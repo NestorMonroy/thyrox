@@ -1,0 +1,28 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(184,36): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:174-194 ---
+    174        },
+    175        async execute(tool, input, toolContext) {
+    176          // Sin puerta de permisos inyectada, el default permite: la decisión de
+    177          // negar es del anfitrión, y fabricarla aquí la escondería.
+    178          const canUseTool = options.permissions?.canUseTool
+    179            ? async (
+    180                requestedTool: typeof tool,
+    181                requestedInput: unknown,
+    182                requestedContext: typeof toolContext,
+    183              ) => {
+    184>               const result = await options.permissions!.canUseTool(
+    185                  requestedTool,
+    186                  requestedInput,
+    187                  requestedContext,
+    188                )
+    189                return {
+    190                  behavior: result.allowed ? 'allow' : 'deny',
+    191                  message: result.reason,
+    192                  updatedInput: requestedInput,
+    193                }
+    194              }

@@ -1,0 +1,75 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/namedImports.test.ts:
+73 |   test('una raíz RELATIVA resuelve igual que una absoluta', () => {
+74 |     const previous = process.cwd()
+75 |     process.chdir(base)
+76 |     try {
+77 |       const rel = missingNamedImports(['app', 'lib'])
+78 |       expect(rel.findings.filter(f => f.kind === 'unresolved').map(f => f.name)).toEqual(['x'])
+                                                                                      ^
+error: expect(received).toEqual(expected)
+
+  [
++   "present",
++   "fn",
++   "ghost",
++   "default",
++   "default",
++   "Shape",
++   "Face",
++   "deepValue",
++   "midValue",
++   "renamed",
++   "present",
+    "x",
++   "feature",
++   "present",
++   "ghostReexport",
+  ]
+
+- Expected  - 0
++ Received  + 14
+
+      at <anonymous> (/home/user/thyrox/tests/verify/namedImports.test.ts:78:82)
+(fail) missingNamedImports > una raíz RELATIVA resuelve igual que una absoluta [2.40ms]
+81 |       process.chdir(previous)
+82 |     }
+83 |   })
+84 |   test('los módulos integrados (bun:, node:) no se miden', () => {
+85 |     const specs = report().findings.map(f => f.specifier)
+86 |     expect(specs).not.toContain('bun:bundle')
+                           ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "bun:bundle"
+Received: [ "../lib/values", "../lib/nodefault", "../lib/barrel", "../lib/does-not-exist",
+  "bun:bundle", "./values"
+]
+
+      at <anonymous> (/home/user/thyrox/tests/verify/namedImports.test.ts:86:23)
+(fail) missingNamedImports > los módulos integrados (bun:, node:) no se miden [2.50ms]
+118 |   test('import * as ns y los destinos de terceros no se miden', () => {
+119 |     expect(names('missing')).not.toContain('whatever')
+120 |     expect(names('missing')).not.toContain('everything')
+121 |   })
+122 |   test('un especificador que no resuelve es otra clase, no un nombre ausente', () => {
+123 |     expect(names('unresolved')).toEqual(['x'])
+                                      ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
++   "feature",
+    "x",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/tests/verify/namedImports.test.ts:123:33)
+(fail) missingNamedImports > un especificador que no resuelve es otra clase, no un nombre ausente [0.40ms]
+
+ 10 pass
+ 3 fail
+ 20 expect() calls
+Ran 13 tests across 1 file. [123.00ms]

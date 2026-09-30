@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash tests/run.sh > .claude/workbench/sustitutos-20260927T025549/h176b/suite.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176b/suite.out", "started_at": "2026-09-27T03:11:15+00:00"}

@@ -1,0 +1,11 @@
+Discover .test.tsx suites in the runner
+
+The TypeScript half collected only *.test.ts, so two bun suites in
+package __tests__ directories (ink's Tree and command-runtime's
+powerup screen) never ran and were absent from the zero count. The
+reach control declared this exact blindness; its disk measurement now
+includes *.test.tsx and counts languages by language, not extension.
+
+Both suites pass (5 pass, 0 fail). bingAdapter.integration.ts stays
+out on purpose: it is a manual script that hits the real Bing, not a
+bun test suite.

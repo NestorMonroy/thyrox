@@ -1,13 +1,12 @@
 import { relative } from 'path'
 import React from 'react'
 import { Box, Text } from '@anthropic/ink'
-import { DiagnosticTrackingService } from '@thyrox/tool-registry/diagnosticTracking.js'
-import type { Attachment } from '@thyrox/agent/attachments.js'
+import { DiagnosticTrackingService, type DiagnosticFile } from '@thyrox/tool-registry/diagnosticTracking.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { CtrlOToExpand } from './CtrlOToExpand.js'
 import { MessageResponse } from './MessageResponse.js'
 
-type DiagnosticsAttachment = Extract<Attachment, { type: 'diagnostics' }>
+type DiagnosticsAttachment = { type: 'diagnostics'; files: DiagnosticFile[] }
 
 type DiagnosticsDisplayProps = {
   attachment: DiagnosticsAttachment

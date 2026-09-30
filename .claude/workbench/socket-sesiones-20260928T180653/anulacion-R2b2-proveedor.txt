@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+45 |   test('disponible devuelve null', () => {
+46 |     expect(fastModeUnavailabilityCause(undefined, {}, context())).toBeNull()
+47 |   })
+48 | 
+49 |   test('apagado: fuera de primera parte o por el entorno', () => {
+50 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ fastModeEnabled: false, apiProvider: 'bedrock' }))).toBe('not_first_party')
+                                                                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: "not_first_party"
+Received: "disabled_by_env"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:50:117)
+(fail) fastModeUnavailabilityCause (gL) > apagado: fuera de primera parte o por el entorno [1.52ms]
+
+ 13 pass
+ 1 fail
+ 52 expect() calls
+Ran 14 tests across 1 file. [211.00ms]

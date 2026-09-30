@@ -1,0 +1,102 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-fkTdys/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-fkTdys/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+# Unhandled error between tests
+-------------------------------
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-fkTdys/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-fkTdys/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+-------------------------------
+
+(fail) updatePidFile (Vt) > sin archivo, o con JSON roto, falla y lo dice [0.64ms]
+94 | 
+95 |   test('una lectura que lanza no rompe la cadena', async () => {
+96 |     writeFileSync(pidFile(), JSON.stringify({ n: 0 }))
+97 |     const throwing: PidFileStorage = {
+98 |       read: async () => {
+99 |         throw new Error('disco')
+                       ^
+error: disco
+      at read (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:99:19)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/src/uds/pidFileRecord.ts:85:36)
+94 | 
+95 |   test('una lectura que lanza no rompe la cadena', async () => {
+96 |     writeFileSync(pidFile(), JSON.stringify({ n: 0 }))
+97 |     const throwing: PidFileStorage = {
+98 |       read: async () => {
+99 |         throw new Error('disco')
+                       ^
+error: disco
+      at read (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:99:19)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/src/uds/pidFileRecord.ts:85:36)
+(fail) updatePidFile (Vt) > una lectura que lanza no rompe la cadena [0.57ms]
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-1iFvRV/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-1iFvRV/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+# Unhandled error between tests
+-------------------------------
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-1iFvRV/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-1iFvRV/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+-------------------------------
+
+(fail) setSessionName (eF) > si el registro no se actualiza avisa, salvo que el registro no sea de esta sesión [0.48ms]
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-p0aw96/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-p0aw96/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+# Unhandled error between tests
+-------------------------------
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-p0aw96/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-p0aw96/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+-------------------------------
+
+(fail) applyAutoSessionName (Rut) > si el registro no se actualizó, vuelve al nombre anterior y lo avisa [0.84ms]
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-SbBbI1/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-SbBbI1/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+# Unhandled error between tests
+-------------------------------
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-KhrCog/pid-file-SbBbI1/4242.json'
+    path: "/tmp/thyrox-tests-KhrCog/pid-file-SbBbI1/4242.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+-------------------------------
+
+(fail) los demás campos del registro > si el registro falla y es de esta sesión, el estado no se publicó [1.10ms]
+
+ 17 pass
+ 5 fail
+ 4 errors
+ 54 expect() calls
+Ran 22 tests across 1 file. [142.00ms]

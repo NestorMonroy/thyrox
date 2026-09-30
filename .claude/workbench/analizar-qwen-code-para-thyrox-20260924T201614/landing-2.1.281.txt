@@ -1,0 +1,18 @@
+==== vt: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function vt [35840,35887)
+function vt(){return x("tengu_stone_shell",!1)}
+==== WVe: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function WVe [136745,136920)
+function WVe(e,n,r){let s=sot(e);if(s===null)return null;let d=(h)=>py(h,n,[h],r),m=!d(s),g=d(e.requested);return{landing:s,landingOutside:m,spellingInside:g,carriedOut:g&&m}}
+==== sen: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function sen [137269,137389)
+function sen(e,n){return`${Nr(e,n.landing)}${n.landingOutside?", which is outside the allowed working directories":""}`}
+==== ien: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function ien [138116,138277)
+function ien(e){return`Where ${KY(e)} leads on disk could not be determined (a link or directory on the way could not be examined, or the links do not resolve)`}
+==== KY: 1 definicion(es) de nivel superior
+---- chunk-015gmret.js function KY [94490,94525)
+function KY(e){return xd(Tn(e),Qt)}
+==== Nr: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function Nr [138043,138116)
+function Nr(e,n){return`${KY(e)} resolves through a symlink to ${KY(n)}`}

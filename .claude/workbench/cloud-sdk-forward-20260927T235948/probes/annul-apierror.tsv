@@ -1,0 +1,3 @@
+instanceof-in-forward	s/^    if (!isApiError(error)) throw error$/    if (!(error instanceof (await import('@anthropic-ai\/sdk')).APIError)) throw error/
+instanceof-in-stream	s/^        const status = isApiError(error) ? error.status ?? 500 : 500$/        const status = error instanceof (await import('@anthropic-ai\/sdk')).APIError ? (error as APIError).status ?? 500 : 500/
+guard-accepts-any-error	s/^  return error instanceof Error \&\& 'status' in error.*$/  return error instanceof Error/

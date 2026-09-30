@@ -1,0 +1,7 @@
+        while IFS=$'\t' read -r p target kind state cpu; do
+            [[ -n "$p" ]] || continue
+            comm=$(cat "/proc/$p/comm" 2>/dev/null || echo '?')
+            echo "sonda $label: $p $comm stdin=$kind($target) estado=$state cpu=${cpu}s" >&2
+            [[ "$kind" == channel ]] && echo "  AVISO $label: pid $p ($comm) lee stdin de un canal ($target)" \
+                "— si su productor no escribe ni cierra, espera para siempre" >&2
+        done <<< "$rows"

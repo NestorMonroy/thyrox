@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(1316,42): error TS18046: '_' is of type 'unknown'.
+  --- código src/packages/agent/QueryEngine.ts:1306-1326 ---
+   1306          // tool_result, and stop_reason isn't end_turn, that's why this fired.
+   1307          // errors[] is turn-scoped via the watermark; previously it dumped the
+   1308          // entire process's logError buffer (ripgrep timeouts, ENOENT, etc).
+   1309          errors: (() => {
+   1310            const all = getInMemoryErrors()
+   1311            const start = errorLogWatermark
+   1312              ? all.lastIndexOf(errorLogWatermark) + 1
+   1313              : 0
+   1314            return [
+   1315              `[ede_diagnostic] result_type=${edeResultType} last_content_type=${edeLastContentType} stop_reason=${lastStopReason}`,
+   1316>             ...all.slice(start).map(_ => _.error),
+   1317            ]
+   1318          })(),
+   1319        }
+   1320        return
+   1321      }
+   1322  
+   1323      // isResultSuccessful() valida la forma del mensaje pero no es un type
+   1324      // predicate, así que tsc no descarta undefined aunque el runtime ya lo
+   1325      // garantice — se hace visible con una guarda explícita.
+   1326      if (result === undefined) {
+src/packages/agent/QueryEngine.ts(1335,32): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1325-1345 ---
+   1325      // garantice — se hace visible con una guarda explícita.
+   1326      if (result === undefined) {
+   1327        return
+   1328      }
+   1329  
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335>       const lastContent = last(result.message.content)
+   1336        if (
+   1337          lastContent?.type === 'text' &&
+   1338          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340          textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {

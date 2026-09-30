@@ -1,15 +1,13 @@
-/**
- * Puerto de `ccnmt: packages/config/utils/expandTilde.ts` (20 líneas
- * fuente). No es uno de los 15 del alcance — es la dependencia de hoja que
- * `plugin/_deps.ts` necesita como import estático de su propia capa
- * («wave-1», sin ciclo): sin dependencias propias salvo `os` (built-in), se
- * porta en el sitio en vez de bloquearse.
- *
- * Expande el `~` inicial de una ruta al directorio home del usuario. Nota:
- * la expansión `~usuario` no se soporta, por razones de seguridad.
- */
 import { homedir } from 'os'
 
+/**
+ * Expands tilde (~) at the start of a path to the user's home directory.
+ * Note: ~username expansion is not supported for security reasons.
+ *
+ * Lives in config (not permission) so config/plugin/_deps.ts can call it
+ * statically — used to be in permission/pathValidation.ts and was lazy-
+ * required to avoid the config → permission cycle.
+ */
 export function expandTilde(path: string): string {
   if (
     path === '~' ||

@@ -12,7 +12,7 @@ import {
   getSessionBypassPermissionsMode,
   getSessionId,
 } from '@thyrox/app-host/bootstrap/state.js'
-import type { AppStateLike as AppState } from '../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { createTaskStateBase, generateTaskId } from '../../Task.js'
 import type { ToolUseContext } from '../../Tool.js'
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'
@@ -77,7 +77,7 @@ function getDefaultTeammateModel(leaderModel: string | null): string {
     // No explicit model configured — follow the leader.
     // undefined follows the leader too, not hardcoded Opus; ant's
     // backward-compat default (hardcoded Opus) doesn't apply to ccb
-    // where non-Anthropic connections have no Claude models.
+    // where non-Anthropic connections have no Anthropic models.
     return leaderModel ?? getHardcodedTeammateModelFallback()
   }
   return parseUserSpecifiedModel(configured)
@@ -93,7 +93,7 @@ function getDefaultTeammateModel(leaderModel: string | null): string {
  * After resolution, the result is repacked with the leader's connection
  * prefix so spawned processes route API calls to the correct endpoint.
  * Without this, non-Anthropic connections (ant-compatible URLs, OpenAI,
- * Gemini) resolve to bare Claude model names that don't match any
+ * Gemini) resolve to bare Anthropic model names that don't match any
  * connection and fall through to the Anthropic first-party API.
  *
  * Exported for testing.
@@ -422,7 +422,7 @@ async function handleSpawnSplitPane(
     await enablePaneBorderStatus()
   }
 
-  // Build the command to spawn Claude Code with teammate identity
+  // Build the command to spawn thyrox with teammate identity
   // Note: We spawn without a prompt - initial instructions are sent via mailbox
   const binaryPath = getTeammateCommand()
 
@@ -622,7 +622,7 @@ async function handleSpawnSeparateWindow(
 
   const paneId = createWindowResult.stdout.trim()
 
-  // Build the command to spawn Claude Code with teammate identity
+  // Build the command to spawn thyrox with teammate identity
   // Note: We spawn without a prompt - initial instructions are sent via mailbox
   const binaryPath = getTeammateCommand()
 
@@ -1037,7 +1037,7 @@ async function handleSpawnInProcess(
 }
 
 /**
- * Handle spawn operation - creates a new Claude Code instance.
+ * Handle spawn operation - creates a new thyrox instance.
  * Uses in-process mode when enabled, otherwise uses tmux/iTerm2 split-pane view.
  * Falls back to in-process if pane backend detection fails (e.g., iTerm2 without
  * it2 CLI or tmux installed).

@@ -1,0 +1,22 @@
+Stop dropping every OTel event; fix provider pins
+
+local-observability replaced getEventLogger and getPromptId with a
+null default because app-host/bootstrap/state.js was not exported. It
+is exported now, and nothing in production ever called
+setGetEventLoggerFn, so logOTelEvent always took its "event dropped"
+branch. The default now reads the real app-host state, through a lazy
+require because app-host depends on this package; the setter stays
+for tests. With the default back at null, exactly the six emission
+cases of systemPromptTelemetry fail. Finding H-THYROX-170.
+
+Provider pins: config's AccountInfo gains the profile fields that
+oauth/client.ts writes (seatTier, ccOnboardingFlags, trial and
+creation dates), which only the provider-internal type had.
+providers.ts writes the APIProvider union one member per line and
+reads modelType through a lazy getInitialSettings that keeps the old
+try; behaviour is unchanged.
+
+Also: detect_client_background stays silent on a ledger job's wait
+sent to the client background, the form the rule now prescribes, and
+truncate.test.ts expects "@th…" after the @claude -> @thyrox rename
+changed its input.

@@ -308,7 +308,7 @@ def write_manifest(destination: pathlib.Path, results: list[ArchiveResult],
 
 
 def main(argv: "list[str] | None" = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=pathlib.Path, default=None,
                         help="raiz del corpus (default: la de thyrox)")
     parser.add_argument("--keep", type=int, default=DEFAULT_KEEP,

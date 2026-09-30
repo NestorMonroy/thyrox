@@ -12,7 +12,7 @@ import { resolve } from 'path'
  *    this by setting projectId fallback when user hasn't configured the
  *    others — pin so a refactor doesn't break the timeout-prevention.
  *
- * 2. CLAUDE_CODE_SKIP_VERTEX_AUTH proxy/test path uses MOCK GoogleAuth
+ * 2. THYROX_CODE_SKIP_VERTEX_AUTH proxy/test path uses MOCK GoogleAuth
  *    (returns empty headers from getRequestHeaders). Pin so the mock
  *    shape stays compatible with real GoogleAuth signature.
  *
@@ -26,7 +26,7 @@ describe('Vertex client config (12s-timeout-prevention)', () => {
   )
 
   test('refreshGcpCredentialsIfNeeded runs BEFORE GoogleAuth import (auth fresh first)', () => {
-    const fnStart = source.indexOf("if (anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')))")
+    const fnStart = source.indexOf("if (anthropic.isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')))")
     const fnSlice = source.slice(fnStart, fnStart + 3500)
     const refreshIdx = fnSlice.indexOf('refreshGcpCredentialsIfNeeded')
     const googleAuthIdx = fnSlice.indexOf("await Promise.all([\n      import('@anthropic-ai/vertex-sdk')")
@@ -35,12 +35,12 @@ describe('Vertex client config (12s-timeout-prevention)', () => {
     expect(googleAuthIdx).toBeGreaterThan(refreshIdx)
   })
 
-  test('refreshGcpCredentials skipped when CLAUDE_CODE_SKIP_VERTEX_AUTH is set', () => {
+  test('refreshGcpCredentials skipped when THYROX_CODE_SKIP_VERTEX_AUTH is set', () => {
     // Test/proxy scenarios don't need real credentials.
-    const fnStart = source.indexOf("if (anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')))")
+    const fnStart = source.indexOf("if (anthropic.isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')))")
     const fnSlice = source.slice(fnStart, fnStart + 1000)
     expect(fnSlice).toMatch(
-      /if\s*\(!anthropic\.isEnvTruthy\(readEnv\('CLAUDE_CODE_SKIP_VERTEX_AUTH'\)\)\)\s*\{[\s\S]*?refreshGcpCredentialsIfNeeded/,
+      /if\s*\(!anthropic\.isEnvTruthy\(readEnv\('THYROX_CODE_SKIP_VERTEX_AUTH'\)\)\)\s*\{[\s\S]*?refreshGcpCredentialsIfNeeded/,
     )
   })
 
@@ -67,7 +67,7 @@ describe('Vertex client config (12s-timeout-prevention)', () => {
     )
   })
 
-  test('CLAUDE_CODE_SKIP_VERTEX_AUTH uses mock GoogleAuth (empty headers)', () => {
+  test('THYROX_CODE_SKIP_VERTEX_AUTH uses mock GoogleAuth (empty headers)', () => {
     // Mock returns getClient → getRequestHeaders that returns {}.
     // Pin the shape so a "let's strengthen the mock" refactor that adds
     // missing fields doesn't accidentally change behavior.
@@ -85,7 +85,9 @@ describe('Vertex client config (12s-timeout-prevention)', () => {
   test('Vertex region from getVertexRegionForModel (per-model)', () => {
     // Vertex doesn't have a single region; some models are only in
     // us-east5, others in us-central1, etc. Pin per-model lookup.
-    expect(source).toMatch(/region:\s*anthropic\.getVertexRegionForModel\(model\)/)
+    // `model` es opcional en la firma del cliente; sin modelo se pide la
+    // región por defecto (cadena vacía).
+    expect(source).toMatch(/region:\s*anthropic\.getVertexRegionForModel\(model \?\? ''\)/)
   })
 
   test('AnthropicVertex + google-auth-library both imported LAZILY', () => {

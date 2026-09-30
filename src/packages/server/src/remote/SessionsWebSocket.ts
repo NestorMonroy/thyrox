@@ -1,21 +1,5 @@
-/**
- * Puerto de `ccnmt: packages/server/src/remote/SessionsWebSocket.ts`.
- *
- * `SDKMessage`/`SDKControl*` — sólo TIPOS (erasados), de
- * `@thyrox/headless-sdk/{agentSdkTypes,controlTypes}.js`.
- * `getOauthConfig`/`getWebSocketTLSOptions`/`getWebSocketProxyAgent`/
- * `getWebSocketProxyUrl`/`logForDebugging`/`errorMessage`/`logError`/
- * `jsonParse`/`jsonStringify` — ver `../internal/pendingCrossPackageDeps.js`.
- *
- * La rama `else` usa `import('ws')` dinámico, EXACTAMENTE como la fuente:
- * no es un rodeo mío por Rule 3 (`@thyrox/ide`/`@thyrox/server` no tienen
- * problema para resolver `ws` — Bun trae un shim nativo del paquete `ws`,
- * verificado con `await import('ws')` en este turno), sino la propia
- * detección de entorno de ccnmt (`typeof Bun !== 'undefined'`). Esa rama
- * nunca se ejecuta bajo este runtime (Bun siempre está definido aquí); se
- * conserva por fidelidad de comportamiento, no porque haga falta.
- */
 import { randomUUID } from 'crypto'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type {
   SDKControlCancelRequest,
@@ -23,36 +7,32 @@ import type {
   SDKControlRequestInner,
   SDKControlResponse,
 } from '@thyrox/headless-sdk/controlTypes.js'
-import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilityLogging,
-  requireLocalObservabilitySlowOperations,
-  requireProviderMtls,
-  requireProviderOauthConstants,
-  requireProviderProxy,
-} from '../internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { getWebSocketTLSOptions } from '@thyrox/provider/mtls.js'
+import { getWebSocketProxyAgent, getWebSocketProxyUrl } from '@thyrox/provider/proxy.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 const RECONNECT_DELAY_MS = 2000
 const MAX_RECONNECT_ATTEMPTS = 5
 const PING_INTERVAL_MS = 30000
 
 /**
- * Máximo de reintentos para 4001 (sesión no encontrada). Durante la
- * compactación el servidor puede considerar la sesión obsoleta un
- * instante; una ventana corta de reintento deja al cliente recuperarse
- * sin rendirse permanentemente.
+ * Maximum retries for 4001 (session not found). During compaction the
+ * server may briefly consider the session stale; a short retry window
+ * lets the client recover without giving up permanently.
  */
 const MAX_SESSION_NOT_FOUND_RETRIES = 3
 
 /**
- * Códigos de cierre de WebSocket que indican un rechazo permanente del
- * lado servidor. El cliente deja de reconectar de inmediato.
- * Nota: 4001 (sesión no encontrada) se maneja aparte con reintentos
- * limitados, ya que puede ser transitorio durante la compactación.
+ * WebSocket close codes that indicate a permanent server-side rejection.
+ * The client stops reconnecting immediately.
+ * Note: 4001 (session not found) is handled separately with limited
+ * retries since it can be transient during compaction.
  */
 const PERMANENT_CLOSE_CODES = new Set([
-  4003, // no autorizado
+  4003, // unauthorized
 ])
 
 type WebSocketState = 'connecting' | 'connected' | 'closed'
@@ -67,12 +47,11 @@ function isSessionsMessage(value: unknown): value is SessionsMessage {
   if (typeof value !== 'object' || value === null || !('type' in value)) {
     return false
   }
-  // Acepta cualquier mensaje con un campo `type` de tipo string. Los
-  // handlers río abajo (sdkMessageAdapter, RemoteSessionManager) deciden
-  // qué hacer con tipos desconocidos. Una allowlist fija aquí descartaría
-  // en silencio tipos de mensaje nuevos que el backend empiece a mandar
-  // antes de que el cliente se actualice.
-  return typeof (value as { type: unknown }).type === 'string'
+  // Accept any message with a string `type` field. Downstream handlers
+  // (sdkMessageAdapter, RemoteSessionManager) decide what to do with
+  // unknown types. A hardcoded allowlist here would silently drop new
+  // message types the backend starts sending before the client is updated.
+  return typeof value.type === 'string'
 }
 
 export type SessionsWebSocketCallbacks = {
@@ -80,35 +59,33 @@ export type SessionsWebSocketCallbacks = {
   onClose?: () => void
   onError?: (error: Error) => void
   onConnected?: () => void
-  /** Se dispara cuando se detecta un cierre transitorio y se agenda un
-   *  reintento. onClose sólo se dispara en cierre permanente (el servidor
-   *  terminó la sesión / se agotaron los intentos). */
+  /** Fired when a transient close is detected and a reconnect is scheduled.
+   *  onClose fires only for permanent close (server ended / attempts exhausted). */
   onReconnecting?: () => void
 }
 
-// Intersección entre globalThis.WebSocket y ws.WebSocket.
+// Common interface between globalThis.WebSocket and ws.WebSocket
 type WebSocketLike = {
   close(): void
   send(data: string): void
-  ping?(): void // Tanto Bun como ws lo soportan.
+  ping?(): void // Bun & ws both support this
 }
 
 /**
- * Cliente WebSocket para conectar con sesiones CCR vía
- * /v1/sessions/ws/{id}/subscribe.
+ * WebSocket client for connecting to CCR sessions via /v1/sessions/ws/{id}/subscribe
  *
- * Protocolo:
- * 1. Conecta a wss://api.anthropic.com/v1/sessions/ws/{sessionId}/subscribe?organization_uuid=...
- * 2. Manda mensaje de auth: { type: 'auth', credential: { type: 'oauth', token: '...' } }
- * 3. Recibe el stream de SDKMessage de la sesión.
+ * Protocol:
+ * 1. Connect to wss://api.anthropic.com/v1/sessions/ws/{sessionId}/subscribe?organization_uuid=...
+ * 2. Send auth message: { type: 'auth', credential: { type: 'oauth', token: '...' } }
+ * 3. Receive SDKMessage stream from the session
  */
 export class SessionsWebSocket {
   private ws: WebSocketLike | null = null
   private state: WebSocketState = 'closed'
   private reconnectAttempts = 0
   private sessionNotFoundRetries = 0
-  private pingInterval: ReturnType<typeof setInterval> | null = null
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  private pingInterval: NodeJS.Timeout | null = null
+  private reconnectTimer: NodeJS.Timeout | null = null
 
   constructor(
     private readonly sessionId: string,
@@ -118,15 +95,9 @@ export class SessionsWebSocket {
   ) {}
 
   /**
-   * Conecta al endpoint WebSocket de sesiones.
+   * Connect to the sessions WebSocket endpoint
    */
   async connect(): Promise<void> {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { logError } = requireLocalObservabilityLogging()
-    const { getOauthConfig } = requireProviderOauthConstants()
-    const { getWebSocketTLSOptions } = requireProviderMtls()
-    const { getWebSocketProxyAgent, getWebSocketProxyUrl } = requireProviderProxy()
-
     if (this.state === 'connecting') {
       logForDebugging('[SessionsWebSocket] Already connecting')
       return
@@ -139,7 +110,7 @@ export class SessionsWebSocket {
 
     logForDebugging(`[SessionsWebSocket] Connecting to ${url}`)
 
-    // Obtiene un token fresco en cada intento de conexión.
+    // Get fresh token for each connection attempt
     const accessToken = this.getAccessToken()
     const headers = {
       Authorization: `Bearer ${accessToken}`,
@@ -147,7 +118,8 @@ export class SessionsWebSocket {
     }
 
     if (typeof Bun !== 'undefined') {
-      // El WebSocket de Bun soporta headers/proxy, pero los tipos DOM no.
+      // Bun's WebSocket supports headers/proxy options but the DOM typings don't
+      // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
       const ws = new globalThis.WebSocket(url, {
         headers,
         proxy: getWebSocketProxyUrl(url),
@@ -178,6 +150,7 @@ export class SessionsWebSocket {
         this.callbacks.onError?.(err)
       })
 
+      // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
       ws.addEventListener('close', (event: CloseEvent) => {
         logForDebugging(
           `[SessionsWebSocket] Closed: code=${event.code} reason=${event.reason}`,
@@ -195,13 +168,13 @@ export class SessionsWebSocket {
         agent: getWebSocketProxyAgent(url),
         ...getWebSocketTLSOptions(),
       })
-      this.ws = ws as unknown as WebSocketLike
+      this.ws = ws
 
       ws.on('open', () => {
         logForDebugging(
           '[SessionsWebSocket] Connection opened, authenticated via headers',
         )
-        // La auth se maneja vía headers, así que quedamos conectados de inmediato.
+        // Auth is handled via headers, so we're immediately connected
         this.state = 'connected'
         this.reconnectAttempts = 0
         this.sessionNotFoundRetries = 0
@@ -232,22 +205,18 @@ export class SessionsWebSocket {
   }
 
   /**
-   * Maneja un mensaje entrante de WebSocket.
+   * Handle incoming WebSocket message
    */
   private handleMessage(data: string): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { logError } = requireLocalObservabilityLogging()
-    const { errorMessage } = requireLocalObservabilityErrorHelpers()
-    const { jsonParse } = requireLocalObservabilitySlowOperations()
     try {
       const message: unknown = jsonParse(data)
 
-      // Reenvía mensajes SDK al callback.
+      // Forward SDK messages to callback
       if (isSessionsMessage(message)) {
         this.callbacks.onMessage(message)
       } else {
         logForDebugging(
-          `[SessionsWebSocket] Ignoring message type: ${typeof message === 'object' && message !== null && 'type' in message ? String((message as { type: unknown }).type) : 'unknown'}`,
+          `[SessionsWebSocket] Ignoring message type: ${typeof message === 'object' && message !== null && 'type' in message ? String(message.type) : 'unknown'}`,
         )
       }
     } catch (error) {
@@ -260,11 +229,9 @@ export class SessionsWebSocket {
   }
 
   /**
-   * Maneja el cierre de WebSocket.
+   * Handle WebSocket close
    */
   private handleClose(closeCode: number): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-
     this.stopPingInterval()
 
     if (this.state === 'closed') {
@@ -276,7 +243,7 @@ export class SessionsWebSocket {
     const previousState = this.state
     this.state = 'closed'
 
-    // Códigos permanentes: deja de reconectar — el servidor terminó la sesión definitivamente.
+    // Permanent codes: stop reconnecting — server has definitively ended the session
     if (PERMANENT_CLOSE_CODES.has(closeCode)) {
       logForDebugging(
         `[SessionsWebSocket] Permanent close code ${closeCode}, not reconnecting`,
@@ -285,10 +252,9 @@ export class SessionsWebSocket {
       return
     }
 
-    // 4001 (sesión no encontrada) puede ser transitorio durante la
-    // compactación: el servidor puede considerar la sesión obsoleta un
-    // instante mientras el worker de CLI está ocupado con la llamada de
-    // compactación y no emite eventos.
+    // 4001 (session not found) can be transient during compaction: the
+    // server may briefly consider the session stale while the CLI worker
+    // is busy with the compaction API call and not emitting events.
     if (closeCode === 4001) {
       this.sessionNotFoundRetries++
       if (this.sessionNotFoundRetries > MAX_SESSION_NOT_FOUND_RETRIES) {
@@ -305,7 +271,7 @@ export class SessionsWebSocket {
       return
     }
 
-    // Intenta reconectar si estábamos conectados.
+    // Attempt reconnection if we were connected
     if (
       previousState === 'connected' &&
       this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS
@@ -322,7 +288,6 @@ export class SessionsWebSocket {
   }
 
   private scheduleReconnect(delay: number, label: string): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     this.callbacks.onReconnecting?.()
     logForDebugging(
       `[SessionsWebSocket] Scheduling reconnect (${label}) in ${delay}ms`,
@@ -341,14 +306,14 @@ export class SessionsWebSocket {
         try {
           this.ws.ping?.()
         } catch {
-          // Ignora errores de ping, el handler de close se ocupa de los problemas de conexión.
+          // Ignore ping errors, close handler will deal with connection issues
         }
       }
     }, PING_INTERVAL_MS)
   }
 
   /**
-   * Detiene el intervalo de ping.
+   * Stop ping interval
    */
   private stopPingInterval(): void {
     if (this.pingInterval) {
@@ -358,12 +323,9 @@ export class SessionsWebSocket {
   }
 
   /**
-   * Manda una respuesta de control de vuelta a la sesión.
+   * Send a control response back to the session
    */
   sendControlResponse(response: SDKControlResponse): void {
-    const { logError } = requireLocalObservabilityLogging()
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { jsonStringify } = requireLocalObservabilitySlowOperations()
     if (!this.ws || this.state !== 'connected') {
       logError(new Error('[SessionsWebSocket] Cannot send: not connected'))
       return
@@ -374,12 +336,9 @@ export class SessionsWebSocket {
   }
 
   /**
-   * Manda una petición de control a la sesión (p. ej. interrupt).
+   * Send a control request to the session (e.g., interrupt)
    */
   sendControlRequest(request: SDKControlRequestInner): void {
-    const { logError } = requireLocalObservabilityLogging()
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { jsonStringify } = requireLocalObservabilitySlowOperations()
     if (!this.ws || this.state !== 'connected') {
       logError(new Error('[SessionsWebSocket] Cannot send: not connected'))
       return
@@ -398,17 +357,16 @@ export class SessionsWebSocket {
   }
 
   /**
-   * Comprueba si está conectado.
+   * Check if connected
    */
   isConnected(): boolean {
     return this.state === 'connected'
   }
 
   /**
-   * Cierra la conexión WebSocket.
+   * Close the WebSocket connection
    */
   close(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     logForDebugging('[SessionsWebSocket] Closing connection')
     this.state = 'closed'
     this.stopPingInterval()
@@ -419,28 +377,25 @@ export class SessionsWebSocket {
     }
 
     if (this.ws) {
-      // Anula los handlers de evento para evitar race conditions durante
-      // la reconexión. Bajo Bun (WebSocket nativo) los handlers onX son la
-      // forma limpia de desengancharlos; bajo Node (paquete ws) los
-      // listeners se adjuntaron con .on() en connect(), pero como ya
-      // vamos a cerrar y anular this.ws, no hace falta limpieza extra.
+      // Null out event handlers to prevent race conditions during reconnect.
+      // Under Bun (native WebSocket), onX handlers are the clean way to detach.
+      // Under Node (ws package), the listeners were attached with .on() in connect(),
+      // but since we're about to close and null out this.ws, no cleanup is needed.
       this.ws.close()
       this.ws = null
     }
   }
 
   /**
-   * Fuerza una reconexión — cierra la conexión existente y establece una
-   * nueva. Útil cuando la suscripción queda obsoleta (p. ej. tras el
-   * apagado de un contenedor).
+   * Force reconnect - closes existing connection and establishes a new one.
+   * Useful when the subscription becomes stale (e.g., after container shutdown).
    */
   reconnect(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     logForDebugging('[SessionsWebSocket] Force reconnecting')
     this.reconnectAttempts = 0
     this.sessionNotFoundRetries = 0
     this.close()
-    // Pequeño delay antes de reconectar (guardado en reconnectTimer para poder cancelarlo).
+    // Small delay before reconnecting (stored in reconnectTimer so it can be cancelled)
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null
       void this.connect()

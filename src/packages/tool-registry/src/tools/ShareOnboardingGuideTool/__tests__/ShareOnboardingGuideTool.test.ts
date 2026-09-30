@@ -42,7 +42,7 @@ describe('tool surface (ant Il5)', () => {
     expect(ShareOnboardingGuideTool.name).toBe(SHARE_ONBOARDING_GUIDE_TOOL_NAME)
   })
   test('isReadOnly: false', () => {
-    expect(ShareOnboardingGuideTool.isReadOnly?.({} as never)).toBe(false)
+    expect(ShareOnboardingGuideTool.isReadOnly?.()).toBe(false)
   })
   test('isConcurrencySafe: false', () => {
     expect(ShareOnboardingGuideTool.isConcurrencySafe?.()).toBe(false)
@@ -64,35 +64,22 @@ describe('tool surface (ant Il5)', () => {
   test('checkPermissions: behavior=allow (ant ships no checkPermissions)', async () => {
     const result = await ShareOnboardingGuideTool.checkPermissions?.(
       { mode: 'check' } as never,
-      {} as never,
     )
     expect(result?.behavior).toBe('allow')
   })
   test('validateInput: { result: true }', async () => {
-    const result = await ShareOnboardingGuideTool.validateInput?.(
-      { mode: 'check' } as never,
-      {} as never,
-    )
+    const result = await ShareOnboardingGuideTool.validateInput?.()
     expect(result).toEqual({ result: true })
   })
   test('renderToolUseMessage: null for default mode, mode string for others', () => {
     expect(
-      ShareOnboardingGuideTool.renderToolUseMessage?.(
-        { mode: 'check' } as never,
-        {} as never,
-      ),
+      ShareOnboardingGuideTool.renderToolUseMessage?.({ mode: 'check' } as never),
     ).toBeNull()
     expect(
-      ShareOnboardingGuideTool.renderToolUseMessage?.(
-        { mode: 'update' } as never,
-        {} as never,
-      ),
+      ShareOnboardingGuideTool.renderToolUseMessage?.({ mode: 'update' } as never),
     ).toBe('update')
     expect(
-      ShareOnboardingGuideTool.renderToolUseMessage?.(
-        { mode: 'delete' } as never,
-        {} as never,
-      ),
+      ShareOnboardingGuideTool.renderToolUseMessage?.({ mode: 'delete' } as never),
     ).toBe('delete')
   })
 })

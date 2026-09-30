@@ -1,0 +1,28 @@
+check "reserva: el registro queda vacio al terminar" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
+# --- dos pools DISTINTOS a la vez, sobre una GPU simulada con estado ---------
+# Integración, no componente: dos `headless-pool` —dos GNU Parallel, cada uno
+# con su -j— comparten la base del historial y por tanto el registro. GPU de
+# 1000 MiB, cada ítem pide 800 y asigna 3 s tarde. Mirando sólo lo libre los
+# dos verían 1000 y correrían juntos; con el registro, uno espera al otro.
+export GPU_STATE="$F/gpu-state" RAMPA_LOG="$F/rampa.log"
+mkdir -p "$GPU_STATE/used"; echo 1000 > "$GPU_STATE/total"; : > "$RAMPA_LOG"
+printf '#!/usr/bin/env bash\nexec bash "%s" "$@"\n' "$RAIZ/tests/session/fakes/stateful-nvidia-smi.sh" > "$F/smi-estado"
+chmod +x "$F/smi-estado"
+dos_pools() {
+  for p in a b; do
+    rm -rf "$F/out-$p"
+    printf 'RAMPA-%s\n' "$p" | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/no-existe" \
+      HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-$p" \
+      --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-$p.salida" 2>&1 &
+  done
+  wait
+}
+dos_pools
+check "dos pools: los dos items terminan" \
+  "$(cat "$F/pool-a.salida" "$F/pool-b.salida" | gawk '/^items=/{print}' | sort -u)" "items=1 ok=1 fallidos=0"
+# Cuántos ítems corrieron a la vez, de los instantes de arranque y fin.
+check "dos pools: nunca corren juntos (máximo simultáneo 1)" \
+  "$(sort -k2,2n "$RAMPA_LOG" | gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}')" "1"
+check "dos pools: el registro queda vacío" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
+unset GPU_STATE RAMPA_LOG
+unset HIST

@@ -18,6 +18,11 @@ export function HookProgressMessage({
   toolUseID,
   isTranscriptMode,
 }: Props): React.ReactNode {
+  // hookEvent llega tipado como unknown desde el stub del SDK (HookEvent en
+  // agentSdkTypes.ts); los llamadores sólo pasan 'PreToolUse'/'PostToolUse'.
+  if (typeof hookEvent !== 'string') {
+    return null
+  }
   const inProgressHookCount =
     lookups.inProgressHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
   const resolvedHookCount =

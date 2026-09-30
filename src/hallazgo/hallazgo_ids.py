@@ -106,11 +106,11 @@ RESOLVE_STORE = _StoreSentinel('RESOLVE_STORE')
 NO_STORE = _StoreSentinel('NO_STORE')
 
 
-def _resolved_store(store_path):
+def _resolved_store(store_path: 'Path | _StoreSentinel | None') -> 'Path | None':
     """La ruta del store, o ``None`` si el caller declaró el opt-out."""
-    if store_path is RESOLVE_STORE:
-        return reach.agent_store_path()
-    if store_path is NO_STORE or store_path is None:
+    if isinstance(store_path, _StoreSentinel):
+        if store_path is RESOLVE_STORE:
+            return reach.agent_store_path()
         return None
     return store_path
 
@@ -189,9 +189,9 @@ def store_numbers(store_path: Path, prefix: str) -> list[int]:
     return numbers
 
 
-#: El acuñador ANTEPONE ``H-``: su argumento es la capa DESNUDA. Medido por
-#: conducta 2026-09-17 al acuñar ``H-THYROX-73`` — ``acunar H-THYROX`` devolvía
-#: ``H-H-THYROX-01``, un id malformado que entra al corpus si nadie lo mira.
+#: El acuñador ANTEPONE ``H-``: su argumento es la capa DESNUDA. Con el prefijo
+#: completo (``acunar H-THYROX``) devolvería ``H-H-THYROX-01``, un id
+#: malformado que entra al corpus si nadie lo mira.
 _BARE_PREFIX_RE = re.compile(r'[A-Za-z]+')
 
 
@@ -266,7 +266,7 @@ def is_free(source_root: Path, full_id: str,
     return number not in used
 
 
-def _cmd_mint(args: argparse.Namespace) -> int:
+def _cmd_propose_id(args: argparse.Namespace) -> int:
     root = docs_root(args.consumer)
     print(next_id(root, args.prefix))   # default: árbol + store
     return 0
@@ -288,15 +288,24 @@ def build_parser() -> argparse.ArgumentParser:
                      'iniciativa.')
     sub = parser.add_subparsers(dest='comando', required=True)
 
-    mint = sub.add_parser(
-        'acunar', help='imprime el next_number H-<PREFIJO>-N libre')
-    mint.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
-    mint.add_argument('--consumer', default='docs',
+    # `propose-id` y `verify` son los nombres públicos; `mint`, `acunar` y
+    # `verificar` quedan como alias para los guiones y documentos que ya los
+    # invocan. «Proponer» y no «acuñar» ni «emitir»: el número NO se reserva,
+    # y un nombre que prometa la asignación invita a saltarse el registro que
+    # sí la hace (H-THYROX-26).
+    propose = sub.add_parser(
+        'propose-id', aliases=['mint', 'acunar'],
+        help='propone H-<PREFIJO>-N para un hallazgo nuevo',
+        description='Propone H-<PREFIJO>-N: el mayor número usado en los .rst y en '
+                    'el store, más uno. Es una propuesta: no lo reserva. Queda '
+                    'asignado cuando se escribe su fila o su .rst.')
+    propose.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
+    propose.add_argument('--consumer', default='docs',
                          help='el clon a resolver con reach.root (default: docs)')
-    mint.set_defaults(func=_cmd_mint)
+    propose.set_defaults(func=_cmd_propose_id)
 
     verify = sub.add_parser(
-        'verificar', help='¿un H-<PREFIJO>-N ya elegido está libre?')
+        'verify', aliases=['verificar'], help='¿un H-<PREFIJO>-N ya elegido está libre?')
     verify.add_argument('id', help='el identificador completo, p. ej. H-API-1112')
     verify.add_argument('--consumer', default='docs')
     verify.set_defaults(func=_cmd_verify)

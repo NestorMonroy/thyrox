@@ -1,0 +1,2 @@
+src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+src/packages/daemon/src/workerVm.ts

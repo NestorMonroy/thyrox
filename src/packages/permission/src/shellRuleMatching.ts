@@ -1,31 +1,16 @@
 /**
- * Porte fiel de `ccnmt: packages/permission/src/shellRuleMatching.ts`
- * (228 líneas, 6 exports, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO: las seis funciones y el tipo
- * `ShellPermissionRule` están presentes, con el mismo cuerpo carácter por
- * carácter.
+ * Shared permission rule matching utilities for shell tools.
  *
- * Utilidades compartidas de emparejamiento de reglas de permiso para
- * herramientas de shell — parseo de reglas (exact/prefix/wildcard),
- * emparejamiento de comandos contra reglas, y generación de sugerencias
- * de permiso. Este es el motor de **decisión** central de este paquete
- * para reglas de shell: cambiar su forma cambia qué comando pasa o no.
- *
- * Divergencia medida: `PermissionUpdate` se importa aquí de
- * `./permissionTypes.js` en vez de `./PermissionUpdateSchema.js` (la
- * fuente). Es el MISMO tipo — `PermissionUpdateSchema.ts` en la fuente lo
- * re-exporta sin cambios desde `./types/permissions.js` → `../permissionTypes.js`
- * (mismo linaje que documenta `types/permissions.ts` de este paquete) — y
- * evita depender del archivo `PermissionUpdateSchema.ts`, cuyo cuerpo
- * (schemas Zod) está bloqueado por la ausencia de `zod` en este paquete.
- *
- * Sin más divergencias.
+ * Extracts common logic for:
+ * - Parsing permission rules (exact, prefix, wildcard)
+ * - Matching commands against rules
+ * - Generating permission suggestions
  */
-import type { PermissionUpdate } from './permissionTypes.js'
 
-// Placeholders de tipo sentinela (byte nulo) para el escapado del patrón
-// wildcard — a nivel de módulo para que los objetos RegExp se compilen
-// una sola vez en vez de por cada comprobación de permiso.
+import type { PermissionUpdate } from './PermissionUpdateSchema.js'
+
+// Null-byte sentinel placeholders for wildcard pattern escaping — module-level
+// so the RegExp objects are compiled once instead of per permission check.
 const ESCAPED_STAR_PLACEHOLDER = '\x00ESCAPED_STAR\x00'
 const ESCAPED_BACKSLASH_PLACEHOLDER = '\x00ESCAPED_BACKSLASH\x00'
 const ESCAPED_STAR_PLACEHOLDER_RE = new RegExp(ESCAPED_STAR_PLACEHOLDER, 'g')
@@ -35,7 +20,7 @@ const ESCAPED_BACKSLASH_PLACEHOLDER_RE = new RegExp(
 )
 
 /**
- * Unión discriminada de regla de permiso parseada.
+ * Parsed permission rule discriminated union.
  */
 export type ShellPermissionRule =
   | {
@@ -52,8 +37,8 @@ export type ShellPermissionRule =
     }
 
 /**
- * Extrae el prefijo de la sintaxis legacy `:*` (p. ej. "npm:*" -> "npm").
- * Se mantiene por compatibilidad hacia atrás.
+ * Extract prefix from legacy :* syntax (e.g., "npm:*" -> "npm")
+ * This is maintained for backwards compatibility.
  */
 export function permissionRuleExtractPrefix(
   permissionRule: string,
@@ -63,28 +48,27 @@ export function permissionRuleExtractPrefix(
 }
 
 /**
- * Verdadero si el patrón contiene wildcards sin escapar (que no son
- * sintaxis legacy `:*`). Devuelve true si el patrón contiene `*` que no
- * están escapados con `\` ni forman parte de `:*` al final.
+ * Check if a pattern contains unescaped wildcards (not legacy :* syntax).
+ * Returns true if the pattern contains * that are not escaped with \ or part of :* at the end.
  */
 export function hasWildcards(pattern: string): boolean {
-  // Si termina en :*, es sintaxis de prefijo legacy, no wildcard.
+  // If it ends with :*, it's legacy prefix syntax, not wildcard
   if (pattern.endsWith(':*')) {
     return false
   }
-  // Busca un `*` sin escapar en cualquier posición. Un asterisco está sin
-  // escapar si no está precedido por una barra invertida, o si está
-  // precedido por un número par de barras invertidas (barras escapadas).
+  // Check for unescaped * anywhere in the pattern
+  // An asterisk is unescaped if it's not preceded by a backslash,
+  // or if it's preceded by an even number of backslashes (escaped backslashes)
   for (let i = 0; i < pattern.length; i++) {
     if (pattern[i] === '*') {
+      // Count backslashes before this asterisk
       let backslashCount = 0
       let j = i - 1
       while (j >= 0 && pattern[j] === '\\') {
         backslashCount++
         j--
       }
-      // Con un número par de barras invertidas (incluido 0), el asterisco
-      // está sin escapar.
+      // If even number of backslashes (including 0), the asterisk is unescaped
       if (backslashCount % 2 === 0) {
         return true
       }
@@ -94,38 +78,40 @@ export function hasWildcards(pattern: string): boolean {
 }
 
 /**
- * Empareja un comando contra un patrón wildcard. `*` empareja cualquier
- * secuencia de caracteres. `\*` empareja un asterisco literal. `\\`
- * empareja una barra invertida literal.
+ * Match a command against a wildcard pattern.
+ * Wildcards (*) match any sequence of characters.
+ * Use \* to match a literal asterisk character.
+ * Use \\ to match a literal backslash.
  *
- * @param pattern - el patrón de regla de permiso con wildcards
- * @param command - el comando a emparejar contra el patrón
- * @returns true si el comando empareja con el patrón
+ * @param pattern - The permission rule pattern with wildcards
+ * @param command - The command to match against
+ * @returns true if the command matches the pattern
  */
 export function matchWildcardPattern(
   pattern: string,
   command: string,
   caseInsensitive = false,
 ): boolean {
-  // Recorta espacio en blanco al inicio/final del patrón.
+  // Trim leading/trailing whitespace from pattern
   const trimmedPattern = pattern.trim()
 
-  // Procesa el patrón para manejar secuencias de escape: \* y \\.
+  // Process the pattern to handle escape sequences: \* and \\
   let processed = ''
   let i = 0
 
   while (i < trimmedPattern.length) {
     const char = trimmedPattern[i]
 
+    // Handle escape sequences
     if (char === '\\' && i + 1 < trimmedPattern.length) {
       const nextChar = trimmedPattern[i + 1]
       if (nextChar === '*') {
-        // \* -> placeholder de asterisco literal
+        // \* -> literal asterisk placeholder
         processed += ESCAPED_STAR_PLACEHOLDER
         i += 2
         continue
       } else if (nextChar === '\\') {
-        // \\ -> placeholder de barra invertida literal
+        // \\ -> literal backslash placeholder
         processed += ESCAPED_BACKSLASH_PLACEHOLDER
         i += 2
         continue
@@ -136,33 +122,31 @@ export function matchWildcardPattern(
     i++
   }
 
-  // Escapa caracteres especiales de regex excepto *.
+  // Escape regex special characters except *
   const escaped = processed.replace(/[.+?^${}()|[\]\\'"]/g, '\\$&')
 
-  // Convierte * sin escapar a .* para el emparejamiento wildcard.
+  // Convert unescaped * to .* for wildcard matching
   const withWildcards = escaped.replace(/\*/g, '.*')
 
-  // Convierte los placeholders de vuelta a literales de regex escapados.
+  // Convert placeholders back to escaped regex literals
   let regexPattern = withWildcards
     .replace(ESCAPED_STAR_PLACEHOLDER_RE, '\\*')
     .replace(ESCAPED_BACKSLASH_PLACEHOLDER_RE, '\\\\')
 
-  // Cuando un patrón termina en ' *' (espacio + wildcard sin escapar) Y ese
-  // wildcard final es el ÚNICO wildcard sin escapar, se hace opcional el
-  // espacio-y-argumentos finales para que 'git *' empareje tanto 'git add'
-  // como el 'git' desnudo. Esto alinea el emparejamiento wildcard con la
-  // semántica de regla de prefijo (git:*). Los patrones con varios
-  // wildcards como '* run *' se excluyen — hacer opcional el último
-  // wildcard emparejaría incorrectamente 'npm run' (sin argumento final).
+  // When a pattern ends with ' *' (space + unescaped wildcard) AND the trailing
+  // wildcard is the ONLY unescaped wildcard, make the trailing space-and-args
+  // optional so 'git *' matches both 'git add' and bare 'git'.
+  // This aligns wildcard matching with prefix rule semantics (git:*).
+  // Multi-wildcard patterns like '* run *' are excluded — making the last
+  // wildcard optional would incorrectly match 'npm run' (no trailing arg).
   const unescapedStarCount = (processed.match(/\*/g) || []).length
   if (regexPattern.endsWith(' .*') && unescapedStarCount === 1) {
     regexPattern = regexPattern.slice(0, -3) + '( .*)?'
   }
 
-  // Crea el regex que empareja la cadena completa. La bandera 's'
-  // (dotAll) hace que '.' empareje saltos de línea, para que los
-  // wildcards emparejen comandos con saltos de línea embebidos (p. ej.
-  // contenido de heredoc tras splitCommand).
+  // Create regex that matches the entire string.
+  // The 's' (dotAll) flag makes '.' match newlines, so wildcards match
+  // commands containing embedded newlines (e.g. heredoc content after splitCommand).
   const flags = 's' + (caseInsensitive ? 'i' : '')
   const regex = new RegExp(`^${regexPattern}$`, flags)
 
@@ -170,12 +154,12 @@ export function matchWildcardPattern(
 }
 
 /**
- * Parsea un string de regla de permiso en un objeto de regla estructurado.
+ * Parse a permission rule string into a structured rule object.
  */
 export function parsePermissionRule(
   permissionRule: string,
 ): ShellPermissionRule {
-  // Primero comprueba la sintaxis legacy de prefijo :* (compatibilidad).
+  // Check for legacy :* prefix syntax first (backwards compatibility)
   const prefix = permissionRuleExtractPrefix(permissionRule)
   if (prefix !== null) {
     return {
@@ -184,7 +168,7 @@ export function parsePermissionRule(
     }
   }
 
-  // Comprueba la sintaxis nueva de wildcard (contiene * pero no :* al final).
+  // Check for new wildcard syntax (contains * but not :* at end)
   if (hasWildcards(permissionRule)) {
     return {
       type: 'wildcard',
@@ -192,7 +176,7 @@ export function parsePermissionRule(
     }
   }
 
-  // Si no, es un emparejamiento exacto.
+  // Otherwise, it's an exact match
   return {
     type: 'exact',
     command: permissionRule,
@@ -200,8 +184,7 @@ export function parsePermissionRule(
 }
 
 /**
- * Genera una sugerencia de actualización de permiso para un emparejamiento
- * exacto de comando.
+ * Generate permission update suggestion for an exact command match.
  */
 export function suggestionForExactCommand(
   toolName: string,
@@ -223,8 +206,7 @@ export function suggestionForExactCommand(
 }
 
 /**
- * Genera una sugerencia de actualización de permiso para un
- * emparejamiento de prefijo.
+ * Generate permission update suggestion for a prefix match.
  */
 export function suggestionForPrefix(
   toolName: string,

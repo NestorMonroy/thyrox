@@ -1,10 +1,3 @@
-/**
- * Puerto fiel de `ccnmt: packages/storage/src/fileReadCache.ts` (2440 bytes
- * fuente, 1 símbolo exportado — el singleton `fileReadCache` — porte
- * completo). Sin divergencias: sus dos únicos imports (`./fileEncoding.js`,
- * `./fsOperations.js`) son módulos de este mismo paquete, ambos portados en
- * este pase.
- */
 import { detectFileEncoding } from './fileEncoding.js'
 import { getFsImplementation } from './fsOperations.js'
 

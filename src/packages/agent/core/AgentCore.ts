@@ -1,18 +1,9 @@
-/**
- * Porte de `ccnmt: packages/agent/core/AgentCore.ts`.
- *
- * La fachada del bucle: guarda el estado acumulado entre turnos (mensajes,
- * conteo de turnos, uso agregado, modelo, sesión) y delega la conversación
- * en sí a `AgentLoop`. `run` reenvía cada evento del loop, actualiza su
- * propio estado a partir de él (`updateState`), y corta el generador con
- * un `done: interrupted` en cuanto `interrupt()` marca la bandera — sin
- * esperar a que el loop termine su turno actual por su cuenta.
- */
-import type { AgentDeps } from '../agentDeps.ts'
-import type { AgentEvent, DoneReason } from '../agentEvents.ts'
-import type { AgentState, AgentInput } from '../agentState.ts'
-import type { CoreMessage, Usage } from '../agentMessages.ts'
-import { AgentLoop } from './AgentLoop.ts'
+
+import type { AgentDeps } from '../types/deps.js'
+import type { AgentEvent, DoneReason } from '../types/events.js'
+import type { AgentState, AgentInput } from '../types/state.js'
+import type { CoreMessage, Usage } from '../types/messages.js'
+import { AgentLoop } from './AgentLoop.js'
 
 export class AgentCore {
   private loop: AgentLoop
@@ -39,10 +30,6 @@ export class AgentCore {
   }
 
   /**
-   * Corre el loop y reenvía sus eventos, actualizando el estado propio a
-   * medida que llegan. Si `interrupt()` marcó la bandera durante el `yield`
-   * al llamador, emite `done: interrupted` y retorna sin drenar el resto
-   * del generador interno.
    */
   async *run(input: AgentInput): AsyncGenerator<AgentEvent> {
     this._interrupted = false
@@ -93,6 +80,7 @@ export class AgentCore {
   setModel(model: string): void {
     this._model = model
   }
+
 
   private updateState(event: AgentEvent): void {
     switch (event.type) {

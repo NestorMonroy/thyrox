@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/skills/skillChangeDetector.ts:268:    if (hasBlockingResult(results)) {
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-269-      logForDebugging(
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-270-        `ConfigChange hook blocked skill reload (${paths.length} paths)`,
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-271-      )
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-272-      return
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-273-    }
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-274-    clearSkillCaches()
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-275-    clearCommandsCache()
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-276-    resetSentSkillNames()
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-277-    skillsChanged.emit()
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-278-  }, testOverrides?.reloadDebounce ?? RELOAD_DEBOUNCE_MS)
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-279-}
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-280-
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-281-/**
+src/packages/tool-registry/src/skills/skillChangeDetector.ts-282- * Reset internal state for testing purposes only.

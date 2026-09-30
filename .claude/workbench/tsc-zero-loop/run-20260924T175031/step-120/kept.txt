@@ -1,0 +1,7 @@
+src/packages/agent/hooks/execAgentHook.ts
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx
+src/packages/repl/src/components/messages/AttachmentMessage.tsx
+src/packages/tool-registry/src/tools/SkillTool/UI.tsx
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts

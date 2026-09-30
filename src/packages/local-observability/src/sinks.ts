@@ -1,18 +1,13 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/sinks.ts` (14
- * líneas fuente, 100 % portado).
- */
 
 import { initializeErrorLogSink } from './logging/error-log-sink.js'
 
 /**
- * Acopla los sinks locales al proceso que NO reenvían telemetría hacia
- * afuera. Se llama desde setup() para el comando por defecto; otros
- * puntos de entrada (subcomandos, daemon, bridge) lo llaman
- * directamente porque no pasan por setup().
+ * Attach process-local sinks that do not forward telemetry externally.
+ * Called from setup() for the default command; other entrypoints (subcommands,
+ * daemon, bridge) call this directly since they bypass setup().
  *
- * Módulo hoja — se mantiene fuera de setup.ts para evitar el ciclo de
- * import setup → commands → bridge → setup.
+ * Leaf module — kept out of setup.ts to avoid the setup → commands → bridge
+ * → setup import cycle.
  */
 export function initSinks(): void {
   initializeErrorLogSink()

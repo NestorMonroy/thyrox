@@ -2,7 +2,7 @@
  * El prompt de sistema de la CLI, armado POR CAPAS (A.4.2).
  *
  * Antes de este módulo la CLI enviaba `flag(argv,'system')` o una frase fija,
- * así que el `CLAUDE.md` del proyecto no llegaba nunca al modelo y una regla
+ * así que el `THYROX.md` del proyecto no llegaba nunca al modelo y una regla
  * con `paths:` tampoco — ni la que casa ni la que no. El mecanismo que las
  * separa ya estaba escrito y probado en `@thyrox/agent`
  * (`loop/context/systemPrompt.ts`: `parseRule`, `matchesPath`, el filtro por
@@ -12,8 +12,8 @@
  * lo que permite que el prefijo se reutilice entre turnos:
  *
  *   base                       el prompt propio del harness; nunca se descarta
- *   CLAUDE.md                  el gobierno del proyecto
- *   .claude/CLAUDE.md          el gobierno de la sesión
+ *   THYROX.md                  el gobierno del proyecto
+ *   .claude/THYROX.md          el gobierno de la sesión
  *   .claude/rules/*.md         sin `paths:`, el piso; con `paths:`, sólo si
  *                              `--target-path` casa alguno de sus patrones
  *

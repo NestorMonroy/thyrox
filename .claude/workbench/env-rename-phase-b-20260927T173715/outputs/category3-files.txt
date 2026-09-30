@@ -1,0 +1,8 @@
+src/packages/agent/__tests__/compactDeltaAttachments.test.ts
+src/packages/binary/__tests__/declaration.test.ts
+src/packages/cli/__tests__/bin.test.ts
+src/packages/cli/__tests__/workbench.test.ts
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+tests/package/dependencies.test.ts
+tests/smoke/headless-smoke.test.ts
+tests/unit/utils/envUtils.test.ts

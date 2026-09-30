@@ -32,7 +32,12 @@ const BUILT_IN_NAMES = new Set([
   'compact',
 ])
 
+// El resto del módulo se conserva: otros módulos del grafo importan de él
+// (`getCommandName`), y un sustituto con sólo esta función los rompía al
+// enlazar.
+const realCommandRuntime = await import('@thyrox/command-runtime/runtime')
 mock.module('@thyrox/command-runtime/runtime', () => ({
+  ...realCommandRuntime,
   builtInCommandNames: () => BUILT_IN_NAMES,
 }))
 

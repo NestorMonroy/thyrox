@@ -9,6 +9,7 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     "types": [
       "bun"
     ]
@@ -17,6 +18,9 @@
     "src/adapters/buildSwarmAgentDeps.ts",
     "src/types/deps.ts",
     "src/mailbox/index.ts",
-    "src/core/teamHelpers.ts"
+    "src/core/teamHelpers.ts",
+    "../cli/src/types/global.d.ts",
+    "../@ant/ink/src/types/ink-jsx.d.ts",
+    "../@ant/ink/src/types/ink-elements.d.ts"
   ]
 }

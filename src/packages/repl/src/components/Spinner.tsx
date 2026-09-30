@@ -43,6 +43,7 @@ import {
 import { TeammateSpinnerTree } from './Spinner/TeammateSpinnerTree.js'
 import { useAnimationFrame } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 export type { SpinnerMode } from './Spinner/types.js'
 
 const DEFAULT_CHARACTERS = getDefaultCharacters()
@@ -84,7 +85,7 @@ export function SpinnerWithVerb(props: Props): React.ReactNode {
   const briefEnvEnabled =
     feature('KAIROS') || feature('KAIROS_BRIEF')
       ?
-        useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_BRIEF), [])
+        useMemo(() => isEnvTruthy(process.env.THYROX_CODE_BRIEF), [])
       : false
 
   // Runtime gate mirrors isBriefEnabled() but inlined — importing from
@@ -264,10 +265,6 @@ function SpinnerWithVerbInner({
   const messageColor = overrideColor ?? defaultColor
   const shimmerColor = overrideShimmerColor ?? defaultShimmerColor
 
-  // TTFT display is gated to internal builds — apiMetricsRef was removed from
-  // props during a refactor, so skip this until it's re-threaded.
-  let ttftText: string | null = null
-
   // When leader is idle but teammates are running (and we're viewing the leader),
   // show a static dim idle display instead of the animated spinner — otherwise
   // useStalledAnimation detects no new tokens after 3s and turns the spinner red.
@@ -331,7 +328,7 @@ function SpinnerWithVerbInner({
     : showClearTip && !nextTask
       ? 'Use /clear to start fresh when switching topics and free up context'
       : showBtwTip && !nextTask
-        ? "Use /btw to ask a quick side question without interrupting Claude's current work"
+        ? `Use /btw to ask a quick side question without interrupting ${PRODUCT_NAME}'s current work`
         : spinnerTip
 
   // Budget text (ant-only) — shown above the tip line

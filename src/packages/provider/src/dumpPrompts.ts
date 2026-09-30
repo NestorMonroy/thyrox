@@ -3,7 +3,7 @@ import { createHash } from 'crypto'
 import { promises as fs } from 'fs'
 import { dirname, join } from 'path'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 function hashString(str: string): string {
@@ -58,7 +58,7 @@ export function addApiRequestToCache(requestData: unknown): void {
 
 export function getDumpPromptsPath(agentIdOrSessionId?: string): string {
   return join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     'dump-prompts',
     `${agentIdOrSessionId ?? getSessionId()}.jsonl`,
   )

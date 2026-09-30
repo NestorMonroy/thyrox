@@ -18,7 +18,7 @@
 ## Esfuerzo: incluir retrabajo y trabajo no-funcional (MM v5.0 Parte 2 §3)
 
 > **Regla (no negociable) — el esfuerzo de calibración NO se calcula solo con las
-> corridas "limpias".** Excluir los fallos/retrabajo o el trabajo de 0 CFP infla
+> ejecuciones "limpias".** Excluir los fallos/retrabajo o el trabajo de 0 CFP infla
 > la productividad y subestima toda estimación posterior.
 
 El Measurement Manual v5.0 (Parte 2, §3, líneas 749-771) es explícito:
@@ -50,7 +50,7 @@ El Measurement Manual v5.0 (Parte 2, §3, líneas 749-771) es explícito:
    [manual/guideline-agile-cosmic-trudel-buglione.md](manual/guideline-agile-cosmic-trudel-buglione.md),
    Trudel & Buglione IWSM/MetriKon 2010): la correlación CFP↔esfuerzo es buena
    **agregando** los tamaños de las US/procesos de la iteración (y los USP de
-   Fibonacci **no son una medida**), no eligiendo las corridas limpias.
+   Fibonacci **no son una medida**), no eligiendo las ejecuciones limpias.
 
 **Fuente de datos del esfuerzo:** debe ser trazable (en kaupamex: `duration_ms`
 de los subagentes + overhead de reconciliación del orquestador). Marca lo que NO

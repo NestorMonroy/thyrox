@@ -17,6 +17,9 @@
 
 export const SPINNER_FRAME_MS = 120
 
+/** Paleta fija de seis glifos, garantizada por `as const`. */
+type SpinnerFrameSet = readonly [string, string, string, string, string, string]
+
 /** Default frames (Unicode sparkles, U+00B7 → U+273D). */
 const DEFAULT_FRAMES = ['·', '✢', '✳', '✶', '✻', '✽'] as const
 
@@ -29,7 +32,7 @@ const GHOSTTY_FRAMES = ['·', '✢', '✳', '✶', '✻', '*'] as const
  *
  * Source: ant ezH = X6(() => ..., () => process.env.TERM).
  */
-export function getSpinnerFrames(): readonly string[] {
+export function getSpinnerFrames(): SpinnerFrameSet {
   if (process.env.TERM === 'xterm-ghostty') return GHOSTTY_FRAMES
   return DEFAULT_FRAMES
 }
@@ -66,5 +69,10 @@ export function getCompletedGlyph(): string {
  */
 export function pickSpinnerFrame(nowMs: number): string {
   const cycle = getSpinnerFramesCycle()
-  return cycle[Math.floor(nowMs / SPINNER_FRAME_MS) % cycle.length]
+  const frame = cycle[Math.floor(nowMs / SPINNER_FRAME_MS) % cycle.length]
+  if (frame === undefined) {
+    // El módulo sobre `cycle.length` siempre produce un índice válido: `cycle` nunca está vacío.
+    throw new Error('spinner cycle produced no frame')
+  }
+  return frame
 }

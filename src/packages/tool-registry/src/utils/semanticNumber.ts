@@ -1,45 +1,36 @@
 import { z } from 'zod/v4'
 
 /**
- * Número que además admite literales decimales en cadena: `"30"`, `"-5"`,
- * `"3.14"`.
+ * Number that also accepts numeric string literals like "30", "-5", "3.14".
  *
- * Procedencia: `ccnmt: packages/tool-registry/src/utils/semanticNumber.ts`
- * (36 líneas). Ese árbol declara `"license": "UNLICENSED"`, así que el cuerpo
- * se reimplementa y no se copia.
+ * Tool inputs arrive as model-generated JSON. The model occasionally quotes
+ * numbers — `"head_limit":"30"` instead of `"head_limit":30` — and z.number()
+ * rejects that with a type error. z.coerce.number() is the wrong fix: it
+ * accepts values like "" or null by converting them via JS Number(), masking
+ * bugs rather than surfacing them.
  *
- * La entrada de una herramienta es JSON que escribe el modelo, y el modelo
- * entrecomilla números de vez en cuando —`"head_limit":"30"` en vez de
- * `"head_limit":30`—. `z.number()` lo rechaza por tipo.
+ * Only strings that are valid decimal number literals (matching /^-?\d+(\.\d+)?$/)
+ * are coerced. Anything else passes through and is rejected by the inner schema.
  *
- * `z.coerce.number()` NO es el arreglo: acepta `""` y `null` convirtiéndolos
- * con `Number()`, que da `0`. Eso no tolera un descuido del modelo: enmascara
- * un defecto y lo entrega como un cero legítimo.
+ * z.preprocess emits {"type":"number"} to the API schema, so the model is
+ * still told this is a number — the string tolerance is invisible client-side
+ * coercion, not an advertised input shape.
  *
- * Sólo se convierte lo que es un literal decimal —`/^-?\d+(\.\d+)?$/`—. Todo
- * lo demás pasa tal cual y lo rechaza el esquema interno: notación científica
- * (`"1e5"`), hexadecimal (`"0x10"`), signo explícito (`"+5"`), punto sin parte
- * entera (`".5"`) o sin parte decimal (`"5."`), y cualquier cosa con espacios.
+ * .optional()/.default() go INSIDE (on the inner schema), not chained after:
+ * chaining them onto ZodPipe widens z.output<> to unknown in Zod v4.
  *
- * `z.preprocess` emite `{"type":"number"}` al esquema del API, así que al
- * modelo se le sigue anunciando un número.
- *
- * `.optional()` y `.default()` van DENTRO, igual que en `semanticBoolean`.
- *
- *   semanticNumber()                          -> number
- *   semanticNumber(z.number().optional())     -> number | undefined
- *   semanticNumber(z.number().default(0))     -> number
+ *   semanticNumber()                              → number
+ *   semanticNumber(z.number().optional())         → number | undefined
+ *   semanticNumber(z.number().default(0))         → number
  */
 export function semanticNumber<T extends z.ZodType>(
   inner: T = z.number() as unknown as T,
 ) {
-  return z.preprocess((value: unknown) => {
-    if (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value)) {
-      const parsed = Number(value)
-      if (Number.isFinite(parsed)) {
-        return parsed
-      }
+  return z.preprocess((v: unknown) => {
+    if (typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v)) {
+      const n = Number(v)
+      if (Number.isFinite(n)) return n
     }
-    return value
+    return v
   }, inner)
 }

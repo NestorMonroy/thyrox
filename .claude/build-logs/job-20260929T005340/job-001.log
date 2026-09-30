@@ -1,0 +1,17 @@
+bun test v1.3.11 (af24e281)
+121 |         const cut = calls === 1
+122 |         const body = new ReadableStream<Uint8Array>({
+123 |           start(controller) {
+124 |             if (cut) {
+125 |               controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+126 |               controller.error(new Error('cortado'))
+                                         ^
+error: cortado
+      at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:126:36)
+      at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:122:22)
+
+ 4687 pass
+ 0 fail
+ 8777 expect() calls
+Ran 4687 tests across 273 files. [14.38s]
+EXIT=0

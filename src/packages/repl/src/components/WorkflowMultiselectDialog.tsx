@@ -4,6 +4,7 @@ import type { ExitState } from '../hooks/useExitOnCtrlCDWithKeybindings.js'
 import { Box, Link, Text, Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { SelectMulti } from './CustomSelect/SelectMulti.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type WorkflowOption = {
   value: Workflow
@@ -18,11 +19,11 @@ type Props = {
 const WORKFLOWS: WorkflowOption[] = [
   {
     value: 'claude' as const,
-    label: '@Claude Code - Tag @claude in issues and PR comments',
+    label: `@${PRODUCT_NAME} - Tag @claude in issues and PR comments`,
   },
   {
     value: 'claude-review' as const,
-    label: 'Claude Code Review - Automated code review on new PRs',
+    label: `${PRODUCT_NAME} Review - Automated code review on new PRs`,
   },
 ]
 
@@ -82,8 +83,8 @@ export function WorkflowMultiselectDialog({
       <Box>
         <Text dimColor>
           More workflow examples (issue triage, CI fixes, etc.) at:{' '}
-          <Link url="https://github.com/anthropics/claude-code-how-works-how-works-action/blob/main/examples/">
-            https://github.com/anthropics/claude-code-how-works-how-works-action/blob/main/examples/
+          <Link url="https://github.com/anthropics/claude-code-action/blob/main/examples/">
+            https://github.com/anthropics/claude-code-action/blob/main/examples/
           </Link>
         </Text>
       </Box>

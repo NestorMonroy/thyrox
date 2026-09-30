@@ -43,7 +43,8 @@ GATES="${GATES:-$HERE}"
 # bloqueaba el commit imprimiendo la receta de arreglar la prosa sobre dos
 # tracebacks. Los cinco consumidores delegan aqui, asi que el defecto era
 # de los cinco.
-export PYTHONPATH="$(dirname "$GATES")${PYTHONPATH:+:$PYTHONPATH}"
+PYTHONPATH="$(dirname "$GATES")${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH
 CODE=0
 
 # Rehusar en vez de omitir, y ANTES de medir nada. Un gate declarado que no
@@ -107,6 +108,12 @@ fi
 if [ "${#PY_STAGED[@]}" -gt 0 ]; then
     python3 "$GATES/check_mutante_en_staging.py" "${PY_STAGED[@]}" || CODE=1
 fi
+
+# El cache guarda trabajo reutilizable entre modelos: cada unidad va en su
+# carpeta con su README.md, como jobs/ (`check_cache_layout.py`). El hogar lo
+# resuelven las constantes (THYROX_CACHE_*), y `--staged` mide solo las
+# unidades que este commit toca: la deuda heredada no bloquea.
+python3 "$GATES/check_cache_layout.py" --root "$CONSUMER" --staged --strict || CODE=1
 
 # Los `.rst` se miden ademas por sintaxis y convenciones; un `.md` de reglas no
 # es RST y esos dos gates no le aplican.

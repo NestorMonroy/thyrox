@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/subscriptionHelpers.behavior.test.ts:
+26 | 
+27 |   test('getSubscriptionName: full switch covers enterprise/team/max/pro + Claude API default', () => {
+28 |     const fnStart = authAliasSource.indexOf('export function getSubscriptionName')
+29 |     const fnSlice = authAliasSource.slice(fnStart, fnStart + 600)
+30 |     // Exact strings — these literals are shown to the user in /status
+31 |     expect(fnSlice).toMatch(/case 'enterprise':\s*\n?\s*return 'Claude Enterprise'/)
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /case 'enterprise':\s*\n?\s*return 'Claude Enterprise'/
+Received: "export function getSubscriptionName(): string {\n  switch (getSubscriptionType()) {\n    case 'enterprise':\n      return `${PRODUCT_NAME} Enterprise`\n    case 'team':\n      return `${PRODUCT_NAME} Team`\n    case 'max':\n      return `${PRODUCT_NAME} Max`\n    case 'pro':\n      return `${PRODUCT_NAME} Pro`\n    default:\n      return 'Anthropic API'\n  }\n}\n\nexport function isUsing3PServices(): boolean {\n  return !!(\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||\n    isEnvTruthy(readEnv("
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/subscriptionHelpers.behavior.test.ts:31:21)
+(fail) subscription helpers (ant No/QQ_/etc parity) > getSubscriptionName: full switch covers enterprise/team/max/pro + Claude API default [0.23ms]
+
+ 1823 pass
+ 1 fail
+ 3183 expect() calls
+Ran 1824 tests across 146 files. [5.99s]
+EXIT=1

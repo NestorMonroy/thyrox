@@ -1,0 +1,1 @@
+anthropic-names	s/provider === 'anthropic' || provider === 'claude' ? ANTHROPIC_HEADERS : STANDARD_HEADERS/STANDARD_HEADERS/

@@ -1,0 +1,1 @@
+function rmr(e){if(!e||!D.test(e)||C.test(e))return;return e}

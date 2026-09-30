@@ -1,6 +1,10 @@
-
-import type { CoreMessage, Usage } from './messages.js'
-
+/**
+ * Porte de `ccnmt: packages/agent/types/state.ts` — el estado que
+ * `AgentCore` expone hacia afuera (`AgentState`), la entrada de un `run`
+ * (`AgentInput`) y el acumulador interno de un turno (`TurnState`).
+ */
+import type { CoreMessage } from './messages.js'
+import type { Usage } from './messages.js'
 
 export interface AgentState {
   readonly messages: readonly CoreMessage[]
@@ -10,7 +14,6 @@ export interface AgentState {
   readonly sessionId: string
 }
 
-
 export interface AgentInput {
   prompt?: string
   messages: CoreMessage[]
@@ -19,7 +22,6 @@ export interface AgentInput {
   tokenBudget?: number | null
   attachments?: Array<{ type: string; [key: string]: unknown }>
 }
-
 
 export interface TurnState {
   pendingToolUses: Array<{

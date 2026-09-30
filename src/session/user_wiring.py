@@ -42,7 +42,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 # La raiz la declaran `bin/` (`export PYTHONPATH="$THYROX_ROOT/src"`) y
 # `tests/run.sh`, asi que este modulo NO se abre el camino solo. El
@@ -94,13 +94,13 @@ def declared_wiring(root: Path | None = None,
     base = Path(root) if root else Path(thyrox_root())
     # El literal `kaupamex-docs` sortea al localizador, que existe justamente
     # para derivar el prefijo del clon (`reach.derive_clone_prefix`). Es dominio
-    # del producto dentro del proveedor y su barrido es la tarea #249; aqui
+    # del producto dentro del proveedor y su barrido es TASK-THYROX-0261; aqui
     # queda como DEFAULT porque `install()` corre sin argumentos, y lo gana
     # cualquier `consumer=` que el consumidor declare.
     consumer = Path(consumer) if consumer else base.parent / "kaupamex-docs"
 
     def cmd(command: str, timeout: int | None = None) -> dict:
-        entrada = {"type": "command", "command": command}
+        entrada: dict[str, Any] = {"type": "command", "command": command}
         if timeout is not None:
             entrada["timeout"] = timeout
         return entrada
@@ -121,22 +121,73 @@ def declared_wiring(root: Path | None = None,
     #   register_session  0 — el mecanismo ya lee AGENT_STORE_CLAUDE_DIR (:713)
     #   measure_delta     --repo <n>=<ruta> (de `reach`) y --results-dir
     #   save_result       --log-dir
+    #
+    # Todo comando Python va por su envoltorio de `bin/`, nunca por `python3
+    # <ruta>.py` directo. H-THYROX-268: `declared_wiring` invocaba el `.py` sin
+    # `PYTHONPATH`, y bajo el entorno del cliente —que no lo declara— eso
+    # muere con `ModuleNotFoundError` (`agents`/`hooks`) en cuanto el modulo
+    # importa otro paquete del arbol. El envoltorio resuelve `THYROX_ROOT`, el
+    # interprete del proveedor y `PYTHONPATH` por si mismo
+    # (`src/session/generate_bin.py`), asi que invocarlo por su nombre corto
+    # es correcto pase lo que pase con las importaciones internas del modulo.
     agentes = f"{base}/src/agents"
+    binroot = f"{base}/bin"
     resultados = f"{consumer}/.claude/agent-results"
     repos = " ".join(f"--repo {nombre}={ruta}"
                      for nombre, ruta in sorted(reach().items()))
-    delta = f"python3 {agentes}/measure_delta.py"
-    registro = f"python3 {agentes}/register_session.py"
+    delta = f"bash {binroot}/measure_delta"
+    registro = f"bash {binroot}/register_session"
     return {
         "hooks": {
             "SubagentStart": [{"hooks": [
                 cmd(f"{delta} --start {repos} --results-dir {resultados}"),
                 cmd(f"{registro} --start"),
             ]}],
+            # Tras compactar, el estado de trabajo (clones sin publicar,
+            # trabajos del ledger sin recoger) vuelve al modelo por aqui y no
+            # por `PostCompact`, cuya salida solo ve el usuario (2.1.281,
+            # `BQe`). La raiz del ledger y el banco los resuelve el hook con
+            # sus constantes (`ledger_root()`, `workbench_dir()`): un literal
+            # aqui seria otra fuente de verdad del hogar.
+            "SessionStart": [{
+                "matcher": "compact",
+                # Por su envoltorio de `bin/` (H-THYROX-268): sin él, y sin el
+                # `PYTHONPATH` que este comando antes anteponia a mano, el
+                # `.py` muere por `ModuleNotFoundError` bajo el entorno del
+                # cliente, que no lo declara.
+                "hooks": [cmd(f"bash {binroot}/compact_context "
+                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
+                              timeout=20)],
+            }, {
+                # Un pool que muere no llega a su `sweep`: sus worktrees —cada
+                # uno una copia del árbol— quedan en disco para la sesión
+                # siguiente. Al arrancar se retiran los de pools sin dueño vivo,
+                # y lo que dejaron sin entregar se salva como parche.
+                "matcher": "startup",
+                "hooks": [cmd(f"bash {base}/bin/item_worktree sweep-orphans {repo}",
+                              timeout=120)
+                          for repo in dict.fromkeys([str(base), *(str(ruta) for _, ruta in sorted(reach().items()))])],
+            }],
             "PreModelSwitch": [{"hooks": [
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
                     timeout=10),
             ]}],
+            # El preflight de cada `tool_use`: sin esta entrada, ningun
+            # detector de `tool_use_preflight.py` puede dispararse en una
+            # sesion. El matcher nombra las herramientas que algun detector
+            # mide; el preflight descarta en proceso lo que no le toca.
+            "PreToolUse": [{
+                "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+                # El envoltorio de `bin/` resuelve el `PYTHONPATH`: el hook
+                # corre desde el cwd de la sesion y sin el entorno del
+                # corredor, y sin el cuatro de los diecisiete detectores no
+                # cargaban (su suite lo mide). Antes este comando anteponia
+                # `PYTHONPATH={base}/src` a mano; el mismo defecto que dejaba
+                # sin PYTHONPATH a `task_lifecycle`/`register_session` podia
+                # repetirse aqui por el mismo camino (H-THYROX-268).
+                "hooks": [cmd(f"bash {binroot}/tool_use_preflight",
+                              timeout=10)],
+            }],
             "SubagentStop": [{"hooks": [
                 cmd(f"node {agentes}/save_result.mjs --log-dir {resultados}"),
                 cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
@@ -152,11 +203,18 @@ def declared_wiring(root: Path | None = None,
             # Sin esto, `mint_created_card` tenia CERO invocadores de
             # produccion y la cita durable se acuñaba a mano y a posteriori,
             # que es justo lo que TASK-DOCS-0404 existe para cerrar.
+            #
+            # Por su envoltorio de `bin/`, no por `python3 <ruta>.py`: el
+            # modulo importa `agents.agents_paths` y `task.board_sync`, y
+            # sin `PYTHONPATH` esas importaciones mueren con
+            # `ModuleNotFoundError` en cuanto el cliente lo invoca por ruta
+            # (H-THYROX-268 — 289 tarjetas y 26 subagentes reconciliados a
+            # mano en la sesion que lo destapo).
             "TaskCreated": [{"hooks": [
-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+                cmd(f"bash {binroot}/task_lifecycle"),
             ]}],
             "TaskCompleted": [{"hooks": [
-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+                cmd(f"bash {binroot}/task_lifecycle"),
             ]}],
         },
         "advisorModel": advisor or DEFAULT_ADVISOR,
@@ -245,7 +303,7 @@ class BackgroundBackup:
     los trabajos, incluido el que si termino**. El respaldo quedaria rehen de un
     trabajo ajeno que nadie va a revivir.
 
-    Por eso el respaldo corre en su PROPIO ledger —`THYROX_JOBS_DIR` junto a los
+    Por eso el respaldo corre en su PROPIO ledger —`THYROX_SESSION_LEDGER_DIR` junto a los
     respaldos, durable, no en `/tmp`—, de modo que la barrera mida exactamente
     este trabajo. El ledger compartido no se toca: se MIRA con `status` y sus
     clases atascadas se reportan, que es la adaptacion del roster — surfacing
@@ -290,7 +348,7 @@ class BackgroundBackup:
 
         # El ledger propio de este respaldo: durable, junto a lo que respalda.
         mine = destination.parent / "ledger"
-        env = {**_os.environ, "THYROX_JOBS_DIR": str(mine)}
+        env = {**_os.environ, "THYROX_SESSION_LEDGER_DIR": str(mine)}
 
         launch = (
             f'nohup bash -c "cp -p {source} {destination}; echo EXIT=\\$?" '
@@ -448,9 +506,15 @@ def _bases() -> dict:
     """Las raices de los tres prefijos; `None` cuando el entorno no la declara."""
     return {
         "home": os.path.expanduser("~"),
+        # thyrox-rename: keep — marcador de los settings del anfitrión
         "project": os.environ.get("CLAUDE_PROJECT_DIR"),
+        # thyrox-rename: keep — marcador de los settings del anfitrión
         "plugin": os.environ.get("CLAUDE_PLUGIN_ROOT"),
     }
+
+
+#: Un token `NOMBRE=valor` en posicion de comando: asignacion de entorno.
+_ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 
 
 def _target_of(command: str, cwd: str | None = None,
@@ -466,6 +530,11 @@ def _target_of(command: str, cwd: str | None = None,
     base_cwd = cwd if cwd is not None else hook_cwd()
     raices = bases if bases is not None else _bases()
     for pieza in command.split():
+        # Una asignacion inicial (`VAR=valor comando`) no es el programa: el
+        # shell la exporta y ejecuta lo que sigue. Sin saltarla, un
+        # `PYTHONPATH=/ruta/src` se leia como la ruta invocada.
+        if _ENV_ASSIGNMENT.match(pieza):
+            continue
         if pieza.startswith("/"):
             return pieza
         for nombre, patron in _BASE_PREFIXES:
@@ -579,9 +648,8 @@ def wiring_drift(live: dict, declared: dict) -> dict:
     incluye los eventos que difieren; sin deriva, ``{}``.
 
     *Métrica:* cadenas de ``command`` por evento, comparadas como conjuntos.
-    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Medido 2026-09-07 sobre
-    el archivo vivo: ``SubagentStart`` y ``SubagentStop`` dan **cero** literales
-    en común con lo declarado, y las dos formas resuelven al MISMO destino — el
+    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Sobre un archivo vivo,
+    ``SubagentStart`` y ``SubagentStop`` pueden dar **cero** literales en común con lo declarado, y las dos formas resuelven al MISMO destino — el
     stub compone ``reach.root("docs")/.claude/agent-results`` donde el declarado
     escribe ``--results-dir`` con esa misma ruta, y ninguna de las dos pasa
     destino al store. Por eso un rojo de este instrumento autoriza a concluir
@@ -616,6 +684,9 @@ def main() -> int:
                         help="instala aunque cambie de valor un campo de la "
                              "clave de la cache de prompt (reescribe el "
                              "contexto entero: usalo entre turnos)")
+    parser.add_argument("--hooks-only", action="store_true",
+                        help="instala solo `hooks`, que no es campo de la clave "
+                             "de la cache: deja `advisorModel` como este")
     args = parser.parse_args()
 
     ruta = live_settings()
@@ -626,8 +697,15 @@ def main() -> int:
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y%m%dT%H%M%S")
         try:
+            declared = declared_wiring()
+            owned = OWNED_KEYS
+            if args.hooks_only:
+                # Solo lo que no enfria la cache: quien opera decide el
+                # advisor, y cambiarlo a mitad de sesion reescribe el
+                # contexto entero (H-DOCS-1012).
+                declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
             record = install(
-                ruta, declared_wiring(), BackgroundBackup(), stamp,
+                ruta, declared, BackgroundBackup(), stamp, owned=owned,
                 backups=args.backups,
                 allow_cache_key_change=args.allow_cache_key_change)
         except WiringRefused as e:

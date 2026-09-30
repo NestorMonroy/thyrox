@@ -70,7 +70,10 @@ def read(transcript_path: "str | Path") -> Closing:
     if not path.exists():
         raise TranscriptNotFound(f"no hay transcript en {path}")
 
-    read_last, read_declared, read_blocks, read_count = None, None, [], 0
+    read_last: "str | None" = None
+    read_declared: "str | None" = None
+    read_blocks: "list[str]" = []
+    read_count = 0
     with open(path, "r", encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
@@ -82,15 +85,18 @@ def read(transcript_path: "str | Path") -> Closing:
                 continue
             if obj.get("type") != "assistant":
                 continue
-            msg = obj.get("message") or {}
+            msg: "dict" = obj.get("message") or {}
             if msg.get("role") != "assistant":
                 continue
             read_count += 1
             read_last = msg.get("stop_reason")
             if read_last:
                 read_declared = read_last
-            read_blocks = [b.get("type") for b in (msg.get("content") or [])
-                           if isinstance(b, dict)]
+            # ``type`` es siempre str en un bloque de contenido bien formado;
+            # se filtra por si acaso para no romper el contrato `list[str]`.
+            read_blocks = [t for b in (msg.get("content") or [])
+                           if isinstance(b, dict)
+                           and isinstance((t := b.get("type")), str)]
     return Closing(last_stop_reason=read_last,
                    last_declared_stop_reason=read_declared,
                    last_block_types=read_blocks,

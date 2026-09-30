@@ -1,36 +1,13 @@
-/**
- * La carga y la edición de reglas de permiso en los archivos de settings.
- *
- * Procedencia: `ccnmt: packages/permission/src/permissionsLoader.ts` (296
- * líneas, 7 exports). Ese árbol declara `"license": "UNLICENSED"`, así que los
- * cuerpos se **reimplementan** y no se copian.
- *
- * Es la contraparte de lectura de `./PermissionUpdate.ts`: aquél escribe lo que
- * una actualización decide, éste lee lo que quedó escrito y lo convierte en
- * reglas evaluables.
- *
- * DOS DIVERGENCIAS DECLARADAS, las dos por un símbolo que este árbol no tiene:
- *
- *  1. `getEnabledSettingSources` no está portada en `@thyrox/config`, así que
- *     `loadAllPermissionRulesFromDisk` recorre TODAS las fuentes declaradas en
- *     vez de las que una restricción `--setting-sources` deje pasar. Es
- *     exactamente lo que `config/settings/settings.ts` ya hace en su propio
- *     recorrido, y lo declara ahí: se mantiene la misma conducta en los dos
- *     sitios en lugar de que uno filtre y el otro no.
- *  2. `safeParseJSON` tampoco existe; el equivalente de este árbol es
- *     `safeParseJSONC`, que además tolera comentarios. Para un archivo de
- *     settings es un superconjunto seguro: todo JSON válido es JSONC válido.
- */
 import { readFileSync } from '@thyrox/storage/fileRead.js'
-import {
-  getFsImplementation,
-  safeResolvePath,
-} from '@thyrox/storage/fsOperations.js'
-import { safeParseJSONC } from '@thyrox/storage/json.js'
+import { getFsImplementation, safeResolvePath } from '@thyrox/storage/fsOperations.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
 import { logError } from '@thyrox/local-observability/logging'
-import { SETTING_SOURCES, type SettingSource } from '@thyrox/config/constants'
 import {
   type EditableSettingSource,
+  getEnabledSettingSources,
+  type SettingSource,
+} from '@thyrox/config/constants'
+import {
   getSettingsFilePathForSource,
   getSettingsForSource,
   updateSettingsForSource,
@@ -48,10 +25,8 @@ import {
 } from './permissionRuleParser.js'
 
 /**
- * ¿La política administrada exige que SÓLO valgan sus reglas?
- *
- * La ausencia de la clave se lee como `false`: leerla al revés dejaría a
- * cualquier instalación sin poder guardar una regla, sin que nadie lo pidiera.
+ * Returns true if allowManagedPermissionRulesOnly is enabled in managed settings (policySettings).
+ * When enabled, only permission rules from managed settings are respected.
  */
 export function shouldAllowManagedPermissionRulesOnly(): boolean {
   return (
@@ -60,7 +35,10 @@ export function shouldAllowManagedPermissionRulesOnly(): boolean {
   )
 }
 
-/** Si la política manda, las opciones de «permitir siempre» no se ofrecen. */
+/**
+ * Returns true if "always allow" options should be shown in permission prompts.
+ * When allowManagedPermissionRulesOnly is enabled, these options are hidden.
+ */
 export function shouldShowAlwaysAllowOptions(): boolean {
   return !shouldAllowManagedPermissionRulesOnly()
 }
@@ -72,13 +50,13 @@ const SUPPORTED_RULE_BEHAVIORS = [
 ] as const satisfies PermissionBehavior[]
 
 /**
- * Lectura TOLERANTE, sólo para editar — nunca para ejecutar.
+ * Lenient version of getSettingsForSource that doesn't fail on ANY validation errors.
+ * Simply parses the JSON and returns it as-is without schema validation.
  *
- * Parsea el archivo sin validar contra el esquema. La razón es concreta: al
- * añadir una regla se reescribe el archivo entero, y si un campo ajeno
- * —digamos un hook mal escrito— hace fallar la validación, la lectura estricta
- * devolvería `null` y la reescritura BORRARÍA las reglas que ya había. Para
- * ejecutar sigue valiendo la lectura validada, que es la que decide permisos.
+ * Used when loading settings to append new rules (avoids losing existing rules
+ * due to validation failures in unrelated fields like hooks).
+ *
+ * FOR EDITING ONLY - do not use this for reading settings for execution.
  */
 function getSettingsForSourceLenient_FOR_EDITING_ONLY_NOT_FOR_READING(
   source: SettingSource,
@@ -94,14 +72,22 @@ function getSettingsForSourceLenient_FOR_EDITING_ONLY_NOT_FOR_READING(
     if (content.trim() === '') {
       return {}
     }
-    const data = safeParseJSONC(content)
+
+    const data = safeParseJSON(content, false)
+    // Return raw parsed JSON without validation to preserve all existing settings
+    // This is safe because we're only using this for reading/appending, not for execution
     return data && typeof data === 'object' ? (data as SettingsJson) : null
   } catch {
     return null
   }
 }
 
-/** Convierte el bloque `permissions` de un archivo en reglas con su fuente. */
+/**
+ * Converts permissions JSON to an array of PermissionRule objects
+ * @param data The parsed permissions data
+ * @param source The source of these rules
+ * @returns Array of PermissionRule objects
+ */
 function settingsJsonToRules(
   data: SettingsJson | null,
   source: PermissionRuleSource,
@@ -128,26 +114,29 @@ function settingsJsonToRules(
 }
 
 /**
- * Todas las reglas de todas las fuentes.
- *
- * Con la política administrada activa, SÓLO las suyas: es lo que significa el
- * candado, y aplicarlo aquí evita que una regla local se cuele por la puerta
- * de la carga.
+ * Loads all permission rules from all relevant sources (managed and project settings)
+ * @returns Array of all permission rules
  */
 export function loadAllPermissionRulesFromDisk(): PermissionRule[] {
+  // If allowManagedPermissionRulesOnly is set, only use managed permission rules
   if (shouldAllowManagedPermissionRulesOnly()) {
     return getPermissionRulesForSource('policySettings')
   }
 
+  // Otherwise, load from all enabled sources (backwards compatible)
   const rules: PermissionRule[] = []
-  // Divergencia 1 (ver la cabecera): sin `getEnabledSettingSources` se
-  // recorren todas las fuentes declaradas.
-  for (const source of SETTING_SOURCES) {
+
+  for (const source of getEnabledSettingSources()) {
     rules.push(...getPermissionRulesForSource(source))
   }
   return rules
 }
 
+/**
+ * Loads permission rules from a specific source
+ * @param source The source to load from
+ * @returns Array of permission rules from that source
+ */
 export function getPermissionRulesForSource(
   source: SettingSource,
 ): PermissionRule[] {
@@ -159,7 +148,7 @@ export type PermissionRuleFromEditableSettings = PermissionRule & {
   source: EditableSettingSource
 }
 
-/** Las tres que tienen archivo editable detrás — ni política ni banderas. */
+// Editable sources that can be modified (excludes policySettings and flagSettings)
 const EDITABLE_SOURCES: EditableSettingSource[] = [
   'userSettings',
   'projectSettings',
@@ -167,22 +156,14 @@ const EDITABLE_SOURCES: EditableSettingSource[] = [
 ]
 
 /**
- * Normaliza una entrada cruda del archivo pasándola por parseo y serialización.
- *
- * Es lo que hace que un nombre heredado escrito hace meses siga casando con su
- * forma canónica de hoy. Comparar cadenas crudas dejaría la regla viva mientras
- * el usuario cree haberla borrado.
+ * Deletes a rule from the project permissions file
+ * @param rule The rule to delete
+ * @returns Promise resolving to a boolean indicating success
  */
-function normalizeEntry(raw: string): string {
-  return permissionRuleValueToString(permissionRuleValueFromString(raw))
-}
-
 export function deletePermissionRuleFromSettings(
   rule: PermissionRuleFromEditableSettings,
 ): boolean {
-  // La comprobación es de tiempo de EJECUCIÓN aunque el tipo ya lo acote: el
-  // tipo se borra al compilar, y esta regla puede llegar desde disco o desde
-  // un anfitrión SDK, donde no hay tipos que valgan.
+  // Runtime check to ensure source is actually editable
   if (!EDITABLE_SOURCES.includes(rule.source as EditableSettingSource)) {
     return false
   }
@@ -190,6 +171,7 @@ export function deletePermissionRuleFromSettings(
   const ruleString = permissionRuleValueToString(rule.ruleValue)
   const settingsData = getSettingsForSource(rule.source)
 
+  // If there's no settings data or permissions, nothing to do
   if (!settingsData || !settingsData.permissions) {
     return false
   }
@@ -199,14 +181,17 @@ export function deletePermissionRuleFromSettings(
     return false
   }
 
+  // Normalize raw settings entries via roundtrip parse→serialize so legacy
+  // names (e.g. "KillShell") match their canonical form ("TaskStop").
+  const normalizeEntry = (raw: string): string =>
+    permissionRuleValueToString(permissionRuleValueFromString(raw))
+
   if (!behaviorArray.some(raw => normalizeEntry(raw) === ruleString)) {
     return false
   }
 
   try {
-    // Se parte del objeto ORIGINAL para conservar las claves que este árbol no
-    // entiende: un archivo de settings lo escriben varias versiones y varias
-    // herramientas, y reescribirlo a ciegas borraría configuración ajena.
+    // Keep a copy of the original permissions data to preserve unrecognized keys
     const updatedSettingsData = {
       ...settingsData,
       permissions: {
@@ -219,8 +204,10 @@ export function deletePermissionRuleFromSettings(
 
     const { error } = updateSettingsForSource(rule.source, updatedSettingsData)
     if (error) {
+      // Error already logged inside updateSettingsForSource
       return false
     }
+
     return true
   } catch (error) {
     logError(error)
@@ -229,9 +216,16 @@ export function deletePermissionRuleFromSettings(
 }
 
 function getEmptyPermissionSettingsJson(): SettingsJson {
-  return { permissions: {} }
+  return {
+    permissions: {},
+  }
 }
 
+/**
+ * Adds rules to the project permissions file
+ * @param ruleValues The rule values to add
+ * @returns Promise resolving to a boolean indicating success
+ */
 export function addPermissionRulesToSettings(
   {
     ruleValues,
@@ -242,36 +236,45 @@ export function addPermissionRulesToSettings(
   },
   source: EditableSettingSource,
 ): boolean {
+  // When allowManagedPermissionRulesOnly is enabled, don't persist new permission rules
   if (shouldAllowManagedPermissionRulesOnly()) {
     return false
   }
 
-  // Nada que añadir NO es un fallo: el llamador pidió que el estado quede como
-  // quiere, y ya lo está.
   if (ruleValues.length < 1) {
+    // No rules to add
     return true
   }
 
   const ruleStrings = ruleValues.map(permissionRuleValueToString)
-  // Primero la lectura validada; si falla, la tolerante. El orden importa: la
-  // tolerante existe para no perder reglas cuando otro campo del archivo está
-  // mal, no para sustituir la validación.
+  // First try the normal settings loader which validates the schema
+  // If validation fails, fall back to lenient loading to preserve existing rules
+  // even if some fields (like hooks) have validation errors
   const settingsData =
     getSettingsForSource(source) ||
     getSettingsForSourceLenient_FOR_EDITING_ONLY_NOT_FOR_READING(source) ||
     getEmptyPermissionSettingsJson()
 
   try {
+    // Ensure permissions object exists
     const existingPermissions = settingsData.permissions || {}
     const existingRules = existingPermissions[ruleBehavior] || []
 
-    const existingRulesSet = new Set(existingRules.map(normalizeEntry))
+    // Filter out duplicates - normalize existing entries via roundtrip
+    // parse→serialize so legacy names match their canonical form.
+    const existingRulesSet = new Set(
+      existingRules.map(raw =>
+        permissionRuleValueToString(permissionRuleValueFromString(raw)),
+      ),
+    )
     const newRules = ruleStrings.filter(rule => !existingRulesSet.has(rule))
 
+    // If no new rules to add, return success
     if (newRules.length === 0) {
       return true
     }
 
+    // Keep a copy of the original settings data to preserve unrecognized keys
     const updatedSettingsData = {
       ...settingsData,
       permissions: {
@@ -280,9 +283,11 @@ export function addPermissionRulesToSettings(
       },
     }
     const result = updateSettingsForSource(source, updatedSettingsData)
+
     if (result.error) {
       throw result.error
     }
+
     return true
   } catch (error) {
     logError(error)

@@ -1,0 +1,4 @@
+src/packages/storage/src/sessionRestore.ts(22,10): error TS2724: '"@thyrox/swarm"' has no exported member named 'restoreWorktreeSession'. Did you mean 'createWorktreeForSession'?
+src/packages/storage/src/sessionRestore.ts(164,18): error TS2698: Spread types may only be created from object types.
+src/packages/storage/src/sessionRestore.ts(283,21): error TS2339: Property 'cache' does not exist on type '() => string'.
+src/packages/storage/src/sessionRestore.ts(306,21): error TS2339: Property 'cache' does not exist on type '() => string'.

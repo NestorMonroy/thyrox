@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env -u THYROX_ROOT bash .claude/workbench/build-native-external-20260929T110118/verify.sh", "started_at": "2026-09-29T11:04:28+00:00"}

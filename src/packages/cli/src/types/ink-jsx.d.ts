@@ -9,7 +9,10 @@
  * augmentation to work correctly.
  */
 import type { ReactNode, Ref } from 'react';
-import type { ClickEvent, FocusEvent, KeyboardEvent, Styles, TextStyles, DOMElement } from '@anthropic/ink';
+// Con alias: dentro de `declare module 'react'` un nombre sin calificar
+// resuelve primero en el ámbito de React, y `FocusEvent`/`KeyboardEvent`
+// pasaban a ser los eventos DOM de React, no los de ink.
+import type { ClickEvent, FocusEvent as InkFocusEvent, KeyboardEvent as InkKeyboardEvent, Styles, TextStyles, DOMElement } from '@anthropic/ink';
 
 declare module 'react' {
   namespace JSX {
@@ -19,14 +22,14 @@ declare module 'react' {
         tabIndex?: number;
         autoFocus?: boolean;
         onClick?: (event: ClickEvent) => void;
-        onFocus?: (event: FocusEvent) => void;
-        onFocusCapture?: (event: FocusEvent) => void;
-        onBlur?: (event: FocusEvent) => void;
-        onBlurCapture?: (event: FocusEvent) => void;
+        onFocus?: (event: InkFocusEvent) => void;
+        onFocusCapture?: (event: InkFocusEvent) => void;
+        onBlur?: (event: InkFocusEvent) => void;
+        onBlurCapture?: (event: InkFocusEvent) => void;
         onMouseEnter?: () => void;
         onMouseLeave?: () => void;
-        onKeyDown?: (event: KeyboardEvent) => void;
-        onKeyDownCapture?: (event: KeyboardEvent) => void;
+        onKeyDown?: (event: InkKeyboardEvent) => void;
+        onKeyDownCapture?: (event: InkKeyboardEvent) => void;
         style?: Styles;
         stickyScroll?: boolean;
         children?: ReactNode;

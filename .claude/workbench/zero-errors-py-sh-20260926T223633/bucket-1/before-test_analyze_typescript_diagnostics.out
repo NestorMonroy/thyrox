@@ -1,0 +1,23 @@
+test_a_suggestion_does_not_make_the_missing_name_new (__main__.MissingNameKeyTest.test_a_suggestion_does_not_make_the_missing_name_new) ... ok
+test_two_different_missing_names_stay_distinct (__main__.MissingNameKeyTest.test_two_different_missing_names_stay_distinct) ... ok
+test_an_arrow_does_not_collapse_distinct_diagnostics (__main__.StableUnionKeyTest.test_an_arrow_does_not_collapse_distinct_diagnostics) ... ok
+test_an_arrow_inside_a_group_does_not_close_it (__main__.StableUnionKeyTest.test_an_arrow_inside_a_group_does_not_close_it) ... ok
+test_fields_outside_the_union_still_tell_diagnostics_apart (__main__.StableUnionKeyTest.test_fields_outside_the_union_still_tell_diagnostics_apart) ... ok
+test_nested_reprints_are_not_new_diagnostics (__main__.StableUnionKeyTest.test_nested_reprints_are_not_new_diagnostics) ... ok
+test_nested_unions_of_different_size_stay_distinct (__main__.StableUnionKeyTest.test_nested_unions_of_different_size_stay_distinct) ... ok
+test_nested_unions_reprinted_in_another_order_are_the_same_key (__main__.StableUnionKeyTest.test_nested_unions_reprinted_in_another_order_are_the_same_key) ... ok
+test_non_union_type_is_kept_verbatim (__main__.StableUnionKeyTest.test_non_union_type_is_kept_verbatim) ... ok
+test_same_union_printed_in_another_order_is_the_same_key (__main__.StableUnionKeyTest.test_same_union_printed_in_another_order_is_the_same_key) ... ok
+test_signals_still_read_the_literal_text (__main__.StableUnionKeyTest.test_signals_still_read_the_literal_text) ... ok
+test_the_reprinted_union_is_not_a_new_diagnostic (__main__.StableUnionKeyTest.test_the_reprinted_union_is_not_a_new_diagnostic) ... ok
+test_unions_of_different_size_stay_distinct (__main__.StableUnionKeyTest.test_unions_of_different_size_stay_distinct) ... ok
+test_counts_diagnostics_not_output_lines (__main__.TypeScriptDiagnosticAnalysisTest.test_counts_diagnostics_not_output_lines) ... ok
+test_counts_shape_audit_diagnostics_beside_tsc (__main__.TypeScriptDiagnosticAnalysisTest.test_counts_shape_audit_diagnostics_beside_tsc) ... ok
+test_diagnostic_identity_ignores_coordinates_and_preserves_count (__main__.TypeScriptDiagnosticAnalysisTest.test_diagnostic_identity_ignores_coordinates_and_preserves_count) ... ok
+test_extracts_missing_export_relationship (__main__.TypeScriptDiagnosticAnalysisTest.test_extracts_missing_export_relationship) ... ok
+test_refuses_a_log_without_diagnostics (__main__.TypeScriptDiagnosticAnalysisTest.test_refuses_a_log_without_diagnostics) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.237s
+
+OK

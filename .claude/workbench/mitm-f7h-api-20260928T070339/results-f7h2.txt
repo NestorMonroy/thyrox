@@ -1,0 +1,87 @@
+== 1: POST /cert sin compuerta de sudo
+(fail) POST /cert without a password is a 400 [2.44ms]
+ 41 pass
+ 1 fail
+== 2: recordar la contraseña también en Windows
+(fail) POST /cert on Windows does not cache the password [1.07ms]
+ 41 pass
+ 1 fail
+== 3: recordar antes de saber si instaló
+(fail) POST /cert canceled by the user is a 409 and forgets nothing [1.07ms]
+ 41 pass
+ 1 fail
+== 4: reiniciar para aunque no corra
+(fail) server restart stops only a running server and re-caches the password stop clears [0.95ms]
+ 41 pass
+ 1 fail
+== 5: reiniciar sin volver a guardar la contraseña
+(fail) server restart stops only a running server and re-caches the password stop clears [1.00ms]
+ 41 pass
+ 1 fail
+== 6: regenerar sin forzar
+(fail) server regenerate-cert forces a new certificate [0.92ms]
+ 41 pass
+ 1 fail
+== 7: confiar sin comprobar que el certificado existe
+(fail) POST /cert of a missing certificate is a 404 [1.40ms]
+ 41 pass
+ 1 fail
+== 8: cancelación como fallo de entorno
+(fail) POST /cert canceled by the user is a 409 and forgets nothing [1.83ms]
+ 41 pass
+ 1 fail
+== 9: DELETE /cert sin la salida idempotente
+(fail) DELETE /cert uninstalls, and without a certificate it is an idempotent success [1.49ms]
+ 41 pass
+ 1 fail
+== 10: DNS de un agente desconocido
+(fail) POST /agents/:id/dns of an unknown agent is a 404 echoing the id, before any DNS call [0.98ms]
+ 41 pass
+ 1 fail
+== 11: reinicio sin vaciar la caché DNS de Windows
+(fail) POST /agents/:id/reset reverts that agent only [2.57ms]
+ 41 pass
+ 1 fail
+== 12: reinicio sin copiar al alias
+(fail) POST /agents/:id/reset reverts that agent only [2.65ms]
+ 41 pass
+ 1 fail
+== 13: reinicio sin verificar el archivo de hosts
+(fail) POST /agents/:id/reset reports verified false when the hosts entry survives [1.49ms]
+ 41 pass
+ 1 fail
+== 15: diagnóstico sondea con el servidor parado
+(fail) GET /diagnose probes the port only while the server runs [1.43ms]
+ 41 pass
+ 1 fail
+== 16: diagnóstico sin el agregado de DNS
+(fail) GET /diagnose without agentId aggregates DNS over the agents that enabled it [0.94ms]
+ 41 pass
+ 1 fail
+== 17: CA del upstream sin comprobar el archivo
+(fail) upstream-ca: POST of a missing file is a 400 and stores nothing [1.28ms]
+ 41 pass
+ 1 fail
+== 18: CA del upstream que no activa sin 400
+(fail) upstream-ca: a CA that fails to activate is a 400 [1.86ms]
+ 41 pass
+ 1 fail
+== 19: prueba de CA sin el marcador PEM
+(fail) upstream-ca/test rejects a missing file, a non-PEM file and a bad body [8.67ms]
+ 41 pass
+ 1 fail
+== 20: TPROXY inválido sin su tipo
+(fail) POST /tproxy rejects an out-of-range config as invalid_request [1.47ms]
+ 41 pass
+ 1 fail
+== 21: cuerpo vacío como JSON malformado
+(fail) POST /repair with an empty body falls back to the cached password [1.27ms]
+ 41 pass
+ 1 fail
+== restaurado
+ M src/packages/mitm/src/api/http.ts
+ M src/packages/mitm/src/api/routes/agentBridgeState.ts
+ M src/packages/mitm/src/manager.ts
+?? src/packages/mitm/src/api/routes/agentBridgePrivileged.ts
+ 42 pass
+ 0 fail

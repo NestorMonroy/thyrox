@@ -11,7 +11,7 @@
  * (:ref:`analisis-reanudacion-y-reconciliacion-en-la-referencia`, `ccnmt`).
  *
  * Lo que NO se porta y por qué: el prompt sintético (`Vmt`) lo inyecta el SDK
- * desde fuera en la sesión remota —las tres `CLAUDE_CODE_RESUME_*` están sin
+ * desde fuera en la sesión remota —las tres `THYROX_CODE_RESUME_*` están sin
  * asignar y el texto no está en el binario—; los permisos parqueados no aplican
  * sin ejecución multi-proceso.
  */
@@ -163,14 +163,14 @@ export type EpochInfo = { epoch: number; priorWorkerProcess: boolean }
 /**
  * La época del worker — el `Gs()` de nuestro árbol (T-092).
  *
- * `CLAUDE_CODE_WORKER_EPOCH` es «un número nuevo cada vez que el worker de la
+ * `THYROX_CODE_WORKER_EPOCH` es «un número nuevo cada vez que el worker de la
  * sesión arranca». Ausente vale 1; mal formada o no ≥1 vale MAX_SAFE_INTEGER,
  * que es «hubo worker anterior, seguro». El único predicado derivado es
  * `priorWorkerProcess: epoch > 1`. Es el único dato del reinicio que llega a la
  * sesión remota, y hasta ahora nadie lo leía.
  */
 export function sessionEpoch(env: NodeJS.ProcessEnv = process.env): EpochInfo {
-  const raw = env.CLAUDE_CODE_WORKER_EPOCH
+  const raw = env.THYROX_CODE_WORKER_EPOCH
   let epoch: number
   if (raw === undefined) epoch = 1
   else {

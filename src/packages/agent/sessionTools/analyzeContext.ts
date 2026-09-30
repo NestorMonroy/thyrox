@@ -301,8 +301,8 @@ async function countMemoryFileTokens(): Promise<{
   memoryFileDetails: MemoryFile[]
   claudeMdTokens: number
 }> {
-  // Simple mode disables CLAUDE.md loading, so don't report tokens for them
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))) {
+  // Simple mode disables THYROX.md loading, so don't report tokens for them
+  if (isEnvTruthy(readEnv('THYROX_CODE_SIMPLE'))) {
     return { memoryFileDetails: [], claudeMdTokens: 0 }
   }
 
@@ -770,7 +770,8 @@ function processUserMessage(
   }
 
   // Process each content block individually
-  for (const block of msg.message.content) {
+  const contentBlocks = Array.isArray(msg.message.content) ? msg.message.content : []
+  for (const block of contentBlocks) {
     const blockStr = jsonStringify(block)
     const blockTokens = roughTokenCountEstimation(blockStr)
 

@@ -1,0 +1,7 @@
+check-suite-discrimina: 0 sin discriminar, 3 sin cobertura, 0 con baseline rojo
+  SIN COBERTURA    classify_agents.py:310 pre_classify(); test-script-naming.sh la nombra pero no la ejecuta
+  SIN COBERTURA    classify_agents.py:439 closing_text(); test-script-naming.sh la nombra pero no la ejecuta
+  SIN COBERTURA    classify_agents.py:468 main(); test-script-naming.sh la nombra pero no la ejecuta
+  (alcance medido: 326 archivos .py, 2178 funciones, 3 con literal ambiguo, 3 mutada(s) dos veces)
+check-suite-discrimina --verificar: 0 mutante(s) vivo(s) (alcance medido: 327 archivos .py bajo src, hooks; 0 en el ledger)
+EXIT=0

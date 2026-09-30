@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+93 |   })
+94 | 
+95 |   test('la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite', () => {
+96 |     const asked: unknown[] = []
+97 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+98 |     expect(modelHasCapability('claude-fable-5-1[1m]', 'fast_mode', 'fable')).toBe(true)
+                                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:98:78)
+(fail) modelHasCapability ($h) > la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite [0.23ms]
+
+ 10 pass
+ 1 fail
+ 26 expect() calls
+Ran 11 tests across 1 file. [80.00ms]

@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(725,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:715-735 ---
+    715                    toolUseContext,
+    716                  )
+    717                }
+    718              }
+    719              // Backfill tool_use inputs on a cloned message before yield so
+    720              // SDK stream output and transcript serialization see legacy/derived
+    721              // fields. The original `message` is left untouched for
+    722              // assistantMessages.push below — it flows back to the API and
+    723              // mutating it would break prompt caching (byte mismatch).
+    724              let yieldMessage: typeof message = message
+    725>             if (message.type === 'assistant') {
+    726                const assistantMsg = message as AssistantMessage
+    727                const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
+    728                let clonedContent: typeof contentArr | undefined
+    729                for (let i = 0; i < contentArr.length; i++) {
+    730                  const block = contentArr[i]!
+    731                  if (
+    732                    block.type === 'tool_use' &&
+    733                    typeof block.input === 'object' &&
+    734                    block.input !== null
+    735                  ) {

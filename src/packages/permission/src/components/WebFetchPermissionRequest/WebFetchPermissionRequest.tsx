@@ -11,6 +11,7 @@ import { PermissionDialog } from '../PermissionDialog.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 import { PermissionRuleExplanation } from '../PermissionRuleExplanation.js'
 import { logUnaryPermissionEvent } from '../utils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function inputToPermissionRuleContent(input: { [k: string]: unknown }): string {
   try {
@@ -34,14 +35,10 @@ export function WebFetchPermissionRequest({
   workerBadge,
 }: PermissionRequestProps): React.ReactNode {
   const [theme] = useTheme()
-  // Copia de `ccnmt: packages/permission/src/components/
-  // WebFetchPermissionRequest/WebFetchPermissionRequest.tsx` con los comentarios
-  // traducidos; el cuerpo es el de la fuente.
-  //
-  // El esquema de input ya valido la url.
+  // url is already validated by the input schema
   const { url } = toolUseConfirm.input as { url: string }
 
-  // Extrae el hostname de la URL.
+  // Extract hostname from URL
   const hostname = new URL(url).hostname
 
   const unaryEvent = useMemo<UnaryEvent>(
@@ -51,7 +48,7 @@ export function WebFetchPermissionRequest({
 
   usePermissionRequestLogging(toolUseConfirm, unaryEvent)
 
-  // Genera las opciones de permiso propias de los dominios.
+  // Generate permission options specific to domains
   const showAlwaysAllowOptions = shouldShowAlwaysAllowOptions()
   const options = useMemo((): OptionWithDescription<string>[] => {
     const result: OptionWithDescription<string>[] = [
@@ -75,7 +72,7 @@ export function WebFetchPermissionRequest({
     result.push({
       label: (
         <Text>
-          No, and tell Claude what to do differently <Text bold>(esc)</Text>
+          No, and tell {PRODUCT_NAME} what to do differently <Text bold>(esc)</Text>
         </Text>
       ),
       value: 'no',
@@ -99,7 +96,7 @@ export function WebFetchPermissionRequest({
           ruleContent,
         }
 
-        // Pasa la actualización de permiso directamente a onAllow.
+        // Pass permission update directly to onAllow
         toolUseConfirm.onAllow(toolUseConfirm.input, [
           {
             type: 'addRules',
@@ -140,7 +137,7 @@ export function WebFetchPermissionRequest({
           permissionResult={toolUseConfirm.permissionResult}
           toolType="tool"
         />
-        <Text>Do you want to allow Claude to fetch this content?</Text>
+        <Text>Do you want to allow {PRODUCT_NAME} to fetch this content?</Text>
         <Select
           options={options}
           onChange={onChange}

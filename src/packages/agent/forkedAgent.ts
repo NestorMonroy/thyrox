@@ -9,6 +9,7 @@
  */
 
 import type { UUID } from 'crypto'
+import type { BetaMessageDeltaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { randomUUID } from 'crypto'
 import type { PromptCommand } from '@thyrox/command-runtime/runtime'
 import type { QuerySource } from './querySource.js'
@@ -557,7 +558,7 @@ export async function runForkedAgent({
       // Extract real usage from message_delta stream events (final usage per API call)
       if (message.type === 'stream_event' && 'event' in message) {
         const streamMsg = message as typeof message & {
-          event?: { type?: string; usage?: unknown }
+          event?: { type?: string; usage?: BetaMessageDeltaUsage }
         }
         if (
           streamMsg.event?.type === 'message_delta' &&

@@ -37,17 +37,17 @@ import {
 } from '@thyrox/config/feature-flags'
 import { setOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
 
-const previo = process.env.CLAUDE_CONFIG_DIR
+const previo = process.env.THYROX_CONFIG_DIR
 
 beforeEach(() => {
-  process.env.CLAUDE_CONFIG_DIR = mkdtempSync(join(tmpdir(), 'trs-'))
+  process.env.THYROX_CONFIG_DIR = mkdtempSync(join(tmpdir(), 'trs-'))
   setOriginalCwd(mkdtempSync(join(tmpdir(), 'trs-cwd-')))
   clearGrowthBookConfigOverrides()
 })
 afterEach(() => {
   clearGrowthBookConfigOverrides()
-  if (previo === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = previo
+  if (previo === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = previo
 })
 
 /** Un mensaje de usuario con N bloques `tool_result`. */

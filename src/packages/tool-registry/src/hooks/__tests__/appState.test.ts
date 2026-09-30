@@ -10,9 +10,9 @@
  * el estado de la aplicación funcione — eso es de `app-host` y su suite.
  *
  * La costura se ejercita por el ERROR, no por el valor. Llamados fuera de un
- * render de React los dos hooks mueren en el despachador
- * —`null is not an object (evaluating 'dispatcher.useContext')`—, y ese
- * mensaje sólo lo puede producir el hook REAL: si `require` devolviera un
+ * render de React los dos hooks mueren en el despachador —sin él, o con el
+ * de sólo contexto que React deja tras un render (ver `OUTSIDE_RENDER`)—, y
+ * esos mensajes sólo los puede producir el hook REAL: si `require` devolviera un
  * espacio de nombres vacío el error sería «no es una función», y si el
  * especificador no resolviera sería un error de resolución del módulo. Los
  * tres son distinguibles, así que el caso discrimina.
@@ -35,8 +35,16 @@
 import { describe, expect, test } from 'bun:test'
 import { useAppStateStore, useSetAppState } from '../appState.js'
 
-/** El mensaje que produce React cuando un hook corre fuera de un render. */
-const OUTSIDE_RENDER = 'dispatcher'
+/**
+ * Los dos mensajes con que React rechaza un hook fuera de un render. Cuál sale
+ * depende de si el proceso ya renderizó algo: sin render previo no hay
+ * despachador (`dispatcher.useContext` sobre null); tras cualquier render
+ * React deja instalado su despachador de sólo contexto, que lanza «Invalid
+ * hook call». `bun test` reúne varias suites en un proceso, así que las dos
+ * formas ocurren según el orden (medido: tras `searchTextRenderFidelity`, la
+ * segunda). Las dos las produce sólo el hook REAL.
+ */
+const OUTSIDE_RENDER = /dispatcher|Invalid hook call/
 
 describe('hooks/appState — la indirección hacia el paquete hermano', () => {
   test('1. los dos símbolos existen y son funciones', () => {
@@ -55,14 +63,15 @@ describe('hooks/appState — la indirección hacia el paquete hermano', () => {
     expect(() => useSetAppState()).toThrow(OUTSIDE_RENDER)
   })
 
-  test('4. el fallo es un TypeError de React, no uno de resolución', () => {
+  test('4. el fallo es de React, no uno de resolución', () => {
     let capturado: unknown
     try {
       useAppStateStore()
     } catch (e) {
       capturado = e
     }
-    expect(capturado).toBeInstanceOf(TypeError)
+    expect(capturado).toBeInstanceOf(Error)
+    expect((capturado as Error).message).toMatch(OUTSIDE_RENDER)
     expect((capturado as Error).message).not.toContain('Cannot find')
   })
 })

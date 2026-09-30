@@ -1,0 +1,15 @@
+=== Caso 1: el sujeto existe y esta bajo el banco declarado ===
+  OK   el archivo del banco existe
+=== Caso 2 (EL QUE DISCRIMINA): el descuento necesita la raiz medida ===
+  OK   con la raiz, el banco se descuenta
+=== Caso 3: los tres recorridos del gate pasan la raiz ===
+  OK   el eje de idioma no reporta el banco
+  OK   el eje de separador no reporta el banco
+  OK   el eje de identificadores no reporta el banco
+=== Caso 4: el descuento no apaga el eje — sigue midiendo producto ===
+  OK   el eje de idioma sigue midiendo archivos
+  OK   el eje de separador sigue midiendo archivos
+  OK   el eje de identificadores sigue midiendo archivos
+
+8 ok, 0 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+EXIT=0

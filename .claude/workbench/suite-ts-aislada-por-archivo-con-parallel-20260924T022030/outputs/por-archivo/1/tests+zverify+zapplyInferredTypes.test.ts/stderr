@@ -1,0 +1,9 @@
+
+tests/verify/applyInferredTypes.test.ts:
+(fail) applyInferredTypes > adds the inferred annotation and closes TS7006 [6591.68ms]
+  ^ this test timed out after 5000ms.
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [10.00s]

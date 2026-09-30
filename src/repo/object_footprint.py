@@ -71,6 +71,8 @@ class Footprint:
 def _blob_oids(root: pathlib.Path, pathspec: str) -> set[str]:
     """Los oid distintos que el pathspec ha tenido en toda la historia."""
     listing = clone.run(root, "rev-list", "--all", "--objects")
+    if listing is None:
+        raise RuntimeError(f"git no respondió en «{root}»: rev-list --all --objects")
     wanted = set()
     for line in listing.splitlines():
         oid, _, path = line.partition(" ")
@@ -106,7 +108,10 @@ def _describe(root: pathlib.Path, oids: set[str]) -> list[tuple[int, int, bool]]
 
 def _loose_oids(root: pathlib.Path) -> set[str]:
     """Los oid que viven como archivo suelto bajo ``.git/objects/xx/yyyy``."""
-    objects = clone.git_dir(root) / "objects"
+    git_dir = clone.git_dir(root)
+    if git_dir is None:
+        raise RuntimeError(f"«{root}» no es un clon de git: no hay .git que resolver")
+    objects = git_dir / "objects"
     found = set()
     for shard in objects.glob("??"):
         if not shard.is_dir():
@@ -119,6 +124,8 @@ def _loose_oids(root: pathlib.Path) -> set[str]:
 def _total_blob_disk(root: pathlib.Path) -> int:
     """El denominador: todos los blobs del repo, contados con la misma vara."""
     listing = clone.run(root, "rev-list", "--all", "--objects")
+    if listing is None:
+        raise RuntimeError(f"git no respondió en «{root}»: rev-list --all --objects")
     oids = {line.partition(" ")[0] for line in listing.splitlines() if line}
     if not oids:
         return 0
@@ -172,6 +179,7 @@ def report(footprint: Footprint) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("pathspec", help="fragmento de ruta del sujeto")
     parser.add_argument("--root", default=".", help="raiz del clon")

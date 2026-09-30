@@ -1,0 +1,6 @@
+.env.example
+src/session/headless-pool.sh
+src/session/item_git_guard/git
+src/session/item_worktree.sh
+src/session/pool_integrate.sh
+tests/session/test-item-worktree-stash.sh

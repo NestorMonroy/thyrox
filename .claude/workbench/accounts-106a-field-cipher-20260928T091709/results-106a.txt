@@ -1,0 +1,49 @@
+== 1: el tag sin longitud fija
+   (src/accounts/fieldCipher.ts)
+(fail) with a key > a truncated authentication tag is rejected, even one GCM would verify [46.15ms]
+ 13 pass
+ 1 fail
+== 2: cifrar dos veces
+   (src/accounts/fieldCipher.ts)
+(fail) with a key > round-trips in the serialized format and never encrypts twice [47.59ms]
+ 13 pass
+ 1 fail
+== 3: una clave en blanco cuenta como declarada
+   (src/accounts/fieldCipher.ts)
+(fail) the key is read from THYROX_STORAGE_ENCRYPTION_KEY; blank does not count [80.64ms]
+ 13 pass
+ 1 fail
+== 4: el aviso de texto plano en cada escritura
+   (src/accounts/fieldCipher.ts)
+(fail) without a key > values pass through unchanged, and the plaintext storage is reported once [0.65ms]
+ 13 pass
+ 1 fail
+== 5: sin marcar la conexión indescifrable
+   (src/accounts/fieldCipher.ts)
+(fail) connection fields > an undecryptable credential is flagged, and reported once per row state [85.15ms]
+ 13 pass
+ 1 fail
+== 6: decryptQuiet informa cada lectura
+   (src/accounts/fieldCipher.ts)
+(fail) connection fields > decryptQuiet reports a failing credential once, not on every read [82.60ms]
+ 13 pass
+ 1 fail
+== 7: sin migrar lo de la sal derivada
+   (src/accounts/fieldCipher.ts)
+(fail) legacy ciphertext > a value encrypted with the old dynamic salt is migrated to the current key [133.04ms]
+ 13 pass
+ 1 fail
+== 8: otra sal fija
+   (src/accounts/fieldCipher.ts)
+(fail) a value OmniRoute stored with the same key reads back [86.42ms]
+ 13 pass
+ 1 fail
+== 9: sin clave, el cifrado se devuelve tal cual
+   (src/accounts/fieldCipher.ts)
+(fail) without a key > a stored ciphertext cannot be read back, and says so [60.72ms]
+ 13 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/
+ 14 pass
+ 0 fail

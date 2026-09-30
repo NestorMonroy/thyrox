@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+114 |   })
+115 | 
+116 |   test('Fy dice si el registro existía; un fallo es false', async () => {
+117 |     const storage = (result: unknown) => ({ delete: async () => result }) as unknown as RegistryStorage
+118 |     expect(await deleteRegistryRecordFromStorage(storage({ ok: true, value: { existed: true } }), '7.json')).toBe(true)
+119 |     expect(await deleteRegistryRecordFromStorage(storage({ ok: true, value: { existed: false } }), '7.json')).toBe(false)
+                                                                                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:119:111)
+(fail) lectura y borrado por el storage (Ny, Fy) > Fy dice si el registro existía; un fallo es false [0.55ms]
+
+ 27 pass
+ 1 fail
+ 80 expect() calls
+Ran 28 tests across 1 file. [206.00ms]

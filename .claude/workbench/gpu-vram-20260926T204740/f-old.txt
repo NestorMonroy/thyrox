@@ -1,0 +1,1 @@
+  *--query-gpu=index,utilization.gpu*)    cat "$FAKE_GPU_UTIL" ;;

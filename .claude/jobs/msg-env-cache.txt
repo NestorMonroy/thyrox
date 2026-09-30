@@ -1,0 +1,6 @@
+Declare the Redis install command and pool history
+
+thyrox_toolchain_require_redis reads THYROX_TOOLCHAIN_REDIS_INSTALL_CMD
+and .env.example did not list it. The three pool templates of this
+block also leave their run history, which the next run derives its
+cache TTL and memory reservation from.

@@ -1,0 +1,69 @@
+src/packages/agent/attachments.ts(1929,9): error TS7006: Parameter 'f' implicitly has an 'any' type.
+  --- código src/packages/agent/attachments.ts:1919-1939 ---
+   1919        'tengu_paper_halyard',
+   1920        false,
+   1921      )
+   1922  
+   1923      // Fase 3: procesar directorios anidados (CWD → destino)
+   1924      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1925      for (const dir of nestedDirs) {
+   1926        const memoryFiles = (
+   1927          await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1928        ).filter(
+   1929>         f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1930        )
+   1931        attachments.push(
+   1932          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1933        )
+   1934      }
+   1935  
+   1936      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1937      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1938      for (const dir of cwdLevelDirs) {
+   1939        const conditionalRules = (
+src/packages/agent/attachments.ts(1932,12): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+  --- código src/packages/agent/attachments.ts:1922-1942 ---
+   1922  
+   1923      // Fase 3: procesar directorios anidados (CWD → destino)
+   1924      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1925      for (const dir of nestedDirs) {
+   1926        const memoryFiles = (
+   1927          await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1928        ).filter(
+   1929          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1930        )
+   1931        attachments.push(
+   1932>         ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1933        )
+   1934      }
+   1935  
+   1936      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1937      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1938      for (const dir of cwdLevelDirs) {
+   1939        const conditionalRules = (
+   1940          await getConditionalRulesForCwdLevelDirectory(
+   1941            dir,
+   1942            filePath,
+src/packages/agent/attachments.ts(1940,15): error TS2304: Cannot find name 'getConditionalRulesForCwdLevelDirectory'.
+  --- código src/packages/agent/attachments.ts:1930-1950 ---
+   1930        )
+   1931        attachments.push(
+   1932          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1933        )
+   1934      }
+   1935  
+   1936      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1937      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1938      for (const dir of cwdLevelDirs) {
+   1939        const conditionalRules = (
+   1940>         await getConditionalRulesForCwdLevelDirectory(
+   1941            dir,
+   1942            filePath,
+   1943            processedPaths,
+   1944          )
+   1945        ).filter(
+   1946          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1947        )
+   1948        attachments.push(
+   1949          ...memoryFilesToAttachments(conditionalRules, toolUseContext, filePath),
+   1950        )

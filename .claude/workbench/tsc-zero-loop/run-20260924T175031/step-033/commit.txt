@@ -1,0 +1,8 @@
+Record the second revealing reorder step of the tsc loop
+
+Thirty-third step: reorderMessagesInUI with a free element type
+revealed the same 3 diagnostics as step 32, which proves the generic
+was not their cause. Messages.tsx helpers require content as a block
+array, while NormalizedMessage is a plain alias of Message; the
+missing import had hidden that as any. The corrected lesson is
+recorded; the fix is to give NormalizedMessage its normalized shape.

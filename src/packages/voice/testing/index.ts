@@ -1,9 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/voice/testing/index.ts` (22 líneas fuente,
- * 100% portado). Helpers de testing: runtime nulo y generador de
- * chunks de transcripción escritos para fixtures de consumidores.
- */
-
 import type {
   VoiceRuntime,
   VoiceTranscriptChunk,

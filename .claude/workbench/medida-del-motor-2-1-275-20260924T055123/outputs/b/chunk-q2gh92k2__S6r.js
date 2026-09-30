@@ -1,0 +1,1 @@
+function $6r(e){if(_B(e)){t(`[SandboxManager] Refusing a session grant for a host srt would re-spell as ${Rx(e)??"(uncanonicalizable)"}`,{level:"warn"});return}let{sessionAllowedHosts:n}=bd(),r=Cpe(e);if(n.has(r))return;n.add(r),tee()}

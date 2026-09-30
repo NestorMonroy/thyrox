@@ -5,6 +5,7 @@ import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdow
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { Select } from './CustomSelect/index.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onAccept(): void
@@ -41,13 +42,13 @@ export function BypassPermissionsModeDialog({
 
   return (
     <Dialog
-      title="WARNING: Claude Code running in Bypass Permissions mode"
+      title={`WARNING: ${PRODUCT_NAME} running in Bypass Permissions mode`}
       color="error"
       onCancel={handleEscape}
     >
       <Box flexDirection="column" gap={1}>
         <Text>
-          In Bypass Permissions mode, Claude Code will not ask for your approval
+          In Bypass Permissions mode, {PRODUCT_NAME} will not ask for your approval
           before running potentially dangerous commands.
           <Newline />
           This mode should only be used in a sandboxed container/VM that has

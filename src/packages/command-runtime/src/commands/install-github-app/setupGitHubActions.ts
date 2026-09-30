@@ -13,6 +13,7 @@ import { openBrowser } from '@thyrox/storage/browser.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { logError } from '@thyrox/local-observability/log.js'
 import type { Workflow } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 async function createWorkflowFile(
   repoName: string,
@@ -41,11 +42,11 @@ async function createWorkflowFile(
   }
 
   let content = workflowContent
-  if (secretName === 'CLAUDE_CODE_OAUTH_TOKEN') {
+  if (secretName === 'THYROX_CODE_OAUTH_TOKEN') {
     // For OAuth tokens, use the claude_code_oauth_token parameter
     content = workflowContent.replace(
       /anthropic_api_key: \$\{\{ secrets\.ANTHROPIC_API_KEY \}\}/g,
-      `claude_code_oauth_token: \${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}`,
+      `claude_code_oauth_token: \${{ secrets.THYROX_CODE_OAUTH_TOKEN }}`,
     )
   } else if (secretName !== 'ANTHROPIC_API_KEY') {
     // For other custom secret names, keep using anthropic_api_key parameter
@@ -86,7 +87,7 @@ async function createWorkflowFile(
         ...context,
       })
       throw new Error(
-        `Failed to create workflow file ${workflowPath}: A Claude workflow file already exists in this repository. Please remove it first or update it manually.`,
+        `Failed to create workflow file ${workflowPath}: A ${PRODUCT_NAME} workflow file already exists in this repository. Please remove it first or update it manually.`,
       )
     }
 
@@ -101,7 +102,7 @@ async function createWorkflowFile(
       '\n\nNeed help? Common issues:\n' +
       '· Permission denied → Run: gh auth refresh -h github.com -s repo,workflow\n' +
       '· Not authorized → Ensure you have admin access to the repository\n' +
-      '· For manual setup → Visit: https://github.com/anthropics/claude-code-how-works-how-works-action'
+      '· For manual setup → Visit: https://github.com/anthropics/claude-code-action'
 
     throw new Error(
       `Failed to create workflow file ${workflowPath}: ${createFileResult.stderr}${helpText}`,
@@ -225,15 +226,15 @@ export async function setupGitHubActions(
         workflows.push({
           path: '.github/workflows/claude.yml',
           content: WORKFLOW_CONTENT,
-          message: 'Claude PR Assistant workflow',
+          message: `${PRODUCT_NAME} PR Assistant workflow`,
         })
       }
 
       if (selectedWorkflows.includes('claude-review')) {
         workflows.push({
-          path: '.github/workflows/claude-code-how-works-how-works-review.yml',
+          path: '.github/workflows/claude-code-review.yml',
           content: CODE_REVIEW_PLUGIN_WORKFLOW_CONTENT,
-          message: 'Claude Code Review workflow',
+          message: `${PRODUCT_NAME} Review workflow`,
         })
       }
 
@@ -274,7 +275,7 @@ export async function setupGitHubActions(
           '\n\nNeed help? Common issues:\n' +
           '· Permission denied → Run: gh auth refresh -h github.com -s repo\n' +
           '· Not authorized → Ensure you have admin access to the repository\n' +
-          '· For manual setup → Visit: https://github.com/anthropics/claude-code-how-works-how-works-action'
+          '· For manual setup → Visit: https://github.com/anthropics/claude-code-action'
 
         throw new Error(
           `Failed to set API key secret: ${setSecretResult.stderr || 'Unknown error'}${helpText}`,

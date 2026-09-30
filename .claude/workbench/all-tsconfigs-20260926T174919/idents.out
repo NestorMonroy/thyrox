@@ -1,0 +1,23 @@
+  src/session/generate_bin.py:658  partes  ->  español: partes
+  src/session/generate_bin.py:659  indice  ->  español: indice
+  tests/agents/test_model_catalog_tokens.py:42  fuente  ->  español: fuente
+  tests/corpus/test_censo_contraparte.py:68  CENSADO  ->  español: censado
+  tests/corpus/test_censo_contraparte.py:69  AUSENTES  ->  español: ausentes
+  tests/hooks/test_detect_awk_substr_target.py:91  cadena  ->  español: cadena
+  tests/hooks/test_detect_awk_substr_target.py:92  texto  ->  español: texto
+  tests/session/test_generate_bin.py:233  falso  ->  español: falso
+  tests/session/test_generate_bin.py:313  culpables  ->  español: culpables
+  tests/session/test_generate_bin.py:970  guarda  ->  español: guarda
+  tests/session/test_generate_bin.py:974  suelto  ->  español: suelto
+  tests/session/test_generate_bin.py:995  familia  ->  español: familia
+  tests/session/test_generate_bin.py:1000  hallados  ->  español: hallados
+  tests/session/test_generate_bin.py:1035  dependencia  ->  español: dependencia
+  tests/session/test_generate_bin.py:1070  faltan  ->  español: faltan
+  tests/session/test_generate_bin.py:1081  fugas  ->  español: fugas
+  tests/session/test_generate_bin.py:177  origen  ->  español: origen
+  tests/session/test_generate_bin.py:313  cuerpo  ->  español: cuerpo
+  tests/verify/test_pool_pipeline.py:165  senal_del_verificador  ->  español: del, senal, verificador
+  tests/verify/test_pool_pipeline.py:166  fix_generico  ->  español: generico
+20 identificador(es) en español (alcance medido: 547 archivo(s) .py bajo .claude/scripts/src/tests/addons/provisioners/utils; 2125 congelado(s) en baseline)
+  Cota inferior: ciega a la palabra que existe en los dos idiomas (total, final, normal).
+  Traducir la palabra, no buscarle un sinónimo: Modelo -> Model, _Base se queda _Base.

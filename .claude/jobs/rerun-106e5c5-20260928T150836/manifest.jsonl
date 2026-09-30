@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash .claude/workbench/accounts-106e5c5-cookie-daemon-20260928T150643/rerun-106e5c5.sh; cd src/packages/provider && bunx tsc -p tsconfig.test.json --noEmit | gawk '/error TS/'; echo TEST_DONE", "started_at": "2026-09-28T15:08:36+00:00"}

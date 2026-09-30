@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import * as React from 'react'
 import { LIGHTNING_BOLT } from '@thyrox/output/constants/figures.js'
-import { Text, color } from '@anthropic/ink'
+import { Text, color, type ThemeSetting } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
 import { resolveThemeSetting } from '../systemTheme.js'
 
@@ -24,7 +24,7 @@ export function getFastIconString(applyColor = true, cooldown = false): string {
   if (!applyColor) {
     return LIGHTNING_BOLT
   }
-  const themeName = resolveThemeSetting(getGlobalConfig().theme)
+  const themeName = resolveThemeSetting(getGlobalConfig().theme as ThemeSetting)
   if (cooldown) {
     return chalk.dim(color('promptBorder', themeName)(LIGHTNING_BOLT))
   }

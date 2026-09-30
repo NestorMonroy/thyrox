@@ -3,65 +3,74 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte completo del paquete headless-sdk de claude-code-nestor-monroy-tools (tarea #238, primer tramo): contratos SDK, protocolo de control (schemas + tipos), tipos core generados, tipos de runtime, tipos de sandbox, telemetria de memoria, compat de mensajes de control. 15 de 15 modulos de la fuente. Cross-dependencias: la fuente importa lazySchema de @claude-code-how-works/tool-registry y logEvent de @claude-code-how-works/local-observability; ninguno resuelve aqui porque headless-sdk no es miembro del bun workspace (DEC-04), asi que ambos viven como sustitutos locales en src/internal/pendingCrossPackageDeps.ts (reimplementacion fiel y punto de inyeccion, respectivamente). MessageContent (de agent/messageShapes en la fuente) se reconstruye directamente desde @anthropic-ai/sdk, que SI es una dependencia npm real. Ver el analisis de la iniciativa para el detalle.",
+  "description": "Porte completo del paquete headless-sdk de claude-code-nestor-monroy-tools (tarea #238, primer tramo): contratos SDK, protocolo de control (schemas + tipos), tipos core generados, tipos de runtime, tipos de sandbox, telemetria de memoria, compat de mensajes de control. 15 de 15 modulos de la fuente. Cross-dependencias: lazySchema se importa de @thyrox/config/lazySchema y logEvent de @thyrox/local-observability, los originales del workspace. MessageContent (de agent/messageShapes en la fuente) se reconstruye directamente desde @anthropic-ai/sdk, que SI es una dependencia npm real. Ver el analisis de la iniciativa para el detalle.",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./agentSdkTypes.js": {
+      "@thyrox/source": "./src/agentSdkTypes.ts",
       "types": "./dist/src/agentSdkTypes.d.ts",
       "default": "./src/agentSdkTypes.ts"
     },
     "./controlMessageCompat": {
+      "@thyrox/source": "./src/controlMessageCompat.ts",
       "types": "./dist/src/controlMessageCompat.d.ts",
       "default": "./src/controlMessageCompat.ts"
     },
     "./controlTypes.js": {
+      "@thyrox/source": "./src/controlTypes.ts",
       "types": "./dist/src/controlTypes.d.ts",
       "default": "./src/controlTypes.ts"
     },
     "./sdkMemorySummary.js": {
+      "@thyrox/source": "./src/sdkMemorySummary.ts",
       "types": "./dist/src/sdkMemorySummary.d.ts",
       "default": "./src/sdkMemorySummary.ts"
     },
     "./sdkUtilityTypes.js": {
+      "@thyrox/source": "./src/sdkUtilityTypes.ts",
       "types": "./dist/src/sdkUtilityTypes.d.ts",
       "default": "./src/sdkUtilityTypes.ts"
     },
     "./runtimeTypes.js": {
+      "@thyrox/source": "./src/runtimeTypes.ts",
       "types": "./dist/src/runtimeTypes.d.ts",
       "default": "./src/runtimeTypes.ts"
     },
     "./coreTypes.js": {
+      "@thyrox/source": "./src/coreTypes.ts",
       "types": "./dist/src/coreTypes.d.ts",
       "default": "./src/coreTypes.ts"
     },
     "./coreSchemas.js": {
+      "@thyrox/source": "./src/coreSchemas.ts",
       "types": "./dist/src/coreSchemas.d.ts",
       "default": "./src/coreSchemas.ts"
     },
     "./controlSchemas.js": {
+      "@thyrox/source": "./src/controlSchemas.ts",
       "types": "./dist/src/controlSchemas.d.ts",
       "default": "./src/controlSchemas.ts"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./agentSdkTypes": {
+      "@thyrox/source": "./src/agentSdkTypes.ts",
+      "types": "./dist/src/agentSdkTypes.d.ts",
+      "default": "./src/agentSdkTypes.ts"
     }
   },
   "scripts": {
@@ -70,6 +79,8 @@
   "dependencies": {
     "zod": "^4.3.6",
     "@anthropic-ai/sdk": "^0.124.0",
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0"
   }
 }

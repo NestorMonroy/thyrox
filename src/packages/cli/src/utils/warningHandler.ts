@@ -48,6 +48,11 @@ function isInternalWarning(warning: Error): boolean {
 // Store reference to our warning handler so we can detect if it's already installed
 let warningHandler: ((warning: Error) => void) | null = null
 
+/** Con `THYROX_DEBUG`, cada aviso de Node también va al log de depuración. */
+export function isWarningDebugEnabled(): boolean {
+  return isEnvTruthy(process.env.THYROX_DEBUG)
+}
+
 export function initializeWarningHandler(): void {
   // Only set up handler once - check if our handler is already installed
   const currentListeners = process.listeners('warning')
@@ -97,7 +102,7 @@ export function initializeWarningHandler(): void {
       })
 
       // In debug mode, show all warnings with context
-      if (isEnvTruthy(process.env.CLAUDE_DEBUG)) {
+      if (isWarningDebugEnabled()) {
         const prefix = isInternal ? '[Internal Warning]' : '[Warning]'
         logForDebugging(`${prefix} ${warning.toString()}`, { level: 'warn' })
       }

@@ -1,0 +1,92 @@
+src/packages/storage/src/sessionRestore.ts(22,10): error TS2724: '"@thyrox/swarm"' has no exported member named 'restoreWorktreeSession'. Did you mean 'createWorktreeForSession'?
+  --- código src/packages/storage/src/sessionRestore.ts:12-32 ---
+     12  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     13  import { getMainLoopModelOverride } from '@thyrox/app-host/bootstrap/state.js'
+     14  import { setMainLoopModelOverride } from '@thyrox/app-host/bootstrap/state.js'
+     15  import { parseUserSpecifiedModel } from '@thyrox/provider/model.js'
+     16  import type { PersistedWorktreeSession } from '@thyrox/agent/logsTypes.js'
+     17  import { getCurrentWorktreeSession } from '@thyrox/swarm'
+     18  import { saveWorktreeState } from './sessionStorage.js'
+     19  import { setCwd } from '@thyrox/shell/Shell.js'
+     20  import { setOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+     21  import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+     22> import { restoreWorktreeSession } from '@thyrox/swarm'
+     23  import { clearMemoryFileCaches } from './claudemd.js'
+     24  import { clearSystemPromptSections } from '@thyrox/provider/systemPromptSections'
+     25  import { getPlansDirectory } from './plans.js'
+     26  import type { Message } from '@thyrox/agent/messageShapes'
+     27  import type { FileHistorySnapshot } from '@thyrox/agent/file-history'
+     28  import type { AttributionSnapshotMessage } from '@thyrox/agent/logsTypes.js'
+     29  import type { ContextCollapseCommitEntry } from '@thyrox/agent/logsTypes.js'
+     30  import type { ContextCollapseSnapshotEntry } from '@thyrox/agent/logsTypes.js'
+     31  import type { TodoList } from '@thyrox/tool-registry/todo/types.js'
+     32  import { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/constants.js'
+src/packages/storage/src/sessionRestore.ts(164,18): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/storage/src/sessionRestore.ts:154-174 ---
+    154    }
+    155  
+    156    // Restore TodoWrite state from transcript (SDK/non-interactive only).
+    157    // Interactive mode uses file-backed v2 tasks, so AppState.todos is unused there.
+    158    if (!isTodoV2Enabled() && result.messages && result.messages.length > 0) {
+    159      const todos = extractTodosFromTranscript(result.messages)
+    160      if (todos.length > 0) {
+    161        const agentId = getSessionId()
+    162        setAppState(prev => ({
+    163          ...prev,
+    164>         todos: { ...prev.todos, [agentId]: todos },
+    165        }))
+    166      }
+    167    }
+    168  
+    169    // Port of ant v2.1.136 5037.js E0_/cP6 — restore active /goal from the
+    170    // resumed transcript. The Stop hook and AppState.activeGoal both need
+    171    // to be rebuilt so the resumed session resumes its goal-loop behaviour.
+    172    // Gated on `tengu_maple_tide` (isGoalCommandEnabled) so dogfood sessions
+    173    // skip the cost when the feature is off.
+    174    if (isGoalCommandEnabled() && result.messages) {
+src/packages/storage/src/sessionRestore.ts(283,21): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/storage/src/sessionRestore.ts:273-293 ---
+    273    // whether the worktree was entered via --worktree (which sets projectRoot)
+    274    // or EnterWorktreeTool (which doesn't). Leaving projectRoot stable matches
+    275    // EnterWorktreeTool's behavior — skills/history stay anchored to the
+    276    // original project.
+    277    restoreWorktreeSession(worktreeSession)
+    278    // The /resume slash command calls this mid-session after caches have been
+    279    // populated against the old cwd. Cheap no-ops for the CLI-flag path
+    280    // (caches aren't populated yet there).
+    281    clearMemoryFileCaches()
+    282    clearSystemPromptSections()
+    283>   getPlansDirectory.cache.clear?.()
+    284  }
+    285  /**
+    286   * Undo restoreWorktreeForResume before a mid-session /resume switches to
+    287   * another session. Without this, /resume from a worktree session to a
+    288   * non-worktree session leaves the user in the old worktree directory with
+    289   * currentWorktreeSession still pointing at the prior session. /resume to a
+    290   * *different* worktree fails entirely — the getCurrentWorktreeSession()
+    291   * guard above blocks the switch.
+    292   *
+    293   * Not needed by CLI --resume/--continue: those run once at startup where
+src/packages/storage/src/sessionRestore.ts(306,21): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/storage/src/sessionRestore.ts:296-316 ---
+    296   */
+    297  export function exitRestoredWorktree(): void {
+    298    const current = getCurrentWorktreeSession()
+    299    if (!current) return
+    300  
+    301    restoreWorktreeSession(null)
+    302    // Worktree state changed, so cached prompt sections that reference it are
+    303    // stale whether or not chdir succeeds below.
+    304    clearMemoryFileCaches()
+    305    clearSystemPromptSections()
+    306>   getPlansDirectory.cache.clear?.()
+    307  
+    308    try {
+    309      process.chdir(current.originalCwd)
+    310    } catch {
+    311      // Original dir is gone (rare). Stay put — restoreWorktreeForResume
+    312      // will cd into the target worktree next if there is one.
+    313      return
+    314    }
+    315    setCwd(current.originalCwd)
+    316    setOriginalCwd(getCwd())

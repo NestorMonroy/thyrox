@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/bgDaemonTimers.test.ts`.
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import {
@@ -147,14 +146,75 @@ describe('setupUpgradeWatchdog', () => {
   })
 
   test('dispose called when binary unreadable returns no-op', () => {
-    // No es fácil mockear argv[1] a mitad de test, pero la rama
-    // centinela de "binario ilegible" se ejercita cada vez que statSync
-    // falla sobre una ruta inexistente (p. ej. el process.argv[1] del
-    // test runner es el propio binario de bun, que es legible, así que
-    // esto es un chequeo de humo de que dispose() no lanza sobre una
-    // configuración válida).
+    // We can't easily mock argv[1] mid-test, but the sentinel branch
+    // for "unreadable binary" is exercised whenever statSync fails on
+    // a non-existent path (e.g. test runner's process.argv[1] is the
+    // bun binary itself, which is readable, so this is a smoke check
+    // that dispose() doesn't throw on a valid setup).
     const abort = new AbortController()
     const w = setupUpgradeWatchdog(abort)
     expect(() => w.dispose()).not.toThrow()
+  })
+})
+
+describe('setupUpgradeWatchdog — It/Fr fidelity (injected resolveBinaryStat/hasBinaryChanged)', () => {
+  test('a detected change aborts and logs old/new mtime', async () => {
+    const abort = new AbortController()
+    const statSequence = [
+      { target: '/bin/ccb', mtimeMs: 100 },
+      { target: '/bin/ccb', mtimeMs: 200 },
+    ]
+    let call = 0
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => statSequence[Math.min(call++, statSequence.length - 1)]!,
+      hasBinaryChanged: (previous, current) => previous.mtimeMs !== current.mtimeMs,
+    })
+    await new Promise(r => setTimeout(r, 40))
+    expect(abort.signal.aborted).toBe(true)
+    w.dispose()
+  })
+
+  test('an unreadable binary (resolveBinaryStat -> null) never aborts', async () => {
+    const abort = new AbortController()
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => null,
+      hasBinaryChanged: () => true,
+    })
+    await new Promise(r => setTimeout(r, 30))
+    expect(abort.signal.aborted).toBe(false)
+    w.dispose()
+  })
+
+  test('no change (hasBinaryChanged -> false) never aborts', async () => {
+    const abort = new AbortController()
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => ({ target: '/bin/ccb', mtimeMs: 100 }),
+      hasBinaryChanged: () => false,
+    })
+    await new Promise(r => setTimeout(r, 30))
+    expect(abort.signal.aborted).toBe(false)
+    w.dispose()
+  })
+
+  test('dispose() before the initial stat resolves prevents any later abort (disposed guard)', async () => {
+    const abort = new AbortController()
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => {
+        await new Promise(r => setTimeout(r, 10))
+        return { target: '/bin/ccb', mtimeMs: 100 }
+      },
+      hasBinaryChanged: () => true,
+    })
+    w.dispose()
+    await new Promise(r => setTimeout(r, 60))
+    expect(abort.signal.aborted).toBe(false)
   })
 })

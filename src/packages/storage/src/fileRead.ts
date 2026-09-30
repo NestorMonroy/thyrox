@@ -1,7 +1,4 @@
 /**
- * Puerto fiel de `ccnmt: packages/storage/src/fileRead.ts` (3209 bytes
- * fuente, 4 símbolos exportados — porte completo).
- *
  * Sync file-read path, extracted from file.ts.
  *
  * file.ts sits in the settings SCC via log.ts → types/logs.ts → types/message.ts →
@@ -13,14 +10,9 @@
  * (log.ts → SCC) on unexpected failures. The -ForResolvedPath/-ForString
  * helpers here are the pure parts; callers who need the logging wrappers
  * import from file.ts.
- *
- * Divergencia declarada: `logForDebugging` (de
- * `@claude-code-how-works/local-observability/debug.js`) se sustituye por la
- * de `../internal/pendingCrossPackageDeps.js` (DEC-04) — mismo `console.error`
- * mínimo, ya establecida por ese módulo.
  */
 
-import { logForDebugging } from './internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getFsImplementation, safeResolvePath } from './fsOperations.js'
 
 export type LineEndingType = 'CRLF' | 'LF'

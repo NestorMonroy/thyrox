@@ -1,0 +1,465 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/config": [
+        "./index.ts"
+      ],
+      "@thyrox/config/types": [
+        "./settings/types.ts"
+      ],
+      "@thyrox/config/constants": [
+        "./settings/constants.ts"
+      ],
+      "@thyrox/config/validation": [
+        "./settings/validation.ts"
+      ],
+      "@thyrox/config/load": [
+        "./settings/load.ts"
+      ],
+      "@thyrox/config/settings": [
+        "./settings/settings.ts"
+      ],
+      "@thyrox/config/settings/settings.js": [
+        "./settings/settings.ts"
+      ],
+      "@thyrox/config/env": [
+        "./env/index.ts"
+      ],
+      "@thyrox/config/env/utils": [
+        "./env/utils.ts"
+      ],
+      "@thyrox/config/env/configHome": [
+        "./env/configHome.ts"
+      ],
+      "@thyrox/config/env/instructionFiles": [
+        "./env/instructionFiles.ts"
+      ],
+      "@thyrox/config/remote": [
+        "./remote/index.ts"
+      ],
+      "@thyrox/config/applySettingsChange": [
+        "./settings/applySettingsChange.ts"
+      ],
+      "@thyrox/config/changeDetector": [
+        "./settings/changeDetector.ts"
+      ],
+      "@thyrox/config/lazySchema": [
+        "./internal/lazySchema.ts"
+      ],
+      "@thyrox/config/lazySchema.js": [
+        "./internal/lazySchema.ts"
+      ],
+      "@thyrox/config/managedPath": [
+        "./settings/managedPath.ts"
+      ],
+      "@thyrox/config/pluginOnlyPolicy": [
+        "./settings/pluginOnlyPolicy.ts"
+      ],
+      "@thyrox/config/sync": [
+        "./sync/index.ts"
+      ],
+      "@thyrox/config/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/config/plugin/core/performStartupChecks.js": [
+        "./plugin/core/performStartupChecks.tsx"
+      ],
+      "@thyrox/config/bundledMode": [
+        "./bundledMode.ts"
+      ],
+      "@thyrox/config/bundledMode.js": [
+        "./bundledMode.ts"
+      ],
+      "@thyrox/config/commonConstants.js": [
+        "./commonConstants.ts"
+      ],
+      "@thyrox/config/configConstants.js": [
+        "./configConstants.ts"
+      ],
+      "@thyrox/config/dxt/helpers.js": [
+        "./dxt/helpers.ts"
+      ],
+      "@thyrox/config/dxt/zip.js": [
+        "./dxt/zip.ts"
+      ],
+      "@thyrox/config/entrypoint": [
+        "./entrypoint.ts"
+      ],
+      "@thyrox/config/entrypoint.js": [
+        "./entrypoint.ts"
+      ],
+      "@thyrox/config/embeddedTools.js": [
+        "./embeddedTools.ts"
+      ],
+      "@thyrox/config/env/dynamic": [
+        "./env/dynamic.ts"
+      ],
+      "@thyrox/config/env/git-settings": [
+        "./env/git-settings.ts"
+      ],
+      "@thyrox/config/env/index.js": [
+        "./env/index.ts"
+      ],
+      "@thyrox/config/env/managed-constants": [
+        "./env/managed-constants.ts"
+      ],
+      "@thyrox/config/env/paths": [
+        "./env/paths.ts"
+      ],
+      "@thyrox/config/env/paths.js": [
+        "./env/paths.ts"
+      ],
+      "@thyrox/config/env/privacy": [
+        "./env/privacy.ts"
+      ],
+      "@thyrox/config/env/privacy-level": [
+        "./env/privacy-level.ts"
+      ],
+      "@thyrox/config/env/utils.js": [
+        "./env/utils.ts"
+      ],
+      "@thyrox/config/env/configHome.js": [
+        "./env/configHome.ts"
+      ],
+      "@thyrox/config/env/instructionFiles.js": [
+        "./env/instructionFiles.ts"
+      ],
+      "@thyrox/config/env/validation": [
+        "./env/validation.ts"
+      ],
+      "@thyrox/config/feature-flags": [
+        "./feature-flags.ts"
+      ],
+      "@thyrox/config/feature-flags.js": [
+        "./feature-flags.ts"
+      ],
+      "@thyrox/config/frontmatterParser.js": [
+        "./frontmatterParser.ts"
+      ],
+      "@thyrox/config/frontmatterParser": [
+        "./frontmatterParser.ts"
+      ],
+      "@thyrox/config/generators": [
+        "./generators.ts"
+      ],
+      "@thyrox/config/git/gitConfigParser.js": [
+        "./git/gitConfigParser.ts"
+      ],
+      "@thyrox/config/gitFilesystem.js": [
+        "./gitFilesystem.ts"
+      ],
+      "@thyrox/config/global/config.js": [
+        "./global/config.ts"
+      ],
+      "@thyrox/config/hash": [
+        "./hash.ts"
+      ],
+      "@thyrox/config/hash.js": [
+        "./hash.ts"
+      ],
+      "@thyrox/config/host": [
+        "./host.ts"
+      ],
+      "@thyrox/config/host.js": [
+        "./host.ts"
+      ],
+      "@thyrox/config/internal/allowedSourcesState.js": [
+        "./internal/allowedSourcesState.ts"
+      ],
+      "@thyrox/config/internal/lazySchema.js": [
+        "./internal/lazySchema.ts"
+      ],
+      "@thyrox/config/managedEnv.js": [
+        "./managedEnv.ts"
+      ],
+      "@thyrox/config/mcpConfigSchema.js": [
+        "./mcpConfigSchema.ts"
+      ],
+      "@thyrox/config/memoize.js": [
+        "./memoize.ts"
+      ],
+      "@thyrox/config/outputStyles.js": [
+        "./outputStyles.ts"
+      ],
+      "@thyrox/config/platform": [
+        "./platform.ts"
+      ],
+      "@thyrox/config/platform.js": [
+        "./platform.ts"
+      ],
+      "@thyrox/config/plugin/_deps": [
+        "./plugin/_deps.ts"
+      ],
+      "@thyrox/config/plugin/_deps.js": [
+        "./plugin/_deps.ts"
+      ],
+      "@thyrox/config/plugin/builtin": [
+        "./plugin/builtin.ts"
+      ],
+      "@thyrox/config/plugin/cacheUtils": [
+        "./plugin/cacheUtils.ts"
+      ],
+      "@thyrox/config/plugin/commands/reload-plugins/index.js": [
+        "./plugin/commands/reload-plugins/index.ts"
+      ],
+      "@thyrox/config/plugin/commands/thinkback-play/index.js": [
+        "./plugin/commands/thinkback-play/index.ts"
+      ],
+      "@thyrox/config/plugin/commands/thinkback/index.js": [
+        "./plugin/commands/thinkback/index.ts"
+      ],
+      "@thyrox/config/plugin/core/loadPluginHooks.js": [
+        "./plugin/core/loadPluginHooks.ts"
+      ],
+      "@thyrox/config/plugin/core/pluginAutoupdate.js": [
+        "./plugin/core/pluginAutoupdate.ts"
+      ],
+      "@thyrox/config/plugin/core/pluginLoader.js": [
+        "./plugin/core/pluginLoader.ts"
+      ],
+      "@thyrox/config/plugin/headlessPluginInstall": [
+        "./plugin/headlessPluginInstall.ts"
+      ],
+      "@thyrox/config/plugin/hintRecommendation": [
+        "./plugin/hintRecommendation.ts"
+      ],
+      "@thyrox/config/plugin/ineffectiveDisables.js": [
+        "./plugin/ineffectiveDisables.ts"
+      ],
+      "@thyrox/config/plugin/installCounts": [
+        "./plugin/installCounts.ts"
+      ],
+      "@thyrox/config/plugin/installedPluginsManager": [
+        "./plugin/installedPluginsManager.ts"
+      ],
+      "@thyrox/config/plugin/loadPluginAgentsAlias.js": [
+        "./plugin/loadPluginAgentsAlias.ts"
+      ],
+      "@thyrox/config/plugin/loadPluginCommands": [
+        "./plugin/loadPluginCommands.ts"
+      ],
+      "@thyrox/config/plugin/loadPluginCommands.js": [
+        "./plugin/loadPluginCommands.ts"
+      ],
+      "@thyrox/config/plugin/loadPluginHooks": [
+        "./plugin/loadPluginHooks.ts"
+      ],
+      "@thyrox/config/plugin/lspPluginIntegration": [
+        "./plugin/lspPluginIntegration.ts"
+      ],
+      "@thyrox/config/plugin/lspRecommendation": [
+        "./plugin/lspRecommendation.ts"
+      ],
+      "@thyrox/config/plugin/marketplaceHelpers": [
+        "./plugin/marketplaceHelpers.ts"
+      ],
+      "@thyrox/config/plugin/marketplaceManager": [
+        "./plugin/marketplaceManager.ts"
+      ],
+      "@thyrox/config/plugin/mcpPluginIntegration": [
+        "./plugin/mcpPluginIntegration.ts"
+      ],
+      "@thyrox/config/plugin/mcpbHandler": [
+        "./plugin/mcpbHandler.ts"
+      ],
+      "@thyrox/config/plugin/officialMarketplace": [
+        "./plugin/officialMarketplace.ts"
+      ],
+      "@thyrox/config/plugin/officialMarketplaceStartupCheck": [
+        "./plugin/officialMarketplaceStartupCheck.ts"
+      ],
+      "@thyrox/config/plugin/orphanedPluginFilter": [
+        "./plugin/orphanedPluginFilter.ts"
+      ],
+      "@thyrox/config/plugin/parseMarketplaceInput": [
+        "./plugin/parseMarketplaceInput.ts"
+      ],
+      "@thyrox/config/plugin/pluginAutoupdate": [
+        "./plugin/pluginAutoupdate.ts"
+      ],
+      "@thyrox/config/plugin/pluginBlocklist": [
+        "./plugin/pluginBlocklist.ts"
+      ],
+      "@thyrox/config/plugin/pluginCliCommands": [
+        "./plugin/pluginCliCommands.ts"
+      ],
+      "@thyrox/config/plugin/pluginDirectories": [
+        "./plugin/pluginDirectories.ts"
+      ],
+      "@thyrox/config/plugin/pluginFlagging": [
+        "./plugin/pluginFlagging.ts"
+      ],
+      "@thyrox/config/plugin/pluginIdentifier": [
+        "./plugin/pluginIdentifier.ts"
+      ],
+      "@thyrox/config/plugin/pluginInstallationHelpers": [
+        "./plugin/pluginInstallationHelpers.ts"
+      ],
+      "@thyrox/config/plugin/pluginLoader": [
+        "./plugin/pluginLoader.ts"
+      ],
+      "@thyrox/config/plugin/pluginOperations": [
+        "./plugin/pluginOperations.ts"
+      ],
+      "@thyrox/config/plugin/pluginOperations.js": [
+        "./plugin/pluginOperations.ts"
+      ],
+      "@thyrox/config/plugin/pluginOptionsStorage": [
+        "./plugin/pluginOptionsStorage.ts"
+      ],
+      "@thyrox/config/plugin/pluginPolicy": [
+        "./plugin/pluginPolicy.ts"
+      ],
+      "@thyrox/config/plugin/pluginStartupCheck": [
+        "./plugin/pluginStartupCheck.ts"
+      ],
+      "@thyrox/config/plugin/refresh": [
+        "./plugin/refresh.ts"
+      ],
+      "@thyrox/config/plugin/schemas": [
+        "./plugin/schemas.ts"
+      ],
+      "@thyrox/config/plugin/types": [
+        "./plugin/types.ts"
+      ],
+      "@thyrox/config/plugin/validatePlugin": [
+        "./plugin/validatePlugin.ts"
+      ],
+      "@thyrox/config/plugin/walkPluginMarkdown.js": [
+        "./plugin/walkPluginMarkdown.ts"
+      ],
+      "@thyrox/config/product": [
+        "./product.ts"
+      ],
+      "@thyrox/config/semver": [
+        "./semver.ts"
+      ],
+      "@thyrox/config/sequential": [
+        "./sequential.ts"
+      ],
+      "@thyrox/config/settings/allErrors": [
+        "./settings/allErrors.ts"
+      ],
+      "@thyrox/config/settings/core/allErrors.js": [
+        "./settings/core/allErrors.ts"
+      ],
+      "@thyrox/config/settings/core/changeDetector.js": [
+        "./settings/core/changeDetector.ts"
+      ],
+      "@thyrox/config/settings/core/constants.js": [
+        "./settings/core/constants.ts"
+      ],
+      "@thyrox/config/settings/core/settings.js": [
+        "./settings/core/settings.ts"
+      ],
+      "@thyrox/config/settings/core/validation.js": [
+        "./settings/core/validation.ts"
+      ],
+      "@thyrox/config/settings/mdm/rawRead": [
+        "./settings/mdm/rawRead.ts"
+      ],
+      "@thyrox/config/settings/mdm/settings": [
+        "./settings/mdm/settings.ts"
+      ],
+      "@thyrox/config/settings/settingsCache.js": [
+        "./settings/settingsCache.ts"
+      ],
+      "@thyrox/config/settings/types.js": [
+        "./settings/types.ts"
+      ],
+      "@thyrox/config/settings/validateEditTool": [
+        "./settings/validateEditTool.ts"
+      ],
+      "@thyrox/config/signal": [
+        "./signal.ts"
+      ],
+      "@thyrox/config/sleep": [
+        "./sleep.ts"
+      ],
+      "@thyrox/config/stream": [
+        "./stream.ts"
+      ],
+      "@thyrox/config/timeouts": [
+        "./timeouts.ts"
+      ],
+      "@thyrox/config/utils/envExpansion.js": [
+        "./utils/envExpansion.ts"
+      ],
+      "@thyrox/config/utils/markdownDescription.js": [
+        "./utils/markdownDescription.ts"
+      ],
+      "@thyrox/config/yaml.js": [
+        "./yaml.ts"
+      ],
+      "@thyrox/config/yaml": [
+        "./yaml.ts"
+      ]
+    }
+  },
+  "include": [
+    "settings/**/*",
+    "env/**/*",
+    "remote/**/*",
+    "internal/**/*",
+    "sync/**/*",
+    "testing/**/*",
+    "dxt/**/*",
+    "git/**/*",
+    "global/**/*",
+    "plugin/**/*",
+    "utils/**/*",
+    "bundledMode.ts",
+    "commonConstants.ts",
+    "configConstants.ts",
+    "embeddedTools.ts",
+    "entrypoint.ts",
+    "feature-flags.ts",
+    "frontmatterParser.ts",
+    "generators.ts",
+    "gitFilesystem.ts",
+    "hash.ts",
+    "host.ts",
+    "index.ts",
+    "managedEnv.ts",
+    "mcpConfigSchema.ts",
+    "memoize.ts",
+    "outputStyles.ts",
+    "platform.ts",
+    "product.ts",
+    "semver.ts",
+    "sequential.ts",
+    "signal.ts",
+    "sleep.ts",
+    "stream.ts",
+    "timeouts.ts",
+    "yaml.ts"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

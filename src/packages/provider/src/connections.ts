@@ -89,7 +89,7 @@ function requireLogout(): {
   performLogout: (opts: { clearOnboarding: boolean }) => Promise<void>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./commands/logout/logout.ts')
+  return require('./commands/logout/logout.tsx')
 }
 
 // ── Discriminación de endpoint ──────────────────────────────────────────
@@ -259,6 +259,10 @@ export function inflateModelSetting(value: string | null | undefined): string | 
 
   if (connectionId !== undefined) {
     if (enabled.some(c => c.id === connectionId)) return value
+    // Stale prefix; fall through to bare search. El prefijo nombra una
+    // conexión que ya no está habilitada: devolver `value` aquí dejaría al
+    // usuario atrapado en un id huérfano sin más salida que editar
+    // settings.json, así que se sigue buscando por el id sin prefijo.
   }
 
   if (
@@ -283,6 +287,8 @@ export function inflateModelSetting(value: string | null | undefined): string | 
     }
   }
 
+  // Orphan id: ninguna conexión habilitada lo ofrece. Se devuelve intacto,
+  // sin inventar un prefijo.
   return value
 }
 
@@ -596,8 +602,8 @@ export function migrateLegacyEnvToConnections(
       try {
         requireConfig().saveGlobalConfig(current => {
           const env = current.env ?? {}
-          if (env.CLAUDE_CODE_USE_OPENAI !== '1') return current
-          const { CLAUDE_CODE_USE_OPENAI: _drop, ...rest } = env
+          if (env.THYROX_CODE_USE_OPENAI !== '1') return current
+          const { THYROX_CODE_USE_OPENAI: _drop, ...rest } = env
           void _drop
           return { ...current, env: rest }
         })
@@ -606,8 +612,8 @@ export function migrateLegacyEnvToConnections(
           readEnv: (name: string) => string | undefined
           deleteEnv: (name: string) => void
         }
-        if (readEnv('CLAUDE_CODE_USE_OPENAI') === '1') {
-          deleteEnv('CLAUDE_CODE_USE_OPENAI')
+        if (readEnv('THYROX_CODE_USE_OPENAI') === '1') {
+          deleteEnv('THYROX_CODE_USE_OPENAI')
         }
       } catch {
         // Best-effort; nunca bloquea el arranque.

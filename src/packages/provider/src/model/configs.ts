@@ -1,7 +1,11 @@
 import type { ModelName } from '../model.js'
 import type { APIProvider } from '../providers.js'
 
-export type ModelConfig = Record<APIProvider, ModelName>
+// `codex` no tiene fila en esta tabla: sus modelos salen de
+// getDefaultModelsForProtocol('codex') (codex/fetchAdapter.ts). Con la clave
+// exigida, las trece configuraciones incumplían ModelConfig, y una lectura
+// ALL_MODEL_CONFIGS[k]['codex'] devolvía undefined tipada como ModelName.
+export type ModelConfig = Record<Exclude<APIProvider, 'codex'>, ModelName>
 
 // @[MODEL LAUNCH]: Add a new CLAUDE_*_CONFIG constant here. Double check the correct model strings
 // here since the pattern may change.
@@ -123,7 +127,50 @@ export const CLAUDE_SONNET_4_6_CONFIG = {
   gemini: 'claude-sonnet-4-6',
 } as const satisfies ModelConfig
 
-// @[MODEL LAUNCH]: Register the new config here.
+export const CLAUDE_SONNET_5_CONFIG = {
+  firstParty: 'claude-sonnet-5',
+  bedrock: 'us.anthropic.claude-sonnet-5',
+  vertex: 'claude-sonnet-5',
+  foundry: 'claude-sonnet-5',
+  openai: 'claude-sonnet-5',
+  gemini: 'claude-sonnet-5',
+} as const satisfies ModelConfig
+
+export const CLAUDE_OPUS_5_CONFIG = {
+  firstParty: 'claude-opus-5',
+  bedrock: 'us.anthropic.claude-opus-5',
+  vertex: 'claude-opus-5',
+  foundry: 'claude-opus-5',
+  openai: 'claude-opus-5',
+  gemini: 'claude-opus-5',
+} as const satisfies ModelConfig
+
+export const CLAUDE_OPUS_5_5_CONFIG = {
+  firstParty: 'claude-opus-5-5',
+  bedrock: 'us.anthropic.claude-opus-5-5',
+  vertex: 'claude-opus-5-5',
+  foundry: 'claude-opus-5-5',
+  openai: 'claude-opus-5-5',
+  gemini: 'claude-opus-5-5',
+} as const satisfies ModelConfig
+
+export const CLAUDE_FABLE_5_CONFIG = {
+  firstParty: 'claude-fable-5',
+  bedrock: 'us.anthropic.claude-fable-5',
+  vertex: 'claude-fable-5',
+  foundry: 'claude-fable-5',
+  openai: 'claude-fable-5',
+  gemini: 'claude-fable-5',
+} as const satisfies ModelConfig
+
+export const CLAUDE_FABLE_5_1_CONFIG = {
+  firstParty: 'claude-fable-5-1',
+  bedrock: 'us.anthropic.claude-fable-5-1',
+  vertex: 'claude-fable-5-1',
+  foundry: 'claude-fable-5-1',
+  openai: 'claude-fable-5-1',
+  gemini: 'claude-fable-5-1',
+} as const satisfies ModelConfig// @[MODEL LAUNCH]: Register the new config here.
 export const ALL_MODEL_CONFIGS = {
   haiku35: CLAUDE_3_5_HAIKU_CONFIG,
   haiku45: CLAUDE_HAIKU_4_5_CONFIG,
@@ -138,6 +185,11 @@ export const ALL_MODEL_CONFIGS = {
   opus46: CLAUDE_OPUS_4_6_CONFIG,
   opus47: CLAUDE_OPUS_4_7_CONFIG,
   opus48: CLAUDE_OPUS_4_8_CONFIG,
+  sonnet5: CLAUDE_SONNET_5_CONFIG,
+  opus5: CLAUDE_OPUS_5_CONFIG,
+  opus55: CLAUDE_OPUS_5_5_CONFIG,
+  fable5: CLAUDE_FABLE_5_CONFIG,
+  fable51: CLAUDE_FABLE_5_1_CONFIG,
 } as const satisfies Record<string, ModelConfig>
 
 export type ModelKey = keyof typeof ALL_MODEL_CONFIGS

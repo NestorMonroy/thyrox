@@ -1,0 +1,4 @@
+src/packages/shell/src/exec.ts(224,35): error TS2345: Argument of type '((lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void) | null' is not assignable to parameter of type '((...args: unknown[]) => void) | null'.
+  Type '(lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void' is not assignable to type '(...args: unknown[]) => void'.
+    Types of parameters 'lastLines' and 'args' are incompatible.
+      Type 'unknown' is not assignable to type 'string'.

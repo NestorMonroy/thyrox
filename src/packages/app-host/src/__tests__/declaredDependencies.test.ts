@@ -30,19 +30,17 @@
  * ese error y quedó como demostración viva del punto 1, hasta corregirse):
  *   1. Un especificador de paquete que aparezca dentro de un comentario o de
  *      un string literal —no de un import real— se contaría igual que una
- *      referencia genuina. Verificado 2026-09-09: cero falsos positivos en
- *      este árbol hoy, pero el riesgo es estructural del regex.
+ *      referencia genuina. No se han medido falsos positivos en este árbol,
+ *      pero el riesgo es estructural del regex.
  *   2. La construcción de TypeScript «tomar el tipo de un import dinámico»
  *      (posición de TIPO, no de valor) cae en la misma rama que un import
  *      dinámico de valor real — dos casos hoy, ambos sobre el paquete
- *      `provider`, en `init.ts` (líneas 201-202 y 251-252). Ese paquete ya
- *      está en el baseline congelado por imports de valor genuinos en
- *      `providerHostSetup.ts`, así que el sobre-conteo no cambia ningún
- *      veredicto hoy.
+ *      `provider`, en `init.ts`. Ese paquete también se importa como valor en
+ *      `providerHostSetup.ts` y está declarado, así que el sobre-conteo no
+ *      cambia ningún veredicto.
  *   3. La forma de `import type` SIN llaves (identificador suelto, sin
- *      `{ }`) no se despoja — verificado 2026-09-09 con un grep sobre el
- *      patrón `import type` seguido de un identificador: 0 hits en este
- *      paquete. Si apareciera, se contaría de más (un import type-only no
+ *      `{ }`) no se despoja; el patrón no aparece en este paquete. Si
+ *      apareciera, se contaría de más (un import type-only no
  *      genera dependencia real en runtime).
  */
 import { describe, expect, test } from 'bun:test'
@@ -85,6 +83,10 @@ function deriveThyroxReferences(): DerivedHit[] {
     const stripped = text.replace(TYPE_ONLY_IMPORT_RE, '')
     for (const match of stripped.matchAll(THYROX_REFERENCE_RE)) {
       const packageName = match[1]
+      // El grupo de captura es obligatorio en THYROX_REFERENCE_RE (sin `?`),
+      // así que siempre está presente en runtime; noUncheckedIndexedAccess
+      // igual tipa el acceso como opcional.
+      if (packageName === undefined) continue
       const upToMatch = stripped.slice(0, match.index ?? 0)
       const lineNumber = upToMatch.split('\n').length
       hits.push({
@@ -132,25 +134,10 @@ const declaredNames = new Set(
 // Deuda heredada CONGELADA — deliberadamente NO se re-deriva en cada corrida:
 // un baseline dinámico absorbería en silencio cualquier import futuro sin
 // declarar, que es exactamente el defecto que este control existe para
-// atrapar. TASK-THYROX-0007 va a tocar los 28 manifiestos del árbol; hasta
-// entonces estos seis quedan como `test.todo`.
-//
-// Medido en vivo 2026-09-09 (ls -d + ls .../package.json por directorio,
-// NO leyendo los docstrings que los citan): 5 de 6 —voice, mcp-runtime, cli,
-// provider, swarm— YA tienen `package.json` en este árbol, pese a que los
-// docstrings que los mencionan (installCliBindings.ts,
-// installPluginBindings.ts, providerHostSetup.ts) siguen afirmando que esos
-// paquetes «no existen en absoluto». Esa prosa está obsoleta — no se usa
-// como razón de los `test.todo` de abajo, que citan sólo lo que este control
-// mismo mide. Sólo `repl` no existe como directorio en absoluto todavía.
-const FROZEN_BASELINE: ReadonlySet<string> = new Set([
-  'cli',
-  'mcp-runtime',
-  'provider',
-  'repl',
-  'swarm',
-  'voice',
-])
+// atrapar. Una entrada sale del baseline en cuanto se declara: si se quedara,
+// retirar la declaración degradaría el fallo a un `test.todo`. Hoy no queda
+// ninguna.
+const FROZEN_BASELINE: ReadonlySet<string> = new Set<string>([])
 
 describe('dependencias declaradas de @thyrox/app-host', () => {
   for (const packageName of derivedNames) {
@@ -171,6 +158,7 @@ describe('dependencias declaradas de @thyrox/app-host', () => {
         `@thyrox/${packageName}: no declarado en dependencies de app-host ` +
           `— deuda heredada, fuera de TASK-THYROX-0005; sitio: ` +
           `${site.filePath}:${site.lineNumber}${voiceNote}`,
+        () => {},
       )
     } else {
       test(`@thyrox/${packageName} está declarado en dependencies`, () => {
@@ -189,6 +177,9 @@ describe('dependencias declaradas de @thyrox/app-host', () => {
     for (const entry of FROZEN_BASELINE) {
       test(`@thyrox/${entry} sigue apareciendo en el árbol derivado`, () => {
         expect(derivedNames).toContain(entry)
+      })
+      test(`@thyrox/${entry} sigue sin declararse: si ya se declaró, sale del baseline`, () => {
+        expect(declaredNames.has(entry)).toBe(false)
       })
     }
   })

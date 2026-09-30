@@ -37,7 +37,11 @@ class LoopResult:
 
 
 def _git(root: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, text=True)
+    # El commit del lazo es desatendido: nadie puede responder a un firmante.
+    # Con `commit.gpgsign=true` global y el firmante ausente, git sale 128
+    # sin que haya concurrencia alguna (medido; el paso 156 murió así).
+    subprocess.run(["git", "-c", "commit.gpgsign=false", *args], cwd=root,
+                   check=True, capture_output=True, text=True)
 
 
 def run_loop(root: Path, proposers: list[str], tsc: list[str], loop_dir: Path, *,
@@ -86,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     first = argv.index("--")
     second = argv.index("--", first + 1)
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--loop-dir", type=Path, required=True)
     parser.add_argument("--max-steps", type=int, default=20)

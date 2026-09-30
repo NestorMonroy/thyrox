@@ -2,6 +2,7 @@ import { z } from 'zod/v4'
 import { HooksSchema } from '../settings/schemas/hooks.js'
 import { McpServerConfigSchema } from './_deps.js'
 import { lazySchema } from '../internal/lazySchema.js'
+import { PRODUCT_NAME } from '../product.js'
 
 /**
  * First-layer defense against official marketplace impersonation.
@@ -13,18 +14,25 @@ import { lazySchema } from '../internal/lazySchema.js'
  */
 
 /**
- * Official marketplace names that are reserved for Anthropic/Claude official use.
+ * Official marketplace names that are reserved for Anthropic/thyrox official use.
  * These names are allowed ONLY for official marketplaces and blocked for third parties.
  */
+// El conjunto del binario 2.1.275, en su orden. thyrox tenía 8 de los 14.
 export const ALLOWED_OFFICIAL_MARKETPLACE_NAMES = new Set([
-  'claude-code-how-works-how-works-marketplace',
-  'claude-code-how-works-how-works-plugins',
+  'claude-code-marketplace',
+  'claude-code-plugins',
   'claude-plugins-official',
   'anthropic-marketplace',
   'anthropic-plugins',
   'agent-skills',
+  'anthropic-agent-skills',
   'life-sciences',
   'knowledge-work-plugins',
+  'claude-for-legal',
+  'claude-for-financial-services',
+  'financial-services-plugins',
+  'first-party-plugins',
+  'claude-tag-plugins',
 ])
 
 /**
@@ -58,7 +66,7 @@ export function isMarketplaceAutoUpdate(
 }
 
 /**
- * Pattern to detect names that impersonate official Anthropic/Claude marketplaces.
+ * Pattern to detect names that impersonate official Anthropic/thyrox marketplaces.
  *
  * Matches names containing variations like:
  * - "official" combined with "anthropic" or "claude" (e.g., "official-claude-plugins")
@@ -79,7 +87,7 @@ export const BLOCKED_OFFICIAL_NAME_PATTERN =
 const NON_ASCII_PATTERN = /[^\u0020-\u007E]/
 
 /**
- * Check if a marketplace name impersonates an official Anthropic/Claude marketplace.
+ * Check if a marketplace name impersonates an official Anthropic/thyrox marketplace.
  *
  * @param name - The marketplace name to check
  * @returns true if the name is blocked (impersonates official), false if allowed
@@ -234,7 +242,7 @@ const MarketplaceNameSchema = lazySchema(() =>
     )
     .refine(name => !isBlockedOfficialName(name), {
       message:
-        'Marketplace name impersonates an official Anthropic/Claude marketplace',
+        `Marketplace name impersonates an official Anthropic/${PRODUCT_NAME} marketplace`,
     })
     .refine(name => name.toLowerCase() !== 'inline', {
       message:
@@ -327,7 +335,7 @@ const PluginManifestMetadataSchema = lazySchema(() =>
  * Schema for plugin hooks configuration (hooks.json)
  *
  * Defines the hooks that a plugin can provide to intercept and modify
- * Claude Code behavior at various lifecycle events.
+ * thyrox behavior at various lifecycle events.
  */
 export const PluginHooksSchema = lazySchema(() =>
   z.object({
@@ -1235,7 +1243,7 @@ export function isLocalPluginSource(source: PluginSource): source is string {
  * For local sources (`file`/`directory`), `installLocation` IS the user's path —
  * it lives outside the plugins cache dir and marketplace operations on it are
  * read-only. For remote sources (`github`/`git`/`url`/`npm`), `installLocation`
- * is a cache-dir entry managed by Claude Code and subject to rm/re-clone.
+ * is a cache-dir entry managed by thyrox and subject to rm/re-clone.
  *
  * Contrast with isLocalPluginSource, which operates on PluginSource (the
  * per-plugin source inside a marketplace entry) and checks for `./` prefix.
@@ -1472,10 +1480,10 @@ export const InstalledPluginSchema = lazySchema(() =>
  * Schema for the installed_plugins.json file (V1 format)
  *
  * Contains a version number and maps plugin IDs to their installation metadata.
- * Maintained automatically by Claude Code, not edited by users.
+ * Maintained automatically by thyrox, not edited by users.
  *
  * The version field tracks schema changes. When the version doesn't match
- * the current schema version, Claude Code will update the file on next startup.
+ * the current schema version, thyrox will update the file on next startup.
  *
  * Example file:
  * {

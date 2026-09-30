@@ -29,7 +29,7 @@ describe('generateTempFilePath — custom prefix and extension', () => {
   })
 
   test('extension passed as-is (no dot inserted)', () => {
-    // Documenta: quien llama debe incluir el punto. ".md" → ".md", "md" → "md".
+    // Documents: caller must include the dot. ".md" → ".md", "md" → "md".
     expect(generateTempFilePath('p', 'noext')).toMatch(/-[\da-f]+noext$/i)
   })
 })
@@ -46,19 +46,19 @@ describe('generateTempFilePath — random UUID path (no contentHash)', () => {
   })
 
   test('UUID identifier is 36 chars (canonical UUID v4 form)', () => {
-    // randomUUID retorna "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" (36 chars).
+    // randomUUID returns "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" (36 chars).
     const p = generateTempFilePath('test', '.x')
-    // Tras "test-" y antes de ".x" deben ir 36 chars.
+    // After "test-" and before ".x" should be 36 chars.
     const match = p.match(/test-([\w-]+)\.x$/)
     expect(match?.[1]?.length).toBe(36)
   })
 })
 
 describe('generateTempFilePath — contentHash path', () => {
-  // Contrato crítico: cuando se pasa contentHash, la ruta resultante es
-  // ESTABLE para el mismo contenido entre procesos distintos. Lo exige la
-  // estabilidad del prompt cache (un UUID al azar invalidaría el prefijo
-  // cacheado de la API en cada spawn de subproceso).
+  // Critical contract: when contentHash is provided, the resulting path
+  // is STABLE for the same content across process boundaries. This is
+  // required for prompt-cache stability (random UUIDs would invalidate
+  // the API cache prefix on every subprocess spawn).
 
   test('same contentHash produces same path', () => {
     const a = generateTempFilePath('p', '.md', { contentHash: 'sandbox-rules' })
@@ -73,7 +73,7 @@ describe('generateTempFilePath — contentHash path', () => {
   })
 
   test('contentHash uses SHA-256 first 16 hex chars', () => {
-    // El identificador debe ser exactamente 16 hex minúsculas.
+    // Identifier should be exactly 16 lowercase hex chars.
     const p = generateTempFilePath('test', '.x', { contentHash: 'foo' })
     const match = p.match(/test-([0-9a-f]+)\.x$/)
     expect(match?.[1]?.length).toBe(16)
@@ -92,16 +92,16 @@ describe('generateTempFilePath — contentHash path', () => {
   })
 
   test('empty-string contentHash falls THROUGH to UUID branch (truthy check)', () => {
-    // Traza: `options?.contentHash ? hash() : randomUUID()`. La condición
-    // del ternario evalúa la veracidad del valor. '' es FALSY, así que
-    // contentHash:'' toma la rama randomUUID — igual que no pasar
-    // contentHash. Documenta esto — quien quiera sha256('') necesitaría
-    // otro centinela.
+    // Trace: `options?.contentHash ? hash() : randomUUID()`. The ternary
+    // condition checks the value's truthiness. Empty string '' is FALSY,
+    // so contentHash:'' takes the randomUUID branch — same as not passing
+    // contentHash at all. Documents this — callers wanting sha256('')
+    // would need a different sentinel.
     const p1 = generateTempFilePath('p', '.md', { contentHash: '' })
     const p2 = generateTempFilePath('p', '.md', { contentHash: '' })
-    // Dos llamadas producen rutas DISTINTAS porque ambas cayeron a UUID.
+    // Two calls produce DIFFERENT paths because both fell to UUID.
     expect(p1).not.toBe(p2)
-    // El id tiene forma de UUID (36 chars), no de sha256 (16 chars).
+    // ID is UUID-shaped (36 chars), not sha256-shaped (16 chars).
     const match = p1.match(/p-([\w-]+)\.md$/)
     expect(match?.[1]?.length).toBe(36)
   })

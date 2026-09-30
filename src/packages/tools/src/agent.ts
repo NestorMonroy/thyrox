@@ -110,7 +110,7 @@ export function agentTool(opts: AgentToolOptions): Tool {
       }
       const tipo = typeof input.subagent_type === 'string' ? input.subagent_type : null
       const definicion = tipo === null ? {} : definiciones[tipo]
-      if (tipo !== null && !definicion) {
+      if (definicion === undefined) {
         const conocidos = Object.keys(definiciones).join(', ')
         return error(`subagent_type desconocido: ${tipo}. Registrados: ${conocidos}`)
       }

@@ -1,0 +1,5 @@
+admission	s/^if \[\[ -n "\$PARALLEL_MAP_NEED_KB" \]\]; then$/if false; then/
+measure	s/^"\$PARALLEL_MAP_TIME" -f .* bash "\$@"$/bash "$@"/
+tab-read	s/^IFS=\$'\\x1f' read -r _memfree _ram_cap need_kb why <<<"\${derived\/\/\$'\\t'\/\$'\\x1f'}"$/IFS=$'\\t' read -r _memfree _ram_cap need_kb why <<<"$derived"/
+no-time	s/^if \[\[ -z "\$time_bin" \]\]; then$/if false; then/
+release	s/^\[\[ -z "\$PARALLEL_MAP_NEED_KB" \]\] || python3 -m session.resource_admission release --owner \$\$$/:/

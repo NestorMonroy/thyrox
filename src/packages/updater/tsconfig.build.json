@@ -1,0 +1,87 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/updater": [
+        "./src/index.ts"
+      ],
+      "@thyrox/updater/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/updater/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/updater/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/updater/autoUpdater.js": [
+        "./src/autoUpdater.ts"
+      ],
+      "@thyrox/updater/binaryCheck.js": [
+        "./src/binaryCheck.ts"
+      ],
+      "@thyrox/updater/githubReleases.js": [
+        "./src/githubReleases.ts"
+      ],
+      "@thyrox/updater/completionCache.js": [
+        "./src/completionCache.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/index.js": [
+        "./src/nativeInstaller/index.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/download.js": [
+        "./src/nativeInstaller/download.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/installer.js": [
+        "./src/nativeInstaller/installer.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/launcherOwnership.js": [
+        "./src/nativeInstaller/launcherOwnership.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/packageManagers.js": [
+        "./src/nativeInstaller/packageManagers.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/pidLock.js": [
+        "./src/nativeInstaller/pidLock.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/platform.js": [
+        "./src/nativeInstaller/platform.ts"
+      ],
+      "@thyrox/updater/nativeInstaller/streamBinaryDownload.js": [
+        "./src/nativeInstaller/streamBinaryDownload.ts"
+      ],
+      "@thyrox/updater/nativeInstaller": [
+        "./src/nativeInstaller/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

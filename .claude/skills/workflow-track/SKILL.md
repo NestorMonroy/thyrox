@@ -42,7 +42,7 @@ Documentar lecciones previene repetir los mismos errores.
    - Patrones reutilizables identificados
    - Errores encontrados y cómo se resolvieron
 
-2. REQUERIDO: Generar `work/../{nombre-wp}-changelog.md` desde commits usando `assets/wp-source/normativa/estandares/plantillas/tpl-iniciativa-progreso.rst` — [D2]
+2. REQUERIDO: Generar `work/../{nombre-wp}-changelog.md` desde commits usando la plantilla de progreso del consumidor (`source/normativa/estandares/plantillas/tpl-iniciativa-progreso.rst`) — [D2]
    - Formato Keep a Changelog adaptado a WPs
    - Agrupar por tipo: Added, Changed, Fixed, Removed
    - NOTA: `CHANGELOG.md` (raíz) se actualiza SOLO en releases (cuando hay bump de versión)
@@ -85,7 +85,7 @@ bash .claude/scripts/task/project-status.sh
 | `context/focus.md` | `## Completado`: FASE N + WP + qué se logró. `## Sin WP activo`: versión actual + próximo en ROADMAP |
 | `context/project-state.md` | Ejecutar `bash .claude/scripts/task/update-state.sh` |
 
-Ver [state-management](../../references/state-management.md) para tabla de triggers completa.
+Ver [state-management](../../../_references/state-management.md) para tabla de triggers completa.
 
 ---
 

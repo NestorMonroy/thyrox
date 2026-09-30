@@ -32,6 +32,9 @@ from paths.reach import thyrox_root  # noqa: E402
 
 _MODULE = thyrox_root(_HERE.parent) / "src/session/bounded_scan.py"
 _spec = importlib.util.spec_from_file_location("_scan", _MODULE)
+assert _spec is not None and _spec.loader is not None, (
+    f"no se pudo construir el spec para {_MODULE}"
+)
 scan = importlib.util.module_from_spec(_spec)
 # El registro en `sys.modules` ANTES de ejecutar es parte de la receta de
 # importlib, no un adorno: `@dataclass` resuelve sus anotaciones mirando

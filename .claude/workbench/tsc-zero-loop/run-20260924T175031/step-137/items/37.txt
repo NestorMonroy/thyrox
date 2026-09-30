@@ -1,0 +1,27 @@
+src/packages/cli/src/structuredIO.ts(669,7): error TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.
+  --- código src/packages/cli/src/structuredIO.ts:659-679 ---
+    659          }
+    660          parentSignal.removeEventListener('abort', onParentAbort)
+    661        }
+    662      }
+    663    }
+    664  
+    665    createHookCallback(callbackId: string, timeout?: number): HookCallback {
+    666      return {
+    667        type: 'callback',
+    668        timeout,
+    669>       callback: async (
+    670          input: HookInput,
+    671          toolUseID: string | null,
+    672          abort: AbortSignal | undefined,
+    673        ): Promise<HookJSONOutput> => {
+    674          try {
+    675            const result = await this.sendRequest<HookJSONOutput>(
+    676              {
+    677                subtype: 'hook_callback',
+    678                callback_id: callbackId,
+    679                input,
+  Types of parameters 'input' and 'input' are incompatible.
+    Type 'HookInput' is not assignable to type '({ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "PreToolUse"; tool_name: string; tool_input: unknown; tool_use_id: string; }) | ... 25 more ... | ({ ...; } & { ...; })'.
+      Type 'HookInput' is not assignable to type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "InstructionsLoaded"; ... 5 more ...; parent_file_path?: string | undefined; }'.
+        Type 'HookInput' is missing the following properties from type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; }': session_id, transcript_path, cwd

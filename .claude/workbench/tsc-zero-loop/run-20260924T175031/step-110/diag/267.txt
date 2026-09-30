@@ -1,0 +1,23 @@
+src/packages/swarm/src/runtime/pollForPromptOrShutdown.ts(285,11): error TS7006: Parameter 'm' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/runtime/pollForPromptOrShutdown.ts:275-295 ---
+    275            shutdownIndex = i
+    276            shutdownParsed = parsed
+    277            break
+    278          }
+    279        }
+    280  
+    281        if (shutdownIndex !== -1) {
+    282          const msg = allMessages[shutdownIndex]!
+    283          const skippedUnread = count(
+    284            allMessages.slice(0, shutdownIndex),
+    285>           m => !m.read,
+    286          )
+    287          logForDebugging(
+    288            `[inProcessRunner] ${identity.agentName} received shutdown request from ${shutdownParsed?.from} (prioritized over ${skippedUnread} unread messages)`,
+    289          )
+    290          // Record before delivery so a crash mid-delivery doesn't cause
+    291          // re-delivery on the next poll (we'd rather drop a request than
+    292          // silently approve shutdown twice).
+    293          if (shutdownParsed?.requestId) {
+    294            processedRequestIds.add(shutdownParsed.requestId)
+    295          }

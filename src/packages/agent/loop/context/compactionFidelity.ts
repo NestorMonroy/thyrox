@@ -60,7 +60,7 @@ function normalize(text: string): string {
 /**
  * **#38 (resuelto):** una lista de cifras de tres dígitos —`{408,429,500,502,
  * 503,529}`— se fundía en un número de 18 dígitos, porque el separador de
- * millar y el de lista son el mismo carácter (1 de 256, corrida 2026-09-02).
+ * millar y el de lista son el mismo carácter.
  * La discriminación es la que la tarea pedía: leer los delimitadores de
  * colección. El `normalize` ancla el run como MAXIMAL —excluye dígito, coma y
  * `{`/`[`/`}`/`]` a ambos lados— así un run dentro de `{}` no empareja en

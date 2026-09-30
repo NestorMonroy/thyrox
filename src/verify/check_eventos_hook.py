@@ -47,8 +47,6 @@ def raices_medidas():
     except Exception:
         pass
     return raices
-ARBOL = '/home/user'
-BASE_REPOS = ARBOL + '/kaupamex-'
 # Las dos anclas: nombres cuya condición de evento de hook no está en duda.
 ANCLAS = ('PreToolUse', 'SubagentStop')
 SECUENCIA = re.compile(r'"[A-Z][A-Za-z]+"(?:,"[A-Z][A-Za-z]+")+')
@@ -84,7 +82,7 @@ def version_del_binario(ruta):
     conteo = {}
     for v in re.findall(r'\b\d+\.\d+\.\d+\b', salida):
         conteo[v] = conteo.get(v, 0) + 1
-    return max(conteo, key=conteo.get) if conteo else 'desconocida'
+    return max(conteo, key=lambda v: conteo[v]) if conteo else 'desconocida'
 
 
 def eventos_declarados(raices):
@@ -140,7 +138,10 @@ def main(argv):
         # —10 eventos— quedaba fuera: su verde no distinguía «no hay typos» de
         # «no medí donde están los hooks» (H-DOCS-479).
         raices = raices_medidas()
-        raices += [ARBOL, os.path.expanduser('~')]
+        # El árbol de trabajo es el declarado (`THYROX_REACH_ROOT`) o el que el
+        # ascenso encuentra: con el literal `/home/user`, un árbol en otra ruta
+        # dejaba su copia viva fuera del alcance.
+        raices += [str(reach.tree_root()), os.path.expanduser('~')]
 
     universo = universo_del_binario(binario)
     if not universo:

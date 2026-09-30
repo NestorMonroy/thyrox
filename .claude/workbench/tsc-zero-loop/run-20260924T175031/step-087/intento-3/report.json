@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1952, "total_final": 1902, "tsc_runs": 1, "accepted": ["agent:agent:settings-unknown-fields-from-source"], "files_kept": ["src/packages/config/settings/types.ts"], "outcomes": {"agent:agent:settings-unknown-fields-from-source": "accepted-net"}}

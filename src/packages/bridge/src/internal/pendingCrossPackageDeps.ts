@@ -8,10 +8,9 @@
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/daemon: src/internal/pendingCrossPackageDeps.ts`: un archivo
  * consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/bridge` no es
- * miembro del bun workspace (`src/packages/package.json`) todavía, así
- * que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano ya
- * exporte el subpath real.
+ * divergencia exacta y su condición de retiro. `@thyrox/*` resuelve desde
+ * este paquete, así que cada envoltorio de abajo espera su reemplazo por el
+ * original (tarea #53).
  *
  * Tres formas, igual que en `@thyrox/daemon` — cada bloque dice cuál:
  *
@@ -27,12 +26,14 @@ import packageJson from '../../package.json'
 import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { randomInt, randomUUID } from 'node:crypto'
 import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { toCompatSessionId } from '../sessionIdCompat.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
+export { isEnvTruthy } from '@thyrox/config/env/utils'
 /**
  * `getOauthConfig` — de `@claude-code-how-works/provider/oauthConstants`.
  * Ya existe idéntica en `@thyrox/provider: src/oauthConstants.ts:155`
@@ -52,7 +53,7 @@ const PROD_OAUTH_CONFIG: OauthConfig = {
 }
 
 export function getOauthConfig(): OauthConfig {
-  const custom = process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL
+  const custom = process.env.THYROX_CODE_CUSTOM_OAUTH_URL
   if (custom) {
     const base = custom.replace(/\/$/, '')
     return { ...PROD_OAUTH_CONFIG, BASE_API_URL: base }
@@ -84,32 +85,6 @@ export function getClaudeAIOAuthTokens(): OAuthTokens | null {
 
 export function setGetClaudeAIOAuthTokensFn(fn: () => OAuthTokens | null): void {
   _getClaudeAIOAuthTokens = fn
-}
-
-/**
- * `updateSessionBridgeId` — de
- * `@claude-code-how-works/agent/concurrentSessions.js:145-149`. Escribe
- * `{bridgeSessionId}` al pid-file de la sesión (vía `updatePidFile`, un
- * mecanismo interno de ese mismo archivo) para que `claude ps` pueda
- * deduplicar sesiones bridge locales. Punto de inyección — default no-op:
- * `setReplBridgeHandle` sigue funcionando sin publicar el id al pid-file;
- * la única consecuencia es que otro peer local no la deduplique de su
- * lista. Se retira cuando `@thyrox/agent` porte `concurrentSessions.ts` Y
- * `@thyrox/bridge` sea miembro del workspace.
- */
-let _updateSessionBridgeId: (bridgeSessionId: string | null) => Promise<void> =
-  async () => {}
-
-export function updateSessionBridgeId(
-  bridgeSessionId: string | null,
-): Promise<void> {
-  return _updateSessionBridgeId(bridgeSessionId)
-}
-
-export function setUpdateSessionBridgeIdFn(
-  fn: (bridgeSessionId: string | null) => Promise<void>,
-): void {
-  _updateSessionBridgeId = fn
 }
 
 /**
@@ -443,19 +418,6 @@ export function getDynamicConfig_CACHED_MAY_BE_STALE<T>(
 }
 
 /**
- * `isEnvTruthy` — de `@claude-code-how-works/config/env/utils`. Ya
- * existe idéntica en `@thyrox/config: env/utils.ts:25`. Reimplementación
- * fiel VERBATIM (pura, 5 líneas). Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
-}
-
-/**
  * `lt` — de `@claude-code-how-works/config/semver`. Ya existe en
  * `@thyrox/provider`... en realidad vive en `@thyrox/config` en la
  * fuente y aún no se porta ahí. Reimplementación fiel ACOTADA: la fuente
@@ -535,9 +497,8 @@ export function getClaudeAiBaseUrl(
 
 /**
  * `getRemoteSessionUrl` — de `@claude-code-how-works/config/product`
- * (verbatim). Corregido H-DOCS-1: el docstring de este bloque ya
- * prometía esta función y NUNCA se escribió — sólo estaban sus tres
- * colaboradores (`getClaudeAiBaseUrl`, `isRemoteSession{Local,Staging}`).
+ * (verbatim), junto a sus tres colaboradores (`getClaudeAiBaseUrl`,
+ * `isRemoteSession{Local,Staging}`).
  */
 export function getRemoteSessionUrl(
   sessionId: string,
@@ -714,7 +675,7 @@ export function truncateToWidth(text: string, maxWidth: number): string {
 }
 
 /**
- * `getClaudeConfigHomeDir` — de
+ * `getConfigHomeDir` — de
  * `@claude-code-how-works/config/env/utils`. `@thyrox/config: env/utils.ts`
  * la MENCIONA en su docstring de cabecera pero no la exporta todavía
  * (porte parcial de ese paquete). Reimplementación fiel VERBATIM (pura,
@@ -723,14 +684,7 @@ export function truncateToWidth(text: string, maxWidth: number): string {
  * sea miembro del workspace.
  */
 
-export const getClaudeConfigHomeDir = memoize(
-  (): string => {
-    return (
-      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
-    ).normalize('NFC')
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-)
+export { getConfigHomeDir }
 
 /**
  * `getSessionId` — de `@claude-code-how-works/app-host/bootstrap/state.js`.
@@ -783,11 +737,11 @@ export function jsonParse(
  * `@claude-code-how-works/storage/sessionStoragePortable.js`. Ya existe
  * idéntica en `@thyrox/storage: src/sessionStoragePortable.ts:329`.
  * Reimplementación fiel VERBATIM, compuesta con el
- * `getClaudeConfigHomeDir` de arriba. Se retira cuando `@thyrox/bridge`
+ * `getConfigHomeDir` de arriba. Se retira cuando `@thyrox/bridge`
  * sea miembro del workspace.
  */
 export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
+  return join(getConfigHomeDir(), 'projects')
 }
 
 /**
@@ -941,7 +895,7 @@ export function setWaitForPolicyLimitsToLoadFn(fn: () => Promise<void>): void {
 type PrivacyLevel = 'default' | 'no-telemetry' | 'essential-traffic'
 
 export function getPrivacyLevel(): PrivacyLevel {
-  if (process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) {
+  if (process.env.THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC) {
     return 'essential-traffic'
   }
   if (process.env.DISABLE_TELEMETRY) {
@@ -1013,7 +967,7 @@ export function setGetSecureStorageFn(fn: () => SecureStorage): void {
  * workspace.
  */
 export function updateSessionIngressAuthToken(token: string): void {
-  process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN = token
+  process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = token
 }
 
 /**
@@ -1221,24 +1175,13 @@ export function setGetMainLoopModelFn(fn: () => string): void {
 }
 
 /**
- * `PermissionMode` — de `@claude-code-how-works/permission/PermissionMode.js`
- * (verbatim: `permission/src/PermissionMode.ts:8` re-exporta el alias desde
- * `./types/permissions.js` → `../permissionTypes.js`). `@thyrox/permission`
- * aún no porta ese archivo (su `permissions.ts` es porte PARCIAL DECLARADO
- * enfocado en `getDenyRuleForTool`, y cita `PermissionMode.js` como sibling
- * no portado). Se declara aquí el tipo estructural — únicamente los seis
- * modos que `EXTERNAL_PERMISSION_MODES` fija en la fuente
- * (`permissionTypes.ts:16-22`); el séptimo (`'auto'`) sólo entra bajo
- * `feature('TRANSCRIPT_CLASSIFIER')`, que este árbol no resuelve — se omite
- * por lo mismo que `feature()` de este archivo defaultea esa bandera a OFF.
+ * `PermissionMode` — de `@claude-code-how-works/permission/PermissionMode.js`,
+ * que re-exporta el alias de `permissionTypes.ts:29`. `@thyrox/permission` ya
+ * porta ese tipo, así que se re-exporta en vez de redeclararlo. La copia
+ * estructural anterior añadía un `'ask'` que la fuente no tiene, y por eso el
+ * modo que llegaba del puente no cabía en el estado de la sesión.
  */
-export type PermissionMode =
-  | 'acceptEdits'
-  | 'bypassPermissions'
-  | 'default'
-  | 'dontAsk'
-  | 'plan'
-  | 'ask'
+export type { PermissionMode } from '@thyrox/permission/permissionTypes'
 
 /**
  * `EMPTY_USAGE` — de `@claude-code-how-works/provider/emptyUsage.js`

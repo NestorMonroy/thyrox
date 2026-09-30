@@ -1,0 +1,1 @@
+cd src/packages/headless-sdk && bun test 2>&1 | tail -n 4

@@ -1,0 +1,8 @@
+evict	s/      if (this.combos.size >= MAX_METRICS_ENTRIES) this.evictOldest()/      void 0/
+expire	s/    for (const \[name, entry\] of this.combos) if (now - this.lastUsedMs(entry) > METRICS_TTL_MS) this.combos.delete(name)/    void now/
+fallbacks	s/    combo.totalFallbacks += outcome.fallbackCount ?? 0/    void 0/
+strategy	s/    combo.strategy = outcome.strategy ?? 'priority'/    void 0/
+no-model	s/    if (!model) return$/    void 0/
+target-key	s/    const key = nonEmpty(outcome.target?.executionKey) ?? model/    const key = model/
+target-provider	s/    target.provider = nonEmpty(outcome.target?.provider) ?? target.provider/    void 0/
+rates	s/    successRate: rate(metric.successes, metric.requests),/    successRate: 0,/

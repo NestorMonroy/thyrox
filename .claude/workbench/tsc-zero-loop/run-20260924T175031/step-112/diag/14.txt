@@ -1,0 +1,47 @@
+src/packages/agent/QueryEngine.ts(748,11): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+  --- código src/packages/agent/QueryEngine.ts:738-758 ---
+    738        ? countToolCalls(this.mutableMessages, SYNTHETIC_OUTPUT_TOOL_NAME)
+    739        : 0
+    740  
+    741      const agent = new AgentCore(
+    742        createProductionDeps({
+    743          tools,
+    744          toolUseContext: processUserInputContext,
+    745          canUseTool: wrappedCanUseTool,
+    746          querySource: 'sdk',
+    747          contextOverrides: {
+    748>           systemPrompt,
+    749            userContext,
+    750            systemContext,
+    751          },
+    752        }),
+    753        {
+    754          messages: toCoreMessages(messages),
+    755          model: mainLoopModel,
+    756          sessionId: getSessionId(),
+    757          totalUsage: this.totalUsage,
+    758        },
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type 'SystemPrompt[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/QueryEngine.ts(757,9): error TS2739: Type 'NonNullableUsage' is missing the following properties from type 'Usage': input_tokens, output_tokens
+  --- código src/packages/agent/QueryEngine.ts:747-767 ---
+    747          contextOverrides: {
+    748            systemPrompt,
+    749            userContext,
+    750            systemContext,
+    751          },
+    752        }),
+    753        {
+    754          messages: toCoreMessages(messages),
+    755          model: mainLoopModel,
+    756          sessionId: getSessionId(),
+    757>         totalUsage: this.totalUsage,
+    758        },
+    759      )
+    760  
+    761      for await (const event of agent.run({
+    762        messages: toCoreMessages(messages),
+    763        maxTurns,
+    764        abortSignal: this.abortController.signal,
+    765      })) {
+    766        if (event.type === 'done') {
+    767          if (event.reason === 'max_turns') {

@@ -9,7 +9,10 @@ import {
 } from '../../PermissionUpdate.js'
 import type { PermissionUpdateDestination } from '../../PermissionUpdateSchema.js'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
-import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
+import {
+  Select,
+  type OptionWithDescription,
+} from '@thyrox/repl/components/CustomSelect/select.js'
 import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
 import { useSearchInput } from '@anthropic/ink/search'
 import { type KeyboardEvent, Box, Text, useTerminalFocus } from '@anthropic/ink'
@@ -35,7 +38,6 @@ import type { UnreachableRule } from '../../shadowedRuleDetection.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { Pane, Tab, Tabs, useTabHeaderFocus, useTabsWidth } from '@anthropic/ink'
 import { SearchBox } from '@anthropic/ink'
-import type { Option } from '@thyrox/repl/components/ui/option.js'
 import { AddPermissionRules } from './AddPermissionRules.js'
 import { AddWorkspaceDirectory } from './AddWorkspaceDirectory.js'
 import { PermissionRuleDescription } from './PermissionRuleDescription.js'
@@ -43,6 +45,7 @@ import { PermissionRuleInput } from './PermissionRuleInput.js'
 import { RecentDenialsTab } from './RecentDenialsTab.js'
 import { RemoveWorkspaceDirectory } from './RemoveWorkspaceDirectory.js'
 import { WorkspaceTab } from './WorkspaceTab.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type TabType = 'recent' | 'allow' | 'ask' | 'deny' | 'workspace'
 
@@ -57,10 +60,7 @@ function RuleSourceText({ rule }: RuleSourceTextProps): React.ReactNode {
   )
 }
 
-// Copia de `ccnmt: packages/permission/src/components/rules/PermissionRuleList.tsx`
-// con los comentarios traducidos; el cuerpo es el de la fuente.
-//
-// Función auxiliar que da la etiqueta adecuada para cada comportamiento de regla
+// Helper function to get the appropriate label for rule behavior
 function getRuleBehaviorLabel(ruleBehavior: PermissionBehavior): string {
   switch (ruleBehavior) {
     case 'allow':
@@ -72,7 +72,7 @@ function getRuleBehaviorLabel(ruleBehavior: PermissionBehavior): string {
   }
 }
 
-// Componente que muestra el detalle de una herramienta y gestiona el flujo interactivo de borrado
+// Component for showing tool details and managing the interactive deletion workflow
 function RuleDetails({
   rule,
   onDelete,
@@ -83,7 +83,7 @@ function RuleDetails({
   onCancel: () => void
 }): React.ReactNode {
   const exitState = useExitOnCtrlCDWithKeybindings()
-  // Usar el atajo configurable de ESC para cancelar
+  // Use configurable keybinding for ESC to cancel
   useKeybinding('confirm:no', onCancel, { context: 'Confirmation' })
 
   const ruleDescription = (
@@ -104,7 +104,7 @@ function RuleDetails({
     </Box>
   )
 
-  // Los ajustes gestionados no se pueden editar
+  // Managed settings can't be edited
   if (rule.source === 'policySettings') {
     return (
       <>
@@ -161,7 +161,7 @@ function RuleDetails({
 }
 
 type RulesTabContentProps = {
-  options: Option[]
+  options: OptionWithDescription<string>[]
   searchQuery: string
   isSearchMode: boolean
   isFocused: boolean
@@ -172,7 +172,7 @@ type RulesTabContentProps = {
   onHeaderFocusChange?: (focused: boolean) => void
 }
 
-// Componente que renderiza el contenido de la pestaña de reglas, con soporte de ancho completo
+// Component for rendering rules tab content with full width support
 function RulesTabContent(props: RulesTabContentProps): React.ReactNode {
   const {
     options,
@@ -217,7 +217,7 @@ function RulesTabContent(props: RulesTabContentProps): React.ReactNode {
   )
 }
 
-// Compone el subtítulo, la búsqueda y el `Select` de una sola pestaña de allow, ask o deny.
+// Composes the subtitle + search + Select for a single allow/ask/deny tab.
 function PermissionRulesTab({
   tab,
   getRulesOptions,
@@ -225,7 +225,7 @@ function PermissionRulesTab({
   ...rulesProps
 }: {
   tab: 'allow' | 'ask' | 'deny'
-  getRulesOptions: (tab: TabType, query?: string) => { options: Option[] }
+  getRulesOptions: (tab: TabType, query?: string) => { options: OptionWithDescription<string>[] }
   handleToolSelect: (value: string, tab: TabType) => void
 } & Omit<RulesTabContentProps, 'options' | 'onSelect'>): React.ReactNode {
   return (
@@ -233,9 +233,9 @@ function PermissionRulesTab({
       <Text>
         {
           {
-            allow: "Claude Code won't ask before using allowed tools.",
-            ask: 'Claude Code will always ask for confirmation before using these tools.',
-            deny: 'Claude Code will always reject requests to use denied tools.',
+            allow: `${PRODUCT_NAME} won't ask before using allowed tools.`,
+            ask: `${PRODUCT_NAME} will always ask for confirmation before using these tools.`,
+            deny: `${PRODUCT_NAME} will always reject requests to use denied tools.`,
           }[tab]
         }
       </Text>
@@ -273,10 +273,9 @@ export function PermissionRuleList({
   const setAppState = useSetAppState()
   const isTerminalFocused = useTerminalFocus()
 
-  // Una ref, no estado: las actualizaciones de `RecentDenialsTab` no tienen
-  // por qué disparar un re-render del padre (sólo se leen al salir), y los
-  // re-renders disparan el defecto de colapso del `ScrollBox` modal del
-  // #23592 en pantalla completa.
+  // Ref not state: RecentDenialsTab updates don't need to trigger parent
+  // re-render (only read on exit), and re-renders trip the modal ScrollBox
+  // collapse bug from #23592 in fullscreen.
   const denialStateRef = useRef<{
     approved: Set<number>
     retry: Set<number>
@@ -290,7 +289,7 @@ export function PermissionRuleList({
   )
 
   const [selectedRule, setSelectedRule] = useState<PermissionRule | undefined>()
-  // Seguir la clave de la última regla con el foco, para restaurar la posición tras borrar
+  // Track the key of the last focused rule to restore position after deletion
   const [lastFocusedRuleKey, setLastFocusedRuleKey] = useState<
     string | undefined
   >()
@@ -350,9 +349,9 @@ export function PermissionRuleList({
         }
       })()
 
-      const options: Option[] = []
+      const options: OptionWithDescription<string>[] = []
 
-      // Mostrar «Add a new rule» sólo en las pestañas de allow y deny (y no mientras se busca)
+      // Only show "Add a new rule" for allow and deny tabs (and not when searching)
       if (tab !== 'workspace' && tab !== 'recent' && !query) {
         options.push({
           label: `Add a new rule${figures.ellipsis}`,
@@ -360,7 +359,7 @@ export function PermissionRuleList({
         })
       }
 
-      // Tomar todas las claves de regla y ordenarlas alfabéticamente por el valor formateado de la regla
+      // Get all rule keys and sort them alphabetically based on rule's formatted value
       const sortedRuleKeys = Array.from(rulesByKey.keys()).sort((a, b) => {
         const ruleA = rulesByKey.get(a)
         const ruleB = rulesByKey.get(b)
@@ -376,13 +375,13 @@ export function PermissionRuleList({
         return 0
       })
 
-      // Construir las opciones desde las claves ordenadas, filtrando por la consulta de búsqueda
+      // Build options from sorted keys, filtering by search query
       const lowerQuery = query.toLowerCase()
       for (const ruleKey of sortedRuleKeys) {
         const rule = rulesByKey.get(ruleKey)
         if (rule) {
           const ruleString = permissionRuleValueToString(rule.ruleValue)
-          // Filtrar por la consulta de búsqueda, si la hay
+          // Filter by search query if provided
           if (query && !ruleString.toLowerCase().includes(lowerQuery)) {
             continue
           }
@@ -418,25 +417,24 @@ export function PermissionRuleList({
     },
   })
 
-  // Atender la entrada al modo de búsqueda
+  // Handle entering search mode
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isSearchModeActive) return
       if (isSearchMode) return
       if (e.ctrl || e.meta) return
 
-      // Entrar al modo de búsqueda con '/' o con cualquier carácter
-      // imprimible. `e.key.length === 1` descarta las teclas especiales
-      // (abajo, return, escape, etc.) — antes la secuencia de escape en crudo
-      // se colaba y activaba el modo de búsqueda con basura al pulsar una
-      // flecha.
+      // Enter search mode with '/' or any printable character.
+      // e.key.length === 1 filters out special keys (down, return, escape,
+      // etc.) — previously the raw escape sequence leaked through and
+      // triggered search mode with garbage on arrow-key press.
       if (e.key === '/') {
         e.preventDefault()
         setIsSearchMode(true)
         setSearchQuery('')
       } else if (
         e.key.length === 1 &&
-        // No entrar al modo de búsqueda con las teclas de navegación de vim, el espacio o la de reintentar
+        // Don't enter search mode for vim-nav / space / retry key
         e.key !== 'j' &&
         e.key !== 'k' &&
         e.key !== 'm' &&
@@ -488,7 +486,7 @@ export function PermissionRuleList({
         ])
       }
 
-      // Avisar de cualquier regla inalcanzable que se acabe de añadir
+      // Show warnings for any unreachable rules we just added
       if (unreachable && unreachable.length > 0) {
         for (const u of unreachable) {
           const severity = u.shadowType === 'deny' ? 'blocked' : 'shadowed'
@@ -554,9 +552,9 @@ export function PermissionRuleList({
     }
   }, [changes, onExit, onRetryDenials])
 
-  // Atender Escape en el nivel superior, para que funcione incluso con el
-  // foco en la cabecera (que deshabilita el componente `Select` y su atajo
-  // `select:cancel`). Replica el patrón de `Settings.tsx`.
+  // Handle Escape at the top level so it works even when header is focused
+  // (which disables the Select component and its select:cancel keybinding).
+  // Mirrors the pattern in Settings.tsx.
   useKeybinding('confirm:no', handleRulesCancel, {
     context: 'Settings',
     isActive: isSearchModeActive && !isSearchMode,
@@ -565,7 +563,7 @@ export function PermissionRuleList({
   const handleDeleteRule = () => {
     if (!selectedRule) return
 
-    // Localizar la regla contigua a la que dar el foco tras borrar
+    // Find the adjacent rule to focus on after deletion
     const { options } = getRulesOptions(selectedRule.ruleBehavior as TabType)
     const selectedKey = jsonStringify(selectedRule)
     const ruleKeys = options
@@ -573,14 +571,14 @@ export function PermissionRuleList({
       .map(opt => opt.value)
     const currentIndex = ruleKeys.indexOf(selectedKey)
 
-    // Intentar dar el foco a la regla siguiente, o a la anterior si se está borrando la última
+    // Try to focus on the next rule, or the previous if deleting the last one
     let nextFocusKey: string | undefined
     if (currentIndex !== -1) {
       if (currentIndex < ruleKeys.length - 1) {
-        // Dar el foco a la regla siguiente
+        // Focus on the next rule
         nextFocusKey = ruleKeys[currentIndex + 1]
       } else if (currentIndex > 0) {
-        // Dar el foco a la regla anterior (se está borrando la última)
+        // Focus on the previous rule (we're deleting the last one)
         nextFocusKey = ruleKeys[currentIndex - 1]
       }
     }
@@ -589,10 +587,15 @@ export function PermissionRuleList({
     void deletePermissionRule({
       rule: selectedRule,
       initialContext: toolPermissionContext,
-      setToolPermissionContext(toolPermissionContext) {
+      setToolPermissionContext(updatedContext) {
         setAppState(prev => ({
           ...prev,
-          toolPermissionContext,
+          toolPermissionContext: {
+            ...prev.toolPermissionContext,
+            alwaysAllowRules: updatedContext.alwaysAllowRules,
+            alwaysDenyRules: updatedContext.alwaysDenyRules,
+            alwaysAskRules: updatedContext.alwaysAskRules,
+          },
         }))
       },
     })
@@ -650,7 +653,7 @@ export function PermissionRuleList({
     return (
       <AddWorkspaceDirectory
         onAddDirectory={(path, remember) => {
-          // Aplicar la actualización de permiso que añade el directorio
+          // Apply the permission update to add the directory
           const destination: PermissionUpdateDestination = remember
             ? 'localSettings'
             : 'session'
@@ -670,7 +673,7 @@ export function PermissionRuleList({
             toolPermissionContext: updatedContext,
           }))
 
-          // Persistir si `remember` es true
+          // Persist if remember is true
           if (remember) {
             persistPermissionUpdate(permissionUpdate)
           }
@@ -758,7 +761,7 @@ export function PermissionRuleList({
           <Tab id="workspace" title="Workspace">
             <Box flexDirection="column">
               <Text>
-                Claude Code can read files in the workspace, and make edits when
+                {PRODUCT_NAME} can read files in the workspace, and make edits when
                 auto-accept edits is on.
               </Text>
               <WorkspaceTab

@@ -7,16 +7,11 @@
  * cual — sólo se preservan las formas (interfaces, firmas) para que el
  * resto del árbol pueda tipar contra ellas.
  *
- * DIVERGENCIA DE ALCANCE en un tipo de la firma — mismo criterio que
- * `skillSearch/prefetch.ts`: `ToolUseContext` (fuente:
- * `@claude-code-how-works/tool-registry/Tool.js`, bloqueado — otro agente de
- * esta ola porta `tool-registry`) se sustituye por el `ToolUseContext` ya
- * declarado en `../postSamplingHooks.ts`. Como ningún cuerpo inspecciona sus
- * campos, la sustitución no cambia el comportamiento observable.
+ * `ToolUseContext` viene de `@thyrox/tool-registry/Tool.js`, como en la fuente.
  */
 
 import type { Message } from '../messageShapes.ts'
-import type { ToolUseContext } from '../postSamplingHooks.ts'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type { QuerySource } from '../querySource.ts'
 
 export interface ContextCollapseHealth {

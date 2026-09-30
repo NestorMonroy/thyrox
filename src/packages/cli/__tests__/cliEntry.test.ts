@@ -1,12 +1,9 @@
 /**
  * El control de la entrada de la CLI (#205, tramo final).
  *
- * Directiva del ejecutor 2026-09-08: «ya no queremos esto harness.ts». El
- * binario se llamaba `harness.ts` por el paquete `@thyrox/harness`, que se
- * retiro en #226/#266 — el nombre sobrevivio a su sujeto. Y su cuerpo de 666
- * lineas fundia en una cascada de `argv.includes` lo que la referencia reparte
- * en tres capas: `entry/` decide el modo, `commands/` implementa cada uno, y
- * el binario solo arranca.
+ * La entrada se reparte en las tres capas de la referencia: `entry/` decide
+ * el modo, `commands/` implementa cada uno, y el binario solo arranca. Una
+ * cascada de `argv.includes` en el binario fundiria las tres.
  *
  * La forma la fija la referencia, medida:
  *
@@ -38,7 +35,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const PKG = join(import.meta.dir, '..')
-const ENTRY = join(PKG, 'src', 'entry', 'main.ts')
+const ENTRY = join(PKG, 'src', 'entry', 'cli.tsx')
 
 /** Los siete comandos autocontenidos que hoy viven inline en el binario. */
 const COMMANDS = [
@@ -53,18 +50,14 @@ const COMMANDS = [
 
 describe('la entrada de la CLI (#205)', () => {
   test('1. el punto de entrada se llama como en las DOS referencias', () => {
-    // Directiva del ejecutor 2026-09-08: «asegurate que thyrox/src sea lo mas
-    // parecido posible a thyrox/_references/restored-src/src/». Medido contra
-    // las dos referencias, que aqui COINCIDEN:
+    // `thyrox/src` sigue la forma de `_references/restored-src/src/`. Medido
+    // contra las dos referencias, que aqui COINCIDEN:
     //
     //   restored-src: src/main.tsx                      (v2.1.88, monolitico)
     //   ccnmt:        packages/cli/src/entry/main.tsx   (el mismo, particionado)
     //   directorios `bin/` en cualquiera de las dos: 0
     //
-    // La primera version de este control afirmaba `bin/thyrox.ts`. Era una
-    // eleccion mia, no de la referencia: ni el nombre ni el directorio salian
-    // de una medicion. Se corrige contra lo medido, que es la unica direccion
-    // en que una prediccion se corrige.
+    // Ni el nombre ni el directorio se eligen: salen de esa medicion.
     expect(existsSync(join(PKG, 'bin'))).toBe(false)
     expect(existsSync(ENTRY)).toBe(true)
   })
@@ -83,7 +76,10 @@ describe('la entrada de la CLI (#205)', () => {
     // ccnmt lo declara (medido: 0 de sus paquetes). El `bin: null` de los tres
     // niveles que #252 nombra es fidelidad a la referencia, no omision.
     expect(pkg.bin).toBeUndefined()
-    expect(pkg.exports['./entry/main']).toBe('./src/entry/main.ts')
+    // Como en ccnmt (`packages/cli/package.json`): el punto de entrada NO es
+    // superficie publica. Lo invocan el build y el arranque por ruta
+    // (`build.ts`, `scripts/dev.ts`; aqui `bin/cli`), nunca un import.
+    expect(Object.keys(pkg.exports).filter((k: string) => k.startsWith('./entry/'))).toEqual([])
   })
 
   test('3. ningun modulo del paquete cita el binario retirado', () => {
@@ -101,8 +97,13 @@ describe('la entrada de la CLI (#205)', () => {
   })
 
   test('4. el punto de entrada es delgado: cita el arranque y NINGUNA logica de dominio', () => {
-    const texto = readFileSync(ENTRY, 'utf8')
-    expect(texto).toContain('runCli')
+    // Dos capas, como en el binario: `cli.tsx` despacha y entrega a `main`;
+    // `main.tsx` es la que cita el despachador de thyrox. Ninguna de las dos
+    // puede alojar una costura de dominio.
+    const capaMain = readFileSync(join(PKG, 'src', 'entry', 'main.tsx'), 'utf8')
+    expect(readFileSync(ENTRY, 'utf8')).toContain("import('./main.tsx')")
+    expect(capaMain).toContain('runCli')
+    const texto = readFileSync(ENTRY, 'utf8') + capaMain
     // Las costuras que serian dominio dentro del punto de entrada. Cada una
     // vivia en el binario de 666 lineas; ninguna puede sobrevivir aqui.
     const prohibidas = [
@@ -132,6 +133,16 @@ describe('la entrada de la CLI (#205)', () => {
     expect(detectMode([]).kind).toBe('help')
     // puro: dos llamadas con el mismo argv dan el mismo descriptor
     expect(detectMode(['--overlap'])).toEqual(detectMode(['--overlap']))
+  })
+
+  test('5b. --help pedido es ayuda, no error de uso; sin argumentos si lo es', async () => {
+    // `claude --help` sale 0, y el smoke portado de la referencia lo exige
+    // (`tests/smoke/headless-smoke.test.ts`). Pedir la ayuda explicitamente
+    // no es un uso incorrecto: sin `--prompt` el 2 corresponde a la llamada
+    // vacia, no a la que pregunta por la ayuda.
+    const { detectMode } = await import('../src/entry/detect-mode.ts')
+    expect(detectMode(['--help'])).toEqual({ kind: 'help', usage: false })
+    expect(detectMode([])).toEqual({ kind: 'help', usage: true })
   })
 
   test('6. cada comando autocontenido vive en su propio modulo', () => {

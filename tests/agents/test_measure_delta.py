@@ -65,6 +65,7 @@ check("sin destino declarado, rehúsa en vez de inventarlo",
 with tempfile.TemporaryDirectory() as tmp:
     destino = Path(tmp) / "agent-results"
     ruta = measure_delta.resolve_log(destino)
+    assert ruta is not None  # con destino declarado, resolve_log no rehusa
     check("con destino, compone la ruta del log",
           "delta-de-agentes.md", ruta.name)
     check("y crea el directorio si falta", True, ruta.parent.is_dir())

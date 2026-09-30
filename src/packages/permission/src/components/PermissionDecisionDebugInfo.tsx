@@ -141,14 +141,10 @@ function SuggestedRules({
 
 type Props = {
   permissionResult: PermissionDecision
-  toolName?: string // Acota las reglas inalcanzables a esta herramienta
+  toolName?: string // Filter unreachable rules to this tool
 }
 
-// Copia de `ccnmt: packages/permission/src/components/
-// PermissionDecisionDebugInfo.tsx` con los comentarios traducidos; el cuerpo es
-// el de la fuente.
-//
-// Auxiliar que extrae los directorios de las actualizaciones de permiso.
+// Helper function to extract directories from permission updates
 function extractDirectories(updates: PermissionUpdate[] | undefined): string[] {
   if (!updates) return []
 
@@ -162,7 +158,7 @@ function extractDirectories(updates: PermissionUpdate[] | undefined): string[] {
   })
 }
 
-// Auxiliar que extrae el modo de las actualizaciones de permiso.
+// Helper function to extract mode from permission updates
 function extractMode(
   updates: PermissionUpdate[] | undefined,
 ): PermissionMode | undefined {
@@ -193,7 +189,7 @@ function SuggestionDisplay({
   const directories = extractDirectories(suggestions)
   const mode = extractMode(suggestions)
 
-  // Si no hay nada que mostrar, se muestra None.
+  // If nothing to display, show None
   if (rules.length === 0 && directories.length === 0 && !mode) {
     return (
       <Box flexDirection="row">
@@ -276,11 +272,11 @@ export function PermissionDecisionDebugInfo({
       sandboxAutoAllowEnabled,
     })
 
-    // Toma las reglas sugeridas del resultado de permiso.
+    // Get the suggested rules from the permission result
     const suggestedRules = extractRules(suggestions)
 
-    // Filtra a las reglas que casan con alguna de las sugeridas. Una regla
-    // casa si tiene el mismo toolName y el mismo ruleContent.
+    // Filter to rules that match any of the suggested rules
+    // A rule matches if it has the same toolName and ruleContent
     if (suggestedRules.length > 0) {
       return all.filter(u =>
         suggestedRules.some(
@@ -291,7 +287,7 @@ export function PermissionDecisionDebugInfo({
       )
     }
 
-    // Respaldo: filtra por nombre de herramienta si se específico.
+    // Fallback: filter by tool name if specified
     if (toolName) {
       return all.filter(u => u.rule.ruleValue.toolName === toolName)
     }

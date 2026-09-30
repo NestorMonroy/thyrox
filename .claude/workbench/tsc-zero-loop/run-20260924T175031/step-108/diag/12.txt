@@ -1,0 +1,161 @@
+src/packages/agent/internal/fileHistoryCore.ts(60,30): error TS2339: Property 'getIsNonInteractiveSession' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:50-70 ---
+     50  const MAX_SNAPSHOTS = 100
+     51  export type DiffStats =
+     52    | {
+     53        filesChanged?: string[]
+     54        insertions: number
+     55        deletions: number
+     56      }
+     57    | undefined
+     58  
+     59  export function fileHistoryEnabled(): boolean {
+     60>   if (getAgentHostBindings().getIsNonInteractiveSession?.() ?? false) {
+     61      return fileHistoryEnabledSdk()
+     62    }
+     63    return (
+     64      getGlobalConfig().fileCheckpointingEnabled !== false &&
+     65      !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+     66    )
+     67  }
+     68  
+     69  function fileHistoryEnabledSdk(): boolean {
+     70    return (
+src/packages/agent/internal/fileHistoryCore.ts(168,35): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:158-178 ---
+    158          snapshots: (() => {
+    159            const copy = state.snapshots.slice()
+    160            copy[copy.length - 1] = updatedMostRecentSnapshot
+    161            return copy
+    162          })(),
+    163          trackedFiles: updatedTrackedFiles,
+    164        }
+    165        maybeDumpStateForDebug(updatedState)
+    166  
+    167        // Record a snapshot update since it has changed.
+    168>       void getAgentHostBindings().recordFileHistorySnapshot?.(
+    169          messageId,
+    170          updatedMostRecentSnapshot,
+    171          true, // isSnapshotUpdate
+    172        ).catch((error: unknown) => {
+    173          getAgentHostBindings().logError?.(new Error(`FileHistory: Failed to record snapshot: ${error}`))
+    174        })
+    175  
+    176        getAgentHostBindings().logEvent?.('tengu_file_history_track_edit_success', {
+    177          isNewFile: isAddingFile,
+    178          version: backup.version,
+src/packages/agent/internal/fileHistoryCore.ts(315,35): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:305-325 ---
+    305            allSnapshots.length > MAX_SNAPSHOTS
+    306              ? allSnapshots.slice(-MAX_SNAPSHOTS)
+    307              : allSnapshots,
+    308          snapshotSequence: (state.snapshotSequence ?? 0) + 1,
+    309        }
+    310        maybeDumpStateForDebug(updatedState)
+    311  
+    312        void notifyVscodeSnapshotFilesUpdated(state, updatedState).catch(e => getAgentHostBindings().logError?.(e))
+    313  
+    314        // Record the file history snapshot to session storage for resume support
+    315>       void getAgentHostBindings().recordFileHistorySnapshot?.(
+    316          messageId,
+    317          newSnapshot,
+    318          false, // isSnapshotUpdate
+    319        ).catch((error: unknown) => {
+    320          getAgentHostBindings().logError?.(new Error(`FileHistory: Failed to record snapshot: ${error}`))
+    321        })
+    322  
+    323        getAgentHostBindings().logDebug?.(
+    324          `FileHistory: Added snapshot for ${messageId}, tracking ${state.trackedFiles.size} files`,
+    325        )
+src/packages/agent/internal/fileHistoryCore.ts(730,44): error TS2339: Property 'getClaudeConfigHomeDir' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:720-740 ---
+    720  
+    721  function getBackupFileName(filePath: string, version: number): string {
+    722    const fileNameHash = createHash('sha256')
+    723      .update(filePath)
+    724      .digest('hex')
+    725      .slice(0, 16)
+    726    return `${fileNameHash}@v${version}`
+    727  }
+    728  
+    729  function resolveBackupPath(backupFileName: string, sessionId?: string): string {
+    730>   const configDir = getAgentHostBindings().getClaudeConfigHomeDir?.() ?? ''
+    731    return join(
+    732      configDir,
+    733      'file-history',
+    734      sessionId || (getAgentHostBindings().getSessionId?.() ?? ''),
+    735      backupFileName,
+    736    )
+    737  }
+    738  
+    739  /**
+    740   * Creates a backup of the file at filePath. If the file does not exist
+src/packages/agent/internal/fileHistoryCore.ts(952,30): error TS2339: Property 'getClaudeConfigHomeDir' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:942-962 ---
+    942      getAgentHostBindings().logDebug?.(
+    943        `FileHistory: No need to copy file history for resuming with same session id: ${sessionId}`,
+    944      )
+    945      return
+    946    }
+    947  
+    948    try {
+    949      // All backups share the same directory: {configDir}/file-history/{sessionId}/
+    950      // Create it once upfront instead of once per backup file
+    951      const newBackupDir = join(
+    952>       getAgentHostBindings().getClaudeConfigHomeDir?.() ?? '',
+    953        'file-history',
+    954        sessionId,
+    955      )
+    956      await mkdir(newBackupDir, { recursive: true })
+    957  
+    958      // Migrate all backup files from the previous session to current session.
+    959      // Process all snapshots in parallel; within each snapshot, links also run in parallel.
+    960      let failedSnapshots = 0
+    961      await Promise.allSettled(
+    962        fileHistorySnapshots.map(async snapshot => {
+src/packages/agent/internal/fileHistoryCore.ts(1020,39): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:1010-1030 ---
+   1010              getAgentHostBindings().logDebug?.(
+   1011                `FileHistory: Copied backup ${backupFileName} from session ${previousSessionId} to ${sessionId}`,
+   1012              )
+   1013            }),
+   1014          )
+   1015  
+   1016          const copyFailed = results.some(r => r.status === 'rejected')
+   1017  
+   1018          // Record the snapshot only if we have successfully migrated the backup files
+   1019          if (!copyFailed) {
+   1020>           void getAgentHostBindings().recordFileHistorySnapshot?.(
+   1021              snapshot.messageId,
+   1022              snapshot,
+   1023              false, // isSnapshotUpdate
+   1024            ).catch((_: unknown) => {
+   1025              getAgentHostBindings().logError?.(
+   1026                new Error(`FileHistory: Failed to record copy backup snapshot`),
+   1027              )
+   1028            })
+   1029          } else {
+   1030            failedSnapshots++
+src/packages/agent/internal/fileHistoryCore.ts(1093,30): error TS2339: Property 'notifyVscodeFileUpdated' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/fileHistoryCore.ts:1083-1103 ---
+   1083      // Get new content from the new backup or current file
+   1084      let newContent: string | null = null
+   1085      if (newBackup?.backupFileName) {
+   1086        const backupPath = resolveBackupPath(newBackup.backupFileName)
+   1087        newContent = await readFileAsyncOrNull(backupPath)
+   1088      }
+   1089      // If newBackup?.backupFileName === null, the file was deleted; newContent stays null.
+   1090  
+   1091      // Only notify if content actually changed
+   1092      if (oldContent !== newContent) {
+   1093>       getAgentHostBindings().notifyVscodeFileUpdated?.(filePath, oldContent, newContent)
+   1094      }
+   1095    }
+   1096  }
+   1097  
+   1098  /** Async read that swallows all errors and returns null (best-effort). */
+   1099  async function readFileAsyncOrNull(path: string): Promise<string | null> {
+   1100    try {
+   1101      return await readFile(path, 'utf-8')
+   1102    } catch {
+   1103      return null

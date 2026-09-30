@@ -1,0 +1,48 @@
+src/packages/permission/src/__tests__/pathSafety.test.ts(59,14): error TS2339: Property 'message' does not exist on type 'PathSafetyResult'.
+  --- código src/packages/permission/src/__tests__/pathSafety.test.ts:49-69 ---
+     49  
+     50  describe('checkPathSafetyForAutoEdit (Gge)', () => {
+     51    test('un archivo común de trabajo es seguro', () => {
+     52      expect(checkPathSafetyForAutoEdit(touch('src', 'a.ts'))).toEqual({ safe: true })
+     53    })
+     54    test('el archivo de settings de un proyecto se corta como settings', () => {
+     55      const file = touch('.claude', 'settings.json')
+     56      const r = checkPathSafetyForAutoEdit(file)
+     57      expect(r.safe).toBe(false)
+     58      expect(r).toMatchObject({ classifierApprovable: true, circuitBreaker: 'claudeSettingsFile' })
+     59>     expect(r.message).toBe(`Claude requested permissions to write to ${file}, but you haven't granted it yet.`)
+     60    })
+     61    test('un archivo de shell es sensible', () => {
+     62      const file = touch('.bashrc')
+     63      const r = checkPathSafetyForAutoEdit(file)
+     64      expect(r).toEqual({ safe: false, message: `Claude requested permissions to edit ${file} which is a sensitive file.`, classifierApprovable: true })
+     65    })
+     66    test('todo lo que cuelga de .git es sensible', () => {
+     67      expect(checkPathSafetyForAutoEdit(touch('.git', 'config')).safe).toBe(false)
+     68    })
+     69    test('la secuencia .config/git es sensible', () => {
+  Property 'message' does not exist on type '{ safe: true; }'.
+src/packages/permission/src/__tests__/pathSafety.test.ts(80,14): error TS2339: Property 'circuitBreaker' does not exist on type 'PathSafetyResult'.
+  --- código src/packages/permission/src/__tests__/pathSafety.test.ts:70-90 ---
+     70      expect(checkPathSafetyForAutoEdit(touch('.config', 'git', 'ignore')).safe).toBe(false)
+     71    })
+     72    test('una ruta con nombre corto 8.3 es sospechosa y no la aprueba el clasificador', () => {
+     73      const file = touch('PROGRA~1', 'x.txt')
+     74      expect(checkPathSafetyForAutoEdit(file)).toMatchObject({ safe: false, classifierApprovable: false, circuitBreaker: 'suspiciousWindowsPath' })
+     75    })
+     76    test('un comando de .claude/commands pide permiso salvo que se permita editar la config', () => {
+     77      const file = touch('.claude', 'commands', 'deploy.md')
+     78      const r = checkPathSafetyForAutoEdit(file)
+     79      expect(r).toMatchObject({ safe: false, classifierApprovable: true })
+     80>     expect(r.circuitBreaker).toBeUndefined()
+     81      expect(checkPathSafetyForAutoEdit(file, undefined, undefined, true)).toEqual({ safe: true })
+     82    })
+     83    test('permitir la config no abre .claude fuera de skills, agents y commands', () => {
+     84      expect(checkPathSafetyForAutoEdit(touch('.claude', 'hooks', 'x.sh'), undefined, undefined, true).safe).toBe(false)
+     85    })
+     86  })
+     87  
+     88  describe('predicados', () => {
+     89    test('isClaudeSettingsPath reconoce settings.local.json en cualquier .claude', () => {
+     90      expect(isClaudeSettingsPath(join(base, 'otro', '.claude', 'settings.local.json'))).toBe(true)
+  Property 'circuitBreaker' does not exist on type '{ safe: true; }'.

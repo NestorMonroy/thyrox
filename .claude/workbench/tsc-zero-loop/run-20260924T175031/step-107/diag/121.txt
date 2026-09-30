@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/teleport.tsx(1333,27): error TS2339: Property 'defaultEnvironmentId' does not exist on type '{}'.
+  --- código src/packages/tool-registry/src/teleport.tsx:1323-1343 ---
+   1323        `Available environments: ${environments.map(e => `${e.environment_id} (${e.name}, ${e.kind})`).join(', ')}`,
+   1324      )
+   1325  
+   1326      // Select environment based on settings, then anthropic_cloud preference, then first available.
+   1327      // Prefer anthropic_cloud environments over byoc: anthropic_cloud environments (e.g. "Default")
+   1328      // are the standard compute environments with full repo access, whereas byoc environments
+   1329      // (e.g. "monorepo") are user-owned compute that may not support the current repository.
+   1330      const settings = getSettings()
+   1331      const defaultEnvironmentId = options.useDefaultEnvironment
+   1332        ? undefined
+   1333>       : settings?.remote?.defaultEnvironmentId
+   1334      let cloudEnv = environments.find(env => env.kind === 'anthropic_cloud')
+   1335      // When the caller opts out of their configured default, do not fall
+   1336      // through to a BYOC env that may not support the current repo or the
+   1337      // requested permission mode. Retry once for eventual consistency,
+   1338      // then fail loudly.
+   1339      if (options.useDefaultEnvironment && !cloudEnv) {
+   1340        logForDebugging(
+   1341          `No anthropic_cloud in env list (${environments.length} envs); retrying fetchEnvironments`,
+   1342        )
+   1343        const retried = await fetchEnvironments()

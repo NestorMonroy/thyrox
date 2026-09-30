@@ -19,9 +19,9 @@ export function tee<T>(source: AsyncIterable<T>, count = 2): AsyncIterable<T>[] 
 
   /** Entrega al consumidor `i`: a su espera si la tiene, a su cola si no. */
   function deliver(i: number, item: T): void {
-    const waiting = pendings[i].shift()
+    const waiting = pendings[i]!.shift()
     if (waiting) waiting.resolve({ value: item, done: false })
-    else queues[i].push(item)
+    else queues[i]!.push(item)
   }
 
   /**
@@ -32,7 +32,7 @@ export function tee<T>(source: AsyncIterable<T>, count = 2): AsyncIterable<T>[] 
    * final limpio de un flujo que fallo.
    */
   function close(i: number): void {
-    for (const p of pendings[i]) {
+    for (const p of pendings[i]!) {
       if (sourceError !== undefined) p.reject(sourceError)
       else p.resolve({ value: undefined, done: true })
     }
@@ -60,14 +60,14 @@ export function tee<T>(source: AsyncIterable<T>, count = 2): AsyncIterable<T>[] 
         next(): Promise<IteratorResult<T, undefined>> {
           // La cola manda sobre el estado de la fuente: lo ya emitido se
           // entrega aunque la fuente haya terminado o fallado despues.
-          const queued = queues[i].shift()
+          const queued = queues[i]!.shift()
           if (queued !== undefined) return Promise.resolve({ value: queued, done: false })
           if (sourceDone) {
             if (sourceError !== undefined) return Promise.reject(sourceError)
             return Promise.resolve({ value: undefined, done: true })
           }
           return new Promise<IteratorResult<T, undefined>>((resolve, reject) => {
-            pendings[i].push({ resolve, reject })
+            pendings[i]!.push({ resolve, reject })
           })
         },
       }

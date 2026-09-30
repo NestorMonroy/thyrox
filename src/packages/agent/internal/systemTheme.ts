@@ -1,21 +1,38 @@
-/**
- * Porte de `ccnmt: packages/agent/internal/systemTheme.ts`.
- *
- * `resolveThemeSetting` deja pasar cualquier ajuste explícito y sólo
- * dispara detección cuando el ajuste literal es `"auto"`. La detección lee
- * `COLORFGBG` (convención de xterm/muchas terminales: `"fg;bg"`, a veces
- * con un tercer segmento intermedio) y cachea el resultado a nivel de
- * módulo — un cambio de env posterior no invalida la cache.
- *
- * DIVERGENCIA DE ALCANCE, declarada. La fuente lee la variable con
- * `readEnv` de `@claude-code-how-works/config/env/utils`, que ese paquete
- * define como `process.env[name]` sin ninguna transformación
- * (`ccnmt: packages/config/env/utils.ts:198`). Ese paquete no vive en este
- * árbol y traerlo entero para una función de una línea no tiene
- * consumidor propio todavía, así que aquí se lee `process.env` directo.
- */
+import type { ThemeName } from '@anthropic/ink'
+import { readEnv } from '@thyrox/config/env/utils'
 
 type SystemTheme = 'dark' | 'light'
+
+/**
+ * El catálogo de temas renderizables, como registro para que tsc exija
+ * que esté completo contra `ThemeName` (una clave de más o de menos no
+ * compila) sin importar ink en tiempo de ejecución.
+ */
+const THEME_NAME_SET: Record<ThemeName, true> = {
+  dark: true,
+  light: true,
+  'light-daltonized': true,
+  'dark-daltonized': true,
+  'light-ansi': true,
+  'dark-ansi': true,
+}
+
+function isThemeName(value: string): value is ThemeName {
+  return Object.hasOwn(THEME_NAME_SET, value)
+}
+
+/**
+ * Resuelve el ajuste de tema a un `ThemeName` renderizable. `'auto'` se
+ * detecta como en `resolveThemeSetting`; un nombre fuera del catálogo cae a
+ * `'dark'`, que es exactamente lo que `getTheme` de ink hace con él en su
+ * rama `default` (`@ant/ink/src/theme/theme-types.ts`), así que el color
+ * observado no cambia — sólo deja de viajar como `string` en un contexto
+ * tipado `ThemeName`.
+ */
+export function resolveThemeName(setting: string): ThemeName {
+  const resolved = resolveThemeSetting(setting)
+  return isThemeName(resolved) ? resolved : 'dark'
+}
 
 let cachedSystemTheme: SystemTheme | undefined
 
@@ -34,7 +51,7 @@ function getSystemThemeName(): SystemTheme {
 }
 
 function detectFromColorFgBg(): SystemTheme | undefined {
-  const colorfgbg = process.env.COLORFGBG
+  const colorfgbg = readEnv('COLORFGBG')
   if (!colorfgbg) return undefined
   const parts = colorfgbg.split(';')
   const bg = parts[parts.length - 1]

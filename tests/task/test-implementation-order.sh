@@ -184,8 +184,16 @@ echo "== 8-bis. etapa 5: la premisa se verifica antes de despachar =="
 PREMISA=$(python3 "$GUION" --tasks-dir "$U" --top 3 --premisa 2>&1)
 afirmar "la etapa 5 corre desde el pipeline" 1 \
     "$(grep -c 'Premisa de las 3 del top' <<<"$PREMISA")"
-afirmar "y publica su denominador" 1 \
-    "$(grep -c '0 de 3 ficha(s) piden re-encuadre' <<<"$PREMISA")"
+# Sin el clon de la aplicacion la etapa 5 REHUSA (no hay simbolos que
+# indexar), y lo que se mide entonces es que el pipeline pase la negativa en
+# vez de tragarsela: un denominador ahi seria un verde sobre nada.
+if python3 -c "from paths import reach; reach.root('api')" >/dev/null 2>&1; then
+    afirmar "y publica su denominador" 1 \
+        "$(grep -c '0 de 3 ficha(s) piden re-encuadre' <<<"$PREMISA")"
+else
+    afirmar "sin el clon de la aplicacion, la etapa 5 nombra su negativa" 1 \
+        "$(grep -c 'REHUSA' <<<"$PREMISA")"
+fi
 
 echo "== 9. universo vacio: no revienta =="
 VACIO=$(mktemp -d)

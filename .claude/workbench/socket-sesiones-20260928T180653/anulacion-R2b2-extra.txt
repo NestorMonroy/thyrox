@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+118 |     expect(describeFastModeDisabledReason('free', 'api-key', ctx)).toBe('Fast mode unavailable during evaluation. Please purchase credits.')
+119 |     expect(describeFastModeDisabledReason('preference', 'oauth', ctx)).toBe('Fast mode has been disabled by your organization')
+120 |     expect(describeFastModeDisabledReason('network_error', 'oauth', ctx)).toBe('Fast mode unavailable due to network connectivity issues')
+121 |     expect(describeFastModeDisabledReason('unknown', 'oauth', ctx)).toBe('Fast mode is currently unavailable')
+122 |     expect(describeFastModeDisabledReason('extra_usage_disabled', 'oauth', ctx)).toBe('Fast mode requires usage credits')
+123 |     expect(describeFastModeDisabledReason('extra_usage_disabled', 'oauth', context({ usageCreditsInstruction: 'I' }))).toBe('Fast mode requires usage credits · I')
+                                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "Fast mode requires usage credits · I"
+Received: "Fast mode requires usage credits"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:123:120)
+(fail) los mensajes ($g, Wg, aC) > describeFastModeDisabledReason ($g) [0.30ms]
+
+ 13 pass
+ 1 fail
+ 54 expect() calls
+Ran 14 tests across 1 file. [128.00ms]

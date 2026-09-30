@@ -1,22 +1,11 @@
 /**
- * Porte COMPLETO de
- * `ccnmt: packages/mcp-runtime/src/mcpConnectionTelemetry.ts` — su única
- * exportación, ninguna omitida.
+ * Port of ant v2.1.136 QN8 (4054.js) — `mcp_server_connection` structured
+ * OTel event helper. Extracted from clientRuntime.ts so the wiring at
+ * the two call sites is a one-liner and clientRuntime.ts stays under
+ * its grandfather LOC budget.
  *
- * Reapuntados a `@thyrox/local-observability` (pasan el filtro de dos
- * pasos — subpath declarado y símbolo verificado en runtime con
- * `import()`): `./telemetry` (`logMcpServerConnectionEvent`,
- * `toolDetailsLoggingEnabled`) y `./errorHelpers.js` (`errorMessage`).
- *
- * Puerto del helper de evento OTel estructurado
- * `mcp_server_connection` (ant v2.1.136 QN8, `4054.js` en la numeración
- * de la fuente). Extraído de `clientRuntime.ts` (no portado en este pase)
- * para que el cableado en sus dos sitios de llamada sea de una línea y
- * `clientRuntime.ts` se mantenga bajo su presupuesto de líneas heredado.
- *
- * `server_name` y el detalle del error se cierran tras
- * `OTEL_LOG_TOOL_DETAILS`, para que los dashboards de cliente queden
- * depurados por defecto.
+ * server_name + error detail are gated on OTEL_LOG_TOOL_DETAILS so
+ * customer dashboards stay scrubbed by default.
  */
 
 import {

@@ -1,0 +1,46 @@
+src/packages/agent/hooks.ts(1671,7): error TS2304: Cannot find name 'logForDiagnosticsNoPII'.
+  --- código src/packages/agent/hooks.ts:1661-1681 ---
+   1661            aborted: signal.aborted,
+   1662          })
+   1663        })
+   1664      })
+   1665    })
+   1666  
+   1667    // Carrera entre la escritura de stdin, la detección async, y la
+   1668    // finalización del proceso
+   1669    try {
+   1670      if (shouldEmitDiag) {
+   1671>       logForDiagnosticsNoPII('info', 'hook_spawn_started', {
+   1672          hook_event_name: hookEvent,
+   1673          index: hookIndex,
+   1674        })
+   1675      }
+   1676      await Promise.race([stdinWritePromise, childErrorPromise])
+   1677  
+   1678      // Espera a que se envíen las respuestas de prompt pendientes antes de resolver
+   1679      const result = await Promise.race([
+   1680        childIsAsyncPromise,
+   1681        childClosePromise,
+src/packages/agent/hooks.ts(1727,7): error TS2304: Cannot find name 'logForDiagnosticsNoPII'.
+  --- código src/packages/agent/hooks.ts:1717-1737 ---
+   1717        const errOutput = `Error occurred while executing hook command: ${errorMsg}`
+   1718        return {
+   1719          stdout: '',
+   1720          stderr: errOutput,
+   1721          output: errOutput,
+   1722          status: 1,
+   1723        }
+   1724      }
+   1725    } finally {
+   1726      if (shouldEmitDiag) {
+   1727>       logForDiagnosticsNoPII('info', 'hook_spawn_completed', {
+   1728          hook_event_name: hookEvent,
+   1729          index: hookIndex,
+   1730          duration_ms: Date.now() - diagStartMs,
+   1731          exit_code: diagExitCode,
+   1732          aborted: diagAborted,
+   1733        })
+   1734      }
+   1735      stopProgressInterval()
+   1736      // Limpia recursos de stream salvo que la propiedad se haya transferido
+   1737      // (p. ej. al registro de hooks asíncronos)

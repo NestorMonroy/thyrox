@@ -1,0 +1,88 @@
+diff --git a/src/packages/plan/__tests__/planMode.test.ts b/src/packages/plan/__tests__/planMode.test.ts
+index 0eea3c7e..96dc726c 100644
+--- a/src/packages/plan/__tests__/planMode.test.ts
++++ b/src/packages/plan/__tests__/planMode.test.ts
+@@ -12,6 +12,7 @@
+  * adorno (sub-patrón D de `metrica-decide-la-conclusion.md`).
+  */
+ import { describe, expect, test } from 'bun:test'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+ import { mkdtempSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+@@ -29,12 +30,37 @@ describe('la ruta del archivo de plan', () => {
+     expect(p).toBe(join(root, '.claude/plans', 's1.md'))
+   })
+ 
+-  test('sin plansDir cae en el hogar, no en la raíz del proyecto', () => {
++  test('sin plansDir usa el hogar de configuración, no la raíz del proyecto', () => {
+     // Falla si alguien "simplifica" el default a projectRoot: el binario
+-    // declara `~/.claude/plans/` y esa diferencia decide dónde vive el plan.
+-    const p = planFilePath('s1', { projectRoot: raiz() })
+-    expect(p).toContain(join('.claude', 'plans', 's1.md'))
+-    expect(p.startsWith(raiz())).toBe(false)
++    // resuelve `join(Se(), "plans")`, y esa diferencia decide dónde vive el plan.
++    const saved = process.env.THYROX_CONFIG_DIR
++    try {
++      const cfg = mkdtempSync(join(tmpdir(), 'planmode-cfg-'))
++      process.env.THYROX_CONFIG_DIR = cfg
++      const p = planFilePath('s1', { projectRoot: raiz() })
++      expect(p).toBe(join(cfg, 'plans', 's1.md'))
++    } finally {
++      if (saved === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = saved
++    }
++  })
++
++  test('sin THYROX_CONFIG_DIR, cae en el mismo hogar que resuelve el resto del árbol', () => {
++    // Falla si el default deja de compartir resolutor con @thyrox/config: dos
++    // resolutores propios divergen en cuanto uno de los dos cambia.
++    const saved = { t: process.env.THYROX_CONFIG_DIR, c: process.env.CLAUDE_CONFIG_DIR }
++    try {
++      delete process.env.THYROX_CONFIG_DIR
++      delete process.env.CLAUDE_CONFIG_DIR
++      const p = planFilePath('s1', { projectRoot: raiz() })
++      expect(p).toBe(join(getConfigHomeDir(), 'plans', 's1.md'))
++      expect(p.startsWith(raiz())).toBe(false)
++    } finally {
++      if (saved.t === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = saved.t
++      if (saved.c === undefined) delete process.env.CLAUDE_CONFIG_DIR
++      else process.env.CLAUDE_CONFIG_DIR = saved.c
++    }
+   })
+ })
+ 
+diff --git a/src/packages/plan/src/mode.ts b/src/packages/plan/src/mode.ts
+index 933ddc95..39cc80c0 100644
+--- a/src/packages/plan/src/mode.ts
++++ b/src/packages/plan/src/mode.ts
+@@ -31,8 +31,8 @@
+  * su interfaz y no del contrato; y a si existe un conjunto de fases más rico
+  * que el binario no expone como literal.
+  */
++import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { isAbsolute, join, resolve } from 'node:path'
+ 
+ /**
+@@ -51,7 +51,7 @@ export type PlanVariant = 'subagent' | 'sparse' | 'full'
+ export type PlanBackendOptions = {
+   /** Raíz del proyecto; una `plansDir` relativa se resuelve contra ella. */
+   projectRoot: string
+-  /** Dónde viven los archivos de plan. Sin ella, `~/.claude/plans/`. */
++  /** Dónde viven los archivos de plan. Sin ella, `plans/` bajo el hogar de configuración. */
+   plansDir?: string
+ }
+ 
+@@ -65,7 +65,8 @@ export function planFilePath(sessionId: string, options: PlanBackendOptions): st
+   const configured = options.plansDir
+   const dir = configured
+     ? (isAbsolute(configured) ? configured : resolve(options.projectRoot, configured))
+-    : join(homedir(), '.claude', 'plans')
++    // el binario resuelve `join(Se(), "plans")`; Se() es getConfigHomeDir() aquí.
++    : join(getConfigHomeDir(), 'plans')
+   return join(dir, `${sessionId}.md`)
+ }
+ 

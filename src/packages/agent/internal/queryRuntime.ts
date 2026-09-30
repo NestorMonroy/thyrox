@@ -1,9 +1,15 @@
 import { randomUUID } from 'crypto'
 import { getAgentHostBindings } from '../host.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { CompactionResult } from '../compaction/compact.js'
 import type { AgentMessage, AgentToolUseContext } from '../internalTypes.js'
 
+// Costura dinámica: el host inyecta funciones por nombre, y cada envoltorio
+// de este módulo declara el tipo de retorno que es su contrato. El índice
+// admite «función o ausente» en vez de `unknown`, que no se puede invocar.
 type DynamicAgentBindings = ReturnType<typeof getAgentHostBindings> &
-  Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Record<string, ((...args: any[]) => any) | undefined>
 
 type ErrorConstructor<T extends Error> = abstract new (...args: never[]) => T
 
@@ -97,7 +103,7 @@ export function isPromptTooLongMessage(message: unknown): boolean {
 
 export function normalizeMessagesForAPI(
   messages: AgentMessage[],
-  tools: unknown[],
+  tools: Tools,
 ): AgentMessage[] {
   return (
     getBindings().normalizeMessagesForAPI?.(messages, tools) as
@@ -304,7 +310,7 @@ export function executeStopFailureHooks(
 }
 
 export function createStreamingToolExecutor(
-  tools: unknown[],
+  tools: Tools,
   canUseTool: unknown,
   toolUseContext: AgentToolUseContext,
 ): StreamingToolExecutorLike | null {
@@ -415,9 +421,13 @@ export function isWithheldReactiveMediaSizeError(
   return getBindings().isWithheldReactiveMediaSizeError?.(message) === true
 }
 
-export function tryReactiveCompact(params: unknown): Promise<unknown> {
+export function tryReactiveCompact(
+  params: unknown,
+): Promise<CompactionResult | null | undefined> {
   return (
-    getBindings().tryReactiveCompact?.(params) as Promise<unknown> | undefined
+    getBindings().tryReactiveCompact?.(params) as
+      | Promise<CompactionResult | null>
+      | undefined
   ) ?? Promise.resolve(undefined)
 }
 

@@ -1,0 +1,16 @@
+== A. Los símbolos de un .py se extraen por AST, no por regex ==
+  ok    ve la función de nivel superior
+  ok    la clase lleva su prefijo
+  ok    y el método va con el nombre pelado
+  ok    un archivo que no parsea NO revienta: devuelve vacío
+== B. El delta discrimina en los dos sentidos ==
+  ok    nombra lo ganado
+  ok    y lo perdido
+  ok    sin cambios, nada ganado ni perdido (control)
+== C. El destino del log es PARÁMETRO, no `docs` ==
+  ok    sin destino declarado, rehúsa en vez de inventarlo
+  ok    con destino, compone la ruta del log
+  ok    y crea el directorio si falta
+
+10 ok, 0 fallos
+exit=0

@@ -23,7 +23,7 @@ import { useEffect } from 'react'
 export function useSpareReadyMarker(): void {
   useEffect(() => {
     if (process.env.CCB_SPARE !== '1') return
-    const jobDir = process.env.CLAUDE_JOB_DIR
+    const jobDir = process.env.THYROX_JOB_DIR
     if (jobDir === undefined || jobDir === '') return
     void (async () => {
       try {

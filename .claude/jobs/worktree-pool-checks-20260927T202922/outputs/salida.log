@@ -1,0 +1,29 @@
+run-task-pool: 4 trabajo(s), anchura 1 (en serie), logs en /home/user/thyrox/.claude/build-logs/job-20260927T202922
+  job-20260927T202922/job-001 bash tests/session/test-headless-pool.sh > .claude/workbench/omniroute-resilience-20260927T200233/outputs/regression-headless-pool.log 2>&1
+  job-20260927T202922/job-002 bash bin/annul_parallel src/session/item_worktree.sh tests/session/test-headless-pool-worktree.sh ITEM_WORKTREE_MODULE .claude/workbench/omniroute-resilience-20260927T200233/probes/annul-item-worktree.tsv > .claude/workbench/omniroute-resilience-20260927T200233/outputs/annul-item-worktree.tsv 2>&1
+  job-20260927T202922/job-003 bash bin/annul_parallel src/session/pool_integrate.sh tests/session/test-headless-pool-worktree.sh POOL_INTEGRATE_MODULE .claude/workbench/omniroute-resilience-20260927T200233/probes/annul-pool-integrate.tsv > .claude/workbench/omniroute-resilience-20260927T200233/outputs/annul-pool-integrate.tsv 2>&1
+  job-20260927T202922/job-004 bash bin/annul_parallel src/session/headless-pool.sh tests/session/test-headless-pool-worktree.sh HEADLESS_POOL_MODULE .claude/workbench/omniroute-resilience-20260927T200233/probes/annul-headless-worktree.tsv > .claude/workbench/omniroute-resilience-20260927T200233/outputs/annul-headless-worktree.tsv 2>&1
+run-task-pool: lanzados 4 de 4; esperando en PRIMER PLANO (timeout 1710s)
+asentado: job-20260927T202922_job-001 -> OK (2 de 5)
+asentado: job-20260927T202922_job-002 -> OK (3 de 5)
+asentado: job-20260927T202922_job-003 -> OK (4 de 5)
+asentado: job-20260927T202922_job-004 -> OK (5 de 5)
+== 5 trabajos asentados ==
+OLVIDADO job-20260927T202922
+       | (vacío — no emitió nada)
+OK     job-20260927T202922_job-001 exit=0
+       | EXIT=0
+       memoria pico: 22364 KB (22 MB) · pared 67.14s
+OK     job-20260927T202922_job-002 exit=2
+       | EXIT=2
+       memoria pico: 27424 KB (27 MB) · pared 7.36s
+OK     job-20260927T202922_job-003 exit=0
+       | EXIT=0
+       memoria pico: 27292 KB (27 MB) · pared 5.22s
+OK     job-20260927T202922_job-004 exit=0
+       | EXIT=0
+       memoria pico: 27672 KB (27 MB) · pared 8.48s
+salida distinta de 0: 1 (job-20260927T202922_job-002)
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0
+__BG_EXIT__=5

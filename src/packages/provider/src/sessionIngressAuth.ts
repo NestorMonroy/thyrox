@@ -23,12 +23,12 @@ function getTokenFromFileDescriptor(): string | null {
     return cachedToken
   }
 
-  const fdEnv = readEnv('CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR')
+  const fdEnv = readEnv('THYROX_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR')
   if (!fdEnv) {
     // No FD env var — either we're not in CCR, or we're a subprocess whose
     // parent stripped the (useless) FD env var. Try the well-known file.
     const path =
-      readEnv('CLAUDE_SESSION_INGRESS_TOKEN_FILE') ??
+      readEnv('THYROX_SESSION_INGRESS_TOKEN_FILE') ??
       CCR_SESSION_INGRESS_TOKEN_PATH
     const fromFile = readTokenFromWellKnownFile(path, 'session ingress token')
     setSessionIngressToken(fromFile)
@@ -38,7 +38,7 @@ function getTokenFromFileDescriptor(): string | null {
   const fd = parseInt(fdEnv, 10)
   if (Number.isNaN(fd)) {
     logForDebugging(
-      `CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR must be a valid file descriptor number, got: ${fdEnv}`,
+      `THYROX_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR must be a valid file descriptor number, got: ${fdEnv}`,
       { level: 'error' },
     )
     setSessionIngressToken(null)
@@ -78,7 +78,7 @@ function getTokenFromFileDescriptor(): string | null {
     // FD env var was set but read failed — typically a subprocess that
     // inherited the env var but not the FD (ENXIO). Try the well-known file.
     const path =
-      readEnv('CLAUDE_SESSION_INGRESS_TOKEN_FILE') ??
+      readEnv('THYROX_SESSION_INGRESS_TOKEN_FILE') ??
       CCR_SESSION_INGRESS_TOKEN_PATH
     const fromFile = readTokenFromWellKnownFile(path, 'session ingress token')
     setSessionIngressToken(fromFile)
@@ -90,18 +90,18 @@ function getTokenFromFileDescriptor(): string | null {
  * Get session ingress authentication token.
  *
  * Priority order:
- *  1. Environment variable (CLAUDE_CODE_SESSION_ACCESS_TOKEN) — set at spawn time,
+ *  1. Environment variable (THYROX_CODE_SESSION_ACCESS_TOKEN) — set at spawn time,
  *     updated in-process via updateSessionIngressAuthToken or
  *     update_environment_variables stdin message from the parent bridge process.
- *  2. File descriptor (legacy path) — CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR,
+ *  2. File descriptor (legacy path) — THYROX_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR,
  *     read once and cached.
- *  3. Well-known file — CLAUDE_SESSION_INGRESS_TOKEN_FILE env var path, or
+ *  3. Well-known file — THYROX_SESSION_INGRESS_TOKEN_FILE env var path, or
  *     /home/claude/.claude/remote/.session_ingress_token. Covers subprocesses
  *     that can't inherit the FD.
  */
 export function getSessionIngressAuthToken(): string | null {
   // 1. Check environment variable
-  const envToken = readEnv('CLAUDE_CODE_SESSION_ACCESS_TOKEN')
+  const envToken = readEnv('THYROX_CODE_SESSION_ACCESS_TOKEN')
   if (envToken) {
     return envToken
   }
@@ -122,7 +122,7 @@ export function getSessionIngressAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       Cookie: `sessionKey=${token}`,
     }
-    const orgUuid = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
+    const orgUuid = readEnv('THYROX_CODE_ORGANIZATION_UUID')
     if (orgUuid) {
       headers['X-Organization-Uuid'] = orgUuid
     }
@@ -137,5 +137,5 @@ export function getSessionIngressAuthHeaders(): Record<string, string> {
  * without restarting the process.
  */
 export function updateSessionIngressAuthToken(token: string): void {
-  process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN = token
+  process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = token
 }

@@ -30,9 +30,9 @@ import errno
 import pathlib
 import sys
 
-AQUI = pathlib.Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
-sys.path.insert(0, str(RAIZ / "src"))
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
+sys.path.insert(0, str(ROOT / "src"))
 
 from session import kernel_modules  # noqa: E402
 
@@ -49,7 +49,7 @@ def check(label: str, condition: bool, extra: str = "") -> None:
         print(f"  FAIL {label}{(' — ' + extra) if extra else ''}")
 
 
-def test_el_numero_de_llamada_es_por_arquitectura() -> None:
+def test_syscall_number_is_per_architecture() -> None:
     """El numero de ``init_module`` NO es universal: depende de la maquina.
 
     Anulacion: fijar 175 como constante. El control cae en aarch64, donde la
@@ -64,7 +64,7 @@ def test_el_numero_de_llamada_es_por_arquitectura() -> None:
           kernel_modules.init_module_number("arquitectura-inventada") is None)
 
 
-def test_ENOSYS_es_la_unica_ausencia() -> None:
+def test_ENOSYS_is_the_only_absence() -> None:
     """Sólo ``ENOSYS`` significa «el kernel no los admite».
 
     Es el caso central. ``EPERM`` significa que la puerta existe y nos falta
@@ -87,7 +87,7 @@ def test_ENOSYS_es_la_unica_ausencia() -> None:
           kernel_modules.classify(errno.ENOSPC) == "unknown")
 
 
-def test_los_archivos_no_deciden_nada() -> None:
+def test_files_decide_nothing() -> None:
     """La presencia de ``/proc/modules`` es indicio, no veredicto.
 
     Es la leccion del episodio: el archivo se instala o lo crea el kernel, y
@@ -97,16 +97,16 @@ def test_los_archivos_no_deciden_nada() -> None:
     Anulacion: que `probe` derive su veredicto de los archivos. Cae esta
     asercion, porque el reporte dejaria de tener dos campos independientes.
     """
-    informe = kernel_modules.probe()
+    report = kernel_modules.probe()
     check("el informe separa la conducta de los indicios",
-          "verdict" in informe and "hints" in informe, str(sorted(informe)))
+          "verdict" in report and "hints" in report, str(sorted(report)))
     check("el veredicto sale del errno",
-          "errno" in informe, str(sorted(informe)))
+          "errno" in report, str(sorted(report)))
     check("y los indicios son rutas, no el veredicto",
-          isinstance(informe["hints"], dict))
+          isinstance(report["hints"], dict))
 
 
-def test_la_sonda_no_puede_cargar_nada() -> None:
+def test_probe_cannot_load_anything() -> None:
     """Control de seguridad: la sonda pasa puntero nulo y longitud cero.
 
     Sin imagen no hay modulo que cargar. Si alguien cambiara la sonda para
@@ -118,7 +118,7 @@ def test_la_sonda_no_puede_cargar_nada() -> None:
           str(kernel_modules.PROBE_ARGUMENTS))
 
 
-def test_el_instrumento_puede_decir_algo_QUE_NO_sea_ENOSYS() -> None:
+def test_instrument_can_say_something_OTHER_than_ENOSYS() -> None:
     """Control de anulacion del INSTRUMENTO, no del sujeto.
 
     Un `ctypes` mal cableado devolveria ``ENOSYS`` a todo, y el veredicto
@@ -143,28 +143,28 @@ def test_el_instrumento_puede_decir_algo_QUE_NO_sea_ENOSYS() -> None:
         check("la maquina no es x86_64; caso omitido por declaracion", True)
         return
 
-    previo = pathlib.Path.cwd()
+    previous = pathlib.Path.cwd()
     try:
         ctypes.set_errno(0)
         libc.syscall(ctypes.c_long(80),
                      ctypes.c_char_p(b"/directorio-que-no-existe"))
-        ausente = ctypes.get_errno()
+        missing = ctypes.get_errno()
         ctypes.set_errno(0)
         libc.syscall(ctypes.c_long(80), ctypes.c_char_p(b"/"))
         real = ctypes.get_errno()
     finally:
         import os  # noqa: PLC0415
-        os.chdir(previo)
+        os.chdir(previous)
 
     check("una llamada implementada contra ruta ausente da ENOENT",
-          ausente == errno.ENOENT, errno.errorcode.get(ausente, str(ausente)))
+          missing == errno.ENOENT, errno.errorcode.get(missing, str(missing)))
     check("y contra una ruta real no da error",
           real == 0, errno.errorcode.get(real, str(real)))
     check("asi que un ENOSYS del sujeto es del KERNEL, no del instrumento",
-          ausente != errno.ENOSYS and real != errno.ENOSYS)
+          missing != errno.ENOSYS and real != errno.ENOSYS)
 
 
-def test_la_familia_entera_responde_igual() -> None:
+def test_whole_family_answers_the_same() -> None:
     """``init_module`` y ``delete_module`` son consecutivas y de la misma familia.
 
     Que las dos den el mismo veredicto acota la ceguera declarada arriba: un
@@ -184,21 +184,21 @@ def test_la_familia_entera_responde_igual() -> None:
     ctypes.set_errno(0)
     libc.syscall(ctypes.c_long(176),
                  ctypes.c_char_p(b"modulo-inexistente"), ctypes.c_int(0))
-    hermana = ctypes.get_errno()
-    sujeto = kernel_modules.probe()
+    sibling = ctypes.get_errno()
+    subject = kernel_modules.probe()
 
     check("las dos de la familia dan el mismo veredicto",
-          kernel_modules.classify(hermana) == sujeto["verdict"],
-          f"{errno.errorcode.get(hermana, hermana)} vs {sujeto['errno_name']}")
+          kernel_modules.classify(sibling) == subject["verdict"],
+          f"{errno.errorcode.get(sibling, sibling)} vs {subject['errno_name']}")
 
 
 def main() -> int:
-    test_el_numero_de_llamada_es_por_arquitectura()
-    test_ENOSYS_es_la_unica_ausencia()
-    test_los_archivos_no_deciden_nada()
-    test_la_sonda_no_puede_cargar_nada()
-    test_el_instrumento_puede_decir_algo_QUE_NO_sea_ENOSYS()
-    test_la_familia_entera_responde_igual()
+    test_syscall_number_is_per_architecture()
+    test_ENOSYS_is_the_only_absence()
+    test_files_decide_nothing()
+    test_probe_cannot_load_anything()
+    test_instrument_can_say_something_OTHER_than_ENOSYS()
+    test_whole_family_answers_the_same()
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: session/kernel_modules.py)")
     return 1 if failed else 0

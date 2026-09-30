@@ -164,3 +164,4 @@ export function filterCommandsForRemoteMode(commands: Command[]): Command[] {
 export function formatDescriptionWithSource(cmd: Command): string {
   return getHostBindings().formatDescriptionWithSource(cmd)
 }
+export type { LocalCommandCall } from './types.js'

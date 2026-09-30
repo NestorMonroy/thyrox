@@ -1,8 +1,6 @@
 /**
- * Puerto de `ccnmt: packages/output/src/buffers/circular-buffer.ts`
- * (verbatim — sin imports en la fuente). Un buffer circular de tamano fijo
- * que desaloja el item mas antiguo cuando se llena. Util para mantener una
- * ventana movil de datos.
+ * A fixed-size circular buffer that automatically evicts the oldest items
+ * when the buffer is full. Useful for maintaining a rolling window of data.
  */
 export class CircularBuffer<T> {
   private buffer: T[]
@@ -14,8 +12,8 @@ export class CircularBuffer<T> {
   }
 
   /**
-   * Agrega un item al buffer. Si el buffer esta lleno, desaloja el item
-   * mas antiguo.
+   * Add an item to the buffer. If the buffer is full,
+   * the oldest item will be evicted.
    */
   add(item: T): void {
     this.buffer[this.head] = item
@@ -26,7 +24,7 @@ export class CircularBuffer<T> {
   }
 
   /**
-   * Agrega varios items al buffer de una vez.
+   * Add multiple items to the buffer at once.
    */
   addAll(items: T[]): void {
     for (const item of items) {
@@ -35,8 +33,8 @@ export class CircularBuffer<T> {
   }
 
   /**
-   * Devuelve los N items mas recientes del buffer. Devuelve menos si el
-   * buffer tiene menos de N items.
+   * Get the most recent N items from the buffer.
+   * Returns fewer items if the buffer contains less than N items.
    */
   getRecent(count: number): T[] {
     const result: T[] = []
@@ -52,8 +50,7 @@ export class CircularBuffer<T> {
   }
 
   /**
-   * Devuelve todos los items actualmente en el buffer, en orden del mas
-   * antiguo al mas nuevo.
+   * Get all items currently in the buffer, in order from oldest to newest.
    */
   toArray(): T[] {
     if (this.size === 0) return []
@@ -70,7 +67,7 @@ export class CircularBuffer<T> {
   }
 
   /**
-   * Vacia el buffer.
+   * Clear all items from the buffer.
    */
   clear(): void {
     this.buffer.length = 0
@@ -79,7 +76,7 @@ export class CircularBuffer<T> {
   }
 
   /**
-   * Devuelve el numero actual de items en el buffer.
+   * Get the current number of items in the buffer.
    */
   length(): number {
     return this.size

@@ -25,7 +25,7 @@ declara su lenguaje y la razón de su elección.
 
 | Dominio | Lenguaje | Por qué |
 |---|---|---|
-| `src/paths/` | Python | sus consumidores son los gates, que se invocan con `python3` pelado. Y no puede depender de una librería de terceros: `python-dotenv` no está instalado en ningún intérprete alcanzable, así que una dependencia ahí convertiría a cada consumidor en un rehúse por precondición ausente. |
+| `src/paths/` | Python | sus consumidores son los gates, que se invocan con `python3` pelado. Y no puede depender de una biblioteca de terceros: `python-dotenv` no está instalado en ningún intérprete alcanzable, así que una dependencia ahí convertiría a cada consumidor en un rehúse por precondición ausente. |
 | `src/workbench/` | TypeScript | porta un mecanismo que ya existía en TS; reescribirlo en otro lenguaje crearía la segunda fuente de verdad que `calibration-verified-numbers.md` prohíbe. |
 | `src/coordination/` | TypeScript | su único consumidor es `claims.ts`, que ya es TS. Un módulo en otro lenguaje no podría importarse desde ahí, así que la ubicación seguiría declarada dos veces — que es el defecto que este módulo cierra. |
 
@@ -77,7 +77,7 @@ vía antes de que la clase tuviera nombre.
 La clase se declara **en el docstring del puerto**, junto a su procedencia: quien
 lo lea tiene que poder saber por qué no hay test sin ir a buscar el criterio.
 
-## Correr las suites
+## Ejecutar las suites
 
 ```bash
 bash tests/run.sh          # las dos mitades, con su conteo por separado
@@ -107,20 +107,20 @@ fuentes, operaciones de plugin, sync remoto (`cat
 src/packages/config/package.json`) — **no** el descubrimiento de rutas entre
 `thyrox` y sus consumidores. Ese mecanismo es **`src/paths/reach.py`** más
 **`src/workbench/paths.py`**, ya citados en «El alcance por variable» arriba —
-con sus gemelos TypeScript, `src/paths/reach.ts` y `src/workbench/paths.ts`
+con sus gemelos TypeScript, `src/packages/paths/reach.ts` y `src/packages/workbench/paths.ts`
 (gemelos declarados así, no un módulo suelto por lenguaje: `src/workbench/
 paths.py:1-4`). **`reach.ts` tiene consumidores reales, medidos, no "casi
 ninguno":**
 
 ```bash
 grep -rln "^import .*reach\.ts['\"]" --include=*.ts --include=*.tsx . \
-    | grep -v "^src/paths/reach.ts$" | sort -u | wc -l
+    | grep -v "^src/packages/paths/reach.ts$" | sort -u | wc -l
 ```
 
 Da **20** archivos distintos: **12 de producción** —entre ellos `src/
 commands/paths.ts`, `src/rules/paths.ts`, `src/skills/paths.ts`, `src/task/
 schema.ts`, `src/reference/triple.ts`, `src/rules/emit/markdown.ts`, y el
-propio `src/workbench/paths.ts`— y **8 suites de test** que lo importan
+propio `src/packages/workbench/paths.ts`— y **8 suites de test** que lo importan
 directo. La cifra anterior de este párrafo (una afirmación sin `grep` detrás)
 era simplemente falsa; corregida tras el hallazgo `h-thyrox-03` de
 `kaupamex-docs: source/gestion/pm/thyrox/iniciativas/
@@ -132,8 +132,8 @@ verificar-hogares-de-sesion-thyrox/` (publicado primero, por error, como
 | # | Pieza | Qué hace | Cuándo |
 |---|---|---|---|
 | 1 | `bash src/session/write-env.sh` | **genera** el `.env` de este árbol por ascenso real (`THYROX_ROOT`, `THYROX_REACH_ROOT`, …) | una vez por clon, o tras mover el árbol |
-| 2 | `python3 src/paths/declarations.py` | **inspecciona**: qué hogar está declarado (viene de env) y cuál cae al default derivado, por clon | para saber qué falta configurar |
-| 3 | `python3 src/verify/check_env_contract_keys.py --strict` | **valida**: toda clave `THYROX_*` que el código lee está en `.env.example` | al tocar cualquier guion que lea una clave nueva |
+| 2 | `bash bin/declarations` | **inspecciona**: qué hogar está declarado (viene de env) y cuál cae al default derivado, por clon | para saber qué falta configurar |
+| 3 | `bash bin/check_env_contract_keys --strict` | **valida**: toda clave `THYROX_*` que el código lee está en `.env.example` | al tocar cualquier guion que lea una clave nueva |
 
 Nada de esto se templa a mano. `write-env.sh` deriva `THYROX_ROOT` subiendo
 directorios hasta encontrar `THYROX_LOCATOR` (`src/paths/reach.py`) — la ruta
@@ -228,11 +228,11 @@ real sobre SU máquina.
 ```bash
 cd thyrox && bash src/session/write-env.sh          # 1. genera .env base
 set -a; source .env; set +a
-python3 src/paths/declarations.py                    # 2. ¿qué falta declarar?
+bash bin/declarations                    # 2. ¿qué falta declarar?
 # declarar a mano en .env, si hace falta, las per-clon: THYROX_WORKBENCH_<CLON>,
 # THYROX_JOBS_<CLON> (ver .env.example, sección «Hogares que el consumidor
 # declara y thyrox NO inventa» para el resto de la familia)
-python3 src/verify/check_env_contract_keys.py --strict   # 3. contrato cerrado
+bash bin/check_env_contract_keys --strict   # 3. contrato cerrado
 bash tests/run.sh                                     # 4. el árbol funciona
 ```
 
@@ -244,10 +244,10 @@ generador que le da nombre corto a **cada** entrypoint (`__main__` en
 invocables desde cualquier directorio:
 
 ```bash
-python3 src/session/generate_bin.py --dry-run   # el plan, sin escribir
-python3 src/session/generate_bin.py             # genera bin/
-python3 src/session/generate_bin.py --install-user-bin   # + copia a ~/.local/bin
-python3 src/session/generate_bin.py --check      # ¿bin/ sigue al día?
+bash bin/generate_bin --dry-run   # el plan, sin escribir
+bash bin/generate_bin             # genera bin/
+bash bin/generate_bin --install-user-bin   # + copia a ~/.local/bin
+bash bin/generate_bin --check      # ¿bin/ sigue al día?
 ```
 
 **`bin/` está versionado** — los envoltorios vienen en el clon, no se
@@ -280,7 +280,7 @@ Tres cosas que el cierre midió y la tarea suponía:
 - **La cita de este párrafo estaba mal, y era anterior.** Decía
   `TASK-THYROX-0018`, que en el store nombra otro sujeto vivo —barrer los 84
   `sys.path.insert`, `pending`—. El correcto es `TASK-THYROX-0028`, cuya
-  descripción es literalmente este trabajo. Un `TASK-<CAPA>-NNNN` resuelve
+  descripción es literalmente este trabajo. Un `TASK-<LAYER>-NNNN` resuelve
   siempre al mismo sujeto; transcribirlo a prosa de memoria, no.
 - **0028 figuraba `completed` desde el 2026-09-15** con sus 24 citas en pie.
   El estado declarado no envejece solo y ningún gate lo mide: ése es el
@@ -292,8 +292,8 @@ Los gates de THYROX miden árboles que no son el suyo. Qué árbol se declara po
 variable, con una cadena de precedencia de lo más específico a lo más derivado:
 
 ```bash
-python3 src/paths/reach.py --list
-eval "$(python3 src/paths/reach.py --env)"
+bash bin/reach --list
+eval "$(bash bin/reach --env)"
 ```
 
 ## Citar una tarea propia y registrar un hallazgo
@@ -306,9 +306,9 @@ una referencia rota desde el primer momento. La forma que resuelve siempre a
 la misma tarea es `TASK-THYROX-NNNN`, y se acuña — no se compone a mano:
 
 ```bash
-python3 -m src.task.task_ids ingerir-board <session_id> <ordinal> --capa thyrox
-python3 -m src.task.task_ids cita <session_id> <ordinal>   # verificar
-python3 -m src.task.task_ids censo                          # conteo por capa
+bash bin/task_ids ingest-board <session_id> <ordinal> --layer thyrox
+bash bin/task_ids lookup <session_id> <ordinal>   # verificar
+bash bin/task_ids census                          # conteo por capa
 ```
 
 Un hallazgo —algo que el trabajo destapó y que alguien podría volver a asumir
@@ -318,15 +318,15 @@ episodio en que un `ls`/`grep` a mano se acotó a una sola iniciativa cuando
 el espacio de nombres es global a la capa.
 
 ```bash
-python3 -m src.hallazgo.hallazgo_ids acunar DOCS           # el siguiente libre
-python3 -m src.hallazgo.hallazgo_ids verificar H-DOCS-1268  # ¿ya existe?
+bash bin/hallazgo_ids propose-id DOCS        # propone el siguiente (no lo reserva)
+bash bin/hallazgo_ids verify H-DOCS-1268     # ¿ya existe?
 
-python3 -m src.agents.agent_store agregar-hallazgo \
+bash bin/agent_store agregar-hallazgo \
   --finding-id H-DOCS-1268 --submodule docs \
   --initiative actualizar-agentic-ai-thyrox \
   --summary "..." --content "..." \
   --source-ref "el archivo que es la fuente de verdad"
-python3 -m src.agents.agent_store buscar-hallazgos --query "..."
+bash bin/agent_store buscar-hallazgos --query "..."
 ```
 
 El banco (`.claude/workbench/`) y el job (`.claude/jobs/`) documentan *cómo*

@@ -1,0 +1,13 @@
+== A. Un desenlace terminal SÍ tiene nivel ==
+  ok    completed entrega algo recuperable, sin verificar -> 3
+  ok    failed murió sin entregar -> 4
+== B. Un estado NO terminal no tiene nivel que afirmar ==
+  ok    running -> None, no 4: el agente sigue vivo
+  ok    un estado desconocido tampoco se cierra
+== C. La línea que escribe respeta el veredicto ==
+  ok    running no emite --retention-level
+  ok    completed sí lo emite, con su valor
+  ok    el status viaja igual en los dos casos
+
+RESULTADO: 7 ok, 0 fallo(s)
+EXIT=0

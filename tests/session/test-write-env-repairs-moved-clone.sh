@@ -4,7 +4,7 @@
 # =============================================================================
 #
 # Origen: hallazgo de un bot de revisión sobre el PR #7 (`chatgpt-codex-connector`,
-# P1 en `.env:3`). `.env` se versiona desde 2026-09-10 con
+# P1 en `.env:3`). `.env` se versionaba entonces con
 # THYROX_ROOT=/home/user/thyrox committeado (directiva del ejecutor,
 # ver `.env.example`). El costo declarado ahí es que un clon en otra ruta
 # hereda ese valor equivocado, y la recuperación documentada es
@@ -70,6 +70,7 @@ echo "== caso 1: --force repara la raíz declarada al valor REAL del clon"
 OUT="$(cd "$CLON" && env -u THYROX_ROOT -u THYROX_ENV_FILE bash src/session/write-env.sh --force 2>&1)"
 RC=$?
 check "exit 0" "$RC" "0"
+[ "$RC" = 0 ] || printf '%s\n' "$OUT"
 ROOT_ESCRITO="$(sed -n 's/^THYROX_ROOT=//p' "$CLON/.env" 2>/dev/null)"
 check "THYROX_ROOT queda en el clon real, no en el viejo" "$ROOT_ESCRITO" "$CLON_REAL"
 

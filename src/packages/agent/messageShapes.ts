@@ -13,11 +13,13 @@
 // importa de `'node:crypto'`. Es el mismo modulo con el prefijo explicito que
 // distingue un builtin de un paquete de npm homonimo; no cambia el tipo.
 import type { UUID } from 'node:crypto'
+import type { APIError } from '@anthropic-ai/sdk'
 import type {
   ContentBlockParam,
   ContentBlock,
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes.js'
 import type {
   BranchAction,
   CommitKind,
@@ -43,7 +45,12 @@ export type MessageContent = string | ContentBlockParam[] | ContentBlock[]
  */
 export type TypedMessageContent = ContentItem[]
 
-export type Message = {
+/**
+ * Los campos comunes a todo mensaje. `Message` es la UNIÓN de sus variantes,
+ * como en la fuente: así `message.type === 'assistant'` estrecha a la variante
+ * que lleva `message` requerido, en vez de dejarlo opcional para todas.
+ */
+export type MessageBase = {
   type: MessageType
   uuid: UUID
   isMeta?: boolean
@@ -74,7 +81,7 @@ export type Message = {
  * SIEMPRE lleva `message`, es la respuesta del API. Se estrecha a requerido.
  * Mismo desenlace que TASK-THYROX-0228 ya fijo para `AppStateLike`.
  */
-export type AssistantMessage = Message & {
+export type AssistantMessage = MessageBase & {
   type: 'assistant'
   message: {
     role?: string
@@ -95,10 +102,48 @@ export type AssistantMessage = Message & {
  * (`repl/src/uiHelpers/groupToolUses.ts`,
  * `repl/src/processUserInput/processUserInput.ts`).
  */
-export type AttachmentMessage<_T = unknown> = Message & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
-export type ProgressMessage<T = unknown> = Message & { type: 'progress'; data: T }
-export type SystemLocalCommandMessage = Message & { type: 'system' }
-export type SystemMessage = Message & { type: 'system' }
+export type Message =
+  | UserMessage
+  | AssistantMessage
+  | AttachmentMessage
+  | ProgressMessage
+  | SystemMessage
+  | (MessageBase & { type: 'grouped_tool_use' | 'collapsed_read_search' })
+export type AttachmentMessage<_T = unknown> = MessageBase & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
+export type ProgressMessage<T = unknown> = MessageBase & { type: 'progress'; data: T }
+/**
+ * Mensajes de sistema como UNIÓN DISCRIMINADA por `subtype`. Cada variante
+ * declara los campos que su productor (`agent/messages.ts`, `create*Message`)
+ * construye. Antes cada alias era `Message & { type: 'system' }`: estrechar por
+ * `message.subtype === 'bridge_status'` no traía `url` ni `content`, y el
+ * lector los veía `unknown` por la firma índice de `MessageBase`.
+ */
+type SystemBase<S extends string> = MessageBase & {
+  type: 'system'
+  subtype: S
+  timestamp?: string
+  isMeta?: boolean
+  level?: SystemMessageLevel
+  toolUseID?: string
+}
+export type SystemLocalCommandMessage = SystemBase<'local_command'> & { content: string }
+export type SystemMessage =
+  | SystemLocalCommandMessage
+  | SystemCompactBoundaryMessage
+  | SystemAPIErrorMessage
+  | SystemFileSnapshotMessage
+  | SystemAgentsKilledMessage
+  | SystemApiMetricsMessage
+  | SystemAwaySummaryMessage
+  | SystemBridgeStatusMessage
+  | SystemInformationalMessage
+  | SystemMemorySavedMessage
+  | SystemMicrocompactBoundaryMessage
+  | SystemPermissionRetryMessage
+  | SystemScheduledTaskFireMessage
+  | SystemStopHookSummaryMessage
+  | SystemTurnDurationMessage
+  | SystemThinkingMessage
 /**
  * DIVERGENCIA DECLARADA, misma clase y misma direccion que `AssistantMessage`
  * de arriba (TASK-THYROX-0228/0233): la fuente deja `message` opcional porque
@@ -108,8 +153,10 @@ export type SystemMessage = Message & { type: 'system' }
  * unico sitio que lo construye (`createUserMessage`) lo asigna incondicional.
  * Se estrecha a requerido en vez de sembrar `?.` en cada consumidor.
  */
-export type UserMessage = Message & {
+export type UserMessage = MessageBase & {
   type: 'user'
+  /** El modo activo al enviarlo (`createUserMessage`); el rewind lo restaura. */
+  permissionMode?: PermissionMode
   message: {
     role?: string
     id?: string
@@ -118,9 +165,18 @@ export type UserMessage = Message & {
     [key: string]: unknown
   }
 }
-export type NormalizedUserMessage = UserMessage
-export type RequestStartEvent = { type: string; [key: string]: unknown }
-export type StreamEvent = { type: string; [key: string]: unknown }
+/** Un mensaje de usuario tras `normalizeMessages`: un bloque, en arreglo. */
+export type NormalizedUserMessage = UserMessage & {
+  message: UserMessage['message'] & { content: ContentItem[] }
+}
+/** Aviso de que la peticion al modelo arranco; el spinner pasa a `requesting`. */
+export type RequestStartEvent = { type: 'stream_request_start' }
+/** Un evento crudo del stream del modelo, con el tiempo al primer token. */
+export type StreamEvent = {
+  type: 'stream_event'
+  event: { type: string; [key: string]: unknown }
+  ttftMs?: number
+}
 
 /**
  * Marcador de frontera de compactacion en el transcript. Su
@@ -131,8 +187,11 @@ export type StreamEvent = { type: string; [key: string]: unknown }
  * `TASK-THYROX-0199`, que en el store nombra otro sujeto — el ordinal
  * del board se habia citado como si fuera durable).
  */
-export type SystemCompactBoundaryMessage = Message & {
-  type: 'system'
+export type SystemCompactBoundaryMessage = SystemBase<'compact_boundary'> & {
+  content?: string
+  // `null` como en `TranscriptMessage` (logsTypes.ts): el transcript lo
+  // escribe así cuando `parentUuid` se anula en un corte de sesión.
+  logicalParentUuid?: UUID | null
   compactMetadata: {
     preservedSegment?: {
       headUuid: UUID
@@ -144,14 +203,78 @@ export type SystemCompactBoundaryMessage = Message & {
   }
 }
 
-export type TombstoneMessage = Message
-export type ToolUseSummaryMessage = Message
-export type MessageOrigin = string
-export type CompactMetadata = Record<string, unknown>
-export type SystemAPIErrorMessage = Message & { type: 'system' }
-export type SystemFileSnapshotMessage = Message & { type: 'system' }
-export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage
-export type NormalizedMessage = Message
+/**
+ * Lapida: retira del transcript un mensaje ya emitido (fallback de modelo o
+ * reintento en streaming). No es un `Message`: nunca entra al historial.
+ */
+export type TombstoneMessage = {
+  type: 'tombstone'
+  message: Message
+}
+/**
+ * Resumen de las herramientas de un turno para el SDK. Tampoco es un
+ * `Message`: el REPL lo ignora y sólo lo consume la salida headless.
+ */
+export type ToolUseSummaryMessage = {
+  type: 'tool_use_summary'
+  summary: string
+  precedingToolUseIds: string[]
+  uuid: UUID
+  timestamp: string
+}
+/**
+ * De dónde viene un mensaje encolado. Era `string`, y ningún productor ni
+ * lector lo usaba así: todos escriben y leen `{ kind, … }`. Medido en 2.1.282
+ * (`origin:{kind:…}` en bunfs-root): `human`, `channel` (con `server`),
+ * `task-notification` (con `source`, `slug`, `displayName`),
+ * `auto-continuation`, `peer`, `coordinator`, `observer-activity`, y
+ * otros; el conjunto crece entre builds, así que `kind` queda abierto.
+ */
+export type MessageOrigin = {
+  kind: string
+  server?: string
+  source?: string
+  [key: string]: unknown
+}
+/**
+ * La forma que `createCompactBoundaryMessage` escribe (`messages.ts`) mas el
+ * tramo preservado que la compactacion parcial anade. El unico constructor
+ * fija `trigger` y `preTokens`, asi que se declaran aqui y ningun lector
+ * tiene que re-afirmarlos.
+ */
+export type CompactMetadata = {
+  trigger: 'manual' | 'auto'
+  preTokens: number
+  userContext?: string
+  messagesSummarized?: number
+  preservedSegment?: {
+    headUuid: UUID
+    anchorUuid: UUID
+    tailUuid: UUID
+  }
+}
+export type SystemAPIErrorMessage = SystemBase<'api_error'> & {
+  cause?: Error
+  error: APIError
+  retryInMs: number
+  retryAttempt: number
+  maxRetries: number
+}
+export type SystemFileSnapshotMessage = SystemBase<'file_snapshot'>
+/** Un mensaje del asistente tras `normalizeMessages`: un bloque, en arreglo. */
+export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage & {
+  message: AssistantMessage['message'] & { content: ContentItem[] }
+}
+/**
+ * Un mensaje tras `normalizeMessages`: un bloque por mensaje, así que su
+ * `content`, cuando hay `message`, es SIEMPRE un arreglo de bloques. El alias
+ * plano a `Message` (`content` cadena u opcional) obligaba a los consumidores
+ * de la vista (`Messages.tsx`: `filterForBriefTool`, `dropTextInBriefTurns`)
+ * a recibir una forma más ancha que la que el normalizador produce.
+ */
+export type NormalizedMessage = Message & {
+  message?: NonNullable<Message['message']> & { content: ContentItem[] }
+}
 export type PartialCompactDirection = string
 
 export type StopHookInfo = {
@@ -160,16 +283,50 @@ export type StopHookInfo = {
   [key: string]: unknown
 }
 
-export type SystemAgentsKilledMessage = Message & { type: 'system' }
-export type SystemApiMetricsMessage = Message & { type: 'system' }
-export type SystemAwaySummaryMessage = Message & { type: 'system' }
-export type SystemBridgeStatusMessage = Message & { type: 'system' }
-export type SystemInformationalMessage = Message & { type: 'system' }
-export type SystemMemorySavedMessage = Message & { type: 'system' }
+export type SystemAgentsKilledMessage = SystemBase<'agents_killed'>
+export type SystemApiMetricsMessage = SystemBase<'api_metrics'> & {
+  ttftMs: number
+  otps: number
+  isP50?: boolean
+  hookDurationMs?: number
+  turnDurationMs?: number
+  toolDurationMs?: number
+  classifierDurationMs?: number
+  toolCount?: number
+  hookCount?: number
+  classifierCount?: number
+  configWriteCount?: number
+}
+export type SystemAwaySummaryMessage = SystemBase<'away_summary'> & { content: string }
+export type SystemBridgeStatusMessage = SystemBase<'bridge_status'> & {
+  content: string
+  url: string
+  upgradeNudge?: string
+}
+export type SystemInformationalMessage = SystemBase<'informational'> & {
+  content: string
+  preventContinuation?: boolean
+}
+export type SystemMemorySavedMessage = SystemBase<'memory_saved'> & {
+  writtenPaths: string[]
+  verb?: string
+}
 export type SystemMessageLevel = string
-export type SystemMicrocompactBoundaryMessage = Message & { type: 'system' }
-export type SystemPermissionRetryMessage = Message & { type: 'system' }
-export type SystemScheduledTaskFireMessage = Message & { type: 'system' }
+export type SystemMicrocompactBoundaryMessage = SystemBase<'microcompact_boundary'> & {
+  content?: string
+  microcompactMetadata: {
+    trigger: 'auto'
+    preTokens: number
+    tokensSaved: number
+    compactedToolIds: string[]
+    clearedAttachmentUUIDs: string[]
+  }
+}
+export type SystemPermissionRetryMessage = SystemBase<'permission_retry'> & {
+  content: string
+  commands: string[]
+}
+export type SystemScheduledTaskFireMessage = SystemBase<'scheduled_task_fire'> & { content: string }
 
 /**
  * DIVERGENCIA DECLARADA, y la causa es el TOOLCHAIN — misma clase que
@@ -188,16 +345,24 @@ export type SystemScheduledTaskFireMessage = Message & { type: 'system' }
  * fuera requerido. El protocolo NO garantiza el rotulo: un hook sin etiqueta
  * es un caso real que el constructor admite.
  */
-export type SystemStopHookSummaryMessage = Message & {
-  type: 'system'
-  subtype: string
+export type SystemStopHookSummaryMessage = SystemBase<'stop_hook_summary'> & {
+  hookErrors: string[]
+  preventedContinuation: boolean
+  stopReason?: string
+  hasOutput: boolean
   hookLabel?: string
   hookCount: number
   totalDurationMs?: number
   hookInfos: StopHookInfo[]
 }
 
-export type SystemTurnDurationMessage = Message & { type: 'system' }
+export type SystemTurnDurationMessage = SystemBase<'turn_duration'> & {
+  durationMs: number
+  budgetTokens?: number
+  budgetLimit?: number
+  budgetNudges?: number
+  messageCount?: number
+}
 
 export type GroupedToolUseMessage = Message & {
   type: 'grouped_tool_use'
@@ -207,9 +372,10 @@ export type GroupedToolUseMessage = Message & {
   displayMessage: NormalizedAssistantMessage | NormalizedUserMessage
 }
 
+// Lo que la vista pinta sale de `applyGrouping` sobre mensajes YA normalizados.
 export type RenderableMessage =
-  | AssistantMessage
-  | UserMessage
+  | NormalizedAssistantMessage
+  | NormalizedUserMessage
   | (Message & { type: 'system' })
   | (Message & { type: 'attachment'; attachment: { type: string; memories?: { path: string; content: string; mtimeMs: number }[]; [key: string]: unknown } })
   | (Message & { type: 'progress' })
@@ -217,8 +383,8 @@ export type RenderableMessage =
   | CollapsedReadSearchGroup
 
 export type CollapsibleMessage =
-  | AssistantMessage
-  | UserMessage
+  | NormalizedAssistantMessage
+  | NormalizedUserMessage
   | GroupedToolUseMessage
 
 export type CollapsedReadSearchGroup = {
@@ -256,7 +422,7 @@ export type CollapsedReadSearchGroup = {
 }
 
 export type HookResultMessage = Message
-export type SystemThinkingMessage = Message & { type: 'system' }
+export type SystemThinkingMessage = SystemBase<'thinking'> & { content?: string }
 
 /**
  * AÑADIDOS de este arbol, no de la fuente: los dos bloques que `messages.ts`

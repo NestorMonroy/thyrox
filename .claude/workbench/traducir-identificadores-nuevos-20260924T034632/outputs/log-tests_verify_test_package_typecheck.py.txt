@@ -1,0 +1,18 @@
+  ok   el propio se atribuye al paquete
+  ok   las DOS formas de hermano se atribuyen al hermano
+  ok   el import que sale del paquete tiene cubo propio
+  ok   y el error sin archivo no cae en ningun cubo
+  ok   TS18003 declara que no se pudo medir
+  ok   TS2688 tambien
+  ok   y un error de tipo normal NO lo declara
+  ok   el veredicto de un paquete sin medir lo dice
+  ok   los destinos salen tambien de exports
+  ok   de un exports con condiciones se toma SOLO la rama default
+  ok   y un destino bajo dist/ se filtra aunque sea el default
+  ok   un baseline ausente no revienta: da el mapa vacio
+  ok   sin bunx rehusa con 2
+  ok   y NO emite un conteo
+  ok   --strict sin baseline rehusa con 2
+  ok   y nombra como congelarlo
+
+test_package_typecheck: 16 ok, 0 falla

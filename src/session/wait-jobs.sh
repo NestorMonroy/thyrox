@@ -46,12 +46,11 @@
 #       adopt-external --id X --log P [--marker RE]
 #   wait-jobs.sh forget <etiqueta>
 #
-# El subcomando va en INGLES desde 2026-09-04 (`identificadores-en-ingles.md`,
-# ampliada por el ejecutor a scripts, funciones y firmas). El nombre español
-# queda como ALIAS y no se retira: mas de treinta `.rst` de hallazgo y analisis
-# lo citan como evidencia fechada de lo que se ejecuto ese dia, y esa clase de
-# cita no se reescribe —mismo criterio que las citas historicas a `odoo19x/`—.
-# El alias mantiene cierta la evidencia sin congelar el idioma del codigo.
+# El subcomando va en INGLES (`identificadores-en-ingles.md`). El nombre
+# español queda como ALIAS: mas de treinta `.rst` de hallazgo y analisis lo
+# citan como evidencia fechada, y esa clase de cita no se reescribe —mismo
+# criterio que las citas historicas a `odoo19x/`—. El alias mantiene cierta la
+# evidencia sin congelar el idioma del codigo.
 #
 # `wait` sale:
 #     0 — todos los trabajos escribieron su marcador
@@ -66,36 +65,38 @@
 
 set -uo pipefail
 
-# El ledger vive en un sitio DURABLE, no en /tmp. Medido 2026-09-02 tras el
-# reinicio del worker (época 247): el directorio de /tmp no sobrevivió al
-# reinicio —justo cuando el ledger importa—, así que un trabajo registrado y no
-# recogido se perdía sin rastro. El ledger VIVO es un directorio de trabajo por
-# sesión bajo `.claude/jobs-ledger/<id>/`; lo que se COMMITEA como evidencia es
-# su archivo comprimido `<id>.tar.gz` bajo `.claude/jobs/`,
-# uno por sesión —como el binario guarda `jobs/<short>/`, pero empaquetado, para
-# no cargar GitHub con muchos `.job` sueltos (directiva del ejecutor 2026-09-02)—.
-# El subcomando `archive` produce ese `.tar.gz`. Un test aísla el ledger vivo
-# con KX_TRABAJOS_DIR.
-# La raiz es la de THYROX —`src/session/` esta dos niveles bajo ella—. Decia
-# `../../..` y resolvia a `/home/user`, un nivel POR ENCIMA del repo: el ledger
-# aterrizaba fuera del arbol versionado. Los dos tests lo sobreescriben con
-# `KX_TRABAJOS_DIR`, asi que el default equivocado nunca se ejercitaba.
+# El ledger vive en un sitio DURABLE, no en /tmp: un /tmp que no sobrevive a
+# un reinicio del worker pierde sin rastro justo el trabajo registrado y no
+# recogido. El ledger VIVO es un directorio por sesión bajo
+# `.claude/jobs-ledger/<id>/`; lo que se COMMITEA como evidencia es su archivo
+# comprimido `<id>.tar.gz` bajo `.claude/jobs/`, uno por sesión —como el
+# binario guarda `jobs/<short>/`, pero empaquetado para no cargar el repo con
+# muchos `.job` sueltos—. El subcomando `archive` produce ese `.tar.gz`.
+# La raiz es la de THYROX: `src/session/` esta dos niveles bajo ella.
 _ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# thyrox-rename: keep — el id de la sesión anfitriona
 _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # NO va bajo el banco: una pieza de banco es una PREGUNTA medida, y esto es
 # estado de sesion. Mezclarlos haria que el gate del manifiesto midiera
 # directorios que nunca van a tener uno.
-# El nombre de la clave va en INGLES desde 2026-09-09: una clave de entorno es
-# un atributo, y `identificadores-en-ingles.md` los gobierna. El prefijo tambien
-# cambia — `KX_` nombraba al consumidor cuando el productor es THYROX.
-#
-# Las dos viejas quedan como RESPALDO, no por nostalgia: medido antes de tocar,
-# `KX_TRABAJOS_DIR` sale 43 veces y `KX_TRABAJOS_ARCHIVO_DIR` 6, repartidas en
-# tres suites de shell que no se estan corriendo en este pase. Renombrar los 49
-# de golpe y no correrlas seria publicar un verde que no medi. La cadena de
-# respaldo hace que el barrido pueda ser gradual sin dejar nada roto en medio;
-# el barrido es la tarea #91.
-LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}}"
+# Las claves van en INGLES y con prefijo `THYROX_`: una clave de entorno es un
+# atributo (`identificadores-en-ingles.md`), y `KX_` nombraba al consumidor.
+# `KX_TRABAJOS_DIR` y `KX_TRABAJOS_ARCHIVO_DIR` quedan como respaldo de lectura
+# para quien aún las declare (`.env.example`); sus pruebas son
+# `test-wait-jobs-archive-dir.sh` y `test-wait-jobs-ledger-home.sh`.
+# La raiz de los ledgers es un hogar: la resuelve `job_ledger.ledger_root()`,
+# con sus dos entradas de entorno (`THYROX_JOBS_LEDGER_DIR` o el `.env`). Un
+# literal aqui seria su segunda fuente de verdad, y el hook de compactacion ya
+# lo copio una vez (H-THYROX-187).
+_LEDGER_ROOT="$(PYTHONPATH="$_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" python3 -c \
+    'from session.job_ledger import ledger_root; print(ledger_root())')" || {
+    echo "wait-jobs.sh: no pude resolver la raiz de los ledgers" >&2; exit 2; }
+# El ledger de ESTA sesión. `THYROX_SESSION_LEDGER_DIR` lo fija tal cual
+# (una suite, el respaldo de `user_wiring`); sin ella, cuelga de la raíz.
+# NO se lee `THYROX_JOBS_DIR`: ése es el hogar de las CORRIDAS (`job_runs`),
+# y el `.env` lo fija a `.claude/jobs` — quien lo exportara metía los `.job`
+# entre directorios que el gate del banco trata como bancos (TASK #31).
+LEDGER="${THYROX_SESSION_LEDGER_DIR:-${KX_TRABAJOS_DIR:-$_LEDGER_ROOT/$_SESSION}}"
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
 # Las dos formas de la familia: `EXIT=` del envoltorio a mano y
 # `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las
@@ -207,8 +208,7 @@ cmd_register() {
 #
 # Lo que `olvidar` NO hace, y hay que decirlo: **no toca el proceso**. Suelta
 # la anotación y deja el trabajo corriendo, huérfano de todo seguimiento.
-# Medido 2026-09-04: tras `olvidar ctl-001`, su `sleep 40` seguía vivo. Para
-# terminarlo de verdad existe `kill`, que señala y luego suelta; `forget`
+# Para terminarlo de verdad existe `kill`, que señala y luego suelta; `forget`
 # queda para el trabajo que se quiere **dejar correr** sin bloquear el turno.
 cmd_forget() {
     local label="${1:?uso: olvidar <label>}"
@@ -261,6 +261,54 @@ cmd_pending() {
     return $any_pending
 }
 
+# El árbol de un pid, él incluido: los hijos de un trabajo son quienes de
+# verdad trabajan (el lazo duerme esperando a su proponedor).
+process_tree() {
+    local pid="$1" child
+    echo "$pid"
+    for child in $(pgrep -P "$pid" 2>/dev/null); do process_tree "$child"; done
+}
+
+# La sonda de stdin sobre el árbol de cada trabajo vivo, repartida con GNU
+# Parallel. Un proceso que lee stdin de un canal espera para siempre si su
+# productor ni escribe ni cierra: es la forma del `rg` sin archivo que corrió
+# 1 h 19 min, y nadie la ve sin mirar `/proc`. Avisa, no mata: una tubería
+# viva también es un canal.
+probe_jobs() {  # probe_jobs <archivo.job>...
+    local probe="$_ROOT/bin/stdin_probe" par="${WAIT_JOBS_PARALLEL:-parallel}" serial=""
+    [[ -f "$probe" ]] || { echo "sonda: falta $probe — no se sondea" >&2; return 0; }
+    command -v "$par" >/dev/null 2>&1 || serial=1
+    [[ -z "$serial" ]] || echo "sonda: sin GNU Parallel ($par) — en serie" >&2
+    local f label pid pids rows p target kind state cpu comm
+    for f in "$@"; do
+        label=$(basename "$f" .job); pid=$(sed -n 's/^pid=//p' "$f")
+        [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null || continue
+        pids=$(process_tree "$pid")
+        if [[ -z "$serial" ]]; then
+            rows=$(printf '%s\n' $pids | "$par" -j8 -k bash "$probe" {} 2>/dev/null)
+        else
+            rows=$(for p in $pids; do bash "$probe" "$p" 2>/dev/null; done)
+        fi
+        while IFS=$'\t' read -r p target kind state cpu writers; do
+            [[ -n "$p" ]] || continue
+            comm=$(cat "/proc/$p/comm" 2>/dev/null || echo '?')
+            # Los escritores los mide la sonda, no este guion: 0 es una
+            # tubería cuyo escritor ya salió (leer da EOF); `-`, un socket,
+            # cuyo otro extremo no se ve.
+            local wr="escritores=${writers:--}"; [[ "$writers" == 0 ]] && wr="sin escritor"
+            echo "sonda $label: $p $comm stdin=$kind($target) $wr estado=$state cpu=${cpu}s" >&2
+            [[ "$kind" == channel && "$writers" != 0 ]] && echo "  AVISO $label: pid $p ($comm) lee stdin de un canal ($target)" \
+                "— si su productor no escribe ni cierra, espera para siempre" >&2
+        done <<< "$rows"
+    done
+}
+
+cmd_probe() {
+    shopt -s nullglob; local jobs=("$LEDGER"/*.job); shopt -u nullglob
+    [[ ${#jobs[@]} -gt 0 ]] || { echo "sonda: ledger vacío ($LEDGER)"; return 0; }
+    probe_jobs "${jobs[@]}"
+}
+
 cmd_wait() {
     # `--only <etiqueta>` acota la espera a DOS formas: la etiqueta exacta y su
     # grupo `<etiqueta>-*`. Sin el, la barrera globea TODO el ledger — que es
@@ -283,10 +331,16 @@ cmd_wait() {
     # propios hijos y publica «sin trabajos registrados» saliendo 0 — el mismo
     # verde falso que el parrafo de arriba describe, por otra via. El glob
     # tiene que conocer el saneo que su propio escritor aplica.
-    local timeout=1800 pattern="$DEFAULT_PATTERN" only=""
+    # `--heartbeat N`: cada N segundos, mientras quede alguno vivo, una linea
+    # por STDERR con cuantos asentaron y cuales faltan. 0 lo apaga. Existe
+    # porque el bucle era mudo: `wait | tail` pasaba minutos sin salida y quien
+    # miraba no separaba «espera un trabajo vivo» de «esta atascado». Va por
+    # STDERR para no tocar el veredicto de STDOUT que otros ya leen.
+    local timeout=1800 pattern="$DEFAULT_PATTERN" only="" heartbeat=30
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --timeout) timeout="${2:?--timeout exige segundos}"; shift 2 ;;
+            --heartbeat) heartbeat="${2:?--heartbeat exige segundos}"; shift 2 ;;
             --pattern)  pattern="${2:?--pattern exige una expresión}"; shift 2 ;;
             --only)     only="${2:?--only exige una etiqueta}"; shift 2 ;;
             *) echo "argumento no reconocido: $1" >&2; exit 64 ;;
@@ -307,10 +361,15 @@ cmd_wait() {
     fi
 
     local started_at; started_at=$(date +%s)
+    local last_beat=$started_at
     local -A settled_as=()
     local total=${#jobs[@]}
 
     while true; do
+        # La cadena se mueve aquí: un dependiente cuyo predecesor asentó se
+        # lanza (o se cancela) sin que nadie corra `dispatch` a mano. Sus
+        # líneas van a stderr; stdout queda para el veredicto.
+        cmd_dispatch 2>&1 | gawk '/LANZADO|CANCELADO|SIN-PREDECESOR/' >&2
         local settled=0
         for f in "${jobs[@]}"; do
             local label; label=$(basename "$f" .job)
@@ -318,6 +377,11 @@ cmd_wait() {
                 (( settled++ )); continue
             fi
             [[ -f "$f" ]] || { settled_as[$label]=OLVIDADO; (( settled++ )); continue; }
+            if grep -q '^cancelled=' "$f"; then
+                settled_as[$label]=CANCELADO; (( settled++ ))
+                echo "asentado: $label -> CANCELADO ($settled de $total)" >&2
+                continue
+            fi
             local log pid ps0 v
             log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
             mk=$(sed -n 's/^marker=//p' "$f")
@@ -326,10 +390,25 @@ cmd_wait() {
             if [[ "$v" != ESPERANDO ]]; then
                 settled_as[$label]="$v"
                 (( settled++ ))
+                echo "asentado: $label -> $v ($settled de $total)" >&2
             fi
         done
 
         (( settled == total )) && break
+
+        local now; now=$(date +%s)
+        if (( heartbeat > 0 && now - last_beat >= heartbeat )); then
+            local alive=()
+            for f in "${jobs[@]}"; do
+                local e; e=$(basename "$f" .job)
+                [[ -n "${settled_as[$e]:-}" ]] || alive+=("$e")
+            done
+            echo "esperando: $settled de $total asentados, $((now - started_at))s; vivos: ${alive[*]}" >&2
+            local alive_jobs=()
+            for e in "${alive[@]}"; do alive_jobs+=("$LEDGER/$e.job"); done
+            probe_jobs "${alive_jobs[@]}"
+            last_beat=$now
+        fi
 
         if (( $(date +%s) - started_at >= timeout )); then
             echo "TIMEOUT — ${timeout}s con $((total - settled)) de $total trabajos sin asentar."
@@ -344,12 +423,26 @@ cmd_wait() {
     done
 
     # Todos asentados: publicar el veredicto por trabajo y retirarlos.
-    local had_bail=0
+    local had_bail=0 nonzero=()
     echo "== $total trabajos asentados =="
     for f in "${jobs[@]}"; do
-        local label log; label=$(basename "$f" .job)
+        local label log mk code; label=$(basename "$f" .job)
         log=$(sed -n 's/^log=//p' "$f" 2>/dev/null)
-        printf '%-6s %s\n' "${settled_as[$label]}" "$label"
+        # `OK` significa «asentado con marcador», no «pasó»: la salida que el
+        # marcador declara va en la misma línea, para que leer sólo la
+        # cabecera no esconda un `EXIT=1`. Un BAIL no tiene marcador y no se
+        # le inventa salida.
+        code=""
+        if [[ "${settled_as[$label]}" == OK ]]; then
+            mk=$(sed -n 's/^marker=//p' "$f" 2>/dev/null)
+            code=$(grep -E "${mk:-$pattern}" "$log" 2>/dev/null | tail -1 | grep -oE '[0-9]+' | tail -1)
+        fi
+        if [[ -n "$code" ]]; then
+            printf '%-6s %s exit=%s\n' "${settled_as[$label]}" "$label" "$code"
+            [[ "$code" == 0 ]] || nonzero+=("$label")
+        else
+            printf '%-6s %s\n' "${settled_as[$label]}" "$label"
+        fi
         # La cola se imprime SIEMPRE, no sólo en BAIL. Recoger un trabajo es
         # leer su resultado; un `OK` a secas deja el turno sin la única cifra
         # por la que se esperó — que es literalmente lo que pasó en
@@ -360,8 +453,17 @@ cmd_wait() {
         fi
         tail -10 "$log" 2>/dev/null | sed 's/^/       | /'
         [[ -s "$log" ]] || echo "       | (vacío — no emitió nada)"
+        # La memoria pico que el lanzador midio con GNU Time, junto al
+        # veredicto: es la cifra con la que se fija `--memfree`, y sin
+        # publicarla aqui nadie la lee. Sin `.time` no se dice nada — el
+        # lanzador ya declaro al lanzar que no media.
+        if [[ -s "$log.time" ]]; then
+            gawk 'NF && $1 ~ /^[0-9]+$/ { m = $1; w = $2 }
+                  END { if (m != "") printf "       memoria pico: %d KB (%.0f MB) · pared %ss\n", m, m / 1024, w }' "$log.time"
+        fi
         rm -f "$f"
     done
+    (( ${#nonzero[@]} == 0 )) || echo "salida distinta de 0: ${#nonzero[@]} (${nonzero[*]})"
     return $(( had_bail ? 2 : 0 ))
 }
 
@@ -516,9 +618,10 @@ class() {
 #   ESPERANDO lo deja como está — todavía no se sabe
 #
 # Es idempotente: un dependiente ya lanzado pierde su `after_ok=`, así que un
-# segundo `dispatch` no lo relanza. Y lo llaman `wait`, `status` y `pending`,
-# de modo que la cadena avanza con cualquier interacción, sin daemon y sin que
-# nadie tenga que quedarse esperando.
+# segundo `dispatch` no lo relanza. Lo llama `wait` en cada vuelta, de modo que
+# la cadena avanza mientras se espera, sin daemon. (Este comentario decía que
+# también `status` y `pending`, y ninguno de los tres lo llamaba: el cierre del
+# paso 161 esperó un `dispatch` a mano.)
 #
 # CANCELADO no es un estado silencioso a propósito: el trabajo se queda en el
 # ledger con `cancelled=` para que `status` lo muestre, y `pending` NO lo
@@ -548,6 +651,14 @@ cmd_dispatch() {
         plog=$(sed -n 's/^log=//p' "$pf");  ppid=$(sed -n 's/^pid=//p' "$pf")
         pps=$(sed -n 's/^proc_start=//p' "$pf"); pmk=$(sed -n 's/^marker=//p' "$pf")
         v=$(verdict "$plog" "$ppid" "$pattern" "$pps" "$pmk")
+        # El marcador dice «termino»; afterok exige «termino con 0». Se lee el
+        # codigo de la ultima linea del marcador — el de `bg.sh` y el `EXIT=`
+        # propio acaban en el numero — y uno distinto de 0 cancela.
+        local pcode=""
+        if [[ "$v" == OK ]]; then
+            pcode=$(grep -E "${pmk:-$pattern}" "$plog" 2>/dev/null | tail -1 | grep -oE "[0-9]+$")
+            [[ -n "$pcode" && "$pcode" != 0 ]] && v=BAIL
+        fi
         case "$v" in
             OK)
                 run=$(sed -n 's/^run=//p' "$f")
@@ -580,7 +691,11 @@ cmd_dispatch() {
                 grep -v '^after_ok=\|^run=' "$f" > "$tmp"
                 printf 'cancelled=%s\n' "$after_ok" >> "$tmp"
                 mv -f "$tmp" "$f"
-                echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                if [[ -n "$pcode" && "$pcode" != 0 ]]; then
+                    echo "  CANCELADO $label — su predecesor '$after_ok' asentó con código $pcode, no 0; no se lanza"
+                else
+                    echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                fi
                 cancelados=$((cancelados + 1))
                 ;;
             *)
@@ -906,6 +1021,7 @@ case "${1:-}" in
     wait|esperar)        shift; cmd_wait "$@" ;;
     pending|pendientes)  shift; cmd_pending "$@" ;;
     status|estado)       shift; cmd_status "$@" ;;
+    probe|sondear)       shift; cmd_probe "$@" ;;
     continue|continuar)  shift; cmd_continue "$@" ;;
     kill|matar)          shift; cmd_kill "$@" ;;
     forget|olvidar)      shift; cmd_forget "$@" ;;

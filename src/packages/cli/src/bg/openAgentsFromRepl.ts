@@ -9,7 +9,7 @@
  *   3. dispatch a daemon-managed PTY worker (fire-and-forget) for the job
  *   4. mark hasUsedAgentsFleet (keeps the footer hint sticky)
  *   5. in-process: unmount the REPL Ink root, focus the new row via
- *      CLAUDE_AGENTS_SELECT, and hand control to the FleetView mount loop
+ *      THYROX_AGENTS_SELECT, and hand control to the FleetView mount loop
  *
  * The unmount (step 5) → FleetView createRoot is exactly the
  * mount→unmount→remount stdin cycle that broke the original port; the
@@ -19,7 +19,7 @@
  * Divergence from ant: rather than re-implementing ant `l14`'s bespoke
  * createRoot loop, ccb reuses `agentsFleetHandler` — the same self-contained
  * FleetView mount loop that backs `ccb agents` (spare pool + dispatch +
- * attach already wired). CLAUDE_AGENTS_SELECT seeds the focused row.
+ * attach already wired). THYROX_AGENTS_SELECT seeds the focused row.
  */
 import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
@@ -60,9 +60,9 @@ export async function openAgentsFromReplLeftArrow(
   // Guard against fork-bomb: a bg/worker session must NEVER background itself
   // into another fleet job. Only a foreground interactive REPL opens agents.
   if (
-    process.env.CLAUDE_CODE_SESSION_KIND === 'bg' ||
+    process.env.THYROX_CODE_SESSION_KIND === 'bg' ||
     process.env.CCB_FLEET_ATTACH_CHILD === '1' ||
-    process.env.CLAUDE_BG_SOURCE !== undefined
+    process.env.THYROX_BG_SOURCE !== undefined
   ) {
     return undefined
   }
@@ -209,7 +209,7 @@ export async function openAgentsFromReplLeftArrow(
   }
 
   await new Promise<void>(resolve => setImmediate(resolve))
-  process.env.CLAUDE_AGENTS_SELECT = short
+  process.env.THYROX_AGENTS_SELECT = short
 
   const { agentsFleetHandler } = await import('../handlers/agentsFleet.js')
   await agentsFleetHandler()

@@ -1,6 +1,3 @@
-// Adaptación de @claude-code-how-works/app-host: src/host.ts.
-// Capa 0 (sin cita a paquete hermano) — porte verbatim, sin divergencias.
-
 import type {
   HostFactory,
   InteractiveHost,

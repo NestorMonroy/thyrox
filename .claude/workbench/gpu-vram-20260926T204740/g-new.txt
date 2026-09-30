@@ -1,0 +1,15 @@
+FREE_QUERY = ["--query-gpu=index,memory.free", "--format=csv,noheader,nounits"]
+
+
+def free_vram_mib(nvidia_smi: str = "nvidia-smi") -> int | None:
+    """La VRAM libre de la GPU con MÁS espacio: un ítem corre en una GPU y no
+    se reparte, así que la suma entre GPUs prometería un sitio que no existe.
+    ``None`` sin ``nvidia-smi``."""
+    try:
+        rows = _query(nvidia_smi, FREE_QUERY)
+    except GpuUnavailable:
+        return None
+    return max((int(float(mib)) for _index, mib, *_ in rows), default=None)
+
+
+def available(nvidia_smi: str = "nvidia-smi") -> bool:

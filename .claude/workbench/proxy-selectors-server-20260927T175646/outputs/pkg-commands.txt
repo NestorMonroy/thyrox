@@ -1,0 +1,9 @@
+cd /home/user/thyrox/src/packages/bridge && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-bridge.log 2>&1
+cd /home/user/thyrox/src/packages/mcp-runtime && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-mcp-runtime.log 2>&1
+cd /home/user/thyrox/src/packages/cli && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-cli.log 2>&1
+cd /home/user/thyrox/src/packages/repl && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-repl.log 2>&1
+cd /home/user/thyrox/src/packages/tool-registry && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-tool-registry.log 2>&1
+cd /home/user/thyrox/src/packages/agent && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-agent.log 2>&1
+cd /home/user/thyrox/src/packages/provider && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-provider.log 2>&1
+cd /home/user/thyrox/src/packages/memory && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-memory.log 2>&1
+cd /home/user/thyrox && timeout 900 bunx tsc --noEmit -p tsconfig.json > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/tsc.log 2>&1

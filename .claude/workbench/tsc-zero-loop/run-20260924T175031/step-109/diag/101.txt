@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/processUserInput/processUserInput.ts(561,9): error TS18046: 'm' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:551-571 ---
+    551      )
+    552      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    553    }
+    554  
+    555    // Log agent mention queries for analysis
+    556    if (inputString !== null && mode === 'prompt') {
+    557      const trimmedInput = inputString.trim()
+    558  
+    559      const agentMention = attachmentMessages.find(
+    560        (m): m is AttachmentMessage<AgentMentionAttachment> =>
+    561>         m.attachment.type === 'agent_mention',
+    562      )
+    563  
+    564      if (agentMention) {
+    565        const agentMentionString = `@agent-${agentMention.attachment.agentType}`
+    566        const isSubagentOnly = trimmedInput === agentMentionString
+    567        const isPrefix =
+    568          trimmedInput.startsWith(agentMentionString) && !isSubagentOnly
+    569  
+    570        // Log whenever users use @agent-<name> syntax
+    571        logEvent('tengu_subagent_at_mention', {

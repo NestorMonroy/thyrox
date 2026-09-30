@@ -20,6 +20,11 @@
  */
 import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
+import { lazySchema } from '../internal/lazySchema.ts'
+import { SandboxSettingsSchema } from './schemas/sandbox.ts'
+import { MarketplaceSourceSchema } from './schemas/marketplace.js'
+import { DynamicWorkflowSizeSchema } from './dynamicWorkflowSize.js'
+import { AskUserQuestionTimeoutSchema } from './askUserQuestionTimeout.js'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -112,15 +117,27 @@ export const HooksSchema = z.object(
 export const DecisionSchema = z.enum(['allow', 'ask', 'deny'])
 
 /**
- * Los cinco modos que el protocolo conoce, declarados AQUÍ y no importados.
+ * Los modos que el esquema de settings admite en `defaultMode`, declarados
+ * AQUÍ y no importados.
  *
  * Es lo que hace `ccnmt: packages/config/settings/types.ts:8`, y por la misma
  * razón: `@thyrox/permission` es quien los define de verdad, pero importarlos
  * pondría a `config` a depender de `permission`, que ya depende de `config`.
- * Duplicar cinco literales cuesta menos que un ciclo entre paquetes.
+ * Duplicar seis literales cuesta menos que un ciclo entre paquetes.
+ *
+ * 2.1.281 incluye `auto` sin condición (`GN`, `chunk-b93xrf5w.js`): un
+ * archivo de settings puede declararlo aunque el modo no esté activo en esta
+ * build, y quien lo lee decide si lo respeta (`settings.ts`, la guarda de
+ * `defaultMode: 'auto'` no confiable). Antes la lista era la de
+ * `EXTERNAL_PERMISSION_MODES` y un archivo con `auto` no validaba.
+ *
+ * pendiente: `...Or(e)` — los modos que aporta cada proveedor registrado
+ * (`Ft[s].permissionModes`). Este árbol no tiene ese registro de
+ * proveedores; se completa cuando exista.
  */
-const EXTERNAL_PERMISSION_MODES = [
+const SETTINGS_PERMISSION_MODES = [
   'acceptEdits',
+  'auto',
   'bypassPermissions',
   'default',
   'dontAsk',
@@ -147,11 +164,11 @@ const EXTERNAL_PERMISSION_MODES = [
  * `'manual'` se preprocesa a `'default'` porque es su alias histórico y sigue
  * apareciendo en archivos escritos por versiones anteriores.
  */
-export const PermissionsSchema = z.object({
+export const PermissionsSchema = lazySchema(() => z.object({
   defaultMode: z
     .preprocess(
       value => (value === 'manual' ? 'default' : value),
-      z.enum(EXTERNAL_PERMISSION_MODES).optional(),
+      z.enum(SETTINGS_PERMISSION_MODES).optional(),
     )
     .optional(),
   read: DecisionSchema.optional(),
@@ -161,31 +178,33 @@ export const PermissionsSchema = z.object({
   allow: z.array(z.string()).optional(),
   deny: z.array(z.string()).optional(),
   ask: z.array(z.string()).optional(),
-})
+}))
 
 /** Un número en un `.env` es un número en JSON; el proceso sólo entiende cadenas. */
-export const EnvironmentVariablesSchema = z.record(
+export const EnvironmentVariablesSchema = lazySchema(() => z.record(
   z.string(),
   z.union([z.string(), z.number(), z.boolean()]).transform((v) => String(v)),
-)
+))
 
-export const SettingsSchema = z
+export const SettingsSchema = lazySchema(() => z
   .object({
     $schema: z.string().optional(),
     model: IDENTIFICADOR_DE_MODELO.optional(),
     advisorModel: IDENTIFICADOR_DE_MODELO.optional(),
+    /** Mensajes entrantes de otras sesiones: `accept` los entrega, `hold` los retiene para revisarlos, `refuse` los rechaza. Un valor inválido cuenta como ausente. */
+    crossSessionInbound: z.enum(['accept', 'hold', 'refuse']).optional().catch(undefined),
     effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).optional(),
     cacheTtl: z.enum(['5m', '1h']).optional(),
     maxTurns: z.number().int().positive().optional(),
     system: z.string().optional(),
-    permissions: PermissionsSchema.optional(),
+    permissions: PermissionsSchema().optional(),
     hooks: HooksSchema.optional(),
-    env: EnvironmentVariablesSchema.optional(),
+    env: EnvironmentVariablesSchema().optional(),
     transcriptDir: z.string().optional(),
     disableAllHooks: z.boolean().optional(),
     // El cliente las declara para PONER el remolque de autoría; aquí existen
     // para poder apagarlo, que es lo que `git-author-identity.md` manda:
-    // ni `Co-Authored-By: Claude …` ni `Claude-Session:` en ningún mensaje.
+    // ni `Co-Authored-By: thyrox …` ni `Claude-Session:` en ningún mensaje.
     // Por eso `includeCoAuthoredBy` sólo admite `false`: aceptar `true`
     // permitiría escribir en un archivo lo que la regla prohíbe.
     includeCoAuthoredBy: z.literal(false).optional(),
@@ -200,12 +219,25 @@ export const SettingsSchema = z
     respectGitignore: z.boolean().optional(),
     claudeMdExcludes: z.array(z.string()).optional(),
     cleanupPeriodDays: z.number().nonnegative().optional(),
-    fileSuggestion: z.unknown().optional(),
-    dynamicWorkflowSize: z.unknown().optional(),
-    askUserQuestionTimeout: z.number().positive().optional(),
+    fileSuggestion: z
+        .object({
+          type: z.literal('command'),
+          command: z.string(),
+        })
+        .optional()
+        .describe('Custom file suggestion configuration for @ mentions'),
+    dynamicWorkflowSize: DynamicWorkflowSizeSchema,
+    askUserQuestionTimeout: AskUserQuestionTimeoutSchema,
     modelType: z.string().optional(),
     availableModels: z.array(z.string()).optional(),
-    modelOverrides: z.record(z.string(), z.unknown()).optional(),
+    modelOverrides: z
+        .record(z.string(), z.string())
+        .optional()
+        .describe(
+          'Override mapping from Anthropic model ID (e.g. "claude-opus-4-6") to provider-specific ' +
+            'model ID (e.g. a Bedrock inference profile ARN). Typically set in managed settings by ' +
+            'enterprise administrators.',
+        ),
     apiKeyHelper: z.string().optional(),
     defaultShell: z.string().optional(),
     allowManagedHooksOnly: z.boolean().optional(),
@@ -217,14 +249,89 @@ export const SettingsSchema = z
     enableAllProjectMcpServers: z.boolean().optional(),
     enabledMcpjsonServers: z.array(z.string()).optional(),
     disabledMcpjsonServers: z.array(z.string()).optional(),
-    allowedMcpServers: z.array(z.unknown()).optional(),
-    deniedMcpServers: z.array(z.unknown()).optional(),
-    enabledPlugins: z.record(z.string(), z.unknown()).optional(),
-    pluginConfigs: z.record(z.string(), z.unknown()).optional(),
+    allowedMcpServers: z
+        .array(AllowedMcpServerEntrySchema())
+        .optional()
+        .describe(
+          'Enterprise allowlist of MCP servers that can be used. ' +
+            'Applies to all scopes including enterprise servers from managed-mcp.json. ' +
+            'If undefined, all servers are allowed. If empty array, no servers are allowed. ' +
+            'Denylist takes precedence - if a server is on both lists, it is denied.',
+        ),
+    deniedMcpServers: z
+        .array(DeniedMcpServerEntrySchema())
+        .optional()
+        .describe(
+          'Enterprise denylist of MCP servers that are explicitly blocked. ' +
+            'If a server is on the denylist, it will be blocked across all scopes including enterprise. ' +
+            'Denylist takes precedence over allowlist - if a server is on both lists, it is denied.',
+        ),
+    enabledPlugins: z
+        .record(
+          z.string(),
+          z.union([z.array(z.string()), z.boolean(), z.undefined()]),
+        )
+        .optional()
+        .describe(
+          'Enabled plugins using plugin-id@marketplace-id format. Example: { "formatter@anthropic-tools": true }. Also supports extended format with version constraints.',
+        ),
+    pluginConfigs: z
+        .record(
+          z.string(),
+          z.object({
+            mcpServers: z
+              .record(
+                z.string(),
+                z.record(
+                  z.string(),
+                  z.union([
+                    z.string(),
+                    z.number(),
+                    z.boolean(),
+                    z.array(z.string()),
+                  ]),
+                ),
+              )
+              .optional()
+              .describe(
+                'User configuration values for MCP servers keyed by server name',
+              ),
+            options: z
+              .record(
+                z.string(),
+                z.union([
+                  z.string(),
+                  z.number(),
+                  z.boolean(),
+                  z.array(z.string()),
+                ]),
+              )
+              .optional()
+              .describe(
+                'Non-sensitive option values from plugin manifest userConfig, keyed by option name. Sensitive values go to secure storage instead.',
+              ),
+          }),
+        )
+        .optional()
+        .describe(
+          'Per-plugin configuration including MCP server user configs, keyed by plugin ID (plugin@marketplace format)',
+        ),
     worktree: z.object({ symlinkDirectories: z.array(z.string()).optional(), sparsePaths: z.array(z.string()).optional() }).optional(),
     plansDirectory: z.string().optional(),
-    sandbox: z.unknown().optional(),
-    statusLine: z.object({ type: z.literal('command'), command: z.string() }).optional(),
+    // El sub-esquema de sandbox ya portado; con `unknown` cada lector de
+    // `settings.sandbox` veía `{}` y no podía leer ninguna de sus claves.
+    sandbox: SandboxSettingsSchema().optional(),
+    // 2.1.282: un `refreshInterval` inválido se descarta (`.catch`) en vez de
+    // invalidar el archivo de settings entero.
+    statusLine: z.object({
+      type: z.literal('command'),
+      command: z.string(),
+      padding: z.number().optional(),
+      refreshInterval: z.number().min(1).optional().catch(undefined)
+        .describe('Re-run the status line command every N seconds in addition to event-driven updates'),
+      hideVimModeIndicator: z.boolean().optional()
+        .describe('Hide the built-in `-- INSERT --` / `-- VISUAL --` indicator below the prompt. Use this when your status line script renders `vim.mode` itself.'),
+    }).optional(),
     outputStyle: z.string().optional(),
     /**
      * Selección de pruebas por impacto (T-051). **No la trae el cliente**: es
@@ -247,10 +354,34 @@ export const SettingsSchema = z
     }).optional(),
     viewMode: z.string().optional(),
     language: z.string().optional(),
-    tui: z.unknown().optional(),
+    tui: z
+        .enum(['default', 'fullscreen'])
+        .optional()
+        .describe(
+          'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting THYROX_CODE_NO_FLICKER, but persistent across sessions.',
+        ),
     spinnerTipsEnabled: z.boolean().optional(),
-    spinnerVerbs: z.array(z.string()).optional(),
-    spinnerTipsOverride: z.unknown().optional(),
+    // Forma de 2.1.281: `append` añade los verbos a los de fábrica y
+    // `replace` usa sólo los propios. Era `string[]`, que no es lo que el
+    // binario acepta ni lo que `getSpinnerVerbs` lee.
+    spinnerVerbs: z
+      .object({
+        mode: z.enum(['append', 'replace']),
+        verbs: z.array(z.string()),
+      })
+      .optional()
+      .describe(
+        'Customize spinner verbs. mode: "append" adds verbs to defaults, "replace" uses only your verbs.',
+      ),
+    spinnerTipsOverride: z
+        .object({
+          excludeDefault: z.boolean().optional(),
+          tips: z.array(z.string()),
+        })
+        .optional()
+        .describe(
+          'Override spinner tips. tips: array of tip strings. excludeDefault: if true, only show custom tips (default: false).',
+        ),
     syntaxHighlightingDisabled: z.boolean().optional(),
     terminalTitleFromRename: z.boolean().optional(),
     prefersReducedMotion: z.boolean().optional(),
@@ -263,11 +394,27 @@ export const SettingsSchema = z
       .optional()
       .catch(undefined),
     showThinkingSummaries: z.boolean().optional(),
-    fastMode: z.unknown().optional(),
+    // Esquemas de 2.1.275: el canal de auto-actualización y la versión
+    // mínima que fija, y la vista por defecto del transcript.
+    autoUpdatesChannel: z.enum(['latest', 'stable', 'rc']).optional(),
+    minimumVersion: z.string().optional(),
+    defaultView: z.enum(['chat', 'transcript']).optional(),
+    fastMode: z
+        .boolean()
+        .optional()
+        .describe(
+          'When true, fast mode is enabled. When absent or false, fast mode is off.',
+        ),
     fastModePerSessionOptIn: z.boolean().optional(),
     promptSuggestionEnabled: z.boolean().optional(),
     showClearContextOnPlanAccept: z.boolean().optional(),
-    agent: z.unknown().optional(),
+    agent: z
+        .string()
+        .optional()
+        .describe(
+          'Name of an agent (built-in or custom) to use for the main thread. ' +
+            "Applies the agent's system prompt, tool restrictions, and model.",
+        ),
     autoMemoryEnabled: z.boolean().optional(),
     autoMemoryDirectory: z.string().optional(),
     autoDreamEnabled: z.boolean().optional(),
@@ -276,10 +423,10 @@ export const SettingsSchema = z
     disableAutoMode: z.boolean().optional(),
     wslInheritsWindowsSettings: z.boolean().optional(),
   })
-  .passthrough()
+  .passthrough())
 
-export type Settings = z.infer<typeof SettingsSchema>
-export type Permissions = z.infer<typeof PermissionsSchema>
+export type Settings = z.infer<ReturnType<typeof SettingsSchema>>
+export type Permissions = z.infer<ReturnType<typeof PermissionsSchema>>
 export type HookEvent = (typeof HOOK_EVENTS)[number]
 
 /**
@@ -316,3 +463,44 @@ export type PluginHookMatcher = {
   /** Formato `nombrePlugin@nombreMarketplace`. */
   pluginId: string
 }
+
+/**
+ * Un matcher de hook aportado por un skill — `ccnmt: packages/config/
+ * settings/types.ts:1140`. Lo distingue de un matcher de plugin la presencia
+ * de `skillRoot` en vez de `pluginRoot`/`pluginId`; `hooks.ts` los discrimina
+ * por esa clave al ejecutar.
+ */
+export type SkillHookMatcher = {
+  matcher?: string
+  hooks: HookCommand[]
+  skillRoot: string
+  skillName: string
+}
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { HookCommand } from './schemas/hooks.js'
+
+/**
+ * Schema for extra marketplaces defined in repository settings
+ * Same as KnownMarketplace but without lastUpdated (which is managed automatically)
+ */
+export const ExtraKnownMarketplaceSchema = lazySchema(() =>
+  z.object({
+    source: MarketplaceSourceSchema().describe(
+      'Where to fetch the marketplace from',
+    ),
+    installLocation: z
+      .string()
+      .optional()
+      .describe(
+        'Local cache path where marketplace manifest is stored (auto-generated if not provided)',
+      ),
+    autoUpdate: z
+      .boolean()
+      .optional()
+      .describe(
+        'Whether to automatically update this marketplace and its installed plugins on startup',
+      ),
+  }),
+)

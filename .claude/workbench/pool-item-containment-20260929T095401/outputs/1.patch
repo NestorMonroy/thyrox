@@ -1,0 +1,901 @@
+diff --git a/.claude/cache/test-item-containment/24969/w1.log b/.claude/cache/test-item-containment/24969/w1.log
+new file mode 100644
+index 00000000..5fbd8613
+--- /dev/null
++++ b/.claude/cache/test-item-containment/24969/w1.log
+@@ -0,0 +1,93 @@
++1790678527.693861209
++1790678527.898508240
++1790678528.102633820
++1790678528.306693434
++1790678528.511331083
++1790678528.715436978
++1790678528.919851374
++1790678529.124638298
++1790678529.329556658
++1790678529.536598606
++1790678529.741654250
++1790678529.947640533
++1790678530.153222298
++1790678530.357960701
++1790678530.564343186
++1790678530.770591210
++1790678530.975456144
++1790678531.179502079
++1790678531.388482662
++1790678531.597172220
++1790678531.808521154
++1790678532.019106191
++1790678532.224913067
++1790678532.429419471
++1790678532.642542570
++1790678532.848030960
++1790678533.053641821
++1790678533.258014661
++1790678533.463777041
++1790678533.669451024
++1790678533.874208527
++1790678534.080671609
++1790678534.285284472
++1790678534.490798191
++1790678534.696022954
++1790678534.901012870
++1790678535.106331399
++1790678535.314449025
++1790678535.520663001
++1790678535.726090636
++1790678535.933739923
++1790678536.141592082
++1790678536.346169499
++1790678536.551616492
++1790678536.756819318
++1790678536.965463901
++1790678537.171306222
++1790678537.380707154
++1790678537.586953860
++1790678537.791929497
++1790678538.002921519
++1790678538.208335608
++1790678538.413202419
++1790678538.618833262
++1790678538.823448306
++1790678539.032937058
++1790678539.241503188
++1790678539.446742368
++1790678539.651612775
++1790678539.856755000
++1790678540.062107732
++1790678540.267833487
++1790678540.474251306
++1790678540.688381173
++1790678540.900355265
++1790678541.106245661
++1790678541.318505547
++1790678541.547748726
++1790678541.752296644
++1790678541.959360203
++1790678542.166215766
++1790678542.371224408
++1790678542.577173693
++1790678542.782110724
++1790678542.986878244
++1790678543.191214222
++1790678543.396223273
++1790678543.600951186
++1790678543.809536708
++1790678544.014260439
++1790678544.219112034
++1790678544.423678615
++1790678544.628401428
++1790678544.838720367
++1790678545.044878393
++1790678545.250317589
++1790678545.454702676
++1790678545.658785916
++1790678545.863035993
++1790678546.068675545
++1790678546.273685764
++1790678546.479166800
++1790678546.685320416
+diff --git a/.claude/cache/test-item-containment/24969/w2.log b/.claude/cache/test-item-containment/24969/w2.log
+new file mode 100644
+index 00000000..998a436a
+--- /dev/null
++++ b/.claude/cache/test-item-containment/24969/w2.log
+@@ -0,0 +1,93 @@
++1790678527.692210388
++1790678527.897406260
++1790678528.101565107
++1790678528.305779905
++1790678528.514611277
++1790678528.718922073
++1790678528.927429587
++1790678529.132292971
++1790678529.336746234
++1790678529.541098266
++1790678529.745911652
++1790678529.951413655
++1790678530.157810170
++1790678530.362863513
++1790678530.566881751
++1790678530.771012125
++1790678530.976006821
++1790678531.180120200
++1790678531.388951633
++1790678531.596602031
++1790678531.805825731
++1790678532.011767394
++1790678532.217093736
++1790678532.421697000
++1790678532.625999201
++1790678532.831388628
++1790678533.036581987
++1790678533.240847395
++1790678533.445355397
++1790678533.650394185
++1790678533.857674148
++1790678534.062701452
++1790678534.268435596
++1790678534.475287017
++1790678534.680158774
++1790678534.889893282
++1790678535.098087848
++1790678535.305302278
++1790678535.512767183
++1790678535.718595618
++1790678535.925581053
++1790678536.133177519
++1790678536.339214883
++1790678536.544472866
++1790678536.754000301
++1790678536.960295650
++1790678537.164923199
++1790678537.373464332
++1790678537.577469419
++1790678537.782014888
++1790678537.990811810
++1790678538.201403035
++1790678538.407427393
++1790678538.614828229
++1790678538.823222920
++1790678539.030397124
++1790678539.239232157
++1790678539.445991065
++1790678539.651722682
++1790678539.858949225
++1790678540.063710504
++1790678540.268949486
++1790678540.482041596
++1790678540.697362119
++1790678540.913391058
++1790678541.125191746
++1790678541.341205834
++1790678541.548106171
++1790678541.753191524
++1790678541.958572007
++1790678542.164359127
++1790678542.369484265
++1790678542.576758110
++1790678542.781877611
++1790678542.986495992
++1790678543.191502500
++1790678543.396944083
++1790678543.603959804
++1790678543.809305711
++1790678544.014406517
++1790678544.219008406
++1790678544.423275801
++1790678544.627994204
++1790678544.838803306
++1790678545.043592102
++1790678545.247924317
++1790678545.452490558
++1790678545.658284556
++1790678545.863457233
++1790678546.068247181
++1790678546.275869249
++1790678546.480624027
++1790678546.685114839
+diff --git a/.claude/cache/test-item-containment/24969/w3.log b/.claude/cache/test-item-containment/24969/w3.log
+new file mode 100644
+index 00000000..cc1fe1a1
+--- /dev/null
++++ b/.claude/cache/test-item-containment/24969/w3.log
+@@ -0,0 +1,94 @@
++1790678527.535667198
++1790678527.741647879
++1790678527.946382141
++1790678528.150998729
++1790678528.355586466
++1790678528.559866429
++1790678528.764336404
++1790678528.968987359
++1790678529.174692767
++1790678529.381015962
++1790678529.588397774
++1790678529.793646729
++1790678529.999295973
++1790678530.204889429
++1790678530.411386813
++1790678530.616485241
++1790678530.822412438
++1790678531.027324786
++1790678531.231204693
++1790678531.444006009
++1790678531.652895305
++1790678531.860755592
++1790678532.067946753
++1790678532.273124663
++1790678532.477822002
++1790678532.684770245
++1790678532.891039993
++1790678533.096901162
++1790678533.302305029
++1790678533.510383783
++1790678533.718111151
++1790678533.928299882
++1790678534.134455629
++1790678534.340103360
++1790678534.545289055
++1790678534.749315172
++1790678534.954604467
++1790678535.161356732
++1790678535.367293360
++1790678535.573168497
++1790678535.778475168
++1790678535.982795369
++1790678536.188476250
++1790678536.393905430
++1790678536.600434179
++1790678536.805146191
++1790678537.013196501
++1790678537.219209623
++1790678537.423866427
++1790678537.628847238
++1790678537.835945955
++1790678538.040297251
++1790678538.246554890
++1790678538.456319754
++1790678538.663154704
++1790678538.872081968
++1790678539.077267372
++1790678539.281954934
++1790678539.492877499
++1790678539.697600960
++1790678539.903303971
++1790678540.108663222
++1790678540.315389110
++1790678540.520998945
++1790678540.731465718
++1790678540.947709819
++1790678541.168434474
++1790678541.380527818
++1790678541.586168633
++1790678541.791203770
++1790678542.011702770
++1790678542.217443837
++1790678542.422945701
++1790678542.628668726
++1790678542.833658267
++1790678543.038140500
++1790678543.245619255
++1790678543.451253284
++1790678543.656087601
++1790678543.860191380
++1790678544.064611961
++1790678544.269562754
++1790678544.473841567
++1790678544.678679988
++1790678544.883436832
++1790678545.088761288
++1790678545.294458943
++1790678545.500252789
++1790678545.705954940
++1790678545.911899179
++1790678546.117546436
++1790678546.323234820
++1790678546.529022330
++1790678546.734471756
+diff --git a/.claude/cache/test-item-containment/24969/w4.log b/.claude/cache/test-item-containment/24969/w4.log
+new file mode 100644
+index 00000000..e410e06e
+--- /dev/null
++++ b/.claude/cache/test-item-containment/24969/w4.log
+@@ -0,0 +1,93 @@
++1790678527.643845652
++1790678527.849097646
++1790678528.053615746
++1790678528.258624825
++1790678528.463612526
++1790678528.668841157
++1790678528.873672099
++1790678529.078099710
++1790678529.283176694
++1790678529.488791495
++1790678529.693590763
++1790678529.898884808
++1790678530.105214493
++1790678530.309714354
++1790678530.514287825
++1790678530.719205505
++1790678530.924393505
++1790678531.128722325
++1790678531.334431207
++1790678531.540944343
++1790678531.752605225
++1790678531.962375557
++1790678532.167628327
++1790678532.372709880
++1790678532.579655383
++1790678532.786124583
++1790678532.991565040
++1790678533.196593111
++1790678533.401809155
++1790678533.607193865
++1790678533.815742523
++1790678534.021097809
++1790678534.229487618
++1790678534.437126888
++1790678534.645841882
++1790678534.851442045
++1790678535.056642746
++1790678535.266971679
++1790678535.472329477
++1790678535.678155829
++1790678535.886261398
++1790678536.092341871
++1790678536.299630534
++1790678536.505678707
++1790678536.711293807
++1790678536.916218040
++1790678537.121961173
++1790678537.326998062
++1790678537.533917970
++1790678537.738401014
++1790678537.943113666
++1790678538.149219402
++1790678538.361457356
++1790678538.566241204
++1790678538.771275410
++1790678538.978857937
++1790678539.187455095
++1790678539.398858858
++1790678539.603761820
++1790678539.808743781
++1790678540.014896619
++1790678540.219009258
++1790678540.424710238
++1790678540.634074871
++1790678540.840861717
++1790678541.046024781
++1790678541.253998016
++1790678541.460773304
++1790678541.665530490
++1790678541.872363855
++1790678542.079186504
++1790678542.284291196
++1790678542.491144248
++1790678542.697324071
++1790678542.902070897
++1790678543.106814571
++1790678543.311363270
++1790678543.516242654
++1790678543.721116897
++1790678543.926740653
++1790678544.131519927
++1790678544.336799188
++1790678544.546637132
++1790678544.751958837
++1790678544.957312848
++1790678545.162257624
++1790678545.367345954
++1790678545.572912790
++1790678545.778815386
++1790678545.984451022
++1790678546.189191251
++1790678546.393254938
++1790678546.598435304
+diff --git a/.env.example b/.env.example
+index 0645d253..3284054e 100644
+--- a/.env.example
++++ b/.env.example
+@@ -312,6 +312,13 @@ THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=
+ # cada Write y Edit del ítem (`src/session/item_worktree.sh`).
+ THYROX_POOL_WORKTREES_DIR=
+ 
++# La raíz de la contención de cada ítem de headless-pool (`item_containment.sh`):
++# un cgroup v1 del controlador `pids` bajo esta ruta si el anfitrión lo
++# permite, o su respaldo por árbol de procesos si no. Se hereda en cada fork,
++# incluido un `setsid` —lo que un kill por grupo de proceso no alcanza
++# (H-THYROX-255)—. Default: `/sys/fs/cgroup/pids/thyrox-pool`.
++THYROX_POOL_CGROUP_ROOT=
++
+ # El TTL de la caché de prompt, en el orden de `QCt` del ejecutable 2.1.282
+ # (`src/packages/agent/promptCacheTtl.ts`): forzar 5m gana a todo; luego la
+ # variable del origen —la conversación principal y los `-p` leen la primera,
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index 3c14b2a3..784947d8 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -345,6 +345,11 @@ done
+ # Parallel no tenga que citar el prompt: recibe numero e item como argumentos.
+ _headless_item() {
+     local n="$1" item="$2"
++    # El cgroup (o directorio de respaldo) de este ítem: se crea aquí, fuera
++    # de la subshell que lo usa, para que exista antes de que ésta intente
++    # entrar en él.
++    local containment_name="$HP_RUN_ID-$n"
++    bash "$HP_ITEM_CONTAINMENT" create "$containment_name" >/dev/null 2>&1
+     # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
+     # GPU (`parallel` 20231122, líneas 4113-4118: no arranca si no hay sitio).
+     # La VRAM libre cambia mientras los items arrancan: se mira por item, justo
+@@ -384,6 +389,11 @@ _headless_item() {
+     fi
+     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
+       | (cd "$workdir" || exit 1
++         # Entra al cgroup del ítem con el pid de ESTA subshell ($BASHPID, no
++         # $$: dentro de una subshell $$ sigue dando el pid del padre). En
++         # modo árbol no hace nada; el respaldo de ese modo es el `setsid` de
++         # más abajo, no esta línea.
++         bash "$HP_ITEM_CONTAINMENT" enter "$containment_name" "$BASHPID" 2>/dev/null
+          # Un item aislado hereda THYROX_ROOT del arbol principal (lo exporta
+          # bin/cli y el runner lo necesita para su node_modules), y con el
+          # los trabajos que lance, su ledger y su archivo caerian en el arbol
+@@ -417,8 +427,17 @@ _headless_item() {
+          # `-q`: sin el, GNU Time antepone «Command exited with non-zero status
+          # N» a la medida del item que falla, y un consumidor que lee la
+          # primera palabra (`ai-course-notes: translation_loop.py`) revienta.
++         # `setsid` hace que ESTA invocación quede en su propia sesión y
++         # grupo de proceso —la subshell se sustituye a sí misma por ella,
++         # sin fork adicional— y `timeout --foreground` deja que el runner
++         # HEREDE ese grupo en vez de crear el suyo propio (H-THYROX-255: sin
++         # `--foreground`, `timeout` reagrupa a su hijo, y un kill por grupo
++         # de esta subshell ya no lo alcanza). Es el respaldo del modo árbol:
++         # un descendiente que no llama `setsid` queda en este mismo grupo
++         # aunque se reparente a init; uno que sí lo llama, se escapa —la
++         # ceguera declarada de `item_containment.sh`—.
+          ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
+-         timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
++         setsid timeout --foreground "$HP_TIMEOUT" "$HP_RUNNER" -p \
+             --model "$HP_MODEL" --setting-sources project \
+             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
+             ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} --no-session-persistence "${session_args[@]}" \
+@@ -437,6 +456,14 @@ _headless_item() {
+     local rc=$?
+     [[ -z "$monitor" ]] || wait "$monitor"
+     [[ -z "$HP_VRAM_NEED" ]] || bash "$HP_GPU" release --ledger "$HP_VRAM_LEDGER" --owner "$owner"
++    # Se drena ANTES de publicar nada: es la corrección de H-THYROX-257, donde
++    # una suite desprendida con `setsid` siguió escribiendo 4-5 s DESPUÉS de
++    # `<n>.verdict`. `drain` no distingue por qué terminó `$pid` —éxito,
++    # fallo o timeout—; limpia siempre lo que haya quedado.
++    bash "$HP_ITEM_CONTAINMENT" drain "$containment_name" "$pid" \
++        > "$HP_OUT/$n.drain.log" 2>&1 \
++        || echo "contención: sobrevivió algo del ítem $n, ver $n.drain.log" >&2
++    bash "$HP_ITEM_CONTAINMENT" remove "$containment_name" 2>/dev/null
+     [[ "$HP_ISOLATION" != worktree ]] || bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_OUT" "$n" "$rc" "$HP_VERIFY"
+     # El .json de siempre es la linea `result` del stream: sus consumidores
+     # no cambian. El stream se queda porque es lo unico que trae el uso de
+@@ -456,6 +483,38 @@ export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
+ export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
+ export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
+ export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
++# La contención de cada ítem (`item_containment.sh`): un cgroup v1 si el
++# anfitrión lo permite, o su respaldo por árbol de procesos si no —H-THYROX-257
++# midió una suite lanzada con `setsid` escribiendo después de `<n>.verdict`, y
++# H-THYROX-255 que `timeout` crea su propio grupo de proceso, así que un kill
++# por grupo del ítem no lo alcanza—. El nombre de cada ítem se ancla al hash de
++# HP_OUT, como en `item_worktree.sh` `run_dir`: dos ejecuciones concurrentes
++# con salidas distintas no comparten cgroup. La detección es una sonda
++# desechable (create + remove) porque cada ítem crea y retira el suyo.
++export HP_ITEM_CONTAINMENT="${HEADLESS_POOL_ITEM_CONTAINMENT:-$HP_HERE/item_containment.sh}"
++HP_RUN_ID="$(printf '%s' "$HP_OUT" | sha1sum | cut -c1-12)"
++HP_CONTAIN_MODE="$(bash "$HP_ITEM_CONTAINMENT" create "$HP_RUN_ID-probe" 2>/dev/null)"
++bash "$HP_ITEM_CONTAINMENT" remove "$HP_RUN_ID-probe" 2>/dev/null
++echo "contención: ${HP_CONTAIN_MODE:-tree}"
++export HP_RUN_ID
++# Si el pool recibe TERM/INT a mitad de ejecución, se drena cada ítem antes
++# de salir: un abandono en silencio deja vivo lo que el ítem desprendió.
++_headless_pool_drain_all() {
++    # Se mata Parallel primero: deja de repartir ítems nuevos y les propaga
++    # la señal a los que ya corren. Drenar por NOMBRE sólo lo que `list`
++    # confirma que existe de verdad —nunca por número asumido— es lo que
++    # evita el fallback a árbol con "$$" (el propio pool) como raíz cuando el
++    # cgroup de un ítem ya se retiró: esa raíz es demasiado ancha, porque el
++    # grupo de proceso de "$$" puede ser el de toda una sesión.
++    [[ -z "${HP_PARALLEL_PID:-}" ]] || kill -TERM "$HP_PARALLEL_PID" 2>/dev/null
++    local name
++    while IFS= read -r name; do
++        [[ -n "$name" ]] || continue
++        bash "$HP_ITEM_CONTAINMENT" drain "$name" "$$" 0 2>/dev/null
++        bash "$HP_ITEM_CONTAINMENT" remove "$name" 2>/dev/null
++    done < <(bash "$HP_ITEM_CONTAINMENT" list "$HP_RUN_ID-" 2>/dev/null)
++}
++trap '_headless_pool_drain_all; exit 143' TERM INT
+ # El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
+ # y mientras alguno viva, el barrido de huérfanos de una sesión nueva no toca
+ # estos worktrees.
+@@ -487,8 +546,13 @@ if [[ -n "$MEMFREE_SPEC" ]]; then
+     echo "memfree: $MEMFREE_SPEC ($MEMFREE_WHY)"
+ fi
+ 
++# En segundo plano y con `wait`, no en primer plano bloqueante: así el trap
++# de TERM/INT de arriba conoce el pid de Parallel y puede terminarlo si el
++# pool recibe la señal a mitad de una tanda.
+ "$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$OUT/joblog.tsv" \
+-    _headless_item '{1}' '{2}' :::: "$OUT/index.tsv" >/dev/null 2>&1
++    _headless_item '{1}' '{2}' :::: "$OUT/index.tsv" >/dev/null 2>&1 &
++HP_PARALLEL_PID=$!
++wait "$HP_PARALLEL_PID"
+ 
+ # El veredicto sale del joblog (columna Exitval), emparejado con el indice por
+ # numero: no depende del orden en que terminaron. El total sale del índice: un
+@@ -519,4 +583,8 @@ fi
+ # `.time` y `record` no escribe fila: una medida ausente no es un cero.
+ [[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$RUNNER_BIN" --item-model "$MODEL" --template "$PROMPT" >/dev/null
+ [[ -n "$HP_TIME" ]] || echo "memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)"
++# Barrido final: un ítem que rehusó antes de llegar a su propio `drain`
++# (p. ej. sin sitio de VRAM) deja creado su cgroup sin drenar ni retirar.
++_headless_pool_drain_all
++trap - TERM INT
+ exit $STATUS
+diff --git a/src/session/item_containment.sh b/src/session/item_containment.sh
+new file mode 100755
+index 00000000..ba002831
+--- /dev/null
++++ b/src/session/item_containment.sh
+@@ -0,0 +1,145 @@
++#!/usr/bin/env bash
++# @description Contención de procesos de un ítem de headless-pool: intenta un
++# cgroup v1 (controlador `pids`) que se hereda en cada fork —incluido un
++# `setsid`— y, si el anfitrión no lo permite, cae a un respaldo por ÁRBOL de
++# procesos (pgrep -P recursivo más el grupo de proceso de la raíz) que es
++# CIEGO a un proceso que se desprende con `setsid` y queda huérfano de init:
++# ese proceso deja de tener padre dentro del árbol y su grupo, si además el
++# anfitrión (Requisito por defecto) no lo autoreagrupó, no coincide con el de
++# la raíz. El modo se decide por FILESYSTEM, no por un flag guardado: cada
++# subcomando comprueba si `cgroup.procs` existe bajo el nombre dado, así que
++# `create`, `enter`, `drain` y `remove` no pueden desincronizarse entre sí.
++#
++# Uso:
++#   item_containment.sh create <nombre>              -> imprime cgroup|tree
++#   item_containment.sh enter  <nombre> <pid>         -> mete pid (no-op en tree)
++#   item_containment.sh drain  <nombre> <pid-raiz> [gracia_s]
++#   item_containment.sh remove <nombre>
++#
++# `drain` manda TERM a lo vivo, espera la gracia (2 s por defecto), manda
++# KILL a lo que quede y repite el ciclo hasta que no quede nada o se agoten
++# los reintentos. Sale 0 si al final no queda nada vivo, 3 si algo sobrevive
++# —lo nombra por stderr—.
++set -uo pipefail
++
++CGROUP_ROOT="${THYROX_POOL_CGROUP_ROOT:-/sys/fs/cgroup/pids/thyrox-pool}"
++MAX_ROUNDS=5
++
++cgroup_dir() { printf '%s/%s\n' "$CGROUP_ROOT" "$1"; }
++
++# `cgroup.procs` sólo lista procesos VIVOS de esta cgroup concreta: el kernel
++# los retira en su propio `exit`. Su existencia (no su contenido) es lo que
++# distingue un cgroup real de un directorio de respaldo.
++is_cgroup_dir() { [[ -e "$1/cgroup.procs" ]]; }
++
++# Los nombres de cgroups REALMENTE existentes bajo un prefijo. Sólo tiene
++# sentido en modo cgroup —en árbol no hay rastro en el filesystem—, y por eso
++# es lo único seguro para un barrido masivo: recorrer sólo lo que de verdad
++# está ahí evita el fallback a árbol con una raíz demasiado ancha (el propio
++# proceso que llama, cuyo grupo puede ser el de una sesión entera).
++list() {
++    local prefix="$1" dir
++    [[ -d "$CGROUP_ROOT" ]] || return 0
++    for dir in "$CGROUP_ROOT/$prefix"*; do
++        [[ -e "$dir/cgroup.procs" ]] || continue
++        printf '%s\n' "${dir##*/}"
++    done
++}
++
++create() {
++    local name="$1" dir
++    dir="$(cgroup_dir "$name")"
++    if mkdir -p "$dir" 2>/dev/null && is_cgroup_dir "$dir"; then
++        echo cgroup
++    else
++        rmdir "$dir" 2>/dev/null
++        echo tree
++    fi
++}
++
++enter() {
++    local name="$1" pid="$2" dir
++    dir="$(cgroup_dir "$name")"
++    if is_cgroup_dir "$dir"; then
++        printf '%s\n' "$pid" > "$dir/cgroup.procs" 2>/dev/null
++    fi
++    return 0
++}
++
++remove() {
++    local name="$1" dir
++    dir="$(cgroup_dir "$1")"
++    rmdir "$dir" 2>/dev/null
++    return 0
++}
++
++send_signal() {
++    local sig="$1" pid
++    shift
++    for pid in "$@"; do
++        kill -"$sig" "$pid" 2>/dev/null
++    done
++}
++
++cgroup_alive_pids() { cat "$1/cgroup.procs" 2>/dev/null; }
++
++# El árbol de pid-raiz por descendencia PADRE-HIJO (pgrep -P, recursivo) más
++# el grupo de proceso cuyo id es el propio pid-raiz. Este segundo componente
++# es el que de verdad carga el peso: para cuando `drain` corre, pid-raiz
++# suele ya haber salido (se le hizo `wait`), así que la descendencia por
++# `ppid` casi siempre está vacía —cada hijo huérfano se re-parenta a init
++# antes de que este guion pueda leerlo—. Lo que sigue siendo válido es el
++# GRUPO: si nadie llamó `setsid`, el hijo hereda el mismo pgid, y un pgid
++# sigue siendo un blanco válido de `kill` aunque su líder original ya haya
++# muerto. Un proceso que sí llamó `setsid` escapa de ese grupo —la ceguera
++# declarada del modo árbol—.
++recursive_descendants() {
++    local pid="$1" kid
++    for kid in $(pgrep -P "$pid" 2>/dev/null); do
++        printf '%s\n' "$kid"
++        recursive_descendants "$kid"
++    done
++}
++
++tree_alive_pids() {
++    local root="$1"
++    {
++        kill -0 "$root" 2>/dev/null && printf '%s\n' "$root"
++        recursive_descendants "$root"
++        pgrep -g "$root" 2>/dev/null
++    } | sort -n -u
++}
++
++drain() {
++    local name="$1" pid_root="$2" gracia="${3:-2}" dir round pids
++    dir="$(cgroup_dir "$name")"
++    local -a listar
++    if is_cgroup_dir "$dir"; then
++        listar=(cgroup_alive_pids "$dir")
++    else
++        listar=(tree_alive_pids "$pid_root")
++    fi
++    for round in $(seq 1 "$MAX_ROUNDS"); do
++        pids="$("${listar[@]}")"
++        [[ -z "$pids" ]] && return 0
++        send_signal TERM $pids
++        sleep "$gracia"
++        pids="$("${listar[@]}")"
++        [[ -z "$pids" ]] && return 0
++        send_signal KILL $pids
++        sleep 0.2
++    done
++    pids="$("${listar[@]}")"
++    [[ -z "$pids" ]] && return 0
++    echo "item_containment: sobrevive(n) tras drenar $name: $(printf '%s' "$pids" | tr '\n' ' ')" >&2
++    return 3
++}
++
++case "${1:-}" in
++    create) shift; create "$@" ;;
++    enter) shift; enter "$@" ;;
++    drain) shift; drain "$@" ;;
++    remove) shift; remove "$@" ;;
++    list) shift; list "$@" ;;
++    *) echo "item_containment: uso: create|enter|drain|remove|list …" >&2; exit 2 ;;
++esac
+diff --git a/src/session/item_worktree.sh b/src/session/item_worktree.sh
+index 157dfb22..dffd3462 100755
+--- a/src/session/item_worktree.sh
++++ b/src/session/item_worktree.sh
+@@ -23,6 +23,13 @@ set -uo pipefail
+ # rechaza cada Write y Edit del ítem sin poder pedir permiso.
+ DEFAULT_WORKTREES_SUBDIR=".thyrox/pool-worktrees"
+ 
++# La contención de procesos del `--verify` (`item_containment.sh`): reusa el
++# camino ya resuelto por `headless-pool.sh` cuando lo hereda (HP_ITEM_CONTAINMENT
++# viaja en el entorno del ítem aislado), y si no —como en la suite propia de
++# este archivo, que llama a `finalize` directamente— resuelve su propio
++# hermano de archivo.
++ITEM_CONTAINMENT_BIN="${HP_ITEM_CONTAINMENT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/item_containment.sh}"
++
+ worktrees_root() {
+     local repo="$1" top
+     if [[ -n "${THYROX_POOL_WORKTREES_DIR:-}" ]]; then
+@@ -234,7 +241,35 @@ finalize() {
+     # resuelve su codigo por THYROX_ROOT (p. ej. `paths/reach.py`) carga la
+     # copia del arbol principal y el verify mide una mezcla de los dos
+     # arboles en vez del worktree solo.
+-    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
++    # El verify corre en su propio cgroup (o respaldo por árbol) y se drena
++    # ANTES de que `finalize` publique el veredicto: lo que desprenda —igual
++    # que el ítem mismo— no debe seguir vivo cuando alguien lea `<n>.verdict`.
++    # `drain` corre AQUÍ, con la subshell todavía viva ($BASHPID), así que en
++    # modo árbol el `pgrep -P` recursivo encuentra a sus hijos por la cadena
++    # padre-hijo real, sin necesitar el truco del grupo de proceso que sí
++    # hace falta para el ítem (drenado después de que su subshell ya salió).
++    elif (
++        cd "$dir" || exit 1
++        verify_name="$(printf '%s' "$out" | sha1sum | cut -c1-12)-$n-verify"
++        bash "$ITEM_CONTAINMENT_BIN" create "$verify_name" >/dev/null 2>&1
++        # El verify corre en SU PROPIA subshell, que entra al cgroup SOBRE SÍ
++        # MISMA ($BASHPID) antes de exec-arse en el verify: si en cambio
++        # entrara la subshell que orquesta esto (la de más arriba), ésa
++        # seguiría viva cuando `drain` lea `cgroup.procs` más abajo y se
++        # mataría a sí misma antes de llegar a `exit "$vrc"` — el defecto
++        # medido al escribir esta línea.
++        (
++            export THYROX_ROOT="$dir" PYTHONPATH="$dir/src"
++            bash "$ITEM_CONTAINMENT_BIN" enter "$verify_name" "$BASHPID" 2>/dev/null
++            exec bash -c "$verify"
++        ) &
++        vpid=$!
++        wait "$vpid"
++        vrc=$?
++        bash "$ITEM_CONTAINMENT_BIN" drain "$verify_name" "$vpid" >/dev/null 2>&1
++        bash "$ITEM_CONTAINMENT_BIN" remove "$verify_name" 2>/dev/null
++        exit "$vrc"
++    ) > "$out/$n.verify.log" 2>&1; then
+         verdict=verificado
+     else
+         verdict=rechazado
+diff --git a/tests/session/test-item-containment.sh b/tests/session/test-item-containment.sh
+new file mode 100755
+index 00000000..bdb651de
+--- /dev/null
++++ b/tests/session/test-item-containment.sh
+@@ -0,0 +1,149 @@
++#!/usr/bin/env bash
++# Suite de la contención de procesos de cada ítem de headless-pool
++# (item_containment.sh + su cableado en headless-pool.sh e item_worktree.sh).
++# Mide el defecto de H-THYROX-257 —una suite lanzada con `thyrox-bg` (que se
++# desprende con `setsid`) siguió escribiendo 4-5 s DESPUÉS de que el pool
++# publicara `<n>.verdict`— y de H-THYROX-255 —`timeout` crea su propio grupo
++# de proceso, así que un kill por grupo del ítem no lo alcanza—.
++set -uo pipefail
++RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
++POOL="${HEADLESS_POOL_MODULE:-$RAIZ/src/session/headless-pool.sh}"
++CONTAINMENT="${ITEM_CONTAINMENT_MODULE:-$RAIZ/src/session/item_containment.sh}"
++export HEADLESS_POOL_ITEM_CONTAINMENT="$CONTAINMENT"
++
++failures=0; total=0
++check() {
++    local label="$1" obtained="$2" expected="$3"
++    total=$((total + 1))
++    if [[ "$obtained" == "$expected" ]]; then echo "  ok    $label"
++    else echo "  FALLA $label: esperado «$expected», obtenido «$obtained»"; failures=$((failures + 1)); fi
++}
++
++F="$RAIZ/.claude/cache/test-item-containment/$$"
++mkdir -p "$F"
++# Los worktrees no pueden colgar de `.claude/` (el runner trataría la ruta
++# como sensible), como en test-headless-pool-worktree.sh.
++mkdir -p "$HOME/.cache"
++THYROX_POOL_WORKTREES_DIR="$(mktemp -d "$HOME/.cache/thyrox-containment-test.XXXXXX")"
++export THYROX_POOL_WORKTREES_DIR
++trap 'git -C "$F/repo" worktree prune 2>/dev/null; rm -rf "${F:?}" "${THYROX_POOL_WORKTREES_DIR:?}"; rmdir "$RAIZ/.claude/cache/test-item-containment" 2>/dev/null || true' EXIT
++
++# El escritor: se desprende de su padre (o no, según lo lance el doble) y
++# añade una línea a su archivo cada 0,2 s, sin límite — sobrevive hasta que
++# algo lo mate. Nunca sale solo, para que la medición sea "algo lo detuvo",
++# no "terminó por su cuenta".
++cat > "$F/writer.sh" <<'SH2'
++#!/usr/bin/env bash
++log="$1"
++while true; do printf '%s\n' "$(date +%s.%N)" >> "$log"; sleep 0.2; done
++SH2
++chmod +x "$F/writer.sh"
++
++# El doble del ejecutor: la última línea del prompt es «Item: <modo> <ruta>
++# [duracion_s]». `setsid` desprende al escritor de su sesión (el defecto de
++# H-THYROX-257); `plano` lo deja en la misma sesión/grupo (para medir que el
++# modo árbol SÍ lo alcanza cuando no hay cgroup). `duracion_s`, si se da,
++# hace que el propio runner —y por tanto el `timeout` que lo envuelve— sigan
++# vivos ese rato, para poder interrumpir al pool a mitad de un ítem.
++cat > "$F/runner" <<SH2
++#!/usr/bin/env bash
++entrada="\$(cat)"
++read -r _ modo ruta dur <<< "\$(printf '%s\n' "\$entrada" | tail -1)"
++touch marker.txt
++case "\$modo" in
++  setsid) setsid "$F/writer.sh" "\$ruta" & ;;
++  plano)  "$F/writer.sh" "\$ruta" & ;;
++esac
++[[ -n "\${dur:-}" ]] && sleep "\$dur"
++jq -cn '{type:"result",result:"hecho"}'
++SH2
++chmod +x "$F/runner"
++export HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-time"
++printf 'Lanza.\n' > "$F/prompt.md"
++
++git init -q "$F/repo" && git -C "$F/repo" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base
++pool() { (cd "$F/repo" && bash "$POOL" --prompt "$F/prompt.md" --model claude-sonnet-5 "$@" 2>&1); }
++
++# El escritor sigue vivo por su propio pid, no por nombre: dos ítems pueden
++# compartir el mismo binario `writer.sh` con rutas distintas.
++escritor_vivo() { pgrep -f "writer\.sh $1" 2>/dev/null | wc -l | tr -d ' '; }
++
++echo "caso 1 (a,b) — el escritor desprendido con setsid no sobrevive al pool, y deja de escribir tras el veredicto"
++OUT1="$F/out1"; LOG1="$F/w1.log"; rm -f "$LOG1"
++SALIDA1="$(printf 'setsid %s\n' "$LOG1" \
++    | HEADLESS_POOL_HISTORY_DIR="$F/hist1" pool --out "$OUT1" --isolation worktree --verify true)"
++check "declara su mecanismo de contención" "$(printf '%s\n' "$SALIDA1" | grep -c '^contención: cgroup$')" "1"
++check "veredicto verificado" "$(cat "$OUT1/1.verdict" 2>/dev/null)" "verificado"
++check "(a) sin proceso vivo del escritor tras volver el pool" "$(escritor_vivo "$LOG1")" "0"
++lineas_al_volver="$(wc -l < "$LOG1" 2>/dev/null || echo 0)"
++sleep 1
++lineas_1s_despues="$(wc -l < "$LOG1" 2>/dev/null || echo 0)"
++check "(b) el archivo no crece 1 s después de existir <1.verdict>" "$lineas_1s_despues" "$lineas_al_volver"
++
++echo "caso 2 (c) — lo mismo cuando es el --verify quien lanza al escritor desprendido"
++OUT2="$F/out2"; LOG2="$F/w2.log"; rm -f "$LOG2"
++VERIFY2="setsid \"$F/writer.sh\" \"$LOG2\" & sleep 0.3; true"
++SALIDA2="$(printf 'ninguno x\n' \
++    | HEADLESS_POOL_HISTORY_DIR="$F/hist2" pool --out "$OUT2" --isolation worktree --verify "$VERIFY2")"
++check "veredicto verificado (verify lanzó y salió 0)" "$(cat "$OUT2/1.verdict" 2>/dev/null)" "verificado"
++check "(c) sin proceso vivo del escritor del verify" "$(escritor_vivo "$LOG2")" "0"
++lineas_al_volver2="$(wc -l < "$LOG2" 2>/dev/null || echo 0)"
++sleep 1
++lineas_1s_despues2="$(wc -l < "$LOG2" 2>/dev/null || echo 0)"
++check "(c) el archivo del verify no crece 1 s después del veredicto" "$lineas_1s_despues2" "$lineas_al_volver2"
++
++echo "caso 3 (e) — sin cgroup disponible, el pool cae a árbol y sigue funcionando; el escritor SIN setsid es alcanzable"
++OUT3="$F/out3"; LOG3="$F/w3.log"; rm -f "$LOG3"
++SALIDA3="$(printf 'plano %s\n' "$LOG3" \
++    | THYROX_POOL_CGROUP_ROOT="/dev/null/thyrox-pool-inexistente" \
++      HEADLESS_POOL_HISTORY_DIR="$F/hist3" pool --out "$OUT3" --isolation worktree --verify true)"
++check "declara modo árbol" "$(printf '%s\n' "$SALIDA3" | grep -c '^contención: tree$')" "1"
++check "aun así, el ítem se verifica" "$(cat "$OUT3/1.verdict" 2>/dev/null)" "verificado"
++check "(e) el árbol alcanza al escritor sin setsid" "$(escritor_vivo "$LOG3")" "0"
++
++echo "caso 4 (d) — un TERM al pool a media ejecución no deja vivo al escritor"
++OUT4="$F/out4"; LOG4="$F/w4.log"; rm -f "$LOG4"
++printf 'setsid %s 6\n' "$LOG4" > "$F/item4.txt"
++# Sin función ni pipe de por medio: un TERM a un pid que resulta ser un
++# ENVOLTORIO (una función, o un lado de una tubería) no llega al proceso real
++# de `headless-pool.sh` —medido: con `f() { (cd ..; bash ..); }; f &`, el pid
++# capturado por `$!` y el pid real que corre adentro NO coinciden—. Con un
++# único subshell explícito y sin tubería, la optimización de bash que
++# sustituye al último comando por `exec` los hace coincidir.
++# La redirección va FUERA del subshell, no pegada al comando de dentro: una
++# redirección propia sobre el último comando de un `(...)` le impide a bash
++# sustituirlo por `exec` — medido: con ella dentro, `$!` da el PADRE del
++# proceso real (`.claude/workbench/…`); fuera, coinciden.
++(cd "$F/repo" && HEADLESS_POOL_HISTORY_DIR="$F/hist4" bash "$POOL" --prompt "$F/prompt.md" \
++    --model claude-sonnet-5 --out "$OUT4" --width 1) < "$F/item4.txt" > "$F/pool4.out" 2>&1 &
++pool_pid=$!
++# Se espera a que el escritor exista de verdad antes de interrumpir — si se
++# manda el TERM demasiado pronto, el ítem podría no haber arrancado aún.
++for _ in $(seq 1 50); do [[ "$(escritor_vivo "$LOG4")" -gt 0 ]] && break; sleep 0.1; done
++check "el escritor arrancó antes de interrumpir" "$([[ "$(escritor_vivo "$LOG4")" -gt 0 ]] && echo si || echo no)" "si"
++kill -TERM "$pool_pid" 2>/dev/null
++for _ in $(seq 1 50); do kill -0 "$pool_pid" 2>/dev/null || break; sleep 0.1; done
++check "el pool termina tras el TERM" "$(kill -0 "$pool_pid" 2>/dev/null && echo vivo || echo muerto)" "muerto"
++sleep 0.5
++check "(d) sin escritor vivo tras interrumpir al pool" "$(escritor_vivo "$LOG4")" "0"
++
++echo "caso 5 (f) — drain sale 3 y nombra el pid cuando algo sobrevive"
++# El doblez: NO se usa un cgroup real ni un proceso genuinamente inmune a
++# KILL (SIGKILL no se puede bloquear). En su lugar, «cgroup.procs» es un
++# archivo PLANO bajo un THYROX_POOL_CGROUP_ROOT de prueba —no una interfaz
++# real del kernel—, así que nunca se vacía aunque el pid que nombra sí
++# muera de verdad al recibir la señal. Esto ejercita honestamente el ciclo
++# acotado y el reporte de sobreviviente de `drain`, sin depender de la
++# temporización de un proceso realmente irrematable.
++STUCK_ROOT="$F/stuck-cgroup-root"
++mkdir -p "$STUCK_ROOT/atascado"
++"$F/writer.sh" /dev/null & stuck_pid=$!
++printf '%s\n' "$stuck_pid" > "$STUCK_ROOT/atascado/cgroup.procs"
++SALIDA5="$(THYROX_POOL_CGROUP_ROOT="$STUCK_ROOT" bash "$CONTAINMENT" drain atascado "$stuck_pid" 0 2>&1)"; rc5=$?
++check "drain con un cgroup.procs que no se vacía: exit 3" "$rc5" "3"
++check "drain nombra el pid que sigue listado" "$(printf '%s\n' "$SALIDA5" | grep -c "$stuck_pid")" "1"
++kill -0 "$stuck_pid" 2>/dev/null && kill -KILL "$stuck_pid" 2>/dev/null
++wait "$stuck_pid" 2>/dev/null
++
++echo "test-item-containment: $total aserciones — $((total - failures)) ok, $failures falla(s)"
++[[ $failures -eq 0 ]]

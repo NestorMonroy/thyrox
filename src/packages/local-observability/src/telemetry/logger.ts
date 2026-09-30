@@ -1,10 +1,8 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/logger.ts`
- * (29 líneas fuente, 100 % portado). Adaptador `DiagLogger` de
- * OpenTelemetry — conecta las emisiones diagnósticas internas de OTel a
- * la superficie de error-log de local-observability. Única dependencia
- * externa: `@opentelemetry/api` (instalada como dependencia real de este
- * paquete).
+ * V7 §8.12 — telemetry/logger: OpenTelemetry `DiagLogger` adapter.
+ *
+ * Moved from src/utils/telemetry/logger.ts. Bridges OTel's internal
+ * diagnostic emissions into local-observability's error-log surface.
  */
 
 import type { DiagLogger } from '@opentelemetry/api'

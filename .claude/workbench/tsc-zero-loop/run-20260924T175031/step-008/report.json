@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3337, "total_final": 3331, "tsc_runs": 1, "accepted": ["agent:default-appstate"], "files_kept": ["src/packages/app-host/src/runtime/appStateCompatShim.ts"], "outcomes": {"agent:default-appstate": "accepted-net"}}

@@ -39,7 +39,6 @@ import {
   createPermissionContext,
   createPermissionQueueOps,
 } from '@thyrox/permission/toolPermission/PermissionContext.js'
-import { logPermissionDecision } from '@thyrox/permission/toolPermission/permissionLogging.js'
 
 export type CanUseToolFn<
   Input extends Record<string, unknown> = Record<string, unknown>,
@@ -147,16 +146,7 @@ function useCanUseTool(
             // Does not have permissions to use tool, check the behavior
             switch (result.behavior) {
               case 'deny': {
-                logPermissionDecision(
-                  {
-                    tool,
-                    input,
-                    toolUseContext,
-                    messageId: ctx.messageId,
-                    toolUseID,
-                  },
-                  { decision: 'reject', source: 'config' },
-                )
+                ctx.logDecision({ decision: 'reject', source: 'config' })
                 if (
                   feature('TRANSCRIPT_CLASSIFIER') &&
                   result.decisionReason?.type === 'classifier' &&

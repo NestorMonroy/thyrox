@@ -90,10 +90,17 @@ Python o con una herramienta dedicada vuelve por la puerta de atrás.
 defecto — `which parallel` falla. Ya existe su instalador idempotente,
 opt-in y con re-verificación del binario (no del exit code del `apt`):
 `src/lib/toolchain.sh::thyrox_toolchain_require_parallel` (`THYROX_INSTALL_PARALLEL=1`).
-Hoy **0 gates** lo invocan fuera de su propia suite
-(`tests/lib/test-toolchain-parallel.sh`) — el mecanismo de lotes de este
-árbol sigue siendo `src/session/run-task-pool.sh`
-(`trabajo-en-segundo-plano.md`), no `parallel`; instalarlo no lo reemplaza.
+`rsync` tampoco viene por defecto; su instalador, con el mismo contrato, es
+`thyrox_toolchain_require_rsync` (`THYROX_INSTALL_RSYNC=1`). La extensión
+pgvector del PostgreSQL local, lo mismo: `thyrox_toolchain_require_pgvector`
+(`THYROX_INSTALL_PGVECTOR=1`), que deriva el paquete de la versión mayor de
+`pg_config` y re-comprueba `vector.control`, no el exit de `apt`.
+El mecanismo de lotes de este árbol, `src/session/run-task-pool.sh`
+(`trabajo-en-segundo-plano.md`), **es** GNU Parallel: lo resuelve con ese
+instalador y rehúsa con exit 4 si falta. Parallel ejerce la anchura
+(`--jobs <archivo>`), la cota de memoria (`--limit`) y el drenaje (SIGHUP); el
+pool pone el marcador, el ledger y la barrera. Lo mismo `headless-pool` y
+`run_ts_isolated.sh`.
 
 | Necesidad | Idioma |
 |---|---|
@@ -103,6 +110,8 @@ Hoy **0 gates** lo invocan fuera de su propia suite
 | únicos por columna 2, primera ocurrencia | `awk '!arr[$2]++' archivo` |
 | suma / media de una columna | `awk '{s+=$1} END{print s}'` / `awk '{s+=$2} END{print s/NR}'` |
 | reemplazo global | `sed 's/foo/bar/g' archivo` |
+| reemplazar un texto FIJO en un archivo (con `$`, `{`, `\`, o varias líneas) | `OLD='<texto>' NEW='<texto>' bash bin/replace_literal [--all] archivo` |
+| …y el texto lleva comillas simples | escribirlo con `cat > old.txt <<'EOF'` y `bash bin/replace_literal --old-file old.txt --new-file new.txt archivo`: el heredoc no interpreta nada, y se quita sólo su salto final. Por variable, un `NEW='…'` con `'pid'` dentro pierde las comillas en el shell antes de llegar al guion (2026-09-26) |
 | recortar espacios al inicio/final | `sed 's/^[ \t]*//;s/[ \t]*$//' archivo` |
 | borrar líneas en blanco | `sed '/^$/d' archivo` |
 | líneas compartidas entre dos listados ya ordenados | `comm -12 a b` |
@@ -110,6 +119,90 @@ Hoy **0 gates** lo invocan fuera de su propia suite
 | aplicar un comando a cada resultado de `find`, N a la vez | `find . -name '*.log' \| xargs -P4 -I{} <comando> {}` |
 | muestreo aleatorio de N líneas | `shuf archivo \| head -n N` |
 | numerar líneas | `cat -n archivo` |
+| reemplazar dentro de un tramo de la línea (caracteres 5 a 14) | `gawk '{s=substr($0,5,10); gsub(/a/,"X",s); $0=substr($0,1,4) s substr($0,15); print}'` · sólo gawk: `gawk '{print substr($0,1,4) gensub(/a/,"X","g",substr($0,5,10)) substr($0,15)}'` · perl: `perl -pe 'substr($_,4,10) =~ s/a/X/g'` (perl cuenta desde 0; awk desde 1) |
+
+**`substr()` nunca es destino de `gsub`/`sub`, en ningún awk** (gawk, mawk,
+busybox). El tercer argumento tiene que ser asignable —una variable o un
+campo— y `substr()` devuelve una copia. No es un fallo de la versión instalada
+y no se arregla instalando otra: se extrae el tramo a una variable, se
+modifica y se vuelve a montar la línea (primera forma de la fila de arriba).
+Directiva del ejecutor 2026-09-25.
+
+Su gate es `src/hooks/detect_awk_substr_target.py`, detector de
+`tool_use_preflight.py`: avisa cuando un comando que invoca awk pasa
+`substr()` como tercer argumento de `gsub`/`sub`. Sus cuatro mitades de juicio
+—el ancla de awk, la exclusión del método `.sub`, y saltar cadenas y literales
+`/regex/` al separar argumentos— se probaron por anulación: retirada cada una
+cae exactamente su caso (`python3 tests/hooks/test_detect_awk_substr_target.py`).
+
+### gawk: `gensub` y `-i inplace`, y cuándo son la forma
+
+gawk es un awk con dos cosas propias. **`gensub`** no modifica nada: devuelve
+el texto cambiado, así que acepta un `substr()` directo y **reutiliza los
+grupos capturados**, cosa que `gsub` no hace. **`-i inplace`** edita el archivo
+en su lugar, con `-v inplace::suffix=.bak` si se quiere copia (en gawk antiguo,
+`-v INPLACE_SUFFIX=.bak`). Directiva del ejecutor 2026-09-25.
+
+| Necesidad | Idioma |
+|---|---|
+| reemplazo en toda la línea, devolviendo el texto | `gawk '{ print gensub(/viejo/, "nuevo", "g") }' archivo` |
+| sólo la segunda coincidencia | `gawk '{ print gensub(/a/, "X", 2) }' archivo` |
+| reutilizar lo encontrado (intercambiar dos palabras) | `gawk '{ print gensub(/(\w+) (\w+)/, "\\2 \\1", "g") }'` |
+| guardar en el mismo archivo | `gawk -i inplace '{ print gensub(/viejo/, "nuevo", "g") }' archivo` |
+| con copia del original | `gawk -i inplace -v inplace::suffix=.bak '{ … }' archivo` |
+
+**Los momentos en que es la forma**, cada uno medido en este contenedor
+(gawk 5.2.1):
+
+1. **Temporal y `mv` de vuelta** — `awk … f > f.tmp && mv f.tmp f` son dos
+   pasos y un temporal que queda si el primero falla: `gawk -i inplace`.
+2. **Grupos capturados en `gsub`/`sub`** — `gsub` no expande `\1`: sobre
+   «hola mundo», `gsub(/(\w+) (\w+)/, "\\2 \\1")` escribe `\2 \1` **y sale
+   0**. Es un resultado falso y silencioso; `gensub` da «mundo hola».
+3. **Una sustitución por línea en Python** — `read_text` → `re.sub` →
+   `write_text` es la puerta de atrás de esta regla: `gawk -i inplace` con
+   `gensub`. No aplica si la sustitución cruza líneas (`re.S`, `DOTALL`,
+   `\n` en el patrón): gawk lee por registro.
+4. **`-i inplace` en otro awk** — `mawk -i inplace` sale 2 («not an option:
+   -i»), y `awk` a secas resuelve a mawk en Debian (`detect_bare_awk`).
+
+**Y una trampa de `-i inplace`, medida el 2026-09-26:** lo que imprime el
+bloque `END` NO va al archivo sino a la salida estándar. Un `END { print "}" }`
+para cerrar un archivo lo deja sin cerrar, sin error. Lo que va al final se
+añade aparte (`printf … >> archivo`). La causa está en la fuente, no sólo en
+la conducta: `-i inplace` carga `/usr/share/awk/inplace.awk` (gawk 5.2.1)
+ANTES que el programa, y su propio `END` —líneas 64-67— llama a
+`inplace::end()`, que devuelve la salida a stdout. Los `END` corren en el
+orden del texto, así que el del módulo va primero.
+
+Su gate es `src/hooks/detect_gawk_opportunity.py`, detector de
+`tool_use_preflight.py`, con esos cuatro momentos. Sus seis mitades de
+juicio —el ancla de awk, que el `mv` vuelva a la entrada, la exclusión de
+`gensub`, exigir escritura, el descuento multilínea y la exclusión de gawk en
+`-i inplace`— se probaron por anulación: retirada cada una cae exactamente
+su gemelo inocente (`python3 tests/hooks/test_detect_gawk_opportunity.py`).
+Avisa, no bloquea.
+
+**Un texto fijo no se reemplaza con regex ni con Python.** `perl -i` y
+`sed -i` leen el texto como regex —`$`, `{` y `.` hay que escaparlos— y, con
+comillas anidadas dentro de un `bash -c` o un `eval`, el comando se rompe
+antes de ejecutarse: el 2026-09-25 un `perl -0 -i -pe 's{LEDGER="\$\{…'` murió
+con «syntax error» y se rehízo con un heredoc de Python, que es la otra forma
+cara. `bin/replace_literal` (`src/lib/replace_literal.sh`) usa gawk con
+`index()` —busca el texto literal— y `ENVIRON[...]` —entrega `OLD`/`NEW`
+intactos, sin procesar sus `\` como haría `-v`—; lee el archivo entero, así
+que `OLD` puede ocupar varias líneas; exige una sola coincidencia salvo
+`--all`, como `Edit`; y vuelca con `cat >`, que conserva inodo y permisos.
+Sale 0, 1 (0 o varias coincidencias, archivo intacto) o 2 (no pudo medir, sin
+conteo). Directiva del ejecutor 2026-09-25.
+
+Su gate es `src/hooks/detect_literal_replacement.py`, detector de
+`tool_use_preflight.py`: avisa cuando `perl -i`, `sed -i` o un heredoc de
+Python con `.replace(` y escritura reemplazan un texto fijo. Sus dos mitades de
+juicio —que el comando reescriba un archivo, y que el patrón no use
+construcciones de regex de verdad— se probaron por anulación
+(`python3 tests/hooks/test_detect_literal_replacement.py`;
+`bash tests/lib/test-replace-literal.sh`).
 
 No es la lista completa de POSIX — es la que cubre lo que hasta ahora tentaba
 a abrir Python para una tarea de una línea. Se amplía cuando aparezca un caso
@@ -118,7 +211,7 @@ nuevo, no por completitud.
 ## El gate — porque una regla sin script es prosa
 
 `src/hooks/detect_dedicated_tool_usage.py`, sexto detector de
-`pretooluse_dispatch.py`. Dispara sobre `Write`/`Edit`/`Read` cuando el
+`tool_use_preflight.py`. Dispara sobre `Write`/`Edit`/`Read` cuando el
 `file_path` no es binario/medio y el contenido no colisiona con el
 delimitador de heredoc, y sugiere el equivalente Bash exacto.
 
@@ -146,3 +239,50 @@ Origen: directiva del ejecutor 2026-09-12, tras confirmar que la regla
 llevaba dos meses sin script (ERR-063, 2026-09-09) y que su sucesor citado
 por ordinal (`#287`) había colisionado con otros dos sujetos en el store.
 Sucesor con cita durable: **TASK-THYROX-0016**.
+
+## Buscar y repetir: el índice de git y GNU Parallel
+
+Dos detectores de `tool_use_preflight.py` cubren los dos momentos en que el
+catálogo de arriba no bastaba para elegir bien:
+
+- **`detect_git_grep_opportunity`** — una pregunta de presencia va a
+  `git grep` sobre el índice, no a `grep -r` ni a `git log -S`. La medición
+  y el porqué están en `search-the-git-index.md`.
+- **`detect_parallel_opportunity`** — un `for`/`while read`/`xargs` que corre
+  un comando externo por elemento, con iteraciones independientes, va a
+  `bin/parallel_map '<comando> {}' ::: <ítems>` (o `:::: -` para leer stdin):
+  deriva la anchura, conserva el orden y exige la fuente declarada, porque el
+  stdin implícito de esta herramienta es un socket del anfitrión que no se
+  cierra. Episodio: un `git log --follow` por archivo sobre 97
+  archivos no terminó en 120 s en serie; con `parallel -j8 -k`, 3 min 38 s.
+  No avisa si el cuerpo escribe el índice de git (un único escritor), si
+  modifica en sitio un archivo que no depende de la variable del bucle (las
+  iteraciones quedan encadenadas), ni sobre un `xargs` sin `-n`/`-L`/`-I`,
+  que ya agrupa todos los argumentos en una sola invocación.
+
+```bash
+python3 tests/hooks/test_detect_git_grep_opportunity.py
+python3 tests/hooks/test_detect_parallel_opportunity.py
+```
+
+## Un paso con riesgo va en su propia llamada, y un borrado lleva guarda
+
+El chequeo de seguridad del cliente rehúsa un borrado cuyo destino empieza
+por una variable sin guarda: vacía, el destino cuelga de `/`. Rehúsa el
+**comando entero**, no el paso: en una llamada de quince pasos no corre
+ninguno y no queda salida que leer. Y lee también el cuerpo de un heredoc,
+porque puede volver a interpretarse como órdenes.
+
+- El destino de un borrado por variable se escribe `"${W:?}"/…`: si falta la
+  variable, el shell aborta en vez de borrar.
+- Un paso con riesgo —borrar, `git`, un servicio— va en una llamada propia,
+  para que un rechazo cueste ese paso y cada resultado se lea aparte.
+- Un archivo cuyo texto contiene un borrado por variable se escribe con
+  `Write`, no con un heredoc.
+
+Su gate es `src/hooks/detect_unguarded_removal.py`, detector de
+`tool_use_preflight.py`: avisa antes de enviar, con la forma con guarda y el
+número de pasos que se perderían. Sus cuatro mitades de juicio —la guarda
+`:?`, la cláusula de varios pasos, la lectura del heredoc y la posición de
+orden— se probaron por anulación: retirada cada una cae exactamente su caso
+(`uv run pytest tests/hooks/test_detect_unguarded_removal.py`).

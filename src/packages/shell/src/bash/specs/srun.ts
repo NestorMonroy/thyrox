@@ -1,33 +1,29 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/bash/specs/srun.ts` — spec Fig
- * del comando `srun` (ejecuta un comando en nodos de un clúster SLURM).
- */
 import type { CommandSpec } from '../registry.js'
 
 const srun: CommandSpec = {
   name: 'srun',
-  description: 'Ejecutar un comando en nodos de un clúster SLURM',
+  description: 'Run a command on SLURM cluster nodes',
   options: [
     {
       name: ['-n', '--ntasks'],
-      description: 'Número de tareas',
+      description: 'Number of tasks',
       args: {
         name: 'count',
-        description: 'Número de tareas a ejecutar',
+        description: 'Number of tasks to run',
       },
     },
     {
       name: ['-N', '--nodes'],
-      description: 'Número de nodos',
+      description: 'Number of nodes',
       args: {
         name: 'count',
-        description: 'Número de nodos a asignar',
+        description: 'Number of nodes to allocate',
       },
     },
   ],
   args: {
     name: 'command',
-    description: 'Comando a ejecutar en el clúster',
+    description: 'Command to run on the cluster',
     isCommand: true,
   },
 }

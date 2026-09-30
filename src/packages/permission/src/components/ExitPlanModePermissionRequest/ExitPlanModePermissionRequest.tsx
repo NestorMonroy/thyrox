@@ -30,7 +30,7 @@ import {
 import { generateSessionName } from '../../commands/rename/generateSessionName.js'
 import { launchUltraplan } from '@thyrox/repl/ultraplan.js'
 import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
-type AppState = Record<string, unknown>
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
 import type { AllowedPrompt } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
@@ -102,6 +102,7 @@ import type { PastedContent } from '@thyrox/config'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
 import { maybeResizeAndDownsampleImageBlock } from '@thyrox/storage/imageResizer.js'
 import { cacheImagePath, storeImage } from '@thyrox/tool-registry/imageStore.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type ResponseValue =
   | 'yes-bypass-permissions'
@@ -240,6 +241,20 @@ export function ExitPlanModePermissionRequest({
     ? !ultraplanSessionUrl && !ultraplanLaunching
     : false
   const usage = toolUseConfirm.assistantMessage.message.usage
+  const normalizedUsage =
+    typeof usage?.input_tokens === 'number'
+      ? {
+          input_tokens: usage.input_tokens,
+          cache_creation_input_tokens:
+            typeof usage.cache_creation_input_tokens === 'number'
+              ? usage.cache_creation_input_tokens
+              : undefined,
+          cache_read_input_tokens:
+            typeof usage.cache_read_input_tokens === 'number'
+              ? usage.cache_read_input_tokens
+              : undefined,
+        }
+      : undefined
   const { mode, isAutoModeAvailable, isBypassPermissionsModeAvailable } =
     toolPermissionContext
   const autoModeAvailableAndOptedIn =
@@ -252,7 +267,7 @@ export function ExitPlanModePermissionRequest({
         showClearContext,
         showUltraplan,
         usedPercent: showClearContext
-          ? getContextUsedPercent(usage, mode)
+          ? getContextUsedPercent(normalizedUsage, mode)
           : null,
         isAutoModeAvailable: autoModeAvailableAndOptedIn,
         isBypassPermissionsModeAvailable,
@@ -524,7 +539,7 @@ export function ExitPlanModePermissionRequest({
       // contexto y de la consulta nueva. Añadir la instrucción de
       // verificación si la funcionalidad está habilitada.
       // Eliminación de código muerto: en las builds externas
-      // CLAUDE_CODE_VERIFY_PLAN vale 'false', así que la comparación
+      // THYROX_CODE_VERIFY_PLAN vale 'false', así que la comparación
       // === 'true' le permite a Bun eliminar la cadena.
       const verificationInstruction =
         undefined === 'true'
@@ -846,7 +861,7 @@ export function ExitPlanModePermissionRequest({
         workerBadge={workerBadge}
       >
         <Box flexDirection="column" paddingX={1} marginTop={1}>
-          <Text>Claude wants to exit plan mode</Text>
+          <Text>{PRODUCT_NAME} wants to exit plan mode</Text>
           <Box marginTop={1}>
             <Select
               options={[
@@ -888,7 +903,7 @@ export function ExitPlanModePermissionRequest({
       >
         <Box flexDirection="column" marginTop={1}>
           <Box paddingX={1} flexDirection="column">
-            <Text>Here is Claude&apos;s plan:</Text>
+            <Text>Here is {PRODUCT_NAME}&apos;s plan:</Text>
           </Box>
           <Box
             borderColor="subtle"
@@ -923,7 +938,7 @@ export function ExitPlanModePermissionRequest({
             {!useStickyFooter && (
               <>
                 <Text dimColor>
-                  Claude has written up a plan and is ready to execute. Would
+                  {PRODUCT_NAME} has written up a plan and is ready to execute. Would
                   you like to proceed?
                 </Text>
                 <Box marginTop={1}>
@@ -1027,7 +1042,7 @@ export function buildPlanApprovalOptions({
 
   if (showUltraplan) {
     options.push({
-      label: 'No, refine with Ultraplan on Claude Code on the web',
+      label: `No, refine with Ultraplan on ${PRODUCT_NAME} on the web`,
       value: 'ultraplan',
     })
   }
@@ -1036,7 +1051,7 @@ export function buildPlanApprovalOptions({
     type: 'input',
     label: 'No, keep planning',
     value: 'no',
-    placeholder: 'Tell Claude what to change',
+    placeholder: `Tell ${PRODUCT_NAME} what to change`,
     description: 'shift+tab to approve with this feedback',
     onChange: onFeedbackChange,
   })

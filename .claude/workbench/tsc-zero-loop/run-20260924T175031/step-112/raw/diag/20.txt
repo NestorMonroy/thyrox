@@ -1,0 +1,2 @@
+src/packages/agent/QueryEngine.ts(1270,17): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(1270,42): error TS2339: Property 'type' does not exist on type '{}'.

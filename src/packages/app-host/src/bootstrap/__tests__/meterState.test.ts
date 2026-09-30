@@ -1,13 +1,10 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 // Characterization tests for Slice A (Telemetry).
 // Locks the current behavior of meter/counter state living in src/bootstrap/state.ts
-// so the upcoming migration to @claude-code-how-works/local-observability/meterState is
+// so the upcoming migration to @thyrox/local-observability/meterState is
 // behavior-preserving. Migrator-Alpha will update the import path after the move.
 //
 // Plan: TEAM_PLAN/mellow-booping-waffle.md §2.1 (Slice A) + §2.4 (assertions).
-//
-// Porte: ccnmt: packages/app-host/src/bootstrap/__tests__/meterState.test.ts
-// (verbatim en casos, datos y expectativas; ver cabecera de cobertura en
-// ../state.ts para qué slice de la fuente respalda este archivo).
 
 import { beforeEach, describe, expect, test } from "bun:test";
 import type { Attributes, Meter, MetricOptions } from "@opentelemetry/api";
@@ -152,7 +149,7 @@ describe("meterState — counter snapshot (setMeter factory calls)", () => {
       },
       {
         name: "claude_code.cost.usage",
-        options: { description: "Cost of the Claude Code session", unit: "USD" },
+        options: { description: `Cost of the ${PRODUCT_NAME} session`, unit: "USD" },
       },
       {
         name: "claude_code.token.usage",
@@ -182,14 +179,14 @@ describe("meterState — counter snapshot (setMeter factory calls)", () => {
 
     setMeter(fakeMeter(), createCounter);
 
-    expect(getSessionCounter()).toBe(produced[0]);
-    expect(getLocCounter()).toBe(produced[1]);
-    expect(getPrCounter()).toBe(produced[2]);
-    expect(getCommitCounter()).toBe(produced[3]);
-    expect(getCostCounter()).toBe(produced[4]);
-    expect(getTokenCounter()).toBe(produced[5]);
-    expect(getCodeEditToolDecisionCounter()).toBe(produced[6]);
-    expect(getActiveTimeCounter()).toBe(produced[7]);
+    expect(getSessionCounter()).toBe(produced[0]!);
+    expect(getLocCounter()).toBe(produced[1]!);
+    expect(getPrCounter()).toBe(produced[2]!);
+    expect(getCommitCounter()).toBe(produced[3]!);
+    expect(getCostCounter()).toBe(produced[4]!);
+    expect(getTokenCounter()).toBe(produced[5]!);
+    expect(getCodeEditToolDecisionCounter()).toBe(produced[6]!);
+    expect(getActiveTimeCounter()).toBe(produced[7]!);
   });
 });
 

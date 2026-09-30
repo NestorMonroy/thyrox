@@ -1,0 +1,26 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+139 |     expect(state.registeredName).toEqual({ name: 'dos', source: 'auto', since: clock, sessionId: 'sess', givenAtLaunch: true })
+140 |   })
+141 | 
+142 |   test('un nombre vacío no hace nada', async () => {
+143 |     expect(await setSessionName('', undefined, undefined, undefined, deps())).toBe(false)
+144 |     expect(state.registeredName).toBeUndefined()
+                                       ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  name: "",
+  source: "user",
+  since: 1000000,
+  sessionId: "sess",
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:144:34)
+(fail) setSessionName (eF) > un nombre vacío no hace nada [0.69ms]
+
+ 21 pass
+ 1 fail
+ 74 expect() calls
+Ran 22 tests across 1 file. [136.00ms]

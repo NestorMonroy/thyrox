@@ -85,12 +85,25 @@ afirmar "no-op deja el mtime intacto" "$ANTES" "$(stat -c %Y "$T")"
 
 # --- Caso 3: no deduplica por nombre de archivo ----------------------------
 # save-agent-result.mjs existe en api y docs con cuerpo distinto: las DOS
-# rutas absolutas tienen que aparecer.
+# rutas absolutas tienen que aparecer. El caso construye su propio árbol con
+# los dos clones: medirlo contra los clones del host lo dejaba en rojo en
+# cualquier contenedor sin `kaupamex-api`, sin que el puente tuviera defecto.
+ARBOL="$TMP/arbol"
+for c in api docs; do
+    mkdir -p "$ARBOL/kaupamex-$c/.claude/hooks"
+    echo "// cuerpo de $c" > "$ARBOL/kaupamex-$c/.claude/hooks/save-agent-result.mjs"
+    printf '{"hooks":{"SubagentStop":[{"hooks":[{"type":"command","command":"node .claude/hooks/save-agent-result.mjs"}]}]}}' \
+        > "$ARBOL/kaupamex-$c/.claude/settings.json"
+done
+mkdir -p "$ARBOL/thyrox/src/paths" && : > "$ARBOL/thyrox/src/paths/reach.py"
+T3="$TMP/settings-arbol.json"
+env -u THYROX_REACH_ROOTS PYTHONPATH="$PWD/src" THYROX_REACH_ROOT="$ARBOL" THYROX_ENV_FILE=/dev/null \
+    KX_BRIDGE_SETTINGS="$T3" python3 "$BRIDGE" --apply >/dev/null 2>&1
 RUTAS=$(python3 -c "
 import json
-d=json.load(open('$T'))
+d=json.load(open('$T3'))
 print(sum(1 for gs in d['hooks'].values() for g in gs for h in g['hooks']
-          if h['command'].endswith('save-agent-result.mjs')))")
+          if h['command'].endswith('save-agent-result.mjs')))" 2>/dev/null)
 afirmar "las dos copias divergentes se puentean" "2" "$RUTAS"
 
 # --- Caso 4: Stop queda fuera por defecto, y entra con la bandera ----------

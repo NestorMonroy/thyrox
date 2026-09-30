@@ -8,20 +8,12 @@
  * borrado explícito o auto-expiración pasado
  * `DEFAULT_CRON_JITTER_CONFIG.recurringMaxAgeMs`.
  *
- * Antes era un porte PARCIAL, y su premisa era una sola: las ocho funciones
- * de E/S dependen de `getAgentHostBindings()`, «inexistente en este árbol».
- * Hoy es falsa — `host.ts:266` lo exporta.
- *
- * Y la pregunta que de verdad importaba no era si el símbolo existe sino si
- * da los miembros que esas ocho consultan. Los cinco están, y **ninguno vive
- * en `host.ts`**, que es donde el docstring anterior los buscaba: cuatro los
- * declara `contracts.ts` —`getProjectRoot`, `getSessionCronTasks`,
- * `addSessionCronTask`, `removeSessionCronTasks`— y `logDebug` es de
- * `host.ts`. Un grep sobre `host.ts` da cero para los cuatro **en los dos
- * árboles**: el instrumento equivocado habría confirmado el bloqueo.
- *
- * Los cinco son opcionales y se consultan con encadenado opcional más
- * respaldo, así que el porte no exige que el anfitrión los instale.
+ * Las ocho funciones de E/S consultan cinco miembros de
+ * `getAgentHostBindings()`: cuatro los declara `contracts.ts`
+ * —`getProjectRoot`, `getSessionCronTasks`, `addSessionCronTask`,
+ * `removeSessionCronTasks`— y `logDebug` es de `host.ts`. Los cinco son
+ * opcionales y se consultan con encadenado opcional más respaldo, así que el
+ * porte no exige que el anfitrión los instale.
  */
 
 import { randomUUID } from 'crypto'
@@ -30,11 +22,32 @@ import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { computeNextCronRun, parseCronExpression } from './cronCore.js'
 import { getAgentHostBindings } from '../host.js'
+import type { AgentFsImplementation, AgentSessionCronTask } from '../contracts.js'
 import {
   isFsInaccessible,
   jsonStringify,
   safeParseJSON,
 } from '../internalUtils.js'
+
+/**
+ * Los cinco bindings de cron que `contracts.ts` declara y que el subconjunto
+ * local de `host.ts` aun no incluye (docstring de este archivo: son
+ * opcionales, asi que el porte no exige que el anfitrion los instale). Se
+ * declaran aqui, junto a quien los consume, con el mismo criterio que
+ * `host.ts` ya usa para acotar su tipo a lo portado: se amplia el tipo local
+ * donde el binding se necesita, no el tipo compartido de `host.ts`.
+ */
+type CronHostBindings = {
+  getProjectRoot?: () => string
+  getFsImplementation?: () => AgentFsImplementation
+  getSessionCronTasks?: () => AgentSessionCronTask[]
+  addSessionCronTask?: (task: AgentSessionCronTask) => void
+  removeSessionCronTasks?: (ids: readonly string[]) => number
+}
+
+function getCronBindings(): ReturnType<typeof getAgentHostBindings> & CronHostBindings {
+  return getAgentHostBindings()
+}
 
 export type CronTask = {
   id: string
@@ -87,7 +100,7 @@ const CRON_FILE_REL = join('.claude', 'scheduled_tasks.json')
  * el daemon del SDK de agentes, que no tiene estado de bootstrap).
  */
 export function getCronFilePath(dir?: string): string {
-  return join(dir ?? getAgentHostBindings().getProjectRoot?.() ?? process.cwd(), CRON_FILE_REL)
+  return join(dir ?? getCronBindings().getProjectRoot?.() ?? process.cwd(), CRON_FILE_REL)
 }
 
 /**
@@ -97,7 +110,7 @@ export function getCronFilePath(dir?: string): string {
  * sola entrada mala nunca bloquee el archivo entero.
  */
 export async function readCronTasks(dir?: string): Promise<CronTask[]> {
-  const bindings = getAgentHostBindings()
+  const bindings = getCronBindings()
   const fs = bindings.getFsImplementation?.() ?? { readFile: async (p: string, opts: { encoding: BufferEncoding }) => { const { readFile: fsReadFile } = await import('fs/promises'); return fsReadFile(p, opts) } }
   let raw: string
   try {
@@ -177,7 +190,7 @@ export async function writeCronTasks(
   tasks: CronTask[],
   dir?: string,
 ): Promise<void> {
-  const root = dir ?? getAgentHostBindings().getProjectRoot?.() ?? process.cwd()
+  const root = dir ?? getCronBindings().getProjectRoot?.() ?? process.cwd()
   await mkdir(join(root, '.claude'), { recursive: true })
   // Se retira la bandera `durable`, que solo vive en tiempo de ejecucion: todo
   // lo que esta en disco es durable por definicion, y dejarla fuera hace que
@@ -222,7 +235,7 @@ export async function addCronTask(
     ...(recurring ? { recurring: true } : {}),
   }
   if (!durable) {
-    getAgentHostBindings().addSessionCronTask?.({ ...task, ...(agentId ? { agentId } : {}) })
+    getCronBindings().addSessionCronTask?.({ ...task, ...(agentId ? { agentId } : {}) })
     return id
   }
   const tasks = await readCronTasks()
@@ -251,7 +264,7 @@ export async function removeCronTasks(
   // ahi, se termina — se salta la lectura del archivo por completo.
   // `removeSessionCronTasks` no hace nada (devuelve 0) cuando no acierta, asi
   // que los caminos previos de borrado durable caen sin reservar memoria.
-  if (dir === undefined && (getAgentHostBindings().removeSessionCronTasks?.(ids) ?? 0) === ids.length) {
+  if (dir === undefined && (getCronBindings().removeSessionCronTasks?.(ids) ?? 0) === ids.length) {
     return
   }
   const idSet = new Set(ids)
@@ -305,7 +318,7 @@ export async function markCronTasksFired(
 export async function listAllCronTasks(dir?: string): Promise<CronTask[]> {
   const fileTasks = await readCronTasks(dir)
   if (dir !== undefined) return fileTasks
-  const sessionTasks = (getAgentHostBindings().getSessionCronTasks?.() ?? []).map(t => ({
+  const sessionTasks = (getCronBindings().getSessionCronTasks?.() ?? []).map(t => ({
     ...t,
     durable: false as const,
   }))
@@ -472,7 +485,7 @@ export function oneShotJitteredNextCronRunMs(
  * Una tarea está "perdida" cuando su próxima corrida agendada (calculada
  * desde createdAt) está en el pasado. Se muestra al usuario al arrancar.
  * Funciona tanto para one-shots como para recurrentes — una tarea
- * recurrente cuya ventana pasó mientras Claude estaba caído sigue estando
+ * recurrente cuya ventana pasó mientras thyrox estaba caído sigue estando
  * "perdida".
  */
 export function findMissedTasks(tasks: CronTask[], nowMs: number): CronTask[] {

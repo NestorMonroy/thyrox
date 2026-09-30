@@ -1,0 +1,15 @@
+tests/session/test-headless-pool.sh exit=0 :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-worktree.sh exit=0 :: test-headless-pool-worktree: 36 aserciones — 36 ok, 0 falla(s)
+tests/session/test-headless-pool-frozen-launcher.sh exit=0 :: result: 6 of 6 assertions green
+tests/session/test-headless-pool-item-drain.sh exit=0 :: result: 16 of 16 assertions green
+tests/session/test-headless-pool-lifecycle.sh exit=0 :: result: 21 of 21 assertions green
+tests/session/test-item-worktree-stash.sh exit=0 :: item_worktree stash guard: 19/19
+tests/session/test_pool_lifecycle.py exit=0 :: resultado: 41 de 41 aserciones en verde
+tests/session/test_snapshot_recovery.py exit=0 :: resultado: 35 de 35 aserciones en verde
+tests/session/test_pool_history.py exit=0 :: test_pool_history: 93 ok, 0 falla(s)
+tests/session/test_writer_inspector.py exit=0 :: resultado: 16 de 16 aserciones en verde
+tests/session/test_process_ownership.py exit=0 :: resultado: 12 de 12 aserciones en verde
+tests/verify/test_step_report.py exit=0 :: test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+tests/verify/test_tsc_cycle.py exit=0 :: test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+tests/verify/test_step_close.py exit=0 :: test_step_close: 14 aserciones — 14 ok, 0 falla(s)
+__BG_EXIT__=0

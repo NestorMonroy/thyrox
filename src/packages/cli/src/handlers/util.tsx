@@ -13,9 +13,10 @@ import { Box, Text } from '@anthropic/ink'
 import { KeybindingSetup } from '@thyrox/repl/keybindings/KeybindingProviderSetup.js'
 import { logEvent } from '@thyrox/local-observability'
 import { MCPConnectionManager } from '@thyrox/mcp-runtime/MCPConnectionManager.js'
-import { AppStateProvider } from '../appStateShim.js'
+import { AppStateProvider, type AppState } from '../appStateShim.js'
 import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { isAnthropicAuthEnabled } from '@thyrox/provider/authAlias.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export async function setupTokenHandler(root: Root): Promise<void> {
   logEvent('tengu_setup_token_command', {})
@@ -26,7 +27,11 @@ export async function setupTokenHandler(root: Root): Promise<void> {
   )
   await new Promise<void>(resolve => {
     root.render(
-      <AppStateProvider onChangeAppState={onChangeAppState}>
+      <AppStateProvider
+        onChangeAppState={prev =>
+          onChangeAppState(prev as { newState: AppState; oldState: AppState })
+        }
+      >
         <KeybindingSetup>
           <Box flexDirection="column" gap={1}>
             <WelcomeV2 />
@@ -47,7 +52,7 @@ export async function setupTokenHandler(root: Root): Promise<void> {
                 void resolve()
               }}
               mode="setup-token"
-              startingMessage="This will guide you through long-lived (1-year) auth token setup for your Claude account. Claude subscription required."
+              startingMessage={`This will guide you through long-lived (1-year) auth token setup for your ${PRODUCT_NAME} account. ${PRODUCT_NAME} subscription required.`}
             />
           </Box>
         </KeybindingSetup>

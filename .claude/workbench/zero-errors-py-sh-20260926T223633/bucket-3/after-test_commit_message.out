@@ -1,0 +1,24 @@
+== las tres medidas son tres, y se distinguen ==
+  ok    bytes cuenta octetos
+  ok    caracteres cuenta code points
+  ok    columnas cuenta ancho en terminal
+  ok    un ideograma ocupa dos columnas
+  ok    ...y un solo code point
+
+== overlong_lines mide columnas, no bytes ==
+  ok    71 columnas con em-dashes NO es violacion
+  ok    ...y en bytes habria dado 79
+  ok    73 columnas de ascii SI es violacion
+
+== check_commit_message aplica el limite a las dos partes ==
+  ok    un mensaje sano no reporta nada
+  ok    una linea de cuerpo larga se reporta
+  ok    ...y se nombra su numero de linea real
+  ok    el subject tiene su propio limite
+
+== el aviso nombra el LOCALE, no una implementacion de awk ==
+  ok    el aviso ya no afirma que el awk de esta maquina sea mawk
+  ok    el aviso nombra el locale, que es la causa medida
+  ok    ...y sigue nombrando a mawk como dato de la comparacion
+
+== 15 ok · 0 fallas ==

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+296 |     const noScope = memoryStorage({ ensureScope: async () => ({ ok: false, error: { code: 'EUNAVAIL', cause: new Error('down') } }) })
+297 |     await expect(publishInboxKey(ADDRESS, TOKEN, { sweepPermitted: false, storage: noScope.storage }, active())).rejects.toThrow(
+298 |       'messaging key folder could not be made through storage',
+299 |     )
+300 |     const noWrite = memoryStorage({ write: async () => ({ ok: false, error: { code: 'EIO' } }) })
+301 |     await expect(publishInboxKey(ADDRESS, TOKEN, { sweepPermitted: false, storage: noWrite.storage }, active())).rejects.toThrow(
+                                                                                                                               ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:301:122)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > sin ámbito o sin escritura, la publicación falla con el mensaje de la referencia; un delete que falla no [1.01ms]
+
+ 33 pass
+ 1 fail
+ 58 expect() calls
+Ran 34 tests across 1 file. [129.00ms]

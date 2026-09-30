@@ -43,9 +43,10 @@ import json
 import sys
 from collections import Counter
 from dataclasses import dataclass, field
+from typing import Sequence
 from pathlib import Path
 
-from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze, diagnostic_key
+from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze, diagnostic_key, stable_key
 
 
 @dataclass(frozen=True)
@@ -78,7 +79,7 @@ class ProposalVerdict:
 
 @dataclass(frozen=True)
 class BatchReport:
-    verdicts: list[Verdict | ProposalVerdict]
+    verdicts: Sequence[Verdict | ProposalVerdict]
     total_before: int
     total_after: int
     new_diagnostics: list[str] = field(default_factory=list)
@@ -119,7 +120,7 @@ def _diagnostic_keys(lines) -> Counter[str]:
     for raw in lines:
         match = DIAGNOSTIC.match(raw.rstrip("\n"))
         if match:
-            keys[diagnostic_key(match)] += 1
+            keys[stable_key(diagnostic_key(match))] += 1
     return keys
 
 
@@ -132,9 +133,10 @@ def _new_diagnostics(before_lines, after_lines) -> tuple[list[str], dict[str, li
         match = DIAGNOSTIC.match(raw.rstrip("\n"))
         if not match:
             continue
+        # Se compara por la clave estable y se informa el texto tal cual.
         key = diagnostic_key(match)
-        if remaining[key] > 0:
-            remaining[key] -= 1
+        if remaining[stable_key(key)] > 0:
+            remaining[stable_key(key)] -= 1
             continue
         new.append(key)
         by_file.setdefault(match.group("file"), []).append(key)
@@ -177,8 +179,9 @@ def verify_proposals(before_lines, after_lines, proposals: list[Proposal]) -> Ba
     )
     verdicts: list[ProposalVerdict] = []
     for proposal in proposals:
-        targets_before = sum(before_keys[target] for target in proposal.targets)
-        targets_after = sum(after_keys[target] for target in proposal.targets)
+        targets = {stable_key(target) for target in proposal.targets}
+        targets_before = sum(before_keys[target] for target in targets)
+        targets_after = sum(after_keys[target] for target in targets)
         attributable = sorted(
             key
             for file in proposal.files
@@ -267,7 +270,7 @@ def read_proposals(path: Path) -> list[Proposal]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--before", type=Path, required=True, help="log de tsc antes del lote")
     parser.add_argument("--after", type=Path, required=True, help="log de tsc despues del lote")
     parser.add_argument("--proposals", type=Path,

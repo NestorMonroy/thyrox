@@ -1,0 +1,166 @@
+src/packages/provider/src/__tests__/connections.test.ts(236,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  --- código src/packages/provider/src/__tests__/connections.test.ts:226-246 ---
+    226    test('returns false for undefined', () => {
+    227      expect(isFirstPartyAnthropicConnection(undefined)).toBe(false)
+    228    })
+    229  
+    230    test('returns false for non-anthropic protocol', () => {
+    231      const conn: ConnectionRecord = {
+    232        ...baseConn,
+    233        protocol: 'openai',
+    234        endpoint: 'https://api.anthropic.com',
+    235      }
+    236>     expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    237    })
+    238  
+    239    test('returns true for api.anthropic.com', () => {
+    240      const conn: ConnectionRecord = {
+    241        ...baseConn,
+    242        protocol: 'anthropic',
+    243        endpoint: 'https://api.anthropic.com',
+    244      }
+    245      expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    246    })
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(245,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  --- código src/packages/provider/src/__tests__/connections.test.ts:235-255 ---
+    235      }
+    236      expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    237    })
+    238  
+    239    test('returns true for api.anthropic.com', () => {
+    240      const conn: ConnectionRecord = {
+    241        ...baseConn,
+    242        protocol: 'anthropic',
+    243        endpoint: 'https://api.anthropic.com',
+    244      }
+    245>     expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    246    })
+    247  
+    248    test('returns true for api.anthropic.com with path', () => {
+    249      const conn: ConnectionRecord = {
+    250        ...baseConn,
+    251        protocol: 'anthropic',
+    252        endpoint: 'https://api.anthropic.com/v1',
+    253      }
+    254      expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    255    })
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(254,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  --- código src/packages/provider/src/__tests__/connections.test.ts:244-264 ---
+    244      }
+    245      expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    246    })
+    247  
+    248    test('returns true for api.anthropic.com with path', () => {
+    249      const conn: ConnectionRecord = {
+    250        ...baseConn,
+    251        protocol: 'anthropic',
+    252        endpoint: 'https://api.anthropic.com/v1',
+    253      }
+    254>     expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    255    })
+    256  
+    257    test('returns true for api-staging.anthropic.com', () => {
+    258      const conn: ConnectionRecord = {
+    259        ...baseConn,
+    260        protocol: 'anthropic',
+    261        endpoint: 'https://api-staging.anthropic.com',
+    262      }
+    263      expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    264    })
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(263,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  --- código src/packages/provider/src/__tests__/connections.test.ts:253-273 ---
+    253      }
+    254      expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    255    })
+    256  
+    257    test('returns true for api-staging.anthropic.com', () => {
+    258      const conn: ConnectionRecord = {
+    259        ...baseConn,
+    260        protocol: 'anthropic',
+    261        endpoint: 'https://api-staging.anthropic.com',
+    262      }
+    263>     expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    264    })
+    265  
+    266    test('returns false for self-hosted proxy', () => {
+    267      const conn: ConnectionRecord = {
+    268        ...baseConn,
+    269        protocol: 'anthropic',
+    270        endpoint: 'https://my-litellm.example.com/anthropic',
+    271      }
+    272      expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    273    })
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(272,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  --- código src/packages/provider/src/__tests__/connections.test.ts:262-282 ---
+    262      }
+    263      expect(isFirstPartyAnthropicConnection(conn)).toBe(true)
+    264    })
+    265  
+    266    test('returns false for self-hosted proxy', () => {
+    267      const conn: ConnectionRecord = {
+    268        ...baseConn,
+    269        protocol: 'anthropic',
+    270        endpoint: 'https://my-litellm.example.com/anthropic',
+    271      }
+    272>     expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    273    })
+    274  
+    275    test('returns false for malformed endpoint', () => {
+    276      const conn: ConnectionRecord = {
+    277        ...baseConn,
+    278        protocol: 'anthropic',
+    279        endpoint: 'not a url',
+    280      }
+    281      expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    282    })
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(281,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  --- código src/packages/provider/src/__tests__/connections.test.ts:271-283 ---
+    271      }
+    272      expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    273    })
+    274  
+    275    test('returns false for malformed endpoint', () => {
+    276      const conn: ConnectionRecord = {
+    277        ...baseConn,
+    278        protocol: 'anthropic',
+    279        endpoint: 'not a url',
+    280      }
+    281>     expect(isFirstPartyAnthropicConnection(conn)).toBe(false)
+    282    })
+    283  })
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.

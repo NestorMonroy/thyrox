@@ -168,7 +168,7 @@ def format_summary(entries: list[BuildEntry], root: pathlib.Path) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument(
         "--root", default=None,
         help="raiz del corpus (default: _references/claude-code-bin de este arbol)",

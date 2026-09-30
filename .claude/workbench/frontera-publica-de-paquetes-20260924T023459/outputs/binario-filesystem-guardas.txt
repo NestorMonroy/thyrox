@@ -1,0 +1,39 @@
+// _a @211496
+function _a(e,n,r,s,g={}
+
+// OTe @201965
+function OTe(e,n,r){if(n.blockReadsOutsideWorkingDirectories!==!0)return!1;let s=r??On(e);return!my(e,n,s,NGt(n))&&hee(e,{},s,{restricted:n.restricted,blockOutsideReads:!0,readBlockFence:!0}).behavior!=="allow"}
+
+// yyt @224045
+function yyt(e,n,r,s){if(r&&r.length>0){if(r.some(Gr))return Vr;if(r.some(Wr))return Kr;if(r.some(Br))return Ur;if(r.some(zr))return Hr;return Hs(r,(h,y)=>yyt(h,y,void 0,s),n)}let g=Ee(e);if(Ds(g,{includeWorkshopDoc:s?.permissionMode==="plan"}))return we(n,"Plan files for current session are allowed for writing");if(!s?.restricted&&Tu(g))return we(n,"Workflow script files for current session are allowed for writing");if(Rj(g))return we(n,"Scratchpad files for current session are allowed for writing");if(js(g))return we(n,"Job tmp/ subtree for current bg session is allowed for writing");if(!s?.restricted&&g.endsWith(".md")&&PYe(g))return we(n,"Agent memory files are allowed for writing");if(EN(g)&&Kh())return $s;if(!s?.restricted&&!sle()&&g.endsWith(".md")&&nq(g))return we(n,jSt);if(!s?.restricted&&g===se(ye(),".claude","launch.json"))return we(n,"Preview launch config is allowed for writing");if(Ls(g))return Fs;if(Wr(g))return Kr;if(Gr(g))return Vr;if(Br(g))return Ur;if(zr(g))return Hr;return{behavior:"passthrough",message:""}}
+
+// hyt @223978
+function hyt(e,n){return!(n.servedCall===!0&&e.behavior==="allow")}
+
+// T_n @223889
+function T_n(e){if(e?.type!=="safetyCheck")return e;return{type:"other",reason:e.reason}}
+
+// Gge @200707
+function Gge(e,n,r,s,g){let h=r||s,y=n??On(e),w=y.some((R)=>HTe(R)||xu(R));for(let R of y)if(b1(R,g))return{safe:!1,message:`Claude requested permissions to write to ${e}, which contains a suspicious Windows path pattern that requires manual approval.`,classifierApprovable:!1,circuitBreaker:"suspiciousWindowsPath",...w&&{also:["claudeSettingsFile"]}};if(w)return{safe:!1,message:`Claude requested permissions to write to ${e}, but you haven't granted it yet.`,classifierApprovable:!0,circuitBreaker:"claudeSettingsFile"};for(let R of y)if(!h&&Cu(R))return{safe:!1,message:`Claude requested permissions to write to ${e}, but you haven't granted it yet.`,classifierApprovable:!0};for(let R of y)if(Lu(R,h,g))return{safe:!1,message:`Claude requested permissions to edit ${e} which is a sensitive file.`,classifierApprovable:!0};return{safe:!0}}
+
+// VFe @200304
+function VFe(e){let n=e.mode==="plan"&&(e.prePlanMode==="auto"||!!e.strippedDangerousRules);return e.isRemoteMode===!0&&!e.restricted&&e.mode!=="auto"&&!n&&e.modeBeforeRewrite!=="auto"}
+
+// my @202176
+function my(e,n,r,s=_b(n)){let g=r??On(e),h=Array.from(s).flatMap((y)=>qge(y));return g.every((y)=>h.some((w)=>Ld(y,w,{caseFold:!1,uncShapeParity:!0})))}
+
+// hee @225088
+function hee(e,n,r,s){if(r&&r.length>0)return Hs(r,(D,N)=>hee(D,N,void 0,s),n);let g=Ee(e);if(Kh()&&(EN(g)||!1))return{behavior:"deny",message:"Cannot read memory while it is paused. Run /pause-memory to resume automemory.",decisionReason:{type:"safetyCheck",reason:f6t,classifierApprovable:!1}};if(!s?.restricted&&Ou(g,s?.blockOutsideReads?ye():void 0))return we(n,"Project directory files are allowed for reading");if(Ds(g,{includeWorkshopDoc:!0}))return we(n,"Plan files for current session are allowed for reading");let h=r_(),y=h.endsWith(oe)?h:h+oe;if(g===h||g.startsWith(y))return we(n,"Tool result files are allowed for reading");if(Rj(g))return we(n,"Scratchpad files for current session are allowed for reading");if(js(g))return we(n,"Job tmp/ subtree for current bg session is allowed for reading");let w=Zk();if(g.startsWith(w))return we(n,"Project temp directory files are allowed for reading");let R=s?.remoteSurface||s?.restricted,P=R||s?.blockOutsideReads;if(!P&&PYe(g))return we(n,"Agent memory files are allowed for reading");if(!R&&nq(g)&&!(s?.blockOutsideReads&&Kht()))return we(n,"auto memory files are allowed for reading");let T=se(ve(),"tasks")+oe;if(!P&&(g===T.slice(0,-1)||g.startsWith(T)))return we(n,"Task files are allowed for reading");let O=se(ve(),"teams")+oe;if(!P&&(g===O.slice(0,-1)||g.startsWith(O)))return we(n,"Team files are allowed for reading");if(s?.readBlockFence&&!s.restricted){if(g===se(ve(),"CLAUDE.md"))return we(n,"The user memory file is allowed for reading");for(let D of["skills","plugins","rules","agents","commands"]){let N=se(ve(),D)+oe;if(g===N.slice(0,-1)||g.startsWith(N))return we(n,`User ${D} files are allowed for reading`)}}let A=w_n()+oe;if(!s?.remoteSurface&&g.startsWith(A))return we(n,"Bundled skill reference files are allowed for reading");return{behavior:"passthrough",message:""}}
+
+// myt @213501
+function myt(e,n,r){let s=null;for(let g of e){let h=_a(g,n,r,"allow");if(!h){let y=FGt(g);if(y!==g)h=_a(y,n,r,"allow")}if(!h)return null;s??=h}return s}
+
+// Ld @203337
+function Ld(e,n,{caseFold:r,skipPrivateAlias:s=!1,uncShapeParity:g=!1}
+
+// Cj @179340
+function Cj(){return su.of(W().host)}
+
+// hw @165791
+function hw(e,n=!1){if(M()!=="windows")return!1;if(n&&Pn(e))return!0;if(n&&/^-[A-Za-z0-9]/.test(e)){let y=e.replace(/^(?:-[A-Za-z0-9]+)+/,"");if(y.length>0&&hw(y,!0))return!0}if(n&&ls.test(e)){let y=e;while(ls.test(y))y=y.slice(y.indexOf("=")+1);if(y.length>0&&hw(y,!0))return!0}if(/\\\\[^ \t\r\n\f\v\\/]+(?:@(?:\d+|ssl))?(?:[\\/]|$|\s)/i.test(e))return!0;if(Zc.test(e))return!0;if(/(?<!:)\/\/[^ \t\r\n\f\v\\/]+(?:@(?:\d+|ssl))?(?:[\\/]|$|\s)/i.test(e))return!0;if((n?/(?<![:\w])\/\\{1,}[^ \t\r\n\f\v\\/]+[\\/]/:/\/\\{2,}[^ \t\r\n\f\v\\/]/).test(e))return!0;if((n?/(?<![:\w])\\{1,}\/[^ \t\r\n\f\v\\/]+[\\/]/:/\\{2,}\/[^ \t\r\n\f\v\\/]/).test(e))return!0;if(/@SSL@\d+/i.test(e)||/@\d+@SSL/i.test(e))return!0;if(/DavWWWRoot/i.test(e))return!0;if(/^\\\\(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[\\/]/.test(e)||/^\/\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[\\/]/.test(e))return!0;if(/^\\\\(\[[\da-fA-F:]+\])[\\/]/.test(e)||/^\/\/(\[[\da-fA-F:]+\])[\\/]/.test(e))return!0;return!1}
+

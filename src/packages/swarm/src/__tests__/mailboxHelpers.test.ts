@@ -1,34 +1,20 @@
 /**
- * Tests de los helpers de mensajes de buzón — mensajes JSON entre agentes
- * del equipo.
+ * Tests for mailbox message helpers — JSON-encoded messages between
+ * agents in the team.
  *
- * Procedencia: `ccnmt: packages/swarm/src/__tests__/mailboxHelpers.test.ts`
- * (257 líneas). Ese árbol declara `"license": "UNLICENSED"`, así que el
- * cuerpo se **reimplementa** y no se copia; la lógica de aserciones se
- * conserva porque fija el contrato observable, no el texto protegido.
+ * Wrong type discrimination = leader interprets a worker's tool-use
+ * permission request as an idle notification (or vice versa) and the
+ * worker hangs forever waiting for a response.
  *
- * Discriminar mal el tipo = el líder interpreta el pedido de permiso de
- * herramienta de un worker como una notificación de idle (o viceversa) y el
- * worker se queda esperando una respuesta para siempre.
- *
- * `formatTeammateMessages` produce el envoltorio XML que aparece en el
- * prompt del líder — escapar mal significa que el texto de un worker que
- * contenga `</teammate-message>` puede cerrar el envoltorio antes de tiempo
- * y confundir al modelo.
- *
- * DIVERGENCIA DECLARADA: la fuente enumera manualmente sus 124 claves de
- * binding requeridas en un array `REQUIRED_BINDING_KEYS`. Aquí se reusan
- * `SWARM_FUNCTION_BINDINGS`/`SWARM_VALUE_BINDINGS` (exportados por
- * `adapters/appRuntime.ts`) en vez de copiar la lista a mano — mismo patrón
- * que `backendRegistry.test.ts` y `InProcessTeammateTask.test.ts`: evita que
- * este archivo quede desalineado si el adaptador gana o pierde un binding.
+ * formatTeammateMessages produces the XML attachment surface that
+ * appears in the leader's prompt — wrong escaping means worker's text
+ * containing `</teammate-message>` could close the wrapper early and
+ * confuse the model.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import {
   _test_resetSwarmAppRuntime,
   installSwarmAppRuntime,
-  SWARM_FUNCTION_BINDINGS,
-  SWARM_VALUE_BINDINGS,
 } from '../adapters/appRuntime.js'
 import {
   createIdleNotification,
@@ -38,28 +24,67 @@ import {
   isPermissionResponse,
 } from '../mailbox/index.js'
 
-/**
- * Dos etapas de bindings distintas se ejercitan aquí:
- *   1. Las suites "sin bindings reales" fijan el camino de fallo de
- *      `is*Notification`/`is*Permission*` — ESPERAN que la ausencia del
- *      binding lance, se atrape y devuelva null.
- *   2. `createIdleNotification` y `formatTeammateMessages` necesitan
- *      valores reales (`TEAMMATE_MESSAGE_TAG`, etc.) para operar.
- * Se instalan bindings mínimos aquí; los stubs de función lanzan al
- * tocarse (con su propio nombre en el mensaje), así que una suite que NO
- * necesita un binding específico y no lo toca no se ve afectada.
- */
+// Two distinct binding stages exercised here:
+//   1. The "no bindings" suites lock the failure-path behavior of
+//      is*Notification / is*Permission* — they EXPECT missing-binding
+//      throw → caught → null.
+//   2. createIdleNotification + formatTeammateMessages need real
+//      values (TEAMMATE_MESSAGE_TAG, etc.) to operate.
+// The previous version of this file relied on undefined cross-file
+// install order to provide stage 2; that's brittle. We install
+// minimal bindings here and explicitly reset before the "no bindings"
+// suites run their probes by re-asserting `_test_resetSwarmAppRuntime`
+// inside each affected describe block via `beforeEach`.
+const REQUIRED_BINDING_KEYS = [
+  'TEAMMATE_MESSAGE_TAG', 'ERROR_MESSAGE_USER_ABORT', 'BASH_TOOL_NAME',
+  'SEND_MESSAGE_TOOL_NAME', 'TASK_CREATE_TOOL_NAME', 'TASK_GET_TOOL_NAME',
+  'TASK_LIST_TOOL_NAME', 'TASK_UPDATE_TOOL_NAME', 'TEAM_CREATE_TOOL_NAME',
+  'TEAM_DELETE_TOOL_NAME', 'TURN_COMPLETION_VERBS', 'SUBAGENT_REJECT_MESSAGE',
+  'SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX', 'STOPPED_DISPLAY_MS',
+  'AGENT_COLORS', 'CLAUDE_OPUS_4_7_CONFIG', 'env', 'getSystemPrompt',
+  'processMailboxPermissionResponse', 'registerPermissionCallback',
+  'unregisterPermissionCallback', 'logEvent', 'getAutoCompactThreshold',
+  'buildPostCompactMessages', 'compactConversation', 'resetMicrocompactState',
+  'createTaskStateBase', 'generateTaskId', 'isTerminalTaskStatus',
+  'createActivityDescriptionResolver', 'createProgressTracker',
+  'getProgressUpdate', 'updateProgressFromMessage', 'runAgent',
+  'awaitClassifierAutoApproval', 'getSpinnerVerbs',
+  'createAssistantAPIErrorMessage', 'createUserMessage', 'evictTaskOutput',
+  'evictTerminalTask', 'registerTask', 'updateTaskState',
+  'tokenCountWithEstimation', 'createAbortController', 'runWithAgentContext',
+  'count', 'logForDebugging', 'logError', 'cloneFileStateCache',
+  'applyPermissionUpdates', 'persistPermissionUpdates', 'applyPermissionUpdate',
+  'hasPermissionsToUseTool', 'emitTaskTerminatedSdk', 'sleep', 'jsonParse',
+  'jsonStringify', 'asSystemPrompt', 'claimTask', 'listTasks', 'updateTask',
+  'sanitizePathComponent', 'getTasksDir', 'notifyTasksUpdated',
+  'createTeammateContext', 'runWithTeammateContext', 'getAgentId',
+  'getAgentName', 'getDynamicTeamContext', 'getTeamName', 'getTeammateColor',
+  'isTeammate', 'registerPerfettoAgent', 'unregisterPerfettoAgent',
+  'isPerfettoTracingEnabled', 'registerAgent', 'unregisterAgent',
+  'createContentReplacementState', 'formatAgentId', 'generateRequestId',
+  'parseAgentId', 'registerCleanup', 'getSessionId',
+  'getIsNonInteractiveSession', 'getChromeFlagOverride', 'getFlagSettingsPath',
+  'getInlinePlugins', 'getMainLoopModelOverride',
+  'getSessionBypassPermissionsMode', 'getSessionCreatedTeams', 'quote',
+  'isInBundledMode', 'getPlatform', 'getGlobalConfig', 'saveGlobalConfig',
+  'execFileNoThrow', 'execFileNoThrowWithCwd', 'getTeamsDir', 'errorMessage',
+  'getErrnoCode', 'lock', 'lockSync', 'unlock', 'check', 'gitExe',
+  'parseGitConfigValue', 'getCommonDir', 'readWorktreeHeadSha', 'resolveGitDir',
+  'resolveRef', 'findCanonicalGitRoot', 'findGitRoot', 'getBranch',
+  'getDefaultBranch', 'executeWorktreeCreateHook', 'executeWorktreeRemoveHook',
+  'hasWorktreeCreateHook', 'addFunctionHook', 'containsPathTraversal',
+  'getInitialSettings', 'getRelativeSettingsFilePathForSource', 'getCwd',
+  'saveCurrentProjectConfig', 'getAPIProvider',
+] as const
+
 function installFullBindings(): void {
   const bindings: Record<string, unknown> = {}
-  for (const key of SWARM_FUNCTION_BINDINGS) {
+  for (const key of REQUIRED_BINDING_KEYS) {
     bindings[key] = (..._args: unknown[]) => {
       throw new Error(
-        `llamada inesperada al binding de runtime de swarm "${key}" en el test de mailboxHelpers`,
+        `unexpected call to swarm runtime binding "${key}" in mailboxHelpers test`,
       )
     }
-  }
-  for (const key of SWARM_VALUE_BINDINGS) {
-    bindings[key] = ''
   }
   Object.assign(bindings, {
     TEAMMATE_MESSAGE_TAG: 'teammate-message',
@@ -79,9 +104,6 @@ function installFullBindings(): void {
     AGENT_COLORS: ['red', 'blue'],
     CLAUDE_OPUS_4_7_CONFIG: { name: 'test-model' },
     env: {},
-    // jsonParse/jsonStringify son bindings de FUNCIÓN (el genérico de
-    // arriba les asigna un stub que lanza) y protocolMessages.ts los
-    // invoca de verdad al crear/leer notificaciones.
     jsonParse: JSON.parse,
     jsonStringify: JSON.stringify,
   })
@@ -96,17 +118,17 @@ afterAll(() => {
   _test_resetSwarmAppRuntime()
 })
 
-describe('createIdleNotification — forma del mensaje', () => {
-  test('la llamada mínima (solo agentId) produce una notificación válida', () => {
+describe('createIdleNotification — message shape', () => {
+  test('minimal call (just agentId) produces valid notification', () => {
     const m = createIdleNotification('worker-1')
     expect(m.type).toBe('idle_notification')
     expect(m.from).toBe('worker-1')
     expect(typeof m.timestamp).toBe('string')
-    // Da la vuelta completa por Date sin perder precisión
+    // Round-trips through Date
     expect(new Date(m.timestamp).toISOString()).toBe(m.timestamp)
   })
 
-  test('con todas las opciones: cada campo fluye a través', () => {
+  test('with all options: each field flows through', () => {
     const m = createIdleNotification('w1', {
       idleReason: 'failed',
       summary: 'config sync failed',
@@ -121,7 +143,7 @@ describe('createIdleNotification — forma del mensaje', () => {
     expect(m.failureReason).toBe('timeout')
   })
 
-  test('con opciones parciales: los campos omitidos quedan undefined', () => {
+  test('partial options: omitted fields stay undefined', () => {
     const m = createIdleNotification('w1', { idleReason: 'available' })
     expect(m.idleReason).toBe('available')
     expect(m.summary).toBeUndefined()
@@ -129,18 +151,18 @@ describe('createIdleNotification — forma del mensaje', () => {
   })
 })
 
-describe('isIdleNotification — validación de entrada', () => {
-  test('texto no-JSON → null (el error de parseo se atrapa en silencio)', () => {
+describe('isIdleNotification — input validation', () => {
+  test('non-JSON text → null (catch swallowed parse error)', () => {
     expect(isIdleNotification('not json')).toBeNull()
   })
 
-  test('string vacío → null', () => {
+  test('empty string → null', () => {
     expect(isIdleNotification('')).toBeNull()
   })
 
-  test('JSON de otro tipo → null', () => {
-    // Fija el comportamiento del discriminador de tipo: un JSON parseable
-    // que NO es una notificación de idle debe devolver null, no lanzar.
+  test('JSON of wrong type → null', () => {
+    // Lock the type-discriminator behavior: a parseable JSON that
+    // isn't an idle notification should return null, not crash.
     expect(
       isIdleNotification(
         JSON.stringify({ type: 'permission_request', request_id: 'r1' }),
@@ -148,24 +170,24 @@ describe('isIdleNotification — validación de entrada', () => {
     ).toBeNull()
   })
 
-  test('JSON válido de notificación de idle → parseado', () => {
+  test('valid idle notification JSON → parsed', () => {
     const json = JSON.stringify(createIdleNotification('w1'))
     expect(isIdleNotification(json)?.from).toBe('w1')
   })
 })
 
-describe('isPermissionRequest / isPermissionResponse — validación de entrada', () => {
-  test('no-JSON → null para ambos checks (sin lanzar)', () => {
+describe('isPermissionRequest / isPermissionResponse — input validation', () => {
+  test('non-JSON → null for both checks (no throw)', () => {
     expect(isPermissionRequest('not json')).toBeNull()
     expect(isPermissionResponse('not json')).toBeNull()
   })
 
-  test('string vacío → null', () => {
+  test('empty string → null', () => {
     expect(isPermissionRequest('')).toBeNull()
     expect(isPermissionResponse('')).toBeNull()
   })
 
-  test('JSON de tipo no relacionado → null', () => {
+  test('JSON of unrelated type → null', () => {
     const json = JSON.stringify({
       type: 'idle_notification',
       from: 'a',
@@ -176,12 +198,12 @@ describe('isPermissionRequest / isPermissionResponse — validación de entrada'
   })
 })
 
-describe('formatTeammateMessages — envoltorio XML', () => {
-  test('lista vacía → string vacío', () => {
+describe('formatTeammateMessages — XML wrapping', () => {
+  test('empty list → empty string', () => {
     expect(formatTeammateMessages([])).toBe('')
   })
 
-  test('un mensaje se envuelve en la etiqueta con atributo teammate_id', () => {
+  test('single message wrapped in tag with teammate_id attr', () => {
     const result = formatTeammateMessages([
       { from: 'alice', text: 'hello', timestamp: '2026-04-30T00:00:00Z' },
     ])
@@ -190,7 +212,7 @@ describe('formatTeammateMessages — envoltorio XML', () => {
     expect(result).toMatch(/^<teammate-message[^>]*>\nhello\n<\/teammate-message>$/)
   })
 
-  test('el atributo color se incluye cuando está presente', () => {
+  test('color attr included when present', () => {
     const result = formatTeammateMessages([
       {
         from: 'a',
@@ -202,14 +224,14 @@ describe('formatTeammateMessages — envoltorio XML', () => {
     expect(result).toContain('color="red"')
   })
 
-  test('el atributo summary se incluye cuando está presente', () => {
+  test('summary attr included when present', () => {
     const result = formatTeammateMessages([
       { from: 'a', text: 'x', timestamp: 'now', summary: 'short' },
     ])
     expect(result).toContain('summary="short"')
   })
 
-  test('varios mensajes se unen con doble salto de línea', () => {
+  test('multiple messages joined by double newline', () => {
     const result = formatTeammateMessages([
       { from: 'a', text: 'one', timestamp: 'now' },
       { from: 'b', text: 'two', timestamp: 'now' },
@@ -220,17 +242,16 @@ describe('formatTeammateMessages — envoltorio XML', () => {
     expect(parts[1]).toContain('two')
   })
 
-  test('el contenido de texto NO se escapa — `</teammate-message>` en el cuerpo cerraría antes de tiempo', () => {
-    // LIMITACIÓN DOCUMENTADA: el formateador no escapa HTML del texto del
-    // cuerpo. Un worker que emita "</teammate-message>" cierra el
-    // envoltorio antes de tiempo. Quien llame debe sanear antes de pasar
-    // el texto a esta función, o confiar en los workers (que es el
-    // default actual).
+  test('text content NOT escaped — `</teammate-message>` in body would close early', () => {
+    // DOCUMENTED LIMITATION: the formatter doesn't HTML-escape body
+    // text. A worker emitting "</teammate-message>" closes the wrapper
+    // early. Callers should sanitize before passing to this function,
+    // or trust workers (which is the current default).
     const result = formatTeammateMessages([
       { from: 'a', text: '</teammate-message>', timestamp: 'now' },
     ])
-    // Documenta la salida sin escapar. Si algún día se añade escapado,
-    // este test falla y fuerza una actualización deliberada.
+    // Document the un-escaped output. If we ever add escaping, this
+    // test fails and forces a deliberate update.
     expect(result).toContain('</teammate-message>\n</teammate-message>')
   })
 })

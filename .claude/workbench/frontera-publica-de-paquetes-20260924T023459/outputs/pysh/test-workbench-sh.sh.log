@@ -1,0 +1,18 @@
+  ok    compone la ruta dentro del run
+  ok    no crea el archivo, solo su ruta
+  ok    REHUSA si el run no existe, en vez de crearlo
+  ok    y no lo deja creado
+  ok    rehusa un nombre con separador — escaparia del run
+  ok    rehusa sin nombre
+  ok    rehusa sin run
+  ok    se exporta a procesos hijos
+  ok    acuna un identificador con sufijo ISO basico
+  ok    acunar NO crea nada en el hogar
+  ok    el andamiaje crea el run bajo el hogar declarado
+  ok    y el resolutor lo encuentra sin puntero
+  ok    el archivo de trabajo nace DENTRO del run
+  ok    sin runs devuelve 1, no una ruta inventada
+  ok    rehusa sin slug
+  ok    el resolutor tambien se exporta a procesos hijos
+
+16 casos: 16 ok, 0 fallos

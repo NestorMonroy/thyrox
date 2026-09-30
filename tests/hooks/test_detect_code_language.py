@@ -14,9 +14,9 @@ no tiene AST que recorrer.
 from __future__ import annotations
 
 import importlib.util
-import pathlib
 import sys
 from pathlib import Path
+from typing import Any
 
 # El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
 # deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
@@ -33,7 +33,8 @@ from paths import reach  # noqa: E402
 _ROOT = reach.thyrox_root()
 _MODULE = _ROOT / "src/hooks/detect_code_language.py"
 _spec = importlib.util.spec_from_file_location("_gate_code_language", _MODULE)
-gate = importlib.util.module_from_spec(_spec)
+assert _spec is not None and _spec.loader is not None
+gate: Any = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
 

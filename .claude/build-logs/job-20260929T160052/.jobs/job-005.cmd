@@ -1,0 +1,1 @@
+uv run --quiet python tests/task/test_board_sync.py

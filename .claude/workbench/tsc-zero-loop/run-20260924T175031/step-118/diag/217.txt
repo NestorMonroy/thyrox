@@ -1,0 +1,27 @@
+src/packages/repl/src/screens/REPLView.tsx(1826,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1816-1836 ---
+   1816            initialMainThreadAgentDefinition,
+   1817            agentDefinitions,
+   1818          );
+   1819          setMainThreadAgentDefinition(restoredAgent);
+   1820          setAppState(prev => ({ ...prev, agent: restoredAgent?.agentType }));
+   1821  
+   1822          // Restore standalone agent context from the resumed conversation
+   1823          // Always reset to the new session's values (or clear if none)
+   1824          setAppState(prev => ({
+   1825            ...prev,
+   1826>           standaloneAgentContext: computeStandaloneAgentContext(log.agentName, log.agentColor),
+   1827          }));
+   1828          void updateSessionName(log.agentName);
+   1829  
+   1830          // Restore read file state from the message history
+   1831          restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
+   1832  
+   1833          // Clear any active loading state (no queryId since we're not in a query)
+   1834          resetLoadingState();
+   1835          setAbortController(null);
+   1836  
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+    Types of property 'color' are incompatible.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.

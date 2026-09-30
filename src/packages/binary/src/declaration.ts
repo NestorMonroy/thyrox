@@ -33,6 +33,8 @@
  * No requiere instalar nada: `typescript` ya es dependencia declarada del
  * arbol, y su analizador da posiciones de byte sobre JavaScript.
  */
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import ts from 'typescript'
 
 /** Un sitio donde el literal aparece como NODO, no como subcadena. */
@@ -69,6 +71,28 @@ function parse(source: string, name = 'payload.js'): ts.SourceFile {
   return ts.createSourceFile(name, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.JS)
 }
 
+let parseCount = 0
+let lastParsed: { source: string; file: ts.SourceFile } | null = null
+
+/**
+ * El árbol de `source`, analizado UNA vez por texto. Sobre un chunk de 5,4 MB
+ * el análisis domina el coste, y `extractByLiteral` lo pagaba dos veces por
+ * llamada y una por cada pregunta sobre el mismo texto. Un solo registro
+ * basta: las llamadas llegan agrupadas por texto.
+ */
+export function parseSource(source: string): ts.SourceFile {
+  if (lastParsed !== null && lastParsed.source === source) return lastParsed.file
+  parseCount++
+  const file = parse(source)
+  lastParsed = { source, file }
+  return file
+}
+
+/** Cuántas veces se analizó un texto completo; lo lee la suite, no el código. */
+export function parseCountForTesting(): number {
+  return parseCount
+}
+
 /**
  * El texto del nodo SIN sus comillas ni su espacio a la izquierda.
  *
@@ -98,7 +122,7 @@ function nodeValue(node: ts.Node): string | null {
  * su propio texto, y eso no es un uso del dato sino prosa sobre el.
  */
 export function findLiteralSites(source: string, literal: string): LiteralSite[] {
-  const sourceFile = parse(source)
+  const sourceFile = parseSource(source)
   const sites: LiteralSite[] = []
   const visit = (node: ts.Node): void => {
     if (nodeValue(node) === literal) {
@@ -146,7 +170,7 @@ function enclosingDeclaration(sourceFile: ts.SourceFile, start: number, end: num
 
 /** Las declaraciones que contienen el literal, sin repetir. */
 export function extractByLiteral(source: string, literal: string): Declaration[] {
-  const sourceFile = parse(source)
+  const sourceFile = parseSource(source)
   const sites = findLiteralSites(source, literal)
   const seen = new Set<string>()
   const out: Declaration[] = []
@@ -167,6 +191,37 @@ export function extractByLiteral(source: string, literal: string): Declaration[]
     })
   }
   return out
+}
+
+/** Una declaración del corpus que contiene un literal, con su chunk. */
+export type DeclarationSite = Omit<Declaration, 'text'> & { file: string; text: string }
+
+/**
+ * Las declaraciones de TODOS los chunks de `root` que contienen `literal`,
+ * ordenadas por chunk y posición. Sólo se analiza el chunk que lleva el
+ * literal como subcadena: analizar los cientos de chunks de una build para
+ * encontrar dos es el costo que el prefiltro evita, y un chunk sin la
+ * subcadena no puede tener el nodo.
+ */
+export function scanLiteral(root: string, literal: string): LiteralScan {
+  const chunks = readdirSync(root).filter(name => name.endsWith('.js')).sort()
+  const sites: DeclarationSite[] = []
+  let chunksWithLiteral = 0
+  for (const file of chunks) {
+    const source = readFileSync(join(root, file), 'utf8')
+    if (!source.includes(literal)) continue
+    const found = extractByLiteral(source, literal)
+    if (found.length > 0) chunksWithLiteral++
+    for (const d of found) sites.push({ file, ...d })
+  }
+  return { sites, chunks: chunks.length, chunksWithLiteral }
+}
+
+/** El recorrido con su denominador: cuántos chunks se midieron y en cuántos estaba. */
+export type LiteralScan = { sites: DeclarationSite[]; chunks: number; chunksWithLiteral: number }
+
+export function declarationsByLiteral(root: string, literal: string): DeclarationSite[] {
+  return scanLiteral(root, literal).sites
 }
 
 /** ¿El fragmento es, por si solo, sintacticamente completo? */

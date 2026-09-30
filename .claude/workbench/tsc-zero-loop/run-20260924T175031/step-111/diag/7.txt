@@ -1,0 +1,16 @@
+src/packages/@ant/ink/src/components/ErrorOverview.tsx(3,24): error TS7016: Could not find a declaration file for module 'stack-utils'. '/home/user/thyrox/node_modules/stack-utils/index.js' implicitly has an 'any' type.
+  --- código src/packages/@ant/ink/src/components/ErrorOverview.tsx:1-13 ---
+      1  import codeExcerpt, { type CodeExcerpt } from 'code-excerpt'
+      2  import { readFileSync } from 'fs'
+      3> import StackUtils from 'stack-utils'
+      4  import Box from './Box.js'
+      5  import Text from './Text.js'
+      6  
+      7  /* eslint-disable custom-rules/no-process-cwd -- stack trace file:// paths are relative to the real OS cwd, not the virtual cwd */
+      8  
+      9  // Error's source file is reported as file:///home/user/file.js
+     10  // This function removes the file://[cwd] part
+     11  const cleanupPath = (path: string | undefined): string | undefined => {
+     12    return path?.replace(`file://${process.cwd()}/`, '')
+     13  }
+  Try `npm i --save-dev @types/stack-utils` if it exists or add a new declaration (.d.ts) file containing `declare module 'stack-utils';`

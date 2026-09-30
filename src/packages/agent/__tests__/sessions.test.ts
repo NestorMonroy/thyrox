@@ -103,11 +103,11 @@ describe('indice de sesiones (T-030)', () => {
     const a = sembrar(d, 'claude-opus-5')
     const filas = indexSessions(d)
     expect(filas.length).toBe(1)
-    expect(filas[0].id).toBe(a.id)
-    expect(filas[0].model).toBe('claude-opus-5')
-    expect(filas[0].turns).toBe(2)
-    expect(filas[0].usage.cache_read_input_tokens).toBe(200)
-    expect(filas[0].firstAt <= filas[0].lastAt).toBe(true)
+    expect(filas[0]!.id).toBe(a.id)
+    expect(filas[0]!.model).toBe('claude-opus-5')
+    expect(filas[0]!.turns).toBe(2)
+    expect(filas[0]!.usage.cache_read_input_tokens).toBe(200)
+    expect(filas[0]!.firstAt <= filas[0]!.lastAt).toBe(true)
   })
 
   test('la bifurcacion aparece en el indice apuntando a su padre', () => {
@@ -115,8 +115,8 @@ describe('indice de sesiones (T-030)', () => {
     const padre = sembrar(d)
     const hija = forkSession({ cwd: d, transcriptDir: d, from: padre.id })
     const porId = Object.fromEntries(indexSessions(d).map((f) => [f.id, f]))
-    expect(porId[hija.id].forkedFrom).toBe(padre.id)
-    expect(porId[padre.id].forkedFrom).toBeNull()
+    expect(porId[hija.id]!.forkedFrom).toBe(padre.id)
+    expect(porId[padre.id]!.forkedFrom).toBeNull()
   })
 
   test('un directorio sin transcripts da un indice vacio, no un error', () => {

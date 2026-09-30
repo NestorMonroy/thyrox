@@ -1,0 +1,437 @@
+diff --git a/src/lib/podman_capabilities.sh b/src/lib/podman_capabilities.sh
+index cbad4202..c66da4fa 100755
+--- a/src/lib/podman_capabilities.sh
++++ b/src/lib/podman_capabilities.sh
+@@ -4,8 +4,9 @@
+ # Compila un ayudante estatico en C, lo empaqueta en una imagen LOCAL sin red
+ # (`podman import` sobre un tar propio, sin registro) y mide, con ese
+ # ayudante corriendo dentro de un contenedor, si el runtime CORRE, si hace
+-# cumplir el limite de PIDs y el de memoria, y si la limpieza retira
+-# contenedor e imagen sin dejar proceso huerfano en el anfitrion.
++# cumplir los limites de PIDs, memoria, red, sistema de archivos y CPU, y si
++# la limpieza retira contenedor e imagen sin dejar proceso huerfano en el
++# anfitrion.
+ #
+ # Publica en stdout una linea TSV por capacidad —`capacidad<TAB>veredicto
+ # <TAB>detalle`—, con veredicto `efectivo`, `no-efectivo` o `error`. Un
+@@ -14,16 +15,27 @@
+ # poder medir: falta Podman, falta gcc, o `podman import` no deja una imagen
+ # usable.
+ #
+-# Cuatro capacidades, en este orden:
+-#   run           el contenedor corre y sale 0
+-#   pids_limit    con --pids-limit 16, el ayudante que intenta 64 procesos
+-#                 logra <= 16
+-#   memory_limit  con --memory 64m (sin swap extra), reservar 256 MiB termina
+-#                 en fallo de reserva u OOM, no en exito
+-#   cleanup       tras `podman rm -f`, ni el contenedor queda listado ni
+-#                 sobrevive su proceso en el anfitrion
++# Ocho capacidades, en este orden:
++#   run                 el contenedor corre y sale 0
++#   pids_limit          con --pids-limit 16, el ayudante que intenta 64
++#                       procesos logra <= 16
++#   memory_limit        con --memory 64m (sin swap extra), reservar 256 MiB
++#                       termina en fallo de reserva u OOM, no en exito
++#   cleanup             tras `podman rm -f`, ni el contenedor queda listado
++#                       ni sobrevive su proceso en el anfitrion
++#   network_none        con --network none, una conexion TCP a una IP fija Y
++#                       una consulta DNS por UDP fallan las dos
++#   read_only_rootfs    con --read-only --read-only-tmpfs=false, escribir en
++#                       / Y en /tmp fallan las dos (--read-only solo deja
++#                       /tmp, /run, /var/tmp y /dev/shm escribibles, porque
++#                       Podman los monta como tmpfs)
++#   cpu_limit           con --cpus 0.5, el ayudante que gira 2 hilos obtiene
++#                       menos nucleos que un umbral con nombre entre el
++#                       limite pedido y el techo sin limite de 2 hilos
++#   readonly_mount      con un directorio propio (no el repo) montado :ro,
++#                       leer un archivo sembrado funciona Y escribir falla
+ #
+-# @exitcode 0 Se pudieron medir las cuatro capacidades (cualquiera sea su
++# @exitcode 0 Se pudieron medir las ocho capacidades (cualquiera sea su
+ #             veredicto).
+ # @exitcode 2 No se pudo medir: falta Podman (via
+ #             `thyrox_toolchain_require_podman`, SIN opt-in de instalacion),
+@@ -44,6 +56,15 @@ _PODMAN_CAP_IMAGE="thyrox-podman-capabilities-${_PODMAN_CAP_RUN_ID}"
+ _PODMAN_CAP_CONTAINER_PREFIX="thyrox-podman-cap-${_PODMAN_CAP_RUN_ID}"
+ _PODMAN_CAP_HELPER_MARKER="thyrox-podman-capabilities-helper-${_PODMAN_CAP_RUN_ID}"
+ 
++# Umbral con nombre para `cpu_limit`, entre el limite pedido (0.5 nucleos) y
++# el techo sin limite de 2 hilos (~2.0 nucleos, medido en
++# `.claude/workbench/podman-isolation-2b-gaps-20260929T140754/`). La medida
++# es sensible a la carga del anfitrion —el mismo banco midio 1,77 en vez de
++# 1,94 bajo contencion de otras sondas—, asi que el umbral deja margen en vez
++# de pegarse al valor esperado.
++readonly _PODMAN_CAP_CPU_LIMIT_THRESHOLD='1.0'
++readonly _PODMAN_CAP_CPU_LIMIT_THREADS=2
++
+ _PODMAN_CAP_WORK=""
+ _PODMAN_CAP_IMAGE_IMPORTED=""
+ declare -a _PODMAN_CAP_CONTAINERS=()
+@@ -82,7 +103,7 @@ cd "$_PODMAN_CAP_WORK" || exit 2
+ 
+ # --- el ayudante ---
+ #
+-# Un solo binario, tres modos por argv[1]:
++# Un solo binario, por argv[1]:
+ #   run          sale 0 de inmediato — mide si el contenedor corre.
+ #   fork <n>     intenta crear <n> procesos hijos y espera a todos; imprime
+ #                cuantos logro CREAR (fork() con exito), no cuantos
+@@ -91,16 +112,39 @@ cd "$_PODMAN_CAP_WORK" || exit 2
+ #                nunca escritas no cuentan contra un limite de memoria real).
+ #   sleep <n>    duerme <n> segundos — deja un proceso vivo en el anfitrion
+ #                para medir la capacidad `cleanup`.
++#   net          conecta por TCP a una IP publica fija, sin DNS, para medir
++#                la red y no el resolvedor.
++#   dns          una consulta DNS minima por UDP: ¿sale y vuelve la
++#                respuesta?
++#   cpu <n>      <n> hilos giran unos segundos; publica el cociente
++#                CPU/pared, que es cuantos nucleos obtuvo el contenedor.
++#   write <ruta> intenta crear/abrir <ruta> en escritura.
++#   read <ruta>  intenta abrir <ruta> en lectura.
+ cat > "$_PODMAN_CAP_WORK/helper.c" <<'HELPER_C_EOF'
++#include <arpa/inet.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <netinet/in.h>
++#include <pthread.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <unistd.h>
++#include <sys/socket.h>
++#include <sys/times.h>
+ #include <sys/wait.h>
++#include <time.h>
++#include <unistd.h>
++
++static void *spin(void *arg) {
++    volatile unsigned long x = 0;
++    time_t end = time(NULL) + *(int *)arg;
++    while (time(NULL) < end) x++;
++    return NULL;
++}
+ 
+ int main(int argc, char **argv) {
+     if (argc < 2) {
+-        fprintf(stderr, "uso: helper <run|fork|mem|sleep> [n]\n");
++        fprintf(stderr, "uso: helper <run|fork|mem|sleep|net|dns|cpu|write|read> [n|ruta]\n");
+         return 1;
+     }
+ 
+@@ -157,6 +201,80 @@ int main(int argc, char **argv) {
+         return 0;
+     }
+ 
++    if (strcmp(argv[1], "net") == 0) {
++        /* Conectar por TCP a una IP publica: sin DNS, para medir la red y no
++         * el resolvedor. */
++        int s = socket(AF_INET, SOCK_STREAM, 0);
++        struct sockaddr_in a = { .sin_family = AF_INET, .sin_port = htons(443) };
++        struct timeval tv = { 3, 0 };
++        int rc;
++        inet_pton(AF_INET, "1.1.1.1", &a.sin_addr);
++        setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
++        rc = s < 0 ? -1 : connect(s, (struct sockaddr *)&a, sizeof a);
++        printf("net_connect=%s errno=%s\n",
++               rc == 0 ? "ok" : "fail", rc == 0 ? "-" : strerror(errno));
++        return 0;
++    }
++
++    if (strcmp(argv[1], "dns") == 0) {
++        /* Una consulta DNS minima (A de example.com) por UDP a 1.1.1.1:53:
++         * ¿sale y vuelve la respuesta? */
++        unsigned char q[] = {0x12, 0x34, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0,
++                              7, 'e', 'x', 'a', 'm', 'p', 'l', 'e',
++                              3, 'c', 'o', 'm', 0, 0, 1, 0, 1};
++        int s = socket(AF_INET, SOCK_DGRAM, 0);
++        struct sockaddr_in a = { .sin_family = AF_INET, .sin_port = htons(53) };
++        struct timeval tv = { 3, 0 };
++        ssize_t sent, got;
++        int send_errno;
++        unsigned char r[512];
++        inet_pton(AF_INET, "1.1.1.1", &a.sin_addr);
++        setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
++        sent = s < 0 ? -1 : sendto(s, q, sizeof q, 0, (struct sockaddr *)&a, sizeof a);
++        send_errno = errno;
++        got = sent < 0 ? -1 : recv(s, r, sizeof r, 0);
++        printf("dns_send=%s dns_answer=%s errno=%s\n",
++               sent >= 0 ? "ok" : "fail", got > 0 ? "ok" : "fail",
++               sent < 0 ? strerror(send_errno) : (got > 0 ? "-" : strerror(errno)));
++        return 0;
++    }
++
++    if (strcmp(argv[1], "cpu") == 0) {
++        /* N hilos girando unos segundos: el cociente CPU/pared dice cuantos
++         * nucleos obtuvo el contenedor. */
++        int secs = 3;
++        int n = argc > 2 ? atoi(argv[2]) : 2;
++        pthread_t th[8];
++        struct tms t0, t9;
++        long hz = sysconf(_SC_CLK_TCK);
++        clock_t w0, w9;
++        double cpu, wall;
++        int i;
++        if (n < 1 || n > 8) n = 2;
++        w0 = times(&t0);
++        for (i = 0; i < n; i++) pthread_create(&th[i], NULL, spin, &secs);
++        for (i = 0; i < n; i++) pthread_join(th[i], NULL);
++        w9 = times(&t9);
++        cpu = (double)(t9.tms_utime - t0.tms_utime + t9.tms_stime - t0.tms_stime) / hz;
++        wall = (double)(w9 - w0) / hz;
++        printf("threads=%d cpu_ratio=%.2f cpu_s=%.2f wall_s=%.2f\n", n, cpu / wall, cpu, wall);
++        return 0;
++    }
++
++    if (strcmp(argv[1], "write") == 0) {
++        const char *path = argc > 2 ? argv[2] : "/probe-write";
++        int fd = open(path, O_CREAT | O_WRONLY, 0644);
++        printf("write=%s errno=%s\n", fd >= 0 ? "ok" : "fail", fd >= 0 ? "-" : strerror(errno));
++        return 0;
++    }
++
++    if (strcmp(argv[1], "read") == 0) {
++        const char *path = argc > 2 ? argv[2] : "";
++        int fd = path[0] == '\0' ? -1 : open(path, O_RDONLY);
++        printf("read=%s errno=%s\n", fd >= 0 ? "ok" : "fail", fd >= 0 ? "-" : strerror(errno));
++        return 0;
++    }
++
+     fprintf(stderr, "modo desconocido: %s\n", argv[1]);
+     return 1;
+ }
+@@ -170,7 +288,7 @@ if ! gcc -static -O2 -o "$_PODMAN_CAP_WORK/helper" "$_PODMAN_CAP_WORK/helper.c"
+ fi
+ 
+ # --- la imagen: un tar propio, importado sin red ---
+-mkdir -p "$_PODMAN_CAP_WORK/rootfs/bin"
++mkdir -p "$_PODMAN_CAP_WORK/rootfs/bin" "$_PODMAN_CAP_WORK/rootfs/tmp"
+ cp "$_PODMAN_CAP_WORK/helper" "$_PODMAN_CAP_WORK/rootfs/bin/helper"
+ if ! tar -C "$_PODMAN_CAP_WORK/rootfs" -cf "$_PODMAN_CAP_WORK/rootfs.tar" .; then
+   echo "podman_capabilities: no se pudo empaquetar el rootfs" >&2
+@@ -294,9 +412,169 @@ _podman_cap_measure_cleanup() {
+   fi
+ }
+ 
++# --- capacidad: network_none ---
++#
++# `efectivo` sólo si las dos formas de salir a la red fallan bajo
++# --network none: TCP/IPv4 a una IP fija (sin pasar por el resolvedor) y una
++# consulta DNS por UDP (que SI pasa por el resolvedor). Dos contenedores,
++# porque el ayudante mide un modo por invocacion.
++_podman_cap_measure_network_none() {
++  local cname_tcp="${_PODMAN_CAP_CONTAINER_PREFIX}-net-tcp"
++  local cname_dns="${_PODMAN_CAP_CONTAINER_PREFIX}-net-dns"
++  local out_tcp out_dns rc_tcp rc_dns tcp_failed=0 dns_failed=0
++  _PODMAN_CAP_CONTAINERS+=("$cname_tcp")
++  _PODMAN_CAP_CONTAINERS+=("$cname_dns")
++
++  out_tcp="$("$PODMAN" run --rm --network none --name "$cname_tcp" \
++        "$_PODMAN_CAP_IMAGE" /bin/helper net 2>&1)"
++  rc_tcp=$?
++  if _podman_cap_is_podman_level_error "$rc_tcp"; then
++    printf 'network_none\terror\tpodman rc=%s (tcp): %s\n' "$rc_tcp" "${out_tcp:0:200}"
++    return
++  fi
++
++  out_dns="$("$PODMAN" run --rm --network none --name "$cname_dns" \
++        "$_PODMAN_CAP_IMAGE" /bin/helper dns 2>&1)"
++  rc_dns=$?
++  if _podman_cap_is_podman_level_error "$rc_dns"; then
++    printf 'network_none\terror\tpodman rc=%s (dns): %s\n' "$rc_dns" "${out_dns:0:200}"
++    return
++  fi
++
++  [[ "$out_tcp" == *"net_connect=fail"* ]] && tcp_failed=1
++  [[ "$out_dns" == *"dns_send=fail"* || "$out_dns" == *"dns_answer=fail"* ]] && dns_failed=1
++
++  if [[ "$tcp_failed" -eq 1 && "$dns_failed" -eq 1 ]]; then
++    printf 'network_none\tefectivo\tTCP y DNS fallan con --network none: %s | %s\n' \
++      "$out_tcp" "$out_dns"
++  else
++    printf 'network_none\tno-efectivo\tTCP=%s DNS=%s con --network none\n' "$out_tcp" "$out_dns"
++  fi
++}
++
++# --- capacidad: read_only_rootfs ---
++#
++# `--read-only` solo NO cierra /tmp, /run, /var/tmp ni /dev/shm: Podman los
++# monta como tmpfs, y eso sigue siendo escribible. Por eso esta sonda exige
++# ademas `--read-only-tmpfs=false`, que cierra tambien esos montajes; medido
++# en `.claude/workbench/podman-isolation-2b-gaps-20260929T140754/`.
++# `efectivo` solo si escribir en / Y en /tmp fallan las dos.
++_podman_cap_measure_read_only_rootfs() {
++  local cname_root="${_PODMAN_CAP_CONTAINER_PREFIX}-ro-root"
++  local cname_tmp="${_PODMAN_CAP_CONTAINER_PREFIX}-ro-tmp"
++  local out_root out_tmp rc_root rc_tmp root_failed=0 tmp_failed=0
++  _PODMAN_CAP_CONTAINERS+=("$cname_root")
++  _PODMAN_CAP_CONTAINERS+=("$cname_tmp")
++
++  out_root="$("$PODMAN" run --rm --network none --read-only --read-only-tmpfs=false \
++        --name "$cname_root" "$_PODMAN_CAP_IMAGE" /bin/helper write /probe-write 2>&1)"
++  rc_root=$?
++  if _podman_cap_is_podman_level_error "$rc_root"; then
++    printf 'read_only_rootfs\terror\tpodman rc=%s (/): %s\n' "$rc_root" "${out_root:0:200}"
++    return
++  fi
++
++  out_tmp="$("$PODMAN" run --rm --network none --read-only --read-only-tmpfs=false \
++        --name "$cname_tmp" "$_PODMAN_CAP_IMAGE" /bin/helper write /tmp/probe-write 2>&1)"
++  rc_tmp=$?
++  if _podman_cap_is_podman_level_error "$rc_tmp"; then
++    printf 'read_only_rootfs\terror\tpodman rc=%s (/tmp): %s\n' "$rc_tmp" "${out_tmp:0:200}"
++    return
++  fi
++
++  [[ "$out_root" == *"write=fail"* ]] && root_failed=1
++  [[ "$out_tmp" == *"write=fail"* ]] && tmp_failed=1
++
++  if [[ "$root_failed" -eq 1 && "$tmp_failed" -eq 1 ]]; then
++    printf 'read_only_rootfs\tefectivo\tescribir en / y /tmp falla con --read-only --read-only-tmpfs=false: %s | %s\n' \
++      "$out_root" "$out_tmp"
++  else
++    printf 'read_only_rootfs\tno-efectivo\t/=%s /tmp=%s con --read-only --read-only-tmpfs=false\n' \
++      "$out_root" "$out_tmp"
++  fi
++}
++
++# --- capacidad: cpu_limit ---
++#
++# La medida es sensible a la carga del anfitrion: correr esta sonda junto a
++# otras que tambien usan CPU puede subir el cociente medido. El umbral
++# (`_PODMAN_CAP_CPU_LIMIT_THRESHOLD`) deja margen entre el limite pedido
++# (0.5) y el techo sin limite de 2 hilos (~2.0) para no confundir esa
++# contencion con que el limite no aplique.
++_podman_cap_measure_cpu_limit() {
++  local cname="${_PODMAN_CAP_CONTAINER_PREFIX}-cpu" out rc ratio
++  _PODMAN_CAP_CONTAINERS+=("$cname")
++  out="$("$PODMAN" run --rm --network none --cpus 0.5 --name "$cname" \
++        "$_PODMAN_CAP_IMAGE" /bin/helper cpu "$_PODMAN_CAP_CPU_LIMIT_THREADS" 2>&1)"
++  rc=$?
++  if _podman_cap_is_podman_level_error "$rc"; then
++    printf 'cpu_limit\terror\tpodman rc=%s: %s\n' "$rc" "${out:0:200}"
++    return
++  fi
++  ratio="$(printf '%s' "$out" | grep -o 'cpu_ratio=[0-9.]*' | cut -d= -f2)"
++  if [[ -z "$ratio" ]]; then
++    printf 'cpu_limit\terror\tsalida sin cpu_ratio legible (rc=%s): %s\n' "$rc" "${out:0:200}"
++    return
++  fi
++  if awk -v r="$ratio" -v t="$_PODMAN_CAP_CPU_LIMIT_THRESHOLD" 'BEGIN { exit !(r < t) }'; then
++    printf 'cpu_limit\tefectivo\t%s nucleos obtenidos con --cpus 0.5 y %s hilos (< %s)\n' \
++      "$ratio" "$_PODMAN_CAP_CPU_LIMIT_THREADS" "$_PODMAN_CAP_CPU_LIMIT_THRESHOLD"
++  else
++    printf 'cpu_limit\tno-efectivo\t%s nucleos obtenidos con --cpus 0.5 y %s hilos (>= %s)\n' \
++      "$ratio" "$_PODMAN_CAP_CPU_LIMIT_THREADS" "$_PODMAN_CAP_CPU_LIMIT_THRESHOLD"
++  fi
++}
++
++# --- capacidad: readonly_mount ---
++#
++# Monta un directorio DESECHABLE PROPIO —subdirectorio de
++# `_PODMAN_CAP_WORK`, que el trap ya retira— nunca el repo. `efectivo` solo
++# si leer el archivo sembrado funciona Y escribir uno nuevo falla las dos.
++_podman_cap_measure_readonly_mount() {
++  local cname_read="${_PODMAN_CAP_CONTAINER_PREFIX}-ro-mount-read"
++  local cname_write="${_PODMAN_CAP_CONTAINER_PREFIX}-ro-mount-write"
++  local mountdir="$_PODMAN_CAP_WORK/readonly-mount"
++  local out_read out_write rc_read rc_write read_ok=0 write_failed=0
++  _PODMAN_CAP_CONTAINERS+=("$cname_read")
++  _PODMAN_CAP_CONTAINERS+=("$cname_write")
++
++  mkdir -p "$mountdir"
++  printf 'seed\n' > "$mountdir/seed.txt"
++
++  out_read="$("$PODMAN" run --rm --network none -v "$mountdir:/mnt/ro:ro" \
++        --name "$cname_read" "$_PODMAN_CAP_IMAGE" /bin/helper read /mnt/ro/seed.txt 2>&1)"
++  rc_read=$?
++  if _podman_cap_is_podman_level_error "$rc_read"; then
++    printf 'readonly_mount\terror\tpodman rc=%s (read): %s\n' "$rc_read" "${out_read:0:200}"
++    return
++  fi
++
++  out_write="$("$PODMAN" run --rm --network none -v "$mountdir:/mnt/ro:ro" \
++        --name "$cname_write" "$_PODMAN_CAP_IMAGE" /bin/helper write /mnt/ro/probe-write 2>&1)"
++  rc_write=$?
++  if _podman_cap_is_podman_level_error "$rc_write"; then
++    printf 'readonly_mount\terror\tpodman rc=%s (write): %s\n' "$rc_write" "${out_write:0:200}"
++    return
++  fi
++
++  [[ "$out_read" == *"read=ok"* ]] && read_ok=1
++  [[ "$out_write" == *"write=fail"* ]] && write_failed=1
++
++  if [[ "$read_ok" -eq 1 && "$write_failed" -eq 1 ]]; then
++    printf 'readonly_mount\tefectivo\tmontaje :ro permite leer y rehusa escribir: %s | %s\n' \
++      "$out_read" "$out_write"
++  else
++    printf 'readonly_mount\tno-efectivo\tread=%s write=%s con montaje :ro\n' "$out_read" "$out_write"
++  fi
++}
++
+ _podman_cap_measure_run
+ _podman_cap_measure_pids_limit
+ _podman_cap_measure_memory_limit
+ _podman_cap_measure_cleanup
++_podman_cap_measure_network_none
++_podman_cap_measure_read_only_rootfs
++_podman_cap_measure_cpu_limit
++_podman_cap_measure_readonly_mount
+ 
+ exit 0
+diff --git a/tests/lib/test-podman-capabilities.sh b/tests/lib/test-podman-capabilities.sh
+index 7c375c83..69ce2c65 100755
+--- a/tests/lib/test-podman-capabilities.sh
++++ b/tests/lib/test-podman-capabilities.sh
+@@ -4,8 +4,9 @@
+ # Tres casos. El primero mide el rechazo: sin Podman en el PATH, la sonda
+ # REHUSA con exit 2 y no imprime ninguna linea de veredicto — un veredicto
+ # fabricado sin poder medir seria peor que ningun veredicto. El segundo mide
+-# el camino real: con el Podman de este contenedor, salen exactamente cuatro
+-# lineas TSV, una por capacidad, y `run`/`cleanup` —las dos que este
++# el camino real: con el Podman de este contenedor, salen exactamente ocho
++# lineas TSV, una por capacidad, y `run`/`cleanup`/`network_none`/
++# `read_only_rootfs`/`cpu_limit`/`readonly_mount` —las seis que este
+ # contenedor sostiene sin condicion— dan `efectivo`. El tercero confirma que
+ # la sonda no deja rastro: ni la imagen ni ningun contenedor propio sobreviven
+ # a la ejecucion.
+@@ -25,7 +26,7 @@ fi
+ ok "el sujeto existe y es ejecutable"
+ 
+ VALID_VERDICTS='efectivo no-efectivo error'
+-EXPECTED_CAPABILITIES='run pids_limit memory_limit cleanup'
++EXPECTED_CAPABILITIES='run pids_limit memory_limit cleanup network_none read_only_rootfs cpu_limit readonly_mount'
+ 
+ # --- Caso 1: sin podman en el PATH, la sonda rehusa sin imprimir veredictos ---
+ #
+@@ -80,10 +81,10 @@ if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
+   fi
+ 
+   LINE_COUNT="$(printf '%s\n' "$REAL_OUT" | grep -c . || true)"
+-  if [[ "$LINE_COUNT" -eq 4 ]]; then
+-    ok "publica exactamente cuatro lineas"
++  if [[ "$LINE_COUNT" -eq 8 ]]; then
++    ok "publica exactamente ocho lineas"
+   else
+-    bad "esperaba 4 lineas, dio $LINE_COUNT. Salida:\n$REAL_OUT"
++    bad "esperaba 8 lineas, dio $LINE_COUNT. Salida:\n$REAL_OUT"
+   fi
+ 
+   declare -A SEEN_CAP=()
+@@ -117,6 +118,17 @@ if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
+   else
+     bad "'cleanup' esperaba efectivo, dio '${VERDICT_OF[cleanup]:-(ausente)}'"
+   fi
++  # Las cuatro capacidades nuevas se sostienen sin condicion en este
++  # anfitrion (Podman 4.9.3, uid 0), medido en
++  # .claude/workbench/podman-isolation-2b-20260929T100450/ y
++  # .claude/workbench/podman-isolation-2b-gaps-20260929T140754/.
++  for cap in network_none read_only_rootfs cpu_limit readonly_mount; do
++    if [[ "${VERDICT_OF[$cap]:-}" == "efectivo" ]]; then
++      ok "'$cap' da efectivo"
++    else
++      bad "'$cap' esperaba efectivo, dio '${VERDICT_OF[$cap]:-(ausente)}'"
++    fi
++  done
+   # pids_limit y memory_limit se informan tal cual: no se fuerza su veredicto.
+   if [[ -n "${VERDICT_OF[pids_limit]:-}" ]]; then
+     ok "'pids_limit' se informa (${VERDICT_OF[pids_limit]}), sin forzar el valor"

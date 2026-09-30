@@ -1,0 +1,1 @@
+  const middleStart = Math.floor((value.length - middle) / 3)

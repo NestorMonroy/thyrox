@@ -1,13 +1,9 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/compactWarningState.test.ts`
- * contra `ccnmt: packages/agent/compaction/compactWarningState.ts`.
- */
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import {
   clearCompactWarningSuppression,
   compactWarningStore,
   suppressCompactWarning,
-} from '../compaction/compactWarningState.ts'
+} from '../compaction/compactWarningState.js'
 
 beforeEach(() => {
   clearCompactWarningSuppression()
@@ -17,40 +13,40 @@ afterEach(() => {
   clearCompactWarningSuppression()
 })
 
-describe('compactWarningStore — estado inicial', () => {
-  test('arranca en false', () => {
+describe('compactWarningStore — initial state', () => {
+  test('starts as false', () => {
     expect(compactWarningStore.getState()).toBe(false)
   })
 })
 
 describe('suppressCompactWarning / clearCompactWarningSuppression', () => {
-  test('suppress pone el estado en true', () => {
+  test('suppress sets state to true', () => {
     suppressCompactWarning()
     expect(compactWarningStore.getState()).toBe(true)
   })
 
-  test('clear devuelve el estado a false', () => {
+  test('clear sets state back to false', () => {
     suppressCompactWarning()
     clearCompactWarningSuppression()
     expect(compactWarningStore.getState()).toBe(false)
   })
 
-  test('suppress repetido es idempotente', () => {
+  test('repeated suppress is idempotent', () => {
     suppressCompactWarning()
     suppressCompactWarning()
     suppressCompactWarning()
     expect(compactWarningStore.getState()).toBe(true)
   })
 
-  test('clear repetido es idempotente', () => {
+  test('repeated clear is idempotent', () => {
     clearCompactWarningSuppression()
     clearCompactWarningSuppression()
     expect(compactWarningStore.getState()).toBe(false)
   })
 })
 
-describe('subscribe — notificación a listeners', () => {
-  test('el listener dispara cuando el estado cambia', () => {
+describe('subscribe — listener notifications', () => {
+  test('listener fires when state changes', () => {
     const listener = mock(() => {})
     const unsubscribe = compactWarningStore.subscribe(listener)
     suppressCompactWarning()
@@ -58,18 +54,18 @@ describe('subscribe — notificación a listeners', () => {
     unsubscribe()
   })
 
-  test('el listener NO dispara cuando el estado se fija al mismo valor (guard Object.is)', () => {
-    // El store tiene un guard `Object.is(next, prev) → skip`. Evita
-    // re-renders innecesarios cuando se fija un valor idéntico.
-    suppressCompactWarning() // false → true (notificaría, pero aún no hay listener)
+  test('listener does NOT fire when state is set to the same value (Object.is check)', () => {
+    // The store has a `Object.is(next, prev) → skip` guard. This avoids
+    // unnecessary re-renders when an identical value is set.
+    suppressCompactWarning() // false → true (would notify, but no listener yet)
     const listener = mock(() => {})
     const unsubscribe = compactWarningStore.subscribe(listener)
-    suppressCompactWarning() // true → true (sin cambio)
+    suppressCompactWarning() // true → true (no change)
     expect(listener).not.toHaveBeenCalled()
     unsubscribe()
   })
 
-  test('varios listeners disparan todos al cambiar el estado', () => {
+  test('multiple listeners all fire on state change', () => {
     const a = mock(() => {})
     const b = mock(() => {})
     const c = mock(() => {})
@@ -85,17 +81,17 @@ describe('subscribe — notificación a listeners', () => {
     unsubC()
   })
 
-  test('unsubscribe detiene a un listener de futuras notificaciones', () => {
+  test('unsubscribe stops a listener from receiving future notifications', () => {
     const listener = mock(() => {})
     const unsubscribe = compactWarningStore.subscribe(listener)
     suppressCompactWarning()
     expect(listener).toHaveBeenCalledTimes(1)
     unsubscribe()
     clearCompactWarningSuppression()
-    expect(listener).toHaveBeenCalledTimes(1) // sigue en 1
+    expect(listener).toHaveBeenCalledTimes(1) // still 1
   })
 
-  test('el listener dispara en ambas direcciones (suppress Y clear)', () => {
+  test('listener fires on both directions (suppress AND clear)', () => {
     const listener = mock(() => {})
     const unsubscribe = compactWarningStore.subscribe(listener)
     suppressCompactWarning() // false → true
@@ -104,7 +100,7 @@ describe('subscribe — notificación a listeners', () => {
     unsubscribe()
   })
 
-  test('desuscribir un listener no afecta a los demás', () => {
+  test('unsubscribing one listener does not affect others', () => {
     const a = mock(() => {})
     const b = mock(() => {})
     const unsubA = compactWarningStore.subscribe(a)

@@ -1,0 +1,45 @@
+src/packages/repl/src/hooksConfigManager.ts(382,5): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/hooksConfigManager.ts:372-392 ---
+    372    >,
+    373    event: HookEvent,
+    374  ): string[] {
+    375    const matchers = Object.keys(hooksByEventAndMatcher[event] || {})
+    376    return sortMatchersByPriority(matchers, hooksByEventAndMatcher, event)
+    377  }
+    378  
+    379  // Get hooks for a specific event and matcher
+    380  export function getHooksForMatcher(
+    381    hooksByEventAndMatcher: Record<
+    382>     HookEvent,
+    383      Record<string, IndividualHookConfig[]>
+    384    >,
+    385    event: HookEvent,
+    386    matcher: string | null,
+    387  ): IndividualHookConfig[] {
+    388    // For events without matchers, hooks are stored with empty string as key
+    389    // because the record keys must be strings.
+    390    const matcherKey = matcher ?? ''
+    391    return hooksByEventAndMatcher[event]?.[matcherKey] ?? []
+    392  }
+src/packages/repl/src/hooksConfigManager.ts(391,33): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/hooksConfigManager.ts:381-400 ---
+    381    hooksByEventAndMatcher: Record<
+    382      HookEvent,
+    383      Record<string, IndividualHookConfig[]>
+    384    >,
+    385    event: HookEvent,
+    386    matcher: string | null,
+    387  ): IndividualHookConfig[] {
+    388    // For events without matchers, hooks are stored with empty string as key
+    389    // because the record keys must be strings.
+    390    const matcherKey = matcher ?? ''
+    391>   return hooksByEventAndMatcher[event]?.[matcherKey] ?? []
+    392  }
+    393  
+    394  // Get metadata for a specific event's matcher
+    395  export function getMatcherMetadata(
+    396    event: HookEvent,
+    397    toolNames: string[],
+    398  ): MatcherMetadata | undefined {
+    399    return getHookEventMetadata(toolNames)[event].matcherMetadata
+    400  }

@@ -1,0 +1,1 @@
+export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_CLAUDE="$HERE/cuda_pool_item.py"

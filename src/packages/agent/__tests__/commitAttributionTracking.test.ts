@@ -55,13 +55,13 @@ describe('la clasificación del repositorio', () => {
 describe('la superficie y las rutas', () => {
   test('5. `getClientSurface` cae a `cli` sin variable declarada', async () => {
     const { getClientSurface } = await import('../commitAttribution.ts')
-    const previo = process.env.CLAUDE_CODE_ENTRYPOINT
-    delete process.env.CLAUDE_CODE_ENTRYPOINT
+    const previo = process.env.THYROX_CODE_ENTRYPOINT
+    delete process.env.THYROX_CODE_ENTRYPOINT
     expect(getClientSurface()).toBe('cli')
-    process.env.CLAUDE_CODE_ENTRYPOINT = 'sdk'
+    process.env.THYROX_CODE_ENTRYPOINT = 'sdk'
     expect(getClientSurface()).toBe('sdk')
-    if (previo === undefined) delete process.env.CLAUDE_CODE_ENTRYPOINT
-    else process.env.CLAUDE_CODE_ENTRYPOINT = previo
+    if (previo === undefined) delete process.env.THYROX_CODE_ENTRYPOINT
+    else process.env.THYROX_CODE_ENTRYPOINT = previo
   })
 
   test('6. una ruta RELATIVA pasa verbatim', async () => {

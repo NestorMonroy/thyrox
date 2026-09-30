@@ -5,6 +5,7 @@
  * servers reuse it. Lives in settings.xaaIdp (non-secret) + a keychain slot
  * keyed by issuer (secret). Separate trust domain from per-server AS secrets.
  */
+import { PRODUCT_NAME } from '../../entry/productName.ts'
 import type { Command } from '@commander-js/extra-typings'
 import { cliError, cliOk } from '../../exit.js'
 import {
@@ -32,7 +33,7 @@ export function registerMcpXaaIdpCommand(mcp: Command): void {
       'Configure the IdP connection (one-time setup for all XAA-enabled servers)',
     )
     .requiredOption('--issuer <url>', 'IdP issuer URL (OIDC discovery)')
-    .requiredOption('--client-id <id>', "Claude Code's client_id at the IdP")
+    .requiredOption('--client-id <id>', `${PRODUCT_NAME}'s client_id at the IdP`)
     .option(
       '--client-secret',
       'Read IdP client secret from MCP_XAA_IDP_CLIENT_SECRET env var',

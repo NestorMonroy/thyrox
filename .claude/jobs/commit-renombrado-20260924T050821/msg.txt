@@ -1,0 +1,18 @@
+Undo a rename applied twice to claude-code literals
+
+A global rename ran twice over "claude-code" and left
+"claude-code-how-works-how-works" in 115 files, in 89 forms. Among
+them: /etc/claude-code/managed-settings.json, so the managed policy
+never loaded; the updater's distribution bucket;
+anthropics/claude-code-action; @anthropic-ai/claude-code; the
+keybindings schema; and the official plugin marketplace names, whose
+absence broke a security boundary. pluginIdentifier.test.ts exposed
+it.
+
+The 2.1.275 binary has /etc/claude-code, claude-code-releases,
+anthropics/claude-code-action and claude-code-keybindings.json, and
+never claude-code-how-works. Every doubled literal becomes
+claude-code; none remains. The 340 files citing the
+@claude-code-how-works/* package scope as provenance are the
+reference project's legitimate name and are left alone. Finding
+H-THYROX-171; the bench records the file list.

@@ -1,6 +1,7 @@
 import { Box, Text } from '@anthropic/ink'
 import { FrameAnimation } from '../FrameAnimation.js'
 import type { Lesson } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const lesson: Lesson = {
   id: 'at-mentions',
@@ -10,7 +11,7 @@ export const lesson: Lesson = {
     <Box flexDirection="column" gap={1}>
       <Text>
         Type <Text underline>@</Text> anywhere in your prompt to fuzzy-find and
-        attach a file. Claude reads it before answering — no more pasting code.
+        attach a file. {PRODUCT_NAME} reads it before answering — no more pasting code.
       </Text>
       <FrameAnimation
         frames={[
@@ -22,8 +23,8 @@ export const lesson: Lesson = {
       />
       <Text>
         Reference specific lines with{' '}
-        <Text color="suggestion">src/app.ts:42</Text> and Claude jumps straight
-        there. Works in both directions: Claude cites files the same way, so
+        <Text color="suggestion">src/app.ts:42</Text> and {PRODUCT_NAME} jumps straight
+        there. Works in both directions: {PRODUCT_NAME} cites files the same way, so
         you can click to open them in your editor.
       </Text>
       <Text dimColor>

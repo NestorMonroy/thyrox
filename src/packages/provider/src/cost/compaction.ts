@@ -49,7 +49,7 @@ export function effectiveWindow(window: number, maxOutputTokens: number): number
  *
  * `function nxe(e,n){let r=e-13000; …; return Math.min(Math.floor(e*(o/100)), r)}`
  *
- * `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` lo baja a un porcentaje, nunca lo sube: el
+ * `THYROX_AUTOCOMPACT_PCT_OVERRIDE` lo baja a un porcentaje, nunca lo sube: el
  * `Math.min` deja `e-13000` como techo. Un override de 100 no desactiva el
  * colchón.
  */
@@ -102,9 +102,9 @@ export type RichLevelResult = {
 
 export type FourLevelsOptions = {
   enabled: boolean
-  /** `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` — sólo baja el umbral. */
+  /** `THYROX_AUTOCOMPACT_PCT_OVERRIDE` — sólo baja el umbral. */
   pctOverride?: number
-  /** `CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE` (`v`) — sustituye el tope duro entero. */
+  /** `THYROX_CODE_BLOCKING_LIMIT_OVERRIDE` (`v`) — sustituye el tope duro entero. */
   blockingOverride?: number
 }
 

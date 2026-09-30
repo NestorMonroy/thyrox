@@ -1,17 +1,17 @@
 /**
- * Puerto de `ccnmt: packages/config/mcpConfigSchema.ts` (197 líneas fuente).
- * Esquemas + tipos de configuración de servidores MCP. Reimplementación
- * fiel: mismos nombres de esquema, mismos campos, misma unión discriminada.
+ * MCP server configuration schemas + types.
  *
- * Vive en `config` (no en `mcp-runtime`) por la misma razón que la fuente
- * documenta: estos esquemas describen la FORMA del archivo de config, no el
- * comportamiento en tiempo de ejecución — pertenecen a la capa que ya posee
- * el parseo de config. Los tipos de runtime (conexiones vivas, estado de
- * CLI MCP) no viajan aquí; describen objetos de conexión, no forma de
- * archivo.
+ * Lives in config (not mcp-runtime) because:
+ *   1. These schemas describe *config-file shape*, not runtime behavior.
+ *      The shape belongs with the layer that owns config parsing.
+ *   2. config/plugin/_deps.ts needs McpServerConfigSchema to validate
+ *      plugin-provided MCP server configs at config-load time. Hosting
+ *      it in mcp-runtime forced a config → mcp-runtime cycle that lazy-
+ *      require was a workaround for, not a design.
  *
- * `zod/v4` resuelve tal cual (verificado con `Bun.resolveSync`); `lazySchema`
- * es la dependencia de hoja portada en `./internal/lazySchema.ts`.
+ * Runtime types (ConnectedMCPServer, FailedMCPServer, MCPCliState, etc.)
+ * stay in @thyrox/mcp-runtime/types — they describe live connection
+ * objects, not config-file shape.
  */
 import { z } from 'zod/v4'
 import { lazySchema } from './internal/lazySchema.js'
@@ -20,7 +20,7 @@ const requestTimeoutField = {
   request_timeout_ms: z.number().int().positive().optional(),
 }
 
-// Esquemas y tipos de configuración
+// Configuration schemas and types
 export const ConfigScopeSchema = lazySchema(() =>
   z.enum([
     'local',
@@ -41,7 +41,7 @@ export type Transport = z.infer<ReturnType<typeof TransportSchema>>
 
 export const McpStdioServerConfigSchema = lazySchema(() =>
   z.object({
-    type: z.literal('stdio').optional(), // Opcional por compatibilidad hacia atrás
+    type: z.literal('stdio').optional(), // Optional for backwards compatibility
     command: z.string().min(1, 'Command cannot be empty'),
     args: z.array(z.string()).default([]),
     env: z.record(z.string(), z.string()).optional(),
@@ -49,11 +49,10 @@ export const McpStdioServerConfigSchema = lazySchema(() =>
   }),
 )
 
-// Cross-App Access (XAA / SEP-990): sólo una bandera por servidor. Los
-// detalles de conexión del IdP (issuer, clientId, callbackPort) vienen de
-// settings.xaaIdp — configurados una vez, compartidos por todos los
-// servidores con XAA habilitado. clientId/clientSecret (config oauth padre +
-// slot de keychain) son para el AS del servidor MCP.
+// Cross-App Access (XAA / SEP-990): just a per-server flag. IdP connection
+// details (issuer, clientId, callbackPort) come from settings.xaaIdp — configured
+// once, shared across all XAA-enabled servers. clientId/clientSecret (parent
+// oauth config + keychain slot) are for the MCP server's AS.
 const McpXaaConfigSchema = lazySchema(() => z.boolean())
 
 const McpOAuthConfigSchema = lazySchema(() =>
@@ -82,7 +81,7 @@ export const McpSSEServerConfigSchema = lazySchema(() =>
   }),
 )
 
-// Tipo de servidor sólo-interno para extensiones de IDE
+// Internal-only server type for IDE extensions
 export const McpSSEIDEServerConfigSchema = lazySchema(() =>
   z.object({
     type: z.literal('sse-ide'),
@@ -92,7 +91,7 @@ export const McpSSEIDEServerConfigSchema = lazySchema(() =>
   }),
 )
 
-// Tipo de servidor sólo-interno para extensiones de IDE
+// Internal-only server type for IDE extensions
 export const McpWebSocketIDEServerConfigSchema = lazySchema(() =>
   z.object({
     type: z.literal('ws-ide'),
@@ -132,7 +131,7 @@ export const McpSdkServerConfigSchema = lazySchema(() =>
   }),
 )
 
-// Tipo de config para servidores proxy de claude.ai
+// Config type for Claude.ai proxy servers
 export const McpClaudeAIProxyServerConfigSchema = lazySchema(() =>
   z.object({
     type: z.literal('claudeai-proxy'),
@@ -183,10 +182,9 @@ export type McpServerConfig = z.infer<ReturnType<typeof McpServerConfigSchema>>
 
 export type ScopedMcpServerConfig = McpServerConfig & {
   scope: ConfigScope
-  // Para servidores provistos por plugin: el `source` (LoadedPlugin.source)
-  // del plugin que lo provee (p. ej. 'slack@anthropic'). Guardado al
-  // construir el config para que el gate de canal no compita con la
-  // hidratación de AppState.plugins.enabled.
+  // For plugin-provided servers: the providing plugin's LoadedPlugin.source
+  // (e.g. 'slack@anthropic'). Stashed at config-build time so the channel
+  // gate doesn't have to race AppState.plugins.enabled hydration.
   pluginSource?: string
 }
 

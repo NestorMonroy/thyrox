@@ -1,0 +1,5 @@
+tests/githooks/test-pre-commit-identifier-language.sh
+tests/githooks/test-pre-commit-reconcile-status.sh
+tests/skills/test-check-skill-artifacts.sh
+tests/verify/test-script-naming.sh
+tests/verify/test-suite-discrimina.sh

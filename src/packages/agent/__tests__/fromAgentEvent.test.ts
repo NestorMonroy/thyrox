@@ -22,37 +22,50 @@ import {
   fromCoreMessages,
   toCoreMessages,
 } from '../createDeps.js'
+import type { AgentEvent } from '../types/events.ts'
+import { toCoreMessage } from '../messageAdapters.ts'
+
+// Los casos alimentan a propósito eventos malformados —tipos que el core no
+// emite, campos ausentes o nulos— para fijar que el proyector los descarta.
+// El contrato tipado no los admite, así que entran por aquí como dato crudo.
+const project = (event: unknown) => fromAgentEvent(event as AgentEvent)
 
 describe('fromAgentEvent — eventos message', () => {
-  test('evento message con campo message anidado devuelve el interior', () => {
-    // Documentado: los eventos message llevan { type: 'message', message: { ... } }
-    // y el mensaje interior tiene su propio campo `message` (forma Anthropic).
-    // El proyector desenvuelve una sola vez.
-    const inner = { type: 'assistant', message: { role: 'assistant', content: [] } }
-    const r = fromAgentEvent({ type: 'message', message: inner })
-    expect(r).toBe(inner)
+  // El core emite su mensaje en forma plana (`CoreMessage`); el proyector lo
+  // devuelve al modelo anidado del bucle con `fromCoreMessage`. Antes se
+  // descartaba todo lo que no llevara `message` anidado — y con eso cualquier
+  // mensaje que el core creara en su propia forma.
+
+  test('un mensaje que entro al core vuelve como el MISMO objeto del bucle', () => {
+    const agent = { type: 'assistant', uuid: 'a-1', message: { role: 'assistant', content: [] } }
+    const r = project({ type: 'message', message: toCoreMessage(agent) })
+    expect(r).toBe(agent)
+  })
+
+  test('un mensaje creado por el core en forma plana se entrega anidado, no se descarta', () => {
+    const r = project({
+      type: 'message',
+      message: { type: 'assistant', uuid: 'c-1', role: 'assistant', content: [{ type: 'text', text: 'x' }] },
+    }) as { type: string; message: { content: unknown } }
+    expect(r.type).toBe('assistant')
+    expect(r.message.content).toEqual([{ type: 'text', text: 'x' }])
   })
 
   test('evento message sin campo message → undefined', () => {
-    expect(fromAgentEvent({ type: 'message' })).toBeUndefined()
+    expect(project({ type: 'message' })).toBeUndefined()
   })
 
   test('evento message con message nulo → undefined', () => {
-    expect(fromAgentEvent({ type: 'message', message: null })).toBeUndefined()
+    expect(project({ type: 'message', message: null })).toBeUndefined()
   })
 
-  test('evento message donde message carece de .message anidado → undefined', () => {
-    // Contrato documentado: el chequeo interior exige `'message' in msg`,
-    // es decir, el objeto interior debe tener él mismo un campo .message.
-    // Si no lo tiene (payload crudo, sólo la etiqueta type), se descarta.
-    expect(
-      fromAgentEvent({ type: 'message', message: { type: 'noinner' } }),
-    ).toBeUndefined()
+  test('un objeto de un tipo que el core no emite → undefined', () => {
+    expect(project({ type: 'message', message: { type: 'noinner' } })).toBeUndefined()
   })
 
   test('evento message con message primitivo (string) → undefined', () => {
     expect(
-      fromAgentEvent({ type: 'message', message: 'string' as never }),
+      project({ type: 'message', message: 'string' as never }),
     ).toBeUndefined()
   })
 })
@@ -60,18 +73,18 @@ describe('fromAgentEvent — eventos message', () => {
 describe('fromAgentEvent — eventos stream', () => {
   test('evento stream devuelve el evento interior verbatim', () => {
     const innerEvent = { type: 'content_block_start', index: 0 }
-    const r = fromAgentEvent({ type: 'stream', event: innerEvent })
+    const r = project({ type: 'stream', event: innerEvent })
     expect(r).toBe(innerEvent)
   })
 
   test('evento stream con event indefinido → undefined', () => {
-    expect(fromAgentEvent({ type: 'stream' })).toBeUndefined()
+    expect(project({ type: 'stream' })).toBeUndefined()
   })
 })
 
 describe('fromAgentEvent — eventos request_start', () => {
   test('devuelve el marcador sintético stream_request_start', () => {
-    expect(fromAgentEvent({ type: 'request_start' })).toEqual({
+    expect(project({ type: 'request_start' })).toEqual({
       type: 'stream_request_start',
     })
   })
@@ -79,7 +92,7 @@ describe('fromAgentEvent — eventos request_start', () => {
   test('campos extra en el input se ignoran — la salida es sólo el marcador', () => {
     // Contrato documentado: request_start sintetiza un marcador de forma
     // fija; cualquier campo extra que pase el llamador se descarta.
-    const r = fromAgentEvent({
+    const r = project({
       type: 'request_start',
       requestId: 'abc',
       extra: 'data',
@@ -90,29 +103,29 @@ describe('fromAgentEvent — eventos request_start', () => {
 
 describe('fromAgentEvent — evento done', () => {
   test('evento done → undefined (descarta, señala fin del stream)', () => {
-    expect(fromAgentEvent({ type: 'done' })).toBeUndefined()
+    expect(project({ type: 'done' })).toBeUndefined()
   })
 
   test('evento done con campos extra → sigue siendo undefined', () => {
     expect(
-      fromAgentEvent({ type: 'done', usage: { input_tokens: 100 } }),
+      project({ type: 'done', usage: { input_tokens: 100 } }),
     ).toBeUndefined()
   })
 })
 
 describe('fromAgentEvent — tipos de evento desconocidos', () => {
   test('tipo desconocido → undefined (la rama default descarta)', () => {
-    expect(fromAgentEvent({ type: 'unknown_type' })).toBeUndefined()
+    expect(project({ type: 'unknown_type' })).toBeUndefined()
   })
 
   test('type vacío → undefined', () => {
-    expect(fromAgentEvent({ type: '' })).toBeUndefined()
+    expect(project({ type: '' })).toBeUndefined()
   })
 
   test('mal tipeado (p.ej. "Message" capitalizado) → undefined', () => {
     // El switch distingue mayúsculas/minúsculas.
     expect(
-      fromAgentEvent({
+      project({
         type: 'Message',
         message: { type: 'x', message: {} },
       } as never),
@@ -131,65 +144,53 @@ describe('fromAgentEvent — invariantes de la forma de retorno', () => {
       { type: 'random' },
     ]
     for (const s of samples) {
-      const r = fromAgentEvent(s)
+      const r = project(s)
       expect(r === undefined || (typeof r === 'object' && r !== null)).toBe(true)
     }
   })
 })
 
 // ──────────────────────────────────────────────────────────────────
-// toCoreMessages / fromCoreMessages — marcadores de frontera de identidad.
+// toCoreMessages / fromCoreMessages — adaptadores reales.
 //
-// V7 §11 separa el tipo AgentMessage del runtime del agente del tipo
-// CoreMessage de cara al SDK. Son estructuralmente idénticos ahora mismo (el
-// cast es un no-op), pero los conversores explícitos hacen la frontera
-// greppeable y permiten que refactors futuros evolucionen las formas de
-// manera independiente sin reescribir cada call site.
+// Ya no son identidad: convierten entre la forma anidada del bucle y la plana
+// del core (`messageAdapters.ts`, cubiertos en detalle en
+// `messageAdapters.test.ts`). Lo que este archivo fija es la parte de su
+// contrato que el proyector usa: el viaje de ida y vuelta conserva cada
+// objeto y su orden.
 // ──────────────────────────────────────────────────────────────────
 
-describe('toCoreMessages — frontera de identidad', () => {
-  test('arreglo vacío → arreglo vacío (misma referencia)', () => {
-    const messages: never[] = []
-    expect(toCoreMessages(messages)).toBe(messages as never[])
+describe('toCoreMessages / fromCoreMessages — viaje de ida y vuelta', () => {
+  test('arreglo vacio → arreglo vacio', () => {
+    expect(fromCoreMessages(toCoreMessages([]))).toEqual([])
   })
 
-  test('los mensajes pasan sin cambios (igualdad de referencia)', () => {
-    const messages = [
-      { type: 'user', message: { role: 'user', content: 'hi' } },
-      { type: 'assistant', message: { role: 'assistant', content: [] } },
-    ] as never[]
-    expect(toCoreMessages(messages)).toBe(messages)
+  test('cada mensaje vuelve como el mismo objeto, en su orden', () => {
+    const a = { type: 'user', uuid: 'u-1', message: { role: 'user', content: 'hi' } }
+    const b = { type: 'assistant', uuid: 'a-1', message: { role: 'assistant', content: [] } }
+    const back = fromCoreMessages(toCoreMessages([a, b]))
+    expect(back[0]).toBe(a)
+    expect(back[1]).toBe(b)
   })
 
-  test('el contenido del arreglo se preserva verbatim', () => {
-    const a = { type: 'a' }
-    const b = { type: 'b' }
-    const r = toCoreMessages([a, b] as never[])
-    expect(r[0]).toBe(a)
-    expect(r[1]).toBe(b)
-  })
-})
-
-describe('fromCoreMessages — frontera de identidad', () => {
-  test('arreglo vacío → arreglo vacío', () => {
-    const messages: never[] = []
-    expect(fromCoreMessages(messages)).toBe(messages as never[])
-  })
-
-  test('los mensajes pasan sin cambios', () => {
-    const messages = [
-      { type: 'user', message: { role: 'user', content: 'hi' } },
-    ] as never[]
-    expect(fromCoreMessages(messages)).toBe(messages)
+  test('la ida entrega la forma plana, sin `message`', () => {
+    const [core] = toCoreMessages([{ type: 'user', uuid: 'u-1', message: { role: 'user', content: 'hi' } }])
+    expect(core).toMatchObject({ type: 'user', role: 'user', content: 'hi' })
+    expect('message' in core!).toBe(false)
   })
 })
 
 describe('to/fromCoreMessages — ida y vuelta', () => {
-  test('to + from = identidad para cualquier input', () => {
+  test('to + from devuelve cada objeto para cualquier input, aun de tipos que el core no modela', () => {
+    // Antes afirmaba identidad del ARREGLO (`toBe(original)`); los adaptadores
+    // ya no son identidad, asi que lo que se conserva es cada elemento.
     const original = [
       { type: 'a', extra: 1 },
       { type: 'b', nested: { x: 'y' } },
     ] as never[]
-    expect(fromCoreMessages(toCoreMessages(original))).toBe(original)
+    const back = fromCoreMessages(toCoreMessages(original))
+    expect(back).toHaveLength(2)
+    expect(back[0]).toBe(original[0])
+    expect(back[1]).toBe(original[1])
   })
 })

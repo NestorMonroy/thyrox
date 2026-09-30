@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 1500 .claude/workbench/tsconfig-build-20260926T222930/after-build.cmds", "started_at": "2026-09-27T01:52:22+00:00"}

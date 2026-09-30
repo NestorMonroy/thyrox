@@ -1,0 +1,60 @@
+run-task-pool: 8 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T154654
+  job-20260927T154654/job-001 pid 27759   cd src/packages/agent && bun test > ../../../.claude/build-logs/fail-agent.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-002 pid 27812   cd src/packages/app-host && bun test > ../../../.claude/build-logs/fail-app-host.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-003 pid 27843   cd src/packages/cli && bun test > ../../../.claude/build-logs/fail-cli.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-004 pid 28186   cd src/packages/config && bun test > ../../../.claude/build-logs/fail-config.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-005 pid 430     cd src/packages/permission && bun test > ../../../.claude/build-logs/fail-permission.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-006 pid 2634    cd src/packages/provider && bun test > ../../../.claude/build-logs/fail-provider.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-007 pid 3290    cd src/packages/storage && bun test > ../../../.claude/build-logs/fail-storage.log 2>&1; echo EXIT=$?
+  job-20260927T154654/job-008 pid 3318    cd src/packages/tool-registry && bun test > ../../../.claude/build-logs/fail-tool-registry.log 2>&1; echo EXIT=$?
+run-task-pool: lanzados 8 de 8; esperando en PRIMER PLANO (timeout 1500s)
+asentado: job-20260927T154654_job-001 -> OK (2 de 9)
+asentado: job-20260927T154654_job-002 -> OK (3 de 9)
+asentado: job-20260927T154654_job-004 -> OK (4 de 9)
+asentado: job-20260927T154654_job-005 -> OK (5 de 9)
+asentado: job-20260927T154654_job-006 -> OK (6 de 9)
+asentado: job-20260927T154654_job-007 -> OK (7 de 9)
+asentado: job-20260927T154654_job-008 -> OK (8 de 9)
+esperando: 8 de 9 asentados, 31s; vivos: job-20260927T154654_job-003
+sonda job-20260927T154654_job-003: 27843 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154654_job-003: 27846 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154654_job-003: 27850 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154654_job-003: 27852 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.55s
+sonda job-20260927T154654_job-003: 6151 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.39s
+asentado: job-20260927T154654_job-003 -> OK (4 de 9)
+== 9 trabajos asentados ==
+OLVIDADO job-20260927T154654
+       | (vacío — no emitió nada)
+OK     job-20260927T154654_job-001 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 263864 KB (258 MB) · pared 18.28s
+OK     job-20260927T154654_job-002 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 215164 KB (210 MB) · pared 1.80s
+OK     job-20260927T154654_job-003 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 252808 KB (247 MB) · pared 58.79s
+OK     job-20260927T154654_job-004 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 156772 KB (153 MB) · pared 9.19s
+OK     job-20260927T154654_job-005 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 229564 KB (224 MB) · pared 11.67s
+OK     job-20260927T154654_job-006 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 264496 KB (258 MB) · pared 5.52s
+OK     job-20260927T154654_job-007 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 256112 KB (250 MB) · pared 7.01s
+OK     job-20260927T154654_job-008 exit=0
+       | EXIT=1
+       | EXIT=0
+       memoria pico: 252508 KB (247 MB) · pared 8.10s
+__BG_EXIT__=0

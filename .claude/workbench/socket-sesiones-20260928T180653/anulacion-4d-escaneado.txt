@@ -1,0 +1,35 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+237 |   test('una vez explorado no vuelve a reportar', async () => {
+238 |     write('3.json', record(3))
+239 |     const d = deps({}, [3])
+240 |     d.state().setUncleanExitsScanned(true)
+241 |     await sweepRegistry(undefined, d)
+242 |     expect(d.recorded.events).toEqual([])
+                                    ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "tengu_unclean_exit",
++     {
++       "on_current_version": false,
++       "prior_session_id": "s3",
++       "prior_version": "none",
++       "session_age_sec": 60,
++     },
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 11
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:242:31)
+(fail) sweepRegistry (xut) > una vez explorado no vuelve a reportar [1.23ms]
+
+ 27 pass
+ 1 fail
+ 80 expect() calls
+Ran 28 tests across 1 file. [201.00ms]

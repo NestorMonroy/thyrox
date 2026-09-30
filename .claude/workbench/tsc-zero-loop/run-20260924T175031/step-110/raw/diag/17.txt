@@ -1,0 +1,60 @@
+src/packages/agent/__tests__/messageQueries.test.ts(49,20): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+src/packages/agent/__tests__/messageQueries.test.ts(54,66): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+src/packages/agent/__tests__/messageQueries.test.ts(64,52): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+src/packages/agent/__tests__/messageQueries.test.ts(71,56): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.

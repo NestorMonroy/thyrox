@@ -1,0 +1,5 @@
+protected-reset	/if (parsed.usefulBytes > 0) this.protectedPhase = false/d
+warmup	s/const ready = elapsed >= this.warmupMs + this.windowMs/const ready = true/
+protected-blocks	s/const abort = ready \&\& !this.protectedPhase \&\&/const abort = ready \&\&/
+measurable	s/const measurable = windowBytes === 0 || windowBytes >= this.minimumBytes/const measurable = true/
+window-cutoff	/this.samples = this.samples.filter(sample => sample.at >= cutoff)/d

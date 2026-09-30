@@ -220,23 +220,23 @@ export function runMigrations(deps: MigrationsDeps = {}): void {
 
 /**
  * Decide el entrypoint de esta invocación (`mcp`, la GitHub Action, `sdk-cli`
- * o `cli`) y lo fija en `CLAUDE_CODE_ENTRYPOINT` — pero sólo si esa
+ * o `cli`) y lo fija en `THYROX_CODE_ENTRYPOINT` — pero sólo si esa
  * variable no viene ya seteada desde afuera. Verbatim, sin divergencias:
  * no cita ningún paquete hermano.
  */
 export function initializeEntrypoint(isNonInteractive: boolean): void {
-  if (process.env.CLAUDE_CODE_ENTRYPOINT) {
+  if (process.env.THYROX_CODE_ENTRYPOINT) {
     return
   }
   const cliArgs = process.argv.slice(2)
   const mcpIndex = cliArgs.indexOf('mcp')
   if (mcpIndex !== -1 && cliArgs[mcpIndex + 1] === 'serve') {
-    process.env.CLAUDE_CODE_ENTRYPOINT = 'mcp'
+    process.env.THYROX_CODE_ENTRYPOINT = 'mcp'
     return
   }
-  if (isEnvTruthy(process.env.CLAUDE_CODE_ACTION)) {
-    process.env.CLAUDE_CODE_ENTRYPOINT = 'claude-code-how-works-how-works-github-action'
+  if (isEnvTruthy(process.env.THYROX_CODE_ACTION)) {
+    process.env.THYROX_CODE_ENTRYPOINT = 'claude-code-github-action'
     return
   }
-  process.env.CLAUDE_CODE_ENTRYPOINT = isNonInteractive ? 'sdk-cli' : 'cli'
+  process.env.THYROX_CODE_ENTRYPOINT = isNonInteractive ? 'sdk-cli' : 'cli'
 }

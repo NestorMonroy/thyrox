@@ -23,17 +23,18 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { which } from '@thyrox/shell/which.js'
 import { getUserBinDir, getXDGDataHome } from '@thyrox/storage/xdg.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
-export const MACOS_BUNDLE_ID = 'com.anthropic.claude-code-how-works-how-works-url-handler'
-const APP_NAME = 'Claude Code URL Handler'
-const DESKTOP_FILE_NAME = 'claude-code-how-works-how-works-url-handler.desktop'
-const MACOS_APP_NAME = 'Claude Code URL Handler.app'
+export const MACOS_BUNDLE_ID = 'com.anthropic.claude-code-url-handler'
+const APP_NAME = `${PRODUCT_NAME} URL Handler`
+const DESKTOP_FILE_NAME = 'claude-code-url-handler.desktop'
+const MACOS_APP_NAME = `${PRODUCT_NAME} URL Handler.app`
 
 // Shared between register* (writes these paths/values) and
 // isProtocolHandlerCurrent (reads them back). Keep the writer and reader
@@ -66,7 +67,7 @@ function windowsCommandValue(claudePath: string): string {
  * Creates a .app bundle where the CFBundleExecutable is a symlink to the
  * already-installed (and signed) `claude` binary. When macOS opens a
  * `claude-cli://` URL, it launches `claude` through this app bundle.
- * Claude then uses the url-handler NAPI module to read the URL from the
+ * thyrox then uses the url-handler NAPI module to read the URL from the
  * Apple Event and handles it normally.
  *
  * This approach avoids shipping a separate executable (which would need
@@ -108,7 +109,7 @@ async function registerMacos(claudePath: string): Promise<void> {
   <array>
     <dict>
       <key>CFBundleURLName</key>
-      <string>Claude Code Deep Link</string>
+      <string>${PRODUCT_NAME} Deep Link</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>${DEEP_LINK_PROTOCOL}</string>
@@ -146,7 +147,7 @@ async function registerLinux(claudePath: string): Promise<void> {
 
   const desktopEntry = `[Desktop Entry]
 Name=${APP_NAME}
-Comment=Handle ${DEEP_LINK_PROTOCOL}:// deep links for Claude Code
+Comment=Handle ${DEEP_LINK_PROTOCOL}:// deep links for ${PRODUCT_NAME}
 ${linuxExecLine(claudePath)}
 Type=Application
 NoDisplay=true
@@ -313,7 +314,7 @@ export async function ensureDeepLinkProtocolRegistered(): Promise<void> {
   // doesn't generate a failure event on every startup. Marker lives in
   // ~/.claude (per-machine, not synced) rather than ~/.claude.json (can sync).
   const failureMarkerPath = path.join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     '.deep-link-register-failed',
   )
   try {

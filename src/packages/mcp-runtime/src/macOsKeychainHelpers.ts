@@ -3,28 +3,10 @@
  * `ccnmt: packages/mcp-runtime/src/macOsKeychainHelpers.ts` — sus 6
  * exportaciones, ninguna omitida.
  *
- * `getClaudeConfigHomeDir` usa el sustituto local verbatim de
- * `./internal/pendingCrossPackageDeps.ts` — el mismo símbolo cuyo repunte
- * falso por `grep` (sin resolución real) se corrigió en H-DOCS-1160 dentro
- * de `client/authCache.ts` de este mismo puerto. `@thyrox/config/env/utils`
- * sólo trae `isEnvTruthy`/`readEnv`/`getAllEnv` (porte parcial
- * TASK-DOCS-0200); ésos son los 14 símbolos omitidos.
- *
- * `getOauthConfig` (`@claude-code-how-works/provider/oauthConstants`) NO
- * tiene sustituto local: no es una función pura y simple — construye
- * config real (URLs, `CLIENT_ID`) con ~140 líneas de lógica que
- * pertenecen al dominio de `@thyrox/provider`, no al de este paquete
- * (reimplementarla aquí sería scope creep sobre el porte de otro paquete).
- * Se envuelve con `require()` diferido — dentro de la función que la usa,
- * nunca en un `import` estático de nivel de módulo — para que ESTE
- * archivo siga siendo importable aunque esa función en concreto falle al
- * invocarse. Medido antes de la corrección: un `import` estático de
- * `@claude-code-how-works/provider/oauthConstants` hacía fallar la carga
- * del módulo ENTERO (`Cannot find module`, verificado con
- * `bun -e "import(...)"`), no sólo la función que la usa — el mismo
- * patrón que ya evita `appStateHooks.ts` de este puerto con su
- * `require('@thyrox/app-host/state/AppState.js')`
- * diferido.
+ * `getConfigHomeDir` viene de `@thyrox/config/env/utils`. `getOauthConfig`
+ * (`@thyrox/provider/oauthConstants`) construye configuración real (URLs,
+ * `CLIENT_ID`) del dominio de `@thyrox/provider`, y se lee por `require()`
+ * diferido dentro de la función que la usa.
  *
  * Helpers ligeros compartidos entre `keychainPrefetch.ts` y
  * `macOsKeychainStorage.ts` (ninguno de los dos portado aún — ver el
@@ -34,8 +16,9 @@
 
 import { createHash } from 'crypto'
 import { userInfo } from 'os'
-import { getClaudeConfigHomeDir } from './internal/pendingCrossPackageDeps.js'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import type { SecureStorageData } from './secureStorageTypes'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getOauthConfig(): { OAUTH_FILE_SUFFIX: string } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -54,8 +37,8 @@ export const CREDENTIALS_SERVICE_SUFFIX = '-credentials'
 export function getMacOsKeychainStorageServiceName(
   serviceSuffix: string = '',
 ): string {
-  const configDir = getClaudeConfigHomeDir()
-  const isDefaultDir = !process.env.CLAUDE_CONFIG_DIR
+  const configDir = getConfigHomeDir()
+  const isDefaultDir = !process.env.THYROX_CONFIG_DIR
 
   // Usa un hash de la ruta del directorio de config para crear un sufijo
   // único pero estable. Sólo se añade sufijo para directorios no-default,
@@ -63,14 +46,14 @@ export function getMacOsKeychainStorageServiceName(
   const dirHash = isDefaultDir
     ? ''
     : `-${createHash('sha256').update(configDir).digest('hex').substring(0, 8)}`
-  return `Claude Code${getOauthConfig().OAUTH_FILE_SUFFIX}${serviceSuffix}${dirHash}`
+  return `${PRODUCT_NAME}${getOauthConfig().OAUTH_FILE_SUFFIX}${serviceSuffix}${dirHash}`
 }
 
 export function getUsername(): string {
   try {
     return process.env.USER || userInfo().username
   } catch {
-    return 'claude-code-how-works-how-works-user'
+    return 'claude-code-user'
   }
 }
 

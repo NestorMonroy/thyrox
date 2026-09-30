@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+58 |   })
+59 | 
+60 |   test('sólo ESRCH prueba que el proceso ya no existe', () => {
+61 |     const error = (code: string) => () => { throw Object.assign(new Error(code), { code }) }
+62 |     expect(isProcessGone(123, error('ESRCH'))).toBe(true)
+63 |     expect(isProcessGone(123, error('EPERM'))).toBe(false)
+                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:63:48)
+(fail) isValidPid (mfn) e isProcessGone (Nh) > sólo ESRCH prueba que el proceso ya no existe [0.39ms]
+
+ 9 pass
+ 1 fail
+ 25 expect() calls
+Ran 10 tests across 1 file. [35.00ms]

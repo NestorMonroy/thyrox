@@ -1,0 +1,2 @@
+receta step-068: Type the AgentMessage boundary from its readers
+receta step-069: Route every AgentMessage/CoreMessage crossing through adapters

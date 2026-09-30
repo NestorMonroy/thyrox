@@ -1,0 +1,21 @@
+src/packages/repl/src/commands/doctor/index.ts(10,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/doctor/doctor")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/repl/src/commands/doctor/index.ts:1-13 ---
+      1  import type { Command } from '@thyrox/command-runtime/runtime'
+      2  import { isEnvTruthy } from '@thyrox/config/env/utils'
+      3  
+      4  const doctor: Command = {
+      5    name: 'doctor',
+      6    aliases: ['checkup'],
+      7    description: 'Diagnose and verify your Claude Code installation and settings',
+      8    isEnabled: () => !isEnvTruthy(process.env.DISABLE_DOCTOR_COMMAND),
+      9    type: 'local-jsx',
+     10>   load: () => import('./doctor.js'),
+     11  }
+     12  
+     13  export default doctor
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/doctor/doctor")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

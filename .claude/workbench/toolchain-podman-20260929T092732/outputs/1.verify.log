@@ -1,0 +1,30 @@
+  ok    la adquisicion existe
+  ok    un binario presente cuyo info responde pasa y resuelve THYROX_TOOLCHAIN_PODMAN_BIN
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    sin opt-in no ejecuta el instalador
+  ok    el rechazo nombra THYROX_INSTALL_PODMAN=1
+  ok    el rechazo no emite conteo
+  ok    un instalador que deja un podman sano se acepta
+  ok    un instalador que miente dejando un binario que resuelve pero no arranca NO se acepta
+  ok    un binario que resuelve y responde --version pero cuyo info falla NO se acepta
+  ok    el instalador por defecto pide el paquete podman
+
+10 casos: 10 ok, 0 fallos
+  ok    la adquisicion existe
+  ok    un binario presente que responde --version pasa y resuelve THYROX_TOOLCHAIN_REDIS_BIN
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    sin opt-in no ejecuta el instalador
+  ok    el rechazo nombra la variable de opt-in y el paquete
+  ok    un instalador que miente sin dejar el binario NO se acepta
+  ok    un binario que resuelve pero no responde --version NO se acepta
+  ok    un binario real, ya presente, se acepta sin instalar
+  ok    el instalador por defecto pide el paquete redis-server
+
+9 casos: 9 ok, 0 fallos
+  ok    1. el .env del consumidor llega
+  ok    2. el proceso gana
+  ok    3. una clave fijada vacía se respeta
+  ok    4. otro prefijo no se carga
+  ok    5. fuera de un clon y sellado, no hay clave
+
+5 casos: 5 ok, 0 fallos

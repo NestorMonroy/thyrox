@@ -11,8 +11,10 @@ function mockStream(
       let i = 0
       return {
         async next() {
-          if (i >= chunks.length) return { done: true, value: undefined }
-          return { done: false, value: chunks[i++] }
+          const chunk = chunks[i]
+          if (chunk === undefined) return { done: true, value: undefined }
+          i++
+          return { done: false, value: chunk }
         },
       }
     },

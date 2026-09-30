@@ -70,8 +70,8 @@ describe('withRetry classification + delay (vs ant retry policy)', () => {
       const median = (arr: number[]) => arr.sort((a, b) => a - b)[Math.floor(arr.length / 2)]
       const sample = (attempt: number) =>
         median(Array.from({ length: 100 }, () => getRetryDelay(attempt)))
-      expect(sample(2)).toBeGreaterThan(sample(1))
-      expect(sample(3)).toBeGreaterThan(sample(2))
+      expect(sample(2)).toBeGreaterThan(sample(1)!)
+      expect(sample(3)).toBeGreaterThan(sample(2)!)
     })
 
     test('caps at maxDelayMs (default 32000)', () => {

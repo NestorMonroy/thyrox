@@ -49,10 +49,10 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 4. Marcar tareas paralelas `[P]`
    - En ejecución paralela: usar `[~]` para reclamar tareas antes de ejecutarlas
-   - Ver [conventions — parallel-agent-execution](../../references/conventions.md#parallel-agent-execution)
+   - Ver [conventions — parallel-agent-execution](../../../_references/conventions.md#parallel-agent-execution)
 
 5. Definir checkpoints de validación por grupo de tareas
-   - Si hay >50 issues: usar `assets/categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst` para categorizar primero
+   - Si hay >50 issues: usar `assets/categorization-plan.md.template` para categorizar primero
 
 6. Incluir en el task-plan:
    - **DAG de dependencias** en Mermaid — qué bloquea qué

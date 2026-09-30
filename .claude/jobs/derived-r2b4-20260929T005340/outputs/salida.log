@@ -1,0 +1,111 @@
+run-task-pool: 9 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260929T005340
+  job-20260929T005340/job-001 bash -c 'cd src/packages/provider && bun test src/__tests__ __tests__'
+  job-20260929T005340/job-002 bash -c 'cd src/packages/agent && bun test __tests__'
+  job-20260929T005340/job-003 bash -c 'cd src/packages/app-host && bun test src/state/__tests__'
+  job-20260929T005340/job-004 bash -c 'cd src/packages/provider && bunx tsc --noEmit -p tsconfig.build.json'
+  job-20260929T005340/job-005 bash -c 'cd src/packages/agent && bunx tsc --noEmit -p tsconfig.build.json'
+  job-20260929T005340/job-006 bash tests/session/test-item-worktree-disk.sh
+  job-20260929T005340/job-007 bash tests/session/test-item-worktree-location.sh
+  job-20260929T005340/job-008 bash tests/session/test-item-worktree-lock.sh
+  job-20260929T005340/job-009 bash tests/session/test-headless-pool-worktree.sh
+run-task-pool: lanzados 9 de 9; esperando en PRIMER PLANO (timeout 1168s)
+asentado: job-20260929T005340_job-001 -> OK (2 de 10)
+asentado: job-20260929T005340_job-002 -> OK (3 de 10)
+asentado: job-20260929T005340_job-003 -> OK (4 de 10)
+asentado: job-20260929T005340_job-004 -> OK (5 de 10)
+asentado: job-20260929T005340_job-005 -> OK (6 de 10)
+asentado: job-20260929T005340_job-006 -> OK (7 de 10)
+asentado: job-20260929T005340_job-007 -> OK (8 de 10)
+asentado: job-20260929T005340_job-008 -> OK (9 de 10)
+asentado: job-20260929T005340_job-009 -> OK (10 de 10)
+== 10 trabajos asentados ==
+OLVIDADO job-20260929T005340
+       | (vacío — no emitió nada)
+OK     job-20260929T005340_job-001 exit=0
+       |                                          ^
+       | error: cortado
+       |       at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:126:36)
+       |       at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:122:22)
+       | 
+       |  4687 pass
+       |  0 fail
+       |  8777 expect() calls
+       | Ran 4687 tests across 273 files. [14.38s]
+       | EXIT=0
+       memoria pico: 474004 KB (463 MB) · pared 14.41s
+OK     job-20260929T005340_job-002 exit=0
+       | fatal: not a git repository (or any of the parent directories): .git
+       | 
+       | __tests__/portFidelity.test.ts:
+       | [portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+       | 
+       |  2691 pass
+       |  0 fail
+       |  4928 expect() calls
+       | Ran 2691 tests across 199 files. [20.37s]
+       | EXIT=0
+       memoria pico: 237616 KB (232 MB) · pared 20.39s
+OK     job-20260929T005340_job-003 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  20 pass
+       |  0 fail
+       |  29 expect() calls
+       | Ran 20 tests across 2 files. [517.00ms]
+       | EXIT=0
+       memoria pico: 115012 KB (112 MB) · pared 0.53s
+OK     job-20260929T005340_job-004 exit=0
+       | EXIT=0
+       memoria pico: 791152 KB (773 MB) · pared 10.60s
+OK     job-20260929T005340_job-005 exit=0
+       | EXIT=0
+       memoria pico: 748292 KB (731 MB) · pared 9.29s
+OK     job-20260929T005340_job-006 exit=0
+       |   ok    no crea worktree
+       |   ok    el motivo nombra el disco
+       | caso 2 — si cabe, lo crea
+       |   ok    sale 0
+       |   ok    crea un worktree más
+       | caso 3 — las variables inválidas se rechazan
+       |   ok    reserva inválida: exit 2
+       |   ok    plazo inválido: exit 2
+       | item_worktree disk: 8/8
+       | EXIT=0
+       memoria pico: 26884 KB (26 MB) · pared 0.29s
+OK     job-20260929T005340_job-007 exit=0
+       |   ok    el árbol principal queda limpio
+       |   ok    la exclusión no se duplica
+       |   ok    sweep retira los worktrees de la ejecución
+       | caso 2 — THYROX_POOL_WORKTREES_DIR cambia la raíz
+       |   ok    bajo la raíz declarada
+       | caso 3 — una raíz con segmento sensible se rechaza
+       |   ok    exit 2
+       |   ok    lo dice
+       | item_worktree location: 10/10
+       | EXIT=0
+       memoria pico: 27648 KB (27 MB) · pared 0.38s
+OK     job-20260929T005340_job-008 exit=0
+       |   ok    tres worktrees de ítem más el principal
+       |   ok    cada uno nombra su directorio
+       | caso 2 — un escritor ajeno retiene el candado 4 s y el alta espera en vez de rendirse
+       |   ok    el alta sale 0 tras el escritor ajeno
+       | caso 3 — agotado el plazo, el alta rehúsa y dice por qué
+       |   ok    sale distinto de 0
+       |   ok    el stderr trae el motivo de git
+       |   ok    THYROX_ITEM_WORKTREE_RETRY_SECONDS inválida se rechaza
+       | item_worktree lock: 7/7
+       | EXIT=0
+       memoria pico: 26572 KB (26 MB) · pared 16.40s
+OK     job-20260929T005340_job-009 exit=0
+       |   ok    sin barrido, el worktree ya no está
+       |   ok    su parche nombra el archivo
+       | caso 7 — si el worktree no se prepara, el .err del ítem trae el motivo
+       |   ok    el ítem sale sin json de resultado
+       |   ok    el .err nombra el motivo de git
+       | caso 8 — los trabajos que lanza un ítem aislado quedan en su salida, no en el árbol principal
+       |   ok    el trabajo aparece bajo la salida del ítem
+       |   ok    el árbol principal no recibe el trabajo
+       | test-headless-pool-worktree: 25 aserciones — 25 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 27288 KB (27 MB) · pared 3.04s
+__BG_EXIT__=0

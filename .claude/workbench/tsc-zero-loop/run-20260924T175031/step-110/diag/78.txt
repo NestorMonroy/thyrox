@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/clear/index.ts(16,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/clear/clear")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/clear/index.ts:6-19 ---
+      6   * - clearConversation: import from 'src/commands/clear/clear/conversation.js'
+      7   */
+      8  import type { Command } from '../../runtime.js'
+      9  
+     10  const clear = {
+     11    type: 'local',
+     12    name: 'clear',
+     13    description: 'Clear conversation history and free up context',
+     14    aliases: ['reset', 'new'],
+     15    supportsNonInteractive: false, // Should just create a new session
+     16>   load: () => import('./clear.js'),
+     17  } satisfies Command
+     18  
+     19  export default clear
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/clear/clear")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

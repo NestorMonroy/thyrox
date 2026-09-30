@@ -1,0 +1,19 @@
+base	15 pass, 0 fail	—
+no-pairing-check	14 pass, 1 fail	bedrock > clave sin secreto, o sesión sin clave, se rechazan
+no-session-check	14 pass, 1 fail	bedrock > clave sin secreto, o sesión sin clave, se rechazan
+no-guardrail-headers	14 pass, 1 fail	bedrock > el guardarraíl viaja en cabeceras y marca el upstream
+no-guardrail-flag	14 pass, 1 fail	bedrock > el guardarraíl viaja en cabeceras y marca el upstream
+no-apikey-null	14 pass, 1 fail	bedrock > una X-Api-Key del upstream se retira salvo que el proceso declare la suya
+process-apikey-ignored	14 pass, 1 fail	bedrock > una X-Api-Key del upstream se retira salvo que el proceso declare la suya
+no-bearer	14 pass, 1 fail	bedrock > con portador no firma: lleva el portador
+no-skipauth	14 pass, 1 fail	bedrock > con portador no firma: lleva el portador
+no-bedrock-base-url	14 pass, 1 fail	bedrock > una base propia reemplaza al punto de acceso de la región
+no-keys	10 pass, 5 fail	bedrock > con claves firma SigV4 en la región del upstream | bedrock > el token de sesión viaja firmado | bedrock > el guardarraíl viaja en cabeceras y marca el upstream | bedrock > una base propia reemplaza al punto de acceso de la región | bedrock > una X-Api-Key del upstream se retira salvo que el proceso declare la suya
+no-session-token	14 pass, 1 fail	bedrock > el token de sesión viaja firmado
+no-vertex-token	14 pass, 1 fail	vertex > con token de acceso llama rawPredict con el portador
+no-settle	14 pass, 1 fail	vertex > una cuenta de servicio que no carga no deja un rechazo sin atender
+no-vertex-null	14 pass, 1 fail	vertex > una X-Api-Key del upstream no viaja a Google
+no-foundry-auth-null	14 pass, 1 fail	foundry > con clave, un Authorization del upstream no viaja a Azure
+no-foundry-base-url	14 pass, 1 fail	foundry > una base propia reemplaza al recurso
+no-foundry-key	12 pass, 3 fail	foundry > con clave usa x-api-key y el recurso, sin Authorization | foundry > con clave, un Authorization del upstream no viaja a Azure | foundry > una base propia reemplaza al recurso
+__BG_EXIT__=0

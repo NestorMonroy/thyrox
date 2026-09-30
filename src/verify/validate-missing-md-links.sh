@@ -35,7 +35,7 @@ while IFS= read -r mdfile; do
         [[ "$content" =~ ^[[:space:]]{4,} ]] && continue
         [[ "$content" =~ ^[[:space:]]*# ]] && continue
 
-        if echo "$content" | grep -qoP '`[^`]*\.md`'; then
+        if grep -qoP '`[^`]*\.md`' <<<"$content"; then
             matches=$(echo "$content" | grep -oP '`[^`]*\.md`' || true)
 
             while IFS= read -r match; do
@@ -53,10 +53,10 @@ while IFS= read -r mdfile; do
                 resolved_path="${file_dir}/${ref}"
                 [ ! -f "$resolved_path" ] && [ ! -f "${SEARCH_DIR}/${ref}" ] && continue
 
-                if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
+                if grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)" <<<"$content"; then
                     continue
                 fi
-                if echo "$content" | grep -qP "\[${match//\//\\/}\]\("; then
+                if grep -qP "\[${match//\//\\/}\]\(" <<<"$content"; then
                     continue
                 fi
 

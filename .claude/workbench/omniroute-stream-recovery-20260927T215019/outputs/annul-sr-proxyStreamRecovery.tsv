@@ -1,0 +1,18 @@
+base	17 pass, 0 fail	—
+byte-cap	15 pass, 2 fail	HoldbackBuffer auto-commits once buffered bytes exceed BUFFER_MAX_BYTES | createRecoverableStream propagates errors once committed (never replays)
+abort-not-retryable	17 pass, 0 fail	—
+undici-family	16 pass, 1 fail	isRetryableStreamError: truncation and transient transport errors are retryable
+responses-completed-marker	17 pass, 0 fail	—
+toolcalls-not-terminal	17 pass, 0 fail	—
+overlap-trim	17 pass, 0 fail	—
+restart-reject	17 pass, 0 fail	—
+inflight-gate	17 pass, 0 fail	—
+empty-stop-needs-reasoning	17 pass, 0 fail	—
+order-fix-gate	17 pass, 0 fail	—
+reopen-discard	16 pass, 1 fail	createRecoverableStream retries an early truncation transparently
+cancel-no-reopen	17 pass, 0 fail	—
+watchdog-ignored	17 pass, 0 fail	—
+empty-prefill-appends	17 pass, 0 fail	—
+responses-envelope	17 pass, 0 fail	—
+finalize-once	17 pass, 0 fail	—
+terminal-marker-preserves	15 pass, 2 fail	createRecoverableStream retries an early truncation transparently | createRecoverableStream passes a clean short stream straight through

@@ -1,0 +1,1 @@
+src/packages/agent/query.ts(1759,37): error TS18046: 'tr.attachment' is of type 'unknown'.

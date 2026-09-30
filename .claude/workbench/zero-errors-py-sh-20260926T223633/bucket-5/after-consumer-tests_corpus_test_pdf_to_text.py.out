@@ -1,0 +1,8 @@
+test_pdf_to_text:
+  ok    la CLI termina con 0 tras escribir
+  ok    el texto quedó escrito
+  ok    el reporte nombra el archivo escrito
+  ok    el rechazo nombra el opt-in del instalador
+  ok    el rechazo nombra la funcion del arbol
+test_pdf_to_text: 5 aserciones — 5 ok, 0 falla(s)
+exit=0

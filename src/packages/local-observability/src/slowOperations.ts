@@ -1,17 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/slowOperations.ts`
- * (162 líneas fuente, 100 % portado). Envuelve `JSON.stringify`/
- * `JSON.parse`/`structuredClone`/`cloneDeep`/`fs.writeFileSync` con el tag
- * `slowLogging` de `slowLoggingTag.ts` para detectar operaciones lentas —
- * en este árbol el tag siempre resuelve al no-op externo (ver
- * `slowLoggingTag.ts`), así que estas envolturas son transparentes:
- * mismo resultado que la función nativa, sin medición real.
- *
- * `jsonStringify`/`jsonParse` son, junto con el barrel y `debug.js`, de
- * los subpaths más citados por futuros consumidores en el censo del
- * porte (56 líneas hacia `slowOperations.js`).
- */
-
 import type { WriteFileOptions } from 'fs'
 import {
   closeSync,
@@ -20,7 +6,7 @@ import {
   openSync,
 } from 'fs'
 import lodashCloneDeep from 'lodash-es/cloneDeep.js'
-import { addSlowOperation } from './internal/pendingCrossPackageDeps.js'
+import { addSlowOperation } from '@thyrox/app-host/bootstrap/state.js'
 import { logForDebugging } from './debug.js'
 import {
   SLOW_OPERATION_THRESHOLD_MS,
@@ -29,29 +15,33 @@ import {
   slowLogging,
 } from './slowLoggingTag.js'
 
-// Cablea el reporter — slowLoggingTag posee la primitiva de temporización
-// pero los sinks de log (debug log + ring buffer de AppState) viven aquí.
-// Este split rompe el ciclo slowOperations → debug → fsOperations →
-// slowOperations. `addSlowOperation` es un punto de inyección (app-host
-// no exporta `./bootstrap/state.js`; ver `pendingCrossPackageDeps.ts`) —
-// hoy es no-op, así que este cableado no tiene efecto observable, pero
-// preserva el contrato exacto de la fuente.
+// Wire the reporter — slowLoggingTag holds the timing primitive but the
+// log sinks (debug log + AppState ring buffer) live here. This split
+// breaks the slowOperations → debug → fsOperations → slowOperations cycle.
 _setSlowOpReporter(addSlowOperation, logForDebugging)
 
 export { SLOW_OPERATION_THRESHOLD_MS, callerFrame, slowLogging }
 
-// WriteFileOptions extendido para incluir 'flush' (disponible desde
-// Node.js 20.1.0+ pero aún no en @types/node).
+// Extended WriteFileOptions to include 'flush' which is available in Node.js 20.1.0+
+// but not yet in @types/node
 type WriteFileOptionsWithFlush =
   | WriteFileOptions
   | (WriteFileOptions & { flush?: boolean })
 
-// --- Operaciones envueltas ---
+// Slow-op timing primitives (AntSlowLogger, threshold, slowLogging tag,
+// callerFrame, buildDescription) live in slowLoggingTag.ts to keep this
+// file off the fsOperations import path.
+
+// --- Wrapped operations ---
 
 /**
- * `JSON.stringify` envuelto con medición de operación lenta.
- * Usar en vez de `JSON.stringify` directo para detectar problemas de
- * rendimiento.
+ * Wrapped JSON.stringify with slow operation logging.
+ * Use this instead of JSON.stringify directly to detect performance issues.
+ *
+ * @example
+ * import { jsonStringify } from './slowOperations.js'
+ * const json = jsonStringify(data)
+ * const prettyJson = jsonStringify(data, null, 2)
  */
 export function jsonStringify(
   value: unknown,
@@ -80,20 +70,29 @@ export function jsonStringify(
 }
 
 /**
- * `JSON.parse` envuelto con medición de operación lenta.
+ * Wrapped JSON.parse with slow operation logging.
+ * Use this instead of JSON.parse directly to detect performance issues.
+ *
+ * @example
+ * import { jsonParse } from './slowOperations.js'
+ * const data = jsonParse(jsonString)
  */
 export const jsonParse: typeof JSON.parse = (text, reviver) => {
   using _ = slowLogging`JSON.parse(${text})`
-  // V8 des-optimiza JSON.parse cuando se pasa un segundo argumento,
-  // aunque sea undefined. Se ramifica explícitamente para que el camino
-  // común (sin reviver) se quede en el camino rápido.
+  // V8 de-opts JSON.parse when a second argument is passed, even if undefined.
+  // Branch explicitly so the common (no-reviver) path stays on the fast path.
   return typeof reviver === 'undefined'
     ? JSON.parse(text)
     : JSON.parse(text, reviver)
 }
 
 /**
- * `structuredClone` envuelto con medición de operación lenta.
+ * Wrapped structuredClone with slow operation logging.
+ * Use this instead of structuredClone directly to detect performance issues.
+ *
+ * @example
+ * import { clone } from './slowOperations.js'
+ * const copy = clone(originalObject)
  */
 export function clone<T>(value: T, options?: StructuredSerializeOptions): T {
   using _ = slowLogging`structuredClone(${value})`
@@ -101,7 +100,12 @@ export function clone<T>(value: T, options?: StructuredSerializeOptions): T {
 }
 
 /**
- * `cloneDeep` de lodash envuelto con medición de operación lenta.
+ * Wrapped cloneDeep with slow operation logging.
+ * Use this instead of lodash cloneDeep directly to detect performance issues.
+ *
+ * @example
+ * import { cloneDeep } from './slowOperations.js'
+ * const copy = cloneDeep(originalObject)
  */
 export function cloneDeep<T>(value: T): T {
   using _ = slowLogging`cloneDeep(${value})`
@@ -109,12 +113,13 @@ export function cloneDeep<T>(value: T): T {
 }
 
 /**
- * Envoltura de `fs.writeFileSync` con medición de operación lenta.
- * Soporta la opción `flush` para asegurar que el dato se escriba a disco
- * antes de retornar.
- * @deprecated Usar `fs.promises.writeFile` para escrituras no bloqueantes.
- * Las escrituras sync bloquean el event loop y causan problemas de
- * rendimiento.
+ * Wrapper around fs.writeFileSync with slow operation logging.
+ * Supports flush option to ensure data is written to disk before returning.
+ * @param filePath The path to the file to write to
+ * @param data The data to write (string or Buffer)
+ * @param options Optional write options (encoding, mode, flag, flush)
+ * @deprecated Use `fs.promises.writeFile` instead for non-blocking writes.
+ * Sync file writes block the event loop and cause performance issues.
  */
 export function writeFileSync(
   filePath: string,
@@ -123,6 +128,7 @@ export function writeFileSync(
 ): void {
   using _ = slowLogging`fs.writeFileSync(${filePath}, ${data})`
 
+  // Check if flush is requested (for object-style options)
   const needsFlush =
     options !== null &&
     typeof options === 'object' &&
@@ -130,13 +136,15 @@ export function writeFileSync(
     options.flush === true
 
   if (needsFlush) {
-    // Flush manual: abrir, escribir, fsync, cerrar.
+    // Manual flush: open file, write, fsync, close
     const encoding =
       typeof options === 'object' && 'encoding' in options
         ? options.encoding
         : undefined
     const mode =
-      typeof options === 'object' && 'mode' in options ? options.mode : undefined
+      typeof options === 'object' && 'mode' in options
+        ? options.mode
+        : undefined
     let fd: number | undefined
     try {
       fd = openSync(filePath, 'w', mode)
@@ -148,6 +156,7 @@ export function writeFileSync(
       }
     }
   } else {
+    // No flush needed, use standard writeFileSync
     fsWriteFileSync(filePath, data, options as WriteFileOptions)
   }
 }

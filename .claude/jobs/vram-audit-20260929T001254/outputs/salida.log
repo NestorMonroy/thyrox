@@ -1,0 +1,46 @@
+run-task-pool: 8 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260929T001255
+  job-20260929T001255/job-001 python3 tests/session/test_gpu_monitor.py > .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_monitor.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_monitor.txt
+  job-20260929T001255/job-002 python3 tests/session/test_gpu_scenarios.py > .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_scenarios.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_scenarios.txt
+  job-20260929T001255/job-003 python3 tests/session/test_gpu_trace.py > .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_trace.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_trace.txt
+  job-20260929T001255/job-004 python3 tests/session/test_pool_history.py > .claude/workbench/vram-flow-audit-20260929T001226/test_pool_history.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_pool_history.txt
+  job-20260929T001255/job-005 bash tests/session/test-gpu-admission-cli.sh > .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-admission-cli.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-admission-cli.txt
+  job-20260929T001255/job-006 bash tests/session/test-gpu-hardware-refusal.sh > .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-hardware-refusal.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-hardware-refusal.txt
+  job-20260929T001255/job-007 bash tests/session/test-pool-calibrate.sh > .claude/workbench/vram-flow-audit-20260929T001226/test-pool-calibrate.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test-pool-calibrate.txt
+  job-20260929T001255/job-008 cd src/packages/config && bun test __tests__/gpuAdmission.test.ts > ../../../.claude/workbench/vram-flow-audit-20260929T001226/gpuAdmission-ts.txt 2>&1; echo EXIT=$? >> ../../../.claude/workbench/vram-flow-audit-20260929T001226/gpuAdmission-ts.txt
+run-task-pool: lanzados 8 de 8; esperando en PRIMER PLANO (timeout 1782s)
+asentado: job-20260929T001255_job-001 -> OK (2 de 9)
+asentado: job-20260929T001255_job-002 -> OK (3 de 9)
+asentado: job-20260929T001255_job-003 -> OK (4 de 9)
+asentado: job-20260929T001255_job-004 -> OK (5 de 9)
+asentado: job-20260929T001255_job-005 -> OK (6 de 9)
+asentado: job-20260929T001255_job-006 -> OK (7 de 9)
+asentado: job-20260929T001255_job-007 -> OK (8 de 9)
+asentado: job-20260929T001255_job-008 -> OK (9 de 9)
+== 9 trabajos asentados ==
+OLVIDADO job-20260929T001255
+       | (vacío — no emitió nada)
+OK     job-20260929T001255_job-001 exit=0
+       | EXIT=0
+       memoria pico: 16896 KB (16 MB) · pared 10.18s
+OK     job-20260929T001255_job-002 exit=0
+       | EXIT=0
+       memoria pico: 16680 KB (16 MB) · pared 10.80s
+OK     job-20260929T001255_job-003 exit=0
+       | EXIT=0
+       memoria pico: 16152 KB (16 MB) · pared 8.71s
+OK     job-20260929T001255_job-004 exit=0
+       | EXIT=0
+       memoria pico: 23140 KB (23 MB) · pared 0.43s
+OK     job-20260929T001255_job-005 exit=0
+       | EXIT=0
+       memoria pico: 16828 KB (16 MB) · pared 1.97s
+OK     job-20260929T001255_job-006 exit=0
+       | EXIT=0
+       memoria pico: 641640 KB (627 MB) · pared 15.08s
+OK     job-20260929T001255_job-007 exit=0
+       | EXIT=0
+       memoria pico: 219656 KB (215 MB) · pared 8.14s
+OK     job-20260929T001255_job-008 exit=0
+       | EXIT=0
+       memoria pico: 55920 KB (55 MB) · pared 3.56s
+__BG_EXIT__=0

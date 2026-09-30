@@ -1,0 +1,5 @@
+    # Se lee sin reventar: si el archivo falta, el caso tiene que salir FALLA,
+    # no una excepción que un filtro de resumen lea como silencio.
+    written = out.read_text() if out.exists() else ""
+    check("el archivo declara el error y su causa", True,
+          written.startswith("error ") and "mismatch" in written)

@@ -20,7 +20,6 @@ SEARCH_DIR="${1:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}"
 # Colores
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 BOLD='\033[1m'
 DIM='\033[2m'
@@ -67,7 +66,7 @@ while IFS= read -r mdfile; do
         # Match backtick-wrapped .md references: `something.md` or `path/something.md`
         # But NOT if already inside a markdown link [...](...md)
         # Use grep to find backtick-wrapped .md refs
-        if echo "$content" | grep -qoP '`[^`]*\.md`'; then
+        if grep -qoP '`[^`]*\.md`' <<<"$content"; then
             # Extract all backtick .md references
             matches=$(echo "$content" | grep -oP '`[^`]*\.md`' || true)
 
@@ -91,13 +90,13 @@ while IFS= read -r mdfile; do
 
                 # Skip if this exact ref is already part of a markdown link on this line
                 # e.g., [text](ref.md) - the ref appears after ](
-                if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
+                if grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)" <<<"$content"; then
                     continue
                 fi
 
                 # Check if the backtick ref is the target of a markdown link
                 # Pattern: [`ref.md`](path) - already a link
-                if echo "$content" | grep -qP "\[${match//\//\\/}\]\("; then
+                if grep -qP "\[${match//\//\\/}\]\(" <<<"$content"; then
                     continue
                 fi
 

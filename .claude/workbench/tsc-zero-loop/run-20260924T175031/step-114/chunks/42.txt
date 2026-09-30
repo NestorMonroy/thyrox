@@ -1,0 +1,2 @@
+src/packages/config/plugin/refresh.ts(183,35): error TS2339: Property 'allAgents' does not exist on type 'unknown[]'.
+src/packages/config/plugin/refresh.ts(188,5): error TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents

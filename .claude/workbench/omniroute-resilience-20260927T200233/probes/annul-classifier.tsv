@@ -1,0 +1,36 @@
+preserve429	s/const preserveQuota429 = !provider || categoryOf(traits) === 'oauth'/const preserveQuota429 = true/
+resource404	s/return isResourceNotFoundResponse(responseBody) ? null : PROVIDER_ERROR_TYPES.MODEL_NOT_FOUND/return PROVIDER_ERROR_TYPES.MODEL_NOT_FOUND/
+fingerprint	s/if (isCloudflareFingerprintRejection(bodyStr)) return PROVIDER_ERROR_TYPES.FINGERPRINT_REJECTION/if (false) return PROVIDER_ERROR_TYPES.FINGERPRINT_REJECTION/
+deactivated403	s/    if (accountDeactivated) return PROVIDER_ERROR_TYPES.ACCOUNT_DEACTIVATED/    if (false) return PROVIDER_ERROR_TYPES.ACCOUNT_DEACTIVATED/
+notallowed	s/&& isAnthropicRequestNotAllowed(bodyStr)) return/\&\& false) return/
+anthropicsurface	s/ || ((provider || '').toLowerCase() === 'anthropic' && traits?.authType === 'oauth')//
+project403	s/  if (isRecoverableProject403(bodyStr, name) || isKiroProfile403(bodyStr, name))/  if (isKiroProfile403(bodyStr, name))/
+kiro403	s/ || isKiroProfile403(bodyStr, name))/)/
+sentinel	s/  if (isSentinelBlock(bodyStr)) return/  if (false) return/
+freetier	s/  if (isOpencodeFreeTierProvider(provider) && isFreeTierClientRefusal(bodyStr))/  if (false)/
+apikey403	s/  if (provider && categoryOf(traits) === 'apikey') return null/  if (false) return null/
+none403	s/  if (provider && traits?.authType === 'none') return null/  if (false) return null/
+geosurface	s/  return surface.includes('antigravity') || surface.includes('gemini')/  return false/
+geobranch	s/&& isGeoBlockEligibleProvider(provider, traits) && isGeoBlockedError(bodyStr)) {/\&\& false) {/
+gcp422	s/if (statusCode === 422 \&\& bodyStr.includes('gcp_project_required'))/if (false)/
+overflow	s/    if (isContextOverflow(bodyStr)) return/    if (false) return/
+model400	/^  if (statusCode === 400) {$/,/^  }$/{s/    if (containsModelUnavailableMessage(bodyStr))/    if (false)/}
+model401	/^  if (statusCode === 401) {$/,/^  }$/{s/    if (containsModelUnavailableMessage(bodyStr))/    if (false)/}
+oauthinvalid	s/    if (isOAuthInvalidToken(bodyStr)) return/    if (false) return/
+dailyquota	s/preserveQuota429 \&\& isDailyQuotaExhausted(bodyStr) ?/false ?/
+quota4xx	s/  if (quotaExhausted \&\& \[400, 401, 402, 403\].includes(statusCode))/  if (false)/
+unknowncategory	s/  if (!traits) return 'apikey'/  if (!traits) return 'oauth'/
+bannedsignals	s/isAccountDeactivated(bodyStr, options.bannedSignals)/isAccountDeactivated(bodyStr)/
+cflookbehind	s/(?<!\[A-Za-z0-9_-\])error\[\\s_-\]?code/error[\\s_-]?code/
+cfsuffix	s/1010(?!\\w)|/1010|/
+challenge	s/^  '_cf_chl_opt',$/  '_cf_chl_opt_disabled',/
+trustedstop	s/const trustedEmptyStop = typeof opts?.provider === 'string' \&\& TRUSTED_EMPTY_STOP_PROVIDERS.has(opts.provider)/const trustedEmptyStop = false/
+legitfinish	s/    if (LEGIT_EMPTY_OPENAI_FINISH.has(finishReason)) return false/    if (false) return false/
+reasoningalt	s/      isPresent(message?.reasoning ?? delta?.reasoning)/      false/
+toolcalls	s/const hasToolCalls = nonEmptyArray(message?.tool_calls) || nonEmptyArray(delta?.tool_calls)/const hasToolCalls = false/
+fakecoverage	s/const FAKE_SUCCESS_MIN_SIGNAL_COVERAGE = 0.12/const FAKE_SUCCESS_MIN_SIGNAL_COVERAGE = 0/
+fakelength	s/ || text.length > FAKE_SUCCESS_MAX_CONTENT_LENGTH) return null/) return null/
+fakeallowlist	s/  if (!isFakeSuccessBodyAllowlistedProvider(provider)) return null/  if (false) return null/
+blamestypes	s/^  PROVIDER_ERROR_TYPES.CONTEXT_OVERFLOW,$//
+blamesstatus	s/  return !CREDENTIAL_STATUSES.has(statusCode)/  return true/
+blamesnull	s/  if (type !== null) return REQUEST_SCOPED_TYPES.has(type)/  if (type !== null \&\& false) return REQUEST_SCOPED_TYPES.has(type)/

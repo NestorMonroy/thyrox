@@ -10,10 +10,11 @@ import type { OutputStyle } from '@thyrox/config'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { OptionWithDescription } from './CustomSelect/select.js'
 import { Select } from './CustomSelect/select.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const DEFAULT_OUTPUT_STYLE_LABEL = 'Default'
 const DEFAULT_OUTPUT_STYLE_DESCRIPTION =
-  'Claude completes coding tasks efficiently and provides concise responses'
+  `${PRODUCT_NAME} completes coding tasks efficiently and provides concise responses`
 
 function mapConfigsToOptions(styles: {
   [styleName: string]: OutputStyleConfig | null
@@ -75,7 +76,7 @@ export function OutputStylePicker({
       <Box flexDirection="column" gap={1}>
         <Box marginTop={1}>
           <Text dimColor>
-            This changes how Claude Code communicates with you
+            This changes how {PRODUCT_NAME} communicates with you
           </Text>
         </Box>
         {isLoading ? (

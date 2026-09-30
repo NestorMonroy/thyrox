@@ -11,7 +11,7 @@
  *      falla al portarse — falla cuando alguien lo consume, y es el defecto
  *      que `porte-completo-no-parcial.md` nombra.
  *
- *   2. Dos paquetes declaran un SUSTITUTO de `getClaudeConfigHomeDir`
+ *   2. Dos paquetes declaran un SUSTITUTO de `getConfigHomeDir`
  *      diciendo que `@thyrox/config/env/utils` no lo exporta. Medido: SÍ lo
  *      exporta, memoizado, desde `env/utils.ts:70`. Los dos bloqueos son
  *      estancados — la tercera vez en esta iniciativa. Y no son inocuos: el
@@ -132,24 +132,24 @@ describe('PastedContent — el tipo que #260 portó incompleto', () => {
   })
 })
 
-describe('getClaudeConfigHomeDir — un símbolo, no tres copias', () => {
-  const previo = process.env.CLAUDE_CONFIG_DIR
+describe('getConfigHomeDir — un símbolo, no tres copias', () => {
+  const previo = process.env.THYROX_CONFIG_DIR
   afterEach(() => {
-    if (previo === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = previo
+    if (previo === undefined) delete process.env.THYROX_CONFIG_DIR
+    else process.env.THYROX_CONFIG_DIR = previo
   })
 
   test('9. los dos sustitutos se retiran y reexportan el canónico', async () => {
     // La identidad de función es lo que se mide, no el valor: dos copias
     // que hoy devuelven lo mismo pueden divergir mañana, y ya divergen —
     // ver el caso 10.
-    const canonico = (await import('@thyrox/config/env/utils')).getClaudeConfigHomeDir
+    const canonico = (await import('@thyrox/config/env/utils')).getConfigHomeDir
     const enObservabilidad = (
       await import('@thyrox/local-observability/internal/pendingCrossPackageDeps.js')
-    ).getClaudeConfigHomeDir
+    ).getConfigHomeDir
     const enProveedor = (
       await import('@thyrox/provider/internal/pendingCrossPackageDeps.js')
-    ).getClaudeConfigHomeDir
+    ).getConfigHomeDir
     expect(enObservabilidad).toBe(canonico)
     expect(enProveedor).toBe(canonico)
   })
@@ -158,25 +158,25 @@ describe('getClaudeConfigHomeDir — un símbolo, no tres copias', () => {
     // Una ruta con acento puede venir descompuesta (NFD) del entorno y
     // compuesta (NFC) del disco. Dos formas de la MISMA ruta que no
     // comparan iguales producen un directorio duplicado que nadie ve.
-    const { getClaudeConfigHomeDir } = await import('@thyrox/config/env/utils')
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-nfd-é'
-    expect(getClaudeConfigHomeDir()).toBe('/tmp/config-nfd-é'.normalize('NFC'))
+    const { getConfigHomeDir } = await import('@thyrox/config/env/utils')
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-nfd-é'
+    expect(getConfigHomeDir()).toBe('/tmp/config-nfd-é'.normalize('NFC'))
   })
 })
 
 describe('imageStore — la imagen pegada, en disco y en el índice', () => {
   let base: string
-  const previo = process.env.CLAUDE_CONFIG_DIR
+  const previo = process.env.THYROX_CONFIG_DIR
 
   beforeEach(async () => {
     base = arbol()
-    process.env.CLAUDE_CONFIG_DIR = base
+    process.env.THYROX_CONFIG_DIR = base
     const { clearStoredImagePaths } = await import('../imageStore.ts')
     clearStoredImagePaths()
   })
   afterEach(() => {
-    if (previo === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = previo
+    if (previo === undefined) delete process.env.THYROX_CONFIG_DIR
+    else process.env.THYROX_CONFIG_DIR = previo
   })
 
   test('11. lo que no es imagen no entra al índice', async () => {
@@ -217,7 +217,7 @@ describe('imageStore — la imagen pegada, en disco y en el índice', () => {
     // permisos 0600 en un directorio de sesión; si algo falla, se pierde la
     // imagen y sigue la conversación.
     const { storeImage } = await import('../imageStore.ts')
-    process.env.CLAUDE_CONFIG_DIR = '/proc/no-se-puede-escribir-aqui'
+    process.env.THYROX_CONFIG_DIR = '/proc/no-se-puede-escribir-aqui'
     expect(await storeImage({ id: 6, type: 'image', content: '' })).toBeNull()
   })
 
@@ -258,7 +258,7 @@ describe('imageStore — la imagen pegada, en disco y en el índice', () => {
 
   test('19. sin directorio base la limpieza no lanza', async () => {
     const { cleanupOldImageCaches } = await import('../imageStore.ts')
-    process.env.CLAUDE_CONFIG_DIR = join(arbol(), 'nunca-existio')
+    process.env.THYROX_CONFIG_DIR = join(arbol(), 'nunca-existio')
     await cleanupOldImageCaches()
   })
 })

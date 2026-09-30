@@ -52,6 +52,8 @@ export const FRAME_SIZE_CAP = 1024 * 1024
  *   `heartbeat` anfitrión → cliente, sigue vivo
  *   `resize`    cliente → anfitrión, cambia el tamaño del PTY
  *   `kill`      cliente → anfitrión, manda una señal
+ *   `detach`    sesión bg → anfitrión, pide soltar a los clientes
+ *               (`bgDetachSignal.ts`; lo atiende `ptyHost.handleCtrl`)
  *   `claim`     demonio → trabajador de reserva, le entrega la intención
  *   `reply`     demonio → trabajador, encola texto como próximo turno
  */
@@ -61,6 +63,7 @@ export type CtrlFrame =
   | { t: 'exit'; code: number; signal?: string }
   | { t: 'resize'; cols: number; rows: number }
   | { t: 'kill'; sig: 'SIGKILL' | 'SIGTERM' }
+  | { t: 'detach' }
   | { t: 'claim'; intent: string; cwd?: string; sessionId?: string }
   | { t: 'reply'; text: string }
   | { t: 'heartbeat'; ts: number; state?: string }
@@ -119,7 +122,7 @@ export function createFrameDecoder(
       const len = pending.readUInt32BE(0)
       if (len > FRAME_SIZE_CAP) {
         stopped = true
-        onError(`trama demasiado grande (${len} > ${FRAME_SIZE_CAP})`)
+        onError(`frame too large (${len} > ${FRAME_SIZE_CAP})`)
         return
       }
       const total = FRAME_HEADER_BYTES + len
@@ -141,13 +144,13 @@ export function createFrameDecoder(
         } catch {
           // Cubre también el cuerpo de longitud 0: `JSON.parse('')` lanza.
           stopped = true
-          onError('json de control mal formado')
+          onError('bad ctrl json')
           return
         }
         onFrame({ kind: CTRL_TAG, ctrl: parsed })
       } else {
         stopped = true
-        onError(`etiqueta de trama desconocida: ${tag}`)
+        onError(`unknown frame kind ${tag}`)
         return
       }
     }

@@ -33,7 +33,7 @@ describe('indexa por nombre', () => {
 
   test('cada valor pasa el esquema medido', () => {
     const built = buildRegistry([agent('alfa')])
-    expect(built.ok && built.registry.alfa.description).toBe('Agente alfa')
+    expect(built.ok && built.registry.alfa!.description).toBe('Agente alfa')
   })
 })
 

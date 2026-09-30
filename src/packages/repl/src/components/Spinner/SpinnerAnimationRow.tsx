@@ -87,7 +87,7 @@ export function SpinnerAnimationRow({
   message,
   messageColor,
   shimmerColor,
-  overrideColor,
+  overrideColor: _overrideColor,
   loadingStartTimeRef,
   totalPausedMsRef,
   pauseStartTimeRef,
@@ -131,7 +131,7 @@ export function SpinnerAnimationRow({
   // hasActiveTools both track leader state. When viewing an active teammate
   // while leader is idle, they'd otherwise flag a false stall after 3s.
   // Treating leaderIsIdle like hasActiveTools resets the stall timer.
-  const { isStalled, stalledIntensity } = useStalledAnimation(
+  const { isStalled } = useStalledAnimation(
     time,
     currentResponseLength,
     hasActiveTools || leaderIsIdle,

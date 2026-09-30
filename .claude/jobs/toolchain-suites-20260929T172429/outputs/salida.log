@@ -1,0 +1,20 @@
+tests/lib/test-toolchain-consumer-env.sh :: 5 casos: 5 ok, 0 fallos
+tests/lib/test-toolchain-degraded.sh :: 16 casos: 16 ok, 0 fallos
+tests/lib/test-toolchain-gawk.sh :: 16 casos: 16 ok, 0 fallos
+tests/lib/test-toolchain-gnu-time.sh :: 9 casos: 9 ok, 0 fallos
+tests/lib/test-toolchain-hunspell.sh :: 8 casos: 8 ok, 0 fallos
+tests/lib/test-toolchain-iproute2.sh :: 7 casos: 7 ok, 0 fallos
+tests/lib/test-toolchain-manifests.sh :: 19 casos: 19 ok, 0 fallos
+tests/lib/test-toolchain-parallel.sh :: 11 casos: 11 ok, 0 fallos
+tests/lib/test-toolchain-pdf-text.sh :: 7 casos: 7 ok, 0 fallos
+tests/lib/test-toolchain-pgvector.sh :: 29 casos: 29 ok, 0 fallos
+tests/lib/test-toolchain-podman.sh :: 10 casos: 10 ok, 0 fallos
+tests/lib/test-toolchain-poppler.sh :: 11 casos: 11 ok, 0 fallos
+tests/lib/test-toolchain-postgres-test-db.sh :: 10 casos: 10 ok, 0 fallos
+tests/lib/test-toolchain-proxy.sh :: 17 casos: 17 ok, 0 fallos
+tests/lib/test-toolchain-redis.sh :: 9 casos: 9 ok, 0 fallos
+tests/lib/test-toolchain-rsync.sh :: 7 casos: 7 ok, 0 fallos
+tests/lib/test-toolchain-sh.sh :: 6 casos: 6 ok, 0 fallos
+tests/lib/test-toolchain-texlive.sh :: 11 casos: 11 ok, 0 fallos
+tests/lib/test-toolchain-uid-aware.sh :: 10 casos: 10 ok, 0 fallos
+__BG_EXIT__=0

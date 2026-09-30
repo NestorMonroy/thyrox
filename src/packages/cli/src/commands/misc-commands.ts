@@ -1,4 +1,5 @@
-import type { Command } from '@commander-js/extra-typings'
+import { PRODUCT_NAME } from '../entry/productName.ts'
+import type { ParentCommand } from './parentCommand.js'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
 import { bridgeMain } from '@thyrox/bridge'
@@ -12,7 +13,7 @@ import { getBaseRenderOptions } from '@thyrox/output/render-options'
 import { validateUuid } from '@thyrox/agent/uuid.js'
 import { TASK_STATUSES } from '@thyrox/agent/tasks.js'
 
-export function registerMiscCommands(program: Command): void {
+export function registerMiscCommands(program: ParentCommand): void {
   // Background session subcommands. The actual handlers run in the
   // cli.tsx fast-path BEFORE Commander parses argv (skips loading
   // commander + main.tsx for the perf-sensitive `ps` / `logs` etc).
@@ -65,9 +66,9 @@ export function registerMiscCommands(program: Command): void {
     .option('--sso', 'Force SSO login flow')
     .option(
       '--console',
-      'Use Anthropic Console (API usage billing) instead of Claude subscription',
+      `Use Anthropic Console (API usage billing) instead of ${PRODUCT_NAME} subscription`,
     )
-    .option('--claudeai', 'Use Claude subscription (default)')
+    .option('--claudeai', `Use ${PRODUCT_NAME} subscription (default)`)
     .action(
       async ({
         email,
@@ -110,7 +111,7 @@ export function registerMiscCommands(program: Command): void {
   const pluginCmd = program
     .command('plugin')
     .alias('plugins')
-    .description('Manage Claude Code plugins')
+    .description(`Manage ${PRODUCT_NAME} plugins`)
     .configureHelp(createSortedHelpConfig())
 
   pluginCmd
@@ -142,7 +143,7 @@ export function registerMiscCommands(program: Command): void {
   // Marketplace subcommands
   const marketplaceCmd = pluginCmd
     .command('marketplace')
-    .description('Manage Claude Code marketplaces')
+    .description(`Manage ${PRODUCT_NAME} marketplaces`)
     .configureHelp(createSortedHelpConfig())
 
   marketplaceCmd
@@ -286,7 +287,7 @@ export function registerMiscCommands(program: Command): void {
   // claude setup-token
   program
     .command('setup-token')
-    .description('Set up a long-lived authentication token (requires Claude subscription)')
+    .description(`Set up a long-lived authentication token (requires ${PRODUCT_NAME} subscription)`)
     .action(async () => {
       const [{ setupTokenHandler }, { createRoot }] = await Promise.all([
         import('../handlers/util.js'),
@@ -408,7 +409,7 @@ export function registerMiscCommands(program: Command): void {
     program
       .command('up')
       .description(
-        '[ANT-ONLY] Initialize or upgrade the local dev environment using the "# claude up" section of the nearest CLAUDE.md',
+        '[ANT-ONLY] Initialize or upgrade the local dev environment using the "# claude up" section of the nearest THYROX.md',
       )
       .action(async () => {
         const { up } = await import('../up.js')
@@ -448,7 +449,7 @@ export function registerMiscCommands(program: Command): void {
   program
     .command('install [target]')
     .description(
-      'Install Claude Code native build. Use [target] to specify version (stable, latest, or specific version)',
+      `Install ${PRODUCT_NAME} native build. Use [target] to specify version (stable, latest, or specific version)`,
     )
     .option('--force', 'Force installation even if already installed')
     .action(async (target: string | undefined, options: { force?: boolean }) => {

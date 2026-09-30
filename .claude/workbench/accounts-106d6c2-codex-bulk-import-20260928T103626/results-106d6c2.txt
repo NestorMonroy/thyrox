@@ -1,0 +1,58 @@
+== 1: el plan no se lee del token
+ 2 fail
+== 2: sin recortar el correo
+ 1 fail
+== 3: la caducidad declarada no gana
+ 2 fail
+== 4: una caducidad ilegible pasa
+ 1 fail
+== 5: sin diez días por defecto
+ 1 fail
+== 6: sin aplanar el auth.json
+ 1 fail
+== 7: tokens anidados sin access token se aplanan
+ 1 fail
+== 8: camelCase pisa snake_case
+ 1 fail
+== 9: sin la cuenta camelCase
+ 1 fail
+== 10: cualquier tipo
+ 1 fail
+== 11: sin campos obligatorios
+ 1 fail
+== 12: sin correo se importa
+ 1 fail
+== 13: el correo plano gana al del token
+ 1 fail
+== 14: la cuenta no es el espacio de trabajo
+ 4 fail
+== 15: sin tokenExpiresAt
+ 1 fail
+== 16: una prioridad fraccionaria pasa
+ 1 fail
+== 17: datos del proveedor vacíos se escriben
+ 1 fail
+== 18: la reimportación pisa lo guardado
+ 1 fail
+== 19: la reimportación conserva la prioridad
+ 1 fail
+== 20: otra cuenta se toca
+ 1 fail
+== 21: un texto es un registro
+ 1 fail
+== 22: un arreglo es una sesión
+ 0 fail
+== 23: sin el nombre de sesión
+ 1 fail
+== 24: sin tokens anidados
+ 1 fail
+== 25: cualquier token es un JWT
+ 1 fail
+== 26: el expires no vence
+ 1 fail
+== 27: el exp no vence
+ 1 fail
+== 28: sin el correo del usuario
+ 1 fail
+== restaurado
+ 0 fail

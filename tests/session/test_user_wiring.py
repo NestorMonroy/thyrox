@@ -43,6 +43,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "user_wiring", HERE / "src" / "session" / "user_wiring.py")
+assert spec is not None and spec.loader is not None
 w = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(w)
 
@@ -64,14 +65,69 @@ def check(etiqueta, esperado, obtenido):
 #: `TaskCreated`/`TaskCompleted` entran con TASK-DOCS-0404: son eventos
 #: DEDICADOS del cliente, no un `PostToolUse` con matcher, y su payload trae
 #: `task_id` y `task_subject` (medido en `_references/claude-code-bin/2.1.266`).
-EVENTS_DECLARED = ["PreModelSwitch", "SubagentStart", "SubagentStop",
-                      "TaskCompleted", "TaskCreated"]
+#:
+#: `PreToolUse` entra el 2026-09-24: los diez detectores de
+#: `tool_use_preflight.py` existian y NINGUN cableado los declaraba, asi que el
+#: aviso de comando largo en primer plano no podia dispararse en ninguna sesion.
+EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SessionStart", "SubagentStart",
+                      "SubagentStop", "TaskCompleted", "TaskCreated"]
 
 print("== 1. la declaracion existe y tiene la forma del settings del cliente ==")
 d = w.declared_wiring()
 check("es un settings con hooks", True, "hooks" in d)
 check("declara sus eventos, todos y solo ellos", EVENTS_DECLARED,
       sorted(d["hooks"]))
+
+print("== 1b. PreToolUse llega al despachador de los detectores ==")
+_pre = d["hooks"].get("PreToolUse", [{}])[0]
+_matcher = set(_pre.get("matcher", "").split("|"))
+check("el matcher cubre Bash y Agent, los dos despachos que se miden",
+      True, {"Bash", "Agent"} <= _matcher)
+check("el matcher cubre la escritura y la lectura de archivos",
+      True, {"Write", "Edit", "Read"} <= _matcher)
+check("el comando es el preflight del proveedor, por su envoltorio de bin/",
+      True, any(h["command"].endswith("bin/tool_use_preflight")
+                for h in _pre.get("hooks", [])))
+
+# El comando cableado corre desde el cwd de la sesion y sin el PYTHONPATH del
+# corredor. Medido 2026-09-24: asi, 4 de 17 detectores no cargaban y el
+# despachador lo decia por stderr, que en un hook nadie lee.
+import subprocess as _sp0, os as _os0  # noqa: E402
+_cmd = next(h["command"] for h in _pre.get("hooks", [{"command": "true"}]))
+_env0 = {k: v for k, v in _os0.environ.items() if k != "PYTHONPATH"}
+_r0 = _sp0.run(_cmd, shell=True, cwd="/", env=_env0, capture_output=True,
+               text=True, input='{"tool_name":"Bash","tool_input":{"command":"ls"}}')
+check("el comando cableado carga todos los detectores sin PYTHONPATH",
+      "", _r0.stderr.strip())
+
+# Tras compactar, el estado de trabajo vuelve por `SessionStart` con matcher
+# `compact`: la salida de `PostCompact` sólo la ve el usuario (2.1.281, `BQe`).
+_start = next(iter(w.declared_wiring()["hooks"].get("SessionStart", [])), {})
+check("SessionStart se declara con el matcher de la compactación", "compact",
+      _start.get("matcher"))
+_cmd1 = next((h["command"] for h in _start.get("hooks", [])), "true")
+check("el comando es el hook de restauración del proveedor, por bin/", True,
+      "bin/compact_context" in _cmd1)
+_r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=True,
+               input='{"hook_event_name":"SessionStart","source":"startup","session_id":"x"}')
+check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",
+      ("{}", ""), (_r1.stdout.strip(), _r1.stderr.strip()))
+
+# Al arrancar una sesión se recogen los worktrees de un pool que murió: su
+# `sweep` final nunca corrió, y cada uno es una copia del árbol en disco.
+_startup = next((e for e in w.declared_wiring()["hooks"].get("SessionStart", [])
+                 if e.get("matcher") == "startup"), {})
+_sweeps = [h["command"] for h in _startup.get("hooks", [])]
+check("SessionStart declara el barrido de huérfanos al arrancar", True,
+      bool(_sweeps) and all("bin/item_worktree sweep-orphans" in c for c in _sweeps))
+check("el barrido cubre el árbol del proveedor", True,
+      any(c.endswith(f" {w.thyrox_root()}") for c in _sweeps))
+import tempfile as _tf0  # noqa: E402
+with _tf0.TemporaryDirectory() as _root0:
+    _r2 = [_sp0.run(c, shell=True, cwd="/", capture_output=True, text=True,
+                    env={**_env0, "THYROX_POOL_WORKTREES_DIR": _root0}) for c in _sweeps]
+check("sin huérfanos, cada barrido sale 0 y calla", [(0, "")] * len(_sweeps),
+      [(r.returncode, r.stdout.strip()) for r in _r2])
 
 print("== 2. el control VE una ruta que no existe ==")
 falso = {"hooks": {"SubagentStop": [{"hooks": [
@@ -185,6 +241,7 @@ _source = _tmp / "fuente.json"
 _source.write_text('{"marca": "contenido-original"}')
 _target = _tmp / "respaldos" / "fuente.json.SELLO"
 _os2.environ["THYROX_JOBS_DIR"] = str(_tmp / "ledger")
+_os2.environ["THYROX_SESSION_LEDGER_DIR"] = str(_tmp / "ledger")
 w.BackgroundBackup(timeout=30).backup(_source, _target)
 check("el respaldo aterrizo", True, _target.exists())
 check("con el contenido de la fuente", _source.read_text(), _target.read_text())
@@ -208,12 +265,12 @@ _foreign_log = _tmp / "ajeno.log"
 _foreign_log.write_text("")
 _sp2.run([_ledger_sh, "register", "ajeno", str(_foreign_log), str(_stalled.pid)],
          capture_output=True, text=True,
-         env={**_os2.environ, "THYROX_JOBS_DIR": str(_shared)})
+         env={**_os2.environ, "THYROX_SESSION_LEDGER_DIR": str(_shared)})
 _stalled.send_signal(19)  # SIGSTOP -> estado T
 _time.sleep(0.5)
 
 _classes = _sp2.run([_ledger_sh, "status"], capture_output=True, text=True,
-                   env={**_os2.environ, "THYROX_JOBS_DIR": str(_shared)}).stdout
+                   env={**_os2.environ, "THYROX_SESSION_LEDGER_DIR": str(_shared)}).stdout
 check("el ledger compartido lo clasifica DETENIDO", True, "DETENIDO" in _classes)
 
 _source2 = _tmp / "fuente2.json"
@@ -250,8 +307,8 @@ for _ev, _gs in w.declared_wiring()["hooks"].items():
     for _g in _gs:
         for _h in _g["hooks"]:
             # El ejecutable es el primer argumento que es una ruta: lo que
-            # viene despues de python3/node/bun run.
-            _m = _re.search(r"(?:python3|node|bun run)\s+(\S+)", _h["command"])
+            # viene despues de python3/node/bun run/bash.
+            _m = _re.search(r"(?:python3|node|bun run|bash)\s+(\S+)", _h["command"])
             if _m:
                 _ejecutables.append((_ev, _m.group(1)))
 _expected = sum(len(_g["hooks"]) for _gs in d["hooks"].values() for _g in _gs)
@@ -331,6 +388,7 @@ import json as _json
 import subprocess as _sp
 import tempfile as _tf
 
+assert w.__file__ is not None
 _MODULO = str(Path(w.__file__))
 
 def _correr(vivo: dict):
@@ -411,7 +469,7 @@ print("== 15-bis. CONTROL DE ANULACION: se retira el campo de la clave ==")
 # Debe caer 15.4 y SOLO 15.4: si tambien cayera 15.9, el verde de la seccion
 # estaria midiendo la idempotencia y no la politica de cache.
 _original = w.CACHE_KEY_FIELDS
-w.CACHE_KEY_FIELDS = ()
+setattr(w, "CACHE_KEY_FIELDS", ())
 try:
     _l18 = _tmp / "anulado.json"
     _l18.write_text(_json.dumps(_otro))
@@ -423,7 +481,7 @@ try:
         pass
     _r19 = w.install(_l16, _declarado15, _FakeBackup(), "SELLO", backups=_tmp)
 finally:
-    w.CACHE_KEY_FIELDS = _original
+    setattr(w, "CACHE_KEY_FIELDS", _original)
 
 check("15-bis.1 anulado, la negativa de 15.4 desaparece", False, _anulado_rehusa)
 check("15-bis.2 y la idempotencia de 15.9 SOBREVIVE", True, _r19["unchanged"])
@@ -487,12 +545,12 @@ print("== 16-bis. CONTROL DE ANULACION: se retira la bandera del destino ==")
 # cuerpo sano no se reporte, y un instrumento ciego tambien las pasa. Ese
 # contraste es lo que hace que el verde de la seccion discrimine.
 _flags_original = w.STORE_DEST_FLAGS
-w.STORE_DEST_FLAGS = ()
+setattr(w, "STORE_DEST_FLAGS", ())
 try:
     _anulado = w.misdirected_store_destinations(_cuerpos)
     _anulado_sano = w.misdirected_store_destinations(_optin)
 finally:
-    w.STORE_DEST_FLAGS = _flags_original
+    setattr(w, "STORE_DEST_FLAGS", _flags_original)
 
 check("16-bis.1 anulado, los dos incumplidores dejan de verse", 0, len(_anulado))
 check("16-bis.2 y el cuerpo sano SOBREVIVE en verde", [], _anulado_sano)
@@ -519,10 +577,37 @@ check("17.2 y entra al universo como roto", 1,
       len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
           {"type": "command", "command": _REL}]}]}},
           cwd="/home/user", bases=_BASES)))
-check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
-      w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
-          {"type": "command", "command": _REL}]}]}},
-          cwd=str(HERE.parent / "kaupamex-docs"), bases=_BASES))
+# H-THYROX-259: la disposicion NO se supone de donde vive el arbol -- se
+# arma la propia, en un directorio temporal retirado al salir, para que el
+# caso mida el comando real del consumidor resuelto desde el cwd correcto
+# sin depender de si `HERE` es el arbol principal o un worktree del pool.
+import tempfile as _tf17  # noqa: E402
+with _tf17.TemporaryDirectory() as _d17:
+    _root17 = Path(_d17)
+    _docs17 = _root17 / "kaupamex-docs"
+    _docs17.mkdir()
+    _target17 = (_root17 / "thyrox" / "src" / "packages" / "agent"
+                   / "bin" / "preModelSwitch.ts")
+    _target17.parent.mkdir(parents=True)
+    _target17.touch()
+    check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
+          w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES))
+
+    # CONTROL DE ANULACION propio de 17.3: si el objetivo temporal no
+    # existe, el mismo comando tiene que reportarse roto -- y solo este
+    # caso, porque es el unico que depende de la disposicion armada aqui.
+    _target17.unlink()
+    check("17.3-anulacion.1 sin el archivo, el comando SI se reporta roto",
+          1, len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES)))
+    _target17.touch()
+    check("17.3-anulacion.2 restaurado el archivo, vuelve a verse sano", [],
+          w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES))
 check("17.4 el prefijo `~/` usa la casa, no el cwd", "/root/x.py",
       w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES))
 check("17.5 un prefijo cuya raiz el entorno no declara REHUSA", None,
@@ -538,8 +623,8 @@ print("== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==")
 _sufijo_original = w._SCRIPT_SUFFIX
 _prefijos_original = w._BASE_PREFIXES
 import re as _re
-w._SCRIPT_SUFFIX = _re.compile(r"(?!)")   # no casa con nada
-w._BASE_PREFIXES = ()
+setattr(w, "_SCRIPT_SUFFIX", _re.compile(r"(?!)"))   # no casa con nada
+setattr(w, "_BASE_PREFIXES", ())
 try:
     _anul_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
     _anul_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
@@ -547,8 +632,8 @@ try:
     _anul_casa = w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES)
     _anul_sano = w._target_of("python3 --stop", cwd="/home/user", bases=_BASES)
 finally:
-    w._SCRIPT_SUFFIX = _sufijo_original
-    w._BASE_PREFIXES = _prefijos_original
+    setattr(w, "_SCRIPT_SUFFIX", _sufijo_original)
+    setattr(w, "_BASE_PREFIXES", _prefijos_original)
 
 # `../thyrox/...` lleva `/`, asi que anular el sufijo NO basta: la rama del
 # `/` es la que lo ve. Se anula tambien esa, y entonces 17.1 y 17.2 caen.
@@ -568,13 +653,13 @@ def _solo_absoluto(command, cwd=None, bases=None):
         if pieza.startswith("/"):
             return pieza
     return None
-w._target_of = _solo_absoluto
+setattr(w, "_target_of", _solo_absoluto)
 try:
     _ciego_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
     _ciego_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
         {"type": "command", "command": _REL}]}]}}, cwd="/home/user", bases=_BASES)
 finally:
-    w._target_of = _original_target
+    setattr(w, "_target_of", _original_target)
 
 check("17-bis.5 con la version vieja, 17.1 CAE", None, _ciego_rel)
 check("17-bis.6 y 17.2 CAE: el comando roto sale del universo", 0, len(_ciego_rotos))
@@ -582,5 +667,152 @@ check("17-bis.7 restaurada, vuelve a verlo",
       "/home/thyrox/src/packages/agent/bin/preModelSwitch.ts",
       w._target_of(_REL, cwd="/home/user", bases=_BASES))
 
+
+# Instalar SOLO los hooks: con un settings vivo sin `advisorModel` (decisión de
+# quien opera), `--write` rehúsa por el cambio de la clave de caché y los hooks
+# nuevos nunca llegan. `--hooks-only` fusiona sólo `hooks`, que no es campo de
+# la clave (`createCacheSafeParams`, 2.1.266).
+import tempfile as _tf9  # noqa: E402
+with _tf9.TemporaryDirectory() as _d9:
+    _live9 = Path(_d9) / "settings.local.json"
+    _live9.write_text(_json.dumps({"permissions": {"allow": ["Bash(ls)"]}}))
+    _r9 = _sp0.run([sys.executable, str(HERE / "src/session/user_wiring.py"), "--write",
+                    "--hooks-only", "--backups", _d9],
+                   env={**_os0.environ, w.LIVE_SETTINGS_VAR: str(_live9),
+                        "PYTHONPATH": str(HERE / "src")},
+                   capture_output=True, text=True)
+    _after9 = _json.loads(_live9.read_text())
+    check("--hooks-only instala sin rehusar", 0, _r9.returncode)
+    check("--hooks-only escribe los hooks declarados", True, "SessionStart" in _after9.get("hooks", {}))
+    check("--hooks-only no toca advisorModel", False, "advisorModel" in _after9)
+    check("--hooks-only conserva permissions", {"allow": ["Bash(ls)"]}, _after9.get("permissions"))
+
+
+print("\n== 18. TODO comando de declared_wiring corre sin ModuleNotFoundError, "
+      "aislado del disco real (H-THYROX-268) ==")
+# MITAD ROJA medida 2026-09-29 sobre el cableado ANTES de esta correccion:
+# `declared_wiring` cableaba `python3 <base>/src/hooks/task_lifecycle.py`
+# (TaskCreated, TaskCompleted) y `python3 <base>/src/agents/register_session.py`
+# (SubagentStart/SubagentStop) sin `PYTHONPATH`. Invocados por su ruta bajo el
+# entorno del cliente —que no declara `PYTHONPATH`— mueren con
+# `ModuleNotFoundError: No module named 'agents'`/`'hooks'`, exit 1 (289
+# tarjetas y 26 subagentes reconciliados a mano en la sesion que lo destapo).
+#
+# El defecto no era de esos dos comandos en particular: era que CUALQUIER
+# comando de `declared_wiring` que invoque un `.py` sin pasar por su
+# envoltorio de `bin/` puede repetirlo apenas ese modulo importe otro paquete
+# del arbol. Por eso esta seccion mide la PROPIEDAD GENERAL —recorre TODOS
+# los comandos que el cableado declara, por evento, sin lista escrita a mano
+# de nombres de hook— y no sólo los dos que fallaban hoy.
+#
+# AISLAMIENTO OBLIGATORIO: nada de lo que sigue escribe en el store real
+# (`<thyrox>/agent-results/`), en `~/.claude`, ni en un repo real. El sandbox
+# declara su propio HOME y las variables de destino que los mecanismos ya
+# leen (`AGENT_STORE_CLAUDE_DIR`, `THYROX_AGENT_STORE`, `THYROX_JOBS_DIR`,
+# `THYROX_SESSION_LEDGER_DIR`, `THYROX_POOL_WORKTREES_DIR`), y el unico
+# comando que actua sobre un REPO (`item_worktree sweep-orphans <repo>`)
+# recibe un repo git TEMPORAL por sustitucion textual, nunca uno real —
+# ninguno de los comandos medidos queda sin aislar.
+import re as _re18
+import subprocess as _sp18
+import tempfile as _tf18
+
+_sandbox18 = Path(_tf18.mkdtemp())
+_home18 = _sandbox18 / "home"
+_home18.mkdir()
+_consumer18 = _sandbox18 / "consumer"
+_agent_results18 = _sandbox18 / "agent-results"
+_store18 = _sandbox18 / "store" / "agent_store.sqlite3"
+_jobs18 = _sandbox18 / "jobs"
+_ledger18 = _sandbox18 / "ledger"
+_pool_worktrees18 = _sandbox18 / "pool-worktrees"
+_pool_worktrees18.mkdir()
+_sweep_repo18 = _sandbox18 / "sweep-repo"
+_sweep_repo18.mkdir()
+_sp18.run(["git", "init", "-q", str(_sweep_repo18)], check=True)
+
+# El entorno de ejecucion: SOLO `PATH` y un `HOME` temporal, sin `PYTHONPATH`
+# — el `env -i` que reproduce el entorno del cliente, que no declara ninguna
+# de las dos cosas que este arbol da por sentadas cuando corre desde `bin/`.
+_env18 = {
+    "PATH": _os0.environ.get("PATH", ""),
+    "HOME": str(_home18),
+    "AGENT_STORE_CLAUDE_DIR": str(_agent_results18),
+    "THYROX_AGENT_STORE": str(_store18),
+    "THYROX_JOBS_DIR": str(_jobs18),
+    "THYROX_SESSION_LEDGER_DIR": str(_ledger18),
+    "THYROX_POOL_WORKTREES_DIR": str(_pool_worktrees18),
+}
+
+_SWEEP18 = _re18.compile(r"(sweep-orphans )(\S+)")
+
+
+def _probe_wiring_commands18(declared: dict) -> list[dict]:
+    """Corre CADA comando de `declared` en el sandbox y mide su stderr.
+
+    Generico por diseño: recorre `declared["hooks"]` por evento, sin nombrar
+    ningun comando — el control de anulacion de mas abajo es lo que prueba
+    que discrimina el comando roto de los sanos, y no que este bucle este
+    mirando algo en particular.
+    """
+    measured = []
+    for event, groups in declared["hooks"].items():
+        for group in groups:
+            for hook_entry in group.get("hooks", []):
+                command = hook_entry["command"]
+                # El unico comando que actua sobre un REPO: se le sustituye
+                # el repo real por uno temporal, nunca al reves.
+                isolated_command = _SWEEP18.sub(rf"\1{_sweep_repo18}", command)
+                r = _sp18.run(isolated_command, shell=True, cwd=str(_sandbox18),
+                             env=_env18, input="{}", capture_output=True,
+                             text=True, timeout=60)
+                measured.append({"event": event, "command": command,
+                                "returncode": r.returncode,
+                                "stdout": r.stdout, "stderr": r.stderr})
+    return measured
+
+
+_declared18 = w.declared_wiring(root=HERE, consumer=_consumer18)
+_measured18 = _probe_wiring_commands18(_declared18)
+
+check("18.1 midio los mismos comandos que declara el cableado",
+      sum(len(g["hooks"]) for gs in _declared18["hooks"].values() for g in gs),
+      len(_measured18))
+
+_with_import_error18 = [
+    f"{m['event']}: {m['command']}" for m in _measured18
+    if "ModuleNotFoundError" in m["stderr"] or "ImportError" in m["stderr"]]
+check("18.2 ningun command declarado falla por import sin PYTHONPATH",
+      [], _with_import_error18)
+
+print("   comandos measured, aislados del disco real (ninguno excluido):")
+for _m18 in _measured18:
+    print(f"     {_m18['event']:16} rc={_m18['returncode']}  {_m18['command']}")
+
+print("== 18-bis. CONTROL DE ANULACION: task_lifecycle vuelve a su .py sin bin/ ==")
+# Si `declared_wiring` volviera a cablear `task_lifecycle` por su ruta
+# directa —el defecto exacto de H-THYROX-268—, 18.2 tiene que caer, Y SOLO por
+# los DOS comandos que usan ese ejecutable (TaskCreated, TaskCompleted). Un
+# 18.2 que cayera por CUALQUIER razon no discriminaria "vio el command roto"
+# de "algo mas se rompio".
+_ORIGINAL18 = f"bash {HERE}/bin/task_lifecycle"
+_BROKEN18 = f"python3 {HERE}/src/hooks/task_lifecycle.py"
+check("18-bis.0 el command original esta presente antes de anular",
+      True, _ORIGINAL18 in _json.dumps(_declared18))
+
+_declared18_annulled = _json.loads(
+    _json.dumps(_declared18).replace(_ORIGINAL18, _BROKEN18))
+check("18-bis.1 la anulacion tocó exactamente los dos comandos de task_lifecycle",
+      2, _json.dumps(_declared18_annulled).count(_BROKEN18))
+
+_measured18_annulled = _probe_wiring_commands18(_declared18_annulled)
+_with_import_error18_annulled = sorted(
+    m["event"] for m in _measured18_annulled
+    if "ModuleNotFoundError" in m["stderr"] or "ImportError" in m["stderr"])
+check("18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas",
+      ["TaskCompleted", "TaskCreated"], _with_import_error18_annulled)
+
+import shutil as _sh18  # noqa: E402
+_sh18.rmtree(_sandbox18, ignore_errors=True)
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

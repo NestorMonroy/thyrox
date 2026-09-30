@@ -30,6 +30,7 @@ import dataclasses
 import pathlib
 import re
 import sys
+from typing import Callable
 
 #: El hogar de los archivos sueltos. Dos entradas, ambas de entorno (DEC-04):
 #: el VALOR lo lleva ``THYROX_USER_CLAUDE_DIR`` y la RUTA a su declaración la
@@ -47,11 +48,11 @@ class Patch:
     target: str
     reason: str
     #: Ya está como thyrox lo quiere.
-    is_applied: object
+    is_applied: Callable[[str], bool]
     #: Es la forma defectuosa que sabemos transformar.
-    is_broken: object
+    is_broken: Callable[[str], bool]
     #: La transformación. Sólo se llama si ``is_broken``.
-    apply: object
+    apply: Callable[[str], str]
 
 
 # --- parche 1: el gate de firma no mide la identidad -------------------------

@@ -1,17 +1,17 @@
 /**
- * Barridos de adopción del bg-daemon. `ant 5166.js` mxb (ruta de roster) +
- * 4639.js (ruta de barrido de jobs/). Extraído de bgDaemon.ts para
- * mantener el archivo de entrada bajo el presupuesto de 800 LOC; el
- * comportamiento es idéntico, los helpers sólo toman el mapa de workers +
- * el env del proceso del daemon explícitamente en vez de capturarlos por
- * clausura.
+ * BG-daemon adoption sweeps. ant 5166.js mxb (roster path) + 4639.js (jobs/
+ * scan path). Extracted from bgDaemon.ts to keep the entry file under the
+ * 800-LOC budget; behavior is identical, the helpers just take the workers
+ * map + the daemon's process env explicitly instead of capturing them via
+ * closure.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/bgAdopt.ts`.
+ * @dynamicRequire
  */
 
-import { existsSync as existsSyncFn } from 'node:fs'
+import { existsSync as existsSyncFn, readdirSync, unlinkSync } from 'node:fs'
+import { join } from 'node:path'
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
 import {
   type WorkerRecord,
@@ -21,19 +21,18 @@ import {
   writeWorkerRecord,
 } from './bgWorkerRegistry.js'
 import { readRoster } from './roster.js'
+import { getDaemonScopeDir } from './socketPaths.js'
 import { WorkerVm } from './workerVm.js'
 
 /**
- * Adopción al arrancar desde roster.json. El supervisor carga el roster
- * previo, reproduce cada entrada como un intento de adopción (verificando
- * que el pid + el socket existan), y da por huérfanas las entradas cuyo
- * proceso subyacente ya no está.
+ * Boot adopt from roster.json. Supervisor loads the previous roster,
+ * replays each entry as an adoption attempt (verifying pid + socket
+ * exists), and orphans entries whose underlying process is gone.
  *
- * Las adopciones en modo roster tienen precedencia sobre el barrido de
- * jobs/ porque el roster lleva entradas cross-cwd que el árbol jobs/
- * acotado por cwd no vería. Ante un roster con parseFailed, se salta — el
- * archivo fue puesto en cuarentena y se cae al barrido de jobs/ + se
- * escribe un roster vacío fresco.
+ * Roster mode adoptions take precedence over the jobs/ scan because the
+ * roster carries cross-cwd entries the cwd-scoped jobs/ tree wouldn't
+ * see. On parseFailed roster, we skip — the file has been quarantined
+ * and we'll fall through to jobs/ scan + write a fresh empty roster.
  */
 export async function adoptFromRoster(
   workers: Map<string, WorkerVm>,
@@ -45,27 +44,26 @@ export async function adoptFromRoster(
   for (const [short, entry] of Object.entries(roster.workers)) {
     if (workers.has(short)) continue
     if (!isPidAliveSync(entry.pid)) {
-      // ant 5166.js UB8: el proceso se fue pero el supervisor estaba
-      // caído. Se marca el meta.json como 'failed' para que `ccb ps` y el
-      // panel de tareas muestren por qué terminó de forma terminal.
+      // ant 5166.js UB8: process is gone but supervisor was down. Mark
+      // the meta.json as 'failed' so `ccb ps` and the tasks panel show
+      // why it ended terminally.
       markAdoptionFailed(short, 'process gone while supervisor was down')
       dead++
       continue
     }
-    // NO caer aquí a entry.rendezvousSock: desde que aterrizó el canal
-    // rv, rendezvousSock es un socket DISTINTO (el socket de control), no
-    // un alias del socket de datos PTY. El viejo fallback
-    // `?? entry.rendezvousSock` asignaría mal el socket rv como el socket
-    // PTY cuando ptySock está ausente — socket equivocado, corrompe el
-    // attach. Un ptySock ausente significa que el worker es genuinamente
-    // inalcanzable para attach (se maneja abajo).
+    // Do NOT fall back to entry.rendezvousSock here: since the rv channel
+    // landed, rendezvousSock is a DISTINCT socket (the control socket), not
+    // an alias for the PTY data socket. The old `?? entry.rendezvousSock`
+    // fallback would mis-assign the rv socket as the PTY socket when ptySock
+    // is absent — wrong socket, corrupts attach. A missing ptySock means the
+    // worker is genuinely unreachable for attach (handled below).
     const ptySocket = entry.ptySock ?? ''
     const sockExists = ptySocket ? existsSyncFn(ptySocket) : false
     if (!sockExists) {
       logEvent('tengu_bg_adopt_sock_unlinked', { short, sock: ptySocket })
-      // pid vivo pero el socket ya no está — el worker es inalcanzable
-      // para attach. Se marca failed con la razón específica para que el
-      // usuario entienda por qué no se puede recuperar la sesión.
+      // pid alive but socket gone — worker is unreachable for attach.
+      // Mark failed with the specific reason so the user understands
+      // why we can't recover the session.
       markAdoptionFailed(short, 'pty socket gone — worker unreachable')
       dead++
       continue
@@ -84,11 +82,11 @@ export async function adoptFromRoster(
       attempt: entry.attempt,
       cliVersion: entry.cliVersion,
     }
-    // ant 2459.js Kv9 — adopción huérfana: cuando el roster lleva una
-    // entrada pero el árbol local jobs/<short>/ no tiene meta.json (una
-    // entrada cross-cwd que escribió el supervisor anterior, un supervisor
-    // fresco en un árbol-cwd distinto), se persiste meta.json ahora para
-    // que `ccb ps`, `ccb logs` y el panel de tareas puedan encontrarlo.
+    // ant 2459.js Kv9 — orphan adoption: when the roster carries an
+    // entry but the local jobs/<short>/ tree has no meta.json (cross-
+    // cwd entry the previous supervisor wrote, fresh supervisor in a
+    // different cwd-tree), persist meta.json now so `ccb ps`,
+    // `ccb logs`, and the tasks panel can find it.
     const existing = readWorkerRecord(short)
     if (!existing) {
       try {
@@ -106,7 +104,7 @@ export async function adoptFromRoster(
         ptySocket,
         rvSocket: entry.rendezvousSock,
         cmd: [],
-        cliVersion: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: process.env.THYROX_CODE_VERSION ?? 'dev',
       },
       record,
     )
@@ -124,10 +122,9 @@ export async function adoptFromRoster(
 }
 
 /**
- * Barrido periódico de jobs/<short>/meta.json para workers generados
- * fuera de nuestro op spawn (p. ej. `ccb --bg-pty` disparado por el
- * usuario). Adopta cada registro pty corriendo; siega huérfanos cuyo pid
- * ya no está.
+ * Periodic scan of jobs/<short>/meta.json for workers spawned outside
+ * our spawn op (e.g. ccb --bg-pty fired by user). Adopts each running
+ * pty record; reaps orphans whose pid is gone.
  */
 export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
   for (const record of readAllWorkerRecords()) {
@@ -159,7 +156,7 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
         sock: ptySocket,
       })
     }
-    const currentCli = process.env.CLAUDE_CODE_VERSION ?? 'dev'
+    const currentCli = process.env.THYROX_CODE_VERSION ?? 'dev'
     if (record.cliVersion && record.cliVersion !== currentCli) {
       logEvent('tengu_bg_adopt_upgrade_respawn', {
         short: record.short,
@@ -197,21 +194,77 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
 }
 
 /**
- * Marca el meta.json de un worker como `status='failed'` con una razón
- * legible por humanos. `ant 5166.js` UB8 — cuando el supervisor adopta una
- * entrada de roster pero descubre que el proceso/socket subyacente ya no
- * está, se actualiza el estado del job de cara al usuario para que el
- * panel de tareas y `ccb ps` muestren "por qué" el job terminó de forma
- * terminal en vez de dejarlo como 'running'.
+ * Barre `<daemon-scope>/*.pty.sock` en busca de hosts "roster-less": un
+ * socket de PTY en disco sin handle vivo en `workers`. Ref `pr`
+ * (chunk-92tvramn.js), rama no-Windows.
  *
- * No-op si falta el meta.json (p. ej. el roster llevaba una entrada
- * cross-cwd cuyo árbol jobs/ está en otro mount).
+ * Simplificaciones frente a la referencia, declaradas porque no se omiten
+ * en silencio:
+ * - pendiente: la referencia también barre huérfanos de `.err`/`.late`/
+ *   `.exec-exit`/`.err.read` sin su `.sock` correspondiente (primera mitad
+ *   del bucle de `pr`) — aquí sólo se reapan los `.sock` sin handle.
+ * - pendiente: antes de marcar `failed` la referencia espera al archivo
+ *   `.exec-exit` (`NIe`/`cl`/`ua`) para no pisar un proceso que está
+ *   terminando de escribir su salida; aquí se marca de inmediato.
+ * - pendiente: la rama `storageV5` (`o.storageV5`) no aplica — ccb no
+ *   tiene ese store.
+ */
+export function reapOrphanPtySockets(
+  workers: Map<string, WorkerVm>,
+  log: (message: string) => void,
+): void {
+  let entries: string[]
+  try {
+    entries = readdirSync(getDaemonScopeDir())
+  } catch {
+    return
+  }
+  let reaped = 0
+  for (const entry of entries) {
+    if (!entry.endsWith('.pty.sock')) continue
+    const short = entry.slice(0, -'.pty.sock'.length)
+    if (workers.has(short)) continue
+    reaped++
+    const record = readWorkerRecord(short)
+    if (record && record.status === 'running') {
+      try {
+        writeWorkerRecord({
+          ...record,
+          status: 'failed',
+          failedReason: 'reaped (roster gap)',
+          exitedAt: Date.now(),
+        })
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      unlinkSync(join(getDaemonScopeDir(), entry))
+    } catch {
+      // best-effort
+    }
+  }
+  if (reaped > 0) {
+    log(`bg orphan-reap: ${reaped} roster-less pty host(s)`)
+    logEvent('tengu_bg_orphan_reap', { reaped: String(reaped) })
+  }
+}
+
+/**
+ * Mark a worker's meta.json as `status='failed'` with a human-readable
+ * reason. ant 5166.js UB8 — when the supervisor adopts a roster entry
+ * but discovers the underlying process / socket is gone, the user-
+ * facing job state is updated so the tasks panel and `ccb ps` show
+ * "why" the job ended terminally instead of leaving it as 'running'.
+ *
+ * No-op if the meta.json is missing (e.g. the roster carried a
+ * cross-cwd entry whose jobs/ tree is on a different mount).
  */
 function markAdoptionFailed(short: string, reason: string): void {
   try {
     const record = readWorkerRecord(short)
     if (!record) return
-    // No arrasar un status que el usuario ya fijó (stopped/killed/failed).
+    // Don't trample a status the user already set (stopped/killed/failed).
     if (record.status !== 'running' && record.status !== 'unknown') return
     writeWorkerRecord({
       ...record,

@@ -1,0 +1,13 @@
+src/session/gpu_monitor.py
+src/session/transcripts.py
+src/verify/check_suite_discrimina.py
+src/verify/tsc_cycle.py
+src/verify/tsc_routes.py
+src/verify/tsc_zero_step.py
+tests/measurement/test_rejection_sampling.py
+tests/measurement/test_rejection_sampling_brief.py
+tests/measurement/test_speculative_speedup.py
+tests/session/test_adopt_background.py
+tests/session/test_background.py
+tests/session/test_pool_history.py
+tests/workbench/test_manifest.py

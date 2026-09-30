@@ -1,10 +1,14 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/errorIds.ts` (15
- * líneas fuente, 100 % portado). IDs de error para rastrear el origen de
- * un `logError()` en producción — identificadores ofuscados, un `const`
- * por error para permitir dead-code-elimination.
+ * Error IDs for tracking error sources in production.
+ * These IDs are obfuscated identifiers that help us trace
+ * which logError() call generated an error.
  *
- * AL AÑADIR UN ERROR NUEVO: usar el "Next ID" e incrementarlo.
+ * These errors are represented as individual const exports for optimal
+ * dead code elimination (external build will only see the numbers).
+ *
+ * ADDING A NEW ERROR TYPE:
+ * 1. Add a const based on Next ID.
+ * 2. Increment Next ID.
  * Next ID: 346
  */
 

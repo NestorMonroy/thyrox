@@ -1,12 +1,5 @@
 /**
- * Porte fiel de `ccnmt: packages/shell/src/errors.ts` — namespace de
- * errores tipados del shell (V7 §6.5).
- *
- * Porte COMPLETO: las cuatro clases exportadas de la fuente están
- * presentes con el mismo código, el mismo `name` y la misma cadena de
- * herencia.
- *
- * @module
+ * V7 §6.5 — ShellError typed error namespace.
  */
 export class ShellBaseError extends Error {
   readonly code: string

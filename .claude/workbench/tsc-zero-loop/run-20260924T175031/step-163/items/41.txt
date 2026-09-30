@@ -1,0 +1,25 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(786,33): error TS2322: Type '({ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand(args: string, context: ToolUseContext): Promise<...>; } | ... 4 more ... | null)[]' is not assignable to type 'readonly Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:776-796 ---
+    776      clearCommandsCache,
+    777      getCommandName,
+    778      isCommandEnabled,
+    779      builtInCommandNames: () => builtInCommandNames(),
+    780      findCommand,
+    781      hasCommand,
+    782      getCommand,
+    783      getSkillToolCommands,
+    784      getSlashCommandToolSkills,
+    785      getMcpSkillCommands: mcpCommands => getMcpSkillCommands(mcpCommands),
+    786>     internalOnlyCommands: () => INTERNAL_ONLY_COMMANDS,
+    787      remoteSafeCommands: () => REMOTE_SAFE_COMMANDS,
+    788      bridgeSafeCommands: () => BRIDGE_SAFE_COMMANDS,
+    789      isBridgeSafeCommand,
+    790      filterCommandsForRemoteMode,
+    791      formatDescriptionWithSource,
+    792    })
+    793  
+    794    commandRegistryHostBindingsInstalled = true
+    795  }
+    796  
+  Type '{ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand(args: string, context: ToolUseContext): Promise<...>; } | ... 4 more ... | null' is not assignable to type 'Command'.
+    Type 'null' is not assignable to type 'Command'.

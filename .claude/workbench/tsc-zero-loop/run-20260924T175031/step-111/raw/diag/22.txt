@@ -1,0 +1,12 @@
+src/packages/agent/compaction/sessionMemoryCompact.ts(39,3): error TS2305: Module '"./compact.js"' has no exported member 'createPlanAttachmentIfNeeded'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(465,24): error TS2554: Expected 6 arguments, but got 4.
+src/packages/agent/compaction/sessionMemoryCompact.ts(489,5): error TS2322: Type 'CompactBoundaryMessage' is not assignable to type 'SystemMessage'.
+  Type 'CompactBoundaryMessage' is not assignable to type 'SystemThinkingMessage'.
+    Type 'CompactBoundaryMessage' is not assignable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+          Type 'undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(490,7): error TS2345: Argument of type 'SystemCompactBoundaryMessage' is not assignable to parameter of type 'CompactBoundaryMessage'.
+  Type 'SystemCompactBoundaryMessage' is not assignable to type '{ type: "system"; subtype?: string | undefined; compactMetadata?: { [key: string]: unknown; trigger: string; preTokens: number; preCompactDiscoveredTools?: string[] | undefined; preservedSegment?: { ...; } | undefined; } | undefined; }'.
+    Types of property 'compactMetadata' are incompatible.
+      Type '{ [key: string]: unknown; preservedSegment?: { [key: string]: unknown; headUuid: `${string}-${string}-${string}-${string}-${string}`; tailUuid: `${string}-${string}-${string}-${string}-${string}`; anchorUuid: `${string}-${string}-${string}-${string}-${string}`; } | undefined; }' is missing the following properties from type '{ [key: string]: unknown; trigger: string; preTokens: number; preCompactDiscoveredTools?: string[] | undefined; preservedSegment?: { headUuid: string; anchorUuid: string; tailUuid: string; } | undefined; }': trigger, preTokens

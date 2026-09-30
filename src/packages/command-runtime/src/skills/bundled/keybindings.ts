@@ -36,10 +36,13 @@ function generateActionsTable(): string {
   for (const block of DEFAULT_BINDINGS) {
     for (const [key, action] of Object.entries(block.bindings)) {
       if (action) {
-        if (!actionInfo[action as string]) {
-          actionInfo[action as string] = { keys: [], context: block.context }
+        const actionKey = action as string
+        let entry = actionInfo[actionKey]
+        if (!entry) {
+          entry = { keys: [], context: block.context }
+          actionInfo[actionKey] = entry
         }
-        actionInfo[action as string].keys.push(key)
+        entry.keys.push(key)
       }
     }
   }
@@ -112,7 +115,7 @@ function generateReservedShortcuts(): string {
 }
 
 const FILE_FORMAT_EXAMPLE: KeybindingsSchemaType = {
-  $schema: 'https://www.schemastore.org/claude-code-how-works-how-works-keybindings.json',
+  $schema: 'https://www.schemastore.org/claude-code-keybindings.json',
   $docs: 'https://code.claude.com/docs/en/keybindings',
   bindings: [
     {

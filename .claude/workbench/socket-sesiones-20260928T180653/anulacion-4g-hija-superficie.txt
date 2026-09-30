@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+146 |   })
+147 | })
+148 | 
+149 | describe('isOnAgentSessionSurface (cFt)', () => {
+150 |   test('una hija siempre lo está', () => {
+151 |     expect(isOnAgentSessionSurface(host({ env: { THYROX_CODE_CHILD_SESSION: '1' } }))).toBe(true)
+                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:151:88)
+(fail) isOnAgentSessionSurface (cFt) > una hija siempre lo está [0.30ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [134.00ms]

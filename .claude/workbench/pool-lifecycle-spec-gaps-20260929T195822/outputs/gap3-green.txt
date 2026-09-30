@@ -1,0 +1,58 @@
+caso 1: la máquina de estados rehúsa lo que su tabla no admite
+  ok    begin deja el ítem en RUNNING
+  ok    RUNNING → CLOSED no se admite
+  ok    RUNNING ⇄ SNAPSHOTTING se admite
+  ok    un segundo begin sobre un ítem vivo se rehúsa
+caso 2: mientras corre, la salida no tiene nada del ítem (I1)
+  ok    la salida sigue vacía
+  ok    closed_items no ve el ítem
+caso 3: publicar mueve, verifica y deja <n>.closed al final (I2)
+  ok    el ítem queda CLOSED
+  ok    closed_items lo ve
+  ok    verify_closed no encuentra discrepancias
+  ok    el manifiesto lleva la generación 1
+  ok    el manifiesto enumera los tres artefactos
+  ok    el runtime ya no tiene artefactos del ítem
+  ok    no queda plan en el runtime
+caso 4: publicar dos veces es idempotente (prueba 10)
+  ok    la segunda publicación devuelve el mismo manifiesto
+  ok    la salida sigue coherente
+caso 5: un artefacto alterado después de publicar se detecta
+  ok    verify_closed nombra el artefacto
+caso 6: una generación nueva sucede a la cerrada; una rancia se rehúsa (prueba 7, I4)
+  ok    la ejecución que arranca sobre gen 1 recibe gen 2
+  ok    la salida queda en la generación 3
+  ok    publicar la generación 2 después de la 3 se rehúsa
+  ok    la salida sigue siendo la de la generación 3
+  ok    el runtime rancio se conserva
+caso 6c: control — sin la comprobación de generación, la rancia pisa a la nueva
+  ok    control: la salida quedó con el contenido rancio
+caso 7: una caída a mitad de la publicación se retoma (prueba 8, I5)
+  ok    el publicador murió a mitad (exit 9)
+  ok    la generación 1 sigue cerrada y coherente
+  ok    el ítem quedó en PUBLISHING
+  ok    reconcile lo publica
+  ok    tras reconcile, la generación 2 está cerrada y coherente
+  ok    y su contenido es el de la generación 2
+  ok    no quedan artefactos preparados en la salida
+caso 7c: control — sin plan persistido, la caída no se puede retomar
+  ok    control: el ítem no se cierra sin plan
+  ok    control: el estado queda sin cerrar
+caso 7d: control — sin la etapa oculta, la caída deja incoherente la generación cerrada
+  ok    control: la generación 1 sigue cerrada pero ya no coincide con su manifiesto
+caso 8: reconcile declara huérfano al ítem cuyo dueño murió y no borra nada
+  ok    el ítem sin dueño vivo queda ABANDONED_RECOVERABLE
+  ok    su runtime se conserva
+  ok    el ítem con dueño vivo no cambia
+  ok    close-run rehúsa con ítems sin cerrar y conserva el runtime
+  ok    sin run.closed en la salida
+caso 9: close-run publica index/joblog y run.closed al final
+  ok    close-run no deja pendientes
+  ok    index y joblog llegan a la salida
+  ok    run.closed nombra los ítems cerrados
+  ok    el runtime de la ejecución se retira
+caso 7f: I5 — una caída en cualquier punto de la publicación se retoma
+  ok    la inyección recorre las ocho operaciones de la publicación
+  ok    ninguna caída deja un cierre incoherente ni impide completar la generación 2
+resultado: 43 de 43 aserciones en verde
+exit=0

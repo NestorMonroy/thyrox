@@ -1,0 +1,10 @@
+15	TS2305	Module '"../attachments.js"' has no exported member 'generateFileAttachment'.
+15	TS2305	Module '"../attachments.js"' has no exported member 'getAgentListingDeltaAttachment'.
+15	TS2305	Module '"../attachments.js"' has no exported member 'getDeferredToolsDeltaAttachment'.
+15	TS2305	Module '"../attachments.js"' has no exported member 'getMcpInstructionsDeltaAttachment'.
+16	TS2305	Module '"@thyrox/config"' has no exported member 'getMemoryPath'.
+17	TS2305	Module '"../context.js"' has no exported member 'COMPACT_MAX_OUTPUT_TOKENS'.
+18	TS2305	Module '"../contextAnalysis.js"' has no exported member 'analyzeContext'.
+23	TS2724	'"../hooks.js"' has no exported member named 'executePostCompactHooks'. Did you mean 'executePreCompactHooks'?
+26	TS2724	'"../messages.js"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?
+37	TS2305	Module '"../toolSearch.js"' has no exported member 'isToolSearchEnabled'.

@@ -52,7 +52,7 @@ function comparaVersion(a: string, b: string): number {
     const d = Number(pa[i]) - Number(pb[i])
     if (d !== 0) return d
   }
-  return pa[4].localeCompare(pb[4])
+  return (pa[4] ?? '').localeCompare(pb[4] ?? '')
 }
 
 /**

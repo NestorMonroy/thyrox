@@ -72,7 +72,12 @@ def verdicts(detector, tasks_dir: str) -> dict[str, str]:
     # el gate y el detector hablaran de universos distintos, que es justo lo que
     # `load_detector` existe para impedir. `build_symbol_index` devuelve además
     # el conteo de archivos, que aquí no se publica.
-    symbols, _ = detector.build_symbol_index(detector.CODE_ROOTS)
+    try:
+        roots = detector.code_roots()
+    except detector.CodeRootMissing as exc:
+        print(f'ERROR — {exc}', file=sys.stderr)
+        raise SystemExit(EXIT_GUARD)
+    symbols, _ = detector.build_symbol_index(roots)
     salida = {}
     for task_id, task in tasks.items():
         if task['status'] == detector.DONE:

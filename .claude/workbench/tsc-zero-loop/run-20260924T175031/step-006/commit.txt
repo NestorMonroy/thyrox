@@ -1,0 +1,6 @@
+Import the canonical AppState where AppStateLike stood in
+
+Sixth step of the agent-compiler loop, accepted-net 3391 -> 3360.
+Seven modules in cli and tool-registry imported their package's
+AppStateLike contract under the name AppState. Both packages depend on
+app-host, so they now import the real AppState.

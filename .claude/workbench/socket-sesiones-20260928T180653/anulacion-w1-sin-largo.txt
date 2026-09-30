@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+125 |     expect(slugFromText('  ¡Hola, mundo!  ')).toBe('hola-mundo')
+126 |   })
+127 | 
+128 |   test('opciones de palabras y largo, sin guiones en los bordes', () => {
+129 |     expect(slugFromText('uno dos tres', { words: 2 })).toBe('uno-dos')
+130 |     expect(slugFromText('abcdefghij klm', { maxLen: 11 })).toBe('abcdefghij')
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "abcdefghij"
+Received: "abcdefghij-klm"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:130:60)
+(fail) slugFromText (E$t) — un slug a partir de texto libre > opciones de palabras y largo, sin guiones en los bordes [0.29ms]
+
+ 15 pass
+ 1 fail
+ 193 expect() calls
+Ran 16 tests across 1 file. [90.00ms]

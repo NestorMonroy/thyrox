@@ -1,0 +1,985 @@
+== TypeScript (bun) ==
+-- FAIL src/packages/binary/__tests__/symbol.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/symbol.test.ts:
+133 |       && /^function ([\w$]+)\(/m.test(readFileSync(join(latestRoot, f), 'utf8')))!
+134 |     const name = /function ([\w$]+)\(/.exec(readFileSync(join(latestRoot, file), 'utf8'))![1]!
+135 |     const result = Bun.spawnSync([process.execPath, join(import.meta.dir, '../bin/binary.ts'), 'symbol', file, name], {
+136 |       cwd: join(import.meta.dir, '../../../..'),
+137 |     })
+138 |     expect(result.exitCode).toBe(0)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/symbol.test.ts:138:29)
+(fail) symbol sin --root > resuelve contra la última build del corpus [495.73ms]
+
+ 11 pass
+ 1 fail
+ 22 expect() calls
+Ran 12 tests across 1 file. [4.18s]
+-- FAIL src/packages/local-observability/__tests__/udsSessionRegistration.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:
+274 |     await registerSession(undefined, deps())
+275 |     switchListeners[0]!('s2', 'resume')
+276 |     await flush()
+277 |     expect(state.adoptions).toBe(1)
+278 |     expect(state.registeredName).toMatchObject({ name: 'app-s2', source: 'derived' })
+279 |     expect(record()).toMatchObject({ name: 'app-s2', sessionId: 's2' })
+                           ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "name": "app-s2",
+-   "sessionId": "s2",
++   "cwd": "/work/app",
++   "kind": "interactive",
++   "name": "app-s1",
++   "nameSince": 1000,
++   "nameSource": "derived",
++   "peerFeatures": [
++     "notify_idle",
++     "artifact_yield",
++   ],
++   "peerProtocol": 1,
++   "pid": 4242,
++   "pidDomain": "linux:m:ns",
++   "procStart": "start-4242",
++   "sessionId": "s1",
++   "startedAt": 1000,
++   "version": "9.9.9",
+  }
+
+- Expected  - 2
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:279:22)
+(fail) los cambios de sesión y de directorio > un cambio que adopta renombra el nombre derivado con la sesión nueva [11.44ms]
+302 | 
+303 |   test('un cambio de directorio publica el nuevo y renombra el nombre derivado', async () => {
+304 |     await registerSession(undefined, deps())
+305 |     cwdListeners[0]!('/work/otro')
+306 |     await flush()
+307 |     expect(record()).toMatchObject({ cwd: '/work/otro', name: 'otro-s1' })
+                           ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "cwd": "/work/otro",
+-   "name": "otro-s1",
++   "cwd": "/work/app",
++   "kind": "interactive",
++   "name": "app-s1",
++   "nameSince": 1000,
++   "nameSource": "derived",
++   "peerFeatures": [
++     "notify_idle",
++     "artifact_yield",
++   ],
++   "peerProtocol": 1,
++   "pid": 4242,
++   "pidDomain": "linux:m:ns",
++   "procStart": "start-4242",
++   "sessionId": "s1",
++   "startedAt": 1000,
++   "version": "9.9.9",
+  }
+
+- Expected  - 2
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:307:22)
+(fail) los cambios de sesión y de directorio > un cambio de directorio publica el nuevo y renombra el nombre derivado [12.17ms]
+
+ 23 pass
+ 2 fail
+ 93 expect() calls
+Ran 25 tests across 1 file. [684.00ms]
+-- FAIL src/packages/paths/__tests__/consumerEnvLayer.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/paths/__tests__/consumerEnvLayer.test.ts:
+48 |     process.chdir(join(clone, 'tools'))
+49 |     expect(envValue(KEY)).toBe('del-consumidor')
+50 |   })
+51 |   test('the provider .env still answers what the consumer omits', () => {
+52 |     const expected = envValue(PROVIDER_KEY)
+53 |     expect(expected).toBeTruthy()
+                          ^
+error: expect(received).toBeTruthy()
+
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/paths/__tests__/consumerEnvLayer.test.ts:53:22)
+(fail) the consumer .env is layered over the provider one > the provider .env still answers what the consumer omits [32.24ms]
+
+ 4 pass
+ 1 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [520.00ms]
+-- FAIL src/packages/paths/__tests__/docs.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/paths/__tests__/docs.test.ts:
+536 |   if (declared) return declared
+537 |   const derived = deriveClonePrefix(start)
+538 |   if (derived) return derived
+539 |   throw new ReachRootError(
+540 |     `no pude derivar el prefijo de clon del árbol, y ${CLONE_PREFIX_VAR} no está declarada.`,
+541 |   )
+        ^
+error: no pude derivar el prefijo de clon del árbol, y THYROX_CLONE_PREFIX no está declarada.
+      at clonePrefix (/home/user/thyrox/src/packages/paths/reach.ts:541:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:563:13)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/src/packages/paths/__tests__/docs.test.ts:74:14)
+(fail) docsRoot — la raiz se descubre, no se escribe > el arbol declarado compone la raiz del clon [0.78ms]
+
+ 30 pass
+ 1 fail
+ 109 expect() calls
+Ran 31 tests across 1 file. [428.00ms]
+-- FAIL src/packages/paths/__tests__/reach.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/paths/__tests__/reach.test.ts:
+536 |   if (declared) return declared
+537 |   const derived = deriveClonePrefix(start)
+538 |   if (derived) return derived
+539 |   throw new ReachRootError(
+540 |     `no pude derivar el prefijo de clon del árbol, y ${CLONE_PREFIX_VAR} no está declarada.`,
+541 |   )
+        ^
+error: no pude derivar el prefijo de clon del árbol, y THYROX_CLONE_PREFIX no está declarada.
+      at clonePrefix (/home/user/thyrox/src/packages/paths/reach.ts:541:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:563:13)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at <anonymous> (/home/user/thyrox/src/packages/paths/__tests__/reach.test.ts:188:12)
+(fail) el tramo del árbol de clones — completa el porte parcial > root: la variable por raíz gana sobre el árbol [0.59ms]
+536 |   if (declared) return declared
+537 |   const derived = deriveClonePrefix(start)
+538 |   if (derived) return derived
+539 |   throw new ReachRootError(
+540 |     `no pude derivar el prefijo de clon del árbol, y ${CLONE_PREFIX_VAR} no está declarada.`,
+541 |   )
+        ^
+error: no pude derivar el prefijo de clon del árbol, y THYROX_CLONE_PREFIX no está declarada.
+      at clonePrefix (/home/user/thyrox/src/packages/paths/reach.ts:541:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:563:13)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at <anonymous> (/home/user/thyrox/src/packages/paths/__tests__/reach.test.ts:195:12)
+(fail) el tramo del árbol de clones — completa el porte parcial > root: la grafía heredada por raíz también se lee [0.33ms]
+536 |   if (declared) return declared
+537 |   const derived = deriveClonePrefix(start)
+538 |   if (derived) return derived
+539 |   throw new ReachRootError(
+540 |     `no pude derivar el prefijo de clon del árbol, y ${CLONE_PREFIX_VAR} no está declarada.`,
+541 |   )
+        ^
+error: no pude derivar el prefijo de clon del árbol, y THYROX_CLONE_PREFIX no está declarada.
+      at clonePrefix (/home/user/thyrox/src/packages/paths/reach.ts:541:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:563:13)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at <anonymous> (/home/user/thyrox/src/packages/paths/reach.ts:628:62)
+      at map (1:11)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:47)
+      at <anonymous> (/home/user/thyrox/src/packages/paths/__tests__/reach.test.ts:200:12)
+(fail) el tramo del árbol de clones — completa el porte parcial > roots da las cinco resueltas contra el árbol [0.60ms]
+
+ 29 pass
+ 3 fail
+ 36 expect() calls
+Ran 32 tests across 1 file. [405.00ms]
+-- FAIL src/packages/provider/__tests__/proxySdkForward.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/proxySdkForward.test.ts:
+176 |   test('el error de la copia del SDK que trae un cliente de nube se reconoce igual', async () => {
+177 |     // Cada SDK de nube instala su propia copia de `@anthropic-ai/sdk`: la
+178 |     // clase del error es otra, aunque la versión sea la misma.
+179 |     const nested = Bun.resolveSync('@anthropic-ai/sdk', Bun.resolveSync('@anthropic-ai/vertex-sdk', import.meta.dir))
+180 |     const { APIError: NestedApiError } = (await import(nested)) as typeof import('@anthropic-ai/sdk')
+181 |     expect(NestedApiError).not.toBe(APIError)
+                                     ^
+error: expect(received).not.toBe(expected)
+
+Expected: not [class APIError extends AnthropicError]
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/proxySdkForward.test.ts:181:32)
+(fail) errores del SDK > el error de la copia del SDK que trae un cliente de nube se reconoce igual [0.42ms]
+
+ 20 pass
+ 1 fail
+ 32 expect() calls
+Ran 21 tests across 1 file. [952.00ms]
+-- FAIL tests/verify/checkEnvPrefix.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/verify/checkEnvPrefix.test.ts:
+(fail) el propio thyrox > ninguna lectura de entorno nueva fuera de THYROX_* y ninguna variable propia sin prueba [5811.84ms]
+  ^ this test timed out after 5000ms.
+
+ 15 pass
+ 1 fail
+ 30 expect() calls
+Ran 16 tests across 1 file. [6.43s]
+pass=21804 fail=10 errors=0 crashes=0 files=1521 failed=7
+
+== Python (stdlib) ==
+-- FAIL tests/agents/test_agents_module_paths.py
+test_every_agents_module_resolves_its_paths (__main__.AgentsModulePaths.test_every_agents_module_resolves_its_paths) ... ok
+test_no_module_constant_points_at_nothing (__main__.AgentsModulePaths.test_no_module_constant_points_at_nothing) ... FAIL
+test_the_census_is_not_empty (__main__.AgentsModulePaths.test_the_census_is_not_empty)
+Sin esto un directorio vacío daría verde: no discriminaría. ... ok
+
+======================================================================
+FAIL: test_no_module_constant_points_at_nothing (__main__.AgentsModulePaths.test_no_module_constant_points_at_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_agents_module_paths.py", line 120, in test_no_module_constant_points_at_nothing
+    self.assertEqual(dangling, [], "constantes Path que no resuelven:\n  "
+AssertionError: Lists differ: ['merge_sqlite_union.py: la sonda no corri[62 chars] 1)'] != []
+
+First list contains 2 additional elements.
+First extra element 0:
+'merge_sqlite_union.py: la sonda no corrió (exit 1)'
+
++ []
+- ['merge_sqlite_union.py: la sonda no corrió (exit 1)',
+-  'store_field_classes.py: la sonda no corrió (exit 1)'] : constantes Path que no resuelven:
+  merge_sqlite_union.py: la sonda no corrió (exit 1)
+  store_field_classes.py: la sonda no corrió (exit 1)
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.798s
+
+FAILED (failures=1)
+-- FAIL tests/corpus/test_backfill_store_destination.py
+F
+======================================================================
+FAIL: test_agent_store_claude_dir_diverts_the_write (__main__.BackfillStoreDestination.test_agent_store_claude_dir_diverts_the_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_backfill_store_destination.py", line 54, in test_agent_store_claude_dir_diverts_the_write
+    self.assertEqual(_sha1(REAL), before, "el store versionado cambió")
+AssertionError: '981507e199876f2da8dcc682c90cfd91e5435600' != 'e38170313147662e24e3d0771d9c0961fdbed3cd'
+- 981507e199876f2da8dcc682c90cfd91e5435600
++ e38170313147662e24e3d0771d9c0961fdbed3cd
+ : el store versionado cambió
+
+----------------------------------------------------------------------
+Ran 1 test in 1.338s
+
+FAILED (failures=1)
+-- FAIL tests/hooks/test_task_lifecycle.py
+test_task_lifecycle:
+
+== 1. el guard admite el EVENTO del hook, no solo el nombre del tool ==
+  ok    `TaskCreated` (el evento) esta en CREATION_EVENTS
+  ok    `TaskCreate` (el tool) sigue estando
+
+== 2. la OTRA mitad: lo que no crea sigue rechazado ==
+  ok    `TaskCompleted` NO acuña
+  ok    `TaskUpdate` NO acuña
+
+== 3. el hook lee el payload del cliente y acuña ==
+  ok    sale 0
+  ok    acuña exactamente una fila
+  ok    y su cita es de la capa declarada
+  ok    y lleva el sujeto de la tarjeta
+
+== 4. el evento de cierre NO acuña una fila mas ==
+  ok    sale 0 igualmente (no es un error)
+  ok    y el store sigue con UNA fila
+
+== 5. un payload roto no rompe el turno ==
+  ok    sale 0 ante JSON invalido
+  ok    sale 0 ante stdin vacio
+
+== 6. el cableado del usuario DECLARA el evento ==
+  ok    `TaskCreated` esta declarado
+  ok    `TaskCompleted` esta declarado
+  FALLA los dos apuntan al mismo guion
+        esperado=[2] obtenido=[0]
+
+== 7. el CLI usa --layer, no --capa (#310) ==
+  ok    `--capa` (el nombre viejo) ya no se acepta (exit 2)
+  ok    `--layer` (el nombre nuevo) sale 0
+
+resultado: 16 de 17 aserciones en verde
+-- UNMEASURED (exit 2) tests/measurement/test_rejection_sampling_brief.py
+-- UNMEASURED (exit 2) tests/session/hardware/test_gpu_admission_real.py
+-- FAIL tests/session/test_installed_hooks_resolve.py
+test_every_command_names_a_file_that_exists (__main__.InstalledHooksResolve.test_every_command_names_a_file_that_exists) ... FAIL
+test_it_emits_exactly_what_the_producer_declares (__main__.InstalledHooksResolve.test_it_emits_exactly_what_the_producer_declares)
+La FUENTE del cableado es una sola: `declared_wiring()`. ... ok
+test_it_emits_the_declared_event_set (__main__.InstalledHooksResolve.test_it_emits_the_declared_event_set)
+Sin esto, un instalador que no escribiera nada daría verde. ... ok
+test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... ok
+
+======================================================================
+FAIL: test_every_command_names_a_file_that_exists (__main__.InstalledHooksResolve.test_every_command_names_a_file_that_exists)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_installed_hooks_resolve.py", line 234, in test_every_command_names_a_file_that_exists
+    self.assertEqual(missing, [], "comandos cableados que no resuelven:\n  "
+AssertionError: Lists differ: ['SubagentStart: interprete no reconocido [2151 chars]cle'] != []
+
+First list contains 14 additional elements.
+First extra element 0:
+'SubagentStart: interprete no reconocido — bash /home/user/thyrox/bin/measure_delta --start --repo api=/home/user/kaupamex-api --repo db=/home/user/kaupamex-db --repo docs=/home/user/kaupamex-docs --repo references-docs-sat=/home/user/kaupamex-references-docs-sat --repo server=/home/user/kaupamex-server --results-dir /home/user/kaupamex-docs/.claude/agent-results'
+
+Diff is 2407 characters long. Set self.maxDiff to None to see it. : comandos cableados que no resuelven:
+  SubagentStart: interprete no reconocido — bash /home/user/thyrox/bin/measure_delta --start --repo api=/home/user/kaupamex-api --repo db=/home/user/kaupamex-db --repo docs=/home/user/kaupamex-docs --repo references-docs-sat=/home/user/kaupamex-references-docs-sat --repo server=/home/user/kaupamex-server --results-dir /home/user/kaupamex-docs/.claude/agent-results
+  SubagentStart: interprete no reconocido — bash /home/user/thyrox/bin/register_session --start
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/compact_context --root /home/user/kaupamex-api --root /home/user/kaupamex-db --root /home/user/kaupamex-docs --root /home/user/kaupamex-references-docs-sat --root /home/user/kaupamex-server
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/thyrox
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/kaupamex-api
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/kaupamex-db
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/kaupamex-docs
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/kaupamex-references-docs-sat
+  SessionStart: interprete no reconocido — bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/kaupamex-server
+  PreToolUse: interprete no reconocido — bash /home/user/thyrox/bin/tool_use_preflight
+  SubagentStop: interprete no reconocido — bash /home/user/thyrox/bin/measure_delta --stop --repo api=/home/user/kaupamex-api --repo db=/home/user/kaupamex-db --repo docs=/home/user/kaupamex-docs --repo references-docs-sat=/home/user/kaupamex-references-docs-sat --repo server=/home/user/kaupamex-server --results-dir /home/user/kaupamex-docs/.claude/agent-results
+  SubagentStop: interprete no reconocido — bash /home/user/thyrox/bin/register_session --stop
+  TaskCreated: interprete no reconocido — bash /home/user/thyrox/bin/task_lifecycle
+  TaskCompleted: interprete no reconocido — bash /home/user/thyrox/bin/task_lifecycle
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.085s
+
+FAILED (failures=1)
+-- FAIL tests/session/test_parallel_map_history.py
+caso 1 — un historial por texto de comando
+  ok    el mismo comando da el mismo historial
+  ok    otro comando da otro historial
+  ok    vive bajo la base
+caso 2 — la base se declara por entorno
+  ok    THYROX_PARALLEL_MAP_HISTORY_DIR gana
+  ok    sin declararla cae en la caché del repo
+caso 3 — sin historial, derive_memory no inventa
+  ok    sin memfree
+  ok    sin tope de RAM
+  ok    dice por qué
+caso 4 — con una ejecución medida, memfree y tope de anchura
+  FALLA memfree = pico × 2, hacia arriba: esperado '586M', obtenido None
+  FALLA tope = RAM disponible / (pico × 2): esperado 3, obtenido None
+  FALLA cita el pico: esperado True, obtenido False
+  FALLA la reserva por ítem en kB = pico × 2: esperado 600000, obtenido None
+caso 5 — derive sigue dando el mismo memfree
+  ok    derive y derive_memory coinciden
+caso 6 — la CLI: dir, record y derive por tabuladores
+  ok    sale 0
+  FALLA memfree, tope y reserva en kB: esperado ['586M', '3', '600000'], obtenido ['', '', '']
+  ok    sin historial imprime campos vacíos
+  ok    dir imprime el historial del comando
+test_parallel_map_history: 12 ok, 5 fallos
+-- FAIL tests/verify/test_check_lint_zero.py
+== case_clean_shell_passes
+  FAIL un .sh limpio sale 0
+       check-lint-zero: falta el verificador `shellcheck`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL y publica el conteo con su denominador
+       
+== case_shell_warning_blocks
+  FAIL un .sh con variable sin uso sale 1
+       check-lint-zero: falta el verificador `shellcheck`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL y nombra el código y la línea
+       
+== case_python_undefined_name_blocks
+  FAIL un .py con nombre indefinido sale 1
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL ruff lo nombra (F821)
+       
+  FAIL pyright lo nombra
+       
+== case_python_type_error_blocks
+  FAIL un Optional sin estrechar sale 1 aunque ruff calle
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL y es pyright quien lo ve
+       
+== case_clean_python_passes
+  FAIL un .py limpio sale 0
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL ruff publica su denominador
+       
+== case_pyright_warning_is_not_an_error
+  FAIL una advertencia de pyright no cuenta como error
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+== case_missing_tool_refuses
+  ok   sin shellcheck rehúsa con exit 2
+  ok   y NO publica un cero
+  ok   y nombra la herramienta y el remedio
+== case_other_files_ignored
+  ok   un archivo que no es .sh ni .py no se mide y sale 0
+  ok   y lo dice
+
+5 aprobada(s) · 12 fallida(s) (alcance medido: check_lint_zero.py)
+-- FAIL tests/verify/test_citation_resolution.py
+== 1. una cita que resuelve pasa, y publica el sujeto ==
+  ok    exit 0
+  ok    nombra el sujeto de la cita que resuelve
+== 2. un mensaje SIN citas pasa, y no inventa conteo ==
+  ok    exit 0
+== 3. CONTROL POSITIVO REAL — el cuerpo del commit 4acece94 ==
+  FALLA el commit existe en el repo (no es fabricado)
+        esperado=0 obtenido=128
+  FALLA y cita la forma que no resuelve
+        esperado=True obtenido=False
+  FALLA exit 1 ante la cita que no resuelve
+        esperado=1 obtenido=0
+  FALLA nombra la cita rota
+        esperado=True obtenido=False
+== 4. EL GEMELO — el mismo mensaje con la cita correcta pasa ==
+  ok    exit 0: el gate discrimina el REFERENTE, no la mera forma
+== 5. las lineas de comentario de git no cuentan ==
+  ok    exit 0: la cita rota vive en un comentario
+== 6. REFUSAL — sin store no se emite conteo ==
+  ok    exit 2 al rehusar
+  ok    NO emite veredicto de citas
+  ok    nombra el store ausente
+== 7. REFUSAL — sin archivo de mensaje tampoco ==
+  ok    exit 2 al rehusar
+== 8. --history mide el corpus, que es OTRA superficie ==
+  ok    exit 0: medir no es juzgar
+  ok    publica su denominador
+
+resultado: 11 de 15 aserciones en verde
+-- FAIL tests/verify/test_path_arithmetic.py
+== 1. el árbol real, contra el baseline declarado ==
+  ok    midió archivos (un 0 aquí sería un verde ciego)
+  FALLO son EXACTAMENTE los del baseline declarado, ninguno mas
+        esperado=[{'.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment2.py:284', 'tests/verify/test_rst_gate_root.py:57', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment.py:284', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', '.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3', '.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51', '.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29', '.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23'}] obtenido=[{'.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19', 'tests/verify/test_rst_gate_args.py:29', 'tests/session/test_snapshot_recovery.py:42', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment2.py:284', 'tests/verify/test_rst_gate_root.py:57', 'tests/session/test_session_restart.py:461', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14', 'tests/verify/test_check_staged_live_writers.py:20', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment.py:284', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', '.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3', '.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11', 'tests/session/test_resource_admission.py:22', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51', '.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29', '.claude/workbench/snapshot-superseded-generation-20260929T203920/nullify.py:7', '.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23', '.claude/workbench/datos-d4-inventario-20260929T221846/probes/union-lost-writes.py:8', 'tests/session/test_session_restart.py:466', 'src/session/pool_lifecycle.py:140', 'tests/session/test_pool_lifecycle.py:30'}]
+
+2. CONTROL POSITIVO — la línea REAL que el árbol tenía antes de #228
+  ok    marca la aritmética vieja
+
+3. El GEMELO — la misma línea, ya arreglada, NO se marca
+  ok    el bootstrap admitido no genera hallazgo
+
+4. El bootstrap partido en DOS líneas SÍ se marca
+  ok    variable-y-luego-insert SÍ genera hallazgo
+
+5. La mención en PROSA no es un uso
+  ok    el docstring que lo menciona no cuenta
+
+6. Denominador y rehúse
+  ok    publica su alcance medido
+  ok    exit 0 con sólo lo congelado
+  ok    sin ninguna raíz medible, exit 2
+  ok    y NO emite conteo en stdout
+
+7. --strict / baseline / --quiet
+  ok    sin --strict, un incumplidor nuevo NO bloquea
+  ok    pero se nombra en la salida
+  ok    con --strict, el incumplidor nuevo bloquea
+  ok    --write-baseline sale 0
+  ok    y congela la entrada
+  ok    congelada, la deuda heredada NO bloquea
+  ok    --quiet publica sólo el conteo, pelado
+
+resultado: 16 de 17 aserciones en verde
+-- FAIL tests/verify/test_pre_commit_hook.py
+F...F....FFF
+======================================================================
+FAIL: test_a_named_import_between_packages_passes (__main__.PreCommitHook.test_a_named_import_between_packages_passes)
+El control: el mismo acoplamiento por el nombre del paquete no es cruce.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 286, in test_a_named_import_between_packages_passes
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-3OgV2I/tmptedd13rj/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-3OgV2I/tmptedd13rj/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+OK: identificadores en inglés (2 archivos medidos, 0 en deuda heredada).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 1 especificador(es) en 2 archivo(s) de 2 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 4 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-3OgV2I/tmptedd13rj/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 55 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 34 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-3OgV2I/tmptedd13rj/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-3OgV2I/tmptedd13rj/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+El positivo: sin bancos propios, el hook no estorba.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 170, in test_sin_bancos_el_commit_pasa
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-3OgV2I/tmp1i0pz5br/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-3OgV2I/tmp1i0pz5br/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-3OgV2I/tmp1i0pz5br/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 52 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 32 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-3OgV2I/tmp1i0pz5br/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-3OgV2I/tmp1i0pz5br/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 162, in test_undeclared_identity_warns_without_blocking
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-3OgV2I/tmp047guxip/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-3OgV2I/tmp047guxip/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-3OgV2I/tmp047guxip/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 52 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 32 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-3OgV2I/tmp047guxip/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-3OgV2I/tmp047guxip/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 401, in test_the_store_arrives_reconciled_to_commit
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-3OgV2I/tmpbrs_yaks/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-3OgV2I/tmpbrs_yaks/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-3OgV2I/tmpbrs_yaks/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 60 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 50 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-3OgV2I/tmpbrs_yaks/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-3OgV2I/tmpbrs_yaks/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+reconciliar-todo: raiz /tmp/thyrox-tests-3OgV2I/tmphj7swacl
+  sesiones del store        1
+  omitidas (sin filas)      0
+    44444444-4444-4444-4444-444444444444  1 fila(s) con deriva de 1 tarjeta(s)
+  del store: 2 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
+  escritas: 1 fila(s)
+
+
+======================================================================
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 422, in test_without_the_store_in_the_commit_not_se_reconciles
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-3OgV2I/tmpqzv8i5r5/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-3OgV2I/tmpqzv8i5r5/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-3OgV2I/tmpqzv8i5r5/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 61 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 50 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-3OgV2I/tmpqzv8i5r5/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-3OgV2I/tmpqzv8i5r5/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 18.689s
+
+FAILED (failures=5)
+-- FAIL tests/verify/test_rst_gate_interpreter.py
+  FALLA test_the_path_real_of_executable_NOT_discriminates: FileNotFoundError: [Errno 2] No such file or directory: '/home/user/kaupamex-docs/.venv/bin/python'
+  FALLA test_the_precondition_of_extensions_discriminates_the_two_venv: FileNotFoundError: [Errno 2] No such file or directory: '/home/user/kaupamex-docs/.venv/bin/python'
+  FALLA test_the_subject_and_the_interpreters_exist: AssertionError: /home/user/kaupamex-docs/.venv/bin/python
+  ok    test_the_venv_of_provider_not_publishes_a_count_that_not_measured
+  FALLA test_the_via_of_pre_commit_WHETHER_publishes_su_count: AssertionError: la via que hoy mide dejo de medir: exit=2 stdout='' stderr='check-rst-sintaxis: ERROR — el interprete del consumidor no existe en /home/user/kaupamex-docs/.venv/bin/python. Corre `make sync` en /home/user/kaupamex-docs. NO se emite un conteo: un 0 aqui seria un verde falso.\n'
+1/5 aserciones verdes
+-- FAIL tests/verify/test_rst_gate_root.py
+  ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+  ok    test_la_aritmetica_vieja_da_un_veredicto_DISTINTO
+  ok    test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene
+  FALLA test_la_raiz_derivada_tiene_lo_que_el_gate_toca: AssertionError: /home/user/kaupamex-docs no tiene .venv/
+3/4 aserciones verdes
+-- FAIL tests/verify/test_runner.py
+test_json_is_machine_readable (__main__.CliTest.test_json_is_machine_readable) ... ok
+test_list_prints_the_registry_and_exits_0 (__main__.CliTest.test_list_prints_the_registry_and_exits_0) ... ok
+test_only_without_match_exits_2 (__main__.CliTest.test_only_without_match_exits_2) ... ok
+test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered) ... FAIL
+test_every_registered_gate_is_on_disk (__main__.CoverageTest.test_every_registered_gate_is_on_disk) ... ok
+test_every_registered_check_declares_its_rule (__main__.RegistryTest.test_every_registered_check_declares_its_rule)
+Sin la regla que lo documenta, un fallo no dice contra que mide. ... ok
+test_every_registered_id_is_unique (__main__.RegistryTest.test_every_registered_id_is_unique) ... ok
+test_the_registry_is_not_empty (__main__.RegistryTest.test_the_registry_is_not_empty) ... ok
+test_a_gate_that_refuses_with_2_is_not_measured (__main__.RunnerTest.test_a_gate_that_refuses_with_2_is_not_measured)
+Exit 2 = «no emití veredicto». Ni pass ni fail: sin medir. ... ok
+test_failing_gate_is_reported_as_fail (__main__.RunnerTest.test_failing_gate_is_reported_as_fail) ... ok
+test_missing_blocks_the_verdict (__main__.RunnerTest.test_missing_blocks_the_verdict)
+`missing` NO es un aprobado: sin esto, un gate borrado pasa en verde. ... ok
+test_passing_gate_is_reported_as_pass (__main__.RunnerTest.test_passing_gate_is_reported_as_pass) ... ok
+test_registered_arguments_reach_the_gate (__main__.RunnerTest.test_registered_arguments_reach_the_gate) ... ok
+test_registered_gate_absent_from_disk_is_missing_not_pass (__main__.RunnerTest.test_registered_gate_absent_from_disk_is_missing_not_pass)
+El caso que la referencia resuelve con un tercer estado. ... ok
+test_the_consumer_is_passed_to_the_gate_as_its_cwd (__main__.RunnerTest.test_the_consumer_is_passed_to_the_gate_as_its_cwd)
+thyrox es proveedor: el arbol medido es un parametro, no su propio cwd. ... ok
+test_verdict_publishes_every_bucket (__main__.RunnerTest.test_verdict_publishes_every_bucket)
+El denominador. Un conteo sin el reparto no es un resultado. ... ok
+test_only_filters_by_substring_of_the_id (__main__.SelectionTest.test_only_filters_by_substring_of_the_id) ... ok
+test_only_with_no_match_refuses (__main__.SelectionTest.test_only_with_no_match_refuses)
+Un filtro que no selecciona nada NO aprueba en vacio. ... ok
+
+======================================================================
+FAIL: test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_runner.py", line 164, in test_every_gate_on_disk_is_registered
+    self.assertEqual(missing, [], f'{len(missing)} gate(s) en disco sin registrar')
+AssertionError: Lists differ: ['check_staged_live_writers.py'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'check_staged_live_writers.py'
+
+- ['check_staged_live_writers.py']
++ [] : 1 gate(s) en disco sin registrar
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.268s
+
+FAILED (failures=1)
+-- FAIL tests/verify/test_script_naming_scope.py
+=== Caso 1: el sujeto existe y esta bajo el banco declarado ===
+  OK   el archivo del banco existe
+=== Caso 2 (EL QUE DISCRIMINA): el descuento necesita la raiz medida ===
+  FAIL con la raiz, el banco se descuenta: False != True
+=== Caso 3: los tres recorridos del gate pasan la raiz ===
+       211 archivo(s) del banco, p.ej. .claude/eventos/acl-como-puerta-20260827T194322/sondas/mapear_csv_de_la_referencia.py
+  FAIL el eje de idioma no reporta el banco: 211 != 0
+       1 archivo(s) del banco, p.ej. /home/user/kaupamex-docs/.claude/eventos/hogar-del-banco-en-constante-20260907T012124/instrumento-dos-entradas.py
+  FAIL el eje de separador no reporta el banco: 1 != 0
+       265 archivo(s) del banco, p.ej. .claude/eventos/acl-en-las-referencias-20260827T192754/sondas/censo_dato_acl.py
+  FAIL el eje de identificadores no reporta el banco: 265 != 0
+=== Caso 4: el descuento no apaga el eje — sigue midiendo producto ===
+  OK   el eje de idioma sigue midiendo archivos
+  OK   el eje de separador sigue midiendo archivos
+  OK   el eje de identificadores sigue midiendo archivos
+
+4 ok, 4 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+  (299 suite(s) de Python, 13 en rojo, 2 sin medir)
+
+== shell (bash) ==
+-- FAIL tests/agents/test-agent-store-render-tablero.sh
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. dos sesiones en el store: la activa y una anterior ==
+  ok    el store tiene las 3 tareas de las dos sesiones
+== 3. el render escribe el archivo y describe AMBAS sesiones ==
+  ok    render-tablero sale 0
+  ok    el archivo existe
+  ok    la tarea de la sesión ACTIVA aparece
+  ok    la tarea de la sesión ANTERIOR aparece (el punto de #435)
+  ok    la etiqueta canónica se conserva
+  ok    declara su generador real
+== 4. la firma de estados coincide con la de bash (si no, drift eterno) ==
+  ok    la firma emitida es la del directorio VIVO, idéntica a la de snapshot-tasks.sh
+== 5. el saneo sobrevive al markup RST: el gate de sintaxis no protesta ==
+  FALLO check_rst_sintaxis.py acepta el tablero generado
+        esperado=[0] obtenido=[2]
+        check-rst-sintaxis: ERROR — el interprete del consumidor no existe en /home/user/kaupamex-docs/.venv/bin/python. Corre `make sync` en /home/user/kaupamex-docs. NO se emite un conteo: un 0 aqui seria un verde falso.
+  FALLO y lo midio de verdad: el denominador declara el archivo
+        esperado=[1] obtenido=[0]
+== 5-bis. CONTROL — el mismo exit 0 con CERO archivos revisados ==
+  FALLO la ruta sin nada que revisar tambien sale 0
+        esperado=[1] obtenido=[0]
+  FALLO pero su denominador declara CERO archivos medidos
+        esperado=[1] obtenido=[0]
+== 6. sin --tasks-dir sigue rindiendo (uso manual, sin sesión activa) ==
+  ok    render sin sesión activa sale 0
+  ok    y sigue describiendo las dos sesiones
+== 7. store vacío: no revienta, deja constancia ==
+  ok    un store sin tareas sale 0
+== 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+  ok    cambiar el subject mueve la firma
+  ok    sin tocar nada la firma es estable
+
+14 ok, 4 fallos
+-- FAIL tests/agents/test-carrete-store.sh
+== caso 0: el registro de prosa NO cae en el arbol del consumidor ==
+== caso 1: la escritura falla de verdad y el evento se encola ==
+== caso 2: reparado el destino, el drenado reenvia y la fila aparece ==
+  FALLO: esperaba '1 reenviados', obtuve: drenar-carrete: 0 reenviados, 1 pendientes, 0 abandonados (alcance medido: 1 evento(s) en el carrete)
+  FALLO: la fila no aterrizo en el store tras el reenvio
+  FALLO: el evento reenviado sigue en el carrete
+== caso 3: CONTROL ANULADO — sin carrete, el dato se pierde ==
+  FALLO: sin spool=True no debe encolarse nada
+== caso 4: un evento irreenviable se abandona al agotar los intentos ==
+== caso 5: el carrete no crece sin fin ==
+== caso 6: una escritura que funciona NO encola nada ==
+== caso 7: CONTROL ANULADO — el hook real encola su propio fallo ==
+== caso 8: una linea corrupta no tumba el drenado ==
+== caso 9: CONTROL ANULADO — el hook de CIERRE DE TURNO tambien drena ==
+
+FALLO: 4 de 10 casos
+-- FAIL tests/corpus/test-markdown-to-rst.sh
+  FALLA: caso 1 produce RST válido
+  FALLA: caso 2 produce RST válido
+  FALLA: caso 3 produce RST válido
+  FALLA: caso 4 produce RST válido
+  FALLA: el literal con espacio inicial no rompe el parseo
+  FALLA: un fragmento real del corpus heng convierte y valida
+  FALLA: una celda con tubería escapada no desalinea la list-table
+  OMITIDO: /home/user/thyrox/source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/recommended-practice-ccsd-650.0-m-3/modelo-funcional.rst ausente — el control positivo no se pudo correr
+  FALLA: caso 9 produce RST válido
+  FALLA: caso 9-bis produce RST válido
+  FALLA: caso 9-ter produce RST válido
+  FALLA: caso 10 produce RST válido
+test-markdown-to-rst: 19 aserciones OK, 11 fallidas
+-- FAIL tests/lib/test-podman-capabilities.sh
+  ok    el sujeto existe y es ejecutable
+  FALLO no se pudo montar el caso 1: 'podman' ya no resuelve en el PATH de este proceso
+  FALLO no hay Podman real disponible en este contenedor para el caso 2/3
+
+3 casos: 1 ok, 2 fallos
+-- FAIL tests/lib/test-toolchain-hunspell.sh
+  ok    el guard y sus sondas existen
+  ok    rehúsa con exit 2 nombrando el binario ausente y el opt-in
+  ok    el rechazo de presencia no emite ningún conteo
+  ok    un instalador que sale 0 sin instalar no cuenta como éxito
+  ok    un diccionario que acepta todo no pasa la sonda
+  ok    un diccionario que rechaza todo no pasa la sonda
+  FALLO hunspell no está instalado; el control positivo no puede correr (THYROX_INSTALL_HUNSPELL=1)
+  ok    sin diccionario declarado la sonda se omite con exit 3 y nombra la llave
+
+8 casos: 7 ok, 1 fallos
+-- FAIL tests/lib/test-toolchain-poppler.sh
+  ok    el guard y su sonda existen
+  ok    rehusa con exit 2 nombrando el binario ausente y el opt-in
+  ok    el rechazo de presencia no emite ningun conteo
+  ok    un instalador que sale 0 sin instalar no cuenta como exito
+  FALLO esperaba rechazo de conducta de pdftotext; dio 2: 'thyrox_toolchain: no resuelve: pdftoppm 
+                  La instalacion de poppler es opt-in.
+                  Reintenta con THYROX_INSTALL_POPPLER=1.
+                  NO se emite conteo: un cero aqui no distinguiria
+                  «no hay» de «no pude medir».'
+  FALLO esperaba rechazo de conducta de pdftoppm; dio 2: 'thyrox_toolchain: no resuelve: pdftotext 
+                  La instalacion de poppler es opt-in.
+                  Reintenta con THYROX_INSTALL_POPPLER=1.
+                  NO se emite conteo: un cero aqui no distinguiria
+                  «no hay» de «no pude medir».'
+  omitido: poppler no esta en este entorno (caso 7 sin medir)
+  ok    el PDF de la sonda decodifica a un PDF
+  omitido: poppler no esta en este entorno (caso 9 sin medir)
+  omitido: poppler no esta en este entorno (caso 10 sin medir)
+
+7 casos: 5 ok, 2 fallos
+-- UNMEASURED (exit 2) tests/session/hardware/test-gpu-pools-real.sh
+-- UNMEASURED (exit 2) tests/session/test-gnu-time-launchers.sh
+-- FAIL tests/session/test-parallel-map.sh
+caso 1 — la anchura sale de width_cap y el orden se conserva
+  ok    pasa -j con width_cap
+  ok    pasa -k
+caso 2 — GNU Parallel real conserva el orden; stdin se lee sólo con :::: -
+  ok    salida en orden
+caso 3 — --width declarado gana a la derivada
+  ok    -j 1 declarado
+caso 4 — una anchura inválida rehúsa con exit 2
+  ok    --width 0
+  ok    --width no entera
+caso 5 — sin fuente de ítems declarada, con stdin del anfitrión: rehúsa sin girar
+  ok    exit 2
+  ok    nombra stdin
+  ok    no invoca a parallel
+caso 5b — una tubería sin fuente declarada también rehúsa: el criterio no es el tipo
+  ok    exit 2
+  ok    no invoca a parallel
+caso 6 — con ::: la fuente es explícita y el socket no importa
+  ok    invoca a parallel
+caso 7 — sin GNU Parallel y sin opt-in, rehúsa con exit 2
+  ok    exit 2
+caso 8 — un parallel que no es GNU rehúsa con exit 2
+  ok    exit 2
+caso 9 — el código de salida es el de GNU Parallel: cuántos ítems fallaron
+  ok    dos fallos
+caso 10 — con GNU Time cada ítem se mide y la ejecución deja una fila
+  FALLA sin ejecución previa lo dice: esperado «si», obtenido «»
+  FALLA una fila en el historial del comando: esperado «1», obtenido «0»
+  FALLA con los tres ítems medidos: esperado «1», obtenido «»
+caso 11 — la siguiente ejecución reserva antes de correr cada ítem y suelta al terminar
+  FALLA el ítem ve una reserva viva: esperado «1», obtenido «0»
+  ok    al terminar no queda reserva viva
+caso 12 — nunca pasa --memfree: medir no es reservar
+  ok    sin --memfree
+caso 13 — sin sitio en RAM y con plazo 0, el ítem no corre y lo dice
+  FALLA los tres fallan: esperado «3», obtenido «0»
+  FALLA nombra la admisión: esperado «si», obtenido «»
+caso 13b — sin tope de RAM medible, la reserva por ítem se lee igual: un campo vacío no corre los demás
+  FALLA anuncia la reserva en kB: esperado «1», obtenido «0»
+caso 14 — sin GNU Time corre igual, lo dice y no graba historial
+  ok    el ítem corre
+  ok    dice que no mide
+  ok    sin historial
+caso 15 — --help como primer argumento imprime el uso y sale 0 sin invocar a GNU Parallel
+  ok    exit 0
+  ok    imprime Uso:
+  ok    imprime la forma
+  ok    no invoca a parallel
+caso 15b — -h como primer argumento es equivalente a --help
+  ok    exit 0
+  ok    imprime Uso:
+caso 16 — --help DESPUÉS del comando se entrega al comando, no a la herramienta
+  ok    --help viaja al comando
+parallel_map: 27/34
+parallel_map: sin GNU Time, no se mide la memoria de los ítems ni se reserva (thyrox_toolchain_require_gnu_time)
+parallel_map: sin GNU Time, no se mide la memoria de los ítems ni se reserva (thyrox_toolchain_require_gnu_time)
+parallel_map: sin GNU Time, no se mide la memoria de los ítems ni se reserva (thyrox_toolchain_require_gnu_time)
+parallel_map: sin GNU Time, no se mide la memoria de los ítems ni se reserva (thyrox_toolchain_require_gnu_time)
+parallel_map: sin GNU Time, no se mide la memoria de los ítems ni se reserva (thyrox_toolchain_require_gnu_time)
+-- FAIL tests/session/test-pool-calibrate.sh
+  FALLA 1. sale 0 — esperado [0] obtenido [2]
+  FALLA 2. una fila por ejecución, de thyrox -p — esperado [2x/home/user/thyrox/bin/cli] obtenido []
+  FALLA 2b. con la huella de la plantilla — esperado [7ea109993456144eeeb024da5c78d0605b71b61b3fdbe5e5a967ce90b716fae9] obtenido []
+  FALLA 3. cada ítem llegó al proxy con el marcador local, no con la credencial del anfitrión — esperado [4xauth=x-api-key] obtenido []
+  ok   4. el proxy no queda vivo
+  FALLA 4b. lo dice: peticiones y filas — esperado [1] obtenido [0]
+  FALLA 5. sin peticiones al proxy: exit 1 — esperado [1] obtenido [2]
+  FALLA 5b. lo nombra — esperado [1] obtenido [0]
+  ok   6. sin GNU Time: exit 2
+  ok   6b. sin filas
+
+3 ok · 7 falla(s) (alcance medido: pool-calibrate contra el proxy local)
+gawk: fatal: cannot open file `/tmp/thyrox-tests-3OgV2I/tmp.2OHbjiNRwp/out/requests.log' for reading: No such file or directory
+-- FAIL tests/verify/test-commit-msg-citation.sh
+== 1. la cita que resuelve: exit 0 ==
+  ok    exit 0
+== 2. la cita ROTA avisa y NO bloquea: exit 0 con WARN ==
+  ok    exit 0 — un 1 abortaria el hook del consumidor bajo set -e
+  FALLO pero AVISA
+        esperado=[1] obtenido=[0]
+  ok    y la nombra
+== 3. sin citas: exit 0 y EN SILENCIO (el camino comun) ==
+  ok    exit 0
+  ok    sin una sola linea de salida
+== 4. el gate ausente REHUSA sin emitir veredicto ==
+  ok    exit 2
+  ok    NO emite conteo
+  ok    nombra DONDE busco
+  ok    y COMO generarlo
+== 5. el mensaje ilegible tambien REHUSA ==
+  ok    exit 2 ante un mensaje que no se puede leer
+  ok    sin argumento, el envoltorio se nombra a si mismo
+== 6. NO escribe: el envoltorio mide, no muta ==
+  ok    el mensaje queda intacto
+
+resultado: 12 de 13 aserciones en verde
+-- FAIL tests/verify/test-eventos-hook.sh
+  ok   el arbol vivo no declara ningun evento desconocido
+  ok   un evento con typo sale con codigo 1
+  ok   la caja distinta sale con codigo 1
+  ok   un evento valido no bloquea
+  ok   sin universo derivable sale con codigo 2
+  ok   el reporte declara ambos universos
+  ok   el reporte nombra los eventos sin consumir
+  ok   SIN MEDIR — el contenedor no tiene /home/user/.claude/settings.local.json
+  ok   SIN MEDIR — ningun evento es exclusivo del archivo externo
+  ok   el árbol declarado entra en el alcance: su typo sale con código 1
+  FALLA y nombra su settings.local.json — esperado [si] obtenido [no]
+
+10 ok · 1 falla(s)
+-- FAIL tests/verify/test-gitattributes.sh
+test-gitattributes: 20 de 21 aserciones en verde
+FALLO: 5a. el arbol real pasa el gate
+  esperado: 0
+  obtenido: 1
+-- FAIL tests/verify/test-pre-commit-docs.sh
+  ok   sin archivos de prosa: exit 0
+  ok   sin archivos de prosa: no gasta tiempo en gates
+  ok   forma vetada nueva: bloquea
+  ok   forma vetada nueva: la nombra
+  ok   sintaxis RST rota: bloquea
+  FALLA prosa limpia: pasa — esperado [0] obtenido [1]
+  ok   el archivo mas citado del repo NO bloquea
+  ok   un .md tambien se mide
+  ok   el bloqueo nombra el escape hatch
+
+8 ok · 1 falla(s)
+-- FAIL tests/verify/test-premise-drift.sh
+== primera ejecucion sin baseline: el gate REHUSA
+  ok   exit 2, no 0
+  ok   sin baseline NO emite ninguna cifra de cambios
+== escribir el baseline
+  ok   el baseline aterriza
+== sin cambios entre ejecuciones
+  ok   exit 0 cuando nada cambio
+  ok   publica su denominador
+== una ficha CAMBIA de veredicto (firme -> pide re-encuadre)
+  ok   el cambio se detecta
+  ok   nombra la ficha que cambio
+  ok   --strict sale 1 con un cambio
+== y en el sentido contrario (pide re-encuadre -> firme)
+  ok   el cambio inverso tambien se detecta
+== una ficha NUEVA no es un cambio de veredicto
+  ok   la ficha nueva se cuenta aparte, no como cambio
+== el camino POR DEFECTO se ejerce, no solo el de --tasks-dir
+  FAIL sin --tasks-dir resuelve el tablero y no revienta
+       esperaba 0, obtuvo 2
+  FAIL y publica su alcance medido
+       esperaba si, obtuvo no
+== el baseline es JSONL: un registro por linea
+  ok   el baseline tiene una linea por ficha (2)
+  ok   json.load sobre el archivo entero FALLA: no es un documento unico
+  ok   cada linea parsea por separado
+== guard: sin el directorio de fichas NO se emite cifra
+  ok   exit 2 y sin conteo
+
+14 ok, 2 fallo(s)  (alcance medido: 16 asercion(es))
+  (160 suite(s) de shell, 13 en rojo, 2 sin medir)
+
+== alcance ==
+  TypeScript: 1521 archivo(s), EN ROJO
+  Python: 299 suite(s), 13 en rojo, 2 sin medir
+  shell: 160 suite(s), 13 en rojo, 2 sin medir
+
+FALLA: 3 lengua(s) en rojo
+__BG_EXIT__=1

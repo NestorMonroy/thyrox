@@ -14,10 +14,12 @@ medirlo sobre un árbol con esa forma es medir lo que corre de verdad.
 """
 import json
 import os
+import re
 import pathlib
 import sqlite3
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -29,21 +31,81 @@ GATE = THYROX / 'src' / 'verify' / 'check_provider_evidence.py'
 # sintetico porque el hook REHUSA por su ausencia — es su contrato, no un
 # descuido. Sin copiarlos, esta suite entera se pondria roja por el arreglo.
 PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-cli-typecheck.sh')
-# El tercero NO esta en el bucle de rehuse del hook —se invoca sin comprobar
-# que exista— asi que su ausencia no produce el mensaje de «verde falso»
-# sino un `bash: no such file` que pone CODE=1. Viaja al repo sintetico por
-# eso: sin el, el commit semilla de ESTA suite fallaba y sus seis casos
-# morian en setUp. Medido: 6 de 6 rojos por deriva del fixture, no por el
-# contrato que dicen medir.
-UNCHECKED_GATES = ('check-cross-model-read.sh',)
-# El gate de identidad. Viaja al fixture porque el hook lo invoca en todo
-# commit; su ausencia pondria rojos los casos que no miden identidad.
-IDENTITY_GATE = 'commit_identity.py'
+# Los gates que el hook invoca se DERIVAN del propio hook, no se enumeran a
+# mano. La tupla escrita a mano derivo tres veces —`check-cross-model-read.sh`,
+# `check_bench_untracked.py` y `check_cache_layout.py` entraron al hook sin
+# entrar al fixture— y cada vez el commit semilla moria en setUp: todos los
+# casos rojos por deriva del fixture, no por el contrato que dicen medir.
+HOOK_GATES_NAMED = tuple(sorted(set(re.findall(r'\$GATES/([\w.-]+)', HOOK.read_text()))))
+
+
+def with_sibling_imports(gates: tuple[str, ...]) -> tuple[str, ...]:
+    """Los gates y, transitivamente, los módulos hermanos que importan.
+
+    El hook nombra `checkEnvPrefix.ts`, que importa `./renameEnvPrefix.ts`, y
+    `check_identifier_language.py`, que lanza `ts_declared_identifiers.ts`:
+    copiar sólo lo nombrado dejaba el gate sin su módulo («Cannot find
+    module»). Se deriva del texto de cada gate, igual que la lista de gates se
+    deriva del hook.
+    """
+    found: list[str] = []
+    pending = list(gates)
+    while pending:
+        name = pending.pop()
+        if name in found:
+            continue
+        found.append(name)
+        if name.endswith(('.ts', '.py')):
+            text = (THYROX / 'src' / 'verify' / name).read_text()
+            pending.extend(sibling for sibling in re.findall(r'([\w.-]+\.ts)\b', text)
+                           if (THYROX / 'src' / 'verify' / sibling).is_file())
+    return tuple(sorted(found))
+
+
+def freeze_whole_tree_baselines(repo: pathlib.Path) -> None:
+    """Deja listos los gates que miden el árbol ENTERO: sus raíces y su línea base.
+
+    `check_product_word` y `checkEnvPrefix` no miden lo que se commitea sino
+    todo `src/`, y la línea base del proveedor describe el árbol del
+    proveedor: en un árbol parcial sobran entradas y faltan pruebas. Estas
+    suites no miden esos gates, así que el fixture hace lo que haría un
+    consumidor al adoptarlos: congelar su deuda de partida con el propio gate.
+    """
+    # `check_md_relative_links` rehúsa sin sus dos raíces: el árbol las tiene.
+    for home in ('skills', 'rules'):
+        (repo / '.claude' / home).mkdir(parents=True, exist_ok=True)
+        (repo / '.claude' / home / '.keep').write_text('')
+    # El recorrido de los .ts carga `typescript`: se enlaza el del proveedor.
+    (repo / 'node_modules').symlink_to(THYROX / 'node_modules', target_is_directory=True)
+    with (repo / '.gitignore').open('a') as ignore:
+        ignore.write('node_modules\n')
+    (repo / IDENTIFIER_BASELINE).parent.mkdir(parents=True, exist_ok=True)
+    (repo / IDENTIFIER_BASELINE).write_text('')
+    verify = repo / 'src' / 'verify'
+    for command in (
+        [sys.executable, str(verify / 'check_product_word.py'), '--repo', str(repo), '--write-baseline'],
+        ['bun', str(verify / 'checkEnvPrefix.ts'), '--root', str(repo), '--write-baseline'],
+    ):
+        frozen = subprocess.run(command, capture_output=True, text=True)
+        if frozen.returncode != 0:
+            raise RuntimeError(f'{command[1]}: {frozen.stdout}{frozen.stderr}')
+
+
+HOOK_GATES = with_sibling_imports(HOOK_GATES_NAMED)
+
+
+IDENTIFIER_BASELINE = pathlib.Path('.claude') / 'baselines' / 'identifier_language_baseline.txt'
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
+    # Los verificadores de lint son del proveedor (`check_lint_zero.py`): el
+    # repo sintético no tiene `.venv`, y sin esta variable el gate rehusaba
+    # con exit 2 en el commit semilla y los doce casos caían en setUp.
     env = {**os.environ, 'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
-           'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t'}
+           'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t',
+           'THYROX_LINT_BIN_DIR': str(THYROX / '.venv' / 'bin'),
+           # El repo sintético no hereda deuda de idioma: su línea base, vacía y declarada.
+           'IDENTIFIER_LANGUAGE_BASELINE': str(repo / IDENTIFIER_BASELINE)}
     return subprocess.run(['git', '-C', str(repo), *args],
                           capture_output=True, text=True, env=env)
 
@@ -58,9 +120,11 @@ class PreCommitHook(unittest.TestCase):
         # stub convierte el caso en un ImportError que no mide nada.
         shutil.copytree(THYROX / 'src' / 'paths', self.repo / 'src' / 'paths')
         shutil.copytree(THYROX / 'src' / 'workbench', self.repo / 'src' / 'workbench')
+        # `check_cache_layout.py` resuelve su hogar con `cache.paths`.
+        shutil.copytree(THYROX / 'src' / 'cache', self.repo / 'src' / 'cache')
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES + UNCHECKED_GATES + (IDENTITY_GATE,):
+        for gate in HOOK_GATES:
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()
@@ -69,7 +133,15 @@ class PreCommitHook(unittest.TestCase):
         git(self.repo, 'init', '-q')
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
         git(self.repo, 'add', '-A')
-        self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+        # Los gates de árbol entero miden lo versionado: se congela tras el add.
+        freeze_whole_tree_baselines(self.repo)
+        git(self.repo, 'add', '-A')
+        # La semilla monta el fixture y no es lo que se prueba: sin
+        # `--no-verify` le pasaban todos los gates del hook, y el lint medía la
+        # copia parcial de `src/` (`declarations.py` importa `rules`, que no
+        # viaja). Los casos commitean después, con el hook activo.
+        seed = git(self.repo, 'commit', '-q', '--no-verify', '-m', 'seed')
+        self.assertEqual(seed.returncode, 0, seed.stdout + seed.stderr)
 
     def test_identity_that_differs_from_the_declared_one_blocks(self):
         """El fixture commitea como `t <t@t>`; el `.env` declara otra identidad."""
@@ -179,11 +251,49 @@ class PreCommitHook(unittest.TestCase):
         self.assertIn('verde falso', result.stderr)
         self.assertIn(PACKAGE_GATES[0], result.stderr)
 
+    def test_a_relative_import_into_a_sibling_package_blocks(self):
+        """Un paquete se entra por su `exports`, no por el `src/` del vecino.
+
+        `package_boundary.py` existía con su suite y nadie lo corría: ningún
+        flujo lo invocaba. Que lo haría fallar: que el hook no lo llame, o que
+        lo llame sin `--strict` y el cruce pase con exit 0.
+        """
+        for name in ('a', 'b'):
+            pkg = self.repo / 'src' / 'pk' / name
+            pkg.mkdir(parents=True)
+            (pkg / 'package.json').write_text(
+                '{"name": "@p/%s", "exports": {".": "./index.ts"}}\n' % name)
+        (self.repo / 'src' / 'pk' / 'a' / 'index.ts').write_text('export const a = 1\n')
+        (self.repo / 'src' / 'pk' / 'b' / 'index.ts').write_text(
+            "import { a } from '../a/index.ts'\nexport const b = a\n")
+        git(self.repo, 'add', 'src/pk')
+        result = git(self.repo, 'commit', '-q', '-m', 'cruce relativo')
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn('../a/index.ts', result.stdout + result.stderr)
+
+    def test_a_named_import_between_packages_passes(self):
+        """El control: el mismo acoplamiento por el nombre del paquete no es cruce."""
+        for name in ('a', 'b'):
+            pkg = self.repo / 'src' / 'pk' / name
+            pkg.mkdir(parents=True)
+            (pkg / 'package.json').write_text(
+                '{"name": "@p/%s", "exports": {".": "./index.ts"}}\n' % name)
+        (self.repo / 'src' / 'pk' / 'a' / 'index.ts').write_text('export const a = 1\n')
+        (self.repo / 'src' / 'pk' / 'b' / 'index.ts').write_text(
+            "import { a } from '@p/a'\nexport const b = a\n")
+        git(self.repo, 'add', 'src/pk')
+        result = git(self.repo, 'commit', '-q', '-m', 'por nombre')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_el_clon_real_lo_tiene_activado(self):
         """`core.hooksPath` no se versiona: se comprueba que este clon lo fijo."""
         configured = git(THYROX, 'config', 'core.hooksPath').stdout.strip()
-        self.assertEqual(configured, '.githooks',
-                         'core.hooksPath sin fijar: corre `bash scripts/install-hooks.sh`')
+        # Relativa (`.githooks`, la que escribe install-hooks.sh) o absoluta al
+        # mismo directorio: las dos activan el hook. Se compara el directorio
+        # resuelto, no la grafía.
+        self.assertTrue(configured, 'core.hooksPath sin fijar: corre `bash scripts/install-hooks.sh`')
+        self.assertEqual((THYROX / configured).resolve(), HOOK.parent.resolve(),
+                         'core.hooksPath no apunta al .githooks de este clon')
         self.assertTrue(os.access(HOOK, os.X_OK), f'{HOOK} sin permiso de ejecucion')
 
 
@@ -208,12 +318,12 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         self.repo = pathlib.Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
         (self.repo / 'src').mkdir()
-        for package in ('paths', 'workbench', 'task'):
+        for package in ('paths', 'workbench', 'task', 'cache'):
             shutil.copytree(THYROX / 'src' / package, self.repo / 'src' / package,
                             ignore=shutil.ignore_patterns('__pycache__'))
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES + UNCHECKED_GATES + (IDENTITY_GATE,):
+        for gate in HOOK_GATES:
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()
@@ -244,7 +354,15 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         git(self.repo, 'init', '-q')
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
         git(self.repo, 'add', '-A')
-        self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+        # Los gates de árbol entero miden lo versionado: se congela tras el add.
+        freeze_whole_tree_baselines(self.repo)
+        git(self.repo, 'add', '-A')
+        # La semilla monta el fixture y no es lo que se prueba: sin
+        # `--no-verify` le pasaban todos los gates del hook, y el lint medía la
+        # copia parcial de `src/` (`declarations.py` importa `rules`, que no
+        # viaja). Los casos commitean después, con el hook activo.
+        seed = git(self.repo, 'commit', '-q', '--no-verify', '-m', 'seed')
+        self.assertEqual(seed.returncode, 0, seed.stdout + seed.stderr)
 
     def _row_of_commit(self, ref='HEAD'):
         """La fila tal como quedo DENTRO del commit, no en el disco."""

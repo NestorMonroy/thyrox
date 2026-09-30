@@ -1,10 +1,7 @@
 /**
- * Variables de entorno con alcance de sesión, fijadas vía `/env`.
- * Se aplican SÓLO a los procesos hijos generados (overrides de entorno del
- * proveedor de bash), NUNCA al propio proceso del REPL.
- *
- * Adaptación fiel de ccnmt `packages/storage/src/sessionEnvVars.ts` — porte
- * completo, el archivo fuente tiene 22 líneas y cuatro símbolos.
+ * Session-scoped environment variables set via /env.
+ * Applied only to spawned child processes (via bash provider env overrides),
+ * not to the REPL process itself.
  */
 const sessionEnvVars = new Map<string, string>()
 

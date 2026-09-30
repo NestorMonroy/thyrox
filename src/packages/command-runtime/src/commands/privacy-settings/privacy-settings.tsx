@@ -14,6 +14,7 @@ import {
   isQualifiedForGrove,
 } from '@thyrox/provider/grove.js'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const FALLBACK_MESSAGE =
   'Review and manage your privacy settings at https://claude.ai/settings/data-privacy-controls'
@@ -59,7 +60,7 @@ export async function call(
     }
     const updatedSettings = updatedSettingsResult.data
     const groveStatus = updatedSettings.grove_enabled ? 'true' : 'false'
-    onDone(`"Help improve Claude" set to ${groveStatus}.`)
+    onDone(`"Help improve ${PRODUCT_NAME}" set to ${groveStatus}.`)
     if (
       settings.grove_enabled !== null &&
       settings.grove_enabled !== updatedSettings.grove_enabled

@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: vinculación > ponderado: con peso 0 se revincula, y la nueva vinculación se mantiene [1.36ms]
+ 59 pass
+ 1 fail

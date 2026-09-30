@@ -4,7 +4,8 @@
 # el `TMPDIR` de la ejecucion. Este preload le da uno propio y lo retira al salir.
 # El mecanismo y su guarda de propiedad: `tests/preload/tmpdir.ts`.
 [test]
-preload = ["./tests/preload/tmpdir.ts"]
+# `store.ts` va DESPUES: copia el store en el TMPDIR que `tmpdir.ts` declara.
+preload = ["./tests/preload/tmpdir.ts", "./tests/preload/store.ts"]
 
 # La raíz ejecuta typecheck sobre consumidores que importan los workspaces por
 # nombre. El linker isolated no crea esos enlaces en node_modules raíz y cambia

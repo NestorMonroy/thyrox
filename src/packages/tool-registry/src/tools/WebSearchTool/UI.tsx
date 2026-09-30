@@ -76,7 +76,11 @@ export function renderToolUseProgressMessage(
     return null
   }
 
-  const data = lastProgress.data
+  const data = lastProgress.data as {
+    type?: string
+    query?: string
+    resultCount?: number
+  }
 
   switch (data.type) {
     case 'query_update':

@@ -1,63 +1,36 @@
 /**
- * El búfer circular que guarda la salida reciente de un PTY, acotado en BYTES.
+ * Bounded ring buffer for the PTY host's reattach-replay log.
  *
- * Se dice «acotado en BYTES», no «acotado» a secas: todo búfer circular es
- * acotado por definición —ésa es su propiedad definitoria, no lo que
- * distingue a éste—, y lo informativo es la UNIDAD de la cota. Y «búfer
- * circular» y no «anillo»: el segundo es el significante sin el significado,
- * porque a secas nombra también un anillo de red o uno algebraico. El
- * identificador se queda en inglés (`PtyRing`, `createRing`), que es como lo
- * nombra el código.
+ * 1:1 port of ant 4702.js wXK (lines 168-195). The ring stores the
+ * most recent `cap` bytes of PTY output; on `attach`, the host
+ * replays these chunks to the new client so they catch up from
+ * (approximately) where the most recent output started.
  *
- * Su razón de ser es el reenganche: cuando un cliente nuevo se ata a un
- * trabajo en curso, el anfitrión le reproduce lo que el búfer guarda para que
- * alcance el estado actual sin haber estado presente. Por eso el tope va en
- * BYTES y no en número de trozos — lo que acota el coste de la reproducción es
- * cuánto se manda, no en cuántas piezas venía.
+ * UTF-8 safety: when the head chunk overflows the cap, we don't
+ * blindly drop it — we trim leading continuation bytes (0b10xxxxxx)
+ * up to 3 of them so the surviving chunk still starts on a code-point
+ * boundary. ant's loop bounds `A < 3 && $ < z.length` mirror UTF-8's
+ * max 3 trailing continuations after a 4-byte lead.
  *
- * Adaptación del patrón de `ccnmt: packages/cli/src/bg/ptyRing.ts`. NO es
- * copia de su texto: ccnmt declara `"license": "UNLICENSED"`, así que lo que
- * se porta es el mecanismo y el contrato (#207).
- *
- * Dos invariantes que el tope NO puede romper:
- *
- *  1. **Nunca se queda vacío.** Un trozo que por sí solo excede el tope se
- *     conserva entero. Vaciar el búfer para respetar el tope daría un
- *     reenganche mudo, que es peor que uno largo.
- *  2. **La cabeza empieza en un punto de código válido.** La salida de un PTY
- *     no viene alineada, así que al tirar un trozo el siguiente puede
- *     arrancar a mitad de un carácter. Se recortan hasta 3 bytes de
- *     continuación (`10xxxxxx`) — el máximo que UTF-8 admite tras un líder de
- *     cuatro bytes.
- *
- * Rendimiento: el desalojo NO reasigna el arreglo. Un cursor `head` marca el
- * prefijo muerto y la compactación real ocurre cuando ese prefijo llega a la
- * mitad de la lista, lo que deja el trabajo amortizado en O(1) por empuje. Es
- * la diferencia entre un `shift()` por byte desalojado y un `splice` cada N.
+ * @dynamicRequire
  */
 
 export interface PtyRing {
-  /** Los trozos vivos, en orden de llegada. Leerlos compacta el prefijo muerto. */
+  /** Returns the current chunk list (compacts internal state). */
   readonly chunks: Buffer[]
-  /** Añade un trozo y desaloja los más antiguos hasta volver bajo el tope. */
+  /** Append a new chunk; evicts oldest until under `cap`. */
   push(chunk: Buffer): void
 }
 
-/** Cuántos bytes de continuación UTF-8 puede haber tras un líder de 4 bytes. */
-const MAX_CONTINUATION_BYTES = 3
-
-/** ¿Es `byte` una continuación UTF-8 (`10xxxxxx`)? */
-function isContinuation(byte: number): boolean {
-  return (byte & 0xc0) === 0x80
-}
-
 /**
- * Un búfer circular con tope en bytes. 256 KiB por defecto — el mismo orden de
- * magnitud que la referencia, y suficiente para que un reenganche recupere
- * varias pantallas de salida sin volverse un volcado.
+ * Create a ring buffer with the given byte cap. Default 256 KiB
+ * matches ant's `hX_ = 262144`.
  */
 export function createRing(cap: number): PtyRing {
   const list: Buffer[] = []
+  // `head` is the in-list compaction cursor; we lazy-shift to avoid
+  // allocating a new array per eviction. `compact()` drops the
+  // dead prefix once it gets to be half the list.
   let head = 0
   let totalBytes = 0
 
@@ -65,32 +38,6 @@ export function createRing(cap: number): PtyRing {
     if (head > 0) {
       list.splice(0, head)
       head = 0
-    }
-  }
-
-  /**
-   * Recorta de la cabeza los bytes de continuación que quedaron huérfanos al
-   * desalojar. Avanza de trozo si uno se agota entero, y para al toparse con
-   * un byte que ya inicia un punto de código.
-   */
-  function trimOrphanContinuations(): void {
-    let stripped = 0
-    while (stripped < MAX_CONTINUATION_BYTES) {
-      const next = list[head]
-      if (!next) break
-      let n = 0
-      while (stripped + n < MAX_CONTINUATION_BYTES && n < next.length && isContinuation(next[n]!)) {
-        n++
-      }
-      if (n > 0) {
-        list[head] = next.subarray(n)
-        totalBytes -= n
-        stripped += n
-      }
-      // Se avanza sólo si el trozo se agotó Y no es el último: el invariante 1
-      // manda por encima del saneo.
-      if (list[head]!.length > 0 || list.length - head === 1) break
-      head++
     }
   }
 
@@ -102,13 +49,39 @@ export function createRing(cap: number): PtyRing {
     push(chunk: Buffer): void {
       list.push(chunk)
       totalBytes += chunk.length
-      // `list.length - head > 1` es el invariante 1: se desaloja mientras
-      // quede más de un trozo vivo, nunca el último.
       while (totalBytes > cap && list.length - head > 1) {
+        // Drop oldest chunk completely.
         totalBytes -= list[head]!.length
         head++
-        trimOrphanContinuations()
+        // After a hard drop, the new head may start mid-codepoint
+        // (PTY output isn't guaranteed to align). Strip up to 3
+        // continuation bytes from its start so consumers see clean
+        // UTF-8 from the first byte. ant's bound: trim continues
+        // either when we've stripped 3 bytes, or when this chunk is
+        // exhausted (then move to next chunk).
+        let stripped = 0
+        while (stripped < 3) {
+          const next = list[head]
+          if (!next) break
+          let n = 0
+          while (
+            stripped + n < 3 &&
+            n < next.length &&
+            (next[n]! & 0xc0) === 0x80
+          ) {
+            n++
+          }
+          if (n > 0) {
+            list[head] = next.subarray(n)
+            totalBytes -= n
+            stripped += n
+          }
+          if (list[head]!.length > 0 || list.length - head === 1) break
+          head++
+        }
       }
+      // Compact when the dead prefix is at least half the list, to
+      // bound amortised array work.
       if (head >= list.length - head) compact()
     },
   }

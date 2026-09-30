@@ -26,8 +26,9 @@
  * `.rst`, por `build-logs.md`.
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '../../../store/db.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 import { createHash } from 'node:crypto'
+import { assertCoreSchemaMigrated } from '@thyrox/task/schema.ts'
 import type { Message } from '@thyrox/agent/loop/types'
 import { CLEARED_MARKER } from '@thyrox/agent/loop/context/microcompact'
 
@@ -54,17 +55,14 @@ export function toolCallIndex(messages: Message[]): Map<string, ToolCall> {
   return idx
 }
 
+/**
+ * Confirma que `CLEARED_TABLE` ya existe. El DDL ya no vive aquí:
+ * `agent_store.py` es el dueño del schema (DEC-TASK 2026-09-29), y esta
+ * función sólo valida la migración que lo crea — rehúsa, nombrando lo que
+ * falta, si el ledger está incompleto.
+ */
 export function ensureClearedTable(db: Database): void {
-  db.run(`CREATE TABLE IF NOT EXISTS ${CLEARED_TABLE} (
-    session_id     TEXT NOT NULL,
-    tool_use_id    TEXT NOT NULL,
-    tool           TEXT NOT NULL,
-    input_json     TEXT NOT NULL,
-    content_sha256 TEXT NOT NULL,
-    content_chars  INTEGER NOT NULL,
-    cleared_at     TEXT NOT NULL,
-    PRIMARY KEY (session_id, tool_use_id)
-  )`)
+  assertCoreSchemaMigrated(db)
 }
 
 /** El argumento que identifica la llamada, con el mismo criterio que la CLI. */
@@ -117,7 +115,7 @@ export function makeClearedPersister(opts: ClearedPersisterOptions): ClearedPers
   const failures = new Map<string, { reason: UnpersistedReason; detail?: string }>()
   let db: Database
   try {
-    db = openStore(opts.dbPath)
+    db = openLocal(opts.dbPath)
     ensureClearedTable(db)
   } catch (e) {
     // Sin store no hay registro, y sin registro no se limpia: devolver un

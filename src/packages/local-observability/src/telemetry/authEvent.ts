@@ -1,8 +1,21 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/authEvent.ts`
- * (77 líneas fuente, 100 % portado). Helper tipado para el evento
- * estructurado OTel `claude_code.auth`. Sin dependencias de paquete
- * hermano fuera de `./events.js` (mismo paquete).
+ * Port of ant v2.1.136 vBH (2642.js) — typed helper for the OTel
+ * `claude_code.auth` structured event.
+ *
+ * ant shape:
+ *   k5("auth", {
+ *     action: H.action,
+ *     success: String(H.success),
+ *     auth_method: H.authMethod,
+ *     ...(error && {
+ *       error_category: errClass.kind,
+ *       ...(status !== undefined && { status_code: String(status) }),
+ *     }),
+ *   })
+ *
+ * Caller passes a JS error; we duck-type-detect axios responses and emit
+ * `error_category` of "auth"|"timeout"|"network"|"http"|"other" matching
+ * ant VV(H) in 0191.js.
  */
 
 import { logOTelEvent } from './events.js'

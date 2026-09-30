@@ -370,9 +370,9 @@ function createPluginCommand(
           )
         }
 
-        // Replace ${CLAUDE_SESSION_ID} with the current session ID
+        // Replace ${THYROX_SESSION_ID} with the current session ID
         finalContent = finalContent.replace(
-          /\$\{CLAUDE_SESSION_ID\}/g,
+          /\$\{THYROX_SESSION_ID\}/g,
           getSessionId(),
         )
 
@@ -417,7 +417,7 @@ export const getPluginCommands = memoize(async (): Promise<Command[]> => {
   // works — getInlinePlugins() is set by main.tsx from --plugin-dir.
   // loadAllPluginsCacheOnly already short-circuits to inline-only when
   // inlinePlugins.length > 0.
-  if (isBareMode() && getInlinePlugins().length === 0) {
+  if (isBareMode() && (getInlinePlugins()?.length ?? 0) === 0) {
     return []
   }
   // Only load commands from enabled plugins
@@ -863,7 +863,7 @@ async function loadSkillsFromDirectory(
 export const getPluginSkills = memoize(async (): Promise<Command[]> => {
   // --bare: same gate as getPluginCommands above — honor explicit
   // --plugin-dir, skip marketplace auto-load.
-  if (isBareMode() && getInlinePlugins().length === 0) {
+  if (isBareMode() && (getInlinePlugins()?.length ?? 0) === 0) {
     return []
   }
   // Only load skills from enabled plugins

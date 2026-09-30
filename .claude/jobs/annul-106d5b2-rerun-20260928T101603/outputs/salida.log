@@ -1,0 +1,19 @@
+== 10: sin el login de github como nombre
+   (src/accounts/oauth/flows/zedHostedFlow.ts)
+(fail) zed-hosted > the pasted callback is decrypted with the private key and the account is named by the user info [79.00ms]
+ 16 pass
+ 1 fail
+== 37: la URL de verificación completa se ignora
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the device code asks for the wide scope and validates what comes back [1.50ms]
+ 16 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/grok/
+?? src/packages/provider/src/accounts/oauth/flows/grokCliFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/xaiOAuthFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/zedHostedFlow.ts
+?? src/packages/provider/src/accounts/zed/
+ 17 pass
+ 0 fail
+__BG_EXIT__=0

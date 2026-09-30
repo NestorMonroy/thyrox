@@ -1,0 +1,67 @@
+run-task-pool: 5 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T060205
+  job-20260927T060205/job-001 pid 26758   uv run --frozen python tests/paths/test_unprefixed_clone.py
+  job-20260927T060205/job-002 pid 26782   uv run --frozen python tests/agents/test_store_repo_path.py
+  job-20260927T060205/job-003 pid 26828   bash tests/lib/test-toolchain-consumer-env.sh
+  job-20260927T060205/job-004 pid 26873   cd src/packages/paths && bun test ../../../tests/paths/consumerEnvLayer.test.ts
+  job-20260927T060205/job-005 pid 26925   bash tests/session/test-wait-jobs-ledger-home.sh
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T060205_job-001 -> OK (2 de 6)
+asentado: job-20260927T060205_job-002 -> OK (3 de 6)
+asentado: job-20260927T060205_job-003 -> OK (4 de 6)
+asentado: job-20260927T060205_job-004 -> OK (5 de 6)
+asentado: job-20260927T060205_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T060205
+       | (vacío — no emitió nada)
+OK     job-20260927T060205_job-001 exit=0
+       | 2. El sufijo de la clave por clon es el nombre entero, no el último tramo
+       |   ok    ai-course-notes -> AI_COURSE_NOTES
+       |   ok    kaupamex-docs -> DOCS
+       | 
+       | 3. La clave por clon gobierna, y resuelve contra la raíz real del clon
+       |   ok    ai-course-notes usa THYROX_WORKBENCH_AI_COURSE_NOTES
+       |   ok    kaupamex-docs sigue usando THYROX_WORKBENCH_DOCS
+       | 
+       | test_unprefixed_clone: 8 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 35928 KB (35 MB) · pared 0.07s
+OK     job-20260927T060205_job-002 exit=0
+       | ....
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.023s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 35960 KB (35 MB) · pared 0.15s
+OK     job-20260927T060205_job-003 exit=0
+       |   ok    1. el .env del consumidor llega
+       |   ok    2. el proceso gana
+       |   ok    3. una clave fijada vacía se respeta
+       |   ok    4. otro prefijo no se carga
+       |   ok    5. fuera de un clon y sellado, no hay clave
+       | 
+       | 5 casos: 5 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 12720 KB (12 MB) · pared 0.30s
+OK     job-20260927T060205_job-004 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  5 pass
+       |  0 fail
+       |  6 expect() calls
+       | Ran 5 tests across 1 file. [56.00ms]
+       | EXIT=0
+       memoria pico: 54148 KB (53 MB) · pared 0.06s
+OK     job-20260927T060205_job-005 exit=0
+       | == 4. THYROX_SESSION_LEDGER_DIR exportada fija el ledger tal cual ==
+       |   ok    el ledger de sesión gana
+       |   ok    y THYROX_JOBS_DIR exportada ya no es el ledger
+       | == 5. CONTROL — THYROX_JOBS_DIR en el .env NO es el ledger ==
+       |   ok    sin la clave nueva, el ledger queda en su default
+       |   ok    y el hogar de runs no recibe un ledger
+       | == 6. un valor relativo se resuelve contra la raíz, como todo hogar ==
+       |   ok    cuelga de la raíz de thyrox
+       | resultado: 9 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 13068 KB (13 MB) · pared 0.47s
+__BG_EXIT__=0

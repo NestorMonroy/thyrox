@@ -1,42 +1,3 @@
-/**
- * Porte de `ccnmt: packages/storage/src/json.ts`.
- *
- * DIVERGENCIA DE ALCANCE, declarada (medido con
- * `ls /home/user/thyrox/src/packages/`, 2026-09-06): la fuente importa
- * tres símbolos de paquetes hermanos ausentes en este árbol. Se
- * reimplementa el mínimo con el que el test corre para cada uno:
- *
- * - `logError` de `@claude-code-how-works/local-observability/logging`
- *   — reimplementado en `./logging.ts` (ver su propio docstring; ningún
- *   test de este pase observa su contenido real, sólo lo mockea a
- *   no-op).
- * - `jsonStringify` de
- *   `@claude-code-how-works/local-observability/slowOperations.js` — la
- *   fuente (`ccnmt: packages/local-observability/src/slowOperations.ts`)
- *   es un wrapper de `JSON.stringify` instrumentado con `slowLogging`
- *   (telemetría de operaciones lentas). Aquí es `JSON.stringify` sin
- *   instrumentar — mismo valor de retorno, sin la telemetría de
- *   performance, que ningún test de este pase ejercita.
- * - `memoizeWithLRU` de `@claude-code-how-works/config/memoize` — la
- *   fuente usa el paquete npm `lru-cache` con un objeto `.cache` que
- *   expone `clear/size/delete/get(peek)/has` para introspección externa.
- *   Aquí es una LRU mínima sobre `Map` (division: en el hit, `.get()`
- *   promueve recencia moviendo la entrada al final; al superar
- *   `maxCacheSize` se evict la entrada menos reciente — la del frente
- *   del Map, que itera en orden de inserción). Ningún test de este pase
- *   inspecciona `.cache` ni depende de la política exacta de eviction
- *   (con 50 entradas y JSON cortos, ninguno de los 28 casos se acerca al
- *   límite); el contrato observable — cachear por clave, devolver el
- *   mismo valor — es idéntico.
- *
- * `jsonc-parser@3.3.1` (real, MIT, Microsoft) SÍ se instaló como
- * dependencia real bajo `node_modules/` (sin tocar ningún
- * `package.json`, que otro agente de esta tanda está escribiendo ahora
- * mismo) — no es un paquete hermano `@claude-code-how-works`, es la
- * misma librería de terceros que la fuente usa para editar JSONC
- * preservando comentarios, y reimplementarla habría sido inventar un
- * parser JSONC en vez de portar el mínimo necesario.
- */
 import { open, readFile, stat } from 'fs/promises'
 import {
   applyEdits,
@@ -44,85 +5,11 @@ import {
   parse as parseJsonc,
 } from 'jsonc-parser/lib/esm/main.js'
 import { stripBOM } from './jsonRead.js'
-import { logError } from './logging.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { memoizeWithLRU } from '@thyrox/config/memoize.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 type CachedParse = { ok: true; value: unknown } | { ok: false }
-
-/**
- * Reimplementación local mínima de
- * `@claude-code-how-works/local-observability/slowOperations.js:jsonStringify`
- * — ver docstring del módulo.
- */
-function jsonStringify(
-  value: unknown,
-  replacer?: ((this: unknown, key: string, value: unknown) => unknown) | (number | string)[] | null,
-  space?: string | number,
-): string {
-  return JSON.stringify(
-    value,
-    replacer as Parameters<typeof JSON.stringify>[1],
-    space,
-  )
-}
-
-type LRUMemoizedFunction<Args extends unknown[], Result> = {
-  (...args: Args): Result
-  cache: {
-    clear: () => void
-    size: () => number
-    delete: (key: string) => boolean
-    get: (key: string) => Result | undefined
-    has: (key: string) => boolean
-  }
-}
-
-/**
- * Reimplementación local mínima de
- * `@claude-code-how-works/config/memoize.js:memoizeWithLRU` — ver
- * docstring del módulo. LRU sobre `Map`: el orden de iteración de un
- * `Map` es el de inserción, así que promover una clave (delete + set)
- * la mueve al final, y la más vieja siempre está al frente.
- */
-function memoizeWithLRU<
-  Args extends unknown[],
-  Result extends NonNullable<unknown>,
->(
-  f: (...args: Args) => Result,
-  cacheFn: (...args: Args) => string,
-  maxCacheSize: number = 100,
-): LRUMemoizedFunction<Args, Result> {
-  const cache = new Map<string, Result>()
-
-  const memoized = (...args: Args): Result => {
-    const key = cacheFn(...args)
-    const cached = cache.get(key)
-    if (cached !== undefined) {
-      // Promueve recencia: re-insertar mueve la clave al final.
-      cache.delete(key)
-      cache.set(key, cached)
-      return cached
-    }
-
-    const result = f(...args)
-    cache.set(key, result)
-    if (cache.size > maxCacheSize) {
-      const oldest = cache.keys().next().value
-      if (oldest !== undefined) cache.delete(oldest)
-    }
-    return result
-  }
-
-  memoized.cache = {
-    clear: () => cache.clear(),
-    size: () => cache.size,
-    delete: (key: string) => cache.delete(key),
-    // peek-like: no promueve recencia, sólo observa.
-    get: (key: string) => cache.get(key),
-    has: (key: string) => cache.has(key),
-  }
-
-  return memoized
-}
 
 // Memoized inner parse. Uses a discriminated-union wrapper because:
 // 1. memoizeWithLRU requires NonNullable<unknown>, but JSON.parse can return

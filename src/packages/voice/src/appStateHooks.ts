@@ -25,13 +25,9 @@
  * —no emite `require` ni `import`— así que el mecanismo diferido queda
  * intacto y el consumidor recupera el tipo real.
  *
- * LA VERSIÓN ANTERIOR DE ESTE HEADER AFIRMABA QUE EL MÓDULO NO EXISTE,
- * citando un `find src/packages/app-host -iname 'AppState.ts'` → 0. El
- * `find` era correcto y la conclusión falsa: **el archivo es
- * `AppState.tsx`**. Buscar la extensión equivocada y concluir que el
- * módulo no existe es el sub-patrón C — medir el significante, concluir
- * sobre el significado. También había retirado el comentario en inglés
- * de la fuente; queda restaurado.
+ * El módulo existe y es `AppState.tsx`: una búsqueda por `AppState.ts` da
+ * cero y no prueba su ausencia. El comentario en inglés de la fuente se
+ * conserva abajo.
  */
 
 // V7 §7.2 — shim con `require()` diferido para que el paquete voice no

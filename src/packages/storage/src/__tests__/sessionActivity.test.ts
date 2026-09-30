@@ -11,19 +11,19 @@ import {
   unregisterSessionActivityCallback,
 } from '../sessionActivity.js'
 
-const ORIGINAL_ENV = process.env.CLAUDE_CODE_REMOTE_SEND_KEEPALIVES
+const ORIGINAL_ENV = process.env.THYROX_CODE_REMOTE_SEND_KEEPALIVES
 
 beforeEach(() => {
   resetSessionActivityForTest()
   setLogForDiagnosticsNoPIIFn(() => {})
-  delete process.env.CLAUDE_CODE_REMOTE_SEND_KEEPALIVES
+  delete process.env.THYROX_CODE_REMOTE_SEND_KEEPALIVES
 })
 
 afterEach(() => {
   resetSessionActivityForTest()
   setLogForDiagnosticsNoPIIFn(() => {})
-  if (ORIGINAL_ENV === undefined) delete process.env.CLAUDE_CODE_REMOTE_SEND_KEEPALIVES
-  else process.env.CLAUDE_CODE_REMOTE_SEND_KEEPALIVES = ORIGINAL_ENV
+  if (ORIGINAL_ENV === undefined) delete process.env.THYROX_CODE_REMOTE_SEND_KEEPALIVES
+  else process.env.THYROX_CODE_REMOTE_SEND_KEEPALIVES = ORIGINAL_ENV
 })
 
 // Nota de alcance: el disparo real del heartbeat/idle a los 30s
@@ -46,15 +46,15 @@ describe('registerSessionActivityCallback / unregisterSessionActivityCallback', 
 })
 
 describe('sendSessionActivitySignal', () => {
-  test('sin CLAUDE_CODE_REMOTE_SEND_KEEPALIVES, NO invoca el callback', () => {
+  test('sin THYROX_CODE_REMOTE_SEND_KEEPALIVES, NO invoca el callback', () => {
     let called = 0
     registerSessionActivityCallback(() => called++)
     sendSessionActivitySignal()
     expect(called).toBe(0)
   })
 
-  test('con CLAUDE_CODE_REMOTE_SEND_KEEPALIVES=1, invoca el callback', () => {
-    process.env.CLAUDE_CODE_REMOTE_SEND_KEEPALIVES = '1'
+  test('con THYROX_CODE_REMOTE_SEND_KEEPALIVES=1, invoca el callback', () => {
+    process.env.THYROX_CODE_REMOTE_SEND_KEEPALIVES = '1'
     let called = 0
     registerSessionActivityCallback(() => called++)
     sendSessionActivitySignal()
@@ -62,7 +62,7 @@ describe('sendSessionActivitySignal', () => {
   })
 
   test('sin callback registrado, no lanza', () => {
-    process.env.CLAUDE_CODE_REMOTE_SEND_KEEPALIVES = 'true'
+    process.env.THYROX_CODE_REMOTE_SEND_KEEPALIVES = 'true'
     expect(() => sendSessionActivitySignal()).not.toThrow()
   })
 })

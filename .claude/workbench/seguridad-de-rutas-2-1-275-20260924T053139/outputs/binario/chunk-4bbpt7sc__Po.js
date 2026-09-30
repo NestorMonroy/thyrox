@@ -1,0 +1,1 @@
+function Po(e,n){if(Pn(n)&&!la(n)||Jr(n)||Vv(n))return{resolvedPath:n,isSymlink:!1,isCanonical:!1};let r=Vh(e,n);if(r!==void 0)return{resolvedPath:r,isSymlink:!0,isCanonical:!1};try{let i=i8t(e,n);return{resolvedPath:i,isSymlink:i!==n,isCanonical:!0}}catch(i){return{resolvedPath:n,isSymlink:!1,isCanonical:!1}}}

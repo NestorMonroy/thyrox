@@ -240,10 +240,10 @@ def sweep(entries: Iterable[TaskEntry],
     return SweepResult(diagnoses, quarantined)
 
 
-def read_stdin_target(pid: int) -> str | None:
+def read_stdin_target(pid: int, proc_root: str = "/proc") -> str | None:
     """El destino de ``/proc/<pid>/fd/0``, verbatim, o ``None`` si no se pudo leer."""
     try:
-        return os.readlink(f"/proc/{pid}/fd/0")
+        return os.readlink(f"{proc_root}/{pid}/fd/0")
     except OSError:
         return None
 

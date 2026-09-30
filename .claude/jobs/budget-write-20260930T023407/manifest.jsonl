@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bun src/verify/checkStartupModuleBudget.ts --write-baseline", "started_at": "2026-09-30T02:34:07+00:00"}

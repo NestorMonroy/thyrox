@@ -20,6 +20,7 @@ import {
   isPreapprovedUrl,
   MAX_MARKDOWN_LENGTH,
 } from './utils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const inputSchema = lazySchema(() =>
   z.strictObject({
@@ -73,9 +74,9 @@ export const WebFetchTool = buildTool({
     const { url } = input as { url: string }
     try {
       const hostname = new URL(url).hostname
-      return `Claude wants to fetch content from ${hostname}`
+      return `${PRODUCT_NAME} wants to fetch content from ${hostname}`
     } catch {
-      return `Claude wants to fetch content from this URL`
+      return `${PRODUCT_NAME} wants to fetch content from this URL`
     }
   },
   userFacingName() {
@@ -147,7 +148,7 @@ export const WebFetchTool = buildTool({
     if (askRule) {
       return {
         behavior: 'ask',
-        message: `Claude requested permissions to use ${WebFetchTool.name}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to use ${WebFetchTool.name}, but you haven't granted it yet.`,
         decisionReason: {
           type: 'rule',
           rule: askRule,
@@ -174,7 +175,7 @@ export const WebFetchTool = buildTool({
 
     return {
       behavior: 'ask',
-      message: `Claude requested permissions to use ${WebFetchTool.name}, but you haven't granted it yet.`,
+      message: `${PRODUCT_NAME} requested permissions to use ${WebFetchTool.name}, but you haven't granted it yet.`,
       suggestions: buildSuggestions(ruleContent),
     }
   },
@@ -278,7 +279,7 @@ To complete your request, I need to fetch content from the redirected URL. Pleas
     }
 
     // Binary content (PDFs, etc.) was additionally saved to disk with a
-    // mime-derived extension. Note it so Claude can inspect the raw file
+    // mime-derived extension. Note it so thyrox can inspect the raw file
     // if the Haiku summary above isn't enough.
     if (persistedPath) {
       result += `\n\n[Binary content (${contentType}, ${formatFileSize(persistedSize ?? bytes)}) also saved to ${persistedPath}]`

@@ -19,7 +19,7 @@ export function renderToolUseMessage(input: Partial<Input>): React.ReactNode {
 export function renderToolResultMessage(
   content: SendMessageToolOutput | string,
   _progressMessages: unknown,
-  { verbose }: { verbose: boolean },
+  { verbose: _verbose }: { verbose: boolean },
 ): React.ReactNode {
   const result: SendMessageToolOutput =
     typeof content === 'string' ? jsonParse(content) : content

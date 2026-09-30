@@ -1,11 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/updater/src/nativeInstaller/launcherOwnership.ts`
- * (26 líneas fuente, 100% portado). Determina si un symlink de
- * lanzador apunta a una versión gestionada por este updater
- * ('managed'), a un binario externo ('external'), o no existe
- * ('missing').
- */
-
 import { lstat, readlink } from 'fs/promises'
 import { dirname, join, resolve, sep } from 'path'
 import { getUserBinDir, getXDGDataHome } from '@thyrox/storage/xdg.js'

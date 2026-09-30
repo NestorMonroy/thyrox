@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # El typecheck del paquete de entrada, como gate donde el trabajo pasa.
 #
-# Por que existe: medido el 2026-09-05, `typecheck` y `typecheck:tests` eran
-# scripts de `package.json` que NADIE invocaba — ni el pre-commit, ni el
-# pre-push, ni `thyrox-audit.sh`. Un script que solo corre cuando alguien se
-# acuerda no es un gate: es el defecto que `gitlink-bump-gate.md` ya dejo
+# Por que existe: `typecheck` y `typecheck:tests` son scripts de
+# `package.json`, y un script que solo corre cuando alguien se acuerda no es un
+# gate: es el defecto que `gitlink-bump-gate.md` ya dejo
 # dicho —la prosa no previene la reincidencia, un gate ejecutable si— con la
 # forma mas barata de cometerlo, porque el comando ya existia.
 #
@@ -13,12 +12,8 @@
 # proyecto de produccion seguiria midiendose con las suyas. Un solo comando
 # haria que ese aflojamiento pasara sin que nada lo delatara.
 #
-# NOMBRE (2026-09-17, directiva del ejecutor: "ya no usamos la palabra
-# harness"). Este gate se llamaba `check-harness-typecheck.sh`. El paquete que
-# medía dejo de existir: TASK-THYROX-0226 vacio `src/packages/harness` —su
-# bucle vive en `@thyrox/agent`, su workbench en `src/workbench/`, su triple en
-# `src/reference/`— y el punto de entrada quedo en `@thyrox/cli`, que es el
-# sujeto real desde entonces. El nombre se deriva del sujeto, no de la historia.
+# NOMBRE: el sujeto es el punto de entrada, `@thyrox/cli`, y el nombre se
+# deriva del sujeto.
 #
 # Uso:  check-cli-typecheck.sh [--strict] [archivos...]
 #   Sin archivos mide siempre. Con archivos, solo actua si alguno pertenece al
@@ -49,9 +44,13 @@ done
 # propia superficie — el defecto que H-DOCS-504 registro en el gate hermano.
 if [[ "${#FILES[@]}" -gt 0 ]]; then
     TOUCHES=0
+    # El alcance es el ARBOL de paquetes, no solo el de entrada: el proyecto
+    # compila a los hermanos por sus enlaces, asi que un commit que toca
+    # `config/` o `agent/` mueve este mismo conteo; con el alcance en `cli/`
+    # ese commit pasaria eximido y el conteo subiria sin que nada lo delate.
     for f in "${FILES[@]}"; do
-        rel="${f#"$ROOT"/}"
-        case "$rel" in "$PACKAGE_REL"/*) TOUCHES=1 ;; esac
+        case "$f" in /*) abs="$f" ;; *) abs="$ROOT/$f" ;; esac
+        case "$abs" in "$PACKAGES_DIR"/*) TOUCHES=1 ;; esac
     done
     if [[ "$TOUCHES" -eq 0 ]]; then
         echo "check-cli-typecheck: sin cambios en el paquete" \
@@ -77,6 +76,20 @@ fi
 # estar enlazados en `node_modules/@thyrox/`. Es el discriminador de
 # TASK-THYROX-0056: un modulo ausente cuyo hermano tampoco existe NO es un
 # workspace sin enlazar — es una dependencia rota, y su arreglo es otro.
+# ¿Esta enlazado `@thyrox/<pkg>` en el `node_modules` del paquete o en el de
+# algun ANCESTRO? La resolucion de Node sube por los ancestros, y el linker que
+# `bunfig.toml` declara —`hoisted`, H-THYROX-154— enlaza los workspaces en la
+# RAIZ. Mirar solo el del paquete publicaba «sin enlazar» sobre un enlace que
+# existia, y rehusaba el veredicto de un `TS2307` que era codigo roto.
+linked_in_ancestor() {
+    local pkg="$1" dir="$PACKAGE"
+    while :; do
+        [ -e "$dir/$SCOPE_DIR/$pkg" ] && return 0
+        [ "$dir" = "/" ] && return 1
+        dir="$(dirname "$dir")"
+    done
+}
+
 unlinked_from() {
     local salida="$1"
     printf '%s\n' "$salida" \
@@ -86,7 +99,7 @@ unlinked_from() {
         | while read -r pkg; do
               [ -n "$pkg" ] || continue
               [ -d "$PACKAGES_DIR/$pkg" ] || continue
-              [ -e "$PACKAGE/$SCOPE_DIR/$pkg" ] && continue
+              linked_in_ancestor "$pkg" && continue
               printf '%s\n' "$pkg"
           done
 }
@@ -155,8 +168,7 @@ fi
 
 # EL TRINQUETE. Con baseline declarado, el veredicto de `--strict` es «no
 # crece», no «compila»: un gate binario sobre un paquete ya rojo bloquea TODO
-# commit que lo toque, tambien los que bajan errores — medido 2026-09-23, un
-# lote que bajaba el total de 4787 a 4493 no pudo commitearse. Sin baseline se
+# commit que lo toque, tambien los que bajan errores. Sin baseline se
 # conserva la conducta binaria de abajo.
 #
 # El baseline es parametro de ESTE arbol (DEC-04): `<proyecto> <conteo>`.

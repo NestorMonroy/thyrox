@@ -18,7 +18,7 @@
  * `MACRO.VERSION`: la fuente lo usa SIN guarda (asume que
  * `agent/internal/macroFallback.ts` ya corrió). Este árbol no cablea esa
  * garantía para este paquete, así que aquí se guarda con `typeof MACRO
- * !== 'undefined'` (mismo patrón que `sentry.ts`/`error-log-sink.ts`) —
+ * !== 'undefined'` (mismo patrón que `error-log-sink.ts`) —
  * es la única divergencia de comportamiento de este archivo, declarada.
  */
 
@@ -83,7 +83,7 @@ export function getTelemetryAttributes(): Attributes {
     ) {
       attributes['user.account_uuid'] = accountUuid
       attributes['user.account_id'] =
-        process.env.CLAUDE_CODE_ACCOUNT_TAGGED_ID ||
+        process.env.THYROX_CODE_ACCOUNT_TAGGED_ID ||
         toTaggedId('user', accountUuid)
     }
   }

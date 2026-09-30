@@ -165,3 +165,8 @@ export interface MCPCliState {
   resources: Record<string, ServerResource[]>
   normalizedNames?: Record<string, string> // Mapea nombres normalizados a los nombres originales
 }
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { Command } from '@thyrox/command-runtime/types'
+export type { Tool } from '@thyrox/tool-registry/runtime'

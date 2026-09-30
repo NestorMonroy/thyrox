@@ -1,0 +1,84 @@
+== 1: cualquier verificador es una clave
+ 1 fail
+== 2: sin consulta suelta
+ 2 fail
+== 3: sin JSON
+ 1 fail
+== 4: sin el alias token
+ 1 fail
+== 5: la organización declarada no gana
+ 1 fail
+== 6: sin la organización personal
+ 1 fail
+== 7: el usuario de zed como Bearer
+ 1 fail
+== 8: cualquier host reusa el puerto local
+ 1 fail
+== 9: un usuario caído tumba el login
+ 1 fail
+== 10: sin el login de github como nombre
+ 0 fail
+== 11: xai sin variable no rehúsa
+ 1 fail
+== 12: el nonce fijo
+ 1 fail
+== 13: xai con el verificador corto
+ 1 fail
+== 14: los espacios como +
+ 1 fail
+== 15: xai sin nombre no hay etiqueta
+ 1 fail
+== 16: cualquier código de usuario
+ 1 fail
+== 17: cualquier esquema
+ 1 fail
+== 18: caracteres de control admitidos
+ 1 fail
+== 19: sin HTTP local
+ 1 fail
+== 20: la respuesta sin URI no es incompleta
+ 1 fail
+== 21: el error sin la descripción
+ 1 fail
+== 22: una página que no es JSON queda vacía
+ 1 fail
+== 23: el navegador sin cota inferior
+ 1 fail
+== 24: el navegador sin seis horas por defecto
+ 1 fail
+== 25: el principal de equipo no es el usuario
+ 2 fail
+== 26: el equipo sin su principal
+ 1 fail
+== 27: la organización sin su principal
+ 1 fail
+== 28: el principal distingue mayúsculas
+ 1 fail
+== 29: el ámbito activo no se prefiere
+ 1 fail
+== 30: sin expires_at
+ 1 fail
+== 31: sin exp
+ 1 fail
+== 32: lo pegado sin cota inferior
+ 1 fail
+== 33: el objeto pegado sin su refresco
+ 1 fail
+== 34: el auth.json sin desenvolver
+ 1 fail
+== 35: la respuesta de servidor como pegado
+ 1 fail
+== 36: el navegador de grok sin verificador largo
+ 1 fail
+== 37: la URL de verificación completa se ignora
+ 0 fail
+== restaurado
+ 0 fail
+
+== re-medición (annul-106d5b2-rerun-20260928T101603)
+== 10: sin el login de github como nombre
+ 1 fail
+== 37: la URL de verificación completa se ignora
+ 1 fail
+== restaurado
+ 0 fail

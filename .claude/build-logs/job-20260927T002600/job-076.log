@@ -1,0 +1,41 @@
+== 1. model_of — un assistant con modelo Claude real ==
+  ok    el identificador viaja verbatim
+== 2. model_of — un mensaje de usuario no aplica ==
+  ok    no es assistant
+== 3. model_of — assistant SIN el campo model ==
+  ok    sin la clave model
+== 4. model_of — un identificador de OTRO proveedor no pasa el prefijo ==
+  ok    gpt-4 no empieza con claude-
+== 5. model_of — DISCRIMINA: identificadores con la versión ADELANTE ==
+  ok    claude-3-5-sonnet se reconoce por prefijo, no por gramática de partes
+  ok    claude-3-5-haiku se reconoce por prefijo, no por gramática de partes
+  ok    claude-3-7-sonnet se reconoce por prefijo, no por gramática de partes
+== 6. accumulate_by_model — reparte por modelo, NO un total plano ==
+  ok    dos cubos, uno por modelo
+  ok    el cubo de sonnet NO incluye el gasto de opus
+  ok    el cubo de opus NO incluye el gasto de sonnet
+  ok    cada cubo cuenta su propio mensaje
+== 7. accumulate_by_model — DISCRIMINA: streaming del MISMO id cuenta UNA vez ==
+  ok    un solo cubo
+  ok    el input NO se triplica
+  ok    un solo id único, aunque aparezca 3 veces
+== 8. accumulate_by_model — un mensaje con usage y SIN modelo cae en UNKNOWN_MODEL ==
+  ok    el cubo ausente existe con su nombre propio
+  ok    su gasto NO se pierde
+  ok    y NO se mezcla con el cubo de sonnet
+  ok    UNKNOWN_MODEL no es la cadena vacía ni None (cubo nombrado, no ambiguo)
+== 9. accumulate_by_model — la deduplicación es GLOBAL, no por cubo ==
+  ok    sólo el cubo de la PRIMERA aparición existe
+  ok    el cubo de opus ni se crea (dedup global, antes de agrupar)
+== 10. accumulate_by_model — cero líneas da un dict vacío, sin excepción ==
+  ok    ningún cubo
+== 11. accumulate_by_model — ignora lo que no trae usage, sin romperse ==
+  ok    sólo el que trae usage cuenta
+== 12. ANULACIÓN — retirar el prefijo hace que TODO pase, y sólo eso cambia ==
+  ok    control previo — gpt-4 sigue sin pasar
+  ok    CAUSA RETIRADA — con el prefijo vacío, gpt-4 SÍ pasa
+  ok    y un identificador Claude real sigue pasando igual (no es lo que cambió)
+  ok    restaurado — gpt-4 vuelve a no pasar
+
+26 ok, 0 fallos
+EXIT=0

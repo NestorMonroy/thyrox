@@ -161,7 +161,11 @@ export function getStrictKnownMarketplaces(): MarketplaceSource[] | null {
   if (!policySettings?.strictKnownMarketplaces) {
     return null // No restrictions
   }
-  return policySettings.strictKnownMarketplaces
+  // `strictKnownMarketplaces` no está en el esquema tipado de `Settings`
+  // (inventory.ts: campo retirado, servicio externo aún sin sistema de
+  // plugins propio) y llega por el `.passthrough()` de la zod, con tipo
+  // `unknown`; la comprobación de arriba ya garantiza un valor truthy.
+  return policySettings.strictKnownMarketplaces as MarketplaceSource[]
 }
 
 /**
@@ -173,7 +177,10 @@ export function getBlockedMarketplaces(): MarketplaceSource[] | null {
   if (!policySettings?.blockedMarketplaces) {
     return null // No blocklist
   }
-  return policySettings.blockedMarketplaces
+  // Mismo motivo que `getStrictKnownMarketplaces`: campo no portado al
+  // esquema, llega por `.passthrough()` como `unknown`, y la comprobación
+  // de arriba ya garantiza un valor truthy.
+  return policySettings.blockedMarketplaces as MarketplaceSource[]
 }
 
 /**
@@ -181,7 +188,12 @@ export function getBlockedMarketplaces(): MarketplaceSource[] | null {
  * Returns undefined if not configured.
  */
 export function getPluginTrustMessage(): string | undefined {
-  return getSettingsForSource('policySettings')?.pluginTrustMessage
+  // `pluginTrustMessage` es una clave "diferida" (inventory.ts): el esquema
+  // de Settings no la declara, así que `passthrough()` la tipa `unknown`.
+  const policySettings = getSettingsForSource('policySettings') as
+    | { pluginTrustMessage?: string }
+    | null
+  return policySettings?.pluginTrustMessage
 }
 
 /**

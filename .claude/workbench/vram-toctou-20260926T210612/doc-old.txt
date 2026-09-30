@@ -1,0 +1,1 @@
+    ``wait_free`` comprobaba sola cada ítem: con 5000 MiB libres dos ítems de

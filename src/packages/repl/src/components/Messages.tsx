@@ -467,7 +467,7 @@ const MessagesImpl = ({
         }
       } else if (msg?.type === 'user') {
         const hasToolResult = msg.message.content.some(
-          block => block.type === 'tool_result',
+(          block: { type: string }) => block.type === 'tool_result',
         )
         if (!hasToolResult) {
           // Reached a previous user turn so don't show stale thinking from before
@@ -506,7 +506,7 @@ const MessagesImpl = ({
   // streamingToolUses updates on every input_json_delta while normalizedMessages
   // stays stable — precompute the Set so the filter is O(k) not O(n×k) per chunk.
   const normalizedToolUseIDs = useMemo(
-    () => getToolUseIDs(normalizedMessages),
+    () => new Set(normalizedMessages.flatMap(getToolUseIDs)),
     [normalizedMessages],
   )
 
@@ -532,7 +532,10 @@ const MessagesImpl = ({
         // fresh randomUUID → unstable React keys → component remounts →
         // Ink rendering corruption (overlapping text from stale DOM nodes).
         msg.uuid = deriveUUID(streamingToolUse.contentBlock.id as UUID, 0)
-        return normalizeMessages([msg])
+        return normalizeMessages([msg]).filter(
+          (m): m is Exclude<NormalizedMessage, ProgressMessageType> =>
+            m.type !== 'progress',
+        )
       }),
     [streamingToolUsesWithoutInProgress],
   )
@@ -540,7 +543,7 @@ const MessagesImpl = ({
   const isTranscriptMode = screen === 'transcript'
   // Hoisted to mount-time — this component re-renders on every scroll.
   const disableVirtualScroll = useMemo(
-    () => isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_VIRTUAL_SCROLL),
+    () => isEnvTruthy(process.env.THYROX_CODE_DISABLE_VIRTUAL_SCROLL),
     [],
   )
   // Virtual scroll replaces the transcript cap: everything is scrollable and
@@ -877,7 +880,8 @@ const MessagesImpl = ({
   // renderToolResultMessage shows. Falls back to renderableSearchText
   // (duck-types toolUseResult) for tools that haven't implemented it,
   // and for all non-tool-result message types. The drift-catcher test
-  // (toolSearchText.test.tsx) renders + compares to keep these in sync.
+  // (@thyrox/tool-registry: src/__tests__/searchTextRenderFidelity.test.tsx)
+  // renders + compares to keep these in sync.
   //
   // A second-React-root reconcile approach was tried and ruled out
   // (measured 3.1ms/msg, growing — flushSyncWork processes all roots;

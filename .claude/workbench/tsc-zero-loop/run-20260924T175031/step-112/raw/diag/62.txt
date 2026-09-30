@@ -1,0 +1,10 @@
+src/packages/app-host/src/providerHostSetup.ts(62,7): error TS2322: Type '(args: ProviderQueryArgs) => AsyncGenerator<unknown, void, any>' is not assignable to type 'ProviderQueryStreamFn'.
+  Call signature return types 'AsyncGenerator<unknown, void, any>' and 'ProviderQueryStream' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<IteratorResult<unknown, void>>' is not assignable to type 'Promise<IteratorResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent, void>>'.
+        Type 'IteratorResult<unknown, void>' is not assignable to type 'IteratorResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent, void>'.
+          Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent, void>'.
+            Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorYieldResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent>'.
+              Type 'unknown' is not assignable to type 'ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent'.
+src/packages/app-host/src/providerHostSetup.ts(130,39): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

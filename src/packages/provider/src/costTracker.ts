@@ -5,25 +5,16 @@
  * `saveCurrentSessionCosts`, `formatTotalCost`, `addToTotalSessionCost`),
  * ninguna omitida.
  *
- * El acumulador real (`app-host/bootstrap/state.js`) es zona prohibida —
- * la escribe otro agente en paralelo esta sesión, y de todas formas no
- * está asignada a este pase. Se accede vía UN único `require()` diferido
- * (`requireBootstrapState`), mismo patrón de indirección que
- * `claudeLegacy.ts`'s `getLegacyRuntime()`. `./advisor.js` → sólo se porta
- * la función pura que se consume (`getAdvisorUsage`, en
- * `internal/pendingCrossPackageDeps.ts`). `./fastMode.js` — CORREGIDO en
- * este pase: `fastMode.ts` ya se portó ENTERO en un pase posterior al que
- * escribió esta nota, así que `isFastModeEnabled` se importa directo de
- * `./fastMode.ts` (sin ciclo: `fastMode.ts` no importa `costTracker.ts`).
- * El sustituto homónimo que quedaba en `pendingCrossPackageDeps.ts` se
- * conserva SÓLO porque `model.ts` sí formaría un ciclo si importara de
- * `fastMode.ts` (`fastMode.ts` importa `model.ts`) — ver el docstring de
- * ese sustituto. `./modelCost.js` (`calculateUSDCost`) NO está
- * asignado a este pase → `require()` diferido relativo (nunca resolverá
- * hasta que se porte, igual que los demás "declarados colgantes" de este
- * árbol). `getModelMaxOutputTokens` (`@thyrox/agent/context.ts`) no está
- * portado ahí todavía → `require()` diferido sobre el mismo subpath;
- * `getContextWindowForModel` SÍ resuelve y se importa estático.
+ * Tres dependencias se leen por `require()` diferido, al primer uso y no al
+ * cargar el módulo: el acumulador de sesión
+ * (`@thyrox/app-host/bootstrap/state.js`, vía `requireBootstrapState`, junto
+ * a la configuración de proyecto de `@thyrox/config`) y
+ * `getModelMaxOutputTokens` (`@thyrox/agent/context`). `./modelCost.ts`
+ * (`calculateUSDCost`) también se difiere. `getAdvisorUsage` sale de
+ * `internal/pendingCrossPackageDeps.ts`, la única función pura de
+ * `./advisor.js` que se consume; `isFastModeEnabled` se importa directo de
+ * `./fastMode.ts`, que no importa este archivo. `getContextWindowForModel`
+ * resuelve y se importa estático.
  */
 
 import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
@@ -214,7 +205,7 @@ export function saveCurrentSessionCosts(fpsMetrics?: FpsMetrics): void {
   }))
 }
 
-function formatCost(cost: number, maxDecimalPlaces: number = 4): string {
+export function formatCost(cost: number, maxDecimalPlaces: number = 4): string {
   return `$${cost > 0.5 ? round(cost, 100).toFixed(2) : cost.toFixed(maxDecimalPlaces)}`
 }
 

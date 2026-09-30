@@ -9,6 +9,10 @@ import type { QuerySource } from '@thyrox/agent/querySource'
 import type { SystemAPIErrorMessage } from '@thyrox/agent/messageShapes'
 import { isAwsCredentialsProviderError } from './aws.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import {
+  FOUNDRY_PURPOSE_REQUEST_FAILURE,
+  handleFoundryCapabilityRejection,
+} from './foundryCapabilities.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { createSystemAPIErrorMessage } from '@thyrox/agent/messages.js'
 import { getAPIProviderForStatsig } from './providers.js'
@@ -95,7 +99,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000
 
 function isPersistentRetryEnabled(): boolean {
   return feature('UNATTENDED_RETRY')
-    ? isEnvTruthy(readEnv('CLAUDE_CODE_UNATTENDED_RETRY'))
+    ? isEnvTruthy(readEnv('THYROX_CODE_UNATTENDED_RETRY'))
     : false
 }
 
@@ -312,6 +316,23 @@ export async function* withRetry<T>(
         continue
       }
 
+      // Foundry (`GDn`, 2.1.282): un 400 que nombra capacidades que el
+      // despliegue no admite las deja registradas y se reintenta — la
+      // petición siguiente ya no las pide. La que existe para usar la
+      // capacidad rechazada (la búsqueda web) no se reintenta.
+      const foundryVerdict = handleFoundryCapabilityRejection(
+        error,
+        retryContext.model,
+        options.querySource,
+      )
+      if (foundryVerdict === FOUNDRY_PURPOSE_REQUEST_FAILURE) {
+        throw new CannotRetryError(error, retryContext)
+      }
+      if (foundryVerdict !== null) {
+        logForDebugging(`[foundry-capabilities] ${foundryVerdict}`)
+        continue
+      }
+
       // Non-foreground sources bail immediately on 529 — no retry amplification
       // during capacity cascades. User never sees these fail.
       if (is529Error(error) && !shouldRetry529(options.querySource)) {
@@ -326,7 +347,7 @@ export async function* withRetry<T>(
       if (
         is529Error(error) &&
         // If FALLBACK_FOR_ALL_PRIMARY_MODELS is not set, fall through only if the primary model is a non-custom Opus model.
-        // TODO: Revisit if the isNonCustomOpusModel check should still exist, or if isNonCustomOpusModel is a stale artifact of when Claude Code was hardcoded on Opus.
+        // TODO: Revisit if the isNonCustomOpusModel check should still exist, or if isNonCustomOpusModel is a stale artifact of when thyrox was hardcoded on Opus.
         (readEnv('FALLBACK_FOR_ALL_PRIMARY_MODELS') ||
           (!isClaudeAISubscriber() && isNonCustomOpusModel(options.model)))
       ) {
@@ -634,7 +655,7 @@ function isOAuthTokenRevokedError(error: unknown): boolean {
 }
 
 function isBedrockAuthError(error: unknown): boolean {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) {
     // AWS libs reject without an API call if .aws holds a past Expiration value
     // otherwise, API calls that receive expired tokens give generic 403
     // "The security token included in the request is invalid"
@@ -673,7 +694,7 @@ function isGoogleAuthLibraryCredentialError(error: unknown): boolean {
 }
 
 function isVertexAuthError(error: unknown): boolean {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) {
     // SDK-level: google-auth-library fails in prepareOptions() before the HTTP call
     if (isGoogleAuthLibraryCredentialError(error)) {
       return true
@@ -715,7 +736,7 @@ function shouldRetry(error: APIError): boolean {
   // credentials. Bypass x-should-retry:false — the server assumes we'd retry
   // the same bad key, but our key is fine.
   if (
-    isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
+    isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
     (error.status === 401 || error.status === 403)
   ) {
     return true
@@ -792,10 +813,11 @@ function shouldRetry(error: APIError): boolean {
 }
 
 export function getDefaultMaxRetries(): number {
-  if (readEnv('CLAUDE_CODE_MAX_RETRIES')) {
-    return parseInt(readEnv('CLAUDE_CODE_MAX_RETRIES'), 10)
+  const maxRetriesEnv = readEnv('THYROX_CODE_MAX_RETRIES')
+  if (maxRetriesEnv) {
+    return parseInt(maxRetriesEnv, 10)
   }
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_RETRY_WATCHDOG'))) return 300
+  if (isEnvTruthy(readEnv('THYROX_CODE_RETRY_WATCHDOG'))) return 300
   return DEFAULT_MAX_RETRIES
 }
 function getMaxRetries(options: RetryOptions): number {

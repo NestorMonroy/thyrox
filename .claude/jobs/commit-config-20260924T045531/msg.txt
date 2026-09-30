@@ -1,0 +1,22 @@
+Port getOrCreateUserID and getAutoModeConfig
+
+Both were declared "ported with their consumer" in @thyrox/config, and
+their consumers are here: they were the next two links blocking the
+Agent tool suites, after roughTokenCountEstimationForMessages.
+
+getOrCreateUserID ports P0 (2.1.275): the global config's userID when
+it is 64 hex digits, else the one generated this session, else 32
+random bytes in hex, persisted to the global config first. The
+session memo is a module variable where the binary uses session
+state.
+
+getAutoModeConfig ports BP: classifier rules come only from user,
+flag and policy settings, concatenated per section in that order.
+Project and local settings are repo-controlled and ignored, with one
+warning per process. The source reader is an optional parameter, on
+the same precedent as getGlobalConfig(filePath?).
+
+Controls: dropping the hex check, the session memo, the trusted-source
+list or the one-time warning each fails exactly its case.
+
+The typecheck baseline drops to 2427, as the last commit measured.

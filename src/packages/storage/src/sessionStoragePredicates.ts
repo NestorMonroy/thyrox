@@ -16,6 +16,13 @@
  * mecanismo de flag (no hay uno equivalente todavía en `@thyrox/*`).
  */
 
+// La firma de la fuente: sobre la unión `Entry` el guard estrecha a
+// `TranscriptMessage` en la rama verdadera y la EXCLUYE en la falsa. Con un
+// `entry is PredicateEntry` todo miembro de `Entry` era asignable, y la rama
+// falsa quedaba en `never` (el cargador de `sessionStorage` no podía leer
+// `summary`, `custom-title`, …).
+import type { Entry, TranscriptMessage } from '@thyrox/agent/logsTypes.js'
+
 /** El subconjunto de `Entry` que este archivo necesita — sólo el campo `type`. */
 export type PredicateEntry = { type: string }
 
@@ -30,9 +37,7 @@ export type PredicateEntry = { type: string }
  * dejaron huérfanos mensajes reales de conversación al reanudar (ver
  * #14373, #23537 en la fuente).
  */
-export function isTranscriptMessage(
-  entry: PredicateEntry,
-): entry is PredicateEntry {
+export function isTranscriptMessage(entry: Entry): entry is TranscriptMessage {
   return (
     entry.type === 'user' ||
     entry.type === 'assistant' ||

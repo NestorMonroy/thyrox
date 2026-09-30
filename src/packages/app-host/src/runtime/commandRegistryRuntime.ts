@@ -14,6 +14,7 @@ import copy from '@thyrox/command-runtime/commands/copy/index.js'
 import desktop from '@thyrox/repl/commands/desktop/index.js'
 import commitPushPr from '@thyrox/agent/commands/commit-push-pr.js'
 import compact from '@thyrox/command-runtime/commands/compact/index.js'
+import pauseMemory from '@thyrox/command-runtime/commands/pause-memory/index.js'
 import config from '@thyrox/repl/commands/config/index.js'
 import { context, contextNonInteractive } from '@thyrox/command-runtime/commands/context/index.js'
 import cost from '@thyrox/command-runtime/commands/cost/index.js'
@@ -194,7 +195,7 @@ import stats from '@thyrox/repl/commands/stats/index.js'
 const usageReport: Command = {
   type: 'prompt',
   name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
+  description: `Generate a report analyzing your ${PRODUCT_NAME} sessions`,
   contentLength: 0,
   progressMessage: 'analyzing your sessions',
   source: 'builtin',
@@ -223,6 +224,7 @@ export type {
   PromptCommand,
   ResumeEntrypoint,
 } from '@thyrox/agent/command.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 export { getCommandName, isCommandEnabled } from '@thyrox/agent/command.js'
 
 // Commands that get eliminated from the external build
@@ -254,7 +256,7 @@ export const INTERNAL_ONLY_COMMANDS = [
   debugToolCall,
   agentsPlatform,
   autofixPr,
-].filter(Boolean)
+].filter((c): c is Command => c !== null)
 
 // Declared as a function so that we don't run this until getCommands is called,
 // since underlying functions read from config, which can't be read at module initialization time
@@ -273,6 +275,7 @@ const COMMANDS = memoize((): Command[] => [
   color,
   compact,
   config,
+  pauseMemory,
   copy,
   desktop,
   context,
@@ -412,8 +415,10 @@ async function getSkills(cwd: string): Promise<{
 // createWorkflowCommand.ts is still a stub and the named-workflow resolver is
 // not wired (see WorkflowTool.ts resolveScript). Until that lands there are no
 // per-workflow commands to register. The Workflow TOOL + ultrawork keyword +
-// /workflows browser all ship and work without this.
-const getWorkflowCommands: ((cwd: string) => Promise<unknown[]>) | null = null
+// /workflows browser all ship and work without this. Mientras tanto la fuente
+// aporta cero comandos, y se declara así en vez de con un `null` que el
+// compilador leía como código muerto.
+const NO_WORKFLOW_COMMANDS: Command[] = []
 
 /**
  * Filters commands by their declared `availability` (auth/provider requirement).
@@ -464,7 +469,7 @@ const loadAllCommands = memoize(async (cwd: string): Promise<Command[]> => {
   ] = await Promise.all([
     getSkills(cwd),
     getPluginCommands(),
-    getWorkflowCommands ? getWorkflowCommands(cwd) : Promise.resolve([]),
+    Promise.resolve(NO_WORKFLOW_COMMANDS),
   ])
 
   return [
@@ -486,8 +491,10 @@ const loadAllCommands = memoize(async (cwd: string): Promise<Command[]> => {
 export async function getCommands(cwd: string): Promise<Command[]> {
   const allCommands = await loadAllCommands(cwd)
 
-  // Get dynamic skills discovered during file operations
-  const dynamicSkills = getDynamicSkills()
+  // Get dynamic skills discovered during file operations. `dynamicSkills.ts`
+  // declara sólo el subconjunto que lee; lo que guarda es el comando entero
+  // que produce su cargador (`loadSkillsDir.ts`, `setSkillDirectoryLoader`).
+  const dynamicSkills = getDynamicSkills() as Command[]
 
   // Build base commands without dynamic skills
   const baseCommands = allCommands.filter(
@@ -501,7 +508,7 @@ export async function getCommands(cwd: string): Promise<Command[]> {
   // Dedupe dynamic skills - only add if not already present
   const baseCommandNames = new Set(baseCommands.map(c => c.name))
   const uniqueDynamicSkills = dynamicSkills.filter(
-(    s: Command) =>
+    (s: Command) =>
       !baseCommandNames.has(s.name) &&
       meetsAvailabilityRequirement(s) &&
       isCommandEnabled(s),

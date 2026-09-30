@@ -1,43 +1,39 @@
 /**
- * Tipos de backend de teammate — porte de
- * `ccnmt: packages/swarm/src/backends/types.ts`.
- *
- * Porte VERBATIM: el archivo fuente no tiene ninguna dependencia externa.
- * Los TRES backends que describe (`tmux`, `iterm2`, `in-process`) siguen
- * siendo el vocabulario correcto — es el contrato de tipos, no la
- * implementación de cada uno (ésas viven en `src/backends/{ITermBackend,
- * TmuxBackend,InProcessBackend,PaneBackendExecutor}.ts`, BLOQUEADAS en este
- * pase: dependen enteras de `adapters/appRuntime.ts`, la fachada de host
- * bindings de ccnmt, ausente en este árbol — ver el hallazgo de este
- * archivo).
- */
-
-/**
- * Tipos de backend disponibles para la ejecución de un teammate.
- * - 'tmux': usa tmux para gestión de panes
- * - 'iterm2': usa splits nativos de iTerm2 vía el CLI `it2`
- * - 'in-process': corre el teammate en el mismo proceso con contexto aislado
+ * Types of backends available for teammate execution.
+ * - 'tmux': Uses tmux for pane management
+ * - 'iterm2': Uses iTerm2 native split panes via the it2 CLI
+ * - 'in-process': Runs teammate in the same process with isolated context
  */
 export type BackendType = 'tmux' | 'iterm2' | 'in-process'
 
-/** Subconjunto de `BackendType` — sólo los backends basados en panes. */
+/**
+ * Subset of BackendType for pane-based backends only.
+ */
 export type PaneBackendType = 'tmux' | 'iterm2'
 
-/** Identificador opaco de un pane gestionado por un backend. */
+/**
+ * Opaque identifier for a pane managed by a backend.
+ */
 export type PaneId = string
 
-/** Resultado de crear un nuevo pane de teammate. */
+/**
+ * Result of creating a new teammate pane.
+ */
 export type CreatePaneResult = {
   paneId: PaneId
   isFirstTeammate: boolean
 }
 
-/** Discrimina si un tipo de backend usa panes de terminal. */
+/**
+ * Type guard to check if a backend type uses terminal panes.
+ */
 export function isPaneBackend(type: BackendType): type is PaneBackendType {
   return type === 'tmux' || type === 'iterm2'
 }
 
-/** Interfaz para los backends de gestión de panes. */
+/**
+ * Interface for pane management backends.
+ */
 export type PaneBackend = {
   readonly type: BackendType
   readonly displayName: string

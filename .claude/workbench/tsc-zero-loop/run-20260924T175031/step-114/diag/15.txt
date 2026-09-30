@@ -1,0 +1,16 @@
+src/packages/app-host/src/main/startup/telemetry.ts(178,73): error TS2339: Property 'prefersReducedMotion' does not exist on type '{}'.
+  --- código src/packages/app-host/src/main/startup/telemetry.ts:168-181 ---
+    168  
+    169    const logEvent = deps.logEvent ?? (() => {})
+    170    logEvent('tengu_startup_telemetry', {
+    171      is_git: isGit,
+    172      worktree_count: worktreeCount,
+    173      gh_auth_status: ghAuthStatus,
+    174      sandbox_enabled: (deps.isSandboxingEnabled ?? (() => false))(),
+    175      are_unsandboxed_commands_allowed: (deps.areUnsandboxedCommandsAllowed ?? (() => false))(),
+    176      is_auto_bash_allowed_if_sandbox_enabled: (deps.isAutoAllowBashIfSandboxedEnabled ?? (() => false))(),
+    177      auto_updater_disabled: (deps.isAutoUpdaterDisabled ?? (() => false))(),
+    178>     prefers_reduced_motion: (deps.getInitialSettings ?? (() => ({})))().prefersReducedMotion ?? false,
+    179      ...getCertEnvVarTelemetry(),
+    180    })
+    181  }

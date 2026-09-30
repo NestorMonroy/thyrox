@@ -1,0 +1,831 @@
+diff --git a/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts b/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+index 996c136e..ad35a3a2 100644
+--- a/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
++++ b/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+@@ -156,3 +156,65 @@ describe('setupUpgradeWatchdog', () => {
+     expect(() => w.dispose()).not.toThrow()
+   })
+ })
++
++describe('setupUpgradeWatchdog — It/Fr fidelity (injected resolveBinaryStat/hasBinaryChanged)', () => {
++  test('a detected change aborts and logs old/new mtime', async () => {
++    const abort = new AbortController()
++    const statSequence = [
++      { target: '/bin/ccb', mtimeMs: 100 },
++      { target: '/bin/ccb', mtimeMs: 200 },
++    ]
++    let call = 0
++    const w = setupUpgradeWatchdog(abort, {
++      intervalMs: 5,
++      binaryPath: '/bin/ccb',
++      resolveBinaryStat: async () => statSequence[Math.min(call++, statSequence.length - 1)]!,
++      hasBinaryChanged: (previous, current) => previous.mtimeMs !== current.mtimeMs,
++    })
++    await new Promise(r => setTimeout(r, 40))
++    expect(abort.signal.aborted).toBe(true)
++    w.dispose()
++  })
++
++  test('an unreadable binary (resolveBinaryStat -> null) never aborts', async () => {
++    const abort = new AbortController()
++    const w = setupUpgradeWatchdog(abort, {
++      intervalMs: 5,
++      binaryPath: '/bin/ccb',
++      resolveBinaryStat: async () => null,
++      hasBinaryChanged: () => true,
++    })
++    await new Promise(r => setTimeout(r, 30))
++    expect(abort.signal.aborted).toBe(false)
++    w.dispose()
++  })
++
++  test('no change (hasBinaryChanged -> false) never aborts', async () => {
++    const abort = new AbortController()
++    const w = setupUpgradeWatchdog(abort, {
++      intervalMs: 5,
++      binaryPath: '/bin/ccb',
++      resolveBinaryStat: async () => ({ target: '/bin/ccb', mtimeMs: 100 }),
++      hasBinaryChanged: () => false,
++    })
++    await new Promise(r => setTimeout(r, 30))
++    expect(abort.signal.aborted).toBe(false)
++    w.dispose()
++  })
++
++  test('dispose() before the initial stat resolves prevents any later abort (disposed guard)', async () => {
++    const abort = new AbortController()
++    const w = setupUpgradeWatchdog(abort, {
++      intervalMs: 5,
++      binaryPath: '/bin/ccb',
++      resolveBinaryStat: async () => {
++        await new Promise(r => setTimeout(r, 10))
++        return { target: '/bin/ccb', mtimeMs: 100 }
++      },
++      hasBinaryChanged: () => true,
++    })
++    w.dispose()
++    await new Promise(r => setTimeout(r, 60))
++    expect(abort.signal.aborted).toBe(false)
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/upgradeProbe.test.ts b/src/packages/daemon/src/__tests__/upgradeProbe.test.ts
+new file mode 100644
+index 00000000..558b05b8
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/upgradeProbe.test.ts
+@@ -0,0 +1,300 @@
++import { afterEach, describe, expect, mock, test } from 'bun:test'
++import { mkdtemp, rm, writeFile, mkdir, symlink } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { join, sep } from 'node:path'
++
++import {
++  CLI_VERSION_PATTERN,
++  hasBinaryChanged,
++  isManagedVersionedBuild,
++  respawnDaemonOnUpgrade,
++  resolveBinaryStat,
++  sanitizeCliVersion,
++  shutdownWithDrainGrace,
++  trackPending,
++} from '../upgradeProbe.js'
++
++const dirsToClean: string[] = []
++
++async function makeTempDir(): Promise<string> {
++  const dir = await mkdtemp(join(tmpdir(), 'thyrox-upgrade-probe-'))
++  dirsToClean.push(dir)
++  return dir
++}
++
++afterEach(async () => {
++  while (dirsToClean.length > 0) {
++    const dir = dirsToClean.pop()
++    if (dir) await rm(dir, { recursive: true, force: true })
++  }
++})
++
++describe('CLI_VERSION_PATTERN / sanitizeCliVersion', () => {
++  test('accepts a normal semver-ish version', () => {
++    expect(CLI_VERSION_PATTERN.test('2.1.283')).toBe(true)
++    expect(sanitizeCliVersion('2.1.283')).toBe('2.1.283')
++  })
++
++  test('rejects control characters and shell metacharacters', () => {
++    expect(sanitizeCliVersion('2.1.283; rm -rf /')).toBe('unrecognized')
++    expect(sanitizeCliVersion('\x1b[31mred\x1b[0m')).toBe('unrecognized')
++  })
++
++  test('rejects an empty string and one over 100 chars', () => {
++    expect(sanitizeCliVersion('')).toBe('unrecognized')
++    expect(sanitizeCliVersion('a'.repeat(101))).toBe('unrecognized')
++  })
++})
++
++describe('resolveBinaryStat', () => {
++  test('returns target + mtimeMs for a readable file', async () => {
++    const dir = await makeTempDir()
++    const file = join(dir, 'bin')
++    await writeFile(file, 'x')
++    const result = await resolveBinaryStat(file)
++    expect(result).not.toBeNull()
++    expect(result?.target).toBe(file)
++    expect(typeof result?.mtimeMs).toBe('number')
++  })
++
++  test('follows a symlink to its real target', async () => {
++    const dir = await makeTempDir()
++    const real = join(dir, 'real-bin')
++    const link = join(dir, 'link-bin')
++    await writeFile(real, 'x')
++    await symlink(real, link)
++    const result = await resolveBinaryStat(link)
++    expect(result?.target).toBe(real)
++  })
++
++  test('ENOENT resolves to null, not a throw', async () => {
++    const dir = await makeTempDir()
++    const missing = join(dir, 'does-not-exist')
++    const result = await resolveBinaryStat(missing)
++    expect(result).toBeNull()
++  })
++
++  test('a non-ENOENT error rethrows for the caller to classify', async () => {
++    const deps = {
++      realpath: async () => {
++        throw Object.assign(new Error('denied'), { code: 'EACCES' })
++      },
++      stat: async () => ({ mtimeMs: 0 }),
++    }
++    await expect(resolveBinaryStat('/whatever', deps)).rejects.toThrow('denied')
++  })
++})
++
++describe('isManagedVersionedBuild', () => {
++  test('false when not a bundled/standalone build', () => {
++    expect(isManagedVersionedBuild('/home/user/.local/share/ccb/versions/2.1.283/ccb', false)).toBe(false)
++  })
++
++  test('true only when bundled AND execPath sits under the managed versions dir', () => {
++    const dataHome = process.env.XDG_DATA_HOME ?? join(process.env.HOME ?? '/root', '.local', 'share')
++    const managed = join(dataHome, 'ccb', 'versions', '2.1.283', 'ccb')
++    expect(isManagedVersionedBuild(managed, true)).toBe(true)
++  })
++
++  test('bundled but outside the managed versions dir is false', () => {
++    expect(isManagedVersionedBuild('/opt/homebrew/bin/ccb', true)).toBe(false)
++  })
++})
++
++describe('hasBinaryChanged', () => {
++  test('different target is always a change, regardless of managed build', () => {
++    const previous = { target: '/a', mtimeMs: 100 }
++    const current = { target: '/b', mtimeMs: 100 }
++    expect(hasBinaryChanged(previous, current, true)).toBe(true)
++    expect(hasBinaryChanged(previous, current, false)).toBe(true)
++  })
++
++  test('same target + different mtime is a change when not a managed build', () => {
++    const previous = { target: '/a', mtimeMs: 100 }
++    const current = { target: '/a', mtimeMs: 200 }
++    expect(hasBinaryChanged(previous, current, false)).toBe(true)
++  })
++
++  test('same target + different mtime is NOT a change on a managed build (Kat descuento)', () => {
++    const previous = { target: '/a', mtimeMs: 100 }
++    const current = { target: '/a', mtimeMs: 200 }
++    expect(hasBinaryChanged(previous, current, true)).toBe(false)
++  })
++
++  test('same target + same mtime is never a change', () => {
++    const previous = { target: '/a', mtimeMs: 100 }
++    const current = { target: '/a', mtimeMs: 100 }
++    expect(hasBinaryChanged(previous, current, false)).toBe(false)
++  })
++})
++
++describe('trackPending', () => {
++  test('adds the promise and removes it once settled (fulfilled)', async () => {
++    const pending = new Set<Promise<unknown>>()
++    let resolveIt: () => void = () => {}
++    const promise = new Promise<void>(resolve => {
++      resolveIt = resolve
++    })
++    trackPending(pending, promise)
++    expect(pending.has(promise)).toBe(true)
++    resolveIt()
++    await promise
++    await Promise.resolve()
++    expect(pending.has(promise)).toBe(false)
++  })
++
++  test('also removes it on rejection', async () => {
++    const pending = new Set<Promise<unknown>>()
++    const promise = Promise.reject(new Error('boom'))
++    trackPending(pending, promise)
++    expect(pending.has(promise)).toBe(true)
++    await promise.catch(() => {})
++    await Promise.resolve()
++    expect(pending.has(promise)).toBe(false)
++  })
++})
++
++describe('shutdownWithDrainGrace', () => {
++  test('exits with the given code once all drain tasks settle', async () => {
++    const order: string[] = []
++    const exit = mock((code: number) => {
++      order.push(`exit:${code}`)
++    })
++    await shutdownWithDrainGrace(0, {
++      drainTasks: [
++        async () => {
++          order.push('a')
++        },
++        async () => {
++          order.push('b')
++        },
++      ],
++      exit,
++    })
++    expect(exit).toHaveBeenCalledWith(0)
++    expect(order).toEqual(['a', 'b', 'exit:0'])
++  })
++
++  test('exits after graceMs even if a drain task never settles', async () => {
++    const exit = mock((_code: number) => {})
++    const start = Date.now()
++    await shutdownWithDrainGrace(1, {
++      drainTasks: [() => new Promise(() => {})],
++      exit,
++      graceMs: 20,
++    })
++    expect(Date.now() - start).toBeLessThan(500)
++    expect(exit).toHaveBeenCalledWith(1)
++  })
++
++  test('a rejecting drain task does not prevent exit', async () => {
++    const exit = mock((_code: number) => {})
++    await shutdownWithDrainGrace(2, {
++      drainTasks: [async () => Promise.reject(new Error('drain failed'))],
++      exit,
++    })
++    expect(exit).toHaveBeenCalledWith(2)
++  })
++})
++
++describe('respawnDaemonOnUpgrade', () => {
++  function baseDeps() {
++    return {
++      spawnDaemon: mock(async () => ({ err: null as unknown, stderrPath: undefined as string | undefined })),
++      waitReachable: mock(async () => true),
++      readStderrTail: mock(async () => ''),
++      openSuccessorLog: mock(async () => ({
++        write: mock((_source: string, _line: string) => {}),
++        close: mock(async () => {}),
++      })),
++      removeStderrCaptureDir: mock(async () => {}),
++      logError: mock((_e: unknown) => {}),
++      logEvent: mock((_n: string, _m?: Record<string, unknown>) => {}),
++    }
++  }
++
++  test('happy path: spawns with the right flags, becomes reachable, no logging at all', async () => {
++    const deps = baseDeps()
++    await respawnDaemonOnUpgrade('/j.json', '/log.txt', 'transient', 'parent-x', deps)
++    expect(deps.spawnDaemon).toHaveBeenCalledWith([
++      'daemon',
++      'run',
++      '--json-path',
++      '/j.json',
++      '--log-file',
++      '/log.txt',
++      '--origin',
++      'transient',
++      '--spawned-by',
++      'parent-x',
++    ])
++    expect(deps.waitReachable).toHaveBeenCalledWith(45_000)
++    expect(deps.openSuccessorLog).not.toHaveBeenCalled()
++    expect(deps.logError).not.toHaveBeenCalled()
++    expect(deps.logEvent).not.toHaveBeenCalled()
++  })
++
++  test('omits --spawned-by when there is no parent', async () => {
++    const deps = baseDeps()
++    await respawnDaemonOnUpgrade('/j.json', '/log.txt', 'transient', undefined, deps)
++    expect(deps.spawnDaemon).toHaveBeenCalledWith([
++      'daemon',
++      'run',
++      '--json-path',
++      '/j.json',
++      '--log-file',
++      '/log.txt',
++      '--origin',
++      'transient',
++    ])
++  })
++
++  test('spawn failure: writes to the successor log, cleans up stderr, logError + tengu_bg_daemon_spawn_failed — no unreachable event', async () => {
++    const deps = baseDeps()
++    deps.spawnDaemon = mock(async () => ({
++      err: Object.assign(new Error('spawn EACCES'), { code: 'EACCES' }),
++      stderrPath: '/tmp/xx/stderr.log',
++    }))
++    await respawnDaemonOnUpgrade('/j.json', '/log.txt', 'auto', undefined, deps)
++    expect(deps.openSuccessorLog).toHaveBeenCalledWith('/log.txt')
++    expect(deps.removeStderrCaptureDir).toHaveBeenCalledWith('/tmp/xx/stderr.log')
++    expect(deps.logError).toHaveBeenCalledTimes(1)
++    expect(deps.logEvent).toHaveBeenCalledWith('tengu_bg_daemon_spawn_failed', {
++      respawn: true,
++      errno_enoent: false,
++      errno_eacces: true,
++      errno: 'EACCES',
++    })
++    expect(deps.logEvent).not.toHaveBeenCalledWith(
++      'tengu_daemon_upgrade_respawn_unreachable',
++      expect.anything(),
++    )
++  })
++
++  test('spawned but unreachable: logs tengu_daemon_upgrade_respawn_unreachable, no logError (spawn itself succeeded)', async () => {
++    const deps = baseDeps()
++    deps.waitReachable = mock(async () => false)
++    await respawnDaemonOnUpgrade('/j.json', '/log.txt', 'auto', undefined, deps)
++    expect(deps.logEvent).toHaveBeenCalledWith('tengu_daemon_upgrade_respawn_unreachable', {
++      stderr_captured: false,
++    })
++    expect(deps.logError).not.toHaveBeenCalled()
++  })
++
++  test('redacts the random daemon temp-dir id out of the captured stderr tail', async () => {
++    const deps = baseDeps()
++    deps.waitReachable = mock(async () => false)
++    deps.spawnDaemon = mock(async () => ({ err: null, stderrPath: '/tmp/cc-daemon-abc123/stderr.log' }))
++    deps.readStderrTail = mock(async () => 'boom in /tmp/cc-daemon-0123456789abcdef/x\n')
++    let written = ''
++    deps.openSuccessorLog = mock(async () => ({
++      write: mock((_source: string, line: string) => {
++        written = line
++      }),
++      close: mock(async () => {}),
++    }))
++    await respawnDaemonOnUpgrade('/j.json', '/log.txt', 'auto', undefined, deps)
++    expect(written).toContain('cc-daemon-*')
++    expect(written).not.toContain('0123456789abcdef')
++  })
++})
+diff --git a/src/packages/daemon/src/bgDaemonTimers.ts b/src/packages/daemon/src/bgDaemonTimers.ts
+index f719536b..6ad2f447 100644
+--- a/src/packages/daemon/src/bgDaemonTimers.ts
++++ b/src/packages/daemon/src/bgDaemonTimers.ts
+@@ -7,10 +7,13 @@
+  * @dynamicRequire
+  */
+ 
+-import { statSync } from 'node:fs'
+-
+ import { logEvent } from '@thyrox/local-observability'
+ 
++import {
++  type BinaryStat,
++  hasBinaryChanged as hasBinaryChangedDefault,
++  resolveBinaryStat as resolveBinaryStatDefault,
++} from './upgradeProbe.js'
+ import type { WorkerVm } from './workerVm.js'
+ 
+ /**
+@@ -82,46 +85,78 @@ export function setupIdleExitWatchdog(opts: IdleExitOptions): {
+ }
+ 
+ /**
+- * Set up the binary-upgrade watchdog. Watches argv[1] (the ccb binary)
+- * for mtime change; on detection, emits tengu_daemon_self_restart_on_upgrade
+- * and aborts the controller so the wrapper / launchAgent restarts the
+- * supervisor under the new binary. Bg workers are re-adopted from the
+- * roster on the next supervisor's boot.
++ * Set up the binary-upgrade watchdog. Resuelve argv[1] (el binario ccb)
++ * con `It` (`resolveBinaryStat`, sigue symlinks) y compara sucesivas
++ * lecturas con `Fr` (`hasBinaryChanged`) — target distinto siempre
++ * cuenta, mtime distinto cuenta salvo en un build administrado por
++ * versión (`Kat`/`isManagedVersionedBuild`). Al detectar cambio, emite
++ * tengu_daemon_self_restart_on_upgrade y aborta el controller para que
++ * el wrapper / launchAgent reinicie el supervisor bajo el binario
++ * nuevo. Los bg workers se re-adoptan desde el roster en el arranque
++ * del siguiente supervisor.
++ *
++ * Si argv[1] es ilegible (ENOENT — pasa en algunas rutas de build
++ * compilado), `resolveBinaryStat` da `null` y el sondeo periódico ni se
++ * arma.
+  *
+- * Returns initial mtime + dispose function. If argv[1] is unreadable
+- * (which happens on some compiled-bundle paths), returns initialMtime=null
+- * and the probe is a no-op.
++ * pendiente: la máquina de estados de `xt` alrededor de `Fr`/`It` en la
++ * referencia —defer mientras el daemon está ocupado
++ * (`upgradeBusyDeferCapMs`), rechazo de upgrade obsoleto
++ * (`tengu_daemon_refuse_stale_upgrade`)— no se porta aquí; este sondeo
++ * dispara en cuanto detecta el cambio, sin ese margen.
+  */
++export interface UpgradeWatchdogOptions {
++  /** Cadencia del sondeo; 30_000ms en la referencia. */
++  intervalMs?: number
++  binaryPath?: string
++  /** Punto de inyección para pruebas — por defecto `It` (./upgradeProbe.ts). */
++  resolveBinaryStat?: (path: string) => Promise<BinaryStat | null>
++  /** Punto de inyección para pruebas — por defecto `Fr` (./upgradeProbe.ts). */
++  hasBinaryChanged?: (previous: BinaryStat, current: BinaryStat) => boolean
++}
++
+ export function setupUpgradeWatchdog(
+   abort: AbortController,
++  opts: UpgradeWatchdogOptions = {},
+ ): { dispose: () => void } {
+-  const binaryPath = process.argv[1] ?? process.execPath
+-  let initialMtime: number | null = null
+-  try {
+-    initialMtime = statSync(binaryPath).mtimeMs
+-  } catch {
+-    return { dispose: () => {} }
+-  }
+-  const timer = setInterval(() => {
+-    if (initialMtime === null) return
+-    if (abort.signal.aborted) return
+-    try {
+-      const current = statSync(binaryPath).mtimeMs
+-      if (current !== initialMtime) {
+-        logEvent('tengu_daemon_self_restart_on_upgrade', {
+-          old_mtime: String(initialMtime),
+-          new_mtime: String(current),
++  const binaryPath = opts.binaryPath ?? process.argv[1] ?? process.execPath
++  const resolveStat = opts.resolveBinaryStat ?? resolveBinaryStatDefault
++  const changed = opts.hasBinaryChanged ?? hasBinaryChangedDefault
++  let initialStat: BinaryStat | null = null
++  let timer: ReturnType<typeof setInterval> | null = null
++  let disposed = false
++
++  // `It` — el primer stat es asíncrono (sigue symlinks vía
++  // fs/promises.realpath); si el binario es ilegible (ENOENT), el
++  // sondeo periódico ni se arma, igual que la referencia deja
++  // `initialMtime=null` y el probe queda como no-op.
++  void resolveStat(binaryPath).then(stat => {
++    if (disposed || stat === null) return
++    initialStat = stat
++    timer = setInterval(() => {
++      if (abort.signal.aborted) return
++      void resolveStat(binaryPath)
++        .then(current => {
++          if (current === null || initialStat === null) return
++          if (changed(initialStat, current)) {
++            logEvent('tengu_daemon_self_restart_on_upgrade', {
++              old_mtime: String(initialStat.mtimeMs),
++              new_mtime: String(current.mtimeMs),
++            })
++            abort.abort()
++          }
+         })
+-        abort.abort()
+-      }
+-    } catch {
+-      // best-effort
+-    }
+-  }, 30_000)
+-  timer.unref()
++        .catch(() => {
++          // best-effort — un error transitorio de stat no debe tumbar el watchdog
++        })
++    }, opts.intervalMs ?? 30_000)
++    timer.unref()
++  })
++
+   return {
+     dispose() {
+-      clearInterval(timer)
++      disposed = true
++      if (timer) clearInterval(timer)
+     },
+   }
+ }
+diff --git a/src/packages/daemon/src/upgradeProbe.ts b/src/packages/daemon/src/upgradeProbe.ts
+new file mode 100644
+index 00000000..6688ea5c
+--- /dev/null
++++ b/src/packages/daemon/src/upgradeProbe.ts
+@@ -0,0 +1,318 @@
++/**
++ * Detección de actualización del binario en ejecución, auto-respawn del
++ * daemon, y el margen de apagado que drena tareas pendientes antes de
++ * salir. Puerto de `ant chunk-92tvramn.js` — símbolos `It` (stat del
++ * binario, sigue symlink), `Fr` (compara dos stats), `dn`
++ * (self-respawn al detectar upgrade en el arranque), `le` (margen de
++ * apagado), `me` (tracking fire-and-forget de promesas pendientes) y la
++ * constante `kr` (validación de `cliVersion`).
++ *
++ * `Fr`/`It` alimentan `setupUpgradeWatchdog` en `./bgDaemonTimers.ts`.
++ * El resto de `dn` — el ensamblado de `daemon run`, la espera de
++ * reachability y la escritura del log del sucesor — vive fuera de este
++ * paquete en la referencia (`Ozt`/launcher, `Le`/log rotativo); aquí se
++ * porta como lógica de orquestación con esas piezas inyectadas.
++ */
++
++import { readFile, realpath as fsRealpath, rm as fsRm, stat as fsStat } from 'node:fs/promises'
++import { homedir } from 'node:os'
++import { dirname, join, sep } from 'node:path'
++
++import { logEvent as realLogEvent } from '@thyrox/local-observability'
++import { logError as realLogError } from '@thyrox/local-observability/logging'
++import { errorMessage, getErrnoCode, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
++import { isInBundledMode } from '@thyrox/config/bundledMode.js'
++
++import { daemonRequest } from './daemonClient.js'
++
++// ---------------------------------------------------------------------------
++// kr — regex-validacion-cliversion
++// ---------------------------------------------------------------------------
++
++/** `ant chunk-92tvramn.js` variable `kr`: forma aceptada de `cliVersion`. */
++export const CLI_VERSION_PATTERN = /^[0-9A-Za-z.+_-]{1,100}$/
++
++/**
++ * `kr.test(...)?...:"unrecognized"` — sanea `cliVersion` antes de
++ * mostrarlo. La referencia lo aplica como guarda ternaria en el sitio de
++ * despliegue (roster/status); aquí se expone como función pura para que
++ * cualquier lector la reuse sin reimplementar el regex.
++ * pendiente: roster.ts (líneas 58,111,145) no pertenece a esta tarea —
++ * queda sin aplicar la sanitización a lo que persiste/expone hoy.
++ */
++export function sanitizeCliVersion(cliVersion: string): string {
++  return CLI_VERSION_PATTERN.test(cliVersion) ? cliVersion : 'unrecognized'
++}
++
++// ---------------------------------------------------------------------------
++// It — resolveBinaryStat
++// ---------------------------------------------------------------------------
++
++export interface BinaryStat {
++  target: string
++  mtimeMs: number
++}
++
++export interface ResolveBinaryStatDeps {
++  realpath: (path: string) => Promise<string>
++  stat: (path: string) => Promise<{ mtimeMs: number }>
++}
++
++const defaultResolveBinaryStatDeps: ResolveBinaryStatDeps = {
++  realpath: fsRealpath,
++  stat: fsStat,
++}
++
++/**
++ * `It`: resuelve `path` a su target real (sigue symlinks) y su
++ * `mtimeMs`. ENOENT (`U(e)` en la referencia) se traduce a `null`;
++ * cualquier otro error se relanza para que el llamador lo clasifique.
++ */
++export async function resolveBinaryStat(
++  path: string,
++  deps: ResolveBinaryStatDeps = defaultResolveBinaryStatDeps,
++): Promise<BinaryStat | null> {
++  try {
++    const target = await deps.realpath(path)
++    const { mtimeMs } = await deps.stat(target)
++    return { target, mtimeMs }
++  } catch (error) {
++    if (isENOENT(error)) return null
++    throw error
++  }
++}
++
++// ---------------------------------------------------------------------------
++// Kat — isManagedVersionedBuild (el descuento que Fr consulta)
++// ---------------------------------------------------------------------------
++
++function managedVersionsDir(): string {
++  const dataHome = process.env.XDG_DATA_HOME || join(homedir(), '.local', 'share')
++  // `ccb` es el nombre de directorio propio de thyrox para el layout que
++  // la referencia guarda bajo `claude` (mismo patrón que
++  // `@thyrox/updater: nativeInstaller/installer.ts::getBaseDirectories`).
++  return join(dataHome, 'ccb', 'versions')
++}
++
++/**
++ * `Kat`: `true` sólo si el proceso corre como ejecutable standalone
++ * empaquetado (`Ed()`) Y su `execPath` vive bajo el directorio de
++ * versiones administradas por el instalador nativo (`PDt()`). Un build
++ * así no confía en el mtime para detectar upgrade — el instalador
++ * reemplaza el símlink activo, no el archivo, así que el eje de verdad
++ * es el `target`, no el `mtimeMs`.
++ */
++export function isManagedVersionedBuild(
++  execPath: string = process.execPath,
++  isBundled: boolean = isInBundledMode(),
++): boolean {
++  if (!isBundled) return false
++  return execPath.startsWith(managedVersionsDir() + sep)
++}
++
++// ---------------------------------------------------------------------------
++// Fr — hasBinaryChanged
++// ---------------------------------------------------------------------------
++
++/**
++ * `Fr`: un `target` distinto (symlink resuelto a otro archivo) siempre
++ * cuenta como cambio. Con el mismo `target`, sólo cuenta si además
++ * cambió el `mtimeMs` — salvo que `isManagedVersionedBuild()` desactive
++ * esa segunda comparación.
++ */
++export function hasBinaryChanged(
++  previous: BinaryStat,
++  current: BinaryStat,
++  isManagedBuild: boolean = isManagedVersionedBuild(),
++): boolean {
++  if (previous.target !== current.target) return true
++  return !isManagedBuild && previous.mtimeMs !== current.mtimeMs
++}
++
++// ---------------------------------------------------------------------------
++// me — trackPending
++// ---------------------------------------------------------------------------
++
++/**
++ * `me`: añade `promise` a `pending` y la retira sola vía `.finally()`
++ * cuando se asienta — tracking fire-and-forget para que un apagado
++ * pueda esperar (con margen) a que las escrituras en vuelo terminen.
++ */
++export function trackPending(pending: Set<Promise<unknown>>, promise: Promise<unknown>): void {
++  pending.add(promise)
++  // `.finally()` devuelve una promesa nueva que también rechaza si
++  // `promise` rechaza; se descarta con un `catch` mudo para no dejar un
++  // rechazo sin manejar — el rechazo original sigue siendo del llamador.
++  void promise.finally(() => pending.delete(promise)).catch(() => {})
++}
++
++// ---------------------------------------------------------------------------
++// le — shutdownWithDrainGrace
++// ---------------------------------------------------------------------------
++
++export interface ShutdownDrainDeps {
++  /** Tareas de vaciado a esperar (p. ej. drenar `pending` de arriba). */
++  drainTasks: ReadonlyArray<() => Promise<unknown>>
++  /** Margen máximo de espera; 500ms en la referencia. */
++  graceMs?: number
++  exit: (code: number) => void
++}
++
++function delay(ms: number): Promise<void> {
++  return new Promise(resolve => {
++    const timer = setTimeout(resolve, ms)
++    timer.unref?.()
++  })
++}
++
++/**
++ * `le`: da hasta `graceMs` (500 por defecto) para que `drainTasks`
++ * terminen antes de salir con `code`. Cualquier fallo de la espera se
++ * ignora — el apagado nunca se bloquea por una tarea de vaciado rota.
++ */
++export async function shutdownWithDrainGrace(code: number, deps: ShutdownDrainDeps): Promise<void> {
++  const graceMs = deps.graceMs ?? 500
++  await Promise.race([Promise.all(deps.drainTasks.map(task => task())), delay(graceMs)]).catch(() => {})
++  deps.exit(code)
++}
++
++// ---------------------------------------------------------------------------
++// dn — respawnDaemonOnUpgrade
++// ---------------------------------------------------------------------------
++
++/** `hw`: redacta el id aleatorio del directorio temporal de captura de stderr. */
++const DAEMON_TEMP_DIR_ID_PATTERN = /cc-daemon-[0-9a-f]{16}/g
++
++function redactDaemonTempDirId(text: string): string {
++  return text.replace(DAEMON_TEMP_DIR_ID_PATTERN, 'cc-daemon-*')
++}
++
++/** `cl`: lee un archivo entero si es un archivo regular y no excede `maxBytes`; `null` en cualquier otro caso. */
++async function readCappedFile(path: string, maxBytes: number): Promise<string | null> {
++  try {
++    const info = await fsStat(path)
++    if (!info.isFile() || info.size > maxBytes) return null
++    return await readFile(path, 'utf8')
++  } catch {
++    return null
++  }
++}
++
++/** `dJe`: sondea `ping` sobre el socket de control hasta `timeoutMs`, cada 100ms. */
++async function pingUntilReachable(timeoutMs: number): Promise<boolean> {
++  const deadline = Date.now() + timeoutMs
++  do {
++    const response = await daemonRequest('ping', {}, { timeoutMs: 100 })
++    if (response.ok) return true
++    await delay(100)
++  } while (Date.now() < deadline)
++  return false
++}
++
++export interface RespawnSpawnResult {
++  err: unknown
++  stderrPath?: string
++}
++
++export interface SuccessorLogWriter {
++  write: (source: string, line: string) => void
++  close: () => Promise<void>
++}
++
++export interface RespawnDaemonDeps {
++  /** `Ozt`: lanza `daemon run` con los flags dados. pendiente: el spawn
++   * real con reintentos de launcher/reinstalación de `Ozt` no se porta
++   * aquí — pertenece al subsistema de `spawnPtyHost` /
++   * `pendingCrossPackageDeps.ts`, fuera del alcance de esta tarea. */
++  spawnDaemon: (args: string[]) => Promise<RespawnSpawnResult>
++  /** `dJe`: `true` si el sucesor responde `ping` dentro de `timeoutMs`. */
++  waitReachable?: (timeoutMs: number) => Promise<boolean>
++  /** `cl`: cola de hasta `maxBytes` del stderr capturado, o `null`. */
++  readStderrTail?: (path: string, maxBytes: number) => Promise<string | null>
++  /** `Le`: abre el log del sucesor para anotar el fallo. pendiente: el
++   * escritor con rotación por tamaño no se porta — inyectado por quien
++   * ya tenga uno (no existe hoy en este paquete). */
++  openSuccessorLog: (logPath: string) => Promise<SuccessorLogWriter>
++  /** `Ur(zr(h),...)`: borra el directorio de captura de stderr. */
++  removeStderrCaptureDir?: (stderrPath: string) => Promise<void>
++  /** `d`: error persistente — por defecto el `logError` real. */
++  logError?: (error: unknown) => void
++  /** `Tv`: evento de telemetría — por defecto el `logEvent` real. */
++  logEvent?: (name: string, metadata?: Record<string, unknown>) => void
++  /** `QF` = 45000ms en la referencia. */
++  reachableTimeoutMs?: number
++}
++
++async function defaultRemoveStderrCaptureDir(stderrPath: string): Promise<void> {
++  await fsRm(dirname(stderrPath), { recursive: true, force: true })
++}
++
++/**
++ * `dn`: al detectar upgrade en el arranque, relanza el propio daemon
++ * (`daemon run` con los mismos flags) y espera a que responda. Si no lo
++ * logra, lo registra en el log del sucesor y en telemetría
++ * (`tengu_daemon_upgrade_respawn_unreachable`); si el respawn ni pudo
++ * lanzarse, va a `logError` + `tengu_bg_daemon_spawn_failed`.
++ */
++export async function respawnDaemonOnUpgrade(
++  jsonPath: string,
++  logPath: string,
++  origin: string,
++  spawnedBy: string | undefined,
++  deps: RespawnDaemonDeps,
++): Promise<void> {
++  const waitReachable = deps.waitReachable ?? pingUntilReachable
++  const readStderrTail = deps.readStderrTail ?? readCappedFile
++  const removeStderrCaptureDir = deps.removeStderrCaptureDir ?? defaultRemoveStderrCaptureDir
++  const logError = deps.logError ?? realLogError
++  const logEvent = deps.logEvent ?? realLogEvent
++  const reachableTimeoutMs = deps.reachableTimeoutMs ?? 45_000
++
++  const args = [
++    'daemon',
++    'run',
++    '--json-path',
++    jsonPath,
++    '--log-file',
++    logPath,
++    '--origin',
++    origin,
++    ...(spawnedBy ? ['--spawned-by', spawnedBy] : []),
++  ]
++  const { err, stderrPath } = await deps.spawnDaemon(args)
++  const failureReason = err
++    ? `failed to spawn: ${errorMessage(err)}`
++    : (await waitReachable(reachableTimeoutMs))
++      ? null
++      : `spawned but never became reachable within ${reachableTimeoutMs / 1000}s`
++
++  if (failureReason !== null) {
++    const rawTail = stderrPath ? await readStderrTail(stderrPath, 1_048_576) : ''
++    const stderrTail = redactDaemonTempDirId((rawTail ?? '').trim()).slice(-2000)
++    const log = await deps.openSuccessorLog(logPath).catch(() => null)
++    log?.write(
++      'supervisor',
++      `upgrade self-respawn ${failureReason} — bg workers may be orphan-reaped ~60s after this process exits unless a client restarts the daemon (run \`ccb agents\`)` +
++        (stderrTail ? `; successor stderr: ${stderrTail}` : ''),
++    )
++    await log?.close()
++    if (!err) {
++      logEvent('tengu_daemon_upgrade_respawn_unreachable', {
++        stderr_captured: stderrTail.length > 0,
++      })
++    }
++  }
++
++  if (stderrPath) await removeStderrCaptureDir(stderrPath).catch(() => {})
++
++  if (err) {
++    logError(new Error(`daemon: upgrade self-respawn failed: ${errorMessage(err)}`))
++    const errnoCode = getErrnoCode(err)
++    logEvent('tengu_bg_daemon_spawn_failed', {
++      respawn: true,
++      errno_enoent: errnoCode === 'ENOENT',
++      errno_eacces: errnoCode === 'EACCES',
++      errno: errnoCode ?? 'unknown',
++    })
++  }
++}

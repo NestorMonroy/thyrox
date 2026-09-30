@@ -1,43 +1,27 @@
 /**
  * Lectores puros de variables de entorno.
  *
- * PORTE COMPLETO — pase de 2026-09-09. La fuente (`ccnmt:
- * packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
- * reimplementación, no copia) declara 18 exports, no 17: una revisión
- * anterior de este docstring enumeraba 17 y omitía `isBareMode` de la
- * lista — la propia cuenta ya arrastraba el porte parcial. Los 18:
- * `getClaudeConfigHomeDir`, `getTeamsDir`, `hasNodeOption`, `isEnvTruthy`,
+ * PORTE COMPLETO de la fuente (`ccnmt: packages/config/env/utils.ts`, 224
+ * líneas, licencia UNLICENSED — reimplementación, no copia): sus 18 exports,
+ * `getConfigHomeDir`, `getTeamsDir`, `hasNodeOption`, `isEnvTruthy`,
  * `isEnvDefinedFalsy`, `isBareMode`, `parseEnvVars`, `getAWSRegion`,
  * `getDefaultVertexRegion`, `shouldMaintainProjectWorkingDir`,
  * `isRunningOnHomespace`, `setCheckProtectedNamespaceFn`,
  * `isInProtectedNamespace`, `getVertexRegionForModel`, `readEnv`,
- * `getAllEnv`, `setEnv`, `deleteEnv`.
+ * `getAllEnv`, `setEnv`, `deleteEnv`. Ninguno tiene dependencia transitiva:
+ * todos usan sólo `process.env`/`process.argv` y los lectores hermanos.
  *
- * Historial de cobertura: `@thyrox/shell`'s `subprocessEnv.ts` consumía tres
- * (`getAllEnv`, `isEnvTruthy`, `readEnv`); el porte de
- * `config/env/git-settings.ts` y `config/env/paths.ts` sumó dos más
- * (`isEnvDefinedFalsy`, `getClaudeConfigHomeDir`) — completados entonces en
- * vez de fabricarlos en el sitio consumidor, siguiendo el mismo criterio que
- * `paths/reach.ts: consumerRoot` («un porte parcial declarado se completa
- * cuando aparece su consumidor» — `porte-completo-no-parcial.md`). Este
- * pase (2026-09-09) cierra los 13 restantes: ninguno tiene dependencia
- * transitiva nueva — todos usan sólo `process.env`/`process.argv` y los
- * cinco ya presentes (`isEnvTruthy`, `getClaudeConfigHomeDir`).
- *
- * Hallazgo, no corregido aquí (fuera del alcance de este archivo):
- * `@thyrox/agent: internalUtils.ts:59,149` y
- * `@thyrox/provider: authAlias.ts:144` ya declaran su PROPIA copia local de
- * `isEnvTruthy`/`isBareMode` en vez de importar de aquí — la primera incluso
- * importa `readEnv` de este mismo módulo dos líneas más arriba de la
- * duplicación. Con `isBareMode` ya portado en este pase, esos dos archivos
- * podrían dejar de fabricarlo — pero eso es una edición de `agent`/`provider`,
- * fuera del alcance de esta tarea.
+ * Duplicación conocida, fuera de este archivo: `@thyrox/agent`
+ * (`internalUtils.ts`, `context.ts`, `prompts.ts`) y `@thyrox/provider`
+ * (`authAlias.ts`) declaran su propia copia de `isEnvTruthy`/`isBareMode` en
+ * vez de importarla de aquí. Retirarlas es edición de esos paquetes (#53).
  *
  * @module
  */
 import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { getConfigHomeDir } from './configHome.js'
 
 /** Interpreta un valor de variable de entorno como verdadero/falso, con la
  * misma tolerancia de forma que usa el resto del proyecto: `1`, `true`,
@@ -75,22 +59,13 @@ export function isEnvDefinedFalsy(
   return ['0', 'false', 'no', 'off'].includes(normalized)
 }
 
-/** El directorio de configuración del usuario: `CLAUDE_CONFIG_DIR`, o
- * `~/.claude`. Memoizado — se lee en cientos de sitios y se normaliza a NFC
- * una sola vez; la clave del memo es el propio valor de la variable, así que
- * un test que la cambie ve el nuevo valor sin `cache.clear()` explícito. */
-export const getClaudeConfigHomeDir = memoize(
-  (): string => {
-    return (
-      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
-    ).normalize('NFC')
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-)
+/** El directorio de configuración del usuario; su resolución (nombres
+ * propios de thyrox con respaldo en los heredados) vive en `configHome.ts`. */
+export { getConfigHomeDir } from './configHome.js'
 
 /** El directorio de equipos, anidado bajo el de configuración del usuario. */
 export function getTeamsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'teams')
+  return join(getConfigHomeDir(), 'teams')
 }
 
 /**
@@ -105,7 +80,7 @@ export function hasNodeOption(flag: string): boolean {
 }
 
 /**
- * `--bare` / `CLAUDE_CODE_SIMPLE`: el modo que salta la contabilidad de
+ * `--bare` / `THYROX_CODE_SIMPLE`: el modo que salta la contabilidad de
  * fondo (sugerencia de prompt, extracción de memoria, auto-dream). Las dos
  * vías gobiernan alcances distintos y no son intercambiables: la variable
  * de entorno gobierna el proceso entero; el flag de línea de comandos,
@@ -113,7 +88,7 @@ export function hasNodeOption(flag: string): boolean {
  */
 export function isBareMode(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
+    isEnvTruthy(process.env.THYROX_CODE_SIMPLE) ||
     process.argv.includes('--bare')
   )
 }
@@ -158,9 +133,9 @@ export function getDefaultVertexRegion(): string {
 }
 
 /** ¿Debe un comando bash restaurar el directorio de trabajo del proyecto
- * después de cada invocación? Gobernado por `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR`. */
+ * después de cada invocación? Gobernado por `THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR`. */
 export function shouldMaintainProjectWorkingDir(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR)
+  return isEnvTruthy(process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR)
 }
 
 /** ¿Corre esto en Homespace (el entorno cloud interno de Anthropic)? Exige

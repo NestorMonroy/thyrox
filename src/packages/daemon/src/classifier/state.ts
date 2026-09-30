@@ -9,6 +9,22 @@
 export type WorkerState = 'idle' | 'working' | 'blocked' | 'done' | 'failed' | 'crashed' | 'stopped'
 export type WorkerTempo = 'active' | 'idle' | 'blocked'
 
+/**
+ * `tt` (chunk-ygx717jg.js) — los kinds de tarea/worker en 2do plano que la
+ * clase `g7` puede representar. Definicion canonica unica: en thyrox el
+ * mismo vocabulario vive repartido como string literals sueltos en
+ * `@thyrox/swarm` (`tasks/types.ts`, sólo `'in_process_teammate'`), `repl` y
+ * `tool-registry` — esta constante no los sustituye, es la referencia
+ * contra la que se podrían unificar (parcial, fuera de alcance de D17).
+ */
+export const TASK_KINDS = [
+  'local_bash',
+  'in_process_teammate',
+  'dream',
+  'auto_mode_scan',
+] as const
+export type TaskKind = (typeof TASK_KINDS)[number]
+
 export interface ClassifierResult {
   state: WorkerState
   detail: string

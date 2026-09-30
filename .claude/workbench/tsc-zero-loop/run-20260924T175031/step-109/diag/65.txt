@@ -1,0 +1,28 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/permission/src/yoloClassifier.ts(309,27): error TS18048: 'msg.message.content' is possibly 'undefined'.
+  --- código src/packages/permission/src/yoloClassifier.ts:299-319 ---
+    299                })
+    300              }
+    301            }
+    302          }
+    303        }
+    304        if (textBlocks.length > 0) {
+    305          transcript.push({ role: 'user', content: textBlocks })
+    306        }
+    307      } else if (msg.type === 'assistant') {
+    308        const blocks: TranscriptBlock[] = []
+    309>       for (const block of msg.message.content) {
+    310          // Sólo se incluyen los bloques tool_use: el texto del asistente lo
+    311          // escribe el modelo, y podría estar compuesto para influir en la
+    312          // decisión del clasificador.
+    313          if (typeof block !== 'string' && block.type === 'tool_use') {
+    314            // Se registran las llamadas a AskUserQuestion para que su respuesta
+    315            // tool_result correspondiente se pliegue arriba. `gZ7` de ant,
+    316            // 3149.js:226.
+    317            if (block.name === ASK_USER_QUESTION_TOOL_NAME) {
+    318              askUserQuestionIds.add(block.id)
+    319            }

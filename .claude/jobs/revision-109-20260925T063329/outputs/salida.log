@@ -1,0 +1,21 @@
+idéntico src/packages/@ant/computer-use-mcp/src/legacy/win32/uiAutomation.ts
+sin llamadas perdidas src/packages/agent/__tests__/emit.test.ts
+idéntico src/packages/agent/commands/commit-push-pr.ts
+sin llamadas perdidas src/packages/agent/loop/context/systemPrompt.ts
+sin llamadas perdidas src/packages/binary/bin/binary.ts
+sin llamadas perdidas src/packages/binary/src/freshness.ts
+sin llamadas perdidas src/packages/binary/src/graph.ts
+sin llamadas perdidas src/packages/cli/src/structuredIOHelper.ts
+sin llamadas perdidas src/packages/config/plugin/loadPluginCommands.ts
+sin llamadas perdidas src/packages/permission/src/permission.ts
+sin llamadas perdidas src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts
+sin llamadas perdidas src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts
+sin llamadas perdidas src/packages/skills/src/fromDir.ts
+idéntico src/packages/swarm/src/install/installSwarmHost.ts
+sin llamadas perdidas src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+sin llamadas perdidas src/task/rst.ts
+sin llamadas perdidas tests/skills/markdown.test.ts
+0 de 17 archivos pierden llamadas al transpilar
+TESTS
+9
+__BG_EXIT__=0

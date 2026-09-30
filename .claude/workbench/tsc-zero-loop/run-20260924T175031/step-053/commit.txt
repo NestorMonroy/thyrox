@@ -1,0 +1,10 @@
+Type the legacy queryHaiku and queryWithModel facade
+
+claudeLegacy.ts forwarded queryHaiku and queryWithModel to the
+installed runtime with (...args: unknown[]) => Promise<unknown>, so
+every caller got an unknown back and had to guess the message shape;
+the session title and the tool-use summary generator failed on it. The
+facade now carries the parameter and return types of the runtime
+functions in claudeLegacyRuntime.ts, which is what the host installs.
+The callers that relied on unknown now surface their real contract
+issues, which the next steps take.

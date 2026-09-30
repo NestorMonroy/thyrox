@@ -114,7 +114,7 @@ async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
     updater: (t: never) => never,
   ) => {
     setAppState(((prev: Record<string, Record<string, { type?: string }>>) => {
-      const t = prev.tasks[taskId]
+      const t = prev.tasks![taskId]
       if (!t || t.type !== 'in_process_teammate') return prev
       const u = updater(t as never)
       if ((u as unknown) === t) return prev
@@ -266,7 +266,7 @@ describe('el sobre <teammate-message> con que entra un mensaje de par', () => {
 
     const textos = (
       (st.leer().tasks as Record<string, { messages: { message: { content: string } }[] }>)
-        .t1.messages
+        .t1!.messages
     ).map(m => m.message.content)
     const sobre = textos.find(t => t.includes('teammate_id="beto"'))
     expect(sobre).toBeDefined()
@@ -303,7 +303,7 @@ describe('el sobre <teammate-message> con que entra un mensaje de par', () => {
 
     const textos = (
       (st.leer().tasks as Record<string, { messages: { message: { content: string } }[] }>)
-        .t1.messages
+        .t1!.messages
     ).map(m => m.message.content)
     const sobre = textos.find(t => t.includes('teammate_id="beto"'))
     expect(sobre).toBe(
@@ -332,7 +332,7 @@ describe('el sobre <teammate-message> con que entra un mensaje de par', () => {
 
     const textos = (
       (st.leer().tasks as Record<string, { messages: { message: { content: string } }[] }>)
-        .t1.messages
+        .t1!.messages
     ).map(m => m.message.content)
     expect(textos[0]).toContain('teammate_id="team-lead"')
     expect(textos[0]).toContain('summary="la tarea"')
@@ -420,7 +420,7 @@ describe('updateTaskState — sus tres guardas', () => {
     })
 
     const t1 = (st.leer().tasks as Record<string, { status: string }>).t1
-    expect(t1.status).toBe('killed')
+    expect(t1!.status).toBe('killed')
     expect(cierres).toEqual([])
     // La ÚLTIMA actualización es la terminal: corto-circuitó.
     expect(st.cambios().at(-1)).toBe(false)

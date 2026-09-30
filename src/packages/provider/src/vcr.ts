@@ -20,7 +20,7 @@ import type {
 } from '@thyrox/agent/messageShapes'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { env } from '@thyrox/config/env'
-import { getClaudeConfigHomeDir, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { normalizeMessagesForAPI } from '@thyrox/agent/messages.js'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
@@ -37,58 +37,6 @@ function shouldUseVCR(): boolean {
   return false
 }
 
-/**
- * Generic fixture management helper
- * Handles caching, reading, writing fixtures for any data type
- */
-async function withFixture<T>(
-  input: unknown,
-  fixtureName: string,
-  f: () => Promise<T>,
-): Promise<T> {
-  if (!shouldUseVCR()) {
-    return await f()
-  }
-
-  // Create hash of input for fixture filename
-  const hash = createHash('sha1')
-    .update(jsonStringify(input))
-    .digest('hex')
-    .slice(0, 12)
-  const filename = join(
-    readEnv('CLAUDE_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
-    `fixtures/${fixtureName}-${hash}.json`,
-  )
-
-  // Fetch cached fixture
-  try {
-    const cached = jsonParse(
-      await readFile(filename, { encoding: 'utf8' }),
-    ) as T
-    return cached
-  } catch (e: unknown) {
-    const code = getErrnoCode(e)
-    if (code !== 'ENOENT') {
-      throw e
-    }
-  }
-
-  if ((env.isCI || readEnv('CI')) && !isEnvTruthy(readEnv('VCR_RECORD'))) {
-    throw new Error(
-      `Fixture missing: ${filename}. Re-run tests with VCR_RECORD=1, then commit the result.`,
-    )
-  }
-
-  // Create & write new fixture
-  const result = await f()
-
-  await mkdir(dirname(filename), { recursive: true })
-  await writeFile(filename, jsonStringify(result, null, 2), {
-    encoding: 'utf8',
-  })
-
-  return result
-}
 
 export async function withVCR(
   messages: Message[],
@@ -111,11 +59,11 @@ export async function withVCR(
   )
 
   const dehydratedInput = mapMessages(
-    messagesForAPI.map(_ => _.message.content),
+    messagesForAPI.map((_: UserMessage | AssistantMessage) => _.message.content),
     dehydrateValue,
   )
   const filename = join(
-    readEnv('CLAUDE_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
+    readEnv('THYROX_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
     `fixtures/${dehydratedInput.map(_ => createHash('sha1').update(jsonStringify(_)).digest('hex').slice(0, 6)).join('-')}.json`,
   )
 
@@ -184,6 +132,9 @@ function mapMessages(
   return messages.map(_ => {
     if (typeof _ === 'string') {
       return f(_)
+    }
+    if (_ === undefined) {
+      return _
     }
     return _.map(_ => {
       switch (_.type) {
@@ -298,7 +249,7 @@ function dehydrateValue(s: unknown): unknown {
     return s
   }
   const cwd = getCwd()
-  const configHome = getClaudeConfigHomeDir()
+  const configHome = getConfigHomeDir()
   let s1 = s
     .replace(/num_files="\d+"/g, 'num_files="[NUM]"')
     .replace(/duration_ms="\d+"/g, 'duration_ms="[DURATION]"')
@@ -347,7 +298,7 @@ function hydrateValue(s: unknown): unknown {
   return s
     .replaceAll('[NUM]', '1')
     .replaceAll('[DURATION]', '100')
-    .replaceAll('[CONFIG_HOME]', getClaudeConfigHomeDir())
+    .replaceAll('[CONFIG_HOME]', getConfigHomeDir())
     .replaceAll('[CWD]', getCwd())
 }
 
@@ -384,28 +335,3 @@ export async function* withStreamingVCR(
   yield* buffer
 }
 
-async function withTokenCountVCR(
-  messages: unknown[],
-  tools: unknown[],
-  f: () => Promise<number | null>,
-): Promise<number | null> {
-  // Dehydrate before hashing so fixture keys survive cwd/config-home/tempdir
-  // variation and message UUID/timestamp churn. System prompts embed the
-  // working directory (both raw and as a slash→dash project slug in the
-  // auto-memory path) and messages carry fresh UUIDs per run; without this,
-  // every test run produces a new hash and fixtures never hit in CI.
-  const cwdSlug = getCwd().replace(/[^a-zA-Z0-9]/g, '-')
-  const dehydrated = (
-    dehydrateValue(jsonStringify({ messages, tools })) as string
-  )
-    .replaceAll(cwdSlug, '[CWD_SLUG]')
-    .replace(
-      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-      '[UUID]',
-    )
-    .replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?/g, '[TIMESTAMP]')
-  const result = await withFixture(dehydrated, 'token-count', async () => ({
-    tokenCount: await f(),
-  }))
-  return result.tokenCount
-}

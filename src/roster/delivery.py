@@ -40,7 +40,15 @@ DELIVERED = "delivered"
 CUT = "cut"
 UNDECIDABLE = "undecidable"
 
-VERDICTS = (DELIVERED, CUT, UNDECIDABLE)
+#: El agente terminó porque la API rehusó la petición (límite de uso, 429;
+#: petición inválida, 400). El cliente lo escribe como un mensaje `assistant`
+#: con un bloque `text` y la marca `isApiErrorMessage`: por la forma de sus
+#: bloques se lee como un reporte, y no lo es. Medido 2026-09-27 en cinco
+#: subagentes cortados por el límite semanal, que el roster contaba como
+#: «entregó» sin que ninguno escribiera su informe.
+API_ERROR = "api_error"
+
+VERDICTS = (DELIVERED, CUT, UNDECIDABLE, API_ERROR)
 
 #: Un bloque de pensamiento no es entrega ni la impide: acompaña al reporte y
 #: también a una llamada de herramienta. Se descuenta antes de decidir.
@@ -52,7 +60,7 @@ def _blocks(entry: dict) -> set[str]:
     content = message.get("content") if isinstance(message, dict) else None
     if not isinstance(content, list):
         return set()
-    return {b.get("type") for b in content if isinstance(b, dict)}
+    return {t for b in content if isinstance(b, dict) and isinstance(t := b.get("type"), str)}
 
 
 def last_assistant(text: str) -> dict | None:
@@ -91,6 +99,8 @@ def classify(text: str) -> str:
     entry = last_assistant(text)
     if entry is None:
         return UNDECIDABLE
+    if entry.get("isApiErrorMessage") is True:
+        return API_ERROR
     kinds = _blocks(entry) - _IGNORED_BLOCKS
     if "tool_use" in kinds:
         return CUT

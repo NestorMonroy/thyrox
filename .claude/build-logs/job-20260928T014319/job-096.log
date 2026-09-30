@@ -1,0 +1,14 @@
+=== Fixture: board sintético de 2000 tareas ===
+  creados: 2000 archivos en /tmp/tmp.Xj2Td9fvjg/tasks/00000000-0000-0000-0000-000000000000
+
+=== POSITIVO: el guion actual contra el board grande ===
+  OK   exit 0
+  OK   emite la linea RESULTADO (no aborta antes del veredicto)
+  OK   la seccion 7 imprime el esquema real
+  OK   el esquema incluye blockedBy (leyo un JSON de verdad)
+
+=== CONTROL: copia mutada con el 'find | head -1' original ===
+  OK   el mutante falla como se espera (exit 141, RESULTADO=0)
+
+RESULTADO: el fix esta protegido — el guion pasa y su version con el bug no.
+EXIT=0

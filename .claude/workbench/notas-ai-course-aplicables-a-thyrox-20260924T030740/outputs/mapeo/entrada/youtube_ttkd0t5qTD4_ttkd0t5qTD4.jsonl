@@ -1,0 +1,1 @@
+{"nota":"youtube_ttkd0t5qTD4_ttkd0t5qTD4","concepto":"有限训练无限使用 (Train Finite Use Infinite Context)","problema":"拓展推理时可用任务范围超过训练序列长度","patron":"模型在有界序列训练后学会元策略（信息保留/舍弃/检索规则），使其能在任意长任务上完成推理，无需单次输入序列长度无限","limite":"需要精密设计压缩/选择/检索机制；在训练未见新型延续模式上可能失败"}

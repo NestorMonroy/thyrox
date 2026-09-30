@@ -1,0 +1,1 @@
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(422,45): error TS2554: Expected 1 arguments, but got 0.

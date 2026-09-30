@@ -1,0 +1,2 @@
+src/packages/agent/__tests__/diffDisplay.test.ts(18,82): error TS2322: Type 'Record<string, string | number | boolean> | undefined' is not assignable to type 'Record<string, unknown>'.
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.

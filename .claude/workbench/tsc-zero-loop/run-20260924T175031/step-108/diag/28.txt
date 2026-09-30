@@ -1,0 +1,138 @@
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(45,50): error TS2554: Expected 0 arguments, but got 1.
+  --- código src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts:35-55 ---
+     35      )
+     36      expect(SHARE_ONBOARDING_GUIDE_DESCRIPTION).toContain('status: has_existing')
+     37    })
+     38  })
+     39  
+     40  describe('tool surface (ant Il5)', () => {
+     41    test('name matches constant', () => {
+     42      expect(ShareOnboardingGuideTool.name).toBe(SHARE_ONBOARDING_GUIDE_TOOL_NAME)
+     43    })
+     44    test('isReadOnly: false', () => {
+     45>     expect(ShareOnboardingGuideTool.isReadOnly?.({} as never)).toBe(false)
+     46    })
+     47    test('isConcurrencySafe: false', () => {
+     48      expect(ShareOnboardingGuideTool.isConcurrencySafe?.()).toBe(false)
+     49    })
+     50    test('isDestructive only on mode="delete"', () => {
+     51      expect(
+     52        ShareOnboardingGuideTool.isDestructive?.({ mode: 'delete' } as never),
+     53      ).toBe(true)
+     54      expect(
+     55        ShareOnboardingGuideTool.isDestructive?.({ mode: 'check' } as never),
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(67,7): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts:57-77 ---
+     57      expect(
+     58        ShareOnboardingGuideTool.isDestructive?.({ mode: 'create' } as never),
+     59      ).toBe(false)
+     60      expect(
+     61        ShareOnboardingGuideTool.isDestructive?.({ mode: 'update' } as never),
+     62      ).toBe(false)
+     63    })
+     64    test('checkPermissions: behavior=allow (ant ships no checkPermissions)', async () => {
+     65      const result = await ShareOnboardingGuideTool.checkPermissions?.(
+     66        { mode: 'check' } as never,
+     67>       {} as never,
+     68      )
+     69      expect(result?.behavior).toBe('allow')
+     70    })
+     71    test('validateInput: { result: true }', async () => {
+     72      const result = await ShareOnboardingGuideTool.validateInput?.(
+     73        { mode: 'check' } as never,
+     74        {} as never,
+     75      )
+     76      expect(result).toEqual({ result: true })
+     77    })
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(73,7): error TS2554: Expected 0 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts:63-83 ---
+     63    })
+     64    test('checkPermissions: behavior=allow (ant ships no checkPermissions)', async () => {
+     65      const result = await ShareOnboardingGuideTool.checkPermissions?.(
+     66        { mode: 'check' } as never,
+     67        {} as never,
+     68      )
+     69      expect(result?.behavior).toBe('allow')
+     70    })
+     71    test('validateInput: { result: true }', async () => {
+     72      const result = await ShareOnboardingGuideTool.validateInput?.(
+     73>       { mode: 'check' } as never,
+     74        {} as never,
+     75      )
+     76      expect(result).toEqual({ result: true })
+     77    })
+     78    test('renderToolUseMessage: null for default mode, mode string for others', () => {
+     79      expect(
+     80        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     81          { mode: 'check' } as never,
+     82          {} as never,
+     83        ),
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(82,9): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts:72-92 ---
+     72      const result = await ShareOnboardingGuideTool.validateInput?.(
+     73        { mode: 'check' } as never,
+     74        {} as never,
+     75      )
+     76      expect(result).toEqual({ result: true })
+     77    })
+     78    test('renderToolUseMessage: null for default mode, mode string for others', () => {
+     79      expect(
+     80        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     81          { mode: 'check' } as never,
+     82>         {} as never,
+     83        ),
+     84      ).toBeNull()
+     85      expect(
+     86        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     87          { mode: 'update' } as never,
+     88          {} as never,
+     89        ),
+     90      ).toBe('update')
+     91      expect(
+     92        ShareOnboardingGuideTool.renderToolUseMessage?.(
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(88,9): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts:78-98 ---
+     78    test('renderToolUseMessage: null for default mode, mode string for others', () => {
+     79      expect(
+     80        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     81          { mode: 'check' } as never,
+     82          {} as never,
+     83        ),
+     84      ).toBeNull()
+     85      expect(
+     86        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     87          { mode: 'update' } as never,
+     88>         {} as never,
+     89        ),
+     90      ).toBe('update')
+     91      expect(
+     92        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     93          { mode: 'delete' } as never,
+     94          {} as never,
+     95        ),
+     96      ).toBe('delete')
+     97    })
+     98  })
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(94,9): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts:84-104 ---
+     84      ).toBeNull()
+     85      expect(
+     86        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     87          { mode: 'update' } as never,
+     88          {} as never,
+     89        ),
+     90      ).toBe('update')
+     91      expect(
+     92        ShareOnboardingGuideTool.renderToolUseMessage?.(
+     93          { mode: 'delete' } as never,
+     94>         {} as never,
+     95        ),
+     96      ).toBe('delete')
+     97    })
+     98  })
+     99  
+    100  describe('mapToolResultToToolResultBlockParam', () => {
+    101    test('content format: "[status] message"', () => {
+    102      const param = ShareOnboardingGuideTool.mapToolResultToToolResultBlockParam(
+    103        {
+    104          status: 'created',

@@ -105,7 +105,7 @@ export async function logOTelEvent(
   // Setups multi-workspace pueden traer la lista de host-paths separada
   // por pipe. Se parte en '|' y se envía como array de cadenas (OTLP lo
   // soporta).
-  const hostPaths = process.env.CLAUDE_CODE_WORKSPACE_HOST_PATHS
+  const hostPaths = process.env.THYROX_CODE_WORKSPACE_HOST_PATHS
   if (hostPaths) attributes['workspace.host_paths'] = hostPaths.split('|')
 
   for (const [key, value] of Object.entries(metadata)) {

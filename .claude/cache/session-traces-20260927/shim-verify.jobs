@@ -1,0 +1,7 @@
+cd src/packages/agent && bun test
+cd src/packages/app-host && bun test
+cd src/packages/cli && bun test
+cd src/packages/command-runtime && bun test
+cd src/packages/repl && bun test
+cd src/packages/storage && bun test
+bash bin/check_package_typecheck agent app-host cli command-runtime repl storage

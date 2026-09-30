@@ -224,6 +224,14 @@ async function handleFastModeShortcut(
   }
 }
 
+// LocalJSXCommandContext sólo declara el escape hatch [key: string]: unknown;
+// getAppState/setAppState llegan por ahí (mismo patrón que ContextCommandContext
+// en context.tsx y ForkCommandContext en fork.tsx).
+type FastCommandContext = LocalJSXCommandContext & {
+  getAppState: () => AppState
+  setAppState: (f: (prev: AppState) => AppState) => void
+}
+
 export async function call(
   onDone: LocalJSXCommandOnDone,
   context: LocalJSXCommandContext,
@@ -240,10 +248,11 @@ export async function call(
 
   const arg = args?.trim().toLowerCase()
   if (arg === 'on' || arg === 'off') {
+    const { getAppState, setAppState } = context as FastCommandContext
     const result = await handleFastModeShortcut(
       arg === 'on',
-      context.getAppState,
-      context.setAppState,
+      getAppState,
+      setAppState,
     )
     onDone(result)
     return null

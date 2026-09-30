@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/commands/commit-push-pr.ts(124,32): error TS18046: 'context' is of type 'unknown'.
+  --- código src/packages/agent/commands/commit-push-pr.ts:114-134 ---
+    114    get contentLength() {
+    115      // Use 'main' as estimate for content length calculation
+    116      return getPromptContent('main').length
+    117    },
+    118    progressMessage: 'creating commit and PR',
+    119    source: 'builtin',
+    120    async getPromptForCommand(args, context) {
+    121      // Get default branch and enhanced PR attribution
+    122      const [defaultBranch, prAttribution] = await Promise.all([
+    123        getDefaultBranch(),
+    124>       getEnhancedPRAttribution(context.getAppState),
+    125      ])
+    126      let promptContent = getPromptContent(defaultBranch, prAttribution)
+    127  
+    128      // Append user instructions if args provided
+    129      const trimmedArgs = args?.trim()
+    130      if (trimmedArgs) {
+    131        promptContent += `\n\n## Additional instructions from user\n\n${trimmedArgs}`
+    132      }
+    133  
+    134      const finalContent = await executeShellCommandsInPrompt(
+src/packages/agent/commands/commit-push-pr.ts(139,28): error TS18046: 'context' is of type 'unknown'.
+  --- código src/packages/agent/commands/commit-push-pr.ts:129-149 ---
+    129      const trimmedArgs = args?.trim()
+    130      if (trimmedArgs) {
+    131        promptContent += `\n\n## Additional instructions from user\n\n${trimmedArgs}`
+    132      }
+    133  
+    134      const finalContent = await executeShellCommandsInPrompt(
+    135        promptContent,
+    136        {
+    137          ...context,
+    138          getAppState() {
+    139>           const appState = context.getAppState()
+    140            return {
+    141              ...appState,
+    142              toolPermissionContext: {
+    143                ...appState.toolPermissionContext,
+    144                alwaysAllowRules: {
+    145                  ...appState.toolPermissionContext.alwaysAllowRules,
+    146                  command: ALLOWED_TOOLS,
+    147                },
+    148              },
+    149            }

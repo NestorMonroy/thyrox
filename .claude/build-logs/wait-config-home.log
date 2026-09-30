@@ -1,0 +1,187 @@
+asentado: job-20260927T092020_job-003 -> OK (1 de 6)
+asentado: job-20260927T092020_job-004 -> OK (2 de 6)
+asentado: job-20260927T092020_job-002 -> OK (1 de 6)
+esperando: 3 de 6 asentados, 31s; vivos: config-home job-20260927T092020_job-001 job-20260927T092020_job-005
+sonda config-home: 11441 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11445 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11448 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.03s
+sonda config-home: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.24s
+sonda config-home: 18924 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18925 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.69s
+sonda config-home: 19104 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 19107 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.46s
+sonda config-home: 12132 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 12139 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 12141 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 12142 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.36s
+sonda config-home: 19448 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home: 12143 tail stdin=channel(pipe:[74137]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home: pid 12143 (tail) lee stdin de un canal (pipe:[74137]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home: 18803 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18806 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18808 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18809 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.75s
+sonda config-home: 19479 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home: 18811 tail stdin=channel(pipe:[83583]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home: pid 18811 (tail) lee stdin de un canal (pipe:[83583]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home: 19476 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.24s
+sonda job-20260927T092020_job-001: 18924 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 18925 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.44s
+sonda job-20260927T092020_job-001: 19104 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 19107 node stdin=devnull(/dev/null) escritores=- estado=S cpu=7.34s
+sonda job-20260927T092020_job-005: 12132 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-005: 12139 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-005: 12141 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-005: 12142 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.37s
+sonda job-20260927T092020_job-005: 19858 bun stdin=file(/memfd:spawn_stdio_stdin (deleted)) escritores=- estado=R cpu=0.74s
+sonda job-20260927T092020_job-005: 12143 tail stdin=channel(pipe:[74137]) escritores=1 estado=S cpu=0.00s
+  AVISO job-20260927T092020_job-005: pid 12143 (tail) lee stdin de un canal (pipe:[74137]) — si su productor no escribe ni cierra, espera para siempre
+esperando: 3 de 6 asentados, 61s; vivos: config-home job-20260927T092020_job-001 job-20260927T092020_job-005
+sonda config-home: 11441 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11445 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11448 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.04s
+sonda config-home: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.26s
+sonda config-home: 21199 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 21200 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.10s
+sonda config-home: 21287 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 21288 node stdin=devnull(/dev/null) escritores=- estado=S cpu=3.13s
+sonda config-home: 12132 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 12139 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 12141 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 12142 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.50s
+sonda config-home: 21388 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home: 12143 tail stdin=channel(pipe:[74137]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home: pid 12143 (tail) lee stdin de un canal (pipe:[74137]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home: 18803 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18806 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18808 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 18809 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.77s
+sonda config-home: 21376 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home: 18811 tail stdin=channel(pipe:[83583]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home: pid 18811 (tail) lee stdin de un canal (pipe:[83583]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home: 21400 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.26s
+sonda job-20260927T092020_job-001: 21199 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 21200 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.06s
+sonda job-20260927T092020_job-001: 21287 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 21288 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.10s
+sonda job-20260927T092020_job-005: 12132 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-005: 12139 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-005: 12141 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-005: 12142 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.51s
+sonda job-20260927T092020_job-005: 21560 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T092020_job-005: 12143 tail stdin=channel(pipe:[74137]) escritores=1 estado=S cpu=0.00s
+  AVISO job-20260927T092020_job-005: pid 12143 (tail) lee stdin de un canal (pipe:[74137]) — si su productor no escribe ni cierra, espera para siempre
+asentado: job-20260927T092020_job-005 -> OK (4 de 6)
+esperando: 4 de 6 asentados, 93s; vivos: config-home job-20260927T092020_job-001
+sonda config-home: 11441 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11445 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11448 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda config-home: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.31s
+sonda config-home: 23105 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 23106 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.93s
+sonda config-home: 23412 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 23413 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.66s
+sonda config-home: 23401 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.31s
+sonda job-20260927T092020_job-001: 23105 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 23106 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.82s
+sonda job-20260927T092020_job-001: 23412 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 23413 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.90s
+esperando: 4 de 6 asentados, 125s; vivos: config-home job-20260927T092020_job-001
+sonda config-home: 11441 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11445 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11448 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.09s
+sonda config-home: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.40s
+sonda config-home: 26026 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 26031 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.50s
+sonda config-home: 26047 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 26048 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.36s
+sonda config-home: 25119 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.09s
+sonda config-home: 26172 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.40s
+sonda job-20260927T092020_job-001: 26026 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 26031 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.24s
+sonda job-20260927T092020_job-001: 26047 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 26048 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.14s
+esperando: 4 de 6 asentados, 156s; vivos: config-home job-20260927T092020_job-001
+sonda config-home: 11441 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11445 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11448 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.09s
+sonda config-home: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.49s
+sonda config-home: 27981 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 27982 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.81s
+sonda config-home: 28106 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 28107 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.26s
+sonda config-home: 25119 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.22s
+sonda config-home: 28272 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.49s
+sonda job-20260927T092020_job-001: 27981 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 27982 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.31s
+sonda job-20260927T092020_job-001: 28106 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 28107 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.91s
+esperando: 4 de 6 asentados, 187s; vivos: config-home job-20260927T092020_job-001
+sonda config-home: 11441 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11445 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11448 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.09s
+sonda config-home: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.50s
+sonda config-home: 30282 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 30283 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.97s
+sonda config-home: 30346 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home: 30347 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.04s
+sonda config-home: 25119 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.33s
+sonda config-home: 30412 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.50s
+sonda job-20260927T092020_job-001: 30282 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 30283 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.61s
+sonda job-20260927T092020_job-001: 30346 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 30347 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.50s
+asentado: config-home -> OK (1 de 6)
+== 6 trabajos asentados ==
+OK     config-home exit=0
+       |        | bun test v1.3.11 (af24e281)
+       |        | 
+       |        |  57 pass
+       |        |  0 fail
+       |        |  64 expect() calls
+       |        | Ran 57 tests across 5 files. [666.00ms]
+       |        | EXIT=0
+       |        memoria pico: 131312 KB (128 MB) · pared 0.68s
+       | salida distinta de 0: 1 (job-20260927T092020_job-001)
+       | __BG_EXIT__=0
+       memoria pico: 851556 KB (832 MB) · pared 197.35s
+OLVIDADO job-20260927T092020_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T092020_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T092020_job-003
+       | (vacío — no emitió nada)
+OK     job-20260927T092020_job-004
+       | (vacío — no emitió nada)
+OK     job-20260927T092020_job-005
+       | (vacío — no emitió nada)

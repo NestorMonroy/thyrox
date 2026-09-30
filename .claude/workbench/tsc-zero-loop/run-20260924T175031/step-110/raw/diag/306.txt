@@ -1,0 +1,10 @@
+tests/unit/openai/streamAdapter.test.ts(10,5): error TS2322: Type '() => { next(): Promise<{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }>; }' is not assignable to type '() => AsyncIterator<ChatCompletionChunk, any, any>'.
+  Call signature return types '{ next(): Promise<{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }>; }' and 'AsyncIterator<ChatCompletionChunk, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }>' is not assignable to type 'Promise<IteratorResult<ChatCompletionChunk, any>>'.
+        Type '{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }' is not assignable to type 'IteratorResult<ChatCompletionChunk, any>'.
+          Type '{ done: false; value: ChatCompletionChunk | undefined; }' is not assignable to type 'IteratorResult<ChatCompletionChunk, any>'.
+            Type '{ done: false; value: ChatCompletionChunk | undefined; }' is not assignable to type 'IteratorYieldResult<ChatCompletionChunk>'.
+              Types of property 'value' are incompatible.
+                Type 'ChatCompletionChunk | undefined' is not assignable to type 'ChatCompletionChunk'.
+                  Type 'undefined' is not assignable to type 'ChatCompletionChunk'.

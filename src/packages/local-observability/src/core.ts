@@ -1,12 +1,8 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/core.ts` (103 líneas
- * fuente, 100 % portado). Módulo hoja: guarda el singleton de
- * observabilidad no-op, los accesores install/get, `logEvent`/
- * `logEventAsync`, `startSpan`/`endSpan` y `shutdownLocalObservability`.
- * Extraído de `index.ts` en la fuente para romper los ciclos
- * index ↔ {spans, compat} — ambos consumidores dependen de esta hoja sin
- * pasar por el barrel.
- */
+// Leaf module: holds the observability singleton, install/get accessors,
+// logEvent/logEventAsync, startSpan/endSpan, shutdownLocalObservability.
+// Extracted from index.ts to break the index ↔ {spans, compat} cycles —
+// both consumers can now depend on this leaf without round-tripping
+// through the barrel.
 
 import type {
   EventMetadata,
@@ -17,6 +13,7 @@ import type {
   Span,
   Tracer,
 } from './contracts.js'
+import { recordAction } from './errorStore/errorRecorder.js'
 
 const noOpLogger: Logger = {
   debug: () => {},
@@ -77,6 +74,7 @@ export function getLocalObservability(): LocalObservability {
 }
 
 export function logEvent(name: string, metadata: EventMetadata = {}): void {
+  recordAction(name, metadata)
   observability.logger.event(name, metadata)
 }
 

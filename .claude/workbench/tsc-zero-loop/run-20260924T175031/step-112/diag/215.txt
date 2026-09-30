@@ -1,0 +1,49 @@
+src/packages/shell/src/Shell.ts(64,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'Partial<{ network: { allowedDomains: string[]; deniedDomains: string[]; strictAllowlist?: boolean | undefined; allowUnixSockets?: string[] | undefined; allowAllUnixSockets?: boolean | undefined; ... 7 more ...; parentProxy?: { ...; } | undefined; }; ... 12 more ...; windows?: { ...; } | undefined; }> | undefined'.
+  --- código src/packages/shell/src/Shell.ts:54-74 ---
+     54    return {
+     55      getCwd: pwd,
+     56      setCwd: setCwdState,
+     57      getOriginalCwd,
+     58      getSessionId,
+     59      logEvent,
+     60      logForDebugging,
+     61      getSessionEnvVars,
+     62      getSessionEnvironmentScript,
+     63      wrapWithSandbox: (cmd, shell, tmpDir, signal) =>
+     64>       SandboxManager.wrapWithSandbox(cmd, shell, tmpDir, signal),
+     65      cleanupAfterSandbox: () => SandboxManager.cleanupAfterCommand(),
+     66      onCwdChanged: onCwdChangedForHooks,
+     67      getTmuxEnv: async () => getClaudeTmuxEnv(),
+     68      ensureTmuxSocket: ensureSocketInitialized,
+     69      hasTmuxToolBeenUsed,
+     70      getPlatform,
+     71      which,
+     72      invalidateSessionEnvCache,
+     73      getTaskOutputDir,
+     74      generateTaskId,
+  Type 'string' has no properties in common with type 'Partial<{ network: { allowedDomains: string[]; deniedDomains: string[]; strictAllowlist?: boolean | undefined; allowUnixSockets?: string[] | undefined; allowAllUnixSockets?: boolean | undefined; ... 7 more ...; parentProxy?: { ...; } | undefined; }; ... 12 more ...; windows?: { ...; } | undefined; }>'.
+src/packages/shell/src/Shell.ts(70,5): error TS2322: Type '(() => Platform) & { cache?: { clear: () => void; } | undefined; }' is not assignable to type '() => "linux" | "windows" | "macos"'.
+  --- código src/packages/shell/src/Shell.ts:60-80 ---
+     60      logForDebugging,
+     61      getSessionEnvVars,
+     62      getSessionEnvironmentScript,
+     63      wrapWithSandbox: (cmd, shell, tmpDir, signal) =>
+     64        SandboxManager.wrapWithSandbox(cmd, shell, tmpDir, signal),
+     65      cleanupAfterSandbox: () => SandboxManager.cleanupAfterCommand(),
+     66      onCwdChanged: onCwdChangedForHooks,
+     67      getTmuxEnv: async () => getClaudeTmuxEnv(),
+     68      ensureTmuxSocket: ensureSocketInitialized,
+     69      hasTmuxToolBeenUsed,
+     70>     getPlatform,
+     71      which,
+     72      invalidateSessionEnvCache,
+     73      getTaskOutputDir,
+     74      generateTaskId,
+     75      getMaxTaskOutputBytes: () => MAX_TASK_OUTPUT_BYTES,
+     76      getSandboxTmpDirName: getClaudeTempDirName,
+     77    }
+     78  }
+     79  
+     80  const getShellConfigFactory = createShellConfigFactory(createShellExecContext())
+  Type 'Platform' is not assignable to type '"linux" | "windows" | "macos"'.
+    Type '"unknown"' is not assignable to type '"linux" | "windows" | "macos"'.

@@ -1,0 +1,251 @@
+run-task-pool: 20 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T092819
+  job-20260927T092819/job-001 pid 1088    bash bin/check_package_typecheck --strict --jobs 2 agent app-host bridge cli command-runtime computer-use-mcp config ide local-observability mcp-runtime memory output permission provider repl shell storage tool-registry updater
+  job-20260927T092819/job-002 pid 1142    cd src/packages/agent && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-003 pid 1163    cd src/packages/app-host && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-004 pid 1384    cd src/packages/bridge && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-005 pid 1731    cd src/packages/cli && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-006 pid 8538    cd src/packages/command-runtime && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-007 pid 12422   cd src/packages/computer-use-mcp && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-008 pid 12643   cd src/packages/config && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-009 pid 13252   cd src/packages/ide && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-010 pid 13351   cd src/packages/local-observability && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-011 pid 13429   cd src/packages/mcp-runtime && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-012 pid 13522   cd src/packages/memory && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-013 pid 13649   cd src/packages/output && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-014 pid 13764   cd src/packages/permission && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-015 pid 14059   cd src/packages/provider && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-016 pid 14467   cd src/packages/repl && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-017 pid 14600   cd src/packages/shell && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-018 pid 14726   cd src/packages/storage && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-019 pid 14754   cd src/packages/tool-registry && set -o pipefail && bun test 2>&1 | tail -12
+  job-20260927T092819/job-020 pid 15596   cd src/packages/updater && set -o pipefail && bun test 2>&1 | tail -12
+run-task-pool: lanzados 20 de 20; esperando en PRIMER PLANO (timeout 1500s)
+asentado: job-20260927T092819_job-002 -> OK (2 de 21)
+asentado: job-20260927T092819_job-003 -> OK (3 de 21)
+asentado: job-20260927T092819_job-004 -> OK (4 de 21)
+asentado: job-20260927T092819_job-005 -> OK (5 de 21)
+asentado: job-20260927T092819_job-006 -> OK (6 de 21)
+asentado: job-20260927T092819_job-007 -> OK (7 de 21)
+asentado: job-20260927T092819_job-008 -> OK (8 de 21)
+asentado: job-20260927T092819_job-009 -> OK (9 de 21)
+asentado: job-20260927T092819_job-010 -> OK (10 de 21)
+asentado: job-20260927T092819_job-011 -> OK (11 de 21)
+asentado: job-20260927T092819_job-012 -> OK (12 de 21)
+asentado: job-20260927T092819_job-013 -> OK (13 de 21)
+asentado: job-20260927T092819_job-014 -> OK (14 de 21)
+asentado: job-20260927T092819_job-015 -> OK (15 de 21)
+asentado: job-20260927T092819_job-016 -> OK (16 de 21)
+asentado: job-20260927T092819_job-017 -> OK (17 de 21)
+asentado: job-20260927T092819_job-018 -> OK (18 de 21)
+asentado: job-20260927T092819_job-019 -> OK (19 de 21)
+asentado: job-20260927T092819_job-020 -> OK (20 de 21)
+asentado: job-20260927T092819_job-001 -> OK (2 de 21)
+== 21 trabajos asentados ==
+OLVIDADO job-20260927T092819
+       | (vacío — no emitió nada)
+OK     job-20260927T092819_job-001 exit=0
+       |   permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   repl: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   updater: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       | 
+       | check-package-typecheck: 0 error(es) propio(s) (alcance medido: 19 de 19 paquete(s))
+       | EXIT=0
+       memoria pico: 851572 KB (832 MB) · pared 140.70s
+OK     job-20260927T092819_job-002 exit=0
+       | fatal: not a git repository (or any of the parent directories): .git
+       | 
+       | __tests__/portFidelity.test.ts:
+       | [portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+       | 
+       |  2655 pass
+       |  0 fail
+       |  4857 expect() calls
+       | Ran 2655 tests across 196 files. [23.61s]
+       | EXIT=0
+       memoria pico: 259364 KB (253 MB) · pared 23.64s
+OK     job-20260927T092819_job-003 exit=5
+       |  - teleport
+       |  - tool-registry
+       |  - voice
+       | size: 21
+       | 
+       |  241 pass
+       |  0 fail
+       |  393 expect() calls
+       | Ran 241 tests across 26 files. [1.67s]
+       | EXIT=5
+       memoria pico: 213840 KB (209 MB) · pared 1.69s
+OK     job-20260927T092819_job-004 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  146 pass
+       |  0 fail
+       |  200 expect() calls
+       | Ran 146 tests across 9 files. [567.00ms]
+       | EXIT=0
+       memoria pico: 123824 KB (121 MB) · pared 0.58s
+OK     job-20260927T092819_job-005 exit=0
+       | listo, integré lo del hijo
+       | segui el procedimiento del skill
+       | (was r0000001, now newshort)
+       | 
+       |  368 pass
+       |  1 todo
+       |  0 fail
+       |  712 expect() calls
+       | Ran 369 tests across 34 files. [72.40s]
+       | EXIT=0
+       memoria pico: 247248 KB (241 MB) · pared 72.42s
+OK     job-20260927T092819_job-006 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  327 pass
+       |  0 fail
+       |  602 expect() calls
+       | Ran 327 tests across 26 files. [72.66s]
+       | EXIT=0
+       memoria pico: 217904 KB (213 MB) · pared 72.68s
+OK     job-20260927T092819_job-007 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  25 pass
+       |  0 fail
+       |  94 expect() calls
+       | Ran 25 tests across 4 files. [522.00ms]
+       | EXIT=0
+       memoria pico: 55004 KB (54 MB) · pared 0.53s
+OK     job-20260927T092819_job-008 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  744 pass
+       |  0 fail
+       |  1436 expect() calls
+       | Ran 744 tests across 53 files. [9.35s]
+       | EXIT=0
+       memoria pico: 155928 KB (152 MB) · pared 9.38s
+OK     job-20260927T092819_job-009 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  21 pass
+       |  0 fail
+       |  40 expect() calls
+       | Ran 21 tests across 2 files. [256.00ms]
+       | EXIT=0
+       memoria pico: 79348 KB (77 MB) · pared 0.26s
+OK     job-20260927T092819_job-010 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  235 pass
+       |  0 fail
+       |  386 expect() calls
+       | Ran 235 tests across 14 files. [834.00ms]
+       | EXIT=0
+       memoria pico: 137216 KB (134 MB) · pared 0.85s
+OK     job-20260927T092819_job-011 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  424 pass
+       |  0 fail
+       |  563 expect() calls
+       | Ran 424 tests across 21 files. [1.58s]
+       | EXIT=0
+       memoria pico: 219376 KB (214 MB) · pared 1.61s
+OK     job-20260927T092819_job-012 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  87 pass
+       |  0 fail
+       |  123 expect() calls
+       | Ran 87 tests across 5 files. [323.00ms]
+       | EXIT=0
+       memoria pico: 86876 KB (85 MB) · pared 0.33s
+OK     job-20260927T092819_job-013 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  474 pass
+       |  0 fail
+       |  658 expect() calls
+       | Ran 474 tests across 26 files. [2.65s]
+       | EXIT=0
+       memoria pico: 221584 KB (216 MB) · pared 2.68s
+OK     job-20260927T092819_job-014 exit=0
+       | 1. You might have mismatching versions of React and the renderer (such as React DOM)
+       | 2. You might be breaking the Rules of Hooks
+       | 3. You might have more than one copy of React in the same app
+       | See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+       | 
+       |  1075 pass
+       |  0 fail
+       |  1821 expect() calls
+       | Ran 1075 tests across 69 files. [11.92s]
+       | EXIT=0
+       memoria pico: 224800 KB (220 MB) · pared 11.94s
+OK     job-20260927T092819_job-015 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  1824 pass
+       |  0 fail
+       |  3187 expect() calls
+       | Ran 1824 tests across 146 files. [5.81s]
+       | EXIT=0
+       memoria pico: 257640 KB (252 MB) · pared 5.83s
+OK     job-20260927T092819_job-016 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  540 pass
+       |  0 fail
+       |  1258 expect() calls
+       | Ran 540 tests across 31 files. [1.72s]
+       | EXIT=0
+       memoria pico: 218232 KB (213 MB) · pared 1.75s
+OK     job-20260927T092819_job-017 exit=0
+       |   stdin-peek [--timeout-ms N]
+       |   env [--gha] [--json]
+       | 
+       | Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+       | 
+       |  288 pass
+       |  0 fail
+       |  432 expect() calls
+       | Ran 288 tests across 17 files. [1.62s]
+       | EXIT=0
+       memoria pico: 218712 KB (214 MB) · pared 1.64s
+OK     job-20260927T092819_job-018 exit=1
+       | Plan file missing during resume: /tmp/plans-eOAcuo/plans/slug-recuperado-attachment.md. Attempting recovery.
+       | Plan recovered from message history, 18 chars
+       | Plan file missing during resume: /tmp/plans-mNoIif/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+       | Plan file recovery failed: no file snapshot or plan content found in message history
+       | 
+       |  1191 pass
+       |  1 fail
+       |  2647 expect() calls
+       | Ran 1192 tests across 71 files. [6.35s]
+       | EXIT=1
+       memoria pico: 254164 KB (248 MB) · pared 6.37s
+OK     job-20260927T092819_job-019 exit=0
+       | Native image processor not available, falling back to sharp
+       | Native image processor not available, falling back to sharp
+       | Native image processor not available, falling back to sharp
+       | Native image processor not available, falling back to sharp
+       | 
+       |  1422 pass
+       |  0 fail
+       |  3251 expect() calls
+       | Ran 1422 tests across 86 files. [8.09s]
+       | EXIT=0
+       memoria pico: 250260 KB (244 MB) · pared 8.12s
+OK     job-20260927T092819_job-020 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  57 pass
+       |  0 fail
+       |  64 expect() calls
+       | Ran 57 tests across 5 files. [723.00ms]
+       | EXIT=0
+       memoria pico: 130844 KB (128 MB) · pared 0.74s
+salida distinta de 0: 2 (job-20260927T092819_job-003 job-20260927T092819_job-018)
+__BG_EXIT__=0

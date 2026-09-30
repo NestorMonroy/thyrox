@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/store",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Conexión a la base SQLite del proveedor.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  }
+}

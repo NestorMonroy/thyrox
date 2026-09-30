@@ -1,0 +1,15 @@
+run-task-pool: 2 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/ptree/logs/job-20260927T191313
+  job-20260927T191313/job-001 sleep 3
+  job-20260927T191313/job-002 sleep 3
+run-task-pool: lanzados 2 de 2; esperando en PRIMER PLANO (timeout 26s)
+asentado: job-20260927T191313_job-001 -> OK (2 de 3)
+asentado: job-20260927T191313_job-002 -> OK (3 de 3)
+== 3 trabajos asentados ==
+OLVIDADO job-20260927T191313
+       | (vacío — no emitió nada)
+OK     job-20260927T191313_job-001 exit=0
+       | EXIT=0
+       memoria pico: 3304 KB (3 MB) · pared 3.00s
+OK     job-20260927T191313_job-002 exit=0
+       | EXIT=0
+       memoria pico: 3192 KB (3 MB) · pared 3.00s

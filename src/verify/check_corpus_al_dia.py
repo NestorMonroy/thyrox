@@ -91,7 +91,7 @@ def versiones_extraidas(raiz: pathlib.Path) -> set[str]:
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument('--raiz', default=str(RAIZ_DEFECTO),
                         help='raiz del corpus (default: _references/claude-code-bin)')
     parser.add_argument('--binario', default=None,

@@ -1,0 +1,2 @@
+El parche original (1.patch.original) incluía agent-results/agent_store.sqlite3: un efecto lateral binario de la ejecución del ítem sobre su copia del store, fuera del contrato.
+Se retiró esa sección antes de integrar; el resto del parche queda intacto.

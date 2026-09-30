@@ -6,7 +6,7 @@
  * separately?». Son esos cuatro y en ese orden; no es una taxonomía propia.
  *
  * POR QUÉ CUATRO SECCIONES Y NO UNA CADENA. El prompt ya se separaba por
- * ORIGEN —base, CLAUDE.md, reglas— y eso responde a otra pregunta: de dónde
+ * ORIGEN —base, THYROX.md, reglas— y eso responde a otra pregunta: de dónde
  * viene el texto. La de aquí es qué gobierna. Con los cuatro deberes
  * nombrados, retirar uno es una operación que se puede hacer y medir, y el
  * apéndice fija para qué sirve poder hacerla: «if removing one section

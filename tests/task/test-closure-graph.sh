@@ -61,16 +61,20 @@ python3 "$SCRIPT" --help >/dev/null 2>&1 || fallo "no responde --help"
 caso "extrae la arista en las seis formas de declarar sucesor"
 SALIDA=$(python3 "$SCRIPT" --corpus "$FIXTURES/formas" --no-git --json 2>&1)
 for id in 101 102 103 104 105 106; do
-  echo "$SALIDA" | grep -q "\"#$id\"" || fallo "no vio el sucesor #$id"
+  grep -q "\"#$id\"" <<<"$SALIDA" || fallo "no vio el sucesor #$id"
 done
 
 # --- el control positivo: una forma que NO es un sucesor no entra ----------
 caso "no confunde una cita de tarea con una declaracion de sucesor"
-echo "$SALIDA" | grep -q '"#999"' && fallo "tomo por sucesor una cita suelta (#999)"
+grep -q '"#999"' <<<"$SALIDA" && fallo "tomo por sucesor una cita suelta (#999)"
 
 # --- F-2: el ranking publica su denominador --------------------------------
 caso "el ranking publica cuantos nodos midio"
-python3 "$SCRIPT" --corpus "$FIXTURES/formas" --no-git 2>&1 | grep -qE "nodos medidos: [0-9]+" \
+# La salida se captura ANTES de buscar: con `pipefail`, `grep -q` cierra la
+# tuberia en la primera coincidencia y el `python3` que sigue escribiendo
+# muere con BrokenPipeError; el pipeline fallaba aunque la linea estuviera.
+# Aparecio al repartir la suite en paralelo, donde el ritmo cambia.
+grep -qE "nodos medidos: [0-9]+" <<<"$(python3 "$SCRIPT" --corpus "$FIXTURES/formas" --no-git 2>&1)" \
   || fallo "el reporte no declara su denominador"
 
 # --- F-3: un ciclo no cuelga ni cambia el resultado entre corridas ----------
@@ -90,13 +94,13 @@ B=$(timeout 60 python3 "$SCRIPT" --corpus "$FIXTURES/ciclo" --json 2>&1)
 # de publicar un cero que nadie puede interpretar. Medido: con --no-git los
 # nueve fixtures dan 0 ciclos, y ese 0 no es evidencia de nada.
 caso "sin arista de vuelta, el reporte declara que el cero no es evidencia"
-python3 "$SCRIPT" --corpus "$FIXTURES/ciclo" --no-git 2>&1 \
-  | grep -qE "bipartito y no puede tener ciclos" \
+grep -qE "bipartito y no puede tener ciclos" \
+  <<<"$(python3 "$SCRIPT" --corpus "$FIXTURES/ciclo" --no-git 2>&1)" \
   || fallo "publico ciclos: 0 sin declarar que el grafo no puede tenerlos"
 
 caso "con arista de vuelta, el reporte publica su cobertura"
-python3 "$SCRIPT" --corpus "$FIXTURES/ciclo" 2>&1 \
-  | grep -qE "arista de vuelta: [0-9]+ de [0-9]+ commits" \
+grep -qE "arista de vuelta: [0-9]+ de [0-9]+ commits" \
+  <<<"$(python3 "$SCRIPT" --corpus "$FIXTURES/ciclo" 2>&1)" \
   || fallo "no publico la cobertura de la arista de vuelta"
 
 # --- el orden: el nodo que desbloquea a mas va antes que la hoja -----------
@@ -176,8 +180,8 @@ esac
 # publicar cuantas citas resuelven a mas de un trabajo — y, sin store, decir
 # que NO PUDO medirlo en vez de publicar un cero, que seria un verde falso.
 caso "publica la ambiguedad del id de tarea, y sin store dice que no pudo"
-python3 "$SCRIPT" --corpus "$FIXTURES/orden" --no-git 2>&1 \
-  | grep -qE "id de tarea: [0-9]+ de [0-9]+ citadas|id de tarea: SIN RESOLVER" \
+grep -qE "id de tarea: [0-9]+ de [0-9]+ citadas|id de tarea: SIN RESOLVER" \
+  <<<"$(python3 "$SCRIPT" --corpus "$FIXTURES/orden" --no-git 2>&1)" \
   || fallo "el reporte no dice nada sobre la resolucion del id de tarea"
 
 SIN_STORE=$(python3 -c "

@@ -81,6 +81,7 @@ import {
 import {
   getBridgeAccessToken,
   getBridgeBaseUrl,
+  getBridgeSessionIngressUrlOverride,
   getBridgeTokenOverride,
 } from './bridgeConfig.js'
 import {
@@ -218,7 +219,7 @@ export async function initReplBridge(
     return null
   }
 
-  // Cuando CLAUDE_BRIDGE_OAUTH_TOKEN está fijo (dev local ant-only), el
+  // Cuando THYROX_BRIDGE_OAUTH_TOKEN está fijo (dev local ant-only), el
   // bridge usa ese token directamente vía getBridgeAccessToken() — el
   // estado del keychain es irrelevante. Salta 2b/2c para preservar ese
   // desacople: un token de keychain expirado no debe bloquear una
@@ -294,7 +295,7 @@ export async function initReplBridge(
   // vs. hasTitle (cualquier título, incluido el auto-derivado —
   // bloquea la re-derivación de conteo-1 pero no la de conteo-3).
   const titlePrefix =
-    readEnv('CLAUDE_CODE_REMOTE_CONTROL_SESSION_NAME_PREFIX')?.trim() ||
+    readEnv('THYROX_CODE_REMOTE_CONTROL_SESSION_NAME_PREFIX')?.trim() ||
     'remote-control'
   let title = `${titlePrefix}-${generateShortWordSlug()}`
   let hasTitle = false
@@ -525,11 +526,7 @@ export async function initReplBridge(
   // bridgeCore.
   const branch = await getBranch()
   const gitRepoUrl = await getRemoteUrl()
-  const sessionIngressUrl =
-    process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      : baseUrl
+  const sessionIngressUrl = getBridgeSessionIngressUrlOverride() ?? baseUrl
 
   // Las sesiones modo-asistente anuncian un worker_type distinto para
   // que la UI web pueda filtrarlas a un selector dedicado. La guarda

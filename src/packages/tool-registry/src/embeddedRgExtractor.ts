@@ -1,46 +1,25 @@
 /**
- * Extrae el binario de ripgrep — sólo para la caja de arena.
+ * Sandbox-only ripgrep binary extractor.
  *
- * El camino normal del harness hacia ripgrep es `ripgrep-napi`: en proceso, sin
- * lanzar nada. Pero el respaldo Linux de la caja de arena invoca `rg` como
- * comando EXTERNO para calcular las rutas denegadas del sistema de archivos, y
- * para eso necesita un archivo real en disco al que hacer `posix_spawn`. NAPI
- * no sirve ahí porque la caja de arena es un proceso *aparte*.
+ * Background: ccb's main ripgrep path is `ripgrep-napi` (in-process,
+ * no spawn). But @anthropic-ai/sandbox-runtime's Linux backend invokes
+ * rg as an external command to compute filesystem deny paths — it
+ * needs an actual file on disk it can `posix_spawn`. NAPI doesn't help
+ * here because the sandbox is a *separate process* from ccb.
  *
- * Para ese único caso —Linux, con la caja de arena habilitada, que es opcional
- * y poco frecuente— el binario de la plataforma viaja embebido en el ejecutable
- * autónomo y se extrae cuando hace falta.
+ * For that one Linux + sandbox-enabled case (opt-in, ~rare), we embed
+ * the platform's vendored rg binary into the standalone executable
+ * via `with { type: "file" }` and extract on demand.
  *
- * En macOS la caja de arena usa primitivas de glob nativas y no necesita rg; en
- * Windows no está soportada. En ambos devuelve `null`.
+ * On macOS (sandbox profile uses native glob primitives, no rg) and
+ * Windows (sandbox not supported), this returns null.
  *
- * La caché va en `os.tmpdir()/thyrox-sandbox-rg-<sha16>`, y es efímera a
- * propósito: el sistema limpia su temporal y un reinicio la borra. El sha es el
- * de los bytes embebidos, así que al subir de versión el binario no encuentra
- * la caché vieja y vuelve a extraer — sin eso, una actualización serviría el
- * rg anterior en silencio.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/embeddedRgExtractor.ts`
- * (83 líneas, 1 símbolo exportado). Ese árbol declara
- * `"license": "UNLICENSED"`, así que el cuerpo se **reimplementa** y no se
- * copia.
- *
- * DIVERGENCIA DECLARADA (una): los dos identificadores que nombran al producto
- * —la global `__CCB_SANDBOX_RG_PATH__` y el prefijo de caché `ccb-sandbox-rg-`—
- * nombran el harness de la fuente, no éste. Aquí son `__THYROX_SANDBOX_RG_PATH__`
- * y `thyrox-sandbox-rg-`. Conservarlos habría metido el dominio del proveedor
- * en el código del consumidor, que es justo lo que la tarea #249 registra como
- * defecto; y el prefijo de caché además colisionaría en un sistema donde
- * convivieran los dos.
+ * Cache: `os.tmpdir()/ccb-sandbox-rg-<sha16>`. Ephemeral —
+ * OS clears tmp eventually, restart wipes it. SHA matches the
+ * embedded bytes so binary upgrades miss the old cache and re-extract.
  */
 import { createHash } from 'crypto'
-import {
-  chmodSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -49,25 +28,27 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 declare global {
   // eslint-disable-next-line no-var
-  var __THYROX_SANDBOX_RG_PATH__: string | undefined
+  var __CCB_SANDBOX_RG_PATH__: string | undefined
 }
 
 let cachedExtracted: string | null = null
 
 /**
- * La ruta en disco de un rg ya extraído, lista para que la caja de arena lo
- * lance. `null` en las plataformas donde la caja de arena no necesita rg
- * (macOS, Windows), y en modo de desarrollo —ahí el build deja un rg junto a
- * `dist/` y el adaptador lo resuelve por su cuenta; a este módulo sólo le toca
- * el caso del ejecutable autónomo.
+ * Returns the on-disk path of an extracted rg binary, suitable for
+ * sandbox-runtime to spawn. Returns null on platforms where the sandbox
+ * doesn't need rg (macOS, Windows), or in dev mode (where build.ts
+ * stages a vendored rg next to dist/).
  */
 export function ensureExtractedRipgrepForSandbox(): string | null {
   if (process.platform !== 'linux') return null
   if (cachedExtracted !== null) return cachedExtracted
 
+  // Dev mode: the vendored on-disk rg is already alongside dist/ via
+  // build.ts. sandbox-adapter handles that path on its own; we only
+  // care about the standalone-binary case.
   if (!isInBundledMode()) return null
 
-  const embeddedPath = globalThis.__THYROX_SANDBOX_RG_PATH__
+  const embeddedPath = globalThis.__CCB_SANDBOX_RG_PATH__
   if (!embeddedPath) return null
 
   let bytes: Buffer
@@ -81,15 +62,12 @@ export function ensureExtractedRipgrepForSandbox(): string | null {
   }
 
   const sha = createHash('sha256').update(bytes).digest('hex').slice(0, 16)
-  const target = join(tmpdir(), `thyrox-sandbox-rg-${sha}`)
+  const target = join(tmpdir(), `ccb-sandbox-rg-${sha}`)
 
   if (!existsSync(target)) {
     try {
       mkdirSync(tmpdir(), { recursive: true })
       writeFileSync(target, bytes)
-      // Sin el bit de ejecución el `posix_spawn` de la caja de arena falla
-      // con EACCES, que es un error del lanzamiento y no de la extracción:
-      // costaría buscarlo en el sitio equivocado.
       chmodSync(target, 0o755)
       logForDebugging(
         `embeddedRgExtractor: extracted ${bytes.length} bytes to ${target}`,

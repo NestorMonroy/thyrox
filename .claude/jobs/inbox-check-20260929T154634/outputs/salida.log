@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+ 6 pass
+ 0 fail
+ 11 expect() calls
+Ran 6 tests across 2 files. [387.00ms]
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 7 expect() calls
+Ran 5 tests across 1 file. [324.00ms]
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 6 expect() calls
+Ran 5 tests across 1 file. [984.00ms]
+bun test v1.3.11 (af24e281)
+
+ 27 pass
+ 0 fail
+ 50 expect() calls
+Ran 27 tests across 3 files. [4.21s]
+rc=0
+?? .claude/cache/headless-pool/template-82fbed21d580/
+__BG_EXIT__=0

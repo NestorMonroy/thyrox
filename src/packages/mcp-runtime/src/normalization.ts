@@ -1,21 +1,18 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/normalization.ts` — su
- * única exportación, ninguna omitida. Sin imports en la fuente (a propósito
- * — evita ciclos de import, según su propio comentario).
+ * Pure utility functions for MCP name normalization.
+ * This file has no dependencies to avoid circular imports.
  */
 
-// Los nombres de servidor de claude.ai llevan este prefijo.
+// Claude.ai server names are prefixed with this string
 const CLAUDEAI_SERVER_PREFIX = 'claude.ai '
 
 /**
- * Normaliza nombres de servidor para que cumplan el patrón de la API
- * `^[a-zA-Z0-9_-]{1,64}$`. Reemplaza cualquier carácter inválido (incluidos
- * puntos y espacios) por guiones bajos.
+ * Normalize server names to be compatible with the API pattern ^[a-zA-Z0-9_-]{1,64}$
+ * Replaces any invalid characters (including dots and spaces) with underscores.
  *
- * Para servidores de claude.ai (nombres que empiezan con "claude.ai "),
- * además colapsa guiones bajos consecutivos y quita los guiones bajos al
- * inicio/final, para no interferir con el delimitador `__` que usan los
- * nombres de herramienta de MCP.
+ * For claude.ai servers (names starting with "claude.ai "), also collapses
+ * consecutive underscores and strips leading/trailing underscores to prevent
+ * interference with the __ delimiter used in MCP tool names.
  */
 export function normalizeNameForMCP(name: string): string {
   let normalized = name.replace(/[^a-zA-Z0-9_-]/g, '_')

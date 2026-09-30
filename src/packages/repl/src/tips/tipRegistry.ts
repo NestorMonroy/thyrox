@@ -8,20 +8,20 @@ import {
 } from '@thyrox/config/settings'
 import { shouldOfferTerminalSetup } from '../terminalSetup.js'
 import { getDesktopUpsellConfig } from '../components/DesktopUpsell/DesktopUpsellStartup.js'
-import { color } from '@anthropic/ink'
+import { color, type ThemeName } from '@anthropic/ink'
 import { shouldShowOverageCreditUpsell } from '../components/LogoV2/OverageCreditUpsell.js'
 import { getShortcutDisplay } from '../keybindings/shortcutFormat.js'
 import { isKairosCronEnabled } from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'
 import { is1PApiCustomer } from '@thyrox/provider/authAlias.js'
 import { getInvokedBinaryName } from '@thyrox/config'
-import { countConcurrentSessions } from '@thyrox/agent/concurrentSessions.js'
+import { sweepRegistry } from '@thyrox/local-observability/uds/registrySweep.js'
 import { getGlobalConfig } from '@thyrox/config'
 import {
   getEffortEnvOverride,
   modelSupportsEffort,
 } from '@thyrox/agent/effort.js'
 import { env } from '@thyrox/config/env/paths'
-import { cacheKeys } from '@thyrox/tool-registry/fileStateCache'
+import { cacheKeys, type FileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import { getWorktreeCount } from '@thyrox/storage/git.js'
 import {
   detectRunningIDEsCached,
@@ -56,6 +56,24 @@ import {
 } from '@thyrox/provider/referral.js'
 import { getSessionsSinceLastShown } from './tipHistory.js'
 import type { Tip, TipContext } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
+
+// Forma real del subconjunto de TipContext que este registro consume; el
+// stub de './types.js' lo declara como `unknown`.
+interface TipDisplayContext {
+  theme: ThemeName
+  bashTools?: Set<string>
+  readFileState?: FileStateCache
+}
+
+// Forma real de un Tip que este registro produce y consume; el stub de
+// './types.js' lo declara como `unknown`.
+interface TipEntry {
+  id: string
+  content: (context: TipDisplayContext) => Promise<string>
+  cooldownSessions: number
+  isRelevant: (context?: TipDisplayContext) => Promise<boolean>
+}
 
 let _isOfficialMarketplaceInstalledCache: boolean | undefined
 async function isOfficialMarketplaceInstalled(): Promise<boolean> {
@@ -69,7 +87,7 @@ async function isOfficialMarketplaceInstalled(): Promise<boolean> {
 
 async function isMarketplacePluginRelevant(
   pluginName: string,
-  context: TipContext | undefined,
+  context: TipDisplayContext | undefined,
   signals: { filePath?: RegExp; cli?: string[] },
 ): Promise<boolean> {
   if (!(await isOfficialMarketplaceInstalled())) {
@@ -78,7 +96,7 @@ async function isMarketplacePluginRelevant(
   if (isPluginInstalled(`${pluginName}@${OFFICIAL_MARKETPLACE_NAME}`)) {
     return false
   }
-  const { bashTools } = context ?? {}
+  const bashTools = context?.bashTools
   if (signals.cli && bashTools?.size) {
     if (signals.cli.some(cmd => bashTools.has(cmd))) {
       return true
@@ -93,11 +111,11 @@ async function isMarketplacePluginRelevant(
   return false
 }
 
-const externalTips: Tip[] = [
+const externalTips: TipEntry[] = [
   {
     id: 'new-user-warmup',
     content: async () =>
-      `Start with small features or bug fixes, tell Claude to propose a plan, and verify its suggested edits`,
+      `Start with small features or bug fixes, tell ${PRODUCT_NAME} to propose a plan, and verify its suggested edits`,
     cooldownSessions: 3,
     async isRelevant() {
       const config = getGlobalConfig()
@@ -144,7 +162,7 @@ const externalTips: Tip[] = [
   {
     id: 'git-worktrees',
     content: async () =>
-      'Use git worktrees to run multiple Claude sessions in parallel.',
+      `Use git worktrees to run multiple ${PRODUCT_NAME} sessions in parallel.`,
     cooldownSessions: 10,
     isRelevant: async () => {
       try {
@@ -159,11 +177,11 @@ const externalTips: Tip[] = [
   {
     id: 'color-when-multi-clauding',
     content: async () =>
-      'Running multiple Claude sessions? Use /color and /rename to tell them apart at a glance.',
+      `Running multiple ${PRODUCT_NAME} sessions? Use /color and /rename to tell them apart at a glance.`,
     cooldownSessions: 10,
     isRelevant: async () => {
       if (getCurrentSessionAgentColor()) return false
-      const count = await countConcurrentSessions()
+      const count = await sweepRegistry()
       return count >= 2
     },
   },
@@ -217,7 +235,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'memory-command',
-    content: async () => 'Use /memory to view and manage Claude memory',
+    content: async () => `Use /memory to view and manage ${PRODUCT_NAME} memory`,
     cooldownSessions: 15,
     async isRelevant() {
       const config = getGlobalConfig()
@@ -240,11 +258,11 @@ const externalTips: Tip[] = [
   {
     id: 'powershell-tool-env',
     content: async () =>
-      'Set CLAUDE_CODE_USE_POWERSHELL_TOOL=1 to enable the PowerShell tool (preview)',
+      'Set THYROX_CODE_USE_POWERSHELL_TOOL=1 to enable the PowerShell tool (preview)',
     cooldownSessions: 10,
     isRelevant: async () =>
       getPlatform() === 'windows' &&
-      process.env.CLAUDE_CODE_USE_POWERSHELL_TOOL === undefined,
+      process.env.THYROX_CODE_USE_POWERSHELL_TOOL === undefined,
   },
   {
     id: 'status-line',
@@ -256,7 +274,7 @@ const externalTips: Tip[] = [
   {
     id: 'prompt-queue',
     content: async () =>
-      'Hit Enter to queue up additional messages while Claude is working.',
+      `Hit Enter to queue up additional messages while ${PRODUCT_NAME} is working.`,
     cooldownSessions: 5,
     async isRelevant() {
       const config = getGlobalConfig()
@@ -266,14 +284,14 @@ const externalTips: Tip[] = [
   {
     id: 'enter-to-steer-in-relatime',
     content: async () =>
-      'Send messages to Claude while it works to steer Claude in real-time',
+      `Send messages to ${PRODUCT_NAME} while it works to steer ${PRODUCT_NAME} in real-time`,
     cooldownSessions: 20,
     isRelevant: async () => true,
   },
   {
     id: 'todo-list',
     content: async () =>
-      'Ask Claude to create a todo list when working on complex tasks to track progress and remain on track',
+      `Ask ${PRODUCT_NAME} to create a todo list when working on complex tasks to track progress and remain on track`,
     cooldownSessions: 20,
     isRelevant: async () => true,
   },
@@ -306,7 +324,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'ide-upsell-external-terminal',
-    content: async () => 'Connect Claude to your IDE · /ide',
+    content: async () => `Connect ${PRODUCT_NAME} to your IDE · /ide`,
     cooldownSessions: 4,
     async isRelevant() {
       if (isSupportedTerminal()) {
@@ -332,7 +350,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'install-slack-app',
-    content: async () => 'Run /install-slack-app to use Claude in Slack',
+    content: async () => `Run /install-slack-app to use ${PRODUCT_NAME} in Slack`,
     cooldownSessions: 10,
     isRelevant: async () => !getGlobalConfig().slackAppInstallCount,
   },
@@ -356,7 +374,7 @@ const externalTips: Tip[] = [
   {
     id: 'paste-images-mac',
     content: async () =>
-      'Paste images into Claude Code using control+v (not cmd+v!)',
+      `Paste images into ${PRODUCT_NAME} using control+v (not cmd+v!)`,
     cooldownSessions: 10,
     isRelevant: async () => getPlatform() === 'macos',
   },
@@ -440,15 +458,15 @@ const externalTips: Tip[] = [
   {
     id: 'desktop-app',
     content: async () =>
-      'Run Claude Code locally or remotely using the Claude desktop app: clau.de/desktop',
+      `Run ${PRODUCT_NAME} locally or remotely using the ${PRODUCT_NAME} desktop app: clau.de/desktop`,
     cooldownSessions: 15,
     isRelevant: async () => getPlatform() !== 'linux',
   },
   {
     id: 'desktop-shortcut',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
-      return `Continue your session in Claude Code Desktop with ${blue('/desktop')}`
+      return `Continue your session in ${PRODUCT_NAME} Desktop with ${blue('/desktop')}`
     },
     cooldownSessions: 15,
     isRelevant: async () => {
@@ -469,14 +487,14 @@ const externalTips: Tip[] = [
   {
     id: 'mobile-app',
     content: async () =>
-      '/mobile to use Claude Code from the Claude app on your phone',
+      `/mobile to use ${PRODUCT_NAME} from the ${PRODUCT_NAME} app on your phone`,
     cooldownSessions: 15,
     isRelevant: async () => true,
   },
   {
     id: 'opusplan-mode-reminder',
     content: async () =>
-      `Your default model setting is Opus Plan Mode. Press ${getShortcutDisplay('chat:cycleMode', 'Chat', 'shift+tab')} twice to activate Plan Mode and plan with Claude Opus.`,
+      `Your default model setting is Opus Plan Mode. Press ${getShortcutDisplay('chat:cycleMode', 'Chat', 'shift+tab')} twice to activate Plan Mode and plan with Opus.`,
     cooldownSessions: 2,
     async isRelevant() {
       if (process.env.USER_TYPE === 'ant') return false
@@ -492,24 +510,24 @@ const externalTips: Tip[] = [
   },
   {
     id: 'frontend-design-plugin',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       return `Working with HTML/CSS? Install the frontend-design plugin:\n${blue(`/plugin install frontend-design@${OFFICIAL_MARKETPLACE_NAME}`)}`
     },
     cooldownSessions: 3,
-    isRelevant: async context =>
+    isRelevant: async (context?: TipDisplayContext) =>
       isMarketplacePluginRelevant('frontend-design', context, {
         filePath: /\.(html|css|htm)$/i,
       }),
   },
   {
     id: 'vercel-plugin',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       return `Working with Vercel? Install the vercel plugin:\n${blue(`/plugin install vercel@${OFFICIAL_MARKETPLACE_NAME}`)}`
     },
     cooldownSessions: 3,
-    isRelevant: async context =>
+    isRelevant: async (context?: TipDisplayContext) =>
       isMarketplacePluginRelevant('vercel', context, {
         filePath: /(?:^|[/\\])vercel\.json$/i,
         cli: ['vercel'],
@@ -517,14 +535,14 @@ const externalTips: Tip[] = [
   },
   {
     id: 'effort-high-nudge',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       const cmd = blue('/effort high')
       const variant = getFeatureValue_CACHED_MAY_BE_STALE<
         'off' | 'copy_a' | 'copy_b'
       >('tengu_tide_elm', 'off')
       return variant === 'copy_b'
-        ? `Use ${cmd} for better one-shot answers. Claude thinks it through first.`
+        ? `Use ${cmd} for better one-shot answers. ${PRODUCT_NAME} thinks it through first.`
         : `Working on something tricky? ${cmd} gives better first answers`
     },
     cooldownSessions: 3,
@@ -547,14 +565,14 @@ const externalTips: Tip[] = [
   },
   {
     id: 'subagent-fanout-nudge',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       const variant = getFeatureValue_CACHED_MAY_BE_STALE<
         'off' | 'copy_a' | 'copy_b'
       >('tengu_tern_alloy', 'off')
       return variant === 'copy_b'
-        ? `For big tasks, tell Claude to ${blue('use subagents')}. They work in parallel and keep your main thread clean.`
-        : `Say ${blue('"fan out subagents"')} and Claude sends a team. Each one digs deep so nothing gets missed.`
+        ? `For big tasks, tell ${PRODUCT_NAME} to ${blue('use subagents')}. They work in parallel and keep your main thread clean.`
+        : `Say ${blue('"fan out subagents"')} and ${PRODUCT_NAME} sends a team. Each one digs deep so nothing gets missed.`
     },
     cooldownSessions: 3,
     isRelevant: async () => {
@@ -569,7 +587,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'loop-command-nudge',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       const variant = getFeatureValue_CACHED_MAY_BE_STALE<
         'off' | 'copy_a' | 'copy_b'
@@ -592,11 +610,11 @@ const externalTips: Tip[] = [
   },
   {
     id: 'guest-passes',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const claude = color('claude', ctx.theme)
       const reward = getCachedReferrerReward()
       return reward
-        ? `Share Claude Code and earn ${claude(formatCreditAmount(reward))} of extra usage · ${claude('/passes')}`
+        ? `Share ${PRODUCT_NAME} and earn ${claude(formatCreditAmount(reward))} of extra usage · ${claude('/passes')}`
         : `You have free guest passes to share · ${claude('/passes')}`
     },
     cooldownSessions: 3,
@@ -611,7 +629,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'overage-credit',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const claude = color('claude', ctx.theme)
       const info = getCachedOverageCreditGrant()
       const amount = info ? formatGrantAmount(info) : null
@@ -623,13 +641,13 @@ const externalTips: Tip[] = [
     isRelevant: async () => shouldShowOverageCreditUpsell(),
   },
 ]
-const internalOnlyTips: Tip[] =
+const internalOnlyTips: TipEntry[] =
   process.env.USER_TYPE === 'ant'
     ? [
         {
           id: 'important-claudemd',
           content: async () =>
-            '[ANT-ONLY] Use "IMPORTANT:" prefix for must-follow CLAUDE.md rules',
+            '[ANT-ONLY] Use "IMPORTANT:" prefix for must-follow THYROX.md rules',
           cooldownSessions: 30,
           isRelevant: async () => true,
         },
@@ -643,7 +661,7 @@ const internalOnlyTips: Tip[] =
       ]
     : []
 
-function getCustomTips(): Tip[] {
+function getCustomTips(): TipEntry[] {
   const settings = getInitialSettings()
   const override = settings.spinnerTipsOverride
   if (!override?.tips?.length) return []
@@ -668,7 +686,7 @@ export async function getRelevantTips(context?: TipContext): Promise<Tip[]> {
 
   // Otherwise, filter built-in tips as before and combine with custom
   const tips = [...externalTips, ...internalOnlyTips]
-  const isRelevant = await Promise.all(tips.map(_ => _.isRelevant(context)))
+  const isRelevant = await Promise.all(tips.map(_ => _.isRelevant(context as TipDisplayContext | undefined)))
   const filtered = tips
     .filter((_, index) => isRelevant[index])
     .filter(_ => getSessionsSinceLastShown(_.id) >= _.cooldownSessions)

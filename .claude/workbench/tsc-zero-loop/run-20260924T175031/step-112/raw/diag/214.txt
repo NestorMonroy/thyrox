@@ -1,0 +1,6 @@
+src/packages/shell/src/Shell.ts(47,7): error TS2345: Argument of type '((lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void) | null | undefined' is not assignable to parameter of type 'ProgressCallback | null'.
+  Type 'undefined' is not assignable to type 'ProgressCallback | null'.
+src/packages/shell/src/Shell.ts(62,5): error TS2322: Type '() => Promise<string | null>' is not assignable to type '() => Promise<string>'.
+  Type 'Promise<string | null>' is not assignable to type 'Promise<string>'.
+    Type 'string | null' is not assignable to type 'string'.
+      Type 'null' is not assignable to type 'string'.

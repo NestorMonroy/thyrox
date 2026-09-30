@@ -15,6 +15,7 @@ import {
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { Select } from '../CustomSelect/select.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type MatcherWithSource = {
   matcher: string
@@ -26,7 +27,7 @@ type Props = {
   selectedEvent: HookEvent
   matchersForSelectedEvent: string[]
   hooksByEventAndMatcher: Record<
-    HookEvent,
+    string,
     Record<string, IndividualHookConfig[]>
   >
   eventDescription: string
@@ -45,7 +46,7 @@ export function SelectMatcherMode({
   // Group matchers with their sources (already sorted by priority in parent)
   const matchersWithSources: MatcherWithSource[] = React.useMemo(() => {
     return matchersForSelectedEvent.map(matcher => {
-      const hooks = hooksByEventAndMatcher[selectedEvent]?.[matcher] || []
+      const hooks = hooksByEventAndMatcher[selectedEvent as string]?.[matcher] || []
       const sources = Array.from(new Set(hooks.map(h => h.source)))
       return {
         matcher,
@@ -66,7 +67,7 @@ export function SelectMatcherMode({
         <Box flexDirection="column" gap={1}>
           <Text dimColor>No hooks configured for this event.</Text>
           <Text dimColor>
-            To add hooks, edit settings.json directly or ask Claude.
+            To add hooks, edit settings.json directly or ask {PRODUCT_NAME}.
           </Text>
         </Box>
       </Dialog>

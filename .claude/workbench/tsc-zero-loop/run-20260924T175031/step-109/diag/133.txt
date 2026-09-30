@@ -1,0 +1,93 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+tests/unit/utils/treeify.test.ts(57,28): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'TreeNode'.
+  --- código tests/unit/utils/treeify.test.ts:47-67 ---
+     47  
+     48    test('renders arrays with length', () => {
+     49      const result = treeify({ items: [1, 2, 3] })
+     50      expect(result).toContain('items')
+     51      expect(result).toContain('[Array(3)]')
+     52    })
+     53  
+     54    test('detects circular references', () => {
+     55      const obj: Record<string, unknown> = { name: 'root' }
+     56      obj.self = obj
+     57>     const result = treeify(obj)
+     58      expect(result).toContain('[Circular]')
+     59    })
+     60  
+     61    test('returns (empty) for empty object', () => {
+     62      const result = treeify({})
+     63      expect(result).toBe('(empty)')
+     64    })
+     65  
+     66    test('hideFunctions filters out function values', () => {
+     67      const obj = { name: 'test', fn: () => {} }
+tests/unit/utils/treeify.test.ts(68,28): error TS2345: Argument of type '{ name: string; fn: () => void; }' is not assignable to parameter of type 'TreeNode'.
+  --- código tests/unit/utils/treeify.test.ts:58-78 ---
+     58      expect(result).toContain('[Circular]')
+     59    })
+     60  
+     61    test('returns (empty) for empty object', () => {
+     62      const result = treeify({})
+     63      expect(result).toBe('(empty)')
+     64    })
+     65  
+     66    test('hideFunctions filters out function values', () => {
+     67      const obj = { name: 'test', fn: () => {} }
+     68>     const result = treeify(obj, { hideFunctions: true })
+     69      expect(result).toContain('name')
+     70      expect(result).not.toContain('fn')
+     71    })
+     72  
+     73    test('showValues false hides leaf values', () => {
+     74      const obj = { name: 'test' }
+     75      const result = treeify(obj, { showValues: false })
+     76      expect(result).toContain('name')
+     77      expect(result).not.toContain('test')
+     78    })
+tests/unit/utils/treeify.test.ts(82,28): error TS2345: Argument of type '{ fn: () => void; }' is not assignable to parameter of type 'TreeNode'.
+  --- código tests/unit/utils/treeify.test.ts:72-92 ---
+     72  
+     73    test('showValues false hides leaf values', () => {
+     74      const obj = { name: 'test' }
+     75      const result = treeify(obj, { showValues: false })
+     76      expect(result).toContain('name')
+     77      expect(result).not.toContain('test')
+     78    })
+     79  
+     80    test('showValues true shows function as [Function]', () => {
+     81      const obj = { fn: () => {} }
+     82>     const result = treeify(obj, { showValues: true })
+     83      expect(result).toContain('[Function]')
+     84    })
+     85  
+     86    test('deep nesting produces correct indentation', () => {
+     87      const obj = { a: { b: { c: 'deep' } } }
+     88      const result = treeify(obj)
+     89      const lines = result.split('\n')
+     90      expect(lines.length).toBe(3)
+     91      // Each level adds indentation
+     92      expect(lines[2]!.length).toBeGreaterThan(lines[1]!.length)
+tests/unit/utils/treeify.test.ts(103,28): error TS2345: Argument of type '{ name: string; nested: { inner: string; }; count: number; }' is not assignable to parameter of type 'TreeNode'.
+  --- código tests/unit/utils/treeify.test.ts:93-109 ---
+     93    })
+     94  
+     95    test('handles empty string key with string value', () => {
+     96      const obj = { ' ': 'whitespace-key' }
+     97      const result = treeify(obj)
+     98      expect(result).toContain('whitespace-key')
+     99    })
+    100  
+    101    test('handles mixed object and primitive values', () => {
+    102      const obj = { name: 'test', nested: { inner: 'val' }, count: 5 }
+    103>     const result = treeify(obj)
+    104      expect(result).toContain('name')
+    105      expect(result).toContain('nested')
+    106      expect(result).toContain('inner')
+    107      expect(result).toContain('count')
+    108    })
+    109  })

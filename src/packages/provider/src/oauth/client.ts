@@ -1,6 +1,6 @@
 /**
  * Porte de `ccnmt: packages/provider/src/oauth/client.ts` — cliente OAuth
- * para los flujos de autenticación con los servicios de Claude. Sus 14
+ * para los flujos de autenticación con los servicios de thyrox. Sus 14
  * exportaciones, ninguna omitida.
  *
  * `./types.js` → `internal/oauthTypes.ts` (ver su cabecera: incluso en la
@@ -134,14 +134,25 @@ export function buildAuthUrl({
   authUrl.searchParams.append('code_challenge_method', 'S256')
   authUrl.searchParams.append('state', state)
 
-  if (orgUUID) authUrl.searchParams.append('orgUUID', orgUUID)
-  if (loginHint) authUrl.searchParams.append('login_hint', loginHint)
-  if (loginMethod) authUrl.searchParams.append('login_method', loginMethod)
+  if (orgUUID) {
+    authUrl.searchParams.append('orgUUID', orgUUID)
+  }
+  if (loginHint) {
+    authUrl.searchParams.append('login_hint', loginHint)
+  }
+  if (loginMethod) {
+    authUrl.searchParams.append('login_method', loginMethod)
+  }
 
   return authUrl.toString()
 }
 
 type AM = AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+// Los comentarios `ant <fn> <emisor>` de las llamadas de abajo nombran la
+// build 2.1.136 que cita su suite (`dg6` intercambio, `Bq_` refresco, `cg6`
+// roles, `lg6` clave de API; `yH` ok, `xH` bad, `G6` sad). Esa build no esta
+// en este arbol; lo medido es 2.1.275, entre parentesis: `$nr`, `dte`, `pSt`
+// y `Fnr`, con `_` ok, `m` bad y `f` sad (chunk-xbd48fav.js).
 function featureOk(n: string): void {
   logEvent('tengu_feature_ok', { feature_name: n as AM })
 }
@@ -168,7 +179,9 @@ export async function exchangeCodeForTokens(
     code_verifier: codeVerifier,
     state,
   }
-  if (expiresIn !== undefined) requestBody.expires_in = expiresIn
+  if (expiresIn !== undefined) {
+    requestBody.expires_in = expiresIn
+  }
 
   const response = await axios.post(getOauthConfig().TOKEN_URL, requestBody, {
     headers: { 'Content-Type': 'application/json' },
@@ -178,16 +191,23 @@ export async function exchangeCodeForTokens(
   if (response.status !== 200) {
     const reason = response.status === 401 ? 'oauth_exchange_invalid_code' : 'oauth_exchange_http_error'
     logEvent('tengu_oauth_token_exchange_failed', { reason, status: String(response.status) })
-    featureBad('oauth_token_exchange', reason)
+    featureBad('oauth_token_exchange', reason) // ant dg6 xH("oauth_token_exchange", reason) (2.1.275: $nr m)
     throw new Error(
       response.status === 401 ? 'Authentication failed: Invalid authorization code' : `Token exchange failed (${response.status}): ${response.statusText}`,
     )
   }
   logEvent('tengu_oauth_token_exchange_success', {})
-  featureOk('oauth_token_exchange')
+  featureOk('oauth_token_exchange') // ant dg6 yH (2.1.275: $nr _)
   return response.data
 }
 
+/**
+ * Port of ant Bq_ signature: `{ scopes, expiresIn, clientId }` — el nombre
+ * es de la build 2.1.136 que cita su suite, que no esta en este arbol. En
+ * 2.1.275 la funcion es `dte` (chunk-xbd48fav.js) y lleva cinco opciones mas
+ * —`skipProfileFetch`, `signal`, `telemetryContext`, `invalidScopeRetried`,
+ * `storageV5`— que este porte no tiene.
+ */
 export async function refreshOAuthToken(
   refreshToken: string,
   { scopes: requestedScopes, expiresIn, clientId }: { scopes?: string[]; expiresIn?: number; clientId?: string } = {},
@@ -252,6 +272,9 @@ export async function refreshOAuthToken(
       }
     }
 
+    // ant Bq_ return: `clientId: K`. Devolverlo hace que el siguiente
+    // refresco lo reenvie y el token siga ligado a su cliente OAuth; 2.1.275
+    // (`dte`) devuelve `clientId:s` igual.
     return {
       accessToken,
       refreshToken: newRefreshToken,
@@ -273,9 +296,9 @@ export async function refreshOAuthToken(
     if (isInvalidGrantError(error)) {
       markRefreshTokenDead(refreshToken)
       logEvent('tengu_oauth_refresh_token_marked_dead_invalid_grant', {})
-      featureBad('oauth_token_refresh', 'oauth_refresh_invalid_grant')
+      featureBad('oauth_token_refresh', 'oauth_refresh_invalid_grant') // ant Bq_ xH (2.1.275: dte m)
     } else {
-      featureSad('oauth_token_refresh', 'oauth_refresh_request_failed')
+      featureSad('oauth_token_refresh', 'oauth_refresh_request_failed') // ant Bq_ G6 (2.1.275: dte f)
     }
     throw error
   }
@@ -288,7 +311,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
 
   if (response.status !== 200) {
     logEvent('tengu_oauth_fetch_roles_failed', { reason: 'http_error', status: String(response.status) })
-    featureBad('oauth_fetch_roles', 'oauth_roles_http_error')
+    featureBad('oauth_fetch_roles', 'oauth_roles_http_error') // ant cg6 xH (2.1.275: pSt m)
     throw new Error(`Failed to fetch user roles: ${response.statusText}`)
   }
   const data = response.data as UserRolesResponse
@@ -296,7 +319,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
 
   if (!config.oauthAccount) {
     logEvent('tengu_oauth_fetch_roles_failed', { reason: 'no_account' })
-    featureBad('oauth_fetch_roles', 'oauth_roles_no_account')
+    featureBad('oauth_fetch_roles', 'oauth_roles_no_account') // ant cg6 xH (2.1.275: pSt m)
     throw new Error('OAuth account information not found in config')
   }
 
@@ -313,7 +336,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
   }))
 
   logEvent('tengu_oauth_roles_stored', { org_role: data.organization_role as AM })
-  featureOk('oauth_fetch_roles')
+  featureOk('oauth_fetch_roles') // ant cg6 yH (2.1.275: pSt _)
 }
 
 export async function createAndStoreApiKey(accessToken: string): Promise<string | null> {
@@ -326,11 +349,11 @@ export async function createAndStoreApiKey(accessToken: string): Promise<string 
     if (apiKey) {
       await saveApiKey(apiKey)
       logEvent('tengu_oauth_api_key', { status: 'success' as AM, statusCode: response.status })
-      featureOk('oauth_create_api_key')
+      featureOk('oauth_create_api_key') // ant lg6 yH (2.1.275: Fnr _)
       return apiKey
     }
     logEvent('tengu_oauth_create_api_key_failed', { reason: 'empty_response' })
-    featureBad('oauth_create_api_key', 'oauth_api_key_empty_response')
+    featureBad('oauth_create_api_key', 'oauth_api_key_empty_response') // ant lg6 xH (2.1.275: Fnr m)
     return null
   } catch (error) {
     logEvent('tengu_oauth_api_key', {
@@ -338,7 +361,7 @@ export async function createAndStoreApiKey(accessToken: string): Promise<string 
       error: (error instanceof Error ? error.message : String(error)) as AM,
     })
     logEvent('tengu_oauth_create_api_key_failed', { reason: 'request_failed' })
-    featureBad('oauth_create_api_key', 'oauth_api_key_request_failed')
+    featureBad('oauth_create_api_key', 'oauth_api_key_request_failed') // ant lg6 xH (2.1.275: Fnr m)
     throw error
   }
 }
@@ -423,7 +446,7 @@ export async function fetchProfileInfo(accessToken: string): Promise<{
  * → fetch en vivo del perfil (requiere scope `user:profile`).
  */
 export async function getOrganizationUUID(): Promise<string | null> {
-  const envOrgUUID = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
+  const envOrgUUID = readEnv('THYROX_CODE_ORGANIZATION_UUID')
   if (envOrgUUID) return envOrgUUID
 
   const globalConfig = getGlobalConfig()
@@ -442,9 +465,9 @@ export async function getOrganizationUUID(): Promise<string | null> {
 
 /** Puebla la info de cuenta OAuth si no está ya cacheada en config. */
 export async function populateOAuthAccountInfoIfNeeded(): Promise<boolean> {
-  const envAccountUuid = readEnv('CLAUDE_CODE_ACCOUNT_UUID')
-  const envUserEmail = readEnv('CLAUDE_CODE_USER_EMAIL')
-  const envOrganizationUuid = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
+  const envAccountUuid = readEnv('THYROX_CODE_ACCOUNT_UUID')
+  const envUserEmail = readEnv('THYROX_CODE_USER_EMAIL')
+  const envOrganizationUuid = readEnv('THYROX_CODE_ORGANIZATION_UUID')
   const hasEnvVars = Boolean(envAccountUuid && envUserEmail && envOrganizationUuid)
   if (envAccountUuid && envUserEmail && envOrganizationUuid) {
     if (!getGlobalConfig().oauthAccount) {

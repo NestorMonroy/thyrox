@@ -1,9 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/voice/src/errors.ts` (30 líneas fuente,
- * 100% portado). Jerarquía de errores de voz: una base con `code` más
- * tres subclases (captura de audio, autenticación, streaming).
- */
-
 export class VoiceBaseError extends Error {
   readonly code: string
 

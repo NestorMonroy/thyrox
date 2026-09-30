@@ -42,7 +42,7 @@ describe('collapseHookSummaries', () => {
     ]
     const result = collapseHookSummaries(messages)
     expect(result).toHaveLength(1)
-    expect(result[0].hookCount).toBe(3)
+    expect(result[0]!.hookCount).toBe(3)
   })
 
   test('does not collapse messages with different hookLabels', () => {
@@ -60,7 +60,7 @@ describe('collapseHookSummaries', () => {
       makeHookSummary({ hookLabel: 'A', hookCount: 5 }),
     ]
     const result = collapseHookSummaries(messages)
-    expect(result[0].hookCount).toBe(8)
+    expect(result[0]!.hookCount).toBe(8)
   })
 
   test('merges hookInfos arrays', () => {
@@ -71,7 +71,7 @@ describe('collapseHookSummaries', () => {
       makeHookSummary({ hookLabel: 'A', hookInfos: [info2] }),
     ]
     const result = collapseHookSummaries(messages)
-    expect(result[0].hookInfos).toEqual([info1, info2])
+    expect(result[0]!.hookInfos).toEqual([info1, info2])
   })
 
   test('merges hookErrors arrays', () => {
@@ -82,7 +82,7 @@ describe('collapseHookSummaries', () => {
       makeHookSummary({ hookLabel: 'A', hookErrors: [err2] }),
     ]
     const result = collapseHookSummaries(messages)
-    expect(result[0].hookErrors).toHaveLength(2)
+    expect(result[0]!.hookErrors).toHaveLength(2)
   })
 
   test('takes max totalDurationMs', () => {
@@ -92,7 +92,7 @@ describe('collapseHookSummaries', () => {
       makeHookSummary({ hookLabel: 'A', totalDurationMs: 75 }),
     ]
     const result = collapseHookSummaries(messages)
-    expect(result[0].totalDurationMs).toBe(100)
+    expect(result[0]!.totalDurationMs).toBe(100)
   })
 
   test('takes any truthy preventContinuation', () => {
@@ -101,14 +101,14 @@ describe('collapseHookSummaries', () => {
       makeHookSummary({ hookLabel: 'A', preventedContinuation: true }),
     ]
     const result = collapseHookSummaries(messages)
-    expect(result[0].preventedContinuation).toBe(true)
+    expect(result[0]!.preventedContinuation).toBe(true)
   })
 
   test('leaves single hook summary unchanged', () => {
     const msg = makeHookSummary({ hookLabel: 'PostToolUse', hookCount: 5 })
     const result = collapseHookSummaries([msg])
     expect(result).toHaveLength(1)
-    expect(result[0].hookCount).toBe(5)
+    expect(result[0]!.hookCount).toBe(5)
   })
 
   test('handles three consecutive same-label summaries', () => {
@@ -119,7 +119,7 @@ describe('collapseHookSummaries', () => {
     ]
     const result = collapseHookSummaries(messages)
     expect(result).toHaveLength(1)
-    expect(result[0].hookCount).toBe(3)
+    expect(result[0]!.hookCount).toBe(3)
   })
 
   test('preserves non-hook messages in between', () => {

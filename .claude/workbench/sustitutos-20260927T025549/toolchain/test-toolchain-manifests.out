@@ -1,0 +1,9 @@
+  ok    las dos sondas existen
+  ok    los seis manifiestos de este arbol estan y se leen
+  ok    un manifiesto obligatorio ausente rehusa con exit 2
+  ok    el rechazo nombra el manifiesto que falta
+  ok    un lock ausente no rehusa: se regenera
+  ok    pero lo nombra igual, como aviso
+  ok    un manifiesto presente e ilegible rehusa y lo nombra
+  ok    el rechazo no emite ningun conteo
+EXIT=124

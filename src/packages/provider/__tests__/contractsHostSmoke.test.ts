@@ -72,6 +72,7 @@ function stubBindings(): ProviderHostBindings {
       logForDebugging: () => {},
       getAWSRegion: () => 'us-east-1',
       getVertexRegionForModel: () => 'us-central1',
+      isEnvTruthy: () => false,
     },
     session: {},
   }

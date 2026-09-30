@@ -1,29 +1,16 @@
-/**
- * Telemetría del clasificador de modo automático: el desenlace que se registra
- * y la forma del error que lo causó. Sin lógica de clasificación.
- *
- * Procedencia: `ccnmt: packages/permission/src/classifierTelemetry.ts`
- * (100 líneas, 4 exports). Ese árbol declara `"license": "UNLICENSED"`, así
- * que los cuerpos se **reimplementan** y no se copian.
- *
- * DIVERGENCIA DECLARADA: ninguna en conducta. El nombre del evento
- * (`tengu_auto_mode_outcome`) se conserva porque es el contrato del sumidero
- * de telemetría y ya es la convención de este árbol — medido, 553 sitios lo
- * usan. Renombrarlo aquí solo partiría el corpus en dos vocabularios; el
- * barrido, si se decide, es la tarea #249.
- */
-import {
-  APIConnectionError,
-  APIConnectionTimeoutError,
-  APIError,
-} from '@anthropic-ai/sdk'
+import { APIConnectionError, APIConnectionTimeoutError, APIError } from '@anthropic-ai/sdk'
 import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata.js'
-import {
-  getErrnoCode,
-  isAbortError,
-} from '@thyrox/local-observability/errorHelpers.js'
+import { getErrnoCode, isAbortError } from '@thyrox/local-observability/errorHelpers.js'
 import { parsePromptTooLongTokenCounts } from '@thyrox/provider/errors.js'
+
+// ============================================================================
+// Auto-mode classifier telemetry (ant Wd / oZ7 / aZ7)
+//
+// Outcome logging + error classification for the auto-mode classifier. Pure
+// telemetry/error-shape helpers — no classification logic — split out of
+// yoloClassifier.ts to keep the decision engine focused.
+// ============================================================================
 
 export type AutoModeOutcome =
   | 'success'
@@ -33,15 +20,9 @@ export type AutoModeOutcome =
   | 'transcript_too_long'
 
 /**
- * Registra el desenlace de una evaluación del clasificador.
- *
- * Todos los campos de texto son de vocabulario cerrado —desenlace, nombre de
- * modelo, tipo de clasificador, clase de fallo—, nunca código ni rutas: es lo
- * que hace segura la conversión al tipo de metadata analítica.
- *
- * Las tres claves opcionales se añaden SÓLO si vienen. Una clave presente con
- * valor `undefined` no es lo mismo que ausente: el sumidero la serializaría
- * como columna vacía y ensuciaría el agregado.
+ * Telemetry helper for tengu_auto_mode_outcome. All string fields are
+ * enum-like values (outcome, model name, classifier type, failure kind) —
+ * never code or file paths, so the AnalyticsMetadata casts are safe.
  */
 export function logAutoModeOutcome(
   outcome: AutoModeOutcome,
@@ -83,13 +64,12 @@ export function logAutoModeOutcome(
 }
 
 /**
- * Reduce un error del clasificador a una cadena estable para la telemetría.
- *
- * EL ORDEN DE LAS COMPROBACIONES ES PARTE DEL MECANISMO, no estilo:
- * `APIConnectionTimeoutError` EXTIENDE `APIConnectionError`, así que
- * invertirlas contaría todo timeout como error de conexión y la distinción
- * desaparecería del agregado sin que nada fallara. La interrupción va antes
- * que las dos porque un abort del reloj de pared no es un fallo del proveedor.
+ * Classify a caught classifier API error into a stable enum string for
+ * telemetry. Mirrors ant 150's oZ7() exactly, including the instanceof order:
+ * APIConnectionTimeoutError must be checked before APIConnectionError because
+ * the former extends the latter. wall_clock_timeout covers abort/timeout
+ * (ant vE); http_NNN carries the HTTP status; errno codes (ENOTFOUND, etc.)
+ * are lowercased; everything else is "other".
  */
 export function classifyClassifierErrorKind(error: unknown): string {
   if (isAbortError(error)) return 'wall_clock_timeout'
@@ -104,11 +84,10 @@ export function classifyClassifierErrorKind(error: unknown): string {
 }
 
 /**
- * Reconoce el error de transcripción demasiado larga y extrae sus dos cuentas.
- *
- * Es el único de la familia que NO vale reintentar: es determinista —la misma
- * transcripción da el mismo error— a diferencia de un 429 o un 5xx, que la
- * capa de consulta ya reintenta por su cuenta.
+ * Detect API 400 "prompt is too long: N tokens > M maximum" errors and
+ * parse the token counts. Returns undefined for any other error.
+ * These are deterministic (same transcript → same error) so retrying
+ * won't help — unlike 429/5xx which sideQuery already retries internally.
  */
 export function detectPromptTooLong(
   error: unknown,

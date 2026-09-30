@@ -71,7 +71,7 @@ export async function call(
           // Clear stale mainLoopModel if it's a bare model id that doesn't
           // belong to any current connection. Without this, the header shows
           // a leftover model from a previous session (e.g. "Sonnet 4.5")
-          // even though the user is now on a fresh Claude Account login.
+          // even though the user is now on a fresh thyrox Account login.
           // This runs after connections are saved so the check is accurate.
           try {
             const { updateSettingsForSource, getSettingsForSource } =

@@ -1,0 +1,94 @@
+src/packages/provider/src/__tests__/integration.test.ts(22,10): error TS2352: Conversion of type '() => Promise<Response>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/__tests__/integration.test.ts:12-32 ---
+     12        controller.close()
+     13      },
+     14    })
+     15    return new Response(body, {
+     16      status: 200,
+     17      headers: { 'content-type': 'text/event-stream' },
+     18    })
+     19  }
+     20  
+     21  function createOpenAIMockFetch(): typeof fetch {
+     22>   return (async () =>
+     23      makeSseResponse([
+     24        'data: {"id":"chatcmpl_test","object":"chat.completion.chunk","created":0,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"role":"assistant","content":"provider-openai-test"},"finish_reason":null}]}\n\n',
+     25        'data: {"id":"chatcmpl_test","object":"chat.completion.chunk","created":0,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":2,"total_tokens":5}}\n\n',
+     26        'data: [DONE]\n\n',
+     27      ])) as typeof fetch
+     28  }
+     29  
+     30  function installTestHostBindings(): void {
+     31    const bindings: ProviderHostBindings = {
+     32      contextPipeline: {
+  Property 'preconnect' is missing in type '() => Promise<Response>' but required in type 'typeof fetch'.
+src/packages/provider/src/__tests__/integration.test.ts(151,29): error TS18046: 'event.message' is of type 'unknown'.
+  --- código src/packages/provider/src/__tests__/integration.test.ts:141-161 ---
+    141    beforeEach(() => {
+    142      installTestHostBindings()
+    143      process.env.OPENAI_API_KEY = 'provider-test'
+    144    })
+    145  
+    146    test('anthropic adapter path resolves without override', async () => {
+    147      const adapter = getProviderAdapter('firstParty')
+    148      const output: string[] = []
+    149      for await (const event of adapter.queryStream(buildQueryArgs(fetch) as any)) {
+    150        if (event.type === 'assistant') {
+    151>         for (const block of event.message.content as any[]) {
+    152            if (block.type === 'text') output.push(block.text)
+    153          }
+    154        }
+    155      }
+    156      expect(output.join('')).toContain('provider-anthropic-test')
+    157    })
+    158  
+    159    test('openai adapter supports streaming + deferred tool filtering', async () => {
+    160      const adapter = getProviderAdapter('openai')
+    161      const output: string[] = []
+src/packages/provider/src/__tests__/integration.test.ts(166,29): error TS18046: 'event.message' is of type 'unknown'.
+  --- código src/packages/provider/src/__tests__/integration.test.ts:156-176 ---
+    156      expect(output.join('')).toContain('provider-anthropic-test')
+    157    })
+    158  
+    159    test('openai adapter supports streaming + deferred tool filtering', async () => {
+    160      const adapter = getProviderAdapter('openai')
+    161      const output: string[] = []
+    162      for await (const event of adapter.queryStream(
+    163        buildQueryArgs(createOpenAIMockFetch()) as any,
+    164      )) {
+    165        if (event.type === 'assistant') {
+    166>         for (const block of event.message.content as any[]) {
+    167            if (block.type === 'text') output.push(block.text)
+    168          }
+    169        }
+    170      }
+    171      expect(output.join('')).toContain('provider-openai-test')
+    172    })
+    173  
+    174    test('openai adapter normalizes errors into assistant api-error messages', async () => {
+    175      const adapter = getProviderAdapter('openai')
+    176      const badFetch = (async () =>
+src/packages/provider/src/__tests__/integration.test.ts(176,22): error TS2352: Conversion of type '() => Promise<Response>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/__tests__/integration.test.ts:166-186 ---
+    166          for (const block of event.message.content as any[]) {
+    167            if (block.type === 'text') output.push(block.text)
+    168          }
+    169        }
+    170      }
+    171      expect(output.join('')).toContain('provider-openai-test')
+    172    })
+    173  
+    174    test('openai adapter normalizes errors into assistant api-error messages', async () => {
+    175      const adapter = getProviderAdapter('openai')
+    176>     const badFetch = (async () =>
+    177        new Response('boom', { status: 500, statusText: 'server error' })) as typeof fetch
+    178  
+    179      const events: any[] = []
+    180      for await (const event of adapter.queryStream(
+    181        buildQueryArgs(badFetch) as any,
+    182      )) {
+    183        events.push(event)
+    184      }
+    185  
+    186      const errorAssistant = events.find(event => event.type === 'assistant')
+  Property 'preconnect' is missing in type '() => Promise<Response>' but required in type 'typeof fetch'.

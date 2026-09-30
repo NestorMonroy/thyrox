@@ -15,9 +15,7 @@ afterEach(() => {
 describe('getGhAuthStatus — gh no instalado', () => {
   test('Bun.which no encuentra gh → not_installed, sin invocar spawn', async () => {
     let spawnLlamado = false
-    // @ts-expect-error — sólo se necesita la forma que which() usa aquí
     Bun.which = () => null
-    // @ts-expect-error — no debería llamarse en esta rama
     Bun.spawn = () => {
       spawnLlamado = true
       throw new Error('no debería spawnearse sin gh instalado')
@@ -30,7 +28,6 @@ describe('getGhAuthStatus — gh no instalado', () => {
 
 describe('getGhAuthStatus — gh instalado', () => {
   test('exit code 0 de `gh auth token` → authenticated', async () => {
-    // @ts-expect-error — stub mínimo
     Bun.which = () => '/usr/bin/gh'
     // @ts-expect-error — stub mínimo del subprocess
     Bun.spawn = (cmd: string[]) => {
@@ -42,7 +39,6 @@ describe('getGhAuthStatus — gh instalado', () => {
   })
 
   test('exit code distinto de 0 → not_authenticated', async () => {
-    // @ts-expect-error — stub mínimo
     Bun.which = () => '/usr/bin/gh'
     // @ts-expect-error — stub mínimo del subprocess
     Bun.spawn = () => ({ exited: Promise.resolve(1) })

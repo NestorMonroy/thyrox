@@ -54,6 +54,12 @@ EOF
 You have the capability to call multiple tools in a single response. Stage and create the commit using a single message. Do not use any other tools or do anything else. Do not send any other text or messages besides these tool calls.`
 }
 
+type CommandContextWithAppState = {
+  getAppState: () => {
+    toolPermissionContext: { alwaysAllowRules: Record<string, unknown> }
+  }
+}
+
 const command = {
   type: 'prompt',
   name: 'commit',
@@ -67,9 +73,9 @@ const command = {
     const finalContent = await executeShellCommandsInPrompt(
       promptContent,
       {
-        ...context,
+        ...(context as Record<string, unknown>),
         getAppState() {
-          const appState = context.getAppState()
+          const appState = (context as CommandContextWithAppState).getAppState()
           return {
             ...appState,
             toolPermissionContext: {

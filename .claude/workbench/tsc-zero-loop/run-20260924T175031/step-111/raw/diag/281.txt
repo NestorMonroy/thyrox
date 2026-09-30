@@ -1,0 +1,9 @@
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(611,9): error TS2554: Expected 1 arguments, but got 2.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(731,7): error TS2322: Type 'import("/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool").CanUseToolFn' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(732,7): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

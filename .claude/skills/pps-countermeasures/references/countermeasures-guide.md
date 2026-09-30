@@ -34,7 +34,7 @@ Usar el término "contramedida" mantiene al equipo en modo aprendizaje: implemen
 
 | Nivel | Descripción | Ejemplo | Robustez |
 |-------|-------------|---------|----------|
-| **Eliminación** | Remover completamente la fuente del problema | Eliminar el paso manual que genera el error | ★★★★★ |
+| **Eliminación** | Retirar completamente la fuente del problema | Eliminar el paso manual que genera el error | ★★★★★ |
 | **Sustitución** | Reemplazar el elemento problemático por uno más confiable | Cambiar el proceso manual por automatización | ★★★★ |
 | **Control de ingeniería (Poka-yoke)** | Diseño que hace imposible o muy difícil el error | Validación que no permite avanzar si el input es inválido | ★★★★ |
 | **Control administrativo** | Procedimientos, estándares, capacitación | SOP actualizado + capacitación del equipo | ★★★ |

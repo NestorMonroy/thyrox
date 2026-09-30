@@ -33,8 +33,8 @@ function isExtraUsageEnabled(): boolean {
     case 'group_zero_credit_limit':
     case 'member_zero_credit_limit':
     case 'org_service_level_disabled':
-    case 'org_service_zero_credit_limit':
     case 'no_limits_configured':
+    case 'fetch_error':
     case 'unknown':
       return false
     default:

@@ -1,9 +1,3 @@
-/**
- * Porte de `ccnmt: packages/command-runtime/src/__tests__/gitignore.test.ts`.
- * Fija el contrato de `getGlobalGitignorePath`: la ruta canonica del
- * gitignore global por usuario (`~/.config/git/ignore`) — la misma que
- * `man gitignore` llama "the per-user ignore file".
- */
 import { describe, expect, test } from 'bun:test'
 import { homedir } from 'os'
 import { join } from 'path'

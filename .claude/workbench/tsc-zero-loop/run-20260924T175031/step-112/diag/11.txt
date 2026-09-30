@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(624,13): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:614-634 ---
+    614  
+    615      if (!shouldQuery) {
+    616        // Return the results of local slash commands.
+    617        // Use messagesFromUserInput (not replayableMessages) for command output
+    618        // because selectableUserMessagesFilter excludes local-command-stdout tags.
+    619        for (const msg of messagesFromUserInput) {
+    620          if (
+    621            msg.type === 'user' &&
+    622            typeof msg.message.content === 'string' &&
+    623            (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624>             msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631                content: stripAnsi(msg.message.content),
+    632              },
+    633              session_id: getSessionId(),
+    634              parent_tool_use_id: null,
+src/packages/agent/QueryEngine.ts(631,34): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:621-641 ---
+    621            msg.type === 'user' &&
+    622            typeof msg.message.content === 'string' &&
+    623            (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624              msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631>               content: stripAnsi(msg.message.content),
+    632              },
+    633              session_id: getSessionId(),
+    634              parent_tool_use_id: null,
+    635              uuid: msg.uuid,
+    636              timestamp: msg.timestamp,
+    637              isReplay: !msg.isCompactSummary,
+    638              isSynthetic: msg.isMeta || msg.isVisibleInTranscriptOnly,
+    639            } as unknown as SDKUserMessageReplay
+    640          }
+    641  

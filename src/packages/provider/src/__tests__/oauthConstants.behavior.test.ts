@@ -66,7 +66,7 @@ describe('oauthConstants (ant 0553.js/0554.js parity)', () => {
 
   test('MCP_CLIENT_METADATA_URL points to Anthropic-hosted CIMD JSON (ant MS6)', () => {
     expect(MCP_CLIENT_METADATA_URL).toBe(
-      'https://claude.ai/oauth/claude-code-how-works-how-works-client-metadata',
+      'https://claude.ai/oauth/claude-code-client-metadata',
     )
   })
 

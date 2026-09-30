@@ -115,7 +115,7 @@ export function buildCodexAuthUrl(): {
   // OpenAI-specific parameters (matched from the pi-ai implementation)
   url.searchParams.set('id_token_add_organizations', 'true')
   url.searchParams.set('codex_cli_simplified_flow', 'true')
-  url.searchParams.set('originator', 'my-claude-code-how-works-how-works')
+  url.searchParams.set('originator', 'my-claude-code')
 
   return { url: url.toString(), verifier, state }
 }

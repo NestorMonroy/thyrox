@@ -1,4 +1,5 @@
 import { mock, describe, expect, test } from 'bun:test'
+import type { TreeNode } from '@thyrox/repl/uiHelpers/treeify.js'
 
 mock.module('figures', () => ({
   default: {
@@ -9,7 +10,7 @@ mock.module('figures', () => ({
 }))
 
 mock.module('src/ink.js', () => ({
-  color: (colorKey: string, themeName: string) => (text: string) => text,
+  color: (_colorKey: string, _themeName: string) => (text: string) => text,
 }))
 
 const { treeify } = await import('@thyrox/repl/uiHelpers/treeify.js')
@@ -52,7 +53,7 @@ describe('treeify', () => {
   })
 
   test('detects circular references', () => {
-    const obj: Record<string, unknown> = { name: 'root' }
+    const obj: TreeNode = { name: 'root' }
     obj.self = obj
     const result = treeify(obj)
     expect(result).toContain('[Circular]')
@@ -89,7 +90,7 @@ describe('treeify', () => {
     const lines = result.split('\n')
     expect(lines.length).toBe(3)
     // Each level adds indentation
-    expect(lines[2].length).toBeGreaterThan(lines[1].length)
+    expect(lines[2]!.length).toBeGreaterThan(lines[1]!.length)
   })
 
   test('handles empty string key with string value', () => {

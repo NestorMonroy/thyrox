@@ -1,68 +1,62 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/__tests__/idePathConversion.test.ts`.
- * Mismos casos que la fuente, reescritos: aserciones de comportamiento
- * observable sobre `checkWSLDistroMatch`, no expresión con derechos de autor.
- */
 import { describe, expect, test } from 'bun:test'
 import { checkWSLDistroMatch } from '../idePathConversion.js'
 
-describe('checkWSLDistroMatch — rutas que no son WSL', () => {
-  test('true para una ruta Windows llana (no es un UNC de WSL)', () => {
+describe('checkWSLDistroMatch — non-WSL paths', () => {
+  test('returns true for plain Windows path (not a WSL UNC)', () => {
     expect(checkWSLDistroMatch('C:\\Users\\me\\project', 'Ubuntu')).toBe(true)
   })
-  test('true para una ruta POSIX llana', () => {
+  test('returns true for plain POSIX path', () => {
     expect(checkWSLDistroMatch('/home/me/project', 'Ubuntu')).toBe(true)
   })
-  test('true para ruta vacía', () => {
+  test('returns true for empty path', () => {
     expect(checkWSLDistroMatch('', 'Ubuntu')).toBe(true)
   })
-  test('true para ruta relativa', () => {
+  test('returns true for relative path', () => {
     expect(checkWSLDistroMatch('./relative', 'Ubuntu')).toBe(true)
   })
 })
 
-describe('checkWSLDistroMatch — forma \\\\wsl.localhost', () => {
-  test('true cuando el nombre de la distro coincide', () => {
+describe('checkWSLDistroMatch — \\\\wsl.localhost form', () => {
+  test('returns true when distro names match', () => {
     expect(
       checkWSLDistroMatch('\\\\wsl.localhost\\Ubuntu\\home\\me', 'Ubuntu'),
     ).toBe(true)
   })
-  test('false cuando el nombre de la distro difiere', () => {
+  test('returns false when distro names differ', () => {
     expect(
       checkWSLDistroMatch('\\\\wsl.localhost\\Debian\\home\\me', 'Ubuntu'),
     ).toBe(false)
   })
-  test('el match distingue mayúsculas (Ubuntu ≠ ubuntu)', () => {
+  test('match is case-sensitive (Ubuntu ≠ ubuntu)', () => {
     expect(
       checkWSLDistroMatch('\\\\wsl.localhost\\Ubuntu\\home\\me', 'ubuntu'),
     ).toBe(false)
   })
 })
 
-describe('checkWSLDistroMatch — forma \\\\wsl$ (legacy)', () => {
-  test('true cuando el nombre de la distro coincide', () => {
+describe('checkWSLDistroMatch — \\\\wsl$ form (legacy)', () => {
+  test('returns true when distro names match', () => {
     expect(checkWSLDistroMatch('\\\\wsl$\\Ubuntu\\home\\me', 'Ubuntu')).toBe(
       true,
     )
   })
-  test('false cuando el nombre de la distro difiere', () => {
+  test('returns false when distro names differ', () => {
     expect(checkWSLDistroMatch('\\\\wsl$\\Debian\\home\\me', 'Ubuntu')).toBe(
       false,
     )
   })
-  test('maneja \\\\wsl$ en la raíz (sin ruta final)', () => {
+  test('handles wsl$ at root (no trailing path)', () => {
     expect(checkWSLDistroMatch('\\\\wsl$\\Ubuntu', 'Ubuntu')).toBe(true)
   })
 })
 
-describe('checkWSLDistroMatch — parcial / malformado', () => {
-  test('un prefijo UNC parcial se trata como no-WSL → true', () => {
+describe('checkWSLDistroMatch — partial / malformed', () => {
+  test('partial UNC prefix is treated as non-WSL → true', () => {
     expect(checkWSLDistroMatch('\\\\wsl', 'Ubuntu')).toBe(true)
   })
-  test('un UNC con el segmento de distro vacío se trata como no-WSL → true', () => {
-    // La regex exige [^\\]+ para la parte de la distro — si está vacía
-    // (\\\\wsl$\\\\path), la regex no matchea y la función devuelve true
-    // (la rama "no es un UNC de WSL").
+  test('UNC with empty distro segment is treated as non-WSL → true', () => {
+    // The regex requires [^\\]+ for the distro part — if it's empty (\\\\wsl$\\\\path),
+    // the regex doesn't match and the function returns true (the "not a WSL UNC" branch).
     expect(checkWSLDistroMatch('\\\\wsl$\\\\path', 'Ubuntu')).toBe(true)
   })
 })

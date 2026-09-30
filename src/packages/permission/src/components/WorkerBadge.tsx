@@ -9,11 +9,8 @@ export type WorkerBadgeProps = {
 }
 
 /**
- * Copia de `ccnmt: packages/permission/src/components/WorkerBadge.tsx` con los
- * comentarios traducidos; el cuerpo es el de la fuente.
- *
- * Renderiza un badge de color con el nombre del worker para los prompts de
- * permiso. Sirve para indicar que worker del swarm está pidiendo el permiso.
+ * Renders a colored badge showing the worker's name for permission prompts.
+ * Used to indicate which swarm worker is requesting the permission.
  */
 export function WorkerBadge({
   name,

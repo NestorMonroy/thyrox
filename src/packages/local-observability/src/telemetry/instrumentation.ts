@@ -1,9 +1,10 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/instrumentation.ts`
- * (14 líneas fuente, 100 % portado). Hooks de ciclo de vida no-op para
- * init/flush de OTel — el build externo tiene la telemetría
- * deshabilitada; la inicialización real vive en ramas ant-only
- * eliminadas del build público.
+ * V7 §8.12 — telemetry/instrumentation: stub lifecycle hooks for OTel init
+ * and flush.
+ *
+ * Moved from src/utils/telemetry/instrumentation.ts. The external build
+ * has telemetry disabled; real initialization code lives in ant-only
+ * branches that are eliminated from the public build.
  */
 
 export async function initializeTelemetry(): Promise<null> {

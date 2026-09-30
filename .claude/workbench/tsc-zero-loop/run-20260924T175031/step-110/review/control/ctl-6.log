@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+agent-loop.test.ts:
+147 |       },
+148 |       installToolRegistryBindings: () => {
+149 |         // eslint-disable-next-line @typescript-eslint/no-require-imports
+150 |         require('./installToolRegistryBindings.js')
+151 |       },
+152 |       installCommandRuntimeBindings: () => {
+                                                 ^
+SyntaxError: Export named 'getSkillDirCommands' not found in module '/home/user/thyrox-control/src/packages/command-runtime/src/skills/loadSkillsDir.ts'.
+      at installCommandRuntimeBindings (/home/user/thyrox-control/src/packages/app-host/src/runtime/bootstrap.ts:152:44)
+      at installHostBindings (/home/user/thyrox-control/src/packages/app-host/src/host.ts:25:14)
+      at installPackageHostBindings (/home/user/thyrox-control/src/packages/app-host/src/packageHostSetup.ts:179:3)
+      at installRuntimeSkeletonBindings (/home/user/thyrox-control/src/packages/app-host/src/runtime/bootstrap.ts:128:3)
+      at /home/user/thyrox-control/src/packages/app-host/src/runtime/bootstrap.ts:191:1
+      at requestImportModule (2:1)
+(fail) agent message queue e2e > enqueue + getCommandQueue round-trip [1583.31ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [1.61s]

@@ -17,7 +17,9 @@
  * eso es lo que lo hace verificable sin un analizador de JavaScript.
  */
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { reflow, stripWhitespace } from '../src/reflow.ts'
 
 /** El invariante que define la etapa: cambia el espacio, nada mas. */
@@ -82,7 +84,7 @@ describe('la sangria refleja el anidamiento', () => {
     const salida = reflow('function f(){if(a){b()}}').split('\n')
     const sangria = (l: string) => l.length - l.trimStart().length
     const cuerpo = salida.filter(l => l.includes('b()'))[0]
-    expect(sangria(cuerpo)).toBeGreaterThan(0)
+    expect(sangria(cuerpo!)).toBeGreaterThan(0)
   })
 
   test('el cierre vuelve al nivel de su apertura', () => {
@@ -90,7 +92,7 @@ describe('la sangria refleja el anidamiento', () => {
     const abre = salida.findIndex(l => l.includes('function f()'))
     const cierra = salida.length - 1 - [...salida].reverse().findIndex(l => l.trim() === '}')
     const sangria = (l: string) => l.length - l.trimStart().length
-    expect(sangria(salida[cierra])).toBe(sangria(salida[abre]))
+    expect(sangria(salida[cierra]!)).toBe(sangria(salida[abre]!))
   })
 })
 
@@ -106,4 +108,30 @@ describe('control sobre el chunk real, si esta', () => {
     expect(stripWhitespace(salida)).toBe(stripWhitespace(src))
     expect(salida.split('\n').length).toBeGreaterThan(src.split('\n').length * 10)
   }, 120_000)
+})
+
+// `reflow` leía sólo el ejecutable VIVO, y sus chunks no se llaman como los
+// del corpus versionado: reformatear un módulo de `_references/…/bunfs-root`
+// obligaba a importar `reflow()` a mano. Con `--root` lee el corpus, como
+// ya hace `symbol`.
+describe('reflow --root', () => {
+  const cli = join(import.meta.dir, '../bin/binary.ts')
+  const run = (...args: string[]) => Bun.spawnSync([process.execPath, cli, 'reflow', ...args])
+
+  test('reformatea el módulo del corpus y no el del ejecutable vivo', () => {
+    const root = mkdtempSync(join(tmpdir(), 'reflow-root-'))
+    const src = 'var a=E(function(){function b(){return 1}function c(){return 2}});\n'
+    writeFileSync(join(root, 'chunk-sintetico.js'), src)
+    const out = join(root, 'salida.js')
+    const result = run('chunk-sintetico.js', '--root', root, '--out', out)
+    expect(result.exitCode).toBe(0)
+    expect(readFileSync(out, 'utf8')).toBe(reflow(src))
+  })
+
+  test('un módulo ausente del corpus rehúsa con 2 y sin cifra', () => {
+    const root = mkdtempSync(join(tmpdir(), 'reflow-root-'))
+    const result = run('chunk-no-existe.js', '--root', root)
+    expect(result.exitCode).toBe(2)
+    expect(result.stderr.toString()).toContain('NO se emite un conteo')
+  })
 })

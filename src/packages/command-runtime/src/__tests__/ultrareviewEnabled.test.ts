@@ -1,19 +1,9 @@
-/**
- * Porte de `ccnmt: packages/command-runtime/src/__tests__/ultrareviewEnabled.test.ts`.
- *
- * DIVERGENCIA DE ALCANCE: el `mock.module` de la fuente apunta a
- * `@claude-code-how-works/config/feature-flags`, ausente en este árbol.
- * Se sustituye por `../commands/review/featureFlags.ts` — ver la cabecera
- * de ese archivo y la de `../commands/review/ultrareviewEnabled.ts` (mismo
- * patrón que `@thyrox/agent/featureFlags.ts` para `agentSwarmsEnabled.ts`).
- * El resto del test —casos, datos, aserciones— es idéntico a la fuente.
- */
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
-const realFeatureFlags = await import('../commands/review/featureFlags.js')
+const realFeatureFlags = await import('@thyrox/config/feature-flags')
 let growthBookValue: unknown = null
 
-mock.module('../commands/review/featureFlags.js', () => ({
+mock.module('@thyrox/config/feature-flags', () => ({
   ...realFeatureFlags,
   getFeatureValue_CACHED_MAY_BE_STALE: <T>(_key: string, fallback: T) =>
     growthBookValue !== null ? (growthBookValue as T) : fallback,

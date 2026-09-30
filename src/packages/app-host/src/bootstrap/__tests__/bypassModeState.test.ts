@@ -1,14 +1,10 @@
 // Characterization tests for Slice C (Bypass Mode).
 // Locks the current behavior of sessionBypassPermissionsMode living in
 // src/bootstrap/state.ts so the upcoming migration to
-// @claude-code-how-works/permission/bypassModeState is behavior-preserving.
+// @thyrox/permission/bypassModeState is behavior-preserving.
 // Migrator-Gamma will update the import path after the move.
 //
 // Plan: TEAM_PLAN/mellow-booping-waffle.md §2.1 (Slice C) + §2.4 (assertions).
-//
-// Porte: ccnmt: packages/app-host/src/bootstrap/__tests__/bypassModeState.test.ts
-// (verbatim en casos, datos y expectativas; ver cabecera de cobertura en
-// ../state.ts para qué slice de la fuente respalda este archivo).
 
 import { beforeEach, describe, expect, test } from "bun:test";
 

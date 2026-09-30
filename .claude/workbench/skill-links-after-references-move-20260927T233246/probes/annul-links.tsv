@@ -1,0 +1,7 @@
+no-fence	s/^        if in_fence:$/        if False:/
+no-code-span	s/for match in LINK.finditer(CODE_SPAN.sub("", line)):/for match in LINK.finditer(line):/
+no-scheme	s/            if SCHEME.match(target) or target.startswith/            if target.startswith/
+no-anchor	s/target.startswith(("#", "\/"))/target.startswith(("\/",))/
+no-placeholder	s/ or PLACEHOLDER.search(target):$/:/
+no-fragment	s/(path.parent \/ target.split("#", 1)\[0\]).exists()/(path.parent \/ target).exists()/
+no-refuse	s/^    if missing_roots:$/    if False:/

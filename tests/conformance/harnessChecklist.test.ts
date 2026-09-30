@@ -1,9 +1,6 @@
 /**
  * El manifiesto de conformidad contra el apéndice A de `hbooks: book1`.
  *
- * Directiva del ejecutor 2026-09-08: «tienes que analizar e implementar lo que
- * dice thyrox/_references/harness-books y harness-engineering/book» (#267).
- *
  * `book1/appendix-a-checklists.md` convierte los principios de los nueve
  * capítulos en **50 predicados** repartidos en 8 secciones, y lo justifica en
  * su primer párrafo: «If principles cannot be turned into checklists, they
@@ -24,7 +21,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CHECKLIST, SECTIONS, coverage, type Predicate } from '../../src/conformance/checklist.ts'
 import { auditEvidence } from '../../src/conformance/audit.ts'
-import { thyroxRoot } from '../../src/paths/reach.ts'
+import { thyroxRoot } from '../../src/packages/paths/reach.ts'
 
 const ROOT = thyroxRoot()
 const APPENDIX = join(ROOT, '_references/harness-books/book1/appendix-a-checklists.md')
@@ -43,7 +40,7 @@ describe('el manifiesto contra el apendice A', () => {
       else if (linea.startsWith('- ') && seccion) porSeccion[seccion] = (porSeccion[seccion] ?? 0) + 1
     }
     const conVinetas = Object.entries(porSeccion).filter(([, n]) => n > 0)
-    expect(SECTIONS.length).toBe(conVinetas.length)
+    expect(conVinetas.length).toBe(SECTIONS.length)
     expect(CHECKLIST.length).toBe(conVinetas.reduce((a, [, n]) => a + n, 0))
   })
 

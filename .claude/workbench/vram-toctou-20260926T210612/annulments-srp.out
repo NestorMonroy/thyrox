@@ -1,0 +1,14 @@
+== anulación A
+  FALLA uno admitido y el otro esperó — esperado ['admitido', 'esperó'], obtenido ['admitido', 'admitido']
+test_gpu_monitor: 38 ok, 1 falla(s)
+== anulación B
+  FALLA media — esperado 300, obtenido 262
+  FALLA <n>.gpu con las cuatro cifras — esperado '300 300 91 8', obtenido '300 262 91 8'
+  FALLA uno admitido y el otro esperó — esperado ['admitido', 'esperó'], obtenido ['admitido', 'admitido']
+  FALLA B no cabe mientras A tenga su reserva — esperado False, obtenido True
+test_gpu_monitor: 35 ok, 4 falla(s)
+== anulación C
+  FALLA con los 3000 ya visibles, 1500 caben en los 2000 libres — esperado True, obtenido False
+  FALLA pendiente: cada reserva menos lo que su árbol ya usa — esperado 4500, obtenido 6000
+  FALLA una reserva ya visible entera no cuenta — esperado 0, obtenido 1500
+test_gpu_monitor: 36 ok, 3 falla(s)

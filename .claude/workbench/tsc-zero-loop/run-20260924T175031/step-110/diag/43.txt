@@ -1,0 +1,24 @@
+src/packages/agent/tasks/LocalShellTask.tsx(406,27): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/shell/src/types").ShellCommand' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/agent/tasks/LocalShellTask.tsx:396-416 ---
+    396      taskId,
+    397      description,
+    398      kind,
+    399      toolUseId,
+    400      agentId,
+    401    )
+    402  
+    403    // Set up result handler
+    404    void shellCommand.result.then(async result => {
+    405      cancelStallWatchdog()
+    406>     await flushAndCleanup(shellCommand)
+    407      let wasKilled = false
+    408      let cleanupFn: (() => void) | undefined
+    409  
+    410      updateTaskState<LocalShellTaskState>(taskId, setAppState, t => {
+    411        if (t.status === 'killed') {
+    412          wasKilled = true
+    413          return t
+    414        }
+    415  
+    416        // Capture cleanup function to call outside of updater
+  Property 'taskOutput' is missing in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.

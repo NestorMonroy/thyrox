@@ -20,14 +20,6 @@ import {
 const ORIGINAL_EXEC_PATH = process.execPath
 const ORIGINAL_ARGV = process.argv
 
-function setExecPath(value: string): void {
-  Object.defineProperty(process, 'execPath', {
-    value,
-    configurable: true,
-    writable: true,
-  })
-}
-
 function restoreExecPath(): void {
   Object.defineProperty(process, 'execPath', {
     value: ORIGINAL_EXEC_PATH,

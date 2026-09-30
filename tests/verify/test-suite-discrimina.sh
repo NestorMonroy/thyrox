@@ -137,12 +137,17 @@ echo "== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo ==
 # arreglo: «0 sin discriminar, 0 sin cobertura» con las tres funciones sin
 # ejercer. La deuda de `test-script-naming.sh` es la tarea #306.
 salida6=$(timeout 300 python3 "$GATE" --solo classify_agents.py 2>&1)
-afirmar "classify_agents se reporta BASELINE ROJO (el juez puede fallar)" "3" \
-        "$(printf '%s' "$salida6" | grep -c 'BASELINE ROJO    classify_agents.py')"
+# El veredicto volvio a cambiar el 2026-09-26: `test-script-naming.sh` quedo
+# VERDE (su deuda de identificadores se pago), asi que ya hay baseline limpio y
+# el juez publica lo que de verdad pasa — la suite NOMBRA las tres funciones y
+# no las ejecuta. Sigue siendo un positivo real del repo; la rama de BASELINE
+# ROJO conserva su propio control en el caso 14.
+afirmar "classify_agents se reporta SIN COBERTURA (el juez puede fallar)" "3" \
+        "$(printf '%s' "$salida6" | grep -c 'SIN COBERTURA    classify_agents.py')"
 # Y el conteo del titular concuerda con las filas: un titular que dijera 0 con
 # tres filas debajo seria el mismo defecto que este guion caza, en su reporte.
 afirmar "el titular concuerda con las filas que imprime" "1" \
-        "$(printf '%s' "$salida6" | grep -c '^check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 3 con baseline rojo$')"
+        "$(printf '%s' "$salida6" | grep -c '^check-suite-discrimina: 0 sin discriminar, 3 sin cobertura, 0 con baseline rojo$')"
 
 echo "== 7. el barrido no deja mutantes: el arbol queda como estaba =="
 # Un mutante superviviente es peor que un falso positivo: se commitea.

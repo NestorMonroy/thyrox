@@ -1,0 +1,8 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(149,31): error TS2532: Object is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(156,31): error TS2532: Object is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(163,18): error TS2532: Object is possibly 'undefined'.

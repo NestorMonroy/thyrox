@@ -1,8 +1,3 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/bash/specs/index.ts` — el
- * índice estático de specs Fig que `getCommandSpec` consulta antes de
- * intentar el import dinámico contra `@withfig/autocomplete`.
- */
 import type { CommandSpec } from '../registry.js'
 import alias from './alias.js'
 import nohup from './nohup.js'

@@ -1,0 +1,16 @@
+# commit-hs
+
+## Qué se lanzó
+
+```
+git -c commit.gpgsign=false commit -q -F /tmp/claude-0/-home-user/efec8688-6a45-5d65-b899-cd988aa8816f/scratchpad/hunspell-msg.txt -- src/verify/check_identifier_language.py .claude/build-logs/job-20260926T201553 .claude/jobs/commit-ph-20260926T201655 .claude/jobs/derived-ph-20260926T201553 .claude/jobs/fullsuite3-20260926T195706 .claude/workbench/all-tsconfigs-20260926T174919/full-suite-3.log
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

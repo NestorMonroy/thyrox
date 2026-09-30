@@ -14,6 +14,7 @@ const realLocalObsCompat = await import("@thyrox/local-observability/compat");
 const realDebug = await import("@thyrox/local-observability/debug.js");
 const realYoloClassifier = await import("@thyrox/permission/yoloClassifier.js");
 const realTokens = await import("@thyrox/agent/tokens.js");
+const realTool = await import("../../../Tool.js");
 
 const noop = () => {};
 
@@ -49,7 +50,11 @@ mock.module("src/services/api/dumpPrompts.js", () => ({
   clearDumpState: noop,
 }));
 
+// Parcial SOBRE las exportaciones reales, como pide la cabecera: sin el
+// spread, el mock ocultaba `buildTool` y todo modulo que lo importara caia
+// con «Export named 'buildTool' not found».
 mock.module("../../../Tool.js", () => ({
+  ...realTool,
   toolMatchesName: () => false,
   findToolByName: noop,
 }));
@@ -178,7 +183,7 @@ const {
   getLastToolUseName,
 } = await import("../agentToolUtils");
 
-function makeAssistantMessage(content: any[]): any {
+function makeAssistantMessage(content: any[] | null): any {
   return { type: "assistant", message: { content } };
 }
 
@@ -258,7 +263,7 @@ describe("getLastToolUseName", () => {
   });
 
   test("handles message with null content", () => {
-    const msg = { type: "assistant", message: { content: null } };
+    const msg = makeAssistantMessage(null);
     expect(getLastToolUseName(msg)).toBeUndefined();
   });
 });

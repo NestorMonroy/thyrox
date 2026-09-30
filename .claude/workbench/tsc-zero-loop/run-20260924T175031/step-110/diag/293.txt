@@ -1,0 +1,95 @@
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(15,13): error TS2352: Conversion of type 'UserMessage | AttachmentMessage<_T> | SystemMessage | undefined' to type '{ sourceToolUseID: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/tool-registry/src/tools/__tests__/utils.test.ts:5-25 ---
+      5  } from '../utils.js'
+      6  
+      7  type Msg = Parameters<typeof tagMessagesWithToolUseID>[0][number]
+      8  
+      9  describe('tagMessagesWithToolUseID', () => {
+     10    test('tags user messages with sourceToolUseID', () => {
+     11      const messages: Msg[] = [
+     12        { type: 'user', message: { content: 'hi' } } as Msg,
+     13      ]
+     14      const tagged = tagMessagesWithToolUseID(messages, 'tu_123')
+     15>     expect((tagged[0] as { sourceToolUseID: string }).sourceToolUseID).toBe(
+     16        'tu_123',
+     17      )
+     18    })
+     19  
+     20    test('preserves all other fields when tagging user message', () => {
+     21      const messages: Msg[] = [
+     22        {
+     23          type: 'user',
+     24          message: { content: 'original' },
+     25          uuid: 'msg-uuid',
+  Property 'sourceToolUseID' is missing in type 'SystemThinkingMessage' but required in type '{ sourceToolUseID: string; }'.
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(22,7): error TS2352: Conversion of type '{ type: "user"; message: { content: string; }; uuid: "msg-uuid"; }' to type 'UserMessage | AttachmentMessage<_T> | SystemMessage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/tool-registry/src/tools/__tests__/utils.test.ts:12-32 ---
+     12        { type: 'user', message: { content: 'hi' } } as Msg,
+     13      ]
+     14      const tagged = tagMessagesWithToolUseID(messages, 'tu_123')
+     15      expect((tagged[0] as { sourceToolUseID: string }).sourceToolUseID).toBe(
+     16        'tu_123',
+     17      )
+     18    })
+     19  
+     20    test('preserves all other fields when tagging user message', () => {
+     21      const messages: Msg[] = [
+     22>       {
+     23          type: 'user',
+     24          message: { content: 'original' },
+     25          uuid: 'msg-uuid',
+     26        } as Msg,
+     27      ]
+     28      const tagged = tagMessagesWithToolUseID(messages, 'tu_x')
+     29      expect((tagged[0] as { uuid: string }).uuid).toBe('msg-uuid')
+     30      expect((tagged[0] as { type: string }).type).toBe('user')
+     31    })
+     32  
+  Type '{ type: "user"; message: { content: string; }; uuid: "msg-uuid"; }' is not comparable to type 'UserMessage'.
+    Type '{ type: "user"; message: { content: string; }; uuid: "msg-uuid"; }' is not comparable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type '"msg-uuid"' is not comparable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(54,13): error TS2352: Conversion of type 'UserMessage | AttachmentMessage<_T> | SystemMessage | undefined' to type '{ sourceToolUseID: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/tool-registry/src/tools/__tests__/utils.test.ts:44-64 ---
+     44        { type: 'system', content: 'sys msg' } as never,
+     45      ]
+     46      const tagged = tagMessagesWithToolUseID(messages, 'tu_x')
+     47      expect(tagged[0]).toBe(messages[0])
+     48    })
+     49  
+     50    test('mixed array: only user tagged, others passed through', () => {
+     51      const userMsg: Msg = { type: 'user', message: { content: 'u' } } as Msg
+     52      const sysMsg: Msg = { type: 'system' } as never
+     53      const tagged = tagMessagesWithToolUseID([userMsg, sysMsg], 'tu_x')
+     54>     expect((tagged[0] as { sourceToolUseID: string }).sourceToolUseID).toBe(
+     55        'tu_x',
+     56      )
+     57      expect(tagged[1]).toBe(sysMsg)
+     58    })
+     59  
+     60    test('undefined toolUseID returns original array reference', () => {
+     61      // Performance / identity contract: when toolUseID is undefined,
+     62      // the input is returned unchanged (same reference). Callers that
+     63      // compare via === for "did anything change?" depend on this.
+     64      const messages: Msg[] = [
+  Property 'sourceToolUseID' is missing in type 'SystemThinkingMessage' but required in type '{ sourceToolUseID: string; }'.
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(154,20): error TS2352: Conversion of type '{ type: "assistant"; message: { content: never[]; }; }' to type 'AssistantMessage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/tool-registry/src/tools/__tests__/utils.test.ts:144-160 ---
+    144          content: [
+    145            { type: 'text', text: 'Bash', name: 'Bash' },
+    146            { type: 'tool_use', id: 'tu_1', name: 'Bash', input: {} },
+    147          ],
+    148        },
+    149      } as Parameters<typeof getToolUseIDFromParentMessage>[0]
+    150      expect(getToolUseIDFromParentMessage(parent, 'Bash')).toBe('tu_1')
+    151    })
+    152  
+    153    test('returns undefined for empty content array', () => {
+    154>     const parent = {
+    155        type: 'assistant',
+    156        message: { content: [] },
+    157      } as Parameters<typeof getToolUseIDFromParentMessage>[0]
+    158      expect(getToolUseIDFromParentMessage(parent, 'Bash')).toBeUndefined()
+    159    })
+    160  })
+  Property 'uuid' is missing in type '{ type: "assistant"; message: { content: never[]; }; }' but required in type 'MessageBase'.

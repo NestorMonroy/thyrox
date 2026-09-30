@@ -129,6 +129,10 @@ PROBES=(
   # sintoma. Leida en este orden, la salida nombra la causa antes que su
   # efecto.
   "manifiestos|error|thyrox_toolchain_require_manifests"
+  # Los GITHOOKS, segundos: son la otra mitad de la declaracion. Sin ellos
+  # ningun gate de commit corre, y el preflight de las herramientas publicaria
+  # verde sobre un clon que no verifica nada al commitear (H-THYROX-161).
+  "githooks|error|thyrox_toolchain_require_githooks"
   "awk|error|thyrox_toolchain_require_gawk"
   "parallel|aviso|thyrox_toolchain_require_parallel"
   "python-proveedor|error|thyrox_toolchain_provider_python"
@@ -142,9 +146,15 @@ PROBES=(
   # mitades Python y shell de bin/ siguen enteras. Es el caso que el
   # aviso degradado existe para nombrar — se continua sin la mitad TS.
   "bun|aviso|thyrox_toolchain_require_bun"
+  # poppler lo usa thyrox mismo (`src/corpus/pdf_to_text.py`); TeX no: su sonda
+  # sale 3 y se declara omitida cuando el consumidor no lo declara.
+  "poppler|aviso|thyrox_toolchain_require_poppler"
+  "texlive|aviso|thyrox_toolchain_probe_texlive"
+  # hunspell tampoco lo usa thyrox: su sonda sale 3 sin diccionario declarado.
+  "hunspell|aviso|thyrox_toolchain_probe_hunspell"
 )
 
-ERRORS=0; WARNS=0; PASSED=0
+ERRORS=0; WARNS=0; PASSED=0; SKIPPED=0
 
 for entry in "${PROBES[@]}"; do
   IFS='|' read -r name kind fn <<<"$entry"
@@ -166,6 +176,14 @@ for entry in "${PROBES[@]}"; do
     PASSED=$((PASSED + 1))
     continue
   fi
+  # Exit 3: la sonda no aplica a este consumidor. Se dice y NO se cuenta como
+  # medida, para que el alcance no la presente como aprobada.
+  if [[ $rc -eq 3 ]]; then
+    echo "omitida · $name"
+    [[ -n "$probe_out" ]] && printf '%s\n' "$probe_out" | sed 's/^/        /'
+    SKIPPED=$((SKIPPED + 1))
+    continue
+  fi
 
   # Se sigue con la siguiente sonda: el veredicto se compone al final con
   # TODOS los huecos, no con el primero.
@@ -182,7 +200,11 @@ done
 TOTAL=${#PROBES[@]}
 MEASURED=$((PASSED + ERRORS + WARNS))
 echo
-echo "$PASSED ok · $ERRORS error · $WARNS aviso — alcance medido: $MEASURED de $TOTAL sondas"
+if (( SKIPPED > 0 )); then
+  echo "$PASSED ok · $ERRORS error · $WARNS aviso · $SKIPPED omitida — alcance medido: $MEASURED de $TOTAL sondas"
+else
+  echo "$PASSED ok · $ERRORS error · $WARNS aviso — alcance medido: $MEASURED de $TOTAL sondas"
+fi
 
 if (( ERRORS > 0 )); then
   exit 1

@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/classifierHeuristic.test.ts`.
 import { describe, expect, test } from 'bun:test'
 import {
   closingShape,
@@ -59,7 +58,7 @@ describe('preClassify — closing patterns', () => {
   })
   test('"please run /login" → blocked auth', () => {
     const r = preClassify('Please run /login to continue.')
-    // Coincide primero con PLEASE_DO_RE
+    // Matches PLEASE_DO_RE first
     expect(r?.state).toBe('blocked')
   })
   test('"giving up" → failed', () => {
@@ -83,8 +82,8 @@ describe('preClassify — code fence aware', () => {
   test('marker inside code fence is ignored', () => {
     const t = 'See example:\n```\nfailed: this is a test fixture\n```\nReady for review.'
     const r = preClassify(t)
-    // failed: está dentro del fence, así que no debe clasificarse como
-    // failed. ready-for al final → done
+    // failed: is inside fence so should not be classified as failed.
+    // ready-for at end → done
     expect(r?.state).toBe('done')
   })
 })

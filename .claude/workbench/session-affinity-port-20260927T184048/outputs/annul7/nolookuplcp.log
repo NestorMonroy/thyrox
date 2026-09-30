@@ -1,0 +1,5 @@
+(fail) SessionAffinitySelector: lookupAffinity sobre LCP > por id publicado, por hash sin prefijo, y sin refrescar mientras crece [1.02ms]
+(fail) SessionAffinitySelector: lookupAffinity sobre LCP > el modelo distingue mayúsculas y admite `::` dentro [0.60ms]
+(fail) SessionAffinitySelector: lookupAffinity sobre LCP > los alias de proveedor comparten espacio LCP [0.45ms]
+ 97 pass
+ 3 fail

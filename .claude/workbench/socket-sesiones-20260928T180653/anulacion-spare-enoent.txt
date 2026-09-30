@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+85 |   })
+86 | 
+87 |   test('en disco, un error que no es ausencia cuenta como reclamado', async () => {
+88 |     rmSync(jobDir!, { recursive: true })
+89 |     writeFileSync(jobDir!, 'no es directorio')
+90 |     expect(await isSpareClaimed(undefined, deps())).toBe(true)
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:90:53)
+(fail) isSpareClaimed (jy) > en disco, un error que no es ausencia cuenta como reclamado [0.60ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [119.00ms]

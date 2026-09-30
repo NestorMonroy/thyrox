@@ -40,7 +40,9 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-AGAINST = {"rejected", "partial"}
+#: `rejected-review` es una aceptada de tsc que la revisión de conducta tumbó
+#: (diff de la salida transpilada): cuenta en contra de su proponente.
+AGAINST = {"rejected", "partial", "rejected-review"}
 #: `revealed` tampoco cuenta: la propuesta cerró su objetivo y lo que destapa
 #: son contratos reales, que van a la cola residual (`tsc_zero_step`).
 IGNORED = {"ambiguous", "no-targets", "infrastructure", "revealed"}
@@ -70,7 +72,7 @@ def count_ledger(rows) -> dict[str, tuple[int, int]]:
         if outcome in IGNORED:
             continue
         pair = counts.setdefault(row["proposer"], [0, 0])
-        if outcome == "accepted":
+        if outcome in ("accepted", "accepted-net", "accepted-partial"):
             pair[0] += 1
         elif outcome in AGAINST:
             pair[1] += 1
@@ -124,7 +126,7 @@ def _read_jsonl(path: Path) -> list[dict]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--candidates", type=Path, required=True)
     parser.add_argument("--ledger", type=Path)
     parser.add_argument("--seed", type=int, required=True)

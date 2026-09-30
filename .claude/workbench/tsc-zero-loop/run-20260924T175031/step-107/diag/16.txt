@@ -1,0 +1,28 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/vcr.ts(136,12): error TS18048: '_' is possibly 'undefined'.
+  --- código src/packages/provider/src/vcr.ts:126-146 ---
+    126  }
+    127  
+    128  function mapMessages(
+    129    messages: (UserMessage | AssistantMessage)['message']['content'][],
+    130    f: (s: unknown) => unknown,
+    131  ): (UserMessage | AssistantMessage)['message']['content'][] {
+    132    return messages.map(_ => {
+    133      if (typeof _ === 'string') {
+    134        return f(_)
+    135      }
+    136>     return _.map(_ => {
+    137        switch (_.type) {
+    138          case 'tool_result':
+    139            if (typeof _.content === 'string') {
+    140              return { ..._, content: f(_.content) }
+    141            }
+    142            if (Array.isArray(_.content)) {
+    143              return {
+    144                ..._,
+    145                content: _.content.map(_ => {
+    146                  switch (_.type) {

@@ -2,8 +2,23 @@ import figures from 'figures'
 import { color } from '@anthropic/ink'
 import type { Theme, ThemeName } from '@anthropic/ink'
 
+// Los valores que `treeify` recorre y pinta: además de subárboles y cadenas,
+// imprime números, booleanos y arreglos con `String(value)` (un arreglo no se
+// recorre: `!Array.isArray(value)`), las funciones como `[Function]` (o las
+// oculta con `hideFunctions`) y `null`. El tipo sólo admitía cadenas, y quien
+// le pasaba cualquiera de los otros fallaba.
+export type TreeValue =
+  | TreeNode
+  | string
+  | number
+  | boolean
+  | unknown[]
+  | ((...args: never[]) => unknown)
+  | null
+  | undefined
+
 export type TreeNode = {
-  [key: string]: TreeNode | string | undefined
+  [key: string]: TreeValue
 }
 
 export type TreeifyOptions = {

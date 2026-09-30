@@ -1,0 +1,2 @@
+src/packages/tool-registry/src/tools/BashTool/UI.tsx(41,25): error TS2322: Type 'unknown' is not assignable to type 'AppState'.
+  Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

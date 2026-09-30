@@ -1,0 +1,100 @@
+src/packages/agent/compaction/sessionMemoryCompact.ts(39,3): error TS2305: Module '"./compact.js"' has no exported member 'createPlanAttachmentIfNeeded'.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:29-49 ---
+     29  } from '../SessionMemory/prompts.js'
+     30  import {
+     31    getLastSummarizedMessageId,
+     32    getSessionMemoryContent,
+     33    waitForSessionMemoryExtraction,
+     34  } from '../SessionMemory/sessionMemoryUtils.js'
+     35  import {
+     36    annotateBoundaryWithPreservedSegment,
+     37    buildPostCompactMessages,
+     38    type CompactionResult,
+     39>   createPlanAttachmentIfNeeded,
+     40  } from './compact.js'
+     41  import { estimateMessageTokens } from './microCompact.js'
+     42  import { getCompactUserSummaryMessage } from './prompt.js'
+     43  import { readEnv } from '@thyrox/config/env'
+     44  
+     45  /**
+     46   * Configuration for session memory compaction thresholds
+     47   */
+     48  export type SessionMemoryCompactConfig = {
+     49    /** Minimum tokens to preserve after compaction */
+src/packages/agent/compaction/sessionMemoryCompact.ts(465,24): error TS2554: Expected 6 arguments, but got 4.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:455-475 ---
+    455      boundaryMarker.compactMetadata.preCompactDiscoveredTools = [
+    456        ...preCompactDiscovered,
+    457      ].sort()
+    458    }
+    459  
+    460    // Truncate oversized sections to prevent session memory from consuming
+    461    // the entire post-compact token budget
+    462    const { truncatedContent, wasTruncated } =
+    463      truncateSessionMemoryForCompact(sessionMemory)
+    464  
+    465>   let summaryContent = getCompactUserSummaryMessage(
+    466      truncatedContent,
+    467      true,
+    468      transcriptPath,
+    469      true,
+    470    )
+    471  
+    472    if (wasTruncated) {
+    473      const memoryPath = getSessionMemoryPath()
+    474      summaryContent += `\n\nSome session memory sections were truncated for length. The full session memory can be viewed at: ${memoryPath}`
+    475    }
+src/packages/agent/compaction/sessionMemoryCompact.ts(489,5): error TS2322: Type 'CompactBoundaryMessage' is not assignable to type 'SystemMessage'.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:479-499 ---
+    479        content: summaryContent,
+    480        isCompactSummary: true,
+    481        isVisibleInTranscriptOnly: true,
+    482      }),
+    483    ]
+    484  
+    485    const planAttachment = createPlanAttachmentIfNeeded(agentId)
+    486    const attachments = planAttachment ? [planAttachment] : []
+    487  
+    488    return {
+    489>     boundaryMarker: annotateBoundaryWithPreservedSegment(
+    490        boundaryMarker,
+    491        summaryMessages[summaryMessages.length - 1]!.uuid,
+    492        messagesToKeep,
+    493      ),
+    494      summaryMessages,
+    495      attachments,
+    496      hookResults,
+    497      messagesToKeep,
+    498      preCompactTokenCount,
+    499      // SM-compact has no compact-API-call, so postCompactTokenCount (kept for
+  Type 'CompactBoundaryMessage' is not assignable to type 'SystemThinkingMessage'.
+    Type 'CompactBoundaryMessage' is not assignable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+          Type 'undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(490,7): error TS2345: Argument of type 'SystemCompactBoundaryMessage' is not assignable to parameter of type 'CompactBoundaryMessage'.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:480-500 ---
+    480        isCompactSummary: true,
+    481        isVisibleInTranscriptOnly: true,
+    482      }),
+    483    ]
+    484  
+    485    const planAttachment = createPlanAttachmentIfNeeded(agentId)
+    486    const attachments = planAttachment ? [planAttachment] : []
+    487  
+    488    return {
+    489      boundaryMarker: annotateBoundaryWithPreservedSegment(
+    490>       boundaryMarker,
+    491        summaryMessages[summaryMessages.length - 1]!.uuid,
+    492        messagesToKeep,
+    493      ),
+    494      summaryMessages,
+    495      attachments,
+    496      hookResults,
+    497      messagesToKeep,
+    498      preCompactTokenCount,
+    499      // SM-compact has no compact-API-call, so postCompactTokenCount (kept for
+    500      // event continuity) and truePostCompactTokenCount converge to the same value.
+  Type 'SystemCompactBoundaryMessage' is not assignable to type '{ type: "system"; subtype?: string | undefined; compactMetadata?: { [key: string]: unknown; trigger: string; preTokens: number; preCompactDiscoveredTools?: string[] | undefined; preservedSegment?: { ...; } | undefined; } | undefined; }'.
+    Types of property 'compactMetadata' are incompatible.
+      Type '{ [key: string]: unknown; preservedSegment?: { [key: string]: unknown; headUuid: `${string}-${string}-${string}-${string}-${string}`; tailUuid: `${string}-${string}-${string}-${string}-${string}`; anchorUuid: `${string}-${string}-${string}-${string}-${string}`; } | undefined; }' is missing the following properties from type '{ [key: string]: unknown; trigger: string; preTokens: number; preCompactDiscoveredTools?: string[] | undefined; preservedSegment?: { headUuid: string; anchorUuid: string; tailUuid: string; } | undefined; }': trigger, preTokens

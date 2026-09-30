@@ -90,7 +90,6 @@ class TestEjeDelIdentificador(unittest.TestCase):
         el modo de fallo que dejo todo el trabajo de thyrox como `TASK-DOCS-*`.
         """
         import json
-        import sqlite3
         import tempfile
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -137,6 +136,7 @@ def _crear_store(directorio: Path):
 
     ruta = reach.thyrox_root() / "src" / "agents" / "agent_store.py"
     spec = importlib.util.spec_from_file_location("agent_store_para_el_control", ruta)
+    assert spec is not None and spec.loader is not None
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     conn = modulo.connect(directorio)

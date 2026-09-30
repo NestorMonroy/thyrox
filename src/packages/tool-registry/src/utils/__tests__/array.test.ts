@@ -1,6 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de `ccnmt: packages/tool-registry/src/utils/__tests__/array.test.ts` (TASK #232).
- */
 import { describe, expect, test } from 'bun:test'
 import { count, intersperse, uniq } from '../array.js'
 

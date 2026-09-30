@@ -1,0 +1,65 @@
+CLAUDE_AFTER_LAST_COMPACT	src/packages/provider/src/sessionIngress.ts	431	params: isEnvTruthy(readEnv('CLAUDE_AFTER_LAST_COMPACT'))
+CLAUDE_AGENTS_SELECT	src/packages/cli/src/bg/openAgentsFromRepl.ts	12	*      CLAUDE_AGENTS_SELECT, and hand control to the FleetView mount loop
+CLAUDE_AGENTS_SELECT	src/packages/cli/src/handlers/agentsFleet.ts	155	// `let z = process.env.CLAUDE_AGENTS_SELECT; … z = f.job.id` — when
+CLAUDE_AGENT_SDK_CLIENT_APP	src/packages/provider/src/anthropic/client.ts	87	const clientApp = readEnv('CLAUDE_AGENT_SDK_CLIENT_APP')
+CLAUDE_AGENT_SDK_CLIENT_APP	src/packages/provider/src/http.ts	29	const clientApp = readEnv('CLAUDE_AGENT_SDK_CLIENT_APP')
+CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS	src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts	27	isEnvTruthy(process.env.CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS) &&
+CLAUDE_AGENT_SDK_MCP_NO_PREFIX	src/packages/mcp-runtime/src/clientRuntime.ts	1489	isEnvTruthy(process.env.CLAUDE_AGENT_SDK_MCP_NO_PREFIX)
+CLAUDE_AGENT_SDK_VERSION	src/packages/provider/src/http.ts	26	const agentSdkVersion = readEnv('CLAUDE_AGENT_SDK_VERSION')
+CLAUDE_AUTOCOMPACT_PCT_OVERRIDE	src/packages/agent/compaction/autoCompact.ts	108	const envPercent = readEnv('CLAUDE_AUTOCOMPACT_PCT_OVERRIDE')
+CLAUDE_AUTOCOMPACT_PCT_OVERRIDE	src/packages/agent/loop/context/contextLevel.ts	238	* bajar** el umbral. Un `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=100` no desactiva el
+CLAUDE_AUTO_BACKGROUND_TASKS	src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx	155	isEnvTruthy(process.env.CLAUDE_AUTO_BACKGROUND_TASKS) ||
+CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR	src/packages/config/env/utils.ts	153	* después de cada invocación? Gobernado por `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR`. */
+CLAUDE_BG_RENDEZVOUS_SOCK	src/packages/agent/background/fleet/rvServer.ts	7	* process. Binds the Unix socket named by `CLAUDE_BG_RENDEZVOUS_SOCK`
+CLAUDE_BG_RENDEZVOUS_SOCK	src/packages/repl/src/screens/repl/useBgRendezvousServer.ts	5	* ONLY in a bg worker that was spawned with `CLAUDE_BG_RENDEZVOUS_SOCK`
+CLAUDE_BG_SOURCE	src/packages/cli/src/bg/agentActionEvent.ts	29	* 'shell' but CLAUDE_BG_SOURCE env can override (e.g. for slash-command
+CLAUDE_BG_SOURCE	src/packages/cli/src/bg/openAgentsFromRepl.ts	65	process.env.CLAUDE_BG_SOURCE !== undefined
+CLAUDE_BG_STARTUP_WEDGE_MS	src/packages/agent/background/fleet/rvServer.ts	132	/** ant default startup-wedge timeout (CLAUDE_BG_STARTUP_WEDGE_MS || 45000). */
+CLAUDE_BRIDGE_BASE_URL	src/packages/bridge/src/bridgeConfig.ts	26	/** Ant-only dev override: CLAUDE_BRIDGE_BASE_URL, else undefined. */
+CLAUDE_BRIDGE_OAUTH_TOKEN	src/packages/bridge/src/bridgeConfig.ts	17	/** Ant-only dev override: CLAUDE_BRIDGE_OAUTH_TOKEN, else undefined. */
+CLAUDE_BRIDGE_SESSION_INGRESS_URL	src/packages/bridge/src/bridgeMain.ts	2247	process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
+CLAUDE_BRIDGE_SESSION_INGRESS_URL	src/packages/bridge/src/initReplBridge.ts	530	process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
+CLAUDE_BRIDGE_USE_CCR_V2	src/packages/bridge/src/bridgeMain.ts	1026	isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+CLAUDE_BRIDGE_USE_CCR_V2	src/packages/bridge/src/replBridge.ts	641	// con CLAUDE_BRIDGE_USE_CCR_V2 como override de dev-ant.
+CLAUDE_CHROME_PERMISSION_MODE	src/packages/agent/claudeInChrome/mcpServer.ts	95	env?.CLAUDE_CHROME_PERMISSION_MODE ??
+CLAUDE_CONFIG_DIR	src/packages/config/bin/settings.ts	58	* El patrón (`CLAUDE_CONFIG_DIR` o `~/.claude`) se repite igual en
+CLAUDE_CONFIG_DIR	src/packages/config/env/paths.ts	26	return join(process.env.CLAUDE_CONFIG_DIR || homedir(), filename)
+CLAUDE_CONFIG_DIR	src/packages/mcp-runtime/src/macOsKeychainHelpers.ts	57	const isDefaultDir = !process.env.CLAUDE_CONFIG_DIR
+CLAUDE_CONFIG_DIR	src/packages/memory/src/paths.ts	68	(readEnv('CLAUDE_CONFIG_DIR') ?? join(homedir(), '.claude')).normalize(
+CLAUDE_CONFIG_DIR	src/packages/storage/bin/storage.ts	26	* `.env` que aparezca ascendiendo). Aquí la variable es `CLAUDE_CONFIG_DIR`
+CLAUDE_CONFIG_DIR	src/packages/storage/src/secureStorage/plainTextStorage.ts	11	*   (`lodash-es/memoize`, resolver = `process.env.CLAUDE_CONFIG_DIR`)
+CLAUDE_CONFIG_HOME	src/packages/agent/background/fleet/fleetStore.ts	44	const root = readEnv('CLAUDE_CONFIG_HOME')
+CLAUDE_CONFIG_HOME	src/packages/cli/src/bg.ts	99	// CLAUDE_CONFIG_HOME env override mirrors the rest of the CLI's
+CLAUDE_CONFIG_HOME	src/packages/cli/src/bg/fleetReplyHelpers.ts	91	const root = readEnv('CLAUDE_CONFIG_HOME') ?? join(homedir(), '.claude')
+CLAUDE_CONFIG_HOME	src/packages/cli/src/bg/sparePool.ts	298	const root = process.env.CLAUDE_CONFIG_HOME ?? join(homedir(), '.claude')
+CLAUDE_CONFIG_HOME	src/packages/cli/src/handlers/agentFleetAttach.ts	188	const root = process.env.CLAUDE_CONFIG_HOME
+CLAUDE_CONFIG_HOME	src/packages/cli/src/handlers/agentsFleet.ts	295	const jobsRoot = process.env.CLAUDE_CONFIG_HOME
+CLAUDE_CONFIG_HOME	src/packages/daemon/src/bgWorkerRegistry.ts	94	const root = process.env.CLAUDE_CONFIG_HOME
+CLAUDE_CONFIG_HOME	src/packages/daemon/src/classifier/orchestrator.ts	259	const jobsRoot = process.env.CLAUDE_CONFIG_HOME
+CLAUDE_CONFIG_HOME	src/packages/daemon/src/classifier/stateFile.ts	38	const root = process.env.CLAUDE_CONFIG_HOME
+CLAUDE_CONFIG_HOME	src/packages/daemon/src/internal/pendingCrossPackageDeps.ts	129	const root = process.env.CLAUDE_CONFIG_HOME
+CLAUDE_CONFIG_HOME	src/packages/daemon/src/socketPaths.ts	99	* CLAUDE_CONFIG_HOME for consistency with bgWorkerRegistry.getJobsRoot()
+CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES	src/packages/memory/src/agentMemory.ts	189	const coworkExtraGuidelines = readEnv('CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES')
+CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES	src/packages/memory/src/memdir.ts	370	readEnv('CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES')
+CLAUDE_COWORK_MEMORY_PATH_OVERRIDE	src/packages/memory/src/paths.ts	110	readEnv('CLAUDE_COWORK_MEMORY_PATH_OVERRIDE'),
+CLAUDE_COWORK_MEMORY_PATH_OVERRIDE	src/packages/permission/src/internalPaths.ts	408	return Boolean(process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE)
+CLAUDE_DEBUG	src/packages/cli/src/utils/warningHandler.ts	100	if (isEnvTruthy(process.env.CLAUDE_DEBUG)) {
+CLAUDE_ENV_FILE	src/packages/storage/src/sessionEnvironment.ts	116	// Revisa CLAUDE_ENV_FILE pasado desde el proceso padre (p. ej. el
+CLAUDE_JOB_DIR	src/packages/agent/background/fleet/renameFleetJob.ts	8	*     dir (CLAUDE_JOB_DIR env or short(8) of session id).
+CLAUDE_JOB_DIR	src/packages/agent/background/fleet/rvServer.ts	309	const jobDir = readEnv('CLAUDE_JOB_DIR')
+CLAUDE_JOB_DIR	src/packages/agent/internal/stopHooksCore.ts	216	const jobDir = readEnv('CLAUDE_JOB_DIR')
+CLAUDE_JOB_DIR	src/packages/permission/src/internalPaths.ts	332	const jobDir = process.env.CLAUDE_JOB_DIR
+CLAUDE_JOB_DIR	src/packages/repl/src/screens/repl/bgDetachSignal.ts	21	*      CLAUDE_JOB_DIR set by spawnPty), send a `t:'detach'` ctrl
+CLAUDE_JOB_DIR	src/packages/repl/src/screens/repl/useBgFleetStateSync.ts	28	* Gated on `THYROX_CODE_SESSION_KIND === 'bg'` AND `CLAUDE_JOB_DIR`
+CLAUDE_JOB_DIR	src/packages/repl/src/screens/repl/useSpareReadyMarker.ts	26	const jobDir = process.env.CLAUDE_JOB_DIR
+CLAUDE_JOB_DIR	src/packages/shell/src/process.ts	124	// (`CLAUDE_JOB_DIR`) para declarar por qué terminó (`y` en la fuente).
+CLAUDE_LOCAL_OAUTH_API_BASE	src/packages/provider/src/oauthConstants.ts	124	const api = readEnv('CLAUDE_LOCAL_OAUTH_API_BASE')?.replace(/\/$/, '') ?? 'http://localhost:8000'
+CLAUDE_LOCAL_OAUTH_APPS_BASE	src/packages/provider/src/oauthConstants.ts	126	readEnv('CLAUDE_LOCAL_OAUTH_APPS_BASE')?.replace(/\/$/, '') ?? 'http://localhost:4000'
+CLAUDE_LOCAL_OAUTH_CONSOLE_BASE	src/packages/provider/src/oauthConstants.ts	128	readEnv('CLAUDE_LOCAL_OAUTH_CONSOLE_BASE')?.replace(/\/$/, '') ?? 'http://localhost:3000'
+CLAUDE_MOCK_HEADERLESS_429	src/packages/provider/src/mockRateLimits.ts	58	const headerless429Override = readEnv('CLAUDE_MOCK_HEADERLESS_429')
+CLAUDE_MORERIGHT	src/packages/repl/src/screens/repl/useReplEnvFlags.ts	22	process.env.USER_TYPE === 'ant' && isEnvTruthy(process.env.CLAUDE_MORERIGHT),
+CLAUDE_REPL_MODE	src/packages/tool-registry/src/tools/REPLTool/constants.ts	17	* THYROX_CODE_REPL=0). The legacy CLAUDE_REPL_MODE=1 also forces it on.
+CLAUDE_SESSION_ID	src/packages/cli/src/handlers/agentsFleet.ts	168	// CLAUDE_SESSION_ID for the standalone `ccb agents` entry (no left-arrow).
+CLAUDE_SESSION_INGRESS_TOKEN_FILE	src/packages/provider/src/sessionIngressAuth.ts	31	readEnv('CLAUDE_SESSION_INGRESS_TOKEN_FILE') ??
+CLAUDE_TRANSCRIPT_PATH	src/packages/agent/hooks.ts	305	transcript_path: process.env.CLAUDE_TRANSCRIPT_PATH ?? '',
+CLAUDE_TRUSTED_DEVICE_TOKEN	src/packages/bridge/src/trustedDevice.ts	130	* (`CLAUDE_TRUSTED_DEVICE_TOKEN`) opaca la lectura de keychain para que

@@ -18,21 +18,25 @@
  *
  * PORTE PARCIAL declarado. Símbolos de la fuente OMITIDOS, y por qué:
  *
- *   - `promptRequestSchema`, `PromptRequest`, `PromptResponse` — el
- *     protocolo de elicitación por prompt. Depende de `lazySchema` de
- *     `@claude-code-how-works/tool-registry/utils/lazySchema.js`, paquete
- *     ausente en este árbol. Ningún test de este pase lo ejercita.
- *   - `syncHookResponseSchema`, `hookJSONOutputSchema` — los esquemas Zod
- *     de validación en tiempo de ejecución. Mismo bloqueo de `lazySchema`,
- *     más los tipos de permisos (`permissionBehaviorSchema`,
- *     `permissionUpdateSchema` de `@claude-code-how-works/permission/*`,
- *     tampoco presentes). `isSyncHookJSONOutput`/`isAsyncHookJSONOutput`
+ *   - `promptRequestSchema` — PORTADO junto con `PromptRequest`/
+ *     `PromptResponse` (ya expuestos más abajo): el consumidor apareció en
+ *     `../hooks.ts`, que lo llama como `promptRequestSchema().safeParse(...)`
+ *     para reconocer una solicitud de elicitación en el stdout de un hook.
+ *     Se re-exporta `PromptRequestSchema` de
+ *     `@thyrox/headless-sdk/coreSchemas.js`, que ya porta el mismo esquema
+ *     Zod con `lazySchema` resuelto localmente — sin depender del paquete
+ *     `@claude-code-how-works/tool-registry/utils/lazySchema.js`, ausente en
+ *     este árbol.
+ *   - `syncHookResponseSchema` — el esquema Zod de la respuesta síncrona
+ *     suelta: ningún consumidor lo importa. `hookJSONOutputSchema` sí se
+ *     expone, como re-export de `HookJSONOutputSchema` de
+ *     `@thyrox/headless-sdk/coreSchemas.js`, que ya porta la misma unión
+ *     asíncrona | síncrona. `isSyncHookJSONOutput`/`isAsyncHookJSONOutput`
  *     no necesitan el esquema — son guardas estructurales puras sobre la
  *     clave `async`.
  *   - `HookCallbackContext`, `HookCallback`, `HookCallbackMatcher` —
- *     PORTADOS 2026-09-19 (TASK-THYROX-0201). Estaban aquí como omitidos
- *     por falta de consumidor; el consumidor apareció:
- *     `app-host/bootstrap/state.ts` tipa `registeredHooks` con
+ *     PORTADOS (TASK-THYROX-0201) para su consumidor,
+ *     `app-host/bootstrap/state.ts`, que tipa `registeredHooks` con
  *     `HookCallbackMatcher | PluginHookMatcher`, igual que la fuente
  *     (`ccnmt: packages/app-host/src/bootstrap/state.ts:12,22,27`). Con
  *     ellos viajan `HookInput` —stub estructural, vecino de los de
@@ -51,6 +55,8 @@
  */
 
 import type { AttributionState } from '../commitAttribution.js'
+export { HookJSONOutputSchema as hookJSONOutputSchema } from '@thyrox/headless-sdk/coreSchemas.js'
+export { PromptRequestSchema as promptRequestSchema } from '@thyrox/headless-sdk/coreSchemas.js'
 
 /**
  * Universo de eventos de hook. Inlineado verbatim desde
@@ -93,6 +99,21 @@ export const HOOK_EVENTS = [
 ] as const
 
 export type HookEvent = (typeof HOOK_EVENTS)[number]
+
+/**
+ * El cuerpo del progreso de un hook en ejecución. Forma del productor del
+ * binario 2.1.275 (`{type:"hook_progress", hookEvent, hookName, command,
+ * promptText?, statusMessage?}`): ya tiene cuatro consumidores reales
+ * (`toolHooks`, `toolExecution`, `Tool.ts`, `stopHookSpinnerSuffix`).
+ */
+export type HookProgress = {
+  type: 'hook_progress'
+  hookEvent: HookEvent
+  hookName: string
+  command: string
+  promptText?: string
+  statusMessage?: string
+}
 
 export function isHookEvent(value: string): value is HookEvent {
   return (HOOK_EVENTS as readonly string[]).includes(value)
@@ -217,7 +238,7 @@ export type HookCallback = {
     input: HookInput,
     toolUseID: string | null,
     abort: AbortSignal | undefined,
-    /** Indice del hook, para que los de SessionStart compongan CLAUDE_ENV_FILE */
+    /** Indice del hook, para que los de SessionStart compongan THYROX_ENV_FILE */
     hookIndex?: number,
     /** Contexto opcional de acceso al estado de la aplicacion */
     context?: HookCallbackContext,
@@ -238,3 +259,7 @@ export type HookCallbackMatcher = {
   hooks: HookCallback[]
   pluginName?: string
 }
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { PromptRequest, PromptResponse } from '@thyrox/headless-sdk/agentSdkTypes.js'

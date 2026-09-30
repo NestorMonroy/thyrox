@@ -42,16 +42,26 @@ import { getAgentHostBindings } from '../host.ts'
 import type {
   AgentMessage,
   AgentQuerySource,
+  AgentStreamEvent,
   AgentToolUseContext,
 } from '../internalTypes.ts'
+import type { CompactionResult } from '../compaction/compact.ts'
+import type { MicrocompactResult } from '../compaction/types.ts'
 
 export type QueryDeps = {
-  callModel: typeof queryModelWithStreaming
+  // El proveedor no depende del agente, así que su generador declara
+  // `unknown`; lo que emite son mensajes del bucle y eventos de stream.
+  callModel: (
+    args: Parameters<typeof queryModelWithStreaming>[0],
+  ) => AsyncGenerator<AgentMessage | AgentStreamEvent, void>
   microcompact: (
     messages: AgentMessage[],
     toolUseContext?: AgentToolUseContext,
     querySource?: AgentQuerySource,
-  ) => Promise<{ messages: AgentMessage[]; [key: string]: unknown }>
+  ) => Promise<{
+    messages: AgentMessage[]
+    compactionInfo?: MicrocompactResult['compactionInfo']
+  }>
   autocompact: (
     messages: AgentMessage[],
     toolUseContext: AgentToolUseContext,
@@ -61,7 +71,9 @@ export type QueryDeps = {
     snipTokensFreed?: number,
   ) => Promise<{
     wasCompacted: boolean
-    compactionResult?: unknown
+    // El de `compaction/compact.ts`: el que `autoCompactIfNeeded` devuelve y el
+    // que `buildPostCompactMessages` consume.
+    compactionResult?: CompactionResult
     consecutiveFailures?: number
     // ant 3970.js — se fija cuando autocompact desiste porque el breaker
     // de rellenado rápido saltó. El caller sale del query loop con razón
@@ -74,7 +86,7 @@ export type QueryDeps = {
 
 export function productionDeps(): QueryDeps {
   return {
-    callModel: queryModelWithStreaming,
+    callModel: queryModelWithStreaming as QueryDeps['callModel'],
     microcompact: async (messages, toolUseContext, querySource) =>
       (await getAgentHostBindings().microcompactMessages?.(
         messages,

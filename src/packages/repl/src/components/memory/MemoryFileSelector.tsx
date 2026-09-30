@@ -1,7 +1,6 @@
 import { feature } from 'bun:bundle'
 import chalk from 'chalk'
 import { mkdir } from 'fs/promises'
-import { join } from 'path'
 import * as React from 'react'
 import { use, useEffect, useState } from 'react'
 import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
@@ -20,12 +19,13 @@ import { logEvent } from '@thyrox/local-observability'
 import { useAppState } from '../../appStateHooks.js'
 import { openPath } from '@thyrox/storage/browser.js'
 import { getMemoryFiles, type MemoryFileInfo } from '@thyrox/storage/claudemd.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getDisplayPath } from '@thyrox/storage/file.js'
 import { formatRelativeTimeAgo } from '@thyrox/output/formatters'
 import { projectIsInGitRepo } from '@thyrox/memory/projectGitInfo'
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { Select } from '../CustomSelect/index.js'
+import { instructionsFileCandidates, pickInstructionsFile } from '@thyrox/config/env/instructionFiles.js'
 
 interface ExtendedMemoryFileInfo extends MemoryFileInfo {
   isNested?: boolean
@@ -48,9 +48,9 @@ export function MemoryFileSelector({
 }: Props): React.ReactNode {
   const existingMemoryFiles = use(getMemoryFiles())
 
-  // Create entries for User and Project CLAUDE.md even if they don't exist
-  const userMemoryPath = join(getClaudeConfigHomeDir(), 'CLAUDE.md')
-  const projectMemoryPath = join(getOriginalCwd(), 'CLAUDE.md')
+  // Create entries for User and Project THYROX.md even if they don't exist
+  const userMemoryPath = pickInstructionsFile(instructionsFileCandidates(getConfigHomeDir()))
+  const projectMemoryPath = pickInstructionsFile(instructionsFileCandidates(getOriginalCwd()))
 
   // Check if these are already in the existing files
   const hasUserMemory = existingMemoryFiles.some(f => f.path === userMemoryPath)
@@ -128,13 +128,13 @@ export function MemoryFileSelector({
     const isGit = projectIsInGitRepo(getOriginalCwd())
 
     if (file.type === 'User' && !file.isNested) {
-      description = 'Saved in ~/.claude/CLAUDE.md'
+      description = 'Saved in ~/.claude/THYROX.md'
     } else if (
       file.type === 'Project' &&
       !file.isNested &&
       file.path === projectMemoryPath
     ) {
-      description = `${isGit ? 'Checked in at' : 'Saved in'} ./CLAUDE.md`
+      description = `${isGit ? 'Checked in at' : 'Saved in'} ./THYROX.md`
     } else if (file.parent) {
       // For imported files (with @-import)
       description = '@-imported'

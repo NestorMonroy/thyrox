@@ -117,8 +117,17 @@ print("== 4. todo indice RE-MUESTREADO satisface q > p ==")
 # Estructural y barato: no depende de cuantas muestras se tomen. Un residuo
 # mal construido falla aqui aunque las frecuencias salieran por casualidad
 # dentro de tolerancia.
+def _sample_traced(rng) -> tuple[int, bool]:
+    """``rs.sample(..., trace=True)`` — anotado, porque la fuente no lo esta
+    y su inferencia por sitio de llamada no distingue el par de un ``int``.
+    """
+    result = rs.sample(DRAFT, TARGET, rng, trace=True)
+    assert isinstance(result, tuple)
+    return result
+
+
 rng = random.Random(7)
-resampled = [rs.sample(DRAFT, TARGET, rng, trace=True) for _ in range(20_000)]
+resampled = [_sample_traced(rng) for _ in range(20_000)]
 rejected = [index for index, accepted in resampled if not accepted]
 check("hubo rechazos que medir", True, len(rejected) > 0)
 # `len(rejected) > 0` dentro de la asercion NO es redundante con la de

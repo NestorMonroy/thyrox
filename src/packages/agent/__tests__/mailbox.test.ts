@@ -1,15 +1,12 @@
 /**
- * Tests de `Mailbox` — cola de mensajes asíncrona con soporte de filtro.
+ * Tests for the Mailbox class — async message queue with filter support.
  *
- * Porte de `ccnmt: packages/agent/__tests__/mailbox.test.ts` (verbatim en
- * casos, datos y expectativas). La clase es el primitivo de paso de
- * mensajes entre workers `teammate`. Un despacho equivocado del waiter
- * produce deadlocks (el worker se queda bloqueado en receive() mientras
- * los mensajes se acumulan); un polling equivocado consume mensajes fuera
- * de orden.
+ * The class is the message-passing primitive between teammate workers.
+ * Wrong waiter dispatch causes deadlocks (worker stuck in receive() while
+ * messages pile up). Wrong polling consumes messages out of order.
  */
 import { describe, expect, test } from 'bun:test'
-import { Mailbox, type Message } from '../runtime/mailbox.ts'
+import { Mailbox, type Message } from '../runtime/mailbox.js'
 
 function msg(over: Partial<Message> & { id: string }): Message {
   return {
@@ -20,7 +17,7 @@ function msg(over: Partial<Message> & { id: string }): Message {
   } as Message
 }
 
-describe('Mailbox — estado inicial', () => {
+describe('Mailbox — initial state', () => {
   test('new mailbox is empty', () => {
     const mb = new Mailbox()
     expect(mb.length).toBe(0)

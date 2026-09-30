@@ -122,7 +122,8 @@ describe('createFrameDecoder', () => {
   })
 
   test('un trozo vacio no rompe ni emite', () => {
-    // AÑADIDO: su suite no lo cubre. Un socket puede entregar un chunk vacio.
+    // Caso propio, fuera de la suite de la fuente: un socket puede entregar
+    // un chunk vacio.
     const c = collector()
     c.feed(Buffer.alloc(0))
     expect(c.frames).toEqual([])
@@ -137,12 +138,14 @@ describe('createFrameDecoder', () => {
     c.feed(cabecera)
     expect(c.frames).toEqual([])
     expect(c.errors).toHaveLength(1)
-    expect(c.errors[0]).toContain('demasiado grande')
+    // El texto es el de la referencia (`frame too large`): el contrato portado lo
+    // fija `cli/src/__tests__/ptyFrame.test.ts`, copiado de ella.
+    expect(c.errors[0]).toContain('frame too large')
   })
 
   test('ACEPTA un cuerpo de tamano exactamente el tope', () => {
-    // AÑADIDO, y es el que discrimina: un decodificador que rechazara TODO
-    // pasaria el caso anterior. Este exige que la frontera sea inclusiva.
+    // Caso propio, fuera de la suite de la fuente, y es el que discrimina:
+    // un decodificador que rechazara TODO pasaria el caso anterior. Este exige que la frontera sea inclusiva.
     const c = collector()
     c.feed(encodeDataFrame(Buffer.alloc(FRAME_SIZE_CAP, 0x61)))
     expect(c.errors).toEqual([])
@@ -163,8 +166,9 @@ describe('createFrameDecoder', () => {
   })
 
   test('rechaza una trama de control con cuerpo de longitud cero', () => {
-    // AÑADIDO: `JSON.parse('')` lanza, asi que el camino de error tiene que
-    // atraparlo igual que un JSON mal formado. Sin este caso, un decodificador
+    // Caso propio, fuera de la suite de la fuente: `JSON.parse('')` lanza,
+    // asi que el camino de error tiene que atraparlo igual que un JSON mal
+    // formado. Sin este caso, un decodificador
     // que no envolviera el parse en try/catch tumbaria el proceso.
     const c = collector()
     const out = Buffer.alloc(FRAME_HEADER_BYTES)

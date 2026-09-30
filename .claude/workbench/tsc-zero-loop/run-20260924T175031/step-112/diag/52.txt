@@ -1,0 +1,47 @@
+src/packages/agent/query.ts(1250,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+  --- código src/packages/agent/query.ts:1240-1260 ---
+   1240        // real response — hooks evaluating it create a death spiral:
+   1241        // error → hook blocking → retry → error → …
+   1242        if (lastMessage?.isApiErrorMessage) {
+   1243          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1244          return { reason: 'completed' }
+   1245        }
+   1246  
+   1247        const stopHookResult = yield* handleStopHooks(
+   1248          messagesForQuery,
+   1249          assistantMessages,
+   1250>         systemPrompt,
+   1251          userContext,
+   1252          systemContext,
+   1253          toolUseContext,
+   1254          querySource,
+   1255          stopHookActive,
+   1256        )
+   1257  
+   1258        // ant v2.1.143 3999.js: a run of consecutive blocks just ended (this
+   1259        // turn produced none, but earlier ones in the streak did) — record how
+   1260        // long the streak was so dashboards can see /goal blocking pressure.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/query.ts(1430,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1420-1440 ---
+   1420      const toolUpdates = streamingToolExecutor
+   1421        ? streamingToolExecutor.getRemainingResults()
+   1422        : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+   1423  
+   1424      for await (const update of toolUpdates) {
+   1425        if (update.message) {
+   1426          yield update.message
+   1427  
+   1428          if (
+   1429            update.message.type === 'attachment' &&
+   1430>           update.message.attachment.type === 'hook_stopped_continuation'
+   1431          ) {
+   1432            shouldPreventContinuation = true
+   1433          }
+   1434  
+   1435          toolResults.push(
+   1436            ...normalizeMessagesForAPI(
+   1437              [update.message],
+   1438              toolUseContext.options.tools,
+   1439            ).filter(_ => _.type === 'user'),
+   1440          )

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/crossSessionInbound.test.ts:
+81 |   })
+82 | 
+83 |   test('un documento de política con valor inválido carga con refuse y sin mutar el original', () => {
+84 |     const document = { crossSessionInbound: 'maybe' }
+85 |     const read = readPolicyDocument(document, 'managed-settings.json')
+86 |     expect(read.settings?.crossSessionInbound).toBe('refuse')
+                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: "refuse"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/crossSessionInbound.test.ts:86:48)
+(fail) el saneo en los sitios que parsean settings > un documento de política con valor inválido carga con refuse y sin mutar el original [1.21ms]
+
+ 7 pass
+ 1 fail
+ 27 expect() calls
+Ran 8 tests across 1 file. [174.00ms]

@@ -1,0 +1,4 @@
+src/packages/repl/src/doctorDiagnostic.ts(664,5): error TS2322: Type '{ working: boolean; mode: "system" | "builtin" | "embedded" | "napi"; systemPath: string | null; }' is not assignable to type '{ working: boolean; mode: "system" | "builtin" | "embedded"; systemPath: string | null; }'.
+  Types of property 'mode' are incompatible.
+    Type '"system" | "builtin" | "embedded" | "napi"' is not assignable to type '"system" | "builtin" | "embedded"'.
+      Type '"napi"' is not assignable to type '"system" | "builtin" | "embedded"'.

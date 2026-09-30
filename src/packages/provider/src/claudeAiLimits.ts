@@ -1,3 +1,23 @@
+import isEqual from 'lodash-es/isEqual.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { APIError } from '@anthropic-ai/sdk'
+import type { BetaMessageParam as MessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
+import { isClaudeAISubscriber } from './authAlias.ts'
+import { getModelBetas } from './internal/legacyRuntimeSupport.ts'
+import { getSmallFastModel } from './model.ts'
+import { isEssentialTrafficOnly } from './internal/pendingCrossPackageDeps.ts'
+import { getAPIMetadata } from './claudeLegacyRuntime.ts'
+import { getAnthropicClient } from './internal/anthropicClient.ts'
+import { shouldProcessRateLimits } from './rateLimitMocking.ts'
+import { logError } from '@thyrox/local-observability/logging'
+import { processRateLimitHeaders } from './rateLimitMocking.js'
+
+
+
+
+
+
 /**
  * El medidor de límite de uso: de la cabecera de respuesta al payload de
  * statusline.
@@ -379,6 +399,7 @@ export type RateLimitType =
   | 'seven_day'
   | 'seven_day_opus'
   | 'seven_day_sonnet'
+  | 'seven_day_overage_included'
   | 'overage'
 
 /**
@@ -397,8 +418,11 @@ export type OverageDisabledReason =
   | 'group_zero_credit_limit'
   | 'member_zero_credit_limit'
   | 'org_service_level_disabled'
-  | 'org_service_zero_credit_limit'
   | 'no_limits_configured'
+  | 'fetch_error'
+  // Sólo llega por cabecera; `toSDKRateLimitInfo` lo publica como
+  // `org_level_disabled_until` (`ka`, 2.1.281).
+  | 'org_spend_cap_reached'
   | 'unknown'
 
 export type ClaudeAILimits = {
@@ -419,6 +443,33 @@ export type ClaudeAILimits = {
   overageDisabledReason?: OverageDisabledReason
   isUsingOverage?: boolean
   surpassedThreshold?: number
+  // Campos que 2.1.281 lee de las cabeceras `anthropic-ratelimit-unified-*`
+  // (`vke`, `chunk-4n4g22z6.js`) y publica al SDK (`ka`).
+  /** Alcance del tope de consumo extra: cabecera `overage-scope`. */
+  overageScope?: OverageScope
+  /** `overage-in-use` === "true": el consumo extra está cubriendo el exceso. */
+  overageInUse?: boolean
+  /** Rutas de mejora de plan, separadas por coma en `upgrade-paths`. */
+  upgradePaths?: string[]
+  /** Uso del tope mensual de servicio: `overage-period-monthly-utilization`. */
+  overagePeriodMonthly?: { utilization: number }
+  /** Uso del tope del canal: `overage-period-channel-utilization`. */
+  overagePeriodChannel?: { utilization: number }
+  /** La respuesta cae en la zona de gracia del límite. */
+  rateLimitGraceActive?: boolean
+  errorCode?: 'credits_required'
+  canUserPurchaseCredits?: boolean
+  hasChargeableSavedPaymentMethod?: boolean
+}
+
+/** Los tres valores que `mlt` acepta de `overage-scope`; cualquier otro se descarta. */
+export type OverageScope = 'service' | 'channel' | 'group_pool'
+
+/** Ventanas unificadas que el SDK publica aparte del estado vigente. */
+export type UnifiedWindows = {
+  five_hour?: { utilization: number; resetsAt: number }
+  seven_day?: { utilization: number; resetsAt: number }
+  seven_day_overage_included?: { utilization: number; resetsAt: number }
 }
 
 const INITIAL_LIMITS: ClaudeAILimits = {
@@ -466,3 +517,476 @@ export function resetCurrentLimits(): void {
 // Los textos de advertencia de limite viven en `rateLimitMessages.ts`; sus
 // consumidores los piden a este modulo.
 export { getRateLimitWarning, getUsingOverageText } from './rateLimitMessages.js'
+
+// --- porte por miembros: un ancla por ítem ---
+/**
+ * Guarda en caché el motivo de deshabilitación del extra usage a partir de las cabeceras de la API.
+ */
+function cacheExtraUsageDisabledReason(headers: globalThis.Headers): void {
+  // Un motivo null significa que el extra usage está habilitado (sin cabecera de motivo)
+  const reason =
+    headers.get('anthropic-ratelimit-unified-overage-disabled-reason') ?? null
+  const cached = getGlobalConfig().cachedExtraUsageDisabledReason
+  if (cached !== reason) {
+    saveGlobalConfig(current => ({
+      ...current,
+      cachedExtraUsageDisabledReason: reason,
+    }))
+  }
+}
+async function makeTestQuery() {
+  const model = getSmallFastModel()
+  const anthropic = getAnthropicClient({
+    maxRetries: 0,
+    model,
+    source: 'quota_check',
+  })
+  const messages: MessageParam[] = [{ role: 'user', content: 'quota' }]
+  const betas = getModelBetas(model)
+  return anthropic.beta.messages
+    .create({
+      model,
+      max_tokens: 1,
+      messages,
+      metadata: getAPIMetadata(),
+      ...(betas.length > 0 ? { betas } : {}),
+    })
+    .asResponse()
+}
+
+/**
+ * El pre-chequeo de cuota: una consulta mínima al modelo rápido, antes de
+ * que el usuario dispare su primera consulta real, para leer las cabeceras
+ * `anthropic-ratelimit-unified-*` con antelación.
+ */
+export async function checkQuotaStatus(): Promise<void> {
+  // Se salta si el tráfico no esencial está desactivado.
+  if (isEssentialTrafficOnly()) {
+    return
+  }
+
+  // Sólo se procesa si hay un suscriptor real o el mock de pruebas activo.
+  if (!shouldProcessRateLimits(isClaudeAISubscriber())) {
+    return
+  }
+
+  // En modo no interactivo (-p) la consulta real sigue de inmediato y
+  // extractQuotaStatusFromHeaders() actualizará los límites desde sus
+  // propias cabeceras de respuesta, así que este pre-chequeo se salta.
+  if (getIsNonInteractiveSession()) {
+    return
+  }
+
+  try {
+    const raw = await makeTestQuery()
+    extractQuotaStatusFromHeaders(raw.headers)
+  } catch (error) {
+    if (error instanceof APIError) {
+      extractQuotaStatusFromError(error)
+    }
+  }
+}
+/**
+ * La composición del resultado desde las cabeceras (`vke`, `chunk-4n4g22z6.js`).
+ *
+ * DIVERGENCIA con la fuente TypeScript, medida contra 2.1.281:
+ * `resetsAt`/`overageResetsAt` se REDONDEAN (`Math.round`, no `Number` a secas);
+ * se leen cinco cabeceras nuevas —`overage-scope`, `overage-in-use`,
+ * `upgrade-paths`, `overage-period-monthly/channel-utilization`— y se admite
+ * `graceActive`, el flag que en el binario aporta la clase de estado del
+ * limitador (no portada aquí, ver docstring del módulo). Cuando el aviso
+ * temprano dispara, el binario YA NO descarta esos cinco campos: los
+ * preserva sobre el resultado del aviso (`Tke`), y es la única mitad de la
+ * fusión que cambia — el resto de campos de base (`overageScope`,
+ * `overageStatus`, `overageResetsAt`, `overageDisabledReason`, `rateLimitType`)
+ * se siguen descartando igual que en la fuente.
+ */
+function computeNewLimitsFromHeaders(
+  headers: Headers,
+  graceActive: boolean = false,
+): ClaudeAILimits {
+  const status =
+    (headers.get('anthropic-ratelimit-unified-status') as QuotaStatus) ||
+    'allowed'
+  const resetsAtHeader = headers.get('anthropic-ratelimit-unified-reset')
+  const resetsAt = resetsAtHeader ? Math.round(Number(resetsAtHeader)) : undefined
+  const unifiedRateLimitFallbackAvailable =
+    headers.get('anthropic-ratelimit-unified-fallback') === 'available'
+
+  // Cabeceras de tipo de límite y soporte de consumo extra.
+  const rateLimitType = headers.get(
+    'anthropic-ratelimit-unified-representative-claim',
+  ) as RateLimitType | null
+  const overageStatus = headers.get(
+    'anthropic-ratelimit-unified-overage-status',
+  ) as QuotaStatus | null
+  const overageResetsAtHeader = headers.get(
+    'anthropic-ratelimit-unified-overage-reset',
+  )
+  const overageResetsAt = overageResetsAtHeader
+    ? Math.round(Number(overageResetsAtHeader))
+    : undefined
+
+  // Razón por la que el consumo extra está deshabilitado (tope de gasto o saldo agotado).
+  const overageDisabledReason = headers.get(
+    'anthropic-ratelimit-unified-overage-disabled-reason',
+  ) as OverageDisabledReason | null
+
+  // Alcance del tope de consumo extra (`mlt`): sólo tres valores válidos pasan.
+  const overageScopeHeader = headers.get(
+    'anthropic-ratelimit-unified-overage-scope',
+  )
+  const overageScope: OverageScope | undefined =
+    overageScopeHeader === 'service' ||
+    overageScopeHeader === 'channel' ||
+    overageScopeHeader === 'group_pool'
+      ? overageScopeHeader
+      : undefined
+
+  // El consumo extra ya está cubriendo el exceso.
+  const overageInUse =
+    headers.get('anthropic-ratelimit-unified-overage-in-use') === 'true'
+
+  // Rutas de mejora de plan, separadas por coma.
+  const upgradePathsHeader = headers.get(
+    'anthropic-ratelimit-unified-upgrade-paths',
+  )
+  const upgradePaths = upgradePathsHeader
+    ? upgradePathsHeader.split(',').map(path => path.trim())
+    : undefined
+
+  // Uso del tope mensual y del tope de canal.
+  const overagePeriodMonthlyHeader = headers.get(
+    'anthropic-ratelimit-unified-overage-period-monthly-utilization',
+  )
+  const overagePeriodMonthlyUtilization = overagePeriodMonthlyHeader
+    ? Number(overagePeriodMonthlyHeader)
+    : NaN
+  const overagePeriodMonthly = Number.isFinite(overagePeriodMonthlyUtilization)
+    ? { utilization: overagePeriodMonthlyUtilization }
+    : undefined
+
+  const overagePeriodChannelHeader = headers.get(
+    'anthropic-ratelimit-unified-overage-period-channel-utilization',
+  )
+  const overagePeriodChannelUtilization = overagePeriodChannelHeader
+    ? Number(overagePeriodChannelHeader)
+    : NaN
+  const overagePeriodChannel = Number.isFinite(overagePeriodChannelUtilization)
+    ? { utilization: overagePeriodChannelUtilization }
+    : undefined
+
+  // Se usa consumo extra: los límites estándar rechazan y el extra lo permite.
+  const isUsingOverage =
+    status === 'rejected' &&
+    (overageStatus === 'allowed' || overageStatus === 'allowed_warning')
+
+  // Si el estado permite avisar, el aviso temprano reemplaza el resto —
+  // salvo los cinco campos que el binario preserva explícitamente (`Tke`).
+  let finalStatus: QuotaStatus = status
+  if (status === 'allowed' || status === 'allowed_warning') {
+    const earlyWarning = getEarlyWarningFromHeaders(
+      headers,
+      unifiedRateLimitFallbackAvailable,
+    )
+    if (earlyWarning) {
+      return {
+        ...earlyWarning,
+        ...(upgradePaths && { upgradePaths }),
+        ...(overageInUse && { overageInUse }),
+        ...(overagePeriodMonthly && { overagePeriodMonthly }),
+        ...(overagePeriodChannel && { overagePeriodChannel }),
+        ...(graceActive && { rateLimitGraceActive: true }),
+      }
+    }
+    finalStatus = 'allowed'
+  }
+
+  return {
+    status: finalStatus,
+    resetsAt,
+    unifiedRateLimitFallbackAvailable,
+    ...(rateLimitType && { rateLimitType }),
+    ...(overageStatus && { overageStatus }),
+    ...(overageResetsAt && { overageResetsAt }),
+    ...(overageDisabledReason && { overageDisabledReason }),
+    ...(overageScope && { overageScope }),
+    ...(upgradePaths && { upgradePaths }),
+    isUsingOverage,
+    ...(overageInUse && { overageInUse }),
+    ...(overagePeriodMonthly && { overagePeriodMonthly }),
+    ...(overagePeriodChannel && { overagePeriodChannel }),
+    ...(graceActive && { rateLimitGraceActive: true }),
+  }
+}
+/**
+ * Calculate what fraction of a time window has elapsed.
+ * Used for time-relative early warning fallback.
+ * @param resetsAt - Unix epoch timestamp in seconds when the limit resets
+ * @param windowSeconds - Duration of the window in seconds
+ * @returns fraction (0-1) of the window that has elapsed
+ */
+function computeTimeProgress(resetsAt: number, windowSeconds: number): number {
+  const nowSeconds = Date.now() / 1000
+  const windowStart = resetsAt - windowSeconds
+  const elapsed = nowSeconds - windowStart
+  return Math.max(0, Math.min(1, elapsed / windowSeconds))
+}
+
+/**
+ * Check if time-relative early warning should be triggered for a rate limit type.
+ * Fallback when server doesn't send surpassed-threshold header.
+ * Returns ClaudeAILimits if thresholds are exceeded, null otherwise.
+ */
+function getTimeRelativeEarlyWarning(
+  headers: globalThis.Headers,
+  config: EarlyWarningConfig,
+  unifiedRateLimitFallbackAvailable: boolean,
+): ClaudeAILimits | null {
+  const { rateLimitType, windowSeconds, thresholds } = config
+  // La configuración ya no lleva `claimAbbrev` (divergencia declarada arriba de
+  // `EarlyWarningConfig`): la abreviatura de cabecera se deriva de
+  // `RATE_LIMIT_WINDOWS`, la misma tabla que ya la relaciona con `rateLimitType`.
+  const claimAbbrev = RATE_LIMIT_WINDOWS.find(([name]) => name === rateLimitType)?.[1]
+
+  const utilizationHeader = headers.get(
+    `anthropic-ratelimit-unified-${claimAbbrev}-utilization`,
+  )
+  const resetHeader = headers.get(
+    `anthropic-ratelimit-unified-${claimAbbrev}-reset`,
+  )
+
+  if (utilizationHeader === null || resetHeader === null) {
+    return null
+  }
+
+  const utilization = Number(utilizationHeader)
+  const resetsAt = Number(resetHeader)
+  const timeProgress = computeTimeProgress(resetsAt, windowSeconds)
+
+  // Check if any threshold is exceeded: high usage early in the window
+  const shouldWarn = thresholds.some(
+    t => utilization >= t.utilization && timeProgress <= t.timePct,
+  )
+
+  if (!shouldWarn) {
+    return null
+  }
+
+  return {
+    status: 'allowed_warning',
+    resetsAt,
+    rateLimitType,
+    utilization,
+    unifiedRateLimitFallbackAvailable,
+    isUsingOverage: false,
+  }
+}
+/**
+ * La misma composición que {@link recordRateLimitHeaders}, pero a partir de
+ * las cabeceras de un ERROR 429 — el `catch` de la llamada, no la respuesta.
+ *
+ * Fuerza `status` a `'rejected'` incluso sin cabeceras: un 429 es en sí mismo
+ * la señal de rechazo, así que el estado no puede quedar en lo que había
+ * antes por falta de dato.
+ */
+export function extractQuotaStatusFromError(error: APIError): void {
+  if (
+    !shouldProcessRateLimits(isClaudeAISubscriber()) ||
+    error.status !== 429
+  ) {
+    return
+  }
+
+  try {
+    let newLimits = { ...currentLimits }
+    if (error.headers) {
+      const headersToUse = processRateLimitHeaders(error.headers)
+      rawUtilization = extractRawUtilization(headersToUse)
+      newLimits = computeNewLimitsFromHeaders(headersToUse)
+
+      cacheExtraUsageDisabledReason(headersToUse)
+    }
+    newLimits.status = 'rejected'
+
+    if (!isEqual(currentLimits, newLimits)) {
+      emitStatusChange(newLimits)
+    }
+  } catch (e) {
+    logError(e as Error)
+  }
+}
+/**
+ * El punto de entrada de cada respuesta: decide si hay que procesar
+ * cabeceras y publica el estado nuevo sólo si cambió.
+ *
+ * `computeNewLimitsFromHeaders` (`vke`, 2.1.281) es donde viven las cabeceras
+ * nuevas (`overage-scope`, `overage-in-use`, `upgrade-paths`,
+ * `overage-period-*`, la gracia); este envoltorio no las toca y no diverge
+ * de la fuente citada arriba.
+ */
+export function extractQuotaStatusFromHeaders(headers: Headers): void {
+  const isSubscriber = isClaudeAISubscriber()
+
+  if (!shouldProcessRateLimits(isSubscriber)) {
+    // Sin nada que procesar: se limpia el crudo y, si había un estado no
+    // default, se vuelve al inicial.
+    rawUtilization = {}
+    if (currentLimits.status !== 'allowed' || currentLimits.resetsAt) {
+      emitStatusChange({ ...INITIAL_LIMITS })
+    }
+    return
+  }
+
+  // Aplica mocks de /mock-limits si está activo.
+  const headersToUse = processRateLimitHeaders(headers)
+  rawUtilization = extractRawUtilization(headersToUse)
+  const newLimits = computeNewLimitsFromHeaders(headersToUse)
+
+  cacheExtraUsageDisabledReason(headersToUse)
+
+  if (!isEqual(currentLimits, newLimits)) {
+    emitStatusChange(newLimits)
+  }
+}
+/**
+ * El orquestador del aviso temprano (`nlt` en el binario 2.1.281): primero
+ * intenta la detección basada en cabecera (umbral ya rebasado, declarado por
+ * el servidor) y, si no hay resultado, recorre las configuraciones de aviso
+ * por tiempo relativo hasta que una dispare.
+ *
+ * DIVERGENCIA declarada: `nlt` añade una condición de gating previa —una
+ * llamada sin argumentos (`fM()` en `chunk-4n4g22z6.js`)— que se pasa como
+ * tercer argumento a la detección por cabecera y que, cuando es verdadera,
+ * salta la configuración `five_hour` del recorrido por tiempo relativo. Su
+ * binding no se resolvió con la extracción disponible en este pase: no está
+ * definido en `chunk-4n4g22z6.js`, y los `fM` homónimos hallados en otros
+ * chunks (auth por API key, formato de PR) son símbolos distintos por
+ * colisión de nombre tras la minificación, no el mismo. Este porte conserva
+ * la forma de la fuente TypeScript, sin ese gate adicional — declarado, no
+ * omitido en silencio (`porte-completo-no-parcial.md`).
+ */
+export function getEarlyWarningFromHeaders(
+  headers: Headers,
+  unifiedRateLimitFallbackAvailable: boolean,
+): ClaudeAILimits | null {
+  const headerBasedWarning = getHeaderBasedEarlyWarning(
+    headers,
+    unifiedRateLimitFallbackAvailable,
+  )
+  if (headerBasedWarning) {
+    return headerBasedWarning
+  }
+
+  for (const config of EARLY_WARNING_CONFIGS) {
+    const timeRelativeWarning = getTimeRelativeEarlyWarning(
+      headers,
+      config,
+      unifiedRateLimitFallbackAvailable,
+    )
+    if (timeRelativeWarning) {
+      return timeRelativeWarning
+    }
+  }
+
+  return null
+}
+/**
+ * El aviso temprano basado en cabecera de umbral rebasado (`fFn`, 2.1.281).
+ *
+ * DIVERGENCIA declarada: la fuente TypeScript leía las cabeceras por su
+ * cuenta, con un mapa propio de sólo tres reclamos (`EARLY_WARNING_CLAIM_MAP`:
+ * `5h`/`7d`/`overage`). El binario reutiliza la MISMA extracción que ya
+ * alimenta al medidor (`extractRawUtilization`), sobre las CUATRO ventanas de
+ * `RATE_LIMIT_WINDOWS` — incluida `seven_day_overage_included`, que la fuente
+ * nunca cubría. Se porta reutilizando el extractor en vez de duplicar el
+ * parseo de cabeceras, que es justo la forma que tomó el binario.
+ *
+ * Devuelve el aviso de la PRIMERA ventana con `surpassedThreshold`, en el
+ * orden de la tabla; `null` si ninguna lo declara.
+ */
+export function getHeaderBasedEarlyWarning(
+  headers: Headers,
+  unifiedRateLimitFallbackAvailable: boolean,
+): ClaudeAILimits | null {
+  const readings = extractRawUtilization(headers)
+  for (const [name] of RATE_LIMIT_WINDOWS) {
+    const window = readings[name]
+    if (window === undefined || window.surpassedThreshold === undefined) continue
+    return {
+      status: 'allowed_warning',
+      resetsAt: window.resets_at,
+      rateLimitType: name,
+      utilization: window.utilization,
+      unifiedRateLimitFallbackAvailable,
+      isUsingOverage: false,
+      surpassedThreshold: window.surpassedThreshold,
+    }
+  }
+  return null
+}
+export function getRateLimitDisplayName(type: RateLimitType): string {
+  return RATE_LIMIT_DISPLAY_NAMES[type] || type
+}
+/**
+ * Un umbral de aviso temprano dentro de una `EarlyWarningConfig`.
+ */
+type EarlyWarningThreshold = {
+  utilization: number // escala 0-1: dispara el aviso cuando el uso >= este valor
+  timePct: number // escala 0-1: dispara el aviso cuando el tiempo transcurrido <= este valor
+}
+
+/**
+ * DIVERGENCIA con la fuente TypeScript: sin `claimAbbrev`.
+ *
+ * La fuente declaraba `claimAbbrev: '5h' | '7d'` para mapear la
+ * configuración a través de `EARLY_WARNING_CLAIM_MAP`. El binario 2.1.281
+ * (`iFn`, `chunk-4n4g22z6.js`) ya no lleva ese campo: la función que evalúa
+ * el aviso temprano recibe `rateLimitType` directo de la propia
+ * configuración, sin pasar por una abreviatura. Se omite aquí porque
+ * portarlo dejaría un campo sin escritor ni lector.
+ */
+type EarlyWarningConfig = {
+  rateLimitType: RateLimitType
+  windowSeconds: number
+  thresholds: EarlyWarningThreshold[]
+}
+
+// Configuraciones de aviso temprano en orden de prioridad (se revisan de la
+// primera a la última). Sirven de respaldo cuando el servidor no envía la
+// cabecera de umbral rebasado: avisan al usuario cuando consume la cuota más
+// rápido de lo que permite la ventana de tiempo. Valores verificados contra
+// el binario 2.1.281 (`iFn`, `chunk-4n4g22z6.js`).
+const EARLY_WARNING_CONFIGS: EarlyWarningConfig[] = [
+  {
+    rateLimitType: 'five_hour',
+    windowSeconds: 5 * 60 * 60,
+    thresholds: [{ utilization: 0.9, timePct: 0.72 }],
+  },
+  {
+    rateLimitType: 'seven_day',
+    windowSeconds: 7 * 24 * 60 * 60,
+    thresholds: [
+      { utilization: 0.75, timePct: 0.6 },
+      { utilization: 0.5, timePct: 0.35 },
+      { utilization: 0.25, timePct: 0.15 },
+    ],
+  },
+]
+
+/**
+ * Los nombres de presentación por tipo de límite.
+ *
+ * DIVERGENCIA con la fuente TypeScript, verificada contra el binario 2.1.281
+ * (`Ide`, `chunk-4n4g22z6.js`): incluye `seven_day_overage_included` —ausente
+ * en la fuente, que no conocía esa ventana— y `overage` cambió su texto de
+ * "extra usage limit" a "usage credit limit".
+ */
+const RATE_LIMIT_DISPLAY_NAMES: Record<RateLimitType, string> = {
+  five_hour: 'session limit',
+  seven_day: 'weekly limit',
+  seven_day_opus: 'Opus limit',
+  seven_day_sonnet: 'Sonnet limit',
+  seven_day_overage_included: 'Fable limit',
+  overage: 'usage credit limit',
+}

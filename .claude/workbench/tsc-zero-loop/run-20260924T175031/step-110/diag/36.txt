@@ -1,0 +1,50 @@
+src/packages/agent/messages.ts(1413,27): error TS2345: Argument of type '(this: undefined, message: Message) => ProgressMessage<unknown>[] | NormalizedMessage[] | AttachmentMessage<unknown>[] | SystemMessage[] | (MessageBase & { ...; })[]' is not assignable to parameter of type '(this: undefined, value: Message, index: number, array: Message[]) => ProgressMessage<unknown> | readonly ProgressMessage<unknown>[]'.
+  --- código src/packages/agent/messages.ts:1403-1423 ---
+   1403  export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
+   1404    // isNewChain tracks whether we need to generate new UUIDs for messages when normalizing.
+   1405    // When a message has multiple content blocks, we split it into multiple messages,
+   1406    // each with a single content block. When this happens, we need to generate new UUIDs
+   1407    // for all subsequent messages to maintain proper ordering and prevent duplicate UUIDs.
+   1408    // This flag is set to true once we encounter a message with multiple content blocks,
+   1409    // and remains true for all subsequent messages in the normalization process.
+   1410    let isNewChain = false
+   1411    // Cada rama emite un bloque por mensaje: el contenido sale como arreglo por
+   1412    // construcción, que es la forma que `NormalizedMessage` declara.
+   1413>   return messages.flatMap(message => {
+   1414      switch (message.type) {
+   1415        case 'assistant': {
+   1416          // El `switch` NO estrecha: `Message.type` esta declarado `MessageType`
+   1417          // y no como literal discriminante, asi que TypeScript no deduce el
+   1418          // subtipo por rama. La rama SI lo garantiza, asi que se declara con un
+   1419          // cast en vez de sembrar `?.` en cada uno de los nueve accesos.
+   1420          const am = message as AssistantMessage
+   1421          // `content` sigue opcional dentro de `message` —la fuente lo lee sin
+   1422          // guarda bajo `strict: false`—, y el arreglo se estrecha a `ContentItem[]`
+   1423          // para que `.map` resuelva: una union `A[] | B[]` no ofrece una firma
+  Type 'ProgressMessage<unknown>[] | NormalizedMessage[] | AttachmentMessage<unknown>[] | SystemMessage[] | (MessageBase & { ...; })[]' is not assignable to type 'ProgressMessage<unknown> | readonly ProgressMessage<unknown>[]'.
+    Type 'NormalizedMessage[]' is not assignable to type 'ProgressMessage<unknown> | readonly ProgressMessage<unknown>[]'.
+      Type 'NormalizedMessage[]' is not assignable to type 'ProgressMessage<unknown>'.
+        Type 'NormalizedMessage[]' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/agent/messages.ts(1568,12): error TS2367: This comparison appears to be unintentional because the types 'false' and 'true' have no overlap.
+  --- código src/packages/agent/messages.ts:1558-1578 ---
+   1558      return false
+   1559    }
+   1560  }
+   1561  
+   1562  function featureEnabledDeferred(name: string): boolean {
+   1563    try {
+   1564      // eslint-disable-next-line @typescript-eslint/no-require-imports
+   1565      const { getFeatureValue_CACHED_MAY_BE_STALE } = require('@thyrox/config/feature-flags') as {
+   1566        getFeatureValue_CACHED_MAY_BE_STALE: <T>(name: string, fallback: T) => T
+   1567      }
+   1568>     return getFeatureValue_CACHED_MAY_BE_STALE(name, false) === true
+   1569    } catch {
+   1570      return false
+   1571    }
+   1572  }
+   1573  
+   1574  /**
+   1575   * El mensaje de rechazo, con la nota de corrección si la memoria automática
+   1576   * está activa y la bandera `tengu_amber_prism` también (≙ `WO` de 2.1.275).
+   1577   * Este árbol no tiene pausa de memoria, así que sólo la desactivación la
+   1578   * apaga.

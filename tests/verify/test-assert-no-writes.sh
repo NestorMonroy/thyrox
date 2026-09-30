@@ -18,7 +18,7 @@
 #
 # Uso:  bash tests/verify/test-assert-no-writes.sh
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 SUJETO="src/verify/assert_no_writes.sh"
 fallos=0
@@ -40,6 +40,7 @@ trap 'rm -rf "$T"' EXIT
 # Los runs de la familia `jobs` —bg.sh crea su run-puntero aun con `--dir`— van
 # al temporal: sin esto la suite dejaba un `sonda-*` en el árbol en cada corrida.
 export THYROX_JOBS_DIR="$T/jobs"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 
 echo '1. rehusa en vez de publicar un cero'
 bash "$SUJETO" >/dev/null 2>&1
@@ -99,7 +100,7 @@ for p in "${payloads[@]}"; do
   i=$((i + 1))
   printf '%s' "$p" > "$T/payload.$i.json"
   salida="$(bash "$SUJETO" -- /bin/sh -c \
-      "python3 src/hooks/pretooluse_dispatch.py < $T/payload.$i.json" 2>&1)"
+      "python3 src/hooks/tool_use_preflight.py < $T/payload.$i.json" 2>&1)"
   codigo=$?
   afirmar "$(veredicto $codigo 0)" "payload $i: el despacho de los 11 no escribe"
   case "$salida" in *'subject_exit=0'*) afirmar ok "payload $i: el despacho salio 0" ;;

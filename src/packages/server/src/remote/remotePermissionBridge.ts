@@ -1,23 +1,13 @@
-/**
- * Puerto de `ccnmt: packages/server/src/remote/remotePermissionBridge.ts`.
- * `SDKControlPermissionRequest` — sólo TIPO, de
- * `@thyrox/headless-sdk/controlTypes.js`.
- * `Tool` — sólo TIPO, de `@thyrox/tool-registry/Tool.js` (el paquete
- * `tool-registry` no existe en este árbol; erasado en runtime, así que no
- * hace falta que exista).
- * `AssistantMessage` — sólo TIPO, de `@thyrox/agent/messageShapes.js`.
- * `jsonStringify` — ver `../internal/pendingCrossPackageDeps.js`.
- */
 import { randomUUID } from 'crypto'
 import type { SDKControlPermissionRequest } from '@thyrox/headless-sdk/controlTypes.js'
 import type { Tool } from '@thyrox/tool-registry/Tool.js'
-import type { AssistantMessage } from '@thyrox/agent/messageShapes.js'
-import { requireLocalObservabilitySlowOperations } from '../internal/pendingCrossPackageDeps.js'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 /**
- * Crea un AssistantMessage sintético para peticiones de permiso remotas.
- * ToolUseConfirm exige un AssistantMessage, pero en modo remoto no
- * tenemos uno real — la llamada a la herramienta corre en el contenedor CCR.
+ * Create a synthetic AssistantMessage for remote permission requests.
+ * The ToolUseConfirm type requires an AssistantMessage, but in remote mode
+ * we don't have a real one — the tool use runs on the CCR container.
  */
 export function createSyntheticAssistantMessage(
   request: SDKControlPermissionRequest,
@@ -56,10 +46,9 @@ export function createSyntheticAssistantMessage(
 }
 
 /**
- * Crea un stub mínimo de Tool para herramientas que no están cargadas
- * localmente. Esto pasa cuando el CCR remoto tiene herramientas (p. ej.
- * herramientas MCP) que el CLI local no conoce. El stub enruta a
- * FallbackPermissionRequest.
+ * Create a minimal Tool stub for tools that aren't loaded locally.
+ * This happens when the remote CCR has tools (e.g., MCP tools) that the
+ * local CLI doesn't know about. The stub routes to FallbackPermissionRequest.
  */
 export function createToolStub(toolName: string): Tool {
   return {
@@ -68,7 +57,6 @@ export function createToolStub(toolName: string): Tool {
     isEnabled: () => true,
     userFacingName: () => toolName,
     renderToolUseMessage: (input: Record<string, unknown>) => {
-      const { jsonStringify } = requireLocalObservabilitySlowOperations()
       const entries = Object.entries(input)
       if (entries.length === 0) return ''
       return entries

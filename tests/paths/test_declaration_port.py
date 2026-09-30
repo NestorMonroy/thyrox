@@ -10,7 +10,7 @@ Qué haría fallar a estos casos (sub-patrón D): retirar el parámetro `source`
 de `env_value` y volver a leer `os.environ` incondicionalmente. Entonces el
 primer caso lee lo que el proceso tenga y el fake no decide nada.
 
-Ciega a: la mitad TypeScript, cuyo puerto ata `tests/paths/reach.test.ts`. Y
+Ciega a: la mitad TypeScript, cuyo puerto ata `src/packages/paths/__tests__/reach.test.ts`. Y
 ciega a los demás efectos conducidos del módulo —el ascenso por el sistema de
 archivos de `consumer_root`, que sigue sin puerto— por decisión de alcance:
 este porte declara UN puerto, el que sus consumidores ya usan.
@@ -109,6 +109,119 @@ class DeclarationPort(unittest.TestCase):
         self.assertTrue(hasattr(reach, "ForReadingDeclarations"))
         self.assertTrue(hasattr(reach.ForReadingDeclarations, "declared"))
 
+
+
+class ProviderLayer(unittest.TestCase):
+    """La capa del ``.env`` del PROVEEDOR: sólo la familia POR CLON del que pregunta.
+
+    El binario del cliente (2.1.281) combina sus fuentes POR CLAVE, de la más
+    general a la más específica —``Object.assign`` del ``env`` de cada una,
+    *«Ordered low-to-high priority — later entries override earlier ones»*—:
+    una clave que la específica no declara conserva el valor de la general.
+    Pero su capa general (``userSettings``) vale para TODOS los proyectos, y el
+    ``.env`` del proveedor no: es la configuración de SU proyecto, con sus
+    hogares propios (``THYROX_CACHE_DIR``, ``THYROX_WORKBENCH_DIR``) y, además,
+    la familia por clon que ``write-env.sh`` escribe PARA cada consumidor
+    (``THYROX_WORKBENCH_DOCS``). Sólo esa familia es general para el consumidor.
+
+    La primera versión trató el archivo entero como general y la suite completa
+    lo midió: 14 suites nuevas en rojo, porque el ``THYROX_CACHE_DIR`` del
+    proveedor aparecía en árboles sintéticos que esperaban el default.
+
+    Qué haría fallar a estos casos: quitar la capa (caen el respaldo y el
+    positivo real), ponerla antes del consumidor (cae la precedencia) o
+    dejarla responder cualquier clave (cae el hogar propio).
+    """
+
+    def setUp(self):
+        import tempfile
+        self._tmp = tempfile.TemporaryDirectory()
+        base = Path(self._tmp.name)
+        self.provider = base / "thyrox"
+        (self.provider / "src" / "paths").mkdir(parents=True)
+        (self.provider / "src" / "paths" / "reach.py").write_text("")
+        (self.provider / ".env").write_text(
+            "THYROX_CAPA_DOCS=del-proveedor-para-docs\n"
+            "THYROX_COMPARTIDA_DOCS=del-proveedor\n"
+            "THYROX_CAPA_API=del-proveedor-para-api\n"
+            "THYROX_CAPA_DIR=hogar-propio-del-proveedor\n")
+        self.consumer = base / "acme-docs"
+        self.consumer.mkdir()
+        # Un multi-repo `acme-`: con un solo `acme-docs` no hay prefijo que
+        # medir y el nombre corto es el nombre entero (H-THYROX-176).
+        (base / "acme-api").mkdir()
+        (self.consumer / ".env").write_text("THYROX_COMPARTIDA_DOCS=del-consumidor\n")
+        self._keys = ("THYROX_CAPA_DOCS", "THYROX_COMPARTIDA_DOCS", "THYROX_CAPA_API",
+                      "THYROX_CAPA_DIR", "THYROX_ENV_FILE")
+        self._saved = {k: os.environ.pop(k, None) for k in self._keys}
+
+    def tearDown(self):
+        for k, v in self._saved.items():
+            if v is not None:
+                os.environ[k] = v
+        self._tmp.cleanup()
+
+    def chain(self):
+        return reach.production_declarations(self.consumer, provider_root=self.provider)
+
+    def test_per_clone_family_falls_back_to_provider(self):
+        self.assertEqual(self.chain().declared("THYROX_CAPA_DOCS"), "del-proveedor-para-docs")
+
+    def test_consumer_wins_over_provider(self):
+        self.assertEqual(self.chain().declared("THYROX_COMPARTIDA_DOCS"), "del-consumidor")
+
+    def test_process_wins_over_both(self):
+        os.environ["THYROX_COMPARTIDA_DOCS"] = "del-proceso"
+        self.assertEqual(self.chain().declared("THYROX_COMPARTIDA_DOCS"), "del-proceso")
+
+    def test_provider_own_home_does_not_leak(self):
+        """EL QUE DISCRIMINA la regresión medida: 14 suites en rojo."""
+        self.assertIsNone(self.chain().declared("THYROX_CAPA_DIR"))
+
+    def test_family_of_another_clone_does_not_leak(self):
+        self.assertIsNone(self.chain().declared("THYROX_CAPA_API"))
+
+    def test_without_provider_env_there_is_no_fallback_nor_error(self):
+        (self.provider / ".env").unlink()
+        self.assertIsNone(self.chain().declared("THYROX_CAPA_DOCS"))
+
+    def test_without_declared_root_provider_is_clone_sibling(self):
+        """El proveedor se busca junto al clon que pregunta, no junto al módulo.
+
+        Buscarlo desde ``reach.__file__`` hacía que un árbol sintético leyera el
+        ``.env`` del proveedor REAL: ``cache/test_home_resolution`` perdió sus
+        dos clones observables porque ``THYROX_WORKBENCH_DOCS`` del host les
+        aparecía declarada.
+        """
+        chain = reach.production_declarations(self.consumer)
+        self.assertEqual(chain.declared("THYROX_CAPA_DOCS"), "del-proveedor-para-docs")
+
+    def test_tree_without_sibling_provider_does_not_inherit_host(self):
+        import shutil
+        shutil.rmtree(self.provider)
+        chain = reach.production_declarations(self.consumer)
+        self.assertIsNone(chain.declared("THYROX_WORKBENCH_DOCS"))
+
+    def test_declared_env_file_turns_off_provider_layer(self):
+        """``THYROX_ENV_FILE`` declara QUÉ archivo gobierna: no se suma otro."""
+        os.environ["THYROX_ENV_FILE"] = os.devnull
+        self.assertIsNone(self.chain().declared("THYROX_CAPA_DOCS"))
+
+    def test_real_positive_per_clone_family_is_read_from_consumer(self):
+        """El episodio: ``THYROX_WORKBENCH_DOCS`` vive en el ``.env`` del
+        proveedor y se pedía desde ``kaupamex-docs``."""
+        # El módulo ya rehusó con RuntimeError si `_ROOT` fuera None; se
+        # re-estrecha aquí porque el narrowing de un global no cruza al
+        # cuerpo de un método.
+        assert _ROOT is not None
+        provider_env = _ROOT / ".env"
+        declared = reach.read_env_file(provider_env).get("THYROX_WORKBENCH_DOCS") \
+            if provider_env.is_file() else None
+        docs = next((c for c in (_ROOT.parent / "kaupamex-docs",) if c.is_dir()), None)
+        if not declared or docs is None:
+            self.skipTest("sin THYROX_WORKBENCH_DOCS declarada o sin clon de docs")
+        os.environ.pop("THYROX_WORKBENCH_DOCS", None)
+        self.assertEqual(reach.env_value("THYROX_WORKBENCH_DOCS", docs), declared)
 
 if __name__ == "__main__":
     unittest.main()

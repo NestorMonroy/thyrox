@@ -38,6 +38,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import term_census  # noqa: E402
+from paths import reach  # noqa: E402
 
 
 class TestTheAccent(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestTheAccent(unittest.TestCase):
             term_census.count("credito simple", ["cr\u00e9dito"]),
             {"cr\u00e9dito": 1})
 
-    def test_4_the_ENIE_does_not_fold_into_the_ENE(self):
+    def test_4_n_with_tilde_does_not_fold_into_plain_n(self):
         """CONTROL DE ANULACION del plegado: `n` y `n` son letras distintas
         en espanol, no una variante de acento. Plegarlas hace que `ano` y
         `ano` se cuenten juntos, que es un error de otra clase."""
@@ -150,11 +151,11 @@ class TestTheOverlap(unittest.TestCase):
 
 
 class TestLineSurface(unittest.TestCase):
-    def _run(self, *args, entrada=""):
-        wrapper = (pathlib.Path(__file__).resolve().parents[2]
+    def _run(self, *args, entry=""):
+        wrapper = (reach.thyrox_root()
                       / "bin" / "term_census")
         return subprocess.run(["bash", str(wrapper), *args],
-                              input=entrada, capture_output=True, text=True)
+                              input=entry, capture_output=True, text=True)
 
     def test_15_counts_over_a_file_and_publishes_the_table(self):
         with tempfile.TemporaryDirectory() as tmp:

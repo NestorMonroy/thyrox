@@ -1,73 +1,63 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/lsp/LSPServerInstance.ts`.
- * `InitializeParams` de `vscode-languageserver-protocol` se importa sólo
- * como tipo (erasado en runtime); `createLSPClientType` es el alias de tipo
- * de `createLSPClient` de `./LSPClient.js`.
- */
 import * as path from 'path'
 import { pathToFileURL } from 'url'
 import type { InitializeParams } from 'vscode-languageserver-protocol'
-import {
-  requireAppHostBootstrapState,
-  requireConfigSleep,
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilityLogging,
-} from '../internal/pendingCrossPackageDeps.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { sleep } from '@thyrox/config/sleep'
 import type { createLSPClient as createLSPClientType } from './LSPClient.js'
 import type { LspServerState, ScopedLspServerConfig } from './types.js'
 
 /**
- * Código de error LSP para "content modified" - indica que el estado del
- * servidor cambió durante el procesamiento del request (p. ej.
- * rust-analyzer sigue indexando el proyecto). Es un error transitorio que
- * se puede reintentar.
+ * LSP error code for "content modified" - indicates the server's state changed
+ * during request processing (e.g., rust-analyzer still indexing the project).
+ * This is a transient error that can be retried.
  */
 const LSP_ERROR_CONTENT_MODIFIED = -32801
 
 /**
- * Máximo de reintentos para errores LSP transitorios como "content modified".
+ * Maximum number of retries for transient LSP errors like "content modified".
  */
 const MAX_RETRIES_FOR_TRANSIENT_ERRORS = 3
 
 /**
- * Delay base en milisegundos para el backoff exponencial en errores transitorios.
- * Delays reales: 500ms, 1000ms, 2000ms
+ * Base delay in milliseconds for exponential backoff on transient errors.
+ * Actual delays: 500ms, 1000ms, 2000ms
  */
 const RETRY_BASE_DELAY_MS = 500
 /**
- * Interfaz de instancia de servidor LSP devuelta por createLSPServerInstance.
- * Gestiona el ciclo de vida de un único servidor LSP con rastreo de estado
- * y monitoreo de salud.
+ * LSP server instance interface returned by createLSPServerInstance.
+ * Manages the lifecycle of a single LSP server with state tracking and health monitoring.
  */
 export type LSPServerInstance = {
-  /** Identificador único del servidor. */
+  /** Unique server identifier */
   readonly name: string
-  /** Configuración del servidor. */
+  /** Server configuration */
   readonly config: ScopedLspServerConfig
-  /** Estado actual del servidor. */
+  /** Current server state */
   readonly state: LspServerState
-  /** Cuándo se inició el servidor por última vez. */
+  /** When the server was last started */
   readonly startTime: Date | undefined
-  /** Último error encontrado. */
+  /** Last error encountered */
   readonly lastError: Error | undefined
-  /** Número de veces que se llamó a restart(). */
+  /** Number of times restart() has been called */
   readonly restartCount: number
-  /** Inicia el servidor y lo inicializa. */
+  /** Start the server and initialize it */
   start(): Promise<void>
-  /** Detiene el servidor con gracia. */
+  /** Stop the server gracefully */
   stop(): Promise<void>
-  /** Reinicia manualmente el servidor (detener y luego iniciar). */
+  /** Manually restart the server (stop then start) */
   restart(): Promise<void>
-  /** Comprueba si el servidor está saludable y listo para requests. */
+  /** Check if server is healthy and ready for requests */
   isHealthy(): boolean
-  /** Envía un request LSP al servidor. */
+  /** Send an LSP request to the server */
   sendRequest<T>(method: string, params: unknown): Promise<T>
-  /** Envía una notificación LSP al servidor (fire-and-forget). */
+  /** Send an LSP notification to the server (fire-and-forget) */
   sendNotification(method: string, params: unknown): Promise<void>
-  /** Registra un handler para notificaciones LSP. */
+  /** Register a handler for LSP notifications */
   onNotification(method: string, handler: (params: unknown) => void): void
-  /** Registra un handler para requests LSP del servidor. */
+  /** Register a handler for LSP requests from the server */
   onRequest<TParams, TResult>(
     method: string,
     handler: (params: TParams) => TResult | Promise<TResult>,
@@ -75,22 +65,21 @@ export type LSPServerInstance = {
 }
 
 /**
- * Crea y gestiona una única instancia de servidor LSP.
+ * Creates and manages a single LSP server instance.
  *
- * Usa el patrón factory function con closures para encapsular el estado
- * (evitando clases). Provee rastreo de estado, monitoreo de salud, y
- * reenvío de requests para un servidor LSP. Soporta reinicio manual con
- * límites de reintento configurables.
+ * Uses factory function pattern with closures for state encapsulation (avoiding classes).
+ * Provides state tracking, health monitoring, and request forwarding for an LSP server.
+ * Supports manual restart with configurable retry limits.
  *
- * Transiciones de la máquina de estados:
+ * State machine transitions:
  * - stopped → starting → running
  * - running → stopping → stopped
- * - cualquiera → error (al fallar)
- * - error → starting (al reintentar)
+ * - any → error (on failure)
+ * - error → starting (on retry)
  *
- * @param name - Identificador único para esta instancia de servidor.
- * @param config - Configuración del servidor, incluyendo comando, args y límites.
- * @returns Instancia de servidor LSP con métodos de gestión de ciclo de vida.
+ * @param name - Unique identifier for this server instance
+ * @param config - Server configuration including command, args, and limits
+ * @returns LSP server instance with lifecycle management methods
  *
  * @example
  * const instance = createLSPServerInstance('my-server', config)
@@ -102,12 +91,7 @@ export function createLSPServerInstance(
   name: string,
   config: ScopedLspServerConfig,
 ): LSPServerInstance {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { logError } = requireLocalObservabilityLogging()
-  const { errorMessage } = requireLocalObservabilityErrorHelpers()
-  const { sleep } = requireConfigSleep()
-
-  // Valida que los campos no implementados no estén fijados.
+  // Validate that unimplemented fields are not set
   if (config.restartOnCrash !== undefined) {
     throw new Error(
       `LSP server '${name}': restartOnCrash is not yet implemented. Remove this field from the configuration.`,
@@ -119,10 +103,9 @@ export function createLSPServerInstance(
     )
   }
 
-  // Estado privado encapsulado vía closures. Carga lazy de LSPClient para
-  // que vscode-jsonrpc (~129KB) sólo se cargue cuando de verdad se
-  // instancia un servidor LSP, no cuando la cadena estática de imports
-  // llega a este módulo.
+  // Private state encapsulated via closures. Lazy-require LSPClient so
+  // vscode-jsonrpc (~129KB) only loads when an LSP server is actually
+  // instantiated, not when the static import chain reaches this module.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createLSPClient } = require('./LSPClient.js') as {
     createLSPClient: typeof createLSPClientType
@@ -132,9 +115,9 @@ export function createLSPServerInstance(
   let lastError: Error | undefined
   let restartCount = 0
   let crashRecoveryCount = 0
-  // Propaga el estado de crash para que ensureServerStarted pueda
-  // reiniciar en el próximo uso. Sin esto, el estado se queda en
-  // 'running' tras un crash y el servidor nunca se reinicia (estado zombi).
+  // Propagate crash state so ensureServerStarted can restart on next use.
+  // Without this, state stays 'running' after crash and the server is never
+  // restarted (zombie state).
   const client = createLSPClient(name, error => {
     state = 'error'
     lastError = error
@@ -142,22 +125,20 @@ export function createLSPServerInstance(
   })
 
   /**
-   * Inicia el servidor LSP y lo inicializa con información del workspace.
+   * Starts the LSP server and initializes it with workspace information.
    *
-   * Si el servidor ya está corriendo o iniciándose, este método retorna de
-   * inmediato. Al fallar, fija el estado a 'error', loguea para monitoreo,
-   * y lanza.
+   * If the server is already running or starting, this method returns immediately.
+   * On failure, sets state to 'error', logs for monitoring, and throws.
    *
-   * @throws {Error} Si el servidor falla al iniciar o inicializar.
+   * @throws {Error} If server fails to start or initialize
    */
   async function start(): Promise<void> {
     if (state === 'running' || state === 'starting') {
       return
     }
 
-    // Limita los intentos de recuperación de crash para que un servidor
-    // que crashea persistentemente no genere procesos hijos sin límite en
-    // cada request entrante.
+    // Cap crash-recovery attempts so a persistently crashing server doesn't
+    // spawn unbounded child processes on every incoming request.
     const maxRestarts = config.maxRestarts ?? 3
     if (state === 'error' && crashRecoveryCount > maxRestarts) {
       const error = new Error(
@@ -173,27 +154,26 @@ export function createLSPServerInstance(
       state = 'starting'
       logForDebugging(`Starting LSP server instance: ${name}`)
 
-      // Inicia el cliente.
+      // Start the client
       await client.start(config.command, config.args || [], {
         env: config.env,
         cwd: config.workspaceFolder,
       })
 
-      // Inicializa con la información del workspace.
-      const workspaceFolder =
-        config.workspaceFolder || requireAppHostBootstrapState().getOriginalCwd()
+      // Initialize with workspace info
+      const workspaceFolder = config.workspaceFolder || getCwd()
       const workspaceUri = pathToFileURL(workspaceFolder).href
 
       const initParams: InitializeParams = {
         processId: process.pid,
 
-        // Pasa las opciones de inicialización específicas del servidor, de
-        // la config de plugin. Requerido por vue-language-server, opcional
-        // para otros. Se provee un objeto vacío por defecto para evitar
-        // errores de undefined en servidores que esperan que este campo exista.
+        // Pass server-specific initialization options from plugin config
+        // Required by vue-language-server, optional for others
+        // Provide empty object as default to avoid undefined errors in servers
+        // that expect this field to exist
         initializationOptions: config.initializationOptions ?? {},
 
-        // Enfoque moderno (LSP 3.16+) - requerido por Pyright, gopls.
+        // Modern approach (LSP 3.16+) - required for Pyright, gopls
         workspaceFolders: [
           {
             uri: workspaceUri,
@@ -201,19 +181,18 @@ export function createLSPServerInstance(
           },
         ],
 
-        // Campos deprecados - algunos servidores todavía los necesitan para
-        // resolver URIs correctamente.
-        rootPath: workspaceFolder, // Deprecado en LSP 3.8 pero algunos servidores lo necesitan
-        rootUri: workspaceUri, // Deprecado en LSP 3.16 pero typescript-language-server lo necesita para goToDefinition
+        // Deprecated fields - some servers still need these for proper URI resolution
+        rootPath: workspaceFolder, // Deprecated in LSP 3.8 but needed by some servers
+        rootUri: workspaceUri, // Deprecated in LSP 3.16 but needed by typescript-language-server for goToDefinition
 
-        // Capacidades del cliente - declara qué features soportamos.
+        // Client capabilities - declare what features we support
         capabilities: {
           workspace: {
-            // No se declara soporte de workspace/configuration porque no se implementa.
-            // Esto previene que los servidores pidan config que no podemos proveer.
+            // Don't claim to support workspace/configuration since we don't implement it
+            // This prevents servers from requesting config we can't provide
             configuration: false,
-            // No se declara soporte de cambios en workspace folders porque
-            // no se manejan notificaciones workspace/didChangeWorkspaceFolders.
+            // Don't claim to support workspace folders changes since we don't handle
+            // workspace/didChangeWorkspaceFolders notifications
             workspaceFolders: false,
           },
           textDocument: {
@@ -273,9 +252,9 @@ export function createLSPServerInstance(
       crashRecoveryCount = 0
       logForDebugging(`LSP server instance started: ${name}`)
     } catch (error) {
-      // Limpia el proceso hijo generado, en caso de timeout/error.
+      // Clean up the spawned child process on timeout/error
       client.stop().catch(() => {})
-      // Previene un rejection sin manejar de la promesa initialize abandonada.
+      // Prevent unhandled rejection from abandoned initialize promise
       initPromise?.catch(() => {})
       state = 'error'
       lastError = error as Error
@@ -285,12 +264,12 @@ export function createLSPServerInstance(
   }
 
   /**
-   * Detiene el servidor LSP con gracia.
+   * Stops the LSP server gracefully.
    *
-   * Si ya está detenido o deteniéndose, retorna de inmediato. Al fallar,
-   * fija el estado a 'error', loguea para monitoreo, y lanza.
+   * If already stopped or stopping, returns immediately.
+   * On failure, sets state to 'error', logs for monitoring, and throws.
    *
-   * @throws {Error} Si el servidor falla al detenerse.
+   * @throws {Error} If server fails to stop
    */
   async function stop(): Promise<void> {
     if (state === 'stopped' || state === 'stopping') {
@@ -311,12 +290,12 @@ export function createLSPServerInstance(
   }
 
   /**
-   * Reinicia manualmente el servidor, deteniéndolo y volviéndolo a iniciar.
+   * Manually restarts the server by stopping and starting it.
    *
-   * Incrementa restartCount y aplica el límite maxRestarts. Nota: esto NO
-   * es automático - debe llamarse explícitamente.
+   * Increments restartCount and enforces maxRestarts limit.
+   * Note: This is NOT automatic - must be called explicitly.
    *
-   * @throws {Error} Si stop o start fallan, o si restartCount excede config.maxRestarts (default: 3).
+   * @throws {Error} If stop or start fails, or if restartCount exceeds config.maxRestarts (default: 3)
    */
   async function restart(): Promise<void> {
     try {
@@ -352,28 +331,26 @@ export function createLSPServerInstance(
   }
 
   /**
-   * Comprueba si el servidor está saludable y listo para manejar requests.
+   * Checks if the server is healthy and ready to handle requests.
    *
-   * @returns `true` si el estado es 'running' Y el cliente completó la inicialización.
+   * @returns true if state is 'running' AND the client has completed initialization
    */
   function isHealthy(): boolean {
     return state === 'running' && client.isInitialized
   }
 
   /**
-   * Envía un request LSP al servidor, con lógica de reintento para errores
-   * transitorios.
+   * Sends an LSP request to the server with retry logic for transient errors.
    *
-   * Comprueba la salud del servidor antes de enviar y envuelve los errores
-   * con contexto. Reintenta automáticamente ante errores "content
-   * modified" (código -32801), que ocurren cuando servidores como
-   * rust-analyzer siguen indexando. Es comportamiento LSP esperado y los
-   * clientes deben reintentar en silencio, según la especificación.
+   * Checks server health before sending and wraps errors with context.
+   * Automatically retries on "content modified" errors (code -32801) which occur
+   * when servers like rust-analyzer are still indexing. This is expected LSP behavior
+   * and clients should retry silently per the LSP specification.
    *
-   * @param method - Nombre del método LSP (p. ej. 'textDocument/definition').
-   * @param params - Parámetros específicos del método.
-   * @returns La respuesta del servidor.
-   * @throws {Error} Si el servidor no está saludable o el request falla tras todos los reintentos.
+   * @param method - LSP method name (e.g., 'textDocument/definition')
+   * @param params - Method-specific parameters
+   * @returns The server's response
+   * @throws {Error} If server is not healthy or request fails after all retries
    */
   async function sendRequest<T>(method: string, params: unknown): Promise<T> {
     if (!isHealthy()) {
@@ -397,11 +374,10 @@ export function createLSPServerInstance(
       } catch (error) {
         lastAttemptError = error as Error
 
-        // Comprueba si es un error transitorio de "content modified" que se
-        // debe reintentar. Esto ocurre comúnmente con rust-analyzer durante
-        // la indexación inicial del proyecto. Se usa duck typing en vez de
-        // instanceof porque puede haber varias versiones de vscode-jsonrpc
-        // en el árbol de dependencias (8.2.0 vs 8.2.1).
+        // Check if this is a transient "content modified" error that we should retry
+        // This commonly happens with rust-analyzer during initial project indexing.
+        // We use duck typing instead of instanceof because there may be multiple
+        // versions of vscode-jsonrpc in the dependency tree (8.2.0 vs 8.2.1).
         const errorCode = (error as { code?: number }).code
         const isContentModifiedError =
           typeof errorCode === 'number' &&
@@ -420,12 +396,12 @@ export function createLSPServerInstance(
           continue
         }
 
-        // Error no reintentable o se agotaron los reintentos.
+        // Non-retryable error or max retries exceeded
         break
       }
     }
 
-    // Todos los reintentos fallaron o el error no era reintentable.
+    // All retries failed or non-retryable error
     const requestError = new Error(
       `LSP request '${method}' failed for server '${name}': ${lastAttemptError?.message ?? 'unknown error'}`,
     )
@@ -434,8 +410,8 @@ export function createLSPServerInstance(
   }
 
   /**
-   * Envía una notificación al servidor LSP (fire-and-forget). Se usa para
-   * sincronización de archivos (didOpen, didChange, didClose).
+   * Send a notification to the LSP server (fire-and-forget).
+   * Used for file synchronization (didOpen, didChange, didClose).
    */
   async function sendNotification(
     method: string,
@@ -461,10 +437,10 @@ export function createLSPServerInstance(
   }
 
   /**
-   * Registra un handler para notificaciones LSP del servidor.
+   * Registers a handler for LSP notifications from the server.
    *
-   * @param method - Método de notificación LSP (p. ej. 'window/logMessage').
-   * @param handler - Función callback para manejar la notificación.
+   * @param method - LSP notification method (e.g., 'window/logMessage')
+   * @param handler - Callback function to handle the notification
    */
   function onNotification(
     method: string,
@@ -474,13 +450,13 @@ export function createLSPServerInstance(
   }
 
   /**
-   * Registra un handler para requests LSP del servidor.
+   * Registers a handler for LSP requests from the server.
    *
-   * Algunos servidores LSP envían requests HACIA el cliente (dirección
-   * inversa). Esto permite registrar handlers para tales requests.
+   * Some LSP servers send requests TO the client (reverse direction).
+   * This allows registering handlers for such requests.
    *
-   * @param method - Método de request LSP (p. ej. 'workspace/configuration').
-   * @param handler - Función callback para manejar el request y devolver una respuesta.
+   * @param method - LSP request method (e.g., 'workspace/configuration')
+   * @param handler - Callback function to handle the request and return a response
    */
   function onRequest<TParams, TResult>(
     method: string,
@@ -489,7 +465,7 @@ export function createLSPServerInstance(
     client.onRequest(method, handler)
   }
 
-  // Devuelve la API pública.
+  // Return public API
   return {
     name,
     config,
@@ -517,8 +493,8 @@ export function createLSPServerInstance(
 }
 
 /**
- * Corre una promesa contra un timeout. Limpia el timer sin importar el
- * desenlace, para evitar rejections sin manejar de callbacks setTimeout huérfanos.
+ * Race a promise against a timeout. Cleans up the timer regardless of outcome
+ * to avoid unhandled rejections from orphaned setTimeout callbacks.
  */
 function withTimeout<T>(
   promise: Promise<T>,

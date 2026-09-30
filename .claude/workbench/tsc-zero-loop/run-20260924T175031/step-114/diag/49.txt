@@ -1,0 +1,46 @@
+src/packages/mcp-runtime/src/config.ts(1375,9): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1365-1385 ---
+   1365        (!configToCheck.type || configToCheck.type === 'stdio') &&
+   1366        ('command' in configToCheck) &&
+   1367        (configToCheck.command === 'npx' ||
+   1368          configToCheck.command.endsWith('\\npx') ||
+   1369          configToCheck.command.endsWith('/npx'))
+   1370      ) {
+   1371        errors.push({
+   1372          ...(filePath && { file: filePath }),
+   1373          path: `mcpServers.${name}`,
+   1374          message: `Windows requires 'cmd /c' wrapper to execute npx`,
+   1375>         suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers`,
+   1376          mcpErrorMetadata: {
+   1377            scope,
+   1378            serverName: name,
+   1379            severity: 'warning',
+   1380          },
+   1381        })
+   1382      }
+   1383  
+   1384      validatedServers[name] = configToCheck
+   1385    }
+src/packages/mcp-runtime/src/config.ts(1421,13): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1411-1431 ---
+   1411    } catch (error: unknown) {
+   1412      const code = getErrnoCode(error)
+   1413      if (code === 'ENOENT') {
+   1414        return {
+   1415          config: null,
+   1416          errors: [
+   1417            {
+   1418              file: filePath,
+   1419              path: '',
+   1420              message: `MCP config file not found: ${filePath}`,
+   1421>             suggestion: 'Check that the file path is correct',
+   1422              mcpErrorMetadata: {
+   1423                scope,
+   1424                severity: 'fatal',
+   1425              },
+   1426            },
+   1427          ],
+   1428        }
+   1429      }
+   1430      logForDebugging(
+   1431        `MCP config read error for ${filePath} (scope=${scope}): ${error}`,

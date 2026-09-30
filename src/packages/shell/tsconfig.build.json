@@ -1,0 +1,218 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/shell": [
+        "./src/index.ts"
+      ],
+      "@thyrox/shell/process.js": [
+        "./src/process.ts"
+      ],
+      "@thyrox/shell/subprocessEnv.js": [
+        "./src/subprocessEnv.ts"
+      ],
+      "@thyrox/shell/bash/heredoc.js": [
+        "./src/bash/heredoc.ts"
+      ],
+      "@thyrox/shell/bash/registry.js": [
+        "./src/bash/registry.ts"
+      ],
+      "@thyrox/shell/bash/shellPrefix.js": [
+        "./src/bash/shellPrefix.ts"
+      ],
+      "@thyrox/shell/bash/shellQuote.js": [
+        "./src/bash/shellQuote.ts"
+      ],
+      "@thyrox/shell/bash/shellQuoting.js": [
+        "./src/bash/shellQuoting.ts"
+      ],
+      "@thyrox/shell/bash/internal.js": [
+        "./src/bash/internal.ts"
+      ],
+      "@thyrox/shell/bash/unicodeDashes.js": [
+        "./src/bash/unicodeDashes.ts"
+      ],
+      "@thyrox/shell/bash/specs/index.js": [
+        "./src/bash/specs/index.ts"
+      ],
+      "@thyrox/shell/execFileNoThrow.js": [
+        "./src/execFileNoThrow.ts"
+      ],
+      "@thyrox/shell/execFileNoThrowPortable.js": [
+        "./src/execFileNoThrowPortable.ts"
+      ],
+      "@thyrox/shell/genericProcessUtils.js": [
+        "./src/genericProcessUtils.ts"
+      ],
+      "@thyrox/shell/which.js": [
+        "./src/which.ts"
+      ],
+      "@thyrox/shell/errors.js": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/shell/types.js": [
+        "./src/types.ts"
+      ],
+      "@thyrox/shell/context.js": [
+        "./src/context.ts"
+      ],
+      "@thyrox/shell/findExecutable.js": [
+        "./src/findExecutable.ts"
+      ],
+      "@thyrox/shell/immediateCommand.js": [
+        "./src/immediateCommand.ts"
+      ],
+      "@thyrox/shell/commandLifecycle.js": [
+        "./src/commandLifecycle.ts"
+      ],
+      "@thyrox/shell/taskOutputPort.js": [
+        "./src/taskOutputPort.ts"
+      ],
+      "@thyrox/shell/execSyncWrapper.js": [
+        "./src/execSyncWrapper.ts"
+      ],
+      "@thyrox/shell/sandboxUiUtils.js": [
+        "./src/sandboxUiUtils.ts"
+      ],
+      "@thyrox/shell/sandbox/sandboxRipgrepResolver.js": [
+        "./src/sandbox/sandboxRipgrepResolver.ts"
+      ],
+      "@thyrox/shell/terminal/iTermBackup.js": [
+        "./src/terminal/iTermBackup.ts"
+      ],
+      "@thyrox/shell/terminal/appleTerminalBackup.js": [
+        "./src/terminal/appleTerminalBackup.ts"
+      ],
+      "@thyrox/shell/providers/outputLimits.js": [
+        "./src/providers/outputLimits.ts"
+      ],
+      "@thyrox/shell/providers/resolveDefaultShell.js": [
+        "./src/providers/resolveDefaultShell.ts"
+      ],
+      "@thyrox/shell/providers/shellToolUtils.js": [
+        "./src/providers/shellToolUtils.ts"
+      ],
+      "@thyrox/shell/providers/shellProvider.js": [
+        "./src/providers/shellProvider.ts"
+      ],
+      "@thyrox/shell/providers/powershellDetection.js": [
+        "./src/providers/powershellDetection.ts"
+      ],
+      "@thyrox/shell/providers/powershellProvider.js": [
+        "./src/providers/powershellProvider.ts"
+      ],
+      "@thyrox/shell/legacy/outputLimits.js": [
+        "./src/legacy/outputLimits.ts"
+      ],
+      "@thyrox/shell/legacy/resolveDefaultShell.js": [
+        "./src/legacy/resolveDefaultShell.ts"
+      ],
+      "@thyrox/shell/legacy/shellToolUtils.js": [
+        "./src/legacy/shellToolUtils.ts"
+      ],
+      "@thyrox/shell/legacy/shellProvider.js": [
+        "./src/legacy/shellProvider.ts"
+      ],
+      "@thyrox/shell/legacy/powershellDetection.js": [
+        "./src/legacy/powershellDetection.ts"
+      ],
+      "@thyrox/shell/legacy/powershellProvider.js": [
+        "./src/legacy/powershellProvider.ts"
+      ],
+      "@thyrox/shell/testing": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/shell/testing.js": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/shell/bash/specs": [
+        "./src/bash/specs/index.ts"
+      ],
+      "@thyrox/shell/Shell.js": [
+        "./src/Shell.ts"
+      ],
+      "@thyrox/shell/bash/ParsedCommand.js": [
+        "./src/bash/ParsedCommand.ts"
+      ],
+      "@thyrox/shell/bash/ast-alias.js": [
+        "./src/bash/ast-alias.ts"
+      ],
+      "@thyrox/shell/bash/commands.js": [
+        "./src/bash/commands.ts"
+      ],
+      "@thyrox/shell/bash/parser.js": [
+        "./src/bash/parser.ts"
+      ],
+      "@thyrox/shell/bash/prefix.js": [
+        "./src/bash/prefix.ts"
+      ],
+      "@thyrox/shell/bash/shellCompletion.js": [
+        "./src/bash/shellCompletion.ts"
+      ],
+      "@thyrox/shell/bash/treeSitterAnalysis.js": [
+        "./src/bash/treeSitterAnalysis.ts"
+      ],
+      "@thyrox/shell/collapseBackgroundBashNotifications.js": [
+        "./src/collapseBackgroundBashNotifications.ts"
+      ],
+      "@thyrox/shell/legacy/readOnlyCommandValidation.js": [
+        "./src/legacy/readOnlyCommandValidation.ts"
+      ],
+      "@thyrox/shell/powershell/dangerousCmdlets.js": [
+        "./src/powershell/dangerousCmdlets.ts"
+      ],
+      "@thyrox/shell/powershell/parser.js": [
+        "./src/powershell/parser.ts"
+      ],
+      "@thyrox/shell/powershell/staticPrefix.js": [
+        "./src/powershell/staticPrefix.ts"
+      ],
+      "@thyrox/shell/sandbox.js": [
+        "./src/sandbox.ts"
+      ],
+      "@thyrox/shell/sandbox/sandbox-adapter.js": [
+        "./src/sandbox/sandbox-adapter.ts"
+      ],
+      "@thyrox/shell/shellCommand.js": [
+        "./src/shellCommand.ts"
+      ],
+      "@thyrox/shell/shellConfig.js": [
+        "./src/shellConfig.ts"
+      ],
+      "@thyrox/shell/terminal/ShellCommand.js": [
+        "./src/terminal/ShellCommand.ts"
+      ],
+      "@thyrox/shell/terminal/terminalPanel.js": [
+        "./src/terminal/terminalPanel.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

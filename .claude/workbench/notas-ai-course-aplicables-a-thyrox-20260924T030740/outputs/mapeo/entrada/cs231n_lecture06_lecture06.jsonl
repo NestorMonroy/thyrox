@@ -1,0 +1,1 @@
+{"nota":"cs231n_lecture06_lecture06","concepto":"Unidad lineal activada sigmoidea (SiLU / Swish)","problema":"Introducir no-linealidad suave con gradientes no-nulos en semi-eje negativo","patron":"Ponderar entrada mediante compresión limitada, permitiendo flujo de gradientes para valores negativos","limite":"Performance similar a GELU pero con forma funcional diferente"}

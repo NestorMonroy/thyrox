@@ -157,8 +157,8 @@ describe('buildReplForkFlags', () => {
 describe('preSeedReplBgJob', () => {
   test('empty intent → blocked + needs="send a prompt to start"', async () => {
     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
-    const orig = process.env.CLAUDE_CONFIG_HOME
-    process.env.CLAUDE_CONFIG_HOME = root
+    const orig = process.env.THYROX_CONFIG_DIR
+    process.env.THYROX_CONFIG_DIR = root
     try {
       const { short, jobDir } = await preSeedReplBgJob('abcdef0123456789', {
         cwd: '/tmp/work',
@@ -179,16 +179,16 @@ describe('preSeedReplBgJob', () => {
       expect(state.sessionId).toBe('abcdef0123456789')
       expect(state.cwd).toBe('/tmp/work')
     } finally {
-      if (orig === undefined) delete process.env.CLAUDE_CONFIG_HOME
-      else process.env.CLAUDE_CONFIG_HOME = orig
+      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
+      else process.env.THYROX_CONFIG_DIR = orig
       rmSync(root, { recursive: true, force: true })
     }
   })
 
   test('non-empty intent → active, no needs', async () => {
     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
-    const orig = process.env.CLAUDE_CONFIG_HOME
-    process.env.CLAUDE_CONFIG_HOME = root
+    const orig = process.env.THYROX_CONFIG_DIR
+    process.env.THYROX_CONFIG_DIR = root
     try {
       const { jobDir } = await preSeedReplBgJob('11112222deadbeef', {
         cwd: '/tmp/work',
@@ -204,8 +204,8 @@ describe('preSeedReplBgJob', () => {
       expect(state.intent).toBe('fix the parser')
       expect(state.detail).toBe('last assistant reply')
     } finally {
-      if (orig === undefined) delete process.env.CLAUDE_CONFIG_HOME
-      else process.env.CLAUDE_CONFIG_HOME = orig
+      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
+      else process.env.THYROX_CONFIG_DIR = orig
       rmSync(root, { recursive: true, force: true })
     }
   })
@@ -218,8 +218,8 @@ describe('preSeedReplBgJob', () => {
     // (ant V__) can rebuild `--resume <orig> --fork-session`. Without this the
     // respawn booted a blank session — the "Welcome back, brand-new REPL" bug.
     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
-    const orig = process.env.CLAUDE_CONFIG_HOME
-    process.env.CLAUDE_CONFIG_HOME = root
+    const orig = process.env.THYROX_CONFIG_DIR
+    process.env.THYROX_CONFIG_DIR = root
     const ORIGINAL_SESSION = '35894943-c5e0-45a0-9484-f113daa5835b'
     try {
       const { jobDir } = await preSeedReplBgJob('b0649465deadbeef', {
@@ -237,8 +237,8 @@ describe('preSeedReplBgJob', () => {
       expect(state.sessionId).not.toBe(state.resumeSessionId)
       expect(state.respawnFlags).toEqual(['--fork-session'])
     } finally {
-      if (orig === undefined) delete process.env.CLAUDE_CONFIG_HOME
-      else process.env.CLAUDE_CONFIG_HOME = orig
+      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
+      else process.env.THYROX_CONFIG_DIR = orig
       rmSync(root, { recursive: true, force: true })
     }
   })
@@ -248,8 +248,8 @@ describe('preSeedReplBgJob', () => {
     // — the row stays self-sufficient (sessionId only) and a respawn would fall
     // through to a fresh worker, matching ant's no-transcript branch.
     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
-    const orig = process.env.CLAUDE_CONFIG_HOME
-    process.env.CLAUDE_CONFIG_HOME = root
+    const orig = process.env.THYROX_CONFIG_DIR
+    process.env.THYROX_CONFIG_DIR = root
     try {
       const { jobDir } = await preSeedReplBgJob('cafef00d12345678', {
         cwd: '/tmp/work',
@@ -260,8 +260,8 @@ describe('preSeedReplBgJob', () => {
       expect(state.respawnFlags).toEqual([])
       expect(state.resumeSessionId).toBeUndefined()
     } finally {
-      if (orig === undefined) delete process.env.CLAUDE_CONFIG_HOME
-      else process.env.CLAUDE_CONFIG_HOME = orig
+      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
+      else process.env.THYROX_CONFIG_DIR = orig
       rmSync(root, { recursive: true, force: true })
     }
   })

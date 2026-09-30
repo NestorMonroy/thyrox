@@ -1,0 +1,9 @@
+Record the concept-mapping run and its job logs
+
+The mapeo-conceptos job ran the headless pool over the filtered
+course concepts (conceptos-filtrados.jsonl) with the prompt in
+probes/prompt-mapeo.md and wrote its per-item output under
+outputs/mapeo; build-logs/job-20260924T044429 holds the nine job logs
+of that run. The job ended with exit 1, so at least one item failed;
+the outputs are kept as evidence of that run, not as a finished
+mapping. Also carries the tail of the last commit job's log.

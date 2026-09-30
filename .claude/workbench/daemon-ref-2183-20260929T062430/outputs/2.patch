@@ -1,0 +1,273 @@
+diff --git a/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts b/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+new file mode 100644
+index 00000000..d48a9de2
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+@@ -0,0 +1,143 @@
++/**
++ * `classifyExitOutcome` — puerto de la clasificación de desenlace K de
++ * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Cubre sólo
++ * las ramas que `WorkerVm` puede evaluar con el estado que ya rastrea; las
++ * ramas que dependen de campos que no rastrea (el lanzador fork-and-exit,
++ * cwd desaparecido, id de sesión tomado, racha de misma causa) se declaran
++ * pendientes en `workerVm.ts` y no tienen aserción aquí.
++ */
++
++import { describe, expect, test } from 'bun:test'
++
++import { classifyExitOutcome, WorkerVm } from '../workerVm.js'
++import { setLogEventFn } from '../internal/pendingCrossPackageDeps.js'
++
++describe('classifyExitOutcome', () => {
++  test('fase upgrading -> sin desenlace (incluso con exitCode 0, que de otro modo sería "done")', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'upgrading',
++        exitCode: 0,
++        attempt: 0,
++        workerReady: false,
++      }),
++    ).toBeUndefined()
++  })
++
++  test('exit 0 -> done', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'running',
++        exitCode: 0,
++        attempt: 0,
++        workerReady: true,
++      }),
++    ).toBe('done')
++  })
++
++  test('modo exec + señal de kill (SIGINT) -> killed', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'running',
++        exitCode: 1,
++        signal: 'SIGINT',
++        launchMode: 'exec',
++        attempt: 0,
++        workerReady: true,
++      }),
++    ).toBe('killed')
++  })
++
++  test('modo exec + señal de kill (SIGQUIT) -> killed', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'running',
++        exitCode: 1,
++        signal: 'SIGQUIT',
++        launchMode: 'exec',
++        attempt: 0,
++        workerReady: true,
++      }),
++    ).toBe('killed')
++  })
++
++  test('modo exec sin señal de kill -> crashed', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'running',
++        exitCode: 1,
++        launchMode: 'exec',
++        attempt: 0,
++        workerReady: true,
++      }),
++    ).toBe('crashed')
++  })
++
++  test('worker no listo tras dos intentos -> crashed', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'spawning',
++        exitCode: 1,
++        attempt: 2,
++        workerReady: false,
++      }),
++    ).toBe('crashed')
++  })
++
++  test('worker no listo con un solo intento -> sin desenlace (queda a la máquina de respawn)', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'spawning',
++        exitCode: 1,
++        attempt: 1,
++        workerReady: false,
++      }),
++    ).toBeUndefined()
++  })
++
++  test('worker listo, sin ninguna condición de la rama final -> sin desenlace', () => {
++    expect(
++      classifyExitOutcome({
++        phase: 'running',
++        exitCode: 1,
++        attempt: 5,
++        workerReady: true,
++      }),
++    ).toBeUndefined()
++  })
++})
++
++describe('WorkerVm#onChildExit payload de tengu_bg_worker_exit', () => {
++  test('emite el payload portado con outcome ya clasificado', () => {
++    const events: Array<{ name: string; metadata?: Record<string, unknown> }> = []
++    setLogEventFn((name, metadata) => {
++      events.push({ name, metadata })
++    })
++    try {
++      const vm = new WorkerVm({
++        short: 'abc123',
++        cwd: process.cwd(),
++        env: process.env,
++        ptySocket: '',
++        cmd: ['true'],
++        cliVersion: '0.0.0-test',
++      })
++      vm.onChildExit(0, undefined)
++      const exitEvents = events.filter(e => e.name === 'tengu_bg_worker_exit')
++      expect(exitEvents.length).toBe(1)
++      const payload = exitEvents[0]?.metadata ?? {}
++      expect(payload.short).toBe('abc123')
++      expect(payload.code).toBe(0)
++      expect(payload.outcome).toBe('done')
++      expect(payload.attempt).toBe(0)
++      expect(typeof payload.procUptimeMs).toBe('number')
++      // Campos que workerVm aún no conoce: declarados pendientes, no inventados.
++      expect(payload.source).toBeUndefined()
++      expect(payload.launch_mode).toBeUndefined()
++      expect(payload.exitCause).toBeUndefined()
++      expect(payload.worker_cli_version).toBeUndefined()
++    } finally {
++      setLogEventFn(() => {})
++    }
++  })
++})
+diff --git a/src/packages/daemon/src/workerVm.ts b/src/packages/daemon/src/workerVm.ts
+index 83b29f5d..812bd830 100644
+--- a/src/packages/daemon/src/workerVm.ts
++++ b/src/packages/daemon/src/workerVm.ts
+@@ -67,6 +67,74 @@ export interface WorkerSpawnConfig {
+ 
+ export type SettleOutcome = 'done' | 'crashed' | 'killed'
+ 
++/**
++ * Entrada pura de `classifyExitOutcome` — el subconjunto de estado del
++ * `WorkerVm` que `g7#onExit` consulta para decidir `K` (ant
++ * `chunk-ygx717jg.js`, clase `g7`, método `onExit`, tengu_bg_worker_exit).
++ */
++export interface ExitClassificationInput {
++  /** Fase del VM al momento de la salida (`g7#phase.kind`). */
++  phase: WorkerPhase['kind']
++  exitCode: number
++  signal?: NodeJS.Signals
++  /** Cuántos intentos de spawn lleva el worker (`g7#attempt`). */
++  attempt: number
++  /** True una vez el worker señalizó que arrancó (`g7#workerReady`).
++   *  `WorkerVm` no tiene ese canal de señal todavía; el llamador aproxima
++   *  con `phase.kind === 'running'` — ver comentario en `onChildExit`. */
++  workerReady: boolean
++  /** Modo de lanzamiento (`g7#dispatch.launch.mode`). `WorkerVm` no
++   *  distingue hoy un modo `exec`; el llamador pasa `undefined` — ver
++   *  comentario en `onChildExit`. */
++  launchMode?: 'exec' | 'pty' | 'detached'
++}
++
++/**
++ * Puerto de la clasificación `K` de `g7#onExit` (ant `chunk-ygx717jg.js`,
++ * clase `g7`). Decide el desenlace ANTES de emitir `tengu_bg_worker_exit`,
++ * no después — al revés de como `onChildExit` lo hacía antes de este puerto.
++ *
++ * Función pura: no lee ni muta el estado del `WorkerVm`, sólo el `input`.
++ *
++ * Ramas portadas, en el mismo orden que la referencia:
++ *   1. fase `upgrading`             -> sin desenlace (se re-lanza desde cero)
++ *   2. `exitCode === 0`             -> 'done'
++ *   3. `launchMode === 'exec'`      -> 'killed' si la señal es de kill
++ *                                      (SIGINT/SIGQUIT), si no 'crashed'
++ *   4. `!workerReady && attempt>=2` -> 'crashed'
++ *
++ * Sin desenlace en cualquier otro caso: la referencia cae a `scheduleRespawn`
++ * y no fija `K`.
++ *
++ * Pendiente, no invocado: la referencia evalúa una segunda rama entre (1) y
++ * (2) — `_` en la fuente — que clasifica como 'crashed' cuando el lanzador
++ * ya salió (fork-and-exit en vez de exec) con éxito y sin que el worker
++ * llegara a listo, en menos de un umbral de tiempo. Depende de detectar el
++ * comando del lanzador y su cola de error de preinicio
++ * (`this.preInitErrorTail()`); `WorkerVm` no rastrea ninguno de los dos.
++ * La rama final de la referencia también evalúa cwd desaparecido, id de
++ * sesión ya tomado por otro worker, una racha repetida de la misma causa de
++ * salida y "listo pero agotó el presupuesto de intentos" — ninguna de esas
++ * señales existe hoy en `WorkerVm`; sólo se porta "no listo tras dos
++ * intentos", que sí puede evaluarse con `attempt` y `workerReady`.
++ */
++export function classifyExitOutcome(input: ExitClassificationInput): SettleOutcome | undefined {
++  const { phase, exitCode, signal, attempt, workerReady, launchMode } = input
++
++  if (phase === 'upgrading') return undefined
++
++  if (exitCode === 0) return 'done'
++
++  if (launchMode === 'exec') {
++    const killedByStopSignal = signal === 'SIGINT' || signal === 'SIGQUIT'
++    return killedByStopSignal ? 'killed' : 'crashed'
++  }
++
++  if (!workerReady && attempt >= 2) return 'crashed'
++
++  return undefined
++}
++
+ /**
+  * VM de worker. Una instancia por job bg. Es dueña del ciclo de vida del
+  * subproceso.
+@@ -464,12 +532,40 @@ export class WorkerVm extends EventEmitter {
+       this.heartbeatTimer = null
+     }
+     const uptime = Date.now() - this.record.startedAt
++    // ant g7#onExit clasifica K ANTES de emitir; workerReady no tiene canal
++    // propio en este puerto, así que se aproxima con la fase: `running`
++    // significa que el worker llegó a correr en este intento. launchMode
++    // queda pendiente: WorkerSpawnConfig no distingue un modo `exec`.
++    const outcome = classifyExitOutcome({
++      phase: this.phase.kind,
++      exitCode,
++      signal,
++      attempt: this.attempt,
++      workerReady: this.phase.kind === 'running',
++      launchMode: undefined,
++    })
+     logEvent('tengu_bg_worker_exit', {
+       short: this.config.short,
+-      pid: String(this.record.pid),
+-      exit_code: String(exitCode),
+-      signal: signal ?? '',
+-      uptime_ms: String(uptime),
++      code: exitCode,
++      signal,
++      attempt: this.attempt,
++      procUptimeMs: uptime,
++      // pendiente: WorkerSpawnConfig no rastrea el origen del despacho
++      // (`dispatch.source` en la referencia) — no se inventa.
++      source: undefined,
++      // pendiente: WorkerSpawnConfig no distingue un modo de lanzamiento
++      // `exec` de uno `pty` — no se inventa.
++      launch_mode: undefined,
++      outcome,
++      // pendiente: la causa de salida (`w` en la referencia, p. ej.
++      // "setcwd") sale de inspeccionar el log del pty-host; este puerto no
++      // lo hace todavía — no se inventa.
++      exitCause: undefined,
++      // pendiente, declarado explícitamente fuera de este porte: aunque
++      // `WorkerRecord.cliVersion` existe, no está confirmado contra la
++      // referencia que sea el mismo valor que `fi(this.record.cliVersion)`
++      // formatea para telemetría — no se asume la equivalencia sin medirla.
++      worker_cli_version: undefined,
+     })
+     if (this.isKilling()) {
+       this.settle('killed')

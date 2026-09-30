@@ -1,0 +1,3 @@
+src/packages/agent/inProcessTeammateHelpers.ts(94,19): error TS2344: Type 'InProcessTeammateTaskState' does not satisfy the constraint 'TaskState'.
+  Type 'InProcessTeammateTaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/swarm/src/tasks/types").InProcessTeammateTaskState'.
+    Type 'InProcessTeammateTaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified

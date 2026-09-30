@@ -1,0 +1,1 @@
+tests/smoke/live-fire-smoke.test.ts(79,13): error TS2339: Property 'executeStopHooks' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/agent/hooks")'.

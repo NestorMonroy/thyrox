@@ -1,11 +1,7 @@
 /**
- * Porte de `ccnmt: packages/agent/compaction/compactWarningState.ts`.
  *
- * Un store minimo tipo pub/sub para un booleano: si el aviso de
- * compactacion esta suprimido en la sesion actual. El guard
- * `Object.is(next, prev)` evita notificar a los listeners cuando el
- * valor fijado es identico al que ya habia.
  */
+
 
 type Listener = () => void
 
@@ -35,7 +31,9 @@ function createSimpleStore<T>(initialState: T): SimpleStore<T> {
   }
 }
 
-/** El store: `true` cuando el aviso de compactacion esta suprimido. */
+
+/**
+ */
 export const compactWarningStore = createSimpleStore<boolean>(false)
 
 export function suppressCompactWarning(): void {

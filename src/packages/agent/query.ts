@@ -12,9 +12,9 @@ import {
 import {
   getFeatureValue_CACHED_MAY_BE_STALE,
 } from '@thyrox/config/feature-flags'
-import {
-  buildPostCompactMessages,
-} from './compaction/index.js'
+// El de `compact.ts` y no el de `compactUtils.ts`: consume el
+// `CompactionResult` que devuelven autocompact y la compactación reactiva.
+import { buildPostCompactMessages } from './compaction/compact.js'
 import {
   evaluateStopHookBlockOutcome,
   handleStopHooks,
@@ -27,7 +27,10 @@ import { executePostToolBatchHooks } from './hooks.js'
 // extends the partial with extra method slots (readFileState etc) that
 // query.ts doesn't model. The cast bridges the two views — runtime is the
 // same toolUseContext object either way.
-import type { ToolUseContext as CanonicalToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type {
+  ToolUseContext as CanonicalToolUseContext,
+  Tools,
+} from '@thyrox/tool-registry/Tool.js'
 import { productionDeps, type QueryDeps } from './internal/queryDeps.js'
 import {
   buildQueryConfig,
@@ -81,6 +84,7 @@ import type {
   AgentToolUseContext as ToolUseContext,
   AgentToolUseSummaryMessage as ToolUseSummaryMessage,
 } from './internalTypes.js'
+import type { Message as CanonicalMessage } from './messageShapes.js'
 import { createBudgetTracker, checkTokenBudget } from './internal/tokenBudget.js'
 import { asSystemPrompt, count, type SystemPrompt } from './internalUtils.js'
 import {
@@ -126,12 +130,9 @@ import {
   type StreamingToolExecutorLike,
 } from './internal/queryRuntime.js'
 import { readEnv } from '@thyrox/config/env'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 
 const SLEEP_TOOL_NAME = 'Sleep'
-type CanUseToolFn = (...args: unknown[]) => Promise<{
-  behavior: 'allow' | 'deny' | 'ask'
-  updatedInput?: unknown
-}>
 
 type State = QueryLoopState
 
@@ -184,6 +185,19 @@ export type QueryParams = {
 }
 
 // -- query loop state
+
+/**
+ * La clase del adjunto de un mensaje, o `undefined` si no es un adjunto. El
+ * mensaje del bucle lleva `attachment` como campo abierto (`unknown`); los
+ * adjuntos que produce `getAttachments` declaran siempre su `type`.
+ */
+function attachmentTypeOf(message: {
+  type: string
+  attachment?: unknown
+}): string | undefined {
+  if (message.type !== 'attachment') return undefined
+  return (message.attachment as { type?: string } | undefined)?.type
+}
 
 // Mutable state carried between loop iterations
 export async function* query(
@@ -349,7 +363,7 @@ async function* queryLoop(
             ).catch(logError)
         : undefined,
       new Set(
-        toolUseContext.options.tools
+        (toolUseContext.options.tools as Tools)
           .filter(t => !Number.isFinite(t.maxResultSizeChars))
           .map(t => t.name),
       ),
@@ -525,7 +539,7 @@ async function* queryLoop(
     //TODO: no need to set toolUseContext.messages during set-up since it is updated here
     toolUseContext = {
       ...toolUseContext,
-      messages: messagesForQuery,
+      messages: messagesForQuery as CanonicalMessage[],
     }
 
     const assistantMessages: AssistantMessage[] = []
@@ -655,9 +669,10 @@ async function* queryLoop(
                 streamingFallbackOccured = true
               },
               querySource, spawnedBySkill: toolUseContext.options.spawnedBySkill as string | undefined, activeSkill: toolUseContext.options.activeSkill as string | undefined,
-              agents: toolUseContext.options.agentDefinitions.activeAgents,
-              allowedAgentTypes:
-                toolUseContext.options.agentDefinitions.allowedAgentTypes,
+              agents: (toolUseContext.options.agentDefinitions as
+                CanonicalToolUseContext['options']['agentDefinitions']).activeAgents,
+              allowedAgentTypes: (toolUseContext.options.agentDefinitions as
+                CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
               hasAppendSystemPrompt:
                 !!toolUseContext.options.appendSystemPrompt,
               maxOutputTokensOverride,
@@ -721,7 +736,7 @@ async function* queryLoop(
             // assistantMessages.push below — it flows back to the API and
             // mutating it would break prompt caching (byte mismatch).
             let yieldMessage: typeof message = message
-            if (message.type === 'assistant') {
+            if ((message as { type: string }).type === 'assistant') {
               const assistantMsg = message as AssistantMessage
               const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
               let clonedContent: typeof contentArr | undefined
@@ -733,7 +748,7 @@ async function* queryLoop(
                   block.input !== null
                 ) {
                   const tool = findToolByName(
-                    toolUseContext.options.tools,
+                    toolUseContext.options.tools as Tools,
                     block.name as string,
                   )
                   if (tool?.backfillObservableInput) {
@@ -758,9 +773,9 @@ async function* queryLoop(
               }
               if (clonedContent) {
                 yieldMessage = {
-                  ...message,
+                  ...assistantMsg,
                   message: { ...(assistantMsg.message ?? {}), content: clonedContent },
-                } as typeof message
+                } as Message
               }
             }
             // Withhold recoverable errors (prompt-too-long, max-output-tokens)
@@ -800,7 +815,7 @@ async function* queryLoop(
             if (!withheld) {
               yield yieldMessage
             }
-            if (message.type === 'assistant') {
+            if ((message as { type: string }).type === 'assistant') {
               const assistantMessage = message as AssistantMessage
               assistantMessages.push(assistantMessage)
 
@@ -1053,7 +1068,7 @@ async function* queryLoop(
       // prevents a spiral and the error surfaces.
       const isWithheldMedia =
         mediaRecoveryEnabled &&
-        Boolean(lastMessage) &&
+        lastMessage !== undefined &&
         isWithheldReactiveMediaSizeError(lastMessage)
       if (isWithheld413) {
         // First: drain all staged context-collapses. Gated on the PREVIOUS
@@ -1173,7 +1188,7 @@ async function* queryLoop(
         if (
           capEnabled &&
           maxOutputTokensOverride === undefined &&
-          !readEnv('CLAUDE_CODE_MAX_OUTPUT_TOKENS')
+          !readEnv('THYROX_CODE_MAX_OUTPUT_TOKENS')
         ) {
           logEvent('tengu_max_tokens_escalate', {
             escalatedTo: getEscalatedMaxTokens(),
@@ -1276,13 +1291,13 @@ async function* queryLoop(
         // met) can't block forever. Each block injects a blockingError into
         // the transcript; left unbounded the transcript grows every cycle
         // until the main API call 413s (prompt-too-long). Decision arithmetic
-        // (maxTurns bound + CLAUDE_CODE_STOP_HOOK_BLOCK_CAP, default 8) lives
+        // (maxTurns bound + THYROX_CODE_STOP_HOOK_BLOCK_CAP, default 8) lives
         // in stopHooksCore so it's unit-lockable.
         const decision = evaluateStopHookBlockOutcome({
           turnCount,
           blockingCount: stopHookBlockingCount,
           maxTurns,
-          blockCapEnv: readEnv('CLAUDE_CODE_STOP_HOOK_BLOCK_CAP'),
+          blockCapEnv: readEnv('THYROX_CODE_STOP_HOOK_BLOCK_CAP'),
         })
 
         if (decision.kind === 'max_turns') {
@@ -1422,8 +1437,7 @@ async function* queryLoop(
         yield update.message
 
         if (
-          update.message.type === 'attachment' &&
-          update.message.attachment.type === 'hook_stopped_continuation'
+          attachmentTypeOf(update.message) === 'hook_stopped_continuation'
         ) {
           shouldPreventContinuation = true
         }
@@ -1457,6 +1471,7 @@ async function* queryLoop(
       const batchToolCalls = toolUseBlocks.map(block => {
         const toolResult = toolResults.find(result => {
           if (result.type !== 'user') return false
+          if (!result.message) return false
           const content = result.message.content
           if (!Array.isArray(content)) return false
           return (content as ToolResultBlockParam[]).some(
@@ -1464,7 +1479,9 @@ async function* queryLoop(
           )
         })
         const messageContent =
-          toolResult?.type === 'user' ? toolResult.message.content : undefined
+          toolResult?.type === 'user' && toolResult.message
+            ? toolResult.message.content
+            : undefined
         const resultContent = Array.isArray(messageContent)
           ? (messageContent as ToolResultBlockParam[]).find(
               (c): c is ToolResultBlockParam =>
@@ -1549,6 +1566,7 @@ async function* queryLoop(
         const toolResult = toolResults.find(
           result =>
             result.type === 'user' &&
+            result.message &&
             Array.isArray(result.message.content) &&
             result.message.content.some(
               content =>
@@ -1558,6 +1576,7 @@ async function* queryLoop(
         )
         const resultContent =
           toolResult?.type === 'user' &&
+          toolResult.message &&
           Array.isArray(toolResult.message.content)
             ? toolResult.message.content.find(
                 (c): c is ToolResultBlockParam =>
@@ -1651,7 +1670,7 @@ async function* queryLoop(
     })
 
     // Get queued commands snapshot before processing attachments.
-    // These will be sent as attachments so Claude can respond to them in the current turn.
+    // These will be sent as attachments so thyrox can respond to them in the current turn.
     //
     // Drain pending notifications. LocalShellTask completions are 'next'
     // (when MONITOR_TOOL is on) and drain without Sleep. Other task types
@@ -1752,7 +1771,7 @@ async function* queryLoop(
     const fileChangeAttachmentCount = count(
       toolResults,
       tr =>
-        tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+        attachmentTypeOf(tr) === 'edited_text_file',
     )
 
     logEvent('tengu_query_after_attachments', {
@@ -1763,8 +1782,9 @@ async function* queryLoop(
     })
 
     // Refresh tools between turns so newly-connected MCP servers become available
-    if (updatedToolUseContext.options.refreshTools) {
-      const refreshedTools = updatedToolUseContext.options.refreshTools()
+    const refreshTools = updatedToolUseContext.options.refreshTools
+    if (refreshTools) {
+      const refreshedTools = refreshTools()
       if (refreshedTools !== updatedToolUseContext.options.tools) {
         updatedToolUseContext = {
           ...updatedToolUseContext,

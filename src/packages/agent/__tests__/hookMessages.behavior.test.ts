@@ -1,8 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/hookMessages.behavior.test.ts`.
- * Los casos, sus datos y sus aserciones vienen de la fuente; lo que cambia es
- * el idioma de la descripción.
- */
 import { describe, expect, test } from 'bun:test'
 
 import {
@@ -15,18 +10,16 @@ import {
 } from '../hooks.js'
 
 /**
- * Fija el formato exacto de los mensajes de feedback de hooks. Estas cadenas
- * son lo que se le muestra AL MODELO como system reminders / mensajes de rol
- * usuario cuando un hook bloquea. El modelo usa el prefijo ("Stop hook
- * feedback:" etc.) para saber que está viendo una respuesta de bloqueo de
- * hook y no un resultado de herramienta, así que el prefijo es parte del
- * contrato.
+ * Pin the exact wire format of hook-feedback messages. These strings are
+ * what gets surfaced TO THE MODEL as system reminders / user-role messages
+ * when hooks block. The model uses the prefix ("Stop hook feedback:" etc.)
+ * to know it's looking at a hook-blocking response vs a tool result, so
+ * the prefix string is part of the contract.
  *
- * Un formato equivocado → el modelo trata la salida del hook como un
- * resultado de herramienta normal y puede seguir ejecutando en vez de
- * esperar a que el hook se reevalúe.
+ * Wrong format → model treats the hook output as regular tool result and
+ * may continue executing instead of waiting for hook re-evaluation.
  */
-describe('Formato del feedback de hooks (contrato de hook-message del ant)', () => {
+describe('Hook feedback formatting (vs ant hook-message contract)', () => {
   const sampleError = { blockingError: 'do not commit secrets to git' }
 
   test('PreToolUse: "<hookName> hook error: <message>"', () => {
@@ -65,7 +58,7 @@ describe('Formato del feedback de hooks (contrato de hook-message del ant)', () 
     )
   })
 
-  test('preserva errores de bloqueo multilínea verbatim', () => {
+  test('preserves multi-line blocking errors verbatim', () => {
     const multilineError = {
       blockingError: 'line 1\nline 2\nline 3',
     }
@@ -73,7 +66,7 @@ describe('Formato del feedback de hooks (contrato de hook-message del ant)', () 
     expect(result).toBe('Stop hook feedback:\nline 1\nline 2\nline 3')
   })
 
-  test('un error de bloqueo vacío se renderiza limpio (sin dos puntos colgante, sin crash)', () => {
+  test('empty blocking error renders cleanly (no trailing colon, no crash)', () => {
     expect(getStopHookMessage({ blockingError: '' })).toBe('Stop hook feedback:\n')
   })
 })

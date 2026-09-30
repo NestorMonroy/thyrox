@@ -1,0 +1,1 @@
+function yne(){return n().sessionScratch.planSlugCache()}

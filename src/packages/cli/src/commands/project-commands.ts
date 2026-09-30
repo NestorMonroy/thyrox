@@ -14,7 +14,8 @@
  *
  * --dry-run prints the plan and exits without confirmation.
  */
-import type { Command } from '@commander-js/extra-typings'
+import { PRODUCT_NAME } from '../entry/productName.ts'
+import type { ParentCommand } from './parentCommand.js'
 import { createInterface } from 'node:readline'
 import { resolve as pathResolve } from 'node:path'
 import { createSortedHelpConfig } from '../entry/commander.js'
@@ -25,7 +26,7 @@ import {
   type PurgeItem,
   type PurgePlan,
 } from '@thyrox/storage/projectPurge.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 
 interface PurgeOptions {
   dryRun?: boolean
@@ -151,7 +152,7 @@ async function runAllProjectsPurge(options: PurgeOptions): Promise<void> {
   const plan = await collectAllProjectsPurgeItems()
   if (plan.items.length === 0) {
     process.stdout.write(
-      `No Claude Code project state found under ${getClaudeConfigHomeDir()}.\n`,
+      `No ${PRODUCT_NAME} project state found under ${getConfigHomeDir()}.\n`,
     )
     return
   }
@@ -196,7 +197,7 @@ async function runSingleProjectPurge(
   const plan = await collectProjectPurgeItems(projectPath)
   if (plan.items.length === 0) {
     process.stdout.write(
-      `No Claude Code project state found for ${projectPath} under ${getClaudeConfigHomeDir()}.\n`,
+      `No ${PRODUCT_NAME} project state found for ${projectPath} under ${getConfigHomeDir()}.\n`,
     )
     return
   }
@@ -237,17 +238,17 @@ async function runSingleProjectPurge(
   )
 }
 
-export function registerProjectCommands(program: Command): void {
+export function registerProjectCommands(program: ParentCommand): void {
   const project = program
     .command('project')
-    .description('Manage Claude Code project state')
+    .description(`Manage ${PRODUCT_NAME} project state`)
     .configureHelp(createSortedHelpConfig())
     .enablePositionalOptions()
 
   project
     .command('purge')
     .description(
-      'Delete all Claude Code state for a project (transcripts, tasks, file history, config entry)',
+      `Delete all ${PRODUCT_NAME} state for a project (transcripts, tasks, file history, config entry)`,
     )
     .argument(
       '[path]',

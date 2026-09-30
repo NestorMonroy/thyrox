@@ -12,6 +12,7 @@ import { getCachedPowerShellPath } from './providers/powershellDetection.js'
 import { createPowerShellProvider } from './providers/powershellProvider.js'
 import { ExecError } from './errors.js'
 import type { ShellConfig, ShellProvider, ShellType } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
 function isExecutable(shellPath: string): boolean {
@@ -38,10 +39,10 @@ function isExecutable(shellPath: string): boolean {
  */
 export async function findSuitableShell(
   whichFn: (command: string) => Promise<string | null>,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<string> {
   // Check for explicit shell override first
-  const shellOverride = process.env.CLAUDE_CODE_SHELL
+  const shellOverride = process.env.THYROX_CODE_SHELL
   if (shellOverride) {
     const isSupported =
       shellOverride.includes('bash') || shellOverride.includes('zsh')
@@ -50,7 +51,7 @@ export async function findSuitableShell(
       return shellOverride
     } else {
       logForDebugging(
-        `CLAUDE_CODE_SHELL="${shellOverride}" is not a valid bash/zsh path, falling back to detection`,
+        `THYROX_CODE_SHELL="${shellOverride}" is not a valid bash/zsh path, falling back to detection`,
       )
     }
   }
@@ -92,15 +93,15 @@ export async function findSuitableShell(
   if (!shellPath) {
     if (getPlatform() === 'windows') {
       throw new ExecError(
-        'No suitable shell found. On Windows, Claude Code requires git-bash ' +
+        `No suitable shell found. On Windows, ${PRODUCT_NAME} requires git-bash ` +
           '(https://git-scm.com/downloads/win). Install git-bash, ensure ' +
-          'bash.exe is discoverable, or set CLAUDE_CODE_GIT_BASH_PATH to the ' +
+          'bash.exe is discoverable, or set THYROX_CODE_GIT_BASH_PATH to the ' +
           'full path of bash.exe. PowerShell commands (via the PowerShell tool) ' +
           'do not require git-bash.',
       )
     }
     throw new ExecError(
-      'No suitable shell found. Claude CLI requires a Posix shell environment. ' +
+      `No suitable shell found. ${PRODUCT_NAME} CLI requires a Posix shell environment. ` +
         'Please ensure you have a valid shell installed and the SHELL environment variable set.',
     )
   }

@@ -2,7 +2,7 @@
  * Plugin Zip Cache Module
  *
  * Manages plugins as ZIP archives in a mounted directory (e.g., Filestore).
- * When CLAUDE_CODE_PLUGIN_USE_ZIP_CACHE is enabled and CLAUDE_CODE_PLUGIN_CACHE_DIR
+ * When THYROX_CODE_PLUGIN_USE_ZIP_CACHE is enabled and THYROX_CODE_PLUGIN_CACHE_DIR
  * is set, plugins are stored as ZIPs in that directory and extracted to a
  * session-local temp directory at startup.
  *
@@ -53,19 +53,19 @@ import type { MarketplaceSource } from './schemas.js'
  * Check if the plugin zip cache mode is enabled.
  */
 export function isPluginZipCacheEnabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_PLUGIN_USE_ZIP_CACHE)
+  return isEnvTruthy(process.env.THYROX_CODE_PLUGIN_USE_ZIP_CACHE)
 }
 
 /**
  * Get the path to the zip cache directory.
- * Requires CLAUDE_CODE_PLUGIN_CACHE_DIR to be set.
+ * Requires THYROX_CODE_PLUGIN_CACHE_DIR to be set.
  * Returns undefined if zip cache is not enabled.
  */
 export function getPluginZipCachePath(): string | undefined {
   if (!isPluginZipCacheEnabled()) {
     return undefined
   }
-  const dir = process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR
+  const dir = process.env.THYROX_CODE_PLUGIN_CACHE_DIR
   return dir ? expandTilde(dir) : undefined
 }
 
@@ -78,17 +78,6 @@ export function getZipCacheKnownMarketplacesPath(): string {
     throw new Error('Plugin zip cache is not enabled')
   }
   return join(cachePath, 'known_marketplaces.json')
-}
-
-/**
- * Get the path to installed_plugins.json in the zip cache.
- */
-function getZipCacheInstalledPluginsPath(): string {
-  const cachePath = getPluginZipCachePath()
-  if (!cachePath) {
-    throw new Error('Plugin zip cache is not enabled')
-  }
-  return join(cachePath, 'installed_plugins.json')
 }
 
 /**
@@ -158,14 +147,6 @@ export async function cleanupSessionPluginCache(): Promise<void> {
     sessionPluginCachePath = null
     sessionPluginCachePromise = null
   }
-}
-
-/**
- * Reset the session plugin cache path (for testing).
- */
-function resetSessionPluginCache(): void {
-  sessionPluginCachePath = null
-  sessionPluginCachePromise = null
 }
 
 /**
@@ -333,10 +314,10 @@ export async function extractZipToDirectory(
   targetDir: string,
 ): Promise<void> {
   const zipBuf = await getFsImplementation().readFileBytes(zipPath)
-  const files = await unzipFile(zipBuf)
+  const files = await unzipFile(Buffer.from(zipBuf))
   // fflate doesn't surface external_attr — parse the central directory so
   // exec bits survive extraction (hooks/scripts need +x to run via `sh -c`).
-  const modes = parseZipModes(zipBuf)
+  const modes = parseZipModes(zipBuf) as Record<string, number>
 
   await getFsImplementation().mkdir(targetDir)
 

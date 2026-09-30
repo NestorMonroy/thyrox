@@ -1,0 +1,6 @@
+src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts(190,27): error TS2339: Property 'promptCount' does not exist on type 'never'.
+src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts(208,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: null): void', gave the following error.
+    Argument of type '11' is not assignable to parameter of type 'null'.
+  Overload 2 of 2, '(expected: null): void', gave the following error.
+    Argument of type '11' is not assignable to parameter of type 'null'.

@@ -689,8 +689,8 @@ async function toggleTeammateVisibility(
  * Only available for ant users (gated for dead code elimination in external builds)
  */
 async function hideTeammate(
-  teammate: TeammateStatus,
-  teamName: string,
+  _teammate: TeammateStatus,
+  _teamName: string,
 ): Promise<void> {
 }
 
@@ -699,8 +699,8 @@ async function hideTeammate(
  * Only available for ant users (gated for dead code elimination in external builds)
  */
 async function showTeammate(
-  teammate: TeammateStatus,
-  teamName: string,
+  _teammate: TeammateStatus,
+  _teamName: string,
 ): Promise<void> {
 }
 

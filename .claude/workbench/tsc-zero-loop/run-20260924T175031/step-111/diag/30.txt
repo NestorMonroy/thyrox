@@ -1,0 +1,161 @@
+src/packages/agent/hooks/execPromptHook.ts(359,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:349-369 ---
+    349        // If the evaluator API call itself errored, surface as a non-blocking
+    350        // error so the Stop hook doesn't loop on infrastructure failures.
+    351        if ((response as { isApiErrorMessage?: boolean }).isApiErrorMessage) {
+    352          const errText = extractTextContent(
+    353            Array.isArray(response.message.content) ? response.message.content : [],
+    354          ).trim()
+    355          logForDebugging(
+    356            `Hooks: prompt-hook evaluator API error: ${errText}`,
+    357          )
+    358          return {
+    359>           hook,
+    360            outcome: 'non_blocking_error',
+    361            message: createAttachmentMessage({
+    362              type: 'hook_non_blocking_error',
+    363              hookName,
+    364              toolUseID: effectiveToolUseID,
+    365              hookEvent,
+    366              stderr: `Hook evaluator API error: ${errText}`,
+    367              stdout: '',
+    368              exitCode: 1,
+    369            }),
+src/packages/agent/hooks/execPromptHook.ts(425,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:415-435 ---
+    415          }
+    416        }
+    417        if (!json) {
+    418          logForDebugging(
+    419            `Hooks: error parsing response as JSON: ${fullResponse}`,
+    420          )
+    421          // Non-blocking: a stuck evaluator must not loop the Stop hook.
+    422          // The model gets a non_blocking_error attachment but the turn ends
+    423          // normally (ant 4793.js does the same — it's the only safe choice).
+    424          return {
+    425>           hook,
+    426            outcome: 'non_blocking_error',
+    427            message: createAttachmentMessage({
+    428              type: 'hook_non_blocking_error',
+    429              hookName,
+    430              toolUseID: effectiveToolUseID,
+    431              hookEvent,
+    432              stderr: 'JSON validation failed',
+    433              stdout: fullResponse,
+    434              exitCode: 1,
+    435            }),
+src/packages/agent/hooks/execPromptHook.ts(445,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:435-455 ---
+    435            }),
+    436          }
+    437        }
+    438  
+    439        const parsed = hookResponseSchema().safeParse(json)
+    440        if (!parsed.success) {
+    441          logForDebugging(
+    442            `Hooks: model response does not conform to expected schema: ${parsed.error.message}`,
+    443          )
+    444          return {
+    445>           hook,
+    446            outcome: 'non_blocking_error',
+    447            message: createAttachmentMessage({
+    448              type: 'hook_non_blocking_error',
+    449              hookName,
+    450              toolUseID: effectiveToolUseID,
+    451              hookEvent,
+    452              stderr: `Schema validation failed: ${parsed.error.message}`,
+    453              stdout: fullResponse,
+    454              exitCode: 1,
+    455            }),
+src/packages/agent/hooks/execPromptHook.ts(489,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:479-499 ---
+    479                toolUseID: effectiveToolUseID,
+    480                hookEvent,
+    481                content: '',
+    482              }),
+    483            } as HookResult
+    484          }
+    485          logForDebugging(
+    486            `Hooks: Prompt hook condition was not met: ${parsed.data.reason}`,
+    487          )
+    488          return {
+    489>           hook,
+    490            outcome: 'blocking',
+    491            blockingError: {
+    492              // Format: `[<original-condition>]: <reason>` — matches ant 4793.js
+    493              // so /goal status renders cleanly via formatLastCheck(reason).
+    494              blockingError: `[${hook.prompt}]: ${parsed.data.reason ?? ''}`,
+    495              command: hook.prompt,
+    496            },
+    497            // ant v2.1.142 4793.js: `preventContinuation:!Y&&H.continueOnBlock!==!0`
+    498            // - Stop/SubagentStop: never prevent (loop semantics — /goal keeps going)
+    499            // - Other events: prevent unless the hook opts into continueOnBlock=true
+src/packages/agent/hooks/execPromptHook.ts(509,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:499-519 ---
+    499            // - Other events: prevent unless the hook opts into continueOnBlock=true
+    500            preventContinuation:
+    501              !isStopEvent && (hook as { continueOnBlock?: boolean }).continueOnBlock !== true,
+    502            stopReason: parsed.data.reason,
+    503          }
+    504        }
+    505  
+    506        // Condition was met
+    507        logForDebugging(`Hooks: Prompt hook condition was met`)
+    508        return {
+    509>         hook,
+    510          outcome: 'success',
+    511          stopReason: parsed.data.reason,
+    512          message: createAttachmentMessage({
+    513            type: 'hook_success',
+    514            hookName,
+    515            toolUseID: effectiveToolUseID,
+    516            hookEvent,
+    517            content: '',
+    518          }),
+    519        }
+src/packages/agent/hooks/execPromptHook.ts(525,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:515-535 ---
+    515            toolUseID: effectiveToolUseID,
+    516            hookEvent,
+    517            content: '',
+    518          }),
+    519        }
+    520      } catch (error) {
+    521        cleanupSignal()
+    522  
+    523        if (combinedSignal.aborted) {
+    524          return {
+    525>           hook,
+    526            outcome: 'cancelled',
+    527          }
+    528        }
+    529        throw error
+    530      }
+    531    } catch (error) {
+    532      const errorMsg = errorMessage(error)
+    533      logForDebugging(`Hooks: Prompt hook error: ${errorMsg}`)
+    534      return {
+    535        hook,
+src/packages/agent/hooks/execPromptHook.ts(535,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:525-545 ---
+    525            hook,
+    526            outcome: 'cancelled',
+    527          }
+    528        }
+    529        throw error
+    530      }
+    531    } catch (error) {
+    532      const errorMsg = errorMessage(error)
+    533      logForDebugging(`Hooks: Prompt hook error: ${errorMsg}`)
+    534      return {
+    535>       hook,
+    536        outcome: 'non_blocking_error',
+    537        message: createAttachmentMessage({
+    538          type: 'hook_non_blocking_error',
+    539          hookName,
+    540          toolUseID: effectiveToolUseID,
+    541          hookEvent,
+    542          stderr: `Error executing prompt hook: ${errorMsg}`,
+    543          stdout: '',
+    544          exitCode: 1,
+    545        }),

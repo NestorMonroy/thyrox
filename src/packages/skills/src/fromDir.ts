@@ -34,21 +34,25 @@ function splitFrontmatter(raw: string): { meta: Map<string, string>; body: strin
 
   let end = -1
   for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trimEnd() === close) { end = i; break }
+    if ((lines[i] ?? '').trimEnd() === close) { end = i; break }
   }
   if (end === -1) return { meta: new Map(), body: raw } // frontmatter sin cerrar
 
   const meta = new Map<string, string>()
   for (let i = 1; i < end; i++) {
-    const line = lines[i]
+    const line = lines[i] ?? ''
     // Sólo claves en columna cero: las anidadas (metadata:) llevan sangría.
     const m = /^([A-Za-z][\w-]*):\s?(.*)$/.exec(line)
-    if (m && !/^\s/.test(line)) meta.set(m[1], m[2])
+    if (m && !/^\s/.test(line)) {
+      const key = m[1]
+      const value = m[2]
+      if (key !== undefined && value !== undefined) meta.set(key, value)
+    }
   }
 
   // El cuerpo empieza tras el cierre; se recortan las líneas en blanco iniciales.
   let start = end + 1
-  while (start < lines.length && lines[start].trim() === '') start++
+  while (start < lines.length && (lines[start] ?? '').trim() === '') start++
   return { meta, body: lines.slice(start).join('\n') }
 }
 

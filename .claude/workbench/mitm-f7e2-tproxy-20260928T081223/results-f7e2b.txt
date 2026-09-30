@@ -1,0 +1,24 @@
+== 1: la orden corre en el anfitrión
+   (src/tproxy/networkNamespace.ts)
+(fail) a rule added inside the namespace does not reach the host [27.23ms]
+ 5 pass
+ 1 fail
+== 2: cerrar sin terminar el proceso
+   (src/tproxy/networkNamespace.ts)
+(fail) closing ends the process that holds the namespace [11.43ms]
+ 5 pass
+ 1 fail
+== 3: sin esperar a que el espacio exista
+   (src/tproxy/networkNamespace.ts)
+(fail) opening waits for the namespace even when unshare is slow to create it [5.76ms]
+ 5 pass
+ 1 fail
+== 4: sin esperar el motivo de un unshare que no arranca
+   (src/tproxy/networkNamespace.ts)
+(fail) a missing unshare refuses, naming it [1.40ms]
+ 5 pass
+ 1 fail
+== restaurado
+?? src/packages/mitm/src/tproxy/networkNamespace.ts
+ 6 pass
+ 0 fail

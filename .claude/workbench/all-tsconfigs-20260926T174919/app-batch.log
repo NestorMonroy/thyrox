@@ -1,0 +1,14 @@
+== tests/verify/test-premise-drift.sh
+EXIT=0
+== guard: sin el directorio de fichas NO se emite cifra
+  ok   exit 2 y sin conteo
+
+16 ok, 0 fallo(s)  (alcance medido: 16 asercion(es))
+== tests/verify/test-verificar-premisa.sh
+EXIT=0
+  ok    el proveedor entra en PATH_ROOTS
+  ok    la composicion de PATH_ROOTS no nombra ninguna raiz
+
+test-verificar-premisa.sh: 23 ok · 0 fallo(s)
+EXIT=2
+REHÚSA — faltan los sujetos del censo: /home/user/odoo-tools. Sin ellos el censo no puede medir, y un rojo aquí no diría nada del censo.

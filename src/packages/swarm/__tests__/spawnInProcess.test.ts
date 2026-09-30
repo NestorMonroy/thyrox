@@ -16,6 +16,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
+import type { AppState } from '../src/adapters/appRuntime.ts'
 
 let raiz = ''
 let trazas: string[] = []
@@ -34,8 +35,8 @@ function estado(inicial: Record<string, unknown> = {}) {
     ...inicial,
   }
   return {
-    fijar: (f: (p: never) => never) => {
-      actual = f(actual as never) as never
+    fijar: (f: (p: AppState) => AppState) => {
+      actual = f(actual as unknown as AppState) as unknown as Record<string, unknown>
     },
     leer: () => actual,
   }

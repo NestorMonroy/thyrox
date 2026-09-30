@@ -1,62 +1,41 @@
 /**
- * Cobertura end-to-end del bug "agente fixer atascado tras 4
- * shutdown_requests".
+ * End-to-end coverage of the "fixer-agent stuck after 4 shutdown_requests"
+ * bug. The original failure mode was a two-layer race:
  *
- * Procedencia: `ccnmt: packages/swarm/src/__tests__/shutdownRequestDelivery.test.ts`
- * (275 líneas). Ese árbol declara `"license": "UNLICENSED"`, así que el
- * cuerpo se **reimplementa** y no se copia.
+ *   1. Leader retried the shutdown_request 4 times while the teammate
+ *      was idle. Each retry pushed a new entry onto the inbox file.
+ *   2. The runner's poll loop scanned the inbox for unread shutdown
+ *      requests, found one, marked it read, and handed it to the model.
+ *      But due to a UI-side reader marking *all* messages as read for
+ *      its own reasons, the remaining three duplicates flipped to
+ *      `read: true` while still being unprocessed by the runner. The
+ *      `!m.read` filter then made them invisible — a "shutdown
+ *      approved but teammate still running" deadlock.
  *
- * El modo de fallo original era una carrera de dos capas:
+ * The fix has two prongs:
  *
- *   1. El líder reintentaba el shutdown_request 4 veces mientras el
- *      teammate estaba idle. Cada reintento empujaba una entrada nueva al
- *      archivo de buzón.
- *   2. El bucle de poll del runner escaneaba el buzón buscando shutdown
- *      requests sin leer, encontraba uno, lo marcaba leído y se lo pasaba
- *      al modelo. Pero por un lector del lado UI que marcaba TODOS los
- *      mensajes como leídos por sus propias razones, los otros tres
- *      duplicados pasaban a `read: true` sin haber sido procesados por
- *      el runner. El filtro `!m.read` los volvía entonces invisibles —
- *      un deadlock de "shutdown aprobado pero teammate sigue corriendo".
+ *   a) writeToMailbox dedupes on (type, requestId), so the leader's
+ *      retries collapse to 1 inbox entry. Verified end-to-end by
+ *      writeToMailboxIntegration.test.ts.
  *
- * El fix tiene dos frentes:
+ *   b) The runner's poll loop ignores `m.read` and uses an in-memory
+ *      `processedRequestIds: Set<string>` as the authoritative
+ *      "already delivered" ledger. A shutdown_request is delivered to
+ *      the model exactly once per runner instance, regardless of
+ *      mailbox-side flag corruption.
  *
- *   a) writeToMailbox deduplica por (type, requestId), así que los
- *      reintentos del líder colapsan a 1 entrada de buzón. Verificado
- *      end-to-end por writeToMailboxIntegration.test.ts.
- *
- *   b) El bucle de poll del runner ignora `m.read` y usa un ledger en
- *      memoria `processedRequestIds: Set<string>` como la autoridad de
- *      "ya entregado". Un shutdown_request se entrega al modelo
- *      exactamente una vez por instancia de runner, sin importar
- *      corrupción del flag del lado buzón.
- *
- * Este archivo simula directamente el bucle de decisión del lado-poll del
- * runner para verificar (b) sin levantar el runtime completo del teammate.
- *
- * CORRECCIÓN (estado heredado incorrecto, corregida en el mismo pase): esta
- * sección decía que la lógica de escaneo real "aún no está portada". Es
- * falso — el ledger `processedRequestIds: Set<string>` y el filtro
- * `!processedRequestIds.has(parsed.requestId)` ya viven, portados, en
- * `runtime/pollForPromptOrShutdown.ts:164,177,254,256,260-261,281`, que
- * `inProcessRunner.ts` (aún no portado) consume vía
- * `waitForNextPromptOrShutdown`. DIVERGENCIA DECLARADA que SÍ se sostiene:
- * `scanForShutdown`, definida más abajo en este archivo, es un espejo local
- * mínimo de ese algoritmo — no una llamada a `pollForPromptOrShutdown.ts` —
- * porque ejercitar el archivo real exigiría el aparato de watch de archivo +
- * AbortSignal de `waitForNextPromptOrShutdown`, que es infraestructura ajena
- * a lo que este test verifica (la semántica de dedup, no el mecanismo de
- * espera). Afirma: un shutdown se entrega la primera vez, y el mismo
- * requestId nunca vuelve a disparar otra entrega, aunque el buzón siga
- * mostrándolo como `read: false`.
+ * This file simulates the runner's poll-side decision loop directly to
+ * verify (b) without spinning up the full teammate runtime. It mirrors
+ * the actual scan logic in inProcessRunner.ts:780-816 byte-for-byte
+ * and asserts: a shutdown is delivered the first time, then the same
+ * requestId never triggers another delivery, even if the mailbox still
+ * shows it as `read: false`.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 
 import {
   _test_resetSwarmAppRuntime,
   installSwarmAppRuntime,
-  SWARM_FUNCTION_BINDINGS,
-  SWARM_VALUE_BINDINGS,
 } from '../adapters/appRuntime.js'
 import {
   createShutdownRequestMessage,
@@ -64,28 +43,61 @@ import {
   type TeammateMessage,
 } from '../mailbox/index.js'
 
-// `isShutdownRequest` camina el binding de runtime de swarm `jsonParse` —
-// es el mismo baile que juega todo consumidor de swarm en sus tests. Se
-// instala un set mínimo de stubs (todo lanza al usarse salvo jsonParse),
-// así que se ejercita el camino REAL de `isShutdownRequest` y cualquier
-// drift en su firma aflora aquí.
-//
-// DIVERGENCIA DECLARADA respecto a la fuente: en vez de copiar a mano la
-// lista `REQUIRED_BINDING_KEYS`, se derivan las claves de
-// `SWARM_FUNCTION_BINDINGS`/`SWARM_VALUE_BINDINGS` (mismo patrón que
-// `mailboxHelpers.test.ts`, `backendRegistry.test.ts` e
-// `InProcessTeammateTask.test.ts`).
+// `isShutdownRequest` walks the swarm runtime `jsonParse` binding —
+// it's the same dance every swarm consumer plays in tests. We install
+// a minimal stub set (everything throws on use except jsonParse), so
+// we exercise the real `isShutdownRequest` path and any drift in its
+// signature surfaces here.
+const REQUIRED_BINDING_KEYS = [
+  'TEAMMATE_MESSAGE_TAG', 'ERROR_MESSAGE_USER_ABORT', 'BASH_TOOL_NAME',
+  'SEND_MESSAGE_TOOL_NAME', 'TASK_CREATE_TOOL_NAME', 'TASK_GET_TOOL_NAME',
+  'TASK_LIST_TOOL_NAME', 'TASK_UPDATE_TOOL_NAME', 'TEAM_CREATE_TOOL_NAME',
+  'TEAM_DELETE_TOOL_NAME', 'TURN_COMPLETION_VERBS', 'SUBAGENT_REJECT_MESSAGE',
+  'SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX', 'STOPPED_DISPLAY_MS',
+  'AGENT_COLORS', 'CLAUDE_OPUS_4_7_CONFIG', 'env', 'getSystemPrompt',
+  'processMailboxPermissionResponse', 'registerPermissionCallback',
+  'unregisterPermissionCallback', 'logEvent', 'getAutoCompactThreshold',
+  'buildPostCompactMessages', 'compactConversation', 'resetMicrocompactState',
+  'createTaskStateBase', 'generateTaskId', 'isTerminalTaskStatus',
+  'createActivityDescriptionResolver', 'createProgressTracker',
+  'getProgressUpdate', 'updateProgressFromMessage', 'runAgent',
+  'awaitClassifierAutoApproval', 'getSpinnerVerbs',
+  'createAssistantAPIErrorMessage', 'createUserMessage', 'evictTaskOutput',
+  'evictTerminalTask', 'registerTask', 'updateTaskState',
+  'tokenCountWithEstimation', 'createAbortController', 'runWithAgentContext',
+  'count', 'logForDebugging', 'logError', 'cloneFileStateCache',
+  'applyPermissionUpdates', 'persistPermissionUpdates', 'applyPermissionUpdate',
+  'hasPermissionsToUseTool', 'emitTaskTerminatedSdk', 'sleep', 'jsonParse',
+  'jsonStringify', 'asSystemPrompt', 'claimTask', 'listTasks', 'updateTask',
+  'sanitizePathComponent', 'getTasksDir', 'notifyTasksUpdated',
+  'createTeammateContext', 'runWithTeammateContext', 'getAgentId',
+  'getAgentName', 'getDynamicTeamContext', 'getTeamName', 'getTeammateColor',
+  'isTeammate', 'registerPerfettoAgent', 'unregisterPerfettoAgent',
+  'isPerfettoTracingEnabled', 'registerAgent', 'unregisterAgent',
+  'createContentReplacementState', 'formatAgentId', 'generateRequestId',
+  'parseAgentId', 'registerCleanup', 'getSessionId',
+  'getIsNonInteractiveSession', 'getChromeFlagOverride', 'getFlagSettingsPath',
+  'getInlinePlugins', 'getMainLoopModelOverride',
+  'getSessionBypassPermissionsMode', 'getSessionCreatedTeams', 'quote',
+  'isInBundledMode', 'getPlatform', 'getGlobalConfig', 'saveGlobalConfig',
+  'execFileNoThrow', 'execFileNoThrowWithCwd', 'getTeamsDir', 'errorMessage',
+  'getErrnoCode', 'lock', 'lockSync', 'unlock', 'check', 'gitExe',
+  'parseGitConfigValue', 'getCommonDir', 'readWorktreeHeadSha', 'resolveGitDir',
+  'resolveRef', 'findCanonicalGitRoot', 'findGitRoot', 'getBranch',
+  'getDefaultBranch', 'executeWorktreeCreateHook', 'executeWorktreeRemoveHook',
+  'hasWorktreeCreateHook', 'addFunctionHook', 'containsPathTraversal',
+  'getInitialSettings', 'getRelativeSettingsFilePathForSource', 'getCwd',
+  'saveCurrentProjectConfig', 'getAPIProvider',
+] as const
+
 beforeAll(() => {
   const bindings: Record<string, unknown> = {}
-  for (const key of SWARM_FUNCTION_BINDINGS) {
+  for (const key of REQUIRED_BINDING_KEYS) {
     bindings[key] = (..._args: unknown[]) => {
       throw new Error(
-        `llamada inesperada al binding de runtime de swarm "${key}" en el test de entrega de shutdown`,
+        `unexpected call to swarm runtime binding "${key}" in shutdown delivery test`,
       )
     }
-  }
-  for (const key of SWARM_VALUE_BINDINGS) {
-    bindings[key] = ''
   }
   Object.assign(bindings, {
     TEAMMATE_MESSAGE_TAG: 'teammate-message',
@@ -125,12 +137,12 @@ type WaitDecision =
   | { type: 'no_shutdown' }
 
 /**
- * Copia mínima de la lógica de escaneo de
- * `inProcessRunner.ts:waitForNextPromptOrShutdown` (aún no portado a este
- * árbol). Se mantiene chica e inline para que el test verifique el MISMO
- * algoritmo que usará el runner, no un mock-de-un-mock. Si el algoritmo
- * del runner cambia, este helper hay que actualizarlo en el mismo pase —
- * es intencional, el test hace cumplir el contrato.
+ * Minimal copy of the scan logic from
+ * inProcessRunner.ts:waitForNextPromptOrShutdown. Kept small and
+ * inline so tests verify the same algorithm the runner uses, not a
+ * mock-of-a-mock. If the runner's algorithm changes, this helper has
+ * to be updated in lockstep — that's intentional, the test enforces
+ * the contract.
  */
 function scanForShutdown(
   allMessages: ReadonlyArray<TeammateMessage>,
@@ -158,8 +170,8 @@ function shutdownEntry(requestId: string, read: boolean): TeammateMessage {
   }
 }
 
-describe('entrega de shutdown del runner — semántica exactamente-una-vez', () => {
-  test('el primer escaneo entrega el shutdown y registra el requestId en el set', () => {
+describe('runner shutdown delivery — exactly-once semantics', () => {
+  test('first scan delivers shutdown, records requestId in set', () => {
     const inbox = [shutdownEntry('req-1', false)]
     const processed = new Set<string>()
 
@@ -168,10 +180,10 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(processed.has('req-1')).toBe(true)
   })
 
-  test('un segundo escaneo con el mismo requestId en el set NO entrega otra vez', () => {
-    // Reproduce la forma del bug original: aunque el buzón siga teniendo
-    // la entrada de shutdown (o la tenga duplicada), una vez que el
-    // runner la entregó, no debe entregarla una segunda vez.
+  test('second scan with same requestId in set does NOT deliver again', () => {
+    // Reproduces the original bug shape: even if the mailbox still has
+    // the shutdown entry (or has it duplicated), once the runner has
+    // delivered it, it must not deliver it a second time.
     const inbox = [shutdownEntry('req-1', false)]
     const processed = new Set<string>(['req-1'])
 
@@ -179,11 +191,11 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(decision).toEqual({ type: 'no_shutdown' })
   })
 
-  test('que el buzón muestre el shutdown como read=true es irrelevante — igual se entrega', () => {
-    // El bug pre-fix: otro lector marcaba el mensaje como leído ANTES de
-    // que el runner lo viera. El código viejo filtraba por !m.read, así
-    // que el runner lo perdía. El código nuevo NO filtra por `read`;
-    // sólo el set processedRequestIds decide.
+  test('mailbox showing shutdown as read=true is irrelevant — we still skip it', () => {
+    // The pre-fix bug: another reader marked the message read BEFORE
+    // the runner saw it. Old code filtered on !m.read so the runner
+    // missed it. New code does NOT filter on `read`; only the
+    // processedRequestIds set decides.
     const inbox = [shutdownEntry('req-1', /*read*/ true)]
     const processed = new Set<string>()
 
@@ -191,7 +203,7 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(decision).toEqual({ type: 'shutdown_request', requestId: 'req-1' })
   })
 
-  test('que el buzón muestre el shutdown como read=true después de la entrega — sigue omitido', () => {
+  test('mailbox showing shutdown as read=true after delivery — still skipped', () => {
     const inbox = [shutdownEntry('req-1', true)]
     const processed = new Set<string>(['req-1'])
 
@@ -199,11 +211,11 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(decision).toEqual({ type: 'no_shutdown' })
   })
 
-  test('4 duplicados del mismo requestId en el buzón → exactamente una entrega', () => {
-    // Buzones anteriores al dedup podían seguir teniendo duplicados de
-    // estado legacy (o de un escritor de otro proceso que no dedupara).
-    // Aun así, el lado runner garantiza entrega exactamente-una-vez
-    // gracias a processedRequestIds.
+  test('4 duplicates of the same requestId in inbox → exactly one delivery', () => {
+    // Pre-mailbox-dedup mailboxes could still contain duplicates from
+    // legacy state (or from a non-dedup-aware writer in another
+    // process). Even then, the runner side guarantees exactly-once
+    // delivery thanks to processedRequestIds.
     const inbox = [
       shutdownEntry('req-1', false),
       shutdownEntry('req-1', false),
@@ -223,7 +235,7 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(decision4.type).toBe('no_shutdown')
   })
 
-  test('un requestId distinto tras el primero se entrega (contratos independientes)', () => {
+  test('different requestId after first is delivered (independent contracts)', () => {
     const processed = new Set<string>()
 
     const inbox1 = [shutdownEntry('req-1', false)]
@@ -234,7 +246,7 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(decision).toEqual({ type: 'shutdown_request', requestId: 'req-2' })
   })
 
-  test('sin shutdown en el buzón devuelve no_shutdown sin mutación', () => {
+  test('no shutdown in inbox returns no_shutdown without mutation', () => {
     const inbox: TeammateMessage[] = [
       {
         from: 'team-lead',
@@ -248,11 +260,10 @@ describe('entrega de shutdown del runner — semántica exactamente-una-vez', ()
     expect(processed.size).toBe(0)
   })
 
-  test('processedRequestIds es por-runner — sets separados son independientes', () => {
-    // Runners de teammate distintos tienen sets processed separados. El
-    // mismo requestId puede entregarse al runner A y al runner B de
-    // forma independiente (p. ej. shutdown_request en broadcast a dos
-    // teammates).
+  test('processedRequestIds is per-runner — separate sets are independent', () => {
+    // Different teammate runners have separate processed-sets. Same
+    // requestId can be delivered to runner A and runner B independently
+    // (e.g. broadcast shutdown_request to two teammates).
     const inboxA = [shutdownEntry('broadcast-1', false)]
     const inboxB = [shutdownEntry('broadcast-1', false)]
     const processedA = new Set<string>()

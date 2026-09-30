@@ -1,6 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/host.ts` (verbatim).
- */
 import type { MemoryHostBindings } from './contracts.js'
 import { HostBindingsError } from './errors.js'
 

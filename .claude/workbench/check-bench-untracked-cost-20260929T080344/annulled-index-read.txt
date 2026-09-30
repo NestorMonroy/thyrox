@@ -1,0 +1,2 @@
+  FALLA la cita se lee del índice, no del árbol de trabajo — esperado {}, obtenido {'.claude/workbench/bench-a': ['.claude/workbench/bench-a/sonda.txt']}
+test_bench_untracked: 14 aserciones — 13 ok, 1 falla(s)

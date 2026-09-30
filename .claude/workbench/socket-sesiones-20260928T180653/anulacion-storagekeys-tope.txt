@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/storageKeys.test.ts:
+34 |   test('la caché de variantes se vacía al llegar a su tope', () => {
+35 |     expect(NAME_VARIANT_CACHE_LIMIT).toBe(32768)
+36 |     for (let index = 0; nameVariantCacheSize() < NAME_VARIANT_CACHE_LIMIT; index++) nameVariants(`relleno-${index}`)
+37 |     expect(nameVariantCacheSize()).toBe(NAME_VARIANT_CACHE_LIMIT)
+38 |     nameVariants('uno-mas')
+39 |     expect(nameVariantCacheSize()).toBe(1)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 32769
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/storageKeys.test.ts:39:36)
+(fail) reglas de nombre > la caché de variantes se vacía al llegar a su tope [41.72ms]
+
+ 10 pass
+ 1 fail
+ 74 expect() calls
+Ran 11 tests across 1 file. [76.00ms]

@@ -1,18 +1,10 @@
 /**
- * Puerto de `ccnmt: packages/headless-sdk/src/controlTypes.ts` (verbatim en
- * estructura; los imports que en la fuente son auto-referencias al propio
- * paquete por nombre, `@claude-code-how-works/headless-sdk/*`, se portan
- * como imports relativos — son módulos hermanos dentro del MISMO paquete,
- * no una dependencia cruzada).
+ * SDK Control Types — inferred from Zod schemas in controlSchemas.ts / coreSchemas.ts.
  *
- * Tipos de Control del SDK — inferidos de los schemas Zod en
- * `controlSchemas.ts` / `coreSchemas.ts`.
- *
- * Definen el protocolo de control entre el bridge del CLI y el servidor.
- * Los consume la capa de bridge/transporte, el gestor de sesión remota, y
- * las rutas de print/IO del CLI.
+ * These types define the control protocol between the CLI bridge and the server.
+ * Used by bridge/transport layer, remote session manager, and CLI print/IO paths.
  */
-import type { z } from 'zod/v4'
+import type { z } from 'zod'
 import type {
   SDKControlRequestSchema,
   SDKControlResponseSchema,
@@ -25,8 +17,8 @@ import type {
   SDKControlRequestInnerSchema,
   StdoutMessageSchema,
   StdinMessageSchema,
-} from './controlSchemas.ts'
-import type { SDKPartialAssistantMessageSchema } from './coreSchemas.ts'
+} from './controlSchemas.js'
+import type { SDKPartialAssistantMessageSchema } from './coreSchemas.js'
 
 export type SDKControlRequest = z.infer<ReturnType<typeof SDKControlRequestSchema>>
 export type SDKControlResponse = z.infer<ReturnType<typeof SDKControlResponseSchema>>

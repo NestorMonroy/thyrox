@@ -50,6 +50,7 @@ import {
   handleReconnectError,
   handleReconnectResult,
 } from './utils/reconnectHelpers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   server: SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo
@@ -141,11 +142,11 @@ export function MCPRemoteServerMenu({
         onComplete?.(`Authentication successful. Connected to ${server.name}.`)
       } else if (result.client.type === 'needs-auth') {
         onComplete?.(
-          'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+          `Authentication successful, but server still requires authentication. You may need to manually restart ${PRODUCT_NAME}.`,
         )
       } else {
         onComplete?.(
-          'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+          `Authentication successful, but server reconnection failed. You may need to manually restart ${PRODUCT_NAME} for the changes to take effect.`,
         )
       }
     } catch (err) {
@@ -210,7 +211,7 @@ export function MCPRemoteServerMenu({
     },
   )
 
-  // Escape to cancel Claude AI authentication
+  // Escape to cancel thyrox AI authentication
   useKeybinding(
     'confirm:no',
     () => {
@@ -223,7 +224,7 @@ export function MCPRemoteServerMenu({
     },
   )
 
-  // Escape to cancel Claude AI clear auth
+  // Escape to cancel thyrox AI clear auth
   useKeybinding(
     'confirm:no',
     () => {
@@ -297,7 +298,7 @@ export function MCPRemoteServerMenu({
         ? 'mcpsrv' + server.config.id.slice(5)
         : server.config.id
       const productSurface = encodeURIComponent(
-        process.env.CLAUDE_CODE_ENTRYPOINT || 'cli',
+        process.env.THYROX_CODE_ENTRYPOINT || 'cli',
       )
       authUrl = `${claudeAiBaseUrl}/api/organizations/${orgUuid}/mcp/start-auth/${serverId}?product_surface=${productSurface}`
     } else {
@@ -391,13 +392,13 @@ export function MCPRemoteServerMenu({
           onComplete?.(message)
         } else if (result.client.type === 'needs-auth') {
           onComplete?.(
-            'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+            `Authentication successful, but server still requires authentication. You may need to manually restart ${PRODUCT_NAME}.`,
           )
         } else {
           // result.client.type === 'failed'
           logMCPDebug(server.name, `Reconnection failed after authentication`)
           onComplete?.(
-            'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+            `Authentication successful, but server reconnection failed. You may need to manually restart ${PRODUCT_NAME} for the changes to take effect.`,
           )
         }
       }

@@ -1,18 +1,11 @@
-/**
- * Puerto de `ccnmt: packages/config/crypto.ts` (11 líneas fuente).
- * Reimplementación fiel VERBATIM.
- *
- * Punto de indirección para el campo "browser" de package.json: cuando bun
- * construye un bundle de navegador con `--target browser`, este archivo se
- * sustituye por una variante `crypto.browser.ts` (no portada aquí — ningún
- * consumidor de este árbol construye para navegador todavía) para evitar un
- * polyfill de ~500KB que Bun incluiría para `import ... from 'crypto'`. Los
- * builds de Node/Bun usan este archivo tal cual.
- *
- * La fuente advierte: `export { randomUUID } from 'crypto'` (sintaxis de
- * re-exportación directa) rompe bajo la compilación a bytecode interna de
- * bun — el import-y-luego-export explícito de abajo produce un binding en
- * vivo correcto.
- */
-import { randomUUID } from 'node:crypto'
+// Indirection point for the package.json "browser" field. When bun builds
+// browser-sdk.js with --target browser, this file is swapped for
+// crypto.browser.ts — avoiding a ~500KB crypto-browserify polyfill that Bun
+// would otherwise inline for `import ... from 'crypto'`. Node/bun builds use
+// this file unchanged.
+//
+// NOTE: `export { randomUUID } from 'crypto'` (re-export syntax) breaks under
+// bun-internal's bytecode compilation — the explicit import-then-export below
+// produces a correct live binding.
+import { randomUUID } from 'crypto'
 export { randomUUID }

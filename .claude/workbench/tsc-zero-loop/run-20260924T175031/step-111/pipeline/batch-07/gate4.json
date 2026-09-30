@@ -1,0 +1,71 @@
+{
+ "reviewed": [
+  {
+   "pattern": "discriminated-union-not-narrowed-across-array-index-accesses",
+   "files": [
+    "src/packages/permission/src/__tests__/shellRuleMatching.test.ts"
+   ]
+  },
+  {
+   "pattern": "optional-assistant-message-id-into-required-string",
+   "files": [
+    "src/packages/permission/src/components/FallbackPermissionRequest.tsx"
+   ]
+  },
+  {
+   "pattern": "assistant-message-id-optional-vs-required-string",
+   "files": [
+    "src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts"
+   ]
+  },
+  {
+   "pattern": "optional-message-id-into-required-metadata-field",
+   "files": [
+    "src/packages/permission/src/components/SkillPermissionRequest/SkillPermissionRequest.tsx",
+    "src/packages/permission/src/components/utils.ts"
+   ]
+  },
+  {
+   "pattern": "option-stub-resolves-to-unknown",
+   "files": [
+    "src/packages/permission/src/components/rules/PermissionRuleList.tsx"
+   ]
+  },
+  {
+   "pattern": "message-content-optional-in-union-message",
+   "files": [
+    "src/packages/permission/src/yoloClassifier.ts"
+   ]
+  },
+  {
+   "pattern": "optional-model-passed-to-string-param-without-guard",
+   "files": [
+    "src/packages/provider/src/legacy/api.ts"
+   ]
+  },
+  {
+   "pattern": "readEnv-invoked-twice-loses-narrowing",
+   "files": [
+    "src/packages/provider/src/mockRateLimits.ts"
+   ]
+  },
+  {
+   "pattern": "readenv-narrowed-by-truthy-check-not-reused",
+   "files": [
+    "src/packages/provider/src/modelAgent.ts"
+   ]
+  },
+  {
+   "pattern": "optional-agents-passed-to-required-field",
+   "files": [
+    "src/packages/provider/src/openai/indexImpl.ts"
+   ]
+  },
+  {
+   "pattern": "double-call-loses-truthy-narrowing",
+   "files": [
+    "src/packages/provider/src/openai/modelMapping.ts"
+   ]
+  }
+ ]
+}

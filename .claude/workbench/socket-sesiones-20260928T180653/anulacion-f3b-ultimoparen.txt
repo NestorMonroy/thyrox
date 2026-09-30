@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+22 | // Un /proc/<pid>/stat real tiene 52 campos; el comando entre paréntesis puede llevar espacios y ')'.
+23 | const STAT = `123 (a (b) c) S 1 123 123 0 -1 4194560 100 0 0 0 1 2 0 0 20 0 1 0 987654 1000 200`
+24 | 
+25 | describe('parseProcStatStartTime (Zne) y readProcessStartToken (b)', () => {
+26 |   test('el inicio es el campo 22, contado tras el último paréntesis del comando', () => {
+27 |     expect(parseProcStatStartTime(STAT)).toBe('987654')
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "987654"
+Received: "0"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:27:42)
+(fail) parseProcStatStartTime (Zne) y readProcessStartToken (b) > el inicio es el campo 22, contado tras el último paréntesis del comando [0.36ms]
+26 |   test('el inicio es el campo 22, contado tras el último paréntesis del comando', () => {
+27 |     expect(parseProcStatStartTime(STAT)).toBe('987654')
+28 |   })
+29 | 
+30 |   test('lee /proc/<pid>/stat; si no se puede leer, no hay token', async () => {
+31 |     expect(await readProcessStartToken(123, async path => (path === '/proc/123/stat' ? STAT : ''))).toBe('987654')
+                                                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: "987654"
+Received: "0"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:31:101)
+(fail) parseProcStatStartTime (Zne) y readProcessStartToken (b) > lee /proc/<pid>/stat; si no se puede leer, no hay token [0.25ms]
+
+ 8 pass
+ 2 fail
+ 26 expect() calls
+Ran 10 tests across 1 file. [89.00ms]

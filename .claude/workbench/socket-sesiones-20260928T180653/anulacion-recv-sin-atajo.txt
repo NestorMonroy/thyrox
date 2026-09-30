@@ -1,0 +1,55 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionReceive.test.ts:
+46 | describe('runSessionReceive (Aot)', () => {
+47 |   test('sin módulos que escuchen, el contenido pasa tal cual y la reserva no hace nada', async () => {
+48 |     const idle = site([])
+49 |     const result = await runSessionReceive({ origin: { kind: 'peer' }, content: 'hola' }, idle, () => {})
+50 |     expect(result).toMatchObject({ content: 'hola' })
+51 |     expect(idle.calls).toEqual([])
+                            ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   {
++     "origin": {
++       "kind": "peer",
++     },
++     "text": "hola",
++   },
++ ]
+
+- Expected  - 1
++ Received  + 8
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:51:24)
+(fail) runSessionReceive (Aot) > sin módulos que escuchen, el contenido pasa tal cual y la reserva no hace nada [0.92ms]
+94 |         })
+95 |         return { consumed: 'antes' }
+96 |       },
+97 |     ])
+98 |     const result = await runSessionReceive({ origin: { kind: 'peer' }, content: 'hola' }, hooks, () => {})
+99 |     expect(result).toEqual({ consumed: 'antes' })
+                        ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "consumed": "antes",
++   "content": "hola",
++   "queueing": {
++     [Symbol(Symbol.dispose)]: [Function],
++     "queued": [Function],
++   },
+  }
+
+- Expected  - 1
++ Received  + 5
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:99:20)
+(fail) runSessionReceive (Aot) > una entrega que llega al núcleo después de consumida recibe el error de no encolado [0.32ms]
+
+ 6 pass
+ 2 fail
+ 18 expect() calls
+Ran 8 tests across 1 file. [43.00ms]

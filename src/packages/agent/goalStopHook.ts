@@ -33,12 +33,8 @@
  *     (`tokensAtStart`, el delta en `renderActiveGoalStatus` bajo
  *     try/catch, y los deltas de pause/resume que ningún test verifica en
  *     detalle).
- *   - `AttachmentMessage` — la fuente lo importa de `./messageShapes.js`.
- *     `../messageShapes.ts` de este árbol es un porte MÍNIMO (ver su propio
- *     docstring) que aún no lo declara, y ese archivo pertenece a otro
- *     agente de esta misma tanda — no se edita. Se declara aquí, localmente,
- *     con la forma exacta de la fuente
- *     (`ccnmt: packages/agent/messageShapes.ts:53`).
+ *   - `AttachmentMessage` se importa de `./messageShapes.js`, como en la
+ *     fuente; una copia local competiría con él.
  *   - `readEnv` — la fuente envuelve `isEnvTruthy`/`isEnvDefinedFalsy` con
  *     `readEnv('VAR')` de `@claude-code-how-works/config/env/utils`. Las
  *     versiones de este árbol (`../internalUtils.ts`) ya aceptan
@@ -85,21 +81,16 @@ import {
 } from './hooksConfigSnapshot.js'
 import {
   addSessionHook,
-  getSessionHooks,
   removeSessionHook,
 } from './hooks/sessionHooks.js'
 import type { HookCommand } from './types/hooks.js'
-import type { Message } from './messageShapes.js'
+import type { AttachmentMessage, Message } from './messageShapes.js'
 
 /**
  * ant `dYK` transporta este tipo desde `./messageShapes.js`; aquí se
  * declara localmente — ver la nota de divergencia del docstring del
  * módulo.
  */
-export type AttachmentMessage<T = unknown> = Message & {
-  type: 'attachment'
-  attachment: { type: string; [key: string]: unknown }
-}
 
 /**
  * ant `nf()` — divergencia declarada arriba: contador local mínimo, sin
@@ -159,11 +150,11 @@ export function isGoalClearKeyword(input: string): boolean {
 /**
  * Ant `HoH`: /goal feature gate. ccb is a solo-maintained CLI, not an
  * enterprise product — no need to mirror ant's GrowthBook gating. The
- * command is always enabled; CLAUDE_CODE_DISABLE_GOAL=1 turns it off as
+ * command is always enabled; THYROX_CODE_DISABLE_GOAL=1 turns it off as
  * an emergency kill-switch.
  */
 export function isGoalCommandEnabled(): boolean {
-  return !isEnvTruthy(process.env['CLAUDE_CODE_DISABLE_GOAL'])
+  return !isEnvTruthy(process.env['THYROX_CODE_DISABLE_GOAL'])
 }
 
 /**
@@ -171,13 +162,13 @@ export function isGoalCommandEnabled(): boolean {
  * the Workflow tool (3904 `isEnabled:()=>bp()`), the `ultrawork` keyword
  * highlight (5163 `bp()?Ap8(j7):[]`) + `ultrawork_request` attachment (4135
  * `FZ3`), and the `/workflows` command (4938). ant gates on
- * `CLAUDE_CODE_WORKFLOWS` env opt-IN + `tengu_workflows_enabled`.
+ * `THYROX_CODE_WORKFLOWS` env opt-IN + `tengu_workflows_enabled`.
  *
- * ccb defaults ON (solo-operator, like `/goal`); `CLAUDE_CODE_WORKFLOWS=0` is
+ * ccb defaults ON (solo-operator, like `/goal`); `THYROX_CODE_WORKFLOWS=0` is
  * the kill-switch (opt-OUT). Folds in the `/goal` kill-switch too.
  */
 export function isWorkflowsEnabled(): boolean {
-  if (isEnvDefinedFalsy(process.env['CLAUDE_CODE_WORKFLOWS'])) return false
+  if (isEnvDefinedFalsy(process.env['THYROX_CODE_WORKFLOWS'])) return false
   return isGoalCommandEnabled()
 }
 
@@ -294,13 +285,17 @@ function buildGoalSentinelAttachment(
  * `type === 'prompt'`.
  */
 function existingGoalHooks(ctx: GoalHookContext): HookCommand[] {
+  // No se usa getSessionHooks: exige el AppState completo del app-host, y
+  // ctx.getAppState() sólo expone el subconjunto declarado en
+  // GoalHookContext. Se lee sessionHooks directamente, misma forma que
+  // clearGoalRuntimeState usa unas líneas más abajo.
   const state = ctx.getAppState()
-  const hooksMap = getSessionHooks(state, ctx.sessionId, 'Stop')
-  const stop = hooksMap.get('Stop') ?? []
+  const store = state.sessionHooks.get(ctx.sessionId)
+  const stop = store?.hooks.Stop ?? []
   const matches: HookCommand[] = []
   for (const matcher of stop) {
     if (matcher.matcher !== '' || matcher.skillRoot !== undefined) continue
-    for (const hook of matcher.hooks) {
+    for (const { hook } of matcher.hooks) {
       if (hook.type === 'prompt') matches.push(hook)
     }
   }

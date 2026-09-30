@@ -1,0 +1,2 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(922,15): error TS2698: Spread types may only be created from object types.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(924,21): error TS18046: 'result.compactionResult' is of type 'unknown'.

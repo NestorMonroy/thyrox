@@ -290,7 +290,7 @@ describe('inputSchema / outputSchema del resultado del anfitrión', () => {
     // Un anfitrión SDK ajeno puede mandar basura en ese campo. Rechazar toda
     // la decisión por eso convertiría un permiso concedido en una denegación.
     expect(r.success).toBe(true)
-    expect(r.success && r.data.updatedPermissions).toBe(undefined)
+    expect(r.success && ('updatedPermissions' in r.data ? r.data.updatedPermissions : undefined)).toBe(undefined)
   })
 
   test('15. una clasificación desconocida cae a indefinida, no rechaza', async () => {

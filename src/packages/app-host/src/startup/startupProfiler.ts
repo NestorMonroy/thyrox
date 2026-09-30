@@ -24,11 +24,11 @@
 //    hacen por debajo para el caso simple de escribir un reporte de texto.
 // 4. `logForDebugging` (de `.../local-observability/debug.js`) — se recibe
 //    como colaborador inyectable (`DebugSink`), default no-op.
-// 5. `isEnvTruthy`/`getClaudeConfigHomeDir` (de
+// 5. `isEnvTruthy`/`getConfigHomeDir` (de
 //    `@claude-code-how-works/config/env/utils`) se reimplementan
 //    localmente, verbatim de
 //    `ccnmt: packages/config/env/utils.ts:20-27,43-48` — salvo que
-//    `getClaudeConfigHomeDir` pierde el memoize de `lodash-es/memoize`
+//    `getConfigHomeDir` pierde el memoize de `lodash-es/memoize`
 //    (paquete no confirmado en este árbol); a este costo (una
 //    normalización NFC por llamada) no le compensa fabricar un cache.
 //
@@ -42,18 +42,9 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { mkdirSync, writeFileSync as writeFileSyncNode } from 'node:fs'
 import { formatMs, formatTimelineLine, getPerformance } from './profilerBase.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize('NFC')
-}
-
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 export type TelemetrySink = (event: string, metadata: Record<string, unknown>) => void
 export type DebugSink = (message: string) => void
 
@@ -63,7 +54,7 @@ const noopDebugSink: DebugSink = () => {}
 // Estado a nivel de módulo — decidido una vez al cargar, igual que la
 // fuente. `resetProfilerStateForTests` lo re-evalúa para tests.
 // eslint-disable-next-line custom-rules/no-process-env-top-level
-let DETAILED_PROFILING = isEnvTruthy(process.env.CLAUDE_CODE_PROFILE_STARTUP)
+let DETAILED_PROFILING = isEnvTruthy(process.env.THYROX_CODE_PROFILE_STARTUP)
 
 const STATSIG_SAMPLE_RATE = 0.005
 // eslint-disable-next-line custom-rules/no-process-env-top-level
@@ -159,7 +150,7 @@ export function profileReport(options: ProfileReportOptions): void {
   // Log a Statsig (muestreado: 100% ant, 0.5% externo)
   logStartupPerf(options.telemetrySink ?? noopTelemetrySink)
 
-  // Reporte detallado si CLAUDE_CODE_PROFILE_STARTUP=1
+  // Reporte detallado si THYROX_CODE_PROFILE_STARTUP=1
   if (DETAILED_PROFILING) {
     const debugSink = options.debugSink ?? noopDebugSink
     const path = getStartupPerfLogPath(options.sessionId)
@@ -178,7 +169,7 @@ export function isDetailedProfilingEnabled(): boolean {
 
 /** Divergencia: recibe `sessionId` — ver docstring del módulo, punto 1. */
 export function getStartupPerfLogPath(sessionId: string): string {
-  return join(getClaudeConfigHomeDir(), 'startup-perf', `${sessionId}.txt`)
+  return join(getConfigHomeDir(), 'startup-perf', `${sessionId}.txt`)
 }
 
 /**
@@ -222,7 +213,7 @@ export function logStartupPerf(telemetrySink: TelemetrySink = noopTelemetrySink)
  */
 export function resetProfilerStateForTests(): void {
   // eslint-disable-next-line custom-rules/no-process-env-top-level
-  DETAILED_PROFILING = isEnvTruthy(process.env.CLAUDE_CODE_PROFILE_STARTUP)
+  DETAILED_PROFILING = isEnvTruthy(process.env.THYROX_CODE_PROFILE_STARTUP)
   // Sin el sorteo aleatorio de la fuente (Math.random() < STATSIG_SAMPLE_RATE):
   // un reset determinista no puede depender de un dado de 0.5%.
   STATSIG_LOGGING_SAMPLED = process.env.USER_TYPE === 'ant'

@@ -1,6 +1,4 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/core/allErrors.ts` (fachada
- * V7 §10.3 — "movido a `@claude-code-how-works/config/settings/allErrors`").
- * Reimplementación fiel VERBATIM.
+ * V7 §10.3 facade — moved to `@thyrox/config/settings/allErrors`.
  */
-export * from '../allErrors.ts'
+export * from '../allErrors.js'

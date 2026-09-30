@@ -27,7 +27,7 @@ import type { LogOption } from '@thyrox/agent/logsTypes.js'
 import type { Message } from '@thyrox/agent/messageShapes'
 import { agenticSessionSearch } from '@thyrox/agent/sessionTools/agenticSessionSearch.js'
 import { renameRecordingForSession } from '@thyrox/output/capture'
-import { updateSessionName } from '@thyrox/agent/concurrentSessions.js'
+import { setSessionName } from '@thyrox/local-observability/uds/pidFileRecord.js'
 import { loadConversationForResume } from '../conversationRecovery.js'
 import { checkCrossProjectResume } from '@thyrox/agent/sessionTools/crossProjectResume.js'
 import type { FileHistorySnapshot } from '@thyrox/agent/file-history'
@@ -269,6 +269,7 @@ export function ResumeConversation({
       if (result.sessionId && !forkSession) {
         switchSession(
           asSessionId(result.sessionId),
+          'resume',
           log.fullPath ? dirname(log.fullPath) : null,
         )
         await renameRecordingForSession()
@@ -299,9 +300,15 @@ export function ResumeConversation({
         result.agentColor,
       )
       if (standaloneAgentContext) {
-        setAppState(prev => ({ ...prev, standaloneAgentContext }))
+        setAppState(prev => ({
+          ...prev,
+          standaloneAgentContext: {
+            ...standaloneAgentContext,
+            color: standaloneAgentContext.color as AgentColorName | undefined,
+          },
+        }))
       }
-      void updateSessionName(result.agentName)
+      void setSessionName(result.agentName)
 
       restoreSessionMetadata(
         forkSession ? { ...result, worktreeSession: undefined } : result,

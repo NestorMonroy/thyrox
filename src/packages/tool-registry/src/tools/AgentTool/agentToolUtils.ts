@@ -21,7 +21,7 @@ import {
   getTelemetryPluginScope,
 } from '../../telemetry/pluginTelemetry.js'
 import { clearDumpState } from '@thyrox/provider/dumpPrompts.js'
-import type { AppStateLike as AppState } from '../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import type {
   Tool,
   ToolPermissionContext,

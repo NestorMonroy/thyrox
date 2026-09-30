@@ -1,0 +1,23 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 2 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 2 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 2 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+[feature/thyrox-l6 79c4b178] Discover .test.tsx suites in the runner
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+[feature/thyrox-l6 1b1b4767] Add tools to close package exports and check names
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 4 files changed, 674 insertions(+)
+ create mode 100644 src/typescript/close_exports.py
+ create mode 100644 src/verify/namedImports.ts
+ create mode 100644 tests/typescript/test_close_exports.py
+ create mode 100644 tests/verify/namedImports.test.ts
+__BG_EXIT__=0

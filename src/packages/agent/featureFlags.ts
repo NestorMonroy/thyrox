@@ -17,7 +17,7 @@
  * genérica que la fuente expone.
  */
 export function getFeatureValue_CACHED_MAY_BE_STALE<T>(
-  key: string,
+  _key: string,
   fallback: T,
 ): T {
   return fallback

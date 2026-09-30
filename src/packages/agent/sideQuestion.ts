@@ -112,7 +112,7 @@ ${question}`
  *
  * The old code used `.find(m => m.type === 'assistant')` which grabbed the
  * first (thinking-only) message, found no text block, and returned null →
- * "No response received". Repos with large context (many skills, big CLAUDE.md)
+ * "No response received". Repos with large context (many skills, big THYROX.md)
  * trigger thinking more often, which is why this reproduced in the monorepo
  * but not here.
  *
@@ -137,7 +137,7 @@ function extractSideQuestionResponse(messages: Message[]): string | null {
     const toolUse = assistantBlocks.find(b => b.type === 'tool_use')
     if (toolUse) {
       const toolName =
-        'name' in toolUse ? (toolUse as { name: string }).name : 'a tool'
+        typeof toolUse.name === 'string' ? toolUse.name : 'a tool'
       return `(The model tried to call ${toolName} instead of answering directly. Try rephrasing or ask in the main conversation.)`
     }
   }

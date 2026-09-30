@@ -1,6 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { Box, Link, Text, type TextProps } from '@anthropic/ink'
 import { FilePathLink } from '../FilePathLink.js'
+import { HOOK_TIMING_DISPLAY_THRESHOLD_MS } from '@thyrox/tool-registry/services/hookTiming.js'
 import { feature } from 'bun:bundle'
 import * as React from 'react'
 import { useState } from 'react'

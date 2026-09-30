@@ -6,11 +6,9 @@
 # declaraba nada, así que la segunda entrada era una rama que nunca se ejecutó y
 # todo consumidor caía al ascenso, que es el último recurso.
 #
-# `.env` SÍ se versiona desde 2026-09-10 (directiva del ejecutor). Antes decía
-# aquí que no, por la DEC-04 aplicada a sí misma: su valor es del CONSUMIDOR.
-# Ese razonamiento no se retira, se paga — un clon en otra ruta hereda el
-# `THYROX_ROOT` de este árbol, y quien clone corre `--force` para reescribirlo.
-# El contrato sigue siendo `.env.example`; ahora además se lee el valor vigente.
+# `.env` no se versiona: por DEC-04 su valor es del CONSUMIDOR y puede llevar
+# secretos. El contrato es `.env.example`, que declara cada clave; este guion
+# escribe el valor vigente de las que se derivan del árbol.
 #
 # Salidas: 0 escrito · 1 ya existía y no se pisa (usar --force) · 2 no pudo
 # derivar la raíz.
@@ -74,13 +72,17 @@ OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
 # segunda entrada de la DEC-04 en una nota que caduca, y el fallo era silencioso:
 # el `.env` seguia siendo valido, sólo que sin la declaracion.
 #
+# Se conserva toda clave declarada, no sólo las `THYROX_*`: un gate lee la
+# suya con su nombre (`IDENTIFIER_LANGUAGE_BASELINE`) y perderla lo devolvía a
+# rehusar en silencio.
+#
 # Se lee ANTES del `>`, que trunca. Las claves propias NO se conservan: se
 # regeneran, que es para lo que existe `--force`.
 PRESERVED=""
 if [[ -f "$DEST" ]]; then
     PRESERVED="$(awk -v owned="${OWNED[*]}" '
         BEGIN { split(owned, o, " "); for (i in o) mine[o[i]] = 1 }
-        /^THYROX_[A-Z0-9_]*=/ {
+        /^[A-Z][A-Z0-9_]*=/ {
             k = substr($0, 1, index($0, "=") - 1)
             if (!(k in mine)) print
         }' "$DEST")"

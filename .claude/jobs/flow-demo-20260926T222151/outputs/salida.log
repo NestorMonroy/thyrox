@@ -1,0 +1,23 @@
+################ 1. SIN HISTORIAL: calibrar ################
+gpu: se mide la VRAM de cada item con /home/user/thyrox/.claude/workbench/flow-demo-20260926T222151/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 8; acotada por lo medido)
+historial: sin ejecución previa de esta plantilla: nada que derivar; VRAM sin ejecución previa de esta plantilla: pide la GPU entera (12000 MiB), de a uno hasta calibrar
+items=3 ok=3 fallidos=0
+máximo simultáneo: 1 (esperado 1: GPU entera, de a uno)
+fila registrada: {"items_measured": 3, "max_wall_s": 2.01, "min_wall_s": 2.01, "peak_kb": 3368, "peak_vram_mib": 1600, "items_gpu_measured": 3}
+
+################ 2. CALIBRADO: min(8, RAM, VRAM) ################
+anchura: 3 (configurada 8; acotada por lo medido)
+historial: última ejecución: 3 ítems, pared máx 2.01 s, pico 3368 KB × 2 -> 7M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (43784 − 0) / (3368 × 2) -> 6; VRAM calibrado: pide 3200 MiB (pico × 2, piso 0); VRAM: (14000 − 2000) / (1600 × 2) -> 3
+items=6 ok=6 fallidos=0
+máximo simultáneo: 3 (esperado 3: (14000-2000)/(1600x2) = 3.75 -> 3)
+
+################ 3. DOS POOLS A LA VEZ, un registro ################
+items=3 ok=3 fallidos=0
+items=3 ok=3 fallidos=0
+máximo simultáneo entre los dos: 4 (cada pool solo admitiría 3; juntos caben 4: 14000/3200)
+registro al terminar: {}
+
+################ 4. step_report de la ejecución 2 ################
+step_report: REHÚSA — /home/user/thyrox/.claude/workbench/flow-demo-20260926T222151/run-2/pipeline no tiene lotes medidos: sin ellos no hay informe, y un cero no distinguiría «no avanzó» de «no se midió»
+__BG_EXIT__=2

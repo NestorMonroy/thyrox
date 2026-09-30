@@ -1,7 +1,7 @@
 // Auto-generated stub — replace with real implementation
 import type { TaskStateBase, SetAppState } from '@thyrox/tool-registry/Task.js';
-import type { AppState } from '../../state/AppState.js';
-import type { AgentId } from '../../types/ids.js';
+import type { AppState } from '@thyrox/app-host/state/AppState.js';
+import type { AgentId } from '@thyrox/repl/replTypes/ids.js';
 
 export type MonitorMcpTaskState = TaskStateBase & {
   type: 'monitor_mcp';

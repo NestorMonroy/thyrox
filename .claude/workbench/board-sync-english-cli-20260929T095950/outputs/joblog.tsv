@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790675990.774	   755.269	0	0	0	0	_headless_item 1 'src/task/board_sync.py src/hooks/task_lifecycle.py tests/task/test_board_sync.py tests/hooks/test_task_lifecycle.py .claude/baselines/identifier_language_baseline.txt .claude/baselines/identifier_language_baseline_claude.txt'

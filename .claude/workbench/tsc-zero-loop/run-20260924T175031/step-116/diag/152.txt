@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx(18,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx:8-28 ---
+      8  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+      9  import { validateAgentType } from '../../validateAgent.js'
+     10  import type { AgentWizardData } from '../types.js'
+     11  
+     12  type Props = {
+     13    existingAgents: AgentDefinition[]
+     14  }
+     15  
+     16  export function TypeStep(_props: Props): ReactNode {
+     17    const { goNext, goBack, updateWizardData, wizardData } =
+     18>     useWizard<AgentWizardData>()
+     19    const [agentType, setAgentType] = useState(wizardData.agentType || '')
+     20    const [error, setError] = useState<string | null>(null)
+     21    const [cursorOffset, setCursorOffset] = useState(agentType.length)
+     22  
+     23    // Handle escape key - Go back to MethodStep
+     24    // Use Settings context so 'n' key doesn't cancel (allows typing 'n' in input)
+     25    useKeybinding('confirm:no', goBack, { context: 'Settings' })
+     26  
+     27    const handleSubmit = (value: string): void => {
+     28      const trimmedValue = value.trim()

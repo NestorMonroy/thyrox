@@ -21,7 +21,7 @@
 - Ambicioso pero alcanzable — al 70% de probabilidad de lograrlo (no 100%)
 - Máximo 3-5 Key Results por Objective
 
-**Regla de oro:** Si no puedes poner un número, no es un Key Result.
+**Criterio rector:** Si no puedes poner un número, no es un Key Result.
 
 ---
 

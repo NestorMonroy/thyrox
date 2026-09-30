@@ -158,7 +158,7 @@ SOURCE_DIRS: tuple[str, ...] = (
     "src/agents", "src/typescript", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
     "src/hooks", "src/lib", "src/paths", "src/peer_mailbox", "src/repo",
     "src/measurement",
-    "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",
+    "src/roster", "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",
 )
 
 #: La guarda que separa un módulo CLI de uno de biblioteca. Tolerante a
@@ -230,14 +230,21 @@ BASH_BUILTINS: frozenset[str] = frozenset({
 
 
 def repository_root() -> pathlib.Path:
-    """La raíz de thyrox, por el localizador y no por aritmética de ruta.
+    """La raíz del árbol que contiene este archivo: el ``bin/`` que se genera es el suyo.
 
-    ``parents[2]`` acertaba mientras este archivo viviera en ``src/session/`` y
-    fallaba **en silencio** al moverlo: el generador compondría su plan contra
-    otro árbol y publicaría un ``bin/`` vacío sin reventar. ``thyrox_root()``
-    resuelve por variable declarada o por ascenso hasta el marcador, así que
-    sobrevive a la mudanza del archivo.
+    Se localiza por ascenso hasta el marcador de thyrox, no por aritmética de
+    ruta: ``parents[2]`` fallaba en silencio al mover el archivo.
+
+    No se consulta ``THYROX_ROOT`` antes del ascenso, a diferencia de
+    ``reach.thyrox_root()``: en una copia o un worktree la variable heredada
+    nombra el clon original, y el generador escribía en SU ``bin/``
+    (TASK-THYROX-0245). Sin marcador en ningún ancestro, se delega en el
+    localizador general.
     """
+    here = pathlib.Path(__file__).resolve().parent
+    for level in (here, *here.parents):
+        if (level / reach.THYROX_MARKER).is_file():
+            return level
     return reach.thyrox_root()
 
 
@@ -608,7 +615,7 @@ def is_typescript_entrypoint(path: pathlib.Path) -> bool:
     no algo que se invoque. Medir el significante que esta a mano en vez del
     que discrimina es el sub-patron C de `metrica-decide-la-conclusion.md`.
     """
-    if path.suffix != ".ts" or path.parent.name not in TS_ENTRYPOINT_DIRS:
+    if path.suffix not in (".ts", ".tsx") or path.parent.name not in TS_ENTRYPOINT_DIRS:
         return False
     try:
         with path.open(encoding="utf-8", errors="replace") as handle:
@@ -655,9 +662,9 @@ def typescript_bin_name(target: pathlib.Path, root: pathlib.Path) -> str:
     # El dueño es el segmento anterior al directorio de entrypoint. Con
     # `entry` hay un `src/` de paquete en medio (`cli/src/entry/main.ts`), asi
     # que se sube uno mas.
-    partes = relative.parts
-    indice = len(partes) - 2
-    owner = partes[indice - 1] if partes[indice] == "bin" else partes[indice - 2]
+    parts = relative.parts
+    index = len(parts) - 2
+    owner = parts[index - 1] if parts[index] == "bin" else parts[index - 2]
     owner = _kebab(owner)
     if owner in stem or stem in owner:
         return owner if len(owner) >= len(stem) else stem
@@ -676,7 +683,12 @@ def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Pat
     src = root / "src"
     if not src.is_dir():
         return found
-    for entry in sorted(src.rglob("*.ts")):
+    # `.tsx` tambien: el punto de entrada de `cli` es `entry/cli.tsx`. Y la
+    # salida nunca: un `.d.ts` emitido conserva el shebang de su fuente.
+    candidates = sorted([*src.rglob("*.ts"), *src.rglob("*.tsx")])
+    for entry in candidates:
+        if entry.name.endswith(".d.ts") or "dist" in entry.parts:
+            continue
         # El linker aislado de bun crea un `node_modules` por paquete
         # —30 medidos bajo src/packages—, y `rglob` los recorre. Una
         # dependencia que traiga un `bin/*.ts` con shebang entraria al
@@ -879,7 +891,7 @@ def current_state(root: pathlib.Path) -> dict[str, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--check", action="store_true",
                         help="no escribe; sale 1 si bin/ difiere del plan")
     parser.add_argument("--dry-run", action="store_true",

@@ -1,0 +1,1142 @@
+diff --git a/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts b/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
+new file mode 100644
+index 00000000..86972115
+--- /dev/null
++++ b/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
+@@ -0,0 +1,253 @@
++/**
++ * Puerto de `ccnmt: packages/storage/src/secureStorage` contra 2.1.283
++ * (`chunk-mmqkf96q.js`). Cubre lo que `plainTextStorage.test.ts` no
++ * cubría todavía: la lectura estricta con centinela `READ_FAILED`, la
++ * copia por generación (`withGenerationTracking`/`Ps`) y el selector de
++ * backend del sistema (`Un`).
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync, statSync } from 'fs'
++import { tmpdir } from 'os'
++import { join } from 'path'
++import { NodeFsOperations, setFsImplementation, setOriginalFsImplementation } from '../../fsOperations.js'
++import {
++  __resetCurrentHostForTests,
++  __setCurrentHostForTests,
++  __setMultiHostAwareForTests,
++  getHostGenerationState,
++  selectBackend,
++  setCopy,
++  withGenerationTracking,
++} from '../credentialStoreInternals.js'
++import { getSecureStorage, registerSystemSecureStorage, resetSystemSecureStorage } from '../index.js'
++import { plainTextStorage } from '../plainTextStorage.js'
++import { READ_FAILED } from '../types.js'
++import type { CredentialBackend, CredentialCopyState, SecureStorage, SecureStorageData } from '../types.js'
++
++let dir: string
++let originalConfigDir: string | undefined
++
++function useTmpConfigDir(): void {
++  dir = mkdtempSync(join(tmpdir(), 'credentialstore283-test-'))
++  process.env.THYROX_CONFIG_DIR = dir
++}
++
++afterEach(() => {
++  if (originalConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
++  else process.env.THYROX_CONFIG_DIR = originalConfigDir
++  if (dir) rmSync(dir, { recursive: true, force: true })
++  setOriginalFsImplementation()
++  __setMultiHostAwareForTests(false)
++  __resetCurrentHostForTests()
++  resetSystemSecureStorage()
++})
++
++describe('escritura con modo 0600 y aviso', () => {
++  test('update() escribe .credentials.json con permisos 0o600 y devuelve el aviso de texto plano', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++
++    const result = plainTextStorage.update({ token: 'sk-ant-xyz' })
++
++    expect(result).toEqual({
++      success: true,
++      warning: 'Warning: Storing credentials in plaintext.',
++    })
++    const mode = statSync(join(dir, '.credentials.json')).mode & 0o777
++    expect(mode).toBe(0o600)
++  })
++
++  test('un segundo update() re-aplica el modo 0600', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++
++    plainTextStorage.update({ a: 1 })
++    const storagePath = join(dir, '.credentials.json')
++    setFsImplementation({
++      ...NodeFsOperations,
++      readFileSync: NodeFsOperations.readFileSync,
++    })
++    plainTextStorage.update({ a: 2 })
++    const mode = statSync(storagePath).mode & 0o777
++    expect(mode).toBe(0o600)
++  })
++})
++
++describe('lectura estricta: ilegible frente a ausente', () => {
++  test('readAsyncStrict() con archivo ilegible (EACCES) devuelve el centinela READ_FAILED', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    setFsImplementation({
++      ...NodeFsOperations,
++      async readFile(): Promise<string> {
++        const err = new Error('EACCES') as NodeJS.ErrnoException
++        err.code = 'EACCES'
++        throw err
++      },
++    })
++
++    const result = await plainTextStorage.readAsyncStrict?.(undefined, {
++      unreadableFileAs: 'failure',
++    })
++    expect(result).toBe(READ_FAILED)
++  })
++
++  test('readAsyncStrict() sin archivo (ENOENT) devuelve null, no el centinela', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++
++    const result = await plainTextStorage.readAsyncStrict?.(undefined, {
++      unreadableFileAs: 'failure',
++    })
++    expect(result).toBeNull()
++  })
++})
++
++describe('copia por generación: descarta una escritura concurrente', () => {
++  test('una escritura que ocurre mientras una lectura está en vuelo invalida la copia en vez de cachear un resultado obsoleto', async () => {
++    const host = {}
++    __setCurrentHostForTests(host)
++    __setMultiHostAwareForTests(true)
++    const getStoragePath = () => ({ storagePath: '/fake/.credentials.json' })
++
++    let resolveRead: (value: CredentialCopyState) => void
++    const readPromise = new Promise<CredentialCopyState>(resolve => {
++      resolveRead = resolve
++    })
++    const backend: CredentialBackend = {
++      readCredentials: () => readPromise,
++      readCredentialsStrict: () => readPromise,
++      writeCredentials: async () => ({ state: 'written' }),
++      deleteCredentials: async () => ({ state: 'deleted' }),
++    }
++    const tracked = withGenerationTracking(backend, getStoragePath, host)
++
++    const pendingRead = tracked.read()
++    // La escritura concurrente adelanta la generación ANTES de que la
++    // lectura en vuelo se resuelva.
++    await tracked.write({ token: 'written-concurrently' })
++    resolveRead!({ state: 'present', data: { token: 'stale-read' } })
++    await pendingRead
++
++    const state = getHostGenerationState(host)
++    // La reconciliación de la lectura vio la generación adelantada (por la
++    // escritura concurrente) y descartó su propio resultado en vez de
++    // cachear un dato ya obsoleto: la copia queda invalidada, nunca con el
++    // texto de la lectura obsoleta.
++    expect(state.copy).toBeUndefined()
++    expect(state.copy?.text).not.toBe(JSON.stringify({ token: 'stale-read' }))
++  })
++
++  test('sin escritura concurrente, la lectura SÍ puebla la copia', async () => {
++    const host = {}
++    __setCurrentHostForTests(host)
++    __setMultiHostAwareForTests(true)
++    const getStoragePath = () => ({ storagePath: '/fake/.credentials.json' })
++    const data: SecureStorageData = { token: 'fresh' }
++    const backend: CredentialBackend = {
++      readCredentials: async () => ({ state: 'present', data }),
++      readCredentialsStrict: async () => ({ state: 'present', data }),
++      writeCredentials: async () => ({ state: 'written' }),
++      deleteCredentials: async () => ({ state: 'deleted' }),
++    }
++    const tracked = withGenerationTracking(backend, getStoragePath, host)
++
++    const result = await tracked.read()
++
++    expect(result).toEqual(data)
++    const state = getHostGenerationState(host)
++    expect(state.copy?.text).toBe(JSON.stringify(data))
++  })
++})
++
++describe('delete() de un archivo inexistente', () => {
++  test('delete() sobre .credentials.json ausente devuelve true (ENOENT no es fallo)', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    expect(plainTextStorage.delete()).toBe(true)
++  })
++})
++
++describe('read({ fromStoreCopy: true }): sólo consulta la copia con isMultiHostAware()', () => {
++  test('con isMultiHostAware() en falso (default), ignora la copia y lee disco', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    plainTextStorage.update({ token: 'en-disco' })
++    const storagePath = join(dir, '.credentials.json')
++    setCopy(getHostGenerationState(), storagePath, JSON.stringify({ token: 'copia-vieja' }))
++
++    expect(plainTextStorage.read({ fromStoreCopy: true })).toEqual({ token: 'en-disco' })
++  })
++
++  test('con isMultiHostAware() en true, sirve la copia sin tocar disco', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    plainTextStorage.update({ token: 'en-disco' })
++    const storagePath = join(dir, '.credentials.json')
++    __setMultiHostAwareForTests(true)
++    setCopy(getHostGenerationState(), storagePath, JSON.stringify({ token: 'de-la-copia' }))
++
++    expect(plainTextStorage.read({ fromStoreCopy: true })).toEqual({ token: 'de-la-copia' })
++  })
++})
++
++describe('update()/delete() invalidan la copia sólo bajo isMultiHostAware()', () => {
++  test('con isMultiHostAware() en falso, update() no toca la copia existente', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    const storagePath = join(dir, '.credentials.json')
++    setCopy(getHostGenerationState(), storagePath, JSON.stringify({ token: 'copia-intacta' }))
++
++    plainTextStorage.update({ token: 'nuevo' })
++
++    expect(getHostGenerationState().copy?.text).toBe(JSON.stringify({ token: 'copia-intacta' }))
++  })
++
++  test('con isMultiHostAware() en true, update() invalida la copia existente', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    const storagePath = join(dir, '.credentials.json')
++    __setMultiHostAwareForTests(true)
++    setCopy(getHostGenerationState(), storagePath, JSON.stringify({ token: 'copia-vieja' }))
++
++    plainTextStorage.update({ token: 'nuevo' })
++
++    expect(getHostGenerationState().copy).toBeUndefined()
++  })
++})
++
++describe('selectBackend(): sin backend, usa siempre el backend crudo', () => {
++  test('con isMultiHostAware() en true pero sin backend, no enruta por seguimiento de generación', async () => {
++    __setMultiHostAwareForTests(true)
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    plainTextStorage.update({ token: 'x' })
++    const getStoragePath = () => ({ storagePath: join(dir, '.credentials.json') })
++
++    const result = await selectBackend(getStoragePath, undefined).read()
++
++    expect(result).toEqual({ token: 'x' })
++    // Al no pasar backend, `Pr` no pudo envolver con `ji`: la copia por
++    // generación de este host sigue sin poblarse.
++    expect(getHostGenerationState().copy).toBeUndefined()
++  })
++})
++
++describe('Un: selector de backend del sistema', () => {
++  test('sin backend del sistema registrado, devuelve plainTextStorage', () => {
++    resetSystemSecureStorage()
++    expect(getSecureStorage()).toBe(plainTextStorage)
++  })
++
++  test('con un backend del sistema registrado, lo devuelve a él en vez de plainTextStorage', () => {
++    const fakeSystemBackend: SecureStorage = {
++      name: 'fake-system-backend',
++      read: () => null,
++      readAsync: async () => null,
++      update: () => ({ success: true }),
++      delete: () => true,
++    }
++    registerSystemSecureStorage(fakeSystemBackend)
++    expect(getSecureStorage()).toBe(fakeSystemBackend)
++  })
++})
+diff --git a/src/packages/storage/src/secureStorage/credentialStoreInternals.ts b/src/packages/storage/src/secureStorage/credentialStoreInternals.ts
+new file mode 100644
+index 00000000..8e7e04c1
+--- /dev/null
++++ b/src/packages/storage/src/secureStorage/credentialStoreInternals.ts
+@@ -0,0 +1,541 @@
++/**
++ * Puerto de la parte de `ccnmt: packages/storage/src/secureStorage` que
++ * `chunk-mmqkf96q.js` (2.1.283) implementa como funciones libres en vez de
++ * como un archivo por símbolo: el candado de escritura (`fWr`/`aFo`/`Rn`/
++ * `vs`), el ayudante de mutación (`Et`), los mapeadores de errno a `fc`
++ * (`$i`/`Ui`), la copia por generación (`Ts`/`qi`/`Xe`/`Tr`/`Ps`/`He`/
++ * `c_e`/`Wi`/`vr`), el envoltorio con seguimiento de generación (`ji`) y su
++ * selector (`Pr`), y el gate de Windows CredMan (`Ms`/`Gi`/`Ns`/`Ds`/
++ * `gWr`/`zi`/`hWr`). `plainTextStorage.ts` es su único consumidor hoy.
++ *
++ * Divergencias declaradas (DEC-04):
++ *
++ * - `q` (clase genérica cache-por-host de `chunk-nvht7ckf.js`, fuera de
++ *   alcance) — reimplementada aquí como `HostScopedCache`, un `WeakMap`
++ *   simple; misma forma (`of(host)` memoiza por identidad de objeto).
++ * - `j()` (de `chunk-nvht7ckf.js`, fuera de alcance) — su `.host` se
++ *   sustituye por `getCurrentHost()`, una variable de módulo con setter
++ *   para pruebas (`__setCurrentHostForTests`), en vez de leer un contexto
++ *   de sesión que este árbol no tiene.
++ * - `N()`/`DBo()` (de `chunk-8nz62976.js`, fuera de alcance — «pineable
++ *   una vez») — sustituidos por `isMultiHostAware()`/
++ *   `__setMultiHostAwareForTests()`, un flag simple y reiniciable: nada en
++ *   este puerto lo fija en producción todavía (su fijador real vive fuera
++ *   de alcance), así que sólo hace falta para que las pruebas puedan
++ *   activarlo y desactivarlo.
++ * - `Ci` (candado de archivo entre procesos, `proper-lock`, de
++ *   `chunk-n9sxb5zy.js`, fuera de alcance) — NO se porta: `withWriteLock`
++ *   serializa sólo dentro de este proceso (`AsyncLocalStorage` + cola de
++ *   promesas, igual que `Rn`/`vs`/`fWr`). Un candado entre procesos
++ *   exigiría la dependencia externa; sin ella, la serialización
++ *   intra-proceso es la mejor aproximación fiel disponible.
++ * - `p(...)` (telemetría, fuera de alcance) — `mutateCredentials` no
++ *   emite ningún evento al saltarse la escritura por lectura fallida; la
++ *   fuente sí lo hace (`"secure_storage_credentials_write"`).
++ * - `nl` (`FALLBACK_LEGS`) y `Fi` (`FALLBACK_RETRY_DELAY_MS`) — se portan
++ *   literalmente pero SIN consumidor en este árbol: su consumidor real es
++ *   un compositor de fallback multi-tramo que no existe en este puerto
++ *   (`fallbackStorage.ts` sólo compone DOS backends, sin reintentos).
++ * - `mWr` (`isLibsecretAvailable`) — memoiza `Promise.resolve(false)`
++ *   igual que la fuente: en 2.1.283 esto YA es un stub fijo (no hay
++ *   soporte de libsecret ni siquiera en el build de origen), así que no
++ *   es una divergencia de comportamiento.
++ * - `uK` (sufijo de OAuth custom/staging, de `chunk-djetmnb8.js`, fuera de
++ *   alcance) — `getWindowsCredManConfigPaths` usa el sufijo vacío (rama
++ *   `prod` de `uK`), ya que la detección de entorno no está en este árbol.
++ * - `gr`/`Ne` (`__classPrivateFieldSet`/`Get`, artefacto del downleveling
++ *   de esbuild para campos privados) — NO se portan: son un mecanismo del
++ *   *bundler* para emular `#campo` en un target antiguo, no lógica de la
++ *   aplicación. TypeScript/Bun compilan `#campo` nativo sin necesitarlos.
++ */
++import { chmod, writeFile } from 'fs/promises'
++import { readFileSync, existsSync } from 'fs'
++import { AsyncLocalStorage } from 'async_hooks'
++import { homedir } from 'os'
++import { join } from 'path'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++import { getErrnoCode, getFsImplementation } from '../fsOperations.js'
++import { READ_FAILED } from './types.js'
++import type {
++  CredentialBackend,
++  CredentialCopyState,
++  ReadFailed,
++  SecureStorage,
++  SecureStorageData,
++  SecureStorageUpdateResult,
++} from './types.js'
++
++function jsonParse<T = unknown>(raw: string): T {
++  return JSON.parse(raw) as T
++}
++
++function jsonStringify(value: unknown): string {
++  return JSON.stringify(value)
++}
++
++/** Puerto de `v6n`. */
++export const PLAINTEXT_WARNING = 'Warning: Storing credentials in plaintext.'
++
++/** Puerto de `nl` — sin consumidor en este árbol, ver docstring del módulo. */
++export const FALLBACK_LEGS: unique symbol = Symbol('secureStorage.fallbackLegs')
++/** Puerto de `Fi` — sin consumidor en este árbol, ver docstring del módulo. */
++export const FALLBACK_RETRY_DELAY_MS = 2000
++
++let libsecretAvailability: Promise<boolean> | undefined
++/** Puerto de `mWr`. */
++export function isLibsecretAvailable(): Promise<boolean> {
++  if (libsecretAvailability === undefined) {
++    libsecretAvailability = Promise.resolve(false)
++  }
++  return libsecretAvailability
++}
++
++// --- Candado de escritura intra-proceso: puerto de `Rn`/`vs`/`fWr`/`aFo` ---
++
++const writeLockContext = new AsyncLocalStorage<boolean>()
++let writeQueueTail: Promise<void> = Promise.resolve()
++
++/** Puerto de `fWr`, sin el candado de archivo entre procesos (`Ci`, ver
++ * docstring del módulo). Serializa `task` respecto de otras llamadas a
++ * `withWriteLock`, y es reentrante: si ya se está dentro de un candado, se
++ * ejecuta directo. */
++export async function withWriteLock<T>(task: () => Promise<T>): Promise<T> {
++  if (writeLockContext.getStore() === true) {
++    return task()
++  }
++  const previousTail = writeQueueTail
++  let releaseNext: () => void = () => {}
++  writeQueueTail = new Promise(resolve => {
++    releaseNext = resolve
++  })
++  try {
++    await previousTail
++    return await writeLockContext.run(true, task)
++  } finally {
++    releaseNext()
++  }
++}
++
++/** Puerto de `aFo`: marca el resto de la tarea como ya-dentro-del-candado,
++ * sin encolarse detrás de otras escrituras. */
++export function runWithinWriteLock<T>(task: () => Promise<T>): Promise<T> {
++  return writeLockContext.run(true, task)
++}
++
++// --- Mapeadores de errno a `READ_FAILED`: puerto de `$i`/`Ui` ---
++
++/** Puerto de `$i`. */
++export function mapErrnoToNullOrReadFailed(
++  code: string | undefined,
++  platform: string,
++): ReadFailed | null {
++  if (code === 'ENOENT' || code === 'EISDIR' || code === 'ENOTDIR') return null
++  if ((code === 'EACCES' || code === 'EPERM') && platform !== 'win32') return null
++  return READ_FAILED
++}
++
++/** Puerto de `Ui`. */
++export function mapErrnoStrictToNullOrReadFailed(code: string | undefined): ReadFailed | null {
++  return code === 'ENOENT' ? null : READ_FAILED
++}
++
++// --- Cache por host: puerto de `q` (sustituto, ver docstring) ---
++
++export class HostScopedCache<V> {
++  private readonly factory: () => V
++  private readonly map = new WeakMap<object, V>()
++
++  constructor(factory: () => V) {
++    this.factory = factory
++  }
++
++  of(host: object): V {
++    let value = this.map.get(host)
++    if (value === undefined) {
++      value = this.factory()
++      this.map.set(host, value)
++    }
++    return value
++  }
++}
++
++let currentHost: object = {}
++
++/** Sustituto de `j().host` — ver docstring del módulo. */
++export function getCurrentHost(): object {
++  return currentHost
++}
++
++export function __setCurrentHostForTests(host: object): void {
++  currentHost = host
++}
++
++export function __resetCurrentHostForTests(): void {
++  currentHost = {}
++}
++
++let multiHostAware = false
++
++/** Sustituto de `N()` — ver docstring del módulo. */
++export function isMultiHostAware(): boolean {
++  return multiHostAware
++}
++
++export function __setMultiHostAwareForTests(value: boolean): void {
++  multiHostAware = value
++}
++
++// --- Copia por generación: puerto de `Ts`/`qi`/`Xe`/`Tr`/`Ps`/`He`/`c_e` ---
++
++/** Puerto de `Ts`. */
++export class HostGenerationState {
++  copy: { storagePath: string; text: string | null } | undefined = undefined
++  generation = 0
++}
++
++/** Puerto de `qi`. */
++const generationStates = new HostScopedCache<HostGenerationState>(() => new HostGenerationState())
++
++/** Puerto de `Xe`. */
++export function getHostGenerationState(host: object = getCurrentHost()): HostGenerationState {
++  return generationStates.of(host)
++}
++
++/** Puerto de `Tr`. */
++export function setCopy(state: HostGenerationState, storagePath: string, text: string | null): void {
++  state.copy = { storagePath, text }
++  state.generation++
++}
++
++/** Puerto de `He`. */
++export function invalidate(state: HostGenerationState): void {
++  state.copy = undefined
++  state.generation++
++}
++
++/** Puerto de `c_e`. */
++export function invalidateHostCache(host: object = getCurrentHost()): void {
++  invalidate(getHostGenerationState(host))
++}
++
++/** Puerto de `Ps`: reconcilia el resultado de una lectura con la copia
++ * vigente. Si la generación avanzó entre el arranque de la lectura y su
++ * resolución (una escritura concurrente), la copia se invalida en vez de
++ * quedarse con un resultado que ya puede estar obsoleto. */
++export function reconcileCopy(
++  state: HostGenerationState,
++  result: CredentialCopyState,
++  storagePath: string,
++  expectedGeneration: number,
++): void {
++  if (expectedGeneration !== state.generation) {
++    invalidate(state)
++    return
++  }
++  switch (result.state) {
++    case 'present':
++      setCopy(state, storagePath, jsonStringify(result.data))
++      return
++    case 'absent':
++    case 'corrupt':
++    case 'refused-symlink':
++      setCopy(state, storagePath, null)
++      return
++    case 'read-failed':
++      invalidate(state)
++      return
++  }
++}
++
++/** Puerto de `Wi`. */
++export function mapCopyStateToValue(result: CredentialCopyState): SecureStorageData | null | ReadFailed {
++  switch (result.state) {
++    case 'present':
++      return result.data
++    case 'absent':
++    case 'corrupt':
++      return null
++    case 'refused-symlink':
++    case 'read-failed':
++      return READ_FAILED
++  }
++}
++
++/** Puerto de `vr`: invalida la copia si la promesa rechaza, y repropaga. */
++export async function runTracked<T>(promise: Promise<T>, state: HostGenerationState): Promise<T> {
++  try {
++    return await promise
++  } catch (e) {
++    invalidate(state)
++    throw e
++  }
++}
++
++// --- Backends sobre archivo: puerto de `Bi` y del adaptador que `ji` envuelve ---
++
++type StoragePathResolver = () => { storagePath: string }
++type StorageDirResolver = () => { storageDir: string; storagePath: string }
++
++async function classifyFileRead(getStoragePath: StoragePathResolver): Promise<CredentialCopyState> {
++  const { storagePath } = getStoragePath()
++  let raw: string
++  try {
++    raw = await getFsImplementation().readFile(storagePath, { encoding: 'utf8' })
++  } catch (e) {
++    return getErrnoCode(e) === 'ENOENT' ? { state: 'absent' } : { state: 'read-failed' }
++  }
++  try {
++    return { state: 'present', data: jsonParse(raw) }
++  } catch {
++    return { state: 'corrupt' }
++  }
++}
++
++/** Puerto de `Bi`: backend de archivo SIN seguimiento de generación —
++ * usado cuando `isMultiHostAware()` es falso, o cuando no se pasa ningún
++ * `CredentialBackend` a `selectBackend`. */
++export function createRawFileReadBackend(getStoragePath: StoragePathResolver): {
++  read(): Promise<SecureStorageData | null>
++  readStrict(strict: boolean): Promise<SecureStorageData | null | ReadFailed>
++} {
++  return {
++    async read() {
++      const { storagePath } = getStoragePath()
++      try {
++        const raw = await getFsImplementation().readFile(storagePath, { encoding: 'utf8' })
++        return jsonParse(raw)
++      } catch {
++        return null
++      }
++    },
++    async readStrict(strict: boolean) {
++      const { storagePath } = getStoragePath()
++      let raw: string
++      try {
++        raw = await getFsImplementation().readFile(storagePath, { encoding: 'utf8' })
++      } catch (e) {
++        const code = getErrnoCode(e)
++        return strict ? mapErrnoStrictToNullOrReadFailed(code) : mapErrnoToNullOrReadFailed(code, 'linux')
++      }
++      try {
++        return jsonParse(raw)
++      } catch {
++        return strict ? READ_FAILED : null
++      }
++    },
++  }
++}
++
++/** Adaptador de las operaciones de archivo a la forma `CredentialBackend`
++ * que `ji`/`withGenerationTracking` espera. */
++export function createFileCredentialBackend(getStoragePath: StorageDirResolver): CredentialBackend {
++  return {
++    readCredentials: () => classifyFileRead(getStoragePath),
++    readCredentialsStrict: () => classifyFileRead(getStoragePath),
++    async writeCredentials(data) {
++      try {
++        const { storageDir, storagePath } = getStoragePath()
++        try {
++          await getFsImplementation().mkdir(storageDir)
++        } catch (e) {
++          if (getErrnoCode(e) !== 'EEXIST') throw e
++        }
++        await writeFile(storagePath, jsonStringify(data), { encoding: 'utf8' })
++        await chmod(storagePath, 0o600)
++        return { state: 'written' }
++      } catch {
++        return { state: 'failed' }
++      }
++    },
++    async deleteCredentials() {
++      const { storagePath } = getStoragePath()
++      try {
++        await getFsImplementation().unlink(storagePath)
++        return { state: 'deleted' }
++      } catch (e) {
++        return getErrnoCode(e) === 'ENOENT' ? { state: 'deleted' } : { state: 'failed' }
++      }
++    },
++  }
++}
++
++/** Puerto de `ji`: envuelve un `CredentialBackend` con la copia por
++ * generación de `host` (por defecto, `getCurrentHost()`). */
++export function withGenerationTracking(
++  backend: CredentialBackend,
++  getStoragePath: StoragePathResolver,
++  host: object = getCurrentHost(),
++): {
++  read(): Promise<SecureStorageData | null>
++  readStrict(strict: boolean): Promise<SecureStorageData | null | ReadFailed>
++  write(data: SecureStorageData): Promise<SecureStorageUpdateResult>
++  remove(): Promise<boolean>
++} {
++  return {
++    async read() {
++      const { storagePath } = getStoragePath()
++      const state = getHostGenerationState(host)
++      const expectedGeneration = state.generation
++      const result = await runTracked(backend.readCredentials(), state)
++      reconcileCopy(state, result, storagePath, expectedGeneration)
++      return result.state === 'present' ? result.data : null
++    },
++    async readStrict(strict: boolean) {
++      const { storagePath } = getStoragePath()
++      const state = getHostGenerationState(host)
++      const expectedGeneration = state.generation
++      const result = await runTracked(
++        strict ? backend.readCredentialsStrict() : backend.readCredentials(),
++        state,
++      )
++      reconcileCopy(state, result, storagePath, expectedGeneration)
++      if (strict) {
++        if (result.state === 'present') return result.data
++        if (result.state === 'absent') return null
++        return READ_FAILED
++      }
++      return mapCopyStateToValue(result)
++    },
++    async write(data: SecureStorageData) {
++      const { storagePath } = getStoragePath()
++      const state = getHostGenerationState(host)
++      const expectedGeneration = state.generation
++      const result = await runTracked(backend.writeCredentials(data), state)
++      if (result.state === 'written' && expectedGeneration === state.generation) {
++        setCopy(state, storagePath, jsonStringify(data))
++      } else {
++        invalidate(state)
++      }
++      return result.state === 'written' ? { success: true, warning: PLAINTEXT_WARNING } : { success: false }
++    },
++    async remove() {
++      const { storagePath } = getStoragePath()
++      const state = getHostGenerationState(host)
++      const expectedGeneration = state.generation
++      const result = await runTracked(backend.deleteCredentials(), state)
++      if (result.state === 'deleted' && expectedGeneration === state.generation) {
++        setCopy(state, storagePath, null)
++      } else {
++        invalidate(state)
++      }
++      return result.state === 'deleted'
++    },
++  }
++}
++
++/** Puerto de `Pr`: `Bi` si no hay seguimiento de generación activo (o no
++ * se dio backend), `ji(backend)` si sí. */
++export function selectBackend(
++  getStoragePath: StoragePathResolver,
++  backend?: CredentialBackend,
++  host: object = getCurrentHost(),
++): {
++  read(): Promise<SecureStorageData | null>
++  readStrict(strict: boolean): Promise<SecureStorageData | null | ReadFailed>
++} {
++  if (isMultiHostAware() && backend !== undefined) {
++    return withGenerationTracking(backend, getStoragePath, host)
++  }
++  return createRawFileReadBackend(getStoragePath)
++}
++
++// --- `mutate`: puerto de `Et` ---
++
++/** Puerto de `Et`. Sin el evento de telemetría de la fuente (ver
++ * docstring del módulo). */
++export async function mutateCredentials(
++  storage: SecureStorage,
++  mutator: (data: SecureStorageData) => SecureStorageData,
++): Promise<SecureStorageUpdateResult & { transient?: boolean }> {
++  return withWriteLock(async () => {
++    storage.invalidateCache?.()
++    const current = storage.readAsyncStrict
++      ? await storage.readAsyncStrict(undefined, { unreadableFileAs: 'failure' })
++      : await storage.readAsync()
++    if (current === READ_FAILED) {
++      return { success: false, transient: true }
++    }
++    const before = current ?? {}
++    const next = mutator(before)
++    if (next === before) return { success: true }
++    return storage.update(next)
++  })
++}
++
++// --- Gate de Windows CredMan: puerto de `Ms`/`Gi`/`Ns`/`Ds`/`gWr`/`zi`/`hWr` ---
++
++type WindowsCredManPaths = { legacyPath: string; configPath: string }
++
++/** Puerto de `Ms`: memoiza una decisión booleana una única vez, salvo que
++ * un `prime()` previo (con las mismas rutas) ya la haya fijado. */
++export class FeatureFlagMemo {
++  private memo: boolean | undefined
++  private handedIn: (WindowsCredManPaths & { enabled: boolean }) | undefined
++
++  prime(enabled: boolean, resolvePaths: () => WindowsCredManPaths): void {
++    if (this.memo !== undefined) return
++    this.handedIn = { enabled, ...resolvePaths() }
++  }
++
++  resolve(resolvePaths: () => WindowsCredManPaths, readFlag: (paths: WindowsCredManPaths) => boolean): boolean {
++    if (this.memo !== undefined) return this.memo
++    try {
++      const paths = resolvePaths()
++      const handedIn = this.handedIn
++      if (
++        handedIn !== undefined &&
++        handedIn.legacyPath === paths.legacyPath &&
++        handedIn.configPath === paths.configPath
++      ) {
++        this.memo = handedIn.enabled
++      } else {
++        this.memo = readFlag(paths)
++      }
++    } catch {
++      this.memo = false
++    }
++    return this.memo
++  }
++
++  reset(): void {
++    this.memo = undefined
++    this.handedIn = undefined
++  }
++}
++
++/** Puerto de `Gi`. */
++const windowsCredManMemos = new HostScopedCache<FeatureFlagMemo>(() => new FeatureFlagMemo())
++
++/** Puerto de `Ns`. */
++export function getWindowsCredManMemo(host: object = getCurrentHost()): FeatureFlagMemo {
++  return windowsCredManMemos.of(host)
++}
++
++/** Puerto de `Ds`, con el sufijo de `uK` fijo a la rama `prod` (ver
++ * docstring del módulo). */
++export function getWindowsCredManConfigPaths(): WindowsCredManPaths {
++  return {
++    legacyPath: join(getConfigHomeDir(), '.config.json'),
++    configPath: join(process.env.CLAUDE_CONFIG_DIR ?? homedir(), '.claude.json'),
++  }
++}
++
++/** Puerto de `zi`. */
++export function readWindowsCredManFlagFromConfig(paths: WindowsCredManPaths): boolean {
++  const path = existsSync(paths.legacyPath) ? paths.legacyPath : paths.configPath
++  const parsed = JSON.parse(readFileSync(path, 'utf8')) as {
++    cachedGrowthBookFeatures?: { tengu_windows_credman?: boolean }
++  }
++  return parsed.cachedGrowthBookFeatures?.tengu_windows_credman === true
++}
++
++/** Puerto de `gWr`. */
++export function shouldUseWindowsCredMan(): boolean {
++  if (process.env.CLAUDE_CODE_FORCE_WINDOWS_CREDMAN === '1') return true
++  return getWindowsCredManMemo().resolve(getWindowsCredManConfigPaths, readWindowsCredManFlagFromConfig)
++}
++
++/** Puerto de `hWr`. */
++export function primeWindowsCredManDecision(enabled: boolean): void {
++  getWindowsCredManMemo().prime(enabled, getWindowsCredManConfigPaths)
++}
+diff --git a/src/packages/storage/src/secureStorage/index.ts b/src/packages/storage/src/secureStorage/index.ts
+index 4057de07..626895c9 100644
+--- a/src/packages/storage/src/secureStorage/index.ts
++++ b/src/packages/storage/src/secureStorage/index.ts
+@@ -1,26 +1,50 @@
+ /**
+- * Puerto fiel de `ccnmt: packages/storage/src/secureStorage/index.ts` (605
+- * bytes fuente, 1 símbolo exportado — porte completo). Elige la
+- * implementación de `SecureStorage` según la plataforma.
++ * Puerto fiel de `ccnmt: packages/storage/src/secureStorage/index.ts`,
++ * llevado a la conducta de `chunk-mmqkf96q.js` (2.1.283): `Un`, el selector
++ * que devuelve el backend del sistema si algo lo registró
++ * (`registerSystemSecureStorage`, sustituto de la asignación a `Os` — ver
++ * abajo) y si no, el de texto plano.
+  *
+- * Divergencia declarada: `SecureStorage` (de
+- * `@claude-code-how-works/mcp-runtime/secureStorageTypes.js`) se importa
+- * del `./types.js` local — ya existente en este árbol (no mío), el mismo
+- * sustituto que usan `fallbackStorage.ts` y `macOsKeychainStorage.ts`.
++ * Divergencia declarada: la fuente fija `Os` desde un inicializador de
++ * plataforma que vive fuera de este tramo (fuera de alcance). Aquí, a
++ * falta de ese inicializador, `getSecureStorage()` conserva el chequeo de
++ * `process.platform` que ya tenía ESTE puerto (exportación pública
++ * preservada, medida por `index.test.ts`) como valor por defecto cuando
++ * nada se registró explícitamente — el registro explícito, cuando existe,
++ * siempre gana, igual que `Un` prioriza `Os` sobre `In`.
+  *
+  * El TODO de libsecret para Linux es de la propia fuente — se conserva
+- * verbatim; en este contenedor Linux, `getSecureStorage()` devuelve
+- * `plainTextStorage` (rama ya cubierta por su propio test).
++ * verbatim; en este contenedor Linux, sin nada registrado,
++ * `getSecureStorage()` devuelve `plainTextStorage` (rama ya cubierta por
++ * su propio test). `isLibsecretAvailable()` (`./credentialStoreInternals.ts`,
++ * puerto de `mWr`) es el mismo stub fijo a `false` que trae 2.1.283.
+  */
+ import { createFallbackStorage } from './fallbackStorage.js'
+ import { macOsKeychainStorage } from './macOsKeychainStorage.js'
+ import { plainTextStorage } from './plainTextStorage.js'
+ import type { SecureStorage } from './types.js'
+ 
++let systemSecureStorage: SecureStorage | undefined
++
++/** Puerto del punto de asignación a `Os`. */
++export function registerSystemSecureStorage(storage: SecureStorage): void {
++  systemSecureStorage = storage
++}
++
++export function resetSystemSecureStorage(): void {
++  systemSecureStorage = undefined
++}
++
+ /**
+- * Get the appropriate secure storage implementation for the current platform
++ * Puerto de `Un`: el backend del sistema si `registerSystemSecureStorage`
++ * lo fijó; si no, el de texto plano (con el chequeo de plataforma como
++ * valor por defecto — ver docstring del módulo).
+  */
+ export function getSecureStorage(): SecureStorage {
++  if (systemSecureStorage !== undefined) {
++    return systemSecureStorage
++  }
++
+   if (process.platform === 'darwin') {
+     return createFallbackStorage(macOsKeychainStorage, plainTextStorage)
+   }
+diff --git a/src/packages/storage/src/secureStorage/plainTextStorage.ts b/src/packages/storage/src/secureStorage/plainTextStorage.ts
+index 75f83350..11f01c7f 100644
+--- a/src/packages/storage/src/secureStorage/plainTextStorage.ts
++++ b/src/packages/storage/src/secureStorage/plainTextStorage.ts
+@@ -1,42 +1,54 @@
+ /**
+- * Puerto de `ccnmt: packages/storage/src/secureStorage/plainTextStorage.ts`
+- * (2369 bytes fuente, 1 símbolo exportado — porte completo). Fallback de
+- * `SecureStorage` que guarda credenciales en texto plano bajo el directorio
+- * de config de thyrox, con permisos `0o600`.
++ * Puerto de `ccnmt: packages/storage/src/secureStorage/plainTextStorage.ts`,
++ * llevado a la conducta de `chunk-mmqkf96q.js` (2.1.283): `In` (el almacén
++ * `plaintext`), con `osGuarded: false`, la lectura estricta con centinela
++ * (`fc`/`READ_FAILED`), la copia por generación (`fromStoreCopy`), `mutate`
++ * sobre `Et`, e `invalidateCache` sobre `c_e`. El resto de la máquina
++ * (candado de escritura, copia por generación, mapeadores de errno,
++ * backend de archivo) vive en `./credentialStoreInternals.ts` — ver su
++ * docstring para las divergencias declaradas.
+  *
+- * Divergencias declaradas (DEC-04), todas triviales:
++ * Divergencias propias de este archivo:
+  *
+- * - `getConfigHomeDir` (de `@claude-code-how-works/config/env/utils`)
+- *   — se reimplementa localmente, SIN memoización. La fuente la memoiza
+- *   (`lodash-es/memoize`, resolver = `process.env.THYROX_CONFIG_DIR`)
+- *   porque tiene 150+ llamadores de alto tráfico; este porte tiene un solo
+- *   consumidor (este archivo), así que memoizar aquí sólo complicaría los
+- *   tests que cambian `THYROX_CONFIG_DIR` entre casos sin aportar nada.
+- * - `getErrnoCode` — la de `./fsOperations.js` de este mismo paquete
+- *   (verbatim a la fuente de `local-observability/errorHelpers.js`, ya
+- *   consolidada ahí).
+- * - `jsonParse`/`jsonStringify` (de
+- *   `@claude-code-how-works/local-observability/slowOperations.js`) —
+- *   `JSON.parse`/`JSON.stringify` directos; la fuente los envuelve para
+- *   telemetría de operaciones lentas (`slowLogging`, no-op fuera de un
+- *   build ant — ver `../fsOperations.ts`), que no aplica aquí.
+- * - `writeFileSync` (idem, `slowOperations.ts:124-155`) — reimplementado
+- *   fiel a su lógica de `flush` (el único valor que este archivo usa es
+- *   `flush: false`, que en la fuente cae al `fs.writeFileSync` normal).
+- * - `SecureStorage`/`SecureStorageData` (de
+- *   `@claude-code-how-works/mcp-runtime/secureStorageTypes.js`) — el tipo
+- *   local `./types.js`, YA EXISTENTE en este árbol (no mío, ver su
+- *   docstring: mismo sustituto que usan `fallbackStorage.ts` y
+- *   `macOsKeychainStorage.ts`).
++ * - `getConfigHomeDir` (de `@claude-code-how-works/config/env/utils`) —
++ *   igual que en el porte anterior: reimplementada localmente sin
++ *   memoización (ver abajo, sin cambios respecto al porte previo).
++ * - `update()`/`delete()` se quedan SÍNCRONOS (exportación pública ya
++ *   existente, preservada): no enrutan por `Pr`/`ji`, que son
++ *   inherentemente asíncronos. Esto coincide con la conducta observable de
++ *   la fuente cuando se los llama sin backend — `Pr(undefined)` siempre
++ *   resuelve a `Bi` — así que sólo se pierde el camino con seguimiento de
++ *   generación cuando alguien pasara un backend explícito a `update`/
++ *   `delete`, cosa que ningún consumidor de este árbol hace. Si en el
++ *   futuro hace falta, `update`/`delete` async es el símbolo que falta
++ *   portar.
++ * - `writeFileSync` (de `slowOperations.ts:124-155`) — reimplementado
++ *   fiel a su lógica de `flush` (idéntico al porte anterior).
++ * - `jsonParse`/`jsonStringify` — `JSON.parse`/`JSON.stringify` directos.
+  */
+ import { chmodSync, closeSync, fsyncSync, openSync, writeFileSync as fsWriteFileSync } from 'fs'
+-import { homedir } from 'os'
+ import { join } from 'path'
+ import { getErrnoCode, getFsImplementation } from '../fsOperations.js'
+-import type { SecureStorage, SecureStorageData } from './types.js'
++import {
++  createFileCredentialBackend,
++  getHostGenerationState,
++  invalidateHostCache,
++  isMultiHostAware,
++  mutateCredentials,
++  PLAINTEXT_WARNING,
++  selectBackend,
++} from './credentialStoreInternals.js'
++import type {
++  CredentialBackend,
++  ReadFailed,
++  SecureStorage,
++  SecureStorageData,
++  SecureStorageReadOptions,
++  SecureStorageReadStrictOptions,
++  SecureStorageUpdateResult,
++} from './types.js'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ 
+-
+ function jsonParse<T = unknown>(raw: string): T {
+   return JSON.parse(raw) as T
+ }
+@@ -70,16 +82,28 @@ function writeFileSync(
+   }
+ }
+ 
++/** Puerto de `we`. */
+ function getStoragePath(): { storageDir: string; storagePath: string } {
+   const storageDir = getConfigHomeDir()
+   const storageFileName = '.credentials.json'
+   return { storageDir, storagePath: join(storageDir, storageFileName) }
+ }
+ 
++function defaultBackend(): CredentialBackend {
++  return createFileCredentialBackend(getStoragePath)
++}
++
+ export const plainTextStorage = {
+   name: 'plaintext',
+-  read(): SecureStorageData | null {
++  osGuarded: false,
++  read(options?: SecureStorageReadOptions): SecureStorageData | null {
+     const { storagePath } = getStoragePath()
++    if (isMultiHostAware() && options?.fromStoreCopy === true) {
++      const copy = getHostGenerationState().copy
++      if (copy !== undefined && copy.storagePath === storagePath) {
++        return copy.text === null ? null : jsonParse(copy.text)
++      }
++    }
+     try {
+       const data = getFsImplementation().readFileSync(storagePath, {
+         encoding: 'utf8',
+@@ -89,16 +113,22 @@ export const plainTextStorage = {
+       return null
+     }
+   },
+-  async readAsync(): Promise<SecureStorageData | null> {
+-    const { storagePath } = getStoragePath()
+-    try {
+-      const data = await getFsImplementation().readFile(storagePath, {
+-        encoding: 'utf8',
+-      })
+-      return jsonParse(data)
+-    } catch {
+-      return null
+-    }
++  async readAsync(backend: CredentialBackend = defaultBackend()): Promise<SecureStorageData | null> {
++    return selectBackend(getStoragePath, backend).read()
++  },
++  async readAsyncStrict(
++    backend: CredentialBackend = defaultBackend(),
++    options?: SecureStorageReadStrictOptions,
++  ): Promise<SecureStorageData | null | ReadFailed> {
++    return selectBackend(getStoragePath, backend).readStrict(options?.unreadableFileAs === 'failure')
++  },
++  async mutate(
++    mutator: (data: SecureStorageData) => SecureStorageData,
++  ): Promise<SecureStorageUpdateResult & { transient?: boolean }> {
++    return mutateCredentials(plainTextStorage, mutator)
++  },
++  invalidateCache(): void {
++    invalidateHostCache()
+   },
+   update(data: SecureStorageData): { success: boolean; warning?: string } {
+     try {
+@@ -119,10 +149,12 @@ export const plainTextStorage = {
+       chmodSync(storagePath, 0o600)
+       return {
+         success: true,
+-        warning: 'Warning: Storing credentials in plaintext.',
++        warning: PLAINTEXT_WARNING,
+       }
+     } catch {
+       return { success: false }
++    } finally {
++      if (isMultiHostAware()) invalidateHostCache()
+     }
+   },
+   delete(): boolean {
+@@ -136,6 +168,8 @@ export const plainTextStorage = {
+         return true
+       }
+       return false
++    } finally {
++      if (isMultiHostAware()) invalidateHostCache()
+     }
+   },
+ } satisfies SecureStorage
+diff --git a/src/packages/storage/src/secureStorage/types.ts b/src/packages/storage/src/secureStorage/types.ts
+index dd71f331..4be5a3fc 100644
+--- a/src/packages/storage/src/secureStorage/types.ts
++++ b/src/packages/storage/src/secureStorage/types.ts
+@@ -5,6 +5,17 @@
+  * decompilation."), así que aquí se fijan las formas concretas que los
+  * consumidores de este porte (`fallbackStorage.ts`, `macOsKeychainStorage.ts`)
+  * y sus tests realmente necesitan.
++ *
++ * Ampliado hacia `chunk-mmqkf96q.js` de 2.1.283: el sentinela `fc`
++ * (`READ_FAILED`), las opciones de lectura (`fromStoreCopy`,
++ * `unreadableFileAs`, de `In.read`/`In.readAsyncStrict`) y la forma del
++ * backend genérico que `ji` (`withGenerationTracking`, en
++ * `./credentialStoreInternals.ts`) envuelve con seguimiento de generación
++ * (`CredentialBackend`, de las llamadas `e.readCredentials()` /
++ * `e.writeCredentials()` / `e.deleteCredentials()` dentro de `ji`). Los
++ * métodos nuevos de `SecureStorage` son OPCIONALES a propósito: preservan
++ * la compatibilidad estructural con `macOsKeychainStorage.ts` y con lo que
++ * `fallbackStorage.ts` compone, ninguno de los cuales los declara.
+  */
+ /** Una entrada de token OAuth de un servidor MCP, por clave de servidor. */
+ export type McpOAuthEntry = {
+@@ -40,10 +51,69 @@ export type SecureStorageUpdateResult = {
+   warning?: string
+ }
+ 
++/**
++ * Puerto de `fc` (`chunk-mmqkf96q.js`) — sentinela de «se intentó leer y
++ * falló», distinto de `null` («no existe»). Lo devuelven las lecturas
++ * estrictas (`readAsyncStrict`) ante un archivo presente pero ilegible.
++ */
++export const READ_FAILED: unique symbol = Symbol('secureStorage.READ_FAILED')
++export type ReadFailed = typeof READ_FAILED
++
++/** Opciones de `In.read` — `fromStoreCopy` intenta la copia por generación
++ * antes de tocar disco (ver `credentialStoreInternals.ts`). */
++export type SecureStorageReadOptions = {
++  fromStoreCopy?: boolean
++}
++
++/** Opciones de `In.readAsyncStrict` — con `unreadableFileAs: 'failure'`,
++ * un archivo presente pero ilegible resuelve a `READ_FAILED` en vez de
++ * `null`. */
++export type SecureStorageReadStrictOptions = {
++  unreadableFileAs?: 'failure' | 'null'
++}
++
++/**
++ * Puerto de la forma que `ji` (`chunk-mmqkf96q.js`) espera de su
++ * argumento `e`: un backend de credenciales de bajo nivel, con sus
++ * cuatro operaciones devolviendo un estado explícito en vez de lanzar.
++ */
++export type CredentialCopyState =
++  | { state: 'present'; data: SecureStorageData }
++  | { state: 'absent' }
++  | { state: 'corrupt' }
++  | { state: 'refused-symlink' }
++  | { state: 'read-failed' }
++
++export type CredentialWriteResult = { state: 'written' } | { state: 'failed' }
++export type CredentialDeleteResult = { state: 'deleted' } | { state: 'failed' }
++
++export type CredentialBackend = {
++  readCredentials(): Promise<CredentialCopyState>
++  readCredentialsStrict(): Promise<CredentialCopyState>
++  writeCredentials(data: SecureStorageData): Promise<CredentialWriteResult>
++  deleteCredentials(): Promise<CredentialDeleteResult>
++}
++
+ export type SecureStorage = {
+   name: string
+-  read(): SecureStorageData | null | undefined
+-  readAsync(): Promise<SecureStorageData | null | undefined>
+-  update(data: SecureStorageData): SecureStorageUpdateResult
+-  delete(): boolean
++  /** Puerto de `In.osGuarded` — `false` para el almacén de texto plano: no
++   * hay ningún guardián del sistema operativo (Keychain/CredMan) delante. */
++  osGuarded?: boolean
++  read(options?: SecureStorageReadOptions): SecureStorageData | null | undefined
++  readAsync(backend?: CredentialBackend): Promise<SecureStorageData | null | undefined>
++  /** Puerto de `In.readAsyncStrict` — ausente en los backends que no lo
++   * necesitan (`macOsKeychainStorage.ts`, el compuesto de
++   * `fallbackStorage.ts`). */
++  readAsyncStrict?(
++    backend?: CredentialBackend,
++    options?: SecureStorageReadStrictOptions,
++  ): Promise<SecureStorageData | null | ReadFailed>
++  update(data: SecureStorageData, backend?: CredentialBackend): SecureStorageUpdateResult
++  /** Puerto de `In.mutate`, sobre `Et` (`mutateCredentials`). */
++  mutate?(
++    mutator: (data: SecureStorageData) => SecureStorageData,
++  ): Promise<SecureStorageUpdateResult & { transient?: boolean }>
++  /** Puerto de `In.invalidateCache`, sobre `c_e`. */
++  invalidateCache?(): void
++  delete(backend?: CredentialBackend): boolean
+ }

@@ -1,18 +1,3 @@
-/**
- * El texto con que se le explica al modelo cuándo llevar lista de pendientes.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/tools/TodoWriteTool/
- * prompt.ts` (2 símbolos exportados). Ese árbol declara
- * `"license": "UNLICENSED"`; el prompt es la INSTRUCCIÓN que el útil emite,
- * así que su texto se conserva verbatim —cambiarlo cambiaría la conducta que
- * el útil produce— y lo que se reimplementa es su envoltorio.
- *
- * El nombre del útil de edición entra por interpolación, no como literal:
- * el ejemplo que lo cita tiene que nombrar al útil REAL, y ese nombre vive
- * en `FileEditTool/constants.ts` (que existe suelto justo para esto).
- *
- * DIVERGENCIA DECLARADA: ninguna.
- */
 import { FILE_EDIT_TOOL_NAME } from '../FileEditTool/constants.js'
 
 export const PROMPT = `Use this tool to create and manage a structured task list for your current coding session. This helps you track progress, organize complex tasks, and demonstrate thoroughness to the user.

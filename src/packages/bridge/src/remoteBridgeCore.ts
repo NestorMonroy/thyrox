@@ -8,7 +8,7 @@
  * "Sin ambiente" = sin la capa de Environments API. Distinto de "CCR v2"
  * (el protocolo de transporte /worker/*) — el camino con ambiente
  * (`./replBridge.js`, portado) también puede usar transporte CCR v2 vía
- * CLAUDE_CODE_USE_CCR_V2. Este archivo trata de quitar la capa de
+ * THYROX_CODE_USE_CCR_V2. Este archivo trata de quitar la capa de
  * poll/dispatch, no del protocolo de transporte de abajo.
  *
  * A diferencia de initBridgeCore (con ambiente, `./replBridge.js`),
@@ -258,7 +258,7 @@ export async function initEnvLessBridgeCore(
       heartbeatIntervalMs: cfg.heartbeat_interval_ms,
       heartbeatJitterFraction: cfg.heartbeat_jitter_fraction,
       // Closure por instancia — mantiene el JWT de worker fuera de
-      // process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN, que mcp/client.ts
+      // process.env.THYROX_CODE_SESSION_ACCESS_TOKEN, que mcp/client.ts
       // lee sin gate y si no lo mandaría a servidores MCP ws/http
       // configurados por el usuario. Congelado-al-construir es correcto:
       // el transporte se reconstruye entero en el refresh
@@ -987,7 +987,7 @@ async function withRetry<T>(
 }
 
 // Wrapper del lado CLI que aplica el override de dev
-// CLAUDE_BRIDGE_BASE_URL e inyecta el token de dispositivo confiable
+// THYROX_BRIDGE_BASE_URL e inyecta el token de dispositivo confiable
 // (ambos son lecturas de env/GrowthBook de las que el export
 // codeSessionApi.ts orientado al SDK debe mantenerse libre).
 export async function fetchRemoteCredentials(

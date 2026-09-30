@@ -1,0 +1,4 @@
+no-skip-endpoint	s/^    if (cloud\[upstream.name\]) continue$//
+no-synthetic-credential	s/^  for (const name of cloudNames) if .*$//
+no-cloud-map	s/^      cloud,$/      cloud: {},/
+no-cloud-options	s/^      options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },$/      options: {},/

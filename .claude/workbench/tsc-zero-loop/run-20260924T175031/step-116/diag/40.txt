@@ -1,0 +1,23 @@
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts(452,32): error TS2345: Argument of type '"fatal"' is not assignable to parameter of type '"resume" | "clear" | "other" | "logout" | "prompt_input_exit" | "bypass_permissions_disabled" | undefined'.
+  --- código src/packages/app-host/src/bootstrap/gracefulShutdown.ts:442-462 ---
+    442            error.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    443          ...(errorMessageHash && {
+    444            error_message_hash:
+    445              errorMessageHash as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    446          }),
+    447        })
+    448        logForDiagnosticsNoPII('error', 'uncaught_exception_loop', {
+    449          count: String(exceptionTimestamps.length),
+    450          window_ms: String(EXCEPTION_LOOP_WINDOW_MS),
+    451        })
+    452>       void gracefulShutdown(1, 'fatal')
+    453      }
+    454    })
+    455  
+    456    // Registra rechazos de promesa no manejados para observabilidad de
+    457    // contenedor y analytics
+    458    process.on('unhandledRejection', reason => {
+    459      const errorName =
+    460        reason instanceof Error
+    461          ? reason.name
+    462          : typeof reason === 'string'

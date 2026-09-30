@@ -1,0 +1,1 @@
+(storage/src/sessionStorage\.ts: TS2339: .*on type 'never'|(branch\.ts|teleport\.tsx): TS2339: Property 'isSidechain')

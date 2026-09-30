@@ -1,7 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/server/src/__tests__/errors.test.ts`.
- * Mismos casos que la fuente, reescritos.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   CoordinationError,
@@ -11,40 +7,40 @@ import {
 } from '../errors.js'
 
 describe('ServerBaseError', () => {
-  test('preserva el código explícito', () => {
+  test('preserves the explicit code', () => {
     expect(new ServerBaseError('CUSTOM', 'm').code).toBe('CUSTOM')
   })
-  test('es una instancia de Error', () => {
+  test('is an Error instance', () => {
     expect(new ServerBaseError('X', 'm')).toBeInstanceOf(Error)
   })
-  test('reenvía cause', () => {
+  test('forwards cause', () => {
     const cause = new Error('underlying')
     expect(new ServerBaseError('X', 'm', { cause }).cause).toBe(cause)
   })
-  test('el name por defecto es ServerBaseError', () => {
+  test('default name is ServerBaseError', () => {
     expect(new ServerBaseError('X', 'm').name).toBe('ServerBaseError')
   })
 })
 
 describe('LifecycleError', () => {
-  test('el código es SERVER_LIFECYCLE_ERROR', () => {
+  test('code is SERVER_LIFECYCLE_ERROR', () => {
     expect(new LifecycleError('m').code).toBe('SERVER_LIFECYCLE_ERROR')
   })
-  test('el name es ServerLifecycleError', () => {
+  test('name is ServerLifecycleError', () => {
     expect(new LifecycleError('m').name).toBe('ServerLifecycleError')
   })
-  test('extiende ServerBaseError', () => {
+  test('extends ServerBaseError', () => {
     expect(new LifecycleError('m')).toBeInstanceOf(ServerBaseError)
   })
 })
 
 describe('SessionTransportError', () => {
-  test('el código es SERVER_SESSION_TRANSPORT_ERROR', () => {
+  test('code is SERVER_SESSION_TRANSPORT_ERROR', () => {
     expect(new SessionTransportError('m').code).toBe(
       'SERVER_SESSION_TRANSPORT_ERROR',
     )
   })
-  test('el name es ServerSessionTransportError', () => {
+  test('name is ServerSessionTransportError', () => {
     expect(new SessionTransportError('m').name).toBe(
       'ServerSessionTransportError',
     )
@@ -52,20 +48,20 @@ describe('SessionTransportError', () => {
 })
 
 describe('CoordinationError', () => {
-  test('el código es SERVER_COORDINATION_ERROR', () => {
+  test('code is SERVER_COORDINATION_ERROR', () => {
     expect(new CoordinationError('m').code).toBe('SERVER_COORDINATION_ERROR')
   })
-  test('el name es ServerCoordinationError', () => {
+  test('name is ServerCoordinationError', () => {
     expect(new CoordinationError('m').name).toBe('ServerCoordinationError')
   })
-  test('reenvía cause', () => {
+  test('forwards cause', () => {
     const cause = new Error('grpc disconnected')
     expect(new CoordinationError('m', { cause }).cause).toBe(cause)
   })
 })
 
-describe('unicidad de códigos de error del servidor', () => {
-  test('las tres subclases tienen códigos distintos', () => {
+describe('server error code uniqueness', () => {
+  test('all three subclasses have distinct codes', () => {
     const codes = new Set([
       new LifecycleError('m').code,
       new SessionTransportError('m').code,
@@ -73,7 +69,7 @@ describe('unicidad de códigos de error del servidor', () => {
     ])
     expect(codes.size).toBe(3)
   })
-  test('todos los códigos de subclase empiezan con el prefijo SERVER_', () => {
+  test('all subclass codes start with SERVER_ prefix', () => {
     for (const code of [
       new LifecycleError('m').code,
       new SessionTransportError('m').code,

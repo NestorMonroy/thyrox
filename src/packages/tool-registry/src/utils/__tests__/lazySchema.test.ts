@@ -1,6 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de `ccnmt: packages/tool-registry/src/utils/__tests__/lazySchema.test.ts` (TASK #232).
- */
 import { describe, expect, mock, test } from 'bun:test'
 import { lazySchema } from '../lazySchema.js'
 

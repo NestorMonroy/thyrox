@@ -1,4 +1,3 @@
-import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
@@ -12,7 +11,7 @@ import type {
   SDKMessage,
   SDKRateLimitInfo,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { ClaudeAILimits } from '@thyrox/provider/claudeAiLimits.js'
+import type { ClaudeAILimits, UnifiedWindows } from '@thyrox/provider/claudeAiLimits.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
 import type {
   AssistantMessage,
@@ -34,7 +33,7 @@ export function toInternalMessages(
         return [
           {
             type: 'assistant',
-            message: message.message,
+            message: { ...message.message },
             uuid: message.uuid,
             requestId: undefined,
             timestamp: new Date().toISOString(),
@@ -44,7 +43,7 @@ export function toInternalMessages(
         return [
           {
             type: 'user',
-            message: message.message,
+            message: { ...message.message },
             uuid: message.uuid ?? randomUUID(),
             timestamp: message.timestamp ?? new Date().toISOString(),
             isMeta: message.isSynthetic,
@@ -80,7 +79,7 @@ type SDKCompactMetadata = SDKCompactBoundaryMessage['compact_metadata']
 export function toSDKCompactMetadata(
   meta: CompactMetadata,
 ): SDKCompactMetadata {
-  const seg = meta.preservedSegment as { headUuid: UUID; anchorUuid: UUID; tailUuid: UUID } | undefined
+  const seg = meta.preservedSegment
   return {
     trigger: meta.trigger,
     pre_tokens: meta.preTokens,
@@ -100,19 +99,28 @@ export function toSDKCompactMetadata(
 export function fromSDKCompactMetadata(
   meta: SDKCompactMetadata,
 ): CompactMetadata {
-  const m = meta as { preserved_segment?: { head_uuid: string; anchor_uuid: string; tail_uuid: string }; trigger?: string; pre_tokens?: number; [key: string]: unknown }
-  const seg = m.preserved_segment
+  const seg = meta.preserved_segment
   return {
-    trigger: m.trigger,
-    preTokens: m.pre_tokens,
+    trigger: meta.trigger,
+    preTokens: meta.pre_tokens,
     ...(seg && {
       preservedSegment: {
-        headUuid: seg.head_uuid,
-        anchorUuid: seg.anchor_uuid,
-        tailUuid: seg.tail_uuid,
+        headUuid: seg.head_uuid as UUID,
+        anchorUuid: seg.anchor_uuid as UUID,
+        tailUuid: seg.tail_uuid as UUID,
       },
     }),
   }
+}
+
+/**
+ * El mensaje del API tal como lo guarda `AssistantMessage` (un registro
+ * suelto) y como lo exige el SDK (`BetaMessage`). Su productor es la
+ * respuesta de la API, que ya tiene esa forma: la conversión es de tipo, no de
+ * datos, y vive aquí para que haya una sola.
+ */
+export function toSdkApiMessage(message: unknown): SDKAssistantMessage['message'] {
+  return message as SDKAssistantMessage['message']
 }
 
 export function toSDKMessages(messages: Message[]): SDKMessage[] {
@@ -122,22 +130,29 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
         return [
           {
             type: 'assistant',
-            message: normalizeAssistantMessageForSDK(message as AssistantMessage),
+            message: toSdkApiMessage(normalizeAssistantMessageForSDK(message as AssistantMessage)),
             session_id: getSessionId(),
             parent_tool_use_id: null,
             uuid: message.uuid,
-            error: message.error,
+            error: message.error as SDKAssistantMessage['error'],
           },
         ]
       case 'user':
         return [
           {
             type: 'user',
-            message: message.message,
+            message: {
+              role:
+                message.message.role === 'assistant' || message.message.role === 'system'
+                  ? message.message.role
+                  : 'user',
+              content: message.message.content ?? '',
+            },
             session_id: getSessionId(),
             parent_tool_use_id: null,
             uuid: message.uuid,
-            timestamp: message.timestamp,
+            timestamp:
+              typeof message.timestamp === 'string' ? message.timestamp : undefined,
             isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
             // Structured tool output (not the string content sent to the
             // model — the full Output object). Rides the protobuf catchall
@@ -196,10 +211,12 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
  *
  * Strips ANSI (e.g. chalk.dim() in /cost) then unwraps the XML wrapper tags.
  */
+// `content` en la raíz no está en el esquema del SDK; el porte lo emite y no
+// consta en el binario si se retira, así que se declara en vez de borrarlo.
 export function localCommandOutputToSDKAssistantMessage(
   rawContent: string,
   uuid: UUID,
-): SDKAssistantMessage {
+): SDKAssistantMessage & { content?: unknown } {
   const cleanContent = stripAnsi(rawContent)
     .replace(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/, '$1')
     .replace(/<local-command-stderr>([\s\S]*?)<\/local-command-stderr>/, '$1')
@@ -211,7 +228,7 @@ export function localCommandOutputToSDKAssistantMessage(
   return {
     type: 'assistant',
     content: synthetic.message?.content,
-    message: synthetic.message,
+    message: toSdkApiMessage(synthetic.message),
     parent_tool_use_id: null,
     session_id: getSessionId(),
     uuid,
@@ -221,15 +238,23 @@ export function localCommandOutputToSDKAssistantMessage(
 /**
  * Maps internal ClaudeAILimits to the SDK-facing SDKRateLimitInfo type,
  * stripping internal-only fields like unifiedRateLimitFallbackAvailable.
+ *
+ * Porte de `ka` de 2.1.281 (`chunk-049e548v.js`): `org_spend_cap_reached` se
+ * publica como `org_level_disabled_until`, `overageScope` como `limitScope`,
+ * `overageInUse` sólo si `includeOverageInUse` no lo apaga y las ventanas
+ * unificadas llegan por opción, no desde los límites.
  */
 export function toSDKRateLimitInfo(
   limits: ClaudeAILimits | undefined,
+  {
+    includeOverageInUse = true,
+    unifiedWindows,
+  }: { includeOverageInUse?: boolean; unifiedWindows?: UnifiedWindows } = {},
 ): SDKRateLimitInfo | undefined {
   if (!limits) {
     return undefined
   }
   return {
-    type: 'rate_limit',
     status: limits.status,
     ...(limits.resetsAt !== undefined && { resetsAt: limits.resetsAt }),
     ...(limits.rateLimitType !== undefined && {
@@ -245,14 +270,35 @@ export function toSDKRateLimitInfo(
       overageResetsAt: limits.overageResetsAt,
     }),
     ...(limits.overageDisabledReason !== undefined && {
-      overageDisabledReason: limits.overageDisabledReason,
+      overageDisabledReason:
+        limits.overageDisabledReason === 'org_spend_cap_reached'
+          ? 'org_level_disabled_until'
+          : limits.overageDisabledReason,
     }),
+    ...(limits.overageScope !== undefined && { limitScope: limits.overageScope }),
     ...(limits.isUsingOverage !== undefined && {
       isUsingOverage: limits.isUsingOverage,
     }),
+    ...(limits.overageInUse !== undefined &&
+      includeOverageInUse && { overageInUse: limits.overageInUse }),
     ...(limits.surpassedThreshold !== undefined && {
       surpassedThreshold: limits.surpassedThreshold,
     }),
+    ...(limits.rateLimitGraceActive === true && { rateLimitGraceActive: true }),
+    ...(limits.overagePeriodMonthly !== undefined && {
+      overagePeriodMonthly: limits.overagePeriodMonthly,
+    }),
+    ...(limits.overagePeriodChannel !== undefined && {
+      overagePeriodChannel: limits.overagePeriodChannel,
+    }),
+    ...(limits.errorCode !== undefined && { errorCode: limits.errorCode }),
+    ...(limits.canUserPurchaseCredits !== undefined && {
+      canUserPurchaseCredits: limits.canUserPurchaseCredits,
+    }),
+    ...(limits.hasChargeableSavedPaymentMethod !== undefined && {
+      hasChargeableSavedPaymentMethod: limits.hasChargeableSavedPaymentMethod,
+    }),
+    ...(unifiedWindows !== undefined && { unifiedWindows }),
   }
 }
 
@@ -270,7 +316,7 @@ function normalizeAssistantMessageForSDK(
     return message.message
   }
 
-  const normalizedContent = content.map((block): BetaContentBlock => {
+  const normalizedContent = content.map(block => {
     if (block.type !== 'tool_use') {
       return block
     }

@@ -1,0 +1,8 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(24,7): error TS18046: 'm.data' is of type 'unknown'.
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(25,8): error TS18046: 'm.data' is of type 'unknown'.
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(25,39): error TS18046: 'm.data' is of type 'unknown'.

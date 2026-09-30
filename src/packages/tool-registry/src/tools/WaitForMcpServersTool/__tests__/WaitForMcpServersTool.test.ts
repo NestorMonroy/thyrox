@@ -45,7 +45,7 @@ describe('prompt text (ant j58)', () => {
 
 describe('tool surface (ant g37)', () => {
   test('isReadOnly: true', () => {
-    expect(WaitForMcpServersTool.isReadOnly?.({} as never)).toBe(true)
+    expect(WaitForMcpServersTool.isReadOnly?.()).toBe(true)
   })
   test('isConcurrencySafe: false', () => {
     expect(WaitForMcpServersTool.isConcurrencySafe?.()).toBe(false)
@@ -54,20 +54,19 @@ describe('tool surface (ant g37)', () => {
     expect(WaitForMcpServersTool.name).toBe(WAIT_FOR_MCP_SERVERS_TOOL_NAME)
   })
   test('userFacingName = "MCP Wait For Servers" (ant B37)', () => {
-    expect(WaitForMcpServersTool.userFacingName?.({} as never)).toBe(
+    expect(WaitForMcpServersTool.userFacingName?.()).toBe(
       'MCP Wait For Servers',
     )
   })
   test('renderToolUseMessage(no servers) = "Wait for pending MCP servers..."', () => {
     expect(
-      WaitForMcpServersTool.renderToolUseMessage?.({} as never, {} as never),
+      WaitForMcpServersTool.renderToolUseMessage?.({} as never),
     ).toBe('Wait for pending MCP servers to connect')
   })
   test('renderToolUseMessage(with servers) lists names', () => {
     expect(
       WaitForMcpServersTool.renderToolUseMessage?.(
         { servers: ['github', 'gitlab'] } as never,
-        {} as never,
       ),
     ).toBe('Wait for MCP servers to connect: github, gitlab')
   })
@@ -78,7 +77,6 @@ describe('checkPermissions (ant: always allow)', () => {
     const input = { servers: ['x'] }
     const result = await WaitForMcpServersTool.checkPermissions?.(
       input as never,
-      {} as never,
     )
     expect(result?.behavior).toBe('allow')
   })

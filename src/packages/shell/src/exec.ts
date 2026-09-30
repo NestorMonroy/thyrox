@@ -24,6 +24,7 @@ import {
 } from './shellCommand.js'
 import { createProviderResolver } from './shellDiscovery.js'
 import { ExecError } from './errors.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
 const DEFAULT_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -137,8 +138,8 @@ export async function exec(
 
   // Sandbox temp directory - use per-user directory name to prevent multi-user permission conflicts
   const sandboxTmpDir = posixJoin(
-    process.env.CLAUDE_CODE_TMPDIR || '/tmp',
-    _getSandboxTmpDirNameFn?.() ?? 'claude-code-how-works-how-works',
+    process.env.THYROX_CODE_TMPDIR || '/tmp',
+    _getSandboxTmpDirNameFn?.() ?? 'claude-code',
   )
 
   const { commandString: builtCommand, cwdFilePath } =
@@ -166,7 +167,7 @@ export async function exec(
       cwd = fallback
     } catch {
       return createFailedCommand(
-        `Working directory "${cwd}" no longer exists. Please restart Claude from an existing directory.`,
+        `Working directory "${cwd}" no longer exists. Please restart ${PRODUCT_NAME} from an existing directory.`,
       )
     }
   }
@@ -215,13 +216,17 @@ export async function exec(
 
   // When onStdout is provided, use pipe mode
   const usePipeMode = !!onStdout
-  const taskId = generateTaskId('b')
+  const taskId = generateTaskId('local_bash')
   const taskOutputDir = ctx.getTaskOutputDir()
   await mkdir(taskOutputDir, { recursive: true })
 
   // Create TaskOutput via injected factory
   const taskOutput: TaskOutputPort = _createTaskOutputFn
-    ? _createTaskOutputFn(taskId, onProgress ?? null, !usePipeMode)
+    ? _createTaskOutputFn(
+        taskId,
+        (onProgress as ((...args: unknown[]) => void) | undefined) ?? null,
+        !usePipeMode,
+      )
     : new StubTaskOutput(taskId)
 
   // In file mode, both stdout and stderr go to the same file fd.
@@ -249,7 +254,7 @@ export async function exec(
         GIT_EDITOR: 'true',
         CLAUDECODE: '1',
         ...envOverrides,
-        CLAUDE_CODE_SESSION_ID: ctx.getSessionId(),
+        THYROX_CODE_SESSION_ID: ctx.getSessionId(),
         // extraEnv last so caller-provided values win over both subprocessEnv
         // and provider overrides — mirrors ant's `extraEnv` semantics.
         ...(extraEnv ?? {}),

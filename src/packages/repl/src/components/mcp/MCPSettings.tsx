@@ -20,6 +20,7 @@ import { MCPStdioServerMenu } from './MCPStdioServerMenu.js'
 import { MCPToolDetailView } from './MCPToolDetailView.js'
 import { MCPToolListView } from './MCPToolListView.js'
 import type { AgentMcpServerInfo, MCPViewState, ServerInfo } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onComplete: (
@@ -171,7 +172,7 @@ export function MCPSettings({ onComplete }: Props): React.ReactNode {
       const defaultTab =
         viewState.server.transport === 'claudeai-proxy'
           ? 'claude.ai'
-          : 'Claude Code'
+          : `${PRODUCT_NAME}`
 
       if (viewState.server.transport === 'stdio') {
         return (

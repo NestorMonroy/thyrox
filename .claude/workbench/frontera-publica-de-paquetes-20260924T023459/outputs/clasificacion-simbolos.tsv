@@ -1,0 +1,187 @@
+no-existe	registerProcessOutputErrorHandlers	 src/packages/shell/src/process.ts	
+definido-en-otro	McpServerConfig	 src/packages/config/plugin/_deps.ts	 src/packages/mcp-runtime/src/compat.ts src/packages/mcp-runtime/src/contracts.ts src/packages/config/mcpConfigSchema.ts src/packages/config/plugin/types.ts
+no-existe	isSystemLocalCommandMessage	 src/packages/agent/messages.ts	
+no-existe	recordFirstStartTime	 src/packages/config/index.ts	
+no-existe	getAttributionTexts	 src/packages/agent/attribution.ts	
+definido-en-otro	createAttachmentMessage	 src/packages/agent/attachments.ts	 src/packages/agent/internal/queryRuntime.ts
+no-existe	ExtraKnownMarketplaceSchema	 src/packages/config/settings/types.ts	
+definido-en-otro	getMessagesAfterCompactBoundary	 src/packages/agent/messages.ts	 src/packages/bridge/src/internal/pendingCrossPackageDeps.ts src/packages/agent/internal/queryRuntime.ts
+no-existe	cyclePermissionMode	 src/packages/permission/src/getNextPermissionMode.ts	
+definido-en-otro	SettingsJson	 src/packages/config/settings/settings.ts	 src/packages/config/settings/types.ts
+definido-en-otro	claimTask	 src/packages/agent/tasks.ts	 src/packages/swarm/src/adapters/appRuntime.ts
+no-existe	extractToolInputForTelemetry	 src/packages/agent/eventMetadata.ts	
+no-existe	StreamingToolUse	 src/packages/agent/messages.ts	
+no-existe	YoloClassifierResult	 src/packages/permission/src/permissionTypes.ts	
+definido-en-otro	hasPermissionsToUseTool	 src/packages/permission/src/permission.ts src/packages/permission/src/permissions.ts	 src/packages/swarm/src/adapters/appRuntime.ts
+no-existe	getMemoryFiles	 src/packages/storage/src/claudemd.ts	
+no-existe	suppressNextSkillListing	 src/packages/agent/attachments.ts	
+no-existe	deletePermissionRule	 src/packages/permission/src/permissions.ts	
+definido-en-otro	Command	 src/packages/mcp-runtime/src/types.ts	 src/packages/command-runtime/src/types.ts src/packages/config/plugin/_deps.ts src/packages/agent/command.ts
+no-existe	clearDynamicSkills	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	getAllSocketPaths	 src/packages/agent/claudeInChrome/common.ts	
+definido-en-otro	modelSupportsEffort	 src/packages/agent/effort.ts	 src/packages/provider/src/internal/legacyRuntimeSupport.ts
+no-existe	resetGetMemoryFilesCache	 src/packages/storage/src/claudemd.ts	
+no-existe	getUseAutoModeDuringPlan	 src/packages/config/settings/settings.ts	
+definido-en-otro	sendSandboxPermissionResponseViaMailbox	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/permissions/index.ts
+no-existe	reorderMessagesInUI	 src/packages/agent/messages.ts	
+no-existe	getExternalClaudeMdIncludes	 src/packages/storage/src/claudemd.ts	
+no-existe	formatCost	 src/packages/provider/src/costTracker.ts	
+no-existe	shouldSkipPluginAutoupdate	 src/packages/config/index.ts	
+no-existe	getSkillDirCommands	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	isPathInSandboxWriteAllowlist	 src/packages/permission/src/pathValidation.ts	
+no-existe	UUID	 src/packages/agent/uuid.ts	
+no-existe	filterOrphanedThinkingOnlyMessages	 src/packages/agent/messages.ts	
+definido-en-otro	getDefaultAppState	 src/packages/app-host/src/state/AppState.tsx	 src/packages/app-host/src/state/AppStateCompat.ts src/packages/app-host/src/runtime/appStateCompatShim.ts
+no-existe	isToolSearchToolAvailable	 src/packages/agent/toolSearch.ts	
+definido-en-otro	getSystemPrompt	 src/packages/agent/prompts.ts	 src/packages/swarm/src/adapters/appRuntime.ts
+definido-en-otro	filterUnresolvedToolUses	 src/packages/agent/messages.ts	 src/packages/agent/loop/session/reconcile.ts
+no-existe	countLinesChanged	 src/packages/agent/diff.ts	
+no-existe	getRemoteControlAtStartup	 src/packages/config/index.ts	
+no-existe	onDynamicSkillsLoaded	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	hasUnresolvedHooksFromLookup	 src/packages/agent/messages.ts	
+definido-en-otro	AppStateStore	 src/packages/repl/src/appStateHooks.ts	 src/packages/app-host/src/state/AppStateCompat.ts
+definido-en-otro	env	 src/packages/config/env/index.ts	 src/packages/ide/src/internal/pendingCrossPackageDeps.ts src/packages/swarm/src/adapters/appRuntime.ts src/packages/config/env/paths.ts
+no-existe	PendingConnect	 src/packages/cli/src/entry/mode-dispatch.ts	
+definido-en-otro	ScopedLspServerConfig	 src/packages/config/plugin/_deps.ts	 src/packages/ide/src/lsp/types.ts
+no-existe	buildMessageLookups	 src/packages/agent/messages.ts	
+definido-en-otro	AgentInput	 src/packages/agent/index.ts	 src/packages/agent/agentState.ts src/packages/agent/types/state.ts
+definido-en-otro	installCliHostBindings	 src/packages/cli/src/index.ts	 src/packages/cli/src/host.ts
+definido-en-otro	RecompactionInfo	 src/packages/agent/compaction/compact.ts	 src/packages/agent/compaction/compactUtils.ts
+definido-en-otro	LspServerConfig	 src/packages/config/plugin/_deps.ts	 src/packages/ide/src/lsp/types.ts src/packages/config/plugin/types.ts
+no-existe	clearSkillCaches	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	shouldShowClaudeMdExternalIncludesWarning	 src/packages/storage/src/claudemd.ts	
+no-existe	hasSuccessfulToolCall	 src/packages/agent/messages.ts	
+no-existe	calculateContextPercentages	 src/packages/agent/context.ts	
+no-existe	StreamingThinking	 src/packages/agent/messages.ts	
+definido-en-otro	ProviderStreamParams	 src/packages/agent/index.ts	 src/packages/agent/types/deps.ts src/packages/agent/agentDeps.ts
+definido-en-otro	CompactionResult	 src/packages/agent/compaction/compact.ts src/packages/agent/index.ts	 src/packages/agent/types/compaction.ts src/packages/agent/types/deps.ts src/packages/agent/compaction/types.ts src/packages/agent/compaction/compactUtils.ts src/packages/agent/agentDeps.ts
+no-existe	AgentMentionAttachment	 src/packages/agent/attachments.ts	
+definido-en-otro	getPatchFromContents	 src/packages/agent/diff.ts	 src/packages/ide/src/internal/pendingCrossPackageDeps.ts
+no-existe	getToolUseIDs	 src/packages/agent/messages.ts	
+definido-en-otro	normalizeMessagesForAPI	 src/packages/agent/messages.ts	 src/packages/agent/internal/queryRuntime.ts src/packages/provider/src/internal/legacyRuntimeSupport.ts src/packages/provider/src/runtimeHelpers.ts
+definido-en-otro	buildPostCompactMessages	 src/packages/agent/compaction/compact.ts	 src/packages/swarm/src/adapters/appRuntime.ts src/packages/agent/compaction/compactUtils.ts
+no-existe	buildSubagentLookups	 src/packages/agent/messages.ts	
+definido-en-otro	StopHookResult	 src/packages/agent/index.ts	 src/packages/agent/types/deps.ts src/packages/agent/agentDeps.ts
+definido-en-otro	PromptRequest	 src/packages/agent/types/hooks.ts	 src/packages/headless-sdk/src/coreTypes.generated.ts
+no-existe	withMemoryCorrectionHint	 src/packages/agent/messages.ts	
+no-existe	runModeDispatch	 src/packages/cli/src/entry/mode-dispatch.ts	
+no-existe	renderableSearchText	 src/packages/agent/sessionTools/transcriptSearch.ts	
+no-existe	filterWhitespaceOnlyAssistantMessages	 src/packages/agent/messages.ts	
+definido-en-otro	writeToStdout	 src/packages/shell/src/process.ts	 src/packages/config/plugin/_deps.ts
+no-existe	getAutoUpdaterDisabledReason	 src/packages/config/index.ts	
+no-existe	getMemoryPath	 src/packages/config/global/config.ts	
+definido-en-otro	createPermissionRequest	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/permissions/index.ts
+definido-en-otro	Tool	 src/packages/mcp-runtime/src/types.ts	 src/packages/tool-registry/src/runtime.ts src/packages/swarm/src/adapters/appRuntime.ts src/packages/tool-registry/src/Tool.ts src/packages/provider/src/internal/legacyRuntimeSupport.ts src/packages/agent/loop/types.ts
+no-existe	checkWritePermissionForTool	 src/packages/permission/src/filesystem.ts	
+no-existe	getDynamicSkills	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	PendingAssistantChat	 src/packages/cli/src/entry/mode-dispatch.ts	
+definido-en-otro	ERROR_MESSAGE_INCOMPLETE_RESPONSE	 src/packages/agent/compaction/compact.ts	 src/packages/agent/compaction/compactUtils.ts
+no-existe	activateConditionalSkillsForPaths	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	getAllBrowserDataPaths	 src/packages/agent/claudeInChromeCommon.ts	
+no-existe	isToolSearchEnabledOptimistic	 src/packages/agent/toolSearch.ts	
+definido-en-otro	startInProcessTeammate	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/runtime/inProcessRunner.ts
+no-existe	checkEditableInternalPath	 src/packages/permission/src/filesystem.ts	
+no-existe	checkRuleBasedPermissions	 src/packages/permission/src/permissions.ts	
+no-existe	getSecureSocketPath	 src/packages/agent/claudeInChrome/common.ts	
+no-existe	formatAutoUpdaterDisabledReason	 src/packages/config/index.ts	
+no-existe	isDangerousRemovalPath	 src/packages/permission/src/pathValidation.ts	
+no-existe	getQuerySourceForREPL	 src/packages/agent/promptCategory.ts	
+no-existe	getAutoModeConfig	 src/packages/config/settings/settings.ts	
+definido-en-otro	buildSystemInitMessage	 src/packages/agent/messages/systemInit.ts	 src/packages/agent/internal/headlessRuntime.ts
+no-existe	setAwaitingPlanApproval	 src/packages/agent/inProcessTeammateHelpers.ts	
+no-existe	getOpusDefaultEffortConfig	 src/packages/agent/effort.ts	
+no-existe	getFileReadIgnorePatterns	 src/packages/permission/src/filesystem.ts	
+no-existe	normalizePatternsToPath	 src/packages/permission/src/filesystem.ts	
+no-existe	parseSkillFrontmatterFields	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+definido-en-otro	AgentColorName	 src/packages/config/plugin/_deps.ts	 src/packages/tool-registry/src/tools/AgentTool/agentColorManager.ts src/packages/swarm/src/adapters/appRuntime.ts src/packages/swarm/src/core/teammateColors.ts
+definido-en-otro	getAssistantMessageText	 src/packages/agent/messages.ts	 src/packages/daemon/src/internal/pendingCrossPackageDeps.ts
+definido-en-otro	getAttachmentMessages	 src/packages/agent/attachments.ts	 src/packages/agent/internal/queryRuntime.ts
+definido-en-otro	compactConversation	 src/packages/agent/compaction/compact.ts	 src/packages/swarm/src/adapters/appRuntime.ts
+definido-en-otro	HeadlessStoreParams	 src/packages/cli/src/index.ts	 src/packages/agent/sessionStores.ts
+definido-en-otro	AgentEvent	 src/packages/agent/index.ts	 src/packages/agent/agentEvents.ts src/packages/agent/types/events.ts
+definido-en-otro	writeToStderr	 src/packages/shell/src/process.ts	 src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts
+no-existe	getProgressMessagesFromLookup	 src/packages/agent/messages.ts	
+no-existe	getEnhancedPRAttribution	 src/packages/agent/attribution.ts	
+definido-en-otro	ERROR_MESSAGE_NOT_ENOUGH_MESSAGES	 src/packages/agent/compaction/compact.ts	 src/packages/agent/compaction/compactUtils.ts
+definido-en-otro	sendSandboxPermissionRequestViaMailbox	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/permissions/index.ts
+no-existe	matchingRuleForInput	 src/packages/permission/src/filesystem.ts	
+no-existe	checkReadPermissionForTool	 src/packages/permission/src/filesystem.ts	
+no-existe	shouldShowUserMessage	 src/packages/agent/messages.ts	
+no-existe	hasExternalClaudeMdIncludes	 src/packages/storage/src/claudemd.ts	
+definido-en-otro	AppState	 src/packages/config/plugin/_deps.ts	 src/packages/tool-registry/src/appStateTypes.ts src/packages/cli/src/appStateShim.tsx src/packages/mcp-runtime/src/appStateHooks.ts src/packages/permission/src/appStateHooks.ts src/packages/app-host/src/state/AppStateCompat.ts src/packages/app-host/src/runtime/appStateCompatShim.ts src/packages/swarm/src/adapters/appRuntime.ts
+no-existe	getSettingsWithSources	 src/packages/config/settings/settings.ts	
+definido-en-otro	OutputStyleConfig	 src/packages/config/plugin/_deps.ts	 src/packages/config/outputStyles.ts
+definido-en-otro	PermissionResult	 src/packages/agent/index.ts	 src/packages/headless-sdk/src/coreTypes.generated.ts src/packages/cli/src/types/sdk-stubs.d.ts src/packages/agent/coreTools.ts src/packages/agent/types/tools.ts src/packages/permission/src/permissionTypes.ts
+no-existe	enhanceSystemPromptWithEnvDetails	 src/packages/agent/prompts.ts	
+no-existe	addSkillDirectories	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	getPatchForDisplay	 src/packages/agent/diff.ts	
+no-existe	EMPTY_STRING_SET	 src/packages/agent/messages.ts	
+no-existe	restoreAgentFromSession	 src/packages/storage/src/sessionRestore.ts	
+definido-en-otro	generateSessionTitle	 src/packages/agent/sessionTitle.ts	 src/packages/bridge/src/internal/pendingCrossPackageDeps.ts
+no-existe	getAllNativeMessagingHostsDirs	 src/packages/agent/claudeInChromeCommon.ts	
+no-existe	getManagedFileSettingsPresence	 src/packages/config/settings/settings.ts	
+no-existe	discoverSkillDirsForPaths	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+definido-en-otro	Attachment	 src/packages/agent/attachments.ts	 src/packages/agent/loop/transcript.ts
+definido-en-otro	ERROR_MESSAGE_USER_ABORT	 src/packages/agent/compaction/compact.ts	 src/packages/swarm/src/adapters/appRuntime.ts src/packages/agent/compaction/compactUtils.ts
+definido-en-otro	stripSignatureBlocks	 src/packages/agent/messages.ts	 src/packages/agent/internal/queryRuntime.ts
+no-existe	getBundledSkillsRoot	 src/packages/permission/src/filesystem.ts	
+no-existe	createPlanAttachmentIfNeeded	 src/packages/agent/compaction/compact.ts	
+no-existe	checkPathSafetyForAutoEdit	 src/packages/permission/src/filesystem.ts	
+no-existe	markHasUsedAgentsFleet	 src/packages/config/index.ts	
+no-existe	validatePath	 src/packages/permission/src/pathValidation.ts	
+definido-en-otro	TaskStateBase	 src/packages/swarm/src/adapters/appRuntime.ts	 src/packages/tool-registry/src/Task.ts src/packages/swarm/src/tasks/types.ts
+definido-en-otro	AgentDefinition	 src/packages/config/plugin/_deps.ts	 src/packages/tools/src/agent.ts src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts src/packages/agent/types.ts src/packages/headless-sdk/src/coreTypes.generated.ts src/packages/swarm/src/adapters/appRuntime.ts src/packages/provider/src/internal/legacyRuntimeSupport.ts src/packages/cli/src/headless.ts
+no-existe	exitRestoredWorktree	 src/packages/storage/src/sessionRestore.ts	
+no-existe	roughTokenCountEstimationForMessage	 src/packages/agent/tokenEstimation.ts	
+no-existe	openInChrome	 src/packages/agent/claudeInChrome/common.ts src/packages/agent/claudeInChromeCommon.ts	
+no-existe	restoreWorktreeForResume	 src/packages/storage/src/sessionRestore.ts	
+no-existe	getPolicySettingsOrigin	 src/packages/config/settings/settings.ts	
+definido-en-otro	getOrCreateUserID	 src/packages/config/index.ts	 src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts src/packages/provider/src/internal/legacyRuntimeSupport.ts
+no-existe	clearMemoryFileCaches	 src/packages/storage/src/claudemd.ts	
+definido-en-otro	AgentDefinitionsResult	 src/packages/config/plugin/_deps.ts	 src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts
+no-existe	PendingSSH	 src/packages/cli/src/entry/mode-dispatch.ts	
+definido-en-otro	mergeHookInstructions	 src/packages/agent/compaction/compact.ts	 src/packages/agent/compaction/compactUtils.ts
+definido-en-otro	Key	 src/packages/@ant/ink/src/hooks/use-input.ts	 src/packages/@ant/ink/src/core/events/input-event.ts
+definido-en-otro	CoreMessage	 src/packages/agent/agentDeps.ts	 src/packages/agent/types/messages.ts src/packages/agent/coreMessages.ts
+definido-en-otro	HookCommand	 src/packages/config/settings/types.ts	 src/packages/agent/loop/hooks.ts src/packages/agent/types/hooks.ts src/packages/config/settings/schemas/hooks.ts
+definido-en-otro	getAllInProcessTeammateTasks	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/tasks/InProcessTeammateTask.ts src/packages/swarm/src/tasks/InProcessTeammateTask.tsx
+no-existe	runClaudeCode	 src/packages/cli/src/index.ts	
+no-existe	ExternalClaudeMdInclude	 src/packages/storage/src/claudemd.ts	
+definido-en-otro	createPermissionRequestMessage	 src/packages/permission/src/permissions.ts	 src/packages/swarm/src/mailbox/protocolMessages.ts
+no-existe	partialCompactConversation	 src/packages/agent/compaction/compact.ts	
+definido-en-otro	getModelMaxOutputTokens	 src/packages/agent/context.ts	 src/packages/provider/src/internal/legacyRuntimeSupport.ts
+no-existe	checkReadableInternalPath	 src/packages/permission/src/filesystem.ts	
+no-existe	isAutoUpdaterDisabled	 src/packages/config/index.ts	
+no-existe	getSocketDir	 src/packages/agent/claudeInChrome/common.ts	
+no-existe	generateSuggestions	 src/packages/permission/src/filesystem.ts	
+no-existe	handleMessageFromStream	 src/packages/agent/messages.ts	
+no-existe	getDefaultEffortForModel	 src/packages/agent/effort.ts	
+no-existe	getCustomApiKeyStatus	 src/packages/config/index.ts	
+definido-en-otro	resetSentSkillNames	 src/packages/agent/attachments.ts	 src/packages/config/plugin/_deps.ts
+no-existe	getManagedSettingsKeysForLogging	 src/packages/config/settings/settings.ts	
+no-existe	roughTokenCountEstimationForMessages	 src/packages/agent/tokenEstimation.ts	
+no-existe	DEFAULT_AGENT_PROMPT	 src/packages/agent/prompts.ts	
+no-existe	hookJSONOutputSchema	 src/packages/agent/types/hooks.ts	
+definido-en-otro	PromptResponse	 src/packages/agent/types/hooks.ts	 src/packages/headless-sdk/src/coreTypes.generated.ts
+definido-en-otro	InProcessTeammateTask	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/tasks/InProcessTeammateTask.ts src/packages/swarm/src/tasks/InProcessTeammateTask.tsx
+no-existe	resetTaskList	 src/packages/agent/tasks.ts	
+no-existe	getSiblingToolUseIDsFromLookup	 src/packages/agent/messages.ts	
+no-existe	restoreSessionStateFromLog	 src/packages/storage/src/sessionRestore.ts	
+no-existe	HookProgress	 src/packages/agent/types/hooks.ts	
+definido-en-otro	ProviderEvent	 src/packages/agent/index.ts	 src/packages/agent/agentDeps.ts src/packages/agent/types/deps.ts
+no-existe	handlePlanApprovalResponse	 src/packages/agent/inProcessTeammateHelpers.ts	
+no-existe	getDisplayedEffortLevel	 src/packages/agent/effort.ts	
+definido-en-otro	PermissionResponse	 src/packages/swarm/src/index.ts	 src/packages/swarm/src/permissions/index.ts
+definido-en-otro	HookEvent	 src/packages/config/plugin/_deps.ts	 src/packages/headless-sdk/src/agentSdkTypes.ts src/packages/config/settings/types.ts src/packages/agent/types/hooks.ts
+no-existe	getAllWindowsRegistryKeys	 src/packages/agent/claudeInChromeCommon.ts	
+no-existe	x	 src/packages/cli/src/testing/io.ts	
+no-existe	createSkillCommand	 src/packages/command-runtime/src/skills/loadSkillsDir.ts	
+no-existe	countTokensWithAPI	 src/packages/agent/tokenEstimation.ts	
+no-existe	ToolPermissionRulesBySource	 src/packages/permission/src/permissionTypes.ts	
+no-existe	SYSTEM_PROMPT_DYNAMIC_BOUNDARY	 src/packages/agent/prompts.ts	
+no-existe	EMPTY_LOOKUPS	 src/packages/agent/messages.ts	
+no-existe	getQueuedCommandAttachments	 src/packages/agent/attachments.ts	
+no-existe	getEffortValueDescription	 src/packages/agent/effort.ts	
+no-existe	getEffortSuffix	 src/packages/agent/effort.ts	
+definido-en-otro	annotateBoundaryWithPreservedSegment	 src/packages/agent/compaction/compact.ts	 src/packages/agent/compaction/compactUtils.ts
+no-existe	resolvePickerEffortPersistence	 src/packages/agent/effort.ts	

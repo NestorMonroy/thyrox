@@ -1,0 +1,33 @@
+== 1: agy comparte el flujo de antigravity
+   (/home/user/thyrox/src/packages/provider/src/accounts/oauth/flowRegistry.ts)
+   0 fail
+== 2: amazon-q sin alias de kiro
+   (/home/user/thyrox/src/packages/provider/src/accounts/oauth/flowRegistry.ts)
+   1 fail
+== 3: kimi ignora la ruta declarada
+   (/home/user/thyrox/src/packages/provider/src/accounts/oauth/flowRegistry.ts)
+   0 fail
+== 4: sin rechazo de proveedor desconocido
+   (/home/user/thyrox/src/packages/cli/src/commands/providers/loginVerb.ts)
+   2 fail
+== 5: --no-browser ignorado
+   (/home/user/thyrox/src/packages/cli/src/commands/providers/loginVerb.ts)
+   2 fail
+== 6: timeout sin validar
+   (/home/user/thyrox/src/packages/cli/src/commands/providers/loginVerb.ts)
+   1 fail
+== 7: plazo vencido como fallo genérico
+   (/home/user/thyrox/src/packages/cli/src/commands/providers/loginVerb.ts)
+   1 fail
+== 8: --connection de otro proveedor aceptada
+   (/home/user/thyrox/src/packages/cli/src/commands/providers/loginVerb.ts)
+   1 fail
+== 9: login no despachado
+   (/home/user/thyrox/src/packages/cli/src/commands/providers-commands.ts)
+   2 fail
+== 10: login sin el store abierto
+   (/home/user/thyrox/src/packages/cli/src/commands/providers-commands.ts)
+   1 fail
+== restaurado
+   0 fail
+__BG_EXIT__=0

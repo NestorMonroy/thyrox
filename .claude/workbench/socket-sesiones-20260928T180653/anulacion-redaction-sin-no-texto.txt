@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsLogRedaction.test.ts:
+44 | describe('telemetría de funcionalidad', () => {
+45 |   test('featureErrorCode (qde): un código conforme pasa; otro es nonconforming; un no-texto no hay código', () => {
+46 |     expect(featureErrorCode('unauthed_drop')).toBe('unauthed_drop')
+47 |     expect(featureErrorCode('1bad')).toBe('nonconforming')
+48 |     expect(featureErrorCode(`a${'b'.repeat(64)}`)).toBe('nonconforming')
+49 |     expect(featureErrorCode(3)).toBeUndefined()
+                                     ^
+error: expect(received).toBeUndefined()
+
+Received: "nonconforming"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsLogRedaction.test.ts:49:33)
+(fail) telemetría de funcionalidad > featureErrorCode (qde): un código conforme pasa; otro es nonconforming; un no-texto no hay código [0.30ms]
+
+ 5 pass
+ 1 fail
+ 16 expect() calls
+Ran 6 tests across 1 file. [43.00ms]

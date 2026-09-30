@@ -560,7 +560,7 @@ export function initExtractMemories(): void {
 export async function executeExtractMemories(
   context: MemREPLContext,
   appendSystemMessage?: AppendSystemMessageFn,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<void> {
   await extractor?.(context, appendSystemMessage)
 }
@@ -573,7 +573,7 @@ export async function executeExtractMemories(
  */
 export async function drainPendingExtraction(
   timeoutMs?: number,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<void> {
   await drainer(timeoutMs)
 }

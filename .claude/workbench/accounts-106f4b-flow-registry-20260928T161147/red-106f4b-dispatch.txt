@@ -1,0 +1,15 @@
+193 |     expect(await providersCommand(['providers', 'login', 'openai'], d)).toBe(2)
+194 |     expect(out.join('')).toContain("Unknown login provider 'openai'")
+                               ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Unknown login provider 'openai'"
+Received: "thyrox providers: unknown verb 'login'; expected one of: list, add, edit, import, remove, test, test-all, validate\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/providersCommands.test.ts:194:26)
+(fail) providers login > refuses a provider that has no login flow [0.27ms]
+
+ 16 pass
+ 3 fail
+ 52 expect() calls
+Ran 19 tests across 1 file. [217.00ms]

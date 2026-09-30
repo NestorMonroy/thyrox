@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bunx tsc -p tsconfig.build.json --noEmit | gawk \"/error TS/\"; echo BUILD_DONE; bunx tsc -p tsconfig.test.json --noEmit | gawk \"/error TS/\"; echo TEST_DONE; bun test __tests__/accounts 2>&1 | tail -3", "started_at": "2026-09-28T11:39:22+00:00"}

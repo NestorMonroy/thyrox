@@ -2,7 +2,7 @@
  * `AnthropicHttpProvider` (T-011…T-014): el adaptador real.
  *
  * **Sin ejercitar contra el servicio.** Este contenedor no tiene credencial de
- * modelo — `ANTHROPIC_API_KEY` ausente, `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST=1`,
+ * modelo — `ANTHROPIC_API_KEY` ausente, `THYROX_CODE_PROVIDER_MANAGED_BY_HOST=1`,
  * y el proxy no inyecta auth para `api.anthropic.com` (401 medido). Lo que sí
  * está probado es su **contrato**: qué envía, qué lee y qué hace cuando el
  * servicio falla, inyectando `fetch`, que es su única dependencia externa.
@@ -19,6 +19,7 @@
  */
 import type { AssistantTurn, ContentBlock, Provider, ProviderRequest, StopReason, Usage } from '@thyrox/agent/loop/types'
 import { accumulate, parseSseEvents, type TextDelta } from './sse.ts'
+import { authHeaders, resolveCredential, type Credential, type ReadFd } from './credentials.ts'
 
 export { parseSseEvents } from './sse.ts'
 export type { SseEvent, TextDelta } from './sse.ts'
@@ -27,7 +28,11 @@ export type RateLimits = { status?: string; reset?: string; remaining?: string }
 export type FetchImpl = (url: string, init: RequestInit) => Promise<Response>
 
 export type HttpProviderOptions = {
+  /** Llave explícita: gana a cualquier fuente del entorno. */
   apiKey?: string
+  /** El entorno del que se resuelve la credencial (por defecto, `process.env`). */
+  env?: Record<string, string | undefined>
+  readFd?: ReadFd
   baseUrl?: string
   version?: string
   /** Cuántas veces se reintenta antes de rendirse (o de caer al respaldo). */
@@ -48,7 +53,7 @@ export class AnthropicHttpProvider implements Provider {
   /** Si la última llamada tuvo que caer al modelo de respaldo. */
   lastFallbackUsed = false
 
-  private apiKey: string
+  private credential: Credential
   private baseUrl: string
   private version: string
   private maxRetries: number
@@ -57,15 +62,20 @@ export class AnthropicHttpProvider implements Provider {
   private fetchImpl: FetchImpl
 
   constructor(opts: HttpProviderOptions = {}) {
-    const key = opts.apiKey ?? process.env.ANTHROPIC_API_KEY
-    if (!key) {
+    const env = opts.env ?? process.env
+    const credential: Credential = opts.apiKey
+      ? { source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: opts.apiKey, unixSocket: env.ANTHROPIC_UNIX_SOCKET?.trim() || undefined }
+      : resolveCredential(env, opts.readFd)
+    if (credential.source === 'none') {
       throw new Error(
-        'AnthropicHttpProvider exige credencial: ANTHROPIC_API_KEY no está en el entorno. ' +
-          'Este contenedor no la tiene (el proveedor lo gestiona el anfitrión); usa RecordedProvider.',
+        'AnthropicHttpProvider exige credencial: ninguna de ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, ' +
+          'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ni ANTHROPIC_API_KEY está en el entorno' +
+          (credential.error ? ` (${credential.error})` : '') +
+          '. Sin ella, usa RecordedProvider.',
       )
     }
-    this.apiKey = key
-    this.baseUrl = opts.baseUrl ?? process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'
+    this.credential = credential
+    this.baseUrl = opts.baseUrl ?? env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'
     this.version = opts.version ?? '2023-06-01'
     this.maxRetries = opts.maxRetries ?? 3
     this.retryDelayMs = opts.retryDelayMs ?? 1000
@@ -87,12 +97,16 @@ export class AnthropicHttpProvider implements Provider {
   }
 
   private cabeceras(request: ProviderRequest): Record<string, string> {
+    const { 'anthropic-beta': authBeta, ...auth } = authHeaders(this.credential)
+    // sólo cuando se va a usar: pedir la beta para 5 m no compra nada
+    const betas = [authBeta, request.cacheTtl === '1h' ? 'extended-cache-ttl-2025-04-11' : undefined].filter(
+      (b): b is string => !!b,
+    )
     return {
       'content-type': 'application/json',
-      'x-api-key': this.apiKey,
+      ...auth,
       'anthropic-version': this.version,
-      // sólo cuando se va a usar: pedir la beta para 5 m no compra nada
-      ...(request.cacheTtl === '1h' ? { 'anthropic-beta': 'extended-cache-ttl-2025-04-11' } : {}),
+      ...(betas.length ? { 'anthropic-beta': betas.join(',') } : {}),
     }
   }
 
@@ -115,7 +129,9 @@ export class AnthropicHttpProvider implements Provider {
         method: 'POST',
         headers: this.cabeceras(request),
         body: this.cuerpo(request, model),
-      })
+        // `ANTHROPIC_UNIX_SOCKET`: Bun acepta `unix` en `fetch`
+        ...(this.credential.unixSocket ? { unix: this.credential.unixSocket } : {}),
+      } as RequestInit)
       this.leerLimites(res)
       if (res.ok) return { res, ultimo: '' }
       const texto = await res.text()

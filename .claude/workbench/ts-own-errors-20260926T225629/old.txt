@@ -1,0 +1,3 @@
+def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
+    project = package_dir / filename
+    body = {"compilerOptions": options, "include": include, "exclude": list(TEST_EXCLUDE)}

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+165 |     expect(asked).toBe(0)
+166 |     ctx.clearing = false
+167 |     clearInterval(state.spareClaimPoll)
+168 |     state.spareClaimPoll = undefined
+169 |     await pollSpareClaim(ctx)
+170 |     expect(asked).toBe(0)
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:170:19)
+(fail) el sondeo de reclamo (iD, sD) > no se solapa, y no hace nada si el sondeo ya se detuvo [0.52ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [145.00ms]

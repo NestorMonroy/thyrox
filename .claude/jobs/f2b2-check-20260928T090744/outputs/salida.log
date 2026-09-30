@@ -1,0 +1,65 @@
+ 0 pass
+ 0 fail
+== 1: sin abrir el sobre cloudcode
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 2: el esfuerzo del alias ignorado
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 3: sin el tramo bajo del presupuesto
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 4: sin retirar resultados huérfanos
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 5: required sin conciliar
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 6: las claves de Draft 2020-12 sin retirar
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 7: la respuesta sin id toma cualquier llamada
+   (provider/src/proxy/translators/geminiToolCallIds.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 8: las llamadas acumuladas nunca salen
+   (provider/src/proxy/translators/responseOpenAIToAntigravity.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 9: sin stream, la respuesta OpenAI tal cual
+   (provider/src/proxy/antigravity.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 10: con stream, los trozos OpenAI tal cual
+   (provider/src/proxy/antigravity.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 11: la ruta sin montar
+   (provider/src/proxy/server.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== 12: sin el sinónimo extra
+   (agent/effort.ts)
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 18: run: command not found
+== restaurado
+ M src/packages/agent/effort.ts
+ M src/packages/provider/src/proxy/server.ts
+ M src/packages/provider/src/proxy/translators/requestMessagesToOpenAI.ts
+?? src/packages/provider/src/proxy/antigravity.ts
+?? src/packages/provider/src/proxy/translators/geminiToolCallIds.ts
+?? src/packages/provider/src/proxy/translators/requestAntigravityToOpenAI.ts
+?? src/packages/provider/src/proxy/translators/responseOpenAIToAntigravity.ts
+.claude/workbench/mitm-f2b2-antigravity-route-20260928T090422/annul-f2b2.sh: line 36: run: command not found
+ 0 fail
+ 3169 expect() calls
+Ran 2074 tests across 66 files. [3.36s]
+src/proxy/translators/requestAntigravityToOpenAI.ts(21,10): error TS2305: Module '"@thyrox/agent/effort.js"' has no exported member 'normalizeReasoningEffort'.
+provider BUILD=2
+__tests__/proxyTranslatorsResponseOpenAIToAntigravity.test.ts(144,16): error TS18047: 'result' is possibly 'null'.
+__tests__/proxyTranslatorsResponseOpenAIToAntigravity.test.ts(144,16): error TS18046: 'result.response.candidates' is of type 'unknown'.
+src/proxy/translators/requestAntigravityToOpenAI.ts(21,10): error TS2305: Module '"@thyrox/agent/effort.js"' has no exported member 'normalizeReasoningEffort'.
+provider TEST=2
+agent BUILD=0
+agent TEST=0
+src/aliasConfig.ts(16,28): error TS2305: Module '"@thyrox/agent/effort.js"' has no exported member 'normalizeReasoningEffort'.
+mitm BUILD=2
+src/aliasConfig.ts(16,28): error TS2305: Module '"@thyrox/agent/effort.js"' has no exported member 'normalizeReasoningEffort'.
+mitm TEST=2
+ 0 fail
+Ran 11 tests across 1 file. [542.00ms]
+__BG_EXIT__=0

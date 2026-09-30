@@ -7,7 +7,7 @@
  * is spawned in the same cwd, with its meta.json persisted under
  * ~/.claude/jobs/<short>/.
  *
- * If we're already inside a bg session (CLAUDE_CODE_SESSION_KIND=bg),
+ * If we're already inside a bg session (THYROX_CODE_SESSION_KIND=bg),
  * fall through to gracefulShutdown without spawning anything — this
  * mirrors ant Tf3 line 254 (`if (E7()) ...g7H()...`).
  *
@@ -19,7 +19,7 @@ import * as React from 'react'
 import { logEvent } from '@thyrox/local-observability'
 
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import type { Message } from '@thyrox/agent/messageShapes'
 import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 
@@ -93,7 +93,7 @@ export async function call(
     }
   }
   // Already in a bg session — ant Tf3:254 short-circuit.
-  if (isBgSession()) {
+  if (isBackgroundSession()) {
     logEvent('tengu_bg_agent_action', {
       action: 'stop',
       source: 'background_command_already_bg',

@@ -1,11 +1,11 @@
 /**
  * `--import-tasks` resuelve el store por el localizador, no por `cwd`.
  *
- * H-THYROX-41. Componía `join(cwd, '.claude', 'agent-results', …)`: sin pasar
- * por ninguna de las cuatro precedencias que `storePath()` declara, y hacia el
- * hogar que `LEGACY_CONSUMER_STORE_DIR` dice NO ser destino de escritura.
- * Como `connect()` hace `mkdir` sin condición, un `cwd` equivocado no falla —
- * crea una cáscara vacía y la deja ahí.
+ * Componer `join(cwd, '.claude', 'agent-results', …)` saltaría las cuatro
+ * precedencias que `storePath()` declara y apuntaría al hogar que
+ * `LEGACY_CONSUMER_STORE_DIR` dice NO ser destino de escritura; como
+ * `connect()` hace `mkdir` sin condición, un `cwd` equivocado no fallaría:
+ * crearía una cáscara vacía (H-THYROX-41).
  *
  * EL CONTROL QUE DISCRIMINA no es «la ruta es la esperada»: es que **cambiar
  * `cwd` no cambie el destino** mientras el localizador no cambie. Una versión
@@ -20,11 +20,15 @@ import { resolveTaskStore } from '../src/commands/importTasks.ts'
 import { STORE_DIR, STORE_FILE, storePath } from '@thyrox/observability/store'
 
 const CONSUMER_ROOT_VAR = 'THYROX_CONSUMER'
+const STORE_PATH_VAR = 'THYROX_STORE'
 const previo = process.env[CONSUMER_ROOT_VAR]
+const previoStore = process.env[STORE_PATH_VAR]
 
 afterEach(() => {
   if (previo === undefined) delete process.env[CONSUMER_ROOT_VAR]
   else process.env[CONSUMER_ROOT_VAR] = previo
+  if (previoStore === undefined) delete process.env[STORE_PATH_VAR]
+  else process.env[STORE_PATH_VAR] = previoStore
 })
 
 describe('resolveTaskStore — el localizador, no el cwd', () => {
@@ -46,6 +50,10 @@ describe('resolveTaskStore — el localizador, no el cwd', () => {
 
   test('el consumidor declarado manda, y NO al hogar heredado', () => {
     const consumidor = mkdtempSync(join(tmpdir(), 'consumidor-'))
+    // El caso mide el peldaño del CONSUMIDOR, así que retira el de arriba:
+    // `THYROX_STORE` gana sobre él, y el preload del store
+    // (`tests/preload/store.ts`) lo fija en cada ejecución de bun.
+    delete process.env[STORE_PATH_VAR]
     process.env[CONSUMER_ROOT_VAR] = consumidor
     const destino = resolveTaskStore(undefined, '/cualquier/cwd')
     expect(destino).toBe(join(consumidor, STORE_DIR, STORE_FILE))

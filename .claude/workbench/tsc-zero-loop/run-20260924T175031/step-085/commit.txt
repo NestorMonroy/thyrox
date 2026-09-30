@@ -1,0 +1,16 @@
+Type the stream branch of fromAgentEvent
+
+Step 085 of the tsc-zero loop: 1974 -> 1964, accepted net.
+
+fromAgentEvent returned event.event in its 'stream' branch, a field
+of a { [key: string]: unknown } record. That unknown absorbed the
+whole inferred return type, and QueryEngine's `if (!message)
+continue` narrowed it to {}, so every read of message.type or
+message.subtype was TS2339. The source has the same body; without
+strict the narrowing does not happen.
+
+The branch now carries the shape the loop's contract declares for
+that value, StreamEvent['event'] from types/events.ts. The cast is
+type-only; the fromAgentEvent tests pass unchanged (pruebas.log).
+
+Memory (gate 3b): unknown-absorbs-return-union.

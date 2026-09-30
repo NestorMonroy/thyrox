@@ -421,7 +421,7 @@ function logAPISuccess({
   fastMode,
   previousRequestId,
   betas,
-  effort,
+  effort: _effort,
 }: {
   model: string
   preNormalizedModel: string

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeModelSupport.test.ts:
+63 |     expect(isFastModeSupportedByModel('claude-fable-5-1')).toBe(true)
+64 |   })
+65 | 
+66 |   test('un modelo que el catálogo no conoce se reconoce por el nombre', () => {
+67 |     expect(isFastModeSupportedByModel('mi-opus-5-despliegue')).toBe(true)
+68 |     expect(isFastModeSupportedByModel('mi-OPUS-4-8')).toBe(true)
+                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeModelSupport.test.ts:68:55)
+(fail) isFastModeSupportedByModel (qy) > un modelo que el catálogo no conoce se reconoce por el nombre [0.37ms]
+
+ 7 pass
+ 1 fail
+ 16 expect() calls
+Ran 8 tests across 1 file. [268.00ms]

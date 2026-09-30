@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/glob.ts`.
- * La version anterior portaba 1 de 2 exports, y los suyos eran
- * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
- * Divergencia frente a la fuente: ninguna, salvo el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
- * Refs: TASK-THYROX-0199.
- */
-
 import { basename, dirname, isAbsolute, join, sep } from 'path'
 import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
@@ -101,11 +92,11 @@ export async function glob(
   // --files: list files instead of searching content
   // --glob: filter by pattern
   // --sort=modified: sort by modification time (oldest first)
-  // --no-ignore: don't respect .gitignore (default true, set CLAUDE_CODE_GLOB_NO_IGNORE=false to respect .gitignore)
-  // --hidden: include hidden files (default true, set CLAUDE_CODE_GLOB_HIDDEN=false to exclude)
+  // --no-ignore: don't respect .gitignore (default true, set THYROX_CODE_GLOB_NO_IGNORE=false to respect .gitignore)
+  // --hidden: include hidden files (default true, set THYROX_CODE_GLOB_HIDDEN=false to exclude)
   // Note: use || instead of ?? to treat empty string as unset (defaulting to true)
-  const noIgnore = isEnvTruthy(process.env.CLAUDE_CODE_GLOB_NO_IGNORE || 'true')
-  const hidden = isEnvTruthy(process.env.CLAUDE_CODE_GLOB_HIDDEN || 'true')
+  const noIgnore = isEnvTruthy(process.env.THYROX_CODE_GLOB_NO_IGNORE || 'true')
+  const hidden = isEnvTruthy(process.env.THYROX_CODE_GLOB_HIDDEN || 'true')
   const args = [
     '--files',
     '--glob',

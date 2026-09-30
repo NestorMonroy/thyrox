@@ -1,0 +1,2091 @@
+FAIL — 2081 identificador(es) en español fuera del baseline:
+
+  src/agents/agent_store.py:889  _cargar_senales   →  cargar, senales
+  src/agents/agent_store.py:1471  _asignacion_metadata   →  asignacion
+  src/agents/agent_store.py:2028  cota_ficha   →  cota, ficha
+  src/agents/agent_store.py:2064  cota_tablero   →  cota, tablero
+  src/agents/agent_store.py:2585  _celda_rst   →  celda
+  src/agents/agent_store.py:2604  _orden_id   →  orden
+  src/agents/agent_store.py:2609  firma_estados   →  estados, firma
+  src/agents/agent_store.py:2654  _celda_bloqueada   →  bloqueada, celda
+  src/agents/agent_store.py:2677  _tabla_de_sesion   →  de, sesion, tabla
+  src/agents/agent_store.py:2720  cmd_render_tablero   →  tablero
+  src/agents/agent_store.py:2920  _invertir   →  invertir
+  src/agents/agent_store.py:387  _SUFIJO_DE_FECHA   →  de, fecha, sufijo
+  src/agents/agent_store.py:865  _CLAVE_ACTUALIZACION   →  actualizacion, clave
+  src/agents/agent_store.py:1366  _STOPWORDS_ES_EN   →  en
+  src/agents/agent_store.py:1678  _TASK_CONOCIDAS   →  conocidas
+  src/agents/agent_store.py:2057  _FILA_TABLERO   →  fila, tablero
+  src/agents/agent_store.py:2061  RUTA_TABLERO   →  ruta, tablero
+  src/agents/agent_store.py:2934  _COLUMNAS_DE_USO   →  columnas, de, uso
+  src/agents/agent_store.py:404  filas   →  filas
+  src/agents/agent_store.py:415  columnas   →  columnas
+  src/agents/agent_store.py:419  fila   →  fila
+  src/agents/agent_store.py:420  valores   →  valores
+  src/agents/agent_store.py:779  existentes   →  existentes
+  src/agents/agent_store.py:899  ruta   →  ruta
+  src/agents/agent_store.py:902  senales   →  senales
+  src/agents/agent_store.py:903  cruda   →  cruda
+  src/agents/agent_store.py:914  capas   →  capas
+  src/agents/agent_store.py:920  _CITA_HALLAZGO   →  cita, hallazgo
+  src/agents/agent_store.py:920  _SENALES_DE_RUTA   →  de, ruta, senales
+  src/agents/agent_store.py:947  texto   →  texto
+  src/agents/agent_store.py:952  cita   →  cita
+  src/agents/agent_store.py:959  candidatas   →  candidatas
+  src/agents/agent_store.py:1093  en_pk   →  en
+  src/agents/agent_store.py:1197  clave   →  clave
+  src/agents/agent_store.py:1492  reemplazo   →  reemplazo
+  src/agents/agent_store.py:1493  fundir   →  fundir
+  src/agents/agent_store.py:1725  vivos   →  vivos
+  src/agents/agent_store.py:1734  destinos   →  destinos
+  src/agents/agent_store.py:1738  movidas   →  movidas
+  src/agents/agent_store.py:1764  citas_antes   →  antes, citas
+  src/agents/agent_store.py:1846  sesion   →  sesion
+  src/agents/agent_store.py:1847  ahora   →  ahora
+  src/agents/agent_store.py:1850  sella_apertura   →  apertura, sella
+  src/agents/agent_store.py:1851  nuevas   →  nuevas
+  src/agents/agent_store.py:1852  actualizadas   →  actualizadas
+  src/agents/agent_store.py:1853  sin_cambio   →  cambio, sin
+  src/agents/agent_store.py:1854  ilegibles   →  ilegibles
+  src/agents/agent_store.py:2019  aviso   →  aviso
+  src/agents/agent_store.py:2042  cotas   →  cotas
+  src/agents/agent_store.py:2045  ficha   →  ficha
+  src/agents/agent_store.py:2084  linea   →  linea
+  src/agents/agent_store.py:2115  por_ficha   →  ficha, por
+  src/agents/agent_store.py:2116  por_tablero   →  por, tablero
+  src/agents/agent_store.py:2117  puestas   →  puestas
+  src/agents/agent_store.py:2118  intactas   →  intactas
+  src/agents/agent_store.py:2118  conservadas   →  conservadas
+  src/agents/agent_store.py:2118  sin_fuente   →  fuente, sin
+  src/agents/agent_store.py:2158  seco   →  seco
+  src/agents/agent_store.py:2159  desglose   →  desglose
+  src/agents/agent_store.py:2177  encontrado   →  encontrado
+  src/agents/agent_store.py:2180  crudo   →  crudo
+  src/agents/agent_store.py:2233  raiz   →  raiz
+  src/agents/agent_store.py:2242  universo   →  universo
+  src/agents/agent_store.py:2242  por_fuente   →  fuente, por
+  src/agents/agent_store.py:2243  conteo   →  conteo
+  src/agents/agent_store.py:2244  sin_cota   →  cota, sin
+  src/agents/agent_store.py:2300  escritas   →  escritas
+  src/agents/agent_store.py:2307  prefijo   →  prefijo
+  src/agents/agent_store.py:2326  partes   →  partes
+  src/agents/agent_store.py:2371  sin_seccion   →  seccion, sin
+  src/agents/agent_store.py:2373  tipos   →  tipos
+  src/agents/agent_store.py:2412  unitarias   →  unitarias
+  src/agents/agent_store.py:2558  con_capa   →  capa, con
+  src/agents/agent_store.py:2559  detalle   →  detalle
+  src/agents/agent_store.py:2562  modo   →  modo
+  src/agents/agent_store.py:2570  columna   →  columna
+  src/agents/agent_store.py:2585  valor   →  valor
+  src/agents/agent_store.py:2630  lineas   →  lineas
+  src/agents/agent_store.py:2654  bruto   →  bruto
+  src/agents/agent_store.py:2679  salida   →  salida
+  src/agents/agent_store.py:2737  activa   →  activa
+  src/agents/agent_store.py:2762  por_sesion   →  por, sesion
+  src/agents/agent_store.py:2770  sesiones   →  sesiones
+  src/agents/agent_store.py:2781  fuente   →  fuente
+  src/agents/agent_store.py:2814  titulo   →  titulo
+  src/agents/agent_store.py:2953  hoy   →  hoy
+  src/agents/agent_store.py:3118  sin_medir   →  medir, sin
+  src/agents/agent_store.py:3509  registrar-sesion   →  registrar, sesion
+  src/agents/agent_store.py:3522  actualizar-sesion   →  actualizar, sesion
+  src/agents/agent_store.py:3604  censo-medicion   →  censo, medicion
+  src/agents/agent_store.py:3610  censo-stop-reason   →  censo
+  src/agents/agent_store.py:3617  censo-tablas   →  censo, tablas
+  src/agents/agent_store.py:3623  listar-sesiones   →  listar, sesiones
+  src/agents/agent_store.py:3628  snapshot-tareas   →  tareas
+  src/agents/agent_store.py:3648  render-tablero   →  tablero
+  src/agents/agent_store.py:3663  derivar-capa   →  capa, derivar
+  src/agents/agent_store.py:3674  agregar-hallazgo   →  agregar, hallazgo
+  src/agents/agent_store.py:3702  fechar-apertura   →  apertura
+  src/agents/agent_store.py:3718  fechar-documentos   →  documentos
+  src/agents/agent_store.py:3735  clasificar-documentos   →  clasificar, documentos
+  src/agents/agent_store.py:3751  buscar-tareas   →  buscar, tareas
+  src/agents/agent_store.py:3774  buscar-hallazgos   →  buscar, hallazgos
+  src/agents/agent_store.py:441  padre   →  padre
+  src/agents/agent_store.py:780  tipo   →  tipo
+  src/agents/agent_store.py:796  con_tokens   →  con
+  src/agents/agent_store.py:954  declarada   →  declarada
+  src/agents/agent_store.py:1542  asignaciones   →  asignaciones
+  src/agents/agent_store.py:1743  vivo   →  vivo
+  src/agents/agent_store.py:1792  sujeto_acunado   →  acunado, sujeto
+  src/agents/agent_store.py:1796  destino   →  destino
+  src/agents/agent_store.py:2092  identificador   →  identificador
+  src/agents/agent_store.py:2181  formato   →  formato
+  src/agents/agent_store.py:2181  largo   →  largo
+  src/agents/agent_store.py:2208  fechas   →  fechas
+  src/agents/agent_store.py:2252  crudo_commit   →  crudo
+  src/agents/agent_store.py:2253  dia_commit   →  dia
+  src/agents/agent_store.py:2378  seccion   →  seccion
+  src/agents/agent_store.py:2446  aguja   →  aguja
+  src/agents/agent_store.py:2449  marcas   →  marcas
+  src/agents/agent_store.py:2474  capa   →  capa
+  src/agents/agent_store.py:2522  por_origen   →  origen, por
+  src/agents/agent_store.py:2523  sin_capa   →  capa, sin
+  src/agents/agent_store.py:2524  respetadas   →  respetadas
+  src/agents/agent_store.py:2598  viejo   →  viejo
+  src/agents/agent_store.py:2598  nuevo   →  nuevo
+  src/agents/agent_store.py:2692  bloqueada   →  bloqueada
+  src/agents/agent_store.py:2746  orden_sesion   →  orden, sesion
+  src/agents/agent_store.py:2757  sin_incorporar   →  incorporar, sin
+  src/agents/agent_store.py:2828  ejemplos   →  ejemplos
+  src/agents/agent_store.py:2858  rotulo   →  rotulo
+  src/agents/agent_store.py:2870  vivas   →  vivas
+  src/agents/agent_store.py:2876  numericos   →  numericos
+  src/agents/agent_store.py:2877  maximo   →  maximo
+  src/agents/agent_store.py:2878  hwm_ruta   →  ruta
+  src/agents/agent_store.py:2883  huecos   →  huecos
+  src/agents/agent_store.py:2955  filas_maestro   →  filas, maestro
+  src/agents/agent_store.py:2958  tablas   →  tablas
+  src/agents/agent_store.py:2964  virtuales   →  virtuales
+  src/agents/agent_store.py:2966  sombras   →  sombras
+  src/agents/agent_store.py:2973  vacias   →  vacias
+  src/agents/agent_store.py:2973  sin_fecha   →  fecha, sin
+  src/agents/agent_store.py:2974  tabla   →  tabla
+  src/agents/agent_store.py:3121  medidos   →  medidos
+  src/agents/agent_store.py:3124  cero   →  cero
+  src/agents/agent_store.py:3128  no_medidos   →  medidos
+  src/agents/agent_store.py:3131  sin_clasificar   →  clasificar, sin
+  src/agents/agent_store.py:3137  huerfanos   →  huerfanos
+  src/agents/agent_store.py:3140  agregado   →  agregado
+  src/agents/agent_store.py:3235  sin_modelo   →  modelo, sin
+  src/agents/agent_store.py:1927  antes   →  antes
+  src/agents/agent_store.py:2047  marca   →  marca
+  src/agents/agent_store.py:2087  fecha   →  fecha
+  src/agents/agent_store.py:2249  dia_declarado   →  declarado, dia
+  src/agents/agent_store.py:2383  serie   →  serie
+  src/agents/agent_store.py:2634  estado   →  estado
+  src/agents/agent_store.py:2848  viejo_s   →  viejo
+  src/agents/agent_store.py:2848  vivo_s   →  vivo
+  src/agents/agent_store.py:2977  ultima   →  ultima
+  src/agents/agent_store.py:3157  etiqueta   →  etiqueta
+  src/agents/agent_store.py:3217  catalogo   →  catalogo
+  src/agents/agent_store.py:3217  motivo   →  motivo
+  src/agents/agent_store.py:3230  por_modelo   →  modelo, por
+  src/agents/agent_store.py:3239  modelo   →  modelo
+  src/agents/agent_store.py:3239  turnos   →  turnos
+  src/agents/agent_store.py:3240  uso   →  uso
+  src/agents/agent_store.py:960  patrones   →  patrones
+  src/agents/agent_store.py:2534  origen   →  origen
+  src/agents/agent_store.py:2980  del_dia   →  del, dia
+  src/agents/anonymize_transcript.py:139  primero   →  primero
+  src/agents/anonymize_transcript.py:148  salida   →  salida
+  src/agents/anonymize_transcript.py:150  marca   →  marca
+  src/agents/anonymize_transcript.py:162  mensaje   →  mensaje
+  src/agents/anonymize_transcript.py:185  entradas   →  entradas
+  src/agents/anonymize_transcript.py:196  antes   →  antes
+  src/agents/anonymize_transcript.py:196  despues   →  despues
+  src/agents/anonymize_transcript.py:198  fallos   →  fallos
+  src/agents/anonymize_transcript.py:199  clave   →  clave
+  src/agents/anonymize_transcript.py:164  limpio   →  limpio
+  src/agents/anonymize_transcript.py:190  limpia   →  limpia
+  src/agents/anonymize_transcript.py:231  texto   →  texto
+  src/agents/anonymize_transcript.py:231  salidas   →  salidas
+  src/agents/anonymize_transcript.py:261  destino   →  destino
+  src/agents/anonymize_transcript.py:154  visto   →  visto
+  src/agents/backfill_agent_sessions.py:104  _ultimo_texto   →  texto, ultimo
+  src/agents/backfill_agent_sessions.py:127  _primer_y_ultimo_timestamp   →  primer, ultimo
+  src/agents/backfill_agent_sessions.py:150  _sesion_id   →  sesion
+  src/agents/backfill_agent_sessions.py:101  _FIRMA_FALLO   →  fallo, firma
+  src/agents/backfill_agent_sessions.py:105  ultimo   →  ultimo
+  src/agents/backfill_agent_sessions.py:128  primero   →  primero
+  src/agents/backfill_agent_sessions.py:178  raiz   →  raiz
+  src/agents/backfill_agent_sessions.py:185  ts_ahora   →  ahora
+  src/agents/backfill_agent_sessions.py:186  procesados   →  procesados
+  src/agents/backfill_agent_sessions.py:189  ruta   →  ruta
+  src/agents/backfill_agent_sessions.py:199  uso   →  uso
+  src/agents/backfill_agent_sessions.py:200  texto_final   →  texto
+  src/agents/backfill_agent_sessions.py:119  bloque   →  bloque
+  src/agents/backfill_agent_sessions.py:202  iniciado   →  iniciado
+  src/agents/backfill_agent_sessions.py:202  actualizado   →  actualizado
+  src/agents/classify_agents.py:152  CANT_PROCEED_RE   →  cant
+  src/agents/classify_agents.py:500  sin_texto   →  sin, texto
+  src/agents/classify_agents.py:475  origen   →  origen
+  src/agents/drain_spool.py:147  tope   →  tope
+  src/agents/drain_spool.py:148  reenviados   →  reenviados
+  src/agents/drain_spool.py:148  abandonados   →  abandonados
+  src/agents/drain_spool.py:149  quedan   →  quedan
+  src/agents/drain_spool.py:151  evento   →  evento
+  src/agents/drain_spool.py:186  medidos   →  medidos
+  src/agents/drain_spool.py:188  pendientes   →  pendientes
+  src/agents/drain_spool.py:161  resultado   →  resultado
+  src/agents/drain_spool.py:164  detalle   →  detalle
+  src/agents/measure_delta.py:80  estado   →  estado
+  src/agents/measure_delta.py:85  archivos_python   →  archivos
+  src/agents/measure_delta.py:103  arrancar   →  arrancar
+  src/agents/measure_delta.py:116  parar   →  parar
+  src/agents/measure_delta.py:60  texto   →  texto
+  src/agents/measure_delta.py:71  fuera   →  fuera
+  src/agents/measure_delta.py:72  nodo   →  nodo
+  src/agents/measure_delta.py:91  rutas   →  rutas
+  src/agents/measure_delta.py:92  linea   →  linea
+  src/agents/measure_delta.py:111  destino   →  destino
+  src/agents/measure_delta.py:122  tipo   →  tipo
+  src/agents/measure_delta.py:123  origen   →  origen
+  src/agents/measure_delta.py:124  previo   →  previo
+  src/agents/measure_delta.py:131  lineas   →  lineas
+  src/agents/measure_delta.py:168  marca   →  marca
+  src/agents/measure_delta.py:188  modo   →  modo
+  src/agents/measure_delta.py:68  arbol   →  arbol
+  src/agents/measure_delta.py:95  ruta   →  ruta
+  src/agents/measure_delta.py:138  nuevos   →  nuevos
+  src/agents/measure_delta.py:143  archivo   →  archivo
+  src/agents/measure_delta.py:136  antes_head   →  antes
+  src/agents/measure_delta.py:136  antes_porcelain   →  antes
+  src/agents/measure_delta.py:144  absoluto   →  absoluto
+  src/agents/measure_delta.py:149  antes   →  antes
+  src/agents/measure_delta.py:146  ahora   →  ahora
+  src/agents/measure_delta.py:150  mas   →  mas
+  src/agents/measure_delta.py:150  menos   →  menos
+  src/agents/measure_delta.py:152  detalle   →  detalle
+  src/agents/measure_delta.py:195  nombre   →  nombre
+  src/agents/measure_subagent_usage.py:138  recolectar   →  recolectar
+  src/agents/measure_subagent_usage.py:155  resumen   →  resumen
+  src/agents/measure_subagent_usage.py:64  PESO   →  peso
+  src/agents/measure_subagent_usage.py:85  CLAVE   →  clave
+  src/agents/measure_subagent_usage.py:91  ruta   →  ruta
+  src/agents/measure_subagent_usage.py:138  raiz   →  raiz
+  src/agents/measure_subagent_usage.py:141  filas   →  filas
+  src/agents/measure_subagent_usage.py:157  canal   →  canal
+  src/agents/measure_subagent_usage.py:242  grupos   →  grupos
+  src/agents/measure_subagent_usage.py:165  agentes   →  agentes
+  src/agents/measure_subagent_usage.py:167  equiv_por_agente_media   →  agente, por
+  src/agents/measure_subagent_usage.py:168  equiv_por_agente_mediana   →  agente, mediana, por
+  src/agents/measure_subagent_usage.py:169  equiv_por_turno_media   →  por, turno
+  src/agents/measure_subagent_usage.py:170  equiv_por_turno_mediana   →  mediana, por, turno
+  src/agents/measure_subagent_usage.py:171  turnos_media   →  turnos
+  src/agents/measure_subagent_usage.py:172  turnos_mediana   →  mediana, turnos
+  src/agents/measure_subagent_usage.py:104  turnos   →  turnos
+  src/agents/measure_subagent_usage.py:104  modelo   →  modelo
+  src/agents/merge_sqlite_union.py:63  tablas_virtuales   →  tablas, virtuales
+  src/agents/merge_sqlite_union.py:76  tablas   →  tablas
+  src/agents/merge_sqlite_union.py:89  columnas   →  columnas
+  src/agents/merge_sqlite_union.py:93  tiene_clave_primaria   →  clave, primaria, tiene
+  src/agents/merge_sqlite_union.py:97  unir   →  unir
+  src/agents/merge_sqlite_union.py:56  TABLAS_INTERNAS_PREFIJO   →  internas, prefijo, tablas
+  src/agents/merge_sqlite_union.py:60  SUFIJOS_SOMBRA_FTS   →  sombra, sufijos
+  src/agents/merge_sqlite_union.py:63  conexion   →  conexion
+  src/agents/merge_sqlite_union.py:63  esquema   →  esquema
+  src/agents/merge_sqlite_union.py:70  filas   →  filas
+  src/agents/merge_sqlite_union.py:81  virtuales   →  virtuales
+  src/agents/merge_sqlite_union.py:82  sombras   →  sombras
+  src/agents/merge_sqlite_union.py:89  tabla   →  tabla
+  src/agents/merge_sqlite_union.py:97  destino   →  destino
+  src/agents/merge_sqlite_union.py:97  origen   →  origen
+  src/agents/merge_sqlite_union.py:102  nuestras   →  nuestras
+  src/agents/merge_sqlite_union.py:103  suyas   →  suyas
+  src/agents/merge_sqlite_union.py:105  insertadas   →  insertadas
+  src/agents/merge_sqlite_union.py:105  omitidas   →  omitidas
+  src/agents/merge_sqlite_union.py:129  antes   →  antes
+  src/agents/merge_sqlite_union.py:130  candidatas   →  candidatas
+  src/agents/merge_sqlite_union.py:132  despues   →  despues
+  src/agents/merge_sqlite_union.py:151  _ancestro   →  ancestro
+  src/agents/merge_sqlite_union.py:151  nuestro   →  nuestro
+  src/agents/merge_sqlite_union.py:151  suyo   →  suyo
+  src/agents/merge_sqlite_union.py:82  sufijo   →  sufijo
+  src/agents/merge_sqlite_union.py:90  fila   →  fila
+  src/agents/merge_stores.py:77  register_resolver   →  resolver
+  src/agents/merge_stores.py:86  resolver_for   →  resolver
+  src/agents/merge_stores.py:49  Resolver   →  resolver
+  src/agents/merge_stores.py:77  resolver   →  resolver
+  src/agents/merge_stores.py:129  nombres   →  nombres
+  src/agents/merge_stores.py:139  reales   →  reales
+  src/agents/merge_stores.py:160  comunes   →  comunes
+  src/agents/merge_stores.py:166  lista   →  lista
+  src/agents/merge_stores.py:167  destino   →  destino
+  src/agents/merge_stores.py:172  insertadas   →  insertadas
+  src/agents/merge_stores.py:172  actualizadas   →  actualizadas
+  src/agents/merge_stores.py:172  iguales   →  iguales
+  src/agents/merge_stores.py:172  destino_mas_nuevo   →  destino, mas, nuevo
+  src/agents/merge_stores.py:204  tabla   →  tabla
+  src/agents/merge_stores.py:209  resolvedor   →  resolvedor
+  src/agents/merge_stores.py:210  columnas_ignoradas   →  columnas, ignoradas
+  src/agents/merge_stores.py:257  ruta   →  ruta
+  src/agents/merge_stores.py:261  informe   →  informe
+  src/agents/merge_stores.py:262  modo   →  modo
+  src/agents/merge_stores.py:110  cita_d   →  cita
+  src/agents/merge_stores.py:110  cita_o   →  cita
+  src/agents/merge_stores.py:163  omitida   →  omitida
+  src/agents/merge_stores.py:174  fila   →  fila
+  src/agents/merge_stores.py:175  clave   →  clave
+  src/agents/merge_stores.py:187  gana   →  gana
+  src/agents/model_catalog.py:298  _cmd_costo   →  costo
+  src/agents/model_catalog.py:321  _cmd_ficha   →  ficha
+  src/agents/model_catalog.py:330  _cmd_por_modelo   →  modelo, por
+  src/agents/model_catalog.py:457  _cmd_sesion   →  sesion
+  src/agents/model_catalog.py:45  RAIZ   →  raiz
+  src/agents/model_catalog.py:336  con   →  con
+  src/agents/model_catalog.py:342  universo   →  universo
+  src/agents/model_catalog.py:343  medidos   →  medidos
+  src/agents/model_catalog.py:506  costo   →  costo
+  src/agents/model_catalog.py:513  ficha   →  ficha
+  src/agents/model_catalog.py:515  por-modelo   →  modelo, por
+  src/agents/model_catalog.py:522  sesion   →  sesion
+  src/agents/model_catalog.py:118  motivo   →  motivo
+  src/agents/model_catalog.py:491  leer   →  leer
+  src/agents/reconcile_store.py:159  _cargar_hook   →  cargar
+  src/agents/reconcile_store.py:349  _ids_incompletos   →  incompletos
+  src/agents/reconcile_store.py:443  _desenlace_erroneo   →  desenlace, erroneo
+  src/agents/reconcile_store.py:487  _desenlace_contra_journal   →  contra, desenlace
+  src/agents/reconcile_store.py:587  _declarar_no_medido   →  declarar, medido
+  src/agents/reconcile_store.py:697  _cierre   →  cierre
+  src/agents/reconcile_store.py:806  _registrar   →  registrar
+  src/agents/reconcile_store.py:824  _completar   →  completar
+  src/agents/reconcile_store.py:864  _tiene_sidecar   →  tiene
+  src/agents/reconcile_store.py:157  SILENCIO_MAXIMO_S   →  maximo, silencio
+  src/agents/reconcile_store.py:199  _telemetria   →  telemetria
+  src/agents/reconcile_store.py:122  raiz   →  raiz
+  src/agents/reconcile_store.py:178  ruta   →  ruta
+  src/agents/reconcile_store.py:265  indice   →  indice
+  src/agents/reconcile_store.py:300  ultimo   →  ultimo
+  src/agents/reconcile_store.py:471  malas   →  malas
+  src/agents/reconcile_store.py:700  uso   →  uso
+  src/agents/reconcile_store.py:774  nivel   →  nivel
+  src/agents/reconcile_store.py:788  fallo   →  fallo
+  src/agents/reconcile_store.py:810  alta   →  alta
+  src/agents/reconcile_store.py:943  rol   →  rol
+  src/agents/reconcile_store.py:944  estado   →  estado
+  src/agents/reconcile_store.py:975  presentes   →  presentes
+  src/agents/reconcile_store.py:976  incompletos   →  incompletos
+  src/agents/reconcile_store.py:982  faltan   →  faltan
+  src/agents/reconcile_store.py:992  erroneas   →  erroneas
+  src/agents/reconcile_store.py:995  vivos   →  vivos
+  src/agents/reconcile_store.py:997  reparables   →  reparables
+  src/agents/reconcile_store.py:1019  reparados   →  reparados
+  src/agents/reconcile_store.py:1019  intactos   →  intactos
+  src/agents/reconcile_store.py:1033  no_medidos   →  medidos
+  src/agents/reconcile_store.py:1036  nivelados   →  nivelados
+  src/agents/reconcile_store.py:228  edad   →  edad
+  src/agents/reconcile_store.py:368  faltantes   →  faltantes
+  src/agents/reconcile_store.py:467  filas   →  filas
+  src/agents/reconcile_store.py:474  fila   →  fila
+  src/agents/reconcile_store.py:517  esperado   →  esperado
+  src/agents/reconcile_store.py:616  candidatos   →  candidatos
+  src/agents/reconcile_store.py:622  irrecuperables   →  irrecuperables
+  src/agents/reconcile_store.py:674  pendientes   →  pendientes
+  src/agents/reconcile_store.py:678  tocadas   →  tocadas
+  src/agents/reconcile_store.py:841  pase   →  pase
+  src/agents/reconcile_store.py:857  detalle   →  detalle
+  src/agents/reconcile_store.py:270  lineas   →  lineas
+  src/agents/reconcile_store.py:311  tipo   →  tipo
+  src/agents/reconcile_store.py:681  marca   →  marca
+  src/agents/register_session.py:253  _moda   →  moda
+  src/agents/register_session.py:611  _telemetria   →  telemetria
+  src/agents/register_session.py:58  MODELO_SINTETICO   →  modelo, sintetico
+  src/agents/register_session.py:63  RAZON_CACHE_WRITE   →  razon
+  src/agents/register_session.py:117  valor   →  valor
+  src/agents/register_session.py:138  transcript_presente   →  presente
+  src/agents/register_session.py:166  hechos   →  hechos
+  src/agents/register_session.py:167  evento   →  evento
+  src/agents/register_session.py:172  clave   →  clave
+  src/agents/register_session.py:176  mensaje   →  mensaje
+  src/agents/register_session.py:205  ultimo   →  ultimo
+  src/agents/register_session.py:206  cuota   →  cuota
+  src/agents/register_session.py:236  texto   →  texto
+  src/agents/register_session.py:237  contenido   →  contenido
+  src/agents/register_session.py:253  conteo   →  conteo
+  src/agents/register_session.py:308  por_id   →  por
+  src/agents/register_session.py:314  esfuerzos   →  esfuerzos
+  src/agents/register_session.py:315  versiones   →  versiones
+  src/agents/register_session.py:321  compactaciones   →  compactaciones
+  src/agents/register_session.py:322  tokens_tirados   →  tirados
+  src/agents/register_session.py:323  ultimo_cierre   →  cierre, ultimo
+  src/agents/register_session.py:408  campos   →  campos
+  src/agents/register_session.py:410  totales   →  totales
+  src/agents/register_session.py:411  modelos   →  modelos
+  src/agents/register_session.py:412  turnos   →  turnos
+  src/agents/register_session.py:425  con_ttl   →  con
+  src/agents/register_session.py:434  crudo   →  crudo
+  src/agents/register_session.py:435  modelo   →  modelo
+  src/agents/register_session.py:491  perfil   →  perfil
+  src/agents/register_session.py:587  ruta   →  ruta
+  src/agents/register_session.py:597  conocidas   →  conocidas
+  src/agents/register_session.py:632  primero   →  primero
+  src/agents/register_session.py:668  duracion   →  duracion
+  src/agents/register_session.py:734  subcomando   →  subcomando
+  src/agents/register_session.py:767  destino   →  destino
+  src/agents/register_session.py:427  razon   →  razon
+  src/agents/register_session.py:496  ttl_medido   →  medido
+  src/agents/register_session.py:502  modelos_vistos   →  modelos, vistos
+  src/agents/register_session.py:503  turnos_sinteticos   →  sinteticos, turnos
+  src/agents/register_session.py:509  esfuerzos_vistos   →  esfuerzos, vistos
+  src/agents/register_session.py:510  versiones_vistas   →  versiones, vistas
+  src/agents/register_session.py:511  tiers_vistos   →  vistos
+  src/agents/register_session.py:564  vacio   →  vacio
+  src/agents/register_session.py:594  datos   →  datos
+  src/agents/register_session.py:756  bandera   →  bandera
+  src/agents/register_session.py:900  marca   →  marca
+  src/agents/register_session.py:900  claves_de_payload   →  claves, de
+  src/agents/register_session.py:913  tareas   →  tareas
+  src/agents/register_session.py:1047  mensaje_final   →  mensaje
+  src/agents/register_session.py:1048  entrego   →  entrego
+  src/agents/register_session.py:918  clases   →  clases
+  src/agents/register_session.py:919  homonima   →  homonima
+  src/agents/register_session.py:920  tarea   →  tarea
+  src/agents/register_session.py:934  uso   →  uso
+  src/agents/register_session.py:967  fallo   →  fallo
+  src/agents/register_session.py:393  detalle   →  detalle
+  src/agents/register_session.py:923  clase   →  clase
+  src/agents/register_session.py:649  bloque   →  bloque
+  src/agents/register_session.py:651  nombre   →  nombre
+  src/corpus/backfill_findings_history.py:108  _parsear_hallazgo   →  hallazgo, parsear
+  src/corpus/backfill_findings_history.py:70  _SEVERIDAD_RE   →  severidad
+  src/corpus/backfill_findings_history.py:73  _TITULO_RE   →  titulo
+  src/corpus/backfill_findings_history.py:75  _SEVERIDAD_CANON   →  severidad
+  src/corpus/backfill_findings_history.py:76  CRITICA   →  critica
+  src/corpus/backfill_findings_history.py:76  CRÍTICA   →  tica
+  src/corpus/backfill_findings_history.py:77  ALTA   →  alta
+  src/corpus/backfill_findings_history.py:77  BAJA   →  baja
+  src/corpus/backfill_findings_history.py:81  _PREFIJO_A_SUBMODULO   →  prefijo, submodulo
+  src/corpus/backfill_findings_history.py:87  texto   →  texto
+  src/corpus/backfill_findings_history.py:89  campos   →  campos
+  src/corpus/backfill_findings_history.py:90  en_meta   →  en
+  src/corpus/backfill_findings_history.py:91  linea   →  linea
+  src/corpus/backfill_findings_history.py:108  ruta   →  ruta
+  src/corpus/backfill_findings_history.py:114  prefijo   →  prefijo
+  src/corpus/backfill_findings_history.py:122  partes   →  partes
+  src/corpus/backfill_findings_history.py:137  cuerpo   →  cuerpo
+  src/corpus/backfill_findings_history.py:171  archivos   →  archivos
+  src/corpus/backfill_findings_history.py:192  procesados   →  procesados
+  src/corpus/backfill_findings_history.py:193  omitidos   →  omitidos
+  src/corpus/backfill_findings_history.py:112  _omitido   →  omitido
+  src/corpus/backfill_findings_history.py:246  razon   →  razon
+  src/corpus/backfill_findings_history.py:198  datos   →  datos
+  src/corpus/bie_series.py:77  primer   →  primer
+  src/corpus/bie_series.py:77  segundo   →  segundo
+  src/corpus/bie_series.py:77  tercer   →  tercer
+  src/corpus/bie_series.py:77  cuarto   →  cuarto
+  src/corpus/census_counterparts.py:127  ruta   →  ruta
+  src/corpus/census_counterparts.py:135  raices   →  raices
+  src/corpus/census_counterparts.py:136  filas   →  filas
+  src/corpus/census_counterparts.py:137  ignoradas   →  ignoradas
+  src/corpus/census_counterparts.py:139  cruda   →  cruda
+  src/corpus/census_counterparts.py:174  raiz   →  raiz
+  src/corpus/census_counterparts.py:252  sin_resolver   →  resolver, sin
+  src/corpus/census_counterparts.py:259  nuestros   →  nuestros
+  src/corpus/census_counterparts.py:266  conteo   →  conteo
+  src/corpus/census_counterparts.py:267  sin_declarar   →  declarar, sin
+  src/corpus/census_counterparts.py:205  nuestro_repo   →  nuestro
+  src/corpus/census_counterparts.py:254  nombres   →  nombres
+  src/corpus/census_counterparts.py:293  tipo   →  tipo
+  src/corpus/census_counterparts.py:153  izquierda   →  izquierda
+  src/corpus/census_counterparts.py:153  nuestro   →  nuestro
+  src/corpus/census_counterparts.py:226  alcanzables   →  alcanzables
+  src/corpus/census_counterparts.py:272  donde   →  donde
+  src/corpus/census_counterparts.py:162  resto   →  resto
+  src/corpus/census_counterparts.py:282  candidatas   →  candidatas
+  src/corpus/census_message_envelopes.py:36  leer_cadenas   →  cadenas, leer
+  src/corpus/census_message_envelopes.py:29  UNIVERSO   →  universo
+  src/corpus/census_message_envelopes.py:36  ruta   →  ruta
+  src/corpus/census_message_envelopes.py:49  texto   →  texto
+  src/corpus/census_message_envelopes.py:51  hallado   →  hallado
+  src/corpus/census_message_envelopes.py:67  sobre   →  sobre
+  src/corpus/census_message_envelopes.py:67  formas   →  formas
+  src/corpus/census_message_envelopes.py:94  comparten   →  comparten
+  src/corpus/census_message_envelopes.py:99  quieto   →  quieto
+  src/corpus/census_message_envelopes.py:61  atributo   →  atributo
+  src/corpus/census_message_envelopes.py:62  estado   →  estado
+  src/corpus/census_message_envelopes.py:114  dato   →  dato
+  src/corpus/census_scripts.py:241  huerfano   →  huerfano
+  src/corpus/document_types.py:45  alcance   →  alcance
+  src/corpus/document_types.py:47  analisis   →  analisis
+  src/corpus/document_types.py:49  decisiones   →  decisiones
+  src/corpus/document_types.py:51  tareas   →  tareas
+  src/corpus/document_types.py:53  progreso   →  progreso
+  src/corpus/document_types.py:55  hallazgo   →  hallazgo
+  src/corpus/document_types.py:60  reporte   →  reporte
+  src/corpus/document_types.py:67  sol   →  sol
+  src/corpus/document_types.py:98  tipo   →  tipo
+  src/corpus/extract_pptx.py:39  para   →  para
+  src/corpus/find_reference_home.py:221  estado   →  estado
+  src/corpus/find_reference_home.py:256  alcance   →  alcance
+  src/corpus/list_corpus_builds.py:90  hijo   →  hijo
+  src/corpus/list_corpus_builds.py:101  valor   →  valor
+  src/corpus/list_corpus_builds.py:102  unidad   →  unidad
+  src/corpus/list_corpus_builds.py:110  partes   →  partes
+  src/corpus/list_corpus_builds.py:122  entradas   →  entradas
+  src/corpus/list_corpus_builds.py:142  ancho_nombre   →  ancho, nombre
+  src/corpus/list_corpus_builds.py:143  lineas   →  lineas
+  src/corpus/list_corpus_builds.py:157  con_volcado   →  con, volcado
+  src/corpus/list_corpus_builds.py:158  con_bunfs   →  con
+  src/corpus/list_corpus_builds.py:159  con_src   →  con
+  src/corpus/list_corpus_builds.py:160  con_manifest   →  con
+  src/corpus/list_corpus_builds.py:161  derivadas   →  derivadas
+  src/corpus/list_corpus_builds.py:130  presentes   →  presentes
+  src/corpus/list_corpus_builds.py:145  etiqueta   →  etiqueta
+  src/corpus/list_corpus_builds.py:146  marcadores   →  marcadores
+  src/corpus/list_corpus_builds.py:147  derivado   →  derivado
+  src/corpus/list_corpus_builds.py:129  sufijo   →  sufijo
+  src/corpus/markdown_to_rst.py:109  _markup_abierto   →  abierto
+  src/corpus/markdown_to_rst.py:195  cuerpo   →  cuerpo
+  src/corpus/markdown_to_rst.py:196  siguiente   →  siguiente
+  src/corpus/markdown_to_rst.py:246  protegida   →  protegida
+  src/corpus/markdown_to_rst.py:138  cita   →  cita
+  src/corpus/markdown_to_rst.py:139  cita_previa   →  cita, previa
+  src/corpus/markdown_to_rst.py:140  continua   →  continua
+  src/corpus/migration_report.py:92  salida   →  salida
+  src/corpus/migration_report.py:108  proceso   →  proceso
+  src/corpus/migration_report.py:128  opciones   →  opciones
+  src/corpus/migration_report.py:146  fallidos   →  fallidos
+  src/docs/check_role_abstraction.py:36  check_regla_a   →  regla
+  src/docs/check_role_abstraction.py:115  check_regla_b   →  regla
+  src/docs/check_role_abstraction.py:141  check_regla_c   →  regla
+  src/docs/check_role_abstraction.py:64  ATRIBUTOS_OBSOLETOS   →  atributos, obsoletos
+  src/docs/check_role_abstraction.py:74  ORM_NARRATIVA   →  narrativa
+  src/docs/check_role_abstraction.py:135  ORM_ESPECIFICO   →  especifico
+  src/docs/check_role_abstraction.py:36  contenido   →  contenido
+  src/docs/check_role_abstraction.py:39  m_inicio   →  inicio
+  src/docs/check_role_abstraction.py:40  m_fin   →  fin
+  src/docs/check_role_abstraction.py:45  inicio   →  inicio
+  src/docs/check_role_abstraction.py:46  fin   →  fin
+  src/docs/check_role_abstraction.py:93  resultado   →  resultado
+  src/docs/check_role_abstraction.py:95  indent_bloque   →  bloque
+  src/docs/check_role_abstraction.py:118  lineas_narrativa   →  lineas, narrativa
+  src/docs/check_role_abstraction.py:169  reportadas_b   →  reportadas
+  src/docs/check_role_abstraction.py:177  raiz   →  raiz
+  src/docs/check_role_abstraction.py:178  archivos   →  archivos
+  src/docs/check_role_abstraction.py:120  texto   →  texto
+  src/docs/check_role_abstraction.py:183  partes   →  partes
+  src/docs/check_role_abstraction.py:52  regla   →  regla
+  src/docs/check_role_abstraction.py:53  archivo   →  archivo
+  src/docs/check_role_abstraction.py:54  linea   →  linea
+  src/docs/check_role_abstraction.py:55  fragmento   →  fragmento
+  src/docs/scaffold_initiative.py:69  alcance   →  alcance
+  src/docs/scaffold_initiative.py:70  tareas   →  tareas
+  src/hallazgo/hallazgo_ids.py:291  acunar   →  acunar
+  src/hallazgo/hallazgo_ids.py:298  verificar   →  verificar
+  src/hooks/bridge_hooks.py:213  antes   →  antes
+  src/hooks/flow_selection.py:108  archivo   →  archivo
+  src/hooks/flow_selection.py:124  carpeta   →  carpeta
+  src/hooks/flow_selection.py:125  homonimo   →  homonimo
+  src/hooks/flow_selection.py:137  resueltos   →  resueltos
+  src/hooks/flow_selection.py:138  sin_resolver   →  resolver, sin
+  src/hooks/flow_selection.py:151  mapa   →  mapa
+  src/hooks/flow_selection.py:151  nombre   →  nombre
+  src/hooks/maintenance_chain.py:188  partes   →  partes
+  src/hooks/stop_gate.py:156  hallado   →  hallado
+  src/hooks/stop_gate.py:154  ruta   →  ruta
+  src/hooks/stop_gate.py:185  cuales   →  cuales
+  src/hooks/stop_tests.py:170  entorno   →  entorno
+  src/measurement/normalizer_magnitude.py:110  FLOAT64_MIN_SUBNORMAL   →  subnormal
+  src/packages/agent/bin/extract_model_registry.py:46  bloque_balanceado   →  balanceado, bloque
+  src/packages/agent/bin/extract_model_registry.py:154  ordenar   →  ordenar
+  src/packages/agent/bin/extract_model_registry.py:43  ANCLA   →  ancla
+  src/packages/agent/bin/extract_model_registry.py:46  texto   →  texto
+  src/packages/agent/bin/extract_model_registry.py:46  ancla   →  ancla
+  src/packages/agent/bin/extract_model_registry.py:46  abre   →  abre
+  src/packages/agent/bin/extract_model_registry.py:46  cierra   →  cierra
+  src/packages/agent/bin/extract_model_registry.py:58  inicio   →  inicio
+  src/packages/agent/bin/extract_model_registry.py:64  profundidad   →  profundidad
+  src/packages/agent/bin/extract_model_registry.py:65  comilla   →  comilla
+  src/packages/agent/bin/extract_model_registry.py:66  escapado   →  escapado
+  src/packages/agent/bin/extract_model_registry.py:106  bloque   →  bloque
+  src/packages/agent/bin/extract_model_registry.py:114  salida   →  salida
+  src/packages/agent/bin/extract_model_registry.py:154  valor   →  valor
+  src/packages/agent/bin/extract_model_registry.py:210  fuente   →  fuente
+  src/packages/agent/bin/extract_model_registry.py:243  ruta   →  ruta
+  src/packages/agent/bin/extract_model_registry.py:245  destino   →  destino
+  src/packages/agent/bin/extract_model_registry.py:268  modelos   →  modelos
+  src/packages/agent/bin/extract_model_registry.py:269  registro   →  registro
+  src/packages/agent/bin/extract_model_registry.py:296  salida_modelos   →  modelos, salida
+  src/packages/agent/bin/extract_model_registry.py:304  salida_alias   →  salida
+  src/packages/agent/bin/extract_model_registry.py:351  sin_tier   →  sin
+  src/packages/agent/bin/extract_model_registry.py:224  fila   →  fila
+  src/packages/agent/bin/extract_model_registry.py:261  catalogo   →  catalogo
+  src/paths/declarations.py:119  resolver   →  resolver
+  src/paths/reach.py:154  cuenta   →  cuenta
+  src/paths/reach.py:155  hermano   →  hermano
+  src/paths/reach.py:176  del_entorno   →  del, entorno
+  src/paths/reach.py:179  derivado   →  derivado
+  src/paths/reach.py:683  declaradas   →  declaradas
+  src/paths/reach.py:158  prefijo   →  prefijo
+  src/paths/reach.py:162  mejor   →  mejor
+  src/paths/reach.py:162  veces   →  veces
+  src/repo/pending_work.py:141  exigidos   →  exigidos
+  src/repo/pending_work.py:197  trabajo   →  trabajo
+  src/rules/paths.py:26  _AQUI   →  aqui
+  src/rules/paths.py:27  _RAIZ   →  raiz
+  src/session/adopt_background.py:203  leido   →  leido
+  src/session/background.py:211  estado   →  estado
+  src/session/background.py:265  destino   →  destino
+  src/session/background.py:266  ancho   →  ancho
+  src/session/background.py:268  resultado   →  resultado
+  src/session/background.py:184  salida   →  salida
+  src/session/background.py:185  proceso   →  proceso
+  src/session/clone_bootstrap.py:277  _comentario   →  comentario
+  src/session/clone_bootstrap.py:381  resultado   →  resultado
+  src/session/clone_bootstrap.py:248  bajo_raiz   →  bajo, raiz
+  src/session/generate_bin.py:315  cubiertos   →  cubiertos
+  src/session/generate_bin.py:316  fuera   →  fuera
+  src/session/generate_bin.py:317  raiz_src   →  raiz
+  src/session/generate_bin.py:533  entorno   →  entorno
+  src/session/generate_bin.py:537  linea   →  linea
+  src/session/generate_bin.py:835  fallos   →  fallos
+  src/session/generate_bin.py:833  del_proveedor   →  del, proveedor
+  src/session/generate_bin.py:846  hecho   →  hecho
+  src/session/generate_bin.py:963  aviso   →  aviso
+  src/session/generate_bin.py:850  razon   →  razon
+  src/session/generate_bin.py:843  forma   →  forma
+  src/session/generate_bin.py:843  objetivo   →  objetivo
+  src/session/generate_bin.py:922  nombre   →  nombre
+  src/session/job_runs.py:136  ancla   →  ancla
+  src/session/job_runs.py:202  manifiesto   →  manifiesto
+  src/session/job_runs.py:234  ruta   →  ruta
+  src/session/job_runs.py:244  presentes   →  presentes
+  src/session/marker_wait.py:169  ruta   →  ruta
+  src/session/marker_wait.py:170  compilado   →  compilado
+  src/session/marker_wait.py:171  inicio   →  inicio
+  src/session/marker_wait.py:324  resultado   →  resultado
+  src/session/marker_wait.py:187  razon   →  razon
+  src/session/marker_wait.py:146  linea   →  linea
+  src/session/parallel.py:101  ancho   →  ancho
+  src/session/parallel.py:113  etapa1   →  etapa
+  src/session/parallel.py:114  etapa2   →  etapa
+  src/session/probe_model_switch_cache.py:169  ida   →  ida
+  src/session/probe_model_switch_cache.py:170  destino   →  destino
+  src/session/probe_model_switch_cache.py:171  vuelta   →  vuelta
+  src/session/probe_model_switch_cache.py:201  orden   →  orden
+  src/session/probe_model_switch_cache.py:202  pares   →  pares
+  src/session/probe_model_switch_cache.py:203  origen   →  origen
+  src/session/probe_model_switch_cache.py:215  controles   →  controles
+  src/session/probe_model_switch_cache.py:270  evento   →  evento
+  src/session/probe_model_switch_cache.py:330  modelos   →  modelos
+  src/session/probe_model_switch_cache.py:341  filas   →  filas
+  src/session/probe_model_switch_cache.py:342  pasos   →  pasos
+  src/session/probe_model_switch_cache.py:376  matriz   →  matriz
+  src/session/probe_model_switch_cache.py:377  resultado   →  resultado
+  src/session/probe_model_switch_cache.py:378  umbral_reuso   →  reuso, umbral
+  src/session/probe_model_switch_cache.py:221  previo   →  previo
+  src/session/probe_model_switch_cache.py:222  leido   →  leido
+  src/session/probe_model_switch_cache.py:345  etiqueta   →  etiqueta
+  src/session/probe_model_switch_cache.py:346  destino_row   →  destino
+  src/session/probe_model_switch_cache.py:381  clave   →  clave
+  src/session/probe_model_switch_cache.py:347  sufijo   →  sufijo
+  src/session/probe_model_switch_cache.py:347  modelo   →  modelo
+  src/session/probe_model_switch_cache.py:354  nombre   →  nombre
+  src/session/probe_model_switch_cache.py:357  fila   →  fila
+  src/session/probe_model_switch_cache.py:373  servido_ida   →  ida, servido
+  src/session/probe_model_switch_cache.py:374  servido_vuelta   →  servido, vuelta
+  src/session/reconcile_user_hooks.py:141  nuevo   →  nuevo
+  src/session/report_client_caps.py:60  binario   →  binario
+  src/session/report_client_caps.py:66  ruta   →  ruta
+  src/session/report_client_caps.py:77  cadenas   →  cadenas
+  src/session/report_client_caps.py:79  conteo   →  conteo
+  src/session/report_client_caps.py:84  orden   →  orden
+  src/session/report_client_caps.py:100  resultados   →  resultados
+  src/session/report_client_caps.py:105  entorno   →  entorno
+  src/session/report_client_caps.py:130  formas   →  formas
+  src/session/report_client_caps.py:158  clave   →  clave
+  src/session/report_client_caps.py:68  salida   →  salida
+  src/session/report_client_caps.py:96  nucleos   →  nucleos
+  src/session/report_client_caps.py:103  etiqueta   →  etiqueta
+  src/session/report_client_caps.py:132  valor   →  valor
+  src/session/report_client_caps.py:113  nombre   →  nombre
+  src/session/report_client_caps.py:114  asignacion   →  asignacion
+  src/session/sync_local_settings.py:303  base_tiene   →  tiene
+  src/session/sync_local_settings.py:390  vista   →  vista
+  src/session/user_wiring.py:69  declarado   →  declarado
+  src/session/user_wiring.py:124  agentes   →  agentes
+  src/session/user_wiring.py:125  resultados   →  resultados
+  src/session/user_wiring.py:129  registro   →  registro
+  src/session/user_wiring.py:233  campos   →  campos
+  src/session/user_wiring.py:502  raices   →  raices
+  src/session/user_wiring.py:503  pieza   →  pieza
+  src/session/user_wiring.py:525  rotos   →  rotos
+  src/session/user_wiring.py:575  hallazgos   →  hallazgos
+  src/session/user_wiring.py:576  cuerpo   →  cuerpo
+  src/session/user_wiring.py:607  por_evento   →  evento, por
+  src/session/user_wiring.py:635  vivo   →  vivo
+  src/session/user_wiring.py:637  deriva   →  deriva
+  src/session/user_wiring.py:638  evento   →  evento
+  src/session/user_wiring.py:664  ruta   →  ruta
+  src/session/user_wiring.py:713  viva   →  viva
+  src/session/user_wiring.py:714  rotos_vivos   →  rotos, vivos
+  src/session/user_wiring.py:715  rotos_declarados   →  declarados, rotos
+  src/session/user_wiring.py:716  n_viva   →  viva
+  src/session/user_wiring.py:103  entrada   →  entrada
+  src/session/user_wiring.py:526  grupos   →  grupos
+  src/session/user_wiring.py:527  grupo   →  grupo
+  src/session/user_wiring.py:577  lineas   →  lineas
+  src/session/user_wiring.py:579  compuestas   →  compuestas
+  src/session/user_wiring.py:738  lados   →  lados
+  src/session/user_wiring.py:511  nombre   →  nombre
+  src/session/user_wiring.py:580  numero   →  numero
+  src/session/user_wiring.py:580  linea   →  linea
+  src/session/user_wiring.py:596  usada   →  usada
+  src/session/user_wiring.py:513  raiz   →  raiz
+  src/session/user_wiring.py:590  bandera   →  bandera
+  src/store/agent_sessions.py:348  medidos   →  medidos
+  src/store/agent_sessions.py:352  no_medidos   →  medidos
+  src/store/agent_sessions.py:356  sin_clasificar   →  clasificar, sin
+  src/store/agent_sessions.py:360  huerfanos   →  huerfanos
+  src/task/agrupar_tareas_por_familia.py:86  _identidad   →  identidad
+  src/task/agrupar_tareas_por_familia.py:93  cita   →  cita
+  src/task/agrupar_tareas_por_familia.py:127  todas   →  todas
+  src/task/asignadas.py:45  DUENOS   →  duenos
+  src/task/asignadas.py:54  ASIGNADAS   →  asignadas
+  src/task/asignadas.py:69  DEVUELTAS   →  devueltas
+  src/task/asignadas.py:87  TRABAJO_PARCIAL   →  parcial, trabajo
+  src/task/board_sync.py:589  acunar-tarjeta   →  acunar, tarjeta
+  src/task/board_sync.py:604  sincronizar-board   →  sincronizar
+  src/task/board_sync.py:615  reconciliar-estados   →  estados, reconciliar
+  src/task/board_sync.py:625  reconciliar-todo   →  reconciliar, todo
+  src/task/closure_graph.py:531  con   →  con
+  src/task/closure_graph.py:611  amb   →  amb
+  src/task/implementation_order.py:342  _cita   →  cita
+  src/task/implementation_order.py:350  cita   →  cita
+  src/task/render_tablero_asignadas.py:41  asuntos   →  asuntos
+  src/task/render_tablero_asignadas.py:51  citas   →  citas
+  src/task/render_tablero_asignadas.py:70  identidad   →  identidad
+  src/task/render_tablero_asignadas.py:76  redacta   →  redacta
+  src/task/render_tablero_asignadas.py:27  AQUI   →  aqui
+  src/task/render_tablero_asignadas.py:37  DESTINO   →  destino
+  src/task/render_tablero_asignadas.py:45  con   →  con
+  src/task/render_tablero_asignadas.py:72  cita   →  cita
+  src/task/render_tablero_asignadas.py:76  fecha   →  fecha
+  src/task/render_tablero_asignadas.py:141  dueno   →  dueno
+  src/task/render_tablero_asignadas.py:141  que   →  que
+  src/task/render_tablero_asignadas.py:157  porque   →  porque
+  src/task/task_ids.py:496  _cmd_acunar   →  acunar
+  src/task/task_ids.py:753  _cmd_ingerir_board   →  ingerir
+  src/task/task_ids.py:866  _cmd_censo   →  censo
+  src/task/task_ids.py:922  _cmd_duplicados   →  duplicados
+  src/task/task_ids.py:364  usados   →  usados
+  src/task/task_ids.py:499  antes   →  antes
+  src/task/task_ids.py:502  nuevos   →  nuevos
+  src/task/task_ids.py:507  tocadas   →  tocadas
+  src/task/task_ids.py:924  filas   →  filas
+  src/task/task_ids.py:925  universo   →  universo
+  src/task/task_ids.py:947  cita   →  cita
+  src/task/task_ids.py:954  p_censo   →  censo
+  src/task/task_ids.py:954  censo   →  censo
+  src/task/task_ids.py:957  duplicados   →  duplicados
+  src/task/task_ids.py:965  ingerir-board   →  ingerir
+  src/task/task_ids.py:977  corregir-capa   →  capa, corregir
+  src/task/task_ids.py:989  p_acunar   →  acunar
+  src/task/task_ids.py:989  acunar   →  acunar
+  src/task/task_ids.py:373  candidatos   →  candidatos
+  src/task/task_ids.py:531  columnas   →  columnas
+  src/task/task_ids.py:612  vistos   →  vistos
+  src/task/task_ids.py:380  vieja   →  vieja
+  src/task/task_ids.py:639  capa   →  capa
+  src/task/task_ids.py:644  siguiente   →  siguiente
+  src/task/vecinos_de_tarea.py:414  estado   →  estado
+  src/task/vecinos_de_tarea.py:415  cita   →  cita
+  src/task/vecinos_de_tarea.py:419  identidad   →  identidad
+  src/task/vecinos_de_tarea.py:498  cita_ancla   →  ancla, cita
+  src/task/vecinos_de_tarea.py:481  criterio   →  criterio
+  src/verify/check_agent_isolation.py:67  revisar   →  revisar
+  src/verify/check_agent_isolation.py:37  DIR_AGENTES   →  agentes
+  src/verify/check_agent_isolation.py:38  EXTENSION_AGENTE   →  agente
+  src/verify/check_agent_isolation.py:39  DELIMITADOR_FRONTMATTER   →  delimitador
+  src/verify/check_agent_isolation.py:43  ANUNCIA   →  anuncia
+  src/verify/check_agent_isolation.py:45  DECLARA   →  declara
+  src/verify/check_agent_isolation.py:46  CLAVE_DESCRIPTION   →  clave
+  src/verify/check_agent_isolation.py:48  FALTA_ANUNCIO   →  anuncio, falta
+  src/verify/check_agent_isolation.py:49  FALTA_DECLARACION   →  declaracion, falta
+  src/verify/check_agent_isolation.py:52  texto   →  texto
+  src/verify/check_agent_isolation.py:56  inicio   →  inicio
+  src/verify/check_agent_isolation.py:57  cierre   →  cierre
+  src/verify/check_agent_isolation.py:61  bloque   →  bloque
+  src/verify/check_agent_isolation.py:67  directorios   →  directorios
+  src/verify/check_agent_isolation.py:69  medidos   →  medidos
+  src/verify/check_agent_isolation.py:69  declaran   →  declaran
+  src/verify/check_agent_isolation.py:69  incoherentes   →  incoherentes
+  src/verify/check_agent_isolation.py:71  raiz   →  raiz
+  src/verify/check_agent_isolation.py:74  archivo   →  archivo
+  src/verify/check_agent_isolation.py:80  declarado   →  declarado
+  src/verify/check_agent_isolation.py:81  anunciado   →  anunciado
+  src/verify/check_agent_isolation.py:117  falta   →  falta
+  src/verify/check_binary_literal_citations.py:74  binario   →  binario
+  src/verify/check_binary_literal_citations.py:79  ruta   →  ruta
+  src/verify/check_binary_literal_citations.py:91  encontrados   →  encontrados
+  src/verify/check_binary_literal_citations.py:92  raiz   →  raiz
+  src/verify/check_binary_literal_citations.py:114  cadenas   →  cadenas
+  src/verify/check_binary_literal_citations.py:115  esperado   →  esperado
+  src/verify/check_binary_literal_citations.py:132  archivos   →  archivos
+  src/verify/check_binary_literal_citations.py:133  laxos   →  laxos
+  src/verify/check_binary_literal_citations.py:134  deriva   →  deriva
+  src/verify/check_binary_literal_citations.py:81  salida   →  salida
+  src/verify/check_binary_literal_citations.py:93  reglas   →  reglas
+  src/verify/check_binary_literal_citations.py:116  etiqueta   →  etiqueta
+  src/verify/check_binary_literal_citations.py:117  hallados   →  hallados
+  src/verify/check_binary_literal_citations.py:152  claves   →  claves
+  src/verify/check_binary_literal_citations.py:116  extraccion   →  extraccion
+  src/verify/check_binary_literal_citations.py:138  linea   →  linea
+  src/verify/check_binary_literal_citations.py:145  clave   →  clave
+  src/verify/check_binary_literal_citations.py:139  deteccion   →  deteccion
+  src/verify/check_byte_oriented_class.py:84  encontradas   →  encontradas
+  src/verify/check_byte_oriented_class.py:85  linea   →  linea
+  src/verify/check_cifra_de_artefacto_vivo.py:150  cargar_baseline   →  cargar
+  src/verify/check_cifra_de_artefacto_vivo.py:161  archivos   →  archivos
+  src/verify/check_cifra_de_artefacto_vivo.py:191  lineas_de_bloque_literal   →  bloque, de, lineas
+  src/verify/check_cifra_de_artefacto_vivo.py:105  PATRONES   →  patrones
+  src/verify/check_cifra_de_artefacto_vivo.py:145  SUFIJOS   →  sufijos
+  src/verify/check_cifra_de_artefacto_vivo.py:147  EXCLUIR   →  excluir
+  src/verify/check_cifra_de_artefacto_vivo.py:179  DIRECTIVA_LITERAL   →  directiva
+  src/verify/check_cifra_de_artefacto_vivo.py:180  CIERRE_DOS_PUNTOS   →  cierre, dos, puntos
+  src/verify/check_cifra_de_artefacto_vivo.py:188  FORMA_EPISODIO   →  episodio, forma
+  src/verify/check_cifra_de_artefacto_vivo.py:100  raiz   →  raiz
+  src/verify/check_cifra_de_artefacto_vivo.py:151  ruta   →  ruta
+  src/verify/check_cifra_de_artefacto_vivo.py:191  texto   →  texto
+  src/verify/check_cifra_de_artefacto_vivo.py:203  lineas   →  lineas
+  src/verify/check_cifra_de_artefacto_vivo.py:204  dentro   →  dentro
+  src/verify/check_cifra_de_artefacto_vivo.py:237  propio   →  propio
+  src/verify/check_cifra_de_artefacto_vivo.py:238  hallazgos   →  hallazgos
+  src/verify/check_cifra_de_artefacto_vivo.py:294  nuevos   →  nuevos
+  src/verify/check_cifra_de_artefacto_vivo.py:207  linea   →  linea
+  src/verify/check_cifra_de_artefacto_vivo.py:208  abre   →  abre
+  src/verify/check_cifra_de_artefacto_vivo.py:249  citadas   →  citadas
+  src/verify/check_cifra_de_artefacto_vivo.py:281  claves   →  claves
+  src/verify/check_cifra_de_artefacto_vivo.py:282  destino   →  destino
+  src/verify/check_cifra_de_artefacto_vivo.py:156  línea   →  nea
+  src/verify/check_cifra_de_artefacto_vivo.py:253  episodios   →  episodios
+  src/verify/check_cifra_de_artefacto_vivo.py:299  clave   →  clave
+  src/verify/check_cifra_de_artefacto_vivo.py:299  forma   →  forma
+  src/verify/check_cifra_de_artefacto_vivo.py:255  _nombre   →  nombre
+  src/verify/check_cifra_de_artefacto_vivo.py:255  patrón   →  patr
+  src/verify/check_config_precedence.py:94  _es_lectura_de_config   →  de, lectura
+  src/verify/check_config_precedence.py:131  _nombres_del_test   →  del, nombres
+  src/verify/check_config_precedence.py:135  _cadena   →  cadena
+  src/verify/check_config_precedence.py:155  _guardas   →  guardas
+  src/verify/check_config_precedence.py:172  _parametros   →  parametros
+  src/verify/check_config_precedence.py:82  FUENTES   →  fuentes
+  src/verify/check_config_precedence.py:103  nombre   →  nombre
+  src/verify/check_config_precedence.py:116  arbol   →  arbol
+  src/verify/check_config_precedence.py:141  eslabones   →  eslabones
+  src/verify/check_config_precedence.py:150  cuerpo   →  cuerpo
+  src/verify/check_config_precedence.py:201  candidatos   →  candidatos
+  src/verify/check_config_precedence.py:203  hijos_de_cadena   →  cadena, de, hijos
+  src/verify/check_config_precedence.py:204  cadenas   →  cadenas
+  src/verify/check_config_precedence.py:237  rama   →  rama
+  src/verify/check_config_precedence.py:109  texto   →  texto
+  src/verify/check_config_precedence.py:117  vistos   →  vistos
+  src/verify/check_config_precedence.py:117  orden   →  orden
+  src/verify/check_config_precedence.py:123  destinos   →  destinos
+  src/verify/check_config_precedence.py:245  medidos   →  medidos
+  src/verify/check_config_precedence.py:245  discrepantes   →  discrepantes
+  src/verify/check_config_precedence.py:283  fuente   →  fuente
+  src/verify/check_config_precedence.py:208  propios   →  propios
+  src/verify/check_config_precedence.py:209  guardas   →  guardas
+  src/verify/check_config_precedence.py:253  arbol_ok   →  arbol
+  src/verify/check_consumer_copies.py:57  SUFIJOS   →  sufijos
+  src/verify/check_consumer_copies.py:81  por_digest   →  por
+  src/verify/check_consumer_copies.py:82  nombres   →  nombres
+  src/verify/check_consumer_copies.py:92  fuente   →  fuente
+  src/verify/check_consumer_copies.py:92  consumidor   →  consumidor
+  src/verify/check_consumer_copies.py:101  copias   →  copias
+  src/verify/check_consumer_copies.py:103  medidos   →  medidos
+  src/verify/check_consumer_copies.py:106  raiz_estado   →  estado, raiz
+  src/verify/check_consumer_copies.py:149  etiqueta   →  etiqueta
+  src/verify/check_consumer_copies.py:149  raiz   →  raiz
+  src/verify/check_corpus_al_dia.py:45  ejecutable   →  ejecutable
+  src/verify/check_corpus_al_dia.py:54  version_viva   →  viva
+  src/verify/check_corpus_al_dia.py:75  versiones_extraidas   →  extraidas, versiones
+  src/verify/check_corpus_al_dia.py:34  EXIT_ATRASADO   →  atrasado
+  src/verify/check_corpus_al_dia.py:40  RAIZ_DEFECTO   →  defecto, raiz
+  src/verify/check_corpus_al_dia.py:45  ruta_declarada   →  declarada, ruta
+  src/verify/check_corpus_al_dia.py:50  hallado   →  hallado
+  src/verify/check_corpus_al_dia.py:54  binario   →  binario
+  src/verify/check_corpus_al_dia.py:67  versiones   →  versiones
+  src/verify/check_corpus_al_dia.py:75  raiz   →  raiz
+  src/verify/check_corpus_al_dia.py:83  hallazgos   →  hallazgos
+  src/verify/check_corpus_al_dia.py:84  hijo   →  hijo
+  src/verify/check_corpus_al_dia.py:110  viva   →  viva
+  src/verify/check_corpus_al_dia.py:117  extraidas   →  extraidas
+  src/verify/check_corpus_al_dia.py:61  salida   →  salida
+  src/verify/check_eventos_hook.py:37  raices_medidas   →  medidas, raices
+  src/verify/check_eventos_hook.py:55  universo_del_binario   →  binario, del, universo
+  src/verify/check_eventos_hook.py:73  version_del_binario   →  binario, del
+  src/verify/check_eventos_hook.py:88  eventos_declarados   →  declarados, eventos
+  src/verify/check_eventos_hook.py:51  ANCLAS   →  anclas
+  src/verify/check_eventos_hook.py:52  SECUENCIA   →  secuencia
+  src/verify/check_eventos_hook.py:44  raices   →  raices
+  src/verify/check_eventos_hook.py:55  ruta   →  ruta
+  src/verify/check_eventos_hook.py:65  nombres   →  nombres
+  src/verify/check_eventos_hook.py:66  secuencia   →  secuencia
+  src/verify/check_eventos_hook.py:82  conteo   →  conteo
+  src/verify/check_eventos_hook.py:95  declarados   →  declarados
+  src/verify/check_eventos_hook.py:96  leidos   →  leidos
+  src/verify/check_eventos_hook.py:97  raiz   →  raiz
+  src/verify/check_eventos_hook.py:112  estricto   →  estricto
+  src/verify/check_eventos_hook.py:113  quieto   →  quieto
+  src/verify/check_eventos_hook.py:114  binario   →  binario
+  src/verify/check_eventos_hook.py:146  universo   →  universo
+  src/verify/check_eventos_hook.py:154  desconocidos   →  desconocidos
+  src/verify/check_eventos_hook.py:155  sin_consumir   →  consumir, sin
+  src/verify/check_eventos_hook.py:58  salida   →  salida
+  src/verify/check_eventos_hook.py:67  miembros   →  miembros
+  src/verify/check_eventos_hook.py:98  nombre   →  nombre
+  src/verify/check_eventos_hook.py:169  evento   →  evento
+  src/verify/check_eventos_hook.py:169  archivos   →  archivos
+  src/verify/check_eventos_hook.py:102  datos   →  datos
+  src/verify/check_githooks_activos.py:73  estado   →  estado
+  src/verify/check_githooks_activos.py:62  ESPERADO   →  esperado
+  src/verify/check_githooks_activos.py:73  raiz   →  raiz
+  src/verify/check_githooks_activos.py:81  valor   →  valor
+  src/verify/check_githooks_activos.py:90  vivos   →  vivos
+  src/verify/check_githooks_activos.py:111  filas   →  filas
+  src/verify/check_githooks_activos.py:112  ausentes   →  ausentes
+  src/verify/check_githooks_activos.py:113  inactivos   →  inactivos
+  src/verify/check_githooks_activos.py:118  nombre   →  nombre
+  src/verify/check_githooks_activos.py:118  veredicto   →  veredicto
+  src/verify/check_githooks_activos.py:118  detalle   →  detalle
+  src/verify/check_githooks_activos.py:119  marca   →  marca
+  src/verify/check_hallazgo_submodulo.py:80  signos   →  signos
+  src/verify/check_hallazgo_submodulo.py:95  leer_baseline   →  leer
+  src/verify/check_hallazgo_submodulo.py:43  RAIZ_PM   →  raiz
+  src/verify/check_hallazgo_submodulo.py:73  PATRON_RUTA   →  ruta
+  src/verify/check_hallazgo_submodulo.py:80  ruta   →  ruta
+  src/verify/check_hallazgo_submodulo.py:117  escribir   →  escribir
+  src/verify/check_hallazgo_submodulo.py:119  universo   →  universo
+  src/verify/check_hallazgo_submodulo.py:135  nuevos   →  nuevos
+  src/verify/check_hallazgo_submodulo.py:86  texto   →  texto
+  src/verify/check_hallazgo_submodulo.py:123  medidos   →  medidos
+  src/verify/check_hallazgo_submodulo.py:123  desajuste   →  desajuste
+  src/verify/check_hallazgo_submodulo.py:132  clave   →  clave
+  src/verify/check_hallazgo_submodulo.py:161  heredada   →  heredada
+  src/verify/check_hallazgo_submodulo.py:129  carpeta   →  carpeta
+  src/verify/check_hooks_timeout.py:82  ruta   →  ruta
+  src/verify/check_hooks_timeout.py:98  faltantes   →  faltantes
+  src/verify/check_hooks_timeout.py:106  con   →  con
+  src/verify/check_hooks_timeout.py:107  estado   →  estado
+  src/verify/check_hooks_timeout.py:101  motivo   →  motivo
+  src/verify/check_identifier_language.py:410  EN_LANG   →  en
+  src/verify/check_ids_entre_ramas.py:71  refs_vivas   →  vivas
+  src/verify/check_ids_entre_ramas.py:84  declaraciones   →  declaraciones
+  src/verify/check_ids_entre_ramas.py:63  RE_ETIQUETA   →  etiqueta
+  src/verify/check_ids_entre_ramas.py:77  todas   →  todas
+  src/verify/check_ids_entre_ramas.py:79  fusionadas   →  fusionadas
+  src/verify/check_ids_entre_ramas.py:86  salida   →  salida
+  src/verify/check_ids_entre_ramas.py:87  por_etiqueta   →  etiqueta, por
+  src/verify/check_ids_entre_ramas.py:88  linea   →  linea
+  src/verify/check_ids_entre_ramas.py:201  ramas   →  ramas
+  src/verify/check_ids_entre_ramas.py:207  rutas   →  rutas
+  src/verify/check_ids_entre_ramas.py:208  duenos   →  duenos
+  src/verify/check_ids_entre_ramas.py:215  colisiones   →  colisiones
+  src/verify/check_ids_entre_ramas.py:89  partes   →  partes
+  src/verify/check_ids_entre_ramas.py:132  rutas_par   →  rutas
+  src/verify/check_ids_entre_ramas.py:133  duenos_par   →  duenos
+  src/verify/check_ids_entre_ramas.py:139  colisiones_par   →  colisiones
+  src/verify/check_ids_entre_ramas.py:162  etiqueta   →  etiqueta
+  src/verify/check_ids_entre_ramas.py:184  usados   →  usados
+  src/verify/check_ids_entre_ramas.py:92  ruta   →  ruta
+  src/verify/check_ids_entre_ramas.py:92  coincidencia   →  coincidencia
+  src/verify/check_ids_entre_ramas.py:210  conjunto   →  conjunto
+  src/verify/check_ids_entre_ramas.py:228  rama   →  rama
+  src/verify/check_mutante_en_staging.py:30  require_mutador   →  mutador
+  src/verify/check_mutante_en_staging.py:52  archivos_en_staging   →  archivos, en
+  src/verify/check_mutante_en_staging.py:53  salida   →  salida
+  src/verify/check_mutante_en_staging.py:61  mutador   →  mutador
+  src/verify/check_mutante_en_staging.py:62  rutas   →  rutas
+  src/verify/check_mutante_en_staging.py:65  ruta   →  ruta
+  src/verify/check_mutante_en_staging.py:64  sucios   →  sucios
+  src/verify/check_mutante_en_staging.py:64  medidos   →  medidos
+  src/verify/check_mutante_en_staging.py:67  texto   →  texto
+  src/verify/check_mutante_en_staging.py:71  numero   →  numero
+  src/verify/check_mutante_en_staging.py:71  linea   →  linea
+  src/verify/check_pathspec_commit.py:67  pendientes   →  pendientes
+  src/verify/check_pathspec_commit.py:100  tocadas   →  tocadas
+  src/verify/check_pathspec_commit.py:71  disco   →  disco
+  src/verify/check_pathspec_commit.py:107  en_disco   →  disco, en
+  src/verify/check_pathspec_commit.py:109  detalle   →  detalle
+  src/verify/check_premise_drift.py:81  salida   →  salida
+  src/verify/check_premise_drift.py:105  ahora   →  ahora
+  src/verify/check_premise_drift.py:108  reparto   →  reparto
+  src/verify/check_premise_drift.py:109  resumen   →  resumen
+  src/verify/check_premise_drift.py:134  antes   →  antes
+  src/verify/check_premise_drift.py:136  cambios   →  cambios
+  src/verify/check_premise_drift.py:137  nuevas   →  nuevas
+  src/verify/check_premise_drift.py:138  idas   →  idas
+  src/verify/check_premise_drift.py:144  viejo   →  viejo
+  src/verify/check_premise_drift.py:144  nuevo   →  nuevo
+  src/verify/check_pushed_branch.py:102  otras   →  otras
+  src/verify/check_python_surface.py:94  todas   →  todas
+  src/verify/check_python_surface.py:105  fuera   →  fuera
+  src/verify/check_python_surface.py:116  declarado   →  declarado
+  src/verify/check_reference_root_resolution.py:81  nodo   →  nodo
+  src/verify/check_reference_root_resolution.py:101  raiz   →  raiz
+  src/verify/check_reference_root_resolution.py:142  raices   →  raices
+  src/verify/check_reference_root_resolution.py:78  arbol   →  arbol
+  src/verify/check_reference_root_resolution.py:85  nombre   →  nombre
+  src/verify/check_reference_root_resolution.py:100  fuera   →  fuera
+  src/verify/check_reference_root_resolution.py:100  medidos   →  medidos
+  src/verify/check_reference_root_resolution.py:105  archivo   →  archivo
+  src/verify/check_reference_root_resolution.py:150  motivo   →  motivo
+  src/verify/check_reference_root_resolution.py:119  texto   →  texto
+  src/verify/check_rst_convenciones.py:118  sin_bloques_literales   →  bloques, literales, sin
+  src/verify/check_rst_convenciones.py:156  archivos_modificados   →  archivos, modificados
+  src/verify/check_rst_convenciones.py:177  rutas_pedidas   →  pedidas, rutas
+  src/verify/check_rst_convenciones.py:103  AUTOR_AGENTE   →  agente, autor
+  src/verify/check_rst_convenciones.py:106  AUTOR_CUALQUIERA   →  autor, cualquiera
+  src/verify/check_rst_convenciones.py:109  TABLA_SIMPLE   →  tabla
+  src/verify/check_rst_convenciones.py:111  TABLA_GRID   →  tabla
+  src/verify/check_rst_convenciones.py:113  DIRECTIVA_LITERAL   →  directiva
+  src/verify/check_rst_convenciones.py:118  texto   →  texto
+  src/verify/check_rst_convenciones.py:126  lineas   →  lineas
+  src/verify/check_rst_convenciones.py:127  salida   →  salida
+  src/verify/check_rst_convenciones.py:128  dentro   →  dentro
+  src/verify/check_rst_convenciones.py:129  sangria_bloque   →  bloque
+  src/verify/check_rst_convenciones.py:130  linea   →  linea
+  src/verify/check_rst_convenciones.py:165  rutas   →  rutas
+  src/verify/check_rst_convenciones.py:186  encontrados   →  encontrados
+  src/verify/check_rst_convenciones.py:207  solo_nuevos   →  nuevos
+  src/verify/check_rst_convenciones.py:208  posicionales   →  posicionales
+  src/verify/check_rst_convenciones.py:228  fallos_autor   →  autor, fallos
+  src/verify/check_rst_convenciones.py:229  fallos_tabla   →  fallos, tabla
+  src/verify/check_rst_convenciones.py:230  con_autor   →  autor, con
+  src/verify/check_rst_convenciones.py:232  ruta   →  ruta
+  src/verify/check_rst_convenciones.py:254  archivos_tabla   →  archivos, tabla
+  src/verify/check_rst_convenciones.py:255  archivos_autor   →  archivos, autor
+  src/verify/check_rst_convenciones.py:216  objetivo   →  objetivo
+  src/verify/check_rst_convenciones.py:217  etiqueta_alcance   →  alcance, etiqueta
+  src/verify/check_rst_convenciones.py:192  hallados   →  hallados
+  src/verify/check_rst_referencias.py:105  sin_bloques_literales   →  bloques, literales, sin
+  src/verify/check_rst_referencias.py:89  ETIQUETA   →  etiqueta
+  src/verify/check_rst_referencias.py:95  DIRECTIVA_LITERAL   →  directiva
+  src/verify/check_rst_referencias.py:101  CONSUMIDOR   →  consumidor
+  src/verify/check_rst_referencias.py:102  RAIZ   →  raiz
+  src/verify/check_rst_referencias.py:105  texto   →  texto
+  src/verify/check_rst_referencias.py:117  lineas   →  lineas
+  src/verify/check_rst_referencias.py:118  salida   →  salida
+  src/verify/check_rst_referencias.py:169  archivos   →  archivos
+  src/verify/check_rst_referencias.py:186  rotas   →  rotas
+  src/verify/check_rst_referencias.py:188  rotas_doc   →  rotas
+  src/verify/check_rst_referencias.py:121  linea   →  linea
+  src/verify/check_rst_referencias.py:124  abre   →  abre
+  src/verify/check_rst_referencias.py:171  etiquetas   →  etiquetas
+  src/verify/check_rst_referencias.py:171  usos   →  usos
+  src/verify/check_rst_referencias.py:171  usos_doc   →  usos
+  src/verify/check_rst_referencias.py:171  recortados   →  recortados
+  src/verify/check_rst_referencias.py:173  crudo   →  crudo
+  src/verify/check_rst_referencias.py:199  estado   →  estado
+  src/verify/check_rst_referencias.py:208  estado_doc   →  estado
+  src/verify/check_rst_referencias.py:188  destino   →  destino
+  src/verify/check_rst_sintaxis.py:93  archivos_nuevos   →  archivos, nuevos
+  src/verify/check_rst_sintaxis.py:185  _reexec_en_venv   →  en
+  src/verify/check_rst_sintaxis.py:242  revisar   →  revisar
+  src/verify/check_rst_sintaxis.py:88  RAIZ   →  raiz
+  src/verify/check_rst_sintaxis.py:89  FUENTE   →  fuente
+  src/verify/check_rst_sintaxis.py:95  salida   →  salida
+  src/verify/check_rst_sintaxis.py:168  ruta   →  ruta
+  src/verify/check_rst_sintaxis.py:242  rutas   →  rutas
+  src/verify/check_rst_sintaxis.py:254  avisos   →  avisos
+  src/verify/check_rst_sintaxis.py:255  fallos   →  fallos
+  src/verify/check_rst_sintaxis.py:316  nuevos   →  nuevos
+  src/verify/check_rst_sintaxis.py:317  sueltos   →  sueltos
+  src/verify/check_rst_sintaxis.py:106  linea   →  linea
+  src/verify/check_rst_sintaxis.py:321  alcance   →  alcance
+  src/verify/check_rst_sintaxis.py:101  crudo   →  crudo
+  src/verify/check_rst_sintaxis.py:282  antes   →  antes
+  src/verify/check_rst_sintaxis.py:287  ajustes   →  ajustes
+  src/verify/check_rule_divergence.py:198  emitida   →  emitida
+  src/verify/check_rule_divergence.py:199  subsumida   →  subsumida
+  src/verify/check_rule_divergence.py:199  divergente   →  divergente
+  src/verify/check_script_naming.py:160  cargar_lexico   →  cargar, lexico
+  src/verify/check_script_naming.py:184  cargar_baseline   →  cargar
+  src/verify/check_script_naming.py:191  scan_idioma   →  idioma
+  src/verify/check_script_naming.py:387  main_idioma   →  idioma
+  src/verify/check_script_naming.py:84  RAICES   →  raices
+  src/verify/check_script_naming.py:86  EXCLUIR   →  excluir
+  src/verify/check_script_naming.py:100  LEXICO   →  lexico
+  src/verify/check_script_naming.py:167  ruta   →  ruta
+  src/verify/check_script_naming.py:191  raiz   →  raiz
+  src/verify/check_script_naming.py:198  espanol   →  espanol
+  src/verify/check_script_naming.py:222  infractores   →  infractores
+  src/verify/check_script_naming.py:280  lexico   →  lexico
+  src/verify/check_script_naming.py:296  relativa   →  relativa
+  src/verify/check_suite_discrimina.py:86  MARCA   →  marca
+  src/verify/check_suite_discrimina.py:137  INSERTADA   →  insertada
+  src/verify/check_suite_discrimina.py:230  archivo   →  archivo
+  src/verify/check_suite_discrimina.py:231  funcion   →  funcion
+  src/verify/check_suite_discrimina.py:232  sentencia   →  sentencia
+  src/verify/check_suite_discrimina.py:233  desde   →  desde
+  src/verify/check_suite_discrimina.py:199  propio   →  propio
+  src/verify/check_suite_discrimina.py:210  texto   →  texto
+  src/verify/check_unreachable_rules.py:38  raices_medidas   →  medidas, raices
+  src/verify/check_unreachable_rules.py:56  raices   →  raices
+  src/verify/check_veredicto_de_gate.py:49  _lee_con_defecto   →  con, defecto
+  src/verify/check_veredicto_de_gate.py:53  infractores   →  infractores
+  src/verify/check_veredicto_de_gate.py:40  RAICES   →  raices
+  src/verify/check_veredicto_de_gate.py:43  INVOCA_GATE   →  invoca
+  src/verify/check_veredicto_de_gate.py:46  ASIGNA   →  asigna
+  src/verify/check_veredicto_de_gate.py:49  texto   →  texto
+  src/verify/check_veredicto_de_gate.py:53  raiz   →  raiz
+  src/verify/check_veredicto_de_gate.py:59  guion   →  guion
+  src/verify/check_veredicto_de_gate.py:56  hallados   →  hallados
+  src/verify/check_veredicto_de_gate.py:56  medidos   →  medidos
+  src/verify/check_veredicto_de_gate.py:82  todos   →  todos
+  src/verify/check_veredicto_de_gate.py:62  numero   →  numero
+  src/verify/check_veredicto_de_gate.py:62  linea   →  linea
+  src/verify/check_veredicto_de_gate.py:66  cuerpo   →  cuerpo
+  src/verify/check_veredicto_de_gate.py:93  archivo   →  archivo
+  src/verify/check_vocabulario_prosa.py:576  DIRECTIVA_LITERAL   →  directiva
+  src/verify/check_vocabulario_prosa.py:577  CIERRE_DOS_PUNTOS   →  cierre, dos, puntos
+  src/verify/check_vocabulario_prosa.py:205  declarado   →  declarado
+  src/verify/check_vocabulario_prosa.py:209  propio   →  propio
+  src/verify/check_vocabulario_prosa.py:221  origenes   →  origenes
+  src/verify/check_vocabulario_prosa.py:223  origen   →  origen
+  src/verify/check_vocabulario_prosa.py:243  declarada   →  declarada
+  src/verify/check_vocabulario_prosa.py:279  ruta   →  ruta
+  src/verify/check_vocabulario_prosa.py:279  motivo   →  motivo
+  src/verify/check_vocabulario_prosa.py:597  lineas   →  lineas
+  src/verify/check_vocabulario_prosa.py:598  inicios   →  inicios
+  src/verify/check_vocabulario_prosa.py:599  desplazamiento   →  desplazamiento
+  src/verify/check_vocabulario_prosa.py:600  linea   →  linea
+  src/verify/check_vocabulario_prosa.py:605  tramos   →  tramos
+  src/verify/check_vocabulario_prosa.py:696  raiz   →  raiz
+  src/verify/check_vocabulario_prosa.py:762  inventado   →  inventado
+  src/verify/check_vocabulario_prosa.py:609  abre   →  abre
+  src/verify/check_vocabulario_prosa.py:617  fin   →  fin
+  src/verify/check_vocabulario_prosa.py:225  candidato   →  candidato
+  src/verify/detect_broken_references.py:38  destino_del_reporte   →  del, destino, reporte
+  src/verify/detect_broken_references.py:44  ruta   →  ruta
+  src/verify/detect_broken_references.py:47  sello   →  sello
+  src/verify/detect_broken_references.py:508  salida   →  salida
+  src/verify/gitattributes.py:181  ausente_repo   →  ausente
+  src/verify/gitattributes.py:182  ausente_archivo   →  archivo, ausente
+  src/verify/gitattributes.py:182  divergente   →  divergente
+  src/verify/lint_agents.py:43  USAR_CUANDO_PATTERN   →  cuando, usar
+  src/verify/reader.py:238  corte   →  corte
+  src/verify/reader.py:241  resto   →  resto
+  src/verify/renumerar_colision.py:43  refs_remotas   →  remotas
+  src/verify/renumerar_colision.py:48  id_libre   →  libre
+  src/verify/renumerar_colision.py:60  archivos_que_citan   →  archivos, citan, que
+  src/verify/renumerar_colision.py:66  ajustar_subrayado   →  ajustar, subrayado
+  src/verify/renumerar_colision.py:35  CAPAS   →  capas
+  src/verify/renumerar_colision.py:48  capa   →  capa
+  src/verify/renumerar_colision.py:48  reservados   →  reservados
+  src/verify/renumerar_colision.py:52  usados   →  usados
+  src/verify/renumerar_colision.py:71  lineas   →  lineas
+  src/verify/renumerar_colision.py:72  cabecera   →  cabecera
+  src/verify/renumerar_colision.py:92  hecho   →  hecho
+  src/verify/renumerar_colision.py:95  etiqueta   →  etiqueta
+  src/verify/renumerar_colision.py:95  rutas_src   →  rutas
+  src/verify/renumerar_colision.py:96  rutas_tgt   →  rutas
+  src/verify/renumerar_colision.py:118  citan_src   →  citan
+  src/verify/renumerar_colision.py:119  citan_tgt   →  citan
+  src/verify/renumerar_colision.py:120  a_editar   →  editar
+  src/verify/renumerar_colision.py:131  refs_editadas   →  editadas
+  src/verify/renumerar_colision.py:75  titulo   →  titulo
+  src/verify/renumerar_colision.py:136  texto   →  texto
+  src/verify/renumerar_colision.py:137  nuevo_txt   →  nuevo
+  src/verify/renumerar_colision.py:126  nuevo   →  nuevo
+  src/verify/runner.py:163  marca   →  marca
+  src/verify/runner.py:167  linea   →  linea
+  src/verify/script_deprecated.py:71  SUCESOR   →  sucesor
+  src/verify/script_deprecated.py:72  HALLAZGO   →  hallazgo
+  src/verify/verificar_persistencia.py:102  seguido   →  seguido
+  src/verify/verificar_persistencia.py:103  sin_seguir   →  seguir, sin
+  src/verify/verificar_persistencia.py:163  fallan   →  fallan
+  src/verify/verificar_persistencia.py:164  ruta   →  ruta
+  src/verify/verificar_persistencia.py:166  marca   →  marca
+  src/verify/verificar_premisa.py:75  _ruta   →  ruta
+  src/verify/verificar_premisa.py:367  supuestos   →  supuestos
+  src/verify/verificar_premisa.py:382  destino   →  destino
+  src/verify/verificar_premisa.py:389  salida   →  salida
+  src/verify/verificar_premisa.py:391  premisa   →  premisa
+  src/verify/verificar_premisa.py:455  cuantas   →  cuantas
+  src/verify/verificar_premisa.py:370  simbolo   →  simbolo
+  src/workbench/paths.py:218  inicio   →  inicio
+  src/workbench/paths.py:260  raiz   →  raiz
+  tests/agents/test_clasificar_agentes.py:141  origen   →  origen
+  tests/agents/test_derive_submodule.py:80  DESACUERDOS_MEDIDOS   →  desacuerdos, medidos
+  tests/agents/test_derive_submodule.py:162  casos   →  casos
+  tests/agents/test_derive_submodule.py:183  _sin   →  sin
+  tests/agents/test_derive_submodule.py:186  _hecho   →  hecho
+  tests/agents/test_derive_submodule.py:88  capa   →  capa
+  tests/agents/test_derive_submodule.py:88  origen   →  origen
+  tests/agents/test_derive_submodule.py:106  capa_sin   →  capa, sin
+  tests/agents/test_derive_submodule.py:106  origen_sin   →  origen, sin
+  tests/agents/test_derive_submodule.py:168  esperado   →  esperado
+  tests/agents/test_derive_submodule.py:168  texto   →  texto
+  tests/agents/test_derive_submodule.py:168  mapa   →  mapa
+  tests/agents/test_document_root_default.py:60  _Sin   →  sin
+  tests/agents/test_document_root_default.py:74  hecho   →  hecho
+  tests/agents/test_measure_delta.py:37  codigo   →  codigo
+  tests/agents/test_measure_delta.py:38  simbolos   →  simbolos
+  tests/agents/test_measure_delta.py:51  antes   →  antes
+  tests/agents/test_measure_delta.py:52  despues   →  despues
+  tests/agents/test_measure_delta.py:53  ganados   →  ganados
+  tests/agents/test_measure_delta.py:53  perdidos   →  perdidos
+  tests/agents/test_measure_delta.py:66  destino   →  destino
+  tests/agents/test_measure_delta.py:67  ruta   →  ruta
+  tests/agents/test_merge_stores.py:27  ESQUEMA   →  esquema
+  tests/agents/test_merge_stores.py:52  _filas   →  filas
+  tests/agents/test_merge_stores.py:59  test_1_la_fila_que_solo_esta_en_el_origen_se_inserta   →  el, en, esta, fila, inserta, origen, que
+  tests/agents/test_merge_stores.py:66  test_2_la_fila_que_solo_esta_en_el_destino_SOBREVIVE   →  destino, el, en, esta, fila, que, sobrevive
+  tests/agents/test_merge_stores.py:74  test_3_gana_el_updated_at_mayor   →  el, gana, mayor
+  tests/agents/test_merge_stores.py:81  test_4_ante_empate_NO_se_toca_el_destino   →  ante, destino, el, empate, toca
+  tests/agents/test_merge_stores.py:89  test_5_dry_run_no_escribe   →  escribe
+  tests/agents/test_merge_stores.py:96  test_6_el_registro_devuelve_el_resolvedor_declarado   →  declarado, devuelve, el, registro, resolvedor
+  tests/agents/test_merge_stores.py:101  test_7_un_resolvedor_registrado_a_mano_gobierna_su_tabla   →  gobierna, mano, registrado, resolvedor, tabla
+  tests/agents/test_merge_stores.py:113  test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto   →  cambia, cita, de, rehusa, sujeto
+  tests/agents/test_merge_stores.py:126  test_9_citation_is_stable_deja_pasar_lo_que_no_desliza   →  deja, desliza, pasar, que
+  tests/agents/test_merge_stores.py:34  ruta   →  ruta
+  tests/agents/test_merge_stores.py:34  filas_sesion   →  filas, sesion
+  tests/agents/test_merge_stores.py:34  filas_tarea   →  filas, tarea
+  tests/agents/test_merge_stores.py:52  tabla   →  tabla
+  tests/agents/test_merge_stores.py:129  gana   →  gana
+  tests/agents/test_model_catalog_paths.py:44  ResolucionDeRutas   →  de, resolucion, rutas
+  tests/agents/test_model_catalog_paths.py:110  ElAccesorDeConfiguracion   →  accesor, configuracion, de, el
+  tests/agents/test_model_catalog_paths.py:39  RAIZ   →  raiz
+  tests/agents/test_model_catalog_paths.py:75  otro   →  otro
+  tests/agents/test_model_catalog_paths.py:85  previo   →  previo
+  tests/agents/test_model_catalog_paths.py:144  del_archivo   →  archivo, del
+  tests/agents/test_model_catalog_paths.py:145  del_proceso   →  del, proceso
+  tests/agents/test_model_catalog_paths.py:146  ruta   →  ruta
+  tests/agents/test_model_catalog_tokens.py:42  fuente   →  fuente
+  tests/agents/test_payload_sin_transcript.py:53  FALLOS   →  fallos
+  tests/agents/test_payload_sin_transcript.py:56  etiqueta   →  etiqueta
+  tests/agents/test_payload_sin_transcript.py:56  esperado   →  esperado
+  tests/agents/test_payload_sin_transcript.py:56  obtenido   →  obtenido
+  tests/agents/test_recommend_cli.py:54  chico   →  chico
+  tests/agents/test_recommend_cli.py:55  grande   →  grande
+  tests/agents/test_recommend_cli.py:66  malo   →  malo
+  tests/agents/test_retention_backfill.py:65  FILAS   →  filas
+  tests/agents/test_retention_backfill.py:95  tocadas   →  tocadas
+  tests/agents/test_retention_backfill.py:98  nivel   →  nivel
+  tests/agents/test_retention_backfill.py:103  esperado   →  esperado
+  tests/agents/test_store_dir_default.py:62  TestDestinoPorDefecto   →  defecto, destino, por
+  tests/agents/test_store_dir_default.py:45  RAIZ   →  raiz
+  tests/agents/test_store_dir_default.py:63  test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor   →  declarado, del, devuelve, el, hogar, nada, proveedor, sin
+  tests/agents/test_store_dir_default.py:72  test_2_no_apunta_al_silo   →  apunta
+  tests/agents/test_store_dir_default.py:77  test_3_claude_dir_sigue_ganando   →  ganando, sigue
+  tests/agents/test_store_dir_default.py:86  test_4_un_repo_declarado_a_proposito_sigue_resolviendo   →  declarado, proposito, resolviendo, sigue
+  tests/agents/test_store_dir_default.py:97  test_5_un_repo_invalido_sigue_rehusando   →  invalido, rehusando, sigue
+  tests/agents/test_store_dir_default.py:126  _sin_banderas   →  banderas, sin
+  tests/agents/test_store_dir_default.py:129  test_1_el_default_de_repo_no_nombra_un_consumidor   →  consumidor, de, el, nombra
+  tests/agents/test_store_dir_default.py:132  test_2_el_destino_sin_banderas_es_el_hogar   →  banderas, destino, el, hogar, sin
+  tests/agents/test_store_dir_default.py:138  test_3_el_destino_sin_banderas_no_cae_en_ningun_clon   →  banderas, cae, clon, destino, el, en, ningun, sin
+  tests/agents/test_store_dir_default.py:143  test_4_el_arbol_documental_no_se_rompe_con_repo_ausente   →  arbol, ausente, con, documental, el, rompe
+  tests/agents/test_store_dir_default.py:139  destino   →  destino
+  tests/agents/test_store_dir_default.py:151  argumentos   →  argumentos
+  tests/agents/test_store_home.py:48  TestHogarUnico   →  hogar, unico
+  tests/agents/test_store_home.py:36  RAIZ   →  raiz
+  tests/agents/test_store_home.py:42  HOGAR   →  hogar
+  tests/agents/test_store_home.py:49  test_1_la_mitad_python_resuelve_al_proveedor   →  mitad, proveedor, resuelve
+  tests/agents/test_store_home.py:55  test_2_la_mitad_TS_resuelve_al_proveedor   →  mitad, proveedor, resuelve
+  tests/agents/test_store_home.py:75  test_3_las_dos_mitades_coinciden   →  coinciden, dos, las, mitades
+  tests/agents/test_store_home.py:92  test_4_ningun_modulo_de_src_compone_la_ruta_del_STORE_en_el_silo   →  compone, de, del, el, en, ningun, ruta
+  tests/agents/test_store_home.py:128  test_5_las_cinco_tablas_existen_en_el_hogar   →  cinco, el, en, existen, hogar, las, tablas
+  tests/agents/test_store_home.py:144  test_6_las_cinco_tablas_tienen_filas_en_el_hogar   →  cinco, el, en, filas, hogar, las, tablas, tienen
+  tests/agents/test_store_home.py:166  test_7_toda_tarea_del_hogar_tiene_cita_durable   →  cita, del, hogar, tarea, tiene, toda
+  tests/agents/test_store_home.py:189  test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar   →  consumidor, de, del, el, en, escribe, hogar, invocado, verdad
+  tests/agents/test_store_home.py:51  ruta   →  ruta
+  tests/agents/test_store_home.py:62  salida   →  salida
+  tests/agents/test_store_home.py:113  raices   →  raices
+  tests/agents/test_store_home.py:114  objetivos   →  objetivos
+  tests/agents/test_store_home.py:115  infractores   →  infractores
+  tests/agents/test_store_home.py:214  marca   →  marca
+  tests/agents/test_store_home.py:215  carga   →  carga
+  tests/agents/test_store_home.py:135  tablas   →  tablas
+  tests/agents/test_store_home.py:159  vacias   →  vacias
+  tests/agents/test_store_home.py:179  sin   →  sin
+  tests/agents/test_store_home.py:122  linea   →  linea
+  tests/agents/test_store_home.py:123  codigo   →  codigo
+  tests/agents/test_store_home.py:220  nombre   →  nombre
+  tests/agents/test_store_home.py:229  hay   →  hay
+  tests/board/test_graph.py:113  ciclico   →  ciclico
+  tests/corpus/test_censar_scripts.py:66  censar   →  censar
+  tests/corpus/test_list_corpus_builds.py:42  escribir   →  escribir
+  tests/corpus/test_list_corpus_builds.py:42  nombres   →  nombres
+  tests/corpus/test_list_corpus_builds.py:45  nombre   →  nombre
+  tests/corpus/test_list_corpus_builds.py:54  raiz   →  raiz
+  tests/corpus/test_list_corpus_builds.py:70  entradas   →  entradas
+  tests/corpus/test_list_corpus_builds.py:72  por_nombre   →  nombre, por
+  tests/corpus/test_list_corpus_builds.py:93  resumen   →  resumen
+  tests/corpus/test_list_corpus_builds.py:101  hecho   →  hecho
+  tests/corpus/test_list_corpus_builds.py:133  entradas_restauradas   →  entradas, restauradas
+  tests/corpus/test_list_corpus_builds.py:134  por_nombre_restaurado   →  nombre, por, restaurado
+  tests/corpus/test_list_corpus_builds.py:122  entradas_anuladas   →  anuladas, entradas
+  tests/corpus/test_list_corpus_builds.py:123  por_nombre_anulado   →  anulado, nombre, por
+  tests/corpus/test_term_census.py:58  credito   →  credito
+  tests/corpus/test_term_census.py:70  ano   →  ano
+  tests/corpus/test_term_census.py:119  digitaliza   →  digitaliza
+  tests/corpus/test_term_census.py:131  nada   →  nada
+  tests/hooks/test_detect_foreground_long_command.py:32  aviso   →  aviso
+  tests/hooks/test_flow_selection.py:106  texto   →  texto
+  tests/hooks/test_flow_selection.py:144  salida   →  salida
+  tests/hooks/test_flow_selection.py:48  archivos   →  archivos
+  tests/hooks/test_flow_selection.py:50  carpeta   →  carpeta
+  tests/hooks/test_flow_selection.py:59  dir_agentes   →  agentes
+  tests/hooks/test_flow_selection.py:137  carga   →  carga
+  tests/hooks/test_flow_selection.py:154  elegidos   →  elegidos
+  tests/hooks/test_flow_selection.py:51  nombre   →  nombre
+  tests/hooks/test_flow_selection.py:51  descripcion   →  descripcion
+  tests/hooks/test_flow_selection.py:93  mapa   →  mapa
+  tests/hooks/test_flow_selection.py:93  sin   →  sin
+  tests/hooks/test_maintenance_chain.py:126  salida   →  salida
+  tests/hooks/test_maintenance_chain.py:127  datos   →  datos
+  tests/hooks/test_maintenance_chain.py:128  contexto   →  contexto
+  tests/hooks/test_maintenance_chain.py:105  excedida   →  excedida
+  tests/hooks/test_maintenance_chain.py:232  carpeta   →  carpeta
+  tests/hooks/test_maintenance_chain.py:233  testigo   →  testigo
+  tests/hooks/test_maintenance_chain.py:234  paso   →  paso
+  tests/hooks/test_maintenance_chain.py:240  resultados   →  resultados
+  tests/hooks/test_process.py:57  carpeta   →  carpeta
+  tests/hooks/test_process.py:58  testigo   →  testigo
+  tests/hooks/test_stop_gate.py:196  barrido_con_hallazgo   →  barrido, con, hallazgo
+  tests/hooks/test_stop_gate.py:201  barrido_limpio   →  barrido, limpio
+  tests/hooks/test_stop_gate.py:229  con_sangria   →  con
+  tests/hooks/test_stop_gate.py:242  revienta   →  revienta
+  tests/hooks/test_stop_gate.py:193  llamadas   →  llamadas
+  tests/hooks/test_stop_gate.py:218  antes   →  antes
+  tests/hooks/test_stop_gate.py:53  carpeta   →  carpeta
+  tests/hooks/test_stop_gate.py:53  nombre   →  nombre
+  tests/hooks/test_stop_gate.py:53  salida   →  salida
+  tests/hooks/test_stop_gate.py:53  codigo   →  codigo
+  tests/hooks/test_stop_gate.py:55  ruta   →  ruta
+  tests/hooks/test_stop_gate.py:81  bloquea   →  bloquea
+  tests/hooks/test_stop_gate.py:83  veredicto   →  veredicto
+  tests/hooks/test_stop_gate.py:88  limpio   →  limpio
+  tests/hooks/test_stop_gate.py:102  con   →  con
+  tests/hooks/test_stop_gate.py:108  sin   →  sin
+  tests/hooks/test_stop_gate.py:112  cero   →  cero
+  tests/hooks/test_stop_gate.py:119  cero_sin   →  cero, sin
+  tests/hooks/test_stop_gate.py:131  puerta   →  puerta
+  tests/hooks/test_stop_gate.py:141  con_ambos   →  ambos, con
+  tests/hooks/test_stop_gate.py:164  declarado   →  declarado
+  tests/hooks/test_stop_gate.py:172  sin_declarar   →  declarar, sin
+  tests/hooks/test_stop_gate.py:255  testigo   →  testigo
+  tests/hooks/test_stop_gate.py:305  datos   →  datos
+  tests/hooks/test_stop_gate.py:362  _anulado   →  anulado
+  tests/hooks/test_stop_gate.py:363  _sin_veredicto   →  sin, veredicto
+  tests/hooks/test_stop_gate.py:364  _ruta_ausente_sigue   →  ausente, ruta, sigue
+  tests/hooks/test_stop_payload.py:52  variante   →  variante
+  tests/hooks/test_stop_payload.py:74  anidado   →  anidado
+  tests/hooks/test_stop_payload.py:82  grande   →  grande
+  tests/hooks/test_stop_payload.py:74  padre   →  padre
+  tests/hooks/test_stop_payload.py:82  relleno   →  relleno
+  tests/hooks/test_stop_pending_work.py:62  ETIQUETAS   →  etiquetas
+  tests/hooks/test_stop_pending_work.py:68  limpio   →  limpio
+  tests/hooks/test_stop_pending_work.py:76  sucio   →  sucio
+  tests/hooks/test_stop_pending_work.py:81  datos   →  datos
+  tests/hooks/test_stop_tests.py:173  _limpio   →  limpio
+  tests/hooks/test_stop_tests.py:198  previo   →  previo
+  tests/hooks/test_stop_tests.py:219  delator   →  delator
+  tests/hooks/test_stop_tests.py:214  codigo   →  codigo
+  tests/hooks/test_stop_tests.py:214  salida   →  salida
+  tests/meta/test_runner_reach.py:48  comprobar   →  comprobar
+  tests/meta/test_runner_reach.py:56  en_disco   →  disco, en
+  tests/meta/test_runner_reach.py:71  listados   →  listados
+  tests/meta/test_runner_reach.py:42  RAIZ   →  raiz
+  tests/meta/test_runner_reach.py:43  CORREDOR   →  corredor
+  tests/meta/test_runner_reach.py:45  fallos   →  fallos
+  tests/meta/test_runner_reach.py:88  lista   →  lista
+  tests/meta/test_runner_reach.py:118  lenguas   →  lenguas
+  tests/meta/test_runner_reach.py:119  exito   →  exito
+  tests/meta/test_runner_reach.py:122  esperado   →  esperado
+  tests/meta/test_runner_reach.py:48  condicion   →  condicion
+  tests/meta/test_runner_reach.py:48  mensaje   →  mensaje
+  tests/meta/test_runner_reach.py:56  raices   →  raices
+  tests/meta/test_runner_reach.py:62  hallados   →  hallados
+  tests/meta/test_runner_reach.py:63  raiz   →  raiz
+  tests/meta/test_runner_reach.py:92  lengua   →  lengua
+  tests/meta/test_runner_reach.py:100  disco   →  disco
+  tests/meta/test_runner_reach.py:104  faltan   →  faltan
+  tests/meta/test_runner_reach.py:64  salida   →  salida
+  tests/paths/test_config_home_cli.py:67  ResolucionEnTresVias   →  en, resolucion, tres, vias
+  tests/paths/test_config_home_cli.py:100  TresDesenlaces   →  desenlaces, tres
+  tests/paths/test_config_home_cli.py:115  PuertaDeShell   →  de, puerta
+  tests/paths/test_config_home_cli.py:31  _AQUI   →  aqui
+  tests/paths/test_config_home_cli.py:32  _RAIZ   →  raiz
+  tests/paths/test_config_home_cli.py:70  test_absoluta_se_devuelve_tal_cual   →  absoluta, cual, devuelve, tal
+  tests/paths/test_config_home_cli.py:75  test_tilde_se_expande   →  expande
+  tests/paths/test_config_home_cli.py:83  test_relativa_se_compone_sobre_la_raiz   →  compone, raiz, relativa, sobre
+  tests/paths/test_config_home_cli.py:91  test_el_default_tambien_pasa_por_la_resolucion   →  el, pasa, por, resolucion, tambien
+  tests/paths/test_config_home_cli.py:103  test_ausente_sin_default_rehusa_por_1_y_sin_imprimir   →  ausente, imprimir, por, rehusa, sin
+  tests/paths/test_config_home_cli.py:109  test_sin_clave_rehusa_por_2   →  clave, por, rehusa, sin
+  tests/paths/test_config_home_cli.py:118  test_la_clave_llega_al_mecanismo   →  clave, llega, mecanismo
+  tests/paths/test_config_home_cli.py:125  test_el_default_llega_al_mecanismo   →  el, llega, mecanismo
+  tests/paths/test_config_home_cli.py:131  test_el_codigo_se_propaga_sin_aplanarse   →  aplanarse, codigo, el, propaga, sin
+  tests/paths/test_config_home_cli.py:137  test_clave_invalida_no_viaja   →  clave, invalida, viaja
+  tests/paths/test_config_home_cli.py:71  salida   →  salida
+  tests/paths/test_config_home_cli.py:78  obtenido   →  obtenido
+  tests/paths/test_consumer_root.py:19  AQUI   →  aqui
+  tests/paths/test_consumer_root.py:44  test_declarado_gana   →  declarado, gana
+  tests/paths/test_consumer_root.py:48  test_variable_de_entorno   →  de, entorno
+  tests/paths/test_consumer_root.py:52  test_asciende_al_marcador_desde_un_subdirectorio   →  asciende, desde, marcador, subdirectorio
+  tests/paths/test_consumer_root.py:61  test_sin_marcador_devuelve_el_punto_de_partida   →  de, devuelve, el, marcador, partida, punto, sin
+  tests/paths/test_consumer_root.py:58  hondo   →  hondo
+  tests/paths/test_consumer_root.py:63  huerfano   →  huerfano
+  tests/paths/test_consumer_root.py:64  suelto   →  suelto
+  tests/paths/test_consumer_root_refuses_provider.py:37  RAIZ   →  raiz
+  tests/paths/test_consumer_root_refuses_provider.py:50  test_1_lo_declarado_manda   →  declarado, manda
+  tests/paths/test_consumer_root_refuses_provider.py:55  test_2_desde_la_raiz_del_proveedor_rehusa   →  del, desde, proveedor, raiz, rehusa
+  tests/paths/test_consumer_root_refuses_provider.py:62  test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa   →  del, desde, proveedor, rehusa, subdirectorio, tambien
+  tests/paths/test_consumer_root_refuses_provider.py:68  test_4_un_consumidor_real_sigue_resolviendo   →  consumidor, resolviendo, sigue
+  tests/paths/test_consumer_root_refuses_provider.py:75  consumidor   →  consumidor
+  tests/paths/test_declaration_port.py:48  test_el_adaptador_inyectado_decide_el_valor   →  adaptador, el, inyectado, valor
+  tests/paths/test_declaration_port.py:54  test_no_toca_el_proceso_cuando_hay_adaptador   →  adaptador, cuando, el, hay, proceso, toca
+  tests/paths/test_declaration_port.py:67  test_ausente_en_el_adaptador_es_None_no_un_respaldo   →  adaptador, ausente, el, en, respaldo
+  tests/paths/test_declaration_port.py:84  test_CONTROL_sin_adaptador_la_cadena_de_produccion_sigue_intacta   →  adaptador, cadena, de, intacta, produccion, sigue, sin
+  tests/paths/test_declaration_port.py:101  test_el_puerto_esta_DECLARADO_no_solo_implicito   →  declarado, el, esta, implicito, puerto
+  tests/paths/test_declaration_port.py:56  clave   →  clave
+  tests/paths/test_declaration_port.py:57  previo   →  previo
+  tests/paths/test_deferred_names_not_used_bare.py:106  test_1_ningun_modulo_lee_desnudo_lo_que_difiere   →  desnudo, difiere, ningun, que
+  tests/paths/test_deferred_names_not_used_bare.py:119  test_2_el_recorrido_ve_el_defecto_cuando_existe   →  cuando, defecto, el, existe, recorrido
+  tests/paths/test_deferred_names_not_used_bare.py:135  test_3_el_acceso_por_atributo_no_es_defecto   →  acceso, atributo, defecto, el, por
+  tests/paths/test_deferred_names_not_used_bare.py:123  mal   →  mal
+  tests/paths/test_deferred_names_not_used_bare.py:139  bien   →  bien
+  tests/paths/test_reach.py:239  _completado   →  completado
+  tests/paths/test_reach.py:116  otro   →  otro
+  tests/paths/test_reach.py:154  somero   →  somero
+  tests/paths/test_reach.py:155  hondo   →  hondo
+  tests/paths/test_reach.py:178  valores   →  valores
+  tests/paths/test_reach.py:201  segunda   →  segunda
+  tests/paths/test_reach.py:253  falso   →  falso
+  tests/paths/test_reach.py:274  vacio   →  vacio
+  tests/paths/test_reach.py:292  proveedor   →  proveedor
+  tests/paths/test_reach.py:293  marcador   →  marcador
+  tests/paths/test_reach.py:299  consumidor   →  consumidor
+  tests/paths/test_reach.py:324  guion   →  guion
+  tests/paths/test_reach.py:324  entorno   →  entorno
+  tests/paths/test_reach.py:362  copia   →  copia
+  tests/paths/test_reach.py:366  arbol   →  arbol
+  tests/paths/test_reach_roots_declared.py:143  _rehusa   →  rehusa
+  tests/paths/test_reach_roots_declared.py:109  vacio   →  vacio
+  tests/paths/test_reach_roots_declared.py:123  otro   →  otro
+  tests/paths/test_reach_roots_declared.py:124  hermano   →  hermano
+  tests/paths/test_reach_roots_shim.py:99  esperadas   →  esperadas
+  tests/paths/test_surface.py:40  correr   →  correr
+  tests/paths/test_surface.py:48  consumidor   →  consumidor
+  tests/paths/test_surface.py:24  RAIZ   →  raiz
+  tests/paths/test_surface.py:27  fallos   →  fallos
+  tests/paths/test_surface.py:30  esperado   →  esperado
+  tests/paths/test_surface.py:30  obtenido   →  obtenido
+  tests/paths/test_surface.py:40  consumidores   →  consumidores
+  tests/paths/test_surface.py:41  entorno   →  entorno
+  tests/paths/test_surface.py:48  cuerpo   →  cuerpo
+  tests/paths/test_surface.py:93  vacio   →  vacio
+  tests/paths/test_surface.py:103  evento   →  evento
+  tests/repo/test_citations.py:98  no_clon   →  clon
+  tests/repo/test_citations.py:89  roto   →  roto
+  tests/repo/test_citations.py:75  clon   →  clon
+  tests/repo/test_pending_work.py:183  texto   →  texto
+  tests/repo/test_pending_work.py:90  raiz   →  raiz
+  tests/repo/test_pending_work.py:91  sucio   →  sucio
+  tests/repo/test_pending_work.py:98  suelto   →  suelto
+  tests/repo/test_pending_work.py:148  origen   →  origen
+  tests/repo/test_pending_work.py:149  clon   →  clon
+  tests/repo/test_pending_work.py:198  limpio   →  limpio
+  tests/repo/test_pending_work.py:204  salida   →  salida
+  tests/repo/test_pending_work_telemetry.py:85  mixto   →  mixto
+  tests/repo/test_pending_work_telemetry.py:89  limpio   →  limpio
+  tests/repo/test_pending_work_telemetry.py:111  linea   →  linea
+  tests/roster/test_job_liveness.py:112  d_sin_holgura   →  holgura, sin
+  tests/roster/test_job_liveness.py:138  raiz   →  raiz
+  tests/roster/test_job_liveness.py:139  vivo   →  vivo
+  tests/roster/test_job_liveness.py:140  corrupto   →  corrupto
+  tests/roster/test_job_liveness.py:152  enlace   →  enlace
+  tests/roster/test_orphan_task.py:107  tabla   →  tabla
+  tests/roster/test_orphan_task.py:115  ciclo   →  ciclo
+  tests/roster/test_process_liveness.py:151  casos   →  casos
+  tests/roster/test_process_liveness.py:177  primer_corte   →  corte, primer
+  tests/roster/test_process_liveness.py:182  pid_imposible   →  imposible
+  tests/roster/test_process_liveness.py:189  propio   →  propio
+  tests/roster/test_process_liveness.py:190  estado_propio   →  estado, propio
+  tests/roster/test_process_liveness.py:191  inicio_propio   →  inicio, propio
+  tests/roster/test_production.py:90  eventos   →  eventos
+  tests/roster/test_production.py:96  resumen   →  resumen
+  tests/roster/test_production.py:123  vivo   →  vivo
+  tests/roster/test_production.py:124  parado   →  parado
+  tests/roster/test_production.py:125  produjo   →  produjo
+  tests/roster/test_production.py:126  sin_evidencia   →  evidencia, sin
+  tests/roster/test_production.py:140  ciego   →  ciego
+  tests/rules/test_paths_parity.py:31  _AQUI   →  aqui
+  tests/rules/test_paths_parity.py:32  _RAIZ   →  raiz
+  tests/rules/test_paths_parity.py:63  test_la_variable_de_entorno_es_la_misma   →  de, entorno, misma
+  tests/rules/test_paths_parity.py:66  test_el_segmento_es_el_mismo   →  el, mismo, segmento
+  tests/rules/test_paths_parity.py:69  test_el_segmento_de_estado_no_se_escribe_en_ninguna_mitad   →  de, el, en, escribe, estado, mitad, ninguna, segmento
+  tests/rules/test_paths_parity.py:83  test_la_clave_por_clon_es_la_misma   →  clave, clon, misma, por
+  tests/rules/test_paths_parity.py:86  test_las_dos_mitades_componen_igual_el_nombre_por_clon   →  clon, componen, dos, el, igual, las, mitades, nombre, por
+  tests/rules/test_paths_parity.py:98  test_declarar_un_clon_no_mueve_a_los_demas   →  clon, declarar, demas, los, mueve
+  tests/rules/test_paths_parity.py:129  test_la_clave_de_familia_como_segmento_relativo_no_colisiona   →  clave, colisiona, como, de, familia, relativo, segmento
+  tests/rules/test_paths_parity.py:157  test_la_clave_de_familia_absoluta_SI_colisiona   →  absoluta, clave, colisiona, de, familia
+  tests/rules/test_paths_parity.py:178  test_la_familia_sigue_siendo_el_ultimo_recurso   →  el, familia, recurso, siendo, sigue, ultimo
+  tests/rules/test_paths_parity.py:197  test_el_hogar_del_consumidor_cae_dentro_del_consumidor   →  cae, consumidor, del, dentro, el, hogar
+  tests/rules/test_paths_parity.py:51  fuente   →  fuente
+  tests/rules/test_paths_parity.py:52  hallado   →  hallado
+  tests/rules/test_paths_parity.py:75  mitad   →  mitad
+  tests/rules/test_paths_parity.py:111  objetivo   →  objetivo
+  tests/rules/test_paths_parity.py:112  antes   →  antes
+  tests/rules/test_paths_parity.py:114  clave   →  clave
+  tests/rules/test_paths_parity.py:115  previo   →  previo
+  tests/rules/test_paths_parity.py:125  movidos   →  movidos
+  tests/rules/test_paths_parity.py:76  cuerpo   →  cuerpo
+  tests/rules/test_paths_parity.py:118  despues   →  despues
+  tests/rules/test_paths_parity.py:145  hogares   →  hogares
+  tests/rules/test_provenance_parity.py:26  _AQUI   →  aqui
+  tests/rules/test_provenance_parity.py:27  _RAIZ   →  raiz
+  tests/rules/test_provenance_parity.py:58  test_el_marcador_es_el_mismo_en_las_dos_mitades   →  dos, el, en, las, marcador, mismo, mitades
+  tests/rules/test_provenance_parity.py:61  test_el_segmento_de_definiciones_es_el_mismo   →  de, definiciones, el, mismo, segmento
+  tests/rules/test_provenance_parity.py:65  test_el_directorio_de_definiciones_existe_en_el_proveedor   →  de, definiciones, directorio, el, en, existe, proveedor
+  tests/rules/test_provenance_parity.py:70  test_la_linea_compuesta_contiene_el_marcador   →  compuesta, contiene, el, linea, marcador
+  tests/rules/test_provenance_parity.py:75  test_el_gate_lee_el_marcador_del_modulo_y_no_su_propia_copia   →  copia, del, el, marcador, propia
+  tests/rules/test_provenance_parity.py:82  test_reconoce_una_cabecera_sellada   →  cabecera, reconoce, sellada, una
+  tests/rules/test_provenance_parity.py:93  test_NO_reconoce_una_regla_real_que_nadie_emitio   →  emitio, nadie, que, reconoce, regla, una
+  tests/rules/test_provenance_parity.py:107  test_el_sello_fuera_de_la_ventana_no_cuenta   →  cuenta, de, el, fuera, sello, ventana
+  tests/rules/test_provenance_parity.py:46  hallado   →  hallado
+  tests/rules/test_provenance_parity.py:72  linea   →  linea
+  tests/rules/test_provenance_parity.py:84  destino   →  destino
+  tests/rules/test_provenance_parity.py:99  candidatas   →  candidatas
+  tests/rules/test_provenance_parity.py:101  vivas   →  vivas
+  tests/rules/test_provenance_parity.py:115  relleno   →  relleno
+  tests/session/test_adopt_background.py:61  leido   →  leido
+  tests/session/test_adopt_background.py:169  _previo   →  previo
+  tests/session/test_adopt_background.py:89  vivo   →  vivo
+  tests/session/test_adopt_background.py:89  corriendo   →  corriendo
+  tests/session/test_adopt_background.py:108  anulado   →  anulado
+  tests/session/test_adopt_background.py:110  antes   →  antes
+  tests/session/test_adopt_background.py:112  despues   →  despues
+  tests/session/test_adopt_background.py:145  entorno   →  entorno
+  tests/session/test_background.py:45  esperar_marcador   →  esperar, marcador
+  tests/session/test_background.py:90  _previo   →  previo
+  tests/session/test_background.py:45  plazo   →  plazo
+  tests/session/test_background.py:46  fin   →  fin
+  tests/session/test_background.py:58  salida   →  salida
+  tests/session/test_background.py:83  muerto   →  muerto
+  tests/session/test_background.py:91  vacio   →  vacio
+  tests/session/test_background.py:103  hogar   →  hogar
+  tests/session/test_background.py:145  asentamientos   →  asentamientos
+  tests/session/test_generate_bin.py:249  entorno   →  entorno
+  tests/session/test_generate_bin.py:514  marcador   →  marcador
+  tests/session/test_generate_bin.py:531  destino   →  destino
+  tests/session/test_generate_bin.py:532  arbol   →  arbol
+  tests/session/test_generate_bin.py:534  hecho   →  hecho
+  tests/session/test_generate_bin.py:538  salida   →  salida
+  tests/session/test_generate_bin.py:590  libreria   →  libreria
+  tests/session/test_generate_bin.py:645  esperado   →  esperado
+  tests/session/test_generate_bin.py:671  biblioteca   →  biblioteca
+  tests/session/test_generate_bin.py:713  huerfanos   →  huerfanos
+  tests/session/test_generate_bin.py:729  objetivos   →  objetivos
+  tests/session/test_generate_bin.py:756  relativo   →  relativo
+  tests/session/test_generate_bin.py:768  punteado   →  punteado
+  tests/session/test_generate_bin.py:772  cuerpo_rel   →  cuerpo
+  tests/session/test_generate_bin.py:773  cuerpo_plano   →  cuerpo, plano
+  tests/session/test_generate_bin.py:834  con_relativo   →  con, relativo
+  tests/session/test_generate_bin.py:897  fallos   →  fallos
+  tests/session/test_generate_bin.py:935  del_proveedor   →  del, proveedor
+  tests/session/test_generate_bin.py:613  ruidosos   →  ruidosos
+  tests/session/test_generate_bin.py:613  de_paquete   →  de, paquete
+  tests/session/test_generate_bin.py:789  ciego_rel   →  ciego
+  tests/session/test_generate_bin.py:790  ciego_plano   →  ciego, plano
+  tests/session/test_generate_bin.py:813  nombre   →  nombre
+  tests/session/test_generate_bin.py:856  proceso   →  proceso
+  tests/session/test_generate_bin.py:907  fallos_ciego   →  ciego, fallos
+  tests/session/test_generate_bin.py:940  marcado   →  marcado
+  tests/session/test_installed_hooks_resolve.py:119  TOPOLOGIA_CONTRARIA   →  contraria, topologia
+  tests/session/test_installed_hooks_resolve.py:162  destino   →  destino
+  tests/session/test_installed_hooks_resolve.py:171  texto   →  texto
+  tests/session/test_installed_hooks_resolve.py:259  contrario   →  contrario
+  tests/session/test_instruction_floor.py:51  raiz   →  raiz
+  tests/session/test_instruction_floor.py:54  clon   →  clon
+  tests/session/test_instruction_floor.py:55  piso   →  piso
+  tests/session/test_instruction_floor.py:80  vacio   →  vacio
+  tests/session/test_instruction_floor.py:90  encuesta   →  encuesta
+  tests/session/test_job_ledger.py:155  alive_que_escribe_y_muere   →  escribe, muere, que
+  tests/session/test_job_ledger.py:228  alive_de_c_para_siempre   →  de, para, siempre
+  tests/session/test_job_ledger.py:265  reemplazo_que_falla   →  falla, que, reemplazo
+  tests/session/test_job_ledger.py:92  listados   →  listados
+  tests/session/test_job_ledger.py:123  soltado   →  soltado
+  tests/session/test_job_ledger.py:161  veredicto   →  veredicto
+  tests/session/test_job_ledger.py:211  resultado   →  resultado
+  tests/session/test_job_ledger.py:256  directorio   →  directorio
+  tests/session/test_job_ledger.py:260  ruta   →  ruta
+  tests/session/test_job_ledger.py:261  antes   →  antes
+  tests/session/test_job_ledger.py:263  reemplazo_original   →  reemplazo
+  tests/session/test_job_ledger.py:279  despues   →  despues
+  tests/session/test_job_ledger.py:280  temporales_huerfanos   →  huerfanos, temporales
+  tests/session/test_job_ledger.py:299  j_volatil   →  volatil
+  tests/session/test_job_ledger.py:301  veredictos   →  veredictos
+  tests/session/test_job_ledger.py:325  raiz   →  raiz
+  tests/session/test_job_ledger.py:331  previo   →  previo
+  tests/session/test_job_ledger.py:250  eterno   →  eterno
+  tests/session/test_job_ledger.py:340  recuperado   →  recuperado
+  tests/session/test_job_ledger.py:273  lanzo_error   →  lanzo
+  tests/session/test_job_runs.py:35  uno   →  uno
+  tests/session/test_job_runs.py:36  dos   →  dos
+  tests/session/test_job_runs.py:59  ausentes   →  ausentes
+  tests/session/test_job_runs.py:66  faltan   →  faltan
+  tests/session/test_jobs_home.py:82  _clon   →  clon
+  tests/session/test_jobs_home.py:87  NombreDeLaFamilia   →  de, familia, nombre
+  tests/session/test_jobs_home.py:98  HogarPorClon   →  clon, hogar, por
+  tests/session/test_jobs_home.py:133  DeclaracionEnElArchivo   →  archivo, declaracion, el, en
+  tests/session/test_jobs_home.py:147  AnclaDelArchivo   →  ancla, archivo, del
+  tests/session/test_jobs_home.py:38  _AQUI   →  aqui
+  tests/session/test_jobs_home.py:39  _RAIZ   →  raiz
+  tests/session/test_jobs_home.py:90  test_compone_el_nombre_por_clon   →  clon, compone, el, nombre, por
+  tests/session/test_jobs_home.py:94  test_el_guion_del_clon_pasa_a_guion_bajo   →  bajo, clon, del, el, guion, pasa
+  tests/session/test_jobs_home.py:100  test_la_clave_por_clon_gana_sobre_la_global   →  clave, clon, gana, por, sobre
+  tests/session/test_jobs_home.py:108  test_un_segmento_relativo_compone_bajo_el_clon   →  bajo, clon, compone, el, relativo, segmento
+  tests/session/test_jobs_home.py:115  test_cada_clon_resuelve_su_propio_hogar   →  cada, clon, hogar, propio, resuelve
+  tests/session/test_jobs_home.py:136  test_lee_la_declaracion_del_env   →  declaracion, del
+  tests/session/test_jobs_home.py:161  test_sin_start_gobierna_el_env_del_cwd   →  del, el, gobierna, sin
+  tests/session/test_jobs_home.py:53  pares   →  pares
+  tests/session/test_jobs_home.py:166  declarado   →  declarado
+  tests/session/test_jobs_home.py:61  clave   →  clave
+  tests/session/test_jobs_home.py:61  previo   →  previo
+  tests/session/test_jobs_home.py:126  hogar_api   →  hogar
+  tests/session/test_jobs_home.py:127  hogar_docs   →  hogar
+  tests/session/test_marker_wait.py:49  lanzar   →  lanzar
+  tests/session/test_marker_wait.py:122  lanzar_carrera   →  carrera, lanzar
+  tests/session/test_marker_wait.py:73  inicio   →  inicio
+  tests/session/test_marker_wait.py:75  duracion   →  duracion
+  tests/session/test_marker_wait.py:136  r_carrera   →  carrera
+  tests/session/test_marker_wait.py:157  r_anulado   →  anulado
+  tests/session/test_marker_wait.py:126  plazo   →  plazo
+  tests/session/test_parallel.py:54  _trabajo   →  trabajo
+  tests/session/test_parallel.py:50  vivos   →  vivos
+  tests/session/test_parallel.py:50  tope   →  tope
+  tests/session/test_parallel.py:43  esperado   →  esperado
+  tests/session/test_probe_model_switch_cache.py:188  filas   →  filas
+  tests/session/test_reconcile_user_hooks.py:21  ROTO   →  roto
+  tests/session/test_reconcile_user_hooks.py:33  DESCONOCIDA   →  desconocida
+  tests/session/test_reconcile_user_hooks.py:88  otro   →  otro
+  tests/session/test_task_pool.py:328  spawn_shell_exterior   →  exterior
+  tests/session/test_task_pool.py:113  entrada   →  entrada
+  tests/session/test_task_pool.py:182  spawn_asienta_ya   →  asienta
+  tests/session/test_task_pool.py:195  sleep_que_libera   →  libera, que
+  tests/session/test_task_pool.py:223  spawn_que_asienta   →  asienta, que
+  tests/session/test_task_pool.py:246  spawn_mixto   →  mixto
+  tests/session/test_task_pool.py:276  spawn_uno_se_cuelga   →  cuelga, uno
+  tests/session/test_task_pool.py:122  anchura_mala   →  anchura, mala
+  tests/session/test_task_pool.py:139  entrada_vacia   →  entrada, vacia
+  tests/session/test_task_pool.py:157  resultado   →  resultado
+  tests/session/test_task_pool.py:342  log_roto   →  roto
+  tests/session/test_task_pool.py:347  log_bueno   →  bueno
+  tests/session/test_task_pool.py:200  pid_mas_viejo   →  mas, viejo
+  tests/session/test_user_wiring.py:378  _correr   →  correr
+  tests/session/test_user_wiring.py:608  _solo_absoluto   →  absoluto
+  tests/session/test_user_wiring.py:50  FALLOS   →  fallos
+  tests/session/test_user_wiring.py:117  falso   →  falso
+  tests/session/test_user_wiring.py:119  rotos   →  rotos
+  tests/session/test_user_wiring.py:289  _ejecutables   →  ejecutables
+  tests/session/test_user_wiring.py:300  _ajenos   →  ajenos
+  tests/session/test_user_wiring.py:386  _declarado   →  declarado
+  tests/session/test_user_wiring.py:389  _con_deriva   →  con, deriva
+  tests/session/test_user_wiring.py:410  _igual   →  igual
+  tests/session/test_user_wiring.py:411  _otro   →  otro
+  tests/session/test_user_wiring.py:412  _declarado15   →  declarado
+  tests/session/test_user_wiring.py:487  _cuerpos   →  cuerpos
+  tests/session/test_user_wiring.py:500  _antes   →  antes
+  tests/session/test_user_wiring.py:518  _mencion   →  mencion
+  tests/session/test_user_wiring.py:580  _sufijo_original   →  sufijo
+  tests/session/test_user_wiring.py:581  _prefijos_original   →  prefijos
+  tests/session/test_user_wiring.py:53  etiqueta   →  etiqueta
+  tests/session/test_user_wiring.py:53  esperado   →  esperado
+  tests/session/test_user_wiring.py:53  obtenido   →  obtenido
+  tests/session/test_user_wiring.py:378  vivo   →  vivo
+  tests/session/test_user_wiring.py:387  _codigo_sin   →  codigo, sin
+  tests/session/test_user_wiring.py:387  _salida_sin   →  salida, sin
+  tests/session/test_user_wiring.py:393  _codigo_con   →  codigo, con
+  tests/session/test_user_wiring.py:393  _salida_con   →  con, salida
+  tests/session/test_user_wiring.py:460  _anulado_rehusa   →  anulado, rehusa
+  tests/session/test_user_wiring.py:534  _anulado   →  anulado
+  tests/session/test_user_wiring.py:535  _anulado_sano   →  anulado, sano
+  tests/session/test_user_wiring.py:587  _anul_rotos   →  rotos
+  tests/session/test_user_wiring.py:589  _anul_casa   →  casa
+  tests/session/test_user_wiring.py:590  _anul_sano   →  sano
+  tests/session/test_user_wiring.py:609  pieza   →  pieza
+  tests/session/test_user_wiring.py:615  _ciego_rel   →  ciego
+  tests/session/test_user_wiring.py:616  _ciego_rotos   →  ciego, rotos
+  tests/session/test_user_wiring.py:380  ruta   →  ruta
+  tests/session/test_user_wiring.py:271  linea   →  linea
+  tests/session/test_write_env.py:113  salida   →  salida
+  tests/session/test_write_env.py:129  propio   →  propio
+  tests/session/test_write_env.py:135  ajeno   →  ajeno
+  tests/session/test_write_env.py:163  mixto   →  mixto
+  tests/session/test_write_env.py:173  tras   →  tras
+  tests/shell/test_shell_cli.py:103  algun_extraido   →  algun, extraido
+  tests/shell/test_shell_cli.py:123  reales   →  reales
+  tests/shell/test_shell_cli.py:127  texto   →  texto
+  tests/shell/test_shell_cli.py:142  linea_bash_c   →  linea
+  tests/shell/test_shell_cli.py:152  ruta_real   →  ruta
+  tests/shell/test_shell_cli.py:165  entorno   →  entorno
+  tests/task/test_board_sync.py:102  store_con   →  con
+  tests/task/test_board_sync.py:123  board_con   →  con
+  tests/task/test_board_sync.py:130  fila   →  fila
+  tests/task/test_board_sync.py:141  fila_por_cita   →  cita, fila, por
+  tests/task/test_board_sync.py:353  rehusa   →  rehusa
+  tests/task/test_board_sync.py:93  SUJETO_BOARD_159   →  sujeto
+  tests/task/test_board_sync.py:94  SUJETO_STORE_159   →  sujeto
+  tests/task/test_board_sync.py:96  SUJETO_BOARD_184   →  sujeto
+  tests/task/test_board_sync.py:98  SUJETO_STORE_184   →  sujeto
+  tests/task/test_board_sync.py:160  _env_previo   →  previo
+  tests/task/test_board_sync.py:193  _linea   →  linea
+  tests/task/test_board_sync.py:204  SESION_FALSA   →  falsa, sesion
+  tests/task/test_board_sync.py:205  _raiz_g   →  raiz
+  tests/task/test_board_sync.py:212  _entorno   →  entorno
+  tests/task/test_board_sync.py:215  _sin_board   →  sin
+  tests/task/test_board_sync.py:232  creado   →  creado
+  tests/task/test_board_sync.py:238  _nueva   →  nueva
+  tests/task/test_board_sync.py:247  actualizado   →  actualizado
+  tests/task/test_board_sync.py:276  _destino   →  destino
+  tests/task/test_board_sync.py:280  _ajeno   →  ajeno
+  tests/task/test_board_sync.py:395  _mal   →  mal
+  tests/task/test_board_sync.py:405  _crear   →  crear
+  tests/task/test_board_sync.py:475  _otra   →  otra
+  tests/task/test_board_sync.py:102  filas   →  filas
+  tests/task/test_board_sync.py:123  tarjetas   →  tarjetas
+  tests/task/test_board_sync.py:141  cita   →  cita
+  tests/task/test_board_sync.py:162  _raiz   →  raiz
+  tests/task/test_board_sync.py:114  capa   →  capa
+  tests/task/test_layer_axis.py:33  TestEjeDelIdentificador   →  del, eje, identificador
+  tests/task/test_layer_axis.py:118  _crear_store   →  crear
+  tests/task/test_layer_axis.py:34  test_1_thyrox_es_un_repo_admitido   →  admitido
+  tests/task/test_layer_axis.py:40  test_2_los_seis_repos_del_multirepo_estan   →  del, estan, los, seis
+  tests/task/test_layer_axis.py:48  test_3_el_prefijo_de_thyrox_es_el_nombre_del_repo_en_mayuscula   →  de, del, el, en, mayuscula, nombre, prefijo
+  tests/task/test_layer_axis.py:62  test_4_la_forma_canonica_admite_el_prefijo_nuevo   →  admite, canonica, el, forma, nuevo, prefijo
+  tests/task/test_layer_axis.py:69  test_5_gen_sigue_existiendo_y_NO_es_un_repo   →  existiendo, sigue
+  tests/task/test_layer_axis.py:82  test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end   →  con
+  tests/task/test_layer_axis.py:118  directorio   →  directorio
+  tests/task/test_layer_axis.py:137  ruta   →  ruta
+  tests/task/test_layer_axis.py:66  cita   →  cita
+  tests/task/test_layer_axis.py:96  raiz   →  raiz
+  tests/task/test_layer_signals.py:75  TestSenalesDeCapa   →  capa, de, senales
+  tests/task/test_layer_signals.py:55  RAIZ   →  raiz
+  tests/task/test_layer_signals.py:56  SENALES   →  senales
+  tests/task/test_layer_signals.py:79  test_1_el_archivo_existe_y_lo_declara_el_contrato   →  archivo, contrato, declara, el, existe
+  tests/task/test_layer_signals.py:86  test_2_declara_las_seis_capas_incluida_thyrox   →  capas, declara, incluida, las, seis
+  tests/task/test_layer_signals.py:93  test_3_deriva_la_capa_de_un_texto_que_la_nombra   →  capa, de, deriva, nombra, que, texto
+  tests/task/test_layer_signals.py:110  test_4_un_texto_que_cruza_DOS_capas_no_se_inventa_una   →  capas, cruza, dos, inventa, que, texto, una
+  tests/task/test_layer_signals.py:118  test_5_sin_declaracion_sigue_rehusando_en_vez_de_inventar   →  de, declaracion, en, inventar, rehusando, sigue, sin, vez
+  tests/task/test_layer_signals.py:59  ruta_senales   →  ruta, senales
+  tests/task/test_layer_signals.py:68  ruta   →  ruta
+  tests/task/test_layer_signals.py:82  ejemplo   →  ejemplo
+  tests/task/test_layer_signals.py:96  casos   →  casos
+  tests/task/test_layer_signals.py:115  cruzado   →  cruzado
+  tests/task/test_layer_signals.py:104  texto   →  texto
+  tests/task/test_layer_signals.py:104  capa   →  capa
+  tests/task/test_layer_signals.py:106  derivada   →  derivada
+  tests/task/test_layer_signals.py:106  procedencia   →  procedencia
+  tests/task/test_task_ids.py:328  _store_con   →  con
+  tests/task/test_task_ids.py:343  _board_con   →  con
+  tests/task/test_task_ids.py:531  _default_store_con   →  con
+  tests/task/test_task_ids.py:82  sin_capa   →  capa, sin
+  tests/task/test_task_ids.py:87  otra_vez   →  otra, vez
+  tests/task/test_task_ids.py:92  tras_derivar   →  derivar, tras
+  tests/task/test_task_ids.py:113  uno   →  uno
+  tests/task/test_task_ids.py:114  dos   →  dos
+  tests/task/test_task_ids.py:119  entradas   →  entradas
+  tests/task/test_task_ids.py:260  primera   →  primera
+  tests/task/test_task_ids.py:271  segunda   →  segunda
+  tests/task/test_task_ids.py:293  antes   →  antes
+  tests/task/test_task_ids.py:303  n_antes   →  antes
+  tests/task/test_task_ids.py:349  VIEJO   →  viejo
+  tests/task/test_task_ids.py:350  NUEVO   →  nuevo
+  tests/task/test_task_ids.py:360  con   →  con
+  tests/task/test_task_ids.py:361  cita_vieja   →  cita, vieja
+  tests/task/test_task_ids.py:365  cita_nueva   →  cita, nueva
+  tests/task/test_task_ids.py:416  _salida   →  salida
+  tests/task/test_task_ids.py:431  _vacio   →  vacio
+  tests/task/test_task_ids.py:456  _amb   →  amb
+  tests/task/test_task_ids.py:485  _sin   →  sin
+  tests/task/test_task_ids.py:499  _falta   →  falta
+  tests/task/test_task_ids.py:527  _VACIO   →  vacio
+  tests/task/test_task_ids.py:130  filas   →  filas
+  tests/task/test_task_ids.py:133  columna   →  columna
+  tests/task/test_task_ids.py:150  puesto   →  puesto
+  tests/task/test_task_ids.py:152  releido   →  releido
+  tests/task/test_task_ids.py:162  segundo   →  segundo
+  tests/task/test_task_ids.py:171  ausente   →  ausente
+  tests/task/test_task_ids.py:181  roto   →  roto
+  tests/task/test_task_ids.py:189  sin_columna   →  columna, sin
+  tests/task/test_task_ids.py:198  ocupado   →  ocupado
+  tests/task/test_task_ids.py:200  tocadas   →  tocadas
+  tests/task/test_task_ids.py:343  tarjetas   →  tarjetas
+  tests/task/test_task_ids.py:531  entorno   →  entorno
+  tests/task/test_task_ids.py:538  salida   →  salida
+  tests/task/test_task_ids.py:172  etiqueta   →  etiqueta
+  tests/task/test_task_source_citas.py:78  store_con   →  con
+  tests/task/test_task_source_citas.py:99  ficha   →  ficha
+  tests/task/test_task_source_citas.py:107  sujeto_real   →  sujeto
+  tests/task/test_task_source_citas.py:107  cita_real   →  cita
+  tests/task/test_task_source_citas.py:140  FICHAS   →  fichas
+  tests/task/test_task_source_citas.py:142  vivo   →  vivo
+  tests/task/test_task_source_citas.py:146  _clave_original   →  clave
+  tests/task/test_task_source_citas.py:163  SIN_COLUMNA   →  columna, sin
+  tests/task/test_task_source_citas.py:171  AMBIGUO   →  ambiguo
+  tests/task/test_task_source_citas.py:177  VACIO   →  vacio
+  tests/task/test_task_source_citas.py:78  filas   →  filas
+  tests/task/test_task_source_citas.py:78  con_columna   →  columna, con
+  tests/task/test_task_source_citas.py:83  columna   →  columna
+  tests/task/test_task_source_citas.py:109  conexion   →  conexion
+  tests/task/test_task_source_citas.py:110  columnas   →  columnas
+  tests/task/test_task_source_citas.py:124  indice   →  indice
+  tests/task/test_task_source_citas.py:149  anulado   →  anulado
+  tests/task/test_task_source_citas.py:150  identidades_anuladas   →  anuladas, identidades
+  tests/task/test_task_source_citas.py:112  fila   →  fila
+  tests/task/test_vecinos_de_tarea.py:51  vecinos   →  vecinos
+  tests/transcript/test_model.py:83  viejo   →  viejo
+  tests/transcript/test_model.py:88  lineas   →  lineas
+  tests/transcript/test_model.py:92  por_modelo   →  modelo, por
+  tests/transcript/test_model.py:102  repetido   →  repetido
+  tests/transcript/test_model.py:110  sin_modelo   →  modelo, sin
+  tests/transcript/test_model.py:114  con_ausente   →  ausente, con
+  tests/transcript/test_model.py:127  malformado   →  malformado
+  tests/transcript/test_model.py:131  resultado_malformado   →  malformado, resultado
+  tests/transcript/test_model.py:141  mixto   →  mixto
+  tests/transcript/test_model.py:148  prefijo_original   →  prefijo
+  tests/transcript/test_tool_events.py:61  raiz   →  raiz
+  tests/transcript/test_tool_events.py:70  escaneo   →  escaneo
+  tests/transcript/test_tool_events.py:99  resumen   →  resumen
+  tests/transcript/test_usage.py:90  assistant_sin_usage   →  sin
+  tests/transcript/test_usage.py:99  linea   →  linea
+  tests/transcript/test_usage.py:111  sin_cache_creation   →  sin
+  tests/transcript/test_usage.py:118  lineas   →  lineas
+  tests/transcript/test_usage.py:120  resultado   →  resultado
+  tests/transcript/test_usage.py:131  repetido   →  repetido
+  tests/transcript/test_usage.py:139  mixto   →  mixto
+  tests/transcript/test_usage.py:141  mixto_resultado   →  mixto, resultado
+  tests/transcript/test_usage.py:149  vacio   →  vacio
+  tests/transcript/test_usage.py:156  sin_id   →  sin
+  tests/transcript/test_usage.py:158  sin_id_resultado   →  resultado, sin
+  tests/transcript/test_usage.py:164  uso   →  uso
+  tests/transcript/test_usage.py:165  pesos   →  pesos
+  tests/transcript/test_usage.py:166  esperado   →  esperado
+  tests/verify/test_byte_class_gate.py:67  positivo   →  positivo
+  tests/verify/test_byte_class_gate.py:99  limpio   →  limpio
+  tests/verify/test_commit_message.py:47  raya   →  raya
+  tests/verify/test_commit_message.py:62  frontera   →  frontera
+  tests/verify/test_commit_message.py:75  sano   →  sano
+  tests/verify/test_commit_message.py:78  largo   →  largo
+  tests/verify/test_commit_message.py:79  problemas   →  problemas
+  tests/verify/test_commit_message.py:83  subject_largo   →  largo
+  tests/verify/test_commit_message_label.py:25  _AQUI   →  aqui
+  tests/verify/test_commit_message_label.py:26  _RAIZ   →  raiz
+  tests/verify/test_commit_message_label.py:40  fallos   →  fallos
+  tests/verify/test_commit_message_label.py:43  esperado   →  esperado
+  tests/verify/test_commit_message_label.py:43  obtenido   →  obtenido
+  tests/verify/test_commit_message_label.py:54  etiqueta   →  etiqueta
+  tests/verify/test_commit_message_label.py:56  consumidor   →  consumidor
+  tests/verify/test_commit_message_label.py:63  salida   →  salida
+  tests/verify/test_commit_message_label.py:62  ruta   →  ruta
+  tests/verify/test_config_precedence.py:56  correr   →  correr
+  tests/verify/test_config_precedence.py:35  RAIZ   →  raiz
+  tests/verify/test_config_precedence.py:42  verdes   →  verdes
+  tests/verify/test_config_precedence.py:86  sueltos   →  sueltos
+  tests/verify/test_config_precedence.py:99  cadena   →  cadena
+  tests/verify/test_config_precedence.py:113  acuerdo   →  acuerdo
+  tests/verify/test_config_precedence.py:128  guardas   →  guardas
+  tests/verify/test_config_precedence.py:143  guardas_invertidas   →  guardas, invertidas
+  tests/verify/test_config_precedence.py:170  homonimo   →  homonimo
+  tests/verify/test_config_precedence.py:46  esperado   →  esperado
+  tests/verify/test_config_precedence.py:71  fuente   →  fuente
+  tests/verify/test_config_precedence.py:73  rama   →  rama
+  tests/verify/test_consumer_anchor.py:82  hondo   →  hondo
+  tests/verify/test_consumer_copies.py:44  correr   →  correr
+  tests/verify/test_consumer_copies.py:28  RAIZ   →  raiz
+  tests/verify/test_consumer_copies.py:31  verdes   →  verdes
+  tests/verify/test_consumer_copies.py:144  entorno   →  entorno
+  tests/verify/test_consumer_copies.py:34  esperado   →  esperado
+  tests/verify/test_consumer_copies.py:59  fuente   →  fuente
+  tests/verify/test_consumer_copies.py:86  limpio   →  limpio
+  tests/verify/test_consumer_copies.py:73  copias   →  copias
+  tests/verify/test_consumer_copies.py:73  medidos   →  medidos
+  tests/verify/test_consumer_root_gates.py:38  consumidor_sintetico   →  consumidor, sintetico
+  tests/verify/test_consumer_root_gates.py:22  AQUI   →  aqui
+  tests/verify/test_consumer_root_gates.py:29  MEDIDOS   →  medidos
+  tests/verify/test_consumer_root_gates.py:65  _correr   →  correr
+  tests/verify/test_consumer_root_gates.py:72  test_ninguno_nombra_una_ruta_de_fuera   →  de, fuera, ninguno, nombra, ruta, una
+  tests/verify/test_consumer_root_gates.py:98  test_ninguno_revienta_antes_de_resolver   →  antes, de, ninguno, resolver, revienta
+  tests/verify/test_consumer_root_gates.py:40  raiz   →  raiz
+  tests/verify/test_consumer_root_gates.py:45  ganchos   →  ganchos
+  tests/verify/test_consumer_root_gates.py:66  ruta   →  ruta
+  tests/verify/test_consumer_root_gates.py:67  corredor   →  corredor
+  tests/verify/test_consumer_root_gates.py:80  fuera   →  fuera
+  tests/verify/test_consumer_root_gates.py:107  rotos   →  rotos
+  tests/verify/test_consumer_root_gates.py:82  hecho   →  hecho
+  tests/verify/test_consumer_root_gates.py:83  texto   →  texto
+  tests/verify/test_consumer_root_gates.py:87  linea   →  linea
+  tests/verify/test_consumer_root_gates.py:88  pieza   →  pieza
+  tests/verify/test_counterpart_body.py:52  FALLOS   →  fallos
+  tests/verify/test_counterpart_body.py:165  localizador   →  localizador
+  tests/verify/test_counterpart_body.py:55  etiqueta   →  etiqueta
+  tests/verify/test_counterpart_body.py:55  esperado   →  esperado
+  tests/verify/test_counterpart_body.py:55  obtenido   →  obtenido
+  tests/verify/test_counterpart_body.py:146  raiz   →  raiz
+  tests/verify/test_counterpart_body.py:149  nuestro   →  nuestro
+  tests/verify/test_counterpart_body.py:150  fuente   →  fuente
+  tests/verify/test_counterpart_body.py:183  sin_contraparte   →  contraparte, sin
+  tests/verify/test_counterpart_body.py:209  localizar_ts   →  localizar
+  tests/verify/test_counterpart_body.py:171  hallazgos   →  hallazgos
+  tests/verify/test_counterpart_body.py:171  alcance   →  alcance
+  tests/verify/test_env_contract_keys.py:36  test_arbol_real_sin_claves_sin_declarar   →  arbol, claves, declarar, sin
+  tests/verify/test_env_contract_keys.py:42  test_retirar_una_clave_real_la_delata   →  clave, delata, retirar, una
+  tests/verify/test_env_contract_keys.py:56  test_un_prefijo_de_familia_no_es_una_clave   →  clave, de, familia, prefijo, una
+  tests/verify/test_env_contract_keys.py:68  test_sin_archivo_rehusa_sin_emitir_cifra   →  archivo, cifra, emitir, rehusa, sin
+  tests/verify/test_error_catalog.py:165  extraviado   →  extraviado
+  tests/verify/test_gitattributes.py:149  con_contrato   →  con, contrato
+  tests/verify/test_gitattributes.py:151  sin_contrato   →  contrato, sin
+  tests/verify/test_gitattributes.py:156  con_comentario   →  comentario, con
+  tests/verify/test_gitattributes.py:158  sin_comentario   →  comentario, sin
+  tests/verify/test_gitattributes.py:163  sin_duplicar   →  duplicar, sin
+  tests/verify/test_gitattributes.py:165  duplicada   →  duplicada
+  tests/verify/test_gitattributes.py:193  roto   →  roto
+  tests/verify/test_gitattributes.py:203  parcial   →  parcial
+  tests/verify/test_hallazgo_sucesor.py:121  montar   →  montar
+  tests/verify/test_hallazgo_sucesor.py:143  correr   →  correr
+  tests/verify/test_hallazgo_sucesor.py:149  conteo   →  conteo
+  tests/verify/test_hallazgo_sucesor.py:94  CIERRE_REAL   →  cierre
+  tests/verify/test_hallazgo_sucesor.py:96  CITA_DURABLE   →  cita
+  tests/verify/test_hallazgo_sucesor.py:109  fuente   →  fuente
+  tests/verify/test_hallazgo_sucesor.py:117  CABECERA   →  cabecera
+  tests/verify/test_hallazgo_sucesor.py:156  seccion   →  seccion
+  tests/verify/test_hallazgo_sucesor.py:187  vacio   →  vacio
+  tests/verify/test_hallazgo_sucesor.py:194  salida   →  salida
+  tests/verify/test_hallazgo_sucesor.py:213  entorno   →  entorno
+  tests/verify/test_hallazgo_sucesor.py:226  contenido_ordinal   →  contenido
+  tests/verify/test_hallazgo_sucesor.py:121  cuerpo   →  cuerpo
+  tests/verify/test_hallazgo_sucesor.py:130  ruta_relativa   →  relativa, ruta
+  tests/verify/test_hallazgo_sucesor.py:131  destino   →  destino
+  tests/verify/test_hallazgo_sucesor.py:143  raiz   →  raiz
+  tests/verify/test_hallazgo_sucesor.py:144  hecho   →  hecho
+  tests/verify/test_hallazgo_sucesor.py:215  codigo   →  codigo
+  tests/verify/test_hook_script_token.py:138  con_roto   →  con, roto
+  tests/verify/test_hook_script_token.py:161  sano   →  sano
+  tests/verify/test_hook_script_token.py:168  opaco   →  opaco
+  tests/verify/test_hook_script_token.py:173  vacio   →  vacio
+  tests/verify/test_hook_script_token.py:174  cero   →  cero
+  tests/verify/test_hook_script_token.py:133  evento   →  evento
+  tests/verify/test_identifier_language.py:38  FAMILIA_VAT   →  familia
+  tests/verify/test_identifier_language.py:40  fallos   →  fallos
+  tests/verify/test_identifier_language.py:58  familias   →  familias
+  tests/verify/test_identifier_language.py:86  CASOS_ESPANOL   →  casos, espanol
+  tests/verify/test_identifier_language.py:107  FUENTE_SINTETICA   →  fuente, sintetica
+  tests/verify/test_identifier_language.py:43  esperado   →  esperado
+  tests/verify/test_identifier_language.py:43  obtenido   →  obtenido
+  tests/verify/test_identifier_language.py:115  arbol   →  arbol
+  tests/verify/test_identifier_language.py:117  codigo   →  codigo
+  tests/verify/test_identifier_language.py:118  declarados   →  declarados
+  tests/verify/test_identifier_language.py:119  familias_sinteticas   →  familias, sinteticas
+  tests/verify/test_identifier_language.py:122  absueltos   →  absueltos
+  tests/verify/test_identifier_language_baseline.py:45  entorno_limpio   →  entorno, limpio
+  tests/verify/test_identifier_language_baseline.py:32  fallos   →  fallos
+  tests/verify/test_identifier_language_baseline.py:35  esperado   →  esperado
+  tests/verify/test_identifier_language_baseline.py:35  obtenido   →  obtenido
+  tests/verify/test_identifier_language_baseline.py:74  destino   →  destino
+  tests/verify/test_identifier_language_baseline.py:89  del_proceso   →  del, proceso
+  tests/verify/test_identifier_language_baseline.py:90  del_env   →  del
+  tests/verify/test_identifier_language_baseline.py:119  archivo   →  archivo
+  tests/verify/test_identifier_language_baseline.py:123  salida   →  salida
+  tests/verify/test_identifier_language_baseline.py:162  listado   →  listado
+  tests/verify/test_identifier_language_corpus.py:79  vistas   →  vistas
+  tests/verify/test_identifier_language_corpus.py:87  falsos   →  falsos
+  tests/verify/test_identifier_language_corpus.py:104  nombre   →  nombre
+  tests/verify/test_identifier_language_corpus.py:91  salida   →  salida
+  tests/verify/test_package_boundary.py:117  hondo   →  hondo
+  tests/verify/test_package_boundary.py:118  somero   →  somero
+  tests/verify/test_package_boundary.py:134  misma   →  misma
+  tests/verify/test_package_boundary.py:151  fuente   →  fuente
+  tests/verify/test_package_boundary.py:160  hallado   →  hallado
+  tests/verify/test_package_boundary.py:177  informe   →  informe
+  tests/verify/test_package_boundary.py:190  cruce   →  cruce
+  tests/verify/test_path_arithmetic.py:75  LINEA_VIEJA_REAL   →  linea, vieja
+  tests/verify/test_path_arithmetic.py:85  LINEA_ARREGLADA   →  arreglada, linea
+  tests/verify/test_path_arithmetic.py:101  esperados   →  esperados
+  tests/verify/test_path_arithmetic.py:144  r_vacio   →  vacio
+  tests/verify/test_path_arithmetic.py:152  r_sin_strict   →  sin
+  tests/verify/test_path_arithmetic.py:164  r_congelado   →  congelado
+  tests/verify/test_path_arithmetic.py:108  hallados   →  hallados
+  tests/verify/test_pathspec_commit.py:44  repo_nuevo   →  nuevo
+  tests/verify/test_pathspec_commit.py:56  correr   →  correr
+  tests/verify/test_pathspec_commit.py:23  RAIZ   →  raiz
+  tests/verify/test_pathspec_commit.py:26  fallos   →  fallos
+  tests/verify/test_pathspec_commit.py:29  esperado   →  esperado
+  tests/verify/test_pathspec_commit.py:29  obtenido   →  obtenido
+  tests/verify/test_pool_pipeline.py:166  senal_del_verificador   →  del, senal, verificador
+  tests/verify/test_pool_pipeline.py:167  fix_generico   →  generico
+  tests/verify/test_pre_commit_hook.py:101  test_sin_bancos_el_commit_pasa   →  bancos, el, pasa, sin
+  tests/verify/test_pre_commit_hook.py:108  test_un_banco_en_el_proveedor_se_reporta   →  banco, el, en, proveedor, reporta
+  tests/verify/test_pre_commit_hook.py:134  test_sin_gates_rehusa_en_vez_de_omitir   →  de, en, omitir, rehusa, sin, vez
+  tests/verify/test_pre_commit_hook.py:143  test_un_gate_que_revienta_no_publica_la_receta_del_banco   →  banco, del, publica, que, receta, revienta
+  tests/verify/test_pre_commit_hook.py:174  test_sin_un_gate_de_paquete_rehusa   →  de, paquete, rehusa, sin
+  tests/verify/test_pre_commit_hook.py:224  test_el_clon_real_lo_tiene_activado   →  activado, clon, el, tiene
+  tests/verify/test_pre_commit_hook.py:125  banco   →  banco
+  tests/verify/test_pushed_branch.py:93  lineas   →  lineas
+  tests/verify/test_pushed_branch.py:111  raiz   →  raiz
+  tests/verify/test_pushed_branch.py:128  codigo   →  codigo
+  tests/verify/test_pushed_branch.py:112  origen   →  origen
+  tests/verify/test_pushed_branch.py:112  clon   →  clon
+  tests/verify/test_reference_root_resolution.py:48  hecho   →  hecho
+  tests/verify/test_reference_root_resolution.py:67  codigo   →  codigo
+  tests/verify/test_reference_root_resolution.py:67  salida   →  salida
+  tests/verify/test_reference_root_resolution.py:76  sobre_control   →  sobre
+  tests/verify/test_reference_root_resolution.py:83  codigo_control   →  codigo
+  tests/verify/test_reference_root_resolution.py:85  codigo_gates   →  codigo
+  tests/verify/test_reference_root_resolution.py:91  propio   →  propio
+  tests/verify/test_reference_root_resolution.py:108  sobre_vacio   →  sobre, vacio
+  tests/verify/test_reference_root_resolution.py:111  codigo_vacio   →  codigo, vacio
+  tests/verify/test_rst_gate_root.py:37  test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene   →  arbol, consumidor, contiene, del, el, que, raiz
+  tests/verify/test_rst_gate_root.py:45  test_la_aritmetica_vieja_da_un_veredicto_DISTINTO   →  aritmetica, distinto, veredicto, vieja
+  tests/verify/test_rst_gate_root.py:62  test_la_raiz_derivada_tiene_lo_que_el_gate_toca   →  derivada, el, que, raiz, tiene, toca
+  tests/verify/test_rst_gate_root.py:69  test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion   →  de, deriva, el, posicion, raiz, sintaxis
+  tests/verify/test_rst_gate_root.py:34  RAIZ_THYROX   →  raiz
+  tests/verify/test_rst_gate_root.py:57  vieja   →  vieja
+  tests/verify/test_rst_gate_root.py:80  arbol   →  arbol
+  tests/verify/test_rst_gate_root.py:81  asignaciones   →  asignaciones
+  tests/verify/test_rst_gate_root.py:84  fuente   →  fuente
+  tests/verify/test_rst_gate_root.py:91  fallos   →  fallos
+  tests/verify/test_rst_gate_root.py:92  casos   →  casos
+  tests/verify/test_rst_gate_root.py:94  nombre   →  nombre
+  tests/verify/test_rst_gate_root.py:94  caso   →  caso
+  tests/verify/test_rule_divergence.py:21  _AQUI   →  aqui
+  tests/verify/test_rule_divergence.py:22  _RAIZ   →  raiz
+  tests/verify/test_rule_divergence.py:43  test_el_universo_tiene_denominador   →  denominador, el, tiene, universo
+  tests/verify/test_rule_divergence.py:47  test_todo_nombre_compartido_vive_en_dos_arboles_o_mas   →  arboles, compartido, dos, en, mas, nombre, todo, vive
+  tests/verify/test_rule_divergence.py:51  test_cada_copia_recibe_exactamente_un_veredicto   →  cada, copia, exactamente, recibe, veredicto
+  tests/verify/test_rule_divergence.py:57  test_anular_el_detector_mueve_solo_a_las_que_lo_declaran   →  anular, declaran, el, las, mueve, que
+  tests/verify/test_rule_divergence.py:85  test_una_subsumida_no_aporta_ninguna_linea_propia   →  aporta, linea, ninguna, propia, subsumida, una
+  tests/verify/test_rule_divergence.py:59  antes   →  antes
+  tests/verify/test_rule_divergence.py:62  declaradas   →  declaradas
+  tests/verify/test_rule_divergence.py:74  movidas   →  movidas
+  tests/verify/test_rule_divergence.py:80  restaurado   →  restaurado
+  tests/verify/test_rule_divergence.py:68  despues   →  despues
+  tests/verify/test_rule_divergence.py:74  clave   →  clave
+  tests/verify/test_script_deprecated.py:162  roto   →  roto
+  tests/verify/test_script_deprecated.py:170  sin_arbol   →  arbol, sin
+  tests/verify/test_script_deprecated.py:171  env_roto   →  roto
+  tests/verify/test_symbol_home.py:48  FALLOS   →  fallos
+  tests/verify/test_symbol_home.py:51  etiqueta   →  etiqueta
+  tests/verify/test_symbol_home.py:51  esperado   →  esperado
+  tests/verify/test_symbol_home.py:51  obtenido   →  obtenido
+  tests/verify/test_symbol_home.py:83  raiz   →  raiz
+  tests/verify/test_symbol_home.py:129  propias   →  propias
+  tests/verify/test_symbol_home.py:130  nombres   →  nombres
+  tests/verify/test_symbol_home.py:152  idx_ingenuo   →  ingenuo
+  tests/verify/test_symbol_home.py:153  r_ingenuo   →  ingenuo
+  tests/verify/test_symbol_home.py:186  propias_ts   →  propias
+  tests/workbench/test_home_resolution.py:73  _sin_clave_por_clon   →  clave, clon, por, sin
+  tests/workbench/test_home_resolution.py:30  _AQUI   →  aqui
+  tests/workbench/test_home_resolution.py:31  _RAIZ   →  raiz
+  tests/workbench/test_home_resolution.py:101  test_la_poblacion_medible_alcanza_para_la_afirmacion   →  afirmacion, alcanza, medible, para, poblacion
+  tests/workbench/test_home_resolution.py:105  test_un_segmento_relativo_compone_un_hogar_por_clon   →  clon, compone, hogar, por, relativo, segmento
+  tests/workbench/test_home_resolution.py:117  test_una_absoluta_SI_colisiona_y_es_correcto   →  absoluta, colisiona, correcto, una
+  tests/workbench/test_home_resolution.py:124  test_la_clave_por_clon_tambien_se_resuelve   →  clave, clon, por, resuelve, tambien
+  tests/workbench/test_home_resolution.py:136  test_sin_raiz_de_consumidor_resoluble_devuelve_la_cruda   →  consumidor, cruda, de, devuelve, raiz, resoluble, sin
+  tests/workbench/test_home_resolution.py:155  test_con_raiz_resoluble_la_misma_relativa_SI_se_compone   →  compone, con, misma, raiz, relativa, resoluble
+  tests/workbench/test_home_resolution.py:168  test_las_dos_familias_resuelven_igual   →  dos, familias, igual, las, resuelven
+  tests/workbench/test_home_resolution.py:131  objetivo   →  objetivo
+  tests/workbench/test_home_resolution.py:149  dentro_del_proveedor   →  del, dentro, proveedor
+  tests/workbench/test_manifest.py:41  MOMENTO   →  momento
+  tests/workbench/test_manifest.py:58  NOMBRES   →  nombres
+  tests/workbench/test_manifest.py:65  nombre   →  nombre
+  tests/workbench/test_manifest.py:91  por_mtime   →  por
+  tests/workbench/test_manifest.py:111  creado   →  creado
+  tests/workbench/test_manifest.py:118  contenido   →  contenido
+  tests/workbench/test_manifest.py:119  clave   →  clave
+  tests/workbench/test_manifest.py:87  indice   →  indice
+  tests/workbench/test_manifest.py:89  marca   →  marca
+  tests/workbench/test_paths.py:88  anotados   →  anotados
+  tests/workbench/test_provider_evidence.py:111  _vacio   →  vacio
+
+Los identificadores van en INGLÉS; los comentarios y docstrings, en
+español. Traducir el nombre, no buscarle un sinónimo más evocador:
+  Modelo → Model (no Probe) · _Base se queda _Base.
+OJO: un modelo CONCRETO no puede empezar ni terminar en guion bajo
+  (Django models.E023). Lo vigila check_model_name_lookup.py.
+
+Medido: 574 archivos. Deuda heredada congelada: 0 (tarea #147).

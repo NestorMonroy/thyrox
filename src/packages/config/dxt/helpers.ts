@@ -1,57 +1,18 @@
-/**
- * Puerto de `ccnmt: packages/config/dxt/helpers.ts` (89 líneas fuente).
- * Validación de manifiestos DXT/MCPB y generación de extension ID.
- * Reimplementación fiel.
- *
- * `@anthropic-ai/mcpb` — dependencia externa real, no instalada en este
- * árbol (verificado con `Bun.resolveSync`). La fuente YA la importa
- * perezosamente vía `await import(...)` dentro de la función (no a nivel de
- * módulo) — por rendimiento de arranque, según su propio comentario: evita
- * cargar ~700KB de closures `.bind` de Zod v3 para sesiones que nunca tocan
- * `.dxt`/`.mcpb`. Se conserva ese mismo `await import()` verbatim en vez de
- * envolverlo con `require()`: no es un hueco de este porte, es la forma que
- * la fuente ya eligió. Como el paquete no está instalado, la función
- * lanzará en tiempo de ejecución si se invoca — el tipo `McpbManifestAny` se
- * declara localmente en su lugar (no se puede importar el tipo de un
- * paquete ausente).
- *
- * `errorMessage` y `jsonParse` — repuntados vía `require()` diferido
- * (`../internal/pendingCrossPackageDeps.ts`): `@thyrox/local-observability`
- * los declara y los tiene implementados; sólo falta el symlink de
- * workspace.
- */
-
-import {
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilitySlowOperations,
-} from '../internal/pendingCrossPackageDeps.js'
+import type { McpbManifestAny } from '@anthropic-ai/mcpb'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 
 /**
- * Sustituto local del tipo `McpbManifestAny` de `@anthropic-ai/mcpb` — el
- * paquete no está instalado, así que su tipo no se puede importar. Se
- * declara el subconjunto que este módulo consume (`author.name`, `name`).
- */
-export type McpbManifestAny = {
-  author: { name: string }
-  name: string
-  [key: string]: unknown
-}
-
-/**
- * Parsea y valida un manifiesto DXT desde un objeto JSON.
+ * Parses and validates a DXT manifest from a JSON object.
  *
- * Import perezoso de `@anthropic-ai/mcpb`: ese paquete usa zod v3 que crea
- * eagerly 24 closures `.bind(this)` por instancia de esquema (~300
- * instancias entre `schemas.js` y `schemas-loose.js`). Diferir el import
- * mantiene ~700KB de closures fuera del heap de arranque para sesiones que
- * nunca tocan `.dxt`/`.mcpb`.
+ * Lazy-imports @anthropic-ai/mcpb: that package uses zod v3 which eagerly
+ * creates 24 .bind(this) closures per schema instance (~300 instances between
+ * schemas.js and schemas-loose.js). Deferring the import keeps ~700KB of bound
+ * closures out of the startup heap for sessions that never touch .dxt/.mcpb.
  */
 export async function validateManifest(
   manifestJson: unknown,
 ): Promise<McpbManifestAny> {
-  // @ts-expect-error — @anthropic-ai/mcpb no está instalado en este árbol;
-  // la fuente ya lo importa perezosamente por la misma razón (ver docstring
-  // del módulo). Se conserva el import diferido tal cual.
   const { vAny } = await import('@anthropic-ai/mcpb')
   const parseResult = vAny.McpbManifestSchema.safeParse(manifestJson)
 
@@ -59,7 +20,7 @@ export async function validateManifest(
     const errors = parseResult.error.flatten()
     const errorMessages = [
       ...Object.entries(errors.fieldErrors).map(
-        ([field, errs]: [string, unknown]) =>
+        ([field, errs]) =>
           `${field}: ${(errs as string[] | undefined)?.join(', ') ?? ''}`,
       ),
       ...(errors.formErrors || []),
@@ -70,17 +31,15 @@ export async function validateManifest(
     throw new Error(`Invalid manifest: ${errorMessages}`)
   }
 
-  return parseResult.data as McpbManifestAny
+  return parseResult.data
 }
 
 /**
- * Parsea y valida un manifiesto DXT desde texto crudo.
+ * Parses and validates a DXT manifest from raw text data.
  */
 export async function parseAndValidateManifestFromText(
   manifestText: string,
 ): Promise<McpbManifestAny> {
-  const { jsonParse } = requireLocalObservabilitySlowOperations()
-  const { errorMessage } = requireLocalObservabilityErrorHelpers()
   let manifestJson: unknown
 
   try {
@@ -93,7 +52,7 @@ export async function parseAndValidateManifestFromText(
 }
 
 /**
- * Parsea y valida un manifiesto DXT desde datos binarios crudos.
+ * Parses and validates a DXT manifest from raw binary data.
  */
 export async function parseAndValidateManifestFromBytes(
   manifestData: Uint8Array,
@@ -103,14 +62,14 @@ export async function parseAndValidateManifestFromBytes(
 }
 
 /**
- * Genera un extension ID a partir del nombre del autor y de la extensión.
- * Usa el mismo algoritmo que el backend de directorio, para consistencia.
+ * Generates an extension ID from author name and extension name.
+ * Uses the same algorithm as the directory backend for consistency.
  */
 export function generateExtensionId(
   manifest: McpbManifestAny,
   prefix?: 'local.unpacked' | 'local.dxt',
 ): string {
-  const sanitize = (str: string): string =>
+  const sanitize = (str: string) =>
     str
       .toLowerCase()
       .replace(/\s+/g, '-')

@@ -6,14 +6,14 @@
  * fronteras V7 (§8 — `agent` no puede importar de `app-compat`); estas
  * implementaciones locales son el patrón aprobado para utilidades puras.
  *
- * Recorte declarado, REVISADO 2026-09-08 (#262): la fuente traía además
- * `isBareMode` y `pathExists`. `isBareMode` **ya entra**: su bloqueo era
- * `readEnv` de `config/env`, que hoy existe en este árbol
- * (`@thyrox/config/env/utils.ts:43`) — se declaraba ausente y la medición
- * lo desmiente. `pathExists` sigue fuera: es portable pero sin consumidor.
+ * Reexporta `isBareMode` e `isEnvTruthy` de su hogar canónico,
+ * `@thyrox/config/env/utils`, y trae `pathExists`, que importa
+ * `internal/fileHistoryCore.ts`.
  */
 import { readEnv } from '@thyrox/config/env/utils'
+import { stat } from 'node:fs/promises'
 
+export { isBareMode, isEnvTruthy } from '@thyrox/config/env/utils'
 // ── Utilidades de error ────────────────────────────────────────────────────
 
 /** Extrae un mensaje de cadena de un valor tipo-error desconocido. */
@@ -55,13 +55,6 @@ export function isFsInaccessible(e: unknown): boolean {
 }
 
 // ── Utilidades de entorno ───────────────────────────────────────────────────
-
-export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
 
 export function isEnvDefinedFalsy(
   envVar: string | boolean | undefined,
@@ -137,17 +130,12 @@ export function asSystemPrompt(value: readonly string[]): SystemPrompt {
   return value as SystemPrompt
 }
 
-/**
- * `--bare` / SIMPLE: el modo que salta la contabilidad de fondo (sugerencia
- * de prompt, extracción de memoria, auto-dream). Una llamada `-p` guionizada
- * no quiere auto-memoria ni agentes bifurcados peleándose recursos mientras
- * se apaga.
- *
- * Las dos vías son las de la fuente y NO son intercambiables: la variable
- * gobierna el proceso entero, y el argumento gobierna esta invocación.
- */
-export function isBareMode(): boolean {
-  return (
-    isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE')) || process.argv.includes('--bare')
-  )
+/** ¿Existe la ruta? De forma asíncrona y sin lanzar: un error de `stat` es «no». */
+export async function pathExists(path: string): Promise<boolean> {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
+  }
 }

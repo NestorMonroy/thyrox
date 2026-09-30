@@ -9,7 +9,7 @@ import { resolve } from 'path'
  * Used by /status (account-information display). The decision tree must
  * preserve ant's exact branching because each field gates downstream UI:
  *  - tokenSource ⇒ "Logged in via {ENV_VAR}"
- *  - subscription ⇒ "Claude Pro/Max/etc."
+ *  - subscription ⇒ "thyrox Pro/Max/etc."
  *  - apiKeySource ⇒ separate "API key: {source}" line
  *  - organization ⇒ org name display (only meaningful for /login flows)
  *  - email ⇒ account email
@@ -40,8 +40,8 @@ describe('getAccountInformation (ant CxH parity)', () => {
   })
 
   test('env-var OAuth token sources go straight to accountInfo.tokenSource', () => {
-    expect(fnSlice).toMatch(/authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN'[\s\S]*?accountInfo\.tokenSource = authTokenSource/)
-    expect(fnSlice).toMatch(/'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'/)
+    expect(fnSlice).toMatch(/authTokenSource === 'THYROX_CODE_OAUTH_TOKEN'[\s\S]*?accountInfo\.tokenSource = authTokenSource/)
+    expect(fnSlice).toMatch(/'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'/)
   })
 
   test('Claude.ai subscribers get subscription name, NOT token source', () => {

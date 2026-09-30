@@ -3,6 +3,21 @@ import type { Message, ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { HookProgress } from '@thyrox/agent/types/hooks.js'
 
 /**
+ * Guarda de tipo para el `data` de un `ProgressMessage`: llega como
+ * `unknown` porque `ProgressMessage` sin parametro de tipo es la variante
+ * que trae el miembro `progress` de la union `Message`.
+ */
+function isHookProgress(data: unknown): data is HookProgress {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    data.type === 'hook_progress' &&
+    'hookEvent' in data
+  )
+}
+
+/**
  * Derive a stop-hook spinner suffix from messages state.
  *
  * Returns null when not loading, no stop-hook progress, or hooks have already
@@ -21,7 +36,7 @@ export function deriveStopHookSpinnerSuffix(
   const progressMsgs = messages.filter(
     (m): m is ProgressMessage<HookProgress> =>
       m.type === 'progress' &&
-      m.data.type === 'hook_progress' &&
+      isHookProgress(m.data) &&
       (m.data.hookEvent === 'Stop' || m.data.hookEvent === 'SubagentStop'),
   )
   if (progressMsgs.length === 0) return null

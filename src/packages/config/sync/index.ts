@@ -1,7 +1,7 @@
 /**
  * Settings Sync Service
  *
- * Syncs user settings and memory files across Claude Code environments.
+ * Syncs user settings and memory files across thyrox environments.
  *
  * - Interactive CLI: Uploads local settings to remote (incremental, only changed entries)
  * - CCR: Downloads remote settings to local before plugin installation
@@ -39,7 +39,7 @@ function getRetryDelay(attempt: number, retryAfterHeader?: string | null, maxDel
   const base = Math.min(BASE_RETRY_DELAY_MS * 2 ** (attempt - 1), maxDelayMs)
   return base + Math.random() * 0.25 * base
 }
-function getClaudeCodeUserAgent(): string { return `claude-code-how-works-how-works/${MACRO.VERSION}` }
+function getClaudeCodeUserAgent(): string { return `claude-code/${MACRO.VERSION}` }
 import {
   type SettingsSyncFetchResult,
   type SettingsSyncUploadResult,
@@ -80,7 +80,7 @@ export async function uploadUserSettingsInBackground(): Promise<void> {
       return
     }
 
-    const projectId = await getConfigHostBindings().getRepoRemoteHash?.()
+    const projectId = (await getConfigHostBindings().getRepoRemoteHash?.()) ?? null
     const localEntries = await buildEntriesFromLocalFiles(projectId)
     const remoteEntries = result.isEmpty ? {} : result.data!.content.entries
     const changedEntries = pickBy(
@@ -182,7 +182,7 @@ async function doDownloadUserSettings(
       }
 
       const entries = result.data!.content.entries
-      const projectId = await getConfigHostBindings().getRepoRemoteHash?.()
+      const projectId = (await getConfigHostBindings().getRepoRemoteHash?.()) ?? null
       const entryCount = Object.keys(entries).length
       tryGetConfigHostBindings().logDiagnostics?.('info', 'settings_sync_download_applying', {
         entryCount,
@@ -284,12 +284,6 @@ async function fetchUserSettingsOnce(): Promise<SettingsSyncFetchResult> {
   } catch (error) {
     const { kind, message } = classifyAxiosError(error)
     switch (kind) {
-      case 'auth':
-        return {
-          success: false,
-          error: 'Not authorized for settings sync',
-          skipRetry: true,
-        }
       case 'timeout':
         return { success: false, error: 'Settings sync request timeout' }
       case 'network':
@@ -471,7 +465,7 @@ async function writeFileForSync(
  *
  * After writing, invalidates relevant caches:
  * - resetSettingsCache() for settings files
- * - getConfigHostBindings().clearMemoryFileCaches?.() for memory files (CLAUDE.md)
+ * - getConfigHostBindings().clearMemoryFileCaches?.() for memory files (THYROX.md)
  */
 async function applyRemoteEntriesToLocal(
   entries: Record<string, string>,

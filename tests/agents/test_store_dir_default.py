@@ -46,6 +46,7 @@ RAIZ = reach.thyrox_root()
 
 _spec = importlib.util.spec_from_file_location(
     "agent_store_para_el_control", RAIZ / "src" / "agents" / "agent_store.py")
+assert _spec is not None and _spec.loader is not None
 agent_store = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(agent_store)
 

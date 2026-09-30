@@ -155,6 +155,26 @@ check('NO ve un literal que no es identificador (mime)',
       'application/json' in declared_in_dict, False)
 check('NO ve un literal numerico', '2' in declared_in_dict, False)
 
+print('=== Un subcomando es un identificador: el nombre público de una operación ===')
+# `hallazgo_ids.py acunar` llevaba su manejador en inglés (`_cmd_mint`) y el
+# nombre que expone la CLI en español: el gate no lo veía porque llega como
+# cadena a `add_parser`, no como un nombre declarado.
+SUBCOMMAND_SOURCE = '''
+sub = parser.add_subparsers()
+sub.add_parser('acunar', help='x')
+sub.add_parser('mint', aliases=['acuñar-viejo'], help='x')
+sub.add_parser('agregar-hallazgo')
+parser.add_argument('--no-soy-subcomando')
+'''
+declared_subcommands = {n for n, _ in gate.declared_identifiers(ast.parse(SUBCOMMAND_SOURCE))}
+check('ve el subcomando en español', 'acunar' in declared_subcommands, True)
+check('ve el subcomando en inglés', 'mint' in declared_subcommands, True)
+check('ve el subcomando con guion', 'agregar-hallazgo' in declared_subcommands, True)
+check('ve los alias', 'acuñar-viejo' in declared_subcommands, True)
+check('NO ve una bandera de add_argument', '--no-soy-subcomando' in declared_subcommands, False)
+check('el criterio de idioma marca el subcomando con guion',
+      bool(gate.spanish_words_in('agregar-hallazgo')), True)
+
 print('=== La clave de canon del CONSUMIDOR se exime, y la declara el consumidor ===')
 # `codigo_error` es la clave canonica de error de api —la manda su propia
 # regla— y sale 269 veces. No es deuda: es contrato. La exencion NO se

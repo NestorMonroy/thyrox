@@ -36,7 +36,7 @@ describe('ensamblado del prompt de sistema (T-022)', () => {
   test('el prompt base va primero y siempre', () => {
     const root = tree({ 'CLAUDE.md': 'raiz' })
     const r = assembleSystemPrompt({ root, base: 'SOY EL BASE' })
-    expect(r.sections[0].name).toBe('base')
+    expect(r.sections[0]!.name).toBe('base')
     expect(r.text.startsWith('SOY EL BASE')).toBe(true)
   })
 
@@ -57,6 +57,26 @@ describe('ensamblado del prompt de sistema (T-022)', () => {
     ])
     expect(r.text).toContain('regla alfa')
     expect(r.text).toContain('nivel 2')
+  })
+
+  test('THYROX.md gana a CLAUDE.md en cada ranura, y las reglas de los dos directorios entran', () => {
+    const root = tree({
+      'THYROX.md': 'propio',
+      'CLAUDE.md': 'heredado',
+      '.thyrox/THYROX.md': 'nivel 2 propio',
+      '.claude/CLAUDE.md': 'nivel 2 heredado',
+      '.thyrox/rules/beta.md': 'regla beta',
+      '.claude/rules/alfa.md': 'regla alfa',
+    })
+    const r = assembleSystemPrompt({ root, base: 'B' })
+    expect(r.sections.map((s) => s.name)).toEqual([
+      'base',
+      'THYROX.md',
+      '.thyrox/THYROX.md',
+      '.thyrox/rules/beta.md',
+      '.claude/rules/alfa.md',
+    ])
+    expect(r.text).not.toContain('heredado')
   })
 
   test('un arbol sin CLAUDE.md ni reglas no revienta: solo queda el base', () => {

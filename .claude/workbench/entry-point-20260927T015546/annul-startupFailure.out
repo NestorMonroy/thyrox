@@ -1,0 +1,12 @@
+== A: cli.tsx no llama al chequeo
+(fail) la rama de cwd en la capa cli > 12. cli.tsx la llama tras --version y ANTES de cargar el perfilador
+ 1 fail
+restaurado
+== B: sin línea result
+(fail) la rama de cwd en la capa cli > 10. sin cwd: mensaje, linea result pedida y salida 1 — en ese orden
+ 1 fail
+restaurado
+== C: sin condición stream-json
+(fail) el resultado de fallo de arranque (sut/ez/out/Fqn/d) > 7. stream-json sólo en un lanzamiento no interactivo
+ 1 fail
+restaurado

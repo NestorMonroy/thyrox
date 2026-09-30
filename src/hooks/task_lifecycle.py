@@ -2,7 +2,7 @@
 """El puente entre el ciclo de vida de una tarjeta del cliente y el store.
 
 Cierra el disparo que ``TASK-DOCS-0404`` lleva abierto: el mecanismo de acuñado
-—``board_sync.mint_created_card``— existia con **cero invocadores de
+—``board_sync.assign_created_card``— existia con **cero invocadores de
 produccion**, asi que la cita durable se acuñaba a mano y a posteriori. Este
 modulo es su unico consumidor real.
 
@@ -37,9 +37,9 @@ no ocurre es deuda, un turno roto es una interrupcion. Mismo criterio que
 claves (``hook_event_name``, ``session_id``, ``task_id``).
 *Ciega a:* una tarjeta creada mientras el hook no esta cableado — el acuñado es
 en el alta, no un barrido; la reconciliacion posterior es
-``bin/task_ids ingerir-board``. Y ciega a que el board haya escrito ya el
+``bin/task_ids ingest-board``. Y ciega a que el board haya escrito ya el
 archivo de la tarjeta: si el cliente despacha el evento antes de escribirlo,
-``mint_created_card`` no la encuentra y este modulo lo reporta sin fallar.
+``assign_created_card`` no la encuentra y este modulo lo reporta sin fallar.
 """
 from __future__ import annotations
 
@@ -93,11 +93,11 @@ def handle(payload: dict, store_path, board_dir=None, layer=None) -> dict:
                            "dos no se sabe que fila tocar")}
 
     if event == "TaskCreated":
-        result = board_sync.mint_created_card(
+        result = board_sync.assign_created_card(
             store_path, session, ordinal, board_dir=board_dir, layer=layer,
             tool_name=event)
         return {"acted": result.acted, "reason": result.reason,
-                "minted": result.minted}
+                "assigned": result.assigned}
 
     # `TaskCompleted`: el estado lo lleva el reconciliador, que aparea la
     # tarjeta con su fila. No se acuña — la cita ya existe desde el alta.
@@ -107,12 +107,13 @@ def handle(payload: dict, store_path, board_dir=None, layer=None) -> dict:
 
 
 def main(argv=None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--store", default=None,
                         help="el store destino; por defecto el del proveedor")
     parser.add_argument("--board", default=None,
                         help="directorio de tarjetas (default: el de la sesion)")
-    parser.add_argument("--capa", default=None,
+    parser.add_argument("--layer", default=None,
                         help="capa declarada de la cita")
     args = parser.parse_args(argv)
 
@@ -120,7 +121,7 @@ def main(argv=None) -> int:
     store = Path(args.store) if args.store else agents_paths.agent_store_path()
     try:
         result = handle(payload, store, board_dir=args.board,
-                           layer=args.capa)
+                           layer=args.layer)
     except Exception as error:                      # noqa: BLE001
         # Deliberadamente ancho: el contrato del hook es no romper el turno.
         print(f"task_lifecycle: no se acuño ({error})", file=sys.stderr)

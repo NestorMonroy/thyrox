@@ -1,0 +1,9 @@
+
+tests/integration/plugin-load.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) plugin loading e2e (guards against setter-shim regressions) > McpServerConfigSchema is a callable function (catches null-literal bug) [1467.30ms]
+
+ 5 pass
+ 1 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [1.60s]

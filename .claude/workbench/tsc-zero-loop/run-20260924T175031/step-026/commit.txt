@@ -1,0 +1,6 @@
+Apply the mechanical infer-from-usage batch of the tsc loop
+
+Twenty-sixth step: five infer-from-usage candidates from tsc_proposers
+in one strict batch with a verdict per file. tsc accepted Messages.tsx
+(2984 -> 2983) and rejected the other four; the rejected ones need a
+shape, not an inferred annotation.

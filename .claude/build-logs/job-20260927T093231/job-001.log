@@ -1,0 +1,23 @@
+check-package-typecheck: 1 provider(s) reconstruido(s) por viejos: ide
+  agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  app-host: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  bridge: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  cli: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  command-runtime: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  computer-use-mcp: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  ide: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  mcp-runtime: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  memory: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  output: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  repl: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  updater: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 19 de 19 paquete(s))
+EXIT=0

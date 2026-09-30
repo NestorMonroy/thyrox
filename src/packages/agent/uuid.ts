@@ -1,29 +1,23 @@
-/**
- * Reconocedor de UUID y acunador de identificador de agente.
- * Porte de `ccnmt: packages/agent/uuid.ts` (`validateUuid`, `createAgentId`).
- */
-import { randomBytes } from 'node:crypto'
-import type { AgentId } from './idTypes.ts'
+import { randomBytes, type UUID } from 'crypto'
+import type { AgentId } from './idTypes.js'
 
-/** Un UUID en su forma canonica, marcado. */
-export type Uuid = string & { readonly __brand: 'Uuid' }
+// Re-export for callers that consume UUID through this module (e.g.
+// repl/components/ultraplan/UltraplanChoiceDialog.tsx). The branded
+// node:crypto type was previously declared locally without an export,
+// breaking those imports.
+export type { UUID }
 
-/** La forma canonica: 8-4-4-4-12 hexadecimales, sin distinguir mayusculas. */
-const UUID_PATTERN =
+const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-/**
- * Reconoce un UUID canonico. Acepta `unknown` a proposito: quien lo llama
- * suele venir de JSON, donde el tipo no esta garantizado.
- */
-export function validateUuid(candidate: unknown): Uuid | null {
-  if (typeof candidate !== 'string') return null
-  return UUID_PATTERN.test(candidate) ? (candidate as Uuid) : null
+export function validateUuid(maybeUuid: unknown): UUID | null {
+  if (typeof maybeUuid !== 'string') return null
+  return uuidRegex.test(maybeUuid) ? (maybeUuid as UUID) : null
 }
 
 /**
- * Acuna un identificador de agente: `a`, la etiqueta opcional, y 16
- * hexadecimales de 8 bytes aleatorios.
+ * Generate a new agent ID with prefix for consistency with task IDs.
+ * Format: a{label-}{16 hex chars}
  */
 export function createAgentId(label?: string): AgentId {
   const suffix = randomBytes(8).toString('hex')

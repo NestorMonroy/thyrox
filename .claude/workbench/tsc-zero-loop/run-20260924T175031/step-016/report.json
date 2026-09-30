@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3196, "total_final": 3188, "tsc_runs": 1, "accepted": ["agent:mcp-set-servers-result"], "files_kept": ["src/packages/cli/src/headless/sdk/session/run-streaming.ts"], "outcomes": {"agent:mcp-set-servers-result": "accepted-net"}}

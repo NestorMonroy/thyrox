@@ -11,7 +11,7 @@
  *  - the parseAsync + post-parse profiler report
  */
 
-import type { Command as CommanderCommand } from '@commander-js/extra-typings'
+import { PRODUCT_NAME } from './productName.ts'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
 import type { RuntimeHandles } from '@thyrox/app-host'
@@ -19,7 +19,7 @@ import type { RuntimeHandles } from '@thyrox/app-host'
 import { init } from '@thyrox/app-host/init.js'
 import { loadPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
 import { loadRemoteManagedSettings } from '../remoteManagedSettings.js'
-import { setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
+import { getSessionId, setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
 import { clearPluginCache } from '../pluginLoader.js'
 import { runMigrations } from '@thyrox/app-host/main/startup/settings.js'
 import { canUserConfigureAdvisor } from '@thyrox/provider/advisor.js'
@@ -31,10 +31,12 @@ import {
 } from '@thyrox/app-host/startup/startupProfiler.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 
-import { createMainProgram } from './commander.js'
+import { createMainProgram, type MainProgram } from './commander.js'
 import { runModeDispatch } from './mode-dispatch.js'
 import type { PendingHandles } from './preprocess-argv.js'
 import { registerMcpCommands } from '../commands/mcp-commands.js'
+import { registerMitmCommands } from '../commands/mitm-commands.js'
+import { registerProvidersCommands } from '../commands/providers-commands.js'
 import { registerMiscCommands } from '../commands/misc-commands.js'
 import { registerProjectCommands } from '../commands/project-commands.js'
 
@@ -43,7 +45,7 @@ import { registerProjectCommands } from '../commands/project-commands.js'
  * Handles the shared bootstrap shape: settings ready, sinks installed,
  * migrations applied, remote managed settings kicked off.
  */
-function attachPreActionHook(program: CommanderCommand): void {
+function attachPreActionHook(program: MainProgram): void {
   program.hook('preAction', async thisCommand => {
     if (
       program.getOptionValue('promptSuggestions') &&
@@ -71,7 +73,7 @@ function attachPreActionHook(program: CommanderCommand): void {
     // process.title on Windows sets the console title directly; on POSIX,
     // terminal shell integration may mirror the process name to the tab.
     // After init() so settings.json env can also gate this (gh-4765).
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_DISABLE_TERMINAL_TITLE)) {
       process.title = 'claude'
     }
 
@@ -156,7 +158,7 @@ function attachPreActionHook(program: CommanderCommand): void {
  * `createMainProgram()` option block. These are either ANT-only, feature
  * flagged, or bridge/teleport-specific.
  */
-function attachSecondaryOptions(program: CommanderCommand): void {
+function attachSecondaryOptions(program: MainProgram): void {
   // Worktree flags
   program.option(
     '-w, --worktree [name]',
@@ -362,7 +364,7 @@ function attachSecondaryOptions(program: CommanderCommand): void {
 export async function runCliProgram(
   runtimeHandles: RuntimeHandles,
   pendings: PendingHandles,
-): Promise<CommanderCommand> {
+): Promise<MainProgram> {
   profileCheckpoint('run_function_start')
 
   const program = createMainProgram()
@@ -385,7 +387,7 @@ export async function runCliProgram(
         },
       )
     })
-    .version(`${MACRO.VERSION} (Claude Code)`, '-v, --version', 'Output the version number')
+    .version(`${MACRO.VERSION} (${PRODUCT_NAME})`, '-v, --version', 'Output the version number')
 
   attachSecondaryOptions(program)
 
@@ -411,14 +413,17 @@ export async function runCliProgram(
     return program
   }
 
-  // claude mcp + server + ssh + open (extracted to @claude-code-how-works/cli)
+  // claude mcp + server + ssh + open (extracted to @thyrox/cli)
   registerMcpCommands(program, { pendingConnect: pendings.pendingConnect })
 
-  // claude auth/plugin/setup-token/agents/auto-mode/remote-control/assistant/doctor/up/rollback/install/log/error/export/task/completion (extracted to @claude-code-how-works/cli)
+  // claude auth/plugin/setup-token/agents/auto-mode/remote-control/assistant/doctor/up/rollback/install/log/error/export/task/completion (extracted to @thyrox/cli)
   registerMiscCommands(program)
 
   // claude project purge — port of ant v2.1.126 WD/5142.js
   registerProjectCommands(program)
+
+  registerMitmCommands(program)
+  registerProvidersCommands(program)
 
   profileCheckpoint('run_before_parse')
   await program.parseAsync(process.argv)
@@ -428,7 +433,7 @@ export async function runCliProgram(
   profileCheckpoint('main_after_run')
 
   // Log startup perf to Statsig (sampled) and output detailed report if enabled
-  profileReport()
+  profileReport({ sessionId: getSessionId() })
 
   return program
 }

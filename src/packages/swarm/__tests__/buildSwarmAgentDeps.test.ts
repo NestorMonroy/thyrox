@@ -31,6 +31,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SwarmHostDeps } from '../src/types/deps.ts'
+import type { CoreTool } from '@thyrox/agent'
 
 let raiz = ''
 let recibido: Record<string, unknown[]> = {}
@@ -327,8 +328,8 @@ describe('buildSwarmAgentDeps — las nueve sub-superficies del AgentDeps', () =
     const deps = await m.buildSwarmAgentDeps({ host: host(), identity: identidad })
 
     expect(deps.provider.getModel()).toBe('modelo-x')
-    expect(deps.tools.find('Bash')).toEqual({ name: 'Bash' })
-    expect(deps.tools.list()).toEqual([{ name: 'Bash' }])
+    expect(deps.tools.find('Bash')).toEqual({ name: 'Bash' } as CoreTool)
+    expect(deps.tools.list()).toEqual([{ name: 'Bash' }] as CoreTool[])
     await deps.tools.execute({} as never, {}, {} as never)
     expect(deps.context.getUserContext()).toEqual({ u: '1' })
     expect(deps.context.getSystemContext()).toEqual({ s: '2' })

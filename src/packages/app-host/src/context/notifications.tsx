@@ -1,17 +1,3 @@
-/**
- * Adaptación de `ccnmt: packages/app-host/src/context/notifications.tsx`.
- * Capa 0 (sin cita a paquete hermano ausente) — porte verbatim, sin
- * divergencias. `Theme` se importa `type`-only desde `@anthropic/ink` —
- * ese paquete es el fork de Ink vendorizado en `ccnmt`, no publicado ni
- * instalado en este árbol (mismo hallazgo que
- * `@thyrox/app-host: src/index.ts` ya documenta para
- * `context/QueuedMessageContext.tsx`). Al usarse sólo como
- * `keyof Theme` (posición de tipo), el import se borra al transpilar —
- * verificado empíricamente en este pase (`bun test` con un import `type`
- * a un especificador irresoluble pasa sin error) — así que el módulo
- * carga sin necesitar que `@anthropic/ink` esté instalado. Instalarlo es
- * decisión del ejecutor, no de este pase.
- */
 import type * as React from 'react'
 import { useCallback, useEffect } from 'react'
 import { useAppStateStore, useSetAppState } from '../state/AppState.js'
@@ -22,19 +8,18 @@ type Priority = 'low' | 'medium' | 'high' | 'immediate'
 type BaseNotification = {
   key: string
   /**
-   * Claves de notificaciones que esta notificación invalida.
-   * Si una notificación es invalidada, se elimina de la cola
-   * y, si está mostrándose, se limpia de inmediato.
+   * Keys of notifications that this notification invalidates.
+   * If a notification is invalidated, it will be removed from the queue
+   * and, if currently displayed, cleared immediately.
    */
   invalidates?: string[]
   priority: Priority
   timeoutMs?: number
   /**
-   * Combina notificaciones con la misma clave, como Array.reduce().
-   * Se llama como fold(accumulator, incoming) cuando llega una
-   * notificación con una clave que ya coincide con una en la cola o
-   * mostrándose. Devuelve la notificación fusionada (debe seguir
-   * llevando fold hacia adelante para futuras fusiones).
+   * Combine notifications with the same key, like Array.reduce().
+   * Called as fold(accumulator, incoming) when a notification with a matching
+   * key already exists in the queue or is currently displayed.
+   * Returns the merged notification (should carry fold forward for future merges).
    */
   fold?: (accumulator: Notification, incoming: Notification) => Notification
 }
@@ -55,8 +40,7 @@ export type Notification = TextNotification | JSXNotification
 
 const DEFAULT_TIMEOUT_MS = 8000
 
-// Guarda el timeout actual para poder limpiarlo cuando llegan
-// notificaciones inmediatas.
+// Track current timeout to clear it when immediate notifications arrive
 let currentTimeoutId: NodeJS.Timeout | null = null
 
 export function useNotifications(): {
@@ -66,7 +50,7 @@ export function useNotifications(): {
   const store = useAppStateStore()
   const setAppState = useSetAppState()
 
-  // Procesa la cola cuando la notificación actual termina o la cola cambia.
+  // Process queue when current notification finishes or queue changes
   const processQueue = useCallback(() => {
     setAppState(prev => {
       const next = getNext(prev.notifications.queue)
@@ -78,8 +62,7 @@ export function useNotifications(): {
         (setAppState, nextKey, processQueue) => {
           currentTimeoutId = null
           setAppState(prev => {
-            // Compara por clave, no por referencia, para tolerar
-            // notificaciones re-creadas.
+            // Compare by key instead of reference to handle re-created notifications
             if (prev.notifications.current?.key !== nextKey) {
               return prev
             }
@@ -111,22 +94,20 @@ export function useNotifications(): {
 
   const addNotification = useCallback<AddNotificationFn>(
     (notif: Notification) => {
-      // Maneja notificaciones de prioridad inmediata.
+      // Handle immediate priority notifications
       if (notif.priority === 'immediate') {
-        // Limpia cualquier timeout existente: se va a mostrar una nueva
-        // notificación inmediata.
+        // Clear any existing timeout since we're showing a new immediate notification
         if (currentTimeoutId) {
           clearTimeout(currentTimeoutId)
           currentTimeoutId = null
         }
 
-        // Arma el timeout de la notificación inmediata.
+        // Set up timeout for the immediate notification
         currentTimeoutId = setTimeout(
           (setAppState, notif, processQueue) => {
             currentTimeoutId = null
             setAppState(prev => {
-              // Compara por clave, no por referencia, para tolerar
-              // notificaciones re-creadas.
+              // Compare by key instead of reference to handle re-created notifications
               if (prev.notifications.current?.key !== notif.key) {
                 return prev
               }
@@ -148,13 +129,13 @@ export function useNotifications(): {
           processQueue,
         )
 
-        // Muestra la notificación inmediata de una vez.
+        // Show the immediate notification right away
         setAppState(prev => ({
           ...prev,
           notifications: {
             current: notif,
             queue:
-              // Sólo re-encola la notificación actual si no es inmediata.
+              // Only re-queue the current notification if it's not immediate
               [
                 ...(prev.notifications.current
                   ? [prev.notifications.current]
@@ -167,17 +148,17 @@ export function useNotifications(): {
               ),
           },
         }))
-        return // IMPORTANTE: sale de addNotification para las inmediatas
+        return // IMPORTANT: Exit addNotification for immediate notifications
       }
 
-      // Maneja notificaciones no inmediatas.
+      // Handle non-immediate notifications
       setAppState(prev => {
-        // ¿Se puede fusionar con una notificación existente de la misma clave?
+        // Check if we can fold into an existing notification with the same key
         if (notif.fold) {
-          // Fusiona con la actual si las claves coinciden.
+          // Fold into current notification if keys match
           if (prev.notifications.current?.key === notif.key) {
             const folded = notif.fold(prev.notifications.current, notif)
-            // Reinicia el timeout de la notificación fusionada.
+            // Reset timeout for the folded notification
             if (currentTimeoutId) {
               clearTimeout(currentTimeoutId)
               currentTimeoutId = null
@@ -214,7 +195,7 @@ export function useNotifications(): {
             }
           }
 
-          // Fusiona con una notificación en cola si las claves coinciden.
+          // Fold into queued notification if keys match
           const queueIdx = prev.notifications.queue.findIndex(
             _ => _.key === notif.key,
           )
@@ -235,7 +216,7 @@ export function useNotifications(): {
           }
         }
 
-        // Sólo agrega a la cola si no está ya presente (evita duplicados).
+        // Only add to queue if not already present (prevent duplicates)
         const queuedKeys = new Set(prev.notifications.queue.map(_ => _.key))
         const shouldAdd =
           !queuedKeys.has(notif.key) &&
@@ -268,7 +249,7 @@ export function useNotifications(): {
         }
       })
 
-      // Procesa la cola después de agregar la notificación.
+      // Process queue after adding the notification
       processQueue()
     },
     [setAppState, processQueue],
@@ -303,10 +284,9 @@ export function useNotifications(): {
     [setAppState, processQueue],
   )
 
-  // Procesa la cola al montar si ya hay notificaciones en el estado
-  // inicial. Lectura imperativa (no useAppState): una suscripción en un
-  // efecto de sólo-montaje sería vestigial y haría re-renderizar a cada
-  // caller ante cualquier cambio de la cola.
+  // Process queue on mount if there are notifications in the initial state.
+  // Imperative read (not useAppState) — a subscription in a mount-only
+  // effect would be vestigial and make every caller re-render on queue changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (store.getState().notifications.queue.length > 0) {

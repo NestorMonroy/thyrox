@@ -56,15 +56,19 @@ describe('anthropic/client.ts headers (ant bx 1984.js parity)', () => {
     )
   })
 
-  test('SDK x-client-app header only set when CLAUDE_AGENT_SDK_CLIENT_APP env is present', () => {
-    expect(source).toMatch(/CLAUDE_AGENT_SDK_CLIENT_APP/)
+  test('un subagente se identifica con agentIdentityHeaders, y por defecto con el contexto en curso', () => {
+    expect(source).toMatch(/\.\.\.agentIdentityHeaders\(agentContext \?\? getAgentContext\(\)\)/)
+  })
+
+  test('SDK x-client-app header only set when THYROX_AGENT_SDK_CLIENT_APP env is present', () => {
+    expect(source).toMatch(/THYROX_AGENT_SDK_CLIENT_APP/)
     expect(source).toMatch(
       /\.\.\.\(clientApp\s*\?\s*\{\s*'x-client-app':\s*clientApp\s*\}\s*:\s*\{\}\)/,
     )
   })
 
-  test('x-anthropic-additional-protection set when CLAUDE_CODE_ADDITIONAL_PROTECTION truthy', () => {
-    expect(source).toMatch(/readEnv\('CLAUDE_CODE_ADDITIONAL_PROTECTION'\)/)
+  test('x-anthropic-additional-protection set when THYROX_CODE_ADDITIONAL_PROTECTION truthy', () => {
+    expect(source).toMatch(/readEnv\('THYROX_CODE_ADDITIONAL_PROTECTION'\)/)
     expect(source).toMatch(
       /defaultHeaders\['x-anthropic-additional-protection'\]\s*=\s*'true'/,
     )

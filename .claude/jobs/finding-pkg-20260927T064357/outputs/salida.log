@@ -1,0 +1,11 @@
+error: @anthropic/ink@workspace:* failed to resolve
+error: @ant/computer-use-mcp@workspace:* failed to resolve
+error: @anthropic/ink@workspace:* failed to resolve
+tsc=0
+ 0 fail
+ 30 expect() calls
+Ran 8 tests across 1 file. [87.00ms]
+  finding: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+__BG_EXIT__=0

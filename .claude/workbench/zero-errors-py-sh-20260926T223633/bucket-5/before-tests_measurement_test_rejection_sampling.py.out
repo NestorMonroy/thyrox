@@ -1,0 +1,39 @@
+== 1. la aceptacion es min(1, q/p), y se publica por indice ==
+  ok    el indice donde q < p acepta con el cociente
+  ok    el indice donde q > p acepta siempre
+  ok    y ninguna probabilidad pasa de 1
+
+== 2. el residuo vive sobre max(0, q - p) y suma 1 ==
+  ok    los indices con q <= p reciben masa 0
+  ok    el residuo suma 1
+  ok    y reparte en proporcion al exceso
+
+== 3. el muestreador converge a q_target, no a p_draft ==
+  ok    indice 0: 0.1001 converge a 0.1
+  ok    indice 1: 0.1002 converge a 0.1
+  ok    indice 2: 0.4001 converge a 0.4
+  ok    indice 3: 0.2991 converge a 0.3
+  ok    indice 4: 0.1005 converge a 0.1
+
+== 4. todo indice RE-MUESTREADO satisface q > p ==
+  ok    hubo rechazos que medir
+  ok    y todos caen donde el objetivo pide mas masa
+
+== 5. el caso limite p == q: el residuo es 0/0 y NO debe calcularse ==
+  ok    la aceptacion es 1 en los cinco indices
+  ok    muestrear con p == q no levanta ninguna excepcion
+  ok    indice 0: 0.3494 se queda en 0.35
+  ok    indice 1: 0.2993 se queda en 0.3
+  ok    indice 2: 0.1501 se queda en 0.15
+  ok    indice 3: 0.1019 se queda en 0.1
+  ok    indice 4: 0.0993 se queda en 0.1
+
+== 6. el residuo REHUSA cuando no hay masa que repartir ==
+  ok    pedirlo con p == q levanta ValueError
+
+== 7. el modulo NO escribe — medido por CONDUCTA, no por docstring ==
+  ok    el sujeto no intenta ninguna escritura
+  ok    y el tracer publica su alcance medido
+
+resultado: 23 de 23 aserciones en verde
+exit=0

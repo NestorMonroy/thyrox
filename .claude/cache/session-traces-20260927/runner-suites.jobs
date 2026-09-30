@@ -1,0 +1,5 @@
+bash tests/session/test-headless-pool.sh
+bash tests/session/test-headless-pool-thyrox-p.sh
+bash tests/session/test-pool-calibrate.sh
+python3 tests/session/test_pool_history.py
+cd src/packages/cli && bun test __tests__/print.test.ts

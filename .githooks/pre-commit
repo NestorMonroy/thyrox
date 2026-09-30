@@ -121,14 +121,94 @@ esac
 # eso duplicaria aqui el criterio que ya vive en el gate, y las dos copias
 # divergirian. Con la lista vacia el gate mide TODO, que es mas estricto y no
 # menos: un `--allow-empty` paga el emisor y el compilador.
+#
+# El filtro incluye R: un renombre prepara su ruta de destino (la que
+# `--name-only` imprime). Sin R, un commit hecho sólo de `git mv` llegaba con
+# la lista vacía y los gates que se disparan por ruta no corrían (4357a89f).
 STAGED=()
 while IFS= read -r line; do
     [[ -n "$line" ]] && STAGED+=("$ROOT/$line")
-done < <(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)
+done < <(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
 
 bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
+
+# Cero hallazgos de ShellCheck, ruff y pyright en los .sh y .py del producto
+# (`src/`, `tests/`) que este commit prepara. Bloquea con hallazgos (exit 1) y
+# también cuando falta un verificador (exit 2): sin él el commit no se midió.
+LINT=()
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.sh|src/*.py|tests/*.sh|tests/*.py) LINT+=("${f#"$ROOT"/}") ;;
+    esac
+done
+if [[ ${#LINT[@]} -gt 0 ]]; then
+    python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
+fi
+
+# Ningún .py staged lleva la marca de un mutante de check_suite_discrimina:
+# esa suite muta el árbol principal mientras corre, y un commit hecho en esa
+# ventana la arrastra. Vivía sólo en src/verify/pre-commit.sh (el hook del
+# consumidor), así que este árbol commiteó una: H-THYROX-279.
+MUTANT_CANDIDATES=()
+for f in "${STAGED[@]}"; do
+    [[ "$f" == *.py ]] && MUTANT_CANDIDATES+=("$f")
+done
+if [ "${#MUTANT_CANDIDATES[@]}" -gt 0 ]; then
+    python3 "$GATES/check_mutante_en_staging.py" "${MUTANT_CANDIDATES[@]}" || CODE=1
+fi
+
+# El idioma de los identificadores, sobre los .py y .ts staged de src/ y tests/.
+# El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
+# 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La
+# deuda heredada está congelada en el baseline que declara el .env; uno nuevo
+# se detiene aquí.
+IDENTIFIERS=()
+for f in "${LINT[@]}"; do
+    [[ "$f" == *.py ]] && IDENTIFIERS+=("$f")
+done
+# Y los .ts staged de src/ y tests/: el AST lo recorre el compilador del árbol
+# (`ts_declared_identifiers.ts`) y el léxico es el mismo. Sin `bun` rehúsa con
+# exit 2, que también bloquea.
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.ts|src/*.tsx|src/*.mts|tests/*.ts) [[ -f "$f" ]] && IDENTIFIERS+=("${f#"$ROOT"/}") ;;
+    esac
+done
+if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
+    (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
+fi
+
+# El vocabulario de la prosa del propio proveedor: reglas, skills, README y
+# CLAUDE.md staged. El gate medía sólo a los consumidores; la deuda heredada
+# del proveedor —términos de dominio como `idempotencia` o la «corrida» de un
+# diseño de experimentos— está congelada en `.claude/baselines/`. Sin léxico
+# rehúsa con exit 2, y eso también bloquea: el commit no se midió.
+PROSE=()
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        .claude/rules/*.md|.claude/skills/*.md|README.md|.claude/CLAUDE.md) [[ -f "$f" ]] && PROSE+=("$f") ;;
+    esac
+done
+if [[ ${#PROSE[@]} -gt 0 ]]; then
+    (cd "$ROOT" && python3 "$GATES/check_vocabulario_prosa.py" --strict --quiet "${PROSE[@]}") || CODE=1
+fi
+
+# Un paquete se entra por su `exports`, nunca por el `src/` del vecino. El gate
+# existía con su suite y ningún flujo lo corría. Mide `src/` entero —todo
+# `package.json` con `exports`, anidado o suelto— porque un cruce lo forman dos
+# archivos y el staged puede ser sólo uno. Corre sólo si el commit prepara
+# código o un manifiesto bajo `src/`: 4.8 s sobre el árbol, medidos.
+BOUNDARY=0
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.ts|src/*.tsx|src/*.mts|src/*.js|src/*.mjs|src/*/package.json) BOUNDARY=1; break ;;
+    esac
+done
+if [[ $BOUNDARY -eq 1 ]]; then
+    python3 "$GATES/package_boundary.py" --strict "$ROOT/src" || CODE=1
+fi
 
 # Un commit por pathspec de un banco commitea sólo lo que git ya sigue: un
 # archivo nuevo del banco sin `git add -N` se queda fuera EN SILENCIO. Mira
@@ -136,6 +216,67 @@ bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 # remedio es un `add -N`, y el coste de no bloquear es evidencia citada que
 # no viajó. Sin rutas lee las staged del índice del propio commit.
 python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
+
+# Un archivo preparado que un proceso vivo sigue escribiendo —la salida de un
+# ítem de pool escrita directamente en un banco, un log que alguien anexa— se
+# commitearía cortado en un instante arbitrario. Bloquea: el remedio es esperar
+# a que el escritor termine, y 2 («no pude demostrar que nadie escribe») tampoco
+# es un verde.
+python3 "$GATES/check_staged_live_writers.py" --repo "$ROOT" || CODE=1
+
+# Cada unidad de `.claude/cache/` en su carpeta con un README que dice qué
+# guarda, de qué episodio sale y cómo se regenera. Estaba cableado sólo en el
+# pre-commit compartido de los consumidores (`src/verify/pre-commit.sh`), así
+# que el caché del propio proveedor no se validaba nunca. Sólo las unidades
+# que este commit prepara (`--staged`).
+python3 "$GATES/check_cache_layout.py" --root "$ROOT" --staged --strict || CODE=1
+
+# Una sola raiz de workspace: ni manifiesto con `workspaces` ni lockfile fuera
+# de la raiz (tarea #62). Mide el indice, asi que ve lo que este commit prepara.
+# Bloquea: una segunda raiz es una segunda fuente de verdad para dependencias,
+# y una admitida exige su razon en el allowlist, no un --no-verify.
+python3 "$GATES/check_single_workspace_root.py" --root "$ROOT" || CODE=1
+
+# «Claude» donde el producto se llama thyrox (tarea #67). Trinquete: la deuda
+# heredada está congelada por archivo en `product_word_baseline.tsv`, y un
+# archivo que crece o uno nuevo con la palabra bloquea. Los servicios ajenos
+# (claude.ai, Claude in Chrome, Claude Desktop, el consentimiento de
+# Anthropic) no cuentan; su lista y su razón están en el gate.
+python3 "$GATES/check_product_word.py" --repo "$ROOT" --strict || CODE=1
+
+# Cada enlace relativo de las skills y las reglas apunta a un archivo que
+# existe: una mudanza de directorio los rompe sin que nada falle.
+python3 "$GATES/check_md_relative_links.py" "$ROOT/.claude/skills" "$ROOT/.claude/rules" || CODE=1
+
+# La configuración de thyrox se lee como THYROX_*, y cada variable propia
+# tiene una prueba que la nombra. Trinquete: las lecturas CLAUDE_* heredadas
+# están congeladas por archivo en `env_prefix_baseline.tsv` (las paga el
+# renombre), y una nueva, una propia sin prueba o una entrada obsoleta
+# bloquean. Sin bun no se mide, y eso se dice en vez de pasar en verde.
+if command -v bun >/dev/null 2>&1; then
+    bun "$GATES/checkEnvPrefix.ts" --root "$ROOT" --strict || CODE=1
+else
+    echo "checkEnvPrefix: bun no está en el PATH; NO se midió el prefijo de entorno." >&2
+    CODE=1
+fi
+
+# Toda clave THYROX_* que el código lee figura en `.env.example`. Se miden los
+# archivos del commit; si el commit toca `.env.example`, el árbol entero,
+# porque retirar una clave del ejemplo deja sin declarar a lectores que el
+# commit no toca.
+if [[ ${#STAGED[@]} -gt 0 ]]; then
+    env_example_staged=""
+    for f in "${STAGED[@]}"; do [[ "$f" == "$ROOT/.env.example" ]] && env_example_staged=1; done
+    if [[ -n "$env_example_staged" ]]; then
+        python3 "$GATES/check_env_contract_keys.py" --root "$ROOT" --strict || CODE=1
+    else
+        python3 "$GATES/check_env_contract_keys.py" --root "$ROOT" --strict --files "${STAGED[@]}" || CODE=1
+    fi
+fi
+
+# Toda clave de `.env` y `.env.local`, que no se versionan, figura en
+# `.env.example`, que es lo que viaja. Compara nombres; no imprime valores.
+python3 "$GATES/check_env_example_coverage.py" --root "$ROOT" || CODE=1
 
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto

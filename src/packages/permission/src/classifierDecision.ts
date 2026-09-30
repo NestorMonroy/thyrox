@@ -20,7 +20,7 @@ import { TEAM_DELETE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamDeleteToo
 import { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/constants.js'
 import { TOOL_SEARCH_TOOL_NAME } from '@thyrox/tool-registry/tools/ToolSearchTool/prompt.js'
 import { WORKFLOW_TOOL_NAME } from '@thyrox/tool-registry/tools/WorkflowTool/constants.js'
-import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'
+import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifierToolName.js'
 import type { PermissionDecisionReason } from './permissionTypes.js'
 
 // Copia de `ccnmt: packages/permission/src/classifierDecision.ts` con los

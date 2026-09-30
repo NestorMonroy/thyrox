@@ -97,8 +97,8 @@ A=$(leer source/gestion/pm/docs/iniciativas/x/analisis-uno.rst series)
 B=$(leer source/requisitos/casos-uso/analisis-dos.rst series)
 afirmar "4a mismo tipo, seccion gestion"     "gestion/analisis"   "$A"
 afirmar "4b mismo tipo, seccion requisitos"  "requisitos/analisis" "$B"
-[[ "$A" != "$B" ]]
-afirmar "4c y por tanto son series DISTINTAS" "0" "$?"
+distintas=1; [[ "$A" != "$B" ]] && distintas=0
+afirmar "4c y por tanto son series DISTINTAS" "0" "$distintas"
 
 # --- 5 · las dos mitades quedan legibles por separado -----------------------
 afirmar "5a section"  "gestion"  "$(leer source/gestion/pm/docs/iniciativas/x/analisis-uno.rst section)"
@@ -129,9 +129,9 @@ afirmar "8 clasificar no borra la fecha" "1" "$NOVACIO"
 
 # --- 9 · denominador + series publicadas ------------------------------------
 SALIDA=$(python3 "$STORE" clasificar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" --dry-run 2>&1)
-echo "$SALIDA" | grep -q "alcance medido"
+grep -q "alcance medido" <<<"$SALIDA"
 afirmar "9a publica denominador" "0" "$?"
-echo "$SALIDA" | grep -qE "[0-9]+ serie"
+grep -qE "[0-9]+ serie" <<<"$SALIDA"
 afirmar "9b publica cuantas series salieron" "0" "$?"
 
 # --- 10 · el plazo NO se inventa: queda NULO y bloqueado por #760 -----------

@@ -1,0 +1,51 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/StatusLine.tsx(100,26): error TS18048: 'rawUtil.five_hour.utilization' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/StatusLine.tsx:90-110 ---
+     90      currentUsage,
+     91      contextWindowSize,
+     92    )
+     93  
+     94    const sessionId = getSessionId()
+     95    const sessionName = getCurrentSessionTitle(sessionId)
+     96    const rawUtil = getRawUtilization()
+     97    const rateLimits: StatusLineCommandInput['rate_limits'] = {
+     98      ...(rawUtil.five_hour && {
+     99        five_hour: {
+    100>         used_percentage: rawUtil.five_hour.utilization * 100,
+    101          resets_at: rawUtil.five_hour.resets_at,
+    102        },
+    103      }),
+    104      ...(rawUtil.seven_day && {
+    105        seven_day: {
+    106          used_percentage: rawUtil.seven_day.utilization * 100,
+    107          resets_at: rawUtil.seven_day.resets_at,
+    108        },
+    109      }),
+    110    }
+src/packages/repl/src/components/StatusLine.tsx(106,26): error TS18048: 'rawUtil.seven_day.utilization' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/StatusLine.tsx:96-116 ---
+     96    const rawUtil = getRawUtilization()
+     97    const rateLimits: StatusLineCommandInput['rate_limits'] = {
+     98      ...(rawUtil.five_hour && {
+     99        five_hour: {
+    100          used_percentage: rawUtil.five_hour.utilization * 100,
+    101          resets_at: rawUtil.five_hour.resets_at,
+    102        },
+    103      }),
+    104      ...(rawUtil.seven_day && {
+    105        seven_day: {
+    106>         used_percentage: rawUtil.seven_day.utilization * 100,
+    107          resets_at: rawUtil.seven_day.resets_at,
+    108        },
+    109      }),
+    110    }
+    111    return {
+    112      ...createBaseHookInput(),
+    113      ...(sessionName && { session_name: sessionName }),
+    114      model: {
+    115        id: runtimeModel,
+    116        display_name: renderModelName(runtimeModel),

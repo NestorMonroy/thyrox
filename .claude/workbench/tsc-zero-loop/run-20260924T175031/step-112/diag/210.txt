@@ -1,0 +1,52 @@
+src/packages/repl/src/screens/REPLView.tsx(2926,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2916-2936 ---
+   2916        resetTurnHookDuration();
+   2917        resetTurnToolDuration();
+   2918        resetTurnClassifierDuration();
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926>         toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929          onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2919-2939 ---
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929>         onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2937          const entries = apiMetricsRef.current;
+   2938  
+   2939          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp

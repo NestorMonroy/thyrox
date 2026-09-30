@@ -1,0 +1,131 @@
+tests/integration/context-build.test.ts(14,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:4-24 ---
+      4    isMemoryFilePath,
+      5    getLargeMemoryFiles,
+      6  } from '@thyrox/storage/claudemd.js'
+      7  import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
+      8  
+      9  // ─── CLAUDE.md Integration with System Prompt ─────────────────────────
+     10  
+     11  describe('Context build: CLAUDE.md + system prompt integration', () => {
+     12    test('buildEffectiveSystemPrompt passes through default prompt', () => {
+     13      const result = buildEffectiveSystemPrompt({
+     14>       defaultSystemPrompt: 'You are Claude.',
+     15      })
+     16      // Result is an array of strings (may be split differently)
+     17      const joined = Array.from(result).join('')
+     18      expect(joined).toBe('You are Claude.')
+     19    })
+     20  
+     21    test('buildEffectiveSystemPrompt handles empty prompts', () => {
+     22      const result = buildEffectiveSystemPrompt({
+     23        defaultSystemPrompt: '',
+     24      })
+tests/integration/context-build.test.ts(23,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:13-33 ---
+     13      const result = buildEffectiveSystemPrompt({
+     14        defaultSystemPrompt: 'You are Claude.',
+     15      })
+     16      // Result is an array of strings (may be split differently)
+     17      const joined = Array.from(result).join('')
+     18      expect(joined).toBe('You are Claude.')
+     19    })
+     20  
+     21    test('buildEffectiveSystemPrompt handles empty prompts', () => {
+     22      const result = buildEffectiveSystemPrompt({
+     23>       defaultSystemPrompt: '',
+     24      })
+     25      const joined = Array.from(result).join('')
+     26      expect(joined).toBe('')
+     27    })
+     28  
+     29    test('buildEffectiveSystemPrompt with overrideSystemPrompt replaces everything', () => {
+     30      const result = buildEffectiveSystemPrompt({
+     31        defaultSystemPrompt: 'Default',
+     32        overrideSystemPrompt: 'Override',
+     33      })
+tests/integration/context-build.test.ts(31,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:21-41 ---
+     21    test('buildEffectiveSystemPrompt handles empty prompts', () => {
+     22      const result = buildEffectiveSystemPrompt({
+     23        defaultSystemPrompt: '',
+     24      })
+     25      const joined = Array.from(result).join('')
+     26      expect(joined).toBe('')
+     27    })
+     28  
+     29    test('buildEffectiveSystemPrompt with overrideSystemPrompt replaces everything', () => {
+     30      const result = buildEffectiveSystemPrompt({
+     31>       defaultSystemPrompt: 'Default',
+     32        overrideSystemPrompt: 'Override',
+     33      })
+     34      const joined = Array.from(result).join('')
+     35      expect(joined).toBe('Override')
+     36    })
+     37  
+     38    test('buildEffectiveSystemPrompt with customSystemPrompt replaces default', () => {
+     39      const result = buildEffectiveSystemPrompt({
+     40        defaultSystemPrompt: 'Default',
+     41        customSystemPrompt: 'Custom',
+tests/integration/context-build.test.ts(40,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:30-50 ---
+     30      const result = buildEffectiveSystemPrompt({
+     31        defaultSystemPrompt: 'Default',
+     32        overrideSystemPrompt: 'Override',
+     33      })
+     34      const joined = Array.from(result).join('')
+     35      expect(joined).toBe('Override')
+     36    })
+     37  
+     38    test('buildEffectiveSystemPrompt with customSystemPrompt replaces default', () => {
+     39      const result = buildEffectiveSystemPrompt({
+     40>       defaultSystemPrompt: 'Default',
+     41        customSystemPrompt: 'Custom',
+     42      })
+     43      const joined = Array.from(result).join('')
+     44      expect(joined).toBe('Custom')
+     45    })
+     46  
+     47    test('buildEffectiveSystemPrompt with appendSystemPrompt includes both', () => {
+     48      const result = buildEffectiveSystemPrompt({
+     49        defaultSystemPrompt: 'Main prompt',
+     50        appendSystemPrompt: 'Appended',
+tests/integration/context-build.test.ts(49,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:39-59 ---
+     39      const result = buildEffectiveSystemPrompt({
+     40        defaultSystemPrompt: 'Default',
+     41        customSystemPrompt: 'Custom',
+     42      })
+     43      const joined = Array.from(result).join('')
+     44      expect(joined).toBe('Custom')
+     45    })
+     46  
+     47    test('buildEffectiveSystemPrompt with appendSystemPrompt includes both', () => {
+     48      const result = buildEffectiveSystemPrompt({
+     49>       defaultSystemPrompt: 'Main prompt',
+     50        appendSystemPrompt: 'Appended',
+     51      })
+     52      const joined = Array.from(result).join('')
+     53      expect(joined).toContain('Main prompt')
+     54      expect(joined).toContain('Appended')
+     55      // Appended should come after main
+     56      expect(joined.indexOf('Main prompt')).toBeLessThan(
+     57        joined.indexOf('Appended'),
+     58      )
+     59    })
+tests/integration/context-build.test.ts(100,32): error TS2345: Argument of type '{ path: string; content: string; }[]' is not assignable to parameter of type 'MemoryFileInfo[]'.
+  --- código tests/integration/context-build.test.ts:90-102 ---
+     90  describe('Context build: large memory file filtering', () => {
+     91    test('getLargeMemoryFiles returns empty for empty input', () => {
+     92      expect(getLargeMemoryFiles([])).toEqual([])
+     93    })
+     94  
+     95    test('getLargeMemoryFiles returns empty when all files are small', () => {
+     96      const files = [
+     97        { path: '/a/CLAUDE.md', content: 'small' },
+     98        { path: '/b/CLAUDE.md', content: 'also small' },
+     99      ]
+    100>     expect(getLargeMemoryFiles(files)).toEqual([])
+    101    })
+    102  })
+  Property 'type' is missing in type '{ path: string; content: string; }' but required in type 'MemoryFileInfo'.

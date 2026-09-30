@@ -4,6 +4,7 @@ import {
   installProviderHostBindings,
   type ProviderHostBindings,
 } from '../index.js'
+import type { ProviderAssistantMessage } from '../contracts.js'
 
 function makeSseResponse(frames: string[]): Response {
   const body = new ReadableStream({
@@ -19,12 +20,15 @@ function makeSseResponse(frames: string[]): Response {
 }
 
 function createOpenAIMockFetch(): typeof fetch {
-  return (async () =>
-    makeSseResponse([
-      'data: {"id":"chatcmpl_test","object":"chat.completion.chunk","created":0,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"role":"assistant","content":"provider-openai-test"},"finish_reason":null}]}\n\n',
-      'data: {"id":"chatcmpl_test","object":"chat.completion.chunk","created":0,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":2,"total_tokens":5}}\n\n',
-      'data: [DONE]\n\n',
-    ])) as typeof fetch
+  return Object.assign(
+    async () =>
+      makeSseResponse([
+        'data: {"id":"chatcmpl_test","object":"chat.completion.chunk","created":0,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{"role":"assistant","content":"provider-openai-test"},"finish_reason":null}]}\n\n',
+        'data: {"id":"chatcmpl_test","object":"chat.completion.chunk","created":0,"model":"gpt-4o-mini","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":2,"total_tokens":5}}\n\n',
+        'data: [DONE]\n\n',
+      ]),
+    { preconnect: () => {} },
+  )
 }
 
 function installTestHostBindings(): void {
@@ -148,7 +152,7 @@ describe('@thyrox/provider integration', () => {
     const output: string[] = []
     for await (const event of adapter.queryStream(buildQueryArgs(fetch) as any)) {
       if (event.type === 'assistant') {
-        for (const block of event.message.content as any[]) {
+        for (const block of ((event as ProviderAssistantMessage).message?.content ?? []) as any[]) {
           if (block.type === 'text') output.push(block.text)
         }
       }
@@ -163,7 +167,7 @@ describe('@thyrox/provider integration', () => {
       buildQueryArgs(createOpenAIMockFetch()) as any,
     )) {
       if (event.type === 'assistant') {
-        for (const block of event.message.content as any[]) {
+        for (const block of ((event as ProviderAssistantMessage).message?.content ?? []) as any[]) {
           if (block.type === 'text') output.push(block.text)
         }
       }
@@ -173,8 +177,10 @@ describe('@thyrox/provider integration', () => {
 
   test('openai adapter normalizes errors into assistant api-error messages', async () => {
     const adapter = getProviderAdapter('openai')
-    const badFetch = (async () =>
-      new Response('boom', { status: 500, statusText: 'server error' })) as typeof fetch
+    const badFetch: typeof fetch = Object.assign(
+      async () => new Response('boom', { status: 500, statusText: 'server error' }),
+      { preconnect: () => {} },
+    )
 
     const events: any[] = []
     for await (const event of adapter.queryStream(

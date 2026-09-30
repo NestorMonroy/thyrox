@@ -1,23 +1,17 @@
 /**
- * Puerto fiel de `ccnmt: packages/bridge/src/flushGate.ts` (71 líneas
- * fuente, 100% portado, sin dependencias).
+ * State machine for gating message writes during an initial flush.
  *
- * Máquina de estados que compuerta la escritura de mensajes durante un
- * flush inicial.
+ * When a bridge session starts, historical messages are flushed to the
+ * server via a single HTTP POST. During that flush, new messages must
+ * be queued to prevent them from arriving at the server interleaved
+ * with the historical messages.
  *
- * Cuando una sesión de bridge arranca, los mensajes históricos se
- * vuelcan al servidor vía un único POST HTTP. Durante ese flush, los
- * mensajes nuevos deben encolarse para evitar que lleguen al servidor
- * intercalados con los históricos.
- *
- * Ciclo de vida:
- *   start()      → enqueue() devuelve true, los items se encolan
- *   end()        → devuelve los items encolados para drenarlos,
- *                  enqueue() devuelve false
- *   drop()       → descarta los items encolados (cierre permanente del
- *                  transporte)
- *   deactivate() → limpia el flag active sin descartar items (reemplazo
- *                  de transporte — el transporte nuevo los drenará)
+ * Lifecycle:
+ *   start() → enqueue() returns true, items are queued
+ *   end()   → returns queued items for draining, enqueue() returns false
+ *   drop()  → discards queued items (permanent transport close)
+ *   deactivate() → clears active flag without dropping items
+ *                   (transport replacement — new transport will drain)
  */
 export class FlushGate<T> {
   private _active = false
@@ -31,14 +25,14 @@ export class FlushGate<T> {
     return this._pending.length
   }
 
-  /** Marca el flush como en curso. enqueue() empezará a encolar items. */
+  /** Mark flush as in-progress. enqueue() will start queuing items. */
   start(): void {
     this._active = true
   }
 
   /**
-   * Termina el flush y devuelve los items encolados para drenarlos.
-   * El llamador es responsable de enviar los items devueltos.
+   * End the flush and return any queued items for draining.
+   * Caller is responsible for sending the returned items.
    */
   end(): T[] {
     this._active = false
@@ -46,9 +40,8 @@ export class FlushGate<T> {
   }
 
   /**
-   * Si el flush está activo, encola los items y devuelve true.
-   * Si el flush no está activo, devuelve false (el llamador debe
-   * enviarlos directamente).
+   * If flush is active, queue the items and return true.
+   * If flush is not active, return false (caller should send directly).
    */
   enqueue(...items: T[]): boolean {
     if (!this._active) return false
@@ -57,8 +50,8 @@ export class FlushGate<T> {
   }
 
   /**
-   * Descarta todos los items encolados (cierre permanente del
-   * transporte). Devuelve la cantidad de items descartados.
+   * Discard all queued items (permanent transport close).
+   * Returns the number of items dropped.
    */
   drop(): number {
     this._active = false
@@ -68,9 +61,9 @@ export class FlushGate<T> {
   }
 
   /**
-   * Limpia el flag active sin descartar los items encolados. Se usa
-   * cuando el transporte se reemplaza (onWorkReceived) — el flush del
-   * transporte nuevo drenará los items pendientes.
+   * Clear the active flag without dropping queued items.
+   * Used when the transport is replaced (onWorkReceived) — the new
+   * transport's flush will drain the pending items.
    */
   deactivate(): void {
     this._active = false

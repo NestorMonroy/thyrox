@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/coordination",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reclamos, ledger e integración de ramas entre sesiones.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  }
+}

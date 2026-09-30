@@ -157,14 +157,14 @@ describe('sessionEpoch (T-092)', () => {
     expect(sessionEpoch({})).toEqual({ epoch: 1, priorWorkerProcess: false })
   })
   test('247 → prior worker true', () => {
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: '247' })).toEqual({ epoch: 247, priorWorkerProcess: true })
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: '247' })).toEqual({ epoch: 247, priorWorkerProcess: true })
   })
   test('mal formada → MAX_SAFE_INTEGER (hubo worker, seguro)', () => {
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: 'x' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: 'x' }).priorWorkerProcess).toBe(true)
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: 'x' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: 'x' }).priorWorkerProcess).toBe(true)
   })
   test('0 y negativos → MAX_SAFE_INTEGER (no es un ordinal válido ≥1)', () => {
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: '0' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: '0' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
   })
 })
 
@@ -176,28 +176,29 @@ describe('reconcileWorkingTree (T-093)', () => {
     execFileSync('git', ['-C', d, 'config', 'user.name', 't'])
     writeFileSync(join(d, 'a.txt'), 'uno\n')
     execFileSync('git', ['-C', d, 'add', 'a.txt'])
-    execFileSync('git', ['-C', d, 'commit', '-q', '-m', 'seed'])
+    // El commit no hereda la firma global del entorno: la prueba mide el árbol, no la firma.
+    execFileSync('git', ['-C', d, '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'seed'])
     writeFileSync(join(d, 'b.txt'), 'sin commitear\n')
     return d
   }
   test('reporta el archivo sin commitear', () => {
     const d = repoConCambio()
     const r = reconcileWorkingTree([{ path: d }])
-    expect(r[0].dirty).toBe(true)
-    expect(r[0].porcelain.some((l) => l.includes('b.txt'))).toBe(true)
+    expect(r[0]!.dirty).toBe(true)
+    expect(r[0]!.porcelain.some((l) => l.includes('b.txt'))).toBe(true)
   })
   test('un repo limpio no está sucio', () => {
     const d = repoConCambio()
     execFileSync('git', ['-C', d, 'add', '-A'])
-    execFileSync('git', ['-C', d, 'commit', '-q', '-m', 'limpio'])
+    execFileSync('git', ['-C', d, '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'limpio'])
     const r = reconcileWorkingTree([{ path: d }])
-    expect(r[0].dirty).toBe(false)
+    expect(r[0]!.dirty).toBe(false)
   })
   test('un path que no es repo se reporta como error, no rompe la barrida', () => {
     const d = dir()
     const r = reconcileWorkingTree([{ path: d }])
-    expect(r[0].error).toBeDefined()
-    expect(r[0].dirty).toBe(false)
+    expect(r[0]!.error).toBeDefined()
+    expect(r[0]!.dirty).toBe(false)
   })
 })
 

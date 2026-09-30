@@ -1,11 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/contracts.ts` (37
- * líneas fuente, 100 % portado — sin dependencias externas). Declara los
- * tipos de la fachada no-op de observabilidad: `Logger`, `Tracer`,
- * `MetricsRecorder`, `HealthProbe` y el agregado `LocalObservability` que
- * `core.ts` instala/lee.
- */
-
 export type EventMetadata = Record<string, unknown>
 
 export type Logger = {

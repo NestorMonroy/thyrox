@@ -1,0 +1,19 @@
+  ok   la serie de nivel ordena por tiempo
+  ok   conserva los valores
+  ok   declara su tipo
+  ok   n y ventana salen de los puntos
+  ok   agregar una llegada da una serie de NIVEL
+  ok   el dia sin llegadas aparece como cero, no se omite
+  ok   la ventana vacia no desplaza el tiempo de las demas
+  ok   el cero cambia la media (1.0 contra 1.5)
+  ok   rehusa una serie vacia
+  ok   rehusa una serie un solo punto
+  ok   la ventana tiene que ser positiva
+  ok   los residuos son observado menos ajustado
+  ok   residuos con largo distinto rehusan
+  ok   el proceso de llegada real se agrega a nivel
+  ok   la suma de los conteos es el total de llegadas
+  ok   y aparecen dias en cero (el arbol no trabaja todos los dias)
+
+16 aprobada(s) · 0 fallida(s) (alcance medido: series.py)
+EXIT=0

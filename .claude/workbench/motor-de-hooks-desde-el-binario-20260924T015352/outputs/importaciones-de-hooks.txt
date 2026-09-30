@@ -1,0 +1,70 @@
+src/packages/command-runtime/src/commands/compact/compact.ts:import { executePreCompactHooks } from '@thyrox/agent/hooks.js'
+src/packages/permission/src/toolPermission/PermissionContext.ts:import { executePermissionRequestHooks } from '@thyrox/agent/hooks.js'
+src/packages/permission/src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx:import { type UnaryEvent, usePermissionRequestLogging } from '../hooks.js'
+src/packages/command-runtime/src/commands/clear/conversation.ts:import {
+src/packages/command-runtime/src/commands/clear/conversation.ts:  executeSessionEndHooks,
+src/packages/command-runtime/src/commands/clear/conversation.ts:  getSessionEndHookTimeoutMs,
+src/packages/command-runtime/src/commands/clear/conversation.ts:} from '@thyrox/agent/hooks.js'
+src/packages/permission/src/components/BashPermissionRequest/BashPermissionRequest.tsx:import { type UnaryEvent, usePermissionRequestLogging } from '../hooks.js'
+src/packages/tool-registry/src/services/toolExecution.ts:import { executePermissionDeniedHooks } from '@thyrox/agent/hooks.js'
+src/packages/tool-registry/src/services/toolHooks.ts:import {
+src/packages/tool-registry/src/services/toolHooks.ts:  executePostToolHooks,
+src/packages/tool-registry/src/services/toolHooks.ts:  executePostToolUseFailureHooks,
+src/packages/tool-registry/src/services/toolHooks.ts:  executePreToolHooks,
+src/packages/tool-registry/src/services/toolHooks.ts:  getPreToolHookBlockingMessage,
+src/packages/tool-registry/src/services/toolHooks.ts:} from '@thyrox/agent/hooks.js'
+src/packages/permission/src/components/FilePermissionDialog/FilePermissionDialog.tsx:import { usePermissionRequestLogging } from '../hooks.js'
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts:import {
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts:  executeTaskCompletedHooks,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts:  getTaskCompletedHookMessage,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts:} from '@thyrox/agent/hooks.js'
+src/packages/tool-registry/src/skills/skillChangeDetector.ts:import { executeConfigChangeHooks, hasBlockingResult } from '@thyrox/agent/hooks.js'
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts:import {
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts:  executeTaskCreatedHooks,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts:  getTaskCreatedHookMessage,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts:} from '@thyrox/agent/hooks.js'
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:import { executeSubagentStartHooks } from '@thyrox/agent/hooks.js'
+src/packages/permission/src/components/FallbackPermissionRequest.tsx:import { type UnaryEvent, usePermissionRequestLogging } from './hooks.js'
+src/packages/swarm/src/install/installSwarmHost.ts:import {
+src/packages/swarm/src/install/installSwarmHost.ts:  executeWorktreeCreateHook,
+src/packages/swarm/src/install/installSwarmHost.ts:  executeWorktreeRemoveHook,
+src/packages/swarm/src/install/installSwarmHost.ts:  hasWorktreeCreateHook,
+src/packages/swarm/src/install/installSwarmHost.ts:} from '@thyrox/agent/hooks.js'
+src/packages/permission/src/components/WebFetchPermissionRequest/WebFetchPermissionRequest.tsx:import { type UnaryEvent, usePermissionRequestLogging } from '../hooks.js'
+src/packages/permission/src/components/SkillPermissionRequest/SkillPermissionRequest.tsx:import { type UnaryEvent, usePermissionRequestLogging } from '../hooks.js'
+src/packages/cli/src/setup/setup.ts:import { hasWorktreeCreateHook } from '@thyrox/agent/hooks.js'
+src/packages/agent/workflow/runtime.ts:import { createWorkflowHooks } from './hooks.js'
+src/packages/cli/src/structuredIO.ts:import { executePermissionRequestHooks } from '@thyrox/agent/hooks.js'
+src/packages/cli/src/headless/sdk/session/run-streaming.ts:import { executeNotificationHooks } from '@thyrox/agent/hooks.js'
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:import {
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:  getPreToolHookBlockingMessage,
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:  getStopHookMessage,
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:  getTeammateIdleHookMessage,
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:  getTaskCreatedHookMessage,
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:  getTaskCompletedHookMessage,
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:  getUserPromptSubmitHookBlockingMessage,
+src/packages/agent/__tests__/hookMessages.behavior.test.ts:} from '../hooks.js'
+src/packages/repl/src/screens/REPLView.tsx:import { executeSessionEndHooks, getSessionEndHookTimeoutMs } from '@thyrox/agent/hooks.js'
+src/packages/agent/query.ts:import { executePostToolBatchHooks } from './hooks.js'
+src/packages/agent/hooks/execPromptHook.ts:import type { HookResult } from '../hooks.js'
+src/packages/agent/hooks/execAgentHook.ts:import type { HookResult } from '../hooks.js'
+src/packages/agent/fileChangedWatcher.ts:import {
+src/packages/agent/fileChangedWatcher.ts:  executeCwdChangedHooks,
+src/packages/agent/fileChangedWatcher.ts:  executeFileChangedHooks,
+src/packages/agent/fileChangedWatcher.ts:  type HookOutsideReplResult,
+src/packages/agent/fileChangedWatcher.ts:} from './hooks.js'
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts:import { executeNotificationHooks } from '@thyrox/agent/hooks.js'
+src/packages/repl/src/processUserInput/processSlashCommand.tsx:import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
+src/packages/repl/src/processUserInput/processUserInput.ts:import {
+src/packages/repl/src/processUserInput/processUserInput.ts:  executeUserPromptSubmitHooks,
+src/packages/repl/src/processUserInput/processUserInput.ts:  getUserPromptSubmitHookBlockingMessage,
+src/packages/repl/src/processUserInput/processUserInput.ts:} from '@thyrox/agent/hooks.js'
+src/packages/repl/src/notifier.ts:import { executeNotificationHooks } from '@thyrox/agent/hooks.js'
+src/packages/repl/src/hooks/fileSuggestions.ts:import {
+src/packages/repl/src/hooks/fileSuggestions.ts:  createBaseHookInput,
+src/packages/repl/src/hooks/fileSuggestions.ts:  executeFileSuggestionCommand,
+src/packages/repl/src/hooks/fileSuggestions.ts:} from '@thyrox/agent/hooks.js'
+src/packages/repl/src/components/StatusLine.tsx:import {
+src/packages/repl/src/components/StatusLine.tsx:  createBaseHookInput,
+src/packages/repl/src/components/StatusLine.tsx:  executeStatusLineCommand,
+src/packages/repl/src/components/StatusLine.tsx:} from '@thyrox/agent/hooks.js'

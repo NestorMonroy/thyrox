@@ -139,7 +139,11 @@ export function stripMediaBlockFromMessages(
   target: MediaBlockStripTarget,
 ): readonly Anthropic.MessageParam[] {
   if (target.messageIdx !== undefined && target.contentIdx !== undefined) {
-    const targeted = stripTargetedMediaBlockFromMessages(messages, target)
+    const targeted = stripTargetedMediaBlockFromMessages(messages, {
+      messageIdx: target.messageIdx,
+      contentIdx: target.contentIdx,
+      kind: target.kind,
+    })
     if (targeted !== messages) return targeted
   }
   return stripLatestMediaBlockFromMessages(messages, target.kind)

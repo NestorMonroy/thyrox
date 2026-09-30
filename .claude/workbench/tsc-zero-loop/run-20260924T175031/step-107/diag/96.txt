@@ -1,0 +1,74 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/command-runtime/src/commands/login/login.tsx(58,28): error TS18046: 'context.getAppState' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:48-68 ---
+     48            // Refresh GrowthBook after login to get updated feature flags (e.g., for claude.ai MCPs)
+     49            refreshGrowthBookAfterAuthChange()
+     50            // Clear any stale trusted device token from a previous account before
+     51            // re-enrolling — prevents sending the old token on bridge calls while
+     52            // the async enrollTrustedDevice() is in-flight.
+     53            clearTrustedDeviceToken()
+     54            // Enroll as a trusted device for Remote Control (10-min fresh-session window)
+     55            void enrollTrustedDevice()
+     56            // Reset killswitch gate checks and re-run with new org
+     57            resetBypassPermissionsCheck()
+     58>           const appState = context.getAppState()
+     59            void checkAndDisableBypassPermissionsIfNeeded(
+     60              appState.toolPermissionContext,
+     61              context.setAppState,
+     62            )
+     63            if (feature('TRANSCRIPT_CLASSIFIER')) {
+     64              resetAutoModeGateCheck()
+     65              void checkAndDisableAutoModeIfNeeded(
+     66                appState.toolPermissionContext,
+     67                context.setAppState,
+     68                appState.fastMode,
+src/packages/command-runtime/src/commands/login/login.tsx(98,19): error TS18046: 'context.setAppState' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:88-108 ---
+     88                // current connection model. If not, it's stale.
+     89                if (!connectionId) {
+     90                  const allIds = getEnabledConnections().flatMap(c =>
+     91                    c.models.map(m => m.id),
+     92                  )
+     93                  if (!allIds.includes(modelId)) {
+     94                    updateSettingsForSource('userSettings', {
+     95                      mainLoopModel: undefined,
+     96                    } as never)
+     97                    // Also clear from AppState so the header re-renders immediately.
+     98>                   context.setAppState(prev => ({
+     99                      ...prev,
+    100                      mainLoopModel: null,
+    101                    }))
+    102                  }
+    103                }
+    104              }
+    105            } catch {
+    106              // Best-effort; never block login completion.
+    107            }
+    108            // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+src/packages/command-runtime/src/commands/login/login.tsx(109,11): error TS18046: 'context.setAppState' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:99-119 ---
+     99                      ...prev,
+    100                      mainLoopModel: null,
+    101                    }))
+    102                  }
+    103                }
+    104              }
+    105            } catch {
+    106              // Best-effort; never block login completion.
+    107            }
+    108            // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+    109>           context.setAppState(prev => ({
+    110              ...prev,
+    111              authVersion: prev.authVersion + 1,
+    112            }))
+    113          }
+    114          onDone(success ? 'Login successful' : 'Login interrupted')
+    115        }}
+    116      />
+    117    )
+    118  }
+    119  

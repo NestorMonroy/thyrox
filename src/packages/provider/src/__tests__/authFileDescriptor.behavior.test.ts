@@ -50,12 +50,12 @@ describe('CCR file-descriptor credential loading invariants', () => {
     expect(source).toMatch(/mode:\s*0o700/)
   })
 
-  test('maybePersistTokenForSubprocesses gated on CLAUDE_CODE_REMOTE (no disk writes outside CCR)', () => {
+  test('maybePersistTokenForSubprocesses gated on THYROX_CODE_REMOTE (no disk writes outside CCR)', () => {
     // Critical security: token-on-disk is only safe inside the CCR
     // container; outside, the user's terminal might use a different
     // sandboxing model and disk-persisted tokens would leak.
     expect(source).toMatch(
-      /if\s*\(!isEnvTruthy\(readEnv\('CLAUDE_CODE_REMOTE'\)\)\)\s*\{?\s*\n?\s*return/,
+      /if\s*\(!isEnvTruthy\(readEnv\('THYROX_CODE_REMOTE'\)\)\)\s*\{?\s*\n?\s*return/,
     )
   })
 

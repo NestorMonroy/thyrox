@@ -1,0 +1,10 @@
+tests/session/test_snapshot_recovery.py :: resultado: 45 de 45 aserciones en verde
+tests/session/test-headless-pool-worktree.sh :: test-headless-pool-worktree: 37 aserciones — 37 ok, 0 falla(s)
+tests/session/test-headless-pool.sh :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-item-drain.sh :: result: 17 of 17 assertions green
+tests/session/test-headless-pool-frozen-launcher.sh :: result: 6 of 6 assertions green
+tests/session/test-gnu-time-launchers.sh :: test-gnu-time-launchers: 13 ok, 0 falla(s)
+tests/session/test-gpu-admission-cli.sh :: aserciones: 3 de 3 · fallos: 0
+tests/session/test_gpu_scenarios.py :: test_gpu_scenarios: 19 ok, 0 falla(s)
+tests/session/test-item-worktree-stash.sh :: item_worktree stash guard: 19/19
+__BG_EXIT__=0

@@ -1,4 +1,3 @@
-/** Puerto de `ccnmt: packages/server/src/contracts.ts`. */
 export type RuntimeStatus = 'inactive' | 'active'
 
 export type RuntimeHandle = {

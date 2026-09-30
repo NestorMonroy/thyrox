@@ -10,7 +10,7 @@ import {
 } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { EffortValue } from '@thyrox/agent/effort.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { AGENT_PATHS } from './types.js'
 
@@ -68,7 +68,7 @@ function getAgentDirectoryPath(location: SettingSource): string {
     case 'flagSettings':
       throw new Error(`Cannot get directory path for ${location} agents`)
     case 'userSettings':
-      return join(getClaudeConfigHomeDir(), AGENT_PATHS.AGENTS_DIR)
+      return join(getConfigHomeDir(), AGENT_PATHS.AGENTS_DIR)
     case 'projectSettings':
       return join(getCwd(), AGENT_PATHS.FOLDER_NAME, AGENT_PATHS.AGENTS_DIR)
     case 'policySettings':

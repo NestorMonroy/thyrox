@@ -11,6 +11,7 @@ import {
 import { hasClaudeAiBillingAccess } from './billing.js'
 import { formatResetTime } from '@thyrox/output/formatters'
 import type { ClaudeAILimits } from './claudeAiLimits.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const FEEDBACK_CHANNEL_ANT = '#briarpatch-cc'
 
@@ -279,7 +280,7 @@ function getWarningUpsellText(
 
     // Pro/Max users: prompt to upgrade
     if (subscriptionType === 'pro' || subscriptionType === 'max') {
-      return '/upgrade to keep using Claude Code'
+      return `/upgrade to keep using ${PRODUCT_NAME}`
     }
   }
 

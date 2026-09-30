@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(538,24): error TS2339: Property 'dev' does not exist on type 'ChannelEntry'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:528-548 ---
+    528        const { content, meta } = notification.params as ChannelNotificationParams
+    529        logMCPDebug(
+    530          connection.name,
+    531          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    532        )
+    533        logEvent('tengu_mcp_channel_message', {
+    534          content_length: content.length,
+    535          meta_key_count: Object.keys(meta ?? {}).length,
+    536          entry_kind:
+    537            entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    538>         is_dev: entry?.dev ?? false,
+    539          plugin: pluginId,
+    540        })
+    541        enqueue({
+    542          mode: 'prompt',
+    543          value: wrapChannelMessage(connection.name, content, meta),
+    544          priority: 'next',
+    545          isMeta: true,
+    546          origin: { kind: 'channel', server: connection.name } as unknown as string,
+    547          skipSlashCommands: true,
+    548        })

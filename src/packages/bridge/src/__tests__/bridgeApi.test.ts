@@ -1,8 +1,3 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/__tests__/bridgeApi.test.ts`
- * (70 líneas fuente, 100% portado). Sin mocks — `validateBridgeId` y
- * `BridgeFatalError` son lógica pura sin dependencias cruzadas.
- */
 import { describe, expect, test } from 'bun:test'
 import { BridgeFatalError, validateBridgeId } from '../bridgeApi.js'
 
@@ -25,7 +20,9 @@ describe('validateBridgeId — accepts safe ids', () => {
 
 describe('validateBridgeId — rejects unsafe ids', () => {
   test('throws on empty string', () => {
-    expect(() => validateBridgeId('', 'sessionId')).toThrow(/Invalid sessionId/)
+    expect(() => validateBridgeId('', 'sessionId')).toThrow(
+      /Invalid sessionId/,
+    )
   })
   test('throws on path traversal (..)', () => {
     expect(() => validateBridgeId('../admin', 'sessionId')).toThrow(
@@ -43,7 +40,7 @@ describe('validateBridgeId — rejects unsafe ids', () => {
     expect(() => validateBridgeId('foo\tbar', 'sessionId')).toThrow()
   })
   test('throws on unicode', () => {
-    expect(() => validateBridgeId('café', 'sessionId')).toThrow()
+    expect(() => validateBridgeId('caf\u00e9', 'sessionId')).toThrow()
   })
   test('throws on URL-encoded chars', () => {
     expect(() => validateBridgeId('foo%2Fbar', 'sessionId')).toThrow()

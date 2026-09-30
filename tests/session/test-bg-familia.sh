@@ -11,7 +11,7 @@
 # no distinguiría el mecanismo de su ausencia.
 # =============================================================================
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; fallo=0
 _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
@@ -19,6 +19,8 @@ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 export THYROX_JOBS_DIR="$TMP/jobs"
+export THYROX_RUNTIME_DIR="$TMP/runtime"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 
 # El LECTOR COMPARTIDO, no un `json.load` por fixture. Resuelve el nombre del
 # archivo y despacha por sufijo; un lector propio aquí es una segunda fuente de

@@ -1,0 +1,17 @@
+Stop two test files leaking module mocks
+
+Bun keeps a mock.module replacement for the rest of the process, so a
+file that mocks a module breaks every later file in the same run that
+wants the real one. Two such leaks made healthy tests fail only in
+batch; bisecting the batch found each culprit:
+
+- compactConversationHelpers.test.ts replaced @thyrox/storage/plans.js,
+  so plans.test.ts got the fake. It now reads the real module over a
+  temporary CLAUDE_CONFIG_DIR, and its expected path comes from
+  getPlanFilePath itself.
+- permissionUpdatePure.test.ts mocked getPermissionHostBindings to
+  return {}, which hid the bindings sandboxWriteAllowlist.test.ts
+  installs later. It now installs empty bindings through the real API.
+
+The permission package runs 1070 pass, 0 fail in one process. The full
+suite went from 221 red files on 2026-09-25 to 22, one of them new.

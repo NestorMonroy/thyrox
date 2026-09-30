@@ -1,0 +1,5 @@
+tests/agents/test_register_session.py
+tests/agents/test_stop_reason_provenance.py
+tests/transcript/test_closing.py
+tests/store/test_agent_sessions.py
+tests/agents/test_store_home.py

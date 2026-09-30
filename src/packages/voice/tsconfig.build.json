@@ -1,0 +1,81 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/voice": [
+        "./src/index.ts"
+      ],
+      "@thyrox/voice/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/voice/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/voice/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/voice/voiceModeEnabled.js": [
+        "./src/voiceModeEnabled.ts"
+      ],
+      "@thyrox/voice/voice.js": [
+        "./src/voice.ts"
+      ],
+      "@thyrox/voice/voiceStreamSTT.js": [
+        "./src/voiceStreamSTT.ts"
+      ],
+      "@thyrox/voice/voiceKeyterms.js": [
+        "./src/voiceKeyterms.ts"
+      ],
+      "@thyrox/voice/appStateHooks.js": [
+        "./src/appStateHooks.ts"
+      ],
+      "@thyrox/voice/hooks/useVoice.js": [
+        "./src/hooks/useVoice.ts"
+      ],
+      "@thyrox/voice/hooks/useVoiceEnabled.js": [
+        "./src/hooks/useVoiceEnabled.ts"
+      ],
+      "@thyrox/voice/hooks/useVoiceIntegration.js": [
+        "./src/hooks/useVoiceIntegration.tsx"
+      ],
+      "@thyrox/voice/voiceContext.js": [
+        "./src/voiceContext.tsx"
+      ],
+      "@thyrox/voice/hooks/useVoiceIntegration": [
+        "./src/hooks/useVoiceIntegration.tsx"
+      ],
+      "@thyrox/voice/voiceContext": [
+        "./src/voiceContext.tsx"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

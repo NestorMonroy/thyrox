@@ -1,10 +1,6 @@
-/**
- * Puerto de `ccnmt: packages/server/src/types.ts`.
- * `lazySchema` — ver `internal/pendingCrossPackageDeps.ts`.
- */
 import type { ChildProcess } from 'child_process'
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 
 export const connectResponseSchema = lazySchema(() =>
   z.object({
@@ -19,11 +15,11 @@ export type ServerConfig = {
   host: string
   authToken: string
   unix?: string
-  /** Timeout de inactividad para sesiones desprendidas (ms). 0 = nunca expira. */
+  /** Idle timeout for detached sessions (ms). 0 = never expire. */
   idleTimeoutMs?: number
-  /** Máximo de sesiones concurrentes. */
+  /** Maximum number of concurrent sessions. */
   maxSessions?: number
-  /** Directorio de workspace por defecto para sesiones sin cwd propio. */
+  /** Default workspace directory for sessions that don't specify cwd. */
   workspace?: string
 }
 
@@ -44,14 +40,13 @@ export type SessionInfo = {
 }
 
 /**
- * Llave estable de sesión → metadata. Se persiste en
- * ~/.claude/server-sessions.json para poder reanudar sesiones entre
- * reinicios del servidor.
+ * Stable session key → session metadata. Persisted to ~/.claude/server-sessions.json
+ * so sessions can be resumed across server restarts.
  */
 export type SessionIndexEntry = {
-  /** ID de sesión asignado por el servidor (coincide con la sesión claude del subproceso). */
+  /** Server-assigned session ID (matches the subprocess's claude session). */
   sessionId: string
-  /** El ID de sesión del transcript de claude para --resume. Igual a sessionId en sesiones directas. */
+  /** The claude transcript session ID for --resume. Same as sessionId for direct sessions. */
   transcriptSessionId: string
   cwd: string
   permissionMode?: string

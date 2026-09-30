@@ -4,7 +4,9 @@
  * type-system bypass for SDK-version compatibility shims.
  */
 import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
+import { getAgentContext } from '@thyrox/agent/agentContext.js'
 import { getAnthropicAuthProvider } from '../auth.js'
+import { type AgentIdentity, agentIdentityHeaders } from './agentIdentityHeaders.ts'
 import { getProviderHostBindings } from '../host.js'
 import { getProviderNetworkLayer } from '../network.js'
 import { getClientPlatform } from '../systemConstants.js'
@@ -37,10 +39,10 @@ import { readEnv } from '@thyrox/config/env'
  *
  * Vertex AI:
  * - Model-specific region variables (highest priority):
- *   - VERTEX_REGION_CLAUDE_3_5_HAIKU: Region for Claude 3.5 Haiku model
- *   - VERTEX_REGION_CLAUDE_HAIKU_4_5: Region for Claude Haiku 4.5 model
- *   - VERTEX_REGION_CLAUDE_3_5_SONNET: Region for Claude 3.5 Sonnet model
- *   - VERTEX_REGION_CLAUDE_3_7_SONNET: Region for Claude 3.7 Sonnet model
+ *   - VERTEX_REGION_CLAUDE_3_5_HAIKU: Region for 3.5 Haiku model
+ *   - VERTEX_REGION_CLAUDE_HAIKU_4_5: Region for Haiku 4.5 model
+ *   - VERTEX_REGION_CLAUDE_3_5_SONNET: Region for 3.5 Sonnet model
+ *   - VERTEX_REGION_CLAUDE_3_7_SONNET: Region for 3.7 Sonnet model
  * - CLOUD_ML_REGION: Optional. The default GCP region to use for all models
  *   If specific model region not specified above
  * - ANTHROPIC_VERTEX_PROJECT_ID: Required. Your GCP project ID
@@ -70,7 +72,8 @@ export async function getAnthropicClient({
   model,
   fetchOverride,
   source,
-  signal,
+  signal: _signal,
+  agentContext,
 }: {
   apiKey?: string
   maxRetries: number
@@ -78,20 +81,22 @@ export async function getAnthropicClient({
   fetchOverride?: ClientOptions['fetch']
   source?: string
   signal?: AbortSignal
+  /** Quién hace la petición; por defecto, el contexto de agente en curso. */
+  agentContext?: AgentIdentity
 }): Promise<Anthropic> {
   const authProvider = getAnthropicAuthProvider()
   const networkLayer = getProviderNetworkLayer()
   const { anthropic } = getProviderHostBindings()
-  const containerId = readEnv('CLAUDE_CODE_CONTAINER_ID')
-  const remoteSessionId = readEnv('CLAUDE_CODE_REMOTE_SESSION_ID')
-  const clientApp = readEnv('CLAUDE_AGENT_SDK_CLIENT_APP')
+  const containerId = readEnv('THYROX_CODE_CONTAINER_ID')
+  const remoteSessionId = readEnv('THYROX_CODE_REMOTE_SESSION_ID')
+  const clientApp = readEnv('THYROX_AGENT_SDK_CLIENT_APP')
   const customHeaders = getCustomHeaders()
   // Ant `bx()` (1984.js): `"x-app": N7() ? "cli-bg" : "cli"`. Background
-  // sessions (CLAUDE_CODE_SESSION_KIND=bg) advertise as `cli-bg` so
+  // sessions (THYROX_CODE_SESSION_KIND=bg) advertise as `cli-bg` so
   // server analytics can split desktop/CLI traffic from autonomous
   // daemon workers. Reading the env directly here avoids pulling the
   // agent package into provider (cycle).
-  const sessionKind = readEnv('CLAUDE_CODE_SESSION_KIND')
+  const sessionKind = readEnv('THYROX_CODE_SESSION_KIND')
   const isBgKind =
     sessionKind === 'bg' ||
     sessionKind === 'daemon' ||
@@ -99,7 +104,7 @@ export async function getAnthropicClient({
   const defaultHeaders: { [key: string]: string } = {
     'x-app': isBgKind ? 'cli-bg' : 'cli',
     // ant v2.1.150 T2() — coarse client-surface identifier (cli / vscode /
-    // sdk / mcp / remote …) derived from CLAUDE_CODE_ENTRYPOINT. Sent on
+    // sdk / mcp / remote …) derived from THYROX_CODE_ENTRYPOINT. Sent on
     // every request for server-side traffic attribution.
     'anthropic-client-platform': getClientPlatform(),
     'User-Agent': anthropic.getUserAgent(),
@@ -111,6 +116,7 @@ export async function getAnthropicClient({
       : {}),
     // SDK consumers can identify their app/library for backend analytics
     ...(clientApp ? { 'x-client-app': clientApp } : {}),
+    ...agentIdentityHeaders(agentContext ?? getAgentContext()),
   }
 
   // Log API client configuration for HFI debugging
@@ -120,7 +126,7 @@ export async function getAnthropicClient({
 
   // Add additional protection header if enabled via env var
   const additionalProtectionEnabled = anthropic.isEnvTruthy(
-    readEnv('CLAUDE_CODE_ADDITIONAL_PROTECTION'),
+    readEnv('THYROX_CODE_ADDITIONAL_PROTECTION'),
   )
   if (additionalProtectionEnabled) {
     defaultHeaders['x-anthropic-additional-protection'] = 'true'
@@ -153,7 +159,7 @@ export async function getAnthropicClient({
       fetch: resolvedFetch,
     }),
   }
-  if (anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) {
+  if (anthropic.isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) {
     const { AnthropicBedrock } = await import('@anthropic-ai/bedrock-sdk')
     // Use region override for small fast model if specified
     const awsRegion =
@@ -165,7 +171,7 @@ export async function getAnthropicClient({
     const bedrockArgs: Record<string, unknown> = {
       ...ARGS,
       awsRegion,
-      ...(anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_BEDROCK_AUTH')) && {
+      ...(anthropic.isEnvTruthy(readEnv('THYROX_CODE_SKIP_BEDROCK_AUTH')) && {
         skipAuth: true,
       }),
       ...(anthropic.isDebugToStdErr() && { logger: createStderrLogger() }),
@@ -193,7 +199,7 @@ export async function getAnthropicClient({
         Authorization: `Bearer ${readEnv('AWS_BEARER_TOKEN_BEDROCK')}`,
       }
     } else if (
-      !anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_BEDROCK_AUTH'))
+      !anthropic.isEnvTruthy(readEnv('THYROX_CODE_SKIP_BEDROCK_AUTH'))
     ) {
       // Refresh auth and get credentials with cache clearing
       const cachedCredentials = await anthropic.refreshAndGetAwsCredentials()
@@ -206,13 +212,13 @@ export async function getAnthropicClient({
     // we have always been lying about the return type - this doesn't support batching or models
     return new AnthropicBedrock(bedrockArgs) as unknown as Anthropic
   }
-  if (anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY'))) {
+  if (anthropic.isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY'))) {
     const { AnthropicFoundry } = await import('@anthropic-ai/foundry-sdk')
     // Determine Azure AD token provider based on configuration
     // SDK reads ANTHROPIC_FOUNDRY_API_KEY by default
     let azureADTokenProvider: (() => Promise<string>) | undefined
     if (!readEnv('ANTHROPIC_FOUNDRY_API_KEY')) {
-      if (anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_FOUNDRY_AUTH'))) {
+      if (anthropic.isEnvTruthy(readEnv('THYROX_CODE_SKIP_FOUNDRY_AUTH'))) {
         // Mock token provider for testing/proxy scenarios (similar to Vertex mock GoogleAuth)
         azureADTokenProvider = () => Promise.resolve('')
       } else {
@@ -236,10 +242,10 @@ export async function getAnthropicClient({
     // we have always been lying about the return type - this doesn't support batching or models
     return new AnthropicFoundry(foundryArgs) as unknown as Anthropic
   }
-  if (anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) {
+  if (anthropic.isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) {
     // Refresh GCP credentials if gcpAuthRefresh is configured and credentials are expired
     // This is similar to how we handle AWS credential refresh for Bedrock
-    if (!anthropic.isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_VERTEX_AUTH'))) {
+    if (!anthropic.isEnvTruthy(readEnv('THYROX_CODE_SKIP_VERTEX_AUTH'))) {
       await anthropic.refreshGcpCredentialsIfNeeded()
     }
 
@@ -282,7 +288,7 @@ export async function getAnthropicClient({
       readEnv('google_application_credentials')
 
     const googleAuth = anthropic.isEnvTruthy(
-      readEnv('CLAUDE_CODE_SKIP_VERTEX_AUTH'),
+      readEnv('THYROX_CODE_SKIP_VERTEX_AUTH'),
     )
       ? ({
           // Mock GoogleAuth for testing/proxy scenarios
@@ -309,7 +315,7 @@ export async function getAnthropicClient({
 
     const vertexArgs: ConstructorParameters<typeof AnthropicVertex>[0] = {
       ...ARGS,
-      region: anthropic.getVertexRegionForModel(model),
+      region: anthropic.getVertexRegionForModel(model ?? ''),
       googleAuth: googleAuth as any,
       ...(anthropic.isDebugToStdErr() && { logger: createStderrLogger() }),
     }
@@ -319,7 +325,7 @@ export async function getAnthropicClient({
 
   // V7 §11.6 — when an Anthropic Compatible connection matches the
   // requested model, override apiKey + baseURL with the connection's
-  // values. This keeps Claude Account OAuth (api.anthropic.com + OAuth
+  // values. This keeps thyrox Account OAuth (api.anthropic.com + OAuth
   // token) and Anthropic Compatible (user-supplied URL + api_key) from
   // colliding through global ANTHROPIC_BASE_URL / ANTHROPIC_AUTH_TOKEN.
   // Resolution is per-call: each query consults the connection registry
@@ -396,7 +402,7 @@ export async function getAnthropicClient({
     // Override the OAuth Authorization header from earlier; api_key path
     // uses x-api-key (set by the SDK from `apiKey:` above). Drop any
     // OAuth Bearer header so the proxy doesn't see two auth methods.
-    delete clientConfig.defaultHeaders?.['Authorization']
+    delete defaultHeaders['Authorization']
   }
 
   return new Anthropic(clientConfig)

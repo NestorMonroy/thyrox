@@ -1,34 +1,20 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/mcpStringUtils.ts` —
- * sus 6 exportaciones, ninguna omitida.
- *
- * Funciones puras de utilidad de cadenas para parsear nombres de
- * herramienta/servidor MCP. Sin dependencias pesadas, para mantenerse
- * ligero para consumidores que sólo necesitan parseo de cadenas (p. ej.
- * `permissionValidation`).
- *
- * Nota: `mcpInfoFromString` y `getMcpPrefix` están duplicadas — a
- * propósito, en la fuente — en `./compat.ts` (la capa de compatibilidad
- * hacia atrás). No se deduplican aquí: es la forma que la propia fuente
- * ya tiene, y este archivo declara su propia razón de ser (ligereza) para
- * mantener la duplicación.
+ * Pure string utility functions for MCP tool/server name parsing.
+ * This file has no heavy dependencies to keep it lightweight for
+ * consumers that only need string parsing (e.g., permissionValidation).
  */
 
 import { normalizeNameForMCP } from './normalization.js'
 
 /*
- * Extrae la información del servidor MCP de una cadena de nombre de
- * herramienta.
- * @param toolString La cadena a parsear. Formato esperado:
- *   "mcp__serverName__toolName"
- * @returns Un objeto con el nombre de servidor y el nombre de
- *   herramienta opcional, o null si no es una regla MCP válida.
+ * Extracts MCP server information from a tool name string
+ * @param toolString The string to parse. Expected format: "mcp__serverName__toolName"
+ * @returns An object containing server name and optional tool name, or null if not a valid MCP rule
  *
- * Limitación conocida: si un nombre de servidor contiene "__", el parseo
- * será incorrecto. Por ejemplo, "mcp__my__server__tool" se parsearía
- * como server="my" y tool="server__tool" en vez de server="my__server"
- * y tool="tool". Esto es raro en la práctica ya que los nombres de
- * servidor normalmente no llevan guiones bajos dobles.
+ * Known limitation: If a server name contains "__", parsing will be incorrect.
+ * For example, "mcp__my__server__tool" would parse as server="my" and tool="server__tool"
+ * instead of server="my__server" and tool="tool". This is rare in practice since server
+ * names typically don't contain double underscores.
  */
 export function mcpInfoFromString(toolString: string): {
   serverName: string
@@ -39,41 +25,37 @@ export function mcpInfoFromString(toolString: string): {
   if (mcpPart !== 'mcp' || !serverName) {
     return null
   }
-  // Une todas las partes después del nombre de servidor para preservar
-  // los guiones bajos dobles en los nombres de herramienta.
+  // Join all parts after server name to preserve double underscores in tool names
   const toolName =
     toolNameParts.length > 0 ? toolNameParts.join('__') : undefined
   return { serverName, toolName }
 }
 
 /**
- * Genera el prefijo de nombre de herramienta/comando MCP para un
- * servidor dado.
- * @param serverName Nombre del servidor MCP
- * @returns La cadena de prefijo
+ * Generates the MCP tool/command name prefix for a given server
+ * @param serverName Name of the MCP server
+ * @returns The prefix string
  */
 export function getMcpPrefix(serverName: string): string {
   return `mcp__${normalizeNameForMCP(serverName)}__`
 }
 
 /**
- * Construye un nombre de herramienta MCP totalmente calificado a partir
- * del nombre de servidor y de herramienta. Inverso de
- * mcpInfoFromString().
- * @param serverName Nombre del servidor MCP (sin normalizar)
- * @param toolName Nombre de la herramienta (sin normalizar)
- * @returns El nombre totalmente calificado, p. ej. "mcp__server__tool"
+ * Builds a fully qualified MCP tool name from server and tool names.
+ * Inverse of mcpInfoFromString().
+ * @param serverName Name of the MCP server (unnormalized)
+ * @param toolName Name of the tool (unnormalized)
+ * @returns The fully qualified name, e.g., "mcp__server__tool"
  */
 export function buildMcpToolName(serverName: string, toolName: string): string {
   return `${getMcpPrefix(serverName)}${normalizeNameForMCP(toolName)}`
 }
 
 /**
- * Devuelve el nombre a usar para el matching de reglas de permiso. Para
- * herramientas MCP, usa el nombre totalmente calificado
- * mcp__server__tool para que las reglas de negación dirigidas a
- * builtins (p. ej. "Write") no coincidan con reemplazos MCP sin prefijo
- * que comparten el mismo nombre de exhibición. Recae en `tool.name`.
+ * Returns the name to use for permission rule matching.
+ * For MCP tools, uses the fully qualified mcp__server__tool name so that
+ * deny rules targeting builtins (e.g., "Write") don't match unprefixed MCP
+ * replacements that share the same display name. Falls back to `tool.name`.
  */
 export function getToolNameForPermissionCheck(tool: {
   name: string
@@ -85,11 +67,10 @@ export function getToolNameForPermissionCheck(tool: {
 }
 
 /*
- * Extrae el nombre de exhibición de un nombre de herramienta/comando MCP.
- * @param fullName El nombre completo de herramienta/comando MCP (p. ej.
- *   "mcp__server_name__tool_name")
- * @param serverName El nombre de servidor a quitar del prefijo
- * @returns El nombre de exhibición sin el prefijo MCP
+ * Extracts the display name from an MCP tool/command name
+ * @param fullName The full MCP tool/command name (e.g., "mcp__server_name__tool_name")
+ * @param serverName The server name to remove from the prefix
+ * @returns The display name without the MCP prefix
  */
 export function getMcpDisplayName(
   fullName: string,
@@ -100,30 +81,26 @@ export function getMcpDisplayName(
 }
 
 /**
- * Extrae sólo el nombre de exhibición de herramienta/comando de un
- * userFacingName.
- * @param userFacingName El nombre completo de cara al usuario (p. ej.
- *   "github - Add comment to issue (MCP)")
- * @returns El nombre de exhibición sin el prefijo de servidor ni el
- *   sufijo (MCP)
+ * Extracts just the tool/command display name from a userFacingName
+ * @param userFacingName The full user-facing name (e.g., "github - Add comment to issue (MCP)")
+ * @returns The display name without server prefix and (MCP) suffix
  */
 export function extractMcpToolDisplayName(userFacingName: string): string {
-  // Esto es feo de verdad, pero nuestro tipo Tool actual no facilita
-  // tener nombres de exhibición distintos para propósitos distintos.
+  // This is really ugly but our current Tool type doesn't make it easy to have different display names for different purposes.
 
-  // Primero, quita el sufijo (MCP) si está presente.
+  // First, remove the (MCP) suffix if present
   let withoutSuffix = userFacingName.replace(/\s*\(MCP\)\s*$/, '')
 
-  // Recorta el resultado.
+  // Trim the result
   withoutSuffix = withoutSuffix.trim()
 
-  // Luego, quita el prefijo de servidor (todo antes de " - ").
+  // Then, remove the server prefix (everything before " - ")
   const dashIndex = withoutSuffix.indexOf(' - ')
   if (dashIndex !== -1) {
     const displayName = withoutSuffix.substring(dashIndex + 3).trim()
     return displayName
   }
 
-  // Si no se encuentra un guion, devuelve la cadena sin (MCP).
+  // If no dash found, return the string without (MCP)
   return withoutSuffix
 }

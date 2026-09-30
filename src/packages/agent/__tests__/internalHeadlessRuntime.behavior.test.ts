@@ -4,121 +4,116 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Porte de
- * `ccnmt: packages/agent/__tests__/internalHeadlessRuntime.behavior.test.ts`.
+ * Source-level pins for `internal/headlessRuntime.ts` — 16 facades over
+ * host bindings used by the headless / --print mode loop.
  *
- * Pin a nivel de fuente para `internal/headlessRuntime.ts` — 16 fachadas
- * sobre las ataduras del host que usa el bucle del modo headless / --print.
+ * The big invariant: each facade has a deterministic fallback when the
+ * host binding is missing. The fallbacks aren't arbitrary — they're tuned
+ * so headless mode degrades gracefully (returns empty arrays/objects)
+ * instead of crashing.
  *
- * El invariante grande: cada fachada tiene un fallback determinístico
- * cuando falta la atadura del host. Los fallbacks NO son arbitrarios —
- * están calibrados para que el modo headless degrade con gracia (devuelve
- * arreglos/objetos vacíos) en vez de reventar.
- *
- * Se fija cada fallback para que un refactor no cambie por accidente
- * "sin host → []" a "sin host → throw" o "sin host → undefined".
+ * Pinning each fallback so a refactor doesn't accidentally change "no
+ * host → []" to "no host → throw" or "no host → undefined".
  */
-describe('internal/headlessRuntime — fallbacks', () => {
+describe('internal/headlessRuntime fallbacks', () => {
   const source = readFileSync(
     resolve(__dirname, '..', 'internal', 'headlessRuntime.ts'),
     'utf-8',
   )
 
-  describe('fallbacks de paso (el input se hace eco sin cambios)', () => {
-    test('parseUserSpecifiedModel: sin host → hace eco del model', () => {
-      // Pin: quien llama pasa el id de modelo escrito por el usuario; si
-      // falta el parser del host, el string crudo es lo mejor que se puede
-      // hacer.
+  describe('passthrough fallbacks (input echoed unchanged)', () => {
+    test('parseUserSpecifiedModel: no host → echo model back', () => {
+      // Pin: caller passes user-typed model id; if no host parser,
+      // the raw string is the best we can do.
       expect(source).toMatch(
         /parseUserSpecifiedModel\?\.\(model\) \?\? model/,
       )
     })
 
-    test('sdkCompatToolName: sin host → hace eco de toolName', () => {
+    test('sdkCompatToolName: no host → echo toolName back', () => {
       expect(source).toMatch(
         /sdkCompatToolName\?\.\(toolName\) \?\? toolName/,
       )
     })
   })
 
-  describe('fallbacks vacíos/falsy (degradan con gracia)', () => {
-    test('getMainLoopModel: sin host → "" (string vacío, no undefined)', () => {
-      // Pin: quien llama usa el resultado como string. undefined reventaría
-      // en un .startsWith, etc.
+  describe('empty/falsy fallbacks (degrade gracefully)', () => {
+    test('getMainLoopModel: no host → "" (empty string, not undefined)', () => {
+      // Pin: callers use the result as a string. undefined would crash
+      // on .startsWith etc.
       expect(source).toMatch(/getMainLoopModel\?\.\(\) \?\? ''/)
     })
 
-    test('loadAllPluginsCacheOnly: sin host → { enabled: [] }', () => {
-      // Pin: quien llama itera .enabled — un arreglo vacío significa "sin
-      // plugins", no "revienta".
+    test('loadAllPluginsCacheOnly: no host → { enabled: [] }', () => {
+      // Pin: caller iterates .enabled — empty array means "no plugins",
+      // not "crash".
       expect(source).toMatch(
         /loadAllPluginsCacheOnly\?\.\(\)\)\s*\?\?\s*\{\s*\n?\s*enabled: \[\],/,
       )
     })
 
-    test('processUserInput: sin host → shouldQuery=false, messages=[]', () => {
-      // Pin: shouldQuery=false significa "sáltate la llamada al LLM".
-      // Devolver true enrutaría un mensaje nulo al modelo.
+    test('processUserInput: no host → shouldQuery=false, messages=[]', () => {
+      // Pin: shouldQuery=false means "skip the LLM call". Returning true
+      // would route a null message to the model.
       expect(source).toMatch(
         /processUserInput[\s\S]+?\?\?\s*\{\s*\n?\s*messages: \[\],\s*\n?\s*shouldQuery: false,\s*\n?\s*allowedTools: undefined,/,
       )
     })
 
-    test('fetchSystemPromptParts: sin host → defaults vacíos (sin reventar al acceder al mapa)', () => {
+    test('fetchSystemPromptParts: no host → empty defaults (no crash on map access)', () => {
       expect(source).toMatch(
         /fetchSystemPromptParts[\s\S]+?\?\?\s*\{\s*\n?\s*defaultSystemPrompt: \[\],\s*\n?\s*userContext: \{\},\s*\n?\s*systemContext: \{\},/,
       )
     })
 
-    test('isResultSuccessful: sin host → false (NO true, NO undefined)', () => {
-      // Pin: caer por defecto a true trataría las corridas sin host
-      // instalado como siempre-exitosas — esconde bugs.
+    test('isResultSuccessful: no host → false (NOT true, NOT undefined)', () => {
+      // Pin: defaulting to true would treat un-host-installed runs as
+      // always-successful — masks bugs.
       expect(source).toMatch(
         /isResultSuccessful\?\.\(result, lastStopReason\) \?\? false/,
       )
     })
 
-    test('selectableUserMessagesFilter: sin host → true (incluye todo)', () => {
-      // Pin: inverso de isResultSuccessful — para filtros, true significa
-      // "incluir". Sin un filtro del host, se incluye cada mensaje.
+    test('selectableUserMessagesFilter: no host → true (include all)', () => {
+      // Pin: inverse of isResultSuccessful — for filters, true means
+      // "include". Without a host filter, include every message.
       expect(source).toMatch(
         /selectableUserMessagesFilter\?\.\(message\) \?\? true/,
       )
     })
 
-    test('getCoordinatorUserContext: sin host → {} (registro vacío)', () => {
+    test('getCoordinatorUserContext: no host → {} (empty record)', () => {
       expect(source).toMatch(
         /getCoordinatorUserContext\?\.\([\s\S]+?\) \?\? \{\}/,
       )
     })
 
-    test('isSnipBoundaryMessage: sin host → false (NO es un snip)', () => {
+    test('isSnipBoundaryMessage: no host → false (NOT a snip)', () => {
       expect(source).toMatch(
         /isSnipBoundaryMessage\?\.\(message\) \?\? false/,
       )
     })
   })
 
-  describe('fallbacks de early-return en generadores', () => {
-    test('handleOrphanedPermission: sin host → generador vacío (return)', () => {
-      // Pin: el AsyncGenerator debe emitir 0 items, no reventar.
+  describe('generator early-return fallbacks', () => {
+    test('handleOrphanedPermission: no host → empty generator (return)', () => {
+      // Pin: AsyncGenerator must yield 0 items, not throw.
       expect(source).toMatch(
         /handleOrphanedPermission[\s\S]+?if \(!handler\) \{\s*\n?\s*return\s*\n?\s*\}\s*\n?\s*yield\* handler\(/,
       )
     })
 
-    test('normalizeMessage: sin host → generador vacío (return)', () => {
+    test('normalizeMessage: no host → empty generator (return)', () => {
       expect(source).toMatch(
         /normalizeMessage[\s\S]+?if \(!normalizer\) \{\s*\n?\s*return\s*\n?\s*\}\s*\n?\s*yield\* normalizer\(/,
       )
     })
   })
 
-  describe('fallbacks con undefined permitido (quien llama lo verifica explícitamente)', () => {
-    test('shouldEnableThinkingByDefault devuelve boolean | undefined', () => {
-      // Pin: tri-estado (true/false/undefined). undefined significa "usar
-      // el default". Quien llama distingue "el host dice false" de "no hay
-      // host".
+  describe('undefined-allowed fallbacks (caller checks explicitly)', () => {
+    test('shouldEnableThinkingByDefault returns boolean | undefined', () => {
+      // Pin: tri-state (true/false/undefined). undefined means "use default".
+      // Caller distinguishes "host says false" from "no host".
       expect(source).toMatch(
         /shouldEnableThinkingByDefault\(\): boolean \| undefined/,
       )
@@ -127,20 +122,19 @@ describe('internal/headlessRuntime — fallbacks', () => {
       )
     })
 
-    test('buildSystemInitMessage devuelve unknown | undefined (sin fallback)', () => {
-      // Pin: el undefined pasa de largo; quien llama lo verifica antes de
-      // enviarlo.
+    test('buildSystemInitMessage returns unknown | undefined (no fallback)', () => {
+      // Pin: passing undefined through; caller checks before sending.
       const block = source.match(
         /export function buildSystemInitMessage[\s\S]+?\n\}/,
       )?.[0]
       expect(block).toBeTruthy()
-      // Sin `?? algo` — el undefined pasa de largo.
+      // No `?? something` — undefined passes through.
       expect(block).not.toMatch(/\?\? /)
     })
 
-    test('snipCompactIfNeeded devuelve undefined sin host (se salta el snip)', () => {
-      // Pin: quien llama verifica `if (result)` antes de usarlo. undefined
-      // significa "snip saltado".
+    test('snipCompactIfNeeded returns undefined when no host (skip snip)', () => {
+      // Pin: caller checks `if (result)` before using. undefined =
+      // "snip skipped" semantics.
       const block = source.match(
         /export function snipCompactIfNeeded[\s\S]+?\n\}/,
       )?.[0]
@@ -149,35 +143,34 @@ describe('internal/headlessRuntime — fallbacks', () => {
     })
   })
 
-  describe('fachadas de efecto colateral', () => {
-    test('registerStructuredOutputEnforcement: no-op vía optional-chain', () => {
-      // Pin: devuelve void — cuando el host no tiene implementación, la
-      // llamada es un no-op silencioso.
+  describe('side-effect facades', () => {
+    test('registerStructuredOutputEnforcement: optional-chain no-op', () => {
+      // Pin: void return — when host has no impl, calling is silent no-op.
       expect(source).toMatch(
         /registerStructuredOutputEnforcement\?\.\(\s*\n?\s*setAppState,\s*\n?\s*sessionId,/,
       )
     })
   })
 
-  test('las 16 exportaciones están presentes', () => {
+  test('all 16 exports present', () => {
     const exportLines = source
       .split('\n')
       .filter(line => /^export (function|async function)/.test(line))
     expect(exportLines.length).toBe(16)
   })
 
-  test('cada export usa optional-chain al acceder a la atadura del host', () => {
-    // Pin: ninguna fachada debe reventar si falta el host. Un regresivo que
-    // haga `getAgentHostBindings().X(...)` sin `?.` reventaría a quien
-    // corre el modo headless sin el host cableado.
+  test('every export uses optional-chain on host binding access', () => {
+    // Pin: no facade should throw on missing host. A regression that
+    // does `getAgentHostBindings().X(...)` without `?.` would crash
+    // anyone running headless mode without the host wired up.
     //
-    // Permitido: el cuerpo de la función desestructura la atadura y la
-    // verifica falsy (handleOrphanedPermission / normalizeMessage); ambas
-    // siguen evitando llamar sobre undefined.
+    // Allowed: function body destructures the binding and checks falsy
+    // (handleOrphanedPermission / normalizeMessage); both still avoid
+    // calling on undefined.
     const directNonOptionalCalls = source.match(
       /getAgentHostBindings\(\)\.[a-zA-Z_$][a-zA-Z0-9_$]*\(/g,
     )
-    // No se esperan matches — toda llamada debe ser vía `?.(`
+    // No matches expected — all calls should be via `?.(`
     expect(directNonOptionalCalls).toBeNull()
   })
 })

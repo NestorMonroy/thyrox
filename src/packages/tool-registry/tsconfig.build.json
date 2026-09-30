@@ -1,0 +1,536 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/tool-registry": [
+        "./src/index.ts"
+      ],
+      "@thyrox/tool-registry/Tool.js": [
+        "./src/Tool.ts"
+      ],
+      "@thyrox/tool-registry/progressTypes": [
+        "./src/progressTypes.ts"
+      ],
+      "@thyrox/tool-registry/appStateTypes": [
+        "./src/appStateTypes.ts"
+      ],
+      "@thyrox/tool-registry/genericTypeUtils": [
+        "./src/genericTypeUtils.ts"
+      ],
+      "@thyrox/tool-registry/fileStateCache": [
+        "./src/fileStateCache.ts"
+      ],
+      "@thyrox/tool-registry/codeIndexing.js": [
+        "./src/codeIndexing.ts"
+      ],
+      "@thyrox/tool-registry/services/hookTiming.js": [
+        "./src/services/hookTiming.ts"
+      ],
+      "@thyrox/tool-registry/utils/array.js": [
+        "./src/utils/array.ts"
+      ],
+      "@thyrox/tool-registry/utils/lazySchema.js": [
+        "./src/utils/lazySchema.ts"
+      ],
+      "@thyrox/tool-registry/hooks/appState.js": [
+        "./src/hooks/appState.ts"
+      ],
+      "@thyrox/tool-registry/services/classifyToolError.js": [
+        "./src/services/classifyToolError.ts"
+      ],
+      "@thyrox/tool-registry/suggestions/skillUsageTracking.js": [
+        "./src/suggestions/skillUsageTracking.ts"
+      ],
+      "@thyrox/tool-registry/task/outputFormatting.js": [
+        "./src/task/outputFormatting.ts"
+      ],
+      "@thyrox/tool-registry/testing": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/tool-registry/testing/index.js": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/tool-registry/utils/objectGroupBy.js": [
+        "./src/utils/objectGroupBy.ts"
+      ],
+      "@thyrox/tool-registry/utils/semanticBoolean.js": [
+        "./src/utils/semanticBoolean.ts"
+      ],
+      "@thyrox/tool-registry/utils/semanticNumber.js": [
+        "./src/utils/semanticNumber.ts"
+      ],
+      "@thyrox/tool-registry/tools/MCPTool/classifyForCollapse.js": [
+        "./src/tools/MCPTool/classifyForCollapse.ts"
+      ],
+      "@thyrox/tool-registry/tools/MCPTool/MCPTool.js": [
+        "./src/tools/MCPTool/MCPTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/MCPTool/UI.js": [
+        "./src/tools/MCPTool/UI.ts"
+      ],
+      "@thyrox/tool-registry/tools/MCPTool/prompt.js": [
+        "./src/tools/MCPTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js": [
+        "./src/tools/ListMcpResourcesTool/ListMcpResourcesTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/ListMcpResourcesTool/UI.js": [
+        "./src/tools/ListMcpResourcesTool/UI.ts"
+      ],
+      "@thyrox/tool-registry/tools/ListMcpResourcesTool/prompt.js": [
+        "./src/tools/ListMcpResourcesTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/ReadMcpResourceTool/ReadMcpResourceTool.js": [
+        "./src/tools/ReadMcpResourceTool/ReadMcpResourceTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/ReadMcpResourceTool/UI.js": [
+        "./src/tools/ReadMcpResourceTool/UI.ts"
+      ],
+      "@thyrox/tool-registry/tools/ReadMcpResourceTool/prompt.js": [
+        "./src/tools/ReadMcpResourceTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/McpAuthTool/McpAuthTool.js": [
+        "./src/tools/McpAuthTool/McpAuthTool.ts"
+      ],
+      "@thyrox/tool-registry/internal/pendingCrossPackageDeps.js": [
+        "./src/internal/pendingCrossPackageDeps.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskGetTool/TaskGetTool.js": [
+        "./src/tools/TaskGetTool/TaskGetTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskGetTool/constants.js": [
+        "./src/tools/TaskGetTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskGetTool/prompt.js": [
+        "./src/tools/TaskGetTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskListTool/TaskListTool.js": [
+        "./src/tools/TaskListTool/TaskListTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskListTool/constants.js": [
+        "./src/tools/TaskListTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskListTool/prompt.js": [
+        "./src/tools/TaskListTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/todo/types.js": [
+        "./src/todo/types.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/constants.js": [
+        "./src/tools/AgentTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileEditTool/constants.js": [
+        "./src/tools/FileEditTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TodoWriteTool/TodoWriteTool.js": [
+        "./src/tools/TodoWriteTool/TodoWriteTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/TodoWriteTool/constants.js": [
+        "./src/tools/TodoWriteTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TodoWriteTool/prompt.js": [
+        "./src/tools/TodoWriteTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/SleepTool/prompt.js": [
+        "./src/tools/SleepTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/testing/TestingPermissionTool.js": [
+        "./src/tools/testing/TestingPermissionTool.tsx"
+      ],
+      "@thyrox/tool-registry/runtime": [
+        "./src/runtime.ts"
+      ],
+      "@thyrox/tool-registry/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/tool-registry/Task.js": [
+        "./src/Task.ts"
+      ],
+      "@thyrox/tool-registry/notebookTypes": [
+        "./src/notebookTypes.ts"
+      ],
+      "@thyrox/tool-registry/toolLimits": [
+        "./src/toolLimits.ts"
+      ],
+      "@thyrox/tool-registry/readEditContext.js": [
+        "./src/readEditContext.ts"
+      ],
+      "@thyrox/tool-registry/toolErrors.js": [
+        "./src/toolErrors.ts"
+      ],
+      "@thyrox/tool-registry/toolSchemaCache.js": [
+        "./src/toolSchemaCache.ts"
+      ],
+      "@thyrox/tool-registry/imageStore.js": [
+        "./src/imageStore.ts"
+      ],
+      "@thyrox/tool-registry/undercover.js": [
+        "./src/undercover.ts"
+      ],
+      "@thyrox/tool-registry/words.js": [
+        "./src/words.ts"
+      ],
+      "@thyrox/tool-registry/pdf.js": [
+        "./src/pdf.ts"
+      ],
+      "@thyrox/tool-registry/gitDiff.js": [
+        "./src/gitDiff.ts"
+      ],
+      "@thyrox/tool-registry/embeddedRgExtractor.js": [
+        "./src/embeddedRgExtractor.ts"
+      ],
+      "@thyrox/tool-registry/claudeCodeHints.js": [
+        "./src/claudeCodeHints.ts"
+      ],
+      "@thyrox/tool-registry/generatedFiles.js": [
+        "./src/generatedFiles.ts"
+      ],
+      "@thyrox/tool-registry/tools/testing/TestingPermissionTool": [
+        "./src/tools/testing/TestingPermissionTool.tsx"
+      ],
+      "@thyrox/tool-registry/task/TaskOutput.js": [
+        "./src/task/TaskOutput.ts"
+      ],
+      "@thyrox/tool-registry/tasks/RemoteAgentTask.js": [
+        "./src/tasks/RemoteAgentTask.tsx"
+      ],
+      "@thyrox/tool-registry/teleport.js": [
+        "./src/teleport.tsx"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/AgentTool.js": [
+        "./src/tools/AgentTool/AgentTool.tsx"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/UI.js": [
+        "./src/tools/AgentTool/UI.tsx"
+      ],
+      "@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js": [
+        "./src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/BashTool.js": [
+        "./src/tools/BashTool/BashTool.tsx"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/BashToolResultMessage.js": [
+        "./src/tools/BashTool/BashToolResultMessage.tsx"
+      ],
+      "@thyrox/tool-registry/tools/PowerShellTool/PowerShellTool.js": [
+        "./src/tools/PowerShellTool/PowerShellTool.tsx"
+      ],
+      "@thyrox/tool-registry/tools/TaskOutputTool/TaskOutputTool.js": [
+        "./src/tools/TaskOutputTool/TaskOutputTool.tsx"
+      ],
+      "@thyrox/tool-registry/collapseReadSearch.js": [
+        "./src/collapseReadSearch.ts"
+      ],
+      "@thyrox/tool-registry/diagnosticTracking.js": [
+        "./src/diagnosticTracking.ts"
+      ],
+      "@thyrox/tool-registry/markdownConfigLoader.js": [
+        "./src/markdownConfigLoader.ts"
+      ],
+      "@thyrox/tool-registry/notebook.js": [
+        "./src/notebook.ts"
+      ],
+      "@thyrox/tool-registry/ripgrep.js": [
+        "./src/ripgrep.ts"
+      ],
+      "@thyrox/tool-registry/services/StreamingToolExecutor.js": [
+        "./src/services/StreamingToolExecutor.ts"
+      ],
+      "@thyrox/tool-registry/services/toolOrchestration.js": [
+        "./src/services/toolOrchestration.ts"
+      ],
+      "@thyrox/tool-registry/skills/skillChangeDetector.js": [
+        "./src/skills/skillChangeDetector.ts"
+      ],
+      "@thyrox/tool-registry/telemetry/pluginTelemetry.js": [
+        "./src/telemetry/pluginTelemetry.ts"
+      ],
+      "@thyrox/tool-registry/toolConstants": [
+        "./src/toolConstants.ts"
+      ],
+      "@thyrox/tool-registry/toolPool.js": [
+        "./src/toolPool.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/agentColorManager.js": [
+        "./src/tools/AgentTool/agentColorManager.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/agentDisplay.js": [
+        "./src/tools/AgentTool/agentDisplay.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js": [
+        "./src/tools/AgentTool/agentToolUtils.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/built-in/claudeCodeGuideAgent.js": [
+        "./src/tools/AgentTool/built-in/claudeCodeGuideAgent.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/forkSubagent.js": [
+        "./src/tools/AgentTool/forkSubagent.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js": [
+        "./src/tools/AgentTool/loadAgentsDir.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/resumeAgent.js": [
+        "./src/tools/AgentTool/resumeAgent.ts"
+      ],
+      "@thyrox/tool-registry/tools/AgentTool/runAgent.js": [
+        "./src/tools/AgentTool/runAgent.ts"
+      ],
+      "@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js": [
+        "./src/tools/AskUserQuestionTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/bashPermissions.js": [
+        "./src/tools/BashTool/bashPermissions.ts"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/destructiveCommandWarning.js": [
+        "./src/tools/BashTool/destructiveCommandWarning.ts"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/readOnlyValidation.js": [
+        "./src/tools/BashTool/readOnlyValidation.ts"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/sedEditParser.js": [
+        "./src/tools/BashTool/sedEditParser.ts"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/shouldUseSandbox.js": [
+        "./src/tools/BashTool/shouldUseSandbox.ts"
+      ],
+      "@thyrox/tool-registry/tools/BashTool/toolName.js": [
+        "./src/tools/BashTool/toolName.ts"
+      ],
+      "@thyrox/tool-registry/tools/BriefTool/BriefTool.js": [
+        "./src/tools/BriefTool/BriefTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/BriefTool/prompt.js": [
+        "./src/tools/BriefTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/EnterPlanModeTool/EnterPlanModeTool.js": [
+        "./src/tools/EnterPlanModeTool/EnterPlanModeTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/EnterPlanModeTool/constants.js": [
+        "./src/tools/EnterPlanModeTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js": [
+        "./src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts"
+      ],
+      "@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js": [
+        "./src/tools/ExitPlanModeTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js": [
+        "./src/tools/FileEditTool/FileEditTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileEditTool/types.js": [
+        "./src/tools/FileEditTool/types.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileEditTool/utils.js": [
+        "./src/tools/FileEditTool/utils.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js": [
+        "./src/tools/FileReadTool/FileReadTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileReadTool/constants.js": [
+        "./src/tools/FileReadTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileReadTool/imageProcessor.js": [
+        "./src/tools/FileReadTool/imageProcessor.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileReadTool/prompt.js": [
+        "./src/tools/FileReadTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js": [
+        "./src/tools/FileWriteTool/FileWriteTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileWriteTool/constants.js": [
+        "./src/tools/FileWriteTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/FileWriteTool/prompt.js": [
+        "./src/tools/FileWriteTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/GlobTool/GlobTool.js": [
+        "./src/tools/GlobTool/GlobTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/GlobTool/prompt.js": [
+        "./src/tools/GlobTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/GrepTool/GrepTool.js": [
+        "./src/tools/GrepTool/GrepTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/GrepTool/prompt.js": [
+        "./src/tools/GrepTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/LSPTool/prompt.js": [
+        "./src/tools/LSPTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/MonitorTool/MonitorTool.js": [
+        "./src/tools/MonitorTool/MonitorTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/NotebookEditTool/NotebookEditTool.js": [
+        "./src/tools/NotebookEditTool/NotebookEditTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/NotebookEditTool/constants.js": [
+        "./src/tools/NotebookEditTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js": [
+        "./src/tools/OverflowTestTool/OverflowTestTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/PowerShellTool/destructiveCommandWarning.js": [
+        "./src/tools/PowerShellTool/destructiveCommandWarning.ts"
+      ],
+      "@thyrox/tool-registry/tools/PowerShellTool/readOnlyValidation.js": [
+        "./src/tools/PowerShellTool/readOnlyValidation.ts"
+      ],
+      "@thyrox/tool-registry/tools/PowerShellTool/toolName.js": [
+        "./src/tools/PowerShellTool/toolName.ts"
+      ],
+      "@thyrox/tool-registry/tools/REPLTool/REPLTool.js": [
+        "./src/tools/REPLTool/REPLTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/REPLTool/constants.js": [
+        "./src/tools/REPLTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/REPLTool/primitiveTools.js": [
+        "./src/tools/REPLTool/primitiveTools.ts"
+      ],
+      "@thyrox/tool-registry/tools/RemoteTriggerTool/prompt.js": [
+        "./src/tools/RemoteTriggerTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js": [
+        "./src/tools/ReviewArtifactTool/ReviewArtifactTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js": [
+        "./src/tools/ScheduleCronTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/ScheduleWakeupTool/prompt.js": [
+        "./src/tools/ScheduleWakeupTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/SendMessageTool/SendMessageTool.js": [
+        "./src/tools/SendMessageTool/SendMessageTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/SendMessageTool/constants.js": [
+        "./src/tools/SendMessageTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/SendUserFileTool/SendUserFileTool.js": [
+        "./src/tools/SendUserFileTool/SendUserFileTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/SendUserFileTool/prompt.js": [
+        "./src/tools/SendUserFileTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/SkillTool/SkillTool.js": [
+        "./src/tools/SkillTool/SkillTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/SkillTool/constants.js": [
+        "./src/tools/SkillTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/SkillTool/prompt.js": [
+        "./src/tools/SkillTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js": [
+        "./src/tools/SyntheticOutputTool/SyntheticOutputTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskCreateTool/constants.js": [
+        "./src/tools/TaskCreateTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskOutputTool/constants.js": [
+        "./src/tools/TaskOutputTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskStopTool/TaskStopTool.js": [
+        "./src/tools/TaskStopTool/TaskStopTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskStopTool/prompt.js": [
+        "./src/tools/TaskStopTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/TaskUpdateTool/constants.js": [
+        "./src/tools/TaskUpdateTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TeamCreateTool/constants.js": [
+        "./src/tools/TeamCreateTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TeamDeleteTool/constants.js": [
+        "./src/tools/TeamDeleteTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js": [
+        "./src/tools/TerminalCaptureTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/ToolSearchTool/ToolSearchTool.js": [
+        "./src/tools/ToolSearchTool/ToolSearchTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/ToolSearchTool/prompt.js": [
+        "./src/tools/ToolSearchTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/TungstenTool/TungstenLiveMonitor.js": [
+        "./src/tools/TungstenTool/TungstenLiveMonitor.ts"
+      ],
+      "@thyrox/tool-registry/tools/TungstenTool/TungstenTool.js": [
+        "./src/tools/TungstenTool/TungstenTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js": [
+        "./src/tools/VerifyPlanExecutionTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebBrowserTool/WebBrowserPanel.js": [
+        "./src/tools/WebBrowserTool/WebBrowserPanel.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js": [
+        "./src/tools/WebFetchTool/WebFetchTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebFetchTool/preapproved.js": [
+        "./src/tools/WebFetchTool/preapproved.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebFetchTool/prompt.js": [
+        "./src/tools/WebFetchTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebFetchTool/utils.js": [
+        "./src/tools/WebFetchTool/utils.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebSearchTool/WebSearchTool.js": [
+        "./src/tools/WebSearchTool/WebSearchTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/WebSearchTool/prompt.js": [
+        "./src/tools/WebSearchTool/prompt.ts"
+      ],
+      "@thyrox/tool-registry/tools/WorkflowTool/WorkflowTool.js": [
+        "./src/tools/WorkflowTool/WorkflowTool.ts"
+      ],
+      "@thyrox/tool-registry/tools/WorkflowTool/bundled/index.js": [
+        "./src/tools/WorkflowTool/bundled/index.ts"
+      ],
+      "@thyrox/tool-registry/tools/WorkflowTool/constants.js": [
+        "./src/tools/WorkflowTool/constants.ts"
+      ],
+      "@thyrox/tool-registry/tools/registry/providers/BuiltInToolsProvider.js": [
+        "./src/tools/registry/providers/BuiltInToolsProvider.ts"
+      ],
+      "@thyrox/tool-registry/tools/shared/gitOperationTracking.js": [
+        "./src/tools/shared/gitOperationTracking.ts"
+      ],
+      "@thyrox/tool-registry/utils/inkColor.js": [
+        "./src/utils/inkColor.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

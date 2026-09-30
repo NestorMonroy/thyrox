@@ -1,0 +1,34 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T021503
+  job-20260927T021503/job-001 pid 26906   cd /home/user/thyrox/src/packages/cli && timeout 900 bun test > /home/user/thyrox/.claude/workbench/entry-point-20260927T015546/green3/bun-cli.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/entry-point-20260927T015546/green3/bun-cli.out
+  job-20260927T021503/job-002 pid 26953   cd /home/user/thyrox && timeout 900 bunx tsc -p tsconfig.json --noEmit > .claude/workbench/entry-point-20260927T015546/green3/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green3/root-tsc.out
+  job-20260927T021503/job-003 pid 26979   cd /home/user/thyrox && timeout 600 bash src/verify/check-cli-typecheck.sh > .claude/workbench/entry-point-20260927T015546/green3/cli-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green3/cli-typecheck.out
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1200s)
+asentado: job-20260927T021503_job-003 -> OK (2 de 4)
+esperando: 2 de 4 asentados, 30s; vivos: job-20260927T021503_job-001 job-20260927T021503_job-002
+sonda job-20260927T021503_job-001: 26906 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-001: 26910 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-001: 26912 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-001: 26914 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-001: 26915 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.96s
+sonda job-20260927T021503_job-001: 28641 bun stdin=file(/memfd:spawn_stdio_stdin (deleted)) escritores=- estado=R cpu=1.04s
+sonda job-20260927T021503_job-002: 26953 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-002: 26957 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-002: 26959 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-002: 26960 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-002: 26961 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T021503_job-002: 26962 node stdin=devnull(/dev/null) escritores=- estado=R cpu=36.86s
+asentado: job-20260927T021503_job-002 -> OK (2 de 4)
+asentado: job-20260927T021503_job-001 -> OK (2 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T021503
+       | (vacío — no emitió nada)
+OK     job-20260927T021503_job-001
+       | EXIT=0
+       memoria pico: 254552 KB (249 MB) · pared 55.96s
+OK     job-20260927T021503_job-002
+       | EXIT=0
+       memoria pico: 2365756 KB (2310 MB) · pared 50.11s
+OK     job-20260927T021503_job-003
+       | EXIT=0
+       memoria pico: 817712 KB (799 MB) · pared 21.52s
+__BG_EXIT__=0

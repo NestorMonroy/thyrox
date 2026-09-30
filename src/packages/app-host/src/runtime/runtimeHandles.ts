@@ -26,6 +26,7 @@ import { getEmptyToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type { AppState } from './appStateCompatShim.js'
 import { getDefaultAppState } from './appStateCompatShim.js'
 import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { createStore, type Store } from '@thyrox/repl/stateStore.js'
 import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import type { LoadedPlugin, PluginError } from '@thyrox/config/plugin/types'
@@ -42,7 +43,7 @@ function createSnapshotStore<T>(initialState: T): SnapshotStore<T> {
   return createStore(initialState)
 }
 
-type RuntimeHandleSet = RuntimeHandles & {
+type RuntimeHandleSet = {
   permission: PermissionRuntimeHandle<ToolPermissionContext, PermissionUpdate>
   mcp: McpRuntimeHandle<
     MCPServerConnection,
@@ -86,7 +87,9 @@ export function createRuntimeHandles(
           needsRefresh: false,
         },
         agentDefinitions: { activeAgents: [], allAgents: [] },
-      } as AppState
+        // Respaldo parcial: sólo las ramas que los handles leen. El resto del
+        // estado lo trae `getDefaultAppState` cuando no falla.
+      } satisfies Partial<AppState> as Partial<AppState> as AppState
     }
   })(),
 ): RuntimeHandleSet {
@@ -160,6 +163,7 @@ export function createRuntimeHandles(
             effort: undefined,
             effectiveModel: null,
           }) as HeadlessStoreParams,
+          onChangeAppState,
         ),
     },
   }

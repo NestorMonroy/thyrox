@@ -74,6 +74,21 @@ import type {
   SwarmHostDeps,
 } from '../types/deps.js'
 
+/**
+ * Forma mínima que este archivo necesita de `CoreTool` para invocar la
+ * herramienta. `CoreTool` es `unknown` por la divergencia de alcance ya
+ * declarada arriba, así que aquí se nombra sólo el contrato que este sitio
+ * de llamada usa, no el tipo completo de la fuente.
+ */
+type CallableSwarmTool = {
+  call: (
+    input: unknown,
+    context: ToolUseContext,
+    canUseTool: unknown,
+    parentMessage: unknown,
+  ) => Promise<{ data: unknown; mcpMeta?: unknown }>
+}
+
 type CreateSwarmHostDepsOptions = {
   context?: Partial<ToolUseContext>
   api?: Partial<HostApiProvider>
@@ -104,7 +119,7 @@ function notImplemented(name: string): never {
 
 function getToolsFromContext(
   context?: Partial<ToolUseContext>,
-): readonly NonNullable<ToolUseContext['options']>['tools'] {
+): NonNullable<ToolUseContext['options']>['tools'] {
   return context?.options?.tools ?? []
 }
 
@@ -175,16 +190,17 @@ export function createSwarmHostDeps(
       async execute(tool, input, toolContext) {
         // Sin puerta de permisos inyectada, el default permite: la decisión de
         // negar es del anfitrión, y fabricarla aquí la escondería.
-        const canUseTool = options.permissions?.canUseTool
+        const permissionsCanUseTool = options.permissions?.canUseTool
+        const canUseTool = permissionsCanUseTool
           ? async (
               requestedTool: typeof tool,
               requestedInput: unknown,
               requestedContext: typeof toolContext,
             ) => {
-              const result = await options.permissions!.canUseTool(
+              const result = await permissionsCanUseTool(
                 requestedTool,
                 requestedInput,
-                requestedContext,
+                requestedContext as { mode: string; input: unknown; [key: string]: unknown },
               )
               return {
                 behavior: result.allowed ? 'allow' : 'deny',
@@ -202,7 +218,7 @@ export function createSwarmHostDeps(
           message: { id: 'swarm-host-deps', content: [] },
           uuid: '00000000-0000-0000-0000-000000000000',
         } as const
-        const result = await tool.call(
+        const result = await (tool as CallableSwarmTool).call(
           input as never,
           context as ToolUseContext,
           canUseTool as never,
@@ -269,8 +285,8 @@ export function createSwarmHostDeps(
       writeFile(path, content) {
         return fsWriteFile(path, content)
       },
-      mkdir(path, mkdirOptions) {
-        return mkdir(path, mkdirOptions)
+      async mkdir(path, mkdirOptions) {
+        await mkdir(path, mkdirOptions)
       },
       exists(path) {
         return Promise.resolve(existsSync(path))

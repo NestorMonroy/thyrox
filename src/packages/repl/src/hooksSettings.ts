@@ -10,6 +10,7 @@ import {
 } from '@thyrox/config/settings'
 import type { HookCommand, HookMatcher } from '@thyrox/config/types'
 import { getSessionHooks } from '@thyrox/agent/hooks/sessionHooks.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type HookSource =
   | EditableSettingSource
@@ -150,7 +151,7 @@ export function hookSourceDescriptionDisplayString(source: HookSource): string {
     case 'sessionHook':
       return 'Session hooks (in-memory, temporary)'
     case 'builtinHook':
-      return 'Built-in hooks (registered internally by Claude Code)'
+      return `Built-in hooks (registered internally by ${PRODUCT_NAME})`
     default:
       return source as string
   }
@@ -212,8 +213,8 @@ export function sortMatchersByPriority(
   )
 
   return [...matchers].sort((a, b) => {
-    const aHooks = hooksByEventAndMatcher[selectedEvent]?.[a] || []
-    const bHooks = hooksByEventAndMatcher[selectedEvent]?.[b] || []
+    const aHooks = hooksByEventAndMatcher[selectedEvent as string]?.[a] || []
+    const bHooks = hooksByEventAndMatcher[selectedEvent as string]?.[b] || []
 
     const aSources = Array.from(new Set(aHooks.map(h => h.source)))
     const bSources = Array.from(new Set(bHooks.map(h => h.source)))

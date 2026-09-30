@@ -1,0 +1,5 @@
+sin excepcion de adaptador	s/const inAdapter = ADAPTERS.has(enclosingFunctionName(node) ?? '')/const inAdapter = false/
+sin desenvolver as-unknown	s/source.type.kind === ts.SyntaxKind.UnknownKeyword) {/false) {/
+SHAPE001 sin familia	s/      if (family === 'core') {/      if (family !== undefined) {/
+sin cadena unica	s/ \&\& !innerOfChain) {/) {/
+sin borrado a ajeno	s/(source === 'core' \&\& target !== 'core')/(source === 'core' \&\& target === 'agent')/

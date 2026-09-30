@@ -1,0 +1,5 @@
+base	11 pass, 0 fail	—
+whole-number-only	10 pass, 1 fail	rateLimitManager/headers — parseResetTime: RFC 3339 timestamp → ms until then
+unix-floor	10 pass, 1 fail	rateLimitManager/headers — parseResetTime: Unix timestamp → ms until then
+minutes-not-ms	11 pass, 0 fail	—
+lowercase-names	11 pass, 0 fail	—

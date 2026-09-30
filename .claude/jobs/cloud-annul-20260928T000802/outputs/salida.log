@@ -1,0 +1,19 @@
+base	13 pass, 0 fail	—
+no-pairing-check	12 pass, 1 fail	bedrock > clave sin secreto, o sesión sin clave, se rechazan
+no-session-check	12 pass, 1 fail	bedrock > clave sin secreto, o sesión sin clave, se rechazan
+no-guardrail-headers	12 pass, 1 fail	bedrock > el guardarraíl viaja en cabeceras y marca el upstream
+no-guardrail-flag	12 pass, 1 fail	bedrock > el guardarraíl viaja en cabeceras y marca el upstream
+no-apikey-null	12 pass, 1 fail	bedrock > una X-Api-Key del upstream se retira salvo que el proceso declare la suya
+process-apikey-ignored	12 pass, 1 fail	bedrock > una X-Api-Key del upstream se retira salvo que el proceso declare la suya
+no-bearer	12 pass, 1 fail	bedrock > con portador no firma: lleva el portador
+no-skipauth	12 pass, 1 fail	bedrock > con portador no firma: lleva el portador
+no-bedrock-base-url	12 pass, 1 fail	bedrock > una base propia reemplaza al punto de acceso de la región
+no-keys	8 pass, 5 fail	bedrock > con claves firma SigV4 en la región del upstream | bedrock > el token de sesión viaja firmado | bedrock > el guardarraíl viaja en cabeceras y marca el upstream | bedrock > una base propia reemplaza al punto de acceso de la región | bedrock > una X-Api-Key del upstream se retira salvo que el proceso declare la suya
+no-session-token	12 pass, 1 fail	bedrock > el token de sesión viaja firmado
+no-vertex-token	12 pass, 1 fail	vertex > con token de acceso llama rawPredict con el portador
+no-settle	12 pass, 1 fail	vertex > una cuenta de servicio que no carga no deja un rechazo sin atender
+no-vertex-null	13 pass, 0 fail	—
+no-foundry-auth-null	13 pass, 0 fail	—
+no-foundry-base-url	12 pass, 1 fail	foundry > una base propia reemplaza al recurso
+no-foundry-key	11 pass, 2 fail	foundry > con clave usa x-api-key y el recurso, sin Authorization | foundry > una base propia reemplaza al recurso
+__BG_EXIT__=0

@@ -158,7 +158,7 @@ export function installCorePackageHostBindings(
   installAgentHostBindings({
     now,
     logDebug: resolvers.logDebug,
-    getClaudeConfigHomeDir: resolvers.getConfigHomeDir,
+    getConfigHomeDir: resolvers.getConfigHomeDir,
     ...resolvers.extraAgentBindings,
   } as any)
 

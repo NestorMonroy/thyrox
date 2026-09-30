@@ -5,6 +5,7 @@
 
 import { randomUUID } from 'node:crypto'
 import { createElement } from 'react'
+import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import { Text } from '@anthropic/ink'
 import { z } from 'zod/v4'
 import { buildTool, type ToolDef } from '../../Tool.js'
@@ -154,7 +155,7 @@ export const WorkflowTool = buildTool({
   searchHint: 'orchestrate subagents with a deterministic JavaScript workflow',
   maxResultSizeChars: 100_000,
   // ant 3904.js `isEnabled:()=>bp()` — runtime workflows gate (default-on,
-  // CLAUDE_CODE_WORKFLOWS=0 kill-switch). The tool module is bundled
+  // THYROX_CODE_WORKFLOWS=0 kill-switch). The tool module is bundled
   // unconditionally; this is the sole visibility gate.
   isEnabled() {
     return isWorkflowsEnabled()
@@ -489,7 +490,6 @@ export const WorkflowTool = buildTool({
         durationMs: result.durationMs,
         scriptPath,
         workflowRunId: runId,
-        workflowName,
         args: input.args,
         transcriptDir,
         setAppState,
@@ -548,8 +548,8 @@ export const WorkflowTool = buildTool({
   renderToolUseRejectedMessage() {
     return 'Workflow rejected'
   },
-  renderToolUseErrorMessage(output: { error?: string }) {
-    return createElement(Text, null, output.error ?? 'Workflow error')
+  renderToolUseErrorMessage(result: ToolResultBlockParam['content']) {
+    return createElement(Text, null, typeof result === 'string' ? result : 'Workflow error')
   },
   renderToolUseProgressMessage() {
     return null

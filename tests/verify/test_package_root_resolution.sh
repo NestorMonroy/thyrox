@@ -16,6 +16,11 @@ set -uo pipefail
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 THYROX="$(cd "$AQUI/../.." && pwd)"
 
+# Lo que se mide es la resolucion POR ARBOL. `tests/run.sh` y los envoltorios
+# de `bin/` exportan `THYROX_ROOT`, que el gate prefiere; heredada, apunta al
+# arbol real y los casos sinteticos leen «otra» sin haber medido nada.
+unset THYROX_ROOT
+
 ok=0; fallo=0
 afirmar() {
     local nombre="$1" esperado="$2" real="$3"
@@ -99,8 +104,13 @@ afirmar "cli-typecheck resuelve su paquete dentro del árbol" propia "$VISTO"
 # el arbol sintetico `$T`, y una ruta relativa desde alli da 127 —el gate no
 # existe— que se leeria como «el gate fallo» en vez de «lo invoque mal».
 SAL="$(cd "$THYROX" && bash "$THYROX/src/verify/check-cli-typecheck.sh" --strict 2>&1)"; COD=$?
+# Con baseline declarado el gate veredicta por TRINQUETE, y ese camino publica
+# el denominador sin el prefijo `OK (…)`. Los dos prueban que midio los dos
+# proyectos; el unico que publica denominador SIN veredicto es el del workspace
+# sin enlazar, y por eso va primero.
 case "$SAL" in
-    *"OK (proyectos medidos: 2 de 2)"*) VISTO=mide ;;
+    *"workspace sin enlazar"*) VISTO=rehusa ;;
+    *"proyectos medidos: 2 de 2"*) VISTO=mide ;;
     *"NO ENCONTRADO"*) VISTO=rehusa ;;
     *) VISTO=otra ;;
 esac

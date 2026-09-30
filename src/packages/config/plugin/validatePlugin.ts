@@ -12,6 +12,7 @@ import {
   PluginMarketplaceEntrySchema,
   PluginMarketplaceSchema,
 } from './schemas.js'
+import { PRODUCT_NAME } from '../product.js'
 
 /**
  * Fields that belong in marketplace.json entries (PluginMarketplaceEntrySchema)
@@ -232,7 +233,7 @@ export async function validatePluginManifest(
           path: key,
           message:
             `Field '${key}' belongs in the marketplace entry (marketplace.json), ` +
-            `not plugin.json. It's harmless here but unused — Claude Code ` +
+            `not plugin.json. It's harmless here but unused — ${PRODUCT_NAME} ` +
             `ignores it at load time.`,
         })
       }
@@ -261,7 +262,7 @@ export async function validatePluginManifest(
       warnings.push({
         path: 'name',
         message:
-          `Plugin name "${manifest.name}" is not kebab-case. Claude Code accepts ` +
+          `Plugin name "${manifest.name}" is not kebab-case. ${PRODUCT_NAME} accepts ` +
           `it, but the Claude.ai marketplace sync requires kebab-case ` +
           `(lowercase letters, digits, and hyphens only, e.g., "my-plugin").`,
       })
@@ -580,7 +581,7 @@ function validateComponentFile(
     warnings.push({
       path: 'description',
       message:
-        `No description in frontmatter. A description helps users and Claude ` +
+        `No description in frontmatter. A description helps users and ${PRODUCT_NAME} ` +
         `understand when to use this ${fileType}.`,
     })
   }

@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsLogRedaction.test.ts:
+20 | 
+21 | describe('maskHexRuns (se/pn)', () => {
+22 |   test('una racha hex de 32 o más se sustituye por los 12 primeros hex de su sha256', () => {
+23 |     const run = 'A'.repeat(32)
+24 |     const digest = createHash('sha256').update(run).digest('hex').slice(0, 12)
+25 |     expect(maskHexRuns(`x ${run} y`)).toBe(`x <hex:${digest}> y`)
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "x <hex:22a48051594c> y"
+Received: "x AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA y"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsLogRedaction.test.ts:25:39)
+(fail) maskHexRuns (se/pn) > una racha hex de 32 o más se sustituye por los 12 primeros hex de su sha256 [0.43ms]
+35 | 
+36 |   test('el resto se enmascara y se corta: 200 para un fragmento, 120 por omisión para un texto', () => {
+37 |     expect(redactLogFragment('x'.repeat(300))).toHaveLength(200)
+38 |     expect(withholdTokenText('z'.repeat(300))).toHaveLength(120)
+39 |     expect(withholdTokenText('z'.repeat(300), 10)).toHaveLength(10)
+40 |     expect(redactLogFragment(`id ${'0'.repeat(40)}`)).toStartWith('id <hex:')
+                                                           ^
+error: expect(received).toStartWith(expected)
+
+Expected to start with: "id <hex:"
+Received: "id 0000000000000000000000000000000000000000"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsLogRedaction.test.ts:40:55)
+(fail) redactLogFragment (TB) y withholdTokenText (Bf) > el resto se enmascara y se corta: 200 para un fragmento, 120 por omisión para un texto [0.31ms]
+
+ 4 pass
+ 2 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [36.00ms]

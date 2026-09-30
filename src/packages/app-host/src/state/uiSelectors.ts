@@ -1,6 +1,3 @@
-// Adaptación de @claude-code-how-works/app-host: src/state/uiSelectors.ts.
-// Capa 0 (sin cita a paquete hermano) — porte verbatim, sin divergencias.
-
 import type { AppState } from './AppStateStore.js';
 
 export const selectShowExpandedTodos = (state: AppState) => state.expandedView === 'tasks';

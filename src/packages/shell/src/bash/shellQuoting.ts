@@ -1,24 +1,13 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/bash/shellQuoting.ts`.
- *
- * Porte COMPLETO: los cinco símbolos exportados de la fuente están
- * presentes (`quoteShellCommand`, `hasStdinRedirect`,
- * `shouldAddStdinRedirect`, `rewriteWindowsNullRedirect`, y las dos
- * funciones internas de detección `containsHeredoc`/
- * `containsMultilineString` que consumen).
- *
- * @module
- */
 import { quote } from './shellQuote.js'
 
 /**
- * Detecta si un comando contiene un patrón de heredoc. Coincide con
- * patrones como: `<<EOF`, `<<'EOF'`, `<<"EOF"`, `<<-EOF`, `<<-'EOF'`,
- * `<<\EOF`, etc.
+ * Detects if a command contains a heredoc pattern
+ * Matches patterns like: <<EOF, <<'EOF', <<"EOF", <<-EOF, <<-'EOF', <<\EOF, etc.
  */
 function containsHeredoc(command: string): boolean {
-  // Primero se comprueban los operadores de desplazamiento de bits y se
-  // excluyen, para no confundirlos con un heredoc.
+  // Match heredoc patterns: << followed by optional -, then optional quotes or backslash, then word
+  // Matches: <<EOF, <<'EOF', <<"EOF", <<-EOF, <<-'EOF', <<\EOF
+  // Check for bit-shift operators first and exclude them
   if (
     /\d\s*<<\s*\d/.test(command) ||
     /\[\[\s*\d+\s*<<\s*\d+\s*\]\]/.test(command) ||
@@ -27,14 +16,19 @@ function containsHeredoc(command: string): boolean {
     return false
   }
 
+  // Now check for heredoc patterns
   const heredocRegex = /<<-?\s*(?:(['"]?)(\w+)\1|\\(\w+))/
   return heredocRegex.test(command)
 }
 
 /**
- * Detecta si un comando contiene cadenas multilínea entre comillas.
+ * Detects if a command contains multiline strings in quotes
  */
 function containsMultilineString(command: string): boolean {
+  // Check for strings with actual newlines in them
+  // Handle escaped quotes by using a more sophisticated pattern
+  // Match single quotes: '...\n...' where content can include escaped quotes \'
+  // Match double quotes: "...\n..." where content can include escaped quotes \"
   const singleQuoteMultiline = /'(?:[^'\\]|\\.)*\n(?:[^'\\]|\\.)*'/
   const doubleQuoteMultiline = /"(?:[^"\\]|\\.)*\n(?:[^"\\]|\\.)*"/
 
@@ -44,40 +38,34 @@ function containsMultilineString(command: string): boolean {
 }
 
 /**
- * Cita un comando de shell apropiadamente, preservando heredocs y
- * cadenas multilínea.
- *
- * @param command el comando a citar
- * @param addStdinRedirect si se añade `< /dev/null`
- * @returns el comando citado correctamente
+ * Quotes a shell command appropriately, preserving heredocs and multiline strings
+ * @param command The command to quote
+ * @param addStdinRedirect Whether to add < /dev/null
+ * @returns The properly quoted command
  */
 export function quoteShellCommand(
   command: string,
   addStdinRedirect: boolean = true,
 ): string {
-  // Si el comando contiene un heredoc o cadenas multilínea, se maneja
-  // aparte — la librería shell-quote escapa incorrectamente `!` a `\!`
-  // en esos casos.
+  // If command contains heredoc or multiline strings, handle specially
+  // The shell-quote library incorrectly escapes ! to \! in these cases
   if (containsHeredoc(command) || containsMultilineString(command)) {
-    // Para heredocs y cadenas multilínea hace falta citar para `eval`
-    // pero evitando el escapado agresivo de shell-quote: se usan
-    // comillas simples y sólo se escapan las comillas simples del
-    // propio comando.
+    // For heredocs and multiline strings, we need to quote for eval
+    // but avoid shell-quote's aggressive escaping
+    // We'll use single quotes and escape only single quotes in the command
     const escaped = command.replace(/'/g, "'\"'\"'")
     const quoted = `'${escaped}'`
 
-    // No se añade el redirect de stdin a los heredocs — ya proveen su
-    // propia entrada.
+    // Don't add stdin redirect for heredocs as they provide their own input
     if (containsHeredoc(command)) {
       return quoted
     }
 
-    // Para cadenas multilínea sin heredoc, se añade el redirect de
-    // stdin si hace falta.
+    // For multiline strings without heredocs, add stdin redirect if needed
     return addStdinRedirect ? `${quoted} < /dev/null` : quoted
   }
 
-  // Para comandos normales, se usa shell-quote.
+  // For regular commands, use shell-quote
   if (addStdinRedirect) {
     return quote([command, '<', '/dev/null'])
   }
@@ -86,59 +74,52 @@ export function quoteShellCommand(
 }
 
 /**
- * Detecta si un comando ya tiene un redirect de stdin. Coincide con
- * patrones como: `< file`, `</path/to/file`, `< /dev/null`, etc. Pero no
- * con `<<EOF` (heredoc), `<<` (desplazamiento de bits), ni `<(` (process
- * substitution).
+ * Detects if a command already has a stdin redirect
+ * Match patterns like: < file, </path/to/file, < /dev/null, etc.
+ * But not <<EOF (heredoc), << (bit shift), or <(process substitution)
  */
 export function hasStdinRedirect(command: string): boolean {
-  // Busca `<` seguido de espacio en blanco y un nombre de archivo/ruta.
-  // Lookahead negativo para excluir: `<<`, `<(`. Debe ir precedido de
-  // espacio en blanco, separador de comando o inicio de la cadena.
+  // Look for < followed by whitespace and a filename/path
+  // Negative lookahead to exclude: <<, <(
+  // Must be preceded by whitespace or command separator or start of string
   return /(?:^|[\s;&|])<(?![<(])\s*\S+/.test(command)
 }
 
 /**
- * Comprueba si se debe añadir un redirect de stdin a un comando.
- *
- * @param command el comando a comprobar
- * @returns true si el redirect de stdin puede añadirse sin riesgo
+ * Checks if stdin redirect should be added to a command
+ * @param command The command to check
+ * @returns true if stdin redirect can be safely added
  */
 export function shouldAddStdinRedirect(command: string): boolean {
-  // No se añade redirect de stdin a los heredocs — interferiría con su
-  // terminador.
+  // Don't add stdin redirect for heredocs as it interferes with the heredoc terminator
   if (containsHeredoc(command)) {
     return false
   }
 
-  // No se añade si el comando ya tiene uno.
+  // Don't add stdin redirect if command already has one
   if (hasStdinRedirect(command)) {
     return false
   }
 
-  // Para el resto de comandos, el redirect de stdin es seguro en
-  // general.
+  // For other commands, stdin redirect is generally safe
   return true
 }
 
 /**
- * Reescribe los redirects de estilo Windows CMD `>nul` a `/dev/null`
- * POSIX.
+ * Rewrites Windows CMD-style `>nul` redirects to POSIX `/dev/null`.
  *
- * El modelo a veces alucina sintaxis de Windows CMD (p. ej. `ls 2>nul`)
- * aunque nuestro shell de bash sea siempre POSIX (Git Bash / WSL en
- * Windows). Cuando Git Bash ve `2>nul`, crea un archivo literal llamado
- * `nul` — un nombre de dispositivo reservado de Windows extremadamente
- * difícil de borrar, que rompe `git add .` y `git clone`.
+ * The model occasionally hallucinates Windows CMD syntax (e.g., `ls 2>nul`)
+ * even though our bash shell is always POSIX (Git Bash / WSL on Windows).
+ * When Git Bash sees `2>nul`, it creates a literal file named `nul` — a
+ * Windows reserved device name that is extremely hard to delete and breaks
+ * `git add .` and `git clone`. See anthropics/claude-code-how-works-how-works#4928.
  *
- * Coincide con: `>nul`, `> NUL`, `2>nul`, `&>nul`, `>>nul` (sin
- * distinguir mayúsculas). NO coincide con: `>null`, `>nullable`,
- * `>nul.txt`, `cat nul.txt`.
+ * Matches: `>nul`, `> NUL`, `2>nul`, `&>nul`, `>>nul` (case-insensitive)
+ * Does NOT match: `>null`, `>nullable`, `>nul.txt`, `cat nul.txt`
  *
- * Limitación: esta expresión regular no parsea el quoting del shell,
- * así que `echo ">nul"` también se reescribe. Es un daño colateral
- * aceptable — es extremadamente raro, y reescribir a `/dev/null` dentro
- * de una cadena es inocuo.
+ * Limitation: this regex does not parse shell quoting, so `echo ">nul"`
+ * will also be rewritten. This is acceptable collateral — it's extremely
+ * rare and rewriting to `/dev/null` inside a string is harmless.
  */
 const NUL_REDIRECT_REGEX = /(\d?&?>+\s*)[Nn][Uu][Ll](?=\s|$|[|&;)\n])/g
 

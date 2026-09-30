@@ -1,0 +1,18 @@
+base	21 pass, 0 fail	—
+byte-cap	21 pass, 0 fail	—
+abort-not-retryable	21 pass, 0 fail	—
+undici-family	21 pass, 0 fail	—
+responses-completed-marker	19 pass, 2 fail	hasTerminalMarker recognizes Responses terminal events without [DONE] | hasTerminalMarker covers a bare event line without a data payload
+toolcalls-not-terminal	21 pass, 0 fail	—
+overlap-trim	19 pass, 2 fail	a cut after content resumes and stitches a Responses suffix | a finished tool call stays continuable when the order fix is off
+restart-reject	21 pass, 0 fail	—
+inflight-gate	20 pass, 1 fail	an in-flight Responses tool call refuses the cut without a re-request
+empty-stop-needs-reasoning	21 pass, 0 fail	—
+order-fix-gate	20 pass, 1 fail	a finished tool call blocks continuation when the order fix is on
+reopen-discard	21 pass, 0 fail	—
+cancel-no-reopen	21 pass, 0 fail	—
+watchdog-ignored	21 pass, 0 fail	—
+empty-prefill-appends	20 pass, 1 fail	makeContinuationBody re-sends input unchanged on an empty prefill
+responses-envelope	20 pass, 1 fail	a cut after content resumes and stitches a Responses suffix
+finalize-once	21 pass, 0 fail	—
+terminal-marker-preserves	21 pass, 0 fail	—

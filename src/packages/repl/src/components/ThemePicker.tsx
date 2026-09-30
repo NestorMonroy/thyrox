@@ -18,6 +18,7 @@ import {
   getSyntaxTheme,
 } from './StructuredDiff/colorDiff.js'
 import { StructuredDiff } from './StructuredDiff.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type ThemePickerProps = {
   onThemeSelect: (setting: ThemeSetting) => void
@@ -167,7 +168,7 @@ export function ThemePicker({
               lines: [
                 ' function greet() {',
                 '-  console.log("Hello, World!");',
-                '+  console.log("Hello, Claude!");',
+                `+  console.log("Hello, ${PRODUCT_NAME}!");`,
                 ' }',
               ],
             }}
@@ -182,7 +183,7 @@ export function ThemePicker({
           {syntaxHighlightingDisabled
             ? `Syntax highlighting disabled (${syntaxToggleShortcut} to enable)`
             : colorModuleUnavailableReason === 'env'
-              ? `Syntax highlighting unavailable (via CLAUDE_CODE_SYNTAX_HIGHLIGHT=${process.env.CLAUDE_CODE_SYNTAX_HIGHLIGHT})`
+              ? `Syntax highlighting unavailable (via THYROX_CODE_SYNTAX_HIGHLIGHT=${process.env.THYROX_CODE_SYNTAX_HIGHLIGHT})`
               : syntaxTheme
                 ? `Syntax theme: ${syntaxTheme.theme}${syntaxTheme.source ? ` (from ${syntaxTheme.source})` : ''} (${syntaxToggleShortcut} to disable)`
                 : `Syntax highlighting enabled (${syntaxToggleShortcut} to disable)`}

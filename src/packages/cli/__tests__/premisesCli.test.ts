@@ -10,7 +10,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runCli } from '../src/entry/main.ts'
+import { runCli } from '../src/entry/run-cli.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'premises-cli-'))
 

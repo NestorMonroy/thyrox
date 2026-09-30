@@ -1,0 +1,2 @@
+    if (found && matched) {
+      publishLcpIdentity(metadata, found)

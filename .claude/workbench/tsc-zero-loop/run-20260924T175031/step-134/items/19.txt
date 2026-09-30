@@ -1,0 +1,6 @@
+Tipo: TranscriptMessage
+Copias:
+  src/packages/agent/logsTypes.ts
+  src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts
+
+src/packages/storage/src/sessionStorage.ts(740): error TS2322: Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 14 more ...; agentId: string | undefined; } | ... 17 more ... | { ...; }' is not assignable to type 'TranscriptMessage'.

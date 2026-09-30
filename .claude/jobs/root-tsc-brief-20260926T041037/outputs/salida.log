@@ -1,0 +1,3 @@
+112
+src/packages/agent/commands/brief.ts(89,29): error TS2345: Argument of type '(prev: { isBriefOnly: boolean; }) => { isBriefOnly: boolean; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+__BG_EXIT__=0

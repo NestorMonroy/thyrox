@@ -62,7 +62,7 @@ def cache_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     # Import diferido, igual que en `workbench.workbench_dir` y por la misma
     # razon: `paths.reach` importa de vuelta y al tope del modulo seria ciclo.
     from paths.reach import (  # noqa: PLC0415
-        ConsumerUnknownError, consumer_root, resolve_home, root as repo_root,
+        ConsumerUnknownError, consumer_root, resolve_home, per_clone_base,
         thyrox_root,
     )
     from paths.declarations import record_fallback  # noqa: PLC0415
@@ -74,7 +74,7 @@ def cache_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     if repo:
         per_clone = env_value(cache_home_name(repo), anchor)
         if per_clone:
-            return resolve_home(per_clone, repo_root(repo))
+            return resolve_home(per_clone, per_clone_base(anchor))
 
     declared = env_value(CACHE_DIR_VAR, anchor)
     if declared:

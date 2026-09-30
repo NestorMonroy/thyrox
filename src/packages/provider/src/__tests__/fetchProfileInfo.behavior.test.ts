@@ -10,7 +10,7 @@ import { resolve } from 'path'
  * ant adds four organization fields to the OAuth profile fetch that ccb
  * didn't read before this commit:
  *   - seatTier — enterprise PAYG vs flat-rate seat type
- *   - ccOnboardingFlags — UI gating for Claude Code onboarding state
+ *   - ccOnboardingFlags — UI gating for thyrox onboarding state
  *   - claudeCodeTrialEndsAt — trial expiry deadline
  *   - claudeCodeTrialDurationDays — trial length (for "X of Y days" UI)
  *

@@ -62,6 +62,8 @@ externas, mismo criterio que D-05 de la iniciativa KNN.
 import argparse
 import base64
 import collections
+import collections.abc
+import dataclasses
 import hashlib
 import json
 import os
@@ -93,7 +95,6 @@ from pathlib import Path, PurePosixPath
 from agents import agents_paths  # noqa: E402
 
 from corpus.document_types import (  # noqa: E402
-    DOCUMENT_TYPES,
     DOCUMENT_TYPE_UNKNOWN,
     document_type as _document_type_projected,
 )
@@ -102,11 +103,11 @@ SCRIPT_PATH = Path(__file__).resolve()
 
 # El alcance a un repo hermano NO se deriva aqui: lo resuelve ``reach_roots``,
 # que es el stub de reexportacion del duenno canonico (``thyrox: src/paths/reach.py``).
-# Antes este modulo componia su propia raiz (``DOCS_ROOT.parent``) y su propio
-# prefijo (``kaupamex-<repo>``) — dos copias de una verdad que ya vivia en otro
-# sitio, y que ningun ``.env`` podia redirigir. Ver H-DOCS-1074.
+# Componer aqui una raiz o un prefijo propios duplicaria esa verdad, y ningun
+# ``.env`` podria redirigir la copia. Ver H-DOCS-1074.
 
 from paths import reach_roots  # noqa: E402
+from paths.reach import per_clone_base  # noqa: E402
 
 # La capa por defecto de una fila de `tasks` se IMPORTA de su dueno canonico y
 # no se copia: `task_ids` declara el vocabulario de capas y su valor de
@@ -146,12 +147,12 @@ DB_FILENAME = "agent_store.sqlite3"
 #: aqui vive la tabla que lo consume: el `CHECK` de ``tasks`` lo interpola, asi
 #: que la lista y la restriccion no pueden desincronizarse.
 #:
-#: ``deleted`` NO esta, y su ausencia es el punto: ``src/task/schema.ts:35``
+#: ``deleted`` NO esta, y su ausencia es el punto: ``src/packages/task/schema.ts:35``
 #: lo declara *orden* de borrar la fila, no estado que se guarde. Admitirlo
 #: aqui convertiria la orden en un estado persistible.
 #:
-#: Su gemelo en la otra lengua es ``src/task/schema.ts::TASK_STATUSES``, y la
-#: suite cruzada (``tests/task/schema.test.ts``) exige que los dos declaren lo
+#: Su gemelo en la otra lengua es ``src/packages/task/schema.ts::TASK_STATUSES``, y la
+#: suite cruzada (``src/packages/task/__tests__/schema.test.ts``) exige que los dos declaren lo
 #: mismo — dos lenguas, un vocabulario.
 TASK_STATUSES = ("pending", "in_progress", "completed")
 
@@ -266,6 +267,16 @@ CREATE TABLE IF NOT EXISTS tasks (
     -- El id sigue siendo un ordinal, y la capa un atributo.
     submodule        TEXT,
     submodule_source TEXT,
+    -- La identidad de una tarjeta del board es ``(session_id, board_ordinal)``,
+    -- no el ``subject`` (H-THYROX-252): el board renombra sin cambiar su
+    -- ordinal, y ``task_id`` es un contador interno sin significado de
+    -- identidad (ver ``ingest_board`` en ``src/task/task_ids.py``). NULO en
+    -- toda fila histórica anterior a esta columna — no se inventa un ordinal
+    -- que nadie declaró. Su unicidad PARCIAL (``WHERE board_ordinal IS NOT
+    -- NULL``) vive en el índice de ``_migrate_tasks_board_ordinal_column``,
+    -- no aquí: SQLite no admite una restricción parcial dentro del DDL de la
+    -- tabla, sólo en un índice aparte.
+    board_ordinal INTEGER,
     created_at    TEXT NOT NULL,
     updated_at    TEXT NOT NULL,
     PRIMARY KEY (session_id, task_id)
@@ -453,7 +464,8 @@ def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
     1. ``--claude-dir`` — la ruta, sin resolver nada. Es lo que usa una prueba
        para no contaminar el store real.
     2. ``--repo`` — el clon consumidor, para leer o escribir su telemetría
-       heredada a propósito (lo que hace ``backfill``).
+       heredada a propósito (lo que hace ``backfill``). Un nombre del roster
+       (``docs``) o la RUTA del clon, que no exige el prefijo.
     3. **nada** — el HOGAR: ``thyrox/agent-results/``.
 
     El peldaño 3 es nuevo (2026-09-07) y sustituye a un rehúse. La razón del
@@ -480,6 +492,15 @@ def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
     if getattr(args, "repo", None) is None:
         return agents_paths.agent_store_path(create=create).parent
 
+    # Una RUTA nombra el clon por sí misma, lleve o no el prefijo del
+    # multi-repo: el roster sólo compone `<prefijo><repo>`, y un consumidor
+    # sin prefijo no tenía forma de nombrarse (H-THYROX-177).
+    if os.sep in args.repo or args.repo.startswith("."):
+        here = Path(args.repo).expanduser()
+        if not here.is_dir():
+            raise FileNotFoundError(f"{here} no existe — declarado en --repo")
+        return per_clone_base(here) / ".claude" / "agent-results"
+
     repos = valid_repos()
     if args.repo not in repos:
         raise ValueError(f"repo invalido: {args.repo!r} (validos: {repos})")
@@ -495,11 +516,8 @@ def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
 #: Columnas de costo/uso de ``agent_sessions`` — agregadas via ALTER TABLE
 #: (no en CORE_SCHEMA/CREATE TABLE) porque el archivo ya existia en produccion
 #: cuando se anadieron: ``CREATE TABLE IF NOT EXISTS`` no altera una tabla
-#: ya creada. Ver H-DOCS-168 — el ejecutor senalo que el costo real de un
-#: subagente (visible en el bloque ``<usage>`` del harness, p. ej. 301 172
-#: tokens de un solo agente de prueba) no se guardaba en ningun lado
-#: consultable, solo en la prosa del log crudo que ``save-agent-result.mjs``
-#: ya escribe (H-DOCS-135/H-DOCS-136 fijaron ahi la formula: dedup por
+#: ya creada. Guardan el costo real de un subagente (H-DOCS-168), el mismo que
+#: ``save-agent-result.mjs`` escribe en prosa (H-DOCS-135/H-DOCS-136: dedup por
 #: ``message.id``, ponderado input 1x / cache_creation 1.25x / cache_read
 #: 0.1x / output 5x). Este migrado le da esa misma cifra una columna SQL
 #: consultable por workflow, en vez de solo texto para humanos.
@@ -578,11 +596,10 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: y se promueve a columna cuando alguien lo consulte.
     "metadata_json": "TEXT",
     #: --- LO QUE EL TITULAR DEL HARNESS MUESTRA Y EL STORE NO GUARDABA.
-    #: Directiva del ejecutor 2026-08-19: el harness rotula cada subagente en
-    #: vuelo con «24 min · 540k tokens · 90 usos de la herramienta bash», y de
-    #: esas tres cifras el store sólo tenía la de tokens. Las otras dos se
-    #: derivan del transcript —que ya se lee para el costo— así que no
-    #: guardarlas era una pérdida, no una imposibilidad.
+    #: El harness rotula cada subagente en vuelo con duración, tokens y usos de
+    #: herramienta («24 min · 540k tokens · 90 usos de la herramienta bash»).
+    #: Las tres se derivan del transcript —que ya se lee para el costo—, así
+    #: que el store guarda las tres.
     #:
     #: Duración en segundos entre el primer y el último `timestamp` del
     #: transcript. NO se deriva de `updated_at - started_at`: esas dos son
@@ -608,11 +625,10 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: repo». Lo escribe el reconciliador en 3 o 4 según lo que puede medir;
     #: la promoción a 2 la hace quien verifica, nunca el propio agente.
     "retention_level": "INTEGER",
-    #: --- SENALES DE EJECUCION (:ref:`h-docs-222`, 2026-08-20). Las declara el
-    #: transcript en cada linea y el recorrido las descartaba sin verlas: el
-    #: extractor filtraba por ``type == assistant`` ANTES de mirarlas, y todas
-    #: viven en el nivel superior. No son columnas "por si acaso" — cada una
-    #: responde una pregunta que hoy esta abierta.
+    #: --- SENALES DE EJECUCION (:ref:`h-docs-222`). Las declara el transcript
+    #: en el nivel superior de cada linea, asi que se leen ANTES de filtrar por
+    #: ``type == assistant``. No son columnas "por si acaso" — cada una
+    #: responde una pregunta abierta.
     #:
     #: Los tres ejes que hacen COMPARABLES dos filas. Sin ellos, dos agentes
     #: con el mismo modelo y distinto esfuerzo, build o tier de facturacion se
@@ -804,12 +820,9 @@ _TASK_LAYER_COLUMNS = {
 #: ``findings_history.submodule`` y que el segmento ``<submodulo>`` de la ruta
 #: de un hallazgo, y por eso el cruce entre las dos tablas es directo.
 #:
-#: ``thyrox`` entro el 2026-09-08, y llega TARDE: el cambio de eje —capa del
-#: producto a repo— es del 2026-09-07 y toco ``task_ids.LAYERS`` sin tocar
-#: esta lista ni la de ``--repo``. Medido al corregirlo: **102 de 1565** tareas
-#: derivan a ``thyrox`` y ninguna lo declaraba, porque ademas el derivador
-#: estaba apagado (ver ``LAYER_SIGNALS_VAR``). Dos omisiones del mismo cambio,
-#: en dos archivos, y ninguna delataba a la otra.
+#: La lista es de REPOS, no de capas del producto, y tiene que coincidir con
+#: ``task_ids.LAYERS`` y con la de ``--repo``: un repo que falte en una de las
+#: tres deja sus tareas sin capa derivable (ver ``LAYER_SIGNALS_VAR``).
 SUBMODULES = ("api", "db", "docs", "server", "thyrox", "ui")
 
 #: Columna del ID DE CITA de ``tasks`` — el ``KX-<CAPA>-NNNN`` estable y
@@ -823,6 +836,20 @@ SUBMODULES = ("api", "db", "docs", "server", "thyrox", "ui")
 #: :ref:`err-026`, que registra ese diseño y su correccion.
 _TASK_CITATION_COLUMNS = {
     "citation_id": "TEXT",
+    # La cita en la capa CORREGIDA. `citation_id` es identidad y no se mueve
+    # (`task_ids.correct_layer`); cuando la capa de una fila deja de ser la que
+    # su prefijo declara, esta columna lleva la cita que la nombra en su capa
+    # (`TASK-GEN-0644` -> `TASK-THYROX-0564`). Las dos resuelven a la fila, y
+    # las dos salen de la misma secuencia por capa.
+    "layer_citation_id": "TEXT",
+}
+
+#: Columna de IDENTIDAD de una tarjeta del board — ``(session_id,
+#: board_ordinal)``, no ``subject`` (H-THYROX-252). Se anade por ALTER TABLE
+#: por la misma razon que las de cita: el store ya existia poblado cuando se
+#: decidio. Ver ``_migrate_tasks_board_ordinal_column``.
+_TASK_BOARD_ORDINAL_COLUMNS = {
+    "board_ordinal": "INTEGER",
 }
 
 #: Columnas del EJE TEMPORAL de ``tasks`` — el "factor tiempo" de la gestion
@@ -877,7 +904,7 @@ LAYER_SIGNALS_VAR = "THYROX_LAYER_SIGNALS"
 
 
 def _cargar_senales() -> tuple:
-    """(patrón de cita, señales por capa) desde la declaración del consumidor.
+    r"""(patrón de cita, señales por capa) desde la declaración del consumidor.
 
     Formato del archivo, una línea por señal::
 
@@ -991,6 +1018,39 @@ def _migrate_tasks_citation_columns(conn: sqlite3.Connection) -> None:
     # filas ya acuñadas. Sin el `WHERE`, N filas sin acuñar chocarian entre si.
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_citation "
                  "ON tasks(citation_id) WHERE citation_id IS NOT NULL")
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_layer_citation "
+                 "ON tasks(layer_citation_id) WHERE layer_citation_id IS NOT NULL")
+    conn.commit()
+
+
+def _migrate_tasks_board_ordinal_column(conn: sqlite3.Connection) -> None:
+    """Anade ``board_ordinal`` a un ``tasks`` ya existente, con su indice.
+
+    Mismo mecanismo que ``_migrate_tasks_citation_columns``: ALTER TABLE por
+    columna que falte, y el indice de unicidad se (re)crea SIEMPRE, sin
+    condicion — es la forma que sobrevive a que ``_migrate_tasks_status_check``
+    reconstruya la tabla y se lleve consigo los indices que no reconstruye
+    (idx_tasks_status/idx_tasks_session son los unicos que esa migracion
+    recrea). Corre DESPUES de ``_migrate_tasks_composite_pk`` y ANTES de
+    ``_migrate_tasks_status_check`` en ``connect()``, mismo orden que sus
+    hermanas de columna.
+
+    La unicidad es PARCIAL (``WHERE board_ordinal IS NOT NULL``) por la misma
+    razon que la de ``citation_id``: las filas historicas —de antes de esta
+    columna— quedan en NULO, y NULO no es un valor que colisione consigo
+    mismo en SQL. La llave que protege es ``(session_id, board_ordinal)``,
+    no la columna sola: dos sesiones pueden compartir el mismo ordinal de
+    board sin chocar.
+    """
+    existentes = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+    if not existentes:
+        return                      # la tabla aun no existe; CORE_SCHEMA la crea bien
+    for columna, tipo in _TASK_BOARD_ORDINAL_COLUMNS.items():
+        if columna not in existentes:
+            conn.execute(f"ALTER TABLE tasks ADD COLUMN {columna} {tipo}")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_board_ordinal "
+        "ON tasks(session_id, board_ordinal) WHERE board_ordinal IS NOT NULL")
     conn.commit()
 
 
@@ -1201,6 +1261,404 @@ def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+class MigrationError(RuntimeError):
+    """Fallo del runner de migraciones: version mas nueva que el codigo,
+    nombre de migracion en conflicto (provenance) o migracion que lanza al
+    aplicarse."""
+
+
+@dataclasses.dataclass(frozen=True)
+class Migration:
+    """Una version de esquema, con su nombre estable de provenance.
+
+    Espejo en Python del contrato v2 de ``@thyrox/store``
+    (``src/packages/store/migrationContract.ts``,
+    ``migrationsSync.ts``): version ascendente sin duplicar, ``apply``
+    dispone el estado nuevo sobre la conexion, y ``already_applied``
+    (opcional) adopta una base donde el cambio YA existe por fuera de este
+    runner — una base heredada de antes de que el ledger existiera — sin
+    volver a ejecutar ``apply``. Para las migraciones de este archivo
+    ``already_applied`` reutiliza la MISMA deteccion que cada ``_migrate_*``
+    ya hacia por su cuenta (columna/indice/tabla presente), asi que adoptar
+    o ejecutar llegan al mismo estado.
+    """
+
+    version: int
+    name: str
+    apply: "collections.abc.Callable[[sqlite3.Connection], None]"
+    already_applied: "collections.abc.Callable[[sqlite3.Connection], bool] | None" = None
+
+
+#: El ledger compartido por Python (dueno del schema) y por
+#: ``src/packages/tools/src/tasks.ts`` (que solo VALIDA, via
+#: ``validateMigrationLedgerSync`` sobre esta misma tabla — DEC-TASK
+#: 2026-09-29, "Python es dueno del schema"). El nombre y la forma
+#: (``version``/``name``/``applied_at``) son los que ``migrationContract.ts``
+#: ya fija para los otros stores del arbol (mitm, provider, error store).
+MIGRATIONS_TABLE = "schema_migrations"
+
+
+def _migrations_control_ddl(table: str) -> str:
+    return (
+        f"CREATE TABLE IF NOT EXISTS {table} "
+        "(version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL)"
+    )
+
+
+def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
+    ).fetchone() is not None
+
+
+def _index_exists(conn: sqlite3.Connection, name: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='index' AND name=?", (name,)
+    ).fetchone() is not None
+
+
+def _trigger_exists(conn: sqlite3.Connection, name: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name=?", (name,)
+    ).fetchone() is not None
+
+
+def _columns(conn: sqlite3.Connection, table: str) -> set:
+    return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def _assert_valid_migrations(migrations) -> None:
+    """Enteros positivos, ascendentes, sin version ni nombre repetidos.
+
+    Mismo predicado que ``assertValidVersions`` de ``migrationContract.ts``.
+    """
+    seen_versions: set = set()
+    seen_names: set = set()
+    previous = None
+    for migration in migrations:
+        if not isinstance(migration.version, int) or migration.version <= 0:
+            raise MigrationError(
+                f"invalid migration version {migration.version!r}: expected a positive integer"
+            )
+        if migration.version in seen_versions:
+            raise MigrationError(f"duplicate migration version {migration.version}")
+        seen_versions.add(migration.version)
+
+        if not migration.name or not migration.name.strip():
+            raise MigrationError(
+                f"invalid migration name for version {migration.version}: "
+                "expected a non-empty identifier"
+            )
+        if migration.name in seen_names:
+            raise MigrationError(f"duplicate migration name '{migration.name}'")
+        seen_names.add(migration.name)
+
+        if previous is not None and migration.version < previous:
+            raise MigrationError(
+                f"migrations out of order: version {migration.version} follows "
+                f"version {previous}, expected ascending order"
+            )
+        previous = migration.version
+
+
+def _read_migrations_ledger(conn: sqlite3.Connection, table: str) -> dict:
+    return {row[0]: row[1] for row in conn.execute(f"SELECT version, name FROM {table}")}
+
+
+def _assert_no_newer_database(table: str, applied_versions, migrations) -> None:
+    """Rehusa si el ledger trae una version que la lista ya no declara.
+
+    Mismo predicado que ``assertNoNewerDatabase`` de ``migrationContract.ts``.
+    """
+    declared = {m.version for m in migrations}
+    for version in applied_versions:
+        if version not in declared:
+            raise MigrationError(
+                f"migrations table '{table}' has version {version} applied, which is no "
+                "longer declared in this migration list (database is newer than code)"
+            )
+
+
+def _assert_migration_provenance(table: str, applied: dict, migrations) -> None:
+    """Rehusa si una version quedo registrada con un nombre distinto del que
+    el codigo declara hoy para ella.
+
+    Mismo predicado que ``assertProvenance`` de ``migrationContract.ts``.
+    """
+    code_name_by_version = {m.version: m.name for m in migrations}
+    for version, registered_name in applied.items():
+        code_name = code_name_by_version.get(version)
+        if code_name is not None and code_name != registered_name:
+            raise MigrationError(
+                f"migrations table '{table}' has version {version} registered as "
+                f"'{registered_name}', but the code declares it as '{code_name}' "
+                "(provenance mismatch)"
+            )
+
+
+def run_migrations(conn: sqlite3.Connection, table: str = MIGRATIONS_TABLE,
+                    migrations=None) -> list:
+    """Aplica las versiones de ``migrations`` que falten, en orden ascendente.
+
+    Espejo de ``runMigrationsSync`` (``@thyrox/store/migrationsSync.ts``):
+    cada version pendiente se aplica junto con su fila de control; sin nada
+    pendiente, la unica operacion es la LECTURA del ledger — sin lock de
+    escritura. Devuelve las versiones aplicadas EN ESTA LLAMADA.
+
+    A diferencia del runner de TypeScript, ``apply`` puede llamar a un
+    ``_migrate_*`` que ya hace su propio ``commit()`` (son las mismas
+    funciones que ``connect()`` invocaba sueltas antes de este cambio, con
+    API intacta): la fila de control se inserta y confirma aparte, no dentro
+    de la MISMA transaccion fisica que el DDL. La atomicidad perfecta cede
+    ante mantener esas funciones sin tocar; el riesgo que abre —DDL aplicado
+    sin su fila si el proceso muere entre las dos— es autocurable, porque
+    cada ``apply`` es idempotente por construccion: una segunda pasada no
+    duplica nada.
+    """
+    if migrations is None:
+        migrations = CORE_MIGRATIONS
+    _assert_valid_migrations(migrations)
+
+    if not _table_exists(conn, table):
+        conn.execute(_migrations_control_ddl(table))
+        conn.commit()
+        applied: dict = {}
+    else:
+        applied = _read_migrations_ledger(conn, table)
+        _assert_no_newer_database(table, applied.keys(), migrations)
+        _assert_migration_provenance(table, applied, migrations)
+
+    pending = [m for m in migrations if m.version not in applied]
+    if not pending:
+        return []
+
+    applied_now = []
+    for migration in pending:
+        try:
+            adopted = migration.already_applied(conn) if migration.already_applied else False
+            if not adopted:
+                migration.apply(conn)
+            conn.execute(
+                f"INSERT INTO {table} (version, name, applied_at) VALUES (?, ?, ?)",
+                (migration.version, migration.name, now_iso()),
+            )
+            conn.commit()
+        except Exception as error:
+            conn.rollback()
+            raise MigrationError(
+                f"migration version {migration.version} failed: {error}"
+            ) from error
+        applied_now.append(migration.version)
+    return applied_now
+
+
+#: `TASK_SESSION_HIGHWATER_DDL` — mismo DDL que
+#: ``src/packages/task/schema.ts::TASK_SESSION_HIGHWATER_DDL``: la marca de
+#: agua POR SESION que `TaskCreate` (lado Bun) usa para asignar el proximo
+#: `task_id`. Vive aqui porque DEC-TASK 2026-09-29 (opcion 1) hace a Python
+#: el dueno del schema; Bun ya no la crea (ver `tasks.ts::conBase`), solo
+#: valida contra el ledger que esta migracion escribe.
+TASK_SESSION_HIGHWATER_DDL = """CREATE TABLE IF NOT EXISTS task_session_highwater (
+    session_id   TEXT NOT NULL PRIMARY KEY,
+    next_task_id INTEGER NOT NULL CHECK (next_task_id >= 1)
+)"""
+
+#: Las columnas de la forma legada `task_highwater`
+#: (``src/packages/task/schema.ts::TASK_HIGHWATER_DDL``), solo para
+#: reconocerla si una base la trae — nunca para crearla.
+_TASK_HIGHWATER_LEGACY_COLUMNS = {"clave", "max_id"}
+
+
+#: Las tablas que ``CORE_SCHEMA`` crea. Adoptar la migracion 1 exige TODAS: una
+#: base heredada que solo tenia ``agent_sessions`` (el esquema de ocho columnas
+#: que ``test-agent-store-usage-columns.sh`` reproduce) quedaba registrada como
+#: migrada sin ``tasks``, ``documents`` ni ``findings_history``. Como el DDL es
+#: todo ``IF NOT EXISTS``, aplicarlo sobre una base parcial solo crea lo que falta.
+_CORE_TABLES = ("agent_sessions", "findings_history", "tasks", "documents")
+
+
+def _core_schema_already_applied(conn: sqlite3.Connection) -> bool:
+    return all(_table_exists(conn, table) for table in _CORE_TABLES)
+
+
+def _apply_core_schema(conn: sqlite3.Connection) -> None:
+    conn.executescript(CORE_SCHEMA)
+    conn.commit()
+
+
+def _agent_sessions_usage_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "agent_sessions")
+    return bool(existentes) and set(_SESSION_USAGE_COLUMNS) <= existentes
+
+
+def _tasks_composite_pk_already_applied(conn: sqlite3.Connection) -> bool:
+    cols = list(conn.execute("PRAGMA table_info(tasks)"))
+    if not cols:
+        return False
+    en_pk = {row[1] for row in cols if row[5]}
+    return "session_id" in en_pk
+
+
+def _tasks_layer_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return bool(existentes) and set(_TASK_LAYER_COLUMNS) <= existentes
+
+
+def _tasks_opening_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return bool(existentes) and set(_TASK_OPENING_COLUMNS) <= existentes
+
+
+def _tasks_citation_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return (
+        bool(existentes)
+        and set(_TASK_CITATION_COLUMNS) <= existentes
+        and _index_exists(conn, "idx_tasks_citation")
+        and _index_exists(conn, "idx_tasks_layer_citation")
+    )
+
+
+def _tasks_board_ordinal_column_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return (
+        bool(existentes)
+        and set(_TASK_BOARD_ORDINAL_COLUMNS) <= existentes
+        and _index_exists(conn, "idx_tasks_board_ordinal")
+    )
+
+
+def _tasks_status_check_already_applied(conn: sqlite3.Connection) -> bool:
+    ddl = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'"
+    ).fetchone()
+    if not ddl or not ddl[0]:
+        return False
+    return _TASK_STATUS_CHECK.replace(" ", "") in ddl[0].replace(" ", "")
+
+
+def _documents_series_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "documents")
+    return bool(existentes) and set(_DOCUMENT_SERIES_COLUMNS) <= existentes
+
+
+def _documents_drop_scanned_at_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "documents")
+    return bool(existentes) and "scanned_at" not in existentes
+
+
+def _task_session_highwater_already_applied(conn: sqlite3.Connection) -> bool:
+    return _table_exists(conn, "task_session_highwater")
+
+
+def _apply_task_session_highwater(conn: sqlite3.Connection) -> None:
+    conn.execute(TASK_SESSION_HIGHWATER_DDL)
+    conn.commit()
+
+
+def _task_highwater_legacy_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "task_highwater")
+    return bool(existentes) and _TASK_HIGHWATER_LEGACY_COLUMNS <= existentes
+
+
+def _adopt_task_highwater_legacy(conn: sqlite3.Connection) -> None:
+    """No crea `task_highwater`: es forma LEGADA (DEC-TASK 2026-09-29, opcion
+    a) que el codigo nuevo no crea, no lee y no escribe
+    (`src/packages/task/schema.ts::TASK_HIGHWATER_DDL`). Esta migracion solo
+    acuna su version en el ledger — adoptando la tabla via
+    ``already_applied`` si una base heredada ya la trae, o sin hacer nada si
+    no (el caso de toda base de hoy) — para que quede declarada y ninguna
+    lectura futura del ledger la vea como pendiente.
+    """
+    return None
+
+
+#: `CLEARED_TOOL_RESULTS_DDL` — mismo DDL que
+#: ``src/packages/observability/src/clearedResults.ts::ensureClearedTable``.
+#: Vive aqui porque DEC-TASK 2026-09-29 (opcion 1) hace a Python el dueno del
+#: schema; observability ya no ejecuta este DDL, solo valida contra el ledger
+#: que esta migracion escribe (TASK-THYROX-0534).
+CLEARED_TOOL_RESULTS_DDL = """CREATE TABLE IF NOT EXISTS cleared_tool_results (
+    session_id     TEXT NOT NULL,
+    tool_use_id    TEXT NOT NULL,
+    tool           TEXT NOT NULL,
+    input_json     TEXT NOT NULL,
+    content_sha256 TEXT NOT NULL,
+    content_chars  INTEGER NOT NULL,
+    cleared_at     TEXT NOT NULL,
+    PRIMARY KEY (session_id, tool_use_id)
+)"""
+
+
+def _cleared_tool_results_already_applied(conn: sqlite3.Connection) -> bool:
+    return _table_exists(conn, "cleared_tool_results")
+
+
+def _apply_cleared_tool_results(conn: sqlite3.Connection) -> None:
+    conn.execute(CLEARED_TOOL_RESULTS_DDL)
+    conn.commit()
+
+
+#: `AGENT_SESSIONS_STAMP_UPDATED_DDL` — mismo cuerpo que
+#: ``src/packages/observability/src/store.ts::ensureUpdatedAtTrigger``.
+#: Misma razon que `CLEARED_TOOL_RESULTS_DDL`: Python lo crea, observability
+#: solo valida que ya esta (TASK-THYROX-0534).
+AGENT_SESSIONS_STAMP_UPDATED_DDL = """CREATE TRIGGER IF NOT EXISTS agent_sessions_stamp_updated
+    AFTER UPDATE OF status ON agent_sessions
+    WHEN NEW.status <> OLD.status
+    BEGIN
+      UPDATE agent_sessions
+      SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE rowid = NEW.rowid;
+    END"""
+
+
+def _agent_sessions_stamp_updated_already_applied(conn: sqlite3.Connection) -> bool:
+    return _trigger_exists(conn, "agent_sessions_stamp_updated")
+
+
+def _apply_agent_sessions_stamp_updated(conn: sqlite3.Connection) -> None:
+    conn.execute(AGENT_SESSIONS_STAMP_UPDATED_DDL)
+    conn.commit()
+
+
+#: El orden es el mismo que ``connect()`` invocaba suelto antes de este
+#: cambio (``_migrate_agent_sessions_usage_columns`` .. ``_migrate_documents_
+#: drop_scanned_at``), mas las cuatro versiones nuevas: `task_session_highwater`
+#: y la adopcion de la forma legada `task_highwater` (TASK-THYROX-0532), y
+#: `cleared_tool_results` mas el trigger `agent_sessions_stamp_updated`,
+#: portados desde observability (TASK-THYROX-0534).
+CORE_MIGRATIONS: tuple = (
+    Migration(1, "create_core_schema", _apply_core_schema, _core_schema_already_applied),
+    Migration(2, "add_agent_sessions_usage_columns", _migrate_agent_sessions_usage_columns,
+              _agent_sessions_usage_columns_already_applied),
+    Migration(3, "migrate_tasks_composite_pk", _migrate_tasks_composite_pk,
+              _tasks_composite_pk_already_applied),
+    Migration(4, "add_tasks_layer_columns", _migrate_tasks_layer_columns,
+              _tasks_layer_columns_already_applied),
+    Migration(5, "add_tasks_opening_columns", _migrate_tasks_opening_columns,
+              _tasks_opening_columns_already_applied),
+    Migration(6, "add_tasks_citation_columns", _migrate_tasks_citation_columns,
+              _tasks_citation_columns_already_applied),
+    Migration(7, "add_tasks_board_ordinal_column", _migrate_tasks_board_ordinal_column,
+              _tasks_board_ordinal_column_already_applied),
+    Migration(8, "add_tasks_status_check", _migrate_tasks_status_check,
+              _tasks_status_check_already_applied),
+    Migration(9, "add_documents_series_columns", _migrate_documents_series_columns,
+              _documents_series_columns_already_applied),
+    Migration(10, "drop_documents_scanned_at", _migrate_documents_drop_scanned_at,
+              _documents_drop_scanned_at_already_applied),
+    Migration(11, "create_task_session_highwater", _apply_task_session_highwater,
+              _task_session_highwater_already_applied),
+    Migration(12, "adopt_task_highwater", _adopt_task_highwater_legacy,
+              _task_highwater_legacy_already_applied),
+    Migration(13, "create_cleared_tool_results", _apply_cleared_tool_results,
+              _cleared_tool_results_already_applied),
+    Migration(14, "create_agent_sessions_stamp_updated_trigger", _apply_agent_sessions_stamp_updated,
+              _agent_sessions_stamp_updated_already_applied),
+)
+
+
 def connect(store_dir: Path) -> sqlite3.Connection:
     """Abre el store, listo para escribir desde procesos concurrentes.
 
@@ -1219,16 +1677,8 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA busy_timeout = 5000")
     conn.execute("PRAGMA journal_mode = WAL")
-    conn.executescript(CORE_SCHEMA)
+    run_migrations(conn)
     _create_fts_schema(conn)
-    _migrate_agent_sessions_usage_columns(conn)
-    _migrate_tasks_composite_pk(conn)
-    _migrate_tasks_layer_columns(conn)
-    _migrate_tasks_opening_columns(conn)
-    _migrate_tasks_citation_columns(conn)
-    _migrate_tasks_status_check(conn)
-    _migrate_documents_series_columns(conn)
-    _migrate_documents_drop_scanned_at(conn)
     _resync_fts(conn)
     return conn
 
@@ -1392,6 +1842,29 @@ def cmd_init(args: argparse.Namespace) -> None:
     with connect(store_dir):
         pass
     print(f"OK: {store_dir / DB_FILENAME} listo (agent_sessions + findings_history)")
+
+
+def cmd_migrate_db(args: argparse.Namespace) -> None:
+    """Aplica las migraciones sobre un archivo SQLite en una ruta ARBITRARIA.
+
+    A diferencia de ``init`` (que resuelve el HOGAR via ``--repo``/``--claude-dir``
+    y fija el nombre ``DB_FILENAME``), aqui el llamador declara el archivo
+    completo. El caso real es un fixture de prueba del lado Bun
+    (``src/packages/task/schema.ts::createMigratedTaskDb``) que necesita un
+    nombre de archivo que el propio test elige (p. ej. ``tablero.sqlite3``),
+    no el que ``connect()`` fija — DEC-TASK 2026-09-29: Python es el dueno del
+    schema, asi que ninguna base de tareas nace sin pasar por este runner.
+    """
+    ruta = Path(args.db_path)
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(ruta)
+    conn.execute("PRAGMA busy_timeout = 5000")
+    conn.execute("PRAGMA journal_mode = WAL")
+    try:
+        run_migrations(conn)
+    finally:
+        conn.close()
+    print(f"OK: {ruta} migrada")
 
 
 def cmd_register_session(args: argparse.Namespace) -> None:
@@ -1789,14 +2262,45 @@ def _reanchor_citations_by_subject(conn, session: str, citas_antes: dict) -> int
             (session, citation)).fetchone()
         if actual and actual[0] == destino:
             continue                    # ya está donde debe: nada que mover
+        # La cita de capa viaja con su `citation_id`: si se quedara en la fila
+        # de origen, las dos citas de una tarea nombrarian filas distintas.
+        layer_citation = None
+        if "layer_citation_id" in {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}:
+            found = conn.execute(
+                "SELECT layer_citation_id FROM tasks "
+                " WHERE session_id = ? AND citation_id = ?", (session, citation)).fetchone()
+            layer_citation = found[0] if found else None
         # Se libera antes de asignar: la columna es única por sesión de hecho, y
         # dos filas con la misma cita es peor que ninguna.
+        if layer_citation is not None:
+            conn.execute("UPDATE tasks SET layer_citation_id = NULL "
+                         " WHERE session_id = ? AND citation_id = ?", (session, citation))
         conn.execute("UPDATE tasks SET citation_id = NULL "
                      " WHERE session_id = ? AND citation_id = ?", (session, citation))
         conn.execute("UPDATE tasks SET citation_id = ? "
                      " WHERE session_id = ? AND task_id = ?", (citation, session, destino))
+        if layer_citation is not None:
+            conn.execute("UPDATE tasks SET layer_citation_id = ? "
+                         " WHERE session_id = ? AND task_id = ?",
+                         (layer_citation, session, destino))
         movidas += 1
     return movidas
+
+
+def _board_ordinal_of(task_id: str):
+    """El ordinal de board de un ``task_id`` del cliente, o ``None``.
+
+    ``task_id`` es TEXT porque es como el cliente lo emite; el ordinal del
+    board que lo nombra es ese mismo valor, numerico casi siempre. Un
+    ``task_id`` que no lo sea (fila fabricada a mano, migracion antigua) no
+    tiene ordinal que fijar — se deja NULO en vez de inventarlo, y la sesion
+    queda «no reconciliada» hasta que alguien lo fije con
+    ``task_ids.link_board_ordinal``.
+    """
+    try:
+        return int(task_id)
+    except (TypeError, ValueError):
+        return None
 
 
 def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
@@ -1860,9 +2364,6 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
         # con los mismos ordinales no mueve el id — mueve el SUJETO debajo, y
         # `TASK-API-0001` pasa a nombrar otra cosa sin que nada falle.
         #
-        # Medido el 2026-09-05: 92 de 93 tareas vivas cargaban un sujeto
-        # distinto del que el store tenía bajo el mismo ordinal.
-        #
         # Se mide ANTES de escribir nada y se rehúsa el volcado ENTERO: un
         # volcado a medias deja unas citas movidas y otras no, que es peor que
         # ninguno porque no se sabe cuáles.
@@ -1913,14 +2414,16 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 ilegibles += 1
                 continue
             task_id = str(d.get("id") or ruta.stem)
+            board_ordinal = _board_ordinal_of(task_id)
             extra = {k: v for k, v in d.items() if k not in _TASK_CONOCIDAS}
             antes = conn.total_changes
             conn.execute(
                 "INSERT INTO tasks (task_id, subject, description, status, "
                 "active_form, owner, blocks_json, blocked_by_json, session_id, "
                 "source, metadata_json, created_at, updated_at, "
-                "opened_at, opened_at_source, submodule, submodule_source) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+                "opened_at, opened_at_source, submodule, submodule_source, "
+                "board_ordinal) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
                 # El conflicto es sobre la clave COMPUESTA: dos sesiones con la
                 # misma tarea "447" son dos filas, no una que se pisa (H-DOCS-175).
                 "ON CONFLICT(session_id, task_id) DO UPDATE SET "
@@ -1933,6 +2436,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 "  blocked_by_json = excluded.blocked_by_json, "
                 "  source = excluded.source, "
                 "  metadata_json = excluded.metadata_json, "
+                "  board_ordinal = excluded.board_ordinal, "
                 "  updated_at = excluded.updated_at "
                 # Sin este WHERE la fila se reescribe aunque sea idéntica, y con
                 # ella `updated_at`. `IS NOT` y no `<>` porque la mitad de estas
@@ -1954,7 +2458,8 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 # tareas. Sigue actualizándose arriba cuando el contenido SÍ
                 # cambia, así que no queda caduco; lo que deja de hacer es
                 # provocar una escritura por sí solo.
-                "   OR tasks.metadata_json    IS NOT excluded.metadata_json",
+                "   OR tasks.metadata_json    IS NOT excluded.metadata_json "
+                "   OR tasks.board_ordinal    IS NOT excluded.board_ordinal",
                 (
                     task_id,
                     d.get("subject") or "",
@@ -1973,8 +2478,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # `ahora` está a segundos del TaskCreate y ES la apertura.
                     #
                     # Un volcado de reconciliación corre el mismo INSERT sobre
-                    # fichas viejas —medido: 525 en un solo día del 2026-08-18—
-                    # y ahí `ahora` es la INGESTIÓN, que es exactamente el
+                    # fichas viejas, y ahí `ahora` es la INGESTIÓN, que es exactamente el
                     # defecto que `created_at` ya tiene. Por eso discrimina el
                     # `--source` y no la novedad de la fila.
                     ahora if sella_apertura else None,
@@ -1982,7 +2486,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # La capa, y `gen` NO es lo mismo que NULL (TASK-THYROX-0021).
                     # Este INSERT escribia quince columnas y `submodule` no era
                     # una de ellas, asi que toda fila que no viniera de
-                    # `ingerir-board` nacia con la columna en NULL. Medido sobre
+                    # `ingest-board` nacia con la columna en NULL. Medido sobre
                     # el store vivo: 404 de 1636 filas, todas con cita TASK-GEN-,
                     # y 402 de esas 404 indecidibles por evidencia de commit — la
                     # clasificacion retroactiva no las alcanza.
@@ -1996,6 +2500,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # juicio, sino su ausencia.
                     UNKNOWN_LAYER,
                     "respaldo al volcar el board: nadie declaro la capa",
+                    board_ordinal,
                 ),
             )
             if task_id not in existentes:
@@ -2176,6 +2681,28 @@ def _parse_declared_date(texto: str):
     return None, None
 
 
+def _is_shallow_repo(repo: Path) -> bool | None:
+    """Si `repo` es un clon superficial (`git clone --depth`), o `None` si no
+    se pudo preguntar.
+
+    Un clon superficial injerta su commit mas viejo sin padres: un `git log
+    --name-only` sobre esa historia listaria en ese commit TODO archivo del
+    arbol, como si hubiera cambiado ahi — la frontera del clon se leeria como
+    la fecha real de cualquier documento sin historia previa dentro de el.
+    `None` es su propio veredicto, distinto de `False`: «no se pudo medir» no
+    es lo mismo que «se midio y no es superficial», y tratarlos igual
+    escribiria una fecha fabricada con la misma confianza que una real.
+    """
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "--is-shallow-repository"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return output == "true"
+
+
 def _last_commit_dates(repo: Path, subtree: str) -> dict:
     """Fecha del ultimo commit por archivo, en UNA pasada sobre el log.
 
@@ -2187,20 +2714,50 @@ def _last_commit_dates(repo: Path, subtree: str) -> dict:
     Ciega al renombrado: sin ``--follow`` la historia se corta en la mudanza,
     asi que un archivo movido declara su fecha desde entonces. Es la direccion
     segura — una fecha posterior conserva de mas, nunca de menos.
+
+    Se pide con ``-z``, no con ``-c core.quotePath=false``: la segunda opcion
+    arregla el escape octal de bytes no ASCII pero deja intacto un salto de
+    linea dentro del nombre (raro, pero legal en un nombre de archivo); ``-z``
+    resuelve las dos cosas a la vez porque separa registros por NUL y por eso
+    deja de citar la ruta (H-THYROX-270, 3 de 6508 documentos con una tilde en
+    el nombre quedaban sin `commit_at` ni `updated_at`). Con ``-z`` cada
+    commit imprime ``@fecha`` seguido de un NUL, y la lista de archivos que le
+    sigue lleva un `\n` de separador ANTES del primer nombre — resabio de la
+    linea en blanco que ese mismo formato deja sin ``-z`` — asi que cada
+    fragmento se despoja de ese `\n` sobrante antes de decidir si es fecha o
+    ruta.
+
+    Se pide con ``--cc``, no con ``-m`` ni ``--first-parent``: sin ninguna
+    opcion de diff para merges, git NO lista archivos en un commit merge, asi
+    que un archivo cuyo UNICO commit es un merge (creado al resolver un
+    conflicto, o al añadirlo durante la resolucion) queda sin fecha —
+    H-THYROX-271, medido sobre `hallazgo-H-DOCS-492-…` en kaupamex-docs.
+    ``-m`` mostraria ese archivo, pero tambien CUALQUIER archivo que el merge
+    trajo sin cambios de una rama, contra CADA padre por separado —
+    re-fechando con la fecha del merge documentos que no cambiaron ahi.
+    ``--first-parent`` tiene el mismo defecto sobre un solo padre. ``--cc``
+    es la combinada: en un commit merge, lista solo los archivos que
+    difieren de TODOS los padres a la vez — exactamente el caso que hay que
+    recuperar, sin tocar lo que el merge trajo intacto (medido: 34307 lineas
+    sin ``--cc`` contra 34340 con ella sobre `source/`, 33 archivos que antes
+    no aparecian en ningun commit).
     """
     try:
         salida = subprocess.run(
-            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "--", subtree],
+            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "--cc", "-z", "--", subtree],
             capture_output=True, text=True, check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return {}
     fechas, actual = {}, None
-    for linea in salida.splitlines():
-        if linea.startswith("@"):
-            actual = linea[1:]
-        elif linea.strip() and actual:
-            fechas.setdefault(linea.strip(), actual)
+    for chunk in salida.split("\0"):
+        chunk = chunk.lstrip("\n")
+        if not chunk:
+            continue
+        if chunk.startswith("@"):
+            actual = chunk[1:]
+        elif actual:
+            fechas.setdefault(chunk, actual)
     return fechas
 
 
@@ -2223,6 +2780,25 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
     raiz = repo / args.subtree
     if not raiz.is_dir():
         print(f"ERROR — no existe {raiz}", file=sys.stderr)
+        raise SystemExit(2)
+
+    shallow = _is_shallow_repo(repo)
+    if shallow is None:
+        print(
+            f"ERROR — no se pudo preguntar a git si {repo} es un clon "
+            "superficial (git rev-parse --is-shallow-repository fallo); "
+            "sin esa garantia no se fecha ningun documento",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    if shallow:
+        print(
+            f"ERROR — {repo} es un clon superficial (git clone --depth): "
+            "su commit mas viejo grafeado se veria como el origen de TODO "
+            "archivo sin historia dentro del clon, asi que fechar-documentos "
+            "rehusa en vez de atribuirle la fecha de esa frontera",
+            file=sys.stderr,
+        )
         raise SystemExit(2)
 
     commits = _last_commit_dates(repo, args.subtree)
@@ -2599,11 +3175,10 @@ def _orden_id(texto: str) -> tuple:
 def firma_estados(tasks_dir: Path) -> str:
     """sha256 de ``id:status:base64(subject + " " + description)`` del directorio VIVO.
 
-    **El texto entra desde H-DOCS-183.** Hasta entonces la firma leía sólo
-    ``status``, así que una tarea RE-DEFINIDA —mismo id, mismo estado, otro
-    enunciado— daba hash idéntico: el hook no disparaba, el volcado al store no
-    corría, y la re-definición se quedaba sólo en el directorio del cliente, que
-    es efímero POR SESIÓN. Medido con control positivo y negativo.
+    **La firma incluye el texto** (H-DOCS-183): con sólo ``status``, una tarea
+    RE-DEFINIDA —mismo id, mismo estado, otro enunciado— daría hash idéntico,
+    el volcado al store no correría y la re-definición se quedaría sólo en el
+    directorio del cliente, que es efímero POR SESIÓN.
 
     **Mide el directorio del cliente, NO el store**, y esa elección es el punto
     delicado de todo el render. ``stop-gate-tablero-desactualizado.sh`` compara
@@ -3212,6 +3787,10 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     if catalogo is None:
         print(f"USD por modelo: SIN MEDIR — {motivo}")
     else:
+        # `catalogo` sólo se pobló en la rama donde `model_catalog` ya se
+        # resolvió como módulo (ver el if/else de arriba); la estrechamos
+        # aquí para que el analizador la vea en el resto del bloque.
+        assert model_catalog is not None
         with connect_readonly(store_dir) as conn:
             por_modelo = conn.execute(
                 "SELECT model, COUNT(*), SUM(turns), SUM(input_tokens), "
@@ -3473,8 +4052,8 @@ def add_target_args(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "--repo",
         default=None,
-        help="consumidor objetivo. SIN declarar, el store es el HOGAR de thyrox; "
-        "declararlo apunta al store heredado de ese clon",
+        help="consumidor objetivo: un nombre del roster o la ruta del clon. SIN "
+        "declarar, el store es el HOGAR de thyrox; declararlo apunta al store de ese clon",
     )
     p.add_argument(
         "--claude-dir",
@@ -3491,6 +4070,12 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("init", help="crear el archivo SQLite unico si no existe")
     add_target_args(p)
     p.set_defaults(func=cmd_init)
+
+    p = sub.add_parser("migrate-file",
+                        help="aplicar las migraciones sobre un archivo SQLite en una "
+                        "ruta arbitraria (no usa --repo/--claude-dir)")
+    p.add_argument("db_path", help="ruta al archivo .sqlite3 a migrar; se crea si no existe")
+    p.set_defaults(func=cmd_migrate_db)
 
     p = sub.add_parser("registrar-sesion", help="pieza (a): registrar/actualizar una sesion de agente")
     add_target_args(p)

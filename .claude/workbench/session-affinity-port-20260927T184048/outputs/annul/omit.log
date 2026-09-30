@@ -1,0 +1,5 @@
+(fail) goMarshal > orden de campos y omitempty como Go [0.41ms]
+(fail) goMarshal > escapa <, >, &, U+2028 y U+2029 como Go [0.30ms]
+(fail) goMarshal > resource al final cuando no está vacío [0.18ms]
+ 18 pass
+ 3 fail

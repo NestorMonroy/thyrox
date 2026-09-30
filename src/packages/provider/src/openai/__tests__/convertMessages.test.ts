@@ -15,8 +15,8 @@ describe('convertMessages — thinking block round-trip', () => {
         message: {
           role: 'assistant',
           content: [
-            { type: 'thinking', thinking: 'Let me think...', signature: 'sig123' },
-            { type: 'text', text: 'Hi there!' },
+            { type: 'thinking' as const, thinking: 'Let me think...', signature: 'sig123' },
+            { type: 'text' as const, text: 'Hi there!' },
           ],
         },
       },
@@ -38,9 +38,9 @@ describe('convertMessages — thinking block round-trip', () => {
         message: {
           role: 'assistant',
           content: [
-            { type: 'thinking', thinking: 'Part A. ', signature: 'sig1' },
-            { type: 'thinking', thinking: 'Part B.', signature: 'sig2' },
-            { type: 'text', text: 'Answer' },
+            { type: 'thinking' as const, thinking: 'Part A. ', signature: 'sig1' },
+            { type: 'thinking' as const, thinking: 'Part B.', signature: 'sig2' },
+            { type: 'text' as const, text: 'Answer' },
           ],
         },
       },
@@ -59,7 +59,7 @@ describe('convertMessages — thinking block round-trip', () => {
         uuid: 'a1',
         message: {
           role: 'assistant',
-          content: [{ type: 'text', text: 'No thinking here' }],
+          content: [{ type: 'text' as const, text: 'No thinking here' }],
         },
       },
     ]
@@ -79,9 +79,9 @@ describe('convertMessages — thinking block round-trip', () => {
         message: {
           role: 'assistant',
           content: [
-            { type: 'thinking', thinking: 'Need to use a tool.', signature: 'sig1' },
+            { type: 'thinking' as const, thinking: 'Need to use a tool.', signature: 'sig1' },
             {
-              type: 'tool_use',
+              type: 'tool_use' as const,
               id: 'tool_1',
               name: 'bash',
               input: { command: 'ls' },

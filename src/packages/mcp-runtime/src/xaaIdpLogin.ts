@@ -105,7 +105,7 @@ function requireConfigSettings(): {
 }
 
 export function isXaaEnabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_XAA)
+  return isEnvTruthy(process.env.THYROX_CODE_ENABLE_XAA)
 }
 
 export type XaaIdpSettings = {

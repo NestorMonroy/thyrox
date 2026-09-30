@@ -6,6 +6,7 @@ import type { ToolProgressData } from '../../Tool.js'
 import type { ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { ThemeName } from '@anthropic/ink'
 import type { Output } from './EnterPlanModeTool.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function renderToolUseMessage(): React.ReactNode {
   return null
@@ -24,7 +25,7 @@ export function renderToolResultMessage(
       </Box>
       <Box paddingLeft={2}>
         <Text dimColor>
-          Claude is now exploring and designing an implementation approach.
+          {PRODUCT_NAME} is now exploring and designing an implementation approach.
         </Text>
       </Box>
     </Box>

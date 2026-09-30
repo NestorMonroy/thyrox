@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bunx tsc --noEmit -p tsconfig.json", "started_at": "2026-09-29T22:29:37+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-29T22:32:48+00:00", "duration_seconds": 191.052983}

@@ -1,0 +1,12 @@
+      1 ../command-runtime/src/internal/pendingCrossPackageDeps.ts
+      1 __tests__/claudeAiLimits.test.ts
+---
+      2 ../../../node_modules/@anthropic/ink/src/components/Box.tsx
+      2 ../../../node_modules/@anthropic/ink/src/components/Link.tsx
+      2 ../../../node_modules/@anthropic/ink/src/components/Newline.tsx
+      1 ../../../node_modules/@anthropic/ink/src/components/RawAnsi.tsx
+      3 ../../../node_modules/@anthropic/ink/src/components/ScrollBox.tsx
+      2 ../../../node_modules/@anthropic/ink/src/components/Text.tsx
+      1 ../command-runtime/src/internal/pendingCrossPackageDeps.ts
+      1 __tests__/claudeAiLimits.test.ts
+__BG_EXIT__=0

@@ -1,0 +1,9 @@
+== tests/session/test-wait-jobs.sh
+  ok    latido: nada de progreso contamina stdout
+
+44 ok, 0 fallos
+== tests/session/test-wait-jobs-dependency.sh
+  ok    y es LIDER de su propio grupo (pgid == pid)
+
+resumen: 11 ok, 0 fallo(s)
+__BG_EXIT__=0

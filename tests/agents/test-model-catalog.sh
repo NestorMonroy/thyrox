@@ -85,7 +85,7 @@ check "sesion valora la escritura al TTL real (1h) y la lectura a 0.25" "$(print
 case "$S" in *"(1,000,000 tokens) se reescribe — 6.2500 USD a 5 m · 10.0000 USD a 1 h"*) C=si ;; *) C=no ;; esac
 check "sesion estima el coste de reescribir el contexto en el destino" "$C" "si"
 # 12. sin transcript rehúsa con exit 2 y sin cifra
-S="$(CLAUDE_CODE_SESSION_ID= python3 "$MC" sesion --transcript "$FX/no-existe.jsonl" 2>/dev/null)"; RC=$?
+S="$(CLAUDE_CODE_SESSION_ID='' python3 "$MC" sesion --transcript "$FX/no-existe.jsonl" 2>/dev/null)"; RC=$?
 check "sesion sin transcript: exit 2 y stdout vacío" "$RC/$S" "2/"
 rm -rf "$FX"
 

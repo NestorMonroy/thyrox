@@ -1,0 +1,63 @@
+# primera medición
+== 1: sin el anidado .token -> 2
+== 2: sin access token se acepta -> 1
+== 3: sin refresh token se acepta -> 1
+== 4: sin expires_at -> 1
+== 5: un ISO ilegible pasa -> 1
+== 6: sin expiry_date -> 1
+== 7: el tipo de token fijo -> 1
+== 8: el método sólo del documento -> 0
+== 9: userinfo sin ?alt=json -> 1
+== 10: un userinfo fallido nombra la cuenta -> 1
+== 11: loadCodeAssist fallido se lee -> 1
+== 12: el proyecto sólo como texto -> 1
+== 13: sin el nivel -> 1
+== 14: sin metadatos -> 1
+== 15: otro perfil de cliente -> 1
+== 16: sin plazo -> 1
+== 17: la cuenta distingue mayúsculas -> 1
+== 18: el duplicado se sobrescribe solo -> 1
+== 19: la elección del operador se pierde -> 1
+== 20: el cliente OAuth guardado gana -> 1
+== 21: el proyecto conocido se pierde -> 1
+== 22: el nivel conocido se pierde -> 1
+== 23: el nombre guardado se pierde -> 1
+== 24: sin identidad se importa -> 1
+== 25: sin proyecto no se degrada -> 0
+== 26: una conexión nueva sin proyecto no se degrada -> 2
+== 27: el correo declarado no gana -> 0
+== 28: sin autoSync en lo nuevo -> 1
+== 29: sin el cliente builtin -> 2
+== 30: la hora de importación del reloj real -> 2
+== 31: cp — RFC3339 no se lee -> 1
+== 32: cp — siempre milisegundos -> 1
+== 33: cp — siempre segundos -> 1
+== 34: cp — un expired cero cuenta -> 1
+== 35: cp — sin expires_in -> 4
+== 36: cp — un expires_in cero cuenta -> 1
+== 37: cp — el tipo distingue mayúsculas -> 1
+== 38: cp — un arreglo es un registro -> 0
+== 39: cp — sin access token se importa -> 1
+== 40: cp — projectId camelCase gana -> 1
+== 41: cp — muse por la rama general -> 3
+== 42: cp — muse sin dca_token -> 2
+== 43: cp — la api_key DCA es de inferencia -> 1
+== 44: cp — muse sin claves se importa -> 1
+== 45: cp — la clave acuñada hereda el reloj -> 1
+== 46: cp — authKind sin defecto -> 1
+== 47: cp — el nombre sin defecto -> 1
+== 48: cp — projectId vacío se escribe -> 1
+== 49: cp — sin marca de importación -> 1
+== 50: cp — sin la variable del directorio -> 1
+== 51: cp — .JSON en mayúsculas no cuenta -> 1
+== 52: cp — todos los archivos -> 1
+== 53: cp — un JSON roto corta el barrido -> 1
+== 54: cp — un directorio ausente lanza -> 1
+== 55: cp — la vista previa lleva tokens -> 1
+== 56: cp — un rechazo corta la importación -> 1
+== restaurado -> 0
+# re-medición tras afinar (38 retirada: comprobación muerta)
+== 8: el método sólo del documento -> 1
+== 25: sin proyecto no se degrada -> 1
+== 27: el correo declarado no gana -> 1
+== restaurado -> 0

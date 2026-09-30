@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+256 | 
+257 |   test('un nombre explícito puesto mientras tanto gana', async () => {
+258 |     registered = { name: 'viejo', source: 'auto' }
+259 |     const racing = { ...context, registry: { ...context.registry, listLive: async () => ((registered = { name: 'mio', source: 'user' }), live) } }
+260 |     await restoreSessionName('bar', 'sess', {}, racing)
+261 |     expect(writes).toEqual([])
+                         ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "bar",
++     "sess",
++     undefined,
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:261:20)
+(fail) restoreSessionName (sae) > un nombre explícito puesto mientras tanto gana [0.39ms]
+
+ 21 pass
+ 1 fail
+ 57 expect() calls
+Ran 22 tests across 1 file. [48.00ms]

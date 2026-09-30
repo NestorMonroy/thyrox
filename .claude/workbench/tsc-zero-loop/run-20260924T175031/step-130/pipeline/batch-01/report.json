@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 205, "total_final": 204, "tsc_runs": 1, "accepted": ["agent:pool:module:src/packages/cli/src/entry/mode-dispatch.ts"], "files_kept": ["src/packages/cli/src/entry/mode-dispatch.ts"], "outcomes": {"agent:pool:module:src/packages/cli/src/entry/mode-dispatch.ts": "accepted"}}

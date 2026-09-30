@@ -80,7 +80,7 @@ export function getOpenAIClient(options?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fetchOptions: networkLayer.getProxyFetchOptions({ forAnthropicAPI: false }) as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(options?.fetchOverride && { fetch: options.fetchOverride as any }),
+    ...(options?.fetchOverride ? { fetch: options.fetchOverride as any } : {}),
   })
 
   if (!options?.fetchOverride) {

@@ -91,6 +91,19 @@ export function getHooksConfigFromSnapshot(): Record<string, unknown> {
 }
 
 /**
+ * Fija el snapshot con una configuración ya resuelta.
+ *
+ * Es el punto por donde entra la configuración mientras este árbol no tenga
+ * un store de settings en vivo (ver el docstring del módulo): quien resuelve
+ * los settings —el arranque del CLI, un test— entrega aquí el bloque
+ * ``hooks`` y, si los declara, ``statusLine`` y ``fileSuggestion``, que el
+ * motor de ``hooks.ts`` lee de este mismo sitio.
+ */
+export function setHooksConfigSnapshot(config: Record<string, unknown>): void {
+  hooksConfigSnapshot = config
+}
+
+/**
  * Reset the hooks configuration snapshot (useful for testing)
  */
 export function resetHooksConfigSnapshot(): void {

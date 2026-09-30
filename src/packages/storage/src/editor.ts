@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/editor.ts`.
- * La version anterior portaba 1 de 3 exports, y los suyos eran
- * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
- * Divergencia frente a la fuente: ninguna, salvo el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
- * Refs: TASK-THYROX-0199.
- */
-
 import {
   type SpawnOptions,
   type SpawnSyncOptions,
@@ -79,7 +70,7 @@ function guiGotoArgv(
  * Launch a file in the user's external editor.
  *
  * For GUI editors (code, subl, etc.): spawns detached — the editor opens
- * in a separate window and Claude Code stays interactive.
+ * in a separate window and thyrox stays interactive.
  *
  * For terminal editors (vim, nvim, nano, etc.): blocks via Ink's alt-screen
  * handoff until the editor exits. This is the same dance as editFileInEditor()

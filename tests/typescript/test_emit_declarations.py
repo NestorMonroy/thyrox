@@ -25,7 +25,7 @@ otra cosa; quien lo confunda comete el sub-patron C con este mecanismo como
 sujeto. Y ciego al coste de recompilar los 42, que no se midio.
 """
 import json
-import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -94,6 +94,7 @@ def make_package(root, name, main_dir):
     # ellos no puede fallar por la causa que importa — y no fallo.
     (pkg / "package.json").write_text(json.dumps({
         "name": f"@probe/{name}", "version": "1.0.0", "private": True,
+        "description": "Adaptación — porte con acentos",
         "main": entry, "types": entry,
         "exports": {
             ".": entry,
@@ -175,9 +176,9 @@ def make_consumer_with_sibling(root, name, sibling, link="local"):
                   "export const mine: string = 1\n"
                   "export const use = (n: number): number => helps(n)\n")
 
-    enlace = (consumer if link == "local" else root) / "node_modules" / "@probe"
-    enlace.mkdir(parents=True, exist_ok=True)
-    (enlace / sibling).symlink_to(root / sibling, target_is_directory=True)
+    link_dir = (consumer if link == "local" else root) / "node_modules" / "@probe"
+    link_dir.mkdir(parents=True, exist_ok=True)
+    (link_dir / sibling).symlink_to(root / sibling, target_is_directory=True)
     return consumer
 
 
@@ -230,10 +231,10 @@ def main():
         check("no derrama declaraciones fuera de dist/", [], strays)
 
         # Caso 7 — el paquete que entra por la RAIZ tambien emite a dist/.
-        raiz = make_package(root, "sin-src", "")
-        mod.emit_package(raiz)
+        root_package = make_package(root, "sin-src", "")
+        mod.emit_package(root_package)
         check("el paquete con entrada en la raiz emite igual",
-              True, (raiz / "dist" / "index.d.ts").is_file())
+              True, (root_package / "dist" / "index.d.ts").is_file())
 
         # Caso 8 — repointing: el `exports` gana sobre el `types` de raiz bajo
         # `moduleResolution: bundler`, asi que reescribir solo la clave de
@@ -250,6 +251,28 @@ def main():
               "./src/index.ts", entry.get("default"))
         check("el types de raiz tambien, para el resolutor que no lee exports",
               "./dist/index.d.ts", manifest.get("types"))
+
+        # Caso 8-cuater — la condicion `source`, PRIMERA. Con `dist/` presente,
+        # la raiz resolvia un paquete a su declaracion y otro a su fuente, y
+        # la misma clase quedaba con dos identidades ("separate declarations
+        # of a private property", 50 errores medidos). La raiz activa
+        # `customConditions: ["source"]` y compila siempre la fuente; un
+        # consumidor sin esa condicion la ignora y ve `types`. El orden de
+        # claves ES la precedencia, asi que se exige que vaya primera.
+        check("la condicion @thyrox/source apunta a la fuente",
+              "./src/index.ts", entry.get("@thyrox/source"))
+        check("y va primera: el orden de claves es la precedencia",
+              "@thyrox/source", next(iter(entry), None))
+        # Con el nombre desnudo `source` la raiz tambien activaba la de
+        # `node_modules/eventsource`, que publica la misma condicion hacia su
+        # `.ts`, y `skipLibCheck` no cubre un `.ts`: un error ajeno medido.
+
+        # Caso 8-quinto — el repunte reescribe el manifiesto entero, y no
+        # debe tocar lo que no repunta. Con `ensure_ascii` por defecto cada
+        # acento de una descripcion salia como `ó`: 7 de 42 manifiestos
+        # reales cambiaban su texto sin que nadie lo pidiera.
+        check("el texto no ASCII sobrevive verbatim al repunte", True,
+              "Adaptación" in (pkg / "package.json").read_text(encoding="utf8"))
 
         # Caso 8-bis — EL QUE DE VERDAD DISCRIMINA. Repuntar SOLO la raiz deja
         # el cambio inerte: los consumidores entran por subpath. Medido sobre
@@ -292,9 +315,9 @@ def main():
         # `node_modules` queda fuera del barrido: el `@types/bun` del fixture es
         # un `.d.ts` que el propio control escribe, no un derrame de la emision.
         # Contarlo confundiria el instrumento con su sujeto.
-        derrame = [str(f.relative_to(root)) for f in root.rglob("*.d.ts")
+        spill = [str(f.relative_to(root)) for f in root.rglob("*.d.ts")
                    if "dist" not in f.parts and "node_modules" not in f.parts]
-        check("y NO deja una declaracion fuera de dist/", [], derrame)
+        check("y NO deja una declaracion fuera de dist/", [], spill)
 
     # --- la declaracion CONSERVA la ruta relativa al rootDir ---------------
     #
@@ -321,11 +344,11 @@ def main():
     # programa: el paquete compilaria sus propias declaraciones y su `rootDir`
     # subiria de `src` a la raiz, moviendo toda su emision. Medido: `storage`
     # daba `src` antes del repunte y `.` despues, sin que su codigo cambiara.
-    repuntado = {"types": "./dist/index.d.ts",
+    repointed = {"types": "./dist/index.d.ts",
                  "exports": {".": {"types": "./dist/index.d.ts",
                                    "default": "./src/index.ts"}}}
     check("los destinos de un manifiesto repuntado son solo la fuente",
-          ["./src/index.ts"], mod.export_targets(repuntado))
+          ["./src/index.ts"], mod.export_targets(repointed))
 
     # --- el escape DENTRO del paquete se amplia, no se rehusa --------------
     #
@@ -354,11 +377,11 @@ def main():
         (pkg / "src" / "index.ts").write_text(
             "import { helps } from '../internal/helper.ts'\n"
             "export const use = (n: number): number => helps(n)\n", encoding="utf8")
-        resultado = mod.emit_package(pkg)
-        check("un escape DENTRO del paquete emite igual", True, resultado.emitted)
-        fuera = [str(p.relative_to(pkg)) for p in pkg.rglob("*.d.ts")
+        emit_result = mod.emit_package(pkg)
+        check("un escape DENTRO del paquete emite igual", True, emit_result.emitted)
+        outside = [str(p.relative_to(pkg)) for p in pkg.rglob("*.d.ts")
                  if "dist" not in p.parts and "node_modules" not in p.parts]
-        check("y su declaracion no sale de dist/", [], fuera)
+        check("y su declaracion no sale de dist/", [], outside)
 
     # --- y el repunte apunta a la declaracion que REALMENTE se escribio ----
     #
@@ -391,11 +414,11 @@ def main():
         mod.emit_package(pkg)
         mod.repoint_manifest(pkg)
         manifest = json.loads((pkg / "package.json").read_text(encoding="utf8"))
-        destinos = [v["types"] for v in manifest["exports"].values()
+        targets = [v["types"] for v in manifest["exports"].values()
                     if isinstance(v, dict)]
-        ausentes = [d for d in destinos if not (pkg / d.lstrip("./")).exists()]
+        absent = [d for d in targets if not (pkg / d.lstrip("./")).exists()]
         check("el repunte tras ensanchar apunta a un archivo que existe",
-              [], ausentes)
+              [], absent)
 
     # --- el comodin de raiz declara TODO el paquete como superficie --------
     #
@@ -434,9 +457,9 @@ def main():
             "exports": {".": "./src/index.ts"},
         }) + "\n", encoding="utf8")
         (pkg / "src" / "index.ts").write_text("export const x = 1\n", encoding="utf8")
-        antes = (pkg / "package.json").read_text(encoding="utf8")
+        before = (pkg / "package.json").read_text(encoding="utf8")
         check("sin dist/ el repunte rehusa", False, mod.repoint_manifest(pkg))
-        check("y NO toca el manifiesto", antes,
+        check("y NO toca el manifiesto", before,
               (pkg / "package.json").read_text(encoding="utf8"))
 
     # --- los tests del paquete NO son superficie declarada -----------------
@@ -468,14 +491,14 @@ def main():
         (pkg / "algo.spec.ts").write_text(
             "import { it } from 'bun:test'\n"
             "it('otro', () => {})\n", encoding="utf8")
-        resultado = mod.emit_package(pkg)
-        check("un paquete con tests emite igual", True, resultado.emitted)
-        emitidas = sorted(str(p.relative_to(pkg / mod.OUTPUT_DIR))
+        emit_result = mod.emit_package(pkg)
+        check("un paquete con tests emite igual", True, emit_result.emitted)
+        emitted_files = sorted(str(p.relative_to(pkg / mod.OUTPUT_DIR))
                           for p in (pkg / mod.OUTPUT_DIR).rglob("*.d.ts"))
-        check("y la declaracion del modulo si sale", True, "util.d.ts" in emitidas)
-        check("pero la del test NO", [], [e for e in emitidas
+        check("y la declaracion del modulo si sale", True, "util.d.ts" in emitted_files)
+        check("pero la del test NO", [], [e for e in emitted_files
                                           if "__tests__" in e or ".spec." in e])
-        check("y el test no aporta errores propios", 0, resultado.own_errors)
+        check("y el test no aporta errores propios", 0, emit_result.own_errors)
 
     # --- el comodin del `exports` CRUZA `/`, y el glob de Python no --------
     #
@@ -567,14 +590,14 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         pkg = make_package(root, "medido", "src")
-        antes = (pkg / "package.json").read_text(encoding="utf8")
+        before = (pkg / "package.json").read_text(encoding="utf8")
         result = mod.check_package(pkg)
         check("check_package cuenta el error del paquete", True, result.errors > 0)
         check("NO escribe dist/", False, (pkg / "dist").exists())
-        check("NO toca el manifiesto", antes,
+        check("NO toca el manifiesto", before,
               (pkg / "package.json").read_text(encoding="utf8"))
-        sobrantes = [f.name for f in pkg.glob("tsconfig*.json")]
-        check("retira su proyecto temporal", [], sobrantes)
+        leftovers = [f.name for f in pkg.glob("tsconfig*.json")]
+        check("retira su proyecto temporal", [], leftovers)
 
 
     # --- la atribucion: el conteo del paquete NO es el de su cierre ---------
@@ -588,15 +611,159 @@ def main():
     #
     # Las DOS formas de enlace se ejercitan porque el clasificador tiene que
     # sobrevivir a las dos: por prefijo de ruta, la del workspace miente.
-    for forma in ("local", "root"):
+    for form in ("local", "root"):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            consumidor = make_consumer_with_sibling(root, "consume", "hermano", forma)
-            medido = mod.check_package(consumidor)
-            check(f"[{forma}] el propio cuenta SOLO el error del paquete",
-                  1, medido.own_errors)
-            check(f"[{forma}] y el hermano se le atribuye a el",
-                  2, medido.sibling_errors)
+            consumer = make_consumer_with_sibling(root, "consume", "hermano", form)
+            measured = mod.check_package(consumer)
+            check(f"[{form}] el propio cuenta SOLO el error del paquete",
+                  1, measured.own_errors)
+            check(f"[{form}] y el hermano se le atribuye a el",
+                  2, measured.sibling_errors)
+
+    # --- los globales de construccion viajan al proyecto de cada paquete ---
+    #
+    # `MACRO` lo inyecta Bun al construir y su declaracion vivia SOLO en
+    # `cli/src/types/global.d.ts`. En la raiz compila porque ese archivo cae en
+    # el mismo programa; en el proyecto de un paquete no, y 26 de los errores
+    # propios medidos (storage, permission, bridge, …) eran `Cannot find name
+    # 'MACRO'`: una dependencia oculta del paquete `cli`.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "usa-macro", "src")
+        (pkg / "src" / "index.ts").write_text("export const version: string = MACRO.VERSION\n")
+        result = mod.check_package(pkg)
+        check("un paquete que usa MACRO no da error propio", 0, result.own_errors)
+        check("y el conteo total tampoco lo trae", False, "MACRO" in result.output)
+
+    # --- el paquete se ve a si mismo por su fuente, no por su dist ---------
+    #
+    # Medido en tool-registry: sus 48 errores propios eran TODOS la misma
+    # clase con dos identidades — `src/Tool` contra
+    # `node_modules/@thyrox/tool-registry/dist/Tool` —, porque un camino del
+    # programa vuelve al paquete por su NOMBRE y el `exports` repuntado lo
+    # manda a su declaracion. Lo mismo el ultimo de repl (`Cursor`). El
+    # proyecto de un paquete tiene que resolver su propio nombre a su fuente;
+    # sus hermanos siguen por `dist`, que es lo que ve un consumidor externo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "propio", "src")
+        (pkg / "src" / "index.ts").write_text(
+            "export class Box { private value = 1\n"
+            "  get(): number { return this.value } }\n")
+        (pkg / "src" / "helper.ts").write_text(
+            "import { Box as ByName } from '@probe/propio'\n"
+            "import { Box } from './index'\n"
+            "export const box: Box = new ByName()\n")
+        mod.emit_package(pkg)
+        mod.repoint_manifest(pkg)
+        result = mod.check_package(pkg)
+        check("el nombre propio resuelve a la fuente: una sola identidad",
+              0, result.own_errors)
+        check("y el error de la doble identidad no aparece",
+              False, "separate declarations" in result.output
+              or "is not assignable" in result.output)
+
+    # --- el build y el test quedan en el paquete, reproducibles sin Python --
+    #
+    # TASK-THYROX-0256. La emision escribia `tsconfig.declarations.json`, lo
+    # usaba y lo BORRABA: ningun paquete tenia con que reconstruir su `dist/`
+    # salvo este script. Los dos proyectos quedan versionables —rutas
+    # relativas— y cada uno se prueba por conducta, no por existencia: el
+    # build regenera `dist/` con `tsc -p` a secas, y el de test ve un error
+    # que el build excluye a proposito.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "reproducible", "src")
+        (pkg / "src" / "index.ts").write_text("export const n: number = 1\n")
+        (pkg / "__tests__").mkdir()
+        (pkg / "__tests__" / "n.test.ts").write_text(
+            "import { n } from '../src/index.ts'\nexport const roto: string = n\n")
+        mod.emit_package(pkg)
+        build = pkg / "tsconfig.build.json"
+        test_project = pkg / "tsconfig.test.json"
+        check("el build queda en el paquete", True, build.is_file())
+        check("y el de test tambien", True, test_project.is_file())
+        texts = [p.read_text() for p in (build, test_project) if p.is_file()]
+        check("ninguno lleva una ruta absoluta: se versionan", False,
+              any(str(root) in t or '"/' in t for t in texts))
+        shutil.rmtree(pkg / "dist", ignore_errors=True)
+        rebuilt = subprocess.run(["bunx", "tsc", "-p", "tsconfig.build.json"],
+                                 cwd=pkg, capture_output=True, text=True, timeout=300)
+        check("tsc -p tsconfig.build.json regenera dist/ sin el script", True,
+              (pkg / "dist" / "index.d.ts").is_file())
+        check("y el build NO ve el error del test", False,
+              "n.test.ts" in (rebuilt.stdout + rebuilt.stderr))
+        tested = subprocess.run(["bunx", "tsc", "-p", "tsconfig.test.json"],
+                                cwd=pkg, capture_output=True, text=True, timeout=300)
+        check("el proyecto de test SI ve el error del test", True,
+              "n.test.ts" in (tested.stdout + tested.stderr))
+        check("y no emite nada", False,
+              any((pkg / "dist").rglob("n.test.d.ts")))
+
+    # --- un archivo exportado desde la RAIZ del paquete tambien se emite ---
+    #
+    # Medido al construir los 42: `config` exporta `./hash.js -> ./hash.ts`
+    # junto a directorios (`settings/`, `env/`, …). `entry_directory` da `""`
+    # para un archivo de la raiz y el `include` lo descartaba: solo se emitia
+    # si algun archivo incluido lo importaba. 16 destinos de `config`, 39 de
+    # `agent` y 1 de `cli` quedaban sin `.d.ts` y el repunte los rehusaba.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "raiz-y-sub"
+        (pkg / "sub").mkdir(parents=True)
+        write_types_stub(root)
+        (pkg / "sub" / "a.ts").write_text("export const a = 1\n")
+        (pkg / "top.ts").write_text("export const top = 2\n")
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/raiz-y-sub", "version": "1.0.0", "private": True,
+            "exports": {"./sub/a.js": "./sub/a.ts", "./top.js": "./top.ts"},
+        }) + "\n")
+        mod.emit_package(pkg)
+        check("el archivo exportado desde la raiz tiene su .d.ts", True,
+              (pkg / "dist" / "top.d.ts").is_file())
+        check("y el repunte ya no lo rehusa", True, mod.repoint_manifest(pkg))
+
+    # --- los paquetes salen del árbol de fuente, no de un glob ni de workspaces ---
+    #
+    # Un paquete es todo `package.json` bajo `src/` con `exports`, dentro o
+    # fuera de `src/packages/` (`src/paths`, `src/store`, `src/task`…): un glob
+    # sobre `src/packages/*` deja fuera a los segundos. Tampoco se toma de
+    # `workspaces`: los proyectos por paquete existen para retirarlo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        def write_manifest(rel, body):
+            (root / rel).mkdir(parents=True, exist_ok=True)
+            (root / rel / "package.json").write_text(json.dumps(body))
+        write_manifest("src/packages/dentro", {"name": "@p/dentro", "exports": {".": "./i.ts"}})
+        write_manifest("src/suelto", {"name": "@p/suelto", "exports": {".": "./i.ts"}})
+        write_manifest("src/packages", {"name": "@p/agregador", "workspaces": ["dentro"]})
+        write_manifest("src/suelto/node_modules/dep", {"name": "dep", "exports": {".": "./x.js"}})
+        (root / "package.json").write_text(json.dumps({"name": "r", "workspaces": []}))
+        found = [p.relative_to(root).as_posix() for p in mod._packages(root)]
+        check("el paquete fuera de src/packages se descubre", True, "src/suelto" in found)
+        check("aunque workspaces no lo liste", True, "src/packages/dentro" in found)
+        check("el agregador sin exports no es paquete", False, "src/packages" in found)
+        check("ni lo que cuelga de node_modules", False,
+              any("node_modules" in p for p in found))
+
+    # Caso — re-emitir. Un paquete con la entrada en la raiz incluye `**/*`, y
+    # sin excluir `dist` sus propias declaraciones son ENTRADA del siguiente
+    # build: tsc rehusa sobrescribirlas (TS5055) y el `.d.ts` queda congelado
+    # con la version anterior del paquete, sin que el build falle en voz alta.
+    # Episodio: `store/dist/db.d.ts` seguia exportando `openStore` tras
+    # renombrarlo a `openLocal`.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "reemite", "")
+        mod.emit_package(pkg)
+        (pkg / "index.ts").write_text(
+            (pkg / "index.ts").read_text() + "export const added = 2\n")
+        second = mod.emit_package(pkg)
+        declared = (pkg / "dist" / "index.d.ts").read_text()
+        check("la segunda emision refleja la fuente nueva", True, "added" in declared)
+        check("sin TS5055 por reescribir su propia salida", False,
+              "TS5055" in second.output)
 
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0

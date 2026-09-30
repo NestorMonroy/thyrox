@@ -3,37 +3,27 @@
  * handler de apagado del proceso (señales, excepciones no atrapadas,
  * timer de failsafe, limpieza de terminal, hint de reanudación).
  *
- * PORTE PARCIAL DECLARADO. `gracefulShutdown.test.ts` (el que sí importa
- * el módulo, fuera del alcance de este pase) queda pendiente; el test de
- * ESTE pase — `__tests__/gracefulShutdown.behavior.test.ts` — es un
- * conjunto de 33 pins A NIVEL DE FUENTE: lee este archivo con
- * `readFileSync` y asevera con `toMatch` sobre su texto literal. NUNCA
- * importa el módulo como código ejecutable, así que las 6 dependencias
- * de paquete que la fuente cita y que NO existen en este árbol —medido
- * con `ls /home/user/thyrox/src/packages/`— no bloquean ese test:
+ * Dos pruebas, dos ejes. `__tests__/gracefulShutdown.behavior.test.ts` fija
+ * la FORMA: lee este archivo con `readFileSync` y asevera sobre su texto.
+ * `__tests__/gracefulShutdown.test.ts` fija la CONDUCTA: importa el módulo y
+ * lo ejecuta con `process.exit` sustituido. El módulo importa, por las
+ * mismas rutas que la fuente:
  *
  *   - `chalk` (dim del hint de reanudación)
  *   - `signal-exit` (`onExit`, el pin del workaround de Bun)
  *   - `lodash-es/memoize.js` (memoización de `setupGracefulShutdown`)
  *   - `@anthropic/ink` (constantes de secuencias de escape + `instances`)
- *   - `@claude-code-how-works/headless-sdk/agentSdkTypes.js` (tipo
- *     `ExitReason` — import de solo-tipo, se elide al transpilar)
- *   - `@claude-code-how-works/local-observability` y sus subrutas
- *     (`logEvent`, `logInternalErrorEvent`, `shutdownEventLoggers`,
- *     `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`,
- *     `logForDebugging`, `logForDiagnosticsNoPII`, `closeSentry`)
- *   - `@claude-code-how-works/config` y sus subrutas (`isEnvTruthy`,
+ *   - `@thyrox/headless-sdk/agentSdkTypes.js` (tipo `ExitReason`)
+ *   - `@thyrox/local-observability` y sus subrutas
+ *   - `@thyrox/config` y sus subrutas (`isEnvTruthy`,
  *     `getInvokedBinaryName`, `sleep`)
- *   - `@claude-code-how-works/storage/sessionStorage.js`
+ *   - `@thyrox/storage/sessionStorage.js`
  *     (`getCurrentSessionTitle`, `sessionIdExists`)
- *   - `../startup/startupProfiler.js` (`profileReport` — vecino de
- *     paquete que tampoco existe todavía en este árbol)
+ *   - `../startup/startupProfiler.js` (`profileReport`)
  *
  * Se citan las mismas rutas de import de la fuente (no se inventan
- * equivalentes locales) para que el símbolo quede localizable el día que
- * esos paquetes se porten. El único import real de este árbol es
- * `./cleanupRegistry.js` (portado en este mismo pase) y `./state.js`
- * (otro agente de esta tanda lo está escribiendo — NO se toca).
+ * equivalentes locales), así que cada símbolo se localiza por su ruta
+ * original.
  *
  * Los 33 pins SÍ exigen preservar literalmente la forma del código (nombres
  * de función, control de flujo, constantes) — ahí el literal ES el
@@ -63,15 +53,15 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   shutdownEventLoggers,
 } from '@thyrox/local-observability/compat'
-type AppState = unknown
+type AppState = import('../state/AppState.js').AppState
 import { runCleanupFunctions } from './cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { flushErrorRecording } from '@thyrox/local-observability/errorRecorder.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getInvokedBinaryName } from '@thyrox/config'
 import { getCurrentSessionTitle, sessionIdExists } from '@thyrox/storage/sessionStorage.js'
 import { sleep } from '@thyrox/config/sleep'
-import { closeSentry } from '@thyrox/local-observability/sentry.js'
 import { profileReport } from '../startup/startupProfiler.js'
 
 /**
@@ -162,10 +152,10 @@ export function cleanupTerminalModes(): void {
     // punto viejo
     if (supportsTabStatus()) writeSync(1, wrapForMultiplexer(CLEAR_TAB_STATUS))
     // Limpia el título de la terminal para que la pestaña no muestre
-    // info vieja de la sesión. Respeta CLAUDE_CODE_DISABLE_TERMINAL_TITLE
+    // info vieja de la sesión. Respeta THYROX_CODE_DISABLE_TERMINAL_TITLE
     // — si el usuario optó por no tener cambios de título, tampoco
     // limpiar su título existente al salir.
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_DISABLE_TERMINAL_TITLE)) {
       if (process.platform === 'win32') {
         process.title = ''
       } else {
@@ -264,24 +254,16 @@ function forceExit(exitCode: number): never {
   }
   try {
     process.exit(exitCode)
-  } catch (e) {
-    // process.exit() lanzó. En tests, está mockeado para lanzar - se
-    // re-lanza para que el test lo vea. En producción, probablemente es
-    // EIO de una terminal muerta - se usa SIGKILL.
-    if ((process.env.NODE_ENV as string) === 'test') {
-      throw e
-    }
-    // Recae en SIGKILL, que no intenta vaciar nada.
+  } catch {
+    // `process.exit` lanzó: el proceso no pudo salir por la vía normal (por
+    // ejemplo, al vaciar la salida sobre una terminal que ya no existe). Se
+    // mata con SIGKILL, que no intenta vaciar nada. Es la conducta del
+    // ejecutable (2.1.283, `Zmo.forceExit`), sin excepciones por entorno.
     process.kill(process.pid, 'SIGKILL')
   }
-  // En tests, process.exit puede estar mockeado para retornar en vez de
-  // salir. En producción, nunca deberíamos llegar aquí.
-  if ((process.env.NODE_ENV as string) !== 'test') {
-    throw new Error('unreachable')
-  }
-  // Truco de TypeScript: se castea a never ya que sabemos que esto solo
-  // pasa en tests donde el mock retorna en vez de salir
-  return undefined as never
+  // `process.exit` y SIGKILL no vuelven. Llegar aquí significa que alguien
+  // los sustituyó por algo que vuelve, y eso no se deja pasar en silencio.
+  throw new Error('unreachable')
 }
 
 /**
@@ -499,8 +481,9 @@ export function gracefulShutdownSync(
       printResumeHint()
       forceExit(exitCode)
     })
-    // Evita un rechazo no manejado: forceExit re-lanza en modo test, lo
-    // que escaparía del handler .catch() de arriba como un nuevo rechazo.
+    // Evita un rechazo no manejado: si forceExit lanza `unreachable` (una
+    // salida sustituida que volvió), escaparía del .catch() de arriba como
+    // un rechazo nuevo. El ejecutable cierra la cadena igual.
     .catch(() => {})
 }
 
@@ -536,7 +519,10 @@ export function getPendingShutdownForTesting(): Promise<void> | undefined {
 // Función de apagado ordenado que drena el event loop
 export async function gracefulShutdown(
   exitCode = 0,
-  reason: ExitReason = 'other',
+  // 'fatal' es una razón interna del detector de bucle de excepciones
+  // no atrapadas (línea de abajo) y no forma parte del contrato público
+  // ExitReason del SDK, que sólo cubre razones de sesión interactiva.
+  reason: ExitReason | 'fatal' = 'other',
   options?: {
     getAppState?: () => AppState
     setAppState?: (f: (prev: AppState) => AppState) => void
@@ -620,7 +606,7 @@ export async function gracefulShutdown(
 
   // Ejecuta los hooks SessionEnd. Se acota tanto el timeout por defecto
   // por hook como la ejecución completa vía un único presupuesto
-  // (CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS, default 1.5s).
+  // (THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS, default 1.5s).
   // hook.timeout en settings se respeta hasta este tope.
   try {
     await executeSessionEndHooks(reason, {
@@ -635,7 +621,7 @@ export async function gracefulShutdown(
   // Registra el rendimiento de arranque antes de que el apagado de
   // analytics vacíe/cancele timers
   try {
-    profileReport()
+    profileReport({ sessionId: getSessionId() })
   } catch {
     // Ignora errores de profiling durante el apagado
   }
@@ -653,10 +639,11 @@ export async function gracefulShutdown(
     })
   }
 
-  // Vacía los sinks locales restantes — acotado a 500ms.
+  // Vacía los sinks locales restantes y los registros de error pendientes —
+  // acotado a 500ms.
   try {
     await Promise.race([
-      Promise.all([shutdownEventLoggers(), closeSentry(2000)]),
+      Promise.all([shutdownEventLoggers(), flushErrorRecording()]),
       sleep(500),
     ])
   } catch {

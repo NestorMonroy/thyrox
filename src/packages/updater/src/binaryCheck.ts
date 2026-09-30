@@ -1,34 +1,27 @@
-/**
- * Puerto de `ccnmt: packages/updater/src/binaryCheck.ts` (53 líneas
- * fuente, 100% portado). Chequeo de binario instalado, con cache de
- * sesión (Map en memoria) para no repetir el `which` en cada llamada.
- */
-
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { which } from '@thyrox/shell/which.js'
 
-// Cache de sesion para evitar chequeos repetidos
+// Session cache to avoid repeated checks
 const binaryCache = new Map<string, boolean>()
 
 /**
- * Comprueba si un binario/comando esta instalado y disponible en el
- * sistema. Usa 'which' en sistemas Unix (macOS, Linux, WSL) y 'where' en
- * Windows.
+ * Check if a binary/command is installed and available on the system.
+ * Uses 'which' on Unix systems (macOS, Linux, WSL) and 'where' on Windows.
  *
- * @param command - El nombre del comando a chequear (p.ej. 'gopls', 'rust-analyzer')
- * @returns Promise<boolean> - true si el comando existe, false en otro caso
+ * @param command - The command name to check (e.g., 'gopls', 'rust-analyzer')
+ * @returns Promise<boolean> - true if the command exists, false otherwise
  */
 export async function isBinaryInstalled(command: string): Promise<boolean> {
-  // Caso borde: comando vacio o solo espacios
+  // Edge case: empty or whitespace-only command
   if (!command || !command.trim()) {
     logForDebugging('[binaryCheck] Empty command provided, returning false')
     return false
   }
 
-  // Recorta el comando para manejar espacios
+  // Trim the command to handle whitespace
   const trimmedCommand = command.trim()
 
-  // Chequea la cache primero
+  // Check cache first
   const cached = binaryCache.get(trimmedCommand)
   if (cached !== undefined) {
     logForDebugging(
@@ -42,7 +35,7 @@ export async function isBinaryInstalled(command: string): Promise<boolean> {
     exists = true
   }
 
-  // Cachea el resultado
+  // Cache the result
   binaryCache.set(trimmedCommand, exists)
 
   logForDebugging(
@@ -53,7 +46,7 @@ export async function isBinaryInstalled(command: string): Promise<boolean> {
 }
 
 /**
- * Limpia la cache de chequeo de binarios (util para testing)
+ * Clear the binary check cache (useful for testing)
  */
 export function clearBinaryCache(): void {
   binaryCache.clear()

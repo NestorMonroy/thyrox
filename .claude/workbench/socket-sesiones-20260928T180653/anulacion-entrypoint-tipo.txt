@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+115 | 
+116 |   test('THYROX_CODE_SESSION_KIND y el teammate descartan una sesión atendida', () => {
+117 |     const state = new EntrypointHostState()
+118 |     state.setInteractive(true)
+119 |     expect(isAttendedSession(context({}, { state }))).toBe(true)
+120 |     expect(isAttendedSession(context({ THYROX_CODE_SESSION_KIND: 'daemon' }, { state }))).toBe(false)
+                                                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:120:91)
+(fail) las demás variables del anfitrión > THYROX_CODE_SESSION_KIND y el teammate descartan una sesión atendida [0.38ms]
+
+ 15 pass
+ 1 fail
+ 87 expect() calls
+Ran 16 tests across 1 file. [50.00ms]

@@ -26,11 +26,7 @@ export function FallbackPermissionRequest({
   workerBadge,
 }: PermissionRequestProps): React.ReactNode {
   const [theme] = useTheme()
-  // Copia de `ccnmt: packages/permission/src/components/
-  // FallbackPermissionRequest.tsx` con los comentarios traducidos; el cuerpo es
-  // el de la fuente.
-  //
-  // TODO: evitar estos casos especiales.
+  // TODO: Avoid these special cases
   const originalUserFacingName = toolUseConfirm.tool.userFacingName(
     toolUseConfirm.input as never,
   )
@@ -57,7 +53,7 @@ export function FallbackPermissionRequest({
             event: 'accept',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
@@ -70,7 +66,7 @@ export function FallbackPermissionRequest({
             event: 'accept',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
@@ -96,7 +92,7 @@ export function FallbackPermissionRequest({
             event: 'reject',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
@@ -115,7 +111,7 @@ export function FallbackPermissionRequest({
       event: 'reject',
       metadata: {
         language_name: 'none',
-        message_id: toolUseConfirm.assistantMessage.message.id,
+        message_id: toolUseConfirm.assistantMessage.message.id ?? '',
         platform: env.platform,
       },
     })

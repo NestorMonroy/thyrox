@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+164 |     expect(withFiles.enqueued[0]!.value).toBe('[2 files] hola')
+165 |     expect(telemetry).toEqual([['uds', 2, 1]])
+166 |     const failing = harness({
+167 |       fileAttachments: {
+168 |         materialize: async () => {
+169 |           throw new Error('disco 0123456789abcdef0123')
+                          ^
+error: disco 0123456789abcdef0123
+      at materialize (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:169:21)
+      at deliverPeerUserMessage (/home/user/thyrox/src/packages/local-observability/src/uds/inboxDelivery.ts:166:50)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:175:11)
+(fail) deliverPeerUserMessage (ze) > adjuntos: antepone el prefijo cuando llega alguno; un fallo se avisa y no corta la entrega [0.69ms]
+
+ 15 pass
+ 1 fail
+ 36 expect() calls
+Ran 16 tests across 1 file. [59.00ms]

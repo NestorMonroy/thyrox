@@ -1,14 +1,3 @@
-/**
- * Porte fiel de `ccnmt: packages/provider/src/contracts.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO — el archivo es en su mayoría declaraciones de tipo (el
- * contrato público de un mensaje/tool/query de provider), más dos
- * funciones puras (`getEmptyProviderToolPermissionContext`,
- * `providerToolMatchesName`). Sin divergencias: sus únicos imports son
- * `@anthropic-ai/sdk` (type-only, se borra al transpilar) y `crypto`
- * (builtin de Node/Bun) — cero dependencias cruzadas de paquete.
- */
-import type { ClientOptions } from '@anthropic-ai/sdk'
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ContentBlock, ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { UUID } from 'crypto'
@@ -129,10 +118,19 @@ export type ProviderAgentDefinition = {
 }
 export type ProviderAgentId = string & { readonly __brand: 'AgentId' }
 export type ProviderEffortValue = string | number
+/**
+ * La notificación que el proveedor entrega al anfitrión: la de texto de
+ * `app-host/context/notifications.tsx`, sin sus campos de UI (`fold`,
+ * `color`, `jsx`). Con `priority: string` y un índice abierto, el
+ * callback del anfitrión —que acepta sólo las prioridades que sabe
+ * mostrar— no se podía pasar aquí.
+ */
 export type ProviderNotification = {
   key: string
-  priority: string
-  [key: string]: unknown
+  priority: 'low' | 'medium' | 'high' | 'immediate'
+  text: string
+  timeoutMs?: number
+  invalidates?: string[]
 }
 
 export type ProviderToolSchemaOptions = {
@@ -172,4 +170,3 @@ export type ProviderCachedAsyncFn<T> = (() => Promise<T>) & {
   }
 }
 
-type ProviderClientFetch = ClientOptions['fetch']

@@ -2,8 +2,8 @@
  * @claude-code-how-works/config/plugin — public surface of the plugin subsystem.
  *
  * V7 §8.6 / §10.1 — plugin discovery / loading / marketplace /
- * installation / validation. Migrated from src/utils/plugins/ in
- * Round 4. All cross-boundary deps flow through ./_deps.ts.
+ * installation / validation. All cross-boundary deps flow through
+ * ./_deps.ts.
  *
  * Callers should import from the leaf subpaths (e.g.
  * `@claude-code-how-works/config/plugin/pluginIdentifier`) to minimize their

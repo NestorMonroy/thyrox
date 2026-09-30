@@ -1,0 +1,115 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/cli": [
+        "./src/index.ts"
+      ],
+      "@thyrox/cli/exitCodes.js": [
+        "./src/exitCodes.ts"
+      ],
+      "@thyrox/cli/argv.js": [
+        "./src/argv.ts"
+      ],
+      "@thyrox/cli/print": [
+        "./src/print.ts"
+      ],
+      "@thyrox/cli/secureStorage/keychainPrefetch": [
+        "./src/secureStorage/keychainPrefetch.ts"
+      ],
+      "@thyrox/cli/structuredIOHelper": [
+        "./src/structuredIOHelper.ts"
+      ],
+      "@thyrox/cli/render": [
+        "./src/render.ts"
+      ],
+      "@thyrox/cli/resume": [
+        "./src/resume.ts"
+      ],
+      "@thyrox/cli/testing/impact": [
+        "./src/testing/impact.ts"
+      ],
+      "@thyrox/cli/testing/io": [
+        "./src/testing/io.ts"
+      ],
+      "@thyrox/cli/bg/daemonAdapter.js": [
+        "./src/bg/daemonAdapter.ts"
+      ],
+      "@thyrox/cli/bg/fleetReplyHelpers.js": [
+        "./src/bg/fleetReplyHelpers.ts"
+      ],
+      "@thyrox/cli/bg/openAgentsFromRepl.js": [
+        "./src/bg/openAgentsFromRepl.ts"
+      ],
+      "@thyrox/cli/bg/ptyFrame.js": [
+        "./src/bg/ptyFrame.ts"
+      ],
+      "@thyrox/cli/commands/version.js": [
+        "./src/commands/version.ts"
+      ],
+      "@thyrox/cli/bg.js": [
+        "./src/bg.ts"
+      ],
+      "@thyrox/cli/handlers/auth.js": [
+        "./src/handlers/auth.ts"
+      ],
+      "@thyrox/cli/mcpServersHandlers.js": [
+        "./src/mcpServersHandlers.ts"
+      ],
+      "@thyrox/cli/print.js": [
+        "./src/print.ts"
+      ],
+      "@thyrox/cli/secureStorage/keychainPrefetch.js": [
+        "./src/secureStorage/keychainPrefetch.ts"
+      ],
+      "@thyrox/cli/ssh/SSHSessionManager.js": [
+        "./src/ssh/SSHSessionManager.ts"
+      ],
+      "@thyrox/cli/ssh/createSSHSession.js": [
+        "./src/ssh/createSSHSession.ts"
+      ],
+      "@thyrox/cli/structuredIO.js": [
+        "./src/structuredIO.ts"
+      ],
+      "@thyrox/cli/structuredIOHelper.js": [
+        "./src/structuredIOHelper.ts"
+      ],
+      "@thyrox/cli/transports/HybridTransport.js": [
+        "./src/transports/HybridTransport.ts"
+      ],
+      "@thyrox/cli/host.js": [
+        "./src/host.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

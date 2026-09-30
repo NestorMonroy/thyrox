@@ -1,14 +1,3 @@
-/**
- * Clonado de una cache de estado de archivo — porte de
- * `ccnmt: packages/agent/internal/fileStateCache.ts`.
- *
- * El clon se construye vía el constructor de la instancia ORIGINAL, no de
- * una clase fija: si `cache` es una subclase, `cloneFileStateCache` conserva
- * el tipo de subclase en el resultado. El estado se transfiere por
- * `dump()`/`load()` — la cache no expone su Map interno, y así el clon queda
- * desacoplado del original desde el primer momento.
- */
-
 export interface FileStateCache {
   readonly max: number
   readonly maxSize: number
@@ -16,11 +5,17 @@ export interface FileStateCache {
   load(entries: unknown): void
 }
 
-export function cloneFileStateCache(cache: FileStateCache): FileStateCache {
+/**
+ * Genérico sobre el tipo concreto de la caché: el clon es de la misma
+ * clase que el original (se construye con su `constructor`), así que el
+ * llamador recibe de vuelta el tipo que entregó — la clase real del
+ * registro de herramientas en QueryEngine, un stub en los tests.
+ */
+export function cloneFileStateCache<T extends FileStateCache>(cache: T): T {
   const ctor = cache.constructor as new (
     maxEntries: number,
     maxSizeBytes: number,
-  ) => FileStateCache
+  ) => T
   const cloned = new ctor(cache.max, cache.maxSize)
   cloned.load(cache.dump())
   return cloned

@@ -1,0 +1,4 @@
+  ok    una salida sin sello no da procedencia; la da la primera publicada
+  ok    control: sin el filtro de cerrados, la salida sin sello la da
+test_pool_pipeline: 68 aserciones — 68 ok, 0 falla(s)
+__BG_EXIT__=0

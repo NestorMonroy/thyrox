@@ -1,0 +1,194 @@
+== 1: vida de una hora
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > is exchanged for the selected organization and kept fifty minutes [7.20ms]
+ 13 pass
+ 1 fail
+== 2: catálogo de 50 min
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.28ms]
+ 13 pass
+ 1 fail
+== 3: sin 401
+   (src/accounts/zed/zedLlm.ts)
+(fail) when to renew the LLM token > on a 401 or an expired or outdated header [0.41ms]
+(fail) a request with the LLM token > carries it as bearer, and is retried once with a fresh token when rejected [0.58ms]
+ 12 pass
+ 2 fail
+== 4: sin cabecera caducada
+   (src/accounts/zed/zedLlm.ts)
+(fail) when to renew the LLM token > on a 401 or an expired or outdated header [0.39ms]
+ 13 pass
+ 1 fail
+== 5: sin cabecera obsoleta
+   (src/accounts/zed/zedLlm.ts)
+(fail) when to renew the LLM token > on a 401 or an expired or outdated header [0.87ms]
+ 13 pass
+ 1 fail
+== 6: id en arreglo
+   (src/accounts/zed/zedLlm.ts)
+ 14 pass
+ 0 fail
+== 7: id en objeto
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.44ms]
+ 13 pass
+ 1 fail
+== 8: sin nombre camel
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > a raw model is mapped with both spellings of each field [0.46ms]
+ 13 pass
+ 1 fail
+== 9: esfuerzo sin vacío
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > a raw model is mapped with both spellings of each field [0.47ms]
+ 13 pass
+ 1 fail
+== 10: sin razón nula
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > a raw model is mapped with both spellings of each field [0.43ms]
+ 13 pass
+ 1 fail
+== 11: sin preguntar la organización
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > without a declared organization it asks the user, and without any it fails [0.64ms]
+ 13 pass
+ 1 fail
+== 12: organización explícita ignorada
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > a forced refresh skips the cache, and another token or organization is another entry [0.40ms]
+ 13 pass
+ 1 fail
+== 13: clave sin token
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > a forced refresh skips the cache, and another token or organization is another entry [0.48ms]
+ 13 pass
+ 1 fail
+== 14: forzar no fuerza
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > a forced refresh skips the cache, and another token or organization is another entry [0.53ms]
+(fail) a request with the LLM token > carries it as bearer, and is retried once with a fresh token when rejected [0.54ms]
+ 12 pass
+ 2 fail
+== 15: sin system id
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > is exchanged for the selected organization and kept fifty minutes [1.39ms]
+ 13 pass
+ 1 fail
+== 16: base fija
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > the cloud base URL is configurable [0.31ms]
+ 13 pass
+ 1 fail
+== 17: token en arreglo
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > the token may come as an array or an object, and its absence is an error [0.31ms]
+ 13 pass
+ 1 fail
+== 18: sin token no falla
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > the token may come as an array or an object, and its absence is an error [0.54ms]
+ 13 pass
+ 1 fail
+== 19: error sin estado
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > an HTTP error carries the server message and status [0.30ms]
+ 13 pass
+ 1 fail
+== 20: error anidado
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed LLM token > an HTTP error carries the server message and status [0.32ms]
+ 13 pass
+ 1 fail
+== 21: sin reintento
+   (src/accounts/zed/zedLlm.ts)
+(fail) a request with the LLM token > carries it as bearer, and is retried once with a fresh token when rejected [0.70ms]
+ 13 pass
+ 1 fail
+== 22: reintento sin forzar
+   (src/accounts/zed/zedLlm.ts)
+(fail) a request with the LLM token > carries it as bearer, and is retried once with a fresh token when rejected [0.65ms]
+ 13 pass
+ 1 fail
+== 23: cabeceras perdidas
+   (src/accounts/zed/zedLlm.ts)
+(fail) a request with the LLM token > carries it as bearer, and is retried once with a fresh token when rejected [0.85ms]
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [0.99ms]
+ 12 pass
+ 2 fail
+== 24: base LLM fija
+   (src/accounts/zed/zedLlm.ts)
+(fail) a request with the LLM token > the LLM base URL is configurable [0.37ms]
+ 13 pass
+ 1 fail
+== 25: sin xAI
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.51ms]
+ 13 pass
+ 1 fail
+== 26: fallo sin error
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > without an access token there is none, and a failed request is an error [0.58ms]
+ 13 pass
+ 1 fail
+== 27: desactivados dentro
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.05ms]
+ 13 pass
+ 1 fail
+== 28: rawById con vacíos
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [0.85ms]
+ 13 pass
+ 1 fail
+== 29: recomendados con vacíos
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.16ms]
+ 13 pass
+ 1 fail
+== 30: rápido camel
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.11ms]
+ 13 pass
+ 1 fail
+== 31: sin token de usuario
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > without an access token there is none, and a failed request is an error [0.58ms]
+ 13 pass
+ 1 fail
+== 32: caché de catálogo ignorada
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.41ms]
+ 13 pass
+ 1 fail
+== 33: sin compartir en vuelo
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > concurrent reads share one request, and a forced one does not [0.86ms]
+ 13 pass
+ 1 fail
+== 34: forzado comparte
+   (src/accounts/zed/zedLlm.ts)
+ 14 pass
+ 0 fail
+== 35: limpiar deja tokens
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > clearing the caches asks again [0.48ms]
+ 13 pass
+ 1 fail
+== 36: limpiar deja modelos
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > clearing the caches asks again [0.58ms]
+ 13 pass
+ 1 fail
+== restaurado
+ 14 pass
+ 0 fail
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/accounts/zed/zedLlm.test.ts(73,18): error TS2339: Property 'message' does not exist on type 'string | (Error & { status?: number | undefined; })'.
+__tests__/accounts/zed/zedLlm.test.ts(74,18): error TS2339: Property 'status' does not exist on type 'string | (Error & { status?: number | undefined; })'.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+ 0 fail
+ 2055 expect() calls
+Ran 637 tests across 42 files. [5.42s]
+__BG_EXIT__=0

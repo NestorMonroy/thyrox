@@ -73,8 +73,13 @@ sembrar() {
 }
 
 # correr <raiz> -> imprime el codigo de salida de --strict
+# El roster del arbol sintetico lo declara la suite: sin declararlo, el gate lo
+# DERIVA de los hermanos del clon real (hoy sólo `kaupamex-docs`), y los otros
+# cuatro repos que `sembrar` crea quedan fuera de la medicion sin avisar.
+SYNTHETIC_ROSTER="api,db,docs,server,ui"
+
 correr() {
-    CHECK_GITATTRIBUTES_REPOS_ROOT="$1" \
+    THYROX_REACH_ROOTS="$SYNTHETIC_ROSTER" CHECK_GITATTRIBUTES_REPOS_ROOT="$1" \
         python3 "$GATE" --quiet --strict >/dev/null 2>&1
     echo "$?"
 }
@@ -217,7 +222,7 @@ PY
 # --- Caso 6: un repo ausente NO se cuenta como aprobado ----------------------
 sembrar "$TMP/parcial" "$CANONICO"
 rm -rf "$TMP/parcial/kaupamex-server"
-SALIDA="$(CHECK_GITATTRIBUTES_REPOS_ROOT="$TMP/parcial" python3 "$GATE" --quiet 2>&1)"
+SALIDA="$(THYROX_REACH_ROOTS="$SYNTHETIC_ROSTER" CHECK_GITATTRIBUTES_REPOS_ROOT="$TMP/parcial" python3 "$GATE" --quiet 2>&1)"
 comprobar "6a. con un repo fuera, el alcance baja a 4" "si" \
     "$(grep -q 'alcance medido: 4 de 5' <<<"$SALIDA" && echo si || echo no)"
 comprobar "6b. el repo ausente se nombra" "si" \

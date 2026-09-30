@@ -1,0 +1,21 @@
+== A1 drop trailing
+(fail) claude-code handler — strips ALL consecutive trailing assistant turns, not just one [3.42ms]
+ 73 pass
+ 1 fail
+== A2 agent header
+(fail) copilot handler — rewrites model and forwards to /v1/chat/completions [2.48ms]
+ 73 pass
+ 1 fail
+== A3 downstream cancel
+ 74 pass
+ 0 fail
+== restored
+ 74 pass
+ 0 fail
+== A3b downstream cancel, con caso nuevo
+(fail) pipeSSE cancels the upstream source when the downstream closes [26.09ms]
+ 74 pass
+ 1 fail
+== restored
+ 75 pass
+ 0 fail

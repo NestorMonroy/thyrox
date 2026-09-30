@@ -1,0 +1,1 @@
+function Zq(t){if(!t.startsWith("/"))return!1;let e=k.get(t);if(e===void 0){if(e=nr(t),k.size>=Mt)k.clear();k.set(t,e)}return e}

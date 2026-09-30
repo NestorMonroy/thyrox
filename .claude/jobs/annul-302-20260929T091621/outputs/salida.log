@@ -1,0 +1,4 @@
+with-fix: test-headless-pool-worktree: 32 aserciones — 32 ok, 0 falla(s)
+lineas con el arreglo tras anular: 0
+without-fix: test-headless-pool-worktree: 32 aserciones — 29 ok, 3 falla(s)
+__BG_EXIT__=0

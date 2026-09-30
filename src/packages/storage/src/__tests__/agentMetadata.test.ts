@@ -13,19 +13,19 @@ import {
 import { setOriginalCwd, setSessionId, setSessionProjectDir } from '../sessionPaths.js'
 
 let configDir: string
-const ORIGINAL_ENV = process.env.CLAUDE_CONFIG_DIR
+const ORIGINAL_ENV = process.env.THYROX_CONFIG_DIR
 
 beforeEach(async () => {
   configDir = await mkdtemp(join(tmpdir(), 'agent-metadata-'))
-  process.env.CLAUDE_CONFIG_DIR = configDir
+  process.env.THYROX_CONFIG_DIR = configDir
   setSessionProjectDir(join(configDir, 'projects', 'proyecto-agentes'))
   setSessionId('sesion-agentmetadata-1')
   setOriginalCwd('/home/user/no-deberia-usarse')
 })
 
 afterEach(async () => {
-  if (ORIGINAL_ENV === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = ORIGINAL_ENV
+  if (ORIGINAL_ENV === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = ORIGINAL_ENV
   setSessionProjectDir(null)
   await rm(configDir, { recursive: true, force: true })
 })

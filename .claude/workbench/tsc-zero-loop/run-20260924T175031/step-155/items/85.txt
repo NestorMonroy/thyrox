@@ -1,0 +1,46 @@
+src/packages/storage/src/claudemd.ts(1173,10): error TS6133: 'consumeNextEagerLoadReason' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:1163-1183 ---
+   1163        }
+   1164      } catch {
+   1165        // El directorio no existe; se omite la resolución para este patrón
+   1166      }
+   1167    }
+   1168  
+   1169    return expanded
+   1170  }
+   1171  
+   1172  // --- porte por miembros: un ancla por ítem ---
+   1173> function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+   1174    if (!shouldFireHook) return undefined
+   1175    shouldFireHook = false
+   1176    const reason = nextEagerLoadReason
+   1177    nextEagerLoadReason = 'session_start'
+   1178    return reason
+   1179  }
+   1180  // Extrae referencias de inclusión @path de tokens ya lexeados y las
+   1181  // resuelve a rutas absolutas. Salta los tokens html para que los @paths
+   1182  // dentro de comentarios de bloque se ignoren — quien llama puede pasar
+   1183  // tokens previos al strip.
+src/packages/storage/src/claudemd.ts(1354,10): error TS6133: 'isInstructionsMemoryType' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:1344-1364 ---
+   1344      )),
+   1345    )
+   1346  
+   1347    // processedPaths se siembra con las rutas incondicionales para los directorios subsiguientes
+   1348    for (const path of unconditionalProcessedPaths) {
+   1349      processedPaths.add(path)
+   1350    }
+   1351  
+   1352    return result
+   1353  }
+   1354> function isInstructionsMemoryType(
+   1355    type: MemoryType,
+   1356  ): type is InstructionsMemoryType {
+   1357    return (
+   1358      type === 'User' ||
+   1359      type === 'Project' ||
+   1360      type === 'Local' ||
+   1361      type === 'Managed'
+   1362    )
+   1363  }
+   1364  /**

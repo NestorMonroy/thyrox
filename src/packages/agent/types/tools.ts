@@ -1,6 +1,13 @@
-
+/**
+ * Porte de `ccnmt: packages/agent/types/tools.ts` — el contrato de una
+ * herramienta ejecutable por el bucle (`CoreTool`), su resultado
+ * (`ToolResult`) y el veredicto de permiso que decide si se ejecuta.
+ *
+ * DIVERGENCIA declarada: la fuente importa `type { z } from 'zod/v4'` pero
+ * no lo usa en ningún tipo del archivo (import muerto). No se porta —
+ * evita una dependencia que el cuerpo del archivo nunca ejercita.
+ */
 import type { CoreContentBlock } from './messages.js'
-
 
 export type ToolInputJSONSchema = {
   type: 'object'
@@ -17,7 +24,6 @@ export interface CoreTool {
   readonly isMcp?: boolean
 }
 
-
 export type ToolResult = {
   output: string | CoreContentBlock[]
   error?: boolean
@@ -27,13 +33,11 @@ export type ToolResult = {
   }
 }
 
-
 export interface ToolExecContext {
   abortSignal: AbortSignal
   toolUseId: string
   [key: string]: unknown
 }
-
 
 export type PermissionResult =
   | { allowed: true }

@@ -1,0 +1,2 @@
+src/packages/repl/src/screens/REPLView.tsx(300,10): error TS2724: '"@thyrox/agent/promptCategory.js"' has no exported member named 'getQuerySourceForREPL'. Did you mean 'getQuerySourceForAgent'?
+src/packages/repl/src/screens/REPLView.tsx(348,10): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'partialCompactConversation'.

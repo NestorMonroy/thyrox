@@ -5,7 +5,7 @@ import { getPlatform } from '@thyrox/config/platform'
 import type { KeybindingBlock } from '@anthropic/ink'
 
 /**
- * Default keybindings that match current Claude Code behavior.
+ * Default keybindings that match current thyrox behavior.
  * These are loaded first, then user keybindings.json overrides them.
  */
 

@@ -12,7 +12,6 @@ Qué tiene que garantizar, según ``plan-tsc-zero.rst``:
 """
 from __future__ import annotations
 
-import random
 import sys
 from pathlib import Path
 
@@ -110,6 +109,11 @@ check("mismo proponente: primero el de más objetivos", ["big", "small"], order)
 check("revealed no cuenta en el registro", {"p": (1, 0)},
              count_ledger([{"proposer": "p", "outcome": "accepted"},
                               {"proposer": "p", "outcome": "revealed"}]))
+
+# Lo que la revisión de conducta tumbó y lo parcial conservado sí cuentan.
+check("rejected-review cuenta en contra y accepted-partial a favor", {"p": (1, 1)},
+      count_ledger([{"proposer": "p", "outcome": "accepted-partial"},
+                    {"proposer": "p", "outcome": "rejected-review"}]))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

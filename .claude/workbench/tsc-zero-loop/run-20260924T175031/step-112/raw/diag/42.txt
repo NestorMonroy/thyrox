@@ -1,0 +1,2 @@
+src/packages/agent/query.ts(452,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+src/packages/agent/query.ts(453,9): error TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.

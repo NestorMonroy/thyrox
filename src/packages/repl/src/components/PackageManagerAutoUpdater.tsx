@@ -31,14 +31,14 @@ const execFileAsync = promisify(execFile)
  * Build the actual argv for a given package manager.
  * Mirrors ant v2.1.136 `ZI3` (4910.js) byte-for-byte.
  *
- *   homebrew → ["brew", "upgrade", "--cask", formulaName ?? "claude-code-how-works-how-works"]
+ *   homebrew → ["brew", "upgrade", "--cask", formulaName ?? "claude-code"]
  *   winget   → ["%LOCALAPPDATA%/Microsoft/WindowsApps/winget.exe",
  *               "upgrade", "--id", "Anthropic.ClaudeCode",
  *               "--exact", "--silent", "--disable-interactivity"]
  *
  * `formulaName` is the actual installed Homebrew cask name (e.g.
- * `claude-code-how-works-how-works` or `claude-code-how-works-how-works@latest`) — `brew upgrade --cask
- * claude-code-how-works-how-works` will NOT touch `claude-code-how-works-how-works@latest` installs, so we
+ * `claude-code` or `claude-code@latest`) — `brew upgrade --cask
+ * claude-code` will NOT touch `claude-code@latest` installs, so we
  * must thread the detected name through.
  */
 function buildUpgradeArgv(
@@ -47,7 +47,7 @@ function buildUpgradeArgv(
 ): string[] | null {
   switch (pm) {
     case 'homebrew':
-      return ['brew', 'upgrade', '--cask', formulaName ?? 'claude-code-how-works-how-works']
+      return ['brew', 'upgrade', '--cask', formulaName ?? 'claude-code']
     case 'winget': {
       const localAppData = process.env.LOCALAPPDATA
       const wingetPath = localAppData
@@ -72,10 +72,10 @@ function buildUpgradeArgv(
  * Build the user-displayed update command for the warning banner.
  * Mirrors ant v2.1.136 `LI3` (4910.js) byte-for-byte:
  *
- *   homebrew → `brew upgrade ${formulaName ?? "claude-code-how-works-how-works"}`
+ *   homebrew → `brew upgrade ${formulaName ?? "claude-code"}`
  *   winget   → `winget upgrade Anthropic.ClaudeCode`
  *   mise     → `mise upgrade claude`
- *   apk      → `apk upgrade claude-code-how-works-how-works`
+ *   apk      → `apk upgrade claude-code`
  *   default  → "your package manager update command"
  *
  * pacman, deb, and rpm don't get specific commands because they each
@@ -88,13 +88,13 @@ function buildUpdateCommand(
 ): string {
   switch (pm) {
     case 'homebrew':
-      return `brew upgrade ${formulaName ?? 'claude-code-how-works-how-works'}`
+      return `brew upgrade ${formulaName ?? 'claude-code'}`
     case 'winget':
       return 'winget upgrade Anthropic.ClaudeCode'
     case 'mise':
       return 'mise upgrade claude'
     case 'apk':
-      return 'apk upgrade claude-code-how-works-how-works'
+      return 'apk upgrade claude-code'
     default:
       return 'your package manager update command'
   }
@@ -180,11 +180,11 @@ export function PackageManagerAutoUpdater({
         : 'latest'
     if (pm === 'homebrew') {
       // Ant `MyK` channel-selection branch:
-      // `g = Q === 'claude-code-how-works-how-works@latest' ? 'latest' : 'stable'`. When
+      // `g = Q === 'claude-code@latest' ? 'latest' : 'stable'`. When
       // the user installed the bleeding-edge formula, track 'latest';
       // otherwise track stable.
       formulaName = detectBrewFormulaName()
-      channel = formulaName === 'claude-code-how-works-how-works@latest' ? 'latest' : 'stable'
+      channel = formulaName === 'claude-code@latest' ? 'latest' : 'stable'
     }
 
     // Per-pm latest fetch:
@@ -193,7 +193,7 @@ export function PackageManagerAutoUpdater({
     //   - others:   GCS channel pointer.
     let latest =
       pm === 'homebrew'
-        ? await getLatestVersionForBrew(formulaName ?? 'claude-code-how-works-how-works', channel)
+        ? await getLatestVersionForBrew(formulaName ?? 'claude-code', channel)
         : await getLatestVersionFromGcs(channel)
     const maxVersion = await getMaxVersion()
 
@@ -229,14 +229,14 @@ export function PackageManagerAutoUpdater({
     )
 
     // Ant `MyK`: actually run the upgrade only when:
-    //   - `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE` env is truthy
+    //   - `THYROX_CODE_PACKAGE_MANAGER_AUTO_UPDATE` env is truthy
     //   - `buildUpgradeArgv(pm)` returns a non-null argv (i.e. pm is
     //     homebrew or winget — the others get a banner-only hint)
     //   - we didn't cap (`s = true` in ant): when capped, the user is
     //     already at/above maxVersion's "upgrade" semantics — running
     //     `brew upgrade` would re-fetch a possibly older cask without
     //     advancing the user. Ant gates on `!s`.
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_PACKAGE_MANAGER_AUTO_UPDATE)) {
       return
     }
     const argv = buildUpgradeArgv(pm, formulaName)

@@ -1,0 +1,1 @@
+function myt(e,n,r){let s=null;for(let g of e){let h=_a(g,n,r,"allow");if(!h){let y=FGt(g);if(y!==g)h=_a(y,n,r,"allow")}if(!h)return null;s??=h}return s}

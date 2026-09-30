@@ -1,14 +1,9 @@
 /**
- * Porte fiel de `ccnmt: packages/provider/src/fileConstants.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO — cero dependencias cruzadas de paquete.
- */
-/**
- * Extensiones de archivo binario a saltar en operaciones de texto — no se
- * pueden comparar de forma significativa como texto y suelen ser grandes.
+ * Binary file extensions to skip for text-based operations.
+ * These files can't be meaningfully compared as text and are often large.
  */
 export const BINARY_EXTENSIONS = new Set([
-  // Imágenes
+  // Images
   '.png',
   '.jpg',
   '.jpeg',
@@ -39,7 +34,7 @@ export const BINARY_EXTENSIONS = new Set([
   '.wma',
   '.aiff',
   '.opus',
-  // Archivos comprimidos
+  // Archives
   '.zip',
   '.tar',
   '.gz',
@@ -50,7 +45,7 @@ export const BINARY_EXTENSIONS = new Set([
   '.z',
   '.tgz',
   '.iso',
-  // Ejecutables/binarios
+  // Executables/binaries
   '.exe',
   '.dll',
   '.so',
@@ -64,7 +59,7 @@ export const BINARY_EXTENSIONS = new Set([
   '.msi',
   '.deb',
   '.rpm',
-  // Documentos (el PDF está aquí; FileReadTool lo excluye en el call site)
+  // Documents (PDF is here; FileReadTool excludes it at the call site)
   '.pdf',
   '.doc',
   '.docx',
@@ -75,13 +70,13 @@ export const BINARY_EXTENSIONS = new Set([
   '.odt',
   '.ods',
   '.odp',
-  // Fuentes tipográficas
+  // Fonts
   '.ttf',
   '.otf',
   '.woff',
   '.woff2',
   '.eot',
-  // Bytecode / artefactos de VM
+  // Bytecode / VM artifacts
   '.pyc',
   '.pyo',
   '.class',
@@ -91,13 +86,13 @@ export const BINARY_EXTENSIONS = new Set([
   '.node',
   '.wasm',
   '.rlib',
-  // Archivos de base de datos
+  // Database files
   '.sqlite',
   '.sqlite3',
   '.db',
   '.mdb',
   '.idx',
-  // Diseño / 3D
+  // Design / 3D
   '.psd',
   '.ai',
   '.eps',
@@ -110,14 +105,14 @@ export const BINARY_EXTENSIONS = new Set([
   // Flash
   '.swf',
   '.fla',
-  // Datos de lock/profiling
+  // Lock/profiling data
   '.lockb',
   '.dat',
   '.data',
 ])
 
 /**
- * Comprueba si una ruta tiene una extensión binaria.
+ * Check if a file path has a binary extension.
  */
 export function hasBinaryExtension(filePath: string): boolean {
   const ext = filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
@@ -125,27 +120,27 @@ export function hasBinaryExtension(filePath: string): boolean {
 }
 
 /**
- * Cantidad de bytes a leer para detectar contenido binario.
+ * Number of bytes to read for binary content detection.
  */
 const BINARY_CHECK_SIZE = 8192
 
 /**
- * Comprueba si un buffer tiene contenido binario, buscando bytes nulos o
- * una proporción alta de caracteres no imprimibles.
+ * Check if a buffer contains binary content by looking for null bytes
+ * or a high proportion of non-printable characters.
  */
 export function isBinaryContent(buffer: Buffer): boolean {
-  // Revisa los primeros BINARY_CHECK_SIZE bytes (o el buffer entero si es menor)
+  // Check first BINARY_CHECK_SIZE bytes (or full buffer if smaller)
   const checkSize = Math.min(buffer.length, BINARY_CHECK_SIZE)
 
   let nonPrintable = 0
   for (let i = 0; i < checkSize; i++) {
     const byte = buffer[i]!
-    // Un byte nulo es un indicador fuerte de binario
+    // Null byte is a strong indicator of binary
     if (byte === 0) {
       return true
     }
-    // Cuenta bytes no imprimibles y que no sean espacio en blanco
-    // (ASCII imprimible es 32-126, más los espacios comunes 9, 10, 13)
+    // Count non-printable, non-whitespace bytes
+    // Printable ASCII is 32-126, plus common whitespace (9, 10, 13)
     if (
       byte < 32 &&
       byte !== 9 && // tab
@@ -156,6 +151,6 @@ export function isBinaryContent(buffer: Buffer): boolean {
     }
   }
 
-  // Si más del 10% es no imprimible, probablemente es binario
+  // If more than 10% non-printable, likely binary
   return nonPrintable / checkSize > 0.1
 }

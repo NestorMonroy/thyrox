@@ -128,7 +128,7 @@ Sin embargo, los requisitos del sistema que aparecen inicialmente como NFR puede
 evolucionar hacia FUR software como avances del proyecto. Por tan to, es importante 
 distinguir los dos tipos de requisitos y la evolución de las necesidades. 
 NEGOCIO Ejemplo: Los requisitos para un nuevo sistema de software incluye la declaración 
-de las necesidades del usuario la opción de archivos seguros mediante la en criptación '. El 
+de las necesidades del usuario la opción de archivos seguros mediante la encriptación '. El 
 proyecto para desarrollar el sistema se encuentra en la etapa de estimación de esfuerzo y 
 costo. Se consideran dos opciones: 
 • Desarrollar algún tipo de software de cifrado propietario. Para la estimación de los 
@@ -1372,7 +1372,7 @@ funcionalidad NM debe ser ignorada.
 El tamaño del cambio en el método COSMIC incluye cambios en cualquiera de los elementos 
 que contribuyen al tamaño, incluyendo las manipulaciones de datos de movimientos de datos. 
 Ejemplo 1: una manipulación de datos A se modifica, por ejemplo, cambiando el cálculo, la 
-específicación de formato, la presentación, y / o validación de los datos. 'Presentación' puede 
+especificación de formato, la presentación, y / o validación de los datos. 'Presentación' puede 
 significar, por ejemplo, el tipo de letra, color de fondo, la longitud del campo, enc abezado de 
 campo, el número de decimales, etc. 
 Ejemplo 2: Supongamos que una solicitud de cambio para un proceso funcional requiere tres 

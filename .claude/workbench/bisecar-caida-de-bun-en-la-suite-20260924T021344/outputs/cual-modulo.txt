@@ -1,0 +1,3 @@
+DESAPARECE sin src/packages/provider/src/errors.ts
+SIGUE cayendo sin src/packages/config/settings/settings.ts
+SIGUE cayendo sin src/packages/agent/internalUtils.ts

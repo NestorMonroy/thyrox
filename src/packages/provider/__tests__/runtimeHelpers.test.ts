@@ -9,6 +9,7 @@
  * El contrato de estos casos es la lectura del fuente, no una suite portada.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import type { BetaTool } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import {
   TOOL_SEARCH_TOOL_NAME,
   calculateUSDCost,
@@ -210,7 +211,7 @@ describe('toolToAPISchema', () => {
     const s = (await toolToAPISchema(
       { name: 'Bash', description: 'corre', inputJSONSchema: { type: 'object', properties: { c: {} } } } as never,
       opciones,
-    )) as Record<string, unknown>
+    )) as BetaTool
     expect(s.name).toBe('Bash')
     expect(s.description).toBe('corre')
     expect(s.input_schema).toEqual({ type: 'object', properties: { c: {} } })
@@ -220,7 +221,7 @@ describe('toolToAPISchema', () => {
     const s = (await toolToAPISchema(
       { name: 'X', description: () => 'calculada' } as never,
       opciones,
-    )) as Record<string, unknown>
+    )) as BetaTool
     expect(s.description).toBe('calculada')
   })
 
@@ -236,7 +237,7 @@ describe('toolToAPISchema', () => {
         },
       } as never,
       { tools: ['t'], agents: ['a'], allowedAgentTypes: ['x'] } as never,
-    )) as Record<string, unknown>
+    )) as BetaTool
     expect(s.description).toBe('del prompt')
     expect(recibido?.tools).toEqual(['t'])
     expect(recibido?.agents).toEqual(['a'])
@@ -244,18 +245,12 @@ describe('toolToAPISchema', () => {
   })
 
   test('sin descripcion queda cadena vacia, no undefined', async () => {
-    const s = (await toolToAPISchema({ name: 'X' } as never, opciones)) as Record<
-      string,
-      unknown
-    >
+    const s = (await toolToAPISchema({ name: 'X' } as never, opciones)) as BetaTool
     expect(s.description).toBe('')
   })
 
   test('sin inputJSONSchema cae al esquema de objeto vacio', async () => {
-    const s = (await toolToAPISchema({ name: 'X' } as never, opciones)) as Record<
-      string,
-      unknown
-    >
+    const s = (await toolToAPISchema({ name: 'X' } as never, opciones)) as BetaTool
     expect(s.input_schema).toEqual({ type: 'object', properties: {} })
   })
 
@@ -263,22 +258,19 @@ describe('toolToAPISchema', () => {
     const s = (await toolToAPISchema(
       { name: 'X', inputJSONSchema: [1, 2] } as never,
       opciones,
-    )) as Record<string, unknown>
+    )) as BetaTool
     expect(s.input_schema).toEqual({ type: 'object', properties: {} })
   })
 
   test('deferLoading y cacheControl solo aparecen si se piden', async () => {
-    const sin = (await toolToAPISchema({ name: 'X' } as never, opciones)) as Record<
-      string,
-      unknown
-    >
+    const sin = (await toolToAPISchema({ name: 'X' } as never, opciones)) as BetaTool
     expect(sin).not.toHaveProperty('defer_loading')
     expect(sin).not.toHaveProperty('cache_control')
 
     const con = (await toolToAPISchema(
       { name: 'X' } as never,
-      { ...opciones, deferLoading: true, cacheControl: { type: 'ephemeral' } } as never,
-    )) as Record<string, unknown>
+      { ...(opciones as Record<string, unknown>), deferLoading: true, cacheControl: { type: 'ephemeral' } } as never,
+    )) as BetaTool
     expect(con.defer_loading).toBe(true)
     expect(con.cache_control).toEqual({ type: 'ephemeral' })
   })

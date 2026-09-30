@@ -1,0 +1,1 @@
+function QU(e){return e.startsWith(eue)?e:`${eue}${e}`}

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2979, "total_final": 2969, "tsc_runs": 1, "accepted": ["agent:dynamic-skills-exports"], "files_kept": ["src/packages/command-runtime/src/skills/loadSkillsDir.ts"], "outcomes": {"agent:dynamic-skills-exports": "accepted-net"}}

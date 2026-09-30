@@ -10,25 +10,25 @@ let originalConfigDir: string | undefined
 
 function useTmpConfigDir(): void {
   dir = mkdtempSync(join(tmpdir(), 'plaintextstorage-test-'))
-  process.env.CLAUDE_CONFIG_DIR = dir
+  process.env.THYROX_CONFIG_DIR = dir
 }
 
 afterEach(() => {
-  if (originalConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+  if (originalConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = originalConfigDir
   if (dir) rmSync(dir, { recursive: true, force: true })
   setOriginalFsImplementation()
 })
 
 describe('plainTextStorage.read / readAsync', () => {
   test('sin archivo de credenciales, read() devuelve null', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     expect(plainTextStorage.read()).toBeNull()
   })
 
   test('sin archivo de credenciales, readAsync() devuelve null', async () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     expect(await plainTextStorage.readAsync()).toBeNull()
   })
@@ -36,7 +36,7 @@ describe('plainTextStorage.read / readAsync', () => {
 
 describe('plainTextStorage.update / read / delete — ciclo completo', () => {
   test('update() crea el directorio de config, escribe con permisos 0o600, y read() lo recupera', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     const result = plainTextStorage.update({ token: 'sk-ant-xyz' })
     expect(result).toEqual({
@@ -52,14 +52,14 @@ describe('plainTextStorage.update / read / delete — ciclo completo', () => {
   })
 
   test('readAsync() recupera lo mismo que update() escribio', async () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     plainTextStorage.update({ token: 'async-token' })
     expect(await plainTextStorage.readAsync()).toEqual({ token: 'async-token' })
   })
 
   test('update() es idempotente si el directorio de config ya existe', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     plainTextStorage.update({ a: 1 })
     const second = plainTextStorage.update({ a: 2 })
@@ -68,7 +68,7 @@ describe('plainTextStorage.update / read / delete — ciclo completo', () => {
   })
 
   test('delete() borra el archivo y read() posterior devuelve null', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     plainTextStorage.update({ token: 'x' })
     expect(plainTextStorage.delete()).toBe(true)
@@ -76,7 +76,7 @@ describe('plainTextStorage.update / read / delete — ciclo completo', () => {
   })
 
   test('delete() sobre un archivo YA ausente (ENOENT) devuelve true, no false', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     expect(plainTextStorage.delete()).toBe(true)
   })
@@ -84,7 +84,7 @@ describe('plainTextStorage.update / read / delete — ciclo completo', () => {
 
 describe('plainTextStorage — ramas de error', () => {
   test('update() ante un mkdirSync que falla con algo distinto de EEXIST devuelve success:false', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     setFsImplementation({
       ...NodeFsOperations,
@@ -98,7 +98,7 @@ describe('plainTextStorage — ramas de error', () => {
   })
 
   test('delete() ante un unlinkSync que falla con algo distinto de ENOENT devuelve false', () => {
-    originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
     useTmpConfigDir()
     plainTextStorage.update({ x: 1 })
     setFsImplementation({

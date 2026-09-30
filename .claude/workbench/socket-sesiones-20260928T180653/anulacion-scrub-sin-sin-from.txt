@@ -1,0 +1,48 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTextScrub.test.ts:
+71 |     expect(scrubPeerMessageText(`<cross-session-message from="from-plugin">\nb\n${CLOSE}`)).toBe(`<\\cross-session-message from="from-plugin">\nb\n<\\/cross-session-message>`)
+72 |   })
+73 | 
+74 |   test('sin from sólo se acepta cuando lo permite quien llama', () => {
+75 |     const bare = `<cross-session-message>\nb\n${CLOSE}`
+76 |     expect(scrubEnvelopeContent(bare, true)).toBe(bare)
+                                                  ^
+error: expect(received).toBe(expected)
+
+- "<cross-session-message>
++ "<\cross-session-message>
+  b
+- </cross-session-message>"
++ <\/cross-session-message>"
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTextScrub.test.ts:76:46)
+(fail) scrubEnvelopeContent (m) y scrubPeerMessageText (g9r) > sin from sólo se acepta cuando lo permite quien llama [0.53ms]
+84 | })
+85 | 
+86 | describe('scrubToolMessageContent (ioe)', () => {
+87 |   test('texto: el sobre sin from sólo vale desde la herramienta de mensajes', () => {
+88 |     const bare = `<cross-session-message>\nb\n${CLOSE}`
+89 |     expect(scrubToolMessageContent(bare, MCP_SEND_MESSAGE_TOOL)).toBe(bare)
+                                                                      ^
+error: expect(received).toBe(expected)
+
+- "<cross-session-message>
++ "<\cross-session-message>
+  b
+- </cross-session-message>"
++ <\/cross-session-message>"
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTextScrub.test.ts:89:66)
+(fail) scrubToolMessageContent (ioe) > texto: el sobre sin from sólo vale desde la herramienta de mensajes [0.53ms]
+
+ 16 pass
+ 2 fail
+ 22 expect() calls
+Ran 18 tests across 1 file. [68.00ms]

@@ -1,0 +1,7 @@
+cd src/packages/agent && bun test __tests__/AgentLoop.test.ts __tests__/attachments.test.ts __tests__/causalChain.test.ts __tests__/compat.test.ts __tests__/contextGovernance.test.ts __tests__/contextPressure.test.ts __tests__/emit.test.ts __tests__/hooksEvents.test.ts __tests__/loop.test.ts __tests__/schema.test.ts __tests__/stopHookBlockCap.test.ts __tests__/stream.test.ts __tests__/tokenBudgetLoop.test.ts > ../../../.claude/workbench/unbounded-turns-20260929T000035/agent-tests.txt 2>&1
+cd src/packages/cli && bun test __tests__/maxTurnsEnv.test.ts __tests__/cli.test.ts __tests__/compressToolResultsWiring.test.ts __tests__/loopStreaming.test.ts __tests__/print.test.ts __tests__/printDelegation.test.ts __tests__/thinking.test.ts > ../../../.claude/workbench/unbounded-turns-20260929T000035/cli-tests.txt 2>&1
+cd src/packages/agent && bunx tsc --noEmit -p tsconfig.json > ../../../.claude/workbench/unbounded-turns-20260929T000035/tsc-agent.txt 2>&1
+cd src/packages/cli && bunx tsc --noEmit -p tsconfig.json > ../../../.claude/workbench/unbounded-turns-20260929T000035/tsc-cli.txt 2>&1
+bash tests/session/test-headless-pool.sh > .claude/workbench/unbounded-turns-20260929T000035/pool-tests.txt 2>&1
+bash tests/session/test-headless-pool-thyrox-p.sh > .claude/workbench/unbounded-turns-20260929T000035/pool-thyrox-p-tests.txt 2>&1
+bun test tests/integration/cli-arguments.test.ts > .claude/workbench/unbounded-turns-20260929T000035/cli-arguments.txt 2>&1

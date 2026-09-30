@@ -1,0 +1,18 @@
+[
+ {
+  "before": "src/packages/agent/task/framework.ts(53,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.",
+  "after": "src/packages/agent/task/framework.ts(53,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | T; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'."
+ },
+ {
+  "before": "src/packages/config/plugin/loadPluginHooks.ts(118,25): error TS2345: Argument of type 'Record<\"SessionStart\" | \"UserPromptSubmit\" | \"PreToolUse\" | \"PostToolUse\" | \"Stop\" | \"SessionEnd\" | \"PreCompact\" | \"PostCompact\" | \"PreModelSwitch\" | \"PostModelSwitch\" | \"SubagentStart\" | \"SubagentStop\", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.",
+  "after": "src/packages/config/plugin/loadPluginHooks.ts(118,25): error TS2345: Argument of type 'Record<\"PreToolUse\" | \"PostToolUse\" | \"UserPromptSubmit\" | \"SessionStart\" | \"SessionEnd\" | \"Stop\" | \"SubagentStart\" | \"SubagentStop\" | \"PreCompact\" | \"PostCompact\" | \"PreModelSwitch\" | \"PostModelSwitch\", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'."
+ },
+ {
+  "before": "src/packages/config/plugin/loadPluginHooks.ts(180,25): error TS2345: Argument of type 'Partial<Record<\"SessionStart\" | \"UserPromptSubmit\" | \"PreToolUse\" | \"PostToolUse\" | \"Stop\" | \"SessionEnd\" | \"PreCompact\" | \"PostCompact\" | \"PreModelSwitch\" | \"PostModelSwitch\" | \"SubagentStart\" | \"SubagentStop\", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.",
+  "after": "src/packages/config/plugin/loadPluginHooks.ts(180,25): error TS2345: Argument of type 'Partial<Record<\"PreToolUse\" | \"PostToolUse\" | \"UserPromptSubmit\" | \"SessionStart\" | \"SessionEnd\" | \"Stop\" | \"SubagentStart\" | \"SubagentStop\" | \"PreCompact\" | \"PostCompact\" | \"PreModelSwitch\" | \"PostModelSwitch\", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'."
+ },
+ {
+  "before": "src/packages/repl/src/processUserInput/processSlashCommand.tsx(1358,5): error TS2322: Type 'unknown[]' is not assignable to type '(AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.",
+  "after": "src/packages/repl/src/processUserInput/processSlashCommand.tsx(1358,5): error TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'."
+ }
+]

@@ -1,0 +1,64 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/startupFailure.test.ts:
+37 | describe('cwdUnavailableMessage (rt)', () => {
+38 |   test('1. un cwd legible no da mensaje', () => {
+39 |     expect(cwdUnavailableMessage(() => '/tmp')).toBeUndefined()
+40 |   })
+41 |   test('2. ENOENT da el mensaje del directorio borrado', () => {
+42 |     expect(cwdUnavailableMessage(() => { throw codeError('ENOENT') })).toBe(
+                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "The current directory no longer exists (it was deleted or moved). Start thyrox from an existing directory."
+Received: "The current directory no longer exists (it was deleted or moved). Start Claude Code from an existing directory."
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupFailure.test.ts:42:72)
+(fail) cwdUnavailableMessage (rt) > 2. ENOENT da el mensaje del directorio borrado [0.33ms]
+41 |   test('2. ENOENT da el mensaje del directorio borrado', () => {
+42 |     expect(cwdUnavailableMessage(() => { throw codeError('ENOENT') })).toBe(
+43 |       'The current directory no longer exists (it was deleted or moved). Start thyrox from an existing directory.')
+44 |   })
+45 |   test('3. otro codigo lo nombra entre parentesis', () => {
+46 |     expect(cwdUnavailableMessage(() => { throw codeError('EACCES') })).toBe(
+                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "Can't read the current directory (EACCES). Start thyrox from a different directory."
+Received: "Can't read the current directory (EACCES). Start Claude Code from a different directory."
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupFailure.test.ts:46:72)
+(fail) cwdUnavailableMessage (rt) > 3. otro codigo lo nombra entre parentesis [0.09ms]
+45 |   test('3. otro codigo lo nombra entre parentesis', () => {
+46 |     expect(cwdUnavailableMessage(() => { throw codeError('EACCES') })).toBe(
+47 |       "Can't read the current directory (EACCES). Start thyrox from a different directory.")
+48 |   })
+49 |   test('4. sin codigo, el mensaje generico sin parentesis', () => {
+50 |     expect(cwdUnavailableMessage(() => { throw 'no es un Error' })).toBe(
+                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: "Can't read the current directory. Start thyrox from a different directory."
+Received: "Can't read the current directory. Start Claude Code from a different directory."
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupFailure.test.ts:50:69)
+(fail) cwdUnavailableMessage (rt) > 4. sin codigo, el mensaje generico sin parentesis [0.06ms]
+121 | 
+122 | describe('el nombre del producto en los mensajes de arranque', () => {
+123 |   test('5. sale de PRODUCT_NAME, no de un literal del binario', () => {
+124 |     expect(PRODUCT_NAME).toBe('thyrox')
+125 |     const source = readFileSync(join(import.meta.dir, '../src/entry/cwdCheck.ts'), 'utf8')
+126 |     expect(source).not.toContain('Claude Code')
+                             ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "Claude Code"
+Received: "/**\n * El chequeo de cwd con que la capa `cli` del binario abre (`rt`, 2.1.282 y\n * 2.1.283; extraido con `bin/binary symbol cli rt` a\n * `.claude/workbench/entry-point-<fecha>/symbol/`).\n *\n * Un cwd borrado o ilegible no falla aqui sino mas adentro, en el primer\n * `process.cwd()` de cualquier modulo, con un rastro que no dice que hacer.\n * La capa de entrada lo mide antes que nada y da el mensaje accionable.\n *\n * El cwd se inyecta para que el caso se pueda probar sin borrar el\n * directorio del proceso que corre la suite.\n */\nimport { PRODUCT_NAME } from './productName.ts'\nexport function cwdUnavailableMessage(getCwd: () => string = () => process.cwd()): string | undefined {\n  try {\n    getCwd()\n    return undefined\n  } catch (error) {\n    const code = error instanceof Error && 'code' in error && typeof error.code === 'string'\n      ? error.code\n      : undefined\n    if (code === 'ENOENT') {\n      return `The current directory no longer exists (it was deleted or moved). Start Claude Code from an existing directory.`\n    }\n    return `Can't read the current directory${code ? ` (${code})` : ''}. Start Claude Code from a different directory.`\n  }\n}\n\n/**\n * La rama completa de `rt` en la capa `cli`: mensaje por stderr, la linea\n * `result` si el cliente la pidio, y salida 1. Todo se inyecta porque en este\n * runtime el caso no se puede provocar de punta a punta — medido: Bun rehusa\n * arrancar desde un cwd borrado (su propio error, exit 1, antes de ejecutar\n * JS), y si el directorio se borra despues, `process.cwd()` devuelve la ruta\n * cacheada sin lanzar. Solo Node lanza `ENOENT`, y el binario conserva `rt`\n * porque su `cli` tambien corre bajo Node.\n */\nexport async function exitIfCwdUnavailable(io: {\n  getCwd?: () => string\n  writeError?: (message: string) => void\n  writeResult?: (failure: { sessionId: string; message: string; reason: string }) => Promise<void>\n  newSessionId?: () => string\n  exit?: (code: number) => never\n} = {}): Promise<void> {\n  const message = cwdUnavailableMessage(io.getCwd)\n  if (!message) return\n  ;(io.writeError ?? (m => console.error(m)))(message)\n  const writeResult = io.writeResult\n    ?? (await import('./startupFailure.ts')).writeStartupFailureResult\n  const newSessionId = io.newSessionId ?? (await import('node:crypto')).randomUUID\n  await writeResult({ sessionId: newSessionId(), message, reason: 'cwd_unavailable' })\n  ;(io.exit ?? (code => process.exit(code)))(1)\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupFailure.test.ts:126:24)
+(fail) el nombre del producto en los mensajes de arranque > 5. sale de PRODUCT_NAME, no de un literal del binario [0.26ms]
+
+ 9 pass
+ 4 fail
+ 27 expect() calls
+Ran 13 tests across 1 file. [61.00ms]

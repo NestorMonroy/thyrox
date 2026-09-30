@@ -1,0 +1,15 @@
+     SessionStart     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/item_worktree sweep-orphans /home/user/kaupamex-api
+     SessionStart     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/item_worktree sweep-orphans /home/user/kaupamex-docs
+     PreModelSwitch   rc=0  bun run /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/src/packages/agent/bin/preModelSwitch.ts
+     PreToolUse       rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/tool_use_preflight
+     SubagentStop     rc=0  node /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/src/agents/save_result.mjs --log-dir /tmp/tmp6gnbdo3_/consumer/.claude/agent-results
+     SubagentStop     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/measure_delta --stop --repo api=/home/user/kaupamex-api --repo docs=/home/user/kaupamex-docs --results-dir /tmp/tmp6gnbdo3_/consumer/.claude/agent-results
+     SubagentStop     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/register_session --stop
+     TaskCreated      rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/task_lifecycle
+     TaskCompleted    rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/399b7ec81ddd/1/bin/task_lifecycle
+== 18-bis. CONTROL DE ANULACION: task_lifecycle vuelve a su .py sin bin/ ==
+  ok    18-bis.0 el comando original esta presente antes de anular
+  ok    18-bis.1 la anulacion tocó exactamente los dos comandos de task_lifecycle
+  ok    18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas
+
+95 ok, 0 fallos

@@ -1,27 +1,22 @@
 /**
- * Puerto de `ccnmt: packages/config/remote/syncCache.ts` (45 líneas
- * fuente). Reimplementación fiel VERBATIM.
+ * Eligibility check for remote managed settings.
  *
- * Chequeo de elegibilidad para settings managed remotos.
+ * The cache state itself lives in syncCacheState.ts (a leaf, no auth import).
+ * This file keeps isRemoteManagedSettingsEligible — the one function that
+ * needs auth/provider state — plus resetSyncCache wrapped to clear the local
+ * eligibility mirror alongside the leaf's state.
  *
- * El estado de la caché vive en `syncCacheState.ts` (una hoja, sin import
- * de auth). Este archivo conserva `isRemoteManagedSettingsEligible` — la
- * única función que necesita estado de auth/provider — más
- * `resetSyncCache` envuelto para limpiar el espejo local de elegibilidad
- * junto con el estado de la hoja.
- *
- * config no puede importar de provider/auth (Wave 3). La lógica completa
- * de elegibilidad se inyecta vía
- * `ConfigHostBindings.checkRemoteSettingsEligibility`, instalada por el
- * app-host en tiempo de composición. config sólo la llama y cachea el
- * resultado.
+ * V7 §8.6: config cannot import from provider/auth (Wave 3 domain core).
+ * The full eligibility logic is injected via ConfigHostBindings.
+ * checkRemoteSettingsEligibility, installed by the app-host at composition
+ * time. Config only calls it and caches the result.
  */
 
-import { getConfigHostBindings } from '../host.ts'
+import { getConfigHostBindings } from '../host.js'
 import {
   resetSyncCache as resetLeafCache,
   setEligibility,
-} from './syncCacheState.ts'
+} from './syncCacheState.js'
 
 let cached: boolean | undefined
 
@@ -31,20 +26,18 @@ export function resetSyncCache(): void {
 }
 
 /**
- * Comprueba si el usuario actual es elegible para settings managed
- * remotos.
+ * Check if the current user is eligible for remote managed settings.
  *
- * Delega en el binding del host (que comprueba tokens OAuth, API key, tipo
- * de proveedor, URL base, entrypoint) y cachea el resultado.
+ * Delegates to the host binding (which checks OAuth tokens, API key,
+ * provider type, base URL, entrypoint) and caches the result.
  */
 export function isRemoteManagedSettingsEligible(): boolean {
   if (cached !== undefined) return cached
 
   const check = getConfigHostBindings().checkRemoteSettingsEligibility
   if (!check) {
-    // El binding del host no está instalado (bootstrap temprano, tests, o
-    // corridas headless que se saltan settings remotos). Conservador: no
-    // elegible.
+    // Host binding not installed (early bootstrap, tests, or headless runs
+    // that skip remote settings). Conservative: not eligible.
     return (cached = setEligibility(false))
   }
 

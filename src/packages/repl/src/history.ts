@@ -4,7 +4,7 @@ import { getProjectRoot, getSessionId } from '@thyrox/app-host/bootstrap/state.j
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import type { HistoryEntry, PastedContent } from '@thyrox/config'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { readLinesReverse } from '@thyrox/storage/fsOperations.js'
 import { lock } from '@thyrox/storage/lockfile.js'
@@ -32,7 +32,7 @@ type StoredPastedContent = {
 }
 
 /**
- * Claude Code parses history for pasted content references to match back to
+ * thyrox parses history for pasted content references to match back to
  * pasted content. The references look like:
  *   Text: [Pasted text #1 +10 lines]
  *   Image: [Image #2]
@@ -112,7 +112,7 @@ async function* makeLogEntryReader(): AsyncGenerator<LogEntry> {
   }
 
   // Read from global history file (shared across all projects)
-  const historyPath = join(getClaudeConfigHomeDir(), 'history.jsonl')
+  const historyPath = join(getConfigHomeDir(), 'history.jsonl')
 
   try {
     for await (const line of readLinesReverse(historyPath)) {
@@ -296,7 +296,7 @@ async function immediateFlushHistory(): Promise<void> {
 
   let release
   try {
-    const historyPath = join(getClaudeConfigHomeDir(), 'history.jsonl')
+    const historyPath = join(getConfigHomeDir(), 'history.jsonl')
 
     // Ensure the file exists before acquiring lock (append mode creates if missing)
     await writeFile(historyPath, '', {
@@ -409,9 +409,9 @@ async function addToPromptHistory(
 }
 
 export function addToHistory(command: HistoryEntry | string): void {
-  // Skip history when running in a tmux session spawned by Claude Code's Tungsten tool.
+  // Skip history when running in a tmux session spawned by thyrox's Tungsten tool.
   // This prevents verification/test sessions from polluting the user's real command history.
-  if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY)) {
+  if (isEnvTruthy(process.env.THYROX_CODE_SKIP_PROMPT_HISTORY)) {
     return
   }
 

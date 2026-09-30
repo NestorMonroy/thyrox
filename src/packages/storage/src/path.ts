@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/path.ts`.
- * La version anterior portaba 4 de 6 exports, y los suyos eran
- * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
- * Divergencia frente a la fuente: ninguna, salvo el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
- * Refs: TASK-THYROX-0199.
- */
-
 import { homedir } from 'os'
 import { dirname, isAbsolute, join, normalize, relative, resolve } from 'path'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'

@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/storageKeys.test.ts:
+106 |     expect(storageKeyTuple(storageKeys.globalConfig())).toEqual(['globalConfig'])
+107 |     expect(storageKeyTuple(storageKeys.globalConfigCopy('k', 't'))).toEqual(['globalConfig', 'k', 't'])
+108 |     expect(storageKeyTuple(storageKeys.userSettings())).toEqual(['settings', 'user'])
+109 |     expect(storageKeyTuple(storageKeys.projectSettings('p'))).toEqual(['settings', 'project', 'p'])
+110 |     expect(storageKeyTuple(storageKeys.localSettings('c'))).toEqual(['settings', 'local', 'c'])
+111 |     expect(storageKeyTuple(storageKeys.taskListMeta('l'))).toEqual(['task', 'l', true])
+                                                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "l",
+-   true,
++   undefined,
+  ]
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/storageKeys.test.ts:111:60)
+(fail) forma canónica (K, mhn, SUo) > las ramas con alternativa [0.51ms]
+
+ 10 pass
+ 1 fail
+ 63 expect() calls
+Ran 11 tests across 1 file. [79.00ms]

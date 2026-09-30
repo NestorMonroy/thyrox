@@ -4,7 +4,7 @@
  * extractMemories,agentMemory,sessionMemoryUtils,sessionMemoryPrompts,
  * memdir/memoryScan}.ts`), vienen de OTROS paquetes del monorepo —
  * `@claude-code-how-works/config` (los subpaths `/feature-flags`,
- * `/settings`, `/env/utils`'s `getClaudeConfigHomeDir`),
+ * `/settings`, `/env/utils`'s `getConfigHomeDir`),
  * `@claude-code-how-works/permission/filesystem`,
  * `@claude-code-how-works/agent/frontmatterParser.js` y
  * `@claude-code-how-works/repl/readFileInRange.js`. Ninguno de esos cinco
@@ -27,7 +27,7 @@
  *   sustituto es FIEL para el subconjunto de flags que `memory` realmente
  *   lee (`tengu_moth_copse`, `tengu_bramble_lintel`, `tengu_passport_quail`,
  *   `tengu_herring_clock`, `tengu_coral_fern`, `tengu_slate_thimble`):
- *   mismo mecanismo de override (`CLAUDE_CODE_FEATURE_OVERRIDES`, JSON) y la
+ *   mismo mecanismo de override (`THYROX_CODE_FEATURE_OVERRIDES`, JSON) y la
  *   misma tabla `LOCAL_GATE_DEFAULTS` recortada a esas seis claves —
  *   verbatim contra `config/feature-flags.ts:88,97` (`tengu_passport_quail:
  *   true`, `tengu_coral_fern: true`; las otras cuatro NO están en la tabla
@@ -111,7 +111,7 @@ const configOverrides = new Map<string, FeatureValue>()
 function parseEnvOverrides(): Record<string, FeatureValue> {
   if (envOverridesParsed) return envOverrides
   envOverridesParsed = true
-  const raw = process.env.CLAUDE_CODE_FEATURE_OVERRIDES
+  const raw = process.env.THYROX_CODE_FEATURE_OVERRIDES
   if (!raw) {
     envOverrides = {}
     return envOverrides
@@ -216,27 +216,9 @@ export function clearSettingsForTesting(): void {
   _settingsForSource = {}
 }
 
-// ── getClaudeConfigHomeDir ───────────────────────────────────────────────────
+// ── getConfigHomeDir ───────────────────────────────────────────────────
 
-/**
- * Puerto fiel de `config/env/utils.ts:20` (`getClaudeConfigHomeDir`) —
- * `@thyrox/config/env/utils.ts` sólo porta `isEnvTruthy`/`readEnv`/
- * `getAllEnv`; esta función quedó fuera de ese porte. Memoizado por
- * `CLAUDE_CONFIG_DIR` con la misma llave que la fuente (sin `lodash-es`:
- * un caché de un solo valor con invalidación manual basta).
- */
-let _configHomeDirCache: { key: string | undefined; value: string } | null =
-  null
-
-export function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  if (_configHomeDirCache && _configHomeDirCache.key === key) {
-    return _configHomeDirCache.value
-  }
-  const value = (key ?? join(homedir(), '.claude')).normalize('NFC')
-  _configHomeDirCache = { key, value }
-  return value
-}
+export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ── getSessionMemoryPath ─────────────────────────────────────────────────────
 

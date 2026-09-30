@@ -31,15 +31,15 @@ describe('getEffectiveContextWindowSize', () => {
     expect(getEffectiveContextWindowSize('m', d)).toBe(200_000 - 20_000)
   })
 
-  test('CLAUDE_CODE_AUTO_COMPACT_WINDOW acota la ventana por arriba antes de restar la reserva', () => {
-    const d = deps({ CLAUDE_CODE_AUTO_COMPACT_WINDOW: '50000' })
+  test('THYROX_CODE_AUTO_COMPACT_WINDOW acota la ventana por arriba antes de restar la reserva', () => {
+    const d = deps({ THYROX_CODE_AUTO_COMPACT_WINDOW: '50000' })
     expect(getEffectiveContextWindowSize('m', d)).toBe(50_000 - 8_000)
   })
 
   test('un override inválido (no numérico o <= 0) se ignora', () => {
-    const negative = deps({ CLAUDE_CODE_AUTO_COMPACT_WINDOW: '-5' })
+    const negative = deps({ THYROX_CODE_AUTO_COMPACT_WINDOW: '-5' })
     expect(getEffectiveContextWindowSize('m', negative)).toBe(200_000 - 8_000)
-    const notNumeric = deps({ CLAUDE_CODE_AUTO_COMPACT_WINDOW: 'x' })
+    const notNumeric = deps({ THYROX_CODE_AUTO_COMPACT_WINDOW: 'x' })
     expect(getEffectiveContextWindowSize('m', notNumeric)).toBe(200_000 - 8_000)
   })
 })
@@ -49,20 +49,20 @@ describe('getAutoCompactThreshold', () => {
     expect(getAutoCompactThreshold('m', deps())).toBe(200_000 - 8_000 - AUTOCOMPACT_BUFFER_TOKENS)
   })
 
-  test('CLAUDE_AUTOCOMPACT_PCT_OVERRIDE gana SÓLO si es más estricto que el umbral por buffer', () => {
+  test('THYROX_AUTOCOMPACT_PCT_OVERRIDE gana SÓLO si es más estricto que el umbral por buffer', () => {
     // 10% de 192000 = 19200, muy por debajo del umbral por buffer (179000)
-    const strict = deps({ CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '10' })
+    const strict = deps({ THYROX_AUTOCOMPACT_PCT_OVERRIDE: '10' })
     expect(getAutoCompactThreshold('m', strict)).toBe(19_200)
   })
 
   test('un porcentaje MÁS LAXO que el umbral por buffer nunca lo relaja (gana el min)', () => {
     // 99% de 192000 = 190080, por encima del umbral por buffer (179000)
-    const lax = deps({ CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '99' })
+    const lax = deps({ THYROX_AUTOCOMPACT_PCT_OVERRIDE: '99' })
     expect(getAutoCompactThreshold('m', lax)).toBe(200_000 - 8_000 - AUTOCOMPACT_BUFFER_TOKENS)
   })
 
   test('un porcentaje fuera de (0, 100] se ignora', () => {
-    const outOfRange = deps({ CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: '150' })
+    const outOfRange = deps({ THYROX_AUTOCOMPACT_PCT_OVERRIDE: '150' })
     expect(getAutoCompactThreshold('m', outOfRange)).toBe(200_000 - 8_000 - AUTOCOMPACT_BUFFER_TOKENS)
   })
 })
@@ -91,8 +91,8 @@ describe('calculateTokenWarningState', () => {
     expect(state.isAboveErrorThreshold).toBe(false)
   })
 
-  test('isAtBlockingLimit usa el override de CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE cuando es válido', () => {
-    const d = deps({ CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE: '100' })
+  test('isAtBlockingLimit usa el override de THYROX_CODE_BLOCKING_LIMIT_OVERRIDE cuando es válido', () => {
+    const d = deps({ THYROX_CODE_BLOCKING_LIMIT_OVERRIDE: '100' })
     const state = calculateTokenWarningState(100, 'm', d, false)
     expect(state.isAtBlockingLimit).toBe(true)
   })

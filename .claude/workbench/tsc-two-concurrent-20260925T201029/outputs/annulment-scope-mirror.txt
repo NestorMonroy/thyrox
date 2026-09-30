@@ -1,0 +1,2 @@
+  FALLA un paquete nuevo en un alcance ya reflejado también se refleja — esperado True, obtenido False
+test_measure_worktree: 9 aserciones — 8 ok, 1 falla(s)

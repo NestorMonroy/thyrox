@@ -151,8 +151,8 @@ def audit(root: pathlib.Path):
             if not resolve(root, f, entry):
                 broken.append(f"{f.relative_to(root)}:{line_no}: -> {entry}")
 
-    huerfanos = sorted(p.relative_to(root) for p in all - seen)
-    return broken, huerfanos, len(seen), len(all)
+    orphans = sorted(p.relative_to(root) for p in all - seen)
+    return broken, orphans, len(seen), len(all)
 
 
 def main(argv: list[str]) -> int:
@@ -160,20 +160,20 @@ def main(argv: list[str]) -> int:
     roots = [a for a in argv[1:] if not a.startswith("-")]
     root = pathlib.Path(roots[0]) if roots else source_root()
 
-    broken, huerfanos, reachable, total = audit(root)
+    broken, orphans, reachable, total = audit(root)
     for row in broken:
         print(f"ROTA      {row}")
-    for h in huerfanos:
+    for h in orphans:
         print(f"HUERFANO  {h}")
 
-    if broken or huerfanos:
+    if broken or orphans:
         print(f"\ncheck-rst-toctree: {len(broken)} entrada(s) rota(s), "
-              f"{len(huerfanos)} huerfano(s)")
+              f"{len(orphans)} huerfano(s)")
     else:
         print("check-rst-toctree: OK — todas las entradas resuelven y ningun "
               "documento queda fuera del indice")
     print(f"  (alcance medido: {reachable} alcanzable(s) de {total} .rst)")
-    return 1 if ((broken or huerfanos) and strict) else 0
+    return 1 if ((broken or orphans) and strict) else 0
 
 
 if __name__ == "__main__":

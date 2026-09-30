@@ -17,17 +17,17 @@
  */
 import { afterAll, beforeAll, describe, expect, mock, test } from 'bun:test'
 
-// CLAUDE_CONFIG_DIR drives getClaudeConfigHomeDir directly (memoized,
+// THYROX_CONFIG_DIR drives getConfigHomeDir directly (memoized,
 // cache-key is the env var itself). Setting the env var avoids mock.module,
 // which is process-wide pollution in bun-test. See
 // feedback_self_audit_before_declaring_done.md.
-const savedConfigDir = process.env.CLAUDE_CONFIG_DIR
+const savedConfigDir = process.env.THYROX_CONFIG_DIR
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_DIR = '/home/user/.claude'
+  process.env.THYROX_CONFIG_DIR = '/home/user/.claude'
 })
 afterAll(() => {
-  if (savedConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = savedConfigDir
+  if (savedConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = savedConfigDir
 })
 
 // managedPath is path-resolution only; mocking is OK (it doesn't bleed

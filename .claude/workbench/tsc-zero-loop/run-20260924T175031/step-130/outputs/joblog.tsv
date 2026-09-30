@@ -1,0 +1,3 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+2	:	1790362594.497	   119.916	0	0	0	0	_headless_item 2 'module:src/packages/cli/src/entry/mode-dispatch.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-130/items/2.txt src/packages/cli/src/entry/run-program.ts'
+1	:	1790362594.484	   176.772	0	0	1	0	_headless_item 1 'module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-130/items/1.txt src/packages/repl/src/components/messages/AttachmentMessage.tsx src/packages/repl/src/processUserInput/processSlashCommand.tsx src/packages/repl/src/processUserInput/processUserInput.ts src/packages/repl/src/screens/REPLView.tsx'

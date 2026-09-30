@@ -1,0 +1,7 @@
+Record who owns each piece of thyrox data
+
+Running a job does not make the daemon the owner of what it produces.
+The daemon owns execution and its level-A files; tasks, findings and
+errors belong to their domains and reach @thyrox/store through them.
+The measurement found one gap: the daemon logs job failures as events
+and never calls recordError, so a failed job is not a persistent error.

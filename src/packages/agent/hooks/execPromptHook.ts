@@ -21,6 +21,7 @@ import type { PromptHook } from '@thyrox/config/types'
 import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import { roughTokenCountEstimationForMessage } from '../tokenEstimation.js'
 import { addArgumentsToPrompt, hookResponseSchema } from './hookHelpers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Ant `Cu3` (4793.js): fraction of evaluator's context window the truncator
@@ -279,7 +280,7 @@ export async function execPromptHook(
     // missing capability, assistant has explicitly exhausted options).
     // Non-Stop hooks keep the simpler 2-shape schema.
     const evaluatorSystemPrompt = isStopEvent
-      ? `You are evaluating a stop-condition hook in Claude Code. Read the conversation transcript carefully, then judge whether the user-provided condition is satisfied.
+      ? `You are evaluating a stop-condition hook in ${PRODUCT_NAME}. Read the conversation transcript carefully, then judge whether the user-provided condition is satisfied.
 
 Your response must be a JSON object with one of these shapes:
 - {"ok": true, "reason": "<quote evidence from the transcript that satisfies the condition>"}
@@ -295,7 +296,7 @@ Important judgement rules:
 - A condition like "until the user replies / responds / says X" requires a NEW user message AFTER the goal was set. The goal-setting message itself is the request, not the reply.
 - Only count statements the assistant actually produced toward goals like "say X". The condition itself is not evidence; the assistant's output is.
 - If in doubt, return ok:false. False positives end the loop early; false negatives just let the agent keep working.`
-      : `You are evaluating a hook condition in Claude Code. Judge whether the user-provided condition is met.
+      : `You are evaluating a hook condition in ${PRODUCT_NAME}. Judge whether the user-provided condition is met.
 
 Your response must be a JSON object with one of these shapes:
 - {"ok": true, "reason": "<reason the condition is met>"}
@@ -356,7 +357,6 @@ Always include a "reason" field.`
           `Hooks: prompt-hook evaluator API error: ${errText}`,
         )
         return {
-          hook,
           outcome: 'non_blocking_error',
           message: createAttachmentMessage({
             type: 'hook_non_blocking_error',
@@ -422,7 +422,6 @@ Always include a "reason" field.`
         // The model gets a non_blocking_error attachment but the turn ends
         // normally (ant 4793.js does the same — it's the only safe choice).
         return {
-          hook,
           outcome: 'non_blocking_error',
           message: createAttachmentMessage({
             type: 'hook_non_blocking_error',
@@ -453,7 +452,7 @@ Always include a "reason" field.`
             stdout: fullResponse,
             exitCode: 1,
           }),
-        }
+        } as HookResult
       }
 
       // Failed to meet condition
@@ -500,7 +499,7 @@ Always include a "reason" field.`
           preventContinuation:
             !isStopEvent && (hook as { continueOnBlock?: boolean }).continueOnBlock !== true,
           stopReason: parsed.data.reason,
-        }
+        } as HookResult
       }
 
       // Condition was met
@@ -516,7 +515,7 @@ Always include a "reason" field.`
           hookEvent,
           content: '',
         }),
-      }
+      } as HookResult
     } catch (error) {
       cleanupSignal()
 
@@ -524,7 +523,7 @@ Always include a "reason" field.`
         return {
           hook,
           outcome: 'cancelled',
-        }
+        } as HookResult
       }
       throw error
     }
@@ -543,6 +542,6 @@ Always include a "reason" field.`
         stdout: '',
         exitCode: 1,
       }),
-    }
+    } as HookResult
   }
 }

@@ -1,0 +1,6 @@
+0 src/packages/provider/__tests__/geminiIndexImpl.test.ts
+0 src/packages/provider/__tests__/adapters.test.ts
+0 src/packages/provider/__tests__/openaiIndexImpl.test.ts
+0 src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts
+0 src/packages/provider/src/__tests__/advisor.test.ts
+0 tests/unit/utils/tokens.test.ts

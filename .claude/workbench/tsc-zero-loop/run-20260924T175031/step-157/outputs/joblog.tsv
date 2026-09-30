@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790386398.990	   240.484	0	0	0	0	_headless_item 1 'type:Message .claude/workbench/tsc-zero-loop/run-20260924T175031/step-157/items/1.txt src/packages/agent/loop/types.ts src/packages/agent/query.ts src/packages/context-compression/src/lite.ts src/packages/repl/src/conversationRecovery.tsx src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts'

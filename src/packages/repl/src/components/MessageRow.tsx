@@ -1,9 +1,10 @@
 import * as React from 'react'
+import type { ToolUseBlockParam } from '@anthropic-ai/sdk/resources/messages/messages.mjs'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import { Box } from '@anthropic/ink'
 import type { Screen } from '../screens/REPL.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
-import type { RenderableMessage } from '@thyrox/agent/messageShapes'
+import type { NormalizedMessage, ProgressMessage, RenderableMessage } from '@thyrox/agent/messageShapes'
 import {
   getDisplayMessageFromCollapsed,
   getToolSearchOrReadInfo,
@@ -103,7 +104,9 @@ export function hasContentAfterIndex(
     // Collapsible grouped_tool_use messages arrive transiently before being
     // merged into the current collapsed group on the next render cycle
     if (msg?.type === 'grouped_tool_use') {
-      const firstInput = msg.messages[0]?.message.content[0]?.input
+      // El agrupador sólo junta mensajes cuyo primer bloque es un tool_use.
+      const firstBlock = msg.messages[0]?.message.content[0] as ToolUseBlockParam | undefined
+      const firstInput = firstBlock?.input
       if (
         getToolSearchOrReadInfo(msg.toolName, firstInput, tools).isCollapsible
       ) {
@@ -137,6 +140,13 @@ function MessageRowImpl({
   const isGrouped = msg.type === 'grouped_tool_use'
   const isCollapsed = msg.type === 'collapsed_read_search'
 
+  // Messages.tsx filtra los mensajes `progress` antes de construir
+  // `renderableMessages`; esta guarda solo estrecha el tipo para el resto
+  // del componente, que `RenderableMessage` sigue incluyendo.
+  if (msg.type === 'progress') {
+    return null
+  }
+
   // A collapsed group is "active" (grey dot, present tense "Reading…") when its tools
   // are still executing OR when the overall query is still running with nothing after it.
   // hasAnyToolInProgress takes priority: if tools are running, always show active regardless
@@ -152,8 +162,12 @@ function MessageRowImpl({
       ? getDisplayMessageFromCollapsed(msg)
       : msg
 
-  const progressMessagesForMessage =
-    isGrouped || isCollapsed ? [] : getProgressMessagesFromLookup(msg, lookups)
+  const progressMessagesForMessage: ProgressMessage[] =
+    isGrouped || isCollapsed
+      ? []
+      : getProgressMessagesFromLookup(msg, lookups).filter(
+          (m): m is ProgressMessage => m.type === 'progress',
+        )
 
   const siblingToolUseIDs =
     isGrouped || isCollapsed
@@ -181,7 +195,7 @@ function MessageRowImpl({
     } else if (isCollapsed) {
       shouldAnimate = hasAnyToolInProgress(msg, inProgressToolUseIDs)
     } else {
-      const toolUseID = getToolUseID(msg)
+      const toolUseID = getToolUseID(msg as NormalizedMessage)
       shouldAnimate = !toolUseID || inProgressToolUseIDs.has(toolUseID)
     }
   }
@@ -266,7 +280,7 @@ function isMessageStreaming(
     const toolIds = getToolUseIdsFromCollapsedGroup(msg)
     return toolIds.some(id => streamingToolUseIDs.has(id))
   }
-  const toolUseID = getToolUseID(msg)
+  const toolUseID = getToolUseID(msg as NormalizedMessage)
   return !!toolUseID && streamingToolUseIDs.has(toolUseID)
 }
 
@@ -294,7 +308,7 @@ function allToolsResolved(
       return resolvedToolUseIDs.has(block.id)
     }
   }
-  const toolUseID = getToolUseID(msg)
+  const toolUseID = getToolUseID(msg as NormalizedMessage)
   return !toolUseID || resolvedToolUseIDs.has(toolUseID)
 }
 
@@ -335,6 +349,7 @@ function areMessageRowPropsEqual(prev: Props, next: Props): boolean {
   // memo for every scrollback message whenever thinking starts/stops (CC-941).
   if (
     prev.lastThinkingBlockId !== next.lastThinkingBlockId &&
+    next.message.type === 'assistant' &&
     hasThinkingContent(next.message)
   ) {
     return false

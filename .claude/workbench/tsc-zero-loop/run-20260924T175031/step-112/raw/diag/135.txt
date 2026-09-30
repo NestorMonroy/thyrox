@@ -1,0 +1,1 @@
+src/packages/provider/src/claudeLegacy.ts(185,72): error TS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.

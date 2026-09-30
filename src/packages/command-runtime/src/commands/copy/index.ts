@@ -3,12 +3,13 @@
  * Implementation is lazy-loaded from copy.tsx to reduce startup time.
  */
 import type { Command } from '../../runtime.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const copy = {
   type: 'local-jsx',
   name: 'copy',
   description:
-    "Copy Claude's last response to clipboard (or /copy N for the Nth-latest)",
+    `Copy ${PRODUCT_NAME}'s last response to clipboard (or /copy N for the Nth-latest)`,
   load: () => import('./copy.js'),
 } satisfies Command
 

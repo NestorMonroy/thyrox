@@ -1,0 +1,7 @@
+no-cloud-route	s/^    if (!cloud) return config.http(request)$/    return config.http(request)/
+no-cache	s/^    let pending = clients.get(name)$/    let pending: Promise<CloudUpstream> | undefined/
+no-evict	s/^      pending.catch(() => clients.delete(name))$/      pending.catch(() => {})/
+no-beta	s/^      betaHeader: request.headers.get('anthropic-beta') ?? undefined,$//
+no-signal	s/^      signal: request.signal,$//
+no-501	s/^    return response ?? errorResponse(501.*/    return response ?? new Response()/
+no-request-id-501	s/, request.requestId)$/)/

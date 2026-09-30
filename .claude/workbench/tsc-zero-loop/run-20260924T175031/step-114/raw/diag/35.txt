@@ -1,0 +1,1 @@
+src/packages/mcp-runtime/src/useManageMCPConnections.ts(528,23): error TS2322: Type '{ kind: string; server: string; }' is not assignable to type 'string'.

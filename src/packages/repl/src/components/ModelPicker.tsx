@@ -41,6 +41,7 @@ import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/index.js'
 import { Byline, KeyboardShortcutHint, Pane } from '@anthropic/ink'
 import { effortLevelToSymbol } from './EffortIndicator.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type Props = {
   initial: string | null
@@ -266,7 +267,7 @@ export function ModelPicker({
           </Text>
           <Text dimColor>
             {headerText ??
-              'Switch between Claude models. Applies to this session and future Claude Code sessions. For other/previous model names, specify with --model.'}
+              `Switch between ${PRODUCT_NAME} models. Applies to this session and future ${PRODUCT_NAME} sessions. For other/previous model names, specify with --model.`}
           </Text>
           {sessionModel && (
             <Text dimColor>

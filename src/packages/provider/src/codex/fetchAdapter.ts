@@ -266,7 +266,6 @@ async function translateCodexStreamToAnthropic(
       let inputTokens = 0
       let currentTextBlockStarted = false
       let inToolCall = false
-      let inReasoningBlock = false
       let hadToolCalls = false
 
       const send = (event: string, data: object): void => {
@@ -328,7 +327,6 @@ async function translateCodexStreamToAnthropic(
                 // back to a Claude model. Reasoning is dropped from
                 // assistant content entirely; the visible answer
                 // arrives via `response.output_text.delta`.
-                inReasoningBlock = true
               } else if (item?.type === 'function_call') {
                 if (currentTextBlockStarted) {
                   send('content_block_stop', {
@@ -402,8 +400,7 @@ async function translateCodexStreamToAnthropic(
                 }
               } else if (item?.type === 'reasoning') {
                 // Reasoning is dropped — no content block was opened,
-                // so nothing to close. Just clear the flag.
-                inReasoningBlock = false
+                // so nothing to close.
               }
             } else if (eventType === 'response.completed') {
               const response = event.response as Record<string, unknown>

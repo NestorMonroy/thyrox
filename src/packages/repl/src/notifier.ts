@@ -7,6 +7,7 @@ import { logError } from '@thyrox/local-observability/log.js'
 import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 import { shouldFireBanner } from './notificationPolicy.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type NotificationOptions = {
   message: string
@@ -41,7 +42,7 @@ export async function sendNotification(
   })
 }
 
-const DEFAULT_TITLE = 'Claude Code'
+const DEFAULT_TITLE = `${PRODUCT_NAME}`
 
 async function sendToChannel(
   channel: string,

@@ -1,0 +1,120 @@
+== 1: nombre sin defecto
+   (src/commands/providers/connectionPayload.ts)
+ 4 fail
+== 2: prioridad cero
+   (src/commands/providers/connectionPayload.ts)
+ 2 fail
+== 3: prioridad decimal
+   (src/commands/providers/connectionPayload.ts)
+ 1 fail
+== 4: datos no objeto
+   (src/commands/providers/connectionPayload.ts)
+ 1 fail
+== 5: modelo sin recortar
+   (src/commands/providers/connectionPayload.ts)
+ 1 fail
+== 6: tipo sin fijar
+   (src/commands/providers/connectionPayload.ts)
+ 3 fail
+== 7: nombre de variable libre
+   (src/commands/providers/credentialInput.ts)
+ 1 fail
+== 8: variable vacía aceptada
+   (src/commands/providers/credentialInput.ts)
+ 1 fail
+== 9: variable sin recortar
+   (src/commands/providers/credentialInput.ts)
+ 4 fail
+== 10: stdin vacío aceptado
+   (src/commands/providers/credentialInput.ts)
+ 1 fail
+== 11: pregunta sin terminal
+   (src/commands/providers/credentialInput.ts)
+ 1 fail
+== 12: sin prompt
+   (src/commands/providers/credentialInput.ts)
+ 1 fail
+== 13: credencial por argumento
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 14: posicional ingenuo
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 15: sin credencial exigida
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 16: no-credential pregunta
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 17: ensayo escribe
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 18: ensayo muestra secreto
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 19: datos sin redactar
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 20: add muestra secretos
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 21: activo e inactivo
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 22: edit prioridad libre
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 23: edit sin cambios
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 24: edit pregunta
+   (src/commands/providers/writeVerbs.ts)
+ 2 fail
+== 25: edit ensayo escribe
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 26: inactivo ignorado
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 27: existente no se salta
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 28: identidad sensible a caja
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 29: entrada sin proveedor
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 30: archivo aporta id
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 31: sigue tras error
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 32: entrada sin credencial
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 33: ensayo importa
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 34: archivo vacío aceptado
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 35: forma providers ignorada
+   (src/commands/providers/writeVerbs.ts)
+ 1 fail
+== 36: prompt con eco
+   (src/commands/providers/secretPrompt.ts)
+ 2 fail
+== 37: sin retroceso
+   (src/commands/providers/secretPrompt.ts)
+ 1 fail
+== 38: Ctrl-C aceptado
+   (src/commands/providers/secretPrompt.ts)
+ 0 fail
+== 39: oyente sin retirar
+   (src/commands/providers/secretPrompt.ts)
+ 2 fail
+== restaurado
+ 0 fail
+__BG_EXIT__=0

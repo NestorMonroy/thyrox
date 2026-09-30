@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# #300: renombre al inglés de la CLI y los identificadores de task_ids.
+set -euo pipefail
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
+B=.claude/workbench/task-ids-english-rename-20260929T083730
+bash bin/headless-pool --prompt "$B/template.md" --out "$B/outputs" --model claude-sonnet-5 \
+  --isolation worktree --width 1 --timeout 3600 \
+  --verify 'python3 tests/task/test_task_ids.py && python3 tests/task/test_board_sync.py && python3 tests/task/test_layer_axis.py && python3 tests/task/test_board_ordinal_identity.py && bash tests/agents/test-agent-store-tareas.sh && bash tests/agents/test-agent-store-reassignment-guard.sh && python3 tests/session/test_generate_bin.py && python3 tests/docs/test_scaffold_initiative.py && python3 tests/agents/test_task_status_vocabulary.py && python3 tests/hooks/test_detect_ephemeral_citation.py && python3 src/verify/check_identifier_language.py src/task/task_ids.py' \
+  < "$B/items.txt"

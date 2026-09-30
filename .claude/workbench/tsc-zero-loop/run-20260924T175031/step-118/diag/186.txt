@@ -1,0 +1,23 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(255,37): error TS7006: Parameter 'm' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:245-265 ---
+    245                {attachment.memories.length === 1 ? 'memory' : 'memories'}
+    246                {!isTranscriptMode && (
+    247                  <>
+    248                    {' '}
+    249                    <CtrlOToExpand />
+    250                  </>
+    251                )}
+    252              </Text>
+    253            </Box>
+    254            {(verbose || isTranscriptMode) &&
+    255>             attachment.memories.map(m => (
+    256                <Box key={m.path} flexDirection="column">
+    257                  <MessageResponse>
+    258                    <Text dimColor>
+    259                      <FilePathLink filePath={m.path}>
+    260                        {basename(m.path)}
+    261                      </FilePathLink>
+    262                    </Text>
+    263                  </MessageResponse>
+    264                  {isTranscriptMode && (
+    265                    <Box paddingLeft={5}>

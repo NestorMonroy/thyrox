@@ -1,0 +1,1 @@
+  return node.entries.findLast(([name]) => name === key)?.[1]

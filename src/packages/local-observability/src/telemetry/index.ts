@@ -1,8 +1,6 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/index.ts`
- * (13 líneas fuente, 100 % portado). Barrel del subsuperficie de
- * telemetría — subpath `telemetry`, citado 5 líneas en el censo de
- * futuros consumidores; `telemetry/perfettoTracing.js` 1 línea.
+ * @thyrox/local-observability/telemetry — barrel export for the
+ * telemetry subsurface.
  */
 
 export * from './attributes.js'

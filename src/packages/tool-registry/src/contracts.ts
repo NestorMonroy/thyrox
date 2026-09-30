@@ -1,15 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/tool-registry/src/contracts.ts` (61 líneas,
- * 8 símbolos). Los tipos estructurales del registro: qué es una herramienta,
- * quién la provee, y qué le pide el registro a su host.
- *
- * Son ESTRUCTURALES a propósito. `ToolLike` no describe la herramienta real
- * —que vive en el paquete que la implementa— sino lo mínimo que el registro
- * necesita para indexarla y filtrarla: su nombre, sus alias y si está
- * habilitada. Atar el registro a la clase real lo haría depender de cada
- * herramienta que registra, que es justo lo que un registro no debe hacer.
- */
-
 export type ToolPermissionContextLike = {
   mode?: string
   [key: string]: unknown
@@ -42,9 +30,9 @@ export type ToolRegistryEvents<TTool extends ToolLike = ToolLike> = {
 }
 
 /**
- * Sustituto estructural del estado de aplicación, para las herramientas que
- * necesitan tipar un `setAppState` o mirar el contexto de permiso sin
- * importar el estado real.
+ * Structural stand-in for app-level AppState, used by tools that need to
+ * type setAppState callbacks or inspect permission context without
+ * importing src/state/AppState (V7 §7.2).
  */
 export type AppStateLike = {
   toolPermissionContext?: ToolPermissionContextLike

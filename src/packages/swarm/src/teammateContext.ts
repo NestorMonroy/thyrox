@@ -1,17 +1,13 @@
-/**
- * Fachada delgada de `src/utils/teammateContext` — porte de
- * `ccnmt: packages/swarm/src/teammateContext.ts`.
- *
- * Porte VERBATIM. La implementación canónica queda en
- * `./teammateContextAlias.ts` porque conecta una AsyncLocalStorage;
- * duplicarla entre límites de paquete rompería la propagación de contexto.
- * Este archivo existe para que los consumidores de `packages/*` se queden
- * dentro de la convención V7 §11.2 de la fuente.
- */
+// Thin alias for src/utils/teammateContext. Canonical implementation stays
+// in src/ because it wires an AsyncLocalStorage; duplicating it across
+// package boundaries would break context propagation. This file exists so
+// packages/* consumers stay inside V7 §11.2.
+// eslint-disable-next-line no-restricted-imports
 export {
   createTeammateContext,
   getTeammateContext,
   isInProcessTeammate,
   runWithTeammateContext,
 } from './teammateContextAlias.js'
+// eslint-disable-next-line no-restricted-imports
 export type { TeammateContext } from './teammateContextAlias.js'

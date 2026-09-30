@@ -18,6 +18,7 @@ import {
   getInitialSettings,
   updateSettingsForSource,
 } from '@thyrox/config/settings'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 interface InstallProps {
   onDone: (result: string, options?: { display?: CommandResultDisplay }) => void
@@ -95,7 +96,7 @@ function Install({ onDone, force, target }: InstallProps): React.ReactNode {
         // Check specifically for lock failure
         if (result.lockFailed) {
           throw new Error(
-            'Could not install - another process is currently installing Claude. Please try again in a moment.',
+            `Could not install - another process is currently installing ${PRODUCT_NAME}. Please try again in a moment.`,
           )
         }
 
@@ -210,14 +211,14 @@ function Install({ onDone, force, target }: InstallProps): React.ReactNode {
       setTimeout(
         onDone,
         2000,
-        'Claude Code installation completed successfully',
+        `${PRODUCT_NAME} installation completed successfully`,
         {
           display: 'system' as const,
         },
       )
     } else if (state.type === 'error') {
       // Give error message time to render before exiting
-      setTimeout(onDone, 3000, 'Claude Code installation failed', {
+      setTimeout(onDone, 3000, `${PRODUCT_NAME} installation failed`, {
         display: 'system' as const,
       })
     }
@@ -235,7 +236,7 @@ function Install({ onDone, force, target }: InstallProps): React.ReactNode {
 
       {state.type === 'installing' && (
         <Text color="claude">
-          Installing Claude Code native build {state.version}...
+          Installing {PRODUCT_NAME} native build {state.version}...
         </Text>
       )}
 
@@ -250,7 +251,7 @@ function Install({ onDone, force, target }: InstallProps): React.ReactNode {
           <Box>
             <StatusIcon status="success" withSpace />
             <Text color="success" bold>
-              Claude Code successfully installed!
+              {PRODUCT_NAME} successfully installed!
             </Text>
           </Box>
           <Box marginLeft={2} flexDirection="column" gap={1}>
@@ -298,7 +299,7 @@ function Install({ onDone, force, target }: InstallProps): React.ReactNode {
 export const install = {
   type: 'local-jsx' as const,
   name: 'install',
-  description: 'Install Claude Code native build',
+  description: `Install ${PRODUCT_NAME} native build`,
   argumentHint: '[options]',
   async call(
     onDone: (

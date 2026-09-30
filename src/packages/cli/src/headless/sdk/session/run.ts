@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import { randomUUID } from 'crypto'
 import type { UUID } from 'crypto'
 import type { McpSdkServerConfig } from '@thyrox/mcp-runtime'
-import type { AppStateLike as AppState } from '../../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import { toolMatchesName } from '@thyrox/tool-registry/Tool.js'
@@ -152,7 +152,7 @@ export async function runHeadless(
 
   if (
     process.env.USER_TYPE === 'ant' &&
-    isEnvTruthy(process.env.CLAUDE_CODE_EXIT_AFTER_FIRST_RENDER)
+    isEnvTruthy(process.env.THYROX_CODE_EXIT_AFTER_FIRST_RENDER)
   ) {
     process.stderr.write(
       `\nStartup time: ${Math.round(process.uptime() * 1000)}ms\n`,
@@ -168,7 +168,7 @@ export async function runHeadless(
   // enabledPlugins.
   if (
     feature('DOWNLOAD_USER_SETTINGS') &&
-    (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+    (isEnvTruthy(process.env.THYROX_CODE_REMOTE) || getIsRemoteMode())
   ) {
     void downloadUserSettings()
   }
@@ -177,7 +177,11 @@ export async function runHeadless(
   // never runs. Subscribe directly so that settings changes (including
   // managed-settings / policy updates) are fully applied.
   settingsChangeDetector.subscribe(source => {
-    applySettingsChange(source, setAppState)
+    // applySettingsChange opera sobre SettingsChangeTarget (contrato
+    // estructural de cuatro campos, declarado en config/settings/applySettingsChange.ts);
+    // se adapta al setAppState concreto de AppState en el borde de la llamada,
+    // mismo patrón que restoreSessionStateFromLog en session/load.ts.
+    applySettingsChange(source, f => setAppState(prev => f(prev) as AppState))
 
     // In headless mode, also sync the denormalized fastMode field from
     // settings. The TUI manages fastMode via the UI so it skips this.
@@ -192,13 +196,13 @@ export async function runHeadless(
 
   // Proactive activation is now handled in main.tsx before getTools() so
   // SleepTool passes isEnabled() filtering. This fallback covers the case
-  // where CLAUDE_CODE_PROACTIVE is set but main.tsx's check didn't fire
+  // where THYROX_CODE_PROACTIVE is set but main.tsx's check didn't fire
   // (e.g. env was injected by the SDK transport after argv parsing).
   if (
     (feature('PROACTIVE') || feature('KAIROS')) &&
     proactiveModule &&
     !proactiveModule.isProactiveActive() &&
-    isEnvTruthy(process.env.CLAUDE_CODE_PROACTIVE)
+    isEnvTruthy(process.env.THYROX_CODE_PROACTIVE)
   ) {
     proactiveModule.activateProactive('command')
   }
@@ -510,11 +514,11 @@ export async function runHeadless(
   const needsFullArray = options.outputFormat === 'json' && options.verbose
   const messages: SDKMessage[] = []
   let lastMessage: SDKMessage | undefined
-  // Streamlined mode transforms messages when CLAUDE_CODE_STREAMLINED_OUTPUT=true and using stream-json
+  // Streamlined mode transforms messages when THYROX_CODE_STREAMLINED_OUTPUT=true and using stream-json
   // Build flag gates this out of external builds; env var is the runtime opt-in for ant builds
   const transformToStreamlined =
     feature('STREAMLINED_OUTPUT') &&
-    isEnvTruthy(process.env.CLAUDE_CODE_STREAMLINED_OUTPUT) &&
+    isEnvTruthy(process.env.THYROX_CODE_STREAMLINED_OUTPUT) &&
     options.outputFormat === 'stream-json'
       ? createStreamlinedTransformer()
       : null

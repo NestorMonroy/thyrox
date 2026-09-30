@@ -3,7 +3,7 @@
  * Reimplementación fiel VERBATIM, salvo el `require()` de `getRemoteSessionUrl`
  * (ver su docstring abajo).
  *
- * El literal `claude-code-how-works-how-works` de `PRODUCT_URL` proviene tal
+ * El literal `claude-code` de `PRODUCT_URL` proviene tal
  * cual de la fuente — es consistente con `remote/index.ts` de este mismo
  * paquete, ya portado por un agente anterior con el mismo literal. Se
  * conserva por fidelidad y coherencia con lo ya comprometido (ver el
@@ -18,9 +18,18 @@
  * cuando `workspaces` los enlace); no se toca `bridge` desde aquí.
  */
 
-export const PRODUCT_URL = 'https://claude.com/claude-code-how-works-how-works'
+/**
+ * El nombre con que el programa se presenta al usuario. Los literales
+ * portados del binario nombran al producto de origen, que es quien los emite
+ * allí; aquí quien arranca es thyrox, y un texto que nombra a otro programa
+ * describe uno que el usuario no lanzó. Todo texto visible lo toma
+ * de aquí (`check_product_word.py` mide lo que falta).
+ */
+export const PRODUCT_NAME = 'thyrox'
 
-// URLs de sesión de Claude Code Remote.
+export const PRODUCT_URL = 'https://claude.com/claude-code'
+
+// URLs de sesión de thyrox Remote.
 export const CLAUDE_AI_BASE_URL = 'https://claude.ai'
 export const CLAUDE_AI_STAGING_BASE_URL = 'https://claude-ai.staging.ant.dev'
 export const CLAUDE_AI_LOCAL_BASE_URL = 'http://localhost:4000'
@@ -55,7 +64,7 @@ export function isRemoteSessionLocal(
 }
 
 /**
- * Obtiene la URL base de Claude AI según el entorno.
+ * Obtiene la URL base de thyrox AI según el entorno.
  */
 export function getClaudeAiBaseUrl(
   sessionId?: string,

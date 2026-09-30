@@ -8,7 +8,11 @@
  * esta herramienta lo contara como admitido. Por eso la lista es cerrada y
  * un `fixId` que no está en ella no se admite.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, setDefaultTimeout, test } from 'bun:test'
+
+// Construye un servicio de lenguaje de TypeScript: bajo la suite en paralelo
+// tarda mas que los 5 s por defecto, sin fallar solo.
+setDefaultTimeout(60_000)
 import { censusFixes, classifyFix, summarize } from '../../src/verify/tscFixCensus'
 import { createMemoryService } from '../../src/verify/tsLanguageService'
 

@@ -1,0 +1,2 @@
+      const imported = (element.propertyName ?? element.name).text
+      const target = corpusPath(statement.moduleSpecifier.text)

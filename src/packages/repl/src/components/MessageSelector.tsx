@@ -537,7 +537,7 @@ export function MessageSelector({
                 isCurrent={false}
               />
               <Text dimColor>
-                ({formatRelativeTimeAgo(new Date(messageToRestore.timestamp))})
+                ({formatRelativeTimeAgo(new Date(messageToRestore.timestamp as string | number))})
               </Text>
             </Box>
             <RestoreOptionDescription
@@ -811,7 +811,9 @@ function UserMessageOption({
 
   const content = userMessage.message.content
   const lastBlock =
-    typeof content === 'string' ? null : content[content.length - 1]
+    content === undefined || typeof content === 'string'
+      ? null
+      : content[content.length - 1]
   const rawMessageText =
     typeof content === 'string'
       ? content.trim()
@@ -978,7 +980,9 @@ export function selectableUserMessagesFilter(
 
   const content = message.message.content
   const lastBlock =
-    typeof content === 'string' ? null : content[content.length - 1]
+    content === undefined || typeof content === 'string'
+      ? null
+      : content[content.length - 1]
   const messageText =
     typeof content === 'string'
       ? content.trim()
@@ -1016,7 +1020,11 @@ export function messagesAfterAreOnlySynthetic(
 
     // Skip known non-meaningful message types
     if (isSyntheticMessage(msg)) continue
-    if (isToolUseResultMessage(msg)) continue
+    // `isToolUseResultMessage` es un type guard hacia `UserMessage`: llamarlo
+    // directo en el `if` estrecharia `msg` excluyendo TODO 'user' del resto
+    // del bucle, no solo el subconjunto que es resultado de herramienta.
+    const isToolResult: boolean = isToolUseResultMessage(msg)
+    if (isToolResult) continue
     if (msg.type === 'progress') continue
     if (msg.type === 'system') continue
     if (msg.type === 'attachment') continue

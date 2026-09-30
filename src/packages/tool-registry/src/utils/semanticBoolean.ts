@@ -1,39 +1,29 @@
 import { z } from 'zod/v4'
 
 /**
- * Booleano que además admite los literales de cadena `"true"` y `"false"`.
+ * Boolean that also accepts the string literals "true"/"false".
  *
- * Procedencia: `ccnmt: packages/tool-registry/src/utils/semanticBoolean.ts`
- * (29 líneas). Ese árbol declara `"license": "UNLICENSED"`, así que el cuerpo
- * se reimplementa y no se copia.
+ * Tool inputs arrive as model-generated JSON. The model occasionally quotes
+ * booleans — `"replace_all":"false"` instead of `"replace_all":false` — and
+ * z.boolean() rejects that with a type error. z.coerce.boolean() is the wrong
+ * fix: it uses JS truthiness, so "false" → true.
  *
- * La entrada de una herramienta es JSON que escribe el modelo, y el modelo
- * entrecomilla booleanos de vez en cuando —`"replace_all":"false"` en vez de
- * `"replace_all":false`—. `z.boolean()` lo rechaza por tipo.
+ * z.preprocess emits {"type":"boolean"} to the API schema, so the model is
+ * still told this is a boolean — the string tolerance is invisible client-side
+ * coercion, not an advertised input shape.
  *
- * `z.coerce.boolean()` NO es el arreglo: usa la veracidad de JavaScript, con
- * lo que `"false"` se convierte en `true`. Es exactamente al revés de lo que
- * el modelo quiso decir, y en silencio.
+ * .optional()/.default() go INSIDE (on the inner schema), not chained after:
+ * chaining them onto ZodPipe widens z.output<> to unknown in Zod v4.
  *
- * `z.preprocess` emite `{"type":"boolean"}` al esquema del API, así que al
- * modelo se le sigue anunciando un booleano: la tolerancia a la cadena es
- * conversión invisible del lado del cliente, no una forma de entrada que se
- * publique.
- *
- * `.optional()` y `.default()` van DENTRO, sobre el esquema interno, nunca
- * encadenados después: encadenarlos sobre un `ZodPipe` ensancha `z.output<>` a
- * `unknown` en Zod v4.
- *
- *   semanticBoolean()                           -> boolean
- *   semanticBoolean(z.boolean().optional())     -> boolean | undefined
- *   semanticBoolean(z.boolean().default(false)) -> boolean
+ *   semanticBoolean()                              → boolean
+ *   semanticBoolean(z.boolean().optional())        → boolean | undefined
+ *   semanticBoolean(z.boolean().default(false))    → boolean
  */
 export function semanticBoolean<T extends z.ZodType>(
   inner: T = z.boolean() as unknown as T,
 ) {
   return z.preprocess(
-    (value: unknown) =>
-      value === 'true' ? true : value === 'false' ? false : value,
+    (v: unknown) => (v === 'true' ? true : v === 'false' ? false : v),
     inner,
   )
 }

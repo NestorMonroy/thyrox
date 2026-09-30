@@ -16,29 +16,29 @@ import {
   setSessionProjectDir,
 } from '../sessionPaths.js'
 
-const ORIGINAL_ENV = process.env.CLAUDE_CONFIG_DIR
+const ORIGINAL_ENV = process.env.THYROX_CONFIG_DIR
 
 beforeEach(() => {
-  delete process.env.CLAUDE_CONFIG_DIR
+  delete process.env.THYROX_CONFIG_DIR
   setSessionProjectDir(null)
 })
 
 afterEach(() => {
-  if (ORIGINAL_ENV === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = ORIGINAL_ENV
+  if (ORIGINAL_ENV === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = ORIGINAL_ENV
   setSessionProjectDir(null)
 })
 
 describe('getProjectsDir', () => {
-  test('usa CLAUDE_CONFIG_DIR + "projects"', () => {
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-a'
+  test('usa THYROX_CONFIG_DIR + "projects"', () => {
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-a'
     expect(getProjectsDir()).toBe(join('/tmp/config-a', 'projects'))
   })
 })
 
 describe('getProjectDir', () => {
   test('sanea el cwd y lo une bajo projects/', () => {
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-b'
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-b'
     const cwd = '/home/user/mi-proyecto-unico-1'
     expect(getProjectDir(cwd)).toBe(
       join('/tmp/config-b', 'projects', '-home-user-mi-proyecto-unico-1'),
@@ -75,7 +75,7 @@ describe('getOriginalCwd / setOriginalCwd', () => {
 
 describe('getTranscriptPath', () => {
   test('sin sessionProjectDir, deriva de getProjectDir(getOriginalCwd())', () => {
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-c'
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-c'
     setOriginalCwd('/home/user/proyecto-transcript')
     setSessionId('sesion-transcript-1')
 
@@ -108,7 +108,7 @@ describe('getTranscriptPathForSession', () => {
   })
 
   test('para OTRO id de sesión, ignora sessionProjectDir y deriva de originalCwd', () => {
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-d'
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-d'
     setSessionProjectDir('/ruta/actual/no-debe-usarse')
     setSessionId('sesion-actual-2')
     setOriginalCwd('/home/user/proyecto-otra-sesion')

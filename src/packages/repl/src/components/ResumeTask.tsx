@@ -16,6 +16,7 @@ import { Select } from './CustomSelect/index.js'
 import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
 import { TeleportError } from './TeleportError.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onSelect: (session: CodeSession) => void
@@ -135,10 +136,10 @@ export function ResumeTask({
       <Box flexDirection="column" padding={1}>
         <Box flexDirection="row">
           <Spinner />
-          <Text bold>Loading Claude Code sessions…</Text>
+          <Text bold>Loading {PRODUCT_NAME} sessions…</Text>
         </Box>
         <Text dimColor>
-          {retrying ? 'Retrying…' : 'Fetching your Claude Code sessions…'}
+          {retrying ? 'Retrying…' : `Fetching your ${PRODUCT_NAME} sessions…`}
         </Text>
       </Box>
     )
@@ -148,7 +149,7 @@ export function ResumeTask({
     return (
       <Box flexDirection="column" padding={1}>
         <Text bold color="error">
-          Error loading Claude Code sessions
+          Error loading {PRODUCT_NAME} sessions
         </Text>
 
         {renderErrorSpecificGuidance(loadErrorType)}
@@ -165,7 +166,7 @@ export function ResumeTask({
     return (
       <Box flexDirection="column" padding={1}>
         <Text bold>
-          No Claude Code sessions found
+          No {PRODUCT_NAME} sessions found
           {currentRepo && <Text> for {currentRepo}</Text>}
         </Text>
         <Box marginTop={1}>
@@ -321,9 +322,9 @@ function renderErrorSpecificGuidance(
     case 'auth':
       return (
         <Box marginY={1} flexDirection="column">
-          <Text dimColor>Teleport requires a Claude account</Text>
+          <Text dimColor>Teleport requires a {PRODUCT_NAME} account</Text>
           <Text dimColor>
-            Run <Text bold>/login</Text> and select &quot;Claude account with
+            Run <Text bold>/login</Text> and select &quot;{PRODUCT_NAME} account with
             subscription&quot;
           </Text>
         </Box>
@@ -332,14 +333,14 @@ function renderErrorSpecificGuidance(
     case 'api':
       return (
         <Box marginY={1} flexDirection="column">
-          <Text dimColor>Sorry, Claude encountered an error</Text>
+          <Text dimColor>Sorry, {PRODUCT_NAME} encountered an error</Text>
         </Box>
       )
 
     case 'other':
       return (
         <Box marginY={1} flexDirection="row">
-          <Text dimColor>Sorry, Claude Code encountered an error</Text>
+          <Text dimColor>Sorry, {PRODUCT_NAME} encountered an error</Text>
         </Box>
       )
   }

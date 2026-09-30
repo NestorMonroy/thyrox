@@ -1,0 +1,24 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T055828
+  job-20260927T055828/job-001 pid 22712   OLD='thyrox@PENDIENTE' NEW='thyrox@55a76fcc' bash bin/replace_literal /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-202-thyrox-p-pedia-una-hora-de-cache-a-toda-cuenta.rst
+  job-20260927T055828/job-002 pid 22767   OLD='thyrox@PENDIENTE' NEW='thyrox@c05c8c86' bash bin/replace_literal /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-203-la-memoria-de-thyrox-p-se-mide-sin-clave-real.rst
+  job-20260927T055828/job-003 pid 22786   OLD='thyrox@PENDIENTE' NEW='thyrox@2982283c' bash bin/replace_literal /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-204-la-tarea-de-thyrox-p-cerro-con-el-pool-lanzando-claude.rst
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T055828_job-001 -> OK (2 de 4)
+asentado: job-20260927T055828_job-002 -> OK (3 de 4)
+asentado: job-20260927T055828_job-003 -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T055828
+       | (vacío — no emitió nada)
+OK     job-20260927T055828_job-001 exit=0
+       | replace_literal: 1 reemplazo(s) en /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-202-thyrox-p-pedia-una-hora-de-cache-a-toda-cuenta.rst
+       | EXIT=0
+       memoria pico: 3932 KB (4 MB) · pared 0.01s
+OK     job-20260927T055828_job-002 exit=0
+       | replace_literal: 1 reemplazo(s) en /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-203-la-memoria-de-thyrox-p-se-mide-sin-clave-real.rst
+       | EXIT=0
+       memoria pico: 4000 KB (4 MB) · pared 0.01s
+OK     job-20260927T055828_job-003 exit=0
+       | replace_literal: 1 reemplazo(s) en /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-204-la-tarea-de-thyrox-p-cerro-con-el-pool-lanzando-claude.rst
+       | EXIT=0
+       memoria pico: 3976 KB (4 MB) · pared 0.01s
+__BG_EXIT__=0

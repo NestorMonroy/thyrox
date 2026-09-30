@@ -1,19 +1,9 @@
 /**
- * Adaptación de `ccnmt: packages/mcp-runtime/testing/index.ts`.
- * Capa 0 (sin cita a paquete hermano ausente) — porte verbatim, sin
- * divergencias. A diferencia de los 13 módulos de `src/` que siguen
- * bloqueados por la ausencia de `@claude-code-how-works/tool-registry`
- * (ver `package.json` de este paquete), este archivo sólo depende de
- * `McpRuntimeHostBindings` (`../src/contracts.js`), que YA está portado
- * — de ahí que sea el único de los 14 módulos ausentes que se cierra en
- * este pase.
- *
- * Runtime MCP en memoria para pruebas. Archivo de ayuda de test — los
- * casteos `as any`/`as unknown` adaptan los tipos concretos del runtime
- * en memoria a los tipos genéricos del lado de prueba
- * (`TConfig`/`TTool`/`TCommand`/`TConnection`). Es un bypass deliberado
- * del patrón de vinculación de runtime; los casteos están en la costura
- * entre las superficies concreta y genérica de prueba.
+ * In-memory MCP runtime for testing. Test-helper file — `as any/unknown`
+ * casts adapt the in-memory runtime's concrete types to the generic
+ * test-side types (TConfig/TTool/TCommand/TConnection). By-design
+ * runtime-binding-pattern bypass; the casts are at the seam between
+ * concrete and generic test surfaces.
  */
 import type { McpRuntimeHostBindings } from '../src/contracts.js'
 

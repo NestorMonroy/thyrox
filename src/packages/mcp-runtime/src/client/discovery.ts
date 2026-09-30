@@ -1,7 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/client/discovery.ts` —
- * sus 3 exportaciones, ninguna omitida.
- */
 import { normalizeNameForMCP } from '../normalization.js';
 
 export function supportsMcpResources(capabilities: { resources?: unknown } | undefined): boolean {

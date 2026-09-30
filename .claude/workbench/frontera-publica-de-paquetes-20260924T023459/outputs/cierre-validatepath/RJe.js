@@ -1,0 +1,1 @@
+function RJe(){let e=te();if(e.projectPathForConfig!==null)return e.projectPathForConfig;let n=ye(),r=Xr(n),s=r?g2(r):g2(Xn(pt(n)));return e.setProjectPathForConfig(s),s}

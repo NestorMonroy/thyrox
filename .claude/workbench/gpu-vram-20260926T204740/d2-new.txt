@@ -1,0 +1,5 @@
+        "peak_kb": max(kb for kb, _ in measures),
+    }
+    vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
+    if vram:
+        row["peak_vram_mib"] = max(vram)

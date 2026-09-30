@@ -7,7 +7,7 @@
  *    organized separately?»
  *
  * QUÉ ESTABA MAL. `assembleSystemPrompt` ya devolvía secciones con nombre —
- * `base`, `CLAUDE.md`, `.claude/CLAUDE.md`, una por regla— y eso es una
+ * `base`, `THYROX.md`, `.claude/THYROX.md`, una por regla— y eso es una
  * separación por ORIGEN. El predicado pregunta por DEBER, y la sección
  * `base` era UNA cadena que cargaba identidad y disciplina de salida juntas:
  * «Eres un agente que trabaja con herramientas. Responde en español.» Dos

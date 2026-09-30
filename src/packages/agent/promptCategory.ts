@@ -7,6 +7,9 @@
  * lectura por tipo de agente deja de poder hacerse.
  */
 
+import { DEFAULT_OUTPUT_STYLE_NAME, OUTPUT_STYLE_CONFIG } from '@thyrox/config/outputStyles.js'
+import { getSettings } from '@thyrox/config/settings/core/settings.js'
+
 /**
  * La categoria de un agente.
  *
@@ -25,4 +28,21 @@ export function getQuerySourceForAgent(
 ): string {
   if (!isBuiltInAgent) return 'agent:custom'
   return agentType ? `agent:builtin:${agentType}` : 'agent:default'
+}
+
+/**
+ * La categoria de una consulta del hilo principal — `cxe` de 2.1.281.
+ *
+ * El estilo de salida por defecto no marca nada; uno propio del producto
+ * lleva su nombre, y cualquier otro colapsa a `custom` por la misma razon
+ * que los agentes del usuario: sus nombres son arbitrarios.
+ */
+export function getQuerySourceForREPL(
+  readOutputStyle: () => string | undefined = () => getSettings()?.outputStyle,
+): string {
+  const style = readOutputStyle() ?? DEFAULT_OUTPUT_STYLE_NAME
+  if (style === DEFAULT_OUTPUT_STYLE_NAME) return 'repl_main_thread'
+  return Object.hasOwn(OUTPUT_STYLE_CONFIG, style)
+    ? `repl_main_thread:outputStyle:${style}`
+    : 'repl_main_thread:outputStyle:custom'
 }

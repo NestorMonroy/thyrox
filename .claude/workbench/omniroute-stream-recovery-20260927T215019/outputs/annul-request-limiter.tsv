@@ -1,0 +1,10 @@
+base	11 pass, 0 fail	—
+fifo	10 pass, 1 fail	maxConcurrent deja esperando lo que no cabe, en orden de llegada
+concurrency	9 pass, 2 fail	maxConcurrent deja esperando lo que no cabe, en orden de llegada | drop rechaza lo encolado con su error y deja terminar lo que corre
+reservoir-block	9 pass, 2 fail	un cupo agotado retiene hasta que la reposición lo rellena | updateSettings cambia el ritmo de un limitador vivo y la reposición sigue
+min-gap	10 pass, 1 fail	minTime separa los arranques
+reservoir-spend	9 pass, 2 fail	un cupo agotado retiene hasta que la reposición lo rellena | updateSettings cambia el ritmo de un limitador vivo y la reposición sigue
+refresh-restart	10 pass, 1 fail	updateSettings cambia el ritmo de un limitador vivo y la reposición sigue
+abort-queue	10 pass, 1 fail	una espera cancelada sale de la cola con la razón de la señal
+pre-aborted	10 pass, 1 fail	una señal ya cancelada no llega a encolar
+drop-queue	0 pass, 1 fail	agotó el plazo (20 s)

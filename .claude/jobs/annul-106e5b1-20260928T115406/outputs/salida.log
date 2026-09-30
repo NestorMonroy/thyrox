@@ -1,0 +1,249 @@
+== 1: sin id pasa
+   (src/accounts/refresh/health/checkPlan.ts)
+ 21 pass
+ 0 fail
+== 2: sin exclusión por proveedor
+   (src/accounts/refresh/health/checkPlan.ts)
+ 21 pass
+ 0 fail
+== 3: intervalo cero comprueba
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > no id, a skipped provider, a disabled interval, or an inactive connection [1.74ms]
+ 20 pass
+ 1 fail
+== 4: inactiva expirada no se reintenta
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > an inactive expired connection is still checked while it has retries left [0.56ms]
+ 20 pass
+ 1 fail
+== 5: sin guarda terminal
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > banned or expired connections are terminal, except the recoverable ones [0.45ms]
+ 20 pass
+ 1 fail
+== 6: baneada sin minúsculas
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > banned or expired connections are terminal, except the recoverable ones [0.62ms]
+ 20 pass
+ 1 fail
+== 7: copilot expirada es terminal
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > banned or expired connections are terminal, except the recoverable ones [0.46ms]
+ 20 pass
+ 1 fail
+== 8: cursor expirada es terminal
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > banned or expired connections are terminal, except the recoverable ones [0.47ms]
+ 20 pass
+ 1 fail
+== 9: cuenta desactivada se reintenta
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > banned or expired connections are terminal, except the recoverable ones [0.45ms]
+ 20 pass
+ 1 fail
+== 10: retirado no se marca
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) deprecated providers > are marked expired once, naming where to migrate [0.56ms]
+ 20 pass
+ 1 fail
+== 11: cursor siempre
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) providers with their own check > cursor is renewed only when its token is unknown or about to expire, and not in backoff [0.46ms]
+ 20 pass
+ 1 fail
+== 12: cursor ignora el circuito
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) providers with their own check > cursor is renewed only when its token is unknown or about to expire, and not in backoff [0.56ms]
+ 20 pass
+ 1 fail
+== 13: margen de 10 min
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) providers with their own check > cursor is renewed only when its token is unknown or about to expire, and not in backoff [0.38ms]
+(fail) when a refresh is due > a token about to expire is refreshed; one with time left waits [0.89ms]
+(fail) a dead refresh token > keeps the connection active while its access token still works [0.96ms]
+ 18 pass
+ 3 fail
+== 14: sin kimi_web
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) providers with their own check > Kimi web, web cookies and Copilot go to their own checks [0.63ms]
+ 20 pass
+ 1 fail
+== 15: kimi sin minúsculas
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > no id, a skipped provider, a disabled interval, or an inactive connection [1.35ms]
+(fail) providers with their own check > Kimi web, web cookies and Copilot go to their own checks [0.55ms]
+ 19 pass
+ 2 fail
+== 16: cookie sin intervalo
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) providers with their own check > Kimi web, web cookies and Copilot go to their own checks [0.42ms]
+ 20 pass
+ 1 fail
+== 17: refresh no texto vale
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections without a refresh token > an API key, a provider without refresh, or another state is left alone [0.59ms]
+ 20 pass
+ 1 fail
+== 18: copilot pide reautenticar
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > banned or expired connections are terminal, except the recoverable ones [0.77ms]
+(fail) providers with their own check > Kimi web, web cookies and Copilot go to their own checks [0.51ms]
+ 19 pass
+ 2 fail
+== 19: sin refresco no pide reautenticar
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections without a refresh token > an API key, a provider without refresh, or another state is left alone [0.67ms]
+ 20 pass
+ 1 fail
+== 20: otro estado pide reautenticar
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections without a refresh token > an API key, a provider without refresh, or another state is left alone [0.62ms]
+ 20 pass
+ 1 fail
+== 21: clave de API pide reautenticar
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections without a refresh token > an API key, a provider without refresh, or another state is left alone [0.61ms]
+ 20 pass
+ 1 fail
+== 22: agotada no se desactiva
+   (src/accounts/refresh/health/checkPlan.ts)
+ 21 pass
+ 0 fail
+== 23: reintento sin espera
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) expired connections with retries left > wait five minutes doubled per retry, then retry; exhausted ones are deactivated once [0.41ms]
+ 20 pass
+ 1 fail
+== 24: espera sin doblar
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) expired connections with retries left > wait five minutes doubled per retry, then retry; exhausted ones are deactivated once [0.45ms]
+ 20 pass
+ 1 fail
+== 25: sin número de intento
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > an inactive expired connection is still checked while it has retries left [1.05ms]
+(fail) expired connections with retries left > wait five minutes doubled per retry, then retry; exhausted ones are deactivated once [0.37ms]
+ 19 pass
+ 2 fail
+== 26: sin ruta se refresca
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) when a refresh is due > a provider without a refresh route is only stamped [0.49ms]
+ 20 pass
+ 1 fail
+== 27: rota por calendario
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) when a refresh is due > without a known expiry, non-rotating providers refresh on their interval; rotating ones never do [0.58ms]
+ 20 pass
+ 1 fail
+== 28: calendario con caducidad conocida
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) when a refresh is due > without a known expiry, non-rotating providers refresh on their interval; rotating ones never do [0.51ms]
+ 20 pass
+ 1 fail
+== 29: calendario de 30 min
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) when a refresh is due > without a known expiry, non-rotating providers refresh on their interval; rotating ones never do [0.90ms]
+ 20 pass
+ 1 fail
+== 30: circuito ignorado
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) when a refresh is due > an open circuit postpones a due refresh [0.42ms]
+ 20 pass
+ 1 fail
+== 31: token del estado nuevo gana
+SIN COINCIDENCIA ÚNICA en src/accounts/refresh/health/checkPlan.ts
+== 32: sin aborto
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) network errors > aborts, timeouts and socket codes are transient, also when wrapped [0.90ms]
+ 20 pass
+ 1 fail
+== 33: sin causa
+   (src/accounts/refresh/health/checkPlan.ts)
+ 21 pass
+ 0 fail
+== 34: sin código
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) network errors > aborts, timeouts and socket codes are transient, also when wrapped [0.78ms]
+ 20 pass
+ 1 fail
+== 35: sin fetch failed
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) network errors > aborts, timeouts and socket codes are transient, also when wrapped [0.66ms]
+ 20 pass
+ 1 fail
+== 36: nombre de objeto ignorado
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) network errors > aborts, timeouts and socket codes are transient, also when wrapped [0.75ms]
+ 20 pass
+ 1 fail
+== 37: refresh token vacío se guarda
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a successful refresh > an explicit expiry wins, no refresh token keeps the stored one, and new data is merged [0.40ms]
+ 20 pass
+ 1 fail
+== 38: expiresIn gana
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a successful refresh > an explicit expiry wins, no refresh token keeps the stored one, and new data is merged [0.51ms]
+ 20 pass
+ 1 fail
+== 39: sin tokenExpiresAt
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a successful refresh > stores the new tokens, clears errors and the circuit, and derives the expiry [0.69ms]
+(fail) a successful refresh > an explicit expiry wins, no refresh token keeps the stored one, and new data is merged [0.38ms]
+ 19 pass
+ 2 fail
+== 40: circuito no se limpia
+   (src/accounts/refresh/health/checkPlan.ts)
+ 0 pass
+ 1 fail
+== 41: datos siempre
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a successful refresh > an explicit expiry wins, no refresh token keeps the stored one, and new data is merged [0.66ms]
+ 20 pass
+ 1 fail
+== 42: cambio no se detecta
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > is ignored when the stored credentials changed during the refresh [0.72ms]
+ 20 pass
+ 1 fail
+== 43: sólo el refresh cuenta como cambio
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > is ignored when the stored credentials changed during the refresh [0.69ms]
+ 20 pass
+ 1 fail
+== 44: token vigente expira
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > keeps the connection active while its access token still works [0.75ms]
+ 20 pass
+ 1 fail
+== 45: sin desactivar a la tercera
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > a non-rotating or Anthropic token is kept; the third retry deactivates [0.65ms]
+ 20 pass
+ 1 fail
+== 46: refresh muerto se conserva
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > otherwise expires the connection, counts the retry and drops a consumed rotating token [0.41ms]
+ 20 pass
+ 1 fail
+== 47: sin código gana el error
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > otherwise expires the connection, counts the retry and drops a consumed rotating token [0.53ms]
+ 20 pass
+ 1 fail
+== 48: rota sin consumido
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > otherwise expires the connection, counts the retry and drops a consumed rotating token [0.49ms]
+(fail) a dead refresh token > a non-rotating or Anthropic token is kept; the third retry deactivates [0.24ms]
+ 19 pass
+ 2 fail
+== 49: sin contar el reintento
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a dead refresh token > otherwise expires the connection, counts the retry and drops a consumed rotating token [0.67ms]
+(fail) a dead refresh token > a non-rotating or Anthropic token is kept; the third retry deactivates [0.45ms]
+ 19 pass
+ 2 fail
+== restaurado
+ 21 pass
+ 0 fail
+__BG_EXIT__=0

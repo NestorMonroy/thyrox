@@ -1,94 +1,90 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/bash/specs/pyright.ts` — spec Fig
- * del comando `pyright` (verificador de tipos para Python).
- */
 import type { CommandSpec } from '../registry.js'
 
 export default {
   name: 'pyright',
-  description: 'Verificador de tipos para Python',
+  description: 'Type checker for Python',
   options: [
-    { name: ['--help', '-h'], description: 'Mostrar mensaje de ayuda' },
-    { name: '--version', description: 'Imprimir la versión de pyright y salir' },
+    { name: ['--help', '-h'], description: 'Show help message' },
+    { name: '--version', description: 'Print pyright version and exit' },
     {
       name: ['--watch', '-w'],
-      description: 'Continuar corriendo y vigilar cambios',
+      description: 'Continue to run and watch for changes',
     },
     {
       name: ['--project', '-p'],
-      description: 'Usar el archivo de configuración en esta ruta',
+      description: 'Use the configuration file at this location',
       args: { name: 'FILE OR DIRECTORY' },
     },
-    { name: '-', description: 'Leer la lista de archivos o directorios desde stdin' },
+    { name: '-', description: 'Read file or directory list from stdin' },
     {
       name: '--createstub',
-      description: 'Crear archivo(s) de stub de tipos para un import',
+      description: 'Create type stub file(s) for import',
       args: { name: 'IMPORT' },
     },
     {
       name: ['--typeshedpath', '-t'],
-      description: 'Usar stubs de tipos typeshed en esta ruta',
+      description: 'Use typeshed type stubs at this location',
       args: { name: 'DIRECTORY' },
     },
     {
       name: '--verifytypes',
-      description: 'Verificar completitud de tipos en un paquete py.typed',
+      description: 'Verify completeness of types in py.typed package',
       args: { name: 'IMPORT' },
     },
     {
       name: '--ignoreexternal',
-      description: 'Ignorar imports externos para --verifytypes',
+      description: 'Ignore external imports for --verifytypes',
     },
     {
       name: '--pythonpath',
-      description: 'Ruta al intérprete de Python',
+      description: 'Path to the Python interpreter',
       args: { name: 'FILE' },
     },
     {
       name: '--pythonplatform',
-      description: 'Analizar para esta plataforma',
+      description: 'Analyze for platform',
       args: { name: 'PLATFORM' },
     },
     {
       name: '--pythonversion',
-      description: 'Analizar para esta versión de Python',
+      description: 'Analyze for Python version',
       args: { name: 'VERSION' },
     },
     {
       name: ['--venvpath', '-v'],
-      description: 'Directorio que contiene entornos virtuales',
+      description: 'Directory that contains virtual environments',
       args: { name: 'DIRECTORY' },
     },
-    { name: '--outputjson', description: 'Emitir resultados en formato JSON' },
-    { name: '--verbose', description: 'Emitir diagnósticos detallados' },
-    { name: '--stats', description: 'Imprimir estadísticas de rendimiento detalladas' },
+    { name: '--outputjson', description: 'Output results in JSON format' },
+    { name: '--verbose', description: 'Emit verbose diagnostics' },
+    { name: '--stats', description: 'Print detailed performance stats' },
     {
       name: '--dependencies',
-      description: 'Emitir información de dependencias de import',
+      description: 'Emit import dependency information',
     },
     {
       name: '--level',
-      description: 'Nivel mínimo de diagnóstico',
+      description: 'Minimum diagnostic level',
       args: { name: 'LEVEL' },
     },
     {
       name: '--skipunannotated',
-      description: 'Omitir el análisis de tipos de funciones sin anotar',
+      description: 'Skip type analysis of unannotated functions',
     },
     {
       name: '--warnings',
-      description: 'Usar código de salida 1 si se reportan warnings',
+      description: 'Use exit code of 1 if warnings are reported',
     },
     {
       name: '--threads',
-      description: 'Usar hasta N hilos para paralelizar la verificación de tipos',
+      description: 'Use up to N threads to parallelize type checking',
       args: { name: 'N', isOptional: true },
     },
   ],
   args: {
     name: 'files',
     description:
-      'Especificar archivos o directorios a analizar (anula el archivo de config)',
+      'Specify files or directories to analyze (overrides config file)',
     isVariadic: true,
     isOptional: true,
   },

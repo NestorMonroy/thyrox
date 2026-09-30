@@ -1,0 +1,70 @@
+{
+ "reviewed": [
+  {
+   "pattern": "undefined-literal-en-parametro-numerico-requerido",
+   "files": [
+    "src/packages/@ant/computer-use-mcp/src/legacy/platforms/darwin.ts"
+   ]
+  },
+  {
+   "pattern": "unknown-command-context-assumed-shape",
+   "files": [
+    "src/packages/agent/commands/security-review.ts"
+   ]
+  },
+  {
+   "pattern": "generic-utility-called-with-narrower-domain-message-type",
+   "files": [
+    "src/packages/agent/compaction/sessionMemoryCompact.ts"
+   ]
+  },
+  {
+   "pattern": "readonly-tools-array-into-mutable-tools-param",
+   "files": [
+    "src/packages/agent/hooks/apiQueryHookHelper.ts"
+   ]
+  },
+  {
+   "pattern": "optional-message-id-into-required-string-field",
+   "files": [
+    "src/packages/agent/hooks/apiQueryHookHelper.ts"
+   ]
+  },
+  {
+   "pattern": "hook-field-absent-from-hookresult-type",
+   "files": [
+    "src/packages/agent/hooks/execAgentHook.ts"
+   ]
+  },
+  {
+   "pattern": "excess-hook-property-on-ported-hookresult",
+   "files": [
+    "src/packages/agent/hooks/execAgentHook.ts"
+   ]
+  },
+  {
+   "pattern": "hook-field-not-in-ported-hookresult-type",
+   "files": [
+    "src/packages/agent/hooks/execAgentHook.ts"
+   ]
+  },
+  {
+   "pattern": "excess-property-hook-in-hookresult-literal",
+   "files": [
+    "src/packages/agent/hooks/execPromptHook.ts"
+   ]
+  },
+  {
+   "pattern": "runtime-field-not-declared-on-return-interface",
+   "files": [
+    "src/packages/agent/hooks/execPromptHook.ts"
+   ]
+  },
+  {
+   "pattern": "hook-result-literal-includes-hook-field-not-in-type",
+   "files": [
+    "src/packages/agent/hooks/execPromptHook.ts"
+   ]
+  }
+ ]
+}

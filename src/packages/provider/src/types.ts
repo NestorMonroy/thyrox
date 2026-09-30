@@ -1,9 +1,3 @@
-/**
- * Porte fiel de `ccnmt: packages/provider/src/types.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO. Sin divergencias: `./contracts.js` y `./requestOptions.js`
- * ya están portados en este mismo pase (hermanos).
- */
 import type { ClientOptions } from '@anthropic-ai/sdk'
 import type {
   ProviderAPIProvider,

@@ -1,11 +1,9 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/schemas/sandbox.ts` (100
- * líneas fuente). Reimplementación fiel VERBATIM.
- *
- * Sub-esquema de settings de sandbox, propiedad de config.
+ * V7 §8.6 — Sandbox settings sub-schema owned by config.
+ * Moved from src/entrypoints/sandboxTypes.ts; source file becomes re-export facade.
  */
 import { z } from 'zod/v4'
-import { lazySchema } from '../../internal/lazySchema.ts'
+import { lazySchema } from '../../internal/lazySchema.js'
 
 const SandboxNetworkConfigSchema = lazySchema(() =>
   z
@@ -78,13 +76,12 @@ export const SandboxSettingsSchema = lazySchema(() =>
         })
         .optional()
         .describe('Custom ripgrep configuration for bundled ripgrep support'),
-      // Puerto de ant v2.1.133 `aTH` (2492.js) — overrides explícitos para
-      // los binarios helper del sandbox. Las capas de settings
-      // (userSettings, projectSettings, localSettings, flagSettings,
-      // policySettings) se recorren de arriba abajo por
-      // `getSandboxBinaryPath` y gana la primera no vacía. Admins de
-      // empresa pueden fijar un bwrap/socat vendorizado sin exigir que el
-      // usuario mute $PATH.
+      // Port of ant v2.1.133 aTH (2492.js) — explicit overrides for the
+      // sandbox helper binaries. settings layers (userSettings,
+      // projectSettings, localSettings, flagSettings, policySettings) are
+      // walked top-down by `getSandboxBinaryPath` and the first non-empty
+      // wins. Enterprise admins can pin a vendored bwrap/socat without
+      // requiring the user to mutate $PATH.
       bwrapPath: z
         .string()
         .optional()
@@ -100,3 +97,4 @@ export const SandboxSettingsSchema = lazySchema(() =>
     })
     .passthrough(),
 )
+

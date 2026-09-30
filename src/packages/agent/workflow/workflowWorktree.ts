@@ -72,6 +72,12 @@ export async function setupWorkflowAgentWorktree(
     worktreePath: worktree.worktreePath,
     async cleanup() {
       try {
+        if (!worktree.headCommit) {
+          log(
+            `[worktree] agent "${label}" worktree kept (has changes): ${worktree.worktreePath}`,
+          )
+          return
+        }
         const changed = await hasWorktreeChanges(
           worktree.worktreePath,
           worktree.headCommit,

@@ -1,0 +1,2 @@
+    if args.order == "wait-free":
+        return 0 if wait_free(args.need, args.nvidia_smi, args.timeout, args.interval) else 3

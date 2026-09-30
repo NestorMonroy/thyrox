@@ -4,7 +4,7 @@ import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import type { IdeType } from '@thyrox/ide/ide.js'
 import { readEnv } from '@thyrox/config/env/utils'
 
-const PLUGIN_PREFIX = 'claude-code-how-works-how-works-jetbrains-plugin'
+const PLUGIN_PREFIX = 'claude-code-jetbrains-plugin'
 
 // Map of IDE names to their directory patterns
 const ideNameToDirMap: { [key: string]: string[] } = {

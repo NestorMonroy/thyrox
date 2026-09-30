@@ -11,10 +11,11 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { parseRstTasks } from '../../../task/rst.ts'
+import { parseRstTasks } from '@thyrox/task/rst.ts'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
-import { runCli } from '../src/entry/main.ts'
-import { docsRoot } from '../../../paths/docs.ts'
+import { runCli } from '../src/entry/run-cli.ts'
+import { docsRoot } from '@thyrox/paths/docs.ts'
 
 /** El archivo de tareas de esta misma iniciativa: control positivo real. */
 // El .rst vive en kaupamex-docs. La aritmetica resolvia a thyrox y el
@@ -54,7 +55,7 @@ describe('puente RST → tablero (T-062)', () => {
       '',
       '- [x] T-022 — otra',
     ].join('\n'))
-    expect(t[0].subject).toBe('Las 47 restantes: se traen por necesidad demostrada, no por paridad. La necesidad, medida por primera vez.')
+    expect(t[0]!.subject).toBe('Las 47 restantes: se traen por necesidad demostrada, no por paridad. La necesidad, medida por primera vez.')
     expect(t).toHaveLength(2)
   })
 
@@ -63,13 +64,13 @@ describe('puente RST → tablero (T-062)', () => {
       '- [ ] **T-010** — depende de **T-079** para arrancar',
       '- [ ] **T-011** — depende de ``html_editor``, que no es una tarea',
     ].join('\n'))
-    expect(t[0].blockedBy).toEqual(['T-079'])
-    expect(t[1].blockedBy).toEqual([])
+    expect(t[0]!.blockedBy).toEqual(['T-079'])
+    expect(t[1]!.blockedBy).toEqual([])
   })
 
   test('una tarea no se declara bloqueada por sí misma', () => {
     const t = parseRstTasks('- [ ] **T-010** — T-010 se cierra cuando depende de T-011')
-    expect(t[0].blockedBy).toEqual(['T-011'])
+    expect(t[0]!.blockedBy).toEqual(['T-011'])
   })
 
   test('sobre el archivo real de esta iniciativa el conteo coincide con el grep', () => {
@@ -83,12 +84,16 @@ describe('puente RST → tablero (T-062)', () => {
 
   test('la línea se conserva: sin ella el puente no puede citar de dónde salió', () => {
     const t = parseRstTasks('\n\n- [ ] T-001 — algo')
-    expect(t[0].line).toBe(3)
+    expect(t[0]!.line).toBe(3)
   })
 })
 
 describe('--import-tasks: el puente como comando (T-062)', () => {
-  const tablero = () => join(mkdtempSync(join(tmpdir(), 'import-')), 'tablero.sqlite3')
+  const tablero = () => {
+    const p = join(mkdtempSync(join(tmpdir(), 'import-')), 'tablero.sqlite3')
+    createMigratedTaskDb(p)
+    return p
+  }
 
   async function correr(argv: string[]) {
     const out: string[] = []

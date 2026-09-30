@@ -1,30 +1,24 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/zodToJsonSchema.test.ts`.
- * Ejercita `zodToJsonSchema` de `zodSchema/zodToJsonSchema.ts`: la
- * conversión nativa vía `toJSONSchema` de `zod/v4` y su cache por
- * identidad de referencia (`WeakMap`).
- */
 import { describe, expect, test } from 'bun:test'
 import { z } from 'zod/v4'
 import { zodToJsonSchema } from '../zodSchema/zodToJsonSchema.js'
 
-describe('zodToJsonSchema — conversión básica', () => {
-  test('z.string() convierte a JSON Schema con type=string', () => {
+describe('zodToJsonSchema — basic conversion', () => {
+  test('z.string() converts to JSON Schema with type=string', () => {
     const result = zodToJsonSchema(z.string())
     expect(result.type).toBe('string')
   })
 
-  test('z.number() convierte a type=number', () => {
+  test('z.number() converts to type=number', () => {
     const result = zodToJsonSchema(z.number())
     expect(result.type).toBe('number')
   })
 
-  test('z.boolean() convierte a type=boolean', () => {
+  test('z.boolean() converts to type=boolean', () => {
     const result = zodToJsonSchema(z.boolean())
     expect(result.type).toBe('boolean')
   })
 
-  test('z.object({...}) convierte a type=object con properties', () => {
+  test('z.object({...}) converts to type=object with properties', () => {
     const result = zodToJsonSchema(
       z.object({ name: z.string(), age: z.number() }),
     )
@@ -32,44 +26,44 @@ describe('zodToJsonSchema — conversión básica', () => {
     expect(result.properties).toBeDefined()
   })
 
-  test('z.array(z.string()) convierte a type=array con items', () => {
+  test('z.array(z.string()) converts to type=array with items', () => {
     const result = zodToJsonSchema(z.array(z.string()))
     expect(result.type).toBe('array')
     expect(result.items).toBeDefined()
   })
 
-  test('z.enum devuelve un schema tipado como enum', () => {
+  test('z.enum returns enum-typed schema', () => {
     const schema = z.enum(['a', 'b', 'c'])
     const result = zodToJsonSchema(schema)
     expect(result.enum).toEqual(['a', 'b', 'c'])
   })
 })
 
-describe('zodToJsonSchema — cache por identidad de referencia', () => {
-  // Contrato crítico de rendimiento: esta función se llama en cada
-  // request de API para cada herramienta (~60-250 veces por turno). La
-  // cache WeakMap vuelve O(1) las búsquedas repetidas. Si un refactor
-  // elimina por accidente la capa de cache, cada request de API vuelve a
-  // parsear cada schema de Zod — medido ~30ms / llamada vs <1μs cacheado.
+describe('zodToJsonSchema — caching by reference identity', () => {
+  // Critical performance contract: this function is called on every API
+  // request for every tool (~60-250 times per turn). The WeakMap cache
+  // makes repeated lookups O(1). If a refactor accidentally drops the
+  // cache layer, every API request re-parses every Zod schema —
+  // measured ~30ms / call vs <1μs cached.
 
-  test('la misma referencia de schema devuelve la misma referencia de resultado', () => {
+  test('same schema reference returns the same result reference', () => {
     const schema = z.object({ name: z.string() })
     const a = zodToJsonSchema(schema)
     const b = zodToJsonSchema(schema)
-    expect(a).toBe(b) // MISMA referencia, no sólo igual
+    expect(a).toBe(b) // SAME reference, not just equal
   })
 
-  test('instancias de schema distintas NO comparten cache (la clave de WeakMap es identidad)', () => {
+  test('different schema instances are NOT cache-shared (WeakMap key is identity)', () => {
     const schema1 = z.object({ name: z.string() })
-    const schema2 = z.object({ name: z.string() }) // estructuralmente igual
+    const schema2 = z.object({ name: z.string() }) // structurally same
     const a = zodToJsonSchema(schema1)
     const b = zodToJsonSchema(schema2)
-    // Referencias distintas → entradas de cache separadas → referencias
-    // de resultado potencialmente distintas.
+    // Different references → separate cache entries → potentially
+    // different result references.
     expect(a).not.toBe(b)
   })
 
-  test('el resultado cacheado es estable en referencia a través de muchas llamadas', () => {
+  test('cached result is reference-stable across many calls', () => {
     const schema = z.string()
     const first = zodToJsonSchema(schema)
     for (let i = 0; i < 50; i++) {
@@ -77,19 +71,19 @@ describe('zodToJsonSchema — cache por identidad de referencia', () => {
     }
   })
 
-  test('la cache es por-schema (no global)', () => {
+  test('caching is per-schema (not global)', () => {
     const a = z.string()
     const b = z.number()
     const ra = zodToJsonSchema(a)
     const rb = zodToJsonSchema(b)
     expect(ra.type).toBe('string')
     expect(rb.type).toBe('number')
-    // Llamadas repetidas preservan el mapeo por-schema.
+    // Repeat calls preserve per-schema mapping.
     expect(zodToJsonSchema(a).type).toBe('string')
     expect(zodToJsonSchema(b).type).toBe('number')
   })
 
-  test('el resultado es un objeto plano (Record<string, unknown>)', () => {
+  test('result is a plain object (Record<string, unknown>)', () => {
     const result = zodToJsonSchema(z.string())
     expect(typeof result).toBe('object')
     expect(result).not.toBeInstanceOf(Array)
@@ -97,8 +91,8 @@ describe('zodToJsonSchema — cache por identidad de referencia', () => {
   })
 })
 
-describe('zodToJsonSchema — schemas complejos', () => {
-  test('schemas de objeto anidados convierten correctamente', () => {
+describe('zodToJsonSchema — complex schemas', () => {
+  test('nested object schemas convert correctly', () => {
     const schema = z.object({
       user: z.object({
         name: z.string(),
@@ -111,7 +105,7 @@ describe('zodToJsonSchema — schemas complejos', () => {
     expect(result.properties).toBeDefined()
   })
 
-  test('los campos opcionales se reflejan en el arreglo required', () => {
+  test('optional fields are reflected in required array', () => {
     const schema = z.object({
       required: z.string(),
       optional: z.string().optional(),
@@ -120,12 +114,12 @@ describe('zodToJsonSchema — schemas complejos', () => {
     expect(result.required).toEqual(['required'])
   })
 
-  test('los tipos union convierten sin lanzar', () => {
+  test('union types convert without throwing', () => {
     const schema = z.union([z.string(), z.number()])
     expect(() => zodToJsonSchema(schema)).not.toThrow()
   })
 
-  test('los tipos literal preservan el valor', () => {
+  test('literal types preserve the value', () => {
     const schema = z.literal('hello')
     const result = zodToJsonSchema(schema)
     expect(result.const).toBe('hello')

@@ -100,6 +100,18 @@ escribir 5 pending 'Portar otra cosa' 'esta tarea esta bloqueada por #9 desde ha
 escribir 6 pending 'Sin senal de ninguna clase' 'prosa sin simbolo ni ruta'
 escribir 9 completed 'Portar has_groups ya cerrada' 'su senal es esperada'
 
+# Los casos 2-8 leen simbolos REALES del clon de la aplicacion. Sin el clon el
+# gate REHUSA con 2 —correcto—, y lo unico que se puede medir es esa negativa:
+# seguir contaria como fallo del gate la ausencia de su sujeto.
+if ! python3 -c "from paths import reach; reach.root('api')" >/dev/null 2>&1; then
+    echo "== 2'. sin el clon de la aplicacion: el gate REHUSA =="
+    SIN_CLON="$(python3 "$GUION" --tasks-dir "$U" 2>&1)"; CODE=$?
+    afirmar "sale con 2, no con un veredicto" 2 "$CODE"
+    afirmar "  … y nombra la raiz que falta" 1 "$(grep -c "REHUSA.*'api'" <<<"$SIN_CLON")"
+    printf '\n%d ok · %d fallo(s) · SIN MEDIR: falta el clon de la aplicacion\n' "$OK" "$FALLO"
+    [[ "$FALLO" -eq 0 ]] && exit 2 || exit 1
+fi
+
 echo "== 2. S1: simbolo REAL del arbol dispara RE-ENCUADRAR =="
 UNO=$(python3 "$GUION" --tasks-dir "$U" 1 2>&1)
 afirmar "#1 pide re-encuadre" 1 "$(grep -c 'veredicto: RE-ENCUADRAR' <<<"$UNO")"

@@ -97,11 +97,11 @@ describe('parseGitDiff', () => {
     expect(result.size).toBe(1)
     const hunks = result.get('foo.ts')!
     expect(hunks).toHaveLength(1)
-    expect(hunks[0].oldStart).toBe(1)
-    expect(hunks[0].oldLines).toBe(3)
-    expect(hunks[0].newStart).toBe(1)
-    expect(hunks[0].newLines).toBe(4)
-    expect(hunks[0].lines).toEqual([' line1', '+added', ' line2', ' line3'])
+    expect(hunks[0]!.oldStart).toBe(1)
+    expect(hunks[0]!.oldLines).toBe(3)
+    expect(hunks[0]!.newStart).toBe(1)
+    expect(hunks[0]!.newLines).toBe(4)
+    expect(hunks[0]!.lines).toEqual([' line1', '+added', ' line2', ' line3'])
   })
 
   test('parses multiple hunks in one file', () => {
@@ -123,8 +123,8 @@ describe('parseGitDiff', () => {
     const result = parseGitDiff(input)
     const hunks = result.get('bar.ts')!
     expect(hunks).toHaveLength(2)
-    expect(hunks[0].oldStart).toBe(1)
-    expect(hunks[1].oldStart).toBe(10)
+    expect(hunks[0]!.oldStart).toBe(1)
+    expect(hunks[1]!.oldStart).toBe(10)
   })
 
   test('skips binary files marker', () => {
@@ -152,7 +152,7 @@ describe('parseGitDiff', () => {
     const result = parseGitDiff(input)
     const hunks = result.get('new.ts')!
     expect(hunks).toHaveLength(1)
-    expect(hunks[0].lines).toEqual(['+line1', '+line2'])
+    expect(hunks[0]!.lines).toEqual(['+line1', '+line2'])
   })
 
   test('parses deleted file', () => {
@@ -210,8 +210,8 @@ describe('parseGitDiff', () => {
 
     const result = parseGitDiff(input)
     const hunks = result.get('solo.ts')!
-    expect(hunks[0].oldLines).toBe(1) // default when no comma
-    expect(hunks[0].newLines).toBe(1)
+    expect(hunks[0]!.oldLines).toBe(1) // default when no comma
+    expect(hunks[0]!.newLines).toBe(1)
   })
 })
 

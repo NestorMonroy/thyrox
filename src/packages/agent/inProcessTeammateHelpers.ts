@@ -1,3 +1,11 @@
+// `InProcessTeammateTaskState` es el tipo real de `@thyrox/swarm`, el mismo
+// que la unión de tareas del estado de la aplicación: una copia estructural
+// local no era miembro de esa unión y `updateTaskState` la rechazaba.
+import {
+  type InProcessTeammateTaskState,
+  type PlanApprovalResponseMessage,
+} from '@thyrox/swarm'
+import { updateTaskState } from './task/framework.js'
 /**
  * Helpers de teammate in-process — porte PARCIAL de
  * `ccnmt: packages/agent/inProcessTeammateHelpers.ts` (100 líneas en la
@@ -7,8 +15,8 @@
  * `InProcessTeammateTaskState`, `isInProcessTeammateTask`,
  * `isPermissionResponse`, `isSandboxPermissionResponse` y
  * `PlanApprovalResponseMessage` de `@claude-code-how-works/swarm`, y
- * `updateTaskState` de `./task/framework.js` — ninguno de los dos existe en
- * este árbol. Se portan sólo `findInProcessTeammateTaskId` y su
+ * `updateTaskState` de `./task/framework.js`; de `@thyrox/swarm` se toma el
+ * tipo de la tarea. Se portan sólo `findInProcessTeammateTaskId` y su
  * discriminador de tipo `isInProcessTeammateTask`, porque son el único
  * símbolo que ejercita el test que este archivo porta
  * (`__tests__/findInProcessTeammateTaskId.test.ts`).
@@ -28,13 +36,8 @@
  * después revienta con `TypeError` al leer `task.identity.agentName`.
  */
 
-type AppState = { tasks: Record<string, unknown> }
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
-type InProcessTeammateTaskState = {
-  type: 'in_process_teammate'
-  id: string
-  identity: { agentName: string; teamName: string }
-}
 
 /**
  * Discrimina si una tarea es un teammate in-process. Deliberadamente sólo
@@ -72,4 +75,41 @@ export function findInProcessTeammateTaskId(
     }
   }
   return undefined
+}
+
+type SetAppState = (updater: (prev: AppState) => AppState) => void
+/**
+ * Set awaitingPlanApproval state for an in-process teammate.
+ *
+ * @param taskId - Task ID of the in-process teammate
+ * @param setAppState - AppState setter
+ * @param awaiting - Whether teammate is awaiting plan approval
+ */
+export function setAwaitingPlanApproval(
+  taskId: string,
+  setAppState: SetAppState,
+  awaiting: boolean,
+): void {
+  updateTaskState<InProcessTeammateTaskState>(taskId, setAppState, task => ({
+    ...task,
+    awaitingPlanApproval: awaiting,
+  }))
+}
+/**
+ * Handle plan approval response for an in-process teammate.
+ * Called by the message callback when a plan_approval_response arrives.
+ *
+ * This resets awaitingPlanApproval to false. The permissionMode from the
+ * response is handled separately by the agent loop (Task #11).
+ *
+ * @param taskId - Task ID of the in-process teammate
+ * @param _response - The plan approval response message (for future use)
+ * @param setAppState - AppState setter
+ */
+export function handlePlanApprovalResponse(
+  taskId: string,
+  _response: PlanApprovalResponseMessage,
+  setAppState: SetAppState,
+): void {
+  setAwaitingPlanApproval(taskId, setAppState, false)
 }

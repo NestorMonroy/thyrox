@@ -1,0 +1,16 @@
+Keep eight headless-pool fixes from loop step 097
+
+A pool of claude -p proposers (one per top file) produced the edits;
+tsc_zero_step kept the eight whose targets reached zero with nothing
+new: 1767 -> 1663 diagnostics. Each one ran its derived tests, and the
+two type-only files transpile identically to HEAD.
+
+Review found provider.ts had ported `delete process.env.X` as
+`delete readEnv(X)`, a no-op: /provider unset never cleared the
+provider variables. It now calls deleteEnv, with a test that fails on
+the no-op. close_step.sh gains gate 4 (gate-sweep): a step does not
+close while an open pattern has live instances without an outcome.
+
+The commit also carries the benches of steps 098-100: the untracked
+bench gate takes the whole tsc-zero-loop directory, and those steps
+are closed in the commits that follow.

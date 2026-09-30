@@ -1,7 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/errorHelpers.behavior.test.ts`
- * (145 líneas fuente, 100 % portado).
- */
 import { describe, expect, test } from 'bun:test'
 
 import {
@@ -16,10 +12,9 @@ import {
 } from '../errorHelpers.ts'
 
 /**
- * Fija los invariantes de los helpers de error. Se llaman desde bloques
- * catch por todo el código base; una regresión aquí cambia cómo los
- * errores se muestran, se loguean, y se comparan contra las condiciones
- * esperadas.
+ * Pin error-helper invariants. These are called from catch blocks
+ * throughout the codebase; a regression here changes how errors get
+ * surfaced, logged, and matched against expected conditions.
  */
 describe('errorHelpers', () => {
   describe('toError / errorMessage', () => {
@@ -35,9 +30,8 @@ describe('errorHelpers', () => {
     })
 
     test('object converted via String()', () => {
-      // Fijado: un objeto se vuelve "[object Object]" vía String() — no
-      // JSON. Un refactor "hagamos JSON.stringify aquí" cambiaría los
-      // logs de debug.
+      // Pin: object becomes "[object Object]" via String() — not JSON.
+      // A "let's JSON.stringify here" refactor would change debug logs.
       expect(errorMessage({})).toBe('[object Object]')
     })
 
@@ -97,7 +91,7 @@ describe('errorHelpers', () => {
     })
 
     test('DOMException with name "AbortError" → true', () => {
-      // El abort nativo de fetch lanza esta forma.
+      // Native fetch abort throws this shape.
       const e = Object.assign(new Error('aborted'), { name: 'AbortError' })
       expect(isAbortError(e)).toBe(true)
     })
@@ -115,7 +109,7 @@ describe('errorHelpers', () => {
     })
 
     test('EACCES → true (permission denied — counts as inaccessible)', () => {
-      // El usuario no puede ver el archivo aunque exista. Se trata como ausente.
+      // User can't see the file even though it might exist. Treat as missing.
       expect(isFsInaccessible(Object.assign(new Error('x'), { code: 'EACCES' }))).toBe(
         true,
       )
@@ -139,12 +133,12 @@ describe('errorHelpers', () => {
 
     test('limits to N stack frames (default 5)', () => {
       const e = new Error('boom')
-      // Sintetiza un stack con 10 frames.
+      // Synthesize a stack with 10 frames
       const frames = Array.from({ length: 10 }, (_, i) => `    at fn${i} (file.ts:${i})`)
       e.stack = `Error: boom\n${frames.join('\n')}`
       const result = shortErrorStack(e, 3)
       const resultLines = result.split('\n')
-      // Header + 3 frames = 4 líneas.
+      // Header + 3 frames = 4 lines
       expect(resultLines.length).toBe(4)
     })
   })

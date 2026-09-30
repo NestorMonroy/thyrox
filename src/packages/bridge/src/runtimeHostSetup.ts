@@ -1,16 +1,3 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/runtimeHostSetup.ts` (42
- * líneas fuente, 100% portado — símbolo único `installBridgeBindings`).
- *
- * Instala las ataduras REALES en el registro de `host.ts` que
- * `index.ts` consulta vía `getBridgeHostBindings()`. `index.ts` es la
- * superficie pública — cada una de sus funciones delega en el registro
- * en vez de importar directamente la implementación; este módulo es el
- * que puebla ese registro con los módulos ya portados, imitando el
- * diseño de indirección de la fuente (permite sustituir el bridge
- * entero — p. ej. en tests — sin tocar `index.ts`).
- */
-
 import { installBridgeHostBindings } from './index.js'
 import { bridgeMain } from './bridgeMain.js'
 import { buildBridgeConnectUrl } from './bridgeStatusUtil.js'
@@ -27,6 +14,40 @@ import {
   enrollTrustedDevice,
   getTrustedDeviceToken,
 } from './trustedDevice.js'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { Message } from '@thyrox/agent/messageShapes.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { InboundMessageFields, InitBridgeOptions as HostInitBridgeOptions } from './contracts.js'
+
+/**
+ * Adaptadores entre el contrato laxo de host-bindings (`unknown` en
+ * `contracts.ts`, deliberado — ver la cabecera de `initReplBridge.ts`) y las
+ * firmas precisas de los módulos internos. En runtime este paquete es el
+ * único llamador de `installBridgeHostBindings`, así que lo que aquí se
+ * afirma siempre llega con la forma precisa.
+ */
+function extractInboundMessageFieldsForHost(message: unknown): InboundMessageFields | undefined {
+  return extractInboundMessageFields(message as SDKMessage)
+}
+
+function resolveAndPrependForHost(
+  message: unknown,
+  content: string | ContentBlockParam[],
+): Promise<string | ContentBlockParam[]> {
+  return resolveAndPrepend(message, content)
+}
+
+function initReplBridgeForHost(
+  options?: HostInitBridgeOptions,
+): ReturnType<typeof initReplBridge> {
+  return initReplBridge(
+    options && {
+      ...options,
+      initialMessages: options.initialMessages as Message[] | undefined,
+      getMessages: options.getMessages as (() => Message[]) | undefined,
+    },
+  )
+}
 
 let installed = false
 
@@ -38,9 +59,9 @@ export function installBridgeBindings(): void {
   installBridgeHostBindings({
     bridgeMain,
     buildBridgeConnectUrl,
-    extractInboundMessageFields,
-    resolveAndPrepend,
-    initReplBridge,
+    extractInboundMessageFields: extractInboundMessageFieldsForHost,
+    resolveAndPrepend: resolveAndPrependForHost,
+    initReplBridge: initReplBridgeForHost,
     getBridgeDisabledReason,
     isCcrMirrorEnabled,
     isBridgeEnabledBlocking,

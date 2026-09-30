@@ -1,0 +1,39 @@
+revealed
+  ok   sólo lo nuevo, con multiplicidad
+  ok   sin nuevo, vacío
+add
+  ok   lleva la lección
+  ok   lleva el veredicto del registro
+  ok   lleva lo destapado
+  ok   persiste una fila por reflexión
+  ok   rehúsa una lección vacía
+recall
+  ok   reflexiones de ese archivo
+  ok   recetas de ese archivo
+  ok   archivo ajeno, sin memoria
+pending_outside
+  ok   señal viva fuera de la candidata, con multiplicidad; la ausente no aparece
+  ok   con todos sus archivos en la candidata, nada pendiente
+  ok   sin memoria de patrones, nada pendiente
+  ok   la señal fuera del `include` del patrón no queda pendiente
+  ok   lo que la candidata declara como objetivo no queda pendiente
+blocking_pending
+  ok   sin salida declarada, lo pendiente bloquea
+  ok   un archivo excluido no bloquea
+  ok   un patrón cerrado no bloquea
+uncovered_by_memory
+  ok   sin memoria, todos los archivos quedan sin cubrir
+  ok   una entrada completa cuya señal no casa los objetivos no cubre
+  ok   cubre sólo lo que su applied nombra
+  ok   señal que casa y applied completo: cubierto
+  ok   un paso sin avance no exige memoria
+sweep_gate
+  ok   sin patrones abiertos, el gate 4 no exige nada
+  ok   con patrones y sin gate4.json, bloquea: el paso 4 se omitió
+  ok   revisado y sin instancias vivas: pasa
+  ok   revisado pero con una instancia viva sin salida: bloquea
+  ok   con el log vigente de un paso posterior: pasa
+audit
+  ok   aceptados, cubiertos por memoria, aplicaciones masivas
+
+todas pasan

@@ -1,17 +1,10 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/jwtUtils.ts`.
- * `logEvent`/`logForDebugging`/`logForDiagnosticsNoPII`/`errorMessage`/
- * `jsonParse` son sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
- */
-import {
-  errorMessage,
-  jsonParse,
-  logEvent,
-  logForDebugging,
-  logForDiagnosticsNoPII,
-} from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 
-/** Formatea una duración en milisegundos como cadena legible (p. ej. "5m 30s"). */
+/** Format a millisecond duration as a human-readable string (e.g. "5m 30s"). */
 function formatDuration(ms: number): string {
   if (ms < 60_000) return `${Math.round(ms / 1000)}s`
   const m = Math.floor(ms / 60_000)
@@ -20,10 +13,10 @@ function formatDuration(ms: number): string {
 }
 
 /**
- * Decodifica el segmento de payload de un JWT sin verificar la firma.
- * Retira el prefijo `sk-ant-si-` de session-ingress si está presente.
- * Devuelve el payload JSON parseado como `unknown`, o `null` si el
- * token está malformado o el payload no es JSON válido.
+ * Decode a JWT's payload segment without verifying the signature.
+ * Strips the `sk-ant-si-` session-ingress prefix if present.
+ * Returns the parsed JSON payload as `unknown`, or `null` if the
+ * token is malformed or the payload is not valid JSON.
  */
 export function decodeJwtPayload(token: string): unknown | null {
   const jwt = token.startsWith('sk-ant-si-')
@@ -39,9 +32,8 @@ export function decodeJwtPayload(token: string): unknown | null {
 }
 
 /**
- * Decodifica el claim `exp` (expiración) de un JWT sin verificar la
- * firma.
- * @returns El valor `exp` en segundos Unix, o `null` si no se puede parsear
+ * Decode the `exp` (expiry) claim from a JWT without verifying the signature.
+ * @returns The `exp` value in Unix seconds, or `null` if unparseable
  */
 export function decodeJwtExpiry(token: string): number | null {
   const payload = decodeJwtPayload(token)
@@ -56,28 +48,26 @@ export function decodeJwtExpiry(token: string): number | null {
   return null
 }
 
-/** Buffer de refresh: solicita un token nuevo antes de expirar. */
+/** Refresh buffer: request a new token before expiry. */
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000
 
-/** Intervalo de refresh de respaldo cuando la expiración del token nuevo se desconoce. */
-const FALLBACK_REFRESH_INTERVAL_MS = 30 * 60 * 1000 // 30 minutos
+/** Fallback refresh interval when the new token's expiry is unknown. */
+const FALLBACK_REFRESH_INTERVAL_MS = 30 * 60 * 1000 // 30 minutes
 
-/** Máx. de fallos consecutivos antes de rendirse con la cadena de refresh. */
+/** Max consecutive failures before giving up on the refresh chain. */
 const MAX_REFRESH_FAILURES = 3
 
-/** Delay de reintento cuando getAccessToken devuelve undefined. */
+/** Retry delay when getAccessToken returns undefined. */
 const REFRESH_RETRY_DELAY_MS = 60_000
 
 /**
- * Crea un scheduler de refresh de token que refresca proactivamente los
- * tokens de sesión antes de que expiren. Lo usan tanto el bridge
- * standalone como el bridge del REPL.
+ * Creates a token refresh scheduler that proactively refreshes session tokens
+ * before they expire. Used by both the standalone bridge and the REPL bridge.
  *
- * Cuando un token está por expirar, el scheduler llama a `onRefresh` con
- * el ID de sesión y el access token OAuth del bridge. El llamador es
- * responsable de entregar el token al transporte apropiado (stdin del
- * proceso hijo para el bridge standalone, reconexión WebSocket para el
- * bridge del REPL).
+ * When a token is about to expire, the scheduler calls `onRefresh` with the
+ * session ID and the bridge's OAuth access token. The caller is responsible
+ * for delivering the token to the appropriate transport (child process stdin
+ * for standalone bridge, WebSocket reconnect for REPL bridge).
  */
 export function createTokenRefreshScheduler({
   getAccessToken,
@@ -88,7 +78,7 @@ export function createTokenRefreshScheduler({
   getAccessToken: () => string | undefined | Promise<string | undefined>
   onRefresh: (sessionId: string, oauthToken: string) => void
   label: string
-  /** Cuánto antes de expirar disparar el refresh. Default 5 min. */
+  /** How long before expiry to fire refresh. Defaults to 5 min. */
   refreshBufferMs?: number
 }): {
   schedule: (sessionId: string, token: string) => void
@@ -98,10 +88,9 @@ export function createTokenRefreshScheduler({
 } {
   const timers = new Map<string, ReturnType<typeof setTimeout>>()
   const failureCounts = new Map<string, number>()
-  // Contador de generación por sesión — incrementado por schedule() y
-  // cancel() para que llamadas asíncronas en vuelo a doRefresh() puedan
-  // detectar cuándo fueron superseídas y deban omitir fijar timers de
-  // seguimiento.
+  // Generation counter per session — incremented by schedule() and cancel()
+  // so that in-flight async doRefresh() calls can detect when they've been
+  // superseded and should skip setting follow-up timers.
   const generations = new Map<string, number>()
 
   function nextGeneration(sessionId: string): number {
@@ -113,25 +102,23 @@ export function createTokenRefreshScheduler({
   function schedule(sessionId: string, token: string): void {
     const expiry = decodeJwtExpiry(token)
     if (!expiry) {
-      // El token no es un JWT decodificable (p. ej. un token OAuth
-      // pasado desde el handler de apertura del WebSocket del bridge
-      // del REPL). Preserva cualquier timer existente (como el refresh
-      // de seguimiento fijado por doRefresh) para que la cadena de
-      // refresh no se rompa.
+      // Token is not a decodable JWT (e.g. an OAuth token passed from the
+      // REPL bridge WebSocket open handler).  Preserve any existing timer
+      // (such as the follow-up refresh set by doRefresh) so the refresh
+      // chain is not broken.
       logForDebugging(
         `[${label}:token] Could not decode JWT expiry for sessionId=${sessionId}, token prefix=${token.slice(0, 15)}…, keeping existing timer`,
       )
       return
     }
 
-    // Limpia cualquier timer de refresh existente — tenemos una
-    // expiración concreta para reemplazarlo.
+    // Clear any existing refresh timer — we have a concrete expiry to replace it.
     const existing = timers.get(sessionId)
     if (existing) {
       clearTimeout(existing)
     }
 
-    // Adelanta la generación para invalidar cualquier doRefresh async en vuelo.
+    // Bump generation to invalidate any in-flight async doRefresh.
     const gen = nextGeneration(sessionId)
 
     const expiryDate = new Date(expiry * 1000).toISOString()
@@ -153,10 +140,9 @@ export function createTokenRefreshScheduler({
   }
 
   /**
-   * Programa el refresh usando un TTL explícito (segundos hasta
-   * expirar) en vez de decodificar el claim exp de un JWT. Lo usan
-   * llamadores cuyo JWT es opaco (p. ej. POST
-   * /v1/code/sessions/{id}/bridge devuelve expires_in directamente).
+   * Schedule refresh using an explicit TTL (seconds until expiry) rather
+   * than decoding a JWT's exp claim. Used by callers whose JWT is opaque
+   * (e.g. POST /v1/code/sessions/{id}/bridge returns expires_in directly).
    */
   function scheduleFromExpiresIn(
     sessionId: string,
@@ -165,10 +151,9 @@ export function createTokenRefreshScheduler({
     const existing = timers.get(sessionId)
     if (existing) clearTimeout(existing)
     const gen = nextGeneration(sessionId)
-    // Acotado a un piso de 30s — si refreshBufferMs excede el
-    // expires_in del servidor (p. ej. un buffer muy grande para testear
-    // refresh frecuente, o el servidor acorta expires_in
-    // inesperadamente), un delayMs sin acotar ≤ 0 haría tight-loop.
+    // Clamp to 30s floor — if refreshBufferMs exceeds the server's expires_in
+    // (e.g. very large buffer for frequent-refresh testing, or server shortens
+    // expires_in unexpectedly), unclamped delayMs ≤ 0 would tight-loop.
     const delayMs = Math.max(expiresInSeconds * 1000 - refreshBufferMs, 30_000)
     logForDebugging(
       `[${label}:token] Scheduled token refresh for sessionId=${sessionId} in ${formatDuration(delayMs)} (expires_in=${expiresInSeconds}s, buffer=${refreshBufferMs / 1000}s)`,
@@ -188,9 +173,8 @@ export function createTokenRefreshScheduler({
       )
     }
 
-    // Si la sesión se canceló o reprogramó mientras estábamos
-    // esperando, la generación habrá cambiado — abortar para evitar
-    // timers huérfanos.
+    // If the session was cancelled or rescheduled while we were awaiting,
+    // the generation will have changed — bail out to avoid orphaned timers.
     if (generations.get(sessionId) !== gen) {
       logForDebugging(
         `[${label}:token] doRefresh for sessionId=${sessionId} stale (gen ${gen} vs ${generations.get(sessionId)}), skipping`,
@@ -206,10 +190,9 @@ export function createTokenRefreshScheduler({
         { level: 'error' },
       )
       logForDiagnosticsNoPII('error', 'bridge_token_refresh_no_oauth')
-      // Programa un reintento para que la cadena de refresh pueda
-      // recuperarse si el token vuelve a estar disponible (p. ej. una
-      // limpieza transitoria de caché durante el refresh). Acotado
-      // para no saturar ante fallos genuinos.
+      // Schedule a retry so the refresh chain can recover if the token
+      // becomes available again (e.g. transient cache clear during refresh).
+      // Cap retries to avoid spamming on genuine failures.
       if (failures < MAX_REFRESH_FAILURES) {
         const retryTimer = setTimeout(
           doRefresh,
@@ -222,7 +205,7 @@ export function createTokenRefreshScheduler({
       return
     }
 
-    // Resetea el contador de fallos ante una obtención exitosa del token
+    // Reset failure counter on successful token retrieval
     failureCounts.delete(sessionId)
 
     logForDebugging(
@@ -231,10 +214,9 @@ export function createTokenRefreshScheduler({
     logEvent('tengu_bridge_token_refreshed', {})
     onRefresh(sessionId, oauthToken)
 
-    // Programa un refresh de seguimiento para que las sesiones de larga
-    // duración se mantengan autenticadas. Sin esto, el timer inicial de
-    // una sola vez deja la sesión vulnerable a la expiración del token
-    // si corre más allá de la primera ventana de refresh.
+    // Schedule a follow-up refresh so long-running sessions stay authenticated.
+    // Without this, the initial one-shot timer leaves the session vulnerable
+    // to token expiry if it runs past the first refresh window.
     const timer = setTimeout(
       doRefresh,
       FALLBACK_REFRESH_INTERVAL_MS,
@@ -248,7 +230,7 @@ export function createTokenRefreshScheduler({
   }
 
   function cancel(sessionId: string): void {
-    // Adelanta la generación para invalidar cualquier doRefresh async en vuelo.
+    // Bump generation to invalidate any in-flight async doRefresh.
     nextGeneration(sessionId)
     const timer = timers.get(sessionId)
     if (timer) {
@@ -259,7 +241,7 @@ export function createTokenRefreshScheduler({
   }
 
   function cancelAll(): void {
-    // Adelanta todas las generaciones para invalidar los doRefresh en vuelo.
+    // Bump all generations so in-flight doRefresh calls are invalidated.
     for (const sessionId of generations.keys()) {
       nextGeneration(sessionId)
     }

@@ -1,0 +1,15 @@
+Add the memory and Redis adapters and their factory
+
+ADR-THYROX-006 1.1.0, phases R1 and R2. The memory adapter serves a
+single proxy; the Redis one runs on Bun.RedisClient and passes the
+same contract against an ephemeral redis-server on a Unix socket.
+The toolchain gains thyrox_toolchain_require_redis, opt-in and
+re-checking the binary.
+
+openSharedStateStore picks Redis when THYROX_REDIS_URL is set and
+memory otherwise. When Redis fails mid-operation it degrades to
+memory once, with a warning, and stays there. Annulling that
+fallback drops exactly its two cases.
+
+.env.example also declares THYROX_CODE_HARBOR_KITE_PACING_OFF, read
+by the peer loop guard of the previous commit.

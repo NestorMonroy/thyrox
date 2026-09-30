@@ -1,0 +1,98 @@
+src/packages/repl/src/components/Settings/Config.tsx(288,21): error TS2339: Property 'mcpClients' does not exist on type '{ dynamicMcpConfig?: Record<string, unknown> | undefined; ideInstallationStatus: unknown; theme: unknown; }'.
+  --- código src/packages/repl/src/components/Settings/Config.tsx:278-298 ---
+    278  
+    279    // Tell the parent when Config's own Esc handler is active so Settings cedes
+    280    // confirm:no. Only true when search mode owns the keyboard — not when the
+    281    // tab header is focused (then Settings must handle Esc-to-close).
+    282    const ownsEsc = isSearchMode && !headerFocused
+    283    React.useEffect(() => {
+    284      onIsSearchModeChange?.(ownsEsc)
+    285    }, [ownsEsc, onIsSearchModeChange])
+    286  
+    287    const isConnectedToIde = hasAccessToIDEExtensionDiffFeature(
+    288>     context.options.mcpClients,
+    289    )
+    290  
+    291    const isFileCheckpointingAvailable = !isEnvTruthy(
+    292      process.env.CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING,
+    293    )
+    294  
+    295    const memoryFiles = React.use(getMemoryFiles(true))
+    296    const shouldShowExternalIncludesToggle =
+    297      hasExternalClaudeMdIncludes(memoryFiles)
+    298  
+src/packages/repl/src/components/Settings/Config.tsx(580,28): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type '"never" | "5m" | "60s" | "10m" | undefined'.
+  --- código src/packages/repl/src/components/Settings/Config.tsx:570-590 ---
+    570        value: globalConfig.showTurnDuration,
+    571        type: 'boolean' as const,
+    572        onChange(showTurnDuration: boolean) {
+    573          saveGlobalConfig(current => ({ ...current, showTurnDuration }))
+    574          setGlobalConfig({ ...getGlobalConfig(), showTurnDuration })
+    575          logEvent('tengu_show_turn_duration_setting_changed', {
+    576            enabled: showTurnDuration,
+    577          })
+    578        },
+    579      },
+    580>     questionTimeoutSetting(settingsData?.askUserQuestionTimeout, timeout =>
+    581        setSettingsData(prev => ({ ...prev, askUserQuestionTimeout: timeout })),
+    582      ),
+    583      {
+    584        id: 'defaultPermissionMode',
+    585        label: 'Default permission mode',
+    586        value: settingsData?.permissions?.defaultMode || 'default',
+    587        options: (() => {
+    588          const priorityOrder: PermissionMode[] = ['default', 'plan']
+    589          const allModes: readonly PermissionMode[] = feature(
+    590            'TRANSCRIPT_CLASSIFIER',
+  Type 'number' is not assignable to type '"never" | "5m" | "60s" | "10m" | undefined'.
+src/packages/repl/src/components/Settings/Config.tsx(581,23): error TS2345: Argument of type '(prev: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }) => { ...; }' is not assignable to parameter of type 'SetStateAction<{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }>'.
+  --- código src/packages/repl/src/components/Settings/Config.tsx:571-591 ---
+    571        type: 'boolean' as const,
+    572        onChange(showTurnDuration: boolean) {
+    573          saveGlobalConfig(current => ({ ...current, showTurnDuration }))
+    574          setGlobalConfig({ ...getGlobalConfig(), showTurnDuration })
+    575          logEvent('tengu_show_turn_duration_setting_changed', {
+    576            enabled: showTurnDuration,
+    577          })
+    578        },
+    579      },
+    580      questionTimeoutSetting(settingsData?.askUserQuestionTimeout, timeout =>
+    581>       setSettingsData(prev => ({ ...prev, askUserQuestionTimeout: timeout })),
+    582      ),
+    583      {
+    584        id: 'defaultPermissionMode',
+    585        label: 'Default permission mode',
+    586        value: settingsData?.permissions?.defaultMode || 'default',
+    587        options: (() => {
+    588          const priorityOrder: PermissionMode[] = ['default', 'plan']
+    589          const allModes: readonly PermissionMode[] = feature(
+    590            'TRANSCRIPT_CLASSIFIER',
+    591          )
+  Type '(prev: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }) => { ...; }' is not assignable to type '(prevState: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }) => { ....'.
+    Call signature return types '{ askUserQuestionTimeout: "never" | "5m" | "60s" | "10m"; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' and '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' are incompatible.
+      The types of 'askUserQuestionTimeout' are incompatible between these types.
+        Type '"never" | "5m" | "60s" | "10m"' is not assignable to type 'number | undefined'.
+          Type 'string' is not assignable to type 'number'.
+src/packages/repl/src/components/Settings/Config.tsx(1593,20): error TS18046: 'context.messages' is of type 'unknown'.
+  --- código src/packages/repl/src/components/Settings/Config.tsx:1583-1603 ---
+   1583      }
+   1584  
+   1585      if (setting.type === 'boolean') {
+   1586        isDirty.current = true
+   1587        setting.onChange(!setting.value)
+   1588        if (setting.id === 'thinkingEnabled') {
+   1589          const newValue = !setting.value
+   1590          const backToInitial = newValue === initialThinkingEnabled.current
+   1591          if (backToInitial) {
+   1592            setShowThinkingWarning(false)
+   1593>         } else if (context.messages.some((m: { type: string }) => m.type === 'assistant')) {
+   1594            setShowThinkingWarning(true)
+   1595          }
+   1596        }
+   1597        return
+   1598      }
+   1599  
+   1600      if (
+   1601        setting.id === 'theme' ||
+   1602        setting.id === 'model' ||
+   1603        setting.id === 'teammateDefaultModel' ||

@@ -1,17 +1,10 @@
 /**
- * Puerto de `ccnmt: packages/config/internal/lazySchema.ts` (11 líneas
- * fuente). No es uno de los 15 módulos del alcance — es la dependencia
- * de hoja que `mcpConfigSchema.ts` necesita: sin dependencias propias, se
- * porta en el sitio en vez de bloquearse con un `require` diferido.
+ * Returns a memoized factory function that constructs the value on first call.
+ * Used to defer Zod schema construction from module init time to first access.
  *
- * Devuelve una función factory memoizada que construye el valor en su
- * primera llamada. Sirve para diferir la construcción de un esquema Zod
- * del momento de inicializar el módulo al momento del primer acceso.
- *
- * La fuente deja este helper de 8 líneas duplicado por cada paquete que lo
- * necesita, en vez de centralizarlo en un paquete de utilidades compartido
- * — el costo de la duplicación es menor que el de que ese paquete
- * compartido se vuelva la próxima dependencia-Dios.
+ * V7 §11.4 — kept package-internal (not in a shared utils package). Each owner
+ * that needs this 8-line helper duplicates it; the cost is negligible compared
+ * to the cost of a shared utility package becoming the next God dependency.
  */
 export function lazySchema<T>(factory: () => T): () => T {
   let cached: T | undefined

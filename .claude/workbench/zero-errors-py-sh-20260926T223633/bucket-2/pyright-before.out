@@ -1,0 +1,223 @@
+WARNING: there is a new pyright version available (v1.1.408 -> v1.1.414).
+Please install the new version or set PYRIGHT_PYTHON_FORCE_VERSION to `latest`
+
+/home/user/thyrox/src/graph/compare_neighbourhood.py
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:40:42 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:41:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:41:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:106:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:200:30 - error: Object of type "(proposed: Unknown, adjacent: Unknown) -> dict[str, Unknown]" is not subscriptable (reportIndexIssue)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:200:56 - error: Object of type "(proposed: Unknown, adjacent: Unknown) -> dict[str, Unknown]" is not subscriptable (reportIndexIssue)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:201:43 - error: Object of type "(proposed: Unknown, adjacent: Unknown) -> dict[str, Unknown]" is not subscriptable (reportIndexIssue)
+  /home/user/thyrox/src/graph/compare_neighbourhood.py:202:26 - error: Object of type "(proposed: Unknown, adjacent: Unknown) -> dict[str, Unknown]" is not subscriptable (reportIndexIssue)
+/home/user/thyrox/src/graph/graph_metrics.py
+  /home/user/thyrox/src/graph/graph_metrics.py:244:48 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/graph/graph_metrics.py:255:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/transcript/cache_probe.py
+  /home/user/thyrox/src/transcript/cache_probe.py:205:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/transcript/closing.py
+  /home/user/thyrox/src/transcript/closing.py:96:37 - error: Argument of type "list[Unknown | None]" cannot be assigned to parameter "last_block_types" of type "list[str]" in function "__init__"
+    "list[Unknown | None]" is not assignable to "list[str]"
+      Type parameter "_T@list" is invariant, but "Unknown | None" is not the same as "str"
+      Consider switching from "list" to "Sequence" which is covariant (reportArgumentType)
+/home/user/thyrox/tests/peer_mailbox/test_peer_mailbox.py
+  /home/user/thyrox/tests/peer_mailbox/test_peer_mailbox.py:208:48 - error: No parameter named "authority" (reportCallIssue)
+/home/user/thyrox/tests/session/hardware/test_gpu_admission_real.py
+  /home/user/thyrox/tests/session/hardware/test_gpu_admission_real.py:61:33 - error: Operator "//" not supported for "None" (reportOptionalOperand)
+/home/user/thyrox/tests/session/test_adopt_background.py
+  /home/user/thyrox/tests/session/test_adopt_background.py:62:49 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/session/test_adopt_background.py:64:71 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/session/test_adopt_background.py:70:8 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/session/test_adopt_background.py:80:61 - error: Cannot access attribute "pid" for class "object"
+    Attribute "pid" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_adopt_background.py:81:68 - error: Cannot access attribute "marker" for class "object"
+    Attribute "marker" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_adopt_background.py:87:25 - error: Argument of type "object" cannot be assigned to parameter "job" of type "Job" in function "settle"
+    "object" is not assignable to "Job" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_adopt_background.py:90:25 - error: Argument of type "object" cannot be assigned to parameter "job" of type "Job" in function "settle"
+    "object" is not assignable to "Job" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_adopt_background.py:117:66 - error: Cannot access attribute "marker" for class "object"
+    Attribute "marker" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_adopt_background.py:119:25 - error: Argument of type "object" cannot be assigned to parameter "job" of type "Job" in function "settle"
+    "object" is not assignable to "Job" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_adopt_background.py:168:15 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/session/test_adopt_background.py:172:15 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/session/test_adopt_background.py:185:11 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+/home/user/thyrox/tests/session/test_background.py
+  /home/user/thyrox/tests/session/test_background.py:142:49 - error: Argument of type "int | None" cannot be assigned to parameter "pid" of type "int" in function "pid_is_alive"
+    Type "int | None" is not assignable to type "int"
+      "None" is not assignable to "int" (reportArgumentType)
+/home/user/thyrox/tests/session/test_bounded_scan.py
+  /home/user/thyrox/tests/session/test_bounded_scan.py:35:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_bounded_scan.py:41:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_bounded_scan.py:41:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/session/test_generate_bin.py
+  /home/user/thyrox/tests/session/test_generate_bin.py:328:74 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:329:64 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:333:27 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:340:32 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:372:33 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:389:33 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:414:33 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:434:27 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:470:35 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_generate_bin.py:475:36 - error: Argument of type "list[str]" cannot be assigned to parameter "extra" of type "str" in function "check"
+    "list[str]" is not assignable to "str" (reportArgumentType)
+/home/user/thyrox/tests/session/test_gpu_monitor.py
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:56:38 - error: "readline" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:86:74 - error: "peak_mib" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:91:71 - error: "avg_mib" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:92:42 - error: "peak_util_pct" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:93:44 - error: "samples" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:95:59 - error: "avg_mib" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:95:80 - error: "samples" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:103:51 - error: "peak_mib" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_monitor.py:103:69 - error: "peak_util_pct" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/session/test_gpu_scenarios.py
+  /home/user/thyrox/tests/session/test_gpu_scenarios.py:176:21 - error: "close" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_scenarios.py:229:44 - error: "close" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_gpu_scenarios.py:232:44 - error: "readline" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/session/test_pool_history.py
+  /home/user/thyrox/tests/session/test_pool_history.py:120:49 - error: "get" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_pool_history.py:121:63 - error: Operator "in" not supported for types "Literal['peak_vram_mib']" and "dict[Unknown, Unknown] | None"
+    Operator "in" not supported for types "Literal['peak_vram_mib']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/session/test_pool_history.py:155:64 - error: "get" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_pool_history.py:175:68 - error: "get" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_pool_history.py:176:51 - error: "get" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_pool_history.py:204:61 - error: Argument of type "float" cannot be assigned to parameter "reserve_kb" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:204:61 - error: Argument of type "float" cannot be assigned to parameter "free_vram_mib" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:204:61 - error: Argument of type "float" cannot be assigned to parameter "vram_reserve_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:204:61 - error: Argument of type "float" cannot be assigned to parameter "available_ram_kb" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:204:61 - error: Argument of type "float" cannot be assigned to parameter "vram_floor_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:208:66 - error: Argument of type "float" cannot be assigned to parameter "reserve_kb" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:208:66 - error: Argument of type "float" cannot be assigned to parameter "free_vram_mib" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:208:66 - error: Argument of type "float" cannot be assigned to parameter "vram_reserve_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:208:66 - error: Argument of type "float" cannot be assigned to parameter "available_ram_kb" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:208:66 - error: Argument of type "float" cannot be assigned to parameter "vram_floor_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:210:82 - error: Argument of type "float" cannot be assigned to parameter "reserve_kb" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:210:82 - error: Argument of type "float" cannot be assigned to parameter "free_vram_mib" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:210:82 - error: Argument of type "float" cannot be assigned to parameter "vram_reserve_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:210:82 - error: Argument of type "float" cannot be assigned to parameter "available_ram_kb" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:215:58 - error: Argument of type "float" cannot be assigned to parameter "reserve_kb" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:215:58 - error: Argument of type "float" cannot be assigned to parameter "free_vram_mib" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:215:58 - error: Argument of type "float" cannot be assigned to parameter "vram_reserve_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:215:58 - error: Argument of type "float" cannot be assigned to parameter "available_ram_kb" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:215:58 - error: Argument of type "float" cannot be assigned to parameter "vram_floor_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:219:80 - error: Argument of type "float" cannot be assigned to parameter "reserve_kb" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:219:80 - error: Argument of type "float" cannot be assigned to parameter "free_vram_mib" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:219:80 - error: Argument of type "float" cannot be assigned to parameter "vram_reserve_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:219:80 - error: Argument of type "float" cannot be assigned to parameter "available_ram_kb" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:222:71 - error: Argument of type "float" cannot be assigned to parameter "reserve_kb" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:222:71 - error: Argument of type "float" cannot be assigned to parameter "free_vram_mib" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:222:71 - error: Argument of type "float" cannot be assigned to parameter "vram_reserve_mib" of type "int" in function "derive"
+    "float" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_pool_history.py:222:71 - error: Argument of type "float" cannot be assigned to parameter "available_ram_kb" of type "int | None" in function "derive"
+    Type "float" is not assignable to type "int | None"
+      "float" is not assignable to "int"
+      "float" is not assignable to "None" (reportArgumentType)
+/home/user/thyrox/tests/session/test_probe_model_switch_cache.py
+  /home/user/thyrox/tests/session/test_probe_model_switch_cache.py:47:41 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_probe_model_switch_cache.py:48:13 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_probe_model_switch_cache.py:49:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/session/test_shared_lock.py
+  /home/user/thyrox/tests/session/test_shared_lock.py:106:19 - error: "readline" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/session/test_user_wiring.py
+  /home/user/thyrox/tests/session/test_user_wiring.py:46:37 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/session/test_user_wiring.py:47:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_user_wiring.py:47:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/session/test_user_wiring.py:374:20 - error: Argument of type "str | None" cannot be assigned to parameter "args" of type "StrPath" in function "__new__"
+    Type "str | None" is not assignable to type "StrPath"
+      Type "None" is not assignable to type "StrPath"
+        "None" is not assignable to "str"
+        "None" is incompatible with protocol "PathLike[str]"
+          "__fspath__" is not present (reportArgumentType)
+  /home/user/thyrox/tests/session/test_user_wiring.py:454:3 - error: Cannot assign to attribute "CACHE_KEY_FIELDS" for class "ModuleType"
+    Attribute "CACHE_KEY_FIELDS" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:466:7 - error: Cannot assign to attribute "CACHE_KEY_FIELDS" for class "ModuleType"
+    Attribute "CACHE_KEY_FIELDS" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:530:3 - error: Cannot assign to attribute "STORE_DEST_FLAGS" for class "ModuleType"
+    Attribute "STORE_DEST_FLAGS" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:535:7 - error: Cannot assign to attribute "STORE_DEST_FLAGS" for class "ModuleType"
+    Attribute "STORE_DEST_FLAGS" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:581:3 - error: Cannot assign to attribute "_SCRIPT_SUFFIX" for class "ModuleType"
+    Attribute "_SCRIPT_SUFFIX" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:582:3 - error: Cannot assign to attribute "_BASE_PREFIXES" for class "ModuleType"
+    Attribute "_BASE_PREFIXES" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:590:7 - error: Cannot assign to attribute "_SCRIPT_SUFFIX" for class "ModuleType"
+    Attribute "_SCRIPT_SUFFIX" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:591:7 - error: Cannot assign to attribute "_BASE_PREFIXES" for class "ModuleType"
+    Attribute "_BASE_PREFIXES" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:611:3 - error: Cannot assign to attribute "_target_of" for class "ModuleType"
+    Attribute "_target_of" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/session/test_user_wiring.py:617:7 - error: Cannot assign to attribute "_target_of" for class "ModuleType"
+    Attribute "_target_of" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/workbench/test_home_resolution.py
+  /home/user/thyrox/tests/workbench/test_home_resolution.py:188:32 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+/home/user/thyrox/tests/workbench/test_manifest.py
+  /home/user/thyrox/tests/workbench/test_manifest.py:73:46 - error: "name" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/workbench/test_manifest.py:97:46 - error: "name" is not a known attribute of "None" (reportOptionalMemberAccess)
+105 errors, 0 warnings, 0 informations

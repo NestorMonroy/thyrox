@@ -1,0 +1,23 @@
+src/packages/repl/src/components/TeleportProgress.tsx(108,6): error TS2741: Property 'initialState' is missing in type '{ children: Element; }' but required in type '{ initialState: AppState; children: ReactNode; }'.
+  --- código src/packages/repl/src/components/TeleportProgress.tsx:98-118 ---
+     98    // Capture the setState function from the rendered component
+     99    let setStep: (step: TeleportProgressStep) => void = () => {}
+    100  
+    101    function TeleportProgressWrapper(): React.ReactNode {
+    102      const [step, _setStep] = useState<TeleportProgressStep>('validating')
+    103      setStep = _setStep
+    104      return <TeleportProgress currentStep={step} sessionId={sessionId} />
+    105    }
+    106  
+    107    root.render(
+    108>     <AppStateProvider>
+    109        <TeleportProgressWrapper />
+    110      </AppStateProvider>,
+    111    )
+    112  
+    113    const result = await teleportResumeCodeSession(sessionId, setStep)
+    114    setStep('checking_out')
+    115    const { branchName, branchError } = await checkOutTeleportedSessionBranch(
+    116      result.branch,
+    117    )
+    118    return {

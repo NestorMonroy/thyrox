@@ -49,7 +49,12 @@ check() {
 }
 
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
-REPO="$TMP/settings.json"; VIVA="$TMP/settings.local.json"; BASE="$TMP/base.json"
+# La forma real: el settings versionado vive en `<consumidor>/.claude/` y la
+# copia viva en `<sesion>/.claude/`. Ninguna de las dos está en
+# /home/user/kaupamex-docs: el guion tiene que derivar ambas raíces de lo que
+# recibe, no del literal con que se escribieron sus datos.
+mkdir -p "$TMP/consumidor/.claude" "$TMP/sesion/.claude"
+REPO="$TMP/consumidor/.claude/settings.json"; VIVA="$TMP/sesion/.claude/settings.local.json"; BASE="$TMP/base.json"
 sync() { python3 "$SUT" --repo "$REPO" --viva "$VIVA" --base "$BASE" "$@"; }
 # Lee una expresión de Python sobre un JSON del temporal. `j` es el documento.
 leer() { python3 -c "
@@ -68,9 +73,15 @@ OUT=$(sync --direccion repositorio --aplicar 2>&1); RC=$?
 check "propagación -> exit 0" "0" "$RC"
 case "$OUT" in *"aplicado  hooks"*) check "declara el bloque aplicado" "sí" "sí" ;;
                                  *) check "declara el bloque aplicado" "sí" "no ($OUT)" ;; esac
-check "el comando llega con ruta absoluta" \
-  "bash /home/user/kaupamex-docs/.claude/hooks/ejemplo.sh" \
+check "el comando llega con ruta absoluta, contra el clon de --repo" \
+  "bash $TMP/consumidor/.claude/hooks/ejemplo.sh" \
   "$(leer "$VIVA" 'j["hooks"]["Stop"][0]["hooks"][0]["command"]')"
+check "los disparadores citan el --repo de esta invocación" "5" \
+  "$(leer "$VIVA" "sum(1 for e in j['hooks'].values() for m in e for h in m['hooks'] if '--repo $REPO' in h['command'])")"
+check "y el --viva de esta invocación" "4" \
+  "$(leer "$VIVA" "sum(1 for e in j['hooks'].values() for m in e for h in m['hooks'] if '--viva $VIVA' in h['command'])")"
+check "ninguno conserva el clon con que se escribieron los datos" "0" \
+  "$(leer "$VIVA" "sum(1 for e in j['hooks'].values() for m in e for h in m['hooks'] if '/home/user/kaupamex-docs' in h['command'])")"
 # Los disparadores de la propia sincronización sobreviven a su propio disparo:
 # es el defecto H-DOCS-287, que borraba el mecanismo en su primera ejecución.
 check "los 5 disparadores siguen en la copia viva" "5" \
@@ -223,7 +234,7 @@ check "todos citan un script que existe" "0" \
 # El control del control: sin la resolucion, reaparece exactamente el marcador.
 # Un verde que no puede volverse rojo no informa — y este caso nacio porque la
 # suite daba 25 de 25 con el defecto puesto.
-sed 's/rendered_sync_hooks()\.items()/SYNC_HOOKS.items()/' "$SUT" \
+sed 's/rendered_sync_hooks(consumer_root, session_root)\.items()/SYNC_HOOKS.items()/' "$SUT" \
   > "$TMP/sut_sin_resolver.py"
 check "sin resolver, los 5 comandos lo conservan" "5" \
   "$(proyeccion "$TMP/sut_sin_resolver.py" "sum('%%PROVEEDOR%%' in x for x in c)")"

@@ -1,0 +1,15 @@
+== 21: sin buscar binario
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > without a declared binary it is looked up [0.57ms]
+ 33 pass
+ 1 fail
+== 27: refresh como access
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) reading a value of state.vscdb > the fuzzy lookup fills only what is missing, and a refresh key is never an access key [0.38ms]
+ 33 pass
+ 1 fail
+== restaurado
+ 34 pass
+ 0 fail
+BUILD_DONE
+__BG_EXIT__=0

@@ -2407,6 +2407,7 @@ export function FleetView(props: FleetViewProps): React.ReactNode {
               start,
               end,
               color: 'suggestion',
+              priority: 5,
             }))}
             // We pass focus={false} so TextInput's internal useInput
             // doesn't steal chords from FleetView's outer cascade.
@@ -2604,7 +2605,7 @@ interface RowProps {
   prCache: FleetPrCache | undefined
   /** Per-row presence from daemon roster (busy/shell/waiting/undefined). */
   presence: FleetPresence
-  onMouseEnter: () => void
+  onMouseEnter: (() => void) | undefined
   onClick: () => void
 }
 
@@ -2667,7 +2668,7 @@ function Row({
     )
   }
   // ant 5277.js: isOrigin = `job.id === initialJobId` (both SHORT ids;
-  // initialJobId = CLAUDE_AGENTS_SELECT = the backgrounded job's short).
+  // initialJobId = THYROX_AGENTS_SELECT = the backgrounded job's short).
   // Compare job.id (short), NOT state.sessionId (full UUID) — the latter
   // never equals the short-id currentSessionId, so the "current session"
   // label never fired (FleetView short-vs-UUID gotcha).

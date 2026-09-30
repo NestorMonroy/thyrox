@@ -32,7 +32,6 @@ fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 GUION="$RAIZ/src/task/refresh-board.sh"
-STORE_CLI="$RAIZ/src/agents/agent_store.py"
 
 OK=0; FALLOS=0
 comprobar() { # <descripción> <condición-ya-evaluada:0|1>

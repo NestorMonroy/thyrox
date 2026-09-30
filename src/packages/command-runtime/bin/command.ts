@@ -59,6 +59,7 @@ import { getManagedFilePath, getManagedSettingsDropInDir } from '../src/skills/m
 import { getCommandName, isCommandEnabled, type CommandBase } from '../src/types.js'
 import { getGlobalGitignorePath } from '../src/gitignore.js'
 import { createMovedToPluginCommand } from '../src/createMovedToPluginCommand.js'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import { deriveForkSlug } from '../src/commands/fork/fork.js'
 import { isUltrareviewEnabled } from '../src/commands/review/ultrareviewEnabled.js'
 import { parsePluginArgs } from '../src/commands/plugin/parseArgs.js'
@@ -275,7 +276,14 @@ async function main(argv: string[]): Promise<number> {
     // USER_TYPE se lee DENTRO de getPromptForCommand — restaurar antes de
     // llamarlo deshace el --ant que acabamos de fijar (bug propio, atrapado
     // por el test "instrucciones de instalación" antes de cablearse).
-    const bloques = await cmd.getPromptForCommand(args, {})
+    // El contrato REAL de createMovedToPluginCommand recibe `context: unknown`
+    // (nunca lo lee — createMovedToPluginCommand.ts:61) y sólo se tipa con
+    // ToolUseContext por el `as Command` de su firma pública; se recorta aquí
+    // a la forma que el runtime realmente cumple, sin tocar esa firma.
+    type ContextlessPromptCommand = {
+      getPromptForCommand(args: string, context: unknown): Promise<ContentBlockParam[]>
+    }
+    const bloques = await (cmd as ContextlessPromptCommand).getPromptForCommand(args, {})
     if (previoUserType === undefined) delete process.env.USER_TYPE
     else process.env.USER_TYPE = previoUserType
     for (const b of bloques) {

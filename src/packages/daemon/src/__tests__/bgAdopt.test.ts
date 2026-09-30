@@ -1,6 +1,7 @@
 // Puerto fiel de `ccnmt: packages/daemon/src/__tests__/bgAdopt.test.ts`.
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -11,21 +12,22 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-bgadopt-test-'))
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
+const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
 })
 afterAll(() => {
-  if (ORIGINAL_CONFIG_HOME === undefined) {
-    delete process.env.CLAUDE_CONFIG_HOME
+  if (ORIGINAL_CONFIG_DIR === undefined) {
+    delete process.env.THYROX_CONFIG_DIR
   } else {
-    process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
   }
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })
 
-import { adoptFromRoster, adoptRunningPtyRecords } from '../bgAdopt.js'
+import { adoptFromRoster, adoptRunningPtyRecords, reapOrphanPtySockets } from '../bgAdopt.js'
+import { getDaemonScopeDir } from '../socketPaths.js'
 import {
   type WorkerRecord,
   readWorkerRecord,
@@ -198,5 +200,49 @@ describe('adoptFromRoster', () => {
     workers.set('ros33333', {} as WorkerVm)
     await adoptFromRoster(workers)
     expect(workers.size).toBe(1) // sin cambios
+  })
+})
+
+describe('reapOrphanPtySockets', () => {
+  test('reaps a .pty.sock with no live handle: unlinks it and marks the record failed', () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    mkdirSync(join(JOBS_DIR, 'orp11111'), { recursive: true })
+    writeWorkerRecord(baseRecord('orp11111', process.pid))
+    const sockPath = join(scope, 'orp11111.pty.sock')
+    writeFileSync(sockPath, '')
+    const logs: string[] = []
+    reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+    expect(existsSync(sockPath)).toBe(false)
+    const after = readWorkerRecord('orp11111')
+    expect(after?.status).toBe('failed')
+    expect(after?.failedReason).toBe('reaped (roster gap)')
+    expect(logs).toEqual(['bg orphan-reap: 1 roster-less pty host(s)'])
+    rmSync(sockPath, { force: true })
+  })
+
+  test('skips a .pty.sock whose short is already in the live workers map', () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    const sockPath = join(scope, 'orp22222.pty.sock')
+    writeFileSync(sockPath, '')
+    const workers = new Map<string, WorkerVm>()
+    workers.set('orp22222', {} as WorkerVm)
+    const logs: string[] = []
+    reapOrphanPtySockets(workers, (m) => logs.push(m))
+    expect(existsSync(sockPath)).toBe(true)
+    expect(logs).toEqual([])
+    rmSync(sockPath, { force: true })
+  })
+
+  test('no .pty.sock files: no log emitted', () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    for (const f of readdirSync(scope)) {
+      if (f.endsWith('.pty.sock')) rmSync(join(scope, f), { force: true })
+    }
+    const logs: string[] = []
+    reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+    expect(logs).toEqual([])
   })
 })

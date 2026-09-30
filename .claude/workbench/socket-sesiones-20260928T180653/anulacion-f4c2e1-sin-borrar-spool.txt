@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerFiles.test.ts:
+151 |     const target = join(deps.uploadsDir(), `${attachment.sha256.slice(0, 8)}-00000002-a.txt`)
+152 |     expect(result).toEqual({ prefix: `@"${target}" `, received: 1, verified: 1 })
+153 |     expect(readFileSync(target, 'utf8')).toBe('contenido')
+154 |     expect(statSync(target).mode & 0o777).toBe(0o600)
+155 |     await Bun.sleep(5)
+156 |     expect(existsSync(attachment.path)).toBe(false)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:156:41)
+(fail) materializeLocalPeerFiles (o4o) > copia al directorio de uploads, lo referencia y retira la copia del spool [10.05ms]
+
+ 16 pass
+ 1 fail
+ 58 expect() calls
+Ran 17 tests across 1 file. [137.00ms]

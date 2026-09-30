@@ -1,0 +1,1 @@
+{"quotaLimits":{"status":"rejected","resetsAt":1790748000,"unifiedRateLimitFallbackAvailable":false,"rateLimitType":"seven_day","overageStatus":"rejected","overageDisabledReason":"out_of_credits","isUsingOverage":false},"error":"rate_limit","apiErrorStatus":429,"text":"You've hit your weekly limit · resets Sep 30, 6am (UTC)"}

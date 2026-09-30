@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/tool-registry .claude/workbench/test-isolation-leaks-20260927T080507/results", "started_at": "2026-09-27T08:07:13+00:00"}

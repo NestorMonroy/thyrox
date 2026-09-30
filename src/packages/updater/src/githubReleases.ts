@@ -16,7 +16,7 @@ import { getPlatform } from './nativeInstaller/platform.js'
 
 // Hard-coded — este es el repo donde se publican los releases de ccb.
 // Sobreescribible via la env CCB_RELEASES_REPO para forks/testing.
-const DEFAULT_REPO = 'Jcg-admin/claude-code-how-works-how-works-how-works'
+const DEFAULT_REPO = 'Jcg-admin/claude-code-how-works'
 
 function getRepo(): string {
   return process.env.CCB_RELEASES_REPO || DEFAULT_REPO

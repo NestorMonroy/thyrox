@@ -1,0 +1,24 @@
+src/packages/provider/src/model/modelStrings.ts(28,16): error TS7053: Element implicitly has an 'any' type because expression of type 'APIProvider' can't be used to index type '{ readonly firstParty: "claude-3-7-sonnet-20250219"; readonly bedrock: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"; readonly vertex: "claude-3-7-sonnet@20250219"; readonly foundry: "claude-3-7-sonnet"; readonly openai: "claude-3-7-sonnet-20250219"; readonly gemini: "claude-3-7-sonnet-20250219"; } | ... 11 more .....'.
+  --- código src/packages/provider/src/model/modelStrings.ts:18-38 ---
+     18   * Maps each model version to its provider-specific model ID string.
+     19   * Derived from ALL_MODEL_CONFIGS — adding a model there extends this type.
+     20   */
+     21  export type ModelStrings = Record<ModelKey, string>
+     22  
+     23  const MODEL_KEYS = Object.keys(ALL_MODEL_CONFIGS) as ModelKey[]
+     24  
+     25  function getBuiltinModelStrings(provider: APIProvider): ModelStrings {
+     26    const out = {} as ModelStrings
+     27    for (const key of MODEL_KEYS) {
+     28>     out[key] = ALL_MODEL_CONFIGS[key][provider]
+     29    }
+     30    return out
+     31  }
+     32  
+     33  async function getBedrockModelStrings(): Promise<ModelStrings> {
+     34    const fallback = getBuiltinModelStrings('bedrock')
+     35    let profiles: string[] | undefined
+     36    try {
+     37      profiles = await getBedrockInferenceProfiles()
+     38    } catch (error) {
+  Property 'codex' does not exist on type '{ readonly firstParty: "claude-3-7-sonnet-20250219"; readonly bedrock: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"; readonly vertex: "claude-3-7-sonnet@20250219"; readonly foundry: "claude-3-7-sonnet"; readonly openai: "claude-3-7-sonnet-20250219"; readonly gemini: "claude-3-7-sonnet-20250219"; } | ... 11 more .....'.

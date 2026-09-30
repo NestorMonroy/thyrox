@@ -1,25 +1,16 @@
-/**
- * Procedencia: `ccnmt: packages/tool-registry/src/tools/TaskListTool/prompt.ts`.
- * Es prosa dirigida al modelo: se conserva su redacción, que es lo que le da
- * su comportamiento, y se declara de dónde viene.
- *
- * DIVERGENCIA DECLARADA — una, y es la corrección de un defecto de la fuente.
- * Allí `idDescription` es un ternario sobre `isAgentSwarmsEnabled()` cuyas DOS
- * ramas devuelven la misma cadena. Portarlo tal cual sería copiar una rama
- * muerta que sugiere una diferencia que no existe; aquí es una constante.
- */
 import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 
 export const DESCRIPTION = 'List all tasks in the task list'
-
-const ID_DESCRIPTION =
-  '- **id**: Task identifier (use with TaskGet, TaskUpdate)'
 
 export function getPrompt(): string {
   const teammateUseCase = isAgentSwarmsEnabled()
     ? `- Before assigning tasks to teammates, to see what's available
 `
     : ''
+
+  const idDescription = isAgentSwarmsEnabled()
+    ? '- **id**: Task identifier (use with TaskGet, TaskUpdate)'
+    : '- **id**: Task identifier (use with TaskGet, TaskUpdate)'
 
   const teammateWorkflow = isAgentSwarmsEnabled()
     ? `
@@ -47,7 +38,7 @@ ${teammateUseCase}- After completing a task, to check for newly unblocked work o
 ## Output
 
 Returns a summary of each task:
-${ID_DESCRIPTION}
+${idDescription}
 - **subject**: Brief description of the task
 - **status**: 'pending', 'in_progress', or 'completed'
 - **owner**: Agent ID if assigned, empty if available

@@ -1,0 +1,3 @@
+(fail) SessionCache: caducidad y alias > set conserva los alias que ya tenía el grupo al moverlo a otra credencial [0.29ms]
+ 12 pass
+ 1 fail

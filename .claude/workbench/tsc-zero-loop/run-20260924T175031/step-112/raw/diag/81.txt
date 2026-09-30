@@ -1,0 +1,2 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(503,24): error TS2339: Property 'meta' does not exist on type 'unknown'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(513,24): error TS2339: Property 'dev' does not exist on type 'ChannelEntry'.

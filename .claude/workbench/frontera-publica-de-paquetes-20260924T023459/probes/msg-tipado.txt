@@ -1,0 +1,20 @@
+Type the hook engine results for their consumers
+
+The engine port closed ~48 missing-export errors in the cli project but
+typed HookResult with an index signature. Omit over an index signature
+collapses every known field to unknown, so consumers received {} where
+they read message.attachment, permissionRequestResult.behavior or
+updatedInput, and the ratchet grew from 2447 to 2449.
+
+HookResult now declares the fields its consumers read: an attachment
+message, the PermissionRequest decision, hookSource and the defer
+behavior. Status line and file suggestion inputs are unknown because
+the engine only serializes them. ExitReason is derived from
+EXIT_REASONS instead of unknown.
+
+Also restores the reference error strings in the PTY frame decoder: the
+port translated them and the contract test matches the English text
+(annulment: reverting one drops exactly its one case).
+
+Measured per file against 74de33b1: no file grows; the cli ratchet
+drops to 2407 in both projects.

@@ -1,11 +1,9 @@
 /**
  * Las 80 claves de settings del cliente, con veredicto por clave.
  *
- * El criterio lo fijó el ejecutor (2026-09-02): *«yo quitaría la de aws, pero
- * dejaría las de git, y creo que sólo quitaría las de servicios externos como
- * aws»*. Es más inclusivo que la primera clasificación —que adoptaba 8 de 80—
- * y cambia la pregunta: ya no es «¿qué usamos?» sino «¿qué apunta a un
- * servicio que no es nuestro?».
+ * Criterio: se retira lo que apunta a un servicio externo (aws) y se conserva
+ * el resto, incluidas las de git. La pregunta no es «¿qué usamos?» sino «¿qué
+ * apunta a un servicio que no es nuestro?».
  *
  * Tres estados, y el del medio es el que evita la mentira por omisión:
  *
@@ -157,7 +155,10 @@ export function deferredCondition(key: string): string | undefined {
 
 export function keysByStatus(): Record<KeyStatus, string[]> {
   const out: Record<KeyStatus, string[]> = { consumida: [], declarada: [], diferida: [] }
-  for (const k of CLIENT_SETTING_KEYS) out[KEY_STATUS[k]].push(k)
+  for (const k of CLIENT_SETTING_KEYS) {
+    const status = KEY_STATUS[k]
+    if (status) out[status].push(k)
+  }
   return out
 }
 
@@ -166,8 +167,11 @@ export function deferredKeysPresent(data: unknown): { key: string; reason: strin
   if (typeof data !== 'object' || data === null) return []
   return Object.keys(data)
     .filter((k) => DIFERIDAS[k])
-    .map((k) => ({
-      key: k,
-      reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
-    }))
+    .map((k) => {
+      const deferred = DIFERIDAS[k]
+      return {
+        key: k,
+        reason: `${deferred?.motivo ?? ''}; todavía no se declara — entraría ${deferred?.condicion ?? ''}`,
+      }
+    })
 }

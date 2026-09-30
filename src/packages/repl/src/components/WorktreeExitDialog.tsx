@@ -4,7 +4,6 @@ import { logEvent } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { Box, Text, Dialog } from '@anthropic/ink'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
-import { getPlansDirectory } from '@thyrox/storage/plans.js'
 import { setCwd } from '@thyrox/shell/Shell.js'
 import {
   cleanupWorktree,
@@ -74,7 +73,6 @@ export function WorktreeExitDialog({
               process.chdir(worktreeSession.originalCwd)
               setCwd(worktreeSession.originalCwd)
               recordWorktreeExit()
-              getPlansDirectory.cache.clear?.()
               setResultMessage('Worktree removed (no changes)')
             })
             .catch(error => {
@@ -126,7 +124,6 @@ export function WorktreeExitDialog({
       process.chdir(worktreeSession.originalCwd)
       setCwd(worktreeSession.originalCwd)
       recordWorktreeExit()
-      getPlansDirectory.cache.clear?.()
       if (hasTmux) {
         setResultMessage(
           `Worktree kept. Your work is saved at ${worktreeSession.worktreePath} on branch ${worktreeSession.worktreeBranch}. Reattach to tmux session with: tmux attach -t ${worktreeSession.tmuxSessionName}`,
@@ -150,7 +147,6 @@ export function WorktreeExitDialog({
       process.chdir(worktreeSession.originalCwd)
       setCwd(worktreeSession.originalCwd)
       recordWorktreeExit()
-      getPlansDirectory.cache.clear?.()
       setResultMessage(
         `Worktree kept at ${worktreeSession.worktreePath} on branch ${worktreeSession.worktreeBranch}. Tmux session terminated.`,
       )
@@ -169,7 +165,6 @@ export function WorktreeExitDialog({
         process.chdir(worktreeSession.originalCwd)
         setCwd(worktreeSession.originalCwd)
         recordWorktreeExit()
-        getPlansDirectory.cache.clear?.()
       } catch (error) {
         logForDebugging(`Failed to clean up worktree: ${error}`, {
           level: 'error',

@@ -82,7 +82,7 @@ describe('A.7.6 — memoria rancia', () => {
     const d = arbol({ 'CLAUDE.md': 'x'.repeat(MAX_MEMORY_CHARACTER_COUNT + exceso) }, {})
     // Sin el exceso, «rancia» es un si/no y no dice si sobran 500 caracteres
     // o 40 000. Lo que se hace con una y con otra es distinto.
-    expect(staleMemory(d)[0].overBy).toBe(exceso)
+    expect(staleMemory(d)[0]!.overBy).toBe(exceso)
   })
 })
 
@@ -91,7 +91,7 @@ describe('A.7.6 — skills invalidos', () => {
     const d = arbol({}, { 'huerfano': null, 'bueno': skillValido('bueno') })
     const malos = invalidSkills(d)
     expect(malos.map((s) => s.name)).toEqual(['huerfano'])
-    expect(malos[0].reason).toBe('sin SKILL.md')
+    expect(malos[0]!.reason).toBe('sin SKILL.md')
   })
 
   test('4. sin description, y con el name cambiado, tambien', () => {

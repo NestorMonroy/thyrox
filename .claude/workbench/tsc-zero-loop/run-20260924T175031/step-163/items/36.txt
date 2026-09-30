@@ -1,0 +1,47 @@
+src/packages/agent/query.ts(1245,37): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  --- código src/packages/agent/query.ts:1235-1255 ---
+   1235  
+   1236        // Skip stop hooks when the last message is an API error (rate limit,
+   1237        // prompt-too-long, auth failure, etc.). The model never produced a
+   1238        // real response — hooks evaluating it create a death spiral:
+   1239        // error → hook blocking → retry → error → …
+   1240        if (lastMessage?.isApiErrorMessage) {
+   1241          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1242          return { reason: 'completed' }
+   1243        }
+   1244  
+   1245>       const stopHookResult = yield* handleStopHooks(
+   1246          messagesForQuery,
+   1247          assistantMessages,
+   1248          systemPrompt,
+   1249          userContext,
+   1250          systemContext,
+   1251          toolUseContext,
+   1252          querySource,
+   1253          stopHookActive,
+   1254        )
+   1255  
+src/packages/agent/query.ts(1248,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+  --- código src/packages/agent/query.ts:1238-1258 ---
+   1238        // real response — hooks evaluating it create a death spiral:
+   1239        // error → hook blocking → retry → error → …
+   1240        if (lastMessage?.isApiErrorMessage) {
+   1241          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1242          return { reason: 'completed' }
+   1243        }
+   1244  
+   1245        const stopHookResult = yield* handleStopHooks(
+   1246          messagesForQuery,
+   1247          assistantMessages,
+   1248>         systemPrompt,
+   1249          userContext,
+   1250          systemContext,
+   1251          toolUseContext,
+   1252          querySource,
+   1253          stopHookActive,
+   1254        )
+   1255  
+   1256        // ant v2.1.143 3999.js: a run of consecutive blocks just ended (this
+   1257        // turn produced none, but earlier ones in the streak did) — record how
+   1258        // long the streak was so dashboards can see /goal blocking pressure.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.

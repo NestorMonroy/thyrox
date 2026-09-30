@@ -1,0 +1,28 @@
+patron: spread-of-never-typed-test-double
+senal_del_verificador: TS2698: Spread types may only be created from object types
+fix_generico: Un doble de prueba declarado como `const x = {...} as never` no se puede esparcir directamente (`{ ...x, extra }`): `never` no es un tipo objeto para el spread. Se castea la variable a un tipo objeto concreto (p. ej. `Record<string, unknown>`) sólo en el punto del spread, dejando el `as never` exterior para el literal combinado que viaja como argumento.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/commands/commit-push-pr.ts(144,9): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/commands/commit-push-pr.ts:134-154 ---
+    134  
+    135      // Append user instructions if args provided
+    136      const trimmedArgs = args?.trim()
+    137      if (trimmedArgs) {
+    138        promptContent += `\n\n## Additional instructions from user\n\n${trimmedArgs}`
+    139      }
+    140  
+    141      const finalContent = await executeShellCommandsInPrompt(
+    142        promptContent,
+    143        {
+    144>         ...context,
+    145          getAppState() {
+    146            const appState = (context as CommandContextWithAppState).getAppState()
+    147            return {
+    148              ...appState,
+    149              toolPermissionContext: {
+    150                ...appState.toolPermissionContext,
+    151                alwaysAllowRules: {
+    152                  ...appState.toolPermissionContext.alwaysAllowRules,
+    153                  command: ALLOWED_TOOLS,
+    154                },

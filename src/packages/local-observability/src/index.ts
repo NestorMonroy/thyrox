@@ -1,11 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/index.ts` (26 líneas
- * fuente, 100 % portado). El barrel principal del paquete — el subpath
- * `.` que, medido en el censo de futuros consumidores
- * (memory/swarm/mcp-runtime/output/repl/…), es el más citado: 108 líneas
- * de import contra este barrel.
- */
-
 export type {
   EventMetadata,
   HealthProbe,

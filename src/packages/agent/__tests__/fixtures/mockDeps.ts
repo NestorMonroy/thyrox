@@ -35,7 +35,7 @@ export function createMockDeps(overrides?: Partial<AgentDeps>): AgentDeps {
       execute: mock(async () => ({ output: 'mock tool result' })),
     },
     permission: {
-      canUseTool: mock(async () => ({ allowed: true })),
+      canUseTool: mock(async () => ({ allowed: true as const })),
     },
     output: {
       emit: mock(() => {}),

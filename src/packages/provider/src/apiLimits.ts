@@ -1,90 +1,94 @@
 /**
- * Porte fiel de `ccnmt: packages/provider/src/apiLimits.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO — la fuente misma se declara sin dependencias a propósito,
- * para evitar imports circulares; cero imports, cero divergencias.
+ * Anthropic API Limits
  *
- * Límites de la API de Anthropic — constantes que el servidor impone del
- * lado de la API, no calculadas dinámicamente en este pase.
+ * These constants define server-side limits enforced by the Anthropic API.
+ * Keep this file dependency-free to prevent circular imports.
+ *
+ * Last verified: 2025-12-22
+ * Source: api/api/schemas/messages/blocks/ and api/api/config.py
+ *
+ * Future: See issue #13240 for dynamic limits fetching from server.
  */
 
 // =============================================================================
-// LÍMITES DE IMAGEN
+// IMAGE LIMITS
 // =============================================================================
 
 /**
- * Tamaño máximo de imagen codificada en base64 (impuesto por la API).
- * La API rechaza imágenes cuya cadena base64 exceda este valor — es el
- * largo en base64, NO los bytes crudos (base64 crece ~33%).
+ * Maximum base64-encoded image size (API enforced).
+ * The API rejects images where the base64 string length exceeds this value.
+ * Note: This is the base64 length, NOT raw bytes. Base64 increases size by ~33%.
  */
 export const API_IMAGE_MAX_BASE64_SIZE = 5 * 1024 * 1024 // 5 MB
 
 /**
- * Tamaño crudo objetivo para quedar bajo el límite de base64 tras
- * codificar (base64 crece por un factor de 4/3, así que el tamaño crudo
- * máximo se despeja como base64_size * 3/4).
+ * Target raw image size to stay under base64 limit after encoding.
+ * Base64 encoding increases size by 4/3, so we derive the max raw size:
+ * raw_size * 4/3 = base64_size → raw_size = base64_size * 3/4
  */
 export const IMAGE_TARGET_RAW_SIZE = (API_IMAGE_MAX_BASE64_SIZE * 3) / 4 // 3.75 MB
 
 /**
- * Dimensiones máximas del lado cliente para redimensionar imágenes.
+ * Client-side maximum dimensions for image resizing.
  *
- * La API redimensiona internamente imágenes de más de 1568px, pero eso
- * ocurre del lado del servidor y no produce error. Estos límites del
- * cliente (2000px) son algo mayores para preservar calidad cuando
- * conviene — el límite duro real es `API_IMAGE_MAX_BASE64_SIZE`.
+ * Note: The API internally resizes images larger than 1568px (source:
+ * encoding/full_encoding.py), but this is handled server-side and doesn't
+ * cause errors. These client-side limits (2000px) are slightly larger to
+ * preserve quality when beneficial.
+ *
+ * The API_IMAGE_MAX_BASE64_SIZE (5MB) is the actual hard limit that causes
+ * API errors if exceeded.
  */
 export const IMAGE_MAX_WIDTH = 2000
 export const IMAGE_MAX_HEIGHT = 2000
 
 // =============================================================================
-// LÍMITES DE PDF
+// PDF LIMITS
 // =============================================================================
 
 /**
- * Tamaño crudo máximo de PDF que cabe en el límite de la petición tras
- * codificar. La API tiene un límite de 32 MB por petición; 20 MB crudos
- * dan ~27 MB en base64, dejando espacio para el contexto de la conversación.
+ * Maximum raw PDF file size that fits within the API request limit after encoding.
+ * The API has a 32MB total request size limit. Base64 encoding increases size by
+ * ~33% (4/3), so 20MB raw → ~27MB base64, leaving room for conversation context.
  */
 export const PDF_TARGET_RAW_SIZE = 20 * 1024 * 1024 // 20 MB
 
 /**
- * Número máximo de páginas de un PDF que la API acepta.
+ * Maximum number of pages in a PDF accepted by the API.
  */
 export const API_PDF_MAX_PAGES = 100
 
 /**
- * Umbral de tamaño por encima del cual un PDF se extrae a imágenes por
- * página en vez de enviarse como bloque de documento base64. Sólo aplica
- * a la API de primera parte; fuera de ella siempre se extrae.
+ * Size threshold above which PDFs are extracted into page images
+ * instead of being sent as base64 document blocks. This applies to
+ * first-party API only; non-first-party always uses extraction.
  */
 export const PDF_EXTRACT_SIZE_THRESHOLD = 3 * 1024 * 1024 // 3 MB
 
 /**
- * Tamaño máximo de PDF para el path de extracción por página. Uno más
- * grande se rechaza, para no procesar archivos extremadamente grandes.
+ * Maximum PDF file size for the page extraction path. PDFs larger than
+ * this are rejected to avoid processing extremely large files.
  */
 export const PDF_MAX_EXTRACT_SIZE = 100 * 1024 * 1024 // 100 MB
 
 /**
- * Páginas máximas que el tool Read extrae en una sola llamada con el
- * parámetro `pages`.
+ * Max pages the Read tool will extract in a single call with the pages parameter.
  */
 export const PDF_MAX_PAGES_PER_READ = 20
 
 /**
- * Un PDF con más páginas que esto recibe tratamiento de referencia al
- * mencionarse con @, en vez de inyectarse entero en el contexto.
+ * PDFs with more pages than this get the reference treatment on @ mention
+ * instead of being inlined into context.
  */
 export const PDF_AT_MENTION_INLINE_THRESHOLD = 10
 
 // =============================================================================
-// LÍMITES DE MEDIOS
+// MEDIA LIMITS
 // =============================================================================
 
 /**
- * Número máximo de medios (imágenes + PDFs) por petición a la API. La API
- * rechaza el exceso con un error confuso; se valida del lado del cliente
- * para dar un mensaje claro.
+ * Maximum number of media items (images + PDFs) allowed per API request.
+ * The API rejects requests exceeding this limit with a confusing error.
+ * We validate client-side to provide a clear error message.
  */
 export const API_MAX_MEDIA_PER_REQUEST = 100

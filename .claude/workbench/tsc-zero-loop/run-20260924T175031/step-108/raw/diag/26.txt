@@ -1,0 +1,40 @@
+src/packages/swarm/src/runtime/inProcessRunner.ts(280,34): error TS2345: Argument of type '(queue: { toolUseID: string; }[]) => { toolUseID: string; }[]' is not assignable to parameter of type '(prev: unknown[]) => unknown[]'.
+  Types of parameters 'queue' and 'prev' are incompatible.
+    Type 'unknown[]' is not assignable to type '{ toolUseID: string; }[]'.
+      Type 'unknown' is not assignable to type '{ toolUseID: string; }'.
+src/packages/swarm/src/runtime/inProcessRunner.ts(351,23): error TS2345: Argument of type '{ contentBlocks?: ContentBlockParam[] | undefined; behavior: "allow"; updatedInput: Record<string, unknown>; userModified: false; acceptFeedback: string | undefined; }' is not assignable to parameter of type 'PermissionDecision | PromiseLike<PermissionDecision>'.
+  Type '{ contentBlocks?: ContentBlockParam[] | undefined; behavior: "allow"; updatedInput: Record<string, unknown>; userModified: false; acceptFeedback: string | undefined; }' is not assignable to type 'PermissionAllowDecision<{ [key: string]: unknown; }> | PromiseLike<PermissionDecision>'.
+    Type '{ contentBlocks?: ContentBlockParam[] | undefined; behavior: "allow"; updatedInput: Record<string, unknown>; userModified: false; acceptFeedback: string | undefined; }' is not assignable to type 'PermissionAllowDecision<{ [key: string]: unknown; }>'.
+      Types of property 'contentBlocks' are incompatible.
+        Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+          Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+            Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+              Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+                Index signature for type 'string' is missing in type 'TextBlockParam'.
+src/packages/swarm/src/runtime/inProcessRunner.ts(371,23): error TS2345: Argument of type '{ behavior: "ask"; message: string; contentBlocks: ContentBlockParam[] | undefined; }' is not assignable to parameter of type 'PermissionDecision | PromiseLike<PermissionDecision>'.
+  Types of property 'contentBlocks' are incompatible.
+    Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+      Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+        Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+          Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+            Index signature for type 'string' is missing in type 'TextBlockParam'.
+src/packages/swarm/src/runtime/inProcessRunner.ts(389,40): error TS2345: Argument of type '(queue: { toolUseID: string; }[]) => { toolUseID: string; }[]' is not assignable to parameter of type '(prev: unknown[]) => unknown[]'.
+  Types of parameters 'queue' and 'prev' are incompatible.
+    Type 'unknown[]' is not assignable to type '{ toolUseID: string; }[]'.
+      Type 'unknown' is not assignable to type '{ toolUseID: string; }'.
+src/packages/swarm/src/runtime/inProcessRunner.ts(433,19): error TS2345: Argument of type '{ contentBlocks?: ContentBlockParam[] | undefined; behavior: "allow"; updatedInput: any; userModified: false; }' is not assignable to parameter of type 'PermissionDecision | PromiseLike<PermissionDecision>'.
+  Type '{ contentBlocks?: ContentBlockParam[] | undefined; behavior: "allow"; updatedInput: any; userModified: false; }' is not assignable to type 'PermissionAllowDecision<{ [key: string]: unknown; }> | PromiseLike<PermissionDecision>'.
+    Type '{ contentBlocks?: ContentBlockParam[] | undefined; behavior: "allow"; updatedInput: any; userModified: false; }' is not assignable to type 'PermissionAllowDecision<{ [key: string]: unknown; }>'.
+      Types of property 'contentBlocks' are incompatible.
+        Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+          Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+            Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+              Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+                Index signature for type 'string' is missing in type 'TextBlockParam'.
+src/packages/swarm/src/runtime/inProcessRunner.ts(445,19): error TS2345: Argument of type '{ behavior: "ask"; message: string; contentBlocks: ContentBlockParam[] | undefined; }' is not assignable to parameter of type 'PermissionDecision | PromiseLike<PermissionDecision>'.
+  Types of property 'contentBlocks' are incompatible.
+    Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+      Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+        Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+          Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+            Index signature for type 'string' is missing in type 'TextBlockParam'.

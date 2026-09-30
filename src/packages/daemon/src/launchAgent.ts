@@ -1,17 +1,15 @@
 /**
- * Superficie de control del LaunchAgent de macOS para el daemon bg.
+ * macOS LaunchAgent control surface for the bg daemon.
  *
- * Portea `ant 4135.js` — instala
- * `~/Library/LaunchAgents/com.ccb.daemon.plist` y enruta
- * `daemon install/uninstall/start/stop/restart/status` a través de
+ * Ports ant 4135.js — installs `~/Library/LaunchAgents/com.ccb.daemon.plist`
+ * and routes `daemon install/uninstall/start/stop/restart/status` through
  * `launchctl bootstrap/bootout/kickstart/kill/print`.
  *
- * Linux/Windows devuelven ok=false con "not supported on platform"
- * (`ant v2.1.131` también apunta sólo a darwin para la ruta de
- * launch-agent; un pase futuro puede añadir soporte de unit-file de
- * systemd si hace falta).
+ * Linux/Windows return ok=false with "not supported on platform". (ant
+ * v2.1.131 also targets darwin only for the launch-agent path; a future
+ * pass can add systemd unit-file support if needed.)
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/launchAgent.ts`.
+ * @dynamicRequire
  */
 
 import { homedir } from 'node:os'
@@ -63,10 +61,9 @@ function serviceTarget(): string {
 }
 
 function programPath(): string {
-  // ccb corre desde un binario de un solo archivo o `bun dist/cli.js`; se
-  // quiere el programa que nos re-invoca. Espeja ant MV8(): usa
-  // process.argv[1] cuando corre vía JIT, el target de bun-compile en
-  // otro caso.
+  // ccb runs from a single-file binary or `bun dist/cli.js`; we want the
+  // program that re-invokes us. Mirrors ant MV8(): use process.argv[1]
+  // when run via JIT, the bun-compile target otherwise.
   return process.argv[1] ?? process.execPath
 }
 
@@ -210,9 +207,8 @@ export async function restartLaunchAgent(): Promise<ServiceResult> {
 }
 
 /**
- * Devuelve true si el plist instalado apunta a una ruta de programa que
- * ya no existe en disco (un upgrade de ccb dejó la ruta del binario viejo
- * en el plist).
+ * Returns true if installed plist points at a program path that no longer
+ * exists on disk (ccb upgrade left the old binary path in plist).
  */
 export async function isLaunchAgentStale(): Promise<boolean> {
   const path = plistPath()

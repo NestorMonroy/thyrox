@@ -1,0 +1,298 @@
+== 1: el formulario con vacíos
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > form params keep only non-empty strings [0.78ms]
+ 24 pass
+ 1 fail
+== 2: sin invalid_token
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > an unrecoverable code is found bare, in fields, nested, double-encoded or in a sentence [2.00ms]
+ 24 pass
+ 1 fail
+== 3: server_error es irrecuperable
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > transient codes, partial words, unknown shapes and deep nesting give nothing [0.60ms]
+(fail) refresh errors > the error body is read once, parsed when it is JSON, and classified [0.75ms]
+ 23 pass
+ 2 fail
+== 4: sin límite izquierdo
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > transient codes, partial words, unknown shapes and deep nesting give nothing [0.53ms]
+ 24 pass
+ 1 fail
+== 5: sin límite derecho
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > transient codes, partial words, unknown shapes and deep nesting give nothing [0.53ms]
+ 24 pass
+ 1 fail
+== 6: sin mayúsculas en la frase
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > an unrecoverable code is found bare, in fields, nested, double-encoded or in a sentence [1.12ms]
+ 24 pass
+ 1 fail
+== 7: sin profundidad máxima
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > transient codes, partial words, unknown shapes and deep nesting give nothing [0.81ms]
+ 24 pass
+ 1 fail
+== 8: profundidad corta
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > transient codes, partial words, unknown shapes and deep nesting give nothing [0.55ms]
+ 24 pass
+ 1 fail
+== 9: sin recortar
+   (src/accounts/refresh/refreshErrors.ts)
+ 25 pass
+ 0 fail
+== 10: sin JSON anidado
+   (src/accounts/refresh/refreshErrors.ts)
+ 25 pass
+ 0 fail
+== 11: sin el campo en texto
+   (src/accounts/refresh/refreshErrors.ts)
+ 25 pass
+ 0 fail
+== 12: el campo con cualquier código
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > transient codes, partial words, unknown shapes and deep nesting give nothing [0.65ms]
+(fail) refresh errors > the error body is read once, parsed when it is JSON, and classified [0.66ms]
+ 23 pass
+ 2 fail
+== 13: sin código en la frase
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > an unrecoverable code is found bare, in fields, nested, double-encoded or in a sentence [1.13ms]
+(fail) refresh errors > the error body is read once, parsed when it is JSON, and classified [0.82ms]
+ 23 pass
+ 2 fail
+== 14: la frase sin minúsculas
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > an unrecoverable code is found bare, in fields, nested, double-encoded or in a sentence [1.01ms]
+ 24 pass
+ 1 fail
+== 15: sin code
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > an unrecoverable code is found bare, in fields, nested, double-encoded or in a sentence [0.68ms]
+ 24 pass
+ 1 fail
+== 16: sin error_code
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > an unrecoverable code is found bare, in fields, nested, double-encoded or in a sentence [0.47ms]
+ 24 pass
+ 1 fail
+== 17: el cuerpo sin leer como texto
+   (src/accounts/refresh/refreshErrors.ts)
+ 25 pass
+ 0 fail
+== 18: sin analizar el cuerpo
+   (src/accounts/refresh/refreshErrors.ts)
+ 25 pass
+ 0 fail
+== 19: sin invalid_request irrecuperable
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > the unrecoverable result markers [0.38ms]
+ 24 pass
+ 1 fail
+== 20: un texto es un resultado
+   (src/accounts/refresh/refreshErrors.ts)
+ 25 pass
+ 0 fail
+== 21: rotación con el viejo vacío
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > a rotation needs two different non-empty tokens [0.45ms]
+ 24 pass
+ 1 fail
+== 22: rotación con el nuevo vacío
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > a rotation needs two different non-empty tokens [0.43ms]
+ 24 pass
+ 1 fail
+== 23: rotación sin comparar
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > a rotation needs two different non-empty tokens [0.31ms]
+(fail) CAS guard > a row rotated by someone else is not overwritten; one still ours is persisted [0.52ms]
+ 23 pass
+ 2 fail
+== 24: CAS sin contexto
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > a row rotated by someone else is not overwritten; one still ours is persisted [0.41ms]
+(fail) CAS guard > no presented token, an empty row or a failed reread never block the persist [0.31ms]
+(fail) CAS guard > the guard is only visible inside its run [0.29ms]
+ 22 pass
+ 3 fail
+== 25: CAS sin token presentado
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > no presented token, an empty row or a failed reread never block the persist [0.60ms]
+ 24 pass
+ 1 fail
+== 26: CAS con relectura fallida bloquea
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > no presented token, an empty row or a failed reread never block the persist [0.49ms]
+ 24 pass
+ 1 fail
+== 27: CAS sin omitir
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > a row rotated by someone else is not overwritten; one still ours is persisted [0.56ms]
+ 24 pass
+ 1 fail
+== 28: CAS sin contar guardados
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > a row rotated by someone else is not overwritten; one still ours is persisted [0.63ms]
+(fail) CAS guard > no presented token, an empty row or a failed reread never block the persist [0.41ms]
+ 23 pass
+ 2 fail
+== 29: CAS sin aviso
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > a row rotated by someone else is not overwritten; one still ours is persisted [0.59ms]
+ 24 pass
+ 1 fail
+== 30: reset sin omitidos
+   (src/accounts/refresh/casGuard.ts)
+(fail) CAS guard > no presented token, an empty row or a failed reread never block the persist [0.60ms]
+ 24 pass
+ 1 fail
+== 31: umbral cuatro
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [0.65ms]
+ 24 pass
+ 1 fail
+== 32: pausa corta
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [0.82ms]
+ 24 pass
+ 1 fail
+== 33: dos intentos
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > failures back off linearly and the third attempt can succeed [1.07ms]
+(fail) retry with circuit breaker > the default is three attempts under an unknown provider [0.28ms]
+ 23 pass
+ 2 fail
+== 34: espera fija
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > failures back off linearly and the third attempt can succeed [1.02ms]
+(fail) retry with circuit breaker > the default is three attempts under an unknown provider [0.40ms]
+ 23 pass
+ 2 fail
+== 35: espera también antes del primero
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > a result on the first attempt is returned without waiting [1.17ms]
+(fail) retry with circuit breaker > failures back off linearly and the third attempt can succeed [0.61ms]
+(fail) retry with circuit breaker > an unrecoverable result stops retrying and is returned [0.22ms]
+(fail) retry with circuit breaker > the default is three attempts under an unknown provider [0.29ms]
+ 21 pass
+ 4 fail
+== 36: sin plazo por intento
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > an attempt that hangs is cut by the timeout and counts as a failure [5000.00ms]
+ 24 pass
+ 1 fail
+== 37: irrecuperable se reintenta
+   (src/accounts/refresh/circuitBreaker.ts)
+ 25 pass
+ 0 fail
+== 38: el éxito no limpia
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > a success clears the failure count [0.61ms]
+ 24 pass
+ 1 fail
+== 39: el disyuntor no corta
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [1.20ms]
+ 24 pass
+ 1 fail
+== 40: el bloqueo no vence
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [1.22ms]
+ 24 pass
+ 1 fail
+== 41: el bloqueo vence un instante antes
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [0.91ms]
+ 24 pass
+ 1 fail
+== 42: sin aviso al saltar
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [0.79ms]
+ 24 pass
+ 1 fail
+== 43: estado sin restante
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > five exhausted refreshes trip the breaker for thirty minutes, then it resets [0.98ms]
+ 24 pass
+ 1 fail
+== 44: proveedor por defecto otro
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > the default is three attempts under an unknown provider [0.62ms]
+ 24 pass
+ 1 fail
+== 45: rotación sin proveedor en la clave
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > the key hashes the refresh token under its provider [0.93ms]
+(fail) rotation map > a recent rotation redirects a caller with the old token for sixty seconds [1.73ms]
+ 23 pass
+ 2 fail
+== 46: rotación en claro
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > the key hashes the refresh token under its provider [0.44ms]
+ 24 pass
+ 1 fail
+== 47: rotación sin caducidad
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > a recent rotation redirects a caller with the old token for sixty seconds [3.34ms]
+(fail) rotation map > expired rotations are pruned on lookup, and the map can be cleared [1.66ms]
+ 23 pass
+ 2 fail
+== 48: rotación de un minuto y algo
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > a recent rotation redirects a caller with the old token for sixty seconds [3.14ms]
+(fail) rotation map > expired rotations are pruned on lookup, and the map can be cleared [1.59ms]
+ 23 pass
+ 2 fail
+== 49: rotación con el viejo vacío
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > nothing is recorded without two different tokens [0.75ms]
+ 24 pass
+ 1 fail
+== 50: rotación sin rotar
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > nothing is recorded without two different tokens [0.93ms]
+ 24 pass
+ 1 fail
+== 51: rotación con el nuevo vacío
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > nothing is recorded without two different tokens [1.37ms]
+ 24 pass
+ 1 fail
+== 52: rotación de dos minutos
+   (src/accounts/refresh/rotationMap.ts)
+(fail) rotation map > a recent rotation redirects a caller with the old token for sixty seconds [2.36ms]
+(fail) rotation map > expired rotations are pruned on lookup, and the map can be cleared [2.38ms]
+ 23 pass
+ 2 fail
+== 53: Google — cualquier cliente propio
+   (src/accounts/refresh/googleClientBinding.ts)
+(fail) Google refresh client > a rotated custom client, a missing secret, no marker or builtin fall back to the provider builtin [0.41ms]
+ 24 pass
+ 1 fail
+== 54: Google — sin secreto
+   (src/accounts/refresh/googleClientBinding.ts)
+(fail) Google refresh client > a rotated custom client, a missing secret, no marker or builtin fall back to the provider builtin [0.49ms]
+ 24 pass
+ 1 fail
+== 55: Google — agy sin familia
+   (src/accounts/refresh/googleClientBinding.ts)
+(fail) Google refresh client > agy shares the antigravity builtin; gemini has its own; an unknown provider is refused [1.48ms]
+ 24 pass
+ 1 fail
+== 56: Google — cualquier proveedor
+   (src/accounts/refresh/googleClientBinding.ts)
+(fail) Google refresh client > agy shares the antigravity builtin; gemini has its own; an unknown provider is refused [0.44ms]
+(fail) Google refresh client > a builtin client that is not declared is refused naming the provider [0.21ms]
+ 23 pass
+ 2 fail
+== 57: Google — sin la marca de prefijo
+   (src/accounts/refresh/googleClientBinding.ts)
+ 25 pass
+ 0 fail
+== restaurado
+ 25 pass
+ 0 fail
+__BG_EXIT__=0

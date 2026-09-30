@@ -15,7 +15,6 @@ raíz y el patrón en vez de declararlos otra vez: dos copias de la misma ruta s
 dos fuentes de verdad, y la que nadie sincroniza falla en silencio.
 """
 
-import pathlib
 import re
 
 

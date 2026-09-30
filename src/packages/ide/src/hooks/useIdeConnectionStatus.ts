@@ -1,8 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/hooks/useIdeConnectionStatus.ts`
- * (verbatim). `MCPServerConnection` viene de `@thyrox/mcp-runtime/types.js`
- * — sólo como TIPO (erasado).
- */
 import { useMemo } from 'react'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 
@@ -21,7 +16,7 @@ export function useIdeConnectionStatus(
     if (!ideClient) {
       return { status: null, ideName: null }
     }
-    // Extrae el nombre del IDE de la config, si está disponible.
+    // Extract IDE name from config if available
     const config = ideClient.config
     const ideName =
       config.type === 'sse-ide' || config.type === 'ws-ide'

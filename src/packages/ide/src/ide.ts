@@ -12,8 +12,9 @@
  *
  * El resto de dependencias cruzadas (`@thyrox/{agent,app-host,config,
  * local-observability,shell,storage}`) SÍ existen en este árbol, pero
- * resuelven vía `require()` diferido porque `@thyrox/ide` no es miembro de
- * `src/packages/package.json:workspaces` todavía — ver la cabecera de
+ * resuelven vía `require()` diferido porque `@thyrox/ide` no era miembro del agregador anidado
+ * `src/packages/package.json` (retirado en la tarea #62; hoy resuelven por
+ * nombre y el reemplazo es la tarea #53) — ver la cabecera de
  * `internal/pendingCrossPackageDeps.ts` para la verificación en vivo.
  *
  * `memoize`/`capitalize` de `lodash-es` — sustituto local (mismo criterio
@@ -25,6 +26,7 @@ import { execa } from 'execa'
 import { createConnection } from 'net'
 import * as os from 'os'
 import { basename, join, sep as pathSeparator, resolve } from 'path'
+import { LEGACY_CONFIG_DIR_NAME } from '@thyrox/config/env/configHome.js'
 import type {
   ConnectedMCPServer,
   MCPServerConnection,
@@ -35,7 +37,7 @@ import {
   env,
   envDynamic,
   getAncestorPidsAsync,
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   getGlobalConfig,
   getIsScrollDraining,
   isJetBrainsPluginInstalledCached,
@@ -69,10 +71,10 @@ const ideOnboardingDialog = (): { hasIdeOnboardingDialogBeenShown(): boolean } =
 
 // Constante de build-time inyectada por Bun.build({ define }); undefined en
 // desarrollo. Declarada en línea, igual que `@thyrox/local-observability:
-// src/sentry.ts` — así este paquete no depende de un `.d.ts` global.
+// src/telemetry/attributes.ts` — así este paquete no depende de un `.d.ts` global.
 declare const MACRO: { VERSION: string } | undefined
 
-// ide antes tenía su propia copia. Se usa el probe canónico de shell —
+// Se usa el probe canónico de shell, no una copia propia —
 // misma semántica (EPERM → false, conservador para recuperación de lockfiles).
 function isProcessRunning(pid: number): boolean {
   if (pid <= 1) return false
@@ -511,7 +513,12 @@ export async function getIdeLockfilesPaths(): Promise<string[]> {
   const { errorMessage, isFsInaccessible } = requireLocalObservabilityErrorHelpers()
   const { getPlatform } = requireConfigPlatform()
 
-  const paths: string[] = [join(getClaudeConfigHomeDir(), 'ide')]
+  const paths: string[] = [join(getConfigHomeDir(), 'ide')]
+  // `rWn` (2.1.283) añade `~/.claude/ide` cuando la raíz se declaró por
+  // variable: es donde escriben las extensiones de editor. Aquí la raíz puede
+  // ser `~/.thyrox` sin variable, así que se decide por la raíz resuelta.
+  const legacyIdeDir = join(os.homedir(), LEGACY_CONFIG_DIR_NAME, 'ide').normalize('NFC')
+  if (paths[0] !== legacyIdeDir) paths.push(legacyIdeDir)
 
   if (getPlatform() !== 'wsl') {
     return paths
@@ -736,8 +743,8 @@ export async function detectIDEs(
   const detectedIDEs: DetectedIDEInfo[] = []
 
   try {
-    // Obtiene CLAUDE_CODE_SSE_PORT, si está fijado.
-    const ssePort = process.env.CLAUDE_CODE_SSE_PORT
+    // Obtiene THYROX_CODE_SSE_PORT, si está fijado.
+    const ssePort = process.env.THYROX_CODE_SSE_PORT
     const envPort = ssePort ? parseInt(ssePort, 10) : null
 
     // Obtiene el directorio de trabajo actual, normalizado a NFC para
@@ -765,7 +772,7 @@ export async function detectIDEs(
       if (!lockfileInfo) continue
 
       let isValid = false
-      if (isEnvTruthy(process.env.CLAUDE_CODE_IDE_SKIP_VALID_CHECK)) {
+      if (isEnvTruthy(process.env.THYROX_CODE_IDE_SKIP_VALID_CHECK)) {
         isValid = true
       } else if (lockfileInfo.port === envPort) {
         // Si el puerto coincide con la variable de entorno, se marca como válido sin importar el directorio.
@@ -919,8 +926,8 @@ export function hasAccessToIDEExtensionDiffFeature(
 
 const EXTENSION_ID =
   process.env.USER_TYPE === 'ant'
-    ? 'anthropic.claude-code-how-works-how-works-internal'
-    : 'anthropic.claude-code-how-works-how-works'
+    ? 'anthropic.claude-code-internal'
+    : 'anthropic.claude-code'
 
 export async function isIDEExtensionInstalled(
   ideType: IdeType,
@@ -969,7 +976,7 @@ async function installIDEExtension(ideType: IdeType): Promise<string | null> {
         await sleep(500)
         const result = await execFileNoThrowWithCwd(
           command,
-          ['--force', '--install-extension', 'anthropic.claude-code-how-works-how-works'],
+          ['--force', '--install-extension', 'anthropic.claude-code'],
           {
             env: getInstallationEnv(),
           },
@@ -1020,7 +1027,7 @@ async function getInstalledVSCodeExtensionVersion(
   const lines = stdout?.split('\n') || []
   for (const line of lines) {
     const [extensionId, version] = line.split('@')
-    if (extensionId === 'anthropic.claude-code-how-works-how-works' && version) {
+    if (extensionId === 'anthropic.claude-code' && version) {
       return version
     }
   }
@@ -1114,7 +1121,7 @@ async function getVSCodeIDECommand(ideType: IdeType): Promise<string | null> {
   // una nueva ventana del editor en vez de correr el CLI. Pedir
   // 'code.cmd' fuerza a cross-spawn/which a saltarse Code.exe. Ver
   // microsoft/vscode#299416 (arreglado en Insiders) y
-  // anthropics/claude-code-how-works-how-works#30975.
+  // anthropics/claude-code#30975.
   const ext = getPlatform() === 'windows' ? '.cmd' : ''
   switch (ideType) {
     case 'vscode':
@@ -1393,7 +1400,7 @@ export async function initializeIdeIntegration(
 
   const shouldAutoInstall = getGlobalConfig().autoInstallIdeExtension ?? true
   if (
-    !isEnvTruthy(process.env.CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL) &&
+    !isEnvTruthy(process.env.THYROX_CODE_IDE_SKIP_AUTO_INSTALL) &&
     shouldAutoInstall
   ) {
     const ideType = ideToInstallExtension ?? getTerminalIdeType()
@@ -1450,8 +1457,8 @@ const detectHostIP = memoize(
   async (isIdeRunningInWindows: boolean, port: number) => {
     const { getPlatform } = requireConfigPlatform()
 
-    if (process.env.CLAUDE_CODE_IDE_HOST_OVERRIDE) {
-      return process.env.CLAUDE_CODE_IDE_HOST_OVERRIDE
+    if (process.env.THYROX_CODE_IDE_HOST_OVERRIDE) {
+      return process.env.THYROX_CODE_IDE_HOST_OVERRIDE
     }
 
     if (getPlatform() !== 'wsl' || !isIdeRunningInWindows) {
@@ -1523,7 +1530,7 @@ async function installFromArtifactory(command: string): Promise<string> {
 
   // Obtiene la versión desde artifactory.
   const versionUrl =
-    'https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-how-works-how-works-internal/claude-vscode-releases/stable'
+    'https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-internal/claude-vscode-releases/stable'
 
   try {
     const versionResponse = await axios.get(versionUrl, {
@@ -1538,10 +1545,10 @@ async function installFromArtifactory(command: string): Promise<string> {
     }
 
     // Descarga el archivo .vsix desde artifactory.
-    const vsixUrl = `https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-how-works-how-works-internal/claude-vscode-releases/${version}/claude-code-how-works-how-works.vsix`
+    const vsixUrl = `https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-internal/claude-vscode-releases/${version}/claude-code.vsix`
     const tempVsixPath = join(
       os.tmpdir(),
-      `claude-code-how-works-how-works-${version}-${Date.now()}.vsix`,
+      `claude-code-${version}-${Date.now()}.vsix`,
     )
 
     try {

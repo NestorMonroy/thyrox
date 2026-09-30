@@ -1,0 +1,34 @@
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/ram-agentic-memory/ram-agentic-memory-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/ram-agentic-memory/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/panda-claude-code-best-practices/panda-claude-code-best-practices-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/panda-claude-code-best-practices/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/vishwas-50-claude-tips/vishwas-50-claude-tips-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/vishwas-50-claude-tips/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/openai-codex-best-practices/openai-codex-best-practices-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/openai-codex-best-practices/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/corey-cowork-starter/corey-cowork-starter-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/corey-cowork-starter/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/cs146s/week03/week03-notes.tex
+- nota (chino): /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/self-evolving-agents-2026-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/course-plan.md
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture01/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture01/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture02/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture02/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture03/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture03/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture04/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture04/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture05/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture05/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture06/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture06/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture07/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture07/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture08/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture08/subs.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture09/subs.srt
+    fuente: /home/user/nestormonroy/ai-course-notes/self-evolving-agents-2026/lecture09/subs.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/dotey-karpathy-translation/dotey-karpathy-translation-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/dotey-karpathy-translation/content.txt
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/dotey-karpathy-translation/original_transcript.txt

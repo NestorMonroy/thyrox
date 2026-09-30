@@ -38,7 +38,7 @@ import { shouldHideTasksFooter } from '../tasks/taskStatusUtils.js'
 import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import { TeamStatus } from '../teams/TeamStatus.js'
 import { isInProcessEnabled } from '@thyrox/swarm'
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import { useAppState, useAppStateStore } from '../../appStateHooks.js'
 import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import HistorySearchInput from './HistorySearchInput.js'
@@ -55,6 +55,10 @@ import { isXtermJs, useHasSelection, useSelection } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { getPlatform } from '@thyrox/config/platform'
 import { PrBadge } from '../PrBadge.js'
+
+// Componente interno de Anthropic que el build de código abierto elimina; aquí
+// sólo se nombra dentro de una rama muerta. Se declara en su único usuario.
+declare function TungstenPill(props?: { key?: string; selected?: boolean }): React.ReactElement | null
 
 // Dead code elimination: conditional import for proactive mode
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -447,7 +451,7 @@ function ModeIndicator({
     // Source: ant 4967.js Ln3 — when running as a bg session attached
     // via FleetView, hint that ← detaches back to the fleet list. ant gates
     // on `G7() && K && !P` where K = isInputEmpty (NOT the composed showHint):
-    //   - isBgSession()  — CLAUDE_CODE_SESSION_KIND === 'bg'
+    //   - isBackgroundSession()  — THYROX_CODE_SESSION_KIND === 'bg'
     //   - isInputEmpty   — input empty, IGNORING status-line/search suppression
     // MUST use isInputEmpty, not showHint: showHint folds in suppressHint,
     // which goes true once the bg session's status line renders (after the
@@ -455,7 +459,7 @@ function ModeIndicator({
     // the first turn — only the foreground branch below was using isInputEmpty.
     // Pressing ← on empty prompt in a bg session triggers
     // sendBgDetachSignal() in REPLView.tsx, which is the live counterpart.
-    ...(isBgSession() && isInputEmpty
+    ...(isBackgroundSession() && isInputEmpty
       ? [
           <Text dimColor key="bg-agents">
             ← for agents
@@ -477,7 +481,7 @@ function ModeIndicator({
       // isLoading is near-always true, so the hint is hidden until idle; that is
       // ant-parity (ant has no auto mode) and accepted by the maintainer.
       const cond =
-        !isBgSession() &&
+        !isBackgroundSession() &&
         !isLoading &&
         isInputEmpty &&
         fleetOn &&

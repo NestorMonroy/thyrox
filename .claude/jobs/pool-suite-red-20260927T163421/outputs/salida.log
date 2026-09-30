@@ -1,0 +1,112 @@
+FALLA tres items: exit 0 — esperado '0', obtenido '1'
+FALLA tres items: resumen — esperado 'items=3 ok=3 fallidos=0', obtenido 'items=3 ok=0 fallidos=3'
+OK   una salida json por item
+FALLA el item llega al final del prompt — esperado 'Item: alfa,Item: beta,Item: gamma', obtenido ''
+FALLA sin sesion persistida y en stream-json — esperado 'persist=no|formato=stream-json', obtenido ''
+FALLA el .json es la linea result del stream, sola — esperado 'result', obtenido ''
+FALLA un stream por item, una linea por peticion — esperado '3x111,3x500', obtenido ''
+OK   el indice empareja numero e item
+OK   un fallo: exit 1
+OK   un fallo: lo nombra
+FALLA un fallo: resumen — esperado 'items=3 ok=2 fallidos=1', obtenido 'items=3 ok=0 fallidos=3'
+FALLA timeout: exit 1 — esperado '1', obtenido '2'
+FALLA timeout: nombra al lento — esperado '1', obtenido '0'
+OK   alias: exit 2
+OK   alias: sin resumen
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin ejecutor: exit 2
+FALLA HEADLESS_POOL_CLAUDE retirada: exit 2 — esperado '2', obtenido '0'
+FALLA HEADLESS_POOL_CLAUDE retirada: nombra HEADLESS_POOL_RUNNER — esperado '1', obtenido '0'
+FALLA HEADLESS_POOL_CLAUDE retirada: sin resumen — esperado '0', obtenido '1'
+OK   sin plantilla: exit 2
+OK   sin ejecutor declarado: thyrox -p (bin/cli)
+OK   memfree: exit 0
+OK   memfree: la cota llega a parallel
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
+OK   cache-ttl 5m: exit 0
+OK   cache-ttl 5m: llega a cada item
+OK   sin cache-ttl: no se fija
+OK   cache-ttl ilegible: exit 2
+OK   cache-ttl ilegible: sin resumen
+FALLA variable sin --cache-ttl: llega sólo como THYROX_* — esperado 'ttl=sin|thx=1h', obtenido 'ttl=1h|thx=1h'
+OK   variable: el pool nombra la razón
+FALLA la variable gana a --cache-ttl — esperado 'ttl=sin|thx=1h', obtenido 'ttl=1h|thx=1h'
+FALLA forzar 5m gana a la variable y a la opción — esperado 'ttl=sin|thx=5m', obtenido 'ttl=5m|thx=5m'
+OK   sólo --cache-ttl: su razón es la opción
+FALLA activar 1h sin opción ni variable: 1h — esperado 'ttl=sin|thx=1h', obtenido 'ttl=1h|thx=1h'
+OK   activar 1h: el pool nombra la razón
+FALLA la opción gana a activar 1h — esperado 'ttl=sin|thx=5m', obtenido 'ttl=5m|thx=5m'
+FALLA forzar 5m gana a activar 1h — esperado 'ttl=sin|thx=5m', obtenido 'ttl=5m|thx=5m'
+FALLA activar 1h en Bedrock, con Bedrock: 1h — esperado 'ttl=sin|thx=1h', obtenido 'ttl=1h|thx=1h'
+OK   activar 1h en Bedrock: la razón es la misma regla
+OK   activar 1h en Bedrock sin Bedrock: no decide
+OK   variable ilegible: exit 2
+OK   variable ilegible: la nombra, sin resumen
+cat: '/tmp/tmp.ymtJrL24wR/out/*.json': No such file or directory
+FALLA con proxy: el item ve el socket y el marcador, sin credencial — esperado 'sock=/tmp/tmp.ymtJrL24wR/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin', obtenido ''
+OK   con proxy: la credencial la recibe el proxy
+OK   con proxy: al terminar el pool el proxy ya no vive
+OK   proxy que no arranca: exit 2, sin resumen, y lo nombra
+OK   sin --credential-proxy el item conserva su entorno
+OK   con GNU time: un .time por item
+OK   con GNU time: memoria pico, pared, usuario y sistema
+OK   con GNU time: el .time del item fallido es solo la medida
+OK   con GNU time: el fallo del item sigue siendo fallo
+OK   GNU time real: el .time trae cuatro cifras
+OK   GNU time real: no declara que falte
+OK   sin GNU time: ningun .time
+OK   sin GNU time: lo declara en vez de callar
+OK   con nvidia-smi: el item deja su .gpu
+OK   con nvidia-smi: VRAM pico y uso pico del item
+OK   con nvidia-smi: lo declara
+OK   sin nvidia-smi: ningun .gpu
+OK   sin nvidia-smi: lo declara en vez de callar
+OK   admision: sin VRAM para su pico el item no arranca
+OK   admision: la causa queda en su .err
+FALLA admision: lo reservado por otro pool vivo no se vuelve a dar — esperado 'items=1 ok=0 fallidos=1', obtenido ''
+OK   admision: la reserva ajena sigue en el registro
+OK   admisión con error: el ítem falla
+OK   admisión con error: el .err dice que falló, no que venció
+OK   VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4
+OK   VRAM: Parallel se lanza con -j 1
+OK   reserva: los items admitidos arrancan
+OK   reserva: el registro queda vacio al terminar
+OK   calibrado exige tantos ítems medidos como van a la vez
+OK   la edad máxima declarada deja fuera la fila
+OK   edad máxima ilegible: exit 2
+OK   dos pools: la ejecución de medida deja el pico del ítem
+OK   dos pools: los dos items terminan
+OK   dos pools: nunca corren juntos (máximo simultáneo 1)
+OK   dos pools: el registro queda vacío
+OK   dos pools: la ejecución concurrente también se mide (una fila por pool)
+OK   pico 0 sin calibrar: los dos terminan
+OK   pico 0 sin calibrar: nunca corren juntos
+OK   pico 0 sin calibrar: lo dice
+OK   RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1
+OK   RAM: Parallel se lanza con -j 1
+OK   historial vacío: lo declara
+OK   historial vacío: no inventa TTL
+OK   la ejecución deja una fila
+OK   la fila nombra el binario que corrió los ítems
+OK   la fila nombra el modelo que corrió los ítems
+OK   la fila lleva la huella del CONTENIDO de la plantilla
+OK   con historial: el TTL sale de la pared medida
+OK   con historial: declara de dónde salió el TTL
+OK   con historial: --memfree sale de la memoria medida
+OK   lo declarado gana al historial: TTL
+OK   lo declarado gana al historial: memfree
+OK   el entorno gana al historial
+OK   la reserva del vecino se suma a lo medido
+OK   una plantilla, un solo historial
+OK   otro binario: no deriva memfree de su fila
+OK   otro binario: lo dice
+OK   otro modelo: no deriva memfree de su fila
+OK   otro modelo: lo dice
+OK   sin historial, la reserva sola es la cota
+OK   reserva ilegible: exit 2
+
+aserciones: 87 de 108 · fallos: 21
+__BG_EXIT__=1

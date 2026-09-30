@@ -1,0 +1,91 @@
+src/agents/agent_store.py:96:5: F401 [*] `corpus.document_types.DOCUMENT_TYPES` imported but unused
+src/agents/model_catalog.py:34:8: F401 [*] `os` imported but unused
+src/board/graph.py:55:49: F401 [*] `typing.Sequence` imported but unused
+src/cache/work_cache.py:66:43: F401 [*] `dataclasses.replace` imported but unused
+src/corpus/census_scripts.py:30:8: F401 [*] `pathlib` imported but unused
+src/corpus/pdf_to_text.py:57:8: F401 [*] `re` imported but unused
+src/docs/scaffold_initiative.py:43:8: F401 [*] `re` imported but unused
+src/hooks/detect_finding_layer.py:18:8: F401 [*] `pathlib` imported but unused
+src/hooks/detect_rst_validation.py:26:8: F401 [*] `pathlib` imported but unused
+src/hooks/maintenance_chain.py:60:21: F401 [*] `pathlib.Path` imported but unused
+src/hooks/stop_pending_work.py:27:21: F401 [*] `pathlib.Path` imported but unused
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:338:51: F401 [*] `pywinauto.controls.uiawrapper.UIAWrapper` imported but unused
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:398:25: F841 [*] Local variable `e` is assigned to but never used
+src/paths/reach_roots.py:39:8: F401 [*] `importlib.util` imported but unused
+src/paths/reach_roots.py:93:5: F841 Local variable `src` is assigned to but never used
+src/repo/gitlink_bump.py:63:8: F401 [*] `sys` imported but unused
+src/session/instruction_floor.py:141:12: F401 [*] `sys` imported but unused
+src/session/job_runs.py:33:8: F401 [*] `json` imported but unused
+src/session/parallel.py:49:30: F401 [*] `typing.Iterable` imported but unused
+src/task/agrupar_tareas_por_familia.py:27:21: F401 [*] `pathlib.Path` imported but unused
+src/verify/check_gitattributes.py:85:5: F841 Local variable `src` is assigned to but never used
+src/verify/check_hook_script_token.py:85:5: F841 Local variable `src` is assigned to but never used
+src/verify/check_manifest_language.py:35:5: F401 [*] `verify.check_identifier_language.corpus_available` imported but unused
+src/verify/check_provider_evidence.py:54:29: F401 `workbench.paths.evidence_dir` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/verify/check_script_deprecated.py:77:5: F841 Local variable `src` is assigned to but never used
+src/verify/check_vocabulario_prosa.py:160:8: F811 [*] Redefinition of unused `os` from line 158: `os` redefined here
+src/verify/detect_broken_references.py:318:29: F841 [*] Local variable `e` is assigned to but never used
+src/verify/member_port.py:293:12: F401 [*] `sys` imported but unused
+src/verify/runner.py:36:8: F401 [*] `os` imported but unused
+tests/agents/test_balanced_block.py:39:8: F401 [*] `sys` imported but unused
+tests/agents/test_derive_submodule.py:47:8: F401 [*] `pathlib` imported but unused
+tests/agents/test_document_root_default.py:19:8: F401 [*] `os` imported but unused
+tests/corpus/test_archive_build_corpus.py:47:8: F401 [*] `subprocess` imported but unused
+tests/corpus/test_archive_extract.py:21:8: F401 [*] `shutil` imported but unused
+tests/corpus/test_list_corpus_builds.py:13:8: F401 [*] `os` imported but unused
+tests/hooks/test_detect_code_language.py:17:8: F401 [*] `pathlib` imported but unused
+tests/hooks/test_detect_dedicated_tool_usage.py:11:8: F401 [*] `pathlib` imported but unused
+tests/hooks/test_flow_selection.py:24:8: F401 [*] `io` imported but unused
+tests/hooks/test_flow_selection.py:28:24: F401 [*] `contextlib.redirect_stderr` imported but unused
+tests/hooks/test_stop_gate.py:28:8: F401 [*] `os` imported but unused
+tests/measurement/test_distribution.py:30:8: F401 [*] `math` imported but unused
+tests/measurement/test_residual_structure.py:19:8: F401 [*] `math` imported but unused
+tests/paths/test_reach.py:239:8: F811 [*] Redefinition of unused `subprocess` from line 40: `subprocess` redefined here
+tests/paths/test_reach_roots_declared.py:23:8: F401 [*] `subprocess` imported but unused
+tests/session/test_adopt_background.py:156:19: F401 [*] `paths.reach` imported but unused
+tests/session/test_background.py:133:25: F401 [*] `session.task_pool` imported but unused
+tests/session/test_generate_bin.py:1149:5: F811 Redefinition of unused `test_no_wrapper_asks_to_block_on_the_real_tree` from line 301: `test_no_wrapper_asks_to_block_on_the_real_tree` redefined here
+tests/session/test_generate_bin.py:1169:5: F811 Redefinition of unused `test_apply_plan_idempotent_and_removes_stale` from line 321: `test_apply_plan_idempotent_and_removes_stale` redefined here
+tests/session/test_generate_bin.py:1192:5: F811 Redefinition of unused `test_check_detects_drift` from line 344: `test_check_detects_drift` redefined here
+tests/session/test_generate_bin.py:1211:5: F811 Redefinition of unused `test_install_user_bin_writes_and_is_idempotent` from line 363: `test_install_user_bin_writes_and_is_idempotent` redefined here
+tests/session/test_generate_bin.py:1241:5: F811 Redefinition of unused `test_install_user_bin_never_touches_foreign_files` from line 393: `test_install_user_bin_never_touches_foreign_files` redefined here
+tests/session/test_generate_bin.py:1286:5: F811 Redefinition of unused `test_resolve_bin_name_prefixes_builtin_collisions` from line 438: `test_resolve_bin_name_prefixes_builtin_collisions` redefined here
+tests/session/test_generate_bin.py:1307:5: F811 Redefinition of unused `test_builtin_collision_on_real_tree` from line 459: `test_builtin_collision_on_real_tree` redefined here
+tests/session/test_generate_bin.py:1328:5: F811 Redefinition of unused `test_cli_check_exit_code` from line 480: `test_cli_check_exit_code` redefined here
+tests/session/test_generate_bin.py:1367:5: F811 Redefinition of unused `test_install_user_bin_warns_when_dir_is_not_on_path` from line 519: `test_install_user_bin_warns_when_dir_is_not_on_path` redefined here
+tests/session/test_generate_bin.py:1390:5: F811 Redefinition of unused `test_install_user_bin_stays_quiet_when_dir_is_on_path` from line 542: `test_install_user_bin_stays_quiet_when_dir_is_on_path` redefined here
+tests/session/test_generate_bin.py:1411:5: F811 Redefinition of unused `test_library_modules_are_silent_when_run_as_scripts` from line 563: `test_library_modules_are_silent_when_run_as_scripts` redefined here
+tests/session/test_generate_bin.py:1474:5: F811 Redefinition of unused `test_repo_family_reaches_bin` from line 626: `test_repo_family_reaches_bin` redefined here
+tests/session/test_generate_bin.py:1498:5: F811 Redefinition of unused `test_shell_library_is_not_an_entrypoint` from line 650: `test_shell_library_is_not_an_entrypoint` redefined here
+tests/session/test_generate_bin.py:1526:5: F811 Redefinition of unused `test_mandatory_flow_tools_reach_bin` from line 678: `test_mandatory_flow_tools_reach_bin` redefined here
+tests/session/test_generate_bin.py:1550:5: F811 Redefinition of unused `test_check_declares_its_universe` from line 702: `test_check_declares_its_universe` redefined here
+tests/session/test_generate_bin.py:1564:5: F811 Redefinition of unused `test_library_shell_stays_out_of_the_real_plan` from line 716: `test_library_shell_stays_out_of_the_real_plan` redefined here
+tests/session/test_generate_bin.py:1586:5: F811 Redefinition of unused `test_package_context_is_detected_and_narrow` from line 738: `test_package_context_is_detected_and_narrow` redefined here
+tests/session/test_generate_bin.py:1647:5: F811 Redefinition of unused `test_dotted_name_refuses_outside_src` from line 799: `test_dotted_name_refuses_outside_src` redefined here
+tests/session/test_generate_bin.py:1666:5: F811 Redefinition of unused `test_relative_import_entrypoints_reach_bin_on_real_tree` from line 818: `test_relative_import_entrypoints_reach_bin_on_real_tree` redefined here
+tests/session/test_generate_bin.py:1709:5: F811 Redefinition of unused `test_exercise_separates_wiring_from_policy` from line 861: `test_exercise_separates_wiring_from_policy` redefined here
+tests/session/test_generate_bin.py:1765:5: F811 Redefinition of unused `test_exercise_on_real_tree_is_green` from line 917: `test_exercise_on_real_tree_is_green` redefined here
+tests/session/test_generate_bin.py:1799:5: F811 Redefinition of unused `test_typescript_discriminator_is_shebang_and_parent` from line 951: `test_typescript_discriminator_is_shebang_and_parent` redefined here
+tests/session/test_generate_bin.py:1833:5: F811 Redefinition of unused `test_typescript_names_resolve_stem_collisions` from line 985: `test_typescript_names_resolve_stem_collisions` redefined here
+tests/session/test_generate_bin.py:1864:5: F811 Redefinition of unused `test_typescript_wrapper_degrades_without_bun` from line 1016: `test_typescript_wrapper_degrades_without_bun` redefined here
+tests/session/test_generate_bin.py:1907:5: F811 Redefinition of unused `test_typescript_entrypoints_reach_bin_on_real_tree` from line 1059: `test_typescript_entrypoints_reach_bin_on_real_tree` redefined here
+tests/session/test_generate_bin.py:1938:5: F811 Redefinition of unused `test_wrapper_exports_root_across_exec` from line 1090: `test_wrapper_exports_root_across_exec` redefined here
+tests/session/test_job_runs.py:81:9: F841 Local variable `segundo` is assigned to but never used
+tests/session/test_session_restart.py:140:8: F401 [*] `os` imported but unused
+tests/store/test_agent_sessions.py:90:8: F401 [*] `sqlite3` imported but unused
+tests/task/test_layer_axis.py:93:16: F401 [*] `sqlite3` imported but unused
+tests/task/test_task_source_citas.py:36:8: F401 [*] `os` imported but unused
+tests/typescript/test_emit_declarations.py:28:8: F401 [*] `os` imported but unused
+tests/typescript/test_emit_declarations.py:29:8: F401 [*] `subprocess` imported but unused
+tests/verify/test_annulment_control.py:13:8: F401 [*] `os` imported but unused
+tests/verify/test_bun_linker.py:3:21: F401 [*] `pathlib.Path` imported but unused
+tests/verify/test_doc_citations.py:22:8: F401 [*] `shutil` imported but unused
+tests/verify/test_hallazgo_sucesor.py:75:26: F821 Undefined name `pathlib`
+tests/verify/test_pathspec_commit.py:12:8: F401 [*] `os` imported but unused
+tests/verify/test_pool_pipeline.py:19:8: F401 [*] `shutil` imported but unused
+tests/verify/test_tree_fingerprint.py:20:8: F401 [*] `sys` imported but unused
+tests/verify/test_tsc_reflect.py:147:15: F841 Local variable `root_mem` is assigned to but never used
+tests/verify/test_tsc_schedule.py:15:8: F401 [*] `random` imported but unused
+tests/verify/test_tsc_sweep_breadth.py:17:8: F401 [*] `json` imported but unused
+Found 89 errors.
+[*] 55 fixable with the `--fix` option (6 hidden fixes can be enabled with the `--unsafe-fixes` option).

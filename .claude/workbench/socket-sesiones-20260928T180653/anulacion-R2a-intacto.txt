@@ -1,0 +1,26 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+108 |   test('si nada cambia devuelve el mismo estado', () => {
+109 |     const { deps } = harness()
+110 |     const initial = { mainLoopModel: 'claude-opus-5', mainLoopModelForSession: null, fastMode: true }
+111 |     const app = store(initial)
+112 |     applyRefusalFallbackRestore(restore(), app.setAppState, deps)
+113 |     expect(app.get()).toBe(initial)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  mainLoopModel: "claude-opus-5",
+  mainLoopModelForSession: null,
+  fastMode: true,
+}
+Received: serializes to the same string
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:113:23)
+(fail) applyRefusalFallbackRestore (wt) > si nada cambia devuelve el mismo estado [0.93ms]
+
+ 10 pass
+ 1 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [68.00ms]

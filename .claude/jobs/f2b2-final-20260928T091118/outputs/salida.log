@@ -1,0 +1,106 @@
+== 1: sin abrir el sobre cloudcode
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+(fail) Antigravity -> OpenAI maps generation config, system instructions, contents and tools [3.35ms]
+(fail) Antigravity -> OpenAI extracts string system instructions and text-only messages [2.19ms]
+(fail) Antigravity -> OpenAI keeps co-located function call and text but strips the orphan function response (#6026) [7.68ms]
+(fail) Antigravity -> OpenAI drops empty thoughtSignature text instead of emitting empty content [0.29ms]
+(fail) Antigravity -> OpenAI lowers schema types recursively [0.19ms]
+(fail) Antigravity -> OpenAI strips enumDescriptions from tool schema (top-level + nested) [0.15ms]
+(fail) Antigravity -> OpenAI preserves the required array on Draft 2020-12 tool schemas [0.16ms]
+(fail) Antigravity -> OpenAI drops required entries that no longer exist in properties [0.09ms]
+(fail) Antigravity -> OpenAI preserves falsy primitive results in function responses (false, 0, empty string, null) [0.24ms]
+(fail) Antigravity -> OpenAI preserves custom response objects without result key [0.11ms]
+(fail) antigravity->openai: no override falls back to the pre-existing thinkingConfig-derived tiers [0.23ms]
+(fail) antigravity->openai: an unrecognized override value is ignored (falls back to derived behavior) [0.19ms]
+(fail) /v1/antigravity > translates the cloudcode envelope and sends it through /v1/messages [8.44ms]
+ 29 pass
+ 13 fail
+== 2: el esfuerzo del alias ignorado
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+(fail) antigravity->openai: an explicit reasoningEffortOverride wins over the request's own thinkingConfig [2.28ms]
+(fail) antigravity->openai: an explicit 'none' override suppresses reasoning_effort even under a thinking request [0.31ms]
+(fail) antigravity->openai: reasoning-only override applies without a model override present [0.31ms]
+ 39 pass
+ 3 fail
+== 3: sin el tramo bajo del presupuesto
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+(fail) antigravity->openai: no override falls back to the pre-existing thinkingConfig-derived tiers [1.58ms]
+(fail) antigravity->openai: an unrecognized override value is ignored (falls back to derived behavior) [0.21ms]
+ 40 pass
+ 2 fail
+== 4: sin retirar resultados huérfanos
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+(fail) Antigravity -> OpenAI strips a lone function response with no matching function call (#6026) [2.82ms]
+(fail) Antigravity -> OpenAI keeps co-located function call and text but strips the orphan function response (#6026) [0.97ms]
+ 40 pass
+ 2 fail
+== 5: required sin conciliar
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+(fail) Antigravity -> OpenAI drops required entries that no longer exist in properties [3.06ms]
+ 41 pass
+ 1 fail
+== 6: las claves de Draft 2020-12 sin retirar
+   (provider/src/proxy/translators/requestAntigravityToOpenAI.ts)
+(fail) Antigravity -> OpenAI preserves the required array on Draft 2020-12 tool schemas [10.37ms]
+ 41 pass
+ 1 fail
+== 7: la respuesta sin id toma cualquier llamada
+   (provider/src/proxy/translators/geminiToolCallIds.ts)
+(fail) an id-less response takes the oldest generated call, not the one the client named [3.24ms]
+ 41 pass
+ 1 fail
+== 7b: la ronda nunca se cierra
+   (provider/src/proxy/translators/geminiToolCallIds.ts)
+(fail) a call left unanswered in an earlier round does not take a later response [0.31ms]
+ 41 pass
+ 1 fail
+== 8: las llamadas acumuladas nunca salen
+   (provider/src/proxy/translators/responseOpenAIToAntigravity.ts)
+(fail) OpenAI -> Antigravity: tool call arguments accumulate and emit once on finish [11.68ms]
+ 41 pass
+ 1 fail
+== 9: sin stream, la respuesta OpenAI tal cual
+   (provider/src/proxy/antigravity.ts)
+(fail) /v1/antigravity > without stream it answers one cloudcode response with candidates and usage [1.43ms]
+ 41 pass
+ 1 fail
+== 10: con stream, los trozos OpenAI tal cual
+   (provider/src/proxy/antigravity.ts)
+(fail) /v1/antigravity > with stream it re-emits the chunks as cloudcode SSE events [12.28ms]
+ 41 pass
+ 1 fail
+== 11: la ruta sin montar
+   (provider/src/proxy/server.ts)
+(fail) /v1/antigravity > translates the cloudcode envelope and sends it through /v1/messages [1.78ms]
+(fail) /v1/antigravity > without stream it answers one cloudcode response with candidates and usage [0.43ms]
+(fail) /v1/antigravity > with stream it re-emits the chunks as cloudcode SSE events [0.38ms]
+(fail) /v1/antigravity > an upstream error keeps its status [0.29ms]
+(fail) /v1/antigravity > a body without model is refused before any upstream call [0.26ms]
+ 37 pass
+ 5 fail
+== 12: sin el sinónimo extra
+   (agent/effort.ts)
+(fail) normalizeAliasEntry keeps canonical max and maps extra onto xhigh [2.58ms]
+ 41 pass
+ 1 fail
+== restaurado
+ M src/packages/agent/effort.ts
+ M src/packages/provider/src/proxy/server.ts
+ M src/packages/provider/src/proxy/translators/requestMessagesToOpenAI.ts
+?? src/packages/provider/src/proxy/antigravity.ts
+?? src/packages/provider/src/proxy/translators/geminiToolCallIds.ts
+?? src/packages/provider/src/proxy/translators/requestAntigravityToOpenAI.ts
+?? src/packages/provider/src/proxy/translators/responseOpenAIToAntigravity.ts
+ 42 pass
+ 0 fail
+ 0 fail
+ 3178 expect() calls
+Ran 2078 tests across 67 files. [3.55s]
+BUILD=0
+__tests__/proxyTranslatorsRequestAntigravityToOpenAI.test.ts(308,23): error TS18048: 'result.tools' is possibly 'undefined'.
+__tests__/proxyTranslatorsRequestAntigravityToOpenAI.test.ts(364,19): error TS18048: 'result.tools' is possibly 'undefined'.
+__tests__/proxyTranslatorsRequestAntigravityToOpenAI.test.ts(372,16): error TS18046: 'params.properties' is of type 'unknown'.
+__tests__/proxyTranslatorsRequestAntigravityToOpenAI.test.ts(403,19): error TS18048: 'result.tools' is possibly 'undefined'.
+TEST=2
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+__BG_EXIT__=0

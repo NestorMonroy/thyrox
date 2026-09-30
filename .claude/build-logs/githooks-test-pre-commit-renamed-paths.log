@@ -1,0 +1,5 @@
+test-pre-commit-renamed-paths:
+  ok    el índice registra el cambio como renombre
+  ok    un commit sólo de renombres invoca el gate de frontera
+  ok    sin rutas de código staged, no se invoca
+test-pre-commit-renamed-paths: 3 aserciones — 3 ok, 0 falla(s)

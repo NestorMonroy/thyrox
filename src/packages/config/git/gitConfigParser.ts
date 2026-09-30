@@ -1,26 +1,19 @@
 /**
- * Puerto de `ccnmt: packages/config/git/gitConfigParser.ts` (283 líneas
- * fuente). No es uno de los 15 del alcance — es la dependencia de hoja que
- * `gitFilesystem.ts` necesita: sólo importa `readFile` de `fs/promises` y
- * `join` de `path` (ambos built-ins de Node), así que se porta en el sitio
- * en vez de bloquearse.
+ * Lightweight parser for .git/config files.
  *
- * Parser ligero de archivos `.git/config`. Verificado contra `config.c` de
- * git:
- *   - Nombres de sección: sin distinguir mayúsculas, alfanumérico + guion.
- *   - Nombres de subsección (entre comillas): distinguen mayúsculas, escapes
- *     de backslash (`\\` y `\"`).
- *   - Nombres de clave: sin distinguir mayúsculas, alfanumérico + guion.
- *   - Valores: comillas opcionales, comentarios en línea (`#` o `;`), escapes
- *     de backslash.
+ * Verified against git's config.c:
+ *   - Section names: case-insensitive, alphanumeric + hyphen
+ *   - Subsection names (quoted): case-sensitive, backslash escapes (\\ and \")
+ *   - Key names: case-insensitive, alphanumeric + hyphen
+ *   - Values: optional quoting, inline comments (# or ;), backslash escapes
  */
 
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
 /**
- * Parsea un único valor de `.git/config`.
- * Encuentra la primera clave que coincide bajo la sección/subsección dada.
+ * Parse a single value from .git/config.
+ * Finds the first matching key under the given section/subsection.
  */
 export async function parseGitConfigValue(
   gitDir: string,
@@ -37,8 +30,8 @@ export async function parseGitConfigValue(
 }
 
 /**
- * Parsea un valor de config desde una cadena en memoria.
- * Exportada para testing.
+ * Parse a config value from an in-memory config string.
+ * Exported for testing.
  */
 export function parseConfigString(
   config: string,
@@ -54,12 +47,12 @@ export function parseConfigString(
   for (const line of lines) {
     const trimmed = line.trim()
 
-    // Salta líneas vacías y líneas de comentario puro.
+    // Skip empty lines and comment-only lines
     if (trimmed.length === 0 || trimmed[0] === '#' || trimmed[0] === ';') {
       continue
     }
 
-    // Cabecera de sección.
+    // Section header
     if (trimmed[0] === '[') {
       inSection = matchesSectionHeader(trimmed, sectionLower, subsection)
       continue
@@ -69,7 +62,7 @@ export function parseConfigString(
       continue
     }
 
-    // Línea clave-valor: encuentra el nombre de la clave.
+    // Key-value line: find the key name
     const parsed = parseKeyValue(trimmed)
     if (parsed && parsed.key.toLowerCase() === keyLower) {
       return parsed.value
@@ -80,11 +73,10 @@ export function parseConfigString(
 }
 
 /**
- * Parsea una línea `clave = valor`. Devuelve `null` si la línea no contiene
- * una clave válida.
+ * Parse a key = value line. Returns null if the line doesn't contain a valid key.
  */
 function parseKeyValue(line: string): { key: string; value: string } | null {
-  // Lee la clave: alfanumérico + guion, empezando por alfa.
+  // Read key: alphanumeric + hyphen, starting with alpha
   let i = 0
   while (i < line.length && isKeyChar(line[i]!)) {
     i++
@@ -94,19 +86,19 @@ function parseKeyValue(line: string): { key: string; value: string } | null {
   }
   const key = line.slice(0, i)
 
-  // Salta espacio en blanco.
+  // Skip whitespace
   while (i < line.length && (line[i] === ' ' || line[i] === '\t')) {
     i++
   }
 
-  // Debe tener '='.
+  // Must have '='
   if (i >= line.length || line[i] !== '=') {
-    // Clave booleana sin valor — no relevante para nuestro uso.
+    // Boolean key with no value — not relevant for our use cases
     return null
   }
-  i++ // salta '='
+  i++ // skip '='
 
-  // Salta espacio en blanco tras '='.
+  // Skip whitespace after '='
   while (i < line.length && (line[i] === ' ' || line[i] === '\t')) {
     i++
   }
@@ -116,16 +108,16 @@ function parseKeyValue(line: string): { key: string; value: string } | null {
 }
 
 /**
- * Parsea un valor de config empezando en la posición i.
- * Maneja cadenas entre comillas, secuencias de escape y comentarios en línea.
+ * Parse a config value starting at position i.
+ * Handles quoted strings, escape sequences, and inline comments.
  */
 function parseValue(line: string, start: number): string {
-  // El resultado se construye junto a un arreglo paralelo `protectedFlags`
-  // para que el recorte de espacio final SÓLO quite espacio en blanco NO
-  // entrecomillado. Sin este rastreo paralelo, un valor como `"Alice   "`
-  // perdía sus espacios finales en silencio porque al final de línea
-  // `inQuote` ya es `false` (la comilla ya cerró) — lo que aplicaba el
-  // recorte a *todo*, incluidos los caracteres que estaban entre comillas.
+  // Build the result alongside a parallel `protected` flag array so that
+  // trailing-whitespace trim only removes UNQUOTED trailing whitespace.
+  // Without this parallel tracking, a value like `"Alice   "` had its
+  // trailing spaces silently stripped because at end-of-line `inQuote`
+  // is false (quote already closed) — which made the trim apply to
+  // *everything*, including chars that were inside quotes.
   const chars: string[] = []
   const protectedFlags: boolean[] = []
   let inQuote = false
@@ -139,7 +131,7 @@ function parseValue(line: string, start: number): string {
   while (i < line.length) {
     const ch = line[i]!
 
-    // Comentarios en línea fuera de comillas terminan el valor.
+    // Inline comments outside quotes end the value
     if (!inQuote && (ch === '#' || ch === ';')) {
       break
     }
@@ -153,7 +145,7 @@ function parseValue(line: string, start: number): string {
     if (ch === '\\' && i + 1 < line.length) {
       const next = line[i + 1]!
       if (inQuote) {
-        // Dentro de comillas: reconoce secuencias de escape.
+        // Inside quotes: recognize escape sequences
         switch (next) {
           case 'n':
             append('\n', true)
@@ -171,31 +163,29 @@ function parseValue(line: string, start: number): string {
             append('\\', true)
             break
           default:
-            // Git descarta el backslash en silencio para escapes desconocidos.
+            // Git silently drops the backslash for unknown escapes
             append(next, true)
             break
         }
         i += 2
         continue
       }
-      // Fuera de comillas: backslash a fin de línea = continuación (no se
-      // maneja multilínea porque se parte por `\n`, pero se maneja `\\` y
-      // otros).
+      // Outside quotes: backslash at end of line = continuation (we don't
+      // handle multi-line since we split on \n, but handle \\ and others)
       if (next === '\\') {
         append('\\', false)
         i += 2
         continue
       }
-      // Fallthrough — trata el backslash literal fuera de comillas.
+      // Fallthrough — treat backslash literally outside quotes
     }
 
     append(ch, inQuote)
     i++
   }
 
-  // Recorta sólo el espacio en blanco final NO entrecomillado. El espacio en
-  // blanco entrecomillado se preserva — coincide con el comportamiento de
-  // `git config --get`.
+  // Trim only trailing UNQUOTED whitespace. Quoted whitespace is preserved
+  // — matches `git config --get` behavior.
   let end = chars.length
   while (
     end > 0 &&
@@ -208,19 +198,18 @@ function parseValue(line: string, start: number): string {
 }
 
 /**
- * Comprueba si una línea de config como `[remote "origin"]` coincide con la
- * sección/subsección dada. La sección no distingue mayúsculas; la
- * subsección sí.
+ * Check if a config line like `[remote "origin"]` matches the given section/subsection.
+ * Section matching is case-insensitive; subsection matching is case-sensitive.
  */
 function matchesSectionHeader(
   line: string,
   sectionLower: string,
   subsection: string | null,
 ): boolean {
-  // La línea empieza con '['.
+  // line starts with '['
   let i = 1
 
-  // Lee el nombre de sección.
+  // Read section name
   while (
     i < line.length &&
     line[i] !== ']' &&
@@ -237,22 +226,22 @@ function matchesSectionHeader(
   }
 
   if (subsection === null) {
-    // Sección simple: debe terminar con ']'.
+    // Simple section: must end with ']'
     return i < line.length && line[i] === ']'
   }
 
-  // Salta espacio antes de la comilla de subsección.
+  // Skip whitespace before subsection quote
   while (i < line.length && (line[i] === ' ' || line[i] === '\t')) {
     i++
   }
 
-  // Debe tener comilla de apertura.
+  // Must have opening quote
   if (i >= line.length || line[i] !== '"') {
     return false
   }
-  i++ // salta la comilla de apertura
+  i++ // skip opening quote
 
-  // Lee la subsección — distingue mayúsculas, maneja escapes `\\` y `\"`.
+  // Read subsection — case-sensitive, handle \\ and \" escapes
   let foundSubsection = ''
   while (i < line.length && line[i] !== '"') {
     if (line[i] === '\\' && i + 1 < line.length) {
@@ -262,7 +251,7 @@ function matchesSectionHeader(
         i += 2
         continue
       }
-      // Git descarta el backslash para otros escapes en subsecciones.
+      // Git drops the backslash for other escapes in subsections
       foundSubsection += next
       i += 2
       continue
@@ -271,11 +260,11 @@ function matchesSectionHeader(
     i++
   }
 
-  // Debe tener comilla de cierre seguida de ']'.
+  // Must have closing quote followed by ']'
   if (i >= line.length || line[i] !== '"') {
     return false
   }
-  i++ // salta la comilla de cierre
+  i++ // skip closing quote
 
   if (i >= line.length || line[i] !== ']') {
     return false

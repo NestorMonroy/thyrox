@@ -16,6 +16,7 @@ import { switchModel } from '../loop/sessions/modelSwitch.ts'
 import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import type { AssistantTurn } from '../loop/types.ts'
 
@@ -90,8 +91,8 @@ describe('los eventos de hook que el harness emite (T-016)', () => {
     expect(pre.leer().length).toBeGreaterThan(0)
     const cargas = post.leer()
     expect(cargas.length).toBeGreaterThan(0)
-    expect(cargas[0].trigger).toBe('micro')
-    expect(cargas[0].cleared).toBe(1)
+    expect(cargas[0]!.trigger).toBe('micro')
+    expect(cargas[0]!.cleared).toBe(1)
   })
 
   test('sin compactacion NO disparan: un hook que salta siempre no informa de nada', async () => {
@@ -121,8 +122,8 @@ describe('los eventos de hook que el harness emite (T-016)', () => {
     expect(inicio.leer().length).toBe(1)
     const cierre = fin.leer()
     expect(cierre.length).toBe(1)
-    expect(typeof cierre[0].transcript_path).toBe('string')
-    expect(cierre[0].parent_session_id).toBe('padre')
+    expect(typeof cierre[0]!.transcript_path).toBe('string')
+    expect(cierre[0]!.parent_session_id).toBe('padre')
   })
 
   test('un PreCompact que bloquea CANCELA la compactacion', async () => {
@@ -144,7 +145,7 @@ describe('los eventos de hook que el harness emite (T-016)', () => {
       hooks: { PreCompact: [{ hooks: [{ type: 'command', command: `bash ${bloqueo}` }] }] },
     })
     // el resultado del primer Bash sigue entero en la tercera peticion
-    const resultados = p.requests[2].messages.flatMap((m) => m.content)
+    const resultados = p.requests[2]!.messages.flatMap((m) => m.content)
       .filter((b) => b.type === 'tool_result').map((b) => (b as { content: string }).content)
     expect(resultados.some((c) => c.includes('uno'))).toBe(true)
   })
@@ -167,10 +168,10 @@ describe('PreModelSwitch y PostModelSwitch (T-016)', () => {
     })
     expect(r.applied).toBe(true)
     const carga = pre.leer()[0]
-    expect(carga.from_model).toBe('claude-opus-5')
-    expect(carga.to_model).toBe('claude-fable-5-1')
-    expect(carga.prompt_cache_warm).toBe(true)
-    expect(carga.context_tokens as number).toBeGreaterThan(0)
+    expect(carga!.from_model).toBe('claude-opus-5')
+    expect(carga!.to_model).toBe('claude-fable-5-1')
+    expect(carga!.prompt_cache_warm).toBe(true)
+    expect(carga!.context_tokens as number).toBeGreaterThan(0)
     expect(post.leer().length).toBe(1)
   })
 
@@ -395,9 +396,11 @@ describe('T-017 — el tablero como emisor (TaskCreated · TaskCompleted)', () =
    * acoplarla a ella la ataría a un harness concreto. El bucle ya sabe el
    * nombre de la herramienta y su resultado, que es todo lo que hace falta.
    */
-  const conTablero = (d: string) => ({
-    ...base(d), tools: [...CORE_TOOLS, ...taskTools({ dbPath: join(d, 'tablero.sqlite3') })],
-  })
+  const conTablero = (d: string) => {
+    const dbPath = join(d, 'tablero.sqlite3')
+    createMigratedTaskDb(dbPath)
+    return { ...base(d), tools: [...CORE_TOOLS, ...taskTools({ dbPath })] }
+  }
 
   test('TaskCreated dispara al crear, y lleva el id que el tablero asigno', async () => {
     const d = dir()
@@ -419,6 +422,7 @@ describe('T-017 — el tablero como emisor (TaskCreated · TaskCompleted)', () =
     const s = espia(d, 'ev')
     const cfg = { hooks: [{ type: 'command' as const, command: s.command }] }
     const dbPath = join(d, 'tablero.sqlite3')
+    createMigratedTaskDb(dbPath)
     const herramientas = [...CORE_TOOLS, ...taskTools({ dbPath })]
     // crear → in_progress → completed: tres llamadas, UN evento
     const p = new RecordedProvider([
@@ -428,7 +432,7 @@ describe('T-017 — el tablero como emisor (TaskCreated · TaskCompleted)', () =
     const r1 = await runLoop({ ...base(d), tools: herramientas, prompt: 'x', provider: p })
     expect(r1.stop).toBe('end_turn')
     const id = JSON.parse(
-      (p.requests[1].messages.at(-1)?.content as { content: string }[])[0].content,
+      (p.requests[1]!.messages.at(-1)?.content as { content: string }[])[0]!.content,
     ).task_id as string
 
     const p2 = new RecordedProvider([

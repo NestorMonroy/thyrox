@@ -1,18 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de la LÓGICA de
- * `ccnmt: packages/tool-registry/src/tools/ReadMcpResourceTool/
- * ReadMcpResourceTool.ts` (TASK #232, porte de `tool-registry`).
- *
- * `isOutputLineTruncated` viene del sustituto local
- * (`internal/pendingCrossPackageDeps.ts`). `getBinaryBlobSavedMessage`/
- * `persistBinaryContent` (de `@thyrox/mcp-runtime/mcpOutputStorage.js`) y
- * `ensureConnectedClient` (de `@thyrox/mcp-runtime/clientRuntime.js`) son
- * 2 de los 13 módulos de `mcp-runtime` aún bloqueados por su propio lado
- * (ver el docstring de `McpAuthTool.ts`); el import se deja apuntando al
- * sitio real. `renderToolResultMessage` (de `./UI.js`) está BLOQUEADO ahí
- * (ver `ReadMcpResourceTool/UI.ts`), pero este archivo sólo importa la
- * referencia.
- */
 import {
   type ReadResourceResult,
   ReadResourceResultSchema,
@@ -26,7 +11,7 @@ import {
   persistBinaryContent,
 } from '@thyrox/mcp-runtime/mcpOutputStorage.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
-import { isOutputLineTruncated } from '../../internal/pendingCrossPackageDeps.js'
+import { isOutputLineTruncated } from '@thyrox/output/terminal.js'
 import { DESCRIPTION, PROMPT } from './prompt.js'
 import {
   renderToolResultMessage,
@@ -115,10 +100,9 @@ export const ReadMcpResourceTool = buildTool({
       ReadResourceResultSchema,
     )) as ReadResourceResult
 
-    // Intercepta cualquier campo blob: decodifica, escribe los bytes
-    // crudos a disco con una extensión derivada del mime, y lo reemplaza
-    // con una ruta. Si no, el base64 se volcaría stringificado
-    // directamente en el contexto.
+    // Intercept any blob fields: decode, write raw bytes to disk with a
+    // mime-derived extension, and replace with a path. Otherwise the base64
+    // would be stringified straight into the context.
     const contents = await Promise.all(
       result.contents.map(async (c, i) => {
         if ('text' in c) {

@@ -1,0 +1,24 @@
+src/packages/@ant/ink/src/components/Box.tsx(95,7): error TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.
+  Type '(event: FocusEvent) => void' is not assignable to type '(event: FocusEvent<Element, Element>) => void'.
+    Types of parameters 'event' and 'event' are incompatible.
+      Type 'FocusEvent<Element, Element>' is missing the following properties from type 'FocusEvent': _target, _currentTarget, _eventPhase, _propagationStopped, and 10 more.
+src/packages/@ant/ink/src/components/Box.tsx(96,7): error TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.
+  Type '(event: FocusEvent) => void' is not assignable to type '(event: FocusEvent<Element, Element>) => void'.
+    Types of parameters 'event' and 'event' are incompatible.
+      Type 'FocusEvent<Element, Element>' is missing the following properties from type 'FocusEvent': _target, _currentTarget, _eventPhase, _propagationStopped, and 10 more.
+src/packages/@ant/ink/src/components/Box.tsx(97,7): error TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.
+  Type '(event: FocusEvent) => void' is not assignable to type '(event: FocusEvent<Element, Element>) => void'.
+    Types of parameters 'event' and 'event' are incompatible.
+      Type 'FocusEvent<Element, Element>' is missing the following properties from type 'FocusEvent': _target, _currentTarget, _eventPhase, _propagationStopped, and 10 more.
+src/packages/@ant/ink/src/components/Box.tsx(98,7): error TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.
+  Type '(event: FocusEvent) => void' is not assignable to type '(event: FocusEvent<Element, Element>) => void'.
+    Types of parameters 'event' and 'event' are incompatible.
+      Type 'FocusEvent<Element, Element>' is missing the following properties from type 'FocusEvent': _target, _currentTarget, _eventPhase, _propagationStopped, and 10 more.
+src/packages/@ant/ink/src/components/Box.tsx(101,7): error TS2322: Type '((event: KeyboardEvent) => void) | undefined' is not assignable to type '((event: KeyboardEvent<Element>) => void) | undefined'.
+  Type '(event: KeyboardEvent) => void' is not assignable to type '(event: KeyboardEvent<Element>) => void'.
+    Types of parameters 'event' and 'event' are incompatible.
+      Type 'KeyboardEvent<Element>' is missing the following properties from type 'KeyboardEvent': ctrl, shift, meta, superKey, and 15 more.
+src/packages/@ant/ink/src/components/Box.tsx(102,7): error TS2322: Type '((event: KeyboardEvent) => void) | undefined' is not assignable to type '((event: KeyboardEvent<Element>) => void) | undefined'.
+  Type '(event: KeyboardEvent) => void' is not assignable to type '(event: KeyboardEvent<Element>) => void'.
+    Types of parameters 'event' and 'event' are incompatible.
+      Type 'KeyboardEvent<Element>' is missing the following properties from type 'KeyboardEvent': ctrl, shift, meta, superKey, and 15 more.

@@ -1,23 +1,17 @@
 /**
- * Puerto de `ccnmt: packages/output/src/formatters/brief-timestamp.ts`
- * (verbatim — sin imports en la fuente).
- */
-
-/**
- * Formatea un timestamp ISO para la linea de etiqueta del mensaje
- * breve/chat.
+ * Format an ISO timestamp for the brief/chat message label line.
  *
- * La visualizacion escala con la antiguedad (como una app de mensajeria):
- *   - mismo dia:      "1:30 PM" o "13:30" (depende del locale)
- *   - hasta 6 dias:   "Sunday, 4:15 PM" (depende del locale)
- *   - mas antiguo:    "Sunday, Feb 20, 4:30 PM" (depende del locale)
+ * Display scales with age (like a messaging app):
+ *   - same day:      "1:30 PM" or "13:30" (locale-dependent)
+ *   - within 6 days: "Sunday, 4:15 PM" (locale-dependent)
+ *   - older:         "Sunday, Feb 20, 4:30 PM" (locale-dependent)
  *
- * Respeta las variables de entorno POSIX (LC_ALL > LC_TIME > LANG) para
- * el formato de hora (12h/24h), nombres de dia, nombres de mes y
- * estructura general. `toLocaleString(undefined)` de Bun/V8 las ignora en
- * macOS, asi que aqui se convierten a etiquetas BCP 47 a mano.
+ * Respects POSIX locale env vars (LC_ALL > LC_TIME > LANG) for time format
+ * (12h/24h), weekday names, month names, and overall structure.
+ * Bun/V8's `toLocaleString(undefined)` ignores these on macOS, so we
+ * convert them to BCP 47 tags ourselves.
  *
- * `now` es inyectable para los tests.
+ * `now` is injectable for tests.
  */
 export function formatBriefTimestamp(
   isoString: string,
@@ -57,9 +51,9 @@ export function formatBriefTimestamp(
 }
 
 /**
- * Deriva una etiqueta de locale BCP 47 desde variables de entorno POSIX.
- * LC_ALL > LC_TIME > LANG, cae a undefined (default del sistema).
- * Convierte formato POSIX (en_GB.UTF-8) a BCP 47 (en-GB).
+ * Derive a BCP 47 locale tag from POSIX env vars.
+ * LC_ALL > LC_TIME > LANG, falls back to undefined (system default).
+ * Converts POSIX format (en_GB.UTF-8) to BCP 47 (en-GB).
  */
 function getLocale(): string | undefined {
   const raw =
@@ -67,13 +61,13 @@ function getLocale(): string | undefined {
   if (!raw || raw === 'C' || raw === 'POSIX') {
     return undefined
   }
-  // Retira codeset (.UTF-8) y modificador (@euro), reemplaza _ por -
+  // Strip codeset (.UTF-8) and modifier (@euro), replace _ with -
   const base = raw.split('.')[0]!.split('@')[0]!
   if (!base) {
     return undefined
   }
   const tag = base.replaceAll('_', '-')
-  // Valida construyendo un Intl locale — etiquetas invalidas lanzan
+  // Validate by trying to construct an Intl locale — invalid tags throw
   try {
     new Intl.DateTimeFormat(tag)
     return tag

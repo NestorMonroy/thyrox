@@ -1,0 +1,3 @@
+.claude/workbench/build-runtime-assets-20260929T111144/verify.sh
+src/typescript/buildJavascript.ts
+tests/typescript/buildJavascript.test.ts

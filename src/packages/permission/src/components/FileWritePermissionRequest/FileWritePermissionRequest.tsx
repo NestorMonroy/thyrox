@@ -56,14 +56,9 @@ export function FileWritePermissionRequest(
   const parsed = parseInput(props.toolUseConfirm.input)
   const { file_path, content } = parsed
 
-  // Copia de `ccnmt: packages/permission/src/components/
-  // FileWritePermissionRequest/FileWritePermissionRequest.tsx` con los
-  // comentarios traducidos; el cuerpo es el de la fuente.
-  //
-  // Una sola lectura gobierna a la vez el texto de la UI ("Create" contra
-  // "Overwrite") y el diff que muestra FileWriteToolDiff. Así se evita un stat
-  // redundante de existsSync, que bloquearía el commit del primer montaje sobre
-  // un filesystem lento o en red.
+  // Single read drives both UI text ("Create" vs "Overwrite") and the diff
+  // shown by FileWriteToolDiff — avoids a redundant existsSync stat that would
+  // block first-mount commit on slow/networked filesystems.
   const { fileExists, oldContent } = useMemo(() => {
     try {
       return { fileExists: true, oldContent: readFileSync(file_path) }

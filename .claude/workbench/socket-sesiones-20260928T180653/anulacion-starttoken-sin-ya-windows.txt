@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+192 |     expect(whichInSanitizedPath('ps', 'rel', () => '/x/ps')).toBeNull()
+193 |     expect(whichInSanitizedPath('ps', '/bin:/usr/bin', (_, path) => (path === '/bin:/usr/bin' ? '/bin/ps' : null))).toBe('/bin/ps')
+194 |   })
+195 | 
+196 |   test('la búsqueda de una variable ignora mayúsculas sólo en Windows', () => {
+197 |     expect(envValue({ Path: '/x' }, 'PATH', 'linux')).toBeUndefined()
+                                                            ^
+error: expect(received).toBeUndefined()
+
+Received: "/x"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:197:55)
+(fail) absolutePathEntries (RGr), whichInSanitizedPath (lxe) y envValue (ya) > la búsqueda de una variable ignora mayúsculas sólo en Windows [0.39ms]
+
+ 21 pass
+ 1 fail
+ 53 expect() calls
+Ran 22 tests across 1 file. [105.00ms]

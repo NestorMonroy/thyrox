@@ -50,7 +50,9 @@ fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 STORE_CLI="$RAIZ/src/agents/agent_store.py"
+# thyrox-rename: keep — directorio del cliente anfitrión
 CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+# thyrox-rename: keep — directorio del cliente anfitrión
 TASKS_ROOT="${CLAUDE_TASKS_ROOT:-$CLAUDE_HOME/tasks}"
 
 # CLAUDE_DIR NO se fuerza por defecto: `agent_store.py resolve_store_dir()`
@@ -72,6 +74,7 @@ SALIDA="$DOCS_ROOT/source/gestion/pm/reportes/tablero-de-tareas.rst"
 # `:fuente:` relativa a `consumer_root()`, que asciende desde el cwd — y
 # desde thyrox aterriza en el propio proveedor. Se declara explicitamente.
 export THYROX_CONSUMER="$DOCS_ROOT"
+# thyrox-rename: keep — el tablero del cliente anfitrión
 TEAM_NAME="${CLAUDE_CODE_TASK_LIST_ID:-${CLAUDE_CODE_TEAM_NAME:-}}"
 
 usage() {

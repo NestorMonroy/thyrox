@@ -1,0 +1,2 @@
+def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MARGIN,
+           reserve_kb: int = 0) -> Decision:

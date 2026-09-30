@@ -202,7 +202,7 @@ def _key(timestamp: str) -> float:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--transcript", required=True,
                         help="ruta del JSONL a sondear (parámetro del consumidor)")
     parser.add_argument("--around", default="",

@@ -33,16 +33,13 @@
  *     (`.../app-host/state/hostSessionState.js`) — SÍ resuelve tal cual
  *     (medido: `Bun.resolveSync` OK).
  *   - `onChangeAppState` (`@claude-code-how-works/repl/onChangeAppState.js`)
- *     — el paquete `repl` NO existe como miembro del workspace (medido:
- *     ausente de `src/packages/package.json`). Se deja SIN traducir y se
- *     difiere con `require()`.
- *   - `createStore` / `Store` (`.../app-host/state/store.js`) —
- *     `@thyrox/app-host` existe pero no expone `state/store.ts` (medido: 0
- *     hits de `export function createStore` en `app-host/src/`). El tipo
- *     `Store<T>` se re-declara localmente como `unknown` (erosionado, sólo
- *     para que `InteractiveSessionStore`/`HeadlessSessionStore` typechequen
- *     con la misma forma pública); `createStore`, el valor, se difiere con
- *     `require()`.
+ *     — no se importa: los dos creadores reciben el oyente como parámetro
+ *     (`AppStateChange`) y el anfitrión les pasa `onChangeAppState`. Así
+ *     `@thyrox/agent` no depende de `repl`.
+ *   - `createStore` / `Store` (`.../app-host/state/store.js`) — el tipo
+ *     `Store<T>` se importa de ahí (el paquete ya exporta `./state/store.js`,
+ *     que reexporta `@thyrox/repl/stateStore`); `createStore`, el valor,
+ *     se sigue difiriendo con `require()`.
  *   - `parseEffortValue` / `toPersistableEffort` (`./effort.js`, hermano
  *     LOCAL en este mismo paquete) — SÍ resuelve (medido:
  *     `Bun.resolveSync('./effort.js', …)` → `agent/effort.ts`).
@@ -65,6 +62,7 @@
  * les falta, no en el import).
  */
 import { feature } from 'bun:bundle'
+import type { Store } from '@thyrox/app-host/state/store.js'
 import {
   type AppState,
   getDefaultAppState,
@@ -73,7 +71,7 @@ import {
   projectHostSessionState,
   type HostSessionState,
 } from '@thyrox/app-host/state/hostSessionState.js'
-import { parseEffortValue, toPersistableEffort } from './effort.js'
+import { parseEffortValue, toPersistableEffort, type EffortLevel } from './effort.js'
 
 // ---- Tipos estructurales mínimos — ver docstring del módulo. ----
 // `Tool`/`ToolPermissionContext`: el paquete tool-registry está ausente por
@@ -109,36 +107,33 @@ export type HeadlessStoreParams = {
   kairosEnabled?: boolean
 }
 
-// `Store<T>`: `@thyrox/app-host` no expone `state/store.ts` — ver
-// docstring. Forma erosionada mínima para que los dos alias de abajo
-// typechequen con la misma forma pública que la fuente.
-// biome-ignore-all assist/source/organizeImports: tipo local sustituto (ver docstring)
-type Store<T> = {
-  getState: () => T
-  setState: (next: T) => void
-  subscribe: (listener: (state: T) => void) => () => void
-}
+// `Store<T>` es el de `@thyrox/app-host/state/store.js`, que hoy sí se
+// exporta. La copia local que había (con `setState(next: T)`) inventaba una
+// firma que no es la real —la real recibe un actualizador— y el store
+// headless no cabía en `HostSessionStore`.
+
+/**
+ * El oyente de cambios de un store de sesión: recibe el estado anterior y el
+ * nuevo tras cada `setState`. Lo pasa quien crea el store — en el anfitrión,
+ * `onChangeAppState` de `@thyrox/repl` —, de modo que este paquete no
+ * depende de `repl`.
+ */
+export type AppStateChange = (change: { newState: AppState; oldState: AppState }) => void
 
 export type InteractiveSessionStore = Store<AppState>
 export type HeadlessSessionStore = Store<AppState>
 
 export function createInteractiveSessionStore(
   initialState?: AppState,
+  onChange?: AppStateChange,
 ): InteractiveSessionStore {
-  // `createStore` y `onChangeAppState`: @thyrox/app-host no expone
-  // `state/store.ts` y @thyrox/repl no existe — ver docstring del módulo.
+  // `createStore`: @thyrox/app-host no expone `state/store.ts` — ver
+  // docstring del módulo.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createStore } = require('@thyrox/app-host/state/store.js') as {
-    createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
+    createStore: <T>(initial: T, onChange?: (change: { newState: T; oldState: T }) => void) => Store<T>
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
-    onChangeAppState: (state: AppState) => void
-  }
-  return createStore<AppState>(
-    initialState ?? getDefaultAppState(),
-    onChangeAppState,
-  )
+  return createStore<AppState>(initialState ?? getDefaultAppState(), onChange)
 }
 
 function buildHeadlessCompatState(
@@ -151,7 +146,7 @@ function buildHeadlessCompatState(
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getInitialSettings } = require('@thyrox/config/settings') as {
     getInitialSettings: () => {
-      effortLevel?: string
+      effortLevel?: EffortLevel
       fastModePerSessionOptIn?: boolean
       fastMode?: boolean
     }
@@ -203,16 +198,13 @@ function buildHeadlessCompatState(
 
 export function createHeadlessSessionStore(
   params: HeadlessStoreParams,
+  onChange?: AppStateChange,
 ): HeadlessSessionStore {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createStore } = require('@thyrox/app-host/state/store.js') as {
-    createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
+    createStore: <T>(initial: T, onChange?: (change: { newState: T; oldState: T }) => void) => Store<T>
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
-    onChangeAppState: (state: AppState) => void
-  }
-  return createStore<AppState>(buildHeadlessCompatState(params), onChangeAppState)
+  return createStore<AppState>(buildHeadlessCompatState(params), onChange)
 }
 
 export function projectInteractiveHostSessionState(

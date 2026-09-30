@@ -1,0 +1,21 @@
+
+src/packages/provider/src/__tests__/performLogout.behavior.test.ts:
+30 |     })
+31 | 
+32 |     test('flushTelemetry imported LAZILY (avoid pulling OpenTelemetry at startup)', () => {
+33 |       // ~1.1MB of OTel modules pull in if loaded eagerly. Logout is rare
+34 |       // and ALREADY blocking, so lazy import is the right tradeoff.
+35 |       expect(fnSlice).toMatch(
+                           ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /const \{ flushTelemetry \} = await import\(\s*\n?\s*'@claude-code-how-works\/local-observability\/telemetry'/
+Received: "export async function performLogout({\n  clearOnboarding = false,\n  preserveInProcessTokens = false,\n}: {\n  clearOnboarding?: boolean\n  // Port of ant Xw_ (3471.js) `preserveInProcessTokens` flag. installOAuthTokens\n  // (ant NZH) calls performLogout to clear prior state BEFORE storing the new\n  // credentials — but the in-process `oauthTokenFromFd` (BsH/A_H) and the\n  // `CLAUDE_CODE_OAUTH_TOKEN` env var must NOT be wiped during this prelude,\n  // because installOAuthTokens may re-establish them afterwards. A regular\n  // logout (clearOnboarding-driven or user-invoked) does want them wiped.\n  preserveInProcessTokens?: boolean\n} = {}): Promise<void> {\n  // Flush telemetry BEFORE clearing credentials to prevent org data leakage\n  const { flushTelemetry } = await import(\n    '@thyrox/local-observability/telemetry'\n  )\n  await flushTelemetry()\n\n  // Ant Xw_: `if (!_) (delete process.env.CLAUDE_CODE_OAUTH_TOKEN, A_H(null))`.\n  // Skip when re-logging in (preserveInProcessTokens=true) so the env-var path\n  // (CLAUDE_CODE_OAUTH_TOKEN headless login) doesn't lose its source mid-flow.\n  if (!preserveInProcessTokens) {\n    // V7 §8.6: core-domain package must go through config helper for env access.\n    const { deleteEnv } = await import('@thyrox/config/env/utils')\n    deleteEnv('CLAUDE_CODE_OAUTH_TOKEN')\n    // Lazy import to avoid circular dep through app-host barrel.\n    const { setOauthTokenFromFd } = await import(\n      '@thyrox/app-host/bootstrap/state.js'\n    )\n    setOauthTokenFromFd(null)\n  }\n\n  await removeApiKey()\n\n  // Wipe all secure storage data on logout\n  const secureStorage = getSecureStorage()\n  secureStorage.delete()\n\n  await clearAuthRelatedCaches()\n  saveGlobalConfig(current => {\n    const updated = { ...current }\n    if (clearOnboarding) {\n      updated.hasCompletedOnboarding = false\n      updated.subscriptionNoticeCount = 0\n      updated.hasAvailableSubscription = false\n      if (updated.customApiKeyResponses?.approved) {\n        updated.customApiKeyResponses = {\n          ...updated.customApiKeyResponses,\n          approved: [],\n        }\n      }\n    }\n    updated.oauthAccount = undefined\n    return updated\n  })\n}\n\n// clearing anything memoized that must be invalidated when user/session/auth changes\nexport async function clearAuthRelatedCaches(): Promise<void> {\n  // Clear the OAuth token cache\n  getClaudeAIOAuthTokens.cache?.clear?.()\n  clearTrustedDeviceTokenCache()\n  clearBetasCaches()\n  clearToolSchemaCache()\n\n  // Clear user data cache BEFORE GrowthBook refresh so it picks up fresh credentials\n  resetUserCache()\n  refreshGrowthBookAfterAuthChange()\n\n  // Clear Grove config cache\n  getGroveNoticeConfig.cache?.clear?.()\n  getGroveSettings.cache?.clear?.()\n\n  // Clear remotely managed settings cache\n  await clearRemoteManagedSettingsCache()\n\n  // Clear policy limits cache\n  await clearPolicyLimitsCache()\n}\n\nexport async function call(\n  onDone: import('@thyrox/agent/command.js').LocalJSXCommandOnDone,\n): Promise<React.ReactNode> "
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/performLogout.behavior.test.ts:35:23)
+(fail) performLogout + clearAuthRelatedCaches order invariants > performLogout (top-level orchestration) > flushTelemetry imported LAZILY (avoid pulling OpenTelemetry at startup) [0.35ms]
+
+ 8 pass
+ 1 fail
+ 22 expect() calls
+Ran 9 tests across 1 file. [153.00ms]

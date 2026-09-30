@@ -1,0 +1,2 @@
+    check("el archivo declara el error y su causa", True,
+          out.read_text().startswith("error ") and "mismatch" in out.read_text())

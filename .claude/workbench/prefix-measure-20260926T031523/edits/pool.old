@@ -1,0 +1,4 @@
+            --max-turns "$HP_MAX_TURNS" --no-session-persistence \
+            --output-format json) \
+      > "$HP_OUT/$n.json" 2> "$HP_OUT/$n.err"
+}

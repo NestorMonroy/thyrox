@@ -1,0 +1,49 @@
+
+1. Las tres clases de import se separan
+  ok    cruce al src/ ajeno -> cruza-paquete
+  ok    salida de la raiz de paquetes -> sale-de-la-raiz
+  ok    dentro del propio paquete -> interno
+  ok    nombre de paquete -> no-relativo
+
+2. La pertenencia la decide el paquete que declara, no la profundidad
+  ok    un archivo hondo pertenece a su paquete
+  ok    uno somero, al mismo
+  ok    un archivo fuera de la raiz no pertenece a ninguno
+
+3. El especificador se resuelve contra el DIRECTORIO del archivo
+  ok    desde src/cost.ts cruza
+  ok    desde src/context/deep.ts NO cruza (se queda en harness)
+  ok    control — comparar la cadena daria el mismo veredicto para los dos
+
+4. El recorrido encuentra los especificadores, y sólo ésos
+  ok    cinco especificadores, no seis (el comentario no cuenta)
+  ok    el dinamico entra
+  ok    el numero de linea acompana
+
+5. El barrido publica su denominador
+  ok    un cruce de paquete
+  ok    una salida de la raiz
+  ok    cuatro archivos medidos (3 de harness + el models.ts de agent)
+  ok    tres especificadores vistos
+  ok    el cruce nombra su destino
+
+6. Controles de anulación — retirada la causa, el veredicto CAMBIA
+  ok    con el cruce, hay hallazgo
+  ok    control — reescrito al nombre, el hallazgo desaparece
+  ok    con dos paquetes, el cruce se ve
+  ok    control — sin package.json vecino, ya no es cruce de paquete
+
+8. Los paquetes anidados se miden: la raíz es src/, no src/packages
+  FALLA descubre los anidados y los sueltos, no el agregador ni node_modules
+          esperado: ['packages/@ant/ink', 'packages/agent', 'paths']
+          real:     ['paths']
+  ok    un archivo pertenece al paquete más profundo
+  ok    el cruce entre hermanos bajo el agregador se ve
+  FALLA y el del suelto al anidado también: dos cruces
+          esperado: 2
+          real:     1
+
+7. Rehúsa nombrando cuando la raíz no es una raíz de paquetes
+  ok    raiz sin paquetes rehúsa con PackageRootError
+
+resultado: 25 de 27 aserciones en verde

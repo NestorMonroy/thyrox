@@ -9,7 +9,7 @@ import { resolve } from 'path'
  * Org-UUID determines request routing (Vertex/Bedrock proxy, Cowork
  * tenancy). The three-tier lookup order is load-bearing:
  *
- *   1. CLAUDE_CODE_ORGANIZATION_UUID env var → operator override
+ *   1. THYROX_CODE_ORGANIZATION_UUID env var → operator override
  *   2. stored oauthAccount.organizationUuid → captured at /login
  *   3. live profile fetch → only if user:profile scope present
  *
@@ -26,9 +26,9 @@ describe('getOrganizationUUID (ant sV parity)', () => {
   const fnStart = clientSource.indexOf('export async function getOrganizationUUID')
   const fnSlice = clientSource.slice(fnStart, fnStart + 2000)
 
-  test('first tier: CLAUDE_CODE_ORGANIZATION_UUID env var wins over everything', () => {
+  test('first tier: THYROX_CODE_ORGANIZATION_UUID env var wins over everything', () => {
     expect(fnSlice).toMatch(
-      /readEnv\('CLAUDE_CODE_ORGANIZATION_UUID'\)[\s\S]{0,80}if\s*\(envOrgUUID\)\s*return envOrgUUID/,
+      /readEnv\('THYROX_CODE_ORGANIZATION_UUID'\)[\s\S]{0,80}if\s*\(envOrgUUID\)\s*return envOrgUUID/,
     )
   })
 
@@ -48,7 +48,7 @@ describe('getOrganizationUUID (ant sV parity)', () => {
   })
 
   test('three tiers appear in the right ORDER (env → stored → fetched)', () => {
-    const envIdx = fnSlice.indexOf("readEnv('CLAUDE_CODE_ORGANIZATION_UUID')")
+    const envIdx = fnSlice.indexOf("readEnv('THYROX_CODE_ORGANIZATION_UUID')")
     const storedIdx = fnSlice.indexOf('globalConfig.oauthAccount?.organizationUuid')
     const fetchedIdx = fnSlice.indexOf('await getOauthProfileFromOauthToken')
     expect(envIdx).toBeGreaterThan(0)

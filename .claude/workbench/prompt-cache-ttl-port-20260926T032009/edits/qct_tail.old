@@ -1,0 +1,7 @@
+    return { ttl: '1h', reason: 'enable_1h_env' }
+  }
+  if (!ctx.isSubscriber || overage) return { ttl: '5m', reason: 'default' }
+  return matchesSource(source, ctx.allowlist ?? MAIN_THREAD_SOURCES)
+    ? { ttl: '1h', reason: 'subscriber' }
+    : { ttl: '5m', reason: 'default' }
+}

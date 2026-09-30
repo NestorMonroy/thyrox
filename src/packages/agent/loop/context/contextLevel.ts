@@ -35,7 +35,7 @@ export const RAPID_REFILL_TRIP = 3
 /** El `e.turnCounter<3` de `N9r`: qué cuenta como recarga «rápida». */
 export const RAPID_REFILL_WINDOW_TURNS = 3
 
-/** `pTe=1e5` — el piso que `CLAUDE_CODE_AUTO_COMPACT_WINDOW` no puede bajar. */
+/** `pTe=1e5` — el piso que `THYROX_CODE_AUTO_COMPACT_WINDOW` no puede bajar. */
 export const AUTO_COMPACT_WINDOW_FLOOR = 100_000
 
 /** `zBe=1e6` — su techo; `Ete` recorta a él y lo reporta como `capped`. */
@@ -185,7 +185,7 @@ export function blockingWindow(model: string): number | null {
  *
  * | Origen | Aquí |
  * |---|---|
- * | `env` (`CLAUDE_CODE_AUTO_COMPACT_WINDOW`) | portado |
+ * | `env` (`THYROX_CODE_AUTO_COMPACT_WINDOW`) | portado |
  * | `settings` (`n`) | portado |
  * | `model-default` (`A9r`/`GO`) | portado |
  * | `clientdata` (`I9r`) | **no** — lee `rowan_thicket` de la config remota, que este harness no recibe |
@@ -211,7 +211,7 @@ export function compactionWindow(
   // `let o=Qp()?n:void 0` — con la compactación apagada el ajuste no viaja.
   const ajuste = autoCompactEnabled(settings) ? configured : undefined
 
-  const env = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
+  const env = process.env.THYROX_CODE_AUTO_COMPACT_WINDOW
   if (env) {
     const b = parseBoundedEnv(env, AUTO_COMPACT_WINDOW_FLOOR, AUTO_COMPACT_WINDOW_CAP)
     // `if(B.status!=="invalid")` — un valor basura NO aplica la rama: la
@@ -235,7 +235,7 @@ export function compactionWindow(
  * `let r=e-13000; …; return Math.min(Math.floor(e*(o/100)), r)`
  *
  * El `Math.min` es lo que hay que leer con cuidado: el override **sólo puede
- * bajar** el umbral. Un `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=100` no desactiva el
+ * bajar** el umbral. Un `THYROX_AUTOCOMPACT_PCT_OVERRIDE=100` no desactiva el
  * colchón de 13 000 — el otro brazo sigue ganando.
  *
  * Su argumento es la ventana de **compactación**, no la declarada: es `nxe(n,r)`
@@ -258,7 +258,7 @@ export function resolveThreshold(model: string, opts?: ContextLevelOptions): num
 
 /** `testPctOverride:o?parseFloat(o):void 0` de `SZe`. */
 function pctOverride(): number | undefined {
-  const crudo = process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
+  const crudo = process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE
   return crudo ? Number.parseFloat(crudo) : undefined
 }
 
@@ -267,11 +267,11 @@ function pctOverride(): number | undefined {
  *
  * Es la **tercera** variable de entorno de este mecanismo, y la única que mueve
  * el tope duro. `DISABLE_COMPACT` quita el escalón intermedio y
- * `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` sólo baja el umbral; ninguna de las dos
+ * `THYROX_AUTOCOMPACT_PCT_OVERRIDE` sólo baja el umbral; ninguna de las dos
  * toca `x`. Ésta lo **sustituye entero**.
  */
 export function blockingLimitOverride(): number | undefined {
-  const crudo = process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE
+  const crudo = process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE
   if (!crudo) return undefined
   return Number.parseInt(String(crudo).trim(), 10)
 }

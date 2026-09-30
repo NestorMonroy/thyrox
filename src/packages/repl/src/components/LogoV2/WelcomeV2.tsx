@@ -1,12 +1,13 @@
 import React from 'react'
 import { Box, Text, useTheme } from '@anthropic/ink'
 import { env } from '@thyrox/config/env/paths'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const WELCOME_V2_WIDTH = 58
 
 export function WelcomeV2(): React.ReactNode {
   const [theme] = useTheme()
-  const welcomeMessage = 'Welcome to Claude Code'
+  const welcomeMessage = `Welcome to ${PRODUCT_NAME}`
 
   if (env.terminal === 'Apple_Terminal') {
     return (

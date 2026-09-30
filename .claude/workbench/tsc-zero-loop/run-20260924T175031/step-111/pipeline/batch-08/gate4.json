@@ -1,0 +1,64 @@
+{
+ "reviewed": [
+  {
+   "pattern": "host-binding-narrower-than-implementation",
+   "files": [
+    "src/packages/provider/src/anthropic/client.ts"
+   ]
+  },
+  {
+   "pattern": "delete-on-sdk-union-header-type",
+   "files": [
+    "src/packages/provider/src/anthropic/client.ts"
+   ]
+  },
+  {
+   "pattern": "optional-message-field-accessed-without-guard",
+   "files": [
+    "src/packages/provider/src/openai/convertMessages.ts"
+   ]
+  },
+  {
+   "pattern": "field-access-on-unknown-stubbed-response-type",
+   "files": [
+    "src/packages/provider/src/referral.ts"
+   ]
+  },
+  {
+   "pattern": "spread-of-unknown-typed-value",
+   "files": [
+    "src/packages/provider/src/referral.ts"
+   ]
+  },
+  {
+   "pattern": "record-unknown-object-cast-to-sdk-union-member",
+   "files": [
+    "src/packages/provider/src/runtimeHelpers.ts"
+   ]
+  },
+  {
+   "pattern": "reread-env-getter-loses-truthy-narrowing",
+   "files": [
+    "src/packages/provider/src/thinking.ts"
+   ]
+  },
+  {
+   "pattern": "readEnv-narrowed-guard-not-shared-across-calls",
+   "files": [
+    "src/packages/provider/src/withRetry.ts"
+   ]
+  },
+  {
+   "pattern": "command-type-split-between-command-runtime-and-agent",
+   "files": [
+    "src/packages/repl/src/commands/config/index.ts"
+   ]
+  },
+  {
+   "pattern": "command-index-imports-wrong-command-type",
+   "files": [
+    "src/packages/repl/src/commands/diff/index.ts"
+   ]
+  }
+ ]
+}

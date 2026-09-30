@@ -1,0 +1,32 @@
+-- FALLIDO src/packages/agent/forkedAgent.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/3.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/16.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/9.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/15.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/11.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/7.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/10.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/18.txt
+-- FALLIDO src/packages/agent/task/framework.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/40.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/59.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/70.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/74.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/69.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/75.txt
+-- FALLIDO src/packages/config/plugin/marketplaceManager.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/85.txt
+-- FALLIDO src/packages/config/plugin/marketplaceManager.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/84.txt
+-- FALLIDO src/packages/app-host/src/runtime/runtimeHandles.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/50.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processUserInput.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/143.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processUserInput.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/145.txt
+-- FALLIDO src/packages/repl/src/hooks/useReplBridge.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/137.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processUserInput.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/144.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processSlashCommand.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/139.txt
+-- FALLIDO src/packages/repl/src/components/messages/AttachmentMessage.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/133.txt
+-- FALLIDO src/packages/repl/src/screens/REPLView.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/152.txt
+-- FALLIDO src/packages/repl/src/screens/REPLView.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/158.txt
+-- FALLIDO src/packages/repl/src/screens/REPLView.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/156.txt
+-- FALLIDO src/packages/repl/src/conversationRecovery.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/136.txt
+-- FALLIDO src/packages/repl/src/screens/REPLView.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/161.txt
+-- FALLIDO src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/diag/174.txt
+items=180 ok=151 fallidos=29
+180
+__BG_EXIT__=0

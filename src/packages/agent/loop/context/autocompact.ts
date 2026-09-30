@@ -88,7 +88,11 @@ const bloques = (m: Message, tipo: ContentBlock['type']) => m.content.some((b) =
  */
 function fronteraSegura(messages: Message[], propuesta: number): number {
   let i = propuesta
-  while (i > 0 && bloques(messages[i], 'tool_result')) i -= 1
+  while (i > 0) {
+    const mensaje = messages[i]
+    if (mensaje === undefined || !bloques(mensaje, 'tool_result')) break
+    i -= 1
+  }
   return i
 }
 

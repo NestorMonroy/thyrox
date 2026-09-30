@@ -1,0 +1,52 @@
+src/packages/agent/query.ts(1130,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:1120-1140 ---
+   1120                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1121                  preCompactContext,
+   1122              )
+   1123            }
+   1124  
+   1125            const postCompactMessages = buildPostCompactMessages(compacted)
+   1126            for (const msg of postCompactMessages) {
+   1127              yield msg
+   1128            }
+   1129            const next: State = {
+   1130>             messages: postCompactMessages,
+   1131              toolUseContext,
+   1132              autoCompactTracking: undefined,
+   1133              maxOutputTokensRecoveryCount,
+   1134              hasAttemptedReactiveCompact: true,
+   1135              maxOutputTokensOverride: undefined,
+   1136              pendingToolUseSummary: undefined,
+   1137              stopHookActive: undefined,
+   1138              stopHookBlockingCount: 0,
+   1139              turnCount,
+   1140              transition: { reason: 'reactive_compact_retry' },
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+src/packages/agent/query.ts(1247,37): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  --- código src/packages/agent/query.ts:1237-1257 ---
+   1237  
+   1238        // Skip stop hooks when the last message is an API error (rate limit,
+   1239        // prompt-too-long, auth failure, etc.). The model never produced a
+   1240        // real response — hooks evaluating it create a death spiral:
+   1241        // error → hook blocking → retry → error → …
+   1242        if (lastMessage?.isApiErrorMessage) {
+   1243          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1244          return { reason: 'completed' }
+   1245        }
+   1246  
+   1247>       const stopHookResult = yield* handleStopHooks(
+   1248          messagesForQuery,
+   1249          assistantMessages,
+   1250          systemPrompt,
+   1251          userContext,
+   1252          systemContext,
+   1253          toolUseContext,
+   1254          querySource,
+   1255          stopHookActive,
+   1256        )
+   1257  

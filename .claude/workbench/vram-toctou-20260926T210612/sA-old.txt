@@ -1,0 +1,3 @@
+        with shared_lock.held(book.path, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+                              min_wait_s=0.01, max_wait_s=0.2):
+            if _try_admit(book, need_mib, owner_pid, nvidia_smi):

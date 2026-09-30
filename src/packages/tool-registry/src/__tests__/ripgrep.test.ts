@@ -89,12 +89,22 @@ beforeAll(() => {
 
   // --- fixture de conteo: exactamente 12 archivos planos → potencia de 10
   //     más cercana da 10 (piso: 10^floor(log10(12))=10; round(12/10)*10=10).
-  const countFixtureDir = join(root, 'count-fixture')
-  mkdirSync(countFixtureDir)
-  for (let i = 0; i < 12; i++) {
-    writeFileSync(join(countFixtureDir, `f${i}.txt`), 'x\n')
-  }
+  buildCountFixture('count-fixture')
 })
+
+/**
+ * Un directorio con exactamente 12 archivos planos. Cada prueba que lo MUTA
+ * construye el suyo: con `--randomize`, la 17 añadía 8 archivos al compartido
+ * y la 16, corrida después, contaba 20 (banco `test-order-leaks-*`).
+ */
+function buildCountFixture(name: string): string {
+  const dir = join(root, name)
+  mkdirSync(dir)
+  for (let i = 0; i < 12; i++) {
+    writeFileSync(join(dir, `f${i}.txt`), 'x\n')
+  }
+  return dir
+}
 
 afterAll(() => {
   rmSync(root, { recursive: true, force: true })
@@ -290,7 +300,7 @@ describe('countFilesRoundedRg — conteo memoizado redondeado a potencia de 10',
     const { countFilesRoundedRg } = await import('../ripgrep.ts')
     const key = ['zzz-no-such-pattern-17']
     const signal = new AbortController().signal
-    const countDir = join(root, 'count-fixture')
+    const countDir = buildCountFixture('count-fixture-17')
     const first = await countFilesRoundedRg(countDir, signal, key)
     expect(first).toBe(10) // 12 archivos -> redondeado a 10
     // Cruza de bucket: 12 + 8 = 20 archivos redondearía a 20, DISTINTO de

@@ -1,0 +1,134 @@
+== 1: sondeo por defecto pisa
+   (src/accounts/webCookie/tokenExtractionConfig.ts)
+(fail) the token extraction configs > quick polling and partial overrides merge over the default [0.34ms]
+ 12 pass
+ 1 fail
+== 2: sin patrón de éxito
+   (src/accounts/webCookie/tokenExtractionConfig.ts)
+(fail) the token extraction configs > quick polling and partial overrides merge over the default [0.19ms]
+ 12 pass
+ 1 fail
+== 3: sin dominio de cookie
+   (src/accounts/webCookie/tokenExtractionConfig.ts)
+(fail) the token extraction configs > a config fills the default polling and keeps what it declares [0.47ms]
+ 12 pass
+ 1 fail
+== 4: sondeo rápido lento
+   (src/accounts/webCookie/tokenExtractionConfig.ts)
+(fail) the token extraction configs > quick polling and partial overrides merge over the default [0.28ms]
+ 12 pass
+ 1 fail
+== 5: listado compartido
+   (src/accounts/webCookie/tokenExtractionConfig.ts)
+(fail) the token extraction configs > an unknown provider has none, and the listing is a copy [0.32ms]
+ 12 pass
+ 1 fail
+== 6: sin mínimo de intervalo
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > the interval defaults to fifteen minutes and never drops under one [0.35ms]
+ 12 pass
+ 1 fail
+== 7: 15 min → 5 min
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > the interval defaults to fifteen minutes and never drops under one [0.28ms]
+ 12 pass
+ 1 fail
+== 8: GET
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a rejected home page marks the credential expired, once [1.72ms]
+ 12 pass
+ 1 fail
+== 9: 403 vale
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a rejected home page marks the credential expired, once [1.53ms]
+ 12 pass
+ 1 fail
+== 10: 401 vale
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a 401 expires too, and any other status keeps it valid [0.40ms]
+ 12 pass
+ 1 fail
+== 11: red condena
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a network failure or a timeout keeps the credential valid, with a warning [0.48ms]
+ 12 pass
+ 1 fail
+== 12: sin plazo
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a network failure or a timeout keeps the credential valid, with a warning [5000.00ms]
+ 12 pass
+ 1 fail
+== 13: sin aviso de red
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a network failure or a timeout keeps the credential valid, with a warning [0.46ms]
+ 12 pass
+ 1 fail
+== 14: desconocido se queda
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a provider without an extraction config is dropped [0.27ms]
+ 12 pass
+ 1 fail
+== 15: caducada repetida
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a rejected home page marks the credential expired, once [1.61ms]
+ 12 pass
+ 1 fail
+== 16: sin marca de hora
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > a rejected home page marks the credential expired, once [1.25ms]
+ 12 pass
+ 1 fail
+== 17: arranque doble
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > starting checks at once and every interval, without keeping the process alive [0.49ms]
+ 12 pass
+ 1 fail
+== 18: sin comprobar al arrancar
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > starting checks at once and every interval, without keeping the process alive [0.43ms]
+ 12 pass
+ 1 fail
+== 19: sin unref
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > starting checks at once and every interval, without keeping the process alive [0.61ms]
+ 12 pass
+ 1 fail
+== 20: parada sin estado
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > stopping clears the timer, twice is harmless, and restart starts again [0.36ms]
+ 12 pass
+ 1 fail
+== 21: timer sin limpiar
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > stopping clears the timer, twice is harmless, and restart starts again [0.37ms]
+ 12 pass
+ 1 fail
+== 22: sin desregistrar
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > an unregistered credential is no longer checked, and the expired list can be cleared [0.63ms]
+ 12 pass
+ 1 fail
+== 23: sin limpiar caducadas
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > an unregistered credential is no longer checked, and the expired list can be cleared [0.43ms]
+ 12 pass
+ 1 fail
+== 24: reinicio sin parar
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+ 13 pass
+ 0 fail
+== 25: estado comparte lista
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+ 13 pass
+ 0 fail
+== restaurado
+ 13 pass
+ 0 fail
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+ 0 fail
+ 2006 expect() calls
+Ran 623 tests across 41 files. [5.25s]
+__BG_EXIT__=0

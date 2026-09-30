@@ -1,0 +1,69 @@
+src/packages/config/plugin/hintRecommendation.ts(75,25): error TS2339: Property 'value' does not exist on type 'ClaudeCodeHint'.
+  --- código src/packages/config/plugin/hintRecommendation.ts:65-85 ---
+     65  export function maybeRecordPluginHint(hint: ClaudeCodeHint): void {
+     66    if (!getFeatureValue_CACHED_MAY_BE_STALE('tengu_lapis_finch', false)) return
+     67    if (hasShownHintThisSession()) return
+     68  
+     69    const state = getGlobalConfig().claudeCodeHints
+     70    if (state?.disabled) return
+     71  
+     72    const shown = state?.plugin ?? []
+     73    if (shown.length >= MAX_SHOWN_PLUGINS) return
+     74  
+     75>   const pluginId = hint.value
+     76    const { name, marketplace } = parsePluginIdentifier(pluginId)
+     77    if (!name || !marketplace) return
+     78    if (!isOfficialMarketplaceName(marketplace)) return
+     79    if (shown.includes(pluginId)) return
+     80    if (isPluginInstalled(pluginId)) return
+     81    if (isPluginBlockedByPolicy(pluginId)) return
+     82  
+     83    // Bound repeat lookups on the same slug — a CLI that emits on every
+     84    // invocation shouldn't trigger N resolve cycles for the same plugin.
+     85    if (triedThisSession.has(pluginId)) return
+src/packages/config/plugin/hintRecommendation.ts(106,25): error TS2339: Property 'value' does not exist on type 'ClaudeCodeHint'.
+  --- código src/packages/config/plugin/hintRecommendation.ts:96-116 ---
+     96  }
+     97  
+     98  /**
+     99   * Resolve the pending hint to a renderable recommendation. Runs the async
+    100   * marketplace lookup that the sync pre-store gate skipped. Returns null if
+    101   * the plugin isn't in the marketplace cache — the hint is discarded.
+    102   */
+    103  export async function resolvePluginHint(
+    104    hint: ClaudeCodeHint,
+    105  ): Promise<PluginHintRecommendation | null> {
+    106>   const pluginId = hint.value
+    107    const { name, marketplace } = parsePluginIdentifier(pluginId)
+    108  
+    109    const pluginData = await getPluginById(pluginId)
+    110  
+    111    logEvent('tengu_plugin_hint_detected', {
+    112      _PROTO_plugin_name: (name ??
+    113        '') as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    114      _PROTO_marketplace_name: (marketplace ??
+    115        '') as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    116      result: (pluginData
+src/packages/config/plugin/hintRecommendation.ts(133,25): error TS2339: Property 'sourceCommand' does not exist on type 'ClaudeCodeHint'.
+  --- código src/packages/config/plugin/hintRecommendation.ts:123-143 ---
+    123        `[hintRecommendation] ${pluginId} not found in marketplace cache`,
+    124      )
+    125      return null
+    126    }
+    127  
+    128    return {
+    129      pluginId,
+    130      pluginName: pluginData.entry.name,
+    131      marketplaceName: marketplace ?? '',
+    132      pluginDescription: pluginData.entry.description,
+    133>     sourceCommand: hint.sourceCommand,
+    134    }
+    135  }
+    136  
+    137  /**
+    138   * Record that a prompt for this plugin was surfaced. Called regardless of
+    139   * the user's yes/no response — show-once semantics.
+    140   */
+    141  export function markHintPluginShown(pluginId: string): void {
+    142    saveGlobalConfig(current => {
+    143      const existing = current.claudeCodeHints?.plugin ?? []

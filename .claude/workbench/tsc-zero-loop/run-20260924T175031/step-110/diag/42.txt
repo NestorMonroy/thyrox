@@ -1,0 +1,23 @@
+src/packages/agent/statusAlias.tsx(339,27): error TS2339: Property 'codex' does not exist on type '{ bedrock: string; vertex: string; foundry: string; gemini: string; openai: string; }'.
+  --- código src/packages/agent/statusAlias.tsx:329-349 ---
+    329  
+    330    return properties
+    331  }
+    332  
+    333  export function buildAPIProviderProperties(): Property[] {
+    334    const apiProvider = getAPIProvider()
+    335  
+    336    const properties: Property[] = []
+    337  
+    338    if (apiProvider !== 'firstParty') {
+    339>     const providerLabel = {
+    340        bedrock: 'AWS Bedrock',
+    341        vertex: 'Google Vertex AI',
+    342        foundry: 'Microsoft Foundry',
+    343        gemini: 'Gemini API',
+    344        openai: 'OpenAI API',
+    345      }[apiProvider]
+    346      properties.push({
+    347        label: 'API provider',
+    348        value: providerLabel,
+    349      })

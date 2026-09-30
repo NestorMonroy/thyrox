@@ -1,13 +1,28 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/structuredEvents.ts`
- * (221 líneas fuente, 100 % portado). Cada helper envuelve `logOTelEvent`
- * con la forma exacta de metadata que emite para un tipo de evento
- * específico. Sin dependencias de paquete hermano fuera de `./events.js`.
+ * Port of ant v2.1.136 typed OTel event helpers (2642.js, 2643.js,
+ * 2822.js, 2911.js, 2914.js, 4054.js, 5059.js).
+ *
+ * Each helper here wraps `logOTelEvent` with the exact metadata shape
+ * ant emits for a specific event type. Without these wrappers, callers
+ * across ccb would either drift on metadata keys (silent schema breakage
+ * on dashboards) or skip telemetry entirely.
+ *
+ * Maps:
+ *   ZzH → logCompactionEvent          ("compaction")
+ *   LF9 → logInternalErrorEvent       ("internal_error")
+ *   Ak  → logAtMentionEvent           ("at_mention")
+ *   Ts  → logPermissionModeChangeEvent("permission_mode_changed")
+ *   QN8 → logMcpServerConnectionEvent ("mcp_server_connection")
+ *   ant 2911.js → logSystemPromptEvent("system_prompt")
+ *   ant 2914.js → logApiRetriesExhaustedEvent ("api_retries_exhausted")
+ *   ant 2643.js → logSkillActivatedEvent ("skill_activated")
+ *   ant 2822.js → logPluginInstalledEvent ("plugin_installed")
+ *   ant 5059.js → logFeedbackSurveyEvent ("feedback_survey")
  */
 
 import { logOTelEvent } from './events.js'
 
-// -- compaction ---------------------------------------------------------
+// -- compaction (ant ZzH 2642.js) ---------------------------------------------
 export type CompactionEvent = {
   trigger: string
   success: boolean
@@ -27,10 +42,9 @@ export async function logCompactionEvent(e: CompactionEvent): Promise<void> {
   })
 }
 
-// -- internal_error ------------------------------------------------------
-// Guardado contra reentrancia: el reportero de errores nunca debe
-// recursar si emitir el evento mismo lanza, o una falla del logger
-// encadenaría para siempre.
+// -- internal_error (ant LF9 2642.js) -----------------------------------------
+// Re-entrancy guarded (y38 in ant): the error reporter must NEVER recurse if
+// emitting the event itself throws, else a logger fault chains forever.
 let internalErrorReentrancyGuard = false
 export function logInternalErrorEvent(error: Error): void {
   if (internalErrorReentrancyGuard) return
@@ -45,8 +59,8 @@ export function logInternalErrorEvent(error: Error): void {
       typeof code === 'string' && /^[A-Z][A-Z0-9_]*$/.test(code)
         ? code
         : undefined
-    // No se espera — los errores internos deben ser fire-and-forget;
-    // que falle emitir no debe detener la recuperación del llamador.
+    // Don't await — internal errors should fire-and-forget; failure to
+    // emit must not stall the caller's recovery path.
     void logOTelEvent('internal_error', {
       error_name: errorName,
       error_code: errorCode,
@@ -56,7 +70,7 @@ export function logInternalErrorEvent(error: Error): void {
   }
 }
 
-// -- at_mention -----------------------------------------------------------
+// -- at_mention (ant Ak 2642.js) ----------------------------------------------
 export async function logAtMentionEvent(args: {
   mentionType: string
   success: boolean
@@ -67,13 +81,13 @@ export async function logAtMentionEvent(args: {
   })
 }
 
-// -- permission_mode_changed -----------------------------------------------
+// -- permission_mode_changed (ant Ts 2642.js) ---------------------------------
 export async function logPermissionModeChangeEvent(args: {
   from: string
   to: string
   trigger?: string
 }): Promise<void> {
-  // Omite transiciones no-op (equivalente a `if (H.from === H.to) return;`).
+  // Skip no-op transitions (matches ant `if (H.from === H.to) return;`).
   if (args.from === args.to) return
   await logOTelEvent('permission_mode_changed', {
     from_mode: args.from,
@@ -82,16 +96,16 @@ export async function logPermissionModeChangeEvent(args: {
   })
 }
 
-// -- mcp_server_connection --------------------------------------------------
+// -- mcp_server_connection (ant QN8 4054.js) ----------------------------------
 export async function logMcpServerConnectionEvent(args: {
   serverName: string
-  transportType?: string // por defecto 'stdio' si es undefined
+  transportType?: string // defaults 'stdio' if undefined
   serverScope: string
   status: string
   durationMs: number
   errorCode?: string
-  errorDetail?: string // sólo se adjunta en builds ant no-customer
-  /** Cuando es false, se despoja server_name + detalle de error (gate de PII). */
+  errorDetail?: string // only attached on ant non-customer builds (P$()=true)
+  /** When false, server_name + error detail are stripped (PII gate). */
   includeIdentifyingFields?: boolean
 }): Promise<void> {
   const includePII = args.includeIdentifyingFields ?? false
@@ -106,7 +120,7 @@ export async function logMcpServerConnectionEvent(args: {
   })
 }
 
-// -- system_prompt -----------------------------------------------------------
+// -- system_prompt (ant 2911.js) ----------------------------------------------
 export async function logSystemPromptEvent(args: {
   hash: string
   content: string
@@ -121,7 +135,7 @@ export async function logSystemPromptEvent(args: {
   })
 }
 
-// -- api_retries_exhausted --------------------------------------------------
+// -- api_retries_exhausted (ant 2914.js) --------------------------------------
 export async function logApiRetriesExhaustedEvent(args: {
   model: string
   error: string
@@ -144,13 +158,13 @@ export async function logApiRetriesExhaustedEvent(args: {
   })
 }
 
-// -- skill_activated -----------------------------------------------------
+// -- skill_activated (ant 2643.js) --------------------------------------------
 export async function logSkillActivatedEvent(args: {
   skillName: string
   invocationTrigger: string
   skillSource?: string
   skillKind?: string
-  /** Si esta skill es "oficial" (builtin/bundled/plugin de anthropic). */
+  /** Whether this skill is "official" (builtin/bundled/anthropic plugin). */
   isOfficial: boolean
   pluginName?: string
   marketplaceName?: string
@@ -165,14 +179,14 @@ export async function logSkillActivatedEvent(args: {
   })
 }
 
-// -- plugin_installed -------------------------------------------------------
+// -- plugin_installed (ant 2822.js) -------------------------------------------
 export async function logPluginInstalledEvent(args: {
   pluginName: string
   pluginVersion?: string
   marketplaceName?: string
   isOfficialMarketplace: boolean
   trigger?: string
-  /** Si la identidad del plugin puede viajar con el evento (gate de PII). */
+  /** Whether plugin identity may flow with the event (PII gate). */
   includeIdentifyingFields?: boolean
 }): Promise<void> {
   const includePII = args.includeIdentifyingFields ?? false
@@ -185,7 +199,7 @@ export async function logPluginInstalledEvent(args: {
   })
 }
 
-// -- feedback_survey ---------------------------------------------------------
+// -- feedback_survey (ant 5059.js) --------------------------------------------
 export type FeedbackSurveyEvent = {
   eventType: 'appeared' | 'dismissed' | 'submitted'
   appearanceId: string

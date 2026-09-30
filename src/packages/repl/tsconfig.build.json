@@ -1,0 +1,599 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/repl/screens/agentFleet/mountFleetView.js": [
+        "./src/screens/agentFleet/mountFleetView.tsx"
+      ],
+      "@thyrox/repl/screens/agentFleet/FleetView.js": [
+        "./src/screens/agentFleet/FleetView.tsx"
+      ],
+      "@thyrox/repl/keybindings/KeybindingProviderSetup.js": [
+        "./src/keybindings/KeybindingProviderSetup.tsx"
+      ],
+      "@thyrox/repl/hooks/useSwarmPermissionPoller.js": [
+        "./src/hooks/useSwarmPermissionPoller.ts"
+      ],
+      "@thyrox/repl/hooks/useNotifyAfterTimeout.js": [
+        "./src/hooks/useNotifyAfterTimeout.ts"
+      ],
+      "@thyrox/repl/hooks/useMainLoopModel.js": [
+        "./src/hooks/useMainLoopModel.ts"
+      ],
+      "@thyrox/repl/hooks/useManagePlugins.js": [
+        "./src/hooks/useManagePlugins.ts"
+      ],
+      "@thyrox/repl/hooks/useCanUseTool.js": [
+        "./src/hooks/useCanUseTool.tsx"
+      ],
+      "@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js": [
+        "./src/hooks/useExitOnCtrlCDWithKeybindings.ts"
+      ],
+      "@thyrox/repl/hooks/fileSuggestions.js": [
+        "./src/hooks/fileSuggestions.ts"
+      ],
+      "@thyrox/repl/hooks/useSettings.js": [
+        "./src/hooks/useSettings.ts"
+      ],
+      "@thyrox/repl/hooks/useSettingsChange.js": [
+        "./src/hooks/useSettingsChange.ts"
+      ],
+      "@thyrox/repl/components/AgentProgressLine.js": [
+        "./src/components/AgentProgressLine.tsx"
+      ],
+      "@thyrox/repl/components/App.js": [
+        "./src/components/App.tsx"
+      ],
+      "@thyrox/repl/components/ConfigurableShortcutHint.js": [
+        "./src/components/ConfigurableShortcutHint.tsx"
+      ],
+      "@thyrox/repl/components/ConsoleOAuthFlow.js": [
+        "./src/components/ConsoleOAuthFlow.tsx"
+      ],
+      "@thyrox/repl/components/ContextVisualization.js": [
+        "./src/components/ContextVisualization.tsx"
+      ],
+      "@thyrox/repl/components/CtrlOToExpand.js": [
+        "./src/components/CtrlOToExpand.tsx"
+      ],
+      "@thyrox/repl/components/CustomSelect/index.js": [
+        "./src/components/CustomSelect/index.ts"
+      ],
+      "@thyrox/repl/components/CustomSelect/select.js": [
+        "./src/components/CustomSelect/select.tsx"
+      ],
+      "@thyrox/repl/components/FallbackToolUseErrorMessage.js": [
+        "./src/components/FallbackToolUseErrorMessage.tsx"
+      ],
+      "@thyrox/repl/components/FallbackToolUseRejectedMessage.js": [
+        "./src/components/FallbackToolUseRejectedMessage.tsx"
+      ],
+      "@thyrox/repl/components/FastIcon.js": [
+        "./src/components/FastIcon.tsx"
+      ],
+      "@thyrox/repl/components/FileEditToolDiff.js": [
+        "./src/components/FileEditToolDiff.tsx"
+      ],
+      "@thyrox/repl/components/FileEditToolUpdatedMessage.js": [
+        "./src/components/FileEditToolUpdatedMessage.tsx"
+      ],
+      "@thyrox/repl/components/FileEditToolUseRejectedMessage.js": [
+        "./src/components/FileEditToolUseRejectedMessage.tsx"
+      ],
+      "@thyrox/repl/components/FilePathLink.js": [
+        "./src/components/FilePathLink.tsx"
+      ],
+      "@thyrox/repl/components/HighlightedCode.js": [
+        "./src/components/HighlightedCode.tsx"
+      ],
+      "@thyrox/repl/components/IdeAutoConnectDialog.js": [
+        "./src/components/IdeAutoConnectDialog.tsx"
+      ],
+      "@thyrox/repl/components/IdeOnboardingDialog.js": [
+        "./src/components/IdeOnboardingDialog.tsx"
+      ],
+      "@thyrox/repl/components/InvalidConfigDialog.js": [
+        "./src/components/InvalidConfigDialog.tsx"
+      ],
+      "@thyrox/repl/components/LogSelector.js": [
+        "./src/components/LogSelector.tsx"
+      ],
+      "@thyrox/repl/components/LogoutPicker.js": [
+        "./src/components/LogoutPicker.tsx"
+      ],
+      "@thyrox/repl/components/LogoV2/WelcomeV2.js": [
+        "./src/components/LogoV2/WelcomeV2.tsx"
+      ],
+      "@thyrox/repl/components/MCPServerApprovalDialog.js": [
+        "./src/components/MCPServerApprovalDialog.tsx"
+      ],
+      "@thyrox/repl/components/MCPServerDesktopImportDialog.js": [
+        "./src/components/MCPServerDesktopImportDialog.tsx"
+      ],
+      "@thyrox/repl/components/MCPServerMultiselectDialog.js": [
+        "./src/components/MCPServerMultiselectDialog.tsx"
+      ],
+      "@thyrox/repl/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.js": [
+        "./src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx"
+      ],
+      "@thyrox/repl/components/ManagedSettingsSecurityDialog/utils.js": [
+        "./src/components/ManagedSettingsSecurityDialog/utils.ts"
+      ],
+      "@thyrox/repl/components/Markdown.js": [
+        "./src/components/Markdown.tsx"
+      ],
+      "@thyrox/repl/components/Message.js": [
+        "./src/components/Message.tsx"
+      ],
+      "@thyrox/repl/components/MessageResponse.js": [
+        "./src/components/MessageResponse.tsx"
+      ],
+      "@thyrox/repl/components/MessageSelector.js": [
+        "./src/components/MessageSelector.tsx"
+      ],
+      "@thyrox/repl/components/Messages.js": [
+        "./src/components/Messages.tsx"
+      ],
+      "@thyrox/repl/components/ModelPicker.js": [
+        "./src/components/ModelPicker.tsx"
+      ],
+      "@thyrox/repl/components/EffortPicker.js": [
+        "./src/components/EffortPicker.tsx"
+      ],
+      "@thyrox/repl/components/NotebookEditToolUseRejectedMessage.js": [
+        "./src/components/NotebookEditToolUseRejectedMessage.tsx"
+      ],
+      "@thyrox/repl/components/PromptInput/PromptInputFooterSuggestions.js": [
+        "./src/components/PromptInput/PromptInputFooterSuggestions.tsx"
+      ],
+      "@thyrox/repl/utils/suggestions/directoryCompletion.js": [
+        "./src/utils/suggestions/directoryCompletion.ts"
+      ],
+      "@thyrox/repl/components/RemoteCallout.js": [
+        "./src/components/RemoteCallout.tsx"
+      ],
+      "@thyrox/repl/components/RemoteEnvironmentDialog.js": [
+        "./src/components/RemoteEnvironmentDialog.tsx"
+      ],
+      "@thyrox/repl/components/Settings/Settings.js": [
+        "./src/components/Settings/Settings.tsx"
+      ],
+      "@thyrox/repl/components/ShowInIDEPrompt.js": [
+        "./src/components/ShowInIDEPrompt.tsx"
+      ],
+      "@thyrox/repl/components/Spinner/ShimmerChar.js": [
+        "./src/components/Spinner/ShimmerChar.tsx"
+      ],
+      "@thyrox/repl/components/Spinner/SpinnerGlyph.js": [
+        "./src/components/Spinner/SpinnerGlyph.tsx"
+      ],
+      "@thyrox/repl/components/Spinner/useShimmerAnimation.js": [
+        "./src/components/Spinner/useShimmerAnimation.ts"
+      ],
+      "@thyrox/repl/components/Spinner.js": [
+        "./src/components/Spinner.tsx"
+      ],
+      "@thyrox/repl/components/StructuredDiff.js": [
+        "./src/components/StructuredDiff.tsx"
+      ],
+      "@thyrox/repl/components/TeleportError.js": [
+        "./src/components/TeleportError.tsx"
+      ],
+      "@thyrox/repl/components/TeleportProgress.js": [
+        "./src/components/TeleportProgress.tsx"
+      ],
+      "@thyrox/repl/components/TextInput.js": [
+        "./src/components/TextInput.tsx"
+      ],
+      "@thyrox/repl/components/ThemePicker.js": [
+        "./src/components/ThemePicker.tsx"
+      ],
+      "@thyrox/repl/components/ToolUseLoader.js": [
+        "./src/components/ToolUseLoader.tsx"
+      ],
+      "@thyrox/repl/components/WorkflowMultiselectDialog.js": [
+        "./src/components/WorkflowMultiselectDialog.tsx"
+      ],
+      "@thyrox/repl/components/agents/AgentsMenu.js": [
+        "./src/components/agents/AgentsMenu.tsx"
+      ],
+      "@thyrox/repl/components/agents/SnapshotUpdateDialog.js": [
+        "./src/components/agents/SnapshotUpdateDialog.ts"
+      ],
+      "@thyrox/repl/components/grove/Grove.js": [
+        "./src/components/grove/Grove.tsx"
+      ],
+      "@thyrox/repl/components/mcp/MCPReconnect.js": [
+        "./src/components/mcp/MCPReconnect.tsx"
+      ],
+      "@thyrox/repl/components/mcp/MCPRemoteServerMenu.js": [
+        "./src/components/mcp/MCPRemoteServerMenu.tsx"
+      ],
+      "@thyrox/repl/components/mcp/MCPStdioServerMenu.js": [
+        "./src/components/mcp/MCPStdioServerMenu.tsx"
+      ],
+      "@thyrox/repl/components/mcp/MCPToolDetailView.js": [
+        "./src/components/mcp/MCPToolDetailView.tsx"
+      ],
+      "@thyrox/repl/components/mcp/MCPToolListView.js": [
+        "./src/components/mcp/MCPToolListView.tsx"
+      ],
+      "@thyrox/repl/components/mcp/index.js": [
+        "./src/components/mcp/index.ts"
+      ],
+      "@thyrox/repl/components/mcp/types.js": [
+        "./src/components/mcp/types.ts"
+      ],
+      "@thyrox/repl/components/memory/MemoryFileSelector.js": [
+        "./src/components/memory/MemoryFileSelector.tsx"
+      ],
+      "@thyrox/repl/components/memory/MemoryUpdateNotification.js": [
+        "./src/components/memory/MemoryUpdateNotification.tsx"
+      ],
+      "@thyrox/repl/components/messages/UserToolResultMessage/RejectedPlanMessage.js": [
+        "./src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx"
+      ],
+      "@thyrox/repl/components/shell/OutputLine.js": [
+        "./src/components/shell/OutputLine.tsx"
+      ],
+      "@thyrox/repl/components/shell/ShellProgressMessage.js": [
+        "./src/components/shell/ShellProgressMessage.tsx"
+      ],
+      "@thyrox/repl/components/shell/ShellTimeDisplay.js": [
+        "./src/components/shell/ShellTimeDisplay.tsx"
+      ],
+      "@thyrox/repl/components/skills/SkillsMenu.js": [
+        "./src/components/skills/SkillsMenu.tsx"
+      ],
+      "@thyrox/repl/components/tasks/BackgroundTasksDialog.js": [
+        "./src/components/tasks/BackgroundTasksDialog.tsx"
+      ],
+      "@thyrox/repl/components/tasks/WorkflowsDialog.js": [
+        "./src/components/tasks/WorkflowsDialog.tsx"
+      ],
+      "@thyrox/repl/components/ui/option.js": [
+        "./src/components/ui/option.ts"
+      ],
+      "@thyrox/repl/notifications.js": [
+        "./src/notifications.ts"
+      ],
+      "@thyrox/repl/promptEditor.js": [
+        "./src/promptEditor.ts"
+      ],
+      "@thyrox/repl/fullscreen.js": [
+        "./src/fullscreen.ts"
+      ],
+      "@thyrox/repl/fastMode.js": [
+        "./src/fastMode.ts"
+      ],
+      "@thyrox/repl/doctorDiagnostic.js": [
+        "./src/doctorDiagnostic.ts"
+      ],
+      "@thyrox/repl/imagePaste.js": [
+        "./src/imagePaste.ts"
+      ],
+      "@thyrox/repl/conversationRecovery.js": [
+        "./src/conversationRecovery.tsx"
+      ],
+      "@thyrox/repl/localInstaller.js": [
+        "./src/localInstaller.ts"
+      ],
+      "@thyrox/repl/stateStore.js": [
+        "./src/stateStore.ts"
+      ],
+      "@thyrox/repl/overlayContext.js": [
+        "./src/overlayContext.tsx"
+      ],
+      "@thyrox/repl/history.js": [
+        "./src/history.ts"
+      ],
+      "@thyrox/repl/modalContext.js": [
+        "./src/modalContext.ts"
+      ],
+      "@thyrox/repl/teammateViewHelpers.js": [
+        "./src/teammateViewHelpers.ts"
+      ],
+      "@thyrox/repl/Cursor.js": [
+        "./src/Cursor.ts"
+      ],
+      "@thyrox/repl/selectors.js": [
+        "./src/selectors.ts"
+      ],
+      "@thyrox/repl/hooksSettings.js": [
+        "./src/hooksSettings.ts"
+      ],
+      "@thyrox/repl/isHookEqual.js": [
+        "./src/isHookEqual.ts"
+      ],
+      "@thyrox/repl/textInputTypes.js": [
+        "./src/textInputTypes.ts"
+      ],
+      "@thyrox/repl/tasksTypes.js": [
+        "./src/tasksTypes.ts"
+      ],
+      "@thyrox/repl/localShellTaskGuards.js": [
+        "./src/localShellTaskGuards.ts"
+      ],
+      "@thyrox/repl/ultraplan.js": [
+        "./src/ultraplan.ts"
+      ],
+      "@thyrox/repl/ultraplan/keyword.js": [
+        "./src/ultraplan/keyword.ts"
+      ],
+      "@thyrox/repl/toolPool.js": [
+        "./src/toolPool.ts"
+      ],
+      "@thyrox/repl/readFileInRange.js": [
+        "./src/readFileInRange.ts"
+      ],
+      "@thyrox/repl/queryHelpers.js": [
+        "./src/queryHelpers.ts"
+      ],
+      "@thyrox/repl/hookEvents.js": [
+        "./src/hookEvents.ts"
+      ],
+      "@thyrox/repl/earlyInput.js": [
+        "./src/earlyInput.ts"
+      ],
+      "@thyrox/repl/relaunch.js": [
+        "./src/relaunch.ts"
+      ],
+      "@thyrox/repl/terminalSetup.js": [
+        "./src/terminalSetup.ts"
+      ],
+      "@thyrox/repl/promptSuggestionSpeculation.js": [
+        "./src/promptSuggestionSpeculation.tsx"
+      ],
+      "@thyrox/repl/promptSuggestion.js": [
+        "./src/promptSuggestion.tsx"
+      ],
+      "@thyrox/repl/projectOnboardingState.js": [
+        "./src/projectOnboardingState.ts"
+      ],
+      "@thyrox/repl/promptOverlayContext.js": [
+        "./src/promptOverlayContext.tsx"
+      ],
+      "@thyrox/repl/extraUsage.js": [
+        "./src/extraUsage.ts"
+      ],
+      "@thyrox/repl/onChangeAppState.js": [
+        "./src/onChangeAppState.ts"
+      ],
+      "@thyrox/repl/collapseTeammateShutdowns.js": [
+        "./src/collapseTeammateShutdowns.ts"
+      ],
+      "@thyrox/repl/collapseHookSummaries.js": [
+        "./src/collapseHookSummaries.ts"
+      ],
+      "@thyrox/repl/commands/color/index.js": [
+        "./src/commands/color/index.ts"
+      ],
+      "@thyrox/repl/commands/statusline.js": [
+        "./src/commands/statusline.tsx"
+      ],
+      "@thyrox/repl/commands/diff/index.js": [
+        "./src/commands/diff/index.ts"
+      ],
+      "@thyrox/repl/commands/usage/index.js": [
+        "./src/commands/usage/index.ts"
+      ],
+      "@thyrox/repl/commands/stats/index.js": [
+        "./src/commands/stats/index.ts"
+      ],
+      "@thyrox/repl/commands/config/index.js": [
+        "./src/commands/config/index.ts"
+      ],
+      "@thyrox/repl/commands/doctor/index.js": [
+        "./src/commands/doctor/index.ts"
+      ],
+      "@thyrox/repl/commands/export/index.js": [
+        "./src/commands/export/index.ts"
+      ],
+      "@thyrox/repl/commands/desktop/index.js": [
+        "./src/commands/desktop/index.ts"
+      ],
+      "@thyrox/repl/commands/help/index.js": [
+        "./src/commands/help/index.ts"
+      ],
+      "@thyrox/repl/commands/mobile/index.js": [
+        "./src/commands/mobile/index.ts"
+      ],
+      "@thyrox/repl/commands/output-style/index.js": [
+        "./src/commands/output-style/index.ts"
+      ],
+      "@thyrox/repl/commands/passes/index.js": [
+        "./src/commands/passes/index.ts"
+      ],
+      "@thyrox/repl/commands/vim/index.js": [
+        "./src/commands/vim/index.ts"
+      ],
+      "@thyrox/repl/commands/rewind/index.js": [
+        "./src/commands/rewind/index.ts"
+      ],
+      "@thyrox/repl/commands/install-slack-app/index.js": [
+        "./src/commands/install-slack-app/index.ts"
+      ],
+      "@thyrox/repl/commands/stickers/index.js": [
+        "./src/commands/stickers/index.ts"
+      ],
+      "@thyrox/repl/commands/files/index.js": [
+        "./src/commands/files/index.ts"
+      ],
+      "@thyrox/repl/commands/tag/index.js": [
+        "./src/commands/tag/index.ts"
+      ],
+      "@thyrox/repl/commands/hooks/index.js": [
+        "./src/commands/hooks/index.ts"
+      ],
+      "@thyrox/repl/commands/keybindings/index.js": [
+        "./src/commands/keybindings/index.ts"
+      ],
+      "@thyrox/repl/commands/exit/index.js": [
+        "./src/commands/exit/index.ts"
+      ],
+      "@thyrox/repl/commands/plan/index.js": [
+        "./src/commands/plan/index.ts"
+      ],
+      "@thyrox/repl/commands/heapdump/index.js": [
+        "./src/commands/heapdump/index.ts"
+      ],
+      "@thyrox/repl/commands/tui/index.js": [
+        "./src/commands/tui/index.ts"
+      ],
+      "@thyrox/repl/tips/tipRegistry.js": [
+        "./src/tips/tipRegistry.ts"
+      ],
+      "@thyrox/repl/commands/add-dir/index.js": [
+        "./src/commands/add-dir/index.ts"
+      ],
+      "@thyrox/repl/commands/sandbox-toggle/index.js": [
+        "./src/commands/sandbox-toggle/index.ts"
+      ],
+      "@thyrox/repl/processUserInput/processUserInput.js": [
+        "./src/processUserInput/processUserInput.ts"
+      ],
+      "@thyrox/repl/processUserInput/processSlashCommand.js": [
+        "./src/processUserInput/processSlashCommand.tsx"
+      ],
+      "@thyrox/repl/deepLink/banner.js": [
+        "./src/deepLink/banner.ts"
+      ],
+      "@thyrox/repl/deepLink/registerProtocol.js": [
+        "./src/deepLink/registerProtocol.ts"
+      ],
+      "@thyrox/repl/deepLink/protocolHandler.js": [
+        "./src/deepLink/protocolHandler.ts"
+      ],
+      "@thyrox/repl/ultraplan/ccrSession.js": [
+        "./src/ultraplan/ccrSession.ts"
+      ],
+      "@thyrox/repl/replTypes/ids.js": [
+        "./src/replTypes/ids.ts"
+      ],
+      "@thyrox/repl/replTypes/permissions.js": [
+        "./src/replTypes/permissions.ts"
+      ],
+      "@thyrox/repl/replTypes/logs.js": [
+        "./src/replTypes/logs.ts"
+      ],
+      "@thyrox/repl/replTypes/utils.js": [
+        "./src/replTypes/utils.ts"
+      ],
+      "@thyrox/repl/replTypes/connectorText.js": [
+        "./src/replTypes/connectorText.ts"
+      ],
+      "@thyrox/repl/replTypes/fileSuggestion.js": [
+        "./src/replTypes/fileSuggestion.ts"
+      ],
+      "@thyrox/repl/replTypes/message.js": [
+        "./src/replTypes/message.ts"
+      ],
+      "@thyrox/repl/replTypes/statusLine.js": [
+        "./src/replTypes/statusLine.ts"
+      ],
+      "@thyrox/repl/replTypes/command.js": [
+        "./src/replTypes/command.ts"
+      ],
+      "@thyrox/repl/replTypes/hooks.js": [
+        "./src/replTypes/hooks.ts"
+      ],
+      "@thyrox/repl/diagnostics/claudeDesktop.js": [
+        "./src/diagnostics/claudeDesktop.ts"
+      ],
+      "@thyrox/repl/diagnostics/debugFilter.js": [
+        "./src/diagnostics/debugFilter.ts"
+      ],
+      "@thyrox/repl/github/githubRepoPathMapping.js": [
+        "./src/github/githubRepoPathMapping.ts"
+      ],
+      "@thyrox/repl/uiHelpers/groupToolUses.js": [
+        "./src/uiHelpers/groupToolUses.ts"
+      ],
+      "@thyrox/repl/uiHelpers/horizontalScroll.js": [
+        "./src/uiHelpers/horizontalScroll.ts"
+      ],
+      "@thyrox/repl/uiHelpers/logoV2Utils.js": [
+        "./src/uiHelpers/logoV2Utils.ts"
+      ],
+      "@thyrox/repl/uiHelpers/treeify.js": [
+        "./src/uiHelpers/treeify.ts"
+      ],
+      "@thyrox/repl/clipboard/pasteStore.js": [
+        "./src/clipboard/pasteStore.ts"
+      ],
+      "@thyrox/repl/keybindings/useShortcutDisplay.js": [
+        "./src/keybindings/useShortcutDisplay.ts"
+      ],
+      "@thyrox/repl/interactiveHelpers/interactiveHelpers.js": [
+        "./src/interactiveHelpers/interactiveHelpers.tsx"
+      ],
+      "@thyrox/repl/dialogLaunchers/dialogLaunchers.js": [
+        "./src/dialogLaunchers/dialogLaunchers.tsx"
+      ],
+      "@thyrox/repl/commands/assistant/index.js": [
+        "./src/commands/assistant/index.ts"
+      ],
+      "@thyrox/repl": [
+        "./src/index.ts"
+      ],
+      "@thyrox/repl/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/repl/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/repl/keybindings/defaultBindings.js": [
+        "./src/keybindings/defaultBindings.ts"
+      ],
+      "@thyrox/repl/keybindings/loadUserBindings.js": [
+        "./src/keybindings/loadUserBindings.ts"
+      ],
+      "@thyrox/repl/keybindings/reservedShortcuts.js": [
+        "./src/keybindings/reservedShortcuts.ts"
+      ],
+      "@thyrox/repl/keybindings/schema.js": [
+        "./src/keybindings/schema.ts"
+      ],
+      "@thyrox/repl/keybindings/shortcutFormat.js": [
+        "./src/keybindings/shortcutFormat.ts"
+      ],
+      "@thyrox/repl/screens/Doctor.js": [
+        "./src/screens/Doctor.tsx"
+      ],
+      "@thyrox/repl/screens/REPL.js": [
+        "./src/screens/REPL.tsx"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+318 |   test('readPeerToken por el storage recorre todas las páginas y lee la clave', async () => {
+319 |     const { storage, files } = memoryStorage({}, 1)
+320 |     files.set('a', '{}')
+321 |     files.set('b', '{}')
+322 |     files.set(inboxKeyFileName(9, ADDRESS), JSON.stringify({ peerToken: TOKEN }))
+323 |     expect(await readPeerToken(ADDRESS, { storage }, active())).toEqual({ kind: 'token', token: TOKEN })
+                                                                      ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "kind": "token",
+-   "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "kind": "unusable",
+  }
+
+- Expected  - 2
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:323:65)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > readPeerToken por el storage recorre todas las páginas y lee la clave [1.34ms]
+350 |   test('la lectura por el storage pide un byte más que el tope para detectar el exceso', async () => {
+351 |     const { storage, files, calls } = memoryStorage()
+352 |     files.set(inboxKeyFileName(9, ADDRESS), JSON.stringify({ peerToken: TOKEN }))
+353 |     await readPeerToken(ADDRESS, { storage }, active())
+354 |     const read = calls.find(call => call.op === 'readText')!
+355 |     expect((read.args[0] as Array<{ offset: number; length: number }>)[0]).toMatchObject({ offset: 0, length: 4097 })
+                  ^
+TypeError: undefined is not an object (evaluating 'read.args')
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:355:13)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > la lectura por el storage pide un byte más que el tope para detectar el exceso [0.68ms]
+
+ 32 pass
+ 2 fail
+ 58 expect() calls
+Ran 34 tests across 1 file. [170.00ms]

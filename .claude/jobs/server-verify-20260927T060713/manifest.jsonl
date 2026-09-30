@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check_package_typecheck --strict server && (cd src/packages/server && bun test) && uv run --frozen python tests/verify/test_check_stand_ins.py", "started_at": "2026-09-27T06:07:13+00:00"}

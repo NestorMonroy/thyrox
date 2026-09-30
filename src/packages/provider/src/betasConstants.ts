@@ -12,13 +12,13 @@
  */
 import { feature } from 'bun:bundle'
 
-export const CLAUDE_CODE_20250219_BETA_HEADER = 'claude-code-how-works-how-works-20250219'
+export const CLAUDE_CODE_20250219_BETA_HEADER = 'claude-code-20250219'
 export const INTERLEAVED_THINKING_BETA_HEADER = 'interleaved-thinking-2025-05-14'
 export const CONTEXT_1M_BETA_HEADER = 'context-1m-2025-08-07'
 export const CONTEXT_MANAGEMENT_BETA_HEADER = 'context-management-2025-06-27'
 export const STRUCTURED_OUTPUTS_BETA_HEADER = 'structured-outputs-2025-12-15'
 export const WEB_SEARCH_BETA_HEADER = 'web-search-2025-03-05'
-// El header de tool-search difiere por proveedor: la API de Claude/Foundry
+// El header de tool-search difiere por proveedor: la API de thyrox/Foundry
 // usa el _1P; Vertex/Bedrock usan el _3P.
 export const TOOL_SEARCH_BETA_HEADER_1P = 'advanced-tool-use-2025-11-20'
 export const TOOL_SEARCH_BETA_HEADER_3P = 'tool-search-tool-2025-10-19'
@@ -59,7 +59,7 @@ export const VERTEX_COUNT_TOKENS_ALLOWED_BETAS = new Set([
 ])
 export const CACHE_EDITING_BETA_HEADER: string = ''
 
-// Diagnóstico de caché opt-in (gate: CLAUDE_CODE_CACHE_DIAGNOSIS=1). Cuando
+// Diagnóstico de caché opt-in (gate: THYROX_CODE_CACHE_DIAGNOSIS=1). Cuando
 // el servidor devuelve diagnóstico por bloque de caché, el runtime puede
 // explicar por qué un cache hit no aterrizó (creación vs lectura, deriva de
 // la clave, split de TTL 1h/5m, etc.).
@@ -71,7 +71,7 @@ export const CACHE_DIAGNOSIS_BETA_HEADER = 'cache-diagnosis-2026-04-07'
 export const EXTENDED_CACHE_TTL_BETA_HEADER = 'extended-cache-ttl-2025-04-11'
 
 // Permite cambiar el system prompt a mitad de conversación. Se activa por
-// env (CLAUDE_CODE_MID_CONVERSATION_SYSTEM) o por flag que matchea el
+// env (THYROX_CODE_MID_CONVERSATION_SYSTEM) o por flag que matchea el
 // nombre del modelo. No va en la lista de betas por defecto — se añade por
 // petición vía `isMidConversationSystemEnabled` (ver betas.ts).
 export const MID_CONVERSATION_SYSTEM_BETA_HEADER = 'mid-conversation-system-2026-04-07'

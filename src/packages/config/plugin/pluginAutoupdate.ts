@@ -15,6 +15,7 @@ import { shouldSkipPluginAutoupdate } from '../index.js'
 import { logForDebugging } from './_deps.js'
 import { errorMessage } from './_deps.js'
 import { logError } from './_deps.js'
+import type { PluginUpdateResult } from './pluginOperations.js'
 import {
   getPendingUpdatesDetails,
   hasPendingUpdates,
@@ -113,7 +114,7 @@ async function updatePlugin(
 
   for (const { scope } of installations) {
     try {
-      const result = await updatePluginOp(pluginId, scope)
+      const result = (await updatePluginOp(pluginId, scope)) as PluginUpdateResult
 
       if (result.success && !result.alreadyUpToDate) {
         wasUpdated = true

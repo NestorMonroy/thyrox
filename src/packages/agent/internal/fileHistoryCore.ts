@@ -15,6 +15,7 @@ import { inspect } from 'util'
 import { getGlobalConfig } from '@thyrox/config'
 import { StateError } from '../errors.js'
 import { getAgentHostBindings } from '../host.js'
+import type { AgentHostBindings } from '../host.js'
 import type { AgentLogOption } from '../internalTypes.js'
 import {
   getErrnoCode,
@@ -47,6 +48,29 @@ export type FileHistoryState = {
   snapshotSequence: number
 }
 
+// `host.ts` declara un subconjunto de `AgentHostBindings` (ver su nota de
+// divergencia de alcance) que aún no incluye los bindings de historial de
+// archivo que este módulo consume. Se amplía aquí, localmente, con la firma
+// exacta que la fuente (`contracts.ts`) declara para cada uno.
+type FileHistoryHostBindings = AgentHostBindings & {
+  getIsNonInteractiveSession?: () => boolean
+  getConfigHomeDir?: () => string
+  recordFileHistorySnapshot?: (
+    messageId: string,
+    snapshot: FileHistorySnapshot,
+    isSnapshotUpdate: boolean,
+  ) => Promise<void>
+  notifyVscodeFileUpdated?: (
+    filePath: string,
+    oldContent: string | null,
+    newContent: string | null,
+  ) => void
+}
+
+function getFileHistoryHostBindings(): FileHistoryHostBindings {
+  return getAgentHostBindings() as FileHistoryHostBindings
+}
+
 const MAX_SNAPSHOTS = 100
 export type DiffStats =
   | {
@@ -57,19 +81,19 @@ export type DiffStats =
   | undefined
 
 export function fileHistoryEnabled(): boolean {
-  if (getAgentHostBindings().getIsNonInteractiveSession?.() ?? false) {
+  if (getFileHistoryHostBindings().getIsNonInteractiveSession?.() ?? false) {
     return fileHistoryEnabledSdk()
   }
   return (
     getGlobalConfig().fileCheckpointingEnabled !== false &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FILE_CHECKPOINTING'))
   )
 }
 
 function fileHistoryEnabledSdk(): boolean {
   return (
-    isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING')) &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+    isEnvTruthy(readEnv('THYROX_CODE_ENABLE_SDK_FILE_CHECKPOINTING')) &&
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FILE_CHECKPOINTING'))
   )
 }
 
@@ -165,11 +189,11 @@ export async function fileHistoryTrackEdit(
       maybeDumpStateForDebug(updatedState)
 
       // Record a snapshot update since it has changed.
-      void getAgentHostBindings().recordFileHistorySnapshot?.(
+      void getFileHistoryHostBindings().recordFileHistorySnapshot?.(
         messageId,
         updatedMostRecentSnapshot,
         true, // isSnapshotUpdate
-      ).catch(error => {
+      ).catch((error: unknown) => {
         getAgentHostBindings().logError?.(new Error(`FileHistory: Failed to record snapshot: ${error}`))
       })
 
@@ -203,7 +227,7 @@ export async function fileHistoryMakeSnapshot(
 
   // Phase 1: capture current state with a no-op updater so we know which
   // files to back up. Returning the same reference keeps this a true no-op
-  // for any wrapper that honors same-ref returns (src/CLAUDE.md wrapper
+  // for any wrapper that honors same-ref returns (src/THYROX.md wrapper
   // rule). Wrappers that unconditionally spread will trigger one extra
   // re-render; acceptable for a once-per-turn call.
   let captured: FileHistoryState | undefined
@@ -312,11 +336,11 @@ export async function fileHistoryMakeSnapshot(
       void notifyVscodeSnapshotFilesUpdated(state, updatedState).catch(e => getAgentHostBindings().logError?.(e))
 
       // Record the file history snapshot to session storage for resume support
-      void getAgentHostBindings().recordFileHistorySnapshot?.(
+      void getFileHistoryHostBindings().recordFileHistorySnapshot?.(
         messageId,
         newSnapshot,
         false, // isSnapshotUpdate
-      ).catch(error => {
+      ).catch((error: unknown) => {
         getAgentHostBindings().logError?.(new Error(`FileHistory: Failed to record snapshot: ${error}`))
       })
 
@@ -727,7 +751,7 @@ function getBackupFileName(filePath: string, version: number): string {
 }
 
 function resolveBackupPath(backupFileName: string, sessionId?: string): string {
-  const configDir = getAgentHostBindings().getClaudeConfigHomeDir?.() ?? ''
+  const configDir = getFileHistoryHostBindings().getConfigHomeDir?.() ?? ''
   return join(
     configDir,
     'file-history',
@@ -920,7 +944,9 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
     return
   }
 
-  const fileHistorySnapshots = log.fileHistorySnapshots
+  const fileHistorySnapshots = log.fileHistorySnapshots as
+    | FileHistorySnapshot[]
+    | undefined
   if (!fileHistorySnapshots || log.messages.length === 0) {
     return
   }
@@ -947,7 +973,7 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
     // All backups share the same directory: {configDir}/file-history/{sessionId}/
     // Create it once upfront instead of once per backup file
     const newBackupDir = join(
-      getAgentHostBindings().getClaudeConfigHomeDir?.() ?? '',
+      getFileHistoryHostBindings().getConfigHomeDir?.() ?? '',
       'file-history',
       sessionId,
     )
@@ -1015,11 +1041,11 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
 
         // Record the snapshot only if we have successfully migrated the backup files
         if (!copyFailed) {
-          void getAgentHostBindings().recordFileHistorySnapshot?.(
+          void getFileHistoryHostBindings().recordFileHistorySnapshot?.(
             snapshot.messageId,
             snapshot,
             false, // isSnapshotUpdate
-          ).catch(_ => {
+          ).catch((_: unknown) => {
             getAgentHostBindings().logError?.(
               new Error(`FileHistory: Failed to record copy backup snapshot`),
             )
@@ -1088,7 +1114,7 @@ async function notifyVscodeSnapshotFilesUpdated(
 
     // Only notify if content actually changed
     if (oldContent !== newContent) {
-      getAgentHostBindings().notifyVscodeFileUpdated?.(filePath, oldContent, newContent)
+      getFileHistoryHostBindings().notifyVscodeFileUpdated?.(filePath, oldContent, newContent)
     }
   }
 }

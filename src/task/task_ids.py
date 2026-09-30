@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""``TASK-<CAPA>-NNNN`` — el identificador de cita de una tarea.
+"""``TASK-<LAYER>-NNNN`` — el identificador de cita de una tarea.
 
 El prefijo dice el GENERO, no el proyecto
 ------------------------------------------
-Nacio como ``KX-<CAPA>-NNNN`` —«el identificador de cita del proyecto»— con un
+Nacio como ``KX-<LAYER>-NNNN`` —«el identificador de cita del proyecto»— con un
 solo eje de clasificacion: la capa. El tipo no entraba porque la unica poblacion
 citable era ``tasks``.
 
@@ -116,14 +116,22 @@ import sys
 # —no lazy— porque varias suites cargan este archivo con
 # `spec_from_file_location`, via por la que su directorio no queda en la ruta
 # de busqueda. Es el mismo criterio que `closure_graph.py` ya documenta.
+#
+# Y el archivo TAMBIEN corre como PROGRAMA directo —`bin/task_ids` (que fija
+# `PYTHONPATH`) y, sin ese envoltorio, las suites que lo invocan por ruta con
+# `subprocess.run`—: ahi `sys.path[0]` es `src/task`, y `paths` no resolveria.
+# El insert es el mismo patron que `paths/reach_roots.py::_load_owner` ya usa
+# para el caso identico de un dueño que se importa por nombre.
+_SRC_DIR = str(pathlib.Path(__file__).resolve().parent.parent)
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
+
 from paths import reach  # noqa: E402
 
 #: Los REPOS del multi-repo donde un trabajo puede aterrizar.
 #:
-#: EL EJE ES EL REPO, NO LA CAPA DEL PRODUCTO — decidido el 2026-09-07, y es
-#: un cambio de significado, no una entrada mas. Los dos ejes coincidian
-#: mientras los cinco repos eran las cinco capas; con ``thyrox`` dejan de
-#: coincidir, porque es un repo y **no** es una capa del producto: es su
+#: EL EJE ES EL REPO, NO LA CAPA DEL PRODUCTO. Los dos ejes coinciden en los
+#: cinco ``kaupamex-*``; con ``thyrox`` no coinciden, porque es un repo y **no** es una capa del producto: es su
 #: PROVEEDOR de metodologia, y los cinco ``kaupamex-*`` son sus consumidores.
 #: Es lo mismo que el comentario de la clave ``submodulos:`` en ``CLAUDE.md``
 #: ya declara un nivel mas arriba.
@@ -137,13 +145,9 @@ LAYERS = ("api", "db", "docs", "server", "thyrox", "ui")
 
 #: El trabajo que CRUZA repos — no el que no se supo clasificar.
 #:
-#: Nacio como «sin señal», y con el eje en la capa del producto eso lo
-#: convirtio en desague: medido el 2026-09-07, **632 de 1565** citas acuñadas
-#: (el 40 %) llevaban ``GEN``, mas que cualquier repo. Un cubo de descarte que
-#: resulta ser el mayor del esquema no es una categoria, es la ausencia de una.
-#:
-#: REDEFINIDO el 2026-09-07 por decision del ejecutor: ``GEN`` nombra el
-#: trabajo que **CRUZA repos**, que en un multi-repo es una categoria real y
+#: Como «sin señal» seria un desague: un cubo de descarte que resulta ser el
+#: mayor del esquema no es una categoria, es la ausencia de una. ``GEN`` nombra
+#: el trabajo que **CRUZA repos**, que en un multi-repo es una categoria real y
 #: frecuente — un porte que toca thyrox y su consumidor, un barrido de los
 #: cinco, una regla que se replica.
 #:
@@ -273,7 +277,7 @@ class TaskRef:
 
 
 class Mapping:
-    """El mapa ``TASK-<CAPA>-NNNN`` ↔ ``(session_id, task_id)``.
+    """El mapa ``TASK-<LAYER>-NNNN`` ↔ ``(session_id, task_id)``.
 
     Guarda **un** diccionario —el directo— y deriva el inverso al cargar o al
     llamar a :meth:`reindex`. Guardar los dos en el archivo abriria la puerta a
@@ -310,7 +314,15 @@ class Mapping:
         """
         self._by_key = {}
         self._by_subject = {}
+        #: Cita de capa -> ``citation_id`` de su fila (``correct_layer``).
+        self.aliases = {}
         for identifier, record in self.ids.items():
+            layer_citation = record.get("layer_citation")
+            if layer_citation:
+                self.aliases[layer_citation] = identifier
+                alias_layer, alias_ordinal = _split(layer_citation)
+                if alias_ordinal >= self._next.get(alias_layer, 0):
+                    self._next[alias_layer] = alias_ordinal + 1
             key = f"{record['session']}{KEY_SEP}{record['task']}"
             self._by_key[key] = identifier
             subject = " ".join((record.get("subject") or "").split())
@@ -325,6 +337,16 @@ class Mapping:
 
     def next_ordinal(self, layer: str) -> int:
         return self._next.get(layer, 1)
+
+    def resolve(self, citation: str) -> str | None:
+        """El ``citation_id`` que nombra ``citation``, sea la original o la de capa."""
+        if citation in self.ids:
+            return citation
+        return self.aliases.get(citation)
+
+    def preferred(self, identifier: str) -> str:
+        """La cita a usar en texto nuevo: la de capa si existe, si no la original."""
+        return (self.ids.get(identifier) or {}).get("layer_citation") or identifier
 
 
 def _now() -> str:
@@ -344,12 +366,42 @@ def format_id(layer: str, ordinal: int) -> str:
     return f"TASK-{layer.upper()}-{ordinal:04d}"
 
 
+#: La columna de la cita en la capa CORREGIDA (``correct_layer``). La crea la
+#: migracion de ``agent_store``; un store sin ella se lee como antes.
+LAYER_CITATION_COLUMN = "layer_citation_id"
+
+
+def _task_columns(conn) -> set:
+    return {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+
+
+def _max_ordinal(conn, layer: str) -> int:
+    """El numero mas alto repartido en una capa, sobre las DOS columnas de cita.
+
+    Es la unica secuencia por capa: ``citation_id`` y ``layer_citation_id``
+    comparten el espacio ``TASK-<LAYER>-NNNN``, y contar solo la primera haria
+    que ``ingest_board`` repartiera un numero que la segunda ya publico.
+    """
+    prefix = f"TASK-{layer.upper()}-"
+    columns = ["citation_id"]
+    if LAYER_CITATION_COLUMN in _task_columns(conn):
+        columns.append(LAYER_CITATION_COLUMN)
+    highest = 0
+    for column in columns:
+        value = conn.execute(
+            f"SELECT MAX(CAST(substr({column}, ?) AS INTEGER)) "
+            f"  FROM tasks WHERE {column} LIKE ?",
+            (len(prefix) + 1, f"{prefix}%")).fetchone()[0]
+        highest = max(highest, int(value or 0))
+    return highest
+
+
 def lookup(mapping: Mapping, session_id: str, task_id: str) -> str | None:
     """El id de cita de un par, o ``None`` si nunca se acuñó."""
     return mapping._by_key.get(f"{session_id}{KEY_SEP}{task_id}")
 
 
-def mint(mapping: Mapping, refs) -> dict:
+def assign_missing_ids(mapping: Mapping, refs) -> dict:
     """Acuña lo que falte y devuelve el id de **todas** las referencias dadas.
 
     Devuelve el id tambien de las que ya lo tenian: quien llama necesita el
@@ -361,7 +413,7 @@ def mint(mapping: Mapping, refs) -> dict:
     #: instantanea: cada referencia es una tarea distinta, asi que un mismo id
     #: no puede servir a dos de ellas aunque compartan titulo. Sin esto, dos
     #: tareas homonimas colapsan en una.
-    usados: set = set()
+    used: set = set()
     for ref in refs:
         # EL SUJETO MANDA, y el orden de estas consultas ES el arreglo de #104.
         # El par ``(sesion, ordinal)`` es una COORDENADA de un instante: el
@@ -370,19 +422,19 @@ def mint(mapping: Mapping, refs) -> dict:
         # exactamente H-DOCS-1042 (92 citas reasignadas). El sujeto lo escribe
         # una persona y sobrevive al volcado: es la identidad.
         subject_key = ref.subject_key
-        candidatos = [i for i in mapping._by_subject.get(subject_key or "", [])
-                      if i not in usados]
-        if subject_key is not None and len(candidatos) == 1:
-            identifier = candidatos[0]
+        candidates = [i for i in mapping._by_subject.get(subject_key or "", [])
+                      if i not in used]
+        if subject_key is not None and len(candidates) == 1:
+            identifier = candidates[0]
             record = mapping.ids[identifier]
             # Se re-ancla la llave natural al ordinal de hoy. El id NO cambia:
             # es identidad, no coordenada (propiedad 3 del contrato).
-            vieja = f"{record['session']}{KEY_SEP}{record['task']}"
-            if vieja != ref.key:
-                mapping._by_key.pop(vieja, None)
+            old_key = f"{record['session']}{KEY_SEP}{record['task']}"
+            if old_key != ref.key:
+                mapping._by_key.pop(old_key, None)
             record["task"] = ref.task_id
             mapping._by_key[ref.key] = identifier
-            usados.add(identifier)
+            used.add(identifier)
             assigned[ref.key] = identifier
             continue
         if subject_key is not None:
@@ -394,8 +446,8 @@ def mint(mapping: Mapping, refs) -> dict:
         else:
             # Sin sujeto util (vacio) la llave natural es lo unico que queda.
             existing = mapping._by_key.get(ref.key)
-            if existing is not None and existing not in usados:
-                usados.add(existing)
+            if existing is not None and existing not in used:
+                used.add(existing)
                 assigned[ref.key] = existing
                 continue
         layer = ref.normalized_layer()
@@ -410,7 +462,7 @@ def mint(mapping: Mapping, refs) -> dict:
         mapping._by_key[ref.key] = identifier
         if subject_key is not None:
             mapping._by_subject.setdefault(subject_key, []).append(identifier)
-        usados.add(identifier)
+        used.add(identifier)
         mapping._next[layer] = ordinal + 1
         assigned[ref.key] = identifier
     return assigned
@@ -429,7 +481,7 @@ def dumps(mapping: Mapping) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Adaptador al store. El nucleo de arriba —``Mapping``, ``mint``, ``lookup``—
+# Adaptador al store. El nucleo de arriba —``Mapping``, ``assign_missing_ids``, ``lookup``—
 # no sabe que existe una base de datos, y esa separacion es deliberada: el mapa
 # tiene que poder reconstruirse con el JSON y nada mas. Lo unico que el store
 # aporta es DE QUE TAREAS hay que acuñar id, y en que orden.
@@ -493,20 +545,20 @@ def refs_from_store(store_path) -> list:
     return refs
 
 
-def _cmd_acunar(args: argparse.Namespace) -> int:
-    """Acuña el id que falte para cada tarea del store. Aditivo, nunca renumera."""
+def _cmd_assign_ids(args: argparse.Namespace) -> int:
+    """Assigns the missing ID for tasks already in the store; never renumbers."""
     mapping = mapping_from_store(args.store)
-    antes = len(mapping.ids)
+    before = len(mapping.ids)
     refs = refs_from_store(args.store)
-    assignments = mint(mapping, refs)
-    nuevos = len(mapping.ids) - antes
+    assignments = assign_missing_ids(mapping, refs)
+    new_count = len(mapping.ids) - before
     if args.dry_run:
-        print(f"acuñar (simulacro): {nuevos} id(es) nuevo(s) sobre {len(refs)} "
+        print(f"acuñar (simulacro): {new_count} id(es) nuevo(s) sobre {len(refs)} "
               f"tarea(s); el mapa quedaria en {len(mapping.ids)}")
         return 0
-    tocadas = persist_to_store(args.store, assignments)
-    print(f"acuñar: {nuevos} id(es) nuevo(s) sobre {len(refs)} tarea(s) del "
-          f"store ({tocadas} fila(s) escrita(s)); {len(mapping.ids)} id(es) de "
+    touched = persist_to_store(args.store, assignments)
+    print(f"acuñar: {new_count} id(es) nuevo(s) sobre {len(refs)} tarea(s) del "
+          f"store ({touched} fila(s) escrita(s)); {len(mapping.ids)} id(es) de "
           f"cita en total")
     return 0
 
@@ -528,13 +580,16 @@ def mapping_from_store(store_path) -> Mapping:
     conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     try:
-        columnas = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
-        if "citation_id" not in columnas:
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+        if "citation_id" not in columns:
             # La columna la crea la migracion del store. Sin ella el mapa esta
             # vacio de verdad — es el primer uso, no un fallo.
             return Mapping()
+        layer_citation = (LAYER_CITATION_COLUMN if LAYER_CITATION_COLUMN in columns
+                          else "NULL")
         rows = list(conn.execute(
-            "SELECT session_id, task_id, citation_id, submodule, subject "
+            "SELECT session_id, task_id, citation_id, submodule, subject, "
+            f"  {layer_citation} AS layer_citation "
             "  FROM tasks WHERE citation_id IS NOT NULL"))
     finally:
         conn.close()
@@ -546,6 +601,10 @@ def mapping_from_store(store_path) -> Mapping:
             "task": row["task_id"],
             "subject": row["subject"] or "",
         }
+        # Solo cuando existe: una clave en `None` cambiaria la forma del mapa
+        # de toda fila que nunca se corrigio.
+        if row["layer_citation"]:
+            ids[row["citation_id"]]["layer_citation"] = row["layer_citation"]
     return Mapping(ids)
 
 
@@ -557,7 +616,7 @@ def persist_to_store(store_path, assignments: dict) -> int:
     id existente se puede pisar ni siquiera por error de quien llama.
     """
     conn = sqlite3.connect(pathlib.Path(store_path))
-    tocadas = 0
+    touched = 0
     try:
         for key, identifier in assignments.items():
             session_id, task_id = key.split(KEY_SEP, 1)
@@ -565,32 +624,49 @@ def persist_to_store(store_path, assignments: dict) -> int:
                 "UPDATE tasks SET citation_id = ? "
                 " WHERE session_id = ? AND task_id = ? AND citation_id IS NULL",
                 (identifier, session_id, task_id))
-            tocadas += cur.rowcount
+            touched += cur.rowcount
         conn.commit()
     finally:
         conn.close()
-    return tocadas
+    return touched
 
 
 def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> list:
-    """Trae al store el sujeto de una tarjeta del board que aun no tiene fila.
+    """Trae al store cada tarjeta del board, por su IDENTIDAD de ordinal.
 
-    El board del cliente numera por ORDINAL de sesion, y ese ordinal se reusa:
-    el store recuerda al ocupante anterior, asi que citar ``#122`` en un `.rst`
-    puede nombrar hoy un sujeto muerto (:ref:`h-docs-1067`). La reparacion no
-    es reasignar el ``citation_id`` viejo —eso destruiria la cita del sujeto
-    anterior, que es el daño de :ref:`h-docs-1042`— sino dar al sujeto nuevo
-    una fila propia en un ordinal libre, con su cita acuñada.
+    La identidad de una tarjeta es ``(session_id, board_ordinal)``, NUNCA el
+    ``subject`` (H-THYROX-252). Deduplicar por sujeto —la forma anterior—
+    hacia que una tarjeta RENOMBRADA en el board se leyera como un sujeto
+    nuevo, y recibiera una SEGUNDA cita sin pisar la primera: dos citas para
+    la misma tarjeta, y nada que las relacione.
 
-    Es ADITIVO por construccion: inserta filas nuevas y no toca ninguna
-    existente. Devuelve ``(ordinal_board, ordinal_store, cita, sujeto)`` por
-    tarjeta acuñada.
+    Por cada ordinal:
 
-    *Metrica:* tarjetas del board cuyo sujeto no aparece en ninguna fila del
-    store para esta sesion.
-    *Ciega a:* un sujeto que exista en el store con otra redaccion — la
-    comparacion es por texto exacto, no por semantica, asi que un reencuadre
-    del titulo se acuña como sujeto nuevo.
+    - si ya hay una fila ``(session_id, board_ordinal)``: no se crea otra.
+      Si su cita es nula, se acuña. Si el sujeto, la descripcion o el estado
+      de la tarjeta cambiaron, se actualizan esos campos — la cita, si ya
+      existia, NUNCA se mueve.
+    - si no hay fila: se inserta una nueva, con su ``board_ordinal`` y una
+      cita nueva.
+
+    Es ADITIVA: nunca reasigna una cita ya acuñada. Devuelve
+    ``(ordinal_board, ordinal_store, cita, sujeto)`` por tarjeta TOCADA —
+    creada, o actualizada de verdad. Repetir el ingest sobre una tarjeta sin
+    cambios no la vuelve a listar (idempotencia observable).
+
+    **Rehusa sobre una sesion no reconciliada.** Si alguna fila de la sesion
+    tiene ``board_ordinal IS NULL``, no se ingiere nada: esa fila es
+    indistinguible de «no existe todavia», y el sujeto de su tarjeta
+    recibiria una segunda cita — exactamente el defecto que esta identidad
+    existe para cerrar. Se reconcilia con :func:`link_board_ordinal` antes de
+    ingerir.
+
+    *Metrica:* tarjetas del board cuyo ``(session_id, board_ordinal)`` no
+    tiene fila en el store, o cuya fila tiene cita nula, o sujeto/descripcion/
+    estado distintos de los de la tarjeta.
+    *Ciega a:* un board con la tarjeta en otro ordinal por error de quien lo
+    genera — la identidad es el ordinal que EL BOARD declara, no un cruce por
+    contenido.
     """
     store_path = pathlib.Path(store_path)
     board_dir = pathlib.Path(board_dir)
@@ -607,18 +683,42 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
         )
     stamp = _now()
     conn = sqlite3.connect(store_path)
-    acunadas = []
+    touched_cards = []
     try:
-        vistos = {row[0] for row in conn.execute(
-            "SELECT subject FROM tasks WHERE session_id = ?", (session_id,))}
-        # Filas del sujeto SIN cita: las deja así `snapshot-tareas`, que
-        # inserta sin acuñar. Saltarlas como «ya vistas» las dejaba sin cita
-        # durable para siempre (medido 2026-09-23: cuatro tareas). Se acuña en
-        # esa fila porque su cita es nula; una cita existente no se reasigna.
-        sin_cita = {row[0]: (row[1], row[2]) for row in conn.execute(
-            "SELECT subject, task_id, submodule FROM tasks "
-            " WHERE session_id = ? AND citation_id IS NULL", (session_id,))}
-        ordinal = int(conn.execute(
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+        if "board_ordinal" not in columns:
+            # Un store que nunca paso por `agent_store.connect()` —el store
+            # real siempre pasa; esto cubre el fixture minimo de una prueba, o
+            # un store muy viejo—. Se migra aqui mismo, con la MISMA
+            # semantica de auto-reconciliacion que `snapshot-tareas` ya
+            # aplica: el ordinal por defecto es el propio `task_id`. No es lo
+            # mismo que la migracion oficial de `agent_store` —que deja NULO
+            # lo historico, porque ahi si puede haber filas que dependieran
+            # de la ausencia de la columna—: aqui la columna nunca existio, y
+            # ninguna fila pudo haber dependido de distinguir "reconciliada"
+            # de "no reconciliada" sobre algo que no estaba.
+            conn.execute("ALTER TABLE tasks ADD COLUMN board_ordinal INTEGER")
+            conn.execute(
+                "UPDATE tasks SET board_ordinal = CAST(task_id AS INTEGER) "
+                " WHERE board_ordinal IS NULL AND task_id GLOB '[0-9]*'")
+        # La sesion tiene que estar RECONCILIADA antes de ingerir — sin esto,
+        # una fila historica sin ordinal es indistinguible de «no existe
+        # todavia» y su tarjeta recibiria una segunda cita (H-THYROX-252).
+        missing_ordinal = conn.execute(
+            "SELECT COUNT(*) FROM tasks "
+            " WHERE session_id = ? AND board_ordinal IS NULL",
+            (session_id,)
+        ).fetchone()[0]
+        if missing_ordinal:
+            raise MappingError(
+                f"la sesion {session_id!r} tiene {missing_ordinal} fila(s) sin "
+                f"board_ordinal: no esta reconciliada. NO se ingiere nada: "
+                f"ingerir aqui repetiria el defecto que esta identidad cierra "
+                f"— una fila sin ordinal es indistinguible de «no existe» y su "
+                f"tarjeta recibiria una segunda cita. Fijar el ordinal de cada "
+                f"fila con link_board_ordinal antes de ingerir el board."
+            )
+        next_task_id = int(conn.execute(
             "SELECT MAX(CAST(task_id AS INTEGER)) FROM tasks WHERE session_id = ?",
             (session_id,)).fetchone()[0] or 0)
         for board_id in ordinals:
@@ -630,64 +730,150 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
                 )
             data = json.loads(card.read_text())
             subject = data.get("subject", "")
-            if subject in vistos and subject not in sin_cita:
-                continue
+            description = data.get("description", "")
+            status = data.get("status", "pending")
             # La tarjeta del board NO trae capa (medido: sus claves son
-            # blockedBy/blocks/description/id/status/subject). `--capa` es una
+            # blockedBy/blocks/description/id/status/subject). `--layer` es una
             # DECLARACION de quien acuña, no una adivinanza del guion; sin
             # ella la fila nace en `gen`, que dice «no se sabe».
-            capa = layer or data.get("submodule") or UNKNOWN_LAYER
-            capa = capa.lower()
-            layer_actual = capa
-            if layer_actual not in LAYERS and layer_actual != UNKNOWN_LAYER:
-                layer_actual = UNKNOWN_LAYER
-            siguiente = conn.execute(
-                "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
-                " WHERE citation_id LIKE ?",
-                (len(f"TASK-{layer_actual.upper()}-") + 1,
-                 f"TASK-{layer_actual.upper()}-%")
-            ).fetchone()[0]
-            cita = format_id(layer_actual, int(siguiente or 0) + 1)
-            if subject in sin_cita:
-                existente, capa_previa = sin_cita.pop(subject)
-                # La capa declarada sustituye sólo a «no se sabe» (`gen`).
-                capa_fila = layer_actual if (capa_previa in (None, UNKNOWN_LAYER)) else capa_previa
-                if capa_fila != layer_actual:
-                    # La cita lleva el prefijo de la capa de SU fila.
-                    previo = conn.execute(
-                        "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
-                        " WHERE citation_id LIKE ?",
-                        (len(f"TASK-{capa_fila.upper()}-") + 1, f"TASK-{capa_fila.upper()}-%")
-                    ).fetchone()[0]
-                    cita = format_id(capa_fila, int(previo or 0) + 1)
-                conn.execute(
-                    "UPDATE tasks SET citation_id = ?, submodule = ?, "
-                    "  submodule_source = ?, updated_at = ? "
-                    " WHERE session_id = ? AND task_id = ? AND citation_id IS NULL",
-                    (cita, capa_fila, "acuñado al ingerir el board", stamp,
-                     session_id, existente))
-                acunadas.append((str(board_id), str(existente), cita, subject))
+            card_layer = (layer or data.get("submodule") or UNKNOWN_LAYER).lower()
+            if card_layer not in LAYERS and card_layer != UNKNOWN_LAYER:
+                card_layer = UNKNOWN_LAYER
+            ordinal_int = int(board_id)
+            card_row = conn.execute(
+                "SELECT task_id, subject, description, status, citation_id, "
+                "       submodule FROM tasks "
+                " WHERE session_id = ? AND board_ordinal = ?",
+                (session_id, ordinal_int)
+            ).fetchone()
+            if card_row is not None:
+                (task_id_row, subject_row, description_row, status_row,
+                 citation, layer_row) = card_row
+                touched = False
+                if citation is None:
+                    # La cita lleva el prefijo de la capa YA conocida de la
+                    # fila; solo cae a la declarada cuando la fila no sabia
+                    # ninguna (`gen`/NULL). El id es identidad — no se corrige
+                    # aqui la CAPA de una fila ya clasificada.
+                    layer_citation = layer_row if layer_row in LAYERS else card_layer
+                    citation = format_id(layer_citation,
+                                         _max_ordinal(conn, layer_citation) + 1)
+                    conn.execute(
+                        "UPDATE tasks SET citation_id = ? "
+                        " WHERE session_id = ? AND task_id = ? "
+                        "   AND citation_id IS NULL",
+                        (citation, session_id, task_id_row))
+                    touched = True
+                if (subject_row, description_row, status_row) != (
+                        subject, description, status):
+                    conn.execute(
+                        "UPDATE tasks SET subject = ?, description = ?, "
+                        "  status = ?, updated_at = ? "
+                        " WHERE session_id = ? AND task_id = ?",
+                        (subject, description, status, stamp,
+                         session_id, task_id_row))
+                    touched = True
+                if touched:
+                    touched_cards.append((str(board_id), str(task_id_row), citation, subject))
                 continue
-            ordinal += 1
+            citation = format_id(card_layer, _max_ordinal(conn, card_layer) + 1)
+            next_task_id += 1
             conn.execute(
                 "INSERT INTO tasks (task_id, subject, description, status, "
                 "  session_id, source, created_at, updated_at, submodule, "
-                "  submodule_source, opened_at, opened_at_source, citation_id) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (str(ordinal), subject, data.get("description", ""),
-                 data.get("status", "pending"), session_id, "task_ids ingerir-board",
-                 stamp, stamp, layer_actual, "acuñado al ingerir el board",
-                 stamp, "acuñado al ingerir el board", cita))
-            vistos.add(subject)
-            acunadas.append((str(board_id), str(ordinal), cita, subject))
+                "  submodule_source, opened_at, opened_at_source, citation_id, "
+                "  board_ordinal) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (str(next_task_id), subject, description, status,
+                 session_id, "task_ids ingest-board", stamp, stamp, card_layer,
+                 "acuñado al ingerir el board", stamp,
+                 "acuñado al ingerir el board", citation, ordinal_int))
+            touched_cards.append((str(board_id), str(next_task_id), citation, subject))
         conn.commit()
     finally:
         conn.close()
-    return acunadas
+    return touched_cards
+
+
+def link_board_ordinal(store_path, session_id: str, citation_id: str,
+                       board_ordinal: int) -> None:
+    """Fija el ``board_ordinal`` de UNA fila existente que aun no lo tiene.
+
+    Es la herramienta de la RECONCILIACION: cuando ``ingest_board`` rehusa por
+    sesion no reconciliada, esta funcion fija el ordinal fila por fila, sobre
+    datos ya reales — no reconcilia nada por su cuenta ni adivina el ordinal
+    que le corresponde a cada cita. Aditiva: no toca ninguna otra columna.
+
+    Rehusa (``MappingError``, nada escrito) en tres casos:
+
+    - la cita no existe en la sesion;
+    - la fila de esa cita YA tiene un ``board_ordinal`` — fijarlo dos veces
+      con valores distintos moveria la identidad de la tarjeta, y este
+      esquema existe justo para que eso no pase en silencio;
+    - el ordinal ya pertenece a OTRA fila de la misma sesion — dos tarjetas
+      no pueden compartir identidad.
+
+    *Metrica:* la fila ``(session_id, citation_id)`` con ``board_ordinal``
+    fijado, o ninguna si rehusa.
+    *Ciega a:* si el ordinal que se declara es realmente el de esa tarjeta en
+    el board vivo — esta funcion no lee el board, sólo escribe lo que se le
+    declara.
+    """
+    store_path = pathlib.Path(store_path)
+    if not store_path.exists():
+        raise MappingError(
+            f"no existe el store {store_path}. NO se fija nada: sin el store "
+            f"no hay fila que reconciliar."
+        )
+    conn = sqlite3.connect(store_path)
+    try:
+        card_row = conn.execute(
+            "SELECT task_id, board_ordinal FROM tasks "
+            " WHERE session_id = ? AND citation_id = ?",
+            (session_id, citation_id)
+        ).fetchone()
+        if card_row is None:
+            raise MappingError(
+                f"la cita {citation_id!r} no existe en la sesion {session_id!r}. "
+                f"NO se fija nada."
+            )
+        task_id, ordinal_actual = card_row
+        if ordinal_actual is not None:
+            raise MappingError(
+                f"la fila de {citation_id!r} ya tiene board_ordinal="
+                f"{ordinal_actual}. NO se fija nada: fijarlo de nuevo movería "
+                f"la identidad de la tarjeta, que es justo lo que este "
+                f"esquema existe para impedir."
+            )
+        occupant = conn.execute(
+            "SELECT citation_id FROM tasks "
+            " WHERE session_id = ? AND board_ordinal = ?",
+            (session_id, board_ordinal)
+        ).fetchone()
+        if occupant is not None:
+            raise MappingError(
+                f"el ordinal {board_ordinal} ya pertenece a {occupant[0]!r} en "
+                f"la sesion {session_id!r}. NO se fija nada: dos tarjetas no "
+                f"pueden compartir identidad."
+            )
+        conn.execute(
+            "UPDATE tasks SET board_ordinal = ? "
+            " WHERE session_id = ? AND task_id = ?",
+            (board_ordinal, session_id, task_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _cmd_link_board_ordinal(args: argparse.Namespace) -> int:
+    link_board_ordinal(args.store, args.sesion, args.cita, args.ordinal)
+    print(f"link-board-ordinal: {args.cita} -> board_ordinal={args.ordinal} "
+          f"(sesion {args.sesion})")
+    return 0
 
 
 def correct_layer(store_path, citation_id: str, layer: str,
-                  reason: str) -> tuple[str, str]:
+                  reason: str) -> tuple[str, str, str | None]:
     """Corrige la CAPA de una tarea sin tocar su ``citation_id``.
 
     Para que existe, y por que la columna y no el id
@@ -708,7 +894,20 @@ def correct_layer(store_path, citation_id: str, layer: str,
     ``submodule_source`` guarda la RAZON, no solo el valor nuevo: una columna
     que cambia sin decir por que es indistinguible de una que se corrompio.
 
-    Devuelve ``(capa_anterior, capa_nueva)``.
+    La cita en la capa corregida
+    ----------------------------
+    Si la capa nueva es una de ``LAYERS`` y el prefijo del ``citation_id`` no
+    la nombra, se acuña ``layer_citation_id``: la cita de la tarea en su capa
+    (``TASK-GEN-0644`` -> ``TASK-THYROX-0564``). El ``citation_id`` sigue
+    resolviendo; la cita nueva resuelve a la misma fila. El numero sale de la
+    misma secuencia que ``ingest_board`` (:func:`_max_ordinal`), asi que
+    ninguna de las dos columnas repite un numero de la otra.
+
+    Una cita de capa ya acuñada NO se reemplaza: si la capa vuelve a cambiar a
+    otra distinta, se rehusa. Publicada, es tan identidad como la primera.
+
+    Devuelve ``(capa_anterior, capa_nueva, cita_de_capa)``; la tercera es
+    ``None`` cuando no corresponde ninguna.
     """
     layer_actual = (layer or "").lower()
     if layer_actual not in LAYERS and layer_actual != UNKNOWN_LAYER:
@@ -723,40 +922,127 @@ def correct_layer(store_path, citation_id: str, layer: str,
             "por que es indistinguible de una que se corrompio.")
     conn = sqlite3.connect(store_path)
     try:
+        has_layer_column = LAYER_CITATION_COLUMN in _task_columns(conn)
         row = conn.execute(
-            "SELECT submodule FROM tasks WHERE citation_id = ?",
+            "SELECT submodule, "
+            + (LAYER_CITATION_COLUMN if has_layer_column else "NULL")
+            + " FROM tasks WHERE citation_id = ?",
             (citation_id,)).fetchone()
         if row is None:
             raise MappingError(
                 f"no hay ninguna tarea con la cita {citation_id} en "
                 f"{store_path}. NO se escribe nada.")
-        previous = row[0]
+        previous, layer_citation = row
+        needs_layer_citation = (layer_actual in LAYERS
+                                and _split(citation_id)[0] != layer_actual)
+        # Todas las negativas van ANTES de escribir: una correccion a medias
+        # (capa cambiada, cita de capa ausente) seria un estado que ningun
+        # lector sabria distinguir de uno correcto.
+        # Sin la columna, la capa se corrige igual y la cita de capa no se
+        # acuña: corregir la capa es la funcion principal y no depende de la
+        # migracion. `_cmd_fix_layer` lo dice en su salida.
+        needs_layer_citation = needs_layer_citation and has_layer_column
+        if (needs_layer_citation and layer_citation is not None
+                and _split(layer_citation)[0] != layer_actual):
+            raise MappingError(
+                f"{citation_id} ya tiene la cita de capa {layer_citation}, y "
+                f"una cita publicada no se reemplaza. NO se escribe nada.")
         stamp = _now()
         conn.execute(
             "UPDATE tasks SET submodule = ?, submodule_source = ?, "
             "  updated_at = ? WHERE citation_id = ?",
             (layer_actual, f"corregida {stamp}: {reason.strip()}",
              stamp, citation_id))
+        if needs_layer_citation and layer_citation is None:
+            layer_citation = format_id(layer_actual,
+                                       _max_ordinal(conn, layer_actual) + 1)
+            conn.execute(
+                f"UPDATE tasks SET {LAYER_CITATION_COLUMN} = ? "
+                f" WHERE citation_id = ?", (layer_citation, citation_id))
         conn.commit()
     finally:
         conn.close()
-    return previous, layer_actual
+    return previous, layer_actual, layer_citation if needs_layer_citation else None
 
 
-def _cmd_fix_layer(args: argparse.Namespace) -> int:
-    previous, new = correct_layer(args.store, args.cita, args.capa, args.razon)
-    print(f"corregir-capa: {args.cita} {previous} -> {new} "
-          f"(la cita NO se mueve: es identidad, no clasificacion)")
+def assign_layer_citations(store_path, dry_run: bool = False) -> list:
+    """Acuña ``layer_citation_id`` en las filas ya corregidas que no la tienen.
+
+    Una fila la necesita cuando su capa es una de ``LAYERS`` y el prefijo de su
+    ``citation_id`` no la nombra: las corregidas antes de que existiera la
+    columna. No reusa :func:`correct_layer` porque esa reescribe
+    ``submodule_source``, y la razon original de la correccion se perderia.
+
+    El orden es el numero del ``citation_id``, de menor a mayor, para que dos
+    pasadas sobre el mismo store acuñen lo mismo. Devuelve
+    ``[(citation_id, cita_de_capa)]``; con ``dry_run`` no escribe.
+    """
+    conn = sqlite3.connect(store_path)
+    try:
+        if LAYER_CITATION_COLUMN not in _task_columns(conn):
+            raise MappingError(
+                f"el store {store_path} no tiene la columna "
+                f"{LAYER_CITATION_COLUMN}. Se crea al abrirlo con "
+                f"agent_store.connect(); NO se escribe nada.")
+        pending = []
+        for citation_id, layer in conn.execute(
+                "SELECT citation_id, submodule FROM tasks "
+                f" WHERE citation_id IS NOT NULL AND {LAYER_CITATION_COLUMN} IS NULL"):
+            layer = (layer or "").lower()
+            if layer in LAYERS and _split(citation_id)[0] != layer:
+                pending.append((_split(citation_id)[1], citation_id, layer))
+        assigned = []
+        next_by_layer: dict = {}
+        for _, citation_id, layer in sorted(pending):
+            if layer not in next_by_layer:
+                next_by_layer[layer] = _max_ordinal(conn, layer) + 1
+            layer_citation = format_id(layer, next_by_layer[layer])
+            next_by_layer[layer] += 1
+            assigned.append((citation_id, layer_citation))
+            if not dry_run:
+                conn.execute(
+                    f"UPDATE tasks SET {LAYER_CITATION_COLUMN} = ? "
+                    f" WHERE citation_id = ?", (layer_citation, citation_id))
+        if not dry_run:
+            conn.commit()
+    finally:
+        conn.close()
+    return assigned
+
+
+def _cmd_assign_layer_citations(args: argparse.Namespace) -> int:
+    assigned = assign_layer_citations(args.store, dry_run=args.dry_run)
+    verb = "acuñaria" if args.dry_run else "acuñada(s)"
+    print(f"assign-layer-citations: {len(assigned)} cita(s) de capa {verb}")
+    for citation_id, layer_citation in assigned:
+        print(f"  {citation_id} -> {layer_citation}")
     return 0
 
 
-def _cmd_ingerir_board(args: argparse.Namespace) -> int:
-    acunadas = ingest_board(args.store, args.board, args.sesion, args.ordinal,
-                            layer=args.capa)
-    print(f"ingerir-board: {len(acunadas)} cita(s) acuñada(s) "
+def _cmd_fix_layer(args: argparse.Namespace) -> int:
+    previous, new, layer_citation = correct_layer(
+        args.store, args.cita, args.layer, args.reason)
+    print(f"fix-layer: {args.cita} {previous} -> {new} "
+          f"(la cita NO se mueve: es identidad, no clasificacion)")
+    if layer_citation:
+        print(f"  cita en su capa: {layer_citation} (resuelve a la misma fila)")
+    elif new in LAYERS and _split(args.cita)[0] != new:
+        with sqlite3.connect(args.store) as conn:
+            missing_column = LAYER_CITATION_COLUMN not in _task_columns(conn)
+        if missing_column:
+            print(f"  sin cita de capa: el store no tiene la columna "
+                  f"{LAYER_CITATION_COLUMN}; se crea al abrirlo con "
+                  f"agent_store.connect()", file=sys.stderr)
+    return 0
+
+
+def _cmd_ingest_board(args: argparse.Namespace) -> int:
+    ingested = ingest_board(args.store, args.board, args.sesion, args.ordinal,
+                            layer=args.layer)
+    print(f"ingest-board: {len(ingested)} cita(s) acuñada(s) "
           f"(alcance medido: {len(args.ordinal)} tarjeta(s) pedida(s))")
-    for board_id, store_id, cita, subject in acunadas:
-        print(f"  board #{board_id:<5} -> store #{store_id:<6} {cita}  {subject[:52]}")
+    for board_id, store_id, citation, subject in ingested:
+        print(f"  board #{board_id:<5} -> store #{store_id:<6} {citation}  {subject[:52]}")
     return 0
 
 
@@ -835,8 +1121,8 @@ def _cmd_lookup(args: argparse.Namespace) -> int:
             # que la acuña.
             print(f"  el board SI tiene esa tarjeta: «{board_subject[:SUBJECT_WIDTH]}»\n"
                   f"  la cita NO se compone prefijando el ordinal — se acuña:\n"
-                  f"    task_ids.py ingerir-board {args.sesion} {args.tarea} "
-                  f"--capa <capa>", file=sys.stderr)
+                  f"    task_ids.py ingest-board {args.sesion} {args.tarea} "
+                  f"--layer <layer>", file=sys.stderr)
         return 1
 
     record = mapping.ids.get(identifier) or {}
@@ -853,17 +1139,22 @@ def _cmd_lookup(args: argparse.Namespace) -> int:
               f"sujeto, no por el numero.", file=sys.stderr)
         return 2
 
+    # El primer campo es la cita a usar en texto nuevo: la de capa cuando la
+    # fila la tiene. La original se nombra al final de la MISMA linea, porque
+    # sigue resolviendo y hay commits que la citan.
+    shown = mapping.preferred(identifier)
+    original = f"  (cita original: {identifier})" if shown != identifier else ""
     if subject:
-        print(f"{identifier}  {subject[:SUBJECT_WIDTH]}")
+        print(f"{shown}  {subject[:SUBJECT_WIDTH]}{original}")
     else:
         # Sin sujeto se DICE, no se calla: una linea con solo el id volveria
         # indistinguible «esta tarea no tiene titulo» de «este comando no
         # publica el sujeto», que es el defecto que esta salida cierra.
-        print(f"{identifier}  (sin sujeto en el store)")
+        print(f"{shown}  (sin sujeto en el store){original}")
     return 0
 
 
-def _cmd_censo(args: argparse.Namespace) -> int:
+def _cmd_census(args: argparse.Namespace) -> int:
     """Cuantos ids hay por capa. Publica su denominador, como todo gate."""
     mapping = mapping_from_store(args.store)
     by_layer: dict = {}
@@ -901,8 +1192,8 @@ def duplicate_citations(store_path) -> list:
         )
     conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True)
     try:
-        columnas = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
-        if "citation_id" not in columnas:
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+        if "citation_id" not in columns:
             raise MappingError(
                 "el store no tiene la columna citation_id. NO se emite conteo."
             )
@@ -911,84 +1202,99 @@ def duplicate_citations(store_path) -> list:
             "       GROUP_CONCAT(DISTINCT citation_id) AS ids "
             "  FROM tasks WHERE citation_id IS NOT NULL AND citation_id != '' "
             " GROUP BY subject HAVING n > 1 ORDER BY n DESC, subject"))
-        universo = conn.execute(
+        universe = conn.execute(
             "SELECT COUNT(DISTINCT subject) FROM tasks "
             " WHERE citation_id IS NOT NULL AND citation_id != ''").fetchone()[0]
     finally:
         conn.close()
-    return [(r[0], r[1], r[2], universo) for r in rows]
+    return [(r[0], r[1], r[2], universe) for r in rows]
 
 
-def _cmd_duplicados(args: argparse.Namespace) -> int:
+def _cmd_duplicates(args: argparse.Namespace) -> int:
     """Reporta los sujetos con mas de una cita. ``--strict`` sale 1 si hay."""
-    filas = duplicate_citations(args.store)
-    universo = filas[0][3] if filas else 0
-    if not universo:
+    rows = duplicate_citations(args.store)
+    universe = rows[0][3] if rows else 0
+    if not universe:
         conn = sqlite3.connect(f"file:{pathlib.Path(args.store)}?mode=ro", uri=True)
-        universo = conn.execute(
+        universe = conn.execute(
             "SELECT COUNT(DISTINCT subject) FROM tasks "
             " WHERE citation_id IS NOT NULL AND citation_id != ''").fetchone()[0]
         conn.close()
-    print(f"task_ids duplicados: {len(filas)} sujeto(s) con mas de una cita "
-          f"(alcance medido: {universo} sujeto(s) con cita en el store)")
-    for subject, n, ids, _ in filas[: args.limite]:
+    print(f"task_ids duplicates: {len(rows)} sujeto(s) con mas de una cita "
+          f"(alcance medido: {universe} sujeto(s) con cita en el store)")
+    for subject, n, ids, _ in rows[: args.limit]:
         print(f"  {n}x  {ids}")
         print(f"      {subject[:96]}")
-    if len(filas) > args.limite:
-        print(f"  … y {len(filas) - args.limite} mas")
-    return 1 if (args.strict and filas) else 0
+    if len(rows) > args.limit:
+        print(f"  … y {len(rows) - args.limit} mas")
+    return 1 if (args.strict and rows) else 0
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--store", default=None)
     sub = parser.add_subparsers(dest="comando", required=True)
 
-    p_lookup = sub.add_parser("cita", help="el TASK-<CAPA>-NNNN de una tarea")
+    p_lookup = sub.add_parser("lookup", help="el TASK-<LAYER>-NNNN de una tarea")
     p_lookup.add_argument("sesion")
     p_lookup.add_argument("tarea")
     p_lookup.add_argument("--board", default=None,
                           help="directorio de tarjetas (default: el de la sesion)")
     p_lookup.set_defaults(func=_cmd_lookup)
 
-    p_censo = sub.add_parser("censo", help="conteo por capa, con su total")
-    p_censo.set_defaults(func=_cmd_censo)
+    p_census = sub.add_parser("census", help="conteo por capa, con su total")
+    p_census.set_defaults(func=_cmd_census)
 
-    p_dup = sub.add_parser("duplicados",
+    p_dup = sub.add_parser("duplicates",
                            help="sujetos con mas de un citation_id (TASK-DB-0002)")
     p_dup.add_argument("--strict", action="store_true",
                        help="exit 1 si hay algun sujeto con mas de una cita")
-    p_dup.add_argument("--limite", type=int, default=10,
+    p_dup.add_argument("--limit", type=int, default=10,
                        help="cuantos sujetos listar (default 10)")
-    p_dup.set_defaults(func=_cmd_duplicados)
+    p_dup.set_defaults(func=_cmd_duplicates)
 
     p_board = sub.add_parser(
-        "ingerir-board",
+        "ingest-board",
         help="trae al store el sujeto de una tarjeta del board y acuña su cita")
     p_board.add_argument("sesion")
     p_board.add_argument("ordinal", nargs="+",
                          help="ordinal(es) del board a ingerir")
-    p_board.add_argument("--capa", default=None, choices=list(LAYERS) + [UNKNOWN_LAYER],
+    p_board.add_argument("--layer", default=None, choices=list(LAYERS) + [UNKNOWN_LAYER],
                          help="capa declarada; sin ella la fila nace en «gen»")
     p_board.add_argument("--board", default=None,
                          help="directorio de tarjetas (default: el de la sesion)")
-    p_board.set_defaults(func=_cmd_ingerir_board)
+    p_board.set_defaults(func=_cmd_ingest_board)
 
     p_layer = sub.add_parser(
-        "corregir-capa",
+        "fix-layer",
         help="corrige la CAPA de una tarea sin mover su cita")
-    p_layer.add_argument("cita", help="el TASK-<CAPA>-NNNN de la tarea")
-    p_layer.add_argument("--capa", required=True,
+    p_layer.add_argument("cita", help="el TASK-<LAYER>-NNNN de la tarea")
+    p_layer.add_argument("--layer", required=True,
                         help=f"la capa correcta: {', '.join(LAYERS)} o "
                              f"'{UNKNOWN_LAYER}' (cruza repos)")
-    p_layer.add_argument("--razon", required=True,
+    p_layer.add_argument("--reason", required=True,
                         help="por que la anterior era incorrecta; queda en "
                              "submodule_source")
     p_layer.set_defaults(func=_cmd_fix_layer)
 
-    p_acunar = sub.add_parser("acunar", help="acuña el id que falte, desde el store")
-    p_acunar.add_argument("--dry-run", action="store_true")
-    p_acunar.set_defaults(func=_cmd_acunar)
+    p_layer_citations = sub.add_parser(
+        "assign-layer-citations",
+        help="acuña la cita de capa de las filas ya corregidas que no la tienen")
+    p_layer_citations.add_argument("--dry-run", action="store_true",
+                                   help="publica lo que acuñaria, sin escribir")
+    p_layer_citations.set_defaults(func=_cmd_assign_layer_citations)
+
+    p_assign_ids = sub.add_parser("assign-ids", help="acuña el id que falte, desde el store")
+    p_assign_ids.add_argument("--dry-run", action="store_true")
+    p_assign_ids.set_defaults(func=_cmd_assign_ids)
+
+    p_link = sub.add_parser(
+        "link-board-ordinal",
+        help="fija el board_ordinal de una fila existente (reconciliacion)")
+    p_link.add_argument("sesion")
+    p_link.add_argument("cita", help="el TASK-<LAYER>-NNNN de la fila")
+    p_link.add_argument("ordinal", type=int, help="el board_ordinal a fijar")
+    p_link.set_defaults(func=_cmd_link_board_ordinal)
 
     args = parser.parse_args(argv)
     args.store = str(resolve_store(args.store))

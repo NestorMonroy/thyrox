@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/microCompactUtils.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { collectCompactableToolIds } from '../compaction/microCompactUtils.js'
 
@@ -68,9 +65,9 @@ describe('collectCompactableToolIds', () => {
   })
 
   test('skips user messages even when content has tool_use shape', () => {
-    // Critico: solo se recolectan tool_use de assistant. El comportamiento
-    // de caching depende de esto — los tool_results del lado user no
-    // serian ids validos para compactar.
+    // Critical: only assistant tool_uses are collected. Caching behavior
+    // depends on this — user-side tool_results wouldn't be valid IDs to
+    // compact.
     const messages: Msg[] = [
       {
         type: 'user',
@@ -139,7 +136,7 @@ describe('collectCompactableToolIds', () => {
         message: {
           content: [
             { type: 'tool_use', id: 'bad_name', name: 123 },
-            { type: 'tool_use', id: 'no_name' }, // sin name
+            { type: 'tool_use', id: 'no_name' }, // missing name
           ],
         },
       },
@@ -170,8 +167,8 @@ describe('collectCompactableToolIds', () => {
         },
       },
     ]
-    // 'Bash' (mayuscula B) esta en el allowlist; 'bash' (minuscula) es el
-    // name del bloque. La igualdad estricta hace que no matcheen.
+    // 'Bash' (capital B) is in allowlist; 'bash' (lowercase) is the
+    // block name. Strict equality means no match.
     expect(
       collectCompactableToolIds(messages, new Set(['Bash'])),
     ).toEqual([])

@@ -1,0 +1,310 @@
+diff --git a/src/packages/daemon/__tests__/workerResourceProfile.test.ts b/src/packages/daemon/__tests__/workerResourceProfile.test.ts
+new file mode 100644
+index 00000000..788a4a9f
+--- /dev/null
++++ b/src/packages/daemon/__tests__/workerResourceProfile.test.ts
+@@ -0,0 +1,156 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  DEFAULT_WORKER_RESOURCE_PROFILE,
++  InvalidWorkerResourceProfileError,
++  validateWorkerResourceProfile,
++  workerResourceLimitArgv,
++  type WorkerResourceProfile,
++} from '../src/podman/workerResourceProfile.js'
++
++describe('DEFAULT_WORKER_RESOURCE_PROFILE', () => {
++  test('es el perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin montajes', () => {
++    expect(DEFAULT_WORKER_RESOURCE_PROFILE.network).toBe('none')
++    expect(DEFAULT_WORKER_RESOURCE_PROFILE.readOnlyRootfs).toBe(true)
++    expect(DEFAULT_WORKER_RESOURCE_PROFILE.mounts).toEqual([])
++  })
++
++  test('valida sin rehusar', () => {
++    expect(() => validateWorkerResourceProfile(DEFAULT_WORKER_RESOURCE_PROFILE)).not.toThrow()
++  })
++})
++
++describe('workerResourceLimitArgv', () => {
++  test('argv exacto del perfil por defecto', () => {
++    expect(workerResourceLimitArgv(DEFAULT_WORKER_RESOURCE_PROFILE)).toEqual([
++      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
++      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
++      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
++      '--network', 'none',
++      '--read-only', '--read-only-tmpfs=false',
++    ])
++  })
++
++  test('argv exacto de un perfil relajado, con red bridge, rootfs escribible y montajes', () => {
++    const profile: WorkerResourceProfile = {
++      cpus: 2,
++      memoryMib: 2048,
++      pidsLimit: 256,
++      network: 'bridge',
++      readOnlyRootfs: false,
++      mounts: [
++        { source: '/host/skills', destination: '/workspace/skills', mode: 'ro' },
++        { source: '/host/scratch', destination: '/workspace/scratch', mode: 'rw' },
++      ],
++    }
++    expect(workerResourceLimitArgv(profile)).toEqual([
++      '--cpus', '2',
++      '--memory', '2048m',
++      '--pids-limit', '256',
++      '--network', 'bridge',
++      '-v', '/host/skills:/workspace/skills:ro',
++      '-v', '/host/scratch:/workspace/scratch:rw',
++    ])
++  })
++
++  test('no emite ningún argumento cuando el perfil es inválido', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 }
++    expect(() => workerResourceLimitArgv(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++})
++
++describe('validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo', () => {
++  test('cpus <= 0', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 }
++    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
++    try {
++      validateWorkerResourceProfile(profile)
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('cpus')
++    }
++  })
++
++  test('cpus negativo', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: -0.5 }
++    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++
++  test('memoryMib <= 0', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, memoryMib: 0 }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('memoryMib')
++    }
++  })
++
++  test('pidsLimit < 1', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, pidsLimit: 0 }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('pidsLimit')
++    }
++  })
++
++  test('pidsLimit no entero', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, pidsLimit: 1.5 }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('pidsLimit')
++    }
++  })
++
++  test('montaje sin destino absoluto', () => {
++    const profile: WorkerResourceProfile = {
++      ...DEFAULT_WORKER_RESOURCE_PROFILE,
++      mounts: [{ source: '/host/skills', destination: 'workspace/skills', mode: 'ro' }],
++    }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].destination')
++    }
++  })
++
++  test('montaje con origen vacío', () => {
++    const profile: WorkerResourceProfile = {
++      ...DEFAULT_WORKER_RESOURCE_PROFILE,
++      mounts: [{ source: '', destination: '/workspace/skills', mode: 'ro' }],
++    }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].source')
++    }
++  })
++
++  test('modo de montaje desconocido', () => {
++    const profile = {
++      ...DEFAULT_WORKER_RESOURCE_PROFILE,
++      mounts: [{ source: '/host/skills', destination: '/workspace/skills', mode: 'rx' }],
++    } as unknown as WorkerResourceProfile
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].mode')
++    }
++  })
++
++  test('red desconocida', () => {
++    const profile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'host' } as unknown as WorkerResourceProfile
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('network')
++    }
++  })
++})
+diff --git a/src/packages/daemon/src/podman/workerResourceProfile.ts b/src/packages/daemon/src/podman/workerResourceProfile.ts
+new file mode 100644
+index 00000000..285c40ff
+--- /dev/null
++++ b/src/packages/daemon/src/podman/workerResourceProfile.ts
+@@ -0,0 +1,142 @@
++/**
++ * Contrato del perfil de límites de recursos de un worker de Podman
++ * (ADR-THYROX-007 Regla 2, TASK-THYROX-0615).
++ *
++ * Cada bandera que este módulo compone ya se midió contra su control en
++ * `src/lib/podman_capabilities.sh` (`--pids-limit`, `--memory`, `--cpus`,
++ * `--network none`, `--read-only`, montajes `:ro`). Aquí sólo vive el
++ * CONTRATO del perfil —su validación y su traducción a argv—, nunca la
++ * ejecución: el `PodmanWorkerManager` que crea y lanza contenedores es
++ * trabajo futuro, no de este archivo.
++ */
++
++export type WorkerNetworkMode = 'none' | 'bridge'
++export type WorkerMountMode = 'ro' | 'rw'
++
++export type WorkerResourceMount = {
++  source: string
++  destination: string
++  mode: WorkerMountMode
++}
++
++export type WorkerResourceProfile = {
++  cpus: number
++  memoryMib: number
++  pidsLimit: number
++  network: WorkerNetworkMode
++  readOnlyRootfs: boolean
++  mounts: WorkerResourceMount[]
++}
++
++const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge']
++const KNOWN_MOUNT_MODES: readonly WorkerMountMode[] = ['ro', 'rw']
++
++/**
++ * El perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin
++ * montajes declarados. Relajar cualquiera de los tres es explícito en el
++ * perfil que se declare — nunca el default silencioso.
++ */
++export const DEFAULT_WORKER_RESOURCE_PROFILE: WorkerResourceProfile = {
++  cpus: 1,
++  memoryMib: 1024,
++  pidsLimit: 128,
++  network: 'none',
++  readOnlyRootfs: true,
++  mounts: [],
++}
++
++/** Un campo del perfil no pasó su validación; nombra el campo, nunca lo omite en silencio. */
++export class InvalidWorkerResourceProfileError extends Error {
++  readonly field: string
++
++  constructor(field: string, message: string) {
++    super(message)
++    this.name = 'InvalidWorkerResourceProfileError'
++    this.field = field
++  }
++}
++
++function requirePositiveNumber(field: string, value: number): void {
++  if (!Number.isFinite(value) || value <= 0) {
++    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser un número > 0, recibido: ${value}`)
++  }
++}
++
++function requirePositiveInteger(field: string, value: number): void {
++  if (!Number.isInteger(value) || value < 1) {
++    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser un entero >= 1, recibido: ${value}`)
++  }
++}
++
++function requireKnownNetwork(network: WorkerNetworkMode): void {
++  if (!KNOWN_NETWORK_MODES.includes(network)) {
++    throw new InvalidWorkerResourceProfileError('network', `red desconocida: ${network}`)
++  }
++}
++
++function requireValidMount(mount: WorkerResourceMount, index: number): void {
++  const field = `mounts[${index}]`
++  if (!mount.source) {
++    throw new InvalidWorkerResourceProfileError(`${field}.source`, 'el origen del montaje no puede estar vacío')
++  }
++  if (!mount.destination.startsWith('/')) {
++    throw new InvalidWorkerResourceProfileError(
++      `${field}.destination`,
++      `el destino del montaje debe ser una ruta absoluta, recibido: ${mount.destination}`,
++    )
++  }
++  if (!KNOWN_MOUNT_MODES.includes(mount.mode)) {
++    throw new InvalidWorkerResourceProfileError(`${field}.mode`, `modo de montaje desconocido: ${mount.mode}`)
++  }
++}
++
++/** Valida el perfil completo; rehúsa en el primer campo inválido, nombrándolo. */
++export function validateWorkerResourceProfile(profile: WorkerResourceProfile): void {
++  requirePositiveNumber('cpus', profile.cpus)
++  requirePositiveNumber('memoryMib', profile.memoryMib)
++  requirePositiveInteger('pidsLimit', profile.pidsLimit)
++  requireKnownNetwork(profile.network)
++  profile.mounts.forEach((mount, index) => requireValidMount(mount, index))
++}
++
++function cpuLimitArgv(cpus: number): string[] {
++  return ['--cpus', String(cpus)]
++}
++
++function memoryLimitArgv(memoryMib: number): string[] {
++  return ['--memory', `${memoryMib}m`]
++}
++
++function pidsLimitArgv(pidsLimit: number): string[] {
++  return ['--pids-limit', String(pidsLimit)]
++}
++
++function networkArgv(network: WorkerNetworkMode): string[] {
++  return ['--network', network]
++}
++
++function rootfsArgv(readOnlyRootfs: boolean): string[] {
++  return readOnlyRootfs ? ['--read-only', '--read-only-tmpfs=false'] : []
++}
++
++function mountArgv(mount: WorkerResourceMount): string[] {
++  return ['-v', `${mount.source}:${mount.destination}:${mount.mode}`]
++}
++
++/**
++ * Traduce un perfil validado al argv de límites para `podman create`/`run`
++ * — no ejecuta nada, sólo compone el argv (mismo contrato que
++ * `thyrox_infrastructure_create_argv` en `src/lib/infrastructure.sh`: un
++ * perfil inválido rehúsa antes de emitir ningún argumento).
++ */
++export function workerResourceLimitArgv(profile: WorkerResourceProfile): string[] {
++  validateWorkerResourceProfile(profile)
++  return [
++    ...cpuLimitArgv(profile.cpus),
++    ...memoryLimitArgv(profile.memoryMib),
++    ...pidsLimitArgv(profile.pidsLimit),
++    ...networkArgv(profile.network),
++    ...rootfsArgv(profile.readOnlyRootfs),
++    ...profile.mounts.flatMap(mountArgv),
++  ]
++}

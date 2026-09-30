@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/cachedMCConfig.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   DEFAULT_CACHED_MC_CONFIG,
@@ -39,10 +36,9 @@ describe('DEFAULT_CACHED_MC_CONFIG — contract anchor', () => {
 })
 
 describe('getCachedMCConfig — env override path', () => {
-  // Cuando CLAUDE_CACHED_MC_ENABLED esta seteada, se toma la ruta de
-  // override por env — se salta GrowthBook por completo. Critico: esto
-  // deja que ops apague el cached microcompact en incidentes sin
-  // necesitar rollback de GrowthBook.
+  // When CLAUDE_CACHED_MC_ENABLED is set, the env-override path is
+  // taken — bypasses GrowthBook entirely. Critical: this lets ops
+  // turn off cached microcompact in incidents without GB rollback.
 
   test('env enabled="1" → enabled=true', () => {
     const result = getCachedMCConfig({
@@ -61,9 +57,10 @@ describe('getCachedMCConfig — env override path', () => {
   })
 
   test('env enabled="true" (string "true") → enabled=false (only "1" qualifies)', () => {
-    // Critico: el chequeo es `envEnabled === '1'`, NO un chequeo truthy.
-    // El string "true" NO es igual a "1" — asi que cae en la rama false.
-    // Atrapa un refactor que use isEnvTruthy() (que aceptaria "true").
+    // Critical: the check is `envEnabled === '1'`, NOT a truthy check.
+    // String "true" is NOT equal to "1" — so it falls into the false
+    // branch. Catches a refactor that uses isEnvTruthy() (which would
+    // accept "true").
     const result = getCachedMCConfig({
       getFeatureValue: <T,>(_k: string, fallback: T) => fallback,
       getEnv: (k: string) =>
@@ -108,8 +105,8 @@ describe('getCachedMCConfig — env override path', () => {
   })
 
   test('env triggerThreshold "0" falls back (because 0 is falsy with || operator)', () => {
-    // Documenta el patron `|| default`: 0 es falsy, asi que el usuario no
-    // puede desactivar el trigger seteandolo a 0. Necesitaria enabled=0.
+    // Documents the `|| default` pattern: 0 is falsy, so user can't
+    // disable trigger via setting to 0. They'd need to set enabled=0.
     const result = getCachedMCConfig({
       getFeatureValue: <T,>(_k: string, fallback: T) => fallback,
       getEnv: (k: string) => {
@@ -197,9 +194,9 @@ describe('getCachedMCConfig — GrowthBook fallback', () => {
   })
 
   test('null GrowthBook value falls back to default', () => {
-    // Documenta el guard `?? DEFAULT_CACHED_MC_CONFIG`. Si GrowthBook se
-    // porta mal y devuelve null, se obtienen los defaults seguros en vez
-    // de romper al acceder `.enabled`.
+    // Documents the `?? DEFAULT_CACHED_MC_CONFIG` guard. If GrowthBook
+    // misbehaves and returns null, we get safe defaults instead of
+    // crashing on `.enabled` access.
     const result = getCachedMCConfig({
       getFeatureValue: <T,>(_k: string, _fallback: T) => null as unknown as T,
       getEnv: () => undefined,
@@ -221,7 +218,7 @@ describe('getCachedMCConfig — env path PRIORITY over GrowthBook', () => {
       getFeatureValue: <T,>(_k: string, _fb: T) => gbConfig as unknown as T,
       getEnv: (k: string) => (k === 'CLAUDE_CACHED_MC_ENABLED' ? '1' : undefined),
     })
-    // Gana la ruta de env.
+    // Env path wins.
     expect(result.enabled).toBe(true)
     expect(result.triggerThreshold).toBe(
       DEFAULT_CACHED_MC_CONFIG.triggerThreshold,

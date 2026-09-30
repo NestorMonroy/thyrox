@@ -1,0 +1,1 @@
+bash tests/session/test-run-task-pool-isolation.sh

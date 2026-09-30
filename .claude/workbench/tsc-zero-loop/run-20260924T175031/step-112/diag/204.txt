@@ -1,0 +1,50 @@
+src/packages/repl/src/screens/REPLView.tsx(2479,9): error TS2322: Type 'Dispatch<SetStateAction<IdeType | null>>' is not assignable to type '(ide: unknown) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2469-2489 ---
+   2469          },
+   2470          onChangeAPIKey: reverify,
+   2471          readFileState: readFileState.current,
+   2472          setToolJSX,
+   2473          addNotification,
+   2474          appendSystemMessage: msg => setMessages(prev => [...prev, msg]),
+   2475          sendOSNotification: opts => {
+   2476            void sendNotification(opts, terminal);
+   2477          },
+   2478          onChangeDynamicMcpConfig,
+   2479>         onInstallIDEExtension: setIDEToInstallExtension,
+   2480          nestedMemoryAttachmentTriggers: new Set<string>(),
+   2481          loadedNestedMemoryPaths: loadedNestedMemoryPathsRef.current,
+   2482          dynamicSkillDirTriggers: new Set<string>(),
+   2483          discoveredSkillNames: discoveredSkillNamesRef.current,
+   2484          setResponseLength,
+   2485          pushApiMetricsEntry:
+   2486            process.env.USER_TYPE === 'ant'
+   2487              ? (ttftMs: number) => {
+   2488                  const now = Date.now();
+   2489                  const baseline = responseLengthRef.current;
+  Types of parameters 'value' and 'ide' are incompatible.
+    Type 'unknown' is not assignable to type 'SetStateAction<IdeType | null>'.
+src/packages/repl/src/screens/REPLView.tsx(2527,9): error TS2322: Type '(sessionId: UUID, log: LogOption, entrypoint: ResumeEntrypoint) => Promise<void>' is not assignable to type '(sessionId: `${string}-${string}-${string}-${string}-${string}`, log: unknown, entrypoint: ResumeEntrypoint) => Promise<void>'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2517-2537 ---
+   2517                setSpinnerMessage(null);
+   2518                setSpinnerColor(null);
+   2519                setSpinnerShimmerColor(null);
+   2520                break;
+   2521            }
+   2522          },
+   2523          setInProgressToolUseIDs,
+   2524          setHasInterruptibleToolInProgress: (v: boolean) => {
+   2525            hasInterruptibleToolInProgressRef.current = v;
+   2526          },
+   2527>         resume,
+   2528          setConversationId,
+   2529          requestPrompt: feature('HOOK_PROMPTS') ? requestPrompt : undefined,
+   2530          contentReplacementState: contentReplacementStateRef.current,
+   2531        };
+   2532      },
+   2533      [
+   2534        commands,
+   2535        combinedInitialTools,
+   2536        mainThreadAgentDefinition,
+   2537        debug,
+  Types of parameters 'log' and 'log' are incompatible.
+    Type 'unknown' is not assignable to type 'LogOption'.

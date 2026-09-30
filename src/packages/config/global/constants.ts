@@ -1,23 +1,5 @@
-/**
- * Puerto de `ccnmt: packages/config/global/constants.ts` (48 líneas
- * fuente). Reimplementación fiel VERBATIM.
- *
- * Las tres constantes (`NOTIFICATION_CHANNELS`, `EDITOR_MODES`,
- * `TEAMMATE_MODES`) están DUPLICADAS a propósito respecto de
- * `../configConstants.ts` (ya portado en este mismo pase) — mismo criterio
- * de duplicación deliberada que `internal/signal.ts` frente a
- * `../signal.ts`: la fuente evita dependencias circulares repitiendo estas
- * tres constantes en dos archivos en vez de que uno importe al otro.
- *
- * El literal `'ccb'` de `getInvokedBinaryName()` es el nombre de fallback
- * de la propia fuente (su fork de Claude Code se distribuye como binario
- * `ccb`) — se conserva tal cual porque describe el comportamiento de
- * fallback de LA FUENTE, no un nombre inventado para este árbol.
- */
-
-// Estas constantes viven en un archivo aparte para evitar problemas de
-// dependencia circular. NO añadir imports a este archivo — debe permanecer
-// libre de dependencias.
+// These constants are in a separate file to avoid circular dependency issues.
+// Do NOT add imports to this file - it must remain dependency-free.
 
 export const NOTIFICATION_CHANNELS = [
   'auto',
@@ -29,32 +11,29 @@ export const NOTIFICATION_CHANNELS = [
   'notifications_disabled',
 ] as const
 
-// Modos de editor válidos (excluye el 'emacs' obsoleto, que se auto-migra a 'normal').
+// Valid editor modes (excludes deprecated 'emacs' which is auto-migrated to 'normal')
 export const EDITOR_MODES = ['normal', 'vim'] as const
 
-// Modos válidos de "teammate" para generar sub-procesos.
-// 'tmux' = teammates tradicionales basados en tmux
-// 'in-process' = teammates en proceso, corriendo en el mismo proceso
-// 'auto' = elige automáticamente según el contexto (default)
+// Valid teammate modes for spawning
+// 'tmux' = traditional tmux-based teammates
+// 'in-process' = in-process teammates running in same process
+// 'auto' = automatically choose based on context (default)
 export const TEAMMATE_MODES = ['auto', 'tmux', 'in-process'] as const
 
 /**
- * Devuelve el nombre con el que el usuario invocó el CLI (p. ej. "ccb", "claude").
+ * Returns the name the user invoked the CLI with (e.g. "ccb", "claude").
  *
- * Se usa para cadenas de cara al usuario tipo "Resume this session with:
- * <name> --resume". Las cadenas decompiladas de ant tienen "claude"
- * hardcodeado; ccb se distribuye como `ccb`.
+ * Used for user-facing strings like "Resume this session with: <name> --resume".
+ * Decompiled-from-ant strings hardcoded "claude"; ccb is distributed as `ccb`.
  *
- * Orden de preferencia:
- *  1. `process.argv0` — lo que vio la shell (coincide con el symlink que
- *     el usuario tecleó). Para binarios standalone de `bun build --compile`
- *     esto es "ccb".
- *  2. basename de `process.argv[1]` — fallback de script-bun y modo dev.
- *  3. Fallback duro "ccb" — esto es un fork de ccb; cosmético, no load-bearing.
+ * Preference order:
+ *  1. `process.argv0` — what shell saw (matches the symlink the user typed).
+ *     For `bun build --compile` standalone binaries this is "ccb".
+ *  2. basename of `process.argv[1]` — Bun-script and dev-mode fallback.
+ *  3. Hard fallback "ccb" — this is a ccb fork; cosmetic, not load-bearing.
  *
- * Se descartan: nombres de runner de bun ("bun", "node"), nombres de
- * archivo de entrada TypeScript ("cli.tsx") — no son nombres de invocación
- * de cara al usuario.
+ * Stripped: bun runner names ("bun", "node"), TypeScript entry filenames
+ * ("cli.tsx") — these aren't user-facing invocation names.
  */
 export function getInvokedBinaryName(): string {
   const candidates = [process.argv0, process.argv[1]]

@@ -12,19 +12,24 @@
  * 1. **Una regla con `paths:` es condicional.** La doc del cliente lo dice al
  *    revés y por eso importa: *"Rules without a `paths` field are loaded
  *    unconditionally"* — declarar `paths:` es lo que la saca del piso.
- * 2. **El orden importa para la caché.** Lo estable va primero (base, CLAUDE.md)
+ * 2. **El orden importa para la caché.** Lo estable va primero (base, THYROX.md)
  *    y lo variable después: la clave de caché es un prefijo, así que una sección
  *    que cambia arriba invalida todo lo de abajo.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import type { Duty } from './basePrompt.ts'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
+import {
+  instructionsFileCandidates,
+  nestedInstructionsFileCandidates,
+  rulesDirectories,
+} from '@thyrox/config/env/instructionFiles.js'
 import { dedupSections } from '@thyrox/context-compression'
 
 export type Section = { name: string; text: string; tokens: number; conditional: boolean }
 
 export type AssembleOptions = {
-  /** Raíz del proyecto: de ahí cuelgan `CLAUDE.md` y `.claude/`. */
+  /** Raíz del proyecto: de ahí cuelgan `THYROX.md` y `.claude/`. */
   root: string
   /**
    * El prompt propio del harness. Nunca se descarta.
@@ -80,9 +85,13 @@ export function parseRule(raw: string): { body: string; paths: string[] | null }
   const match = fenced ?? dashed
   if (!match) return { body: raw, paths: null }
   const body = raw.slice(match[0].length)
-  const line = /^\s*paths:\s*(.+)$/m.exec(match[1])
+  const inner = match[1]
+  if (inner === undefined) return { body, paths: null }
+  const line = /^\s*paths:\s*(.+)$/m.exec(inner)
   if (!line) return { body, paths: null }
-  return { body, paths: splitPaths(line[1]) }
+  const captured = line[1]
+  if (captured === undefined) return { body, paths: null }
+  return { body, paths: splitPaths(captured) }
 }
 
 /** `paths: a, b` · `paths: ["a", "b"]` · `paths: a` — las tres formas dan la misma lista. */
@@ -120,14 +129,16 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
     ? [section('base', opts.base)]
     : opts.base.map((d) => section(`base:${d.name}`, d.text))
 
-  const root = readTrimmed(join(opts.root, 'CLAUDE.md'))
-  if (root) rawCandidates.push(section('CLAUDE.md', root))
+  // Cada ranura carga su primer candidato existente: `THYROX.md` y, si no
+  // está, `THYROX.md` (`@thyrox/config/env/instructionFiles`).
+  for (const candidates of [instructionsFileCandidates(opts.root), nestedInstructionsFileCandidates(opts.root)]) {
+    const path = candidates.find((p) => existsSync(p))
+    const text = path ? readTrimmed(path) : null
+    if (path && text) rawCandidates.push(section(relative(opts.root, path), text))
+  }
 
-  const level2 = readTrimmed(join(opts.root, '.claude', 'CLAUDE.md'))
-  if (level2) rawCandidates.push(section('.claude/CLAUDE.md', level2))
-
-  const rulesDir = join(opts.root, '.claude', 'rules')
-  if (existsSync(rulesDir)) {
+  for (const rulesDir of rulesDirectories(opts.root)) {
+    if (!existsSync(rulesDir)) continue
     const files = readdirSync(rulesDir).filter((f) => f.endsWith('.md')).sort()
     for (const file of files) {
       const raw = readTrimmed(join(rulesDir, file))
@@ -140,7 +151,7 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
         if (!paths.some((p) => matchesPath(p, opts.targetPath as string))) continue
       }
       if (!body.trim()) continue
-      rawCandidates.push(section(`.claude/rules/${file}`, body.trim(), paths !== null))
+      rawCandidates.push(section(relative(opts.root, join(rulesDir, file)), body.trim(), paths !== null))
     }
   }
 

@@ -1,0 +1,47 @@
+src/packages/agent/QueryEngine.ts(991,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  --- código src/packages/agent/QueryEngine.ts:981-1001 ---
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984              currentMessageUsage = updateUsage(
+    985                currentMessageUsage,
+    986                eventMessage.usage,
+    987              )
+    988            }
+    989            if (event.type === 'message_delta') {
+    990              currentMessageUsage = updateUsage(
+    991>               currentMessageUsage,
+    992                event.usage as BetaMessageDeltaUsage,
+    993              )
+    994              // Capture stop_reason from message_delta. The assistant message
+    995              // is yielded at content_block_stop with stop_reason=null; the
+    996              // real value only arrives here (see claude.ts message_delta
+    997              // handler). Without this, result.stop_reason is always null.
+    998              const delta = event.delta as { stop_reason?: string | null }
+    999              if (delta.stop_reason != null) {
+   1000                lastStopReason = delta.stop_reason
+   1001              }
+  Type 'NonNullableUsage' is missing the following properties from type 'BetaUsage': cache_creation, cache_creation_input_tokens, cache_read_input_tokens, fallback_credit, and 8 more.
+src/packages/agent/QueryEngine.ts(1005,13): error TS2322: Type 'unknown' is not assignable to type 'NonNullableUsage'.
+  --- código src/packages/agent/QueryEngine.ts:995-1015 ---
+    995              // is yielded at content_block_stop with stop_reason=null; the
+    996              // real value only arrives here (see claude.ts message_delta
+    997              // handler). Without this, result.stop_reason is always null.
+    998              const delta = event.delta as { stop_reason?: string | null }
+    999              if (delta.stop_reason != null) {
+   1000                lastStopReason = delta.stop_reason
+   1001              }
+   1002            }
+   1003            if (event.type === 'message_stop') {
+   1004              // Accumulate current message usage into total
+   1005>             this.totalUsage = accumulateUsage(
+   1006                this.totalUsage,
+   1007                currentMessageUsage,
+   1008              )
+   1009            }
+   1010  
+   1011            if (includePartialMessages) {
+   1012              yield {
+   1013                type: 'stream_event' as const,
+   1014                event,
+   1015                session_id: getSessionId(),

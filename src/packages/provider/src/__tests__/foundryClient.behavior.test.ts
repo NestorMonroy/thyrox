@@ -11,7 +11,7 @@ import { resolve } from 'path'
  *      (azureADTokenProvider stays undefined)
  *   2. No API key → use DefaultAzureCredential via @azure/identity
  *
- * CLAUDE_CODE_SKIP_FOUNDRY_AUTH: mock token provider for test/proxy scenarios.
+ * THYROX_CODE_SKIP_FOUNDRY_AUTH: mock token provider for test/proxy scenarios.
  *
  * Pin all three branches + the Azure scope string.
  */
@@ -21,9 +21,9 @@ describe('Foundry client config (Azure AD auth)', () => {
     'utf-8',
   )
 
-  test('Foundry branch dispatches on CLAUDE_CODE_USE_FOUNDRY', () => {
+  test('Foundry branch dispatches on THYROX_CODE_USE_FOUNDRY', () => {
     expect(source).toMatch(
-      /if\s*\(anthropic\.isEnvTruthy\(readEnv\('CLAUDE_CODE_USE_FOUNDRY'\)\)\)\s*\{[\s\S]*?await import\('@anthropic-ai\/foundry-sdk'\)/,
+      /if\s*\(anthropic\.isEnvTruthy\(readEnv\('THYROX_CODE_USE_FOUNDRY'\)\)\)\s*\{[\s\S]*?await import\('@anthropic-ai\/foundry-sdk'\)/,
     )
   })
 
@@ -34,12 +34,12 @@ describe('Foundry client config (Azure AD auth)', () => {
     expect(source).toMatch(/if\s*\(!readEnv\('ANTHROPIC_FOUNDRY_API_KEY'\)\)/)
   })
 
-  test('CLAUDE_CODE_SKIP_FOUNDRY_AUTH → mock token provider (empty string)', () => {
+  test('THYROX_CODE_SKIP_FOUNDRY_AUTH → mock token provider (empty string)', () => {
     // Returns `Promise.resolve('')` — pin the empty-string return so
     // a refactor doesn't accidentally use a placeholder like 'mock-token'
     // that downstream auth might log/leak.
     expect(source).toMatch(
-      /CLAUDE_CODE_SKIP_FOUNDRY_AUTH[\s\S]*?azureADTokenProvider = \(\) => Promise\.resolve\(''\)/,
+      /THYROX_CODE_SKIP_FOUNDRY_AUTH[\s\S]*?azureADTokenProvider = \(\) => Promise\.resolve\(''\)/,
     )
   })
 

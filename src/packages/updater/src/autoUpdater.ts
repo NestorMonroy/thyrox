@@ -20,7 +20,7 @@
  *   2. `env.isRunningWithBun()` / `env.isNpmFromWindowsPath()`
  *      (`config/env/paths.ts` + `config/bundledMode.ts`) — ver
  *      `./internal/envCompat.ts`.
- *   3. `getClaudeConfigHomeDir` (`config/env/utils.ts`, porte parcial
+ *   3. `getConfigHomeDir` (`config/env/utils.ts`, porte parcial
  *      declarado que no la incluye) — ver `./internal/envCompat.ts`.
  *   4. `gt`/`gte`/`lt`/`parseVersion` (`config/semver.ts`, ausente) —
  *      ver `./internal/semverCompat.ts`.
@@ -56,7 +56,7 @@ import {
 } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   isNpmFromWindowsPath,
   isRunningWithBun,
 } from './internal/envCompat.js'
@@ -70,9 +70,10 @@ import { tryGetShellConfig } from './internal/shellConfigCompat.js'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import type { ReleaseChannel } from './nativeInstaller/download.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const GCS_BUCKET_URL =
-  'https://storage.googleapis.com/claude-code-how-works-how-works-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-how-works-how-works-releases'
+  'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases'
 
 /** Ver docstring del módulo — sustituto local del global `MACRO` de ccnmt. */
 const MACRO = {
@@ -231,7 +232,7 @@ export async function assertMinVersion(): Promise<void> {
       lt(MACRO.VERSION, versionConfig.minVersion)
     ) {
       console.error(`
-It looks like your version of Claude Code (${MACRO.VERSION}) needs an update.
+It looks like your version of ${PRODUCT_NAME} (${MACRO.VERSION}) needs an update.
 A newer version (${versionConfig.minVersion} or higher) is required to continue.
 
 To update, please run:
@@ -387,7 +388,7 @@ const LOCK_TIMEOUT_MS = 5 * 60 * 1000 // timeout de 5 minutos para locks
  * setup de test
  */
 export function getLockFilePath(): string {
-  return join(getClaudeConfigHomeDir(), '.update.lock')
+  return join(getConfigHomeDir(), '.update.lock')
 }
 
 /**
@@ -454,7 +455,7 @@ async function acquireLock(): Promise<boolean> {
         // traga EEXIST internamente, asi que una carrera de creacion de
         // directorio no puede llegar al catch de abajo — solo el
         // EEXIST de writeFile (contencion de lock real) puede.
-        await fs.mkdir(getClaudeConfigHomeDir())
+        await fs.mkdir(getConfigHomeDir())
         await writeFile(lockPath, `${process.pid}`, {
           encoding: 'utf8',
           flag: 'wx',
@@ -784,7 +785,7 @@ export async function installGlobalPackage(
       console.error(`
 Error: Windows NPM detected in WSL
 
-You're running Claude Code in WSL but using the Windows NPM installation from /mnt/c/.
+You're running ${PRODUCT_NAME} in WSL but using the Windows NPM installation from /mnt/c/.
 This configuration is not supported for updates.
 
 To fix this issue:

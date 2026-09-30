@@ -33,7 +33,7 @@ describe('performLogout + clearAuthRelatedCaches order invariants', () => {
       // ~1.1MB of OTel modules pull in if loaded eagerly. Logout is rare
       // and ALREADY blocking, so lazy import is the right tradeoff.
       expect(fnSlice).toMatch(
-        /const \{ flushTelemetry \} = await import\(\s*\n?\s*'@claude-code-how-works\/local-observability\/telemetry'/,
+        /const \{ flushTelemetry \} = await import\(\s*\n?\s*'@thyrox\/local-observability\/telemetry'/,
       )
     })
 

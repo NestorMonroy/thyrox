@@ -1,0 +1,18 @@
+base	13 pass, 0 fail	—
+byte-cap	13 pass, 0 fail	—
+abort-not-retryable	13 pass, 0 fail	—
+undici-family	13 pass, 0 fail	—
+responses-completed-marker	13 pass, 0 fail	—
+toolcalls-not-terminal	13 pass, 0 fail	—
+overlap-trim	11 pass, 2 fail	trimContinuationOverlap removes a duplicated seam so the join is append-only | trimContinuationOverlap drops a continuation fully contained in what was emitted
+restart-reject	13 pass, 0 fail	—
+inflight-gate	13 pass, 0 fail	—
+empty-stop-needs-reasoning	13 pass, 0 fail	—
+order-fix-gate	13 pass, 0 fail	—
+reopen-discard	13 pass, 0 fail	—
+cancel-no-reopen	13 pass, 0 fail	—
+watchdog-ignored	13 pass, 0 fail	—
+empty-prefill-appends	12 pass, 1 fail	makeContinuationBody accepts an empty prefill by re-sending the messages unchanged
+responses-envelope	13 pass, 0 fail	—
+finalize-once	13 pass, 0 fail	—
+terminal-marker-preserves	13 pass, 0 fail	—

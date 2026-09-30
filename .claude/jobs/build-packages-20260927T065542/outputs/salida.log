@@ -1,0 +1,390 @@
+run-task-pool: 48 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T065542
+  job-20260927T065542/job-001 pid 31796   bash bin/emit_declarations agent
+  job-20260927T065542/job-002 pid 31850   bash bin/emit_declarations app-host
+  job-20260927T065542/job-003 pid 32084   bash bin/emit_declarations audio-capture-napi
+  job-20260927T065542/job-004 pid 32207   bash bin/emit_declarations binary
+  job-20260927T065542/job-005 pid 32273   bash bin/emit_declarations bridge
+  job-20260927T065542/job-006 pid 32334   bash bin/emit_declarations claude-for-chrome-mcp
+  job-20260927T065542/job-007 pid 32425   bash bin/emit_declarations cli
+  job-20260927T065542/job-008 pid 32442   bash bin/emit_declarations color-diff-napi
+  job-20260927T065542/job-009 pid 32600   bash bin/emit_declarations command-runtime
+  job-20260927T065542/job-010 pid 369     bash bin/emit_declarations computer-use-input
+  job-20260927T065542/job-011 pid 438     bash bin/emit_declarations computer-use-mcp
+  job-20260927T065542/job-012 pid 670     bash bin/emit_declarations computer-use-swift
+  job-20260927T065542/job-013 pid 833     bash bin/emit_declarations config
+  job-20260927T065542/job-014 pid 902     bash bin/emit_declarations context-compression
+  job-20260927T065542/job-015 pid 973     bash bin/emit_declarations coordination
+  job-20260927T065542/job-016 pid 1123    bash bin/emit_declarations daemon
+  job-20260927T065542/job-017 pid 1163    bash bin/emit_declarations finding
+  job-20260927T065542/job-018 pid 1256    bash bin/emit_declarations headless-sdk
+  job-20260927T065542/job-019 pid 1321    bash bin/emit_declarations ide
+  job-20260927T065542/job-020 pid 1405    bash bin/emit_declarations image-processor-napi
+  job-20260927T065542/job-021 pid 1524    bash bin/emit_declarations ink
+  job-20260927T065542/job-022 pid 1542    bash bin/emit_declarations local-observability
+  job-20260927T065542/job-023 pid 1725    bash bin/emit_declarations mcp-runtime
+  job-20260927T065542/job-024 pid 1742    bash bin/emit_declarations memory
+  job-20260927T065542/job-025 pid 1981    bash bin/emit_declarations modifiers-napi
+  job-20260927T065542/job-026 pid 2062    bash bin/emit_declarations observability
+  job-20260927T065542/job-027 pid 2079    bash bin/emit_declarations output
+  job-20260927T065542/job-028 pid 2227    bash bin/emit_declarations paths
+  job-20260927T065542/job-029 pid 2312    bash bin/emit_declarations permission
+  job-20260927T065542/job-030 pid 2338    bash bin/emit_declarations plan
+  job-20260927T065542/job-031 pid 2432    bash bin/emit_declarations provider
+  job-20260927T065542/job-032 pid 2690    bash bin/emit_declarations repl
+  job-20260927T065542/job-033 pid 2779    bash bin/emit_declarations ripgrep-napi
+  job-20260927T065542/job-034 pid 2923    bash bin/emit_declarations server
+  job-20260927T065542/job-035 pid 3166    bash bin/emit_declarations shell
+  job-20260927T065542/job-036 pid 3315    bash bin/emit_declarations skills
+  job-20260927T065542/job-037 pid 3468    bash bin/emit_declarations stdin-napi
+  job-20260927T065542/job-038 pid 3485    bash bin/emit_declarations storage
+  job-20260927T065542/job-039 pid 3596    bash bin/emit_declarations store
+  job-20260927T065542/job-040 pid 3692    bash bin/emit_declarations swarm
+  job-20260927T065542/job-041 pid 3709    bash bin/emit_declarations task
+  job-20260927T065542/job-042 pid 3884    bash bin/emit_declarations teleport
+  job-20260927T065542/job-043 pid 3983    bash bin/emit_declarations tool-registry
+  job-20260927T065542/job-044 pid 4075    bash bin/emit_declarations tools
+  job-20260927T065542/job-045 pid 4316    bash bin/emit_declarations updater
+  job-20260927T065542/job-046 pid 4581    bash bin/emit_declarations url-handler-napi
+  job-20260927T065542/job-047 pid 4598    bash bin/emit_declarations voice
+  job-20260927T065542/job-048 pid 4737    bash bin/emit_declarations workbench
+run-task-pool: lanzados 48 de 48; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T065542_job-001 -> OK (2 de 49)
+asentado: job-20260927T065542_job-002 -> OK (3 de 49)
+asentado: job-20260927T065542_job-003 -> OK (4 de 49)
+asentado: job-20260927T065542_job-004 -> OK (5 de 49)
+asentado: job-20260927T065542_job-005 -> OK (6 de 49)
+asentado: job-20260927T065542_job-006 -> OK (7 de 49)
+asentado: job-20260927T065542_job-007 -> OK (8 de 49)
+asentado: job-20260927T065542_job-008 -> OK (9 de 49)
+asentado: job-20260927T065542_job-009 -> OK (10 de 49)
+asentado: job-20260927T065542_job-010 -> OK (11 de 49)
+asentado: job-20260927T065542_job-011 -> OK (12 de 49)
+asentado: job-20260927T065542_job-012 -> OK (13 de 49)
+asentado: job-20260927T065542_job-013 -> OK (14 de 49)
+asentado: job-20260927T065542_job-014 -> OK (15 de 49)
+asentado: job-20260927T065542_job-015 -> OK (16 de 49)
+asentado: job-20260927T065542_job-016 -> OK (17 de 49)
+asentado: job-20260927T065542_job-017 -> OK (18 de 49)
+asentado: job-20260927T065542_job-018 -> OK (19 de 49)
+asentado: job-20260927T065542_job-019 -> OK (20 de 49)
+asentado: job-20260927T065542_job-020 -> OK (21 de 49)
+asentado: job-20260927T065542_job-021 -> OK (22 de 49)
+asentado: job-20260927T065542_job-022 -> OK (23 de 49)
+asentado: job-20260927T065542_job-023 -> OK (24 de 49)
+asentado: job-20260927T065542_job-024 -> OK (25 de 49)
+asentado: job-20260927T065542_job-025 -> OK (26 de 49)
+asentado: job-20260927T065542_job-026 -> OK (27 de 49)
+asentado: job-20260927T065542_job-027 -> OK (28 de 49)
+asentado: job-20260927T065542_job-028 -> OK (29 de 49)
+asentado: job-20260927T065542_job-029 -> OK (30 de 49)
+asentado: job-20260927T065542_job-030 -> OK (31 de 49)
+asentado: job-20260927T065542_job-031 -> OK (32 de 49)
+asentado: job-20260927T065542_job-032 -> OK (33 de 49)
+asentado: job-20260927T065542_job-033 -> OK (34 de 49)
+asentado: job-20260927T065542_job-034 -> OK (35 de 49)
+asentado: job-20260927T065542_job-035 -> OK (36 de 49)
+asentado: job-20260927T065542_job-036 -> OK (37 de 49)
+asentado: job-20260927T065542_job-037 -> OK (38 de 49)
+asentado: job-20260927T065542_job-038 -> OK (39 de 49)
+asentado: job-20260927T065542_job-039 -> OK (40 de 49)
+asentado: job-20260927T065542_job-040 -> OK (41 de 49)
+asentado: job-20260927T065542_job-041 -> OK (42 de 49)
+asentado: job-20260927T065542_job-042 -> OK (43 de 49)
+asentado: job-20260927T065542_job-043 -> OK (44 de 49)
+asentado: job-20260927T065542_job-044 -> OK (45 de 49)
+asentado: job-20260927T065542_job-045 -> OK (46 de 49)
+asentado: job-20260927T065542_job-046 -> OK (47 de 49)
+asentado: job-20260927T065542_job-047 -> OK (48 de 49)
+asentado: job-20260927T065542_job-048 -> OK (49 de 49)
+== 49 trabajos asentados ==
+OLVIDADO job-20260927T065542
+       | (vacío — no emitió nada)
+OK     job-20260927T065542_job-001 exit=0
+       | agent: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 748180 KB (731 MB) · pared 11.89s
+OK     job-20260927T065542_job-002 exit=0
+       | app-host: emitio pese a 2 errores (2 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 2 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 550992 KB (538 MB) · pared 7.55s
+OK     job-20260927T065542_job-003 exit=0
+       | audio-capture-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 224528 KB (219 MB) · pared 2.30s
+OK     job-20260927T065542_job-004 exit=0
+       | binary: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 258908 KB (253 MB) · pared 2.53s
+OK     job-20260927T065542_job-005 exit=0
+       | bridge: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 493392 KB (482 MB) · pared 6.01s
+OK     job-20260927T065542_job-006 exit=0
+       | claude-for-chrome-mcp: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 299968 KB (293 MB) · pared 3.36s
+OK     job-20260927T065542_job-007 exit=0
+       | cli: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 810020 KB (791 MB) · pared 11.09s
+OK     job-20260927T065542_job-008 exit=0
+       | color-diff-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 237232 KB (232 MB) · pared 2.50s
+OK     job-20260927T065542_job-009 exit=0
+       | command-runtime: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 578328 KB (565 MB) · pared 9.14s
+OK     job-20260927T065542_job-010 exit=0
+       | computer-use-input: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 237212 KB (232 MB) · pared 2.39s
+OK     job-20260927T065542_job-011 exit=0
+       | computer-use-mcp: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 473364 KB (462 MB) · pared 6.28s
+OK     job-20260927T065542_job-012 exit=0
+       | computer-use-swift: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 238384 KB (233 MB) · pared 2.54s
+OK     job-20260927T065542_job-013 exit=0
+       | config: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 556436 KB (543 MB) · pared 8.10s
+OK     job-20260927T065542_job-014 exit=0
+       | context-compression: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 234604 KB (229 MB) · pared 2.25s
+OK     job-20260927T065542_job-015 exit=0
+       | coordination: emitio pese a 3 errores (0 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 3 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 238212 KB (233 MB) · pared 2.49s
+OK     job-20260927T065542_job-016 exit=0
+       | daemon: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 299384 KB (292 MB) · pared 3.84s
+OK     job-20260927T065542_job-017 exit=0
+       | finding: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 233952 KB (228 MB) · pared 2.45s
+OK     job-20260927T065542_job-018 exit=0
+       | headless-sdk: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 343468 KB (335 MB) · pared 4.14s
+OK     job-20260927T065542_job-019 exit=0
+       | ide: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 434492 KB (424 MB) · pared 5.60s
+OK     job-20260927T065542_job-020 exit=0
+       | image-processor-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 234560 KB (229 MB) · pared 2.23s
+OK     job-20260927T065542_job-021 exit=0
+       | ink: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 343416 KB (335 MB) · pared 5.66s
+OK     job-20260927T065542_job-022 exit=0
+       | local-observability: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 444068 KB (434 MB) · pared 5.96s
+OK     job-20260927T065542_job-023 exit=0
+       | mcp-runtime: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 577824 KB (564 MB) · pared 7.85s
+OK     job-20260927T065542_job-024 exit=0
+       | memory: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 406524 KB (397 MB) · pared 5.24s
+OK     job-20260927T065542_job-025 exit=0
+       | modifiers-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 228476 KB (223 MB) · pared 2.10s
+OK     job-20260927T065542_job-026 exit=0
+       | observability: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 238972 KB (233 MB) · pared 2.44s
+OK     job-20260927T065542_job-027 exit=0
+       | output: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 410132 KB (401 MB) · pared 4.88s
+OK     job-20260927T065542_job-028 exit=0
+       | paths: emitio pese a 2 errores (0 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 2 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 240184 KB (235 MB) · pared 2.21s
+OK     job-20260927T065542_job-029 exit=0
+       | permission: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 577924 KB (564 MB) · pared 10.32s
+OK     job-20260927T065542_job-030 exit=0
+       | plan: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 230060 KB (225 MB) · pared 2.06s
+OK     job-20260927T065542_job-031 exit=0
+       | provider: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 706892 KB (690 MB) · pared 10.38s
+OK     job-20260927T065542_job-032 exit=0
+       | repl: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 882716 KB (862 MB) · pared 16.20s
+OK     job-20260927T065542_job-033 exit=0
+       | ripgrep-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 223888 KB (219 MB) · pared 2.13s
+OK     job-20260927T065542_job-034 exit=0
+       | server: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 443940 KB (434 MB) · pared 5.55s
+OK     job-20260927T065542_job-035 exit=0
+       | shell: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 476444 KB (465 MB) · pared 6.36s
+OK     job-20260927T065542_job-036 exit=0
+       | skills: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 235520 KB (230 MB) · pared 2.43s
+OK     job-20260927T065542_job-037 exit=0
+       | stdin-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 230820 KB (225 MB) · pared 2.13s
+OK     job-20260927T065542_job-038 exit=0
+       | storage: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 459636 KB (449 MB) · pared 6.08s
+OK     job-20260927T065542_job-039 exit=0
+       | store: emitio pese a 1 errores (0 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 1 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 230792 KB (225 MB) · pared 2.26s
+OK     job-20260927T065542_job-040 exit=0
+       | swarm: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 444212 KB (434 MB) · pared 5.68s
+OK     job-20260927T065542_job-041 exit=0
+       | task: emitio pese a 5 errores (0 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 5 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 238572 KB (233 MB) · pared 2.33s
+OK     job-20260927T065542_job-042 exit=0
+       | teleport: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 390044 KB (381 MB) · pared 4.63s
+OK     job-20260927T065542_job-043 exit=0
+       | tool-registry: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 740768 KB (723 MB) · pared 12.86s
+OK     job-20260927T065542_job-044 exit=0
+       | tools: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 392168 KB (383 MB) · pared 4.52s
+OK     job-20260927T065542_job-045 exit=0
+       | updater: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 406256 KB (397 MB) · pared 5.22s
+OK     job-20260927T065542_job-046 exit=0
+       | url-handler-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 228352 KB (223 MB) · pared 2.14s
+OK     job-20260927T065542_job-047 exit=0
+       | voice: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 409428 KB (400 MB) · pared 4.80s
+OK     job-20260927T065542_job-048 exit=0
+       | workbench: emitio pese a 2 errores (0 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 2 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+       memoria pico: 235384 KB (230 MB) · pared 2.21s
+__BG_EXIT__=0

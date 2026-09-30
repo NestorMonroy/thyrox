@@ -1,15 +1,14 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/schemas/hooks.ts` (136 líneas
- * fuente). Reimplementación fiel VERBATIM.
+ * V7 §8.6 — Hook Zod schemas owned by config (settings schema sub-section).
+ * Moved from src/schemas/hooks.ts; source file becomes re-export facade.
  *
- * `HOOK_EVENTS` y `SHELL_TYPES` se inlinean aquí (igual que la fuente)
- * porque config no puede depender del SDK de agente ni del proveedor de
- * shell.
+ * HOOK_EVENTS and SHELL_TYPES are inlined here (V7 §11.4) because config
+ * cannot depend on agent SDK types or shell provider at Wave 1.
  */
 import { z } from 'zod/v4'
-import { lazySchema } from '../../internal/lazySchema.ts'
+import { lazySchema } from '../../internal/lazySchema.js'
 
-// Inlineado — lista canónica de eventos de hook.
+// Inlined from src/entrypoints/agentSdkTypes.js — canonical list of hook events.
 const HOOK_EVENTS = [
   'PreToolUse',
   'PostToolUse',
@@ -44,7 +43,7 @@ const HOOK_EVENTS = [
 
 type HookEvent = (typeof HOOK_EVENTS)[number]
 
-// Inlineado — proveedor de shell.
+// Inlined from src/utils/shell/shellProvider.ts
 const SHELL_TYPES = ['bash', 'powershell'] as const
 
 const IfConditionSchema = lazySchema(() =>
@@ -79,11 +78,11 @@ function buildHookSchemas() {
     model: z.string().optional().describe('Model to use (e.g., "claude-sonnet-4-6"). Defaults to small fast model.'),
     statusMessage: z.string().optional().describe('Custom spinner status message'),
     once: z.boolean().optional().describe('If true, hook runs once and is removed'),
-    // ant v2.1.142 4793.js: PreToolUse / PostToolUse etc. fijan
-    // preventContinuation a true al bloquear por defecto. continueOnBlock=true
-    // invierte eso — el hook reporta bloqueo con una razón, pero se permite
-    // seguir al modelo (útil para verificadores de fallo blando). Stop /
-    // SubagentStop siempre continúan sin importar esto (semántica de loop).
+    // ant v2.1.142 4793.js: PreToolUse / PostToolUse etc. set preventContinuation
+    // to true on blocking by default. continueOnBlock=true flips that — the
+    // hook reports blocking with a reason, but the model is allowed to keep
+    // running (useful for soft-fail verifiers). Stop / SubagentStop always
+    // continue regardless (loop semantics).
     continueOnBlock: z.boolean().optional().describe('If true, a blocking outcome surfaces the reason but does not prevent the model from continuing. Ignored for Stop/SubagentStop hooks, which always continue.'),
   })
 
@@ -127,7 +126,7 @@ export const HooksSchema = lazySchema(() =>
   z.partialRecord(z.enum(HOOK_EVENTS), z.array(HookMatcherSchema())),
 )
 
-// Tipos inferidos.
+// Inferred types
 export type HookCommand = z.infer<ReturnType<typeof HookCommandSchema>>
 export type BashCommandHook = Extract<HookCommand, { type: 'command' }>
 export type PromptHook = Extract<HookCommand, { type: 'prompt' }>

@@ -1,14 +1,11 @@
 /**
- * Puerto de `ccnmt: packages/output/src/__tests__/intl.test.ts`
- * (verbatim). Tests de los helpers de intl — envuelven Intl.Segmenter /
- * Intl.RelativeTimeFormat con instancias cacheadas de forma perezosa. Son
- * puros dado un build de ICU funcional, asi que se puede sondear el
- * manejo de clusters de grafema de forma deterministica.
+ * Tests for intl helpers — wrap Intl.Segmenter / Intl.RelativeTimeFormat
+ * with lazy-cached instances. These are pure given a working ICU build,
+ * so we can probe grapheme cluster handling deterministically.
  *
- * Los usan: posicionamiento del cursor, operadores de vim, recorte de
- * transcript. Un limite de grafema incorrecto hace que backspace se coma
- * la mitad de un caracter CJK o una familia de marcas combinantes
- * (👨‍👩‍👧‍👦 partida en pedazos).
+ * Used by: cursor positioning, vim operators, transcript trimming.
+ * Wrong grapheme boundary = backspace eats half a CJK char or a
+ * combining-mark family (👨‍👩‍👧‍👦 broken into pieces).
  */
 import { describe, expect, test } from 'bun:test'
 import {

@@ -1,0 +1,15 @@
+src/packages/storage/src/claudemd.ts(1348,5): error TS6133: 'hasLoggedInitialLoad' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:1338-1350 ---
+   1338    '.tex',
+   1339    '.latex',
+   1340    // Lock files (often text-based)
+   1341    '.lock',
+   1342    // Misc
+   1343    '.log',
+   1344    '.diff',
+   1345    '.patch',
+   1346  ])
+   1347  
+   1348> let hasLoggedInitialLoad = false
+   1349  
+   1350  let shouldFireHook = true

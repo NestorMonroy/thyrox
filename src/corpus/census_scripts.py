@@ -27,7 +27,6 @@ directorio de invocación y rehúsa si aterriza en el proveedor.
 """
 import argparse
 import collections
-import pathlib
 import subprocess
 import sys
 

@@ -60,13 +60,13 @@ COUNTERPART_DECLARATION_VAR = "THYROX_COUNTERPART_DECLARATION"
 COUNTERPART_DECLARATION_FILE_VAR = ENV_FILE_VAR
 
 #: Qué árbol del alcance es la referencia contra la que se censa, por su alias.
-#: Era un literal del producto de UN consumidor. Directiva del ejecutor
-#: 2026-09-07: lo que un consumidor construye no le incumbe al proveedor —
-#: thyrox gobierna el multi-repo, no el dominio de lo que cada clon fabrica.
+#: Lo declara el consumidor: lo que un consumidor construye no le incumbe al
+#: proveedor —thyrox gobierna el multi-repo, no el dominio de lo que cada clon
+#: fabrica (directiva del ejecutor).
 REFERENCE_ROOT_VAR = "THYROX_CENSUS_REFERENCE_ROOT"
 
-#: Qué repositorio del alcance se censa, por su alias. Caía a un consumidor
-#: concreto, así que el proveedor decidía a quién mide.
+#: Qué repositorio del alcance se censa, por su alias. Sin default: con uno, el
+#: proveedor decidiría a quién mide.
 CENSUSED_ROOT_VAR = "THYROX_CENSUS_ROOT"
 
 #: Dónde cuelgan las unidades dentro del repositorio censado, separadas por

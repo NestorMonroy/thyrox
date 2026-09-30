@@ -108,6 +108,7 @@ export function removeRedundantContent(messages: Message[]): { messages: Message
   const out: Message[] = []
   for (let i = 0; i < messages.length; i++) {
     const m = messages[i]
+    if (m === undefined) continue
     const previous = i > 0 ? messages[i - 1] : undefined
     if (previous && previous.role === m.role && contentKey(previous) === contentKey(m)) {
       applied = true
@@ -151,7 +152,7 @@ export type DedupSectionsResult<T extends NamedSection> = { sections: T[]; dupli
  * intercalable de mensajes `role: 'system'`. El mismo PRINCIPIO -- descartar
  * contenido repetido antes de que entre al prompt -- se adapta a la forma
  * real que si tenemos: la lista de SECCIONES que `assembleSystemPrompt`
- * concatena (`CLAUDE.md`, cada `.claude/rules/*.md`...).
+ * concatena (`THYROX.md`, cada `.claude/rules/*.md`...).
  *
  * Divergencia deliberada de la clave: la fuente compara
  * `content.trim().slice(0, 200)` -- un PREFIJO -- porque sus mensajes de

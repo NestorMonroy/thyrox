@@ -1,0 +1,6 @@
+.env.example
+src/packages/daemon/src/__tests__/spareClaim.test.ts
+src/packages/daemon/src/__tests__/sparePool.test.ts
+src/packages/daemon/src/bgDaemon.ts
+src/packages/daemon/src/spareClaim.ts
+src/packages/daemon/src/sparePool.ts

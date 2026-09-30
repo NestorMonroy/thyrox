@@ -25,7 +25,9 @@ const MODEL_KEYS = Object.keys(ALL_MODEL_CONFIGS) as ModelKey[]
 function getBuiltinModelStrings(provider: APIProvider): ModelStrings {
   const out = {} as ModelStrings
   for (const key of MODEL_KEYS) {
-    out[key] = ALL_MODEL_CONFIGS[key][provider]
+    // `ModelConfig` excluye 'codex' a propósito (ver comentario en configs.ts):
+    // sus modelos nunca salen de esta tabla, así que el índice se acota aquí.
+    out[key] = ALL_MODEL_CONFIGS[key][provider as Exclude<APIProvider, 'codex'>]
   }
   return out
 }

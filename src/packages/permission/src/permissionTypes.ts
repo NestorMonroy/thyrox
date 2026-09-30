@@ -33,23 +33,21 @@
  *
  * NO se agregan (sin consumidor confirmado en este pase): `AdditionalWorkingDirectory`
  * (SÍ se agrega — ver abajo), `PermissionCommandMetadata` sólo se usa dentro
- * de `PermissionMetadata`, `ClassifierResult`/`ClassifierBehavior`/
- * `ClassifierUsage`/`YoloClassifierResult` (sólo los consume `yoloClassifier.ts`
+ * de `PermissionMetadata`, `ClassifierResult`/`ClassifierBehavior`
+ * (sólo los consume `yoloClassifier.ts`
  * y `classifierShared.ts`, bloqueados por `@anthropic-ai/sdk`/`zod`, no
  * linkeados en `node_modules` de este paquete sin correr `bun install`, fuera
- * de alcance de este pase), `ToolPermissionRulesBySource`/`ToolPermissionContext`
- * canónicos (cada consumidor de este pase declara su propio tipo local más
- * angosto, igual que ya hace `permissions.ts` — ver su docstring).
+ * de alcance de este pase), `ToolPermissionContext` canónico (cada consumidor
+ * declara su propio tipo local más angosto, igual que ya hace `permissions.ts`
+ * — ver su docstring). `ToolPermissionRulesBySource` SÍ está: la importa
+ * `tool-registry/src/Tool.ts`.
  *
- * DIVERGENCIA DECLARADA — `ContentBlockParam`: la fuente tipa los campos
- * `contentBlocks` de `PermissionAllowDecision`/`PermissionAskDecision` con
- * `ContentBlockParam` de `@anthropic-ai/sdk/resources/messages.mjs`, que no
- * está linkeado en `node_modules` de este paquete. Se declara aquí la misma
- * forma estructural mínima que ya usa `@thyrox/agent/messages.ts:516-518`
- * para el mismo problema (discriminante `type` + índice abierto), en vez de
- * arrastrar el SDK entero por un tipo.
+ * `ContentBlockParam` es el del SDK (`@anthropic-ai/sdk/resources/messages.mjs`),
+ * como en la fuente: una copia local no encajaría con los consumidores que
+ * pasan esos bloques al SDK.
  */
 
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import { feature } from 'bun:bundle'
 
 /** `permissionTypes.ts:42`. */
@@ -65,6 +63,15 @@ export type PermissionRuleSource =
   | 'cliArg'
   | 'command'
   | 'session'
+
+/**
+ * Las reglas de permiso por su fuente: cada fuente aporta su lista de reglas
+ * serializadas (`Tool(contenido)`). La forma de `ToolPermissionContext` de
+ * `@thyrox/tool-registry/Tool.ts`, que la importa de aquí.
+ */
+export type ToolPermissionRulesBySource = {
+  [T in PermissionRuleSource]?: string[]
+}
 
 /** `permissionTypes.ts:65-68`. */
 export type PermissionRuleValue = {
@@ -128,6 +135,58 @@ export type ClassifierUsage = {
   outputTokens: number
   cacheReadInputTokens: number
   cacheCreationInputTokens: number
+}
+
+/**
+ * La decision del clasificador de modo auto sobre una accion, con la
+ * telemetria de su llamada. `permissionTypes.ts:344-403`.
+ */
+export type YoloClassifierResult = {
+  thinking?: string
+  shouldBlock: boolean
+  reason: string
+  unavailable?: boolean
+  /**
+   * La API respondio «prompt is too long»: el transcript del clasificador
+   * excede su ventana. Es determinista (mismo transcript, mismo error), asi
+   * que quien llama vuelve al prompt normal en vez de reintentar o cerrar.
+   */
+  transcriptTooLong?: boolean
+  /** El modelo de esta llamada al clasificador. */
+  model: string
+  /** Consumo de la llamada, para la telemetria de sobrecosto. */
+  usage?: ClassifierUsage
+  durationMs?: number
+  /** Longitud en caracteres de cada componente del prompt enviado. */
+  promptLengths?: {
+    systemPrompt: number
+    toolCalls: number
+    userPrompts: number
+  }
+  /** Ruta donde se volcaron los prompts; sólo con `unavailable` por error de API. */
+  errorDumpPath?: string
+  /**
+   * Por que un bloqueo es un fallo de parseo: negativa de politica, respuesta
+   * ilegible, sin tool_use o esquema invalido. Sólo con `shouldBlock` por
+   * parseo, nunca por error de API o aborto.
+   */
+  failureMode?: 'policy_refusal' | 'unparseable' | 'no_tool_use' | 'invalid_schema'
+  /** La etapa que produjo la decision final (clasificador XML de dos etapas). */
+  stage?: 'fast' | 'thinking'
+  /** Consumo de la etapa 1 (rapida) cuando tambien corrio la 2. */
+  stage1Usage?: ClassifierUsage
+  stage1DurationMs?: number
+  /**
+   * `request_id` de la etapa 1, para unir con los registros de la API. El
+   * clasificador de una etapa (tool_use) tambien lo escribe aqui.
+   */
+  stage1RequestId?: string
+  /** `msg_xxx` de la etapa 1: une el evento de decision con su prompt. */
+  stage1MsgId?: string
+  stage2Usage?: ClassifierUsage
+  stage2DurationMs?: number
+  stage2RequestId?: string
+  stage2MsgId?: string
 }
 
 // ============================================================================
@@ -195,11 +254,7 @@ export type AdditionalWorkingDirectory = {
 // Decisiones y resultados de permiso — `permissionTypes.ts:142-329`
 // ============================================================================
 
-/** Divergencia declarada arriba — ver el docstring del módulo. */
-export type ContentBlockParam = {
-  type: string
-  [key: string]: unknown
-}
+export type { ContentBlockParam }
 
 /**
  * Forma mínima de un comando para metadata de permiso. `permissionTypes.ts:150-155`.
@@ -330,6 +385,9 @@ export type PermissionDecisionReason =
       type: 'safetyCheck'
       reason: string
       classifierApprovable: boolean
+      /** El disyuntor que la consulta dispara (2.1.275, `Au`/`Gge`). */
+      circuitBreaker?: string
+      also?: string[]
     }
   | {
       type: 'other'

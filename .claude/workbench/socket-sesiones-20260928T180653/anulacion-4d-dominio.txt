@@ -1,0 +1,61 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+123 | 
+124 | describe('recordInPidDomain (lpn) e isWindowsPosixCwd (aD)', () => {
+125 |   test('un registro con dominio vale sólo en el suyo', () => {
+126 |     const d = deps()
+127 |     expect(recordInPidDomain(record(5, { pidDomain: DOMAIN }) as never, DOMAIN, [], d)).toBe(true)
+128 |     expect(recordInPidDomain(record(5, { pidDomain: 'otro' }) as never, DOMAIN, [], d)).toBe(false)
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:128:89)
+(fail) recordInPidDomain (lpn) e isWindowsPosixCwd (aD) > un registro con dominio vale sólo en el suyo [0.62ms]
+204 |     write('4.json', record(4, { pidDomain: 'otro' }))
+205 |     write('5.json', record(5))
+206 |     write('otro.txt', 'x')
+207 |     const d = deps({}, [3, 4], [2])
+208 |     expect(await sweepRegistry(undefined, d)).toBe(2)
+209 |     expect(readdirSync(dir).sort()).toEqual(['1.json', '2.json', '4.json', '5.json', 'otro.txt'])
+                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "2.json",
+-   "4.json",
+    "5.json",
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:209:37)
+(fail) sweepRegistry (xut) > cuenta las vivas y la propia; borra los registros muertos del dominio [2.62ms]
+274 |     write('4.json', record(4, { pidDomain: 'otro' }))
+275 |     write(KEY(4), { peerToken: 'a'.repeat(32) })
+276 |     write('20.json', record(20))
+277 |     write(KEY(20), { peerToken: 'a'.repeat(32) })
+278 |     await sweepRegistry(undefined, deps({}, [4]))
+279 |     expect(readdirSync(dir).sort()).toEqual(['20.json', '4.json', KEY(20), KEY(4)].sort())
+                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -3,4 +3,3 @@
+    "20.json",
+-   "4.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.key",
+-   "4.json",
+  ]
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:279:37)
+(fail) sweepRegistry (xut) > no toca los pids que no están muertos ni los apartados por dominio [1.67ms]
+
+ 25 pass
+ 3 fail
+ 80 expect() calls
+Ran 28 tests across 1 file. [215.00ms]

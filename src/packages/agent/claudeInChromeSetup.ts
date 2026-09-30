@@ -15,7 +15,7 @@ import { isInBundledMode } from '@thyrox/config/bundledMode'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   isEnvDefinedFalsy,
   isEnvTruthy,
 } from '@thyrox/config/env/utils'
@@ -31,6 +31,7 @@ import {
 } from './claudeInChromeCommon.js'
 import { getChromeSystemPrompt } from './claudeInChrome/prompt.js'
 import { isChromeExtensionInstalledPortable } from './claudeInChromeSetupPortable.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const CHROME_EXTENSION_RECONNECT_URL = 'https://clau.de/chrome/reconnect'
 
@@ -52,10 +53,10 @@ export function shouldEnableClaudeInChrome(chromeFlag?: boolean): boolean {
   }
 
   // Check environment variables
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_CFC'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_ENABLE_CFC'))) {
     return true
   }
-  if (isEnvDefinedFalsy(readEnv('CLAUDE_CODE_ENABLE_CFC'))) {
+  if (isEnvDefinedFalsy(readEnv('THYROX_CODE_ENABLE_CFC'))) {
     return false
   }
 
@@ -85,7 +86,7 @@ export function shouldAutoEnableClaudeInChrome(): boolean {
 }
 
 /**
- * Setup Claude in Chrome MCP server and tools
+ * Setup thyrox in Chrome MCP server and tools
  *
  * @returns MCP config and allowed tools, or throws an error if platform is unsupported
  */
@@ -101,7 +102,7 @@ export function setupClaudeInChrome(): {
 
   const env: Record<string, string> = {}
   if (getSessionBypassPermissionsMode()) {
-    env.CLAUDE_CHROME_PERMISSION_MODE = 'skip_all_permission_checks'
+    env.THYROX_CHROME_PERMISSION_MODE = 'skip_all_permission_checks'
   }
   const hasEnv = Object.keys(env).length > 0
 
@@ -117,7 +118,7 @@ export function setupClaudeInChrome(): {
       )
       .catch(e =>
         logForDebugging(
-          `[Claude in Chrome] Failed to install native host: ${e}`,
+          `[${PRODUCT_NAME} in Chrome] Failed to install native host: ${e}`,
           { level: 'error' },
         ),
       )
@@ -148,7 +149,7 @@ export function setupClaudeInChrome(): {
       )
       .catch(e =>
         logForDebugging(
-          `[Claude in Chrome] Failed to install native host: ${e}`,
+          `[${PRODUCT_NAME} in Chrome] Failed to install native host: ${e}`,
           { level: 'error' },
         ),
       )
@@ -182,7 +183,7 @@ function getNativeMessagingHostsDirs(): string[] {
     // Windows uses a single location with registry entries pointing to it
     const home = homedir()
     const appData = readEnv('APPDATA') || join(home, 'AppData', 'Local')
-    return [join(appData, 'Claude Code', 'ChromeNativeHost')]
+    return [join(appData, `${PRODUCT_NAME}`, 'ChromeNativeHost')]
   }
 
   // macOS and Linux: return all browser native messaging directories
@@ -194,12 +195,12 @@ export async function installChromeNativeHostManifest(
 ): Promise<void> {
   const manifestDirs = getNativeMessagingHostsDirs()
   if (manifestDirs.length === 0) {
-    throw Error('Claude in Chrome Native Host not supported on this platform')
+    throw Error(`${PRODUCT_NAME} in Chrome Native Host not supported on this platform`)
   }
 
   const manifest = {
     name: NATIVE_HOST_IDENTIFIER,
-    description: 'Claude Code Browser Extension Native Host',
+    description: `${PRODUCT_NAME} Browser Extension Native Host`,
     path: manifestBinaryPath,
     type: 'stdio',
     allowed_origins: [
@@ -232,13 +233,13 @@ export async function installChromeNativeHostManifest(
       await mkdir(manifestDir, { recursive: true })
       await writeFile(manifestPath, manifestContent)
       logForDebugging(
-        `[Claude in Chrome] Installed native host manifest at: ${manifestPath}`,
+        `[${PRODUCT_NAME} in Chrome] Installed native host manifest at: ${manifestPath}`,
       )
       anyManifestUpdated = true
     } catch (error) {
       // Log but don't fail - the browser might not be installed
       logForDebugging(
-        `[Claude in Chrome] Failed to install manifest at ${manifestPath}: ${error}`,
+        `[${PRODUCT_NAME} in Chrome] Failed to install manifest at ${manifestPath}: ${error}`,
       )
     }
   }
@@ -254,12 +255,12 @@ export async function installChromeNativeHostManifest(
     void isChromeExtensionInstalled().then(isInstalled => {
       if (isInstalled) {
         logForDebugging(
-          `[Claude in Chrome] First-time install detected, opening reconnect page in browser`,
+          `[${PRODUCT_NAME} in Chrome] First-time install detected, opening reconnect page in browser`,
         )
         void openInChrome(CHROME_EXTENSION_RECONNECT_URL)
       } else {
         logForDebugging(
-          `[Claude in Chrome] First-time install detected, but extension not installed, skipping reconnect`,
+          `[${PRODUCT_NAME} in Chrome] First-time install detected, but extension not installed, skipping reconnect`,
         )
       }
     })
@@ -288,11 +289,11 @@ function registerWindowsNativeHosts(manifestPath: string): void {
     ]).then(result => {
       if (result.code === 0) {
         logForDebugging(
-          `[Claude in Chrome] Registered native host for ${browser} in Windows registry: ${fullKey}`,
+          `[${PRODUCT_NAME} in Chrome] Registered native host for ${browser} in Windows registry: ${fullKey}`,
         )
       } else {
         logForDebugging(
-          `[Claude in Chrome] Failed to register native host for ${browser} in Windows registry: ${result.stderr}`,
+          `[${PRODUCT_NAME} in Chrome] Failed to register native host for ${browser} in Windows registry: ${result.stderr}`,
         )
       }
     })
@@ -308,7 +309,7 @@ function registerWindowsNativeHosts(manifestPath: string): void {
  */
 async function createWrapperScript(command: string): Promise<string> {
   const platform = getPlatform()
-  const chromeDir = join(getClaudeConfigHomeDir(), 'chrome')
+  const chromeDir = join(getConfigHomeDir(), 'chrome')
   const wrapperPath =
     platform === 'windows'
       ? join(chromeDir, 'chrome-native-host.bat')
@@ -318,12 +319,12 @@ async function createWrapperScript(command: string): Promise<string> {
     platform === 'windows'
       ? `@echo off
 REM Chrome native host wrapper script
-REM Generated by Claude Code - do not edit manually
+REM Generated by ${PRODUCT_NAME} - do not edit manually
 ${command}
 `
       : `#!/bin/sh
 # Chrome native host wrapper script
-# Generated by Claude Code - do not edit manually
+# Generated by ${PRODUCT_NAME} - do not edit manually
 exec ${command}
 `
 
@@ -341,7 +342,7 @@ exec ${command}
   }
 
   logForDebugging(
-    `[Claude in Chrome] Created Chrome native host wrapper script: ${wrapperPath}`,
+    `[${PRODUCT_NAME} in Chrome] Created Chrome native host wrapper script: ${wrapperPath}`,
   )
   return wrapperPath
 }
@@ -384,7 +385,7 @@ function isChromeExtensionInstalled_CACHED_MAY_BE_STALE(): boolean {
 }
 
 /**
- * Detects if the Claude in Chrome extension is installed by checking the Extensions
+ * Detects if the thyrox in Chrome extension is installed by checking the Extensions
  * directory across all supported Chromium-based browsers and their profiles.
  *
  * @returns Object with isInstalled boolean and the browser where the extension was found
@@ -393,7 +394,7 @@ export async function isChromeExtensionInstalled(): Promise<boolean> {
   const browserPaths = getAllBrowserDataPaths()
   if (browserPaths.length === 0) {
     logForDebugging(
-      `[Claude in Chrome] Unsupported platform for extension detection: ${getPlatform()}`,
+      `[${PRODUCT_NAME} in Chrome] Unsupported platform for extension detection: ${getPlatform()}`,
     )
     return false
   }

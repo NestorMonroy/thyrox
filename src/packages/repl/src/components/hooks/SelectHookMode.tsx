@@ -16,6 +16,7 @@ import {
 } from '../../hooksSettings.js'
 import { Select } from '../CustomSelect/select.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   selectedEvent: HookEvent
@@ -37,7 +38,7 @@ export function SelectHookMode({
   const title =
     hookEventMetadata.matcherMetadata !== undefined
       ? `${selectedEvent} - Matcher: ${selectedMatcher || '(all)'}`
-      : selectedEvent
+      : String(selectedEvent)
 
   if (hooksForSelectedMatcher.length === 0) {
     return (
@@ -50,7 +51,7 @@ export function SelectHookMode({
         <Box flexDirection="column" gap={1}>
           <Text dimColor>No hooks configured for this event.</Text>
           <Text dimColor>
-            To add hooks, edit settings.json directly or ask Claude.
+            To add hooks, edit settings.json directly or ask {PRODUCT_NAME}.
           </Text>
         </Box>
       </Dialog>

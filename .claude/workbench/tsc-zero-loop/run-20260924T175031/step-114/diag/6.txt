@@ -1,0 +1,46 @@
+src/packages/agent/hooks/AsyncHookRegistry.ts(64,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:54-74 ---
+     54    toolName?: string
+     55    pluginId?: string
+     56  }): void {
+     57    const timeout = asyncResponse.asyncTimeout || 15000 // Default 15s
+     58    logForDebugging(
+     59      `Hooks: Registering async hook ${processId} (${hookName}) with timeout ${timeout}ms`,
+     60    )
+     61    const stopProgressInterval = startHookProgressInterval({
+     62      hookId,
+     63      hookName,
+     64>     hookEvent,
+     65      getOutput: async () => {
+     66        const taskOutput = pendingHooks.get(processId)?.shellCommand?.taskOutput
+     67        if (!taskOutput) {
+     68          return { stdout: '', stderr: '', output: '' }
+     69        }
+     70        const stdout = await taskOutput.getStdout()
+     71        const stderr = taskOutput.getStderr()
+     72        return { stdout, stderr, output: stdout + stderr }
+     73      },
+     74    })
+src/packages/agent/hooks/AsyncHookRegistry.ts(110,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:100-120 ---
+    100    outcome: 'success' | 'error' | 'cancelled',
+    101  ): Promise<void> {
+    102    hook.stopProgressInterval()
+    103    const taskOutput = hook.shellCommand?.taskOutput
+    104    const stdout = taskOutput ? await taskOutput.getStdout() : ''
+    105    const stderr = taskOutput?.getStderr() ?? ''
+    106    hook.shellCommand?.cleanup()
+    107    emitHookResponse({
+    108      hookId: hook.hookId,
+    109      hookName: hook.hookName,
+    110>     hookEvent: hook.hookEvent,
+    111      output: stdout + stderr,
+    112      stdout,
+    113      stderr,
+    114      exitCode,
+    115      outcome,
+    116    })
+    117  }
+    118  
+    119  export async function checkForAsyncHookResponses(): Promise<
+    120    Array<{

@@ -3,17 +3,11 @@
  * símbolos exportados: 23 funciones, 7 constantes, 15 tipos) — el registro
  * de configuración global, o sea `~/.claude.json` y su modelo de datos.
  *
- * POR QUÉ ESTE PORTE (#260). `@thyrox/config` no exportaba `getGlobalConfig`,
- * así que sus dos consumidores vivían de sustitutos que fingen que la
- * configuración está vacía: `updater/src/internal/globalConfigCompat.ts`
- * (devuelve `{}`, y su `saveGlobalConfig` es un no-op declarado) y el
- * `require()` diferido de `provider/src/oauth/client.ts`. Un `oauth/client`
- * que lee `{}` no encuentra el registro de conexiones y se comporta como si
- * el usuario no tuviera ninguna.
+ * `getGlobalConfig` es lo que leen `updater` y `provider/src/oauth/client.ts`:
+ * un `oauth/client` que leyera `{}` no encontraría el registro de conexiones y
+ * se comportaría como si el usuario no tuviera ninguna.
  *
- * ALCANCE, declarado y no omitido en silencio (`porte-completo-no-parcial.md`).
- * Este pase trae el NÚCLEO DE LECTURA/ESCRITURA y su modelo de datos, que es
- * lo que desbloquea a los dos consumidores:
+ * ALCANCE, declarado y no omitido en silencio (`porte-completo-no-parcial.md`):
  *
  *   tipos      `GlobalConfig` con sus 15 tipos satélite, entero.
  *   constantes `DEFAULT_GLOBAL_CONFIG`, `GLOBAL_CONFIG_KEYS`,
@@ -22,25 +16,18 @@
  *              `isProjectConfigKey`, `getGlobalConfigWriteCount`,
  *              `enableConfigs`, `checkHasTrustDialogAccepted`,
  *              `isPathTrusted`, `_setGlobalConfigCacheForTesting`.
+ *   proyecto   `getCurrentProjectConfig`, `saveCurrentProjectConfig`,
+ *              `getProjectPathForConfig`, al final de este archivo.
+ *   memoria    `getMemoryPath`, que cuelga de `teamMemPaths` tras la bandera
+ *              `TEAMMEM`, igual que en la fuente.
  *
- * LO QUE NO TRAE, con su razón — cada uno es una tarea, no un olvido:
+ * El resto de la fuente vive en módulos hermanos: los accesores del
+ * AUTO-UPDATER en `./autoUpdater.ts` y `recordFirstStartTime`,
+ * `markHasUsedAgentsFleet`, `getRemoteControlAtStartup` y
+ * `getCustomApiKeyStatus` en `./configMarkers.ts`.
  *
- *   [PORTADA 2026-09-19, al final de este archivo] la mitad de PROYECTO
- *       (`getCurrentProjectConfig`, `saveCurrentProjectConfig`,
- *       `getProjectPathForConfig`). Sus dos razones de deferimiento estaban
- *       rancias al medirlas: los bindings `getOriginalCwd` y
- *       `findCanonicalGitRoot` ya existían, y 18 archivos en 10 paquetes la
- *       importan — `repl` no arrancaba por eso.
- *   los accesores del AUTO-UPDATER (`isAutoUpdaterDisabled`,
- *       `shouldSkipPluginAutoupdate`, `formatAutoUpdaterDisabledReason`,
- *       `getAutoUpdaterDisabledReason`) — leen `settings`, no este registro;
- *       su hogar natural es el propio `@thyrox/updater`.
- *   las rutas de MEMORIA y REGLAS (`getMemoryPath`, `getManagedClaudeRulesDir`,
- *       `getUserClaudeRulesDir`) — `getMemoryPath` cuelga de `teamMemPaths`,
- *       que la fuente carga tras la bandera `TEAMMEM`.
- *   `getOrCreateUserID`, `recordFirstStartTime`, `markHasUsedAgentsFleet`,
- *       `getRemoteControlAtStartup`, `getCustomApiKeyStatus` — escritores de
- *       una clave concreta; se portan con su consumidor.
+ * LO QUE NO TRAE: las rutas de REGLAS (`getManagedClaudeRulesDir`,
+ * `getUserClaudeRulesDir`); ningún consumidor de este árbol las pide todavía.
  *
  * DIVERGENCIA DECLARADA, y es la única de firma: el parámetro `filePath`
  * OPCIONAL. La fuente resuelve la ruta ella misma y, para poder probarse,
@@ -68,12 +55,21 @@
  * declarado — la fuente declara ~15 claves más que ningún consumidor de este
  * árbol lee todavía.
  */
+import { randomBytes } from 'node:crypto'
 import { unwatchFile, watchFile } from 'node:fs'
 import memoize from 'lodash-es/memoize.js'
 import pickBy from 'lodash-es/pickBy.js'
 import { dirname, join, normalize, resolve } from 'node:path'
 import { AccessError, ParseError as ConfigParseError } from '../errors.js'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.js'
+import { getManagedFilePath } from '../settings/managedPath.js'
+import { feature } from 'bun:bundle'
+import { getConfigHomeDir as resolveUserConfigHomeDir } from '../env/configHome.js'
+import {
+  instructionsFileCandidates,
+  localInstructionsFileCandidates,
+  pickInstructionsFile,
+} from '../env/instructionFiles.js'
 
 // La fuente inlinea estos tipos para no arrastrar el paquete que los define
 // (su comentario: «type-only imports inlined»). Se conserva el criterio.
@@ -121,8 +117,7 @@ function normalizePathForConfigKey(path: string): string {
 
 function getConfigHomeDir(): string {
   return (
-    getConfigHostBindings().getConfigHomeDir?.() ??
-    join(process.env.HOME ?? process.env.USERPROFILE ?? '.', '.claude')
+    getConfigHostBindings().getConfigHomeDir?.() ?? resolveUserConfigHomeDir()
   )
 }
 
@@ -282,6 +277,17 @@ export type AccountInfo = {
   workspaceRole?: string | null
   organizationName?: string
   billingType?: BillingType
+  // Los campos del perfil que `fetchProfileInfo` y `refreshOAuthToken`
+  // guardan (su_/Bq_ del binario). Vivían sólo en el `AccountInfo` de
+  // `provider/internal/oauthTypes.ts`; `oauth/client.ts` escribe en este.
+  displayName?: string
+  hasExtraUsageEnabled?: boolean
+  accountCreatedAt?: string
+  subscriptionCreatedAt?: string
+  ccOnboardingFlags?: Record<string, unknown>
+  claudeCodeTrialEndsAt?: string | null
+  claudeCodeTrialDurationDays?: number | null
+  seatTier?: string | null
 }
 
 export type AuthProtocol = 'anthropic' | 'openai' | 'codex' | 'gemini'
@@ -624,7 +630,6 @@ let globalConfigCache: {
   file: string | null
 } = { config: null, mtime: 0, file: null }
 
-let lastReadFileStats: { mtime: number; size: number } | null = null
 let globalConfigWriteCount = 0
 // Guard de reentrada: evita `getConfig → logEvent → getGlobalConfig →
 // getConfig` cuando el archivo está corrupto.
@@ -852,7 +857,6 @@ function startGlobalConfigFreshnessWatcher(file: string): void {
             mtime: curr.mtimeMs,
             file,
           }
-          lastReadFileStats = { mtime: curr.mtimeMs, size: curr.size }
         })
         .catch(() => {})
     },
@@ -871,7 +875,6 @@ function writeThroughGlobalConfigCache(
   file: string,
 ): void {
   globalConfigCache = { config, mtime: Date.now(), file }
-  lastReadFileStats = null
 }
 
 export function getGlobalConfig(filePath?: string): GlobalConfig {
@@ -903,9 +906,6 @@ export function getGlobalConfig(filePath?: string): GlobalConfig {
       getConfig(file, createDefaultGlobalConfig),
     )
     globalConfigCache = { config, mtime: stats?.mtimeMs ?? Date.now(), file }
-    lastReadFileStats = stats
-      ? { mtime: stats.mtimeMs, size: stats.size }
-      : null
     if (!filePath) startGlobalConfigFreshnessWatcher(file)
     return config
   } catch {
@@ -1036,6 +1036,37 @@ const TEST_PROJECT_CONFIG_FOR_TESTING: ProjectConfig = {
  * barras hacia delante hace que `C:\Users\…` y `C:/Users/…` caigan en la
  * misma clave, que es lo único que distingue a esta ruta de un `resolve`.
  */
+/** `dg` del binario: un userID válido son 64 dígitos hex. */
+const USER_ID_PATTERN = /^[0-9a-f]{64}$/
+
+/**
+ * El userID generado en esta sesión. En el binario vive en el estado de
+ * sesión (`generatedUserID`/`setGeneratedUserID`); aquí es una variable de
+ * módulo, que dura lo mismo que un proceso. Divergencia de hogar declarada.
+ */
+let generatedUserID: string | undefined
+
+/**
+ * Porte de `P0` (2.1.275): el `userID` de la config global si es válido; si
+ * no, el ya generado en la sesión; si no, uno nuevo de 32 bytes aleatorios en
+ * hex, que se persiste en la config global antes de devolverse.
+ */
+export function getOrCreateUserID(filePath?: string): string {
+  const config = getGlobalConfig(filePath)
+  if (typeof config.userID === 'string' && USER_ID_PATTERN.test(config.userID)) {
+    return config.userID
+  }
+  if (generatedUserID) return generatedUserID
+  const userID = randomBytes(32).toString('hex')
+  generatedUserID = userID
+  saveGlobalConfig(current => ({ ...current, userID }), filePath)
+  return userID
+}
+
+export function _resetGeneratedUserIDForTesting(): void {
+  generatedUserID = undefined
+}
+
 export const getProjectPathForConfig = memoize((): string => {
   const originalCwd = getConfigHostBindings().getOriginalCwd?.() ?? process.cwd()
   const gitRoot = getConfigHostBindings().findCanonicalGitRoot?.(originalCwd)
@@ -1155,4 +1186,31 @@ export function saveCurrentProjectConfig(
     saveConfig(_getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
     writeThroughGlobalConfigCache(written, _getGlobalClaudeFile())
   }
+}
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+const teamMemPaths = feature('TEAMMEM')
+  ? (require('@thyrox/memory/teamMemPaths') as typeof import('@thyrox/memory/teamMemPaths'))
+  : null
+export function getMemoryPath(memoryType: MemoryType): string {
+  const cwd = getConfigHostBindings().getOriginalCwd?.() ?? process.cwd()
+
+  switch (memoryType) {
+    case 'User':
+      return pickInstructionsFile(instructionsFileCandidates(getConfigHomeDir()))
+    case 'Local':
+      return pickInstructionsFile(localInstructionsFileCandidates(cwd))
+    case 'Project':
+      return pickInstructionsFile(instructionsFileCandidates(cwd))
+    case 'Managed':
+      return pickInstructionsFile(instructionsFileCandidates(getManagedFilePath()))
+    case 'AutoMem':
+      const cfgBindings = tryGetConfigHostBindings()
+      return cfgBindings.getAutoMemEntrypoint?.() ?? ''
+  }
+  // TeamMem is only a valid MemoryType when feature('TEAMMEM') is true
+  if (feature('TEAMMEM')) {
+    return teamMemPaths!.getTeamMemEntrypoint()
+  }
+  return '' // unreachable in external builds where TeamMem is not in MemoryType
 }

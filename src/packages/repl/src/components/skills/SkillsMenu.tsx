@@ -8,7 +8,7 @@ import {
   getCommandName,
   type PromptCommand,
 } from '@thyrox/command-runtime/runtime'
-import { Box, Text } from '@anthropic/ink'
+import { Box, Text, type Color } from '@anthropic/ink'
 import {
   estimateSkillFrontmatterTokens,
   getSkillsPath,
@@ -141,15 +141,15 @@ export function SkillsMenu({ onExit, commands }: Props): React.ReactNode {
 
   const getScopeTag = (
     source: SkillSource,
-  ): { label: string; color: string } | undefined => {
+  ): { label: string; color: Color } | undefined => {
     switch (source) {
       case 'projectSettings':
       case 'localSettings':
-        return { label: 'local', color: 'yellow' }
+        return { label: 'local', color: 'ansi:yellow' }
       case 'userSettings':
-        return { label: 'global', color: 'cyan' }
+        return { label: 'global', color: 'ansi:cyan' }
       case 'policySettings':
-        return { label: 'managed', color: 'magenta' }
+        return { label: 'managed', color: 'ansi:magenta' }
       default:
         return undefined
     }

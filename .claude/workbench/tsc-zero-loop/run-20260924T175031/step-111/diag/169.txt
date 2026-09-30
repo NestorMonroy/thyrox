@@ -1,0 +1,24 @@
+src/packages/provider/src/withRetry.ts(796,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/withRetry.ts:786-806 ---
+    786    }
+    787  
+    788    // Retry internal errors.
+    789    if (error.status && error.status >= 500) return true
+    790  
+    791    return false
+    792  }
+    793  
+    794  export function getDefaultMaxRetries(): number {
+    795    if (readEnv('CLAUDE_CODE_MAX_RETRIES')) {
+    796>     return parseInt(readEnv('CLAUDE_CODE_MAX_RETRIES'), 10)
+    797    }
+    798    if (isEnvTruthy(readEnv('CLAUDE_CODE_RETRY_WATCHDOG'))) return 300
+    799    return DEFAULT_MAX_RETRIES
+    800  }
+    801  function getMaxRetries(options: RetryOptions): number {
+    802    return options.maxRetries ?? getDefaultMaxRetries()
+    803  }
+    804  
+    805  const DEFAULT_FAST_MODE_FALLBACK_HOLD_MS = 30 * 60 * 1000 // 30 minutes
+    806  const SHORT_RETRY_THRESHOLD_MS = 20 * 1000 // 20 seconds
+  Type 'undefined' is not assignable to type 'string'.

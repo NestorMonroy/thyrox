@@ -49,6 +49,7 @@ import {
 import { assembleToolPool } from '../../runtime.js'
 import { asAgentId } from '@thyrox/agent/idTypes'
 import { getAgentContext, runWithAgentContext } from '@thyrox/agent/agentContext.js'
+import { agentDepth, concurrencyRefusal, depthRefusal } from '@thyrox/agent/subagentLimits.js'
 import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import { getCwd, runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
@@ -145,13 +146,13 @@ const PROGRESS_THRESHOLD_MS = 2000 // Show background hint after 2 seconds
 // Check if background tasks are disabled at module load time
 const isBackgroundTasksDisabled =
   // eslint-disable-next-line custom-rules/no-process-env-top-level -- Intentional: schema must be defined at module load
-  isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)
+  isEnvTruthy(process.env.THYROX_CODE_DISABLE_BACKGROUND_TASKS)
 
 // Auto-background agent tasks after this many ms (0 = disabled)
 // Enabled by env var OR GrowthBook gate (checked lazily since GB may not be ready at module load)
-function getAutoBackgroundMs(): number {
+export function getAutoBackgroundMs(): number {
   if (
-    isEnvTruthy(process.env.CLAUDE_AUTO_BACKGROUND_TASKS) ||
+    isEnvTruthy(process.env.THYROX_AUTO_BACKGROUND_TASKS) ||
     getFeatureValue_CACHED_MAY_BE_STALE('tengu_auto_background_agents', false)
   ) {
     return 120_000
@@ -260,7 +261,11 @@ type InputSchema = ReturnType<typeof inputSchema>
 // fields even when .omit() strips them for gating (cwd, run_in_background).
 // subagent_type is optional; call() defaults it to general-purpose when the
 // fork gate is off, or routes to the fork path when the gate is on.
-type AgentToolInput = z.infer<ReturnType<typeof baseInputSchema>> & {
+type AgentToolInput = Omit<
+  z.infer<ReturnType<typeof baseInputSchema>>,
+  'run_in_background'
+> & {
+  run_in_background?: boolean
   name?: string
   team_name?: string
   mode?: z.infer<ReturnType<typeof permissionModeSchema>>
@@ -336,6 +341,19 @@ import type { AgentToolProgress, ShellProgress } from '../../progressTypes.js'
 // events from the sub-agent so the SDK receives tool_progress updates during bash/powershell runs.
 export type Progress = AgentToolProgress | ShellProgress
 
+// El `data` de un ProgressMessage del sub-agente llega tipado `unknown`
+// (ProgressMessage<T = unknown> en messageShapes.ts): esta guarda angosta
+// al shape real que BashTool/PowerShellTool ya escriben, sin cambiar la
+// comprobación que el código ya hacía sobre `.type`.
+function isShellProgressData(data: unknown): data is ShellProgress {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    (data.type === 'bash_progress' || data.type === 'powershell_progress')
+  )
+}
+
 export const AgentTool = buildTool({
   async prompt({ agents, tools, getToolPermissionContext, allowedAgentTypes }) {
     const toolPermissionContext = await getToolPermissionContext()
@@ -366,7 +384,7 @@ export const AgentTool = buildTool({
     // Use inline env check instead of coordinatorModule to avoid circular
     // dependency issues during test module loading.
     const isCoordinator = feature('COORDINATOR_MODE')
-      ? isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)
+      ? isEnvTruthy(process.env.THYROX_CODE_COORDINATOR_MODE)
       : false
     return await getPrompt(filteredAgents, isCoordinator, allowedAgentTypes)
   },
@@ -404,8 +422,24 @@ export const AgentTool = buildTool({
     const startTime = Date.now()
     const model = isCoordinatorMode() ? undefined : modelParam
 
+    // Las dos guardas del binario (`lo`/`pn`, 2.1.275): quien ya esta en la
+    // profundidad maxima no engendra, y el lanzamiento N+1 se RECHAZA, no se
+    // encola. Ver `@thyrox/agent/subagentLimits`.
+    const depthBlock = depthRefusal(
+      getAgentContext(),
+      process.env,
+      getFeatureValue_CACHED_MAY_BE_STALE,
+    )
+    if (depthBlock) throw new Error(depthBlock.message)
+
     // Get app state for permission mode and agent filtering
     const appState = toolUseContext.getAppState()
+
+    const runningSubagents = (
+      Object.values(appState.tasks ?? {}) as { type?: string; status?: string }[]
+    ).filter(task => task.type === 'local_agent' && task.status === 'running').length
+    const widthBlock = concurrencyRefusal(runningSubagents, process.env)
+    if (widthBlock) throw new Error(widthBlock.message)
     const permissionMode = appState.toolPermissionContext.mode
     // In-process teammates get a no-op setAppState; setAppStateForTasks
     // reaches the root store so task registration/progress/kill stay visible.
@@ -457,7 +491,7 @@ export const AgentTool = buildTool({
           plan_mode_required: spawnMode === 'plan',
           model: model ?? agentDef?.model,
           agent_type: subagent_type,
-          invokingRequestId: assistantMessage?.requestId,
+          invokingRequestId: assistantMessage?.requestId as string | undefined,
         },
         toolUseContext,
       )
@@ -518,7 +552,7 @@ export const AgentTool = buildTool({
       if (!found) {
         found = resolveSubagentTypeWithFuzzy(effectiveType, {
           allAgents, agents,
-          getDenyRule: (t, i) => getDenyRuleForAgent(appState.toolPermissionContext, t, i),
+          getDenyRule: (t, i) => getDenyRuleForAgent(appState.toolPermissionContext, t, i) ?? undefined,
         }) ?? undefined
       }
       if (!found) {
@@ -809,7 +843,7 @@ export const AgentTool = buildTool({
     // Use inline env check instead of coordinatorModule to avoid circular
     // dependency issues during test module loading.
     const isCoordinator = feature('COORDINATOR_MODE')
-      ? isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)
+      ? isEnvTruthy(process.env.THYROX_CODE_COORDINATOR_MODE)
       : false
 
     // Fork subagent experiment: force ALL spawns async for a unified
@@ -990,9 +1024,10 @@ export const AgentTool = buildTool({
         parentSessionId: getParentSessionId(),
         parentAgentId: getAgentContext()?.agentId,
         agentType: 'subagent' as const,
+        depth: agentDepth(getAgentContext()) + 1,
         subagentName: selectedAgent.agentType,
         isBuiltIn: isBuiltInAgent(selectedAgent),
-        invokingRequestId: assistantMessage?.requestId,
+        invokingRequestId: assistantMessage?.requestId as string | undefined,
         invocationKind: 'spawn' as const,
         invocationEmitted: false,
       }
@@ -1061,9 +1096,10 @@ export const AgentTool = buildTool({
         parentSessionId: getParentSessionId(),
         parentAgentId: getAgentContext()?.agentId,
         agentType: 'subagent' as const,
+        depth: agentDepth(getAgentContext()) + 1,
         subagentName: selectedAgent.agentType,
         isBuiltIn: isBuiltInAgent(selectedAgent),
-        invokingRequestId: assistantMessage?.requestId,
+        invokingRequestId: assistantMessage?.requestId as string | undefined,
         invocationKind: 'spawn' as const,
         invocationEmitted: false,
       }
@@ -1465,8 +1501,8 @@ export const AgentTool = buildTool({
               // receives tool_progress events just as it does for the main agent.
               if (
                 message.type === 'progress' &&
-                (message.data.type === 'bash_progress' ||
-                  message.data.type === 'powershell_progress') &&
+                typeof message.toolUseID === 'string' &&
+                isShellProgressData(message.data) &&
                 onProgress
               ) {
                 onProgress({
@@ -1491,6 +1527,7 @@ export const AgentTool = buildTool({
 
               const normalizedNew = normalizeMessages([message])
               for (const m of normalizedNew) {
+                if (!m.message) continue
                 for (const content of m.message.content) {
                   if (
                     content.type !== 'tool_use' &&
@@ -1504,7 +1541,16 @@ export const AgentTool = buildTool({
                     onProgress({
                       toolUseID: `agent_${assistantMessage.message.id}`,
                       data: {
-                        message: m,
+                        // `m` normalizado sólo puede ser 'assistant' o 'user' —
+                        // el filtro de más arriba (`message.type !== 'assistant'
+                        // && message.type !== 'user'`) ya descartó cualquier otro
+                        // tipo antes de normalizar. Para un mensaje de asistente,
+                        // `usage` siempre viene poblado por la API real (mismo
+                        // supuesto que UI.tsx:572/816 ya hacen sin guardia).
+                        // `NormalizedMessage` no conserva esa garantía en su tipo
+                        // porque se calcula sobre la unión completa de
+                        // `Message['message']`, no por rama — de ahí el estrechado.
+                        message: m as AgentToolProgress['message'],
                         type: 'agent_progress',
                         // prompt only needed on first progress message (UI.tsx:624
                         // reads progressMessages[0]). Omit here to avoid duplication.

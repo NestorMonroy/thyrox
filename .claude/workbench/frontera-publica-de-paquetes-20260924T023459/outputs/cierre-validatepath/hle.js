@@ -1,0 +1,1 @@
+function hle(e){return T(g(e,"active_config"))?.trim()||"default"}

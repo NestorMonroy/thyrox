@@ -43,7 +43,7 @@ trap 'rm -rf "$TMP"' EXIT
 ORIGEN="$TMP/origen"; CLON="$TMP/clon"
 git init -q --bare "$ORIGEN"
 git init -q "$TMP/semilla"
-cd "$TMP/semilla"
+cd "$TMP/semilla" || exit 1
 git config user.email t@t; git config user.name t
 mkdir -p source/a source/b
 printf '.. _h-docs-100:\n\nCompartida\n==========\n' > source/a/compartida.rst
@@ -62,7 +62,7 @@ printf '.. _h-docs-101:\n\nSolo B\n======\n' > source/b/solo-b.rst
 git add -A; git commit -qm b; git push -q origin feature/b
 
 git clone -q "$ORIGEN" "$CLON"
-cd "$CLON"; git fetch -q origin
+cd "$CLON" || exit; git fetch -q origin
 
 echo "=== Caso 1: la colision entre dos ramas se ve ==="
 salida="$(python3 "$GATE" --strict 2>&1)"; rc=$?
@@ -106,9 +106,11 @@ rc=$?
 desconocida="$(python3 "$GATE" --disponible inventada 1 2>&1)"; rc=$?
 [[ $rc -eq 2 ]] && ok "una capa inventada SI se rehusa" \
                 || bad "una capa inventada deberia rehusarse, dio $rc"
+[[ "$desconocida" == *"CAPA conocida"* ]] && ok "y el rechazo nombra la capa como desconocida" \
+                || bad "el rechazo no nombra la capa: $desconocida"
 
 echo "=== Caso 4 (positivo real): la colision medida en kaupamex-docs ==="
-cd "$RAIZ"
+cd "$RAIZ" || exit 1
 n="$(python3 "$GATE" --quiet 2>/dev/null)"
 if [[ -z "$n" ]]; then
     bad "el gate no devolvio conteo sobre el repo real"

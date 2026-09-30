@@ -1,0 +1,74 @@
+
+1. La constante por raíz se LEE (H-DOCS-1070)
+  ok    THYROX_REACH_API gana sobre el árbol
+  ok    control — sin la constante por raíz cae al clon del árbol
+
+2. El proceso gana al archivo .env
+  ok    el proceso gana
+  ok    control — sin proceso, manda el .env
+
+3. El ascenso NO depende de la profundidad
+  ok    desde 2 niveles
+  ok    desde 5 niveles
+  ok    control — los dos coinciden (un offset fijo daría distinto)
+
+4. El .env se lee sin librería de terceros
+  ok    ignora el comentario y la línea en blanco
+  ok    acepta el prefijo export
+  ok    quita la comilla doble
+  ok    quita la comilla simple
+  ok    descarta la línea sin '='
+
+5. Las variables nombran al LECTOR, como el binario
+  ok    la primera es la del lector
+  ok    la heredada queda de segunda
+  ok    el tramo extra sigue la misma forma
+  ok    y su heredada
+  ok    la constante por raíz nombra al lector
+  ok    y admite la heredada
+  ok    gana la primera de la tupla
+  ok    control — retirada la primera, manda la segunda
+
+6. El tramo extra exige rutas absolutas
+  ok    una raíz extra absoluta entra
+  ok    una relativa rehúsa
+
+7. Rehúsa nombrando, nunca devuelve un conjunto corto
+  ok    raíz desconocida rehúsa
+  ok    require_all rehúsa si falta una raíz
+
+8. El CLI sobrevive a que le cierren la salida
+  ok    no vuelca traceback por stderr
+  ok    y sale sin error
+
+9. thyrox se localiza a SÍ MISMO por mecanismo, no por aritmética (#146)
+  ok    THYROX_ROOT declarada gana
+  ok    control — sin la variable, asciende hasta el marcador
+  ok    y acierta desde cualquier profundidad
+  ok    un directorio llamado thyrox sin el marcador no cuenta
+
+10. desde un consumidor, lo resuelve el MECANISMO multi-repo (#146)
+  ok    sin THYROX_ROOT, lo halla como hermano de los clones
+  ok    control — un hermano llamado thyrox sin marcador no basta
+
+11. El CLI publica la raíz de THYROX — el bootstrap que shell necesita
+  ok    desde su sitio, sale 0
+  ok    y publica la raíz real de thyrox
+  ok    la variable declarada gana sobre el ascenso
+  ok    una copia fuera del árbol halla al proveedor por el hermano
+  ok    y publica su raíz
+  ok    control — sin marcador en ningún hermano, rehúsa con 2
+  ok    control — y NO publica una ruta
+  ok    control — el motivo nombra el marcador, no «modo desconocido»
+
+12. --env se bootstrapea a sí mismo: exporta las dos entradas de DEC-04
+  ok    exporta THYROX_ROOT
+  ok    exporta THYROX_ENV_FILE
+  ok    sigue exportando una raíz por clon del roster
+== el prefijo de clon se declara o se deriva, no se codifica ==
+  ok    en un arbol ajeno DERIVA su prefijo, no el nuestro
+  ok    la declaracion GANA sobre la derivacion
+  ok    y ningun literal de multi-repo se ASIGNA en el mecanismo
+
+resultado: 46 de 46 aserciones en verde
+EXIT=0

@@ -1,0 +1,1 @@
+bash tests/session/test-headless-pool.sh

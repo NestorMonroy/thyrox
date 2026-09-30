@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/storageKeys.test.ts:
+26 | describe('reglas de nombre', () => {
+27 |   test('nameVariants (cK): minúsculas, sin puntos ni espacios finales, y lo previo a los dos puntos', () => {
+28 |     expect(nameVariants('Foo. .')).toEqual(['foo'])
+29 |     expect(nameVariants('A.txt:Stream ')).toEqual(['a.txt:stream', 'a.txt'])
+30 |     expect(Object.isFrozen(nameVariants('x'))).toBe(true)
+31 |     expect(nameVariants('mismo')).toBe(nameVariants('mismo'))
+                                       ^
+error: expect(received).toBe(expected)
+
+Expected: [ "mismo" ]
+Received: serializes to the same string
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/storageKeys.test.ts:31:35)
+(fail) reglas de nombre > nameVariants (cK): minúsculas, sin puntos ni espacios finales, y lo previo a los dos puntos [0.42ms]
+
+ 10 pass
+ 1 fail
+ 74 expect() calls
+Ran 11 tests across 1 file. [78.00ms]

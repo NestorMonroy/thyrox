@@ -228,11 +228,11 @@ describe('convertEffortValueToLevel', () => {
 // ─── getEffortLevelDescription ─────────────────────────────────────────
 
 describe('getEffortLevelDescription', () => {
-  // Wording aligned with Anthropic docs at
-  // platform.claude.com/docs/en/build-with-claude/effort
+  // El texto es el de `ne` en el binario 2.1.275 (`chunk-87qahtf8.js`), no el
+  // de la documentacion que esta suite citaba: la build medida manda.
   test("returns description for 'low'", () => {
     const desc = getEffortLevelDescription('low')
-    expect(desc).toContain('efficient')
+    expect(desc).toContain('minimal overhead')
   })
 
   test("returns description for 'medium'", () => {
@@ -242,18 +242,18 @@ describe('getEffortLevelDescription', () => {
 
   test("returns description for 'high'", () => {
     const desc = getEffortLevelDescription('high')
-    expect(desc).toContain('default')
+    expect(desc).toContain('extensive testing')
   })
 
   test("returns description for 'xhigh'", () => {
     const desc = getEffortLevelDescription('xhigh')
-    expect(desc).toContain('long-horizon')
-    expect(desc).toContain('Extended reasoning')
+    expect(desc).toContain('Deeper reasoning than high')
+    expect(desc).toContain('Opus 4.7+')
   })
 
   test("returns description for 'max'", () => {
     const desc = getEffortLevelDescription('max')
-    expect(desc).toContain('maximum')
+    expect(desc).toContain('Maximum capability')
   })
 })
 

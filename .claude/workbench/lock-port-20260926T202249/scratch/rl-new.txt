@@ -1,0 +1,28 @@
+replace_all=0
+file=""
+old_file=""
+new_file=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --all) replace_all=1; shift ;;
+        --old-file) old_file="${2:-}"; shift 2 ;;
+        --new-file) new_file="${2:-}"; shift 2 ;;
+        -h|--help) gawk 'FNR>=2 && /^#/ {sub(/^# ?/, ""); print} FNR>2 && !/^#/ {exit}' "$0"; exit 0 ;;
+        *) file="$1"; shift ;;
+    esac
+done
+
+refuse() { echo "replace_literal: NO se pudo medir — $1. No se emite conteo." >&2; exit 2; }
+
+# El texto por ARCHIVO, para escribirlo con un heredoc `<<'EOF'`, que no
+# interpreta nada: por variable, las comillas simples del texto se pierden en
+# el shell antes de llegar aquí. Se quita EXACTAMENTE el salto final que el
+# heredoc añade —`$(cat)` quitaría todos—; los internos se conservan.
+read_text_file() {
+    local text
+    [[ -f "$1" ]] || refuse "no existe el archivo de texto $1"
+    text="$(cat "$1"; printf x)"; text="${text%x}"
+    printf '%s' "${text%$'\n'}"
+}
+if [[ -n "$old_file" ]]; then OLD="$(read_text_file "$old_file"; printf x)" || exit 2; OLD="${OLD%x}"; export OLD; fi
+if [[ -n "$new_file" ]]; then NEW="$(read_text_file "$new_file"; printf x)" || exit 2; NEW="${NEW%x}"; export NEW; fi

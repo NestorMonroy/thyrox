@@ -1,16 +1,12 @@
 /**
- * Puerto de `ccnmt: packages/output/src/utils/intl.ts` (verbatim — sin
- * imports en la fuente).
+ * Shared Intl object instances with lazy initialization.
  *
- * Instancias compartidas de objetos Intl con inicializacion perezosa.
- *
- * Los constructores de Intl son caros (~0.05-0.1ms cada uno), asi que se
- * cachean instancias para reusarlas en vez de crear una nueva cada vez.
- * La inicializacion perezosa asegura que solo se paga el costo cuando
- * realmente se necesita.
+ * Intl constructors are expensive (~0.05-0.1ms each), so we cache instances
+ * for reuse across the codebase instead of creating new ones each time.
+ * Lazy initialization ensures we only pay the cost when actually needed.
  */
 
-// Segmentadores para procesamiento de texto Unicode (inicializacion perezosa)
+// Segmenters for Unicode text processing (lazily initialized)
 let graphemeSegmenter: Intl.Segmenter | null = null
 let wordSegmenter: Intl.Segmenter | null = null
 
@@ -24,8 +20,8 @@ export function getGraphemeSegmenter(): Intl.Segmenter {
 }
 
 /**
- * Extrae el primer cluster de grafema de una cadena.
- * Devuelve '' para cadenas vacias.
+ * Extract the first grapheme cluster from a string.
+ * Returns '' for empty strings.
  */
 export function firstGrapheme(text: string): string {
   if (!text) return ''
@@ -35,8 +31,8 @@ export function firstGrapheme(text: string): string {
 }
 
 /**
- * Extrae el ultimo cluster de grafema de una cadena.
- * Devuelve '' para cadenas vacias.
+ * Extract the last grapheme cluster from a string.
+ * Returns '' for empty strings.
  */
 export function lastGrapheme(text: string): string {
   if (!text) return ''
@@ -54,7 +50,7 @@ export function getWordSegmenter(): Intl.Segmenter {
   return wordSegmenter
 }
 
-// Cache de RelativeTimeFormat (llave por style:numeric)
+// RelativeTimeFormat cache (keyed by style:numeric)
 const rtfCache = new Map<string, Intl.RelativeTimeFormat>()
 
 export function getRelativeTimeFormat(
@@ -70,7 +66,7 @@ export function getRelativeTimeFormat(
   return rtf
 }
 
-// La zona horaria es constante durante la vida del proceso
+// Timezone is constant for the process lifetime
 let cachedTimeZone: string | null = null
 
 export function getTimeZone(): string {
@@ -80,10 +76,9 @@ export function getTimeZone(): string {
   return cachedTimeZone
 }
 
-// El subtag de idioma del locale del sistema (p. ej. 'en', 'ja') es
-// constante durante la vida del proceso. null = aun no calculado;
-// undefined = calculado pero no disponible (asi un entorno con ICU
-// recortado falla una vez en vez de reintentar en cada llamada).
+// System locale language subtag (e.g. 'en', 'ja') is constant for the process
+// lifetime. null = not yet computed; undefined = computed but unavailable (so
+// a stripped-ICU environment fails once instead of retrying on every call).
 let cachedSystemLocaleLanguage: string | undefined | null = null
 
 export function getSystemLocaleLanguage(): string | undefined {

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bunx tsc --noEmit -p tsconfig.build.json && bunx tsc --noEmit -p tsconfig.test.json", "started_at": "2026-09-29T00:37:33+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-29T00:37:55+00:00", "duration_seconds": 22.505649}

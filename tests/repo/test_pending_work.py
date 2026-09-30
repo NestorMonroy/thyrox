@@ -59,7 +59,10 @@ def check(label: str, expected, obtained) -> None:
 
 
 def git(repo: Path, *args: str) -> str:
-    done = subprocess.run(["git", "-C", str(repo), *args],
+    # El fixture no hereda la firma de commits del entorno: con
+    # `commit.gpgsign=true` global y sin llave, el `commit` falla en silencio
+    # y deja el archivo en stage, que el barrido cuenta como trabajo.
+    done = subprocess.run(["git", "-C", str(repo), "-c", "commit.gpgsign=false", *args],
                           capture_output=True, text=True)
     return done.stdout.strip()
 

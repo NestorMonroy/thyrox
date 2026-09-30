@@ -11,7 +11,7 @@ import { join } from 'node:path'
 import { AGENTS } from '../index.ts'
 import { toMarkdown } from '../emit/markdown.ts'
 import { diffSummary, parseArgs } from '../emit/plan.ts'
-import { agentsDir } from '../../../paths/reach.ts'
+import { agentsDir } from '@thyrox/paths/reach.ts'
 
 // El hogar es un PARÁMETRO resuelto por `agentsDir()`: la variable del
 // proceso, la del `.env`, y sólo entonces el hogar propio de thyrox. Era

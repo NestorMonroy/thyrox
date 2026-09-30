@@ -27,7 +27,7 @@ describe('registro de herramientas (T-005, T-010)', () => {
     }
     // la especificacion NO lleva el permiso ni la implementacion: eso es del
     // harness, no del modelo
-    expect(Object.keys(specs[0])).toEqual(['name', 'description', 'input_schema'])
+    expect(Object.keys(specs[0]!)).toEqual(['name', 'description', 'input_schema'])
   })
 
   test('registry busca por nombre y devuelve undefined si no existe', () => {

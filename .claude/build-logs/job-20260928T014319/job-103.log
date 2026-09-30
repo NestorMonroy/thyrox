@@ -1,0 +1,73 @@
+== 1. control positivo — el caso del banco se REPRODUCE ==
+  ok    `yes | grep -q y` bajo pipefail sale 141 (SIGPIPE al escritor)
+  ok    el MISMO pipeline sin pipefail sale 0 — la precondición pesa
+  ok    un escritor CORTO no invierte — el falso positivo a evitar
+  ok    el gate marca `yes | grep -q`
+
+== 2. escritores SIN FIN: se marcan ==
+  ok    yes
+  ok    tail -f
+  ok    tail --follow con -n
+  ok    journalctl --follow
+  ok    docker logs -f
+  ok    /dev/urandom
+  ok    el escritor puede estar dos etapas antes del consumidor
+  ok    dentro de una sustitución de comando
+
+== 2-bis. consumidores que CORTAN: los cuatro medidos ==
+  ok    grep -q se marca
+  ok    grep -m N se marca
+  ok    grep -l se marca
+  ok    head -n se marca
+  ok    head -c se marca
+  ok    grep -qi combinado se marca
+
+== 3. fuera de alcance: ni un falso positivo ==
+  ok    echo de variable: su tamaño es de check_unsized_writer_pipe
+  ok    printf de un literal corto (cabe en el búfer)
+  ok    cat de archivo — tamaño desconocido, lo mide el gate hermano
+  ok    find sobre un árbol
+  ok    timeout ACOTA al escritor sin fin
+  ok    consumidor que lee hasta EOF (grep -c): cuelga, no invierte — fuera
+  ok    consumidor wc -l: fuera por lo mismo
+  ok    sin pipefail no se marca
+  ok    `|| true` neutraliza el veredicto — fuera
+  ok    `|| :` también
+  ok    una línea de comentario no es código
+  ok    un `|` dentro de comillas no es una tubería
+  ok    `||` no se lee como dos tuberías
+  ok    una tubería de una sola etapa no existe
+
+== 4. controles de anulación ==
+  ok    con el gate íntegro, las 2 aserciones de pipefail pasan
+  ok    ANULADA la precondición: caen EXACTAMENTE esas 2
+  ok    y las de escritor acotado sobreviven a esa anulación
+  ok    restaurada, vuelven a pasar
+  ok    con el gate íntegro, las 5 aserciones de escritor acotado pasan
+  ok    ANULADO el recorte: caen EXACTAMENTE esas 5
+  ok    `yes` se sigue marcando (no discrimina esta anulación)
+  ok    restaurado, vuelven a pasar
+
+== 5. CLI ==
+  ok    raíz ausente: exit 2
+  ok    y NO emite conteo
+  ok    sin ningún guion de shell: exit 2
+  ok    y NO emite conteo
+  ok    2 incumplidores (el .sh y el extensionless por shebang)
+  ok    exit 1
+  ok    node_modules queda fuera
+  ok    publica el denominador de tuberías
+  ok    publica el denominador de guiones con pipefail
+  ok    y el de guiones de shell medidos
+  ok    declara qué mide
+  ok    y a qué es ciega
+  ok    --quiet emite un entero pelado
+  ok    y conserva el código
+  ok    --write-baseline sale 0
+  ok    congelada, la deuda heredada NO bloquea
+  ok    pero se declara en el conteo
+  ok    un incumplidor NUEVO sí bloquea
+  ok    y sólo se nombra él
+
+59 ok, 0 fallos (alcance medido: 59 aserciones)
+EXIT=0

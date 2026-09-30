@@ -1,0 +1,43 @@
+descartado (no es parámetro simple): src/packages/@ant/computer-use-input/src/backends/linux.ts:23 runAsync
+descartado (no es parámetro simple): src/packages/@ant/computer-use-input/src/backends/win32.ts:25 psAsync
+descartado (no es parámetro simple): src/packages/@ant/computer-use-mcp/src/legacy/win32/windowMessage.ts:283 pasteViaClipboard
+descartado (no es parámetro simple): src/packages/@ant/computer-use-mcp/src/toolCalls.ts:157 requireNumber
+descartado (no es parámetro simple): src/packages/@ant/computer-use-swift/src/backends/darwin.ts:29 osascriptSync
+descartado (no es parámetro simple): src/packages/@ant/computer-use-swift/src/backends/win32.ts:66 primary
+descartado (no es parámetro simple): src/packages/agent/claudeInChromeSetupPortable.ts:95 getAllBrowserDataPathsPortable
+descartado (la fuente lo usa distinto): src/packages/agent/effort.ts:303 MAX_MODELS
+descartado (sin archivo en la fuente): src/packages/agent/featureFlags.ts:20 key
+descartado (no es parámetro simple): src/packages/agent/goalStopHook.ts:99 T
+descartado (la fuente lo usa distinto): src/packages/agent/internal/loopDynamicCore.ts:119 scheduledTasksEnabled
+descartado (no es parámetro simple): src/packages/app-host/src/init.ts:415 doInitializeTelemetry
+descartado (sin archivo en la fuente): src/packages/command-runtime/src/commands/review/featureFlags.ts:21 key
+descartado (la fuente lo usa distinto): src/packages/config/global/config.ts:640 lastReadFileStats
+descartado (no es parámetro simple): src/packages/config/plugin/gitAvailability.ts:67 clearGitAvailabilityCache
+descartado (no es parámetro simple): src/packages/config/plugin/pluginVersioning.ts:157 isVersionedPath
+descartado (no es parámetro simple): src/packages/config/plugin/zipCache.ts:166 resetSessionPluginCache
+descartado (no es parámetro simple): src/packages/config/plugin/zipCache.ts:86 getZipCacheInstalledPluginsPath
+descartado (no es parámetro simple): src/packages/config/plugin/zipCacheAdapters.ts:72 readMarketplaceJson
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:835 setMockBillingAccess
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:807 setMockSubscriptionType
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:759 getScenarioDescription
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:721 getCurrentMockScenario
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:628 getMockStatus
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:322 setMockRateLimitScenario
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:277 setMockEarlyWarning
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:250 addExceededLimit
+descartado (no es parámetro simple): src/packages/provider/src/mockRateLimits.ts:101 setMockHeader
+descartado (no es parámetro simple): src/packages/provider/src/proxy.ts:133 parseIpv4ToInteger
+descartado (no es parámetro simple): src/packages/provider/src/vcr.ts:387 withTokenCountVCR
+descartado (no es parámetro simple): src/packages/repl/src/__tests__/relaunch.test.ts:23 setExecPath
+descartado (no es parámetro simple): src/packages/repl/src/components/ConsoleOAuthFlow.tsx:126 setConnectionProtocol
+descartado (no es parámetro simple): src/packages/repl/src/components/LogoV2/LogoV2.tsx:318 rightWidth
+descartado (no es parámetro simple): src/packages/repl/src/components/Spinner/SpinnerAnimationRow.tsx:134 stalledIntensity
+descartado (no es parámetro simple): src/packages/repl/src/components/goal/GoalPanel.tsx:35 relativeTime
+descartado (no es parámetro simple): src/packages/repl/src/components/wizard/types.ts:2 T
+descartado (no es parámetro simple): src/packages/shell/src/shell/prefix.ts:25 createLRUCache
+descartado (sin archivo en la fuente): src/packages/tool-registry/src/tools/MCPTool/UI.ts:38 MCP_OUTPUT_WARNING_THRESHOLD_TOKENS
+descartado (no es parámetro simple): src/packages/tool-registry/src/tools/SendMessageTool/UI.tsx:22 verbose
+descartado (no es parámetro simple): src/packages/tool-registry/src/tools/TaskStopTool/TaskStopTool.ts:109 abortController
+descartado (no es parámetro simple): src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts:382 extractTargetMcpServer
+descartado (no es parámetro simple): src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts:349 waitForPendingMcpServers
+aplicados: 61 · descartados: 42

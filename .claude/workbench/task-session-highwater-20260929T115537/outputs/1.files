@@ -1,0 +1,4 @@
+src/packages/task/schema.ts
+src/packages/tools/__tests__/taskCreateWorker.ts
+src/packages/tools/__tests__/taskSessionHighwater.test.ts
+src/packages/tools/src/tasks.ts

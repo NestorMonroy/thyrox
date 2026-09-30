@@ -237,20 +237,20 @@ export const PermissionModeSchema = lazySchema(() =>
  */
 export type CanUseToolFn = (...args: any[]) => Promise<any>
 export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = string
-export type AppState = unknown
-export type Tool = unknown
-export type AgentProgress = unknown
-export type CustomAgentDefinition = unknown
-export type AgentDefinition = unknown
-export type AgentToolResult = unknown
-export type PermissionDecision = unknown
-export type AgentContext = unknown
+export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
+export type Tool = import('@thyrox/tool-registry/Tool.js').Tool
+export type AgentProgress = import('@thyrox/agent/localAgentTask.js').AgentProgress
+export type CustomAgentDefinition = import('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js').CustomAgentDefinition
+export type AgentDefinition = import('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js').AgentDefinition
+export type AgentToolResult = import('@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js').AgentToolResult
+export type PermissionDecision = import('@thyrox/permission/permissionTypes.js').PermissionDecision
+export type AgentContext = import('@thyrox/agent/agentContext.js').AgentContext
 export type ModelAlias = string
-export type PermissionUpdate = unknown
+export type PermissionUpdate = import('@thyrox/permission/permissionTypes.js').PermissionUpdate
 export type PermissionMode = string
-export type Task = unknown
+export type Task = import('@thyrox/tool-registry/Task.js').Task
 export type SetAppState = (updater: (prev: AppState) => AppState) => void
-export type TeammateContext = unknown
+export type TeammateContext = import('../teammateContextAlias.js').TeammateContext
 export type AgentColorName = string
 
 export type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
@@ -677,3 +677,7 @@ export function _test_resetSwarmAppRuntime(): void {
   saveCurrentProjectConfig = missingBinding('saveCurrentProjectConfig')
   getAPIProvider = missingBinding('getAPIProvider')
 }
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { TaskStateBase } from '../tasks/types.js'

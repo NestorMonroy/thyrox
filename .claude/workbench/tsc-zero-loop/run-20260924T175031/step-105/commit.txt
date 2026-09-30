@@ -1,0 +1,5 @@
+Rename bindWindow's pid now that nothing stores it
+
+Removing the dead boundPid state in step 104 left the pid parameter of
+the exported bindWindow unused. Renaming it to _pid keeps the call
+signature and closes the last live instance of dead-local-not-read.

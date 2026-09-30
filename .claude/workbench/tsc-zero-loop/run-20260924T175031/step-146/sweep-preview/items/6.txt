@@ -1,0 +1,36 @@
+Patrón: regex-capture-group-possibly-undefined
+Señal del verificador: TS2532: Object is possibly 'undefined'
+Arreglo genérico: Con `noUncheckedIndexedAccess`, `match[n]` de un `RegExpMatchArray` se tipa `string | undefined` aunque el grupo de captura sea obligatorio en el patrón. Dentro del `if (m)` que ya confirma el match, usar `(m[n] ?? '<default>').metodo()` en vez de indexar directo — el default nunca se alcanza en la práctica porque el grupo siempre casa junto con `m`, pero satisface el tipo sin `!` ni cambiar la conducta.
+Ya aplicado en: src/coordination/claims.ts, src/packages/app-host/src/__tests__/declaredDependencies.test.ts, src/packages/binary/src/freshness.ts, src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts, src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+Archivos donde la señal sigue viva: src/packages/config/settings/inventory.ts
+
+src/packages/config/settings/inventory.ts(171,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }
+src/packages/config/settings/inventory.ts(171,75): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }

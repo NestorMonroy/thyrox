@@ -1,0 +1,54 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(521,5): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:511-531 ---
+    511  
+    512    if (uniqueDynamicSkills.length === 0) {
+    513      return baseCommands
+    514    }
+    515  
+    516    // Insert dynamic skills after plugin skills but before built-in commands
+    517    const builtInNames = new Set(COMMANDS().map(c => c.name))
+    518    const insertIndex = baseCommands.findIndex(c => builtInNames.has(c.name))
+    519  
+    520    if (insertIndex === -1) {
+    521>     return [...baseCommands, ...uniqueDynamicSkills]
+    522    }
+    523  
+    524    return [
+    525      ...baseCommands.slice(0, insertIndex),
+    526      ...uniqueDynamicSkills,
+    527      ...baseCommands.slice(insertIndex),
+    528    ]
+    529  }
+    530  
+    531  /**
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(524,3): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:514-534 ---
+    514    }
+    515  
+    516    // Insert dynamic skills after plugin skills but before built-in commands
+    517    const builtInNames = new Set(COMMANDS().map(c => c.name))
+    518    const insertIndex = baseCommands.findIndex(c => builtInNames.has(c.name))
+    519  
+    520    if (insertIndex === -1) {
+    521      return [...baseCommands, ...uniqueDynamicSkills]
+    522    }
+    523  
+    524>   return [
+    525      ...baseCommands.slice(0, insertIndex),
+    526      ...uniqueDynamicSkills,
+    527      ...baseCommands.slice(insertIndex),
+    528    ]
+    529  }
+    530  
+    531  /**
+    532   * Clears only the memoization caches for commands, WITHOUT clearing skill caches.
+    533   * Use this when dynamic skills are added to invalidate cached command lists.
+    534   */
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.

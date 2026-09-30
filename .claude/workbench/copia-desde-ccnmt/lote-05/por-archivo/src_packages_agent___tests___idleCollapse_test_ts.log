@@ -1,0 +1,48 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/idleCollapse.test.ts:
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at collapseConsecutiveIdleDuplicates (/home/user/thyrox/src/packages/agent/attachments/mailbox.ts:190:5)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/idleCollapse.test.ts:134:20)
+(fail) collapseConsecutiveIdleDuplicates > three identical idles in a row → keep first only [0.41ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at collapseConsecutiveIdleDuplicates (/home/user/thyrox/src/packages/agent/attachments/mailbox.ts:190:5)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/idleCollapse.test.ts:173:20)
+(fail) collapseConsecutiveIdleDuplicates > different senders do not interfere [0.08ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at collapseConsecutiveIdleDuplicates (/home/user/thyrox/src/packages/agent/attachments/mailbox.ts:190:5)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/idleCollapse.test.ts:233:12)
+(fail) collapseConsecutiveIdleDuplicates > long run of identical idles → keep first only [0.11ms]
+
+ 8 pass
+ 3 fail
+ 8 expect() calls
+Ran 11 tests across 1 file. [535.00ms]
+exit=1

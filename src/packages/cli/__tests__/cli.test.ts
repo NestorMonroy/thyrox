@@ -92,10 +92,10 @@ describe('selector de reanudacion (T-041)', () => {
     b.transcript.appendAssistant({ id: 'm', model: 'claude-sonnet-5', content: [{ type: 'text', text: 'r' }] }, uso)
 
     const opciones = resumeChoices(d)
-    expect(opciones[0].id).toBe(b.id)
-    expect(opciones[0].model).toBe('claude-sonnet-5')
-    expect(opciones[0].summary).toContain('la segunda pregunta')
-    expect(opciones[1].id).toBe(a.id)
+    expect(opciones[0]!.id).toBe(b.id)
+    expect(opciones[0]!.model).toBe('claude-sonnet-5')
+    expect(opciones[0]!.summary).toContain('la segunda pregunta')
+    expect(opciones[1]!.id).toBe(a.id)
   })
 
   test('una bifurcacion se anuncia como tal en su etiqueta', () => {

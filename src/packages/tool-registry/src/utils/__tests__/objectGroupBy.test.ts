@@ -1,88 +1,83 @@
-/**
- * La mitad ROJA de `objectGroupBy`.
- *
- * Procedencia del SUJETO: `ccnmt: packages/tool-registry/src/utils/objectGroupBy.ts`.
- * Los casos son propios —no se copian los de su `__tests__`, que ese árbol
- * declara `"license": "UNLICENSED"`— y cubren el mismo contrato.
- *
- * Las dos costuras con conducta propia, cada una con su anulación:
- *
- * 1. **El prototipo nulo** — una clave llamada `toString` es una clave, no el
- *    método heredado. Anulación: cambiar `Object.create(null)` por `{}` y cae
- *    el caso que la busca.
- * 2. **El índice del selector** — base 0, y avanza aunque dos elementos caigan
- *    en el mismo grupo. Anulación: pasar una constante en vez de `index++` y
- *    cae el caso que lo recoge.
- *
- * Métrica: la conducta de la función sobre arreglos, generadores y claves de
- * los tres tipos que `PropertyKey` admite.
- * Ciega a: el rendimiento y al orden de las CLAVES del objeto, que en un
- * objeto de prototipo nulo sigue las reglas de JavaScript y no las de esta
- * función.
- */
 import { describe, expect, test } from 'bun:test'
 import { objectGroupBy } from '../objectGroupBy.js'
 
 describe('objectGroupBy', () => {
-  test('agrupa por lo que el selector devuelve', () => {
-    const r = objectGroupBy([1, 2, 3, 4, 5], n => (n % 2 === 0 ? 'par' : 'impar'))
-    expect(r).toEqual({ impar: [1, 3, 5], par: [2, 4] })
+  test('groups items by key selector', () => {
+    const items = [1, 2, 3, 4, 5]
+    const result = objectGroupBy(items, n => (n % 2 === 0 ? 'even' : 'odd'))
+    expect(result).toEqual({ odd: [1, 3, 5], even: [2, 4] })
   })
 
-  test('dentro de cada grupo conserva el orden de entrada', () => {
-    const r = objectGroupBy(['bo', 'ba', 'ca', 'be'], s => s[0] as string)
-    expect(r.b).toEqual(['bo', 'ba', 'be'])
-    expect(r.c).toEqual(['ca'])
+  test('preserves item order within each group', () => {
+    const items = [
+      { id: 1, type: 'a' },
+      { id: 2, type: 'b' },
+      { id: 3, type: 'a' },
+      { id: 4, type: 'a' },
+    ]
+    const result = objectGroupBy(items, x => x.type)
+    expect(result.a?.map(x => x.id)).toEqual([1, 3, 4])
+    expect(result.b?.map(x => x.id)).toEqual([2])
   })
 
-  test('el selector recibe el índice, base 0 y sin saltos', () => {
-    const vistos: number[] = []
-    // Todos al mismo grupo: si el índice se derivara del tamaño del grupo en
-    // vez de la posición, esto seguiría dando 0,1,2 y el caso no discriminaría.
-    objectGroupBy(['a', 'b', 'c'], (_s, i) => {
-      vistos.push(i)
-      return 'uno'
+  test('keySelector receives index (0-based)', () => {
+    const indices: number[] = []
+    objectGroupBy(['a', 'b', 'c'], (_, i) => {
+      indices.push(i)
+      return 'k'
     })
-    expect(vistos).toEqual([0, 1, 2])
+    expect(indices).toEqual([0, 1, 2])
   })
 
-  test('sin elementos devuelve un objeto sin claves', () => {
-    expect(Object.keys(objectGroupBy([], () => 'x'))).toEqual([])
+  test('empty iterable returns empty object', () => {
+    expect(objectGroupBy([], () => 'any')).toEqual({})
   })
 
-  test('el resultado tiene prototipo nulo — `toString` es una clave, no un método', () => {
-    const r = objectGroupBy(['x'], () => 'toString')
-    expect(Object.getPrototypeOf(r)).toBeNull()
-    expect(r.toString).toEqual(['x'])
+  test('single-group scenario', () => {
+    expect(objectGroupBy([1, 2, 3], () => 'all')).toEqual({ all: [1, 2, 3] })
   })
 
-  test('admite claves numéricas', () => {
-    const r = objectGroupBy([1.2, 1.8, 2.4], n => Math.floor(n))
-    expect(r[1]).toEqual([1.2, 1.8])
-    expect(r[2]).toEqual([2.4])
+  test('result has null prototype (no inherited Object methods leak)', () => {
+    // Contract: `Object.create(null)` — protects against prototype
+    // pollution and accidental key collisions with 'toString',
+    // 'hasOwnProperty', etc.
+    const result = objectGroupBy([1, 2], () => 'toString')
+    expect(Object.getPrototypeOf(result)).toBeNull()
   })
 
-  test('admite claves de tipo símbolo', () => {
-    const a = Symbol('a')
-    const b = Symbol('b')
-    const r = objectGroupBy([1, 2, 3], n => (n === 2 ? b : a))
-    expect(r[a]).toEqual([1, 3])
-    expect(r[b]).toEqual([2])
+  test('numeric string keys work as PropertyKey', () => {
+    const result = objectGroupBy(['x', 'y', 'z'], (_, i) => String(i))
+    expect(result['0']).toEqual(['x'])
+    expect(result['1']).toEqual(['y'])
+    expect(result['2']).toEqual(['z'])
   })
 
-  test('consume cualquier iterable, no sólo arreglos', () => {
-    function* gen(): Generator<number> {
+  test('symbol keys work as PropertyKey', () => {
+    const KEY_A = Symbol('a')
+    const KEY_B = Symbol('b')
+    const result = objectGroupBy(
+      [1, 2, 3, 4],
+      n => (n % 2 ? KEY_A : KEY_B),
+    )
+    expect(result[KEY_A]).toEqual([1, 3])
+    expect(result[KEY_B]).toEqual([2, 4])
+  })
+
+  test('handles iterables (not just arrays)', () => {
+    function* gen() {
       yield 1
       yield 2
       yield 3
     }
-    const r = objectGroupBy(gen(), n => (n > 1 ? 'alto' : 'bajo'))
-    expect(r).toEqual({ bajo: [1], alto: [2, 3] })
+    const result = objectGroupBy(gen(), n => (n > 1 ? 'big' : 'small'))
+    expect(result.small).toEqual([1])
+    expect(result.big).toEqual([2, 3])
   })
 
-  test('no muta la entrada', () => {
-    const entrada = [3, 1, 2]
-    objectGroupBy(entrada, n => String(n))
-    expect(entrada).toEqual([3, 1, 2])
+  test('does NOT mutate input', () => {
+    const items = [1, 2, 3]
+    const before = [...items]
+    objectGroupBy(items, () => 'k')
+    expect(items).toEqual(before)
   })
 })

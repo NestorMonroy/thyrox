@@ -3,7 +3,7 @@
 // component, so we re-export it via require() at module-load time (cheap).
 import * as React from 'react'
 
-export type AppState = unknown
+export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mod = require('@thyrox/app-host/state/AppState.js') as {

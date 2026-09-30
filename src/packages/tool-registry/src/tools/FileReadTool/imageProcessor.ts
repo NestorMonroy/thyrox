@@ -54,6 +54,23 @@ type SharpCreator = (options: SharpCreatorOptions) => SharpInstance
 let cachedProcessor: SharpFunction | null = null
 let cachedCreator: SharpCreator | null = null
 
+// Los dos cargadores, sustituibles sólo desde las pruebas: la ausencia de un
+// binario depende de lo que haya instalado, y `mock.module` no la simula de
+// forma estable en Bun (una fábrica que lanza sólo falla el primer import).
+let importNapi = (): Promise<Record<string, unknown>> =>
+  import('@thyrox/image-processor-napi') as Promise<Record<string, unknown>>
+let importSharp = (): Promise<unknown> => import('sharp')
+
+export function _setImageImportersForTesting(importers: {
+  napi?: () => Promise<Record<string, unknown>>
+  sharp?: () => Promise<unknown>
+}): void {
+  if (importers.napi) importNapi = importers.napi
+  if (importers.sharp) importSharp = importers.sharp
+  cachedProcessor = null
+  cachedCreator = null
+}
+
 /**
  * Devuelve la función de procesamiento para imágenes YA EXISTENTES
  * (redimensionar, recomprimir). Intenta primero el binario nativo
@@ -72,7 +89,7 @@ export async function getImageProcessor(): Promise<SharpFunction> {
   void isInBundledMode // referenciado para no perder el import; no gatea nada aquí
 
   try {
-    const napiModule = await import('@thyrox/image-processor-napi')
+    const napiModule = await importNapi()
     const candidate = (napiModule.sharp ?? napiModule.default) as SharpFunction
     if (typeof candidate === 'function') {
       cachedProcessor = candidate
@@ -88,7 +105,7 @@ export async function getImageProcessor(): Promise<SharpFunction> {
   // garantizado en toda configuración de runtime — si falla, quien llame
   // ve el rechazo y decide su propio fallback (p. ej. pasar el buffer sin
   // procesar).
-  const imported = (await import('sharp')) as MaybeDefault<SharpFunction>
+  const imported = (await importSharp()) as MaybeDefault<SharpFunction>
   const sharpFn = unwrapDefault(imported)
   cachedProcessor = sharpFn
   return sharpFn
@@ -104,7 +121,7 @@ export async function getImageProcessor(): Promise<SharpFunction> {
 export async function getImageCreator(): Promise<SharpCreator> {
   if (cachedCreator) return cachedCreator
 
-  const imported = (await import('sharp')) as MaybeDefault<SharpCreator>
+  const imported = (await importSharp()) as MaybeDefault<SharpCreator>
   const creator = unwrapDefault(imported)
   cachedCreator = creator
   return creator

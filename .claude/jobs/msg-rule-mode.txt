@@ -1,0 +1,8 @@
+Split shared-state failure behavior by proxy mode
+
+The rule let every operation fall back to per-proxy memory when
+Redis failed. With several proxies that breaks the lease, the
+cooldowns and the windows the port promises: two proxies could
+refresh the same rotating token. The mode is now declared, and in
+multi-proxy mode an operation that needs a global view refuses
+explicitly. R5 carries it into the factory.

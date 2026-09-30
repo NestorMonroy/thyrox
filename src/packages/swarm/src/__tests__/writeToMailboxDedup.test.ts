@@ -1,33 +1,27 @@
 /**
- * Tests de la clave de deduplicación que `writeToMailbox` usa para
- * descartar mensajes de protocolo reintentados.
+ * Tests for the dedup key used by writeToMailbox to drop retried
+ * protocol messages.
  *
- * Procedencia: `ccnmt: packages/swarm/src/__tests__/writeToMailboxDedup.test.ts`
- * (126 líneas). Ese árbol declara `"license": "UNLICENSED"`, así que el
- * cuerpo se **reimplementa** y no se copia.
+ * Background: the previous implementation appended every call
+ * unconditionally. A retried `shutdown_request` with the same
+ * requestId stacked up four entries in the recipient's inbox; the
+ * runner processed the first one but the read-flag race caused the
+ * remaining three to become invisible — locking the teammate in
+ * "approved but not exiting" limbo. The fix dedupes at the write
+ * site: if the inbox already contains an entry with the same
+ * (type, requestId) pair, the new write is a no-op.
  *
- * Contexto: la implementación previa apendaba cada llamada sin condición.
- * Un `shutdown_request` reintentado con el mismo requestId apilaba cuatro
- * entradas en el buzón del destinatario; el runner procesaba la primera
- * pero la carrera del flag `read` volvía invisibles a las otras tres —
- * dejando al teammate atrapado en un limbo de "aprobado pero sin salir".
- * El fix deduplica en el sitio de escritura: si el buzón ya tiene una
- * entrada con el mismo par (type, requestId), la escritura nueva es un
- * no-op.
- *
- * Verificado al nivel del helper (`extractDedupKey`) porque el camino
- * completo de `writeToMailbox` arrastra los bindings de runtime de
- * swarm; el helper es el punto de decisión real y cubre exhaustivamente
- * cada forma de mensaje relevante para el dedup. No necesita
- * `installSwarmAppRuntime` — usa `JSON.parse` crudo, no el binding
- * `jsonParse`.
+ * Verified at the helper level (extractDedupKey) since the full
+ * writeToMailbox path drags in the swarm runtime bindings; the helper
+ * is the actual decision point and exhaustively covers every
+ * dedup-relevant message shape.
  */
 import { describe, expect, test } from 'bun:test'
 
 import { extractDedupKey } from '../mailbox/index.js'
 
-describe('extractDedupKey — los mensajes de protocolo con requestId se dedupean', () => {
-  test('shutdown_request con requestId devuelve la clave de dedup', () => {
+describe('extractDedupKey — protocol messages with requestId are deduped', () => {
+  test('shutdown_request with requestId returns the dedup key', () => {
     const text = JSON.stringify({
       type: 'shutdown_request',
       requestId: 'req-1',
@@ -40,7 +34,7 @@ describe('extractDedupKey — los mensajes de protocolo con requestId se dedupea
     })
   })
 
-  test('plan_approval_request con requestId devuelve la clave de dedup', () => {
+  test('plan_approval_request with requestId returns the dedup key', () => {
     const text = JSON.stringify({
       type: 'plan_approval_request',
       requestId: 'plan-1',
@@ -54,7 +48,7 @@ describe('extractDedupKey — los mensajes de protocolo con requestId se dedupea
     })
   })
 
-  test('requestIds distintos producen claves distintas', () => {
+  test('different requestIds yield different keys', () => {
     const a = extractDedupKey(
       JSON.stringify({ type: 'shutdown_request', requestId: 'r1' }),
     )
@@ -65,7 +59,7 @@ describe('extractDedupKey — los mensajes de protocolo con requestId se dedupea
     expect(b).toEqual({ type: 'shutdown_request', requestId: 'r2' })
   })
 
-  test('tipos distintos con el mismo requestId producen claves distintas', () => {
+  test('different types with same requestId yield different keys', () => {
     const a = extractDedupKey(
       JSON.stringify({ type: 'shutdown_request', requestId: 'r1' }),
     )
@@ -77,14 +71,14 @@ describe('extractDedupKey — los mensajes de protocolo con requestId se dedupea
   })
 })
 
-describe('extractDedupKey — los mensajes sin clave devuelven null', () => {
-  test('texto plano devuelve null', () => {
+describe('extractDedupKey — non-keyed messages return null', () => {
+  test('plain text returns null', () => {
     expect(extractDedupKey('hello there')).toBeNull()
   })
 
-  test('JSON sin type+requestId devuelve null', () => {
-    // idle_notification tiene type pero no requestId — quien llama
-    // decide si quiere duplicados.
+  test('JSON without type+requestId returns null', () => {
+    // idle_notification has type but no requestId — caller decides
+    // whether duplicates are wanted.
     expect(
       extractDedupKey(
         JSON.stringify({
@@ -96,37 +90,37 @@ describe('extractDedupKey — los mensajes sin clave devuelven null', () => {
     ).toBeNull()
   })
 
-  test('JSON con requestId pero sin type devuelve null', () => {
+  test('JSON with requestId but no type returns null', () => {
     expect(
       extractDedupKey(JSON.stringify({ requestId: 'r1', payload: 'x' })),
     ).toBeNull()
   })
 
-  test('type no-string devuelve null', () => {
+  test('non-string type returns null', () => {
     expect(
       extractDedupKey(JSON.stringify({ type: 42, requestId: 'r1' })),
     ).toBeNull()
   })
 
-  test('requestId no-string devuelve null', () => {
+  test('non-string requestId returns null', () => {
     expect(
       extractDedupKey(JSON.stringify({ type: 'shutdown_request', requestId: 42 })),
     ).toBeNull()
   })
 
-  test('JSON malformado devuelve null', () => {
+  test('malformed JSON returns null', () => {
     expect(extractDedupKey('{not json')).toBeNull()
   })
 
-  test('string vacío devuelve null', () => {
+  test('empty string returns null', () => {
     expect(extractDedupKey('')).toBeNull()
   })
 
-  test('JSON null devuelve null', () => {
+  test('JSON null returns null', () => {
     expect(extractDedupKey('null')).toBeNull()
   })
 
-  test('array JSON devuelve null (no es un objeto)', () => {
+  test('JSON array returns null (not an object)', () => {
     expect(extractDedupKey('["shutdown_request","r1"]')).toBeNull()
   })
 })

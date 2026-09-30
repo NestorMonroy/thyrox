@@ -1,0 +1,2 @@
+src/session/parallel_map.sh
+tests/session/test-parallel-map.sh

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+66 |     expect(calls).toEqual([['/usr/bin/tmux', ['show-environment', '-g']]])
+67 |     expect(probeTmuxChildSessionMarker({ env: { TMUX: 'x' }, ...found('OTRO=1') })).toBe('absent')
+68 |   })
+69 | 
+70 |   test('sin tmux, con salida no cero o si lanza, no se sabe', () => {
+71 |     expect(probeTmuxChildSessionMarker({ env: { TMUX: 'x' }, which: () => null, run: () => ({ status: 0, stdout: '' }) })).toBe('unknown')
+                                                                                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "unknown"
+Received: "absent"
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:71:124)
+(fail) probeTmuxChildSessionMarker (C) > sin tmux, con salida no cero o si lanza, no se sabe [0.25ms]
+
+ 17 pass
+ 1 fail
+ 37 expect() calls
+Ran 18 tests across 1 file. [123.00ms]

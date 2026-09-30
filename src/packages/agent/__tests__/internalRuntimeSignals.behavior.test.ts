@@ -4,18 +4,17 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Pines a nivel de fuente para `internal/runtimeSignals.ts` — tres
- * delegados encadenados por optional-chaining a los bindings del host.
- * Porte de
- * `ccnmt: packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts`.
+ * Source-level pins for `internal/runtimeSignals.ts` — three optional-chained
+ * delegators to host bindings. These are called from the query hot path and
+ * provide diagnostic checkpoints + command-lifecycle notifications.
  *
- * Invariantes:
- *  1. Los tres delegan vía `getAgentHostBindings().X?.(...)` — nunca lanzan
- *     si el host no instaló el binding.
- *  2. `notifyCommandLifecycle` acepta SÓLO 'started' | 'completed' (una
- *     unión que un refactor podría ensanchar — se fija aquí).
- *  3. `headlessProfilerCheckpoint` y `queryCheckpoint` reciben SÓLO el
- *     nombre (sin payload de metadata). El host decide qué hacer con él.
+ * Invariants:
+ *  1. All three delegate via `getAgentHostBindings().X?.(...)` — never throw
+ *     if the host hasn't installed the binding.
+ *  2. notifyCommandLifecycle accepts ONLY 'started' | 'completed' (a union
+ *     a refactor might widen — pin it).
+ *  3. headlessProfilerCheckpoint and queryCheckpoint are NAME-only (no
+ *     metadata payload). The host decides what to do with the name.
  */
 describe('internal/runtimeSignals', () => {
   const source = readFileSync(
@@ -23,19 +22,19 @@ describe('internal/runtimeSignals', () => {
     'utf-8',
   )
 
-  test('headlessProfilerCheckpoint delega vía optional chain (sin host = no-op)', () => {
+  test('headlessProfilerCheckpoint delegates via optional chain (no host = no-op)', () => {
     expect(source).toMatch(
       /headlessProfilerCheckpoint\(name: string\): void \{\s*\n?\s*getAgentHostBindings\(\)\.headlessProfilerCheckpoint\?\.\(name\)/,
     )
   })
 
-  test('queryCheckpoint delega vía optional chain', () => {
+  test('queryCheckpoint delegates via optional chain', () => {
     expect(source).toMatch(
       /queryCheckpoint\(name: string\): void \{\s*\n?\s*getAgentHostBindings\(\)\.queryCheckpoint\?\.\(name\)/,
     )
   })
 
-  test('notifyCommandLifecycle delega con ambos argumentos', () => {
+  test('notifyCommandLifecycle delegates with both args', () => {
     expect(source).toMatch(
       /notifyCommandLifecycle\([\s\S]*?uuid: string,[\s\S]*?state: 'started' \| 'completed'/,
     )
@@ -44,22 +43,21 @@ describe('internal/runtimeSignals', () => {
     )
   })
 
-  test('la unión de estado es EXACTAMENTE started|completed (ningún otro estado)', () => {
-    // Pin: un refactor que agregue 'in_progress' cambiaría la UI aguas abajo.
-    // Si hacen falta más estados, se agregan deliberadamente Y se actualiza
-    // este test.
+  test('state union is EXACTLY started|completed (no other states)', () => {
+    // Pin: a refactor that adds 'in_progress' would change downstream UI.
+    // If you need more states, add them deliberately AND update this test.
     expect(source).toMatch(/'started' \| 'completed'/)
     expect(source).not.toMatch(/'in_progress'/)
     expect(source).not.toMatch(/'cancelled'/)
   })
 
-  test('importa getAgentHostBindings desde "../host.ts" (divergencia declarada: la fuente usa "../host.js", aquí el resto de "internal/" ya importa sus hermanos con extensión .ts)', () => {
+  test('imports getAgentHostBindings from "../host.js"', () => {
     expect(source).toMatch(
-      /import \{ getAgentHostBindings \} from '\.\.\/host\.ts'/,
+      /import \{ getAgentHostBindings \} from '\.\.\/host\.js'/,
     )
   })
 
-  test('las tres se exportan (las consumen la query y el runtime de comandos)', () => {
+  test('all three are exported (consumed by query, command runtime)', () => {
     expect(source).toMatch(/^export function headlessProfilerCheckpoint/m)
     expect(source).toMatch(/^export function queryCheckpoint/m)
     expect(source).toMatch(/^export function notifyCommandLifecycle/m)

@@ -1,0 +1,3 @@
+==== P9n: 1 definicion(es) de nivel superior
+---- chunk-ygx717jg.js function P9n [65696,66222)
+function P9n(e,r,s,h,n,p){r.claimed=!0;let o=g7.claim(e,{pid:r.hostPid,ptySockPath:r.ptySock,spawnPty:s,getAuthSnapshot:h,ptyAuth:r.ptyAuth,storageV5:n,credentials:p});return we(e.short,qjt(e)?h?.():void 0).then((u)=>Ut(r.claimSock,Bt(e,u,o.socketAuth(),r.claimAuth))).catch((u)=>{i("tengu_bg_sendclaim_failed",{short:_E(e.short),errno:ao(u),...Hd(u)}),t(`[bg-spare] send-claim failed: ${l(u)}`,{level:"warn"});let g=be(r.ptySock);g.on("error",()=>{}),g.once("connect",()=>{g.write(QO({t:"kill",sig:"SIGTERM"})),g.end()})}),o}

@@ -59,7 +59,7 @@ const permissionSetupModule = feature('TRANSCRIPT_CLASSIFIER')
 
 /**
  * Schema for prompt-based permission requests.
- * Used by Claude to request semantic permissions when exiting plan mode.
+ * Used by thyrox to request semantic permissions when exiting plan mode.
  */
 const allowedPromptSchema = lazySchema(() =>
   z.object({
@@ -218,7 +218,7 @@ export const ExitPlanModeV2Tool: Tool<InputSchema, Output> = buildTool({
     }
     return { result: true }
   },
-  async checkPermissions(input, context) {
+  async checkPermissions(input, _context) {
     // For ALL teammates, bypass the permission UI to avoid sending permission_request
     // The call() method handles the appropriate behavior:
     // - If isPlanModeRequired(): sends plan_approval_request to leader

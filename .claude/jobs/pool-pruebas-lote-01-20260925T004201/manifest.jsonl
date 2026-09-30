@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --timeout 1800 .claude/workbench/copia-desde-ccnmt/lote-01/comandos-copia.txt", "started_at": "2026-09-25T00:42:01+00:00"}

@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/pdfUtils.ts`.
- * La version anterior portaba 3 de 4 exports, y los suyos eran
- * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
- * Divergencia frente a la fuente: ninguna, salvo el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
- * Refs: TASK-THYROX-0199.
- */
-
 import { getMainLoopModel } from '@thyrox/provider/model.js'
 
 // Document extensions that are handled specially

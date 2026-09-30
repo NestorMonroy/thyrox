@@ -122,7 +122,7 @@ function getCertEnvVarTelemetry(): Record<string, boolean> {
   if (process.env.NODE_EXTRA_CA_CERTS) {
     result.has_node_extra_ca_certs = true
   }
-  if (process.env.CLAUDE_CODE_CLIENT_CERT) {
+  if (process.env.THYROX_CODE_CLIENT_CERT) {
     result.has_client_cert = true
   }
   if (hasNodeOption('--use-system-ca')) {
@@ -175,7 +175,7 @@ export async function logStartupTelemetry(deps: StartupTelemetryDeps = {}): Prom
     are_unsandboxed_commands_allowed: (deps.areUnsandboxedCommandsAllowed ?? (() => false))(),
     is_auto_bash_allowed_if_sandbox_enabled: (deps.isAutoAllowBashIfSandboxedEnabled ?? (() => false))(),
     auto_updater_disabled: (deps.isAutoUpdaterDisabled ?? (() => false))(),
-    prefers_reduced_motion: (deps.getInitialSettings ?? (() => ({})))().prefersReducedMotion ?? false,
+    prefers_reduced_motion: (deps.getInitialSettings ?? ((): { prefersReducedMotion?: boolean } => ({})))().prefersReducedMotion ?? false,
     ...getCertEnvVarTelemetry(),
   })
 }

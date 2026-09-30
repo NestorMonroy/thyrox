@@ -237,7 +237,7 @@ def markov_clustering(
 
     communities = defaultdict(list)
     for node in nodes:
-        rows = matrix.get(node)
+        rows = matrix.get(node, {})
         if not rows:
             communities[node].append(node)
             continue
@@ -252,7 +252,7 @@ def rank(score, top):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     origin = parser.add_mutually_exclusive_group(required=True)
     origin.add_argument("--manifests", help="raíz con <addon>/__manifest__.py")
     origin.add_argument("--edges", help="archivo de aristas 'origen destino'")

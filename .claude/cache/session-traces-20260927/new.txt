@@ -1,0 +1,4 @@
+/** El directorio de configuración del usuario; su resolución (nombres
+ * propios de thyrox con respaldo en los heredados) vive en `configHome.ts`. */
+export { getConfigHomeDir } from './configHome.js'
+import { getConfigHomeDir } from './configHome.js'

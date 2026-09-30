@@ -1,0 +1,23 @@
+== 1. CLI: un árbol limpio emite {} y SIEMPRE sale 0 ==
+  ok    sale 0
+  ok    emite el objeto vacío
+== 2. CLI: con trabajo bloquea, con la prosa del consumidor ==
+  ok    sale 0 igual
+  ok    bloquea
+  ok    nombra el repo
+  ok    con la etiqueta inyectada
+  ok    y la prosa del consumidor
+== 3. DISCRIMINA: una reentrada NO barre nada ==
+  ok    el mismo repo sucio emite {}
+== 4. CONTROL: sin raíces NO publica un verde ==
+  ok    sale 0
+  ok    emite {}
+  ok    y lo nombra en stderr
+== 5. CONTROL: una etiqueta ausente NO se rellena sola ==
+  ok    emite {}, no un motivo a medias
+  ok    y nombra las etiquetas que faltan
+== 6. CONTROL: una etiqueta mal formada rehúsa SIN stdout ==
+  ok    no sale 0
+  ok    y NO publica stdout
+
+15 ok, 0 fallos

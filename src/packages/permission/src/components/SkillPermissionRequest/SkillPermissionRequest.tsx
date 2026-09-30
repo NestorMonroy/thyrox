@@ -17,6 +17,7 @@ import {
 } from '../PermissionPrompt.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 import { PermissionRuleExplanation } from '../PermissionRuleExplanation.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type SkillOptionValue = 'yes' | 'yes-exact' | 'yes-prefix' | 'no'
 
@@ -43,11 +44,7 @@ export function SkillPermissionRequest(
 
   const skill = parseInput(toolUseConfirm.input)
 
-  // Copia de `ccnmt: packages/permission/src/components/SkillPermissionRequest/
-  // SkillPermissionRequest.tsx` con los comentarios traducidos; el cuerpo es el
-  // de la fuente.
-  //
-  // Comprueba si esto es un comando, usando la metadata de checkPermissions.
+  // Check if this is a command using metadata from checkPermissions
   const commandObj =
     toolUseConfirm.permissionResult.behavior === 'ask' &&
     toolUseConfirm.permissionResult.metadata &&
@@ -76,11 +73,10 @@ export function SkillPermissionRequest(
       },
     ]
 
-    // Las opciones de "permitir siempre" solo se añaden cuando
-    // allowManagedPermissionRulesOnly no las restringe.
+    // Only add "always allow" options when not restricted by allowManagedPermissionRulesOnly
     const alwaysAllowOptions: PermissionPromptOption<SkillOptionValue>[] = []
     if (showAlwaysAllowOptions) {
-      // Añade la opción de coincidencia exacta.
+      // Add exact match option
       alwaysAllowOptions.push({
         label: (
           <Text>
@@ -91,7 +87,7 @@ export function SkillPermissionRequest(
         value: 'yes-exact',
       })
 
-      // Añade la opción de prefijo si el skill lleva argumentos.
+      // Add prefix option if the skill has arguments
       const spaceIndex = skill.indexOf(' ')
       if (spaceIndex > 0) {
         const commandPrefix = skill.substring(0, spaceIndex)
@@ -134,7 +130,7 @@ export function SkillPermissionRequest(
             event: 'accept',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
@@ -147,7 +143,7 @@ export function SkillPermissionRequest(
             event: 'accept',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
@@ -174,12 +170,12 @@ export function SkillPermissionRequest(
             event: 'accept',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
 
-          // Extrae el prefijo del skill: todo lo anterior al primer espacio.
+          // Extract the skill prefix (everything before the first space)
           const spaceIndex = skill.indexOf(' ')
           const commandPrefix =
             spaceIndex > 0 ? skill.substring(0, spaceIndex) : skill
@@ -206,7 +202,7 @@ export function SkillPermissionRequest(
             event: 'reject',
             metadata: {
               language_name: 'none',
-              message_id: toolUseConfirm.assistantMessage.message.id,
+              message_id: toolUseConfirm.assistantMessage.message.id ?? '',
               platform: env.platform,
             },
           })
@@ -225,7 +221,7 @@ export function SkillPermissionRequest(
       event: 'reject',
       metadata: {
         language_name: 'none',
-        message_id: toolUseConfirm.assistantMessage.message.id,
+        message_id: toolUseConfirm.assistantMessage.message.id ?? '',
         platform: env.platform,
       },
     })
@@ -236,7 +232,7 @@ export function SkillPermissionRequest(
 
   return (
     <PermissionDialog title={`Use skill "${skill}"?`} workerBadge={workerBadge}>
-      <Text>Claude may use instructions, code, or files from this Skill.</Text>
+      <Text>{PRODUCT_NAME} may use instructions, code, or files from this Skill.</Text>
       <Box flexDirection="column" paddingX={2} paddingY={1}>
         <Text dimColor>{commandObj?.description}</Text>
       </Box>

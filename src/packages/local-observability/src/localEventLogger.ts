@@ -1,25 +1,46 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/localEventLogger.ts`
- * (89 líneas fuente, 100 % portado). Logger de eventos sólo-local —
- * instala un `Logger` que escribe llamadas `event(name, meta)` a un
- * archivo jsonl local. NUNCA abre una conexión de red. Sin dependencias
- * de paquete hermano.
+ * Local-only event logger — installs a Logger that writes `event(name, meta)`
+ * calls to a local jsonl file. NEVER opens a network connection.
  *
- * Gate: apagado por defecto — `logEvent` se queda no-op para que el
- * archivo de eventos no crezca para quien no pidió telemetría.
- * `CLAUDE_CODE_LOCAL_TELEMETRY=1` → instala el logger que escribe a
- * archivo.
+ * Audited 2026-05-07: nothing in packages/local-observability/src reaches
+ * the network. Datadog / GrowthBook / Statsig stubs return early.
+ * sessionDataUploader is a 3-line `() => {}` stub.
  *
- * Salida: `~/.claude/telemetry/events-<YYYY-MM-DD>.jsonl`, un evento por
- * línea como `{"ts": iso, "name": str, "metadata": obj}`.
+ * Gate:
+ *   default OFF — logEvent stays no-op so events file doesn't fill up
+ *     for users who don't ask for telemetry.
+ *   `THYROX_CODE_LOCAL_TELEMETRY=1` → install file-writing logger.
+ *
+ * Output: <config home>/telemetry/events-<YYYY-MM-DD>.jsonl, one event per
+ * line as `{"ts": iso, "name": str, "metadata": obj}`. Date suffix so
+ * old days can be deleted/archived without truncating in-use file.
+ * `THYROX_CODE_LOCAL_TELEMETRY_DIR` overrides the directory.
+ *
+ * Bypasses the existing logForDebugging path because that gates on DEBUG
+ * mode — events should fire whenever the env var is set, regardless of
+ * whether the user is actively debugging.
+ *
+ * @dynamicRequire
  */
 
 import { appendFileSync, mkdirSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { resolveDataDir } from '@thyrox/config/env/configHome'
 import type { EventMetadata, Logger, LocalObservability } from './contracts.js'
 import { installLocalObservability } from './core.js'
 import { logForDebugging } from './debug.js'
+
+export const LOCAL_TELEMETRY_DIR_ENV = 'THYROX_CODE_LOCAL_TELEMETRY_DIR'
+export const LOCAL_TELEMETRY_DATA_SUBDIR = 'telemetry'
+
+/**
+ * Directorio de los eventos: `Eo.join(Se(),"telemetry")` en el ejecutable de
+ * referencia (2.1.283, `Hn()` de `chunk-t6pwageh.js`) — subdirectorio fijo
+ * del hogar de configuración, no de `homedir()/.claude` a mano.
+ */
+export function resolveLocalTelemetryDir(env: Record<string, string | undefined> = process.env): string {
+  return resolveDataDir(LOCAL_TELEMETRY_DIR_ENV, LOCAL_TELEMETRY_DATA_SUBDIR, env)
+}
 
 let eventFilePath: string | null = null
 let eventFileDate: string | null = null
@@ -27,7 +48,7 @@ let eventFileDate: string | null = null
 function getEventFilePath(): string {
   const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
   if (eventFilePath && eventFileDate === today) return eventFilePath
-  const dir = join(homedir(), '.claude', 'telemetry')
+  const dir = resolveLocalTelemetryDir()
   try {
     mkdirSync(dir, { recursive: true, mode: 0o700 })
   } catch {
@@ -40,15 +61,14 @@ function getEventFilePath(): string {
 
 function writeEvent(name: string, metadata: EventMetadata): void {
   try {
-    const line =
-      JSON.stringify({
-        ts: new Date().toISOString(),
-        name,
-        metadata: metadata ?? {},
-      }) + '\n'
+    const line = JSON.stringify({
+      ts: new Date().toISOString(),
+      name,
+      metadata: metadata ?? {},
+    }) + '\n'
     appendFileSync(getEventFilePath(), line, { mode: 0o600 })
   } catch {
-    // best-effort; el logging nunca debe tumbar al llamador
+    // best-effort; never let telemetry crash the caller
   }
 }
 
@@ -63,9 +83,8 @@ function fileLogger(): Logger {
 }
 
 /**
- * Instala el logger de eventos de archivo local. Se llama desde el
- * bootstrap de app-host cuando el gate se satisface. Idempotente —
- * seguro de llamar varias veces.
+ * Install the local-file event logger. Called from app-host bootstrap when
+ * the gate is satisfied. Idempotent — safe to call multiple times.
  */
 export function installLocalEventLogger(
   override: Partial<LocalObservability> = {},
@@ -74,10 +93,10 @@ export function installLocalEventLogger(
 }
 
 /**
- * Si el gate de telemetría sólo-local está satisfecho. Helper puro para
- * que el llamador pueda elegir omitir la instalación por completo.
+ * Whether the local-only telemetry gate is satisfied. Pure helper so the
+ * caller can choose to skip installation entirely.
  */
 export function isLocalTelemetryEnabled(): boolean {
-  const v = process.env.CLAUDE_CODE_LOCAL_TELEMETRY
+  const v = process.env.THYROX_CODE_LOCAL_TELEMETRY
   return v === '1' || v === 'true'
 }

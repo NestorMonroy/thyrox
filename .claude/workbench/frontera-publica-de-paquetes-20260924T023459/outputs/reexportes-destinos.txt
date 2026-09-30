@@ -1,0 +1,15 @@
+src/packages/@ant/ink/src/hooks/use-input.ts
+src/packages/agent/agentDeps.ts
+src/packages/agent/attachments.ts
+src/packages/agent/compaction/compact.ts
+src/packages/agent/index.ts
+src/packages/agent/messages.ts
+src/packages/agent/messages/systemInit.ts
+src/packages/app-host/src/state/AppState.tsx
+src/packages/cli/src/index.ts
+src/packages/config/env/index.ts
+src/packages/config/plugin/_deps.ts
+src/packages/config/settings/settings.ts
+src/packages/config/settings/types.ts
+src/packages/swarm/src/adapters/appRuntime.ts
+src/packages/swarm/src/index.ts

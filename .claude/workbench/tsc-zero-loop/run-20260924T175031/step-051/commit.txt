@@ -1,0 +1,14 @@
+Port output-token limits and context percentages
+
+The status line, Doctor and the provider's cost tracker import
+getModelMaxOutputTokens and calculateContextPercentages from
+agent/context, which declared neither. They are ported from 2.1.275
+(T3, eKt). The output limits come from the vendored catalog by
+canonical name, so dated and [1m] names resolve too, with the fixed
+Claude 3 caps and a 32 000 / 128 000 fallback. The per-connection
+overrides and the remote per-model cap of the binary do not exist in
+this tree. The percentages count input plus both cache kinds against
+the window and clamp to 0..100.
+
+Annulled in turn, the canonicalization dropped its two tests and the
+clamp and the cache sum one each.

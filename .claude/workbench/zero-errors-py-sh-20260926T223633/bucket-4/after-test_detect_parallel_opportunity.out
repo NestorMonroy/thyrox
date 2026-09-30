@@ -1,0 +1,22 @@
+test_detect_parallel_opportunity:
+  ok    el bucle real del episodio avisa
+  ok    un while read con un comando externo por línea avisa
+  ok    xargs sin -P avisa
+  ok    un bucle de sólo builtins calla
+  ok    un bucle que escribe el índice de git calla (un solo escritor)
+  ok    una lista literal corta calla
+  ok    xargs -P ya es paralelo
+  ok    parallel ya es la forma, aunque la línea traiga un xargs
+  ok    xargs sin -n/-L/-I agrupa en una invocación y calla
+  ok    xargs agrupado aunque edite en sitio calla
+  ok    xargs -I corre uno por elemento y avisa
+  ok    xargs -L 1 corre uno por elemento y avisa
+  ok    un bucle que modifica un archivo común calla
+  ok    un bucle que modifica un archivo por elemento avisa
+  ok    tres elementos citados con espacios son una lista corta
+  ok    un bucle dentro de un heredoc calla
+  ok    tras el heredoc, un bucle real avisa
+  ok    otra herramienta no se mira
+  ok    sólo mira Bash
+  ok    el aviso nombra parallel y su -k (orden de salida)
+test_detect_parallel_opportunity: 20 ok, 0 fallos

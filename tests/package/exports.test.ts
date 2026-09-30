@@ -38,12 +38,11 @@
  * `src/index.ts`; thyrox no lo tiene, y fabricar uno para llenar la casilla
  * seria inventar un simbolo por simetria.
  *
- * Corregido 2026-09-07 — el bloque 2 media COBERTURA con la evidencia de FORMA
- * ------------------------------------------------------------------------
- * El bloque exigia `exports` igual a un diccionario con UNA entrada por cada
- * `.ts` de `src/`, y citaba como respaldo el «33 de 33» del precedente local.
- * Ese 33 de 33 mide como se DERIVA un subpath de su destino; no dice nada
- * sobre cuantos modulos llevan entrada. Una sola medicion sosteniendo dos
+ * El bloque 2 mide COBERTURA por resolucion, no por enumeracion
+ * -------------------------------------------------------------
+ * El «33 de 33» del precedente local mide como se DERIVA un subpath de su
+ * destino; no dice nada sobre cuantos modulos llevan entrada. Leerlo como
+ * respaldo de una entrada por `.ts` seria una sola medicion sosteniendo dos
  * afirmaciones — el sub-patron A de `metrica-decide-la-conclusion.md`.
  *
  * Medido en la fuente (`ccnmt`, 31 paquetes con manifiesto): NINGUNO declara
@@ -58,9 +57,8 @@
  * nadie sincroniza, que es lo que `calibration-verified-numbers.md` prohibe en
  * su corolario. El patron cubre por construccion y no puede quedarse atras.
  *
- * Lo que el bloque mide ahora es mas fuerte, no mas debil: no «los dos
- * diccionarios son iguales» sino «cada modulo resuelve A SI MISMO por el
- * mapa», con la semantica de resolucion de Node. Sigue cayendo si un modulo
+ * El bloque no mide «los dos diccionarios son iguales» sino «cada modulo
+ * resuelve A SI MISMO por el mapa», con la semantica de resolucion de Node. Sigue cayendo si un modulo
  * queda fuera de cobertura — verificado con el control de anulacion.
  *
  * Los 25 `index.ts` van explicitos porque el patron no los alcanza:

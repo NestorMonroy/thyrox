@@ -1,0 +1,2 @@
+error: Cannot find module '../../src/accounts/apiKeyProbe.ts' from '/home/user/thyrox/src/packages/provider/__tests__/accounts/apiKeyProbe.test.ts'
+ 1 fail

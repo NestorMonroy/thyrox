@@ -217,6 +217,15 @@ export class McpToolCallError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS extends T
  * Per the MCP spec, servers return 404 when a session ID is no longer valid.
  * We check both signals to avoid false positives from generic 404s (wrong URL, server gone, etc.).
  */
+/**
+ * ¿Las herramientas de este servidor se exponen sin el prefijo
+ * `mcp__servidor__`? Sólo un servidor del SDK, y sólo con
+ * `THYROX_AGENT_SDK_MCP_NO_PREFIX`.
+ */
+export function skipsMcpToolPrefix(configType: string | undefined): boolean {
+  return configType === 'sdk' && isEnvTruthy(process.env.THYROX_AGENT_SDK_MCP_NO_PREFIX)
+}
+
 export function isMcpSessionExpiredError(error: Error): boolean {
   const httpStatus =
     'code' in error ? (error as Error & { code?: number }).code : undefined
@@ -253,8 +262,9 @@ function getMcpToolTimeoutMs(): number {
 }
 
 import { isClaudeInChromeMCPServer } from '@thyrox/agent/claudeInChromeCommon.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
-// Lazy: toolRendering.tsx pulls React/ink; only needed when Claude-in-Chrome MCP server is connected
+// Lazy: toolRendering.tsx pulls React/ink; only needed when thyrox-in-Chrome MCP server is connected
 /* eslint-disable @typescript-eslint/no-require-imports */
 const claudeInChromeToolRendering =
   (): typeof import('@thyrox/agent/claudeInChrome/toolRendering.js') =>
@@ -670,8 +680,8 @@ export const connectToServer = memoize(
       } else if ((serverRef as ScopedMcpServerConfig).type === 'stdio' || !(serverRef as ScopedMcpServerConfig).type) {
         const stdioRef = serverRef as McpStdioServerConfig
         const finalCommand =
-          process.env.CLAUDE_CODE_SHELL_PREFIX || stdioRef.command
-        const finalArgs = process.env.CLAUDE_CODE_SHELL_PREFIX
+          process.env.THYROX_CODE_SHELL_PREFIX || stdioRef.command
+        const finalArgs = process.env.THYROX_CODE_SHELL_PREFIX
           ? [[stdioRef.command, ...stdioRef.args].join(' ')]
           : stdioRef.args
         transport = new StdioClientTransport({
@@ -711,8 +721,8 @@ export const connectToServer = memoize(
 
       const client = new Client(
         {
-          name: 'claude-code-how-works-how-works',
-          title: 'Claude Code',
+          name: 'claude-code',
+          title: `${PRODUCT_NAME}`,
           version: MACRO.VERSION ?? 'unknown',
           description: "Anthropic's agentic coding tool",
           websiteUrl: PRODUCT_URL,
@@ -1483,9 +1493,25 @@ export const fetchToolsForClient = memoizeWithLRU(
       const toolsToProcess = recursivelySanitizeUnicode(result.tools)
 
       // Check if we should skip the mcp__ prefix for SDK MCP servers
-      const skipPrefix =
-        client.config.type === 'sdk' &&
-        isEnvTruthy(process.env.CLAUDE_AGENT_SDK_MCP_NO_PREFIX)
+      const skipPrefix = skipsMcpToolPrefix(client.config.type)
+
+      // Estados de progreso del ciclo de vida de una llamada MCP que este
+      // archivo emite (inicio/fin/fallo), además del progreso reenviado por
+      // el SDK que ya modela `MCPProgress`.
+      type McpToolLifecycleProgress =
+        | {
+            type: 'mcp_progress'
+            status: 'started'
+            serverName: string
+            toolName: string
+          }
+        | {
+            type: 'mcp_progress'
+            status: 'completed' | 'failed'
+            serverName: string
+            toolName: string
+            elapsedTimeMs: number
+          }
 
       // Convert MCP tools to our Tool format
       return toolsToProcess
@@ -1560,7 +1586,7 @@ export const fetchToolsForClient = memoizeWithLRU(
               context,
               _canUseTool,
               parentMessage,
-              onProgress?: ToolCallProgress<MCPProgress>,
+              onProgress?: ToolCallProgress<MCPProgress | McpToolLifecycleProgress>,
             ) {
               const toolUseId = extractToolUseId(parentMessage)
               const meta = toolUseId
@@ -2275,9 +2301,10 @@ export async function executeTool(call: {
     args: call.input,
     meta: call.meta,
     signal,
-    setAppState: updater => {
-      void updater({ elicitation: { queue: [] } } as AppState)
-    },
+    // No-op: executeTool siempre pasa handleElicitation, así que la rama
+    // de cola de elicitation en modo REPL (dentro de callMCPToolWithUrlElicitationRetry)
+    // nunca invoca este updater.
+    setAppState: () => {},
     handleElicitation: async () => ({ action: 'cancel' }),
   })
 }
@@ -3106,8 +3133,8 @@ export async function setupSdkMcpClients(
 
       const client = new Client(
         {
-          name: 'claude-code-how-works-how-works',
-          title: 'Claude Code',
+          name: 'claude-code',
+          title: `${PRODUCT_NAME}`,
           version: MACRO.VERSION ?? 'unknown',
           description: "Anthropic's agentic coding tool",
           websiteUrl: PRODUCT_URL,

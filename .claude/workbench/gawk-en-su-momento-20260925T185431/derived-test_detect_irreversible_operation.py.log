@@ -1,0 +1,13 @@
+ok   test_asks_on_drop_or_truncate_sent_to_a_database_client
+ok   test_asks_on_force_push_but_not_on_lease
+ok   test_asks_on_git_clean_force
+ok   test_asks_on_git_reset_hard
+ok   test_asks_on_removing_a_root_home_or_git_dir
+ok   test_ignores_a_heredoc_body_written_to_a_file
+ok   test_ignores_tools_other_than_bash
+ok   test_measures_each_segment_of_a_compound_command
+ok   test_stays_silent_on_removing_a_scratch_path
+ok   test_stays_silent_when_drop_is_only_searched_for
+ok   test_the_notice_names_what_it_would_destroy
+
+11 caso(s); 0 fallo(s)

@@ -1,22 +1,15 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/productionWiring.test.ts`.
- *
- * Ejercita `AgentCore` con un `AgentDeps` que se acerca más a producción
- * que los mocks triviales de las otras suites: un provider de dos turnos
- * (uno con `tool_use`, otro con `end_turn`) y una herramienta `Echo` real
- * que el loop debe descubrir, ejecutar y reflejar en los eventos y en el
- * mensaje final de texto.
- */
 import { describe, test, expect, mock } from 'bun:test'
-import { AgentCore } from '../core/AgentCore.ts'
-import { createMockDeps } from './fixtures/mockDeps.ts'
+import { AgentCore } from '../core/AgentCore.js'
+import { createMockDeps } from './fixtures/mockDeps.js'
+import type { CoreMessage } from '../types/messages.js'
 
 describe('AgentCore production wiring', () => {
   test('runs through src/agent production adapters for tools and permissions', async () => {
     const echoTool = {
       name: 'Echo',
-      inputJSONSchema: {
-        type: 'object',
+      description: 'Repite el texto recibido',
+      inputSchema: {
+        type: 'object' as const,
         properties: {
           text: { type: 'string' },
         },
@@ -86,7 +79,7 @@ describe('AgentCore production wiring', () => {
       tools: {
         find: mock((name: string) => name === 'Echo' ? echoTool : undefined),
         list: mock(() => [echoTool]),
-        execute: mock(async (tool: { name: string }, input: { text: string }) =>
+        execute: mock(async (_tool: { name: string }, input: { text: string }) =>
           ({ output: `echo:${input.text}` }),
         ),
       },
@@ -99,7 +92,7 @@ describe('AgentCore production wiring', () => {
         })),
       },
       compaction: {
-        maybeCompact: mock(async (messages: unknown[]) => ({
+        maybeCompact: mock(async (messages: CoreMessage[]) => ({
           compacted: false,
           messages,
         })),

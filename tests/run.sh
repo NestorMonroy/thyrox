@@ -22,12 +22,13 @@
 # igual. Ese acoplamiento es el punto — es lo que hace del `--list` un
 # instrumento y no una promesa.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 # El checkout que contiene este runner es el sujeto. Una variable o un `.env`
 # heredado no puede redirigir la medición hacia otro clon.
 export THYROX_ROOT="$PWD"
-export THYROX_REACH_ROOT="$(dirname "$PWD")"
+THYROX_REACH_ROOT="$(dirname "$PWD")"
+export THYROX_REACH_ROOT
 
 # El lock de Python sólo gobierna si se usa su intérprete. Los fixtures
 # sintéticos del runner no tienen `.venv`, por eso conservan un fallback.
@@ -75,13 +76,39 @@ trap retirar_tmpdir EXIT
 
 # `node_modules` trae tests de terceros —198 de zod, medidos— que no son
 # nuestros: incluirlos inflaria el denominador con material que no mantenemos.
-descubrir_ts()     { find src tests -name '*.test.ts' -not -path '*/node_modules/*' | sort; }
+descubrir_ts()     { find src tests \( -name '*.test.ts' -o -name '*.test.tsx' \) -not -path '*/node_modules/*' | sort; }
 descubrir_python() { find tests -name 'test_*.py' -not -path '*/node_modules/*' | sort; }
 # `run-all.sh` y este mismo archivo son corredores, no pruebas; no empiezan por
 # `test` asi que el patron ya los excluye, y se declara para que se lea.
 descubrir_shell()  { find tests -name 'test*.sh' -not -path '*/node_modules/*' | sort; }
 
 only="${1:-}"
+
+# --- La huella del arbol: ¿cambio mientras se media? ------------------------
+#
+# Una suite larga mide un arbol que puede cambiar mientras corre: una edicion
+# del orquestador, un commit de otro escritor, el mutante que otra suite deja
+# a medias. Si el arbol del final no es el del principio, el veredicto no
+# corresponde a ningun estado: se sale 3 y se dice cual habria sido, en vez de
+# publicarlo como rojo o verde. Alcance y ceguera: `src/verify/tree_fingerprint.py`.
+huella() { "$PYTHON_BIN" -m verify.tree_fingerprint . 2>/dev/null; }
+HUELLA_INICIO=""
+case "$only" in
+  --list|--changed-list) ;;
+  *) HUELLA_INICIO="$(huella)" || echo "run.sh: sin huella del arbol; el veredicto no se podra atribuir" ;;
+esac
+veredicto_final() {
+  local code="$1" veredicto="$2" fin
+  fin="$(huella)"
+  if [ -n "$HUELLA_INICIO" ] && [ "$fin" != "$HUELLA_INICIO" ]; then
+    echo
+    echo "ÁRBOL MUTADO durante la medición: el veredicto no es atribuible a ningún estado."
+    echo "  habría sido: $veredicto"
+    echo "  (huella al empezar ${HUELLA_INICIO:0:12}, al terminar ${fin:0:12})"
+    exit 3
+  fi
+  exit "$code"
+}
 
 # --- `--changed`: el subconjunto DERIVADO, no la suite entera ---------------
 #
@@ -90,9 +117,9 @@ only="${1:-}"
 # comando: derivar el subconjunto costaba dos greps a mano, asi que lo barato
 # era lanzar todo.
 #
-# Medido el 2026-09-06 sobre un cambio de tres archivos: la suite completa
-# tardo 110 s y el subconjunto derivado 0.359 s —308x— y NINGUNO de los 97
-# rojos que publico venia del cambio. Ver :ref:`h-docs-1130`.
+# La suite completa sin baseline previo no atribuye sus rojos al cambio; el
+# subconjunto derivado si, y cuesta ordenes de magnitud menos. La medicion
+# que lo sostiene: :ref:`h-docs-1130`.
 #
 # Que deriva: los archivos que el arbol tiene tocados (sin publicar o sin
 # commitear) y, por cada uno, las suites que MENCIONAN su nombre de modulo.
@@ -154,11 +181,11 @@ if [ "$only" = "--changed" ] || [ "$only" = "--changed-list" ]; then
       *.py)      "$PYTHON_BIN" "$s" >/dev/null 2>&1 ;;
       *)         bash "$s" >/dev/null 2>&1 ;;
     esac
-    if [ $? -eq 0 ]; then echo "-- $s"; else echo "-- ROJO $s"; rojas=$((rojas+1)); fi
+    if [ $? -eq 0 ]; then echo "-- $s"; else echo "-- FAIL $s"; rojas=$((rojas+1)); fi
   done <<< "$derivadas"
   echo "== $rojas en rojo de $(printf '%s\n' "$derivadas" | wc -l) derivadas =="
-  [ "$rojas" -eq 0 ] || exit 1
-  exit 0
+  [ "$rojas" -eq 0 ] || veredicto_final 1 rojo
+  veredicto_final 0 verde
 fi
 
 if [ "$only" = "--list" ]; then
@@ -176,7 +203,10 @@ declare -a resumen=()
 if [ "$only" != "--python-only" ] && [ "$only" != "--shell-only" ]; then
   echo "== TypeScript (bun) =="
   mapfile -t suites_ts < <(descubrir_ts)
-  if bun test "${suites_ts[@]}"; then
+  # Un proceso de `bun test` por archivo (src/verify/run_ts_isolated.sh):
+  # `mock.module` es global al proceso y, con todos los archivos en uno, un
+  # archivo contaminaba a los siguientes hasta tumbar a Bun.
+  if printf '%s\n' "${suites_ts[@]}" | bash src/verify/run_ts_isolated.sh; then
     resumen+=("TypeScript: ${#suites_ts[@]} archivo(s), en verde")
   else
     failures=$((failures + 1))
@@ -185,60 +215,49 @@ if [ "$only" != "--python-only" ] && [ "$only" != "--shell-only" ]; then
   echo
 fi
 
+# measure_half <etiqueta> <interprete> <descubridor> — corre una mitad con
+# `src/verify/run_suites_isolated.sh`: un proceso por suite, repartidas con GNU
+# parallel y con tope por suite (`THYROX_SUITE_TIMEOUT`, `THYROX_SUITE_WIDTH`).
+# En serie y sin tope, una suite colgada deja la ejecucion entera esperando
+# para siempre; con el tope es un rojo con nombre.
+#
+# Exit 2 NO es rojo: es «rehuso, no emito veredicto» — el contrato que
+# `check_script_naming.py` y `tests/verify/test-pre-commit-docs.sh` usan cuando
+# falta su sujeto. Colapsarlo con el 1 hace que el corredor publique «la suite
+# fallo» donde lo cierto es «no habia con que medir», que es el sub-patron D
+# aplicado a este mismo archivo. Se cuentan aparte y NO suman a `failures`.
+measure_half() {
+  local label="$1" interpreter="$2"; shift 2
+  local suites output count failed unmeasured
+  suites="$("$@")"
+  count="$(printf '%s' "$suites" | gawk 'NF' | wc -l)"
+  failed=0; unmeasured=0
+  if [ "$count" -gt 0 ]; then
+    output="$(printf '%s\n' "$suites" \
+      | bash src/verify/run_suites_isolated.sh --interpreter "$interpreter")"
+    printf '%s\n' "$output" | gawk '!/^files=/'
+    failed="$(printf '%s\n' "$output" | gawk -F'failed=' '/^files=/{split($2,a," "); print a[1]}')"
+    unmeasured="$(printf '%s\n' "$output" | gawk -F'unmeasured=' '/^files=/{split($2,a," "); print a[1]}')"
+    # Sin la linea final el corredor no midio: rehuso o murio. No es un verde.
+    if [ -z "$failed" ]; then
+      echo "-- NO VERDICT: run_suites_isolated no publico su conteo"
+      failed="$count"; unmeasured=0
+    fi
+  fi
+  [ "$failed" -gt 0 ] && failures=$((failures + 1))
+  resumen+=("$label: $count suite(s), $failed en rojo, $unmeasured sin medir")
+  echo "  ($count suite(s) de $label, $failed en rojo, $unmeasured sin medir)"
+}
+
 if [ "$only" != "--ts-only" ] && [ "$only" != "--shell-only" ]; then
   echo "== Python (stdlib) =="
-  count=0
-  rojos_py=0
-  sin_medir_py=0
-  # Exit 2 NO es rojo, aqui tampoco: es «rehuso, no emito veredicto». La mitad
-  # de shell lo separa desde su primera version y esta lo colapsaba con el 1
-  # (`python3 "$suite" || ROJO`), asi que el corredor publicaba «la suite fallo»
-  # donde lo cierto era «no habia con que medir» — y ese rojo entraba al conteo
-  # que decide si la ejecucion entera falla. Las dos mitades miden el mismo
-  # contrato; que una lo honre y la otra no es el sub-patron D con el corredor
-  # como instrumento. Se cuentan aparte y NO suman a `failures`.
-  while IFS= read -r suite; do
-    count=$((count + 1))
-    # La mitad shell marca `-- ROJO <suite>` y esta sólo publicaba el conteo:
-    # once rojos sin nombre no se pueden triar. Misma forma que «un conteo sin
-    # denominador no es un resultado», un nivel más abajo.
-    echo "-- $suite"          # ANTES de correr: un cuelgue se atribuye
-    "$PYTHON_BIN" "$suite"
-    case $? in
-      0) ;;
-      2) sin_medir_py=$((sin_medir_py + 1)); echo "-- SIN MEDIR (exit 2) $suite" ;;
-      *) rojos_py=$((rojos_py + 1));         echo "-- ROJO $suite" ;;
-    esac
-  done < <(descubrir_python)
-  [ "$rojos_py" -gt 0 ] && failures=$((failures + 1))
-  resumen+=("Python: $count suite(s), $rojos_py en rojo, $sin_medir_py sin medir")
-  echo "  ($count suite(s) de Python, $rojos_py en rojo, $sin_medir_py sin medir)"
+  measure_half Python "$PYTHON_BIN" descubrir_python
   echo
 fi
 
 if [ "$only" != "--ts-only" ] && [ "$only" != "--python-only" ]; then
   echo "== shell (bash) =="
-  count=0
-  rojos_sh=0
-  sin_medir=0
-  # Exit 2 NO es rojo: es «rehuso, no emito veredicto» — el contrato que
-  # `check_script_naming.py` y `tests/verify/test-pre-commit-docs.sh` usan
-  # cuando falta su sujeto (el lexico, el clon hermano de kaupamex-docs).
-  # Colapsarlo con el 1 hace que el corredor publique «la suite fallo» donde
-  # lo cierto es «no habia con que medir», que es el sub-patron D aplicado a
-  # este mismo archivo. Se cuentan aparte y NO suman a `failures`.
-  while IFS= read -r suite; do
-    count=$((count + 1))
-    bash "$suite" >/dev/null 2>&1
-    case $? in
-      0) ;;
-      2) sin_medir=$((sin_medir + 1)); echo "-- SIN MEDIR (exit 2) $suite" ;;
-      *) rojos_sh=$((rojos_sh + 1));   echo "-- ROJO $suite" ;;
-    esac
-  done < <(descubrir_shell)
-  [ "$rojos_sh" -gt 0 ] && failures=$((failures + 1))
-  resumen+=("shell: $count suite(s), $rojos_sh en rojo, $sin_medir sin medir")
-  echo "  ($count suite(s) de shell, $rojos_sh en rojo, $sin_medir sin medir)"
+  measure_half shell bash descubrir_shell
 fi
 
 echo
@@ -248,7 +267,8 @@ for linea in "${resumen[@]}"; do echo "  $linea"; done
 if [ "$failures" -gt 0 ]; then
   echo
   echo "FALLA: $failures lengua(s) en rojo"
-  exit 1
+  veredicto_final 1 rojo
 fi
 echo
 echo "OK: las tres lenguas en verde"
+veredicto_final 0 verde

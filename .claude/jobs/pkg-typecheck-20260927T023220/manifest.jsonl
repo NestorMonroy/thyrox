@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check_package_typecheck --jobs 2 > .claude/workbench/frontera-publica-20260927T023207/package-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/package-typecheck.out", "started_at": "2026-09-27T02:32:20+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T02:37:21+00:00", "duration_seconds": 301.944702}

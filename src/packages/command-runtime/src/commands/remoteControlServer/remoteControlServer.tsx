@@ -148,7 +148,7 @@ function ServerManagementDialog({ onDone }: Props): React.ReactNode {
       <Box flexDirection="column" gap={1}>
         <Text>
           Remote Control Server is{' '}
-          <Text bold color="green">
+          <Text bold color="ansi:green">
             running
           </Text>
           {daemonProcess ? ` (PID: ${daemonProcess.pid})` : ''}

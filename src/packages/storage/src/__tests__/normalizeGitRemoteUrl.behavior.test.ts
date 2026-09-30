@@ -12,7 +12,7 @@ import { normalizeGitRemoteUrl } from '../git.ts'
  * Una normalización equivocada → el mismo repo se trata como distinto,
  * rompiendo:
  *   - El resume de sesión entre las formas de clon SSH/HTTPS
- *   - La configuración por-repo (búsqueda en la jerarquía CLAUDE.md,
+ *   - La configuración por-repo (búsqueda en la jerarquía THYROX.md,
  *     indexada por el id del repo)
  *   - La deduplicación de analítica (el mismo repo contado varias veces)
  *
@@ -20,8 +20,8 @@ import { normalizeGitRemoteUrl } from '../git.ts'
  */
 describe('normalizeGitRemoteUrl (derivación de identidad del repo)', () => {
   test('formato SSH → host/owner/repo (minúsculas)', () => {
-    expect(normalizeGitRemoteUrl('git@github.com:Anthropic/claude-code-how-works-how-works.git')).toBe(
-      'github.com/anthropic/claude-code-how-works-how-works',
+    expect(normalizeGitRemoteUrl('git@github.com:Anthropic/claude-code.git')).toBe(
+      'github.com/anthropic/claude-code',
     )
   })
 
@@ -32,8 +32,8 @@ describe('normalizeGitRemoteUrl (derivación de identidad del repo)', () => {
   })
 
   test('HTTPS → host/owner/repo (minúsculas, .git eliminado)', () => {
-    expect(normalizeGitRemoteUrl('https://github.com/Anthropic/claude-code-how-works-how-works.git')).toBe(
-      'github.com/anthropic/claude-code-how-works-how-works',
+    expect(normalizeGitRemoteUrl('https://github.com/Anthropic/claude-code.git')).toBe(
+      'github.com/anthropic/claude-code',
     )
   })
 

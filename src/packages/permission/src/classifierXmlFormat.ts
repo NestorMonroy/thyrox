@@ -27,8 +27,11 @@ import type { ClassifierUsage } from './permissionTypes.js'
  * Ahí la etapa 1 es el veredicto final, así que tiene que aplicar el conjunto
  * de reglas entero: no cabe el atajo de «ya lo mirará la etapa 2».
  */
+// Texto de 2.1.275 (`chunk-q2gh92k2.js`): el binario dejó de decir
+// «<block> immediately» y exige que la respuesta EMPIECE por `<block>`, sin
+// preámbulo.
 export const XML_S1_SUFFIX =
-  '\nErr on the side of blocking. <block> immediately.'
+  '\nErr on the side of blocking. Your ENTIRE response MUST begin with <block>. Do NOT output any analysis, reasoning, or commentary before <block>. No "Looking at..." or similar preamble.'
 
 /**
  * Sufijo de la etapa 1 en el modo de DOS etapas, que es el de por defecto.
@@ -41,8 +44,10 @@ export const XML_S1_SUFFIX =
  * Usar aquí el sufijo de una sola etapa es un defecto conocido: le pide a la
  * etapa 1 un juicio definitivo para el que no está equipada.
  */
+// Texto de 2.1.275: añade el juicio por el efecto completo de la acción, no
+// por su forma, y la misma exigencia de empezar por `<block>`.
 export const XML_S1_SUFFIX_BOTH =
-  '\nErr on the side of blocking. Stage 1 does NOT apply user intent or ALLOW exceptions — stage 2 will handle those. Block if ANY rule could apply. <block> immediately.'
+  '\nErr on the side of blocking. Stage 1 does NOT apply user intent or ALLOW exceptions — stage 2 will handle those. Judge the action by its full effect — what it runs, sends, publishes, or enables — not its surface form. Block if ANY rule could apply. Your ENTIRE response MUST begin with <block>. Do NOT output any analysis, reasoning, or commentary before <block>. No "Looking at..." or similar preamble.'
 
 /**
  * Sufijo de la etapa 2: pide razonamiento explícito antes del veredicto, y

@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+87 |     expect(modelHasCapability('claude-fable-5-1', 'fast_mode', 'claude-fable-5-1')).toBe(true)
+88 |   })
+89 | 
+90 |   test('sin anulación: el catálogo afirma o no decide', () => {
+91 |     expect(modelHasCapability('claude-opus-5', 'fast_mode', 'opus')).toBe(true)
+92 |     expect(modelHasCapability('claude-fable-5-1', 'fast_mode', 'fable')).toBeUndefined()
+                                                                              ^
+error: expect(received).toBeUndefined()
+
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:92:74)
+(fail) modelHasCapability ($h) > sin anulación: el catálogo afirma o no decide [0.31ms]
+ 97 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+ 98 |     expect(modelHasCapability('claude-fable-5-1[1m]', 'fast_mode', 'fable')).toBe(true)
+ 99 |     expect(asked).toEqual([['fast_mode', ['fable', 'claude-fable-5-1']]])
+100 |     expect(modelHasCapability('claude-fable-5-1', 'per_turn_effort', 'fable')).toBe(true)
+101 |     setFeatureGateLookup(() => false)
+102 |     expect(modelHasCapability('claude-haiku-4-5', 'per_turn_effort', 'haiku')).toBeUndefined()
+                                                                                     ^
+error: expect(received).toBeUndefined()
+
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:102:80)
+(fail) modelHasCapability ($h) > la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite [0.26ms]
+
+ 9 pass
+ 2 fail
+ 29 expect() calls
+Ran 11 tests across 1 file. [81.00ms]

@@ -1,11 +1,6 @@
 /**
- * Puerto FIEL y COMPLETO de
- * `ccnmt: packages/tool-registry/src/utils/lazySchema.ts` (TASK #232, porte
- * de `tool-registry`). Sin dependencias.
- *
- * Devuelve una factory memoizada que construye el valor en la primera
- * llamada. Se usa para diferir la construcción de esquemas Zod desde el
- * momento de inicialización del módulo hasta el primer acceso.
+ * Returns a memoized factory function that constructs the value on first call.
+ * Used to defer Zod schema construction from module init time to first access.
  */
 export function lazySchema<T>(factory: () => T): () => T {
   let cached: T | undefined

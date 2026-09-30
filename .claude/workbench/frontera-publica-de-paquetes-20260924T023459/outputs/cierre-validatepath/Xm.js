@@ -1,0 +1,1 @@
+function Xm(e,n){let r=te();if(Nn()){let h=e(r.testGlobalConfig);if(h===r.testGlobalConfig)return Promise.resolve(!0);return r.overwriteTestGlobalConfig(h),Promise.resolve(!0)}let s=Ec((h)=>{let y=e(h);if(y===h)return h;return{...y,projects:ts(h.projects,y.projects)}});if(yc(n,"saveGlobalConfig"))return Promise.resolve(!1);let g=Afe(r);return is(Ia(),()=>hfe(e,s,n,g))}

@@ -6,7 +6,7 @@
  *
  * TODO(#22051): pass useBundleMode once landed so local-only / uncommitted
  * repo state is captured. The GitHub-clone path (current) only works for
- * pushed branches on repos with the Claude GitHub app installed.
+ * pushed branches on repos with the thyrox GitHub app installed.
  */
 
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'
@@ -137,7 +137,7 @@ export async function launchRemoteReview(
   // consume at session creation routes billing: first N zero-rate, then
   // anthropic:cccr org-service-key (overage-only).
   if (!eligibility.eligible) {
-    const blockers = (eligibility as { eligible: false; errors: Array<{ type: string }> }).errors.filter(
+    const blockers = eligibility.errors.filter(
       e => e.type !== 'no_remote_environment',
     )
     if (blockers.length > 0) {
@@ -306,7 +306,7 @@ export async function launchRemoteReview(
   logEvent('tengu_review_remote_launched', {})
   const sessionUrl = getRemoteTaskSessionUrl(session.id)
   // Concise — the tool-output block is visible to the user, so the model
-  // shouldn't echo the same info. Just enough for Claude to acknowledge the
+  // shouldn't echo the same info. Just enough for thyrox to acknowledge the
   // launch without restating the target/URL (both already printed above).
   return [
     {

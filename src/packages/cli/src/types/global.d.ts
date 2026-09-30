@@ -4,17 +4,7 @@
  */
 
 // ============================================================================
-// MACRO — Bun compile-time constants injected via bunfig.toml [define] (dev)
-// and Bun.build({ define }) (production). See bunfig.toml & build.ts.
-declare namespace MACRO {
-  export const VERSION: string
-  export const BUILD_TIME: string
-  export const FEEDBACK_CHANNEL: string
-  export const ISSUES_EXPLAINER: string
-  export const NATIVE_PACKAGE_URL: string
-  export const PACKAGE_URL: string
-  export const VERSION_CHANGELOG: string
-}
+// MACRO — compartido por varios paquetes: vive en src/types/build-globals.d.ts.
 
 // ============================================================================
 // Internal Anthropic-only identifiers (dead-code eliminated in open-source)
@@ -38,8 +28,7 @@ declare const Gates: Record<string, boolean>
 declare function GateOverridesWarning(): JSX.Element | null
 declare function ExperimentEnrollmentNotice(): JSX.Element | null
 
-// Hook timing threshold (re-exported from services/tools/toolExecution.ts)
-declare const HOOK_TIMING_DISPLAY_THRESHOLD_MS: number
+// Hook timing threshold: se importa de @thyrox/tool-registry/services/hookTiming.js
 
 // Ultraplan (internal)
 declare function UltraplanChoiceDialog(props: Record<string, unknown>): JSX.Element | null
@@ -50,8 +39,7 @@ declare function launchUltraplan(...args: unknown[]): Promise<string>
 // (react/compiler-runtime emits compiled JSX that loses generic type params)
 declare type T = unknown
 
-// Tungsten (internal)
-declare function TungstenPill(props?: { key?: string; selected?: boolean }): JSX.Element | null
+// Tungsten (internal): declarado en su único usuario, repl/PromptInputFooterLeftSide.tsx
 
 // ============================================================================
 // Build-time constants BUILD_TARGET/BUILD_ENV/INTERFACE_TYPE — removed (zero runtime usage)
@@ -60,20 +48,4 @@ declare function TungstenPill(props?: { key?: string; selected?: boolean }): JSX
 // Ink custom JSX intrinsic elements — see src/types/ink-jsx.d.ts
 
 // ============================================================================
-// Bun text/file loaders — allow importing non-TS assets as strings
-declare module '*.md' {
-  const content: string
-  export default content
-}
-declare module '*.txt' {
-  const content: string
-  export default content
-}
-declare module '*.html' {
-  const content: string
-  export default content
-}
-declare module '*.css' {
-  const content: string
-  export default content
-}
+// Bun text/file loaders: declarados en src/types/build-globals.d.ts

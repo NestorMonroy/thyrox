@@ -1,0 +1,67 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+patron: regex-capture-group-possibly-undefined
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Con `noUncheckedIndexedAccess`, `match[n]` de un `RegExpMatchArray` se tipa `string | undefined` aunque el grupo de captura sea obligatorio en el patrón. Dentro del `if (m)` que ya confirma el match, usar `(m[n] ?? '<default>').metodo()` en vez de indexar directo — el default nunca se alcanza en la práctica porque el grupo siempre casa junto con `m`, pero satisface el tipo sin `!` ni cambiar la conducta.
+
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+patron: length-on-possibly-undefined-getter-stub
+senal_del_verificador: TS2532: Object is possibly 'undefined'\.
+fix_generico: Cuando un valor viene de un getter cuyo stub por defecto devuelve `undefined` (p. ej. `_getX: () => T | undefined = () => undefined`, sobreescrito luego por `setGetXFn` desde el host) y el sitio de uso accede a una propiedad como `.length` sin comprobar, se usa encadenamiento opcional con un valor por defecto que reproduce la semántica de 'vacío' que el stub ya representa: `(x()?.length ?? 0)` en vez de `x().length`. No cambia la conducta para el caso real (siempre poblado antes de esta llamada) y evita el crash latente del caso por defecto.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(184,36): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:174-194 ---
+    174        },
+    175        async execute(tool, input, toolContext) {
+    176          // Sin puerta de permisos inyectada, el default permite: la decisión de
+    177          // negar es del anfitrión, y fabricarla aquí la escondería.
+    178          const canUseTool = options.permissions?.canUseTool
+    179            ? async (
+    180                requestedTool: typeof tool,
+    181                requestedInput: unknown,
+    182                requestedContext: typeof toolContext,
+    183              ) => {
+    184>               const result = await options.permissions!.canUseTool(
+    185                  requestedTool,
+    186                  requestedInput,
+    187                  requestedContext,
+    188                )
+    189                return {
+    190                  behavior: result.allowed ? 'allow' : 'deny',
+    191                  message: result.reason,
+    192                  updatedInput: requestedInput,
+    193                }
+    194              }
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(205,30): error TS18046: 'tool' is of type 'unknown'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:195-215 ---
+    195            : async () => ({ behavior: 'allow' as const, updatedInput: input })
+    196  
+    197          if (!context) {
+    198            notImplemented('tools.execute without ToolUseContext')
+    199          }
+    200          const parentMessage = {
+    201            type: 'assistant',
+    202            message: { id: 'swarm-host-deps', content: [] },
+    203            uuid: '00000000-0000-0000-0000-000000000000',
+    204          } as const
+    205>         const result = await tool.call(
+    206            input as never,
+    207            context as ToolUseContext,
+    208            canUseTool as never,
+    209            parentMessage as never,
+    210          )
+    211          return { content: result.data, metadata: result.mcpMeta } as never
+    212        },
+    213        ...options.tools,
+    214      } satisfies HostToolRegistry,
+    215  

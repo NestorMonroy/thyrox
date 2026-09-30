@@ -1,0 +1,24 @@
+src/packages/repl/src/screens/REPLView.tsx(5050,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:5040-5060 ---
+   5040                  </Box>
+   5041                )}
+   5042                {process.env.USER_TYPE === 'ant' && <TungstenLiveMonitor />}
+   5043                {feature('WEB_BROWSER_TOOL') ? WebBrowserPanelModule && <WebBrowserPanelModule.WebBrowserPanel /> : null}
+   5044                <Box flexGrow={1} />
+   5045                {showSpinner && (
+   5046                  <SpinnerWithVerb
+   5047                    mode={streamMode}
+   5048                    spinnerTip={spinnerTip}
+   5049                    responseLengthRef={responseLengthRef}
+   5050>                   apiMetricsRef={apiMetricsRef}
+   5051                    overrideMessage={spinnerMessage}
+   5052                    spinnerSuffix={stopHookSpinnerSuffix}
+   5053                    verbose={verbose}
+   5054                    loadingStartTimeRef={loadingStartTimeRef}
+   5055                    totalPausedMsRef={totalPausedMsRef}
+   5056                    pauseStartTimeRef={pauseStartTimeRef}
+   5057                    overrideColor={spinnerColor}
+   5058                    overrideShimmerColor={spinnerShimmerColor}
+   5059                    hasActiveTools={inProgressToolUseIDs.size > 0}
+   5060                    leaderIsIdle={!isLoading}
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.

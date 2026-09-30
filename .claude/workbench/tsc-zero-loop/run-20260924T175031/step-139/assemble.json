@@ -1,0 +1,14 @@
+{
+ "applied": [
+  "clearDynamicSkills",
+  "discoverSkillDirsForPaths",
+  "getDynamicSkills",
+  "onDynamicSkillsLoaded",
+  "__declarations__:types"
+ ],
+ "rejected": {},
+ "missing": [
+  "activateConditionalSkillsForPaths",
+  "addSkillDirectories"
+ ]
+}

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+136 |   test('sin sesión interactiva, o con nombre derivado, sólo escribe', async () => {
+137 |     await runStartupNaming({ sessionNameArg: 'foo', interactive: false, writeName: (name, source) => context.writeName(name, 'sess', source) }, context)
+138 |     registered = { name: 'foo', source: 'derived' }
+139 |     await runStartupNaming({ interactive: true, writeName: (name, source) => context.writeName(name, 'sess', source) }, context)
+140 |     expect(writes).toEqual([['foo', 'sess', 'user']])
+141 |     expect(scheduled.length).toBe(0)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:141:30)
+(fail) runStartupNaming (Gkr) y scheduleNameRecheck (Vtn) > sin sesión interactiva, o con nombre derivado, sólo escribe [0.42ms]
+
+ 21 pass
+ 1 fail
+ 57 expect() calls
+Ran 22 tests across 1 file. [52.00ms]

@@ -14,7 +14,7 @@ import { resolve } from 'path'
  * una edición futura los haga regresar. Ver
  * `memory/project_automode_full_align_ant_2150_2026_05_27.md` y la fuente de
  * ant en
- * `bun-demincer/work/claude-code-how-works-how-works-2.1.150/resplit/{3149,4260}.js`.
+ * `bun-demincer/work/claude-code-2.1.150/resplit/{3149,4260}.js`.
  *
  * Por qué a nivel de fuente: bun:test corre con las feature flags APAGADAS
  * (TRANSCRIPT_CLASSIFIER está tras una puerta) y el camino del clasificador
@@ -55,8 +55,8 @@ describe('auto-mode classifier model (ant IZ7→F7: main-loop, not Haiku)', () =
     expect(fnSlice).not.toMatch(/return getSmallFastModel\(\)/)
   })
 
-  test('env override CLAUDE_CODE_AUTO_MODE_MODEL stays the escape hatch', () => {
-    expect(yoloClassifier).toMatch(/CLAUDE_CODE_AUTO_MODE_MODEL/)
+  test('env override THYROX_CODE_AUTO_MODE_MODEL stays the escape hatch', () => {
+    expect(yoloClassifier).toMatch(/THYROX_CODE_AUTO_MODE_MODEL/)
   })
 })
 
@@ -69,9 +69,11 @@ describe('two-stage classifier stage-1 suffix (ant Gp5: both→fp5, fast→Mp5)'
     expect(xmlFormat).toMatch(/Block if ANY rule could apply/)
   })
 
-  test('Mp5 (fast-only) suffix stays the terse immediate-block form', () => {
+  // 2.1.275 cambió el sufijo corto: ya no es «<block> immediately», sino la
+  // exigencia de empezar la respuesta por <block> (gana el binario).
+  test('fast-only suffix: la respuesta tiene que EMPEZAR por <block> (2.1.275)', () => {
     expect(xmlFormat).toMatch(
-      /XML_S1_SUFFIX = '\\nErr on the side of blocking\. <block> immediately\.'/,
+      /XML_S1_SUFFIX =\s*'\\nErr on the side of blocking\. Your ENTIRE response MUST begin with <block>\./,
     )
   })
 
@@ -114,7 +116,8 @@ describe('fallback-to-ask paths (ant xaH) — prompt, do not run the classifier'
     // `computeAutoModeFallback` devuelve null cuando sólo hay
     // `sandboxOverride`, para que llegue al clasificador; las tres razones que
     // merecen prompt devuelven una razón.
-    expect(classifierDecision).toMatch(/sandboxOverride alone/)
+    // El comentario de la fuente se tradujo; se ancla a su forma actual.
+    expect(classifierDecision).toMatch(/sandboxOverride por sí solo/)
     expect(classifierDecision).toMatch(/isSandboxOverride/)
     expect(classifierDecision).toMatch(
       /return \{ reason: 'safety_check' \}|reason: 'safety_check'/,

@@ -31,7 +31,6 @@ import {
   type PromptInputMode,
 } from '../textInputTypes.js'
 import {
-  type AgentMentionAttachment,
   createAttachmentMessage,
   getAttachmentMessages,
 } from '@thyrox/agent/attachments.js'
@@ -357,7 +356,7 @@ async function processUserInputBase(
     : []
   const imagePasteIds = imageContents.map(img => img.id)
 
-  // Store images to disk so Claude can reference the path in context
+  // Store images to disk so thyrox can reference the path in context
   // (for manipulation with CLI tools, uploading to PRs, etc.)
   const storedImagePaths = pastedContents
     ? await storeImages(pastedContents)
@@ -557,7 +556,7 @@ async function processUserInputBase(
     const trimmedInput = inputString.trim()
 
     const agentMention = attachmentMessages.find(
-      (m): m is AttachmentMessage<AgentMentionAttachment> =>
+      (m): m is AttachmentMessage =>
         m.attachment.type === 'agent_mention',
     )
 

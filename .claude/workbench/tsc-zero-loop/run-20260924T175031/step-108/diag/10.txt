@@ -1,0 +1,161 @@
+src/packages/agent/internal/cronSchedulerCore.ts(313,32): error TS2339: Property 'removeSessionCronTasks' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:303-323 ---
+    303          const newNext =
+    304            jitteredNextCronRunMs(t.cron, now, t.id, jitterCfg) ?? Infinity
+    305          nextFireAt.set(t.id, newNext)
+    306          // Persist lastFiredAt=now so next process spawn reconstructs this
+    307          // same newNext on first-sight. Session tasks skip — process-local.
+    308          if (!isSession) firedFileRecurring.push(t.id)
+    309        } else if (isSession) {
+    310          // One-shot (or aged-out recurring) session task: synchronous memory
+    311          // removal. No inFlight window — the next tick will read a session
+    312          // store without this id.
+    313>         getAgentHostBindings().removeSessionCronTasks?.([t.id])
+    314          nextFireAt.delete(t.id)
+    315        } else {
+    316          // One-shot (or aged-out recurring) file task: delete from disk.
+    317          // inFlight guards against double-fire during the async
+    318          // removeCronTasks + chokidar reload.
+    319          inFlight.add(t.id)
+    320          void removeCronTasks([t.id], dir)
+    321            .catch(e =>
+    322              getAgentHostBindings().logDebug?.(
+    323                `[ScheduledTasks] failed to remove task ${t.id}: ${e}`,
+src/packages/agent/internal/cronSchedulerCore.ts(361,46): error TS2339: Property 'getSessionCronTasks' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:351-371 ---
+    351              for (const id of firedFileRecurring) inFlight.delete(id)
+    352            })
+    353        }
+    354      }
+    355      // Session-only tasks: process-private, the lock does not apply — the
+    356      // other session cannot see them and there is no double-fire risk. Read
+    357      // fresh from bootstrap state every tick (no chokidar, no load()). This
+    358      // is skipped on the daemon path (`dir !== undefined`) which never
+    359      // touches bootstrap state.
+    360      if (dir === undefined) {
+    361>       for (const t of getAgentHostBindings().getSessionCronTasks?.() ?? []) process(t, true)
+    362      }
+    363  
+    364      if (seen.size === 0) {
+    365        // No live tasks this tick — clear the whole schedule so
+    366        // getNextFireTime() returns null. The eviction loop below is
+    367        // unreachable here (seen is empty), so stale entries would
+    368        // otherwise survive indefinitely and keep the daemon agent warm.
+    369        nextFireAt.clear()
+    370        return
+    371      }
+src/packages/agent/internal/cronSchedulerCore.ts(460,80): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:450-470 ---
+    450        // getScheduledTasksEnabled() would read a never-initialized flag. The
+    451        // daemon is asking to schedule; just enable.
+    452        if (dir !== undefined) {
+    453          getAgentHostBindings().logDebug?.(
+    454            `[ScheduledTasks] scheduler start() — dir=${dir}, hasTasks=${hasCronTasksSync(dir)}`,
+    455          )
+    456          void enable()
+    457          return
+    458        }
+    459        getAgentHostBindings().logDebug?.(
+    460>         `[ScheduledTasks] scheduler start() — enabled=${getAgentHostBindings().getScheduledTasksEnabled?.()}, hasTasks=${hasCronTasksSync()}`,
+    461        )
+    462        // Auto-enable when scheduled_tasks.json has entries. CronCreateTool
+    463        // also sets this when a task is created mid-session.
+    464        if (
+    465          !getAgentHostBindings().getScheduledTasksEnabled?.() &&
+    466          (assistantMode || hasCronTasksSync())
+    467        ) {
+    468          getAgentHostBindings().setScheduledTasksEnabled?.(true)
+    469        }
+    470        if (getAgentHostBindings().getScheduledTasksEnabled?.()) {
+src/packages/agent/internal/cronSchedulerCore.ts(465,33): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:455-475 ---
+    455          )
+    456          void enable()
+    457          return
+    458        }
+    459        getAgentHostBindings().logDebug?.(
+    460          `[ScheduledTasks] scheduler start() — enabled=${getAgentHostBindings().getScheduledTasksEnabled?.()}, hasTasks=${hasCronTasksSync()}`,
+    461        )
+    462        // Auto-enable when scheduled_tasks.json has entries. CronCreateTool
+    463        // also sets this when a task is created mid-session.
+    464        if (
+    465>         !getAgentHostBindings().getScheduledTasksEnabled?.() &&
+    466          (assistantMode || hasCronTasksSync())
+    467        ) {
+    468          getAgentHostBindings().setScheduledTasksEnabled?.(true)
+    469        }
+    470        if (getAgentHostBindings().getScheduledTasksEnabled?.()) {
+    471          void enable()
+    472          return
+    473        }
+    474        enablePoll = setInterval(
+    475          en => {
+src/packages/agent/internal/cronSchedulerCore.ts(468,32): error TS2339: Property 'setScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:458-478 ---
+    458        }
+    459        getAgentHostBindings().logDebug?.(
+    460          `[ScheduledTasks] scheduler start() — enabled=${getAgentHostBindings().getScheduledTasksEnabled?.()}, hasTasks=${hasCronTasksSync()}`,
+    461        )
+    462        // Auto-enable when scheduled_tasks.json has entries. CronCreateTool
+    463        // also sets this when a task is created mid-session.
+    464        if (
+    465          !getAgentHostBindings().getScheduledTasksEnabled?.() &&
+    466          (assistantMode || hasCronTasksSync())
+    467        ) {
+    468>         getAgentHostBindings().setScheduledTasksEnabled?.(true)
+    469        }
+    470        if (getAgentHostBindings().getScheduledTasksEnabled?.()) {
+    471          void enable()
+    472          return
+    473        }
+    474        enablePoll = setInterval(
+    475          en => {
+    476            if (getAgentHostBindings().getScheduledTasksEnabled?.()) void en()
+    477          },
+    478          CHECK_INTERVAL_MS,
+src/packages/agent/internal/cronSchedulerCore.ts(470,34): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:460-480 ---
+    460          `[ScheduledTasks] scheduler start() — enabled=${getAgentHostBindings().getScheduledTasksEnabled?.()}, hasTasks=${hasCronTasksSync()}`,
+    461        )
+    462        // Auto-enable when scheduled_tasks.json has entries. CronCreateTool
+    463        // also sets this when a task is created mid-session.
+    464        if (
+    465          !getAgentHostBindings().getScheduledTasksEnabled?.() &&
+    466          (assistantMode || hasCronTasksSync())
+    467        ) {
+    468          getAgentHostBindings().setScheduledTasksEnabled?.(true)
+    469        }
+    470>       if (getAgentHostBindings().getScheduledTasksEnabled?.()) {
+    471          void enable()
+    472          return
+    473        }
+    474        enablePoll = setInterval(
+    475          en => {
+    476            if (getAgentHostBindings().getScheduledTasksEnabled?.()) void en()
+    477          },
+    478          CHECK_INTERVAL_MS,
+    479          enable,
+    480        )
+src/packages/agent/internal/cronSchedulerCore.ts(476,38): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronSchedulerCore.ts:466-486 ---
+    466          (assistantMode || hasCronTasksSync())
+    467        ) {
+    468          getAgentHostBindings().setScheduledTasksEnabled?.(true)
+    469        }
+    470        if (getAgentHostBindings().getScheduledTasksEnabled?.()) {
+    471          void enable()
+    472          return
+    473        }
+    474        enablePoll = setInterval(
+    475          en => {
+    476>           if (getAgentHostBindings().getScheduledTasksEnabled?.()) void en()
+    477          },
+    478          CHECK_INTERVAL_MS,
+    479          enable,
+    480        )
+    481        enablePoll.unref?.()
+    482      },
+    483      stop() {
+    484        stopped = true
+    485        if (enablePoll) {
+    486          clearInterval(enablePoll)

@@ -1,0 +1,15 @@
+  ok    el asunto nombra el paso y los totales del pipeline
+  ok    lo que se commitea: lo conservado, el banco, sus jobs y la memoria de la ejecución
+  ok    dos commits: el paso y el trinquete
+  ok    el trinquete baja sólo el proyecto que el gate nombró
+  ok    lo que no conservó el paso ni es suyo queda fuera
+  ok    el informe del paso queda en su banco y en el commit
+  ok    empuja la rama actual a su upstream
+  ok    el resultado nombra los commits
+  ok    el cierre suelta el lock de commit del repo
+  ok    con el lock de otro, rehúsa nombrando a su dueño
+  ok    y no commitea nada
+  ok    sin informe del pipeline no hay cierre: rehúsa nombrándolo
+  ok    y no commitea nada
+  ok    un git que falla nombra su stderr: el cierre no calla la causa
+test_step_close: 14 aserciones — 14 ok, 0 falla(s)

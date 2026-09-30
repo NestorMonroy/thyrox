@@ -1,19 +1,13 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/statsCacheHelpers.test.ts`
- * (396 líneas fuente, 100 % portado). Sin dependencias de paquete
- * hermano — todos los símbolos bajo prueba son puros.
+ * Tests for statsCache pure helpers — drive incremental aggregation
+ * for the /stats display, /usage charts, and longest-session tracking.
  *
- * Tests de los helpers puros de statsCache — impulsan la agregación
- * incremental para el display de /stats, los gráficos de /usage, y el
- * tracking de la sesión más larga.
+ * Wrong merge math = misleading dashboards (e.g. "you've used 10x your
+ * actual tokens" or "longest session was 2s long because the merger
+ * compared timestamps not durations").
  *
- * Una matemática de merge equivocada = dashboards engañosos (p. ej. "has
- * usado 10x tus tokens reales" o "la sesión más larga duró 2s porque el
- * merger comparó timestamps, no duraciones").
- *
- * Los helpers de fecha sostienen los cálculos de racha — una comparación
- * "antes" equivocada implica que la sesión de ayer nunca cuenta hacia la
- * racha.
+ * Date helpers underpin streak calculations — wrong "before" comparison
+ * means yesterday's session never counts toward the streak.
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -21,47 +15,47 @@ import {
   mergeCacheWithNewStats,
   type PersistedStatsCache,
   toDateString,
-} from '../aggregates/statsCache.ts'
+} from '../aggregates/statsCache.js'
 
 describe('toDateString', () => {
-  test('extrae YYYY-MM-DD de un Date', () => {
+  test('extracts YYYY-MM-DD from a Date', () => {
     const d = new Date('2026-04-30T15:30:00Z')
     expect(toDateString(d)).toBe('2026-04-30')
   })
 
-  test('usa la fecha UTC (no local)', () => {
-    // El mismo instante en UTC y hora local puede diferir por un día.
-    // toISOString() siempre da UTC.
+  test('uses UTC date (not local)', () => {
+    // Same instant in UTC and local time may differ by a day.
+    // toISOString() always yields UTC.
     const d = new Date('2026-04-30T23:59:59.999Z')
     expect(toDateString(d)).toBe('2026-04-30')
   })
 
-  test('lanza con un Date inválido (toISOString devuelve "Invalid Date")', () => {
+  test('throws on invalid Date (toISOString returns "Invalid Date")', () => {
     const invalid = new Date('not a date')
     expect(() => toDateString(invalid)).toThrow()
   })
 })
 
 describe('isDateBefore', () => {
-  test('fecha anterior < fecha posterior → true', () => {
+  test('earlier date < later date → true', () => {
     expect(isDateBefore('2026-04-29', '2026-04-30')).toBe(true)
   })
 
-  test('misma fecha → false', () => {
+  test('same date → false', () => {
     expect(isDateBefore('2026-04-30', '2026-04-30')).toBe(false)
   })
 
-  test('fecha posterior → false', () => {
+  test('later date → false', () => {
     expect(isDateBefore('2026-05-01', '2026-04-30')).toBe(false)
   })
 
-  test('la comparación lexicográfica funciona sobre YYYY-MM-DD', () => {
-    // Los strings YYYY-MM-DD ordenan igual que las fechas reales.
+  test('lexicographic comparison works on YYYY-MM-DD', () => {
+    // YYYY-MM-DD strings sort the same as actual dates.
     expect(isDateBefore('2025-12-31', '2026-01-01')).toBe(true)
     expect(isDateBefore('2026-01-01', '2025-12-31')).toBe(false)
   })
 
-  test('fronteras de mes distintas', () => {
+  test('different month boundaries', () => {
     expect(isDateBefore('2026-04-30', '2026-05-01')).toBe(true)
     expect(isDateBefore('2026-04-01', '2026-04-30')).toBe(true)
   })
@@ -101,8 +95,8 @@ const sampleUsage = () => ({
   maxOutputTokens: 8_192,
 })
 
-describe('mergeCacheWithNewStats — merge vacío', () => {
-  test('caché vacío + stats nuevas vacías → caché vacío con lastComputedDate actualizado', () => {
+describe('mergeCacheWithNewStats — empty merge', () => {
+  test('empty cache + empty new stats → empty cache with updated lastComputedDate', () => {
     const result = mergeCacheWithNewStats(emptyCache(), emptyNewStats(), '2026-04-30')
     expect(result.lastComputedDate).toBe('2026-04-30')
     expect(result.totalSessions).toBe(0)
@@ -110,15 +104,15 @@ describe('mergeCacheWithNewStats — merge vacío', () => {
     expect(result.longestSession).toBeNull()
   })
 
-  test('lastComputedDate siempre se sobreescribe (no se mezcla)', () => {
+  test('lastComputedDate always overwritten (not merged)', () => {
     const cache = { ...emptyCache(), lastComputedDate: '2026-04-29' }
     const result = mergeCacheWithNewStats(cache, emptyNewStats(), '2026-04-30')
     expect(result.lastComputedDate).toBe('2026-04-30')
   })
 })
 
-describe('mergeCacheWithNewStats — merge de actividad diaria', () => {
-  test('días nuevos se agregan, la salida sale ordenada ascendente', () => {
+describe('mergeCacheWithNewStats — daily activity merge', () => {
+  test('new days appended, output sorted ascending', () => {
     const cache = {
       ...emptyCache(),
       dailyActivity: [
@@ -143,7 +137,7 @@ describe('mergeCacheWithNewStats — merge de actividad diaria', () => {
     ])
   })
 
-  test('merge de la misma fecha: los conteos se SUMAN', () => {
+  test('same-date merge: counts SUMMED', () => {
     const cache = {
       ...emptyCache(),
       dailyActivity: [
@@ -170,8 +164,8 @@ describe('mergeCacheWithNewStats — merge de actividad diaria', () => {
   })
 })
 
-describe('mergeCacheWithNewStats — tokens diarios por modelo', () => {
-  test('tokens de modelo nuevos para una fecha nueva se insertan', () => {
+describe('mergeCacheWithNewStats — daily model tokens', () => {
+  test('new model tokens for new date inserted', () => {
     const result = mergeCacheWithNewStats(
       emptyCache(),
       {
@@ -189,7 +183,7 @@ describe('mergeCacheWithNewStats — tokens diarios por modelo', () => {
     })
   })
 
-  test('misma fecha + mismo modelo: los conteos de tokens se SUMAN', () => {
+  test('same date + same model: token counts SUMMED', () => {
     const cache = {
       ...emptyCache(),
       dailyModelTokens: [
@@ -209,7 +203,7 @@ describe('mergeCacheWithNewStats — tokens diarios por modelo', () => {
     expect(result.dailyModelTokens[0]?.tokensByModel['claude-opus']).toBe(1200)
   })
 
-  test('misma fecha + modelo distinto: se guardan lado a lado', () => {
+  test('same date + different model: kept side-by-side', () => {
     const cache = {
       ...emptyCache(),
       dailyModelTokens: [
@@ -233,8 +227,8 @@ describe('mergeCacheWithNewStats — tokens diarios por modelo', () => {
   })
 })
 
-describe('mergeCacheWithNewStats — uso de modelo', () => {
-  test('modelo nuevo se agrega cuando no está en el caché', () => {
+describe('mergeCacheWithNewStats — model usage', () => {
+  test('new model added when not in cache', () => {
     const result = mergeCacheWithNewStats(
       emptyCache(),
       {
@@ -246,7 +240,7 @@ describe('mergeCacheWithNewStats — uso de modelo', () => {
     expect(result.modelUsage['claude-opus']).toEqual(sampleUsage())
   })
 
-  test('uso de modelo existente se SUMA para campos aditivos', () => {
+  test('existing model usage SUMMED for additive fields', () => {
     const cache = {
       ...emptyCache(),
       modelUsage: { 'claude-opus': sampleUsage() },
@@ -266,8 +260,8 @@ describe('mergeCacheWithNewStats — uso de modelo', () => {
     expect(merged.costUSD).toBe(0.02)
   })
 
-  test('contextWindow + maxOutputTokens usan Math.max (no suma)', () => {
-    // Documentado: los límites no se suman — se conserva el mayor.
+  test('contextWindow + maxOutputTokens use Math.max (not sum)', () => {
+    // Documented: limits don't add up — keep the larger.
     const cache = {
       ...emptyCache(),
       modelUsage: {
@@ -290,8 +284,8 @@ describe('mergeCacheWithNewStats — uso de modelo', () => {
   })
 })
 
-describe('mergeCacheWithNewStats — conteos por hora', () => {
-  test('conteos de hora nuevos se agregan', () => {
+describe('mergeCacheWithNewStats — hour counts', () => {
+  test('new hour counts added', () => {
     const result = mergeCacheWithNewStats(
       emptyCache(),
       { ...emptyNewStats(), hourCounts: { 9: 5, 14: 10 } },
@@ -300,7 +294,7 @@ describe('mergeCacheWithNewStats — conteos por hora', () => {
     expect(result.hourCounts).toEqual({ 9: 5, 14: 10 })
   })
 
-  test('conteos de hora existentes se SUMAN', () => {
+  test('existing hour counts SUMMED', () => {
     const cache = { ...emptyCache(), hourCounts: { 9: 5 } }
     const result = mergeCacheWithNewStats(
       cache,
@@ -311,8 +305,8 @@ describe('mergeCacheWithNewStats — conteos por hora', () => {
   })
 })
 
-describe('mergeCacheWithNewStats — agregados de sesión', () => {
-  test('totalSessions + totalMessages se SUMAN', () => {
+describe('mergeCacheWithNewStats — session aggregates', () => {
+  test('totalSessions + totalMessages SUMMED', () => {
     const cache = { ...emptyCache(), totalSessions: 10, totalMessages: 100 }
     const result = mergeCacheWithNewStats(
       cache,
@@ -329,7 +323,7 @@ describe('mergeCacheWithNewStats — agregados de sesión', () => {
     expect(result.totalMessages).toBe(115)
   })
 
-  test('longestSession se toma de las stats nuevas cuando es más larga', () => {
+  test('longestSession picked from new stats when longer', () => {
     const cache = {
       ...emptyCache(),
       longestSession: { sessionId: 'old', duration: 1000, messageCount: 5, timestamp: '2026-04-29T10:00:00Z' },
@@ -348,7 +342,7 @@ describe('mergeCacheWithNewStats — agregados de sesión', () => {
     expect(result.longestSession?.duration).toBe(5000)
   })
 
-  test('longestSession se conserva del caché cuando su valor es más largo', () => {
+  test('longestSession kept from cache when cache value is longer', () => {
     const cache = {
       ...emptyCache(),
       longestSession: { sessionId: 'old', duration: 9999, messageCount: 5, timestamp: '2026-04-29T10:00:00Z' },
@@ -366,7 +360,7 @@ describe('mergeCacheWithNewStats — agregados de sesión', () => {
     expect(result.longestSession?.sessionId).toBe('old')
   })
 
-  test('firstSessionDate usa el timestamp más temprano visto', () => {
+  test('firstSessionDate uses earliest timestamp seen', () => {
     const cache = { ...emptyCache(), firstSessionDate: '2026-04-30T10:00:00Z' }
     const result = mergeCacheWithNewStats(
       cache,
@@ -381,7 +375,7 @@ describe('mergeCacheWithNewStats — agregados de sesión', () => {
     expect(result.firstSessionDate).toBe('2026-04-25T10:00:00Z')
   })
 
-  test('totalSpeculationTimeSavedMs se SUMA', () => {
+  test('totalSpeculationTimeSavedMs SUMMED', () => {
     const cache = { ...emptyCache(), totalSpeculationTimeSavedMs: 1000 }
     const result = mergeCacheWithNewStats(
       cache,
@@ -392,11 +386,11 @@ describe('mergeCacheWithNewStats — agregados de sesión', () => {
   })
 })
 
-describe('mergeCacheWithNewStats — versión', () => {
-  test('result.version siempre usa la versión actual del caché', () => {
-    // Los cachés viejos migrados tendrán su versión fijada al cargar,
-    // pero el merger siempre emite la versión de schema más reciente.
+describe('mergeCacheWithNewStats — version', () => {
+  test('result.version always uses the current cache version', () => {
+    // Older caches that get migrated will have their version set on
+    // load, but the merger always emits the latest schema version.
     const result = mergeCacheWithNewStats(emptyCache(), emptyNewStats(), '2026-04-30')
-    expect(result.version).toBe(3) // constante STATS_CACHE_VERSION
+    expect(result.version).toBe(3) // STATS_CACHE_VERSION constant
   })
 })

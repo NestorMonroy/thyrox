@@ -1,0 +1,21 @@
+== 1: el JWT de cuatro partes
+   (src/accounts/jwtPayload.ts)
+(fail) jwt payload > anything else is null: another shape, a non-object body, garbage or not a string [0.31ms]
+ 39 pass
+ 1 fail
+== 2: un arreglo como cuerpo
+   (src/accounts/jwtPayload.ts)
+(fail) jwt payload > anything else is null: another shape, a non-object body, garbage or not a string [0.30ms]
+ 39 pass
+ 1 fail
+== restaurado
+ M src/packages/provider/src/accounts/grok/grokTokens.ts
+ M src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+ M src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+?? src/packages/provider/src/accounts/imports/cliAuthFileExport.ts
+?? src/packages/provider/src/accounts/imports/codexAuthFile.ts
+?? src/packages/provider/src/accounts/imports/codexAuthImport.ts
+?? src/packages/provider/src/accounts/jwtPayload.ts
+ 40 pass
+ 0 fail
+__BG_EXIT__=0

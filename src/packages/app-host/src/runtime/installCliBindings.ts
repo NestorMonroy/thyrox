@@ -1,50 +1,54 @@
 /**
  * Adaptación de @claude-code-how-works/app-host: src/runtime/installCliBindings.ts.
- * Capa 1 tramo B — porte FIEL de la lógica; importaciones DECLARADAS
- * COLGANTES, sin traducir y sin stub.
  *
- * La fuente instala tres bindings del paquete `cli`
- * (`createHeadlessStore`, `runHeadless`, `getStructuredIO`) leyendo su
- * implementación real de dos paquetes hermanos:
+ * Instala tres bindings del host CLI (`createHeadlessStore`, `runHeadless`,
+ * `getStructuredIO`) leyendo su implementación real de `@thyrox/cli` y de
+ * `@thyrox/agent/sessionStores.js` (`createHeadlessSessionStore`,
+ * `HeadlessStoreParams`).
  *
- *   - `@claude-code-how-works/cli` (`installCliHostBindings`,
- *     `HeadlessStoreParams`), `/cli/print.js` (`runHeadless`) y
- *     `/cli/structuredIOHelper.js` (`getStructuredIO`) — el paquete `cli`
- *     NO existe en este árbol.
- *   - `@claude-code-how-works/agent/sessionStores.js`
- *     (`createHeadlessSessionStore`) — `@thyrox/agent` SÍ existe, pero su
- *     `package.json` (`exports`) no expone ningún `sessionStores.js`; el
- *     módulo tampoco está portado en `src/packages/agent/`. Mismo
- *     criterio que `agent/internal/macroFallback.ts` fija para
- *     `@claude-code-how-works/config/env`: la ausencia del PAQUETE no es
- *     lo que se declara — es la ausencia del MÓDULO/EXPORT concreto.
+ * Cada símbolo de `@thyrox/cli` se importa por su propia ruta
+ * (`host.js`, `print.js`, `structuredIOHelper.js`), nunca por el barrel `.`
+ * (`cli/src/index.ts`). El barrel reexporta el punto de entrada de
+ * `entry/run-cli.js`, que encadena `entry/run-program.js` ->
+ * `commands/mitm-commands.js`: importarlo arrastraría el despacho de
+ * comandos entero de la CLI y el paquete `@thyrox/mitm` sólo para instalar
+ * unos enlaces. `installCliHostBindings` se importa de `./host.js`, el
+ * export propio de `cli/src/host.ts`: el mismo patrón que `runtimeHostSetup.js`
+ * sigue en `@thyrox/bridge` y `@thyrox/mcp-runtime`.
  *
- * Ninguno de los cuatro símbolos se stubea localmente: el import queda
- * literal, pinneado contra la fuente. La función y su guard
- * (`cliBindingsInstalled`) se portan verbatim porque son la única parte
- * de este archivo con lógica propia — el resto es wiring puro hacia
- * bindings ausentes.
- *
- * El auto-run `installCliBindings()` al final del módulo (igual que la
- * fuente) es lo que hace este archivo NO TESTEABLE: como side-effect de
- * módulo llama de inmediato a `installCliHostBindings`, que no existe.
- * Aun sin ese auto-run, los cuatro imports estáticos ya agotan la
- * resolución de módulos antes de que corra cualquier código.
- *
- * Sin test: no hay forma de importar este archivo sin que la resolución
- * de módulos falle en la primera línea de import de valor. Mismo estado
- * que `installBridgeBindings.ts`/`installMcpRuntimeBindings.ts`
- * (hermanos en este directorio) y que los tres binding-installers ya
- * portados sin suite (`installCommandRuntimeBindings.ts`,
- * `installProviderBindings.ts`, `installToolRegistryBindings.ts`).
+ * `installCliBindingsImports.test.ts` mide el grafo de módulos en runtime
+ * (`require.cache`) tras cargar este archivo: ninguna entrada corresponde a
+ * `cli/src/index.ts` ni a `@thyrox/mitm`.
  */
-import {
-  installCliHostBindings,
-  type HeadlessStoreParams,
-} from '@thyrox/cli'
+import { installCliHostBindings } from '@thyrox/cli/host.js'
 import { runHeadless } from '@thyrox/cli/print.js'
 import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
-import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+import { createHeadlessSessionStore, type HeadlessSessionStore, type HeadlessStoreParams } from '@thyrox/agent/sessionStores.js'
+import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
+import { onRefusalFallbackRestored } from '../state/refusalFallbackRestore.js'
+import type { AppState } from './appStateCompatShim.js'
+
+/**
+ * `b8r` YA NO es sólo esto: el `b8r(() => {_r = void 0})` literal de 2.1.283
+ * (`chunk-ycnq45th.js`) está portado en `run-streaming.ts`
+ * (`onRefusalFallbackRestored` limpia `activeUserSpecifiedModel`, el espejo
+ * real de `_r`). Esta función es OTRO consumidor de la misma señal, no un
+ * sustituto: `subscribeRefusalFallbackReset` sólo está cableado al AppState
+ * interactivo (`app-host/runtime/bootstrap.ts`), y el store que
+ * `createHeadlessSessionStore` construye para el SDK headless / `-p` mode
+ * (`agent/sessionStores.ts`) es un `AppState` propio y separado — nada más
+ * limpia su `mainLoopModelForSession` cuando la restauración ocurre. Sigue
+ * siendo necesaria mientras ese store exista y nadie la reemplace por
+ * `subscribeRefusalFallbackReset` cableado directamente a él. Exportada
+ * aparte para medirla sin pasar por `installCliHostBindings`.
+ */
+export function wireRefusalFallbackRestoreForHeadlessStore(
+  store: HeadlessSessionStore,
+): () => void {
+  return onRefusalFallbackRestored(() => {
+    store.setState(prev => ({ ...prev, mainLoopModelForSession: null }))
+  })
+}
 
 let cliBindingsInstalled = false
 
@@ -52,10 +56,18 @@ export function installCliBindings(): void {
   if (cliBindingsInstalled) return
 
   installCliHostBindings({
-    createHeadlessStore: params =>
-      createHeadlessSessionStore(params as HeadlessStoreParams),
+    createHeadlessStore: params => {
+      const store = createHeadlessSessionStore(params as HeadlessStoreParams, onChangeAppState)
+      wireRefusalFallbackRestoreForHeadlessStore(store)
+      return {
+        getState: () => store.getState(),
+        // Lo que llega es el actualizador de `setAppState`; el store lo aplica.
+        setState: (...args: unknown[]) =>
+          store.setState(args[0] as (prev: AppState) => AppState),
+      }
+    },
     runHeadless: (...args) =>
-      runHeadless(...(args as Parameters<typeof runHeadless>)),
+      runHeadless(...(args as Parameters<typeof runHeadless>)) as Promise<void>,
     getStructuredIO,
   })
 

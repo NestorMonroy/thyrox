@@ -1,0 +1,11 @@
+app-host: emitio pese a 63 errores (63 propio(s))
+binary: OK
+cli: emitio pese a 82 errores (82 propio(s))
+computer-use-mcp: emitio pese a 17 errores (17 propio(s))
+daemon: emitio pese a 16 errores (16 propio(s))
+local-observability: OK
+task: OK
+tools: OK
+
+emit_declarations: 8 paquete(s) medido(s), 178 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

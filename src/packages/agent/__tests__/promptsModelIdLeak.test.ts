@@ -1,18 +1,14 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/promptsModelIdLeak.test.ts`.
- *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente arma un `beforeAll` que
- * instala `installConfigHostBindings(new InMemoryConfig().bindings)` porque
- * su `prompts.ts` completo llama `getInitialSettings()` (via
- * `getAPIProvider()`, para el caso `foundry` de `getMarketingNameForModel`).
- * El porte MINIMO de `computeEnvInfo`/`computeSimpleEnvInfo` en
- * `../prompts.js` no llama a ningun host binding de config — resuelve
- * marca y corte de conocimiento contra el catalogo vendorizado local
- * (`../models.ts`) — asi que el `beforeAll` no tiene nada que instalar
- * aqui y se omite. Los cinco casos de la fuente se conservan verbatim.
- */
-import { describe, expect, test } from 'bun:test'
+import { beforeAll, describe, expect, test } from 'bun:test'
+import { installConfigHostBindings } from '@thyrox/config'
+import { InMemoryConfig } from '@thyrox/config/testing'
 import { computeEnvInfo, computeSimpleEnvInfo } from '../prompts.js'
+
+beforeAll(() => {
+  // prompts.ts pulls in getInitialSettings() (via getAPIProvider) which
+  // requires the config host bindings to be installed before any settings
+  // read. Use the in-memory binding so the test is hermetic.
+  installConfigHostBindings(new InMemoryConfig().bindings)
+})
 
 /**
  * Contract test: the system-prompt env info must never carry the

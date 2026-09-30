@@ -25,16 +25,16 @@ import {
 } from '@thyrox/app-host/bootstrap/state.js'
 import { isTodoV2Enabled } from '../tasks.ts'
 
-const PREVIO = process.env.CLAUDE_CODE_ENABLE_TASKS
+const PREVIO = process.env.THYROX_CODE_ENABLE_TASKS
 
 beforeEach(() => {
   resetStateForTests()
-  delete process.env.CLAUDE_CODE_ENABLE_TASKS
+  delete process.env.THYROX_CODE_ENABLE_TASKS
 })
 
 afterEach(() => {
-  if (PREVIO === undefined) delete process.env.CLAUDE_CODE_ENABLE_TASKS
-  else process.env.CLAUDE_CODE_ENABLE_TASKS = PREVIO
+  if (PREVIO === undefined) delete process.env.THYROX_CODE_ENABLE_TASKS
+  else process.env.THYROX_CODE_ENABLE_TASKS = PREVIO
 })
 
 describe('isTodoV2Enabled — 4 casos', () => {
@@ -51,7 +51,7 @@ describe('isTodoV2Enabled — 4 casos', () => {
   test('8. la variable de entorno lo fuerza aunque no sea interactiva', () => {
     setIsInteractive(false)
     for (const valor of ['1', 'true', 'yes', 'on', 'TRUE']) {
-      process.env.CLAUDE_CODE_ENABLE_TASKS = valor
+      process.env.THYROX_CODE_ENABLE_TASKS = valor
       expect(isTodoV2Enabled()).toBe(true)
     }
   })
@@ -61,7 +61,7 @@ describe('isTodoV2Enabled — 4 casos', () => {
     // cadena '0' sería verdadera y habilitaría los útiles al revés de lo pedido.
     setIsInteractive(false)
     for (const valor of ['0', 'false', 'no', 'off', '']) {
-      process.env.CLAUDE_CODE_ENABLE_TASKS = valor
+      process.env.THYROX_CODE_ENABLE_TASKS = valor
       expect(isTodoV2Enabled()).toBe(false)
     }
   })

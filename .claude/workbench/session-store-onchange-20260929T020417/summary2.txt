@@ -1,0 +1,3 @@
+build agent exit=0 errors=0
+tsc app-host exit=0 errors=0
+tsc provider exit=2 errors=2

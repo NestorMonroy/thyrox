@@ -3,7 +3,7 @@ import { basename, dirname, join } from 'path'
 
 import { getOriginalCwd, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
@@ -19,7 +19,7 @@ const recordingState: { filePath: string | null; timestamp: number } = {
 
 /**
  * Get the asciicast recording file path.
- * For ants with CLAUDE_CODE_TERMINAL_RECORDING=1: returns a path.
+ * For ants with THYROX_CODE_TERMINAL_RECORDING=1: returns a path.
  * Otherwise: returns null.
  * The path is computed once and cached in recordingState.
  */
@@ -30,12 +30,12 @@ export function getRecordFilePath(): string | null {
   if (process.env.USER_TYPE !== 'ant') {
     return null
   }
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_TERMINAL_RECORDING)) {
+  if (!isEnvTruthy(process.env.THYROX_CODE_TERMINAL_RECORDING)) {
     return null
   }
   // Record alongside the transcript.
   // Each launch gets its own file so --continue produces multiple recordings.
-  const projectsDir = join(getClaudeConfigHomeDir(), 'projects')
+  const projectsDir = join(getConfigHomeDir(), 'projects')
   const projectDir = join(projectsDir, sanitizePath(getOriginalCwd()))
   recordingState.timestamp = Date.now()
   recordingState.filePath = join(
@@ -56,7 +56,7 @@ export function _resetRecordingStateForTesting(): void {
  */
 export function getSessionRecordingPaths(): string[] {
   const sessionId = getSessionId()
-  const projectsDir = join(getClaudeConfigHomeDir(), 'projects')
+  const projectsDir = join(getConfigHomeDir(), 'projects')
   const projectDir = join(projectsDir, sanitizePath(getOriginalCwd()))
   try {
     // eslint-disable-next-line custom-rules/no-sync-fs -- called during /share before upload, not in hot path
@@ -86,7 +86,7 @@ export async function renameRecordingForSession(): Promise<void> {
   if (!oldPath || recordingState.timestamp === 0) {
     return
   }
-  const projectsDir = join(getClaudeConfigHomeDir(), 'projects')
+  const projectsDir = join(getConfigHomeDir(), 'projects')
   const projectDir = join(projectsDir, sanitizePath(getOriginalCwd()))
   const newPath = join(
     projectDir,
@@ -195,8 +195,8 @@ export function installAsciicastRecorder(): void {
   ) as typeof process.stdout.write
   process.stdout.write = function (
     chunk: string | Uint8Array,
-    encodingOrCb?: BufferEncoding | ((err?: Error) => void),
-    cb?: (err?: Error) => void,
+    encodingOrCb?: BufferEncoding | ((err?: Error | null) => void),
+    cb?: (err?: Error | null) => void,
   ): boolean {
     // Record the output event
     const elapsed = (performance.now() - startTime) / 1000

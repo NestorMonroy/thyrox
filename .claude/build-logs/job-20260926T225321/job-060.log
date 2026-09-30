@@ -1,0 +1,9 @@
+  ok   con los gates ausentes rehúsa con 2, no con 1
+  ok   y nombra el gate que falta
+  ok   y NO dice que lo saltó
+  ok   con los gates verdes autoriza
+  ok   con el gate de IDs rojo bloquea
+  ok   un universo vacío (exit 2) no bloquea
+
+pre-push: 6 ok, 0 fallo(s) (alcance medido: /home/user/thyrox/src/verify/pre-push.sh)
+EXIT=0

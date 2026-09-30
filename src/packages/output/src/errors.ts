@@ -1,8 +1,5 @@
 /**
- * Puerto de `ccnmt: packages/output/src/errors.ts` (verbatim — sin imports
- * en la fuente). V7 §6.5 — el namespace tipado de errores del paquete
- * `output`: un `code` estable por clase, para que el consumidor discrimine
- * por codigo en vez de por `instanceof` de una jerarquia mas fina.
+ * V7 §6.5 — OutputError typed error namespace.
  */
 export class OutputBaseError extends Error {
   readonly code: string

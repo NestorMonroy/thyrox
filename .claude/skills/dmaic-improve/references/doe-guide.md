@@ -26,7 +26,7 @@ El DOE (Diseño de Experimentos) es la herramienta más poderosa de Improve para
 | **Factor** | Variable de proceso que se cree influye en el CTQ | Temperatura, velocidad, operador |
 | **Nivel** | Valores que toma el factor en el experimento | Temperatura: [180°C, 200°C] → 2 niveles |
 | **Corrida** | Una combinación específica de niveles de todos los factores | Temp=180°C + Velocidad=50rpm |
-| **Réplica** | Repetir la misma corrida para estimar el error experimental | Correr la misma combinación 2-3 veces |
+| **Réplica** | Repetir la misma corrida para estimar el error experimental | Ejecutar la misma combinación 2-3 veces |
 | **Respuesta** | El CTQ que se mide en cada corrida | DPMO, tiempo de ciclo, resistencia |
 | **Efecto principal** | Cambio promedio en la respuesta al cambiar un factor | "Aumentar temperatura 20°C reduce DPMO en 1,500" |
 | **Interacción** | El efecto de un factor depende del nivel de otro | "A alta temperatura, el efecto de la velocidad desaparece" |

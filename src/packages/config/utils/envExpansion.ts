@@ -1,16 +1,11 @@
 /**
- * Puerto de `ccnmt: packages/config/utils/envExpansion.ts` (43 líneas
- * fuente). Sin dependencias — sólo `process.env` y `String.replace`.
- * Reimplementación fiel.
- *
- * Expande variables de entorno en un valor de cadena de una config MCP,
- * con la sintaxis `${VAR}` y `${VAR:-default}`.
+ * Shared utilities for expanding environment variables in MCP server configurations
  */
 
 /**
- * Expande variables de entorno en un valor de cadena.
- * Soporta la sintaxis `${VAR}` y `${VAR:-default}`.
- * @returns objeto con la cadena expandida y la lista de variables ausentes
+ * Expand environment variables in a string value
+ * Handles ${VAR} and ${VAR:-default} syntax
+ * @returns Object with expanded string and list of missing variables
  */
 export function expandEnvVarsInString(value: string): {
   expanded: string
@@ -19,10 +14,9 @@ export function expandEnvVarsInString(value: string): {
   const missingVars: string[] = []
 
   const expanded = value.replace(/\$\{([^}]+)\}/g, (match, varContent) => {
-    // Se busca el PRIMER `:-` y se parte ahí. Un `split(':-', 2)` ingenuo
-    // descarta todo lo que va después del segundo elemento, así que
-    // `${A:-foo:-bar}` perdería `:-bar` del default. `indexOf` + `slice`
-    // conservan el resto verbatim.
+    // Find the FIRST `:-` and split there. Naive `split(':-', 2)` discards
+    // anything after the second element, so `${A:-foo:-bar}` would lose
+    // `:-bar` from the default. Use indexOf + slice to keep the rest verbatim.
     const sepIdx = varContent.indexOf(':-')
     const varName = sepIdx === -1 ? varContent : varContent.slice(0, sepIdx)
     const defaultValue =
@@ -36,10 +30,9 @@ export function expandEnvVarsInString(value: string): {
       return defaultValue
     }
 
-    // Registra la variable ausente para reportar el error.
-    // Devuelve el original si no se encontró (permite depurar y se
-    // reportará como error).
+    // Track missing variable for error reporting
     missingVars.push(varName)
+    // Return original if not found (allows debugging but will be reported as error)
     return match
   })
 

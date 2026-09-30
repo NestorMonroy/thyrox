@@ -1,5 +1,4 @@
-// Superficie pública de integración del daemon.
-// Puerto fiel de `ccnmt: packages/daemon/src/index.ts`.
+// V7 §8.22 — daemon integration public surface.
 export * from './contracts.js'
 export * from './errors.js'
 

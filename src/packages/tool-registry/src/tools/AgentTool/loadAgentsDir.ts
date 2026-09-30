@@ -68,8 +68,9 @@ const AgentMcpServerSpecSchema = lazySchema(() =>
 )
 
 // Zod schemas for JSON agent validation
-// Note: HooksSchema is lazy so the circular chain AppState -> loadAgentsDir -> settings/types
-// is broken at module load time
+// Nota: AgentJsonSchema es lazy para romper la cadena circular AppState ->
+// loadAgentsDir -> settings/types al cargar el módulo; HooksSchema (importado
+// de @thyrox/config/types) ya es un ZodObject concreto, no un lazySchema.
 const AgentJsonSchema = lazySchema(() =>
   z.object({
     description: z.string().min(1, 'Description cannot be empty'),
@@ -85,7 +86,7 @@ const AgentJsonSchema = lazySchema(() =>
     effort: z.union([z.enum(EFFORT_LEVELS), z.number().int()]).optional(),
     permissionMode: z.enum(PERMISSION_MODES).optional(),
     mcpServers: z.array(AgentMcpServerSpecSchema()).optional(),
-    hooks: HooksSchema().optional(),
+    hooks: HooksSchema.optional(),
     maxTurns: z.number().int().positive().optional(),
     skills: z.array(z.string()).optional(),
     initialPrompt: z.string().optional(),
@@ -125,9 +126,9 @@ export type BaseAgentDefinition = {
   memory?: AgentMemoryScope // Persistent memory scope
   isolation?: 'worktree' | 'remote' // Run in an isolated git worktree, or remotely in CCR (ant-only)
   pendingSnapshotUpdate?: { snapshotTimestamp: string }
-  /** Omit CLAUDE.md hierarchy from the agent's userContext. Read-only agents
+  /** Omit THYROX.md hierarchy from the agent's userContext. Read-only agents
    * (Explore, Plan) don't need commit/PR/lint guidelines — the main agent has
-   * full CLAUDE.md and interprets their output. Saves ~5-15 Gtok/week across
+   * full THYROX.md and interprets their output. Saves ~5-15 Gtok/week across
    * 34M+ Explore spawns. Kill-switch: tengu_slim_subagent_claudemd. */
   omitClaudeMd?: boolean
 }
@@ -296,7 +297,7 @@ async function initializeAgentMemorySnapshots(
 export const getAgentDefinitionsWithOverrides = memoize(
   async (cwd: string): Promise<AgentDefinitionsResult> => {
     // Simple mode: skip custom agents, only return built-ins
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+    if (isEnvTruthy(process.env.THYROX_CODE_SIMPLE)) {
       const builtInAgents = getBuiltInAgents()
       return {
         activeAgents: builtInAgents,
@@ -429,7 +430,7 @@ function parseHooksFromFrontmatter(
     return undefined
   }
 
-  const result = HooksSchema().safeParse(frontmatter.hooks)
+  const result = HooksSchema.safeParse(frontmatter.hooks)
   if (!result.success) {
     logForDebugging(
       `Invalid hooks in agent '${agentType}': ${result.error.message}`,

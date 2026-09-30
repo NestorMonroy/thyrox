@@ -58,22 +58,22 @@ describe('extraccion de la declaracion que contiene el literal', () => {
   test('sube de la cadena a la declaracion de variable entera', () => {
     const src = 'var z=1;var x0=[["five_hour","5h"],["seven_day","7d"]];var y=2;'
     const [d] = extractByLiteral(src, 'five_hour')
-    expect(d.text).toBe('var x0=[["five_hour","5h"],["seven_day","7d"]];')
-    expect(d.binding).toBe('x0')
+    expect(d!.text).toBe('var x0=[["five_hour","5h"],["seven_day","7d"]];')
+    expect(d!.binding).toBe('x0')
   })
 
   test('sube de la cadena a la funcion entera', () => {
     const src = 'function f(e){return e.get("anthropic-ratelimit-unified-5h-utilization")}'
     const [d] = extractByLiteral(src, 'anthropic-ratelimit-unified-5h-utilization')
-    expect(d.text).toBe(src)
-    expect(d.binding).toBe('f')
-    expect(d.kind).toBe('FunctionDeclaration')
+    expect(d!.text).toBe(src)
+    expect(d!.binding).toBe('f')
+    expect(d!.kind).toBe('FunctionDeclaration')
   })
 
   test('lo extraido parsea solo', () => {
     const src = 'var a=1;function g(){return 31536000}'
     const [d] = extractByLiteral(src, '31536000')
-    expect(parsesClean(d.text)).toBe(true)
+    expect(parsesClean(d!.text)).toBe(true)
   })
 
   test('un literal ausente devuelve la lista vacia, no una excepcion', () => {
@@ -88,9 +88,9 @@ describe.if(hayCorpus)('contra el corpus REAL de 2.1.274', () => {
     const [d] = extractByLiteral(src, 'seven_day_overage_included')
         .filter((x) => x.text.includes('"five_hour","5h"'))
     expect(d).toBeDefined()
-    expect(d.text).toContain('["overage","overage"]')
+    expect(d!.text).toContain('["overage","overage"]')
     // Las cuatro ventanas, y el binding que 2.1.266 llamaba `E0e`.
-    expect(d.text.match(/\["[a-z_]+","[a-z0-9_]+"\]/g)?.length).toBe(4)
+    expect(d!.text.match(/\["[a-z_]+","[a-z0-9_]+"\]/g)?.length).toBe(4)
   })
 
   test('la guarda deja fuera la prosa de ayuda de la linea de estado', () => {

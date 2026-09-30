@@ -1,0 +1,46 @@
+src/packages/agent/internal/stopHooksCore.ts(391,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:381-401 ---
+    381                const info = hookInfos.find(
+    382                  i => i.command === a.command && i.durationMs === undefined,
+    383                )
+    384                if (info) info.durationMs = a.durationMs as number
+    385              }
+    386            }
+    387          }
+    388        }
+    389  
+    390        if (result.blockingError) {
+    391>         const userMessage = host().createUserMessage?.({
+    392            content: host().getStopHookMessage?.(result.blockingError) ?? '',
+    393            isMeta: true, // Oculto en la interfaz — sale en el resumen.
+    394          })
+    395          if (userMessage) {
+    396            blockingErrors.push(userMessage)
+    397            yield userMessage
+    398          }
+    399          hasOutput = true
+    400  
+    401          // Un bloqueo de `/goal` NO contribuye a `hookErrors`: se renderiza
+src/packages/agent/internal/stopHooksCore.ts(455,37): error TS2339: Property 'createUserInterruptionMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:445-465 ---
+    445            message: stopReason,
+    446            hookName: 'Stop',
+    447            toolUseID: stopHookToolUseID,
+    448            hookEvent: 'Stop',
+    449          })
+    450          if (detenido) yield detenido
+    451        }
+    452  
+    453        if (toolUseContext.abortController.signal.aborted) {
+    454          host().logEvent?.('tengu_pre_stop_hooks_cancelled', {})
+    455>         const interrupcion = host().createUserInterruptionMessage?.({
+    456            toolUse: false,
+    457          })
+    458          if (interrupcion) yield interrupcion
+    459          return { blockingErrors: [], preventContinuation: true }
+    460        }
+    461      }
+    462  
+    463      if (hookCount > 0) {
+    464        const resumen = host().createStopHookSummaryMessage?.(
+    465          hookCount,

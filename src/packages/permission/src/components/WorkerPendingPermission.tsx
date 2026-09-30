@@ -14,12 +14,8 @@ type Props = {
 }
 
 /**
- * Copia de `ccnmt: packages/permission/src/components/WorkerPendingPermission.tsx`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
- *
- * Indicador visual que se muestra en los workers mientras esperan a que el
- * leader apruebe una petición de permiso. Muestra la herramienta pendiente con
- * un spinner y la información de lo que se está pidiendo.
+ * Visual indicator shown on workers while waiting for leader to approve a permission request.
+ * Displays the pending tool with a spinner and information about what's being requested.
  */
 export function WorkerPendingPermission({
   toolName,

@@ -1,19 +1,14 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/teamMemoryOps.ts` (verbatim).
- */
 import { isTeamMemPath } from './teamMemPaths.js'
 
-// Inlineado desde src/tools/{FileEditTool,FileWriteTool} para mantener a
-// este archivo hoja de Wave-2 sin dependencia de src/. Las constantes son
-// cadenas estables con el nombre de la herramienta.
+// Inlined from src/tools/{FileEditTool,FileWriteTool} to keep this Wave-2
+// leaf file src/-free. Constants are stable tool-name strings.
 const FILE_EDIT_TOOL_NAME = 'Edit'
 const FILE_WRITE_TOOL_NAME = 'Write'
 
 export { isTeamMemPath }
 
 /**
- * Verifica si el uso de una herramienta de búsqueda apunta a archivos de
- * memoria de equipo, examinando su ruta.
+ * Check if a search tool use targets team memory files by examining its path.
  */
 export function isTeamMemorySearch(toolInput: unknown): boolean {
   const input = toolInput as
@@ -25,8 +20,7 @@ export function isTeamMemorySearch(toolInput: unknown): boolean {
 }
 
 /**
- * Verifica si el uso de una herramienta Write o Edit apunta a un archivo de
- * memoria de equipo.
+ * Check if a Write or Edit tool use targets a team memory file.
  */
 export function isTeamMemoryWriteOrEdit(
   toolName: string,
@@ -41,9 +35,8 @@ export function isTeamMemoryWriteOrEdit(
 }
 
 /**
- * Agrega partes del resumen de memoria de equipo al arreglo `parts`.
- * Encapsula toda la lógica verbo/cadena de memoria de equipo para
- * getSearchReadSummaryText.
+ * Append team memory summary parts to the parts array.
+ * Encapsulates all team memory verb/string logic for getSearchReadSummaryText.
  */
 export function appendTeamMemorySummaryParts(
   memoryCounts: {

@@ -11,12 +11,12 @@
 // src/state/AppStateCompat at module level. getDefaultAppState is called
 // once during runtime-handle construction, so a require() hop is fine.
 
-export type AppState = unknown
+export type AppState = import('../state/AppState.js').AppState
 
-export function getDefaultAppState(): unknown {
+export function getDefaultAppState(): AppState {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('../state/AppStateCompat.js') as {
-    getDefaultAppState: () => unknown
+    getDefaultAppState: () => AppState
   }
   return mod.getDefaultAppState()
 }

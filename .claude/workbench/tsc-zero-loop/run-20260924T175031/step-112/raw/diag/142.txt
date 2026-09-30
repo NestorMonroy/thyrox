@@ -1,0 +1,2 @@
+src/packages/repl/src/commands/plan/plan.tsx(49,20): error TS18046: 'getAppState' is of type 'unknown'.
+src/packages/repl/src/commands/plan/plan.tsx(55,5): error TS18046: 'setAppState' is of type 'unknown'.

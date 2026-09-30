@@ -16,18 +16,20 @@
  * silenciosa. Lo que NO tolera es que falte lo esencial —el comportamiento, el
  * mensaje de una denegación— porque ahí no hay valor por defecto seguro.
  *
- * DIVERGENCIA DECLARADA: `Tool` y `ToolUseContext` van como tipos inline
- * laxos, igual que en la fuente, que ya los declara así con el comentario
- * "inlined type-only imports from Tool.ts". No se amplía.
+ * DIVERGENCIA DECLARADA: `Tool` va como tipo inline laxo, igual que en la
+ * fuente ("inlined type-only imports from Tool.ts"). `ToolUseContext` ya no:
+ * su copia inline tipaba `setAppState` de forma que el real no le asignaba, y
+ * se toma del contrato con `Pick` (import de tipos, sin acoplar la ejecución).
  */
 import z from 'zod/v4'
 import { getPermissionHostBindings } from './host.js'
+import type { ToolUseContext as RealToolUseContext } from '@thyrox/tool-registry/Tool.js'
 
 type Tool = { name: string; [key: string]: unknown }
-type ToolUseContext = {
-  setAppState: (updater: (prev: never) => unknown) => void
-  abortController: { abort: () => void }
-}
+// Sólo los dos campos que este archivo lee, tomados del contrato real. La
+// copia inline declaraba `setAppState(updater: (prev: never) => unknown)`, y
+// el `setAppState` real no le asignaba: tres llamadores de `cli` fallaban.
+type ToolUseContext = Pick<RealToolUseContext, 'setAppState' | 'abortController'>
 
 import { lazySchema } from '../internal/lazySchema.js'
 import type {
@@ -116,9 +118,9 @@ export function permissionPromptToolResultToPermissionDecision(
     const updatedPermissions = result.updatedPermissions
     if (updatedPermissions) {
       toolUseContext.setAppState(prev => ({
-        ...(prev as object),
+        ...prev,
         toolPermissionContext: applyPermissionUpdates(
-          (prev as { toolPermissionContext: never }).toolPermissionContext,
+          prev.toolPermissionContext,
           updatedPermissions,
         ),
       }))

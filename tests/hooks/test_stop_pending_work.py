@@ -37,7 +37,9 @@ def check(label: str, expected, obtained) -> None:
 
 
 def git(repo: Path, *args: str) -> None:
-    subprocess.run(["git", "-C", str(repo), *args], capture_output=True)
+    # Sin la firma del entorno: con `commit.gpgsign=true` global el commit
+    # falla en silencio y el repo "limpio" queda con un archivo en stage.
+    subprocess.run(["git", "-C", str(repo), "-c", "commit.gpgsign=false", *args], capture_output=True)
 
 
 def new_repo(parent: Path, name: str) -> Path:

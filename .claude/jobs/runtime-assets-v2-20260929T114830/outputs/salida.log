@@ -1,0 +1,6 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO Recursos runtime del build JS (H-THYROX-263, 264, 265, 266): src/typescript/buildJavascript.ts, tests/typescript/buildJavascript.test.ts, src/packages/computer-use-mcp/src/legacy/win32/bridgeClient.ts
+items=1 ok=0 fallidos=1
+verificados=0 rechazados=0 sin-cambios=0 fallidos=1
+__BG_EXIT__=1

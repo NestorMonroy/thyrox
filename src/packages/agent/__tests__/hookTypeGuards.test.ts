@@ -1,24 +1,14 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/hookTypeGuards.test.ts` —
- * guardas de tipo de hook que gobiernan el enrutamiento sync/async del
- * despacho.
+ * Tests for hook type guards — drive sync/async hook dispatch routing.
  *
- * Una clasificación equivocada produce, o bien:
- *   - un hook async tratado como sync: quien llama espera un resultado
- *     que nunca llega de forma síncrona, cuelga el turno
- *   - un hook sync tratado como async: quien llama asume que devuelve una
- *     promesa, pero volvió de inmediato, y la salida se descarta
+ * Wrong classification = either:
+ *   - Async hook treated as sync: caller waits for a result that
+ *     never arrives synchronously, hangs the turn
+ *   - Sync hook treated as async: caller assumes future-based, but
+ *     it returned immediately, output dropped
  *
- * `isHookEvent` protege la superficie de la API — aceptar una cadena
- * desconocida como nombre de `HookEvent` deja que la configuración
- * derive en silencio.
- *
- * DIVERGENCIA DE IMPORT, declarada: la fuente importa `HookJSONOutput` de
- * `@claude-code-how-works/headless-sdk/agentSdkTypes.js`, paquete ausente
- * en este árbol. Se importa en su lugar el tipo homónimo declarado en
- * `../types/hooks.ts` (mismo pase, mismo stub estructural
- * `Record<string, unknown>` que la fuente misma usa en su capa generada —
- * ver el docstring de ese archivo).
+ * isHookEvent guards the API surface — accepting an unknown string
+ * as a HookEvent name lets configuration silently drift.
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -26,10 +16,10 @@ import {
   isHookEvent,
   isSyncHookJSONOutput,
 } from '../types/hooks.js'
-import type { HookJSONOutput } from '../types/hooks.js'
+import type { HookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
-describe('isHookEvent — guarda de tipo para la unión de cadenas HookEvent', () => {
-  test('acepta eventos conocidos', () => {
+describe('isHookEvent — type guard for HookEvent string union', () => {
+  test('known events accepted', () => {
     expect(isHookEvent('PreToolUse')).toBe(true)
     expect(isHookEvent('PostToolUse')).toBe(true)
     expect(isHookEvent('Stop')).toBe(true)
@@ -37,46 +27,46 @@ describe('isHookEvent — guarda de tipo para la unión de cadenas HookEvent', (
     expect(isHookEvent('Notification')).toBe(true)
   })
 
-  test('rechaza nombres de evento desconocidos', () => {
+  test('unknown event names rejected', () => {
     expect(isHookEvent('SomeFutureEvent')).toBe(false)
-    expect(isHookEvent('preToolUse')).toBe(false) // distingue mayúsculas
-    expect(isHookEvent('PRE_TOOL_USE')).toBe(false) // mayúsculas-con-guion-bajo
+    expect(isHookEvent('preToolUse')).toBe(false) // case-sensitive
+    expect(isHookEvent('PRE_TOOL_USE')).toBe(false) // upper-snake
     expect(isHookEvent('')).toBe(false)
   })
 
-  test('rechaza nombres parecidos a erratas', () => {
-    // Atrapa erratas comunes que habrían deshabilitado hooks en silencio.
-    expect(isHookEvent('PreTooluse')).toBe(false) // mayúscula equivocada
+  test('typo-like names rejected', () => {
+    // Catch common typos that would have silently disabled hooks.
+    expect(isHookEvent('PreTooluse')).toBe(false) // wrong case
     expect(isHookEvent('PreToolUsage')).toBe(false)
     expect(isHookEvent('PostUseTool')).toBe(false)
   })
 })
 
-describe('isSyncHookJSONOutput — guarda de unión discriminada', () => {
-  test('objeto sin la clave async → sync (true)', () => {
+describe('isSyncHookJSONOutput — discriminated union guard', () => {
+  test('object without async key → sync (true)', () => {
     expect(isSyncHookJSONOutput({} as HookJSONOutput)).toBe(true)
   })
 
-  test('objeto con async: false → sync (true)', () => {
+  test('object with async: false → sync (true)', () => {
     expect(
       isSyncHookJSONOutput({ async: false } as unknown as HookJSONOutput),
     ).toBe(true)
   })
 
-  test('objeto con async: true → NO es sync', () => {
+  test('object with async: true → NOT sync', () => {
     expect(
       isSyncHookJSONOutput({ async: true } as unknown as HookJSONOutput),
     ).toBe(false)
   })
 
-  test('objeto con async: undefined → sync (sin clave async tras el delete)', () => {
-    // Documentado: sólo async===true rechaza. Los valores falsy son sync.
+  test('object with async: undefined → sync (no async key after delete)', () => {
+    // Documented: only async===true rejects. Falsy values are sync.
     expect(
       isSyncHookJSONOutput({ async: undefined } as unknown as HookJSONOutput),
     ).toBe(true)
   })
 
-  test('objeto con continue/decision (campo sync) → sync', () => {
+  test('object with continue/decision (sync field) → sync', () => {
     expect(
       isSyncHookJSONOutput({
         continue: true,
@@ -85,46 +75,46 @@ describe('isSyncHookJSONOutput — guarda de unión discriminada', () => {
     ).toBe(true)
   })
 
-  test('objeto con async: 1 (truthy no-booleano) → SIGUE siendo sync (=== estricto)', () => {
-    // Documentado: sólo async===true EXACTO dispara la clasificación async.
+  test('object with async: 1 (truthy non-bool) → STILL sync (strict ===)', () => {
+    // Documented: only EXACTLY async===true triggers async classification.
     expect(
       isSyncHookJSONOutput({ async: 1 } as unknown as HookJSONOutput),
     ).toBe(true)
   })
 })
 
-describe('isAsyncHookJSONOutput — guarda inversa', () => {
+describe('isAsyncHookJSONOutput — inverse guard', () => {
   test('async: true → async (true)', () => {
     expect(
       isAsyncHookJSONOutput({ async: true } as unknown as HookJSONOutput),
     ).toBe(true)
   })
 
-  test('async: false → NO es async', () => {
+  test('async: false → NOT async', () => {
     expect(
       isAsyncHookJSONOutput({ async: false } as unknown as HookJSONOutput),
     ).toBe(false)
   })
 
-  test('objeto sin la clave async → NO es async', () => {
+  test('object without async key → NOT async', () => {
     expect(isAsyncHookJSONOutput({} as HookJSONOutput)).toBe(false)
   })
 
-  test('async: 1 (truthy) → NO es async (=== estricto)', () => {
+  test('async: 1 (truthy) → NOT async (strict ===)', () => {
     expect(
       isAsyncHookJSONOutput({ async: 1 } as unknown as HookJSONOutput),
     ).toBe(false)
   })
 
-  test('async: "true" (cadena) → NO es async', () => {
+  test('async: "true" (string) → NOT async', () => {
     expect(
       isAsyncHookJSONOutput({ async: 'true' } as unknown as HookJSONOutput),
     ).toBe(false)
   })
 })
 
-describe('isSyncHookJSONOutput / isAsyncHookJSONOutput — partición exhaustiva', () => {
-  test('toda entrada es EXACTAMENTE una de sync O async (mutuamente excluyentes)', () => {
+describe('isSyncHookJSONOutput / isAsyncHookJSONOutput — exhaustive partition', () => {
+  test('every input is exactly one of sync OR async (mutually exclusive)', () => {
     const cases = [
       {} as HookJSONOutput,
       { async: false } as unknown as HookJSONOutput,
@@ -136,7 +126,7 @@ describe('isSyncHookJSONOutput / isAsyncHookJSONOutput — partición exhaustiva
     for (const c of cases) {
       const sync = isSyncHookJSONOutput(c)
       const async = isAsyncHookJSONOutput(c)
-      // XOR: exactamente una de las dos es true.
+      // XOR: exactly one of them is true.
       expect(sync !== async).toBe(true)
     }
   })

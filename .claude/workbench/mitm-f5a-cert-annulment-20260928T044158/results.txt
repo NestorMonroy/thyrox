@@ -1,0 +1,24 @@
+== A1 clave sin 0o600
+(fail) loadOrCreateMitmCa: the written CA private key file mode is 0o600 [77.83ms]
+ 17 pass
+ 1 fail
+== A2 CA regenerada en cada llamada
+(fail) loadOrCreateMitmCa: a second call loads the same CA instead of regenerating [206.98ms]
+ 17 pass
+ 1 fail
+== A3 migración que no mira la CA existente
+(fail) decideCertMigration: CA pair already persisted → use root CA even without the flag [1.71ms]
+ 17 pass
+ 1 fail
+== A4 hoja con un solo SAN
+(fail) generateCert() issues a cert whose SAN list covers all 4 antigravity hosts [208.98ms]
+(fail) the forced certificate is still valid and carries every antigravity SAN [139.62ms]
+ 16 pass
+ 2 fail
+== A5 generate que ignora force
+(fail) generateCert({ force: true }) mints a new certificate over the existing one [57.87ms]
+ 17 pass
+ 1 fail
+== restored
+ 18 pass
+ 0 fail

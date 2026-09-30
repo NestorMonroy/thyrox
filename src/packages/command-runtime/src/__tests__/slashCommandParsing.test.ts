@@ -1,10 +1,3 @@
-/**
- * Porte de `ccnmt: packages/command-runtime/src/__tests__/slashCommandParsing.test.ts`.
- * Fija el contrato de `parseSlashCommand` (tokeniza un `/comando` en nombre +
- * args + bandera MCP, o `null` si la entrada no es un slash command) y de
- * `parseStackedSlashCommands` (lee de dos a cinco tokens `/skill` en cadena
- * antes de la tarea real, con tope de cinco).
- */
 import { describe, expect, test } from "bun:test";
 import { parseSlashCommand, parseStackedSlashCommands } from "../slashCommandParsing";
 

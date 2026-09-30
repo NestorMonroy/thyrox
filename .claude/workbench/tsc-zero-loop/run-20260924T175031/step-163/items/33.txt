@@ -1,0 +1,54 @@
+src/packages/agent/query.ts(672,15): error TS2322: Type 'EffortValue | undefined' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/query.ts:662-682 ---
+    662                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    663                hasAppendSystemPrompt:
+    664                  !!toolUseContext.options.appendSystemPrompt,
+    665                maxOutputTokensOverride,
+    666                fetchOverride: dumpPromptsFetch,
+    667                mcpTools: appState.mcp.tools,
+    668                hasPendingMcpServers: appState.mcp.clients.some(
+    669  (                c: { type: string }) => c.type === 'pending',
+    670                ),
+    671                queryTracking,
+    672>               effortValue: appState.effortValue,
+    673                advisorModel: appState.advisorModel,
+    674                skipCacheWrite,
+    675                agentId: toolUseContext.agentId,
+    676                addNotification: toolUseContext.addNotification,
+    677                ...(params.taskBudget && {
+    678                  taskBudget: {
+    679                    total: params.taskBudget.total,
+    680                    ...(taskBudgetRemaining !== undefined && {
+    681                      remaining: taskBudgetRemaining,
+    682                    }),
+  Type 'number' is not assignable to type 'string'.
+src/packages/agent/query.ts(676,15): error TS2322: Type '((notif: Notification) => void) | undefined' is not assignable to type '((notif: ProviderNotification) => void) | undefined'.
+  --- código src/packages/agent/query.ts:666-686 ---
+    666                fetchOverride: dumpPromptsFetch,
+    667                mcpTools: appState.mcp.tools,
+    668                hasPendingMcpServers: appState.mcp.clients.some(
+    669  (                c: { type: string }) => c.type === 'pending',
+    670                ),
+    671                queryTracking,
+    672                effortValue: appState.effortValue,
+    673                advisorModel: appState.advisorModel,
+    674                skipCacheWrite,
+    675                agentId: toolUseContext.agentId,
+    676>               addNotification: toolUseContext.addNotification,
+    677                ...(params.taskBudget && {
+    678                  taskBudget: {
+    679                    total: params.taskBudget.total,
+    680                    ...(taskBudgetRemaining !== undefined && {
+    681                      remaining: taskBudgetRemaining,
+    682                    }),
+    683                  },
+    684                }),
+    685              },
+    686            })) {
+  Type '(notif: Notification) => void' is not assignable to type '(notif: ProviderNotification) => void'.
+    Types of parameters 'notif' and 'notif' are incompatible.
+      Type 'ProviderNotification' is not assignable to type 'Notification'.
+        Type 'ProviderNotification' is not assignable to type 'TextNotification'.
+          Type 'ProviderNotification' is not assignable to type 'BaseNotification'.
+            Types of property 'priority' are incompatible.
+              Type 'string' is not assignable to type 'Priority'.

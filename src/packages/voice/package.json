@@ -7,87 +7,94 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./voiceModeEnabled.js": {
+      "@thyrox/source": "./src/voiceModeEnabled.ts",
       "types": "./dist/src/voiceModeEnabled.d.ts",
       "default": "./src/voiceModeEnabled.ts"
     },
     "./voice.js": {
+      "@thyrox/source": "./src/voice.ts",
       "types": "./dist/src/voice.d.ts",
       "default": "./src/voice.ts"
     },
     "./voiceStreamSTT.js": {
+      "@thyrox/source": "./src/voiceStreamSTT.ts",
       "types": "./dist/src/voiceStreamSTT.d.ts",
       "default": "./src/voiceStreamSTT.ts"
     },
     "./voiceKeyterms.js": {
+      "@thyrox/source": "./src/voiceKeyterms.ts",
       "types": "./dist/src/voiceKeyterms.d.ts",
       "default": "./src/voiceKeyterms.ts"
     },
     "./appStateHooks.js": {
+      "@thyrox/source": "./src/appStateHooks.ts",
       "types": "./dist/src/appStateHooks.d.ts",
       "default": "./src/appStateHooks.ts"
     },
     "./hooks/useVoice.js": {
+      "@thyrox/source": "./src/hooks/useVoice.ts",
       "types": "./dist/src/hooks/useVoice.d.ts",
       "default": "./src/hooks/useVoice.ts"
     },
     "./hooks/useVoiceEnabled.js": {
+      "@thyrox/source": "./src/hooks/useVoiceEnabled.ts",
       "types": "./dist/src/hooks/useVoiceEnabled.d.ts",
       "default": "./src/hooks/useVoiceEnabled.ts"
     },
     "./hooks/useVoiceIntegration.js": {
+      "@thyrox/source": "./src/hooks/useVoiceIntegration.tsx",
       "types": "./dist/src/hooks/useVoiceIntegration.d.ts",
       "default": "./src/hooks/useVoiceIntegration.tsx"
     },
     "./voiceContext.js": {
+      "@thyrox/source": "./src/voiceContext.tsx",
       "types": "./dist/src/voiceContext.d.ts",
       "default": "./src/voiceContext.tsx"
     },
     "./hooks/useVoiceIntegration": {
+      "@thyrox/source": "./src/hooks/useVoiceIntegration.tsx",
       "types": "./dist/src/hooks/useVoiceIntegration.d.ts",
       "default": "./src/hooks/useVoiceIntegration.tsx"
     },
     "./voiceContext": {
+      "@thyrox/source": "./src/voiceContext.tsx",
       "types": "./dist/src/voiceContext.d.ts",
       "default": "./src/voiceContext.tsx"
-    },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
     }
   },
   "scripts": {
     "test": "bun test"
   },
   "dependencies": {
-    "@anthropic/ink": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/audio-capture-napi": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/storage": "workspace:*",
+    "@anthropic/ink": "1.0.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/audio-capture-napi": "1.0.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/storage": "0.1.0",
     "react": "^19.0.0",
     "ws": "^8.21.0",
     "zod": "^4.3.6"

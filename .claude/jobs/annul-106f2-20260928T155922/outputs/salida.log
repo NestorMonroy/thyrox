@@ -1,0 +1,111 @@
+== 1: sin clave aceptada
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 2: sin receta prueba igual
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 3: sin keyCheckPath
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 4: sin baseUrl propia
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 5: 401 sigue al chat
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 6: 403 válido
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 7: 5xx válido
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 8: 4xx inválido
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 9: sin bearer
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 10: anthropic sin versión
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 11: google sin clave
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 12: sin timeout
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 13: modelo de la conexión ignorado
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 14: sin variable por proveedor
+   (provider/src/accounts/apiKeyProbe.ts)
+ 2 fail
+== 15: sin variable general
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 16: nombre sin normalizar
+   (provider/src/accounts/apiKeyProbe.ts)
+ 1 fail
+== 17: error de red
+   (provider/src/accounts/apiKeyProbe.ts)
+ 2 fail
+== 18: cookie web ignorada
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 19: oauth probado
+   (provider/src/accounts/connectionTest.ts)
+ 4 fail
+== 20: sin clave probado
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 21: no soportado persiste
+   (provider/src/accounts/connectionTest.ts)
+ 2 fail
+== 22: sin baseUrl de la conexión
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 23: error sin persistir
+   (provider/src/accounts/connectionTest.ts)
+ 2 fail
+== 24: fallo sin fuente
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 25: fallo sin código
+   (provider/src/accounts/connectionTest.ts)
+ 2 fail
+== 26: mensaje por defecto
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 27: sin id aceptado
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 28: tipo ausente no avisa
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 29: descifrado ignorado
+   (provider/src/accounts/connectionTest.ts)
+ 1 fail
+== 30: oauth sin aviso
+   (provider/src/accounts/connectionTest.ts)
+ 2 fail
+== 31: sin persistir
+   (cli/src/commands/providers/testVerbs.ts)
+ 3 fail
+== 32: inactiva probada
+   (cli/src/commands/providers/testVerbs.ts)
+ 2 fail
+== 33: saltada falla
+   (cli/src/commands/providers/testVerbs.ts)
+ 1 fail
+== 34: test sin selector
+   (cli/src/commands/providers/testVerbs.ts)
+ 1 fail
+== 35: validate siempre OK
+   (cli/src/commands/providers/testVerbs.ts)
+ 1 fail
+== 36: json de test
+   (cli/src/commands/providers/testVerbs.ts)
+ 1 fail
+== restaurado
+ 0 fail
+__BG_EXIT__=0

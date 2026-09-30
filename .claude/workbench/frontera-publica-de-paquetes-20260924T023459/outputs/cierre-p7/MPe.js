@@ -1,0 +1,1 @@
+function MPe(e){let n=new Map;for(let r of e){let s=r.startsWith("mcp__")?`${r.split("__",2).join("__")}__*`:r;n.set(s,(n.get(s)??0)+1)}return[...n.entries()].sort(([r],[s])=>r.localeCompare(s)).map(([r,s])=>s>1?`${r} (${s})`:r).join(", ")}

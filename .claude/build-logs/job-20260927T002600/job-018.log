@@ -1,0 +1,14 @@
+== 1. una columna con nombre de la lista vieja ==
+  ok    created_at se detecta
+== 2. el caso que el instrumento viejo NO veia ==
+  ok    cleared_at tambien se detecta
+== 3. varias columnas: se devuelven TODAS, no la primera ==
+  ok    created_at y updated_at
+== 4. una tabla sin fecha lo dice, no falla ==
+  ok    lista vacia
+== 5. la ultima escritura sale del MAXIMO de todas ==
+  ok    gana el mayor entre las dos columnas
+  ok    sin columna de fecha devuelve None
+
+6 ok, 0 fallos
+EXIT=0

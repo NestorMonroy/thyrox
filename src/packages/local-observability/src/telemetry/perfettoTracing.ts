@@ -1,11 +1,12 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/perfettoTracing.ts`
- * (31 líneas fuente, 100 % portado). Fachada "V7 §10.3" — re-exporta el
- * tracing de Perfetto (`./perfetto.js`, en este árbol reducido a su
- * comportamiento no-op real — ver el docstring de ese archivo).
+ * V7 §10.3 facade — perfetto tracing moved to
+ * `@thyrox/local-observability/telemetry/perfetto`.
  */
 
-export type { TraceEvent, TraceEventPhase } from './perfetto.js'
+export type {
+  TraceEvent,
+  TraceEventPhase,
+} from './index.js'
 export {
   MAX_EVENTS_FOR_TESTING,
   emitPerfettoCounter,
@@ -27,4 +28,4 @@ export {
   startUserInputPerfettoSpan,
   triggerPeriodicWriteForTesting,
   unregisterAgent,
-} from './perfetto.js'
+} from './index.js'

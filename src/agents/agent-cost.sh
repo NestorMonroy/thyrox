@@ -16,6 +16,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 AGENT_ID="$1"
+# thyrox-rename: keep — directorio del cliente anfitrión
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
 HOOK="$(dirname "${BASH_SOURCE[0]}")/register_session.py"
 

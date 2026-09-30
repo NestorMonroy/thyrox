@@ -1,27 +1,13 @@
-/**
- * Puerto COMPLETO de
- * `ccnmt: packages/storage/src/getWorktreePathsPortable.ts` (27 líneas
- * fuente). Cero dependencias hermanas ausentes — sólo `child_process` y
- * `util` de Node. Porte verbatim.
- *
- * Reconciliación (tarea #208): este archivo YA estaba reimplementado como
- * una función PRIVADA dentro de `./projectPurge.ts` (idéntica, ver su
- * docstring), porque otro agente no podía crear este archivo fuera de su
- * propiedad en aquel pase. Con el módulo real aquí, `projectPurge.ts` pasa
- * a IMPORTAR desde este archivo y su copia privada se retira — ver el
- * commit de reconciliación.
- */
 import { execFile as execFileCb } from 'child_process'
 import { promisify } from 'util'
 
 const execFileAsync = promisify(execFileCb)
 
 /**
- * Detección portable de worktrees usando sólo `child_process` — sin
- * analytics, sin dependencias de bootstrap, sin execa. La usan
- * `listSessionsImpl.ts` (SDK) y cualquier consumidor que necesite las
- * rutas de worktree sin arrastrar la cadena de dependencias del CLI
- * (execa → cross-spawn → which).
+ * Portable worktree detection using only child_process — no analytics,
+ * no bootstrap deps, no execa. Used by listSessionsImpl.ts (SDK) and
+ * anywhere that needs worktree paths without pulling in the CLI
+ * dependency chain (execa → cross-spawn → which).
  */
 export async function getWorktreePathsPortable(cwd: string): Promise<string[]> {
   try {

@@ -1,0 +1,2 @@
+check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' "$F/parallel.args")" "1"
+unset HIST

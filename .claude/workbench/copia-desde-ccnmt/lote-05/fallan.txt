@@ -1,0 +1,17 @@
+src/packages/agent/__tests__/goalStopHook.test.ts
+src/packages/agent/__tests__/idleCollapse.test.ts
+src/packages/bridge/src/__tests__/trustedDevice.test.ts
+src/packages/cli/__tests__/bin.test.ts
+src/packages/cli/__tests__/binAgentWiring.test.ts
+src/packages/cli/__tests__/binSkillWiring.test.ts
+src/packages/cli/__tests__/compressToolResultsWiring.test.ts
+src/packages/cli/__tests__/hogarDeLaCli.test.ts
+src/packages/cli/__tests__/impactCli.test.ts
+src/packages/cli/__tests__/loopStreaming.test.ts
+src/packages/cli/__tests__/premisesCli.test.ts
+src/packages/cli/__tests__/rstTasks.test.ts
+src/packages/cli/__tests__/systemPromptLayering.test.ts
+src/packages/cli/__tests__/workbench.test.ts
+src/packages/permission/__tests__/planModeV2.test.ts
+src/packages/tool-registry/src/__tests__/undercover.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts

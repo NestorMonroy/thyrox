@@ -11,6 +11,7 @@ export {
   type ModuleTable,
   type Trailer,
 } from './bunfs.ts'
+export { locatePayload, OFFSETS_BYTES, type LocatedPayload, type PayloadForm } from './payload.ts'
 export { buildGraph, importsOf, type Graph } from './graph.ts'
 export { writeCorpus, type CorpusResult } from './corpus.ts'
 export { corpusVersion, freshness, type Freshness } from './freshness.ts'

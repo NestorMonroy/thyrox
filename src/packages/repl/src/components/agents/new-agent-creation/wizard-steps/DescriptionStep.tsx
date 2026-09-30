@@ -6,11 +6,11 @@ import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import TextInput from '../../../TextInput.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
-import type { AgentWizardData } from '../types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function DescriptionStep(): ReactNode {
   const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+    useWizard()
   const [whenToUse, setWhenToUse] = useState(wizardData.whenToUse || '')
   const [cursorOffset, setCursorOffset] = useState(whenToUse.length)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +44,7 @@ export function DescriptionStep(): ReactNode {
 
   return (
     <WizardDialogLayout
-      subtitle="Description (tell Claude when to use this agent)"
+      subtitle={`Description (tell ${PRODUCT_NAME} when to use this agent)`}
       footerText={
         <Byline>
           <KeyboardShortcutHint shortcut="Type" action="enter text" />
@@ -65,7 +65,7 @@ export function DescriptionStep(): ReactNode {
       }
     >
       <Box flexDirection="column">
-        <Text>When should Claude use this agent?</Text>
+        <Text>When should {PRODUCT_NAME} use this agent?</Text>
 
         <Box marginTop={1}>
           <TextInput

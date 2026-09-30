@@ -1,0 +1,32 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts(91,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/app-host/src/__tests__/declaredDependencies.test.ts:81-101 ---
+     81  function deriveThyroxReferences(): DerivedHit[] {
+     82    const hits: DerivedHit[] = []
+     83    for (const filePath of collectSourceFiles(SRC_ROOT)) {
+     84      const text = readFileSync(filePath, 'utf8')
+     85      const stripped = text.replace(TYPE_ONLY_IMPORT_RE, '')
+     86      for (const match of stripped.matchAll(THYROX_REFERENCE_RE)) {
+     87        const packageName = match[1]
+     88        const upToMatch = stripped.slice(0, match.index ?? 0)
+     89        const lineNumber = upToMatch.split('\n').length
+     90        hits.push({
+     91>         packageName,
+     92          filePath: relative(SRC_ROOT, filePath),
+     93          lineNumber,
+     94        })
+     95      }
+     96    }
+     97    return hits
+     98  }
+     99  
+    100  const derivedHits = deriveThyroxReferences()
+    101  const derivedNames = [...new Set(derivedHits.map((h) => h.packageName))].sort()

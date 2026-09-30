@@ -1,0 +1,16 @@
+# commit-ident
+
+## Qué se lanzó
+
+```
+bash -c git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -F .claude/jobs/commit-identificadores.msg -- src/corpus/archive_extract.py src/corpus/bie_series.py src/corpus/cfb.py src/corpus/doc_to_text.py src/corpus/docx_to_text.py src/corpus/ooxml.py src/corpus/pdf_to_text.py src/corpus/term_census.py src/corpus/xls_to_text.py src/corpus/xlsx_to_text.py src/hooks/detect_unbounded_wait.py src/session/kernel_modules.py src/session/session_restart.py src/task/task_ids.py src/typescript/emit_declarations.py src/verify/check_identifier_language.py src/verify/check_package_typecheck.py src/verify/check_rst_toctree.py tests/corpus/test_archive_extract.py tests/corpus/test_backfill_store_destination.py tests/corpus/test_bie_series.py tests/corpus/test_cfb.py tests/corpus/test_doc_to_text.py tests/corpus/test_docx_charts.py tests/corpus/test_ooxml.py tests/corpus/test_term_census.py tests/corpus/test_xls_to_text.py tests/hooks/test_detect_unbounded_wait.py tests/meta/test_runner_reach.py tests/paths/test_consumer_strict_optin.py tests/paths/test_declaration_port.py tests/session/test_job_runs.py tests/session/test_jobs_home.py tests/session/test_kernel_module_support.py tests/session/test_session_restart.py tests/session/test_transcripts_home.py tests/task/test_task_ids.py tests/typescript/test_emit_declarations.py tests/verify/test_check_rst_toctree.py tests/verify/test_package_typecheck.py .env.example bin/close_exports bin/run_ts_isolated .claude/baselines/identifier_language_baseline_claude.txt .claude/workbench/traducir-identificadores-nuevos-20260924T034632
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

@@ -14,7 +14,7 @@
  *   render in default fg instead of white/pink. Output structure (line
  *   numbers, markers, backgrounds, word-diff) is identical.
  * - BAT_THEME env support is a stub: highlight.js has no bat theme set, so
- *   getSyntaxTheme always returns the default for the given Claude theme.
+ *   getSyntaxTheme always returns the default for the given thyrox theme.
  */
 
 import { diffArrays } from 'diff'
@@ -190,35 +190,6 @@ function defaultSyntaxThemeName(themeName: string): string {
   if (themeName.includes('ansi')) return 'ansi'
   if (themeName.includes('dark')) return 'Royal Gold Dark'
   return 'GitHub'
-}
-
-// highlight.js scope → syntect Monokai Extended foreground (measured from the
-// Rust module's output so colors match the original exactly)
-const MONOKAI_SCOPES: Record<string, Color> = {
-  keyword: rgb(249, 38, 114),
-  _storage: rgb(102, 217, 239),
-  built_in: rgb(166, 226, 46),
-  type: rgb(166, 226, 46),
-  literal: rgb(190, 132, 255),
-  number: rgb(190, 132, 255),
-  string: rgb(230, 219, 116),
-  title: rgb(166, 226, 46),
-  'title.function': rgb(166, 226, 46),
-  'title.class': rgb(166, 226, 46),
-  'title.class.inherited': rgb(166, 226, 46),
-  params: rgb(253, 151, 31),
-  comment: rgb(117, 113, 94),
-  meta: rgb(117, 113, 94),
-  attr: rgb(166, 226, 46),
-  attribute: rgb(166, 226, 46),
-  variable: rgb(255, 255, 255),
-  'variable.language': rgb(255, 255, 255),
-  property: rgb(255, 255, 255),
-  operator: rgb(249, 38, 114),
-  punctuation: rgb(248, 248, 242),
-  symbol: rgb(190, 132, 255),
-  regexp: rgb(230, 219, 116),
-  subst: rgb(248, 248, 242),
 }
 
 // Custom dark theme for the TUI: lower saturation, richer gold accents, and
@@ -1020,7 +991,7 @@ export function getSyntaxTheme(themeName: string): SyntaxTheme {
   // highlight.js has no bat theme set, so env vars can't select alternate
   // syntect themes. We still report the env var if set, for diagnostics.
   const envTheme =
-    process.env.CLAUDE_CODE_SYNTAX_HIGHLIGHT ?? process.env.BAT_THEME
+    process.env.THYROX_CODE_SYNTAX_HIGHLIGHT ?? process.env.BAT_THEME
   void envTheme
   return { theme: defaultSyntaxThemeName(themeName), source: null }
 }

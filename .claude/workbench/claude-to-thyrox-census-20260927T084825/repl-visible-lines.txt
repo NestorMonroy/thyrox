@@ -1,0 +1,171 @@
+src/packages/repl/src/commands/doctor/index.ts:7:description: 'Diagnose and verify your Claude Code installation and settings',
+src/packages/repl/src/commands/install-slack-app/index.ts:6:description: 'Install the Claude Slack app',
+src/packages/repl/src/commands/mobile/index.ts:7:description: 'Show QR code to download the Claude mobile app',
+src/packages/repl/src/commands/passes/index.ts:13:return 'Share a free week of Claude Code with friends and earn extra usage'
+src/packages/repl/src/commands/passes/index.ts:15:return 'Share a free week of Claude Code with friends'
+src/packages/repl/src/commands/stats/index.ts:6:description: 'Show your Claude Code usage statistics and activity',
+src/packages/repl/src/commands/statusline.tsx:7:description: "Set up Claude Code's status line UI",
+src/packages/repl/src/commands/stickers/index.ts:6:description: 'Order Claude Code stickers',
+src/packages/repl/src/components/AutoModeOptInDialog.tsx:9:"Auto mode lets Claude handle permission prompts automatically — Claude checks each tool call for risky actions and prompt injection before executing.
+src/packages/repl/src/components/BypassPermissionsModeDialog.tsx:44:title="WARNING: Claude Code running in Bypass Permissions mode"
+src/packages/repl/src/components/BypassPermissionsModeDialog.tsx:50:In Bypass Permissions mode, Claude Code will not ask for your approval
+src/packages/repl/src/components/ClaudeInChromeOnboarding.tsx:42:your browser directly from Claude Code. You can navigate websites,
+src/packages/repl/src/components/ClaudeInChromeOnboarding.tsx:58:Claude can browse, click, and type on
+src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx:78:Important: Only use Claude Code with files you trust. Accessing
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:96:? 'Login method pre-selected: Subscription Plan (Claude Pro/Max)'
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:347:'Claude Account',
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:353:void sendNotification({ message: 'Claude Code login successful', notificationType: 'auth_success' }, terminal)
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:725:: `Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.`}
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:736:Claude account with subscription ·{' '}
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:1710:Claude Code supports Amazon Bedrock, Microsoft Foundry, and Vertex
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:1711:AI. Set the required environment variables, then restart Claude
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:1797:<Text>Creating API key for Claude Code…</Text>
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:86:{ label: 'Open in Claude Code Desktop', value: 'try' as const },
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:92:<PermissionDialog title="Try Claude Code Desktop">
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:96:Same Claude Code with visual diffs, live app preview, parallel
+src/packages/repl/src/components/HelpV2/General.tsx:10:Claude understands your codebase, makes edits with your permission,
+src/packages/repl/src/components/HelpV2/HelpV2.tsx:111:: `Claude Code v${MACRO.VERSION}`
+src/packages/repl/src/components/IdeOnboardingDialog.tsx:50:<Text>Welcome to Claude Code for {ideName}</Text>
+src/packages/repl/src/components/IdeOnboardingDialog.tsx:64:• Claude has context of <Text color="suggestion">⧉ open files</Text>{' '}
+src/packages/repl/src/components/IdeOnboardingDialog.tsx:68:• Review Claude Code&apos;s changes{' '}
+src/packages/repl/src/components/InterruptedByUser.tsx:8:<Text dimColor>· What should Claude do instead?</Text>
+src/packages/repl/src/components/LogSelector.tsx:1101:Claude found these results:
+src/packages/repl/src/components/LogSelector.tsx:1144:Search deeply using Claude →
+src/packages/repl/src/components/LogSelector.tsx:1260:<Text>Searching with Claude…</Text>
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx:129:carries prompt injection risks. Restart Claude Code without {flag} to
+src/packages/repl/src/components/LogoV2/CondensedLogo.tsx:59:const versionPrefix = 'Claude Code v'
+src/packages/repl/src/components/LogoV2/CondensedLogo.tsx:93:<Text bold>Claude Code</Text>{' '}
+src/packages/repl/src/components/LogoV2/GuestPassesUpsell.tsx:69:? `Share Claude Code and earn ${formatCreditAmount(reward)} of extra usage · /passes`
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:181:? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:228:const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:229:const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:392:? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE
+src/packages/repl/src/components/LogoV2/WelcomeV2.tsx:9:const welcomeMessage = 'Welcome to Claude Code'
+src/packages/repl/src/components/LogoV2/feedConfigs.tsx:66:? `Share Claude Code and earn ${formatCreditAmount(reward)} of extra usage`
+src/packages/repl/src/components/LogoV2/feedConfigs.tsx:67:: 'Share Claude Code with friends'
+src/packages/repl/src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx:72:{ label: 'No, exit Claude Code', value: 'exit' },
+src/packages/repl/src/components/ModelPicker.tsx:269:'Switch between Claude models. Applies to this session and future Claude Code sessions. For other/previous model names, specify with --model.'}
+src/packages/repl/src/components/Onboarding.tsx:117:<Text>Claude can make mistakes</Text>
+src/packages/repl/src/components/Onboarding.tsx:119:You should always review Claude&apos;s responses, especially when
+src/packages/repl/src/components/Onboarding.tsx:181:<Text bold>Use Claude Code&apos;s terminal setup?</Text>
+src/packages/repl/src/components/OutputStylePicker.tsx:16:'Claude completes coding tasks efficiently and provides concise responses'
+src/packages/repl/src/components/OutputStylePicker.tsx:78:This changes how Claude Code communicates with you
+src/packages/repl/src/components/Passes/Passes.tsx:220:? `Share a free week of Claude Code with friends. If they love it and subscribe, you'll get ${formatCreditAmount(referrerReward)} of extra usage to ke
+src/packages/repl/src/components/Passes/Passes.tsx:221:: 'Share a free week of Claude Code with friends. '}
+src/packages/repl/src/components/PromptInput/IssueFlagBanner.tsx:22:Something off with Claude?
+src/packages/repl/src/components/PromptInput/PromptInput.tsx:1078:text: 'This prompt will launch an ultraplan session in Claude Code on the web',
+src/packages/repl/src/components/PromptInput/PromptInput.tsx:1091:text: 'Run /ultrareview after Claude finishes to review these changes in the cloud',
+src/packages/repl/src/components/PromptInput/PromptInput.tsx:1102:text: 'This prompt will steer Claude into autonomous workflow mode',
+src/packages/repl/src/components/RemoteCallout.tsx:55:(claude.ai/code) or the Claude app, so you can pick up where you
+src/packages/repl/src/components/ResumeTask.tsx:138:<Text bold>Loading Claude Code sessions…</Text>
+src/packages/repl/src/components/ResumeTask.tsx:141:{retrying ? 'Retrying…' : 'Fetching your Claude Code sessions…'}
+src/packages/repl/src/components/ResumeTask.tsx:151:Error loading Claude Code sessions
+src/packages/repl/src/components/ResumeTask.tsx:168:No Claude Code sessions found
+src/packages/repl/src/components/ResumeTask.tsx:324:<Text dimColor>Teleport requires a Claude account</Text>
+src/packages/repl/src/components/ResumeTask.tsx:326:Run <Text bold>/login</Text> and select &quot;Claude account with
+src/packages/repl/src/components/ResumeTask.tsx:335:<Text dimColor>Sorry, Claude encountered an error</Text>
+src/packages/repl/src/components/ResumeTask.tsx:342:<Text dimColor>Sorry, Claude Code encountered an error</Text>
+src/packages/repl/src/components/Settings/Config.tsx:800:label: 'Notify when Claude decides',
+src/packages/repl/src/components/Settings/Config.tsx:1343:`${globalConfig.agentPushNotifEnabled ? 'Enabled' : 'Disabled'} Claude-decision notifications`,
+src/packages/repl/src/components/Spinner.tsx:330:? "Use /btw to ask a quick side question without interrupting Claude's current work"
+src/packages/repl/src/components/Stats.tsx:99:<Text> Loading your Claude Code stats…</Text>
+src/packages/repl/src/components/Stats.tsx:212:No stats available yet. Start using Claude Code!
+src/packages/repl/src/components/TeleportError.tsx:117:<Dialog title="Log in to Claude" onCancel={onCancel}>
+src/packages/repl/src/components/TeleportError.tsx:121:Your Claude Pro/Max subscription will be used by Claude Code.
+src/packages/repl/src/components/TeleportError.tsx:126:{ label: 'Login with Claude account', value: 'login' },
+src/packages/repl/src/components/TeleportRepoMismatchDialog.tsx:78:Open Claude Code in <Text bold>{targetRepo}</Text>:
+src/packages/repl/src/components/ThemePicker.tsx:170:'+  console.log("Hello, Claude!");',
+src/packages/repl/src/components/ThinkingToggle.tsx:32:description: 'Claude will think before responding',
+src/packages/repl/src/components/ThinkingToggle.tsx:37:description: 'Claude will respond without extended thinking',
+src/packages/repl/src/components/WorkflowMultiselectDialog.tsx:21:label: '@Claude Code - Tag @claude in issues and PR comments',
+src/packages/repl/src/components/WorkflowMultiselectDialog.tsx:25:label: 'Claude Code Review - Automated code review on new PRs',
+src/packages/repl/src/components/agents/AgentDetail.tsx:76:<Text bold>Description</Text> (tells Claude when to use this agent):
+src/packages/repl/src/components/agents/AgentsList.tsx:252:No agents found. Create specialized subagents that Claude can
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx:110:<Text bold>Description</Text> (tells Claude when to use this agent):
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:46:subtitle="Description (tell Claude when to use this agent)"
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:67:<Text>When should Claude use this agent?</Text>
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx:13:label: 'Generate with Claude (recommended)',
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:240:settings.json or ask Claude.
+src/packages/repl/src/components/hooks/SelectEventMode.tsx:57:settings.json directly or ask Claude.{' '}
+src/packages/repl/src/components/hooks/SelectHookMode.tsx:53:To add hooks, edit settings.json directly or ask Claude.
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx:69:To add hooks, edit settings.json directly or ask Claude.
+src/packages/repl/src/components/hooks/ViewHookMode.tsx:77:Claude to help.
+src/packages/repl/src/components/mcp/ElicitationDialog.tsx:287:useNotifyAfterTimeout('Claude Code needs your input', 'elicitation_dialog')
+src/packages/repl/src/components/mcp/ElicitationDialog.tsx:1311:'Claude Code needs your input',
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:144:'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:148:'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:394:'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:400:'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+src/packages/repl/src/components/mcp/MCPSettings.tsx:174:: 'Claude Code'
+src/packages/repl/src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx:14:<Text color="subtle">User rejected Claude&apos;s plan:</Text>
+src/packages/repl/src/components/sandbox/SandboxOverridesTab.tsx:118:When a command fails due to sandbox restrictions, Claude can retry
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:53:return 'Review the plan in Claude Code on the web'
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:163:This will terminate the Claude Code on the web session.
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:219:label: 'Review in Claude Code on the web',
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:383:{ label: 'Open in Claude Code on the web', value: 'open' },
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:387:{ label: 'Open in Claude Code on the web', value: 'open' },
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:46:'Ultraplan sends your task to Claude Code on the web for deep exploration. ' +
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:47:'Claude will research, draft a detailed plan, and return it here for your review ' +
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:49:dialogPipeline: 'Your prompt → Claude Code on the web → Plan review → Implementation',
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:110:? 'Disable remote control and launch in Claude Code on the web'
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:111:: 'launch in Claude Code on the web';
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:138:For more information on Claude Code on the web: <Link url={CCR_TERMS_URL}>{CCR_TERMS_URL}</Link>
+src/packages/repl/src/deepLink/registerProtocol.ts:34:const APP_NAME = 'Claude Code URL Handler'
+src/packages/repl/src/deepLink/registerProtocol.ts:36:const MACOS_APP_NAME = 'Claude Code URL Handler.app'
+src/packages/repl/src/deepLink/registerProtocol.ts:111:<string>Claude Code Deep Link</string>
+src/packages/repl/src/deepLink/registerProtocol.ts:149:Comment=Handle ${DEEP_LINK_PROTOCOL}:// deep links for Claude Code
+src/packages/repl/src/diagnostics/claudeDesktop.ts:27:'Claude',
+src/packages/repl/src/diagnostics/claudeDesktop.ts:40:const configPath = `/mnt/c${wslPath}/AppData/Roaming/Claude/claude_desktop_config.json`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:75:'Claude',
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:60:return pathExists('/Applications/Claude.app')
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:95:'/Applications/Claude.app/Contents/Info.plist',
+src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:31:Use your existing Claude {subscriptionType} plan with Claude Code
+src/packages/repl/src/hooks/useReplBridge.tsx:739:? 'Please upgrade to the latest version of the Claude mobile app to see your Remote Control sessions.'
+src/packages/repl/src/hooksConfigManager.ts:89:'Input to command is JSON with original user prompt text.\nExit code 0 - stdout shown to Claude\nExit code 2 - block processing, erase original prompt
+src/packages/repl/src/hooksConfigManager.ts:94:'Input to command is JSON with expansion_type, command_name, command_args, command_source, and original prompt.\nExit code 0 - stdout shown to Claude\
+src/packages/repl/src/hooksConfigManager.ts:103:'Input to command is JSON with session start source.\nExit code 0 - stdout shown to Claude\nBlocking errors are ignored\nOther exit codes - show stder
+src/packages/repl/src/hooksConfigManager.ts:110:summary: 'Right before Claude concludes its response',
+src/packages/repl/src/hooksConfigManager.ts:189:'Input to command is JSON with trigger (init or maintenance).\nExit code 0 - stdout shown to Claude\nBlocking errors are ignored\nOther exit codes - s
+src/packages/repl/src/hooksConfigManager.ts:246:'Input to command is JSON with file_path, memory_type (User, Project, Local, Managed), load_reason (session_start, nested_traversal, path_glob_match, 
+src/packages/repl/src/hooksSettings.ts:153:return 'Built-in hooks (registered internally by Claude Code)'
+src/packages/repl/src/keybindings/schema.ts:252:'Claude Code keybindings configuration. Customize keyboard shortcuts by context.',
+src/packages/repl/src/localInstaller.ts:121:`Failed to install Claude CLI package: ${result.stderr}`,
+src/packages/repl/src/notificationPolicy.ts:17:'idle_prompt', // REPLView idle watcher — "Claude is waiting"
+src/packages/repl/src/notifier.ts:44:const DEFAULT_TITLE = 'Claude Code'
+src/packages/repl/src/processUserInput/processSlashCommand.tsx:735:content: `This skill can only be invoked by Claude, not directly by users. Ask Claude to use the "${commandName}" skill for you.`,
+src/packages/repl/src/projectOnboardingState.ts:29:text: 'Ask Claude to create a new app or clone a repository',
+src/packages/repl/src/projectOnboardingState.ts:36:text: 'Run /init to create a CLAUDE.md file with instructions for Claude',
+src/packages/repl/src/promptSuggestion.tsx:257:const SUGGESTION_PROMPT = `[SUGGESTION MODE: Suggest what the user might naturally type next into Claude Code.]
+src/packages/repl/src/promptSuggestion.tsx:268:Claude offers options → suggest the one the user would likely pick, based on conversation
+src/packages/repl/src/promptSuggestion.tsx:269:Claude asks to continue → "yes" or "go ahead"
+src/packages/repl/src/promptSuggestion.tsx:278:- Claude-voice ("Let me...", "I'll...", "Here's...")
+src/packages/repl/src/screens/Doctor.tsx:243:onDone('Claude Code diagnostics dismissed', { display: 'system' })
+src/packages/repl/src/screens/REPLView.tsx:1111:const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'Claude Code';
+src/packages/repl/src/screens/REPLView.tsx:4316:message: 'Claude is waiting for your input',
+src/packages/repl/src/screens/REPLView.tsx:5054:the user sees their input echoed while Claude processes. */}
+src/packages/repl/src/screens/agentFleet/components/FleetBanner.tsx:50:<Text bold>Claude Code</Text>
+src/packages/repl/src/screens/repl/useSuspendResumeHandlers.ts:23:`\nClaude Code has been suspended. Run \`fg\` to bring Claude Code back.\nNote: ctrl + z now suspends Claude Code, ctrl + _ undoes input.\n`,
+src/packages/repl/src/tips/tipRegistry.ts:117:`Start with small features or bug fixes, tell Claude to propose a plan, and verify its suggested edits`,
+src/packages/repl/src/tips/tipRegistry.ts:164:'Use git worktrees to run multiple Claude sessions in parallel.',
+src/packages/repl/src/tips/tipRegistry.ts:179:'Running multiple Claude sessions? Use /color and /rename to tell them apart at a glance.',
+src/packages/repl/src/tips/tipRegistry.ts:237:content: async () => 'Use /memory to view and manage Claude memory',
+src/packages/repl/src/tips/tipRegistry.ts:276:'Hit Enter to queue up additional messages while Claude is working.',
+src/packages/repl/src/tips/tipRegistry.ts:286:'Send messages to Claude while it works to steer Claude in real-time',
+src/packages/repl/src/tips/tipRegistry.ts:293:'Ask Claude to create a todo list when working on complex tasks to track progress and remain on track',
+src/packages/repl/src/tips/tipRegistry.ts:326:content: async () => 'Connect Claude to your IDE · /ide',
+src/packages/repl/src/tips/tipRegistry.ts:352:content: async () => 'Run /install-slack-app to use Claude in Slack',
+src/packages/repl/src/tips/tipRegistry.ts:376:'Paste images into Claude Code using control+v (not cmd+v!)',
+src/packages/repl/src/tips/tipRegistry.ts:460:'Run Claude Code locally or remotely using the Claude desktop app: clau.de/desktop',
+src/packages/repl/src/tips/tipRegistry.ts:468:return `Continue your session in Claude Code Desktop with ${blue('/desktop')}`
+src/packages/repl/src/tips/tipRegistry.ts:489:'/mobile to use Claude Code from the Claude app on your phone',
+src/packages/repl/src/tips/tipRegistry.ts:496:`Your default model setting is Opus Plan Mode. Press ${getShortcutDisplay('chat:cycleMode', 'Chat', 'shift+tab')} twice to activate Plan Mode and plan
+src/packages/repl/src/tips/tipRegistry.ts:544:? `Use ${cmd} for better one-shot answers. Claude thinks it through first.`
+src/packages/repl/src/tips/tipRegistry.ts:573:? `For big tasks, tell Claude to ${blue('use subagents')}. They work in parallel and keep your main thread clean.`
+src/packages/repl/src/tips/tipRegistry.ts:574:: `Say ${blue('"fan out subagents"')} and Claude sends a team. Each one digs deep so nothing gets missed.`
+src/packages/repl/src/tips/tipRegistry.ts:616:? `Share Claude Code and earn ${claude(formatCreditAmount(reward))} of extra usage · ${claude('/passes')}`
+src/packages/repl/src/uiHelpers/statusNoticeDefinitions.tsx:97:Auth conflict: Using {authTokenInfo.source} instead of Claude account
+src/packages/repl/src/ultraplan.ts:131:`Ultraplan approved — executing in Claude Code on the web. Follow along at: ${url}`,
+src/packages/repl/src/ultraplan.ts:197:return `${DIAMOND_OPEN} ultraplan\n${prefix}Starting Claude Code on the web…`;
+src/packages/repl/src/ultraplan.ts:201:return `${DIAMOND_OPEN} ultraplan · Monitor progress in Claude Code on the web ${url}\nYou can continue working — when the ${DIAMOND_OPEN} fills, pres
+src/packages/repl/src/ultraplan.ts:295:'(Opus). Runs in Claude Code on the web. When the plan is ready,',
+src/packages/repl/src/ultraplan.ts:469:description: `~10–30 min · Claude Code on the web drafts an advanced plan you can edit and approve. See ${CCR_TERMS_URL}`,

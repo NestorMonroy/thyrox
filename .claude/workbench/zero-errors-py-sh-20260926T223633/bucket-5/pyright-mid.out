@@ -1,0 +1,46 @@
+/home/user/thyrox/src/corpus/backfill_findings_history.py
+  /home/user/thyrox/src/corpus/backfill_findings_history.py:209:22 - error: "execute" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/agents/test_measure_delta.py
+  /home/user/thyrox/tests/agents/test_measure_delta.py:69:39 - error: "name" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/agents/test_measure_delta.py:70:55 - error: "parent" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/agents/test_register_session.py
+  /home/user/thyrox/tests/agents/test_register_session.py:63:47 - error: Operator "in" not supported for types "Literal['registrar-sesion']" and "list[str] | None"
+    Operator "in" not supported for types "Literal['registrar-sesion']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/agents/test_register_session.py:64:43 - error: Operator "in" not supported for types "Literal['--repo']" and "list[str] | None"
+    Operator "in" not supported for types "Literal['--repo']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/agents/test_register_session.py:64:63 - error: Operator "in" not supported for types "Literal['docs']" and "list[str] | None"
+    Operator "in" not supported for types "Literal['docs']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/agents/test_register_session.py:65:42 - error: Operator "in" not supported for types "Literal['a1']" and "list[str] | None"
+    Operator "in" not supported for types "Literal['a1']" and "None" (reportOperatorIssue)
+/home/user/thyrox/tests/cache/test_work_cache.py
+  /home/user/thyrox/tests/cache/test_work_cache.py:113:31 - error: "FileStat" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/measurement/test_rejection_sampling.py
+  /home/user/thyrox/tests/measurement/test_rejection_sampling.py:122:42 - error: "int" is not iterable
+    "__iter__" method not defined (reportGeneralTypeIssues)
+/home/user/thyrox/tests/measurement/test_rejection_sampling_brief.py
+  /home/user/thyrox/tests/measurement/test_rejection_sampling_brief.py:124:9 - error: No overloads for "__getitem__" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/tests/measurement/test_rejection_sampling_brief.py:124:9 - error: Argument of type "tuple[int, Literal[True]] | int | tuple[int, Literal[False]]" cannot be assigned to parameter "s" of type "slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]" in function "__getitem__"
+    Type "tuple[int, Literal[True]] | int | tuple[int, Literal[False]]" is not assignable to type "slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]"
+      "int" is not assignable to "slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]" (reportArgumentType)
+  /home/user/thyrox/tests/measurement/test_rejection_sampling_brief.py:124:9 - error: No overloads for "__setitem__" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/tests/measurement/test_rejection_sampling_brief.py:124:9 - error: Argument of type "tuple[int, Literal[True]] | int | tuple[int, Literal[False]]" cannot be assigned to parameter "key" of type "slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]" in function "__setitem__"
+    Type "tuple[int, Literal[True]] | int | tuple[int, Literal[False]]" is not assignable to type "slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]"
+      "int" is not assignable to "slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]" (reportArgumentType)
+/home/user/thyrox/tests/measurement/test_speculative_speedup.py
+  /home/user/thyrox/tests/measurement/test_speculative_speedup.py:52:16 - error: "__getitem__" method not defined on type "int" (reportIndexIssue)
+  /home/user/thyrox/tests/measurement/test_speculative_speedup.py:73:27 - error: "__getitem__" method not defined on type "int" (reportIndexIssue)
+/home/user/thyrox/tests/task/test_board_sync.py
+  /home/user/thyrox/tests/task/test_board_sync.py:195:7 - error: Argument of type "list[str] | bool" cannot be assigned to parameter "condition" of type "bool" in function "check"
+    Type "list[str] | bool" is not assignable to type "bool"
+      "list[str]" is not assignable to "bool" (reportArgumentType)
+/home/user/thyrox/tests/task/test_task_ids.py
+  /home/user/thyrox/tests/task/test_task_ids.py:67:68 - error: Variable not allowed in type expression (reportInvalidTypeForm)
+  /home/user/thyrox/tests/task/test_task_ids.py:388:7 - error: Argument of type "list[Any] | Any" cannot be assigned to parameter "condition" of type "bool" in function "check"
+    Type "list[Any] | Any" is not assignable to type "bool"
+      "list[Any]" is not assignable to "bool" (reportArgumentType)
+/home/user/thyrox/tests/task/test_task_source_citas.py
+  /home/user/thyrox/tests/task/test_task_source_citas.py:148:4 - error: Cannot assign to attribute "_subject_key" for class "ModuleType"
+    Attribute "_subject_key" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/task/test_task_source_citas.py:154:8 - error: Cannot assign to attribute "_subject_key" for class "ModuleType"
+    Attribute "_subject_key" is unknown (reportAttributeAccessIssue)
+20 errors, 0 warnings, 0 informations

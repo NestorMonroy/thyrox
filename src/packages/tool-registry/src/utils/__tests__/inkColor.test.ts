@@ -39,22 +39,22 @@ describe('toInkColor — known agent colors', () => {
 
 describe('toInkColor — unknown color fallback', () => {
   test('unknown color gets "ansi:" prefix', () => {
-    expect(toInkColor('hotpink')).toBe('ansi:hotpink')
+    expect(String(toInkColor('hotpink'))).toBe('ansi:hotpink')
   })
 
   test('hex-style color string gets "ansi:" prefix', () => {
-    expect(toInkColor('#ff00ff')).toBe('ansi:#ff00ff')
+    expect(String(toInkColor('#ff00ff'))).toBe('ansi:#ff00ff')
   })
 
   test('uppercase known color name → fallback (case-sensitive lookup)', () => {
     // Critical: agent color name lookup is case-sensitive. 'RED' is
     // NOT a known agent color → falls through to ansi: prefix.
     // Catches a refactor that adds .toLowerCase() to the lookup.
-    expect(toInkColor('RED')).toBe('ansi:RED')
+    expect(String(toInkColor('RED'))).toBe('ansi:RED')
   })
 
   test('color with whitespace → ansi:fallback (no trim applied)', () => {
-    expect(toInkColor(' red ')).toBe('ansi: red ')
+    expect(String(toInkColor(' red '))).toBe('ansi: red ')
   })
 })
 

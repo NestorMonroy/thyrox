@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { FLAG_ICON } from '@thyrox/output/constants/figures.js'
 import { Box, Text } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * ANT-ONLY: Banner shown in the transcript that prompts users to report
@@ -19,7 +20,7 @@ export function IssueFlagBanner(): React.ReactNode {
       <Text>
         <Text dimColor>[ANT-ONLY] </Text>
         <Text color="warning" bold>
-          Something off with Claude?
+          Something off with {PRODUCT_NAME}?
         </Text>
         <Text dimColor> /issue to report it</Text>
       </Text>

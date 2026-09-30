@@ -35,11 +35,7 @@ export function WorkspaceTab({
   useEffect(() => {
     onHeaderFocusChange?.(headerFocused)
   }, [headerFocused, onHeaderFocusChange])
-  // Copia de `ccnmt: packages/permission/src/components/rules/WorkspaceTab.tsx`
-  // con los comentarios traducidos; el cuerpo es el de la fuente.
-  //
-  // Toma solo los directorios de workspace adicionales, no el directorio de
-  // trabajo actual.
+  // Get only additional workspace directories (not the current working directory)
   const additionalDirectories = React.useMemo((): DirectoryItem[] => {
     return Array.from(
       toolPermissionContext.additionalWorkingDirectories.keys(),
@@ -72,7 +68,7 @@ export function WorkspaceTab({
     [onExit],
   )
 
-  // Las opciones de la vista de lista principal.
+  // Main list view options
   const options = React.useMemo(() => {
     const opts = additionalDirectories.map(dir => ({
       label: dir.path,
@@ -87,7 +83,7 @@ export function WorkspaceTab({
     return opts
   }, [additionalDirectories])
 
-  // La vista de lista principal.
+  // Main list view
   return (
     <Box flexDirection="column" marginBottom={1}>
       {/* Current working directory section */}

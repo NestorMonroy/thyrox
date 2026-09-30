@@ -14,7 +14,7 @@ import type { RuleDefinition } from '../../src/rules/types.ts'
 import { render, resolveParameters, toMarkdown, UnresolvedParameterError } from '../../src/rules/emit/markdown.ts'
 import { consumerRulesDir, RULES_SEGMENT } from '../../src/rules/paths.ts'
 import { emittedMarker } from '../../src/rules/provenance.ts'
-import { stateDir } from '../../src/workbench/paths.ts'
+import { stateDir } from '../../src/packages/workbench/paths.ts'
 import { RULES } from '../../src/rules/index.ts'
 
 const universal: RuleDefinition = {
@@ -126,7 +126,7 @@ describe('el registro', () => {
     for (const rule of RULES) {
       const declarados = new Set((rule.parameters ?? []).map((p) => p.name))
       const usados = [...rule.body.matchAll(/\{\{([A-Za-z][A-Za-z0-9_]*)\}\}/g)].map((m) => m[1])
-      for (const nombre of usados) expect(declarados.has(nombre)).toBe(true)
+      for (const nombre of usados) expect(declarados.has(nombre!)).toBe(true)
     }
   })
 

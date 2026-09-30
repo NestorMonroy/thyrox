@@ -1,0 +1,12 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 6 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 6 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 6 archivo(s) pedido(s))
+ruff: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+OK: identificadores en inglés (3 archivos medidos, 2081 en deuda heredada).
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 55633 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1552 aparición(es) del producto en 335 archivo(s) (alcance medido: src)

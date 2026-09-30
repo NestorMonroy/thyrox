@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+72 |     expect(currentJobDir(host())).toBeUndefined()
+73 |   })
+74 | 
+75 |   test('usesDaemonBackend (jte): THYROX_BG_BACKEND igual a daemon', () => {
+76 |     expect(usesDaemonBackend(host({ env: { THYROX_BG_BACKEND: 'daemon' } }))).toBe(true)
+77 |     expect(usesDaemonBackend(host({ env: { THYROX_BG_BACKEND: 'detached' } }))).toBe(false)
+                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:77:81)
+(fail) sessionKind (oJ) y los predicados por tipo > usesDaemonBackend (jte): THYROX_BG_BACKEND igual a daemon [0.26ms]
+
+ 8 pass
+ 1 fail
+ 36 expect() calls
+Ran 9 tests across 1 file. [38.00ms]

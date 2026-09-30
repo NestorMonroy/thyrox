@@ -1,30 +1,6 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/createSession.ts`.
- * `getClaudeAIOAuthTokens`/`getOrganizationUUID`/`getOauthConfig`/
- * `getOAuthHeaders`/`parseGitHubRepository`/`parseGitRemote`/
- * `getDefaultBranch`/`getMainLoopModel`/`logForDebugging`/
- * `errorMessage` son sustitutos — ver
- * `internal/pendingCrossPackageDeps.ts`. La fuente cargaba estos
- * símbolos (más `axios`) con `await import(...)` perezoso en cada
- * función exportada; aquí se izan a imports estáticos de módulo porque
- * el especificador SÍ resuelve (Regla 3): `axios` es dependencia npm
- * real, y el resto son los sustitutos de este mismo archivo — nunca
- * paquetes `@claude-code-how-works/*` que de verdad no resolverían.
- */
-import axios from 'axios'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import {
-  errorMessage,
-  getClaudeAIOAuthTokens,
-  getDefaultBranch,
-  getMainLoopModel,
-  getOAuthHeaders,
-  getOauthConfig,
-  getOrganizationUUID,
-  logForDebugging,
-  parseGitHubRepository,
-  parseGitRemote,
-} from './internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { extractErrorDetail } from './debugUtils.js'
 import { toCompatSessionId } from './sessionIdCompat.js'
 
@@ -39,21 +15,21 @@ type GitOutcome = {
   git_info: { type: 'github'; repo: string; branches: string[] }
 }
 
-// Los eventos deben envolverse en { type: 'event', data: <sdk_message> }
-// para el endpoint POST /v1/sessions (formato de unión discriminada).
+// Events must be wrapped in { type: 'event', data: <sdk_message> } for the
+// POST /v1/sessions endpoint (discriminated union format).
 type SessionEvent = {
   type: 'event'
   data: SDKMessage
 }
 
 /**
- * Crea una sesión en un entorno de bridge vía POST /v1/sessions.
+ * Create a session on a bridge environment via POST /v1/sessions.
  *
- * La usan tanto `claude remote-control` (sesión vacía para que el
- * usuario tenga dónde escribir de inmediato) como `/remote-control`
- * (sesión pre-poblada con historial de conversación).
+ * Used by both `claude remote-control` (empty session so the user has somewhere to
+ * type immediately) and `/remote-control` (session pre-populated with conversation
+ * history).
  *
- * Devuelve el ID de sesión en éxito, o null si la creación falla (no fatal).
+ * Returns the session ID on success, or null if creation fails (non-fatal).
  */
 export async function createBridgeSession({
   environmentId,
@@ -76,6 +52,15 @@ export async function createBridgeSession({
   getAccessToken?: () => string | undefined
   permissionMode?: string
 }): Promise<string | null> {
+  const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
+  const { getOrganizationUUID } = await import('@thyrox/provider/oauth/client.js')
+  const { getOauthConfig } = await import('@thyrox/provider/oauthConstants')
+  const { getOAuthHeaders } = await import('@thyrox/teleport/api.js')
+  const { parseGitHubRepository } = await import('@thyrox/storage/detectRepository.js')
+  const { getDefaultBranch } = await import('@thyrox/storage/git.js')
+  const { getMainLoopModel } = await import('@thyrox/provider/model.js')
+  const { default: axios } = await import('axios')
+
   const accessToken =
     getAccessToken?.() ?? getClaudeAIOAuthTokens()?.accessToken
   if (!accessToken) {
@@ -89,11 +74,12 @@ export async function createBridgeSession({
     return null
   }
 
-  // Construye la fuente git y el contexto de outcome
+  // Build git source and outcome context
   let gitSource: GitSource | null = null
   let gitOutcome: GitOutcome | null = null
 
   if (gitRepoUrl) {
+    const { parseGitRemote } = await import('@thyrox/storage/detectRepository.js')
     const parsed = parseGitRemote(gitRepoUrl)
     if (parsed) {
       const { host, owner, name } = parsed
@@ -112,7 +98,7 @@ export async function createBridgeSession({
         },
       }
     } else {
-      // Fallback: intenta parseGitHubRepository para el formato owner/repo
+      // Fallback: try parseGitHubRepository for owner/repo format
       const ownerRepo = parseGitHubRepository(gitRepoUrl)
       if (ownerRepo) {
         const [owner, name] = ownerRepo.split('/')
@@ -194,18 +180,23 @@ export async function createBridgeSession({
 }
 
 /**
- * Obtiene una sesión de bridge vía GET /v1/sessions/{id}.
+ * Fetch a bridge session via GET /v1/sessions/{id}.
  *
- * Devuelve el environment_id de la sesión (para el resume de
- * `--session-id`) y su título. Usa las mismas cabeceras acotadas a la
- * org que create/archive — el cliente a nivel de environments en
- * bridgeApi.ts usa una cabecera beta distinta y sin UUID de org, lo que
- * hace que la Sessions API devuelva 404.
+ * Returns the session's environment_id (for `--session-id` resume) and title.
+ * Uses the same org-scoped headers as create/archive — the environments-level
+ * client in bridgeApi.ts uses a different beta header and no org UUID, which
+ * makes the Sessions API return 404.
  */
 export async function getBridgeSession(
   sessionId: string,
   opts?: { baseUrl?: string; getAccessToken?: () => string | undefined },
 ): Promise<{ environment_id?: string; title?: string } | null> {
+  const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
+  const { getOrganizationUUID } = await import('@thyrox/provider/oauth/client.js')
+  const { getOauthConfig } = await import('@thyrox/provider/oauthConstants')
+  const { getOAuthHeaders } = await import('@thyrox/teleport/api.js')
+  const { default: axios } = await import('axios')
+
   const accessToken =
     opts?.getAccessToken?.() ?? getClaudeAIOAuthTokens()?.accessToken
   if (!accessToken) {
@@ -253,22 +244,21 @@ export async function getBridgeSession(
 }
 
 /**
- * Archiva una sesión de bridge vía POST /v1/sessions/{id}/archive.
+ * Archive a bridge session via POST /v1/sessions/{id}/archive.
  *
- * El servidor CCR nunca archiva sesiones automáticamente — el archivado
- * siempre es una acción explícita del cliente. Tanto `claude
- * remote-control` (bridge standalone) como el bridge del REPL
- * `/remote-control` siempre-activo llaman a esto durante el apagado
- * para archivar cualquier sesión que siga viva.
+ * The CCR server never auto-archives sessions — archival is always an
+ * explicit client action. Both `claude remote-control` (standalone bridge) and the
+ * always-on `/remote-control` REPL bridge call this during shutdown to archive any
+ * sessions that are still alive.
  *
- * El endpoint de archive acepta sesiones en cualquier estado (running,
- * idle, requires_action, pending) y devuelve 409 si ya está archivada,
- * lo que hace seguro llamarlo incluso si el runner del lado servidor ya
- * archivó la sesión.
+ * The archive endpoint accepts sessions in any status (running, idle,
+ * requires_action, pending) and returns 409 if already archived, making
+ * it safe to call even if the server-side runner already archived the
+ * session.
  *
- * Los llamadores deben manejar errores — esta función no tiene
- * try/catch; 5xx, timeouts y errores de red lanzan. El archivado es
- * best-effort durante la limpieza; los call sites envuelven con .catch().
+ * Callers must handle errors — this function has no try/catch; 5xx,
+ * timeouts, and network errors throw. Archival is best-effort during
+ * cleanup; call sites wrap with .catch().
  */
 export async function archiveBridgeSession(
   sessionId: string,
@@ -278,6 +268,12 @@ export async function archiveBridgeSession(
     timeoutMs?: number
   },
 ): Promise<void> {
+  const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
+  const { getOrganizationUUID } = await import('@thyrox/provider/oauth/client.js')
+  const { getOauthConfig } = await import('@thyrox/provider/oauthConstants')
+  const { getOAuthHeaders } = await import('@thyrox/teleport/api.js')
+  const { default: axios } = await import('axios')
+
   const accessToken =
     opts?.getAccessToken?.() ?? getClaudeAIOAuthTokens()?.accessToken
   if (!accessToken) {
@@ -321,19 +317,24 @@ export async function archiveBridgeSession(
 }
 
 /**
- * Actualiza el título de una sesión de bridge vía PATCH /v1/sessions/{id}.
+ * Update the title of a bridge session via PATCH /v1/sessions/{id}.
  *
- * Se llama cuando el usuario renombra una sesión vía /rename mientras
- * una conexión de bridge está activa, para que el título se mantenga
- * sincronizado en claude.ai/code.
+ * Called when the user renames a session via /rename while a bridge
+ * connection is active, so the title stays in sync on claude.ai/code.
  *
- * Los errores se tragan — la sincronización de título es best-effort.
+ * Errors are swallowed — title sync is best-effort.
  */
 export async function updateBridgeSessionTitle(
   sessionId: string,
   title: string,
   opts?: { baseUrl?: string; getAccessToken?: () => string | undefined },
 ): Promise<void> {
+  const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
+  const { getOrganizationUUID } = await import('@thyrox/provider/oauth/client.js')
+  const { getOauthConfig } = await import('@thyrox/provider/oauthConstants')
+  const { getOAuthHeaders } = await import('@thyrox/teleport/api.js')
+  const { default: axios } = await import('axios')
+
   const accessToken =
     opts?.getAccessToken?.() ?? getClaudeAIOAuthTokens()?.accessToken
   if (!accessToken) {
@@ -353,10 +354,9 @@ export async function updateBridgeSessionTitle(
     'x-organization-uuid': orgUUID,
   }
 
-  // El gateway de compat sólo acepta session_* (compat/convert.go:27).
-  // Los llamadores v2 pasan cse_* crudo; se re-etiqueta aquí para que
-  // todos los llamadores puedan pasar lo que tengan. Idempotente para el
-  // session_* de v1 y el compatSessionId ya convertido de bridgeMain.
+  // Compat gateway only accepts session_* (compat/convert.go:27). v2 callers
+  // pass raw cse_*; retag here so all callers can pass whatever they hold.
+  // Idempotent for v1's session_* and bridgeMain's pre-converted compatSessionId.
   const compatId = toCompatSessionId(sessionId)
   const url = `${opts?.baseUrl ?? getOauthConfig().BASE_API_URL}/v1/sessions/${compatId}`
   logForDebugging(`[bridge] Updating session title: ${compatId} → ${title}`)

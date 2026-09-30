@@ -39,9 +39,9 @@ const {
 describe('isFullscreenEnvEnabled — ant j9 parity', () => {
   const saved: Record<string, string | undefined> = {}
   const ENV_KEYS = [
-    'CLAUDE_CODE_SESSION_KIND',
-    'CLAUDE_CODE_NO_FLICKER',
-    'CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN',
+    'THYROX_CODE_SESSION_KIND',
+    'THYROX_CODE_NO_FLICKER',
+    'THYROX_CODE_DISABLE_ALTERNATE_SCREEN',
     'USER_TYPE',
     'TMUX',
     'TERM_PROGRAM',
@@ -81,13 +81,13 @@ describe('isFullscreenEnvEnabled — ant j9 parity', () => {
   // --- step 1: bg worker forced fullscreen, ahead of every opt-out ---
 
   test('bg session → fullscreen even when NO_FLICKER=0 opt-out is set', () => {
-    process.env.CLAUDE_CODE_SESSION_KIND = 'bg'
-    process.env.CLAUDE_CODE_NO_FLICKER = '0'
+    process.env.THYROX_CODE_SESSION_KIND = 'bg'
+    process.env.THYROX_CODE_NO_FLICKER = '0'
     expect(isFullscreenEnvEnabled()).toBe(true)
   })
 
   test('bg session → fullscreen even under tmux -CC', () => {
-    process.env.CLAUDE_CODE_SESSION_KIND = 'bg'
+    process.env.THYROX_CODE_SESSION_KIND = 'bg'
     process.env.TMUX = '/tmp/tmux-1000/default,1,0'
     process.env.TERM_PROGRAM = 'iTerm.app'
     process.env.TERM = 'xterm-256color'
@@ -97,19 +97,19 @@ describe('isFullscreenEnvEnabled — ant j9 parity', () => {
   // --- step 2: explicit opt-out (ant V$8) ---
 
   test('NO_FLICKER=0 → off (explicit opt-out honored for foreground)', () => {
-    process.env.CLAUDE_CODE_NO_FLICKER = '0'
+    process.env.THYROX_CODE_NO_FLICKER = '0'
     expect(isFullscreenEnvEnabled()).toBe(false)
   })
 
   test('DISABLE_ALTERNATE_SCREEN=1 → off (the V$8 arm ccb was missing)', () => {
-    process.env.CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN = '1'
+    process.env.THYROX_CODE_DISABLE_ALTERNATE_SCREEN = '1'
     expect(isFullscreenEnvEnabled()).toBe(false)
   })
 
   // --- step 3: explicit opt-in ---
 
   test('NO_FLICKER=1 → fullscreen', () => {
-    process.env.CLAUDE_CODE_NO_FLICKER = '1'
+    process.env.THYROX_CODE_NO_FLICKER = '1'
     expect(isFullscreenEnvEnabled()).toBe(true)
   })
 })

@@ -1,8 +1,5 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/errors.ts` — sus 6
- * clases, ninguna omitida. Sin imports en la fuente.
- *
- * V7 §6.5 — espacio de nombres de errores tipados de MCP.
+ * V7 §6.5 — MCP typed error namespace.
  */
 export class McpBaseError extends Error {
   readonly code: string

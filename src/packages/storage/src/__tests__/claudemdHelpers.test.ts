@@ -2,7 +2,7 @@
  * Tests for claudemd.ts pure helpers — high-traffic memory-file logic
  * that decides what gets injected into the system prompt.
  *
- * Why this matters: a wrong "isMemoryFilePath" misses CLAUDE.md edits and
+ * Why this matters: a wrong "isMemoryFilePath" misses THYROX.md edits and
  * the user sees stale injection. Wrong stripHtmlComments either swallows
  * the entire file (bad) or leaves authorial notes leaking into the prompt
  * (also bad). Wrong getLargeMemoryFiles silently truncates context.
@@ -104,8 +104,9 @@ describe('stripHtmlComments — empty / edge inputs', () => {
   })
 
   test('mixed CRLF + LF preserved when no comment present', () => {
-    // Important: the fast path (no "<!--" present) returns the original
-    // content untouched, CRLF included.
+    // Important: marked normalises \r\n during lex, but the no-comment
+    // fast path returns the original content untouched (the function
+    // returns identity when "<!--" is not present).
     const input = 'a\r\nb\nc\r\n'
     const { content, stripped } = stripHtmlComments(input)
     expect(content).toBe(input)

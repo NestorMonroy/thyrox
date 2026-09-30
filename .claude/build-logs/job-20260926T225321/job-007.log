@@ -1,0 +1,6 @@
+test-pre-commit-cache-layout:
+  ok    el pre-commit llama al gate del caché
+  ok    sobre lo preparado y en modo estricto
+  ok    su fallo bloquea el commit
+test-pre-commit-cache-layout: 3 aserciones — 3 ok, 0 falla(s)
+EXIT=0

@@ -518,6 +518,137 @@ for target in "${TARGETS[@]}"; do
 done
 
 # --------------------------------------------------------------------------
+# Paso 6 — preparar los clones: lo que vive en `.git/config` y no viaja
+#
+# Un clon nuevo trae `.githooks/` y el atributo `merge=sqlite-union`, y las dos
+# mitades que los hacen efectivos —`core.hooksPath` y la definición del
+# driver— viven en `.git/config`, que no se versiona. Sin ellas git no corre
+# ningún gate de commit y mergea el store como binario, y nada lo dice. Así
+# llegaron a develop cinco claves sin declarar con su gate en rojo
+# (H-THYROX-161). El mecanismo ya existía —`src/verify/install-hooks.sh`— y
+# nadie lo invocaba: el paso del onboarding es éste, así que lo invoca éste.
+#
+# Se DELEGA, para el proveedor y para cada consumidor: repetir aquí su lógica
+# sería la segunda fuente de verdad que este árbol prohíbe. Va con
+# `--solo-mostrar`, que activa los githooks y el driver y sólo MUESTRA los
+# hooks de sesión: escribir `settings.local.json` a mitad de una sesión cambia
+# la clave de caché del hilo, y esa decisión no es de un instalador.
+#
+# `--check` no escribe: mide `core.hooksPath` y el driver y cuenta lo que
+# falte como pendiente. `--dry-run` dice lo que haría.
+# --------------------------------------------------------------------------
+
+CLONE_INSTALLER_REL="src/verify/install-hooks.sh"
+CLONE_INSTALLER="$ROOT/$CLONE_INSTALLER_REL"
+PREFLIGHT_REL="src/verify/check-toolchain-ready.sh"
+CONTRACT_GATE_REL="src/verify/check_env_contract_keys.py"
+MEASURE_FAIL=0
+
+is_git_clone() { git -C "$1" rev-parse --show-toplevel >/dev/null 2>&1; }
+
+CLONES=()
+is_git_clone "$ROOT" && CLONES+=("$ROOT")
+for target in "${TARGETS[@]}"; do
+    is_git_clone "$target" && CLONES+=("$target")
+done
+
+check_clone() {
+    local clone="$1" current driver
+    if [ -d "$clone/.githooks" ]; then
+        current="$(git -C "$clone" config --get core.hooksPath 2>/dev/null || true)"
+        if [ "$current" != ".githooks" ]; then
+            warn "$clone — core.hooksPath=${current:-<sin fijar>}: sus githooks no corren"
+            PENDING=$((PENDING + 1))
+        fi
+    fi
+    if grep -qs "merge=sqlite-union" "$clone/.gitattributes"; then
+        driver="$(git -C "$clone" config --get merge.sqlite-union.driver 2>/dev/null || true)"
+        if [ -z "$driver" ]; then
+            warn "$clone — el driver merge.sqlite-union está declarado y sin definir"
+            PENDING=$((PENDING + 1))
+        fi
+    fi
+}
+
+prepare_clone() {
+    local clone="$1" output rc
+    output="$(THYROX_ROOT="$ROOT" THYROX_TARGET_REPO="$clone" \
+        bash "$CLONE_INSTALLER" --solo-mostrar 2>&1)"
+    rc=$?
+    # exit 3 es «githooks y driver hechos, hooks de sesión no». En el
+    # PROVEEDOR es lo esperado: thyrox no declara hooks de sesión propios —no
+    # tiene `.claude/settings.json`—, los publica para sus consumidores. En un
+    # consumidor el mismo 3 es un fallo, y cae en la rama de abajo.
+    if [ "$rc" -eq 3 ] && [ "$clone" = "$ROOT" ]; then
+        ok "$clone — githooks y driver de merge preparados (sin hooks de sesión: el proveedor no los declara)"
+        return 0
+    fi
+    [ "$rc" -eq 0 ] || {
+        warn "$clone — $CLONE_INSTALLER_REL falló (exit $rc):"
+        printf '%s\n' "$output" | sed 's/^/        /' >&2
+        MEASURE_FAIL=1
+        return 0
+    }
+    ok "$clone — githooks y driver de merge preparados"
+}
+
+if [ "${#CLONES[@]}" -gt 0 ]; then
+    case "$MODE" in
+        check)
+            for clone in "${CLONES[@]}"; do check_clone "$clone"; done
+            ;;
+        dry-run)
+            for clone in "${CLONES[@]}"; do
+                info "$clone — prepararía githooks y driver de merge ($CLONE_INSTALLER_REL --solo-mostrar)"
+            done
+            ;;
+        install)
+            if [ -f "$CLONE_INSTALLER" ]; then
+                for clone in "${CLONES[@]}"; do prepare_clone "$clone"; done
+            else
+                warn "SIN MEDIR — falta $CLONE_INSTALLER_REL: no se prepararon los githooks ni el driver de merge de ${#CLONES[@]} clon(es)"
+            fi
+            ;;
+    esac
+elif [ "$MODE" = "install" ] && [ ! -f "$CLONE_INSTALLER" ]; then
+    warn "SIN MEDIR — falta $CLONE_INSTALLER_REL, y ningún destino es un clon de git"
+fi
+
+# --------------------------------------------------------------------------
+# Paso 7 — medir el árbol, no sólo sugerir que se mida
+#
+# El informe final nombraba el preflight y nadie lo corría. Aquí corren los
+# dos que un clon nuevo necesita: el preflight de la cadena (conducta de cada
+# herramienta, githooks incluidos) y el contrato de `.env` (ninguna clave
+# leída sin declarar). Su veredicto se PROPAGA: una instalación sobre un árbol
+# que no pasa sus gates sale 1 y dice cuál. Si falta uno, se declara SIN MEDIR
+# en vez de publicar verde.
+# --------------------------------------------------------------------------
+
+run_measure() {
+    local rel="$1" label="$2" output rc
+    shift 2
+    if [ ! -f "$ROOT/$rel" ]; then
+        warn "SIN MEDIR — falta $rel ($label)"
+        return 0
+    fi
+    output="$(cd "$ROOT" && THYROX_ROOT="$ROOT" PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" "$@" "$ROOT/$rel" 2>&1)"
+    rc=$?
+    printf '\n  %s:\n' "$label"
+    printf '%s\n' "$output" | sed 's/^/    /'
+    case "$rc" in
+        0) : ;;
+        2) warn "SIN MEDIR — $rel no pudo medir (exit 2)" ;;
+        *) warn "$label en rojo (exit $rc)"; MEASURE_FAIL=1 ;;
+    esac
+}
+
+if [ "$MODE" != "dry-run" ]; then
+    run_measure "$PREFLIGHT_REL" "preflight de la cadena" bash
+    run_measure "$CONTRACT_GATE_REL" "contrato de .env" python3
+fi
+
+# --------------------------------------------------------------------------
 # Lo opcional avisa, no rehúsa. Medido sobre los documentos del consumidor que
 # citan este árbol: la forma de invocación es siempre el intérprete de Python;
 # la toolchain de TypeScript es de desarrollo del propio thyrox, y su ausencia
@@ -531,15 +662,18 @@ fi
 printf '\n'
 
 if [ "$MODE" = "check" ]; then
-    if [ "$PENDING" -eq 0 ]; then
+    if [ "$PENDING" -eq 0 ] && [ "$MEASURE_FAIL" -eq 0 ]; then
         ok "las $(( ${#TARGETS[@]} )) raíces declaran $ROOT_KEY=$ROOT"
         exit 0
     fi
-    printf '%s  %d de %d destinos sin %s%s\n' \
-        "$C_YELLOW" "$PENDING" "${#TARGETS[@]}" "$ROOT_KEY" "$C_RESET" >&2
-    printf '  corre ./install.sh sin --check para declararla\n' >&2
-    printf '  este guion escribe ESA clave y ninguna otra: las demás del\n' >&2
-    printf '  contrato son decisión del consumidor — ver %s\n' "$CONTRACT_FILE" >&2
+    if [ "$PENDING" -gt 0 ]; then
+        printf '%s  %d pendiente(s) entre %d destino(s) y sus clones%s\n' \
+            "$C_YELLOW" "$PENDING" "${#TARGETS[@]}" "$C_RESET" >&2
+        printf '  corre ./install.sh sin --check para declarar %s y preparar los clones\n' "$ROOT_KEY" >&2
+        printf '  este guion escribe ESA clave y ninguna otra: las demás del\n' >&2
+        printf '  contrato son decisión del consumidor — ver %s\n' "$CONTRACT_FILE" >&2
+    fi
+    [ "$MEASURE_FAIL" -eq 0 ] || printf '  una medición del árbol quedó en rojo: ver arriba\n' >&2
     exit 1
 fi
 
@@ -565,3 +699,10 @@ conducta, no presencia, y nombra la precondicion de lo que falte:
 
   ${C_RESET}bash "$ROOT/bin/check-toolchain-ready"${C_RESET}
 EOF
+
+# La instalación escribió lo suyo; si el árbol no pasa sus gates, se dice y se
+# sale 1. Un exit 0 aquí publicaría «listo» sobre un clon que no verifica nada.
+if [ "$MEASURE_FAIL" -ne 0 ]; then
+    printf '%s  instalado, pero el árbol NO pasa sus gates: ver arriba%s\n' "$C_YELLOW" "$C_RESET" >&2
+    exit 1
+fi

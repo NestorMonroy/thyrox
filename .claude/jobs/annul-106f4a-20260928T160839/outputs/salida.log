@@ -1,0 +1,87 @@
+== 1: sin puerto fijo
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 2: sin timeout al callback
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 3: ruta de callback fija
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 4: sin navegador
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 5: navegador siempre
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 6: timeout sin marca
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 7: error del proveedor ignorado
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 8: sin descripción del error
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 9: sin código aceptado
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 10: sin verificar state
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 11: servidor abierto
+   (src/accounts/oauth/loginRunner.ts)
+ 2 fail
+== 12: PKCE a todos
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 13: sin reto PKCE
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 14: sin dato extra de kiro
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 15: sin código de dispositivo aceptado
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 16: sin página completa
+   (src/accounts/oauth/loginRunner.ts)
+ 0 fail
+== 17: sin código de usuario
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 18: intervalo por defecto
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 19: intervalo del proveedor ignorado
+   (src/accounts/oauth/loginRunner.ts)
+ 2 fail
+== 20: slow_down sin frenar
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 21: pendiente termina
+   (src/accounts/oauth/loginRunner.ts)
+ 2 fail
+== 22: sin plazo
+   (src/accounts/oauth/loginRunner.ts)
+ SIN-RESUMEN fail
+== 23: error sin descripción
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 24: token vacío aceptado
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 25: token sin validar
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 26: token sin recortar
+   (src/accounts/oauth/loginRunner.ts)
+ 2 fail
+== 27: sin mensaje de éxito
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 28: excepción sin capturar
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== restaurado
+ 0 fail
+__BG_EXIT__=0

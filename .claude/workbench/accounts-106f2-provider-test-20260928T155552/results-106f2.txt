@@ -1,0 +1,38 @@
+== 1: sin clave aceptada -> 1
+== 2: sin receta prueba igual -> 1
+== 3: sin keyCheckPath -> 1
+== 4: sin baseUrl propia -> 1
+== 5: 401 sigue al chat -> 1
+== 6: 403 válido -> 1
+== 7: 5xx válido -> 1
+== 8: 4xx inválido -> 1
+== 9: sin bearer -> 1
+== 10: anthropic sin versión -> 1
+== 11: google sin clave -> 1
+== 12: sin timeout -> 1
+== 13: modelo de la conexión ignorado -> 1
+== 14: sin variable por proveedor -> 2
+== 15: sin variable general -> 1
+== 16: nombre sin normalizar -> 1
+== 17: error de red -> 2
+== 18: cookie web ignorada -> 1
+== 19: oauth probado -> 4
+== 20: sin clave probado -> 1
+== 21: no soportado persiste -> 2
+== 22: sin baseUrl de la conexión -> 1
+== 23: error sin persistir -> 2
+== 24: fallo sin fuente -> 1
+== 25: fallo sin código -> 2
+== 26: mensaje por defecto -> 1
+== 27: sin id aceptado -> 1
+== 28: tipo ausente no avisa -> 1
+== 29: descifrado ignorado -> 1
+== 30: oauth sin aviso -> 2
+== 31: sin persistir -> 3
+== 32: inactiva probada -> 2
+== 33: saltada falla -> 1
+== 34: test sin selector -> 1
+== 35: validate siempre OK -> 1
+== 36: json de test -> 1
+== restaurado -> 0
+36 de 36 anulaciones discriminan; restaurado 0 fail.

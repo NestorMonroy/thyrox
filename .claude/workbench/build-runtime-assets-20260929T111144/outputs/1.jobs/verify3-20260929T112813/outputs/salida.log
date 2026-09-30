@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+tests/typescript/buildJavascript.test.ts:
+pkg: repunte INERTE — 3 .js no emitido(s):
+  ./dist/index.js
+  ./dist/sub/reader.js
+  ./dist/index.js
+  Corre antes: typescript-build-javascript <paquete>
+
+ 16 pass
+ 0 fail
+ 41 expect() calls
+Ran 16 tests across 1 file. [213.00ms]
+cli: 1 referencia(s) de módulo declarada(s), no emitida(s):
+  ./src/entry/cli.tsx: '../../package.json' — fuera del rootDir del paquete
+config: 1 referencia(s) de módulo declarada(s), no emitida(s):
+  ./gpuAdmission.ts: '../../..' — fuera del rootDir del paquete
+headless-sdk: 1 referencia(s) de módulo declarada(s), no emitida(s):
+  ./bin/generateCoreTypes.ts: '../src' — es un directorio, no un archivo
+mitm: 1 referencia(s) de módulo declarada(s), no emitida(s):
+  ./src/manager.ts: './server/main.ts' — referencia a otro módulo de código
+buildJavascript: 0 paquete(s) con fallo (alcance medido: 51 paquete(s))
+dist: agent/models ok (20)
+dist: tools/definitions ok (32)
+dist: tools/rupCoordinator FALLA — ENOENT: no such file or directory, open '/home/user/thyrox/.thyrox/pool-worktrees/e9a8d8b76e3d/1/src/packages/tools/dist/rupCoordinator.prompt.md'
+dist: 31 prompt(s) emitido(s) en tools
+__BG_EXIT__=1

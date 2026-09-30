@@ -1,0 +1,3 @@
+src/packages/@ant/computer-use-mcp/src/legacy/cleanup.ts(60,21): error TS2345: Argument of type '(prev: unknown) => unknown' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  Type 'unknown' is not assignable to type 'AppState'.
+    Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

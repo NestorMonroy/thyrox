@@ -1,0 +1,53 @@
+src/packages/agent/query.ts(675,15): error TS2322: Type '((notif: Notification) => void) | undefined' is not assignable to type '((notif: ProviderNotification) => void) | undefined'.
+  --- código src/packages/agent/query.ts:665-685 ---
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667                hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671                effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675>               addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {
+    678                    total: params.taskBudget.total,
+    679                    ...(taskBudgetRemaining !== undefined && {
+    680                      remaining: taskBudgetRemaining,
+    681                    }),
+    682                  },
+    683                }),
+    684              },
+    685            })) {
+  Type '(notif: Notification) => void' is not assignable to type '(notif: ProviderNotification) => void'.
+    Types of parameters 'notif' and 'notif' are incompatible.
+      Type 'ProviderNotification' is not assignable to type 'Notification'.
+        Type 'ProviderNotification' is not assignable to type 'TextNotification'.
+          Type 'ProviderNotification' is not assignable to type 'BaseNotification'.
+            Types of property 'priority' are incompatible.
+              Type 'string' is not assignable to type 'Priority'.
+src/packages/agent/query.ts(798,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+  --- código src/packages/agent/query.ts:788-808 ---
+    788              }
+    789              if (isWithheldReactivePromptTooLong(message as Message)) {
+    790                withheld = true
+    791              }
+    792              if (
+    793                mediaRecoveryEnabled &&
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798>             if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804              if ((message as { type: string }).type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(

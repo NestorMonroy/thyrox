@@ -1,0 +1,32 @@
+test_member_port:
+  ok    las anclas de imports van tras el último import, incluso multilínea
+  ok    las de cuerpo van al final
+  ok    aplica las ediciones de ancla de cada ítem
+  ok    rechaza lo que no es un ancla propia, con su motivo
+  ok    un nombre importado dos veces del mismo módulo queda una vez
+  ok    los imports de valor del mismo módulo se fusionan en uno
+  ok    el import type no se mezcla con el de valor
+  ok    un import que choca con una declaración local se retira
+  ok    un nombre importado desde dos módulos queda sólo en el primero
+  ok    las anclas sin usar se retiran
+  ok    lee la salida de cada ítem por su número; la que falló no cuenta
+  ok    assemble deja el archivo sin anclas, con lo aplicado y los imports fusionados
+  ok    y nombra los ítems sin propuesta
+  ok    la primera ola sin mapa numera todos los ítems; las siguientes, su mapa
+  ok    con un mapa por ola, cada ola usa el suyo, también la primera
+  ok    un número de mapas que no cuadra con las olas se rehúsa
+  ok    un ancla prefijo de otra se aplica sólo sobre su línea
+  ok    un ayudante pequeño de un solo llamador sube hasta su dueño no absorbido
+  ok    un ayudante con dos llamadores es su propio ítem
+  ok    lo que el destino ya tiene no se porta
+  ok    las declaraciones ausentes van en su propio ítem
+  ok    un ayudante grande no se absorbe
+member_port plan: 2 ítem(s) -> /tmp/tmpfzsygvjf/step/items.txt
+  ok    plan escribe un ítem por grupo, en el formato de módulo
+  ok    el ítem nombra ancla, rangos con JSDoc y los otros miembros que usa
+  ok    las declaraciones se listan con su rango, JSDoc incluido
+  ok    un nombre repetido lleva una sola ancla de cada clase
+  ok    un nombre reexportado cuenta como declarado en el destino
+  ok    un import de varias líneas sin duplicados conserva su forma
+  ok    un 0 en el mapa salta la salida de otro módulo
+test_member_port: 29 aserciones — 29 ok, 0 falla(s)

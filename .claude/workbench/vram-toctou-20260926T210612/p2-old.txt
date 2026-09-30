@@ -1,0 +1,5 @@
+HP_GPU_PY="$HP_HERE/gpu_monitor.py"
+HP_PYPATH="$HP_HERE/..${PYTHONPATH:+:$PYTHONPATH}"
+HP_GPU_INTERVAL="${HEADLESS_POOL_GPU_INTERVAL:-0.5}"
+HP_NVIDIA_SMI=""
+if PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" available --nvidia-smi "$NVIDIA_SMI_BIN" 2>/dev/null; then

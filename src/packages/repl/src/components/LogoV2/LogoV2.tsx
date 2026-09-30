@@ -1,6 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import * as React from 'react'
-import { Box, Text, color, stringWidth } from '@anthropic/ink'
+import { Box, Text, color, stringWidth, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
 import { useTerminalSize } from '@anthropic/ink'
 import {
   getLayoutMode,
@@ -8,7 +8,6 @@ import {
   calculateOptimalLeftWidth,
   formatWelcomeMessage,
   truncatePath,
-  getRecentActivitySync,
   getLogoDisplayData,
 } from '../../uiHelpers/logoV2Utils.js'
 import { truncate } from '@thyrox/output/formatters/truncate.js'
@@ -35,6 +34,7 @@ import {
   getStartupPerfLogPath,
   isDetailedProfilingEnabled,
 } from '@thyrox/app-host/startup/startupProfiler.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { EmergencyTip } from './EmergencyTip.js'
 import { PowerupBanner } from '@thyrox/command-runtime/commands/powerup/PowerupBanner.js'
 import { VoiceModeNotice } from './VoiceModeNotice.js'
@@ -67,11 +67,15 @@ import { useAppState } from '../../appStateHooks.js'
 import { getEffortSuffix } from '@thyrox/agent/effort.js'
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
 import { renderModelSetting } from '@thyrox/provider/model.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const LEFT_PANEL_MAX_WIDTH = 50
 
+function isThemeSetting(value: string): value is ThemeSetting {
+  return (THEME_SETTINGS as readonly string[]).includes(value)
+}
+
 export function LogoV2(): React.ReactNode {
-  const activities = getRecentActivitySync()
   const username = getGlobalConfig().oauthAccount?.displayName ?? ''
 
   const { columns } = useTerminalSize()
@@ -88,7 +92,7 @@ export function LogoV2(): React.ReactNode {
   // - First startup (numStartups === 1): show first announcement
   // - All other startups: randomly select from announcements
   const [announcement] = useState(() => {
-    const announcements = getInitialSettings().companyAnnouncements
+    const announcements = getInitialSettings().companyAnnouncements as string[] | undefined
     if (!announcements || announcements.length === 0) return undefined
     return config.numStartups === 1
       ? announcements[0]
@@ -108,7 +112,7 @@ export function LogoV2(): React.ReactNode {
   // so this is now equivalent to "condensed unless onboarding or forced".
   const isCondensedMode =
     !showOnboarding &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_FORCE_FULL_LOGO)
+    !isEnvTruthy(process.env.THYROX_CODE_FORCE_FULL_LOGO)
 
   useEffect(() => {
     if (showGuestPassesUpsell && !showOnboarding && !isCondensedMode) {
@@ -142,7 +146,7 @@ export function LogoV2(): React.ReactNode {
   } = getLogoDisplayData()
   // Prefer AppState.agent (set from --agent CLI flag) over settings
   const agentName = agent ?? agentNameFromSettings
-  // -20 to account for the max length of subscription name " · Claude Enterprise".
+  // -20 to account for the max length of subscription name " · thyrox Enterprise".
   const effortSuffix = getEffortSuffix(model, effortValue)
   const modelDisplayName = truncate(
     fullModelDisplayName + effortSuffix,
@@ -150,7 +154,7 @@ export function LogoV2(): React.ReactNode {
   )
 
   // Render condensed logo unless we're showing project onboarding or
-  // CLAUDE_CODE_FORCE_FULL_LOGO is set (matches `isCondensedMode` above).
+  // THYROX_CODE_FORCE_FULL_LOGO is set (matches `isCondensedMode` above).
   if (isCondensedMode) {
     return (
       <>
@@ -168,15 +172,15 @@ export function LogoV2(): React.ReactNode {
         )}
         <EmergencyTip />
         <PowerupBanner />
-        {process.env.CLAUDE_CODE_TMUX_SESSION && (
+        {process.env.THYROX_CODE_TMUX_SESSION && (
           <Box paddingLeft={2} flexDirection="column">
             <Text dimColor>
-              tmux session: {process.env.CLAUDE_CODE_TMUX_SESSION}
+              tmux session: {process.env.THYROX_CODE_TMUX_SESSION}
             </Text>
             <Text dimColor>
-              {process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS
-                ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
-                : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}
+              {process.env.THYROX_CODE_TMUX_PREFIX_CONFLICTS
+                ? `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} ${process.env.THYROX_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.THYROX_CODE_TMUX_PREFIX})`
+                : `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} d`}
             </Text>
           </Box>
         )}
@@ -206,7 +210,7 @@ export function LogoV2(): React.ReactNode {
             </Text>
             {isDetailedProfilingEnabled() && (
               <Text dimColor>
-                Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+                Startup Perf: {getDisplayPath(getStartupPerfLogPath(getSessionId()))}
               </Text>
             )}
           </Box>
@@ -220,9 +224,10 @@ export function LogoV2(): React.ReactNode {
   // Calculate layout and display values
   const layoutMode = getLayoutMode(columns)
 
-  const userTheme = resolveThemeSetting(getGlobalConfig().theme)
-  const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
-  const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+  const rawTheme = getGlobalConfig().theme
+  const userTheme = resolveThemeSetting(isThemeSetting(rawTheme) ? rawTheme : 'dark')
+  const borderTitle = ` ${color('claude', userTheme)(`${PRODUCT_NAME}`)} ${color('inactive', userTheme)(`v${version}`)} `
+  const compactBorderTitle = color('claude', userTheme)(` ${PRODUCT_NAME} `)
 
   // Early return for compact mode
   if (layoutMode === 'compact') {
@@ -315,7 +320,7 @@ export function LogoV2(): React.ReactNode {
   )
 
   // Calculate layout dimensions
-  const { leftWidth, rightWidth } = calculateLayoutDimensions(
+  const { leftWidth } = calculateLayoutDimensions(
     columns,
     layoutMode,
     optimalLeftWidth,
@@ -378,15 +383,15 @@ export function LogoV2(): React.ReactNode {
       )}
       <EmergencyTip />
       <PowerupBanner />
-      {process.env.CLAUDE_CODE_TMUX_SESSION && (
+      {process.env.THYROX_CODE_TMUX_SESSION && (
         <Box paddingLeft={2} flexDirection="column">
           <Text dimColor>
-            tmux session: {process.env.CLAUDE_CODE_TMUX_SESSION}
+            tmux session: {process.env.THYROX_CODE_TMUX_SESSION}
           </Text>
           <Text dimColor>
-            {process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS
-              ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
-              : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}
+            {process.env.THYROX_CODE_TMUX_PREFIX_CONFLICTS
+              ? `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} ${process.env.THYROX_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.THYROX_CODE_TMUX_PREFIX})`
+              : `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} d`}
           </Text>
         </Box>
       )}
@@ -421,7 +426,7 @@ export function LogoV2(): React.ReactNode {
           <Text dimColor>Debug logs: {getDisplayPath(getDebugLogPath())}</Text>
           {isDetailedProfilingEnabled() && (
             <Text dimColor>
-              Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+              Startup Perf: {getDisplayPath(getStartupPerfLogPath(getSessionId()))}
             </Text>
           )}
         </Box>

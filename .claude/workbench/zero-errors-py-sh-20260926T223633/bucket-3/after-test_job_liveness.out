@@ -1,0 +1,44 @@
+== 1. shape terminado gana SIEMPRE, sin importar la antigüedad ==
+  ok    verdict terminated
+  ok    procedencia: el marcador decidió
+== 2. DISCRIMINA: 'cut' DENTRO de la ventana sigue siendo 'recent' ==
+  ok    no se declara muerto por el contenido solo
+  ok    procedencia: fue la antigüedad, no el marcador
+== 3. y 'pending' DENTRO de la ventana también es 'recent' ==
+  ok    mismo veredicto que 'cut' mientras es reciente
+== 4. DISCRIMINA: 'cut' FUERA de la ventana es evidencia POSITIVA ==
+  ok    stalled_evident, no stalled_unknown
+  ok    procedencia: el marcador decidió
+== 5. y 'pending' FUERA de la ventana es sólo AUSENCIA de evidencia ==
+  ok    stalled_unknown, no stalled_evident
+  ok    procedencia: sólo la antigüedad, ningún marcador
+== 6. DISCRIMINA: la holgura de reloj es una constante PROPIA, sumada ==
+  ok    950s con holgura de 60 sigue 'recent'
+  ok    el mismo caso SIN holgura ya es 'stalled_unknown'
+== 7. justo en el borde (900+60=960) sigue 'recent'; a 961 ya no ==
+  ok    960s exactos: recent
+  ok    961s: stalled_unknown
+== 8. un shape fuera del vocabulario rehúsa, no se adivina ==
+  ok    rehúsa shape desconocido
+== 9. is_alive() — el booleano ENCIMA del veredicto de 4 valores ==
+  ok    terminated no está vivo
+  ok    recent SÍ está vivo
+  ok    stalled_evident no está vivo
+  ok    stalled_unknown TAMPOCO está vivo — ausencia no es evidencia de vida
+== 10. DISCRIMINA: sweep() separa lo ilegible en cuarentena, NUNCA en diagnoses ==
+  ok    el legible aparece en diagnoses
+  ok    el corrupto NO aparece en diagnoses
+  ok    el corrupto aparece en quarantined, con su razón
+  ok    nada más en cuarentena
+== 11. un symlink roto se pone en cuarentena ANTES de leer su contenido ==
+  ok    el symlink roto queda en cuarentena, no en diagnoses
+== 12. sweep() con entradas de las TRES formas, contra un umbral real ==
+  ok    a: terminated pase lo que pase
+  ok    b: cut reciente = recent
+  ok    c: cut viejo = stalled_evident
+  ok    d: pending viejo = stalled_unknown
+  ok    sin cuarentena en este barrido
+== 13. una lista de entradas VACÍA no rehúsa — aquí SÍ es un estado legítimo ==
+  ok    sweep([]) no rehúsa
+
+29 ok, 0 fallos

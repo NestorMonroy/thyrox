@@ -1,0 +1,9 @@
+Record ADR-THYROX-003: the pool measures VRAM
+
+ADR-THYROX-002 left VRAM out of scope because claude -p does not use
+the local GPU. The pool belongs to thyrox, not to claude -p, and a
+consumer running local CUDA work uses it too, so each item's VRAM is
+now measured in three states, bounds the launch width and gates each
+item's start. It supersedes only 002's VRAM paragraph.
+
+Implemented in thyrox@c846097b.

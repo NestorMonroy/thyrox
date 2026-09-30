@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/daemon && bun test 2>&1 | tail -n 15", "started_at": "2026-09-29T20:44:13+00:00"}

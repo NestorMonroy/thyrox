@@ -12,7 +12,7 @@ import { toJSONSchema } from 'zod/v4'
 import { SettingsSchema } from './types.ts'
 
 export function generateSettingsJSONSchema(): string {
-  const jsonSchema = toJSONSchema(SettingsSchema, { unrepresentable: 'any' })
+  const jsonSchema = toJSONSchema(SettingsSchema(), { unrepresentable: 'any' })
   // config ya no pasa por src/utils/slowOperations. El envoltorio
   // slowLogging alrededor de JSON.stringify es observabilidad que
   // pertenece a local-observability; para un volcado de esquema de una

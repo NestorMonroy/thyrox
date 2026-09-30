@@ -1,0 +1,5 @@
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-097/diag/4.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processSlashCommand.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-097/diag/8.txt
+-- FALLIDO src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-097/diag/18.txt
+items=24 ok=21 fallidos=3
+__BG_EXIT__=1

@@ -94,10 +94,10 @@ describe('compactMessages (T-023)', () => {
 
   test('el resultado abre con el resumen y conserva la cola', () => {
     const r = compactMessages(conversacion(), { summary: 'RESUMEN DE LO ANTERIOR', keepLast: 2 })
-    expect(r.messages[0].role).toBe('user')
-    expect((r.messages[0].content[0] as { text: string }).text).toContain('RESUMEN DE LO ANTERIOR')
+    expect(r.messages[0]!.role).toBe('user')
+    expect((r.messages[0]!.content[0] as { text: string }).text).toContain('RESUMEN DE LO ANTERIOR')
     expect(r.messages.length).toBe(3)
-    expect((r.messages[2].content[0] as { text: string }).text).toBe('respuesta tres')
+    expect((r.messages[2]!.content[0] as { text: string }).text).toBe('respuesta tres')
   })
 
   test('la frontera se declara: cuantos mensajes quedaron detras', () => {

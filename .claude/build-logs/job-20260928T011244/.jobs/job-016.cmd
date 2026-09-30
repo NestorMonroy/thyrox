@@ -1,0 +1,1 @@
+cd src/packages/daemon && bun test 2>&1 | tail -n 4

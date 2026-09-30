@@ -40,12 +40,13 @@
  *    TODOS los archivos como fallidos con un mensaje explícito — un
  *    porte fiel no puede simular una subida real sin la Files API, y un
  *    default que "silenciosamente tuviera éxito" falsearía el resultado.
- * 5. `getCwd`/`readEnv` — reusan `../internal/pendingCrossPackageDeps.js`
- *    (ya establecidas para todo el paquete).
+ * 5. `getCwd` reusa `../internal/pendingCrossPackageDeps.js`; `readEnv` se
+ *    importa del original, `@thyrox/config/env/utils`.
  */
 
 import { join, relative } from 'path'
-import { getCwd, readEnv } from '../internal/pendingCrossPackageDeps.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getCwd } from '../internal/pendingCrossPackageDeps.js'
 import {
   findModifiedFiles,
   getEnvironmentKind,
@@ -142,9 +143,9 @@ async function uploadSessionFiles(
  * Execute file persistence for modified files in the outputs directory.
  *
  * Assembles all config internally:
- * - Checks environment kind (CLAUDE_CODE_ENVIRONMENT_KIND)
+ * - Checks environment kind (THYROX_CODE_ENVIRONMENT_KIND)
  * - Retrieves session access token
- * - Requires CLAUDE_CODE_REMOTE_SESSION_ID for session ID
+ * - Requires THYROX_CODE_REMOTE_SESSION_ID for session ID
  *
  * @param turnStartTime - The timestamp when the turn started
  * @param signal - Optional abort signal for cancellation
@@ -164,11 +165,11 @@ export async function runFilePersistence(
     return null
   }
 
-  const sessionId = readEnv('CLAUDE_CODE_REMOTE_SESSION_ID')
+  const sessionId = readEnv('THYROX_CODE_REMOTE_SESSION_ID')
   if (!sessionId) {
     logError(
       new Error(
-        'File persistence enabled but CLAUDE_CODE_REMOTE_SESSION_ID is not set',
+        'File persistence enabled but THYROX_CODE_REMOTE_SESSION_ID is not set',
       ),
     )
     return null
@@ -372,9 +373,9 @@ export async function executeFilePersistence(
 /**
  * Check if file persistence is enabled.
  * Requires: feature flag ON, valid environment kind, session access token,
- * and CLAUDE_CODE_REMOTE_SESSION_ID.
+ * and THYROX_CODE_REMOTE_SESSION_ID.
  * This ensures only public-api/sessions users trigger file persistence,
- * not normal Claude Code CLI users.
+ * not normal thyrox CLI users.
  *
  * Divergencia: `feature('FILE_PERSISTENCE')` se omite (constante `false`,
  * ver docstring del módulo) — esta función SIEMPRE devuelve `false` aquí.
@@ -385,7 +386,7 @@ export function isFilePersistenceEnabled(): boolean {
     return (
       getEnvironmentKind() === 'byoc' &&
       !!getSessionIngressAuthToken() &&
-      !!readEnv('CLAUDE_CODE_REMOTE_SESSION_ID')
+      !!readEnv('THYROX_CODE_REMOTE_SESSION_ID')
     )
   }
   return false

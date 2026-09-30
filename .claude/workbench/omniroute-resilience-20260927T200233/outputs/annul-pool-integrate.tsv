@@ -1,0 +1,5 @@
+base	20 pass, 0 fail	—
+noclash	18 pass, 2 fail	el sexto es conflicto con el primero | resume la integración
+unverifiedalways	19 pass, 1 fail	no se aplica sin --unverified
+noverified	15 pass, 5 fail	aplica a.txt con el texto del primero | aplica b.txt | el sexto es conflicto con el primero | sale 1 si algo con cambios no se integró | resume la integración
+exitcode	19 pass, 1 fail	sale 1 si algo con cambios no se integró

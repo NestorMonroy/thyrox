@@ -131,7 +131,8 @@ import {
 import { emitToolResultFailure, emitToolResultSuccess } from './toolResultTelemetry.js'
 
 /** Minimum total hook duration (ms) to show inline timing summary */
-export const HOOK_TIMING_DISPLAY_THRESHOLD_MS = 500
+import { HOOK_TIMING_DISPLAY_THRESHOLD_MS } from './hookTiming.js'
+export { HOOK_TIMING_DISPLAY_THRESHOLD_MS }
 /** Log a debug warning when hooks/permission-decision block for this long. Matches
  * BashTool's PROGRESS_THRESHOLD_MS — the collapsed view feels stuck past this. */
 const SLOW_PHASE_LOG_THRESHOLD_MS = 2000
@@ -214,7 +215,6 @@ function decisionReasonToOTelSource(
     case 'other':
       return 'config'
     default: {
-      const _exhaustive: never = reason
       return 'config'
     }
   }
@@ -773,7 +773,7 @@ async function checkPermissionsAndCallTool(
     tool,
     processedInput,
     toolUseID,
-    assistantMessage.message.id,
+    messageId,
     requestId,
     mcpServerType,
     mcpServerBaseUrl,
@@ -1022,7 +1022,7 @@ async function checkPermissionsAndCallTool(
     if (rejectContentBlocks?.length) {
       const imageCount = count(
         rejectContentBlocks,
-        (b: ContentBlockParam) => b.type === 'image',
+        b => b.type === 'image',
       )
       if (imageCount > 0) {
         const startId = getNextImagePasteId(toolUseContext.messages)
@@ -1236,7 +1236,7 @@ async function checkPermissionsAndCallTool(
       }
 
       if (Object.keys(contentAttributes).length > 0) {
-        addToolContentEvent('tool.output', contentAttributes)
+        addToolContentEvent(undefined, { event: 'tool.output', ...contentAttributes })
       }
     }
 
@@ -1404,7 +1404,7 @@ async function checkPermissionsAndCallTool(
       if (allowContentBlocks?.length) {
         const imageCount = count(
           allowContentBlocks,
-          (b: ContentBlockParam) => b.type === 'image',
+          b => b.type === 'image',
         )
         if (imageCount > 0) {
           const startId = getNextImagePasteId(toolUseContext.messages)
@@ -1446,7 +1446,7 @@ async function checkPermissionsAndCallTool(
       toolUseContext,
       tool,
       toolUseID,
-      assistantMessage.message.id,
+      messageId,
       processedInput,
       toolOutput,
       requestId,

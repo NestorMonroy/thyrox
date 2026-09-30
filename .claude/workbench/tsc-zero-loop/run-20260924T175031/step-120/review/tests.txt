@@ -1,0 +1,7 @@
+src/packages/agent/__tests__/fromAgentEvent.test.ts
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+src/packages/tool-registry/src/tools/ListMcpResourcesTool/__tests__/UI.test.ts
+src/packages/tool-registry/src/tools/MCPTool/__tests__/UI.test.ts
+src/packages/tool-registry/src/tools/ReadMcpResourceTool/__tests__/UI.test.ts
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts

@@ -1,0 +1,16 @@
+(fail) extractSessionInfo: todos los clientes > Messages con subagente [1.24ms]
+(fail) extractSessionInfo: todos los clientes > Codex con hilo padre [0.17ms]
+(fail) extractSessionInfo: todos los clientes > slot de pi [0.12ms]
+(fail) extractSessionInfo: todos los clientes > afinidad de OpenCode con padre [0.08ms]
+(fail) extractSessionInfo: todos los clientes > Codex: Session-Id en cabecera, hilo y bifurcación en el cuerpo [0.54ms]
+(fail) extractSessionInfo: todos los clientes > Antigravity [0.10ms]
+(fail) extractSessionInfo: padre del cuerpo con sesión en cabecera > genérica [0.34ms]
+(fail) extractSessionInfo: padre del cuerpo con sesión en cabecera > Codex [0.14ms]
+(fail) extractSessionInfo: padre del cuerpo con sesión en cabecera > Messages [0.09ms]
+(fail) extractSessionInfo: reglas > hilo y conversación, en cabecera y en cuerpo [0.13ms]
+(fail) extractSessionInfo: reglas > un padre igual a la propia sesión se descarta [0.10ms]
+(fail) extractSessionInfo: reglas > prompt_cache_key, clientreq y sesión de ejecución [0.44ms]
+(fail) extractSessionInfo: reglas > user_id de Messages con el agente en cabecera [0.19ms]
+(fail) claves duplicadas en el metadata > padre con sesión en cabecera [0.12ms]
+ 22 pass
+ 14 fail

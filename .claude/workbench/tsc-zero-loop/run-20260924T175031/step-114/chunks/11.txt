@@ -1,0 +1,2 @@
+src/packages/agent/sessionTools/analyzeContext.ts(358,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+src/packages/agent/sessionTools/analyzeContext.ts(633,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.

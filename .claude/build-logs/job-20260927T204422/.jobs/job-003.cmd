@@ -1,0 +1,1 @@
+python3 tests/hooks/test_detect_foreground_long_command.py > .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_hooks_test_detect_foreground_long_command_py.log 2>&1; echo EXIT=$? >> .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_hooks_test_detect_foreground_long_command_py.log

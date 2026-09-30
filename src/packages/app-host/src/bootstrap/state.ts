@@ -20,17 +20,15 @@
  *   -------------------------------------------------------------
  *   TOTAL PORTADO: 60 de 229 símbolos exportados por la fuente.
  *
- * Slice E entró el 2026-09-08 (#262): `handleStopHooks` necesita
- * `getTotalOutputTokens` para el conteo de tokens del objetivo `/goal`, y sin
- * ella el generador no se puede portar. Se trae la slice ENTERA —los cinco
+ * Slice E (#262): `handleStopHooks` necesita `getTotalOutputTokens` para el
+ * conteo de tokens del objetivo `/goal`. Se trae la slice ENTERA —los cinco
  * acumuladores de token, el coste y los dos lectores de uso— en vez del
  * símbolo suelto: portar uno solo dejaría `STATE.modelUsage` sin escritor y
  * los cinco lectores devolviendo cero para siempre, que es el verde que no
  * discrimina.
  *
- * Slice F entró el 2026-09-08 (#234): `imageStore` de `@thyrox/tool-registry`
- * guarda cada imagen bajo el directorio de SU sesión, y sin `getSessionId`
- * el módulo no se puede portar. Se trae la slice ENTERA por el mismo motivo
+ * Slice F (#234): `imageStore` de `@thyrox/tool-registry` guarda cada imagen
+ * bajo el directorio de SU sesión, con `getSessionId`. Se trae la slice ENTERA por el mismo motivo
  * que la E: el `planSlugCache` se purga en `regenerateSessionId` y en
  * `switchSession`, así que traer sólo el lector dejaría un mapa que crece y
  * nadie vacía. `onSessionSwitch` DIVERGE —se reimplementa con un conjunto
@@ -113,6 +111,7 @@ export {
   getAllowedSettingSources,
   setAllowedSettingSources,
 } from '@thyrox/config/internal/allowedSourcesState.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Un matcher de hook, venga del registro interno o de un plugin. Misma
@@ -209,6 +208,12 @@ type State = {
   // Slice I — modelo del bucle principal
   mainLoopModelOverride: ModelSetting | undefined
   initialMainLoopModel: ModelSetting
+  // Fase R — enclavamiento del modelo de respaldo por rechazo
+  refusalFallbackOccurred: boolean
+  refusalFallbackHeaderArmed: boolean
+  refusalFallbackLatchOriginRequestId: string | undefined
+  silentLaneServerArmed: boolean
+  refusalFallbackModelLatch: RefusalFallbackModelLatch | undefined
   modelStrings: ModelStrings | null
   sdkBetas: string[] | undefined
   mainThreadAgentType: string | undefined
@@ -352,6 +357,11 @@ function getInitialState(): State {
     promptId: null,
     mainLoopModelOverride: undefined,
     initialMainLoopModel: null,
+    refusalFallbackOccurred: false,
+    refusalFallbackHeaderArmed: false,
+    refusalFallbackLatchOriginRequestId: undefined,
+    silentLaneServerArmed: false,
+    refusalFallbackModelLatch: undefined,
     modelStrings: null,
     sdkBetas: undefined,
     mainThreadAgentType: undefined,
@@ -434,7 +444,7 @@ export function setMeter(
     description: 'Number of git commits created',
   })
   STATE.costCounter = createCounter('claude_code.cost.usage', {
-    description: 'Cost of the Claude Code session',
+    description: `Cost of the ${PRODUCT_NAME} session`,
     unit: 'USD',
   })
   STATE.tokenCounter = createCounter('claude_code.token.usage', {
@@ -637,8 +647,11 @@ export function regenerateSessionId(
     STATE.parentSessionId = STATE.sessionId
   }
   STATE.planSlugCache.delete(STATE.sessionId)
+  forgetRefusalFallbackOccurred()
+  const restore = restoreRefusalFallbackModel()
   STATE.sessionId = randomUUID() as SessionId
   STATE.sessionProjectDir = null
+  emitSessionSwitch(STATE.sessionId, 'clear', restore)
   return STATE.sessionId
 }
 
@@ -647,9 +660,52 @@ export function getParentSessionId(): SessionId | undefined {
 }
 
 /**
- * Cambia de sesión ATÓMICAMENTE. `sessionId` y `sessionProjectDir` cambian
- * siempre juntos —no hay setter separado para ninguno— para que no puedan
- * desincronizarse.
+ * Por qué cambió la sesión: los motivos con que 2.1.283 llama a `mh` y a
+ * `fn`. Los oyentes deciden con él —un `cd` o un `hydrate` conservan la
+ * conversación; `clear`, `resume` y `remote_attach` la reinician—.
+ */
+export type SessionSwitchReason =
+  | 'clear'
+  | 'resume'
+  | 'fork'
+  | 'remote_attach'
+  | 'cd'
+  | 'spare_claim'
+  | 'hydrate'
+  | 'startup_custom_id'
+
+/**
+ * Lo que `mn` devuelve al deshacer el modelo de respaldo: el modelo previo
+ * del estado de la aplicación, el de la sesión y el override que vuelve a
+ * regir, para que el oyente restaure su propia copia.
+ */
+export type RefusalFallbackRestore = {
+  appStateModel: ModelSetting
+  forSessionValue: ModelSetting
+  overrideValue: ModelSetting | undefined
+  restoredToExplicitOverride: boolean
+  fallbackModel: ModelSetting
+}
+
+/** El tercer argumento sólo llega cuando un cambio de sesión deshizo el respaldo. */
+export type SessionSwitchListener = (
+  id: SessionId,
+  reason: SessionSwitchReason,
+  restore?: RefusalFallbackRestore,
+) => void
+
+/** Las rutas de proyecto que un cambio de sesión puede fijar a la vez (`r` de `mh`). */
+export type SessionSwitchPaths = {
+  originalCwd?: string
+  projectRoot?: string
+  cwd?: string
+}
+
+/**
+ * Cambia de sesión ATÓMICAMENTE (`mh`). `sessionId` y `sessionProjectDir`
+ * cambian siempre juntos —no hay setter separado para ninguno— para que no
+ * puedan desincronizarse. Los oyentes reciben el aviso aunque el id no
+ * cambie: el motivo es parte del mensaje.
  *
  * @param projectDir directorio que contiene `<sessionId>.jsonl`. Omitir (o
  *   `null`) para una sesión del proyecto actual: la ruta se deriva de
@@ -657,15 +713,30 @@ export function getParentSessionId(): SessionId | undefined {
  *   sesión vive en otro proyecto —worktrees de git, reanudación cruzada—.
  *   CADA llamada reinicia el directorio; nunca se arrastra el de la sesión
  *   anterior.
+ * @param paths rutas de proyecto que se fijan con el cambio; si trae
+ *   `originalCwd`, su señal se emite después de la de sesión.
+ *
+ * Al pasar a OTRA sesión se olvida el rechazo y se deshace el modelo de
+ * respaldo (`mn`); si hubo restauración, los oyentes la reciben como tercer
+ * argumento.
  */
 export function switchSession(
   sessionId: SessionId,
+  reason: SessionSwitchReason,
   projectDir: string | null = null,
+  paths?: SessionSwitchPaths,
 ): void {
-  STATE.planSlugCache.delete(STATE.sessionId)
+  let restore: RefusalFallbackRestore | undefined
+  if (STATE.sessionId !== sessionId) {
+    STATE.planSlugCache.delete(STATE.sessionId)
+    forgetRefusalFallbackOccurred()
+    restore = restoreRefusalFallbackModel()
+  }
   STATE.sessionId = sessionId
   STATE.sessionProjectDir = projectDir
-  for (const listener of sessionSwitchListeners) listener(sessionId)
+  if (paths) applyProjectPaths(paths)
+  emitSessionSwitch(sessionId, reason, restore)
+  if (paths?.originalCwd !== undefined) emitOriginalCwdChange()
 }
 
 /**
@@ -676,14 +747,46 @@ export function switchSession(
  * bootstrap no puede importar a sus oyentes —es hoja del grafo—, así que
  * son ellos los que se registran.
  */
-const sessionSwitchListeners = new Set<(id: SessionId) => void>()
+const sessionSwitchListeners = new Set<SessionSwitchListener>()
+const originalCwdListeners = new Set<(originalCwd: string) => void>()
 
-export function onSessionSwitch(
-  listener: (id: SessionId) => void,
-): () => void {
+/** `fn`. */
+function emitSessionSwitch(
+  sessionId: SessionId,
+  reason: SessionSwitchReason,
+  restore: RefusalFallbackRestore | undefined,
+): void {
+  for (const listener of sessionSwitchListeners) {
+    if (restore) listener(sessionId, reason, restore)
+    else listener(sessionId, reason)
+  }
+}
+
+/** `hn`: emite el `originalCwd` vigente, no el que se pidió fijar. */
+function emitOriginalCwdChange(): void {
+  for (const listener of originalCwdListeners) listener(STATE.originalCwd)
+}
+
+/** `D1t`: fija las rutas presentes, normalizadas a NFC. */
+function applyProjectPaths(paths: SessionSwitchPaths): void {
+  if (paths.originalCwd !== undefined) STATE.originalCwd = paths.originalCwd.normalize('NFC')
+  if (paths.projectRoot !== undefined) STATE.projectRoot = paths.projectRoot.normalize('NFC')
+  if (paths.cwd !== undefined) STATE.cwd = paths.cwd.normalize('NFC')
+}
+
+/** `Zd`. */
+export function onSessionSwitch(listener: SessionSwitchListener): () => void {
   sessionSwitchListeners.add(listener)
   return () => {
     sessionSwitchListeners.delete(listener)
+  }
+}
+
+/** `kzr`: avisa cada vez que `originalCwd` se fija. */
+export function onOriginalCwdChange(listener: (originalCwd: string) => void): () => void {
+  originalCwdListeners.add(listener)
+  return () => {
+    originalCwdListeners.delete(listener)
   }
 }
 
@@ -733,6 +836,7 @@ export function getProjectRoot(): string {
 
 export function setOriginalCwd(cwd: string): void {
   STATE.originalCwd = cwd.normalize('NFC')
+  emitOriginalCwdChange()
 }
 
 /**
@@ -1152,6 +1256,115 @@ export function setMainLoopModelOverride(
   model: ModelSetting | undefined,
 ): void {
   STATE.mainLoopModelOverride = model
+}
+
+// ---------------------------------------------------------------------------
+// Fase R — modelo de respaldo por rechazo
+// ---------------------------------------------------------------------------
+
+/**
+ * El modelo que regía antes de que un rechazo cambiara al de respaldo, con
+ * las dos copias que el estado de la aplicación guardaba.
+ */
+export type RefusalFallbackModelLatch = {
+  fallbackModel: ModelSetting
+  previousOverride: ModelSetting | undefined
+  previousAppStateModel: ModelSetting
+  previousModelForSession: ModelSetting
+}
+
+/** `o2r`: el primer id de petición que llegue queda como origen. */
+export function markRefusalFallbackOccurred(requestId: string | undefined): void {
+  STATE.refusalFallbackOccurred = true
+  STATE.refusalFallbackLatchOriginRequestId ??= requestId
+}
+
+/** `MF`. */
+export function hasRefusalFallbackOccurred(): boolean {
+  return STATE.refusalFallbackOccurred
+}
+
+/** `xmt`. */
+export function armRefusalFallbackHeader(requestId: string | undefined): void {
+  STATE.refusalFallbackHeaderArmed = true
+  STATE.refusalFallbackLatchOriginRequestId ??= requestId
+}
+
+/** `Txe`. */
+export function isRefusalFallbackHeaderArmed(): boolean {
+  return STATE.refusalFallbackHeaderArmed
+}
+
+/** `s2r`. */
+export function armSilentLaneFromServer(): void {
+  STATE.silentLaneServerArmed = true
+}
+
+/** `m8n`. */
+export function isSilentLaneServerArmed(): boolean {
+  return STATE.silentLaneServerArmed
+}
+
+/** `i2r`. */
+export function getRefusalFallbackLatchOriginRequestId(): string | undefined {
+  return STATE.refusalFallbackLatchOriginRequestId
+}
+
+/** `l2r`: olvida las marcas del rechazo; el enclavamiento del modelo se conserva. */
+export function forgetRefusalFallbackOccurred(): void {
+  STATE.refusalFallbackOccurred = false
+  STATE.refusalFallbackHeaderArmed = false
+  STATE.silentLaneServerArmed = false
+  STATE.refusalFallbackLatchOriginRequestId = undefined
+}
+
+/**
+ * `Imt`. Si el modelo vigente es todavía el de respaldo enclavado, un
+ * respaldo nuevo sólo cambia el modelo de respaldo: el previo sigue siendo
+ * el que regía antes del primer rechazo.
+ */
+export function latchRefusalFallbackModel(latch: RefusalFallbackModelLatch): void {
+  const current = STATE.refusalFallbackModelLatch
+  if (current && STATE.mainLoopModelOverride === current.fallbackModel) {
+    STATE.refusalFallbackModelLatch = { ...current, fallbackModel: latch.fallbackModel }
+    return
+  }
+  STATE.refusalFallbackModelLatch = latch
+}
+
+/** `a2r`. */
+export function setRefusalFallbackPreviousOverride(model: ModelSetting | undefined): void {
+  const current = STATE.refusalFallbackModelLatch
+  if (current) STATE.refusalFallbackModelLatch = { ...current, previousOverride: model }
+}
+
+/** `fre`. */
+export function unlatchRefusalFallbackModel(): void {
+  STATE.refusalFallbackModelLatch = undefined
+}
+
+/** `n7`. */
+export function getRefusalFallbackModelLatch(): RefusalFallbackModelLatch | undefined {
+  return STATE.refusalFallbackModelLatch
+}
+
+/**
+ * `mn`: suelta el enclavamiento y, si el modelo vigente sigue siendo el de
+ * respaldo, vuelve al override previo y devuelve lo restaurado. Si el
+ * usuario cambió de modelo entretanto, su elección se respeta.
+ */
+export function restoreRefusalFallbackModel(): RefusalFallbackRestore | undefined {
+  const latch = STATE.refusalFallbackModelLatch
+  unlatchRefusalFallbackModel()
+  if (!latch || STATE.mainLoopModelOverride !== latch.fallbackModel) return undefined
+  setMainLoopModelOverride(latch.previousOverride)
+  return {
+    appStateModel: latch.previousAppStateModel,
+    forSessionValue: latch.previousModelForSession,
+    overrideValue: latch.previousOverride,
+    restoredToExplicitOverride: latch.previousOverride !== undefined,
+    fallbackModel: latch.fallbackModel,
+  }
 }
 
 export function setInitialMainLoopModel(model: ModelSetting): void {
@@ -1837,7 +2050,7 @@ export function getAdditionalDirectoriesForClaudeMd(): string[] {
   return STATE.additionalDirectoriesForClaudeMd
 }
 
-/** Notifica a los suscriptores: el cargador de CLAUDE.md depende de esto. */
+/** Notifica a los suscriptores: el cargador de THYROX.md depende de esto. */
 export function setAdditionalDirectoriesForClaudeMd(
   directories: string[],
 ): void {

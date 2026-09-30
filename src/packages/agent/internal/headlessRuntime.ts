@@ -1,19 +1,14 @@
-/**
- * Fachadas del modo headless / --print — porte de
- * `ccnmt: packages/agent/internal/headlessRuntime.ts`.
- *
- * 16 fachadas sobre las ataduras del host que usa el bucle del modo
- * headless. El invariante grande: cada fachada tiene un fallback
- * determinístico cuando falta la atadura del host, calibrado para que el
- * modo headless degrade con gracia (arreglos/objetos vacíos) en vez de
- * reventar. Ninguna llama sobre el host sin `?.` — un binding ausente
- * jamás debe tirar abajo una corrida sin host cableado.
- */
-import { getAgentHostBindings } from '../host.ts'
-import type { AgentMessage } from '../internalTypes.ts'
+import { getAgentHostBindings } from '../host.js'
+import type { AgentMessage } from '../internalTypes.js'
+import type { Message } from '../messageShapes.js'
+import type { SetAppState } from '../messageQueueManager.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export function registerStructuredOutputEnforcement(
-  setAppState: (f: (prev: unknown) => unknown) => void,
+  setAppState: SetAppState,
   sessionId: string,
 ): void {
   getAgentHostBindings().registerStructuredOutputEnforcement?.(
@@ -42,9 +37,9 @@ export async function loadAllPluginsCacheOnly(): Promise<{
 }
 
 export async function processUserInput(params: unknown): Promise<{
-  messages: AgentMessage[]
+  messages: Message[]
   shouldQuery: boolean
-  allowedTools: unknown
+  allowedTools?: string[]
   model?: string
   resultText?: string
   [key: string]: unknown
@@ -77,7 +72,7 @@ export function shouldEnableThinkingByDefault(): boolean | undefined {
   return getAgentHostBindings().shouldEnableThinkingByDefault?.()
 }
 
-export function buildSystemInitMessage(params: unknown): unknown {
+export function buildSystemInitMessage(params: unknown): SDKMessage | undefined {
   return getAgentHostBindings().buildSystemInitMessage?.(params)
 }
 
@@ -86,11 +81,11 @@ export function sdkCompatToolName(toolName: string): string {
 }
 
 export async function* handleOrphanedPermission(
-  orphanedPermission: unknown,
-  tools: unknown[],
+  orphanedPermission: OrphanedPermission,
+  tools: Tools,
   messages: AgentMessage[],
-  context: unknown,
-): AsyncGenerator<unknown> {
+  context: ProcessUserInputContext,
+): AsyncGenerator<SDKMessage> {
   const handler = getAgentHostBindings().handleOrphanedPermission
   if (!handler) {
     return
@@ -109,7 +104,7 @@ export function isResultSuccessful(
 
 export async function* normalizeMessage(
   message: AgentMessage,
-): AsyncGenerator<unknown> {
+): AsyncGenerator<SDKMessage> {
   const normalizer = getAgentHostBindings().normalizeMessage
   if (!normalizer) {
     return
@@ -140,6 +135,6 @@ export function isSnipBoundaryMessage(message: AgentMessage): boolean {
 export function snipCompactIfNeeded(
   messages: AgentMessage[],
   options?: { force?: boolean },
-): { messages: AgentMessage[]; executed: boolean } | undefined {
+): { messages: Message[]; executed: boolean } | undefined {
   return getAgentHostBindings().snipCompactIfNeeded?.(messages, options)
 }

@@ -1,8 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/attribution.test.ts`, acotado a
- * `countUserPromptsInMessages` — ver docstring de `../attribution.ts` para
- * el alcance declarado del porte.
- */
 import { describe, expect, test } from 'bun:test'
 import { countUserPromptsInMessages } from '../attribution.js'
 

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+104 | 
+105 |   test('flattenControls (OJ) y toSingleLine (po)', () => {
+106 |     expect(flattenControls('\x1b[1ma\u0007b')).toBe('a b')
+107 |     expect(toSingleLine('  a\n\n b \t c ')).toBe('a b c')
+108 |     expect(toSingleLine('`a` <b>', { drop: /[`<>]/g })).toBe('a b')
+109 |     expect(toSingleLine('abcdef', { maxCodeUnits: 3 })).toBe('abc')
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "abc"
+Received: "abcdef"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:109:57)
+(fail) el resto de chunk-pbnxt79v.js > flattenControls (OJ) y toSingleLine (po) [0.44ms]
+
+ 17 pass
+ 1 fail
+ 35 expect() calls
+Ran 18 tests across 1 file. [39.00ms]

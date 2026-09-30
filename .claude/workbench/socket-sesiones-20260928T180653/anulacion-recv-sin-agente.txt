@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionReceive.test.ts:
+55 | 
+56 |   test('si la entrega llega al fondo sin cambios, el contenido original sigue; queued resuelve la cadena', async () => {
+57 |     let answer: unknown
+58 |     const hooks = site([async (event, next) => (answer = await next(event))])
+59 |     const result = await runSessionReceive({ origin: { kind: 'peer' }, content: ENVELOPE, agentId: 'a1' }, hooks, () => {})
+60 |     expect(hooks.calls[0]).toEqual({ origin: { kind: 'peer' }, text: STRIPPED, agentId: 'a1' })
+                                ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
+-   "agentId": "a1",
+    "origin": {
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:60:28)
+(fail) runSessionReceive (Aot) > si la entrega llega al fondo sin cambios, el contenido original sigue; queued resuelve la cadena [0.85ms]
+
+ 6 pass
+ 1 fail
+ 14 expect() calls
+Ran 7 tests across 1 file. [49.00ms]

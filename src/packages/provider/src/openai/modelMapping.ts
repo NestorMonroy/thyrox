@@ -54,14 +54,15 @@ function getModelFamily(model: string): 'haiku' | 'sonnet' | 'opus' | null {
  * 4. `DEFAULT_MODEL_MAP`.
  * 5. El propio nombre, ya recortado.
  *
- * El sufijo `[1m]` —modificador de ventana propio de Claude— se recorta ANTES
+ * El sufijo `[1m]` —modificador de ventana propio de thyrox— se recorta ANTES
  * de detectar la familia y ANTES de consultar el mapa, con un ancla al final:
  * solo cuenta como sufijo si esta al final.
  */
 export function resolveOpenAIModel(anthropicModel: string): string {
   // Prioridad maxima: el override explicito.
-  if (readEnv('OPENAI_MODEL')) {
-    return readEnv('OPENAI_MODEL')
+  const openaiModelOverride = readEnv('OPENAI_MODEL')
+  if (openaiModelOverride) {
+    return openaiModelOverride
   }
 
   const cleanModel = anthropicModel.replace(/\[1m\]$/, '')

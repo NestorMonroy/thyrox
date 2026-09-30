@@ -1,12 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/messageHelpers.test.ts`.
- *
- * `internal/messageHelpers.ts` NO es la familia `messages/helpers` — es un
- * módulo homónimo, distinto: aquí viven `SYNTHETIC_MESSAGES` (el conjunto de
- * cadenas sintéticas que un consumidor usa como ancla para NO contarlas como
- * prompt real del usuario) y `countToolCalls` (cuenta MENSAJES de asistente
- * que usan una tool dada, no bloques `tool_use` individuales).
- */
 import { describe, expect, test } from 'bun:test'
 import {
   countToolCalls,
@@ -15,25 +6,25 @@ import {
 
 type Msg = Parameters<typeof countToolCalls>[0][number]
 
-describe('SYNTHETIC_MESSAGES — cadenas sintéticas conocidas', () => {
-  // Estas cadenas se usan en otros módulos como ancla para detectar
-  // mensajes de usuario sintéticos inyectados (p. ej. filtrado de
-  // transcript, conteo de atribución). Si un cambio futuro agrega un
-  // mensaje sintético nuevo y olvida actualizar este set, el mensaje se
-  // contaría como un prompt real — inflando el conteo en silencio.
+describe('SYNTHETIC_MESSAGES — known synthetic strings', () => {
+  // These strings are used elsewhere as anchors to detect injected
+  // synthetic user messages (e.g., transcript filtering, attribution
+  // counting). If a future change adds a new synthetic message but
+  // forgets to update this set, the message would be counted as a
+  // real user prompt — silently inflating prompt counts.
 
-  test('contiene "[Request interrupted by user]"', () => {
+  test('contains "[Request interrupted by user]"', () => {
     expect(SYNTHETIC_MESSAGES.has('[Request interrupted by user]')).toBe(true)
   })
-  test('contiene "[Request interrupted by user for tool use]"', () => {
+  test('contains "[Request interrupted by user for tool use]"', () => {
     expect(
       SYNTHETIC_MESSAGES.has('[Request interrupted by user for tool use]'),
     ).toBe(true)
   })
-  test('contiene "No response requested."', () => {
+  test('contains "No response requested."', () => {
     expect(SYNTHETIC_MESSAGES.has('No response requested.')).toBe(true)
   })
-  test('contiene el rechazo "doesn\'t want to take this action"', () => {
+  test('contains the "doesn\'t want to take this action" rejection', () => {
     const rejection = SYNTHETIC_MESSAGES.values()
     let found = false
     for (const m of rejection) {
@@ -41,7 +32,7 @@ describe('SYNTHETIC_MESSAGES — cadenas sintéticas conocidas', () => {
     }
     expect(found).toBe(true)
   })
-  test('contiene el rechazo "doesn\'t want to proceed with this tool"', () => {
+  test('contains the "doesn\'t want to proceed with this tool" rejection', () => {
     let found = false
     for (const m of SYNTHETIC_MESSAGES) {
       if (m.includes("doesn't want to proceed with this tool")) found = true
@@ -49,19 +40,19 @@ describe('SYNTHETIC_MESSAGES — cadenas sintéticas conocidas', () => {
     expect(found).toBe(true)
   })
 
-  test('NO contiene mensajes escritos por el usuario (p. ej. "hi")', () => {
+  test('does NOT contain user-typed messages (e.g., "hi")', () => {
     expect(SYNTHETIC_MESSAGES.has('hi')).toBe(false)
     expect(SYNTHETIC_MESSAGES.has('hello')).toBe(false)
     expect(SYNTHETIC_MESSAGES.has('')).toBe(false)
   })
 })
 
-describe('countToolCalls — casos vacíos / sin match', () => {
-  test('devuelve 0 con la lista de mensajes vacía', () => {
+describe('countToolCalls — empty / no-match cases', () => {
+  test('returns 0 for empty messages', () => {
     expect(countToolCalls([], 'Bash')).toBe(0)
   })
 
-  test('devuelve 0 cuando no hay mensajes de assistant', () => {
+  test('returns 0 when no assistant messages', () => {
     expect(
       countToolCalls(
         [{ type: 'user', message: { content: [] } } as never],
@@ -70,7 +61,7 @@ describe('countToolCalls — casos vacíos / sin match', () => {
     ).toBe(0)
   })
 
-  test('devuelve 0 cuando ningún mensaje usa la tool pedida', () => {
+  test('returns 0 when no message uses the requested tool', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -82,14 +73,14 @@ describe('countToolCalls — casos vacíos / sin match', () => {
     expect(countToolCalls(messages, 'Bash')).toBe(0)
   })
 
-  test('salta mensajes falsy (null/undefined)', () => {
+  test('skips falsy messages (null/undefined)', () => {
     const messages = [null, undefined, null] as never as Msg[]
     expect(countToolCalls(messages, 'Bash')).toBe(0)
   })
 })
 
-describe('countToolCalls — conteo básico', () => {
-  test('cuenta un solo tool_use', () => {
+describe('countToolCalls — basic counting', () => {
+  test('counts a single tool_use', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -101,10 +92,10 @@ describe('countToolCalls — conteo básico', () => {
     expect(countToolCalls(messages, 'Bash')).toBe(1)
   })
 
-  test('cuenta cada mensaje de ASSISTANT que usa la tool, no cada bloque tool_use', () => {
-    // Contrato: la función cuenta MENSAJES con ≥1 tool_use que hace match,
-    // NO bloques tool_use individuales. Dos tool_use en el mismo mensaje
-    // cuentan como 1.
+  test('counts each ASSISTANT message that uses the tool, not each tool_use block', () => {
+    // Contract: function counts MESSAGES that contain ≥1 matching
+    // tool_use, NOT individual tool_use blocks. Two tool_uses in the
+    // same message = 1 count.
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -119,7 +110,7 @@ describe('countToolCalls — conteo básico', () => {
     expect(countToolCalls(messages, 'Bash')).toBe(1)
   })
 
-  test('cuenta a través de varios mensajes de assistant', () => {
+  test('counts across multiple assistant messages', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -137,7 +128,7 @@ describe('countToolCalls — conteo básico', () => {
     expect(countToolCalls(messages, 'Bash')).toBe(2)
   })
 
-  test('NO cuenta mensajes de user/system', () => {
+  test('does NOT count user/system messages', () => {
     const messages: Msg[] = [
       {
         type: 'user',
@@ -149,14 +140,14 @@ describe('countToolCalls — conteo básico', () => {
     expect(countToolCalls(messages, 'Bash')).toBe(0)
   })
 
-  test('NO cuenta cuando el content del assistant no es un array', () => {
+  test('does NOT count when assistant content is non-array', () => {
     const messages: Msg[] = [
       { type: 'assistant', message: { content: 'plain string' } } as never,
     ]
     expect(countToolCalls(messages, 'Bash')).toBe(0)
   })
 
-  test('sólo cuenta el nombre de tool que hace match (case-sensitive)', () => {
+  test('counts only matching tool name (case-sensitive)', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -170,12 +161,12 @@ describe('countToolCalls — conteo básico', () => {
   })
 })
 
-describe('countToolCalls — salida temprana vía maxCount', () => {
-  // Contrato crítico: maxCount permite al llamador dejar de iterar en
-  // cuanto vio "suficiente" — lo usan chequeos de camino caliente que
-  // sólo necesitan "≥N", no el conteo exacto.
+describe('countToolCalls — early-exit via maxCount', () => {
+  // Critical contract: maxCount lets callers stop iterating once
+  // they've seen "enough" — used by hot-path checks where we just
+  // need "≥N" not the precise count.
 
-  test('devuelve de inmediato cuando el conteo llega a maxCount', () => {
+  test('returns immediately when count reaches maxCount', () => {
     const messages: Msg[] = Array.from({ length: 10 }, (_, i) => ({
       type: 'assistant',
       message: {
@@ -187,7 +178,7 @@ describe('countToolCalls — salida temprana vía maxCount', () => {
     expect(countToolCalls(messages, 'Bash', 3)).toBe(3)
   })
 
-  test('NO sale temprano cuando el conteo está por debajo de maxCount', () => {
+  test('does NOT exit early when count is below maxCount', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -199,7 +190,7 @@ describe('countToolCalls — salida temprana vía maxCount', () => {
     expect(countToolCalls(messages, 'Bash', 5)).toBe(1)
   })
 
-  test('devuelve el conteo completo cuando maxCount es undefined', () => {
+  test('returns full count when maxCount is undefined', () => {
     const messages: Msg[] = Array.from({ length: 5 }, (_, i) => ({
       type: 'assistant',
       message: {
@@ -211,10 +202,10 @@ describe('countToolCalls — salida temprana vía maxCount', () => {
     expect(countToolCalls(messages, 'Bash')).toBe(5)
   })
 
-  test('maxCount=0 es falsy y en la práctica desactiva la salida temprana', () => {
-    // Contrato: `maxCount && count >= maxCount` corta en corto cuando
-    // maxCount=0 porque 0 es falsy. Pasar 0 se comporta como "sin tope".
-    // Este caso documenta esa rareza — pasar 0 no devuelve 0.
+  test('maxCount=0 is falsy and effectively disables early-exit', () => {
+    // Contract: `maxCount && count >= maxCount` short-circuits when
+    // maxCount=0 because 0 is falsy. So passing 0 acts like "no cap".
+    // This documents that quirk — passing 0 doesn't return 0.
     const messages: Msg[] = [
       {
         type: 'assistant',

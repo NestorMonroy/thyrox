@@ -1,0 +1,166 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/storage": [
+        "./src/index.ts"
+      ],
+      "@thyrox/storage/cache-paths": [
+        "./src/cache-paths.ts"
+      ],
+      "@thyrox/storage/tempfile.js": [
+        "./src/tempfile.ts"
+      ],
+      "@thyrox/storage/path.js": [
+        "./src/path.ts"
+      ],
+      "@thyrox/storage/windowsPaths.js": [
+        "./src/windowsPaths.ts"
+      ],
+      "@thyrox/storage/xdg.js": [
+        "./src/xdg.ts"
+      ],
+      "@thyrox/storage/glob.js": [
+        "./src/glob.ts"
+      ],
+      "@thyrox/storage/testing": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/storage/browser.js": [
+        "./src/browser.ts"
+      ],
+      "@thyrox/storage/claudemd.js": [
+        "./src/claudemd.ts"
+      ],
+      "@thyrox/storage/detectRepository.js": [
+        "./src/detectRepository.ts"
+      ],
+      "@thyrox/storage/editor.js": [
+        "./src/editor.ts"
+      ],
+      "@thyrox/storage/file.js": [
+        "./src/file.ts"
+      ],
+      "@thyrox/storage/filePersistence/filePersistence.js": [
+        "./src/filePersistence/filePersistence.ts"
+      ],
+      "@thyrox/storage/filePersistence/types.js": [
+        "./src/filePersistence/types.ts"
+      ],
+      "@thyrox/storage/fileRead.js": [
+        "./src/fileRead.ts"
+      ],
+      "@thyrox/storage/findGitRoot.js": [
+        "./src/findGitRoot.ts"
+      ],
+      "@thyrox/storage/fsOperations": [
+        "./src/fsOperations.ts"
+      ],
+      "@thyrox/storage/fsOperations.js": [
+        "./src/fsOperations.ts"
+      ],
+      "@thyrox/storage/getWorktreePaths.js": [
+        "./src/getWorktreePaths.ts"
+      ],
+      "@thyrox/storage/git.js": [
+        "./src/git.ts"
+      ],
+      "@thyrox/storage/imageResizer.js": [
+        "./src/imageResizer.ts"
+      ],
+      "@thyrox/storage/imageValidation.js": [
+        "./src/imageValidation.ts"
+      ],
+      "@thyrox/storage/json.js": [
+        "./src/json.ts"
+      ],
+      "@thyrox/storage/lockfile.js": [
+        "./src/lockfile.ts"
+      ],
+      "@thyrox/storage/pdfUtils.js": [
+        "./src/pdfUtils.ts"
+      ],
+      "@thyrox/storage/plans.js": [
+        "./src/plans.ts"
+      ],
+      "@thyrox/storage/projectPurge.js": [
+        "./src/projectPurge.ts"
+      ],
+      "@thyrox/storage/secureStorage.js": [
+        "./src/secureStorage.ts"
+      ],
+      "@thyrox/storage/secureStorage/keychainPrefetch.js": [
+        "./src/secureStorage/keychainPrefetch.ts"
+      ],
+      "@thyrox/storage/secureStorage/macOsKeychainHelpers.js": [
+        "./src/secureStorage/macOsKeychainHelpers.ts"
+      ],
+      "@thyrox/storage/secureStorage/macOsKeychainStorage.js": [
+        "./src/secureStorage/macOsKeychainStorage.ts"
+      ],
+      "@thyrox/storage/secureStorage/types.js": [
+        "./src/secureStorage/types.ts"
+      ],
+      "@thyrox/storage/sessionActivity.js": [
+        "./src/sessionActivity.ts"
+      ],
+      "@thyrox/storage/sessionEnvVars.js": [
+        "./src/sessionEnvVars.ts"
+      ],
+      "@thyrox/storage/sessionEnvironment.js": [
+        "./src/sessionEnvironment.ts"
+      ],
+      "@thyrox/storage/sessionRestore.js": [
+        "./src/sessionRestore.ts"
+      ],
+      "@thyrox/storage/sessionStart.js": [
+        "./src/sessionStart.ts"
+      ],
+      "@thyrox/storage/sessionState.js": [
+        "./src/sessionState.ts"
+      ],
+      "@thyrox/storage/sessionStorage.js": [
+        "./src/sessionStorage.ts"
+      ],
+      "@thyrox/storage/sessionStoragePortable.js": [
+        "./src/sessionStoragePortable.ts"
+      ],
+      "@thyrox/storage/task/diskOutput.js": [
+        "./src/task/diskOutput.ts"
+      ],
+      "@thyrox/storage/toolResultStorage.js": [
+        "./src/toolResultStorage.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

@@ -1,23 +1,17 @@
 /**
- * Copia de `ccnmt: packages/permission/src/__tests__/shadowedRuleDetection.test.ts`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
+ * Tests for shadowedRuleDetection — drives /doctor warnings about
+ * unreachable permission rules in user/project/policy settings.
  *
- * Tests de `shadowedRuleDetection` — el que alimenta los avisos de /doctor
- * sobre reglas de permiso inalcanzables en los ajustes de usuario, de
- * proyecto y de política.
+ * Wrong shadow detection = either spurious warnings (annoying, training
+ * users to ignore /doctor) OR missed shadows (real config bugs ship to
+ * users — they THINK their allow rule lets them through, but the ask
+ * rule above blocks every attempt).
  *
- * Detectar mal una regla ensombrecida produce o avisos espurios —molestos, y
- * entrenan al usuario a ignorar /doctor— o sombras que pasan desapercibidas:
- * ahí un defecto real de configuración le llega al usuario, que CREE que su
- * regla de allow le deja pasar cuando la regla de ask de más arriba bloquea
- * cada intento.
- *
- * La excepción del auto-allow de Bash con sandbox es especialmente sutil: una
- * regla de ask que abarca toda la herramienta y viene de los ajustes
- * PERSONALES no debe ensombrecer reglas de allow específicas cuando el
- * sandbox está habilitado, pero una que venga de ajustes COMPARTIDOS (de
- * proyecto o de política) TIENE que seguir avisando — puede que otros
- * miembros del equipo no tengan sandbox.
+ * The Bash sandbox-auto-allow exception is especially subtle: tool-wide
+ * ask rules from PERSONAL settings shouldn't shadow specific allow
+ * rules when sandbox is enabled, but tool-wide ask rules from SHARED
+ * settings (project/policy) MUST still warn — other team members may
+ * not have sandbox.
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -108,9 +102,8 @@ describe('detectUnreachableRules — no shadowing', () => {
   })
 
   test('tool-wide allow + tool-wide ask: NOT marked unreachable (no specific rule)', () => {
-    // Documentado: una regla de allow que abarca toda la herramienta no
-    // puede quedar «ensombrecida» — sólo se comprueban las específicas, las
-    // que llevan `ruleContent`.
+    // Documented: tool-wide allow rules can't be "shadowed" — only
+    // specific (with ruleContent) ones are checked.
     const ctx = buildContext({
       allow: { localSettings: ['Bash'] },
       ask: { localSettings: ['Bash'] },
@@ -140,7 +133,7 @@ describe('detectUnreachableRules — deny shadowing (most severe)', () => {
   })
 
   test('deny shadowing prevents ask shadowing reporting (priority)', () => {
-    // Documentado: cuando la sombra la produce un deny, NO se reporta además la sombra del ask.
+    // Documented: when deny shadows, we DON'T also report ask shadow.
     const ctx = buildContext({
       allow: { localSettings: ['Bash(ls:*)'] },
       ask: { localSettings: ['Bash'] },
@@ -188,8 +181,8 @@ describe('detectUnreachableRules — ask shadowing', () => {
 
 describe('detectUnreachableRules — Bash sandbox auto-allow exception', () => {
   test('Bash + sandbox enabled + ask from PERSONAL settings → NOT shadowed', () => {
-    // Documentado: un Bash en sandbox se auto-permite, así que la regla de
-    // ask de los ajustes personales es irrelevante.
+    // Documented: sandboxed Bash auto-allows, so the ask rule from
+    // personal settings is moot.
     const ctx = buildContext({
       allow: { localSettings: ['Bash(ls:*)'] },
       ask: { localSettings: ['Bash'] }, // localSettings is personal
@@ -210,8 +203,8 @@ describe('detectUnreachableRules — Bash sandbox auto-allow exception', () => {
   })
 
   test('Bash + sandbox enabled + ask from projectSettings (SHARED) → STILL shadowed', () => {
-    // Documentado: los ajustes compartidos avisan siempre, incluso con
-    // sandbox — puede que otros miembros del equipo no lo tengan habilitado.
+    // Documented: shared settings always warn, even with sandbox
+    // — other team members may not have sandbox enabled.
     const ctx = buildContext({
       allow: { localSettings: ['Bash(ls:*)'] },
       ask: { projectSettings: ['Bash'] },
@@ -234,7 +227,7 @@ describe('detectUnreachableRules — Bash sandbox auto-allow exception', () => {
       allow: { localSettings: ['Edit(*.ts)'] },
       ask: { localSettings: ['Edit'] },
     })
-    // `sandboxAutoAllowEnabled` no aplica a Edit.
+    // sandboxAutoAllowEnabled doesn't apply to Edit.
     const result = detectUnreachableRules(ctx, { sandboxAutoAllowEnabled: true })
     expect(result).toHaveLength(1)
   })
@@ -257,7 +250,7 @@ describe('detectUnreachableRules — across multiple sources', () => {
       deny: { policySettings: ['Bash'] },
     })
     const result = detectUnreachableRules(ctx, { sandboxAutoAllowEnabled: false })
-    // gana deny (es más severo)
+    // deny wins (more severe)
     expect(result).toHaveLength(1)
     expect(result[0]?.shadowType).toBe('deny')
   })

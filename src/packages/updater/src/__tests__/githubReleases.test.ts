@@ -12,7 +12,7 @@ describe('parseTagFromReleaseLocation', () => {
   test('extracts tag from an absolute github.com redirect URL', () => {
     expect(
       parseTagFromReleaseLocation(
-        'https://github.com/Jcg-admin/claude-code-how-works-how-works-how-works/releases/tag/v26.5.92',
+        'https://github.com/Jcg-admin/claude-code-how-works/releases/tag/v26.5.92',
       ),
     ).toBe('v26.5.92')
   })
@@ -20,7 +20,7 @@ describe('parseTagFromReleaseLocation', () => {
   test('extracts tag from a relative redirect path', () => {
     expect(
       parseTagFromReleaseLocation(
-        '/Jcg-admin/claude-code-how-works-how-works-how-works/releases/tag/v26.5.92',
+        '/Jcg-admin/claude-code-how-works/releases/tag/v26.5.92',
       ),
     ).toBe('v26.5.92')
   })

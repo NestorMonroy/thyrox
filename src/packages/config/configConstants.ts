@@ -1,11 +1,5 @@
-/**
- * Puerto de `ccnmt: packages/config/configConstants.ts` (21 líneas fuente).
- * Reimplementación fiel VERBATIM.
- *
- * Estas constantes viven en un archivo aparte para evitar problemas de
- * dependencia circular. NO añadir imports a este archivo — debe permanecer
- * libre de dependencias.
- */
+// These constants are in a separate file to avoid circular dependency issues.
+// Do NOT add imports to this file - it must remain dependency-free.
 
 export const NOTIFICATION_CHANNELS = [
   'auto',
@@ -17,11 +11,11 @@ export const NOTIFICATION_CHANNELS = [
   'notifications_disabled',
 ] as const
 
-// Modos de editor válidos (excluye el 'emacs' obsoleto, que se auto-migra a 'normal').
+// Valid editor modes (excludes deprecated 'emacs' which is auto-migrated to 'normal')
 export const EDITOR_MODES = ['normal', 'vim'] as const
 
-// Modos válidos de "teammate" para generar sub-procesos.
-// 'tmux' = teammates tradicionales basados en tmux
-// 'in-process' = teammates en proceso, corriendo en el mismo proceso
-// 'auto' = elige automáticamente según el contexto (default)
+// Valid teammate modes for spawning
+// 'tmux' = traditional tmux-based teammates
+// 'in-process' = in-process teammates running in same process
+// 'auto' = automatically choose based on context (default)
 export const TEAMMATE_MODES = ['auto', 'tmux', 'in-process'] as const

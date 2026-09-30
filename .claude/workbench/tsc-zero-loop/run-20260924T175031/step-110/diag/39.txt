@@ -1,0 +1,24 @@
+src/packages/agent/sessionStores.ts(162,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'EffortValue | undefined'.
+  --- código src/packages/agent/sessionStores.ts:152-172 ---
+    152    const { getInitialSettings } = require('@thyrox/config/settings') as {
+    153      getInitialSettings: () => {
+    154        effortLevel?: string
+    155        fastModePerSessionOptIn?: boolean
+    156        fastMode?: boolean
+    157      }
+    158    }
+    159    const initialSettings = getInitialSettings()
+    160    const initialEffortValue =
+    161      parseEffortValue(params.effort) ??
+    162>     toPersistableEffort(initialSettings.effortLevel)
+    163    // `isFastModeEnabled`/`getFastModeUnavailableReason`/
+    164    // `isFastModeSupportedByModel`: @thyrox/provider no expone `fastMode.ts`
+    165    // — ver docstring del módulo.
+    166    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    167    const fastModeMod = require('@thyrox/provider/fastMode.js') as {
+    168      isFastModeEnabled: () => boolean
+    169      getFastModeUnavailableReason: () => string | null
+    170      isFastModeSupportedByModel: (model: string | null) => boolean
+    171    }
+    172    const initialFastMode =
+  Type 'string' is not assignable to type 'EffortValue | undefined'.

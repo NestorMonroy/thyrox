@@ -1,23 +1,3 @@
-/**
- * El texto con que se le explica al modelo cuándo y cómo dormir.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/tools/SleepTool/prompt.ts`
- * (3 símbolos exportados). Ese árbol declara `"license": "UNLICENSED"`; el
- * prompt es la INSTRUCCIÓN que el útil emite, así que su texto se conserva
- * verbatim —cambiarlo cambiaría la conducta que produce— y lo que se
- * reimplementa es su envoltorio.
- *
- * LA ETIQUETA DEL AVISO PERIÓDICO NO SE TECLEA: entra por interpolación
- * desde `@thyrox/command-runtime/xml.js`. Si el runtime la renombra, el
- * prompt sigue nombrando la real; con el literal quedaría instruyendo sobre
- * una etiqueta que nunca llega, y ese fallo aparece como un modelo que
- * ignora avisos que sí está recibiendo.
- *
- * SÓLO LLEGA EL PROMPT, y no es un porte parcial silencioso: la fuente
- * tampoco tiene el útil. `SleepTool/` contiene un único archivo, este.
- *
- * DIVERGENCIA DECLARADA: ninguna.
- */
 import { TICK_TAG } from '@thyrox/command-runtime/xml.js'
 
 export const SLEEP_TOOL_NAME = 'Sleep'

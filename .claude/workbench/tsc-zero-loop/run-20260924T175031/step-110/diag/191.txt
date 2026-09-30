@@ -1,0 +1,15 @@
+src/packages/repl/src/components/BridgeDialog.tsx(2,40): error TS7016: Could not find a declaration file for module 'qrcode'. '/home/user/thyrox/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/BridgeDialog.tsx:1-12 ---
+      1  import { basename } from 'path'
+      2> import { toString as qrToString } from 'qrcode'
+      3  import * as React from 'react'
+      4  import { useEffect, useState } from 'react'
+      5  import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+      6  import {
+      7    buildActiveFooterText,
+      8    buildIdleFooterText,
+      9    FAILED_FOOTER_TEXT,
+     10    getBridgeStatus,
+     11  } from '@thyrox/bridge/bridgeStatusUtil.js'
+     12  import {
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`

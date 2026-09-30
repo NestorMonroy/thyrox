@@ -1,0 +1,15 @@
+src/packages/agent/fileChangedWatcher.ts:148:  const hookResult = await executeCwdChangedHooks(oldCwd, newCwd).catch((e: unknown) => {
+src/packages/agent/fileChangedWatcher.ts-149-    const msg = errorMessage(e)
+src/packages/agent/fileChangedWatcher.ts-150-    logForDebugging(`CwdChanged hook failed: ${msg}`, {
+src/packages/agent/fileChangedWatcher.ts-151-      level: 'error',
+src/packages/agent/fileChangedWatcher.ts-152-    })
+src/packages/agent/fileChangedWatcher.ts-153-    notifyCallback?.(msg, true)
+src/packages/agent/fileChangedWatcher.ts-154-    return {
+src/packages/agent/fileChangedWatcher.ts-155-      results: [] as HookOutsideReplResult[],
+src/packages/agent/fileChangedWatcher.ts-156-      watchPaths: [] as string[],
+src/packages/agent/fileChangedWatcher.ts-157-      systemMessages: [] as string[],
+src/packages/agent/fileChangedWatcher.ts-158-    }
+src/packages/agent/fileChangedWatcher.ts-159-  })
+src/packages/agent/fileChangedWatcher.ts-160-  dynamicWatchPaths = hookResult.watchPaths
+src/packages/agent/fileChangedWatcher.ts-161-  dynamicWatchPathsSorted = hookResult.watchPaths.slice().sort()
+src/packages/agent/fileChangedWatcher.ts-162-  for (const msg of hookResult.systemMessages) {

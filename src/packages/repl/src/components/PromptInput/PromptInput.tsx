@@ -220,6 +220,7 @@ import { usePromptInputPlaceholder } from './usePromptInputPlaceholder.js'
 import { useShowFastIconHint } from './useShowFastIconHint.js'
 import { useSwarmBanner } from './useSwarmBanner.js'
 import { isNonSpacePrintable, isVimModeEnabled } from './utils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   debug: boolean
@@ -232,7 +233,7 @@ type Props = {
   isLoading: boolean
   verbose: boolean
   messages: Message[]
-  onAutoUpdaterResult: (result: AutoUpdaterResult) => void
+  onAutoUpdaterResult: (result: AutoUpdaterResult | null) => void
   autoUpdaterResult: AutoUpdaterResult | null
   input: string
   onInputChange: (value: string) => void
@@ -455,7 +456,7 @@ function PromptInput({
   const tmuxFooterVisible =
     process.env.USER_TYPE === 'ant' && hasTungstenSession
   // WebBrowser pill — visible when a browser is open
-  const bagelFooterVisible = useAppState(s =>
+  const bagelFooterVisible = useAppState(_s =>
         false,
   )
   const teamContext = useAppState(s => s.teamContext)
@@ -510,7 +511,7 @@ function PromptInput({
     if (viewedTeammate) {
       return {
         ...toolPermissionContext,
-        mode: viewedTeammate.permissionMode,
+        mode: viewedTeammate.permissionMode as PermissionMode,
       }
     }
     return toolPermissionContext
@@ -704,7 +705,6 @@ function PromptInput({
 
   const tasksSelected = footerItemSelected === 'tasks'
   const tmuxSelected = footerItemSelected === 'tmux'
-  const bagelSelected = footerItemSelected === 'bagel'
   const teamsSelected = footerItemSelected === 'teams'
   const bridgeSelected = footerItemSelected === 'bridge'
 
@@ -1076,7 +1076,7 @@ function PromptInput({
     if (feature('ULTRAPLAN') && ultraplanTriggers.length) {
       addNotification({
         key: 'ultraplan-active',
-        text: 'This prompt will launch an ultraplan session in Claude Code on the web',
+        text: `This prompt will launch an ultraplan session in ${PRODUCT_NAME} on the web`,
         priority: 'immediate',
         timeoutMs: 5000,
       })
@@ -1089,7 +1089,7 @@ function PromptInput({
     if (isUltrareviewEnabled() && ultrareviewTriggers.length) {
       addNotification({
         key: 'ultrareview-active',
-        text: 'Run /ultrareview after Claude finishes to review these changes in the cloud',
+        text: `Run /ultrareview after ${PRODUCT_NAME} finishes to review these changes in the cloud`,
         priority: 'immediate',
         timeoutMs: 5000,
       })
@@ -1100,7 +1100,7 @@ function PromptInput({
     if (ultraworkTriggers.length) {
       addNotification({
         key: 'ultrawork-active',
-        text: 'This prompt will steer Claude into autonomous workflow mode',
+        text: `This prompt will steer ${PRODUCT_NAME} into autonomous workflow mode`,
         priority: 'immediate',
         timeoutMs: 5000,
       })
@@ -1901,7 +1901,7 @@ function PromptInput({
     if (isAgentSwarmsEnabled() && viewedTeammate && viewingAgentTaskId) {
       const teammateContext: ToolPermissionContext = {
         ...toolPermissionContext,
-        mode: viewedTeammate.permissionMode,
+        mode: viewedTeammate.permissionMode as PermissionMode,
       }
       // Pass undefined for teamContext (unused but kept for API compatibility)
       const nextMode = getNextPermissionMode(teammateContext, undefined)
@@ -3200,8 +3200,12 @@ function getInitialPasteId(messages: Message[]): number {
   for (const message of messages) {
     if (message.type === 'user') {
       // Check image paste IDs
-      if (message.imagePasteIds) {
-        for (const id of message.imagePasteIds) {
+      // `imagePasteIds` no esta declarado en `UserMessage`: llega por la firma de
+      // indice de `MessageBase`, o sea `unknown` (aqui `{}` tras la guarda de
+      // truthiness). Mismo estrechamiento que `agent/messages.ts:1483`.
+      const imagePasteIds = message.imagePasteIds as number[] | undefined
+      if (imagePasteIds) {
+        for (const id of imagePasteIds) {
           if (id > maxId) maxId = id
         }
       }

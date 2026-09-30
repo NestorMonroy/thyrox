@@ -1,19 +1,13 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/teamMemPaths.ts` (verbatim, con una
- * excepción: `getFeatureValue_CACHED_MAY_BE_STALE` viene del sustituto
- * local `./internal/pendingCrossPackageDeps.js` — ver su docstring).
- */
-import { lstat, realpath } from 'node:fs/promises'
-import { dirname, join, resolve, sep } from 'node:path'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from './internal/pendingCrossPackageDeps.js'
+import { lstat, realpath } from 'fs/promises'
+import { dirname, join, resolve, sep } from 'path'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 export { PathTraversalError } from './errors.js'
 import { PathTraversalError } from './errors.js'
-import { getAutoMemPath, isAutoMemoryEnabled } from './paths.js'
-
 function getErrnoCode(e: unknown): string | undefined {
   if (e && typeof e === 'object' && 'code' in e && typeof e.code === 'string') return e.code
   return undefined
 }
+import { getAutoMemPath, isAutoMemoryEnabled } from './paths.js'
 
 function sanitizePathKey(key: string): string {
   if (key.includes('\0')) {
@@ -135,7 +129,7 @@ export function isTeamMemPath(filePath: string): boolean {
 
 export async function validateTeamMemWritePath(
   filePath: string,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<string> {
   if (filePath.includes('\0')) {
     throw new PathTraversalError(`Null byte in path: "${filePath}"`)
@@ -156,7 +150,7 @@ export async function validateTeamMemWritePath(
   return resolvedPath
 }
 
-export async function validateTeamMemKey(key: string, signal?: AbortSignal): Promise<string> {
+export async function validateTeamMemKey(key: string, _signal?: AbortSignal): Promise<string> {
   const safeKey = sanitizePathKey(key)
   const filePath = join(getTeamMemPath(), safeKey)
   return validateTeamMemWritePath(filePath)

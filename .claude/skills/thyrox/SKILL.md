@@ -14,7 +14,7 @@ Sistema agentic para organizar trabajo de cualquier tamaño. Implementado actual
 `FASE N` = número secuencial global del proyecto (cada WP ocupa una FASE).
 `Phase N` = etapa interna del ciclo THYROX dentro de ese WP (1–12, se reinicia en cada FASE).
 Ejemplo: "FASE 20 está en Phase 10" = el WP #20 del proyecto está ejecutándose.
-Ver glosario completo en [CLAUDE.md](../../../CLAUDE.md#glosario).
+Ver el glosario completo en el `CLAUDE.md` del consumidor.
 
 ```mermaid
 flowchart LR
@@ -531,19 +531,19 @@ no lo escribe el skill: se **declara** en la clave `:flow:` del bloque
 
 | Artefacto | Cuándo es obligatorio | Plantilla real |
 |-----------|----------------------|----------------|
-| `index.rst` | siempre | [tpl-iniciativa-index.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-index.rst) |
-| `alcance-<slug>.rst` | al dejar DISCOVER (`:estado:` ≥ `en-definicion`); lleva **Premisa verificada** + `:flow:` | [tpl-iniciativa-alcance.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst) |
-| `progreso-<slug>.rst` | en `en-ejecucion` | [tpl-iniciativa-progreso.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-progreso.rst) |
+| `index.rst` | siempre | `source/normativa/estandares/plantillas/tpl-iniciativa-index.rst` (del consumidor) |
+| `alcance-<slug>.rst` | al dejar DISCOVER (`:estado:` ≥ `en-definicion`); lleva **Premisa verificada** + `:flow:` | `source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst` (del consumidor) |
+| `progreso-<slug>.rst` | en `en-ejecucion` | `source/normativa/estandares/plantillas/tpl-iniciativa-progreso.rst` (del consumidor) |
 | `analisis-<slug>.rst` | condicional: si hay investigación con hallazgos calibrados | — |
 | `decisiones-<slug>.rst` | condicional: si hay ≥1 decisión con alternativas (DEC-NN) | — |
-| `tareas-<slug>.rst` | condicional: si hay ≥1 tarea atómica T-NNN | [tpl-iniciativa-tareas.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst) |
+| `tareas-<slug>.rst` | condicional: si hay ≥1 tarea atómica T-NNN | `source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst` (del consumidor) |
 | `hallazgos/hallazgo-<ID>-<corto>.rst` + su `index.rst` | por hallazgo, desde 2026-08-03 | — |
 
 **Artefactos que NO viven en la iniciativa:**
 
 | Artefacto | Dónde | Nota |
 |-----------|-------|------|
-| ADRs de producto | `source/{backend,frontend}/adr/*.rst` | [tpl-adr.rst](../../../source/normativa/estandares/plantillas/tpl-adr.rst) |
+| ADRs de producto | `source/{backend,frontend}/adr/*.rst` | `source/normativa/estandares/plantillas/tpl-adr.rst` (del consumidor) |
 | Decisiones de documentación | `source/gestion/decisiones/` | DEC-DOC |
 | Riesgos y deuda técnica | `source/risks-technical-debt/registro-riesgos-y-deuda-tecnica.rst` | registro **único** del proyecto, no uno por WP |
 | Principios globales | `source/normativa/principios/` | sustituye al `constitution.md` del template |
@@ -617,7 +617,7 @@ analyze/methodology-landscape/universal-pattern.md     ← subdomain + nombre de
 constraints/technical-constraints.md                   ← cajón + nombre descriptivo
 ```
 
-Ver [conventions](../../references/conventions.md) para detalles completos.
+Ver [conventions](../../../_references/conventions.md) para detalles completos.
 
 ---
 
@@ -765,7 +765,7 @@ El gate Phase 6→7 (Plano A) es la aprobacion para todo Phase 7. Las operacione
 (update-state.sh, validate-session-close.sh, git add/commit/push) corren automaticamente
 despues de ese gate — son consecuencia de la decision, no nuevas decisiones.
 
-Ver [permission-model](../../references/permission-model.md) para la referencia completa y `.claude/settings.json` para la configuracion vigente.
+Ver [permission-model](../../../_references/permission-model.md) para la referencia completa y `.claude/settings.json` para la configuracion vigente.
 
 ---
 
@@ -806,52 +806,52 @@ Ver references en `workflow-discover/references/` — introduction, requirements
 [reference-validation](../workflow-track/references/reference-validation.md) · [incremental-correction](../workflow-track/references/incremental-correction.md)
 
 ### Cross-phase (leer según necesidad)
-[conventions](../../references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
+[conventions](../../../_references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
 [scalability](../workflow-discover/references/scalability.md) — Cómo escalar el framework según complejidad
-[examples](../../references/examples.md) — 8 casos de uso reales
-[agent-spec](../../references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
-[skill-vs-agent](../../references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo
-[claude-code-components](../../references/claude-code-components.md) — Referencia oficial de Skills, Subagents y Context (docs oficiales)
-[permission-model](../../references/permission-model.md) — Dos planos de aprobacion: gates de decision (SKILL) vs permisos de herramienta (settings.json)
+[examples](../../../_references/examples.md) — 8 casos de uso reales
+[agent-spec](../../../_references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
+[skill-vs-agent](../../../_references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo
+[claude-code-components](../../../_references/claude-code-components.md) — Referencia oficial de Skills, Subagents y Context (docs oficiales)
+[permission-model](../../../_references/permission-model.md) — Dos planos de aprobacion: gates de decision (SKILL) vs permisos de herramienta (settings.json)
 
 ### Plataforma Claude Code — arquitectura y extensión (leer cuando se trabaja con la plataforma)
-[plugins](../../references/plugins.md) — Arquitectura de plugin: manifest plugin.json, namespace /name:cmd, distribución, seguridad de subagentes en plugins
-[hook-output-control](../../references/hook-output-control.md) — Semántica de suppressOutput (stdout del hook, NO el tool result), additionalContext, updatedInput, permissionDecision
-[subagent-patterns](../../references/subagent-patterns.md) — Patrones de aislamiento de contexto, worktree isolation, persistent memory, agent teams, background agents
-[scheduled-tasks](../../references/scheduled-tasks.md) — /loop, CronCreate, cloud tasks persistentes, print mode (-p), CI/CD integration, auto mode
-[memory-hierarchy](../../references/memory-hierarchy.md) — Sistema de 8 niveles de memoria CLAUDE.md, imports @path, auto-memory, managed settings enterprise
-[mcp-integration](../../references/mcp-integration.md) — Servidores MCP (HTTP/stdio/SSE), OAuth, elicitation, canales push, límites de herramientas
-[tool-execution-model](../../references/tool-execution-model.md) — Todos los flujos de Edit/Write: permission model (settings.json, allow/ask/deny, precedencia) vs context isolation (subagente, background, hook, worktree)
-[command-execution-model](../../references/command-execution-model.md) — Flujo de ejecución de commands (parse→shell→LLM), fat vs thin wrapper, delegación explícita (context:fork) vs probabilística, restricciones plugin commands
-[sdd](../../references/sdd.md) — Specification-Driven Development (TDD + DbC): collaborative tests vs contratos, ciclo SDD, amplificación de tests, cuándo usar cada tipo de spec
+[plugins](../../../_references/plugins.md) — Arquitectura de plugin: manifest plugin.json, namespace /name:cmd, distribución, seguridad de subagentes en plugins
+[hook-output-control](../../../_references/hook-output-control.md) — Semántica de suppressOutput (stdout del hook, NO el tool result), additionalContext, updatedInput, permissionDecision
+[subagent-patterns](../../../_references/subagent-patterns.md) — Patrones de aislamiento de contexto, worktree isolation, persistent memory, agent teams, background agents
+[scheduled-tasks](../../../_references/scheduled-tasks.md) — /loop, CronCreate, cloud tasks persistentes, print mode (-p), CI/CD integration, auto mode
+[memory-hierarchy](../../../_references/memory-hierarchy.md) — Sistema de 8 niveles de memoria CLAUDE.md, imports @path, auto-memory, managed settings enterprise
+[mcp-integration](../../../_references/mcp-integration.md) — Servidores MCP (HTTP/stdio/SSE), OAuth, elicitation, canales push, límites de herramientas
+[tool-execution-model](../../../_references/tool-execution-model.md) — Todos los flujos de Edit/Write: permission model (settings.json, allow/ask/deny, precedencia) vs context isolation (subagente, background, hook, worktree)
+[command-execution-model](../../../_references/command-execution-model.md) — Flujo de ejecución de commands (parse→shell→LLM), fat vs thin wrapper, delegación explícita (context:fork) vs probabilística, restricciones plugin commands
+[sdd](../../../_references/sdd.md) — Specification-Driven Development (TDD + DbC): collaborative tests vs contratos, ciclo SDD, amplificación de tests, cuándo usar cada tipo de spec
 
 ### Authoring — crear o modificar componentes Claude Code
-[skill-authoring](../../references/skill-authoring.md) — Crear o mejorar skills (frontmatter completo, modos, variables, paths:)
-[agent-authoring](../../references/agent-authoring.md) — Crear agentes nativos (GAP-007..012: skills:, memory:, background:, isolation:, permissionMode)
-[claude-authoring](../../references/claude-authoring.md) — Cuándo y cómo crear CLAUDE.md (jerarquía, @imports, /init, anti-patrones)
-[hook-authoring](../../references/hook-authoring.md) — Crear hooks (eventos, output control, patrones, errores comunes)
-[component-decision](../../references/component-decision.md) — Flowchart SKILL vs CLAUDE.md vs Agent vs Hook vs Plugin vs Command
+[skill-authoring](../../../_references/skill-authoring.md) — Crear o mejorar skills (frontmatter completo, modos, variables, paths:)
+[agent-authoring](../../../_references/agent-authoring.md) — Crear agentes nativos (GAP-007..012: skills:, memory:, background:, isolation:, permissionMode)
+[claude-authoring](../../../_references/claude-authoring.md) — Cuándo y cómo crear CLAUDE.md (jerarquía, @imports, /init, anti-patrones)
+[hook-authoring](../../../_references/hook-authoring.md) — Crear hooks (eventos, output control, patrones, errores comunes)
+[component-decision](../../../_references/component-decision.md) — Flowchart SKILL vs CLAUDE.md vs Agent vs Hook vs Plugin vs Command
 
 ### Plataforma avanzada — features y CLI completo
-[advanced-features](../../references/advanced-features.md) — Planning Mode, Extended Thinking, Auto Mode, Worktrees, Sandboxing, Agent Teams, Channels
-[cli-reference](../../references/cli-reference.md) — Todos los flags, 30+ env vars, subcomandos claude auth/mcp/agents
-[settings-reference](../../references/settings-reference.md) — Referencia exhaustiva de todas las keys de settings.json (scope, defaults, sandbox, hooks, MCP)
-[slash-commands-reference](../../references/slash-commands-reference.md) — Catálogo de 60+ built-in commands, bundled skills, sintaxis de argumentos $ARGUMENTS/$0/$1
-[glossary](../../references/glossary.md) — Glosario de 130+ términos Claude Code (sintaxis, modelos, patrones, seguridad, ecosistema)
-[visual-reference](../../references/visual-reference.md) — 19 diagramas consolidados: Master Loop, context zones, permission modes, árboles de decisión
+[advanced-features](../../../_references/advanced-features.md) — Planning Mode, Extended Thinking, Auto Mode, Worktrees, Sandboxing, Agent Teams, Channels
+[cli-reference](../../../_references/cli-reference.md) — Todos los flags, 30+ env vars, subcomandos claude auth/mcp/agents
+[settings-reference](../../../_references/settings-reference.md) — Referencia exhaustiva de todas las keys de settings.json (scope, defaults, sandbox, hooks, MCP)
+[slash-commands-reference](../../../_references/slash-commands-reference.md) — Catálogo de 60+ built-in commands, bundled skills, sintaxis de argumentos $ARGUMENTS/$0/$1
+[glossary](../../../_references/glossary.md) — Glosario de 130+ términos Claude Code (sintaxis, modelos, patrones, seguridad, ecosistema)
+[visual-reference](../../../_references/visual-reference.md) — 19 diagramas consolidados: Master Loop, context zones, permission modes, árboles de decisión
 
 ### Patrones — cómo implementar correctamente
-[memory-patterns](../../references/memory-patterns.md) — Estado de sesión, @imports, auto-memory, memory: en subagents
-[tool-patterns](../../references/tool-patterns.md) — Herramienta correcta por tarea, parallel calls, Edit vs Write
-[testing-patterns](../../references/testing-patterns.md) — SDD práctico, CI/CD con claude -p, code review automation
-[multimodal](../../references/multimodal.md) — Leer imágenes, PDFs, notebooks y screenshots con Read tool
-[output-formats](../../references/output-formats.md) — --output-format, --json-schema, jq patterns, structured output
+[memory-patterns](../../../_references/memory-patterns.md) — Estado de sesión, @imports, auto-memory, memory: en subagents
+[tool-patterns](../../../_references/tool-patterns.md) — Herramienta correcta por tarea, parallel calls, Edit vs Write
+[testing-patterns](../../../_references/testing-patterns.md) — SDD práctico, CI/CD con claude -p, code review automation
+[multimodal](../../../_references/multimodal.md) — Leer imágenes, PDFs, notebooks y screenshots con Read tool
+[output-formats](../../../_references/output-formats.md) — --output-format, --json-schema, jq patterns, structured output
 
 ### Streaming y llamadas largas
-[stream-resilience](../../references/stream-resilience.md) — CLAUDE_STREAM_IDLE_TIMEOUT_MS, TTFToken, --fallback-model, recovery patterns
-[streaming-errors](../../references/streaming-errors.md) — Catálogo de errores con causas/fixes, matriz de diagnóstico rápido
-[long-running-calls](../../references/long-running-calls.md) — --max-turns, background vs print mode, síntesis del padre, worktrees, checkpoints
+[stream-resilience](../../../_references/stream-resilience.md) — CLAUDE_STREAM_IDLE_TIMEOUT_MS, TTFToken, --fallback-model, recovery patterns
+[streaming-errors](../../../_references/streaming-errors.md) — Catálogo de errores con causas/fixes, matriz de diagnóstico rápido
+[long-running-calls](../../../_references/long-running-calls.md) — --max-turns, background vs print mode, síntesis del padre, worktrees, checkpoints
 
 ### Avanzado (leer cuando Claude tiene dificultades)
-[prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
-[long-context-tips](../../references/long-context-tips.md) — Documentos >5,000 palabras
+[prompting-tips](../../../_references/prompting-tips.md) — Cuando Claude no entiende instrucciones
+[long-context-tips](../../../_references/long-context-tips.md) — Documentos >5,000 palabras

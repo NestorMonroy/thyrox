@@ -65,10 +65,10 @@ export function buildQueryConfig(): QueryConfig {
         'tengu_streaming_tool_execution2',
       ),
       emitToolUseSummaries: isEnvTruthy(
-        readEnv('CLAUDE_CODE_EMIT_TOOL_USE_SUMMARIES'),
+        readEnv('THYROX_CODE_EMIT_TOOL_USE_SUMMARIES'),
       ),
       isAnt: process.env.USER_TYPE === 'ant',
-      fastModeEnabled: !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FAST_MODE')),
+      fastModeEnabled: !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FAST_MODE')),
     },
   }
 }
@@ -120,7 +120,7 @@ export type QueryLoopState = {
    * Consecutive Stop/SubagentStop blocking count for the current turn — ant
    * v2.1.143 3999.js. Bumped each time a Stop hook blocks the turn from
    * ending; reset to 0 on every other transition. The loop ends the turn
-   * once it exceeds CLAUDE_CODE_STOP_HOOK_BLOCK_CAP (default 8) so an
+   * once it exceeds THYROX_CODE_STOP_HOOK_BLOCK_CAP (default 8) so an
    * unsatisfiable /goal condition can't block forever — each block injects a
    * blockingError, growing the transcript every cycle until the main API call
    * 413s (prompt-too-long). The cap is the structural backstop the `impossible`

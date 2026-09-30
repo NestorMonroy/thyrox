@@ -4,7 +4,7 @@
  * When plugin versions are updated, old versions are marked with a
  * `.orphaned_at` file but kept on disk for 7 days (since concurrent
  * sessions might still reference them). During this window, Grep/Glob
- * could return files from orphaned versions, causing Claude to use
+ * could return files from orphaned versions, causing thyrox to use
  * outdated plugin code.
  *
  * We find `.orphaned_at` markers via a single ripgrep call and generate
@@ -69,7 +69,7 @@ export async function getGlobExclusionsForPluginCache(
       new AbortController().signal,
     )
 
-    cachedExclusions = markers.map((markerPath: string): string => {
+    const exclusions = markers.map((markerPath: string): string => {
       // ripgrep may return absolute or relative — normalize to relative.
       const versionDir = dirname(markerPath)
       const rel = isAbsolute(versionDir)
@@ -79,7 +79,8 @@ export async function getGlobExclusionsForPluginCache(
       const posixRelative = rel.replace(/\\/g, '/')
       return `!**/${posixRelative}/**`
     })
-    return cachedExclusions
+    cachedExclusions = exclusions
+    return exclusions
   } catch {
     // Best-effort — don't break core search tools if ripgrep fails here
     cachedExclusions = []
@@ -94,7 +95,7 @@ export function clearPluginCacheExclusions(): void {
 /**
  * One path is a prefix of the other. Special-cases root (normalize('/') + sep
  * = '//'). Case-insensitive on win32 since normalize() doesn't lowercase
- * drive letters and CLAUDE_CODE_PLUGIN_CACHE_DIR may disagree with resolved.
+ * drive letters and THYROX_CODE_PLUGIN_CACHE_DIR may disagree with resolved.
  */
 function pathsOverlap(a: string, b: string): boolean {
   const na = normalizeForCompare(a)

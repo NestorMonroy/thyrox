@@ -1,0 +1,237 @@
+diff --git a/src/packages/provider/bin/generateStorageKey.ts b/src/packages/provider/bin/generateStorageKey.ts
+new file mode 100644
+index 00000000..5f32c95b
+--- /dev/null
++++ b/src/packages/provider/bin/generateStorageKey.ts
+@@ -0,0 +1,101 @@
++#!/usr/bin/env bun
++/**
++ * Genera `THYROX_STORAGE_ENCRYPTION_KEY` — el secreto que
++ * `accounts/fieldCipher.ts` deriva con scrypt para cifrar las credenciales
++ * guardadas. `fieldCipher.ts` acepta cualquier cadena no vacía como secreto
++ * (`declared = secret?.trim() ? secret : undefined`); este generador produce
++ * 32 bytes aleatorios en hexadecimal, con la misma entropía que
++ * `KEY_LENGTH` deriva para la clave AES-256 real.
++ *
++ *   bun bin/generateStorageKey.ts [--env-file <ruta>]
++ *
++ * Sin `--env-file`, el `.env` de la raíz de thyrox (`@thyrox/paths/reach.ts:
++ * thyroxRoot`). Si la variable YA está declarada con un valor no vacío en ese
++ * archivo, rehúsa y deja el archivo intacto: rotarla dejaría huérfanas las
++ * conexiones que esa clave ya cifró. La clave nunca se imprime, ni por stdout
++ * ni por stderr.
++ *
++ * Salidas: 0 escrita · 1 la variable ya está declarada · 2 invocación
++ * inválida (falta el valor de `--env-file`, o no se pudo derivar la raíz de
++ * thyrox para el valor por defecto).
++ */
++import { randomBytes } from 'node:crypto'
++import { existsSync, readFileSync, writeFileSync } from 'node:fs'
++import { join } from 'node:path'
++import { thyroxRoot } from '@thyrox/paths/reach.ts'
++
++import { STORAGE_KEY_VARIABLE } from '../src/accounts/fieldCipher.ts'
++
++const KEY_BYTES = 32
++
++/** 32 bytes aleatorios en hex: el mismo tamaño que `KEY_LENGTH` deriva para AES-256. */
++function generateKey(): string {
++  return randomBytes(KEY_BYTES).toString('hex')
++}
++
++function defaultEnvFilePath(): string {
++  return join(thyroxRoot(), '.env')
++}
++
++function arg(argv: string[], name: string): string | undefined {
++  const i = argv.indexOf(`--${name}`)
++  return i >= 0 ? argv[i + 1] : undefined
++}
++
++/**
++ * El valor ya declarado de la variable en `path`, o `null` si no hay
++ * archivo, no hay línea para ella, o su valor está en blanco — un valor en
++ * blanco no cifró nada todavía, así que completarlo no rota ninguna clave en
++ * uso.
++ */
++function declaredValue(path: string, name: string): string | null {
++  if (!existsSync(path)) return null
++  for (const raw of readFileSync(path, 'utf8').split('\n')) {
++    let line = raw.trim()
++    if (!line || line.startsWith('#')) continue
++    if (line.startsWith('export ')) line = line.slice('export '.length).trimStart()
++    const cut = line.indexOf('=')
++    if (cut === -1) continue
++    if (line.slice(0, cut).trim() !== name) continue
++    const value = line.slice(cut + 1).trim()
++    if (value) return value
++  }
++  return null
++}
++
++function appendKey(path: string, key: string): void {
++  const existing = existsSync(path) ? readFileSync(path, 'utf8') : ''
++  const withNewline = existing.length > 0 && !existing.endsWith('\n') ? `${existing}\n` : existing
++  writeFileSync(path, `${withNewline}${STORAGE_KEY_VARIABLE}=${key}\n`)
++}
++
++export function main(argv: string[]): number {
++  let envFile: string
++  const declared = arg(argv, 'env-file')
++  if (argv.includes('--env-file') && declared === undefined) {
++    process.stderr.write('--env-file requiere una ruta.\n')
++    return 2
++  }
++  try {
++    envFile = declared ?? defaultEnvFilePath()
++  } catch (error) {
++    process.stderr.write(`${(error as Error).message}\n`)
++    return 2
++  }
++
++  if (declaredValue(envFile, STORAGE_KEY_VARIABLE) !== null) {
++    process.stderr.write(
++      `${STORAGE_KEY_VARIABLE} ya está declarada en ${envFile}: no se rota, ` +
++        'dejaría huérfanas las conexiones que esa clave ya cifró.\n',
++    )
++    return 1
++  }
++
++  appendKey(envFile, generateKey())
++  process.stdout.write(`${STORAGE_KEY_VARIABLE} escrita en ${envFile}\n`)
++  return 0
++}
++
++if (import.meta.main) {
++  process.exit(main(process.argv.slice(2)))
++}
+diff --git a/src/packages/provider/src/__tests__/generateStorageKey.test.ts b/src/packages/provider/src/__tests__/generateStorageKey.test.ts
+new file mode 100644
+index 00000000..01a718ea
+--- /dev/null
++++ b/src/packages/provider/src/__tests__/generateStorageKey.test.ts
+@@ -0,0 +1,124 @@
++/**
++ * `bin/generateStorageKey.ts`: genera `THYROX_STORAGE_ENCRYPTION_KEY` y la
++ * añade a un `.env`, sin rotar una clave ya declarada — rotarla dejaría
++ * huérfanas las conexiones que esa clave ya cifró.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { STORAGE_KEY_VARIABLE } from '../accounts/fieldCipher.ts'
++import { main } from '../../bin/generateStorageKey.ts'
++
++function tmpEnvDir(): string {
++  return mkdtempSync(join(tmpdir(), 'generate-storage-key-'))
++}
++
++/** Captura stdout/stderr sin tocar el terminal de la suite. */
++async function run(argv: string[]) {
++  const out: string[] = []
++  const err: string[] = []
++  const so = process.stdout.write.bind(process.stdout)
++  const se = process.stderr.write.bind(process.stderr)
++  process.stdout.write = ((s: string) => { out.push(String(s)); return true }) as typeof process.stdout.write
++  process.stderr.write = ((s: string) => { err.push(String(s)); return true }) as typeof process.stderr.write
++  try {
++    const code = await main(argv)
++    return { code, out: out.join(''), err: err.join('') }
++  } finally {
++    process.stdout.write = so
++    process.stderr.write = se
++  }
++}
++
++const dirsToClean: string[] = []
++afterEach(() => {
++  delete process.env.THYROX_ROOT
++  while (dirsToClean.length) rmSync(dirsToClean.pop()!, { recursive: true, force: true })
++})
++
++describe('escribe una clave nueva', () => {
++  test('en un .env que aún no existe, y nunca la imprime', async () => {
++    const dir = tmpEnvDir()
++    dirsToClean.push(dir)
++    const envFile = join(dir, '.env')
++
++    const { code, out, err } = await run(['--env-file', envFile])
++
++    expect(code).toBe(0)
++    const written = readFileSync(envFile, 'utf8')
++    const match = written.match(new RegExp(`^${STORAGE_KEY_VARIABLE}=([0-9a-f]+)$`, 'm'))
++    expect(match).not.toBeNull()
++    const key = match![1]!
++    expect(key.length).toBeGreaterThanOrEqual(32)
++    expect(out).not.toContain(key)
++    expect(err).not.toContain(key)
++  })
++
++  test('la añade a un .env que ya tiene otras variables, conservándolas', async () => {
++    const dir = tmpEnvDir()
++    dirsToClean.push(dir)
++    const envFile = join(dir, '.env')
++    writeFileSync(envFile, 'OTHER_VAR=hello\n')
++
++    const { code } = await run(['--env-file', envFile])
++
++    expect(code).toBe(0)
++    const written = readFileSync(envFile, 'utf8')
++    expect(written).toContain('OTHER_VAR=hello')
++    expect(written).toMatch(new RegExp(`${STORAGE_KEY_VARIABLE}=[0-9a-f]+`))
++  })
++
++  test('completa la variable si está declarada en blanco', async () => {
++    const dir = tmpEnvDir()
++    dirsToClean.push(dir)
++    const envFile = join(dir, '.env')
++    writeFileSync(envFile, `${STORAGE_KEY_VARIABLE}=\n`)
++
++    const { code } = await run(['--env-file', envFile])
++
++    expect(code).toBe(0)
++    const written = readFileSync(envFile, 'utf8')
++    expect(written).toMatch(new RegExp(`${STORAGE_KEY_VARIABLE}=[0-9a-f]+`))
++  })
++})
++
++describe('rehúsa rotar una clave existente', () => {
++  test('con código distinto de 0, deja el archivo intacto y no imprime la clave', async () => {
++    const dir = tmpEnvDir()
++    dirsToClean.push(dir)
++    const envFile = join(dir, '.env')
++    const before = `${STORAGE_KEY_VARIABLE}=ya-declarada-antes\n`
++    writeFileSync(envFile, before)
++
++    const { code, out, err } = await run(['--env-file', envFile])
++
++    expect(code).not.toBe(0)
++    expect(readFileSync(envFile, 'utf8')).toBe(before)
++    expect(out).not.toContain('ya-declarada-antes')
++    expect(err).not.toContain('ya-declarada-antes')
++  })
++})
++
++describe('--env-file por defecto', () => {
++  test('sin --env-file usa el .env de la raíz del árbol (THYROX_ROOT)', async () => {
++    const dir = tmpEnvDir()
++    dirsToClean.push(dir)
++    process.env.THYROX_ROOT = dir
++
++    const { code } = await run([])
++
++    expect(code).toBe(0)
++    const written = readFileSync(join(dir, '.env'), 'utf8')
++    expect(written).toMatch(new RegExp(`${STORAGE_KEY_VARIABLE}=[0-9a-f]+`))
++  })
++})
++
++describe('--env-file sin valor', () => {
++  test('rehúsa con código 2', async () => {
++    const { code, err } = await run(['--env-file'])
++    expect(code).toBe(2)
++    expect(err).toContain('--env-file')
++  })
++})

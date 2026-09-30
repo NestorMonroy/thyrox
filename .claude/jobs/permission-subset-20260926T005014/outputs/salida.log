@@ -1,0 +1,13 @@
+ 1067 pass
+ 3 fail
+ 1810 expect() calls
+Ran 1070 tests across 69 files. [9.15s]
+ 681 pass
+ 3 fail
+ 1125 expect() calls
+Ran 684 tests across 43 files. [4.07s]
+ 11 pass
+ 0 fail
+ 94 expect() calls
+Ran 11 tests across 1 file. [1.56s]
+__BG_EXIT__=0

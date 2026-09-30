@@ -1,22 +1,16 @@
 /**
- * Wrappers HTTP delgados para la API de code-session de CCR v2.
+ * Thin HTTP wrappers for the CCR v2 code-session API.
  *
- * Archivo separado de remoteBridgeCore.ts para que el subpath /bridge
- * del SDK pueda exportar createCodeSession + fetchRemoteCredentials sin
- * empaquetar el árbol pesado del CLI (analytics, transporte, etc.). Los
- * llamadores proveen accessToken + baseUrl explícitos — sin auth ni
- * lecturas de config implícitas.
- *
- * Puerto fiel de `ccnmt: packages/bridge/src/codeSessionApi.ts`.
- * `logForDebugging`/`errorMessage`/`jsonStringify` son sustitutos — ver
- * `internal/pendingCrossPackageDeps.ts`.
+ * Separate file from remoteBridgeCore.ts so the SDK /bridge subpath can
+ * export createCodeSession + fetchRemoteCredentials without bundling the
+ * heavy CLI tree (analytics, transport, etc.). Callers supply explicit
+ * accessToken + baseUrl — no implicit auth or config reads.
  */
+
 import axios from 'axios'
-import {
-  errorMessage,
-  jsonStringify,
-  logForDebugging,
-} from './internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { extractErrorDetail } from './debugUtils.js'
 
 const ANTHROPIC_VERSION = '2023-06-01'
@@ -41,10 +35,9 @@ export async function createCodeSession(
   try {
     response = await axios.post(
       url,
-      // bridge: {} es la señal positiva para el oneof del runner —
-      // omitirlo (o enviar environment_id: "") ahora da 400. BridgeRunner
-      // hoy es un mensaje vacío; es un placeholder para futuras opciones
-      // específicas de bridge.
+      // bridge: {} is the positive signal for the oneof runner — omitting it
+      // (or sending environment_id: "") now 400s. BridgeRunner is an empty
+      // message today; it's a placeholder for future bridge-specific options.
       { title, bridge: {}, ...(tags?.length ? { tags } : {}) },
       {
         headers: oauthHeaders(accessToken),
@@ -87,9 +80,8 @@ export async function createCodeSession(
 }
 
 /**
- * Credenciales de POST /bridge. El JWT es opaco — no decodificar.
- * Cada llamada a /bridge incrementa worker_epoch del lado servidor (ES
- * el registro).
+ * Credentials from POST /bridge. JWT is opaque — do not decode.
+ * Each /bridge call bumps worker_epoch server-side (it IS the register).
  */
 export type RemoteCredentials = {
   worker_jwt: string
@@ -153,9 +145,8 @@ export async function fetchRemoteCredentials(
     )
     return null
   }
-  // protojson serializa int64 como string para evitar pérdida de
-  // precisión en JS; Go también puede devolver un number según la
-  // configuración del encoder.
+  // protojson serializes int64 as a string to avoid JS precision loss;
+  // Go may also return a number depending on encoder settings.
   const rawEpoch = data.worker_epoch
   const epoch = typeof rawEpoch === 'string' ? Number(rawEpoch) : rawEpoch
   if (

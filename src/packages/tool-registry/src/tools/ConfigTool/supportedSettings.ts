@@ -8,6 +8,7 @@ import {
 import { getModelOptions } from '@thyrox/provider/modelOptions.js'
 import { validateModel } from '@thyrox/provider/validateModel.js'
 import { THEME_NAMES, THEME_SETTINGS } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** AppState keys that can be synced for immediate UI effect */
 type SyncableAppStateKey = 'verbose' | 'mainLoopModel' | 'thinkingEnabled'
@@ -134,7 +135,7 @@ export const SUPPORTED_SETTINGS: Record<string, SettingConfig> = {
     source: 'settings',
     type: 'string',
     description:
-      'Preferred language for Claude responses and voice dictation (e.g., "japanese", "spanish")',
+      `Preferred language for ${PRODUCT_NAME} responses and voice dictation (e.g., "japanese", "spanish")`,
   },
   teammateMode: {
     source: 'global',
@@ -179,13 +180,13 @@ export const SUPPORTED_SETTINGS: Record<string, SettingConfig> = {
           source: 'global' as const,
           type: 'boolean' as const,
           description:
-            'Fire a local terminal banner when Claude is waiting on user input (permission prompt, MCP elicitation, idle-after-response).',
+            `Fire a local terminal banner when ${PRODUCT_NAME} is waiting on user input (permission prompt, MCP elicitation, idle-after-response).`,
         },
         agentPushNotifEnabled: {
           source: 'global' as const,
           type: 'boolean' as const,
           description:
-            'Fire a local terminal banner when Claude proactively decides to ping you via PushNotificationTool.',
+            `Fire a local terminal banner when ${PRODUCT_NAME} proactively decides to ping you via PushNotificationTool.`,
         },
       }
     : {}),

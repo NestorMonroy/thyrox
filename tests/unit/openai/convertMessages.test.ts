@@ -40,7 +40,7 @@ describe('anthropicMessagesToOpenAI', () => {
 
   test('skips empty system prompt', () => {
     const result = anthropicMessagesToOpenAI([makeUserMsg('hi')], [] as any)
-    expect(result[0].role).toBe('user')
+    expect(result[0]!.role).toBe('user')
   })
 
   test('converts simple user text message', () => {
@@ -170,11 +170,11 @@ describe('anthropicMessagesToOpenAI', () => {
     )
 
     expect(result).toHaveLength(4)
-    expect(result[0].role).toBe('system')
-    expect(result[1].role).toBe('user')
-    expect(result[2].role).toBe('assistant')
+    expect(result[0]!.role).toBe('system')
+    expect(result[1]!.role).toBe('user')
+    expect(result[2]!.role).toBe('assistant')
     expect((result[2] as any).tool_calls).toBeDefined()
-    expect(result[3].role).toBe('tool')
+    expect(result[3]!.role).toBe('tool')
   })
 
   test('converts base64 image to image_url', () => {
@@ -280,7 +280,7 @@ describe('anthropicMessagesToOpenAI', () => {
       ],
       [] as any,
     )
-    expect((result[0].content as any[])[0].image_url.url).toBe(
+    expect((result[0]!.content as any[])[0].image_url.url).toBe(
       'data:image/png;base64,ABC123',
     )
   })

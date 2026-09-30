@@ -1,17 +1,10 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/debugUtils.ts`.
- * `logEvent`/`logForDebugging`/`errorMessage`/`jsonStringify` son
- * sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
- * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` es
- * sólo-tipo (se borra al compilar) — se cita `@thyrox/local-observability`.
- */
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 import {
-  errorMessage,
-  jsonStringify,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-  logForDebugging,
-} from './internal/pendingCrossPackageDeps.js'
+} from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 const DEBUG_MSG_LIMIT = 2000
 
@@ -40,7 +33,7 @@ export function redactSecrets(s: string): string {
   })
 }
 
-/** Trunca una cadena para logging de debug, colapsando saltos de línea. */
+/** Truncate a string for debug logging, collapsing newlines. */
 export function debugTruncate(s: string): string {
   const flat = s.replace(/\n/g, '\\n')
   if (flat.length <= DEBUG_MSG_LIMIT) {
@@ -49,7 +42,7 @@ export function debugTruncate(s: string): string {
   return flat.slice(0, DEBUG_MSG_LIMIT) + `... (${flat.length} chars)`
 }
 
-/** Trunca un valor serializable a JSON para logging de debug. */
+/** Truncate a JSON-serializable value for debug logging. */
 export function debugBody(data: unknown): string {
   const raw = typeof data === 'string' ? data : jsonStringify(data)
   const s = redactSecrets(raw)
@@ -60,10 +53,9 @@ export function debugBody(data: unknown): string {
 }
 
 /**
- * Extrae un mensaje de error descriptivo de un error de axios (o de
- * cualquier error). Para errores HTTP, apenda el mensaje del cuerpo de
- * respuesta del servidor si está disponible, ya que el mensaje por
- * defecto de axios sólo incluye el código de estado.
+ * Extract a descriptive error message from an axios error (or any error).
+ * For HTTP errors, appends the server's response body message if available,
+ * since axios's default message only includes the status code.
  */
 export function describeAxiosError(err: unknown): string {
   const msg = errorMessage(err)
@@ -90,8 +82,8 @@ export function describeAxiosError(err: unknown): string {
 }
 
 /**
- * Extrae el código de estado HTTP de un error de axios, si está
- * presente. Devuelve undefined para errores no-HTTP (p. ej. fallos de red).
+ * Extract the HTTP status code from an axios error, if present.
+ * Returns undefined for non-HTTP errors (e.g. network failures).
  */
 export function extractHttpStatus(err: unknown): number | undefined {
   if (
@@ -108,8 +100,8 @@ export function extractHttpStatus(err: unknown): number | undefined {
 }
 
 /**
- * Extrae un mensaje legible del cuerpo de respuesta de un error de la
- * API. Revisa `data.message` primero, luego `data.error.message`.
+ * Pull a human-readable message out of an API error response body.
+ * Checks `data.message` first, then `data.error.message`.
  */
 export function extractErrorDetail(data: unknown): string | undefined {
   if (!data || typeof data !== 'object') return undefined
@@ -129,10 +121,9 @@ export function extractErrorDetail(data: unknown): string | undefined {
 }
 
 /**
- * Registra un skip de init del bridge — mensaje de debug + evento de
- * analytics `tengu_bridge_repl_skipped`. Centraliza el nombre del evento
- * y el cast de AnalyticsMetadata para que los call sites no repitan las
- * 5 líneas de boilerplate cada uno.
+ * Log a bridge init skip — debug message + `tengu_bridge_repl_skipped`
+ * analytics event. Centralizes the event name and the AnalyticsMetadata
+ * cast so call sites don't each repeat the 5-line boilerplate.
  */
 export function logBridgeSkip(
   reason: string,

@@ -1,0 +1,3 @@
+tests/lib/test-reach-sh.sh con THYROX_ROOT exportado: 8 casos: 8 ok, 0 fallos
+tests/session/test_generate_bin.py con THYROX_ROOT exportado: ModuleNotFoundError: No module named 'paths'
+tests/session/test_generate_bin.py con THYROX_ROOT exportado: 118 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)

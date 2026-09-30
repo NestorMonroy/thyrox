@@ -1,0 +1,116 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/tee.ts(22,21): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/tee.ts:12-32 ---
+     12    type Pending = {
+     13      resolve: (value: IteratorResult<T, undefined>) => void
+     14      reject: (reason: unknown) => void
+     15    }
+     16    const pendings: Pending[][] = Array.from({ length: count }, () => [])
+     17    let sourceDone = false
+     18    let sourceError: unknown
+     19  
+     20    /** Entrega al consumidor `i`: a su espera si la tiene, a su cola si no. */
+     21    function deliver(i: number, item: T): void {
+     22>     const waiting = pendings[i].shift()
+     23      if (waiting) waiting.resolve({ value: item, done: false })
+     24      else queues[i].push(item)
+     25    }
+     26  
+     27    /**
+     28     * Cierra al consumidor `i`.
+     29     *
+     30     * Si la fuente lanzo, la espera pendiente se RECHAZA en vez de resolverse
+     31     * como terminada: resolverla perderia el error, y quien espera leeria un
+     32     * final limpio de un flujo que fallo.
+src/packages/agent/tee.ts(24,10): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/tee.ts:14-34 ---
+     14      reject: (reason: unknown) => void
+     15    }
+     16    const pendings: Pending[][] = Array.from({ length: count }, () => [])
+     17    let sourceDone = false
+     18    let sourceError: unknown
+     19  
+     20    /** Entrega al consumidor `i`: a su espera si la tiene, a su cola si no. */
+     21    function deliver(i: number, item: T): void {
+     22      const waiting = pendings[i].shift()
+     23      if (waiting) waiting.resolve({ value: item, done: false })
+     24>     else queues[i].push(item)
+     25    }
+     26  
+     27    /**
+     28     * Cierra al consumidor `i`.
+     29     *
+     30     * Si la fuente lanzo, la espera pendiente se RECHAZA en vez de resolverse
+     31     * como terminada: resolverla perderia el error, y quien espera leeria un
+     32     * final limpio de un flujo que fallo.
+     33     */
+     34    function close(i: number): void {
+src/packages/agent/tee.ts(35,21): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/tee.ts:25-45 ---
+     25    }
+     26  
+     27    /**
+     28     * Cierra al consumidor `i`.
+     29     *
+     30     * Si la fuente lanzo, la espera pendiente se RECHAZA en vez de resolverse
+     31     * como terminada: resolverla perderia el error, y quien espera leeria un
+     32     * final limpio de un flujo que fallo.
+     33     */
+     34    function close(i: number): void {
+     35>     for (const p of pendings[i]) {
+     36        if (sourceError !== undefined) p.reject(sourceError)
+     37        else p.resolve({ value: undefined, done: true })
+     38      }
+     39      pendings[i] = []
+     40    }
+     41  
+     42    async function drain(): Promise<void> {
+     43      try {
+     44        for await (const item of source) {
+     45          for (let i = 0; i < count; i++) deliver(i, item)
+src/packages/agent/tee.ts(63,26): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/tee.ts:53-73 ---
+     53    }
+     54  
+     55    void drain()
+     56  
+     57    return Array.from({ length: count }, (_, i) => ({
+     58      [Symbol.asyncIterator](): AsyncIterator<T, undefined> {
+     59        return {
+     60          next(): Promise<IteratorResult<T, undefined>> {
+     61            // La cola manda sobre el estado de la fuente: lo ya emitido se
+     62            // entrega aunque la fuente haya terminado o fallado despues.
+     63>           const queued = queues[i].shift()
+     64            if (queued !== undefined) return Promise.resolve({ value: queued, done: false })
+     65            if (sourceDone) {
+     66              if (sourceError !== undefined) return Promise.reject(sourceError)
+     67              return Promise.resolve({ value: undefined, done: true })
+     68            }
+     69            return new Promise<IteratorResult<T, undefined>>((resolve, reject) => {
+     70              pendings[i].push({ resolve, reject })
+     71            })
+     72          },
+     73        }
+src/packages/agent/tee.ts(70,13): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/tee.ts:60-76 ---
+     60          next(): Promise<IteratorResult<T, undefined>> {
+     61            // La cola manda sobre el estado de la fuente: lo ya emitido se
+     62            // entrega aunque la fuente haya terminado o fallado despues.
+     63            const queued = queues[i].shift()
+     64            if (queued !== undefined) return Promise.resolve({ value: queued, done: false })
+     65            if (sourceDone) {
+     66              if (sourceError !== undefined) return Promise.reject(sourceError)
+     67              return Promise.resolve({ value: undefined, done: true })
+     68            }
+     69            return new Promise<IteratorResult<T, undefined>>((resolve, reject) => {
+     70>             pendings[i].push({ resolve, reject })
+     71            })
+     72          },
+     73        }
+     74      },
+     75    }))
+     76  }

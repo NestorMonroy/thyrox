@@ -57,6 +57,7 @@ import {
   logForDiagnosticsNoPII,
   waitForPolicyLimitsToLoad,
 } from './internal/pendingCrossPackageDeps.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Ant `ZJ8`
 const TRUSTED_DEVICE_GATE = 'tengu_sessions_elevated_auth_enforcement'
@@ -89,7 +90,7 @@ export const PROACTIVE_ENROLLMENT_DISABLED_MESSAGE =
 
 // Mensaje `U$5` de ant, caso no-deshabilitado
 export const TRUSTED_DEVICE_UNENROLLED_MESSAGE =
-  'Your organization requires Trusted Devices for Remote Control, but this device is not enrolled. Please run `/login` in Claude Code to enroll this device.'
+  `Your organization requires Trusted Devices for Remote Control, but this device is not enrolled. Please run \`/login\` in ${PRODUCT_NAME} to enroll this device.`
 
 /**
  * Ant `U$H` — lector del kill-switch. Se usa tanto para omitir el
@@ -126,7 +127,7 @@ function isTrustedDeviceGateEnabled(): boolean {
  * `getSecureStorage().read()` arranca un subproceso `security` de macOS
  * (~40ms) y bridgeApi.ts llama esto desde getHeaders() en cada
  * poll/heartbeat/ack. El override por env var
- * (`CLAUDE_TRUSTED_DEVICE_TOKEN`) opaca la lectura de keychain para que
+ * (`THYROX_TRUSTED_DEVICE_TOKEN`) opaca la lectura de keychain para que
  * los wrappers enterprise puedan inyectar un token pre-emitido sin tocar
  * el keychain del usuario.
  *
@@ -134,7 +135,7 @@ function isTrustedDeviceGateEnabled(): boolean {
  * de enrolamiento exitoso (`VJ8` llama a cache.clear tras persistir).
  */
 const readStoredTrustedDeviceToken = memoize((): string | undefined => {
-  const envToken = process.env.CLAUDE_TRUSTED_DEVICE_TOKEN
+  const envToken = process.env.THYROX_TRUSTED_DEVICE_TOKEN
   if (envToken) return envToken
   return getSecureStorage().read()?.trustedDeviceToken
 })
@@ -235,7 +236,7 @@ export function clearTrustedDeviceToken(): void {
  * de comportamiento):
  *   1. checkGate_CACHED_OR_BLOCKING(TRUSTED_DEVICE_GATE)
  *   2. isProactiveEnrollmentDisabled()
- *   3. precedencia de la env var CLAUDE_TRUSTED_DEVICE_TOKEN
+ *   3. precedencia de la env var THYROX_TRUSTED_DEVICE_TOKEN
  *   4. waitForPolicyLimitsToLoad() + isPolicyAllowed(require_trusted_devices)
  *   5. presencia de un access token OAuth
  *   6. opt-out de isEssentialTrafficOnly()
@@ -267,9 +268,9 @@ export async function enrollTrustedDevice(): Promise<void> {
     // 3. Precedencia de env var — readStoredTrustedDeviceToken respeta
     //    la env var, así que enrolar escribiría un token permanentemente
     //    opacado.
-    if (process.env.CLAUDE_TRUSTED_DEVICE_TOKEN) {
+    if (process.env.THYROX_TRUSTED_DEVICE_TOKEN) {
       logForDebugging(
-        '[trusted-device] CLAUDE_TRUSTED_DEVICE_TOKEN env var is set, skipping enrollment (env var takes precedence)',
+        '[trusted-device] THYROX_TRUSTED_DEVICE_TOKEN env var is set, skipping enrollment (env var takes precedence)',
       )
       return
     }
@@ -306,7 +307,7 @@ export async function enrollTrustedDevice(): Promise<void> {
         device_id?: string
       }>(
         `${baseUrl}/api/auth/trusted_devices`,
-        { display_name: `Claude Code on ${hostname()} · ${process.platform}` },
+        { display_name: `${PRODUCT_NAME} on ${hostname()} · ${process.platform}` },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

@@ -84,7 +84,7 @@ describe('SleepTool/prompt — 5 casos', () => {
 describe('TestingPermissionTool — 7 casos', () => {
   test('6. se nombra igual en el protocolo y ante la persona', () => {
     expect(TestingPermissionTool.name).toBe('TestingPermission')
-    expect(TestingPermissionTool.userFacingName()).toBe('TestingPermission')
+    expect(TestingPermissionTool.userFacingName(undefined)).toBe('TestingPermission')
   })
 
   test('7. SÓLO se habilita bajo NODE_ENV=test', () => {
@@ -114,8 +114,8 @@ describe('TestingPermissionTool — 7 casos', () => {
   })
 
   test('8. es de sólo lectura y seguro ante concurrencia', () => {
-    expect(TestingPermissionTool.isReadOnly()).toBe(true)
-    expect(TestingPermissionTool.isConcurrencySafe()).toBe(true)
+    expect(TestingPermissionTool.isReadOnly({})).toBe(true)
+    expect(TestingPermissionTool.isConcurrencySafe({})).toBe(true)
   })
 
   test('9. SIEMPRE pide permiso — es su razón de existir', () => {
@@ -137,20 +137,49 @@ describe('TestingPermissionTool — 7 casos', () => {
   test('11. no dibuja nada en ninguna de sus seis superficies', async () => {
     // Las seis devuelven `null` a propósito: el útil no tiene nada que
     // mostrar, y un render vacío ensuciaría el transcript de la suite.
-    for (const render of [
-      TestingPermissionTool.renderToolUseMessage,
-      TestingPermissionTool.renderToolUseProgressMessage,
-      TestingPermissionTool.renderToolUseQueuedMessage,
-      TestingPermissionTool.renderToolUseRejectedMessage,
-      TestingPermissionTool.renderToolResultMessage,
-      TestingPermissionTool.renderToolUseErrorMessage,
-    ]) {
-      expect(render({} as never, {} as never)).toBeNull()
-    }
+    //
+    // Cada renderer se llama con su propia aridad: en el tipo `Tool`,
+    // `renderToolUseMessage` es el único obligatorio (2 argumentos); los
+    // otros cinco son opcionales y `renderToolResultMessage` toma 3, no 2 —
+    // iterarlos con una sola forma de llamada no tipa.
+    expect(
+      TestingPermissionTool.renderToolUseMessage({} as never, {} as never),
+    ).toBeNull()
+    expect(
+      TestingPermissionTool.renderToolUseProgressMessage?.(
+        {} as never,
+        {} as never,
+      ),
+    ).toBeNull()
+    expect(TestingPermissionTool.renderToolUseQueuedMessage?.()).toBeNull()
+    expect(
+      TestingPermissionTool.renderToolUseRejectedMessage?.(
+        {} as never,
+        {} as never,
+      ),
+    ).toBeNull()
+    expect(
+      TestingPermissionTool.renderToolResultMessage?.(
+        {} as never,
+        {} as never,
+        {} as never,
+      ),
+    ).toBeNull()
+    expect(
+      TestingPermissionTool.renderToolUseErrorMessage?.(
+        {} as never,
+        {} as never,
+      ),
+    ).toBeNull()
   })
 
   test('12. al ejecutarse dice que se ejecutó, y el bloque lo repite', async () => {
-    const { data } = await TestingPermissionTool.call({} as never, CTX)
+    const { data } = await TestingPermissionTool.call(
+      {} as never,
+      CTX,
+      {} as never,
+      {} as never,
+    )
     expect(data).toBe('TestingPermission executed successfully')
     const bloque = TestingPermissionTool.mapToolResultToToolResultBlockParam(
       data,

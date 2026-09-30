@@ -43,15 +43,10 @@ import {
 import { installPermissionHostBindings } from '../src/host.ts'
 import * as autoModeState from '../src/autoModeState.ts'
 import * as ps from '../src/permissionSetup.ts'
-
-/**
- * Forma local, no importada — `permissionSetup.ts` NO exporta
- * `ToolPermissionContext` (queda privado: exportarlo colisionaría con el
- * tipo del mismo nombre que ya exporta `permissions.ts` en el barrel
- * `index.ts`, medido con `barrelAndTesting.test.ts`). Duck typing
- * estructural — la misma forma laxa que ambos archivos usan.
- */
-type ToolPermissionContext = { permissionRules: unknown; [key: string]: unknown }
+import {
+  getEmptyToolPermissionContext,
+  type ToolPermissionContext,
+} from '@thyrox/tool-registry/Tool.js'
 
 /** Lo que el host anota al despojar/depurar. Se vacía en cada caso. */
 let debugLog: Array<{ message: string; metadata?: unknown }> = []
@@ -62,7 +57,7 @@ let shutdownCalls: Array<[number | undefined, string | undefined]> = []
 function baseContext(
   overrides: Partial<ToolPermissionContext> = {},
 ): ToolPermissionContext {
-  return { permissionRules: {}, mode: 'default', ...overrides }
+  return { ...getEmptyToolPermissionContext(), ...overrides }
 }
 
 beforeEach(() => {

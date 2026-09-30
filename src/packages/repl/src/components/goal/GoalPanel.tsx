@@ -32,15 +32,6 @@ function plural(n: number, word: string): string {
   return n === 1 ? word : `${word}s`
 }
 
-function relativeTime(d: Date): string {
-  const diffMs = Date.now() - d.getTime()
-  if (diffMs < 60_000) return 'just now'
-  if (diffMs < 3_600_000) return `${Math.round(diffMs / 60_000)}m ago`
-  if (diffMs < 86_400_000) return `${Math.round(diffMs / 3_600_000)}h ago`
-  if (diffMs < 7 * 86_400_000) return `${Math.round(diffMs / 86_400_000)}d ago`
-  return d.toISOString().slice(0, 10)
-}
-
 export function GoalPanel(props: {
   activeGoal?: ActiveGoal
   messages: Message[]

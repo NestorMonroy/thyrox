@@ -1,0 +1,2 @@
+bash bin/finding rst H-THYROX-211 --resolved-in thyrox@7e6eedcf --body /home/user/thyrox/.claude/workbench/findings-211-212-20260927T073727/body-211.rst
+bash bin/finding rst H-THYROX-212 --resolved-in thyrox@4f465d63 --body /home/user/thyrox/.claude/workbench/findings-211-212-20260927T073727/body-212.rst

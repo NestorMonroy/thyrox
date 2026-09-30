@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(458,28): error TS2339: Property 'attachments' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:448-468 ---
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458>           compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+    468            compactionUsage?.cache_creation_input_tokens ?? 0,
+src/packages/agent/query.ts(459,28): error TS2339: Property 'hookResults' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:449-469 ---
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459>           compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+    468            compactionUsage?.cache_creation_input_tokens ?? 0,
+    469          compactionTotalTokens: compactionUsage

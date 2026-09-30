@@ -1,0 +1,5 @@
+#: Caducó otra vez con `PreToolUse` (los detectores de `pretooluse_dispatch`,
+#: 2026-09-24) y `SessionStart` (el contexto tras compactar, `965a9eed`): la
+#: suite quedó roja dos días sin que nadie la corriera.
+EXPECTED_EVENTS = {"SubagentStart", "PreModelSwitch", "SubagentStop",
+                   "TaskCreated", "TaskCompleted", "PreToolUse", "SessionStart"}

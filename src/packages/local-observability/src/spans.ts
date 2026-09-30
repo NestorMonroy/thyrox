@@ -1,12 +1,7 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/spans.ts` (102
- * líneas fuente, 100 % portado). Fachada no-op de tracing por encima de
- * `core.ts` — cada `start*Span` abre un span real (no-op) vía
- * `startSpan`/`endSpan` de `core.ts`; nada de esto emite tracing de
- * verdad, es el mismo contrato que la fuente declara.
- */
-
-import { endSpan as endObsSpan, startSpan as startObsSpan } from './core.js'
+import {
+  endSpan as endObsSpan,
+  startSpan as startObsSpan,
+} from './core.js'
 import type { Span as ObsSpan } from './contracts.js'
 
 export type Span = {
@@ -53,37 +48,50 @@ export function endLLMRequestSpan(
   endObsSpan(span?._obsSpan)
 }
 
-export function startToolSpan(_toolName: string, _input?: unknown): Span {
-  const span = startObsSpan('tool')
-  return { _obsSpan: span }
-}
+// Los spans de herramienta siguen el contrato de sesión que usa
+// toolExecution.ts (el del binario, `sessionTracing`): el llamador abre y
+// cierra sin guardar el span —`startToolBlockedOnUserSpan()`,
+// `endToolSpan(resultado)`—, y el módulo recuerda cuál está abierto. La
+// versión anterior, como la fuente, pedía el span por argumento, y cada
+// llamada era TS2554. Una ranura por clase de span: dos herramientas
+// concurrentes compartirían ranura, que el binario resuelve con contexto
+// asíncrono; aquí el trazado está apagado (isBetaTracingEnabled() es false).
+let openToolSpan: ObsSpan | undefined
+let openToolExecutionSpan: ObsSpan | undefined
+let openBlockedOnUserSpan: ObsSpan | undefined
 
-export function endToolSpan(span: Span | undefined, _output?: unknown): void {
-  endObsSpan(span?._obsSpan)
-}
-
-export function startToolExecutionSpan(
+export function startToolSpan(
   _toolName: string,
+  _attributes?: Record<string, unknown>,
   _input?: unknown,
 ): Span {
-  const span = startObsSpan('tool_execution')
-  return { _obsSpan: span }
+  openToolSpan = startObsSpan('tool')
+  return { _obsSpan: openToolSpan }
 }
 
-export function startToolBlockedOnUserSpan(_toolName: string): Span {
-  const span = startObsSpan('tool_blocked_on_user')
-  return { _obsSpan: span }
+export function endToolSpan(_output?: unknown): void {
+  endObsSpan(openToolSpan)
+  openToolSpan = undefined
 }
 
-export function endToolExecutionSpan(
-  span: Span | undefined,
-  _output?: unknown,
-): void {
-  endObsSpan(span?._obsSpan)
+export function startToolExecutionSpan(): Span {
+  openToolExecutionSpan = startObsSpan('tool_execution')
+  return { _obsSpan: openToolExecutionSpan }
 }
 
-export function endToolBlockedOnUserSpan(span: Span | undefined): void {
-  endObsSpan(span?._obsSpan)
+export function startToolBlockedOnUserSpan(): Span {
+  openBlockedOnUserSpan = startObsSpan('tool_blocked_on_user')
+  return { _obsSpan: openBlockedOnUserSpan }
+}
+
+export function endToolExecutionSpan(_metadata?: unknown): void {
+  endObsSpan(openToolExecutionSpan)
+  openToolExecutionSpan = undefined
+}
+
+export function endToolBlockedOnUserSpan(_decision?: string, _source?: string): void {
+  endObsSpan(openBlockedOnUserSpan)
+  openBlockedOnUserSpan = undefined
 }
 
 export function startHookSpan(_hookName: string, _eventName: string): Span {

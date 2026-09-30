@@ -1,0 +1,212 @@
+== 1: heredados valen
+   (src/accounts/webCookie/webCookieProviders.ts)
+(fail) the web-cookie catalog > knows every catalogued provider in any case, and nothing inherited [0.32ms]
+ 24 pass
+ 1 fail
+== 2: sin minúsculas
+   (src/accounts/webCookie/webCookieProviders.ts)
+(fail) the web-cookie catalog > knows every catalogued provider in any case, and nothing inherited [0.29ms]
+ 24 pass
+ 1 fail
+== 3: grok con /models
+   (src/accounts/webCookie/webCookieProviders.ts)
+(fail) validating a web-cookie provider > a provider without a models API only trusts a 401/403 [0.37ms]
+ 24 pass
+ 1 fail
+== 4: lmarena fiable
+   (src/accounts/webCookie/webCookieProviders.ts)
+(fail) validating a web-cookie provider > a redirect is blocked, and on an unreliable probe it is unsupported [0.52ms]
+ 24 pass
+ 1 fail
+== 5: JSON sin token
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.37ms]
+ 24 pass
+ 1 fail
+== 6: token no textual
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.42ms]
+ 24 pass
+ 1 fail
+== 7: sin Bearer
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.84ms]
+ 24 pass
+ 1 fail
+== 8: Bearer sensible a caja
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.78ms]
+ 24 pass
+ 1 fail
+== 9: prefijo Cookie
+   (src/accounts/webCookie/zaiToken.ts)
+ 25 pass
+ 0 fail
+== 10: sin token=
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.85ms]
+(fail) resolving the probe of a provider > Z.ai probes /api/models with its bearer token, and without one it is required [0.34ms]
+ 23 pass
+ 2 fail
+== 11: par suelto vale
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.86ms]
+(fail) resolving the probe of a provider > Z.ai probes /api/models with its bearer token, and without one it is required [0.52ms]
+ 23 pass
+ 2 fail
+== 12: JSON sin llave
+   (src/accounts/webCookie/zaiToken.ts)
+ 25 pass
+ 0 fail
+== 13: fuera de catálogo
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) resolving the probe of a provider > a provider outside the catalog is unsupported [0.25ms]
+ 24 pass
+ 1 fail
+== 14: sin cookie sondea
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) resolving the probe of a provider > a missing cookie is required, not unsupported [0.50ms]
+ 24 pass
+ 1 fail
+== 15: sin host sondea
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) resolving the probe of a provider > a provider without an API host, or whose host is not a plain http(s) URL, is unsupported [0.23ms]
+(fail) validating a web-cookie provider > a rejection is returned without any request [0.20ms]
+ 23 pass
+ 2 fail
+== 16: wss o consulta sondea
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) resolving the probe of a provider > a provider without an API host, or whose host is not a plain http(s) URL, is unsupported [0.43ms]
+ 24 pass
+ 1 fail
+== 17: zai con cookie
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) resolving the probe of a provider > Z.ai probes /api/models with its bearer token, and without one it is required [0.61ms]
+ 24 pass
+ 1 fail
+== 18: zai sin token sondea
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) resolving the probe of a provider > Z.ai probes /api/models with its bearer token, and without one it is required [0.51ms]
+ 24 pass
+ 1 fail
+== 19: cookie sin recortar
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > the probe is a GET that does not follow redirects, with the trimmed cookie [0.31ms]
+ 24 pass
+ 1 fail
+== 20: sigue redirecciones
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > the probe is a GET that does not follow redirects, with the trimmed cookie [0.31ms]
+ 24 pass
+ 1 fail
+== 21: 403 vale
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a 401 or 403 is an expired session [0.74ms]
+ 24 pass
+ 1 fail
+== 22: sin código AUTH_007
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a 401 or 403 is an expired session [1.06ms]
+ 24 pass
+ 1 fail
+== 23: redirección vale
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a redirect is blocked, and on an unreliable probe it is unsupported [0.34ms]
+ 24 pass
+ 1 fail
+== 24: sin API de modelos vale
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a provider without a models API only trusts a 401/403 [0.39ms]
+ 24 pass
+ 1 fail
+== 25: red lanza
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a network failure is a sanitized error, never thrown [0.31ms]
+(fail) validating a web-cookie provider > a thrown value that is not an Error still reports a failure [0.11ms]
+ 23 pass
+ 2 fail
+== 26: error sin sanear
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a network failure is a sanitized error, never thrown [0.41ms]
+ 24 pass
+ 1 fail
+== 27: chatgpt sondea
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > chatgpt-web goes to its own validator, and without one it is unsupported [0.37ms]
+ 24 pass
+ 1 fail
+== 28: chatgpt sin su validador
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > chatgpt-web goes to its own validator, and without one it is unsupported [0.39ms]
+ 24 pass
+ 1 fail
+== 29: fuera de catálogo sondea
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > a provider outside the catalog is not its business [0.25ms]
+ 24 pass
+ 1 fail
+== 30: sin intervalo
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > a check inside its interval is skipped [0.31ms]
+ 24 pass
+ 1 fail
+== 31: intervalo inclusivo
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > a check exactly one interval old, or never done, is probed [0.25ms]
+ 24 pass
+ 1 fail
+== 32: nunca comprobado se salta
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+ 25 pass
+ 0 fail
+== 33: sin credencial sondea
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > without a credential it stamps without probing, and the cookie in the provider data counts [0.32ms]
+ 24 pass
+ 1 fail
+== 34: sin cookie en datos
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > without a credential it stamps without probing, and the cookie in the provider data counts [0.30ms]
+ 24 pass
+ 1 fail
+== 35: apiKey sin recortar
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > a valid cookie only stamps the check, silently [0.61ms]
+(fail) the web-cookie health check > without a credential it stamps without probing, and the cookie in the provider data counts [0.17ms]
+ 23 pass
+ 2 fail
+== 36: no soportado caduca
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > an unsupported provider only stamps, silently [0.32ms]
+ 24 pass
+ 1 fail
+== 37: sólo por código
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > the expired code alone, or the words in the error, are enough [0.30ms]
+ 24 pass
+ 1 fail
+== 38: sólo por texto
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > the expired code alone, or the words in the error, are enough [0.21ms]
+ 24 pass
+ 1 fail
+== 39: sin caducar
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > an expired session marks the connection expired [0.36ms]
+(fail) the web-cookie health check > the expired code alone, or the words in the error, are enough [0.28ms]
+ 23 pass
+ 2 fail
+== 40: ambiguo sin aviso
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > an ambiguous failure warns and only stamps [0.50ms]
+ 24 pass
+ 1 fail
+== 41: ambiguo sin sello
+   (src/accounts/refresh/health/webCookieHealthCheck.ts)
+(fail) the web-cookie health check > an ambiguous failure warns and only stamps [0.28ms]
+ 24 pass
+ 1 fail
+== restaurado
+ 25 pass
+ 0 fail
+__BG_EXIT__=0

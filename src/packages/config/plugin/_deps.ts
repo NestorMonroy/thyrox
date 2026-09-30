@@ -48,9 +48,8 @@
  *   binding estático que fallaría igual que un `import` (sin symlink de
  *   workspace). Se intenta `require()` y, si falla, se cae al valor real
  *   copiado — no inventado — como fallback.
- * - `coerceDescriptionToString` — de `@thyrox/agent/frontmatterParser.ts`
- *   (existe). Es función, así que se envuelve como función (no como
- *   binding estático).
+ * - `coerceDescriptionToString` — reexportada de `../frontmatterParser.ts`,
+ *   su hogar en este mismo paquete.
  * - `FRONTMATTER_REGEX` — de `../frontmatterParser.ts`, no portado en este
  *   pase. Se declara localmente con el valor exacto de la fuente
  *   (`/^---\s*\n([\s\S]*?)---\s*\n?/`, verificado leyendo el archivo) — es
@@ -64,11 +63,20 @@
  *   final para el veredicto.
  */
 
-import { requireAgentFrontmatterParser } from '../internal/pendingCrossPackageDeps.js'
+import type {
+  ExecFileOptions,
+  ExecFileResult,
+  ExecFileWithCwdOptions,
+} from '@thyrox/shell/execFileNoThrow.js'
+import type { McpbManifestAny } from '@anthropic-ai/mcpb'
+import type { LoadedPlugin } from './types.js'
+import type { HookEvent, PluginHookMatcher } from '../settings/types.js'
+import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
 import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../utils/envExpansion.js'
 import { expandTilde as _canonicalExpandTilde } from '../utils/expandTilde.js'
 import { extractDescriptionFromMarkdown as _canonicalExtractDescriptionFromMarkdown } from '../utils/markdownDescription.js'
 import { McpServerConfigSchema as _canonicalMcpServerConfigSchema } from '../mcpConfigSchema.js'
+import type { FrontmatterShell } from '../frontmatterParser.js'
 
 // ---------------------------------------------------------------------------
 // Logging / diagnóstico (reinyectado — evita imports cíclicos)
@@ -111,6 +119,25 @@ export function setLogForDiagnosticsNoPIIFn(
 // Helpers de FS + rutas
 // ---------------------------------------------------------------------------
 
+/**
+ * Lo que los cargadores de plugins leen de una entrada de directorio y de un
+ * `stat`. Los valores reales son `fs.Dirent` y `fs.Stats`, que ya traen
+ * `isFile` e `isSymbolicLink`; el tipo anterior los omitía y los cargadores
+ * que los llaman no compilaban.
+ */
+export type PluginDirent = {
+  name: string
+  isFile(): boolean
+  isDirectory(): boolean
+  isSymbolicLink(): boolean
+}
+export type PluginStats = {
+  mtime: Date
+  size: number
+  isFile(): boolean
+  isDirectory(): boolean
+}
+
 export type PluginFsImpl = {
   existsSync(path: string): boolean
   mkdirSync(path: string, options?: { recursive?: boolean }): void
@@ -118,8 +145,8 @@ export type PluginFsImpl = {
   readFileSync(path: string, encoding: 'utf8'): string
   readdirSync(
     path: string,
-  ): Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>
-  statSync(path: string): { mtime: Date; isDirectory(): boolean; size: number }
+  ): Array<PluginDirent>
+  statSync(path: string): PluginStats
   rmSync(path: string, options?: { recursive?: boolean; force?: boolean }): void
   rmdirSync(path: string): void
   renameSync(oldPath: string, newPath: string): void
@@ -136,8 +163,8 @@ export type PluginFsImpl = {
   mkdir(path: string, options?: { recursive?: boolean }): Promise<void>
   readdir(
     path: string,
-  ): Promise<Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>>
-  stat(path: string): Promise<{ mtime: Date; isDirectory(): boolean; size: number }>
+  ): Promise<Array<PluginDirent>>
+  stat(path: string): Promise<PluginStats>
   rm(path: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>
   rename(oldPath: string, newPath: string): Promise<void>
 }
@@ -155,17 +182,9 @@ function nodeFsFallback(): PluginFsImpl {
     writeFileSync: (p, d) => fs.writeFileSync(p, d),
     readFileSync: (p, e) => fs.readFileSync(p, e) as string,
     readdirSync: p =>
-      fs.readdirSync(p, { withFileTypes: true }) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      fs.readdirSync(p, { withFileTypes: true }) as PluginDirent[],
     statSync: p =>
-      fs.statSync(p) as {
-        mtime: Date
-        isDirectory(): boolean
-        size: number
-      },
+      fs.statSync(p) as PluginStats,
     rmSync: (p, o) => fs.rmSync(p, o),
     rmdirSync: p => fs.rmdirSync(p),
     renameSync: (o, n) => fs.renameSync(o, n),
@@ -180,17 +199,9 @@ function nodeFsFallback(): PluginFsImpl {
       await fsp.mkdir(p, { recursive: true, ...(o ?? {}) })
     },
     readdir: async p =>
-      (await fsp.readdir(p, { withFileTypes: true })) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      (await fsp.readdir(p, { withFileTypes: true })) as PluginDirent[],
     stat: async p =>
-      (await fsp.stat(p)) as {
-        mtime: Date
-        isDirectory(): boolean
-        size: number
-      },
+      (await fsp.stat(p)) as PluginStats,
     rm: async (p, o) => fsp.rm(p, o),
     rename: async (o, n) => fsp.rename(o, n),
   }
@@ -248,8 +259,9 @@ export function setSafeResolvePathFn(fn: typeof _safeResolvePath): void {
 let _getSessionId: () => string = () => 'unknown-session'
 let _getOriginalCwd: () => string = () => process.cwd()
 let _getCwd: () => string = () => process.cwd()
-let _getInlinePlugins: () => Record<string, unknown> | undefined = () =>
-  undefined
+// Las rutas de `--plugin-dir`: el estado del anfitrión es un arreglo
+// (`app-host/bootstrap/state.ts`, `getInlinePlugins`).
+let _getInlinePlugins: () => string[] = () => []
 
 export function getSessionId(): string {
   return _getSessionId()
@@ -260,7 +272,7 @@ export function getOriginalCwd(): string {
 export function getCwd(): string {
   return _getCwd()
 }
-export function getInlinePlugins(): Record<string, unknown> | undefined {
+export function getInlinePlugins(): string[] {
   return _getInlinePlugins()
 }
 export function setGetSessionIdFn(fn: typeof _getSessionId): void {
@@ -319,10 +331,12 @@ export function setIsSettingSourceEnabledFn(
 // Helpers de git
 // ---------------------------------------------------------------------------
 
-let _gitExe: () => Promise<string> = async () => 'git'
+// Síncrono como el de la fuente (`storage/git.ts`): la ruta del binario se
+// memoiza allí, y los llamadores la pasan directo a `execFile`.
+let _gitExe: () => string = () => 'git'
 let _getHeadForDir: (dir: string) => Promise<string | null> = async () => null
 
-export function gitExe(): Promise<string> {
+export function gitExe(): string {
   return _gitExe()
 }
 export function getHeadForDir(dir: string): Promise<string | null> {
@@ -339,39 +353,36 @@ export function setGetHeadForDirFn(fn: typeof _getHeadForDir): void {
 // Ejecución de subprocesos
 // ---------------------------------------------------------------------------
 
-export type ExecResult = {
-  code: number
-  stdout: string
-  stderr: string
-}
+// Las firmas son las de `@thyrox/shell/execFileNoThrow.js`, que es lo que
+// el instalador enlaza: `execFileNoThrowWithCwd` recibe el `cwd` DENTRO de
+// las opciones, no como tercer argumento.
+export type ExecResult = ExecFileResult
 
 let _execFileNoThrow: (
   cmd: string,
   args: string[],
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileOptions,
 ) => Promise<ExecResult> = async () => ({ code: -1, stdout: '', stderr: '' })
 
 let _execFileNoThrowWithCwd: (
   cmd: string,
   args: string[],
-  cwd: string,
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileWithCwdOptions,
 ) => Promise<ExecResult> = async () => ({ code: -1, stdout: '', stderr: '' })
 
 export function execFileNoThrow(
   cmd: string,
   args: string[],
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileOptions,
 ): Promise<ExecResult> {
   return _execFileNoThrow(cmd, args, options)
 }
 export function execFileNoThrowWithCwd(
   cmd: string,
   args: string[],
-  cwd: string,
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileWithCwdOptions,
 ): Promise<ExecResult> {
-  return _execFileNoThrowWithCwd(cmd, args, cwd, options)
+  return _execFileNoThrowWithCwd(cmd, args, options)
 }
 export function setExecFileNoThrowFn(fn: typeof _execFileNoThrow): void {
   _execFileNoThrow = fn
@@ -399,19 +410,8 @@ export function setWhichFn(fn: typeof _which): void {
 // Helpers puros (inlineados desde varios src/utils)
 // ---------------------------------------------------------------------------
 
-/** de src/utils/envUtils */
-export function isEnvTruthy(v: string | boolean | undefined): boolean {
-  if (!v) return false
-  if (typeof v === 'boolean') return v
-  return ['1', 'true', 'yes', 'on'].includes(v.toLowerCase().trim())
-}
-
-export function isEnvDefinedFalsy(v: string | boolean | undefined): boolean {
-  if (v === undefined) return false
-  if (typeof v === 'boolean') return !v
-  if (!v) return false
-  return ['0', 'false', 'no', 'off'].includes(v.toLowerCase().trim())
-}
+/** de src/utils/envUtils — su hogar en este paquete es `env/utils.ts`. */
+export { isEnvDefinedFalsy, isEnvTruthy } from '../env/utils.js'
 
 /** de src/utils/errors */
 export function toError(value: unknown): Error {
@@ -446,14 +446,23 @@ export function isENOENT(e: unknown): boolean {
 }
 
 /** de src/utils/slowOperations */
-let _jsonStringify: (v: unknown) => string = v => JSON.stringify(v)
-let _jsonParse: (t: string) => unknown = t => JSON.parse(t)
+// Firmas de `@thyrox/local-observability/slowOperations.js`, que es lo que
+// el instalador enlaza: el formateo (`replacer`, `space`) y el `reviver`
+// viajan hasta la función real en vez de perderse en el puente.
+type JsonStringifyFn = (
+  value: unknown,
+  replacer?: ((this: unknown, key: string, value: unknown) => unknown) | (number | string)[] | null,
+  space?: string | number,
+) => string
+type JsonParseFn = (text: string, reviver?: (this: unknown, key: string, value: unknown) => unknown) => unknown
+let _jsonStringify: JsonStringifyFn = (v, r, s) => JSON.stringify(v, r as Parameters<typeof JSON.stringify>[1], s)
+let _jsonParse: JsonParseFn = (t, r) => (r === undefined ? JSON.parse(t) : JSON.parse(t, r))
 let _clone: <T>(v: T) => T = v => JSON.parse(JSON.stringify(v))
-export function jsonStringify(v: unknown): string {
-  return _jsonStringify(v)
+export function jsonStringify(...args: Parameters<JsonStringifyFn>): string {
+  return _jsonStringify(...args)
 }
-export function jsonParse(t: string): unknown {
-  return _jsonParse(t)
+export function jsonParse(...args: Parameters<JsonParseFn>): unknown {
+  return _jsonParse(...args)
 }
 export function clone<T>(v: T): T {
   return _clone(v)
@@ -584,7 +593,8 @@ export function setWalkMarkdownFilesFn(fn: typeof _walkMarkdownFiles): void {
 // sustitución de argumentos de CLI)
 // ---------------------------------------------------------------------------
 
-type BuiltinPluginResult = { enabled: unknown[]; disabled: unknown[] }
+// El contrato es el de `./builtin.ts` (`getBuiltinPlugins`), que es lo inyectado.
+type BuiltinPluginResult = { enabled: LoadedPlugin[]; disabled: LoadedPlugin[] }
 
 let _getBuiltinPluginsFn: () => BuiltinPluginResult = () => ({
   enabled: [],
@@ -696,13 +706,21 @@ function loadEffortLevels(): readonly string[] {
 export const EFFORT_LEVELS = loadEffortLevels()
 
 // Tipos (passthroughs estructurales)
-export type ClaudeCodeHint = { id: string; message: string; cta?: string }
+// La forma real del aviso es la del protocolo (`v`, `type`, `value`, …) que
+// declara `tool-registry/claudeCodeHints.ts`; la copia de aquí había
+// inventado otra (`id`, `message`, `cta`) que nadie emite.
+import type { ClaudeCodeHint } from '@thyrox/tool-registry/claudeCodeHints.js'
+export type { ClaudeCodeHint }
+// Misma forma que `@thyrox/local-observability/errorHelpers.js`: la ruta
+// del archivo y la configuración por defecto que debe usarse en su lugar.
 export class ConfigParseError extends Error {
-  readonly path?: string
-  constructor(message: string, path?: string) {
+  filePath: string
+  defaultConfig: unknown
+  constructor(message: string, filePath: string, defaultConfig: unknown) {
     super(message)
     this.name = 'ConfigParseError'
-    this.path = path
+    this.filePath = filePath
+    this.defaultConfig = defaultConfig
   }
 }
 export type FrontmatterData = Record<string, unknown>
@@ -755,14 +773,12 @@ export const setClearRegisteredPluginHooksFn =
   setClearRegisteredPluginHooksFn_
 
 /**
- * `coerceDescriptionToString` — reexport de la impl real en
- * `@thyrox/agent/frontmatterParser.ts` (existe, verificado). Se envuelve
- * como función (no como binding estático de `export {...} from`, que
- * fallaría por falta de symlink de workspace).
+ * `coerceDescriptionToString` vive en este mismo paquete
+ * (`../frontmatterParser.ts`). Antes se pedía a `@thyrox/agent/frontmatterParser`,
+ * que sólo reexporta este módulo: la vuelta por `agent` tipaba el resultado
+ * como `unknown` y rompía la descripción de cada comando de plugin.
  */
-export function coerceDescriptionToString(...args: unknown[]): unknown {
-  return requireAgentFrontmatterParser().coerceDescriptionToString(...args)
-}
+export { coerceDescriptionToString } from '../frontmatterParser.js'
 
 /**
  * `extractDescriptionFromMarkdown` lives in
@@ -785,11 +801,17 @@ const [_getExecuteShellCommandsInPrompt, setExecuteShellCommandsInPromptFn_] =
   makeSetter(
     async (prompt: string, ..._rest: unknown[]): Promise<string> => prompt,
   )
+// El contrato es el de `tool-registry/src/ripgrep.ts:715`, que es lo que se
+// inyecta: devuelve una línea por coincidencia, no el texto entero.
 const [_getRipGrep, setRipGrepFn_] = makeSetter(
-  async (..._args: unknown[]): Promise<string> => '',
+  async (_args: string[], _target: string, _abortSignal: AbortSignal): Promise<string[]> => [],
 )
+// El contrato es el de dxt/zip.ts, que es lo que se inyecta y lo que los tres
+// llamadores usan: recibe el zip en memoria y devuelve sus archivos. La
+// fachada declaraba (zipPath, destDir): Promise<void>, como la fuente, y cada
+// llamador era TS2554 aunque en ejecución funcionara.
 const [_getUnzipFile, setUnzipFileFn_] = makeSetter(
-  async (_zipPath: string, _destDir: string): Promise<void> => {},
+  async (_zipData: Buffer): Promise<Record<string, Uint8Array>> => ({}),
 )
 export function extractDescriptionFromMarkdown(
   text: string,
@@ -809,11 +831,11 @@ export function executeShellCommandsInPrompt(
 ): Promise<string> {
   return _getExecuteShellCommandsInPrompt()(prompt, ...rest)
 }
-export function ripGrep(...args: unknown[]): Promise<string> {
-  return _getRipGrep()(...args)
+export function ripGrep(args: string[], target: string, abortSignal: AbortSignal): Promise<string[]> {
+  return _getRipGrep()(args, target, abortSignal)
 }
-export function unzipFile(zipPath: string, destDir: string): Promise<void> {
-  return _getUnzipFile()(zipPath, destDir)
+export function unzipFile(zipData: Buffer): Promise<Record<string, Uint8Array>> {
+  return _getUnzipFile()(zipData)
 }
 export const setExtractDescriptionFromMarkdownFn =
   setExtractDescriptionFromMarkdownFn_
@@ -884,7 +906,7 @@ const [
   setParseSlashCommandToolsFromFrontmatterFn_,
 ] = makeSetter((_v: unknown): string[] => [])
 const [_getParseShellFrontmatter, setParseShellFrontmatterFn_] = makeSetter(
-  (_v: unknown): unknown => null,
+  (_value: unknown, _source: string): FrontmatterShell | undefined => undefined,
 )
 const [_getParseBooleanFrontmatter, setParseBooleanFrontmatterFn_] =
   makeSetter((_v: unknown): boolean | undefined => undefined)
@@ -897,7 +919,7 @@ const [_getParseEffortValue, setParseEffortValueFn_] = makeSetter(
 )
 const [_getParseYaml, setParseYamlFn_] = makeSetter((_s: string): unknown => null)
 const [_getParseArgumentNames, setParseArgumentNamesFn_] = makeSetter(
-  (_s: string): string[] => [],
+  (_s: string | string[] | undefined): string[] => [],
 )
 const [_getParseUserSpecifiedModel, setParseUserSpecifiedModelFn_] =
   makeSetter((_v: unknown): string | undefined => undefined)
@@ -954,8 +976,11 @@ export function parseAgentToolsFromFrontmatter(v: unknown): string[] {
 export function parseSlashCommandToolsFromFrontmatter(v: unknown): string[] {
   return _getParseSlashCommandToolsFromFrontmatter()(v)
 }
-export function parseShellFrontmatter(v: unknown): unknown {
-  return _getParseShellFrontmatter()(v)
+// Firma de la implementación inyectada (agent/frontmatterParser.ts): el
+// origen se usa para el mensaje de aviso. Ver facade-signature-diverges-
+// from-injected-impl en la memoria del lazo.
+export function parseShellFrontmatter(value: unknown, source: string): FrontmatterShell | undefined {
+  return _getParseShellFrontmatter()(value, source)
 }
 export function parseBooleanFrontmatter(v: unknown): boolean | undefined {
   return _getParseBooleanFrontmatter()(v)
@@ -973,7 +998,7 @@ export function parseEffortValue(
 export function parseYaml(s: string): unknown {
   return _getParseYaml()(s)
 }
-export function parseArgumentNames(s: string): string[] {
+export function parseArgumentNames(s: string | string[] | undefined): string[] {
   return _getParseArgumentNames()(s)
 }
 export function parseUserSpecifiedModel(v: unknown): string | undefined {
@@ -997,8 +1022,10 @@ export function substituteArguments(
 }
 export function parseAndValidateManifestFromBytes(
   bytes: Uint8Array,
-): Promise<unknown> {
-  return _getParseAndValidateManifestFromBytes()(bytes)
+): Promise<McpbManifestAny> {
+  // La implementación inyectada es `dxt/helpers.parseAndValidateManifestFromBytes`,
+  // que devuelve el manifiesto validado.
+  return _getParseAndValidateManifestFromBytes()(bytes) as Promise<McpbManifestAny>
 }
 export const setParseFrontmatterFn = setParseFrontmatterFn_
 export const setParseAgentToolsFromFrontmatterFn =
@@ -1019,26 +1046,34 @@ export const setParseAndValidateManifestFromBytesFn =
   setParseAndValidateManifestFromBytesFn_
 
 // -- hooks registrados, cachés de agente/comando
+// El contrato es el de `app-host/bootstrap/state.ts`: un mapa por evento, o
+// `null` sin registro. Este lado sólo registra matchers de plugin, y al leer no
+// distingue los de callback, que no conoce: por eso `unknown[]` por evento.
+type RegisteredHooksByEvent = Partial<Record<HookEvent, unknown[]>>
 const [_getRegisteredHooks_, setGetRegisteredHooksFn_] = makeSetter(
-  (): unknown[] => [],
+  (): RegisteredHooksByEvent | null => null,
 )
 const [_getRegisterHookCallbacks, setRegisterHookCallbacksFn_] = makeSetter(
-  (_hooks: unknown[]): void => {},
+  (_hooks: Partial<Record<HookEvent, PluginHookMatcher[]>>): void => {},
 )
 const [
   _getGetAgentDefinitionsWithOverrides,
   setGetAgentDefinitionsWithOverridesFn_,
-] = makeSetter(async (..._args: unknown[]): Promise<unknown[]> => [])
-export function getRegisteredHooks(): unknown[] {
+] = makeSetter(
+  // Sin host enlazado no hay agentes: el resultado vacío con su forma real,
+  // no un arreglo, que `refresh` leería como `allAgents` indefinido.
+  async (_cwd: string): Promise<AgentDefinitionsResult> => ({ activeAgents: [], allAgents: [] }),
+)
+export function getRegisteredHooks(): RegisteredHooksByEvent | null {
   return _getRegisteredHooks_()()
 }
-export function registerHookCallbacks(hooks: unknown[]): void {
+export function registerHookCallbacks(hooks: Partial<Record<HookEvent, PluginHookMatcher[]>>): void {
   _getRegisterHookCallbacks()(hooks)
 }
 export function getAgentDefinitionsWithOverrides(
-  ...args: unknown[]
-): Promise<unknown[]> {
-  return _getGetAgentDefinitionsWithOverrides()(...args)
+  cwd: string,
+): Promise<AgentDefinitionsResult> {
+  return _getGetAgentDefinitionsWithOverrides()(cwd)
 }
 export const setGetRegisteredHooksFn = setGetRegisteredHooksFn_
 export const setRegisterHookCallbacksFn = setRegisterHookCallbacksFn_
@@ -1103,12 +1138,14 @@ export const setPluralFn = setPluralFn_
 
 // -- hint + estado de hint
 const [_getHasShownHintThisSession, setHasShownHintThisSessionFn_] =
-  makeSetter((_id: string): boolean => false)
+  makeSetter((): boolean => false)
 const [_getSetPendingHint, setSetPendingHintFn_] = makeSetter(
   (_hint: ClaudeCodeHint | null): void => {},
 )
-export function hasShownHintThisSession(id: string): boolean {
-  return _getHasShownHintThisSession()(id)
+// Sin argumento, como la implementación inyectada (tool-registry/claudeCodeHints.ts):
+// la marca es por sesión, no por pista.
+export function hasShownHintThisSession(): boolean {
+  return _getHasShownHintThisSession()()
 }
 export function setPendingHint(hint: ClaudeCodeHint | null): void {
   _getSetPendingHint()(hint)
@@ -1117,8 +1154,10 @@ export const setHasShownHintThisSessionFn = setHasShownHintThisSessionFn_
 export const setSetPendingHintFn = setSetPendingHintFn_
 
 // -- directorios de sistema + git + varios
+// El contrato es el de `agent/misc/systemDirectories.ts`: nombre -> ruta
+// (HOME, DESKTOP…), que es lo que `getMcpConfigForManifest` espera.
 const [_getGetSystemDirectories, setGetSystemDirectoriesFn_] = makeSetter(
-  (): string[] => [],
+  (): Record<string, string> => ({}),
 )
 const [_getFindCanonicalGitRoot, setFindCanonicalGitRootFn_] = makeSetter(
   (_cwd: string): string | null => null,
@@ -1144,7 +1183,7 @@ const [_getWithDiagnosticsTiming, setWithDiagnosticsTimingFn_] = makeSetter(
   async <T>(_event: string, fn: () => Promise<T>): Promise<T> => fn(),
 )
 const [_getGetSecureStorage, setGetSecureStorageFn_] = makeSetter(
-  (): unknown => null,
+  (): SecureStorage | null => null,
 )
 const [_getUninstallPluginOp, setUninstallPluginOpFn_] = makeSetter(
   async (..._args: unknown[]): Promise<unknown> => null,
@@ -1152,10 +1191,17 @@ const [_getUninstallPluginOp, setUninstallPluginOpFn_] = makeSetter(
 const [_getUpdatePluginOp, setUpdatePluginOpFn_] = makeSetter(
   async (..._args: unknown[]): Promise<unknown> => null,
 )
-const [_getWriteFileSync, setWriteFileSyncFn_] = makeSetter(
-  (p: string, d: string): void => getFsImplementation().writeFileSync(p, d),
+// Con las opciones de `fs.writeFileSync` (incluida `flush`), como la función
+// real de `slowOperations.js`; el respaldo sin anfitrión las ignora.
+type WriteFileSyncFn = (
+  path: string,
+  data: string,
+  options?: { encoding?: BufferEncoding; mode?: number; flag?: string; flush?: boolean },
+) => void
+const [_getWriteFileSync, setWriteFileSyncFn_] = makeSetter<WriteFileSyncFn>(
+  (p, d) => getFsImplementation().writeFileSync(p, d),
 )
-export function getSystemDirectories(): string[] {
+export function getSystemDirectories(): Record<string, string> {
   return _getGetSystemDirectories()()
 }
 export function findCanonicalGitRoot(cwd: string): string | null {
@@ -1182,8 +1228,9 @@ export function withDiagnosticsTiming<T>(
 ): Promise<T> {
   return _getWithDiagnosticsTiming()(event, fn)
 }
-export function getSecureStorage(): unknown {
-  return _getGetSecureStorage()()
+export function getSecureStorage(): SecureStorage {
+  // La costura empieza vacía; el arranque inyecta el almacenamiento real.
+  return _getGetSecureStorage()() as SecureStorage
 }
 export function uninstallPluginOp(...args: unknown[]): Promise<unknown> {
   return _getUninstallPluginOp()(...args)
@@ -1191,8 +1238,8 @@ export function uninstallPluginOp(...args: unknown[]): Promise<unknown> {
 export function updatePluginOp(...args: unknown[]): Promise<unknown> {
   return _getUpdatePluginOp()(...args)
 }
-export function writeFileSync(p: string, d: string): void {
-  _getWriteFileSync()(p, d)
+export function writeFileSync(...args: Parameters<WriteFileSyncFn>): void {
+  _getWriteFileSync()(...args)
 }
 export const setGetSystemDirectoriesFn = setGetSystemDirectoriesFn_
 export const setFindCanonicalGitRootFn = setFindCanonicalGitRootFn_
@@ -1232,55 +1279,38 @@ export function setGracefulShutdownFn(fn: typeof _gracefulShutdown): void {
 }
 
 // ---------------------------------------------------------------------------
-// Slots de tipo forward-compat — las definiciones precisas viven en
-// subsistemas de capa superior (tool-registry para Command, skills para
-// BundledSkillDefinition). Usar tipos estructurales equivalentes a
-// `unknown` mantiene la capa del paquete plugin limpia.
+// Tipos de capa superior: `Command` (agent) y `BundledSkillDefinition`
+// (command-runtime). Se re-exportan sólo como tipos: una ranura de campos
+// `unknown` con índice abierto rechaza a los consumidores que le pasan los
+// tipos reales (H-THYROX-176).
 // ---------------------------------------------------------------------------
 
-export type Command = {
-  type: string
-  name: string
-  description?: string
-  hasUserSpecifiedDescription?: boolean
-  allowedTools?: string[]
-  argumentHint?: string
-  whenToUse?: string
-  model?: string
-  disableModelInvocation?: boolean
-  userInvocable?: boolean
-  contentLength?: number
-  source?: string
-  loadedFrom?: string
-  hooks?: unknown
-  context?: unknown
-  agent?: unknown
-  isEnabled?: () => boolean
-  isHidden?: boolean
-  progressMessage?: string
-  getPromptForCommand?: unknown
-  [key: string]: unknown
-}
+// El `Command` real vive en `@thyrox/agent/command.js`. Esta ranura lo
+// sustituía por un objeto de campos `unknown` con índice abierto, y cada lista
+// de comandos de plugin fallaba al entregarse a quien espera el `Command`
+// completo. Se re-exporta sólo el tipo: la capa de plugin no gana ninguna
+// dependencia de ejecución.
+export type { Command } from '@thyrox/agent/command.js'
 
-export type BundledSkillDefinition = {
-  name: string
-  description?: string
-  allowedTools?: string[]
-  argumentHint?: string
-  whenToUse?: string
-  model?: string
-  disableModelInvocation?: boolean
-  userInvocable?: boolean
-  hooks?: unknown
-  context?: unknown
-  agent?: unknown
-  isEnabled?: () => boolean
-  getPromptForCommand?: unknown
-  [key: string]: unknown
-}
+// Igual que `Command`: la definición real vive en el paquete de comandos.
+export type { BundledSkillDefinition } from '@thyrox/command-runtime/skills/bundledSkills.js'
 
 // El paquete ya existe: se reexportan los bindings canónicos en vez de
 // conservar la prosa heredada que afirmaba que estaba ausente.
 export { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
 export { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/constants.js'
 export { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/constants.js'
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { HookEvent } from '../settings/types.js'
+export type { LspServerConfig, ScopedLspServerConfig } from './types.js'
+export type { McpServerConfig } from '../mcpConfigSchema.js'
+export type { OutputStyleConfig } from '../outputStyles.js'
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+export type { AgentDefinitionsResult }
+export type { AppState } from '@thyrox/tool-registry/appStateTypes'

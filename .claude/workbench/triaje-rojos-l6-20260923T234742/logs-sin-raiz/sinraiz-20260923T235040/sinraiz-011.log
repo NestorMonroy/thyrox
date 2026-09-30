@@ -1,0 +1,9 @@
+FALLA archivo real del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules en la cadena: exit 2
+OK   guard sin node_modules: nombra lo que falta
+OK   guard con un duenyo que no es la raiz: exit 2
+OK   ningun echo del gate lleva sustitucion viva
+
+aserciones: 5 de 6 · fallos: 1
+EXIT=1

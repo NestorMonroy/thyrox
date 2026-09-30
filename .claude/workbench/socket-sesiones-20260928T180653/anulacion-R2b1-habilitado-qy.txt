@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeModelSupport.test.ts:
+76 |     expect(asked).toEqual([['fast_mode', ['proxy/claude-sonnet-5-x', 'claude-sonnet-5']]])
+77 |   })
+78 | 
+79 |   test('sin modo rápido habilitado ningún modelo lo soporta', () => {
+80 |     process.env.THYROX_CODE_DISABLE_FAST_MODE = '1'
+81 |     expect(isFastModeSupportedByModel('claude-opus-5')).toBe(false)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeModelSupport.test.ts:81:57)
+(fail) isFastModeSupportedByModel (qy) > sin modo rápido habilitado ningún modelo lo soporta [3.88ms]
+
+ 7 pass
+ 1 fail
+ 17 expect() calls
+Ran 8 tests across 1 file. [299.00ms]

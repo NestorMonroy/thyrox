@@ -1,0 +1,5 @@
+chunk-379zyrv7.js FirstStatement Ws [51518,59550)
+chunk-bv3ay8p2.js FirstStatement Mf [182679,185630)
+chunk-csayct82.js FunctionDeclaration SPt [1919087,1919611)
+chunk-v49zfq06.js ExpressionStatement - [20478,31843)
+literal: 4 declaración(es) en 4 de 2138 chunk(s)

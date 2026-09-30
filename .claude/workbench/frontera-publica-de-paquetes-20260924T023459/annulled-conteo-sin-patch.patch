@@ -1,0 +1,11 @@
+--- a/src/packages/agent/diff.ts
++++ b/src/packages/agent/diff.ts
+@@ -95,7 +95,7 @@
+ ): void {
+   let added = 0
+   let removed = 0
+-  if (patch.length === 0 && (newFileContent || oldFileContent)) {
++  if (false) {
+     added = lineCount(newFileContent)
+     removed = lineCount(oldFileContent)
+   } else {

@@ -11,6 +11,9 @@ set -euo pipefail
 WORKSPACE="/tmp/thyrox-functional-eval-workspace"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
 SKILL_DIR="${PROJECT_ROOT}/.claude/skills/thyrox"
+# El ejecutor de cada caso: `thyrox -p` (`bin/cli`), el mismo que usa
+# `headless-pool`. THYROX_CLI lo reemplaza, por ejemplo en las pruebas.
+THYROX_CLI="${THYROX_CLI:-${PROJECT_ROOT}/bin/cli}"
 SPECIFIC_EVAL="${1:-all}"
 
 TOTAL_PASS=0
@@ -33,7 +36,7 @@ check_expectation() {
     local pattern="$2"
     local description="$3"
 
-    if echo "$result" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<<"$result"; then
         echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
@@ -49,7 +52,7 @@ check_negative() {
     local pattern="$2"
     local description="$3"
 
-    if echo "$result" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<<"$result"; then
         echo "    [ERROR] $description (found when shouldn't)"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1
@@ -84,7 +87,7 @@ EOF
     echo "=== FE-01: Nuevo proyecto — analizar primero ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Quiero crear un sistema de inventario para una tienda pequeña. Manejaría productos, categorías, stock, y alertas cuando un producto está por agotarse. La tienda tiene 2 empleados y unos 500 productos. Ayúdame a empezar." 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Quiero crear un sistema de inventario para una tienda pequeña. Manejaría productos, categorías, stock, y alertas cuando un producto está por agotarse. La tienda tiene 2 empleados y unos 500 productos. Ayúdame a empezar." 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -157,7 +160,7 @@ EOF
     echo "=== FE-02: Status check con contexto simulado ==="
 
     local result
-    result=$(cd "$dir" && claude -p "¿En qué punto estamos del proyecto? ¿Qué debería hacer ahora?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "¿En qué punto estamos del proyecto? ¿Qué debería hacer ahora?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -200,7 +203,7 @@ EOF
     echo "=== FE-03: Descomposición directa (con contexto de app) ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Necesito agregar soporte multi-idioma a la aplicación. Los textos están hardcodeados en español por todo el código. Hay unas 30 pantallas. Descompón esto en tareas que pueda ir haciendo." 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Necesito agregar soporte multi-idioma a la aplicación. Los textos están hardcodeados en español por todo el código. Hay unas 30 pantallas. Descompón esto en tareas que pueda ir haciendo." 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"

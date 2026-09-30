@@ -1,24 +1,19 @@
 /**
- * Addendum de system prompt específico de teammate — porte de
- * `ccnmt: packages/swarm/src/core/teammatePromptAddendum.ts`.
+ * Teammate-specific system prompt addendum.
  *
- * Porte VERBATIM: cero dependencias externas — es una constante de
- * cadena.
+ * Appended to the full main agent system prompt for teammates.
+ * Explains visibility constraints, communication requirements, and
+ * the structured protocol responses the teammate must emit when the
+ * leader sends them a shutdown_request or plan_approval_request.
  *
- * Se añade al final del system prompt del agente principal para los
- * teammates. Explica las restricciones de visibilidad, los requisitos de
- * comunicación, y las respuestas de protocolo estructuradas que el
- * teammate debe emitir cuando el leader le envía un `shutdown_request` o
- * un `plan_approval_request`.
- *
- * La sección de protocolo es el contrato del que depende el runner: un
- * turno de texto plano "Acknowledged. Shutting down." es INVISIBLE para
- * el leader porque no pasa por SendMessage. Sin un `shutdown_response`
- * explícito, el poll del leader sigue esperando y `teammate_terminated`
- * nunca se dispara — el deadlock que el operador encontró durante la
- * prueba e2e del 2026-04-30 (worker-c idle tras el shutdown pero sin
- * salir en realidad). Este addendum hace que el contrato de protocolo
- * sea imposible de pasar por alto.
+ * The protocol section is the contract the runner relies on: an
+ * "Acknowledged. Shutting down." plain-text turn is INVISIBLE to the
+ * leader because it does not go through SendMessage. Without an
+ * explicit shutdown_response, the leader's poll keeps waiting and
+ * `teammate_terminated` never fires — the deadlock the operator hit
+ * during the 2026-04-30 e2e probe (worker-c idle after shutdown but
+ * never actually exiting). This addendum makes the protocol contract
+ * impossible to miss.
  */
 export const TEAMMATE_SYSTEM_PROMPT_ADDENDUM = `
 # Agent Teammate Communication

@@ -423,7 +423,7 @@ class AbortedShellCommand implements ShellCommandWithOutput {
     stderr?: string
     code?: number
   }) {
-    this.taskOutput = new StubTaskOutput(generateTaskId('b'))
+    this.taskOutput = new StubTaskOutput(generateTaskId('local_bash'))
     this.result = Promise.resolve({
       code: opts?.code ?? 145,
       stdout: '',
@@ -453,7 +453,7 @@ export function createAbortedCommand(
 }
 
 export function createFailedCommand(preSpawnError: string): ShellCommandWithOutput {
-  const taskOutput: TaskOutputPort = new StubTaskOutput(generateTaskId('b'))
+  const taskOutput: TaskOutputPort = new StubTaskOutput(generateTaskId('local_bash'))
   return {
     status: 'completed' as const,
     result: Promise.resolve({

@@ -1,0 +1,7 @@
+suites exit=0
+pass=8613 fail=0 errors=0 crashes=0 files=572 failed=0
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+tsc agent exit=0 errors=0
+tsc provider exit=2 errors=2
+tsc config exit=0 errors=0
+tsc app-host exit=2 errors=3

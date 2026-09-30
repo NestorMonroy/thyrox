@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+172 |     const agent = context({ THYROX_CODE_ENTRYPOINT: 'local_agent' })
+173 |     resolveEntrypoint(false, agent)
+174 |     expect(agent.env.THYROX_CODE_ENTRYPOINT).toBe('local-agent')
+175 |     const cli = context({ THYROX_CODE_ENTRYPOINT: 'cli' })
+176 |     resolveEntrypoint(true, cli)
+177 |     expect(cli.env.THYROX_CODE_ENTRYPOINT).toBe('sdk-cli')
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "sdk-cli"
+Received: "cli"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:177:44)
+(fail) initializeEntrypointHostState (NUo) y resolveEntrypoint (D) > con entrypoint declarado sólo normaliza local_agent y cli no interactivo [0.30ms]
+
+ 15 pass
+ 1 fail
+ 89 expect() calls
+Ran 16 tests across 1 file. [61.00ms]

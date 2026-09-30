@@ -5,27 +5,9 @@
  *
  * 1. **Envoltorios de `require()` diferido** hacia paquetes hermanos que YA
  *    existen en este árbol (`config`, `local-observability`, `storage`,
- *    `app-host`, `agent`, `shell`) pero no resuelven de forma estática desde
- *    aquí: `@thyrox/ide` **no es miembro** de `src/packages/package.json:
- *    workspaces` todavía, así que ningún `node_modules/@thyrox/*` symlink
- *    existe en este paquete — verificado en vivo, no de memoria:
- *
- *    ```
- *    $ cd src/packages/ide && bun -e \
- *        "require.resolve('@thyrox/local-observability/debug.js')"
- *    Cannot find module '@thyrox/local-observability/debug.js' …
- *    $ bun install   # con una dependencia "workspace:*" en package.json
- *    error: Workspace dependency "@thyrox/local-observability" not found
- *    ```
- *
- *    Un `import` estático de un especificador que no resuelve hace fallar la
- *    carga del MÓDULO ENTERO, no sólo la función que lo usa — mismo patrón
- *    que documentan `@thyrox/config` y `@thyrox/mcp-runtime:
- *    src/xaaIdpLogin.ts`. Cuando el orquestador registre `ide` en
- *    `workspaces` y corra `bun install`, estos envoltorios empiezan a
- *    resolver contra los símbolos REALES ya portados — no son un stub que
- *    sustituye comportamiento, son un indirect call a un módulo hermano que
- *    hoy no se puede enlazar estáticamente.
+ *    `app-host`, `agent`, `shell`). `@thyrox/*` resuelve desde este paquete,
+ *    así que cada envoltorio llama al símbolo REAL ya portado —no es un stub
+ *    que sustituya conducta— y se retira importándolo de forma estática.
  *
  * 2. **Reimplementación fiel recortada** de símbolos que NO existen en
  *    NINGÚN paquete hermano de este árbol todavía — el paquete completo
@@ -50,6 +32,7 @@ import { join as pathJoin } from 'node:path'
 import type { StructuredPatchHunk } from '@thyrox/agent/diff.js'
 import type { IdeType } from '../ide.js'
 
+export { isBareMode } from '@thyrox/config/env/utils'
 // ─────────────────────────────────────────────────────────────────────────
 // 1. Envoltorios de require() diferido — el paquete hermano YA existe
 // ─────────────────────────────────────────────────────────────────────────
@@ -250,36 +233,7 @@ export function isEnvDefinedFalsy(
   return ['0', 'false', 'no', 'off'].includes(normalizedValue)
 }
 
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts` (`isBareMode`). `--bare` /
- * `CLAUDE_CODE_SIMPLE`: sin LSP, porque LSP es para integración de editor
- * (diagnostics, hover, ir-a-definición) y las llamadas `-p` guionadas no lo
- * usan.
- */
-export function isBareMode(): boolean {
-  return (
-    requireConfigEnvUtils().isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
-    process.argv.includes('--bare')
-  )
-}
-
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts:20-27`
- * (`getClaudeConfigHomeDir`). Memoizado por `CLAUDE_CONFIG_DIR` — mismo
- * cuerpo que ya usan `@thyrox/memory` y `@thyrox/mcp-runtime` en sus propios
- * `pendingCrossPackageDeps.ts` (mismo origen).
- */
-let _claudeConfigHomeDirCache: { key: string | undefined; value: string } | null =
-  null
-export function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  if (_claudeConfigHomeDirCache && _claudeConfigHomeDirCache.key === key) {
-    return _claudeConfigHomeDirCache.value
-  }
-  const value = (key ?? pathJoin(homedir(), '.claude')).normalize('NFC')
-  _claudeConfigHomeDirCache = { key, value }
-  return value
-}
+export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ─────────────────────────────────────────────────────────────────────────
 // 2b. Reimplementación fiel — config/env/paths.ts y config/env/dynamic.ts

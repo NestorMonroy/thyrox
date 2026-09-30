@@ -1,0 +1,24 @@
+src/packages/repl/src/queryHelpers.ts(71,30): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(array: readonly [...unknown[], ContentBlockParam]): ContentBlockParam', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'readonly [...unknown[], ContentBlockParam]'.
+      Type 'undefined' is not assignable to type 'readonly [...unknown[], ContentBlockParam]'.
+  Overload 2 of 2, '(array: List<string> | null | undefined): string | undefined', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'List<string> | null | undefined'.
+      Type 'ContentBlockParam[]' is not assignable to type 'ArrayLike<string>'.
+        'number' index signatures are incompatible.
+          Type 'ContentBlockParam' is not assignable to type 'string'.
+            Type 'ToolResultBlockParam' is not assignable to type 'string'.
+src/packages/repl/src/queryHelpers.ts(120,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+  Type 'undefined' is not assignable to type 'BetaMessage'.
+src/packages/repl/src/queryHelpers.ts(124,11): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+src/packages/repl/src/queryHelpers.ts(143,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+src/packages/repl/src/queryHelpers.ts(147,17): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+src/packages/repl/src/queryHelpers.ts(153,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is not assignable to type 'MessageParam'.
+    Types of property 'role' are incompatible.
+      Type 'string | undefined' is not assignable to type '"user" | "assistant" | "system"'.
+        Type 'undefined' is not assignable to type '"user" | "assistant" | "system"'.
+src/packages/repl/src/queryHelpers.ts(157,17): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/repl/src/queryHelpers.ts(217,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+  Type 'undefined' is not assignable to type 'MessageParam'.

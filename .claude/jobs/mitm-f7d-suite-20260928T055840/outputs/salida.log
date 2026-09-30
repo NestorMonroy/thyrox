@@ -1,0 +1,8 @@
+
+ 457 pass
+ 0 fail
+ 75 expect() calls
+Ran 457 tests across 70 files. [13.55s]
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+tsc_errors=1
+__BG_EXIT__=0

@@ -1,0 +1,47 @@
+== 1. la declaración completa no deja ninguna unidad SIN-DECLARAR ==
+  ok    sale 0 con la declaración completa
+  ok    ninguna línea SIN-DECLARAR
+  ok    el directorio sin marcador no es unidad
+== 2. CONTROL POSITIVO: la declaración sin dos filas ==
+  ok    sale 1 cuando faltan las filas
+  ok    nombra a beta dentro de la línea
+  ok    nombra a delta dentro de la línea
+== 3. una raíz que no resuelve se AVISA, no se calla ==
+  ok    avisa de la raíz vacía
+== 4. sin ninguna fila raiz: el censo se REHÚSA a medir ==
+  ok    sale 2 sin raíces declaradas
+== 5. las filas de nivel MODELO se ignoran, y lo declara ==
+  ok    declara cuántas ignoró
+== 6. una CONSTANTE del dominio sin definir: rehúsa y se nombra ==
+  ok    sin THYROX_CENSUS_ROOT: exit 2
+  ok    sin THYROX_CENSUS_ROOT: el mensaje la nombra
+  ok    sin THYROX_CENSUS_ROOT: no emite resumen
+  ok    sin THYROX_CENSUS_UNIT_MARKER: exit 2
+  ok    sin THYROX_CENSUS_UNIT_MARKER: el mensaje la nombra
+  ok    sin THYROX_CENSUS_UNIT_MARKER: no emite resumen
+  ok    sin THYROX_CENSUS_UNIT_BASES: exit 2
+  ok    sin THYROX_CENSUS_UNIT_BASES: el mensaje la nombra
+  ok    sin THYROX_CENSUS_UNIT_BASES: no emite resumen
+  ok    sin THYROX_CENSUS_REFERENCE_ROOT: exit 2
+  ok    sin THYROX_CENSUS_REFERENCE_ROOT: el mensaje la nombra
+  ok    sin THYROX_CENSUS_REFERENCE_ROOT: no emite resumen
+== 7. la declaración sin hogar: rehúsa nombrando sus dos entradas ==
+  ok    nombra la entrada del VALOR
+  ok    y la entrada de la RUTA del archivo que la declara
+  ok    sin declarar REHÚSA con exit 2
+  ok    y el mensaje nombra la constante
+== 8. la referencia por ALIAS entra por el tramo extensible, o se rehúsa ==
+  ok    sin la referencia en el alcance sale 2
+  ok    y nombra la variable del tramo extra
+  ok    declarada en el tramo extra, mide y sale 0
+== 9. CONTROL DE ANULACIÓN: con la declaración intacta el caso 2 cae ==
+  ok    con la declaración completa --strict vuelve a 0
+== 10. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==
+  ok    el repo censado no cae a un consumidor concreto
+  ok    el árbol de referencia no se nombra en el mecanismo
+  ok    qué marca la unidad censada se declara
+  ok    y su constante existe
+  ok    igual que la del árbol de referencia
+
+34 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,30 @@
+==== Spt AUSENTE
+
+==== zUt AUSENTE
+
+==== Ajn AUSENTE
+
+==== lfs AUSENTE
+
+==== BFe AUSENTE
+
+==== RT AUSENTE
+
+==== iue AUSENTE
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt AUSENTE
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume (109)
+function Ume(){let{accessKeyId:e,secretAccessKey:n,configFile:r,credsFile:s}=nG();return Boolean(e&&n||r||s)}
+
+==== T3n AUSENTE

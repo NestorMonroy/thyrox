@@ -1,0 +1,318 @@
+== 1: el marcador distingue mayúsculas
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the method marker ignores case and spaces [0.36ms]
+ 28 pass
+ 1 fail
+== 2: sin extremo se acepta
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the token endpoint must be https on a known identity provider [27.79ms]
+ 28 pass
+ 1 fail
+== 3: http se acepta
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the token endpoint must be https on a known identity provider [0.65ms]
+ 28 pass
+ 1 fail
+== 4: cualquier host
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the token endpoint must be https on a known identity provider [0.76ms]
+ 28 pass
+ 1 fail
+== 5: el host exacto como sufijo
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the token endpoint must be https on a known identity provider [1.06ms]
+ 28 pass
+ 1 fail
+== 6: el sufijo como host exacto
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the token endpoint must be https on a known identity provider [0.75ms]
+ 28 pass
+ 1 fail
+== 7: el mensaje no nombra el host
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the token endpoint must be https on a known identity provider [1.07ms]
+ 28 pass
+ 1 fail
+== 8: alcances vacíos se unen
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > scopes collapse to one space-separated string [0.41ms]
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [0.44ms]
+ 27 pass
+ 2 fail
+== 9: sin preferred_username
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the login name is the email, else preferred_username, else upn [1.06ms]
+ 28 pass
+ 1 fail
+== 10: sin upn
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the login name is the email, else preferred_username, else upn [1.08ms]
+ 28 pass
+ 1 fail
+== 11: sin el alias client_id
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [0.64ms]
+ 28 pass
+ 1 fail
+== 12: sin el alias token_endpoint
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [0.59ms]
+ 28 pass
+ 1 fail
+== 13: sin scopes
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [0.42ms]
+(fail) refresh > an external IdP token refreshes against its own endpoint, form-encoded [0.58ms]
+(fail) refresh > an external IdP refresh keeps the rotated token and its lifetime, and names a refusal [0.21ms]
+ 26 pass
+ 3 fail
+== 14: sin refresh token pasa
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [0.63ms]
+ 28 pass
+ 1 fail
+== 15: sin clientId pasa
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [1.45ms]
+ 28 pass
+ 1 fail
+== 16: sin scope pasa
+   (src/accounts/kiro/kiroExternalIdp.ts)
+(fail) external IdP > the refresh is a public-client grant, with the snake-case aliases accepted [1.09ms]
+ 28 pass
+ 1 fail
+== 17: el registro sin validar la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) client registration > a refused registration names the answer; a bad region never reaches the network [1.02ms]
+ 28 pass
+ 1 fail
+== 18: el registro sin issuerUrl
+   (src/accounts/kiro/kiroService.ts)
+(fail) client registration > a client is registered in the requested region with the flow configuration [1.30ms]
+ 28 pass
+ 1 fail
+== 19: el registro rechazado pasa
+   (src/accounts/kiro/kiroService.ts)
+(fail) client registration > a refused registration names the answer; a bad region never reaches the network [0.54ms]
+ 28 pass
+ 1 fail
+== 20: IdP externo por OIDC
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an external IdP token refreshes against its own endpoint, form-encoded [0.59ms]
+(fail) refresh > an external IdP refresh keeps the rotated token and its lifetime, and names a refusal [0.31ms]
+ 27 pass
+ 2 fail
+== 21: IdP como JSON
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an external IdP token refreshes against its own endpoint, form-encoded [1.35ms]
+ 28 pass
+ 1 fail
+== 22: IdP rechazado pasa
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an external IdP refresh keeps the rotated token and its lifetime, and names a refusal [0.62ms]
+ 28 pass
+ 1 fail
+== 23: IdP sin refresh rotado
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an external IdP refresh keeps the rotated token and its lifetime, and names a refusal [0.48ms]
+ 28 pass
+ 1 fail
+== 24: IdP sin vida declarada
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an external IdP refresh keeps the rotated token and its lifetime, and names a refusal [0.79ms]
+ 28 pass
+ 1 fail
+== 25: importado por OIDC
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an imported social token refreshes at the Kiro auth service even with a client [0.62ms]
+ 28 pass
+ 1 fail
+== 26: OIDC sin secreto
+   (src/accounts/kiro/kiroService.ts)
+ 29 pass
+ 0 fail
+== 27: región fija
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a Builder ID token refreshes against AWS OIDC in its region [0.92ms]
+(fail) refresh > without a region the OIDC refresh goes to us-east-1 and keeps the old token when none rotates [0.38ms]
+(fail) refresh > a refused OIDC refresh registers a fresh client and retries once [0.40ms]
+(fail) import validation > a cached Builder ID client that refreshes the token makes it a Builder ID import [0.99ms]
+ 25 pass
+ 4 fail
+== 28: OIDC sin validar la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > without a region the OIDC refresh goes to us-east-1 and keeps the old token when none rotates [1.32ms]
+ 28 pass
+ 1 fail
+== 29: sin re-registro
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a refused OIDC refresh registers a fresh client and retries once [0.36ms]
+(fail) refresh > the retry keeps a rotated token and lifetime; a failed retry says so [0.23ms]
+(fail) import validation > when the cached client fails, the social refresh validates it and a dedicated client is registered [0.86ms]
+ 26 pass
+ 3 fail
+== 30: el reintento rechazado pasa
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > the retry keeps a rotated token and lifetime; a failed retry says so [0.53ms]
+ 28 pass
+ 1 fail
+== 31: sin informar el cliente nuevo
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a refused OIDC refresh registers a fresh client and retries once [0.52ms]
+ 28 pass
+ 1 fail
+== 32: el reintento con el cliente viejo
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a refused OIDC refresh registers a fresh client and retries once [0.57ms]
+ 28 pass
+ 1 fail
+== 33: OIDC sin refresh rotado
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a Builder ID token refreshes against AWS OIDC in its region [0.72ms]
+(fail) import validation > the token own client id picks the cached registration [0.81ms]
+ 27 pass
+ 2 fail
+== 34: social sin perfil
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > an imported social token refreshes at the Kiro auth service even with a client [0.82ms]
+(fail) import validation > when the cached client fails, the social refresh validates it and a dedicated client is registered [1.36ms]
+ 27 pass
+ 2 fail
+== 35: social rechazado pasa
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a social refresh keeps the old token, defaults the lifetime and names a refusal [0.60ms]
+(fail) import validation > a token the social refresh rejects is not valid [0.42ms]
+ 27 pass
+ 2 fail
+== 36: caché — el hint no gana
+   (src/accounts/kiro/kiroService.ts)
+(fail) cached SSO client credentials > the token own client wins; then the region; then the latest expiry [1.72ms]
+(fail) import validation > the token own client id picks the cached registration [0.70ms]
+ 27 pass
+ 2 fail
+== 37: caché — sin preferir la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) cached SSO client credentials > the token own client wins; then the region; then the latest expiry [2.31ms]
+ 28 pass
+ 1 fail
+== 38: caché — la caducidad más temprana
+   (src/accounts/kiro/kiroService.ts)
+(fail) cached SSO client credentials > the token own client wins; then the region; then the latest expiry [4.89ms]
+ 28 pass
+ 1 fail
+== 39: caché — sin clientSecretExpiresAt
+   (src/accounts/kiro/kiroService.ts)
+(fail) cached SSO client credentials > the token own client wins; then the region; then the latest expiry [2.02ms]
+ 28 pass
+ 1 fail
+== 40: caché — entradas sin secreto
+   (src/accounts/kiro/kiroService.ts)
+(fail) cached SSO client credentials > a missing cache, broken files and entries without a secret give nothing [3.31ms]
+ 28 pass
+ 1 fail
+== 41: caché — cualquier archivo
+   (src/accounts/kiro/kiroService.ts)
+(fail) cached SSO client credentials > a missing cache, broken files and entries without a secret give nothing [3.52ms]
+ 28 pass
+ 1 fail
+== 42: importar — cualquier token
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > only an AWS refresh token is accepted, in a valid region [1.14ms]
+ 28 pass
+ 1 fail
+== 43: importar — sin validar la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > only an AWS refresh token is accepted, in a valid region [1.19ms]
+ 28 pass
+ 1 fail
+== 44: importar — sin caché
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > a cached Builder ID client that refreshes the token makes it a Builder ID import [1.47ms]
+(fail) import validation > the token own client id picks the cached registration [0.93ms]
+(fail) import validation > when the cached client fails, the social refresh validates it and a dedicated client is registered [0.65ms]
+ 26 pass
+ 3 fail
+== 45: importar — la caché sin la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > a cached Builder ID client that refreshes the token makes it a Builder ID import [1.12ms]
+ 28 pass
+ 1 fail
+== 46: importar — sin el hint
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > the token own client id picks the cached registration [1.47ms]
+ 28 pass
+ 1 fail
+== 47: importar — sin cliente propio
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > when the cached client fails, the social refresh validates it and a dedicated client is registered [1.34ms]
+ 28 pass
+ 1 fail
+== 48: importar — el rechazo sin prefijo
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > a token the social refresh rejects is not valid [0.66ms]
+ 28 pass
+ 1 fail
+== 49: importar — sin el cliente de la caché en el resultado
+   (src/accounts/kiro/kiroService.ts)
+(fail) import validation > a cached Builder ID client that refreshes the token makes it a Builder ID import [1.34ms]
+ 28 pass
+ 1 fail
+== 50: perfiles — sin preferir la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > profiles are listed on the regional host and the one in the region wins [0.86ms]
+ 28 pass
+ 1 fail
+== 51: perfiles — sin profileArn
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > profiles are listed on the regional host and the one in the region wins [0.77ms]
+ 28 pass
+ 1 fail
+== 52: perfiles — rechazo pasa
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > without a match the first profile is taken; none gives null; a refusal is named [0.85ms]
+(fail) profiles and API keys > a key denied only on profile listing is still valid; any other failure is not [0.62ms]
+ 27 pass
+ 2 fail
+== 53: perfiles — sin tokentype
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > profiles are listed on the regional host and the one in the region wins [1.21ms]
+ 28 pass
+ 1 fail
+== 54: perfiles — sin validar la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > without a match the first profile is taken; none gives null; a refusal is named [1.00ms]
+ 28 pass
+ 1 fail
+== 55: clave — sin recortar
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > an API key is trimmed and its profile looked up [0.70ms]
+ 28 pass
+ 1 fail
+== 56: clave — cualquier negativa se tolera
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > a key denied only on profile listing is still valid; any other failure is not [0.69ms]
+ 28 pass
+ 1 fail
+== 57: clave — ninguna negativa se tolera
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > a key denied only on profile listing is still valid; any other failure is not [0.81ms]
+ 28 pass
+ 1 fail
+== 58: clave — sin validar la región
+   (src/accounts/kiro/kiroService.ts)
+ 29 pass
+ 0 fail
+== 59: correo — sin preferred_username
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > the account name of a token is its email, preferred username or subject [1.38ms]
+ 28 pass
+ 1 fail
+== 60: correo — sin sub
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > the account name of a token is its email, preferred username or subject [1.16ms]
+ 28 pass
+ 1 fail
+== restaurado
+ 29 pass
+ 0 fail
+__BG_EXIT__=0

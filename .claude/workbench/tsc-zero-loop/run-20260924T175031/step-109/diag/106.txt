@@ -1,0 +1,28 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/screens/agentFleet/FleetView.tsx(2252,15): error TS2322: Type '(() => void) | undefined' is not assignable to type '() => void'.
+  --- código src/packages/repl/src/screens/agentFleet/FleetView.tsx:2242-2262 ---
+   2242                      (row.job.state.tempo === 'active' ? 'busy' : 'waiting')
+   2243                    : undefined
+   2244                }
+   2245                // Source: ant 5092.js `onMouseEnter: bH || _H ? void 0 : K9`.
+   2246                // `_H` is peek-open, `bH` is dispatch-buffer non-empty.
+   2247                // ant DISABLES mouse hover when peek is open or the user is
+   2248                // composing a dispatch — a stray cursor movement would
+   2249                // otherwise switch the focused row (and thus the peek
+   2250                // panel's content) underneath the user's intent. Same
+   2251                // behaviour ccb should have.
+   2252>               onMouseEnter={
+   2253                  peekOpen || dispatchBuf !== ''
+   2254                    ? undefined
+   2255                    : () => {
+   2256                        // ant: mouse hover updates B_/l_ so the per-render
+   2257                        // follow-id effect doesn't drag focus back to the
+   2258                        // previous row.
+   2259                        setSelectionIndex(idx)
+   2260                        if (row.kind === 'job') {
+   2261                          followIdRef.current = row.job.id
+   2262                          followGroupRef.current = undefined

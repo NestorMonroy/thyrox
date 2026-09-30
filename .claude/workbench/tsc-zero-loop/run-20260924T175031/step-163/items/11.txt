@@ -1,0 +1,29 @@
+src/packages/repl/src/hooks/useReplBridge.tsx(536,27): error TS2345: Argument of type '(prev: AppState) => AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:526-546 ---
+    526                  const reason = getAutoModeUnavailableReason()
+    527                  return {
+    528                    ok: false,
+    529                    error: reason
+    530                      ? `Cannot set permission mode to auto: ${getAutoModeUnavailableNotification(reason)}`
+    531                      : 'Cannot set permission mode to auto',
+    532                  }
+    533                }
+    534                // Guards passed — apply via the centralized transition so
+    535                // prePlanMode stashing and auto-mode state sync all fire.
+    536>               setAppState(prev => {
+    537                  const current = prev.toolPermissionContext.mode
+    538                  if (current === mode) return prev
+    539                  const next = transitionPermissionMode(
+    540                    current,
+    541                    mode,
+    542                    prev.toolPermissionContext,
+    543                  )
+    544                  return {
+    545                    ...prev,
+    546                    toolPermissionContext: { ...next, mode },
+  Type 'AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to type 'AppState'.
+    Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+      Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+        The types of 'toolPermissionContext.mode' are incompatible between these types.
+          Type 'PermissionMode' is not assignable to type 'InternalPermissionMode'.
+            Type '"ask"' is not assignable to type 'InternalPermissionMode'.

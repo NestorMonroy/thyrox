@@ -1,45 +1,47 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/isEmptyMessageText.test.ts`.
+ * Tests for isEmptyMessageText + stripPromptXMLTags — pure helpers
+ * for detecting "empty" message content and stripping internal XML
+ * wrapper tags before display/comparison.
  *
- * `stripPromptXMLTags` retira cuatro familias de etiqueta del prompt:
- * `<commit_analysis>`, `<context>`, `<function_analysis>` y `<pr_analysis>`.
- * Son envoltorios de INYECCION DE PROMPT —ordenes del sistema—, no etiquetas
- * de presentacion, que se retiran con otro mecanismo del paquete de salida.
+ * stripPromptXMLTags removes 4 specific tag families from prompts:
+ *   <commit_analysis>, <context>, <function_analysis>, <pr_analysis>
+ * These are PROMPT-INJECTION wrappers (system commands), not display
+ * tags (which use stripDisplayTags in @thyrox/output).
  *
- * `isEmptyMessageText` es cierto cuando el texto queda en blanco tras retirar
- * esos envoltorios, o cuando es exactamente el centinela `NO_CONTENT_MESSAGE`.
+ * isEmptyMessageText is true when:
+ *   - text is whitespace-only after stripping the wrapper tags, OR
+ *   - text equals the canonical NO_CONTENT_MESSAGE sentinel
  *
- * Equivocarse tiene las dos formas caras: mensajes vacios que se cuelan al
- * transcript —tokens gastados en marcadores «(no content)»— o mensajes con
- * contenido real que se filtran fuera, y entonces el usuario cree que el
- * modelo no respondio.
+ * Wrong = empty messages slip into transcript (tokens wasted on
+ * "(no content)" placeholders) or genuine non-empty messages get
+ * filtered out (user thinks model didn't reply).
  */
 import { describe, expect, test } from 'bun:test'
-import { isEmptyMessageText, stripPromptXMLTags } from '../messages.ts'
-import { NO_CONTENT_MESSAGE } from '../constants/messages.ts'
+import { isEmptyMessageText, stripPromptXMLTags } from '../messages.js'
+import { NO_CONTENT_MESSAGE } from '../constants/messages.js'
 
-describe('stripPromptXMLTags retira cuatro familias de etiqueta', () => {
-  test('retira <commit_analysis>...</commit_analysis>', () => {
+describe('stripPromptXMLTags — strips 4 specific tag families', () => {
+  test('<commit_analysis>...</commit_analysis> stripped', () => {
     expect(
       stripPromptXMLTags('<commit_analysis>git stuff</commit_analysis>'),
     ).toBe('')
   })
 
-  test('retira <context>...</context>', () => {
+  test('<context>...</context> stripped', () => {
     expect(stripPromptXMLTags('<context>file info</context>')).toBe('')
   })
 
-  test('retira <function_analysis>...</function_analysis>', () => {
+  test('<function_analysis>...</function_analysis> stripped', () => {
     expect(
       stripPromptXMLTags('<function_analysis>code</function_analysis>'),
     ).toBe('')
   })
 
-  test('retira <pr_analysis>...</pr_analysis>', () => {
+  test('<pr_analysis>...</pr_analysis> stripped', () => {
     expect(stripPromptXMLTags('<pr_analysis>PR review</pr_analysis>')).toBe('')
   })
 
-  test('retira varias familias presentes en la misma entrada', () => {
+  test('multiple tag families in one input all stripped', () => {
     expect(
       stripPromptXMLTags(
         '<context>x</context><commit_analysis>y</commit_analysis>',
@@ -47,7 +49,7 @@ describe('stripPromptXMLTags retira cuatro familias de etiqueta', () => {
     ).toBe('')
   })
 
-  test('conserva el contenido que queda fuera del envoltorio', () => {
+  test('content outside wrapper preserved', () => {
     expect(
       stripPromptXMLTags(
         'real text<context>system context</context>more text',
@@ -55,13 +57,13 @@ describe('stripPromptXMLTags retira cuatro familias de etiqueta', () => {
     ).toBe('real textmore text')
   })
 
-  test('si fuera del envoltorio solo hay espacios, recorta', () => {
+  test('only whitespace outside wrapper trims', () => {
     expect(
       stripPromptXMLTags('   <context>x</context>   '),
     ).toBe('')
   })
 
-  test('retira el envoltorio aunque su contenido ocupe varias lineas', () => {
+  test('multiline content inside wrapper stripped', () => {
     expect(
       stripPromptXMLTags(
         '<context>\nline1\nline2\n</context>',
@@ -69,41 +71,41 @@ describe('stripPromptXMLTags retira cuatro familias de etiqueta', () => {
     ).toBe('')
   })
 
-  test('conserva una etiqueta que no esta en las cuatro, como <thinking>', () => {
+  test('non-stripped tag (e.g. <thinking>) preserved', () => {
     expect(
       stripPromptXMLTags('<thinking>kept</thinking>'),
     ).toBe('<thinking>kept</thinking>')
   })
 
-  test('el texto llano pasa sin cambios', () => {
+  test('plain text passes through', () => {
     expect(stripPromptXMLTags('hello world')).toBe('hello world')
   })
 
-  test('la cadena vacia devuelve cadena vacia', () => {
+  test('empty string → empty string', () => {
     expect(stripPromptXMLTags('')).toBe('')
   })
 
-  test('solo espacios devuelve cadena vacia por el recorte', () => {
+  test('whitespace-only → empty string (trim)', () => {
     expect(stripPromptXMLTags('   \n\t  ')).toBe('')
   })
 })
 
-describe('isEmptyMessageText — los casos ciertos', () => {
-  test('la cadena vacia es vacia', () => {
+describe('isEmptyMessageText — true cases', () => {
+  test('empty string → true', () => {
     expect(isEmptyMessageText('')).toBe(true)
   })
 
-  test('solo espacios es vacio', () => {
+  test('whitespace-only → true', () => {
     expect(isEmptyMessageText('   \n\t  ')).toBe(true)
   })
 
-  test('solo etiquetas retiradas es vacio', () => {
+  test('only stripped XML tags → true', () => {
     expect(
       isEmptyMessageText('<context>system info</context>'),
     ).toBe(true)
   })
 
-  test('solo varias etiquetas retiradas es vacio', () => {
+  test('multiple stripped tags only → true', () => {
     expect(
       isEmptyMessageText(
         '<context>x</context>\n<commit_analysis>y</commit_analysis>',
@@ -111,58 +113,58 @@ describe('isEmptyMessageText — los casos ciertos', () => {
     ).toBe(true)
   })
 
-  test('el centinela NO_CONTENT_MESSAGE es vacio', () => {
+  test('NO_CONTENT_MESSAGE sentinel → true', () => {
     expect(isEmptyMessageText(NO_CONTENT_MESSAGE)).toBe(true)
   })
 
-  test('el centinela con espacios alrededor sigue siendo vacio', () => {
+  test('NO_CONTENT_MESSAGE with surrounding whitespace → true', () => {
     expect(isEmptyMessageText(`   ${NO_CONTENT_MESSAGE}   `)).toBe(true)
   })
 })
 
-describe('isEmptyMessageText — los casos falsos', () => {
-  test('el texto llano no es vacio', () => {
+describe('isEmptyMessageText — false cases', () => {
+  test('plain text → false', () => {
     expect(isEmptyMessageText('hello')).toBe(false)
   })
 
-  test('etiquetas retiradas mas contenido real no es vacio', () => {
+  test('text with stripped tags + real content → false', () => {
     expect(
       isEmptyMessageText('<context>x</context>real content'),
     ).toBe(false)
   })
 
-  test('una etiqueta que no se retira, como <thinking>, no es vacio', () => {
+  test('non-stripped tag (e.g. <thinking>) → false', () => {
     expect(
       isEmptyMessageText('<thinking>preserved content</thinking>'),
     ).toBe(false)
   })
 
-  test('el centinela como subcadena no cuenta: solo la coincidencia exacta', () => {
-    // Fijado: solo la coincidencia EXACTA del centinela tras recortar cuenta.
-    // Cualquier texto adyacente lo descalifica.
+  test('NO_CONTENT_MESSAGE substring (not exact match after trim) → false', () => {
+    // Locked: only EXACT match (after trim) of NO_CONTENT_MESSAGE
+    // counts. Adjacent text disqualifies.
     expect(
       isEmptyMessageText(`prefix ${NO_CONTENT_MESSAGE}`),
     ).toBe(false)
   })
 
-  test('la coincidencia del centinela distingue caja', () => {
+  test('case-sensitive sentinel match', () => {
     expect(isEmptyMessageText('(NO CONTENT)')).toBe(false)
   })
 
-  test('un solo caracter no es vacio', () => {
+  test('single-character text → false', () => {
     expect(isEmptyMessageText('x')).toBe(false)
   })
 })
 
-describe('forma del valor devuelto', () => {
-  test('isEmptyMessageText devuelve siempre un booleano', () => {
+describe('return shape', () => {
+  test('isEmptyMessageText always returns boolean', () => {
     const samples = ['', 'hello', NO_CONTENT_MESSAGE, '<context>x</context>']
     for (const s of samples) {
       expect(typeof isEmptyMessageText(s)).toBe('boolean')
     }
   })
 
-  test('stripPromptXMLTags devuelve siempre una cadena', () => {
+  test('stripPromptXMLTags always returns string', () => {
     const samples = ['', 'hello', '<context>x</context>', 'before<context>y</context>after']
     for (const s of samples) {
       expect(typeof stripPromptXMLTags(s)).toBe('string')

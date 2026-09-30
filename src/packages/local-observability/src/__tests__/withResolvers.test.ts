@@ -1,7 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/withResolvers.test.ts`
- * (129 líneas fuente, 100 % portado).
- */
 import { describe, expect, test } from 'bun:test'
 import { withResolvers } from '../utils/withResolvers.js'
 
@@ -78,7 +74,7 @@ describe('withResolvers — settlement is one-way', () => {
     const { promise, resolve, reject } = withResolvers<number>()
     resolve(1)
     reject(new Error('too-late'))
-    // La promesa ya está asentada; el reject es no-op.
+    // Promise is already settled; the reject is a no-op.
     await expect(promise).resolves.toBe(1)
   })
 
@@ -86,7 +82,7 @@ describe('withResolvers — settlement is one-way', () => {
     const { promise, resolve, reject } = withResolvers<number>()
     reject(new Error('first'))
     resolve(99)
-    // Promesa ya rechazada; el resolve es no-op.
+    // Already-rejected promise; resolve is a no-op.
     await expect(promise).rejects.toThrow('first')
   })
 
@@ -100,9 +96,9 @@ describe('withResolvers — settlement is one-way', () => {
 })
 
 describe('withResolvers — async coordination pattern', () => {
-  // El propósito entero de este helper es dejar que un fragmento de
-  // código cree la promesa + el handle, y otro fragmento la asiente más
-  // tarde (p. ej. en un event listener). Se verifica ese patrón.
+  // The whole point of this helper is to let one piece of code
+  // create the promise + handle, and another piece of code settle
+  // it later (e.g., in an event listener). Verify that pattern.
 
   test('handles cross-async settlement', async () => {
     const { promise, resolve } = withResolvers<string>()
@@ -116,7 +112,7 @@ describe('withResolvers — async coordination pattern', () => {
     const awaitTask = promise.then(v => {
       settled.value = v
     })
-    expect(settled.value).toBeUndefined() // aún no
+    expect(settled.value).toBeUndefined() // not yet
     resolve(7)
     await awaitTask
     expect(settled.value).toBe(7)

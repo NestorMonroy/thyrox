@@ -183,8 +183,9 @@ describe('toRelativePath', () => {
 
 describe('getDirectoryForPath', () => {
   test('returns the path itself when given an existing directory', () => {
-    // The packages directory is guaranteed to exist in this repo
-    const dir = resolve(process.cwd(), 'packages')
+    // En thyrox los paquetes viven bajo `src/`; `packages/` en la raíz era el
+    // árbol de origen de esta prueba.
+    const dir = resolve(process.cwd(), 'src')
     const result = getDirectoryForPath(dir)
     expect(result).toBe(dir)
   })

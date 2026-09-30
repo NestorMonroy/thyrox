@@ -1,0 +1,1 @@
+function Yrn(e){return Object.values(e.alwaysDenyRules).some((n)=>(n?.length??0)>0)}

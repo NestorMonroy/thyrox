@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+149 |   test('sin dominio en macos no interactivo, sólo cuentan las rutas bajo el home', () => {
+150 |     const mac = deps({ platform: () => 'macos', isInteractive: () => false })
+151 |     expect(recordInPidDomain(record(5, { cwd: `/home/u${sep}p` }) as never, DOMAIN, [], mac)).toBe(true)
+152 |     expect(recordInPidDomain(record(5, { cwd: '/home/u' }) as never, DOMAIN, [], mac)).toBe(true)
+153 |     expect(recordInPidDomain(record(5) as never, DOMAIN, [], mac)).toBe(true)
+154 |     expect(recordInPidDomain(record(5, { cwd: '/home/uv' }) as never, DOMAIN, [], mac)).toBe(false)
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:154:89)
+(fail) recordInPidDomain (lpn) e isWindowsPosixCwd (aD) > sin dominio en macos no interactivo, sólo cuentan las rutas bajo el home [0.37ms]
+
+ 27 pass
+ 1 fail
+ 79 expect() calls
+Ran 28 tests across 1 file. [193.00ms]

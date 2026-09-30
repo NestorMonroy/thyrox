@@ -18,7 +18,7 @@ import {
   createPermissionResponseMessage,
   createSandboxPermissionRequestMessage,
   createSandboxPermissionResponseMessage,
-} from '../mailbox/protocolMessages.js'
+} from '../mailbox/index.js'
 
 describe('createPermissionRequestMessage', () => {
   test('returns permission_request type with all required fields', () => {

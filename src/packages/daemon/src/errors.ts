@@ -1,8 +1,3 @@
-/**
- * Jerarquía de errores del daemon. Puerto fiel de
- * `ccnmt: packages/daemon/src/errors.ts`.
- */
-
 export class DaemonBaseError extends Error {
   readonly code: string
 

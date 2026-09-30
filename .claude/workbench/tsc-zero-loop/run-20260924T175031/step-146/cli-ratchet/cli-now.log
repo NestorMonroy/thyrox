@@ -1,0 +1,161 @@
+../agent/QueryEngine.ts(557,11): error TS2322: Type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 24 more ... | undefined' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }'.
+../agent/QueryEngine.ts(706,11): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+../agent/QueryEngine.ts(797,9): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+../agent/QueryEngine.ts(822,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+../agent/QueryEngine.ts(972,15): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'BetaRawMessageStreamEvent'.
+../agent/QueryEngine.ts(1228,17): error TS2769: No overload matches this call.
+../agent/attachments.ts(1911,10): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+../agent/attachments.ts(1929,15): error TS2304: Cannot find name 'getMemoryFilesForNestedDirectory'.
+../agent/attachments.ts(1935,12): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+../agent/attachments.ts(1952,12): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+../agent/hooks.ts(27,46): error TS2724: '"./types/hooks.js"' has no exported member named 'promptRequestSchema'. Did you mean 'PromptRequest'?
+../agent/hooks.ts(67,47): error TS2724: '"@thyrox/config/settings/types.js"' has no exported member named 'SkillHookMatcher'. Did you mean 'HookMatcher'?
+../agent/hooks.ts(1188,34): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+../agent/hooks.ts(1538,13): error TS2741: Property 'async' is missing in type 'AsyncHookJSONOutput' but required in type '{ async: true; asyncTimeout?: number | undefined; }'.
+../agent/hooks.ts(1666,7): error TS2304: Cannot find name 'logForDiagnosticsNoPII'.
+../agent/hooks.ts(1722,7): error TS2304: Cannot find name 'logForDiagnosticsNoPII'.
+../agent/hooks.ts(2168,11): error TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
+../agent/hooks.ts(2345,32): error TS7006: Parameter 'hook' implicitly has an 'any' type.
+../agent/hooks.ts(2530,38): error TS2339: Property 'length' does not exist on type '{}'.
+../agent/hooks.ts(2622,35): error TS2304: Cannot find name 'TypedSyncHookOutput'.
+../agent/messages.ts(4378,19): error TS2677: A type predicate's type must be assignable to its parameter's type.
+../agent/messages.ts(4383,17): error TS18048: '_.attachment' is possibly 'undefined'.
+../agent/messages/mappers.ts(123,13): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+../agent/messages/mappers.ts(127,13): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+../agent/messages/mappers.ts(134,13): error TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.
+../agent/messages/mappers.ts(213,5): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+../agent/query.ts(386,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+../agent/query.ts(448,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+../agent/query.ts(449,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+../agent/query.ts(450,9): error TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.
+../agent/query.ts(451,9): error TS2339: Property 'compactionUsage' does not exist on type '{}'.
+../agent/query.ts(457,28): error TS2339: Property 'summaryMessages' does not exist on type '{}'.
+../agent/query.ts(458,28): error TS2339: Property 'attachments' does not exist on type '{}'.
+../agent/query.ts(459,28): error TS2339: Property 'hookResults' does not exist on type '{}'.
+../agent/query.ts(508,60): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+../agent/query.ts(515,7): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+../agent/query.ts(528,7): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+../agent/query.ts(671,15): error TS2322: Type 'EffortValue | undefined' is not assignable to type 'string | undefined'.
+../agent/query.ts(675,15): error TS2322: Type '((notif: Notification) => void) | undefined' is not assignable to type '((notif: ProviderNotification) => void) | undefined'.
+../agent/query.ts(725,17): error TS18046: 'message' is of type 'unknown'.
+../agent/query.ts(762,19): error TS2698: Spread types may only be created from object types.
+../agent/query.ts(798,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+../agent/query.ts(802,21): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+../agent/query.ts(804,17): error TS18046: 'message' is of type 'unknown'.
+../agent/query.ts(1122,64): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+../agent/query.ts(1127,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+../agent/query.ts(1244,37): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+../agent/query.ts(1247,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+../agent/query.ts(1427,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+../agent/query.ts(1461,27): error TS18048: 'result.message' is possibly 'undefined'.
+../agent/query.ts(1468,41): error TS18048: 'toolResult.message' is possibly 'undefined'.
+../agent/query.ts(1553,27): error TS18048: 'result.message' is possibly 'undefined'.
+../agent/query.ts(1554,13): error TS18048: 'result.message' is possibly 'undefined'.
+../agent/query.ts(1562,25): error TS18048: 'toolResult.message' is possibly 'undefined'.
+../agent/query.ts(1563,15): error TS18048: 'toolResult.message' is possibly 'undefined'.
+../agent/query.ts(1756,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+../agent/sessionTools/analyzeContext.ts(358,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+../agent/sessionTools/analyzeContext.ts(633,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+../agent/task/framework.ts(53,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.
+../agent/task/framework.ts(54,18): error TS2352: Conversion of type 'TaskState' to type 'T | undefined' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+../agent/task/framework.ts(79,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+../agent/task/framework.ts(108,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../agent/task/framework.ts(109,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+../agent/task/framework.ts(299,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+src/entry/commander.ts(40,3): error TS2322: Type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to type 'Command<[], {}, {}>'.
+src/headless/sdk/session/run-streaming.ts(792,10): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+src/headless/sdk/session/run-streaming.ts(792,22): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+src/headless/sdk/session/run-streaming.ts(2143,9): error TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.
+src/headless/sdk/session/run-streaming.ts(2144,9): error TS2322: Type '(command: QueuedCommand) => void' is not assignable to type '(entry: { mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }) => void'.
+src/headless/sdk/session/run-streaming.ts(2362,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+src/headless/sdk/session/run-streaming.ts(2713,17): error TS7006: Parameter 'url' implicitly has an 'any' type.
+src/headless/sdk/session/run-streaming.ts(2717,41): error TS7006: Parameter 'submit' implicitly has an 'any' type.
+src/headless/sdk/session/run-streaming.ts(2813,24): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/headless/sdk/session/run-streaming.ts(3289,29): error TS2339: Property 'content' does not exist on type '{}'.
+src/headless/sdk/session/run-streaming.ts(3289,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+src/headless/sdk/session/run-streaming.ts(3302,56): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: "control_response"; response: { subtype: "success"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: "error"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.
+src/headless/sdk/session/run-streaming.ts(3434,11): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/headless/sdk/session/run-streaming.ts(3438,57): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/headless/sdk/session/run-streaming.ts(3467,34): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/headless/sdk/session/run-streaming.ts(3474,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+src/headless/sdk/session/run-streaming.ts(3475,9): error TS2322: Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+src/structuredIO.ts(669,7): error TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.
+../config/plugin/loadPluginHooks.ts(118,25): error TS2345: Argument of type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.
+../config/plugin/loadPluginHooks.ts(180,25): error TS2345: Argument of type 'Partial<Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.
+../config/plugin/marketplaceManager.ts(1994,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+../config/plugin/marketplaceManager.ts(1999,7): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Partial<unknown>'.
+../config/plugin/mcpbHandler.ts(424,5): error TS2322: Type 'string[]' is not assignable to type 'Record<string, string>'.
+../config/plugin/orphanedPluginFilter.ts(72,32): error TS2339: Property 'map' does not exist on type 'string'.
+../config/plugin/pluginLoader.ts(3191,5): error TS2322: Type 'unknown[]' is not assignable to type 'LoadedPlugin[]'.
+../mcp-runtime/src/channelNotification.ts(285,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+../mcp-runtime/src/useManageMCPConnections.ts(528,23): error TS2322: Type '{ kind: string; server: string; }' is not assignable to type 'string'.
+../permission/src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx(9,10): error TS1484: 'StructuredPatchHunk' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+../permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx(18,10): error TS1484: 'StructuredPatchHunk' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+../permission/src/toolPermission/PermissionContext.ts(127,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+../permission/src/toolPermission/PermissionContext.ts(205,46): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+../provider/src/claudeLegacyRuntime.ts(575,61): error TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | BetaUsage | undefined'.
+../provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+../repl/src/components/BridgeDialog.tsx(66,5): error TS2769: No overload matches this call.
+../repl/src/components/LogoV2/ChannelsNotice.tsx(51,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+../repl/src/components/Message.tsx(108,11): error TS2322: Type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' is not assignable to type 'Attachment'.
+../repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
+../repl/src/components/Message.tsx(116,36): error TS2339: Property 'map' does not exist on type 'MessageContent'.
+../repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+../repl/src/components/Message.tsx(177,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+../repl/src/components/Message.tsx(321,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../repl/src/components/Message.tsx(323,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../repl/src/components/Message.tsx(419,11): error TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.
+../repl/src/components/Message.tsx(436,11): error TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.
+../repl/src/components/Message.tsx(459,11): error TS2322: Type 'ThinkingBlockParam | ConnectorTextBlock | BetaThinkingBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+../repl/src/components/Message.tsx(507,24): error TS2345: Argument of type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+../repl/src/components/PromptInput/Notifications.tsx(390,11): error TS2322: Type '(result: AutoUpdaterResult) => void' is not assignable to type '(autoUpdaterResult: AutoUpdaterResult | null) => void'.
+../repl/src/components/StatusLine.tsx(347,29): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+../repl/src/components/StatusLine.tsx(389,42): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+../repl/src/components/messages/AttachmentMessage.tsx(65,56): error TS2769: No overload matches this call.
+../repl/src/components/messages/AttachmentMessage.tsx(85,30): error TS2345: Argument of type '(msg: { text: string; from: string; color: string | undefined; summary: string | undefined; }, idx: number) => React.JSX.Element' is not assignable to parameter of type '(value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => Element'.
+../repl/src/components/messages/AttachmentMessage.tsx(199,64): error TS2339: Property 'truncated' does not exist on type 'FileAttachment | AlreadyReadFileAttachment'.
+../repl/src/components/messages/AttachmentMessage.tsx(474,35): error TS2339: Property 'paused' does not exist on type '{ type: "goal_status"; met: boolean; condition: string; sentinel?: boolean | undefined; reason?: string | undefined; iterations?: number | undefined; durationMs?: number | undefined; tokens?: number | undefined; failed?: boolean | undefined; }'.
+../repl/src/components/messages/AttachmentMessage.tsx(555,23): error TS1360: Type '"hook_additional_context" | "task_reminder" | "structured_output" | "output_style" | "hook_cancelled" | "mcp_instructions_delta" | "auto_mode" | "skill_discovery" | "plan_mode" | ... 23 more ... | "bagel_console"' does not satisfy the expected type '"hook_additional_context" | "hook_success" | "task_reminder" | "structured_output" | "output_style" | "hook_cancelled" | "goal_status" | "mcp_instructions_delta" | "auto_mode" | ... 25 more ... | "deferred_tools_delta"'.
+../repl/src/conversationRecovery.tsx(187,30): error TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+../repl/src/conversationRecovery.tsx(188,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+../repl/src/conversationRecovery.tsx(562,33): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+../repl/src/hooks/useReplBridge.tsx(536,27): error TS2345: Argument of type '(prev: AppState) => AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+../repl/src/processUserInput/processTextPrompt.ts(79,7): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+../repl/src/processUserInput/processTextPrompt.ts(92,5): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+../repl/src/queryHelpers.ts(71,30): error TS2769: No overload matches this call.
+../repl/src/queryHelpers.ts(120,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+../repl/src/queryHelpers.ts(124,11): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+../repl/src/queryHelpers.ts(143,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.
+../repl/src/queryHelpers.ts(147,17): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+../repl/src/queryHelpers.ts(153,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.
+../repl/src/queryHelpers.ts(157,17): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../repl/src/queryHelpers.ts(217,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+../repl/src/queryHelpers.ts(221,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../repl/src/queryHelpers.ts(338,43): error TS2352: Conversion of type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+../repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+../repl/src/screens/REPLView.tsx(1800,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+../repl/src/screens/REPLView.tsx(1802,34): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+../repl/src/screens/REPLView.tsx(1806,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+../repl/src/screens/REPLView.tsx(1826,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+../repl/src/screens/REPLView.tsx(2387,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+../repl/src/screens/REPLView.tsx(2616,1): error TS2769: No overload matches this call.
+../repl/src/screens/REPLView.tsx(2800,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+../repl/src/screens/REPLView.tsx(2947,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+../repl/src/screens/REPLView.tsx(3290,11): error TS2698: Spread types may only be created from object types.
+../repl/src/screens/REPLView.tsx(3995,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+../repl/src/screens/REPLView.tsx(5050,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+../repl/src/screens/repl/bgDetachSignal.ts(53,40): error TS2322: Type '"detach"' is not assignable to type '"kill" | "resize" | "exit" | "reply" | "heartbeat" | "hello" | "live" | "claim"'.
+../storage/src/claudemd.ts(863,12): error TS2304: Cannot find name 'parseMemoryFileContent'.
+../storage/src/sessionStorage.ts(94,3): error TS2440: Import declaration conflicts with local declaration of 'SerializedMessage'.
+../storage/src/sessionStorage.ts(740,15): error TS2322: Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 14 more ...; agentId: string | undefined; } | ... 17 more ... | { ...; }' is not assignable to type 'TranscriptMessage'.
+../storage/src/sessionStorage.ts(4663,15): error TS2304: Cannot find name 'MessageContent'.
+../tool-registry/src/services/toolHooks.ts(390,16): error TS2322: Type 'import("/home/user/thyrox/src/packages/permission/src/ruleBasedPermissions").PermissionDecision' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").PermissionDecision'.
+../tool-registry/src/tools/AgentTool/builtInAgents.ts(38,15): error TS2339: Property 'getCoordinatorAgents' does not exist on type 'typeof import("/home/user/thyrox/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir")'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(83,7): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(83,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(88,5): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(186,7): error TS2322: Type 'AnyMessage' is not assignable to type 'Message'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(187,7): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.
+../tool-registry/src/tools/BashTool/UI.tsx(41,25): error TS2322: Type 'unknown' is not assignable to type 'AppState'.

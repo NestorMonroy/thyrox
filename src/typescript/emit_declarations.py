@@ -6,10 +6,11 @@ El fenomeno, medido
 --------------------
 
 Un typecheck del paquete `cli` publica 2821 errores y **76 % de ellos no son
-suyos**: viven en veinte paquetes hermanos. La causa no es el protocolo
-`workspace:*` —que es lo que materializa los 37 enlaces de `node_modules`, y
-sin el no resolveria nada: los 42 manifiestos declaran `private: true`— sino
-lo que cada hermano expone en su `exports`. Los 42 resuelven a `./src/index.ts`
+suyos**: viven en veinte paquetes hermanos. La causa no es cómo se declara el
+hermano —la raíz declara el workspace y cada importador pide la versión exacta
+del hermano, que Bun enlaza al miembro local; sin eso no resolvería nada: los
+manifiestos declaran `private: true`— sino lo que cada hermano expone en su
+`exports`. Los 42 resuelven a `./src/index.ts`
 o `./index.ts`, o sea a **fuente**, asi que el compilador del consumidor la
 compila entera bajo SUS opciones.
 
@@ -43,6 +44,7 @@ fuente que no compila. Confundir las dos cosas es el sub-patron C.
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import json
 import os
 import re
@@ -51,6 +53,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from paths import reach  # noqa: E402
 
 #: El directorio de salida, relativo a la raiz del paquete. No se versiona: un
 #: clon fresco sin el cae al `default` del exports, que sigue siendo la fuente
@@ -97,7 +100,13 @@ COMPILER_OPTIONS = {
 #: sufijo `.declarations` para no colisionar con el `tsconfig.json` que 10 de
 #: los 42 si tienen — sobreescribirlo seria destruir la configuracion del
 #: paquete para construir su declaracion, que es justo lo contrario.
-PROJECT_FILE = "tsconfig.declarations.json"
+#: El proyecto de emision ES el build del paquete, y queda en el: con el,
+#: `tsc -p tsconfig.build.json` reconstruye `dist/` sin este script
+#: (TASK-THYROX-0256). Antes se escribia como `tsconfig.declarations.json` y
+#: se borraba al terminar, asi que ningun paquete tenia con que construirse.
+PROJECT_FILE = "tsconfig.build.json"
+#: Su gemelo de test: el mismo programa MAS los tests, sin emitir nada.
+TEST_PROJECT_FILE = "tsconfig.test.json"
 
 _ERROR_LINE = re.compile(r"error TS[0-9]+")
 #: Una linea de error de tsc que ademas NOMBRA su archivo. Es un subconjunto
@@ -116,6 +125,9 @@ _LOCATED_ERROR = re.compile(r"^(?P<file>[^(\n]+)\(\d+,\d+\): error TS[0-9]+", re
 #: `@types/bun` — los tres controles de `check_package` estaban verdes por ese
 #: segundo error, no por el error de tipo que el fixture escribe.
 UNMEASURABLE_CODES = ("TS18003", "TS2688")
+#: Los codigos con que tsc declara un `.d.ts` que NO escribio: TS5055 (lo
+#: sobrescribiria siendo entrada) y TS5033 (fallo la escritura).
+UNWRITTEN_CODES = ("TS5055", "TS5033")
 
 
 def unmeasurable_reason(output: str):
@@ -156,19 +168,19 @@ def classify_errors(output: str, package_dir) -> dict:
     hermano. Sin el, se sumaria al que no le toca.
     """
     package_dir = os.path.abspath(str(package_dir))
-    cubos = {"own": 0, "sibling": 0, "escaped": 0}
+    buckets = {"own": 0, "sibling": 0, "escaped": 0}
     for match in _LOCATED_ERROR.finditer(output):
-        crudo = match.group("file").strip()
-        if not os.path.isabs(crudo):
-            crudo = os.path.join(package_dir, crudo)
-        ruta = os.path.normpath(crudo)
-        if "node_modules" in ruta.split(os.sep):
-            cubos["sibling"] += 1
-        elif ruta.startswith(package_dir + os.sep):
-            cubos["own"] += 1
+        raw = match.group("file").strip()
+        if not os.path.isabs(raw):
+            raw = os.path.join(package_dir, raw)
+        path = os.path.normpath(raw)
+        if "node_modules" in path.split(os.sep):
+            buckets["sibling"] += 1
+        elif path.startswith(package_dir + os.sep):
+            buckets["own"] += 1
         else:
-            cubos["escaped"] += 1
-    return cubos
+            buckets["escaped"] += 1
+    return buckets
 
 
 @dataclass
@@ -203,6 +215,20 @@ class EmitResult:
         un campo aparte podria quedar desincronizado de ella.
         """
         return unmeasurable_reason(self.output)
+
+    @property
+    def unwritten(self):
+        """El codigo de tsc que dejo un `.d.ts` sin escribir, o `None`.
+
+        TS5055 y TS5033 no impiden emitir el resto: `dist/` conserva la
+        declaracion de la fuente anterior para ese archivo. `emitted` no lo
+        ve —mira si hay algun `.d.ts`, no si es el de esta fuente—, y sellar
+        la huella ahi declara fresca una declaracion congelada.
+        """
+        for code in UNWRITTEN_CODES:
+            if f"error {code}:" in self.output:
+                return code
+        return None
 
     def verdict(self) -> str:
         if self.unmeasurable:
@@ -269,12 +295,76 @@ TEST_EXCLUDE = (
 )
 
 
+#: Los globales que Bun inyecta al construir (`MACRO`). Los usan varios
+#: paquetes; su declaracion vive en la raiz y entra al proyecto de cada uno
+#: como archivo explicito. Un `.d.ts` no cuenta para el `rootDir`, asi que no
+#: provoca escape.
+SOURCE_CONDITION = "@thyrox/source"
+BUILD_GLOBALS = reach.thyrox_root() / "src" / "types" / "build-globals.d.ts"
+
+
+def self_paths(package_dir: Path) -> dict:
+    """`paths` que resuelve el NOMBRE propio del paquete a su fuente.
+
+    Un paquete que vuelve a si mismo por su nombre —directo, o a traves de la
+    declaracion de un hermano— pasa por su `exports` repuntado y llega a su
+    `dist/`: la misma clase queda con dos identidades (medido: los 48 errores
+    propios de tool-registry y el ultimo de repl). Los hermanos no se tocan:
+    siguen por `dist`, que es lo que ve un consumidor externo.
+    """
+    manifest = _read_manifest(package_dir)
+    name = manifest.get("name")
+    exports = manifest.get("exports")
+    if not isinstance(name, str):
+        return {}
+    if not isinstance(exports, dict):
+        exports = {".": exports or manifest.get("main")}
+    paths = {}
+    for subpath, entry in exports.items():
+        source = entry.get("default") if isinstance(entry, dict) else entry
+        if not isinstance(subpath, str) or not isinstance(source, str):
+            continue
+        if source.lstrip("./").startswith(f"{OUTPUT_DIR}/"):
+            continue
+        key = name if subpath == "." else f"{name}/{subpath.removeprefix('./')}"
+        paths[key] = [source if source.startswith(".") else f"./{source}"]
+    return paths
+
+
 def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
     project = package_dir / filename
-    project.write_text(json.dumps({"compilerOptions": options,
-                                   "include": include,
-                                   "exclude": list(TEST_EXCLUDE)},
-                                  indent=2) + "\n", encoding="utf8")
+    own = self_paths(package_dir)
+    if own and "paths" not in options:
+        options = {**options, "paths": own}
+    # `dist` se excluye porque es la salida: con `include: ["**/*"]` sus
+    # `.d.ts` serian entrada del siguiente build, tsc rehusaria sobrescribirlos
+    # (TS5055) y la declaracion quedaria congelada sin que el build fallara.
+    body = {"compilerOptions": options, "include": include,
+            "exclude": [*TEST_EXCLUDE, "node_modules", OUTPUT_DIR]}
+    if BUILD_GLOBALS.is_file():
+        # Relativa: el proyecto se versiona, y una ruta absoluta lo ataria a
+        # este clon.
+        body["files"] = [os.path.relpath(BUILD_GLOBALS, package_dir)]
+    project.write_text(json.dumps(body, indent=2) + "\n", encoding="utf8")
+    return project
+
+
+def write_test_project(package_dir: Path, include: list) -> Path:
+    """`tsconfig.test.json`: el programa del build MAS los tests, sin emitir.
+
+    Extiende el build para no divergir de el —mismas opciones, mismos
+    globales—, reabre el `exclude` de tests y apaga la emision. `rootDir`
+    sube a la raiz del paquete porque los tests viven fuera de `src/`.
+    """
+    project = package_dir / TEST_PROJECT_FILE
+    body = {
+        "extends": f"./{PROJECT_FILE}",
+        "compilerOptions": {"noEmit": True, "declaration": False,
+                            "emitDeclarationOnly": False, "rootDir": "."},
+        "include": sorted(set(include) | {"**/__tests__/**/*", "**/*.test.ts", "**/*.test.tsx"}),
+        "exclude": ["node_modules", OUTPUT_DIR],
+    }
+    project.write_text(json.dumps(body, indent=2) + "\n", encoding="utf8")
     return project
 
 
@@ -286,34 +376,40 @@ def export_targets(manifest: dict):
     `repoint_manifest` reescribe, y por eso se deriva aqui en vez de mirar solo
     `main`: hay paquetes cuyo unico destino declarado vive en `exports`.
     """
-    destinos = []
+    targets = []
 
-    def recolectar(valor):
-        if isinstance(valor, str):
-            destinos.append(valor)
-        elif isinstance(valor, dict):
+    def collect(value):
+        if isinstance(value, str):
+            targets.append(value)
+        elif isinstance(value, dict):
             # De un manifiesto YA repuntado se toma solo `default`: `types`
             # apunta a `dist/`, y meterlo aqui haria que el paquete compilara
             # sus propias declaraciones y le subiria el `rootDir`. Medido:
             # `storage` daba `src` antes del repunte y `.` despues, sin que su
             # codigo cambiara — la emision entera se habria movido.
-            if "default" in valor:
-                recolectar(valor["default"])
+            # La condicion de fuente manda: una vez que el build JS repunta
+            # `default` a `dist/*.js`, `default` deja de nombrar el fuente y el
+            # filtro de abajo lo descartaria, dejando el paquete sin entradas.
+            if SOURCE_CONDITION in value:
+                collect(value[SOURCE_CONDITION])
                 return
-            for clave, anidado in valor.items():
-                if clave == "types":
+            if "default" in value:
+                collect(value["default"])
+                return
+            for key, nested in value.items():
+                if key == "types":
                     continue
-                recolectar(anidado)
+                collect(nested)
 
-    for clave in ("main", "types"):
-        recolectar(manifest.get(clave))
-    recolectar(manifest.get("exports"))
+    for key in ("main", "types"):
+        collect(manifest.get(key))
+    collect(manifest.get("exports"))
     # `dist/` es SALIDA por definicion, nunca fuente. La clave `types` de raiz
     # de un manifiesto ya repuntado apunta ahi, y sin este filtro el paquete
     # se compilaria a si mismo: `repoint_manifest` dejaria de ser idempotente
     # porque el `rootDir` que deriva cambiaria en la segunda pasada.
-    salida = f"{OUTPUT_DIR}/"
-    return [d for d in destinos if not d.lstrip("./").startswith(salida)]
+    output = f"{OUTPUT_DIR}/"
+    return [d for d in targets if not d.lstrip("./").startswith(output)]
 
 
 def _project_shape(package_dir: Path):
@@ -333,11 +429,11 @@ def _project_shape(package_dir: Path):
     se midio».
     """
     manifest = _read_manifest(package_dir)
-    directorios = []
-    for destino in export_targets(manifest):
-        directorio = entry_directory(destino)
-        if directorio and directorio not in directorios:
-            directorios.append(directorio)
+    directories = []
+    for target in export_targets(manifest):
+        directory = entry_directory(target)
+        if directory and directory not in directories:
+            directories.append(directory)
     # Un comodin ANCLADO EN LA RAIZ del paquete —`"./*": "./*.ts"`— declara
     # como superficie todo el paquete, no un directorio. `entry_directory` le
     # da `""` porque su dirname es vacio, asi que la rama de colapso lo
@@ -349,26 +445,34 @@ def _project_shape(package_dir: Path):
     # 17 vecinos por import relativo, que resuelve `.ts` antes que `.d.ts`.
     if any("*" in d and not entry_directory(d) for d in export_targets(manifest)):
         return ".", ["**/*"]
-    if not directorios:
+    if not directories:
         return ".", ["*.ts"]
+    # Un archivo exportado desde la RAIZ tiene directorio `""` y la seleccion
+    # de arriba lo descarta: con directorios nombrados al lado, solo se emitia
+    # si algun archivo incluido lo importaba. Medido al construir los 42:
+    # 16 destinos de `config`, 39 de `agent` y 1 de `cli` sin `.d.ts`. Se
+    # declaran por nombre, y su presencia fuerza el `rootDir` a la raiz.
+    root_files = sorted({t.lstrip("./") for t in export_targets(manifest)
+                         if "*" not in t and not entry_directory(t)
+                         and t.endswith((".ts", ".tsx"))})
     # El `rootDir` es el ANCESTRO COMUN de los directorios declarados, no el
     # primero ni la raiz del paquete. `storage` declara `src` y `src/testing`:
     # elegir la raiz subiria el `rootDir` un nivel de mas y desplazaria TODA su
     # emision dentro de `dist/`. `headless-sdk` declara `src` y `testing`, que
     # no se anidan, y ahi el ancestro comun si es el paquete.
-    raiz = os.path.commonpath(directorios) if len(directorios) > 1 else directorios[0]
-    if raiz in ("", "."):
+    root = os.path.commonpath(directories) if len(directories) > 1 else directories[0]
+    if root in ("", ".") or root_files:
         # Un directorio ANIDADO en otro ya lo cubre el comodin del ancestro; se
         # descarta para no declarar el mismo archivo dos veces. `repl` declara
         # 58 destinos, 57 de ellos bajo `src`: sin este colapso el `include`
         # lista los 58 y describe el mismo programa con 58 veces mas ruido.
-        cubiertos = [d for d in directorios
+        covered = [d for d in directories
                      if not any(o != d and (d + os.sep).startswith(o + os.sep)
-                                for o in directorios)]
-        return ".", [f"{d}/**/*" for d in cubiertos]
+                                for o in directories)]
+        return ".", [f"{d}/**/*" for d in covered] + root_files
     # Un directorio que cae DENTRO de la raiz comun ya lo cubre su comodin; se
     # descarta para no declarar el mismo archivo dos veces.
-    return raiz, [f"{raiz}/**/*"]
+    return root, [f"{root}/**/*"]
 
 
 def escaping_files(package_dir: Path, root_dir=None, include=None) -> tuple:
@@ -460,10 +564,10 @@ def check_package(package_dir: Path) -> EmitResult:
         return EmitResult(package_dir.name, False, 0, f"{type(exc).__name__}: {exc}")
     finally:
         project.unlink(missing_ok=True)
-    cubos = classify_errors(output, package_dir)
+    buckets = classify_errors(output, package_dir)
     return EmitResult(package_dir.name, False, len(_ERROR_LINE.findall(output)), output,
-                      own_errors=cubos["own"], sibling_errors=cubos["sibling"],
-                      escaped_errors=cubos["escaped"], checked=True)
+                      own_errors=buckets["own"], sibling_errors=buckets["sibling"],
+                      escaped_errors=buckets["escaped"], checked=True)
 
 
 def emit_package(package_dir: Path) -> EmitResult:
@@ -497,23 +601,24 @@ def emit_package(package_dir: Path) -> EmitResult:
         # que componerla antes de preguntar si cae dentro. Sin eso el `dentro`
         # sale vacio siempre y el reintento no se toma nunca — el arreglo
         # existiria y no dispararia, que es peor que no tenerlo.
-        raiz = os.path.realpath(str(package_dir))
-        dentro = [f for f in escaping
-                  if os.path.normpath(os.path.join(raiz, f)).startswith(raiz + os.sep)]
-        if len(dentro) == len(escaping):
-            extra = sorted({f.split(os.sep)[0] for f in dentro
+        root = os.path.realpath(str(package_dir))
+        inside = [f for f in escaping
+                  if os.path.normpath(os.path.join(root, f)).startswith(root + os.sep)]
+        if len(inside) == len(escaping):
+            extra = sorted({f.split(os.sep)[0] for f in inside
                             if os.sep in f})
             root_dir = "."
             include = sorted(set(include) | {f"{d}/**/*" for d in extra if d != "."})
             escaping = escaping_files(package_dir, root_dir, include)
         if escaping:
-            detalle = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
-            return EmitResult(package_dir.name, False, 0, detalle, escaping)
+            detail = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
+            return EmitResult(package_dir.name, False, 0, detail, escaping)
 
     options = dict(COMPILER_OPTIONS)
     options["rootDir"] = root_dir
     options["outDir"] = OUTPUT_DIR
-    project = _write_project(package_dir, PROJECT_FILE, options, include)
+    _write_project(package_dir, PROJECT_FILE, options, include)
+    write_test_project(package_dir, include)
     try:
         completed = subprocess.run(
             ["bunx", "tsc", "-p", PROJECT_FILE],
@@ -521,15 +626,13 @@ def emit_package(package_dir: Path) -> EmitResult:
         output = (completed.stdout or "") + (completed.stderr or "")
     except (OSError, subprocess.TimeoutExpired) as exc:
         return EmitResult(package_dir.name, False, 0, f"{type(exc).__name__}: {exc}")
-    finally:
-        project.unlink(missing_ok=True)
 
     emitted = (package_dir / OUTPUT_DIR).is_dir() and any(
         (package_dir / OUTPUT_DIR).rglob("*.d.ts"))
-    cubos = classify_errors(output, package_dir)
+    buckets = classify_errors(output, package_dir)
     return EmitResult(package_dir.name, emitted, len(_ERROR_LINE.findall(output)), output,
-                      own_errors=cubos["own"], sibling_errors=cubos["sibling"],
-                      escaped_errors=cubos["escaped"])
+                      own_errors=buckets["own"], sibling_errors=buckets["sibling"],
+                      escaped_errors=buckets["escaped"])
 
 
 def declaration_for(source_entry: str, root_dir: str = "") -> str:
@@ -555,11 +658,11 @@ def declaration_for(source_entry: str, root_dir: str = "") -> str:
     Esa sustitucion es lo que hace que UNA entrada cubra los 240 imports por
     subpath que los consumidores de `storage` emiten.
     """
-    ruta = source_entry.lstrip("./")
-    base = ruta[: -len(".ts")] if ruta.endswith(".ts") else os.path.splitext(ruta)[0]
-    raiz = (root_dir or "").strip("./")
-    if raiz and raiz != "." and (base + "/").startswith(raiz + "/"):
-        base = base[len(raiz) + 1:]
+    path = source_entry.lstrip("./")
+    base = path[: -len(".ts")] if path.endswith(".ts") else os.path.splitext(path)[0]
+    root = (root_dir or "").strip("./")
+    if root and root != "." and (base + "/").startswith(root + "/"):
+        base = base[len(root) + 1:]
     return f"./{OUTPUT_DIR}/{base}.d.ts"
 
 
@@ -570,18 +673,18 @@ _declaration_for = declaration_for
 
 
 def _declaration_exists(package_dir: Path, candidate: str,
-                        source_entry: str = None) -> bool:
+                        source_entry: str | None = None) -> bool:
     """Si la declaracion que `candidate` nombra existe de verdad en el disco.
 
     Un `candidate` con comodin no se puede probar con `exists()`: se expande
     y basta con que la expansion encuentre algo. Cero coincidencias es
     ausencia, igual que un archivo concreto que no esta.
     """
-    relativa = candidate.lstrip("./")
-    if "*" not in relativa:
-        return (package_dir / relativa).exists()
+    relative = candidate.lstrip("./")
+    if "*" not in relative:
+        return (package_dir / relative).exists()
     if source_entry is None:
-        return any(package_dir.glob(relativa))
+        return any(package_dir.glob(relative))
     # UNA coincidencia no basta. Un comodin cubre N archivos, y el defecto que
     # se quiere ver es que ALGUNOS no tengan declaracion: con `any()` el
     # primero que exista tapa a los demas y el veredicto no discrimina — el
@@ -602,31 +705,31 @@ def _declaration_exists(package_dir: Path, candidate: str,
     # `dist/src/screens/agentFleet.d.ts` rehusaba el repunte de un paquete
     # cuyas declaraciones estaban todas emitidas. Un gate que bloquea trabajo
     # correcto cuesta mas que no tenerlo.
-    fuentes = sorted(f for f in package_dir.glob(patron.replace("*", "**/*", 1))
+    sources = sorted(f for f in package_dir.glob(patron.replace("*", "**/*", 1))
                      if f.is_file()
                      and OUTPUT_DIR not in f.relative_to(package_dir).parts)
-    if not fuentes:
-        return any(package_dir.glob(relativa))
-    for fuente in fuentes:
-        comodin = str(fuente.relative_to(package_dir))
+    if not sources:
+        return any(package_dir.glob(relative))
+    for source in sources:
+        wildcard = str(source.relative_to(package_dir))
         # Lo que la emision salta a proposito no se puede exigir aqui: sin
         # este descuento todo paquete con tests rehusaria el repunte para
         # siempre, que es el mecanismo bloqueandose a si mismo.
-        if any(fnmatch.fnmatch(comodin, patron_test) or
-               fnmatch.fnmatch("/" + comodin, patron_test.lstrip("*"))
+        if any(fnmatch.fnmatch(wildcard, patron_test) or
+               fnmatch.fnmatch("/" + wildcard, patron_test.lstrip("*"))
                for patron_test in TEST_EXCLUDE):
             continue
-        comodin = os.path.splitext(comodin)[0]
+        wildcard = os.path.splitext(wildcard)[0]
         # El comodin del destino ocupa el mismo sitio que el de la fuente: se
         # sustituye por lo que la fuente puso ahi, no por el nombre entero.
-        prefijo, _, sufijo = source_entry.lstrip("./").partition("*")
-        sufijo = os.path.splitext(sufijo)[0]
-        if not comodin.startswith(prefijo):
+        prefix, _, suffix = source_entry.lstrip("./").partition("*")
+        suffix = os.path.splitext(suffix)[0]
+        if not wildcard.startswith(prefix):
             continue
-        medio = comodin[len(prefijo):]
-        if sufijo and medio.endswith(sufijo):
-            medio = medio[: -len(sufijo)] if sufijo else medio
-        if not (package_dir / relativa.replace("*", medio, 1)).exists():
+        middle = wildcard[len(prefix):]
+        if suffix and middle.endswith(suffix):
+            middle = middle[: -len(suffix)] if suffix else middle
+        if not (package_dir / relative.replace("*", middle, 1)).exists():
             return False
     return True
 
@@ -649,14 +752,14 @@ def resolve_declaration(package_dir: Path, source_entry: str, root_dir: str):
     vacio.
     """
     package_dir = Path(package_dir)
-    candidatas = []
-    for raiz in (root_dir, "."):
-        candidata = declaration_for(source_entry, raiz)
-        if candidata not in candidatas:
-            candidatas.append(candidata)
-    for candidata in candidatas:
-        if _declaration_exists(package_dir, candidata, source_entry):
-            return candidata
+    candidates = []
+    for root in (root_dir, "."):
+        candidate = declaration_for(source_entry, root)
+        if candidate not in candidates:
+            candidates.append(candidate)
+    for candidate in candidates:
+        if _declaration_exists(package_dir, candidate, source_entry):
+            return candidate
     return None
 
 
@@ -692,27 +795,38 @@ def repoint_manifest(package_dir: Path) -> bool:
         exports = {".": exports or manifest.get("main") or "./index.ts"}
 
     repointed = {}
-    ausentes = []
+    absent = []
     for subpath, entry in exports.items():
-        source_entry = entry.get("default") if isinstance(entry, dict) else entry
+        source_entry = (entry.get(SOURCE_CONDITION) or entry.get("default")) if isinstance(entry, dict) else entry
         if not isinstance(source_entry, str):
             repointed[subpath] = entry
             continue
-        declaracion = resolve_declaration(package_dir, source_entry, root_dir)
-        if declaracion is None:
-            ausentes.append((subpath, declaration_for(source_entry, root_dir)))
+        declaration = resolve_declaration(package_dir, source_entry, root_dir)
+        if declaration is None:
+            absent.append((subpath, declaration_for(source_entry, root_dir)))
             continue
-        repointed[subpath] = {"types": declaracion, "default": source_entry}
+        # La condicion de fuente primero: el orden de claves es la
+        # precedencia. La raiz la activa con `customConditions` y compila la
+        # fuente (una sola identidad por clase); quien no la declara sigue a
+        # `types`. Lleva espacio de nombres porque `source` a secas tambien
+        # lo publican paquetes de `node_modules` hacia su `.ts`.
+        # Un `default` que ya apunta al `.js` de `dist/` lo puso el build JS
+        # (`buildJavascript.ts`); reescribirlo al fuente desharia ese repunte
+        # en cada emision de declaraciones.
+        built = entry.get("default") if isinstance(entry, dict) else None
+        keep_built = isinstance(built, str) and built.startswith(f"./{OUTPUT_DIR}/") and built.endswith(".js")
+        repointed[subpath] = {SOURCE_CONDITION: source_entry, "types": declaration,
+                              "default": built if keep_built else source_entry}
 
     # Un `types` que apunta al vacio no falla: tsc cae al `default`, que es
     # fuente, y el repunte queda INERTE sin emitir un byte. El unico sintoma
     # es un conteo del consumidor que no baja lo que deberia, a cuatro pasos
     # de la causa. Se rehusa entero y se nombra cada destino ausente.
-    if ausentes:
+    if absent:
         print(f"{package_dir.name}: repunte INERTE — "
-              f"{len(ausentes)} destino(s) de types no existen:", file=sys.stderr)
-        for subpath, candidata in ausentes:
-            print(f"  {subpath} -> {candidata}", file=sys.stderr)
+              f"{len(absent)} destino(s) de types no existen:", file=sys.stderr)
+        for subpath, candidate in absent:
+            print(f"  {subpath} -> {candidate}", file=sys.stderr)
         print("  Corre la emision antes del repunte: "
               "emit_declarations <paquete>", file=sys.stderr)
         return False
@@ -722,28 +836,126 @@ def repoint_manifest(package_dir: Path) -> bool:
     root = repointed.get(".")
     if isinstance(root, dict):
         manifest["types"] = root["types"]
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf8")
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+                             encoding="utf8")
     return True
 
 
+SOURCE_ROOT = "src"
+_PRUNED_DIRS = frozenset({"node_modules", OUTPUT_DIR, ".git", "__pycache__"})
+
+
+def source_packages(root: Path) -> list[Path]:
+    """Los paquetes del árbol de fuente: todo `package.json` bajo `src/` que
+    declara `exports`, en orden estable.
+
+    Es la única lista de paquetes, y la comparten el emisor y
+    `check_exports_types`. No sale de `workspaces`: cada paquete se construye
+    con su `tsconfig.build.json`, y esos proyectos existen para que
+    `workspaces` deje de ser necesario. Un paquete sin `exports` no tiene
+    frontera pública que emitir; el único medido así era el agregador
+    `src/packages/package.json`, retirado en la tarea #62.
+    """
+    found: list[Path] = []
+    for directory, subdirs, files in os.walk(root / SOURCE_ROOT):
+        subdirs[:] = [d for d in subdirs if d not in _PRUNED_DIRS]
+        if "package.json" not in files:
+            continue
+        manifest = json.loads((Path(directory) / "package.json").read_text(encoding="utf8"))
+        if "exports" in manifest:
+            found.append(Path(directory))
+    return sorted(found)
+
+
+
+
+#: La huella de lo que se compiló, dentro de la salida: viaja y se borra con ella.
+DIGEST_FILE = ".source-digest"
+
+#: Lo que no cambia la declaración: salida, dependencias, pruebas y su proyecto.
+_NOT_INPUT_DIRS = {OUTPUT_DIR, "node_modules", "__tests__"}
+_NOT_INPUT_NAMES = {"tsconfig.test.json", "tsconfig.tests.json"}
+_INPUT_SUFFIXES = {".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".json"}
+
+
+def _is_test(name: str) -> bool:
+    return any(name.endswith(s) for s in (".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"))
+
+
+def source_digest(package_dir: Path) -> str:
+    """sha256 de las entradas del build: ruta relativa y contenido, ordenados.
+
+    *Métrica:* los archivos fuente y de configuración del paquete, sin su
+    salida, sus dependencias ni sus pruebas.
+    *Ciega a:* un cambio en un paquete HERMANO que altere un tipo inferido de
+    esta declaración; la huella es por paquete, y ese caso lo ve el typecheck
+    del consumidor, no esta huella.
+    """
+    package_dir = Path(package_dir)
+    inputs = []
+    # os.walk poda en el sitio y no sigue enlaces: `node_modules` de un paquete
+    # (ink trae el suyo) y los enlaces de workspace no se recorren.
+    for current, dirs, files in os.walk(package_dir):
+        dirs[:] = [d for d in dirs if d not in _NOT_INPUT_DIRS]
+        for name in files:
+            path = Path(current) / name
+            if name in _NOT_INPUT_NAMES or _is_test(name) or path.suffix not in _INPUT_SUFFIXES:
+                continue
+            inputs.append(path)
+    digest = hashlib.sha256()
+    for path in sorted(inputs):
+        rel = path.relative_to(package_dir)
+        digest.update(str(rel).encode() + b"\0" + path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def write_digest(package_dir: Path) -> None:
+    """Sella ``dist/`` con la huella de la fuente que acaba de compilarse."""
+    out = Path(package_dir) / OUTPUT_DIR
+    out.mkdir(exist_ok=True)
+    (out / DIGEST_FILE).write_text(source_digest(package_dir) + "\n", encoding="utf-8")
+
+
+def is_stale(package_dir: Path) -> bool:
+    """¿El ``dist/`` no corresponde a la fuente? Sin huella, no se sabe: viejo."""
+    stamp = Path(package_dir) / OUTPUT_DIR / DIGEST_FILE
+    if not stamp.is_file():
+        return True
+    return stamp.read_text(encoding="utf-8").strip() != source_digest(package_dir)
+
 def _packages(root: Path):
-    for pattern in ("src/packages/*/package.json", "src/packages/@ant/*/package.json"):
-        for manifest in sorted(root.glob(pattern)):
-            yield manifest.parent
+    yield from source_packages(root)
 
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if "-h" in argv or "--help" in argv:
-        print(__doc__.strip())
-        print("\nUso:  emit_declarations [--repoint] [--all] [paquete ...]")
+        print((__doc__ or "").strip())
+        print("\nUso:  emit_declarations [--repoint] [--all|--stale] [--root R] [paquete ...]")
+        print("      emit_declarations --list-stale [--root R]")
+        print("  --stale emite solo los paquetes cuya huella no coincide con su fuente;")
+        print("  --list-stale los publica uno por linea, sin emitir, para el pool.")
         print("  Sin paquetes exige --all: emitir los 42 recompila el arbol entero")
         print("  y tarda, asi que no puede ser lo que pasa por teclear el nombre")
         print("  del guion sin argumentos.")
         return 0
-    desconocidas = [a for a in argv if a.startswith("-") and a not in ("--repoint", "--all")]
-    if desconocidas:
-        print(f"emit_declarations: bandera no reconocida: {' '.join(desconocidas)}",
+    root_override = None
+    if "--root" in argv:
+        at = argv.index("--root")
+        if at + 1 >= len(argv):
+            print("emit_declarations: --root necesita una ruta", file=sys.stderr)
+            return 2
+        root_override = Path(argv[at + 1])
+        del argv[at:at + 2]
+    if "--list-stale" in argv:
+        base = root_override or reach.thyrox_root()
+        for package_dir in _packages(base):
+            if is_stale(package_dir):
+                print(package_dir.name)
+        return 0
+    unknown = [a for a in argv if a.startswith("-") and a not in ("--repoint", "--all", "--stale")]
+    if unknown:
+        print(f"emit_declarations: bandera no reconocida: {' '.join(unknown)}",
               file=sys.stderr)
         print("  NO se emite nada: una bandera mal escrita no debe caer al caso",
               file=sys.stderr)
@@ -755,10 +967,10 @@ def main(argv=None):
               file=sys.stderr)
         return 2
 
-    root = Path(os.environ.get("THYROX_ROOT", Path(__file__).resolve().parents[2]))
+    root = root_override or reach.thyrox_root()
     repoint = "--repoint" in argv
     wanted = [a for a in argv if not a.startswith("-")]
-    if not wanted and "--all" not in argv:
+    if not wanted and "--all" not in argv and "--stale" not in argv:
         print("emit_declarations: nombra el paquete, o pide --all explicitamente.",
               file=sys.stderr)
         print("  Emitir los 42 recompila el arbol entero; que eso sea el caso por",
@@ -767,6 +979,11 @@ def main(argv=None):
               file=sys.stderr)
         return 2
     targets = [p for p in _packages(root) if not wanted or p.name in wanted]
+    if "--stale" in argv:
+        targets = [p for p in targets if is_stale(p)]
+        if not targets:
+            print("emit_declarations: ningun paquete viejo; nada que emitir")
+            return 0
     if not targets:
         print(f"emit_declarations: ningun paquete coincide con {wanted}", file=sys.stderr)
         return 2
@@ -776,6 +993,14 @@ def main(argv=None):
         result = emit_package(package_dir)
         total_errors += result.errors
         print(result.verdict())
+        if result.emitted and not result.unwritten:
+            # Sellar lo que se compilo: la declaracion corresponde a esta fuente
+            # aunque traiga errores, porque tsc emite conservando las firmas.
+            # Salvo si tsc dejo algun `.d.ts` sin escribir: ese queda viejo.
+            write_digest(package_dir)
+        elif result.unwritten:
+            print(f"  {result.package}: {result.unwritten} dejo declaraciones sin "
+                  f"escribir; la huella no se sella")
         if repoint and result.emitted:
             repoint_manifest(package_dir)
 

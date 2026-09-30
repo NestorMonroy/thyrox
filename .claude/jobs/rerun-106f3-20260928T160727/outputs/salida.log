@@ -1,0 +1,8 @@
+== 38: Ctrl-C aceptado
+   (src/commands/providers/secretPrompt.ts)
+exit=124
+== restaurado
+ 2 pass
+ 0 fail
+exit=0
+__BG_EXIT__=0

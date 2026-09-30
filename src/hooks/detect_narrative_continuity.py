@@ -1,4 +1,4 @@
-"""Noveno detector de ``pretooluse_dispatch.py`` — continuidad narrativa entre secciones.
+"""Noveno detector de ``tool_use_preflight.py`` — continuidad narrativa entre secciones.
 
 TASK-THYROX-0041. Generaliza ``weak_section_openers()``
 (``NestorMonroy/ai-course-notes@717e2df6``, ``tools/scripts/

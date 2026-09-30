@@ -272,8 +272,7 @@ const OUTBOUND_ONLY_ERROR =
  * para coordinación a nivel de turno (interrupt, set_max_thinking_tokens).
  * Si no respondemos, el servidor cuelga y mata el WS tras ~10-14s.
  *
- * Antes era un closure dentro de onWorkReceived de initBridgeCore; ahora
- * toma los colaboradores como parámetros para que ambos cores lo usen.
+ * Toma los colaboradores como parámetros para que ambos cores lo usen.
  */
 export function handleServerControlRequest(
   request: SDKControlRequest,

@@ -1,0 +1,461 @@
+run-task-pool: 2 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T031744
+  job-20260927T031744/job-001 pid 30677   bash tests/run.sh > .claude/workbench/sustitutos-20260927T025549/h178/suite.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h178/suite.out
+  job-20260927T031744/job-002 pid 30724   (bunx tsc --noEmit -p tsconfig.json > .claude/workbench/sustitutos-20260927T025549/h178/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h178/root-tsc.out); (python3 src/verify/check_package_typecheck.py --strict > .claude/workbench/sustitutos-20260927T025549/h178/pkg.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h178/pkg.out); (bash bin/lint > .claude/workbench/sustitutos-20260927T025549/h178/lint.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h178/lint.out)
+run-task-pool: lanzados 2 de 2; esperando en PRIMER PLANO (timeout 1800s)
+esperando: 1 de 3 asentados, 31s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=0.37s
+sonda job-20260927T031744_job-001: 379 bun stdin=channel(pipe:[271865]) sin escritor estado=R cpu=0.47s
+sonda job-20260927T031744_job-001: 429 bun stdin=channel(pipe:[271883]) sin escritor estado=R cpu=0.32s
+sonda job-20260927T031744_job-001: 32464 bun stdin=channel(pipe:[271021]) sin escritor estado=S cpu=1.96s
+sonda job-20260927T031744_job-001: 530 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 32621 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30729 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30730 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30734 node stdin=devnull(/dev/null) escritores=- estado=R cpu=27.70s
+esperando: 1 de 3 asentados, 62s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=0.67s
+sonda job-20260927T031744_job-001: 2336 bun stdin=channel(pipe:[285461]) sin escritor estado=S cpu=2.09s
+sonda job-20260927T031744_job-001: 3710 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 3838 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 3025 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 3060 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 3289 bun stdin=channel(pipe:[286901]) sin escritor estado=R cpu=1.81s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30729 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30730 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30734 node stdin=devnull(/dev/null) escritores=- estado=R cpu=50.76s
+esperando: 1 de 3 asentados, 92s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=0.98s
+sonda job-20260927T031744_job-001: 7789 bun stdin=channel(pipe:[306569]) sin escritor estado=R cpu=1.10s
+sonda job-20260927T031744_job-001: 7794 bun stdin=channel(pipe:[304580]) sin escritor estado=R cpu=1.49s
+sonda job-20260927T031744_job-001: 7826 bun stdin=channel(pipe:[305570]) sin escritor estado=R cpu=1.09s
+sonda job-20260927T031744_job-001: 7866 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30729 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30730 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30734 node stdin=devnull(/dev/null) escritores=- estado=R cpu=75.52s
+esperando: 1 de 3 asentados, 122s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=R cpu=1.34s
+sonda job-20260927T031744_job-001: 9272 bun stdin=channel(pipe:[319162]) sin escritor estado=R cpu=4.16s
+sonda job-20260927T031744_job-001: 9355 bun stdin=channel(pipe:[319177]) sin escritor estado=R cpu=3.72s
+sonda job-20260927T031744_job-001: 9612 bun stdin=channel(pipe:[316161]) sin escritor estado=S cpu=0.08s
+sonda job-20260927T031744_job-001: 9653 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=0.63s
+sonda job-20260927T031744_job-001: 9632 bun stdin=channel(pipe:[316172]) sin escritor estado=R cpu=0.85s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda job-20260927T031744_job-002: 8629 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8632 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.01s
+sonda job-20260927T031744_job-002: 8824 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8825 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.52s
+sonda job-20260927T031744_job-002: 9665 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 9666 node stdin=devnull(/dev/null) escritores=- estado=S cpu=1.09s
+sonda job-20260927T031744_job-002: 9736 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 9737 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.70s
+esperando: 1 de 3 asentados, 152s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=1.41s
+sonda job-20260927T031744_job-001: 9612 bun stdin=channel(pipe:[316161]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 11143 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.42s
+sonda job-20260927T031744_job-001: 10348 bun stdin=channel(pipe:[330343]) sin escritor estado=S cpu=0.11s
+sonda job-20260927T031744_job-001: 11134 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.43s
+sonda job-20260927T031744_job-001: 10468 bun stdin=channel(pipe:[329011]) sin escritor estado=S cpu=2.13s
+sonda job-20260927T031744_job-001: 11118 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=0.97s
+sonda job-20260927T031744_job-001: 10990 bun stdin=channel(pipe:[328345]) sin escritor estado=R cpu=1.21s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.08s
+sonda job-20260927T031744_job-002: 8629 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8632 node stdin=devnull(/dev/null) escritores=- estado=R cpu=15.38s
+sonda job-20260927T031744_job-002: 10101 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 10102 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.19s
+sonda job-20260927T031744_job-002: 10682 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 10683 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.99s
+sonda job-20260927T031744_job-002: 10983 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 10984 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.86s
+esperando: 1 de 3 asentados, 183s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=1.56s
+sonda job-20260927T031744_job-001: 9612 bun stdin=channel(pipe:[316161]) sin escritor estado=S cpu=0.11s
+sonda job-20260927T031744_job-001: 12462 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.06s
+sonda job-20260927T031744_job-001: 12734 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.01s
+sonda job-20260927T031744_job-001: 12788 bun stdin=channel(pipe:[355478]) sin escritor estado=R cpu=0.68s
+sonda job-20260927T031744_job-001: 12810 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.08s
+sonda job-20260927T031744_job-002: 12097 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 12099 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.61s
+sonda job-20260927T031744_job-002: 12208 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 12212 node stdin=devnull(/dev/null) escritores=- estado=S cpu=4.00s
+sonda job-20260927T031744_job-002: 12779 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 12780 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.71s
+sonda job-20260927T031744_job-002: 12940 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 12942 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.18s
+esperando: 1 de 3 asentados, 213s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=1.76s
+sonda job-20260927T031744_job-001: 9612 bun stdin=channel(pipe:[316161]) sin escritor estado=S cpu=0.12s
+sonda job-20260927T031744_job-001: 14362 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=2.18s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.08s
+sonda job-20260927T031744_job-001: 14455 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 14594 bun stdin=channel(pipe:[365785]) sin escritor estado=S cpu=0.18s
+sonda job-20260927T031744_job-001: 14768 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 14797 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.09s
+sonda job-20260927T031744_job-002: 13092 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 13093 node stdin=devnull(/dev/null) escritores=- estado=R cpu=9.29s
+sonda job-20260927T031744_job-002: 14081 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 14082 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.62s
+sonda job-20260927T031744_job-002: 14382 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 14383 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.33s
+sonda job-20260927T031744_job-002: 14601 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 14614 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.34s
+esperando: 1 de 3 asentados, 244s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=2.19s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.09s
+sonda job-20260927T031744_job-001: 16891 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 16968 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 17114 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 17137 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.11s
+sonda job-20260927T031744_job-002: 14601 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 14614 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-002: 15525 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 15526 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.96s
+sonda job-20260927T031744_job-002: 15590 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 15591 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.65s
+sonda job-20260927T031744_job-002: 16057 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 16058 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.99s
+esperando: 1 de 3 asentados, 275s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=2.43s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.09s
+sonda job-20260927T031744_job-001: 20238 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.08s
+sonda job-20260927T031744_job-001: 18266 bun stdin=channel(pipe:[380543]) sin escritor estado=S cpu=0.07s
+sonda job-20260927T031744_job-001: 20170 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=1.71s
+sonda job-20260927T031744_job-001: 20237 bun stdin=channel(pipe:[382228]) sin escritor estado=R cpu=0.69s
+sonda job-20260927T031744_job-001: 20327 bun stdin=channel(pipe:[384316]) sin escritor estado=R cpu=0.47s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.11s
+sonda job-20260927T031744_job-002: 15590 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 15591 node stdin=devnull(/dev/null) escritores=- estado=R cpu=15.25s
+sonda job-20260927T031744_job-002: 17611 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 17613 ? stdin=unreadable(-) escritores=- estado=Z cpu=8.65s
+sonda job-20260927T031744_job-002: 18617 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 18618 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.02s
+sonda job-20260927T031744_job-002: 20133 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 20134 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.64s
+esperando: 1 de 3 asentados, 307s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=2.55s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 23454 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.20s
+sonda job-20260927T031744_job-001: 23043 bun stdin=channel(pipe:[392086]) sin escritor estado=R cpu=1.73s
+sonda job-20260927T031744_job-001: 23256 bun stdin=channel(pipe:[392149]) sin escritor estado=R cpu=1.59s
+sonda job-20260927T031744_job-001: 23680 bun stdin=channel(pipe:[395440]) sin escritor estado=R cpu=0.91s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.12s
+sonda job-20260927T031744_job-002: 15590 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 15591 node stdin=devnull(/dev/null) escritores=- estado=R cpu=20.48s
+sonda job-20260927T031744_job-002: 22134 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 22139 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.66s
+sonda job-20260927T031744_job-002: 22911 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 22912 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.76s
+sonda job-20260927T031744_job-002: 23655 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 23657 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.97s
+esperando: 1 de 3 asentados, 337s; vivos: job-20260927T031744_job-001 job-20260927T031744_job-002
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=2.65s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 25788 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.67s
+sonda job-20260927T031744_job-001: 25704 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 25870 ? stdin=channel(pipe:[408837]) sin escritor estado=R cpu=1.70s
+sonda job-20260927T031744_job-001: 25896 bun stdin=channel(pipe:[409601]) sin escritor estado=R cpu=1.46s
+sonda job-20260927T031744_job-002: 30724 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30727 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 30728 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8099 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 8100 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.13s
+sonda job-20260927T031744_job-002: 22134 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-002: 22139 node stdin=devnull(/dev/null) escritores=- estado=R cpu=12.64s
+asentado: job-20260927T031744_job-002 -> OK (2 de 3)
+esperando: 2 de 3 asentados, 368s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=3.14s
+sonda job-20260927T031744_job-001: 12638 bun stdin=channel(pipe:[353590]) sin escritor estado=S cpu=0.12s
+sonda job-20260927T031744_job-001: 28565 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.10s
+sonda job-20260927T031744_job-001: 28621 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 28671 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 28694 bun stdin=channel(pipe:[420505]) sin escritor estado=R cpu=0.51s
+esperando: 2 de 3 asentados, 398s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=3.67s
+sonda job-20260927T031744_job-001: 31146 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 31351 bun stdin=channel(pipe:[429933]) sin escritor estado=R cpu=1.13s
+sonda job-20260927T031744_job-001: 31358 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 31651 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 31656 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 31457 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 429s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=4.19s
+sonda job-20260927T031744_job-001: 2033 bun stdin=channel(pipe:[446212]) sin escritor estado=R cpu=1.05s
+sonda job-20260927T031744_job-001: 2068 bun stdin=channel(pipe:[446230]) sin escritor estado=R cpu=1.57s
+sonda job-20260927T031744_job-001: 2224 bun stdin=channel(pipe:[446307]) sin escritor estado=R cpu=1.03s
+sonda job-20260927T031744_job-001: 2253 bun stdin=channel(pipe:[446311]) sin escritor estado=R cpu=1.06s
+esperando: 2 de 3 asentados, 459s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=4.57s
+sonda job-20260927T031744_job-001: 5271 bun stdin=channel(pipe:[462409]) sin escritor estado=R cpu=1.62s
+sonda job-20260927T031744_job-001: 5310 bun stdin=channel(pipe:[463175]) sin escritor estado=R cpu=1.27s
+sonda job-20260927T031744_job-001: 5514 bun stdin=channel(pipe:[465043]) sin escritor estado=S cpu=0.26s
+sonda job-20260927T031744_job-001: 5613 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 490s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=4.96s
+sonda job-20260927T031744_job-001: 8156 bun stdin=channel(pipe:[477596]) sin escritor estado=R cpu=1.61s
+sonda job-20260927T031744_job-001: 8256 ? stdin=unreadable(-) escritores=- estado=Z cpu=0.60s
+sonda job-20260927T031744_job-001: 8289 bun stdin=channel(pipe:[470895]) sin escritor estado=R cpu=0.47s
+sonda job-20260927T031744_job-001: 8292 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 521s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=5.15s
+sonda job-20260927T031744_job-001: 9062 bun stdin=channel(pipe:[486403]) sin escritor estado=R cpu=9.01s
+sonda job-20260927T031744_job-001: 9120 bun stdin=channel(pipe:[486413]) sin escritor estado=R cpu=8.05s
+sonda job-20260927T031744_job-001: 9636 bun stdin=channel(pipe:[484785]) sin escritor estado=R cpu=4.69s
+sonda job-20260927T031744_job-001: 9687 bun stdin=channel(pipe:[484787]) sin escritor estado=R cpu=4.21s
+esperando: 2 de 3 asentados, 552s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30744 bash stdin=channel(pipe:[269712]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30761 parallel stdin=channel(pipe:[268876]) sin escritor estado=S cpu=5.17s
+sonda job-20260927T031744_job-001: 9636 bun stdin=channel(pipe:[484785]) sin escritor estado=R cpu=15.20s
+sonda job-20260927T031744_job-001: 10307 bun stdin=channel(pipe:[484942]) sin escritor estado=R cpu=12.30s
+sonda job-20260927T031744_job-001: 10668 bun stdin=channel(pipe:[485088]) sin escritor estado=R cpu=8.64s
+sonda job-20260927T031744_job-001: 11369 bun stdin=channel(pipe:[495778]) sin escritor estado=R cpu=1.17s
+esperando: 2 de 3 asentados, 582s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.01s
+sonda job-20260927T031744_job-001: 14672 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=0.09s
+esperando: 2 de 3 asentados, 612s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.03s
+sonda job-20260927T031744_job-001: 15492 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=21.43s
+esperando: 2 de 3 asentados, 642s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.03s
+sonda job-20260927T031744_job-001: 16668 python stdin=channel(pipe:[505115]) sin escritor estado=D cpu=1.54s
+esperando: 2 de 3 asentados, 672s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.03s
+sonda job-20260927T031744_job-001: 16668 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 704s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.05s
+sonda job-20260927T031744_job-001: 19058 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=2.48s
+esperando: 2 de 3 asentados, 734s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.07s
+sonda job-20260927T031744_job-001: 21235 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 765s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.08s
+sonda job-20260927T031744_job-001: 22885 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.13s
+sonda job-20260927T031744_job-001: 23214 sleep stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 23215 sleep stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 23216 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 23217 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 795s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.08s
+sonda job-20260927T031744_job-001: 27028 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.06s
+sonda job-20260927T031744_job-001: 27243 ? stdin=unreadable(-) escritores=- estado=Z cpu=0.00s
+sonda job-20260927T031744_job-001: 27253 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 27261 ? stdin=unreadable(-) escritores=- estado=Z cpu=0.00s
+sonda job-20260927T031744_job-001: 27265 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 825s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.08s
+sonda job-20260927T031744_job-001: 28892 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.05s
+sonda job-20260927T031744_job-001: 28948 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=0.08s
+esperando: 2 de 3 asentados, 855s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 29492 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.07s
+sonda job-20260927T031744_job-001: 29906 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 29907 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 2 de 3 asentados, 885s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 31123 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.05s
+sonda job-20260927T031744_job-001: 31128 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=1.94s
+esperando: 2 de 3 asentados, 915s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 31566 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.03s
+sonda job-20260927T031744_job-001: 31567 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=19.29s
+esperando: 2 de 3 asentados, 945s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 31566 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.03s
+sonda job-20260927T031744_job-001: 32514 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=15.40s
+esperando: 2 de 3 asentados, 975s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.10s
+sonda job-20260927T031744_job-001: 31566 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.03s
+sonda job-20260927T031744_job-001: 1199 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=10.67s
+esperando: 2 de 3 asentados, 1005s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.11s
+sonda job-20260927T031744_job-001: 2424 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=3.46s
+esperando: 2 de 3 asentados, 1035s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.11s
+sonda job-20260927T031744_job-001: 9648 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=1.67s
+sonda job-20260927T031744_job-001: 9786 python stdin=channel(pipe:[505115]) sin escritor estado=R cpu=0.62s
+esperando: 2 de 3 asentados, 1065s; vivos: job-20260927T031744_job-001
+sonda job-20260927T031744_job-001: 30677 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30682 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30683 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T031744_job-001: 30684 bash stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.12s
+sonda job-20260927T031744_job-001: 11017 python stdin=channel(pipe:[505115]) sin escritor estado=S cpu=0.14s
+sonda job-20260927T031744_job-001: 11474 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 11475 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T031744_job-001: 11525 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+Terminated

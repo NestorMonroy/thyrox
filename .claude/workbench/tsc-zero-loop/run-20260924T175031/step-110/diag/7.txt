@@ -1,0 +1,23 @@
+src/packages/@ant/ink/src/vim/transitions.ts(251,20): error TS2783: 'type' is specified more than once, so this usage will be overwritten.
+  --- código src/packages/@ant/ink/src/vim/transitions.ts:241-261 ---
+    241    if (result) return result
+    242    return {}
+    243  }
+    244  
+    245  function fromOperator(
+    246    state: Extract<CommandState, { type: 'operator' }>,
+    247    input: string,
+    248    ctx: TransitionContext,
+    249  ): TransitionResult {
+    250    if (/\d/.test(input)) {
+    251>     const next = { type: 'operatorCount', ...state, digits: input }
+    252      return { next }
+    253    }
+    254  
+    255    if (input === state.op[0]) {
+    256      return { execute: () => executeLineOp(state.op, state.count, ctx) }
+    257    }
+    258  
+    259    return handleOperatorInput(state.op, state.count, input, ctx) ?? {}
+    260  }
+    261  

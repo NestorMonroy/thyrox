@@ -1,0 +1,52 @@
+Patrón: callback-param-untyped-via-any-args-wrapper
+Señal del verificador: TS7006: Parameter '\w+' implicitly has an 'any' type
+Arreglo genérico: cuando la función invocada está tipada con `(...args: any[])` (un wrapper de compatibilidad, p. ej. `setupSdkMcpClients` en mcp-runtime/src/client.ts), TypeScript no puede inferir los parámetros de un callback pasado como argumento. Se anota el callback explícitamente con el tipo real que su implementación concreta espera (localizable en la declaración original sin el wrapper, p. ej. `clientRuntime.ts`, o en el consumidor que sí lo tipa, p. ej. `structuredIO.sendMcpMessage`), importando el tipo si hace falta.
+Ya aplicado en: src/packages/cli/src/headless/sdk/session/run-streaming.ts
+Archivos donde la señal sigue viva: src/packages/repl/src/commands/color/color.ts
+
+src/packages/repl/src/commands/color/color.ts(53,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:43-63 ---
+     43  
+     44    // Handle reset to default (gray)
+     45    if (RESET_ALIASES.includes(colorArg as (typeof RESET_ALIASES)[number])) {
+     46      const sessionId = getSessionId() as UUID
+     47      const fullPath = getTranscriptPath()
+     48  
+     49      // Use "default" sentinel (not empty string) so truthiness guards
+     50      // in sessionStorage.ts persist the reset across session restarts
+     51      await saveAgentColor(sessionId, 'default', fullPath)
+     52  
+     53>     context.setAppState(prev => ({
+     54        ...prev,
+     55        standaloneAgentContext: {
+     56          ...prev.standaloneAgentContext,
+     57          name: prev.standaloneAgentContext?.name ?? '',
+     58          color: undefined,
+     59        },
+     60      }))
+     61  
+     62      onDone('Session color reset to default', { display: 'system' })
+     63      return null
+src/packages/repl/src/commands/color/color.ts(82,23): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:72-92 ---
+     72      return null
+     73    }
+     74  
+     75    const sessionId = getSessionId() as UUID
+     76    const fullPath = getTranscriptPath()
+     77  
+     78    // Save to transcript for persistence across sessions
+     79    await saveAgentColor(sessionId, colorArg, fullPath)
+     80  
+     81    // Update AppState for immediate effect
+     82>   context.setAppState(prev => ({
+     83      ...prev,
+     84      standaloneAgentContext: {
+     85        ...prev.standaloneAgentContext,
+     86        name: prev.standaloneAgentContext?.name ?? '',
+     87        color: colorArg as AgentColorName,
+     88      },
+     89    }))
+     90  
+     91    onDone(`Session color set to: ${colorArg}`, { display: 'system' })
+     92    return null

@@ -1,3 +1,4 @@
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 // Adaptación de @claude-code-how-works/app-host: src/main/cli/runtimeActivation.ts.
 // Capa 1 — porte PARCIAL declarado.
 //
@@ -22,13 +23,6 @@
 // `isEnvTruthy` se reimplementa localmente (verbatim de
 // `ccnmt: packages/config/env/utils.ts:43-48`).
 
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
 export type ProactiveDeps = {
   isProactiveActive?: () => boolean
   activateProactive?: (source: string) => void
@@ -40,7 +34,7 @@ export function maybeActivateProactive(options: unknown, deps: ProactiveDeps = {
   const featureGateActive = false
   if (
     featureGateActive &&
-    ((options as { proactive?: boolean } | null)?.proactive || isEnvTruthy(process.env.CLAUDE_CODE_PROACTIVE))
+    ((options as { proactive?: boolean } | null)?.proactive || isEnvTruthy(process.env.THYROX_CODE_PROACTIVE))
   ) {
     const isProactiveActive = deps.isProactiveActive ?? (() => false)
     const activateProactive = deps.activateProactive ?? (() => {})
@@ -63,7 +57,7 @@ export function maybeActivateBrief(options: unknown, deps: BriefDeps = {}): void
   if (!featureGateActive) return
 
   const briefFlag = (options as { brief?: boolean } | null)?.brief
-  const briefEnv = isEnvTruthy(process.env.CLAUDE_CODE_BRIEF)
+  const briefEnv = isEnvTruthy(process.env.THYROX_CODE_BRIEF)
   if (!briefFlag && !briefEnv) return
 
   const isBriefEntitled = deps.isBriefEntitled ?? (() => false)

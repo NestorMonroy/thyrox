@@ -6,7 +6,7 @@ import type {
 import { randomUUID } from 'crypto'
 import type { AssistantMessage } from '@thyrox/agent/messageShapes.js'
 import type {
-  HookInput,
+  HookInput as SDKHookInput,
   HookJSONOutput,
   PermissionUpdate as SDKPermissionUpdate,
   SDKMessage,
@@ -207,7 +207,6 @@ export class StructuredIO {
     this.prependedLines.push(
       jsonStringify({
         type: 'user',
-        content,
         uuid: '',
         session_id: '',
         message: { role: 'user', content },
@@ -353,7 +352,7 @@ export class StructuredIO {
       if (message.type === 'update_environment_variables') {
         // Apply environment variable updates directly to process.env.
         // Used by bridge session runner for auth token refresh
-        // (CLAUDE_CODE_SESSION_ACCESS_TOKEN) which must be readable
+        // (THYROX_CODE_SESSION_ACCESS_TOKEN) which must be readable
         // by the REPL process itself, not just child Bash commands.
         const variables = message.variables as Record<string, string>
         const keys = Object.keys(variables)
@@ -667,17 +666,17 @@ export class StructuredIO {
     return {
       type: 'callback',
       timeout,
-      callback: async (
-        input: HookInput,
-        toolUseID: string | null,
-        abort: AbortSignal | undefined,
-      ): Promise<HookJSONOutput> => {
+      // Parámetros tipados por `HookCallback`: anotarlos con el `HookInput` del
+      // SDK exigía más de lo que el contrato entrega, y la función no cabía.
+      callback: async (input, toolUseID, abort): Promise<HookJSONOutput> => {
         try {
           const result = await this.sendRequest<HookJSONOutput>(
             {
               subtype: 'hook_callback',
               callback_id: callbackId,
-              input,
+              // El agente tipa la entrada con un shim suelto
+              // (`agent/types/hooks.ts`); lo que construye es la del evento.
+              input: input as SDKHookInput,
               tool_use_id: toolUseID || undefined,
             },
             hookJSONOutputSchema(),

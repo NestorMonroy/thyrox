@@ -13,11 +13,26 @@
 
 import { feature } from 'bun:bundle'
 import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
-import type {
-  PendingAssistantChat,
-  PendingConnect,
-  PendingSSH,
-} from './mode-dispatch.js'
+// `PendingConnect`/`PendingAssistantChat`/`PendingSSH` no viven en
+// `./mode-dispatch.js`: la adaptación local de ese módulo es una tabla de
+// siete comandos autocontenidos y no porta el `ModeDispatchContext` de la
+// fuente. Se declaran aquí, con la misma forma que la fuente les da.
+type PendingConnect = {
+  url: string | undefined
+  authToken: string | undefined
+  dangerouslySkipPermissions: boolean
+}
+
+type PendingAssistantChat = { sessionId?: string; discover: boolean }
+
+type PendingSSH = {
+  host: string | undefined
+  cwd: string | undefined
+  permissionMode: string | undefined
+  dangerouslySkipPermissions: boolean
+  local: boolean
+  extraCliArgs: string[]
+}
 
 export type PendingHandles = {
   pendingConnect: PendingConnect | undefined
@@ -125,7 +140,7 @@ export async function preprocessCliArgv(pendings: PendingHandles): Promise<void>
     // positive signal — cheaper than importing and guessing with heuristics.
     if (
       process.platform === 'darwin' &&
-      process.env.__CFBundleIdentifier === 'com.anthropic.claude-code-how-works-how-works-url-handler'
+      process.env.__CFBundleIdentifier === 'com.anthropic.claude-code-url-handler'
     ) {
       const { enableConfigs } = await import('@thyrox/config')
       enableConfigs()
@@ -140,7 +155,7 @@ export async function preprocessCliArgv(pendings: PendingHandles): Promise<void>
   // `claude assistant [sessionId]` — stash and strip so the main
   // command handles it, giving the full interactive TUI. Position-0 only
   // (matching the ssh pattern below) — indexOf would false-positive on
-  // `claude -p "explain assistant"`. Root-flag-before-subcommand
+  // `thyrox -p "explain assistant"`. Root-flag-before-subcommand
   // (e.g. `--debug assistant`) falls through to the stub, which
   // prints usage.
   if (feature('KAIROS') && pendingAssistantChat) {

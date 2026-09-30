@@ -27,7 +27,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { consumerRulesDir } from '../rules/paths.ts'
 import { consumerSkillsDir } from '../skills/paths.ts'
-import { stateDir } from '../workbench/paths.ts'
+import { stateDir } from '@thyrox/workbench/paths.ts'
 // Import RELATIVO y no por nombre de paquete: `src/conformance/` vive fuera
 // de `src/packages/`, así que el alcance `@thyrox/*` no resuelve desde aquí.
 // Es el mismo puente que `cli/src/argv.ts` documenta, y por la misma razón:

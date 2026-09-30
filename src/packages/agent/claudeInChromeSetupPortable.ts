@@ -1,7 +1,7 @@
 import { readdir } from 'fs/promises'
-import { homedir } from 'os'
 import { join } from 'path'
 import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Production extension ID
 const PROD_EXTENSION_ID = 'fcoeoabgfenejglbffodgkkbkcdhcgfn'
@@ -32,108 +32,12 @@ type BrowserPath = {
 
 type Logger = (message: string) => void
 
-// Browser detection order - must match BROWSER_DETECTION_ORDER from common.ts
-const BROWSER_DETECTION_ORDER: ChromiumBrowser[] = [
-  'chrome',
-  'brave',
-  'arc',
-  'edge',
-  'chromium',
-  'vivaldi',
-  'opera',
-]
 
-type BrowserDataConfig = {
-  macos: string[]
-  linux: string[]
-  windows: { path: string[]; useRoaming?: boolean }
-}
 
-// Must match CHROMIUM_BROWSERS dataPath from common.ts
-const CHROMIUM_BROWSERS: Record<ChromiumBrowser, BrowserDataConfig> = {
-  chrome: {
-    macos: ['Library', 'Application Support', 'Google', 'Chrome'],
-    linux: ['.config', 'google-chrome'],
-    windows: { path: ['Google', 'Chrome', 'User Data'] },
-  },
-  brave: {
-    macos: ['Library', 'Application Support', 'BraveSoftware', 'Brave-Browser'],
-    linux: ['.config', 'BraveSoftware', 'Brave-Browser'],
-    windows: { path: ['BraveSoftware', 'Brave-Browser', 'User Data'] },
-  },
-  arc: {
-    macos: ['Library', 'Application Support', 'Arc', 'User Data'],
-    linux: [],
-    windows: { path: ['Arc', 'User Data'] },
-  },
-  chromium: {
-    macos: ['Library', 'Application Support', 'Chromium'],
-    linux: ['.config', 'chromium'],
-    windows: { path: ['Chromium', 'User Data'] },
-  },
-  edge: {
-    macos: ['Library', 'Application Support', 'Microsoft Edge'],
-    linux: ['.config', 'microsoft-edge'],
-    windows: { path: ['Microsoft', 'Edge', 'User Data'] },
-  },
-  vivaldi: {
-    macos: ['Library', 'Application Support', 'Vivaldi'],
-    linux: ['.config', 'vivaldi'],
-    windows: { path: ['Vivaldi', 'User Data'] },
-  },
-  opera: {
-    macos: ['Library', 'Application Support', 'com.operasoftware.Opera'],
-    linux: ['.config', 'opera'],
-    windows: { path: ['Opera Software', 'Opera Stable'], useRoaming: true },
-  },
-}
+
 
 /**
- * Get all browser data paths to check for extension installation.
- * Portable version that uses process.platform directly.
- */
-function getAllBrowserDataPathsPortable(): BrowserPath[] {
-  const home = homedir()
-  const paths: BrowserPath[] = []
-
-  for (const browserId of BROWSER_DETECTION_ORDER) {
-    const config = CHROMIUM_BROWSERS[browserId]
-    let dataPath: string[] | undefined
-
-    switch (process.platform) {
-      case 'darwin':
-        dataPath = config.macos
-        break
-      case 'linux':
-        dataPath = config.linux
-        break
-      case 'win32': {
-        if (config.windows.path.length > 0) {
-          const appDataBase = config.windows.useRoaming
-            ? join(home, 'AppData', 'Roaming')
-            : join(home, 'AppData', 'Local')
-          paths.push({
-            browser: browserId,
-            path: join(appDataBase, ...config.windows.path),
-          })
-        }
-        continue
-      }
-    }
-
-    if (dataPath && dataPath.length > 0) {
-      paths.push({
-        browser: browserId,
-        path: join(home, ...dataPath),
-      })
-    }
-  }
-
-  return paths
-}
-
-/**
- * Detects if the Claude in Chrome extension is installed by checking the Extensions
+ * Detects if the thyrox in Chrome extension is installed by checking the Extensions
  * directory across all supported Chromium-based browsers and their profiles.
  *
  * This is a portable version that can be used by both TUI and VS Code extension.
@@ -150,7 +54,7 @@ async function detectExtensionInstallationPortable(
   browser: ChromiumBrowser | null
 }> {
   if (browserPaths.length === 0) {
-    log?.(`[Claude in Chrome] No browser paths to check`)
+    log?.(`[${PRODUCT_NAME} in Chrome] No browser paths to check`)
     return { isInstalled: false, browser: null }
   }
 
@@ -179,7 +83,7 @@ async function detectExtensionInstallationPortable(
 
     if (profileDirs.length > 0) {
       log?.(
-        `[Claude in Chrome] Found ${browser} profiles: ${profileDirs.join(', ')}`,
+        `[${PRODUCT_NAME} in Chrome] Found ${browser} profiles: ${profileDirs.join(', ')}`,
       )
     }
 
@@ -196,7 +100,7 @@ async function detectExtensionInstallationPortable(
         try {
           await readdir(extensionPath)
           log?.(
-            `[Claude in Chrome] Extension ${extensionId} found in ${browser} ${profile}`,
+            `[${PRODUCT_NAME} in Chrome] Extension ${extensionId} found in ${browser} ${profile}`,
           )
           return { isInstalled: true, browser }
         } catch {
@@ -206,7 +110,7 @@ async function detectExtensionInstallationPortable(
     }
   }
 
-  log?.(`[Claude in Chrome] Extension not found in any browser`)
+  log?.(`[${PRODUCT_NAME} in Chrome] Extension not found in any browser`)
   return { isInstalled: false, browser: null }
 }
 

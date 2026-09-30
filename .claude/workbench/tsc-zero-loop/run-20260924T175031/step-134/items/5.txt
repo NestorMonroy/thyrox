@@ -1,0 +1,7 @@
+Tipo: FsOperations
+Copias:
+  src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts
+  src/packages/storage/src/fsOperations.ts
+
+src/packages/app-host/src/runtime/installPluginBindings.ts(479): error TS2551: Property 'writeFileSync' does not exist on type 'FsOperations'. Did you mean 'readFileSync'?
+src/packages/app-host/src/runtime/installPluginBindings.ts(504): error TS2345: Argument of type 'string' is not assignable to parameter of type 'FsOperations'.

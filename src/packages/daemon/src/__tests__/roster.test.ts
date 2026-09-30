@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/roster.test.ts`.
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import {
   existsSync,
@@ -11,21 +10,21 @@ import {
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// Aísla cada test de roster bajo un tmpdir por-corrida, NUNCA toca el
-// ~/.claude/daemon real del usuario. Se hace vía CLAUDE_CONFIG_HOME, la
-// misma variable de entorno que respeta bgWorkerRegistry.getJobsRoot().
+// Isolate every roster test under a per-run tmpdir, NEVER touch the
+// user's real ~/.thyrox/daemon. Done via THYROX_CONFIG_DIR, which is
+// the same env var getConfigHomeDir() respects.
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-roster-test-'))
 const DAEMON_DIR = join(ISOLATED_HOME, 'daemon')
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
+const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
 })
 afterAll(() => {
-  if (ORIGINAL_CONFIG_HOME === undefined) {
-    delete process.env.CLAUDE_CONFIG_HOME
+  if (ORIGINAL_CONFIG_DIR === undefined) {
+    delete process.env.THYROX_CONFIG_DIR
   } else {
-    process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
   }
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })
@@ -181,21 +180,19 @@ describe('recordToRosterEntry', () => {
     expect(e.pid).toBe(42)
     expect(e.cwd).toBe('/foo')
     expect(e.ptySock).toBe('/foo/pty.sock')
-    // El socket rv (control) es un socket DISTINTO del socket de datos
-    // PTY y debe proyectarse desde r.rendezvousSocket — NUNCA aliasearse
-    // a r.ptySocket. Un reinicio del roster re-apunta el cliente rv
-    // usando esto; si llevara la ruta PTY, el handshake rv corrompería
-    // el stream PTY.
+    // The rv (control) socket is a DISTINCT socket from the PTY data socket
+    // and must be projected from r.rendezvousSocket — NOT aliased to
+    // r.ptySocket. A roster restart re-points the rv client using this; if
+    // it carried the PTY path, the rv handshake would corrupt the PTY stream.
     expect(e.rendezvousSock).toBe('/foo/rv.sock')
     expect(e.cliVersion).toBe('v26.5.0')
     expect(e.attempt).toBe(2)
   })
 
   test('rv socket survives a roster write→read round-trip (restart recovery)', async () => {
-    // Todo el punto de persistir rendezvousSocket: un reinicio del
-    // supervisor debe recuperar la dirección rv de roster.json para que
-    // adoptFromRoster pueda re-apuntar el cliente rv. Se fija ese
-    // round-trip.
+    // The whole point of persisting rendezvousSocket: a supervisor restart
+    // must recover the rv address from roster.json so adoptFromRoster can
+    // re-point the rv client. Lock that round-trip.
     await updateRoster(r => {
       r.workers['rvjob'] = recordToRosterEntry({
         short: 'rvjob',
@@ -223,9 +220,9 @@ describe('recordToRosterEntry', () => {
       startedAt: 0,
       status: 'running',
       ptySocket: '/old/pty.sock',
-      // sin rendezvousSocket — worker generado antes de que existiera el canal rv
+      // no rendezvousSocket — worker spawned before the rv channel existed
     })
-    // Debe ser undefined (el cliente rv es no-op), NUNCA silenciosamente la ruta PTY.
+    // Must be undefined (rv client no-ops), NOT silently the PTY path.
     expect(e.rendezvousSock).toBeUndefined()
     expect(e.ptySock).toBe('/old/pty.sock')
   })

@@ -1,0 +1,1 @@
+function th(e){return t(e.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"))}

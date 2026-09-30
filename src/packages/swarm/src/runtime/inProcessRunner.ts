@@ -62,7 +62,7 @@
  *    costuras puras: la forma del sobre, la guarda del actualizador de estado
  *    y la puerta de la bandera.
  */
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { ContentBlockParam } from '@thyrox/permission/permissionTypes.js'
 import {
   applyPermissionUpdates,
   asSystemPrompt,
@@ -277,8 +277,10 @@ function createInProcessCanUseTool(
           decisionMade = true
           reportPermissionWait()
           resolve({ behavior: 'ask', message: SUBAGENT_REJECT_MESSAGE })
-          setToolUseConfirmQueue((queue: { toolUseID: string }[]) =>
-            queue.filter(item => item.toolUseID !== toolUseID),
+          setToolUseConfirmQueue((queue: unknown[]) =>
+            queue.filter(
+              item => (item as { toolUseID: string }).toolUseID !== toolUseID,
+            ),
           )
         }
 
@@ -386,8 +388,10 @@ function createInProcessCanUseTool(
                   onAbortListener,
                 )
                 reportPermissionWait()
-                setToolUseConfirmQueue((queue: { toolUseID: string }[]) =>
-                  queue.filter(item => item.toolUseID !== toolUseID),
+                setToolUseConfirmQueue((queue: unknown[]) =>
+                  queue.filter(
+                    item => (item as { toolUseID: string }).toolUseID !== toolUseID,
+                  ),
                 )
                 resolve({
                   ...freshResult,

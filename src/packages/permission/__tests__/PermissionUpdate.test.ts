@@ -20,25 +20,22 @@ import {
   supportsPersistence,
 } from '../src/PermissionUpdate.ts'
 import type { PermissionUpdate } from '../src/permissionTypes.ts'
+import {
+  getEmptyToolPermissionContext,
+  type ToolPermissionContext,
+} from '@thyrox/tool-registry/Tool.js'
 
 beforeAll(() => {
   installPermissionHostBindings({})
 })
 
-function emptyContext() {
-  return {
-    // `applyPermissionUpdate` tipa su parámetro con el mismo inline laxo
-    // de la fuente (`{ permissionRules: unknown; [key: string]: unknown }`
-    // — ver el docstring de `PermissionUpdate.ts`); esta clave no la lee
-    // ninguna rama del switch, pero TS la exige presente para la
-    // asignabilidad estructural.
-    permissionRules: undefined,
-    mode: 'default',
-    alwaysAllowRules: {},
-    alwaysDenyRules: {},
-    alwaysAskRules: {},
-    additionalWorkingDirectories: new Map(),
-  }
+function emptyContext(): ToolPermissionContext {
+  // `applyPermissionUpdate` tipa su parámetro con el `ToolPermissionContext`
+  // real importado de `@thyrox/tool-registry/Tool.js`, no con el inline laxo
+  // que describía el docstring de `PermissionUpdate.ts`. Se usa el mismo
+  // constructor vacío que exporta el paquete de origen del tipo, en vez de
+  // reconstruir sus campos a mano.
+  return getEmptyToolPermissionContext()
 }
 
 describe('extractRules / hasRules', () => {

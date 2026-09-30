@@ -1,0 +1,26 @@
+-- FAIL src/packages/mitm/__tests__/sharedStateBoundary.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/mitm/__tests__/sharedStateBoundary.test.ts:
+34 | }
+35 | 
+36 | /** Módulos del grafo (un addon nativo sin compilar queda externo: no es JS que importe nada)  de `entrypoints` que pertenecen al estado compartido o a un cliente de Redis. */
+37 | export async function forbiddenModules(entrypoints: string[]): Promise<string[]> {
+38 |   const result = await Bun.build({ entrypoints, target: 'bun', metafile: true, throw: false, external: ['*.node'] })
+39 |   if (!result.success) throw new Error(`el empaquetado falló: ${result.logs.map(String).join('\n')}`)
+                                      ^
+error: el empaquetado falló: ResolveMessage: Could not resolve: "./oauthConstants.ts"
+ResolveMessage: Could not resolve: "./providers.ts"
+ResolveMessage: Could not resolve: "./aws.ts"
+      at forbiddenModules (/home/user/thyrox/src/packages/mitm/__tests__/sharedStateBoundary.test.ts:39:34)
+      at async <anonymous> (/home/user/thyrox/src/packages/mitm/__tests__/sharedStateBoundary.test.ts:58:18)
+(fail) @thyrox/mitm no llega al estado compartido > el grafo de módulos del paquete entero no incluye estado compartido ni Redis [45.10ms]
+
+ 3 pass
+ 1 fail
+ 3 expect() calls
+Ran 4 tests across 1 file. [374.00ms]
+pass=55 fail=1 errors=0 crashes=0 files=9 failed=1
+TS_EXIT=1
+TSC_EXIT=0
+__BG_EXIT__=0

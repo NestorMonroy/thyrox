@@ -1,11 +1,7 @@
 /**
- * Copia de `ccnmt: packages/permission/src/classifierApprovalsHook.ts` con los
- * comentarios traducidos; el cuerpo es el de la fuente.
- *
- * El hook de React del store de classifierApprovals. Se separo de
- * classifierApprovals.ts para que quien importa solo estado puro —
- * permissions.ts, toolExecution.ts, postCompactCleanup.ts — no arrastre React
- * hasta print.ts.
+ * React hook for classifierApprovals store.
+ * Split from classifierApprovals.ts so pure-state importers (permissions.ts,
+ * toolExecution.ts, postCompactCleanup.ts) do not pull React into print.ts.
  */
 
 import { useSyncExternalStore } from 'react'

@@ -11,6 +11,7 @@ import {
   pathInAllowedWorkingPath,
 } from '../../filesystem.js'
 import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 /**
  * Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx`
  * con los comentarios traducidos; el cuerpo es el de la fuente.
@@ -43,7 +44,7 @@ export function isInClaudeFolder(filePath: string): boolean {
  * decidir si se muestra la opción de permiso especial de «.claude folder» en
  * los archivos del directorio personal del usuario.
  */
-export function isInGlobalClaudeFolder(filePath: string): boolean {
+export function isInGlobalConfigFolder(filePath: string): boolean {
   const absolutePath = expandPath(filePath)
   const globalClaudeFolderPath = join(homedir(), '.claude')
 
@@ -101,7 +102,7 @@ export function getFilePermissionOptions({
       type: 'input',
       label: 'Yes',
       value: 'yes',
-      placeholder: 'and tell Claude what to do next',
+      placeholder: `and tell ${PRODUCT_NAME} what to do next`,
       onChange: onAcceptFeedbackChange,
       allowEmptySubmitToCancel: true,
       option: { type: 'accept-once' },
@@ -121,7 +122,7 @@ export function getFilePermissionOptions({
 
   // Comprobar si ésta es una ruta de carpeta .claude/, de proyecto o global
   const inClaudeFolder = isInClaudeFolder(filePath)
-  const inGlobalClaudeFolder = isInGlobalClaudeFolder(filePath)
+  const inGlobalConfigFolder = isInGlobalConfigFolder(filePath)
 
   // Opción 2: para la carpeta .claude/, mostrar la opción especial en vez de
   // la genérica de sesión.
@@ -129,13 +130,13 @@ export function getFilePermissionOptions({
   // afectan al estado en memoria, no a los ajustes persistidos. El ajuste
   // `allowManagedPermissionRulesOnly` sólo restringe las reglas de permiso
   // persistidas.
-  if ((inClaudeFolder || inGlobalClaudeFolder) && operationType !== 'read') {
+  if ((inClaudeFolder || inGlobalConfigFolder) && operationType !== 'read') {
     options.push({
-      label: 'Yes, and allow Claude to edit its own settings for this session',
+      label: `Yes, and allow ${PRODUCT_NAME} to edit its own settings for this session`,
       value: 'yes-claude-folder',
       option: {
         type: 'accept-session',
-        scope: inGlobalClaudeFolder ? 'global-claude-folder' : 'claude-folder',
+        scope: inGlobalConfigFolder ? 'global-claude-folder' : 'claude-folder',
       },
     })
   } else {
@@ -189,7 +190,7 @@ export function getFilePermissionOptions({
       type: 'input',
       label: 'No',
       value: 'no',
-      placeholder: 'and tell Claude what to do differently',
+      placeholder: `and tell ${PRODUCT_NAME} what to do differently`,
       onChange: onRejectFeedbackChange,
       allowEmptySubmitToCancel: true,
       option: { type: 'reject' },

@@ -1,0 +1,246 @@
+run-task-pool: 48 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T081131
+  job-20260927T081131/job-001 pid 16105   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/agent .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-002 pid 16141   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/app-host .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-003 pid 16231   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/audio-capture-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-004 pid 16547   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/binary .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-005 pid 19652   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/bridge .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-006 pid 20159   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/claude-for-chrome-mcp .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-007 pid 20854   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/cli .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-008 pid 22980   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/color-diff-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-009 pid 23020   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/command-runtime .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-010 pid 26635   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/computer-use-input .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-011 pid 26907   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/computer-use-mcp .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-012 pid 27090   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/computer-use-swift .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-013 pid 27391   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/config .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-014 pid 27751   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/context-compression .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-015 pid 27862   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/coordination .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-016 pid 28722   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/daemon .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-017 pid 28934   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/finding .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-018 pid 28958   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/headless-sdk .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-019 pid 29023   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/ide .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-020 pid 29047   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/image-processor-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-021 pid 29149   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/ink .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-022 pid 29173   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/local-observability .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-023 pid 29228   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/mcp-runtime .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-024 pid 29252   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/memory .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-025 pid 29351   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/modifiers-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-026 pid 29394   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/observability .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-027 pid 29418   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/output .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-028 pid 29541   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/paths .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-029 pid 29611   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/permission .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-030 pid 29640   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/plan .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-031 pid 29741   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/provider .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-032 pid 30015   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/repl .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-033 pid 30198   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/ripgrep-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-034 pid 30291   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/server .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-035 pid 30393   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/shell .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-036 pid 30417   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/skills .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-037 pid 30475   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/stdin-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-038 pid 30499   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/storage .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-039 pid 30989   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/store .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-040 pid 31169   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/swarm .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-041 pid 31488   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/task .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-042 pid 31512   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/teleport .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-043 pid 31561   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/tool-registry .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-044 pid 31585   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/tools .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-045 pid 32092   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/updater .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-046 pid 32133   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/url-handler-napi .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-047 pid 32240   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/voice .claude/workbench/per-package-tests-final-20260927T081131/results
+  job-20260927T081131/job-048 pid 32280   bash .claude/workbench/per-package-tests-20260927T071825/run-one.sh src/packages/workbench .claude/workbench/per-package-tests-final-20260927T081131/results
+run-task-pool: lanzados 48 de 48; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T081131_job-001 -> OK (2 de 49)
+asentado: job-20260927T081131_job-002 -> OK (3 de 49)
+asentado: job-20260927T081131_job-003 -> OK (4 de 49)
+asentado: job-20260927T081131_job-004 -> OK (5 de 49)
+asentado: job-20260927T081131_job-005 -> OK (6 de 49)
+asentado: job-20260927T081131_job-006 -> OK (7 de 49)
+asentado: job-20260927T081131_job-007 -> OK (8 de 49)
+asentado: job-20260927T081131_job-008 -> OK (9 de 49)
+asentado: job-20260927T081131_job-009 -> OK (10 de 49)
+asentado: job-20260927T081131_job-010 -> OK (11 de 49)
+asentado: job-20260927T081131_job-011 -> OK (12 de 49)
+asentado: job-20260927T081131_job-012 -> OK (13 de 49)
+asentado: job-20260927T081131_job-013 -> OK (14 de 49)
+asentado: job-20260927T081131_job-014 -> OK (15 de 49)
+asentado: job-20260927T081131_job-015 -> OK (16 de 49)
+asentado: job-20260927T081131_job-016 -> OK (17 de 49)
+asentado: job-20260927T081131_job-017 -> OK (18 de 49)
+asentado: job-20260927T081131_job-018 -> OK (19 de 49)
+asentado: job-20260927T081131_job-019 -> OK (20 de 49)
+asentado: job-20260927T081131_job-020 -> OK (21 de 49)
+asentado: job-20260927T081131_job-021 -> OK (22 de 49)
+asentado: job-20260927T081131_job-022 -> OK (23 de 49)
+asentado: job-20260927T081131_job-023 -> OK (24 de 49)
+asentado: job-20260927T081131_job-024 -> OK (25 de 49)
+asentado: job-20260927T081131_job-025 -> OK (26 de 49)
+asentado: job-20260927T081131_job-026 -> OK (27 de 49)
+asentado: job-20260927T081131_job-027 -> OK (28 de 49)
+asentado: job-20260927T081131_job-028 -> OK (29 de 49)
+asentado: job-20260927T081131_job-029 -> OK (30 de 49)
+asentado: job-20260927T081131_job-030 -> OK (31 de 49)
+asentado: job-20260927T081131_job-031 -> OK (32 de 49)
+asentado: job-20260927T081131_job-032 -> OK (33 de 49)
+asentado: job-20260927T081131_job-033 -> OK (34 de 49)
+asentado: job-20260927T081131_job-034 -> OK (35 de 49)
+asentado: job-20260927T081131_job-035 -> OK (36 de 49)
+asentado: job-20260927T081131_job-036 -> OK (37 de 49)
+asentado: job-20260927T081131_job-037 -> OK (38 de 49)
+asentado: job-20260927T081131_job-038 -> OK (39 de 49)
+asentado: job-20260927T081131_job-039 -> OK (40 de 49)
+asentado: job-20260927T081131_job-040 -> OK (41 de 49)
+asentado: job-20260927T081131_job-041 -> OK (42 de 49)
+asentado: job-20260927T081131_job-042 -> OK (43 de 49)
+asentado: job-20260927T081131_job-044 -> OK (44 de 49)
+asentado: job-20260927T081131_job-045 -> OK (45 de 49)
+asentado: job-20260927T081131_job-046 -> OK (46 de 49)
+asentado: job-20260927T081131_job-047 -> OK (47 de 49)
+asentado: job-20260927T081131_job-048 -> OK (48 de 49)
+asentado: job-20260927T081131_job-043 -> OK (44 de 49)
+== 49 trabajos asentados ==
+OLVIDADO job-20260927T081131
+       | (vacío — no emitió nada)
+OK     job-20260927T081131_job-001 exit=0
+       | EXIT=0
+       memoria pico: 267948 KB (262 MB) · pared 15.65s
+OK     job-20260927T081131_job-002 exit=0
+       | EXIT=0
+       memoria pico: 158456 KB (155 MB) · pared 0.85s
+OK     job-20260927T081131_job-003 exit=0
+       | EXIT=0
+       memoria pico: 57700 KB (56 MB) · pared 0.11s
+OK     job-20260927T081131_job-004 exit=0
+       | EXIT=0
+       memoria pico: 1607764 KB (1570 MB) · pared 6.47s
+OK     job-20260927T081131_job-005 exit=0
+       | EXIT=0
+       memoria pico: 130856 KB (128 MB) · pared 0.56s
+OK     job-20260927T081131_job-006 exit=0
+       | EXIT=0
+       memoria pico: 54812 KB (54 MB) · pared 0.12s
+OK     job-20260927T081131_job-007 exit=0
+       | EXIT=0
+       memoria pico: 247784 KB (242 MB) · pared 54.58s
+OK     job-20260927T081131_job-008 exit=0
+       | EXIT=0
+       memoria pico: 81304 KB (79 MB) · pared 0.28s
+OK     job-20260927T081131_job-009 exit=0
+       | EXIT=0
+       memoria pico: 218036 KB (213 MB) · pared 57.13s
+OK     job-20260927T081131_job-010 exit=0
+       | EXIT=0
+       memoria pico: 55180 KB (54 MB) · pared 0.53s
+OK     job-20260927T081131_job-011 exit=0
+       | EXIT=0
+       memoria pico: 62764 KB (61 MB) · pared 0.50s
+OK     job-20260927T081131_job-012 exit=0
+       | EXIT=0
+       memoria pico: 56340 KB (55 MB) · pared 0.80s
+OK     job-20260927T081131_job-013 exit=0
+       | EXIT=0
+       memoria pico: 160408 KB (157 MB) · pared 8.60s
+OK     job-20260927T081131_job-014 exit=0
+       | EXIT=0
+       memoria pico: 59428 KB (58 MB) · pared 0.12s
+OK     job-20260927T081131_job-015 exit=0
+       | EXIT=0
+       memoria pico: 70500 KB (69 MB) · pared 3.73s
+OK     job-20260927T081131_job-016 exit=0
+       | EXIT=0
+       memoria pico: 91124 KB (89 MB) · pared 0.80s
+OK     job-20260927T081131_job-017 exit=0
+       | EXIT=0
+       memoria pico: 60760 KB (59 MB) · pared 0.19s
+OK     job-20260927T081131_job-018 exit=0
+       | EXIT=0
+       memoria pico: 61228 KB (60 MB) · pared 0.15s
+OK     job-20260927T081131_job-019 exit=0
+       | EXIT=0
+       memoria pico: 85708 KB (84 MB) · pared 0.24s
+OK     job-20260927T081131_job-020 exit=0
+       | EXIT=0
+       memoria pico: 65200 KB (64 MB) · pared 0.14s
+OK     job-20260927T081131_job-021 exit=0
+       | EXIT=0
+       memoria pico: 92880 KB (91 MB) · pared 0.24s
+OK     job-20260927T081131_job-022 exit=0
+       | EXIT=0
+       memoria pico: 146784 KB (143 MB) · pared 0.63s
+OK     job-20260927T081131_job-023 exit=0
+       | EXIT=0
+       memoria pico: 229052 KB (224 MB) · pared 1.33s
+OK     job-20260927T081131_job-024 exit=0
+       | EXIT=0
+       memoria pico: 94160 KB (92 MB) · pared 0.29s
+OK     job-20260927T081131_job-025 exit=0
+       | EXIT=0
+       memoria pico: 53192 KB (52 MB) · pared 0.12s
+OK     job-20260927T081131_job-026 exit=0
+       | EXIT=0
+       memoria pico: 68136 KB (67 MB) · pared 0.17s
+OK     job-20260927T081131_job-027 exit=0
+       | EXIT=0
+       memoria pico: 227856 KB (223 MB) · pared 2.19s
+OK     job-20260927T081131_job-028 exit=0
+       | EXIT=0
+       memoria pico: 66860 KB (65 MB) · pared 0.26s
+OK     job-20260927T081131_job-029 exit=0
+       | EXIT=0
+       memoria pico: 232608 KB (227 MB) · pared 8.85s
+OK     job-20260927T081131_job-030 exit=0
+       | EXIT=0
+       memoria pico: 53920 KB (53 MB) · pared 0.14s
+OK     job-20260927T081131_job-031 exit=0
+       | EXIT=0
+       memoria pico: 264364 KB (258 MB) · pared 3.79s
+OK     job-20260927T081131_job-032 exit=0
+       | EXIT=0
+       memoria pico: 221836 KB (217 MB) · pared 1.33s
+OK     job-20260927T081131_job-033 exit=0
+       | EXIT=0
+       memoria pico: 60652 KB (59 MB) · pared 0.38s
+OK     job-20260927T081131_job-034 exit=0
+       | EXIT=0
+       memoria pico: 53324 KB (52 MB) · pared 0.11s
+OK     job-20260927T081131_job-035 exit=0
+       | EXIT=0
+       memoria pico: 140636 KB (137 MB) · pared 0.66s
+OK     job-20260927T081131_job-036 exit=0
+       | EXIT=0
+       memoria pico: 70764 KB (69 MB) · pared 0.19s
+OK     job-20260927T081131_job-037 exit=0
+       | EXIT=0
+       memoria pico: 60392 KB (59 MB) · pared 2.78s
+OK     job-20260927T081131_job-038 exit=0
+       | EXIT=0
+       memoria pico: 258516 KB (252 MB) · pared 6.41s
+OK     job-20260927T081131_job-039 exit=0
+       | EXIT=0
+       memoria pico: 55248 KB (54 MB) · pared 0.14s
+OK     job-20260927T081131_job-040 exit=0
+       | EXIT=0
+       memoria pico: 157664 KB (154 MB) · pared 2.80s
+OK     job-20260927T081131_job-041 exit=0
+       | EXIT=0
+       memoria pico: 70024 KB (68 MB) · pared 0.15s
+OK     job-20260927T081131_job-042 exit=0
+       | EXIT=0
+       memoria pico: 53008 KB (52 MB) · pared 0.10s
+OK     job-20260927T081131_job-043 exit=0
+       | EXIT=0
+       memoria pico: 251344 KB (245 MB) · pared 7.77s
+OK     job-20260927T081131_job-044 exit=0
+       | EXIT=0
+       memoria pico: 228296 KB (223 MB) · pared 2.12s
+OK     job-20260927T081131_job-045 exit=0
+       | EXIT=0
+       memoria pico: 138820 KB (136 MB) · pared 0.56s
+OK     job-20260927T081131_job-046 exit=0
+       | EXIT=0
+       memoria pico: 53324 KB (52 MB) · pared 0.11s
+OK     job-20260927T081131_job-047 exit=0
+       | EXIT=0
+       memoria pico: 154764 KB (151 MB) · pared 0.68s
+OK     job-20260927T081131_job-048 exit=0
+       | EXIT=0
+       memoria pico: 62244 KB (61 MB) · pared 0.17s
+__BG_EXIT__=0

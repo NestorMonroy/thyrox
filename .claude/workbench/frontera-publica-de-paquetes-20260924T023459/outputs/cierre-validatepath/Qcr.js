@@ -1,0 +1,1 @@
+function Qcr(e,n){let r=(u)=>u.split(_).filter(Boolean),i=d.resolve(e),o=d.resolve(n),s=r(i),a=r(o);return d.parse(i).root===d.parse(o).root&&s.length<a.length&&s.every((u,c)=>u===a[c])}

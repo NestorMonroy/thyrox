@@ -86,7 +86,7 @@ export function createApiQueryHook<TResult>(
         messages,
         systemPrompt,
         thinkingConfig: { type: 'disabled' as const },
-        tools,
+        tools: [...tools],
         signal: createAbortController().signal,
         options: {
           getToolPermissionContext: async () => {
@@ -117,7 +117,7 @@ export function createApiQueryHook<TResult>(
             type: 'success',
             queryName: config.name,
             result,
-            messageId: response.message.id,
+            messageId: response.message.id ?? randomUUID(),
             model,
             uuid,
           },

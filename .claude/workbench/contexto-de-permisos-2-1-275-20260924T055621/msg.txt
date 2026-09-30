@@ -1,0 +1,31 @@
+Port checkRuleBasedPermissions from 2.1.275
+
+Twelve suites failed importing checkRuleBasedPermissions, which
+permissions.ts declared omitted. It is oT in chunk-q2gh92k2.js, the
+rule half of the permission decision, and it needs two pieces this
+tree lacked:
+
+- permissionContext.ts (pe in chunk-zvswra5f.js): the context for one
+  call. The event-delivery guard moves Skill allow rules to stripped
+  rules; the call's layers add command allow and deny rules, bash
+  clamps, prompt avoidance, sandbox suspension, a permission mode
+  (bypass only when available and not disabled by settings) and the
+  last working directory; remote execution drops the read fence and
+  acceptEdits; a prompt shell command does not inherit auto mode.
+- circuitBreakers.ts (Yt in chunk-q8sknw7e.js): what each safety
+  circuit breaker implies.
+
+ruleBasedPermissions.ts then ports oT: whole-tool and field deny
+rules (skipped for a classifier-only tool with onBlock flag when only
+non-settings sources deny it), ask rules with Bash's sandbox
+auto-allow, the tool's own checker with its crash posture, the
+classifier-only and allowed_domains reviews, field ask rules, user
+interaction, and the MCP permission ceiling.
+
+Declared: the mode anchoring to the request needs a binary class this
+tree does not have, and the Bash sandbox decision is delegated to
+tool-registry's shouldUseSandbox.
+
+Annulment, one case each: Skill stripping, last working-directory
+layer, returning a safety-check ask, dropping suggestions on an ask
+rule, and the classifier-only review.

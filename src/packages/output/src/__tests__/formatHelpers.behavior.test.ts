@@ -10,13 +10,10 @@ import {
 } from '../formatters/format.ts'
 
 /**
- * Puerto de
- * `ccnmt: packages/output/src/__tests__/formatHelpers.behavior.test.ts`
- * (verbatim). Fija los formateadores visibles al usuario. Aparecen EN
- * TODAS PARTES de la UI (footer del REPL, /context, /status, headers de
- * resultado de herramienta, entradas de log). Un drift en el formato
- * rompe la consistencia visual y los scripts/tests que parsean la
- * salida.
+ * Pin user-visible format helpers. These appear EVERYWHERE in the UI
+ * (REPL footer, /context, /status, tool result headers, log entries).
+ * Drift in format breaks visual consistency and scripts/tests that
+ * parse the output.
  */
 describe('output formatters', () => {
   describe('formatFileSize', () => {

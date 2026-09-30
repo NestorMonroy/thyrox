@@ -18,6 +18,7 @@ import type {
   CoreContentBlock,
   Usage,
 } from '../agentMessages.ts'
+import { isCoreMessage } from '../coreMessages.ts'
 import type { CoreTool, ToolResult } from '../coreTools.ts'
 import { createBudgetTracker, checkTokenBudget } from '../internal/tokenBudget.ts'
 import { createSyntheticToolResults, shouldAbort } from '../internal/abort.ts'
@@ -110,11 +111,14 @@ export class AgentLoop {
 
         for await (const event of stream) {
           const eventType = event.type
-          if (eventType === 'assistant') {
-            assistantMessage = event as unknown as CoreAssistantMessage
+          // Los deps convierten a la forma plana lo que el provider emite como
+          // mensaje (`createDeps.ts`, `toCoreMessage`); aqui se comprueba en
+          // vez de afirmarse.
+          if (isCoreMessage(event) && event.type === 'assistant') {
+            assistantMessage = event
             yield { type: 'message', message: assistantMessage }
-          } else if (eventType === 'system') {
-            yield { type: 'message', message: event as unknown as CoreMessage }
+          } else if (isCoreMessage(event) && event.type === 'system') {
+            yield { type: 'message', message: event }
           } else {
             yield { type: 'stream', event }
             const rawEvent = eventType === 'stream_event'
@@ -145,17 +149,10 @@ export class AgentLoop {
       }
 
       turnCount++
-      // El stop_reason del mensaje de assistant puede vivir en el nivel
-      // superior (forma del provider SDK) o bajo .message (forma legada /
-      // beta de la API de Anthropic).
-      const rawAsst = assistantMessage as
-        | (CoreAssistantMessage & {
-            stop_reason?: string | null
-            message?: { stop_reason?: string | null }
-          })
-        | null
+      // El core solo recibe mensajes planos (los deps los convierten con
+      // `toCoreMessage`), asi que `stop_reason` esta en la raiz.
       const stopReason: string | null | undefined =
-        rawAsst?.stop_reason ?? rawAsst?.message?.stop_reason ?? turnState.stopReason ?? null
+        assistantMessage?.stop_reason ?? turnState.stopReason ?? null
       if (stopReason !== 'tool_use') {
         const budgetDecision = checkTokenBudget(
           budgetTracker,
@@ -382,9 +379,9 @@ export class AgentLoop {
     if (event.type === 'content_block_delta' && 'delta' in event) {
       const delta = event.delta as { type?: string; text?: string; thinking?: string; partial_json?: string }
       if (delta?.type === 'text_delta' && delta.text != null && turnState.currentTextBlockIndex >= 0) {
-        turnState.textBlocks[turnState.currentTextBlockIndex].text += delta.text
+        turnState.textBlocks[turnState.currentTextBlockIndex]!.text += delta.text
       } else if (delta?.type === 'thinking_delta' && delta.thinking != null && turnState.currentThinkingBlockIndex >= 0) {
-        turnState.thinkingBlocks[turnState.currentThinkingBlockIndex].thinking += delta.thinking
+        turnState.thinkingBlocks[turnState.currentThinkingBlockIndex]!.thinking += delta.thinking
       }
     }
     if (event.type === 'message_delta' && 'delta' in event) {
@@ -420,33 +417,14 @@ export class AgentLoop {
       usage: { ...turnState.turnUsage },
       stop_reason: turnState.stopReason,
       timestamp: Date.now(),
-      message: {
-        role: 'assistant',
-        content,
-        stop_reason: turnState.stopReason,
-        usage: { ...turnState.turnUsage },
-      },
     }
   }
 
   private extractToolUses(
     message: CoreAssistantMessage | null,
   ): Array<{ id: string; name: string; input: unknown }> {
-    if (!message) return []
-    // El content de CoreAssistantMessage puede vivir en el nivel superior
-    // (forma del provider SDK) o anidado bajo .message (forma legada /
-    // beta de la API de Anthropic).
-    const raw = message as CoreAssistantMessage & {
-      content?: unknown
-      message?: { content?: unknown }
-    }
-    const content = Array.isArray(raw.content)
-      ? raw.content
-      : Array.isArray(raw.message?.content)
-        ? raw.message.content
-        : null
-    if (!content) return []
-    return content
+    if (!message || !Array.isArray(message.content)) return []
+    return message.content
       .filter(
         (block: any) =>
           typeof block === 'object' && block !== null && 'type' in block && block.type === 'tool_use',

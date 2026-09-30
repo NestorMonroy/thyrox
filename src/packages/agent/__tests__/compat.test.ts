@@ -7,7 +7,7 @@
  * formato nuevo.
  */
 
-import { thyroxRoot } from '../../../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
 import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -31,9 +31,9 @@ describe('las definiciones de @thyrox/agent corren como agentes (T-036)', () => 
     for (const a of AGENTS) {
       const d = defs[a.name]
       expect(d).toBeTruthy()
-      expect(d.systemPrompt).toBe(a.prompt)
-      if (a.model && a.model !== 'inherit') expect(d.model).toBe(a.model)
-      if (a.maxTurns) expect(d.maxTurns).toBe(a.maxTurns)
+      expect(d!.systemPrompt).toBe(a.prompt)
+      if (a.model && a.model !== 'inherit') expect(d!.model).toBe(a.model)
+      if (a.maxTurns) expect(d!.maxTurns).toBe(a.maxTurns)
     }
   })
 
@@ -62,14 +62,14 @@ describe('las definiciones de @thyrox/agent corren como agentes (T-036)', () => 
   test('un agente real del paquete se despacha y devuelve su conclusion', async () => {
     const d = dir()
     const defs = agentDefinitionsFromRegistry(AGENTS)
-    const nombre = AGENTS[0].name
-    const p = new RecordedProvider([texto('lo que el agente concluyo', defs[nombre].model ?? 'claude-opus-5')])
+    const nombre = AGENTS[0]!.name
+    const p = new RecordedProvider([texto('lo que el agente concluyo', defs[nombre]!.model ?? 'claude-opus-5')])
     const { agentTool } = await import('@thyrox/tools/agent')
     const t = agentTool({ provider: p, transcriptDir: d, definitions: defs })
     const r = await t.run({ prompt: 'trabaja', subagent_type: nombre },
       { cwd: d, sessionId: 'padre', abort: new AbortController().signal, messages: [] })
     expect(r.isError).toBe(false)
-    expect(p.requests[0].system).toBe(AGENTS[0].prompt)
+    expect(p.requests[0]!.system).toBe(AGENTS[0]!.prompt)
   })
 })
 
@@ -81,8 +81,10 @@ describe('la instrumentacion existente lee nuestros transcripts (T-034)', () => 
       provider: p, model: 'claude-opus-5', system: 's', prompt: 'x',
       tools: CORE_TOOLS, cwd: d, transcriptDir: d,
     })
-    const salida = Bun.spawnSync(['python3',
-      join(thyroxRoot(), 'src', 'agents', 'model_catalog.py'),
+    // Por el envoltorio de `bin/`, que exporta PYTHONPATH: por la ruta al
+    // fuente, el guion sólo encontraba sus módulos si el llamador ya lo traía.
+    const salida = Bun.spawnSync(['bash',
+      join(thyroxRoot(), 'bin', 'model_catalog'),
       'sesion', '--transcript', r.transcriptPath])
     expect(salida.exitCode).toBe(0)
     const texto_ = salida.stdout.toString()
@@ -112,7 +114,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
 
   test('un gate real se ejecuta por la herramienta Bash y devuelve su salida', async () => {
     const d = dir()
-    const gate = join(REPO, 'src', 'verify', 'check_hallazgo_submodulo.py')
+    const gate = join(REPO, 'bin', 'check_hallazgo_submodulo')
     // El baseline es parametro del CONSUMIDOR (DEC-04): thyrox es el
     // proveedor de este gate y no tiene source/gestion/pm/ propio, asi que
     // sin un baseline declarado el gate rehusa (h-docs-1107) en vez de
@@ -126,7 +128,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
     try {
       const p = new RecordedProvider([
         { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
-          content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `python3 ${JSON.stringify(gate)}` } }] },
+          content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `bash ${JSON.stringify(gate)}` } }] },
         texto('el gate corrio'),
       ])
       const r = await runLoop({
@@ -134,7 +136,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
         tools: CORE_TOOLS, cwd: REPO, transcriptDir: d,
       })
       expect(r.stop).toBe('end_turn')
-      const resultado = p.requests[1].messages.flatMap((m) => m.content)
+      const resultado = p.requests[1]!.messages.flatMap((m) => m.content)
         .find((b) => b.type === 'tool_result') as { content: string; is_error?: boolean }
       // El gate publica su denominador: es la señal de que midió algo, no de
       // que el instrumento estuviera mudo.
@@ -156,7 +158,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
       provider: p, model: 'claude-opus-5', system: 's', prompt: 'x',
       tools: CORE_TOOLS, cwd: d, transcriptDir: d,
     })
-    const resultado = p.requests[1].messages.flatMap((m) => m.content)
+    const resultado = p.requests[1]!.messages.flatMap((m) => m.content)
       .find((b) => b.type === 'tool_result') as { is_error?: boolean }
     expect(resultado.is_error).toBe(true)
   })
@@ -174,7 +176,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
       permissions: { deny: ['Bash(git push:*)'] },
     })
     expect(r.stop).toBe('end_turn')
-    const resultado = p.requests[1].messages.flatMap((m) => m.content)
+    const resultado = p.requests[1]!.messages.flatMap((m) => m.content)
       .find((b) => b.type === 'tool_result') as { content: string; is_error?: boolean }
     expect(resultado.is_error).toBe(true)
     expect(resultado.content).toContain('git push')

@@ -1,0 +1,16 @@
+Add withMemoryCorrectionHint with its own hint text
+
+After checkRuleBasedPermissions resolved, the tool-registry and agent
+suites failed importing withMemoryCorrectionHint from messages.ts. In
+2.1.275 it is WO in chunk-q2gh92k2.js: the rejection message gains a
+note when auto memory is on and the tengu_amber_prism flag is set.
+
+The note reaches the model, so its wording is written for this tree
+(MEMORY_CORRECTION_HINT); the test pins the contract and that the
+binary's text is not copied. This tree has no memory pause, so only
+disabling auto memory turns it off.
+
+The bench records the 104 missing exports tsc reports across the
+tree, the list the next ports work through.
+
+The tsc baseline drops to the 2384 the previous commit measured.

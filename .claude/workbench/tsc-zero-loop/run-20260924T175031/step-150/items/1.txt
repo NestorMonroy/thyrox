@@ -1,0 +1,34 @@
+Patrón: read-model-contradicts-readers
+Señal del verificador: TS2\d+: (Argument of )?[Tt]ype '(AgentMessage|AgentAssistantMessage|Message|UserMessage|CompactableMessage)(\[\])?' is not assignable to (parameter of )?type '(readonly )?(AgentMessage|Message|CoreMessage)(\[\])?'|Property 'includes' does not exist on type 'never'
+Arreglo genérico: Se conserva la separacion de modelos (Clean Code; qwen-code separa su AgentMessage con adaptador). Se censan con el type checker los campos que el lector realmente lee; solo se corrigen los campos cuya declaracion contradice a sus lectores (content leido como string, usage casteado), de modo que el modelo canonico satisfaga el del bucle por tipado estructural. Las fronteras se nombran con adaptadores tipados, no con genericos identidad ni alias.
+Ya aplicado en: src/packages/agent/createDeps.ts, src/packages/agent/internal/messageHelpers.ts, src/packages/agent/internalTypes.ts
+Archivos donde la señal sigue viva: src/packages/agent/QueryEngine.ts
+
+src/packages/agent/QueryEngine.ts(797,9): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/QueryEngine.ts:787-807 ---
+    787                  : String(event.error ?? 'Agent core execution failed'),
+    788              ],
+    789            }
+    790            return
+    791          }
+    792  
+    793          continue
+    794        }
+    795  
+    796        if (event.type === 'compaction') {
+    797>         this.mutableMessages = fromCoreMessages(event.after)
+    798          messages.splice(0, messages.length, ...this.mutableMessages)
+    799  
+    800          const compactBoundary = createCompactBoundaryMessage(
+    801            'auto',
+    802            0,
+    803            this.mutableMessages.at(-1)?.uuid,
+    804          )
+    805          this.mutableMessages.push(compactBoundary)
+    806          messages.push(compactBoundary)
+    807  
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.

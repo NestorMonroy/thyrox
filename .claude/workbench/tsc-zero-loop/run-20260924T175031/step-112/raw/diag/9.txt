@@ -1,0 +1,2 @@
+src/packages/agent/QueryEngine.ts(538,11): error TS2698: Spread types may only be created from object types.
+src/packages/agent/QueryEngine.ts(599,11): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.

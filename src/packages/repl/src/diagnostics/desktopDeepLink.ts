@@ -7,6 +7,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { pathExists } from '@thyrox/storage/file.js'
 import { gte as semverGte } from '@thyrox/config/semver'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const MIN_DESKTOP_VERSION = '1.1.2396'
 
@@ -28,7 +29,7 @@ function isDevMode(): boolean {
 }
 
 /**
- * Builds a deep link URL for Claude Desktop to resume a CLI session.
+ * Builds a deep link URL for thyrox Desktop to resume a CLI session.
  * Format: claude://resume?session={sessionId}&cwd={cwd}
  * In dev mode: claude-dev://resume?session={sessionId}&cwd={cwd}
  */
@@ -41,7 +42,7 @@ function buildDesktopDeepLink(sessionId: string): string {
 }
 
 /**
- * Check if Claude Desktop app is installed.
+ * Check if thyrox Desktop app is installed.
  * On macOS, checks for /Applications/Claude.app.
  * On Linux, checks if xdg-open can handle claude:// protocol.
  * On Windows, checks if the protocol handler exists.
@@ -57,7 +58,7 @@ async function isDesktopInstalled(): Promise<boolean> {
 
   if (platform === 'darwin') {
     // Check for Claude.app in /Applications
-    return pathExists('/Applications/Claude.app')
+    return pathExists(`/Applications/${PRODUCT_NAME}.app`)
   } else if (platform === 'linux') {
     // Check if xdg-mime can find a handler for claude://
     // Note: xdg-mime returns exit code 0 even with no handler, so check stdout too
@@ -81,7 +82,7 @@ async function isDesktopInstalled(): Promise<boolean> {
 }
 
 /**
- * Detect the installed Claude Desktop version.
+ * Detect the installed thyrox Desktop version.
  * On macOS, reads CFBundleShortVersionString from the app plist.
  * On Windows, finds the highest app-X.Y.Z directory in the Squirrel install.
  * Returns null if version cannot be determined.
@@ -92,7 +93,7 @@ async function getDesktopVersion(): Promise<string | null> {
   if (platform === 'darwin') {
     const { code, stdout } = await execFileNoThrow('defaults', [
       'read',
-      '/Applications/Claude.app/Contents/Info.plist',
+      `/Applications/${PRODUCT_NAME}.app/Contents/Info.plist`,
       'CFBundleShortVersionString',
     ])
     if (code !== 0) {
@@ -200,7 +201,7 @@ async function openDeepLink(deepLinkUrl: string): Promise<boolean> {
 }
 
 /**
- * Build and open a deep link to resume the current session in Claude Desktop.
+ * Build and open a deep link to resume the current session in thyrox Desktop.
  * Returns an object with success status and any error message.
  */
 export async function openCurrentSessionInDesktop(): Promise<{
@@ -216,7 +217,7 @@ export async function openCurrentSessionInDesktop(): Promise<{
     return {
       success: false,
       error:
-        'Claude Desktop is not installed. Install it from https://claude.ai/download',
+        `${PRODUCT_NAME} Desktop is not installed. Install it from https://claude.ai/download`,
     }
   }
 
@@ -227,7 +228,7 @@ export async function openCurrentSessionInDesktop(): Promise<{
   if (!opened) {
     return {
       success: false,
-      error: 'Failed to open Claude Desktop. Please try opening it manually.',
+      error: `Failed to open ${PRODUCT_NAME} Desktop. Please try opening it manually.`,
       deepLinkUrl,
     }
   }

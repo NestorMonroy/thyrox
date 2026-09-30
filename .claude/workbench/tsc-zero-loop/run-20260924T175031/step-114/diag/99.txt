@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx(11,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx:1-21 ---
+      1  import { type ReactNode } from 'react'
+      2  import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
+      3  import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
+      4  import { useWizard } from '../../../wizard/index.js'
+      5  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+      6  import { ModelSelector } from '../../ModelSelector.js'
+      7  import type { AgentWizardData } from '../types.js'
+      8  
+      9  export function ModelStep(): ReactNode {
+     10    const { goNext, goBack, updateWizardData, wizardData } =
+     11>     useWizard<AgentWizardData>()
+     12  
+     13    const handleComplete = (model?: string): void => {
+     14      updateWizardData({ selectedModel: model })
+     15      goNext()
+     16    }
+     17  
+     18    return (
+     19      <WizardDialogLayout
+     20        subtitle="Select model"
+     21        footerText={

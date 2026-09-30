@@ -1,108 +1,105 @@
 /**
- * Engendrar un compañero DENTRO de este proceso, sin panel ni subproceso.
+ * In-process teammate spawning
  *
- * Procedencia: `ccnmt: packages/swarm/src/runtime/spawnInProcess.ts` (328
- * líneas, 5 símbolos exportados). Ese árbol declara `"license":
- * "UNLICENSED"`, así que el cuerpo se **reimplementa** y no se copia.
+ * Creates and registers an in-process teammate task. Unlike process-based
+ * teammates (tmux/iTerm2), in-process teammates run in the same Node.js
+ * process using AsyncLocalStorage for context isolation.
  *
- * Este módulo NO ejecuta al agente: crea su contexto, registra su tarea en el
- * estado de la aplicación, y devuelve las asas. Quien lo ejecuta es el
- * componente de tarea, que usa `runWithTeammateContext()` para aislar la
- * identidad de cada compañero.
- *
- * DIVERGENCIA DECLARADA: la fuente toma `sample` de `lodash-es`, que no está
- * en este árbol. Se reimplementa abajo en cinco líneas —es lo que
- * `porte-completo-no-parcial.md` manda hacer cuando el stack no trae el
- * mecanismo— en vez de añadir una dependencia por una función de una línea.
+ * The actual agent execution loop is handled by InProcessTeammateTask
+ * component (Task #14). This module handles:
+ * 1. Creating TeammateContext
+ * 2. Creating linked AbortController
+ * 3. Registering InProcessTeammateTaskState in AppState
+ * 4. Returning spawn result for backend
  */
-import {
-  createAbortController,
-  createTaskStateBase,
-  createTeammateContext,
-  emitTaskTerminatedSdk,
-  evictTaskOutput,
-  evictTerminalTask,
-  formatAgentId,
-  generateTaskId,
-  getSessionId,
-  getSpinnerVerbs,
-  isPerfettoTracingEnabled,
-  logForDebugging,
-  registerAgent as registerPerfettoAgent,
-  registerCleanup,
-  registerTask,
-  STOPPED_DISPLAY_MS,
-  TURN_COMPLETION_VERBS,
-  unregisterAgent as unregisterPerfettoAgent,
-} from '../adapters/appRuntime.js'
+
+import sample from 'lodash-es/sample.js'
+import { getSessionId } from '../adapters/appRuntime.js'
+import { getSpinnerVerbs } from '../adapters/appRuntime.js'
+import { TURN_COMPLETION_VERBS } from '../adapters/appRuntime.js'
 import type { AppState } from '../adapters/appRuntime.js'
-import { removeMemberByAgentId } from '../core/teamHelpers.js'
+import { createTaskStateBase, generateTaskId } from '../adapters/appRuntime.js'
 import type {
   InProcessTeammateTaskState,
   TeammateIdentity,
 } from '../tasks/types.js'
-
-/**
- * Un elemento al azar, o `undefined` si no hay ninguno.
- *
- * Es la reimplementación del `sample` de `lodash-es` que la fuente importa —
- * ver la divergencia de la cabecera—. El `undefined` del arreglo vacío es
- * parte del contrato: quien llama recibe un verbo ausente en vez de un
- * índice fuera de rango.
- */
-function sample<T>(items: readonly T[] | undefined): T | undefined {
-  if (!items || items.length === 0) return undefined
-  return items[Math.floor(Math.random() * items.length)]
-}
+import { createAbortController } from '../adapters/appRuntime.js'
+import { formatAgentId } from '../adapters/appRuntime.js'
+import { registerCleanup } from '../adapters/appRuntime.js'
+import { logForDebugging } from '../adapters/appRuntime.js'
+import { emitTaskTerminatedSdk } from '../adapters/appRuntime.js'
+import { evictTaskOutput } from '../adapters/appRuntime.js'
+import {
+  evictTerminalTask,
+  registerTask,
+  STOPPED_DISPLAY_MS,
+} from '../adapters/appRuntime.js'
+import { createTeammateContext } from '../adapters/appRuntime.js'
+import {
+  isPerfettoTracingEnabled,
+  registerAgent as registerPerfettoAgent,
+  unregisterAgent as unregisterPerfettoAgent,
+} from '../adapters/appRuntime.js'
+import { removeMemberByAgentId } from '../core/teamHelpers.js'
 
 type SetAppStateFn = (updater: (prev: AppState) => AppState) => void
 
 /**
- * Lo mínimo que hace falta para engendrar.
- *
- * Es un recorte de `ToolUseContext`: pedirlo entero ataría este módulo a todo
- * lo que aquel arrastra, y de ahí sólo se usan dos campos.
+ * Minimal context required for spawning an in-process teammate.
+ * This is a subset of ToolUseContext - only what spawnInProcessTeammate actually uses.
  */
 export type SpawnContext = {
   setAppState: SetAppStateFn
   toolUseId?: string
 }
 
-/** La configuración del compañero que se va a engendrar. */
+/**
+ * Configuration for spawning an in-process teammate.
+ */
 export type InProcessSpawnConfig = {
-  /** El nombre visible, p. ej. «researcher». */
+  /** Display name for the teammate, e.g., "researcher" */
   name: string
-  /** El equipo al que pertenece. */
+  /** Team this teammate belongs to */
   teamName: string
-  /** El encargo inicial. */
+  /** Initial prompt/task for the teammate */
   prompt: string
-  /** El color en la interfaz. */
+  /** Optional UI color for the teammate */
   color?: string
-  /** Si tiene que planificar antes de tocar nada. */
+  /** Whether teammate must enter plan mode before implementing */
   planModeRequired: boolean
-  /** El modelo propio, si difiere del heredado. */
+  /** Optional model override for this teammate */
   model?: string
 }
 
-/** El desenlace del engendro. */
+/**
+ * Result from spawning an in-process teammate.
+ */
 export type InProcessSpawnOutput = {
+  /** Whether spawn was successful */
   success: boolean
-  /** `nombre@equipo`. */
+  /** Full agent ID (format: "name@team") */
   agentId: string
-  /** Con qué seguirle la pista en el estado de la aplicación. */
+  /** Task ID for tracking in AppState */
   taskId?: string
-  /** Su propio controlador de aborto. */
+  /** AbortController for this teammate (linked to parent) */
   abortController?: AbortController
-  /** El contexto que aísla su identidad durante la ejecución. */
+  /** Teammate context for AsyncLocalStorage */
   teammateContext?: ReturnType<typeof createTeammateContext>
+  /** Error message if spawn failed */
   error?: string
 }
 
 /**
- * Engendra un compañero en proceso.
+ * Spawns an in-process teammate.
  *
- * NUNCA lanza: el líder está en medio de una tanda, y una excepción que suba
- * abortaría al resto por el fallo de uno.
+ * Creates the teammate's context, registers the task in AppState, and returns
+ * the spawn result. The actual agent execution is driven by the
+ * InProcessTeammateTask component which uses runWithTeammateContext() to
+ * execute the agent loop with proper identity isolation.
+ *
+ * @param config - Spawn configuration
+ * @param context - Context with setAppState for registering task
+ * @returns Spawn result with teammate info
  */
 export async function spawnInProcessTeammate(
   config: InProcessSpawnConfig,
@@ -111,6 +108,7 @@ export async function spawnInProcessTeammate(
   const { name, teamName, prompt, color, planModeRequired, model } = config
   const { setAppState } = context
 
+  // Generate deterministic agent ID
   const agentId = formatAgentId(name, teamName)
   const taskId = generateTaskId('in_process_teammate')
 
@@ -119,12 +117,14 @@ export async function spawnInProcessTeammate(
   )
 
   try {
-    // Controlador PROPIO, no encadenado al del líder: interrumpir la consulta
-    // del líder no debe matar a los compañeros que ya están trabajando.
+    // Create independent AbortController for this teammate
+    // Teammates should not be aborted when the leader's query is interrupted
     const abortController = createAbortController()
 
+    // Get parent session ID for transcript correlation
     const parentSessionId = getSessionId()
 
+    // Create teammate identity (stored as plain data in AppState)
     const identity: TeammateIdentity = {
       agentId,
       agentName: name,
@@ -134,6 +134,8 @@ export async function spawnInProcessTeammate(
       parentSessionId,
     }
 
+    // Create teammate context for AsyncLocalStorage
+    // This will be used by runWithTeammateContext() during agent execution
     const teammateContext = createTeammateContext({
       agentId,
       agentName: name,
@@ -144,12 +146,12 @@ export async function spawnInProcessTeammate(
       abortController,
     })
 
+    // Register agent in Perfetto trace for hierarchy visualization
     if (isPerfettoTracingEnabled()) {
       registerPerfettoAgent(agentId, name, parentSessionId)
     }
 
-    // El recorte lleva su marca: sin ella, un encargo cortado se lee como uno
-    // corto y el lector no distingue «esto es todo» de «esto es el principio».
+    // Create task state
     const description = `${name}: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}`
 
     const taskState: InProcessTeammateTaskState = {
@@ -174,19 +176,18 @@ export async function spawnInProcessTeammate(
       lastReportedToolCount: 0,
       lastReportedTokenCount: 0,
       pendingUserMessages: [],
-      // Arranca como arreglo vacío, no `undefined`: así el lector de mensajes
-      // funciona desde el primer instante sin comprobar la ausencia.
-      messages: [],
+      messages: [], // Initialize to empty array so getDisplayedMessages works immediately
     }
 
-    // La limpieza aborta al compañero cuando el líder sale. Sin ella, el
-    // compañero sobrevive gastando contexto contra un turno que nadie lee.
+    // Register cleanup handler for graceful shutdown
     const unregisterCleanup = registerCleanup(async () => {
       logForDebugging(`[spawnInProcessTeammate] Cleanup called for ${agentId}`)
       abortController.abort()
+      // Task state will be updated by the execution loop when it detects abort
     })
     taskState.unregisterCleanup = unregisterCleanup
 
+    // Register task in AppState
     registerTask(taskState, setAppState)
 
     logForDebugging(
@@ -215,9 +216,13 @@ export async function spawnInProcessTeammate(
 }
 
 /**
- * Mata a un compañero en proceso abortando su controlador.
+ * Kills an in-process teammate by aborting its controller.
  *
- * Es lo que `InProcessBackend.kill()` acaba llamando.
+ * Note: This is the implementation called by InProcessBackend.kill().
+ *
+ * @param taskId - Task ID of the teammate to kill
+ * @param setAppState - AppState setter
+ * @returns true if killed successfully
  */
 export function killInProcessTeammate(
   taskId: string,
@@ -237,28 +242,29 @@ export function killInProcessTeammate(
 
     const teammateTask = task as InProcessTeammateTaskState
 
-    // La guarda es sobre el ESTADO, no sobre la existencia: la tarea sigue
-    // ahí después de morir, y volver a matarla emitiría un segundo cierre.
     if (teammateTask.status !== 'running') {
       return prev
     }
 
-    // La identidad se captura aquí para usarla FUERA del actualizador: la
-    // escritura del archivo de equipo no va dentro de una función de estado.
+    // Capture identity for cleanup after state update
     teamName = teammateTask.identity.teamName
     agentId = teammateTask.identity.agentId
     toolUseId = teammateTask.toolUseId
     description = teammateTask.description
 
+    // Abort the controller to stop execution
     teammateTask.abortController?.abort()
+
+    // Call cleanup handler
     teammateTask.unregisterCleanup?.()
 
+    // Update task state and remove from teamContext.teammates
     killed = true
 
-    // Quien llamó a «espera a que esté en reposo» se quedaría colgado para
-    // siempre: este compañero ya no va a llegar a reposo nunca.
+    // Call pending idle callbacks to unblock any waiters (e.g., engine.waitForIdle)
     teammateTask.onIdleCallbacks?.forEach(cb => cb())
 
+    // Remove from teamContext.teammates using the agentId
     let updatedTeamContext = prev.teamContext
     if (prev.teamContext && prev.teamContext.teammates && agentId) {
       const { [agentId]: _, ...remainingTeammates } = prev.teamContext.teammates
@@ -278,9 +284,7 @@ export function killInProcessTeammate(
           status: 'killed' as const,
           notified: true,
           endTime: Date.now(),
-          // Se vacían las asas que ya no sirven: dejarlas mantiene vivas
-          // referencias a un trabajo que terminó.
-          onIdleCallbacks: [],
+          onIdleCallbacks: [], // Clear callbacks to prevent stale references
           messages: teammateTask.messages?.length
             ? [teammateTask.messages[teammateTask.messages.length - 1]!]
             : undefined,
@@ -294,15 +298,17 @@ export function killInProcessTeammate(
     }
   })
 
+  // Remove from team file (outside state updater to avoid file I/O in callback)
   if (teamName && agentId) {
     void removeMemberByAgentId(teamName, agentId)
   }
 
   if (killed) {
     void evictTaskOutput(taskId)
-    // `notified: true` ya evitó la notificación en XML, así que el cierre del
-    // SDK se emite aquí a mano. El bucle en proceso sólo emite mientras el
-    // estado sea `running`, de modo que no habrá un segundo cierre.
+    // notified:true was pre-set so no XML notification fires; close the SDK
+    // task_started bookend directly. The in-process runner's own
+    // completion/failure emit guards on status==='running' so it won't
+    // double-emit after seeing status:killed.
     emitTaskTerminatedSdk(taskId, 'stopped', {
       toolUseId,
       summary: description,
@@ -313,8 +319,7 @@ export function killInProcessTeammate(
     )
   }
 
-  // La baja del rastreo va SIEMPRE, encendido o no: el registro es un mapa en
-  // memoria y dejar la entrada lo hace crecer sin fin.
+  // Release perfetto agent registry entry
   if (agentId) {
     unregisterPerfettoAgent(agentId)
   }

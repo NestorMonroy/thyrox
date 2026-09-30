@@ -4,16 +4,16 @@ import { CACHE_PATHS, setCwdFn, setDjb2HashFn } from '../cache-paths.js'
 const realCwd = process.cwd
 
 beforeEach(() => {
-  // Restaura a los valores por defecto antes de cada test.
+  // Reset to defaults before each test.
   setCwdFn(() => '/users/test-home/myproject')
 })
 
 afterEach(() => {
-  // Restaura la función real de cwd tras cada test.
+  // Restore real cwd function after each test.
   setCwdFn(() => realCwd.call(process))
 })
 
-describe('CACHE_PATHS — estructura básica', () => {
+describe('CACHE_PATHS — basic structure', () => {
   test('baseLogs returns a path containing the sanitized project dir', () => {
     setCwdFn(() => '/users/test/myproject')
     const result = CACHE_PATHS.baseLogs()
@@ -36,7 +36,7 @@ describe('CACHE_PATHS — estructura básica', () => {
   })
 })
 
-describe('sanitizePath via CACHE_PATHS — reemplazo de caracteres', () => {
+describe('sanitizePath via CACHE_PATHS — character replacement', () => {
   test('replaces / with -', () => {
     setCwdFn(() => '/a/b/c')
     expect(CACHE_PATHS.baseLogs()).toContain('-a-b-c')
@@ -59,8 +59,8 @@ describe('sanitizePath via CACHE_PATHS — reemplazo de caracteres', () => {
 
   test('mcpLogs sanitizes server name (Windows colon compat)', () => {
     setCwdFn(() => '/proj')
-    // El nombre del servidor con dos puntos (letras de unidad de Windows)
-    // debe sanearse porque ':' está reservado en el filesystem de Windows.
+    // Server name with colons (Windows drive letter chars) must be sanitized
+    // because colons are reserved on Windows filesystem.
     expect(CACHE_PATHS.mcpLogs('foo:bar:baz')).toMatch(/mcp-logs-foo-bar-baz$/)
   })
 
@@ -70,32 +70,32 @@ describe('sanitizePath via CACHE_PATHS — reemplazo de caracteres', () => {
   })
 })
 
-describe('sanitizePath via CACHE_PATHS — límite de longitud + hash de respaldo', () => {
-  // Contrato crítico: rutas de más de 200 caracteres se les apenda un hash
-  // djb2 en base 36 para desambiguar nombres truncados. Sin esto, dos rutas
-  // largas que compartan los primeros 200 caracteres colisionarían.
+describe('sanitizePath via CACHE_PATHS — length bound + hash fallback', () => {
+  // Critical contract: paths longer than 200 chars get appended with a
+  // base-36 djb2 hash to disambiguate truncated names. Without this,
+  // two long paths sharing the first 200 chars would collide.
 
   test('paths under 200 chars are NOT hash-suffixed', () => {
-    // cwd distintivo: el nombre saneado queda bien por debajo de 200 y es
-    // fácil de verificar.
+    // Use a distinctive cwd so the resulting sanitized name is well under 200
+    // and easy to verify.
     setCwdFn(() => '/short/project')
     const path = CACHE_PATHS.baseLogs()
     const segments = path.split(/[/\\]/)
     const projectDirName = segments[segments.length - 1]!
-    // Debe ser exactamente "-short-project" (saneado — slash inicial → -).
+    // Should be exactly "-short-project" (sanitized — leading slash → -).
     expect(projectDirName).toBe('-short-project')
-    // Sin sufijo de hash adicional.
+    // No additional hash suffix.
     expect(projectDirName.length).toBeLessThan(200)
   })
 
   test('paths exactly 200 sanitized chars are NOT hash-suffixed (≤ check)', () => {
     setCwdFn(() => 'a'.repeat(200))
     const path = CACHE_PATHS.baseLogs()
-    // El nombre saneado es "a"*200 = exactamente 200, que es ≤ 200 →
-    // sin hash. Verifica el manejo del límite.
+    // The sanitized name is "a"*200 = exactly 200, which is ≤ 200
+    // boundary so no hash. Verify the boundary handling.
     const segments = path.split(/[/\\]/)
     const projectDirName = segments[segments.length - 1]
-    // Sin sufijo -<base36> esperado.
+    // No -<base36> suffix expected.
     expect(projectDirName).toBe('a'.repeat(200))
   })
 
@@ -105,15 +105,15 @@ describe('sanitizePath via CACHE_PATHS — límite de longitud + hash de respald
     const path = CACHE_PATHS.baseLogs()
     const segments = path.split(/[/\\]/)
     const projectDirName = segments[segments.length - 1]!
-    // Debe ser prefijo de 200 chars + "-<hash-base36>".
+    // Should be 200-char prefix + "-<hash-base36>".
     expect(projectDirName.startsWith('a'.repeat(200))).toBe(true)
     expect(projectDirName).toMatch(/^a{200}-[0-9a-z]+$/)
   })
 
   test('different long paths with same 200-char prefix get DIFFERENT hash suffixes', () => {
-    // Desambiguación crítica: dos repos que compartan un prefijo de 200
-    // chars NO deben colisionar en el directorio de caché. El hash captura
-    // el nombre COMPLETO.
+    // Critical disambiguation: two repos that happen to share a 200-char
+    // prefix must NOT collide in the cache directory. Hash captures
+    // the FULL name.
     const a = 'a'.repeat(200) + 'X'
     const b = 'a'.repeat(200) + 'Y'
     setCwdFn(() => a)
@@ -127,10 +127,10 @@ describe('sanitizePath via CACHE_PATHS — límite de longitud + hash de respald
     setDjb2HashFn(() => 0xdeadbeef)
     setCwdFn(() => 'a'.repeat(250))
     const path = CACHE_PATHS.baseLogs()
-    // 0xdeadbeef = 3735928559 en base 36.
+    // 0xdeadbeef = 3735928559 in base36.
     const expected = (0xdeadbeef).toString(36)
     expect(path).toContain(`-${expected}`)
-    // Vuelve al valor por defecto.
+    // Reset to default.
     setDjb2HashFn(s => {
       let h = 5381
       for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i)
@@ -142,9 +142,9 @@ describe('sanitizePath via CACHE_PATHS — límite de longitud + hash de respald
     setCwdFn(() => 'a'.repeat(250))
     const path = CACHE_PATHS.baseLogs()
     const match = path.match(/-([0-9a-z]+)$/)!
-    // Verifica que es una cadena base-36 válida (sólo 0-9 y a-z).
+    // Verify it's a valid base-36 string (only 0-9 and a-z).
     expect(match[1]).toMatch(/^[0-9a-z]+$/)
-    // No debe contener mayúsculas.
+    // Should not contain uppercase.
     expect(match[1]).toBe(match[1]!.toLowerCase())
   })
 })
@@ -161,9 +161,9 @@ describe('CACHE_PATHS — DI', () => {
   })
 
   test('CACHE_PATHS calls cwd() each time (NOT memoized)', () => {
-    // Crítico: evaluación perezosa. Si estuviera memoizado, cambiar de cwd
-    // a mitad de sesión (modo worktree) dejaría a los siguientes
-    // CACHE_PATHS.* usando rutas obsoletas.
+    // Critical: lazy evaluation. If memoized, switching cwd mid-session
+    // (worktree mode) would leave subsequent CACHE_PATHS.* using stale
+    // paths.
     let cwdValue = '/initial'
     setCwdFn(() => cwdValue)
     const initial = CACHE_PATHS.baseLogs()

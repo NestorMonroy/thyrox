@@ -213,5 +213,224 @@ with tempfile.TemporaryDirectory() as directory:
     # vez—, pero pagando el lote: lo que discrimina es que no hay pasada.
     assert_equal("ni paga otra pasada de tsc por ella", 1, again.tsc_runs)
 
+# --- Política neta (`net=True`): el arreglo de causa raíz ---------------------
+# Tipar un contrato destapa errores que antes no se podían ver. Con la política
+# estricta eso es `revealed` y se revierte; con la neta se conserva si bajan los
+# objetivos Y baja el total, y lo destapado queda registrado como trabajo nuevo.
+
+
+def net_fixture(base: Path, replacement: str) -> tuple[dict, list[str]]:
+    a = "const a = BAD1 BAD5\n"
+    (base / "a.ts").write_text(a)
+    (base / "b.ts").write_text("const b = BAD2\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    row = proposal("root:a.ts", "agent", "a.ts", a, "BAD1 BAD5", replacement,
+                   ["a.ts: TS9001: bad 1.", "a.ts: TS9001: bad 5."])
+    return row, [sys.executable, "fake_tsc.py"]
+
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "REVEAL")
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, [row], tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None, net=True)
+    last = [json.loads(line) for line in ledger.read_text().splitlines()][-1]
+    assert_equal("neta: destapa en otro archivo pero el total baja — se conserva",
+                 ("progress", 3, 2, "const a = REVEAL\n"),
+                 (report.status, report.total_before, report.total_final, (base / "a.ts").read_text()))
+    assert_equal("neta: el registro dice accepted-net y lleva lo destapado",
+                 ("accepted-net", ["z.ts: TS9004: revealed contract."]),
+                 (last["outcome"], last["new_diagnostics"]))
+    assert_equal("neta: lo destapado no va a la cola residual", False,
+                 (base / "residual.jsonl").exists() and "root:a.ts" in (base / "residual.jsonl").read_text())
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "WORSE")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, net=True)
+    # Antes este caso se conservaba. Se invirtió medido: las dos veces que la
+    # neta conservó código roto, lo nuevo caía en el propio archivo.
+    assert_equal("neta: un diagnóstico nuevo en su propio archivo la tumba aunque el total baje",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "REVEAL")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("estricta (por defecto): el mismo cambio se revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5 WORSE REVEAL")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, net=True)
+    assert_equal("neta: si el total no baja se revierte aunque un objetivo baje",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+
+# --- Parcial conservable (`accept_partial=True`) ------------------------------
+# Baja un objetivo de dos y no deja nada nuevo en su archivo: se conserva.
+# Una parcial que deja algo nuevo se revierte por la bisección, igual que
+# una aceptada.
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5")
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, [row], tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None, accept_partial=True)
+    last = [json.loads(line) for line in ledger.read_text().splitlines()][-1]
+    assert_equal("parcial sin nada nuevo: se conserva",
+                 ("progress", 3, 2, "const a = BAD5\n", "accepted-partial"),
+                 (report.status, report.total_before, report.total_final, (base / "a.ts").read_text(),
+                  last["outcome"]))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("sin la opción, la misma parcial se revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5 WORSE")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, accept_partial=True)
+    assert_equal("parcial con algo nuevo: la bisección la revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+
+# El control que discrimina el coste: una parcial limpia y otra que deja algo
+# nuevo en su propio archivo. La culpable no entra a la bisección: una pasada
+# de confirmación para la limpia (3 en total) y no una por mitad (4).
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    a, c = "const a = BAD1 BAD5\n", "const c = BAD6 BAD7\n"
+    (base / "a.ts").write_text(a)
+    (base / "c.ts").write_text(c)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("clean:a.ts", "agent", "a.ts", a, "BAD1 BAD5", "BAD5",
+                     ["a.ts: TS9001: bad 1.", "a.ts: TS9001: bad 5."]),
+            proposal("dirty:c.ts", "agent", "c.ts", c, "BAD6 BAD7", "BAD7 WORSE",
+                      ["c.ts: TS9001: bad 6.", "c.ts: TS9001: bad 7."])]
+    report = step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None,
+                           accept_partial=True)
+    assert_equal("la parcial que rompe su archivo no paga bisección",
+                 (3, "accepted-partial", "partial", "const a = BAD5\n", c),
+                 (report.tsc_runs, report.outcomes["clean:a.ts"], report.outcomes["dirty:c.ts"],
+                  (base / "a.ts").read_text(), (base / "c.ts").read_text()))
+
+
+# Lo nuevo cae en OTRO archivo (z.ts) que importa a.ts: sólo la propuesta de
+# a.ts es sospechosa. Las otras tres no pagan bisección: una pasada para
+# medir el lote tras revertir a.ts, y no las cuatro de bisecar el conjunto.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    texts = {"a.ts": "const a = BAD1\n", "b.ts": "const b = BAD2\n", "c.ts": "const c = BAD3\n",
+             "d.ts": "const d = BAD4\n", "z.ts": "import { a } from './a.js'\n"}
+    for name, text in texts.items():
+        (base / name).write_text(text)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("fix:a.ts", "agent", "a.ts", texts["a.ts"], "BAD1", "REVEAL", ["a.ts: TS9001: bad 1."])]
+    rows += [proposal(f"fix:{n}.ts", "agent", f"{n}.ts", texts[f"{n}.ts"], f"BAD{i}", "1",
+                      [f"{n}.ts: TS9001: bad {i}."]) for n, i in (("b", 2), ("c", 3), ("d", 4))]
+    report = step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("el grafo de imports acota la bisección al sospechoso",
+                 (3, "revealed", ["fix:b.ts", "fix:c.ts", "fix:d.ts"], 1),
+                 (report.tsc_runs, report.outcomes["fix:a.ts"], sorted(report.accepted), report.total_final))
+
+
+# Línea base desfasada: el árbol trae un diagnóstico (e.ts) que el log previo
+# no tiene y que ninguna propuesta alcanza. El paso rehúsa en vez de culpar,
+# y deja el árbol sin las propuestas.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "b.ts").write_text("const b = BAD2\n")
+    (base / "e.ts").write_text("const e = BAD9\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("fix:a.ts", "agent", "a.ts", "const a = BAD1\n", "BAD1", "1", ["a.ts: TS9001: bad 1."]),
+            proposal("fix:b.ts", "agent", "b.ts", "const b = BAD2\n", "BAD2", "2", ["b.ts: TS9001: bad 2."])]
+    stale = ["a.ts(1,1): error TS9001: bad 1.", "b.ts(1,1): error TS9001: bad 2."]
+    try:
+        step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl", base / "bench",
+                      seed=7, epsilon=0.5, alpha0=0.5, max_batch=None, before_lines=stale)
+        refused = "no rehusó"
+    except RuntimeError as error:
+        refused = "línea base desfasada" in str(error)
+    assert_equal("una línea base desfasada rehúsa y no culpa a nadie",
+                 (True, "const a = BAD1\n", False),
+                 (refused, (base / "a.ts").read_text(), (base / "ledger.jsonl").exists()))
+
+# --- Crear un archivo (porte de módulo) ---------------------------------------
+# Un porte puede traer un módulo nuevo. Su base es «ausente»: el paso lo crea
+# al aplicar y, si lo revierte, lo BORRA — un archivo vacío que quedara en el
+# árbol seguiría siendo un módulo que tsc compila.
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("import { x } from './n'\nconst a = BAD1\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    text = (base / "a.ts").read_text()
+    row = {"proposal_id": "port:n", "proposer": "good", "targets": ["a.ts: TS9001: bad 1."],
+           "files": ["a.ts", "sub/n.ts"],
+           "bases": {"a.ts": sha(text), "sub/n.ts": step.ABSENT_BASE},
+           "edits": [{"file": "a.ts", "start": text.index("BAD1"), "length": 4, "newText": "x"},
+                     {"file": "sub/n.ts", "start": 0, "length": 0, "newText": "export const x = 1\n"}]}
+    report = step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("una propuesta aceptada crea su archivo nuevo", "export const x = 1\n",
+                 (base / "sub/n.ts").read_text() if (base / "sub/n.ts").exists() else None)
+    assert_equal("y cierra su objetivo", ("progress", 1, 0), (report.status, report.total_before,
+                                                            report.total_final))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    text = (base / "a.ts").read_text()
+    row = {"proposal_id": "port:n", "proposer": "bad", "targets": ["a.ts: TS9001: bad 1."],
+           "files": ["a.ts", "n.ts"], "bases": {"a.ts": sha(text), "n.ts": step.ABSENT_BASE},
+           "edits": [{"file": "a.ts", "start": text.index("BAD1"), "length": 4, "newText": "1"},
+                     {"file": "n.ts", "start": 0, "length": 0, "newText": "WORSE\n"}]}
+    step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                  base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("revertir una creación borra el archivo", (False, "const a = BAD1\n"),
+                 ((base / "n.ts").exists(), (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    # «Ausente» es una base como otra: si el archivo YA existe, la base cambió.
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "n.ts").write_text("const n = 0\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    row = {"proposal_id": "port:n", "proposer": "good", "targets": ["a.ts: TS9001: bad 1."],
+           "files": ["n.ts"], "bases": {"n.ts": step.ABSENT_BASE},
+           "edits": [{"file": "n.ts", "start": 0, "length": 0, "newText": "otro\n"}]}
+    step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                  base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("crear sobre un archivo que ya existe no se aplica", "const n = 0\n",
+                 (base / "n.ts").read_text() if (base / "n.ts").exists() else None)
+
+# L02 de self-evolving-agents-2026: cada fila del ledger lleva la configuración
+# con que se juzgó (step_setup), para poder atribuir un cambio de aceptación.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    ledger = base / "ledger.jsonl"
+    step.run_step(base, candidates, tsc, ledger, base / "bench", seed=7, epsilon=0.5, alpha0=0.5,
+                  max_batch=None, setup_id="s-123")
+    rows = [json.loads(line) for line in ledger.read_text().splitlines()]
+    assert_equal("todas las filas del ledger llevan el setup_id del paso, también la de infraestructura",
+                 (3, {"s-123"}), (len(rows), {row.get("setup_id") for row in rows}))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

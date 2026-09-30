@@ -1,18 +1,14 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/findInProcessTeammateTaskId.test.ts`.
- * Los casos, sus datos y sus aserciones vienen de la fuente; lo que cambia es
- * el idioma de la descripción.
+ * Tests for findInProcessTeammateTaskId — pure helper that locates an
+ * in-process teammate's task ID by agent name. The leader uses this
+ * to find the task to send messages, update awaitingPlanApproval,
+ * etc.
  *
- * Tests de findInProcessTeammateTaskId — helper puro que ubica el task ID
- * de un teammate in-process por nombre de agente. El líder lo usa para
- * encontrar la tarea a la que enviarle mensajes, actualizar
- * awaitingPlanApproval, etc.
+ * Wrong = leader can't find the task → message goes nowhere →
+ * silent breakage of teammate coordination.
  *
- * Equivocarse = el líder no encuentra la tarea → el mensaje no llega a
- * ningún lado → ruptura silenciosa de la coordinación entre teammates.
- *
- * Búsqueda discriminada por tipo: sólo hacen match las tareas donde
- * type === 'in_process_teammate' Y identity.agentName === input.
+ * Type-discriminated lookup: only matches tasks where
+ * type === 'in_process_teammate' AND identity.agentName === input.
  */
 import { describe, expect, test } from 'bun:test'
 import { findInProcessTeammateTaskId } from '../inProcessTeammateHelpers.js'
@@ -33,8 +29,8 @@ const teammateTask = (
   ...overrides,
 })
 
-describe('findInProcessTeammateTaskId — búsqueda básica', () => {
-  test('nombre de agente coincidente → task id', () => {
+describe('findInProcessTeammateTaskId — basic lookup', () => {
+  test('matching agent name → task id', () => {
     const r = findInProcessTeammateTaskId(
       'researcher',
       buildAppState({
@@ -44,7 +40,7 @@ describe('findInProcessTeammateTaskId — búsqueda básica', () => {
     expect(r).toBe('t1')
   })
 
-  test('nombre de agente sin coincidencia → undefined', () => {
+  test('non-matching agent name → undefined', () => {
     const r = findInProcessTeammateTaskId(
       'unknown',
       buildAppState({
@@ -54,16 +50,16 @@ describe('findInProcessTeammateTaskId — búsqueda básica', () => {
     expect(r).toBeUndefined()
   })
 
-  test('tasks vacío → undefined', () => {
+  test('empty tasks → undefined', () => {
     expect(
       findInProcessTeammateTaskId('researcher', buildAppState({})),
     ).toBeUndefined()
   })
 })
 
-describe('findInProcessTeammateTaskId — discriminación por tipo', () => {
-  test('tareas que no son in-process se ignoran aunque el nombre coincida', () => {
-    // local_bash con el mismo agentName NO debe hacer match.
+describe('findInProcessTeammateTaskId — type discrimination', () => {
+  test('non-in-process tasks ignored even if name matches', () => {
+    // local_bash with same agentName must NOT match.
     const r = findInProcessTeammateTaskId(
       'researcher',
       buildAppState({
@@ -77,7 +73,7 @@ describe('findInProcessTeammateTaskId — discriminación por tipo', () => {
     expect(r).toBeUndefined()
   })
 
-  test('tareas que no son objeto se saltan sin crashear', () => {
+  test('non-object tasks safely skipped (no crash)', () => {
     expect(() =>
       findInProcessTeammateTaskId(
         'researcher',
@@ -90,16 +86,15 @@ describe('findInProcessTeammateTaskId — discriminación por tipo', () => {
     ).not.toThrow()
   })
 
-  test('tarea con type=in_process_teammate pero sin identity → LANZA', () => {
-    // Bug FIJADO (locked): isInProcessTeammateTask sólo chequea `type`, no
-    // la forma de identity. Así que una tarea malformada pasa el
-    // predicado, y luego `task.identity.agentName` lanza TypeError.
+  test('task with type=in_process_teammate but missing identity → THROWS', () => {
+    // LOCKED bug: isInProcessTeammateTask only checks `type`, not
+    // identity shape. So a malformed task passes the predicate, then
+    // `task.identity.agentName` throws TypeError.
     //
-    // Es responsabilidad del llamador asegurar que las tareas estén bien
-    // formadas; el predicado se podría endurecer para chequear identity
-    // también, pero eso es un cambio aparte. Este test fija el
-    // comportamiento actual para que un refactor no cambie en silencio
-    // crash → retorno-undefined.
+    // Caller's responsibility to ensure tasks are well-formed; the
+    // predicate could be tightened to check identity too, but that's
+    // a separate change. This test locks the current behaviour so a
+    // refactor doesn't silently change crash → undefined-return.
     expect(() =>
       findInProcessTeammateTaskId(
         'researcher',
@@ -107,7 +102,7 @@ describe('findInProcessTeammateTaskId — discriminación por tipo', () => {
           t1: {
             id: 't1',
             type: 'in_process_teammate',
-            // Sin campo identity
+            // No identity field
           },
         }),
       ),
@@ -115,22 +110,22 @@ describe('findInProcessTeammateTaskId — discriminación por tipo', () => {
   })
 })
 
-describe('findInProcessTeammateTaskId — múltiples tareas', () => {
-  test('devuelve la primera tarea que hace match en orden de iteración', () => {
-    // Object.values itera en orden de inserción; el helper devuelve el
-    // primer match.
+describe('findInProcessTeammateTaskId — multiple tasks', () => {
+  test('returns first matching task in iteration order', () => {
+    // Object.values iterates insertion order; the helper returns the
+    // first match.
     const r = findInProcessTeammateTaskId(
       'researcher',
       buildAppState({
         t1: teammateTask('t1', 'other'),
         t2: teammateTask('t2', 'researcher'),
-        t3: teammateTask('t3', 'researcher'), // nombre duplicado (no debería pasar, pero fija el comportamiento)
+        t3: teammateTask('t3', 'researcher'), // duplicate name (shouldn't happen, but lock behaviour)
       }),
     )
     expect(r).toBe('t2')
   })
 
-  test('tipos de tarea mixtos: sólo cuenta el in-process teammate', () => {
+  test('mixed task types: only in-process teammate counted', () => {
     const r = findInProcessTeammateTaskId(
       'researcher',
       buildAppState({
@@ -143,8 +138,8 @@ describe('findInProcessTeammateTaskId — múltiples tareas', () => {
   })
 })
 
-describe('findInProcessTeammateTaskId — casos límite', () => {
-  test('el match del nombre de agente distingue mayúsculas/minúsculas', () => {
+describe('findInProcessTeammateTaskId — edge cases', () => {
+  test('case-sensitive agent name match', () => {
     const r = findInProcessTeammateTaskId(
       'Researcher',
       buildAppState({
@@ -154,7 +149,7 @@ describe('findInProcessTeammateTaskId — casos límite', () => {
     expect(r).toBeUndefined()
   })
 
-  test('nombre de agente vacío → sólo hace match con la tarea de nombre vacío', () => {
+  test('empty agent name → only matches empty-name task', () => {
     expect(
       findInProcessTeammateTaskId(
         '',
@@ -173,7 +168,7 @@ describe('findInProcessTeammateTaskId — casos límite', () => {
     ).toBe('t1')
   })
 
-  test('un espacio en el nombre de agente se trata como parte del nombre', () => {
+  test('whitespace in agent name treated as part of name', () => {
     expect(
       findInProcessTeammateTaskId(
         'researcher ',

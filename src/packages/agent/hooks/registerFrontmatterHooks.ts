@@ -1,4 +1,4 @@
-import { HOOK_EVENTS, type HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import { HOOK_EVENTS, type HookEvent } from '../types/hooks.js'
 import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import type { HooksSettings } from '@thyrox/config/types'

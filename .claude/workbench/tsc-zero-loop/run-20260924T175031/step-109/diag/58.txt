@@ -1,0 +1,32 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts(92,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts:82-102 ---
+     82          yesInputMode,
+     83          noInputMode,
+     84        }),
+     85      [filePath, toolPermissionContext, operationType, yesInputMode, noInputMode],
+     86    )
+     87  
+     88    // Handle option selection using shared handlers
+     89    const onChange = useCallback(
+     90      (option: PermissionOption, input: T, feedback?: string) => {
+     91        const params: PermissionHandlerParams = {
+     92>         messageId: toolUseConfirm.assistantMessage.message.id,
+     93          path: filePath,
+     94          toolUseConfirm,
+     95          toolPermissionContext,
+     96          onDone,
+     97          onReject,
+     98          completionType,
+     99          languageName,
+    100          operationType,
+    101        }
+    102  

@@ -1,0 +1,1 @@
+dl=Object.assign(function(){return N.of(D()).directory()}

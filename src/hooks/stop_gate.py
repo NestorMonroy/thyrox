@@ -112,6 +112,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TextIO
 
 # El módulo se importa como ``hooks.stop_gate`` (con ``src`` en la ruta) y también
 # se ejecuta como guion —así lo invoca el stub del consumidor—, donde
@@ -172,7 +173,7 @@ class Gate:
     #: Segundos que se le conceden al motor. Un motor colgado no puede dejar el
     #: turno colgado con él.
     timeout: int = 60
-    _stderr: object = field(default=None, repr=False)
+    _stderr: TextIO | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         if not callable(self.engine) and not self.engine:

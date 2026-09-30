@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+84 |     expect(jobsRootDir(host())).toBe(join('/cfg', 'jobs'))
+85 |   })
+86 | 
+87 |   test('jobStorageKey (qKn): sólo un trabajo directamente bajo la raíz de trabajos', () => {
+88 |     expect(jobStorageKey('/cfg/jobs/abc', ['state.json'], host())).toEqual({ namespace: 'job', jobId: 'abc', relPath: ['state.json'] })
+89 |     expect(jobStorageKey('/cfg/jobs/abc/', ['state.json'], host())).toBeUndefined()
+                                                                         ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  namespace: "job",
+  jobId: "abc",
+  relPath: [ "state.json" ],
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:89:69)
+(fail) trabajos en el storage > jobStorageKey (qKn): sólo un trabajo directamente bajo la raíz de trabajos [0.54ms]
+
+ 8 pass
+ 1 fail
+ 33 expect() calls
+Ran 9 tests across 1 file. [42.00ms]

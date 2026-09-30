@@ -16,7 +16,7 @@ import {
   LEGACY_CONSUMER_STORE_DIR, STORE_DIR,
   STORE_FILE, STORE_PATH, STORE_PATH_VAR, recordHarnessSession, storePath,
 } from '../src/store.ts'
-import { CONSUMER_ROOT_VAR, thyroxRoot } from '../../../paths/reach.ts'
+import { CONSUMER_ROOT_VAR, thyroxRoot } from '@thyrox/paths/reach.ts'
 import { costReport, turnCost } from '../src/cost.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 
@@ -77,10 +77,10 @@ describe('diario de eventos (T-032)', () => {
     j.log('compaction', { kind: 'micro', cleared: 3 })
     const filas = readJournal(join(d, 'diario.jsonl'))
     expect(filas.length).toBe(2)
-    expect(filas[0].kind).toBe('turn_start')
-    expect(filas[0].sessionId).toBe('ses-1')
-    expect(typeof filas[0].timestamp).toBe('string')
-    expect(filas[1].data.cleared).toBe(3)
+    expect(filas[0]!.kind).toBe('turn_start')
+    expect(filas[0]!.sessionId).toBe('ses-1')
+    expect(typeof filas[0]!.timestamp).toBe('string')
+    expect(filas[1]!.data.cleared).toBe(3)
   })
 
   test('NUNCA rompe el flujo: un destino imposible no lanza', () => {
@@ -167,8 +167,8 @@ describe('integracion con agent_store (T-033)', () => {
     const filas = db.query('select turns, status from agent_sessions').all() as { turns: number; status: string }[]
     db.close()
     expect(filas.length).toBe(1)
-    expect(filas[0].turns).toBe(9)
-    expect(filas[0].status).toBe('completed')
+    expect(filas[0]!.turns).toBe(9)
+    expect(filas[0]!.status).toBe('completed')
   })
 })
 
@@ -263,10 +263,16 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
     expect(STORE_DIR).not.toBe(LEGACY_CONSUMER_STORE_DIR)
   })
 
-  test('sin ninguna de las dos, cae al clon de docs — la conducta de hoy', () => {
+  // Comparaba contra la CONSTANTE `STORE_PATH`, que se resuelve al importar
+  // el modulo con el entorno de ESE momento: bajo el preload del store
+  // (`tests/preload/store.ts`, H-THYROX-164) apunta a la copia de la ejecucion,
+  // y con razon. Lo que el caso afirma es el ultimo peldaño de la precedencia,
+  // asi que se compara contra ese peldaño: el hogar unico es el proveedor,
+  // como el docstring declara.
+  test('sin ninguna de las dos, cae al árbol del proveedor', () => {
     delete process.env[STORE_PATH_VAR]
     delete process.env[CONSUMER_ROOT_VAR]
-    expect(storePath()).toBe(STORE_PATH)
+    expect(storePath()).toBe(join(thyroxRoot(), STORE_DIR, STORE_FILE))
   })
 
   test('el ascenso NO gobierna: tres árboles del sistema llevan el marcador', () => {
@@ -285,8 +291,7 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
     // que no puede distinguir las dos conductas no mide ninguna — sub-patron D
     // de `metrica-decide-la-conclusion.md`.
     //
-    // Lo que este afirma es la decision del ejecutor 2026-09-07: sin variables,
-    // TODO aterriza en `thyrox/agent-results`, que es lo que impide el silo que
+    // Sin variables, TODO aterriza en `thyrox/agent-results`, que es lo que impide el silo que
     // :ref:`h-docs-1237` midio (dos archivos versionados, ninguno superconjunto
     // del otro).
     delete process.env[STORE_PATH_VAR]

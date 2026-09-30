@@ -1,0 +1,4 @@
+{"batch": 1, "files": 5, "total_before": 246, "total_final": 234, "tsc_runs": 2, "kept": 3}
+{"batch": 2, "files": 1, "total_before": 234, "total_final": 226, "tsc_runs": 1, "kept": 1}
+{"batches": 2, "files_kept": 4}
+__BG_EXIT__=0

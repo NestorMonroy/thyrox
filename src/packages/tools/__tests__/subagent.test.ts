@@ -13,6 +13,7 @@ import { STORE_PATH } from '@thyrox/observability/store'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { alterColumns, createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { agentTool } from '../src/agent.ts'
 import { taskTools } from '../src/tasks.ts'
 import { readJournal } from '@thyrox/observability/journal'
@@ -48,7 +49,7 @@ describe('herramienta Agent — el subagente (T-018)', () => {
     const p = new RecordedProvider([texto('ok')])
     const t = agentTool({ provider: p, transcriptDir: d, definitions: {} })
     await t.run({ prompt: 'solo lo mio' }, ctx(d))
-    const enviado = JSON.stringify(p.requests[0].messages)
+    const enviado = JSON.stringify(p.requests[0]!.messages)
     expect(enviado).toContain('solo lo mio')
     expect(enviado).not.toContain('padre')
   })
@@ -68,8 +69,8 @@ describe('herramienta Agent — el subagente (T-018)', () => {
       definitions: { revisor: { model: 'claude-opus-5', systemPrompt: 'eres el revisor' } },
     })
     await t.run({ prompt: 'revisa', subagent_type: 'revisor' }, ctx(d))
-    expect(p.requests[0].model).toBe('claude-opus-5')
-    expect(p.requests[0].system).toContain('eres el revisor')
+    expect(p.requests[0]!.model).toBe('claude-opus-5')
+    expect(p.requests[0]!.system).toContain('eres el revisor')
   })
 
   test('un subagent_type desconocido es un error nombrado, no un default silencioso', async () => {
@@ -151,17 +152,17 @@ describe('la captura nativa en el store (rama B, H-DOCS-1024)', () => {
     const f = rs[0]
     // El CONTROL que discrimina: el tipo es el REAL, no 'desconocido' ni 'harness'.
     // Ese es exactamente el campo que la reconciliacion desde disco no reconstruye.
-    expect(f.subagent_type).toBe('migration-porter')
-    expect(f.source).toBe('harness')
-    expect(f.usage_source).toBe('transcript')
-    expect(f.status).toBe('completed')
-    expect(f.model).toBe('claude-opus-5')
-    expect(f.description).toBe('porte de ir.cron')
-    expect(f.turns).toBe(1)
+    expect(f!.subagent_type).toBe('migration-porter')
+    expect(f!.source).toBe('harness')
+    expect(f!.usage_source).toBe('transcript')
+    expect(f!.status).toBe('completed')
+    expect(f!.model).toBe('claude-opus-5')
+    expect(f!.description).toBe('porte de ir.cron')
+    expect(f!.turns).toBe(1)
     // uso grabado: cache_read=100, output=5 — tokens reales, no NULL.
-    expect(f.cache_read_tokens).toBe(100)
-    expect(f.output_tokens).toBe(5)
-    expect(f.retention_level).toBe(3)
+    expect(f!.cache_read_tokens).toBe(100)
+    expect(f!.output_tokens).toBe(5)
+    expect(f!.retention_level).toBe(3)
   })
 
   test('running -> completed es UNA fila; el session_id del bucle llega en el cierre', async () => {
@@ -174,12 +175,12 @@ describe('la captura nativa en el store (rama B, H-DOCS-1024)', () => {
     const rs = filas(store)
     expect(rs.length).toBe(1)          // no duplica: mismo agent_id
     const f = rs[0]
-    expect(f.status).toBe('completed')
+    expect(f!.status).toBe('completed')
     // El session_id ya NO es el placeholder del despacho (= agent_id): es el id
     // real del bucle, el basename del transcript. Sin el update en ON CONFLICT
     // la fase 'running' habria dejado el placeholder para siempre.
-    expect(f.session_id).not.toBe(f.agent_id)
-    expect(r.content).toContain(String(f.session_id))
+    expect(f!.session_id).not.toBe(f!.agent_id)
+    expect(r.content).toContain(String(f!.session_id))
   })
 
   test('un subagente que falla deja status=failed, con su tipo real', async () => {
@@ -194,9 +195,9 @@ describe('la captura nativa en el store (rama B, H-DOCS-1024)', () => {
     expect(r.isError).toBe(true)
     const rs = filas(store)
     expect(rs.length).toBe(1)
-    expect(rs[0].status).toBe('failed')
-    expect(rs[0].subagent_type).toBe('revisor')
-    expect(rs[0].source).toBe('harness')
+    expect(rs[0]!.status).toBe('failed')
+    expect(rs[0]!.subagent_type).toBe('revisor')
+    expect(rs[0]!.source).toBe('harness')
   })
 
   test('sin storePath no se escribe nada — el tool sigue usable sin store', async () => {
@@ -210,14 +211,15 @@ describe('la captura nativa en el store (rama B, H-DOCS-1024)', () => {
 })
 
 describe('herramientas de tablero Task* (T-019)', () => {
+  /**
+   * Una base migrada por el dueño del schema (`agent_store.py`), no una copia
+   * del DDL de `tasks` leído del store real: `conBase` sólo VALIDA el ledger
+   * desde DEC-TASK 2026-09-29, así que el fixture tiene que migrar como lo
+   * haría un despliegue real.
+   */
   function tableroTemporal(): string {
     const destino = join(dir(), 'store.sqlite3')
-    const real = new Database(STORE_PATH, { readonly: true })
-    const ddl = real.query("select sql from sqlite_master where type='table' and name='tasks'").get() as { sql: string }
-    real.close()
-    const db = new Database(destino)
-    db.run(ddl.sql)
-    db.close()
+    createMigratedTaskDb(destino)
     return destino
   }
 
@@ -233,17 +235,17 @@ describe('herramientas de tablero Task* (T-019)', () => {
     const [crear, listar, actualizar] = ['TaskCreate', 'TaskList', 'TaskUpdate']
       .map((n) => taskTools({ dbPath: p }).find((t) => t.name === n)!)
     const d = dir()
-    const c = await crear.run({ subject: 'portar ir.cron', description: 'con su suite' }, ctx(d))
+    const c = await crear!.run({ subject: 'portar ir.cron', description: 'con su suite' }, ctx(d))
     expect(c.isError).toBe(false)
     const id = JSON.parse(c.content).task_id as string
     expect(id).toBeTruthy()
 
-    const l = JSON.parse((await listar.run({}, ctx(d))).content) as { task_id: string; status: string }[]
+    const l = JSON.parse((await listar!.run({}, ctx(d))).content) as { task_id: string; status: string }[]
     expect(l.map((t) => t.task_id)).toContain(id)
-    expect(l[0].status).toBe('pending')
+    expect(l[0]!.status).toBe('pending')
 
-    await actualizar.run({ task_id: id, status: 'completed' }, ctx(d))
-    const l2 = JSON.parse((await listar.run({ status: 'completed' }, ctx(d))).content) as { task_id: string }[]
+    await actualizar!.run({ task_id: id, status: 'completed' }, ctx(d))
+    const l2 = JSON.parse((await listar!.run({ status: 'completed' }, ctx(d))).content) as { task_id: string }[]
     expect(l2.map((t) => t.task_id)).toEqual([id])
   })
 
@@ -258,8 +260,8 @@ describe('herramientas de tablero Task* (T-019)', () => {
   test('un estado fuera del vocabulario se rechaza con la lista de los validos', async () => {
     const p = tableroTemporal()
     const [crear, actualizar] = ['TaskCreate', 'TaskUpdate'].map((n) => taskTools({ dbPath: p }).find((t) => t.name === n)!)
-    const id = JSON.parse((await crear.run({ subject: 'x' }, ctx(dir()))).content).task_id
-    const r = await actualizar.run({ task_id: id, status: 'inventado' }, ctx(dir()))
+    const id = JSON.parse((await crear!.run({ subject: 'x' }, ctx(dir()))).content).task_id
+    const r = await actualizar!.run({ task_id: id, status: 'inventado' }, ctx(dir()))
     expect(r.isError).toBe(true)
     expect(r.content).toContain('pending')
   })
@@ -274,9 +276,11 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     return fila.sql
   }
 
-  /** Una base vacía creada por el propio harness, sin copiar nada del store. */
+  /** Una base vacía, migrada por el dueño del schema — nada que copiar del store. */
   function tableroPropio(): string {
-    return join(dir(), 'propio.sqlite3')
+    const p = join(dir(), 'propio.sqlite3')
+    createMigratedTaskDb(p)
+    return p
   }
 
   function util(dbPath: string, nombre: string, sessionId?: string) {
@@ -296,8 +300,14 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     const db = new Database(p, { readonly: true })
     const columnas = (db.query('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
     db.close()
-    const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)].map((m) => m[1])
-    for (const c of reales) expect(columnas).toContain(c)
+    // El piso es el CREATE del store; las columnas que el store añade por
+    // `ALTER` (`src/packages/task/schema.ts`, «Piso, no contrato») quedan fuera a
+    // propósito y se leen sondeando. El SQL del store real ya las incluye.
+    const migradas = new Set(alterColumns())
+    const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)]
+      .map((m) => m[1])
+      .filter((c) => !migradas.has(c!))
+    for (const c of reales) expect(columnas).toContain(c!)
   })
 
   test('el id es el ordinal siguiente del tablero, no un UUID', async () => {

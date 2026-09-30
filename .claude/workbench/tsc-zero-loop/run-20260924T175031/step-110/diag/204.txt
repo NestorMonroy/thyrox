@@ -1,0 +1,61 @@
+src/packages/repl/src/components/Stats.tsx(2,36): error TS7016: Could not find a declaration file for module 'asciichart'. '/home/user/thyrox/node_modules/asciichart/asciichart.js' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/Stats.tsx:1-12 ---
+      1  import { feature } from 'bun:bundle'
+      2> import { plot as asciichart } from 'asciichart'
+      3  import chalk from 'chalk'
+      4  import figures from 'figures'
+      5  import React, {
+      6    Suspense,
+      7    use,
+      8    useCallback,
+      9    useEffect,
+     10    useMemo,
+     11    useState,
+     12  } from 'react'
+  Try `npm i --save-dev @types/asciichart` if it exists or add a new declaration (.d.ts) file containing `declare module 'asciichart';`
+src/packages/repl/src/components/Stats.tsx(816,46): error TS2345: Argument of type 'string' is not assignable to parameter of type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/repl/src/components/Stats.tsx:806-826 ---
+    806      const repeatCount = Math.floor(chartWidth / dailyTokens.length)
+    807      recentData = []
+    808      for (const day of dailyTokens) {
+    809        for (let i = 0; i < repeatCount; i++) {
+    810          recentData.push(day)
+    811        }
+    812      }
+    813    }
+    814  
+    815    // Color palette for different models - use theme colors
+    816>   const theme = getTheme(resolveThemeSetting(getGlobalConfig().theme))
+    817    const colors = [
+    818      themeColorToAnsi(theme.suggestion),
+    819      themeColorToAnsi(theme.success),
+    820      themeColorToAnsi(theme.warning),
+    821    ]
+    822  
+    823    // Prepare series data for each model
+    824    const series: number[][] = []
+    825    const legend: ChartLegend[] = []
+    826  
+src/packages/repl/src/components/Stats.tsx(973,46): error TS2345: Argument of type 'string' is not assignable to parameter of type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/repl/src/components/Stats.tsx:963-983 ---
+    963      const padding = Math.max(2, contentWidth - lastLineLen - statsLabel.length)
+    964      lines[lines.length - 1] =
+    965        lastLine + ' '.repeat(padding) + chalk.gray(statsLabel)
+    966    }
+    967  
+    968    return lines.join('\n')
+    969  }
+    970  
+    971  function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
+    972    const lines: string[] = []
+    973>   const theme = getTheme(resolveThemeSetting(getGlobalConfig().theme))
+    974    const h = (text: string) => applyColor(text, theme.claude as Color)
+    975  
+    976    // Two-column helper with fixed spacing
+    977    // Column 1: label (18 chars) + value + padding to reach col 2
+    978    // Column 2 starts at character position 40
+    979    const COL1_LABEL_WIDTH = 18
+    980    const COL2_START = 40
+    981    const COL2_LABEL_WIDTH = 18
+    982  
+    983    const row = (l1: string, v1: string, l2: string, v2: string): string => {

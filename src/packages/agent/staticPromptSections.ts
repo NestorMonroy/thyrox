@@ -1,19 +1,17 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/agent/staticPromptSections.ts`.
+ * Static (always-emitted) system-prompt sections extracted from prompts.ts
+ * to keep that file under its grandfathered LOC budget.
  *
- * Secciones estáticas (siempre emitidas) del system prompt, separadas de
- * `prompts.ts` para no exceder su presupuesto de líneas heredado. Cada
- * exportación corresponde a un registro `systemPromptSection(nombre, () =>
- * ...)` en `prompts.ts` y se alinea con su contraparte en el binario
- * vendorizado (`ant v2.1.139`, citado verbatim en el comentario de origen).
+ * Each export here corresponds to one `systemPromptSection(name, () => ...)`
+ * registration in prompts.ts and lines up with an ant counterpart.
  */
 
-// ant v2.1.139 4769.js: sección summarize_tool_results.
+// ant v2.1.139 4769.js:summarize_tool_results section.
 export const SUMMARIZE_TOOL_RESULTS_SECTION =
   `When working with tool results, write down any important information you might need later in your response, as the original tool result may be cleared later.`
 
-// ant v2.1.139 4769.js:556 (VE3) — context_management. Siempre emitida; le
-// dice al modelo que la auto-compactación mantendrá el trabajo en marcha,
-// para que no intente cerrar prematuramente cuando la conversación crece.
+// ant v2.1.139 4769.js:556 (VE3) — context_management. Always emitted; tells
+// the model that auto-compaction will keep work going so it doesn't try to
+// wrap up early when the conversation grows long.
 export const CONTEXT_MANAGEMENT_SECTION =
   `# Context management\nWhen the conversation grows long, some or all of the current context is summarized; the summary, along with any remaining unsummarized context, is provided in the next context window so work can continue — you don't need to wrap up early or hand off mid-task.`

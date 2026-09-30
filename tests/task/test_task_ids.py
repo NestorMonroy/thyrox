@@ -49,6 +49,7 @@ MODULE_PATH = reach.thyrox_root() / "src" / "task" / "task_ids.py"
 SUT = MODULE_PATH
 
 _spec = importlib.util.spec_from_file_location("task_ids", MODULE_PATH)
+assert _spec is not None and _spec.loader is not None
 kx = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(kx)
 
@@ -63,49 +64,51 @@ def check(condition: bool, label: str) -> None:
         failures.append(label)
 
 
-def entry(session: str, task_id, layer=None, subject: str = "") -> kx.TaskRef:
+def entry(session: str, task_id, layer=None, subject: str = ""):
+    # `kx` es un modulo cargado por import dinamico: pyright no puede resolver
+    # `kx.TaskRef` como tipo, asi que aqui no se anota el retorno.
     return kx.TaskRef(session_id=session, task_id=str(task_id),
                       layer=layer, subject=subject)
 
 
 # --- 1. forma del identificador -------------------------------------------
 mapping = kx.Mapping()
-assigned = kx.mint(mapping, [entry("s1", 7, "api", "Portar Field")])
+assigned = kx.assign_missing_ids(mapping, [entry("s1", 7, "api", "Portar Field")])
 check(assigned["s1\x007"] == "TASK-API-0001", "1a: primer id de api es TASK-API-0001")
 check(kx.ID_RE.match("TASK-API-0001") is not None, "1b: el patron acepta la forma canonica")
 check(kx.ID_RE.match("TASK-API-1") is None, "1c: el patron rechaza el ordinal sin relleno")
 check(kx.ID_RE.match("kx-api-0001") is None, "1d: el patron rechaza la minuscula")
 
-sin_capa = kx.mint(mapping, [entry("s1", 8, None, "sin señal de capa")])
+sin_capa = kx.assign_missing_ids(mapping, [entry("s1", 8, None, "sin señal de capa")])
 check(sin_capa["s1\x008"] == "TASK-GEN-0001",
       "1e: la tarea sin capa acuña bajo GEN, no bajo una capa inventada")
 
 # --- 2. idempotencia -------------------------------------------------------
-otra_vez = kx.mint(mapping, [entry("s1", 7, "api", "Portar Field")])
+otra_vez = kx.assign_missing_ids(mapping, [entry("s1", 7, "api", "Portar Field")])
 check(otra_vez["s1\x007"] == "TASK-API-0001", "2a: re-acuñar no mueve el id")
 check(len(mapping.ids) == 2, "2b: re-acuñar no añade entradas")
 
 # --- 3. estabilidad bajo cambio de capa ------------------------------------
-tras_derivar = kx.mint(mapping, [entry("s1", 8, "docs", "sin señal de capa")])
+tras_derivar = kx.assign_missing_ids(mapping, [entry("s1", 8, "docs", "sin señal de capa")])
 check(tras_derivar["s1\x008"] == "TASK-GEN-0001",
       "3a: derivar la capa despues NO renumera el id ya acuñado")
 check(mapping.ids["TASK-GEN-0001"]["layer"] == "gen",
       "3b: la capa congelada en el id no se reescribe")
 
 # --- 4. contador por capa, global y sin reuso -------------------------------
-kx.mint(mapping, [entry("s1", 9, "api"), entry("s1", 10, "docs")])
+kx.assign_missing_ids(mapping, [entry("s1", 9, "api"), entry("s1", 10, "docs")])
 check(kx.lookup(mapping, "s1", "9") == "TASK-API-0002", "4a: el contador de api avanza")
 check(kx.lookup(mapping, "s1", "10") == "TASK-DOCS-0001",
       "4b: cada capa lleva su propio contador")
 del mapping.ids["TASK-API-0002"]
 mapping.reindex()
-kx.mint(mapping, [entry("s1", 11, "api")])
+kx.assign_missing_ids(mapping, [entry("s1", 11, "api")])
 check(kx.lookup(mapping, "s1", "11") == "TASK-API-0003",
       "4c: borrar una entrada NO libera su numero — el siguiente sale del maximo")
 
 # --- 5. la colision real de ERR-024 ----------------------------------------
 colision = kx.Mapping()
-kx.mint(colision, [entry("168b0fdf", 371, "docs", "otra tarea"),
+kx.assign_missing_ids(colision, [entry("168b0fdf", 371, "docs", "otra tarea"),
                    entry("29a5e555", 371, "docs", "Declarar la equivalencia")])
 uno = kx.lookup(colision, "168b0fdf", "371")
 dos = kx.lookup(colision, "29a5e555", "371")
@@ -116,8 +119,8 @@ check(uno != dos, "5b: el mismo #371 en dos sesiones NO comparte identificador")
 entradas = [entry("sA", 3, "api"), entry("sA", 1, "docs"),
             entry("sB", 3, None), entry("sA", 2, "api")]
 primera, segunda = kx.Mapping(), kx.Mapping()
-kx.mint(primera, entradas)
-kx.mint(segunda, entradas)
+kx.assign_missing_ids(primera, entradas)
+kx.assign_missing_ids(segunda, entradas)
 check(kx.dumps(primera) == kx.dumps(segunda),
       "6a: dos acuñaciones del mismo orden dan el mismo mapa, byte a byte")
 
@@ -145,7 +148,7 @@ with tempfile.TemporaryDirectory() as tmp:
                         ("sA", "1", "docs", "uno", "2026-01-01", None),
                         ("sB", "3", None, "otra", "2026-02-01", None)])
     puesto = kx.Mapping()
-    kx.persist_to_store(store, kx.mint(puesto, kx.refs_from_store(store)))
+    kx.persist_to_store(store, kx.assign_missing_ids(puesto, kx.refs_from_store(store)))
     releido = kx.mapping_from_store(store)
     check(kx.dumps(releido) == kx.dumps(puesto),
           "6b: escribir al store y releerlo no altera el mapa")
@@ -157,7 +160,7 @@ with tempfile.TemporaryDirectory() as tmp:
     conn.execute("INSERT INTO tasks VALUES ('sC','9','api','nueve','2026-03-01',NULL)")
     conn.commit(); conn.close()
     segundo = kx.mapping_from_store(store)
-    kx.persist_to_store(store, kx.mint(segundo, kx.refs_from_store(store)))
+    kx.persist_to_store(store, kx.assign_missing_ids(segundo, kx.refs_from_store(store)))
     check(kx.lookup(kx.mapping_from_store(store), "sC", "9") == "TASK-API-0002",
           "6d: acuñar sobre un store ya acuñado continua el contador")
     check(kx.lookup(kx.mapping_from_store(store), "sA", "3") == "TASK-API-0001",
@@ -224,8 +227,8 @@ with tempfile.TemporaryDirectory() as tmp:
           "8a: sesion por su tarea mas antigua, tarea por id NUMERICO (2 antes que 10)")
 
     uno, dos = kx.Mapping(), kx.Mapping()
-    kx.mint(uno, kx.refs_from_store(store))
-    kx.mint(dos, kx.refs_from_store(store))
+    kx.assign_missing_ids(uno, kx.refs_from_store(store))
+    kx.assign_missing_ids(dos, kx.refs_from_store(store))
     check(kx.dumps(uno) == kx.dumps(dos),
           "8b: dos acuñaciones desde el mismo store dan el mismo mapa")
     check(kx.lookup(uno, "sA", "2") == "TASK-API-0001",
@@ -259,7 +262,7 @@ primera = [
     kx.TaskRef(S, "2", "api", "Barrer los identificadores en espanol"),
 ]
 m9 = kx.Mapping()
-a1 = kx.mint(m9, primera)
+a1 = kx.assign_missing_ids(m9, primera)
 id_gate = a1[f"{S}\x001"]
 sweep_id = a1[f"{S}\x002"]
 
@@ -271,7 +274,7 @@ segunda = [
     kx.TaskRef(S, "3", "api", "Barrer los identificadores en espanol"),
 ]
 before_minting = len(m9.ids)
-a2 = kx.mint(m9, segunda)
+a2 = kx.assign_missing_ids(m9, segunda)
 
 check(a2[f"{S}\x002"] == id_gate,
       "9a: el sujeto conserva su id cuando el ordinal cambia (1 -> 2)")
@@ -285,20 +288,20 @@ check(a2[f"{S}\x001"] not in (id_gate, sweep_id),
 # 9e — control que discrimina: sin el anclaje, 9c daria +3 en vez de +1. Se
 # mide anulando el indice por sujeto, que es la pieza que hace el trabajo.
 m9b = kx.Mapping()
-kx.mint(m9b, primera)
+kx.assign_missing_ids(m9b, primera)
 m9b._by_subject = {}          # la guarda anulada (sub-patron D)
 antes = len(m9b.ids)
-kx.mint(m9b, segunda)
+kx.assign_missing_ids(m9b, segunda)
 check(len(m9b.ids) == antes + 3,
       "9e: con el indice por sujeto anulado nacen 3 ids — el control discrimina")
 
 # 9f — dos tareas con el MISMO sujeto: el sujeto no desambigua y no se elige al
 # azar. Se acuña, y el par queda como estaba.
 m9c = kx.Mapping()
-kx.mint(m9c, [kx.TaskRef(S, "1", "docs", "Titulo repetido"),
+kx.assign_missing_ids(m9c, [kx.TaskRef(S, "1", "docs", "Titulo repetido"),
               kx.TaskRef(S, "2", "docs", "Titulo repetido")])
 n_antes = len(m9c.ids)
-kx.mint(m9c, [kx.TaskRef(S, "9", "docs", "Titulo repetido")])
+kx.assign_missing_ids(m9c, [kx.TaskRef(S, "9", "docs", "Titulo repetido")])
 check(len(m9c.ids) == n_antes + 1,
       "9f: con el sujeto ambiguo se acuña uno nuevo, no se elige al azar")
 
@@ -313,27 +316,40 @@ check(kx.TaskRef(S, "1", "docs", "a  b").subject_key
       "9h: el sujeto se compara normalizado por espacios")
 
 
-# --- 10. `ingest_board` — el sujeto del board entra al store en un ordinal
-#     LIBRE, sin pisar la cita del ocupante anterior de su ordinal.
-#
-#     El defecto que repara es real y esta medido (:ref:`h-docs-1067`): el
-#     ordinal del board se reusa, y en el store esos mismos numeros nombran
-#     otros sujetos. El control positivo reproduce esa forma — una fila vieja
-#     ya ocupa el ordinal "5" con OTRO sujeto y su propia cita.
+# --- 10. `ingest_board` — la identidad de una tarjeta es su ORDINAL, no su
+#     sujeto (H-THYROX-252). El control positivo es el episodio real: una
+#     tarjeta renombrada EN EL MISMO ordinal no puede recibir una segunda
+#     cita. La cobertura profunda —link_board_ordinal y los controles de
+#     anulacion— vive en tests/task/test_board_ordinal_identity.py; aqui solo
+#     el contrato minimo de la funcion que este archivo posee.
 import sqlite3
 
 def _store_con(filas):
-    """Un store minimo con las columnas que `ingest_board` toca."""
+    """Un store minimo con las columnas que `ingest_board` toca.
+
+    Cada fila es ``(task_id, subject, session_id, submodule, citation_id)``
+    o, con un sexto elemento explicito, ``(..., board_ordinal)``. Sin el
+    sexto, el ordinal por defecto es el propio ``task_id`` — la sesion ya
+    RECONCILIADA, que es el caso comun en estas pruebas—; un ``None``
+    explicito deja la fila sin ordinal (sesion no reconciliada).
+    """
     d = pathlib.Path(tempfile.mkdtemp())
     db = d / "s.sqlite3"
     c = sqlite3.connect(db)
     c.execute("CREATE TABLE tasks (task_id TEXT, subject TEXT, description TEXT,"
               " status TEXT, session_id TEXT, source TEXT, created_at TEXT,"
               " updated_at TEXT, submodule TEXT, submodule_source TEXT,"
-              " opened_at TEXT, opened_at_source TEXT, citation_id TEXT)")
+              " opened_at TEXT, opened_at_source TEXT, citation_id TEXT,"
+              " board_ordinal INTEGER)")
     for f in filas:
+        if len(f) == 6:
+            task_id, subject, session_id, submodule, citation_id, board_ordinal = f
+        else:
+            task_id, subject, session_id, submodule, citation_id = f
+            board_ordinal = int(task_id)
         c.execute("INSERT INTO tasks (task_id, subject, session_id, submodule,"
-                  " citation_id) VALUES (?,?,?,?,?)", f)
+                  " citation_id, board_ordinal) VALUES (?,?,?,?,?,?)",
+                  (task_id, subject, session_id, submodule, citation_id, board_ordinal))
     c.commit(); c.close()
     return d, db
 
@@ -346,62 +362,77 @@ def _board_con(tarjetas):
 VIEJO = "Cron A — portar el ejecutor de IrCron"
 NUEVO = "Reparar el REcompile() panic del gate de sucesor"
 
+# 10a — el control positivo del episodio: la tarjeta del ordinal "5" se
+#     RENOMBRA en el board. Deduplicar por sujeto (la forma anterior) leia
+#     esto como un sujeto nuevo y acuñaba una SEGUNDA cita; por ordinal, es
+#     la MISMA tarjeta.
 _, DB = _store_con([("5", VIEJO, S, "gen", "TASK-GEN-0045")])
 BOARD = _board_con({"5": {"subject": NUEVO, "submodule": "docs"}})
 acunadas = kx.ingest_board(DB, BOARD, S, ["5"])
 
-check(len(acunadas) == 1, "10a: el sujeto nuevo del board se acuña")
-check(acunadas[0][1] != "5",
-      "10b: aterriza en un ordinal LIBRE, no en el 5 que ya estaba ocupado")
+check(len(acunadas) == 1, "10a: la tarjeta renombrada se procesa una vez")
+check(acunadas[0][1] == "5",
+      "10b: NO aterriza en un ordinal nuevo — es la MISMA fila que ya existia")
 
 con = sqlite3.connect(DB)
-cita_vieja = con.execute("SELECT citation_id FROM tasks WHERE subject = ?",
-                         (VIEJO,)).fetchone()[0]
-check(cita_vieja == "TASK-GEN-0045",
-      "10c: la cita del sujeto ANTERIOR queda intacta (el daño de h-docs-1042)")
-cita_nueva = con.execute("SELECT citation_id FROM tasks WHERE subject = ?",
-                         (NUEVO,)).fetchone()[0]
-check(cita_nueva != cita_vieja and cita_nueva.startswith("TASK-DOCS-"),
-      "10d: el sujeto nuevo recibe cita propia, en la capa que declara su tarjeta")
+filas = con.execute("SELECT task_id, subject, citation_id FROM tasks "
+                    "WHERE session_id = ?", (S,)).fetchall()
 con.close()
+check(len(filas) == 1,
+      "10c: sigue habiendo UNA sola fila — el defecto de H-THYROX-252 no reaparece")
+check(filas[0][1] == NUEVO,
+      "10d: el sujeto de la fila es el NUEVO — se actualizo en su sitio")
+check(filas[0][2] == "TASK-GEN-0045",
+      "10e: la cita NO se movio — sigue siendo la que ya tenia esa tarjeta")
 
-# 10e — idempotencia: repetir el mismo ingest NO acuña una segunda cita para
-#     el mismo sujeto. Sin esto, cada pasada duplicaria la fila (TASK-DB-0002).
-check(len(kx.ingest_board(DB, BOARD, S, ["5"])) == 0,
-      "10e: repetir el ingest no acuña de nuevo el mismo sujeto")
+# 10f — idempotencia: repetir el ingest sin cambios no vuelve a listar la
+#     tarjeta — nada que tocar.
+check(kx.ingest_board(DB, BOARD, S, ["5"]) == [],
+      "10f: repetir el ingest sin cambios no toca nada")
 
-# 10f — `snapshot-tareas` inserta la fila SIN cita y en `gen`; si después se
-#     ingiere el board, el sujeto ya existe y se saltaba, así que la fila se
-#     quedaba sin cita durable para siempre. Medido 2026-09-23: cuatro tareas
-#     de la sesión quedaron así y `ingerir-board` publicó «0 acuñadas».
-#     Se acuña en ESA fila, sólo porque su cita es nula: una cita existente
-#     nunca se reasigna (h-docs-1042).
-_, DB3 = _store_con([("1", NUEVO, S, "gen", None)])
+# 10g — un ordinal que AUN no tiene fila SI crea una nueva.
+BOARD2 = _board_con({"5": {"subject": NUEVO, "submodule": "docs"},
+                     "9": {"subject": "Una tarjeta genuinamente nueva",
+                           "submodule": "api"}})
+acunadas2 = kx.ingest_board(DB, BOARD2, S, ["9"])
+check(len(acunadas2) == 1, "10g: un ordinal sin fila previa SI se acuña")
+check(acunadas2[0][1] != "5",
+      "10h: y aterriza en un task_id propio, no en el de la tarjeta renombrada")
+
+# 10i — una fila que YA tiene ordinal pero SIN cita (como la deja
+#     `snapshot-tareas`) recibe su cita sin duplicarse.
+_, DB3 = _store_con([("1", NUEVO, S, "gen", None, 5)])
 acunadas3 = kx.ingest_board(DB3, BOARD, S, ["5"], layer="thyrox")
 con = sqlite3.connect(DB3)
-filas3 = con.execute("SELECT task_id, citation_id, submodule FROM tasks "
-                     "WHERE subject = ?", (NUEVO,)).fetchall()
+rows3 = con.execute("SELECT task_id, citation_id FROM tasks "
+                     "WHERE session_id = ?", (S,)).fetchall()
 con.close()
-check(len(filas3) == 1 and filas3[0][1] is not None and filas3[0][1].startswith("TASK-THYROX-"),
-      "10f: la fila sin cita que dejó el snapshot recibe su cita, sin duplicarse")
-check(filas3 and filas3[0][2] == "thyrox",
-      "10g: y la capa declarada sustituye al «gen» que no sabía")
+check(len(rows3) == 1 and rows3[0][1] is not None
+      and rows3[0][1].startswith("TASK-THYROX-"),
+      "10i: la fila sin cita recibe la suya, sin duplicarse")
 check(len(acunadas3) == 1 and acunadas3[0][1] == "1",
-      "10h: el informe la cuenta como acuñada en su ordinal existente")
+      "10j: el informe la cuenta en su task_id existente, no en uno nuevo")
 
-# 10f — control que DISCRIMINA: con el indice de sujetos vacio —la pieza que
-#     hace el trabajo— el segundo ingest SI duplicaria. Se mide sobre un store
-#     hermano, sin tocar el de arriba.
-_, DB2 = _store_con([])
-check(len(kx.ingest_board(DB2, BOARD, S, ["5"])) == 1,
-      "10f: sobre un store sin ese sujeto SI se acuña — el control discrimina")
+# 10k — guard: una SESION no reconciliada (alguna fila con board_ordinal
+#     NULO) REHUSA por completo — nada se escribe.
+_, DB4 = _store_con([("1", "A", S, "gen", "TASK-GEN-0900", None)])
+antes = sqlite3.connect(DB4).execute(
+    "SELECT subject, citation_id FROM tasks").fetchall()
+try:
+    kx.ingest_board(DB4, BOARD2, S, ["9"])
+    check(False, "10k: una sesion no reconciliada debe REHUSAR")
+except kx.MappingError as exc:
+    check("1" in str(exc), "10k: y nombra CUANTAS filas sin ordinal tiene")
+after = sqlite3.connect(DB4).execute(
+    "SELECT subject, citation_id FROM tasks").fetchall()
+check(antes == after, "10l: y no escribe nada — ni siquiera la tarjeta nueva")
 
-# 10g — guard: una tarjeta que falta REHUSA, y no escribe la mitad del lote.
+# 10m — guard: una tarjeta que falta REHUSA, y no escribe la mitad del lote.
 try:
     kx.ingest_board(DB, BOARD, S, ["5", "99"])
-    check(False, "10g: una tarjeta ausente debe REHUSAR")
+    check(False, "10m: una tarjeta ausente debe REHUSAR")
 except kx.MappingError:
-    check(True, "10g: una tarjeta ausente REHUSA en vez de acuñar a medias")
+    check(True, "10m: una tarjeta ausente REHUSA en vez de acuñar a medias")
 
 
 # 11 — `cita` publica el SUJETO, no solo el id (#182).
@@ -411,7 +442,7 @@ except kx.MappingError:
 #     Acertar la mitad entrena a confiar en el comando.
 _, DB3 = _store_con([("7", "El sujeto que tiene que aparecer", S, "docs", "TASK-DOCS-0007")])
 _salida = subprocess.run(
-    [sys.executable, str(SUT), "--store", str(DB3), "cita", S, "7"],
+    [sys.executable, str(SUT), "--store", str(DB3), "lookup", S, "7"],
     capture_output=True, text=True)
 check(_salida.returncode == 0, "11a: `cita` resuelve un par que existe")
 check("TASK-DOCS-0007" in _salida.stdout, "11b: y publica el identificador")
@@ -426,7 +457,7 @@ check(len(_salida.stdout.strip().splitlines()) == 1,
 #     indistinguible «la tarea no tiene titulo» de «el comando no lo publica».
 _, DB4 = _store_con([("8", "", S, "docs", "TASK-DOCS-0008")])
 _vacio = subprocess.run(
-    [sys.executable, str(SUT), "--store", str(DB4), "cita", S, "8"],
+    [sys.executable, str(SUT), "--store", str(DB4), "lookup", S, "8"],
     capture_output=True, text=True)
 check("sin sujeto" in _vacio.stdout, "11e: un sujeto vacio se declara, no se omite")
 
@@ -451,7 +482,7 @@ BOARD5 = _board_con({"276": {"id": "276", "status": "in_progress",
                              "subject": "Portar appRuntime y los 32 de swarm "
                                         "que no usan interfaz"}})
 _amb = subprocess.run(
-    [sys.executable, str(SUT), "--store", str(DB5), "cita",
+    [sys.executable, str(SUT), "--store", str(DB5), "lookup",
      "--board", str(BOARD5), S, "276"],
     capture_output=True, text=True)
 check(_amb.returncode != 0,
@@ -470,7 +501,7 @@ BOARD6 = _board_con({"276": {"id": "276", "status": "pending",
                              "subject": "Gate: filas del list-table vs "
                                         "entradas del toctree"}})
 _ok = subprocess.run(
-    [sys.executable, str(SUT), "--store", str(DB5), "cita",
+    [sys.executable, str(SUT), "--store", str(DB5), "lookup",
      "--board", str(BOARD6), S, "276"],
     capture_output=True, text=True)
 check(_ok.returncode == 0 and "TASK-API-0150" in _ok.stdout,
@@ -480,7 +511,7 @@ check(_ok.returncode == 0 and "TASK-API-0150" in _ok.stdout,
 #     indistinguible «no hay ambiguedad» de «no pude mirar», que es el
 #     sub-patron D aplicado a la propia guarda.
 _sin = subprocess.run(
-    [sys.executable, str(SUT), "--store", str(DB5), "cita",
+    [sys.executable, str(SUT), "--store", str(DB5), "lookup",
      "--board", str(BOARD5 / "no-existe"), S, "276"],
     capture_output=True, text=True)
 check(_sin.returncode == 0 and "TASK-API-0150" in _sin.stdout,
@@ -494,11 +525,11 @@ check("no alcanzable" in _sin.stderr,
 #     de la tarjeta y el comando que la acuña cierra ese hueco.
 _, DB7 = _store_con([])
 _falta = subprocess.run(
-    [sys.executable, str(SUT), "--store", str(DB7), "cita",
+    [sys.executable, str(SUT), "--store", str(DB7), "lookup",
      "--board", str(BOARD5), S, "276"],
     capture_output=True, text=True)
 check(_falta.returncode != 0, "12h: sin fila en el store `cita` sigue rehusando")
-check("Portar appRuntime" in _falta.stderr and "ingerir-board" in _falta.stderr,
+check("Portar appRuntime" in _falta.stderr and "ingest-board" in _falta.stderr,
       "12i: y nombra el sujeto de la tarjeta y el comando que lo acuña")
 
 
@@ -609,6 +640,129 @@ try:
     check(False, "capa: capa fuera del canon REHUSA")
 except kx.MappingError:
     check(True, "capa: capa fuera del canon REHUSA")
+
+
+# ---------------------------------------------------------------------------
+# 13. La cita de la CAPA corregida — `layer_citation_id`, una columna aparte.
+#
+# El bloque 9 fija que `fix-layer` NO mueve el `citation_id`: es identidad.
+# Eso deja una tarea de thyrox citada para siempre como `TASK-GEN-NNNN`, que
+# es la forma en que nacian todas las tarjetas del board sin capa declarada.
+# La segunda columna da la cita en su capa sin tocar la primera: las dos
+# resuelven a la misma fila, y las dos salen de UNA sola secuencia por capa.
+#
+# EL QUE DISCRIMINA es 13c: sin contar la columna nueva al numerar, el
+# siguiente `ingest-board` de thyrox repetiria el numero ya repartido, y una
+# cita nombraria dos tareas.
+def _store_with_layer_citation(filas):
+    """Como `_store_con`, con la columna `layer_citation_id` presente."""
+    d, db = _store_con(filas)
+    c = sqlite3.connect(db)
+    c.execute("ALTER TABLE tasks ADD COLUMN layer_citation_id TEXT")
+    c.commit(); c.close()
+    return d, db
+
+
+def _layer_citation_of(db, task_id):
+    return sqlite3.connect(db).execute(
+        "SELECT citation_id, layer_citation_id FROM tasks WHERE task_id = ?",
+        (task_id,)).fetchone()
+
+
+_, DB13 = _store_with_layer_citation([
+    ("10", "Tarea de thyrox acuñada sin capa", S, "gen", "TASK-GEN-0010"),
+    ("5", "Otra tarea de thyrox", S, "thyrox", "TASK-THYROX-0005"),
+])
+_minted = kx.correct_layer(DB13, "TASK-GEN-0010", "thyrox", "el trabajo vive en thyrox")
+_row = _layer_citation_of(DB13, "10")
+check(_row == ("TASK-GEN-0010", "TASK-THYROX-0006"),
+      "13a: corregir a una capa distinta del prefijo acuña la cita de esa capa")
+check(_minted[2] == "TASK-THYROX-0006",
+      "13a: y la devuelve a quien la pidio")
+
+kx.correct_layer(DB13, "TASK-GEN-0010", "thyrox", "otra vez")
+check(_layer_citation_of(DB13, "10")[1] == "TASK-THYROX-0006",
+      "13b: repetir la correccion no acuña otra cita (idempotente)")
+
+_board13 = _board_con({"11": {"subject": "Tarjeta nueva de thyrox",
+                              "description": "", "status": "pending"}})
+kx.ingest_board(DB13, _board13, S, ["11"], layer="thyrox")
+check(_layer_citation_of(DB13, "11")[1] is None and sqlite3.connect(DB13).execute(
+          "SELECT citation_id FROM tasks WHERE board_ordinal = 11").fetchone()[0]
+      == "TASK-THYROX-0007",
+      "13c: ingest-board cuenta la columna nueva y NO repite el 0006")
+
+_map13 = kx.mapping_from_store(DB13)
+check(_map13.resolve("TASK-THYROX-0006") == "TASK-GEN-0010",
+      "13d: la cita de capa resuelve a la misma fila que su citation_id")
+check(_map13.resolve("TASK-GEN-0010") == "TASK-GEN-0010",
+      "13d: y el citation_id sigue resolviendo")
+check(_map13.next_ordinal("thyrox") == 8,
+      "13d: la marca de agua del mapa tambien cuenta la columna nueva")
+
+_, DB13e = _store_with_layer_citation([
+    ("20", "Ya nacio en su capa", S, "thyrox", "TASK-THYROX-0020"),
+    ("21", "Cruza repos", S, "docs", "TASK-DOCS-0021"),
+])
+kx.correct_layer(DB13e, "TASK-THYROX-0020", "thyrox", "sin cambio")
+kx.correct_layer(DB13e, "TASK-DOCS-0021", "gen", "cruza repos")
+check(_layer_citation_of(DB13e, "20")[1] is None,
+      "13e: si el prefijo ya es la capa, no se acuña nada")
+check(_layer_citation_of(DB13e, "21")[1] is None,
+      "13e: `gen` no es una capa: corregir a gen no acuña cita")
+
+try:
+    kx.correct_layer(DB13, "TASK-GEN-0010", "docs", "cambio de opinion")
+    check(False, "13f: una cita de capa ya publicada no se reemplaza — REHUSA")
+except kx.MappingError:
+    check(_layer_citation_of(DB13, "10")[1] == "TASK-THYROX-0006",
+          "13f: una cita de capa ya publicada no se reemplaza — REHUSA")
+
+_, DB13g = _store_con([("30", "Store sin la columna", S, "gen", "TASK-GEN-0030")])
+_without_column = kx.correct_layer(DB13g, "TASK-GEN-0030", "thyrox", "falta la migracion")
+check(_without_column == ("gen", "thyrox", None)
+      and sqlite3.connect(DB13g).execute(
+          "SELECT submodule FROM tasks WHERE task_id = '30'").fetchone()[0] == "thyrox",
+      "13g: sin la columna, la capa se corrige igual y no se acuña cita de capa")
+_cli13g = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB13g), "fix-layer", "TASK-GEN-0030",
+     "--layer", "docs", "--reason", "otra"], capture_output=True, text=True)
+check(_cli13g.returncode == 0 and "layer_citation_id" in _cli13g.stderr,
+      "13g: y la CLI lo dice, nombrando la columna que falta")
+
+_look13 = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB13), "lookup", S, "10"],
+    capture_output=True, text=True)
+check(_look13.stdout.split()[:1] == ["TASK-THYROX-0006"]
+      and "TASK-GEN-0010" in _look13.stdout
+      and len(_look13.stdout.strip().splitlines()) == 1,
+      "13h: lookup publica primero la cita de capa, nombra la original, en una linea")
+
+# 13i — el relleno de lo ya corregido. Las filas cuya capa ya se corrigio antes
+#     de que existiera la columna reciben su cita de capa, sin tocar la RAZON
+#     que `submodule_source` guarda (por eso no se reusa `correct_layer`).
+_, DB13i = _store_with_layer_citation([
+    ("40", "Capa docs, prefijo gen", S, "docs", "TASK-GEN-0040"),
+    ("41", "Sin capa conocida", S, None, "TASK-GEN-0041"),
+    ("42", "Ya en su capa", S, "thyrox", "TASK-THYROX-0003"),
+    ("43", "Capa thyrox, prefijo gen", S, "thyrox", "TASK-GEN-0043"),
+])
+sqlite3.connect(DB13i).execute(
+    "UPDATE tasks SET submodule_source = 'corregida antes'").connection.commit()
+_dry = kx.assign_layer_citations(DB13i, dry_run=True)
+check(_dry == [("TASK-GEN-0040", "TASK-DOCS-0001"), ("TASK-GEN-0043", "TASK-THYROX-0004")]
+      and _layer_citation_of(DB13i, "40")[1] is None,
+      "13i: dry-run publica lo que acuñaria y no escribe")
+_done = kx.assign_layer_citations(DB13i)
+check(_done == _dry and _layer_citation_of(DB13i, "43")[1] == "TASK-THYROX-0004",
+      "13i: acuña solo donde el prefijo no nombra una capa conocida")
+check(_layer_citation_of(DB13i, "41")[1] is None and _layer_citation_of(DB13i, "42")[1] is None,
+      "13i: sin capa conocida, o ya en su capa, no acuña nada")
+check(sqlite3.connect(DB13i).execute(
+          "SELECT COUNT(*) FROM tasks WHERE submodule_source = 'corregida antes'").fetchone()[0] == 4,
+      "13i: no toca la razon de la correccion")
+check(kx.assign_layer_citations(DB13i) == [],
+      "13i: una segunda pasada no acuña nada (idempotente)")
 
 print(f"{checks} aserciones")
 if failures:

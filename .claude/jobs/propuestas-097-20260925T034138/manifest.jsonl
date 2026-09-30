@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/headless-pool --prompt .claude/workbench/tsc-zero-loop/run-20260924T175031/step-097/plantilla.md --out .claude/workbench/tsc-zero-loop/run-20260924T175031/step-097/outputs --model claude-sonnet-5 --width 4 --timeout 900 --tools Read,Grep,Glob --max-turns 40 --cwd /home/user/thyrox < .claude/workbench/tsc-zero-loop/run-20260924T175031/step-097/items.txt", "started_at": "2026-09-25T03:41:38+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-09-25T04:04:36+00:00", "duration_seconds": 1378.07285}

@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: LCP > el resultado de una petición LCP no toca las vinculaciones por sesión [1.64ms]
+ 102 pass
+ 1 fail

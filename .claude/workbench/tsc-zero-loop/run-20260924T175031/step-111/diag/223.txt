@@ -1,0 +1,69 @@
+src/packages/repl/src/components/messageActions.tsx(31,60): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/repl/src/components/messageActions.tsx:21-41 ---
+     21  ] as const
+     22  export type NavigableType = (typeof NAVIGABLE_TYPES)[number]
+     23  
+     24  type NavigableOf<T extends NavigableType> = Extract<
+     25    RenderableMessage,
+     26    { type: T }
+     27  >
+     28  export type NavigableMessage = RenderableMessage
+     29  
+     30  // Tier-2 blocklist (tier-1 is height > 0) — things that render but aren't actionable.
+     31> export function isNavigableMessage(msg: NavigableMessage): boolean {
+     32    switch (msg.type) {
+     33      case 'assistant': {
+     34        const b = msg.message.content[0]
+     35        // Text responses (minus AssistantTextMessage's return-null cases — tier-1
+     36        // misses unmeasured virtual items), or tool calls with extractable input.
+     37        return (
+     38          (b?.type === 'text' &&
+     39            !isEmptyMessageText(b.text) &&
+     40            !SYNTHETIC_MESSAGES.has(b.text)) ||
+     41          (b?.type === 'tool_use' && b.name in PRIMARY_INPUT)
+src/packages/repl/src/components/messageActions.tsx(352,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/repl/src/components/messageActions.tsx:342-362 ---
+    342    const CLOSE = '</system-reminder>'
+    343    let t = text.trimStart()
+    344    while (t.startsWith('<system-reminder>')) {
+    345      const end = t.indexOf(CLOSE)
+    346      if (end < 0) break
+    347      t = t.slice(end + CLOSE.length).trimStart()
+    348    }
+    349    return t
+    350  }
+    351  
+    352> function copyTextOf(msg: NavigableMessage): string {
+    353    switch (msg.type) {
+    354      case 'user': {
+    355        const b = msg.message.content[0]
+    356        return b?.type === 'text' ? stripSystemReminders(b.text) : ''
+    357      }
+    358      case 'assistant': {
+    359        const b = msg.message.content[0]
+    360        if (b?.type === 'text') return b.text
+    361        const tc = toolCallOf(msg)
+    362        return tc ? (PRIMARY_INPUT[tc.name]?.extract(tc.input) ?? '') : ''
+src/packages/repl/src/components/messageActions.tsx(378,29): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/repl/src/components/messageActions.tsx:368-388 ---
+    368          .flatMap(m =>
+    369            m.type === 'user'
+    370              ? [toolResultText(m)]
+    371              : m.type === 'grouped_tool_use'
+    372                ? m.results.map(toolResultText)
+    373                : [],
+    374          )
+    375          .filter(Boolean)
+    376          .join('\n\n')
+    377      case 'system':
+    378>       if ('content' in msg) return msg.content
+    379        if ('error' in msg) return String(msg.error)
+    380        return msg.subtype
+    381      case 'attachment': {
+    382        const a = msg.attachment
+    383        if (a.type === 'queued_command') {
+    384          const p = a.prompt as string | ReadonlyArray<ContentItem>
+    385          return typeof p === 'string'
+    386            ? p
+    387            : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')
+    388        }

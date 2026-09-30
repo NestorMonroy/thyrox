@@ -1,0 +1,27 @@
+src/rules/emit/markdown.ts(55,36): error TS2769: No overload matches this call.
+  --- código src/rules/emit/markdown.ts:45-65 ---
+     45            `marcador sin resolver publicaria prosa que nadie puede cumplir.`,
+     46        )
+     47      }
+     48      resolved[parameter.name] = declared
+     49    }
+     50    return resolved
+     51  }
+     52  
+     53  /** Sustituye los marcadores; lanza ante uno que ningún parámetro declara. */
+     54  export function render(body: string, values: Record<string, string>): string {
+     55>   return body.replace(PLACEHOLDER, (_match, name: string) => {
+     56      if (!(name in values)) {
+     57        throw new UnresolvedParameterError(
+     58          `El cuerpo usa {{${name}}} y la definicion no lo declara como ` +
+     59            `parametro. NO se emite con el marcador crudo.`,
+     60        )
+     61      }
+     62      return values[name]
+     63    })
+     64  }
+     65  
+  The last overload gave the following error.
+    Argument of type '(_match: string, name: string) => string | undefined' is not assignable to parameter of type '(substring: string, ...args: any[]) => string'.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.

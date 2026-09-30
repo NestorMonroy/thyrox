@@ -1,8 +1,3 @@
-/**
- * Jerarquía de errores del bridge. Puerto fiel de
- * `ccnmt: packages/bridge/src/errors.ts`.
- */
-
 export class BridgeBaseError extends Error {
   readonly code: string
 

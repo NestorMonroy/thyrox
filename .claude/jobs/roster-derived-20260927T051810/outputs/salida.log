@@ -1,0 +1,163 @@
+run-task-pool: 12 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260927T051810
+  job-20260927T051810/job-001 pid 30182   PYTHONPATH=src timeout 600 python3 tests/hooks/test_task_lifecycle.py
+  job-20260927T051810/job-002 pid 30216   timeout 600 bash tests/install/test_install.sh
+  job-20260927T051810/job-003 pid 30284   timeout 600 bash tests/lib/test-reach-pythonpath.sh
+  job-20260927T051810/job-004 pid 30319   PYTHONPATH=src timeout 600 python3 tests/paths/test_deferred_names_not_used_bare.py
+  job-20260927T051810/job-005 pid 30356   timeout 600 bash tests/session/test-arranque-de-clon.sh
+  job-20260927T051810/job-006 pid 30673   timeout 600 bash tests/session/test-jobs-ledger-home.sh
+  job-20260927T051810/job-007 pid 30724   timeout 600 bash tests/session/test-sincronizar-settings-local.sh
+  job-20260927T051810/job-008 pid 30759   PYTHONPATH=src timeout 600 python3 tests/session/test_installed_hooks_resolve.py
+  job-20260927T051810/job-009 pid 31266   PYTHONPATH=src timeout 600 python3 tests/session/test_user_wiring.py
+  job-20260927T051810/job-010 pid 31302   timeout 600 bash tests/verify/test-eventos-hook.sh
+  job-20260927T051810/job-011 pid 31354   timeout 600 bash tests/verify/test-githooks-activos.sh
+  job-20260927T051810/job-012 pid 31761   timeout 600 bash tests/verify/test-hook-script-token.sh
+run-task-pool: lanzados 12 de 12; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T051810_job-001 -> OK (2 de 13)
+asentado: job-20260927T051810_job-002 -> OK (3 de 13)
+asentado: job-20260927T051810_job-003 -> OK (4 de 13)
+asentado: job-20260927T051810_job-004 -> OK (5 de 13)
+asentado: job-20260927T051810_job-005 -> OK (6 de 13)
+asentado: job-20260927T051810_job-006 -> OK (7 de 13)
+asentado: job-20260927T051810_job-007 -> OK (8 de 13)
+asentado: job-20260927T051810_job-008 -> OK (9 de 13)
+asentado: job-20260927T051810_job-011 -> OK (10 de 13)
+asentado: job-20260927T051810_job-009 -> OK (10 de 13)
+asentado: job-20260927T051810_job-012 -> OK (12 de 13)
+esperando: 12 de 13 asentados, 31s; vivos: job-20260927T051810_job-010
+sonda job-20260927T051810_job-010: 31302 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T051810_job-010: 31309 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T051810_job-010: 31311 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T051810_job-010: 31315 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T051810_job-010: 493 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T051810_job-010: 494 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=0.79s
+sonda job-20260927T051810_job-010: 495 grep stdin=channel(pipe:[107106]) escritores=1 estado=S cpu=0.00s
+  AVISO job-20260927T051810_job-010: pid 495 (grep) lee stdin de un canal (pipe:[107106]) — si su productor no escribe ni cierra, espera para siempre
+asentado: job-20260927T051810_job-010 -> OK (11 de 13)
+== 13 trabajos asentados ==
+OLVIDADO job-20260927T051810
+       | (vacío — no emitió nada)
+OK     job-20260927T051810_job-001 exit=0
+       |   ok    sale 0 ante JSON invalido
+       |   ok    sale 0 ante stdin vacio
+       | 
+       | == 6. el cableado del usuario DECLARA el evento ==
+       |   ok    `TaskCreated` esta declarado
+       |   ok    `TaskCompleted` esta declarado
+       |   ok    los dos apuntan al mismo guion
+       | 
+       | resultado: 15 de 15 aserciones en verde
+       | EXIT=0
+       memoria pico: 21072 KB (21 MB) · pared 0.30s
+OK     job-20260927T051810_job-002 exit=0
+       |   ok   --dry-run no invoca el instalador de clones
+       |   ok   --dry-run dice que prepararia el clon
+       |   ok   sin instalador -> SIN MEDIR
+       |   ok   sin instalador -> nombra el archivo
+       |   ok   exit 3 en el proveedor -> exit 0
+       |   ok   exit 3 en el proveedor -> lo dice
+       |   ok   exit 3 en un consumidor -> exit 1
+       | 
+       | 59 aserciones: 59 ok, 0 fallidas
+       | EXIT=0
+       memoria pico: 17912 KB (17 MB) · pared 3.33s
+OK     job-20260927T051810_job-003 exit=0
+       |   ok    el modulo importa su hermano
+       | === Caso 4: el prepend NO pisa lo que el llamador ya traia ===
+       |   ok    src va delante y lo del llamador sobrevive
+       | === Caso 5: dos source no duplican la entrada ===
+       |   ok    el guard de doble inclusion lo cubre
+       | === Caso 6: 0 guiones de PRODUCCION invocan un modulo que no podran importar ===
+       |   ok    0 guiones de produccion sin cobertura (universo medido: 135 modulos)
+       | 
+       | 6 casos: 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13052 KB (13 MB) · pared 0.25s
+OK     job-20260927T051810_job-004 exit=0
+       | test_2_el_recorrido_ve_el_defecto_cuando_existe (__main__.TestDeferredNamesNotUsedBare.test_2_el_recorrido_ve_el_defecto_cuando_existe)
+       | El control positivo: sin esto, el caso 1 pasaria por no mirar nada. ... ok
+       | test_3_el_acceso_por_atributo_no_es_defecto (__main__.TestDeferredNamesNotUsedBare.test_3_el_acceso_por_atributo_no_es_defecto)
+       | `modulo.RAIZ` desde fuera SI lo resuelve PEP 562: no se marca. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 3 tests in 0.299s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 22972 KB (22 MB) · pared 0.34s
+OK     job-20260927T051810_job-005 exit=0
+       | test-arranque-de-clon: 21 de 21 aserciones en verde
+       | EXIT=0
+       memoria pico: 13964 KB (14 MB) · pared 0.86s
+OK     job-20260927T051810_job-006 exit=0
+       |   ok    el hogar de las corridas NO mueve el ledger
+       |   ok    el .job cae bajo la raíz del ledger, en su sesión, y nada en las corridas
+       |   ok    THYROX_SESSION_LEDGER_DIR es el ledger de la sesión, tal cual
+       | 
+       | 3 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13180 KB (13 MB) · pared 0.33s
+OK     job-20260927T051810_job-007 exit=0
+       | == 9. un bloque sin dueño declarado se reporta, no se adivina ==
+       |   ok    bloque sin dueño -> exit 1
+       |   ok    dice por qué no lo toca
+       | == 10. el disparador cita al PROVEEDOR, y su marcador queda resuelto ==
+       |   ok    ningun comando conserva el marcador
+       |   ok    todos citan un script que existe
+       |   ok    sin resolver, los 5 comandos lo conservan
+       | 
+       | resultado: 31 aserciones en verde, 0 en rojo
+       | EXIT=0
+       memoria pico: 12592 KB (12 MB) · pared 0.78s
+OK     job-20260927T051810_job-008 exit=0
+       | test_it_emits_the_declared_event_set (__main__.InstalledHooksResolve.test_it_emits_the_declared_event_set)
+       | Sin esto, un instalador que no escribiera nada daría verde. ... ok
+       | test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+       | CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.576s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 15880 KB (16 MB) · pared 0.67s
+OK     job-20260927T051810_job-009 exit=0
+       |   ok    17-bis.5 con la version vieja, 17.1 CAE
+       |   ok    17-bis.6 y 17.2 CAE: el comando roto sale del universo
+       |   ok    17-bis.7 restaurada, vuelve a verlo
+       |   ok    --hooks-only instala sin rehusar
+       |   ok    --hooks-only escribe los hooks declarados
+       |   ok    --hooks-only no toca advisorModel
+       |   ok    --hooks-only conserva permissions
+       | 
+       | 85 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15844 KB (15 MB) · pared 1.79s
+OK     job-20260927T051810_job-010 exit=0
+       |   ok   sin universo derivable sale con codigo 2
+       |   ok   el reporte declara ambos universos
+       |   ok   el reporte nombra los eventos sin consumir
+       |   ok   la raiz del arbol de trabajo entra en el alcance
+       |   ok   lo que SOLO declara el archivo externo no sale sin consumir
+       |   ok   el árbol declarado entra en el alcance: su typo sale con código 1
+       |   ok   y nombra su settings.local.json
+       | 
+       | 11 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 176136 KB (172 MB) · pared 37.49s
+OK     job-20260927T051810_job-011 exit=0
+       |   ok    sin roster sale 2
+       |   ok    y no publica un conteo
+       |   ok    y nombra la variable que falta
+       | == 3. --strict bloquea, y sale 0 cuando el arbol esta sano ==
+       |   ok    con incumplidores sale 1
+       |   ok    un clon ausente no bloquea --strict
+       |   ok    arbol sano sale 0
+       | 
+       | test-githooks-activos: OK — 15 aserciones sobre 6 clones sinteticos
+       | EXIT=0
+       memoria pico: 12748 KB (12 MB) · pared 0.47s
+OK     job-20260927T051810_job-012 exit=0
+       | test-hook-script-token: 21 de 21 aserciones en verde
+       | EXIT=0
+       memoria pico: 12604 KB (12 MB) · pared 1.35s
+__BG_EXIT__=0

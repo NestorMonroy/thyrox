@@ -1,15 +1,27 @@
 # Un comando largo va a segundo plano; un subagente es otra cosa y cuesta
 
-Un comando cuya duración estimada supere el medio minuto **no se espera en
-primer plano ni se delega a un subagente**: se lanza como proceso y se recoge
-con la barrera. El mecanismo ya está construido en este árbol y tiene tres
-piezas, una por forma del problema:
+Un comando cuya duración estimada supere los **diez segundos** **no se espera
+en primer plano ni se delega a un subagente**: se lanza como proceso y se recoge
+con la barrera.
+
+> Umbral bajado de medio minuto a diez segundos por directiva del ejecutor
+> 2026-09-24: *«si un comando tarda más de 10 s en ejecución, lo tienes que
+> mandar a 2do plano»*. Medido en la misma sesión: el aviso no podía salir en
+> ninguna, porque `declared_wiring()` no declaraba `PreToolUse` y los diez
+> detectores de `tool_use_preflight.py` quedaban sin cablear. Ya lo declara
+> (`tests/session/test_user_wiring.py`, caso 1b).
+
+El mecanismo ya está construido en este árbol y tiene tres piezas, una por
+forma del problema:
 
 | Forma | Pieza (dónde vive) | Se invoca | Qué hace |
 |---|---|---|---|
 | un trabajo | `src/session/bg.sh` | `bin/thyrox-bg` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
 | N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
 | la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
+| un comando sobre N ítems, en primer plano | `src/session/parallel_map.sh` | `bin/parallel_map` | GNU Parallel con la anchura de `width_cap`, `-k` y la fuente de ítems declarada; cada ítem se mide con GNU Time y reserva su RAM antes de correr |
+| N lecturas **con juicio**, una por item | `src/session/headless-pool.sh` | `bin/headless-pool` | una conversación `thyrox -p` por item, repartidas con GNU Parallel; salida y veredicto por item |
+| N implementaciones **con juicio**, una por item | `headless-pool --isolation worktree` + `src/session/pool_integrate.sh` | `bin/headless-pool`, `bin/pool_integrate` | cada item escribe en su propio worktree y se verifica ahí; la integración aplica al árbol lo verificado y disjunto, y declara cada conflicto |
 
 Debajo están los primitivos: `background.spawn_detached`, `job_ledger`,
 `marker_wait` y `task_pool`.
@@ -48,6 +60,218 @@ De ahí el criterio, que no es de estilo: **el agente rinde cuando el trabajo es
 ancho y exige juicio**. Una suite, un gate, un censo, un barrido determinista —
 cualquier cosa cuyo resultado no dependa de decidir nada— es un proceso, y
 despachar un agente para eso es pagar una conversación por un `exit code`.
+
+## La tercera forma: juicio por item, sin subagente
+
+Las dos formas de arriba cubren los extremos: el **proceso** —determinista,
+cero tokens— y el **subagente** —una conversación con juicio—. Entre los dos
+falta el caso que H-THYROX-168 registró: **N items independientes que sí
+exigen un modelo** —leer una nota y extraer sus conceptos, clasificar un
+hallazgo— y que no necesitan ni el contexto del orquestador ni su anchura.
+
+```bash
+printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
+    --out <banco>/outputs/<dir> --model claude-sonnet-5 [--width N] [--timeout S]
+```
+
+Cada ítem recibe sólo la plantilla y su `Item:`, corre sin sesión
+persistida, con `--setting-sources project` y herramientas de lectura, y deja
+`<n>.json` en disco antes de que nadie lo resuma. El modelo va por
+identificador completo; un alias rehúsa con exit 2.
+
+**El ítem corre sobre el bucle propio por defecto**: sin declarar nada, el
+pool lanza `thyrox -p` (`bin/cli`), y sólo ése: hablar con Anthropic u otro
+proveedor es trabajo de thyrox —sus traductores y su selección de
+credenciales—, no de un segundo cliente. `HEADLESS_POOL_RUNNER` sólo declara
+un doble que habla el contrato de `thyrox -p` (pruebas, arnés de GPU);
+`HEADLESS_POOL_CLAUDE`, que permitía correr `claude -p`, rehúsa con exit 2
+(directiva del ejecutor 2026-09-27). `thyrox -p` acepta la misma línea de comando
+que el pool compone y escribe el mismo `stream-json`
+(`src/packages/cli/src/entry/print.ts`, con
+las formas de `system/init` y `result` del binario 2.1.282). Su credencial se
+resuelve con la cadena de `@thyrox/provider: credentials.ts`
+—`ANTHROPIC_AUTH_TOKEN`, `THYROX_CODE_OAUTH_TOKEN` o su descriptor,
+`ANTHROPIC_API_KEY`—; sin ninguna rehúsa diciéndolo. La credencial que el
+anfitrión da a la sesión de `claude` no llega al shell y no se reutiliza
+(`.claude/workbench/binary-host-auth-20260926T223508/`).
+
+Su TTL de caché lo decide la cadena del ejecutable (`EPt`/`should1hCacheTTL`):
+1 h sólo para una cuenta de suscripción fuera de excedente; con una clave de
+API, 5 m. La variable `THYROX_CODE_PROMPT_CACHE_TTL` que el pool fija gana a
+esa decisión.
+
+**Su memoria se calibra sin credencial real**: GNU Time mide el proceso local
+y el modelo corre en el servidor, así que un servidor de loopback basta.
+`bin/pool-calibrate` levanta `bin/provider-anthropic-mock-server`, corre el
+pool N veces contra él con un marcador local como clave —retira del entorno la
+credencial del anfitrión, y el proxy registra la clase que le llegó— y deja
+las filas en el historial de la plantilla. Mide un piso: las respuestas son
+mínimas y no invocan herramientas.
+
+```bash
+bash tests/session/test-headless-pool-thyrox-p.sh
+bash tests/session/test-pool-calibrate.sh
+```
+
+Frente al subagente: **no hereda** la conversación del orquestador, **no
+ocupa** la anchura del tool `Agent` —que rechaza el lanzamiento N+1— y su
+salida es por item, no un resumen. Frente al proceso: sí paga tokens, así que
+sólo rinde cuando cada item exige juicio.
+
+**El ciclo medido vive en el pool, no en quien lo invoca.** Con GNU Time,
+cada ejecución deja su fila en el historial de la plantilla
+(`src/session/pool_history.py`, `bin/pool_history`), y la siguiente deriva lo
+que nadie declaró: el TTL con `choose_cache_ttl` sobre la pared máxima de un
+ítem —sus tres ramas: ≤ 5 min → `5m`, hasta 1 h → `1h`, más → `5m`— y
+`--memfree` como la memoria pico × 2 más `HEADLESS_POOL_MEMFREE_RESERVE`, la
+de un vecino que corre al lado. Lo declarado gana siempre; sin historial no
+se inventa, y la salida lo dice (`historial: sin ejecución previa…`). El
+`stdin_probe` lo corre `wait-jobs wait` sobre el árbol del trabajo, así que el
+pool se lanza con `thyrox-bg` y se recoge con la barrera. Antes vivía sólo en
+`tsc_cycle.py`, que además fijaba `--memfree 3G`: quien llamaba al pool
+directamente quedaba fuera del ciclo sin saberlo.
+
+`--memfree` es memoria del **sistema**; la VRAM es otro recurso, GNU Time no
+la ve y GNU Parallel no tiene `--memfree` para la GPU. `src/session/gpu_monitor.py`
+la mide por ítem con `nvidia-smi` sobre el árbol de procesos del ítem y deja
+`<n>.gpu` con TRES estados que no se colapsan: una medida (el 0 incluido),
+ausente (sin `nvidia-smi`: no hay archivo) y `error <causa>` (se intentó y
+falló). `step_report` publica la VRAM máxima y mediana, y los errores aparte.
+
+La anchura con que se lanza es `min(configurada, RAM, VRAM)`: cada tope es
+`(libre − reserva) / (pico × margen)`, con la reserva RESTADA de lo libre
+(`HEADLESS_POOL_MEMFREE_RESERVE`, `HEADLESS_POOL_VRAM_RESERVE_MIB`). Y como la
+VRAM libre cambia mientras los ítems arrancan, cada ítem pide sitio para su
+pico justo antes de lanzarse: la admisión de `--memfree` (`parallel` 20231122,
+4113-4118). Su otra mitad —matar al más joven cuando lo libre cae a la
+mitad— no se porta: mataría un ítem a media petición.
+
+**Comprobar no basta: la admisión RESERVA** — para la VRAM y para la RAM. El
+registro y el bucle de comprobar-y-reservar viven en
+`src/session/resource_admission.py`; cada recurso aporta sólo su medida
+(`nvidia-smi` o `MemAvailable` y el RSS del árbol). Por eso `bin/parallel_map`
+no pasa `--memfree`: esa cota de GNU Parallel mide al lanzar y no reserva, y es
+la misma ventana de comprobar-y-usar con la RAM en lugar de la VRAM.
+
+Con 5000 MiB libres de VRAM y dos ítems
+de 3000, dos comprobaciones sueltas ven sitio las dos y arrancan los dos —la
+carrera de comprobar-y-usar, reproducida por
+`.claude/workbench/vram-toctou-*/probe-toctou.sh`—. `gpu_monitor admit` mide,
+decide y reserva bajo `shared_lock` en un registro de VRAM comprometida
+(`HEADLESS_POOL_VRAM_LEDGER`, compartido por los pools de una misma base de
+historial): lo admisible es lo libre menos lo que dueños VIVOS reservaron y su
+árbol aún no usa. El ítem suelta con `release` al terminar, y la reserva de
+un dueño muerto deja de contar sola. Es el patrón de
+`atomic_link_if_count_less_than` del semáforo de GNU Parallel (15105-15125):
+bloquear, contar, reservar, soltar el lock.
+
+La implementación es una, en Python, y se usa por su interfaz: el shell con
+`bin/gpu_monitor admit|release` y TypeScript con
+`@thyrox/config: gpuAdmission.ts` (`admitVram`/`releaseVram`), que lanza el
+mismo envoltorio. Su control es la carrera cruzada —Python contra TS sobre el
+mismo registro, entra uno—, y cae si una cara reserva en otro registro.
+
+```bash
+bash tests/session/test-gpu-admission-cli.sh
+(cd src/packages/config && bun test __tests__/gpuAdmission.test.ts)
+```
+
+**El registro protege sólo lo que se pide, y lo que se pide sale del
+historial.** Un pico 0 medido es una medida («este ítem no usó GPU»); como
+predicción de los ítems siguientes sólo vale si el historial está
+**calibrado**: la última ejecución midió la VRAM de TODOS sus ítems y cada uno
+duró al menos dos intervalos de muestreo. Sin calibrar —sin historial, VRAM
+medida en parte de los ítems, ítems demasiado cortos o una fila anterior a la
+calibración— cada ítem pide el piso `HEADLESS_POOL_VRAM_MIN_MIB` si se
+declaró, y si no **la GPU entera, de a uno**, hasta que una ejecución lo
+calibre. El motivo sale en la línea `historial:`. Antes, un 0 de ítems no
+vistos hacía que no se pidiera nada y dos pools corrían juntos con el registro
+en su sitio (H-THYROX-192).
+
+**GNU Time se resuelve por el toolchain en los tres lanzadores** —`bg.sh`,
+`run-task-pool.sh` y `headless-pool.sh`—, con
+`thyrox_toolchain_require_gnu_time`: una sola definición de «es GNU Time», y
+`HEADLESS_POOL_TIME` como anulación. En las suites se declara en cada caso;
+heredado del contenedor, el `/usr/bin/time` real graba filas de historial y el
+resultado depende de la máquina.
+
+Con `thyrox -p` el modelo corre en el servidor y la GPU local no se usa;
+medida, este contenedor no tiene GPU: `bin/hardware-inventory` combina ocho
+señales —PCI `0x10de` y clase `0x03`, `/dev/nvidia*`, `/dev/dri`,
+`/proc/driver/nvidia`, `libcuda`, `libnvidia-ml` y `nvidia-smi -L`— y da
+`nvidia-usable`, `partial` (con lo que falta) o `none`. La ausencia de
+`nvidia-smi` sola no prueba nada.
+
+**Tres niveles de prueba, y cada uno afirma sólo lo suyo.** El `nvidia-smi`
+falso es un MODELO de cómo creemos que se comporta una GPU NVIDIA; si el
+modelo está equivocado, la batería entera sale verde y falla en hardware.
+
+| Nivel | Qué prueba | Suite | Aquí |
+|---|---|---|---|
+| 1 — fake | la lógica: lock, registro, reserva lenta, sobreuso, SIGKILL, zombi, VRAM ajena, carrera con barrera, dos pools | `test_gpu_monitor.py`, `test_gpu_scenarios.py`, `test-gpu-admission-cli.sh`, `test-headless-pool.sh`, `gpuAdmission.test.ts` | corre |
+| 2 — GPU real | que el modelo del fake corresponde a ESTA GPU: PID visible, uso = asignado + contexto, lo libre baja lo que sube el uso, se libera al salir | `hardware/test_gpu_admission_real.py` | rehúsa, exit 2 |
+| 3 — carga real | dos `headless-pool` sobre una GPU real y un registro común no corren juntos | `hardware/test-gpu-pools-real.sh` | rehúsa, exit 2 |
+
+**Frontera de aceptación.** Que el nivel 1 pase permite afirmar «la lógica de
+admisión y reserva satisface estos escenarios»; NO «el control de VRAM está
+validado en NVIDIA real». Esa segunda frase exige los niveles 2 y 3 en verde
+sobre el hardware donde se va a usar.
+
+**El fake imita lo observado; no define el hardware.** El nivel 2 deja
+`trace.tsv` y `report.json`, y `bin/gpu_trace compare` nombra el parámetro del
+fake que la traza desmiente (`context_overhead_mib=N`, `hide_pids`). Si el
+modelo se aleja del hardware se corrige el fake con esa evidencia, nunca la
+lectura de la traza para que coincida con los tests. Que el comparador detecta
+un modelo equivocado se prueba aquí mismo, registrando contra el fake con
+sobrecarga y con PIDs ocultos (`test_gpu_trace.py`); que los arneses rehúsan
+sin GPU, en `test-gpu-hardware-refusal.sh`.
+
+**El discriminador es distributivo, no numérico.** «Para cada una de las 365
+notas, extrae sus conceptos» es esta forma; «sobre los 22 archivos, decide
+cuáles son divergencia» es un juicio **conjunto** sobre el lote, y ése es de
+un agente. `detect_agent_dispatch` lo aplica así: sugiere `headless-pool`
+cuando el despacho nombra juicio **y** una forma distributiva explícita.
+
+Antes de 2026-09-24 esto existía sólo como un guion suelto de banco
+(`notas-ai-course-aplicables-a-thyrox-*/probes/extraer-conceptos.sh`): corrió
+bien, y nadie más podía invocarlo.
+
+```bash
+bash tests/session/test-headless-pool.sh
+python3 tests/hooks/test_detect_agent_dispatch.py
+```
+
+## La cuarta forma: implementación por item, con aislamiento
+
+Cuando cada item tiene que **escribir** —implementar un cambio, no sólo
+leerlo—, el pool le da lo mismo que `isolation: worktree` le da a un
+subagente: un worktree propio desde `HEAD` y una verificación en su sitio. El
+árbol principal no cambia mientras el pool corre. Por defecto el ítem recibe
+sólo `Bash`, no `Edit` ni `Write`: si el pool se las ofrece, las usa en vez de
+`sed`, `gawk` o `bin/replace_literal` (medido en R-2b-3: 2 `Write` junto a
+16 `Bash`). `--tools` las devuelve cuando un ítem las necesite de verdad.
+
+```bash
+printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
+    --out <banco>/outputs/<dir> --model claude-sonnet-5 \
+    --isolation worktree --verify '<comando que prueba el cambio>'
+bash bin/pool_integrate <banco>/outputs/<dir>     # aplica lo verificado y disjunto
+```
+
+Cada item deja `<n>.patch`, `<n>.files` y `<n>.verdict`: `verificado`,
+`rechazado`, `sin-verificar`, `sin-cambios` o `fallido`. `pool_integrate`
+aplica en orden los `verificado`, y los `sin-verificar` sólo con
+`--unverified`. Un parche que toca un archivo ya aplicado queda como
+`conflicto: <archivo>` y no se aplica. No commitea: los archivos aplicados
+quedan en el árbol, y quien integra los commitea por pathspec.
+
+El discriminador es el mismo que el de la tercera forma, más uno: los items
+tienen que ser **disjuntos por archivo**. Dos items que editan el mismo
+archivo no se integran los dos; el segundo vuelve como conflicto.
+
+```bash
+bash tests/session/test-headless-pool-worktree.sh
+```
 
 ## Antes de elegir el instrumento de espera: ¿cómo se lanzó?
 
@@ -129,11 +353,15 @@ bloquea:
 |---|---|---|
 | la **notificación** del cliente cuando el trabajo termina | sola, sin pedirla | no |
 | `wait-jobs.sh status` / `pending` al ir a cerrar | cuando el turno va a terminar | no |
-| `wait-jobs.sh wait` en Bash primer plano | cuando el **resultado** es lo siguiente que se necesita | sí |
+| `thyrox-bg wait` / `wait-jobs wait` **como tarea en segundo plano del cliente** (`run_in_background`) | cuando el **resultado** es lo siguiente que se necesita | no — el cliente notifica al terminar |
 
-La tercera es legítima **sólo en ese caso**: el trabajo siguiente depende del
-resultado y no hay nada más que adelantar. Usarla justo después de lanzar
-convierte el segundo plano en un primer plano lento.
+**Una espera nunca va en primer plano**, ni siquiera cuando el resultado es lo
+siguiente que se necesita. Esta tabla permitía antes `wait-jobs wait` en Bash
+primer plano para ese caso; el ejecutor lo retiró el 2026-09-24 —*«se tiene que
+mandar en automático»*— tras un `thyrox-bg wait` que retuvo el turno varios
+minutos. El trabajo va al *ledger* con `thyrox-bg`; la espera, al segundo plano
+del cliente, que es lo único que notifica. `detect_foreground_long_command`
+avisa ya sobre una espera sin `run_in_background`.
 
 **Y ordenar no exige bloquear.** Si B depende de A, la arista se declara **al
 lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:
@@ -218,7 +446,7 @@ marcador.
 ## El gate — porque una regla sin script es prosa
 
 `src/hooks/detect_foreground_long_command.py`, cuarto detector de
-`pretooluse_dispatch`. Dispara sobre `Bash` y avisa cuando el comando invoca una
+`tool_use_preflight`. Dispara sobre `Bash` y avisa cuando el comando invoca una
 familia larga —suite, build, gate de corpus, migración— **en posición de
 comando** y no viaja ya por un ensamblador ni por un `nohup` propio.
 
@@ -248,7 +476,7 @@ veían el tool `Agent`, y el matcher de `PreToolUse` del consumidor sólo cubrí
 `Write|Edit|MultiEdit` y `Bash`.
 
 `src/hooks/detect_agent_dispatch.py`, quinto detector de
-`pretooluse_dispatch`, dispara sobre `Agent` cuando el prompt (o su
+`tool_use_preflight`, dispara sobre `Agent` cuando el prompt (o su
 descripción) invoca una **familia determinista** —suite, gate, build, censo o
 barrido, búsqueda mecánica, migración— **y** no nombra ningún verbo de juicio.
 
@@ -315,7 +543,7 @@ ningún hook cargue.
 ### El gate
 
 `src/hooks/detect_unbounded_traversal.py`, décimo detector de
-`pretooluse_dispatch`. **Mide dos familias, y sus condiciones NO son las
+`tool_use_preflight`. **Mide dos familias, y sus condiciones NO son las
 mismas** — h-thyrox-29 las separó midiendo, después de que el detector las
 tratara como una sola bajo el rótulo «sin cota» (el sub-patrón A de
 `metrica-decide-la-conclusion.md`, con este gate como sujeto).
@@ -407,3 +635,35 @@ la regla vive aquí y los consumidores la heredan.
 *Ciega a:* un consumidor que invoque los ensambladores desde un guion sin
 nombrarlos en una regla —el conteo mide la prosa que gobierna, no el uso real—,
 y a `db` y `server`, que no llevan ese archivo.
+
+## Un trabajo vivo se sondea — y lo hace la barrera, no la memoria
+
+> Directiva del ejecutor 2026-09-26, tras dos episodios: un `rg` sin archivo
+> leyó un socket 1 h 19 min, y el paso 160 corrió minutos sin que nadie
+> mirara sus procesos hasta que el ejecutor preguntó —*«puedes implementar
+> una regla o hook con sh para que no te olvides de esto»*—.
+
+`wait-jobs wait` sondea en **cada latido** (30 s por defecto) el árbol de
+cada trabajo vivo con `bin/stdin_probe`, repartido con GNU Parallel, y
+escribe por stderr una línea por proceso más un `AVISO` por cada uno que lee
+stdin de un canal con escritor vivo, o de un socket: si su productor no
+escribe ni cierra, espera para siempre. Una tubería cuyo escritor ya salió
+(cada ítem del pool) da EOF y no se avisa; los escritores los cuenta la
+propia sonda, en su sexta columna.
+A mano, sin esperar:
+
+```bash
+bash bin/wait-jobs probe                                        # todo el ledger
+pgrep -f '[p]atron' | parallel -j8 -k bash bin/stdin_probe {}   # un patrón suelto
+```
+
+**Se sondea el ÁRBOL, no un nombre.** Medido en el paso 160: `pgrep -f
+'[t]sc_proposers'` no vio al proceso que trabajaba —se llama
+`tscProposers.ts`— y sólo quedaron el lazo y su `bash`, dormidos: se leía
+como «nada corre». `wait-jobs` parte del pid registrado y baja por `pgrep
+-P`, así que el nombre no importa. Avisa, no mata: una tubería viva también
+es un canal.
+
+```bash
+bash tests/session/test-wait-jobs-probe.sh
+```

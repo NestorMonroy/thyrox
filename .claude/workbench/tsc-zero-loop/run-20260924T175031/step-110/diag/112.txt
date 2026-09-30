@@ -1,0 +1,46 @@
+src/packages/config/plugin/headlessPluginInstall.ts(114,9): error TS7006: Parameter 'r' implicitly has an 'any' type.
+  --- código src/packages/config/plugin/headlessPluginInstall.ts:104-124 ---
+    104                  logForDebugging(
+    105                    `installPluginsForHeadless: installed marketplace ${event.name}`,
+    106                  )
+    107                } else if (event.type === 'failed') {
+    108                  logForDebugging(
+    109                    `installPluginsForHeadless: failed to install marketplace ${event.name}: ${event.error}`,
+    110                  )
+    111                }
+    112              },
+    113            }),
+    114>         r => ({
+    115            installed_count: r.installed.length,
+    116            updated_count: r.updated.length,
+    117            failed_count: r.failed.length,
+    118            skipped_count: r.skipped.length,
+    119          }),
+    120        )
+    121  
+    122        if (reconcileResult.skipped.length > 0) {
+    123          logForDebugging(
+    124            `installPluginsForHeadless: skipped ${reconcileResult.skipped.length} marketplace(s) unsupported by zip cache: ${reconcileResult.skipped.join(', ')}`,
+src/packages/config/plugin/headlessPluginInstall.ts(114,9): error TS2554: Expected 2 arguments, but got 3.
+  --- código src/packages/config/plugin/headlessPluginInstall.ts:104-124 ---
+    104                  logForDebugging(
+    105                    `installPluginsForHeadless: installed marketplace ${event.name}`,
+    106                  )
+    107                } else if (event.type === 'failed') {
+    108                  logForDebugging(
+    109                    `installPluginsForHeadless: failed to install marketplace ${event.name}: ${event.error}`,
+    110                  )
+    111                }
+    112              },
+    113            }),
+    114>         r => ({
+    115            installed_count: r.installed.length,
+    116            updated_count: r.updated.length,
+    117            failed_count: r.failed.length,
+    118            skipped_count: r.skipped.length,
+    119          }),
+    120        )
+    121  
+    122        if (reconcileResult.skipped.length > 0) {
+    123          logForDebugging(
+    124            `installPluginsForHeadless: skipped ${reconcileResult.skipped.length} marketplace(s) unsupported by zip cache: ${reconcileResult.skipped.join(', ')}`,

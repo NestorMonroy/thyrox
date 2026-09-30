@@ -53,7 +53,7 @@
  *    agregación (fuera de alcance: `src/packages/config/`).
  *
  * 2. `getAutoModeUnavailableNotification` OMITE el sufijo
- *    `· #claude-code-how-works-how-works-feedback` que la fuente añade sólo
+ *    `· #claude-code-feedback` que la fuente añade sólo
  *    para `USER_TYPE === 'ant'` — un canal de feedback interno de Anthropic,
  *    sin cadena fiel que portar. MISMO precedente que `planModeV2.ts` ya
  *    declaró (su Divergencia 1) para una rama `ant` distinta. Esto NO es
@@ -255,18 +255,13 @@ async function getDynamicConfig_BLOCKS_ON_INIT<T>(
   return getFeatureValue_CACHED_MAY_BE_STALE<T>(key, fallback)
 }
 
-function isEnvTruthy(value: string | boolean | undefined): boolean {
-  if (!value) return false
-  if (typeof value === 'boolean') return value
-  return ['1', 'true', 'yes', 'on'].includes(String(value).toLowerCase().trim())
-}
-
 /**
  * El contexto de permisos, con la misma forma laxa que usa
  * `PermissionUpdate.ts`: el tipo completo vive en el consumidor, y este
  * paquete sólo necesita saber que es un objeto indexable.
  */
-type ToolPermissionContext = { permissionRules: unknown; [key: string]: unknown }
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 type ToolPermissionRulesBySource = Record<string, string[]>
 
 const AGENT_TOOL_NAME = 'Agent'
@@ -763,7 +758,7 @@ export type AutoModeUnavailableReason = 'settings' | 'circuit-breaker' | 'model'
 
 /**
  * DIVERGENCIA DECLARADA. La fuente añade, sólo para `USER_TYPE === 'ant'`,
- * el sufijo `· #claude-code-how-works-how-works-feedback` — el nombre de un
+ * el sufijo `· #claude-code-feedback` — el nombre de un
  * canal de feedback interno de Anthropic, no un placeholder genérico. Se
  * omite aquí, siguiendo el MISMO precedente que `planModeV2.ts` ya declaró
  * (su Divergencia Declarada 1): la condición es de esa organización y no
@@ -1242,11 +1237,11 @@ export function initialPermissionModeFromCLI({
     // settings (p. ej. bypassPermissions concedería acceso total en
     // silencio en un entorno remoto).
     if (
-      isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
+      isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
       !['acceptEdits', 'plan', 'default'].includes(settingsMode)
     ) {
       logForDebugging(
-        `settings defaultMode "${settingsMode}" is not supported in CLAUDE_CODE_REMOTE — only acceptEdits and plan are allowed`,
+        `settings defaultMode "${settingsMode}" is not supported in THYROX_CODE_REMOTE — only acceptEdits and plan are allowed`,
       )
       logEvent('tengu_ccr_unsupported_default_mode_ignored', {
         mode: settingsMode,

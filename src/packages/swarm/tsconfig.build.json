@@ -1,0 +1,178 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/swarm": [
+        "./src/index.ts"
+      ],
+      "@thyrox/swarm/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/swarm/backends/types.js": [
+        "./src/backends/types.ts"
+      ],
+      "@thyrox/swarm/types/constants.js": [
+        "./src/types/constants.ts"
+      ],
+      "@thyrox/swarm/types/deps.js": [
+        "./src/types/deps.ts"
+      ],
+      "@thyrox/swarm/core/constants.js": [
+        "./src/core/constants.ts"
+      ],
+      "@thyrox/swarm/core/teammatePromptAddendum.js": [
+        "./src/core/teammatePromptAddendum.ts"
+      ],
+      "@thyrox/swarm/core/teammateColors.js": [
+        "./src/core/teammateColors.ts"
+      ],
+      "@thyrox/swarm/core/teamHelpers.js": [
+        "./src/core/teamHelpers.ts"
+      ],
+      "@thyrox/swarm/teammateContext.js": [
+        "./src/teammateContext.ts"
+      ],
+      "@thyrox/swarm/teammateContextAlias.js": [
+        "./src/teammateContextAlias.ts"
+      ],
+      "@thyrox/swarm/childSession.js": [
+        "./src/childSession.ts"
+      ],
+      "@thyrox/swarm/teammateState.js": [
+        "./src/teammateState.ts"
+      ],
+      "@thyrox/swarm/mailbox/protocolMessages.js": [
+        "./src/mailbox/protocolMessages.ts"
+      ],
+      "@thyrox/swarm/tasks/types.js": [
+        "./src/tasks/types.ts"
+      ],
+      "@thyrox/swarm/worktree/postCommitAttribution.js": [
+        "./src/worktree/postCommitAttribution.ts"
+      ],
+      "@thyrox/swarm/worktree/safeRemoval.js": [
+        "./src/worktree/safeRemoval.ts"
+      ],
+      "@thyrox/swarm/worktree/safeIgnore.js": [
+        "./src/worktree/safeIgnore.ts"
+      ],
+      "@thyrox/swarm/adapters/appRuntime.js": [
+        "./src/adapters/appRuntime.ts"
+      ],
+      "@thyrox/swarm/adapters/buildSwarmAgentDeps.js": [
+        "./src/adapters/buildSwarmAgentDeps.ts"
+      ],
+      "@thyrox/swarm/core/teammateModel.js": [
+        "./src/core/teammateModel.ts"
+      ],
+      "@thyrox/swarm/backends/teammateModeSnapshot.js": [
+        "./src/backends/teammateModeSnapshot.ts"
+      ],
+      "@thyrox/swarm/backends/detection.js": [
+        "./src/backends/detection.ts"
+      ],
+      "@thyrox/swarm/runtime/spawnUtils.js": [
+        "./src/runtime/spawnUtils.ts"
+      ],
+      "@thyrox/swarm/worktree/sparseConfigCleanup.js": [
+        "./src/worktree/sparseConfigCleanup.ts"
+      ],
+      "@thyrox/swarm/core/teamFileRegistration.js": [
+        "./src/core/teamFileRegistration.ts"
+      ],
+      "@thyrox/swarm/core/reconnection.js": [
+        "./src/core/reconnection.ts"
+      ],
+      "@thyrox/swarm/teamDiscovery.js": [
+        "./src/teamDiscovery.ts"
+      ],
+      "@thyrox/swarm/mailbox/index.js": [
+        "./src/mailbox/index.ts"
+      ],
+      "@thyrox/swarm/core/teammateInit.js": [
+        "./src/core/teammateInit.ts"
+      ],
+      "@thyrox/swarm/permissions/index.js": [
+        "./src/permissions/index.ts"
+      ],
+      "@thyrox/swarm/backends/PaneBackendExecutor.js": [
+        "./src/backends/PaneBackendExecutor.ts"
+      ],
+      "@thyrox/swarm/backends/it2Setup.js": [
+        "./src/backends/it2Setup.ts"
+      ],
+      "@thyrox/swarm/backends/registry.js": [
+        "./src/backends/registry.ts"
+      ],
+      "@thyrox/swarm/backends/TmuxBackend.js": [
+        "./src/backends/TmuxBackend.ts"
+      ],
+      "@thyrox/swarm/backends/ITermBackend.js": [
+        "./src/backends/ITermBackend.ts"
+      ],
+      "@thyrox/swarm/backends/InProcessBackend.js": [
+        "./src/backends/InProcessBackend.ts"
+      ],
+      "@thyrox/swarm/runtime/pollForPromptOrShutdown.js": [
+        "./src/runtime/pollForPromptOrShutdown.ts"
+      ],
+      "@thyrox/swarm/core/teammateLayoutManager.js": [
+        "./src/core/teammateLayoutManager.ts"
+      ],
+      "@thyrox/swarm/runtime/spawnInProcess.js": [
+        "./src/runtime/spawnInProcess.ts"
+      ],
+      "@thyrox/swarm/runtime/inProcessRunner.js": [
+        "./src/runtime/inProcessRunner.ts"
+      ],
+      "@thyrox/swarm/mailbox": [
+        "./src/mailbox/index.ts"
+      ],
+      "@thyrox/swarm/permissions": [
+        "./src/permissions/index.ts"
+      ],
+      "@thyrox/swarm/worktree": [
+        "./src/worktree/index.ts"
+      ],
+      "@thyrox/swarm/commands/agents/index.js": [
+        "./commands/agents/index.ts"
+      ],
+      "@thyrox/swarm/commands/branch/index.js": [
+        "./commands/branch/index.ts"
+      ],
+      "@thyrox/swarm/install/installSwarmHost.js": [
+        "./src/install/installSwarmHost.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "commands/agents/**/*",
+    "commands/branch/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

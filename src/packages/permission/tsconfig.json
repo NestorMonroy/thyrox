@@ -8,6 +8,7 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     "types": [
       "bun"
     ]
@@ -15,5 +16,10 @@
   "include": [
     "src/**/*.ts",
     "bin/**/*.ts"
+  ],
+  "files": [
+    "../cli/src/types/global.d.ts",
+    "../@ant/ink/src/types/ink-jsx.d.ts",
+    "../@ant/ink/src/types/ink-elements.d.ts"
   ]
 }

@@ -1,10 +1,5 @@
 /**
- * Porte de `ccnmt: packages/agent/userPromptKeywords/userPromptKeywords.ts`.
- */
-
-/**
- * Verifica si la entrada coincide con patrones de palabra clave negativa
- * (frustracion, profanidad).
+ * Checks if input matches negative keyword patterns
  */
 export function matchesNegativeKeyword(input: string): boolean {
   const lowerInput = input.toLowerCase()
@@ -16,18 +11,17 @@ export function matchesNegativeKeyword(input: string): boolean {
 }
 
 /**
- * Verifica si la entrada coincide con patrones de "seguir adelante"
- * (continuacion de la tarea en curso).
+ * Checks if input matches keep going/continuation patterns
  */
 export function matchesKeepGoingKeyword(input: string): boolean {
   const lowerInput = input.toLowerCase().trim()
 
-  // Coincide con "continue" solo si es el prompt entero.
+  // Match "continue" only if it's the entire prompt
   if (lowerInput === 'continue') {
     return true
   }
 
-  // Coincide con "keep going" o "go on" en cualquier parte de la entrada.
+  // Match "keep going" or "go on" anywhere in the input
   const keepGoingPattern = /\b(keep going|go on)\b/
   return keepGoingPattern.test(lowerInput)
 }

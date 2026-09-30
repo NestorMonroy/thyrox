@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsCappedText.test.ts:
+41 | 
+42 |   test('cl/rLo no siguen un enlace simbólico', async () => {
+43 |     const file = join(dir, 'a.txt')
+44 |     writeFileSync(file, 'hola')
+45 |     symlinkSync(file, join(dir, 'l'))
+46 |     expect(await readCappedFile(join(dir, 'l'), 10)).toBeNull()
+                                                          ^
+error: expect(received).toBeNull()
+
+Received: "hola"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsCappedText.test.ts:46:54)
+(fail) lectores con tope > cl/rLo no siguen un enlace simbólico [0.64ms]
+
+ 6 pass
+ 1 fail
+ 28 expect() calls
+Ran 7 tests across 1 file. [39.00ms]

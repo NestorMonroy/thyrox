@@ -316,7 +316,7 @@ import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/load
 import { resolveAgentTools } from '@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js';
 import { resumeAgentBackground } from '@thyrox/tool-registry/tools/AgentTool/resumeAgent.js';
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
-import { useAppState } from '../appStateHooks.js';
+import { useAppState, type AppState } from '../appStateHooks.js';
 import { useReplActions } from './repl/useReplActions.js';
 import { useReplAppState } from './repl/useReplAppState.js';
 import { useReplRuntimeViews } from './repl/useReplRuntimeViews.js';
@@ -366,7 +366,7 @@ import {
   restoreWorktreeForResume,
   exitRestoredWorktree,
 } from '@thyrox/storage/sessionRestore.js';
-import { updateSessionName, updateSessionActivity } from '@thyrox/agent/concurrentSessions.js';
+import { setSessionName, updateSessionStatus } from '@thyrox/local-observability/uds/pidFileRecord.js';
 import { isInProcessTeammateTask, type InProcessTeammateTaskState } from '@thyrox/swarm';
 import { restoreRemoteAgentTasks } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js';
 import { useInboxPoller } from '../hooks/useInboxPoller.js';
@@ -414,10 +414,6 @@ import { RemoteCallout } from '../components/RemoteCallout.js';
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const AntModelSwitchCallout =
   process.env.USER_TYPE === 'ant' ? require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout : null;
-const shouldShowAntModelSwitch =
-  process.env.USER_TYPE === 'ant'
-    ? require('../components/AntModelSwitchCallout.js').shouldShowModelSwitchCallout
-    : (): boolean => false;
 const UndercoverAutoCallout =
   process.env.USER_TYPE === 'ant' ? require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout : null;
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
@@ -509,12 +505,13 @@ import {
   createAttachmentMessage,
   getQueuedCommandAttachments,
 } from '@thyrox/agent/attachments.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
 // function identity each render, which would break composedOnScroll's memo.
 const HISTORY_STUB = { maybeLoadOlder: (_: ScrollBoxHandle) => {} };
 // Window after a user-initiated scroll during which type-into-empty does NOT
-// repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+// repin to bottom. Josh Rosen's workflow: thyrox emits long output → scroll
 // up to read the start → start typing → before this fix, snapped to bottom.
 // https://anthropic.slack.com/archives/C07VBSHV7EV/p1773545449871739
 const RECENT_SCROLL_REPIN_WINDOW_MS = 3000;
@@ -585,8 +582,6 @@ export function REPL({
   pendingHookMessages,
   initialFileHistorySnapshots,
   initialContentReplacements,
-  initialAgentName,
-  initialAgentColor,
   mcpClients: initialMcpClients,
   dynamicMcpConfig: initialDynamicMcpConfig,
   autoConnectIdeFlag,
@@ -611,7 +606,7 @@ export function REPL({
   const { titleDisabled, moreRightEnabled, disableVirtualScroll } = useReplEnvFlags();
   const disableMessageActions = feature('MESSAGE_ACTIONS')
     ?
-      useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_MESSAGE_ACTIONS), [])
+      useMemo(() => isEnvTruthy(process.env.THYROX_CODE_DISABLE_MESSAGE_ACTIONS), [])
     : false;
 
   // Log REPL mount/unmount lifecycle
@@ -688,14 +683,14 @@ export function REPL({
 
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
   // ResumeConversation.tsx (via setAppState before rendering REPL) to avoid
-  // useEffect-based state initialization on mount (per CLAUDE.md guidelines)
+  // useEffect-based state initialization on mount (per THYROX.md guidelines)
 
   // Local state for commands (hot-reloadable; see useCommandReload triggers)
   const [localCommands, setLocalCommands] = useState(initialCommands);
   useCommandReload(isRemoteSession ? undefined : getProjectRoot(), appPlugins.commands, setLocalCommands);
 
   // Track proactive mode for tools dependency - SleepTool filters by proactive state
-  const proactiveActive = React.useSyncExternalStore(
+  const proactiveActive = React.useSyncExternalStore<boolean>(
     proactiveModule?.subscribeToProactiveChanges ?? PROACTIVE_NO_OP_SUBSCRIBE,
     proactiveModule?.isProactiveActive ?? PROACTIVE_FALSE,
   );
@@ -724,7 +719,7 @@ export function REPL({
   const [screen, setScreen] = useState<Screen>('prompt');
   const [showAllInTranscript, setShowAllInTranscript] = useState(false);
   // [ forces the dump-to-scrollback path inside transcript mode. Separate
-  // from CLAUDE_CODE_NO_FLICKER=0 (which is process-lifetime) — this is
+  // from THYROX_CODE_NO_FLICKER=0 (which is process-lifetime) — this is
   // ephemeral, reset on transcript exit. Diagnostic escape hatch so
   // terminal/tmux native cmd-F can search the full flat render.
   const [dumpMode, setDumpMode] = useState(false);
@@ -760,9 +755,7 @@ export function REPL({
     combinedInitialTools,
     commands,
     interactiveMcpClients,
-    mcp,
     mcpClients,
-    plugins,
     tools,
   } = useReplRuntimeViews({
     runtimeGraph,
@@ -1020,7 +1013,7 @@ export function REPL({
   } | null>(null);
 
   // Track local JSX commands separately so tools can't overwrite them.
-  // This enables "immediate" commands (like /btw) to persist while Claude is processing.
+  // This enables "immediate" commands (like /btw) to persist while thyrox is processing.
   const localJSXCommandRef = useRef<{
     jsx: React.ReactNode | null;
     shouldHidePromptInput: boolean;
@@ -1116,7 +1109,7 @@ export function REPL({
   // session from mid-conversation context.
   const haikuTitleAttemptedRef = useRef((initialMessages?.length ?? 0) > 0);
   const agentTitle = mainThreadAgentDefinition?.agentType;
-  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'Claude Code';
+  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? `${PRODUCT_NAME}`;
   const isWaitingForApproval =
     toolUseConfirmQueue.length > 0 || promptQueue.length > 0 || pendingWorkerRequest || pendingSandboxRequest;
   // Local-jsx commands (like /plugin, /config) show user-facing dialogs that
@@ -1130,7 +1123,7 @@ export function REPL({
   // here because onQueryImpl reads them (background session description,
   // haiku title extraction gate).
 
-  // Prevent macOS from sleeping while Claude is working
+  // Prevent macOS from sleeping while thyrox is working
   useEffect(() => {
     if (isLoading && !isWaitingForApproval && !isShowingLocalJSXCommand) {
       startPreventSleep();
@@ -1158,7 +1151,7 @@ export function REPL({
   // back to transcript-tail derivation when this is missing/stale.
   useEffect(() => {
     if (feature('BG_SESSIONS')) {
-      void updateSessionActivity({ status: sessionStatus, waitingFor });
+      void updateSessionStatus({ status: sessionStatus, waitingFor });
     }
   }, [sessionStatus, waitingFor]);
 
@@ -1172,7 +1165,9 @@ export function REPL({
 
   // Register the leader's setToolUseConfirmQueue for in-process teammates
   useEffect(() => {
-    registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+    registerLeaderToolUseConfirmQueue(updater =>
+      setToolUseConfirmQueue(prev => updater(prev) as ToolUseConfirm[]),
+    );
     return () => unregisterLeaderToolUseConfirmQueue();
   }, [setToolUseConfirmQueue]);
 
@@ -1558,7 +1553,13 @@ export function REPL({
       bashTools: bashTools.current,
     }).then(async tip => {
       if (tip) {
-        const content = await tip.content({ theme });
+        // Forma real del subconjunto de Tip que el spinner consume; el stub
+        // de 'tips/types.js' lo declara como `unknown` (mismo patrón que
+        // TipEntry en tipRegistry.ts).
+        interface SpinnerTipContent {
+          content: (context: { theme: typeof theme }) => Promise<string>
+        }
+        const content = await (tip as SpinnerTipContent).content({ theme });
         setAppState(prev => ({
           ...prev,
           spinnerTip: content,
@@ -1721,15 +1722,6 @@ export function REPL({
     // but keep it when isBriefOnly suppresses the streaming text display
     (!visibleStreamingText || isBriefOnly);
 
-  // Check if any permission or ask question prompt is currently visible
-  // This is used to prevent the survey from opening while prompts are active
-  const hasActivePrompt =
-    toolUseConfirmQueue.length > 0 ||
-    promptQueue.length > 0 ||
-    sandboxPermissionRequestQueue.length > 0 ||
-    elicitation.queue.length > 0 ||
-    workerSandboxPermissions.queue.length > 0;
-
   const showIssueFlagBanner = useIssueFlagBanner(messages, submitCount);
 
   // Initialize IDE integration
@@ -1814,7 +1806,12 @@ export function REPL({
         }
 
         // Restore file history and attribution state from the resumed conversation
-        restoreSessionStateFromLog(log, setAppState);
+        // restoreSessionStateFromLog opera sobre AppStateLike (contrato
+        // estructural que storage usa para no importar el AppState real);
+        // se adapta al setAppState concreto en el borde de la llamada.
+        restoreSessionStateFromLog(log, update =>
+          setAppState(prev => update(prev) as AppState),
+        );
         if (log.fileHistorySnapshots) {
           void copyFileHistoryForResume(log);
         }
@@ -1832,11 +1829,17 @@ export function REPL({
 
         // Restore standalone agent context from the resumed conversation
         // Always reset to the new session's values (or clear if none)
+        const restoredStandaloneAgentContext = computeStandaloneAgentContext(log.agentName, log.agentColor);
         setAppState(prev => ({
           ...prev,
-          standaloneAgentContext: computeStandaloneAgentContext(log.agentName, log.agentColor),
+          standaloneAgentContext: restoredStandaloneAgentContext
+            ? {
+                ...restoredStandaloneAgentContext,
+                color: restoredStandaloneAgentContext.color as AgentColorName | undefined,
+              }
+            : undefined,
         }));
-        void updateSessionName(log.agentName);
+        void setSessionName(log.agentName);
 
         // Restore read file state from the message history
         restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
@@ -1860,7 +1863,7 @@ export function REPL({
         // Switch session (id + project dir atomically). fullPath may point to
         // a different project (cross-worktree, /branch); null derives from
         // current originalCwd.
-        switchSession(asSessionId(sessionId), log.fullPath ? dirname(log.fullPath) : null);
+        switchSession(asSessionId(sessionId), entrypoint === 'fork' ? 'fork' : 'resume', log.fullPath ? dirname(log.fullPath) : null);
         // Rename asciicast recording to match the resumed session ID
         const { renameRecordingForSession } = await import('@thyrox/output/capture');
         await renameRecordingForSession();
@@ -1979,13 +1982,13 @@ export function REPL({
   // before onQuery builds its own context, and discovery on turn N must
   // still attribute a SkillTool call on turn N+k. Cleared in clearConversation.
   const discoveredSkillNamesRef = useRef(new Set<string>());
-  // Session-level dedup for nested_memory CLAUDE.md attachments.
-  // readFileState is a 100-entry LRU; once it evicts a CLAUDE.md path,
+  // Session-level dedup for nested_memory THYROX.md attachments.
+  // readFileState is a 100-entry LRU; once it evicts a THYROX.md path,
   // the next discovery cycle re-injects it. Cleared in clearConversation.
   const loadedNestedMemoryPathsRef = useRef(new Set<string>());
 
   // Helper to restore read file state from messages (used for resume flows)
-  // This allows Claude to edit files that were read in previous sessions
+  // This allows thyrox to edit files that were read in previous sessions
   const restoreReadFileState = useCallback((messages: MessageType[], cwd: string) => {
     const extracted = extractReadFilesFromMessages(messages, cwd, READ_FILE_STATE_CACHE_SIZE);
     readFileState.current = mergeFileStateCaches(readFileState.current, extracted);
@@ -2023,7 +2026,7 @@ export function REPL({
   // Permission and interactive dialogs can show even when toolJSX is set,
   // as long as shouldContinueAnimation is true. This prevents deadlocks when
   // agents set background hints while waiting for user interaction.
-  const allowDialogsWithAnimation = !toolJSX || toolJSX.shouldContinueAnimation;
+  const allowDialogsWithAnimation = Boolean(!toolJSX || toolJSX.shouldContinueAnimation);
   const focusedInputDialog = getFocusedInputDialog({
     isExiting,
     exitFlow,
@@ -2036,7 +2039,7 @@ export function REPL({
     hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
     hasElicitation: Boolean(elicitation.queue[0]),
     showingCostDialog,
-    idleReturnPending,
+    idleReturnPending: Boolean(idleReturnPending),
     isLoading,
     ultraplanPendingChoice,
     ultraplanLaunchPending,
@@ -2395,7 +2398,9 @@ export function REPL({
 
   // Register the leader's setToolPermissionContext for in-process teammates
   useEffect(() => {
-    registerLeaderSetToolPermissionContext(setToolPermissionContext);
+    registerLeaderSetToolPermissionContext((context, options) =>
+      setToolPermissionContext(context as ToolPermissionContext, options),
+    );
     return () => unregisterLeaderSetToolPermissionContext();
   }, [setToolPermissionContext]);
 
@@ -2413,7 +2418,7 @@ export function REPL({
   const getToolUseContext = useCallback(
     (
       messages: MessageType[],
-      newMessages: MessageType[],
+      _newMessages: MessageType[],
       abortController: AbortController,
       mainLoopModel: string,
     ): ProcessUserInputContext => {
@@ -2694,7 +2699,13 @@ export function REPL({
             if (feature('PROACTIVE') || feature('KAIROS')) {
               proactiveModule?.setContextBlocked(false);
             }
-          } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
+          } else if (
+            newMessage.type === 'progress' &&
+            typeof newMessage.data === 'object' &&
+            newMessage.data !== null &&
+            'type' in newMessage.data &&
+            isEphemeralToolProgress(newMessage.data.type)
+          ) {
             // Replace the previous ephemeral progress tick for the same tool
             // call instead of appending. Sleep/Bash emit a tick per second and
             // only the last one is rendered; appending blows up the messages
@@ -2710,6 +2721,12 @@ export function REPL({
               if (
                 last?.type === 'progress' &&
                 last.parentToolUseID === newMessage.parentToolUseID &&
+                last.data &&
+                typeof last.data === 'object' &&
+                'type' in last.data &&
+                newMessage.data &&
+                typeof newMessage.data === 'object' &&
+                'type' in newMessage.data &&
                 last.data.type === newMessage.data.type
               ) {
                 const copy = oldMessages.slice();
@@ -2784,7 +2801,7 @@ export function REPL({
         }
       }
 
-      // Mark onboarding as complete when any user message is sent to Claude
+      // Mark onboarding as complete when any user message is sent to thyrox
       void maybeMarkProjectOnboardingComplete();
 
       // Extract a session title from the first real user message. One-shot
@@ -2793,10 +2810,10 @@ export function REPL({
       // which was broken by SessionStart hook messages (prepended via
       // useDeferredHookMessages) and attachment messages (appended by
       // processTextPrompt) — both pushed length past 1 on turn one, so the
-      // title silently fell through to the "Claude Code" default.
+      // title silently fell through to the "thyrox" default.
       if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
         const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
-        const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+        const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content ?? '') : null;
         // Skip synthetic breadcrumbs — slash-command output, prompt-skill
         // expansions (/commit → <command-message>), local-command headers
         // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
@@ -2943,7 +2960,9 @@ export function REPL({
         toolUseContext,
         querySource: getQuerySourceForREPL(),
       })) {
-        onQueryEvent(event);
+        // El bucle emite la forma mínima (`AgentMessage`); lo que produce son
+        // los mensajes concretos que el manejador del stream distingue.
+        onQueryEvent(event as Parameters<typeof onQueryEvent>[0]);
       }
 
       queryCheckpoint('query_end');
@@ -3047,7 +3066,7 @@ export function REPL({
         // replayed as user-visible text.
         newMessages
           .filter((m): m is UserMessage => m.type === 'user' && !m.isMeta)
-          .map(_ => getContentText(_.message.content))
+          .map(_ => (_.message.content === undefined ? null : getContentText(_.message.content)))
           .filter(_ => _ !== null)
           .forEach((msg, i) => {
             enqueue({ value: msg, mode: 'prompt' });
@@ -3261,8 +3280,12 @@ export function REPL({
       }
 
       // Atomically: clear initial message, set permission mode and rules, and store plan for verification
-      const shouldStorePlanForVerification =
-        initialMsg.message.planContent && process.env.USER_TYPE === 'ant' && isEnvTruthy(undefined);
+      // El plan a verificar, o null si no aplica: `planContent` llega sin tipar.
+      const planContent = initialMsg.message.planContent;
+      const planForVerification =
+        typeof planContent === 'string' && planContent && process.env.USER_TYPE === 'ant' && isEnvTruthy(undefined)
+          ? planContent
+          : null;
 
       setAppState(prev => {
         // Build and apply permission updates (mode + allowedPrompts rules)
@@ -3286,9 +3309,9 @@ export function REPL({
           ...prev,
           initialMessage: null,
           toolPermissionContext: updatedToolPermissionContext,
-          ...(shouldStorePlanForVerification && {
+          ...(planForVerification !== null && {
             pendingPlanVerification: {
-              plan: initialMsg.message.planContent!,
+              plan: planForVerification,
               verificationStarted: false,
               verificationCompleted: false,
             },
@@ -3376,7 +3399,7 @@ export function REPL({
       }
 
       // Handle immediate commands - these bypass the queue and execute right away
-      // even while Claude is processing. Commands opt-in via `immediate: true`.
+      // even while thyrox is processing. Commands opt-in via `immediate: true`.
       // Commands triggered via keybindings are always treated as immediate.
       if (!speculationAccept && input.trim().startsWith('/')) {
         // Expand [Pasted text #N] refs so immediate commands (e.g. /btw) receive
@@ -3523,8 +3546,8 @@ export function REPL({
       // controls treatment: "dialog" (blocking), "hint" (notification), "off".
       {
         const willowMode = getFeatureValue_CACHED_MAY_BE_STALE('tengu_willow_mode', 'off');
-        const idleThresholdMin = Number(process.env.CLAUDE_CODE_IDLE_THRESHOLD_MINUTES) || 75;  // `||` falls back on NaN; `??` wouldn't
-        const tokenThreshold = Number(process.env.CLAUDE_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
+        const idleThresholdMin = Number(process.env.THYROX_CODE_IDLE_THRESHOLD_MINUTES) || 75;  // `||` falls back on NaN; `??` wouldn't
+        const tokenThreshold = Number(process.env.THYROX_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
         if (
           willowMode !== 'off' &&
           !getGlobalConfig().idleReturnDismissed &&
@@ -3850,7 +3873,7 @@ export function REPL({
    * with an empty prompt opens the agents view.
    *
    * In ccb, when the REPL is running as a bg session attached via
-   * FleetView (`CLAUDE_CODE_SESSION_KIND === 'bg'`), we emit a sentinel
+   * FleetView (`THYROX_CODE_SESSION_KIND === 'bg'`), we emit a sentinel
    * OSC sequence over stdout. The outer `runAttach` client scans PTY
    * data for the sentinel and detaches — landing the user back in
    * the FleetView (which is paused on the outer process).
@@ -3861,14 +3884,14 @@ export function REPL({
    */
   const handleLeftArrowOnEmpty = useCallback(() => {
     // Source: ant 4177.js `$1H()`:
-    //   if (!PF_()) return                     // PF_() = CLAUDE_BG_BACKEND==="daemon"
+    //   if (!PF_()) return                     // PF_() = THYROX_BG_BACKEND==="daemon"
     //   let H = f4K()                          // detach message
     //   ri({type:"detach-request", msg:H})    // daemon RPC (ccb has no daemon)
     //   process.stdout.write(w_H(H))          // APC wire format
     //
     // w_H = ant 4176.js: with msg → `\x1b_cc-detach-msg;<msg>\x1b\\` + aNH; without → aNH
     // aNH = `\x1b_cc-daemon-detach\x1b\\`
-    if (process.env.CLAUDE_CODE_SESSION_KIND === 'bg') {
+    if (process.env.THYROX_CODE_SESSION_KIND === 'bg') {
       sendBgDetachSignal();
       return;
     }
@@ -3937,7 +3960,7 @@ export function REPL({
   // (detach / exit via handleLeftArrowOnEmpty).
   const leftArrowMessageHandler = useMemo(
     () =>
-      process.env.CLAUDE_CODE_SESSION_KIND === 'bg' ||
+      process.env.THYROX_CODE_SESSION_KIND === 'bg' ||
       process.env.CCB_FLEET_ATTACH_CHILD === '1'
         ? undefined
         : (_show: boolean) => {
@@ -4029,9 +4052,13 @@ export function REPL({
         const imageBlocks: Array<ImageBlockParam> = message.message.content.filter(block => block.type === 'image');
         if (imageBlocks.length > 0) {
           const newPastedContents: Record<number, PastedContent> = {};
+          // `imagePasteIds` no esta declarado en `UserMessage`: llega por la firma
+          // de indice de `MessageBase`, o sea `unknown`. Mismo estrechamiento que
+          // `PromptInput.tsx:3205`.
+          const imagePasteIds = message.imagePasteIds as number[] | undefined;
           imageBlocks.forEach((block, index) => {
             if (block.source.type === 'base64') {
-              const id = message.imagePasteIds?.[index] ?? index + 1;
+              const id = imagePasteIds?.[index] ?? index + 1;
               newPastedContents[id] = {
                 id,
                 type: 'image',
@@ -4103,15 +4130,15 @@ export function REPL({
     // bottom right corner of the screen if the API key is invalid.
     void reverify();
 
-    // Populate readFileState with CLAUDE.md files at startup
+    // Populate readFileState with THYROX.md files at startup
     const memoryFiles = await getMemoryFiles();
     if (memoryFiles.length > 0) {
       const fileList = memoryFiles
         .map(f => `  [${f.type}] ${f.path} (${f.content.length} chars)${f.parent ? ` (included by ${f.parent})` : ''}`)
         .join('\n');
-      logForDebugging(`Loaded ${memoryFiles.length} CLAUDE.md/rules files:\n${fileList}`);
+      logForDebugging(`Loaded ${memoryFiles.length} THYROX.md/rules files:\n${fileList}`);
     } else {
-      logForDebugging('No CLAUDE.md/rules files found');
+      logForDebugging('No THYROX.md/rules files found');
     }
     for (const file of memoryFiles) {
       // When the injected content doesn't match disk (stripped HTML comments,
@@ -4236,7 +4263,7 @@ export function REPL({
     }
   }, [submitCount]);
 
-  // Idle-prompt watcher: fire "Claude is waiting for your input" after
+  // Idle-prompt watcher: fire "thyrox is waiting for your input" after
   // messageIdleNotifThresholdMs of inactivity following a query completion.
   // Banner-policy gate (KAIROS push toggles, channel selection) lives in
   // notifier.ts:sendNotification → shouldFireBanner('idle_prompt') — the
@@ -4245,7 +4272,7 @@ export function REPL({
   // resplit/5031.js and avoids missing the fire window if a user toggles
   // settings between query-end and idle-threshold.
   useEffect(() => {
-    // Don't set up notification if Claude is busy
+    // Don't set up notification if thyrox is busy
     if (isLoading) return;
 
     // Only enable notifications after the first new interaction in this session
@@ -4261,7 +4288,7 @@ export function REPL({
         const lastUserInteraction = getLastInteractionTime();
 
         if (lastUserInteraction > lastQueryCompletionTime) {
-          // User has interacted since Claude finished - they're not idle, don't notify
+          // User has interacted since thyrox finished - they're not idle, don't notify
           return;
         }
 
@@ -4287,7 +4314,7 @@ export function REPL({
         ) {
           void sendNotification(
             {
-              message: 'Claude is waiting for your input',
+              message: `${PRODUCT_NAME} is waiting for your input`,
               notificationType: 'idle_prompt',
             },
             terminal,
@@ -4315,10 +4342,10 @@ export function REPL({
     if (willowMode !== 'hint' && willowMode !== 'hint_v2') return;
     if (getGlobalConfig().idleReturnDismissed) return;
 
-    const tokenThreshold = Number(process.env.CLAUDE_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
+    const tokenThreshold = Number(process.env.THYROX_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
     if (getTotalInputTokens() < tokenThreshold) return;
 
-    const idleThresholdMs = (Number(process.env.CLAUDE_CODE_IDLE_THRESHOLD_MINUTES) || 75) * 60_000;
+    const idleThresholdMs = (Number(process.env.THYROX_CODE_IDLE_THRESHOLD_MINUTES) || 75) * 60_000;
     const elapsed = Date.now() - lastQueryCompletionTime;
     const remaining = idleThresholdMs - elapsed;
 
@@ -5042,7 +5069,6 @@ export function REPL({
                   mode={streamMode}
                   spinnerTip={spinnerTip}
                   responseLengthRef={responseLengthRef}
-                  apiMetricsRef={apiMetricsRef}
                   overrideMessage={spinnerMessage}
                   spinnerSuffix={stopHookSpinnerSuffix}
                   verbose={verbose}
@@ -5326,7 +5352,7 @@ export function REPL({
                         bashToolsProcessedIdx.current = 0;
                       }
                       skipIdleCheckRef.current = true;
-                      void onSubmitRef.current(pending.input, {
+                      void onSubmit(pending.input, {
                         setCursorOffset: () => {},
                         clearBuffer: () => {},
                         resetHistory: () => {},

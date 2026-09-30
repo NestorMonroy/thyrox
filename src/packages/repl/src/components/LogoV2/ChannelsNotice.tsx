@@ -12,7 +12,10 @@ import {
   getHasDevChannels,
 } from '@thyrox/app-host/bootstrap/state.js'
 import { Box, Text } from '@anthropic/ink'
-import { isChannelsEnabled } from '@thyrox/mcp-runtime/channelAllowlist.js'
+import {
+  type ChannelAllowlistEntry,
+  isChannelsEnabled,
+} from '@thyrox/mcp-runtime/channelAllowlist.js'
 import { getEffectiveChannelAllowlist } from '@thyrox/mcp-runtime/channelNotification.js'
 import { getMcpConfigsByScope } from '@thyrox/mcp-runtime/config.js'
 import {
@@ -21,6 +24,7 @@ import {
 } from '@thyrox/provider/authAlias.js'
 import { loadInstalledPluginsV2 } from '@thyrox/config/plugin/installedPluginsManager'
 import { getSettingsForSource } from '@thyrox/config/settings'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** @dynamicRequire */
 export function ChannelsNotice(): React.ReactNode {
@@ -48,7 +52,7 @@ export function ChannelsNotice(): React.ReactNode {
       const policy = getSettingsForSource('policySettings')
       const allowlist = getEffectiveChannelAllowlist(
         sub,
-        policy?.allowedChannelPlugins,
+        policy?.allowedChannelPlugins as ChannelAllowlistEntry[] | undefined,
       )
       return {
         channels: ch,
@@ -123,7 +127,7 @@ export function ChannelsNotice(): React.ReactNode {
       <Text color="error">Listening for channel messages from: {list}</Text>
       <Text dimColor>
         Experimental · inbound messages will be pushed into this session, this
-        carries prompt injection risks. Restart Claude Code without {flag} to
+        carries prompt injection risks. Restart {PRODUCT_NAME} without {flag} to
         disable.
       </Text>
       {unmatched.map(u => (

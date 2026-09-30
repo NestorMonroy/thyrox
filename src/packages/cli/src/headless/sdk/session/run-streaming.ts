@@ -1,4 +1,5 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+import type { McpSetServersResult } from '../../../mcpServersHandlers.js'
 import { feature } from 'bun:bundle'
 import '@thyrox/app-host/runtime/bootstrap.js'
 import { settingsChangeDetector } from '@thyrox/config/changeDetector'
@@ -78,10 +79,13 @@ import {
   setupSdkMcpClients,
   setupVscodeSdkMcp,
   setMcpServerEnabled,
-  type MCPServerConnection,
   type McpSdkServerConfig,
   type ScopedMcpServerConfig,
 } from '@thyrox/mcp-runtime'
+// La conexión concreta (unión discriminada con `client`, `capabilities` y
+// `cleanup`): los `*Base` de abajo la fijan a las formas del CLI, y el
+// contrato genérico de la raíz del paquete no declara esos campos.
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import { ask } from '@thyrox/agent/query-engine'
 import { canBatchWith, joinPromptValues } from './prompt-utils.js'
 import { handleOrphanedPermissionResponse } from '../../handleOrphanedPermissionResponse.js'
@@ -99,18 +103,12 @@ import {
 } from '@thyrox/mcp-runtime'
 import type {
   DynamicMcpState as DynamicMcpStateBase,
-  SdkMcpState as SdkMcpStateBase,
 } from '@thyrox/mcp-runtime'
 
 // Concrete parameterisations of the generic mcp-runtime contracts used in
 // this file — the generic `*Base` forms declare the type slots, these lock
 // them to the CLI's concrete client/tool/config shapes.
 type DynamicMcpState = DynamicMcpStateBase<
-  MCPServerConnection,
-  Tools,
-  ScopedMcpServerConfig
->
-type SdkMcpState = SdkMcpStateBase<
   MCPServerConnection,
   Tools,
   ScopedMcpServerConfig
@@ -130,6 +128,7 @@ import {
   isShuttingDown,
 } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { onRefusalFallbackRestored } from '@thyrox/app-host/state/refusalFallbackRestore.js'
 import { createIdleTimeoutManager } from '@thyrox/agent/idleTimeout.js'
 import type {
   SDKStatus,
@@ -193,6 +192,7 @@ import { executeNotificationHooks } from '@thyrox/agent/hooks.js'
 import {
   ElicitRequestSchema,
   ElicitationCompleteNotificationSchema,
+  type JSONRPCMessage,
 } from '@modelcontextprotocol/sdk/types.js'
 import {
   toInternalMessages,
@@ -231,7 +231,7 @@ import {
 import { runWithWorkload, WORKLOAD_CRON } from '@thyrox/provider/workloadContext.js'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import type { AppStateLike as AppState } from '../../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import {
   fileHistoryRewind,
   fileHistoryCanRestore,
@@ -280,9 +280,6 @@ import { sleep } from '@thyrox/config/sleep'
 
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
-const coordinatorModeModule = feature('COORDINATOR_MODE')
-  ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))
-  : null
 const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
     ? (require('@thyrox/agent/proactive/index.js') as typeof import('@thyrox/agent/proactive/index.js'))
@@ -290,9 +287,6 @@ const proactiveModule =
 const cronSchedulerModule = require('@thyrox/agent/scheduler') as typeof import('@thyrox/agent/scheduler')
 const cronJitterConfigModule = require('@thyrox/agent/misc/cronJitterConfig.js') as typeof import('@thyrox/agent/misc/cronJitterConfig.js')
 const cronGate = require('@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js')
-const extractMemoriesModule = feature('EXTRACT_MEMORIES')
-  ? (require('@thyrox/memory/extractMemories') as typeof import('@thyrox/memory/extractMemories'))
-  : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 const SHUTDOWN_TEAM_PROMPT = `<system-reminder>
@@ -539,7 +533,7 @@ export function runHeadlessStreaming(
   // Auto-resume interrupted turns on restart so CC continues from where it
   // left off without requiring the SDK to re-send the prompt.
   const resumeInterruptedTurnEnv =
-    process.env.CLAUDE_CODE_RESUME_INTERRUPTED_TURN
+    process.env.THYROX_CODE_RESUME_INTERRUPTED_TURN
   if (
     turnInterruptionState &&
     turnInterruptionState.kind !== 'none' &&
@@ -589,6 +583,15 @@ export function runHeadlessStreaming(
     }
   })
   let activeUserSpecifiedModel = options.userSpecifiedModel
+  // `b8r` (`chunk-ycnq45th.js`, 2.1.283): al restaurarse el respaldo por
+  // rechazo, el espejo local deja de reflejar el override que la
+  // restauración acaba de deshacer.
+  const unsubscribeRefusalFallbackRestore = onRefusalFallbackRestored(() => {
+    activeUserSpecifiedModel = undefined
+  })
+  registerCleanup(async () => {
+    unsubscribeRefusalFallbackRestore()
+  })
 
   function injectModelSwitchBreadcrumbs(
     modelArg: string,
@@ -797,7 +800,7 @@ export function runHeadlessStreaming(
       // Re-initialize all SDK MCP servers with current config
       const sdkSetup = await setupSdkMcpClients(
         sdkMcpConfigs,
-        (serverName, message) =>
+        (serverName: string, message: JSONRPCMessage) =>
           structuredIO.sendMcpMessage(serverName, message),
       )
       sdkClients = sdkSetup.clients
@@ -931,12 +934,14 @@ export function runHeadlessStreaming(
     }> => {
       const oldSdkClientNames = new Set(sdkClients.map(c => c.name))
 
-      const result = await runtimeHandleMcpSetServers(
+      // El API del runtime es opaco (V7 §10.2 Cut 5): quien llama lo
+      // especializa con el tipo concreto de su implementación.
+      const result = (await runtimeHandleMcpSetServers(
         servers,
         { configs: sdkMcpConfigs, clients: sdkClients, tools: sdkTools },
         dynamicMcpState,
-        setAppState,
-      )
+        setAppState as (f: (prev: unknown) => unknown) => void,
+      )) as McpSetServersResult
 
       // Update SDK state (need to mutate sdkMcpConfigs since it's shared)
       for (const key of Object.keys(sdkMcpConfigs)) {
@@ -1081,7 +1086,7 @@ export function runHeadlessStreaming(
       // its promise so this awaits the same in-flight request.
       await Promise.all([
         feature('DOWNLOAD_USER_SETTINGS') &&
-        (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+        (isEnvTruthy(process.env.THYROX_CODE_REMOTE) || getIsRemoteMode())
           ? withDiagnosticsTiming('headless_user_settings_download', () =>
               downloadUserSettings(),
             )
@@ -1103,13 +1108,13 @@ export function runHeadlessStreaming(
 
   // Background plugin installation for all headless users
   // Installs marketplaces from extraKnownMarketplaces and missing enabled plugins
-  // CLAUDE_CODE_SYNC_PLUGIN_INSTALL=true: resolved in run() before the first
+  // THYROX_CODE_SYNC_PLUGIN_INSTALL=true: resolved in run() before the first
   // query so plugins are guaranteed available on the first ask().
   let pluginInstallPromise: Promise<void> | null = null
   // --bare / SIMPLE: skip plugin install. Scripted calls don't add plugins
   // mid-session; the next interactive run reconciles.
   if (!isBareMode()) {
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SYNC_PLUGIN_INSTALL)) {
+    if (isEnvTruthy(process.env.THYROX_CODE_SYNC_PLUGIN_INSTALL)) {
       pluginInstallPromise = installPluginsAndApplyMcpInBackground()
     } else {
       void installPluginsAndApplyMcpInBackground()
@@ -1124,7 +1129,7 @@ export function runHeadlessStreaming(
   let currentAgents = agents
 
   // Clear all plugin-related caches, reload commands/agents/hooks.
-  // Called after CLAUDE_CODE_SYNC_PLUGIN_INSTALL completes (before first query)
+  // Called after THYROX_CODE_SYNC_PLUGIN_INSTALL completes (before first query)
   // and after non-sync background install finishes.
   // refreshActivePlugins calls clearAllCaches() which is required because
   // loadAllPlugins() may have run during main.tsx startup BEFORE managed
@@ -1167,7 +1172,7 @@ export function runHeadlessStreaming(
     const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
       {}
     for (const [name, config] of Object.entries(newConfigs)) {
-      const type = config.type
+      const type = (config as { type: string }).type
       if (
         type === undefined ||
         type === 'stdio' ||
@@ -1251,14 +1256,14 @@ export function runHeadlessStreaming(
     await updateSdkMcp()
     headlessProfilerCheckpoint('after_updateSdkMcp')
 
-    // Resolve deferred plugin installation (CLAUDE_CODE_SYNC_PLUGIN_INSTALL).
+    // Resolve deferred plugin installation (THYROX_CODE_SYNC_PLUGIN_INSTALL).
     // The promise was started eagerly so installation overlaps with other init.
     // Awaiting here guarantees plugins are available before the first ask().
-    // If CLAUDE_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS is set, races against that
+    // If THYROX_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS is set, races against that
     // deadline and proceeds without plugins on timeout (logging an error).
     if (pluginInstallPromise) {
       const timeoutMs = parseInt(
-        process.env.CLAUDE_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS || '',
+        process.env.THYROX_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS || '',
         10,
       )
       if (timeoutMs > 0) {
@@ -1267,7 +1272,7 @@ export function runHeadlessStreaming(
         if (result === 'timeout') {
           logError(
             new Error(
-              `CLAUDE_CODE_SYNC_PLUGIN_INSTALL: plugin installation timed out after ${timeoutMs}ms`,
+              `THYROX_CODE_SYNC_PLUGIN_INSTALL: plugin installation timed out after ${timeoutMs}ms`,
             ),
           )
           logEvent('tengu_sync_plugin_install_timeout', {
@@ -1648,7 +1653,7 @@ export function runHeadlessStreaming(
           // Generate and emit prompt suggestion for SDK consumers
           if (
             options.promptSuggestions &&
-            !isEnvDefinedFalsy(process.env.CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION)
+            !isEnvDefinedFalsy(process.env.THYROX_CODE_ENABLE_PROMPT_SUGGESTION)
           ) {
             // TS narrows suggestionState to never in the while loop body;
             // cast via unknown to reset narrowing.
@@ -2365,7 +2370,10 @@ export function runHeadlessStreaming(
             sdkClient.type === 'connected' &&
             sdkClient.client?.transport?.onmessage
           ) {
-            sdkClient.client.transport.onmessage(mcpRequest.message)
+            // El esquema de control deja el mensaje sin tipar
+            // (`JSONRPCMessagePlaceholder`) y el binario lo reenvía tal cual
+            // (2.1.282: `Byo(ie,F.message)`), sin validarlo.
+            sdkClient.client.transport.onmessage(mcpRequest.message as JSONRPCMessage)
           }
           sendControlResponseSuccess(message)
         } else if (message.request.subtype === 'rewind_files') {
@@ -2442,7 +2450,7 @@ export function runHeadlessStreaming(
           try {
             if (
               feature('DOWNLOAD_USER_SETTINGS') &&
-              (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+              (isEnvTruthy(process.env.THYROX_CODE_REMOTE) || getIsRemoteMode())
             ) {
               // Re-pull user settings so enabledPlugins pushed from the
               // user's local CLI take effect before the cache sweep.
@@ -2716,11 +2724,13 @@ export function runHeadlessStreaming(
               const oauthPromise = performMCPOAuthFlow(
                 serverName,
                 config,
-                url => resolveAuthUrl!(url),
+(                url: string) => resolveAuthUrl!(url),
                 controller.signal,
                 {
                   skipBrowserOpen: true,
-                  onWaitingForCallback: submit => {
+                  onWaitingForCallback: (
+                    submit: (callbackUrl: string) => void,
+                  ) => {
                     oauthCallbackSubmitters.set(serverName, submit)
                   },
                 },
@@ -2816,7 +2826,7 @@ export function runHeadlessStreaming(
                     ],
                   }
                 })
-                .catch(error => {
+                .catch((error: unknown) => {
                   logForDebugging(
                     `MCP OAuth failed for ${serverName}: ${error}`,
                     { level: 'error' },
@@ -3437,11 +3447,11 @@ export function runHeadlessStreaming(
         const sessionId = getSessionId() as UUID
         const existsInSession = await doesMessageExistInSession(
           sessionId,
-          message.uuid,
+          message.uuid as UUID,
         )
 
         // Check both historical duplicates (from file) and runtime duplicates (this session)
-        if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+        if (existsInSession || receivedMessageUuids.has(message.uuid as UUID)) {
           logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
           // Send acknowledgment for duplicate message if replay mode is enabled
           if (options.replayUserMessages) {
@@ -3470,7 +3480,7 @@ export function runHeadlessStreaming(
         }
 
         // Track this UUID to prevent runtime duplicates
-        trackReceivedMessageUuid(message.uuid)
+        trackReceivedMessageUuid(message.uuid as UUID)
       }
 
       enqueue({
@@ -3478,7 +3488,7 @@ export function runHeadlessStreaming(
         // file_attachments rides the protobuf catchall from the web composer.
         // Same-ref no-op when absent (no 'file_attachments' key).
         value: await resolveAndPrepend(message, message.message.content),
-        uuid: message.uuid,
+        uuid: message.uuid as UUID | undefined,
         priority: message.priority,
       })
       // Increment prompt count for attribution tracking and save snapshot

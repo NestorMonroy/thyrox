@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 .claude/jobs/build-packages-20260927T065542/build.jobs", "started_at": "2026-09-27T06:55:42+00:00"}

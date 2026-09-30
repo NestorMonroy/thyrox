@@ -1,13 +1,5 @@
 /**
- * Porte fiel de `ccnmt: packages/shell/src/taskOutputPort.ts` — el
- * contrato que implementa el destino de la salida de una tarea en
- * background: acumula stdout/stderr, decide cuándo derramar a disco
- * (`spillToDisk`) y expone el archivo resultante.
  *
- * Porte COMPLETO: la única interfaz exportada de la fuente está
- * presente, con todos sus miembros.
- *
- * @module
  */
 export interface TaskOutputPort {
   readonly taskId: string

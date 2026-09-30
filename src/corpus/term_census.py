@@ -149,7 +149,7 @@ def format_census(summary: dict) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("corpus", help="el archivo de texto")
     parser.add_argument("terminos", nargs="+", help="que contar")
     parser.add_argument("--prefix", action="store_true",
@@ -158,14 +158,14 @@ def main(argv: list[str] | None = None) -> int:
                         help="distingue mayusculas de minusculas")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.corpus)
-    if not origen.is_file():
-        print("term_census: no existe o no es un archivo: %s" % origen,
+    source = pathlib.Path(args.corpus)
+    if not source.is_file():
+        print("term_census: no existe o no es un archivo: %s" % source,
               file=sys.stderr)
         print("             NO se emite tabla.", file=sys.stderr)
         return 2
 
-    text_value = origen.read_text(encoding="utf-8", errors="replace")
+    text_value = source.read_text(encoding="utf-8", errors="replace")
     summary = summarize(text_value, args.terminos,
                         fold_case=not args.case, prefix=args.prefix)
     if summary["empty_corpus"]:

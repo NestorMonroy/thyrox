@@ -1,7 +1,7 @@
 /**
  * Bootstrap utilities extracted from src/main.tsx.
  * These pure helpers are used during CLI startup and are safe to import
- * from @claude-code-how-works/cli without triggering circular dependencies.
+ * from @thyrox/cli without triggering circular dependencies.
  *
  * Moved from src/main.tsx per V7 Phase 4 cut-A.
  */

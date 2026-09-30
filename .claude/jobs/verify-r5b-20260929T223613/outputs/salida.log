@@ -1,0 +1,47 @@
+[src/packages/shared-state/__tests__/redis.test.ts]  0 fail
+[src/packages/shared-state/__tests__/redis.test.ts]  23 expect() calls
+[src/packages/shared-state/__tests__/redis.test.ts] Ran 10 tests across 1 file. [1025.00ms]
+[src/packages/shared-state/__tests__/factory.test.ts]  0 fail
+[src/packages/shared-state/__tests__/factory.test.ts]  41 expect() calls
+[src/packages/shared-state/__tests__/factory.test.ts] Ran 18 tests across 1 file. [143.00ms]
+[src/packages/shared-state/__tests__/factory.redis.test.ts]  0 fail
+[src/packages/shared-state/__tests__/factory.redis.test.ts]  3 expect() calls
+[src/packages/shared-state/__tests__/factory.redis.test.ts] Ran 1 test across 1 file. [10.25s]
+[src/packages/provider/__tests__/proxyCredentialCooldown.test.ts]  0 fail
+[src/packages/provider/__tests__/proxyCredentialCooldown.test.ts]  37 expect() calls
+[src/packages/provider/__tests__/proxyCredentialCooldown.test.ts] Ran 14 tests across 1 file. [193.00ms]
+[src/packages/mitm/__tests__/sharedStateBoundary.test.ts]  0 fail
+[src/packages/mitm/__tests__/sharedStateBoundary.test.ts]  4 expect() calls
+[src/packages/mitm/__tests__/sharedStateBoundary.test.ts] Ran 4 tests across 1 file. [1283.00ms]
+[src/packages/provider/__tests__/proxyServerRateLimit.test.ts]  0 fail
+[src/packages/provider/__tests__/proxyServerRateLimit.test.ts]  7 expect() calls
+[src/packages/provider/__tests__/proxyServerRateLimit.test.ts] Ran 5 tests across 1 file. [530.00ms]
+[src/packages/provider/__tests__/proxyStartServer.test.ts]  0 fail
+[src/packages/provider/__tests__/proxyStartServer.test.ts]  44 expect() calls
+[src/packages/provider/__tests__/proxyStartServer.test.ts] Ran 25 tests across 1 file. [868.00ms]
+[src/packages/provider/__tests__/proxyRateLimitManager.test.ts]  0 fail
+[src/packages/provider/__tests__/proxyRateLimitManager.test.ts]  36 expect() calls
+[src/packages/provider/__tests__/proxyRateLimitManager.test.ts] Ran 21 tests across 1 file. [156.00ms]
+[src/packages/provider/__tests__/proxyServerCooldown.test.ts]  0 fail
+[src/packages/provider/__tests__/proxyServerCooldown.test.ts]  10 expect() calls
+[src/packages/provider/__tests__/proxyServerCooldown.test.ts] Ran 6 tests across 1 file. [395.00ms]
+[src/packages/provider/__tests__/proxyModelCooldownCause.test.ts]  0 fail
+[src/packages/provider/__tests__/proxyModelCooldownCause.test.ts]  13 expect() calls
+[src/packages/provider/__tests__/proxyModelCooldownCause.test.ts] Ran 8 tests across 1 file. [417.00ms]
+[src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts]  0 fail
+[src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts]  5 expect() calls
+[src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts] Ran 2 tests across 1 file. [173.00ms]
+[src/packages/provider/src/accounts/refresh/__tests__/tokenRefreshSharedLease.test.ts]  0 fail
+[src/packages/provider/src/accounts/refresh/__tests__/tokenRefreshSharedLease.test.ts]  12 expect() calls
+[src/packages/provider/src/accounts/refresh/__tests__/tokenRefreshSharedLease.test.ts] Ran 4 tests across 1 file. [176.00ms]
+[src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts]  0 fail
+[src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts]  8 expect() calls
+[src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts] Ran 3 tests across 1 file. [172.00ms]
+[src/packages/provider/src/proxy/__tests__/startServerSharedState.test.ts]  0 fail
+[src/packages/provider/src/proxy/__tests__/startServerSharedState.test.ts]  15 expect() calls
+[src/packages/provider/src/proxy/__tests__/startServerSharedState.test.ts] Ran 8 tests across 1 file. [754.00ms]
+[tsc provider] check-package-typecheck: ningun paquete coincide con ['src/packages/provider']
+[tsc shared-state] check-package-typecheck: ningun paquete coincide con ['src/packages/shared-state']
+[tsc mitm] check-package-typecheck: ningun paquete coincide con ['src/packages/mitm']
+VERIFY_RC=0
+__BG_EXIT__=0

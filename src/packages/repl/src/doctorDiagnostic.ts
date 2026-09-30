@@ -1,7 +1,7 @@
 import { execa } from 'execa'
 import { readFile, realpath } from 'fs/promises'
 import { homedir } from 'os'
-import { delimiter, join, posix, win32 } from 'path'
+import { basename, delimiter, join, posix, win32 } from 'path'
 import { checkGlobalInstallPermissions } from '@thyrox/updater/autoUpdater.js'
 import { getExternalLauncherPath } from '@thyrox/updater'
 import { isInBundledMode } from '@thyrox/config/bundledMode'
@@ -46,6 +46,7 @@ import {
 } from '@thyrox/shell/shellConfig.js'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import { which } from '@thyrox/shell/which.js'
+import { instructionsFileCandidates, pickInstructionsFile } from '@thyrox/config/env/instructionFiles.js'
 
 export type InstallationType =
   | 'npm-global'
@@ -69,7 +70,7 @@ export type DiagnosticInfo = {
   packageManager?: string
   ripgrepStatus: {
     working: boolean
-    mode: 'system' | 'builtin' | 'embedded'
+    mode: 'system' | 'builtin' | 'embedded' | 'napi'
     systemPath: string | null
   }
 }
@@ -219,8 +220,8 @@ async function detectMultipleInstallations(): Promise<
   }
 
   // Check for global npm installation
-  const packagesToCheck = ['@anthropic-ai/claude-code-how-works-how-works']
-  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code-how-works-how-works') {
+  const packagesToCheck = ['@anthropic-ai/claude-code']
+  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code') {
     packagesToCheck.push(MACRO.PACKAGE_URL)
   }
   const npmResult = await execFileNoThrow('npm', [
@@ -547,10 +548,10 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
 
     for (const install of npmInstalls) {
       if (install.type === 'npm-global') {
-        let uninstallCmd = 'npm -g uninstall @anthropic-ai/claude-code-how-works-how-works'
+        let uninstallCmd = 'npm -g uninstall @anthropic-ai/claude-code'
         if (
           MACRO.PACKAGE_URL &&
-          MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code-how-works-how-works'
+          MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code'
         ) {
           uninstallCmd += ` && npm -g uninstall ${MACRO.PACKAGE_URL}`
         }
@@ -596,13 +597,13 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
     }
   }
 
-  const projectInstructions = join(getCwd(), 'CLAUDE.md')
+  const projectInstructions = pickInstructionsFile(instructionsFileCandidates(getCwd()))
   try {
     const [content, tracked] = await Promise.all([
       readFile(projectInstructions, 'utf8'),
       execFileNoThrowWithCwd(
         'git',
-        ['ls-files', '--error-unmatch', 'CLAUDE.md'],
+        ['ls-files', '--error-unmatch', basename(projectInstructions)],
         { cwd: getCwd() },
       ),
     ])
@@ -619,13 +620,13 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
     ) {
       warnings.push({
         issue:
-          'Checked-in CLAUDE.md contains substantial instructions that appear derivable from the repository',
+          `Checked-in ${basename(projectInstructions)} contains substantial instructions that appear derivable from the repository`,
         fix:
           'Trim commands, directory listings, and facts visible in package manifests or source; keep only durable constraints and non-obvious decisions.',
       })
     }
   } catch {
-    // Missing/unreadable CLAUDE.md is not a health failure.
+    // Un archivo de instrucciones ausente o ilegible no es un fallo de salud.
   }
 
   // Get ripgrep status and configuration

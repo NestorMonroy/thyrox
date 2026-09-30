@@ -1,0 +1,29 @@
+Patrón: provider-host-bindings-stub-falta-campo-247
+Señal del verificador: : TS2741: Property\ .+?\ is\ missing\ in\ type\ .+?\ but\ required\ in\ type\ .+?\.$
+Arreglo genérico: Derivado de los objetivos de src/packages/provider/__tests__/contractsHostSmoke.test.ts; ver su diff en el paso.
+Ya aplicado en: src/packages/provider/__tests__/contractsHostSmoke.test.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(1538,13): error TS2741: Property 'async' is missing in type 'AsyncHookJSONOutput' but required in type '{ async: true; asyncTimeout?: number | undefined; }'.
+  --- código src/packages/agent/hooks.ts:1528-1548 ---
+   1528          if (isAsyncHookJSONOutput(parsed) && !forceSyncExecution) {
+   1529            const processId = `async_hook_${child.pid}`
+   1530            logForDebugging(
+   1531              `Hooks: Detected async hook, backgrounding process ${processId}`,
+   1532            )
+   1533  
+   1534            const backgrounded = executeInBackground({
+   1535              processId,
+   1536              hookId,
+   1537              shellCommand,
+   1538>             asyncResponse: parsed,
+   1539              hookEvent,
+   1540              hookName,
+   1541              command: hook.command,
+   1542              pluginId,
+   1543            })
+   1544            if (backgrounded) {
+   1545              shellCommandTransferred = true
+   1546              asyncResolve?.({
+   1547                stdout,
+   1548                stderr,

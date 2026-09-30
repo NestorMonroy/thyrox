@@ -96,6 +96,7 @@ import {
 } from './pidLock.js'
 import { getBinaryName, getPlatform } from './platform.js'
 import { getLauncherOwnership } from './launcherOwnership.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** Ver docstring del módulo — sustituto local del global `MACRO` de ccnmt. */
 const MACRO = {
@@ -966,7 +967,7 @@ export async function checkInstall(
       const absoluteTarget = resolve(dirname(dirs.executable), target)
       if (!(await isPossibleClaudeBinary(absoluteTarget))) {
         messages.push({
-          message: `Claude symlink points to missing or invalid binary: ${target}`,
+          message: `${PRODUCT_NAME} symlink points to missing or invalid binary: ${target}`,
           userActionRequired: true,
           type: 'error',
         })
@@ -982,7 +983,7 @@ export async function checkInstall(
         // EINVAL (no es symlink) u otro — chequea como binario regular
         if (!(await isPossibleClaudeBinary(dirs.executable))) {
           messages.push({
-            message: `${dirs.executable} exists but is not a valid Claude binary`,
+            message: `${dirs.executable} exists but is not a valid ${PRODUCT_NAME} binary`,
             userActionRequired: true,
             type: 'error',
           })
@@ -1819,9 +1820,9 @@ export async function cleanupNpmInstallations(): Promise<{
   const warnings: string[] = []
   let removed = 0
 
-  // Siempre intenta remover @anthropic-ai/claude-code-how-works-how-works
+  // Siempre intenta remover @anthropic-ai/claude-code
   const codePackageResult = await attemptNpmUninstall(
-    '@anthropic-ai/claude-code-how-works-how-works',
+    '@anthropic-ai/claude-code',
   )
   if (codePackageResult.success) {
     removed++
@@ -1833,7 +1834,7 @@ export async function cleanupNpmInstallations(): Promise<{
   }
 
   // Tambien intenta remover MACRO.PACKAGE_URL si esta definido y es distinto
-  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code-how-works-how-works') {
+  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code') {
     const macroPackageResult = await attemptNpmUninstall(MACRO.PACKAGE_URL)
     if (macroPackageResult.success) {
       removed++

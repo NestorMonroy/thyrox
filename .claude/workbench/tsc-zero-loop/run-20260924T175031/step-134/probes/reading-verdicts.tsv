@@ -1,0 +1,16 @@
+# veredicto por lectura del result de cada salida (no por regex); la regex de classify_outputs.py sobrecuenta
+item	type	verdict
+1	Message	mismo nombre, otro tipo
+2	AppState	ya canónico, nada que unificar
+4	CompactionResult	sin salida (error_max_turns)
+5	FsOperations	ya canónico, el error no nace de la copia
+7	PermissionMode	sin salida (error_max_turns)
+8	SystemPrompt	mismo nombre, otro tipo
+10	EffortValue	mismo nombre, otro tipo
+12	MCPServerConnection	mismo nombre, otro tipo
+13	PermissionDecision	mismo nombre, otro tipo
+14	PermissionUpdate	ya canónico, el error no nace de la copia
+15	Props	mismo nombre, otro tipo
+16	RequestStartEvent	mismo nombre, otro tipo
+17	SystemCompactBoundaryMessage	mismo nombre, otro tipo
+19	TranscriptMessage	mismo nombre, otro tipo

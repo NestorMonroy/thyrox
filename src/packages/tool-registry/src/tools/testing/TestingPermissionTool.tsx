@@ -1,24 +1,6 @@
 /**
- * El útil que SIEMPRE abre un diálogo de permiso. Sólo para pruebas.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/tools/testing/
- * TestingPermissionTool.tsx` (1 símbolo exportado). Ese árbol declara
- * `"license": "UNLICENSED"`, así que el cuerpo se **reimplementa** y no se
- * copia.
- *
- * EXISTE PARA QUE LA SUITE DE EXTREMO A EXTREMO TENGA UN DIÁLOGO QUE
- * EJERCITAR. Su `checkPermissions` no tiene rama de `allow`: no es una
- * omisión, es su acto. Y por eso `isEnabled` lo ata a `NODE_ENV === 'test'`
- * —sin esa guarda, un útil cuyo único efecto es interrumpir a la persona
- * aparecería en una sesión real.
- *
- * LA EXTENSIÓN `.tsx` NO IMPLICA REACT. Medido sobre la fuente: **0**
- * ocurrencias de `react`, y sus cuatro importaciones son `zod`, `Tool.js` y
- * `lazySchema.js`. Se conserva la extensión para que la comparación archivo
- * a archivo con la fuente no se descoloque; el bloqueo transversal de react
- * que gobierna a ~25 módulos de este paquete no le aplica.
- *
- * DIVERGENCIA DECLARADA: ninguna.
+ * This testing-only tool will always pop up a permission dialog when called by
+ * the model.
  */
 import { z } from 'zod/v4'
 import type { Tool } from '../../Tool.js'
@@ -45,7 +27,6 @@ export const TestingPermissionTool: Tool<InputSchema, string> = buildTool({
   userFacingName() {
     return 'TestingPermission'
   },
-  // La guarda: fuera de una corrida de pruebas el útil no existe.
   isEnabled() {
     return process.env.NODE_ENV === 'test'
   },
@@ -56,14 +37,12 @@ export const TestingPermissionTool: Tool<InputSchema, string> = buildTool({
     return true
   },
   async checkPermissions() {
-    // Sin rama de `allow`: pedir permiso ES lo que este útil hace.
+    // This tool always requires permission
     return {
       behavior: 'ask' as const,
       message: `Run test?`,
     }
   },
-  // Las seis superficies devuelven `null`: el útil no tiene nada que
-  // mostrar, y un render vacío ensuciaría el transcript de la suite.
   renderToolUseMessage() {
     return null
   },

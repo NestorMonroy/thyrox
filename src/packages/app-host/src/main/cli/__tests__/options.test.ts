@@ -1,26 +1,25 @@
 import { describe, expect, test } from 'bun:test'
 import { extractTeammateOptions } from '../options.js'
 
-describe('extractTeammateOptions — análisis defensivo', () => {
-  test('null → objeto vacío', () => {
+describe('extractTeammateOptions — defensive parsing', () => {
+  test('null → empty object', () => {
     expect(extractTeammateOptions(null)).toEqual({})
   })
 
-  test('undefined → objeto vacío', () => {
+  test('undefined → empty object', () => {
     expect(extractTeammateOptions(undefined)).toEqual({})
   })
 
-  test('primitivos no-objeto → objeto vacío', () => {
+  test('non-object primitives → empty object', () => {
     expect(extractTeammateOptions('string')).toEqual({})
     expect(extractTeammateOptions(42)).toEqual({})
     expect(extractTeammateOptions(true)).toEqual({})
   })
 
-  test('un arreglo también se acepta como objeto (typeof [] === "object")', () => {
-    // typeof [] es 'object', así que la función NO rechaza los arreglos.
-    // Los índices del arreglo, escritos como números, no se acceden por
-    // los nombres de campo, así que el resultado queda vacío (sin
-    // campos agentId, etc.).
+  test('array also accepted as object (typeof [] === "object")', () => {
+    // typeof [] is 'object', so the function does NOT reject arrays.
+    // Array indices spelled as numbers are not accessed via the field
+    // names, so the result is empty (no agentId etc. fields).
     expect(extractTeammateOptions([])).toEqual({
       agentId: undefined,
       agentName: undefined,
@@ -34,8 +33,8 @@ describe('extractTeammateOptions — análisis defensivo', () => {
   })
 })
 
-describe('extractTeammateOptions — campos de cadena', () => {
-  test('los 5 campos de cadena se propagan cuando se proveen', () => {
+describe('extractTeammateOptions — string fields', () => {
+  test('all 5 string fields propagate when provided', () => {
     expect(
       extractTeammateOptions({
         agentId: 'agent-1',
@@ -57,12 +56,11 @@ describe('extractTeammateOptions — campos de cadena', () => {
     })
   })
 
-  test('valores no-cadena en campos de cadena se descartan a undefined', () => {
-    // CRÍTICO: valores numéricos o booleanos para campos de cadena NO
-    // deben propagarse. Un refactor futuro que use `String(opts.agentId)`
-    // dejaría que `42` se convirtiera silenciosamente en `"42"` — lo que
-    // enrutaría a un ID de agente inexistente. El chequeo estricto de
-    // typeof sostiene esta garantía.
+  test('non-string string-fields are dropped to undefined', () => {
+    // CRITICAL: numeric or boolean values for string fields must NOT
+    // propagate. A future refactor that uses `String(opts.agentId)`
+    // would silently let `42` become `"42"` — which would route to a
+    // nonexistent agent ID. The strict typeof check is load-bearing.
     expect(
       extractTeammateOptions({
         agentId: 42,
@@ -81,10 +79,10 @@ describe('extractTeammateOptions — campos de cadena', () => {
     })
   })
 
-  test('la cadena vacía SÍ se acepta (el chequeo usa typeof, no un truthy)', () => {
-    // El chequeo es `typeof opts.X === 'string'`, NO `opts.X` (truthy).
-    // La cadena vacía es una cadena válida. Esto documenta que — si
-    // quien llama pasa '', eso se propaga como ''.
+  test('empty string IS accepted (truthy check uses typeof, not Boolean)', () => {
+    // The check is `typeof opts.X === 'string'`, NOT `opts.X` (truthy).
+    // Empty string is a valid string. Documents this — if the caller
+    // passes '', that propagates as ''.
     expect(
       extractTeammateOptions({
         agentId: '',
@@ -93,42 +91,41 @@ describe('extractTeammateOptions — campos de cadena', () => {
   })
 })
 
-describe('extractTeammateOptions — planModeRequired (booleano)', () => {
+describe('extractTeammateOptions — planModeRequired (boolean)', () => {
   test('true → true', () => {
     expect(
       extractTeammateOptions({ planModeRequired: true }).planModeRequired,
     ).toBe(true)
   })
 
-  test('false → false (¡no undefined!)', () => {
-    // CRÍTICO: false es un valor válido, no "ausente". El chequeo es
-    // `typeof === 'boolean'`. Un refactor futuro con
-    // `opts.planModeRequired ?? undefined` convertiría false en
-    // undefined y rompería el contrato explícito de "sin plan mode".
+  test('false → false (not undefined!)', () => {
+    // CRITICAL: false is a valid value, not "missing". The check is
+    // `typeof === 'boolean'`. A future `opts.planModeRequired ?? undefined`
+    // refactor would convert false to undefined and break the
+    // explicit-no-plan-mode contract.
     expect(
       extractTeammateOptions({ planModeRequired: false }).planModeRequired,
     ).toBe(false)
   })
 
-  test('no-booleano se rechaza (cadena "true" → undefined)', () => {
+  test('non-boolean rejected (string "true" → undefined)', () => {
     expect(
       extractTeammateOptions({ planModeRequired: 'true' }).planModeRequired,
     ).toBeUndefined()
   })
 
-  test('no-booleano se rechaza (número 1 → undefined)', () => {
+  test('non-boolean rejected (number 1 → undefined)', () => {
     expect(
       extractTeammateOptions({ planModeRequired: 1 }).planModeRequired,
     ).toBeUndefined()
   })
 })
 
-describe('extractTeammateOptions — enum teammateMode', () => {
-  // El campo teammateMode debe ser exactamente uno de tres valores;
-  // cualquier otro se descarta a undefined. Esto es una frontera de
-  // seguridad — si un usuario pudiera pasar un modo arbitrario, el
-  // runtime podría fallar con un caso de modo no manejado en el
-  // despachador.
+describe('extractTeammateOptions — teammateMode enum', () => {
+  // The teammateMode field must be one of three exact values; anything
+  // else is dropped to undefined. This is a security boundary — if a
+  // user could pass an arbitrary mode string, the runtime might crash
+  // with an unhandled mode case in the dispatcher.
 
   test('"auto" → "auto"', () => {
     expect(
@@ -148,39 +145,38 @@ describe('extractTeammateOptions — enum teammateMode', () => {
     ).toBe('in-process')
   })
 
-  test('modo desconocido → undefined', () => {
+  test('unknown mode → undefined', () => {
     expect(
       extractTeammateOptions({ teammateMode: 'foreground' }).teammateMode,
     ).toBeUndefined()
   })
 
-  test('discrepancia de mayúsculas ("AUTO") → undefined', () => {
-    // Chequeo de enum sensible a mayúsculas/minúsculas. Esto documenta
-    // que — una mayúscula mal tecleada no coincide.
+  test('case mismatch ("AUTO") → undefined', () => {
+    // Case-sensitive enum check. Documents this — typo'd uppercase
+    // doesn't match.
     expect(
       extractTeammateOptions({ teammateMode: 'AUTO' }).teammateMode,
     ).toBeUndefined()
   })
 
-  test('modo no-cadena → undefined', () => {
+  test('non-string mode → undefined', () => {
     expect(
       extractTeammateOptions({ teammateMode: 42 }).teammateMode,
     ).toBeUndefined()
   })
 
-  test('modo null → undefined', () => {
+  test('null mode → undefined', () => {
     expect(
       extractTeammateOptions({ teammateMode: null }).teammateMode,
     ).toBeUndefined()
   })
 })
 
-describe('extractTeammateOptions — campos extra se descartan en silencio', () => {
-  test('los campos desconocidos no se filtran a la salida', () => {
-    // La función sólo reenvía los 8 campos conocidos. Los campos
-    // extra en la entrada se descartan en silencio — defensivo
-    // contra nombres de argumento CLI mal tecleados o llamadores
-    // obsoletos.
+describe('extractTeammateOptions — extra fields silently dropped', () => {
+  test('unknown fields do not leak into output', () => {
+    // The function only forwards the 8 known fields. Extra fields in
+    // the input are silently dropped — defensive against typo'd
+    // CLI arg names or stale callers.
     const result = extractTeammateOptions({
       agentId: 'a',
       randomExtraField: 'leaked?',

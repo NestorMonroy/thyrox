@@ -9,7 +9,6 @@ un fenomeno que este git no produce y habria publicado 0 para siempre.
 """
 from __future__ import annotations
 
-import os
 import pathlib
 import subprocess
 import sys

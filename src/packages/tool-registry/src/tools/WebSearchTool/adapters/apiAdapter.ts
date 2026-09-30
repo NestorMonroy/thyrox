@@ -85,13 +85,13 @@ export class ApiSearchAdapter implements WebSearchAdapter {
     let progressCounter = 0
 
     for await (const event of queryStream) {
-      if (event.type === 'assistant') {
+      if ((event as { type: string }).type === 'assistant') {
         const msg = event as { message: { content: BetaContentBlock[] } }
         allContentBlocks.push(...msg.message.content)
         continue
       }
 
-      if (event.type === 'stream_event') {
+      if ((event as { type: string }).type === 'stream_event') {
         const streamEvt = event as {
           event?: {
             type: string

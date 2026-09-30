@@ -109,7 +109,9 @@ class AbsenceClaim:
     text: str
     symbols: list = field(default_factory=list)
     path: str = ""
-    kind: "ClaimKind" = None
+    # Siempre se pasa por nombre en el único sitio que construye — sin
+    # default de verdad, porque no hay un valor neutro de ClaimKind.
+    kind: "ClaimKind" = field(kw_only=True)
 
 
 def _symbols_in(text: str) -> list:
@@ -200,7 +202,7 @@ def _modules(root, requested):
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("files", nargs="*")
     parser.add_argument("--root", default="src")
     parser.add_argument("--quiet", action="store_true")

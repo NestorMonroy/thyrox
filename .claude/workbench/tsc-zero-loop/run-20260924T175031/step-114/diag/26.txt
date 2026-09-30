@@ -1,0 +1,23 @@
+src/packages/config/plugin/loadPluginAgents.ts(303,36): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+  --- código src/packages/config/plugin/loadPluginAgents.ts:293-313 ---
+    293                        plugin.manifest,
+    294                        loadedPaths,
+    295                      )
+    296  
+    297                      if (agents.length > 0) {
+    298                        logForDebugging(
+    299                          `Loaded ${agents.length} agents from plugin ${plugin.name} custom path: ${agentPath}`,
+    300                        )
+    301                      }
+    302                      return agents
+    303>                   } else if (stats.isFile() && agentPath.endsWith('.md')) {
+    304                      // Load single agent file
+    305                      const agent = await loadAgentFromFile(
+    306                        agentPath,
+    307                        plugin.name,
+    308                        [],
+    309                        plugin.source,
+    310                        plugin.path,
+    311                        plugin.manifest,
+    312                        loadedPaths,
+    313                      )

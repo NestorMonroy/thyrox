@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+65 | describe('touchHeartbeat (jNr) y removeHeartbeat (WNr)', () => {
+66 |   test('en archivo local escribe la hora y la borra; sin directorio calla', async () => {
+67 |     await touchHeartbeat(undefined, deps())
+68 |     expect(readFileSync(heartbeat(), 'utf8')).toBe('1000000')
+69 |     await removeHeartbeat(undefined, deps())
+70 |     expect(existsSync(heartbeat())).toBe(false)
+                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:70:37)
+(fail) touchHeartbeat (jNr) y removeHeartbeat (WNr) > en archivo local escribe la hora y la borra; sin directorio calla [1.20ms]
+
+ 10 pass
+ 1 fail
+ 41 expect() calls
+Ran 11 tests across 1 file. [119.00ms]

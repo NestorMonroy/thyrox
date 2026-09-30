@@ -1,0 +1,13 @@
+==== f: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js variable f [1551,1579)
+f={accept:0,hold:1,refuse:2}
+==== B: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function B [3647,3742)
+function B(){return gb().errors.some((e)=>e.path===N5n&&e.severity==="warning"&&!e.statusOnly)}
+==== ar: 1 definicion(es) de nivel superior
+---- chunk-sctj0cwn.js function ar [5846,5885)
+function ar(e){return fs().includes(e)}
+==== he: 1 definicion(es) de nivel superior
+---- chunk-ckctvm5v.js function he [87380,87444)
+function he(e){if(LF()&&hb.has(e))return null;return w8e(e,F())}
+symbol: 4 de 4 nombre(s) resueltos

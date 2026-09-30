@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Suspense, use, useMemo } from 'react'
 import { Box, NoSelect, Text } from '@anthropic/ink'
 import type {
+  NotebookCell,
   NotebookCellType,
   NotebookContent,
 } from '@thyrox/tool-registry/notebookTypes'
@@ -14,7 +15,7 @@ import { safeParseJSON } from '@thyrox/storage/json.js'
 import { parseCellId } from '@thyrox/tool-registry/notebook.js'
 import { HighlightedCode } from '@thyrox/repl/components/HighlightedCode.js'
 import { StructuredDiff } from '@thyrox/repl/components/StructuredDiff.js'
-import { StructuredPatchHunk } from 'diff'
+import type { StructuredPatchHunk } from 'diff'
 
 type Props = {
   notebook_path: string
@@ -84,7 +85,7 @@ function NotebookEditToolDiffInner({
       }
       return ''
     }
-    const cell = notebookData.cells.find((cell: { id: string }) => cell.id === cell_id)
+    const cell = notebookData.cells.find((cell: NotebookCell) => cell.id === cell_id)
     if (!cell) {
       return ''
     }

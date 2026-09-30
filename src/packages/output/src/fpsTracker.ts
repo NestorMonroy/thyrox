@@ -1,9 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/output/src/fpsTracker.ts` (verbatim — sin
- * imports en la fuente). Mide FPS promedio y el 1% mas lento (low-1%) de
- * una serie de duraciones de frame, para diagnosticar renders lentos sin
- * arrastrar el fork de Ink (no depende de el).
- */
 export type FpsMetrics = {
   averageFps: number
   low1PctFps: number

@@ -1,0 +1,11 @@
+./__tests__/systemPromptLayering.test.ts
+./__tests__/lightModes.test.ts
+./__tests__/impactCli.test.ts
+./__tests__/loopStreaming.test.ts
+./__tests__/startupFailure.test.ts
+./__tests__/cliEntry.test.ts
+./__tests__/workbench.test.ts
+./__tests__/versionMacro.test.ts
+./__tests__/productName.test.ts
+./__tests__/bin.test.ts
+./__tests__/hogarDeLaCli.test.ts

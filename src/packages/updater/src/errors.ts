@@ -1,10 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/updater/src/errors.ts` (30 líneas fuente,
- * 100% portado). Jerarquía de errores del updater: una base con `code`
- * más tres subclases (chequeo de versión, verificación de firma/hash,
- * instalación).
- */
-
 export class UpdaterBaseError extends Error {
   readonly code: string
 

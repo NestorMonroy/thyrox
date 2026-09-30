@@ -5,7 +5,7 @@ import uniqBy from 'lodash-es/uniqBy.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { emitReplHydrationTelemetry, emitSpawnedBySkillTelemetry, maybeRecordForkContextRef, runReplHydration } from './runAgentTelemetry.js'
 import { getProjectRoot, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
-import { getCommand, getSkillToolCommands, hasCommand } from '@thyrox/command-runtime/runtime'
+import { getCommand, getSkillToolCommands, hasCommand, type Command } from '@thyrox/command-runtime/runtime'
 import {
   DEFAULT_AGENT_PROMPT,
   enhanceSystemPromptWithEnvDetails,
@@ -28,17 +28,12 @@ import type {
 } from '@thyrox/mcp-runtime/types.js'
 import type { Tool, Tools, ToolUseContext } from '../../Tool.js'
 import { killShellTasksForAgent } from '@thyrox/agent/tasks/LocalShellTask/killShellTasks.js'
-import type { Command } from '@thyrox/agent/command.js'
 import type { AgentId } from '@thyrox/agent/idTypes'
 import type {
   AssistantMessage,
   Message,
   ProgressMessage,
-  RequestStartEvent,
-  StreamEvent,
   SystemCompactBoundaryMessage,
-  TombstoneMessage,
-  ToolUseSummaryMessage,
   UserMessage,
 } from '@thyrox/agent/messageShapes'
 import { createAttachmentMessage } from '@thyrox/agent/attachments.js'
@@ -218,19 +213,14 @@ async function initializeAgentMcpServers(
   }
 }
 
-type QueryMessage =
-  | StreamEvent
-  | RequestStartEvent
-  | Message
-  | ToolUseSummaryMessage
-  | TombstoneMessage
-
 /**
  * Type guard to check if a message from query() is a recordable Message type.
  * Matches the types we want to record: assistant, user, progress, or system compact_boundary.
  */
 function isRecordableMessage(
-  msg: QueryMessage,
+  // Lo que `query()` emite es la union del modelo del bucle; la guarda sólo
+  // lee `type` y `subtype`, así que recibe esa forma mínima y no `QueryMessage`.
+  msg: { type: string; subtype?: unknown },
 ): msg is
   | AssistantMessage
   | UserMessage
@@ -366,7 +356,7 @@ export async function* runAgent({
   ])
 
   // Read-only agents (Explore, Plan) don't act on commit/PR/lint rules from
-  // CLAUDE.md — the main agent has full context and interprets their output.
+  // THYROX.md — the main agent has full context and interprets their output.
   // Dropping claudeMd here saves ~5-15 Gtok/week across 34M+ Explore spawns.
   // Explicit override.userContext from callers is preserved untouched.
   // Kill-switch defaults true; flip tengu_slim_subagent_claudemd=false to revert.
@@ -610,16 +600,13 @@ export async function* runAgent({
         content: await skill.getPromptForCommand('', toolUseContext),
       })),
     )
-    for (const { skillName, skill, content } of loaded) {
+    for (const { skillName, content } of loaded) {
       logForDebugging(
         `[Agent: ${agentDefinition.agentType}] Preloaded skill '${skillName}'`,
       )
 
       // Add command-message metadata so the UI shows which skill is loading
-      const metadata = formatSkillLoadingMetadata(
-        skillName,
-        skill.progressMessage,
-      )
+      const metadata = formatSkillLoadingMetadata(skillName)
 
       initialMessages.push(
         createUserMessage({

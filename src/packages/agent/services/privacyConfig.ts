@@ -1,5 +1,5 @@
 /**
- * V7 §10.3 facade — moved to `@claude-code-how-works/config/env/privacy`.
+ * V7 §10.3 facade — moved to `@thyrox/config/env/privacy`.
  *
  * Wires the host's `isTelemetryDisabled` probe into the package via the
  * setter exported by the package. This file is still the call site for

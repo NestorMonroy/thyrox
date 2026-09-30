@@ -15,25 +15,23 @@
  *     equipo del lider (via `swarm/teammateState.js`).
  *   - la resolucion por equipo de `getTaskListId()` (via
  *     `swarm/teammateContext.js` + `app-host/bootstrap/state.js`); esta
- *     version resuelve solo por `CLAUDE_CODE_TASK_LIST_ID` o el id explicito
+ *     version resuelve solo por `THYROX_CODE_TASK_LIST_ID` o el id explicito
  *     que el llamador pase.
- *   - `resetTaskList()`, `claimTask()`/`claimTaskWithBusyCheck()` y sus
- *     tipos `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita
- *     y dependen del mismo sustrato ausente.
+ *   - `claimTask()`/`claimTaskWithBusyCheck()` y sus tipos
+ *     `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita y
+ *     dependen del mismo sustrato ausente. (`resetTaskList` se porta al
+ *     final, desde 2.1.275.)
  *
- * AVISO RETIRADO 2026-09-08: `isTodoV2Enabled()` figuraba aqui como NO
- * portada, bloqueada en `getIsNonInteractiveSession()`. El bloqueo era REAL
- * —medido, la funcion no existia en ningun paquete de este arbol— y cae al
- * portar la slice de sesion interactiva de `app-host/bootstrap/state.ts`.
- * La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
+ * `isTodoV2Enabled()` lee `getIsNonInteractiveSession()` de la slice de sesion
+ * interactiva de `app-host/bootstrap/state.ts`. La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
  * dos manifiestos y que la fuente tiene igual (`ccnmt: agent/tasks.ts:4`).
  *
  * REIMPLEMENTADO LOCALMENTE (la logica es trivial; no amerita traer una
  * dependencia externa para 3-10 lineas cada una):
  *   - `lazySchema` (memoiza la construccion del schema Zod al primer uso;
  *     `tool-registry/utils/lazySchema.ts`, 4 lineas).
- *   - `getClaudeConfigHomeDir` — la fuente la memoiza con `lodash-es`
- *     keyed por `CLAUDE_CONFIG_DIR`; aqui se lee el env var en cada
+ *   - `getConfigHomeDir` — la fuente la memoiza con `lodash-es`
+ *     keyed por `THYROX_CONFIG_DIR`; aqui se lee el env var en cada
  *     llamada (sin memo: es una optimizacion de performance, no de
  *     comportamiento, y el valor puede cambiar entre tests).
  *   - `errorMessage` / `getErrnoCode` (`local-observability/errorHelpers.ts`).
@@ -60,6 +58,8 @@ import { join } from 'node:path'
 import { z } from 'zod'
 import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { TaskCycleError } from './errors.ts'
+import * as lockfile from '@thyrox/storage/lockfile.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ---------------------------------------------------------------------------
 // Reimplementaciones locales de utilidades de paquetes hermanos ausentes.
@@ -71,10 +71,6 @@ function lazySchema<T>(factory: () => T): () => T {
   return () => (cached ??= factory())
 }
 
-/** ≙ `config/env/utils.ts::getClaudeConfigHomeDir`, sin la memoizacion de lodash. */
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize('NFC')
-}
 
 /** ≙ `local-observability/errorHelpers.ts::errorMessage`. */
 function errorMessage(e: unknown): string {
@@ -246,11 +242,11 @@ async function writeHighWaterMark(taskListId: string, value: number): Promise<vo
 /**
  * Obtiene el ID de la lista de tareas segun el contexto actual.
  * Prioridad (version portada — ver la divergencia declarada arriba):
- * 1. `CLAUDE_CODE_TASK_LIST_ID` — ID de lista de tareas explicito.
+ * 1. `THYROX_CODE_TASK_LIST_ID` — ID de lista de tareas explicito.
  * 2. Nombre de equipo del lider — fijado al crear un equipo via TeamCreate.
  */
 export function getTaskListId(): string {
-  const taskListId = process.env.CLAUDE_CODE_TASK_LIST_ID
+  const taskListId = process.env.THYROX_CODE_TASK_LIST_ID
   if (taskListId) {
     return taskListId
   }
@@ -258,7 +254,7 @@ export function getTaskListId(): string {
     return leaderTeamName
   }
   throw new Error(
-    'getTaskListId(): no hay CLAUDE_CODE_TASK_LIST_ID ni equipo de lider — ' +
+    'getTaskListId(): no hay THYROX_CODE_TASK_LIST_ID ni equipo de lider — ' +
       'la resolucion por sesion/equipo no se porto (ver docstring del modulo).',
   )
 }
@@ -273,7 +269,7 @@ export function sanitizePathComponent(input: string): string {
 }
 
 export function getTasksDir(taskListId: string): string {
-  return join(getClaudeConfigHomeDir(), 'tasks', sanitizePathComponent(taskListId))
+  return join(getConfigHomeDir(), 'tasks', sanitizePathComponent(taskListId))
 }
 
 export function getTaskPath(taskListId: string, taskId: string): string {
@@ -692,7 +688,7 @@ export const DEFAULT_TASKS_MODE_TASK_LIST_ID = 'tasklist'
  * al reves de lo pedido.
  */
 export function isTodoV2Enabled(): boolean {
-  const declarado = process.env.CLAUDE_CODE_ENABLE_TASKS
+  const declarado = process.env.THYROX_CODE_ENABLE_TASKS
   if (
     declarado !== undefined &&
     ['1', 'true', 'yes', 'on'].includes(declarado.toLowerCase().trim())
@@ -700,4 +696,236 @@ export function isTodoV2Enabled(): boolean {
     return true
   }
   return !getIsNonInteractiveSession()
+}
+
+/**
+ * `e2r` de 2.1.275: vacía la lista bajo su candado, sólo si todas sus
+ * tareas están completadas (si no, `false` y no toca nada). Antes de borrar
+ * sube la marca de agua al id más alto, para que el siguiente `createTask`
+ * no reutilice un id ya visto. pendiente: el backend de almacenamiento V5
+ * de la fuente; aquí sólo existe la vía de archivos.
+ */
+export async function resetTaskList(taskListId: string): Promise<boolean> {
+  const lockPath = await ensureTaskListLockFile(taskListId)
+  const release = await acquireLock(lockPath)
+  try {
+    if ((await listTasks(taskListId)).some(t => t.status !== 'completed')) return false
+    const highest = await findHighestTaskIdFromFiles(taskListId)
+    if (highest > 0 && highest > (await readHighWaterMark(taskListId)))
+      await writeHighWaterMark(taskListId, highest)
+    let files: string[]
+    try {
+      files = await readdir(getTasksDir(taskListId))
+    } catch {
+      files = []
+    }
+    for (const file of files) {
+      if (!file.endsWith('.json') || file.startsWith('.')) continue
+      try {
+        await unlink(join(getTasksDir(taskListId), file))
+      } catch {}
+    }
+    notifyTasksUpdated()
+    return true
+  } finally {
+    await release()
+  }
+}
+
+// Lock options: retry with backoff so concurrent callers (multiple Claudes
+// in a swarm) wait for the lock instead of failing immediately. The sync
+// lockSync API blocked the event loop; the async API needs explicit retries
+// to achieve the same serialization semantics.
+//
+// Budget sized for ~10+ concurrent swarm agents: each critical section does
+// readdir + N×readFile + writeFile (~50-100ms on slow disks), so the last
+// caller in a 10-way race needs ~900ms. retries=30 gives ~2.6s total wait.
+const LOCK_OPTIONS = {
+  retries: {
+    retries: 30,
+    minTimeout: 5,
+    maxTimeout: 100,
+  },
+}
+export type ClaimTaskResult = {
+  success: boolean
+  reason?:
+    | 'task_not_found'
+    | 'already_claimed'
+    | 'already_resolved'
+    | 'blocked'
+    | 'agent_busy'
+  task?: Task
+  busyWithTasks?: string[] // task IDs the agent is busy with (when reason is 'agent_busy')
+  blockedByTasks?: string[] // task IDs blocking this task (when reason is 'blocked')
+}
+export type ClaimTaskOptions = {
+  /**
+   * If true, checks whether the agent is already busy (owns other open tasks)
+   * before allowing the claim. This check is performed atomically with the claim
+   * using a task-list-level lock to prevent TOCTOU race conditions.
+   */
+  checkAgentBusy?: boolean
+}
+/**
+ * Attempts to claim a task for an agent with file locking to prevent race conditions.
+ * Returns success if the task was claimed, or a reason if it wasn't.
+ *
+ * When checkAgentBusy is true, uses a task-list-level lock to atomically check
+ * if the agent owns any other open tasks before claiming.
+ */
+export async function claimTask(
+  taskListId: string,
+  taskId: string,
+  claimantAgentId: string,
+  options: ClaimTaskOptions = {},
+): Promise<ClaimTaskResult> {
+  const taskPath = getTaskPath(taskListId, taskId)
+
+  // Check existence before locking — proper-lockfile.lock throws if the
+  // target file doesn't exist, and we want a clean task_not_found result.
+  const taskBeforeLock = await getTask(taskListId, taskId)
+  if (!taskBeforeLock) {
+    return { success: false, reason: 'task_not_found' }
+  }
+
+  // If we need to check agent busy status, use task-list-level lock
+  // to prevent TOCTOU race conditions
+  if (options.checkAgentBusy) {
+    return claimTaskWithBusyCheck(taskListId, taskId, claimantAgentId)
+  }
+
+  // Otherwise, use task-level lock (original behavior)
+  let release: (() => Promise<void>) | undefined
+  try {
+    // Acquire exclusive lock on the task file
+    release = await lockfile.lock(taskPath, LOCK_OPTIONS)
+
+    // Read current task state
+    const task = await getTask(taskListId, taskId)
+    if (!task) {
+      return { success: false, reason: 'task_not_found' }
+    }
+
+    // Check if already claimed by another agent
+    if (task.owner && task.owner !== claimantAgentId) {
+      return { success: false, reason: 'already_claimed', task }
+    }
+
+    // Check if already resolved
+    if (task.status === 'completed') {
+      return { success: false, reason: 'already_resolved', task }
+    }
+
+    // Check for unresolved blockers (open or in_progress tasks block)
+    const allTasks = await listTasks(taskListId)
+    const unresolvedTaskIds = new Set(
+      allTasks.filter(t => t.status !== 'completed').map(t => t.id),
+    )
+    const blockedByTasks = task.blockedBy.filter(id =>
+      unresolvedTaskIds.has(id),
+    )
+    if (blockedByTasks.length > 0) {
+      return { success: false, reason: 'blocked', task, blockedByTasks }
+    }
+
+    // Claim the task (already holding taskPath lock — use unsafe variant)
+    const updated = await updateTaskUnsafe(taskListId, taskId, {
+      owner: claimantAgentId,
+    })
+    return { success: true, task: updated! }
+  } catch (error) {
+    logForDebugging(
+      `[Tasks] Failed to claim task ${taskId}: ${errorMessage(error)}`,
+    )
+    logError(error)
+    return { success: false, reason: 'task_not_found' }
+  } finally {
+    if (release) {
+      await release()
+    }
+  }
+}
+/**
+ * Claims a task with an atomic check for agent busy status.
+ * Uses a task-list-level lock to ensure the busy check and claim are atomic.
+ */
+async function claimTaskWithBusyCheck(
+  taskListId: string,
+  taskId: string,
+  claimantAgentId: string,
+): Promise<ClaimTaskResult> {
+  const lockPath = await ensureTaskListLockFile(taskListId)
+
+  let release: (() => Promise<void>) | undefined
+  try {
+    // Acquire exclusive lock on the task list
+    release = await lockfile.lock(lockPath, LOCK_OPTIONS)
+
+    // Read all tasks to check agent status and task state atomically
+    const allTasks = await listTasks(taskListId)
+
+    // Find the task we want to claim
+    const task = allTasks.find(t => t.id === taskId)
+    if (!task) {
+      return { success: false, reason: 'task_not_found' }
+    }
+
+    // Check if already claimed by another agent
+    if (task.owner && task.owner !== claimantAgentId) {
+      return { success: false, reason: 'already_claimed', task }
+    }
+
+    // Check if already resolved
+    if (task.status === 'completed') {
+      return { success: false, reason: 'already_resolved', task }
+    }
+
+    // Check for unresolved blockers (open or in_progress tasks block)
+    const unresolvedTaskIds = new Set(
+      allTasks.filter(t => t.status !== 'completed').map(t => t.id),
+    )
+    const blockedByTasks = task.blockedBy.filter(id =>
+      unresolvedTaskIds.has(id),
+    )
+    if (blockedByTasks.length > 0) {
+      return { success: false, reason: 'blocked', task, blockedByTasks }
+    }
+
+    // Check if agent is busy with other unresolved tasks
+    const agentOpenTasks = allTasks.filter(
+      t =>
+        t.status !== 'completed' &&
+        t.owner === claimantAgentId &&
+        t.id !== taskId,
+    )
+    if (agentOpenTasks.length > 0) {
+      return {
+        success: false,
+        reason: 'agent_busy',
+        task,
+        busyWithTasks: agentOpenTasks.map(t => t.id),
+      }
+    }
+
+    // Claim the task. Use updateTaskUnsafe since we already hold the
+    // task-list lock — calling updateTask here would attempt to acquire
+    // the per-task lock under the list lock, which deadlocks against any
+    // caller (e.g. claimTask, deleteTask cascade) holding them in the
+    // opposite order. Same pattern as the non-busyCheck branch above.
+    const updated = await updateTaskUnsafe(taskListId, taskId, {
+      owner: claimantAgentId,
+    })
+    return { success: true, task: updated! }
+  } catch (error) {
+    logForDebugging(
+      `[Tasks] Failed to claim task ${taskId} with busy check: ${errorMessage(error)}`,
+    )
+    logError(error)
+    return { success: false, reason: 'task_not_found' }
+  } finally {
+    if (release) {
+      await release()
+    }
+  }
 }

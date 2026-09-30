@@ -93,7 +93,7 @@ import sys
 from pathlib import Path
 
 
-from session.job_ledger import JobLedger  # noqa: E402
+from session.job_ledger import Job, JobLedger  # noqa: E402
 
 #: Variable que declara el marcador terminal del corredor anfitrion.
 MARKER_VAR = "THYROX_BACKGROUND_MARKER"
@@ -174,7 +174,7 @@ def parse_notice(text: str) -> tuple[str, Path] | None:
 
 
 def adopt(ledger: JobLedger, job_id: str, log: Path,
-          marker: str | None = None, command: str = "") -> object:
+          marker: str | None = None, command: str = "") -> Job:
     """Anota el trabajo ajeno con su marcador, para que la barrera lo cubra.
 
     Sin ``pid``: no lo lanzamos nosotros y su identificador no es un pid. El

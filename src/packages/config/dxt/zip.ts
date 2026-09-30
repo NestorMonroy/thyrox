@@ -1,40 +1,20 @@
-/**
- * Puerto de `ccnmt: packages/config/dxt/zip.ts` (226 líneas fuente).
- * Validación y extracción segura de zips DXT/MCPB (límites anti zip-bomb,
- * anti path-traversal) más el parseo manual de modos Unix del directorio
- * central del zip. Reimplementación fiel.
- *
- * `isAbsolute`/`normalize` de `path` son built-ins. `fflate` es una
- * dependencia externa real no instalada en este árbol (verificado con
- * `Bun.resolveSync`); la fuente YA la importa perezosamente dentro de
- * `unzipFile` — por la misma razón de arranque que `dxt/helpers.ts`: evita
- * ~196KB de tablas de lookup top-level (`revfd`, `rev`) cuando el módulo se
- * alcanza sin necesitar unzip. Se conserva ese `await import()` verbatim.
- *
- * Repuntados vía `require()` diferido
- * (`../internal/pendingCrossPackageDeps.ts`): `logForDebugging`, `isENOENT`
- * (`@thyrox/local-observability`), `getFsImplementation`,
- * `containsPathTraversal` (`@thyrox/storage`) — los cuatro existen en su
- * paquete, sólo falta el symlink de workspace.
- */
-
 import { isAbsolute, normalize } from 'path'
-import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-  requireStorageFsOperations,
-  requireStoragePath,
-} from '../internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { containsPathTraversal } from '@thyrox/storage/path.js'
 
 const LIMITS = {
-  MAX_FILE_SIZE: 512 * 1024 * 1024, // 512MB por archivo
-  MAX_TOTAL_SIZE: 1024 * 1024 * 1024, // 1024MB total sin comprimir
-  MAX_FILE_COUNT: 100000, // Máximo de archivos
-  MAX_COMPRESSION_RATIO: 50, // Por encima de 50:1 es sospechoso
-  MIN_COMPRESSION_RATIO: 0.5, // Por debajo de 0.5:1 podría ser contenido ya comprimido malicioso
+  MAX_FILE_SIZE: 512 * 1024 * 1024, // 512MB per file
+  MAX_TOTAL_SIZE: 1024 * 1024 * 1024, // 1024MB total uncompressed
+  MAX_FILE_COUNT: 100000, // Maximum number of files
+  MAX_COMPRESSION_RATIO: 50, // Anything above 50:1 is suspicious
+  MIN_COMPRESSION_RATIO: 0.5, // Below 0.5:1 might indicate already compressed malicious content
 }
 
-/** Rastreador de estado para la validación de un zip durante la extracción. */
+/**
+ * State tracker for zip file validation during extraction
+ */
 type ZipValidationState = {
   fileCount: number
   totalUncompressedSize: number
@@ -42,28 +22,34 @@ type ZipValidationState = {
   errors: string[]
 }
 
-/** Metadata de archivo del filtro de fflate. */
+/**
+ * File metadata from fflate filter
+ */
 type ZipFileMetadata = {
   name: string
   originalSize?: number
 }
 
-/** Resultado de validar un único archivo dentro de un zip. */
+/**
+ * Result of validating a single file in a zip archive
+ */
 type FileValidationResult = {
   isValid: boolean
   error?: string
 }
 
-/** Valida una ruta de archivo para prevenir ataques de path traversal. */
+/**
+ * Validates a file path to prevent path traversal attacks
+ */
 export function isPathSafe(filePath: string): boolean {
-  if (requireStoragePath().containsPathTraversal(filePath)) {
+  if (containsPathTraversal(filePath)) {
     return false
   }
 
-  // Normaliza la ruta para resolver segmentos '.'.
+  // Normalize the path to resolve any '.' segments
   const normalized = normalize(filePath)
 
-  // Rechaza rutas absolutas (sólo se quieren rutas relativas en archivos).
+  // Check for absolute paths (we only want relative paths in archives)
   if (isAbsolute(normalized)) {
     return false
   }
@@ -71,7 +57,9 @@ export function isPathSafe(filePath: string): boolean {
   return true
 }
 
-/** Valida un único archivo durante la extracción del zip. */
+/**
+ * Validates a single file during zip extraction
+ */
 export function validateZipFile(
   file: ZipFileMetadata,
   state: ZipValidationState,
@@ -80,31 +68,31 @@ export function validateZipFile(
 
   let error: string | undefined
 
-  // Comprueba el conteo de archivos.
+  // Check file count
   if (state.fileCount > LIMITS.MAX_FILE_COUNT) {
     error = `Archive contains too many files: ${state.fileCount} (max: ${LIMITS.MAX_FILE_COUNT})`
   }
 
-  // Valida la seguridad de la ruta.
+  // Validate path safety
   if (!isPathSafe(file.name)) {
     error = `Unsafe file path detected: "${file.name}". Path traversal or absolute paths are not allowed.`
   }
 
-  // Comprueba el tamaño individual del archivo.
+  // Check individual file size
   const fileSize = file.originalSize || 0
   if (fileSize > LIMITS.MAX_FILE_SIZE) {
     error = `File "${file.name}" is too large: ${Math.round(fileSize / 1024 / 1024)}MB (max: ${Math.round(LIMITS.MAX_FILE_SIZE / 1024 / 1024)}MB)`
   }
 
-  // Rastrea el tamaño total sin comprimir.
+  // Track total uncompressed size
   state.totalUncompressedSize += fileSize
 
-  // Comprueba el tamaño total.
+  // Check total size
   if (state.totalUncompressedSize > LIMITS.MAX_TOTAL_SIZE) {
     error = `Archive total size is too large: ${Math.round(state.totalUncompressedSize / 1024 / 1024)}MB (max: ${Math.round(LIMITS.MAX_TOTAL_SIZE / 1024 / 1024)}MB)`
   }
 
-  // Comprueba el ratio de compresión para detectar zip bombs.
+  // Check compression ratio for zip bomb detection
   const currentRatio = state.totalUncompressedSize / state.compressedSize
   if (currentRatio > LIMITS.MAX_COMPRESSION_RATIO) {
     error = `Suspicious compression ratio detected: ${currentRatio.toFixed(1)}:1 (max: ${LIMITS.MAX_COMPRESSION_RATIO}:1). This may be a zip bomb.`
@@ -114,22 +102,17 @@ export function validateZipFile(
 }
 
 /**
- * Descomprime datos de un Buffer y devuelve su contenido como un registro de
- * rutas de archivo a datos `Uint8Array`. Usa `unzipSync` para evitar los
- * crashes por terminación de worker de fflate en bun. Acepta bytes crudos de
- * zip para que quien llama pueda leer el archivo de forma asíncrona.
+ * Unzips data from a Buffer and returns its contents as a record of file paths to Uint8Array data.
+ * Uses unzipSync to avoid fflate worker termination crashes in bun.
+ * Accepts raw zip bytes so that the caller can read the file asynchronously.
  *
- * `fflate` se importa perezosamente para evitar sus ~196KB de tablas de
- * lookup top-level (`revfd` Int32Array(32769), `rev` Uint16Array(32768),
- * etc.) asignándose al arranque cuando este módulo se alcanza vía la cadena
- * del cargador de plugins.
+ * fflate is lazy-imported to avoid its ~196KB of top-level lookup tables (revfd
+ * Int32Array(32769), rev Uint16Array(32768), etc.) being allocated at startup
+ * when this module is reached via the plugin loader chain.
  */
 export async function unzipFile(
   zipData: Buffer,
 ): Promise<Record<string, Uint8Array>> {
-  // @ts-expect-error — fflate no está instalado en este árbol; la fuente ya
-  // lo importa perezosamente por la misma razón de arranque (ver docstring
-  // del módulo). Se conserva el import diferido tal cual.
   const { unzipSync } = await import('fflate')
   const compressedSize = zipData.length
 
@@ -141,7 +124,7 @@ export async function unzipFile(
   }
 
   const result = unzipSync(new Uint8Array(zipData), {
-    filter: (file: ZipFileMetadata) => {
+    filter: file => {
       const validationResult = validateZipFile(file, state)
       if (!validationResult.isValid) {
         throw new Error(validationResult.error!)
@@ -150,7 +133,7 @@ export async function unzipFile(
     },
   })
 
-  requireLocalObservabilityDebug().logForDebugging(
+  logForDebugging(
     `Zip extraction completed: ${state.fileCount} files, ${Math.round(state.totalUncompressedSize / 1024)}KB uncompressed`,
   )
 
@@ -158,33 +141,30 @@ export async function unzipFile(
 }
 
 /**
- * Parsea los modos de archivo Unix del directorio central de un zip.
+ * Parse Unix file modes from a zip's central directory.
  *
- * `unzipSync` de fflate sólo devuelve `Record<string, Uint8Array>` — no
- * expone los atributos externos de archivo guardados en el directorio
- * central. Eso significa que los bits de ejecutable se pierden en la
- * extracción (todo se vuelve 0644). El camino de git-clone preserva +x de
- * forma nativa; el camino GCS/zip necesita este helper para mantener
- * paridad.
+ * fflate's `unzipSync` returns only `Record<string, Uint8Array>` — it does not
+ * surface the external file attributes stored in the central directory. This
+ * means executable bits are lost during extraction (everything becomes 0644).
+ * The git-clone path preserves +x natively, but the GCS/zip path needs this
+ * helper to keep parity.
  *
- * Devuelve `nombre → modo` para entradas creadas en un host Unix (byte alto
- * de `versionMadeBy` === 3). Las entradas de otros hosts, o sin bits de modo
- * seteados, se omiten. Quien llama debe tratar una clave ausente como "usar
- * el modo por defecto".
+ * Returns `name → mode` for entries created on a Unix host (`versionMadeBy`
+ * high byte === 3). Entries from other hosts, or with no mode bits set, are
+ * omitted. Callers should treat a missing key as "use default mode".
  *
- * Formato según PKZIP APPNOTE.TXT §4.3.12 (directorio central) y §4.3.16
- * (EOCD). ZIP64 no se maneja — devuelve `{}` en archivos >4GB o >65535
- * entradas, que basta para zips de marketplace (~3.5MB) y bundles MCPB.
+ * Format per PKZIP APPNOTE.TXT §4.3.12 (central directory) and §4.3.16 (EOCD).
+ * ZIP64 is not handled — returns `{}` on archives >4GB or >65535 entries,
+ * which is fine for marketplace zips (~3.5MB) and MCPB bundles.
  */
 export function parseZipModes(data: Uint8Array): Record<string, number> {
-  // Vista Buffer para los métodos readUInt* — comparte memoria, sin copia.
+  // Buffer view for readUInt* methods — shares memory, no copy.
   const buf = Buffer.from(data.buffer, data.byteOffset, data.byteLength)
   const modes: Record<string, number> = {}
 
-  // 1. Encuentra el registro End of Central Directory (firma 0x06054b50).
-  //    Vive en los últimos 22 + 65535 bytes (tamaño fijo de EOCD + máximo
-  //    largo de comentario). Recorre hacia atrás — el EOCD suele ser los
-  //    últimos 22 bytes.
+  // 1. Find the End of Central Directory record (sig 0x06054b50). It lives in
+  //    the trailing 22 + 65535 bytes (fixed EOCD size + max comment length).
+  //    Scan backwards — the EOCD is typically the last 22 bytes.
   const minEocd = Math.max(0, buf.length - 22 - 0xffff)
   let eocd = -1
   for (let i = buf.length - 22; i >= minEocd; i--) {
@@ -193,14 +173,13 @@ export function parseZipModes(data: Uint8Array): Record<string, number> {
       break
     }
   }
-  if (eocd < 0) return modes // malformado — deja que el error de fflate salga por otro lado
+  if (eocd < 0) return modes // malformed — let fflate's error surface elsewhere
 
   const entryCount = buf.readUInt16LE(eocd + 10)
-  let off = buf.readUInt32LE(eocd + 16) // offset de inicio del directorio central
+  let off = buf.readUInt32LE(eocd + 16) // central directory start offset
 
-  // 2. Recorre las entradas del directorio central (firma 0x02014b50). Cada
-  //    entrada tiene una cabecera fija de 46 bytes seguida de
-  //    nombre/extra/comentario de largo variable.
+  // 2. Walk central directory entries (sig 0x02014b50). Each entry has a
+  //    46-byte fixed header followed by variable-length name/extra/comment.
   for (let i = 0; i < entryCount; i++) {
     if (off + 46 > buf.length || buf.readUInt32LE(off) !== 0x02014b50) break
     const versionMadeBy = buf.readUInt16LE(off + 4)
@@ -210,9 +189,8 @@ export function parseZipModes(data: Uint8Array): Record<string, number> {
     const externalAttr = buf.readUInt32LE(off + 38)
     const name = buf.toString('utf8', off + 46, off + 46 + nameLen)
 
-    // versionMadeBy byte alto = SO del host. 3 = Unix. Para zips Unix, los
-    // 16 bits altos de externalAttr guardan st_mode (tipo de archivo +
-    // bits de permiso).
+    // versionMadeBy high byte = host OS. 3 = Unix. For Unix zips, the high
+    // 16 bits of externalAttr hold st_mode (file type + permission bits).
     if (versionMadeBy >> 8 === 3) {
       const mode = (externalAttr >>> 16) & 0xffff
       if (mode) modes[name] = mode
@@ -225,23 +203,21 @@ export function parseZipModes(data: Uint8Array): Record<string, number> {
 }
 
 /**
- * Lee un archivo zip de disco de forma asíncrona y lo descomprime.
- * Devuelve su contenido como un registro de rutas de archivo a datos
- * `Uint8Array`.
+ * Reads a zip file from disk asynchronously and unzips it.
+ * Returns its contents as a record of file paths to Uint8Array data.
  */
 export async function readAndUnzipFile(
   filePath: string,
 ): Promise<Record<string, Uint8Array>> {
-  const fs = requireStorageFsOperations().getFsImplementation()
+  const fs = getFsImplementation()
 
   try {
     const zipData = await fs.readFileBytes(filePath)
-    // El await es obligatorio aquí: sin él, los rechazos del ahora-async
-    // unzipFile() escapan del try/catch y evitan el envoltorio de error de
-    // abajo.
+    // await is required here: without it, rejections from the now-async
+    // unzipFile() escape the try/catch and bypass the error wrapping below.
     return await unzipFile(zipData)
   } catch (error) {
-    if (requireLocalObservabilityErrorHelpers().isENOENT(error)) {
+    if (isENOENT(error)) {
       throw error
     }
     const errorMessage = error instanceof Error ? error.message : String(error)

@@ -13,16 +13,21 @@
  * distinct uuids). The post-pass `recoverOrphanedParallelToolResults`
  * splices siblings + their tool_results back in.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 import type { UUID } from 'crypto'
-import type { TranscriptMessage } from '../conversationChain.js'
+import type { TranscriptMessage } from '@thyrox/agent/logsTypes.js'
 
-// Adaptación: la fuente (ccnmt) importa logEvent/logError de
-// @claude-code-how-works/local-observability(/logging) y los mockea aquí a
-// no-ops. Ese paquete no existe en este árbol (DEC-04: sin imports
-// cross-@thyrox/* todavía) — el puerto de conversationChain.ts define sus
-// propios logEvent/logError locales como no-ops, así que no hace falta
-// mockear nada: no hay import externo que interceptar.
+// logEvent is a global side-effect — stub it.
+const realObs = await import('@thyrox/local-observability')
+mock.module('@thyrox/local-observability', () => ({
+  ...realObs,
+  logEvent: () => {},
+}))
+const realLog = await import('@thyrox/local-observability/logging')
+mock.module('@thyrox/local-observability/logging', () => ({
+  ...realLog,
+  logError: () => {},
+}))
 
 const { buildConversationChain, checkResumeConsistency } = await import(
   '../conversationChain.js'
@@ -87,7 +92,7 @@ describe('buildConversationChain — basic linearization', () => {
     const b = user('u2', 'u1')
     const c = user('u3', 'u2')
     const result = buildConversationChain(toMap(a, b, c), c)
-    expect(result.map(m => m.uuid)).toEqual(['u1', 'u2', 'u3'])
+    expect(result.map(m => m.uuid as string)).toEqual(['u1', 'u2', 'u3'])
   })
 
   test('orphaned leaf (no parent in map) returns [leaf] only', () => {
@@ -130,7 +135,7 @@ describe('buildConversationChain — parallel tool_results recovery', () => {
 
     const map = toMap(prev, asstA, asstB, trA, trB, next)
     const result = buildConversationChain(map, next)
-    const uuids = result.map(m => m.uuid)
+    const uuids = result.map(m => m.uuid as string)
     // All 5 messages should be in the chain (in some sensible order).
     expect(uuids).toContain('prev')
     expect(uuids).toContain('aA')
@@ -144,7 +149,7 @@ describe('buildConversationChain — parallel tool_results recovery', () => {
     const a = user('u1')
     const b = user('u2', 'u1')
     const result = buildConversationChain(toMap(a, b), b)
-    expect(result.map(m => m.uuid)).toEqual(['u1', 'u2'])
+    expect(result.map(m => m.uuid as string)).toEqual(['u1', 'u2'])
   })
 
   test('empty messages map returns [leaf] (no recovery possible)', () => {
@@ -158,7 +163,7 @@ describe('buildConversationChain — parallel tool_results recovery', () => {
     const prev = user('prev')
     const asst = assistant('a1', 'prev') // no messageId
     const result = buildConversationChain(toMap(prev, asst), asst)
-    expect(result.map(m => m.uuid)).toEqual(['prev', 'a1'])
+    expect(result.map(m => m.uuid as string)).toEqual(['prev', 'a1'])
   })
 })
 

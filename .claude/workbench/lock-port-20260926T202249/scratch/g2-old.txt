@@ -1,0 +1,1 @@
+añade aparte (`printf … >> archivo`).

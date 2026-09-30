@@ -18,14 +18,6 @@ import { resolve } from 'path'
  *   1. A future refactor that drops the timeout from sync read/delete.
  *   2. A future refactor that switches to a different exec primitive
  *      without porting the timeout (e.g., back to execaSync without arg).
- *
- * Este test es un source-pin: sólo lee el texto del módulo portado
- * (`../secureStorage/macOsKeychainStorage.ts`) y greppea los patrones — no
- * ejecuta ningún `security` real, así que corre igual en Linux que en
- * macOS. `macOsKeychainStorage.ts` es un puerto propio con sustitutos
- * locales de `execa`/`execFileNoThrow` (ver el docstring de ese archivo);
- * los patrones que este test fija sobreviven al sustituto porque son sobre
- * la FORMA del texto fuente, no sobre el comportamiento del proceso.
  */
 describe('macOsKeychainStorage — 2s timeout pins', () => {
   const source = readFileSync(

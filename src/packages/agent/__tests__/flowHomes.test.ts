@@ -116,8 +116,8 @@ describe('definitionsWithMissingHomes — el gate DMAIC-control de T-006 (#54)',
 
       const problemas = definitionsWithMissingHomes([rupCoordinator], raiz)
       expect(problemas.length).toBe(1)
-      expect(problemas[0].name).toBe(rupCoordinator.name)
-      expect(problemas[0].missing.sort()).toEqual([...ausentesEsperados].sort())
+      expect(problemas[0]!.name).toBe(rupCoordinator.name)
+      expect(problemas[0]!.missing.sort()).toEqual([...ausentesEsperados].sort())
     } finally {
       rmSync(raiz, { recursive: true, force: true })
     }
@@ -145,7 +145,7 @@ describe('declaredHomes — la mitad consumidora: flow -> hogares', () => {
  * La raiz del arbol NO se decide dos veces.
  *
  * `flowHomes` traia una copia verbatim de `docsRoot` —variable propia mas
- * ascenso— que respondia la misma pregunta que `src/paths/docs.ts`, que a su
+ * ascenso— que respondia la misma pregunta que `src/packages/paths/docs.ts`, que a su
  * vez delega en el alcance. Dos copias de una decision divergen: un consumidor
  * que declare `THYROX_REACH_DOCS` mueve una y no la otra.
  */

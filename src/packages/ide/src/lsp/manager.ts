@@ -22,7 +22,7 @@ type InitializationState = 'not-started' | 'pending' | 'success' | 'failed'
 
 /**
  * Instancia singleton global del manager de servidores LSP. Se inicializa
- * durante el arranque de Claude Code.
+ * durante el arranque de thyrox.
  */
 let lspManagerInstance: LSPServerManager | undefined
 
@@ -66,7 +66,7 @@ export function _resetLspManagerForTesting(): void {
  * pendiente.
  *
  * Quien llama debe comprobar `undefined` y manejarlo con gracia, ya que la
- * inicialización ocurre de forma asíncrona durante el arranque de Claude
+ * inicialización ocurre de forma asíncrona durante el arranque de thyrox
  * Code. Usar getInitializationStatus() para distinguir entre los estados
  * pendiente, fallido y no-iniciado.
  */
@@ -145,7 +145,7 @@ export async function waitForInitialization(): Promise<void> {
 /**
  * Inicializa el singleton del manager de servidores LSP.
  *
- * Se llama durante el arranque de Claude Code. Crea sincrónicamente la
+ * Se llama durante el arranque de thyrox. Crea sincrónicamente la
  * instancia del manager, y luego arranca la inicialización asíncrona
  * (cargar configs de LSP) en segundo plano sin bloquear el arranque.
  *
@@ -229,7 +229,7 @@ export function initializeLspServerManager(): void {
  * tras limpiar las cachés de plugins, para que los nuevos servidores LSP
  * de plugins recién cargados se detecten.
  *
- * Corrige https://github.com/anthropics/claude-code-how-works-how-works/issues/15521:
+ * Corrige https://github.com/anthropics/claude-code/issues/15521:
  * loadAllPlugins() está memoizado y puede llamarse muy temprano en el
  * arranque (vía el prefetch de getCommands en setup.ts) antes de que los
  * marketplaces se reconcilien, cacheando una lista de plugins vacía.
@@ -278,7 +278,7 @@ export function reinitializeLspServerManager(): void {
 /**
  * Apaga el manager de servidores LSP y limpia los recursos.
  *
- * Debe llamarse durante el apagado de Claude Code. Detiene todos los
+ * Debe llamarse durante el apagado de thyrox. Detiene todos los
  * servidores LSP corriendo y limpia el estado interno. Seguro de llamar
  * cuando no está inicializado (no-op).
  *

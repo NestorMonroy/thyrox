@@ -1,0 +1,106 @@
+run-task-pool: 20 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260926T193758
+  job-20260926T193758/job-001 pid 12531   cd /home/user/thyrox && timeout 900 python3 tests/hooks/test_detect_gawk_opportunity.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_hooks_test_detect_gawk_opportunity.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_hooks_test_detect_gawk_opportunity.py.log
+  job-20260926T193758/job-002 pid 12556   cd /home/user/thyrox && timeout 900 python3 tests/hooks/test_detect_self_matching_pgrep.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_hooks_test_detect_self_matching_pgrep.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_hooks_test_detect_self_matching_pgrep.py.log
+  job-20260926T193758/job-003 pid 12572   cd /home/user/thyrox && timeout 900 python3 tests/hooks/test_pretooluse_dispatch.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_hooks_test_pretooluse_dispatch.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_hooks_test_pretooluse_dispatch.py.log
+  job-20260926T193758/job-004 pid 12616   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-degraded.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-degraded.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-degraded.sh.log
+  job-20260926T193758/job-005 pid 12658   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-gawk.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-gawk.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-gawk.sh.log
+  job-20260926T193758/job-006 pid 12734   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-gnu-time.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-gnu-time.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-gnu-time.sh.log
+  job-20260926T193758/job-007 pid 12770   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-hunspell.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-hunspell.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-hunspell.sh.log
+  job-20260926T193758/job-008 pid 12814   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-manifests.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-manifests.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-manifests.sh.log
+  job-20260926T193758/job-009 pid 12875   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-parallel.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-parallel.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-parallel.sh.log
+  job-20260926T193758/job-010 pid 12955   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-pdf-text.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-pdf-text.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-pdf-text.sh.log
+  job-20260926T193758/job-011 pid 12986   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-poppler.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-poppler.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-poppler.sh.log
+  job-20260926T193758/job-012 pid 13042   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-proxy.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-proxy.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-proxy.sh.log
+  job-20260926T193758/job-013 pid 13213   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-sh.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-sh.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-sh.sh.log
+  job-20260926T193758/job-014 pid 13262   cd /home/user/thyrox && timeout 900 bash tests/lib/test-toolchain-texlive.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-texlive.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_lib_test-toolchain-texlive.sh.log
+  job-20260926T193758/job-015 pid 13324   cd /home/user/thyrox && timeout 900 bash tests/session/test-gnu-time-launchers.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test-gnu-time-launchers.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test-gnu-time-launchers.sh.log
+  job-20260926T193758/job-016 pid 13393   cd /home/user/thyrox && timeout 900 bash tests/session/test-wait-jobs-ledger-home.sh > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test-wait-jobs-ledger-home.sh.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test-wait-jobs-ledger-home.sh.log
+  job-20260926T193758/job-017 pid 13607   cd /home/user/thyrox && timeout 900 python3 tests/session/test_generate_bin.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test_generate_bin.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test_generate_bin.py.log
+  job-20260926T193758/job-018 pid 13627   cd /home/user/thyrox && timeout 900 python3 tests/session/test_user_wiring.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test_user_wiring.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_session_test_user_wiring.py.log
+  job-20260926T193758/job-019 pid 14183   cd /home/user/thyrox && timeout 900 python3 tests/verify/test_env_contract_keys.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_verify_test_env_contract_keys.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_verify_test_env_contract_keys.py.log
+  job-20260926T193758/job-020 pid 14607   cd /home/user/thyrox && timeout 900 python3 tests/verify/test_step_report.py > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_verify_test_step_report.py.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/merge-l1-r2/tests_verify_test_step_report.py.log
+run-task-pool: lanzados 20 de 20; esperando en PRIMER PLANO (timeout 1200s)
+asentado: job-20260926T193758_job-001 -> OK (2 de 21)
+asentado: job-20260926T193758_job-002 -> OK (3 de 21)
+asentado: job-20260926T193758_job-003 -> OK (4 de 21)
+asentado: job-20260926T193758_job-004 -> OK (5 de 21)
+asentado: job-20260926T193758_job-005 -> OK (6 de 21)
+asentado: job-20260926T193758_job-006 -> OK (7 de 21)
+asentado: job-20260926T193758_job-007 -> OK (8 de 21)
+asentado: job-20260926T193758_job-008 -> OK (9 de 21)
+asentado: job-20260926T193758_job-009 -> OK (10 de 21)
+asentado: job-20260926T193758_job-010 -> OK (11 de 21)
+asentado: job-20260926T193758_job-011 -> OK (12 de 21)
+asentado: job-20260926T193758_job-012 -> OK (13 de 21)
+asentado: job-20260926T193758_job-013 -> OK (14 de 21)
+asentado: job-20260926T193758_job-014 -> OK (15 de 21)
+asentado: job-20260926T193758_job-015 -> OK (16 de 21)
+asentado: job-20260926T193758_job-016 -> OK (17 de 21)
+asentado: job-20260926T193758_job-018 -> OK (18 de 21)
+asentado: job-20260926T193758_job-020 -> OK (19 de 21)
+asentado: job-20260926T193758_job-017 -> OK (18 de 21)
+asentado: job-20260926T193758_job-019 -> OK (20 de 21)
+== 21 trabajos asentados ==
+OLVIDADO job-20260926T193758
+       | (vacío — no emitió nada)
+OK     job-20260926T193758_job-001
+       | EXIT=0
+       memoria pico: 11680 KB (11 MB) · pared 0.04s
+OK     job-20260926T193758_job-002
+       | EXIT=0
+       memoria pico: 11548 KB (11 MB) · pared 0.03s
+OK     job-20260926T193758_job-003
+       | EXIT=0
+       memoria pico: 16552 KB (16 MB) · pared 0.11s
+OK     job-20260926T193758_job-004
+       | EXIT=0
+       memoria pico: 10328 KB (10 MB) · pared 0.09s
+OK     job-20260926T193758_job-005
+       | EXIT=0
+       memoria pico: 4068 KB (4 MB) · pared 0.06s
+OK     job-20260926T193758_job-006
+       | EXIT=0
+       memoria pico: 3920 KB (4 MB) · pared 0.03s
+OK     job-20260926T193758_job-007
+       | EXIT=0
+       memoria pico: 5484 KB (5 MB) · pared 0.05s
+OK     job-20260926T193758_job-008
+       | EXIT=0
+       memoria pico: 4248 KB (4 MB) · pared 0.11s
+OK     job-20260926T193758_job-009
+       | EXIT=0
+       memoria pico: 20828 KB (20 MB) · pared 0.31s
+OK     job-20260926T193758_job-010
+       | EXIT=0
+       memoria pico: 3976 KB (4 MB) · pared 0.01s
+OK     job-20260926T193758_job-011
+       | EXIT=0
+       memoria pico: 18264 KB (18 MB) · pared 0.16s
+OK     job-20260926T193758_job-012
+       | EXIT=0
+       memoria pico: 3956 KB (4 MB) · pared 0.17s
+OK     job-20260926T193758_job-013
+       | EXIT=0
+       memoria pico: 3856 KB (4 MB) · pared 0.04s
+OK     job-20260926T193758_job-014
+       | EXIT=0
+       memoria pico: 18736 KB (18 MB) · pared 0.53s
+OK     job-20260926T193758_job-015
+       | EXIT=0
+       memoria pico: 212696 KB (208 MB) · pared 7.01s
+OK     job-20260926T193758_job-016
+       | EXIT=0
+       memoria pico: 13236 KB (13 MB) · pared 0.58s
+OK     job-20260926T193758_job-017
+       | EXIT=0
+       memoria pico: 27996 KB (27 MB) · pared 16.42s
+OK     job-20260926T193758_job-018
+       | EXIT=0
+       memoria pico: 15964 KB (16 MB) · pared 1.81s
+OK     job-20260926T193758_job-019
+       | EXIT=0
+       memoria pico: 115056 KB (112 MB) · pared 24.98s
+OK     job-20260926T193758_job-020
+       | EXIT=0
+       memoria pico: 15472 KB (15 MB) · pared 0.06s
+__BG_EXIT__=0

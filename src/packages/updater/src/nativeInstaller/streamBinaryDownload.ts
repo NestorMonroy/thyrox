@@ -1,10 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/updater/src/nativeInstaller/streamBinaryDownload.ts`
- * (96 líneas fuente, 100% portado). Descarga el binario en streaming,
- * calculando su SHA256 al vuelo, con reintento ante fallos transitorios
- * y deteccion de descargas estancadas (sin datos antes del timeout).
- */
-
 import axios from 'axios'
 import { createHash } from 'crypto'
 import { createWriteStream } from 'fs'

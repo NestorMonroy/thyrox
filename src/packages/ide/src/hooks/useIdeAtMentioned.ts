@@ -1,19 +1,12 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/hooks/useIdeAtMentioned.ts`.
- * `lazySchema` — ver la nota de `useIdeLogging.ts`.
- */
 import { useEffect, useRef } from 'react'
+import { logError } from '@thyrox/local-observability/logging'
 import { z } from 'zod/v4'
 import type {
   ConnectedMCPServer,
   MCPServerConnection,
 } from '@thyrox/mcp-runtime/types.js'
-import {
-  lazySchema,
-  requireLocalObservabilityLogging,
-} from '../internal/pendingCrossPackageDeps.js'
 import { getConnectedIdeClient } from '../ide.js'
-
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 export type IDEAtMentioned = {
   filePath: string
   lineStart?: number
@@ -34,8 +27,8 @@ const AtMentionedSchema = lazySchema(() =>
 )
 
 /**
- * Hook que rastrea las notificaciones de at-mention del IDE, registrándose
- * directamente en los handlers de notificación del cliente MCP.
+ * A hook that tracks IDE at-mention notifications by directly registering
+ * with MCP client notification handlers,
  */
 export function useIdeAtMentioned(
   mcpClients: MCPServerConnection[],
@@ -44,16 +37,15 @@ export function useIdeAtMentioned(
   const ideClientRef = useRef<ConnectedMCPServer | undefined>(undefined)
 
   useEffect(() => {
-    // Busca el cliente de IDE en la lista de clientes MCP.
+    // Find the IDE client from the MCP clients list
     const ideClient = getConnectedIdeClient(mcpClients)
 
     if (ideClientRef.current !== ideClient) {
       ideClientRef.current = ideClient
     }
 
-    // Si se encontró un cliente de IDE conectado, se registra el handler.
+    // If we found a connected IDE client, register our handler
     if (ideClient) {
-      const { logError } = requireLocalObservabilityLogging()
       ideClient.client.setNotificationHandler(
         AtMentionedSchema(),
         notification => {
@@ -62,7 +54,7 @@ export function useIdeAtMentioned(
           }
           try {
             const data = notification.params
-            // Ajusta los números de línea a base-1 en vez de base-0.
+            // Adjust line numbers to be 1-based instead of 0-based
             const lineStart =
               data.lineStart !== undefined ? data.lineStart + 1 : undefined
             const lineEnd =
@@ -79,6 +71,6 @@ export function useIdeAtMentioned(
       )
     }
 
-    // No hace falta cleanup, los clientes MCP gestionan su propio ciclo de vida.
+    // No cleanup needed as MCP clients manage their own lifecycle
   }, [mcpClients, onAtMentioned])
 }

@@ -1,12 +1,3 @@
-/**
- * Puerto fiel de
- * `ccnmt: packages/bridge/src/__tests__/webhookSanitizer.test.ts`
- * (113 líneas fuente, 100% portado). Sin mocks —
- * `sanitizeInboundWebhookContent` compone su propia tabla de patrones
- * más `redactSecrets` (punto de inyección/reimplementación acotada, ver
- * `internal/pendingCrossPackageDeps.ts`), ninguno requiere adaptación
- * para el test.
- */
 import { describe, expect, test } from 'bun:test'
 import { sanitizeInboundWebhookContent } from '../webhookSanitizer.js'
 
@@ -18,8 +9,7 @@ describe('sanitizeInboundWebhookContent — pass-through', () => {
     expect(sanitizeInboundWebhookContent('hello world')).toBe('hello world')
   })
   test('PR description without secrets', () => {
-    const text =
-      '## Summary\nFixes a typo in the README.\n\n## Test plan\n- ran tests'
+    const text = '## Summary\nFixes a typo in the README.\n\n## Test plan\n- ran tests'
     expect(sanitizeInboundWebhookContent(text)).toBe(text)
   })
 })
@@ -35,33 +25,37 @@ describe('sanitizeInboundWebhookContent — token redaction', () => {
     expect(out).toContain('[REDACTED_GITHUB_TOKEN]')
   })
   test('GitHub OAuth (gho_)', () => {
-    expect(sanitizeInboundWebhookContent('gho_' + 'A'.repeat(36))).toContain(
-      '[REDACTED_GITHUB_TOKEN]',
-    )
+    expect(
+      sanitizeInboundWebhookContent('gho_' + 'A'.repeat(36)),
+    ).toContain('[REDACTED_GITHUB_TOKEN]')
   })
   test('Anthropic API key', () => {
-    const out = sanitizeInboundWebhookContent('API: sk-ant-' + 'A'.repeat(50))
+    const out = sanitizeInboundWebhookContent(
+      'API: sk-ant-' + 'A'.repeat(50),
+    )
     expect(out).toContain('[REDACTED_ANTHROPIC_KEY]')
   })
   test('Bearer token in Authorization header', () => {
     const text = 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.payload.sig'
-    expect(sanitizeInboundWebhookContent(text)).toContain('[REDACTED_TOKEN]')
+    expect(sanitizeInboundWebhookContent(text)).toContain(
+      '[REDACTED_TOKEN]',
+    )
   })
   test('AWS access key (AKIA prefix)', () => {
-    expect(sanitizeInboundWebhookContent('AKIAIOSFODNN7EXAMPLE')).toContain(
-      '[REDACTED_AWS_KEY]',
-    )
+    expect(
+      sanitizeInboundWebhookContent('AKIAIOSFODNN7EXAMPLE'),
+    ).toContain('[REDACTED_AWS_KEY]')
   })
   test('npm access token', () => {
     const out = sanitizeInboundWebhookContent('npm_' + 'A'.repeat(36))
     expect(out).toContain('[REDACTED_NPM_TOKEN]')
   })
   test('Slack bot token', () => {
-    // Construye la forma del token dinámicamente para que esta línea
-    // fuente no dispare el escáner de secretos de GitHub Push
-    // Protection (hace pattern-match de literales xoxb- en la fuente de
-    // verdad, no distingue fixtures de test).
-    const slackShape = 'xox' + 'b' + '-1234567890-9876543210-AbCdEfGhIjKlMnOp'
+    // Construct token-shape dynamically so this source line doesn't trip
+    // GitHub Push Protection's secret scanner (it pattern-matches xoxb-
+    // literals on source-of-truth, can't tell test fixtures apart).
+    const slackShape =
+      'xox' + 'b' + '-1234567890-9876543210-AbCdEfGhIjKlMnOp'
     const out = sanitizeInboundWebhookContent(slackShape)
     expect(out).toContain('[REDACTED_SLACK_TOKEN]')
   })
@@ -72,9 +66,7 @@ describe('sanitizeInboundWebhookContent — token redaction', () => {
   test('multiple secrets in one payload', () => {
     const text =
       'pr title\n' +
-      'token: ghp_' +
-      'A'.repeat(36) +
-      '\n' +
+      'token: ghp_' + 'A'.repeat(36) + '\n' +
       'aws: AKIAIOSFODNN7EXAMPLE\n'
     const out = sanitizeInboundWebhookContent(text)
     expect(out).toContain('[REDACTED_GITHUB_TOKEN]')
@@ -86,7 +78,7 @@ describe('sanitizeInboundWebhookContent — truncation', () => {
   test('truncates content over 100KB', () => {
     const huge = 'x'.repeat(101_000)
     const out = sanitizeInboundWebhookContent(huge)
-    expect(out.length).toBeLessThanOrEqual(100_000 + 50) // longitud del marcador de truncado
+    expect(out.length).toBeLessThanOrEqual(100_000 + 50) // truncation marker length
     expect(out).toContain('[truncated]')
   })
   test('content at exactly 100KB is NOT truncated', () => {
@@ -95,7 +87,7 @@ describe('sanitizeInboundWebhookContent — truncation', () => {
     expect(out).toBe(exact)
   })
   test('truncation happens AFTER redaction (so secrets at end still redacted)', () => {
-    // Genera 90KB de texto plano + un secreto cerca del borde de truncado
+    // Generate 90KB of plain text + a secret near the truncation boundary
     const filler = 'x'.repeat(90_000)
     const secret = 'ghp_' + 'A'.repeat(36)
     const moreFiller = 'y'.repeat(20_000)

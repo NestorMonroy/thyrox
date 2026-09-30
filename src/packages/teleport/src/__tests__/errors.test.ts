@@ -1,8 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/teleport/src/__tests__/errors.test.ts`
- * (100% portado, verbatim en su cobertura).
- */
-
 import { describe, expect, test } from 'bun:test'
 import {
   ContextSyncError,

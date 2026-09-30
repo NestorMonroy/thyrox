@@ -1,0 +1,1 @@
+rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=1000 HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa

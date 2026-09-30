@@ -1,50 +1,29 @@
 /**
- * El contexto de equipo al arrancar: en un lanzamiento nuevo y al reanudar.
+ * Swarm Reconnection Module
  *
- * Procedencia: `ccnmt: packages/swarm/src/core/reconnection.ts` (119 líneas,
- * 2 símbolos exportados). Ese árbol declara `"license": "UNLICENSED"`, así que
- * el cuerpo se **reimplementa** y no se copia.
- *
- * DOS CAMINOS DE ENTRADA, y por eso son dos funciones:
- *
- * - **Lanzamiento nuevo** — el equipo y el nombre llegan por la línea de
- *   comandos, y el contexto se calcula de forma SÍNCRONA antes del primer
- *   render. Calcularlo después obligaría a pintar una vez sin él y a
- *   corregirlo luego, que es la clase de parche que este cómputo elimina.
- * - **Reanudación** — el equipo y el nombre viven en el transcript. El
- *   identificador de agente NO: se recupera del roster, buscándolo por nombre.
- *
- * DIVERGENCIA DECLARADA: la forma del contexto de equipo se declara AQUÍ
- * (`TeamContext`) y no se indexa desde el estado del anfitrión. `AppState` es
- * `unknown` en el adaptador —es del anfitrión y no de este paquete—, así que
- * `AppState['teamContext']` no tiene sentido de tipo. Y la forma es de swarm:
- * el anfitrión sólo la transporta.
+ * Handles initialization of swarm context for teammates.
+ * - Fresh spawns: Initialize from CLI args (set in main.tsx via dynamicTeamContext)
+ * - Resumed sessions: Initialize from teamName/agentName stored in the transcript
  */
-import {
-  getDynamicTeamContext,
-  logError,
-  logForDebugging,
-} from '../adapters/appRuntime.js'
+
+import type { AppState } from '../adapters/appRuntime.js'
+import { logForDebugging } from '../adapters/appRuntime.js'
+import { logError } from '../adapters/appRuntime.js'
+import { getDynamicTeamContext } from '../adapters/appRuntime.js'
 import { getTeamFilePath, readTeamFile } from './teamHelpers.js'
 
-/** Lo que una sesión sabe del equipo al que pertenece. */
-export type TeamContext = {
-  teamName: string
-  teamFilePath: string
-  leadAgentId: string
-  selfAgentId: string | undefined
-  selfAgentName: string
-  isLeader: boolean
-  teammates: Record<string, unknown>
-}
-
 /**
- * Calcula el contexto inicial, o `undefined` si esta sesión no es de un equipo.
+ * Computes the initial teamContext for AppState.
  *
- * No pertenecer a ningún equipo es el caso normal de una sesión cualquiera: se
- * registra como traza, no como error.
+ * This is called synchronously in main.tsx to compute the teamContext
+ * BEFORE the first render, eliminating the need for useEffect workarounds.
+ *
+ * @returns The teamContext object to include in initialState, or undefined if not a teammate
  */
-export function computeInitialTeamContext(): TeamContext | undefined {
+export function computeInitialTeamContext():
+  | AppState['teamContext']
+  | undefined {
+  // dynamicTeamContext is set in main.tsx from CLI args
   const context = getDynamicTeamContext()
 
   if (!context?.teamName || !context?.agentName) {
@@ -56,10 +35,9 @@ export function computeInitialTeamContext(): TeamContext | undefined {
 
   const { teamName, agentId, agentName } = context
 
+  // Read team file to get lead agent ID
   const teamFile = readTeamFile(teamName)
   if (!teamFile) {
-    // Aquí SÍ es un defecto: nos dijeron que somos de un equipo cuyo archivo
-    // no existe, así que o se borró o el nombre está mal.
     logError(
       new Error(
         `[computeInitialTeamContext] Could not read team file for ${teamName}`,
@@ -68,8 +46,8 @@ export function computeInitialTeamContext(): TeamContext | undefined {
     return undefined
   }
 
-  // El líder es quien NO trae identificador de agente: los compañeros lo
-  // reciben al ser lanzados, y a él no lo lanzó nadie.
+  const teamFilePath = getTeamFilePath(teamName)
+
   const isLeader = !agentId
 
   logForDebugging(
@@ -78,7 +56,7 @@ export function computeInitialTeamContext(): TeamContext | undefined {
 
   return {
     teamName,
-    teamFilePath: getTeamFilePath(teamName),
+    teamFilePath,
     leadAgentId: teamFile.leadAgentId,
     selfAgentId: agentId,
     selfAgentName: agentName,
@@ -88,20 +66,18 @@ export function computeInitialTeamContext(): TeamContext | undefined {
 }
 
 /**
- * Fija el contexto de equipo al reanudar una sesión de compañero.
+ * Initialize teammate context from a resumed session.
  *
- * El identificador se busca en el ROSTER por nombre: el transcript guarda
- * equipo y nombre, que es lo que sobrevive a una reanudación.
- *
- * Que el compañero ya no esté en el roster no derriba la sesión: se fija el
- * contexto sin identificador. Lo quitaron del equipo, no del mundo, y sigue
- * necesitando saber de dónde venía.
+ * This is called when resuming a session that has teamName/agentName stored
+ * in the transcript. It sets up teamContext in AppState so that heartbeat
+ * and other swarm features work correctly.
  */
 export function initializeTeammateContextFromSession(
-  setAppState: (updater: (prev: Record<string, unknown>) => Record<string, unknown>) => void,
+  setAppState: (updater: (prev: AppState) => AppState) => void,
   teamName: string,
   agentName: string,
 ): void {
+  // Read team file to get lead agent ID
   const teamFile = readTeamFile(teamName)
   if (!teamFile) {
     logError(
@@ -112,24 +88,30 @@ export function initializeTeammateContextFromSession(
     return
   }
 
+  // Find the member in the team file to get their agentId
   const member = teamFile.members.find(m => m.name === agentName)
   if (!member) {
     logForDebugging(
       `[Reconnection] Member ${agentName} not found in team ${teamName} - may have been removed`,
     )
   }
+  const agentId = member?.agentId
 
-  const teamContext: TeamContext = {
-    teamName,
-    teamFilePath: getTeamFilePath(teamName),
-    leadAgentId: teamFile.leadAgentId,
-    selfAgentId: member?.agentId,
-    selfAgentName: agentName,
-    isLeader: false,
-    teammates: {},
-  }
+  const teamFilePath = getTeamFilePath(teamName)
 
-  setAppState(prev => ({ ...prev, teamContext }))
+  // Set teamContext in AppState
+  setAppState(prev => ({
+    ...prev,
+    teamContext: {
+      teamName,
+      teamFilePath,
+      leadAgentId: teamFile.leadAgentId,
+      selfAgentId: agentId,
+      selfAgentName: agentName,
+      isLeader: false,
+      teammates: {},
+    },
+  }))
 
   logForDebugging(
     `[Reconnection] Initialized agent context from session for ${agentName} in team ${teamName}`,

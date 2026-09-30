@@ -1,0 +1,6 @@
+bash bin/finding rst H-THYROX-213 --resolved-in thyrox@82417e3d
+bash bin/finding rst H-THYROX-214 --resolved-in thyrox@8b3a95ea
+bash bin/finding rst H-THYROX-215 --resolved-in thyrox@f7318d69
+bash bin/finding rst H-THYROX-216 --resolved-in thyrox@fd067d08
+bash bin/finding rst H-THYROX-217 --resolved-in thyrox@7e10ae0d
+bash bin/finding rst H-THYROX-218 --resolved-in thyrox@b4c74a09

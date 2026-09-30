@@ -1,0 +1,2 @@
+src/packages/cli/src/entry/run-program.ts(35,10): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'runModeDispatch'.
+src/packages/cli/src/entry/run-program.ts(431,3): error TS2554: Expected 1 arguments, but got 0.

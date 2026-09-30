@@ -1,0 +1,42 @@
+# Anulaciones 106e-5c-2 — primera pasada
+== 1: exp textual vale -> 1
+== 2: iat sin validar -> 0
+== 3: caducado estricto -> 1
+== 4: umbral estricto -> 1
+== 5: sin caducidad caduca -> 1
+== 6: umbral por defecto 0 -> 1
+== 7: reloj propio -> 4
+== 8: variable ignorada -> 2
+== 9: barras finales -> 3
+== 10: base explícita ignorada -> 1
+== 11: token sin recortar -> 2
+== 12: vacío pide igual -> 1
+== 13: POST -> 1
+== 14: sin portador -> 1
+== 15: sin origen -> 1
+== 16: error sin sanear -> 1
+== 17: HTTP sin estado -> 1
+== 18: access no textual -> 1
+== 19: vida opaca de 1 h -> 1
+== 20: refresh perdido -> 1
+== 21: red lanza -> 1
+== 22: sin caducidad guardada -> 2
+== 23: estado sin limpiar -> 2
+== 24: sin respaldo en datos -> 2
+== 25: fallo persiste -> 1
+== 26: desconocida lanza -> 1
+== 27: ventana fija -> 1
+== 28: otro proveedor pasa -> 1
+== 29: sin minúsculas -> 1
+== 30: sin refresh intenta -> 1
+== 31: sin mirar caducidad -> 1
+== 32: sólo apiKey -> 1
+== 33: ventana ignorada -> 1
+== 34: éxito sin token -> 1
+== 35: fallo sin aviso -> 1
+== 36: no persiste -> 1
+== restaurado -> 0
+
+# Repetición tras afilar 2
+== 2: iat sin validar -> 1
+== restaurado -> 0

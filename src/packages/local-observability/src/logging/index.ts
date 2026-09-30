@@ -1,8 +1,6 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/logging/index.ts`
- * (10 líneas fuente, 100 % portado). Barrel del subsuperficie de
- * logging — subpath `logging`, citado 63 líneas en el censo de futuros
- * consumidores.
+ * @thyrox/local-observability/logging — barrel export for the logging
+ * subsurface.
  */
 
 export * from './error-log.js'

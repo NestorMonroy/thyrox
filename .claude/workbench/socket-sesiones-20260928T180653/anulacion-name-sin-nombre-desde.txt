@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+123 |   })
+124 | 
+125 |   test('al renombrar cede ante cualquiera; al revisar, por la antigüedad del nombre', () => {
+126 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, newer], moment: 'rename', slug: () => 'calm-fox' }).kind).toBe('yield')
+127 |     const renamedLate: LiveSession = { ...older, nameSince: 400 }
+128 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, renamedLate], moment: 'recheck', slug: () => 'calm-fox' })).toEqual({ kind: 'keep' })
+                                                                                                                                           ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "kind": "keep",
++   "holders": [
++     {
++       "name": "Work",
++       "nameSince": 400,
++       "pid": 11,
++       "procStart": "s11",
++       "startedAt": 100,
++     },
++   ],
++   "kind": "yield",
++   "newName": "work-calm-fox",
+  }
+
+- Expected  - 1
++ Received  + 11
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:128:134)
+(fail) decideNameCollision (B) > al renombrar cede ante cualquiera; al revisar, por la antigüedad del nombre [0.38ms]
+
+ 14 pass
+ 1 fail
+ 45 expect() calls
+Ran 15 tests across 1 file. [43.00ms]

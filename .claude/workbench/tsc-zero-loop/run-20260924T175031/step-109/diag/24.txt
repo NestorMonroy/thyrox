@@ -1,0 +1,28 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/sessionTools/transcriptSearch.ts(86,15): error TS18048: 'msg.attachment.memories' is possibly 'undefined'.
+  --- código src/packages/agent/sessionTools/transcriptSearch.ts:76-96 ---
+     76            })
+     77            .join('\n')
+     78        }
+     79        break
+     80      }
+     81      case 'attachment': {
+     82        // relevant_memories renders full m.content in transcript mode
+     83        // (AttachmentMessage.tsx <Ansi>{m.content}</Ansi>). Visible but
+     84        // unsearchable without this — [ dump finds it, / doesn't.
+     85        if (msg.attachment.type === 'relevant_memories') {
+     86>         raw = msg.attachment.memories.map(m => m.content).join('\n')
+     87        } else if (
+     88          // Mid-turn prompts — queued while an agent is running. Render via
+     89          // UserTextMessage (AttachmentMessage.tsx:~348). stickyPromptText
+     90          // (VirtualMessageList.tsx:~103) has the same guards — mirror here.
+     91          msg.attachment.type === 'queued_command' &&
+     92          msg.attachment.commandMode !== 'task-notification' &&
+     93          !msg.attachment.isMeta
+     94        ) {
+     95          const p = msg.attachment.prompt
+     96          raw =

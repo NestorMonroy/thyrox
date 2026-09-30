@@ -11,23 +11,47 @@
  * El archivo es AUTOCONTENIDO: no importa nada externo. Se porta completo.
  */
 
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+
 // ── Tipos de mensaje ────────────────────────────────────────────────────────
+
+/**
+ * El cuerpo de un mensaje tal como lo LEE el bucle. Dos campos divergen de la
+ * fuente (`ccnmt: packages/agent/internalTypes.ts:16-25`), y los dos porque la
+ * declaracion contradecia a sus propios lectores, medido con el censo de
+ * lecturas por type checker (`.claude/workbench/agent-message-field-census-*`):
+ *
+ *   - `content`: la fuente declara `unknown[]`, y `QueryEngine` lo lee con
+ *     `typeof msg.message.content === 'string'` antes de `.includes`. Con la
+ *     fuente compilando en `"strict": false` (`ccnmt: tsconfig.json:7`) eso
+ *     pasa; con `"strict": true` (`tsconfig.json:8`) la rama string es `never`.
+ *     Es opcional porque el mensaje canonico lo declara opcional.
+ *   - `usage`: la fuente declara `{ [key: string]: number }`, y su unico
+ *     lector (`query.ts`) lo castea antes de leerlo; el `usage` real es el
+ *     `BetaUsage` del API, que no cabe en esa firma.
+ *
+ * Con esos dos campos el `Message` canonico satisface esta forma por tipado
+ * estructural, que es lo que el encabezado de este archivo promete: el bucle
+ * conserva su modelo propio y quien lo llama no necesita cast.
+ */
+export type AgentMessageBody = {
+  content?: string | readonly unknown[]
+  usage?: unknown
+  [key: string]: unknown
+}
 
 /** Forma mínima de mensaje que usan los stop hooks y el query loop. */
 export type AgentMessage = {
   type: string
   uuid?: string
   isApiErrorMessage?: boolean
-  message?: {
-    content: unknown[]
-    usage?: { [key: string]: number }
-  }
+  message?: AgentMessageBody
   [key: string]: unknown
 }
 
 export type AgentAssistantMessage = AgentMessage & {
   type: 'assistant'
-  message: { content: unknown[]; usage?: { [key: string]: number } }
+  message: AgentMessageBody
 }
 
 export type AgentStreamEvent = {
@@ -76,29 +100,18 @@ export type AgentHookResult = {
 
 // ── Tipos de tool / contexto ─────────────────────────────────────────────────
 
-/** Forma mínima de ToolUseContext que necesitan los stop hooks y el query loop. */
-export type AgentToolUseContext = {
-  agentId?: string
-  agentType?: string
-  abortController: AbortController
-  getAppState: () => { toolPermissionContext: { mode: string }; [key: string]: unknown }
-  setAppState?: (f: (prev: unknown) => unknown) => void
-  addNotification?: (n: { key: string; text: string; priority: string }) => void
-  queryTracking?: { chainId: string; depth: number }
-  appendSystemMessage?: (msg: unknown) => void
-  options: {
-    mainLoopModel: string
-    tools: unknown[]
-    isNonInteractiveSession?: boolean
-    [key: string]: unknown
-  }
-  [key: string]: unknown
-}
+/**
+ * El contexto de herramienta del query loop es el del registro, para que un
+ * consumidor que tiene el tipo real lo pase sin convertirlo.
+ */
+export type AgentToolUseContext = ToolUseContext
 
 // ── Tipo de system prompt ────────────────────────────────────────────────────
 
 /** Forma mínima de SystemPrompt. */
-export type AgentSystemPrompt = Array<{ content: unknown }>
+// El prompt de sistema es la lista de secciones de texto de la fuente
+// (`SystemPrompt`, `readonly string[]` con marca); aquí sin la marca.
+export type AgentSystemPrompt = readonly string[]
 
 // ── Fuente de la query ───────────────────────────────────────────────────────
 

@@ -1,11 +1,3 @@
-// Adaptación de @claude-code-how-works/app-host: src/activityManager.ts.
-// Capa 0 (sin cita a paquete hermano) — porte verbatim, sin divergencias.
-//
-// Importa './bootstrap/state.js', un archivo de este mismo paquete que
-// esta sesión tiene PROHIBIDO tocar (lo están escribiendo otros dos
-// agentes en paralelo, en el mismo pase). Esta importación queda
-// colgante hasta que ese archivo aterrice; no se fabrica un stub aquí.
-
 import { getActiveTimeCounter as getActiveTimeCounterImpl } from './bootstrap/state.js'
 
 type ActivityManagerOptions = {

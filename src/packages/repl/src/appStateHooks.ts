@@ -2,10 +2,10 @@
 // import src/state/AppState at top level. Forwards args verbatim.
 import type { Context, ReactNode } from 'react'
 
-// ESTRECHADO 2026-09-19 (TASK-THYROX-0203), no portado verbatim.
+// ESTRECHADO (TASK-THYROX-0203), no portado verbatim.
 //
 // La referencia declara los dos como `unknown`
-// (`ccnmt: packages/repl/src/appStateHooks.ts:5-6`). Su propio CLAUDE.md:274
+// (`ccnmt: packages/repl/src/appStateHooks.ts:5-6`). Su propio THYROX.md:274
 // fija el umbral que decide cuando eso se estrecha: un shim `unknown` solo
 // rinde sobre consumidores de patron ACCESS (`x.campo`), y a partir de tres
 // sitios vale estrecharlo. Medido aqui: 340 TS18046 de la forma
@@ -75,13 +75,18 @@ export function useAppStateStore(): {
   return mod.useAppStateStore()
 }
 
-export function AppStateProvider(props: {
-  initialState: AppState
-  children: ReactNode
-}): ReactNode {
+// Las props son las del proveedor real (`store`, `onChangeAppState`
+// incluidas): el envoltorio las estrechaba y `App.tsx` no compilaba.
+type HostAppStateProvider = typeof import('@thyrox/app-host/state/AppState.js').AppStateProvider
+
+export function AppStateProvider(props: Parameters<HostAppStateProvider>[0]): ReactNode {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@thyrox/app-host/state/AppState.js') as {
-    AppStateProvider: (p: { initialState: AppState; children: ReactNode }) => ReactNode
+    AppStateProvider: HostAppStateProvider
   }
   return mod.AppStateProvider(props)
 }
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { AppStateStore } from '@thyrox/app-host/state/AppStateStore.js'

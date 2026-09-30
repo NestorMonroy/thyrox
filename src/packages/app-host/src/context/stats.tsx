@@ -1,22 +1,3 @@
-/**
- * Adaptación de `ccnmt: packages/app-host/src/context/stats.tsx`.
- * Capa 0 (sin cita a paquete hermano ausente) — porte verbatim de toda
- * la lógica pura (`percentile`, `createStatsStore`, los hooks); UNA
- * divergencia declarada.
- *
- * `saveCurrentProjectConfig` (de `@claude-code-how-works/config`, el
- * barrel completo) se sustituye por el punto de inyección de
- * `internal/pendingCrossPackageDeps.ts` — `@thyrox/config` es un porte
- * parcial y su barrel (`.`) todavía no exporta ese símbolo (el módulo
- * real, `config/global/config.js`, está ausente entero; verificado con
- * `Bun.resolveSync`). Ver ese archivo para la divergencia completa y la
- * condición de retiro. El único llamador es el `flush` del efecto de
- * `StatsProvider`, corrido en `process.on('exit', …)`: persistencia
- * best-effort de métricas de sesión — el sustituto es un no-op seguro
- * mientras el símbolo no exista, igual criterio que
- * `@thyrox/updater: src/internal/globalConfigCompat.ts` ya aplica para
- * el mismo módulo ausente.
- */
 import React, {
   createContext,
   useCallback,
@@ -24,7 +5,7 @@ import React, {
   useEffect,
   useMemo,
 } from 'react'
-import { saveCurrentProjectConfig } from '../internal/pendingCrossPackageDeps.js'
+import { saveCurrentProjectConfig } from '@thyrox/config'
 
 export type StatsStore = {
   increment(name: string, value?: number): void
@@ -80,7 +61,7 @@ export function createStatsStore(): StatsStore {
       if (value > h.max) {
         h.max = value
       }
-      // Muestreo por reservorio (Algoritmo R)
+      // Reservoir sampling (Algorithm R)
       if (h.reservoir.length < RESERVOIR_SIZE) {
         h.reservoir.push(value)
       } else {

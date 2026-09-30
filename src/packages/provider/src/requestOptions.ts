@@ -1,11 +1,3 @@
-/**
- * Porte fiel de `ccnmt: packages/provider/src/requestOptions.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO — un único tipo (`ProviderRequestOptions`). Sin divergencias:
- * `./contracts.js` ya está portado en este mismo pase (hermano); los
- * demás imports son type-only de `@anthropic-ai/sdk` (se borran al
- * transpilar).
- */
 import type { ClientOptions } from '@anthropic-ai/sdk'
 import type {
   ProviderAgentDefinition,
@@ -28,9 +20,9 @@ export type ProviderRequestOptions = {
   fallbackModel?: string
   onStreamingFallback?: () => void
   querySource: ProviderQuerySource
-  /** Propagado desde el override de `runAgent` cuando lo dispara un skill. */
+  /** ant 2599.js — spawnedBySkill from runAgent override propagated. */
   spawnedBySkill?: string
-  /** Lo fija el `SkillTool` o el path de submit del REPL. */
+  /** ant 2599.js — activeSkill set by SkillTool / REPL submit path. */
   activeSkill?: string
   agents?: readonly ProviderAgentDefinition[]
   allowedAgentTypes?: string[]

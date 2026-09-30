@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/SkillTool/UI.tsx(132,26): error TS18046: 'progressMessage.data' is of type 'unknown'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/UI.tsx:122-142 ---
+    122        .map(pm => pm.data),
+    123    )
+    124  
+    125    return (
+    126      <MessageResponse>
+    127        <Box flexDirection="column">
+    128          <SubAgentProvider>
+    129            {displayedMessages.map(progressMessage => (
+    130              <Box key={progressMessage.uuid} height={1} overflow="hidden">
+    131                <MessageComponent
+    132>                 message={progressMessage.data.message}
+    133                  lookups={EMPTY_LOOKUPS}
+    134                  addMargin={false}
+    135                  tools={tools}
+    136                  commands={[]}
+    137                  verbose={verbose}
+    138                  inProgressToolUseIDs={inProgressToolUseIDs}
+    139                  progressMessagesForMessage={[]}
+    140                  shouldAnimate={false}
+    141                  shouldShowDot={false}
+    142                  style="condensed"

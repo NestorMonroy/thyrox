@@ -1,67 +1,61 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/timeBasedMCConfig.test.ts`
- * contra `ccnmt: packages/agent/compaction/timeBasedMCConfig.ts`.
- */
 import { describe, expect, mock, test } from 'bun:test'
 import {
   TIME_BASED_MC_CONFIG_DEFAULTS,
   getTimeBasedMCConfig,
-} from '../compaction/timeBasedMCConfig.ts'
+} from '../compaction/timeBasedMCConfig.js'
 
-describe('TIME_BASED_MC_CONFIG_DEFAULTS — ancla del contrato', () => {
-  // Estos defaults acotan cuándo dispara el microcompact por tiempo. Son
-  // el baseline "a prueba de fallos" cuando GrowthBook no está disponible.
-  // Si algún valor deriva sin querer, el comportamiento del microcompact
-  // cambia en silencio para los usuarios del primer arranque (antes de
-  // que la caché de GrowthBook se puebla).
+describe('TIME_BASED_MC_CONFIG_DEFAULTS — contract anchor', () => {
+  // These defaults gate when time-based microcompact fires. They form
+  // the "fail-safe" baseline when GrowthBook is unavailable. If any
+  // value drifts unintentionally, microcompact behavior changes silently
+  // for users on first launch (before GrowthBook cache populates).
 
-  test('enabled tiene default false', () => {
-    // Crítico: una feature gateada por GrowthBook DEBE arrancar apagada.
-    // Si un refactor lo voltea a true, la feature queda "activa por
-    // defecto" y rompe el modelo de kill-switch.
+  test('enabled defaults to false', () => {
+    // Critical: GrowthBook-gated feature MUST default off. If a refactor
+    // flips this to true, the feature becomes "enabled-by-default" and
+    // breaks the kill-switch model.
     expect(TIME_BASED_MC_CONFIG_DEFAULTS.enabled).toBe(false)
   })
 
-  test('gapThresholdMinutes es 60 (1 hora)', () => {
-    // Por qué 60: coincide con el TTL de la caché de prompt de Anthropic.
-    // Un hueco >60min significa que la caché ya está muerta de todos
-    // modos, así que microcompactar en ese límite no revienta una caché
-    // que de otro modo seguiría caliente.
+  test('gapThresholdMinutes is 60 (1 hour)', () => {
+    // Why 60: matches Anthropic prompt-cache TTL. A gap >60min means
+    // the cache is dead anyway, so microcompacting at that boundary
+    // doesn't bust an otherwise-warm cache.
     expect(TIME_BASED_MC_CONFIG_DEFAULTS.gapThresholdMinutes).toBe(60)
   })
 
-  test('keepRecent es 5', () => {
+  test('keepRecent is 5', () => {
     expect(TIME_BASED_MC_CONFIG_DEFAULTS.keepRecent).toBe(5)
   })
 
-  test('la config tiene exactamente 3 campos (sin adiciones silenciosas)', () => {
-    // Atrapa refactors que agregan un campo sin actualizar a sus consumidores.
+  test('config has exactly 3 fields (no silent additions)', () => {
+    // Catches refactors that add a field without updating callers.
     expect(Object.keys(TIME_BASED_MC_CONFIG_DEFAULTS).length).toBe(3)
   })
 })
 
 describe('getTimeBasedMCConfig', () => {
-  test('lee la clave de GrowthBook "tengu_slate_heron"', () => {
+  test('reads "tengu_slate_heron" GrowthBook key', () => {
     const getFeatureValue = mock(<T,>(_k: string, defaultValue: T): T => defaultValue)
     getTimeBasedMCConfig({ getFeatureValue })
     expect(getFeatureValue).toHaveBeenCalledTimes(1)
     expect(getFeatureValue.mock.calls[0]?.[0]).toBe('tengu_slate_heron')
   })
 
-  test('pasa TIME_BASED_MC_CONFIG_DEFAULTS como fallback', () => {
+  test('passes TIME_BASED_MC_CONFIG_DEFAULTS as the fallback', () => {
     const getFeatureValue = mock(<T,>(_k: string, defaultValue: T): T => defaultValue)
     getTimeBasedMCConfig({ getFeatureValue })
     expect(getFeatureValue.mock.calls[0]?.[1]).toBe(TIME_BASED_MC_CONFIG_DEFAULTS)
   })
 
-  test('devuelve los defaults cuando GrowthBook devuelve el fallback', () => {
+  test('returns the defaults when GrowthBook returns the fallback', () => {
     const result = getTimeBasedMCConfig({
       getFeatureValue: <T,>(_k: string, defaultValue: T) => defaultValue,
     })
     expect(result).toBe(TIME_BASED_MC_CONFIG_DEFAULTS)
   })
 
-  test('devuelve el valor de GrowthBook cuando se provee uno', () => {
+  test('returns the GrowthBook value when one is provided', () => {
     const customConfig = {
       enabled: true,
       gapThresholdMinutes: 30,
@@ -74,12 +68,11 @@ describe('getTimeBasedMCConfig', () => {
     expect(result).toEqual(customConfig)
   })
 
-  test('la exposición dispara incondicionalmente (sin guard)', () => {
-    // Crítico para telemetría: el tracking de exposición A/B de GrowthBook
-    // depende de que la lectura ocurra en TODOS los caminos de código. Si
-    // un refactor futuro la envuelve en `if (algunaCondicion)`, los datos
-    // del experimento quedan sesgados. El contrato es "siempre leer,
-    // siempre exponer".
+  test('exposure fires unconditionally (not behind a guard)', () => {
+    // Critical for telemetry: GrowthBook A/B exposure tracking depends
+    // on the read happening on every code path. If a future refactor
+    // wraps it in `if (someCondition)`, the experiment data becomes
+    // biased. The contract is "always read, always expose".
     const getFeatureValue = mock(<T,>(_k: string, defaultValue: T): T => defaultValue)
     for (let i = 0; i < 10; i++) {
       getTimeBasedMCConfig({ getFeatureValue })
@@ -87,10 +80,9 @@ describe('getTimeBasedMCConfig', () => {
     expect(getFeatureValue).toHaveBeenCalledTimes(10)
   })
 
-  test('no memoiza — cada llamada golpea la lectura de GrowthBook', () => {
-    // Igual que arriba pero verificado explícitamente: la función
-    // deliberadamente NO cachea su propio resultado. Cachear es trabajo
-    // de GrowthBook.
+  test('does not memoize — each call hits the GrowthBook read', () => {
+    // Same as above but verifies explicitly: the function deliberately
+    // does NOT cache its own result. Caching is GrowthBook's job.
     let callCount = 0
     const getFeatureValue = <T,>(_k: string, defaultValue: T): T => {
       callCount++

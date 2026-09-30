@@ -1,0 +1,33 @@
+  FALLA el pool sale 0 — esperado [0] obtenido [1]
+  FALLA resumen del pool — esperado [items=2 ok=2 fallidos=0] obtenido [items=2 ok=0 fallidos=2]
+  ok   un .json por ítem
+  FALLA el .json es la línea result, de éxito — esperado [result/success] obtenido []
+  FALLA con el texto del modelo — esperado [concepto: admisión] obtenido []
+  FALLA el stream abre con system/init — esperado [system/init] obtenido []
+  FALLA las herramientas del pool llegan acotadas — esperado [["Read"]] obtenido []
+  FALLA una línea assistant por petición, con su uso — esperado [2x500] obtenido []
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch" && uv sync
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch" && uv sync
+historial: sin ejecución previa de /tmp/tmp.akjggPXa71/thyrox-p en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+contención: cgroup
+-- FALLIDO alfa
+-- FALLIDO beta
+items=2 ok=0 fallidos=2
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+  FALLA por el túnel: el pool sale 0 — esperado [0] obtenido [2]
+  FALLA por el túnel: el ítem termina bien — esperado [items=1 ok=1 fallidos=0] obtenido []
+gawk: fatal: cannot open file `/tmp/tmp.akjggPXa71/requests.log' for reading: No such file or directory
+  FALLA por el túnel: el servicio recibe la llave que puso el proxy — esperado [auth=x-api-key] obtenido []
+  ok   por el túnel: el socket no queda al terminar
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch" && uv sync
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch" && uv sync
+historial: sin ejecución previa de /home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — el proxy de credencial no arrancó (/home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch/bin/provider-credential-proxy): thyrox_toolchain: 'bun' resuelve, y /home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch/node_modules esta ausente o vacio. IMPORTANT si desea usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli es necesario corregir cd /home/user/thyrox/.thyrox/pool-worktrees/diag303-with-patch && bun install por el momento, continua sin usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli 
+
+2 ok · 10 falla(s) (alcance medido: headless-pool con thyrox -p)

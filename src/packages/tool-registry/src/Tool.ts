@@ -17,12 +17,9 @@
  *   `command-runtime/src`), `@thyrox/agent/file-history` (no existe aún).
  *   Cuando esos paquetes hermanos completen esa ruta, este archivo empieza
  *   a tipar contra el símbolo real sin tocarlo.
- * - `React.ReactNode` se sustituye por el alias local `ReactNodeLike` (ver
- *   más abajo): `react` no está instalado en este árbol (medido — ningún
- *   `node_modules/react` bajo este paquete) y `React` tampoco es un
- *   namespace ambiental aquí (no hay `@types/react`). El alias documenta la
- *   forma sin traer la dependencia — mismo patrón que
- *   `@thyrox/voice: src/hooks/useVoiceIntegration.tsx`.
+ * - `React.ReactNode` se nombra por el alias `ReactNodeLike` (ver más
+ *   abajo); desde que `react` es dependencia del paquete, el alias es el
+ *   tipo real y no un `unknown`.
  */
 import type {
   ToolResultBlockParam,
@@ -33,17 +30,18 @@ import type {
   ElicitResult,
 } from '@modelcontextprotocol/sdk/types.js'
 import type { UUID } from 'crypto'
+import type { ReactNode } from 'react'
 import type { z } from 'zod/v4'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { ThinkingConfig } from '@thyrox/provider/thinking.js'
 
 /**
- * Sustituto local de `React.ReactNode` — ver docstring del módulo. Sólo se
- * usa como anotación de tipo en las firmas de renderizado de abajo; ninguna
- * de esas firmas se invoca desde este archivo.
+ * `React.ReactNode`. Se llamó `ReactNodeLike` y valía `unknown` mientras
+ * `react` no resolvía desde este paquete; ya es dependencia declarada
+ * (`package.json`) y el alias se conserva para no renombrar sus usos.
  */
-export type ReactNodeLike = unknown
+export type ReactNodeLike = ReactNode
 
 export type ToolInputJSONSchema = {
   [x: string]: unknown
@@ -261,10 +259,10 @@ export type ToolUseContext = {
   }) => void
   nestedMemoryAttachmentTriggers?: Set<string>
   /**
-   * Rutas de CLAUDE.md ya inyectadas como adjuntos nested_memory en esta
+   * Rutas de THYROX.md ya inyectadas como adjuntos nested_memory en esta
    * sesión. Deduplica para memoryFilesToAttachments — readFileState es un
    * LRU que desaloja entradas en sesiones ocupadas, así que su chequeo
-   * .has() solo puede re-inyectar el mismo CLAUDE.md docenas de veces.
+   * .has() solo puede re-inyectar el mismo THYROX.md docenas de veces.
    */
   loadedNestedMemoryPaths?: Set<string>
   dynamicSkillDirTriggers?: Set<string>
@@ -511,14 +509,14 @@ export type Tool<
    * Para herramientas MCP: los nombres de servidor y herramienta tal como
    * los recibió el servidor MCP (sin normalizar). Presente en toda
    * herramienta MCP sin importar si `name` lleva prefijo
-   * (mcp__server__tool) o no (modo CLAUDE_AGENT_SDK_MCP_NO_PREFIX).
+   * (mcp__server__tool) o no (modo THYROX_AGENT_SDK_MCP_NO_PREFIX).
    */
   mcpInfo?: { serverName: string; toolName: string }
   readonly name: string
   /**
    * Tamaño máximo en caracteres para el resultado de la herramienta antes
    * de persistirlo a disco. Cuando se excede, el resultado se guarda en un
-   * archivo y Claude recibe una vista previa con la ruta del archivo en
+   * archivo y thyrox recibe una vista previa con la ruta del archivo en
    * vez del contenido completo.
    *
    * Se fija a Infinity para herramientas cuya salida nunca debe
@@ -669,9 +667,9 @@ export type Tool<
    *
    * Opcional: si se omite → heurística por nombre de campo en
    * transcriptSearch.ts. El drift lo atrapa
-   * test/utils/transcriptSearch.renderFidelity.test.tsx, que renderiza
+   * `src/__tests__/searchTextRenderFidelity.test.tsx`, que renderiza
    * salidas de muestra y marca texto indexado-pero-no-renderizado
-   * (fantasma) o renderizado-pero-no-indexado (aviso de subconteo).
+   * (fantasma). El subconteo está permitido y no se mide.
    */
   extractSearchText?(out: Output): string
   /**

@@ -15,7 +15,7 @@ Especialista en calibración epistémica de artefactos metodológicos. Detecta l
 
 ## Problema que resuelve
 
-THYROX como sistema de Agentic AI usa Claude como motor — cuya P(correcto sin validación) ≈ 0.70-0.80 por diseño arquitectónico. Los artefactos THYROX (análisis, estrategias, risk registers, exit conditions) pueden presentar rigor aparente sin el mecanismo de validación que lo sustancia: **realismo performativo**.
+THYROX como sistema de Agentic AI usa un modelo de Anthropic como motor — cuya P(correcto sin validación) ≈ 0.70-0.80 por diseño arquitectónico. Los artefactos THYROX (análisis, estrategias, risk registers, exit conditions) pueden presentar rigor aparente sin el mecanismo de validación que lo sustancia: **realismo performativo**.
 
 El agente detecta esto y propone el mecanismo de evidencia correcto para cada tipo de claim.
 

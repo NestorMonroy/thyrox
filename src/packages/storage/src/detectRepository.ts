@@ -1,24 +1,3 @@
-/**
- * Qué repositorio de GitHub es éste.
- *
- * Procedencia: `ccnmt: packages/storage/src/detectRepository.ts` (121 líneas,
- * 6 exports). Ese árbol declara `"license": "UNLICENSED"`, así que el cuerpo
- * se **reimplementa** —mismo nombre de módulo, mismo sitio, mismos nombres y
- * firmas— y no se copia.
- *
- * Sustituye al porte parcial anterior, que declaraba UNO de los seis. Sus tres
- * razones estaban caducadas, medido: `app-host/bootstrap/cwd` existe,
- * `getRemoteUrl` de `./git.js` existe —llegó en el pase anterior— y
- * `local-observability` existe, así que el `logForDebugging` no-op local se
- * retira y el módulo vuelve a tener canal de diagnóstico.
- *
- * El módulo tiene DOS caras a propósito, y no se pueden fundir:
- * `detectCurrentRepositoryWithHost` responde por cualquier host —una
- * instalación privada de GitHub incluida— y `detectCurrentRepository` filtra
- * a github.com, porque quien la llama construye URLs de github.com con la
- * respuesta. Colapsarlas no da un error: da enlaces que apuntan al sitio
- * equivocado y parecen correctos.
- */
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getRemoteUrl } from './git.js'
@@ -26,11 +5,6 @@ import { parseGitRemote, type ParsedRepository } from './parseGitRemote.js'
 
 export { parseGitRemote, type ParsedRepository }
 
-/**
- * La caché va POR directorio, no global: dos worktrees o dos proyectos
- * abiertos a la vez tienen remotos distintos, y una caché global le daría a
- * uno la respuesta del otro.
- */
 const repositoryWithHostCache = new Map<string, ParsedRepository | null>()
 
 export function clearRepositoryCaches(): void {
@@ -40,15 +14,17 @@ export function clearRepositoryCaches(): void {
 export async function detectCurrentRepository(): Promise<string | null> {
   const result = await detectCurrentRepositoryWithHost()
   if (!result) return null
-  // Sólo github.com: quien llama asume que el resultado es de ahí. Para
-  // instalaciones privadas está `detectCurrentRepositoryWithHost`.
+  // Only return results for github.com to avoid breaking downstream consumers
+  // that assume the result is a github.com repository.
+  // Use detectCurrentRepositoryWithHost() for GHE support.
   if (result.host !== 'github.com') return null
   return `${result.owner}/${result.name}`
 }
 
 /**
- * Como `detectCurrentRepository`, pero devuelve también el host. Quien
- * necesite construir URLs contra un host concreto usa ésta.
+ * Like detectCurrentRepository, but also returns the host (e.g. "github.com"
+ * or a GHE hostname). Callers that need to construct URLs against a specific
+ * GitHub host should use this variant.
  */
 export async function detectCurrentRepositoryWithHost(): Promise<ParsedRepository | null> {
   const cwd = getCwd()
@@ -62,8 +38,6 @@ export async function detectCurrentRepositoryWithHost(): Promise<ParsedRepositor
     logForDebugging(`Git remote URL: ${remoteUrl}`)
     if (!remoteUrl) {
       logForDebugging('No git remote URL found')
-      // El `null` se cachea también: si sólo se cacheara el acierto, cada
-      // consulta en un repositorio sin remoto volvería a lanzar git.
       repositoryWithHostCache.set(cwd, null)
       return null
     }
@@ -82,13 +56,11 @@ export async function detectCurrentRepositoryWithHost(): Promise<ParsedRepositor
 }
 
 /**
- * El repositorio de github.com cacheado para el cwd actual, como
- * `owner/name`, de forma SÍNCRONA. `null` si nadie lo ha resuelto todavía o
- * si el host no es github.com.
+ * Synchronously returns the cached github.com repository for the current cwd
+ * as "owner/name", or null if it hasn't been resolved yet or the host is not
+ * github.com. Call detectCurrentRepository() first to populate the cache.
  *
- * Es síncrona a propósito: la usa código que no puede esperar. Sin nada
- * cacheado la respuesta honesta es `null`, no un valor a medias — quien la
- * necesite resuelta llama antes a `detectCurrentRepository`.
+ * Callers construct github.com URLs, so GHE hosts are filtered out here.
  */
 export function getCachedRepository(): string | null {
   const parsed = repositoryWithHostCache.get(getCwd())
@@ -97,23 +69,38 @@ export function getCachedRepository(): string | null {
 }
 
 /**
- * Parsea una URL de remoto git —o un `owner/repo` pelado— y devuelve
- * `owner/repo`. Sólo responde por github.com; para una instalación privada,
- * `parseGitRemote` directamente.
+ * Parses a git remote URL into host, owner, and name components.
+ * Accepts any host (github.com, GHE instances, etc.).
  *
- * El `owner/repo` pelado se acepta por retrocompatibilidad con quien ya
- * guardaba la respuesta en ese formato.
+ * Supports:
+ *   https://host/owner/repo.git
+ *   git@host:owner/repo.git
+ *   ssh://git@host/owner/repo.git
+ *   git://host/owner/repo.git
+ *   https://host/owner/repo (no .git)
+ *
+ * Note: repo names can contain dots (e.g., cc.kurs.web)
+ */
+/**
+ * Parses a git remote URL or "owner/repo" string and returns "owner/repo".
+ * Only returns results for github.com hosts — GHE URLs return null.
+ * Use parseGitRemote() for GHE support.
+ * Also accepts plain "owner/repo" strings for backward compatibility.
  */
 export function parseGitHubRepository(input: string): string | null {
   const trimmed = input.trim()
 
+  // Try parsing as a full remote URL first.
+  // Only return results for github.com hosts — existing callers (VS Code extension,
+  // bridge) assume this function is GitHub.com-specific. Use parseGitRemote() directly
+  // for GHE support.
   const parsed = parseGitRemote(trimmed)
   if (parsed) {
     if (parsed.host !== 'github.com') return null
     return `${parsed.owner}/${parsed.name}`
   }
 
-  // Si ningún patrón de URL casó, puede venir ya en formato `owner/repo`.
+  // If no URL pattern matched, check if it's already in owner/repo format
   if (
     !trimmed.includes('://') &&
     !trimmed.includes('@') &&
@@ -121,6 +108,7 @@ export function parseGitHubRepository(input: string): string | null {
   ) {
     const parts = trimmed.split('/')
     if (parts.length === 2 && parts[0] && parts[1]) {
+      // Remove .git extension if present
       const repo = parts[1].replace(/\.git$/, '')
       return `${parts[0]}/${repo}`
     }
@@ -129,3 +117,5 @@ export function parseGitHubRepository(input: string): string | null {
   logForDebugging(`Could not parse repository from: ${trimmed}`)
   return null
 }
+
+// looksLikeRealHostname moved to ./parseGitRemote.ts (private helper).

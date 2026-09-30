@@ -1,0 +1,7 @@
+5 FALLA: 3 de 3 centinela(s) sobreviven al segundo build
+1 ok: 31 de 31 prompt(s) leídos desde dist sin src/, mismo conjunto por nombre
+2a ok: models.jsonl junto a sus 1 lector(es)
+2b ok: models.js carga desde dist sin el fuente de agent (20 modelos)
+3 FALLA: 1 .js con __dirname/__filename absoluto; bridge.py falta junto a 1 de 1 lector(es)
+3b FALLA: 6 de 2770 archivo(s) de dist cambian con la ruta del árbol fuente
+__BG_EXIT__=3

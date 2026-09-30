@@ -28,6 +28,7 @@ import {
 import { Select } from './CustomSelect/select.js'
 import { Spinner } from './Spinner.js'
 import TextInput from './TextInput.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onDone(): void
@@ -93,7 +94,7 @@ export function ConsoleOAuthFlow({
   const orgUUID = Array.isArray(orgUUIDRaw) ? orgUUIDRaw[0] : orgUUIDRaw
   const forcedMethodMessage =
     forceLoginMethod === 'claudeai'
-      ? 'Login method pre-selected: Subscription Plan (Claude Pro/Max)'
+      ? `Login method pre-selected: Subscription Plan (${PRODUCT_NAME} Pro/Max)`
       : forceLoginMethod === 'console'
         ? 'Login method pre-selected: API Usage Billing (Anthropic Console)'
         : null
@@ -118,14 +119,10 @@ export function ConsoleOAuthFlow({
   const [cursorOffset, setCursorOffset] = useState(0)
   const [oauthService] = useState(() => new OAuthService())
   const [loginWithClaudeAi, setLoginWithClaudeAi] = useState(() => {
-    // Use Claude AI auth for setup-token mode to support user:inference scope
+    // Use thyrox AI auth for setup-token mode to support user:inference scope
     return mode === 'setup-token' || forceLoginMethod === 'claudeai'
   })
   const [loginWithCodex, setLoginWithCodex] = useState(false)
-  // Track which protocol the user is creating a connection for (API key forms)
-  const [connectionProtocol, setConnectionProtocol] = useState<
-    'anthropic' | 'openai' | 'codex' | 'gemini' | null
-  >(null)
   // Name for new API key connections
   const [connectionName, setConnectionName] = useState('')
 
@@ -333,7 +330,7 @@ export function ConsoleOAuthFlow({
 
       if (mode === 'setup-token') {
         // For setup-token mode, return the OAuth access token directly (it can be used as an API key)
-        // Don't save to keychain - the token is displayed for manual use with CLAUDE_CODE_OAUTH_TOKEN
+        // Don't save to keychain - the token is displayed for manual use with THYROX_CODE_OAUTH_TOKEN
         setOAuthStatus({ state: 'success', token: result.accessToken })
       } else {
         await installOAuthTokens(result)
@@ -348,13 +345,13 @@ export function ConsoleOAuthFlow({
         // login flow used to clobber other configured providers.
         upsertProtocolConnection(
           'anthropic',
-          'Claude Account',
+          `${PRODUCT_NAME} Account`,
           'https://api.anthropic.com',
         )
 
         setOAuthStatus({ state: 'success' })
         // notification:ungated reason=user just authenticated, this is the success ack
-        void sendNotification({ message: 'Claude Code login successful', notificationType: 'auth_success' }, terminal)
+        void sendNotification({ message: `${PRODUCT_NAME} login successful`, notificationType: 'auth_success' }, terminal)
       }
     } catch (err) {
       const errorMessage = (err as Error).message
@@ -393,8 +390,8 @@ export function ConsoleOAuthFlow({
       // Codex models: static mirror from getDefaultModelsForProtocol.
       // Dynamic /models needs impersonating openai/codex Rust CLI version
       // space and returns tier-filtered varying lists. Routing is per-model
-      // via the connection record — do NOT set CLAUDE_CODE_USE_OPENAI here
-      // (would clobber Claude Account requests with the OpenAI adapter).
+      // via the connection record — do NOT set THYROX_CODE_USE_OPENAI here
+      // (would clobber thyrox Account requests with the OpenAI adapter).
       upsertProtocolConnection(
         'codex',
         'ChatGPT Codex',
@@ -510,7 +507,7 @@ export function ConsoleOAuthFlow({
               </Text>
               <Text dimColor>
                 Use this token by setting: export
-                CLAUDE_CODE_OAUTH_TOKEN=&lt;token&gt;
+                THYROX_CODE_OAUTH_TOKEN=&lt;token&gt;
               </Text>
             </Box>
           </Box>
@@ -587,7 +584,7 @@ function OAuthStatusMessage({
   setLoginWithCodex,
   onDone,
   connectionName,
-  setConnectionName,
+  setConnectionName: _setConnectionName,
 }: OAuthStatusMessageProps): React.ReactNode {
   switch (oauthStatus.state) {
     case 'select_connection': {
@@ -726,7 +723,7 @@ function OAuthStatusMessage({
           <Text bold>
             {startingMessage
               ? startingMessage
-              : `Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.`}
+              : `${PRODUCT_NAME} can be used with your ${PRODUCT_NAME} subscription or billed based on API usage through your Console account.`}
           </Text>
 
           <Text>Select login method:</Text>
@@ -737,7 +734,7 @@ function OAuthStatusMessage({
                 {
                   label: (
                     <Text>
-                      Claude account with subscription ·{' '}
+                      {PRODUCT_NAME} account with subscription ·{' '}
                       <Text dimColor>Pro, Max, Team, or Enterprise</Text>
                       {process.env.USER_TYPE === 'ant' && (
                         <Text>
@@ -930,15 +927,6 @@ function OAuthStatusMessage({
             }
           },
           [activeField, baseUrl, apiKey, haikuModel, sonnetModel, opusModel],
-        )
-
-        const switchTo = useCallback(
-          (target: Field) => {
-            setOAuthStatus(buildState(activeField, inputValue, target))
-            setInputValue(displayValues[target] ?? '')
-            setInputCursorOffset((displayValues[target] ?? '').length)
-          },
-          [activeField, inputValue, displayValues, buildState, setOAuthStatus],
         )
 
         const doSave = useCallback(() => {
@@ -1720,8 +1708,8 @@ function OAuthStatusMessage({
 
           <Box flexDirection="column" gap={1}>
             <Text>
-              Claude Code supports Amazon Bedrock, Microsoft Foundry, and Vertex
-              AI. Set the required environment variables, then restart Claude
+              {PRODUCT_NAME} supports Amazon Bedrock, Microsoft Foundry, and Vertex
+              AI. Set the required environment variables, then restart {PRODUCT_NAME}
               Code.
             </Text>
 
@@ -1807,7 +1795,7 @@ function OAuthStatusMessage({
         <Box flexDirection="column" gap={1}>
           <Box>
             <Spinner />
-            <Text>Creating API key for Claude Code…</Text>
+            <Text>Creating API key for {PRODUCT_NAME}…</Text>
           </Box>
         </Box>
       )

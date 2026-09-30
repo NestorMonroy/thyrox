@@ -1,19 +1,8 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/getToolUseIDPure.test.ts`.
- *
- * `getToolUseID` es el punto unico que resuelve «¿a que tool_use pertenece
- * este mensaje?» a traves de los cinco tipos de mensaje del bucle
- * (assistant, user, progress, system) — cada uno con su propia fuente del
- * dato (el primer bloque, `sourceToolUseID`, o el campo `toolUseID`
- * directo). `getToolResultIDs` reduce el historial al mapa
- * `tool_use_id → is_error` que otros ayudantes usan para saber que
- * herramientas ya resolvieron.
- */
 import { describe, expect, test } from 'bun:test'
-import { getToolUseID, getToolResultIDs } from '../messages.ts'
-import type { NormalizedMessage } from '../messageShapes.ts'
+import { getToolUseID, getToolResultIDs } from '../messages.js'
+import type { NormalizedMessage } from '../messageShapes.js'
 
-// Ayudante: construye un NormalizedMessage con varias formas.
+// Helper: build a NormalizedMessage of various shapes.
 type Block = { type: string; [k: string]: unknown }
 
 function userWithBlocks(blocks: Block[]): NormalizedMessage {
@@ -38,8 +27,8 @@ function assistantWithBlocks(blocks: Block[]): NormalizedMessage {
   } as unknown as NormalizedMessage
 }
 
-describe('getToolUseID — mensaje de asistente', () => {
-  test('el primer bloque es tool_use → devuelve el id', () => {
+describe('getToolUseID — assistant message', () => {
+  test('first block is tool_use → returns id', () => {
     expect(
       getToolUseID(
         assistantWithBlocks([{ type: 'tool_use', id: 'tu_1', name: 'X' }]),
@@ -47,7 +36,7 @@ describe('getToolUseID — mensaje de asistente', () => {
     ).toBe('tu_1')
   })
 
-  test('el primer bloque es texto → null (solo importa el primer bloque)', () => {
+  test('first block is text → null (only first block matters)', () => {
     expect(
       getToolUseID(
         assistantWithBlocks([
@@ -58,11 +47,11 @@ describe('getToolUseID — mensaje de asistente', () => {
     ).toBeNull()
   })
 
-  test('arreglo de contenido vacio → null', () => {
+  test('empty content array → null', () => {
     expect(getToolUseID(assistantWithBlocks([]))).toBeNull()
   })
 
-  test('contenido no-arreglo (cadena) → null', () => {
+  test('non-array content (string) → null', () => {
     expect(
       getToolUseID({
         type: 'assistant',
@@ -71,10 +60,9 @@ describe('getToolUseID — mensaje de asistente', () => {
     ).toBeNull()
   })
 
-  test('el primer bloque es una cadena (forma rara de la API) → null', () => {
-    // El chequeo maneja explicitamente `typeof firstBlock === 'string'` →
-    // null. Algunas respuestas antiguas de la API usan bloques de
-    // contenido en cadena.
+  test('first block is string (rare API shape) → null', () => {
+    // The check explicitly handles `typeof firstBlock === 'string'` →
+    // null. Some old API responses use string content blocks.
     expect(
       getToolUseID({
         type: 'assistant',
@@ -84,15 +72,14 @@ describe('getToolUseID — mensaje de asistente', () => {
   })
 })
 
-describe('getToolUseID — mensaje de usuario', () => {
-  test('sourceToolUseID definido → lo devuelve (anula el recorrido del contenido)', () => {
+describe('getToolUseID — user message', () => {
+  test('sourceToolUseID set → returns it (overrides content scan)', () => {
     expect(getToolUseID(userWithSourceToolUseID('tu_src'))).toBe('tu_src')
   })
 
-  test('sourceToolUseID definido gana incluso si el contenido tiene tool_result', () => {
-    // sourceToolUseID es el ID «etiquetado via» que agrega
-    // tagMessagesWithToolUseID. TIENE que ganar — el tool_result del
-    // contenido es solo incidental.
+  test('sourceToolUseID set wins even if content has tool_result', () => {
+    // sourceToolUseID is the "tagged-via" ID added by tagMessagesWithToolUseID.
+    // It MUST win — the content's tool_result is just incidental.
     expect(
       getToolUseID({
         type: 'user',
@@ -104,7 +91,7 @@ describe('getToolUseID — mensaje de usuario', () => {
     ).toBe('tu_winner')
   })
 
-  test('el primer bloque es tool_result → devuelve su tool_use_id', () => {
+  test('first block tool_result → returns its tool_use_id', () => {
     expect(
       getToolUseID(
         userWithBlocks([
@@ -114,17 +101,17 @@ describe('getToolUseID — mensaje de usuario', () => {
     ).toBe('tu_3')
   })
 
-  test('el primer bloque es texto (no tool_result) → null', () => {
+  test('first block text (not tool_result) → null', () => {
     expect(
       getToolUseID(userWithBlocks([{ type: 'text', text: 'reply' }])),
     ).toBeNull()
   })
 
-  test('contenido vacio → null', () => {
+  test('empty content → null', () => {
     expect(getToolUseID(userWithBlocks([]))).toBeNull()
   })
 
-  test('contenido no-arreglo + sin sourceToolUseID → null', () => {
+  test('non-array content + no sourceToolUseID → null', () => {
     expect(
       getToolUseID({
         type: 'user',
@@ -135,7 +122,7 @@ describe('getToolUseID — mensaje de usuario', () => {
 })
 
 describe('getToolUseID — progress / system / attachment', () => {
-  test('un mensaje progress devuelve el campo toolUseID', () => {
+  test('progress message returns toolUseID field', () => {
     expect(
       getToolUseID({
         type: 'progress',
@@ -144,7 +131,7 @@ describe('getToolUseID — progress / system / attachment', () => {
     ).toBe('tu_p')
   })
 
-  test('el subtipo informational de system con toolUseID lo devuelve', () => {
+  test('system informational subtype with toolUseID returns it', () => {
     expect(
       getToolUseID({
         type: 'system',
@@ -154,7 +141,7 @@ describe('getToolUseID — progress / system / attachment', () => {
     ).toBe('tu_sys')
   })
 
-  test('informational sin toolUseID devuelve null', () => {
+  test('system informational without toolUseID returns null', () => {
     expect(
       getToolUseID({
         type: 'system',
@@ -163,10 +150,9 @@ describe('getToolUseID — progress / system / attachment', () => {
     ).toBeNull()
   })
 
-  test('un subtipo de system que NO es informational devuelve null aunque haya toolUseID', () => {
-    // Critico: solo el subtipo 'informational' esta asociado a un
-    // tool_use. 'init', 'compact_boundary' etc. NO deberian propagar el
-    // campo.
+  test('system NON-informational subtype returns null even with toolUseID', () => {
+    // Critical: only 'informational' subtype is associated with a tool_use.
+    // 'init', 'compact_boundary' etc. should NOT propagate the field.
     expect(
       getToolUseID({
         type: 'system',
@@ -177,12 +163,12 @@ describe('getToolUseID — progress / system / attachment', () => {
   })
 })
 
-describe('getToolResultIDs — flatMap sobre los tool_results', () => {
-  test('entrada vacia → objeto vacio', () => {
+describe('getToolResultIDs — flatMap over tool_results', () => {
+  test('empty input → empty object', () => {
     expect(getToolResultIDs([])).toEqual({})
   })
 
-  test('extrae tool_use_id de un usuario-con-tool_result-como-primer-bloque', () => {
+  test('extracts tool_use_id from user-with-tool_result-first-block', () => {
     const r = getToolResultIDs([
       userWithBlocks([
         { type: 'tool_result', tool_use_id: 'tu_a', content: 'x' },
@@ -191,7 +177,7 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r).toEqual({ tu_a: false })
   })
 
-  test('la bandera is_error se propaga', () => {
+  test('is_error flag propagates', () => {
     const r = getToolResultIDs([
       userWithBlocks([
         {
@@ -205,7 +191,7 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r).toEqual({ tu_a: true })
   })
 
-  test('is_error ausente se toma como false por defecto', () => {
+  test('missing is_error defaults to false', () => {
     const r = getToolResultIDs([
       userWithBlocks([
         { type: 'tool_result', tool_use_id: 'tu_b', content: 'r' },
@@ -214,14 +200,14 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r.tu_b).toBe(false)
   })
 
-  test('el primer bloque que no es tool-result se omite', () => {
+  test('non-tool-result first block skipped', () => {
     const r = getToolResultIDs([
       userWithBlocks([{ type: 'text', text: 'hi' }]),
     ])
     expect(r).toEqual({})
   })
 
-  test('los mensajes de asistente se omiten (solo el usuario lleva tool_result)', () => {
+  test('assistant messages skipped (only user has tool_result)', () => {
     const r = getToolResultIDs([
       assistantWithBlocks([
         { type: 'tool_result', tool_use_id: 'tu_c' } as unknown as Block,
@@ -230,7 +216,7 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r).toEqual({})
   })
 
-  test('varios mensajes de tool_result — todos se extraen', () => {
+  test('multiple tool_result messages — all extracted', () => {
     const r = getToolResultIDs([
       userWithBlocks([
         { type: 'tool_result', tool_use_id: 'tu_a', content: 'a' },
@@ -247,10 +233,10 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r).toEqual({ tu_a: false, tu_b: true })
   })
 
-  test('solo se revisa el PRIMER bloque (segun el comentario de la implementacion)', () => {
-    // Documenta el contrato actual: solo content[0] importa. Si un futuro
-    // mensaje tiene varios bloques tool_result en un solo mensaje (raro),
-    // solo se captura el primero.
+  test('only FIRST block checked (per implementation comment)', () => {
+    // Documents the current contract: only content[0] matters. If a
+    // future message has multiple tool_result blocks in one message
+    // (rare), only the first is captured.
     const r = getToolResultIDs([
       userWithBlocks([
         { type: 'tool_result', tool_use_id: 'tu_first', content: 'a' },
@@ -261,7 +247,7 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r.tu_second).toBeUndefined()
   })
 
-  test('el contenido no-arreglo se omite en silencio', () => {
+  test('non-array content silently skipped', () => {
     const r = getToolResultIDs([
       {
         type: 'user',
@@ -271,10 +257,10 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
     expect(r).toEqual({})
   })
 
-  test('los duplicados colapsan al ultimo-gana (semantica de Object.fromEntries)', () => {
-    // Sonda CRITICA: si el mismo tool_use_id aparece dos veces (raro pero
-    // posible durante un reintento), Object.fromEntries conserva el
-    // ULTIMO valor. Lo documenta.
+  test('duplicates collapse to last-wins (Object.fromEntries semantics)', () => {
+    // CRITICAL probe: if the same tool_use_id appears twice (rare but
+    // possible during retry), Object.fromEntries keeps the LAST value.
+    // Documents this.
     const r = getToolResultIDs([
       userWithBlocks([
         { type: 'tool_result', tool_use_id: 'tu_dup', is_error: false, content: 'first' },
@@ -283,6 +269,6 @@ describe('getToolResultIDs — flatMap sobre los tool_results', () => {
         { type: 'tool_result', tool_use_id: 'tu_dup', is_error: true, content: 'second' },
       ]),
     ])
-    expect(r.tu_dup).toBe(true) // gana el ultimo
+    expect(r.tu_dup).toBe(true) // last wins
   })
 })

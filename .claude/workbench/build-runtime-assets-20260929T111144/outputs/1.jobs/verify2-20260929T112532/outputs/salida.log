@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+tests/typescript/buildJavascript.test.ts:
+pkg: repunte INERTE — 3 .js no emitido(s):
+  ./dist/index.js
+  ./dist/sub/reader.js
+  ./dist/index.js
+  Corre antes: typescript-build-javascript <paquete>
+
+ 16 pass
+ 0 fail
+ 41 expect() calls
+Ran 16 tests across 1 file. [215.00ms]
+cli: 1 referencia(s) de módulo declarada(s), no emitida(s):
+  ./src/entry/cli.tsx: '../../package.json' — fuera del rootDir del paquete
+config: 1 referencia(s) de módulo declarada(s), no emitida(s):
+  ./gpuAdmission.ts: '../../..' — fuera del rootDir del paquete
+262 | /** Copia cada recurso del plan a su posición bajo `dist/`. `copy: false` es sólo para pruebas. */
+263 | export function emitModuleResources(plan: ResourcePlan, options: { copy?: boolean } = {}): void {
+264 |   if (options.copy === false) return
+265 |   for (const item of plan.emit) {
+266 |     mkdirSync(dirname(item.targetAbs), { recursive: true })
+267 |     copyFileSync(item.sourceAbs, item.targetAbs)
+          ^
+ENOTSUP: operation not supported on socket, copyfile 'src/packages/headless-sdk/src' -> 'src/packages/headless-sdk/dist/src'
+    path: "src/packages/headless-sdk/src",
+    dest: "src/packages/headless-sdk/dist/src",
+ syscall: "copyfile",
+   errno: -95,
+    code: "ENOTSUP"
+
+      at emitModuleResources (/home/user/thyrox/.thyrox/pool-worktrees/e9a8d8b76e3d/1/src/typescript/buildJavascript.ts:267:5)
+      at buildPackage (/home/user/thyrox/.thyrox/pool-worktrees/e9a8d8b76e3d/1/src/typescript/buildJavascript.ts:290:40)
+      at async main (/home/user/thyrox/.thyrox/pool-worktrees/e9a8d8b76e3d/1/src/typescript/buildJavascript.ts:393:26)
+
+Bun v1.3.11 (Linux x64)
+__BG_EXIT__=1

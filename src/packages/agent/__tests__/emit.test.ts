@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { AGENTS, migrationPorter, toAgentsJson, toMarkdown } from '../index.ts'
-import { agentsDir } from '../../../paths/reach.ts'
+import { agentsDir } from '@thyrox/paths/reach.ts'
 
 // El control lee el hogar por el mismo mecanismo que el emisor escribe. Si
 // leyera una ruta propia, los dos podrían divergir sin que nada lo dijera —
@@ -13,7 +13,9 @@ const ON_DISK = join(agentsDir(), 'migration-porter.md')
 function diskUpdatedAt(text: string): string {
   const found = /^updated_at: (.+)$/m.exec(text)
   if (!found) throw new Error('el archivo en disco no declara updated_at')
-  return found[1]
+  const value = found[1]
+  if (value === undefined) throw new Error('el archivo en disco no declara updated_at')
+  return value
 }
 
 describe('toMarkdown', () => {

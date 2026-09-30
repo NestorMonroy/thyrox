@@ -1,0 +1,32 @@
+# Anulaciones 106e-5c-5 — primera pasada
+== 1: sondeo por defecto pisa -> 1
+== 2: sin patrón de éxito -> 1
+== 3: sin dominio de cookie -> 1
+== 4: sondeo rápido lento -> 1
+== 5: listado compartido -> 1
+== 6: sin mínimo de intervalo -> 1
+== 7: 15 min → 5 min -> 1
+== 8: GET -> 1
+== 9: 403 vale -> 1
+== 10: 401 vale -> 1
+== 11: red condena -> 1
+== 12: sin plazo -> 1
+== 13: sin aviso de red -> 1
+== 14: desconocido se queda -> 1
+== 15: caducada repetida -> 1
+== 16: sin marca de hora -> 1
+== 17: arranque doble -> 1
+== 18: sin comprobar al arrancar -> 1
+== 19: sin unref -> 1
+== 20: parada sin estado -> 1
+== 21: timer sin limpiar -> 1
+== 22: sin desregistrar -> 1
+== 23: sin limpiar caducadas -> 1
+== 24: reinicio sin parar -> 0
+== 25: estado comparte lista -> 0
+== restaurado -> 0
+
+# 24 y 25 afiladas
+== 24: reinicio sin parar -> 1
+== 25: estado comparte lista -> 1
+== restaurado -> 0

@@ -1,0 +1,4 @@
+(fail) normalizeToCanonicalUuid > vacío, espacios y prefijos sin cuerpo dan vacío [0.44ms]
+(fail) normalizeToCanonicalUuid > es determinista, distingue entradas y quita prefijos encadenados [0.51ms]
+ 19 pass
+ 2 fail

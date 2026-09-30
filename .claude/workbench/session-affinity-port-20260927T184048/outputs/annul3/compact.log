@@ -1,0 +1,3 @@
+(fail) alias > compactAliases deja una sola clave de caché de prompt y 64 estables [0.33ms]
+ 12 pass
+ 1 fail

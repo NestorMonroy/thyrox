@@ -1,0 +1,138 @@
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1064,32): error TS2339: Property 'label' does not exist on type 'DisplayGeometry'.
+  --- código src/packages/@ant/computer-use-mcp/src/toolCalls.ts:1054-1074 ---
+   1054  
+   1055    const out = [];
+   1056    for (const g of granted) {
+   1057      const displayIds = idsByBundle.get(g.bundleId);
+   1058      if (!displayIds || displayIds.length === 0) continue;
+   1059      out.push({
+   1060        bundleId: g.bundleId,
+   1061        displayName: g.displayName,
+   1062        displays: displayIds.map((id) => {
+   1063          const d = displayById.get(id);
+   1064>         return { id, label: d?.label, isPrimary: d?.isPrimary };
+   1065        }),
+   1066      });
+   1067    }
+   1068    return out;
+   1069  }
+   1070  
+   1071  /**
+   1072   * Shared app-resolution + partition + hide-preview pipeline. Extracted from
+   1073   * `handleRequestAccess` so `handleRequestTeachAccess` can call the same path.
+   1074   *
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1064,53): error TS2339: Property 'isPrimary' does not exist on type 'DisplayGeometry'.
+  --- código src/packages/@ant/computer-use-mcp/src/toolCalls.ts:1054-1074 ---
+   1054  
+   1055    const out = [];
+   1056    for (const g of granted) {
+   1057      const displayIds = idsByBundle.get(g.bundleId);
+   1058      if (!displayIds || displayIds.length === 0) continue;
+   1059      out.push({
+   1060        bundleId: g.bundleId,
+   1061        displayName: g.displayName,
+   1062        displays: displayIds.map((id) => {
+   1063          const d = displayById.get(id);
+   1064>         return { id, label: d?.label, isPrimary: d?.isPrimary };
+   1065        }),
+   1066      });
+   1067    }
+   1068    return out;
+   1069  }
+   1070  
+   1071  /**
+   1072   * Shared app-resolution + partition + hide-preview pipeline. Extracted from
+   1073   * `handleRequestAccess` so `handleRequestTeachAccess` can call the same path.
+   1074   *
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1969,20): error TS2339: Property 'label' does not exist on type 'DisplayGeometry'.
+  --- código src/packages/@ant/computer-use-mcp/src/toolCalls.ts:1959-1979 ---
+   1959    displays: readonly DisplayGeometry[],
+   1960  ): Map<number, string> {
+   1961    // Sort by displayId so the (N) suffix is stable regardless of
+   1962    // NSScreen.screens iteration order — same label always maps to same
+   1963    // physical display across buildMonitorNote → switch_display round-trip,
+   1964    // even if display configuration reorders between the two calls.
+   1965    const sorted = [...displays].sort((a, b) => a.displayId - b.displayId);
+   1966    const counts = new Map<string, number>();
+   1967    const out = new Map<number, string>();
+   1968    for (const d of sorted) {
+   1969>     const base = d.label ?? `display ${d.displayId}`;
+   1970      const n = (counts.get(base) ?? 0) + 1;
+   1971      counts.set(base, n);
+   1972      out.set(d.displayId, n === 1 ? base : `${base} (${n})`);
+   1973    }
+   1974    return out;
+   1975  }
+   1976  
+   1977  /**
+   1978   * Build the monitor-context text that accompanies a screenshot. Tells the
+   1979   * model which monitor it's looking at (by human name), lists other attached
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2081,14): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+  --- código src/packages/@ant/computer-use-mcp/src/toolCalls.ts:2071-2091 ---
+   2071        // at the prepareForAction call site.
+   2072        doHide: subGates.hideBeforeAction,
+   2073      });
+   2074  
+   2075      // Non-atomic path's takeScreenshotWithRetry has a MIN_SCREENSHOT_BYTES
+   2076      // check + retry. The atomic call is expensive (resolve+prepare+capture),
+   2077      // so no retry here — just a warning when the result is implausibly
+   2078      // small (transient display state like sleep wake). Skip when
+   2079      // captureError is set (base64 is intentionally empty then).
+   2080      if (
+   2081>       result.captureError === undefined &&
+   2082        decodedByteLength(result.base64) < MIN_SCREENSHOT_BYTES
+   2083      ) {
+   2084        adapter.logger.warn(
+   2085          `[computer-use] resolvePrepareCapture result implausibly small (${decodedByteLength(result.base64)} bytes decoded) — possible transient display state`,
+   2086        );
+   2087      }
+   2088  
+   2089      // Resolver picked a different display than the session had selected
+   2090      // (host window moved, or allowed app on a different display). Write
+   2091      // the pick back to session so teach overlay positioning and subsequent
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2119,16): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+  --- código src/packages/@ant/computer-use-mcp/src/toolCalls.ts:2109-2129 ---
+   2109      if (overrides.lastScreenshot !== undefined) {
+   2110        hiddenSinceLastSeen = result.hidden;
+   2111      }
+   2112      if (result.hidden.length > 0) {
+   2113        overrides.onAppsHidden?.(result.hidden);
+   2114      }
+   2115  
+   2116      // Partial-success case: hide succeeded, capture failed (SCK perm
+   2117      // revoked mid-session). onAppsHidden fired above so auto-unhide will
+   2118      // restore hidden apps at turn end. Now surface the error to the model.
+   2119>     if (result.captureError !== undefined) {
+   2120        return errorResult(result.captureError, "capture_failed");
+   2121      }
+   2122  
+   2123      const hiddenNote = await buildHiddenNote(adapter, hiddenSinceLastSeen);
+   2124  
+   2125      // Cherry-pick — don't spread `result` (would leak resolver fields into lastScreenshot).
+   2126      const shot: ScreenshotResult = {
+   2127        base64: result.base64,
+   2128        width: result.width,
+   2129        height: result.height,
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2120,33): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+  --- código src/packages/@ant/computer-use-mcp/src/toolCalls.ts:2110-2130 ---
+   2110        hiddenSinceLastSeen = result.hidden;
+   2111      }
+   2112      if (result.hidden.length > 0) {
+   2113        overrides.onAppsHidden?.(result.hidden);
+   2114      }
+   2115  
+   2116      // Partial-success case: hide succeeded, capture failed (SCK perm
+   2117      // revoked mid-session). onAppsHidden fired above so auto-unhide will
+   2118      // restore hidden apps at turn end. Now surface the error to the model.
+   2119      if (result.captureError !== undefined) {
+   2120>       return errorResult(result.captureError, "capture_failed");
+   2121      }
+   2122  
+   2123      const hiddenNote = await buildHiddenNote(adapter, hiddenSinceLastSeen);
+   2124  
+   2125      // Cherry-pick — don't spread `result` (would leak resolver fields into lastScreenshot).
+   2126      const shot: ScreenshotResult = {
+   2127        base64: result.base64,
+   2128        width: result.width,
+   2129        height: result.height,
+   2130        displayWidth: result.displayWidth,

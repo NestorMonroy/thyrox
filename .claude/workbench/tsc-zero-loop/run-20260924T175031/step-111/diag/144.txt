@@ -1,0 +1,24 @@
+src/packages/provider/__tests__/adapters.test.ts(240,22): error TS2352: Conversion of type '() => Promise<Response>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/__tests__/adapters.test.ts:230-250 ---
+    230  
+    231    test('2. el adaptador de OpenAI transmite por su propio camino', async () => {
+    232      const adaptador = getProviderAdapter('openai')
+    233      expect(await textoDe(adaptador, argumentos(fetchOpenAI()))).toContain(
+    234        'respuesta-de-openai',
+    235      )
+    236    })
+    237  
+    238    test('3. un fallo de OpenAI sale como mensaje de asistente, no como excepcion', async () => {
+    239      const adaptador = getProviderAdapter('openai')
+    240>     const malFetch = (async () =>
+    241        new Response('boom', { status: 500, statusText: 'server error' })) as typeof fetch
+    242      const eventos: Array<Record<string, unknown>> = []
+    243      for await (const e of adaptador.queryStream(argumentos(malFetch) as never)) {
+    244        eventos.push(e as unknown as Record<string, unknown>)
+    245      }
+    246      const error = eventos.find(e => e.type === 'assistant')
+    247      expect(error).toBeDefined()
+    248      const contenido = (error!.message as { content: Array<Record<string, unknown>> }).content
+    249      expect(String(contenido[0]!.text)).toContain('API Error:')
+    250    })
+  Property 'preconnect' is missing in type '() => Promise<Response>' but required in type 'typeof fetch'.

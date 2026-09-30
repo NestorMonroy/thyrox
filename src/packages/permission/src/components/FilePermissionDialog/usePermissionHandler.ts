@@ -69,11 +69,7 @@ function handleAcceptOnce(
 
   logPermissionEvent('accept', completionType, languageName, messageId)
 
-  // Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/
-  // usePermissionHandler.ts` con los comentarios traducidos; el cuerpo es el de
-  // la fuente.
-  //
-  // Registra el envio de aceptacion con el contexto del feedback.
+  // Log accept submission with feedback context
   logEvent('tengu_accept_submitted', {
     toolName: sanitizeToolNameForAnalytics(
       toolUseConfirm.tool.name,
@@ -105,8 +101,7 @@ function handleAcceptSession(
 
   logPermissionEvent('accept', completionType, languageName, messageId)
 
-  // En el ámbito claude-folder se concede acceso de sesión a todos los
-  // archivos de .claude/.
+  // For claude-folder scope, grant session-level access to all .claude/ files
   if (
     options?.scope === 'claude-folder' ||
     options?.scope === 'global-claude-folder'
@@ -133,13 +128,13 @@ function handleAcceptSession(
     return
   }
 
-  // Genera las actualizaciones de permiso si se aporta la ruta.
+  // Generate permission updates if path is provided
   const suggestions = path
     ? generateSuggestions(path, operationType, toolPermissionContext)
     : []
 
   onDone()
-  // Pasa las actualizaciones de permiso directamente a onAllow.
+  // Pass permission updates directly to onAllow
   toolUseConfirm.onAllow(toolUseConfirm.input, suggestions)
 }
 
@@ -164,7 +159,7 @@ function handleReject(
     options?.hasFeedback,
   )
 
-  // Registra el envio de rechazo con el contexto del feedback.
+  // Log reject submission with feedback context
   logEvent('tengu_reject_submitted', {
     toolName: sanitizeToolNameForAnalytics(
       toolUseConfirm.tool.name,

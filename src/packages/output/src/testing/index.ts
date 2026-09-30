@@ -1,18 +1,16 @@
 /**
- * `@claude-code-how-works/output/testing` — puerto de
- * `ccnmt: packages/output/src/testing/index.ts` (verbatim).
+ * @thyrox/output/testing
  *
- * V7 §9.11 — el fake en memoria del paquete output. NO debe importar de
- * ../internal/ (regla dura de V7 §9.11).
+ * V7 §9.11 — in-memory fake for the output package.
+ * Must NOT import from ../internal/ (V7 §9.11 hard rule).
  */
 import type { OutputEvent, OutputTarget } from '../contracts.js'
 
 export type { OutputEvent, OutputTarget }
 
 /**
- * CapturingOutputTarget — captura todos los OutputEvent emitidos en un
- * arreglo tipado. Los tests pueden inspeccionar `.events` despues de
- * ejercitar el sistema bajo prueba.
+ * CapturingOutputTarget — captures all emitted OutputEvents into a typed
+ * array. Tests can inspect `.events` after exercising the system under test.
  */
 export class CapturingOutputTarget implements OutputTarget {
   readonly events: OutputEvent[] = []
@@ -25,7 +23,7 @@ export class CapturingOutputTarget implements OutputTarget {
 
   close(): void {}
 
-  /** Limpia todos los eventos capturados. */
+  /** Clear all captured events. */
   reset(): void {
     this.events.length = 0
   }

@@ -1,0 +1,259 @@
+"""El preflight de cada ``tool_use``: lo que se evalúa antes de ejecutarlo.
+
+El cliente lo invoca en el evento ``PreToolUse`` con la llamada pendiente.
+Cada detector registrado la evalúa por su cuenta —un aviso, o una decisión
+``ask``/``deny`` cuando el daño llegaría antes que el aviso— y el preflight
+devuelve una sola respuesta de hook con todo lo que dijeron. Por dentro es un
+Scatter-Gather: la llamada va a todos los detectores y sus respuestas se
+agregan; el nombre dice el papel, no ese mecanismo (``clean-code.md``,
+«Nombres»).
+
+La forma de la respuesta sale de medir el ejecutable (``h-docs-451``, 9 de 9
+mecanismos presentes en 2.1.246):
+
+1. **El cliente funde y NO atribuye.** ``foldSettingsHooks`` concatena los
+   ``additionalContexts`` de N hooks, el renderizador los une dentro de UN
+   ``<system-reminder>`` y lo etiqueta con el **evento**, nunca con el script.
+   Por eso cada bloque lleva el nombre de su detector.
+2. **El tope es POR HOOK y ANTES de concatenar** (``WBr = 10 000``). Los
+   detectores lo comparten, así que cada uno tiene su cuota: sin ella, el
+   primero que se desborde deja mudos a los demás.
+3. **Un contenido vacío no aporta elemento**: de ahí el cortocircuito.
+
+Qué pasa cuando algo falla, en sus dos capas:
+
+- **como biblioteca**, ``preflight`` con cero detectores lanza
+  ``EmptyRegistryError``: no hay con qué evaluar, y un ``{}`` se leería como
+  «ninguno tuvo nada que avisar»;
+- **como hook**, ``main`` convierte esa excepción en un aviso por stderr, imprime
+  ``{}`` y sale 0: la herramienta se ejecuta. El preflight falla abierto;
+- **un detector roto se aísla**: su excepción no llega al contexto ni tumba a
+  los demás;
+- **una carga parcial sigue y lo declara**: ``build_registry`` devuelve también
+  los que faltaron.
+"""
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from pathlib import Path
+from typing import Callable, Iterable, Sequence
+
+#: El tope que el cliente aplica por hook (``WBr``, medido en 2.1.246). Al
+#: consolidar, los detectores lo comparten en vez de tener uno cada uno.
+TOTAL_BUDGET = 10000
+
+#: Margen para el separador de cada detector y el pegamento entre bloques.
+_FORMAT_MARGIN = 200
+
+Detector = tuple[str, Callable[[dict], str | None]]
+
+#: Los detectores que THYROX aporta, y el directorio donde viven. Es el default
+#: del ``__main__``: sin él, invocar el módulo como hook imprimía ``{}`` y salía
+#: 0 —el verde silencioso que este mismo archivo denuncia— porque no recibía ni
+#: directorio ni lista.
+DETECTOR_DIR = Path(__file__).resolve().parent
+DETECTOR_NAMES: tuple[str, ...] = (
+    "detect_agent_dispatch",
+    "detect_finding_layer",
+    "detect_foreground_long_command",
+    "detect_prose_vocabulary",
+    "detect_rst_validation",
+    "detect_dedicated_tool_usage",
+    "detect_ephemeral_citation",
+    "detect_topic_duplication",
+    "detect_narrative_continuity",
+    "detect_unbounded_traversal",
+    "detect_unbounded_wait",
+    "detect_code_language",
+    "detect_self_matching_pgrep",
+    "detect_stdin_reading_interpreter",
+    "detect_temp_home_write",
+    "detect_bare_awk",
+    "detect_client_background",
+    "detect_irreversible_operation",
+    "detect_unguarded_removal",
+    "detect_edit_loop",
+    "detect_awk_substr_target",
+    "detect_gawk_opportunity",
+    "detect_literal_replacement",
+    "detect_parallel_opportunity",
+    "detect_git_grep_opportunity",
+    "detect_history_comment",
+    "detect_classifier_outage",
+    "detect_library_path_invocation",
+)
+
+
+class EmptyRegistryError(RuntimeError):
+    """Ningún detector se cargó: no hay con qué medir.
+
+    Distinto de «ninguno tuvo nada que avisar», que es el caso común y devuelve
+    ``{}``. Confundirlos publica un verde que no discrimina.
+    """
+
+
+def load_detector(directory: Path, name: str) -> Callable[[dict], str | None]:
+    """Importa un detector por ruta y devuelve su ``detect``.
+
+    El nombre estaba **en español** mientras el contrato lo fijaban los tres
+    detectores del consumidor. Portados aquí, esa razón ya no existe y el
+    identificador vuelve a inglés como el resto del árbol.
+    """
+    spec = importlib.util.spec_from_file_location(name, Path(directory) / f"{name}.py")
+    if spec is None or spec.loader is None:
+        raise ImportError(f"no se pudo componer el spec de {name}")
+    module = importlib.util.module_from_spec(spec)
+    # El registro en ``sys.modules`` ANTES de ejecutar es parte de la receta de
+    # importlib, no un adorno. Sin el, un detector que use ``@dataclass`` con
+    # ``from __future__ import annotations`` revienta: el decorador resuelve
+    # sus anotaciones mirando ``sys.modules[cls.__module__].__dict__`` y recibe
+    # None. Y como ``build_registry`` traga la excepcion, el detector aterriza
+    # en ``missing`` SIN que nadie lo lea — el verde silencioso que el
+    # docstring de este mismo archivo denuncia, cometido por su propio cargador.
+    # Medido: ``detect_narrative_continuity`` llevaba inerte desde que lo
+    # declaro la lista (:ref:`h-thyrox-23`).
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module.detect
+
+
+def build_registry(directory: Path,
+                   names: Sequence[str]) -> tuple[list[Detector], list[str]]:
+    """Los detectores que cargaron, y los nombres de los que no.
+
+    Devuelve las dos listas en vez de sólo la primera: sin la segunda, una
+    carga parcial es indistinguible de una completa, y ésa es la mitad que a la
+    fuente le faltaba. El orden es el de declaración, y es el que verá el lector.
+    """
+    registry: list[Detector] = []
+    missing: list[str] = []
+    for name in names:
+        try:
+            registry.append((name.removeprefix("inject_"),
+                             load_detector(directory, name)))
+        except Exception:
+            missing.append(name)
+    return registry, missing
+
+
+def _truncate(text: str, quota: int) -> str:
+    """El texto dentro de su cuota, diciendo cuánto se dejó fuera.
+
+    Un recorte mudo es peor que no recortar: el lector no puede distinguir «el
+    detector dijo esto» de «el detector dijo más y no cabía».
+    """
+    if len(text) <= quota:
+        return text
+    dropped = len(text) - quota
+    notice = f"\n[recortado: {dropped} caracteres más — la ventana es compartida]"
+    return text[:max(0, quota - len(notice))] + notice
+
+
+#: Las decisiones de permiso que un detector puede pedir, por fuerza.
+_DECISION_RANK = {"ask": 1, "deny": 2}
+
+
+def preflight(payload: dict, detectors: Iterable[Detector]) -> dict:
+    """El JSON a imprimir: un solo bloque con lo que cada detector aporte.
+
+    Devuelve ``{}`` cuando ninguno tiene nada que decir — el caso común y el
+    único que no cuesta nada. Con la lista vacía **rehúsa**: ver la clase.
+    """
+    detectors = list(detectors)
+    if not detectors:
+        raise EmptyRegistryError(
+            "no se cargó ningún detector: no hay con qué medir, y devolver "
+            "un JSON vacío se leería como «ninguno tuvo nada que avisar». "
+            "Declara la lista de detectores y su directorio."
+        )
+
+    quota = max(1, (TOTAL_BUDGET - _FORMAT_MARGIN) // len(detectors))
+
+    blocks: list[str] = []
+    decision: str | None = None
+    reasons: list[str] = []
+    for name, detect in detectors:
+        try:
+            notice = detect(payload)
+        except Exception:
+            # Un detector roto se aísla. Su excepción no llega al contexto: el
+            # lector no puede hacer nada con ella y el ruido tapa a los sanos.
+            continue
+        # Un detector puede además PEDIR una decisión de permiso: devuelve
+        # ``{"notice", "decision"}``. Lo abrió `detect_irreversible_operation`,
+        # porque un aviso llega cuando el daño ya ocurrió. Entre varios, gana la
+        # más fuerte (``deny`` > ``ask``).
+        if isinstance(notice, dict):
+            wanted = notice.get("decision")
+            notice = notice.get("notice")
+            if wanted in _DECISION_RANK and notice:
+                if decision is None or _DECISION_RANK[wanted] > _DECISION_RANK[decision]:
+                    decision = wanted
+                reasons.append(f"[{name}] {notice}")
+        if not notice or not str(notice).strip():
+            continue                      # cortocircuito por vacío
+        blocks.append(f"[{name}]\n{_truncate(str(notice), quota)}")
+
+    if not blocks:
+        return {}
+
+    out = {
+        "hookEventName": "PreToolUse",
+        "additionalContext": "\n\n".join(blocks),
+    }
+    if decision:
+        out["permissionDecision"] = decision
+        out["permissionDecisionReason"] = _truncate("\n".join(reasons), quota)
+    return {"hookSpecificOutput": out}
+
+
+def main(stdin_text: str | None = None,
+         detectors: Iterable[Detector] | None = None,
+         directory: Path | None = None,
+         names: Sequence[str] | None = None) -> int:
+    """Punto de entrada del hook: imprime la respuesta y sale 0, siempre.
+
+    Falla abierto: el ``EmptyRegistryError`` de la biblioteca se convierte aquí
+    en un aviso por stderr y un ``{}``, y la herramienta se ejecuta. El aviso
+    deja rastro de que no se evaluó nada.
+    """
+    text = stdin_text if stdin_text is not None else _read_stdin()
+    try:
+        payload = json.loads(text or "{}")
+        if not isinstance(payload, dict):
+            payload = {}
+    except (ValueError, TypeError):
+        print("{}")
+        return 0
+
+    if detectors is None:
+        # El default es el set propio de THYROX. Un llamador que quiera otro lo
+        # pasa; lo que ya no ocurre es quedarse sin ninguno y no enterarse.
+        directory = DETECTOR_DIR if directory is None else directory
+        names = DETECTOR_NAMES if not names else names
+        detectors, missing = build_registry(directory, names)
+        if missing:
+            print(f"tool_use_preflight: no cargaron {len(missing)} de "
+                  f"{len(names)} detectores: {', '.join(missing)}", file=sys.stderr)
+
+    try:
+        print(json.dumps(preflight(payload, detectors), ensure_ascii=False))
+    except EmptyRegistryError as err:
+        print("{}")
+        print(f"tool_use_preflight: {err}", file=sys.stderr)
+    except Exception:
+        print("{}")
+    return 0
+
+
+def _read_stdin() -> str:
+    try:
+        return sys.stdin.read()
+    except (OSError, ValueError):
+        return ""
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

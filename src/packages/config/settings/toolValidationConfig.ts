@@ -1,21 +1,18 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/toolValidationConfig.ts` (103
- * líneas fuente). Reimplementación fiel VERBATIM. Sin dependencias.
+ * Tool validation configuration
  *
- * Configuración de validación de herramientas. La mayoría de las
- * herramientas no necesitan configuración — la validación básica funciona
- * automáticamente. Sólo se añade una herramienta aquí si tiene requisitos
- * de patrón especiales.
+ * Most tools need NO configuration - basic validation works automatically.
+ * Only add your tool here if it has special pattern requirements.
  */
 
 type ToolValidationConfig = {
-  /** Herramientas que aceptan patrones glob de archivo (p. ej. *.ts, src/**) */
+  /** Tools that accept file glob patterns (e.g., *.ts, src/**) */
   filePatternTools: string[]
 
-  /** Herramientas que aceptan patrones wildcard de bash (* en cualquier lado) y la sintaxis legada de prefijo :* */
+  /** Tools that accept bash wildcard patterns (* anywhere) and legacy :* prefix syntax */
   bashPrefixTools: string[]
 
-  /** Reglas de validación custom para herramientas específicas */
+  /** Custom validation rules for specific tools */
   customValidation: {
     [toolName: string]: (content: string) => {
       valid: boolean
@@ -27,7 +24,7 @@ type ToolValidationConfig = {
 }
 
 const TOOL_VALIDATION_CONFIG: ToolValidationConfig = {
-  // Herramientas de patrón de archivo (aceptan *.ts, src/**, etc.)
+  // File pattern tools (accept *.ts, src/**, etc.)
   filePatternTools: [
     'Read',
     'Write',
@@ -37,12 +34,12 @@ const TOOL_VALIDATION_CONFIG: ToolValidationConfig = {
     'NotebookEdit',
   ],
 
-  // Herramientas wildcard de bash (aceptan * en cualquier lado, y la sintaxis legada command:*)
+  // Bash wildcard tools (accept * anywhere, and legacy command:* syntax)
   bashPrefixTools: ['Bash'],
 
-  // Validación custom (sólo si hace falta)
+  // Custom validation (only if needed)
   customValidation: {
-    // WebSearch no soporta wildcards ni patrones complejos.
+    // WebSearch doesn't support wildcards or complex patterns
     WebSearch: content => {
       if (content.includes('*') || content.includes('?')) {
         return {
@@ -55,9 +52,9 @@ const TOOL_VALIDATION_CONFIG: ToolValidationConfig = {
       return { valid: true }
     },
 
-    // WebFetch usa el prefijo domain: para permisos basados en hostname.
+    // WebFetch uses domain: prefix for hostname-based permissions
     WebFetch: content => {
-      // Comprueba si está intentando usar un formato de URL.
+      // Check if it's trying to use a URL format
       if (content.includes('://') || content.startsWith('http')) {
         return {
           valid: false,
@@ -70,7 +67,7 @@ const TOOL_VALIDATION_CONFIG: ToolValidationConfig = {
         }
       }
 
-      // Debe empezar con el prefijo domain:.
+      // Must start with domain: prefix
       if (!content.startsWith('domain:')) {
         return {
           valid: false,
@@ -83,24 +80,24 @@ const TOOL_VALIDATION_CONFIG: ToolValidationConfig = {
         }
       }
 
-      // Permite wildcards en patrones de dominio.
-      // Válido: domain:*.example.com, domain:example.*, etc.
+      // Allow wildcards in domain patterns
+      // Valid: domain:*.example.com, domain:example.*, etc.
       return { valid: true }
     },
   },
 }
 
-// Comprueba si una herramienta usa patrones de archivo.
+// Helper to check if a tool uses file patterns
 export function isFilePatternTool(toolName: string): boolean {
   return TOOL_VALIDATION_CONFIG.filePatternTools.includes(toolName)
 }
 
-// Comprueba si una herramienta usa patrones de prefijo bash.
+// Helper to check if a tool uses bash prefix patterns
 export function isBashPrefixTool(toolName: string): boolean {
   return TOOL_VALIDATION_CONFIG.bashPrefixTools.includes(toolName)
 }
 
-// Obtiene la validación custom para una herramienta.
+// Helper to get custom validation for a tool
 export function getCustomValidation(toolName: string) {
   return TOOL_VALIDATION_CONFIG.customValidation[toolName]
 }

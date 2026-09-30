@@ -20,11 +20,11 @@ const { getAPIProvider, isFirstPartyAnthropicBaseUrl } = await import(
 
 describe('getAPIProvider', () => {
   const envKeys = [
-    'CLAUDE_CODE_USE_GEMINI',
-    'CLAUDE_CODE_USE_BEDROCK',
-    'CLAUDE_CODE_USE_VERTEX',
-    'CLAUDE_CODE_USE_FOUNDRY',
-    'CLAUDE_CODE_USE_OPENAI',
+    'THYROX_CODE_USE_GEMINI',
+    'THYROX_CODE_USE_BEDROCK',
+    'THYROX_CODE_USE_VERTEX',
+    'THYROX_CODE_USE_FOUNDRY',
+    'THYROX_CODE_USE_OPENAI',
   ] as const
   const savedEnv: Record<string, string | undefined> = {}
 
@@ -60,61 +60,61 @@ describe('getAPIProvider', () => {
 
   test('modelType takes precedence over environment variables', () => {
     mockedModelType = 'gemini'
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     expect(getAPIProvider()).toBe('gemini')
   })
 
-  test('returns "gemini" when CLAUDE_CODE_USE_GEMINI is set', () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  test('returns "gemini" when THYROX_CODE_USE_GEMINI is set', () => {
+    process.env.THYROX_CODE_USE_GEMINI = '1'
     expect(getAPIProvider()).toBe('gemini')
   })
 
-  test('returns "bedrock" when CLAUDE_CODE_USE_BEDROCK is set', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+  test('returns "bedrock" when THYROX_CODE_USE_BEDROCK is set', () => {
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     expect(getAPIProvider()).toBe('bedrock')
   })
 
-  test('returns "vertex" when CLAUDE_CODE_USE_VERTEX is set', () => {
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
+  test('returns "vertex" when THYROX_CODE_USE_VERTEX is set', () => {
+    process.env.THYROX_CODE_USE_VERTEX = '1'
     expect(getAPIProvider()).toBe('vertex')
   })
 
-  test('returns "foundry" when CLAUDE_CODE_USE_FOUNDRY is set', () => {
-    process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  test('returns "foundry" when THYROX_CODE_USE_FOUNDRY is set', () => {
+    process.env.THYROX_CODE_USE_FOUNDRY = '1'
     expect(getAPIProvider()).toBe('foundry')
   })
 
   test('bedrock takes precedence over gemini', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_GEMINI = '1'
     expect(getAPIProvider()).toBe('bedrock')
   })
 
   test('bedrock takes precedence over vertex', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_VERTEX = '1'
     expect(getAPIProvider()).toBe('bedrock')
   })
 
   test('bedrock wins when all three env vars are set', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
-    process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_VERTEX = '1'
+    process.env.THYROX_CODE_USE_FOUNDRY = '1'
     expect(getAPIProvider()).toBe('bedrock')
   })
 
   test('"true" is truthy', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = 'true'
+    process.env.THYROX_CODE_USE_BEDROCK = 'true'
     expect(getAPIProvider()).toBe('bedrock')
   })
 
   test('"0" is not truthy', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '0'
+    process.env.THYROX_CODE_USE_BEDROCK = '0'
     expect(getAPIProvider()).toBe('firstParty')
   })
 
   test('empty string is not truthy', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = ''
+    process.env.THYROX_CODE_USE_BEDROCK = ''
     expect(getAPIProvider()).toBe('firstParty')
   })
 })

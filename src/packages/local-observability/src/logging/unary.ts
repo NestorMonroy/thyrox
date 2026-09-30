@@ -1,7 +1,8 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/logging/unary.ts`
- * (44 líneas fuente, 100 % portado). Envoltura delgada `logUnaryEvent` —
- * sin dependencias de paquete hermano.
+ * V7 §8.12 — unary: `logUnaryEvent` thin wrapper.
+ *
+ * Moved from src/utils/unaryLogging.ts. Already used @thyrox/local-observability
+ * internally, so migration was a trivial relocate.
  */
 
 import { logEvent } from '../index.js'

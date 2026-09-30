@@ -1,0 +1,340 @@
+diff --git a/src/packages/local-observability/__tests__/udsF4Accessors.test.ts b/src/packages/local-observability/__tests__/udsF4Accessors.test.ts
+new file mode 100644
+index 00000000..f2f4c711
+--- /dev/null
++++ b/src/packages/local-observability/__tests__/udsF4Accessors.test.ts
+@@ -0,0 +1,190 @@
++/**
++ * Los accesores del estado del buzón: `Pqo`, `Oqo`, `oEn`, `RVt`, `sEn`,
++ * `Hqo`, `iEn`, `Mqo`, `Dqo` y `m9r` (`chunk-yg53q7yp.js`, `chunk-4v3yb6t3.js`)
++ * de 2.1.283.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  createInboxState,
++  describeStartFailure,
++  readActiveSocketPath,
++  readLastStartDegradedCause,
++  readLastStartFailureCause,
++  readStartFailureMessage,
++  removeActiveKeyFileSync,
++  setOnEnableRemoteControl,
++  setOnEnqueue,
++  setOnPeerMessageStatus,
++  setOnRename,
++} from '../src/uds/inboxState.ts'
++
++const dirs: string[] = []
++function tempDir(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'uds-f4-'))
++  dirs.push(dir)
++  return dir
++}
++afterEach(() => {
++  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
++})
++
++describe('Pqo / Oqo / Dqo: lectura simple del estado', () => {
++  test('cada accesor lee su propio campo, sin tocar los otros', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'bind_failed'
++    state.lastStartDegradedCause = 'key_publish_failed'
++    state.activeSocketPath = '/run/a/1.sock'
++    expect(readLastStartFailureCause(state)).toBe('bind_failed')
++    expect(readLastStartDegradedCause(state)).toBe('key_publish_failed')
++    expect(readActiveSocketPath(state)).toBe('/run/a/1.sock')
++  })
++
++  test('sin nada fijado, los tres dan undefined', () => {
++    const state = createInboxState()
++    expect(readLastStartFailureCause(state)).toBeUndefined()
++    expect(readLastStartDegradedCause(state)).toBeUndefined()
++    expect(readActiveSocketPath(state)).toBeUndefined()
++  })
++})
++
++describe('RVt / oEn: por qué el buzón no está disponible', () => {
++  test('arrancando, no hay mensaje', () => {
++    const state = createInboxState()
++    state.startInFlight = true
++    state.lastStartFailureCause = 'bind_failed'
++    expect(describeStartFailure(state)).toBeUndefined()
++  })
++
++  test('ya arrancado, no hay mensaje aunque quede una causa vieja', () => {
++    const state = createInboxState()
++    state.activeSocketPath = '/run/a/1.sock'
++    state.lastStartFailureCause = 'bind_failed'
++    expect(describeStartFailure(state)).toBeUndefined()
++  })
++
++  test('sin causa, no hay mensaje', () => {
++    const state = createInboxState()
++    expect(describeStartFailure(state)).toBeUndefined()
++  })
++
++  test('socket_dir_refused sin detalle', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'socket_dir_refused'
++    expect(describeStartFailure(state)).toBe('its socket directory could not be set up')
++  })
++
++  test('socket_dir_refused con detalle', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'socket_dir_refused'
++    state.lastStartFailureDetail = 'EACCES'
++    expect(describeStartFailure(state)).toBe('its socket directory could not be set up: EACCES')
++  })
++
++  test('path_refused', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'path_refused'
++    expect(describeStartFailure(state)).toBe('its socket path is not a usable local address')
++  })
++
++  test('bind_failed', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'bind_failed'
++    expect(describeStartFailure(state)).toBe('it could not be started')
++  })
++
++  test('key_publish_failed', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'key_publish_failed'
++    expect(describeStartFailure(state)).toBe('its peer key could not be published')
++  })
++
++  test('post_bind_setup_failed', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'post_bind_setup_failed'
++    expect(describeStartFailure(state)).toBe('setting it up after bind failed')
++  })
++
++  test('oEn delega en describeStartFailure sobre el mismo estado', () => {
++    const state = createInboxState()
++    state.lastStartFailureCause = 'path_refused'
++    expect(readStartFailureMessage(state)).toBe(describeStartFailure(state))
++  })
++})
++
++describe('sEn / Hqo / iEn / Mqo: los avisos se fijan en el estado', () => {
++  test('setOnRename fija onRename', () => {
++    const state = createInboxState()
++    const calls: string[] = []
++    setOnRename(state, name => calls.push(name))
++    state.onRename?.('nuevo-nombre')
++    expect(calls).toEqual(['nuevo-nombre'])
++  })
++
++  test('setOnEnableRemoteControl fija onEnableRemoteControl', () => {
++    const state = createInboxState()
++    let called = false
++    setOnEnableRemoteControl(state, () => {
++      called = true
++    })
++    state.onEnableRemoteControl?.()
++    expect(called).toBe(true)
++  })
++
++  test('setOnPeerMessageStatus fija onPeerMessageStatus, con y sin detalle', () => {
++    const state = createInboxState()
++    const calls: unknown[] = []
++    setOnPeerMessageStatus(state, (status, id, details) => calls.push([status, id, details]))
++    state.onPeerMessageStatus?.('delivered', 'msg-1')
++    state.onPeerMessageStatus?.('dropped', 'msg-2', { dropReason: 'disconnected', droppedCount: 3 })
++    expect(calls).toEqual([
++      ['delivered', 'msg-1', undefined],
++      ['dropped', 'msg-2', { dropReason: 'disconnected', droppedCount: 3 }],
++    ])
++  })
++
++  test('setOnEnqueue fija onEnqueue', () => {
++    const state = createInboxState()
++    let calls = 0
++    setOnEnqueue(state, () => {
++      calls += 1
++    })
++    state.onEnqueue?.()
++    expect(calls).toBe(1)
++  })
++
++  test('cada setter deja el campo en undefined si se le pasa undefined', () => {
++    const state = createInboxState()
++    setOnRename(state, () => {})
++    setOnRename(state, undefined)
++    expect(state.onRename).toBeUndefined()
++  })
++})
++
++describe('m9r: retira el archivo de clave activo', () => {
++  test('borra el archivo cuando activeKeyFile apunta a uno existente', () => {
++    const dir = tempDir()
++    const path = join(dir, 'a.key')
++    writeFileSync(path, '{}')
++    const state = createInboxState()
++    state.activeKeyFile = path
++    removeActiveKeyFileSync(state)
++    expect(existsSync(path)).toBe(false)
++  })
++
++  test('no hace nada si activeKeyFile no está fijado', () => {
++    const state = createInboxState()
++    expect(() => removeActiveKeyFileSync(state)).not.toThrow()
++  })
++
++  test('traga el error si el archivo ya no existe', () => {
++    const dir = tempDir()
++    const path = join(dir, 'no-existe.key')
++    const state = createInboxState()
++    state.activeKeyFile = path
++    expect(() => removeActiveKeyFileSync(state)).not.toThrow()
++  })
++})
+diff --git a/src/packages/local-observability/src/uds/inboxState.ts b/src/packages/local-observability/src/uds/inboxState.ts
+index c6ddd19e..7c08f9b7 100644
+--- a/src/packages/local-observability/src/uds/inboxState.ts
++++ b/src/packages/local-observability/src/uds/inboxState.ts
+@@ -2,7 +2,11 @@
+  * El estado del buzón de una sesión: lo que `c()` guarda en 2.1.283
+  * (`O_t.of(host)`), con los campos que el servidor escribe y los que la
+  * interfaz de estado lee.
++ *
++ * `Lqo` y `z1o` arrancan el servidor (`mn`) y son otra fase: no se portan
++ * aquí.
+  */
++import { unlinkSync } from 'node:fs'
+ import type { Socket } from 'node:net'
+ 
+ import type { InboxTokens } from './inboxAuth.ts'
+@@ -21,6 +25,13 @@ export type InboxStartFailureCause =
+ /** Con qué degradación arrancó, sin impedirlo. */
+ export type InboxStartDegradedCause = 'primary_dir_refused_fell_back' | 'key_publish_failed'
+ 
++/** El estado de un mensaje enviado a un par, según lo notifica `peer_message_status`. */
++export type PeerMessageStatusHandler = (
++  status: string,
++  id: string,
++  details?: { dropReason: string; droppedCount: number },
++) => void
++
+ export type InboxState = {
+   activeSocketPath: string | undefined
+   connectedClients: Set<Socket>
+@@ -43,6 +54,18 @@ export type InboxState = {
+   peerDirOwnerUids: number[] | undefined
+   /** `onEnqueue`: se llama tras encolar un mensaje de un par. */
+   onEnqueue: (() => void) | undefined
++  /** `onRename`: otro proceso renombró esta sesión. */
++  onRename: ((name: string) => void) | undefined
++  /**
++   * `onEnableRemoteControl`: activa el control remoto de esta sesión. La
++   * acción de control que lo dispara (`enable_remote_control`) no está en el
++   * alcance de F4 — se declara sin argumentos hasta portar su emisor.
++   */
++  onEnableRemoteControl: (() => void) | undefined
++  /** `onPeerMessageStatus`: notifica el estado de un mensaje enviado a un par. */
++  onPeerMessageStatus: PeerMessageStatusHandler | undefined
++  /** `activeKeyFile`: la ruta de la clave publicada mientras el buzón está abierto. */
++  activeKeyFile: string | undefined
+ }
+ 
+ export function createInboxState(): InboxState {
+@@ -62,6 +85,10 @@ export function createInboxState(): InboxState {
+     authOkReported: false,
+     peerDirOwnerUids: undefined,
+     onEnqueue: undefined,
++    onRename: undefined,
++    onEnableRemoteControl: undefined,
++    onPeerMessageStatus: undefined,
++    activeKeyFile: undefined,
+   }
+ }
+ 
+@@ -70,3 +97,83 @@ export function recordDegraded(state: InboxState, cause: InboxStartDegradedCause
+   if (cause === 'key_publish_failed' && state.lastStartDegradedCause === 'primary_dir_refused_fell_back') return
+   state.lastStartDegradedCause = cause
+ }
++
++/** `Pqo`: por qué falló el último arranque del buzón. */
++export function readLastStartFailureCause(state: InboxState): InboxStartFailureCause | undefined {
++  return state.lastStartFailureCause
++}
++
++/** `Oqo`: con qué degradación arrancó el buzón, si con alguna. */
++export function readLastStartDegradedCause(state: InboxState): InboxStartDegradedCause | undefined {
++  return state.lastStartDegradedCause
++}
++
++/** `Dqo`: la ruta del socket activo, si el buzón está arrancado. */
++export function readActiveSocketPath(state: InboxState): string | undefined {
++  return state.activeSocketPath
++}
++
++/**
++ * `RVt`: por qué el buzón no está disponible, en prosa; `undefined` si está
++ * arrancando, ya arrancado, o nunca falló.
++ */
++export function describeStartFailure(state: InboxState): string | undefined {
++  if (state.startInFlight || state.activeSocketPath !== undefined) return undefined
++  switch (state.lastStartFailureCause) {
++    case 'socket_dir_refused':
++      return state.lastStartFailureDetail !== undefined
++        ? `its socket directory could not be set up: ${state.lastStartFailureDetail}`
++        : 'its socket directory could not be set up'
++    case 'path_refused':
++      return 'its socket path is not a usable local address'
++    case 'bind_failed':
++      return 'it could not be started'
++    case 'key_publish_failed':
++      return 'its peer key could not be published'
++    case 'post_bind_setup_failed':
++      return 'setting it up after bind failed'
++    case undefined:
++      return undefined
++  }
++}
++
++/** `oEn`: el mensaje de `describeStartFailure` sobre el estado activo. */
++export function readStartFailureMessage(state: InboxState): string | undefined {
++  return describeStartFailure(state)
++}
++
++/** `sEn`: fija el aviso de renombre de esta sesión. */
++export function setOnRename(state: InboxState, handler: ((name: string) => void) | undefined): void {
++  state.onRename = handler
++}
++
++/** `Hqo`: fija el aviso de activación de control remoto. */
++export function setOnEnableRemoteControl(state: InboxState, handler: (() => void) | undefined): void {
++  state.onEnableRemoteControl = handler
++}
++
++/** `iEn`: fija el aviso de estado de un mensaje enviado a un par. */
++export function setOnPeerMessageStatus(state: InboxState, handler: PeerMessageStatusHandler | undefined): void {
++  state.onPeerMessageStatus = handler
++}
++
++/** `Mqo`: fija el aviso de mensaje de un par encolado. */
++export function setOnEnqueue(state: InboxState, handler: (() => void) | undefined): void {
++  state.onEnqueue = handler
++}
++
++/**
++ * `m9r`: borra el archivo de clave activo, de mejor esfuerzo. Que ya no
++ * exista no es un error (mismo criterio que `removeInboxKey` en
++ * `inboxKeys.ts`); es síncrona porque corre en un cierre que no puede
++ * esperar una promesa.
++ */
++export function removeActiveKeyFileSync(state: InboxState): void {
++  try {
++    const path = state.activeKeyFile
++    if (path === undefined) return
++    unlinkSync(path)
++  } catch {
++    // Salida de mejor esfuerzo: el barrido retira lo que quede.
++  }
++}

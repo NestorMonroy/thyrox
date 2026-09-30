@@ -1,0 +1,10 @@
+Build the renderable message types from normalized ones
+
+Thirty-sixth step of the agent-compiler loop, accepted-net
+2959 -> 2878, targets 90 -> 14. The view renders what applyGrouping
+produces from normalized messages, yet RenderableMessage and
+CollapsibleMessage used the raw AssistantMessage and UserMessage,
+whose content may be a string or absent: 89 reads of .content across
+13 files (MessageRow, messageActions, ...) failed on it.
+NormalizedUserMessage and NormalizedAssistantMessage now carry their
+block-array content, and the renderable unions are built from them.

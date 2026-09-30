@@ -1,0 +1,1 @@
+    print(f"{decision.cache_ttl or '-'}\t{decision.memfree or '-'}\t{decision.why}")

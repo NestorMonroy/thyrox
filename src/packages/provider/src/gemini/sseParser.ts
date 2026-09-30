@@ -1,14 +1,6 @@
 /**
- * Analizador incremental de tramas SSE — porte de
- * `ccnmt: packages/provider/src/gemini/sseParser.ts` (86 lineas, 1 export).
- *
- * El puerto es COMPLETO: el tipo `SSEFrame` y `parseSSEFrames`. Ninguno queda
- * fuera.
- *
- * La fuente lo declara como codigo INCORPORADO desde el transporte SSE de su
- * paquete de CLI, a proposito, para no crear una dependencia entre paquetes
- * por un analizador de ochenta lineas. El puerto conserva esa decision: vive
- * aqui, no importado del hermano.
+ * SSE frame parser inlined from @thyrox/cli SSETransport.
+ * Avoids a cross-package dependency on the CLI package.
  */
 
 type SSEFrame = {
@@ -18,20 +10,21 @@ type SSEFrame = {
 }
 
 /**
- * Analiza tramas SSE de un buffer de texto, devolviendo las completas y el
- * resto incompleto para la siguiente pasada.
+ * Incrementally parse SSE frames from a text buffer.
+ * Returns parsed frames and the remaining (incomplete) buffer.
  *
- * Segun la norma WHATWG una linea puede terminar en CRLF, LF o CR suelto. Se
- * normaliza todo a LF antes de recorrer, para que las tres formas produzcan la
- * misma frontera `\n\n`. Sin eso, un servidor que emita CRLF —observado en
- * Gemini tras ciertos proxies— nunca produciria una trama y el stream se
- * colgaria.
+ * Per WHATWG SSE spec, lines may end with CRLF, LF, or CR. We normalize
+ * any CR or CRLF to LF before scanning so all three line endings produce
+ * the same `\n\n` frame boundary. Without this, a server emitting CRLF
+ * (Gemini observed in some proxy configurations) would never produce a
+ * parsed frame and the stream would hang.
  */
 export function parseSSEFrames(buffer: string): {
   frames: SSEFrame[]
   remaining: string
 } {
-  // El ORDEN importa: CRLF primero, para que cada par se vuelva un solo LF.
+  // Normalize line endings: CRLF → LF, then standalone CR → LF.
+  // Order matters — CRLF must be replaced first so each pair becomes one LF.
   if (buffer.includes('\r')) {
     buffer = buffer.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
   }
@@ -39,12 +32,13 @@ export function parseSSEFrames(buffer: string): {
   const frames: SSEFrame[] = []
   let pos = 0
 
-  // Las tramas SSE se delimitan con doble salto de linea.
+  // SSE frames are delimited by double newlines
   let idx: number
   while ((idx = buffer.indexOf('\n\n', pos)) !== -1) {
     const rawFrame = buffer.slice(pos, idx)
     pos = idx + 2
 
+    // Skip empty frames
     if (!rawFrame.trim()) continue
 
     const frame: SSEFrame = {}
@@ -52,7 +46,7 @@ export function parseSSEFrames(buffer: string): {
 
     for (const line of rawFrame.split('\n')) {
       if (line.startsWith(':')) {
-        // Comentario SSE, p. ej. `:keepalive`.
+        // SSE comment (e.g., `:keepalive`)
         isComment = true
         continue
       }
@@ -61,9 +55,11 @@ export function parseSSEFrames(buffer: string): {
       if (colonIdx === -1) continue
 
       const field = line.slice(0, colonIdx)
-      // La norma recorta UN espacio tras los dos puntos, si lo hay.
+      // Per SSE spec, strip one leading space after colon if present
       const value =
-        line[colonIdx + 1] === ' ' ? line.slice(colonIdx + 2) : line.slice(colonIdx + 1)
+        line[colonIdx + 1] === ' '
+          ? line.slice(colonIdx + 2)
+          : line.slice(colonIdx + 1)
 
       switch (field) {
         case 'event':
@@ -73,16 +69,14 @@ export function parseSSEFrames(buffer: string): {
           frame.id = value
           break
         case 'data':
-          // La norma manda concatenar varias lineas `data:` con salto.
+          // Per SSE spec, multiple data: lines are concatenated with \n
           frame.data = frame.data ? frame.data + '\n' + value : value
           break
-        // El resto de campos —`retry:` y demas— se ignora.
+        // Ignore other fields (retry:, etc.)
       }
     }
 
-    // Solo salen las tramas con datos, y las de puro comentario, que existen
-    // para refrescar la vivacidad. Una con `data` vacio NO sale: la guarda
-    // mide veracidad y la cadena vacia es falsy.
+    // Only emit frames that have data (or are pure comments which reset liveness)
     if (frame.data || isComment) {
       frames.push(frame)
     }

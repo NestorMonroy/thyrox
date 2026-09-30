@@ -1,0 +1,8 @@
+base	20 pass, 0 fail	—
+defaulttools	19 pass, 1 fail	las herramientas por defecto escriben
+gitcheck	19 pass, 1 fail	sale 2
+isolationmode	19 pass, 1 fail	un modo desconocido sale 2
+cdworkdir	9 pass, 11 fail	el árbol principal sigue limpio | veredictos en orden | el parche nombra su archivo | la línea de resumen cuenta los veredictos | aplica a.txt con el texto del primero | no aplica lo rechazado | el sexto es conflicto con el primero | sale 1 si algo con cambios no se integró | resume la integración | veredicto sin-verificar | no se aplica sin --unverified
+nofinalize	10 pass, 10 fail	veredictos en orden | el parche nombra su archivo | la línea de resumen cuenta los veredictos | aplica a.txt con el texto del primero | aplica b.txt | el sexto es conflicto con el primero | sale 1 si algo con cambios no se integró | resume la integración | veredicto sin-verificar | con --unverified se aplica
+nosummary	19 pass, 1 fail	la línea de resumen cuenta los veredictos
+nosweep	19 pass, 1 fail	el pool deja sólo el árbol principal

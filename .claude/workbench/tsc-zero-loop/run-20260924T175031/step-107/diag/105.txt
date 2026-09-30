@@ -1,0 +1,97 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/referral.ts(140,35): error TS18046: 'reward' is of type 'unknown'.
+  --- código src/packages/provider/src/referral.ts:130-150 ---
+    130    EUR: '€',
+    131    GBP: '£',
+    132    BRL: 'R$',
+    133    CAD: 'CA$',
+    134    AUD: 'A$',
+    135    NZD: 'NZ$',
+    136    SGD: 'S$',
+    137  }
+    138  
+    139  export function formatCreditAmount(reward: ReferrerRewardInfo): string {
+    140>   const symbol = CURRENCY_SYMBOLS[reward.currency] ?? `${reward.currency} `
+    141    const amount = reward.amount_minor_units / 100
+    142    const formatted = amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+    143    return `${symbol}${formatted}`
+    144  }
+    145  
+    146  /**
+    147   * Get cached referrer reward info from eligibility cache
+    148   * Returns the reward info if the user is in a v1 campaign, null otherwise
+    149   */
+    150  export function getCachedReferrerReward(): ReferrerRewardInfo | null {
+src/packages/provider/src/referral.ts(140,58): error TS18046: 'reward' is of type 'unknown'.
+  --- código src/packages/provider/src/referral.ts:130-150 ---
+    130    EUR: '€',
+    131    GBP: '£',
+    132    BRL: 'R$',
+    133    CAD: 'CA$',
+    134    AUD: 'A$',
+    135    NZD: 'NZ$',
+    136    SGD: 'S$',
+    137  }
+    138  
+    139  export function formatCreditAmount(reward: ReferrerRewardInfo): string {
+    140>   const symbol = CURRENCY_SYMBOLS[reward.currency] ?? `${reward.currency} `
+    141    const amount = reward.amount_minor_units / 100
+    142    const formatted = amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+    143    return `${symbol}${formatted}`
+    144  }
+    145  
+    146  /**
+    147   * Get cached referrer reward info from eligibility cache
+    148   * Returns the reward info if the user is in a v1 campaign, null otherwise
+    149   */
+    150  export function getCachedReferrerReward(): ReferrerRewardInfo | null {
+src/packages/provider/src/referral.ts(141,18): error TS18046: 'reward' is of type 'unknown'.
+  --- código src/packages/provider/src/referral.ts:131-151 ---
+    131    GBP: '£',
+    132    BRL: 'R$',
+    133    CAD: 'CA$',
+    134    AUD: 'A$',
+    135    NZD: 'NZ$',
+    136    SGD: 'S$',
+    137  }
+    138  
+    139  export function formatCreditAmount(reward: ReferrerRewardInfo): string {
+    140    const symbol = CURRENCY_SYMBOLS[reward.currency] ?? `${reward.currency} `
+    141>   const amount = reward.amount_minor_units / 100
+    142    const formatted = amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+    143    return `${symbol}${formatted}`
+    144  }
+    145  
+    146  /**
+    147   * Get cached referrer reward info from eligibility cache
+    148   * Returns the reward info if the user is in a v1 campaign, null otherwise
+    149   */
+    150  export function getCachedReferrerReward(): ReferrerRewardInfo | null {
+    151    const orgId = getOauthAccountInfo()?.organizationUuid
+src/packages/provider/src/referral.ts(206,56): error TS18046: 'response' is of type 'unknown'.
+  --- código src/packages/provider/src/referral.ts:196-216 ---
+    196  
+    197        saveGlobalConfig(current => ({
+    198          ...current,
+    199          passesEligibilityCache: {
+    200            ...current.passesEligibilityCache,
+    201            [orgId]: cacheEntry,
+    202          },
+    203        }))
+    204  
+    205        logForDebugging(
+    206>         `Passes eligibility cached for org ${orgId}: ${response.eligible}`,
+    207        )
+    208  
+    209        return response
+    210      } catch (error) {
+    211        logForDebugging('Failed to fetch and cache passes eligibility')
+    212        logError(error as Error)
+    213        return null
+    214      } finally {
+    215        // Clear the promise when done
+    216        fetchInProgress = null

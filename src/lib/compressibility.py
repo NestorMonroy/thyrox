@@ -124,7 +124,7 @@ def report(reading: Compressibility) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("source", nargs="+",
                         help="rutas a medir; «-» lee el payload de stdin")
     parser.add_argument("--level", type=int, default=DEFAULT_LEVEL,

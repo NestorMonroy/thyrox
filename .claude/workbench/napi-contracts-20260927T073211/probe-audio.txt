@@ -1,0 +1,10 @@
+{
+ "platform": "x64-linux",
+ "available": true,
+ "recording": false,
+ "playing": false,
+ "mic": 3,
+ "stopNativeRecording": "ok",
+ "stopNativePlayback": "ok",
+ "writeIdle": "ok"
+}

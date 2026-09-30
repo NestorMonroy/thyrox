@@ -1,0 +1,36 @@
+Ask for the whole GPU until VRAM history is calibrated
+
+The shared ledger only protects what an item asks for, and the ask came
+from the template history. A peak of 0 left by items too short to be
+sampled made the pool ask for nothing, so two pools ran together with
+the ledger in place (H-THYROX-192). The earlier fix only changed the
+test so it measured its own item first; the production gap stayed.
+
+A history is now calibrated only when its last run measured the VRAM
+of every item and each lasted two sampling intervals. record keeps
+that coverage. Calibrated, an item asks max(peak x margin, floor);
+uncalibrated, it asks HEADLESS_POOL_VRAM_MIN_MIB if declared, else the
+whole GPU and width 1, which serializes across pools through the
+ledger. The reason is printed on the history line. The regression
+runs two pools on a stale 0 with no measuring run: they no longer
+overlap, and they do again when the history is taken as calibrated.
+
+The first run of that policy found two more defects. admit could not
+create its lock when the ledger directory did not exist yet, the case
+of any fresh history base. And the pool reported every admit failure
+as "no room", a measured timeout it never measured; exit 3 and an
+error are now told apart.
+
+GNU Time was installed and used, but resolved three ways. The pool
+now goes through the toolchain like bg.sh and run-task-pool.sh, the
+pool suite declares it per case instead of inheriting the host's
+/usr/bin/time (which wrote real rows and caused the H-THYROX-192 test
+contamination), one case exercises the real binary, and the
+concurrent runs are measured instead of switched off.
+
+hardware-inventory combines eight signals (PCI 0x10de and class 0x03,
+/dev/nvidia*, /dev/dri, /proc/driver/nvidia, libcuda, libnvidia-ml,
+nvidia-smi -L) into nvidia-usable, partial or none; this host is a
+Firecracker microVM with only virtio devices and reports none.
+PyTorch joins as the optional gpu group for the hardware harnesses,
+which now look for it in the provider environment.

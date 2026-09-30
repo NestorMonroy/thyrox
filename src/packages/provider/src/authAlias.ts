@@ -50,7 +50,8 @@ import { logEvent, type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPAT
 import { getModelStrings } from './internal/modelSupport.ts'
 import { getAPIProvider } from './providers.ts'
 import { isOAuthTokenExpired, refreshOAuthToken, shouldUseClaudeAIAuth } from './oauth/client.ts'
-import { clearRefreshTokenDeadSet, isRefreshTokenDead, markRefreshTokenDead as _markDead } from './internal/refreshTokenDeadSet.ts'
+import { getOauthProfileFromOauthToken } from './oauth/getOauthProfile.ts'
+import { clearRefreshTokenDeadSet, isRefreshTokenDead } from './internal/refreshTokenDeadSet.ts'
 import {
   getApiKeyFromFileDescriptor,
   getOAuthTokenFromFileDescriptor,
@@ -67,9 +68,11 @@ import { memoizeWithTTLAsync, sleep, jsonParse, clearBetasCaches, clearToolSchem
 import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
 import { getMacOsKeychainStorageServiceName, getUsername, clearKeychainCache } from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import type { AccountInfo, OAuthTokens, SubscriptionType } from './internal/oauthTypes.ts'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
-void _markDead // re-exportada indirectamente vía oauth/client.ts
 
+import { isBareMode } from '@thyrox/config/env/utils'
 const execFileAsync = promisify(execFile)
 
 const DEFAULT_API_KEY_HELPER_TTL = 5 * 60 * 1000
@@ -141,10 +144,6 @@ function checkHasTrustDialogAccepted(): boolean {
     return true
   }
 }
-function isBareMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) || process.argv.includes('--bare')
-}
-
 // `./mockRateLimits.js` es ant-only; USER_TYPE 'ant' nunca es true fuera de
 // Anthropic. Sustituto trivial fiel a ese camino frío.
 function shouldUseMockSubscription(): boolean {
@@ -155,7 +154,7 @@ function getMockSubscriptionType(): SubscriptionType | null {
 }
 
 function isManagedOAuthContext(): boolean {
-  return isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) || readEnv('CLAUDE_CODE_ENTRYPOINT') === 'claude-desktop'
+  return isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) || readEnv('THYROX_CODE_ENTRYPOINT') === 'claude-desktop'
 }
 
 /** ¿Soportamos auth 1P directa? */
@@ -163,27 +162,27 @@ export function isAnthropicAuthEnabled(): boolean {
   if (isBareMode()) return false
 
   if (readEnv('ANTHROPIC_UNIX_SOCKET')) {
-    return !!readEnv('CLAUDE_CODE_OAUTH_TOKEN')
+    return !!readEnv('THYROX_CODE_OAUTH_TOKEN')
   }
 
   const settings = getSettings() || {}
   const is3P =
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_ANTHROPIC_AWS')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_MANTLE')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_ANTHROPIC_AWS')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_MANTLE')) ||
     settings.modelType === 'openai' ||
     settings.modelType === 'gemini' ||
     !!readEnv('OPENAI_BASE_URL') ||
     !!readEnv('GEMINI_BASE_URL')
   const apiKeyHelper = settings.apiKeyHelper
-  const hasExternalAuthToken = readEnv('ANTHROPIC_AUTH_TOKEN') || apiKeyHelper || readEnv('CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR')
+  const hasExternalAuthToken = readEnv('ANTHROPIC_AUTH_TOKEN') || apiKeyHelper || readEnv('THYROX_CODE_API_KEY_FILE_DESCRIPTOR')
 
   const { source: apiKeySource } = getAnthropicApiKeyWithSource({ skipRetrievingKeyFromApiKeyHelper: true })
   const hasExternalApiKey = apiKeySource === 'ANTHROPIC_API_KEY' || apiKeySource === 'apiKeyHelper'
 
-  const shouldDisableAuth = is3P || (Boolean(hasExternalAuthToken) && !isManagedOAuthContext()) || (hasExternalApiKey && !isManagedOAuthContext())
+  const shouldDisableAuth = is3P || !!(hasExternalAuthToken && !isManagedOAuthContext()) || (hasExternalApiKey && !isManagedOAuthContext())
 
   return !shouldDisableAuth
 }
@@ -200,14 +199,14 @@ export function getAuthTokenSource() {
   if (readEnv('ANTHROPIC_AUTH_TOKEN') && !isManagedOAuthContext()) {
     return { source: 'ANTHROPIC_AUTH_TOKEN' as const, hasToken: true }
   }
-  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN')) {
-    return { source: 'CLAUDE_CODE_OAUTH_TOKEN' as const, hasToken: true }
+  if (readEnv('THYROX_CODE_OAUTH_TOKEN')) {
+    return { source: 'THYROX_CODE_OAUTH_TOKEN' as const, hasToken: true }
   }
 
   const oauthTokenFromFd = getOAuthTokenFromFileDescriptor()
   if (oauthTokenFromFd) {
-    if (readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
-      return { source: 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const, hasToken: true }
+    if (readEnv('THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+      return { source: 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const, hasToken: true }
     }
     return { source: 'CCR_OAUTH_TOKEN_FILE' as const, hasToken: true }
   }
@@ -278,8 +277,8 @@ export function getAnthropicApiKeyWithSource(
     const apiKeyFromFd = getApiKeyFromFileDescriptor()
     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
 
-    if (!apiKeyEnv && !readEnv('CLAUDE_CODE_OAUTH_TOKEN') && !readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
-      throw new Error('ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required')
+    if (!apiKeyEnv && !readEnv('THYROX_CODE_OAUTH_TOKEN') && !readEnv('THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+      throw new Error('ANTHROPIC_API_KEY or THYROX_CODE_OAUTH_TOKEN env var is required')
     }
     if (apiKeyEnv) return { key: apiKeyEnv, source: 'ANTHROPIC_API_KEY' }
     return { key: null, source: 'none' }
@@ -371,11 +370,11 @@ export function isAwsCredentialExportFromProjectSettings(): boolean {
 }
 
 export function calculateApiKeyHelperTTL(): number {
-  const envTtl = readEnv('CLAUDE_CODE_API_KEY_HELPER_TTL_MS')
+  const envTtl = readEnv('THYROX_CODE_API_KEY_HELPER_TTL_MS')
   if (envTtl) {
     const parsed = parseInt(envTtl, 10)
     if (!Number.isNaN(parsed) && parsed >= 0) return parsed
-    logForDebugging(`Found CLAUDE_CODE_API_KEY_HELPER_TTL_MS env var, but it was not a valid number. Got ${envTtl}`, { level: 'error' })
+    logForDebugging(`Found THYROX_CODE_API_KEY_HELPER_TTL_MS env var, but it was not a valid number. Got ${envTtl}`, { level: 'error' })
   }
   return DEFAULT_API_KEY_HELPER_TTL
 }
@@ -446,17 +445,41 @@ async function _executeApiKeyHelper(isNonInteractiveSession: boolean): Promise<s
     }
   }
 
-  try {
-    const { stdout } = await execFileAsync('/bin/sh', ['-c', apiKeyHelper], { timeout: 10 * 60 * 1000 })
-    const trimmed = stdout?.trim()
-    if (!trimmed) throw new Error('did not return a value')
-    return trimmed
-  } catch (e) {
-    const err = e as { killed?: boolean; code?: number; stderr?: string; message?: string }
-    const why = err.killed ? 'timed out' : `exited ${err.code}`
-    const stderr = err.stderr?.trim()
-    throw new Error(stderr ? `${why}: ${stderr}` : err.message ?? why)
+  // La forma de 2.1.275 (`chunk-xbd48fav.js`): el helper corre SIN lanzar
+  // (`Lw(n, {timeout: 600000, reject: false})`) y el fallo se compone aqui,
+  // con el stderr recortado a 500. Queda fuera, declarado: la validacion de
+  // que la salida sirva como clave (`J8r`, «returned output that cannot be
+  // used as an API key») y el `cwd` de `So()`.
+  const result = await runShellNoThrow(apiKeyHelper, { timeout: 10 * 60 * 1000 })
+  if (result.failed) {
+    const why = result.timedOut ? 'timed out' : `exited ${result.exitCode}`
+    const stderr = result.stderr && result.stderr.trim().slice(0, 500)
+    throw new Error(stderr ? `${why}: ${stderr}` : why)
   }
+  const stdout = result.stdout?.trim()
+  if (!stdout) {
+    throw new Error('did not return a value')
+  }
+  return stdout
+}
+
+/** Un comando de shell que NO lanza: el resultado dice si fallo y por que. */
+function runShellNoThrow(
+  command: string,
+  { timeout }: { timeout: number },
+): Promise<{ failed: boolean; timedOut: boolean; exitCode: number | null; stdout: string; stderr: string }> {
+  return new Promise(resolve => {
+    execFile('/bin/sh', ['-c', command], { timeout, encoding: 'utf8' }, (error, stdout, stderr) => {
+      const err = error as (NodeJS.ErrnoException & { killed?: boolean; signal?: string | null }) | null
+      resolve({
+        failed: err !== null,
+        timedOut: err?.killed === true && err.signal === 'SIGTERM',
+        exitCode: err === null ? 0 : typeof err.code === 'number' ? err.code : null,
+        stdout: stdout ?? '',
+        stderr: stderr ?? '',
+      })
+    })
+  })
 }
 
 export function getApiKeyFromApiKeyHelperCached(): string | null {
@@ -961,7 +984,7 @@ export function saveOAuthTokensIfNeeded(tokens: OAuthTokens): { success: boolean
 
   try {
     const storageData = secureStorage.read() || {}
-    const existingOauth = storageData.claudeAiOauth
+    const existingOauth = storageData.claudeAiOauth as OAuthTokens | undefined
 
     storageData.claudeAiOauth = {
       accessToken: tokens.accessToken,
@@ -1008,8 +1031,8 @@ function inferenceOnlyToken(accessToken: string): OAuthTokens {
 export const getClaudeAIOAuthTokens = memoize((): OAuthTokens | null => {
   if (isBareMode()) return null
 
-  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN')) {
-    return inferenceOnlyToken(readEnv('CLAUDE_CODE_OAUTH_TOKEN')!)
+  if (readEnv('THYROX_CODE_OAUTH_TOKEN')) {
+    return inferenceOnlyToken(readEnv('THYROX_CODE_OAUTH_TOKEN')!)
   }
   const oauthTokenFromFd = getOAuthTokenFromFileDescriptor()
   if (oauthTokenFromFd) return inferenceOnlyToken(oauthTokenFromFd)
@@ -1037,7 +1060,7 @@ let lastCredentialsMtimeMs = 0
 
 async function invalidateOAuthCacheIfDiskChanged(): Promise<void> {
   try {
-    const { mtimeMs } = await stat(join(getClaudeConfigHomeDirLocal(), '.credentials.json'))
+    const { mtimeMs } = await stat(join(getConfigHomeDir(), '.credentials.json'))
     if (mtimeMs !== lastCredentialsMtimeMs) {
       lastCredentialsMtimeMs = mtimeMs
       clearOAuthTokenCache()
@@ -1048,12 +1071,6 @@ async function invalidateOAuthCacheIfDiskChanged(): Promise<void> {
   }
 }
 
-function getClaudeConfigHomeDirLocal(): string {
-  const override = readEnv('CLAUDE_CONFIG_DIR')
-  if (override) return override
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? '.'
-  return `${home}/.claude`
-}
 
 const pending401Handlers = new Map<string, Promise<boolean>>()
 
@@ -1061,7 +1078,7 @@ type OAuthTokensView = {
   accessToken?: string
   refreshToken?: string
   expiresAt?: number
-  scopes?: readonly string[]
+  scopes?: string[]
   subscriptionType?: string | null
   clientId?: string
 }
@@ -1092,12 +1109,12 @@ async function handleOAuth401ErrorImpl(failedAccessToken: string): Promise<boole
   const currentTokens = asView(await getClaudeAIOAuthTokensAsync())
 
   if (!currentTokens?.refreshToken) {
-    const hasEnvToken = !!readEnv('CLAUDE_CODE_OAUTH_TOKEN')
+    const hasEnvToken = !!readEnv('THYROX_CODE_OAUTH_TOKEN')
     const hasCcrToken = !!getOAuthTokenFromFileDescriptor()
     if (hasEnvToken || hasCcrToken) {
       const diskOauth = asView(await readClaudeAiOauthFromDisk())
       if (diskOauth?.accessToken && diskOauth.accessToken !== failedAccessToken) {
-        if (hasEnvToken) process.env.CLAUDE_CODE_OAUTH_TOKEN = diskOauth.accessToken
+        if (hasEnvToken) process.env.THYROX_CODE_OAUTH_TOKEN = diskOauth.accessToken
         if (hasCcrToken) setOauthTokenFromFd(diskOauth.accessToken)
         clearOAuthTokenCache()
         logEvent('tengu_oauth_401_recovered_from_disk', {})
@@ -1117,7 +1134,7 @@ async function handleOAuth401ErrorImpl(failedAccessToken: string): Promise<boole
 
 export async function getClaudeAIOAuthTokensAsync(): Promise<OAuthTokens | null> {
   if (isBareMode()) return null
-  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN') || getOAuthTokenFromFileDescriptor()) {
+  if (readEnv('THYROX_CODE_OAUTH_TOKEN') || getOAuthTokenFromFileDescriptor()) {
     return getClaudeAIOAuthTokens()
   }
   return readClaudeAiOauthFromDisk()
@@ -1128,7 +1145,7 @@ let pendingRefreshCheck: Promise<boolean> | null = null
 export async function withOAuthRefreshLock<T>(
   callback: (ctx: { lockedTokens: OAuthTokensView | null; lockAttempts: number }) => Promise<T>,
 ): Promise<T> {
-  const claudeDir = getClaudeConfigHomeDirLocal()
+  const claudeDir = getConfigHomeDir()
   await mkdir(claudeDir, { recursive: true })
   const MAX_RETRIES = 5
   let retryCount = 0
@@ -1157,7 +1174,9 @@ export async function withOAuthRefreshLock<T>(
         } catch (releaseError) {
           logError(releaseError)
           logEvent('tengu_oauth_token_refresh_lock_release_error', {
-            error: errorMessage(releaseError) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+            error: errorMessage(
+              releaseError,
+            ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           })
         }
       }
@@ -1202,7 +1221,7 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
   }
   if (!force && !isOAuthTokenExpired(freshTokens.expiresAt ?? null)) return false
 
-  const claudeDir = getClaudeConfigHomeDirLocal()
+  const claudeDir = getConfigHomeDir()
   await mkdir(claudeDir, { recursive: true })
 
   let release: (() => Promise<void>) | undefined
@@ -1218,6 +1237,10 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
         return checkAndRefreshOAuthTokenIfNeededImpl(retryCount + 1, force, baselineAccessToken)
       }
       logEvent('tengu_oauth_token_refresh_lock_retry_limit_reached', { maxRetries: MAX_RETRIES })
+      // Port of ant pt6 (1997.js): G6("oauth_token_refresh", "oauth_refresh_lock_timeout")
+      // — el nombre es de la build 2.1.136 que cita su suite, que no esta en
+      // este arbol. En 2.1.275 el mismo evento sale de
+      // `f("oauth_token_refresh","oauth_refresh_lock_timeout", …)` (chunk-xbd48fav.js).
       logEvent('tengu_feature_sad', {
         feature_name: 'oauth_token_refresh' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         error_code: 'oauth_refresh_lock_timeout' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1228,6 +1251,9 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
     logEvent('tengu_oauth_token_refresh_lock_error', {
       error: errorMessage(err) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
+    // Port of ant pt6 (1997.js): xH("oauth_token_refresh", "oauth_refresh_lock_error")
+    // — build 2.1.136, como arriba. En 2.1.275:
+    // `m("oauth_token_refresh","oauth_refresh_lock_error")` (chunk-xbd48fav.js).
     logEvent('tengu_feature_bad', {
       feature_name: 'oauth_token_refresh' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       error_code: 'oauth_refresh_lock_error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1247,10 +1273,19 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
     if (isRefreshTokenDead(lockedTokens.refreshToken)) return false
 
     logEvent('tengu_oauth_token_refresh_starting', {})
-    const shouldOmitScopes = (shouldUseClaudeAIAuth(lockedTokens.scopes as string[] | undefined) || Boolean(lockedTokens.subscriptionType)) && !lockedTokens.clientId
+    // Port of ant v2.1.136 pt6 (1997.js) — cuando se omiten los scopes:
+    //   scopes: (bB(w.scopes) || w.subscriptionType) && !w.clientId ? void 0 : w.scopes
+    // Un token anterior a los scopes se reconoce por su `subscriptionType`, y
+    // uno ligado a un cliente propio conserva sus scopes tal cual: sin el
+    // `!clientId`, el refresco devolveria el conjunto por defecto.
+    const lockedSubscriptionType = lockedTokens.subscriptionType
+    const lockedClientId = lockedTokens.clientId
+    const shouldOmitScopes =
+      (shouldUseClaudeAIAuth(lockedTokens.scopes) || lockedSubscriptionType) &&
+      !lockedClientId
     const refreshedTokens = await refreshOAuthToken(lockedTokens.refreshToken, {
-      scopes: shouldOmitScopes ? undefined : (lockedTokens.scopes as string[] | undefined),
-      clientId: lockedTokens.clientId,
+      scopes: shouldOmitScopes ? undefined : lockedTokens.scopes,
+      clientId: lockedClientId,
     })
     saveOAuthTokensIfNeeded(refreshedTokens)
     getClaudeAIOAuthTokens.cache?.clear?.()
@@ -1274,7 +1309,9 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
     } catch (releaseError) {
       logError(releaseError)
       logEvent('tengu_oauth_token_refresh_lock_release_error', {
-        error: errorMessage(releaseError) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        error: errorMessage(
+          releaseError,
+        ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
     }
   }
@@ -1377,25 +1414,25 @@ export function getRateLimitTier(): string | null {
 export function getSubscriptionName(): string {
   switch (getSubscriptionType()) {
     case 'enterprise':
-      return 'Claude Enterprise'
+      return `${PRODUCT_NAME} Enterprise`
     case 'team':
-      return 'Claude Team'
+      return `${PRODUCT_NAME} Team`
     case 'max':
-      return 'Claude Max'
+      return `${PRODUCT_NAME} Max`
     case 'pro':
-      return 'Claude Pro'
+      return `${PRODUCT_NAME} Pro`
     default:
-      return 'Claude API'
+      return 'Anthropic API'
   }
 }
 
 export function isUsing3PServices(): boolean {
   return !!(
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_ANTHROPIC_AWS')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_MANTLE'))
+    isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_ANTHROPIC_AWS')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_MANTLE'))
   )
 }
 
@@ -1419,14 +1456,16 @@ export function getOtelHeadersFromHelper(): Record<string, string> {
   const otelHeadersHelper = getConfiguredOtelHeadersHelper()
   if (!otelHeadersHelper) return {}
 
-  const debounceMs = parseInt(readEnv('CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS') || DEFAULT_OTEL_HEADERS_DEBOUNCE_MS.toString(), 10)
+  const debounceMs = parseInt(readEnv('THYROX_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS') || DEFAULT_OTEL_HEADERS_DEBOUNCE_MS.toString(), 10)
   if (cachedOtelHeaders && Date.now() - cachedOtelHeadersTimestamp < debounceMs) {
     return cachedOtelHeaders
   }
 
   if (isOtelHeadersHelperFromProjectOrLocalSettings()) {
     const hasTrust = checkHasTrustDialogAccepted()
-    if (!hasTrust) return {}
+    if (!hasTrust) {
+      return {}
+    }
   }
 
   try {
@@ -1475,7 +1514,7 @@ export function getAccountInformation() {
 
   const { source: authTokenSource } = getAuthTokenSource()
   const accountInfo: UserAccountInfo = {}
-  if (authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN' || authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR') {
+  if (authTokenSource === 'THYROX_CODE_OAUTH_TOKEN' || authTokenSource === 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR') {
     accountInfo.tokenSource = authTokenSource
   } else if (isClaudeAISubscriber()) {
     accountInfo.subscription = getSubscriptionName()
@@ -1498,7 +1537,15 @@ export function getAccountInformation() {
   return accountInfo
 }
 
-export type OrgValidationResult = { valid: true } | { valid: false; message: string }
+// `reason` es del binario 2.1.275 (`chunk-xbd48fav.js`); opcional para los
+// consumidores que sólo leen `message`.
+export type OrgValidationResult =
+  | { valid: true }
+  | {
+      valid: false
+      reason?: 'managed_settings_invalid' | 'org_verify_failed' | 'org_pin_mismatch'
+      message: string
+    }
 
 /**
  * Valida que el token OAuth activo pertenezca a una organización permitida
@@ -1516,6 +1563,7 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
   if (allowedOrgUuids.length === 0) {
     return {
       valid: false,
+      reason: 'managed_settings_invalid',
       message: `forceLoginOrgUUID in managed settings is set to an empty array.\nNo organizations are permitted. This is almost certainly a misconfiguration.\nContact your administrator.`,
     }
   }
@@ -1527,32 +1575,42 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
   if (!tokens) return { valid: true }
 
   const { source } = getAuthTokenSource()
-  const isEnvVarToken = source === 'CLAUDE_CODE_OAUTH_TOKEN' || source === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
+  const isEnvVarToken = source === 'THYROX_CODE_OAUTH_TOKEN' || source === 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { fetchProfileInfo } = require('./oauth/client.ts') as { fetchProfileInfo: (t: string) => Promise<{ rawProfile?: { organization: { uuid: string } } }> }
-  const profileInfo = await fetchProfileInfo(tokens.accessToken)
-  const profile = profileInfo.rawProfile
+  // Porte de 2.1.275: el perfil se pide DESPUÉS de refrescar el token, y
+  // un fallo al pedirlo rehúsa con `org_verify_failed`.
+  // `OAuthProfileResponse` es aún un marcador `unknown`: se acota a lo que se
+  // lee. Un perfil sin `organization.uuid` no verifica nada.
+  const fetched = (await getOauthProfileFromOauthToken(tokens.accessToken)) as
+    | { organization?: { uuid?: string } }
+    | undefined
+  const profile = fetched?.organization?.uuid ? fetched : undefined
   if (!profile) {
     return {
       valid: false,
+      reason: 'org_verify_failed',
       message:
         `Unable to verify organization for the current authentication token.\n` +
-        `This machine requires ${requiredPhrase} but the profile could not be fetched.\n` +
-        `This may be a network error, or the token may lack the user:profile scope required for\n` +
-        `verification (tokens from 'claude setup-token' do not include this scope).\n` +
-        `Try again, or obtain a full-scope token via 'claude auth login'.`,
+        `This machine requires ${requiredPhrase} but the token could not be validated.\n` +
+        `This may be a network error, or the token may have been revoked.\n` +
+        `Try again, or run: claude auth login`,
     }
   }
 
-  const tokenOrgUuid = profile.organization.uuid
+  const tokenOrgUuid = profile.organization?.uuid as string
   if (allowedOrgUuids.includes(tokenOrgUuid)) return { valid: true }
 
   if (isEnvVarToken) {
+    // Se nombra la variable para que el usuario sepa cuál quitar.
+    const envVarName =
+      source === 'THYROX_CODE_OAUTH_TOKEN'
+        ? 'THYROX_CODE_OAUTH_TOKEN'
+        : 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
     return {
       valid: false,
+      reason: 'org_pin_mismatch',
       message:
-        `The ${source} environment variable provides a token for a\n` +
+        `The ${envVarName} environment variable provides a token for a\n` +
         `different organization than required by this machine's managed settings.\n\n` +
         `Required: ${requiredPhrase}\n` +
         `Token organization: ${tokenOrgUuid}\n\n` +
@@ -1562,6 +1620,7 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
 
   return {
     valid: false,
+    reason: 'org_pin_mismatch',
     message: `Your authentication token belongs to organization ${tokenOrgUuid},\nbut this machine requires ${requiredPhrase}.\n\nPlease log in with a permitted organization: claude auth login`,
   }
 }

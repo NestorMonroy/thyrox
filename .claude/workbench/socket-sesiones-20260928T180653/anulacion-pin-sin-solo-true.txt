@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsStorageBackendPin.test.ts:
+22 | 
+23 |   test('sólo el booleano true activa; cualquier otro valor servido cuenta como apagado y se avisa', () => {
+24 |     const warnings: string[] = []
+25 |     const pin = new StorageBackendPin(message => warnings.push(message))
+26 |     expect(pin.pinServed('true')).toBe('pinned')
+27 |     expect(pin.isActive()).toBe(false)
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsStorageBackendPin.test.ts:27:28)
+(fail) StorageBackendPin (N/DBo/dVn) > sólo el booleano true activa; cualquier otro valor servido cuenta como apagado y se avisa [0.31ms]
+
+ 3 pass
+ 1 fail
+ 11 expect() calls
+Ran 4 tests across 1 file. [74.00ms]

@@ -1,0 +1,10 @@
+esperando: 0 de 1 asentados, 30s; vivos: root-tsc-brief
+sonda root-tsc-brief: 25030 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda root-tsc-brief: 25035 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda root-tsc-brief: 25037 node stdin=devnull(/dev/null) escritores=- estado=R cpu=50.76s
+asentado: root-tsc-brief -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     root-tsc-brief
+       | 112
+       | src/packages/agent/commands/brief.ts(89,29): error TS2345: Argument of type '(prev: { isBriefOnly: boolean; }) => { isBriefOnly: boolean; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+       | __BG_EXIT__=0

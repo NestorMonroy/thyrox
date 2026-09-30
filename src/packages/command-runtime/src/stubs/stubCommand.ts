@@ -1,19 +1,26 @@
-/**
- * Porte fiel de `ccnmt: packages/command-runtime/src/stubs/stubCommand.ts`
- * (paquete `command-runtime`, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO.
- *
- * Comando stub compartido entre los puntos de entrada con feature
- * deshabilitada. Reemplaza 17 stubs idénticos de
- * `src/commands/(name)/index.js` (ant-trace, autofix-pr,
- * backfill-sessions, break-cache, bughunter, ctx_viz, debug-tool-call,
- * env, good-claude, issue, mock-limits, oauth-refresh, onboarding,
- * perf-issue, share, summary, teleport) que eran idénticos en la fuente.
- * El registro trata los comandos `isHidden` + `isEnabled=false` como
- * ausentes, así que quien llame ve el mismo comportamiento en tiempo de
- * ejecución mientras el conteo de archivos baja en 17 — ninguno de esos
- * 17 puntos de entrada individuales se porta en este pase; se documentan
- * como reemplazados por este único archivo, siguiendo el mismo criterio
- * de la fuente.
- */
-export default { isEnabled: () => false, isHidden: true, name: 'stub' }
+// Stub command shared across feature-disabled entry points.
+//
+// Replaces 17 individual src/commands/(name)/index.js stubs that were
+// identical (ant-trace, autofix-pr, backfill-sessions, break-cache,
+// bughunter, ctx_viz, debug-tool-call, env, good-claude, issue,
+// mock-limits, oauth-refresh, onboarding, perf-issue, share, summary,
+// teleport). The registry treats isHidden + isEnabled=false commands as
+// absent, so callers see the same runtime behavior as before while the
+// file count drops by 17.
+//
+// Es un `Command` completo y no un objeto suelto: los registros que lo alojan
+// (`BRIDGE_SAFE_COMMANDS`, `INTERNAL_ONLY_COMMANDS`) están tipados como
+// `Command`, y con la forma parcial ninguno compilaba.
+import type { Command } from '@thyrox/agent/command.js'
+
+const stub: Command = {
+  type: 'local',
+  name: 'stub',
+  description: 'Disabled command',
+  isEnabled: () => false,
+  isHidden: true,
+  supportsNonInteractive: false,
+  load: () => Promise.reject(new Error('stub command is disabled and cannot be loaded')),
+}
+
+export default stub

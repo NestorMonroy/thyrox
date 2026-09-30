@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "sh -c parallel -j2 --colsep '\\t' -k bash .claude/workbench/test-isolation-leaks-20260927T080507/pair.sh {1} {2} :::: .claude/workbench/test-isolation-leaks-20260927T080507/pairs.tsv > .claude/workbench/test-isolation-leaks-20260927T080507/pairs-result.tsv", "started_at": "2026-09-27T08:06:36+00:00"}

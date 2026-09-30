@@ -1,0 +1,1 @@
+  return status >= 400 && status < 500 && !fallsOver(status)

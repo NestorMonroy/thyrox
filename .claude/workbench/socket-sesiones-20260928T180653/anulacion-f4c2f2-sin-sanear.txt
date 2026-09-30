@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+66 |   for (let index = 0; index < 5; index++) await Promise.resolve()
+67 | }
+68 | 
+69 | describe('nombres', () => {
+70 |   test('sanitizeSessionName (li): sin controles, 200 puntos de código, sin espacios en los bordes', () => {
+71 |     expect(sanitizeSessionName('  a\u0007b​c  ')).toBe('a b c')
+                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "a b c"
+Received: "  ab​c  "
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:71:50)
+(fail) nombres > sanitizeSessionName (li): sin controles, 200 puntos de código, sin espacios en los bordes [0.42ms]
+204 | 
+205 | describe('restoreSessionName (sae)', () => {
+206 |   test('un nombre vacío o sin registro no hace nada', async () => {
+207 |     await restoreSessionName('  ', 'sess', {}, context)
+208 |     await restoreSessionName('bar', 'sess', {}, { ...context, registry: { ...context.registry, whenRegistered: async () => false } })
+209 |     expect(writes).toEqual([])
+                         ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "  ",
++     "sess",
++     undefined,
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:209:20)
+(fail) restoreSessionName (sae) > un nombre vacío o sin registro no hace nada [0.49ms]
+
+ 20 pass
+ 2 fail
+ 55 expect() calls
+Ran 22 tests across 1 file. [46.00ms]

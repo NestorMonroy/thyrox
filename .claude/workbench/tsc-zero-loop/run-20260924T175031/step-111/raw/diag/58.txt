@@ -1,0 +1,8 @@
+src/packages/bridge/src/bridgeMain.ts(2269,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/bridge/src/bridgeMain.ts(2270,5): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/bridge/src/bridgeMain.ts(2323,9): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/bridge/src/bridgeMain.ts(2324,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

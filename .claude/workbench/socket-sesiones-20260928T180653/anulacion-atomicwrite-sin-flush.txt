@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+207 |       syncs++
+208 |       return original.call(this)
+209 |     }
+210 |     try {
+211 |       await writeFileAtomicWithMode(join(dir, 'f'), 'x', { mode: 0o600, flush: true })
+212 |       expect(syncs).toBe(1)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:212:21)
+(fail) opciones completas de Jne > flush sincroniza el temporal antes de publicarlo [1.22ms]
+227 |       proto.sync = async () => { throw errno('EINVAL') }
+228 |       await writeFileAtomicWithMode(join(dir, 'ok'), 'x', { flush: true })
+229 |       expect(readFileSync(join(dir, 'ok'), 'utf8')).toBe('x')
+230 |       proto.sync = async () => { throw errno('EIO') }
+231 |       writeFileSync(join(dir, 'kept'), 'viejo')
+232 |       await expect(writeFileAtomicWithMode(join(dir, 'kept'), 'x', { flush: true })).rejects.toMatchObject({ code: 'EIO' })
+                                                                                                   ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:232:94)
+(fail) opciones completas de Jne > flush tolera un sync no admitido (EINVAL) y propaga un fallo real sin tocar el destino [1.53ms]
+
+ 25 pass
+ 2 fail
+ 69 expect() calls
+Ran 27 tests across 1 file. [179.00ms]

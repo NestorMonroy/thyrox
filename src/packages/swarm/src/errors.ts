@@ -1,14 +1,3 @@
-/**
- * Errores tipados del dominio swarm — porte de
- * `ccnmt: packages/swarm/src/errors.ts`.
- *
- * Porte VERBATIM: el archivo fuente no tiene ninguna dependencia externa
- * (ni de `adapters/appRuntime.ts` ni de ningún hermano), así que no hay
- * divergencia que declarar. Los cuatro `code` (`SWARM_*`) y los cuatro
- * `name` (`Swarm*Error`) se preservan tal cual — son el identificador de
- * wire-protocol que la telemetría y el log-scraping consumen aguas abajo.
- */
-
 export class SwarmBaseError extends Error {
   readonly code: string
 

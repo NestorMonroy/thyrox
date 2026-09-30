@@ -1,0 +1,30 @@
+src/packages/swarm/__tests__/spawnInProcess.test.ts(314,59): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(329,47): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(340,52): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(343,59): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(361,52): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(382,52): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(394,52): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(407,52): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(420,52): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.
+src/packages/swarm/__tests__/spawnInProcess.test.ts(432,42): error TS2345: Argument of type '(f: (p: never) => never) => void' is not assignable to parameter of type 'SetAppStateFn'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'AppState' is not assignable to type 'never'.

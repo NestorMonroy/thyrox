@@ -8,7 +8,7 @@
  * transcript cada vez. Sin cota, el transcript crece hasta que la
  * llamada principal a la API da 413 ("Prompt is too long"). Este cap
  * es el respaldo estructural: acota la racha por `maxTurns` Y por
- * `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` (default 8). El veredicto
+ * `THYROX_CODE_STOP_HOOK_BLOCK_CAP` (default 8). El veredicto
  * `impossible` del evaluador (`execPromptHook`) puede cortar en corto
  * ALGUNOS casos, pero depende de que el evaluador lo proponga
  * voluntariamente — el cap es la garantía.
@@ -26,20 +26,16 @@
  * `evaluateStopHookBlockOutcome`— y ninguno ejecuta código fuera de
  * esas dos funciones puras.
  *
- * PORTE COMPLETO desde 2026-09-08 (#262). El único símbolo que faltaba
- * —`handleStopHooks`, el generador de integración— entra en este pase, con
- * sus cuatro bloqueos cerrados en el mismo commit:
+ * PORTE COMPLETO, con `handleStopHooks`, el generador de integración. Sus
+ * dependencias:
  *
- *   · las **once** llamadas que hace sobre `getAgentHostBindings()` están
- *     ahora declaradas en `../host.ts`, no sólo dos;
- *   · `getTotalOutputTokens` llegó a `@thyrox/app-host` con la slice E
- *     entera de `bootstrap/state.ts`;
- *   · `isBareMode` entró en `../internalUtils.ts` — su bloqueo era `readEnv`,
- *     que ya existe;
- *   · `@thyrox/memory` se declaró como dependencia y re-exporta
- *     `executeExtractMemories` / `isExtractModeActive` desde su raíz, que es
- *     de donde la fuente los importa.
- *
+ *   · las **once** llamadas sobre `getAgentHostBindings()`, declaradas en
+ *     `../host.ts`;
+ *   · `getTotalOutputTokens`, de `@thyrox/app-host` (slice E de
+ *     `bootstrap/state.ts`);
+ *   · `isBareMode`, de `../internalUtils.ts`;
+ *   · `executeExtractMemories` / `isExtractModeActive`, re-exportados por la
+ *     raíz de `@thyrox/memory`, que es de donde la fuente los importa.
  * Lo que NO viaja, declarado: las tres banderas de compilación de la fuente
  * (`feature('TEMPLATES')`, `feature('EXTRACT_MEMORIES')`,
  * `feature('CHICAGO_MCP')`) provienen de `bun:bundle`, que este árbol no
@@ -50,7 +46,7 @@
 
 /**
  * Resuelve el cap de bloqueos consecutivos del Stop hook. Ant v2.1.143
- * 3999.js: `parseInt(env.CLAUDE_CODE_STOP_HOOK_BLOCK_CAP) ?? 8`, y
+ * 3999.js: `parseInt(env.THYROX_CODE_STOP_HOOK_BLOCK_CAP) ?? 8`, y
  * luego `cap > 0 && n > cap`.
  *
  * - ausente / no-numérico → 8 (el respaldo por defecto)
@@ -64,7 +60,7 @@ import { logEvent as obsLogEvent } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getTotalOutputTokens } from '@thyrox/app-host/bootstrap/state.js'
 import { getAgentHostBindings } from '../host.js'
-import type { HostTask, StopHookExecutionResult } from '../host.js'
+import type { StopHookExecutionResult } from '../host.js'
 import {
   addSessionHook,
   getSessionHooks,
@@ -78,6 +74,7 @@ import type {
   AgentREPLHookContext,
   AgentStopHookInfo,
   AgentSystemPrompt,
+  AgentTask,
   AgentToolUseContext,
 } from '../internalTypes.js'
 
@@ -139,7 +136,7 @@ export function evaluateStopHookBlockOutcome(params: {
 export function stopHookBlockCapMessage(blockingCount: number): string {
   return (
     `A hook blocked the turn from ending ${blockingCount} consecutive times — overriding and ending turn. ` +
-    "For Stop/SubagentStop hooks, check stop_hook_active in the input and return success while it's true. Set CLAUDE_CODE_STOP_HOOK_BLOCK_CAP to raise this limit."
+    "For Stop/SubagentStop hooks, check stop_hook_active in the input and return success while it's true. Set THYROX_CODE_STOP_HOOK_BLOCK_CAP to raise this limit."
   )
 }
 
@@ -185,7 +182,7 @@ export async function* handleStopHooks(
   toolUseContext: AgentToolUseContext,
   querySource: AgentQuerySource,
   stopHookActive?: boolean,
-): AsyncGenerator<unknown, StopHookResult> {
+): AsyncGenerator<AgentMessage, StopHookResult> {
   const hookStartTime = Date.now()
   const host = () => getAgentHostBindings()
 
@@ -212,7 +209,7 @@ export async function* handleStopHooks(
   // una bifurcación de fondo ensucie la línea de tiempo con sus propios
   // mensajes. Se espera al clasificador para que el estado quede escrito
   // antes de que el turno vuelva — si no, un listado muestra estado rancio.
-  const jobDir = readEnv('CLAUDE_JOB_DIR')
+  const jobDir = readEnv('THYROX_JOB_DIR')
   if (jobDir && querySource.startsWith('repl_main_thread') && !toolUseContext.agentId) {
     // Historia completa del turno: `assistantMessages` se reinicia en cada
     // iteración del bucle, así que las llamadas de iteraciones anteriores
@@ -236,7 +233,7 @@ export async function* handleStopHooks(
   // guionizada no quiere auto-memoria ni agentes bifurcados peleándose
   // recursos mientras el proceso se apaga.
   if (!isBareMode()) {
-    if (!isEnvDefinedFalsy(readEnv('CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION'))) {
+    if (!isEnvDefinedFalsy(readEnv('THYROX_CODE_ENABLE_PROMPT_SUGGESTION'))) {
       void host().executePromptSuggestion?.(stopHookContext)
     }
     if (!toolUseContext.agentId && extraccionDeMemoriaActiva()) {
@@ -282,7 +279,7 @@ export async function* handleStopHooks(
     if (appState.activeGoal) {
       try {
         const taskListId = host().getTaskListId?.()
-        const tasks: HostTask[] = (await host().listTasks?.(taskListId)) ?? []
+        const tasks: AgentTask[] = (await host().listTasks?.(taskListId)) ?? []
         const hayTrabajoDeFondo = tasks.some(
           t =>
             (t.status === 'in_progress' || t.status === 'running') &&
@@ -403,21 +400,16 @@ export async function* handleStopHooks(
         let esBloqueoDeObjetivo = false
         const hook = result.hook as { type?: string; prompt?: string } | undefined
         if (hook?.type === 'prompt') {
-          const estado = toolUseContext.getAppState() as {
-            activeGoal?: {
-              condition: string
-              iterations: number
-              paused?: boolean
-            }
-          }
-          const activo = estado.activeGoal
+          const activo = toolUseContext.getAppState().activeGoal
           if (activo && !activo.paused && activo.condition === hook.prompt) {
             esBloqueoDeObjetivo = true
             const reason = result.stopReason
-            toolUseContext.setAppState((prev: unknown) => ({
-              ...(prev as object),
+            // Como el binario 2.1.281: el objetivo nuevo esparce el que se
+            // leyó (`{...Je, iterations: Je.iterations+1, lastReason}`).
+            toolUseContext.setAppState?.(prev => ({
+              ...prev,
               activeGoal: {
-                ...((prev as { activeGoal: object }).activeGoal),
+                ...activo,
                 iterations: activo.iterations + 1,
                 lastReason: reason,
               },
@@ -546,7 +538,7 @@ export async function* handleStopHooks(
 async function* resolverObjetivoAlcanzado(
   result: StopHookExecutionResult,
   toolUseContext: AgentToolUseContext,
-): AsyncGenerator<unknown, void> {
+): AsyncGenerator<AgentMessage, void> {
   const host = getAgentHostBindings()
   const hook = result.hook as { type?: string; prompt?: string } | undefined
   if (hook?.type !== 'prompt' || !hook.prompt) return
@@ -582,8 +574,8 @@ async function* resolverObjetivoAlcanzado(
   } catch {
     // Limpieza de mejor esfuerzo.
   }
-  toolUseContext.setAppState((prev: unknown) => ({
-    ...(prev as object),
+  toolUseContext.setAppState?.(prev => ({
+    ...prev,
     activeGoal: undefined,
   }))
 
@@ -626,7 +618,7 @@ async function* resolverObjetivoAlcanzado(
 async function* hooksDeTeammate(
   permissionMode: string,
   toolUseContext: AgentToolUseContext,
-): AsyncGenerator<unknown, StopHookResult> {
+): AsyncGenerator<AgentMessage, StopHookResult> {
   const host = () => getAgentHostBindings()
   const teammateName = host().getAgentName?.() ?? ''
   const teamName = host().getTeamName?.() ?? ''
@@ -639,8 +631,8 @@ async function* hooksDeTeammate(
   const consumir = async function* (
     gen: AsyncGenerator<StopHookExecutionResult, void>,
     nombreDelHook: 'TaskCompleted' | 'TeammateIdle',
-    mensajeDeBloqueo: (e: unknown) => string,
-  ): AsyncGenerator<unknown, boolean> {
+    mensajeDeBloqueo: (e: { blockingError: string }) => string,
+  ): AsyncGenerator<AgentMessage, boolean> {
     for await (const result of gen) {
       if (result.message) {
         const msg = result.message as { type: string; toolUseID?: string }
@@ -675,7 +667,7 @@ async function* hooksDeTeammate(
   }
 
   const taskListId = host().getTaskListId?.()
-  const tasks: HostTask[] = (await host().listTasks?.(taskListId)) ?? []
+  const tasks: AgentTask[] = (await host().listTasks?.(taskListId)) ?? []
   for (const task of tasks.filter(
     t => t.status === 'in_progress' && t.owner === teammateName,
   )) {

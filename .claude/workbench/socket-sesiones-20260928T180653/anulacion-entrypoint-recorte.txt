@@ -1,0 +1,50 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+55 |   })
+56 | })
+57 | 
+58 | describe('THYROX_CODE_ENTRYPOINT', () => {
+59 |   test('declaredEntrypoint (Nd) sólo devuelve uno conocido, recortado', () => {
+60 |     expect(declaredEntrypoint(context({ THYROX_CODE_ENTRYPOINT: ' cli ' }))).toBe('cli')
+                                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "cli"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:60:78)
+(fail) THYROX_CODE_ENTRYPOINT > declaredEntrypoint (Nd) sólo devuelve uno conocido, recortado [0.35ms]
+84 |   })
+85 | })
+86 | 
+87 | describe('las demás variables del anfitrión', () => {
+88 |   test('THYROX_CODE_DESKTOP_APP_VERSION sólo para el escritorio propio o el agente local', () => {
+89 |     expect(desktopAppVersion(context({ THYROX_CODE_ENTRYPOINT: 'claude-desktop', THYROX_CODE_DESKTOP_APP_VERSION: ' 1.2 ' }))).toBe('1.2')
+                                                                                                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: "1.2"
+Received: " 1.2 "
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:89:128)
+(fail) las demás variables del anfitrión > THYROX_CODE_DESKTOP_APP_VERSION sólo para el escritorio propio o el agente local [0.12ms]
+ 95 |     expect(isHostManagedGateway(context({ ...base, THYROX_CODE_ENTRYPOINT: 'claude-desktop' }))).toBe(true)
+ 96 |     expect(isHostManagedGateway(context({ ...base, THYROX_CODE_ENTRYPOINT: 'cli' }))).toBe(false)
+ 97 |     const lineage = { ...base, THYROX_CODE_HOST_GATEWAY_LINEAGE: 'on', THYROX_CODE_HOST_CREDS_FILE: '/c' }
+ 98 |     expect(isHostManagedGateway(context(lineage))).toBe(true)
+ 99 |     expect(isHostGatewayLineageManaged(context(lineage))).toBe(true)
+100 |     expect(isHostGatewayLineageManaged(context({ ...lineage, THYROX_CODE_HOST_CREDS_FILE: ' ' }))).toBe(false)
+                                                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:100:100)
+(fail) las demás variables del anfitrión > THYROX_CODE_PROVIDER_MANAGED_BY_HOST, THYROX_CODE_USE_GATEWAY, THYROX_CODE_HOST_GATEWAY_LINEAGE y THYROX_CODE_HOST_CREDS_FILE [0.28ms]
+
+ 13 pass
+ 3 fail
+ 86 expect() calls
+Ran 16 tests across 1 file. [63.00ms]

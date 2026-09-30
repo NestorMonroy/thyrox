@@ -1,0 +1,283 @@
+run-task-pool: 22 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/workbench/triaje-rojos-l6-20260923T234742/logs-sin-raiz/sinraiz-20260923T235040
+  sinraiz-20260923T235040/sinraiz-001 pid 26746   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/corpus/test_censo_contraparte.py
+  sinraiz-20260923T235040/sinraiz-002 pid 26764   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/hooks/test-bridge-hooks.sh
+  sinraiz-20260923T235040/sinraiz-003 pid 26815   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/lib/test-node-resolution.sh
+  sinraiz-20260923T235040/sinraiz-004 pid 26958   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/lib/test-reach-pythonpath.sh
+  sinraiz-20260923T235040/sinraiz-005 pid 26980   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/lib/test-reach-sh.sh
+  sinraiz-20260923T235040/sinraiz-006 pid 27141   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/lib/test-toolchain-sh.sh
+  sinraiz-20260923T235040/sinraiz-007 pid 27169   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/lib/test-workbench-sh.sh
+  sinraiz-20260923T235040/sinraiz-008 pid 27258   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/session/test_generate_bin.py
+  sinraiz-20260923T235040/sinraiz-009 pid 27274   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/session/test_session_restart.py
+  sinraiz-20260923T235040/sinraiz-010 pid 27340   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/task/test-implementation-order.sh
+  sinraiz-20260923T235040/sinraiz-011 pid 27525   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-cross-model-read.sh
+  sinraiz-20260923T235040/sinraiz-012 pid 27624   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-eventos-hook.sh
+  sinraiz-20260923T235040/sinraiz-013 pid 28051   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-gitattributes.sh
+  sinraiz-20260923T235040/sinraiz-014 pid 28200   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-hook-script-token.sh
+  sinraiz-20260923T235040/sinraiz-015 pid 28327   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-premise-drift.sh
+  sinraiz-20260923T235040/sinraiz-016 pid 28411   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-script-naming.sh
+  sinraiz-20260923T235040/sinraiz-017 pid 28833   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test-verificar-premisa.sh
+  sinraiz-20260923T235040/sinraiz-018 pid 29006   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src bash tests/verify/test_package_root_resolution.sh
+  sinraiz-20260923T235040/sinraiz-019 pid 29372   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_path_arithmetic.py
+  sinraiz-20260923T235040/sinraiz-020 pid 29443   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_pre_commit_hook.py
+  sinraiz-20260923T235040/sinraiz-021 pid 29731   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_runner.py
+  sinraiz-20260923T235040/sinraiz-022 pid 29791   cd /home/user/thyrox && env -u THYROX_ROOT -u THYROX_REACH_ROOT PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_script_naming_scope.py
+run-task-pool: lanzados 22 de 22; esperando en PRIMER PLANO (timeout 600s)
+asentado: sinraiz-20260923T235040_sinraiz-001 -> OK (2 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-002 -> OK (3 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-003 -> OK (4 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-004 -> OK (5 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-005 -> OK (6 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-006 -> OK (7 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-007 -> OK (8 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-008 -> OK (9 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-009 -> OK (10 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-010 -> OK (11 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-011 -> OK (12 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-012 -> OK (13 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-013 -> OK (14 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-014 -> OK (15 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-015 -> OK (16 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-016 -> OK (17 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-017 -> OK (18 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-018 -> OK (19 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-019 -> OK (20 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-020 -> OK (21 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-021 -> OK (22 de 23)
+asentado: sinraiz-20260923T235040_sinraiz-022 -> OK (23 de 23)
+== 23 trabajos asentados ==
+OLVIDADO sinraiz-20260923T235040
+       | (vacío — no emitió nada)
+OK     sinraiz-20260923T235040_sinraiz-001
+       |         esperado=[0] obtenido=[2]
+       | == 9. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==
+       |   ok    el repo censado no cae a un consumidor concreto
+       |   ok    el árbol de referencia no se nombra en el mecanismo
+       |   ok    qué marca la unidad censada se declara
+       |   ok    y su constante existe
+       |   ok    igual que la del árbol de referencia
+       | 
+       | 11 ok, 9 fallos
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-002
+       |         esperado=[2] obtenido=[1]
+       |   ok    Stop NO se puentea por defecto
+       |   ok    Stop entra con --include-stop
+       |   ok    --include-stop suma comandos
+       |   ok    dry-run no escribe (control)
+       |   ok    dry-run anuncia que no escribió
+       |   ok    dry-run muestra el diff
+       | 
+       | aserciones: 11  ok: 10  fallo: 1
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-003
+       | OK   arbol real: el duenyo es alcanzable desde src/packages/agent
+       | FALLA arbol real: el duenyo esta anclado al store de la raiz — esperado 'anclado', obtenido 'no'
+       | OK   izado: el duenyo es la raiz, acepta
+       | OK   aislado que ancla en la raiz: acepta
+       | OK   aislado que ancla en la raiz ANIDADA: rehusa
+       | OK   jardin sin entradas: rehusa, no publica un cero
+       | OK   solo hermanos de workspace: rehusa (no son entradas del store)
+       | 
+       | aserciones: 11 de 12 · fallos: 1
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-004
+       | === Caso 4: el prepend NO pisa lo que el llamador ya traia ===
+       |   ok    src va delante y lo del llamador sobrevive
+       | === Caso 5: dos source no duplican la entrada ===
+       |   ok    el guard de doble inclusion lo cubre
+       | === Caso 6: 0 guiones de PRODUCCION invocan un modulo que no podran importar ===
+       |   FALLO 1 guion(es) de produccion invocan un modulo que no podran importar:
+       |         .githooks/commit-msg -> src/verify/commit_identity.py
+       | 
+       | 6 casos: 5 ok, 1 fallos
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-005
+       |   ok    la declaracion gana
+       | === Caso 7 (DEC-04): THYROX_ENV_FILE declara la raiz, sin ascender ===
+       |   ok    la declaracion por archivo resuelve
+       | === Caso 8 (DEC-04): el marcador es CONSTANTE con entrada de entorno ===
+       |   ok    el marcador se declara, no se cablea
+       | 
+       | alcance medido: 8 aserciones sobre /home/user/thyrox/src/lib/reach.sh
+       | 
+       | 8 casos: 8 ok, 0 fallos
+       | EXIT=0
+OK     sinraiz-20260923T235040_sinraiz-006
+       |   ok    el selector existe
+       |   ok    el proveedor usa su propio entorno
+       |   ok    sin entorno rehusa y nombra uv sync
+       |   FALLO esperaba 'uv run --project <ruta de api>', dio ''
+       |   ok    proveedor y consumidor son entornos distintos
+       |   ok    un consumidor desconocido se rehusa
+       | 
+       | 6 casos: 5 ok, 1 fallos
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-007
+       |         esperado=[contenido]
+       |         obtenido=[]
+       |   FALLO sin runs devuelve 1, no una ruta inventada
+       |         esperado=[1]
+       |         obtenido=[2]
+       |   ok    rehusa sin slug
+       |   ok    el resolutor tambien se exporta a procesos hijos
+       | 
+       | 16 casos: 12 ok, 4 fallos
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-008
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |   ok   y el plan medido no esta vacio
+       | 
+       | 118 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=0
+OK     sinraiz-20260923T235040_sinraiz-009
+       |   ok    una mencion SIN clave no se toma por declaracion
+       |   ok    sin transcript NO se afirma que haga falta
+       |   ok    y se declara que no se midio
+       |   ok    y el denominador sigue siendo cero
+       |   ok    con transcript SI se mide
+       |   ok    y ahi el veredicto es booleano
+       |   ok    mencion y disparo difieren
+       | 
+       | OK=33 FAILED=2
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-010
+       |   FALLO y publica su denominador
+       |         esperado=[1] obtenido=[0]
+       | == 9. universo vacio: no revienta ==
+       |   ok    directorio sin tareas sale 0
+       | == 10. el sustrato lo decide el llamador: el mismo universo por stdin (#579) ==
+       |   ok    por stdin cuenta las mismas 16 tareas
+       |   ok    por stdin arma el mismo graph (13 edges, 3 cycles)
+       | 
+       | test-implementation-order.sh: 27 ok · 1 fallo(s)
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-011
+       | FALLA archivo real del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+       | OK   archivo fuera de la superficie: el gate SE EXIME
+       | OK   guard sin node_modules en la cadena: exit 2
+       | OK   guard sin node_modules: nombra lo que falta
+       | OK   guard con un duenyo que no es la raiz: exit 2
+       | OK   ningun echo del gate lleva sustitucion viva
+       | 
+       | aserciones: 5 de 6 · fallos: 1
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-012
+       |   ok   la caja distinta sale con codigo 1
+       |   ok   un evento valido no bloquea
+       |   ok   sin universo derivable sale con codigo 2
+       |   ok   el reporte declara ambos universos
+       |   ok   el reporte nombra los eventos sin consumir
+       |   FALLA la raiz del arbol de trabajo entra en el alcance — esperado [1] obtenido [0]
+       |   ok   SIN MEDIR — ningun evento es exclusivo del archivo externo
+       | 
+       | 8 ok · 1 falla(s)
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-013
+       |   esperado: 4
+       |   obtenido: 0
+       | FALLO: 6a. con un repo fuera, el alcance baja a 4
+       |   esperado: si
+       |   obtenido: no
+       | FALLO: 6b. el repo ausente se nombra
+       |   esperado: si
+       |   obtenido: no
+       | test-gitattributes: 13 de 21 aserciones en verde
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-014
+       | AVISO: no se hallo el comando real con separador — el caso 4 no midio nada
+       | test-hook-script-token: 20 de 21 aserciones en verde
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-015
+       |        esperaba 2, obtuvo ''
+       |   ok   json.load sobre el archivo entero FALLA: no es un documento unico
+       |   FAIL cada linea parsea por separado
+       |        esperaba si, obtuvo no
+       | == guard: sin el directorio de fichas NO se emite cifra
+       |   FAIL exit 2 y sin conteo
+       |        esperaba 2, obtuvo 1
+       | 
+       | 3 ok, 13 fallo(s)  (alcance medido: 16 asercion(es))
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-016
+       |   ok   y nombra el PARAMETRO: la firma es parte del eje
+       |   ok   y el eje del NOMBRE de ese mismo archivo pasa
+       |   ok   traducido, el eje de identificadores pasa
+       |   ok   sin lexico el eje de identificadores sale con 2
+       |   ok   y nombra el lexico que le falta
+       |   ok   el reporte de identificadores declara el alcance
+       |   FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [242]
+       | 
+       | 29 ok · 2 falla(s)
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-017
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 446, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       |   FALLO el proveedor entra en PATH_ROOTS
+       |         esperado=[si] obtenido=[]
+       |   ok    la composicion de PATH_ROOTS no nombra ninguna raiz
+       | 
+       | test-verificar-premisa.sh: 5 ok · 18 fallo(s)
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-018
+       |   ok   agent-artifacts resuelve su paquete dentro del árbol
+       |   ok   cli-typecheck resuelve su paquete dentro del árbol
+       |   FALLO cli-typecheck mide los dos proyectos del paquete
+       |        esperado: mide
+       |        obtenido: otra
+       |   ok   cli-typecheck sale 0 sobre el arbol limpio
+       |   ok   la variable gana sobre la resolución por árbol
+       | 
+       | test-package-root-resolution: 4 ok, 1 falla
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-019
+       |   ok    sin --strict, un incumplidor nuevo NO bloquea
+       |   ok    pero se nombra en la salida
+       |   ok    con --strict, el incumplidor nuevo bloquea
+       |   ok    --write-baseline sale 0
+       |   ok    y congela la entrada
+       |   ok    congelada, la deuda heredada NO bloquea
+       |   ok    --quiet publica sólo el conteo, pelado
+       | 
+       | resultado: 16 de 17 aserciones en verde
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-020
+       | Traceback (most recent call last):
+       |   File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 247, in setUp
+       |     self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+       | AssertionError: 1 != 0
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 10 tests in 1.871s
+       | 
+       | FAILED (failures=10)
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-021
+       | 'check_bench_untracked.py'
+       | 
+       | - ['check_bench_untracked.py', 'check_meta_timestamps.py', 'check_rst_toctree.py']
+       | + [] : 3 gate(s) en disco sin registrar
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 18 tests in 0.204s
+       | 
+       | FAILED (failures=1)
+       | EXIT=1
+OK     sinraiz-20260923T235040_sinraiz-022
+       |   FAIL el eje de separador no reporta el banco: 1 != 0
+       |        265 archivo(s) del banco, p.ej. .claude/eventos/acl-en-las-referencias-20260827T192754/sondas/censo_dato_acl.py
+       |   FAIL el eje de identificadores no reporta el banco: 265 != 0
+       | === Caso 4: el descuento no apaga el eje — sigue midiendo producto ===
+       |   OK   el eje de idioma sigue midiendo archivos
+       |   OK   el eje de separador sigue midiendo archivos
+       |   OK   el eje de identificadores sigue midiendo archivos
+       | 
+       | 4 ok, 4 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+       | EXIT=1
+__BG_EXIT__=0

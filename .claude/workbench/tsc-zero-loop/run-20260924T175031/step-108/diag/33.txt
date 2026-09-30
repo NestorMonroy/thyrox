@@ -1,0 +1,99 @@
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(194,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/permissionUpdatePure.test.ts:184-204 ---
+    184      // refuse this dangerous request.
+    185      expect(createReadRuleSuggestion('/')).toBeUndefined()
+    186    })
+    187  
+    188    test('Windows-shaped path on non-Windows platform — backslashes preserved', () => {
+    189      // toPosixPath only converts \ to / on `windows` platform. On macOS
+    190      // (test machine), backslashes pass through. Documents the platform
+    191      // dependency — test result reflects the test runner's host.
+    192      const result = createReadRuleSuggestion('C:\\Users\\me')
+    193      // posix.isAbsolute('C:\\Users\\me') is false → no leading slash added.
+    194>     expect(result?.rules[0]?.ruleContent).toBe('C:\\Users\\me/**')
+    195    })
+    196  
+    197    test('default destination is "session" if not provided', () => {
+    198      expect(createReadRuleSuggestion('/some/path')?.destination).toBe(
+    199        'session',
+    200      )
+    201    })
+    202  
+    203    test('custom destination overrides default', () => {
+    204      expect(
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(215,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/permissionUpdatePure.test.ts:205-225 ---
+    205        createReadRuleSuggestion('/some/path', 'localSettings')?.destination,
+    206      ).toBe('localSettings')
+    207    })
+    208  
+    209    test('preserves trailing slashes if present', () => {
+    210      // Documents that the function does NOT normalize trailing slashes.
+    211      // Caller is responsible for already-clean path input.
+    212      const result = createReadRuleSuggestion('/some/path/')
+    213      // toPosixPath leaves the trailing slash. Then the absolute check
+    214      // sees /some/path/ as absolute → wrapped as //some/path//**
+    215>     expect(result?.rules[0]?.ruleContent).toBe('//some/path//**')
+    216    })
+    217  
+    218    test('rule structure — addRules type, behavior allow, toolName Read', () => {
+    219      // Anchor the structure so refactors that change e.g. behavior to
+    220      // 'ask' (which would surface a permission prompt) get caught.
+    221      const result = createReadRuleSuggestion('/x/y')
+    222      expect(result?.type).toBe('addRules')
+    223      expect(result?.behavior).toBe('allow')
+    224      expect(result?.rules[0]?.toolName).toBe('Read')
+    225      expect(result?.rules.length).toBe(1)
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(223,20): error TS2339: Property 'behavior' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/permissionUpdatePure.test.ts:213-227 ---
+    213      // toPosixPath leaves the trailing slash. Then the absolute check
+    214      // sees /some/path/ as absolute → wrapped as //some/path//**
+    215      expect(result?.rules[0]?.ruleContent).toBe('//some/path//**')
+    216    })
+    217  
+    218    test('rule structure — addRules type, behavior allow, toolName Read', () => {
+    219      // Anchor the structure so refactors that change e.g. behavior to
+    220      // 'ask' (which would surface a permission prompt) get caught.
+    221      const result = createReadRuleSuggestion('/x/y')
+    222      expect(result?.type).toBe('addRules')
+    223>     expect(result?.behavior).toBe('allow')
+    224      expect(result?.rules[0]?.toolName).toBe('Read')
+    225      expect(result?.rules.length).toBe(1)
+    226    })
+    227  })
+  Property 'behavior' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(224,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/permissionUpdatePure.test.ts:214-227 ---
+    214      // sees /some/path/ as absolute → wrapped as //some/path//**
+    215      expect(result?.rules[0]?.ruleContent).toBe('//some/path//**')
+    216    })
+    217  
+    218    test('rule structure — addRules type, behavior allow, toolName Read', () => {
+    219      // Anchor the structure so refactors that change e.g. behavior to
+    220      // 'ask' (which would surface a permission prompt) get caught.
+    221      const result = createReadRuleSuggestion('/x/y')
+    222      expect(result?.type).toBe('addRules')
+    223      expect(result?.behavior).toBe('allow')
+    224>     expect(result?.rules[0]?.toolName).toBe('Read')
+    225      expect(result?.rules.length).toBe(1)
+    226    })
+    227  })
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(225,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/permissionUpdatePure.test.ts:215-227 ---
+    215      expect(result?.rules[0]?.ruleContent).toBe('//some/path//**')
+    216    })
+    217  
+    218    test('rule structure — addRules type, behavior allow, toolName Read', () => {
+    219      // Anchor the structure so refactors that change e.g. behavior to
+    220      // 'ask' (which would surface a permission prompt) get caught.
+    221      const result = createReadRuleSuggestion('/x/y')
+    222      expect(result?.type).toBe('addRules')
+    223      expect(result?.behavior).toBe('allow')
+    224      expect(result?.rules[0]?.toolName).toBe('Read')
+    225>     expect(result?.rules.length).toBe(1)
+    226    })
+    227  })
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.

@@ -1,0 +1,2 @@
+                      available_ram_kb=args.available_ram_kb, vram_floor_mib=args.vram_floor_mib,
+                      gpu_interval_s=args.gpu_interval)

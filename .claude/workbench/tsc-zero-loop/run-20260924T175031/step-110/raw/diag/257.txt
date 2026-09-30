@@ -1,0 +1,1 @@
+src/packages/shell/src/sandbox/sandbox-adapter.ts(778,17): error TS2339: Property 'getSandboxBinaryPath' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/config/settings/settings")'.

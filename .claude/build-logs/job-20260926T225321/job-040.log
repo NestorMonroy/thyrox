@@ -1,0 +1,11 @@
+OK   ruta absoluta del paquete: el gate MIDE
+OK   ruta absoluta del .md derivado: el gate MIDE
+OK   ruta relativa del paquete: el gate MIDE
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules/zod: exit 2
+OK   guard sin node_modules/zod: nombra la biblioteca y el comando
+OK   guard con zod distinta de la fijada: exit 2
+OK   guard con zod distinta: nombra la instalada y la fijada
+
+aserciones: 8 de 8 · fallos: 0
+EXIT=0

@@ -1,0 +1,36 @@
+== 1. usage_of — un mensaje assistant con las cuatro claves ==
+  ok    las cuatro claves mapeadas
+== 2. usage_of — un mensaje sin type assistant da None ==
+  ok    un mensaje de usuario no aplica
+== 3. usage_of — un assistant SIN usage da None, no revienta ==
+  ok    sin la clave usage
+== 4. usage_of — clave AUSENTE dentro de usage cuenta 0, no revienta ==
+  ok    cache_creation en 0 cuando falta la clave
+== 5. accumulate — suma básica de dos mensajes con ids distintos ==
+  ok    input sumado
+  ok    cache_creation sumado
+  ok    cache_read sumado
+  ok    output sumado
+  ok    dos ids únicos aportaron
+  ok    total() suma los cuatro
+== 6. DISCRIMINA: tres líneas con el MISMO id cuentan UNA vez ==
+  ok    input NO se triplica
+  ok    cache_read NO se triplica
+  ok    un solo id único, aunque aparezca 3 veces
+== 7. accumulate ignora lo que no aplica sin romperse ==
+  ok    sólo el que trae usage cuenta
+  ok    y su input se refleja
+== 8. accumulate de CERO líneas da Usage en ceros, sin excepción ==
+  ok    los cuatro componentes en 0
+  ok    cero mensajes únicos
+  ok    total() también da 0
+== 9. un message.id AUSENTE no se deduplica — se cuenta igual ==
+  ok    las dos apariciones sin id se suman (no se puede deduplicar)
+  ok    y cada una cuenta como su propio mensaje
+== 10. weighted — con pesos inyectados da la combinación esperada ==
+  ok    weighted() combina cada componente con su peso
+== 11. weighted — SIN peso inyectado da 0.0, no hay precio oculto ==
+  ok    un mapping vacío no asume ningún peso por defecto
+
+22 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+179 |   test('una línea en blanco, una ilegible o un fragmento final ilegible cierran la conexión', async () => {
+180 |     await exchange(['\n'], { waitMs: 400 })
+181 |     await exchange(['nope\n'], { waitMs: 400 })
+182 |     await exchange(['nope'], { waitMs: 400 })
+183 |     const drops = warnings.filter(message => message.startsWith('[uds-messaging] Dropped'))
+184 |     expect(drops).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   "[uds-messaging] Dropped a blank line from a connection that did not authenticate; closing it",
+    "[uds-messaging] Dropped an unparseable line from a connection that did not authenticate; closing it",
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:184:19)
+(fail) con autenticación exigida > una línea en blanco, una ilegible o un fragmento final ilegible cierran la conexión [17.23ms]
+
+ 16 pass
+ 1 fail
+ 29 expect() calls
+Ran 17 tests across 1 file. [548.00ms]

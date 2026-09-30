@@ -1,21 +1,18 @@
 /**
- * Porte de `ccnmt: packages/agent/zodSchema/zodToJsonSchema.ts`.
- * Convierte schemas de Zod v4 a JSON Schema usando el `toJSONSchema`
- * nativo del paquete.
+ * Converts Zod v4 schemas to JSON Schema using native toJSONSchema.
  */
 
 import { toJSONSchema, type ZodTypeAny } from 'zod/v4'
 
 export type JsonSchema7Type = Record<string, unknown>
 
-// toolToAPISchema() corre esto para cada herramienta en cada request de
-// API (~60-250 veces/turno). Los schemas de herramienta se envuelven con
-// lazySchema(), que garantiza la misma referencia ZodTypeAny por sesión,
-// así que se puede cachear por identidad.
+// toolToAPISchema() runs this for every tool on every API request (~60-250
+// times/turn). Tool schemas are wrapped with lazySchema() which guarantees the
+// same ZodTypeAny reference per session, so we can cache by identity.
 const cache = new WeakMap<ZodTypeAny, JsonSchema7Type>()
 
 /**
- * Convierte un schema de Zod v4 a formato JSON Schema.
+ * Converts a Zod v4 schema to JSON Schema format.
  */
 export function zodToJsonSchema(schema: ZodTypeAny): JsonSchema7Type {
   const hit = cache.get(schema)

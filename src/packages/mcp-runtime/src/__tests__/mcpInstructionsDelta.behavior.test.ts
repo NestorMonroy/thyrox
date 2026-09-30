@@ -8,7 +8,7 @@ import { resolve } from 'path'
  * that decides which MCP server instructions to announce on each turn.
  *
  * Critical invariants worth pinning:
- *  1. Env override CLAUDE_CODE_MCP_INSTR_DELTA wins over both `USER_TYPE=ant`
+ *  1. Env override THYROX_CODE_MCP_INSTR_DELTA wins over both `USER_TYPE=ant`
  *     AND the GrowthBook gate `tengu_basalt_3kr`. Order matters: truthy first
  *     (early-return true), falsy second (early-return false), then default.
  *  2. Default-enabled paths: `USER_TYPE === 'ant'` OR GrowthBook gate.
@@ -28,17 +28,17 @@ describe('mcpInstructionsDelta — source pins', () => {
   )
 
   describe('isMcpInstructionsDeltaEnabled — gate ordering', () => {
-    test('CLAUDE_CODE_MCP_INSTR_DELTA truthy → return true (highest priority)', () => {
+    test('THYROX_CODE_MCP_INSTR_DELTA truthy → return true (highest priority)', () => {
       expect(source).toMatch(
-        /if \(isEnvTruthy\(process\.env\.CLAUDE_CODE_MCP_INSTR_DELTA\)\) return true/,
+        /if \(isEnvTruthy\(process\.env\.THYROX_CODE_MCP_INSTR_DELTA\)\) return true/,
       )
     })
 
-    test('CLAUDE_CODE_MCP_INSTR_DELTA defined-falsy → return false (second priority)', () => {
+    test('THYROX_CODE_MCP_INSTR_DELTA defined-falsy → return false (second priority)', () => {
       // Pin: defined-falsy (0, false, no, off), NOT just !truthy. Caller
       // explicitly setting `=false` MUST disable even if USER_TYPE=ant.
       expect(source).toMatch(
-        /if \(isEnvDefinedFalsy\(process\.env\.CLAUDE_CODE_MCP_INSTR_DELTA\)\) return false/,
+        /if \(isEnvDefinedFalsy\(process\.env\.THYROX_CODE_MCP_INSTR_DELTA\)\) return false/,
       )
     })
 
@@ -62,8 +62,8 @@ describe('mcpInstructionsDelta — source pins', () => {
       )?.[0]
       expect(fn).toBeTruthy()
       // Position check: truthy line < falsy line < return line.
-      const truthyIdx = fn!.indexOf("isEnvTruthy(process.env.CLAUDE_CODE_MCP_INSTR_DELTA)")
-      const falsyIdx = fn!.indexOf("isEnvDefinedFalsy(process.env.CLAUDE_CODE_MCP_INSTR_DELTA)")
+      const truthyIdx = fn!.indexOf("isEnvTruthy(process.env.THYROX_CODE_MCP_INSTR_DELTA)")
+      const falsyIdx = fn!.indexOf("isEnvDefinedFalsy(process.env.THYROX_CODE_MCP_INSTR_DELTA)")
       const antIdx = fn!.indexOf("USER_TYPE === 'ant'")
       expect(truthyIdx).toBeGreaterThan(-1)
       expect(falsyIdx).toBeGreaterThan(truthyIdx)

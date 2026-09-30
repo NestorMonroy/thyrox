@@ -1,0 +1,82 @@
+asentado: bisect-agent -> OK (1 de 9)
+asentado: bisect-agent2 -> OK (2 de 9)
+asentado: bun-link -> OK (3 de 9)
+asentado: escaped-after -> OK (4 de 9)
+asentado: escaped-before -> OK (5 de 9)
+asentado: head-rerun -> OK (6 de 9)
+asentado: own-self -> OK (7 de 9)
+asentado: own-tr-repl -> OK (8 de 9)
+asentado: serial-rerun -> OK (9 de 9)
+== 9 trabajos asentados ==
+OK     bisect-agent
+       | sin contaminación con todos juntos
+       | __BG_EXIT__=1
+       memoria pico: 267388 KB (261 MB) · pared 14.98s
+OK     bisect-agent2
+       | sin contaminación con todos juntos
+       | __BG_EXIT__=1
+       memoria pico: 250964 KB (245 MB) · pared 13.94s
+OK     bun-link
+       | [0.09ms] ".env"
+       | bun install v1.3.11 (af24e281)
+       | Resolving dependencies
+       | Resolved, downloaded and extracted [62]
+       | Saved lockfile
+       | 
+       | 5 packages installed [4.73s]
+       | __BG_EXIT__=0
+       memoria pico: 49312 KB (48 MB) · pared 4.73s
+OK     escaped-after
+       | OK     job-20260927T013008_job-012
+       |        | EXIT=0
+       |        memoria pico: 64276 KB (63 MB) · pared 0.13s
+       | OK     job-20260927T013008_job-013
+       |        | EXIT=0
+       |        memoria pico: 224684 KB (219 MB) · pared 2.24s
+       | OK     job-20260927T013008_job-014
+       |        | EXIT=0
+       |        memoria pico: 254068 KB (248 MB) · pared 6.56s
+       | __BG_EXIT__=0
+       memoria pico: 2519132 KB (2460 MB) · pared 90.21s
+OK     escaped-before
+       | OK     job-20260927T012834_job-005
+       |        | EXIT=0
+       |        memoria pico: 650880 KB (636 MB) · pared 7.19s
+       | OK     job-20260927T012834_job-006
+       |        | EXIT=0
+       |        memoria pico: 868084 KB (848 MB) · pared 11.98s
+       | OK     job-20260927T012834_job-007
+       |        | EXIT=0
+       |        memoria pico: 1058428 KB (1034 MB) · pared 15.85s
+       | __BG_EXIT__=0
+       memoria pico: 1058428 KB (1034 MB) · pared 38.58s
+OK     head-rerun
+       | __BG_EXIT__=0
+       memoria pico: 271260 KB (265 MB) · pared 21.63s
+OK     own-self
+       | == 3 trabajos asentados ==
+       | OLVIDADO job-20260927T012650
+       |        | (vacío — no emitió nada)
+       | OK     job-20260927T012650_job-001
+       |        | EXIT=0
+       |        memoria pico: 886884 KB (866 MB) · pared 13.73s
+       | OK     job-20260927T012650_job-002
+       |        | EXIT=0
+       |        memoria pico: 1066360 KB (1041 MB) · pared 18.61s
+       | __BG_EXIT__=0
+       memoria pico: 1066360 KB (1041 MB) · pared 19.24s
+OK     own-tr-repl
+       | == 3 trabajos asentados ==
+       | OLVIDADO job-20260927T012514
+       |        | (vacío — no emitió nada)
+       | OK     job-20260927T012514_job-001
+       |        | EXIT=0
+       |        memoria pico: 907016 KB (886 MB) · pared 20.65s
+       | OK     job-20260927T012514_job-002
+       |        | EXIT=0
+       |        memoria pico: 1076004 KB (1051 MB) · pared 24.21s
+       | __BG_EXIT__=0
+       memoria pico: 1076004 KB (1051 MB) · pared 25.85s
+OK     serial-rerun
+       | __BG_EXIT__=0
+       memoria pico: 267392 KB (261 MB) · pared 20.04s

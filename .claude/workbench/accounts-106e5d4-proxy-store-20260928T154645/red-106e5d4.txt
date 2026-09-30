@@ -1,0 +1,5 @@
+(fail) startProxyServer: credenciales del store de conexiones > un upstream sin credenciales declaradas usa las de su proveedor en el store [9.20ms]
+(fail) startProxyServer: credenciales del store de conexiones > el store se relee en cada petición: una conexión nueva sirve sin reiniciar [8.07ms]
+(fail) startProxyServer: credenciales del store de conexiones > rateLimit protege también las credenciales de clave de API del store [9.08ms]
+ 22 pass
+ 3 fail

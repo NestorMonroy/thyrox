@@ -1,0 +1,179 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(6,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:1-16 ---
+      1  // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+      2  import React, { useMemo } from 'react'
+      3  import { Ansi, Box, Text } from '@anthropic/ink'
+      4  import { FilePathLink } from '../FilePathLink.js'
+      5  import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
+      6> import type { Attachment } from '@thyrox/agent/attachments.js'
+      7  import { isBgAgentPanelEnabled } from '../tasks/taskStatusUtils.js'
+      8  import type { NullRenderingAttachmentType } from './nullRenderingAttachments.js'
+      9  import { useAppState } from '../../appStateHooks.js'
+     10  import { getDisplayPath } from '@thyrox/storage/file.js'
+     11  import { formatFileSize } from '@thyrox/output/formatters'
+     12  import { MessageResponse } from '../MessageResponse.js'
+     13  import { basename, sep } from 'path'
+     14  import { UserTextMessage } from './UserTextMessage.js'
+     15  import { DiagnosticsDisplay } from '../DiagnosticsDisplay.js'
+     16  import { getContentText } from '@thyrox/agent/messages.js'
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(63,56): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:53-73 ---
+     53    const bg = useSelectedMessageBg()
+     54    // Hoisted to mount-time — per-message component, re-renders on every scroll.
+     55    const isDemoEnv = feature('EXPERIMENTAL_SKILL_SEARCH')
+     56      ?
+     57        useMemo(() => isEnvTruthy(process.env.IS_DEMO), [])
+     58      : false
+     59    // Handle teammate_mailbox BEFORE switch
+     60    if (isAgentSwarmsEnabled() && attachment.type === 'teammate_mailbox') {
+     61      // Filter out idle notifications BEFORE counting - they are hidden in the UI
+     62      // so showing them in the count would be confusing ("2 messages in mailbox:" with nothing shown)
+     63>     const visibleMessages = attachment.messages.filter(msg => {
+     64        if (isShutdownApproved(msg.text)) {
+     65          return false
+     66        }
+     67        try {
+     68          const parsed = jsonParse(msg.text)
+     69          return (
+     70            parsed?.type !== 'idle_notification' &&
+     71            parsed?.type !== 'teammate_terminated'
+     72          )
+     73        } catch {
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(83,31): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:73-93 ---
+     73        } catch {
+     74          return true // Non-JSON messages are visible
+     75        }
+     76      })
+     77  
+     78      if (visibleMessages.length === 0) {
+     79        return null
+     80      }
+     81      return (
+     82        <Box flexDirection="column">
+     83>         {visibleMessages.map((msg, idx) => {
+     84            // Try to parse as JSON for task_assignment messages
+     85            let parsedMsg: {
+     86              type?: string
+     87              taskId?: string
+     88              subject?: string
+     89              assignedBy?: string
+     90            } | null = null
+     91            try {
+     92              parsedMsg = jsonParse(msg.text)
+     93            } catch {
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(83,36): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:73-93 ---
+     73        } catch {
+     74          return true // Non-JSON messages are visible
+     75        }
+     76      })
+     77  
+     78      if (visibleMessages.length === 0) {
+     79        return null
+     80      }
+     81      return (
+     82        <Box flexDirection="column">
+     83>         {visibleMessages.map((msg, idx) => {
+     84            // Try to parse as JSON for task_assignment messages
+     85            let parsedMsg: {
+     86              type?: string
+     87              taskId?: string
+     88              subject?: string
+     89              assignedBy?: string
+     90            } | null = null
+     91            try {
+     92              parsedMsg = jsonParse(msg.text)
+     93            } catch {
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(151,14): error TS7006: Parameter 's' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:141-161 ---
+    141    // skill_discovery rendered here (not in the switch) so the 'skill_discovery'
+    142    // string literal stays inside a feature()-guarded block. A case label can't
+    143    // be conditionally eliminated; an if-body can.
+    144    if (feature('EXPERIMENTAL_SKILL_SEARCH')) {
+    145      if (attachment.type === 'skill_discovery') {
+    146        if (attachment.skills.length === 0) return null
+    147        // Ant users get shortIds inline so they can /skill-feedback while the
+    148        // turn is still fresh. External users (when this un-gates) just see
+    149        // names — shortId is undefined outside ant builds anyway.
+    150        const names = attachment.skills
+    151>         .map(s => (s.shortId ? `${s.name} [${s.shortId}]` : s.name))
+    152          .join(', ')
+    153        const firstId = attachment.skills[0]?.shortId
+    154        const hint =
+    155          process.env.USER_TYPE === 'ant' && !isDemoEnv && firstId
+    156            ? ` · /skill-feedback ${firstId} 1=wrong 2=noisy 3=good [comment]`
+    157            : ''
+    158        return (
+    159          <Line>
+    160            <Text bold>{attachment.skills.length}</Text> relevant{' '}
+    161            {plural(attachment.skills.length, 'skill')}: {names}
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(255,37): error TS7006: Parameter 'm' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:245-265 ---
+    245                {attachment.memories.length === 1 ? 'memory' : 'memories'}
+    246                {!isTranscriptMode && (
+    247                  <>
+    248                    {' '}
+    249                    <CtrlOToExpand />
+    250                  </>
+    251                )}
+    252              </Text>
+    253            </Box>
+    254            {(verbose || isTranscriptMode) &&
+    255>             attachment.memories.map(m => (
+    256                <Box key={m.path} flexDirection="column">
+    257                  <MessageResponse>
+    258                    <Text dimColor>
+    259                      <FilePathLink filePath={m.path}>
+    260                        {basename(m.path)}
+    261                      </FilePathLink>
+    262                    </Text>
+    263                  </MessageResponse>
+    264                  {isTranscriptMode && (
+    265                    <Box paddingLeft={5}>
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(325,43): error TS7006: Parameter 'id' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:315-335 ---
+    315          attachment.imagePasteIds && attachment.imagePasteIds.length > 0
+    316        return (
+    317          <Box flexDirection="column">
+    318            <UserTextMessage
+    319              addMargin={addMargin}
+    320              param={{ text, type: 'text' }}
+    321              verbose={verbose}
+    322              isTranscriptMode={isTranscriptMode}
+    323            />
+    324            {hasImages &&
+    325>             attachment.imagePasteIds?.map(id => (
+    326                <UserImageMessage key={id} imageId={id} />
+    327              ))}
+    328          </Box>
+    329        )
+    330      }
+    331      case 'plan_file_reference':
+    332        return (
+    333          <Line>
+    334            Plan file referenced ({getDisplayPath(attachment.planFilePath)})
+    335          </Line>
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(341,48): error TS7006: Parameter 's' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:331-351 ---
+    331      case 'plan_file_reference':
+    332        return (
+    333          <Line>
+    334            Plan file referenced ({getDisplayPath(attachment.planFilePath)})
+    335          </Line>
+    336        )
+    337      case 'invoked_skills': {
+    338        if (attachment.skills.length === 0) {
+    339          return null
+    340        }
+    341>       const skillNames = attachment.skills.map(s => s.name).join(', ')
+    342        return <Line>Skills restored ({skillNames})</Line>
+    343      }
+    344      case 'diagnostics':
+    345        return <DiagnosticsDisplay attachment={attachment} verbose={verbose} />
+    346      case 'mcp_resource':
+    347        return (
+    348          <Line>
+    349            Read MCP resource <Text bold>{attachment.name}</Text> from{' '}
+    350            {attachment.server}
+    351          </Line>

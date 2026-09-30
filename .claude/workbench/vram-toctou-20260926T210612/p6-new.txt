@@ -1,0 +1,1 @@
+        bash "$HP_GPU" watch "$pid" "$HP_OUT/$n.gpu" \

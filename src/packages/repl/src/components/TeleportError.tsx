@@ -9,6 +9,7 @@ import { ConsoleOAuthFlow } from './ConsoleOAuthFlow.js'
 import { Select } from './CustomSelect/index.js'
 import { Dialog } from '@anthropic/ink'
 import { TeleportStash } from './TeleportStash.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type TeleportLocalErrorType = 'needsLogin' | 'needsGitStash'
 
@@ -114,16 +115,16 @@ export function TeleportError({
       }
 
       return (
-        <Dialog title="Log in to Claude" onCancel={onCancel}>
+        <Dialog title={`Log in to ${PRODUCT_NAME}`} onCancel={onCancel}>
           <Box flexDirection="column">
             <Text dimColor>Teleport requires a Claude.ai account.</Text>
             <Text dimColor>
-              Your Claude Pro/Max subscription will be used by Claude Code.
+              Your {PRODUCT_NAME} Pro/Max subscription will be used by {PRODUCT_NAME}.
             </Text>
           </Box>
           <Select
             options={[
-              { label: 'Login with Claude account', value: 'login' },
+              { label: `Login with ${PRODUCT_NAME} account`, value: 'login' },
               { label: 'Exit', value: 'exit' },
             ]}
             onChange={handleLoginDialogSelect}

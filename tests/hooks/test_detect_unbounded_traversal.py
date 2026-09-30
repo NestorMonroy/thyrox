@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from typing import Any
 from pathlib import Path
 
 # Bootstrap canonico (`paths.reach.BOOTSTRAP`): ascenso con deteccion, no
@@ -37,7 +38,8 @@ from paths.reach import thyrox_root  # noqa: E402
 
 _MODULE = thyrox_root(_HERE.parent) / "src/hooks/detect_unbounded_traversal.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
-gate = importlib.util.module_from_spec(_spec)
+assert _spec is not None and _spec.loader is not None
+gate: Any = importlib.util.module_from_spec(_spec)
 sys.modules["_gate"] = gate
 _spec.loader.exec_module(gate)
 
@@ -221,7 +223,8 @@ def test_the_notice_names_the_mechanism_and_the_floor():
 
 def test_the_dispatcher_registry_declares_this_detector():
     _spec_d = importlib.util.spec_from_file_location(
-        "_disp", thyrox_root(_HERE.parent) / "src/hooks/pretooluse_dispatch.py")
+        "_disp", thyrox_root(_HERE.parent) / "src/hooks/tool_use_preflight.py")
+    assert _spec_d is not None and _spec_d.loader is not None
     disp = importlib.util.module_from_spec(_spec_d)
     sys.modules["_disp"] = disp
     _spec_d.loader.exec_module(disp)

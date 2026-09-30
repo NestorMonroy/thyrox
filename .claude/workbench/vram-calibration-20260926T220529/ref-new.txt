@@ -1,0 +1,19 @@
+echo "== nivel 2: GPU que responde y PyTorch del entorno del proveedor, pero SIN CUDA =="
+# `uv sync --group gpu` instala PyTorch aunque no haya GPU; entonces
+# `torch.cuda.is_available()` es False y el arnés tiene que decirlo así, no
+# como «falta PyTorch».
+VENV_PY="$RAIZ/.venv/bin/python"
+if [[ -x "$VENV_PY" ]] && "$VENV_PY" -c 'import torch' >/dev/null 2>&1; then
+  if "$VENV_PY" -c 'import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)' >/dev/null 2>&1; then
+    echo "(hay CUDA: este caso sólo aplica sin GPU)"
+  else
+    "$VENV_PY" "$HW/test_gpu_admission_real.py" --nvidia-smi "$T/smi" --out "$T/n2c" > "$T/o" 2> "$T/e"; code=$?
+    check "exit 2" "$code" "2"
+    check "nombra CUDA" "$(grep -c 'CUDA' "$T/e")" "1"
+    check "sin traza escrita" "$(ls "$T/n2c" 2>/dev/null | wc -l)" "0"
+  fi
+else
+  echo "(sin PyTorch en $VENV_PY: uv sync --group gpu)"
+fi
+
+echo "== nivel 3: sin nvidia-smi =="

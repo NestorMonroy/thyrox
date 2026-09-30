@@ -1,0 +1,2 @@
+src/packages/provider/src/claudeLegacy.ts(64,43): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+src/packages/provider/src/claudeLegacy.ts(139,41): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.

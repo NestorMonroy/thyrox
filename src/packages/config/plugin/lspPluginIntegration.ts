@@ -85,11 +85,6 @@ export async function loadPluginLspServers(
   } catch (error) {
     // .lsp.json is optional, ignore if it doesn't exist
     if (!isENOENT(error)) {
-      const _errorMsg =
-        error instanceof Error
-          ? `Failed to read/parse .lsp.json in plugin ${plugin.name}: ${error.message}`
-          : `Failed to read/parse .lsp.json file in plugin ${plugin.name}`
-
       logError(toError(error))
 
       errors.push({
@@ -179,11 +174,6 @@ async function loadLspServersFromManifest(
           })
         }
       } catch (error) {
-        const _errorMsg =
-          error instanceof Error
-            ? `Failed to read/parse LSP config from ${decl} in plugin ${pluginName}: ${error.message}`
-            : `Failed to read/parse LSP config file ${decl} in plugin ${pluginName}`
-
         logError(toError(error))
 
         errors.push({
@@ -250,7 +240,10 @@ export function resolvePluginLspEnvironment(
     return expanded
   }
 
-  const resolved = { ...config }
+  // config ya fue validado contra LspServerConfigSchema por el productor;
+  // LspServerConfig es un alias opaco (unknown) a nivel de paquete.
+  const typedConfig = config as z.infer<ReturnType<typeof LspServerConfigSchema>>
+  const resolved = { ...typedConfig }
 
   // Resolve command path
   if (resolved.command) {
@@ -292,6 +285,13 @@ export function resolvePluginLspEnvironment(
 }
 
 /**
+ * Guarda de tipo: comprueba que el valor sea un objeto registro.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
  * Add plugin scope to LSP server configs
  * This adds a prefix to server names to avoid conflicts between plugins
  */
@@ -302,6 +302,9 @@ export function addPluginScopeToLspServers(
   const scopedServers: Record<string, ScopedLspServerConfig> = {}
 
   for (const [name, config] of Object.entries(servers)) {
+    if (!isRecord(config)) {
+      continue
+    }
     // Add plugin prefix to server name to avoid conflicts
     const scopedName = `plugin:${pluginName}:${name}`
     scopedServers[scopedName] = {

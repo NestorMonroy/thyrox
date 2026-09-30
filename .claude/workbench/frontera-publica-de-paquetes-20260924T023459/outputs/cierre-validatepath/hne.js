@@ -1,0 +1,1 @@
+function hne(){return n().sessionFlags.sessionTrustAccepted()}

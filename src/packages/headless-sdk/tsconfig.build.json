@@ -1,0 +1,75 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/headless-sdk": [
+        "./src/index.ts"
+      ],
+      "@thyrox/headless-sdk/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/headless-sdk/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/headless-sdk/agentSdkTypes.js": [
+        "./src/agentSdkTypes.ts"
+      ],
+      "@thyrox/headless-sdk/controlMessageCompat": [
+        "./src/controlMessageCompat.ts"
+      ],
+      "@thyrox/headless-sdk/controlTypes.js": [
+        "./src/controlTypes.ts"
+      ],
+      "@thyrox/headless-sdk/sdkMemorySummary.js": [
+        "./src/sdkMemorySummary.ts"
+      ],
+      "@thyrox/headless-sdk/sdkUtilityTypes.js": [
+        "./src/sdkUtilityTypes.ts"
+      ],
+      "@thyrox/headless-sdk/runtimeTypes.js": [
+        "./src/runtimeTypes.ts"
+      ],
+      "@thyrox/headless-sdk/coreTypes.js": [
+        "./src/coreTypes.ts"
+      ],
+      "@thyrox/headless-sdk/coreSchemas.js": [
+        "./src/coreSchemas.ts"
+      ],
+      "@thyrox/headless-sdk/controlSchemas.js": [
+        "./src/controlSchemas.ts"
+      ],
+      "@thyrox/headless-sdk/agentSdkTypes": [
+        "./src/agentSdkTypes.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

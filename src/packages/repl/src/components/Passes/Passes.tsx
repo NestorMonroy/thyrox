@@ -13,13 +13,11 @@ import {
   formatCreditAmount,
   getCachedOrFetchPassesEligibility,
 } from '@thyrox/provider/referral.js'
-import type {
-  ReferralRedemptionsResponse,
-  ReferrerRewardInfo,
-} from '@thyrox/provider/oauth/types.js'
+import type { ReferrerRewardInfo } from '@thyrox/provider/oauth/types.js'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { Pane } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type PassStatus = {
   passNumber: number
@@ -66,7 +64,11 @@ export function Passes({ onDone }: Props): React.ReactNode {
     async function loadPassesData() {
       try {
         // Check eligibility first (uses cache if available)
-        const eligibilityData = await getCachedOrFetchPassesEligibility()
+        const eligibilityData = (await getCachedOrFetchPassesEligibility()) as {
+          eligible?: boolean
+          referral_code_details?: { referral_link?: string; campaign?: string }
+          referrer_reward?: unknown
+        } | null
 
         if (!eligibilityData || !eligibilityData.eligible) {
           setIsAvailable(false)
@@ -90,9 +92,12 @@ export function Passes({ onDone }: Props): React.ReactNode {
           'claude_code_guest_pass'
 
         // Fetch redemptions data
-        let redemptionsData: ReferralRedemptionsResponse
+        let redemptionsData: { redemptions?: unknown[]; limit?: number }
         try {
-          redemptionsData = await fetchReferralRedemptions(campaign)
+          redemptionsData = (await fetchReferralRedemptions(campaign)) as {
+            redemptions?: unknown[]
+            limit?: number
+          }
         } catch (err) {
           logError(err as Error)
           setIsAvailable(false)
@@ -213,13 +218,13 @@ export function Passes({ onDone }: Props): React.ReactNode {
         <Box flexDirection="column" marginLeft={2}>
           <Text dimColor>
             {referrerReward
-              ? `Share a free week of Claude Code with friends. If they love it and subscribe, you'll get ${formatCreditAmount(referrerReward)} of extra usage to keep building. `
-              : 'Share a free week of Claude Code with friends. '}
+              ? `Share a free week of ${PRODUCT_NAME} with friends. If they love it and subscribe, you'll get ${formatCreditAmount(referrerReward)} of extra usage to keep building. `
+              : `Share a free week of ${PRODUCT_NAME} with friends. `}
             <Link
               url={
                 referrerReward
-                  ? 'https://support.claude.com/en/articles/13456702-claude-code-how-works-how-works-guest-passes'
-                  : 'https://support.claude.com/en/articles/12875061-claude-code-how-works-how-works-guest-passes'
+                  ? 'https://support.claude.com/en/articles/13456702-claude-code-guest-passes'
+                  : 'https://support.claude.com/en/articles/12875061-claude-code-guest-passes'
               }
             >
               Terms apply.

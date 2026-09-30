@@ -81,7 +81,7 @@ const MAX_EVENTS = 100_000
  */
 export function initializePerfettoTracing(): void {
   // NO PORTADO: el cuerpo real de esta rama (parseo de
-  // CLAUDE_CODE_PERFETTO_TRACE, cálculo de tracePath, arranque del
+  // THYROX_CODE_PERFETTO_TRACE, cálculo de tracePath, arranque del
   // intervalo de escritura periódica) — inalcanzable en este árbol.
 }
 

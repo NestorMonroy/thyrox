@@ -1,0 +1,5 @@
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/sweep/diag/61.txt
+-- FALLIDO tests/integration/cli-arguments.test.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/sweep/diag/64.txt
+items=64 ok=62 fallidos=2
+64
+__BG_EXIT__=0

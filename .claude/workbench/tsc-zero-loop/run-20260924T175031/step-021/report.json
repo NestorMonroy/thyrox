@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3119, "total_final": 3059, "tsc_runs": 1, "accepted": ["agent:hook-shims-appstate"], "files_kept": ["src/packages/mcp-runtime/src/appStateHooks.ts", "src/packages/permission/src/appStateHooks.ts"], "outcomes": {"agent:hook-shims-appstate": "accepted-net"}}

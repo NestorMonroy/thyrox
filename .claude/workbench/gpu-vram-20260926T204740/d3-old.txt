@@ -1,0 +1,1 @@
+def record(history: Path, out_dir: Path) -> dict | None:

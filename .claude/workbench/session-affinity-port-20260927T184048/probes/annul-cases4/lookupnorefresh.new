@@ -1,0 +1,1 @@
+        const authId = this.cache.getAndRefresh(`${namespace}::${boundSessionIdentity(candidate)}::${modelKey}`)

@@ -1,0 +1,6 @@
+memoria [revealed] copy-symbols:src/packages/config/settings/types.ts: Culpa ajena: los diagnosticos nuevos del lote eran los 13 del propio copiador (src/verify/copy_missing_symbols.ts, medido por el tsconfig raiz). La copia no se juzgo por si misma; se repite tras corregir el copiador (d38c3d15).
+memoria [revealed] copy-symbols:src/packages/config/settings/types.ts:retry-d38c3d15: Culpa ajena otra vez: los 5 diagnosticos nuevos eran de tests/verify/copyMissingSymbols.test.ts, que el tsconfig raiz mide. Causa de fondo: el log antes era de antes de que el copiador y su prueba existieran. Se corrige la prueba y se mide una base fresca antes de reintentar.
+receta step-045: Declare the update channel and view settings keys
+receta step-054: Use the ported sandbox schema in settings
+receta step-057: Emit hook progress and admit auto as a settings mode
+receta step-076: Copy six missing exports from ccnmt verbatim

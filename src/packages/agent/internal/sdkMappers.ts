@@ -1,75 +1,25 @@
-/**
- * Mapeo de forma interna (Anthropic, camelCase) al contrato de salida del
- * SDK (snake_case) — porte de `ccnmt: packages/agent/internal/sdkMappers.ts`.
- *
- * `toSDKCompactMetadata` traduce las claves de la metadata de compactación;
- * `localCommandOutputToSDKAssistantMessage` envuelve la salida cruda de un
- * comando local (que puede traer color ANSI y las etiquetas propias del
- * runner) en un mensaje de assistant sintético con la forma que el SDK
- * espera.
- *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `stripAnsi` del
- * paquete `strip-ansi` y `NO_CONTENT_MESSAGE` de un
- * `constants/messages.ts` propio. Ninguno de los dos vive en este árbol —
- * `strip-ansi` no está en las dependencias declaradas del paquete, y el
- * segundo no tiene otro consumidor todavía (mismo criterio que
- * `messageShapes.ts`: se porta cuando lo tenga). Aquí ambos se reimplementan
- * localmente y acotados a lo que este módulo necesita: `stripAnsiCodes` sólo
- * cubre secuencias CSI (`ESC [ ... letra`), que es lo único que el runner
- * de comandos locales emite.
- */
-
-/** El centinela cuando, tras limpiar, no queda contenido que mostrar. */
-const NO_CONTENT_MESSAGE = '(no content)'
+import type {
+  BetaContentBlock,
+  BetaTextBlock,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type {
+  SDKAssistantMessage,
+  SDKCompactBoundaryMessage,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import stripAnsi from 'strip-ansi'
+import type { CompactMetadata } from '../messageShapes.js'
+import { NO_CONTENT_MESSAGE } from '../constants/messages.js'
 
 const SYNTHETIC_MODEL = '<synthetic>'
 
-/** Secuencias CSI: ESC seguido de "[", parámetros numéricos/`;`, y una letra final. */
-const ANSI_CSI_PATTERN = /\x1b\[[0-9;]*[a-zA-Z]/g
+type SDKCompactMetadata = SDKCompactBoundaryMessage['compact_metadata']
 
-function stripAnsiCodes(text: string): string {
-  return text.replace(ANSI_CSI_PATTERN, '')
-}
-
-type PreservedSegment = {
-  headUuid: string
-  anchorUuid: string
-  tailUuid: string
-}
-
-type CompactMetadata = {
-  trigger?: unknown
-  preTokens?: unknown
-  preservedSegment?: PreservedSegment
-}
-
-type SDKCompactMetadata = {
-  trigger?: unknown
-  pre_tokens?: unknown
-  preserved_segment?: {
-    head_uuid: string
-    anchor_uuid: string
-    tail_uuid: string
-  }
-}
-
-type SDKAssistantMessage = {
-  type: 'assistant'
-  content: Array<{ type: 'text'; text: string }>
-  message: {
-    id: string
-    model: string
-    role: 'assistant'
-    content: Array<{ type: 'text'; text: string }>
-    stop_reason: 'end_turn'
-    usage: {
-      input_tokens: number
-      output_tokens: number
-    }
-  }
-  parent_tool_use_id: null
-  session_id: string
-  uuid: string
+/**
+ * El mensaje sintético lleva además `content` en la raíz, como el de la
+ * fuente (`ccnmt: messages/mappers.ts`), que el esquema del SDK no declara.
+ */
+type SyntheticSDKAssistantMessage = SDKAssistantMessage & {
+  content: Array<BetaContentBlock>
 }
 
 export function toSDKCompactMetadata(
@@ -97,31 +47,57 @@ export function localCommandOutputToSDKAssistantMessage(
   sessionId: string,
   stdoutTag: string,
   stderrTag: string,
-): SDKAssistantMessage {
-  const cleanContent = stripAnsiCodes(rawContent)
-    .replace(new RegExp(`<${stdoutTag}>([\\s\\S]*?)</${stdoutTag}>`), '$1')
-    .replace(new RegExp(`<${stderrTag}>([\\s\\S]*?)</${stderrTag}>`), '$1')
+): SyntheticSDKAssistantMessage {
+  const cleanContent = stripAnsi(rawContent)
+    .replace(
+      new RegExp(`<${stdoutTag}>([\\s\\S]*?)</${stdoutTag}>`),
+      '$1',
+    )
+    .replace(
+      new RegExp(`<${stderrTag}>([\\s\\S]*?)</${stderrTag}>`),
+      '$1',
+    )
     .trim()
 
-  const content = [
+  const content: BetaTextBlock[] = [
     {
-      type: 'text' as const,
+      type: 'text',
       text: cleanContent === '' ? NO_CONTENT_MESSAGE : cleanContent,
+      citations: [],
     },
   ]
 
+  // Los campos anulables en `null` y los contadores en 0, como el mensaje
+  // sintético que 2.1.281 arma para el SDK; `diagnostics` y
+  // `fallback_credit` los exige la versión del SDK de este árbol.
   return {
     type: 'assistant',
     content,
     message: {
       id: `synthetic-${uuid}`,
+      type: 'message',
       model: SYNTHETIC_MODEL,
       role: 'assistant',
       content,
+      container: null,
+      context_management: null,
+      diagnostics: null,
+      stop_details: null,
       stop_reason: 'end_turn',
+      stop_sequence: null,
       usage: {
         input_tokens: 0,
         output_tokens: 0,
+        cache_creation_input_tokens: 0,
+        cache_read_input_tokens: 0,
+        cache_creation: null,
+        fallback_credit: null,
+        inference_geo: null,
+        iterations: null,
+        output_tokens_details: null,
+        server_tool_use: null,
+        service_tier: null,
+        speed: null,
       },
     },
     parent_tool_use_id: null,

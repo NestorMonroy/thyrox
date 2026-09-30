@@ -141,7 +141,35 @@ check "solo hermanos de workspace: rehusa (no son entradas del store)" \
     "$(anchored_to_root_store "$HERM/src/packages/agent" "$HERM" && echo anclado || echo no)" \
     "no"
 
-rm -rf "$IZADO" "$AIS" "$ANID" "$VACIO_NM" "$HERM"
+# 11 — linker IZADO con conflicto de versiones. La raiz pide una version y un
+# workspace otra; solo una cabe en la raiz, y Bun materializa la otra en un
+# `node_modules` ANIDADO del workspace, como directorio real. El lockfile de
+# la raiz la declara con la clave `<workspace>/<paquete>`. Es el caso del arbol
+# real (`@thyrox/agent/@anthropic-ai/sdk` 0.124.0 contra 0.110.0 en la raiz),
+# y el gate lo rehusaba: solo conocia el izado sin anidar y el aislado.
+HOIST="$(mktemp -d)"
+mkdir -p "$HOIST/node_modules/zod" "$HOIST/src/packages/agent/node_modules/zod"
+printf '{"name":"@thyrox/agent"}' > "$HOIST/src/packages/agent/package.json"
+printf '{"name":"zod","version":"4.0.0"}' > "$HOIST/src/packages/agent/node_modules/zod/package.json"
+# Y su `.bin`, como Bun lo deja: el ejecutable enlaza DENTRO del jardin, y no
+# es una entrada del store — es la forma exacta del arbol real.
+mkdir -p "$HOIST/src/packages/agent/node_modules/.bin"
+ln -s ../zod/cli "$HOIST/src/packages/agent/node_modules/.bin/zod-cli"
+printf '{\n  "packages": {\n    "zod": ["zod@3.0.0", ""],\n    "@thyrox/agent/zod": ["zod@4.0.0", ""],\n  }\n}\n' > "$HOIST/bun.lock"
+check "izado con anidado que el lockfile de la raiz declara: acepta" \
+    "$(anchored_to_root_store "$HOIST/src/packages/agent" "$HOIST" && echo anclado || echo no)" \
+    "anclado"
+
+# 12 — EL QUE DISCRIMINA al 11: la misma forma, pero la version instalada NO
+# es la que el lockfile de la raiz declara para ese workspace (un install
+# hecho contra otro lockfile). Rehusa: aceptar cualquier anidado seria
+# volver a medir la RUTA en vez del LOCKFILE.
+printf '{"name":"zod","version":"9.9.9"}' > "$HOIST/src/packages/agent/node_modules/zod/package.json"
+check "izado con anidado que el lockfile de la raiz NO declara: rehusa" \
+    "$(anchored_to_root_store "$HOIST/src/packages/agent" "$HOIST" && echo anclado || echo no)" \
+    "no"
+
+rm -rf "$IZADO" "$AIS" "$ANID" "$VACIO_NM" "$HERM" "$HOIST"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"

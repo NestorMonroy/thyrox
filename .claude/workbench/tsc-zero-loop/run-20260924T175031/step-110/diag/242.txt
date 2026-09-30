@@ -1,0 +1,51 @@
+src/packages/repl/src/hooks/useSwarmInitialization.ts(60,35): error TS2345: Argument of type 'SetAppState' is not assignable to parameter of type '(updater: (prev: PermissionCarryingState) => PermissionCarryingState) => void'.
+  --- código src/packages/repl/src/hooks/useSwarmInitialization.ts:50-70 ---
+     50        if (teamName && agentName) {
+     51          // Resumed agent session - set up team context from stored info
+     52          initializeTeammateContextFromSession(setAppState, teamName, agentName)
+     53  
+     54          // Get agentId from team file for hook initialization
+     55          const teamFile = readTeamFile(teamName)
+     56          const member = teamFile?.members.find(
+     57            (m: { name: string }) => m.name === agentName,
+     58          )
+     59          if (member) {
+     60>           initializeTeammateHooks(setAppState, getSessionId(), {
+     61              teamName,
+     62              agentId: member.agentId,
+     63              agentName,
+     64            })
+     65          }
+     66        } else {
+     67          // Fresh spawn or standalone session
+     68          // teamContext is already computed in main.tsx via computeInitialTeamContext()
+     69          // and included in initialState, so we only need to initialize hooks here
+     70          const context = getDynamicTeamContext?.()
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'PermissionCarryingState' is not assignable to type 'AppState'.
+      Type 'PermissionCarryingState' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+src/packages/repl/src/hooks/useSwarmInitialization.ts(72,35): error TS2345: Argument of type 'SetAppState' is not assignable to parameter of type '(updater: (prev: PermissionCarryingState) => PermissionCarryingState) => void'.
+  --- código src/packages/repl/src/hooks/useSwarmInitialization.ts:62-81 ---
+     62              agentId: member.agentId,
+     63              agentName,
+     64            })
+     65          }
+     66        } else {
+     67          // Fresh spawn or standalone session
+     68          // teamContext is already computed in main.tsx via computeInitialTeamContext()
+     69          // and included in initialState, so we only need to initialize hooks here
+     70          const context = getDynamicTeamContext?.()
+     71          if (context?.teamName && context?.agentId && context?.agentName) {
+     72>           initializeTeammateHooks(setAppState, getSessionId(), {
+     73              teamName: context.teamName,
+     74              agentId: context.agentId,
+     75              agentName: context.agentName,
+     76            })
+     77          }
+     78        }
+     79      }
+     80    }, [setAppState, initialMessages, enabled])
+     81  }
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'PermissionCarryingState' is not assignable to type 'AppState'.
+      Type 'PermissionCarryingState' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.

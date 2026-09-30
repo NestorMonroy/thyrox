@@ -1,0 +1,4 @@
+==== TC: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js variable TC [231997,232127)
+TC=new Set(["x-app",Fdt,"x-claude-code-agent-id","x-claude-code-parent-agent-id",bqn,yqn,_qn,"x-anthropic-additional-protection"])
+symbol: 1 de 1 nombre(s) resueltos

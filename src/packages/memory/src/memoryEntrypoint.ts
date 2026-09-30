@@ -1,18 +1,11 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/memoryEntrypoint.ts` (verbatim,
- * salvo `getFeatureValue_CACHED_MAY_BE_STALE` — ver
- * `./internal/pendingCrossPackageDeps.js`).
- *
- * Módulo hoja: contiene las constantes de entrypoint y el constructor del
- * prompt de contexto de búsqueda, compartidos entre `memdir.ts` y
- * `teamMemPrompts.ts`. Se extrajo para romper el ciclo memdir ↔
- * teamMemPrompts: memdir usaba `require` perezoso de teamMemPrompts (guarda
- * TEAMMEM), así que teamMemPrompts no debía importar de vuelta desde
- * memdir. Ambos dependen ahora de esta hoja en su lugar.
- */
+// Leaf module: holds the entrypoint constants and search-context prompt
+// builder shared between memdir.ts and teamMemPrompts.ts. Extracted to
+// break the memdir ↔ teamMemPrompts cycle: memdir lazy-requires
+// teamMemPrompts (TEAMMEM gate), so teamMemPrompts must not import back
+// from memdir. Both now depend on this leaf instead.
 
 import { getMemoryHostBindings } from './host.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from './internal/pendingCrossPackageDeps.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 
 export const ENTRYPOINT_NAME = 'MEMORY.md'
 export const MAX_ENTRYPOINT_LINES = 200

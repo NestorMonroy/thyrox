@@ -1,0 +1,128 @@
+diff --git a/src/packages/app-host/src/runtime/__tests__/installCliBindingsImports.test.ts b/src/packages/app-host/src/runtime/__tests__/installCliBindingsImports.test.ts
+new file mode 100644
+index 00000000..c5763cdd
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/__tests__/installCliBindingsImports.test.ts
+@@ -0,0 +1,32 @@
++import { describe, expect, test } from 'bun:test'
++
++/**
++ * `installCliBindings` cablea tres bindings headless del host CLI
++ * (`createHeadlessStore`, `runHeadless`, `getStructuredIO`) importando cada
++ * submódulo de `@thyrox/cli` por su ruta propia, nunca por el barrel `.`. El
++ * barrel reexporta `runClaudeCode` desde `entry/run-cli.js`, que encadena
++ * `entry/run-program.js` -> `commands/mitm-commands.js`: importarlo mete el
++ * despacho de comandos entero y el paquete `@thyrox/mitm` sólo para instalar
++ * unos enlaces.
++ *
++ * La prueba mide el grafo REAL en runtime (`require.cache`, el único
++ * registro que Bun comparte entre `import` y `require`), no un recorrido
++ * estático de imports: `cli/src/print.ts` difiere su propio
++ * `require('./index.js')` hasta que alguien invoca `runHeadless`, así que un
++ * análisis estático marcaría el barrel como cargado aunque en runtime no lo
++ * esté todavía.
++ */
++describe('installCliBindings no arrastra la CLI entera ni mitm', () => {
++  test('cargar el módulo no mete cli/src/index.ts ni @thyrox/mitm en el grafo', async () => {
++    await import('../installCliBindings.ts')
++    const loaded = Object.keys(require.cache)
++
++    expect(loaded.some(path => path.endsWith('/cli/src/index.ts'))).toBe(false)
++    expect(loaded.some(path => path.includes('/packages/mitm/'))).toBe(false)
++
++    // Control positivo: el módulo sí se cargó, con sus tres bindings estrechos.
++    expect(loaded.some(path => path.endsWith('/cli/src/host.ts'))).toBe(true)
++    expect(loaded.some(path => path.endsWith('/cli/src/print.ts'))).toBe(true)
++    expect(loaded.some(path => path.endsWith('/cli/src/structuredIOHelper.ts'))).toBe(true)
++  })
++})
+diff --git a/src/packages/app-host/src/runtime/installCliBindings.ts b/src/packages/app-host/src/runtime/installCliBindings.ts
+index 7e357a9f..a24d16d0 100644
+--- a/src/packages/app-host/src/runtime/installCliBindings.ts
++++ b/src/packages/app-host/src/runtime/installCliBindings.ts
+@@ -1,50 +1,30 @@
+ /**
+  * Adaptación de @claude-code-how-works/app-host: src/runtime/installCliBindings.ts.
+- * Capa 1 tramo B — porte FIEL de la lógica; importaciones DECLARADAS
+- * COLGANTES, sin traducir y sin stub.
+  *
+- * La fuente instala tres bindings del paquete `cli`
+- * (`createHeadlessStore`, `runHeadless`, `getStructuredIO`) leyendo su
+- * implementación real de dos paquetes hermanos:
++ * Instala tres bindings del host CLI (`createHeadlessStore`, `runHeadless`,
++ * `getStructuredIO`) leyendo su implementación real de `@thyrox/cli` y de
++ * `@thyrox/agent/sessionStores.js` (`createHeadlessSessionStore`,
++ * `HeadlessStoreParams`).
+  *
+- *   - `@claude-code-how-works/cli` (`installCliHostBindings`,
+- *     `HeadlessStoreParams`), `/cli/print.js` (`runHeadless`) y
+- *     `/cli/structuredIOHelper.js` (`getStructuredIO`) — el paquete `cli`
+- *     NO existe en este árbol.
+- *   - `@claude-code-how-works/agent/sessionStores.js`
+- *     (`createHeadlessSessionStore`) — `@thyrox/agent` SÍ existe, pero su
+- *     `package.json` (`exports`) no expone ningún `sessionStores.js`; el
+- *     módulo tampoco está portado en `src/packages/agent/`. Mismo
+- *     criterio que `agent/internal/macroFallback.ts` fija para
+- *     `@claude-code-how-works/config/env`: la ausencia del PAQUETE no es
+- *     lo que se declara — es la ausencia del MÓDULO/EXPORT concreto.
++ * Cada símbolo de `@thyrox/cli` se importa por su propia ruta
++ * (`host.js`, `print.js`, `structuredIOHelper.js`), nunca por el barrel `.`
++ * (`cli/src/index.ts`). El barrel reexporta `runClaudeCode` desde
++ * `entry/run-cli.js`, que encadena `entry/run-program.js` ->
++ * `commands/mitm-commands.js`: importarlo arrastraría el despacho de
++ * comandos entero de la CLI y el paquete `@thyrox/mitm` sólo para instalar
++ * unos enlaces. `installCliHostBindings` vivía sólo en el barrel
++ * (`cli/src/host.ts`, sin export propio) — se le añadió el export
++ * `./host.js` en `cli/package.json`, mismo patrón que `runtimeHostSetup.js`
++ * ya usa en `@thyrox/bridge` y `@thyrox/mcp-runtime` para este caso exacto.
+  *
+- * Ninguno de los cuatro símbolos se stubea localmente: el import queda
+- * literal, pinneado contra la fuente. La función y su guard
+- * (`cliBindingsInstalled`) se portan verbatim porque son la única parte
+- * de este archivo con lógica propia — el resto es wiring puro hacia
+- * bindings ausentes.
+- *
+- * El auto-run `installCliBindings()` al final del módulo (igual que la
+- * fuente) es lo que hace este archivo NO TESTEABLE: como side-effect de
+- * módulo llama de inmediato a `installCliHostBindings`, que no existe.
+- * Aun sin ese auto-run, los cuatro imports estáticos ya agotan la
+- * resolución de módulos antes de que corra cualquier código.
+- *
+- * Sin test: no hay forma de importar este archivo sin que la resolución
+- * de módulos falle en la primera línea de import de valor. Mismo estado
+- * que `installBridgeBindings.ts`/`installMcpRuntimeBindings.ts`
+- * (hermanos en este directorio) y que los tres binding-installers ya
+- * portados sin suite (`installCommandRuntimeBindings.ts`,
+- * `installProviderBindings.ts`, `installToolRegistryBindings.ts`).
++ * `installCliBindingsImports.test.ts` mide el grafo de módulos en runtime
++ * (`require.cache`) tras cargar este archivo: ninguna entrada corresponde a
++ * `cli/src/index.ts` ni a `@thyrox/mitm`.
+  */
+-import {
+-  installCliHostBindings,
+-  type HeadlessStoreParams,
+-} from '@thyrox/cli'
++import { installCliHostBindings } from '@thyrox/cli/host.js'
+ import { runHeadless } from '@thyrox/cli/print.js'
+ import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
+-import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
++import { createHeadlessSessionStore, type HeadlessStoreParams } from '@thyrox/agent/sessionStores.js'
+ import type { AppState } from './appStateCompatShim.js'
+ 
+ let cliBindingsInstalled = false
+diff --git a/src/packages/cli/package.json b/src/packages/cli/package.json
+index 9dd9e724..fe62d7b2 100644
+--- a/src/packages/cli/package.json
++++ b/src/packages/cli/package.json
+@@ -131,6 +131,11 @@
+       "@thyrox/source": "./src/transports/HybridTransport.ts",
+       "types": "./dist/transports/HybridTransport.d.ts",
+       "default": "./src/transports/HybridTransport.ts"
++    },
++    "./host.js": {
++      "@thyrox/source": "./src/host.ts",
++      "types": "./dist/host.d.ts",
++      "default": "./src/host.ts"
+     }
+   },
+   "scripts": {

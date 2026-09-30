@@ -1,29 +1,26 @@
 /**
- * Puerto fiel de `ccnmt: packages/bridge/src/capacityWake.ts` (56 líneas
- * fuente, 100% portado, sin dependencias).
+ * Shared capacity-wake primitive for bridge poll loops.
  *
- * Primitiva compartida de "despertar por capacidad" para los poll loops
- * del bridge. Tanto replBridge.ts como bridgeMain.ts necesitan dormir
- * mientras están "en capacidad" pero despertar antes si (a) la señal del
- * loop externo aborta (shutdown), o (b) se libera capacidad (sesión
- * terminada / transporte perdido). Este módulo encapsula el controlador
- * de despertar mutable + el merger de dos señales que ambos poll loops
- * duplicaban byte a byte en la fuente.
+ * Both replBridge.ts and bridgeMain.ts need to sleep while "at capacity"
+ * but wake early when either (a) the outer loop signal aborts (shutdown),
+ * or (b) capacity frees up (session done / transport lost). This module
+ * encapsulates the mutable wake-controller + two-signal merger that both
+ * poll loops previously duplicated byte-for-byte.
  */
 
 export type CapacitySignal = { signal: AbortSignal; cleanup: () => void }
 
 export type CapacityWake = {
   /**
-   * Crea una señal que aborta cuando la señal del loop externo o el
-   * controlador de despertar de capacidad se dispara. Devuelve la señal
-   * fusionada y una función de limpieza que remueve los listeners cuando
-   * el sleep resuelve normalmente (sin abortar).
+   * Create a signal that aborts when either the outer loop signal or the
+   * capacity-wake controller fires. Returns the merged signal and a cleanup
+   * function that removes listeners when the sleep resolves normally
+   * (without abort).
    */
   signal(): CapacitySignal
   /**
-   * Aborta el sleep de "en capacidad" actual y arma un controlador
-   * nuevo para que el poll loop re-chequee trabajo nuevo de inmediato.
+   * Abort the current at-capacity sleep and arm a fresh controller so the
+   * poll loop immediately re-checks for new work.
    */
   wake(): void
 }

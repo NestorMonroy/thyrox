@@ -1,0 +1,13 @@
+== caso 1: con el preload, la suite no deja fixture en /tmp ==
+  ok   delta de directorios impact- en /tmp
+== caso 2: el preload retira su propio directorio al salir ==
+  ok   delta de directorios thyrox-tests- en /tmp
+== caso 3: anulacion — retirado el bunfig, el fixture vuelve a /tmp ==
+  ok   sin preload la suite SI deja fixture
+== caso 4: un TMPDIR heredado sobrevive al preload ==
+  ok   el directorio heredado sigue existiendo
+== caso 5: el fixture aterriza dentro del TMPDIR heredado ==
+  ok   hay fixture dentro del heredado
+
+== 5 asercion(es), 0 en rojo ==
+EXIT=0

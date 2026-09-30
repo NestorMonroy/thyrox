@@ -7,6 +7,7 @@
  * Moved from src/main.tsx per V7 Phase 4 cut-B.
  */
 
+import { PRODUCT_NAME } from './productName.ts'
 import {
   Command as CommanderCommand,
   InvalidArgumentError,
@@ -35,14 +36,17 @@ export function createSortedHelpConfig(): {
  * Creates and configures the main Commander program with all CLI options.
  * Returns the program without .action() or preAction hook attached —
  * those are wired in main.tsx's run() function.
+ *
+ * El tipo de retorno se infiere: la cadena de `.argument`/`.option` tipa el
+ * prompt posicional y cada opción, y un `Command` a secas los borraría.
  */
-export function createMainProgram(): CommanderCommand {
+export function createMainProgram() {
   return new CommanderCommand()
     .configureHelp(createSortedHelpConfig())
     .enablePositionalOptions()
     .name('claude')
     .description(
-      `Claude Code - starts an interactive session by default, use -p/--print for non-interactive output`,
+      `${PRODUCT_NAME} - starts an interactive session by default, use -p/--print for non-interactive output`,
     )
     .argument('[prompt]', 'Your prompt', String)
     // Subcommands inherit helpOption via commander's copyInheritedSettings —
@@ -75,12 +79,12 @@ export function createMainProgram(): CommanderCommand {
     )
     .option(
       '-p, --print',
-      'Print response and exit (useful for pipes). Note: The workspace trust dialog is skipped when Claude is run with the -p mode. Only use this flag in directories you trust.',
+      `Print response and exit (useful for pipes). Note: The workspace trust dialog is skipped when ${PRODUCT_NAME} is run with the -p mode. Only use this flag in directories you trust.`,
       () => true,
     )
     .option(
       '--bare',
-      'Minimal mode: skip hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and CLAUDE.md auto-discovery. Sets CLAUDE_CODE_SIMPLE=1. Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read). 3P providers (Bedrock/Vertex/Foundry) use their own credentials. Skills still resolve via /skill-name. Explicitly provide context via: --system-prompt[-file], --append-system-prompt[-file], --add-dir (CLAUDE.md dirs), --mcp-config, --settings, --agents, --plugin-dir.',
+      'Minimal mode: skip hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and THYROX.md auto-discovery. Sets THYROX_CODE_SIMPLE=1. Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read). 3P providers (Bedrock/Vertex/Foundry) use their own credentials. Skills still resolve via /skill-name. Explicitly provide context via: --system-prompt[-file], --append-system-prompt[-file], --add-dir (THYROX.md dirs), --mcp-config, --settings, --agents, --plugin-dir.',
       () => true,
     )
     .addOption(
@@ -418,10 +422,13 @@ export function createMainProgram(): CommanderCommand {
       [] as string[],
     )
     .option('--disable-slash-commands', 'Disable all skills', () => true)
-    .option('--chrome', 'Enable Claude in Chrome integration')
-    .option('--no-chrome', 'Disable Claude in Chrome integration')
+    .option('--chrome', `Enable ${PRODUCT_NAME} in Chrome integration`)
+    .option('--no-chrome', `Disable ${PRODUCT_NAME} in Chrome integration`)
     .option(
       '--file <specs...>',
       'File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)',
     )
 }
+
+/** El programa principal, con su argumento posicional y sus opciones tipados. */
+export type MainProgram = ReturnType<typeof createMainProgram>

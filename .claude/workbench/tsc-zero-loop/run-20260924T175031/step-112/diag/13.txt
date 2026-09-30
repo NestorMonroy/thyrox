@@ -1,0 +1,49 @@
+src/packages/agent/QueryEngine.ts(743,9): error TS2322: Type 'Tools' is not assignable to type 'RuntimeTool[]'.
+  --- código src/packages/agent/QueryEngine.ts:733-753 ---
+    733      // shift()s during the turn — the index slides. If this entry is rotated
+    734      // out, lastIndexOf returns -1 and we include everything (safe fallback).
+    735      const errorLogWatermark = getInMemoryErrors().at(-1)
+    736      // Snapshot count before this query for delta-based retry limiting
+    737      const initialStructuredOutputCalls = jsonSchema
+    738        ? countToolCalls(this.mutableMessages, SYNTHETIC_OUTPUT_TOOL_NAME)
+    739        : 0
+    740  
+    741      const agent = new AgentCore(
+    742        createProductionDeps({
+    743>         tools,
+    744          toolUseContext: processUserInputContext,
+    745          canUseTool: wrappedCanUseTool,
+    746          querySource: 'sdk',
+    747          contextOverrides: {
+    748            systemPrompt,
+    749            userContext,
+    750            systemContext,
+    751          },
+    752        }),
+    753        {
+  Type '{ [key: string]: unknown; name: string; aliases?: string[] | undefined; }' is missing the following properties from type 'RuntimeTool': userFacingName, call
+src/packages/agent/QueryEngine.ts(744,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'RuntimeToolUseContext'.
+  --- código src/packages/agent/QueryEngine.ts:734-754 ---
+    734      // out, lastIndexOf returns -1 and we include everything (safe fallback).
+    735      const errorLogWatermark = getInMemoryErrors().at(-1)
+    736      // Snapshot count before this query for delta-based retry limiting
+    737      const initialStructuredOutputCalls = jsonSchema
+    738        ? countToolCalls(this.mutableMessages, SYNTHETIC_OUTPUT_TOOL_NAME)
+    739        : 0
+    740  
+    741      const agent = new AgentCore(
+    742        createProductionDeps({
+    743          tools,
+    744>         toolUseContext: processUserInputContext,
+    745          canUseTool: wrappedCanUseTool,
+    746          querySource: 'sdk',
+    747          contextOverrides: {
+    748            systemPrompt,
+    749            userContext,
+    750            systemContext,
+    751          },
+    752        }),
+    753        {
+    754          messages: toCoreMessages(messages),
+  Types of property 'options' are incompatible.
+    Property 'mainLoopModel' is missing in type 'Record<string, unknown>' but required in type '{ [key: string]: unknown; mainLoopModel: string; thinkingConfig?: unknown; tools?: unknown; querySource?: string | undefined; agentDefinitions?: { activeAgents: unknown[]; allowedAgentTypes: unknown[]; } | undefined; }'.

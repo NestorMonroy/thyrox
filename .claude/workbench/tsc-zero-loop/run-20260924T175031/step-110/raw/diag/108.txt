@@ -1,0 +1,6 @@
+src/packages/config/generators.ts(37,11): error TS2322: Type 'Promise<QueuedGenerator<A> | { done: boolean | undefined; value: void | A; generator: AsyncGenerator<A, void, any>; promise: Promise<QueuedGenerator<A>>; }>' is not assignable to type 'Promise<QueuedGenerator<A>>'.
+  Type 'QueuedGenerator<A> | { done: boolean | undefined; value: void | A; generator: AsyncGenerator<A, void, any>; promise: Promise<QueuedGenerator<A>>; }' is not assignable to type 'QueuedGenerator<A>'.
+    Type '{ done: boolean | undefined; value: void | A; generator: AsyncGenerator<A, void, any>; promise: Promise<QueuedGenerator<A>>; }' is not assignable to type 'QueuedGenerator<A>'.
+      Types of property 'value' are incompatible.
+        Type 'void | A' is not assignable to type 'A | undefined'.
+          Type 'void' is not assignable to type 'A | undefined'.

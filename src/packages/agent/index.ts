@@ -81,3 +81,12 @@ export type {
   TaskClaimingDep,
 } from './agentDeps.ts'
 export type { CoreTool, ToolResult } from './coreTools.ts'
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { AgentEvent } from './agentEvents.js'
+export type { AgentInput } from './agentState.js'
+export type { CompactionResult } from './types/compaction.js'
+export type { PermissionResult } from './coreTools.js'
+export type { ProviderEvent } from './agentDeps.js'
+export type { ProviderStreamParams, StopHookResult } from './types/deps.js'

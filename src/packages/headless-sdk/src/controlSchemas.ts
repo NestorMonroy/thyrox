@@ -1,8 +1,7 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/controlSchemas.ts` (verbatim
- * en estructura; `lazySchema` se importa del sustituto local — ver
- * `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no es
- * miembro del bun workspace; el import de `coreSchemas.js` en la fuente es
+ * en estructura; `lazySchema` se importa del original,
+ * `@thyrox/config/lazySchema`; el import de `coreSchemas.js` en la fuente es
  * una auto-referencia al propio paquete por nombre y se porta como import
  * relativo, `./coreSchemas.ts` — es un módulo hermano del MISMO paquete).
  *
@@ -15,7 +14,7 @@
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import { lazySchema } from '@thyrox/config/lazySchema'
 import {
   AccountInfoSchema,
   AgentDefinitionSchema,
@@ -35,6 +34,7 @@ import {
   SDKUserMessageSchema,
   SlashCommandSchema,
 } from './coreSchemas.ts'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ============================================================================
 // External Type Placeholders
@@ -554,6 +554,103 @@ export const SDKControlElicitationResponseSchema = lazySchema(() =>
 )
 
 
+// Solicitudes que el ejecutable 2.1.281 envía por el canal de control y que
+// el lector de stdin ya atiende. Los campos salen de los emisores del propio
+// binario (`sendControlRequest({subtype:"…", …})`), no de una suposición.
+
+export const SDKControlEndSessionRequestSchema = lazySchema(() =>
+  z
+    .object({ subtype: z.literal('end_session'), reason: z.string().optional() })
+    .describe('Ends the session; the reason is informational (e.g. session_not_found).'),
+)
+
+export const SDKControlChannelEnableRequestSchema = lazySchema(() =>
+  z
+    .object({ subtype: z.literal('channel_enable'), serverName: z.string() })
+    .describe('Enables the channel of an MCP server.'),
+)
+
+export const SDKControlMcpAuthenticateRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('mcp_authenticate'),
+      serverName: z.string(),
+      redirectUri: z.string().optional(),
+    })
+    .describe('Starts the OAuth flow of an MCP server.'),
+)
+
+export const SDKControlMcpOAuthCallbackUrlRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('mcp_oauth_callback_url'),
+      serverName: z.string(),
+      callbackUrl: z.string(),
+    })
+    .describe('Delivers the OAuth callback URL of an MCP server.'),
+)
+
+export const SDKControlMcpClearAuthRequestSchema = lazySchema(() =>
+  z
+    .object({ subtype: z.literal('mcp_clear_auth'), serverName: z.string() })
+    .describe('Clears the stored OAuth credentials of an MCP server.'),
+)
+
+export const SDKControlClaudeAuthenticateRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('claude_authenticate'),
+      loginWithClaudeAi: z.boolean().optional(),
+    })
+    .describe(`Starts the ${PRODUCT_NAME} account login flow.`),
+)
+
+export const SDKControlClaudeOAuthCallbackRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('claude_oauth_callback'),
+      authorizationCode: z.string(),
+      state: z.string(),
+    })
+    .describe(`Delivers the authorization code of the ${PRODUCT_NAME} login flow.`),
+)
+
+export const SDKControlClaudeOAuthWaitForCompletionRequestSchema = lazySchema(() =>
+  z
+    .object({ subtype: z.literal('claude_oauth_wait_for_completion') })
+    .describe(`Waits until the ${PRODUCT_NAME} login flow completes.`),
+)
+
+export const SDKControlGenerateSessionTitleRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('generate_session_title'),
+      description: z.string(),
+      persist: z.boolean().optional(),
+    })
+    .describe('Generates a session title from a description.'),
+)
+
+export const SDKControlSideQuestionRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('side_question'),
+      question: z.string(),
+      history: z.array(z.unknown()).optional(),
+    })
+    .describe('Answers a side question reusing the main thread prompt cache.'),
+)
+
+export const SDKControlRemoteControlRequestSchema = lazySchema(() =>
+  z
+    .object({
+      subtype: z.literal('remote_control'),
+      enabled: z.boolean(),
+      name: z.string().optional(),
+    })
+    .describe('Enables or disables Remote Control for the session.'),
+)
+
 // ============================================================================
 // Control Request/Response Wrappers
 // ============================================================================
@@ -581,6 +678,17 @@ export const SDKControlRequestInnerSchema = lazySchema(() =>
     SDKControlApplyFlagSettingsRequestSchema(),
     SDKControlGetSettingsRequestSchema(),
     SDKControlElicitationRequestSchema(),
+    SDKControlEndSessionRequestSchema(),
+    SDKControlChannelEnableRequestSchema(),
+    SDKControlMcpAuthenticateRequestSchema(),
+    SDKControlMcpOAuthCallbackUrlRequestSchema(),
+    SDKControlMcpClearAuthRequestSchema(),
+    SDKControlClaudeAuthenticateRequestSchema(),
+    SDKControlClaudeOAuthCallbackRequestSchema(),
+    SDKControlClaudeOAuthWaitForCompletionRequestSchema(),
+    SDKControlGenerateSessionTitleRequestSchema(),
+    SDKControlSideQuestionRequestSchema(),
+    SDKControlRemoteControlRequestSchema(),
   ]),
 )
 

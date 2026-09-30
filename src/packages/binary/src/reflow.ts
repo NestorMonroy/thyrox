@@ -96,7 +96,7 @@ function* scan(src: string): Generator<Token> {
       }
     }
     codigo += c
-    if (!/\s/.test(c)) previo = c
+    if (c !== undefined && !/\s/.test(c)) previo = c
     i++
   }
   yield* emitirCodigo()
@@ -130,7 +130,8 @@ function finDePlantilla(src: string, i: number): number {
       while (j < src.length && nivel > 0) {
         if (src[j] === '\\') { j += 2; continue }
         if (src[j] === '`') { j = finDePlantilla(src, j); continue }
-        if (src[j] === '"' || src[j] === "'") { j = finDeCadena(src, j, src[j]); continue }
+        const cj = src[j]
+        if (cj === '"' || cj === "'") { j = finDeCadena(src, j, cj); continue }
         if (src[j] === '{') nivel++
         else if (src[j] === '}') nivel--
         j++
@@ -154,7 +155,7 @@ function finDeExpresionRegular(src: string, i: number): number {
     else if (c === '[') enClase = true
     else if (c === '/') {
       j++
-      while (j < src.length && /[a-z]/i.test(src[j])) j++
+      while (j < src.length && /[a-z]/i.test(src[j] ?? '')) j++
       return j
     }
     j++

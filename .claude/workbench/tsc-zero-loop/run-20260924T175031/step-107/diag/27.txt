@@ -1,0 +1,28 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/config/plugin/PluginInstallationManager.ts(43,63): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type '{ name: string; }'.
+  --- código src/packages/config/plugin/PluginInstallationManager.ts:33-53 ---
+     33    status: 'pending' | 'installing' | 'installed' | 'failed',
+     34    error?: string,
+     35  ): void {
+     36    setAppState(prevState => ({
+     37      ...prevState,
+     38      plugins: {
+     39        ...prevState.plugins,
+     40        installationStatus: {
+     41          ...prevState.plugins.installationStatus,
+     42          marketplaces: prevState.plugins.installationStatus.marketplaces.map(
+     43> (          m): { name: string } => (m.name === name ? { ...m, status, error } : m),
+     44          ),
+     45        },
+     46      },
+     47    }))
+     48  }
+     49  
+     50  /**
+     51   * Perform background plugin startup checks and installations.
+     52   *
+     53   * This is a thin wrapper around reconcileMarketplaces() that maps onProgress

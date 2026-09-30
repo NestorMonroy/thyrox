@@ -32,7 +32,9 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
-export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0
@@ -44,7 +46,7 @@ T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 # ANTES de interrogarla. Es el mismo defecto que la suite existe para atrapar:
 # un control que falla por su instrumento, no por su sujeto.
 contiene() { # contiene <texto> <patron> -> si|no
-    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+    grep -qE "$2" <<<"$1" && echo si || echo no
 }
 
 af() { # af <descripcion> <esperado> <obtenido>
@@ -170,22 +172,27 @@ af "el archivo aporta la anchura" 2 \
 # 12. EL QUE DISCRIMINA — el archivo se RELEE al liberarse un hueco.
 #     Cuatro durmientes con anchura 1: el primero corre mientras el archivo
 #     pasa de 1 a 3, asi que los tres restantes entran juntos. Si la anchura
-#     se resolviera una sola vez, entrarian de uno en uno y el reloj de pared
-#     seria ~4 veces el de un durmiente.
+#     se resolviera una sola vez, entrarian de uno en uno y ningun par se
+#     solaparia.
 echo 1 > "$T/vivo.conf"
 printf 'sleep 2\nsleep 2\nsleep 2\nsleep 2\n' > "$T/cuatro.txt"
 ( sleep 1; echo 3 > "$T/vivo.conf" ) &
 _SUBIDOR=$!
-_INICIO="$(date +%s)"
 BG_DIR="$T/relee" bash "$POOL" --width "$T/vivo.conf" --timeout 30 --prefix rel "$T/cuatro.txt" >/dev/null 2>&1
-_LAPSO=$(( $(date +%s) - _INICIO ))
 wait "$_SUBIDOR" 2>/dev/null
-# El reloj SOLO no discrimina: si el guion rehusa la ruta, no lanza nada y el
-# lapso es 0 — verde por no haber medido. Se exige TAMBIEN que los cuatro
+# El solape SOLO no discrimina del todo: si el guion rehusa la ruta, no lanza
+# nada y no hay joblog. Se exige TAMBIEN que los cuatro
 # trabajos existan, que es lo que separa «rapido» de «no corrio».
 af "los cuatro trabajos se lanzaron" 4 "$(ls "$T"/relee/*/*.log 2>/dev/null | wc -l)"
-af "releer el archivo admite los cuatro en menos de 3 vueltas" si \
-   "$([ "$_LAPSO" -lt 6 ] && echo si || echo no)"
+# El solape se lee del joblog de GNU Parallel (inicio y duración de cada
+# trabajo), no del reloj de pared: bajo carga el reloj crece por causas ajenas
+# a la anchura y el caso fallaba sin que la relectura fallara. Con anchura 1
+# y sin relectura, ningún par de trabajos se solapa.
+_SOLAPE="$(tail -n +2 "$T"/relee/*/joblog.tsv 2>/dev/null | gawk -F'\t' '
+    { printf "%.3f 1\n%.3f -1\n", $3, $3 + $4 }' | sort -n -k1,1 -k2,2n | gawk '
+    { n += $2; if (n > m) m = n } END { print m + 0 }')"
+af "releer el archivo deja correr a la vez más de uno (pico ${_SOLAPE})" si \
+   "$([ "${_SOLAPE:-0}" -ge 2 ] && echo si || echo no)"
 
 # 13. EL DRENAJE — `0` en el archivo A MITAD del despacho: se deja de admitir
 #     trabajos nuevos y los vivos terminan. Es lo que la forma de archivo
@@ -237,6 +244,73 @@ af "con 6 trabajos y --width 2 publica 2, no 6" si \
 
 # Y la cota es de REPORTE: no recorta lo que se lanza. Los dos trabajos salen.
 af "capar no deja trabajos sin lanzar" 2 "$(ls "$T"/cap/*/*.log 2>/dev/null | wc -l)"
+
+
+# =============================================================================
+# El planificador es GNU Parallel
+# =============================================================================
+# La anchura, la relectura del archivo de anchura, la cota de memoria y el
+# drenaje los ejerce GNU Parallel (`--jobs`, `--limit`, SIGHUP); el pool pone
+# lo que Parallel no trae: el marcador, el ledger y la barrera. Su rastro es el
+# joblog: una fila por intento.
+printf 'true\ntrue\ntrue\n' > "$T/par.txt"
+BG_DIR="$T/par" bash "$POOL" --width 2 --timeout 30 --prefix par "$T/par.txt" >/dev/null 2>&1
+af "el despacho deja el joblog de GNU Parallel" 3 \
+   "$(tail -n +2 "$T"/par/*/joblog.tsv 2>/dev/null | wc -l)"
+
+# Sin GNU Parallel no hay planificador propio al que caer: rehusa con 4 y
+# nombra la herramienta, antes de lanzar nada.
+SAL="$(THYROX_TOOLCHAIN_PARALLEL_BIN="$T/no-parallel" BG_DIR="$T/nopar" \
+       bash "$POOL" --width 1 --timeout 30 "$T/par.txt" 2>&1)"
+af "sin GNU Parallel sale 4" 4 $?
+af "y dice que falta GNU Parallel" si "$(contiene "$SAL" 'GNU [Pp]arallel')"
+af "y no lanzo ningun trabajo" 0 "$(ls "$T"/nopar/*/*.log 2>/dev/null | wc -l)"
+
+
+# =============================================================================
+# Mutación concurrente
+# =============================================================================
+# (a) El guion que corre no se relee. Bash lee un guion por desplazamiento:
+#     reescrito EN SU SITIO (mismo inodo, como `cat >` o `bin/replace_literal`)
+#     mientras corre, el proceso vivo sigue leyendo el archivo nuevo desde el
+#     byte viejo y ejecuta un trozo cualquiera. Se corre una copia del pool y se
+#     le antepone texto a mitad del despacho: tiene que terminar en verde.
+COPY="$T/copia"
+mkdir -p "$COPY/src"
+cp -r "$RAIZ/src/session" "$RAIZ/src/lib" "$RAIZ/src/paths" "$RAIZ/src/verify" "$RAIZ/src/workbench" "$COPY/src/"
+printf 'sleep 2\nsleep 2\n' > "$T/mut.txt"
+( sleep 1
+  for f in run-task-pool.sh run-task-pool-job.sh; do
+      _orig="$(cat "$COPY/src/session/$f")"
+      { head -1 <<<"$_orig"; for _ in $(seq 40); do echo "# relleno que desplaza cada byte del guion"; done
+        tail -n +2 <<<"$_orig"; } > "$T/$f.new"
+      cat "$T/$f.new" > "$COPY/src/session/$f"
+  done ) &
+_MUTADOR=$!
+PYTHONPATH="$COPY/src" BG_DIR="$T/mut" bash "$COPY/src/session/run-task-pool.sh" --width 2 --timeout 30 --prefix mut "$T/mut.txt" > "$T/mut.out" 2>&1
+_MUT_EXIT=$?
+wait "$_MUTADOR" 2>/dev/null
+af "reescribir el guion en su sitio no rompe el despacho en curso" 0 "$_MUT_EXIT"
+af "y los dos trabajos llegaron a su marcador" 2 "$(grep -l '^EXIT=0' "$T"/mut/*/*.log 2>/dev/null | wc -l)"
+
+# (b) El árbol que se mide no se movió. Un trabajo que cambia un archivo
+#     versionado del árbol del llamador deja un veredicto que no corresponde a
+#     ningún estado: sale 5 y lo dice, en vez de publicarlo como verde.
+REPO="$T/repo"
+mkdir -p "$REPO/src"
+git -C "$REPO" init -q
+echo uno > "$REPO/src/a.txt"
+git -C "$REPO" add src/a.txt
+git -C "$REPO" -c user.name=t -c user.email=t@t commit -q -m seed
+printf 'echo dos >> src/a.txt\n' > "$T/muta-arbol.txt"
+SAL="$(cd "$REPO" && BG_DIR="$T/arbol" bash "$POOL" --width 1 --timeout 30 --prefix arb "$T/muta-arbol.txt" 2>&1)"
+af "un trabajo que muta el árbol medido sale 5" 5 $?
+af "y dice que el veredicto no es atribuible" si "$(contiene "$SAL" 'ÁRBOL MUTADO')"
+# CONTROL: el mismo árbol sin mutarlo sale 0. Sin él, un pool que saliera 5
+# siempre pasaría el caso de arriba.
+printf 'true\n' > "$T/no-muta.txt"
+( cd "$REPO" && BG_DIR="$T/arbol2" bash "$POOL" --width 1 --timeout 30 --prefix arb2 "$T/no-muta.txt" >/dev/null 2>&1 )
+af "sin mutación el mismo árbol sale 0" 0 $?
 
 echo "test-run-task-pool: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

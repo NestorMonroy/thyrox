@@ -1,0 +1,17 @@
+no-pairing-check	s/^  if (!auth.aws_access_key_id !== !auth.aws_secret_access_key || (auth.aws_session_token \&\& !auth.aws_access_key_id)) {$/  if (false) {/
+no-session-check	s/ || (auth.aws_session_token \&\& !auth.aws_access_key_id)) {$/) {/
+no-guardrail-headers	s/Authorization: null, ...apiKeyNull, ...guardrail }$/Authorization: null, ...apiKeyNull }/
+no-guardrail-flag	s/, ...(config.guardrail \&\& { guardrail: true as const }) }/ }/
+no-apikey-null	s/^  const apiKeyNull = !declaresApiKey(processHeaders) \&\& { 'X-Api-Key': null }$/  const apiKeyNull = false/
+process-apikey-ignored	s/^  return Object.keys(headers).some(name => name.toLowerCase() === 'x-api-key')$/  return false/
+no-bearer	s/^  const client = auth.aws_bearer_token$/  const client = false/
+no-skipauth	s/^      skipAuth: true,$/      skipAuth: false,/
+no-bedrock-base-url	s/^  const base = { awsRegion: config.region, ...(config.base_url \&\& { baseURL: config.base_url }), /  const base = { awsRegion: config.region, /
+no-keys	s/^        awsAccessKey: auth.aws_access_key_id,$/        awsAccessKey: undefined,/
+no-session-token	s/^        awsSessionToken: auth.aws_session_token,$/        awsSessionToken: undefined,/
+no-vertex-token	s/getRequestHeaders: async () => ({ Authorization: `Bearer \${token}` })/getRequestHeaders: async () => ({})/
+no-settle	s/^  if (pending \&\& typeof pending.catch === 'function') pending.catch(() => {})$/  void pending/
+no-vertex-null	s/^  return { ...processHeaders, Authorization: null, ...(!declaresApiKey(processHeaders) \&\& { 'X-Api-Key': null }) }$/  return { ...processHeaders }/
+no-foundry-auth-null	s/const defaultHeaders = withKey ? { ...config.headers, ...processHeaders, Authorization: null } :/const defaultHeaders = withKey ? { ...config.headers, ...processHeaders } :/
+no-foundry-base-url	s/^  const location = config.base_url ? { baseURL: config.base_url } : { resource: config.resource }$/  const location = { resource: config.resource }/
+no-foundry-key	s/^  const withKey = config.auth.api_key !== undefined$/  const withKey = false/

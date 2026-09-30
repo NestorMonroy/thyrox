@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 .claude/workbench/sustitutos-20260927T025549/fill-hashes.cmds", "started_at": "2026-09-27T05:58:28+00:00"}

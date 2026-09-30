@@ -5,6 +5,7 @@ import { dirname } from 'path'
 import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
 import {
   builtInCommandNames,
+  type Command as RuntimeCommand,
   findCommand,
   getCommands,
   type PromptCommand,
@@ -18,6 +19,7 @@ import type {
 } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import type { Command } from '@thyrox/agent/command.js'
+import { parseEffortValue } from '@thyrox/agent/effort.js'
 import type {
   AssistantMessage,
   AttachmentMessage,
@@ -79,7 +81,7 @@ import {
  * Gets all commands including MCP skills/prompts from AppState.
  * SkillTool needs this because getCommands() only returns local/bundled skills.
  */
-async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
+async function getAllCommands(context: ToolUseContext): Promise<RuntimeCommand[]> {
   // Only include MCP skills (loadedFrom === 'mcp'), not plain MCP prompts.
   // Before this filter, the model could invoke MCP prompts via SkillTool
   // if it guessed the mcp__server__prompt name — they weren't discoverable
@@ -87,7 +89,7 @@ async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
   const mcpSkills = context
     .getAppState()
     .mcp.commands.filter(
-(      cmd: { type: string; loadedFrom: string }) => cmd.type === 'prompt' && cmd.loadedFrom === 'mcp',
+      (cmd: RuntimeCommand) => cmd.type === 'prompt' && cmd.loadedFrom === 'mcp',
     )
   if (mcpSkills.length === 0) return getCommands(getProjectRoot())
   const localCommands = await getCommands(getProjectRoot())
@@ -352,7 +354,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
   prompt: async () => getPrompt(getProjectRoot()),
 
   // Only one skill/command should run at a time, since the tool expands the
-  // command into a full prompt that Claude must process before continuing.
+  // command into a full prompt that thyrox must process before continuing.
   // Skill-coach needs the skill name to avoid false-positive "you could have
   // used skill X" suggestions when X was actually invoked. Backseat classifies
   // downstream tool calls from the expanded prompt, not this wrapper, so the
@@ -657,7 +659,8 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     // Extract metadata from the command
     const allowedTools = processedCommand.allowedTools || []
     const model = processedCommand.model
-    const effort = command?.type === 'prompt' ? command.effort : undefined
+    const effort =
+      command?.type === 'prompt' ? parseEffortValue(command.effort) : undefined
 
     const isBuiltIn = builtInCommandNames().has(commandName)
     const isBundled = command?.type === 'prompt' && command.source === 'bundled'
@@ -915,7 +918,7 @@ const SAFE_SKILL_PROPERTIES = new Set([
   'userFacingName',
 ])
 
-function skillHasOnlySafeProperties(command: Command): boolean {
+function skillHasOnlySafeProperties(command: RuntimeCommand): boolean {
   for (const key of Object.keys(command)) {
     if (SAFE_SKILL_PROPERTIES.has(key)) {
       continue
@@ -1065,7 +1068,7 @@ async function executeRemoteSkill(
   // content unchanged if no frontmatter is present.
   const { content: bodyContent } = parseFrontmatter(content, skillPath)
 
-  // Inject base directory header + ${CLAUDE_SKILL_DIR}/${CLAUDE_SESSION_ID}
+  // Inject base directory header + ${CLAUDE_SKILL_DIR}/${THYROX_SESSION_ID}
   // substitution (matches loadSkillsDir.ts) so the model can resolve relative
   // refs like ./schemas/foo.json against the cache dir.
   const skillDir = dirname(skillPath)
@@ -1074,7 +1077,7 @@ async function executeRemoteSkill(
   let finalContent = `Base directory for this skill: ${normalizedDir}\n\n${bodyContent}`
   finalContent = finalContent.replace(/\$\{CLAUDE_SKILL_DIR\}/g, normalizedDir)
   finalContent = finalContent.replace(
-    /\$\{CLAUDE_SESSION_ID\}/g,
+    /\$\{THYROX_SESSION_ID\}/g,
     getSessionId(),
   )
 

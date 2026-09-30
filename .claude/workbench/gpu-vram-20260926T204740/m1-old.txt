@@ -1,0 +1,6 @@
+    totals, utils = [], []
+    while True:
+        try:
+            current = sample(nvidia_smi)
+        except GpuUnavailable:
+            break

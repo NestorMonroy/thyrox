@@ -1,0 +1,4 @@
+(fail) SessionCache: caducidad y alias > touch y compareAndDelete exigen la credencial esperada [0.30ms]
+(fail) SessionCache: caducidad y alias > invalidate retira un alias sin que el grupo lo recree al refrescar [0.10ms]
+ 11 pass
+ 2 fail

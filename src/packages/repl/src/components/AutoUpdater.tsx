@@ -81,7 +81,10 @@ export function AutoUpdater({
     }
 
     const currentVersion = MACRO.VERSION
-    const channel = getInitialSettings()?.autoUpdatesChannel ?? 'latest'
+    // `rc` («slow» en la interfaz) no es un canal de descarga: 2.1.275 lo
+    // instala como `stable`.
+    const configuredChannel = getInitialSettings()?.autoUpdatesChannel ?? 'latest'
+    const channel = configuredChannel === 'rc' ? 'stable' : configuredChannel
     const latestVersion = await getLatestVersion(channel)
     const isDisabled = isAutoUpdaterDisabled()
 

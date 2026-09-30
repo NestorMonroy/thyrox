@@ -35,7 +35,7 @@ import { AutoUpdaterWrapper } from '../AutoUpdaterWrapper.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 import { IdeStatusIndicator } from '../IdeStatusIndicator.js'
 import { MemoryUsageIndicator } from '../MemoryUsageIndicator.js'
-import { SentryErrorBoundary } from '../SentryErrorBoundary.js'
+import { ErrorBoundary } from '../ErrorBoundary.js'
 import { TokenWarning } from '../TokenWarning.js'
 import { SandboxPromptFooterHint } from './SandboxPromptFooterHint.js'
 
@@ -102,7 +102,7 @@ type Props = {
   debug: boolean
   verbose: boolean
   messages: Message[]
-  onAutoUpdaterResult: (result: AutoUpdaterResult) => void
+  onAutoUpdaterResult: (result: AutoUpdaterResult | null) => void
   onChangeIsUpdating: (isUpdating: boolean) => void
   ideSelection: IDESelection | undefined
   mcpClients?: MCPServerConnection[]
@@ -213,7 +213,7 @@ export function Notifications({
   ])
 
   return (
-    <SentryErrorBoundary>
+    <ErrorBoundary>
       <Box
         flexDirection="column"
         alignItems={isNarrow ? 'flex-start' : 'flex-end'}
@@ -239,7 +239,7 @@ export function Notifications({
           onChangeIsUpdating={onChangeIsUpdating}
         />
       </Box>
-    </SentryErrorBoundary>
+    </ErrorBoundary>
   )
 }
 
@@ -278,7 +278,7 @@ function NotificationContent({
   autoUpdaterResult: AutoUpdaterResult | null
   isAutoUpdating: boolean
   isShowingCompactMessage: boolean
-  onAutoUpdaterResult: (result: AutoUpdaterResult) => void
+  onAutoUpdaterResult: (result: AutoUpdaterResult | null) => void
   onChangeIsUpdating: (isUpdating: boolean) => void
 }): ReactNode {
   // Poll apiKeyHelper inflight state to show slow-helper notice.
@@ -359,7 +359,7 @@ function NotificationContent({
       {(apiKeyStatus === 'invalid' || apiKeyStatus === 'missing') && (
         <Box>
           <Text color="error" wrap="truncate">
-            {isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)
+            {isEnvTruthy(process.env.THYROX_CODE_REMOTE)
               ? 'Authentication error · Try again'
               : 'Not logged in · Run /login'}
           </Text>

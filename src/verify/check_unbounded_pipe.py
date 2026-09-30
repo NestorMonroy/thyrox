@@ -21,7 +21,7 @@ caso                                          pipefail      resultado
 ``yes | head -n 1`` · ``head -c 4``           sí            invierte 10/10
 ``tail -f -n +1`` 20 MB ``| grep -q``         sí            invierte 10/10
 ``cat`` 20 MB ``| grep -q``                   sí            invierte 10/10
-``echo "$V" | grep -q`` con V de 5 MB         sí            **0 de 20**
+``echo "$V" | grep -q`` con V de 5 MB         sí            20/20 (ver abajo)
 ``printf MARCA | grep -q MARCA`` (5 bytes)    sí            **0 de 20**
 ``yes | grep -q y``                           **no**        **0 de 10**
 marca al FINAL de la entrada                  sí            **0 de 10**
@@ -38,8 +38,14 @@ Sólo el **escritor sin fin por construcción**: ``yes``, ``tail -f``,
 ``/dev/urandom`` y hermanos. Ahí la inversión no depende de un tamaño que
 haya que adivinar.
 
-``cat``, ``echo`` y ``printf`` quedan **fuera a propósito**. El umbral entre
-los 5 MB que no invierten y los 20 MB que sí no está medido, y el árbol ya
+``echo``/``printf`` también invierten en cuanto su salida supera el búfer del
+pipe (64 KiB; medido desde 107 KB): el umbral es el tamaño, no el tipo de
+escritor. Esa clase —escritor de tamaño desconocido— la mide
+``check_unsized_writer_pipe.py``; este gate conserva sólo la del escritor sin
+fin, que no necesita adivinar ningún tamaño.
+
+``cat``, ``echo`` y ``printf`` quedan **fuera de ESTE gate a propósito**. El
+árbol ya
 tiene dos sitios que un gate ingenuo marcaría —``cat
 /sys/module/apparmor/parameters/enabled | grep -q Y`` y ``systemctl cat … |
 grep -q``, ambos de unos pocos bytes, que **nunca** invierten—. Marcarlos
@@ -48,8 +54,9 @@ coste ya está registrado en este proyecto.
 
 El contrafactual está medido, no supuesto: el alcance ingenuo —todo pipeline
 bajo pipefail que acabe en un consumidor que corta— marcaba **527** sitios en
-los seis repos, y su escritor más común era ``echo`` con **202**, la clase que
-midió 0 de 20 inversiones. Ver ``counterfactual_naive_scope.py`` del banco.
+los seis repos, y su escritor más común era ``echo`` con **202** — la clase que
+se creyó inocua por el 0/20 que no se reprodujo, y que hoy es alcance de
+``check_unsized_writer_pipe.py``. Ver ``counterfactual_naive_scope.py`` del banco.
 
 Consumidores: los cuatro medidos
 --------------------------------
@@ -419,8 +426,8 @@ def main(argv=None) -> int:
           "fin (yes · tail/journalctl/docker/kubectl --follow · /dev/urandom) "
           "seguida de una etapa que cortocircuita (grep -q/-m/-l · head), con el "
           "estado NO neutralizado por `|| true`.")
-    print("Ciega a: el escritor ACOTADO pero grande —`cat` de 20 MB invierte 10/10 "
-          "y de 5 MB 0/20, y el umbral no está medido—; a la posición de la marca, "
+    print("Ciega a: el escritor ACOTADO pero grande —invierte en cuanto pasa del "
+          "búfer del pipe (64 KiB), y lo mide check_unsized_writer_pipe—; a la posición de la marca, "
           "que decide si hay SIGPIPE; al consumidor que lee hasta EOF (`grep -c`, "
           "`wc`), que con escritor sin fin CUELGA en vez de invertir; y a la "
           "tubería armada en una variable o por `eval`.")

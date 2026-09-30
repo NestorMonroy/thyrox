@@ -1,0 +1,18 @@
+Bring every package tsconfig to zero errors
+
+The root and CLI projects were at zero, but five package projects
+(agent, permission, provider, swarm, tools, with their test projects)
+failed with 144 to 161 errors each. Measured over the 18 package
+tsconfigs with run-task-pool; nine failed, all for two config causes,
+not code:
+
+- They set no "jsx" while their imports reach .tsx files (93 TS6142
+  per project). They now use "react-jsx", as the root and CLI do.
+- They do not include the global declarations the root sees through
+  src/**: MACRO, TungstenPill and HOOK_TIMING_DISPLAY_THRESHOLD_MS
+  (cli/src/types/global.d.ts) and ink's JSX intrinsic elements
+  (@ant/ink/src/types). They are declared in "files", which the test
+  projects inherit because they only replace "include".
+
+After both changes the nine projects exit 0; the other nine already
+did.

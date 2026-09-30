@@ -1,0 +1,26 @@
+src/packages/provider/src/adapters.ts(66,5): error TS2322: Type '(args: ProviderQueryArgs) => Promise<ProviderStreamEvent>' is not assignable to type 'ProviderQueryFn'.
+  --- código src/packages/provider/src/adapters.ts:56-76 ---
+     56      queryStream: ProviderAdapter['queryStream']
+     57      query?: ProviderAdapter['query']
+     58      authProvider: ProviderAdapter['authProvider']
+     59    },
+     60  ): ProviderAdapter {
+     61    return {
+     62      id,
+     63      authProvider: options.authProvider,
+     64      contextPipeline: getProviderContextPipeline(),
+     65      networkLayer: getProviderNetworkLayer(),
+     66>     query:
+     67        options.query ??
+     68        (async args => {
+     69          let assistantMessage
+     70          for await (const event of options.queryStream(args)) {
+     71            if (event.type === 'assistant') {
+     72              assistantMessage = event
+     73            }
+     74          }
+     75          if (!assistantMessage) {
+     76            throw new StreamError(`Provider ${id} did not yield an assistant message.`)
+  Type 'Promise<ProviderStreamEvent>' is not assignable to type 'Promise<ProviderAssistantMessage>'.
+    Type 'ProviderStreamEvent' is not assignable to type 'ProviderAssistantMessage'.
+      Property 'uuid' is missing in type 'ProviderStreamEvent' but required in type 'ProviderMessage'.

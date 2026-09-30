@@ -1,0 +1,14 @@
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(83,7): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(83,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(88,5): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(186,7): error TS2322: Type 'AnyMessage' is not assignable to type 'Message'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(187,7): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.
+../tool-registry/src/tools/BashTool/UI.tsx(41,25): error TS2322: Type 'unknown' is not assignable to type 'AppState'.
+check-cli-typecheck: tsconfig.json no crece: 161, igual al baseline.
+check-cli-typecheck: tsconfig.tests.json no crece: 161, igual al baseline.
+check-cli-typecheck: proyectos medidos: 2 de 2
+rutas: 342 pares de modelo, 1026 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
+cross-model-read: 0 lecturas cruzadas (superficie real auditada)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 2 banco(s) tocado(s))
+b689a312 Save the in-progress ports with the CLI ratchet at 161
+__BG_EXIT__=0

@@ -1,0 +1,5 @@
+src/packages/repl/src/components/Message.tsx(436,11): error TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.
+  Property 'text' is missing in type 'ConnectorTextBlock' but required in type 'TextBlockParam'.
+src/packages/repl/src/components/Message.tsx(459,11): error TS2322: Type 'ThinkingBlockParam | ConnectorTextBlock | BetaThinkingBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+  Type 'ConnectorTextBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+    Property 'thinking' is missing in type 'ConnectorTextBlock' but required in type 'ThinkingBlock'.

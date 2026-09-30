@@ -82,7 +82,7 @@ status: Borrador
 | Cancelado | 0 | 0% |
 | **Total** | **0** | **100%** |
 
-**Cobertura de traceabilidad:**
+**Cobertura de trazabilidad:**
 - % requisitos con componente asignado: [%]
 - % requisitos con test case: [%]
 - % requisitos verificados: [%]

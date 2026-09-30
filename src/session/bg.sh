@@ -88,6 +88,8 @@ set -euo pipefail
 BG_DIR="${BG_DIR:-}"
 
 _SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=src/lib/launcher_freeze.sh
+source "$_SRC_DIR/lib/launcher_freeze.sh"
 
 # El puente a la familia. Un solo sitio invoca Python: si el módulo no está, se
 # rehúsa con su motivo en vez de caer a un hogar inventado — un default derivado
@@ -169,6 +171,7 @@ _paths() {
     _resolve_flat_home
     if [[ -n "$BG_DIR" ]]; then
         LOG="${BG_DIR}/${name}.log"
+        FINAL_LOG="$LOG"
         PIDF="${BG_DIR}/${name}.pid"
         RUN=""
         return
@@ -185,11 +188,30 @@ _paths() {
     local plano; plano="$(_family flat-home "$RUN")"
     if [[ -n "$plano" ]]; then
         LOG="${plano}/${name}.log"
+        FINAL_LOG="$LOG"
         PIDF="${plano}/${name}.pid"
         return
     fi
-    LOG="${RUN}/outputs/salida.log"
     PIDF="${RUN}/outputs/pid"
+    _family_logs "$RUN"
+}
+
+# El log de un run de la familia tiene dos sitios. Mientras el trabajo corre,
+# escribe en el runtime (ignorado por git): un commit por pathspec no puede
+# llevarse un log incompleto. Al terminar, el propio trabajo lo publica en el run
+# ya completo, con su marcador. `LOG` es el que hay que leer AHORA: el final si
+# ya se publicó, el vivo si no. `FINAL_LOG` es donde quedará, y es lo que se
+# registra en la barrera: el marcador aparece ahí sólo con el log entero.
+# Un trabajo que muere sin publicar deja su log en el runtime, no en el run.
+_family_logs() {
+    local run="$1"
+    FINAL_LOG="${run}/outputs/salida.log"
+    LIVE_LOG="$(thyrox_runtime_dir "$(dirname "$_SRC_DIR")")/jobs/$(basename "$run")/salida.log"
+    if [[ -f "$FINAL_LOG" || ! -f "$LIVE_LOG" ]]; then
+        LOG="$FINAL_LOG"
+    else
+        LOG="$LIVE_LOG"
+    fi
 }
 
 # El marcador de salida. `wait` y `status` lo buscan en vez de adivinar por el
@@ -320,6 +342,7 @@ cmd_start() {
     if [[ -n "$memfree_spec" ]]; then
         source "$(dirname "${BASH_SOURCE[0]}")/../lib/reach.sh"
         source "$(dirname "${BASH_SOURCE[0]}")/../lib/memory.sh"
+        # shellcheck disable=SC2034  # lo lee memory.sh, cargado arriba
         AWK_BIN="$(thyrox_config_value THYROX_TOOLCHAIN_AWK_BIN awk)"
         memfree="$(parse_binary_size "$memfree_spec")" || {
             echo "bg.sh start: --memfree ilegible: '$memfree_spec' (ej. 4G, 512M)" >&2; exit 2; }
@@ -350,8 +373,22 @@ cmd_start() {
         RUN="$(_family scaffold "$name" "$*" "$BG_DIR")"
     else
         RUN="$(_family scaffold "$name" "$*")"
-        LOG="${RUN}/outputs/salida.log"
         PIDF="${RUN}/outputs/pid"
+        _family_logs "$RUN"
+        LOG="$LIVE_LOG"
+        mkdir -p "$(dirname "$LIVE_LOG")"
+    fi
+    # La publicación del log vivo, al final del propio trabajo. Primero `.time`
+    # y después el log: cuando el marcador aparece en el run, la medida ya está.
+    # Cada archivo se copia a un nombre oculto y se renombra, así que el run
+    # nunca muestra un log incompleto.
+    local publish=""
+    if [[ "$LOG" != "$FINAL_LOG" ]]; then
+        local out_dir tmp
+        out_dir="$(dirname "$FINAL_LOG")"
+        tmp="${out_dir}/.salida.log.publishing"
+        publish="; if [[ -f $(printf '%q' "$LOG.time") ]]; then cp -- $(printf '%q' "$LOG.time") $(printf '%q' "$tmp") && mv -f -- $(printf '%q' "$tmp") $(printf '%q' "$FINAL_LOG.time") && rm -f -- $(printf '%q' "$LOG.time"); fi"
+        publish+="; cp -- $(printf '%q' "$LOG") $(printf '%q' "$tmp") && mv -f -- $(printf '%q' "$tmp") $(printf '%q' "$FINAL_LOG") && rm -f -- $(printf '%q' "$LOG") && rmdir -- $(printf '%q' "$(dirname "$LOG")")"
     fi
 
     # `disown` evita que la shell trackee el job; el marcador se escribe SIEMPRE
@@ -371,7 +408,26 @@ cmd_start() {
     # fondo NO es lider de grupo, asi que `setsid` no bifurca y hace `exec`
     # directamente. El contrato de pid del que cuelga el ledger se preserva; el
     # control positivo lo mide exigiendo `pgid == pid`.
-    nohup setsid bash -c "$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"" \
+    # GNU Time envuelve el comando INTERIOR y deja `<log>.time` con
+    # «memoria-pico-KB pared-s usuario-s sistema-s»: sin eso, lo que de verdad
+    # pesa en la maquina —la suite, un `tsc` de todo el arbol— no dejaba
+    # cifra y su `--memfree` seguia siendo una estimacion. Va dentro del
+    # `bash -c`, asi que el pid, el `setsid` y el marcador no cambian, y GNU
+    # Time devuelve el codigo del hijo. `-q` quita la linea «Command exited
+    # with non-zero status N» que antepone a la medida de un trabajo fallido.
+    # Sin GNU Time el trabajo corre igual y se declara: una medida ausente no
+    # es un cero.
+    # La consulta va en una SUBSHELL: `toolchain.sh` exporta sus defaults y,
+    # cargado aqui, los heredaria el trabajo (ver `run-task-pool.sh`).
+    local time_prefix="" time_bin
+    time_bin="$(source "$_SRC_DIR/lib/toolchain.sh"
+                thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || true
+    if [[ -n "$time_bin" ]]; then
+        time_prefix="$(printf '%q ' "$time_bin" -q -f '%M %e %U %S' -o "$LOG.time")"
+    else
+        echo "memoria: sin GNU Time, no se mide la de este trabajo (thyrox_toolchain_require_gnu_time)"
+    fi
+    nohup setsid bash -c "${time_prefix}$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"${publish}" \
         > "$LOG" 2>&1 &
     local pid=$!
     disown "$pid" 2>/dev/null || true
@@ -381,7 +437,8 @@ cmd_start() {
         _memfree_watch "$pid" "$memfree" "$LOG" >/dev/null 2>&1 < /dev/null &
         disown $! 2>/dev/null || true
     fi
-    printf 'PID=%s\nLOG=%s\n' "$pid" "$LOG"
+    printf 'PID=%s\nLOG=%s\n' "$pid" "$FINAL_LOG"
+    [[ "$LOG" == "$FINAL_LOG" ]] || printf 'LIVE=%s\n' "$LOG"
     [[ -n "${RUN:-}" ]] && printf 'RUN=%s\n' "$RUN"
 
     # El tercer desenlace. Sin el, quien llama tiene que decidir ANTES si el
@@ -392,6 +449,7 @@ cmd_start() {
     if (( grace > 0 )) && kill -0 "$pid" 2>/dev/null; then
         timeout "$grace" tail -f --pid="$pid" /dev/null || true
     fi
+    [[ -z "${RUN:-}" || -n "$BG_DIR" ]] || _family_logs "$RUN"
     if grep -q "^${_MARK}" "$LOG" 2>/dev/null; then
         local rc; rc="$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
         # `|| true`: cuando el log contiene SOLO el marcador, `grep -v` no
@@ -438,6 +496,7 @@ cmd_wait() {
     if kill -0 "$pid" 2>/dev/null; then
         timeout "$secs" tail -f --pid="$pid" /dev/null || true
     fi
+    _paths "$name"
 
     if grep -q "^${_MARK}" "$LOG" 2>/dev/null; then
         local rc; rc="$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
@@ -510,7 +569,7 @@ cmd_register() {
         echo "bg.sh register: no encuentro wait-jobs.sh en '$wait_jobs' (fija WAIT_JOBS)" >&2
         exit 2
     }
-    bash "$wait_jobs" register "$name" "$LOG" "$pid" --marker "$(cmd_marker_pattern)"
+    bash "$wait_jobs" register "$name" "$FINAL_LOG" "$pid" --marker "$(cmd_marker_pattern)"
 }
 
 cmd_log() { _take_dir_flag "$@"; _paths "${_ARGS_SIN_DIR[0]}"; printf '%s\n' "$LOG"; }

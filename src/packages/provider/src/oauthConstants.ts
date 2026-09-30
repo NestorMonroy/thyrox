@@ -20,7 +20,7 @@ function getOauthConfigType(): OauthConfigType {
 }
 
 export function fileSuffixForOauthConfig(): string {
-  if (readEnv('CLAUDE_CODE_CUSTOM_OAUTH_URL')) {
+  if (readEnv('THYROX_CODE_CUSTOM_OAUTH_URL')) {
     return '-custom-oauth'
   }
   switch (getOauthConfigType()) {
@@ -85,7 +85,7 @@ const PROD_OAUTH_CONFIG = {
   CONSOLE_SUCCESS_URL:
     'https://platform.claude.com/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code',
   CLAUDEAI_SUCCESS_URL:
-    'https://platform.claude.com/oauth/code/success?app=claude-code-how-works-how-works',
+    'https://platform.claude.com/oauth/code/success?app=claude-code',
   MANUAL_REDIRECT_URL: 'https://platform.claude.com/oauth/code/callback',
   CLIENT_ID: '9d1c250a-e61b-44d9-88ed-5944d1962f5e',
   OAUTH_FILE_SUFFIX: '',
@@ -94,7 +94,7 @@ const PROD_OAUTH_CONFIG = {
 } as const
 
 export const MCP_CLIENT_METADATA_URL =
-  'https://claude.ai/oauth/claude-code-how-works-how-works-client-metadata'
+  'https://claude.ai/oauth/claude-code-client-metadata'
 
 const STAGING_OAUTH_CONFIG =
   process.env.USER_TYPE === 'ant'
@@ -109,7 +109,7 @@ const STAGING_OAUTH_CONFIG =
         CONSOLE_SUCCESS_URL:
           'https://platform.staging.ant.dev/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code',
         CLAUDEAI_SUCCESS_URL:
-          'https://platform.staging.ant.dev/oauth/code/success?app=claude-code-how-works-how-works',
+          'https://platform.staging.ant.dev/oauth/code/success?app=claude-code',
         MANUAL_REDIRECT_URL: 'https://platform.staging.ant.dev/oauth/code/callback',
         CLIENT_ID: '22422756-60c9-4084-8eb7-27705fd5cf9a',
         OAUTH_FILE_SUFFIX: '-staging-oauth',
@@ -121,11 +121,11 @@ const STAGING_OAUTH_CONFIG =
 // Tres servidores de desarrollo local: :8000 api-proxy, :4000 frontend
 // claude-ai, :3000 frontend Console. Variables de entorno permiten override.
 function getLocalOauthConfig(): OauthConfig {
-  const api = readEnv('CLAUDE_LOCAL_OAUTH_API_BASE')?.replace(/\/$/, '') ?? 'http://localhost:8000'
+  const api = readEnv('THYROX_LOCAL_OAUTH_API_BASE')?.replace(/\/$/, '') ?? 'http://localhost:8000'
   const apps =
-    readEnv('CLAUDE_LOCAL_OAUTH_APPS_BASE')?.replace(/\/$/, '') ?? 'http://localhost:4000'
+    readEnv('THYROX_LOCAL_OAUTH_APPS_BASE')?.replace(/\/$/, '') ?? 'http://localhost:4000'
   const consoleBase =
-    readEnv('CLAUDE_LOCAL_OAUTH_CONSOLE_BASE')?.replace(/\/$/, '') ?? 'http://localhost:3000'
+    readEnv('THYROX_LOCAL_OAUTH_CONSOLE_BASE')?.replace(/\/$/, '') ?? 'http://localhost:3000'
   return {
     BASE_API_URL: api,
     CONSOLE_AUTHORIZE_URL: `${consoleBase}/oauth/authorize`,
@@ -135,7 +135,7 @@ function getLocalOauthConfig(): OauthConfig {
     API_KEY_URL: `${api}/api/oauth/claude_cli/create_api_key`,
     ROLES_URL: `${api}/api/oauth/claude_cli/roles`,
     CONSOLE_SUCCESS_URL: `${consoleBase}/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code`,
-    CLAUDEAI_SUCCESS_URL: `${consoleBase}/oauth/code/success?app=claude-code-how-works-how-works`,
+    CLAUDEAI_SUCCESS_URL: `${consoleBase}/oauth/code/success?app=claude-code`,
     MANUAL_REDIRECT_URL: `${consoleBase}/oauth/code/callback`,
     CLIENT_ID: '22422756-60c9-4084-8eb7-27705fd5cf9a',
     OAUTH_FILE_SUFFIX: '-local-oauth',
@@ -144,7 +144,7 @@ function getLocalOauthConfig(): OauthConfig {
   }
 }
 
-// Sólo despliegues FedStart/PubSec pueden usar CLAUDE_CODE_CUSTOM_OAUTH_URL —
+// Sólo despliegues FedStart/PubSec pueden usar THYROX_CODE_CUSTOM_OAUTH_URL —
 // evita que un token OAuth se envíe a un endpoint arbitrario.
 const ALLOWED_OAUTH_BASE_URLS = [
   'https://beacon.claude-ai.staging.ant.dev',
@@ -164,11 +164,11 @@ export function getOauthConfig(): OauthConfig {
     }
   })()
 
-  const oauthBaseUrl = readEnv('CLAUDE_CODE_CUSTOM_OAUTH_URL')
+  const oauthBaseUrl = readEnv('THYROX_CODE_CUSTOM_OAUTH_URL')
   if (oauthBaseUrl) {
     const base = oauthBaseUrl.replace(/\/$/, '')
     if (!ALLOWED_OAUTH_BASE_URLS.includes(base)) {
-      throw new Error('CLAUDE_CODE_CUSTOM_OAUTH_URL is not an approved endpoint.')
+      throw new Error('THYROX_CODE_CUSTOM_OAUTH_URL is not an approved endpoint.')
     }
     config = {
       ...config,
@@ -179,14 +179,14 @@ export function getOauthConfig(): OauthConfig {
       TOKEN_URL: `${base}/v1/oauth/token`,
       API_KEY_URL: `${base}/api/oauth/claude_cli/create_api_key`,
       ROLES_URL: `${base}/api/oauth/claude_cli/roles`,
-      CONSOLE_SUCCESS_URL: `${base}/oauth/code/success?app=claude-code-how-works-how-works`,
-      CLAUDEAI_SUCCESS_URL: `${base}/oauth/code/success?app=claude-code-how-works-how-works`,
+      CONSOLE_SUCCESS_URL: `${base}/oauth/code/success?app=claude-code`,
+      CLAUDEAI_SUCCESS_URL: `${base}/oauth/code/success?app=claude-code`,
       MANUAL_REDIRECT_URL: `${base}/oauth/code/callback`,
       OAUTH_FILE_SUFFIX: '-custom-oauth',
     }
   }
 
-  const clientIdOverride = readEnv('CLAUDE_CODE_OAUTH_CLIENT_ID')
+  const clientIdOverride = readEnv('THYROX_CODE_OAUTH_CLIENT_ID')
   if (clientIdOverride) {
     config = { ...config, CLIENT_ID: clientIdOverride }
   }

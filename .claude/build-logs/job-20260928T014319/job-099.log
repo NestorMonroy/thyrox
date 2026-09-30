@@ -1,0 +1,140 @@
+F...F....FFF
+======================================================================
+FAIL: test_a_named_import_between_packages_passes (__main__.PreCommitHook.test_a_named_import_between_packages_passes)
+El control: el mismo acoplamiento por el nombre del paquete no es cruce.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 222, in test_a_named_import_between_packages_passes
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp5rxb0kgn/.claude/eventos)
+  hogar del banco: /tmp/tmp5rxb0kgn/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+ERROR — El baseline de deuda heredada no está declarado. Es una decisión del consumidor, no del proveedor: declara IDENTIFIER_LANGUAGE_BASELINE en el proceso, o en el archivo que nombra THYROX_ENV_FILE (por defecto el .env del árbol). NO se emite un baseline vacío por defecto: eso haría ver como nueva a deuda heredada real (H-DOCS-1072).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 1 especificador(es) en 2 archivo(s) de 2 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp5rxb0kgn/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 42 ruta(s) versionada(s), 0 admitida(s))
+  src/verify/check_product_word.py: 15 (baseline 0)
+  src/verify/commit_identity.py: 2 (baseline 0)
+check_product_word: 2 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: REHÚSA — no existe /tmp/tmp5rxb0kgn/.claude/skills, /tmp/tmp5rxb0kgn/.claude/rules
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmp5rxb0kgn/src/verify/checkEnvPrefix.ts'
+
+Bun v1.3.11 (Linux x64)
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+El positivo: sin bancos propios, el hook no estorba.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 106, in test_sin_bancos_el_commit_pasa
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpkdhhmr2e/.claude/eventos)
+  hogar del banco: /tmp/tmpkdhhmr2e/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmpkdhhmr2e/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 39 ruta(s) versionada(s), 0 admitida(s))
+  src/verify/check_product_word.py: 15 (baseline 0)
+  src/verify/commit_identity.py: 2 (baseline 0)
+check_product_word: 2 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: REHÚSA — no existe /tmp/tmpkdhhmr2e/.claude/skills, /tmp/tmpkdhhmr2e/.claude/rules
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmpkdhhmr2e/src/verify/checkEnvPrefix.ts'
+
+Bun v1.3.11 (Linux x64)
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 98, in test_undeclared_identity_warns_without_blocking
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpl08pctnl/.claude/eventos)
+  hogar del banco: /tmp/tmpl08pctnl/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmpl08pctnl/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 39 ruta(s) versionada(s), 0 admitida(s))
+  src/verify/check_product_word.py: 15 (baseline 0)
+  src/verify/commit_identity.py: 2 (baseline 0)
+check_product_word: 2 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: REHÚSA — no existe /tmp/tmpl08pctnl/.claude/skills, /tmp/tmpl08pctnl/.claude/rules
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmpl08pctnl/src/verify/checkEnvPrefix.ts'
+
+Bun v1.3.11 (Linux x64)
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 334, in test_the_store_arrives_reconciled_to_commit
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpvdswilj2/.claude/eventos)
+  hogar del banco: /tmp/tmpvdswilj2/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmpvdswilj2/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 47 ruta(s) versionada(s), 0 admitida(s))
+  src/task/snapshot-tasks.sh: 1 (baseline 0)
+  src/verify/check_product_word.py: 15 (baseline 0)
+  src/verify/commit_identity.py: 2 (baseline 0)
+check_product_word: 3 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: REHÚSA — no existe /tmp/tmpvdswilj2/.claude/skills, /tmp/tmpvdswilj2/.claude/rules
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmpvdswilj2/src/verify/checkEnvPrefix.ts'
+
+Bun v1.3.11 (Linux x64)
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+reconciliar-todo: raiz /tmp/tmpxm51aigc
+  sesiones del store        1
+  omitidas (sin filas)      0
+    44444444-4444-4444-4444-444444444444  1 fila(s) con deriva de 1 tarjeta(s)
+  del store: 2 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
+  escritas: 1 fila(s)
+
+
+======================================================================
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 355, in test_without_the_store_in_the_commit_not_se_reconciles
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpb52_co75/.claude/eventos)
+  hogar del banco: /tmp/tmpb52_co75/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmpb52_co75/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 48 ruta(s) versionada(s), 0 admitida(s))
+  src/task/snapshot-tasks.sh: 1 (baseline 0)
+  src/verify/check_product_word.py: 15 (baseline 0)
+  src/verify/commit_identity.py: 2 (baseline 0)
+check_product_word: 3 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: REHÚSA — no existe /tmp/tmpb52_co75/.claude/skills, /tmp/tmpb52_co75/.claude/rules
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmpb52_co75/src/verify/checkEnvPrefix.ts'
+
+Bun v1.3.11 (Linux x64)
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 26.700s
+
+FAILED (failures=5)
+EXIT=1

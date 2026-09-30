@@ -1,0 +1,11 @@
+src/packages/agent/forkedAgent.ts(550,7): error TS2322: Type 'import("/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool").CanUseToolFn' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/agent/forkedAgent.ts(551,7): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/agent/forkedAgent.ts(566,41): error TS2345: Argument of type '{ [x: string]: unknown; inputTokens?: number; outputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; input_tokens: number; cache_creation_input_tokens: number; ... 8 more ...; cache_deleted_input_tokens?: number; }' is not assignable to parameter of type 'BetaUsage'.
+  Type '{ [x: string]: unknown; inputTokens?: number | undefined; outputTokens?: number | undefined; cacheReadInputTokens?: number | undefined; cacheCreationInputTokens?: number | undefined; input_tokens: number; ... 9 more ...; cache_deleted_input_tokens?: number | undefined; }' is missing the following properties from type 'BetaUsage': fallback_credit, output_tokens_details
+src/packages/agent/forkedAgent.ts(567,11): error TS2322: Type 'unknown' is not assignable to type 'NonNullableUsage'.

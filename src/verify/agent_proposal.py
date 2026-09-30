@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""El cambio del agente como candidato del lazo tsc cero.
+
+El lazo (`tsc_zero_step`) sabía juzgar propuestas, pero sólo las recibía de
+proponentes mecánicos (`bin/tsc_proposers`: los code fixes del compilador), que
+no atacan causas raíz. Esta pieza es el proponente con juicio: el agente edita
+el árbol, y aquí esa edición se convierte en un candidato —una edición mínima
+por archivo, su base de `HEAD` y los objetivos que el agente declara con un
+patrón sobre el log de partida— y el archivo vuelve a su base. Así no decide
+el agente si su arreglo funcionó: lo aplica el paso y lo juzga `tsc`.
+
+Uso::
+
+    bin/agent_proposal --before-log L --pattern REGEX --id NOMBRE archivo... >> candidatos.jsonl
+
+Salidas del CLI: 0 candidato emitido · 2 rehúsa (sin cambios, sin objetivos).
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
+from verify.tsc_reflect import blocking_pending, recall
+
+
+def _sha(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def _head_text(root: Path, file: str) -> str:
+    return subprocess.run(["git", "show", f"HEAD:{file}"], cwd=root, check=True,
+                          capture_output=True, text=True).stdout
+
+
+def _minimal_edit(file: str, base: str, edited: str) -> dict:
+    """Una sola edición: el tramo entre el prefijo y el sufijo comunes."""
+    start = 0
+    limit = min(len(base), len(edited))
+    while start < limit and base[start] == edited[start]:
+        start += 1
+    end_base, end_edited = len(base), len(edited)
+    while end_base > start and end_edited > start and base[end_base - 1] == edited[end_edited - 1]:
+        end_base -= 1
+        end_edited -= 1
+    return {"file": file, "start": start, "length": end_base - start,
+            "newText": edited[start:end_edited]}
+
+
+def build(root: Path, files: list[str], before_lines: list[str], pattern: str, name: str) -> dict:
+    """Candidato a partir de la edición del agente; deja cada archivo en su base."""
+    regex = re.compile(pattern)
+    # Las líneas de continuación de un mensaje encadenado no son diagnósticos.
+    matches = (DIAGNOSTIC.match(line.rstrip("\n")) for line in before_lines)
+    targets = sorted({key for match in matches if match
+                      if regex.search(key := diagnostic_key(match))})
+    bases, edits, restore = {}, [], {}
+    for file in files:
+        base = _head_text(root, file)
+        edited = (root / file).read_text()
+        if edited == base:
+            raise ValueError(f"{file} no difiere de HEAD: no hay edición que proponer")
+        bases[file] = _sha(base)
+        edits.append(_minimal_edit(file, base, edited))
+        restore[file] = base
+    if not targets:
+        raise ValueError(f"el patrón {pattern!r} no nombra ningún diagnóstico del log de partida")
+    for file, base in restore.items():
+        (root / file).write_text(base)
+    return {"proposal_id": f"agent:{name}", "proposer": "agent", "targets": targets,
+            "files": list(files), "edits": edits, "bases": bases}
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
+    parser.add_argument("--root", type=Path, default=Path("."))
+    parser.add_argument("--before-log", type=Path, required=True)
+    parser.add_argument("--pattern", required=True, help="regex sobre `archivo: TSxxxx: mensaje`")
+    parser.add_argument("--id", required=True)
+    parser.add_argument("--run", type=Path,
+                        help="corrida del lazo: antes de salir, recuerda sus reflexiones y recetas")
+    parser.add_argument("files", nargs="+")
+    args = parser.parse_args(argv)
+    # `build` deja cada archivo en su base; si el gate 4 bloquea después, la
+    # edición del agente tiene que volver al árbol, o se pierde.
+    edited = {file: (args.root / file).read_text() for file in args.files
+              if (args.root / file).is_file()}
+    try:
+        row = build(args.root, args.files, args.before_log.read_text().splitlines(), args.pattern,
+                    args.id)
+    except (ValueError, OSError, re.error, subprocess.CalledProcessError) as error:
+        print(f"agent_proposal: REHÚSA — {error}", file=sys.stderr)
+        return 2
+    if args.run is not None:
+        # Reflexion: leer la memoria de estos archivos ANTES de que tsc juzgue.
+        memory = recall(args.run, args.files)
+        for item in memory["reflections"]:
+            print(f"memoria [{item['outcome']}] {item['proposal_id']}: {item['lesson']}",
+                  file=sys.stderr)
+        for item in memory["recipes"]:
+            print(f"receta {item['step']}: {item['subject']}", file=sys.stderr)
+        # Paso 4 del plan: la señal de un patrón aprendido que sigue viva en
+        # otros archivos se nombra, para aplicarlo en bloque en vez de uno
+        # por paso.
+        before = args.before_log.read_text().splitlines()
+        # Gate 4 (plan v2.2.0): no se propone otra cosa mientras un patrón
+        # aprendido siga vivo fuera de la candidata sin salida declarada. Sólo
+        # se lista lo que bloquea: un patrón cerrado o un archivo excluido ya
+        # tienen su razón escrita en la memoria.
+        blocking = blocking_pending(args.run, before, args.files, row["targets"])
+        for pattern_id, files in blocking.items():
+            for file, count in sorted(files.items(), key=lambda kv: -kv[1]):
+                print(f"pendiente {pattern_id}: {count} en {file}", file=sys.stderr)
+        if blocking:
+            names = ", ".join(f"{n} ({sum(f.values())} en {len(f)} archivo(s))" for n, f in blocking.items())
+            print(f"GATE 4 BLOQUEADO — patrón(es) con señal viva fuera de la candidata: {names}. "
+                  "Inclúyelos en la candidata o declara la salida con bin/tsc_sweep "
+                  "exclude|close --reason.", file=sys.stderr)
+            for file, text in edited.items():
+                (args.root / file).write_text(text)
+            return 4
+    print(json.dumps(row, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

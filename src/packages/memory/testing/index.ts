@@ -1,10 +1,8 @@
 /**
- * Puerto de `ccnmt: packages/memory/testing/index.ts` (verbatim).
+ * @thyrox/memory/testing
  *
- * `@thyrox/memory/testing`
- *
- * V7 §9.11 — costuras públicas in-memory para tests del paquete memory.
- * NO debe importar de ../src/internal/.
+ * V7 §9.11 — public in-memory seams for memory package tests.
+ * Must NOT import from ../src/internal/.
  */
 import type {
   MemFsImplementation,
@@ -27,7 +25,7 @@ function createDirEntry(name: string, kind: 'file' | 'dir'): DirEntry {
 }
 
 /**
- * Stub de filesystem en memoria para tests del paquete memory.
+ * In-memory filesystem stub for memory package tests.
  */
 export class MemoryFsStub implements MemFsImplementation {
   private readonly files = new Map<string, string>()
@@ -81,7 +79,7 @@ export class MemoryFsStub implements MemFsImplementation {
 }
 
 /**
- * Stub de host bindings con comportamiento no-op determinístico.
+ * Host binding stub with deterministic no-op behavior.
  */
 export function createMemoryHostBindings(
   overrides?: Partial<MemoryHostBindings>,

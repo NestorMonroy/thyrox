@@ -4,23 +4,19 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Pines a nivel de fuente para `internal/sessionRuntime.ts` — fachadas de
- * session-id / cwd / presupuesto de tokens. Cada una tiene un fallback
- * determinista usado en tests y en escenarios previos a la instalación del
- * host. Porte de
- * `ccnmt: packages/agent/__tests__/internalSessionRuntime.behavior.test.ts`.
+ * Source-level pins for `internal/sessionRuntime.ts` — session-id / cwd /
+ * token-budget facades. Each has a deterministic fallback used in tests
+ * and pre-host-init scenarios.
  *
- * Invariantes clave:
- *  1. El fallback de `getSessionId` es "unknown" (el centinela que la
- *     telemetría espera cuando no arrancó ninguna sesión).
- *  2. `getCwdState` encadena DOS fallbacks del host (cwd actual → cwd
- *     original) antes de caer en `process.cwd()`. El orden importa: un
- *     turno puede haber hecho `cd`, y se quiere la ruta actual, no la de
- *     arranque.
- *  3. `getOriginalCwd` cae directo en `process.cwd()` (un solo fallback).
- *  4. `isSessionPersistenceDisabled` cae en FALSE por defecto (persistencia
- *     encendida por defecto — una regresión a true descartaría sesiones en
- *     silencio).
+ * Key invariants:
+ *  1. getSessionId fallback is "unknown" (used as the sentinel that
+ *     telemetry expects when no session has been started).
+ *  2. getCwdState chains TWO host fallbacks (current cwd → original cwd)
+ *     before bottoming out at process.cwd(). The order matters: a turn
+ *     might `cd` away, and we want the current path, not the launch one.
+ *  3. getOriginalCwd bottoms out at process.cwd() (single fallback).
+ *  4. isSessionPersistenceDisabled defaults to FALSE (persistence ON by
+ *     default — a regression to true would silently drop sessions).
  */
 describe('internal/sessionRuntime fallbacks', () => {
   const source = readFileSync(
@@ -28,58 +24,55 @@ describe('internal/sessionRuntime fallbacks', () => {
     'utf-8',
   )
 
-  test('getSessionId cae en el literal "unknown"', () => {
-    // Pin: NO '' ni 'no-session'. La telemetría hace join sobre este valor
-    // exacto.
+  test('getSessionId fallback is the literal string "unknown"', () => {
+    // Pin: NOT '' or 'no-session'. Analytics joins on this exact value.
     expect(source).toMatch(/getSessionId\?\.\(\) \?\? 'unknown'/)
   })
 
-  test('getSdkBetas: sin host → [] (NO undefined)', () => {
-    // Pin: quien llama esparce ...getSdkBetas() dentro de un arreglo de
-    // headers.
+  test('getSdkBetas: no host → [] (NOT undefined)', () => {
+    // Pin: caller spreads ...getSdkBetas() into a headers array.
     expect(source).toMatch(/getSdkBetas\?\.\(\) \?\? \[\]/)
   })
 
-  test('getCurrentTurnTokenBudget: sin host → 0', () => {
+  test('getCurrentTurnTokenBudget: no host → 0', () => {
     expect(source).toMatch(/getCurrentTurnTokenBudget\?\.\(\) \?\? 0/)
   })
 
-  test('getTurnOutputTokens: sin host → 0', () => {
+  test('getTurnOutputTokens: no host → 0', () => {
     expect(source).toMatch(/getTurnOutputTokens\?\.\(\) \?\? 0/)
   })
 
-  test('incrementBudgetContinuationCount: sin host → no-op silencioso (void)', () => {
-    // Pin: retorno void; ningún resultado observable.
+  test('incrementBudgetContinuationCount: no host → silent no-op (void)', () => {
+    // Pin: void return; no observable result.
     expect(source).toMatch(
       /incrementBudgetContinuationCount\?\.\(\)/,
     )
   })
 
-  test('cadena de getCwdState: actual → original → process.cwd()', () => {
-    // Pin: fallback de 3 niveles. El orden es crítico — primero el
-    // actual, para que un /cd del turno se refleje, cayendo al directorio
-    // de arranque original, y luego al default del proceso.
+  test('getCwdState chain: current → original → process.cwd()', () => {
+    // Pin: 3-tier fallback. Order is critical — current first, so a
+    // /cd in the turn reflects, falling back to original launch dir,
+    // then the process default.
     expect(source).toMatch(
       /getCwdState\?\.\(\) \?\?\s*\n?\s*getAgentHostBindings\(\)\.getOriginalCwd\?\.\(\) \?\?\s*\n?\s*process\.cwd\(\)/,
     )
   })
 
-  test('getOriginalCwd: sin host → process.cwd() (el directorio de arranque del binario)', () => {
-    // Pin: fallback más simple. NO encadenado — el cwd original es
-    // exactamente ese.
+  test('getOriginalCwd: no host → process.cwd() (the binary launch dir)', () => {
+    // Pin: simpler fallback. NOT chained — original cwd is exactly that.
     expect(source).toMatch(
       /getOriginalCwd\?\.\(\) \?\? process\.cwd\(\)/,
     )
   })
 
-  test('setCwdState: optional-chain (no-op sin host)', () => {
+  test('setCwdState: optional-chain (no-op when host absent)', () => {
     expect(source).toMatch(/setCwdState\?\.\(cwd\)/)
   })
 
-  test('isSessionPersistenceDisabled cae en FALSE (persistencia encendida por defecto)', () => {
-    // Pin: invariante crítico de UX. Una regresión a `?? true`
-    // desactivaría la persistencia de sesión en silencio, descartando el
-    // historial de conversación en cada salida.
+  test('isSessionPersistenceDisabled defaults to FALSE (persistence ON by default)', () => {
+    // Pin: critical UX invariant. A regression to `?? true` would
+    // silently disable session persistence, dropping conversation
+    // history on every quit.
     expect(source).toMatch(
       /isSessionPersistenceDisabled\?\.\(\) \?\? false/,
     )

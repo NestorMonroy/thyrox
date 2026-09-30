@@ -1,0 +1,3 @@
+mkdir -p "$(bash "$RAIZ/bin/pool_history" dir "$F/prompt.md" | sed "s|^.*/|$HIST/|")"
+printf '{"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 0.1, "max_wall_s": 0.1, "peak_kb": 1000, "peak_vram_mib": 0}\n' \
+  > "$(bash "$RAIZ/bin/pool_history" dir "$F/prompt.md" | sed "s|^.*/|$HIST/|")/history.jsonl"

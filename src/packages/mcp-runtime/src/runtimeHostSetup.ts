@@ -52,13 +52,15 @@ export function installMcpRuntimeBindings(): void {
   }
 
   const bindings: AnyBindings = {
-    connectAll: clientRuntime.connectAll,
-    discover: clientRuntime.discover,
-    executeTool: clientRuntime.executeTool,
+    connectAll: clientRuntime.connectAll as AnyBindings['connectAll'],
+    discover: clientRuntime.discover as AnyBindings['discover'],
+    executeTool: clientRuntime.executeTool as AnyBindings['executeTool'],
     getMcpToolsCommandsAndResources:
-      clientRuntime.getMcpToolsCommandsAndResources,
-    prefetchResources: clientRuntime.prefetchResources,
-    prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+      clientRuntime.getMcpToolsCommandsAndResources as AnyBindings['getMcpToolsCommandsAndResources'],
+    prefetchResources:
+      clientRuntime.prefetchResources as AnyBindings['prefetchResources'],
+    prefetchAllMcpResources:
+      clientRuntime.prefetchAllMcpResources as AnyBindings['prefetchAllMcpResources'],
     handleMcpSetServers:
       handleMcpSetServers as AnyBindings['handleMcpSetServers'],
     reconcileMcpServers:

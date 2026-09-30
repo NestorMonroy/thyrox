@@ -1,0 +1,27 @@
+Port the effort display from the binary, schemas lazy
+
+Settings schemas: the source and the 2.1.275 binary declare
+SettingsSchema, PermissionsSchema and EnvironmentVariablesSchema as
+lazy factories, and this tree held plain instances. pluginLoader and
+updateConfig already called SettingsSchema() and failed at runtime
+with a TypeError; three files declared the divergence instead of
+closing it. All three are factories now, and every consumer calls
+them. parseSettingSourcesFlag throws the binary's message again. The
+suite ported from the reference is aligned to two standing decisions
+it contradicted: model takes a full identifier, never an alias, and
+includeCoAuthoredBy only admits false; both refusals are now tested.
+
+Effort: seven names the ccnmt port had left out are ported from the
+2.1.275 binary (chunk-87qahtf8.js): modelSupportsEffort (I_),
+getDefaultEffortForModel (C), resolveModelEffort (Sw),
+getDisplayedEffortLevel (TT), getEffortSuffix (Uyt) and both
+descriptions (ne, nQn), with the model catalog as capability source
+and canonicalModelName (mSe) to match dated or prefixed ids.
+modelSupportsMaxEffort and modelSupportsXhighEffort take the binary's
+shape (Dj, s3): until now xhigh was refused for Sonnet 5, Opus 5 and
+Fable, and a session on claude-fable-5-1 had xhigh clamped to high.
+The ccnmt proxy asymmetry for xhigh is not in the measured build, and
+its case is realigned. resolvePickerEffortPersistence is not in
+2.1.275; it is the earlier API ModelPicker still uses, ported to its
+suite's contract. Every guard was annulled on its own and exactly its
+cases fell; the hook branch had none and gained one.

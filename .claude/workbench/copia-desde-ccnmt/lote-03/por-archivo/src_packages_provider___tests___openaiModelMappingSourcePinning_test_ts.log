@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/openaiModelMappingSourcePinning.test.ts:
+58 |   'utf-8',
+59 | )
+60 | 
+61 | describe('invariantes escritos en openai/modelMapping.ts', () => {
+62 |   test('1. el entorno se lee por readEnv, no por process.env directo', () => {
+63 |     expect(fuente).toMatch(/import \{ readEnv \} from '@thyrox\/config\/env\/utils'/)
+                        ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /import \{ readEnv \} from '@thyrox\/config\/env\/utils'/
+Received: "/**\n * Default mapping from Anthropic model names to OpenAI model names.\n * Used only when ANTHROPIC_DEFAULT_*_MODEL env vars are not set.\n */\nimport { readEnv } from '@thyrox/config/env'\nconst DEFAULT_MODEL_MAP: Record<string, string> = {\n  'claude-sonnet-4-20250514': 'gpt-4o',\n  'claude-sonnet-4-5-20250929': 'gpt-4o',\n  'claude-sonnet-4-6': 'gpt-4o',\n  'claude-opus-4-20250514': 'o3',\n  'claude-opus-4-1-20250805': 'o3',\n  'claude-opus-4-5-20251101': 'o3',\n  'claude-opus-4-6': 'o3',\n  'claude-opus-4-7': 'o3',\n  'claude-opus-4-8': 'o3',\n  'claude-haiku-4-5-20251001': 'gpt-4o-mini',\n  'claude-3-5-haiku-20241022': 'gpt-4o-mini',\n  'claude-3-7-sonnet-20250219': 'gpt-4o',\n  'claude-3-5-sonnet-20241022': 'gpt-4o',\n}\n\n/**\n * Determine the model family (haiku / sonnet / opus) from an Anthropic model ID.\n */\nfunction getModelFamily(model: string): 'haiku' | 'sonnet' | 'opus' | null {\n  if (/haiku/i.test(model)) return 'haiku'\n  if (/opus/i.test(model)) return 'opus'\n  if (/sonnet/i.test(model)) return 'sonnet'\n  return null\n}\n\n/**\n * Resolve the OpenAI model name for a given Anthropic model.\n *\n * Priority:\n * 1. OPENAI_MODEL env var (override all)\n * 2. OPENAI_DEFAULT_{FAMILY}_MODEL env var (e.g. OPENAI_DEFAULT_SONNET_MODEL)\n * 3. ANTHROPIC_DEFAULT_{FAMILY}_MODEL env var (backward compatibility)\n * 4. DEFAULT_MODEL_MAP lookup\n * 5. Pass through original model name\n */\nexport function resolveOpenAIModel(anthropicModel: string): string {\n  // Highest priority: explicit override\n  if (readEnv('OPENAI_MODEL')) {\n    return readEnv('OPENAI_MODEL')\n  }\n\n  // Strip [1m] suffix if present (Claude-specific modifier)\n  const cleanModel = anthropicModel.replace(/\\[1m\\]$/, '')\n\n  // Check family-specific overrides\n  const family = getModelFamily(cleanModel)\n  if (family) {\n    // OpenAI-specific family override (preferred for openai provider)\n    const openaiEnvVar = `OPENAI_DEFAULT_${family.toUpperCase()}_MODEL`\n    const openaiOverride = readEnv(openaiEnvVar)\n    if (openaiOverride) return openaiOverride\n\n    // Anthropic env var (backward compatibility)\n    const anthropicEnvVar = `ANTHROPIC_DEFAULT_${family.toUpperCase()}_MODEL`\n    const anthropicOverride = readEnv(anthropicEnvVar)\n    if (anthropicOverride) return anthropicOverride\n  }\n\n  return DEFAULT_MODEL_MAP[cleanModel] ?? cleanModel\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/openaiModelMappingSourcePinning.test.ts:63:20)
+(fail) invariantes escritos en openai/modelMapping.ts > 1. el entorno se lee por readEnv, no por process.env directo [1.28ms]
+
+ 7 pass
+ 1 fail
+ 17 expect() calls
+Ran 8 tests across 1 file. [113.00ms]
+exit=1

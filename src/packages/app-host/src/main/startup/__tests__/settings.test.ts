@@ -8,7 +8,7 @@ import {
   type SettingsFlagDeps,
 } from '../settings.js'
 
-const ENV_KEYS = ['CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_ACTION', 'USER_TYPE'] as const
+const ENV_KEYS = ['THYROX_CODE_ENTRYPOINT', 'THYROX_CODE_ACTION', 'USER_TYPE'] as const
 let snapshot: Record<string, string | undefined>
 let argvOriginal: string[]
 
@@ -30,35 +30,35 @@ afterEach(() => {
 })
 
 describe('initializeEntrypoint', () => {
-  test('si CLAUDE_CODE_ENTRYPOINT ya está seteado, no lo toca', () => {
-    process.env.CLAUDE_CODE_ENTRYPOINT = 'ya-seteado'
+  test('si THYROX_CODE_ENTRYPOINT ya está seteado, no lo toca', () => {
+    process.env.THYROX_CODE_ENTRYPOINT = 'ya-seteado'
     initializeEntrypoint(false)
-    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('ya-seteado')
+    expect(process.env.THYROX_CODE_ENTRYPOINT).toBe('ya-seteado')
   })
 
   test('con "mcp serve" en argv, fija "mcp"', () => {
     process.argv = ['node', 'cli.js', 'mcp', 'serve']
     initializeEntrypoint(false)
-    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('mcp')
+    expect(process.env.THYROX_CODE_ENTRYPOINT).toBe('mcp')
   })
 
-  test('con CLAUDE_CODE_ACTION truthy, fija el entrypoint de la GitHub Action', () => {
+  test('con THYROX_CODE_ACTION truthy, fija el entrypoint de la GitHub Action', () => {
     process.argv = ['node', 'cli.js']
-    process.env.CLAUDE_CODE_ACTION = '1'
+    process.env.THYROX_CODE_ACTION = '1'
     initializeEntrypoint(false)
-    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('claude-code-how-works-how-works-github-action')
+    expect(process.env.THYROX_CODE_ENTRYPOINT).toBe('claude-code-github-action')
   })
 
   test('no interactivo sin banderas: fija "sdk-cli"', () => {
     process.argv = ['node', 'cli.js']
     initializeEntrypoint(true)
-    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('sdk-cli')
+    expect(process.env.THYROX_CODE_ENTRYPOINT).toBe('sdk-cli')
   })
 
   test('interactivo sin banderas: fija "cli"', () => {
     process.argv = ['node', 'cli.js']
     initializeEntrypoint(false)
-    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('cli')
+    expect(process.env.THYROX_CODE_ENTRYPOINT).toBe('cli')
   })
 })
 

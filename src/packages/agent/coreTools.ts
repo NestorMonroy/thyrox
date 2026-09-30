@@ -1,50 +1,8 @@
 /**
- * Porte de `ccnmt: packages/agent/types/tools.ts` — el contrato de una
- * herramienta ejecutable por el bucle (`CoreTool`), su resultado
- * (`ToolResult`) y el veredicto de permiso que decide si se ejecuta.
- *
- * DIVERGENCIA declarada: la fuente importa `type { z } from 'zod/v4'` pero
- * no lo usa en ningún tipo del archivo (import muerto). No se porta —
- * evita una dependencia que el cuerpo del archivo nunca ejercita.
+ * Reexporta el porte, que vive en la ruta de la fuente
+ * (`ccnmt: packages/agent/types/tools.ts` -> `types/tools.ts`). Hasta
+ * aqui el porte vivia en este archivo, una ruta que la fuente no tiene, y
+ * `types/tools.ts` guardaba una copia sin adaptar: el mismo modelo dos
+ * veces en la misma capa. Mismo patron que `compactionDeps.ts`.
  */
-import type { CoreContentBlock } from './coreMessages.ts'
-
-export type ToolInputJSONSchema = {
-  type: 'object'
-  properties?: { [key: string]: unknown }
-  [key: string]: unknown
-}
-
-export interface CoreTool {
-  readonly name: string
-  readonly description: string
-  readonly inputSchema: ToolInputJSONSchema
-  readonly userFacingName?: string
-  readonly isLocal?: boolean
-  readonly isMcp?: boolean
-}
-
-export type ToolResult = {
-  output: string | CoreContentBlock[]
-  error?: boolean
-  metadata?: {
-    durationMs?: number
-    [key: string]: unknown
-  }
-}
-
-export interface ToolExecContext {
-  abortSignal: AbortSignal
-  toolUseId: string
-  [key: string]: unknown
-}
-
-export type PermissionResult =
-  | { allowed: true }
-  | { allowed: false; reason: string }
-
-export interface PermissionContext {
-  mode: string
-  input: unknown
-  [key: string]: unknown
-}
+export * from './types/tools.js'

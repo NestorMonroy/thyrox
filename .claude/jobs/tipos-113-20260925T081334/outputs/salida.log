@@ -1,0 +1,16 @@
+[0.07ms] ".env"
+bun add v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [32]
+Saved lockfile
+
+installed @types/semver@7.8.0
+installed @types/qrcode@1.5.6
+installed @types/plist@3.0.5
+installed @types/he@1.2.3
+installed @types/turndown@5.0.6
+installed @types/stack-utils@2.0.3
+installed @types/asciichart@1.5.8
+
+7 packages installed [431.00ms]
+__BG_EXIT__=0

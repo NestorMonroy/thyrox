@@ -57,6 +57,7 @@ export {
   parseCronExpression,
 } from './internal/cronCore.ts'
 export { createCronScheduler } from './internal/cronSchedulerCore.ts'
+export type { CronScheduler } from './internal/cronSchedulerCore.ts'
 export {
   cancelAllPendingLoopSessionCrons,
   isLoopDynamicEnabled,

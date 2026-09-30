@@ -1,12 +1,3 @@
-/**
- * Porte de `ccnmt: packages/command-runtime/src/__tests__/argumentSubstitution.test.ts`.
- * Fija el contrato de sustitucion de `$ARGUMENTS` en prompts de skill/comando:
- * tokenizado tipo shell (comillas simples/dobles, comillas escapadas dentro
- * de comillas dobles), nombres de argumento desde el frontmatter, el hint
- * progresivo de argumentos restantes, y las cuatro formas de placeholder
- * (`$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, nombrado) mas el fallback de apendizar
- * `ARGUMENTS: <valor>` cuando no hay placeholder.
- */
 import { describe, expect, test } from "bun:test";
 import {
   parseArguments,

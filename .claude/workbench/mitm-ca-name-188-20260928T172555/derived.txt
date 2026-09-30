@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/tproxy/fixtures/captureInNamespace.ts:
+
+# Unhandled error between tests
+-------------------------------
+23 | 
+24 | execFileSync('ip', ['link', 'set', 'lo', 'up'])
+25 | execFileSync('ip', ['addr', 'add', `${UPSTREAM_IP}/32`, 'dev', 'lo'])
+26 | 
+27 | const upstream = https.createServer(
+28 |   { key: fs.readFileSync(process.env.UPSTREAM_KEY!), cert: fs.readFileSync(process.env.UPSTREAM_CERT!) },
+                 ^
+TypeError: path must be a string or a file descriptor
+ code: "ERR_INVALID_ARG_TYPE"
+
+      at /home/user/thyrox/src/packages/mitm/__tests__/tproxy/fixtures/captureInNamespace.ts:28:13
+-------------------------------
+
+
+ 116 pass
+ 1 fail
+ 1 error
+ 162 expect() calls
+Ran 117 tests across 16 files. [17.31s]

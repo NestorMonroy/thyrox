@@ -41,6 +41,7 @@
  */
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type {
   Message,
   ToolResultBlockParam,
@@ -726,16 +727,12 @@ function replaceToolResultContents(
     if (message.type !== 'user' || !Array.isArray(message.message?.content)) {
       return message
     }
-    const content = message.message.content as Array<{
-      type: string
-      tool_use_id?: string
-      [key: string]: unknown
-    }>
+    // El contenido de un mensaje de usuario es siempre `ContentBlockParam[]`
+    // (lo que se envía al API); `ContentBlock[]` sólo aparece en respuestas
+    // del asistente, ya descartadas arriba por `type !== 'user'`.
+    const content = message.message.content as ContentBlockParam[]
     const needsReplace = content.some(
-      b =>
-        b.type === 'tool_result' &&
-        b.tool_use_id !== undefined &&
-        replacementMap.has(b.tool_use_id),
+      b => b.type === 'tool_result' && replacementMap.has(b.tool_use_id),
     )
     if (!needsReplace) return message
     return {
@@ -743,7 +740,7 @@ function replaceToolResultContents(
       message: {
         ...message.message,
         content: content.map(block => {
-          if (block.type !== 'tool_result' || block.tool_use_id === undefined) {
+          if (block.type !== 'tool_result') {
             return block
           }
           const replacement = replacementMap.get(block.tool_use_id)

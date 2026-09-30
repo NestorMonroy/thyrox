@@ -11,7 +11,7 @@
  * para mantener el contenedor vivo.
  *
  * El envío de keep-alives está gateado por
- * CLAUDE_CODE_REMOTE_SEND_KEEPALIVES. El logging de diagnóstico dispara
+ * THYROX_CODE_REMOTE_SEND_KEEPALIVES. El logging de diagnóstico dispara
  * siempre, para ayudar a diagnosticar huecos de inactividad.
  *
  * Tres dependencias hermanas ausentes, reimplementadas PRIVADAMENTE con
@@ -28,16 +28,11 @@
  *    `delete`).
  *  - `logForDiagnosticsNoPII` (`local-observability/logging`) — no-op con
  *    setter `setLogForDiagnosticsNoPIIFn`.
- *  - `isEnvTruthy` (`@thyrox/config: env/utils.ts`, que sí existe de
- *    verdad en este monorepo) — no se importa por el mismo motivo de
- *    aislamiento de paquete; se reimplementa fiel a esa fuente real
- *    (`1`/`true`/`yes`/`on`, sin distinguir mayúsculas).
  *
- * `readEnv` SÍ se reusa de verdad: se importa de
- * `./internal/pendingCrossPackageDeps.js`, sustituto ya presente en este
- * paquete.
+ * `readEnv` e `isEnvTruthy` se importan del original,
+ * `@thyrox/config/env/utils`, un módulo hoja.
  */
-import { readEnv } from './internal/pendingCrossPackageDeps.js'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 // ---------------------------------------------------------------------------
 // Sustitutos — ver docstring del archivo.
@@ -64,14 +59,6 @@ export function setLogForDiagnosticsNoPIIFn(
   _logForDiagnosticsNoPII = fn
 }
 
-/** Fiel a `@thyrox/config: env/utils.ts::isEnvTruthy` — ver docstring. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
-}
-
 // ---------------------------------------------------------------------------
 // El módulo real — porte fiel.
 // ---------------------------------------------------------------------------
@@ -94,7 +81,7 @@ function startHeartbeatTimer(): void {
     _logForDiagnosticsNoPII('debug', 'session_keepalive_heartbeat', {
       refcount,
     })
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE_SEND_KEEPALIVES'))) {
+    if (isEnvTruthy(readEnv('THYROX_CODE_REMOTE_SEND_KEEPALIVES'))) {
       activityCallback?.()
     }
   }, SESSION_ACTIVITY_INTERVAL_MS)
@@ -137,7 +124,7 @@ export function unregisterSessionActivityCallback(): void {
 }
 
 export function sendSessionActivitySignal(): void {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE_SEND_KEEPALIVES'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_REMOTE_SEND_KEEPALIVES'))) {
     activityCallback?.()
   }
 }

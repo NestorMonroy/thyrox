@@ -19,15 +19,16 @@ import type {
   BetaToolChoiceAuto,
   BetaToolChoiceTool,
   BetaToolUnion,
-  BetaUsage,
   BetaMessageParam as MessageParam,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
 import type { ClientOptions } from '@anthropic-ai/sdk'
+import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { getProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderRequestOptions } from './internal/providerTypes.ts'
+import type { ProviderEffortValue, ProviderNotification } from './contracts.ts'
 import { HostBindingsError } from './errors.ts'
 
 type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[]
@@ -41,12 +42,12 @@ export type Options = ProviderRequestOptions & {
   extraToolSchemas?: BetaToolUnion[]
   querySource: string
   agents: unknown[]
-  effortValue?: string
+  effortValue?: ProviderEffortValue
   mcpTools: unknown
   queryTracking?: unknown
   agentId?: string
   outputFormat?: BetaJSONOutputFormat
-  addNotification?: (notif: unknown) => void
+  addNotification?: (notif: ProviderNotification) => void
   fetchOverride?: ClientOptions['fetch']
   taskBudget?: OptionsTaskBudget
 }
@@ -61,7 +62,7 @@ type ClaudeLegacyRuntime = {
   }
   configureTaskBudgetParams: (
     taskBudget: Options['taskBudget'],
-    outputConfig: BetaMessageStreamParams['output'] & {
+    outputConfig: BetaMessageStreamParams['output_config'] & {
       task_budget?: { type: 'tokens'; total: number; remaining?: number }
     },
     betas: string[],
@@ -89,16 +90,22 @@ type ClaudeLegacyRuntime = {
   executeNonStreamingRequest: (...args: unknown[]) => AsyncGenerator<unknown, unknown>
   stripExcessMediaItems: (...args: unknown[]) => unknown
   cleanupStream: (stream: Stream<BetaRawMessageStreamEvent>) => void
-  updateUsage: (usage: BetaUsage, delta?: BetaMessageDeltaUsage) => BetaUsage
-  accumulateUsage: (...args: unknown[]) => unknown
+  updateUsage: (
+    usage: Readonly<NonNullableUsage>,
+    delta?: BetaMessageDeltaUsage,
+  ) => NonNullableUsage
+  accumulateUsage: (
+    totalUsage: Readonly<NonNullableUsage>,
+    messageUsage: Readonly<NonNullableUsage>,
+  ) => NonNullableUsage
   addCacheBreakpoints: (...args: unknown[]) => unknown
   buildSystemPromptBlocks: (
     systemPrompt: unknown,
     enablePromptCaching: boolean,
     options?: { skipGlobalCacheForSystemPrompt?: boolean; querySource?: string },
   ) => TextBlockParam[]
-  queryHaiku: (...args: unknown[]) => Promise<unknown>
-  queryWithModel: (...args: unknown[]) => Promise<unknown>
+  queryHaiku: typeof import('./claudeLegacyRuntime.ts').queryHaiku
+  queryWithModel: typeof import('./claudeLegacyRuntime.ts').queryWithModel
   adjustParamsForNonStreaming: <
     T extends { max_tokens: number; thinking?: BetaMessageStreamParams['thinking'] },
   >(
@@ -136,7 +143,7 @@ export function getCacheControl(args?: {
 
 export function configureTaskBudgetParams(
   taskBudget: Options['taskBudget'],
-  outputConfig: BetaMessageStreamParams['output'] & {
+  outputConfig: BetaMessageStreamParams['output_config'] & {
     task_budget?: { type: 'tokens'; total: number; remaining?: number }
   },
   betas: string[],
@@ -183,7 +190,7 @@ export async function* queryModelWithStreaming(args: {
 }
 
 export async function* executeNonStreamingRequest(...args: unknown[]): AsyncGenerator<unknown, unknown> {
-  yield* getLegacyRuntime().executeNonStreamingRequest(...args)
+  return yield* getLegacyRuntime().executeNonStreamingRequest(...args)
 }
 
 export function stripExcessMediaItems(...args: unknown[]): unknown {
@@ -194,12 +201,20 @@ export function cleanupStream(stream: Stream<BetaRawMessageStreamEvent>): void {
   return getLegacyRuntime().cleanupStream(stream)
 }
 
-export function updateUsage(usage: BetaUsage, delta?: BetaMessageDeltaUsage): BetaUsage {
+// El uso que se acumula es el `NonNullableUsage` del SDK —el mismo que
+// `logging` exporta—, no el `BetaUsage` crudo con sus campos nulables.
+export function updateUsage(
+  usage: Readonly<NonNullableUsage>,
+  delta?: BetaMessageDeltaUsage,
+): NonNullableUsage {
   return getLegacyRuntime().updateUsage(usage, delta)
 }
 
-export function accumulateUsage(...args: unknown[]): unknown {
-  return getLegacyRuntime().accumulateUsage(...args)
+export function accumulateUsage(
+  totalUsage: Readonly<NonNullableUsage>,
+  messageUsage: Readonly<NonNullableUsage>,
+): NonNullableUsage {
+  return getLegacyRuntime().accumulateUsage(totalUsage, messageUsage)
 }
 
 export function addCacheBreakpoints(...args: unknown[]): unknown {
@@ -214,11 +229,17 @@ export function buildSystemPromptBlocks(
   return getLegacyRuntime().buildSystemPromptBlocks(systemPrompt, enablePromptCaching, options)
 }
 
-export async function queryHaiku(...args: unknown[]): Promise<unknown> {
+// Firmas de `claudeLegacyRuntime.ts`, que es lo que el anfitrión instala:
+// un `unknown` aquí obligaba a cada llamador a adivinar la forma del mensaje.
+export async function queryHaiku(
+  ...args: Parameters<ClaudeLegacyRuntime['queryHaiku']>
+): ReturnType<ClaudeLegacyRuntime['queryHaiku']> {
   return getLegacyRuntime().queryHaiku(...args)
 }
 
-export async function queryWithModel(...args: unknown[]): Promise<unknown> {
+export async function queryWithModel(
+  ...args: Parameters<ClaudeLegacyRuntime['queryWithModel']>
+): ReturnType<ClaudeLegacyRuntime['queryWithModel']> {
   return getLegacyRuntime().queryWithModel(...args)
 }
 

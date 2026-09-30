@@ -177,6 +177,7 @@ import {
 } from '@thyrox/shell/execFileNoThrow.js'
 import { pathExists, writeFileSyncAndFlush } from '@thyrox/storage/file.js'
 import { getFsImplementation, safeResolvePath } from '@thyrox/storage/fsOperations.js'
+import { resolve as resolvePath } from 'node:path'
 import { gitExe } from '@thyrox/storage/git.js'
 import { getHeadForDir } from '@thyrox/config/gitFilesystem.js'
 import { logError } from '@thyrox/local-observability/logging'
@@ -212,8 +213,8 @@ export function installPluginBindings(): void {
   // escribe en los placeholders de _deps.ts, agent/hooks.ts lee del
   // STATE de app-host. Sin estos tres wires las dos mitades divergen y
   // todo hook de plugin aterriza en silencio en un slot no-op.)
-  setGetRegisteredHooksFn(() => getRegisteredHooks() as never)
-  setRegisterHookCallbacksFn(hooks => registerHookCallbacks(hooks as never))
+  setGetRegisteredHooksFn(() => getRegisteredHooks())
+  setRegisterHookCallbacksFn(hooks => registerHookCallbacks(hooks))
   setClearRegisteredPluginHooksFn(() => clearRegisteredPluginHooks())
 
   // --- secureStorage (wire hermano del anterior: mismo patrón de slot
@@ -233,15 +234,15 @@ export function installPluginBindings(): void {
   //     import estático es para evitar problemas de orden de carga
   //     cuando el módulo de implementación también toca el estado del
   //     host durante su propia inicialización.
-  setRipGrepFn(async (...args: unknown[]) => {
+  setRipGrepFn(async (args, target, abortSignal) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { ripGrep } = require('@thyrox/tool-registry/ripgrep.js')
-    return ripGrep(...args)
+    const { ripGrep } = require('@thyrox/tool-registry/ripgrep.js') as typeof import('@thyrox/tool-registry/ripgrep.js')
+    return ripGrep(args, target, abortSignal)
   })
-  setUnzipFileFn((zipPath, destDir) => {
+  setUnzipFileFn(zipData => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { unzipFile } = require('@thyrox/config/dxt/zip.js')
-    return unzipFile(zipPath, destDir)
+    return unzipFile(zipData)
   })
   setParseZipModesFn((data: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -260,7 +261,7 @@ export function installPluginBindings(): void {
   })
   setGetSystemDirectoriesFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getSystemDirectories } = require('@thyrox/agent/misc/systemDirectories.js')
+    const { getSystemDirectories } = require('@thyrox/agent/misc/systemDirectories.js') as typeof import('@thyrox/agent/misc/systemDirectories.js')
     return getSystemDirectories()
   })
   setGetAdditionalDirectoriesForClaudeMdFn(() => {
@@ -345,7 +346,7 @@ export function installPluginBindings(): void {
     const { getBuiltinPluginDefinition } = require('@thyrox/config/plugin/builtin')
     return getBuiltinPluginDefinition(id)
   })
-  setExtractDescriptionFromMarkdownFn((text: string, def: string) => {
+  setExtractDescriptionFromMarkdownFn((text: string, def?: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { extractDescriptionFromMarkdown } = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return extractDescriptionFromMarkdown(text, def)
@@ -435,10 +436,10 @@ export function installPluginBindings(): void {
     const { withDiagnosticsTiming } = require('@thyrox/local-observability/logging')
     return withDiagnosticsTiming(event, fn) as Promise<T>
   })
-  setWriteFileSyncFn((path: string, data: string) => {
+  setWriteFileSyncFn((path, data, options) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { writeFileSync } = require('@thyrox/local-observability/slowOperations.js')
-    writeFileSync(path, data)
+    writeFileSync(path, data, options)
   })
   setWriteToStdoutFn((data: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -447,17 +448,19 @@ export function installPluginBindings(): void {
   })
   setGracefulShutdownFn(async (code?: number) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js')
-    return gracefulShutdown(code)
+    const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js') as typeof import('../bootstrap/gracefulShutdown.js')
+    // DIVERGENCIA DECLARADA: el binding exige Promise<never> (nunca
+    // resuelve), pero la implementación real puede retornar cuando el
+    // apagado ya está en curso — mismo patrón ya documentado para este
+    // binding en permission/src/permissionSetup.ts.
+    return gracefulShutdown(code) as Promise<never>
   })
 
   // --- sesión / cwd
   setGetSessionIdFn(() => getSessionId())
   setGetOriginalCwdFn(() => getOriginalCwd())
   setGetCwdFn(() => getCwd())
-  setGetInlinePluginsFn(() =>
-    getInlinePlugins() as Record<string, unknown> | undefined,
-  )
+  setGetInlinePluginsFn(() => getInlinePlugins())
 
   // --- settings
   setGetSettingsFn(() => getSettings() as any)
@@ -471,15 +474,11 @@ export function installPluginBindings(): void {
   const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
   setFsImplementationFn({
     existsSync: p => getFsImplementation().existsSync(p),
-    mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
-    writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
-    readFileSync: (p, e) => getFsImplementation().readFileSync(p, e) as string,
+    mkdirSync: p => getFsImplementation().mkdirSync(p),
+    writeFileSync: (p, d) => nodeFs.writeFileSync(p, d),
+    readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
     readdirSync: p =>
-      nodeFs.readdirSync(p, { withFileTypes: true }) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      nodeFs.readdirSync(p, { withFileTypes: true }),
     statSync: p => getFsImplementation().statSync(p) as any,
     rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
     rmdirSync: p => nodeFs.rmdirSync(p),
@@ -495,42 +494,41 @@ export function installPluginBindings(): void {
       await nodeFsp.mkdir(p, { recursive: true, ...(o ?? {}) })
     },
     readdir: async p =>
-      (await nodeFsp.readdir(p, { withFileTypes: true })) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      (await nodeFsp.readdir(p, { withFileTypes: true })),
     stat: async p => (await nodeFsp.stat(p)) as any,
     rm: async (p, o) => nodeFsp.rm(p, o),
     rename: async (o, n) => nodeFsp.rename(o, n),
   })
   setPathExistsFn(p => pathExists(p))
-  setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+  // La ranura recibe (base, relativa); el de storage, (fs, ruta) y devuelve
+  // la ruta con los enlaces ya resueltos.
+  setSafeResolvePathFn((base, rel) =>
+    safeResolvePath(getFsImplementation(), resolvePath(base, rel)).resolvedPath)
   setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
   setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
-  setRegisterCleanupFn(fn => registerCleanup(fn))
+  setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
 
   // --- git
-  setGitExeFn(() => gitExe() as any)
+  setGitExeFn(() => gitExe())
   setGetHeadForDirFn(dir => getHeadForDir(dir))
 
   // --- subproceso
-  setExecFileNoThrowFn((cmd, args, options) =>
-    execFileNoThrow(cmd, args, options) as any,
-  )
-  setExecFileNoThrowWithCwdFn((cmd, args, cwd, options) =>
-    execFileNoThrowWithCwd(cmd, args, cwd, options) as any,
-  )
+  setExecFileNoThrowFn(execFileNoThrow)
+  setExecFileNoThrowWithCwdFn(execFileNoThrowWithCwd)
   setWhichFn(cmd => which(cmd))
 
   // --- operaciones lentas
-  setJsonStringifyFn(v => jsonStringify(v))
-  setJsonParseFn(t => jsonParse(t) as unknown)
+  setJsonStringifyFn((value, replacer, space) =>
+    jsonStringify(value, replacer as Parameters<typeof JSON.stringify>[1], space),
+  )
+  setJsonParseFn(jsonParse)
   setCloneFn(v => clone(v))
 
   // --- telemetría
   setBuildPluginTelemetryFieldsFn((...args) =>
-    buildPluginTelemetryFields(...(args as any)),
+    buildPluginTelemetryFields(
+      ...(args as [string, string | undefined, (Set<string> | null)?]),
+    ),
   )
   setClassifyPluginCommandErrorFn(error =>
     classifyPluginCommandError(error) as any,

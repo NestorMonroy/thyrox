@@ -1,18 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de la LÓGICA de
- * `ccnmt: packages/tool-registry/src/tools/ListMcpResourcesTool/
- * ListMcpResourcesTool.ts` (TASK #232, porte de `tool-registry`).
- *
- * `isOutputLineTruncated` se importa del sustituto local
- * (`internal/pendingCrossPackageDeps.ts`), no de
- * `@thyrox/output/terminal.js`: ese subpath no existe todavía en el
- * paquete hermano `output` — ver el docstring del sustituto para la
- * fidelidad exacta.
- *
- * `renderToolResultMessage` (de `./UI.js`) está BLOQUEADO ahí — ver
- * `ListMcpResourcesTool/UI.ts` — pero el módulo entero carga sin fallar:
- * este archivo importa el símbolo (una función), no lo invoca en carga.
- */
 import { z } from 'zod/v4'
 import {
   ensureConnectedClient,
@@ -21,9 +6,9 @@ import {
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logMCPError } from '@thyrox/local-observability/log.js'
+import { logMCPError } from '@thyrox/local-observability/logging'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
-import { isOutputLineTruncated } from '../../internal/pendingCrossPackageDeps.js'
+import { isOutputLineTruncated } from '@thyrox/output/terminal.js'
 import { DESCRIPTION, LIST_MCP_RESOURCES_TOOL_NAME, PROMPT } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'
 
@@ -91,12 +76,11 @@ export const ListMcpResourcesTool = buildTool({
       )
     }
 
-    // fetchResourcesForClient está cacheado con LRU (por nombre de
-    // servidor) y ya viene caliente del prefetch al arrancar. La caché se
-    // invalida en onclose y en notificaciones resources/list_changed, así
-    // que los resultados nunca quedan obsoletos. ensureConnectedClient es
-    // un no-op cuando está sano (hit de memoize), pero tras onclose
-    // devuelve una conexión fresca para que el re-fetch tenga éxito.
+    // fetchResourcesForClient is LRU-cached (by server name) and already
+    // warm from startup prefetch. Cache is invalidated on onclose and on
+    // resources/list_changed notifications, so results are never stale.
+    // ensureConnectedClient is a no-op when healthy (memoize hit), but after
+    // onclose it returns a fresh connection so the re-fetch succeeds.
     const results = await Promise.all(
       clientsToProcess.map(async client => {
         if (client.type !== 'connected') return []
@@ -104,8 +88,7 @@ export const ListMcpResourcesTool = buildTool({
           const fresh = await ensureConnectedClient(client)
           return await fetchResourcesForClient(fresh)
         } catch (error) {
-          // El fallo de reconexión de un servidor no debe hundir el
-          // resultado entero.
+          // One server's reconnect failure shouldn't sink the whole result.
           logMCPError(client.name, errorMessage(error))
           return []
         }

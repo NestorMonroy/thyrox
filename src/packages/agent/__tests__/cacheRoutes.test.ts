@@ -54,8 +54,9 @@ describe('TTL por origen y alias', () => {
     expect(DEFAULT_TTL_BY_SOURCE.repl_main_thread).toBe('1h')
     expect(DEFAULT_TTL_BY_SOURCE['agent:custom']).toBe('5m')
   })
-  test('opus-5 lo alcanza el alias opus; mythos-5-1 no lo alcanza ninguno', () => {
-    expect(aliasesReaching('claude-opus-5')).toEqual(['opus'])
+  test('desde 2.1.282 el alias opus alcanza opus-5-5; opus-5 y mythos-5-1 no los alcanza ninguno', () => {
+    expect(aliasesReaching('claude-opus-5-5')).toEqual(['opus'])
+    expect(aliasesReaching('claude-opus-5')).toEqual([])
     expect(aliasesReaching('claude-mythos-5-1')).toEqual([])
   })
 })

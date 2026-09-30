@@ -1,0 +1,10 @@
+== CLAUDE.local.md
+literal: 9 declaración(es) en 7 de 2138 chunk(s)
+chunk-g5y6rvce.js FunctionDeclaration czt [1064,2057)
+chunk-qrmg14b4.js FunctionDeclaration eE [121337,141990)
+chunk-t6pwageh.js FunctionDeclaration aJ [514706,514927)
+chunk-xhz0wqc4.js FirstStatement vn [41504,42052)
+== Personal CLAUDE.local.md
+literal: 0 declaración(es) en 0 de 2138 chunk(s)
+== init set up
+literal: 0 declaración(es) en 0 de 2138 chunk(s)

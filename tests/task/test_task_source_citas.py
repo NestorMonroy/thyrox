@@ -33,7 +33,6 @@ Los bloques, y por que cada uno existe:
 from __future__ import annotations
 
 import importlib.util
-import os
 import pathlib
 import sqlite3
 import sys
@@ -61,6 +60,7 @@ _REAL = reach.agent_store_path()
 STORE_REAL = _REAL if _REAL.is_file() else None
 
 _spec = importlib.util.spec_from_file_location("task_source", MODULE_PATH)
+assert _spec is not None and _spec.loader is not None
 ts = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ts)
 
@@ -144,13 +144,13 @@ check(len(vivo) == 1 and vivo.get("7") == "TASK-API-0001",
       "2a: con la clave viva empareja exactamente una ficha")
 
 _clave_original = ts._subject_key
-ts._subject_key = lambda subject: None
+ts._subject_key = lambda subject: None  # pyright: ignore[reportAttributeAccessIssue]  # ts es un modulo cargado por import dinamico; esto es el monkeypatch del control de anulacion
 try:
     anulado = ts.citation_index(FICHAS, store_path=DB)
     identidades_anuladas = [ts.format_identity(f["id"], anulado.get(f["id"]))
                             for f in FICHAS]
 finally:
-    ts._subject_key = _clave_original
+    ts._subject_key = _clave_original  # pyright: ignore[reportAttributeAccessIssue]  # idem: restaura el atributo monkeypatcheado arriba
 
 check(len(anulado) == 0,
       "2b: anulada la clave de sujeto CAEN todas las citas (1 -> 0)")

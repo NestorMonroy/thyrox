@@ -1,22 +1,13 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/InProcessTransport.ts`
- * — su única exportación (más la clase interna que consume), ninguna
- * omitida.
- *
- * `@modelcontextprotocol/sdk` está declarado en `package.json`
- * (`^1.29.0`, misma versión que fija `ccnmt: package.json`) pero no
- * resuelve todavía en este árbol — sin `node_modules` enlazado, mismo
- * criterio de deuda que `command-runtime::@anthropic-ai/sdk`.
- *
- * Par de transportes enlazados en proceso para correr un servidor y un
- * cliente MCP en el mismo proceso, sin lanzar un subproceso.
- *
- * `send()` de un lado entrega a `onmessage` del otro. `close()` de
- * cualquiera de los dos llama `onclose` en ambos.
- */
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js'
 
+/**
+ * In-process linked transport pair for running an MCP server and client
+ * in the same process without spawning a subprocess.
+ *
+ * `send()` on one side delivers to `onmessage` on the other.
+ * `close()` on either side calls `onclose` on both.
+ */
 class InProcessTransport implements Transport {
   private peer: InProcessTransport | undefined
   private closed = false
@@ -36,8 +27,8 @@ class InProcessTransport implements Transport {
     if (this.closed) {
       throw new Error('Transport is closed')
     }
-    // Entrega al otro lado de forma asíncrona para evitar problemas de
-    // profundidad de pila con ciclos síncronos de petición/respuesta.
+    // Deliver to the other side asynchronously to avoid stack depth issues
+    // with synchronous request/response cycles
     queueMicrotask(() => {
       this.peer?.onmessage?.(message)
     })
@@ -49,7 +40,7 @@ class InProcessTransport implements Transport {
     }
     this.closed = true
     this.onclose?.()
-    // Cierra al peer si todavía no se había cerrado.
+    // Close the peer if it hasn't already closed
     if (this.peer && !this.peer.closed) {
       this.peer.closed = true
       this.peer.onclose?.()
@@ -58,9 +49,8 @@ class InProcessTransport implements Transport {
 }
 
 /**
- * Crea un par de transportes enlazados para comunicación MCP en proceso.
- * Los mensajes enviados en un transporte se entregan al `onmessage` del
- * otro.
+ * Creates a pair of linked transports for in-process MCP communication.
+ * Messages sent on one transport are delivered to the other's `onmessage`.
  *
  * @returns [clientTransport, serverTransport]
  */

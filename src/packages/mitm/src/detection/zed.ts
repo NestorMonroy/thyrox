@@ -1,0 +1,28 @@
+/**
+ * Si el editor Zed está instalado. Sólo mira el sistema de archivos: no
+ * lanza un shell ni interpola rutas.
+ *
+ * Porte de `omniroute: src/mitm/detection/zed.ts` (MIT).
+ */
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import type { DetectionResult } from "../types.ts";
+
+const HOME = os.homedir();
+const PATHS = [
+  "/Applications/Zed.app",
+  path.join(HOME, "Applications", "Zed.app"),
+  "/usr/bin/zed",
+  "/usr/local/bin/zed",
+  path.join(HOME, ".local", "bin", "zed"),
+  path.join(HOME, ".local", "share", "zed"),
+  path.join(HOME, ".config", "zed"),
+];
+
+export function detectZed(): DetectionResult {
+  for (const p of PATHS) {
+    if (fs.existsSync(p)) return { installed: true, path: p };
+  }
+  return { installed: false };
+}

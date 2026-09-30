@@ -8,24 +8,19 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./elf": {
+      "@thyrox/source": "./src/elf.ts",
       "types": "./dist/elf.d.ts",
       "default": "./src/elf.ts"
     },
     "./bunfs": {
+      "@thyrox/source": "./src/bunfs.ts",
       "types": "./dist/bunfs.d.ts",
       "default": "./src/bunfs.ts"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
     }
   },
   "scripts": {

@@ -1,17 +1,10 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/fileOperationAnalytics.ts`
- * (71 líneas fuente, 100 % portado). Analítica preservando privacidad
- * (hashing) para operaciones de archivo. Sin dependencias de paquete
- * hermano.
- */
-
 import { createHash } from 'crypto'
 import { logEvent } from './index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from './compat.js'
 
 /**
- * Crea un hash SHA256 truncado (16 caracteres) para rutas de archivo.
- * Se usa para analítica de operaciones de archivo que preserva privacidad.
+ * Creates a truncated SHA256 hash (16 chars) for file paths
+ * Used for privacy-preserving analytics on file operations
  */
 function hashFilePath(
   filePath: string,
@@ -23,8 +16,8 @@ function hashFilePath(
 }
 
 /**
- * Crea un hash SHA256 completo (64 caracteres) para el contenido de un
- * archivo. Se usa para deduplicación y detección de cambios.
+ * Creates a full SHA256 hash (64 chars) for file contents
+ * Used for deduplication and change detection analytics
  */
 function hashFileContent(
   content: string,
@@ -34,11 +27,13 @@ function hashFileContent(
     .digest('hex') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
 }
 
-// Tamaño máximo de contenido a hashear (100KB) — evita agotar memoria al
-// hashear archivos grandes (p. ej. imágenes en base64).
+// Maximum content size to hash (100KB)
+// Prevents memory exhaustion when hashing large files (e.g., base64-encoded images)
 const MAX_CONTENT_HASH_SIZE = 100 * 1024
 
-/** Loguea analítica de operación de archivo a Statsig. */
+/**
+ * Logs file operation analytics to Statsig
+ */
 export function logFileOperation(params: {
   operation: 'read' | 'write' | 'edit'
   tool: 'FileReadTool' | 'FileWriteTool' | 'FileEditTool'
@@ -58,7 +53,8 @@ export function logFileOperation(params: {
     filePathHash: hashFilePath(params.filePath),
   }
 
-  // Sólo hashea el contenido si está presente y bajo el límite de tamaño.
+  // Only hash content if it's provided and below size limit
+  // This prevents memory exhaustion from hashing large files (e.g., base64-encoded images)
   if (
     params.content !== undefined &&
     params.content.length <= MAX_CONTENT_HASH_SIZE

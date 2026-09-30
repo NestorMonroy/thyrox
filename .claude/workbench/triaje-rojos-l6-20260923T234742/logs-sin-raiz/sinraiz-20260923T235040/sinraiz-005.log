@@ -1,0 +1,21 @@
+=== Caso 1: el guion existe y parsea ===
+  ok    parsea
+=== Caso 2: publica la raiz de thyrox, no el padre de los clones ===
+  ok    raiz = /home/user/thyrox
+=== Caso 3: publica el padre de los clones por separado ===
+  ok    arbol = /home/user
+=== Caso 4 (EL QUE DISCRIMINA): acierta desde una profundidad no calibrada ===
+  ok    desde 4 niveles mas hondo sigue dando /home/user/thyrox
+=== Caso 5: fuera del arbol REHUSA, no inventa una ruta ===
+  ok    rehusa (rc=2) y da la razon
+=== Caso 6: THYROX_ROOT declarada gana sobre el ascenso ===
+  ok    la declaracion gana
+=== Caso 7 (DEC-04): THYROX_ENV_FILE declara la raiz, sin ascender ===
+  ok    la declaracion por archivo resuelve
+=== Caso 8 (DEC-04): el marcador es CONSTANTE con entrada de entorno ===
+  ok    el marcador se declara, no se cablea
+
+alcance medido: 8 aserciones sobre /home/user/thyrox/src/lib/reach.sh
+
+8 casos: 8 ok, 0 fallos
+EXIT=0

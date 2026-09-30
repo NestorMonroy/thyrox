@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1921, "total_final": 1898, "tsc_runs": 1, "accepted": ["agent:agent:canonical-agent-progress-in-swarm:task-state"], "files_kept": ["src/packages/swarm/src/adapters/appRuntime.ts", "src/packages/swarm/src/tasks/types.ts"], "outcomes": {"agent:agent:canonical-agent-progress-in-swarm:task-state": "accepted-net"}}

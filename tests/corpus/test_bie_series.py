@@ -32,6 +32,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import bie_series as bie  # noqa: E402
+from paths import reach  # noqa: E402
 
 NOTE_TOSI = """/a  La  informacion a partir del primer trimestre de 2023 y del
 primer  trimestre de  2005 hasta el primer trimestre de 2020 proviene  de  la
@@ -181,7 +182,7 @@ class TestSummary(unittest.TestCase):
                  ("2023/04", 28.2), ("2026/02", 30.2)]
         r = bie.summarize(series, note)
         self.assertEqual(r["total"], 5)
-        self.assertEqual(r["comparables"], 2)          # 2010/01 y 2026/02
+        self.assertEqual(r["comparable"], 2)          # 2010/01 y 2026/02
         self.assertEqual(r["above"], 0)
         self.assertEqual(r["last"], ("2026/02", 30.2))
 
@@ -190,9 +191,9 @@ class TestSummary(unittest.TestCase):
         publicar un maximo de un conjunto vacio."""
         note = bie.parse_note(NOTE_TOSI)
         r = bie.summarize([("2020/02", 22.9)], note)
-        self.assertEqual(r["comparables"], 0)
+        self.assertEqual(r["comparable"], 0)
         self.assertIsNone(r["max"])
-        self.assertTrue(r["sin_sujeto"])
+        self.assertTrue(r["no_subject"])
 
 
 class TestNoteFromDump(unittest.TestCase):
@@ -260,7 +261,7 @@ class TestEncoding(unittest.TestCase):
 
 class TestLineSurface(unittest.TestCase):
     def _run(self, *args):
-        wrapper = (pathlib.Path(__file__).resolve().parents[2]
+        wrapper = (reach.thyrox_root()
                       / "bin" / "bie_series")
         import subprocess
         return subprocess.run(["bash", str(wrapper), *args],
@@ -289,7 +290,7 @@ class TestLineSurface(unittest.TestCase):
                          encoding="utf-8")
             r = self._run(str(f))
             self.assertEqual(r.returncode, 2)
-            self.assertIn("comparables", r.stderr.lower())
+            self.assertIn("comparable", r.stderr.lower())
 
 
 if __name__ == "__main__":

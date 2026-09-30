@@ -1,0 +1,97 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx(81,16): error TS2339: Property 'type' does not exist on type '{}'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx:71-91 ---
+     71      return null
+     72    }
+     73  
+     74    const lastProgress = progressMessages[progressMessages.length - 1]
+     75    if (!lastProgress?.data) {
+     76      return null
+     77    }
+     78  
+     79    const data = lastProgress.data
+     80  
+     81>   switch (data.type) {
+     82      case 'query_update':
+     83        return (
+     84          <MessageResponse>
+     85            <Text dimColor>Searching: {data.query}</Text>
+     86          </MessageResponse>
+     87        )
+     88      case 'search_results_received':
+     89        return (
+     90          <MessageResponse>
+     91            <Text dimColor>
+src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx(85,43): error TS2339: Property 'query' does not exist on type '{}'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx:75-95 ---
+     75    if (!lastProgress?.data) {
+     76      return null
+     77    }
+     78  
+     79    const data = lastProgress.data
+     80  
+     81    switch (data.type) {
+     82      case 'query_update':
+     83        return (
+     84          <MessageResponse>
+     85>           <Text dimColor>Searching: {data.query}</Text>
+     86          </MessageResponse>
+     87        )
+     88      case 'search_results_received':
+     89        return (
+     90          <MessageResponse>
+     91            <Text dimColor>
+     92              Found {data.resultCount} results for &quot;{data.query}&quot;
+     93            </Text>
+     94          </MessageResponse>
+     95        )
+src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx(92,25): error TS2339: Property 'resultCount' does not exist on type '{}'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx:82-102 ---
+     82      case 'query_update':
+     83        return (
+     84          <MessageResponse>
+     85            <Text dimColor>Searching: {data.query}</Text>
+     86          </MessageResponse>
+     87        )
+     88      case 'search_results_received':
+     89        return (
+     90          <MessageResponse>
+     91            <Text dimColor>
+     92>             Found {data.resultCount} results for &quot;{data.query}&quot;
+     93            </Text>
+     94          </MessageResponse>
+     95        )
+     96      default:
+     97        return null
+     98    }
+     99  }
+    100  
+    101  export function renderToolResultMessage(output: Output): React.ReactNode {
+    102    const { searchCount } = getSearchSummary(output.results ?? [])
+src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx(92,62): error TS2339: Property 'query' does not exist on type '{}'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx:82-102 ---
+     82      case 'query_update':
+     83        return (
+     84          <MessageResponse>
+     85            <Text dimColor>Searching: {data.query}</Text>
+     86          </MessageResponse>
+     87        )
+     88      case 'search_results_received':
+     89        return (
+     90          <MessageResponse>
+     91            <Text dimColor>
+     92>             Found {data.resultCount} results for &quot;{data.query}&quot;
+     93            </Text>
+     94          </MessageResponse>
+     95        )
+     96      default:
+     97        return null
+     98    }
+     99  }
+    100  
+    101  export function renderToolResultMessage(output: Output): React.ReactNode {
+    102    const { searchCount } = getSearchSummary(output.results ?? [])

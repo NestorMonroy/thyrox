@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/userPromptKeywords.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   matchesKeepGoingKeyword,

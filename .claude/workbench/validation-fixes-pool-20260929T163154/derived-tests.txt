@@ -1,0 +1,11 @@
+tests/agents/test-agent-store-render-tablero.sh
+tests/corpus/test-markdown-to-rst.sh
+tests/hooks/test_detect_library_path_invocation.py
+tests/hooks/test_detect_parallel_opportunity.py
+tests/hooks/test_detect_rst_validation.py
+tests/hooks/test_shell_text.py
+tests/session/test_generate_bin.py
+tests/verify/test-suite-discrimina.sh
+tests/verify/test_check_rst_sintaxis_args.py
+tests/verify/test_rst_gate_interpreter.py
+tests/verify/test_rst_gate_root.py

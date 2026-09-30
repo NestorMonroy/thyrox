@@ -1,0 +1,167 @@
+== 1: openai en otro carril
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > providers of one token family share a lane; the rest have none [0.34ms]
+(fail) refresh serializer > refreshes of one family run one at a time, with a gap only when another waits [2.76ms]
+ 20 pass
+ 2 fail
+== 2: cline sin carril
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > providers of one token family share a lane; the rest have none [0.42ms]
+ 21 pass
+ 1 fail
+== 3: pausa de 1 s
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > the spacing comes from its variable; zero opts out, garbage keeps the default [0.35ms]
+(fail) refresh serializer > refreshes of one family run one at a time, with a gap only when another waits [2.07ms]
+ 20 pass
+ 2 fail
+== 4: vacío no es valor por defecto
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > the spacing comes from its variable; zero opts out, garbage keeps the default [0.40ms]
+ 21 pass
+ 1 fail
+== 5: negativo vale
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > the spacing comes from its variable; zero opts out, garbage keeps the default [0.39ms]
+ 21 pass
+ 1 fail
+== 6: infinito vale
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > the spacing comes from its variable; zero opts out, garbage keeps the default [0.64ms]
+ 21 pass
+ 1 fail
+== 7: sin carril
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > refreshes of one family run one at a time, with a gap only when another waits [1.95ms]
+ 21 pass
+ 1 fail
+== 8: el fallo anterior bloquea
+   (src/accounts/refresh/refreshSerializer.ts)
+ 22 pass
+ 0 fail
+== 9: pausa siempre
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > refreshes of one family run one at a time, with a gap only when another waits [2.23ms]
+ 21 pass
+ 1 fail
+== 10: pausa cero se duerme
+   (src/accounts/refresh/refreshSerializer.ts)
+ 22 pass
+ 0 fail
+== 11: sin rotación recordada
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > a token already rotated is answered from the rotation, not presented again [3.92ms]
+ 21 pass
+ 1 fail
+== 12: sin fila guardada
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) stored row freshness > a newer stored token that is still fresh is used without refreshing [1.90ms]
+(fail) stored row freshness > a newer stored token about to expire is the one refreshed [1.40ms]
+(fail) stored row freshness > the same stored token, a missing row or a read failure change nothing [5.35ms]
+ 19 pass
+ 3 fail
+== 13: fila vigente se refresca
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) stored row freshness > a newer stored token that is still fresh is used without refreshing [1.69ms]
+ 21 pass
+ 1 fail
+== 14: margen de vigencia cero
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) stored row freshness > a newer stored token about to expire is the one refreshed [1.64ms]
+ 21 pass
+ 1 fail
+== 15: se refresca el token en memoria
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) stored row freshness > a newer stored token about to expire is the one refreshed [2.02ms]
+ 21 pass
+ 1 fail
+== 16: fallo de lectura lanza
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) stored row freshness > the same stored token, a missing row or a read failure change nothing [3.94ms]
+ 21 pass
+ 1 fail
+== 17: el mismo token cuenta como más nuevo
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) stored row freshness > the same stored token, a missing row or a read failure change nothing [1.11ms]
+ 21 pass
+ 1 fail
+== 18: recuerda sin refresh token
+   (src/accounts/refresh/tokenRefresh.ts)
+ 22 pass
+ 0 fail
+== 19: sin carril en el refresco
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > every refresh goes through the family lane [3.13ms]
+ 21 pass
+ 1 fail
+== 20: guarda sin access token
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) persisting the refresh > only a result with an access token is persisted; a connectionless success without persist warns [3.59ms]
+ 21 pass
+ 1 fail
+== 21: sin CAS
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) persisting the refresh > a row already rotated by another writer is not overwritten [2.88ms]
+ 21 pass
+ 1 fail
+== 22: fallo de guardado se traga
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) persisting the refresh > a failed persist is logged and reaches the caller [2.90ms]
+ 21 pass
+ 1 fail
+== 23: sin guardado del contexto
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) persisting the refresh > the persist callback can travel with the call [3.41ms]
+ 21 pass
+ 1 fail
+== 24: refresh token no texto pasa
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > without a usable refresh token nothing is refreshed [1.29ms]
+ 21 pass
+ 1 fail
+== 25: sin mutex por conexión
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > concurrent callers of one connection share one refresh, whatever token each loaded [4.47ms]
+(fail) persisting the refresh > the result is persisted inside the connection window, before waiters see it [3.43ms]
+ 20 pass
+ 2 fail
+== 26: mutex no se libera
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > concurrent callers of one connection share one refresh, whatever token each loaded [4.01ms]
+(fail) persisting the refresh > a failed persist is logged and reaches the caller [1.56ms]
+ 20 pass
+ 2 fail
+== 27: sin contar esperas
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > concurrent callers of one connection share one refresh, whatever token each loaded [2.98ms]
+ 21 pass
+ 1 fail
+== 28: sin compartir por token
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > without a connection, concurrent refreshes of the same token are shared [5.92ms]
+ 21 pass
+ 1 fail
+== 29: caché por token no se libera
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > a dead or tokenless result is not remembered as a rotation [3.41ms]
+ 21 pass
+ 1 fail
+== 30: sin aviso de guardado ausente
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) persisting the refresh > only a result with an access token is persisted; a connectionless success without persist warns [3.70ms]
+ 21 pass
+ 1 fail
+== 31: todas incluye inactivas
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) all access tokens > each active connection with a provider is refreshed, keyed by provider [4.33ms]
+ 21 pass
+ 1 fail
+== 32: todas incluye nulos
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) all access tokens > each active connection with a provider is refreshed, keyed by provider [4.73ms]
+ 21 pass
+ 1 fail
+== restaurado
+ 22 pass
+ 0 fail
+__BG_EXIT__=0

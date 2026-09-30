@@ -42,6 +42,7 @@ import { TASK_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskListTool/co
 import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
 import { TEAM_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamCreateTool/constants.js'
 import { TEAM_DELETE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamDeleteTool/constants.js'
+import type { getSystemPrompt as getSystemPromptSignature } from '@thyrox/agent/constants/prompts.js'
 import { getSpinnerVerbs } from '@thyrox/agent/constants/spinnerVerbs.js'
 import { TURN_COMPLETION_VERBS } from '@thyrox/agent/constants/turnCompletionVerbs.js'
 import {
@@ -171,7 +172,7 @@ export function installSwarmHost(): void {
   }
 
   installSwarmAppRuntime({
-    async getSystemPrompt(...args: any[]) {
+    async getSystemPrompt(...args: Parameters<typeof getSystemPromptSignature>) {
       const mod = await import('@thyrox/agent/constants/prompts.js')
       return mod.getSystemPrompt(...args)
     },

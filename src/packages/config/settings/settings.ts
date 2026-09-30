@@ -22,15 +22,13 @@
  * `settingsMergeCustomizer`, `getSettingsWithErrors`, `getInitialSettings`,
  * `getSettings` (alias).
  *
+ * La fuente `policySettings` es la composición de `./policySettings.ts`
+ * (`UP` y `Zy` de 2.1.283): remota o asistente, MDM, archivo administrado,
+ * proceso padre y HKCU como último recurso. Sus errores entran en
+ * `getSettingsWithErrors` junto a los de las demás fuentes.
+ *
  * NO portados — bloqueado, declarado por nombre:
  *
- * - Resolución de `policySettings` (remote > MDM/plist/HKLM >
- *   managed-settings.json > HKCU): depende de `../remote/syncCacheState.js`
- *   (`getRemoteManagedSettingsSyncFromCache`), `./mdm/settings.js`
- *   (`getHkcuSettings`, `getMdmSettings`) y `./managedPath.js` +
- *   `loadManagedFileSettings` — ninguno existe en `@thyrox/config`.
- *   `getSettingsForSource('policySettings')` devuelve `null`, el mismo
- *   valor que la fuente cuando las cuatro capas están vacías.
  * - Capa de plugin settings (`getPluginSettingsBase`, `plugin/*` como base
  *   de menor precedencia): no portada. `loadSettingsFromDisk` arranca el
  *   merge desde `{}` en vez de la base de plugins.
@@ -44,17 +42,17 @@
  *   `@thyrox/config/settings/types.ts` ya declara
  *   (`['default', 'acceptEdits', 'bypass']`) no incluye `'auto'` — el guard
  *   sería inerte con el esquema actual.
- * - `loadManagedFileSettings`, `getManagedFileSettingsPresence`,
- *   `getPolicySettingsOrigin`, `getManagedSettingsKeysForLogging`,
- *   `getSandboxBinaryPath`, `getSettingsWithSources`,
- *   `hasSkipDangerousModePermissionPrompt`, `hasAutoModeOptIn`,
- *   `getUseAutoModeDuringPlan`, `getAutoModeConfig`,
+ * - `getManagedFileSettingsPresence` y `getPolicySettingsOrigin` se portan
+ *   al final (`Ysr`/`wS` de 2.1.275), acotados a la capa de
+ *   archivo: las otras capas de política no existen aquí.
+ * - `loadManagedFileSettings`, `getManagedSettingsKeysForLogging`,
+ *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
- * - Caché: `./settingsCache.ts` no existe en `@thyrox/config`. Se sustituye
- *   por tres cachés de módulo equivalentes (`Map` + variable), ámbito local
- *   a este archivo — mismo contrato observable (`resetSettingsCache`
- *   invalida las tres).
+ * - Caché: `./settingsCache.ts`, el módulo de la fuente. Hubo aquí una copia
+ *   local de sus tres cachés con la nota «ausente»; el módulo ya existía, y
+ *   un `resetSettingsCache` importado desde fuera limpiaba otras cachés que
+ *   las que este archivo leía.
  * - `markInternalWrite` (`./internalWrites.ts`, ausente): se omite; una
  *   escritura vía `updateSettingsForSource` puede ser tratada como externa
  *   por un detector de cambios que la consulte. Declarado, no fabricado.
@@ -65,8 +63,10 @@
  *   fs queda para un pase posterior.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
+import { z } from 'zod'
 import {
   mkdirSync,
+  readdirSync,
   readFileSync as fsReadFileSync,
   realpathSync,
   writeFileSync as fsWriteFileSync,
@@ -77,9 +77,22 @@ import {
   formatZodError,
   type SettingsError,
 } from './validation.ts'
+import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 import { SETTING_SOURCES, type SettingSource } from './constants.ts'
+import { getManagedFilePath } from './managedPath.ts'
+import { composePolicySettings, defaultPolicyContext, policySettingsDocument } from './policySettings.ts'
 import { SettingsSchema, type Settings as SettingsJson } from './types.ts'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
+import { feature } from 'bun:bundle'
+import {
+  getCachedParsedFile,
+  getCachedSettingsForSource,
+  getSessionSettingsCache,
+  resetSettingsCache,
+  setCachedParsedFile,
+  setCachedSettingsForSource,
+  setSessionSettingsCache,
+} from './settingsCache.js'
 
 // Excluye 'policySettings' (resolución MDM/remota, no portada) y
 // 'flagSettings' (sólo lectura, viene del flag/SDK) — mismo recorte que la
@@ -130,20 +143,6 @@ function handleFileSystemError(error: unknown, path: string): void {
   }
 }
 
-/** Sustituto local de `./settingsCache.ts` (ausente) — mismo contrato: */
-const parsedFileCache = new Map<
-  string,
-  { settings: SettingsJson | null; errors: SettingsError[] }
->()
-const settingsForSourceCache = new Map<SettingSource, SettingsJson | null>()
-let sessionSettingsCache: { settings: SettingsJson; errors: SettingsError[] } | null = null
-
-function resetSettingsCache(): void {
-  parsedFileCache.clear()
-  settingsForSourceCache.clear()
-  sessionSettingsCache = null
-}
-
 function getManagedSettingsFilePath(): string {
   return join(getConfigHostBindings().getConfigHomeDir?.() ?? '.', 'managed-settings.json')
 }
@@ -162,9 +161,9 @@ function parseSettingsFileUncached(path: string): {
 
     const data = safeParseJSON(content)
 
-    const ruleWarnings = filterInvalidPermissionRules(data, path)
+    const ruleWarnings = [...filterInvalidPermissionRules(data, path), ...sanitizeCrossSessionInbound(data, path)]
 
-    const result = SettingsSchema.safeParse(data)
+    const result = SettingsSchema().safeParse(data)
 
     if (!result.success) {
       const errors = formatZodError(result.error, path)
@@ -186,7 +185,7 @@ export function parseSettingsFile(path: string): {
   settings: SettingsJson | null
   errors: SettingsError[]
 } {
-  const cached = parsedFileCache.get(path)
+  const cached = getCachedParsedFile(path)
   if (cached) {
     return {
       settings: cached.settings ? structuredClone(cached.settings) : null,
@@ -194,7 +193,7 @@ export function parseSettingsFile(path: string): {
     }
   }
   const result = parseSettingsFileUncached(path)
-  parsedFileCache.set(path, result)
+  setCachedParsedFile(path, result)
   return {
     settings: result.settings ? structuredClone(result.settings) : null,
     errors: result.errors,
@@ -265,11 +264,8 @@ export function getSettingsFilePathForSource(
 function getSettingsForSourceUncached(
   source: SettingSource,
 ): SettingsJson | null {
-  // policySettings: la cadena remote > MDM/plist > managed-settings.json >
-  // HKCU no está portada (ver docstring del módulo) — se devuelve `null`,
-  // el mismo valor que la fuente cuando las cuatro capas están vacías.
   if (source === 'policySettings') {
-    return null
+    return policySettingsDocument(defaultPolicyContext()) as SettingsJson | null
   }
 
   const settingsFilePath = getSettingsFilePathForSource(source)
@@ -280,7 +276,7 @@ function getSettingsForSourceUncached(
   if (source === 'flagSettings') {
     const inlineSettings = getConfigHostBindings().getFlagSettingsInline?.()
     if (inlineSettings) {
-      const parsed = SettingsSchema.safeParse(inlineSettings)
+      const parsed = SettingsSchema().safeParse(inlineSettings)
       if (parsed.success) {
         return mergeWith(
           fileSettings || {},
@@ -295,11 +291,10 @@ function getSettingsForSourceUncached(
 }
 
 export function getSettingsForSource(source: SettingSource): SettingsJson | null {
-  if (settingsForSourceCache.has(source)) {
-    return settingsForSourceCache.get(source) ?? null
-  }
+  const cached = getCachedSettingsForSource(source)
+  if (cached !== undefined) return cached
   const result = getSettingsForSourceUncached(source)
-  settingsForSourceCache.set(source, result)
+  setCachedSettingsForSource(source, result)
   return result
 }
 
@@ -436,7 +431,15 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
     // portada) — se recorren TODAS las fuentes declaradas.
     for (const source of SETTING_SOURCES) {
       if (source === 'policySettings') {
-        // Cadena remote/MDM/managed-file/HKCU no portada — 0 aporte.
+        for (const error of composePolicySettings(defaultPolicyContext()).errors) {
+          const errorKey = `${error.file}:${error.path}:${error.message}`
+          if (!seenErrors.has(errorKey)) {
+            seenErrors.add(errorKey)
+            allErrors.push(error)
+          }
+        }
+        const policy = getSettingsForSource('policySettings')
+        if (policy) mergedSettings = mergeWith(mergedSettings, policy, settingsMergeCustomizer)
         continue
       }
 
@@ -465,7 +468,7 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
       if (source === 'flagSettings') {
         const inlineSettings = getConfigHostBindings().getFlagSettingsInline?.()
         if (inlineSettings) {
-          const parsed = SettingsSchema.safeParse(inlineSettings)
+          const parsed = SettingsSchema().safeParse(inlineSettings)
           if (parsed.success) {
             mergedSettings = mergeWith(mergedSettings, parsed.data, settingsMergeCustomizer)
           }
@@ -486,12 +489,13 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
 }
 
 export function getSettingsWithErrors(): { settings: SettingsJson; errors: SettingsError[] } {
-  if (sessionSettingsCache !== null) {
-    return sessionSettingsCache
+  const cached = getSessionSettingsCache()
+  if (cached !== null) {
+    return cached
   }
   const result = loadSettingsFromDisk()
   tryGetConfigHostBindings().profileCheckpoint?.('loadSettingsFromDisk_end')
-  sessionSettingsCache = result
+  setSessionSettingsCache(result)
   return result
 }
 
@@ -511,3 +515,305 @@ export function getInitialSettings(): SettingsJson {
  * atrás — consumido por `../managedEnv.ts` vía `require('./settings/settings.js')`.
  */
 export const getSettings = getInitialSettings
+
+/**
+ * Las fuentes que pueden aceptar un aviso de permisos por el usuario.
+ *
+ * `projectSettings` queda FUERA a propósito: viaja con el repositorio, y un
+ * repositorio clonado no puede aceptar por quien lo abre. Es la lista que el
+ * binario 2.1.275 recorre en `sU` y en sus hermanas de la misma forma.
+ */
+const PERMISSION_PROMPT_OPT_IN_SOURCES = [
+  'userSettings',
+  'localSettings',
+  'flagSettings',
+  'policySettings',
+] as const satisfies readonly SettingSource[]
+
+function declaredInOptInSource(key: string): boolean {
+  return PERMISSION_PROMPT_OPT_IN_SOURCES.some(
+    (source) => !!(getSettingsForSource(source) as Record<string, unknown> | null)?.[key],
+  )
+}
+
+/** ¿Aceptó el usuario el aviso del modo que salta los permisos? (`sU`). */
+/**
+ * `Djn` de 2.1.281: invalida las cachés y devuelve la configuración efectiva
+ * junto con cada fuente que aporta alguna clave, de menor a mayor prioridad.
+ * Sin `getEnabledSettingSources` (no portada) se recorren todas las fuentes.
+ */
+export function getSettingsWithSources(
+  read: (source: SettingSource) => SettingsJson | null = getSettingsForSource,
+  effective: () => SettingsJson = getInitialSettings,
+): { effective: SettingsJson; sources: Array<{ source: SettingSource; settings: SettingsJson }> } {
+  resetSettingsCache()
+  const sources: Array<{ source: SettingSource; settings: SettingsJson }> = []
+  for (const source of SETTING_SOURCES) {
+    const settings = read(source)
+    if (settings && Object.keys(settings).length > 0) sources.push({ source, settings })
+  }
+  return { effective: effective(), sources }
+}
+
+export function hasSkipDangerousModePermissionPrompt(): boolean {
+  return declaredInOptInSource('skipDangerousModePermissionPrompt')
+}
+
+/**
+ * ¿Aceptó el usuario el aviso del auto mode? La clave es la que escribe
+ * `AutoModeOptInDialog` y borra `resetAutoModeOptInForDefaultOffer`.
+ */
+export function hasAutoModeOptIn(): boolean {
+  return declaredInOptInSource('skipAutoPermissionPrompt')
+}
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { SettingsJson } from './types.js'
+export type { AskUserQuestionTimeout } from './askUserQuestionTimeout.js'
+
+
+/**
+ * Las reglas del clasificador de auto mode — porte de `BP` (2.1.275,
+ * `chunk-v49f6nqy.js`), con su esquema `gq`.
+ *
+ * Sólo las fuentes que el repositorio NO controla aportan reglas: user, flag
+ * y policy, en ese orden, concatenadas por sección. `projectSettings` y
+ * `localSettings` se ignoran —un repositorio no puede autorizarse a sí
+ * mismo— y se avisa una sola vez por proceso si traen reglas válidas.
+ * Devuelve sólo las secciones no vacías, o `undefined` si no hay ninguna.
+ *
+ * Divergencias declaradas: el lector de fuentes es un parámetro opcional
+ * (mismo precedente que `getGlobalConfig(filePath?)`: aditivo, y compra un
+ * control sin disco); el evento de telemetría del aviso no se emite, porque
+ * `@thyrox/config` no tiene binding de telemetría; y la excepción del binario
+ * que calla el aviso de `projectSettings` en un caso (`LT()`) no se porta,
+ * porque su condición no está identificada — aquí siempre avisa.
+ */
+const AutoModeSchema = z.object({
+  allow: z.array(z.string()).optional(),
+  soft_deny: z.array(z.string()).optional(),
+  hard_deny: z.array(z.string()).optional(),
+  deny: z.array(z.string()).optional(),
+  environment: z.array(z.string()).optional(),
+})
+
+export type AutoModeConfig = {
+  allow?: string[]
+  soft_deny?: string[]
+  hard_deny?: string[]
+  environment?: string[]
+}
+
+const AUTO_MODE_TRUSTED_SOURCES = ['userSettings', 'flagSettings', 'policySettings'] as const
+const AUTO_MODE_UNTRUSTED_SOURCES = ['projectSettings', 'localSettings'] as const
+let autoModeUntrustedSourceWarned = false
+
+export function _resetAutoModeWarningForTesting(): void {
+  autoModeUntrustedSourceWarned = false
+}
+
+type AutoModeReader = (source: string) => { autoMode?: unknown } | null
+
+export function getAutoModeConfig(
+  read: AutoModeReader = source =>
+    getSettingsForSource(source as SettingSource) as { autoMode?: unknown } | null,
+): AutoModeConfig | undefined {
+  if (!autoModeUntrustedSourceWarned) {
+    for (const source of AUTO_MODE_UNTRUSTED_SOURCES) {
+      const autoMode = read(source)?.autoMode
+      if (autoMode && AutoModeSchema.safeParse(autoMode).success) {
+        autoModeUntrustedSourceWarned = true
+        tryGetConfigHostBindings().logDebug?.(
+          `settings autoMode in ${source} ignored — only user/flag/managed settings may set classifier rules (projectSettings and localSettings are repo-controllable)`,
+        )
+      }
+    }
+  }
+  const merged: Required<AutoModeConfig> = { allow: [], soft_deny: [], hard_deny: [], environment: [] }
+  for (const source of AUTO_MODE_TRUSTED_SOURCES) {
+    const parsed = AutoModeSchema.safeParse(read(source)?.autoMode)
+    if (!parsed.success) continue
+    for (const key of ['allow', 'soft_deny', 'hard_deny', 'environment'] as const) {
+      if (parsed.data[key]) merged[key].push(...parsed.data[key]!)
+    }
+  }
+  const result: AutoModeConfig = {}
+  for (const key of ['allow', 'soft_deny', 'hard_deny', 'environment'] as const) {
+    if (merged[key].length > 0) result[key] = merged[key]
+  }
+  return Object.keys(result).length > 0 ? result : undefined
+}
+
+type SandboxBinaryReader = (source: string) => { sandbox?: Record<string, unknown> } | null
+
+/**
+ * `Ysn`/`Nvo` de 2.1.281: ruta de `bwrap` o `socat` declarada en
+ * `sandbox.<field>`. El esquema dice que sólo se honra desde user,
+ * managed/policy o `--settings`, así que se leen las fuentes de confianza
+ * —las mismas de `getAutoModeConfig`— con policy por delante, y gana la
+ * primera no nula. Divergencia declarada: el binario recorre `Lu()` (los
+ * niveles de política ya resueltos); aquí se recorren las fuentes, porque
+ * ese resolvedor no está portado.
+ */
+export function getSandboxBinaryPath(
+  field: 'bwrapPath' | 'socatPath',
+  read: SandboxBinaryReader = source =>
+    getSettingsForSource(source as SettingSource) as { sandbox?: Record<string, unknown> } | null,
+): string | undefined {
+  for (const source of [...AUTO_MODE_TRUSTED_SOURCES].reverse()) {
+    const value = read(source)?.sandbox?.[field]
+    if (typeof value === 'string') return value
+  }
+  return undefined
+}
+
+/** Un archivo de settings administrado cuenta si parsea y trae alguna clave. */
+function hasManagedSettings(path: string): boolean {
+  const { settings } = parseSettingsFile(path)
+  return settings !== null && Object.keys(settings).length > 0
+}
+
+/**
+ * `Ysr` de 2.1.275: si el directorio administrado tiene su
+ * `managed-settings.json` base y si `managed-settings.d/` aporta algún
+ * `.json` con contenido. Parámetro opcional aditivo para medirlo.
+ */
+export function getManagedFileSettingsPresence(dir: string = getManagedFilePath()): {
+  hasBase: boolean
+  hasDropIns: boolean
+} {
+  const hasBase = hasManagedSettings(join(dir, 'managed-settings.json'))
+  let hasDropIns = false
+  try {
+    const dropInDir = join(dir, 'managed-settings.d')
+    hasDropIns = readdirSync(dropInDir, { withFileTypes: true }).some(
+      entry =>
+        (entry.isFile() || entry.isSymbolicLink()) &&
+        entry.name.endsWith('.json') &&
+        !entry.name.startsWith('.') &&
+        hasManagedSettings(join(dropInDir, entry.name)),
+    )
+  } catch {}
+  return { hasBase, hasDropIns }
+}
+
+export type PolicySettingsOrigin = 'remote' | 'helper' | 'plist' | 'hklm' | 'file' | 'parent' | 'hkcu'
+
+/**
+ * `wS` de 2.1.275: la capa de la que salen los settings de política.
+ *
+ * pendiente: la fuente elige entre remota, helper, plist/HKLM, archivo,
+ * proceso padre y HKCU; aquí sólo existe la capa de archivo (ver la
+ * cabecera), así que el origen es `file` si el directorio administrado
+ * aporta algo y `null` si no.
+ */
+export function getPolicySettingsOrigin(dir?: string): PolicySettingsOrigin | null {
+  const { hasBase, hasDropIns } = getManagedFileSettingsPresence(dir)
+  return hasBase || hasDropIns ? 'file' : null
+}
+
+/**
+ * Get a list of setting keys from managed settings for logging purposes.
+ * For certain nested settings (permissions, sandbox, hooks), expands to show
+ * one level of nesting (e.g., "permissions.allow"). For other settings,
+ * returns only the top-level key.
+ *
+ * @param settings The settings object to extract keys from
+ * @returns Sorted array of key paths
+ */
+export function getManagedSettingsKeysForLogging(
+  settings: SettingsJson,
+): string[] {
+  // Use .strip() to get only valid schema keys
+  const validSettings = SettingsSchema().strip().parse(settings) as Record<
+    string,
+    unknown
+  >
+  const keysToExpand = ['permissions', 'sandbox', 'hooks']
+  const allKeys: string[] = []
+
+  // Define valid nested keys for each nested setting we expand
+  const validNestedKeys: Record<string, Set<string>> = {
+    permissions: new Set([
+      'allow',
+      'deny',
+      'ask',
+      'defaultMode',
+      'disableBypassPermissionsMode',
+      ...(feature('TRANSCRIPT_CLASSIFIER') ? ['disableAutoMode'] : []),
+      'additionalDirectories',
+    ]),
+    sandbox: new Set([
+      'enabled',
+      'failIfUnavailable',
+      'allowUnsandboxedCommands',
+      'network',
+      'filesystem',
+      'ignoreViolations',
+      'excludedCommands',
+      'autoAllowBashIfSandboxed',
+      'enableWeakerNestedSandbox',
+      'enableWeakerNetworkIsolation',
+      'ripgrep',
+    ]),
+    // For hooks, we use z.record with enum keys, so we validate separately
+    hooks: new Set([
+      'PreToolUse',
+      'PostToolUse',
+      'Notification',
+      'UserPromptSubmit',
+      'SessionStart',
+      'SessionEnd',
+      'Stop',
+      'SubagentStop',
+      'PreCompact',
+      'PostCompact',
+      'TeammateIdle',
+      'TaskCreated',
+      'TaskCompleted',
+    ]),
+  }
+
+  for (const key of Object.keys(validSettings)) {
+    if (
+      keysToExpand.includes(key) &&
+      validSettings[key] &&
+      typeof validSettings[key] === 'object'
+    ) {
+      // Expand nested keys for these special settings (one level deep only)
+      const nestedObj = validSettings[key] as Record<string, unknown>
+      const validKeys = validNestedKeys[key]
+
+      if (validKeys) {
+        for (const nestedKey of Object.keys(nestedObj)) {
+          // Only include known valid nested keys
+          if (validKeys.has(nestedKey)) {
+            allKeys.push(`${key}.${nestedKey}`)
+          }
+        }
+      }
+    } else {
+      // For other settings, just use the top-level key
+      allKeys.push(key)
+    }
+  }
+
+  return allKeys.sort()
+}
+/**
+ * Returns whether plan mode should use auto mode semantics. Default true
+ * (opt-out). Returns false if any trusted source explicitly sets false.
+ * projectSettings is excluded so a malicious project can't control this.
+ */
+export function getUseAutoModeDuringPlan(): boolean {
+  if (feature('TRANSCRIPT_CLASSIFIER')) {
+    return (
+      getSettingsForSource('policySettings')?.useAutoModeDuringPlan !== false &&
+      getSettingsForSource('flagSettings')?.useAutoModeDuringPlan !== false &&
+      getSettingsForSource('userSettings')?.useAutoModeDuringPlan !== false &&
+      getSettingsForSource('localSettings')?.useAutoModeDuringPlan !== false
+    )
+  }
+  return true
+}

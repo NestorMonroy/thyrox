@@ -28,6 +28,7 @@ from __future__ import annotations
 import importlib.util
 import pathlib
 import sys
+from typing import Any
 
 # El bootstrap de UNA linea es la unica aritmetica que el gate admite: no se
 # puede pedir `reach.thyrox_root()` antes de que `import reach` funcione.
@@ -36,7 +37,8 @@ from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_self_matching_pgrep.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
-gate = importlib.util.module_from_spec(_spec)
+assert _spec is not None and _spec.loader is not None
+gate: Any = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
 #: El comando del episodio, citado verbatim. NO es un incumplidor fabricado:
@@ -101,9 +103,28 @@ check("y no le basta la palabra en prosa", None,
 # --- 8. el aviso nombra las DOS salidas --------------------------------------
 print("== 8. el aviso nombra el mecanismo sancionado y el discriminador ==")
 notice = detect(EPISODE)
+assert notice is not None
 check("nombra marker_wait --pid-only", True, "--pid-only" in notice)
 check("nombra wait-jobs, para N trabajos", True, "wait-jobs" in notice)
 check("y nombra la clase de corchete como salida minima", True, "[c]" in notice or "[p]" in notice)
+
+# --- 8b. el corchete derrotado por el resto del mismo comando ----------------
+# Episodio 2026-09-26 (ai-course-notes, ola 6): un guion escrito con heredoc y
+# lanzado en la misma llamada esperaba con `while pgrep -f
+# '[n]ota-de-correccion.*annul.sh'`. El `bash -c` del cliente lleva TODO el
+# heredoc en su linea de comando, incluido `ls -d .../nota-de-correccion-*)` y,
+# mas adelante, `annul.sh`: el `.*` los une, el patron casa al lanzador y el
+# bucle no termino en 14 minutos. El corchete solo protege si nada mas del
+# comando casa el patron.
+DEFEATED = ("N=$(ls -d .claude/workbench/nota-de-correccion-*)\n"
+            "while pgrep -f '[n]ota-de-correccion.*annul.sh' >/dev/null; do sleep 20; done\n"
+            "bash $N/annul.sh")
+TWIN = ("N=$(ls -d .claude/workbench/nota-de-correccion-*)\n"
+        "while pgrep -f '[n]ota-de-correccion.*annul.sh' >/dev/null; do sleep 20; done")
+print("== 8b. el corchete no basta si el resto del comando casa el patron ==")
+check("avisa sobre el episodio de la ola 6", True, detect(DEFEATED) is not None)
+check("calla si la palabra aparece pero el patron entero no casa", None, detect(TWIN))
+
 
 # --- 9. control de anulacion de la excepcion del corchete --------------------
 print("== 9. anulada la excepcion del corchete, cae EXACTAMENTE ese caso ==")

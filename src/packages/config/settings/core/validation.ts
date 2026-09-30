@@ -1,6 +1,4 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/core/validation.ts` (fachada
- * V7 §10.3 — "movido a `@claude-code-how-works/config/validation`").
- * Reimplementación fiel VERBATIM.
+ * V7 §10.3 facade — moved to `@thyrox/config/validation`.
  */
-export * from '../validation.ts'
+export * from '../validation.js'

@@ -1,21 +1,24 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/getLogDisplayTitle.test.ts`
- * (237 líneas fuente, 100 % portado).
+ * Tests for getLogDisplayTitle — pure helper that picks the best
+ * display title for a session in /resume picker. The fallback
+ * chain has 6 levels:
+ *   1. agentName (set via /rename or by swarm spawn)
+ *   2. customTitle (user-set)
+ *   3. summary (auto-derived)
+ *   4. firstPrompt (if non-empty after stripping XML tags
+ *      AND not an autonomous <tick> prompt)
+ *   5. defaultTitle (caller-provided)
+ *   6. "Autonomous session" (when firstPrompt was a <tick>)
+ *   7. sessionId.slice(0, 8) as last resort
+ *   8. ''
  *
- * `getLogDisplayTitle` es el helper puro que elige el título a mostrar de
- * una sesión en el selector de /resume. La cadena de fallback tiene 8
- * niveles: agentName → customTitle → summary → firstPrompt (si no vacío
- * tras despojar tags XML Y no es un prompt autónomo <tick>) → defaultTitle
- * → "Autonomous session" (cuando firstPrompt era un <tick>) →
- * sessionId.slice(0, 8) → ''.
- *
- * Una prioridad equivocada muestra la sesión incorrecta al usuario cuando
- * varias comparten prefijo. El salto del prompt autónomo es crítico: el
- * auto-prompt es `<tick>haz esto</tick>` — sin el salto, el selector
- * mostraría el XML crudo, que no tiene sentido para el usuario.
+ * Wrong priority = wrong session shown to the user when multiple
+ * have the same prefix. The autonomous-prompt skip is critical:
+ * the auto-prompt is `<tick>do this</tick>` — without skipping, the
+ * picker would show the raw XML which is meaningless to the user.
  */
 import { describe, expect, test } from 'bun:test'
-import { getLogDisplayTitle } from '../log.ts'
+import { getLogDisplayTitle } from '../log.js'
 
 type LogOption = Parameters<typeof getLogDisplayTitle>[0]
 
@@ -26,8 +29,8 @@ const baseLog = (overrides: Partial<LogOption> = {}): LogOption =>
     ...overrides,
   }) as LogOption
 
-describe('getLogDisplayTitle — prioridad de fallback', () => {
-  test('agentName tiene la prioridad más alta', () => {
+describe('getLogDisplayTitle — fallback priority', () => {
+  test('agentName takes top priority', () => {
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -41,7 +44,7 @@ describe('getLogDisplayTitle — prioridad de fallback', () => {
     ).toBe('researcher')
   })
 
-  test('customTitle se prefiere sobre summary + firstPrompt', () => {
+  test('customTitle is preferred over summary + firstPrompt', () => {
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -53,7 +56,7 @@ describe('getLogDisplayTitle — prioridad de fallback', () => {
     ).toBe('my custom')
   })
 
-  test('summary se usa sin agentName/customTitle', () => {
+  test('summary used when no agentName/customTitle', () => {
     expect(
       getLogDisplayTitle(
         baseLog({ summary: 'a session summary', firstPrompt: 'first' }),
@@ -61,19 +64,19 @@ describe('getLogDisplayTitle — prioridad de fallback', () => {
     ).toBe('a session summary')
   })
 
-  test('firstPrompt se usa sin agentName/customTitle/summary', () => {
+  test('firstPrompt used when no agentName/customTitle/summary', () => {
     expect(
       getLogDisplayTitle(baseLog({ firstPrompt: 'help me debug' })),
     ).toBe('help me debug')
   })
 
-  test('defaultTitle se usa cuando no hay nada más disponible', () => {
+  test('defaultTitle used when nothing else available', () => {
     expect(
       getLogDisplayTitle(baseLog({ firstPrompt: '' }), 'fallback default'),
     ).toBe('fallback default')
   })
 
-  test('el prefijo de 8 chars del sessionId se usa al final', () => {
+  test('sessionId 8-char prefix used last', () => {
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -84,18 +87,18 @@ describe('getLogDisplayTitle — prioridad de fallback', () => {
     ).toBe('550e8400')
   })
 
-  test('cadena vacía cuando no hay ningún campo disponible', () => {
+  test('empty string when no fields available', () => {
     expect(
       getLogDisplayTitle(baseLog({ sessionId: '', firstPrompt: '' })),
     ).toBe('')
   })
 })
 
-describe('getLogDisplayTitle — manejo del prompt autónomo', () => {
-  test('prompt <tick> se salta → se usa "Autonomous session"', () => {
-    // Contrato documentado: cuando firstPrompt empieza con <tick>, el
-    // selector NO debe mostrar el XML crudo — cae a la etiqueta sintética
-    // "Autonomous session".
+describe('getLogDisplayTitle — autonomous prompt handling', () => {
+  test('<tick> prompt skipped → "Autonomous session" used', () => {
+    // Documented contract: when firstPrompt starts with <tick>, the
+    // picker must NOT show the raw XML — fall through to the
+    // synthetic "Autonomous session" label.
     expect(
       getLogDisplayTitle(
         baseLog({ firstPrompt: '<tick>do this thing</tick>' }),
@@ -103,13 +106,13 @@ describe('getLogDisplayTitle — manejo del prompt autónomo', () => {
     ).toBe('Autonomous session')
   })
 
-  test('<tick> sin ningún otro campo → "Autonomous session"', () => {
+  test('<tick> with no other fields → "Autonomous session"', () => {
     expect(
       getLogDisplayTitle(baseLog({ firstPrompt: '<tick>auto</tick>' })),
     ).toBe('Autonomous session')
   })
 
-  test('<tick> + customTitle → gana customTitle (no es autónoma)', () => {
+  test('<tick> + customTitle → customTitle wins (not autonomous)', () => {
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -120,8 +123,8 @@ describe('getLogDisplayTitle — manejo del prompt autónomo', () => {
     ).toBe('My Title')
   })
 
-  test('<tick> + defaultTitle → gana defaultTitle sobre la etiqueta autónoma', () => {
-    // defaultTitle va ANTES que la etiqueta autónoma en la cadena.
+  test('<tick> + defaultTitle → defaultTitle wins over autonomous label', () => {
+    // defaultTitle comes BEFORE the autonomous label in the chain.
     expect(
       getLogDisplayTitle(
         baseLog({ firstPrompt: '<tick>auto</tick>' }),
@@ -131,8 +134,8 @@ describe('getLogDisplayTitle — manejo del prompt autónomo', () => {
   })
 })
 
-describe('getLogDisplayTitle — despojo de tags XML en firstPrompt', () => {
-  test('firstPrompt con tag ide_opened_file embebido → tag despojado', () => {
+describe('getLogDisplayTitle — XML tag stripping in firstPrompt', () => {
+  test('firstPrompt with embedded ide_opened_file tag → tag stripped', () => {
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -143,8 +146,8 @@ describe('getLogDisplayTitle — despojo de tags XML en firstPrompt', () => {
     ).toBe('real prompt text')
   })
 
-  test('firstPrompt que ES sólo un tag XML → vacío tras despojar → siguiente fallback', () => {
-    // Tras despojar, firstPrompt queda vacío. Debe caer al siguiente nivel.
+  test('firstPrompt that is ONLY an XML tag → empty after strip → next fallback', () => {
+    // After stripping, firstPrompt is empty. Should fall through.
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -155,7 +158,7 @@ describe('getLogDisplayTitle — despojo de tags XML en firstPrompt', () => {
     ).toBe('abcd1234')
   })
 
-  test('firstPrompt con tags mezclados + texto → queda la porción de texto', () => {
+  test('firstPrompt with mixed tags + text → text portion remains', () => {
     expect(
       getLogDisplayTitle(
         baseLog({
@@ -166,9 +169,9 @@ describe('getLogDisplayTitle — despojo de tags XML en firstPrompt', () => {
     ).toBe('actual user query')
   })
 
-  test('prosa del usuario con contenido tipo-XML en mayúscula (p. ej. <Button>) se preserva', () => {
-    // El despojo sólo matchea nombres de tag en minúscula — prosa del
-    // usuario con <Button> o <!DOCTYPE> no se despoja.
+  test('user prose with uppercase XML-like content (e.g. <Button>) preserved', () => {
+    // The strip only matches lowercase tag names — user prose with
+    // <Button> or <!DOCTYPE> doesn't get stripped.
     expect(
       getLogDisplayTitle(
         baseLog({ firstPrompt: 'fix the <Button> layout' }),
@@ -177,22 +180,22 @@ describe('getLogDisplayTitle — despojo de tags XML en firstPrompt', () => {
   })
 })
 
-describe('getLogDisplayTitle — recorte del título', () => {
-  test('los espacios en blanco se recortan del resultado final', () => {
+describe('getLogDisplayTitle — title trimming', () => {
+  test('whitespace stripped from final result', () => {
     expect(
       getLogDisplayTitle(baseLog({ summary: '   summary   ' })),
     ).toBe('summary')
   })
 
-  test('agentName también se recorta', () => {
+  test('agentName trimmed too', () => {
     expect(
       getLogDisplayTitle(baseLog({ agentName: '  bot  ' })),
     ).toBe('bot')
   })
 })
 
-describe('getLogDisplayTitle — rarezas de prioridad con cadena vacía', () => {
-  test('agentName vacío cae a customTitle', () => {
+describe('getLogDisplayTitle — empty-string priority quirks', () => {
+  test('empty agentName falls through to customTitle', () => {
     expect(
       getLogDisplayTitle(
         baseLog({ agentName: '', customTitle: 'custom' }),
@@ -200,7 +203,7 @@ describe('getLogDisplayTitle — rarezas de prioridad con cadena vacía', () => 
     ).toBe('custom')
   })
 
-  test('customTitle vacío cae a summary', () => {
+  test('empty customTitle falls through to summary', () => {
     expect(
       getLogDisplayTitle(
         baseLog({ customTitle: '', summary: 'sum' }),
@@ -208,7 +211,7 @@ describe('getLogDisplayTitle — rarezas de prioridad con cadena vacía', () => 
     ).toBe('sum')
   })
 
-  test('summary vacío cae a firstPrompt', () => {
+  test('empty summary falls through to firstPrompt', () => {
     expect(
       getLogDisplayTitle(
         baseLog({ summary: '', firstPrompt: 'first' }),
@@ -217,14 +220,14 @@ describe('getLogDisplayTitle — rarezas de prioridad con cadena vacía', () => 
   })
 })
 
-describe('getLogDisplayTitle — casos límite de sessionId', () => {
-  test('sessionId corto (< 8 chars) se usa tal cual', () => {
+describe('getLogDisplayTitle — sessionId edge cases', () => {
+  test('short sessionId (< 8 chars) used as-is', () => {
     expect(
       getLogDisplayTitle(baseLog({ sessionId: 'abc', firstPrompt: '' })),
     ).toBe('abc')
   })
 
-  test('sessionId de exactamente 8 chars', () => {
+  test('exactly 8 char sessionId', () => {
     expect(
       getLogDisplayTitle(
         baseLog({ sessionId: 'abcdefgh', firstPrompt: '' }),

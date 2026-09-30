@@ -57,7 +57,6 @@ fi
 # T-038: Observabilidad — append transición a phase-history.jsonl
 HISTORY_FILE=".thyrox/context/phase-history.jsonl"
 FLOW=$(grep "^flow:" "$NOW_FILE" 2>/dev/null | sed 's/flow: *//' | tr -d '[:space:]')
-METHODOLOGY_STEP=$(grep "^methodology_step:" "$NOW_FILE" 2>/dev/null | sed 's/methodology_step: *//')
 WP_NAME=$(basename "$WP_PATH")
 EPIC=$(echo "$WP_NAME" | grep -oP '^\d+' || echo "")
 printf '{"timestamp":"%s","from":"%s","to":"%s","flow":"%s","epic":"%s","wp":"%s"}\n' \

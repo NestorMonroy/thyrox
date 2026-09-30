@@ -1,18 +1,17 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/peerUid.test.ts`.
 import { describe, expect, test } from 'bun:test'
 import type { Socket } from 'node:net'
 
 import { checkPeerUid, getPeerUid } from '../peerUid.js'
 
 /**
- * La búsqueda FFI real se ejercita por rutas de integración (un proceso
- * supervisor de verdad atando el socket de control). Aquí se prueba el
- * contrato público:
- * - getPeerUid devuelve null en win32 / handle-sin-fd / sockets no-net
- *   sin lanzar
- * - checkPeerUid devuelve null cuando la verificación no es posible
- *   (coincide con el fall-through best-effort de ant 5163 RFK)
- * - checkPeerUid devuelve null cuando peer == uid propio (ruta de permiso)
+ * The actual FFI lookup is exercised by integration paths (real
+ * supervisor process binding the control socket). Here we test the
+ * public contract:
+ * - getPeerUid returns null on win32 / handle-without-fd / non-net
+ *   sockets without throwing
+ * - checkPeerUid returns null when verification isn't possible
+ *   (matches ant 5163 RFK best-effort fall-through)
+ * - checkPeerUid returns null when peer == self uid (allow path)
  */
 
 function fakeSocket(handle?: { fd?: number }): Socket {
@@ -39,10 +38,9 @@ describe('getPeerUid', () => {
 
 describe('checkPeerUid', () => {
   test('returns null when peer cannot be verified', () => {
-    // Sin handle → getPeerUid devuelve null → checkPeerUid devuelve null
-    // (permiso best-effort). Es el mismo retorno-null que en Windows,
-    // donde la búsqueda de peer-uid no está soportada. Verifica el
-    // contrato ant RFK.
+    // No handle → getPeerUid returns null → checkPeerUid returns null
+    // (best-effort allow). This is the same null-return as on Windows
+    // where peer-uid lookup isn't supported. Verifies ant RFK contract.
     expect(checkPeerUid(fakeSocket(undefined))).toBeNull()
   })
 
@@ -51,8 +49,8 @@ describe('checkPeerUid', () => {
   })
 
   test('does not throw even when getuid is unavailable', () => {
-    // process.getuid existe en POSIX pero no en Windows. Este test sólo
-    // confirma que checkPeerUid es seguro de llamar en cualquier plataforma.
+    // process.getuid exists on POSIX but not on Windows. This test
+    // just confirms checkPeerUid is safe to call on any platform.
     expect(() => checkPeerUid(fakeSocket(undefined))).not.toThrow()
   })
 })

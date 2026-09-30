@@ -1,4 +1,3 @@
-/** Puerto de `ccnmt: packages/server/src/index.ts`. */
 import type { RemoteSessionConfig, RuntimeHandle } from './contracts.js'
 
 export type {

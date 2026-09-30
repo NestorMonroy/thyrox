@@ -36,7 +36,8 @@ corto sin decir por que. Los dos casos estan medidos: la lista de clientes de
 un portafolio eran logotipos y no salio un solo nombre; y unas instrucciones
 academicas devolvieron contornos vectoriales.
 
-Esa frontera es el eje 2 de ``thyrox_toolchain_require_pdf_text``, y su
+Esa frontera es el eje 2 de ``bin/check-toolchain-ready`` (el eje 1, el
+extractor, lo adquiere ``thyrox_toolchain_require_pdf_text``), y su
 remedio es otro: ``apt-get install tesseract-ocr``.
 
 *Metrica:* caracteres extraidos por pagina.
@@ -53,7 +54,6 @@ from __future__ import annotations
 
 import argparse
 import pathlib
-import re
 import shutil
 import subprocess
 import sys
@@ -70,24 +70,24 @@ def _pdftotext_bin() -> str | None:
     return shutil.which(binary)
 
 
-def extract_with_pdftotext(origen: pathlib.Path, *, layout: bool = True) -> str:
-    binario = _pdftotext_bin()
-    if binario is None:
+def extract_with_pdftotext(source: pathlib.Path, *, layout: bool = True) -> str:
+    binary = _pdftotext_bin()
+    if binary is None:
         raise FileNotFoundError("pdftotext no resuelve")
-    argv = [binario]
+    argv = [binary]
     if layout:
         argv.append("-layout")
-    argv += [str(origen), "-"]
+    argv += [str(source), "-"]
     completed = subprocess.run(argv, capture_output=True, check=True)
     return completed.stdout.decode("utf-8", errors="replace")
 
 
-def extract_with_library(origen: pathlib.Path) -> str:
+def extract_with_library(source: pathlib.Path) -> str:
     """Respaldo. Solo se usa si ``pdftotext`` no esta."""
     import pdfplumber  # noqa: PLC0415 — respaldo opcional, no dependencia dura
 
     parts: list[str] = []
-    with pdfplumber.open(origen) as pdf:
+    with pdfplumber.open(source) as pdf:
         for page in pdf.pages:
             parts.append(page.extract_text() or "")
     return PAGE_BREAK.join(parts)
@@ -127,21 +127,22 @@ def main(argv: list[str] | None = None) -> int:
                         help="no preservar el trazado (sin -layout)")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        raise SystemExit(f"pdf_to_text: no existe: {origen}")
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        raise SystemExit(f"pdf_to_text: no existe: {source}")
 
     if _pdftotext_bin() is not None:
         via = "pdftotext" + ("" if args.raw else " -layout")
-        text = extract_with_pdftotext(origen, layout=not args.raw)
+        text = extract_with_pdftotext(source, layout=not args.raw)
     else:
         try:
-            text = extract_with_library(origen)
+            text = extract_with_library(source)
             via = "pdfplumber (respaldo)"
         except ImportError:
             raise SystemExit(
                 "pdf_to_text: no hay extractor.\n"
-                "  Remedio, el ligero: apt-get install -y poppler-utils (718 KB)\n"
+                "  Remedio, el ligero (poppler-utils, 718 KB), desde el arbol:\n"
+                "    source src/lib/toolchain.sh && THYROX_INSTALL_PDF_TEXT=1 thyrox_toolchain_require_pdf_text\n"
                 "  Lo comprueba: bash bin/check-toolchain-ready"
             ) from None
 
@@ -159,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         print("  Una pagina sin texto suele ser imagen o contorno vectorial.")
         print("  Esto NO hace OCR. Eje 2: bash bin/check-toolchain-ready, y")
         print("  su remedio es apt-get install -y tesseract-ocr.")
-    print(f"escrito: {destino}")
+    print(f"escrito: {out_file}")
     return 0
 
 

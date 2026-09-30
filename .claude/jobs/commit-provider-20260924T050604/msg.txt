@@ -1,0 +1,21 @@
+Bring the provider parity suites to green
+
+Eleven provider suites were red; all eleven now pass (96 pass, 0
+fail). None needed a behaviour change beyond validateForceLoginOrg.
+
+- validateForceLoginOrg follows 2.1.275: the profile comes from
+  getOauthProfileFromOauthToken after the token refresh, each refusal
+  carries its reason (managed_settings_invalid, org_verify_failed,
+  org_pin_mismatch), the verify-failed message is the binary's, and
+  the env-var mismatch names the variable. The binary's branch for an
+  unreadable managed policy is not ported and stays declared.
+- authAlias.ts no longer imports markRefreshTokenDead: it only touched
+  it with a void, and oauth/client.ts is the one write site.
+- Brace and comment pins: the OTel trust gate, the OAuth URL and
+  expires_in branches, the 3P auth conjunction and the stale/orphan
+  steps of inflateModelSetting.
+- performLogout's pin still named the @claude-code-how-works scope.
+- sessionIngressAuth's no-token case read the real CCR token file of
+  a remote session; it now points the fallback at a missing path.
+
+The typecheck baseline drops to 2409, as the last commit measured.

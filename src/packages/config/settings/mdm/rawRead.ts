@@ -1,24 +1,16 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/mdm/rawRead.ts` (129 líneas
- * fuente). Reimplementación fiel VERBATIM.
+ * Minimal module for firing MDM subprocess reads without blocking the event loop.
+ * Has minimal imports — only child_process, fs, and mdmConstants (which only imports os).
  *
- * Módulo mínimo para disparar lecturas de subproceso MDM sin bloquear el
- * event loop. Imports mínimos — sólo child_process, fs y mdm/constants
- * (que sólo importa os).
+ * Two usage patterns:
+ * 1. Startup: startMdmRawRead() fires at main.tsx module evaluation, results consumed later via getMdmRawReadPromise()
+ * 2. Poll/fallback: fireRawRead() creates a fresh read on demand (used by changeDetector and SDK entrypoint)
  *
- * Dos patrones de uso:
- * 1. Arranque: `startMdmRawRead()` dispara en la evaluación del módulo de
- *    entrada, los resultados se consumen después vía
- *    `getMdmRawReadPromise()`.
- * 2. Poll/fallback: `fireRawRead()` crea una lectura fresca a demanda
- *    (usada por `changeDetector` y el entrypoint del SDK).
- *
- * El stdout crudo lo consume `settings.ts` (mdm) vía
- * `consumeRawReadResult()`.
+ * Raw stdout is consumed by mdmSettings.ts via consumeRawReadResult().
  */
 
-import { execFile } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { execFile } from 'child_process'
+import { existsSync } from 'fs'
 import {
   getMacOSPlistPaths,
   MDM_SUBPROCESS_TIMEOUT_MS,
@@ -27,7 +19,7 @@ import {
   WINDOWS_REGISTRY_KEY_PATH_HKCU,
   WINDOWS_REGISTRY_KEY_PATH_HKLM,
   WINDOWS_REGISTRY_VALUE_NAME,
-} from './constants.ts'
+} from './constants.js'
 
 export type RawReadResult = {
   plistStdouts: Array<{ stdout: string; label: string }> | null
@@ -54,12 +46,10 @@ function execFilePromise(
 }
 
 /**
- * Dispara lecturas de subproceso frescas para settings MDM y devuelve el
- * stdout crudo.
- * En macOS: lanza plutil para cada ruta de plist en paralelo, gana el
- * primero.
- * En Windows: lanza reg query para HKLM y HKCU en paralelo.
- * En Linux: devuelve vacío (sin equivalente de MDM).
+ * Fire fresh subprocess reads for MDM settings and return raw stdout.
+ * On macOS: spawns plutil for each plist path in parallel, picks first winner.
+ * On Windows: spawns reg query for HKLM and HKCU in parallel.
+ * On Linux: returns empty (no MDM equivalent).
  */
 export function fireRawRead(): Promise<RawReadResult> {
   return (async (): Promise<RawReadResult> => {
@@ -68,13 +58,12 @@ export function fireRawRead(): Promise<RawReadResult> {
 
       const allResults = await Promise.all(
         plistPaths.map(async ({ path, label }) => {
-          // Ruta rápida: se salta el subproceso plutil si el archivo plist
-          // no existe. Lanzar plutil toma ~5ms incluso para un ENOENT
-          // inmediato, y las máquinas sin MDM nunca tienen estos archivos.
-          // Usa `existsSync` sincrónico para preservar el invariante de
-          // "lanzar durante los imports": `execFilePromise` debe ser el
-          // primer await para que plutil arranque antes de que el event
-          // loop haga polling (ver `main.tsx:3-4`).
+          // Fast-path: skip the plutil subprocess if the plist file does not
+          // exist. Spawning plutil takes ~5ms even for an immediate ENOENT,
+          // and non-MDM machines never have these files.
+          // Uses synchronous existsSync to preserve the spawn-during-imports
+          // invariant: execFilePromise must be the first await so plutil
+          // spawns before the event loop polls (see main.tsx:3-4).
           if (!existsSync(path)) {
             return { stdout: '', label, ok: false }
           }
@@ -86,7 +75,7 @@ export function fireRawRead(): Promise<RawReadResult> {
         }),
       )
 
-      // Gana la primera fuente (el array está en orden de prioridad).
+      // First source wins (array is in priority order)
       const winner = allResults.find(r => r.ok)
       return {
         plistStdouts: winner
@@ -124,9 +113,8 @@ export function fireRawRead(): Promise<RawReadResult> {
 }
 
 /**
- * Dispara lecturas de subproceso crudas una vez, para el arranque. Se
- * llama en la evaluación del módulo `main.tsx`. Los resultados se
- * consumen vía `getMdmRawReadPromise()`.
+ * Fire raw subprocess reads once for startup. Called at main.tsx module evaluation.
+ * Results are consumed via getMdmRawReadPromise().
  */
 export function startMdmRawRead(): void {
   if (rawReadPromise) return
@@ -134,8 +122,7 @@ export function startMdmRawRead(): void {
 }
 
 /**
- * Obtiene la promesa de arranque. Devuelve `null` si
- * `startMdmRawRead()` no fue llamada.
+ * Get the startup promise. Returns null if startMdmRawRead() wasn't called.
  */
 export function getMdmRawReadPromise(): Promise<RawReadResult> | null {
   return rawReadPromise

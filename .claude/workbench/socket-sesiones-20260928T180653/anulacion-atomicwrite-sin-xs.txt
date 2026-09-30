@@ -1,0 +1,97 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+14 | beforeEach(() => {
+15 |   dir = mkdtempSync(join(tmpdir(), 'uds-atomic-'))
+16 | })
+17 | afterEach(() => rmSync(dir, { recursive: true, force: true }))
+18 | 
+19 | const errno = (code: string) => Object.assign(new Error(code), { code })
+                                                       ^
+error: EXDEV
+ code: "EXDEV"
+
+      at errno (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:19:51)
+      at renameFn (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:81:97)
+      at writeFileAtomicWithMode (/home/user/thyrox/src/packages/local-observability/src/uds/atomicWrite.ts:195:13)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:81:11)
+(fail) writeFileAtomicWithMode (An/Jne) > un rename con código de XS cae al brazo in situ: escribe en el mismo inodo y borra el temporal [1.10ms]
+14 | beforeEach(() => {
+15 |   dir = mkdtempSync(join(tmpdir(), 'uds-atomic-'))
+16 | })
+17 | afterEach(() => rmSync(dir, { recursive: true, force: true }))
+18 | 
+19 | const errno = (code: string) => Object.assign(new Error(code), { code })
+                                                       ^
+error: EPERM
+ code: "EPERM"
+
+      at errno (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:19:51)
+      at renameFn (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:91:97)
+      at writeFileAtomicWithMode (/home/user/thyrox/src/packages/local-observability/src/uds/atomicWrite.ts:195:13)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:91:11)
+(fail) writeFileAtomicWithMode (An/Jne) > el brazo in situ aplica el modo pedido cuando el destino ya existía [1.34ms]
+108 |     writeFileSync(real, 'intacto')
+109 |     const target = join(dir, 'k.json')
+110 |     symlinkSync(real, target)
+111 |     await expect(
+112 |       writeFileAtomicWithMode(target, 'x', { mode: 0o600, renameFn: async () => { throw errno('EXDEV') } }),
+113 |     ).rejects.toMatchObject({ code: 'ELOOP' })
+                    ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "ELOOP",
+- }
++ [Error: EXDEV]
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:113:15)
+(fail) writeFileAtomicWithMode (An/Jne) > el brazo in situ no sigue un enlace simbólico en el destino [1.00ms]
+120 |     const failure = await writeFileAtomicWithMode(target, 'nuevo', {
+121 |       mode: 0o600,
+122 |       renameFn: async () => { throw errno('EXDEV') },
+123 |       inPlaceWriteHook: () => { throw errno('ENOSPC') },
+124 |     }).catch(e => e)
+125 |     expect(failure).toMatchObject({ code: 'ENOSPC', targetOutcome: 'restored' })
+                          ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "ENOSPC",
+-   "targetOutcome": "restored",
+- }
++ [Error: EXDEV]
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:125:21)
+(fail) writeFileAtomicWithMode (An/Jne) > un fallo de escritura in situ tras truncar restaura el original y lo anota [0.83ms]
+136 |     const failure = await writeFileAtomicWithMode(target, 'nuevo', {
+137 |       mode: 0o600,
+138 |       renameFn: async () => { throw errno('EXDEV') },
+139 |       inPlaceWriteHook: () => { throw errno('EIO') },
+140 |     }).catch(e => e)
+141 |     expect(failure).toMatchObject({ code: 'EIO', targetOutcome: 'removed' })
+                          ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "EIO",
+-   "targetOutcome": "removed",
+- }
++ [Error: EXDEV]
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:141:21)
+(fail) writeFileAtomicWithMode (An/Jne) > un fallo in situ sobre un destino ausente borra el parcial [0.87ms]
+
+ 10 pass
+ 5 fail
+ 26 expect() calls
+Ran 15 tests across 1 file. [98.00ms]

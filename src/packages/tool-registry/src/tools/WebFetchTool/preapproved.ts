@@ -1,15 +1,16 @@
-// For legal and security concerns, we typically only allow Web Fetch to access
-// domains that the user has provided in some form. However, we make an
-// exception for a list of preapproved domains that are code-related.
+// Por razones legales y de seguridad, WebFetch sólo accede, en general, a
+// dominios que el usuario proporcionó de alguna forma. La excepción es esta
+// lista de dominios preaprobados, relacionados con código.
 //
-// SECURITY WARNING: These preapproved domains are ONLY for WebFetch (GET requests only).
-// The sandbox system deliberately does NOT inherit this list for network restrictions,
-// as arbitrary network access (POST, uploads, etc.) to these domains could enable
-// data exfiltration. Some domains like huggingface.co, kaggle.com, and nuget.org
-// allow file uploads and would be dangerous for unrestricted network access.
+// ADVERTENCIA DE SEGURIDAD: estos dominios valen SÓLO para WebFetch (sólo
+// peticiones GET). El sandbox NO hereda esta lista para sus restricciones de
+// red, a propósito: el acceso de red arbitrario (POST, subidas) a estos
+// dominios permitiría exfiltrar datos. Algunos —huggingface.co, kaggle.com,
+// nuget.org— admiten subida de archivos.
 //
-// See test/utils/sandbox/webfetch-preapproved-separation.test.ts for verification
-// that sandbox network restrictions require explicit user permission rules.
+// La verificación de que la red del sandbox exige reglas explícitas del
+// usuario vive en
+// `@thyrox/shell: src/sandbox/__tests__/webfetchPreapprovedSeparation.test.ts`.
 
 export const PREAPPROVED_HOSTS = new Set([
   // Anthropic

@@ -1,0 +1,10 @@
+==== s: 1 definicion(es) de nivel superior
+---- fs/promises external readlink [615,668)
+import{readFile as r,readlink as s}from"fs/promises";
+==== r: 1 definicion(es) de nivel superior
+---- fs/promises external readFile [615,668)
+import{readFile as r,readlink as s}from"fs/promises";
+==== i: 1 definicion(es) de nivel superior
+---- os external hostname [668,698)
+import{hostname as i}from"os";
+symbol: 3 de 3 nombre(s) resueltos

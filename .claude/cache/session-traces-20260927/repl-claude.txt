@@ -1,0 +1,470 @@
+src/promptSuggestion.tsx:257:const SUGGESTION_PROMPT = `[SUGGESTION MODE: Suggest what the user might naturally type next into Claude Code.]
+src/promptSuggestion.tsx:268:Claude offers options → suggest the one the user would likely pick, based on conversation
+src/promptSuggestion.tsx:269:Claude asks to continue → "yes" or "go ahead"
+src/promptSuggestion.tsx:278:- Claude-voice ("Let me...", "I'll...", "Here's...")
+src/queryHelpers.ts:179:        // Only emit for Claude Code Remote for now
+src/notificationPolicy.ts:17:  'idle_prompt', // REPLView idle watcher — "Claude is waiting"
+src/promptSuggestionSpeculation.tsx:42:import { getClaudeTempDir } from '@thyrox/permission/filesystem'
+src/promptSuggestionSpeculation.tsx:79:  return join(getClaudeTempDir(), 'speculation', String(process.pid), id)
+src/commands/mobile/index.ts:7:  description: 'Show QR code to download the Claude mobile app',
+src/screens/REPLView.tsx:448:import { useClaudeCodeHintRecommendation } from '../hooks/useClaudeCodeHintRecommendation.js';
+src/screens/REPLView.tsx:449:import { PluginHintMenu } from '../components/ClaudeCodeHint/PluginHintMenu.js';
+src/screens/REPLView.tsx:513:// repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+src/screens/REPLView.tsx:804:  const { recommendation: hintRecommendation, handleResponse: handleHintResponse } = useClaudeCodeHintRecommendation();
+src/screens/REPLView.tsx:1015:  // This enables "immediate" commands (like /btw) to persist while Claude is processing.
+src/screens/REPLView.tsx:1111:  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'Claude Code';
+src/screens/REPLView.tsx:1125:  // Prevent macOS from sleeping while Claude is working
+src/screens/REPLView.tsx:1990:  // This allows Claude to edit files that were read in previous sessions
+src/screens/REPLView.tsx:2803:      // Mark onboarding as complete when any user message is sent to Claude
+src/screens/REPLView.tsx:2812:      // title silently fell through to the "Claude Code" default.
+src/screens/REPLView.tsx:3401:      // even while Claude is processing. Commands opt-in via `immediate: true`.
+src/screens/REPLView.tsx:4265:  // Idle-prompt watcher: fire "Claude is waiting for your input" after
+src/screens/REPLView.tsx:4274:    // Don't set up notification if Claude is busy
+src/screens/REPLView.tsx:4290:          // User has interacted since Claude finished - they're not idle, don't notify
+src/screens/REPLView.tsx:4316:              message: 'Claude is waiting for your input',
+src/screens/REPLView.tsx:5054:                  the user sees their input echoed while Claude processes. */}
+src/screens/Doctor.tsx:243:    onDone('Claude Code diagnostics dismissed', { display: 'system' })
+src/projectOnboardingState.ts:23:  const hasClaudeMd = instructionsFileCandidates(getCwd()).some(path => fs.existsSync(path))
+src/projectOnboardingState.ts:37:      isComplete: hasClaudeMd,
+src/ultraplan.ts:131:            `Ultraplan approved — executing in Claude Code on the web. Follow along at: ${url}`,
+src/ultraplan.ts:197:  return `${DIAMOND_OPEN} ultraplan\n${prefix}Starting Claude Code on the web…`;
+src/ultraplan.ts:201:  return `${DIAMOND_OPEN} ultraplan · Monitor progress in Claude Code on the web ${url}\nYou can continue working — when the ${DIAMOND_OPEN} fills, press ↓ to view results`;
+src/ultraplan.ts:295:      '(Opus). Runs in Claude Code on the web. When the plan is ready,',
+src/ultraplan.ts:469:  description: `~10–30 min · Claude Code on the web drafts an advanced plan you can edit and approve. See ${CCR_TERMS_URL}`,
+src/commands/install-slack-app/index.ts:6:  description: 'Install the Claude Slack app',
+src/doctorDiagnostic.ts:43:  findClaudeAlias,
+src/doctorDiagnostic.ts:44:  findValidClaudeAlias,
+src/doctorDiagnostic.ts:462:  const existingAlias = await findClaudeAlias()
+src/doctorDiagnostic.ts:463:  const validAlias = await findValidClaudeAlias()
+src/screens/agentFleet/components/FleetBanner.tsx:7: *   │ Claude Code v2.1.143                        │  line 1 — bold "Claude Code" + dim version
+src/screens/agentFleet/components/FleetBanner.tsx:50:        <Text bold>Claude Code</Text>
+src/notifier.ts:44:const DEFAULT_TITLE = 'Claude Code'
+src/hooksConfigManager.ts:89:          'Input to command is JSON with original user prompt text.\nExit code 0 - stdout shown to Claude\nExit code 2 - block processing, erase original prompt, and show stderr to user only\nOther exit codes - show stderr to user only',
+src/hooksConfigManager.ts:94:          'Input to command is JSON with expansion_type, command_name, command_args, command_source, and original prompt.\nExit code 0 - stdout shown to Claude\nExit code 2 - block expansion and show stderr to user only\nOther exit codes - show stderr to user only',
+src/hooksConfigManager.ts:103:          'Input to command is JSON with session start source.\nExit code 0 - stdout shown to Claude\nBlocking errors are ignored\nOther exit codes - show stderr to user only',
+src/hooksConfigManager.ts:110:        summary: 'Right before Claude concludes its response',
+src/hooksConfigManager.ts:189:          'Input to command is JSON with trigger (init or maintenance).\nExit code 0 - stdout shown to Claude\nBlocking errors are ignored\nOther exit codes - show stderr to user only',
+src/hooksConfigManager.ts:246:          'Input to command is JSON with file_path, memory_type (User, Project, Local, Managed), load_reason (session_start, nested_traversal, path_glob_match, include, compact), globs (optional — the paths: frontmatter patterns that matched), trigger_file_path (optional — the file Claude touched that caused the load), and parent_file_path (optional — the file that @-included this one).\nExit code 0 - command completes successfully\nOther exit codes - show stderr to user only\nThis hook is observability-only and does not support blocking.',
+src/uiHelpers/logoV2Utils.ts:4:import { getSubscriptionName, isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
+src/uiHelpers/logoV2Utils.ts:254:  const billingType = isClaudeAISubscriber()
+src/terminalSetup.ts:46: * not the remote server where Claude is running.
+src/terminalSetup.ts:93:  // keyboard protocol, which Claude Code already parses. No setup needed for
+src/uiHelpers/statusNoticeDefinitions.tsx:19:  isClaudeAISubscriber,
+src/uiHelpers/statusNoticeDefinitions.tsx:86:      isClaudeAISubscriber() &&
+src/uiHelpers/statusNoticeDefinitions.tsx:97:          Auth conflict: Using {authTokenInfo.source} instead of Claude account
+src/interactiveHelpers/interactiveHelpers.tsx:36:  getExternalClaudeMdIncludes,
+src/interactiveHelpers/interactiveHelpers.tsx:38:  shouldShowClaudeMdExternalIncludesWarning,
+src/interactiveHelpers/interactiveHelpers.tsx:48:  getClaudeAIOAuthTokens,
+src/interactiveHelpers/interactiveHelpers.tsx:185:          if (getClaudeAIOAuthTokens()) return true
+src/interactiveHelpers/interactiveHelpers.tsx:247:    if (await shouldShowClaudeMdExternalIncludesWarning()) {
+src/interactiveHelpers/interactiveHelpers.tsx:248:      const externalIncludes = getExternalClaudeMdIncludes(
+src/interactiveHelpers/interactiveHelpers.tsx:251:      const { ClaudeMdExternalIncludesDialog } = await import(
+src/interactiveHelpers/interactiveHelpers.tsx:252:        '../components/ClaudeMdExternalIncludesDialog.js'
+src/interactiveHelpers/interactiveHelpers.tsx:255:        <ClaudeMdExternalIncludesDialog
+src/interactiveHelpers/interactiveHelpers.tsx:301:  // processes but ignored by Claude Code itself (see auth.ts).
+src/interactiveHelpers/interactiveHelpers.tsx:372:      const [{ isChannelsEnabled }, { getClaudeAIOAuthTokens }] =
+src/interactiveHelpers/interactiveHelpers.tsx:384:      if (!isChannelsEnabled() || !getClaudeAIOAuthTokens()?.accessToken) {
+src/interactiveHelpers/interactiveHelpers.tsx:413:  // Show Chrome onboarding for first-time Claude in Chrome users
+src/interactiveHelpers/interactiveHelpers.tsx:416:    !getGlobalConfig().hasCompletedClaudeInChromeOnboarding
+src/interactiveHelpers/interactiveHelpers.tsx:418:    const { ClaudeInChromeOnboarding } = await import(
+src/interactiveHelpers/interactiveHelpers.tsx:419:      '../components/ClaudeInChromeOnboarding.js'
+src/interactiveHelpers/interactiveHelpers.tsx:422:      <ClaudeInChromeOnboarding onDone={done} />
+src/commands/passes/index.ts:13:      return 'Share a free week of Claude Code with friends and earn extra usage'
+src/commands/passes/index.ts:15:    return 'Share a free week of Claude Code with friends'
+src/keybindings/defaultBindings.ts:8: * Default keybindings that match current Claude Code behavior.
+src/keybindings/schema.ts:252:      'Claude Code keybindings configuration. Customize keyboard shortcuts by context.',
+src/keybindings/reservedShortcuts.ts:14: * Shortcuts that cannot be rebound - they are hardcoded in Claude Code.
+src/hooks/notifs/useRateLimitWarningNotification.tsx:8:import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
+src/hooks/notifs/useRateLimitWarningNotification.tsx:10:import { hasClaudeAiBillingAccess } from '@thyrox/provider/billing.js'
+src/hooks/notifs/useRateLimitWarningNotification.tsx:15:  const claudeAiLimits = useClaudeAiLimits()
+src/hooks/notifs/useRateLimitWarningNotification.tsx:28:  const hasBillingAccess = hasClaudeAiBillingAccess()
+src/screens/repl/useReplActions.ts:6:import { usePromptsFromClaudeInChrome } from '../../hooks/usePromptsFromClaudeInChrome.js'
+src/screens/repl/useReplActions.ts:40:  usePromptsFromClaudeInChrome(mcpClients, toolPermissionMode)
+src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:2:import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
+src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:18:    const subscriptionType = await getExistingClaudeSubscription()
+src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:31:          Use your existing Claude {subscriptionType} plan with Claude Code
+src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:47:async function getExistingClaudeSubscription(): Promise<'Max' | 'Pro' | null> {
+src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:49:  if (isClaudeAISubscriber()) {
+src/screens/repl/useSuspendResumeHandlers.ts:23:        `\nClaude Code has been suspended. Run \`fg\` to bring Claude Code back.\nNote: ctrl + z now suspends Claude Code, ctrl + _ undoes input.\n`,
+src/tips/tipRegistry.ts:117:      `Start with small features or bug fixes, tell Claude to propose a plan, and verify its suggested edits`,
+src/tips/tipRegistry.ts:164:      'Use git worktrees to run multiple Claude sessions in parallel.',
+src/tips/tipRegistry.ts:179:      'Running multiple Claude sessions? Use /color and /rename to tell them apart at a glance.',
+src/tips/tipRegistry.ts:237:    content: async () => 'Use /memory to view and manage Claude memory',
+src/tips/tipRegistry.ts:276:      'Hit Enter to queue up additional messages while Claude is working.',
+src/tips/tipRegistry.ts:286:      'Send messages to Claude while it works to steer Claude in real-time',
+src/tips/tipRegistry.ts:293:      'Ask Claude to create a todo list when working on complex tasks to track progress and remain on track',
+src/tips/tipRegistry.ts:326:    content: async () => 'Connect Claude to your IDE · /ide',
+src/tips/tipRegistry.ts:352:    content: async () => 'Run /install-slack-app to use Claude in Slack',
+src/tips/tipRegistry.ts:376:      'Paste images into Claude Code using control+v (not cmd+v!)',
+src/tips/tipRegistry.ts:460:      'Run Claude Code locally or remotely using the Claude desktop app: clau.de/desktop',
+src/tips/tipRegistry.ts:468:      return `Continue your session in Claude Code Desktop with ${blue('/desktop')}`
+src/tips/tipRegistry.ts:489:      '/mobile to use Claude Code from the Claude app on your phone',
+src/tips/tipRegistry.ts:496:      `Your default model setting is Opus Plan Mode. Press ${getShortcutDisplay('chat:cycleMode', 'Chat', 'shift+tab')} twice to activate Plan Mode and plan with Claude Opus.`,
+src/tips/tipRegistry.ts:544:        ? `Use ${cmd} for better one-shot answers. Claude thinks it through first.`
+src/tips/tipRegistry.ts:573:        ? `For big tasks, tell Claude to ${blue('use subagents')}. They work in parallel and keep your main thread clean.`
+src/tips/tipRegistry.ts:574:        : `Say ${blue('"fan out subagents"')} and Claude sends a team. Each one digs deep so nothing gets missed.`
+src/tips/tipRegistry.ts:616:        ? `Share Claude Code and earn ${claude(formatCreditAmount(reward))} of extra usage · ${claude('/passes')}`
+src/hooks/notifs/useMcpConnectivityStatus.tsx:5:import { hasClaudeAiMcpEverConnected } from '@thyrox/mcp-runtime/claudeai.js'
+src/hooks/notifs/useMcpConnectivityStatus.tsx:33:    const failedClaudeAiClients = mcpClients.filter(
+src/hooks/notifs/useMcpConnectivityStatus.tsx:37:        hasClaudeAiMcpEverConnected(client.name),
+src/hooks/notifs/useMcpConnectivityStatus.tsx:43:    const needsAuthClaudeAiServers = mcpClients.filter(
+src/hooks/notifs/useMcpConnectivityStatus.tsx:47:        hasClaudeAiMcpEverConnected(client.name),
+src/hooks/notifs/useMcpConnectivityStatus.tsx:51:      failedClaudeAiClients.length === 0 &&
+src/hooks/notifs/useMcpConnectivityStatus.tsx:53:      needsAuthClaudeAiServers.length === 0
+src/hooks/notifs/useMcpConnectivityStatus.tsx:72:    if (failedClaudeAiClients.length > 0) {
+src/hooks/notifs/useMcpConnectivityStatus.tsx:78:              {failedClaudeAiClients.length} claude.ai{' '}
+src/hooks/notifs/useMcpConnectivityStatus.tsx:79:              {failedClaudeAiClients.length === 1 ? 'connector' : 'connectors'}{' '}
+src/hooks/notifs/useMcpConnectivityStatus.tsx:106:    if (needsAuthClaudeAiServers.length > 0) {
+src/hooks/notifs/useMcpConnectivityStatus.tsx:112:              {needsAuthClaudeAiServers.length} claude.ai{' '}
+src/hooks/notifs/useMcpConnectivityStatus.tsx:113:              {needsAuthClaudeAiServers.length === 1
+src/hooks/useTaskListWatcher.ts:31: * This enables "tasks mode" where Claude watches for externally-created
+src/hooks/useTaskListWatcher.ts:211: * Format a task as a prompt for Claude to work on.
+src/commands/add-dir/add-dir.tsx:5:  getAdditionalDirectoriesForClaudeMd,
+src/commands/add-dir/add-dir.tsx:6:  setAdditionalDirectoriesForClaudeMd,
+src/commands/add-dir/add-dir.tsx:88:    const currentDirs = getAdditionalDirectoriesForClaudeMd()
+src/commands/add-dir/add-dir.tsx:90:      setAdditionalDirectoriesForClaudeMd([...currentDirs, path])
+src/hooks/useCancelRequest.ts:96:    // This takes precedence over queue management so users can always interrupt Claude
+src/hooks/useCancelRequest.ts:104:    // Priority 2: Pop queue when Claude is idle (no running task to cancel)
+src/diagnostics/doctorContextWarnings.ts:43:async function checkClaudeMdFiles(): Promise<ContextWarning | null> {
+src/diagnostics/doctorContextWarnings.ts:253:      checkClaudeMdFiles(),
+src/hooks/useIssueFlagBanner.ts:31:  // Direct corrections about Claude's output
+src/hooks/useIssueFlagBanner.ts:34:  // Referencing prior instructions Claude missed
+src/hooks/useIssueFlagBanner.ts:36:  // Questioning Claude's actions
+src/hooks/useIssueFlagBanner.ts:40:  // Explicit retry/revert of Claude's work
+src/diagnostics/desktopDeepLink.ts:31: * Builds a deep link URL for Claude Desktop to resume a CLI session.
+src/diagnostics/desktopDeepLink.ts:44: * Check if Claude Desktop app is installed.
+src/diagnostics/desktopDeepLink.ts:45: * On macOS, checks for /Applications/Claude.app.
+src/diagnostics/desktopDeepLink.ts:59:    // Check for Claude.app in /Applications
+src/diagnostics/desktopDeepLink.ts:60:    return pathExists('/Applications/Claude.app')
+src/diagnostics/desktopDeepLink.ts:84: * Detect the installed Claude Desktop version.
+src/diagnostics/desktopDeepLink.ts:95:      '/Applications/Claude.app/Contents/Info.plist',
+src/diagnostics/desktopDeepLink.ts:108:    const installDir = join(localAppData, 'AnthropicClaude')
+src/diagnostics/desktopDeepLink.ts:203: * Build and open a deep link to resume the current session in Claude Desktop.
+src/diagnostics/desktopDeepLink.ts:219:        'Claude Desktop is not installed. Install it from https://claude.ai/download',
+src/diagnostics/desktopDeepLink.ts:230:      error: 'Failed to open Claude Desktop. Please try opening it manually.',
+src/processUserInput/processSlashCommand.tsx:735:          content: `This skill can only be invoked by Claude, not directly by users. Ask Claude to use the "${commandName}" skill for you.`,
+src/diagnostics/claudeDesktop.ts:13:export async function getClaudeDesktopConfigPath(): Promise<string> {
+src/diagnostics/claudeDesktop.ts:18:      `Unsupported platform: ${platform} - Claude Desktop integration only works on macOS and WSL.`,
+src/diagnostics/claudeDesktop.ts:27:      'Claude',
+src/diagnostics/claudeDesktop.ts:40:    const configPath = `/mnt/c${wslPath}/AppData/Roaming/Claude/claude_desktop_config.json`
+src/diagnostics/claudeDesktop.ts:59:      // Look for Claude Desktop config in each user directory
+src/diagnostics/claudeDesktop.ts:75:          'Claude',
+src/diagnostics/claudeDesktop.ts:94:    'Could not find Claude Desktop config file in Windows. Make sure Claude Desktop is installed on Windows.',
+src/diagnostics/claudeDesktop.ts:98:export async function readClaudeDesktopMcpServers(): Promise<
+src/diagnostics/claudeDesktop.ts:103:      'Unsupported platform - Claude Desktop integration only works on macOS and WSL.',
+src/diagnostics/claudeDesktop.ts:107:    const configPath = await getClaudeDesktopConfigPath()
+src/localInstaller.ts:22:export function getLocalClaudePath(): string {
+src/localInstaller.ts:93: * Install or update Claude CLI package in the local directory
+src/localInstaller.ts:97:export async function installOrUpdateClaudePackage(
+src/localInstaller.ts:121:        `Failed to install Claude CLI package: ${result.stderr}`,
+src/processUserInput/processUserInput.ts:359:  // Store images to disk so Claude can reference the path in context
+src/commands/doctor/index.ts:7:  description: 'Diagnose and verify your Claude Code installation and settings',
+src/hooks/useClaudeCodeHintRecommendation.tsx:37:type UseClaudeCodeHintRecommendationResult = {
+src/hooks/useClaudeCodeHintRecommendation.tsx:42:export function useClaudeCodeHintRecommendation(): UseClaudeCodeHintRecommendationResult {
+src/hooks/useClaudeCodeHintRecommendation.tsx:57:          `[useClaudeCodeHintRecommendation] surfacing ${resolved.pluginId} from ${resolved.sourceCommand}`,
+src/commands/desktop/index.ts:17:  description: 'Continue the current session in Claude Desktop',
+src/commands/statusline.tsx:7:  description: "Set up Claude Code's status line UI",
+src/commands/stickers/index.ts:6:  description: 'Order Claude Code stickers',
+src/commands/stats/index.ts:6:  description: 'Show your Claude Code usage statistics and activity',
+src/hooks/useApiKeyVerification.ts:7:  getClaudeAIOAuthTokens,
+src/hooks/useApiKeyVerification.ts:42: *      `getClaudeAIOAuthTokens()`).
+src/hooks/useApiKeyVerification.ts:56:        if (getClaudeAIOAuthTokens()) return true
+src/history.ts:35: * Claude Code parses history for pasted content references to match back to
+src/history.ts:412:  // Skip history when running in a tmux session spawned by Claude Code's Tungsten tool.
+src/hooks/usePromptsFromClaudeInChrome.tsx:13:  isTrackedClaudeInChromeTabId,
+src/hooks/usePromptsFromClaudeInChrome.tsx:19:const ClaudeInChromePromptNotificationSchema = lazySchema(() =>
+src/hooks/usePromptsFromClaudeInChrome.tsx:42: * A hook that listens for prompt notifications from the Claude for Chrome extension,
+src/hooks/usePromptsFromClaudeInChrome.tsx:45:export function usePromptsFromClaudeInChrome(
+src/hooks/usePromptsFromClaudeInChrome.tsx:63:        ClaudeInChromePromptNotificationSchema(),
+src/hooks/usePromptsFromClaudeInChrome.tsx:73:            !isTrackedClaudeInChromeTabId(tabId)
+src/hooks/useChromeExtensionNotification.tsx:2:import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
+src/hooks/useChromeExtensionNotification.tsx:5:  shouldEnableClaudeInChrome,
+src/hooks/useChromeExtensionNotification.tsx:23:    if (!shouldEnableClaudeInChrome(chromeFlag)) return null
+src/hooks/useChromeExtensionNotification.tsx:25:    // Claude in Chrome is only supported for claude.ai subscribers (unless user is ant)
+src/hooks/useChromeExtensionNotification.tsx:26:    if (process.env.USER_TYPE !== 'ant' && !isClaudeAISubscriber()) {
+src/hooks/useChromeExtensionNotification.tsx:31:            Claude in Chrome requires a claude.ai subscription
+src/hooks/useChromeExtensionNotification.tsx:59:        text: `Claude in Chrome enabled · /chrome`,
+src/deepLink/protocolHandler.ts:53:  // baked at registration time, and we want the terminal-launched Claude to
+src/deepLink/protocolHandler.ts:116: * Resolve the working directory for the launched Claude instance.
+src/deepLink/protocolHandler.ts:119: * so a web link referencing a repo the user doesn't have still opens Claude.
+src/hooks/useInboxPoller.ts:815:    // Format messages with XML wrapper for Claude (include color if available)
+src/hooks/useInboxPoller.ts:816:    // Transform plan approval requests to include instructions for Claude
+src/hooks/useInboxPoller.ts:922:    // Format messages with XML wrapper for Claude (include color if available)
+src/hooks/fileSuggestions.ts:442: * Gets additional files from Claude config directories
+src/hooks/fileSuggestions.ts:444:async function getClaudeConfigFiles(cwd: string): Promise<string[]> {
+src/hooks/fileSuggestions.ts:536:      getClaudeConfigFiles(cwd),
+src/deepLink/terminalLauncher.ts:4: * Detects the user's preferred terminal emulator and launches Claude Code
+src/deepLink/terminalLauncher.ts:197: * Launch Claude Code in the detected terminal emulator.
+src/hooks/useReplBridge.tsx:739:                  ? 'Please upgrade to the latest version of the Claude mobile app to see your Remote Control sessions.'
+src/deepLink/registerProtocol.ts:34:const APP_NAME = 'Claude Code URL Handler'
+src/deepLink/registerProtocol.ts:36:const MACOS_APP_NAME = 'Claude Code URL Handler.app'
+src/deepLink/registerProtocol.ts:69: * Claude then uses the url-handler NAPI module to read the URL from the
+src/deepLink/registerProtocol.ts:111:      <string>Claude Code Deep Link</string>
+src/deepLink/registerProtocol.ts:149:Comment=Handle ${DEEP_LINK_PROTOCOL}:// deep links for Claude Code
+src/deepLink/registerProtocol.ts:218:  const resolved = claudePath ?? (await resolveClaudePath())
+src/deepLink/registerProtocol.ts:241:async function resolveClaudePath(): Promise<string> {
+src/deepLink/registerProtocol.ts:306:  const claudePath = await resolveClaudePath()
+src/hooksSettings.ts:153:      return 'Built-in hooks (registered internally by Claude Code)'
+src/components/ultraplan/UltraplanLaunchDialog.tsx:46:      'Ultraplan sends your task to Claude Code on the web for deep exploration. ' +
+src/components/ultraplan/UltraplanLaunchDialog.tsx:47:      'Claude will research, draft a detailed plan, and return it here for your review ' +
+src/components/ultraplan/UltraplanLaunchDialog.tsx:49:    dialogPipeline: 'Your prompt → Claude Code on the web → Plan review → Implementation',
+src/components/ultraplan/UltraplanLaunchDialog.tsx:110:    ? 'Disable remote control and launch in Claude Code on the web'
+src/components/ultraplan/UltraplanLaunchDialog.tsx:111:    : 'launch in Claude Code on the web';
+src/components/ultraplan/UltraplanLaunchDialog.tsx:138:              For more information on Claude Code on the web: <Link url={CCR_TERMS_URL}>{CCR_TERMS_URL}</Link>
+src/components/HelpV2/HelpV2.tsx:111:              : `Claude Code v${MACRO.VERSION}`
+src/components/ThinkingToggle.tsx:32:      description: 'Claude will think before responding',
+src/components/ThinkingToggle.tsx:37:      description: 'Claude will respond without extended thinking',
+src/components/HelpV2/General.tsx:10:          Claude understands your codebase, makes edits with your permission,
+src/components/sandbox/SandboxOverridesTab.tsx:118:          When a command fails due to sandbox restrictions, Claude can retry
+src/components/ConsoleOAuthFlow.tsx:96:      ? 'Login method pre-selected: Subscription Plan (Claude Pro/Max)'
+src/components/ConsoleOAuthFlow.tsx:120:  const [loginWithClaudeAi, setLoginWithClaudeAi] = useState(() => {
+src/components/ConsoleOAuthFlow.tsx:121:    // Use Claude AI auth for setup-token mode to support user:inference scope
+src/components/ConsoleOAuthFlow.tsx:193:      logEvent('tengu_oauth_success', { loginWithClaudeAi })
+src/components/ConsoleOAuthFlow.tsx:288:      logEvent('tengu_oauth_flow_start', { loginWithClaudeAi })
+src/components/ConsoleOAuthFlow.tsx:297:            loginWithClaudeAi,
+src/components/ConsoleOAuthFlow.tsx:347:          'Claude Account',
+src/components/ConsoleOAuthFlow.tsx:353:        void sendNotification({ message: 'Claude Code login successful', notificationType: 'auth_success' }, terminal)
+src/components/ConsoleOAuthFlow.tsx:371:  }, [oauthService, setShowPastePrompt, loginWithClaudeAi, mode, orgUUID])
+src/components/ConsoleOAuthFlow.tsx:393:      // (would clobber Claude Account requests with the OpenAI adapter).
+src/components/ConsoleOAuthFlow.tsx:432:        (loginWithClaudeAi, onDone) => {
+src/components/ConsoleOAuthFlow.tsx:433:          logEvent('tengu_oauth_success', { loginWithClaudeAi })
+src/components/ConsoleOAuthFlow.tsx:438:        loginWithClaudeAi,
+src/components/ConsoleOAuthFlow.tsx:443:  }, [mode, oauthStatus, loginWithClaudeAi, onDone])
+src/components/ConsoleOAuthFlow.tsx:531:          setLoginWithClaudeAi={setLoginWithClaudeAi}
+src/components/ConsoleOAuthFlow.tsx:559:  setLoginWithClaudeAi: (value: boolean) => void
+src/components/ConsoleOAuthFlow.tsx:582:  setLoginWithClaudeAi,
+src/components/ConsoleOAuthFlow.tsx:725:              : `Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.`}
+src/components/ConsoleOAuthFlow.tsx:736:                      Claude account with subscription ·{' '}
+src/components/ConsoleOAuthFlow.tsx:823:                  setLoginWithClaudeAi(false)
+src/components/ConsoleOAuthFlow.tsx:865:                    setLoginWithClaudeAi(true)
+src/components/ConsoleOAuthFlow.tsx:868:                    setLoginWithClaudeAi(false)
+src/components/ConsoleOAuthFlow.tsx:1710:              Claude Code supports Amazon Bedrock, Microsoft Foundry, and Vertex
+src/components/ConsoleOAuthFlow.tsx:1711:              AI. Set the required environment variables, then restart Claude
+src/components/ConsoleOAuthFlow.tsx:1797:            <Text>Creating API key for Claude Code…</Text>
+src/components/ThemePicker.tsx:170:                '+  console.log("Hello, Claude!");',
+src/components/hooks/ViewHookMode.tsx:5: * confirmation screen and directs users to settings.json or Claude for edits.
+src/components/hooks/ViewHookMode.tsx:77:          Claude to help.
+src/components/ClaudeInChromeOnboarding.tsx:15:export function ClaudeInChromeOnboarding({ onDone }: Props): React.ReactNode {
+src/components/ClaudeInChromeOnboarding.tsx:22:      return { ...current, hasCompletedClaudeInChromeOnboarding: true }
+src/components/ClaudeInChromeOnboarding.tsx:35:      title="Claude in Chrome (Beta)"
+src/components/ClaudeInChromeOnboarding.tsx:41:          Claude in Chrome works with the Chrome extension to let you control
+src/components/ClaudeInChromeOnboarding.tsx:42:          your browser directly from Claude Code. You can navigate websites,
+src/components/ClaudeInChromeOnboarding.tsx:58:          Claude can browse, click, and type on
+src/components/tasks/RemoteSessionDetailDialog.tsx:53:    return 'Review the plan in Claude Code on the web'
+src/components/tasks/RemoteSessionDetailDialog.tsx:163:            This will terminate the Claude Code on the web session.
+src/components/tasks/RemoteSessionDetailDialog.tsx:219:              label: 'Review in Claude Code on the web',
+src/components/tasks/RemoteSessionDetailDialog.tsx:383:        { label: 'Open in Claude Code on the web', value: 'open' },
+src/components/tasks/RemoteSessionDetailDialog.tsx:387:        { label: 'Open in Claude Code on the web', value: 'open' },
+src/components/hooks/SelectMatcherMode.tsx:69:            To add hooks, edit settings.json directly or ask Claude.
+src/components/hooks/HooksConfigMenu.tsx:7: * or ask Claude — the menu directs them there.
+src/components/hooks/HooksConfigMenu.tsx:211:  // users can edit settings.json or ask Claude instead.
+src/components/hooks/HooksConfigMenu.tsx:240:              settings.json or ask Claude.
+src/components/hooks/SelectHookMode.tsx:53:            To add hooks, edit settings.json directly or ask Claude.
+src/components/hooks/SelectEventMode.tsx:7: * edit settings.json directly or ask Claude.
+src/components/hooks/SelectEventMode.tsx:57:            settings.json directly or ask Claude.{' '}
+src/components/InterruptedByUser.tsx:8:      <Text dimColor>· What should Claude do instead?</Text>
+src/components/PromptInput/PromptInput.tsx:1078:        text: 'This prompt will launch an ultraplan session in Claude Code on the web',
+src/components/PromptInput/PromptInput.tsx:1091:        text: 'Run /ultrareview after Claude finishes to review these changes in the cloud',
+src/components/PromptInput/PromptInput.tsx:1102:        text: 'This prompt will steer Claude into autonomous workflow mode',
+src/components/ModelPicker.tsx:269:              'Switch between Claude models. Applies to this session and future Claude Code sessions. For other/previous model names, specify with --model.'}
+src/components/agents/AgentDetail.tsx:76:          <Text bold>Description</Text> (tells Claude when to use this agent):
+src/components/PromptInput/Notifications.tsx:17:import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
+src/components/PromptInput/Notifications.tsx:70:  const claudeAiLimits = useClaudeAiLimits()
+src/components/PromptInput/Notifications.tsx:143:  const claudeAiLimits = useClaudeAiLimits()
+src/components/AutoModeOptInDialog.tsx:9:  "Auto mode lets Claude handle permission prompts automatically — Claude checks each tool call for risky actions and prompt injection before executing. Actions Claude identifies as safe are executed, while actions Claude identifies as risky are blocked and Claude may try a different approach. Ideal for long-running tasks. Sessions are slightly more expensive. Claude can make mistakes that allow harmful commands to run, it's recommended to only use in isolated environments. Shift+Tab to change mode."
+src/components/DesktopUpsell/DesktopUpsellStartup.tsx:86:    { label: 'Open in Claude Code Desktop', value: 'try' as const },
+src/components/DesktopUpsell/DesktopUpsellStartup.tsx:92:    <PermissionDialog title="Try Claude Code Desktop">
+src/components/DesktopUpsell/DesktopUpsellStartup.tsx:96:            Same Claude Code with visual diffs, live app preview, parallel
+src/components/VirtualMessageList.tsx:141: * prepended to the stored text for Claude's context (memory updates, auto
+src/components/PromptInput/IssueFlagBanner.tsx:22:          Something off with Claude?
+src/components/agents/AgentsList.tsx:252:            No agents found. Create specialized subagents that Claude can
+src/components/FullscreenLayout.tsx:216: * users think of as "a new message from Claude" — not raw assistant entries
+src/components/FullscreenLayout.tsx:262: * until Claude's text response lands.
+src/components/FullscreenLayout.tsx:345:      // Most OSC 8 links emitted by Claude Code are file:// URLs from
+src/components/FullscreenLayout.tsx:533:// conversation turn's prompt above the viewport so you know what Claude was
+src/components/grove/Grove.tsx:59:            <Text bold>You can help improve Claude </Text>
+src/components/grove/Grove.tsx:105:          <Text bold>Help improve Claude</Text>
+src/components/grove/Grove.tsx:116:            Turning ON the improve Claude setting extends data retention from 30
+src/components/grove/Grove.tsx:231:            'Accept terms · Help improve Claude: OFF (for emails with your domain)',
+src/components/grove/Grove.tsx:237:          label: 'Accept terms · Help improve Claude: ON',
+src/components/grove/Grove.tsx:241:          label: 'Accept terms · Help improve Claude: OFF',
+src/components/grove/Grove.tsx:367:          <Text bold>Help improve Claude</Text>
+src/components/mcp/types.ts:22:  McpClaudeAIProxyServerConfig,
+src/components/mcp/types.ts:51:export type ClaudeAIServerInfo = BaseServerInfo & {
+src/components/mcp/types.ts:56:  config: McpClaudeAIProxyServerConfig
+src/components/mcp/types.ts:59:export type ServerInfo = StdioServerInfo | SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo
+src/components/OutputStylePicker.tsx:16:  'Claude completes coding tasks efficiently and provides concise responses'
+src/components/OutputStylePicker.tsx:78:            This changes how Claude Code communicates with you
+src/components/ResumeTask.tsx:138:          <Text bold>Loading Claude Code sessions…</Text>
+src/components/ResumeTask.tsx:141:          {retrying ? 'Retrying…' : 'Fetching your Claude Code sessions…'}
+src/components/ResumeTask.tsx:151:          Error loading Claude Code sessions
+src/components/ResumeTask.tsx:168:          No Claude Code sessions found
+src/components/ResumeTask.tsx:324:          <Text dimColor>Teleport requires a Claude account</Text>
+src/components/ResumeTask.tsx:326:            Run <Text bold>/login</Text> and select &quot;Claude account with
+src/components/ResumeTask.tsx:335:          <Text dimColor>Sorry, Claude encountered an error</Text>
+src/components/ResumeTask.tsx:342:          <Text dimColor>Sorry, Claude Code encountered an error</Text>
+src/components/RemoteCallout.tsx:4:import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
+src/components/RemoteCallout.tsx:55:            (claude.ai/code) or the Claude app, so you can pick up where you
+src/components/RemoteCallout.tsx:83:  const tokens = getClaudeAIOAuthTokens()
+src/components/Onboarding.tsx:80:    // processes but ignored by Claude Code itself (see auth.ts).
+src/components/Onboarding.tsx:117:            <Text>Claude can make mistakes</Text>
+src/components/Onboarding.tsx:119:              You should always review Claude&apos;s responses, especially when
+src/components/Onboarding.tsx:181:          <Text bold>Use Claude Code&apos;s terminal setup?</Text>
+src/components/mcp/MCPSettings.tsx:3:import { ClaudeAuthProvider } from '@thyrox/mcp-runtime/auth.js'
+src/components/mcp/MCPSettings.tsx:5:  McpClaudeAIProxyServerConfig,
+src/components/mcp/MCPSettings.tsx:62:          const isClaudeAIProxy = client.config.type === 'claudeai-proxy'
+src/components/mcp/MCPSettings.tsx:66:            const authProvider = new ClaudeAuthProvider(
+src/components/mcp/MCPSettings.tsx:91:          if (isClaudeAIProxy) {
+src/components/mcp/MCPSettings.tsx:96:              config: client.config as McpClaudeAIProxyServerConfig,
+src/components/mcp/MCPSettings.tsx:174:          : 'Claude Code'
+src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx:13:      label: 'Generate with Claude (recommended)',
+src/components/InvalidConfigDialog.tsx:27: * Dialog shown when the Claude config file contains invalid JSON
+src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:46:      subtitle="Description (tell Claude when to use this agent)"
+src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:67:        <Text>When should Claude use this agent?</Text>
+src/components/mcp/MCPListPanel.tsx:278:          {/* Claude.ai servers section */}
+src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx:110:            <Text bold>Description</Text> (tells Claude when to use this agent):
+src/components/TeleportRepoMismatchDialog.tsx:78:              Open Claude Code in <Text bold>{targetRepo}</Text>:
+src/components/mcp/ElicitationDialog.tsx:287:  useNotifyAfterTimeout('Claude Code needs your input', 'elicitation_dialog')
+src/components/mcp/ElicitationDialog.tsx:1311:    'Claude Code needs your input',
+src/components/LogSelector.tsx:224:  // Track if the "Search deeply using Claude" option is focused
+src/components/LogSelector.tsx:1101:              Claude found these results:
+src/components/LogSelector.tsx:1144:                Search deeply using Claude →
+src/components/LogSelector.tsx:1260:              <Text>Searching with Claude…</Text>
+src/components/mcp/MCPRemoteServerMenu.tsx:45:  ClaudeAIServerInfo,
+src/components/mcp/MCPRemoteServerMenu.tsx:55:  server: SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo
+src/components/mcp/MCPRemoteServerMenu.tsx:86:  const [isClaudeAIAuthenticating, setIsClaudeAIAuthenticating] =
+src/components/mcp/MCPRemoteServerMenu.tsx:88:  const [claudeAIAuthUrl, setClaudeAIAuthUrl] = useState<string | null>(null)
+src/components/mcp/MCPRemoteServerMenu.tsx:89:  const [isClaudeAIClearingAuth, setIsClaudeAIClearingAuth] = useState(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:90:  const [claudeAIClearAuthUrl, setClaudeAIClearAuthUrl] = useState<
+src/components/mcp/MCPRemoteServerMenu.tsx:93:  const [claudeAIClearAuthBrowserOpened, setClaudeAIClearAuthBrowserOpened] =
+src/components/mcp/MCPRemoteServerMenu.tsx:132:  const handleClaudeAIAuthComplete = React.useCallback(async () => {
+src/components/mcp/MCPRemoteServerMenu.tsx:133:    setIsClaudeAIAuthenticating(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:134:    setClaudeAIAuthUrl(null)
+src/components/mcp/MCPRemoteServerMenu.tsx:144:          'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+src/components/mcp/MCPRemoteServerMenu.tsx:148:          'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+src/components/mcp/MCPRemoteServerMenu.tsx:159:  const handleClaudeAIClearAuthComplete = React.useCallback(async () => {
+src/components/mcp/MCPRemoteServerMenu.tsx:193:    setIsClaudeAIClearingAuth(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:194:    setClaudeAIClearAuthUrl(null)
+src/components/mcp/MCPRemoteServerMenu.tsx:195:    setClaudeAIClearAuthBrowserOpened(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:213:  // Escape to cancel Claude AI authentication
+src/components/mcp/MCPRemoteServerMenu.tsx:217:      setIsClaudeAIAuthenticating(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:218:      setClaudeAIAuthUrl(null)
+src/components/mcp/MCPRemoteServerMenu.tsx:222:      isActive: isClaudeAIAuthenticating,
+src/components/mcp/MCPRemoteServerMenu.tsx:226:  // Escape to cancel Claude AI clear auth
+src/components/mcp/MCPRemoteServerMenu.tsx:230:      setIsClaudeAIClearingAuth(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:231:      setClaudeAIClearAuthUrl(null)
+src/components/mcp/MCPRemoteServerMenu.tsx:232:      setClaudeAIClearAuthBrowserOpened(false)
+src/components/mcp/MCPRemoteServerMenu.tsx:236:      isActive: isClaudeAIClearingAuth,
+src/components/mcp/MCPRemoteServerMenu.tsx:242:    if (key.return && isClaudeAIAuthenticating) {
+src/components/mcp/MCPRemoteServerMenu.tsx:243:      void handleClaudeAIAuthComplete()
+src/components/mcp/MCPRemoteServerMenu.tsx:245:    if (key.return && isClaudeAIClearingAuth) {
+src/components/mcp/MCPRemoteServerMenu.tsx:247:        void handleClaudeAIClearAuthComplete()
+src/components/mcp/MCPRemoteServerMenu.tsx:251:        setClaudeAIClearAuthUrl(connectorsUrl)
+src/components/mcp/MCPRemoteServerMenu.tsx:252:        setClaudeAIClearAuthBrowserOpened(true)
+src/components/mcp/MCPRemoteServerMenu.tsx:283:  const handleClaudeAIAuth = React.useCallback(async () => {
+src/components/mcp/MCPRemoteServerMenu.tsx:308:    setClaudeAIAuthUrl(authUrl)
+src/components/mcp/MCPRemoteServerMenu.tsx:309:    setIsClaudeAIAuthenticating(true)
+src/components/mcp/MCPRemoteServerMenu.tsx:314:  const handleClaudeAIClearAuth = React.useCallback(() => {
+src/components/mcp/MCPRemoteServerMenu.tsx:315:    setIsClaudeAIClearingAuth(true)
+src/components/mcp/MCPRemoteServerMenu.tsx:394:            'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+src/components/mcp/MCPRemoteServerMenu.tsx:400:            'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+src/components/mcp/MCPRemoteServerMenu.tsx:538:  if (isClaudeAIAuthenticating) {
+src/components/mcp/MCPRemoteServerMenu.tsx:581:  if (isClaudeAIClearingAuth) {
+src/components/mcp/MCPRemoteServerMenu.tsx:830:                    await handleClaudeAIAuth()
+src/components/mcp/MCPRemoteServerMenu.tsx:833:                    handleClaudeAIClearAuth()
+src/components/FallbackToolUseErrorMessage.tsx:33:    // Remove sandbox_violations tags from error display (Claude still sees them in the tool result)
+src/components/Settings/Config.tsx:58:import { ClaudeMdExternalIncludesDialog } from '../ClaudeMdExternalIncludesDialog.js'
+src/components/Settings/Config.tsx:68:  getExternalClaudeMdIncludes,
+src/components/Settings/Config.tsx:70:  hasExternalClaudeMdIncludes,
+src/components/Settings/Config.tsx:297:    hasExternalClaudeMdIncludes(memoryFiles)
+src/components/Settings/Config.tsx:800:            label: 'Notify when Claude decides',
+src/components/Settings/Config.tsx:1005:      label: 'Claude in Chrome enabled by default',
+src/components/Settings/Config.tsx:1133:              if (projectConfig.hasClaudeMdExternalIncludesApproved) {
+src/components/Settings/Config.tsx:1293:    // processes but ignored by Claude Code itself (see auth.ts).
+src/components/Settings/Config.tsx:1343:        `${globalConfig.agentPushNotifEnabled ? 'Enabled' : 'Disabled'} Claude-decision notifications`,
+src/components/Settings/Config.tsx:1913:          <ClaudeMdExternalIncludesDialog
+src/components/Settings/Config.tsx:1918:            externalIncludes={getExternalClaudeMdIncludes(memoryFiles)}
+src/components/Spinner.tsx:330:        ? "Use /btw to ask a quick side question without interrupting Claude's current work"
+src/components/WorkflowMultiselectDialog.tsx:21:    label: '@Claude Code - Tag @claude in issues and PR comments',
+src/components/WorkflowMultiselectDialog.tsx:25:    label: 'Claude Code Review - Automated code review on new PRs',
+src/components/TeleportError.tsx:4:  checkNeedsClaudeAiLogin,
+src/components/TeleportError.tsx:71:  const handleLoginWithClaudeAI = useCallback(() => {
+src/components/TeleportError.tsx:78:        handleLoginWithClaudeAI()
+src/components/TeleportError.tsx:84:    [handleLoginWithClaudeAI, onCancel],
+src/components/TeleportError.tsx:117:        <Dialog title="Log in to Claude" onCancel={onCancel}>
+src/components/TeleportError.tsx:119:            <Text dimColor>Teleport requires a Claude.ai account.</Text>
+src/components/TeleportError.tsx:121:              Your Claude Pro/Max subscription will be used by Claude Code.
+src/components/TeleportError.tsx:126:              { label: 'Login with Claude account', value: 'login' },
+src/components/TeleportError.tsx:147:    checkNeedsClaudeAiLogin(),
+src/components/AutoUpdater.tsx:25:  installOrUpdateClaudePackage,
+src/components/AutoUpdater.tsx:191:        installStatus = await installOrUpdateClaudePackage(channel)
+src/components/AutoUpdater.tsx:213:          installStatus = await installOrUpdateClaudePackage(channel)
+src/components/IdeOnboardingDialog.tsx:50:            <Text>Welcome to Claude Code for {ideName}</Text>
+src/components/IdeOnboardingDialog.tsx:64:            • Claude has context of <Text color="suggestion">⧉ open files</Text>{' '}
+src/components/IdeOnboardingDialog.tsx:68:            • Review Claude Code&apos;s changes{' '}
+src/components/messages/UserTextMessage.tsx:164:  // Cross-session UDS message (from another Claude session's SendMessage).
+src/components/LogoV2/feedConfigs.tsx:66:    ? `Share Claude Code and earn ${formatCreditAmount(reward)} of extra usage`
+src/components/LogoV2/feedConfigs.tsx:67:    : 'Share Claude Code with friends'
+src/components/MCPServerDesktopImportDialog.tsx:90:        title="Import MCP Servers from Claude Desktop"
+src/components/MCPServerDesktopImportDialog.tsx:91:        subtitle={`Found ${serverNames.length} MCP ${plural(serverNames.length, 'server')} in Claude Desktop.`}
+src/components/messages/AssistantTextMessage.tsx:90:    // Local JSX commands don't need a response, but we still want Claude to see them
+src/components/messages/RateLimitMessage.tsx:4:import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
+src/components/messages/RateLimitMessage.tsx:9:  isClaudeAISubscriber,
+src/components/messages/RateLimitMessage.tsx:11:import { hasClaudeAiBillingAccess } from '@thyrox/provider/billing.js'
+src/components/messages/RateLimitMessage.tsx:76:  const shouldShowUpsell = shouldProcessMockLimits() || isClaudeAISubscriber()
+src/components/messages/RateLimitMessage.tsx:86:  const claudeAiLimits = useClaudeAiLimits()
+src/components/messages/RateLimitMessage.tsx:112:      hasBillingAccess: hasClaudeAiBillingAccess(),
+src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx:14:        <Text color="subtle">User rejected Claude&apos;s plan:</Text>
+src/components/ClaudeMdExternalIncludesDialog.tsx:4:import type { ExternalClaudeMdInclude } from '@thyrox/storage/claudemd.js'
+src/components/ClaudeMdExternalIncludesDialog.tsx:11:  externalIncludes?: ExternalClaudeMdInclude[]
+src/components/ClaudeMdExternalIncludesDialog.tsx:14:export function ClaudeMdExternalIncludesDialog({
+src/components/ClaudeMdExternalIncludesDialog.tsx:31:          hasClaudeMdExternalIncludesApproved: false,
+src/components/ClaudeMdExternalIncludesDialog.tsx:32:          hasClaudeMdExternalIncludesWarningShown: true,
+src/components/ClaudeMdExternalIncludesDialog.tsx:38:          hasClaudeMdExternalIncludesApproved: true,
+src/components/ClaudeMdExternalIncludesDialog.tsx:39:          hasClaudeMdExternalIncludesWarningShown: true,
+src/components/ClaudeMdExternalIncludesDialog.tsx:78:        Important: Only use Claude Code with files you trust. Accessing
+src/components/LogoV2/WelcomeV2.tsx:9:  const welcomeMessage = 'Welcome to Claude Code'
+src/components/LogoV2/CondensedLogo.tsx:58:  // Truncate version to fit within available width, accounting for "Claude Code v" prefix
+src/components/LogoV2/CondensedLogo.tsx:59:  const versionPrefix = 'Claude Code v'
+src/components/LogoV2/CondensedLogo.tsx:93:          <Text bold>Claude Code</Text>{' '}
+src/components/LogoV2/GuestPassesUpsell.tsx:69:        ? `Share Claude Code and earn ${formatCreditAmount(reward)} of extra usage · /passes`
+src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx:72:            { label: 'No, exit Claude Code', value: 'exit' },
+src/components/Stats.tsx:25:  aggregateClaudeCodeStatsForRange,
+src/components/Stats.tsx:26:  type ClaudeCodeStats,
+src/components/Stats.tsx:54:  | { type: 'success'; data: ClaudeCodeStats }
+src/components/Stats.tsx:76:  return aggregateClaudeCodeStatsForRange('all')
+src/components/Stats.tsx:99:          <Text> Loading your Claude Code stats…</Text>
+src/components/Stats.tsx:124:    Partial<Record<StatsDateRange, ClaudeCodeStats>>
+src/components/Stats.tsx:144:    aggregateClaudeCodeStatsForRange(dateRange)
+src/components/Stats.tsx:212:          No stats available yet. Start using Claude Code!
+src/components/Stats.tsx:292:  stats: ClaudeCodeStats
+src/components/Stats.tsx:293:  allTimeStats: ClaudeCodeStats
+src/components/Stats.tsx:569:  stats: ClaudeCodeStats,
+src/components/Stats.tsx:615:  stats: ClaudeCodeStats
+src/components/Stats.tsx:924:  stats: ClaudeCodeStats,
+src/components/Stats.tsx:940:  stats: ClaudeCodeStats,
+src/components/Stats.tsx:976:function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
+src/components/Stats.tsx:1125:function renderModelsToAnsi(stats: ClaudeCodeStats): string[] {
+src/components/LogoV2/LogoV2.tsx:148:  // -20 to account for the max length of subscription name " · Claude Enterprise".
+src/components/LogoV2/LogoV2.tsx:181:                ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
+src/components/LogoV2/LogoV2.tsx:228:  const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
+src/components/LogoV2/LogoV2.tsx:229:  const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+src/components/LogoV2/LogoV2.tsx:392:              ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
+src/components/DesktopHandoff.tsx:72:        setDownloadMessage('Claude Desktop is not installed.')
+src/components/DesktopHandoff.tsx:79:          `Claude Desktop needs to be updated (found v${installStatus.version}, need v1.1.2396+).`,
+src/components/DesktopHandoff.tsx:94:        setError(result.error ?? 'Failed to open Claude Desktop')
+src/components/DesktopHandoff.tsx:105:          onDone('Session transferred to Claude Desktop', { display: 'system' })
+src/components/DesktopHandoff.tsx:141:    checking: 'Checking for Claude Desktop…',
+src/components/DesktopHandoff.tsx:143:    opening: 'Opening Claude Desktop…',
+src/components/DesktopHandoff.tsx:144:    success: 'Opening in Claude Desktop…',
+src/components/PackageManagerAutoUpdater.tsx:36: *               "upgrade", "--id", "Anthropic.ClaudeCode",
+src/components/PackageManagerAutoUpdater.tsx:60:        'Anthropic.ClaudeCode',
+src/components/PackageManagerAutoUpdater.tsx:76: *   winget   → `winget upgrade Anthropic.ClaudeCode`
+src/components/PackageManagerAutoUpdater.tsx:93:      return 'winget upgrade Anthropic.ClaudeCode'
+src/components/BypassPermissionsModeDialog.tsx:44:      title="WARNING: Claude Code running in Bypass Permissions mode"
+src/components/BypassPermissionsModeDialog.tsx:50:          In Bypass Permissions mode, Claude Code will not ask for your approval
+src/components/Passes/Passes.tsx:220:              ? `Share a free week of Claude Code with friends. If they love it and subscribe, you'll get ${formatCreditAmount(referrerReward)} of extra usage to keep building. `
+src/components/Passes/Passes.tsx:221:              : 'Share a free week of Claude Code with friends. '}
+src/components/LogoV2/ChannelsNotice.tsx:22:  getClaudeAIOAuthTokens,
+src/components/LogoV2/ChannelsNotice.tsx:59:        noAuth: !getClaudeAIOAuthTokens()?.accessToken,
+src/components/LogoV2/ChannelsNotice.tsx:129:        carries prompt injection risks. Restart Claude Code without {flag} to

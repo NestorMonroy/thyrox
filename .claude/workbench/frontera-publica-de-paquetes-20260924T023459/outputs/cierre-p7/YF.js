@@ -1,0 +1,1 @@
+function YF(e){if(e?.kind!=="task-notification")return e;return{kind:"task-notification",...e.subkind!==void 0&&{subkind:e.subkind},...e.fireReason!==void 0&&{fireReason:e.fireReason}}}

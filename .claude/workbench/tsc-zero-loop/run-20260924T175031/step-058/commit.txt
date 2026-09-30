@@ -1,0 +1,14 @@
+Use the canonical TaskStateBase in swarm
+
+swarm kept its own TaskStateBase with 8 of the canonical 11 fields,
+and type and status widened to string. The copy was justified by
+consumer reads, but startTime alone is read by five components, and
+the producer already fills all eleven through createTaskStateBase.
+The narrow copy broke the task state unions: isBackgroundTask could
+not narrow, and in_process_teammate fell out of the comparable types.
+
+The source adapter re-exports the canonical type, and swarm already
+depends on tool-registry, so it is now a type-only import of it.
+
+tsc: 2519 -> 2499 (accepted-net, 11 targets -> 2; 5 revealed, in the
+ledger).

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+51 |     expect(capabilityOverrideFromEnv('effort', 'claude-haiku-4-5')).toBeUndefined()
+52 |   })
+53 | 
+54 |   test('la última mención gana', () => {
+55 |     process.env[ENV] = 'fast_mode;-fast_mode'
+56 |     expect(capabilityOverrideFromEnv('fast_mode', 'x')).toBe(false)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:56:57)
+(fail) capabilityOverrideFromEnv (UYe) — THYROX_CODE_MODEL_CAPABILITIES > la última mención gana [0.29ms]
+
+ 10 pass
+ 1 fail
+ 28 expect() calls
+Ran 11 tests across 1 file. [78.00ms]

@@ -45,7 +45,7 @@ export function applyCoordinatorToolFilter(tools: Tools): Tools {
 export function mergeAndFilterTools(
   initialTools: Tools,
   assembled: Tools,
-  mode: ToolPermissionContext['mode'],
+  _mode: ToolPermissionContext['mode'],
 ): Tools {
   const [mcp, builtIn] = partition(
     uniqBy([...initialTools, ...assembled], 'name'),

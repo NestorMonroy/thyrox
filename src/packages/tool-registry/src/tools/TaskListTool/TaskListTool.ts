@@ -1,26 +1,12 @@
-/**
- * `TaskList` — el resumen de todas las tareas del listado.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/tools/TaskListTool/TaskListTool.ts`.
- * Ese árbol no declara licencia, así que el cuerpo se reimplementa y no se
- * copia. Porte COMPLETO.
- *
- * LA DECISIÓN QUE NO ES OBVIA: un bloqueante YA completado se retira del
- * `blockedBy` que se publica. Sin ese filtro una tarea seguiría reportándose
- * bloqueada por algo que terminó, y quien lea la lista no la tomaría — el
- * listado diría «esperá» sobre trabajo que ya está disponible.
- *
- * DIVERGENCIA DECLARADA: ninguna.
- */
 import { z } from 'zod/v4'
+import { buildTool, type ToolDef } from '../../Tool.js'
+import { lazySchema } from '../../utils/lazySchema.js'
 import {
   getTaskListId,
   isTodoV2Enabled,
   listTasks,
   TaskStatusSchema,
 } from '@thyrox/agent/tasks.js'
-import { buildTool, type ToolDef } from '../../Tool.js'
-import { lazySchema } from '../../utils/lazySchema.js'
 import { TASK_LIST_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, getPrompt } from './prompt.js'
 
@@ -77,23 +63,30 @@ export const TaskListTool = buildTool({
     return null
   },
   async call() {
-    const todas = (await listTasks(getTaskListId())).filter(
+    const taskListId = getTaskListId()
+
+    const allTasks = (await listTasks(taskListId)).filter(
       t => !t.metadata?._internal,
     )
 
-    const resueltas = new Set(
-      todas.filter(t => t.status === 'completed').map(t => t.id),
+    // Build a set of resolved task IDs for filtering
+    const resolvedTaskIds = new Set(
+      allTasks.filter(t => t.status === 'completed').map(t => t.id),
     )
 
-    const tasks = todas.map(task => ({
+    const tasks = allTasks.map(task => ({
       id: task.id,
       subject: task.subject,
       status: task.status,
       owner: task.owner,
-      blockedBy: task.blockedBy.filter(id => !resueltas.has(id)),
+      blockedBy: task.blockedBy.filter(id => !resolvedTaskIds.has(id)),
     }))
 
-    return { data: { tasks } }
+    return {
+      data: {
+        tasks,
+      },
+    }
   },
   mapToolResultToToolResultBlockParam(content, toolUseID) {
     const { tasks } = content as Output

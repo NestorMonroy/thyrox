@@ -19,6 +19,7 @@ from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_foreground_long_command.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
+assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
@@ -58,6 +59,36 @@ def test_the_background_discount_carries_its_own_weight():
     assert _detect("bash tests/run.sh & disown") is None
 
 
+def test_warns_on_the_suites_this_tree_actually_runs():
+    """Las suites de thyrox se invocan por su archivo, no por `pytest`.
+
+    Los cuatro comandos son los que corrieron en primer plano el 2026-09-29,
+    cada uno de varios minutos, sin que el detector dijera nada.
+    """
+    for command in (
+        'timeout 300 bash tests/session/test-headless-pool-worktree.sh 2>&1 | grep -E "FALLA|aserciones"',
+        "bash tests/session/test-item-worktree-orphans.sh 2>&1 | tail -14",
+        "PYTHONDONTWRITEBYTECODE=1 timeout 300 python3 tests/session/test_user_wiring.py 2>&1 | grep FALLO",
+        'timeout 300 bash tests/session/test-headless-pool.sh 2>&1 | grep -E "FALLA|aserciones"',
+    ):
+        aviso = _detect(command)
+        assert aviso is not None and "la suite" in aviso, command
+
+
+def test_a_suite_file_named_as_an_argument_stays_silent():
+    assert _detect("sed -n 1,40p tests/session/test-headless-pool.sh") is None
+    # Una ruta dentro de un texto entrecomillado es un dato, no una orden.
+    assert _detect("OLD='a' NEW='bash tests/session/test-x.sh' bash bin/replace_literal f") is None
+    assert _detect("bash bin/thyrox-bg start s --grace 0 -- bash tests/session/test-headless-pool.sh") is None
+
+
+def test_a_suite_named_inside_a_heredoc_body_stays_silent():
+    """El mensaje de commit que describió este arreglo disparó el aviso."""
+    command = ("git commit -q -F - -- src/x.py <<'EOF'\nThe detector only knew pytest, bun test,\n"
+               "npm test and jest. The suites here are invoked by their file.\nEOF")
+    assert _detect(command) is None
+
+
 def test_stays_silent_on_short_commands():
     assert _detect("git status --short") is None
     assert _detect("grep -rn pytest .claude/rules/") is None
@@ -71,10 +102,10 @@ def test_stays_silent_without_a_command():
 
 def test_the_dispatcher_registers_it():
     sys.path.insert(0, str(_MODULE.parent))
-    import pretooluse_dispatch as dispatch
+    import tool_use_preflight as preflight_hook
 
-    assert "detect_foreground_long_command" in dispatch.DETECTOR_NAMES
-    registry, missing = dispatch.build_registry(_MODULE.parent, dispatch.DETECTOR_NAMES)
+    assert "detect_foreground_long_command" in preflight_hook.DETECTOR_NAMES
+    registry, missing = preflight_hook.build_registry(_MODULE.parent, preflight_hook.DETECTOR_NAMES)
     assert not missing, missing
     assert any(name == "detect_foreground_long_command" for name, _ in registry)
 
@@ -100,3 +131,38 @@ if __name__ == "__main__":
             traceback.print_exc()
     print(f"resumen: {_failures} fallo(s)")
     raise SystemExit(1 if _failures else 0)
+
+
+def _payload_bg(command, background):
+    return {"tool_name": "Bash",
+            "tool_input": {"command": command, "run_in_background": background}}
+
+
+def test_warns_on_a_blocking_wait_in_the_foreground():
+    """Una espera ES un comando largo (directiva del ejecutor 2026-09-24).
+
+    `thyrox-bg wait` en primer plano bloqueo el turno varios minutos: el
+    detector lo eximia porque el comando nombraba el mecanismo.
+    """
+    for command in ("timeout 580 bash bin/thyrox-bg wait ts-completa",
+                    "bash bin/wait-jobs wait --timeout 1800",
+                    "bash src/session/bg.sh wait suite",
+                    "bash bin/marker_wait log.txt --pid 12"):
+        notice = gate.detect(_payload_bg(command, False))
+        assert notice and "espera" in notice.lower(), command
+
+
+def test_a_wait_sent_to_the_client_background_stays_silent():
+    assert gate.detect(_payload_bg("bash bin/thyrox-bg wait ts-completa", True)) is None
+
+
+def test_non_blocking_ledger_commands_stay_silent():
+    for command in ("bash bin/thyrox-bg status ts", "bash bin/wait-jobs status",
+                    "bash bin/thyrox-bg start x -- bash tests/run.sh"):
+        assert gate.detect(_payload_bg(command, False)) is None, command
+
+
+def test_a_wait_named_inside_a_heredoc_body_stays_silent():
+    """El cuerpo de un heredoc es un dato que se escribe, no una orden."""
+    command = "python3 - <<'PY'\nnota = 'usa wait-jobs wait'\nPY"
+    assert gate.detect(_payload_bg(command, False)) is None

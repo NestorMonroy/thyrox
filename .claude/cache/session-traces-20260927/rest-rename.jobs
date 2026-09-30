@@ -1,0 +1,22 @@
+bash bin/check_package_typecheck --strict --jobs 2 agent app-host bridge claude-for-chrome-mcp cli command-runtime computer-use-mcp config daemon headless-sdk ide mcp-runtime memory permission provider shell storage teleport tool-registry updater voice 
+cd src/packages/agent && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/app-host && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/bridge && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/claude-for-chrome-mcp && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/cli && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/command-runtime && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/computer-use-mcp && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/config && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/daemon && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/headless-sdk && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/ide && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/mcp-runtime && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/memory && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/permission && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/provider && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/shell && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/storage && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/teleport && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/tool-registry && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/updater && set -o pipefail && bun test 2>&1 | tail -25
+cd src/packages/voice && set -o pipefail && bun test 2>&1 | tail -25

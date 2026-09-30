@@ -30,8 +30,8 @@ import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 
 import { logEvent } from '@thyrox/local-observability'
 
 // Inline ant `VF9` (2643.js) here — pluginTelemetry.ts already implements
-// the same hash as `hashPluginId`, but it lives in @claude-code-how-works/tool-registry
-// which transitively depends on @claude-code-how-works/config. Importing it back would
+// the same hash as `hashPluginId`, but it lives in @thyrox/tool-registry
+// which transitively depends on @thyrox/config. Importing it back would
 // create a config↔tool-registry cycle. Keeping a 5-line duplicate of a pure
 // function is cheaper than adding a third package to host the shared helper.
 // The salt must stay identical to pluginTelemetry.ts:PLUGIN_ID_HASH_SALT —
@@ -58,37 +58,6 @@ export type CollisionEntry = {
   name: string
   /** Source label (e.g. 'user', 'project', 'managed', 'plugin', 'builtin'). */
   source: string
-}
-
-/**
- * Ant `yF9` — emit `tengu_plugin_folder_shadowed`. Call once per shadowed
- * folder (the loser, not the winner). Cheap — drops on the floor when
- * telemetry is disabled.
- *
- * Component-shadow detection (ant `sc9`) is not yet wired into the loader;
- * once it is, callers should invoke this helper from the loader path that
- * detects an explicit component list collocated with a standard folder.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _logFolderShadowed(opts: {
-  pluginName: string
-  marketplace: string | undefined
-  component: 'commands' | 'agents' | 'skills' | 'outputStyles' | 'hooks'
-}): void {
-  // Inline the redacted/hash twins ourselves — we can't import the full
-  // buildPluginTelemetryFields helper here without creating a config→
-  // tool-registry import cycle (pluginTelemetry depends on @claude-code-how-works/
-  // config/plugin/pluginIdentifier). The hashPluginId import is fine
-  // because it's a single pure function and doesn't transitively pull
-  // the config/plugin types graph back in.
-  logEvent('tengu_plugin_folder_shadowed', {
-    component:
-      opts.component as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    plugin_id_hash: hashItemName(
-      opts.pluginName,
-      opts.marketplace,
-    ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-  })
 }
 
 /**

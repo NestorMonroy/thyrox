@@ -1,0 +1,20 @@
+  ok   el ruido blanco NO se declara estructurado
+  ok   y su Q queda por debajo del critico
+  ok   el veredicto se llama «sin evidencia», no «aleatorio»
+  ok   una caminata aleatoria SI se declara estructurada
+  ok   su Q supera el critico por mucho
+  ok   la autocorrelacion de rezago 1 de una alternante es negativa
+  ok   con n pequeño la correccion de Ljung SI rechaza
+  ok   y el Box-Pierce llano sobre los MISMOS datos no rechazaria
+  ok   rehusa con cero rezagos
+  ok   rehusa con tantos rezagos como puntos
+  ok   rehusa con mas rezagos que puntos
+  ok   rehusa una serie de residuos demasiado corta
+  ok   el ajuste lineal sobre el sujeto real deja estructura
+  ok   aun con un R2 mediocre, el Q lo supera con holgura
+  ok   dos series con R2 casi igual dan veredictos OPUESTOS
+  ok   la de residuos en rampa es la estructurada
+  ok   y la de residuos sin memoria no lo es
+
+17 aprobada(s) · 0 fallida(s) (alcance medido: residual_structure.py)
+EXIT=0

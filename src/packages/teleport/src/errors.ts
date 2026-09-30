@@ -1,10 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/teleport/src/errors.ts` (30 líneas fuente,
- * 100% portado). Jerarquía de errores de teleport: una base con `code`
- * más tres subclases por dominio (selección de entorno, sincronización
- * de contexto, ejecución remota).
- */
-
 export class TeleportBaseError extends Error {
   readonly code: string
 

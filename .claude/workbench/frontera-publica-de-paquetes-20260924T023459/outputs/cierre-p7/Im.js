@@ -1,0 +1,1 @@
+function Im(){return p()&&!n().childSession}

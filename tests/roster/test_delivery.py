@@ -71,5 +71,23 @@ check("línea ilegible sola -> indecidible", delivery.UNDECIDABLE,
 check("transcript vacío -> indecidible", delivery.UNDECIDABLE,
       delivery.classify(""))
 
+print("4. Un error de API NO es una entrega")
+# Forma medida del binario 2.1.282 en cinco subagentes cortados por el límite
+# semanal: el cliente escribe el error como un mensaje `assistant` con un
+# bloque `text` y lo marca con `isApiErrorMessage`/`apiErrorStatus`. Leído
+# sólo por sus bloques, parecía un reporte final.
+error_429 = {"type": "assistant", "isApiErrorMessage": True, "apiErrorStatus": 429,
+             "error": "rate_limit",
+             "message": {"content": [{"type": "text",
+                                      "text": "You've hit your weekly limit"}]}}
+check("error 429 al cierre -> api_error, no entregó", delivery.API_ERROR,
+      delivery.classify(transcript(assistant("tool_use"), error_429)))
+check("error de API seguido de attachment sigue siendo api_error", delivery.API_ERROR,
+      delivery.classify(transcript(error_429, {"type": "attachment"})))
+check("api_error es uno de los desenlaces declarados", True,
+      delivery.API_ERROR in delivery.VERDICTS)
+check("un texto sin la marca sigue siendo entregó", delivery.DELIVERED,
+      delivery.classify(transcript({**error_429, "isApiErrorMessage": False})))
+
 print(f"\nresultado: {PASSED} de {PASSED + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)

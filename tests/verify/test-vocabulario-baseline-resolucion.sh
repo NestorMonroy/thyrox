@@ -56,7 +56,7 @@ mkdir -p "$TMP/huerfano/source"
 cp "$PROSA" "$TMP/huerfano/source/sujeto.rst"
 SALIDA="$(VOCAB_GATE_BASELINE="$TMP/no-existe.txt" python3 "$GATE" "$TMP/huerfano/source/sujeto.rst" 2>&1)"
 CODIGO=$?
-if [ "$CODIGO" -eq 2 ] && printf '%s' "$SALIDA" | grep -q "baseline"; then
+if [ "$CODIGO" -eq 2 ] && grep -q "baseline" <<<"$SALIDA"; then
   ok "rehusa con exit 2 y nombra el baseline ausente"
 else
   falla "rehuso sin baseline" "exit=$CODIGO — un 0 aqui seria un verde falso"
@@ -128,8 +128,8 @@ printf 'Sujeto\n======\n\nUna zzforma-que-solo-el-consumidor-declara y una corri
 SALIDA7="$( (cd "$TMP/consumidor" && python3 "$GATE" --strict --no-baseline "source/vetada.rst") 2>&1 )"
 CODIGO7=$?
 if [ "$CODIGO7" -eq 1 ] \
-   && printf '%s' "$SALIDA7" | grep -q 'corrida' \
-   && ! printf '%s' "$SALIDA7" | grep -q 'zzforma-que-solo-el-consumidor-declara'; then
+   && grep -q 'corrida' <<<"$SALIDA7" \
+   && ! grep -q 'zzforma-que-solo-el-consumidor-declara' <<<"$SALIDA7"; then
   ok "usa la lista canonica del proveedor e ignora la copia del consumidor"
 else
   falla "lista del proveedor" "exit=$CODIGO7 — marco la forma del consumidor, o no vio la canonica"
@@ -145,7 +145,7 @@ caso
 SALIDA8="$( VOCAB_GATE_FORBIDDEN="$TMP/no-existe/vetadas.txt" \
   python3 "$GATE" --no-baseline "$PROSA" 2>&1 )"
 CODIGO8=$?
-if [ "$CODIGO8" -eq 2 ] && printf '%s' "$SALIDA8" | grep -q "vocabulario_prohibido"; then
+if [ "$CODIGO8" -eq 2 ] && grep -q "vocabulario_prohibido" <<<"$SALIDA8"; then
   ok "rehusa con la lista declarada y ausente, y la nombra"
 else
   falla "rehuso sin lista" "exit=$CODIGO8 — un conteo aqui mediria un solo eje"

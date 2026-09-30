@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# THYROX — pre-push. Defensa SECUNDARIA de TASK-THYROX-0629.
+#
+# El bloqueo PRIMARIO del invariante ("SESSION_CLOSED" implica que ningun
+# hallazgo durable de la sesion queda solo como fila) es el cierre de sesion —
+# ver `.claude/workbench/datos-d4-inventario-20260929T221846/README.md`, §8.
+# Este hook cubre lo que salio de ese ciclo de vida sin pasar por ahi: un
+# crash, una sesion que nunca cerro limpio. Es frontera de transporte, no
+# dueña del invariante, y por eso su regla es distinta de la del bloqueo
+# primario: si no puede medir, NO bloquea — afirmarlo sin evidencia seria el
+# defecto que `evidencia-antes-de-afirmar.md` prohibe, aplicado al reves (un
+# bloqueo sin medicion en vez de un veredicto sin medicion).
+#
+# THYROX no tenia hook de pre-push, asi que aqui no hay conducta previa que
+# romper — se estrena junto con el gate que corre.
+#
+# Escape hatch: `git push --no-verify`.
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+GATE="$ROOT/bin/check_finding_id_unique"
+
+if [[ ! -x "$GATE" ]]; then
+    echo "pre-push: $GATE no encontrado — la defensa secundaria no corrio." >&2
+    echo "  NO se bloquea: es secundaria, el bloqueo primario es el cierre de sesion." >&2
+    exit 0
+fi
+
+# El corpus del consumidor se resuelve por la MISMA via que ya usa el gate
+# (src/paths/reach.py, tal como lo consulta su propia suite en
+# test_the_real_padding_collisions_are_seen): "docs" es kaupamex-docs, de
+# donde salen los .rst y el baseline. THYROX_ROOT se fija al repo que se
+# esta empujando, no al que la sesion haya declarado antes: bin/ resuelve el
+# interprete y el PYTHONPATH contra ESE arbol.
+export THYROX_ROOT="$ROOT"
+export PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+CONSUMER="$(python3 -c "
+import sys
+from paths import reach
+try:
+    path = reach.root('docs')
+except Exception as exc:
+    print(f'no se pudo resolver el corpus del consumidor (docs): {exc}', file=sys.stderr)
+    raise SystemExit(1)
+print(path)
+")"
+STATUS=$?
+
+if [[ $STATUS -ne 0 || -z "$CONSUMER" || ! -d "$CONSUMER" ]]; then
+    echo "pre-push: corpus del consumidor no alcanzable${CONSUMER:+ ($CONSUMER)} —" >&2
+    echo "  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;" >&2
+    echo "  tampoco se bloquea, porque es secundaria (README D4-A, §8)." >&2
+    exit 0
+fi
+
+if ! (cd "$CONSUMER" && "$GATE" --strict); then
+    echo >&2
+    echo "pre-push: el push se detiene. Hay hallazgo(s) del store sin su .rst" >&2
+    echo "  fuera del baseline, en $CONSUMER." >&2
+    echo "  Escribir el .rst (bin/finding rst) o congelar la entrada como deuda" >&2
+    echo "  heredada en su baseline si corresponde." >&2
+    exit 1
+fi
+
+exit 0

@@ -1,13 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/structuredEvents.behavior.test.ts`
- * (431 líneas fuente, 100 % portado).
- *
- * Mismo ajuste que `logAuthEvent.behavior.test.ts`/`logOTelEvent.behavior.test.ts`:
- * `setEventLogger` de `@claude-code-how-works/app-host/bootstrap/state.js`
- * se sustituye por `setGetEventLoggerFn` (punto de inyección, Categoría 2)
- * de `internal/pendingCrossPackageDeps.ts`.
- */
-
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import {
@@ -27,14 +17,13 @@ import {
 } from '../telemetry/structuredEvents.ts'
 import {
   getEventLogger,
-  setGetEventLoggerFn,
-  type EventLoggerLike,
-} from '../internal/pendingCrossPackageDeps.ts'
+  setEventLogger,
+} from '@thyrox/app-host/bootstrap/state.js'
 
 /**
- * Puerto pin de los helpers tipados de eventos OTel de ant 2642.js /
- * 2643.js / 2822.js / 2911.js / 2914.js / 4054.js / 5059.js. Cada helper
- * envuelve logOTelEvent con la forma exacta de metadata que emite ant.
+ * Pin port of ant 2642.js / 2643.js / 2822.js / 2911.js / 2914.js /
+ * 4054.js / 5059.js typed OTel event helpers. Each helper wraps
+ * logOTelEvent with the exact metadata shape ant emits.
  */
 
 type EmittedLog = {
@@ -44,7 +33,10 @@ type EmittedLog = {
   attributes: Record<string, unknown>
 }
 
-function makeFakeLogger(): EventLoggerLike & { emitted: EmittedLog[] } {
+function makeFakeLogger(): {
+  emitted: EmittedLog[]
+  emit: (l: EmittedLog) => void
+} {
   const emitted: EmittedLog[] = []
   return {
     emitted,
@@ -61,13 +53,13 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  setGetEventLoggerFn(() => originalLogger)
+  setEventLogger(originalLogger as never)
 })
 
 describe('logCompactionEvent (ant ZzH 2642.js)', () => {
-  test('body=claude_code.compaction, success serializado como string', async () => {
+  test('body=claude_code.compaction, success serialised as string', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logCompactionEvent({
       trigger: 'manual',
       success: true,
@@ -84,9 +76,9 @@ describe('logCompactionEvent (ant ZzH 2642.js)', () => {
     expect(a['post_tokens']).toBe('8000')
   })
 
-  test('duration_ms es Math.round de durationMs (coincide con ant)', async () => {
+  test('duration_ms is Math.round of durationMs (matches ant)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logCompactionEvent({
       trigger: 'auto',
       success: true,
@@ -95,9 +87,9 @@ describe('logCompactionEvent (ant ZzH 2642.js)', () => {
     expect(fake.emitted[0]!.attributes['duration_ms']).toBe('1235')
   })
 
-  test('pre/post tokens opcionales → ausentes de attributes cuando undefined', async () => {
+  test('pre/post tokens optional → not in attributes when undefined', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logCompactionEvent({
       trigger: 'auto',
       success: false,
@@ -112,47 +104,47 @@ describe('logCompactionEvent (ant ZzH 2642.js)', () => {
 })
 
 describe('logInternalErrorEvent (ant LF9 2642.js)', () => {
-  test('emite con error_name desde el constructor cuando el Error es genérico', async () => {
+  test('emits with error_name from constructor when generic Error', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     class CustomError extends Error {
-      override name = 'Error' // genérico a propósito, para probar el fallback
+      override name = 'Error' // intentionally generic to test fallback
     }
     logInternalErrorEvent(new CustomError('boom'))
     await new Promise(r => setTimeout(r, 20))
     expect(fake.emitted[0]?.attributes['error_name']).toBe('CustomError')
   })
 
-  test('error_code pasa cuando coincide /^[A-Z][A-Z0-9_]*$/', async () => {
+  test('error_code passes through when /^[A-Z][A-Z0-9_]*$/', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     const e = Object.assign(new Error('x'), { code: 'ENOENT' })
     logInternalErrorEvent(e)
     await new Promise(r => setTimeout(r, 20))
     expect(fake.emitted[0]?.attributes['error_code']).toBe('ENOENT')
   })
 
-  test('error_code queda undefined cuando no coincide con la regex estricta', async () => {
+  test('error_code undefined when not matching the strict regex', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     const e = Object.assign(new Error('x'), { code: 'lowercase' })
     logInternalErrorEvent(e)
     await new Promise(r => setTimeout(r, 20))
     expect(fake.emitted[0]?.attributes['error_code']).toBeUndefined()
   })
 
-  test('el guard de reentrancia previene recursión infinita', () => {
+  test('reentrancy guard prevents infinite recursion', () => {
     let depth = 0
-    setGetEventLoggerFn(() => ({
+    setEventLogger({
       emit: () => {
         depth++
         if (depth > 5) throw new Error('hard stop — guard failed')
-        // simula que el propio emit lanza, lo que el código llamador
-        // podría atrapar y volver a llamar al reportador de errores
+        // simulate emit itself throwing, which calling code could
+        // then trap and re-call the error reporter
         throw new Error('emit failed')
       },
-    }))
-    // Si el guard funciona, no hay recursión infinita; debe retornar rápido.
+    } as never)
+    // If guard works, no infinite recursion; should return quickly.
     expect(() => {
       logInternalErrorEvent(new Error('outer'))
     }).not.toThrow()
@@ -160,27 +152,27 @@ describe('logInternalErrorEvent (ant LF9 2642.js)', () => {
 })
 
 describe('logAtMentionEvent (ant Ak 2642.js)', () => {
-  test('mention_type + success (cast a string)', async () => {
+  test('mention_type + success (string-cast)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logAtMentionEvent({ mentionType: 'file', success: true })
     expect(fake.emitted[0]!.body).toBe('claude_code.at_mention')
     expect(fake.emitted[0]!.attributes['mention_type']).toBe('file')
     expect(fake.emitted[0]!.attributes['success']).toBe('true')
   })
 
-  test('success=false serializado como "false"', async () => {
+  test('success=false serialised as "false"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logAtMentionEvent({ mentionType: 'directory', success: false })
     expect(fake.emitted[0]!.attributes['success']).toBe('false')
   })
 })
 
 describe('logPermissionModeChangeEvent (ant Ts 2642.js)', () => {
-  test('emite con from_mode + to_mode + trigger opcional', async () => {
+  test('emits with from_mode + to_mode + optional trigger', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logPermissionModeChangeEvent({
       from: 'default',
       to: 'plan',
@@ -192,25 +184,25 @@ describe('logPermissionModeChangeEvent (ant Ts 2642.js)', () => {
     expect(a['trigger']).toBe('shift+tab')
   })
 
-  test('from === to → no se emite evento (transición no-op)', async () => {
+  test('from === to → no event emitted (no-op transition)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logPermissionModeChangeEvent({ from: 'plan', to: 'plan' })
     expect(fake.emitted.length).toBe(0)
   })
 
-  test('trigger se omite cuando es undefined', async () => {
+  test('trigger omitted when undefined', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logPermissionModeChangeEvent({ from: 'default', to: 'plan' })
     expect('trigger' in fake.emitted[0]!.attributes).toBe(false)
   })
 })
 
 describe('logMcpServerConnectionEvent (ant QN8 4054.js)', () => {
-  test('campos PII gateados por includeIdentifyingFields=false (default)', async () => {
+  test('PII fields gated by includeIdentifyingFields=false (default)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logMcpServerConnectionEvent({
       serverName: 'my-server',
       transportType: 'stdio',
@@ -227,9 +219,9 @@ describe('logMcpServerConnectionEvent (ant QN8 4054.js)', () => {
     expect(a['duration_ms']).toBe('250')
   })
 
-  test('campos PII fluyen cuando includeIdentifyingFields=true', async () => {
+  test('PII fields flow through when includeIdentifyingFields=true', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logMcpServerConnectionEvent({
       serverName: 'my-server',
       transportType: 'stdio',
@@ -246,9 +238,9 @@ describe('logMcpServerConnectionEvent (ant QN8 4054.js)', () => {
     expect(a['error_code']).toBe('ETIMEDOUT')
   })
 
-  test('transport_type usa "stdio" por defecto cuando no se provee', async () => {
+  test('transport_type defaults to "stdio" when not provided', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logMcpServerConnectionEvent({
       serverName: 's',
       serverScope: 'user',
@@ -260,9 +252,9 @@ describe('logMcpServerConnectionEvent (ant QN8 4054.js)', () => {
 })
 
 describe('logSystemPromptEvent (ant 2911.js)', () => {
-  test('el flag truncated se emite como string "true" cuando es true', async () => {
+  test('truncated flag emitted as "true" string when true', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logSystemPromptEvent({
       hash: 'abc123',
       content: 'You are Claude...',
@@ -276,9 +268,9 @@ describe('logSystemPromptEvent (ant 2911.js)', () => {
     expect(a['system_prompt_truncated']).toBe('true')
   })
 
-  test('truncated=false → campo omitido (coincide con el ternario de ant)', async () => {
+  test('truncated=false → field omitted (matches ant ternary)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logSystemPromptEvent({
       hash: 'x',
       content: 'y',
@@ -290,9 +282,9 @@ describe('logSystemPromptEvent (ant 2911.js)', () => {
 })
 
 describe('logApiRetriesExhaustedEvent (ant 2914.js)', () => {
-  test('el payload completo hace roundtrip con los totales convertidos a string', async () => {
+  test('full payload roundtrips with stringified totals', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logApiRetriesExhaustedEvent({
       model: 'claude-opus-4-7',
       error: 'rate_limit',
@@ -312,9 +304,9 @@ describe('logApiRetriesExhaustedEvent (ant 2914.js)', () => {
     expect(a['effort']).toBe('high')
   })
 
-  test('campos opcionales omitidos cuando son undefined', async () => {
+  test('optional fields omitted when undefined', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logApiRetriesExhaustedEvent({
       model: 'claude-opus-4-7',
       error: 'network',
@@ -330,9 +322,9 @@ describe('logApiRetriesExhaustedEvent (ant 2914.js)', () => {
 })
 
 describe('logSkillActivatedEvent (ant 2643.js)', () => {
-  test('el nombre de un skill oficial fluye verbatim', async () => {
+  test('official skill name flows through verbatim', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logSkillActivatedEvent({
       skillName: 'pdf-skill',
       invocationTrigger: 'autonomous',
@@ -343,9 +335,9 @@ describe('logSkillActivatedEvent (ant 2643.js)', () => {
     expect(fake.emitted[0]!.attributes['skill.name']).toBe('pdf-skill')
   })
 
-  test('el nombre de un skill NO-oficial se redacta como "custom_skill"', async () => {
+  test('NON-official skill name redacted as "custom_skill"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logSkillActivatedEvent({
       skillName: 'my-secret-skill',
       invocationTrigger: 'autonomous',
@@ -354,9 +346,9 @@ describe('logSkillActivatedEvent (ant 2643.js)', () => {
     expect(fake.emitted[0]!.attributes['skill.name']).toBe('custom_skill')
   })
 
-  test('plugin.name + marketplace.name sólo cuando es oficial', async () => {
+  test('plugin.name + marketplace.name only when official', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logSkillActivatedEvent({
       skillName: 'x',
       invocationTrigger: 'autonomous',
@@ -371,9 +363,9 @@ describe('logSkillActivatedEvent (ant 2643.js)', () => {
 })
 
 describe('logPluginInstalledEvent (ant 2822.js)', () => {
-  test('marketplace.is_official siempre presente (cast a string)', async () => {
+  test('marketplace.is_official always present (string-cast)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logPluginInstalledEvent({
       pluginName: 'x',
       isOfficialMarketplace: true,
@@ -381,9 +373,9 @@ describe('logPluginInstalledEvent (ant 2822.js)', () => {
     expect(fake.emitted[0]!.attributes['marketplace.is_official']).toBe('true')
   })
 
-  test('la identidad del plugin se gatea con includeIdentifyingFields', async () => {
+  test('plugin identity gated on includeIdentifyingFields', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logPluginInstalledEvent({
       pluginName: 'x',
       pluginVersion: '1.0',
@@ -397,9 +389,9 @@ describe('logPluginInstalledEvent (ant 2822.js)', () => {
     expect(a['marketplace.name']).toBe('m')
   })
 
-  test('PII suprimida por defecto', async () => {
+  test('PII suppressed by default', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logPluginInstalledEvent({
       pluginName: 'x',
       isOfficialMarketplace: false,
@@ -410,9 +402,9 @@ describe('logPluginInstalledEvent (ant 2822.js)', () => {
 })
 
 describe('logFeedbackSurveyEvent (ant 5059.js)', () => {
-  test('evento appeared con el payload completo', async () => {
+  test('appeared event with full payload', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logFeedbackSurveyEvent({
       eventType: 'appeared',
       appearanceId: 'a1',
@@ -426,9 +418,9 @@ describe('logFeedbackSurveyEvent (ant 5059.js)', () => {
     expect(a['enabled_via_override']).toBe('true')
   })
 
-  test('enabled_via_override omitido cuando no se provee', async () => {
+  test('enabled_via_override omitted when not provided', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    setEventLogger(fake as never)
     await logFeedbackSurveyEvent({
       eventType: 'submitted',
       appearanceId: 'a1',

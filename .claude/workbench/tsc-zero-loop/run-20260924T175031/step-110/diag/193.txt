@@ -1,0 +1,39 @@
+src/packages/repl/src/components/IdeOnboardingDialog.tsx(93,45): error TS2538: Type '{}' cannot be used as an index type.
+  --- código src/packages/repl/src/components/IdeOnboardingDialog.tsx:83-103 ---
+     83            Press Enter to continue
+     84          </Text>
+     85        </Box>
+     86      </>
+     87    )
+     88  }
+     89  
+     90  export function hasIdeOnboardingDialogBeenShown(): boolean {
+     91    const config = getGlobalConfig()
+     92    const terminal = envDynamic.terminal || 'unknown'
+     93>   return config.hasIdeOnboardingBeenShown?.[terminal] === true
+     94  }
+     95  
+     96  function markDialogAsShown(): void {
+     97    if (hasIdeOnboardingDialogBeenShown()) {
+     98      return
+     99    }
+    100    const terminal = envDynamic.terminal || 'unknown'
+    101    saveGlobalConfig(current => ({
+    102      ...current,
+    103      hasIdeOnboardingBeenShown: {
+src/packages/repl/src/components/IdeOnboardingDialog.tsx(105,7): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.
+  --- código src/packages/repl/src/components/IdeOnboardingDialog.tsx:95-108 ---
+     95  
+     96  function markDialogAsShown(): void {
+     97    if (hasIdeOnboardingDialogBeenShown()) {
+     98      return
+     99    }
+    100    const terminal = envDynamic.terminal || 'unknown'
+    101    saveGlobalConfig(current => ({
+    102      ...current,
+    103      hasIdeOnboardingBeenShown: {
+    104        ...current.hasIdeOnboardingBeenShown,
+    105>       [terminal]: true,
+    106      },
+    107    }))
+    108  }

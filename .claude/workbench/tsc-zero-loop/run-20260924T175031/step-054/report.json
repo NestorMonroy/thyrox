@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2578, "total_final": 2550, "tsc_runs": 1, "accepted": ["agent:settings-sandbox-schema"], "files_kept": ["src/packages/config/settings/types.ts"], "outcomes": {"agent:settings-sandbox-schema": "accepted-net"}}

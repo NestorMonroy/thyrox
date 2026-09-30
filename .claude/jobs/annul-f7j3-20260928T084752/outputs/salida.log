@@ -1,0 +1,49 @@
+== 1: serve sin publicar su URL
+   (src/commands/mitm-commands.ts)
+(fail) thyrox mitm serve runs through the real launcher and stops on SIGTERM [1823.01ms]
+(fail) serve publishes its URL in the data dir while it serves, and withdraws it on stop [4.66ms]
+(fail) a privileged verb reaches the API that serve published [3.66ms]
+ 23 pass
+ 3 fail
+== 2: serve sin retirar su URL
+   (src/commands/mitm-commands.ts)
+(fail) thyrox mitm serve runs through the real launcher and stops on SIGTERM [2207.29ms]
+(fail) serve publishes its URL in the data dir while it serves, and withdraws it on stop [5.03ms]
+ 24 pass
+ 2 fail
+== 3: los verbos privilegiados fuera de la tabla de modos
+   (src/commands/mitm-commands.ts)
+(fail) a privileged verb reaches the API that serve published [3.73ms]
+(fail) a privileged verb without a running API refuses, naming serve [0.81ms]
+ 24 pass
+ 2 fail
+== 4: los verbos privilegiados fuera del programa completo
+   (src/commands/mitm-commands.ts)
+(fail) the full program exposes every privileged verb under mitm [0.96ms]
+ 25 pass
+ 1 fail
+== 5: la contraseña con el resto de stdin
+   (src/commands/mitm/stdinSecret.ts)
+(fail) the sudo password is the first stdin line, without its line break [3.82ms]
+ 25 pass
+ 1 fail
+== 6: la contraseña aceptada por argv
+   (src/commands/mitm/privilegedVerbs.ts)
+(fail) the sudo password travels only from stdin into the body [1.57ms]
+ 25 pass
+ 1 fail
+== 7: sin API en marcha, llamar igual
+   (src/commands/mitm/privilegedVerbs.ts)
+(fail) without a running API the verb refuses, naming serve [0.52ms]
+(fail) a privileged verb without a running API refuses, naming serve [1.32ms]
+ 24 pass
+ 2 fail
+== restaurado
+ M src/packages/cli/src/commands/mitm-commands.ts
+?? src/packages/cli/src/commands/mitm/apiEndpoint.ts
+?? src/packages/cli/src/commands/mitm/privilegedVerbs.ts
+?? src/packages/cli/src/commands/mitm/remoteApi.ts
+?? src/packages/cli/src/commands/mitm/stdinSecret.ts
+ 26 pass
+ 0 fail
+__BG_EXIT__=0

@@ -50,9 +50,7 @@ export function parseArgs(argv = []) {
  * El transcript DEL SUBAGENTE llega en `agent_transcript_path`;
  * `transcript_path` es el de la SESION PRINCIPAL, que el harness mete en todo
  * payload. Leer solo el segundo no vacia el dato: lo llena con el uso de la
- * sesion entera — o falla si el payload no lo trae (H-DOCS-198: medido, el
- * disparo real del 2026-08-18 no apendo nada mientras `register_agent_session`,
- * que ya preferia `agent_transcript_path`, si capturo el uso del mismo evento).
+ * sesion entera — o falla si el payload no lo trae (H-DOCS-198).
  */
 export function transcriptPath(payload = {}) {
   return payload.agent_transcript_path || payload.transcript_path || null
@@ -120,7 +118,7 @@ export function lastAssistantText(lines = []) {
 /**
  * Coste ponderado en tokens equivalentes de entrada.
  *
- * H-DOCS-1008 (2026-09-02): estos pesos son las RAZONES DE UN SOLO TIER
+ * H-DOCS-1008: estos pesos son las RAZONES DE UN SOLO TIER
  * (`tier_3_15`: 3 / 15 / 3.75 / 0.3) aplicadas a todo modelo. Se quedan porque
  * `equiv_cost` es una columna del store que se compara entre 800+ filas y
  * cambiar la formula romperia esa comparacion — pero NO son un precio. El USD

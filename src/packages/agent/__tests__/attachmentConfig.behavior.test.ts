@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/attachmentConfig.behavior.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 
 import {
@@ -13,12 +10,12 @@ import {
 
 /**
  * Pin attachment-cadence and memory-surfacing constants. These govern
- * how often Claude Code re-injects system reminders mid-session:
+ * how often thyrox re-injects system reminders mid-session:
  * - Too frequent → context bloat (every turn carrying reminder bytes)
  * - Too rare → model "forgets" mode constraints (plan-mode escapes)
  *
  * Memory byte caps are load-bearing safety limits:
- * - MAX_MEMORY_BYTES caps per-file injection (prevent 100KB CLAUDE.md
+ * - MAX_MEMORY_BYTES caps per-file injection (prevent 100KB THYROX.md
  *   from busting the context window in one turn)
  * - MAX_SESSION_BYTES caps cumulative surfacing across a long session
  *   so the prefetcher doesn't keep finding "more relevant" memories

@@ -21,6 +21,7 @@ import { formatDuration } from '@thyrox/output/formatters'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import { toInternalMessages } from '@thyrox/agent/messagesMappers.js'
 import { EMPTY_LOOKUPS, normalizeMessages } from '@thyrox/agent/messages.js'
+import type { NormalizedMessage } from '@thyrox/agent/messageShapes'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { teleportResumeCodeSession } from '@thyrox/tool-registry/teleport.js'
 import { Select } from '../CustomSelect/select.js'
@@ -30,6 +31,7 @@ import {
   formatReviewStageCounts,
   RemoteSessionProgress,
 } from './RemoteSessionProgress.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   session: DeepImmutable<RemoteAgentTaskState>
@@ -49,7 +51,7 @@ type Props = {
 function formatToolUseSummary(name: string, input: unknown): string {
   // plan_ready phase is only reached via ExitPlanMode tool
   if (name === EXIT_PLAN_MODE_V2_TOOL_NAME) {
-    return 'Review the plan in Claude Code on the web'
+    return `Review the plan in ${PRODUCT_NAME} on the web`
   }
   if (!input || typeof input !== 'object') return name
   // AskUserQuestion: show the question text as a CTA, not the tool name.
@@ -159,7 +161,7 @@ function UltraplanSessionDetail({
       >
         <Box flexDirection="column" gap={1}>
           <Text dimColor>
-            This will terminate the Claude Code on the web session.
+            This will terminate the {PRODUCT_NAME} on the web session.
           </Text>
           <Select
             options={[
@@ -215,7 +217,7 @@ function UltraplanSessionDetail({
         <Select
           options={[
             {
-              label: 'Review in Claude Code on the web',
+              label: `Review in ${PRODUCT_NAME} on the web`,
               value: 'open' as const,
             },
             ...(onKill && running
@@ -379,11 +381,11 @@ function ReviewSessionDetail({
 
   const options: { label: string; value: MenuAction }[] = completed
     ? [
-        { label: 'Open in Claude Code on the web', value: 'open' },
+        { label: `Open in ${PRODUCT_NAME} on the web`, value: 'open' },
         { label: 'Dismiss', value: 'dismiss' },
       ]
     : [
-        { label: 'Open in Claude Code on the web', value: 'open' },
+        { label: `Open in ${PRODUCT_NAME} on the web`, value: 'open' },
         ...(onKill && running
           ? [{ label: 'Stop ultrareview', value: 'stop' as const }]
           : []),
@@ -474,8 +476,15 @@ export function RemoteSessionDetailDialog({
   // Ultraplan/review sessions never read this — skip the normalize work for them.
   const lastMessages = useMemo(() => {
     if (session.isUltraplan || session.isRemoteReview) return []
+    // `normalizeMessages` nunca produce estos dos tipos en la practica -su
+    // `switch` los deja pasar por el `default`, y el log de origen no los
+    // trae-, pero el tipo de retorno los incluye; se estrechan aqui para que
+    // calcen con el union mas angosto que exige el prop `message` de `Message`.
     return normalizeMessages(toInternalMessages(session.log as SDKMessage[]))
-      .filter(_ => _.type !== 'progress')
+      .filter(
+        (_): _ is Exclude<NormalizedMessage, { type: 'progress' | 'grouped_tool_use' | 'collapsed_read_search' }> =>
+          _.type !== 'progress' && _.type !== 'grouped_tool_use' && _.type !== 'collapsed_read_search',
+      )
       .slice(-3)
   }, [session])
 

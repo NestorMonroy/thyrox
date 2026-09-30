@@ -21,6 +21,7 @@
  * anfitrión real lo llama. Eso se mide al portar cada consumidor, no aquí.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
+import type { HostTask } from '../src/types/deps.ts'
 
 const RUTA = '../src/adapters/createSwarmHostDeps.ts'
 const RUTA_RUNTIME = '../src/adapters/appRuntime.ts'
@@ -149,7 +150,7 @@ describe('createSwarmHostDeps — el estado de tarea colapsa de 5 a 3', () => {
     })
     const { createSwarmHostDeps } = await import(RUTA)
     const tareas = await createSwarmHostDeps().tasks.listTasks('lista-1')
-    expect(tareas.map(t => t.status)).toEqual([
+    expect(tareas.map((t: HostTask) => t.status)).toEqual([
       'in_progress', 'in_progress', 'in_progress',
     ])
   })
@@ -163,7 +164,7 @@ describe('createSwarmHostDeps — el estado de tarea colapsa de 5 a 3', () => {
     })
     const { createSwarmHostDeps } = await import(RUTA)
     const tareas = await createSwarmHostDeps().tasks.listTasks('lista-1')
-    expect(tareas.map(t => t.status)).toEqual(['pending', 'completed'])
+    expect(tareas.map((t: HostTask) => t.status)).toEqual(['pending', 'completed'])
   })
 
   test('blockedBy ausente se normaliza a lista vacía, no a undefined', async () => {

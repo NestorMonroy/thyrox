@@ -1,0 +1,1 @@
+function pTo(e){let n=RR(e);if(n===-1)return e;let r=e.substring(0,n),s=M()==="windows"?Math.max(r.lastIndexOf("/"),r.lastIndexOf("\\")):r.lastIndexOf("/");if(s===-1)return".";return r.substring(0,s)||"/"}

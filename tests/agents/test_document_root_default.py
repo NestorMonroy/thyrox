@@ -16,7 +16,6 @@ el 2—. El 1 mide la bandera explicita, que ningun default afecta.
 from __future__ import annotations
 
 import importlib.util
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -36,6 +35,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 
 spec = importlib.util.spec_from_file_location("agent_store", HERE / "src" / "agents" / "agent_store.py")
+assert spec is not None and spec.loader is not None
 store = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(store)
 

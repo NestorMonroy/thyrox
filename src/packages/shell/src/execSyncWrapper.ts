@@ -1,31 +1,22 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/execSyncWrapper.ts`.
- *
- * Envoltorio de `execSync` con logging de operaciones lentas. Usar en
- * vez de `execSync` de `node:child_process` directo para detectar
- * problemas de rendimiento.
- *
- * @todo Migrar a los llamadores al camino asíncrono cuando sea posible.
- * `execSync` bloquea el event loop; el camino async vive en
- * `execFileNoThrow`.
- *
- * @example
- * import { execSync } from './execSyncWrapper.js'
- * const result = execSync('git status', { encoding: 'utf8' })
- *
- * Porte COMPLETO: las cuatro sobrecargas de tipo y la implementación de
- * la fuente están presentes.
- *
- * @module
- */
 import {
   type ExecSyncOptions,
   type ExecSyncOptionsWithBufferEncoding,
   type ExecSyncOptionsWithStringEncoding,
   execSync as nodeExecSync,
-} from 'node:child_process'
+} from 'child_process'
 import { slowLogging } from '@thyrox/local-observability/slowOperations.js'
 
+/**
+ * Wrapped execSync with slow-operation logging.
+ * Use this instead of child_process execSync directly to detect performance issues.
+ *
+ * @todo Migrate callers to async alternatives where possible. Sync exec
+ * blocks the event loop; the async path lives in `execFileNoThrow`.
+ *
+ * @example
+ * import { execSync } from './execSyncWrapper.js'
+ * const result = execSync('git status', { encoding: 'utf8' })
+ */
 export function execSync(command: string): Buffer
 export function execSync(
   command: string,

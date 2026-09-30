@@ -1,0 +1,35 @@
+
+src/packages/config/__tests__/pluginIdentifier.test.ts:
+147 |     expect(isOfficialMarketplaceName('agent-skills')).toBe(true)
+148 |   })
+149 | 
+150 |   test('case-insensitive matching (CLAUDE-CODE-PLUGINS → true)', () => {
+151 |     // The check uses `.toLowerCase()`. Verify upstream/uppercase variants.
+152 |     expect(isOfficialMarketplaceName('CLAUDE-CODE-PLUGINS')).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/pluginIdentifier.test.ts:152:62)
+(fail) isOfficialMarketplaceName — security boundary > case-insensitive matching (CLAUDE-CODE-PLUGINS → true) [0.20ms]
+151 |     // The check uses `.toLowerCase()`. Verify upstream/uppercase variants.
+152 |     expect(isOfficialMarketplaceName('CLAUDE-CODE-PLUGINS')).toBe(true)
+153 |   })
+154 | 
+155 |   test('mixed case accepted', () => {
+156 |     expect(isOfficialMarketplaceName('Claude-Code-Plugins')).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/pluginIdentifier.test.ts:156:62)
+(fail) isOfficialMarketplaceName — security boundary > mixed case accepted [0.04ms]
+
+ 36 pass
+ 2 fail
+ 39 expect() calls
+Ran 38 tests across 1 file. [163.00ms]

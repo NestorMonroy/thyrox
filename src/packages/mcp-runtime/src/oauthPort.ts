@@ -1,39 +1,11 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/oauthPort.ts` — sus 2
- * exportaciones, ninguna omitida.
- *
- * `getPlatform` NO se reapunta a `@claude-code-how-works/config/platform`
- * ni se deja como especificador colgante: a diferencia de la mayoría de
- * los imports cruzados de este porte, éste se EJECUTA al cargar el
- * módulo (`REDIRECT_PORT_RANGE` se calcula a nivel de módulo, no dentro
- * de una función) — dejarlo sin resolver rompe la carga del archivo
- * entero, no sólo una rama no ejercitada por los tests. `@thyrox/config`
- * tampoco declara `./platform` en su `exports` (sólo `.`, `./types`,
- * `./constants`, `./validation`, `./load`, `./env/utils`), así que no hay
- * a dónde reapuntar todavía.
- *
- * Se reimplementa un sustituto local mínimo, MISMO patrón y MISMO cuerpo
- * que ya usa `@thyrox/storage: src/internal/pendingCrossPackageDeps.ts`
- * para el mismo símbolo — no se importa de ahí porque ese archivo no está
- * exportado en el `package.json` de `@thyrox/storage` (es un detalle
- * interno de esa fuente, no una API de paquete). Distingue sólo
- * `macos`/`windows`/`linux` por `process.platform` (wsl colapsa a
- * `linux`, igual que en `storage`); ningún test de este porte ejercita la
- * rama wsl de la fuente original.
- *
- * Helpers del puerto de redirección OAuth — extraídos de `auth.ts` para
- * romper la dependencia circular `auth.ts` ↔ `xaaIdpLogin.ts`.
+ * OAuth redirect port helpers — extracted from auth.ts to break the
+ * auth.ts ↔ xaaIdpLogin.ts circular dependency.
  */
 import { createServer } from 'http'
+import { getPlatform } from '@thyrox/config/platform'
 
-function getPlatform(): 'macos' | 'windows' | 'linux' | 'unknown' {
-  if (process.platform === 'darwin') return 'macos'
-  if (process.platform === 'win32') return 'windows'
-  if (process.platform === 'linux') return 'linux'
-  return 'unknown'
-}
-
-// El rango dinámico de puertos de Windows 49152-65535 está reservado.
+// Windows dynamic port range 49152-65535 is reserved
 const REDIRECT_PORT_RANGE =
   getPlatform() === 'windows'
     ? { min: 39152, max: 49151 }
@@ -41,11 +13,10 @@ const REDIRECT_PORT_RANGE =
 const REDIRECT_PORT_FALLBACK = 3118
 
 /**
- * Construye una URI de redirección en localhost con el puerto dado y una
- * ruta fija `/callback`.
+ * Builds a redirect URI on localhost with the given port and a fixed `/callback` path.
  *
- * RFC 8252 sección 7.3 (OAuth para apps nativas): las URIs de redirección
- * loopback coinciden con cualquier puerto siempre que la ruta coincida.
+ * RFC 8252 Section 7.3 (OAuth for Native Apps): loopback redirect URIs match any
+ * port as long as the path matches.
  */
 export function buildRedirectUri(
   port: number = REDIRECT_PORT_FALLBACK,
@@ -59,11 +30,11 @@ function getMcpOAuthCallbackPort(): number | undefined {
 }
 
 /**
- * Busca un puerto disponible en el rango especificado para la
- * redirección OAuth. Usa selección aleatoria por seguridad.
+ * Finds an available port in the specified range for OAuth redirect
+ * Uses random selection for better security
  */
 export async function findAvailablePort(): Promise<number> {
-  // Primero intenta el puerto configurado, si se especificó.
+  // First, try the configured port if specified
   const configuredPort = getMcpOAuthCallbackPort()
   if (configuredPort) {
     return configuredPort
@@ -71,7 +42,7 @@ export async function findAvailablePort(): Promise<number> {
 
   const { min, max } = REDIRECT_PORT_RANGE
   const range = max - min + 1
-  const maxAttempts = Math.min(range, 100) // No intentar por siempre.
+  const maxAttempts = Math.min(range, 100) // Don't try forever
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const port = min + Math.floor(Math.random() * range)
@@ -86,12 +57,11 @@ export async function findAvailablePort(): Promise<number> {
       })
       return port
     } catch {
-      // Puerto ya en uso; se intenta el siguiente pick aleatorio / el
-      // fallback de abajo.
+      // Port already in use; try the next random pick / fallback below
     }
   }
 
-  // Si la selección aleatoria falló, intenta el puerto de fallback.
+  // If random selection failed, try the fallback port
   try {
     await new Promise<void>((resolve, reject) => {
       const testServer = createServer()

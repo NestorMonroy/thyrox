@@ -1,0 +1,30 @@
+base	15 pass, 0 fail	—
+trim-tools	14 pass, 1 fail	compressContext: Layer 1 — trims long tool messages
+prune-images	15 pass, 0 fail	—
+compress-thinking	13 pass, 2 fail	compressContext: Layer 2 — compresses thinking in old messages | compressContext: Layer 2 preserves prompt-format thinking tags in string content
+thinking-keep-last	15 pass, 0 fail	—
+purify	14 pass, 1 fail	compressContext: Layer 3 — drops old messages to fit
+purify-repair	15 pass, 0 fail	—
+notice-merge	15 pass, 0 fail	—
+notice-bytes	15 pass, 0 fail	—
+image-budget	15 pass, 0 fail	—
+document-budget	15 pass, 0 fail	—
+openai-image	15 pass, 0 fail	—
+claude-image	15 pass, 0 fail	—
+gemini-image	15 pass, 0 fail	—
+responses-placeholder	15 pass, 0 fail	—
+prune-target-stop	15 pass, 0 fail	—
+pairs-keep-last	15 pass, 0 fail	—
+pairs-orphan-result	15 pass, 0 fail	—
+pairs-empty-assistant	15 pass, 0 fail	—
+adjacency	15 pass, 0 fail	—
+strip-trailing	15 pass, 0 fail	—
+mistral	15 pass, 0 fail	—
+env-provider	0 pass, 1 fail	—
+env-default	15 pass, 0 fail	—
+env-reserve	15 pass, 0 fail	—
+env-keep	15 pass, 0 fail	—
+keep-zero	15 pass, 0 fail	—
+injected	15 pass, 0 fail	—
+name-hints	15 pass, 0 fail	—
+reserve-scale	14 pass, 1 fail	compressContext: default reserve scales down for smaller context windows

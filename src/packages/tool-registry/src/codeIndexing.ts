@@ -1,28 +1,22 @@
 /**
- * Puerto FIEL y COMPLETO de
- * `ccnmt: packages/tool-registry/src/codeIndexing.ts` (TASK #232, porte de
- * `tool-registry`). Sin dependencias.
+ * Utility functions for detecting code indexing tool usage.
  *
- * Funciones utilitarias para detectar el uso de herramientas de indexado de
- * código.
- *
- * Rastrea el uso de soluciones comunes de indexado de código como
- * Sourcegraph, Cody, etc., tanto vía comandos de CLI como vía integraciones
- * con servidores MCP.
+ * Tracks usage of common code indexing solutions like Sourcegraph, Cody, etc.
+ * both via CLI commands and MCP server integrations.
  */
 
 /**
- * Identificadores conocidos de herramientas de indexado de código.
- * Son los nombres normalizados que se usan en los eventos de analítica.
+ * Known code indexing tool identifiers.
+ * These are the normalized names used in analytics events.
  */
 export type CodeIndexingTool =
-  // Motores de búsqueda de código
+  // Code search engines
   | 'sourcegraph'
   | 'hound'
   | 'seagoat'
   | 'bloop'
   | 'gitloop'
-  // Asistentes de codificación con IA que indexan
+  // AI coding assistants with indexing
   | 'cody'
   | 'aider'
   | 'continue'
@@ -38,23 +32,23 @@ export type CodeIndexingTool =
   | 'qodo'
   | 'amazon-q'
   | 'gemini'
-  // Servidores MCP de indexado de código
+  // MCP code indexing servers
   | 'claude-context'
   | 'code-index-mcp'
   | 'local-code-search'
   | 'autodev-codebase'
-  // Proveedores de contexto
+  // Context providers
   | 'openctx'
 
 /**
- * Mapeo de prefijos de comando de CLI a herramientas de indexado de código.
- * La clave es el nombre del comando (la primera palabra del comando).
+ * Mapping of CLI command prefixes to code indexing tools.
+ * The key is the command name (first word of the command).
  */
 const CLI_COMMAND_MAPPING: Record<string, CodeIndexingTool> = {
-  // Ecosistema Sourcegraph
+  // Sourcegraph ecosystem
   src: 'sourcegraph',
   cody: 'cody',
-  // Asistentes de codificación con IA
+  // AI coding assistants
   aider: 'aider',
   tabby: 'tabby',
   tabnine: 'tabnine',
@@ -62,30 +56,29 @@ const CLI_COMMAND_MAPPING: Record<string, CodeIndexingTool> = {
   pieces: 'pieces',
   qodo: 'qodo',
   aide: 'aide',
-  // Herramientas de búsqueda de código
+  // Code search tools
   hound: 'hound',
   seagoat: 'seagoat',
   bloop: 'bloop',
   gitloop: 'gitloop',
-  // Asistentes de IA de proveedores cloud
+  // Cloud provider AI assistants
   q: 'amazon-q',
   gemini: 'gemini',
 }
 
 /**
- * Mapeo de patrones de nombre de servidor MCP a herramientas de indexado
- * de código. Los patrones se comparan sin distinguir mayúsculas contra el
- * nombre del servidor.
+ * Mapping of MCP server name patterns to code indexing tools.
+ * Patterns are matched case-insensitively against the server name.
  */
 const MCP_SERVER_PATTERNS: Array<{
   pattern: RegExp
   tool: CodeIndexingTool
 }> = [
-  // Ecosistema Sourcegraph
+  // Sourcegraph ecosystem
   { pattern: /^sourcegraph$/i, tool: 'sourcegraph' },
   { pattern: /^cody$/i, tool: 'cody' },
   { pattern: /^openctx$/i, tool: 'openctx' },
-  // Asistentes de codificación con IA
+  // AI coding assistants
   { pattern: /^aider$/i, tool: 'aider' },
   { pattern: /^continue$/i, tool: 'continue' },
   { pattern: /^github[-_]?copilot$/i, tool: 'github-copilot' },
@@ -104,12 +97,12 @@ const MCP_SERVER_PATTERNS: Array<{
   { pattern: /^amazon[-_]?q$/i, tool: 'amazon-q' },
   { pattern: /^gemini[-_]?code[-_]?assist$/i, tool: 'gemini' },
   { pattern: /^gemini$/i, tool: 'gemini' },
-  // Herramientas de búsqueda de código
+  // Code search tools
   { pattern: /^hound$/i, tool: 'hound' },
   { pattern: /^seagoat$/i, tool: 'seagoat' },
   { pattern: /^bloop$/i, tool: 'bloop' },
   { pattern: /^gitloop$/i, tool: 'gitloop' },
-  // Servidores MCP de indexado de código
+  // MCP code indexing servers
   { pattern: /^claude[-_]?context$/i, tool: 'claude-context' },
   { pattern: /^code[-_]?index[-_]?mcp$/i, tool: 'code-index-mcp' },
   { pattern: /^code[-_]?index$/i, tool: 'code-index-mcp' },
@@ -120,21 +113,20 @@ const MCP_SERVER_PATTERNS: Array<{
 ]
 
 /**
- * Detecta si un comando de bash usa una CLI de indexado de código.
+ * Detects if a bash command is using a code indexing CLI tool.
  *
- * @param command - la cadena completa del comando de bash
- * @returns el identificador de la herramienta de indexado, o `undefined` si
- *   no es un comando de indexado de código
+ * @param command - The full bash command string
+ * @returns The code indexing tool identifier, or undefined if not a code indexing command
  *
  * @example
- * detectCodeIndexingFromCommand('src search "pattern"') // devuelve 'sourcegraph'
- * detectCodeIndexingFromCommand('cody chat --message "help"') // devuelve 'cody'
- * detectCodeIndexingFromCommand('ls -la') // devuelve undefined
+ * detectCodeIndexingFromCommand('src search "pattern"') // returns 'sourcegraph'
+ * detectCodeIndexingFromCommand('cody chat --message "help"') // returns 'cody'
+ * detectCodeIndexingFromCommand('ls -la') // returns undefined
  */
 export function detectCodeIndexingFromCommand(
   command: string,
 ): CodeIndexingTool | undefined {
-  // Extrae la primera palabra (el nombre del comando)
+  // Extract the first word (command name)
   const trimmed = command.trim()
   const firstWord = trimmed.split(/\s+/)[0]?.toLowerCase()
 
@@ -142,7 +134,7 @@ export function detectCodeIndexingFromCommand(
     return undefined
   }
 
-  // Revisa comandos prefijados con npx/bunx
+  // Check for npx/bunx prefixed commands
   if (firstWord === 'npx' || firstWord === 'bunx') {
     const secondWord = trimmed.split(/\s+/)[1]?.toLowerCase()
     if (secondWord && secondWord in CLI_COMMAND_MAPPING) {
@@ -154,23 +146,20 @@ export function detectCodeIndexingFromCommand(
 }
 
 /**
- * Detecta si una herramienta MCP proviene de un servidor de indexado de
- * código.
+ * Detects if an MCP tool is from a code indexing server.
  *
- * @param toolName - el nombre de la herramienta MCP (formato:
- *   mcp__serverName__toolName)
- * @returns el identificador de la herramienta de indexado, o `undefined` si
- *   no es una herramienta de indexado de código
+ * @param toolName - The MCP tool name (format: mcp__serverName__toolName)
+ * @returns The code indexing tool identifier, or undefined if not a code indexing tool
  *
  * @example
- * detectCodeIndexingFromMcpTool('mcp__sourcegraph__search') // devuelve 'sourcegraph'
- * detectCodeIndexingFromMcpTool('mcp__cody__chat') // devuelve 'cody'
- * detectCodeIndexingFromMcpTool('mcp__filesystem__read') // devuelve undefined
+ * detectCodeIndexingFromMcpTool('mcp__sourcegraph__search') // returns 'sourcegraph'
+ * detectCodeIndexingFromMcpTool('mcp__cody__chat') // returns 'cody'
+ * detectCodeIndexingFromMcpTool('mcp__filesystem__read') // returns undefined
  */
 export function detectCodeIndexingFromMcpTool(
   toolName: string,
 ): CodeIndexingTool | undefined {
-  // Los nombres de herramienta MCP siguen el formato: mcp__serverName__toolName
+  // MCP tool names follow the format: mcp__serverName__toolName
   if (!toolName.startsWith('mcp__')) {
     return undefined
   }
@@ -195,16 +184,14 @@ export function detectCodeIndexingFromMcpTool(
 }
 
 /**
- * Detecta si el nombre de un servidor MCP corresponde a una herramienta de
- * indexado de código.
+ * Detects if an MCP server name corresponds to a code indexing tool.
  *
- * @param serverName - el nombre del servidor MCP
- * @returns el identificador de la herramienta de indexado, o `undefined` si
- *   no es un servidor de indexado de código
+ * @param serverName - The MCP server name
+ * @returns The code indexing tool identifier, or undefined if not a code indexing server
  *
  * @example
- * detectCodeIndexingFromMcpServerName('sourcegraph') // devuelve 'sourcegraph'
- * detectCodeIndexingFromMcpServerName('filesystem') // devuelve undefined
+ * detectCodeIndexingFromMcpServerName('sourcegraph') // returns 'sourcegraph'
+ * detectCodeIndexingFromMcpServerName('filesystem') // returns undefined
  */
 export function detectCodeIndexingFromMcpServerName(
   serverName: string,

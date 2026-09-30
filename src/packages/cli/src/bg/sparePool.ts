@@ -52,7 +52,7 @@
 import { connect } from 'node:net'
 import { existsSync } from 'node:fs'
 
-import { readEnv } from '@thyrox/config/env'
+import { getConfigHomeDir, readEnv } from '@thyrox/config/env'
 import {
   invalidateCache,
   readJobState,
@@ -87,14 +87,14 @@ let disabled = false
  *
  * macOS exempted because `os.freemem()` doesn't line up with vm_stat
  * (would cause spurious retires). Linux/Windows: default 1024 MB,
- * overridable via CLAUDE_CODE_BG_LOW_MEM_MB env (matches the daemon's
+ * overridable via THYROX_CODE_BG_LOW_MEM_MB env (matches the daemon's
  * NdK port at bgDaemon.ts:355 — same env, same default).
  */
 function lowMemory(): boolean {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const os = require('node:os') as typeof import('node:os')
   if (os.platform() === 'darwin') return false
-  const envOverride = Number(readEnv('CLAUDE_CODE_BG_LOW_MEM_MB'))
+  const envOverride = Number(readEnv('THYROX_CODE_BG_LOW_MEM_MB'))
   const thresholdMb = Number.isFinite(envOverride) && envOverride > 0
     ? envOverride
     : 1024
@@ -294,9 +294,7 @@ export async function rewriteSpareState(
   cwd: string,
 ): Promise<void> {
   const { join } = await import('node:path')
-  const { homedir } = await import('node:os')
-  const root = process.env.CLAUDE_CONFIG_HOME ?? join(homedir(), '.claude')
-  const jobDir = join(root, 'jobs', short)
+  const jobDir = join(getConfigHomeDir(), 'jobs', short)
   invalidateCache(jobDir)
   const now = new Date().toISOString()
   // Single-line label from intent, capped at 60 chars. Mirrors

@@ -1,11 +1,7 @@
 /**
- * Instalador nativo - API pública
+ * Native Installer - Public API
  *
- * Archivo barrel que exporta solo las funciones usadas por consumidores
- * externos.
- *
- * Puerto de `ccnmt: packages/updater/src/nativeInstaller/index.ts`
- * (17 líneas fuente, 100% portado).
+ * Barrel file exporting only the functions used by external consumers.
  */
 export {
   checkInstall,

@@ -132,12 +132,10 @@ get() { printf '%s\n' "$OUT" | awk -v k="$1" '$1==k && $2 ~ /^[0-9]+$/ {print $2
 check "terminado = 3 (cerrado + harness + propio)" "3" "$(get terminado)"
 check "desaparecido = 1 (el cortado y congelado; NO el vivo de enlace viejo)"  "1" "$(get desaparecido)"
 check "indecidible = 1 (bash mudo y congelado)"    "1" "$(get indecidible)"
-# ANTES: los tres caian en `atascado`, y ese era el defecto (H-DOCS-1004):
-# sin segunda muestra, «escribio hace poco» se publicaba como «se quedo
-# pegado» — el veredicto CONTRARIO. Desde que el veredicto lo decide
-# `thyrox: src/roster/job_liveness.py`, los tres se reparten: dentro de la
-# ventana y sin `--vigilar` el guion publica `reciente`, que dice lo unico
-# que se sabe. `atascado` queda para lo que una segunda muestra confirma.
+# Sin segunda muestra, «escribio hace poco» no es «se quedo pegado» — son
+# veredictos CONTRARIOS (H-DOCS-1004). El veredicto lo decide
+# `thyrox: src/roster/job_liveness.py`: dentro de la ventana y sin
+# `--vigilar` el guion publica `reciente`, que dice lo unico que se sabe. `atascado` queda para lo que una segunda muestra confirma.
 check "reciente = 3 (pegado + fresco + vivo con enlace viejo)" "3" "$(get reciente)"
 check "atascado = 0 sin --vigilar (no se afirma sin segunda muestra)" "0" "$(get atascado)"
 check "TOTAL = 8"                                  "8" "$(get TOTAL)"
@@ -213,7 +211,7 @@ printf 'salida\n[exited with code 0]\n' > "$BASE/-tmp-fixture-ajeno/sess-1/tasks
 # El senuelo es el MAS NUEVO: con la heuristica de mtime gana el.
 touch -d '2020-01-01 00:00:00' "$BASE/-home-user/$SESION/tasks"
 
-OUT=$(RECONCILE_ROSTER= RECONCILE_ROSTER_BASE="$BASE" \
+OUT=$(RECONCILE_ROSTER='' RECONCILE_ROSTER_BASE="$BASE" \
       CLAUDE_CODE_SESSION_ID="$SESION" bash "$SUT" 2>&1)
 check "elige el roster de SU sesion, no el senuelo mas nuevo" \
       "1" "$(printf '%s\n' "$OUT" | awk '$1=="TOTAL"{print $2}')"
@@ -222,8 +220,8 @@ check "y lo declara: el origen no dice heuristica" \
 
 # Sin el id de sesion, la heuristica sigue siendo el ultimo recurso — y publica
 # cuantos candidatos descarto, para que el lector sepa que fue una conjetura.
-OUT2=$(RECONCILE_ROSTER= RECONCILE_ROSTER_BASE="$BASE" \
-       CLAUDE_CODE_SESSION_ID= bash "$SUT" 2>&1)
+OUT2=$(RECONCILE_ROSTER='' RECONCILE_ROSTER_BASE="$BASE" \
+       CLAUDE_CODE_SESSION_ID='' bash "$SUT" 2>&1)
 check "sin id de sesion cae al senuelo (y es correcto: no hay con que decidir)" \
       "2" "$(printf '%s\n' "$OUT2" | awk '$1=="TOTAL"{print $2}')"
 # `grep -E` con `.` NO casa la `í` de dos bytes bajo la locale C: la primera

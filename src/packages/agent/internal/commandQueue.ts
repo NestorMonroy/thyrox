@@ -1,20 +1,5 @@
-/**
- * Cola de comandos — porte de `ccnmt: packages/agent/internal/commandQueue.ts`.
- *
- * Tres delegados finos sobre las ataduras del host:
- *   1. `getCommandsByMaxPriority` — [] si el host está ausente.
- *   2. `remove` — no-op si el host está ausente.
- *   3. `isSlashCommand` — primero la atadura del host; SI NO, un
- *      fallback real: `value` debe ser string, recortado empieza con
- *      "/", y `skipSlashCommands` suprime la detección.
- *
- * `AgentMessage` viene de `../internalTypes.ts` (autocontenido, ya
- * portado) en vez de `../contracts.ts` (285 líneas, sin portar en este
- * árbol) — misma convención que `host.ts` ya adoptó para sus propios
- * bindings.
- */
-import type { AgentMessage } from '../internalTypes.ts'
-import { getAgentHostBindings } from '../host.ts'
+import type { AgentMessage } from '../internalTypes.js'
+import { getAgentHostBindings } from '../host.js'
 
 type QueuedCommand = {
   priority?: 'now' | 'next' | 'later'

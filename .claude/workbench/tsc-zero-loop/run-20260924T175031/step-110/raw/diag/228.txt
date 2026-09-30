@@ -1,0 +1,1 @@
+src/packages/repl/src/components/messages/nullRenderingAttachments.ts(1,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.

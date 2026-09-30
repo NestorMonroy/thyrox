@@ -1,0 +1,5 @@
+Version: 2.1.283
+"--version"||t[0]==="-v"||t[0]==="-V")){if(console.log(`${{ISSUES_EXPLAINER:"report the issue at https://github.com/anthropics/claude-code/issues",PACKAGE_URL:"@anthropic-
+VERSION:"2.1.283"
+VERSION:"2.1.283"
+VERSION:"2.1.283"

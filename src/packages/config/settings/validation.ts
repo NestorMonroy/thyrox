@@ -15,6 +15,12 @@ export type SettingsError = {
   path: string
   message: string
   invalidValue?: unknown
+  /** Gravedad declarada; sin ella el error se trata como hasta ahora. */
+  severity?: 'fatal' | 'error' | 'warning'
+  /** Sólo se muestra en el estado, no como aviso de arranque. */
+  statusOnly?: boolean
+  /** Los valores admitidos, cuando el error es de dominio. */
+  expected?: string
 }
 
 /** Nombre público conservado por los consumers anteriores al rename. */
@@ -54,7 +60,7 @@ export function validateSettingsFileContent(content: string): ValidationResult {
   }
   // El schema público es passthrough para cargar versiones futuras. Esta
   // frontera valida una edición escrita por Thyrox y por ello es estricta.
-  const r = SettingsSchema.strict().safeParse(data)
+  const r = SettingsSchema().strict().safeParse(data)
   if (!r.success) {
     return {
       isValid: false,

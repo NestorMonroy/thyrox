@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTrust.test.ts:
+116 |   test('sin veredicto pedido no es propio', async () => {
+117 |     expect(await isSelfSent({ selfPid: 4242, needsVerdict: false, childTokenPresented: true, platform: 'windows' })).toBe(false)
+118 |   })
+119 | 
+120 |   test('siendo init o en Windows decide el token de hijo', async () => {
+121 |     expect(await isSelfSent({ selfPid: 1, needsVerdict: true, childTokenPresented: true, platform: 'linux' })).toBe(true)
+                                                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTrust.test.ts:121:112)
+(fail) isSelfSent (ye) > siendo init o en Windows decide el token de hijo [0.23ms]
+
+ 16 pass
+ 1 fail
+ 48 expect() calls
+Ran 17 tests across 1 file. [135.00ms]

@@ -1,0 +1,23 @@
+==== of: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js function of [402258,402301)
+function of(e){return e.agentType==="main"}
+==== VOo: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js function VOo [231245,231419)
+function VOo(e,n){if(e===void 0)return;if(e==="compact")return"compaction";let r=ks(e);if(r==="subagent"&&n.agentType==="subagent"&&n.workflowRunId)return"workflow";return r}
+==== qOo: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js function qOo [231443,231660)
+function qOo(e,n){if(e===void 0||!e.startsWith("agent:"))return;if(n.agentType==="teammate")return"teammate";if(e.startsWith(rm))return e.slice(rm.length)||void 0;if(e.startsWith("agent:custom"))return"custom";return}
+==== yqn: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js variable yqn [231180,231213)
+yqn="x-claude-code-request-class"
+==== _qn: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js variable _qn [231214,231244)
+_qn="x-claude-code-agent-type"
+==== bqn: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js variable bqn [231664,231693)
+bqn="x-claude-code-prompt-id"
+symbol: 6 de 6 nombre(s) resueltos
+==== qnn: 1 definicion(es) de nivel superior
+---- chunk-5t3x93y6.js function qnn [457823,457988)
+function qnn(){let e=a.CLAUDE_CODE_GATEWAY_HINT_HEADERS;if(e!==void 0)return e;if($l())return!0;if(Pe()!=="firstParty")return!1;return x("tengu_splendid_sutton",!1)}
+symbol: 1 de 1 nombre(s) resueltos

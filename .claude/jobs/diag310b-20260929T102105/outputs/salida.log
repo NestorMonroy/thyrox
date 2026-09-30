@@ -1,0 +1,4 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+head-only	exit=1	17.3=FALLO	fallos=1
+with-patch	exit=1	17.3=FALLO	fallos=1
+__BG_EXIT__=0

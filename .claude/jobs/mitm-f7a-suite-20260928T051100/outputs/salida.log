@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+ 395 pass
+ 0 fail
+ 75 expect() calls
+Ran 395 tests across 59 files. [5.17s]
+mitm: emitio pese a 1 errores (1 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

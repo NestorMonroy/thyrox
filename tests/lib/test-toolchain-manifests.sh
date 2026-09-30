@@ -174,4 +174,54 @@ else
   bad "esperaba exit 2 sin manifiesto, dio $declared_rc"
 fi
 
+# Caso 12 — un array de VARIOS elementos en una sola línea. El `match` interior
+# sobrescribía `RSTART`/`RLENGTH`, y el avance tomaba la posición del nombre
+# y no la de la cadena citada: la misma cadena volvía a casar y el `awk`
+# giraba para siempre. Lo destapó `lint = ["pyright", "ruff", "shellcheck-py"]`
+# (`eb9e3ae9`): `tests/run.sh`, sin tope por suite, quedó colgado aquí.
+# `timeout` convierte el cuelgue en exit 124 en vez de una espera infinita.
+oneline="$(mktemp -d "${TMPDIR:-/tmp}/manifiesto-una-linea-XXXXXX")"
+printf '[project]\ndependencies = ["alfa>=1", "beta"]\n\n[dependency-groups]\nlint = ["gamma", "delta-x", "epsilon"]\n' \
+  > "$oneline/pyproject.toml"
+for pkg in alfa beta gamma delta_x epsilon; do
+  THYROX_ROOT="$oneline" timeout 10 bash -c \
+    'source "$0" 2>/dev/null; thyrox_toolchain_python_package_declared "$1"' "$SUBJECT" "$pkg"
+  rc=$?
+  if [[ $rc -eq 0 ]]; then
+    ok "array de una línea: ve $pkg"
+  else
+    bad "array de una línea: $pkg dio $rc (124 = el awk no terminó)"
+  fi
+done
+rm -rf "$oneline"
+
+
+# Caso 13 — los dos universos se declaran por entorno: el consumidor nombra
+# sus manifiestos con THYROX_TOOLCHAIN_MANIFESTS_REQUIRED y
+# THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL, y la sonda mide ÉSOS, no los del
+# proveedor. Se fijan antes de cargar el guion porque ahí se resuelve el
+# valor por defecto.
+declared="$(mktemp -d "${TMPDIR:-/tmp}/manifiestos-declarados-XXXXXX")"
+touch "$declared/a.toml"
+probe_declared() {  # probe_declared <requeridos> <opcionales>
+  # env -i: esta suite ya cargó el guion, y su guarda de idempotencia haría del
+  # `source` del hijo un no-op (ver el caso 12 de test-toolchain-gawk.sh).
+  env -i PATH="$PATH" HOME="$HOME" THYROX_ROOT="$declared" THYROX_TOOLCHAIN_MANIFESTS_REQUIRED="$1" \
+    THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL="$2" \
+    bash -c 'source "$0" 2>/dev/null; thyrox_toolchain_require_manifests' "$SUBJECT" 2>&1
+}
+out="$(probe_declared 'a.toml' 'z.lock')"; rc=$?
+if [[ $rc -eq 0 && "$out" == *z.lock* ]]; then
+  ok "REQUIRED declarado presente: pasa, y el OPTIONAL declarado ausente se nombra"
+else
+  bad "REQUIRED='a.toml' OPTIONAL='z.lock': esperaba exit 0 nombrando z.lock, dio $rc: $out"
+fi
+out="$(probe_declared 'a.toml b.toml' '')"; rc=$?
+if [[ $rc -eq 2 && "$out" == *b.toml* ]]; then
+  ok "REQUIRED declarado con uno ausente: rehúsa con exit 2 y lo nombra"
+else
+  bad "REQUIRED='a.toml b.toml': esperaba exit 2 nombrando b.toml, dio $rc: $out"
+fi
+rm -rf "${declared:?}"
+
 thyrox_summary

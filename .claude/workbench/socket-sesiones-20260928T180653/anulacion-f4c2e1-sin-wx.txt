@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerFiles.test.ts:
+200 |     const attachment = await staged('c.txt')
+201 |     const target = join(deps.uploadsDir(), `${attachment.sha256.slice(0, 8)}-00000002-c.txt`)
+202 |     mkdirSync(deps.uploadsDir(), { recursive: true })
+203 |     writeFileSync(target, 'previo')
+204 |     const result = await materializeLocalPeerFiles([attachment], deps)
+205 |     expect(result.verified).toBe(0)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:205:29)
+(fail) materializeLocalPeerFiles (o4o) > no pisa un archivo que ya está en uploads con el mismo nombre [2.65ms]
+
+ 17 pass
+ 1 fail
+ 59 expect() calls
+Ran 18 tests across 1 file. [135.00ms]

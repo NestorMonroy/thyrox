@@ -5,6 +5,7 @@ import { Box, Text } from '@anthropic/ink'
 import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { applyPermissionUpdate } from '../../PermissionUpdate.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   directoryPath: string
@@ -53,7 +54,7 @@ export function RemoveWorkspaceDirectory({
         <Text bold>{directoryPath}</Text>
       </Box>
       <Text>
-        Claude Code will no longer have access to files in this directory.
+        {PRODUCT_NAME} will no longer have access to files in this directory.
       </Text>
       <Select
         onChange={handleSelect}

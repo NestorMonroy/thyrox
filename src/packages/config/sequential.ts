@@ -1,8 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/config/sequential.ts` (56 líneas fuente).
- * Reimplementación fiel VERBATIM. Sin dependencias.
- */
-
 type QueueItem<T extends unknown[], R> = {
   args: T
   resolve: (value: R) => void
@@ -11,17 +6,15 @@ type QueueItem<T extends unknown[], R> = {
 }
 
 /**
- * Crea un envoltorio de ejecución secuencial para funciones async, para
- * evitar condiciones de carrera. Garantiza que las llamadas concurrentes a
- * la función envuelta se ejecuten una a la vez, en el orden en que se
- * recibieron, preservando los valores de retorno correctos.
+ * Creates a sequential execution wrapper for async functions to prevent race conditions.
+ * Ensures that concurrent calls to the wrapped function are executed one at a time
+ * in the order they were received, while preserving the correct return values.
  *
- * Útil para operaciones que deben ejecutarse secuencialmente, como
- * escrituras de archivo o actualizaciones de base de datos que podrían
- * entrar en conflicto si se ejecutan concurrentemente.
+ * This is useful for operations that must be performed sequentially, such as
+ * file writes or database updates that could cause conflicts if executed concurrently.
  *
- * @param fn la función async a envolver con ejecución secuencial
- * @returns una versión envuelta de la función que ejecuta las llamadas secuencialmente
+ * @param fn - The async function to wrap with sequential execution
+ * @returns A wrapped version of the function that executes calls sequentially
  */
 export function sequential<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
@@ -48,7 +41,7 @@ export function sequential<T extends unknown[], R>(
 
     processing = false
 
-    // Comprueba si se añadieron ítems nuevos mientras se procesaba.
+    // Check if new items were added while we were processing
     if (queue.length > 0) {
       void processQueue()
     }

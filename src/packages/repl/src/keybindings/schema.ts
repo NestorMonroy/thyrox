@@ -5,6 +5,7 @@
 
 import { z } from 'zod/v4'
 import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Valid context names where keybindings can be applied.
@@ -249,7 +250,7 @@ export const KeybindingsSchema = lazySchema(() =>
         .describe('Array of keybinding blocks by context'),
     })
     .describe(
-      'Claude Code keybindings configuration. Customize keyboard shortcuts by context.',
+      `${PRODUCT_NAME} keybindings configuration. Customize keyboard shortcuts by context.`,
     ),
 )
 

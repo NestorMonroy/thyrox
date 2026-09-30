@@ -1,33 +1,4 @@
 /**
- * Lectura portable del transcript de sesion — porte COMPLETO por fusion de
- * `ccnmt: packages/storage/src/sessionStoragePortable.ts` (18 simbolos).
- *
- * «Portable» es el eje: estas funciones no dependen del proceso del cliente ni
- * de su estado en memoria, asi que sirven tanto al propio harness como a un
- * lector externo del transcript — de ahi que `sessionStorage.ts` las consuma en
- * vez de duplicarlas.
- *
- * La version anterior portaba 7 de los 18, y los 7 eran subconjunto ESTRICTO de
- * la fuente: cero simbolos propios que perder en la fusion. Los once que
- * faltaban son la mitad de LECTURA ACOTADA (`LITE_READ_BUF_SIZE`,
- * `readHeadAndTail`, `readSessionLite`, `LiteSessionFile`) y la de RESOLUCION
- * DE RUTA (`canonicalizePath`, `findProjectDir`, `getProjectDir`,
- * `getProjectsDir`, `resolveSessionFilePath`), mas
- * `readTranscriptForLoad` y `SKIP_PRECOMPACT_THRESHOLD`.
- *
- * Su ausencia no se veia en el typecheck agregado: `sessionStorage.ts` las
- * importa, y el modulo **abortaba al cargar** con `Export named
- * 'LITE_READ_BUF_SIZE' not found`. El instrumento que lo destapa es el import
- * real, no el conteo de diagnosticos.
- *
- * Divergencia frente a la fuente: **ninguna**. El unico cambio es el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169); sus dos
- * subpaths resuelven — `config/env/utils.ts` y `config/hash.ts`.
- *
- * Refs: TASK-THYROX-0199.
- */
-
-/**
  * Portable session storage utilities.
  *
  * Pure Node.js — no internal dependencies on logging, experiments, or feature
@@ -38,7 +9,7 @@
 import type { UUID } from 'crypto'
 import { open as fsOpen, readdir, realpath, stat } from 'fs/promises'
 import { join } from 'path'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getWorktreePathsPortable } from './getWorktreePathsPortable.js'
 import { djb2Hash } from '@thyrox/config/hash'
 
@@ -356,7 +327,7 @@ export function sanitizePath(name: string): string {
 // ---------------------------------------------------------------------------
 
 export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
+  return join(getConfigHomeDir(), 'projects')
 }
 
 export function getProjectDir(projectDir: string): string {

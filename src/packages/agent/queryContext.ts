@@ -14,7 +14,7 @@ import '@thyrox/app-host/providerHostSetup.js'
 import type { Command } from '@thyrox/command-runtime/types'
 import { getSystemPrompt } from './prompts.js'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
-type AppState = any
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 import type { Tools, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import type { Message } from './messageShapes.js'

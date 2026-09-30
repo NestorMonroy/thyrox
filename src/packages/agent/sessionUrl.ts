@@ -1,12 +1,5 @@
-/**
- * Reconocedor del identificador de reanudación de una sesión — porte de
- * `ccnmt: packages/agent/sessionUrl.ts`.
- *
- * `validateUuid` viene de `./uuid.ts`, ya portado en este árbol; el resto
- * del módulo es puro y sin más dependencias que `node:crypto`.
- */
 import { randomUUID, type UUID } from 'crypto'
-import { validateUuid } from './uuid.ts'
+import { validateUuid } from './uuid.js'
 
 export type ParsedSessionUrl = {
   sessionId: UUID
@@ -17,21 +10,18 @@ export type ParsedSessionUrl = {
 }
 
 /**
- * Parsea un identificador de reanudación de sesión, que puede ser:
- * - una ruta a un archivo JSONL (p. ej. `session.jsonl`);
- * - un UUID plano;
- * - una URL que contiene el id de sesión (p. ej.
- *   `https://api.example.com/v1/session_ingress/session/550e8400-...`).
+ * Parses a session resume identifier which can be either:
+ * - A URL containing session ID (e.g., https://api.example.com/v1/session_ingress/session/550e8400-e29b-41d4-a716-446655440000)
+ * - A plain session ID (UUID)
  *
- * @param resumeIdentifier — la URL, ruta o id de sesión a parsear.
- * @returns la información de sesión parseada, o `null` si no es válida.
+ * @param resumeIdentifier - The URL or session ID to parse
+ * @returns Parsed session information or null if invalid
  */
 export function parseSessionIdentifier(
   resumeIdentifier: string,
 ): ParsedSessionUrl | null {
-  // Se verifica la ruta JSONL ANTES de parsear como URL: una ruta absoluta
-  // de Windows (p. ej. C:\path\file.jsonl) parsea como URL válida con "C:"
-  // como protocolo.
+  // Check for JSONL file path before URL parsing, since Windows absolute
+  // paths (e.g., C:\path\file.jsonl) are parsed as valid URLs with C: as protocol
   if (resumeIdentifier.toLowerCase().endsWith('.jsonl')) {
     return {
       sessionId: randomUUID() as UUID,
@@ -42,7 +32,7 @@ export function parseSessionIdentifier(
     }
   }
 
-  // ¿Es un UUID plano?
+  // Check if it's a plain UUID
   if (validateUuid(resumeIdentifier)) {
     return {
       sessionId: resumeIdentifier as UUID,
@@ -53,12 +43,12 @@ export function parseSessionIdentifier(
     }
   }
 
-  // ¿Es una URL?
+  // Check if it's a URL
   try {
     const url = new URL(resumeIdentifier)
 
-    // Se usa la URL completa como ingressUrl. El sessionId siempre se
-    // genera fresco.
+    // Use the entire URL as the ingress URL
+    // Always generate a random session ID
     return {
       sessionId: randomUUID() as UUID,
       ingressUrl: url.href,
@@ -67,7 +57,7 @@ export function parseSessionIdentifier(
       isJsonlFile: false,
     }
   } catch {
-    // No es una URL válida.
+    // Not a valid URL
   }
 
   return null

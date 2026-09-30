@@ -1,0 +1,16 @@
+run-task-pool: 2 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T012514
+  job-20260927T012514/job-001 pid 1102    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/ts-own-errors-20260926T225629 python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/tool-registry > .claude/workbench/ts-own-errors-20260926T225629/after-source/tool-registry.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-source/tool-registry.err
+  job-20260927T012514/job-002 pid 1133    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/ts-own-errors-20260926T225629 python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/repl > .claude/workbench/ts-own-errors-20260926T225629/after-source/repl.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-source/repl.err
+run-task-pool: lanzados 2 de 2; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260927T012514_job-001 -> OK (2 de 3)
+asentado: job-20260927T012514_job-002 -> OK (3 de 3)
+== 3 trabajos asentados ==
+OLVIDADO job-20260927T012514
+       | (vacío — no emitió nada)
+OK     job-20260927T012514_job-001
+       | EXIT=0
+       memoria pico: 907016 KB (886 MB) · pared 20.65s
+OK     job-20260927T012514_job-002
+       | EXIT=0
+       memoria pico: 1076004 KB (1051 MB) · pared 24.21s
+__BG_EXIT__=0

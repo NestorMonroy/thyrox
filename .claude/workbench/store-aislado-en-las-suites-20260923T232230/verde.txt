@@ -1,0 +1,5 @@
+  ok    contextPressure.test.ts no cambia el store versionado
+  ok    observability.test.ts sigue leyendo el esquema del store
+
+2 casos: 2 ok, 0 fallos
+rc=0

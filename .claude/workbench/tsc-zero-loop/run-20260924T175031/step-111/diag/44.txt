@@ -1,0 +1,48 @@
+src/packages/agent/tasks/LocalMainSessionTask.tsx(430,55): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/tasks/LocalMainSessionTask.tsx:420-440 ---
+    420          // /clear re-links the symlink mid-run.
+    421          void recordSidechainTranscript([msg], taskId, lastRecordedUuid).catch(
+    422            err => logForDebugging(`bg-session transcript write failed: ${err}`),
+    423          )
+    424          lastRecordedUuid = msg.uuid
+    425  
+    426          if (msg.type === 'assistant') {
+    427            const contentBlocks = (msg.message?.content ?? []) as Array<{ type: string; text?: string; name?: string; input?: unknown }>
+    428            for (const block of contentBlocks) {
+    429              if (block.type === 'text') {
+    430>               tokenCount += roughTokenCountEstimation(block.text)
+    431              } else if (block.type === 'tool_use') {
+    432                toolCount++
+    433                const activity: ToolActivity = {
+    434                  toolName: block.name,
+    435                  input: block.input as Record<string, unknown>,
+    436                }
+    437                recentActivities.push(activity)
+    438                if (recentActivities.length > MAX_RECENT_ACTIVITIES) {
+    439                  recentActivities.shift()
+    440                }
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/tasks/LocalMainSessionTask.tsx(434,17): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/agent/tasks/LocalMainSessionTask.tsx:424-444 ---
+    424          lastRecordedUuid = msg.uuid
+    425  
+    426          if (msg.type === 'assistant') {
+    427            const contentBlocks = (msg.message?.content ?? []) as Array<{ type: string; text?: string; name?: string; input?: unknown }>
+    428            for (const block of contentBlocks) {
+    429              if (block.type === 'text') {
+    430                tokenCount += roughTokenCountEstimation(block.text)
+    431              } else if (block.type === 'tool_use') {
+    432                toolCount++
+    433                const activity: ToolActivity = {
+    434>                 toolName: block.name,
+    435                  input: block.input as Record<string, unknown>,
+    436                }
+    437                recentActivities.push(activity)
+    438                if (recentActivities.length > MAX_RECENT_ACTIVITIES) {
+    439                  recentActivities.shift()
+    440                }
+    441              }
+    442            }
+    443          }
+    444  
+  Type 'undefined' is not assignable to type 'string'.

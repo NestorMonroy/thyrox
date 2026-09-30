@@ -1,17 +1,16 @@
 /**
- * Puerto de `ccnmt: packages/output/src/__tests__/fpsTracker.test.ts`
- * (verbatim). Tests de FpsTracker — rastrea el FPS promedio + p99 (1%
- * mas lento) del loop de render del REPL. Las metricas alimentan
- * dashboards usados para detectar regresiones de rendimiento.
+ * Tests for FpsTracker — tracks average + p99 (1% low) FPS for the
+ * REPL render loop. The metrics flow into Statsig dashboards used
+ * to spot perf regressions.
  *
- * Un p99 incorrecto esconde una pequena fraccion de frames con stutter
- * dentro del promedio; el dashboard dice "60fps avg" mientras el usuario
- * ve jank. El 1% low FPS es el canario de esos frames malos.
+ * Wrong p99 = a small fraction of stutter frames hides in the
+ * average; the dashboard says "60fps avg" while users see jank.
+ * The 1% low FPS is the canary for those bad frames.
  *
- * Los tests son deterministas donde es posible: se controlan las
- * entradas de `record()` pero se depende de `performance.now()` para el
- * tiempo total. Se afirman relaciones matematicas (p. ej. low1PctFps ≤
- * averageFps), no numeros absolutos, salvo donde la matematica es exacta.
+ * Tests are deterministic-where-possible: we control `record()`
+ * inputs but rely on `performance.now()` for total time. We assert
+ * mathematical relationships (e.g. low1PctFps ≤ averageFps), not
+ * absolute numbers, except where the math is exact.
  */
 import { describe, expect, test } from 'bun:test'
 import { FpsTracker } from '../fpsTracker.js'

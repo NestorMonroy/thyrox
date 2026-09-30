@@ -46,7 +46,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import os
-from typing import Callable, Iterable, Sequence, TypeVar
+from typing import Callable, Sequence, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")

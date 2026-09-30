@@ -1,0 +1,6 @@
+Record the derived subset of the shared-lock work
+
+38 of 38 suites green over the consumers of tests/run.sh, the lock in
+its three faces, replace_literal, the pool history and the tree
+fingerprint, run with run-task-pool; the one forgotten entry is the
+pool's own parent.

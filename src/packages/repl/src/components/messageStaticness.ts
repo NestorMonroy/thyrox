@@ -27,7 +27,11 @@ export function shouldRenderStatically(
     return true
   }
   switch (message.type) {
-    case 'attachment':
+    case 'attachment': {
+      // Un `attachment` nunca resuelve toolUseID: getToolUseID cae a su
+      // `default: return null`, y `!toolUseID` ya siempre daba `return true`.
+      return true
+    }
     case 'user':
     case 'assistant': {
       if (message.type === 'assistant') {
@@ -65,6 +69,12 @@ export function shouldRenderStatically(
       return allResolved
     }
     case 'collapsed_read_search': {
+      return false
+    }
+    case 'progress': {
+      // `progress` se filtra antes de llegar aqui (Messages.tsx lo excluye
+      // del listado renderizable); rama inalcanzable que sólo cierra la
+      // exhaustividad del switch sobre `RenderableMessage`.
       return false
     }
   }

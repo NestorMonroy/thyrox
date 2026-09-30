@@ -1,0 +1,22 @@
+== tests/session/test_gpu_scenarios.py
+test_gpu_scenarios: 19 ok, 0 falla(s)
+== tests/session/test_gpu_trace.py
+test_gpu_trace: 14 ok, 0 falla(s)
+== tests/verify/test_step_report.py
+test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+== tests/session/test-gpu-admission-cli.sh
+aserciones: 3 de 3 · fallos: 0
+== tests/session/test-gnu-time-launchers.sh
+test-gnu-time-launchers: 13 ok, 0 falla(s)
+== tests/session/test-hardware-inventory.sh
+aserciones: 16 de 16 · fallos: 0
+== tests/lib/test-toolchain-gnu-time.sh
+9 casos: 9 ok, 0 fallos
+== gpuAdmission.test.ts
+ 4 pass
+ 0 fail
+== generate_bin
+bin/ al día: 257 entrypoint(s)
+118 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+SUBSET_RC=0
+__BG_EXIT__=0

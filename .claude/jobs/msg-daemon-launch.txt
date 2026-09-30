@@ -1,0 +1,3 @@
+Record the launch of the daemon reference pool
+
+The job directory is versioned so the run survives the container.

@@ -51,9 +51,7 @@ import {
   logEvent,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   registerCleanup,
-  updateSessionBridgeId,
   updateSessionIngressAuthToken,
-  isEnvTruthy,
   isInProtectedNamespace,
   errorMessage,
   sleep,
@@ -74,6 +72,7 @@ import {
   buildCCRv2SdkUrl,
   sameSessionId,
 } from './workSecret.js'
+import { recordBridgeSessionId } from '@thyrox/local-observability/uds/pidFileRecord.js'
 import { toCompatSessionId, toInfraSessionId } from './sessionIdCompat.js'
 import { getTrustedDeviceToken } from './trustedDevice.js'
 import type { HybridTransport } from '@thyrox/cli/transports/HybridTransport.js'
@@ -110,6 +109,7 @@ import {
   clearBridgePointer,
   readBridgePointer,
 } from './bridgePointer.js'
+import { isBridgeCcrV2Forced } from './bridgeConfig.js'
 
 export type ReplBridgeHandle = {
   bridgeSessionId: string
@@ -237,7 +237,7 @@ export type BridgeCoreParams = {
    * auto-gate de esa función es un throw defensivo, no una guarda
    * amable, y su orden de efectos secundarios es setAutoModeActive(true)
    * y luego throw, lo que corrompe el invariante de 3 vías documentado en
-   * src/CLAUDE.md si el callback deja escapar el throw aquí.
+   * src/THYROX.md si el callback deja escapar el throw aquí.
    */
   onSetPermissionMode?: (
     mode: PermissionMode,
@@ -638,7 +638,7 @@ export async function initBridgeCore(
   // Session-Ingress) o SSETransport+CCRClient (v2: lecturas SSE +
   // escrituras POST a CCR /worker/*). La elección v1/v2 se hace en
   // onWorkReceived: dirigida por el servidor vía secret.use_code_sessions,
-  // con CLAUDE_BRIDGE_USE_CCR_V2 como override de dev-ant.
+  // con THYROX_BRIDGE_USE_CCR_V2 como override de dev-ant.
   let transport: ReplBridgeTransport | null = null
   // Se incrementa en cada onWorkReceived. Se captura en el .then() de
   // createV2ReplTransport para detectar resoluciones obsoletas: si dos
@@ -906,7 +906,7 @@ export async function initBridgeCore(
     // Re-publica en el archivo PID para que la deduplicación de peers
     // (peerRegistry.ts) recoja el ID nuevo — setReplBridgeHandle sólo se
     // dispara al iniciar/apagar, no al reconectar.
-    void updateSessionBridgeId(toCompatSessionId(newSessionId)).catch(() => {})
+    void recordBridgeSessionId(toCompatSessionId(newSessionId)).catch(() => {})
     // Reinicia el estado de transporte por sesión de INMEDIATO tras el
     // intercambio de sesión, antes de cualquier await. Si esto corre
     // después del `await writeBridgePointer` de abajo, hay una ventana
@@ -1275,12 +1275,12 @@ export async function initBridgeCore(
       // bandera del servidor esté activa para tu usuario — requiere
       // ccr_v2_compat_enabled del lado servidor o registerWorker da 404.
       //
-      // Se mantiene separada de CLAUDE_CODE_USE_CCR_V2 (el selector de
+      // Se mantiene separada de THYROX_CODE_USE_CCR_V2 (el selector de
       // transporte del SDK hijo que fija sessionRunner/environment-manager)
       // para evitar el riesgo de herencia en modo spawn donde la variable
       // del orquestador padre se filtraría a un hijo v1.
       const useCcrV2 =
-        serverUseCcrV2 || isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+        serverUseCcrV2 || isBridgeCcrV2Forced()
 
       // La autenticación es el único punto donde v1 y v2 divergen de
       // verdad:

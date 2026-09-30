@@ -1,0 +1,91 @@
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(20,29): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:10-30 ---
+     10  import figures from 'figures'
+     11  import * as React from 'react'
+     12  import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+     13  import type { HookEventMetadata } from '../../hooksConfigManager.js'
+     14  import { Box, Link, Text } from '@anthropic/ink'
+     15  import { plural } from '@thyrox/output/utils/stringUtils.js'
+     16  import { Select } from '../CustomSelect/select.js'
+     17  import { Dialog } from '@anthropic/ink'
+     18  
+     19  type Props = {
+     20>   hookEventMetadata: Record<HookEvent, HookEventMetadata>
+     21    hooksByEvent: Partial<Record<HookEvent, number>>
+     22    totalHooksCount: number
+     23    restrictedByPolicy: boolean
+     24    onSelectEvent: (event: HookEvent) => void
+     25    onCancel: () => void
+     26  }
+     27  
+     28  export function SelectEventMode({
+     29    hookEventMetadata,
+     30    hooksByEvent,
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(21,32): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:11-31 ---
+     11  import * as React from 'react'
+     12  import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+     13  import type { HookEventMetadata } from '../../hooksConfigManager.js'
+     14  import { Box, Link, Text } from '@anthropic/ink'
+     15  import { plural } from '@thyrox/output/utils/stringUtils.js'
+     16  import { Select } from '../CustomSelect/select.js'
+     17  import { Dialog } from '@anthropic/ink'
+     18  
+     19  type Props = {
+     20    hookEventMetadata: Record<HookEvent, HookEventMetadata>
+     21>   hooksByEvent: Partial<Record<HookEvent, number>>
+     22    totalHooksCount: number
+     23    restrictedByPolicy: boolean
+     24    onSelectEvent: (event: HookEvent) => void
+     25    onCancel: () => void
+     26  }
+     27  
+     28  export function SelectEventMode({
+     29    hookEventMetadata,
+     30    hooksByEvent,
+     31    totalHooksCount,
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(70,44): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:60-80 ---
+     60          </Box>
+     61  
+     62          <Box flexDirection="column">
+     63            <Select
+     64              onChange={value => {
+     65                onSelectEvent(value as HookEvent)
+     66              }}
+     67              onCancel={onCancel}
+     68              options={Object.entries(hookEventMetadata).map(
+     69                ([name, metadata]) => {
+     70>                 const count = hooksByEvent[name as HookEvent] || 0
+     71                  return {
+     72                    label:
+     73                      count > 0 ? (
+     74                        <Text>
+     75                          {name} <Text color="suggestion">({count})</Text>
+     76                        </Text>
+     77                      ) : (
+     78                        name
+     79                      ),
+     80                    value: name,
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(81,32): error TS18046: 'metadata' is of type 'unknown'.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:71-90 ---
+     71                  return {
+     72                    label:
+     73                      count > 0 ? (
+     74                        <Text>
+     75                          {name} <Text color="suggestion">({count})</Text>
+     76                        </Text>
+     77                      ) : (
+     78                        name
+     79                      ),
+     80                    value: name,
+     81>                   description: metadata.summary,
+     82                  }
+     83                },
+     84              )}
+     85            />
+     86          </Box>
+     87        </Box>
+     88      </Dialog>
+     89    )
+     90  }

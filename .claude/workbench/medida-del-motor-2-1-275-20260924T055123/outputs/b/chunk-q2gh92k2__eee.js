@@ -1,0 +1,1 @@
+function eee(){try{let e=ge("policySettings")?.sandbox?.enabledPlatforms;if(e===void 0)return!0;if(e.length===0)return!1;let n=M();return e.includes(n)}catch(e){return t(`Failed to check enabledPlatforms: ${e}`),!0}}

@@ -1,0 +1,21 @@
+Open every store through @thyrox/store openers
+
+ADR-THYROX-006 fixes one opener module per persistence level. This
+lands both halves:
+
+- D1a: openByUrl in store/sql.ts opens Bun.SQL by URL and reports
+  StoreCapabilities (dialect, extensionsLoadable), since Bun.SQL on
+  SQLite cannot load extensions (H-THYROX-238). mysql and mariadb
+  are declared but rejected as phase D7 rather than failing inside
+  the driver. The error store's dialect helpers move here; its
+  private dialect.ts is gone.
+- D3-1: openLocal sets busy_timeout on every local bun:sqlite open.
+  finding, mitm, observability, tools and the provider connection
+  store now use it; the connection store is read by the proxy while
+  the CLI writes it, and had no busy_timeout before.
+
+Annulment controls: dropping the mysql rejection fails 1 of 11 sql
+tests; dropping busy_timeout fails the 3 openLocal tests plus 1
+connection-store test. bun.lock was regenerated with bun install
+after the two pool items conflicted on it; build tsconfigs were
+regenerated with the dist exclusion from the previous commit.

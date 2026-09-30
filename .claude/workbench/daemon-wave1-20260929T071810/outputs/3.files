@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/bgAdopt.test.ts
+src/packages/daemon/src/__tests__/jobDirectoryCleanup.test.ts
+src/packages/daemon/src/bgAdopt.ts
+src/packages/daemon/src/jobDirectoryCleanup.ts

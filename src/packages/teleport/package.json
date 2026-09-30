@@ -7,53 +7,72 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./remote-setup": {
+      "@thyrox/source": "./src/remote-setup/index.ts",
       "types": "./dist/src/remote-setup/index.d.ts",
       "default": "./src/remote-setup/index.ts"
     },
     "./remote-setup/remote-setup": {
+      "@thyrox/source": "./src/remote-setup/remote-setup.tsx",
       "types": "./dist/src/remote-setup/remote-setup.d.ts",
       "default": "./src/remote-setup/remote-setup.tsx"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./api.js": {
+      "@thyrox/source": "./src/api.ts",
+      "types": "./dist/src/api.d.ts",
+      "default": "./src/api.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./environmentSelection.js": {
+      "@thyrox/source": "./src/environmentSelection.ts",
+      "types": "./dist/src/environmentSelection.d.ts",
+      "default": "./src/environmentSelection.ts"
     },
-    "./remote-setup/*.js": {
-      "types": "./dist/src/remote-setup/*.d.ts",
-      "default": "./src/remote-setup/*.ts"
+    "./environments.js": {
+      "@thyrox/source": "./src/environments.ts",
+      "types": "./dist/src/environments.d.ts",
+      "default": "./src/environments.ts"
+    },
+    "./gitBundle.js": {
+      "@thyrox/source": "./src/gitBundle.ts",
+      "types": "./dist/src/gitBundle.d.ts",
+      "default": "./src/gitBundle.ts"
+    },
+    "./remote-setup/index.js": {
+      "@thyrox/source": "./src/remote-setup/index.ts",
+      "types": "./dist/src/remote-setup/index.d.ts",
+      "default": "./src/remote-setup/index.ts"
     }
   },
   "scripts": {
     "test": "bun test"
   },
   "dependencies": {
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/storage": "0.1.0",
     "axios": "^1.20.0",
     "zod": "^4.3.6"
   }

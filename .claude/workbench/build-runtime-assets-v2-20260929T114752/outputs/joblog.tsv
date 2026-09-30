@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790683108.144	   595.312	0	0	0	0	_headless_item 1 'Recursos runtime del build JS (H-THYROX-263, 264, 265, 266): src/typescript/buildJavascript.ts, tests/typescript/buildJavascript.test.ts, src/packages/computer-use-mcp/src/legacy/win32/bridgeClient.ts'

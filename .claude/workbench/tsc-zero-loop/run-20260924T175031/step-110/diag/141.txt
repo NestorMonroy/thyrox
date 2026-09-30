@@ -1,0 +1,25 @@
+src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts(23,67): error TS2322: Type '{ source: string; ruleBehavior: string; ruleValue: { toolName: string; ruleContent: string; }; }' is not assignable to type 'PermissionRule'.
+  --- código src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts:13-33 ---
+     13      expect(createPermissionRequestMessage('Bash', { type: 'classifier', classifier: 'yolo', reason: 'writes outside' })).toBe(
+     14        "Classifier 'yolo' requires approval for this Bash command: writes outside",
+     15      )
+     16    })
+     17    test('hook con y sin razón', () => {
+     18      expect(createPermissionRequestMessage('Bash', { type: 'hook', hookName: 'guard', reason: 'no' })).toBe("Hook 'guard' blocked this action: no")
+     19      expect(createPermissionRequestMessage('Bash', { type: 'hook', hookName: 'guard' })).toBe("Hook 'guard' requires approval for this Bash command")
+     20    })
+     21    test('regla, con su fuente', () => {
+     22      const rule = { source: 'userSettings', ruleBehavior: 'ask', ruleValue: { toolName: 'Bash', ruleContent: 'rm:*' } }
+     23>     expect(createPermissionRequestMessage('Bash', { type: 'rule', rule })).toBe(
+     24        "Permission rule 'Bash(rm:*)' from user settings requires approval for this Bash command",
+     25      )
+     26    })
+     27    test('subcomandos: sólo los que piden, y en Bash sin sus redirecciones', () => {
+     28      const reasons = new Map([
+     29        ['ls', { behavior: 'allow' }],
+     30        ['echo hi > out.txt', { behavior: 'ask' }],
+     31        ['rm -rf x', { behavior: 'passthrough' }],
+     32      ])
+     33      expect(createPermissionRequestMessage('Bash', { type: 'subcommandResults', reasons })).toBe(
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type 'PermissionRuleSource'.

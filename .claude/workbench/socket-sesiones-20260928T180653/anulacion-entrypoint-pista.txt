@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+107 |     expect(isRemoteControlSession(context({ THYROX_CODE_ENTRYPOINT: 'remote' }))).toBe(false)
+108 |   })
+109 | 
+110 |   test('THYROX_CODE_HIDE_SETTINGS_HINT y los anfitriones que la ocultan', () => {
+111 |     expect(showsSettingsHint(context())).toBe(true)
+112 |     expect(showsSettingsHint(context({ THYROX_CODE_HIDE_SETTINGS_HINT: 'yes' }))).toBe(false)
+                                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:112:83)
+(fail) las demás variables del anfitrión > THYROX_CODE_HIDE_SETTINGS_HINT y los anfitriones que la ocultan [0.29ms]
+
+ 15 pass
+ 1 fail
+ 89 expect() calls
+Ran 16 tests across 1 file. [71.00ms]

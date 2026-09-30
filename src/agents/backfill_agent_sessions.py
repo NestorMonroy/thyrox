@@ -69,6 +69,7 @@ from agents import agents_paths  # noqa: E402
 
 _g = importlib.util.spec_from_file_location(
     "deprecado", agents_paths.LIB_DIR / "deprecated.py")
+assert _g is not None and _g.loader is not None
 _dep = importlib.util.module_from_spec(_g)
 _g.loader.exec_module(_dep)
 _dep.deprecated_guard("backfill_agent_sessions.py")
@@ -82,12 +83,14 @@ assert (DOCS_ROOT / "source" / "gestion" / "pm").is_dir(), (
     f"raiz mal anclada: {DOCS_ROOT} — no tiene source/gestion/pm")
 
 _spec_store = importlib.util.spec_from_file_location("agent_store", HERE / "agent_store.py")
+assert _spec_store is not None and _spec_store.loader is not None
 agent_store = importlib.util.module_from_spec(_spec_store)
 _spec_store.loader.exec_module(agent_store)
 
 _spec_hook = importlib.util.spec_from_file_location(
     "ras", agents_paths.hooks_dir() / "register_agent_session.py"
 )
+assert _spec_hook is not None and _spec_hook.loader is not None
 ras = importlib.util.module_from_spec(_spec_hook)
 _spec_hook.loader.exec_module(ras)
 
@@ -205,6 +208,8 @@ def main() -> int:
                 procesados += 1
                 continue
 
+            # `conn` es None sólo bajo --dry-run, y esa rama ya hizo `continue`.
+            assert conn is not None
             conn.execute(
                 """
                 INSERT INTO agent_sessions

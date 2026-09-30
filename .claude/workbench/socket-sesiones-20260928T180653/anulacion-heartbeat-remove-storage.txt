@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+93 |     }
+94 |     for (let index = 0; index < 4; index++) await touchHeartbeat(storage, deps())
+95 |     expect(calls[0]).toEqual([{ namespace: 'session', file: '.fleetview-heartbeat' }, '1000000', { publishDiscipline: 'inPlace' }])
+96 |     expect(logs).toEqual(['[concurrentSessions] heartbeat touch failed: EIO', '[concurrentSessions] heartbeat touch failed: caído'])
+97 |     await removeHeartbeat(storage, deps())
+98 |     expect(calls.at(-1)).toEqual(['delete', { namespace: 'session', file: '.fleetview-heartbeat' }])
+                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   "delete",
+    {
+@@ -5,3 +5,6 @@
+      "namespace": "session",
++   },
++   "1000000",
++   {
++     "publishDiscipline": "inPlace",
+    },
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:98:26)
+(fail) touchHeartbeat (jNr) y removeHeartbeat (WNr) > con storage escribe en su sitio; calla el padre ausente y registra lo demás [0.82ms]
+
+ 10 pass
+ 1 fail
+ 41 expect() calls
+Ran 11 tests across 1 file. [111.00ms]

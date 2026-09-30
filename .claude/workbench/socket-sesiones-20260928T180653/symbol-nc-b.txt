@@ -1,0 +1,4 @@
+==== b: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function b [6492,6884)
+async function b(e,n){let r=n===void 0?{}:{env:n,extendEnv:!1};try{{let o=await ce().readFile(`/proc/${e}/stat`,{encoding:"utf8"});return Zne(o)}let i=n===void 0?"ps":lxe("ps",ya(n,"PATH")??"");if(i===null)return;let s=await Ve(i,["-o","lstart=","-p",String(e)],{timeout:1000,...r,env:{...n??process.env,LC_ALL:"C",TZ:"UTC"}});return s.code===0&&s.stdout?s.stdout.trim():void 0}catch{return}}
+symbol: 1 de 1 nombre(s) resueltos

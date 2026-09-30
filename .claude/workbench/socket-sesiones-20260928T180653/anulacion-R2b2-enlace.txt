@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+121 |     expect(describeFastModeDisabledReason('unknown', 'oauth', ctx)).toBe('Fast mode is currently unavailable')
+122 |     expect(describeFastModeDisabledReason('extra_usage_disabled', 'oauth', ctx)).toBe('Fast mode requires usage credits')
+123 |   })
+124 | 
+125 |   test('extraUsageDisabledMessage (Wg): el enlace gana a la instrucción', () => {
+126 |     expect(extraUsageDisabledMessage(context({ usageCreditsLink: 'L', usageCreditsInstruction: 'I' }))).toBe('Fast mode requires usage credits · L to turn them on')
+                                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "Fast mode requires usage credits · L to turn them on"
+Received: "Fast mode requires usage credits · I"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:126:105)
+(fail) los mensajes ($g, Wg, aC) > extraUsageDisabledMessage (Wg): el enlace gana a la instrucción [0.34ms]
+
+ 13 pass
+ 1 fail
+ 52 expect() calls
+Ran 14 tests across 1 file. [46.00ms]

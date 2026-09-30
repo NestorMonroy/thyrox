@@ -6,12 +6,9 @@
  * `@thyrox/local-observability: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts`: un
  * archivo consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/daemon` no es
- * miembro del bun workspace (`src/packages/package.json`) — se probó en
- * vivo antes de escribir este archivo (`Cannot find module
- * '@thyrox/local-observability'` al resolver desde `src/packages/daemon`) —
- * así que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano
- * ya exporte el símbolo real.
+ * divergencia exacta y su condición de retiro. `@thyrox/*` resuelve desde
+ * este paquete, así que cada envoltorio se retira importando el símbolo real
+ * que el hermano ya exporta.
  *
  * Una sola forma aquí — PUNTO DE INYECCIÓN, no reimplementación: `logEvent`
  * pertenece de verdad al pipeline de telemetría de `local-observability`.
@@ -69,8 +66,9 @@ export function setLogEventFn(
  */
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync, promises as fsPromises } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 export type FleetJobStatus = 'working' | 'blocked' | 'done' | 'failed' | 'stopped'
 export type FleetTempo = 'active' | 'blocked' | 'idle'
@@ -124,8 +122,7 @@ const STATE_FILE = 'state.json'
 
 /** Fiel a `ccnmt: fleetStore.ts:38-41` (ant `b0()`). */
 function getJobsRoot(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return join(getConfigHomeDir(), 'jobs')
 }
 
 /** Fiel a `ccnmt: fleetStore.ts:49-51` (ant `V4(short)`). */
@@ -403,7 +400,7 @@ export function errorMessage(e: unknown): string {
  * esta forma portada todavía — y es un subsistema con estado real, spawnea
  * un proceso PTY-host — a diferencia de `ptyFrame.ts`, que sí se portó
  * entero por ser puro). Sólo lo usa el scheduler de pre-calentamiento del
- * spare pool (gate `CLAUDE_CODE_BG_SPARE_POOL=1`, default OFF). Default:
+ * spare pool (gate `THYROX_CODE_BG_SPARE_POOL=1`, default OFF). Default:
  * lanza, así el `catch` que ya envuelve la llamada en `bgDaemon.ts` absorbe
  * el fallo y sólo emite la telemetría `tengu_bg_spare_claim_fail`
  * `reason: 'prewarm-spawn-failed'` — el daemon sigue funcionando sin

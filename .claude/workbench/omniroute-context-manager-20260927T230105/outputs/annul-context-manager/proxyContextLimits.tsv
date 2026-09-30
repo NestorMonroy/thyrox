@@ -1,0 +1,30 @@
+base	8 pass, 0 fail	—
+trim-tools	8 pass, 0 fail	—
+prune-images	8 pass, 0 fail	—
+compress-thinking	8 pass, 0 fail	—
+thinking-keep-last	8 pass, 0 fail	—
+purify	8 pass, 0 fail	—
+purify-repair	8 pass, 0 fail	—
+notice-merge	8 pass, 0 fail	—
+notice-bytes	8 pass, 0 fail	—
+image-budget	8 pass, 0 fail	—
+document-budget	8 pass, 0 fail	—
+openai-image	7 pass, 1 fail	THYROX_CONTEXT_KEEP_LATEST_IMAGES fija cuántas imágenes recientes se conservan, cero incluido
+claude-image	8 pass, 0 fail	—
+gemini-image	8 pass, 0 fail	—
+responses-placeholder	8 pass, 0 fail	—
+prune-target-stop	8 pass, 0 fail	—
+pairs-keep-last	8 pass, 0 fail	—
+pairs-orphan-result	8 pass, 0 fail	—
+pairs-empty-assistant	8 pass, 0 fail	—
+adjacency	8 pass, 0 fail	—
+strip-trailing	8 pass, 0 fail	—
+mistral	8 pass, 0 fail	—
+env-provider	0 pass, 1 fail	—
+env-default	7 pass, 1 fail	THYROX_CONTEXT_LENGTH_DEFAULT vale para cualquier proveedor sin variable propia
+env-reserve	7 pass, 1 fail	THYROX_CONTEXT_RESERVE_TOKENS fija la reserva cuando la llamada no la da
+env-keep	7 pass, 1 fail	THYROX_CONTEXT_KEEP_LATEST_IMAGES fija cuántas imágenes recientes se conservan, cero incluido
+keep-zero	7 pass, 1 fail	THYROX_CONTEXT_KEEP_LATEST_IMAGES fija cuántas imágenes recientes se conservan, cero incluido
+injected	6 pass, 2 fail	la ventana inyectada gana a la pista por nombre | compressContext lee la ventana inyectada
+name-hints	7 pass, 1 fail	la ventana inyectada gana a la pista por nombre
+reserve-scale	8 pass, 0 fail	—

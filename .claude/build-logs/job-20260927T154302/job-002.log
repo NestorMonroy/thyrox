@@ -1,0 +1,26 @@
+130 |     const r = assembleSystemPrompt({ root, base: 'IRRENUNCIABLE', budgetTokens: 1 })
+131 |     expect(r.sections.map((s) => s.name)).toEqual(['base'])
+132 |     expect(r.text).toBe('IRRENUNCIABLE')
+133 |     expect(r.dropped.map((s) => s.name)).toEqual(['CLAUDE.md'])
+                                               ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "CLAUDE.md",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/systemPrompt.test.ts:133:42)
+(fail) ensamblado del prompt de sistema (T-022) > el base NUNCA se descarta, aunque el presupuesto sea absurdo [0.30ms]
+
+__tests__/portFidelity.test.ts:
+[portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+
+ 2650 pass
+ 5 fail
+ 4851 expect() calls
+Ran 2655 tests across 196 files. [27.74s]
+EXIT=1

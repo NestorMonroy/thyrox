@@ -1,0 +1,72 @@
+test_pool_pipeline:
+  ok    los ítems se agrupan por archivo
+  ok    un archivo con un trozo en curso no está listo
+  ok    listo cuando terminan todos sus trozos
+  ok    lo ya tomado no se vuelve a tomar
+  ok    una salida a medio escribir no cuenta como terminada
+  ok    aplica lo seguro y descarta lo que silencia o no encuentra
+  ok    la base es el texto ACTUAL, no HEAD
+  ok    los objetivos son los diagnósticos del archivo
+  ok    sin cambio no hay candidato
+{"batch": 1, "files": 1, "total_before": 2, "total_final": 1, "tsc_runs": 1, "kept": 1}
+  ok    ciclo completo: el lote mide en el worktree y conserva el arreglo
+  ok    y lo conservado vuelve al árbol principal
+  ok    sin tocar lo que ningún lote tomó
+  ok    gate 3b: lo conservado deja su patrón en la memoria, con los cuatro campos
+  ok    sin patrón, el gate 3b detiene el pipeline con un error explícito
+  ok    y no exporta lo conservado al árbol principal
+  ok    la procedencia de un patrón del agente nombra paso, evidencia, configuración, regla y archivo
+  ok    la de uno derivado declara la regla con que se derivó
+  ok    el prefijo 'error ' del log crudo se quita de la señal
+  ok    y el patrón normalizado queda aplicado al archivo
+  ok    una señal que sólo casa con texto encadenado entra DERIVADA de la clave del archivo
+  ok    la derivada conserva lo citado LITERAL
+  ok    y no casa con otro diagnóstico del mismo código con otras citas
+  ok    y queda aplicada al archivo
+  ok    una clave sin cita es el texto fijo del código: no se deriva ni entra
+  ok    y el motivo la nombra
+  ok    si el código de la señal no está en el archivo, no se deriva y no entra
+  ok    una señal repetida no crea patrón: lo aplicado va al existente, sin problema
+  ok    el apóstrofo de una palabra no es una cita
+  ok    sin cita (TS2769 fija su primera línea) no hay señal que derivar
+  ok    exclude-file: el rechazado se excluye y el patrón sigue abierto
+  ok    close-pattern: un rechazo cierra el patrón, citando el paso
+  ok    y lo aceptado se marca aplicado en los dos casos
+  ok    la procedencia reconstruida sale de la primera salida que nombra el patrón
+  ok    un patrón que ya tiene procedencia no se toca
+  ok    el que sólo aparece después toma su propio paso
+  ok    devuelve cuántos reconstruyó, y una segunda pasada no reconstruye nada
+  ok    el candidato toca los archivos que aplican y crea el nuevo
+  ok    un archivo con una edición que falla cae entero, con su motivo
+  ok    el archivo nuevo lleva base ausente
+  ok    los objetivos son los de los archivos tocados y los consumidores declarados
+  ok    la edición del archivo nuevo es su contenido entero
+  ok    una edición que silencia hace caer su archivo
+  ok    crear sobre un archivo existente se rechaza con el motivo del binario
+{"batch": 1, "files": 1, "total_before": 1, "total_final": 0, "tsc_runs": 1, "kept": 2}
+  ok    modo módulo: se conservan los dos archivos del porte
+  ok    y el archivo nuevo llega al árbol principal, directorio incluido
+{"batch": 1, "files": 2, "total_before": 3, "total_final": 2, "tsc_runs": 2, "kept": 1, "worktrees": 2}
+{"batch": 2, "files": 1, "total_before": 2, "total_final": 1, "tsc_runs": 1, "kept": 1, "worktrees": 2}
+  ok    dos worktrees: se conservan a y c, no b
+  ok    y llegan al árbol principal
+  ok    el primer lote midió dos prefijos a la vez
+  ok    los dos worktrees terminan iguales
+  ok    el ledger registra cada decisión
+  ok    cada fila de la ruta especulativa lleva el setup_id del pipeline
+{"batch": 1, "files": 2, "total_before": 3, "total_final": 3, "tsc_runs": 2, "kept": 0, "worktrees": 2}
+{"batch": 2, "files": 2, "total_before": 3, "total_final": 1, "tsc_runs": 2, "kept": 2, "worktrees": 2}
+  ok    lo medido encima de un rechazo vuelve y se decide después
+  ok    el paso lleva --net cuando el pipeline lo pide
+  ok    y no lo lleva cuando no
+  ok    el paso lleva el setup_id del pipeline, antes del separador de tsc
+  ok    sin setup_id no inventa uno
+  ok    sin final.log, la base sigue siendo la anterior
+  ok    con final.log, la base es la del lote
+  ok    el archivo conservado queda aplicado
+  ok    el no conservado queda excluido
+  ok    y su razón cita el paso
+  ok    un conservado ajeno al patrón no se le atribuye
+  ok    devuelve lo aplicado y lo excluido
+  ok    una unidad que no es de patrón no toca la memoria
+test_pool_pipeline: 64 aserciones — 64 ok, 0 falla(s)

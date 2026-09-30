@@ -1,0 +1,9 @@
+tests/session/test_snapshot_recovery.py
+tests/session/test-headless-pool-worktree.sh
+tests/session/test-headless-pool.sh
+tests/session/test-headless-pool-item-drain.sh
+tests/session/test-headless-pool-frozen-launcher.sh
+tests/session/test-gnu-time-launchers.sh
+tests/session/test-gpu-admission-cli.sh
+tests/session/test_gpu_scenarios.py
+tests/session/test-item-worktree-stash.sh

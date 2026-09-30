@@ -1,0 +1,17 @@
+src/packages/provider/__tests__/providerRouting.test.ts
+src/packages/provider/src/__tests__/extraUsage.test.ts
+src/packages/provider/src/__tests__/gatewayModelDiscovery.test.ts
+src/packages/provider/src/__tests__/providerCommandUnset.test.ts
+src/packages/provider/src/__tests__/providerRouting.test.ts
+src/packages/provider/src/__tests__/thinking.test.ts
+src/packages/tool-registry/src/__tests__/pdf.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/commandSemantics.test.ts
+src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts
+src/packages/tool-registry/src/tools/LSPTool/__tests__/formatters.test.ts
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/gitSafety.test.ts
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/adapterFactory.integration.test.ts
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/adapterFactory.test.ts
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts

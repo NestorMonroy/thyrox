@@ -44,6 +44,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "counterpart_body", HERE / "src" / "verify" / "counterpart_body.py")
+assert spec is not None and spec.loader is not None  # el archivo existe en este árbol
 engine = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(engine)
 reader = engine.reader_module

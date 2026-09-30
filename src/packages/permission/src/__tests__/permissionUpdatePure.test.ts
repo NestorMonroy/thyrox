@@ -1,22 +1,15 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
+import type { PermissionHostBindings } from '../contracts.js'
+import { installPermissionHostBindings } from '../host.js'
+import { createReadRuleSuggestion, extractRules, hasRules } from '../PermissionUpdate.js'
 
-// Copia de `ccnmt: packages/permission/src/__tests__/permissionUpdatePure.test.ts`
-// con los comentarios traducidos; el cuerpo es el de la fuente.
-//
-// Simular las ataduras al host ANTES de importar `PermissionUpdate`.
-// `PermissionUpdate` → `filesystem` → `getPermissionHostBindings` lanza si no
-// están instaladas. Aquí se provee un stub que deja que `toPosixPath` —por
-// `getPlatform`— caiga a su valor por defecto, el basado en
-// `process.platform`.
-const realHost = await import('../host.js')
-mock.module('../host.js', () => ({
-  ...realHost,
-  getPermissionHostBindings: () => ({}),
-}))
-
-const { createReadRuleSuggestion, extractRules, hasRules } = await import(
-  '../PermissionUpdate.js'
-)
+// PermissionUpdate → filesystem → getPermissionHostBindings lanza si no hay
+// enlaces instalados. Unos enlaces vacíos dejan que toPosixPath (vía
+// getPlatform) caiga a su valor por defecto de process.platform. Se instalan
+// con la API real y no con `mock.module`: en Bun ese sustituto vive el resto
+// del proceso, y los enlaces que otro archivo instalaba después quedaban
+// ocultos por el getter falso (sandboxWriteAllowlist.test.ts fallaba en lote).
+installPermissionHostBindings({} as PermissionHostBindings)
 import type { PermissionUpdate } from '../PermissionUpdateSchema.js'
 
 describe('extractRules — flatMap over addRules', () => {
@@ -66,7 +59,7 @@ describe('extractRules — flatMap over addRules', () => {
   })
 
   test('non-addRules updates filtered out', () => {
-    // La actualización `setMode` no tiene reglas — hay que saltarla por el caso por defecto.
+    // setMode update has no rules — must be skipped via the default case.
     const updates: PermissionUpdate[] = [
       { type: 'setMode', mode: 'plan' } as PermissionUpdate,
       {
@@ -133,9 +126,9 @@ describe('hasRules — predicate', () => {
   })
 
   test('addRules with empty rules array → false', () => {
-    // Crítico: una actualización `addRules` sin reglas es, técnicamente, del
-    // tipo `addRules`, pero no añade ninguna. `hasRules` NO debe contarla como
-    // que tiene reglas — el contrato es «¿hay al menos una regla?».
+    // Critical: an addRules update with no rules is technically an
+    // addRules type, but it adds no rules. hasRules should NOT count it
+    // as having rules — the contract is "is there at least one rule".
     expect(
       hasRules([
         {
@@ -183,20 +176,22 @@ describe('createReadRuleSuggestion — Read rule generation', () => {
   })
 
   test('root "/" → undefined (cannot grant universal Read)', () => {
-    // CRÍTICO: una regla de Read para «/» permitiría leer cualquier cosa en
-    // cualquier punto del sistema de archivos. La función devuelve `undefined`
-    // para rehusar esa petición peligrosa.
+    // CRITICAL: a Read rule for "/" would allow reading everything
+    // anywhere on the filesystem. The function returns undefined to
+    // refuse this dangerous request.
     expect(createReadRuleSuggestion('/')).toBeUndefined()
   })
 
   test('Windows-shaped path on non-Windows platform — backslashes preserved', () => {
-    // `toPosixPath` sólo convierte \ en / en la plataforma `windows`. En
-    // macOS —la máquina de test— las barras invertidas pasan tal cual.
-    // Documenta la dependencia de plataforma: el resultado del test refleja el
-    // host donde corre.
+    // toPosixPath only converts \ to / on `windows` platform. On macOS
+    // (test machine), backslashes pass through. Documents the platform
+    // dependency — test result reflects the test runner's host.
     const result = createReadRuleSuggestion('C:\\Users\\me')
-    // `posix.isAbsolute('C:\\Users\\me')` es false → no se antepone barra.
-    expect(result?.rules[0]?.ruleContent).toBe('C:\\Users\\me/**')
+    if (result?.type !== 'addRules') {
+      throw new Error('expected addRules')
+    }
+    // posix.isAbsolute('C:\\Users\\me') is false → no leading slash added.
+    expect(result.rules[0]?.ruleContent).toBe('C:\\Users\\me/**')
   })
 
   test('default destination is "session" if not provided', () => {
@@ -212,22 +207,27 @@ describe('createReadRuleSuggestion — Read rule generation', () => {
   })
 
   test('preserves trailing slashes if present', () => {
-    // Documenta que la función NO normaliza las barras finales. Quien llama
-    // es responsable de pasar una ruta ya limpia.
+    // Documents that the function does NOT normalize trailing slashes.
+    // Caller is responsible for already-clean path input.
     const result = createReadRuleSuggestion('/some/path/')
-    // `toPosixPath` deja la barra final. Después la comprobación de absoluta
-    // ve /some/path/ como absoluta → queda envuelta como //some/path//**
-    expect(result?.rules[0]?.ruleContent).toBe('//some/path//**')
+    if (result?.type !== 'addRules') {
+      throw new Error('expected addRules')
+    }
+    // toPosixPath leaves the trailing slash. Then the absolute check
+    // sees /some/path/ as absolute → wrapped as //some/path//**
+    expect(result.rules[0]?.ruleContent).toBe('//some/path//**')
   })
 
   test('rule structure — addRules type, behavior allow, toolName Read', () => {
-    // Anclar la estructura para que se detecte un refactor que cambie, por
-    // ejemplo, el comportamiento a 'ask' (que haría aflorar un prompt de
-    // permiso).
+    // Anchor the structure so refactors that change e.g. behavior to
+    // 'ask' (which would surface a permission prompt) get caught.
     const result = createReadRuleSuggestion('/x/y')
     expect(result?.type).toBe('addRules')
-    expect(result?.behavior).toBe('allow')
-    expect(result?.rules[0]?.toolName).toBe('Read')
-    expect(result?.rules.length).toBe(1)
+    if (result?.type !== 'addRules') {
+      throw new Error('expected addRules')
+    }
+    expect(result.behavior).toBe('allow')
+    expect(result.rules[0]?.toolName).toBe('Read')
+    expect(result.rules.length).toBe(1)
   })
 })

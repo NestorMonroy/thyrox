@@ -1,0 +1,8 @@
+src/packages/agent
+src/packages/app-host
+src/packages/cli
+src/packages/config
+src/packages/permission
+src/packages/provider
+src/packages/storage
+src/packages/tool-registry

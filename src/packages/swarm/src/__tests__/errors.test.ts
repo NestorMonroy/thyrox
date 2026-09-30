@@ -73,10 +73,9 @@ describe('WorktreeError', () => {
 })
 
 describe('error code uniqueness contract', () => {
-  // Por qué: el `code` es el identificador a nivel de wire-protocol (llega
-  // a la telemetría del host, al log scraping, a las reglas de alerta). Si
-  // dos subclases de error llegan a compartir código, eso es un bug de
-  // contrato.
+  // Why: code is the wire-protocol-level identifier (it surfaces to
+  // host telemetry, log scraping, alert rules). If two error subclasses
+  // ever share a code, that's a contract bug.
   test('all four classes have distinct error codes', () => {
     const codes = new Set([
       new SwarmBaseError('SWARM_BASE', 'm').code,

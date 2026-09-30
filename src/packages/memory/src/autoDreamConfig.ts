@@ -1,22 +1,14 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/autoDreamConfig.ts`, con
- * `getInitialSettings` desde el sustituto local
- * `./internal/pendingCrossPackageDeps.js` (`config/settings` no está
- * portado en `@thyrox/config`).
- *
- * Recordado como un flag de settings — controla el toggle visible al
- * usuario en la fila "Auto-dream: on/off" de `/memory`. Con `/dream`
- * disparado por cron (subsistema 1 del porte de KAIROS, mayo 2026), este
- * flag es puramente un hint de UI: le dice al modelo si el usuario quiere
- * consolidación nocturna. La programación real vive en
- * `.claude/scheduled_tasks.json` vía el flujo `/dream nightly`.
- */
+// Autoremembered as a settings flag — controls the user-facing toggle in
+// `/memory`'s "Auto-dream: on/off" row. With the cron-driven `/dream`
+// (subsystem 1 of the KAIROS port, May 2026), this flag is purely a UI
+// hint: it tells the model whether the user wants nightly consolidation.
+// The actual scheduling lives in `.claude/scheduled_tasks.json` via the
+// `/dream nightly` flow.
 
-import { getInitialSettings } from './internal/pendingCrossPackageDeps.js'
+import { getInitialSettings } from '@thyrox/config/settings'
 
 export function isAutoDreamEnabled(): boolean {
-  // Default true — los usuarios de auto-memoria quieren consolidación
-  // salvo que digan lo contrario. Mismo default que la implementación
-  // legado del stop-hook.
+  // Default true — auto-memory users want consolidation unless they say
+  // otherwise. Same default as the legacy stop-hook implementation.
   return getInitialSettings().autoDreamEnabled !== false
 }

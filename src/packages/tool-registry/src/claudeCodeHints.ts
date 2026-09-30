@@ -21,7 +21,7 @@
  * nombre de módulo, mismo sitio, mismos nombres y firmas— y no se copia.
  *
  * DIVERGENCIA DECLARADA (una): el literal de la etiqueta. La fuente escribe
- * `<claude-code-how-works-how-works-hint`, que es un artefacto de su propio
+ * `<claude-code-hint`, que es un artefacto de su propio
  * renombrado —la sustitución `claude-code` → `claude-code-how-works` se aplicó
  * dos veces sobre la misma cadena—. La etiqueta nombra el PROTOCOLO de este
  * harness, no el de aquél, así que aquí es `<thyrox-hint`. Copiar el literal

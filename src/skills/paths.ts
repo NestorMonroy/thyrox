@@ -12,8 +12,8 @@
  */
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { envValue, repoOfRoot, resolveHome, thyroxRoot } from '../paths/reach.ts'
-import { stateDir } from '../workbench/paths.ts'
+import { envValue, repoOfRoot, resolveHome, thyroxRoot } from '@thyrox/paths/reach.ts'
+import { stateDir } from '@thyrox/workbench/paths.ts'
 
 /**
  * La variable de FAMILIA — declara el hogar de todos los clones a la vez. Es

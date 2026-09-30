@@ -17,7 +17,7 @@
  * el emisor empeoraría la cifra que existe para justificarlo.
  */
 import type { RuleDefinition } from '../types.ts'
-import { envValue } from '../../paths/reach.ts'
+import { envValue } from '@thyrox/paths/reach.ts'
 import { emittedMarker } from '../provenance.ts'
 
 /** El marcador de un parámetro en el cuerpo. */
@@ -52,14 +52,15 @@ export function resolveParameters(
 
 /** Sustituye los marcadores; lanza ante uno que ningún parámetro declara. */
 export function render(body: string, values: Record<string, string>): string {
-  return body.replace(PLACEHOLDER, (match, name: string) => {
-    if (!(name in values)) {
+  return body.replace(PLACEHOLDER, (_match, name: string) => {
+    const resolved = values[name]
+    if (resolved === undefined) {
       throw new UnresolvedParameterError(
         `El cuerpo usa {{${name}}} y la definicion no lo declara como ` +
           `parametro. NO se emite con el marcador crudo.`,
       )
     }
-    return values[name]
+    return resolved
   })
 }
 

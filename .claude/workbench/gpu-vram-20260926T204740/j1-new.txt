@@ -1,0 +1,6 @@
+rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
+# Lo que discrimina no es el mensaje sino el -j que llega a Parallel: un aviso
+# impreso sin aplicar la anchura pasaria la linea de arriba.
+check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' "$F/parallel.args")" "1"

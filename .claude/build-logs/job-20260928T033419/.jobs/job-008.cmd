@@ -1,0 +1,1 @@
+cd src/packages/permission && echo == permission && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20

@@ -20,7 +20,7 @@ import type { AppState } from '../../../appStateTypes.js'
 // strict — it throws if any expected key is missing — so we stub every key
 // with a function that throws on use, then override only the handful that
 // readTeamFileAsync / writeTeamFileAsync / ensureTeamFile actually touch.
-// Inlined per CLAUDE.md: "mock 模式必須內聯在測試文件中，不能從共享 helper 導入".
+// Inlined per THYROX.md: "mock 模式必須內聯在測試文件中，不能從共享 helper 導入".
 const REQUIRED_BINDING_KEYS = [
   'TEAMMATE_MESSAGE_TAG', 'ERROR_MESSAGE_USER_ABORT', 'BASH_TOOL_NAME',
   'SEND_MESSAGE_TOOL_NAME', 'TASK_CREATE_TOOL_NAME', 'TASK_GET_TOOL_NAME',
@@ -208,7 +208,7 @@ describe('ensureTeamFile', () => {
     // not a stub (spawnMultiAgent imports it directly, not via the swarm
     // runtime binding we installed). Just check it's populated.
     expect(rebuilt.leadSessionId).toEqual(expect.any(String))
-    expect(rebuilt.leadSessionId.length).toBeGreaterThan(0)
+    expect(rebuilt.leadSessionId!.length).toBeGreaterThan(0)
     expect(rebuilt.members).toHaveLength(2)
     const names = rebuilt.members.map(m => m.name).sort()
     expect(names).toEqual(['alpha', 'beta'])

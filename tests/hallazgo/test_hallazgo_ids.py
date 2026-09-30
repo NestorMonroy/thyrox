@@ -175,6 +175,7 @@ check("y el mismo número SÍ está libre si se declara el opt-out — el contro
       "DISCRIMINA las dos fuentes", True,
       hallazgo_ids.is_free(TMP / "nueve", "H-TESTDEF-9",
                            store_path=hallazgo_ids.NO_STORE))
+assert hallazgo_ids.next_id.__defaults__ is not None
 check("el DEFAULT no es el opt-out: RESOLVE_STORE es el valor por omisión",
       hallazgo_ids.RESOLVE_STORE,
       hallazgo_ids.next_id.__defaults__[0])
@@ -238,6 +239,34 @@ check("un prefijo con no-letras se rehusa", True, _refused_odd)
 # ANULACION: retirando `validated_prefix` de `next_id`, caen exactamente las
 # cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de
 # control positivo — medido al escribirlas.
+
+# El subcomando se llama `propose-id`: calcula el mayor número usado más uno y
+# lo imprime, pero NO lo reserva. «Acuñar», «mint» y «emitir» prometen una
+# asignación que no ocurre hasta que alguien escribe la fila o el .rst — el
+# hueco de H-THYROX-26. `mint` y `acunar` siguen como alias para los guiones y
+# documentos que ya los invocan; no se reescribe evidencia fechada.
+import contextlib as _contextlib  # noqa: E402  -- sólo para leer la ayuda
+import io as _io  # noqa: E402
+parser = hallazgo_ids.build_parser()
+check("propose-id es el subcomando", hallazgo_ids._cmd_propose_id,
+      parser.parse_args(["propose-id", "THYROX"]).func)
+check("mint sigue resolviendo, como alias", hallazgo_ids._cmd_propose_id,
+      parser.parse_args(["mint", "THYROX"]).func)
+check("acunar sigue resolviendo, como alias", hallazgo_ids._cmd_propose_id,
+      parser.parse_args(["acunar", "THYROX"]).func)
+check("la ayuda anuncia propose-id", True, "propose-id" in parser.format_help())
+help_buffer = _io.StringIO()
+with _contextlib.redirect_stdout(help_buffer):
+    try:
+        parser.parse_args(["propose-id", "--help"])
+    except SystemExit:
+        pass
+subcommand_help = help_buffer.getvalue()
+check("y dice que no reserva el número", True, "no lo reserva" in subcommand_help)
+check("verify es el subcomando", hallazgo_ids._cmd_verify,
+      parser.parse_args(["verify", "H-API-1"]).func)
+check("verificar sigue resolviendo, como alias", hallazgo_ids._cmd_verify,
+      parser.parse_args(["verificar", "H-API-1"]).func)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

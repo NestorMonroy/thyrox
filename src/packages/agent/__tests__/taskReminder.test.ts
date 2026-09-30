@@ -23,6 +23,7 @@ import {
   isValidAttachment, renderAttachment, TASK_REMINDER_TEXT,
   TURNS_SINCE_WRITE, TURNS_BETWEEN_REMINDERS,
 } from '../loop/context/attachments.ts'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { resumenTablero, taskTools } from '@thyrox/tools/tasks'
 import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
@@ -30,7 +31,11 @@ import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn, ProviderRequest } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'taskrem-'))
-const tablero = () => join(dir(), 'tablero.sqlite3')
+const tablero = () => {
+  const p = join(dir(), 'tablero.sqlite3')
+  createMigratedTaskDb(p)
+  return p
+}
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }
 const texto = (t: string): AssistantTurn => ({ id: `m${Math.random()}`, model: 'claude-opus-5', stop_reason: 'end_turn', content: [{ type: 'text', text: t }], usage: uso })
 const usa = (name: string, input: Record<string, unknown> = {}): AssistantTurn => ({
@@ -57,8 +62,8 @@ const primerRecordatorio = (reqs: ProviderRequest[]): number => reqs.findIndex((
 describe('renderAttachment(task_reminder) — el mismo <system-reminder> del ejecutable', () => {
   test('sin tareas: sólo el texto fijo, sin el bloque "Here are the existing tasks"', () => {
     const [m] = renderAttachment({ type: 'task_reminder', tasks: [] })
-    expect(m.isMeta).toBe(true)
-    const t = (m.content[0] as { text: string }).text
+    expect(m!.isMeta).toBe(true)
+    const t = (m!.content[0] as { text: string }).text
     expect(t.startsWith('<system-reminder>\n')).toBe(true)
     expect(t.endsWith('\n</system-reminder>')).toBe(true)
     expect(t).toContain(TASK_REMINDER_TEXT)
@@ -71,7 +76,7 @@ describe('renderAttachment(task_reminder) — el mismo <system-reminder> del eje
       tasks: [{ id: '75', status: 'pending', subject: 'Completar el porte de TaskUpdate' },
               { id: '76', status: 'in_progress', subject: 'Rediseñar el subsistema de TASK' }],
     })
-    const t = (m.content[0] as { text: string }).text
+    const t = (m!.content[0] as { text: string }).text
     expect(t).toContain('Here are the existing tasks:')
     expect(t).toContain('#75. [pending] Completar el porte de TaskUpdate')
     expect(t).toContain('#76. [in_progress] Rediseñar el subsistema de TASK')
@@ -82,7 +87,7 @@ describe('renderAttachment(task_reminder) — el mismo <system-reminder> del eje
     expect(isValidAttachment({ type: 'task_reminder', tasks: [] })).toBe(true)
     expect(isValidAttachment({ type: 'task_reminder', tasks: 'x' })).toBe(false)
     const [m] = renderAttachment({ type: 'task_reminder' })
-    expect((m.content[0] as { text: string }).text).toContain(TASK_REMINDER_TEXT)
+    expect((m!.content[0] as { text: string }).text).toContain(TASK_REMINDER_TEXT)
   })
 })
 
@@ -184,14 +189,19 @@ describe('resumenTablero — el tablero durable, sin la lista efímera', () => {
   })
 })
 
+// Los turnos sin escritura de tarea usan `Glob`, de solo lectura: el caso mide la
+// cadencia del recordatorio, no la herramienta. Con `Bash` cada turno lanzaba un
+// shell real (~110 ms, medido en `.claude/workbench/frontera-publica-de-paquetes-*`)
+// y los 23 turnos rozaban el plazo de 5 s de `bun test` bajo carga.
 describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
   test('a los 10 turnos sin escritura de tarea, el 10º request trae el recordatorio con el tablero', async () => {
     const d = dir()
     const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     const tc = taskTools({ dbPath: db, sessionId: 'S' }).find((t) => t.name === 'TaskCreate')!
     await tc.run({ subject: 'seguir el porte de TaskUpdate' }, ctx())
     // 9 turnos con herramienta + 1 texto: el bucle llega a la iteración 10
-    const p = new RecordedProvider([...Array.from({ length: 9 }, () => usa('Bash', { command: 'true' })), texto('fin')])
+    const p = new RecordedProvider([...Array.from({ length: 9 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin')])
     await runLoop({
       cwd: d, model: 'claude-opus-5', system: 'h', tools: CORE_TOOLS, transcriptDir: d,
       prompt: 'trabaja', provider: p, taskReminder: { dbPath: db, sessionId: 'S' },
@@ -199,8 +209,8 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     // el gate es 10/10: antes del 10º request no hay recordatorio
     expect(TURNS_SINCE_WRITE).toBe(10)
     expect(TURNS_BETWEEN_REMINDERS).toBe(10)
-    expect(reminderEn(p.requests[8])).toBeNull()
-    const t = reminderEn(p.requests[9])
+    expect(reminderEn(p.requests[8]!)).toBeNull()
+    const t = reminderEn(p.requests[9]!)
     expect(t).not.toBeNull()
     expect(t!).toContain('#1. [pending] seguir el porte de TaskUpdate')
   })
@@ -208,8 +218,9 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
   test('una escritura de tarea reinicia el contador: el recordatorio cae un turno más tarde', async () => {
     const d = dir()
     const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     // sin escritura: dónde cae el primer recordatorio
-    const sinEscritura = new RecordedProvider([...Array.from({ length: 11 }, () => usa('Bash', { command: 'true' })), texto('fin')])
+    const sinEscritura = new RecordedProvider([...Array.from({ length: 11 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin')])
     await runLoop({
       cwd: d, model: 'claude-opus-5', system: 'h', tools: CORE_TOOLS, transcriptDir: d,
       prompt: 'x', provider: sinEscritura, taskReminder: { dbPath: db, sessionId: 'S' },
@@ -220,9 +231,10 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     // con una TaskUpdate en el turno 1: el reset empuja el recordatorio un turno
     const d2 = dir()
     const db2 = join(d2, 'store.sqlite3')
+    createMigratedTaskDb(db2)
     const conEscritura = new RecordedProvider([
       usa('TaskUpdate', { task_id: '999', status: 'in_progress' }),
-      ...Array.from({ length: 11 }, () => usa('Bash', { command: 'true' })), texto('fin'),
+      ...Array.from({ length: 11 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin'),
     ])
     await runLoop({
       cwd: d2, model: 'claude-opus-5', system: 'h', tools: CORE_TOOLS, transcriptDir: d2,

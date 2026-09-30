@@ -1,0 +1,3 @@
+==== Mne: 1 definicion(es) de nivel superior
+---- chunk-0jw7026c.js variable Mne [30455,31126)
+Mne=XC(async()=>{let e=K(),n=a.CLAUDE_CODE_CLIENT_CERT,r=a.CLAUDE_CODE_CLIENT_KEY,[o,s]=await Promise.all([n?ve(n,"client certificate from CLAUDE_CODE_CLIENT_CERT"):null,r?ve(r,"client key from CLAUDE_CODE_CLIENT_KEY"):null]),i=Boolean(n&&!o||r&&!s),c=Boolean(!i&&o&&s&&Nt(o.content,s.content));if(c)t("mTLS: Ignoring mismatched client cert/key pair \u2014 mid-rotation read",{level:"error"});let u=i||c,l=n?u?e.clientCert:o:null,f=r?u?e.clientKey:s:null,d=e.clientCert?.path!==l?.path||e.clientCert?.content!==l?.content||e.clientKey?.path!==f?.path||e.clientKey?.content!==f?.content;if(e.clientCert=l,e.clientKey=f,d)ke(e);return{changed:d,readFailed:u,mismatched:c}})

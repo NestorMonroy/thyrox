@@ -29,17 +29,17 @@ def rec(op, payload=b""):
     return struct.pack("<HH", op, len(payload)) + payload
 
 
-def sst(chains, *, unicode=False, partir=None):
+def sst(chains, *, unicode=False, split=None):
     """Una SST. `partir` mete un CONTINUE tras esa cantidad de cadenas."""
     def one(s):
         if unicode:
             return struct.pack("<HB", len(s), 0x01) + s.encode("utf-16-le")
         return struct.pack("<HB", len(s), 0x00) + s.encode("latin-1")
     body = struct.pack("<ii", len(chains), len(chains))
-    if partir is None:
+    if split is None:
         return rec(0x00FC, body + b"".join(one(s) for s in chains))
-    first = body + b"".join(one(s) for s in chains[:partir])
-    rest = b"".join(one(s) for s in chains[partir:])
+    first = body + b"".join(one(s) for s in chains[:split])
+    rest = b"".join(one(s) for s in chains[split:])
     return rec(0x00FC, first) + rec(0x003C, rest)
 
 
@@ -88,7 +88,7 @@ class TestSharedStrings(unittest.TestCase):
         —su SST va seguida de EXTSST— pero una consulta mas grande si."""
         chains = ["c%02d" % i for i in range(10)]
         body = rec(0x00FD, struct.pack("<HHHi", 0, 0, 0, 9))
-        rows = xls.rows_from_stream(workbook(body, sst(chains, partir=4)))
+        rows = xls.rows_from_stream(workbook(body, sst(chains, split=4)))
         self.assertEqual(rows[0], ["c09"])
 
 
@@ -153,7 +153,7 @@ class TestVerdict(unittest.TestCase):
         from test_cfb import build  # noqa: E402
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Otro": bytes(range(256)) * 20})
+            build(f, {"Other": bytes(range(256)) * 20})
             with self.assertRaises(xls.NotAWorkbook) as box:
                 xls.rows(f)
             self.assertIn("Workbook", str(box.exception))

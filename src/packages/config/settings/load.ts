@@ -18,6 +18,7 @@ import { precedence, type SettingSource } from './constants.ts'
 import type { Settings } from './types.ts'
 import { deferredKeysPresent } from './inventory.ts'
 import { filterInvalidPermissionRules, formatZodError, type SettingsError } from './validation.ts'
+import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 import { SettingsSchema } from './types.ts'
 
 export type SourcedSettings = { source: SettingSource; settings: Settings }
@@ -71,12 +72,13 @@ export function loadSettings(specs: LoadSpec[]): LoadResult {
       continue
     }
     errors.push(...filterInvalidPermissionRules(data, path))
+    errors.push(...sanitizeCrossSessionInbound(data, path, { policySource: source === 'policySettings' }))
     // Una clave diferida no invalida el archivo: se avisa nombrando el
     // servicio ajeno y la condición que la traería, y la carga sigue.
     for (const { key, reason } of deferredKeysPresent(data)) {
       errors.push({ file: source, path: `${path} → ${key}`, message: reason })
     }
-    const r = SettingsSchema.safeParse(data)
+    const r = SettingsSchema().safeParse(data)
     if (!r.success) {
       errors.push(...formatZodError(r.error, path))
       continue

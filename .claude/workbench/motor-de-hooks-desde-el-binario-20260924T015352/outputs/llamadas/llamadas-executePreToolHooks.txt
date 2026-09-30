@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/services/toolHooks.ts:466:    for await (const result of executePreToolHooks(
+src/packages/tool-registry/src/services/toolHooks.ts-467-      tool.name,
+src/packages/tool-registry/src/services/toolHooks.ts-468-      toolUseID,
+src/packages/tool-registry/src/services/toolHooks.ts-469-      processedInput,
+src/packages/tool-registry/src/services/toolHooks.ts-470-      toolUseContext,
+src/packages/tool-registry/src/services/toolHooks.ts-471-      appState.toolPermissionContext.mode,
+src/packages/tool-registry/src/services/toolHooks.ts-472-      toolUseContext.abortController.signal,
+src/packages/tool-registry/src/services/toolHooks.ts-473-      undefined, // timeoutMs - use default
+src/packages/tool-registry/src/services/toolHooks.ts-474-      toolUseContext.requestPrompt,
+src/packages/tool-registry/src/services/toolHooks.ts-475-      tool.getToolUseSummary?.(processedInput),
+src/packages/tool-registry/src/services/toolHooks.ts-476-    )) {
+src/packages/tool-registry/src/services/toolHooks.ts-477-      try {
+src/packages/tool-registry/src/services/toolHooks.ts-478-        if (result.message) {
+src/packages/tool-registry/src/services/toolHooks.ts-479-          yield { type: 'message', message: { message: result.message as AttachmentMessage | ProgressMessage<HookProgress> } }
+src/packages/tool-registry/src/services/toolHooks.ts-480-        }

@@ -66,6 +66,7 @@ afirmar "stop_gate.py parsea" 0 $?
 
 echo "== 2. barrera positiva: N trabajos que terminan bien =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 for i in 1 2; do
     L=$(fixture_file); nohup bash -c "sleep $i; echo EXIT=0" >"$L" 2>&1 & P=$!; disown $P
     bash "$GUION" registrar "t$i" "$L" "$P" >/dev/null
@@ -75,6 +76,7 @@ afirmar "ledger vacío tras recoger" "" "$(ls "$THYROX_JOBS_DIR")"
 
 echo "== 3. un trabajo muere sin marcador =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LA=$(fixture_file); nohup bash -c "sleep 1; echo EXIT=0" >"$LA" 2>&1 & PA=$!; disown $PA
 LB=$(fixture_file); nohup bash -c "echo arrancando; sleep 1; kill -9 \$\$" >"$LB" 2>&1 & PB=$!; disown $PB
 bash "$GUION" registrar vivo "$LA" "$PA" >/dev/null
@@ -83,19 +85,29 @@ SALIDA=$(bash "$GUION" esperar --timeout 30); COD=$?
 afirmar "un BAIL -> exit 2" 2 "$COD"
 grep -q '^BAIL   muerto' <<<"$SALIDA"; afirmar "nombra al que murió" 0 $?
 grep -q '^OK     vivo'   <<<"$SALIDA"; afirmar "no arrastra al que sí terminó" 0 $?
+grep -qE '^OK +vivo +exit=0$' <<<"$SALIDA"; afirmar "el que terminó bien lleva exit=0" 0 $?
+grep -qE '^BAIL +muerto$' <<<"$SALIDA"; afirmar "un BAIL no inventa salida: no hay marcador" 0 $?
+grep -qF 'salida distinta de 0' <<<"$SALIDA"; afirmar "sin salidas distintas de 0 no hay pie" 1 $?
 
 echo "== 4. CONTROL POSITIVO — el episodio H-DOCS-155 =="
 # La suite TERMINA y escribe su marcador; nadie la recoge; el turno cierra.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LS=$(fixture_file); printf '7 failed, 3165 passed, 4 skipped\nEXIT=1\n' > "$LS"
 bash "$GUION" registrar suite-api "$LS" 999999 >/dev/null
 afirmar "terminado y SIN RECOGER -> el gate bloquea" "block" "$(decision_del_gate)"
 SALIDA=$(bash "$GUION" esperar --timeout 10)
 grep -q '7 failed' <<<"$SALIDA"; afirmar "la recogida IMPRIME el resultado" 0 $?
+# `OK` dice «asentado con marcador», no «pasó». La salida del marcador va en
+# la MISMA línea del veredicto, y el pie cuenta las distintas de 0: leer sólo
+# la cabecera ya no esconde un `EXIT=1`.
+grep -qE '^OK +suite-api +exit=1$' <<<"$SALIDA"; afirmar "la cabecera lleva la salida del marcador" 0 $?
+grep -qF 'salida distinta de 0: 1 (suite-api)' <<<"$SALIDA"; afirmar "el pie cuenta las salidas distintas de 0" 0 $?
 afirmar "tras recoger, el gate calla" "ninguna" "$(decision_del_gate)"
 
 echo "== 5. el gate no estorba ni reincide =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 afirmar "sin trabajos -> no bloquea" "ninguna" "$(decision_del_gate)"
 LV=$(fixture_file); nohup bash -c "sleep 300" >"$LV" 2>&1 & PV=$!; disown $PV
 bash "$GUION" registrar largo "$LV" "$PV" >/dev/null
@@ -109,11 +121,12 @@ kill $PV 2>/dev/null
 
 echo "== 6. archivar empaqueta el ledger en <id>.tar.gz (T-096) =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 KX_TRABAJOS_ARCHIVO_DIR=$(fixture_dir); export KX_TRABAJOS_ARCHIVO_DIR
 LJ=$(fixture_file); echo "EXIT=0" >"$LJ"
 bash "$GUION" registrar demo "$LJ" 99999 >/dev/null
 bash "$GUION" archivar sesion-x >/dev/null
-afirmar "el .tar.gz existe" 0 "$( [ -f "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" ]; echo $? )"
+afirmar "el .tar.gz existe" 0 "$( [ -f "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" ] && echo 0 || echo 1 )"
 afirmar "el archivo trae el .job" "demo" "$(tar -tzf "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" | grep -oE 'demo' | head -1)"
 afirmar "el ledger vivo se vació de .job" 0 "$(find "$THYROX_JOBS_DIR" -name '*.job' | wc -l | tr -d ' ')"
 bash "$GUION" archivar sesion-x >/dev/null; afirmar "archivar en vacío es no-op (exit 0)" 0 $?
@@ -125,6 +138,7 @@ echo "== 7. adopción de un huérfano real (TASK-DOCS-0377) =="
 # tras él hay un trabajo vivo que ninguna herramienta ve. Ése es el episodio
 # que h-docs-1037 registró, y el control positivo que esta sección exige.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 MARCA="huerfano-$$-$RANDOM"
 LH=$(fixture_file)
 # La forma de lanzamiento es la de `run-task-pool.sh`, no una fabricada: el
@@ -160,6 +174,7 @@ kill $PH 2>/dev/null
 
 echo "== 8. proc_start distingue un pid RECICLADO (control anulado) =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LR=$(fixture_file); nohup bash -c "sleep 300" >"$LR" 2>&1 & PR=$!; disown $PR
 bash "$GUION" register r1 "$LR" "$PR" >/dev/null
 afirmar "con el proc_start real -> VIVO" "VIVO" "$(bash "$GUION" status | awk '$1=="r1"{print $2}')"
@@ -175,6 +190,7 @@ kill $PR 2>/dev/null
 # esperando a un proceso ajeno — sale 3 en vez de 2, y el turno cierra creyendo
 # que el trabajo sigue en marcha.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LW=$(fixture_file); nohup bash -c "sleep 300" >"$LW" 2>&1 & PW=$!; disown $PW
 bash "$GUION" register w1 "$LW" "$PW" >/dev/null
 sed -i 's/^proc_start=.*/proc_start=1/' "$THYROX_JOBS_DIR/w1.job"
@@ -184,6 +200,7 @@ kill $PW 2>/dev/null
 
 echo "== 9. la salida de estado no arrastra el token del renombre (ERR-028) =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 afirmar "el resumen dice 'estado:'" "estado:" "$(bash "$GUION" status | awk '{print $1}')"
 
 echo "== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) =="
@@ -192,6 +209,7 @@ echo "== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) =
 # propio chequeo. `status` NO es `pending`: es la via informativa, y hasta
 # ahora devolvia 1 con CUALQUIER cosa en el ledger, VIVO incluido.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LV10=$(fixture_file); nohup bash -c "sleep 300" >"$LV10" 2>&1 & PV10=$!; disown $PV10
 bash "$GUION" registrar sano "$LV10" "$PV10" >/dev/null
 bash "$GUION" status >/dev/null; afirmar "un VIVO sano -> status exit 0" 0 $?
@@ -201,6 +219,7 @@ kill $PV10 2>/dev/null; wait $PV10 2>/dev/null
 # BAIL -- ese si tiene que seguir siendo distinto de 0, porque de verdad pide
 # accion ('forget'/investigar).
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LB10=$(fixture_file); nohup bash -c "kill -9 \$\$" >"$LB10" 2>&1 & PB10=$!; disown $PB10
 sleep 1
 bash "$GUION" registrar roto "$LB10" "$PB10" >/dev/null
@@ -222,11 +241,12 @@ bash "$GUION" status >/dev/null; afirmar "un BAIL real -> status sigue en exit 1
 # RECHACE y que los dos sobrevivan.
 
 contiene_texto() {  # contiene_texto <texto> <patron-ere> -> si|no
-    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+    grep -qE "$2" <<<"$1" && echo si || echo no
 }
 
 # A. nombre corto, sin ambiguedad -> resuelve
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LOG_A=$(fixture_file); nohup bash -c "sleep 300" >"$LOG_A" 2>&1 & PID_A=$!; disown $PID_A
 bash "$GUION" registrar "batch-a/job-001" "$LOG_A" "$PID_A" >/dev/null
 bash "$GUION" matar "job-001" 1 >/dev/null 2>&1
@@ -234,6 +254,7 @@ afirmar "nombre corto sin ambiguedad: suelta el ledger" "" "$(bash "$GUION" pend
 
 # B. mismo nombre corto en DOS despachos -> rehusa, y ninguno se toca
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LOG_B1=$(fixture_file); nohup bash -c "sleep 300" >"$LOG_B1" 2>&1 & PID_B1=$!; disown $PID_B1
 LOG_B2=$(fixture_file); nohup bash -c "sleep 300" >"$LOG_B2" 2>&1 & PID_B2=$!; disown $PID_B2
 bash "$GUION" registrar "batch-a/job-001" "$LOG_B1" "$PID_B1" >/dev/null
@@ -249,6 +270,34 @@ afirmar "etiqueta completa: queda solo el otro" 1 "$(bash "$GUION" pendientes 2>
 afirmar "etiqueta completa: el que queda es el que no se nombro" "si" \
     "$(contiene_texto "$(bash "$GUION" pendientes 2>/dev/null)" 'batch-b')"
 kill $PID_B2 2>/dev/null; wait $PID_B2 2>/dev/null
+
+# =============================================================================
+# La espera tiene que VERSE viva — el bucle de `wait` era mudo
+# =============================================================================
+# Episodio 2026-09-23: `wait --timeout 540 | tail -25` estuvo minutos «sin
+# salida» mientras la suite de partida terminaba. No estaba colgado: el bucle
+# sólo imprimía al asentar TODOS o al vencer el plazo, así que quien mira no
+# separaba «espera un trabajo vivo» de «está atascado». El progreso va por
+# STDERR para no tocar el veredicto de STDOUT que otros ya leen.
+#
+# Qué lo haría fallar: retirar el latido o la línea de asentado — cae el caso
+# correspondiente y ninguno más. STDOUT se sigue comparando entero.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
+LH1=$(fixture_file); nohup bash -c "echo EXIT=0" >"$LH1" 2>&1 & PH1=$!; disown $PH1
+LH2=$(fixture_file); nohup bash -c "sleep 3; echo EXIT=0" >"$LH2" 2>&1 & PH2=$!; disown $PH2
+sleep 1
+bash "$GUION" register rapido "$LH1" "$PH1" >/dev/null
+bash "$GUION" register lento  "$LH2" "$PH2" >/dev/null
+ERR_H=$(fixture_file)
+OUT_H=$(WAIT_JOBS_INTERVAL=1 bash "$GUION" wait --timeout 30 --heartbeat 1 2>"$ERR_H")
+RC_H=$?
+STDERR_H=$(cat "$ERR_H")
+afirmar "latido: wait sigue saliendo 0"                     0    "$RC_H"
+afirmar "latido: stdout conserva su cabecera"               "si" "$(contiene_texto "$OUT_H" '^== 2 trabajos asentados ==')"
+afirmar "latido: stderr anuncia el primero que asienta"     "si" "$(contiene_texto "$STDERR_H" 'asentado: rapido -> OK \(1 de 2\)')"
+afirmar "latido: stderr late mientras uno sigue vivo"       "si" "$(contiene_texto "$STDERR_H" 'esperando: 1 de 2 asentados.*lento')"
+afirmar "latido: nada de progreso contamina stdout"         "no" "$(contiene_texto "$OUT_H" 'esperando:|asentado:')"
 
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"

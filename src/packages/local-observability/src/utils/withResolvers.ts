@@ -1,8 +1,6 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/utils/withResolvers.ts`
- * (13 líneas fuente, 100 % portado). Polyfill de `Promise.withResolvers()`
- * (ES2024, Node 22+) — el `package.json` de la fuente declara
- * `"engines": {"node": ">=18.0.0"}`, así que no puede usar el nativo.
+ * Polyfill for Promise.withResolvers() (ES2024, Node 22+).
+ * package.json declares "engines": { "node": ">=18.0.0" } so we can't use the native one.
  */
 export function withResolvers<T>(): PromiseWithResolvers<T> {
   let resolve!: (value: T | PromiseLike<T>) => void

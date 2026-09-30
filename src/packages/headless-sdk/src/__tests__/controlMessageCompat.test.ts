@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { normalizeControlMessageKeys } from '../controlMessageCompat.js'
 
+/**
+ * `normalizeControlMessageKeys` muta el objeto reemplazando `requestId` por
+ * `request_id`; el tipo inferido del literal no lo refleja, así que se
+ * declara explícitamente para que `toEqual` acepte ambas grafías.
+ */
+type RequestIdKeys = { requestId?: string; request_id?: string }
+
 describe('normalizeControlMessageKeys — non-object inputs', () => {
   test('null passes through unchanged', () => {
     expect(normalizeControlMessageKeys(null)).toBe(null)
@@ -21,7 +28,7 @@ describe('normalizeControlMessageKeys — non-object inputs', () => {
 
 describe('normalizeControlMessageKeys — top-level requestId', () => {
   test('renames camelCase requestId → snake_case request_id', () => {
-    const input = { requestId: 'abc123' }
+    const input: RequestIdKeys = { requestId: 'abc123' }
     normalizeControlMessageKeys(input)
     expect(input).toEqual({ request_id: 'abc123' })
   })
@@ -55,7 +62,7 @@ describe('normalizeControlMessageKeys — top-level requestId', () => {
   })
 
   test('preserves other keys', () => {
-    const input = { requestId: 'r1', method: 'subscribe', params: { a: 1 } }
+    const input: RequestIdKeys & { method: string; params: { a: number } } = { requestId: 'r1', method: 'subscribe', params: { a: 1 } }
     normalizeControlMessageKeys(input)
     expect(input).toEqual({
       request_id: 'r1',
@@ -67,7 +74,7 @@ describe('normalizeControlMessageKeys — top-level requestId', () => {
 
 describe('normalizeControlMessageKeys — nested response.requestId', () => {
   test('renames response.requestId → response.request_id', () => {
-    const input = { type: 'control_response', response: { requestId: 'nested-abc' } }
+    const input: { type: string; response: RequestIdKeys } = { type: 'control_response', response: { requestId: 'nested-abc' } }
     normalizeControlMessageKeys(input)
     expect(input).toEqual({
       type: 'control_response',
@@ -76,7 +83,7 @@ describe('normalizeControlMessageKeys — nested response.requestId', () => {
   })
 
   test('preserves other response fields', () => {
-    const input = {
+    const input: { response: RequestIdKeys & { subtype: string; data: { x: number } } } = {
       response: { requestId: 'r1', subtype: 'success', data: { x: 42 } },
     }
     normalizeControlMessageKeys(input)
@@ -86,7 +93,7 @@ describe('normalizeControlMessageKeys — nested response.requestId', () => {
   })
 
   test('handles BOTH top-level and nested rename in a single call', () => {
-    const input = {
+    const input: RequestIdKeys & { response: RequestIdKeys } = {
       requestId: 'outer',
       response: { requestId: 'inner' },
     }

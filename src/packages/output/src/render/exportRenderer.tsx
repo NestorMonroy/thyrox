@@ -61,7 +61,7 @@ function StaticKeybindingProvider({
 // NormalizedMessages — 1:1 with block count. String content = 1 block.
 // AttachmentMessage etc. have no .message and normalize to ≤1.
 function normalizedUpperBound(m: Message): number {
-  if (!('message' in m)) return 1
+  if (!m.message) return 1
   const c = m.message.content
   return Array.isArray(c) ? c.length : 1
 }

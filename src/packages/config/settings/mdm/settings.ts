@@ -8,7 +8,7 @@
  * un agente anterior) — se llama `.safeParse` directamente, sin los
  * paréntesis de invocación. Mismo comportamiento observable.
  *
- * Lectura de settings managed MDM (Mobile Device Management) para Claude
+ * Lectura de settings managed MDM (Mobile Device Management) para thyrox
  * Code, desde la configuración MDM a nivel de SO:
  * - macOS: dominio de preferencia `com.anthropic.claudecode`
  *   (perfiles MDM sólo en /Library/Managed Preferences/ — no en
@@ -16,7 +16,7 @@
  * - Windows: `HKLM\SOFTWARE\Policies\ClaudeCode` (sólo admin)
  *   y `HKCU\SOFTWARE\Policies\ClaudeCode` (escribible por usuario, menor prioridad).
  * - Linux: sin equivalente MDM (usa
- *   `/etc/claude-code-how-works-how-works/managed-settings.json` en su lugar —
+ *   `/etc/claude-code/managed-settings.json` en su lugar —
  *   literal tal cual de la fuente; ver la nota de `managedPath.ts`).
  *
  * Los settings de política usan "gana la primera fuente". Prioridad (de
@@ -56,6 +56,7 @@ import {
   formatZodError,
 } from '../validation.ts'
 import type { SettingsError } from '../validation.ts'
+import { sanitizeCrossSessionInbound } from '../crossSessionInbound.ts'
 import {
   WINDOWS_REGISTRY_KEY_PATH_HKCU,
   WINDOWS_REGISTRY_KEY_PATH_HKLM,
@@ -276,8 +277,8 @@ export function parseCommandOutputAsSettings(
     return { settings: {}, errors: [] }
   }
 
-  const ruleWarnings = filterInvalidPermissionRules(data, sourcePath)
-  const parseResult = SettingsSchema.safeParse(data)
+  const ruleWarnings = [...filterInvalidPermissionRules(data, sourcePath), ...sanitizeCrossSessionInbound(data, sourcePath, { policySource: true })]
+  const parseResult = SettingsSchema().safeParse(data)
   if (!parseResult.success) {
     const errors = formatZodError(parseResult.error, sourcePath)
     return { settings: {}, errors: [...ruleWarnings, ...errors] }

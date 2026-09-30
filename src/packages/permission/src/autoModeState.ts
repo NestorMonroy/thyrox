@@ -1,25 +1,13 @@
-/**
- * Porte fiel de `ccnmt: packages/permission/src/autoModeState.ts`
- * (41 líneas, 8 exports, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO: los tres flags de módulo (`autoModeActive`,
- * `autoModeFlagCli`, `autoModeCircuitBroken`) y sus siete
- * getters/setters más `_resetForTesting` están presentes, con el mismo
- * comportamiento.
- *
- * Vive en su propio módulo para que los callers puedan hacer
- * `require()` condicional bajo `feature('TRANSCRIPT_CLASSIFIER')` — el
- * paquete `permission` es dueño de este estado (movido de
- * `src/utils/permissions/` en la fuente original).
- *
- * Sin divergencias.
- */
+// Auto mode state functions — lives in its own module so callers can
+// conditionally require() it on feature('TRANSCRIPT_CLASSIFIER').
+//
+// V7 §8.4 — permission package owns this state; moved from src/utils/permissions/.
 
 let autoModeActive = false
 let autoModeFlagCli = false
-// Lo fija la comprobación asíncrona de verifyAutoModeGateAccess cuando lee
-// un `tengu_auto_mode_config.enabled === 'disabled'` fresco desde
-// GrowthBook. Lo consume isAutoModeGateEnabled() para bloquear el
-// re-ingreso por SDK/explícito tras un kick-out.
+// Set by the async verifyAutoModeGateAccess check when it
+// reads a fresh tengu_auto_mode_config.enabled === 'disabled' from GrowthBook.
+// Used by isAutoModeGateEnabled() to block SDK/explicit re-entry after kick-out.
 let autoModeCircuitBroken = false
 
 export function setAutoModeActive(active: boolean): void {

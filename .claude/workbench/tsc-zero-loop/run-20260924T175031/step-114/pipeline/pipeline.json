@@ -1,0 +1,86 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 15,
+   "total_before": 522,
+   "total_final": 512,
+   "tsc_runs": 2,
+   "kept": 6
+  },
+  {
+   "batch": 2,
+   "files": 18,
+   "total_before": 512,
+   "total_final": 498,
+   "tsc_runs": 2,
+   "kept": 6
+  },
+  {
+   "batch": 3,
+   "files": 15,
+   "total_before": 498,
+   "total_final": 492,
+   "tsc_runs": 2,
+   "kept": 4
+  },
+  {
+   "batch": 4,
+   "files": 21,
+   "total_before": 492,
+   "total_final": 484,
+   "tsc_runs": 1,
+   "kept": 4
+  },
+  {
+   "batch": 5,
+   "files": 15,
+   "total_before": 484,
+   "total_final": 469,
+   "tsc_runs": 2,
+   "kept": 7
+  },
+  {
+   "batch": 6,
+   "files": 14,
+   "total_before": 469,
+   "total_final": 461,
+   "tsc_runs": 3,
+   "kept": 4
+  }
+ ],
+ "files_kept": [
+  "src/packages/@ant/ink/src/vim/transitions.ts",
+  "src/packages/agent/__tests__/diffDisplay.test.ts",
+  "src/packages/agent/hooks/execPromptHook.ts",
+  "src/packages/agent/tasks/LocalMainSessionTask.tsx",
+  "src/packages/cli/src/setup/setup.ts",
+  "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx",
+  "src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx",
+  "src/packages/config/plugin/loadPluginAgents.ts",
+  "src/packages/config/plugin/loadPluginCommands.ts",
+  "src/packages/config/plugin/lspPluginIntegration.ts",
+  "src/packages/config/plugin/marketplaceHelpers.ts",
+  "src/packages/config/plugin/marketplaceManager.ts",
+  "src/packages/config/plugin/mcpbHandler.ts",
+  "src/packages/provider/__tests__/providerStreaming.test.ts",
+  "src/packages/provider/src/oauth/index.ts",
+  "src/packages/provider/src/openai/client.ts",
+  "src/packages/repl/src/components/FastIcon.tsx",
+  "src/packages/repl/src/components/LogoV2/LogoV2.tsx",
+  "src/packages/repl/src/components/MessageRow.tsx",
+  "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+  "src/packages/repl/src/components/Stats.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx",
+  "src/packages/repl/src/components/messageStaticness.ts",
+  "src/packages/repl/src/hooksConfigManager.ts",
+  "src/packages/shell/src/Shell.ts",
+  "src/packages/shell/src/sandbox/sandbox-adapter.ts",
+  "src/packages/swarm/src/adapters/createSwarmHostDeps.ts",
+  "src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts",
+  "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts",
+  "tests/integration/message-pipeline.test.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-114/pipeline/batch-06/final.log"
+}

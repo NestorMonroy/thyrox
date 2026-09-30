@@ -1,0 +1,2 @@
+src/verify/check_rst_sintaxis.py
+tests/verify/test_check_rst_sintaxis_args.py

@@ -1,0 +1,30 @@
+test_bench_untracked:
+  ok    el banco del commit con archivos sin seguimiento se nombra
+  ok    con `add -N` no queda nada fuera
+  ok    un banco que el commit no toca no se mira
+  ok    una ruta fuera de las raíces de banco no es banco
+check_bench_untracked: .claude/workbench/bench-a deja fuera 1 archivo(s) nuevo(s):
+  .claude/workbench/bench-a/nuevo.txt
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 1 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+  ok    el CLI sale 1 si algo queda fuera
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+  ok    el CLI sale 0 si nada queda fuera
+  ok    un banco citado por un archivo staged se mira aunque nada suyo esté staged
+  ok    un banco que nadie cita sigue sin mirarse
+  ok    citado y con su archivo en el índice, no queda nada fuera
+  ok    la cita se lee del índice, no del árbol de trabajo
+  ok    un nombre que sólo es prefijo del citado no toca el banco
+  ok    citado dentro de una ruta, el banco se toca
+  ok    la cita del archivo 38 de 40 se ve en la lectura por lotes
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_bench_untracked.py", line 160, in <module>
+    gate.cited_benches(base, [*staged, "src/borrado.py"]))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/verify/check_bench_untracked.py", line 122, in cited_benches
+    for blob in staged_blobs(repo, staged):
+  File "/home/user/thyrox/src/verify/check_bench_untracked.py", line 91, in staged_blobs
+    blob = process.stdout.read(int(fields[2]))
+                                   ~~~~~~^^^
+IndexError: list index out of range
+exit=1

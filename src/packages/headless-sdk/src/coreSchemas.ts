@@ -1,10 +1,8 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/coreSchemas.ts` (verbatim en
- * estructura; `lazySchema` se importa del sustituto local — ver
- * `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no es
- * miembro del bun workspace y no puede resolver
- * `@claude-code-how-works/tool-registry/utils/lazySchema.js` ni su
- * equivalente `@thyrox/agent`).
+ * estructura; `lazySchema` se importa del original,
+ * `@thyrox/config/lazySchema`, en vez de
+ * `@claude-code-how-works/tool-registry/utils/lazySchema.js`).
  *
  * SDK Core Schemas - Zod schemas for serializable SDK data types.
  *
@@ -15,7 +13,13 @@
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import { lazySchema } from '@thyrox/config/lazySchema'
+import type { MessageParam } from '@anthropic-ai/sdk/resources'
+import type {
+  BetaMessage,
+  BetaRawMessageStreamEvent,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ============================================================================
 // Usage & Model Types
@@ -78,7 +82,7 @@ export const ThinkingAdaptiveSchema = lazySchema(() =>
     .object({
       type: z.literal('adaptive'),
     })
-    .describe('Claude decides when and how much to think (Opus 4.7/4.6+).'),
+    .describe(`${PRODUCT_NAME} decides when and how much to think (Opus 4.7/4.6+).`),
 )
 
 export const ThinkingEnabledSchema = lazySchema(() =>
@@ -106,7 +110,7 @@ export const ThinkingConfigSchema = lazySchema(() =>
       ThinkingDisabledSchema(),
     ])
     .describe(
-      "Controls Claude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.",
+      `Controls ${PRODUCT_NAME}'s thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.`,
     ),
 )
 
@@ -1071,7 +1075,7 @@ export const ModelInfoSchema = lazySchema(() =>
         .boolean()
         .optional()
         .describe(
-          'Whether this model supports adaptive thinking (Claude decides when and how much to think)',
+          `Whether this model supports adaptive thinking (${PRODUCT_NAME} decides when and how much to think)`,
         ),
       supportsFastMode: z
         .boolean()
@@ -1241,14 +1245,22 @@ export const RewindFilesResultSchema = lazySchema(() =>
 // The generation script uses TypeOverrideMap to output the correct TS type references.
 // This allows us to define SDK message types in Zod while maintaining proper typing.
 
+//
+// En este árbol el generador (`bin/generateCoreTypes.ts`) deriva los tipos con
+// `z.infer`, así que el reemplazo de tipo va en el propio schema: `z.custom<T>()`
+// sin validador acepta cualquier valor, igual que `z.unknown()`, y le da a
+// `z.infer` el tipo externo. Los tres tipos son los que publica el SDK
+// (`@anthropic-ai/claude-agent-sdk` 0.3.197, `sdk.d.ts`): `MessageParam`,
+// `BetaMessage` y `BetaRawMessageStreamEvent`.
+
 /** Placeholder for APIUserMessage from @anthropic-ai/sdk */
-export const APIUserMessagePlaceholder = lazySchema(() => z.unknown())
+export const APIUserMessagePlaceholder = lazySchema(() => z.custom<MessageParam>())
 
 /** Placeholder for APIAssistantMessage from @anthropic-ai/sdk */
-export const APIAssistantMessagePlaceholder = lazySchema(() => z.unknown())
+export const APIAssistantMessagePlaceholder = lazySchema(() => z.custom<BetaMessage>())
 
 /** Placeholder for RawMessageStreamEvent from @anthropic-ai/sdk */
-export const RawMessageStreamEventPlaceholder = lazySchema(() => z.unknown())
+export const RawMessageStreamEventPlaceholder = lazySchema(() => z.custom<BetaRawMessageStreamEvent>())
 
 /** Placeholder for UUID from crypto */
 export const UUIDPlaceholder = lazySchema(() => z.string())
@@ -1261,14 +1273,21 @@ export const NonNullableUsagePlaceholder = lazySchema(() => z.unknown())
 // ============================================================================
 
 export const SDKAssistantMessageErrorSchema = lazySchema(() =>
+  // Los doce valores de 2.1.281, en su orden.
   z.enum([
     'authentication_failed',
+    'oauth_org_not_allowed',
+    'account_on_hold',
+    'verification_required',
     'billing_error',
     'rate_limit',
+    'overloaded',
     'invalid_request',
+    'model_not_found',
     'server_error',
     'unknown',
     'max_output_tokens',
+    'cloud_credential_error',
   ]),
 )
 
@@ -1309,25 +1328,39 @@ export const SDKUserMessageReplaySchema = lazySchema(() =>
   }),
 )
 
-export const SDKRateLimitInfoSchema = lazySchema(() =>
-  z
+export const SDKRateLimitInfoSchema = lazySchema(() => {
+  // Forma de 2.1.281 (`chunk-b7h8pwnv.js`, extraída a
+  // `.claude/workbench/rate-limit-info-port-20260925T205710/sdk-rate-limit-schema.js`).
+  const window = z.object({ utilization: z.number(), resetsAt: z.number().int() })
+  return z
     .object({
       status: z.enum(['allowed', 'allowed_warning', 'rejected']),
-      resetsAt: z.number().optional(),
+      resetsAt: z.number().int().optional(),
       rateLimitType: z
         .enum([
           'five_hour',
           'seven_day',
           'seven_day_opus',
           'seven_day_sonnet',
+          'seven_day_overage_included',
           'overage',
         ])
         .optional(),
       utilization: z.number().optional(),
+      unifiedWindows: z
+        .object({
+          five_hour: window.optional(),
+          seven_day: window.optional(),
+          seven_day_overage_included: window.optional(),
+        })
+        .optional()
+        .describe(
+          'Five-hour, weekly and overage-included weekly windows as read from the anthropic-ratelimit-unified-* headers; absent until the first response that carries them.',
+        ),
       overageStatus: z
         .enum(['allowed', 'allowed_warning', 'rejected'])
         .optional(),
-      overageResetsAt: z.number().optional(),
+      overageResetsAt: z.number().int().optional(),
       overageDisabledReason: z
         .enum([
           'overage_not_provisioned',
@@ -1340,16 +1373,24 @@ export const SDKRateLimitInfoSchema = lazySchema(() =>
           'group_zero_credit_limit',
           'member_zero_credit_limit',
           'org_service_level_disabled',
-          'org_service_zero_credit_limit',
           'no_limits_configured',
+          'fetch_error',
           'unknown',
         ])
         .optional(),
       isUsingOverage: z.boolean().optional(),
+      overageInUse: z.boolean().optional(),
       surpassedThreshold: z.number().optional(),
+      rateLimitGraceActive: z.boolean().optional(),
+      overagePeriodMonthly: z.object({ utilization: z.number() }).optional(),
+      overagePeriodChannel: z.object({ utilization: z.number() }).optional(),
+      limitScope: z.enum(['service', 'channel', 'group_pool']).optional(),
+      errorCode: z.enum(['credits_required']).optional(),
+      canUserPurchaseCredits: z.boolean().optional(),
+      hasChargeableSavedPaymentMethod: z.boolean().optional(),
     })
-    .describe('Rate limit information for claude.ai subscription users.'),
-)
+    .describe('Rate limit information for claude.ai subscription users.')
+})
 
 export const SDKAssistantMessageSchema = lazySchema(() =>
   z.object({

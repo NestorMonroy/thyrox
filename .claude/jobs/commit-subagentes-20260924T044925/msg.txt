@@ -1,0 +1,33 @@
+Guard subagent spawn depth and width as the binary
+
+Proposal 2 of the ai-course-notes bench: src/packages had neither of
+the two guards the 2.1.275 binary applies to the Agent tool (0 hits
+for the variables or the nesting-limit text).
+
+@thyrox/agent/subagentLimits ports the contract. Depth is 0 on the
+main thread and the context's depth otherwise; the maximum comes from
+CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH, then the tengu_hazel_trellis
+flag when it is an integer of at least one, then 3. Width comes from
+CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS or 20. At either limit the
+launch is refused with the binary's text, including "Do not retry":
+the N+1 launch is not queued.
+
+AgentTool.call checks both before anything else, and the two child
+contexts it builds now carry depth = parent + 1 (SubagentContext gains
+an optional depth).
+
+Controls: dropping the depth comparison fails exactly the depth
+refusal case; dropping the exemption fails exactly the exemption
+case. The derived subset passes 348; its one red file,
+agentToolUtils.test.ts, is red at HEAD too, on the missing
+roughTokenCountEstimationForMessages export.
+
+The same commit ports the per-message token estimator the Agent tool
+tests import (R, ige, dAo, Vm) and aligns roughTokenCountEstimation
+with xu: no CJK adjustment. Both token estimators of 2.1.275, xu and
+s3n, divide the length evenly; the binary's CJK-aware code counts
+words for prompt suggestions, sizes terminal cells and segments text,
+none of it tokens. A first review claimed there was no CJK code at
+all; its escape search used a double backslash and missed it. The
+executor caught that. Twelve cases that fixed ccnmt's 1.5 per
+character are aligned to the binary. Finding H-THYROX-169.

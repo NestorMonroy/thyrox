@@ -1,0 +1,24 @@
+src/packages/config/plugin/loadPluginHooks.ts(118,25): error TS2345: Argument of type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:108-128 ---
+    108    // Clear-then-register as an atomic pair. Previously the clear lived in
+    109    // clearPluginHookCache(), which meant any clearAllCaches() call (from
+    110    // /plugins UI, pluginInstallationHelpers, thinkback, etc.) wiped plugin
+    111    // hooks from STATE.registeredHooks and left them wiped until someone
+    112    // happened to call loadPluginHooks() again. SessionStart explicitly awaits
+    113    // loadPluginHooks() before firing so it always re-registered; Stop has no
+    114    // such guard, so plugin Stop hooks silently never fired after any plugin
+    115    // management operation (gh-29767). Doing the clear here makes the swap
+    116    // atomic — old hooks stay valid until this point, new hooks take over.
+    117    clearRegisteredPluginHooks()
+    118>   registerHookCallbacks(allPluginHooks)
+    119  
+    120    const totalHooks = Object.values(allPluginHooks).reduce(
+    121      (sum, matchers) => sum + matchers.reduce((s, m) => s + m.hooks.length, 0),
+    122      0,
+    123    )
+    124    logForDebugging(
+    125      `Registered ${totalHooks} hooks from ${enabled.length} plugins`,
+    126    )
+    127  })
+    128  
+  Type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.

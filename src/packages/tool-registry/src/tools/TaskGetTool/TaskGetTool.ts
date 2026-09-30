@@ -1,24 +1,12 @@
-/**
- * `TaskGet` — una tarea completa, por su identificador.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/tools/TaskGetTool/TaskGetTool.ts`.
- * Ese árbol no declara licencia, así que el cuerpo se reimplementa y no se
- * copia. Porte COMPLETO.
- *
- * `isEnabled()` consulta `isTodoV2Enabled()`, que hasta el pase anterior no
- * existía en este árbol: el útil se podía escribir pero no se podía habilitar.
- *
- * DIVERGENCIA DECLARADA: ninguna.
- */
 import { z } from 'zod/v4'
+import { buildTool, type ToolDef } from '../../Tool.js'
+import { lazySchema } from '../../utils/lazySchema.js'
 import {
   getTask,
   getTaskListId,
   isTodoV2Enabled,
   TaskStatusSchema,
 } from '@thyrox/agent/tasks.js'
-import { buildTool, type ToolDef } from '../../Tool.js'
-import { lazySchema } from '../../utils/lazySchema.js'
 import { TASK_GET_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, PROMPT } from './prompt.js'
 
@@ -83,11 +71,17 @@ export const TaskGetTool = buildTool({
     return null
   },
   async call({ taskId }) {
-    const task = await getTask(getTaskListId(), taskId)
+    const taskListId = getTaskListId()
 
-    // Una tarea ausente NO es un error: quien pregunta puede tener un id
-    // viejo, y reventar obligaría a envolver cada consulta en un intento.
-    if (!task) return { data: { task: null } }
+    const task = await getTask(taskListId, taskId)
+
+    if (!task) {
+      return {
+        data: {
+          task: null,
+        },
+      }
+    }
 
     return {
       data: {
@@ -118,8 +112,6 @@ export const TaskGetTool = buildTool({
       `Description: ${task.description}`,
     ]
 
-    // Las dependencias aparecen SÓLO cuando las hay: una lista vacía impresa
-    // como `Blocked by: ` se lee como un dato faltante, no como su ausencia.
     if (task.blockedBy.length > 0) {
       lines.push(`Blocked by: ${task.blockedBy.map(id => `#${id}`).join(', ')}`)
     }

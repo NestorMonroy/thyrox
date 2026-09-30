@@ -1,9 +1,3 @@
-/**
- * Puerto fiel de
- * `ccnmt: packages/bridge/src/__tests__/sessionIdCompat.test.ts`
- * (78 líneas fuente, 100% portado). Sin mocks — `setCseShimGate` ya es
- * un setter de DI en la fuente misma.
- */
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
   setCseShimGate,
@@ -12,7 +6,7 @@ import {
 } from '../sessionIdCompat.js'
 
 afterEach(() => {
-  // Reset al default (sin gate registrado = shim activo)
+  // Reset to default (no gate registered = shim active)
   setCseShimGate(() => true)
 })
 
@@ -37,9 +31,13 @@ describe('toCompatSessionId — cse_ → session_', () => {
     expect(toCompatSessionId(`cse_${uuid}`)).toBe(`session_${uuid}`)
   })
   test('default (no gate registered) is shim-active', () => {
-    // Registrar () => true fuerza el mismo camino que "sin gate
-    // registrado" (ver docstring de sessionIdCompat.ts: el shim
-    // defaultea a activo).
+    // Calling with no gate set should still rewrite (matches the comment
+    // in source: "shim defaults to active")
+    // Reset by clearing — caller can do this with a fresh shim gate function
+    // If you assume the gate has not been registered, then `_isCseShimEnabled` is
+    // undefined and the second condition `if (_isCseShimEnabled && ...)` is
+    // skipped, so the rewrite happens.
+    // Force this by re-importing... easier: just register a () => true.
     setCseShimGate(() => true)
     expect(toCompatSessionId('cse_x')).toBe('session_x')
   })

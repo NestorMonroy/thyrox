@@ -17,6 +17,6 @@ export function useGetToolFromMessages(
     if (!tool) {
       return null
     }
-    return { tool, toolUse }
+    return { tool, toolUse: toolUse as ToolUseBlockParam }
   }, [toolUseID, lookups, tools])
 }

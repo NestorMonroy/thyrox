@@ -1,0 +1,92 @@
+src/packages/repl/src/components/WorktreeExitDialog.tsx(77,33): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/repl/src/components/WorktreeExitDialog.tsx:67-87 ---
+     67          setCommitCount(count)
+     68  
+     69          // If no changes and no commits, clean up silently
+     70          if (changeLines.length === 0 && count === 0) {
+     71            setStatus('removing')
+     72            void cleanupWorktree()
+     73              .then(() => {
+     74                process.chdir(worktreeSession.originalCwd)
+     75                setCwd(worktreeSession.originalCwd)
+     76                recordWorktreeExit()
+     77>               getPlansDirectory.cache.clear?.()
+     78                setResultMessage('Worktree removed (no changes)')
+     79              })
+     80              .catch(error => {
+     81                logForDebugging(`Failed to clean up worktree: ${error}`, {
+     82                  level: 'error',
+     83                })
+     84                setResultMessage('Worktree cleanup failed, exiting anyway')
+     85              })
+     86              .then(() => {
+     87                setStatus('done')
+src/packages/repl/src/components/WorktreeExitDialog.tsx(129,25): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/repl/src/components/WorktreeExitDialog.tsx:119-139 ---
+    119      if (value === 'keep' || value === 'keep-with-tmux') {
+    120        setStatus('keeping')
+    121        logEvent('tengu_worktree_kept', {
+    122          commits: commitCount,
+    123          changed_files: changes.length,
+    124        })
+    125        await keepWorktree()
+    126        process.chdir(worktreeSession.originalCwd)
+    127        setCwd(worktreeSession.originalCwd)
+    128        recordWorktreeExit()
+    129>       getPlansDirectory.cache.clear?.()
+    130        if (hasTmux) {
+    131          setResultMessage(
+    132            `Worktree kept. Your work is saved at ${worktreeSession.worktreePath} on branch ${worktreeSession.worktreeBranch}. Reattach to tmux session with: tmux attach -t ${worktreeSession.tmuxSessionName}`,
+    133          )
+    134        } else {
+    135          setResultMessage(
+    136            `Worktree kept. Your work is saved at ${worktreeSession.worktreePath} on branch ${worktreeSession.worktreeBranch}`,
+    137          )
+    138        }
+    139        setStatus('done')
+src/packages/repl/src/components/WorktreeExitDialog.tsx(153,25): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/repl/src/components/WorktreeExitDialog.tsx:143-163 ---
+    143          commits: commitCount,
+    144          changed_files: changes.length,
+    145        })
+    146        if (worktreeSession.tmuxSessionName) {
+    147          await killTmuxSession(worktreeSession.tmuxSessionName)
+    148        }
+    149        await keepWorktree()
+    150        process.chdir(worktreeSession.originalCwd)
+    151        setCwd(worktreeSession.originalCwd)
+    152        recordWorktreeExit()
+    153>       getPlansDirectory.cache.clear?.()
+    154        setResultMessage(
+    155          `Worktree kept at ${worktreeSession.worktreePath} on branch ${worktreeSession.worktreeBranch}. Tmux session terminated.`,
+    156        )
+    157        setStatus('done')
+    158      } else if (value === 'remove' || value === 'remove-with-tmux') {
+    159        setStatus('removing')
+    160        logEvent('tengu_worktree_removed', {
+    161          commits: commitCount,
+    162          changed_files: changes.length,
+    163        })
+src/packages/repl/src/components/WorktreeExitDialog.tsx(172,27): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/repl/src/components/WorktreeExitDialog.tsx:162-182 ---
+    162          changed_files: changes.length,
+    163        })
+    164        if (worktreeSession.tmuxSessionName) {
+    165          await killTmuxSession(worktreeSession.tmuxSessionName)
+    166        }
+    167        try {
+    168          await cleanupWorktree()
+    169          process.chdir(worktreeSession.originalCwd)
+    170          setCwd(worktreeSession.originalCwd)
+    171          recordWorktreeExit()
+    172>         getPlansDirectory.cache.clear?.()
+    173        } catch (error) {
+    174          logForDebugging(`Failed to clean up worktree: ${error}`, {
+    175            level: 'error',
+    176          })
+    177          setResultMessage('Worktree cleanup failed, exiting anyway')
+    178          setStatus('done')
+    179          return
+    180        }
+    181        const tmuxNote = hasTmux ? ' Tmux session terminated.' : ''
+    182        if (commitCount > 0 && changes.length > 0) {

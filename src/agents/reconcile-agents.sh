@@ -23,25 +23,23 @@
 # (2.1.42) no tiene esas cadenas y no hace falta que las tenga — igual que la
 # referencia Odoo gobierna sin ejecutarse. Ver :ref:`h-docs-138`.
 #
-# **Corregido 2026-08-13 (:ref:`h-docs-140`).** Esta cabecera atribuía el guard
-# de abajo a `_respawn_unconfirmed_bail`. Es falso, y lo corrige una fuente de
-# mayor calidad: `ccb: bgDaemon.ts:462-469` muestra que ese evento dispara
+# El guard de abajo NO es `_respawn_unconfirmed_bail` (:ref:`h-docs-140`):
+# `ccb: bgDaemon.ts:462-469` muestra que ese evento dispara
 # cuando el trabajo **muere antes de confirmar que arrancó**, para que quien
 # espera reciba el error real en vez de un timeout — eso vive ahora en
 # `session/marker_wait.py`, no aquí. La anti-duplicación que sí hace este guion
 # es `tengu_bg_respawn_stale` (`:638-642`), y el contador de intentos de más
 # abajo es `respawn-stalled` (`:599-604`). Tres nombres, tres mecanismos.
 #
-# El roster ya existía y no lo usábamos
-# --------------------------------------
-# Medido 2026-08-13 sobre esta sesión, `/tmp/claude-0/-home-user/<sesión>/tasks`:
+# El roster
+# ---------
+# `/tmp/claude-0/-home-user/<sesión>/tasks` tiene una entrada por trabajo:
 #
-#   84 symlinks  → subagentes; apuntan a `subagents/agent-<id>.jsonl`
-#  172 archivos  → tareas de `Bash(run_in_background)`; son su propio stdout
-#    0 enlaces rotos
+#   symlinks  → subagentes; apuntan a `subagents/agent-<id>.jsonl`
+#   archivos  → tareas de `Bash(run_in_background)`; son su propio stdout
 #
-# Es un roster con marca de tiempo por entrada. La reconciliación manual nunca
-# lo consultó: iba a `ps`, que no ve a los subagentes porque no son procesos.
+# Es un roster con marca de tiempo por entrada. `ps` no sirve para esto: no ve
+# a los subagentes porque no son procesos.
 #
 # Qué marcador terminal tiene cada clase (medido, y NO es simétrico)
 # -------------------------------------------------------------------
@@ -120,10 +118,9 @@ ROSTER_BASE="${RECONCILE_ROSTER_BASE:-/tmp/claude-0}"
 ROSTER="${RECONCILE_ROSTER:-}"
 ROSTER_ORIGIN="declarado"
 
-# El id de sesion DISCRIMINA; el mtime solo ordena. Medido 2026-09-09: bajo
-# `/tmp/claude-0` habia 57 directorios `tasks` y 56 eran fixtures de nuestras
-# propias suites. El real ganaba por ser el mas reciente — una coincidencia de
-# orden, no una razon: cualquier suite que cree su fixture despues del ultimo
+# El id de sesion DISCRIMINA; el mtime solo ordena. Bajo `/tmp/claude-0` casi
+# todos los directorios `tasks` son fixtures de nuestras propias suites, y
+# elegir el mas reciente es una coincidencia de orden, no una razon: cualquier suite que cree su fixture despues del ultimo
 # agente secuestra el roster, y el reporte publica un TOTAL confiado sobre la
 # poblacion equivocada. El cliente pone el id en el entorno y en la ruta.
 if [[ -z "$ROSTER" && -n "${CLAUDE_CODE_SESSION_ID:-}" ]]; then
@@ -246,6 +243,7 @@ DELIVERY
   case "$v" in
     delivered) echo "entrego" ;;
     cut)       echo "cortado" ;;
+    api_error) echo "error-api" ;;
     *)         echo "indecidible" ;;
   esac
 }
@@ -254,9 +252,8 @@ classify() {
   local entry="$1" shape age mtime verdict
   shape=$(terminal_shape "$entry")
   # -L: la entrada de un subagente es un SYMLINK a su transcript, y `stat` sin
-  # -L mide el enlace — que no cambia desde que el harness lo creo. Medido
-  # 2026-09-02 (H-DOCS-1004): seis agentes vivos reportados «atascado 11-14
-  # min» con el enlace a las 05:06 y el transcript creciendo a las 05:22.
+  # -L mide el enlace — que no cambia desde que el harness lo creo, y leeria
+  # «atascado» a un agente cuyo transcript sigue creciendo (H-DOCS-1004).
   mtime=$(stat -L -c %Y "$entry" 2>/dev/null || echo 0)
   age=$(( NOW - mtime ))
 
@@ -414,7 +411,7 @@ fi
 # guion moria en `COUNT[$v]: unbound variable` — el instrumento que las reglas
 # mandan correr para mirar el roster no corria. No mintio: se apago, que es el
 # desenlace menos malo de los dos, pero deja al roster sin lectura.
-declare -A COUNT=( [terminado]=0 [entrego]=0 [cortado]=0 [vivo]=0 [reciente]=0 \
+declare -A COUNT=( [terminado]=0 [entrego]=0 [cortado]=0 [error-api]=0 [vivo]=0 [reciente]=0 \
                    [atascado]=0 [desaparecido]=0 [indecidible]=0 )
 TOTAL=0
 DETAIL=""
@@ -431,16 +428,21 @@ while IFS= read -r entry; do
     v=indecidible
   fi
   COUNT[$v]=$(( ${COUNT[$v]} + 1 ))
-  if [[ "$v" == "desaparecido" || "$v" == "atascado" ]]; then
+  if [[ "$v" == "desaparecido" || "$v" == "atascado" || "$v" == "error-api" ]]; then
     id=$(basename "$entry" .output)
     kind=$([[ -L "$entry" ]] && echo subagente || echo bash)
     mins=$(( (NOW - $(stat -L -c %Y "$entry" 2>/dev/null || echo "$NOW")) / 60 ))
     DETAIL+="  $v  $id  ($kind, sin escribir ${mins} min)"$'\n'
+    if [[ "$v" == "error-api" ]]; then
+      plan=$(PYTHONPATH="$READER" python3 "$READER/roster/recovery.py" "$(readlink -f "$entry")" 2>/dev/null \
+        | cut -f3)
+      DETAIL+="      -> ${plan:-(no se pudo leer la accion)}"$'\n'
+    fi
   fi
 done < <(find "$ROSTER" -maxdepth 1 -name '*.output' 2>/dev/null | sort)
 
 if [[ "$MODE" == "quiet" ]]; then
-  echo "reconcile-agents: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
+  echo "reconcile-agents: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} error-api=${COUNT[error-api]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
   exit 0
 fi
 
@@ -453,10 +455,11 @@ echo
 # en 0 —ningun veredicto de subagente devuelve el literal `terminado`— y el
 # lector veia «terminado 0» con un «entrego 1» debajo: la cabecera negando a
 # su propio detalle.
-TERMINADOS=$(( COUNT[terminado] + COUNT[entrego] + COUNT[cortado] ))
+TERMINADOS=$(( COUNT[terminado] + COUNT[entrego] + COUNT[cortado] + COUNT[error-api] ))
 printf '  %-14s %s\n' terminado    "$TERMINADOS"
 printf '  %-14s %s\n' "  entrego"   "${COUNT[entrego]}"
 printf '  %-14s %s\n' "  cortado"   "${COUNT[cortado]}"
+printf '  %-14s %s\n' "  error-api" "${COUNT[error-api]}"
 printf '  %-14s %s\n' "  no aplica" "${COUNT[terminado]}"
 printf '  %-14s %s\n' vivo         "${COUNT[vivo]}"
 printf '  %-14s %s\n' reciente     "${COUNT[reciente]}"
@@ -468,4 +471,16 @@ printf '  %-14s %s\n' TOTAL "$TOTAL"
 [[ -n "$DETAIL" ]] && { echo; echo "$DETAIL"; }
 echo "Sólo 'desaparecido' autoriza relanzar, y sólo vía --confirmar-muerte <id>."
 echo "'indecidible' NO es 'muerto': es que este instrumento no puede verlo."
+echo "'error-api' NO entregó: la API rehusó la petición; su trabajo en disco sigue sin recoger."
+# El worktree de un agente es otro eje: el candado de git lo pone el CLIENTE
+# con su pid y no dice si el agente sigue. Lo deciden su entrega, su rama y su
+# árbol (`thyrox: src/roster/worktree_state.py`), y cada veredicto trae qué
+# hacer con el trabajo — ninguno retira uno cuyo trabajo no está en HEAD.
+REPO_TOP=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [[ -n "$REPO_TOP" ]]; then
+  echo
+  echo "== worktrees de agente =="
+  PYTHONPATH="$READER" python3 "$READER/roster/worktree_state.py" --repo "$REPO_TOP" --tasks-dir "$ROSTER" \
+    || echo "  (no se pudo medir: worktree_state salió con error)"
+fi
 exit 0

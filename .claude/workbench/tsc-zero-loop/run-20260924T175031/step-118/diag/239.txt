@@ -1,0 +1,25 @@
+src/packages/tool-registry/src/services/toolExecution.ts(1405,11): error TS2345: Argument of type 'ContentBlockParam[]' is not assignable to parameter of type 'readonly ContentBlockParam[]'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1395-1415 ---
+   1395            ? permissionDecision.contentBlocks
+   1396            : undefined
+   1397        if (allowContentBlocks?.length) {
+   1398          contentBlocks.push(...allowContentBlocks)
+   1399        }
+   1400  
+   1401        // Generate sequential imagePasteIds so each image renders with a distinct label
+   1402        let allowImageIds: number[] | undefined
+   1403        if (allowContentBlocks?.length) {
+   1404          const imageCount = count(
+   1405>           allowContentBlocks,
+   1406            (b: ContentBlockParam) => b.type === 'image',
+   1407          )
+   1408          if (imageCount > 0) {
+   1409            const startId = getNextImagePasteId(toolUseContext.messages)
+   1410            allowImageIds = Array.from(
+   1411              { length: imageCount },
+   1412              (_, i) => startId + i,
+   1413            )
+   1414          }
+   1415        }
+  Type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+    Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name

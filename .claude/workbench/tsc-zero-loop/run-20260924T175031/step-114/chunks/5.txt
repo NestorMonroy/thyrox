@@ -1,0 +1,2 @@
+src/packages/agent/constants/spinnerVerbs.ts(10,45): error TS2339: Property 'verbs' does not exist on type 'string[]'.
+src/packages/agent/constants/spinnerVerbs.ts(12,39): error TS2339: Property 'verbs' does not exist on type 'string[]'.

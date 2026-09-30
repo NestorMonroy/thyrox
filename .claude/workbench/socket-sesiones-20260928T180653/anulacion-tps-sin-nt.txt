@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/transferPathSafety.test.ts:
+14 |     expect(isNetworkLikePath('/net/host/x')).toBe(true)
+15 |     expect(isNetworkLikePath('/net')).toBe(true)
+16 |     expect(isNetworkLikePath('/Network/Servers/h/x')).toBe(true)
+17 |     expect(isNetworkLikePath('\\\\?\\C:\\x')).toBe(true)
+18 |     expect(isNetworkLikePath('/x/../??/c')).toBe(true)
+19 |     expect(isNetworkLikePath('\\GLOBAL??\\C:\\x')).toBe(true)
+                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:19:52)
+(fail) isNetworkLikePath (Djt) > UNC salvo WSL local, automontaje, /net, prefijos de dispositivo y rutas que resuelve el núcleo [0.80ms]
+
+ 4 pass
+ 1 fail
+ 31 expect() calls
+Ran 5 tests across 1 file. [66.00ms]

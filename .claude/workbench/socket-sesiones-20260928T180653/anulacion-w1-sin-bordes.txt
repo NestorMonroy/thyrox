@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+120 | describe('slugFromText (E$t) — un slug a partir de texto libre', () => {
+121 |   test('primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado', () => {
+122 |     expect(slugFromText('Fix the Login Bug in production now')).toBe('fix-the-login-bug')
+123 |     expect(slugFromText('[Pasted text #1 +3 lines] Revisa esto [Image #2] ya')).toBe('revisa-esto-ya')
+124 |     expect(slugFromText('[...Truncated text #4 +10 lines...] [Audio #1] hola')).toBe('hola')
+125 |     expect(slugFromText('  ¡Hola, mundo!  ')).toBe('hola-mundo')
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "hola-mundo"
+Received: "hola-mundo-"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:125:46)
+(fail) slugFromText (E$t) — un slug a partir de texto libre > primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado [0.80ms]
+125 |     expect(slugFromText('  ¡Hola, mundo!  ')).toBe('hola-mundo')
+126 |   })
+127 | 
+128 |   test('opciones de palabras y largo, sin guiones en los bordes', () => {
+129 |     expect(slugFromText('uno dos tres', { words: 2 })).toBe('uno-dos')
+130 |     expect(slugFromText('abcdefghij klm', { maxLen: 11 })).toBe('abcdefghij')
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "abcdefghij"
+Received: "abcdefghij-"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:130:60)
+(fail) slugFromText (E$t) — un slug a partir de texto libre > opciones de palabras y largo, sin guiones en los bordes [0.11ms]
+
+ 14 pass
+ 2 fail
+ 193 expect() calls
+Ran 16 tests across 1 file. [77.00ms]

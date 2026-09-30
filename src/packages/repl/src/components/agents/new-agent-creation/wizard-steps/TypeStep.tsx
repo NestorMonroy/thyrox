@@ -15,7 +15,7 @@ type Props = {
 
 export function TypeStep(_props: Props): ReactNode {
   const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+    useWizard<AgentWizardData & Record<string, unknown>>()
   const [agentType, setAgentType] = useState(wizardData.agentType || '')
   const [error, setError] = useState<string | null>(null)
   const [cursorOffset, setCursorOffset] = useState(agentType.length)

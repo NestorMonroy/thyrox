@@ -1,0 +1,52 @@
+src/packages/agent/query.ts(528,7): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/query.ts:518-538 ---
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+    526      toolUseContext = {
+    527        ...toolUseContext,
+    528>       messages: messagesForQuery,
+    529      }
+    530  
+    531      const assistantMessages: AssistantMessage[] = []
+    532      const toolResults: (UserMessage | AttachmentMessage)[] = []
+    533      // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    534      // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+    535      // Set during streaming whenever a tool_use block arrives — the sole
+    536      // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
+    537      const toolUseBlocks: ToolUseBlock[] = []
+    538      let needsFollowUp = false
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+src/packages/agent/query.ts(671,15): error TS2322: Type 'EffortValue | undefined' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/query.ts:661-681 ---
+    661                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    662                hasAppendSystemPrompt:
+    663                  !!toolUseContext.options.appendSystemPrompt,
+    664                maxOutputTokensOverride,
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667                hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671>               effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675                addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {
+    678                    total: params.taskBudget.total,
+    679                    ...(taskBudgetRemaining !== undefined && {
+    680                      remaining: taskBudgetRemaining,
+    681                    }),
+  Type 'number' is not assignable to type 'string'.

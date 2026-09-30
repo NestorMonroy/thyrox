@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 .claude/workbench/sustitutos-20260927T025549/waitjobs-derived.cmds", "started_at": "2026-09-27T05:03:22+00:00"}

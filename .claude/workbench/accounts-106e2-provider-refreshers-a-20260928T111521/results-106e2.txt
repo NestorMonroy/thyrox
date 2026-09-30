@@ -1,0 +1,62 @@
+# primera medición
+== 1: invalid_request no mata -> 2
+== 2: invalid_grant no mata -> 5
+== 3: cualquier código mata -> 3
+== 4: formulario sin tipo -> 4
+== 5: anthropic sin beta -> 1
+== 6: anthropic sin cliente -> 1
+== 7: anthropic sin refresh rotado -> 1
+== 8: anthropic sin clasificar -> 1
+== 9: anthropic la red lanza -> 1
+== 10: anthropic sin aviso de fallo -> 1
+== 11: anthropic sin aviso de éxito -> 1
+== 12: github sin secreto -> 1
+== 13: github sin clasificar -> 1
+== 14: github la red no lanza -> 2
+== 15: github sin refresh rotado -> 1
+== 16: copilot sin barra final quitada -> 1
+== 17: copilot con Bearer -> 1
+== 18: copilot sin versión declarada -> 1
+== 19: copilot sin estado -> 1
+== 20: copilot la red lanza -> 1
+== 21: copilot sin caducidad -> 1
+== 22: google sin secreto -> 1
+== 23: google sin token muerto -> 1
+== 24: google muerto por texto -> 1
+== 25: google cualquier código mata -> 1
+== 26: google sin refresh rotado -> 1
+== 27: gitlab sin token se intenta -> 1
+== 28: gitlab sin instancia de la conexión -> 1
+== 29: gitlab sin recortar la instancia -> 1
+== 30: gitlab sin quitar la barra -> 1
+== 31: gitlab sin cliente de la conexión -> 1
+== 32: gitlab sin cliente configurado -> 1
+== 33: gitlab sin muerto -> 1
+== 34: gitlab la red lanza -> 1
+== 35: gitlab sin refresh rotado -> 1
+== 36: qoder sin extremo se intenta -> 1
+== 37: qoder sin cliente se intenta -> 1
+== 38: qoder sin secreto se intenta -> 1
+== 39: qoder sin Basic -> 1
+== 40: qoder sin secreto en el formulario -> 1
+== 41: qoder sin clasificar -> 1
+== 42: qoder sin aviso -> 1
+== 43: cline sin el sobre data -> 1
+== 44: cline sin mínimo de un segundo -> 1
+== 45: cline redondea hacia arriba -> 1
+== 46: cline sin clasificar -> 1
+== 47: cline con reloj real -> 1
+== 48: cline otro tipo de cliente -> 1
+== 49: cline sin refresh rotado -> 1
+== 50: cline la red lanza -> 1
+== 51: codebuddy sin token se intenta -> 1
+== 52: codebuddy sin cabecera del token -> 1
+== 53: codebuddy cualquier código -> 1
+== 54: codebuddy sin access token -> 1
+== 55: codebuddy rechazo se lee -> 0
+== 56: codebuddy la red lanza -> 1
+== 57: codebuddy sin refresh rotado -> 1
+== restaurado -> 0
+# re-medición tras afinar
+== 55: codebuddy rechazo se lee -> 1
+== restaurado -> 0

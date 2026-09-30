@@ -1,0 +1,56 @@
+src/packages/swarm/__tests__/buildSwarmAgentDeps.test.ts(330,45): error TS2769: No overload matches this call.
+  --- código src/packages/swarm/__tests__/buildSwarmAgentDeps.test.ts:320-340 ---
+    320      expect(recibido['tasks.updateTask']).toEqual([['eq', 't1', { status: 'in_progress' }]])
+    321    })
+    322  })
+    323  
+    324  describe('buildSwarmAgentDeps — las nueve sub-superficies del AgentDeps', () => {
+    325    test('14. cada sub-superficie delega en el miembro del host que le toca', async () => {
+    326      const m = await import('../src/adapters/buildSwarmAgentDeps.ts')
+    327      const deps = await m.buildSwarmAgentDeps({ host: host(), identity: identidad })
+    328  
+    329      expect(deps.provider.getModel()).toBe('modelo-x')
+    330>     expect(deps.tools.find('Bash')).toEqual({ name: 'Bash' })
+    331      expect(deps.tools.list()).toEqual([{ name: 'Bash' }])
+    332      await deps.tools.execute({} as never, {}, {} as never)
+    333      expect(deps.context.getUserContext()).toEqual({ u: '1' })
+    334      expect(deps.context.getSystemContext()).toEqual({ s: '2' })
+    335      expect(deps.session.getSessionId()).toBe('ses-1')
+    336      await deps.session.recordTranscript([])
+    337      deps.output.emit({ tipo: 'x' })
+    338      await deps.hooks.onTurnStart({} as never)
+    339      await deps.hooks.onTurnEnd({} as never)
+    340      await deps.hooks.onStop([], {} as never)
+  Overload 1 of 2, '(expected: CoreTool | undefined): void', gave the following error.
+    Argument of type '{ name: string; }' is not assignable to parameter of type 'CoreTool'.
+      Type '{ name: string; }' is missing the following properties from type 'CoreTool': description, inputSchema
+  Overload 2 of 2, '(expected: NoInfer<CoreTool | undefined>): void', gave the following error.
+    Argument of type '{ name: string; }' is not assignable to parameter of type 'CoreTool'.
+      Type '{ name: string; }' is missing the following properties from type 'CoreTool': description, inputSchema
+src/packages/swarm/__tests__/buildSwarmAgentDeps.test.ts(331,40): error TS2769: No overload matches this call.
+  --- código src/packages/swarm/__tests__/buildSwarmAgentDeps.test.ts:321-341 ---
+    321    })
+    322  })
+    323  
+    324  describe('buildSwarmAgentDeps — las nueve sub-superficies del AgentDeps', () => {
+    325    test('14. cada sub-superficie delega en el miembro del host que le toca', async () => {
+    326      const m = await import('../src/adapters/buildSwarmAgentDeps.ts')
+    327      const deps = await m.buildSwarmAgentDeps({ host: host(), identity: identidad })
+    328  
+    329      expect(deps.provider.getModel()).toBe('modelo-x')
+    330      expect(deps.tools.find('Bash')).toEqual({ name: 'Bash' })
+    331>     expect(deps.tools.list()).toEqual([{ name: 'Bash' }])
+    332      await deps.tools.execute({} as never, {}, {} as never)
+    333      expect(deps.context.getUserContext()).toEqual({ u: '1' })
+    334      expect(deps.context.getSystemContext()).toEqual({ s: '2' })
+    335      expect(deps.session.getSessionId()).toBe('ses-1')
+    336      await deps.session.recordTranscript([])
+    337      deps.output.emit({ tipo: 'x' })
+    338      await deps.hooks.onTurnStart({} as never)
+    339      await deps.hooks.onTurnEnd({} as never)
+    340      await deps.hooks.onStop([], {} as never)
+    341      await deps.compaction.maybeCompact([], 10)
+  Overload 1 of 2, '(expected: CoreTool[]): void', gave the following error.
+    Type '{ name: string; }' is missing the following properties from type 'CoreTool': description, inputSchema
+  Overload 2 of 2, '(expected: NoInfer<CoreTool[]>): void', gave the following error.
+    Type '{ name: string; }' is missing the following properties from type 'CoreTool': description, inputSchema

@@ -43,18 +43,12 @@ EXIT_GUARD = 2
 #: Las SEIS raices de trabajo que `hallazgos-documentacion-obligatoria.md`
 #: declara, en minuscula porque asi viven en la etiqueta RST (`.. _h-docs-42:`).
 #:
-#: Se declara UNA vez y las dos expresiones de abajo se derivan de ella. Antes
-#: eran tres literales independientes —el `re.compile`, el patron de `git grep`
-#: y la guarda de `--disponible`— y los tres enumeraban CINCO: `thyrox` no
-#: estaba en ninguno. La regla se corrigio a seis el 2026-09-17 y este mecanismo
-#: se quedo atras, que es la forma inversa de lo que esa misma regla documenta
-#: sobre si misma («el mecanismo ya era de N raices; la prosa enumeraba cinco»).
+#: Se declara UNA vez y las expresiones de abajo —el `re.compile`, el patron
+#: de `git grep` y la guarda de `--disponible`— se derivan de ella: tres
+#: literales independientes divergirian, y una capa ausente de uno dejaria sin
+#: la guarda de colision de `H-THYROX-26` a los hallazgos de esa capa.
 #:
-#: Lo que el rehuse escondia no era el rehuse: era que la guarda de colision que
-#: `H-THYROX-26` impone —dos hallazgos bajo un numero, el segundo pisando al
-#: primero sin emitir un byte— no cubria la capa cuyo corpus vive en ESTE arbol.
-#:
-#: NO se importa el `--capa` de `task_ids.py`: aquel enumera capas de TAREA e
+#: NO se importa el `--layer` de `task_ids.py`: aquel enumera capas de TAREA e
 #: incluye `gen`, que no es prefijo de ningun hallazgo. Compartir el literal
 #: acoplaria este gate a un universo distinto del que mide.
 LAYERS: tuple[str, ...] = ('api', 'db', 'docs', 'server', 'thyrox', 'ui')
@@ -96,7 +90,7 @@ def declaraciones(ref):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument('--base', default='origin/develop',
                         help='rama destino contra la que se decide si otra sigue viva')
     parser.add_argument('--quiet', action='store_true', help='solo el conteo')

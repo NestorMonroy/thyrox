@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts(88,11): error TS18046: 'event' is of type 'unknown'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts:78-98 ---
+     78        },
+     79      })
+     80  
+     81      const allContentBlocks: BetaContentBlock[] = []
+     82      let currentToolUseId: string | null = null
+     83      let currentToolUseJson = ''
+     84      const toolUseQueries = new Map<string, string>()
+     85      let progressCounter = 0
+     86  
+     87      for await (const event of queryStream) {
+     88>       if (event.type === 'assistant') {
+     89          const msg = event as { message: { content: BetaContentBlock[] } }
+     90          allContentBlocks.push(...msg.message.content)
+     91          continue
+     92        }
+     93  
+     94        if (event.type === 'stream_event') {
+     95          const streamEvt = event as {
+     96            event?: {
+     97              type: string
+     98              content_block?: { type: string; id?: string; tool_use_id?: string; content?: unknown; [key: string]: unknown }
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts(94,11): error TS18046: 'event' is of type 'unknown'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts:84-104 ---
+     84      const toolUseQueries = new Map<string, string>()
+     85      let progressCounter = 0
+     86  
+     87      for await (const event of queryStream) {
+     88        if (event.type === 'assistant') {
+     89          const msg = event as { message: { content: BetaContentBlock[] } }
+     90          allContentBlocks.push(...msg.message.content)
+     91          continue
+     92        }
+     93  
+     94>       if (event.type === 'stream_event') {
+     95          const streamEvt = event as {
+     96            event?: {
+     97              type: string
+     98              content_block?: { type: string; id?: string; tool_use_id?: string; content?: unknown; [key: string]: unknown }
+     99              delta?: { type: string; partial_json?: string; [key: string]: unknown }
+    100              [key: string]: unknown
+    101            }
+    102          }
+    103  
+    104          if (streamEvt.event?.type === 'content_block_start') {

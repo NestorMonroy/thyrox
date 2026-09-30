@@ -1,0 +1,49 @@
+src/packages/repl/src/screens/REPLView.tsx(2805,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2795-2815 ---
+   2795  
+   2796        // Extract a session title from the first real user message. One-shot
+   2797        // via ref (was tengu_birch_mist experiment: first-message-only to save
+   2798        // Haiku calls). The ref replaces the old `messages.length <= 1` check,
+   2799        // which was broken by SessionStart hook messages (prepended via
+   2800        // useDeferredHookMessages) and attachment messages (appended by
+   2801        // processTextPrompt) — both pushed length past 1 on turn one, so the
+   2802        // title silently fell through to the "Claude Code" default.
+   2803        if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+   2804          const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+   2805>         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+   2806          // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+   2807          // expansions (/commit → <command-message>), local-command headers
+   2808          // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+   2809          // None of these are the user's topic; wait for real prose.
+   2810          if (
+   2811            text &&
+   2812            !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) &&
+   2813            !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) &&
+   2814            !text.startsWith(`<${COMMAND_NAME_TAG}>`) &&
+   2815            !text.startsWith(`<${BASH_INPUT_TAG}>`)
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(2952,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2942-2962 ---
+   2942  
+   2943        for await (const event of query({
+   2944          messages: messagesIncludingNewMessages,
+   2945          systemPrompt,
+   2946          userContext,
+   2947          systemContext,
+   2948          canUseTool,
+   2949          toolUseContext,
+   2950          querySource: getQuerySourceForREPL(),
+   2951        })) {
+   2952>         onQueryEvent(event);
+   2953        }
+   2954  
+   2955        queryCheckpoint('query_end');
+   2956  
+   2957        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2958        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2959        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2960          const entries = apiMetricsRef.current;
+   2961  
+   2962          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp

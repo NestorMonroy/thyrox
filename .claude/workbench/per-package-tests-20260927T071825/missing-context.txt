@@ -1,0 +1,13 @@
+audio-capture-napi tests/audio-capture-napi=0 fuentes_ts=1
+computer-use-input tests/computer-use-input=0 fuentes_ts=5
+computer-use-mcp tests/computer-use-mcp=0 fuentes_ts=47
+computer-use-swift tests/computer-use-swift=0 fuentes_ts=5
+coordination tests/coordination=4 fuentes_ts=3
+image-processor-napi tests/image-processor-napi=0 fuentes_ts=1
+modifiers-napi tests/modifiers-napi=0 fuentes_ts=1
+paths tests/paths=21 fuentes_ts=2
+plan tests/plan=0 fuentes_ts=1
+store tests/store=2 fuentes_ts=1
+task tests/task=13 fuentes_ts=5
+url-handler-napi tests/url-handler-napi=0 fuentes_ts=1
+workbench tests/workbench=7 fuentes_ts=2

@@ -1,0 +1,2994 @@
+bun test v1.3.11 (af24e281)
+
+tests/integration/slash-commands.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) slash command popup e2e > getCommands returns at least built-in commands [1350.66ms]
+3169 |   // getInlinePlugins() is a synchronous state read with no dependency on
+3170 |   // marketplace loading, so these two sources can be fetched concurrently.
+3171 |   const inlinePlugins = getInlinePlugins()
+3172 |   const [marketplaceResult, sessionResult] = await Promise.all([
+3173 |     marketplaceLoader(),
+3174 |     inlinePlugins.length > 0
+           ^
+TypeError: undefined is not an object (evaluating 'inlinePlugins.length')
+      at assemblePluginLoadResult (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3174:5)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3149:12)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/loadPluginCommands.ts:424:37)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/tests/integration/slash-commands.test.ts:51:24)
+(fail) slash command popup e2e > getPluginCommands + getPluginSkills aggregate cleanly [5.38ms]
+
+tests/integration/cli-arguments.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../packages/cli/src/entry/commander.js' from '/home/user/thyrox/tests/integration/cli-arguments.test.ts'
+-------------------------------
+
+
+tests/smoke/swarm-smoke.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+(fail) smoke:swarm boot > agentHostBindings teammate wires resolve to functions [0.44ms]
+64 |     ]
+65 |     for (const name of requiredExports) {
+66 |       expect(
+67 |         typeof (mod as Record<string, unknown>)[name],
+68 |         `swarm.${name} should be a function`,
+69 |       ).toBe('function')
+             ^
+error: swarm.markMessagesAsReadByPredicate should be a function
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/swarm-smoke.test.ts:69:9)
+(fail) smoke:swarm boot > mailbox module loads without error [6.47ms]
+
+tests/smoke/headless-smoke.test.ts:
+61 | }
+62 | 
+63 | describe('smoke:headless boot', () => {
+64 |   test('--version prints something and exits 0', async () => {
+65 |     const r = await runCli(['--version'], 30_000)
+66 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:66:24)
+(fail) smoke:headless boot > --version prints something and exits 0 [10.36ms]
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+70 |   }, 35_000)
+71 | 
+72 |   test('--help exits 0 and prints usage', async () => {
+73 |     const r = await runCli(['--help'], 30_000)
+74 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:74:24)
+(fail) smoke:headless boot > --help exits 0 and prints usage [6.94ms]
+
+tests/smoke/resume-smoke.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+(fail) smoke:resume session persistence > bootstrap loads storage subsystem [0.48ms]
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+(fail) smoke:resume session persistence > write+flush+read roundtrip via storage API [0.35ms]
+
+tests/smoke/plugin-hooks-smoke.test.ts:
+24 |       'PreCompact',
+25 |       'Notification',
+26 |     ]
+27 |     for (const e of queried) {
+28 |       expect(r.dispatch[e]).toBeDefined()
+29 |       expect(r.dispatch[e]!.matched).toBeGreaterThanOrEqual(0)
+                                          ^
+error: expect(received).toBeGreaterThanOrEqual(expected)
+
+Expected: >= 0
+Received: -1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:29:38)
+(fail) smoke:plugin dispatch path > dispatch probe ran for every queried event [2.75ms]
+ 99 |   test('no dispatch query throws (every event handler reachable)', async () => {
+100 |     const r = await probeRuntime()
+101 |     const threwEvents = Object.entries(r.dispatch)
+102 |       .filter(([_, v]) => v.matched === -1)
+103 |       .map(([k]) => k)
+104 |     expect(threwEvents).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "Stop",
++   "SubagentStop",
++   "SessionStart",
++   "PreToolUse",
++   "UserPromptSubmit",
++   "PreCompact",
++   "Notification",
++ ]
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:104:25)
+(fail) smoke:plugin dispatch path > no dispatch query throws (every event handler reachable) [0.56ms]
+
+tests/smoke/live-fire-smoke.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+      at link (unknown:1:11)
+(fail) (unnamed) [2.58ms]
+
+tests/smoke/bg-cycle-smoke.test.ts:
+74 | describe('smoke:bg cycle (detached)', () => {
+75 |   let short: string | undefined
+76 | 
+77 |   test('--bg-detached spawns child + writes meta.json', async () => {
+78 |     const r = await runCli(['--bg-detached', 'echo smoke'], 25_000)
+79 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:79:24)
+(fail) smoke:bg cycle (detached) > --bg-detached spawns child + writes meta.json [7.06ms]
+100 |     expect(meta.status).toBe('running')
+101 |     expect(typeof meta.pid).toBe('number')
+102 |   }, 30_000)
+103 | 
+104 |   test('ps surfaces the new short', async () => {
+105 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:105:19)
+(fail) smoke:bg cycle (detached) > ps surfaces the new short [0.20ms]
+107 |     expect(r.exitCode).toBe(0)
+108 |     expect(r.stdout).toContain(short!)
+109 |   }, 20_000)
+110 | 
+111 |   test('rm removes the job dir', async () => {
+112 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:112:19)
+(fail) smoke:bg cycle (detached) > rm removes the job dir [0.18ms]
+141 | describe('smoke:bg argParse', () => {
+142 |   test('isolated home has been used (no leakage to ~/.claude/jobs)', () => {
+143 |     // The actual ~/.claude/jobs/ should not contain our smoke shorts.
+144 |     // We can't assert ABSENCE strictly (user may have other jobs) but
+145 |     // we can confirm our isolated home was where the cycle ran.
+146 |     expect(existsSync(join(ISOLATED_HOME, 'jobs'))).toBe(true)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:146:53)
+(fail) smoke:bg argParse > isolated home has been used (no leakage to ~/.claude/jobs) [0.07ms]
+
+tests/smoke/repl-smoke.test.ts:
+13 | import { probeRuntime } from './lib/runtime-probe.js'
+14 | 
+15 | describe('smoke:repl boot path', () => {
+16 |   test('bootstrap completes without errors', async () => {
+17 |     const r = await probeRuntime()
+18 |     expect(r.errors).toEqual([])
+                          ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "installRuntimeSkeletonBindings failed: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.",
++   "loadPluginHooks failed: undefined is not an object (evaluating 'inlinePlugins.length')",
++   "loadAllPluginsCacheOnly failed: undefined is not an object (evaluating 'inlinePlugins.length')",
++   "getMatchingHooks(Stop) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++   "getMatchingHooks(SubagentStop) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++   "getMatchingHooks(SessionStart) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++   "getMatchingHooks(PreToolUse) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++   "getMatchingHooks(UserPromptSubmit) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++   "getMatchingHooks(PreCompact) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++   "getMatchingHooks(Notification) threw: getMatchingHooks is not a function. (In 'getMatchingHooks(void 0, "probe-session", event, input, void 0)', 'getMatchingHooks' is undefined)",
++ ]
+
+- Expected  - 1
++ Received  + 12
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/repl-smoke.test.ts:18:22)
+(fail) smoke:repl boot path > bootstrap completes without errors [0.66ms]
+
+tests/reference/triple.test.ts:
+195 |   test('toda raiz declarada resuelve a un directorio que existe', () => {
+196 |     // El denominador va junto al conteo: un `0 ausentes` sin decir sobre
+197 |     // cuantas raices se midio no distingue un catalogo sano de uno vacio.
+198 |     const ausentes = Object.keys(TRIPLES).filter((a) => !existsSync(resolveRoot(a)))
+199 |     expect({ ausentes, medidas: Object.keys(TRIPLES).length })
+200 |       .toEqual({ ausentes: [], medidas: 9 })
+             ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,11 @@
+  {
+-   "ausentes": [],
++   "ausentes": [
++     "odoo19c",
++     "odoo19e",
++     "odoo18c",
++     "odoo18e",
++     "ccb",
++     "ccnmt",
++     "ui-core",
++   ],
+    "medidas": 9,
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/tests/reference/triple.test.ts:200:8)
+(fail) la raiz declarada tiene que existir y ser absoluta (#294) > toda raiz declarada resuelve a un directorio que existe [0.30ms]
+
+tests/package/sibling_exports.test.ts:
+134 |           expect({ pkg: p.nombre, declara: '.' in p.exports }).toEqual({
+135 |             pkg: p.nombre, declara: false,
+136 |           })
+137 |           return
+138 |         }
+139 |         expect({ pkg: p.nombre, declara: '.' in p.exports }).toEqual({
+                                                                   ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
+-   "declara": true,
++   "declara": false,
+    "pkg": "@thyrox/mcp-runtime",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:139:62)
+(fail) exports de los paquetes hermanos > bloque 1 — hay modulo raiz si y solo si hay subpath "." > @thyrox/mcp-runtime [0.18ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/modifiers-napi [0.25ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/repl [0.64ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/context-compression [0.08ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/stdin-napi [0.04ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/server [0.08ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/updater [0.11ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/provider [0.07ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/config [0.09ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/local-observability [0.12ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/daemon [0.05ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/teleport [0.07ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/voice [0.07ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/color-diff-napi [0.05ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/ripgrep-napi [0.06ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/shell [0.17ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/binary [0.06ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/url-handler-napi [0.04ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/app-host [0.10ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/permission.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/permission [0.10ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/output [0.17ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/command-runtime [0.13ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/storage [0.06ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/swarm [0.15ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/headless-sdk [0.06ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/ide [0.05ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/audio-capture-napi [0.03ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/tool-registry [0.22ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/bridge [0.05ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/image-processor-napi [0.04ms]
+158 |         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+159 |         // `./src/index.ts` inexistente y ningun bloque lo veia.
+160 |         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+161 |           if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+162 |         }
+163 |         expect(muertos).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "types -> ./dist/src/index.d.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:163:25)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/memory [0.04ms]
+172 |           'bun',
+173 |           ['-e', `await import(${JSON.stringify(p.nombre)}); console.log('OK')`],
+174 |           { cwd: p.dir, encoding: 'utf8' },
+175 |         )
+176 |         expect(`${p.nombre}: ${r.stdout.trim() || r.stderr.split('\n')[0]}`)
+177 |           .toBe(`${p.nombre}: OK`)
+                 ^
+error: expect(received).toBe(expected)
+
+Expected: "@thyrox/mcp-runtime: OK"
+Received: "@thyrox/mcp-runtime: error: Cannot find module '@thyrox/mcp-runtime' from '/home/user/thyrox/src/packages/mcp-runtime/[eval]'"
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:177:12)
+(fail) exports de los paquetes hermanos > bloque 3 — el paquete resuelve POR SU NOMBRE desde su propio directorio > @thyrox/mcp-runtime [11.68ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/Cursor.ts",
++   "src/__tests__/extraUsage.test.ts",
++   "src/__tests__/findRawIndex.test.ts",
++   "src/__tests__/fullscreenBgForced.test.ts",
++   "src/__tests__/history.test.ts",
++   "src/__tests__/horizontalScroll.test.ts",
++   "src/__tests__/imagePasteValidation.test.ts",
++   "src/__tests__/inputModes.test.ts",
++   "src/__tests__/isBackgroundTask.test.ts",
++   "src/__tests__/isHookEqual.test.ts",
++   "src/__tests__/isLocalShellTask.test.ts",
++   "src/__tests__/isNonSpacePrintable.test.ts",
++   "src/__tests__/keybindingsSchema.test.ts",
++   "src/__tests__/keybindingsTemplate.test.ts",
++   "src/__tests__/keyboardShortcuts.test.ts",
++   "src/__tests__/killRing.test.ts",
++   "src/__tests__/managedSettingsSecurity.test.ts",
++   "src/__tests__/maybeTruncateInput.test.ts",
++   "src/__tests__/median.test.ts",
++   "src/__tests__/notificationPolicy.test.ts",
++   "src/__tests__/optionMap.test.ts",
++   "src/__tests__/relaunch.test.ts",
++   "src/__tests__/replScreenHelpers.test.ts",
++   "src/__tests__/reservedShortcuts.test.ts",
++   "src/__tests__/treeify.test.ts",
++   "src/__tests__/ultraplanKeyword.test.ts",
++   "src/__tests__/validateKeybindings.test.ts",
++   "src/__tests__/vimCharClass.test.ts",
++   "src/accessibility.ts",
++   "src/appStateHooks.ts",
++   "src/clipboard/pasteStore.ts",
++   "src/clipboard/screenshotClipboard.ts",
++   "src/collapseHookSummaries.ts",
++   "src/collapseTeammateShutdowns.ts",
++   "src/commands/add-dir/add-dir.tsx",
++   "src/commands/add-dir/index.ts",
++   "src/commands/add-dir/validation.ts",
++   "src/commands/assistant/assistant.ts",
++   "src/commands/assistant/index.ts",
++   "src/commands/cd/cd.ts",
++   "src/commands/cd/index.ts",
++   "src/commands/color/color.ts",
++   "src/commands/color/index.ts",
++   "src/commands/config/config.tsx",
++   "src/commands/config/index.ts",
++   "src/commands/desktop/desktop.tsx",
++   "src/commands/desktop/index.ts",
++   "src/commands/diff/diff.tsx",
++   "src/commands/diff/index.ts",
++   "src/commands/doctor/doctor.tsx",
++   "src/commands/doctor/index.ts",
++   "src/commands/exit/exit.tsx",
++   "src/commands/exit/index.ts",
++   "src/commands/export/export.tsx",
++   "src/commands/export/index.ts",
++   "src/commands/files/files.ts",
++   "src/commands/files/index.ts",
++   "src/commands/heapdump/heapdump.ts",
++   "src/commands/heapdump/index.ts",
++   "src/commands/help/help.tsx",
++   "src/commands/help/index.ts",
++   "src/commands/hooks/hooks.tsx",
++   "src/commands/hooks/index.ts",
++   "src/commands/install-slack-app/index.ts",
++   "src/commands/install-slack-app/install-slack-app.ts",
++   "src/commands/keybindings/index.ts",
++   "src/commands/keybindings/keybindings.ts",
++   "src/commands/mobile/index.ts",
++   "src/commands/mobile/mobile.tsx",
++   "src/commands/output-style/index.ts",
++   "src/commands/output-style/output-style.tsx",
++   "src/commands/passes/index.ts",
++   "src/commands/passes/passes.tsx",
++   "src/commands/plan/index.ts",
++   "src/commands/plan/plan.tsx",
++   "src/commands/rewind/index.ts",
++   "src/commands/rewind/rewind.ts",
++   "src/commands/sandbox-toggle/index.ts",
++   "src/commands/sandbox-toggle/sandbox-toggle.tsx",
++   "src/commands/stats/index.ts",
++   "src/commands/stats/stats.tsx",
++   "src/commands/statusline.tsx",
++   "src/commands/stickers/index.ts",
++   "src/commands/stickers/stickers.ts",
++   "src/commands/tag/index.ts",
++   "src/commands/tag/tag.tsx",
++   "src/commands/tui/index.ts",
++   "src/commands/tui/tui.ts",
++   "src/commands/usage/index.ts",
++   "src/commands/usage/usage.tsx",
++   "src/commands/vim/index.ts",
++   "src/commands/vim/vim.ts",
++   "src/components/AgentProgressLine.tsx",
++   "src/components/AntModelSwitchCallout.tsx",
++   "src/components/App.tsx",
++   "src/components/ApproveApiKey.tsx",
++   "src/components/AutoModeOptInDialog.tsx",
++   "src/components/AutoUpdater.tsx",
++   "src/components/AutoUpdaterWrapper.tsx",
++   "src/components/AwsAuthStatusBox.tsx",
++   "src/components/BaseTextInput.tsx",
++   "src/components/BashModeProgress.tsx",
++   "src/components/BridgeDialog.tsx",
++   "src/components/BypassPermissionsModeDialog.tsx",
++   "src/components/ChannelDowngradeDialog.tsx",
++   "src/components/ClaudeCodeHint/PluginHintMenu.tsx",
++   "src/components/ClaudeInChromeOnboarding.tsx",
++   "src/components/ClaudeMdExternalIncludesDialog.tsx",
++   "src/components/ClickableImageRef.tsx",
++   "src/components/CompactSummary.tsx",
++   "src/components/ConfigurableShortcutHint.tsx",
++   "src/components/ConsoleOAuthFlow.tsx",
++   "src/components/ContextSuggestions.tsx",
++   "src/components/ContextVisualization.tsx",
++   "src/components/CoordinatorAgentStatus.tsx",
++   "src/components/CostThresholdDialog.tsx",
++   "src/components/CtrlOToExpand.tsx",
++   "src/components/CustomSelect/SelectMulti.tsx",
++   "src/components/CustomSelect/index.ts",
++   "src/components/CustomSelect/option-map.ts",
++   "src/components/CustomSelect/select-input-option.tsx",
++   "src/components/CustomSelect/select-option.tsx",
++   "src/components/CustomSelect/select.tsx",
++   "src/components/CustomSelect/use-multi-select-state.ts",
++   "src/components/CustomSelect/use-select-input.ts",
++   "src/components/CustomSelect/use-select-navigation.ts",
++   "src/components/CustomSelect/use-select-state.ts",
++   "src/components/DesktopHandoff.tsx",
++   "src/components/DesktopUpsell/DesktopUpsellStartup.tsx",
++   "src/components/DevBar.tsx",
++   "src/components/DevChannelsDialog.tsx",
++   "src/components/DiagnosticsDisplay.tsx",
++   "src/components/EffortCallout.tsx",
++   "src/components/EffortIndicator.ts",
++   "src/components/EffortPicker.tsx",
++   "src/components/ExitFlow.tsx",
++   "src/components/ExportDialog.tsx",
++   "src/components/FallbackToolUseErrorMessage.tsx",
++   "src/components/FallbackToolUseRejectedMessage.tsx",
++   "src/components/FastIcon.tsx",
++   "src/components/FileEditToolDiff.tsx",
++   "src/components/FileEditToolUpdatedMessage.tsx",
++   "src/components/FileEditToolUseRejectedMessage.tsx",
++   "src/components/FilePathLink.tsx",
++   "src/components/FullscreenLayout.tsx",
++   "src/components/GlobalSearchDialog.tsx",
++   "src/components/HelpV2/Commands.tsx",
++   "src/components/HelpV2/General.tsx",
++   "src/components/HelpV2/HelpV2.tsx",
++   "src/components/HighlightedCode.tsx",
++   "src/components/HighlightedCode/Fallback.tsx",
++   "src/components/HistorySearchDialog.tsx",
++   "src/components/IdeAutoConnectDialog.tsx",
++   "src/components/IdeOnboardingDialog.tsx",
++   "src/components/IdeStatusIndicator.tsx",
++   "src/components/IdleReturnDialog.tsx",
++   "src/components/IneffectivePluginDisables.tsx",
++   "src/components/InterruptedByUser.tsx",
++   "src/components/InvalidConfigDialog.tsx",
++   "src/components/InvalidSettingsDialog.tsx",
++   "src/components/KeybindingWarnings.tsx",
++   "src/components/LanguagePicker.tsx",
++   "src/components/LogSelector.tsx",
++   "src/components/LogoV2/AnimatedAsterisk.tsx",
++   "src/components/LogoV2/AnimatedClawd.tsx",
++   "src/components/LogoV2/ChannelsNotice.tsx",
++   "src/components/LogoV2/Clawd.tsx",
++   "src/components/LogoV2/CondensedLogo.tsx",
++   "src/components/LogoV2/EmergencyTip.tsx",
++   "src/components/LogoV2/ExperimentEnrollmentNotice.tsx",
++   "src/components/LogoV2/Feed.tsx",
++   "src/components/LogoV2/FeedColumn.tsx",
++   "src/components/LogoV2/GateOverridesWarning.tsx",
++   "src/components/LogoV2/GuestPassesUpsell.tsx",
++   "src/components/LogoV2/LogoV2.tsx",
++   "src/components/LogoV2/Opus1mMergeNotice.tsx",
++   "src/components/LogoV2/OverageCreditUpsell.tsx",
++   "src/components/LogoV2/VoiceModeNotice.tsx",
++   "src/components/LogoV2/WelcomeV2.tsx",
++   "src/components/LogoV2/feedConfigs.tsx",
++   "src/components/LogoutPicker.tsx",
++   "src/components/LspRecommendation/LspRecommendationMenu.tsx",
++   "src/components/MCPServerApprovalDialog.tsx",
++   "src/components/MCPServerDesktopImportDialog.tsx",
++   "src/components/MCPServerDialogCopy.tsx",
++   "src/components/MCPServerMultiselectDialog.tsx",
++   "src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx",
++   "src/components/ManagedSettingsSecurityDialog/utils.ts",
++   "src/components/Markdown.tsx",
++   "src/components/MarkdownTable.tsx",
++   "src/components/MemoryUsageIndicator.tsx",
++   "src/components/Message.tsx",
++   "src/components/MessageModel.tsx",
++   "src/components/MessageResponse.tsx",
++   "src/components/MessageRow.tsx",
++   "src/components/MessageSelector.tsx",
++   "src/components/MessageTimestamp.tsx",
++   "src/components/Messages.tsx",
++   "src/components/ModelPicker.tsx",
++   "src/components/NativeAutoUpdater.tsx",
++   "src/components/NotebookEditToolUseRejectedMessage.tsx",
++   "src/components/OffscreenFreeze.tsx",
++   "src/components/Onboarding.tsx",
++   "src/components/OutputStylePicker.tsx",
++   "src/components/PackageManagerAutoUpdater.tsx",
++   "src/components/Passes/Passes.tsx",
++   "src/components/PrBadge.tsx",
++   "src/components/PressEnterToContinue.tsx",
++   "src/components/PromptInput/HistorySearchInput.tsx",
++   "src/components/PromptInput/IssueFlagBanner.tsx",
++   "src/components/PromptInput/Notifications.tsx",
++   "src/components/PromptInput/PromptInput.tsx",
++   "src/components/PromptInput/PromptInputFooter.tsx",
++   "src/components/PromptInput/PromptInputFooterLeftSide.tsx",
++   "src/components/PromptInput/PromptInputFooterSuggestions.tsx",
++   "src/components/PromptInput/PromptInputHelpMenu.tsx",
++   "src/components/PromptInput/PromptInputModeIndicator.tsx",
++   "src/components/PromptInput/PromptInputQueuedCommands.tsx",
++   "src/components/PromptInput/PromptInputStashNotice.tsx",
++   "src/components/PromptInput/SandboxPromptFooterHint.tsx",
++   "src/components/PromptInput/ShimmeredInput.tsx",
++   "src/components/PromptInput/VoiceIndicator.tsx",
++   "src/components/PromptInput/inputModes.ts",
++   "src/components/PromptInput/inputPaste.ts",
++   "src/components/PromptInput/useMaybeTruncateInput.ts",
++   "src/components/PromptInput/usePromptInputPlaceholder.ts",
++   "src/components/PromptInput/useShowFastIconHint.ts",
++   "src/components/PromptInput/useSwarmBanner.ts",
++   "src/components/PromptInput/utils.ts",
++   "src/components/QuickOpenDialog.tsx",
++   "src/components/RemoteCallout.tsx",
++   "src/components/RemoteEnvironmentDialog.tsx",
++   "src/components/ResumeTask.tsx",
++   "src/components/SandboxViolationExpandedView.tsx",
++   "src/components/ScrollKeybindingHandler.tsx",
++   "src/components/SentryErrorBoundary.ts",
++   "src/components/SessionBackgroundHint.tsx",
++   "src/components/SessionPreview.tsx",
++   "src/components/Settings/Config.tsx",
++   "src/components/Settings/Settings.tsx",
++   "src/components/Settings/Status.tsx",
++   "src/components/Settings/Usage.tsx",
++   "src/components/Settings/questionTimeoutSetting.ts",
++   "src/components/ShowInIDEPrompt.tsx",
++   "src/components/Spinner.tsx",
++   "src/components/Spinner/GlimmerMessage.tsx",
++   "src/components/Spinner/ShimmerChar.tsx",
++   "src/components/Spinner/SpinnerAnimationRow.tsx",
++   "src/components/Spinner/SpinnerGlyph.tsx",
++   "src/components/Spinner/TeammateSpinnerLine.tsx",
++   "src/components/Spinner/TeammateSpinnerTree.tsx",
++   "src/components/Spinner/teammateSelectHint.ts",
++   "src/components/Spinner/types.ts",
++   "src/components/Spinner/useShimmerAnimation.ts",
++   "src/components/Spinner/useStalledAnimation.ts",
++   "src/components/Spinner/utils.ts",
++   "src/components/Stats.tsx",
++   "src/components/StatusLine.tsx",
++   "src/components/StatusNotices.tsx",
++   "src/components/StructuredDiff.tsx",
++   "src/components/StructuredDiff/Fallback.tsx",
++   "src/components/StructuredDiff/colorDiff.ts",
++   "src/components/StructuredDiffList.tsx",
++   "src/components/TagTabs.tsx",
++   "src/components/TaskListV2.tsx",
++   "src/components/TeammateViewHeader.tsx",
++   "src/components/TeleportError.tsx",
++   "src/components/TeleportProgress.tsx",
++   "src/components/TeleportRepoMismatchDialog.tsx",
++   "src/components/TeleportResumeWrapper.tsx",
++   "src/components/TeleportStash.tsx",
++   "src/components/TextInput.tsx",
++   "src/components/ThemePicker.tsx",
++   "src/components/ThinkingToggle.tsx",
++   "src/components/TokenWarning.tsx",
++   "src/components/ToolUseLoader.tsx",
++   "src/components/UndercoverAutoCallout.tsx",
++   "src/components/ValidationErrorsList.tsx",
++   "src/components/VimTextInput.tsx",
++   "src/components/VirtualMessageList.tsx",
++   "src/components/WorkflowMultiselectDialog.tsx",
++   "src/components/WorktreeExitDialog.tsx",
++   "src/components/agents/AgentDetail.tsx",
++   "src/components/agents/AgentEditor.tsx",
++   "src/components/agents/AgentNavigationFooter.tsx",
++   "src/components/agents/AgentsList.tsx",
++   "src/components/agents/AgentsMenu.tsx",
++   "src/components/agents/ColorPicker.tsx",
++   "src/components/agents/ModelSelector.tsx",
++   "src/components/agents/SnapshotUpdateDialog.ts",
++   "src/components/agents/ToolSelector.tsx",
++   "src/components/agents/agentFileUtils.ts",
++   "src/components/agents/generateAgent.ts",
++   "src/components/agents/new-agent-creation/CreateAgentWizard.tsx",
++   "src/components/agents/new-agent-creation/types.ts",
++   "src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/ConfirmStepWrapper.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/LocationStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/PromptStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx",
++   "src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx",
++   "src/components/agents/types.ts",
++   "src/components/agents/utils.ts",
++   "src/components/agents/validateAgent.ts",
++   "src/components/diff/DiffDetailView.tsx",
++   "src/components/diff/DiffDialog.tsx",
++   "src/components/diff/DiffFileList.tsx",
++   "src/components/goal/GoalActiveIndicator.tsx",
++   "src/components/goal/GoalPanel.tsx",
++   "src/components/grove/Grove.tsx",
++   "src/components/hooks/HooksConfigMenu.tsx",
++   "src/components/hooks/PromptDialog.tsx",
++   "src/components/hooks/SelectEventMode.tsx",
++   "src/components/hooks/SelectHookMode.tsx",
++   "src/components/hooks/SelectMatcherMode.tsx",
++   "src/components/hooks/ViewHookMode.tsx",
++   "src/components/mcp/CapabilitiesSection.tsx",
++   "src/components/mcp/ElicitationDialog.tsx",
++   "src/components/mcp/MCPAgentServerMenu.tsx",
++   "src/components/mcp/MCPListPanel.tsx",
++   "src/components/mcp/MCPReconnect.tsx",
++   "src/components/mcp/MCPRemoteServerMenu.tsx",
++   "src/components/mcp/MCPSettings.tsx",
++   "src/components/mcp/MCPStdioServerMenu.tsx",
++   "src/components/mcp/MCPToolDetailView.tsx",
++   "src/components/mcp/MCPToolListView.tsx",
++   "src/components/mcp/McpParsingWarnings.tsx",
++   "src/components/mcp/index.ts",
++   "src/components/mcp/types.ts",
++   "src/components/mcp/utils/reconnectHelpers.tsx",
++   "src/components/memory/MemoryFileSelector.tsx",
++   "src/components/memory/MemoryUpdateNotification.tsx",
++   "src/components/messageActions.tsx",
++   "src/components/messageStaticness.ts",
++   "src/components/messages/AdvisorMessage.tsx",
++   "src/components/messages/AssistantRedactedThinkingMessage.tsx",
++   "src/components/messages/AssistantTextMessage.tsx",
++   "src/components/messages/AssistantThinkingMessage.tsx",
++   "src/components/messages/AssistantToolUseMessage.tsx",
++   "src/components/messages/AttachmentMessage.tsx",
++   "src/components/messages/CollapsedReadSearchContent.tsx",
++   "src/components/messages/CompactBoundaryMessage.tsx",
++   "src/components/messages/GroupedToolUseContent.tsx",
++   "src/components/messages/HighlightedThinkingText.tsx",
++   "src/components/messages/HookProgressMessage.tsx",
++   "src/components/messages/PlanApprovalMessage.tsx",
++   "src/components/messages/RateLimitMessage.tsx",
++   "src/components/messages/ShutdownMessage.tsx",
++   "src/components/messages/SnipBoundaryMessage.ts",
++   "src/components/messages/SystemAPIErrorMessage.tsx",
++   "src/components/messages/SystemTextMessage.tsx",
++   "src/components/messages/TaskAssignmentMessage.tsx",
++   "src/components/messages/UserAgentNotificationMessage.tsx",
++   "src/components/messages/UserBashInputMessage.tsx",
++   "src/components/messages/UserBashOutputMessage.tsx",
++   "src/components/messages/UserChannelMessage.tsx",
++   "src/components/messages/UserCommandMessage.tsx",
++   "src/components/messages/UserCrossSessionMessage.ts",
++   "src/components/messages/UserForkBoilerplateMessage.ts",
++   "src/components/messages/UserGitHubWebhookMessage.ts",
++   "src/components/messages/UserImageMessage.tsx",
++   "src/components/messages/UserLocalCommandOutputMessage.tsx",
++   "src/components/messages/UserMemoryInputMessage.tsx",
++   "src/components/messages/UserPlanMessage.tsx",
++   "src/components/messages/UserPromptMessage.tsx",
++   "src/components/messages/UserResourceUpdateMessage.tsx",
++   "src/components/messages/UserTeammateMessage.tsx",
++   "src/components/messages/UserTextMessage.tsx",
++   "src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx",
++   "src/components/messages/UserToolResultMessage/RejectedToolUseMessage.tsx",
++   "src/components/messages/UserToolResultMessage/UserToolCanceledMessage.tsx",
++   "src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx",
++   "src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx",
++   "src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx",
++   "src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx",
++   "src/components/messages/UserToolResultMessage/utils.tsx",
++   "src/components/messages/nullRenderingAttachments.ts",
++   "src/components/messages/teamMemCollapsed.tsx",
++   "src/components/messages/teamMemSaved.ts",
++   "src/components/sandbox/SandboxConfigTab.tsx",
++   "src/components/sandbox/SandboxDependenciesTab.tsx",
++   "src/components/sandbox/SandboxDoctorSection.tsx",
++   "src/components/sandbox/SandboxOverridesTab.tsx",
++   "src/components/sandbox/SandboxSettings.tsx",
++   "src/components/shell/ExpandShellOutputContext.tsx",
++   "src/components/shell/OutputLine.tsx",
++   "src/components/shell/ShellProgressMessage.tsx",
++   "src/components/shell/ShellTimeDisplay.tsx",
++   "src/components/skills/SkillsMenu.tsx",
++   "src/components/tasks/AsyncAgentDetailDialog.tsx",
++   "src/components/tasks/BackgroundTask.tsx",
++   "src/components/tasks/BackgroundTaskStatus.tsx",
++   "src/components/tasks/BackgroundTasksDialog.tsx",
++   "src/components/tasks/DreamDetailDialog.tsx",
++   "src/components/tasks/InProcessTeammateDetailDialog.tsx",
++   "src/components/tasks/MonitorMcpDetailDialog.ts",
++   "src/components/tasks/RemoteSessionDetailDialog.tsx",
++   "src/components/tasks/RemoteSessionProgress.tsx",
++   "src/components/tasks/ShellDetailDialog.tsx",
++   "src/components/tasks/ShellProgress.tsx",
++   "src/components/tasks/WorkflowDetailDialog.ts",
++   "src/components/tasks/WorkflowsDialog.tsx",
++   "src/components/tasks/__tests__/bgAgentPanelGate.test.ts",
++   "src/components/tasks/renderToolActivity.tsx",
++   "src/components/tasks/taskStatusUtils.tsx",
++   "src/components/teams/TeamStatus.tsx",
++   "src/components/teams/TeamsDialog.tsx",
++   "src/components/ui/OrderedList.tsx",
++   "src/components/ui/OrderedListItem.tsx",
++   "src/components/ui/TreeSelect.tsx",
++   "src/components/ui/option.ts",
++   "src/components/ultraplan/UltraplanChoiceDialog.tsx",
++   "src/components/ultraplan/UltraplanLaunchDialog.tsx",
++   "src/components/wizard/WizardDialogLayout.tsx",
++   "src/components/wizard/WizardNavigationFooter.tsx",
++   "src/components/wizard/WizardProvider.tsx",
++   "src/components/wizard/index.ts",
++   "src/components/wizard/types.ts",
++   "src/components/wizard/useWizard.ts",
++   "src/conversationRecovery.tsx",
++   "src/costHook/costHook.ts",
++   "src/deepLink/banner.ts",
++   "src/deepLink/parseDeepLink.ts",
++   "src/deepLink/protocolHandler.ts",
++   "src/deepLink/registerProtocol.ts",
++   "src/deepLink/terminalLauncher.ts",
++   "src/deepLink/terminalPreference.ts",
++   "src/diagnostics/claudeDesktop.ts",
++   "src/diagnostics/debugFilter.ts",
++   "src/diagnostics/desktopDeepLink.ts",
++   "src/diagnostics/doctorContextWarnings.ts",
++   "src/diagnostics/skillsBudgetWarning.ts",
++   "src/dialogLaunchers/dialogLaunchers.tsx",
++   "src/doctorDiagnostic.ts",
++   "src/earlyInput.ts",
++   "src/extraUsage.ts",
++   "src/fastMode.ts",
++   "src/fileIndex/index.ts",
++   "src/fullscreen.ts",
++   "src/github/ghAuthToken.ts",
++   "src/github/ghPrStatus.ts",
++   "src/github/ghPrStatusRest.ts",
++   "src/github/githubRepoPathMapping.ts",
++   "src/handlePromptSubmit.tsx",
++   "src/highlight/highlightMatch.tsx",
++   "src/history.ts",
++   "src/hookEvents.ts",
++   "src/hooks/fileSuggestions.ts",
++   "src/hooks/notifs/useAntOrgWarningNotification.ts",
++   "src/hooks/notifs/useAutoModeUnavailableNotification.ts",
++   "src/hooks/notifs/useCanSwitchToExistingSubscription.tsx",
++   "src/hooks/notifs/useDeprecationWarningNotification.tsx",
++   "src/hooks/notifs/useFastModeNotification.tsx",
++   "src/hooks/notifs/useIDEStatusIndicator.tsx",
++   "src/hooks/notifs/useInstallMessages.tsx",
++   "src/hooks/notifs/useLspInitializationNotification.tsx",
++   "src/hooks/notifs/useMcpConnectivityStatus.tsx",
++   "src/hooks/notifs/useModelMigrationNotifications.tsx",
++   "src/hooks/notifs/useNpmDeprecationNotification.tsx",
++   "src/hooks/notifs/usePluginAutoupdateNotification.tsx",
++   "src/hooks/notifs/usePluginInstallationStatus.tsx",
++   "src/hooks/notifs/useRateLimitWarningNotification.tsx",
++   "src/hooks/notifs/useSettingsErrors.tsx",
++   "src/hooks/notifs/useStartupNotification.ts",
++   "src/hooks/notifs/useTeammateShutdownNotification.ts",
++   "src/hooks/renderPlaceholder.ts",
++   "src/hooks/safeIgnore.ts",
++   "src/hooks/unifiedSuggestions.ts",
++   "src/hooks/useAfterFirstRender.ts",
++   "src/hooks/useApiKeyVerification.ts",
++   "src/hooks/useArrowKeyHistory.tsx",
++   "src/hooks/useAssistantHistory.ts",
++   "src/hooks/useAwaySummary.ts",
++   "src/hooks/useBackgroundTaskNavigation.ts",
++   "src/hooks/useBlink.ts",
++   "src/hooks/useCanUseTool.tsx",
++   "src/hooks/useCancelRequest.ts",
++   "src/hooks/useChromeExtensionNotification.tsx",
++   "src/hooks/useClaudeCodeHintRecommendation.tsx",
++   "src/hooks/useClipboardImageHint.ts",
++   "src/hooks/useCommandKeybindings.tsx",
++   "src/hooks/useCommandQueue.ts",
++   "src/hooks/useCommandReload.ts",
++   "src/hooks/useCopyOnSelect.ts",
++   "src/hooks/useDeferredHookMessages.ts",
++   "src/hooks/useDiffData.ts",
++   "src/hooks/useDirectConnect.ts",
++   "src/hooks/useElapsedTime.ts",
++   "src/hooks/useExitOnCtrlCD.ts",
++   "src/hooks/useExitOnCtrlCDWithKeybindings.ts",
++   "src/hooks/useFileHistorySnapshotInit.ts",
++   "src/hooks/useGlobalKeybindings.tsx",
++   "src/hooks/useHistorySearch.ts",
++   "src/hooks/useInboxPoller.ts",
++   "src/hooks/useInputBuffer.ts",
++   "src/hooks/useIssueFlagBanner.ts",
++   "src/hooks/useLogMessages.ts",
++   "src/hooks/useLspPluginRecommendation.tsx",
++   "src/hooks/useMailboxBridge.ts",
++   "src/hooks/useMainLoopModel.ts",
++   "src/hooks/useManagePlugins.ts",
++   "src/hooks/useMemoryUsage.ts",
++   "src/hooks/useMergedClients.ts",
++   "src/hooks/useMergedCommands.ts",
++   "src/hooks/useMergedTools.ts",
++   "src/hooks/useNotifyAfterTimeout.ts",
++   "src/hooks/useOfficialMarketplaceNotification.tsx",
++   "src/hooks/usePasteHandler.ts",
++   "src/hooks/usePluginRecommendationBase.tsx",
++   "src/hooks/usePrStatus.ts",
++   "src/hooks/usePromptSuggestion.ts",
++   "src/hooks/usePromptsFromClaudeInChrome.tsx",
++   "src/hooks/useQueueProcessor.ts",
++   "src/hooks/useRemoteSession.ts",
++   "src/hooks/useReplBridge.tsx",
++   "src/hooks/useSSHSession.ts",
++   "src/hooks/useScheduledTasks.ts",
++   "src/hooks/useSessionBackgrounding.ts",
++   "src/hooks/useSettings.ts",
++   "src/hooks/useSettingsChange.ts",
++   "src/hooks/useSkillsBudgetNotification.tsx",
++   "src/hooks/useSwarmInitialization.ts",
++   "src/hooks/useSwarmPermissionPoller.ts",
++   "src/hooks/useTaskListWatcher.ts",
++   "src/hooks/useTasksV2.ts",
++   "src/hooks/useTeammateViewAutoExit.ts",
++   "src/hooks/useTeleportResume.tsx",
++   "src/hooks/useTextInput.ts",
++   "src/hooks/useTurnDiffs.ts",
++   "src/hooks/useTypeahead.tsx",
++   "src/hooks/useUpdateNotification.ts",
++   "src/hooks/useVimInput.ts",
++   "src/hooks/useVirtualScroll.constants.ts",
++   "src/hooks/useVirtualScroll.ts",
++   "src/hooksConfigManager.ts",
++   "src/hooksSettings.ts",
++   "src/imagePaste.ts",
++   "src/interactiveHelpers/interactiveHelpers.tsx",
++   "src/isHookEqual.ts",
++   "src/keybindings/KeybindingContext.tsx",
++   "src/keybindings/KeybindingProviderSetup.tsx",
++   "src/keybindings/defaultBindings.ts",
++   "src/keybindings/loadUserBindings.ts",
++   "src/keybindings/parser.ts",
++   "src/keybindings/reservedShortcuts.ts",
++   "src/keybindings/resolver.ts",
++   "src/keybindings/schema.ts",
++   "src/keybindings/shortcutFormat.ts",
++   "src/keybindings/template.ts",
++   "src/keybindings/useShortcutDisplay.ts",
++   "src/keybindings/validate.ts",
++   "src/keyboardShortcuts.ts",
++   "src/localInstaller.ts",
++   "src/localShellTaskGuards.ts",
++   "src/modalContext.ts",
++   "src/moreright/useMoreRight.tsx",
++   "src/notificationPolicy.ts",
++   "src/notifications.ts",
++   "src/notifier.ts",
++   "src/onChangeAppState.ts",
++   "src/overlayContext.tsx",
++   "src/processUserInput/looksLikeCommand.ts",
++   "src/processUserInput/processBashCommand.tsx",
++   "src/processUserInput/processSlashCommand.tsx",
++   "src/processUserInput/processTextPrompt.ts",
++   "src/processUserInput/processUserInput.ts",
++   "src/processUserInput/slashUserPromptTelemetry.ts",
++   "src/processUserInput/stackedSlashCommands.ts",
++   "src/projectOnboardingState.ts",
++   "src/promptEditor.ts",
++   "src/promptOverlayContext.tsx",
++   "src/promptSuggestion.tsx",
++   "src/promptSuggestionSpeculation.tsx",
++   "src/queryHelpers.ts",
++   "src/readFileInRange.ts",
++   "src/relaunch.ts",
++   "src/replTypes/command.ts",
++   "src/replTypes/connectorText.ts",
++   "src/replTypes/fileSuggestion.ts",
++   "src/replTypes/hooks.ts",
++   "src/replTypes/ids.ts",
++   "src/replTypes/logs.ts",
++   "src/replTypes/message.ts",
++   "src/replTypes/permissions.ts",
++   "src/replTypes/statusLine.ts",
++   "src/replTypes/utils.ts",
++   "src/screens/Doctor.tsx",
++   "src/screens/REPL.tsx",
++   "src/screens/REPLView.tsx",
++   "src/screens/ResumeConversation.tsx",
++   "src/screens/agentFleet/FleetView.tsx",
++   "src/screens/agentFleet/__tests__/helpers.test.ts",
++   "src/screens/agentFleet/components/BlockedQuestionsPrompt.tsx",
++   "src/screens/agentFleet/components/FleetBanner.tsx",
++   "src/screens/agentFleet/components/FleetFooter.tsx",
++   "src/screens/agentFleet/components/FleetJobRow.tsx",
++   "src/screens/agentFleet/components/FleetSectionHeader.tsx",
++   "src/screens/agentFleet/components/FleetSpinner.tsx",
++   "src/screens/agentFleet/components/HelpOverlay.tsx",
++   "src/screens/agentFleet/components/PeekPanel.tsx",
++   "src/screens/agentFleet/components/VoiceAudioMeter.tsx",
++   "src/screens/agentFleet/helpers/childStatusColor.ts",
++   "src/screens/agentFleet/helpers/controlChars.ts",
++   "src/screens/agentFleet/helpers/deriveActivity.ts",
++   "src/screens/agentFleet/helpers/deriveBand.ts",
++   "src/screens/agentFleet/helpers/deriveChildSummaries.ts",
++   "src/screens/agentFleet/helpers/derivePeekChildRows.ts",
++   "src/screens/agentFleet/helpers/dispatchHighlights.ts",
++   "src/screens/agentFleet/helpers/doneFoldCap.ts",
++   "src/screens/agentFleet/helpers/elapsed.ts",
++   "src/screens/agentFleet/helpers/extractRepoCwd.ts",
++   "src/screens/agentFleet/helpers/flattenDetail.ts",
++   "src/screens/agentFleet/helpers/glyphColor.ts",
++   "src/screens/agentFleet/helpers/glyphs.ts",
++   "src/screens/agentFleet/helpers/grapheme.ts",
++   "src/screens/agentFleet/helpers/jobLabel.ts",
++   "src/screens/agentFleet/helpers/jobMatch.ts",
++   "src/screens/agentFleet/helpers/labelReplaceAnim.ts",
++   "src/screens/agentFleet/helpers/loopJob.ts",
++   "src/screens/agentFleet/helpers/materializeFleetImages.ts",
++   "src/screens/agentFleet/helpers/needsRespawn.ts",
++   "src/screens/agentFleet/helpers/parseQuery.ts",
++   "src/screens/agentFleet/helpers/patchStateOnReply.ts",
++   "src/screens/agentFleet/helpers/pickIcon.ts",
++   "src/screens/agentFleet/helpers/repoGroup.ts",
++   "src/screens/agentFleet/helpers/resultUrl.ts",
++   "src/screens/agentFleet/helpers/rollupColor.ts",
++   "src/screens/agentFleet/helpers/sectionLabels.ts",
++   "src/screens/agentFleet/helpers/selfDriving.ts",
++   "src/screens/agentFleet/helpers/sortJobs.ts",
++   "src/screens/agentFleet/helpers/spinnerFrames.ts",
++   "src/screens/agentFleet/helpers/stateBucket.ts",
++   "src/screens/agentFleet/helpers/stateOutcome.ts",
++   "src/screens/agentFleet/hooks/useFleetActions.ts",
++   "src/screens/agentFleet/hooks/useFleetDispatchPaste.ts",
++   "src/screens/agentFleet/hooks/useFleetInput.ts",
++   "src/screens/agentFleet/hooks/useFleetPolling.ts",
++   "src/screens/agentFleet/hooks/useFleetRows.ts",
++   "src/screens/agentFleet/hooks/useLabelReplaceAnim.ts",
++   "src/screens/agentFleet/mountFleetView.tsx",
++   "src/screens/repl/AnimatedTerminalTitle.tsx",
++   "src/screens/repl/REPLController.tsx",
++   "src/screens/repl/TranscriptModeFooter.tsx",
++   "src/screens/repl/TranscriptSearchBar.tsx",
++   "src/screens/repl/backgroundAgentNotifications.ts",
++   "src/screens/repl/backgrounding.ts",
++   "src/screens/repl/bgDetachSignal.ts",
++   "src/screens/repl/dialogs.ts",
++   "src/screens/repl/findRawIndex.ts",
++   "src/screens/repl/integrations.ts",
++   "src/screens/repl/median.ts",
++   "src/screens/repl/onlySleepToolActive.ts",
++   "src/screens/repl/stopHookSpinnerSuffix.ts",
++   "src/screens/repl/submission.ts",
++   "src/screens/repl/useBgFleetStateSync.ts",
++   "src/screens/repl/useBgRendezvousServer.ts",
++   "src/screens/repl/useHandleExit.tsx",
++   "src/screens/repl/useQueuedCommandOnCancel.ts",
++   "src/screens/repl/useRateLimitHandlers.ts",
++   "src/screens/repl/useReplActions.ts",
++   "src/screens/repl/useReplAppState.ts",
++   "src/screens/repl/useReplEnvFlags.ts",
++   "src/screens/repl/useReplRuntimeViews.ts",
++   "src/screens/repl/useSpareReadyMarker.ts",
++   "src/screens/repl/useStartupCallouts.ts",
++   "src/screens/repl/useSuspendResumeHandlers.ts",
++   "src/screens/repl/useTranscriptFreeze.ts",
++   "src/selectors.ts",
++   "src/stateStore.ts",
++   "src/suggestions/commandSuggestions.ts",
++   "src/suggestions/directoryCompletion.ts",
++   "src/suggestions/shellHistoryCompletion.ts",
++   "src/suggestions/skillUsageTracking.ts",
++   "src/suggestions/slackChannelSuggestions.ts",
++   "src/systemTheme.ts",
++   "src/tasksTypes.ts",
++   "src/teammateViewHelpers.ts",
++   "src/terminalSetup.ts",
++   "src/textInputTypes.ts",
++   "src/tips/tipHistory.ts",
++   "src/tips/tipRegistry.ts",
++   "src/tips/tipScheduler.ts",
++   "src/tips/types.ts",
++   "src/toolPool.ts",
++   "src/uiHelpers/groupToolUses.ts",
++   "src/uiHelpers/horizontalScroll.ts",
++   "src/uiHelpers/logoV2Utils.ts",
++   "src/uiHelpers/statusNoticeDefinitions.tsx",
++   "src/uiHelpers/statusNoticeHelpers.ts",
++   "src/uiHelpers/treeify.ts",
++   "src/ultraplan.ts",
++   "src/ultraplan/ccrSession.ts",
++   "src/ultraplan/keyword.ts",
++   "src/utils/suggestions/directoryCompletion.ts",
++ ]
+
+- Expected  - 1
++ Received  + 702
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/repl [27.11ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/caCerts.ts",
++   "src/commands/logout/index.ts",
++   "src/commands/logout/logout.tsx",
++   "src/oauth/index.ts",
++   "src/testing/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/provider [2.44ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/__tests__/color-diff.test.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/color-diff-napi [0.14ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/context/QueuedMessageContext.tsx",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/app-host [0.96ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/commands/index.ts",
++   "src/commands/permissions.tsx",
++   "src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx",
++   "src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx",
++   "src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx",
++   "src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx",
++   "src/components/AskUserQuestionPermissionRequest/QuestionView.tsx",
++   "src/components/AskUserQuestionPermissionRequest/SubmitQuestionsView.tsx",
++   "src/components/BashPermissionRequest/BashPermissionRequest.tsx",
++   "src/components/BashPermissionRequest/bashToolUseOptions.tsx",
++   "src/components/ComputerUseApproval/ComputerUseApproval.tsx",
++   "src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx",
++   "src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
++   "src/components/FallbackPermissionRequest.tsx",
++   "src/components/FileEditPermissionRequest/FileEditPermissionRequest.tsx",
++   "src/components/FilePermissionDialog/FilePermissionDialog.tsx",
++   "src/components/FilePermissionDialog/permissionOptions.tsx",
++   "src/components/FileWritePermissionRequest/FileWritePermissionRequest.tsx",
++   "src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx",
++   "src/components/FilesystemPermissionRequest/FilesystemPermissionRequest.tsx",
++   "src/components/NotebookEditPermissionRequest/NotebookEditPermissionRequest.tsx",
++   "src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx",
++   "src/components/PermissionDecisionDebugInfo.tsx",
++   "src/components/PermissionDialog.tsx",
++   "src/components/PermissionExplanation.tsx",
++   "src/components/PermissionPrompt.tsx",
++   "src/components/PermissionRequest.tsx",
++   "src/components/PermissionRequestTitle.tsx",
++   "src/components/PermissionRuleExplanation.tsx",
++   "src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx",
++   "src/components/PowerShellPermissionRequest/powershellToolUseOptions.tsx",
++   "src/components/SandboxPermissionRequest.tsx",
++   "src/components/SedEditPermissionRequest/SedEditPermissionRequest.tsx",
++   "src/components/SkillPermissionRequest/SkillPermissionRequest.tsx",
++   "src/components/WebFetchPermissionRequest/WebFetchPermissionRequest.tsx",
++   "src/components/WorkerBadge.tsx",
++   "src/components/WorkerPendingPermission.tsx",
++   "src/components/rules/AddPermissionRules.tsx",
++   "src/components/rules/AddWorkspaceDirectory.tsx",
++   "src/components/rules/PermissionRuleDescription.tsx",
++   "src/components/rules/PermissionRuleInput.tsx",
++   "src/components/rules/PermissionRuleList.tsx",
++   "src/components/rules/RecentDenialsTab.tsx",
++   "src/components/rules/RemoveWorkspaceDirectory.tsx",
++   "src/components/rules/WorkspaceTab.tsx",
++   "src/components/shellPermissionHelpers.tsx",
++ ]
+
+- Expected  - 1
++ Received  + 48
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/permission [1.47ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/render/exportRenderer.tsx",
++   "src/render/static-render.tsx",
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/output [0.67ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/MCPConnectionManager.tsx",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/mcp-runtime [0.61ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/commands/background/background.tsx",
++   "src/commands/background/index.ts",
++   "src/commands/bridge/bridge.tsx",
++   "src/commands/bridge/index.ts",
++   "src/commands/btw/btw.tsx",
++   "src/commands/btw/index.ts",
++   "src/commands/chrome/chrome.tsx",
++   "src/commands/chrome/index.ts",
++   "src/commands/context/context.tsx",
++   "src/commands/context/index.ts",
++   "src/commands/copy/copy.tsx",
++   "src/commands/copy/index.ts",
++   "src/commands/effort/effort.tsx",
++   "src/commands/effort/index.ts",
++   "src/commands/extra-usage/extra-usage.tsx",
++   "src/commands/fast/fast.tsx",
++   "src/commands/fast/index.ts",
++   "src/commands/fork/fork.tsx",
++   "src/commands/fork/index.ts",
++   "src/commands/ide/ide.tsx",
++   "src/commands/ide/index.ts",
++   "src/commands/install-github-app/ApiKeyStep.tsx",
++   "src/commands/install-github-app/CheckExistingSecretStep.tsx",
++   "src/commands/install-github-app/CheckGitHubStep.tsx",
++   "src/commands/install-github-app/ChooseRepoStep.tsx",
++   "src/commands/install-github-app/CreatingStep.tsx",
++   "src/commands/install-github-app/ErrorStep.tsx",
++   "src/commands/install-github-app/ExistingWorkflowStep.tsx",
++   "src/commands/install-github-app/InstallAppStep.tsx",
++   "src/commands/install-github-app/OAuthFlowStep.tsx",
++   "src/commands/install-github-app/SuccessStep.tsx",
++   "src/commands/install-github-app/WarningsStep.tsx",
++   "src/commands/install-github-app/index.ts",
++   "src/commands/install-github-app/install-github-app.tsx",
++   "src/commands/install/install.tsx",
++   "src/commands/login/index.ts",
++   "src/commands/login/login.tsx",
++   "src/commands/mcp/index.ts",
++   "src/commands/mcp/mcp.tsx",
++   "src/commands/memory/index.ts",
++   "src/commands/memory/memory.tsx",
++   "src/commands/model/index.ts",
++   "src/commands/model/model.tsx",
++   "src/commands/plugin/AddMarketplace.tsx",
++   "src/commands/plugin/BrowseMarketplace.tsx",
++   "src/commands/plugin/DiscoverPlugins.tsx",
++   "src/commands/plugin/ManageMarketplaces.tsx",
++   "src/commands/plugin/ManagePlugins.tsx",
++   "src/commands/plugin/PluginErrors.tsx",
++   "src/commands/plugin/PluginOptionsDialog.tsx",
++   "src/commands/plugin/PluginOptionsFlow.tsx",
++   "src/commands/plugin/PluginSettings.tsx",
++   "src/commands/plugin/PluginTrustWarning.tsx",
++   "src/commands/plugin/UnifiedInstalledCell.tsx",
++   "src/commands/plugin/ValidatePlugin.tsx",
++   "src/commands/plugin/index.tsx",
++   "src/commands/plugin/plugin.tsx",
++   "src/commands/plugin/pluginDetailsHelpers.tsx",
++   "src/commands/powerup/CelebrationShimmer.tsx",
++   "src/commands/powerup/FrameAnimation.tsx",
++   "src/commands/powerup/LiveModeCycler.tsx",
++   "src/commands/powerup/PowerupBanner.tsx",
++   "src/commands/powerup/__tests__/powerup-screen.test.tsx",
++   "src/commands/powerup/index.ts",
++   "src/commands/powerup/lessons/at-mentions.tsx",
++   "src/commands/powerup/lessons/automate.tsx",
++   "src/commands/powerup/lessons/background.tsx",
++   "src/commands/powerup/lessons/fork.tsx",
++   "src/commands/powerup/lessons/index.ts",
++   "src/commands/powerup/lessons/mcp.tsx",
++   "src/commands/powerup/lessons/memory.tsx",
++   "src/commands/powerup/lessons/model-dial.tsx",
++   "src/commands/powerup/lessons/modes.tsx",
++   "src/commands/powerup/lessons/multi-provider.tsx",
++   "src/commands/powerup/lessons/undo.tsx",
++   "src/commands/powerup/powerup.tsx",
++   "src/commands/privacy-settings/index.ts",
++   "src/commands/privacy-settings/privacy-settings.tsx",
++   "src/commands/rate-limit-options/index.ts",
++   "src/commands/rate-limit-options/rate-limit-options.tsx",
++   "src/commands/remote-env/index.ts",
++   "src/commands/remote-env/remote-env.tsx",
++   "src/commands/remoteControlServer/index.ts",
++   "src/commands/remoteControlServer/remoteControlServer.tsx",
++   "src/commands/resume/index.ts",
++   "src/commands/resume/resume.tsx",
++   "src/commands/review/UltrareviewOverageDialog.tsx",
++   "src/commands/review/ultrareviewCommand.tsx",
++   "src/commands/session/index.ts",
++   "src/commands/session/session.tsx",
++   "src/commands/skills/index.ts",
++   "src/commands/skills/skills.tsx",
++   "src/commands/status/status.tsx",
++   "src/commands/stop/index.ts",
++   "src/commands/stop/stop.tsx",
++   "src/commands/terminalSetup/index.ts",
++   "src/commands/theme/index.ts",
++   "src/commands/theme/theme.tsx",
++   "src/commands/upgrade/index.ts",
++   "src/commands/upgrade/upgrade.tsx",
++   "src/commands/workflows/workflows.tsx",
++   "src/skills/bundled/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 104
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/command-runtime [2.28ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/appStateShim.tsx",
++   "src/entry/cli.tsx",
++   "src/entry/main.tsx",
++   "src/handlers/mcp.tsx",
++   "src/handlers/util.tsx",
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/cli [1.11ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/core/It2SetupPrompt.tsx",
++   "src/tasks/InProcessTeammateTask.tsx",
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/swarm [0.90ms]
+267 |           if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+268 |           // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+269 |           if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+270 |           return true
+271 |         })
+272 |         expect(sinCubrir).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/tasks/RemoteAgentTask.tsx",
++   "src/teleport.tsx",
++   "src/tools/AgentTool/AgentTool.tsx",
++   "src/tools/AgentTool/UI.tsx",
++   "src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx",
++   "src/tools/BashTool/BashTool.tsx",
++   "src/tools/BashTool/BashToolResultMessage.tsx",
++   "src/tools/BashTool/UI.tsx",
++   "src/tools/BriefTool/UI.tsx",
++   "src/tools/ConfigTool/UI.tsx",
++   "src/tools/EnterPlanModeTool/UI.tsx",
++   "src/tools/EnterWorktreeTool/UI.tsx",
++   "src/tools/ExitPlanModeTool/UI.tsx",
++   "src/tools/ExitWorktreeTool/UI.tsx",
++   "src/tools/FileEditTool/UI.tsx",
++   "src/tools/FileReadTool/UI.tsx",
++   "src/tools/FileWriteTool/UI.tsx",
++   "src/tools/GlobTool/UI.tsx",
++   "src/tools/GrepTool/UI.tsx",
++   "src/tools/LSPTool/UI.tsx",
++   "src/tools/ListMcpResourcesTool/UI.tsx",
++   "src/tools/MCPTool/UI.tsx",
++   "src/tools/NotebookEditTool/UI.tsx",
++   "src/tools/PowerShellTool/PowerShellTool.tsx",
++   "src/tools/PowerShellTool/UI.tsx",
++   "src/tools/PushNotificationTool/PushNotificationTool.tsx",
++   "src/tools/ReadMcpResourceTool/UI.tsx",
++   "src/tools/RemoteTriggerTool/UI.tsx",
++   "src/tools/ScheduleCronTool/UI.tsx",
++   "src/tools/ScheduleWakeupTool/ScheduleWakeupTool.tsx",
++   "src/tools/SendMessageTool/UI.tsx",
++   "src/tools/SendUserFileTool/UI.tsx",
++   "src/tools/SkillTool/UI.tsx",
++   "src/tools/TaskOutputTool/TaskOutputTool.tsx",
++   "src/tools/TaskStopTool/UI.tsx",
++   "src/tools/TeamCreateTool/UI.tsx",
++   "src/tools/TeamDeleteTool/UI.tsx",
++   "src/tools/WebFetchTool/UI.tsx",
++   "src/tools/WebSearchTool/UI.tsx",
++   "src/tools/WebSearchTool/adapters/index.ts",
++   "src/tools/WorkflowTool/bundled/index.ts",
++   "src/tools/registry/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 44
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:272:27)
+(fail) exports de los paquetes hermanos > bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9) > @thyrox/tool-registry [6.56ms]
+
+tests/package/exports.test.ts:
+162 |   test('cada modulo .ts de src/ resuelve a si mismo por el mapa', () => {
+163 |     const exports = manifest().exports as Record<string, string>
+164 |     const sinCubrir = sourceModules().filter(
+165 |       (m) => resolveSubpath(exports, subpathFor(m)) !== './' + m,
+166 |     )
+167 |     expect(sinCubrir).toEqual([])
+                            ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/@ant/claude-for-chrome-mcp/src/index.ts",
++   "src/packages/@ant/computer-use-input/src/index.ts",
++   "src/packages/@ant/computer-use-mcp/src/index.ts",
++   "src/packages/@ant/computer-use-mcp/src/legacy/platforms/index.ts",
++   "src/packages/@ant/computer-use-swift/src/index.ts",
++   "src/packages/@ant/ink/src/core/yoga-layout/index.ts",
++   "src/packages/@ant/ink/src/index.ts",
++   "src/packages/@ant/ink/src/keybindings/index.ts",
++   "src/packages/@ant/ink/src/search/index.ts",
++   "src/packages/@ant/ink/src/vim/index.ts",
++   "src/packages/agent/commands/pr_comments/index.ts",
++   "src/packages/agent/commands/tasks/index.ts",
++   "src/packages/agent/testing/index.ts",
++   "src/packages/audio-capture-napi/src/index.ts",
++   "src/packages/color-diff-napi/src/index.ts",
++   "src/packages/command-runtime/src/commands/background/index.ts",
++   "src/packages/command-runtime/src/commands/bridge/index.ts",
++   "src/packages/command-runtime/src/commands/btw/index.ts",
++   "src/packages/command-runtime/src/commands/chrome/index.ts",
++   "src/packages/command-runtime/src/commands/context/index.ts",
++   "src/packages/command-runtime/src/commands/copy/index.ts",
++   "src/packages/command-runtime/src/commands/effort/index.ts",
++   "src/packages/command-runtime/src/commands/fast/index.ts",
++   "src/packages/command-runtime/src/commands/fork/index.ts",
++   "src/packages/command-runtime/src/commands/ide/index.ts",
++   "src/packages/command-runtime/src/commands/install-github-app/index.ts",
++   "src/packages/command-runtime/src/commands/login/index.ts",
++   "src/packages/command-runtime/src/commands/mcp/index.ts",
++   "src/packages/command-runtime/src/commands/memory/index.ts",
++   "src/packages/command-runtime/src/commands/model/index.ts",
++   "src/packages/command-runtime/src/commands/powerup/index.ts",
++   "src/packages/command-runtime/src/commands/powerup/lessons/index.ts",
++   "src/packages/command-runtime/src/commands/privacy-settings/index.ts",
++   "src/packages/command-runtime/src/commands/rate-limit-options/index.ts",
++   "src/packages/command-runtime/src/commands/remote-env/index.ts",
++   "src/packages/command-runtime/src/commands/remoteControlServer/index.ts",
++   "src/packages/command-runtime/src/commands/resume/index.ts",
++   "src/packages/command-runtime/src/commands/session/index.ts",
++   "src/packages/command-runtime/src/commands/skills/index.ts",
++   "src/packages/command-runtime/src/commands/stop/index.ts",
++   "src/packages/command-runtime/src/commands/terminalSetup/index.ts",
++   "src/packages/command-runtime/src/commands/theme/index.ts",
++   "src/packages/command-runtime/src/commands/upgrade/index.ts",
++   "src/packages/command-runtime/src/skills/bundled/index.ts",
++   "src/packages/config/plugin/commands/reload-plugins/index.ts",
++   "src/packages/config/plugin/commands/thinkback-play/index.ts",
++   "src/packages/config/plugin/commands/thinkback/index.ts",
++   "src/packages/config/plugin/index.ts",
++   "src/packages/config/sync/index.ts",
++   "src/packages/image-processor-napi/src/index.ts",
++   "src/packages/mcp-runtime/src/index.ts",
++   "src/packages/modifiers-napi/src/index.ts",
++   "src/packages/output/src/render/index.ts",
++   "src/packages/permission/src/commands/index.ts",
++   "src/packages/provider/src/commands/logout/index.ts",
++   "src/packages/provider/src/oauth/index.ts",
++   "src/packages/provider/src/testing/index.ts",
++   "src/packages/repl/src/commands/add-dir/index.ts",
++   "src/packages/repl/src/commands/assistant/index.ts",
++   "src/packages/repl/src/commands/cd/index.ts",
++   "src/packages/repl/src/commands/color/index.ts",
++   "src/packages/repl/src/commands/config/index.ts",
++   "src/packages/repl/src/commands/desktop/index.ts",
++   "src/packages/repl/src/commands/diff/index.ts",
++   "src/packages/repl/src/commands/doctor/index.ts",
++   "src/packages/repl/src/commands/exit/index.ts",
++   "src/packages/repl/src/commands/export/index.ts",
++   "src/packages/repl/src/commands/files/index.ts",
++   "src/packages/repl/src/commands/heapdump/index.ts",
++   "src/packages/repl/src/commands/help/index.ts",
++   "src/packages/repl/src/commands/hooks/index.ts",
++   "src/packages/repl/src/commands/install-slack-app/index.ts",
++   "src/packages/repl/src/commands/keybindings/index.ts",
++   "src/packages/repl/src/commands/mobile/index.ts",
++   "src/packages/repl/src/commands/output-style/index.ts",
++   "src/packages/repl/src/commands/passes/index.ts",
++   "src/packages/repl/src/commands/plan/index.ts",
++   "src/packages/repl/src/commands/rewind/index.ts",
++   "src/packages/repl/src/commands/sandbox-toggle/index.ts",
++   "src/packages/repl/src/commands/stats/index.ts",
++   "src/packages/repl/src/commands/stickers/index.ts",
++   "src/packages/repl/src/commands/tag/index.ts",
++   "src/packages/repl/src/commands/tui/index.ts",
++   "src/packages/repl/src/commands/usage/index.ts",
++   "src/packages/repl/src/commands/vim/index.ts",
++   "src/packages/repl/src/components/CustomSelect/index.ts",
++   "src/packages/repl/src/components/mcp/index.ts",
++   "src/packages/repl/src/components/wizard/index.ts",
++   "src/packages/repl/src/fileIndex/index.ts",
++   "src/packages/repl/src/index.ts",
++   "src/packages/repl/testing/index.ts",
++   "src/packages/ripgrep-napi/src/index.ts",
++   "src/packages/stdin-napi/src/index.ts",
++   "src/packages/swarm/commands/agents/index.ts",
++   "src/packages/swarm/commands/branch/index.ts",
++   "src/packages/swarm/testing/index.ts",
++   "src/packages/tool-registry/src/tools/WebSearchTool/adapters/index.ts",
++   "src/packages/tool-registry/src/tools/WorkflowTool/bundled/index.ts",
++   "src/packages/tool-registry/src/tools/registry/index.ts",
++   "src/packages/url-handler-napi/src/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 102
+
+      at <anonymous> (/home/user/thyrox/tests/package/exports.test.ts:167:23)
+(fail) 2 — el mapa esta completo y su forma se deriva > cada modulo .ts de src/ resuelve a si mismo por el mapa [75.42ms]
+
+tests/package/dependencies.test.ts:
+165 |     const dir = join(PAQUETES, nombre)
+166 |     const m = manifiesto(dir)
+167 |     const conocidas = new Set([...declaradas(m), ...deLaRaiz])
+168 | 
+169 |     test(`${m.name}: sus terceros instalados están en el manifiesto`, () => {
+170 |       expect([...clasificar(dir, conocidas).sinDeclarar].sort()).toEqual([])
+                                                                       ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@aws-sdk/client-bedrock-runtime",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:170:66)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/provider: sus terceros instalados están en el manifiesto [15.84ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@aws-sdk/client-sts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/provider: todo import externo resuelve [13.59ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "audio-capture.node",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/voice: todo import externo resuelve [0.94ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/agent: todo import externo resuelve [22.18ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@thyrox/tool-registry",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/app-host: todo import externo resuelve [6.26ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@thyrox/agent",
++   "@thyrox/mcp-runtime",
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/cli: todo import externo resuelve [8.79ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@thyrox/tool-registry",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/tool-registry: todo import externo resuelve [22.92ms]
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-SiIV3F/integ-H1VT6d/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-SiIV3F/integ-URoohU/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+
+tests/unit/settings/config.test.ts:
+27 | 
+28 | // ─── Settings Schema Validation ──────────────────────────────────────────
+29 | 
+30 | describe('SettingsSchema', () => {
+31 |   test('accepts empty object', () => {
+32 |     const result = SettingsSchema().safeParse({})
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:32:20)
+(fail) SettingsSchema > accepts empty object [0.30ms]
+32 |     const result = SettingsSchema().safeParse({})
+33 |     expect(result.success).toBe(true)
+34 |   })
+35 | 
+36 |   test('accepts model string', () => {
+37 |     const result = SettingsSchema().safeParse({ model: 'sonnet' })
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:37:20)
+(fail) SettingsSchema > accepts model string [0.08ms]
+37 |     const result = SettingsSchema().safeParse({ model: 'sonnet' })
+38 |     expect(result.success).toBe(true)
+39 |   })
+40 | 
+41 |   test('accepts permissions block with allow rules', () => {
+42 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:42:20)
+(fail) SettingsSchema > accepts permissions block with allow rules [0.06ms]
+44 |     })
+45 |     expect(result.success).toBe(true)
+46 |   })
+47 | 
+48 |   test('accepts permissions block with deny rules', () => {
+49 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:49:20)
+(fail) SettingsSchema > accepts permissions block with deny rules [0.04ms]
+51 |     })
+52 |     expect(result.success).toBe(true)
+53 |   })
+54 | 
+55 |   test('accepts env variables', () => {
+56 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:56:20)
+(fail) SettingsSchema > accepts env variables [0.05ms]
+58 |     })
+59 |     expect(result.success).toBe(true)
+60 |   })
+61 | 
+62 |   test('accepts hooks configuration', () => {
+63 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:63:20)
+(fail) SettingsSchema > accepts hooks configuration [0.05ms]
+72 |     })
+73 |     expect(result.success).toBe(true)
+74 |   })
+75 | 
+76 |   test('accepts attribution settings', () => {
+77 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:77:20)
+(fail) SettingsSchema > accepts attribution settings [0.04ms]
+82 |     })
+83 |     expect(result.success).toBe(true)
+84 |   })
+85 | 
+86 |   test('accepts worktree settings', () => {
+87 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:87:20)
+(fail) SettingsSchema > accepts worktree settings [0.04ms]
+92 |     })
+93 |     expect(result.success).toBe(true)
+94 |   })
+95 | 
+96 |   test('accepts $schema field', () => {
+97 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:97:20)
+(fail) SettingsSchema > accepts $schema field [0.04ms]
+ 99 |     })
+100 |     expect(result.success).toBe(true)
+101 |   })
+102 | 
+103 |   test('passes through unknown keys (passthrough mode)', () => {
+104 |     const result = SettingsSchema().safeParse({ unknownKey: 'value' })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:104:20)
+(fail) SettingsSchema > passes through unknown keys (passthrough mode) [0.08ms]
+107 |       expect((result.data as any).unknownKey).toBe('value')
+108 |     }
+109 |   })
+110 | 
+111 |   test('coerces env var numbers to strings', () => {
+112 |     const result = EnvironmentVariablesSchema().safeParse({ PORT: 3000 })
+                         ^
+TypeError: EnvironmentVariablesSchema is not a function. (In 'EnvironmentVariablesSchema()', 'EnvironmentVariablesSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:112:20)
+(fail) SettingsSchema > coerces env var numbers to strings [0.06ms]
+115 |       expect(result.data.PORT).toBe('3000')
+116 |     }
+117 |   })
+118 | 
+119 |   test('accepts boolean settings', () => {
+120 |     const result = SettingsSchema().safeParse({
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:120:20)
+(fail) SettingsSchema > accepts boolean settings [0.04ms]
+124 |     })
+125 |     expect(result.success).toBe(true)
+126 |   })
+127 | 
+128 |   test('accepts cleanupPeriodDays', () => {
+129 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: 30 })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:129:20)
+(fail) SettingsSchema > accepts cleanupPeriodDays [0.03ms]
+129 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: 30 })
+130 |     expect(result.success).toBe(true)
+131 |   })
+132 | 
+133 |   test('rejects negative cleanupPeriodDays', () => {
+134 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: -1 })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:134:20)
+(fail) SettingsSchema > rejects negative cleanupPeriodDays [0.04ms]
+134 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: -1 })
+135 |     expect(result.success).toBe(false)
+136 |   })
+137 | 
+138 |   test('accepts statusLine configuration', () => {
+139 |     const result = SettingsSchema().safeParse({
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:139:20)
+(fail) SettingsSchema > accepts statusLine configuration [0.04ms]
+141 |     })
+142 |     expect(result.success).toBe(true)
+143 |   })
+144 | 
+145 |   test('accepts sshConfigs', () => {
+146 |     const result = SettingsSchema().safeParse({
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:146:20)
+(fail) SettingsSchema > accepts sshConfigs [0.05ms]
+159 | 
+160 | // ─── Permissions Schema ─────────────────────────────────────────────────
+161 | 
+162 | describe('PermissionsSchema', () => {
+163 |   test('accepts defaultMode', () => {
+164 |     const result = PermissionsSchema().safeParse({
+                         ^
+TypeError: PermissionsSchema is not a function. (In 'PermissionsSchema()', 'PermissionsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:164:20)
+(fail) PermissionsSchema > accepts defaultMode [0.06ms]
+166 |     })
+167 |     expect(result.success).toBe(true)
+168 |   })
+169 | 
+170 |   test('accepts additionalDirectories', () => {
+171 |     const result = PermissionsSchema().safeParse({
+                         ^
+TypeError: PermissionsSchema is not a function. (In 'PermissionsSchema()', 'PermissionsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:171:20)
+(fail) PermissionsSchema > accepts additionalDirectories [0.04ms]
+173 |     })
+174 |     expect(result.success).toBe(true)
+175 |   })
+176 | 
+177 |   test('accepts disableBypassPermissionsMode', () => {
+178 |     const result = PermissionsSchema().safeParse({
+                         ^
+TypeError: PermissionsSchema is not a function. (In 'PermissionsSchema()', 'PermissionsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:178:20)
+(fail) PermissionsSchema > accepts disableBypassPermissionsMode [0.03ms]
+387 |       'projectSettings',
+388 |     ])
+389 |   })
+390 | 
+391 |   test('throws for invalid source name', () => {
+392 |     expect(() => parseSettingSourcesFlag('invalid')).toThrow(
+                                                           ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "Invalid setting source"
+Received message: "fuente de settings desconocida: 'invalid' (válidas: user, project, local, flag, policy)"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:392:54)
+(fail) parseSettingSourcesFlag > throws for invalid source name [0.19ms]
+430 | })
+431 | 
+432 | describe('validateSettingsFileContent', () => {
+433 |   test('accepts valid JSON settings', () => {
+434 |     const result = validateSettingsFileContent('{"model": "sonnet"}')
+435 |     expect(result.isValid).toBe(true)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:435:28)
+(fail) validateSettingsFileContent > accepts valid JSON settings [12.47ms]
+454 |   })
+455 | })
+456 | 
+457 | describe('formatZodError', () => {
+458 |   test('formats invalid type error', () => {
+459 |     const result = SettingsSchema().safeParse({ model: 123 })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:459:20)
+(fail) formatZodError > formats invalid type error [0.20ms]
+467 |   })
+468 | })
+469 | 
+470 | describe('gemini settings', () => {
+471 |   test('accepts gemini modelType', () => {
+472 |     const result = SettingsSchema().safeParse({ modelType: 'gemini' })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:472:20)
+(fail) gemini settings > accepts gemini modelType [0.07ms]
+
+tests/unit/utils/gitDiff.test.ts:
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:10:20)
+(fail) parseGitNumstat > parses single file [0.49ms]
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:25:20)
+(fail) parseGitNumstat > parses multiple files [0.10ms]
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:35:20)
+(fail) parseGitNumstat > handles binary file with dash counts [0.07ms]
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:44:20)
+(fail) parseGitNumstat > handles rename format [0.05ms]
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:52:20)
+(fail) parseGitNumstat > handles filename with tabs [0.05ms]
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:68:20)
+(fail) parseGitNumstat > skips lines with fewer than 3 tab-separated parts [0.05ms]
+223 |     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
+224 | 
+225 |     added += fileAdded
+226 |     removed += fileRemoved
+227 | 
+228 |     if (perFileStats.size < MAX_FILES) {
+                                  ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitNumstat (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:228:29)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:73:20)
+(fail) parseGitNumstat > handles zero additions and zero deletions [0.05ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:96:20)
+(fail) parseGitDiff > parses single file with one hunk [0.49ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:123:20)
+(fail) parseGitDiff > parses multiple hunks in one file [0.10ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:136:20)
+(fail) parseGitDiff > skips binary files marker [0.08ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:152:20)
+(fail) parseGitDiff > parses new file mode [0.12ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:169:20)
+(fail) parseGitDiff > parses deleted file [0.06ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:195:20)
+(fail) parseGitDiff > handles multiple files [0.07ms]
+261 |   if (!stdout.trim()) return result
+262 | 
+263 |   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
+264 | 
+265 |   for (const fileDiff of fileDiffs) {
+266 |     if (result.size >= MAX_FILES) break
+                             ^
+ReferenceError: Cannot access 'MAX_FILES' before initialization.
+      at parseGitDiff (/home/user/thyrox/src/packages/tool-registry/src/gitDiff.ts:266:24)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/gitDiff.test.ts:211:20)
+(fail) parseGitDiff > skips hunk without comma (single line) [0.06ms]
+
+tests/unit/utils/stream.test.ts:
+1 | import { describe, expect, test } from 'bun:test'
+2 | import { Stream } from '@thyrox/config/stream'
+3 | 
+4 | describe('Stream', () => {
+5 |   test('enqueue then read resolves with the value', async () => {
+6 |     const stream = new Stream<number>()
+                           ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:6:24)
+(fail) Stream > enqueue then read resolves with the value [0.26ms]
+ 9 |     const result = await stream.next()
+10 |     expect(result).toEqual({ done: false, value: 42 })
+11 |   })
+12 | 
+13 |   test('enqueue multiple then drain in order', async () => {
+14 |     const stream = new Stream<string>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:14:24)
+(fail) Stream > enqueue multiple then drain in order [0.15ms]
+20 |     expect(await stream.next()).toEqual({ done: false, value: 'b' })
+21 |     expect(await stream.next()).toEqual({ done: false, value: 'c' })
+22 |   })
+23 | 
+24 |   test('next() blocks until enqueue provides a value', async () => {
+25 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:25:24)
+(fail) Stream > next() blocks until enqueue provides a value [0.13ms]
+30 |     const result = await promise
+31 |     expect(result).toEqual({ done: false, value: 99 })
+32 |   })
+33 | 
+34 |   test('done() resolves pending reader with done:true', async () => {
+35 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:35:24)
+(fail) Stream > done() resolves pending reader with done:true [0.10ms]
+38 |     stream.done()
+39 |     expect(await promise).toEqual({ done: true, value: undefined })
+40 |   })
+41 | 
+42 |   test('done() with no pending reader — subsequent next returns done:true', async () => {
+43 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:43:24)
+(fail) Stream > done() with no pending reader — subsequent next returns done:true [0.08ms]
+45 |     stream.done()
+46 |     expect(await stream.next()).toEqual({ done: true, value: undefined })
+47 |   })
+48 | 
+49 |   test('error() rejects pending reader', async () => {
+50 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:50:24)
+(fail) Stream > error() rejects pending reader [0.09ms]
+53 |     stream.error(new Error('boom'))
+54 |     expect(promise).rejects.toThrow('boom')
+55 |   })
+56 | 
+57 |   test('error() after done — hasError is set but next returns done:true (isDone checked first)', async () => {
+58 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:58:24)
+(fail) Stream > error() after done — hasError is set but next returns done:true (isDone checked first) [0.10ms]
+62 |     // next() checks isDone before hasError, so it returns done:true
+63 |     expect(await stream.next()).toEqual({ done: true, value: undefined })
+64 |   })
+65 | 
+66 |   test('enqueue after done — queue is checked before isDone, value is consumed', async () => {
+67 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:67:24)
+(fail) Stream > enqueue after done — queue is checked before isDone, value is consumed [0.09ms]
+74 |     expect(await stream.next()).toEqual({ done: true, value: undefined })
+75 |   })
+76 | 
+77 |   test('return() marks stream as done and calls returned callback', async () => {
+78 |     let called = false
+79 |     const stream = new Stream<number>(() => {
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:79:24)
+(fail) Stream > return() marks stream as done and calls returned callback [0.15ms]
+86 |     // Subsequent next returns done
+87 |     expect(await stream.next()).toEqual({ done: true, value: undefined })
+88 |   })
+89 | 
+90 |   test('return() without callback still works', async () => {
+91 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:91:24)
+(fail) Stream > return() without callback still works [0.08ms]
+93 |     const result = await stream.return()
+94 |     expect(result).toEqual({ done: true, value: undefined })
+95 |   })
+96 | 
+97 |   test('Symbol.asyncIterator throws on second call', () => {
+98 |     const stream = new Stream<number>()
+                            ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:98:24)
+(fail) Stream > Symbol.asyncIterator throws on second call [0.04ms]
+101 |       'Stream can only be iterated once',
+102 |     )
+103 |   })
+104 | 
+105 |   test('for-await-of iteration drains queued values then ends', async () => {
+106 |     const stream = new Stream<string>()
+                             ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:106:24)
+(fail) Stream > for-await-of iteration drains queued values then ends [0.18ms]
+113 |     }
+114 |     expect(results).toEqual(['x', 'y'])
+115 |   })
+116 | 
+117 |   test('for-await-of blocks until done', async () => {
+118 |     const stream = new Stream<number>()
+                             ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:118:24)
+(fail) Stream > for-await-of blocks until done [0.12ms]
+133 |     await iterPromise
+134 |     expect(results).toEqual([1, 2])
+135 |   })
+136 | 
+137 |   test('error during for-await-of rejects the loop', async () => {
+138 |     const stream = new Stream<number>()
+                             ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:138:24)
+(fail) Stream > error during for-await-of rejects the loop [0.07ms]
+144 |     stream.error(new Error('stream broken'))
+145 |     expect(iterPromise).rejects.toThrow('stream broken')
+146 |   })
+147 | 
+148 |   test('concurrent enqueue from multiple sources does not lose data', async () => {
+149 |     const stream = new Stream<number>()
+                             ^
+ReferenceError: Cannot access 'Stream' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/stream.test.ts:149:24)
+(fail) Stream > concurrent enqueue from multiple sources does not lose data [0.16ms]
+
+tests/unit/utils/fingerprint.test.ts:
+ 5 |   computeFingerprint,
+ 6 | } from '@thyrox/provider/fingerprint.js'
+ 7 | 
+ 8 | describe('FINGERPRINT_SALT', () => {
+ 9 |   test("has expected value '59cf53e54c78'", () => {
+10 |     expect(FINGERPRINT_SALT).toBe('59cf53e54c78')
+                                ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:10:28)
+(fail) FINGERPRINT_SALT > has expected value '59cf53e54c78' [0.15ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:82:20)
+(fail) computeFingerprint > returns deterministic 3-char hex string [0.18ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:88:15)
+(fail) computeFingerprint > same input produces same fingerprint [0.05ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:94:15)
+(fail) computeFingerprint > different message text produces different fingerprint [0.04ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:100:15)
+(fail) computeFingerprint > different version produces different fingerprint [0.05ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:106:20)
+(fail) computeFingerprint > handles short strings (length < 21) [0.04ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:112:20)
+(fail) computeFingerprint > handles empty string [0.04ms]
+55 | ): string {
+56 |   // Extract chars at indices [4, 7, 20], use "0" if index not found
+57 |   const indices = [4, 7, 20]
+58 |   const chars = indices.map(i => messageText[i] || '0').join('')
+59 | 
+60 |   const fingerprintInput = `${FINGERPRINT_SALT}${chars}${version}`
+                                   ^
+ReferenceError: Cannot access 'FINGERPRINT_SALT' before initialization.
+      at computeFingerprint (/home/user/thyrox/src/packages/provider/src/fingerprint.ts:60:31)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/fingerprint.test.ts:118:20)
+(fail) computeFingerprint > fingerprint is valid hex [0.04ms]
+
+tests/unit/utils/json.test.ts:
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Expected '}'
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/json.test.ts:42:12)
+
+
+tests/unit/utils/generators.test.ts:
+4 |  */
+5 | 
+6 | const NO_VALUE = Symbol('NO_VALUE')
+7 | 
+8 | export async function lastX<A>(as: AsyncGenerator<A>): Promise<A> {
+9 |   let lastValue: A | typeof NO_VALUE = NO_VALUE
+                                           ^
+ReferenceError: Cannot access 'NO_VALUE' before initialization.
+      at lastX (/home/user/thyrox/src/packages/config/generators.ts:9:40)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/generators.test.ts:18:26)
+(fail) lastX > returns last yielded value [0.39ms]
+4 |  */
+5 | 
+6 | const NO_VALUE = Symbol('NO_VALUE')
+7 | 
+8 | export async function lastX<A>(as: AsyncGenerator<A>): Promise<A> {
+9 |   let lastValue: A | typeof NO_VALUE = NO_VALUE
+                                           ^
+ReferenceError: Cannot access 'NO_VALUE' before initialization.
+      at lastX (/home/user/thyrox/src/packages/config/generators.ts:9:40)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/generators.test.ts:23:26)
+(fail) lastX > returns only value from single-yield generator [0.11ms]
+23 |     const result = await lastX(range(1))
+24 |     expect(result).toBe(0)
+25 |   })
+26 | 
+27 |   test('throws on empty generator', async () => {
+28 |     await expect(lastX(range(0))).rejects.toThrow('No items in generator')
+                                               ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "No items in generator"
+Received message: "Cannot access 'NO_VALUE' before initialization."
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/generators.test.ts:28:43)
+(fail) lastX > throws on empty generator [0.12ms]
+
+tests/unit/utils/path.test.ts:
+184 | describe('getDirectoryForPath', () => {
+185 |   test('returns the path itself when given an existing directory', () => {
+186 |     // The packages directory is guaranteed to exist in this repo
+187 |     const dir = resolve(process.cwd(), 'packages')
+188 |     const result = getDirectoryForPath(dir)
+189 |     expect(result).toBe(dir)
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: "/home/user/thyrox/packages"
+Received: "/home/user/thyrox"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/path.test.ts:189:20)
+(fail) getDirectoryForPath > returns the path itself when given an existing directory [0.37ms]
+
+tests/unit/utils/diff.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getPatchFromContents' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+============================================================
+Bun v1.3.11 (af24e281) Linux x64
+Linux Kernel v6.18.44 | glibc v2.39
+CPU: sse42 popcnt avx avx2 avx512
+Args: "bun" "--smol" "--smol" "test" "tests/commands/roundTrip.test.ts" "tests/conformance/harnessChecklist.test.ts" "tests/conformance/maintenance.test.ts" "tests/coordination/branchIntegration.test.ts" "tests/coordination/cla"...
+Features: Bun.stderr(2) Bun.stdin(2) Bun.stdout(2) bunfig dotenv jsc spawn(353) transpiler_cache(56) tsconfig(34) yaml_parse(3) 
+Builtins: "bun:test" "bun:wrap" "bun:sqlite" "node:assert" "node:async_hooks" "node:buffer" "node:child_process" "node:constants" "node:crypto" "node:dns" "node:events" "node:fs" "node:fs/promises" "node:http" "node:https" "node:module" "node:net" "node:os" "node:path" "node:path/posix" "node:path/win32" "node:perf_hooks" "node:process" "node:readline" "node:readline/promises" "node:stream" "node:stream/consumers" "node:stream/promises" "node:string_decoder" "node:timers/promises" "node:tls" "node:tty" "node:url" "node:util" "node:vm" "node:zlib" "node:worker_threads" "node:v8" "node:http2" "node:diagnostics_channel" 
+Elapsed: 9183ms | User: 2833ms | Sys: 638ms
+RSS: 0.80GB | Peak: 0.31GB | Commit: 0.80GB | Faults: 0 | Machine: 14.35GB
+
+panic(main thread): Segmentation fault at address 0x18
+oh no: Bun has crashed. This indicates a bug in Bun, not your code.
+
+To send a redacted crash report to Bun's team,
+please file a GitHub issue using the link below:
+
+ https://bun.report/1.3.11/lt1af24e28ijggEu0ggC48hp5E+ypRmizzkE68w6mE498zuFqokwuFyln8jEms15jEmh36wF2t7y0F_izrhkEms15jEu3sx0Fg/ji5F43mjoE__ms15jEs9owsFA2AwB
+

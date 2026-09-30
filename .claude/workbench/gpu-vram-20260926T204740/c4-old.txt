@@ -1,0 +1,10 @@
+    peaks, utils = [], []
+    for path in (bench / "outputs").glob("*.gpu"):
+        fields = path.read_text(errors="ignore").split()
+        if len(fields) == 4 and all(f.isdigit() for f in fields):
+            peaks.append(int(fields[0]))
+            utils.append(int(fields[2]))
+    if not peaks:
+        return {"measured": 0}
+    return {"measured": len(peaks), "vram_max_mib": max(peaks),
+            "vram_median_mib": int(statistics.median(peaks)), "util_max_pct": max(utils)}

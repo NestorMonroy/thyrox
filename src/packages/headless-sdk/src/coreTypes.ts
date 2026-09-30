@@ -1,33 +1,27 @@
-/**
- * Puerto de `ccnmt: packages/headless-sdk/src/coreTypes.ts` (verbatim).
- *
- * Tipos SDK comunes serializables, usados tanto por consumidores como por
- * constructores del SDK.
- *
- * Los tipos se generan a partir de los schemas Zod en `coreSchemas.ts`.
- * Para modificar tipos:
- * 1. Editar los schemas Zod en `coreSchemas.ts`.
- * 2. Regenerar (en la fuente: `bun scripts/generate-sdk-types.ts`; este
- *    puerto no trae ese script — ver la sección de bloqueos declarados).
- *
- * Los schemas están disponibles en `coreSchemas.ts` para validación en
- * runtime, pero no son parte de la API pública.
- */
+// SDK Core Types - Common serializable types used by both SDK consumers and SDK builders.
+//
+// Types are generated from Zod schemas in coreSchemas.ts.
+// To modify types:
+// 1. Edit Zod schemas in coreSchemas.ts
+// 2. Run: bun scripts/generate-sdk-types.ts
+//
+// Schemas are available in coreSchemas.ts for runtime validation but are not
+// part of the public API.
 
-// Reexporta los tipos de sandbox para consumidores del SDK
+// Re-export sandbox types for SDK consumers
 export type {
   SandboxFilesystemConfig,
   SandboxIgnoreViolations,
   SandboxNetworkConfig,
   SandboxSettings,
-} from './sandboxTypes.ts'
-// Reexporta todos los tipos generados
-export * from './coreTypes.generated.ts'
+} from './sandboxTypes.js'
+// Re-export all generated types
+export * from './coreTypes.generated.js'
 
-// Reexporta tipos utilitarios que no se pueden expresar como schemas Zod
-export type { NonNullableUsage } from './sdkUtilityTypes.ts'
+// Re-export utility types that can't be expressed as Zod schemas
+export type { NonNullableUsage } from './sdkUtilityTypes.js'
 
-// Arreglos const para uso en runtime
+// Const arrays for runtime usage
 export const HOOK_EVENTS = [
   'PreToolUse',
   'PostToolUse',

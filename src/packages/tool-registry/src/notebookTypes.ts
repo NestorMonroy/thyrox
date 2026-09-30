@@ -1,18 +1,62 @@
 /**
  * Puerto de `ccnmt: packages/tool-registry/src/notebookTypes.ts` (8 líneas,
- * 7 símbolos). Los tipos del cuaderno que `NotebookEditTool` consume.
+ * 7 símbolos). Los tipos del cuaderno que `notebook.ts`, `NotebookEditTool`
+ * y el diff de permisos consumen.
  *
- * DIVERGENCIA DECLARADA — ninguna, y es lo que hay que decir: la fuente los
- * declara `unknown` a propósito, con el comentario `Decompiled
- * placeholders`. Refinarlos aquí sería inventar una forma que la fuente no
- * fija, y el consumidor que hoy los usa estructuralmente empezaría a fallar
- * contra un contrato que nadie escribió. Se portan tal cual y se estrechan
- * el día que el consumidor real llegue con su forma medida.
+ * DIVERGENCIA DECLARADA: la fuente los declara `unknown` con el comentario
+ * `Decompiled placeholders` — el decompilado perdió los tipos, no los
+ * decidió. La forma no se inventa: es la del formato público de Jupyter,
+ * nbformat v4 (celdas `code`/`markdown`/`raw`, salidas `stream`,
+ * `execute_result`, `display_data` y `error`), recortada a los campos que
+ * los consumidores de este árbol leen o escriben. `NotebookCellSource*` y
+ * `NotebookOutputImage` son la forma ya procesada que `notebook.ts` produce.
  */
-export type NotebookCell = unknown
-export type NotebookContent = unknown
-export type NotebookCellOutput = unknown
-export type NotebookCellSource = unknown
-export type NotebookCellSourceOutput = unknown
-export type NotebookOutputImage = unknown
-export type NotebookCellType = unknown
+export type NotebookCellType = 'code' | 'markdown' | 'raw'
+
+export type NotebookOutputImage = {
+  image_data: string
+  media_type: 'image/png' | 'image/jpeg'
+}
+
+type MimeBundle = { 'text/plain'?: string | string[]; [mime: string]: unknown }
+
+export type NotebookCellOutput =
+  | { output_type: 'stream'; name?: string; text?: string | string[] }
+  | {
+      output_type: 'execute_result' | 'display_data'
+      data?: MimeBundle
+      metadata?: Record<string, unknown>
+      execution_count?: number | null
+    }
+  | { output_type: 'error'; ename: string; evalue: string; traceback: string[] }
+
+export type NotebookCell = {
+  id?: string
+  cell_type: NotebookCellType
+  source: string | string[]
+  metadata: Record<string, unknown>
+  execution_count?: number | null
+  outputs?: NotebookCellOutput[]
+}
+
+export type NotebookContent = {
+  cells: NotebookCell[]
+  metadata: { language_info?: { name?: string }; [key: string]: unknown }
+  nbformat: number
+  nbformat_minor: number
+}
+
+export type NotebookCellSourceOutput = {
+  output_type: string
+  text?: string
+  image?: NotebookOutputImage
+}
+
+export type NotebookCellSource = {
+  cellType: NotebookCellType
+  source: string
+  execution_count?: number
+  cell_id: string
+  language?: string
+  outputs?: NotebookCellSourceOutput[]
+}

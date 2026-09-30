@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/verify/test_source_copy_step.py

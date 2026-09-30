@@ -1,32 +1,17 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/logAuthEvent.behavior.test.ts`
- * (214 líneas fuente, 100 % portado).
- *
- * La fuente inyecta el logger vía `getEventLogger`/`setEventLogger` de
- * `@claude-code-how-works/app-host/bootstrap/state.js`. Ese subpath no
- * existe en `@thyrox/app-host` (paquete concurrente en esta misma
- * ejecución), así que el sustituto en `internal/pendingCrossPackageDeps.ts`
- * usa la forma "punto de inyección" (Categoría 2): en vez de un setter
- * directo del logger, expone `setGetEventLoggerFn(fn)` que fija la
- * FUNCIÓN captadora — el test se adapta a esa forma, sin tocar la lógica
- * de clasificación de errores que es lo que realmente se está probando.
- */
-
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import { logAuthEvent } from '../telemetry/authEvent.ts'
 import { __resetOTelEventStateForTest } from '../telemetry/events.ts'
 import {
   getEventLogger,
-  setGetEventLoggerFn,
-  type EventLoggerLike,
-} from '../internal/pendingCrossPackageDeps.ts'
+  setEventLogger,
+} from '@thyrox/app-host/bootstrap/state.js'
 
 /**
- * Puerto pin de ant v2.1.136 vBH (2642.js) — wrapper tipado sobre el
- * evento estructurado OTel `claude_code.auth`.
+ * Pin port of ant v2.1.136 vBH (2642.js) — typed wrapper around the
+ * `claude_code.auth` OTel structured event.
  *
- * Forma en el binario:
+ * ant shape:
  *   k5("auth", {
  *     action,
  *     success: String(success),
@@ -34,12 +19,12 @@ import {
  *     ...(error && { error_category, ...(status && { status_code }) }),
  *   })
  *
- * El cubo de error_category viene de ant VV (0191.js):
+ * The error_category bucket comes from ant VV (0191.js):
  *   - { isAxiosError: true } + response.status 401|403  → 'auth'
  *   - code === 'ECONNABORTED'                          → 'timeout'
  *   - code === 'ECONNREFUSED' | 'ENOTFOUND'             → 'network'
- *   - otro error axios                                  → 'http'
- *   - cualquier otra cosa                                → 'other'
+ *   - other axios errors                                → 'http'
+ *   - anything else                                     → 'other'
  */
 
 type EmittedLog = {
@@ -49,7 +34,10 @@ type EmittedLog = {
   attributes: Record<string, unknown>
 }
 
-function makeFakeLogger(): EventLoggerLike & { emitted: EmittedLog[] } {
+function makeFakeLogger(): {
+  emitted: EmittedLog[]
+  emit: (l: EmittedLog) => void
+} {
   const emitted: EmittedLog[] = []
   return {
     emitted,
@@ -66,13 +54,15 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  setGetEventLoggerFn(() => originalLogger)
+  // biome-ignore lint/suspicious/noExplicitAny: test stub
+  setEventLogger(originalLogger as any)
 })
 
-describe('logAuthEvent — camino feliz', () => {
-  test('success=true login → body claude_code.auth + 3 campos obligatorios', async () => {
+describe('logAuthEvent — happy path', () => {
+  test('success=true login → body claude_code.auth + 3 mandatory fields', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({ action: 'login', success: true, authMethod: 'oauth' })
     expect(fake.emitted.length).toBe(1)
     expect(fake.emitted[0]!.body).toBe('claude_code.auth')
@@ -80,14 +70,15 @@ describe('logAuthEvent — camino feliz', () => {
     expect(attrs['action']).toBe('login')
     expect(attrs['success']).toBe('true')
     expect(attrs['auth_method']).toBe('oauth')
-    // Sin error → sin error_category / status_code.
+    // No error → no error_category / status_code
     expect('error_category' in attrs).toBe(false)
     expect('status_code' in attrs).toBe(false)
   })
 
-  test('success=false → string "false" (coincide con String(H.success) del binario)', async () => {
+  test('success=false → "false" string (matches ant String(H.success))', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -96,9 +87,10 @@ describe('logAuthEvent — camino feliz', () => {
     expect(fake.emitted[0]!.attributes['success']).toBe('false')
   })
 
-  test('auth_method=api_key fluye hasta el evento', async () => {
+  test('auth_method=api_key flows through', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: true,
@@ -108,10 +100,11 @@ describe('logAuthEvent — camino feliz', () => {
   })
 })
 
-describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
-  test('Error no-axios → error_category="other", sin status_code', async () => {
+describe('logAuthEvent — error classification (port of ant VV)', () => {
+  test('non-axios Error → error_category="other", no status_code', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -125,7 +118,8 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
 
   test('axios 401 → error_category="auth", status_code="401"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     const err = { isAxiosError: true, response: { status: 401 } }
     await logAuthEvent({
       action: 'login',
@@ -140,7 +134,8 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
 
   test('axios 403 → error_category="auth", status_code="403"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -153,7 +148,8 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
 
   test('axios ECONNABORTED → error_category="timeout"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -165,7 +161,8 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
 
   test('axios ECONNREFUSED → error_category="network"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -177,7 +174,8 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
 
   test('axios ENOTFOUND → error_category="network"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -189,7 +187,8 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
 
   test('axios 500 → error_category="http", status_code="500"', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,
@@ -200,9 +199,10 @@ describe('logAuthEvent — clasificación de error (puerto de ant VV)', () => {
     expect(fake.emitted[0]!.attributes['status_code']).toBe('500')
   })
 
-  test('flag isAxiosError en false → "other" (no tiene la forma isAxiosError)', async () => {
+  test('isAxiosError flag false → "other" (not isAxiosError-shaped)', async () => {
     const fake = makeFakeLogger()
-    setGetEventLoggerFn(() => fake)
+    // biome-ignore lint/suspicious/noExplicitAny: test stub
+    setEventLogger(fake as any)
     await logAuthEvent({
       action: 'login',
       success: false,

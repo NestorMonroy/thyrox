@@ -25,14 +25,14 @@
  *    cuyo VALOR es su contrato (`'ExitPlanMode'`), se inlinea verbatim.
  *  - `getCwd` y `logForDebugging` — SÍ se reusan de verdad, importados de
  *    `./internal/pendingCrossPackageDeps.js`.
- *  - `getClaudeConfigHomeDir` (`config/env/utils`) — reimplementación
+ *  - `getConfigHomeDir` (`config/env/utils`) — reimplementación
  *    PRIVADA fiel, mismo cuerpo que ya usan `projectPurge.ts` y
  *    `sessionPaths.ts` de este paquete.
  *  - `isENOENT` (`local-observability/errorHelpers.js`) — fiel, una línea.
  *  - `getEnvironmentKind` (`./filePersistence/outputsScanner.js`, hermano
  *    del propio paquete `storage` pero NO uno de mis 14 módulos ni
  *    presente todavía en este árbol) — se reimplementa aquí, fiel a su
- *    cuerpo real (lee `CLAUDE_CODE_ENVIRONMENT_KIND`, 8 líneas).
+ *    cuerpo real (lee `THYROX_CODE_ENVIRONMENT_KIND`, 8 líneas).
  *  - `getFsImplementation` (`./fsOperations.js`, archivo de 23801 B en la
  *    fuente, AUSENTE de este árbol y fuera de mis 14 módulos) — se usa
  *    `fs`/`fs/promises` DIRECTO en vez de la capa de abstracción
@@ -53,12 +53,12 @@
  *
  * `getPlansDirectory` NO se memoiza (la fuente sí, con `lodash-es/
  * memoize.js` sin argumentos) — mismo criterio que YA declara
- * `projectPurge.ts` de este paquete para `getClaudeConfigHomeDir`: cada
- * test de este pase cambia `CLAUDE_CONFIG_DIR`/settings/cwd a un valor
+ * `projectPurge.ts` de este paquete para `getConfigHomeDir`: cada
+ * test de este pase cambia `THYROX_CONFIG_DIR`/settings/cwd a un valor
  * nuevo, así que memoizar no ahorraría nada y rompería el aislamiento
  * entre casos.
  */
-import { randomUUID } from 'crypto'
+import { randomUUID, type UUID } from 'crypto'
 import { existsSync, mkdirSync, readFileSync } from 'fs'
 import { copyFile, readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
@@ -67,6 +67,7 @@ import { logForDebugging, getCwd } from './internal/pendingCrossPackageDeps.js'
 import { logError } from './logging.js'
 import { generateWordSlug } from '@thyrox/tool-registry/words.js'
 import { getSessionId } from './sessionPaths.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 type AgentId = string
 type SessionId = string
@@ -85,11 +86,6 @@ function getPlanSlugCache(): Map<SessionId, string> {
   return _planSlugCache
 }
 
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize(
-    'NFC',
-  )
-}
 
 function isENOENT(e: unknown): boolean {
   return Boolean(
@@ -100,7 +96,7 @@ function isENOENT(e: unknown): boolean {
 /** Fiel a `filePersistence/outputsScanner.ts::getEnvironmentKind` — ver
  * docstring del archivo. */
 function getEnvironmentKind(): 'byoc' | 'anthropic_cloud' | null {
-  const kind = process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+  const kind = process.env.THYROX_CODE_ENVIRONMENT_KIND
   if (kind === 'byoc' || kind === 'anthropic_cloud') {
     return kind
   }
@@ -121,15 +117,18 @@ function getInitialSettings(): InitialSettings {
 // Tipos aplanados de mensaje — ver docstring del archivo.
 // ---------------------------------------------------------------------------
 
+// `content` e `input` como en el transcript real: opcional el primero,
+// sin tipar el segundo. Con la forma más estricta, un `LogOption` del agente
+// no se podía pasar a este módulo.
 type PlanMessageContentBlock = {
   type: string
   name?: string
-  input?: Record<string, unknown>
+  input?: unknown
 }
 export type PlanMessage = {
   type: string
   slug?: string
-  message?: { content: PlanMessageContentBlock[] | string }
+  message?: { content?: PlanMessageContentBlock[] | string }
   planContent?: string
   attachment?: { type: string; planContent?: string }
   subtype?: string
@@ -205,13 +204,13 @@ export function getPlansDirectory(): string {
       logError(
         new Error(`plansDirectory must be within project root: ${settingsDir}`),
       )
-      plansPath = join(getClaudeConfigHomeDir(), 'plans')
+      plansPath = join(getConfigHomeDir(), 'plans')
     } else {
       plansPath = resolved
     }
   } else {
     // Por defecto.
-    plansPath = join(getClaudeConfigHomeDir(), 'plans')
+    plansPath = join(getConfigHomeDir(), 'plans')
   }
 
   // Asegura que el directorio exista (mkdirSync con recursive:true es
@@ -412,7 +411,7 @@ function recoverPlanFromMessages(log: LogOption): string | null {
             block.type === 'tool_use' &&
             block.name === EXIT_PLAN_MODE_V2_TOOL_NAME
           ) {
-            const plan = block.input?.plan
+            const plan = (block.input as { plan?: unknown } | undefined)?.plan
             if (typeof plan === 'string' && plan.length > 0) {
               return plan
             }
@@ -507,7 +506,7 @@ export async function persistFileSnapshotIfRemote(): Promise<void> {
     // la llamada revienta con TypeError, capturado por el catch de
     // afuera. Ese es el comportamiento observado y el que se prueba.
     const { recordTranscript } = (await import('./sessionStorage.js')) as {
-      recordTranscript: (messages: unknown[]) => Promise<void>
+      recordTranscript: (messages: unknown[]) => Promise<UUID | null>
     }
     await recordTranscript([message])
   } catch (error) {

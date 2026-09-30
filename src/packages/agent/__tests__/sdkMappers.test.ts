@@ -1,17 +1,16 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/sdkMappers.test.ts` — el mapeo
- * de forma interna (Anthropic, camelCase) al contrato de salida del SDK
- * (snake_case). Es el contrato de wire-protocol para consumidores del SDK:
- * una regresión aquí rompe a todos en silencio.
+ * Tests for sdkMappers — convert internal Anthropic-shape data to the
+ * SDK output format. The mapping is the wire-protocol contract for SDK
+ * consumers; a regression silently breaks all SDK clients.
  */
 import { describe, expect, test } from 'bun:test'
 import {
   localCommandOutputToSDKAssistantMessage,
   toSDKCompactMetadata,
-} from '../internal/sdkMappers.ts'
+} from '../internal/sdkMappers.js'
 
 describe('toSDKCompactMetadata', () => {
-  test('metadata básica: trigger + preTokens, sin preservedSegment', () => {
+  test('basic metadata: trigger + preTokens, no preservedSegment', () => {
     const result = toSDKCompactMetadata({
       trigger: 'auto',
       preTokens: 42000,
@@ -20,11 +19,11 @@ describe('toSDKCompactMetadata', () => {
       trigger: 'auto',
       pre_tokens: 42000,
     })
-    // preservedSegment OMITIDO cuando no está presente.
+    // preservedSegment OMITTED when not present
     expect(result).not.toHaveProperty('preserved_segment')
   })
 
-  test('con preservedSegment: las claves pasan a snake_case', () => {
+  test('with preservedSegment: keys snake_cased', () => {
     const result = toSDKCompactMetadata({
       trigger: 'manual',
       preTokens: 100000,
@@ -41,9 +40,9 @@ describe('toSDKCompactMetadata', () => {
     })
   })
 
-  test('preservedSegment con campos extra conserva sólo las tres claves fijadas', () => {
-    // A prueba de futuro: si preservedSegment crece, la forma del SDK no
-    // expone accidentalmente campos nuevos. Sólo las tres documentadas.
+  test('preservedSegment with extra fields preserves only the three locked keys', () => {
+    // Future-proof: if preservedSegment grows, the SDK shape doesn't
+    // accidentally expose new fields. Only the documented three.
     const result = toSDKCompactMetadata({
       trigger: 'auto',
       preTokens: 0,
@@ -60,12 +59,10 @@ describe('toSDKCompactMetadata', () => {
       tail_uuid: 't',
     })
     expect(result.preserved_segment).not.toHaveProperty('extraInternalField')
-    expect(result.preserved_segment).not.toHaveProperty(
-      'extra_internal_field',
-    )
+    expect(result.preserved_segment).not.toHaveProperty('extra_internal_field')
   })
 
-  test('preTokens en cero se conserva (no se descarta por falsy)', () => {
+  test('zero preTokens preserved (not falsy-stripped)', () => {
     const result = toSDKCompactMetadata({
       trigger: 'auto',
       preTokens: 0,
@@ -75,7 +72,7 @@ describe('toSDKCompactMetadata', () => {
 })
 
 describe('localCommandOutputToSDKAssistantMessage', () => {
-  test('elimina los códigos de escape ANSI', () => {
+  test('strips ANSI escape codes', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       '\x1b[31mred text\x1b[0m',
       'u1',
@@ -86,7 +83,7 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect((result.content[0] as { text: string }).text).toBe('red text')
   })
 
-  test('elimina los envoltorios configurados de stdout/stderr', () => {
+  test('strips configured stdout/stderr wrappers', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       '<stdout>hello</stdout>',
       'u1',
@@ -97,7 +94,7 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect((result.content[0] as { text: string }).text).toBe('hello')
   })
 
-  test('elimina tanto el envoltorio de stdout como el de stderr', () => {
+  test('strips both stdout and stderr wrappers', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       '<stdout>out</stdout> AND <stderr>err</stderr>',
       'u1',
@@ -108,8 +105,8 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect((result.content[0] as { text: string }).text).toBe('out AND err')
   })
 
-  test('content vacío (tras limpiar) → centinela "(no content)"', () => {
-    // Fija la constante canónica NO_CONTENT_MESSAGE.
+  test('empty content (after stripping) → "(no content)" sentinel', () => {
+    // Locks the canonical NO_CONTENT_MESSAGE constant.
     const result = localCommandOutputToSDKAssistantMessage(
       '',
       'u1',
@@ -120,7 +117,7 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect((result.content[0] as { text: string }).text).toBe('(no content)')
   })
 
-  test('sólo espacios en blanco tras limpiar → "(no content)"', () => {
+  test('whitespace-only after stripping → "(no content)"', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       '   \n  \t  ',
       'u1',
@@ -131,7 +128,7 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect((result.content[0] as { text: string }).text).toBe('(no content)')
   })
 
-  test('la forma del resultado cumple el contrato SDKAssistantMessage', () => {
+  test('result shape matches SDKAssistantMessage contract', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       'plain text',
       'uuid-1',
@@ -150,9 +147,9 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect(result.message.usage.output_tokens).toBe(0)
   })
 
-  test('el arreglo de content coincide entre el nivel superior y message.content', () => {
-    // Documentado: la misma referencia de arreglo de content en ambos
-    // lugares (la función fija `content` y `message.content` al mismo valor).
+  test('content array matches between top-level and message.content', () => {
+    // Documented: same content array reference at both locations
+    // (the function sets `content` and `message.content` to same value).
     const result = localCommandOutputToSDKAssistantMessage(
       'plain',
       'u',
@@ -163,7 +160,7 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     expect(result.content).toBe(result.message.content)
   })
 
-  test('se conserva el content multilínea', () => {
+  test('multi-line content preserved', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       'line1\nline2\nline3',
       'u',
@@ -176,7 +173,7 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
     )
   })
 
-  test('el content multilínea DENTRO del envoltorio también se limpia', () => {
+  test('multi-line content INSIDE wrapper still gets stripped', () => {
     const result = localCommandOutputToSDKAssistantMessage(
       '<stdout>line1\nline2</stdout>',
       'u',
@@ -184,14 +181,12 @@ describe('localCommandOutputToSDKAssistantMessage', () => {
       'stdout',
       'stderr',
     )
-    expect((result.content[0] as { text: string }).text).toBe(
-      'line1\nline2',
-    )
+    expect((result.content[0] as { text: string }).text).toBe('line1\nline2')
   })
 
-  test('nombres de tag personalizados funcionan', () => {
-    // La función recibe los nombres de tag de stdout/stderr como
-    // parámetros, admitiendo markup no-default.
+  test('custom tag names work', () => {
+    // The function takes stdout/stderr tag names as params, allowing
+    // for non-default markup.
     const result = localCommandOutputToSDKAssistantMessage(
       '<my-out>hello</my-out>',
       'u',

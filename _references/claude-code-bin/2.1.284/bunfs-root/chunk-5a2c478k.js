@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.284
+import{l}from"/$bunfs/root/chunk-31aa9k3a.js";import{cd}from"/$bunfs/root/chunk-bz96yhka.js";import{t}from"/$bunfs/root/chunk-6b6gfk00.js";import{BAe}from"/$bunfs/root/chunk-p4d9qevk.js";import{Ei}from"/$bunfs/root/chunk-swk3rjnt.js";import{Ct}from"/$bunfs/root/chunk-320rdak1.js";import{qn}from"/$bunfs/root/chunk-12vsw1j8.js";import{N4e}from"/$bunfs/root/chunk-0g015hgw.js";import{EKe}from"/$bunfs/root/chunk-77kn462z.js";function ccr(e){return`To fix: ${e.webSetupHint?`${e.webSetupHint}, or connect`:"connect"} an account at ${N4e()} \u2014 ${e.rerun} (allow a minute after connecting).`}function w3t(e){return`${e.subject} with the GitHub account connected to your Claude account, and none is connected (or the connection expired). ${ccr(e)}`}function v3t(e){let r=e.apostrophe??"'",o=`install the app at ${BAe}`,n=e.webSetupHint,i=n&&e.leadWithWebSetup?`${n}, or ${o}`:`${o}${n?`, or ${n}`:""}`;return`Your connected GitHub account can${r}t see ${e.owner}/${e.name} \u2014 usually the Claude GitHub app isn${r}t installed on ${e.owner} or wasn${r}t granted this repo (web-connected accounts need it for private repos), or a different GitHub account is connected. To fix: ${i} \u2014 ${e.rerun}.`}var b=5000,d=2147483647;async function E3t(e,r,o=b){let n={verdict:"inconclusive",httpStatus:null};if(Ct()||!qn())return n;let i=Number.isSafeInteger(o)&&o>0?Math.min(o,d):0;if(i===0)return n;let c=AbortSignal.timeout(i),a=(async()=>{if(await Ei(),c.aborted)return n;let{linkedAccountAccess:s,httpStatus:p}=await EKe(e,r,c);return{verdict:s,httpStatus:p}})(),u=await cd(a,c,()=>Error("budget expired")).catch((s)=>(t(`linked GitHub account access probe gave up, treating as inconclusive: ${l(s)}`),n));return t(`linked GitHub account access to ${e}/${r}: ${u.verdict} (HTTP ${u.httpStatus??"none"})`),u}
+export{ccr,w3t,v3t,E3t};

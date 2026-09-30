@@ -51,7 +51,7 @@ import sys
 # codigo de salida como instrumento: un veredicto que no discrimina su causa.
 try:
     from workbench.paths import (  # noqa: E402
-        WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
+        WorkbenchHomeError, state_dir, workbench_dir,
     )
     from paths.reach import ConsumerUnknownError  # noqa: E402
 except ImportError as _err:  # pragma: no cover - se ejercita por subproceso

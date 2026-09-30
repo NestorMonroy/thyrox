@@ -1,0 +1,16 @@
+Props	282	155
+State	8	8
+Options	9	8
+Output	42	6
+CacheEntry	5	5
+Logger	5	4
+Message	5	4
+SettingSource	4	4
+AppStateLike	4	4
+WebSocketLike	4	4
+PermissionMode	6	3
+Span	3	3
+Color	3	3
+Progress	3	3
+Token	3	3
+distribucion	[(1, 162), (2, 146), (3, 30), (4, 5), (5, 1), (6, 1), (8, 2), (155, 1)]

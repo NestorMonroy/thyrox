@@ -47,12 +47,8 @@ type Props = {
 }
 
 /**
- * Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
- *
- * Vista lado a lado para las preguntas que traen contenido de vista previa.
- * Muestra una lista vertical de opciones a la izquierda y un panel de vista
- * previa a la derecha.
+ * A side-by-side question view for questions with preview content.
+ * Displays a vertical option list on the left with a preview panel on the right.
  */
 export function PreviewQuestionView({
   question,
@@ -84,13 +80,13 @@ export function PreviewQuestionView({
   const questionText = question.question
   const questionState = questionStates[questionText]
 
-  // Sólo opciones reales: en una pregunta con vista previa no hay «Other»
+  // Only real options — no "Other" for preview questions
   const allOptions = question.options
 
-  // Seguir qué opción tiene el foco, para saber qué vista previa mostrar
+  // Track which option is focused (for preview display)
   const [focusedIndex, setFocusedIndex] = useState(0)
 
-  // Reiniciar `focusedIndex` al navegar a otra pregunta
+  // Reset focusedIndex when navigating to a different question
   const prevQuestionText = useRef(questionText)
   if (prevQuestionText.current !== questionText) {
     prevQuestionText.current = questionText
@@ -143,7 +139,7 @@ export function PreviewQuestionView({
     [focusedIndex, allOptions.length, isInNotesInput],
   )
 
-  // Atender ctrl+g para abrir el editor externo y escribir las notas
+  // Handle ctrl+g to open external editor for notes
   useKeybinding(
     'chat:externalEditor',
     async () => {
@@ -160,12 +156,11 @@ export function PreviewQuestionView({
     { context: 'Chat', isActive: isInNotesInput && !!editor },
   )
 
-  // Atender las flechas izquierda y derecha y el tab para navegar entre
-  // preguntas. Tiene que estar en el componente hijo, y no sólo en el padre,
-  // porque los manejadores de `useInput` del hijo se registran primero en el
-  // emisor de eventos y se disparan antes que los del padre. Sin esto, el
-  // `useKeybindings` del padre puede no dispararse de forma fiable, según el
-  // orden de los listeners en el emisor.
+  // Handle left/right arrow and tab for question navigation.
+  // This must be in the child component (not just the parent) because child useInput
+  // handlers register first on the event emitter and fire before parent handlers.
+  // Without this, the parent's useKeybindings may not fire reliably depending on
+  // listener ordering in the event emitter.
   useKeybindings(
     {
       'tabs:previous': () => onTabPrev?.(),
@@ -174,9 +169,8 @@ export function PreviewQuestionView({
     { context: 'Tabs', isActive: !isInNotesInput && !isFooterFocused },
   )
 
-  // Reenviar la respuesta (la etiqueta a secas) al salir del campo de notas.
-  // Las notas se guardan en `questionStates` y se recogen al enviar, por las
-  // anotaciones.
+  // Re-submit the answer (plain label) when exiting notes input.
+  // Notes are stored in questionStates and collected at submit time via annotations.
   const handleNotesExit = useCallback(() => {
     setIsInNotesInput(false)
     onTextInputFocus(false)
@@ -193,9 +187,8 @@ export function PreviewQuestionView({
     setIsFooterFocused(false)
   }, [])
 
-  // Atender el teclado para navegar entre opciones, pie y notas. Siempre
-  // activo — el manejador enruta por dentro según `isFooterFocused` e
-  // `isInNotesInput`.
+  // Handle keyboard input for option/footer/notes navigation.
+  // Always active — the handler routes internally based on isFooterFocused/isInNotesInput.
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (isFooterFocused) {
@@ -235,11 +228,10 @@ export function PreviewQuestionView({
       }
 
       if (isInNotesInput) {
-        // En modo de entrada de notas, interceptar escape y enter como
-        // respaldo, por si los manejadores de la fase del EventEmitter
-        // (`useInput`) los consumen antes de que lleguen a `TextInput`. El
-        // análisis completo de la cadena de despacho de eventos está en el
-        // mensaje del commit.
+        // In notes input mode, intercept escape + enter as a fallback
+        // in case the EventEmitter-phase (useInput) handlers consume
+        // them before they reach TextInput. See the commit message for
+        // the full event-dispatch chain analysis.
         if (e.key === 'escape') {
           e.preventDefault()
           handleNotesExit()
@@ -250,7 +242,7 @@ export function PreviewQuestionView({
         return
       }
 
-      // Atender la navegación entre opciones (vertical)
+      // Handle option navigation (vertical)
       if (e.key === 'up' || (e.ctrl && e.key === 'p')) {
         e.preventDefault()
         if (focusedIndex > 0) {
@@ -259,7 +251,7 @@ export function PreviewQuestionView({
       } else if (e.key === 'down' || (e.ctrl && e.key === 'n')) {
         e.preventDefault()
         if (focusedIndex === allOptions.length - 1) {
-          // Al final de las opciones, pasar al pie
+          // At bottom of options, go to footer
           handleDownFromPreview()
         } else {
           handleNavigate('down')
@@ -268,7 +260,7 @@ export function PreviewQuestionView({
         e.preventDefault()
         handleSelectOption(focusedIndex)
       } else if (e.key === 'n' && !e.ctrl && !e.meta) {
-        // Pulsar 'n' para dar el foco al campo de notas
+        // Press 'n' to focus the notes input
         e.preventDefault()
         setIsInNotesInput(true)
         onTextInputFocus(true)
@@ -304,29 +296,26 @@ export function PreviewQuestionView({
 
   const previewContent = focusedOption?.preview || null
 
-  // El ancho disponible del panel derecho es el de la terminal menos el panel izquierdo y el hueco.
+  // The right panel's available width is terminal minus the left panel and gap.
   const LEFT_PANEL_WIDTH = 30
   const GAP = 4
   const { columns } = useTerminalSize()
   const previewMaxWidth = columns - LEFT_PANEL_WIDTH - GAP
 
-  // Líneas que, dentro del área de contenido, no son contenido de vista
-  // previa:
-  // 1: el `marginTop` de la caja lado a lado
-  // 2: los bordes de `PreviewBox` (arriba y abajo)
-  // 2: la sección de notas (`marginTop=1` más el texto)
-  // 2: la sección del pie (`marginTop=1` más el separador)
-  // 1: la línea de «Chat about this»
-  // 1: la línea de modo plan (puede mostrarse o no)
-  // 2: el texto de ayuda (`marginTop=1` más el texto)
+  // Lines used within the content area that aren't preview content:
+  // 1: marginTop on side-by-side box
+  // 2: PreviewBox borders (top + bottom)
+  // 2: notes section (marginTop=1 + text)
+  // 2: footer section (marginTop=1 + divider)
+  // 1: "Chat about this" line
+  // 1: plan mode line (may or may not show)
+  // 2: help text (marginTop=1 + text)
   const PREVIEW_OVERHEAD = 11
 
-  // Calcular el máximo de líneas disponibles para el contenido de vista
-  // previa a partir del presupuesto de altura del padre, para no desbordar la
-  // terminal. NO se rellenan las opciones más cortas hasta igualar a la más
-  // alta — de la consistencia de maquetación entre preguntas se encarga el
-  // `minHeight` de la caja exterior, y los saltos dentro de una misma pregunta
-  // son aceptables.
+  // Compute the max lines available for preview content from the parent's
+  // height budget to prevent terminal overflow. We do NOT pad shorter options
+  // to match the tallest — the outer box's minHeight handles cross-question
+  // layout consistency, and within-question shifts are acceptable.
   const previewMaxLines = useMemo(() => {
     return minContentHeight
       ? Math.max(1, minContentHeight - PREVIEW_OVERHEAD)

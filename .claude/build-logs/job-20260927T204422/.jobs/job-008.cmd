@@ -1,0 +1,1 @@
+python3 tests/hooks/test_tool_use_preflight.py > .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_hooks_test_tool_use_preflight_py.log 2>&1; echo EXIT=$? >> .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_hooks_test_tool_use_preflight_py.log

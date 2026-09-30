@@ -1,0 +1,1 @@
+python3 tests/session/test_gpu_monitor.py

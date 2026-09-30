@@ -1,0 +1,59 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/permission/src/permission.ts(55,16): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/permission.ts:45-65 ---
+     45    if (modo === 'bypass') return 'allow'
+     46    const p = policy?.[capability] ?? policy?.default ?? 'allow'
+     47    if (modo === 'acceptEdits' && capability === 'write') return 'allow'
+     48    if (p === 'ask' && !interactive) return 'deny'
+     49    return p
+     50  }
+     51  
+     52  /** `Bash(git push:*)` da herramienta `Bash` y patrón `git push:*`. */
+     53  function partirRegla(rule: string): { tool: string; pattern?: string } {
+     54    const m = /^([A-Za-z_][A-Za-z0-9_]*)\((.*)\)$/.exec(rule)
+     55>   return m ? { tool: m[1], pattern: m[2] } : { tool: rule }
+     56  }
+     57  
+     58  /** El argumento sobre el que casa el patrón: el comando o la ruta, según la herramienta. */
+     59  function objetivo(input: Record<string, unknown>): string {
+     60    for (const clave of ['command', 'file_path', 'path', 'pattern', 'url']) {
+     61      const v = input[clave]
+     62      if (typeof v === 'string') return v
+     63    }
+     64    return ''
+     65  }
+src/packages/permission/src/permission.ts(93,64): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/permission/src/permission.ts:83-103 ---
+     83   * `git push:*` es la forma del cliente para «el comando empieza por `git
+     84   * push`»; los dos puntos separan el prefijo del comodín. Un patrón sin esa
+     85   * forma se trata como glob, que es lo que sirve para rutas.
+     86   */
+     87  export function matchesRule(rule: string, toolName: string, input: Record<string, unknown>): boolean {
+     88    const { tool, pattern } = partirRegla(rule)
+     89    if (tool !== toolName) return false
+     90    if (pattern === undefined || pattern === '*') return true
+     91    const valor = objetivo(input)
+     92    const prefijo = /^(.*):\*$/.exec(pattern)
+     93>   if (prefijo) return valor === prefijo[1] || valor.startsWith(prefijo[1])
+     94    return globARegExp(pattern).test(valor)
+     95  }
+     96  
+     97  /** ¿La ruta cae dentro de alguno de los directorios declarados? Se resuelve antes de comparar. */
+     98  export function confinedTo(path: string, directories: string[]): boolean {
+     99    if (directories.length === 0) return true
+    100    const absoluta = resolve(path)
+    101    return directories.some((d) => {
+    102      const raiz = resolve(d)
+    103      const rel = relative(raiz, absoluta)

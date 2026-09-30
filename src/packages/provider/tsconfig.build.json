@@ -1,0 +1,406 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/provider": [
+        "./src/index.ts"
+      ],
+      "@thyrox/provider/anthropicHttp": [
+        "./src/anthropicHttp.ts"
+      ],
+      "@thyrox/provider/credentials": [
+        "./src/credentials.ts"
+      ],
+      "@thyrox/provider/recorded": [
+        "./src/recorded.ts"
+      ],
+      "@thyrox/provider/anthropicMockServer": [
+        "./src/anthropicMockServer.ts"
+      ],
+      "@thyrox/provider/sse": [
+        "./src/sse.ts"
+      ],
+      "@thyrox/provider/caCerts": [
+        "./src/internal/caCerts.ts"
+      ],
+      "@thyrox/provider/gemini": [
+        "./src/gemini/index.ts"
+      ],
+      "@thyrox/provider/openai": [
+        "./src/openai/index.ts"
+      ],
+      "@thyrox/provider/policyLimits": [
+        "./src/policyLimits/index.ts"
+      ],
+      "@thyrox/provider/commands/logout/logout.js": [
+        "./src/commands/logout/logout.tsx"
+      ],
+      "@thyrox/provider/adminRequests.js": [
+        "./src/adminRequests.ts"
+      ],
+      "@thyrox/provider/advisor.js": [
+        "./src/advisor.ts"
+      ],
+      "@thyrox/provider/antModels.js": [
+        "./src/antModels.ts"
+      ],
+      "@thyrox/provider/apiLimits.js": [
+        "./src/apiLimits.ts"
+      ],
+      "@thyrox/provider/authAlias.js": [
+        "./src/authAlias.ts"
+      ],
+      "@thyrox/provider/authPortable.js": [
+        "./src/authPortable.ts"
+      ],
+      "@thyrox/provider/awsAuthStatusManager.js": [
+        "./src/awsAuthStatusManager.ts"
+      ],
+      "@thyrox/provider/betas.js": [
+        "./src/betas.ts"
+      ],
+      "@thyrox/provider/betasConstants.js": [
+        "./src/betasConstants.ts"
+      ],
+      "@thyrox/provider/billing.js": [
+        "./src/billing.ts"
+      ],
+      "@thyrox/provider/caCerts.js": [
+        "./src/caCerts.ts"
+      ],
+      "@thyrox/provider/claude.js": [
+        "./src/claude.ts"
+      ],
+      "@thyrox/provider/claudeAiLimits.js": [
+        "./src/claudeAiLimits.ts"
+      ],
+      "@thyrox/provider/claudeAiLimitsHook.js": [
+        "./src/claudeAiLimitsHook.ts"
+      ],
+      "@thyrox/provider/claudeLegacy": [
+        "./src/claudeLegacy.ts"
+      ],
+      "@thyrox/provider/claudeLegacyRuntime.js": [
+        "./src/claudeLegacyRuntime.ts"
+      ],
+      "@thyrox/provider/commands/advisor.js": [
+        "./src/commands/advisor.ts"
+      ],
+      "@thyrox/provider/commands/logout/index.js": [
+        "./src/commands/logout/index.ts"
+      ],
+      "@thyrox/provider/commands/provider.js": [
+        "./src/commands/provider.ts"
+      ],
+      "@thyrox/provider/accounts/apiKeyProbe": [
+        "./src/accounts/apiKeyProbe.ts"
+      ],
+      "@thyrox/provider/accounts/connectionTest": [
+        "./src/accounts/connectionTest.ts"
+      ],
+      "@thyrox/provider/accounts/webCookie/webCookieProbe": [
+        "./src/accounts/webCookie/webCookieProbe.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/loginRunner": [
+        "./src/accounts/oauth/loginRunner.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/flowRegistry": [
+        "./src/accounts/oauth/flowRegistry.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/oauthFlows": [
+        "./src/accounts/oauth/oauthFlows.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/callbackServer": [
+        "./src/accounts/oauth/callbackServer.ts"
+      ],
+      "@thyrox/provider/accounts/connectionStoreHome": [
+        "./src/accounts/connectionStoreHome.ts"
+      ],
+      "@thyrox/provider/connections": [
+        "./src/connections.ts"
+      ],
+      "@thyrox/provider/connections.js": [
+        "./src/connections.ts"
+      ],
+      "@thyrox/provider/connectorTextTypes": [
+        "./src/connectorTextTypes.ts"
+      ],
+      "@thyrox/provider/context.js": [
+        "./src/context.ts"
+      ],
+      "@thyrox/provider/cost/cacheBreak": [
+        "./src/cost/cacheBreak.ts"
+      ],
+      "@thyrox/provider/cost/cacheRoutes": [
+        "./src/cost/cacheRoutes.ts"
+      ],
+      "@thyrox/provider/cost/compaction": [
+        "./src/cost/compaction.ts"
+      ],
+      "@thyrox/provider/cost/crossModelRead": [
+        "./src/cost/crossModelRead.ts"
+      ],
+      "@thyrox/provider/cost/policy": [
+        "./src/cost/policy.ts"
+      ],
+      "@thyrox/provider/costTracker.js": [
+        "./src/costTracker.ts"
+      ],
+      "@thyrox/provider/dumpPrompts.js": [
+        "./src/dumpPrompts.ts"
+      ],
+      "@thyrox/provider/errorUtils.js": [
+        "./src/errorUtils.ts"
+      ],
+      "@thyrox/provider/errors.js": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/provider/extraUsage.js": [
+        "./src/extraUsage.ts"
+      ],
+      "@thyrox/provider/fastMode.js": [
+        "./src/fastMode.ts"
+      ],
+      "@thyrox/provider/fastModeAvailability.js": [
+        "./src/fastModeAvailability.ts"
+      ],
+      "@thyrox/provider/fileConstants.js": [
+        "./src/fileConstants.ts"
+      ],
+      "@thyrox/provider/filesApi.js": [
+        "./src/filesApi.ts"
+      ],
+      "@thyrox/provider/fingerprint.js": [
+        "./src/fingerprint.ts"
+      ],
+      "@thyrox/provider/firstTokenDate.js": [
+        "./src/firstTokenDate.ts"
+      ],
+      "@thyrox/provider/gatewayModelDiscovery.js": [
+        "./src/gatewayModelDiscovery.ts"
+      ],
+      "@thyrox/provider/gemini/convertTools.js": [
+        "./src/gemini/convertTools.ts"
+      ],
+      "@thyrox/provider/gemini/types.js": [
+        "./src/gemini/types.ts"
+      ],
+      "@thyrox/provider/grove.js": [
+        "./src/grove.ts"
+      ],
+      "@thyrox/provider/headlessProfiler.js": [
+        "./src/headlessProfiler.ts"
+      ],
+      "@thyrox/provider/http.js": [
+        "./src/http.ts"
+      ],
+      "@thyrox/provider/internal/pendingCrossPackageDeps.js": [
+        "./src/internal/pendingCrossPackageDeps.ts"
+      ],
+      "@thyrox/provider/legacy/api.js": [
+        "./src/legacy/api.ts"
+      ],
+      "@thyrox/provider/logging.js": [
+        "./src/logging.ts"
+      ],
+      "@thyrox/provider/model.js": [
+        "./src/model.ts"
+      ],
+      "@thyrox/provider/foundryCapabilities.js": [
+        "./src/foundryCapabilities.ts"
+      ],
+      "@thyrox/provider/model/aliases.js": [
+        "./src/model/aliases.ts"
+      ],
+      "@thyrox/provider/model/antModels.js": [
+        "./src/model/antModels.ts"
+      ],
+      "@thyrox/provider/model/bedrock.js": [
+        "./src/model/bedrock.ts"
+      ],
+      "@thyrox/provider/model/check1mAccess.js": [
+        "./src/model/check1mAccess.ts"
+      ],
+      "@thyrox/provider/model/configs.js": [
+        "./src/model/configs.ts"
+      ],
+      "@thyrox/provider/model/contextWindowUpgradeCheck.js": [
+        "./src/model/contextWindowUpgradeCheck.ts"
+      ],
+      "@thyrox/provider/model/deprecation.js": [
+        "./src/model/deprecation.ts"
+      ],
+      "@thyrox/provider/model/model.js": [
+        "./src/model/model.ts"
+      ],
+      "@thyrox/provider/model/modelAllowlist.js": [
+        "./src/model/modelAllowlist.ts"
+      ],
+      "@thyrox/provider/model/providers.js": [
+        "./src/model/providers.ts"
+      ],
+      "@thyrox/provider/modelAgent.js": [
+        "./src/modelAgent.ts"
+      ],
+      "@thyrox/provider/modelAliases.js": [
+        "./src/modelAliases.ts"
+      ],
+      "@thyrox/provider/modelCost.js": [
+        "./src/modelCost.ts"
+      ],
+      "@thyrox/provider/modelOptions.js": [
+        "./src/modelOptions.ts"
+      ],
+      "@thyrox/provider/modelStrings.js": [
+        "./src/modelStrings.ts"
+      ],
+      "@thyrox/provider/mtls.js": [
+        "./src/mtls.ts"
+      ],
+      "@thyrox/provider/oauth/client.js": [
+        "./src/oauth/client.ts"
+      ],
+      "@thyrox/provider/oauth/codex-auth.js": [
+        "./src/oauth/codex-auth.ts"
+      ],
+      "@thyrox/provider/oauth/getOauthProfile.js": [
+        "./src/oauth/getOauthProfile.ts"
+      ],
+      "@thyrox/provider/oauth/index.js": [
+        "./src/oauth/index.ts"
+      ],
+      "@thyrox/provider/oauth/types.js": [
+        "./src/oauth/types.ts"
+      ],
+      "@thyrox/provider/oauthConstants": [
+        "./src/oauthConstants.ts"
+      ],
+      "@thyrox/provider/oauthConstants.js": [
+        "./src/oauthConstants.ts"
+      ],
+      "@thyrox/provider/openai/convertTools.js": [
+        "./src/openai/convertTools.ts"
+      ],
+      "@thyrox/provider/overageCreditGrant.js": [
+        "./src/overageCreditGrant.ts"
+      ],
+      "@thyrox/provider/policyLimits/index.js": [
+        "./src/policyLimits/index.ts"
+      ],
+      "@thyrox/provider/promptCacheBreakDetection.js": [
+        "./src/promptCacheBreakDetection.ts"
+      ],
+      "@thyrox/provider/providerHostSetup": [
+        "./src/providerHostSetup.ts"
+      ],
+      "@thyrox/provider/providers.js": [
+        "./src/providers.ts"
+      ],
+      "@thyrox/provider/proxy.js": [
+        "./src/proxy.ts"
+      ],
+      "@thyrox/provider/queryProfiler.js": [
+        "./src/queryProfiler.ts"
+      ],
+      "@thyrox/provider/rateLimitMessages.js": [
+        "./src/rateLimitMessages.ts"
+      ],
+      "@thyrox/provider/rateLimitMocking.js": [
+        "./src/rateLimitMocking.ts"
+      ],
+      "@thyrox/provider/referral.js": [
+        "./src/referral.ts"
+      ],
+      "@thyrox/provider/sessionIngress.js": [
+        "./src/sessionIngress.ts"
+      ],
+      "@thyrox/provider/sessionIngressAuth.js": [
+        "./src/sessionIngressAuth.ts"
+      ],
+      "@thyrox/provider/systemConstants.js": [
+        "./src/systemConstants.ts"
+      ],
+      "@thyrox/provider/systemPrompt.js": [
+        "./src/systemPrompt.ts"
+      ],
+      "@thyrox/provider/systemPromptSections": [
+        "./src/systemPromptSections.ts"
+      ],
+      "@thyrox/provider/systemPromptType.js": [
+        "./src/systemPromptType.ts"
+      ],
+      "@thyrox/provider/thinking.js": [
+        "./src/thinking.ts"
+      ],
+      "@thyrox/provider/ultrareviewQuota.js": [
+        "./src/ultrareviewQuota.ts"
+      ],
+      "@thyrox/provider/usage.js": [
+        "./src/usage.ts"
+      ],
+      "@thyrox/provider/user.js": [
+        "./src/user.ts"
+      ],
+      "@thyrox/provider/userAgent.js": [
+        "./src/userAgent.ts"
+      ],
+      "@thyrox/provider/validateModel.js": [
+        "./src/validateModel.ts"
+      ],
+      "@thyrox/provider/withRetry.js": [
+        "./src/withRetry.ts"
+      ],
+      "@thyrox/provider/workloadContext.js": [
+        "./src/workloadContext.ts"
+      ],
+      "@thyrox/provider/proxy/upstreamHeaders": [
+        "./src/proxy/upstreamHeaders.ts"
+      ],
+      "@thyrox/provider/proxy/proxyEndpoint": [
+        "./src/proxy/proxyEndpoint.ts"
+      ],
+      "@thyrox/provider/sanitize/credentialPatterns": [
+        "./src/sanitize/credentialPatterns.ts"
+      ],
+      "@thyrox/provider/sanitize/errorPathRedaction": [
+        "./src/sanitize/errorPathRedaction.ts"
+      ],
+      "@thyrox/provider/sanitize/errorSanitization": [
+        "./src/sanitize/errorSanitization.ts"
+      ],
+      "@thyrox/provider/sanitize/upstreamErrorPassthrough": [
+        "./src/sanitize/upstreamErrorPassthrough.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

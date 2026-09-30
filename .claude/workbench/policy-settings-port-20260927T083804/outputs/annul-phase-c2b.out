@@ -1,0 +1,41 @@
+base	34 pass, 0 fail	—
+wsl-mount-no-lower	33 pass, 1 fail	rutas de Windows vistas desde WSL > la unidad pasa a /mnt/<letra> y las barras se invierten
+mdm-label-fixed	32 pass, 2 fail	qué fuente ata > MDM gana al archivo y se nombra por plataforma | qué fuente ata > una MDM de sólo sustitutos que no ata avisa que el archivo la suple
+wsl-branch-ignored	32 pass, 2 fail	la rama WSL (aft) > una MDM que ata deja fuera el archivo de Linux | la rama WSL (aft) > heredando de Windows, el archivo de Windows gana si trae política
+wsl-mdm-ignored	33 pass, 1 fail	la rama WSL (aft) > una MDM que ata deja fuera el archivo de Linux
+wsl-windows-always	33 pass, 1 fail	la rama WSL (aft) > heredando sin archivo de Windows, cae al de Linux
+parent-warning-dropped	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > managedMcpServers del padre se avisa como ignorado
+helper-env-case	33 pass, 1 fail	el asistente de política (BL) > si funde su salida, lo hace sobre la remota y lo recuerda en la sesión
+helper-env-plain	33 pass, 1 fail	el asistente de política (BL) > si funde su salida, lo hace sobre la remota y lo recuerda en la sesión
+helper-keeps-helper-keys	33 pass, 1 fail	el asistente de política (BL) > si funde su salida, lo hace sobre la remota y lo recuerda en la sesión
+helper-tier-as-slot	33 pass, 1 fail	el asistente de política (BL) > como escalón propio, la composición no lo cuenta
+helper-no-merge	33 pass, 1 fail	el asistente de política (BL) > si funde su salida, lo hace sobre la remota y lo recuerda en la sesión
+helper-not-cached	33 pass, 1 fail	el asistente de política (BL) > si funde su salida, lo hace sobre la remota y lo recuerda en la sesión
+helper-merged-over-always	33 pass, 1 fail	el asistente de política (BL) > sin base con política, no dice sobre qué fundió
+parent-default-merge	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > el anfitrión que administra el gateway pone merge por defecto
+slot-not-helper	33 pass, 1 fail	el asistente de política (BL) > armado desde la remota, ocupa la ranura remota
+rank-ignores-authored	33 pass, 1 fail	qué fuente ata > una MDM de sólo sustitutos que no ata avisa que el archivo la suple
+slot-binds-always	33 pass, 1 fail	qué fuente ata > una remota con sólo objetos vacíos no ata frente a un archivo con valores
+mdm-binds-always	33 pass, 1 fail	qué fuente ata > una MDM de sólo sustitutos que no ata avisa que el archivo la suple
+mode-from-any	33 pass, 1 fail	qué fuente ata > el modo de una fuente que no ata no decide si ata otra
+lost-dropped	33 pass, 1 fail	qué fuente ata > una remota con sólo objetos vacíos no ata frente a un archivo con valores
+lost-warning-dropped	33 pass, 1 fail	qué fuente ata > una MDM de sólo sustitutos que no ata avisa que el archivo la suple
+parent-errors-dropped	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > managedMcpServers del padre se avisa como ignorado
+held-empty-dropped	33 pass, 1 fail	qué fuente ata > una fuente con contenido de política sin settings ata vacía
+present-ignores-held	33 pass, 1 fail	qué fuente ata > una fuente con contenido de política sin settings ata vacía
+never-shut-out-ignores-file	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > con un administrador autorado y el padre en first-wins, el padre queda fuera
+parent-always-included	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > con un administrador autorado y el padre en first-wins, el padre queda fuera
+parent-slice-empty-kept	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > un padre sin nada que restrinja no deja porción
+overlay-ignores-host	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > el modelo del padre sólo si el anfitrión administra el proveedor
+contributes-top-only-keys	33 pass, 1 fail	qué fuente ata > una fuente fundida que sólo trae claves del escalón superior no cuenta como aporte
+document-parent-not-null	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > con porción del padre y sin administrador, HKCU no se usa
+document-hkcu-empty	33 pass, 1 fail	HKCU como último recurso (Zy) > sin administrador ni padre, HKCU con contenido
+tiers-no-parent	33 pass, 1 fail	el proceso padre (lft, J2o, Z2o) > sin administrador, la porción del padre entra
+merged-sources-always	33 pass, 1 fail	qué fuente ata > sin fusión no hay fuentes fundidas
+rz-ignores-desktop	32 pass, 2 fail	lo que decide el entorno (Rz, MRe) > el anfitrión administra el gateway desde un escritorio | lo que decide el entorno (Rz, MRe) > el contexto de la sesión los lee del entorno del proceso
+rz-lineage-no-creds	33 pass, 1 fail	lo que decide el entorno (Rz, MRe) > o con el linaje de gateway y su archivo de credenciales
+rz-ignores-provider	33 pass, 1 fail	lo que decide el entorno (Rz, MRe) > sin proveedor administrado o sin gateway, no
+rz-ignores-gateway	33 pass, 1 fail	lo que decide el entorno (Rz, MRe) > sin proveedor administrado o sin gateway, no
+mcp-any-entrypoint	33 pass, 1 fail	lo que decide el entorno (Rz, MRe) > los servidores MCP del anfitrión se respetan sólo desde sus puntos de entrada
+context-no-rz	33 pass, 1 fail	lo que decide el entorno (Rz, MRe) > el contexto de la sesión los lee del entorno del proceso
+context-no-mre	33 pass, 1 fail	lo que decide el entorno (Rz, MRe) > el contexto de la sesión los lee del entorno del proceso

@@ -1,0 +1,7 @@
+base	6 pass, 0 fail	—
+no-clear	5 pass, 1 fail	un acierto devuelve la credencial cuyo enfriamiento venció
+no-mark	3 pass, 3 fail	un 429 enfría la credencial y la siguiente petición va a otra | el cuerpo de un 4xx llega a la decisión: una baja es definitiva | un 5xx enfría sin leer el cuerpo
+no-error-text	5 pass, 1 fail	el cuerpo de un 4xx llega a la decisión: una baja es definitiva
+base	14 pass, 0 fail	—
+always-off	12 pass, 2 fail	startProxyServer: enfriamiento por credencial > por defecto, la credencial que falla queda apartada para la petición siguiente | startProxyServer: enfriamiento por credencial > las señales de baja del operador llegan a la decisión
+no-banned	13 pass, 1 fail	startProxyServer: enfriamiento por credencial > las señales de baja del operador llegan a la decisión

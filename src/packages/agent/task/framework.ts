@@ -7,7 +7,7 @@ import {
   TASK_TYPE_TAG,
   TOOL_USE_ID_TAG,
 } from '@thyrox/command-runtime/xml.js'
-type AppState = { tasks: Record<string, unknown> }
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 import {
   isTerminalTaskStatus,
   type TaskStatus,
@@ -45,7 +45,12 @@ type SetAppState = (updater: (prev: AppState) => AppState) => void
  * Helper function for task implementations.
  * Generic to allow type-safe updates for specific task types.
  */
-export function updateTaskState<T extends TaskState>(
+// Las tareas que el estado de la aplicación guarda. `T` se acota a ellas y
+// no al `TaskState` relajado de este archivo: la conversión de un elemento de
+// `prev.tasks` a `T` sólo es válida si `T` es una de esas tareas.
+type AppTaskState = NonNullable<AppState['tasks']>[string]
+
+export function updateTaskState<T extends AppTaskState>(
   taskId: string,
   setAppState: SetAppState,
   updater: (task: T) => T,
@@ -61,12 +66,15 @@ export function updateTaskState<T extends TaskState>(
       // spread so s.tasks subscribers don't re-render on unchanged state.
       return prev
     }
+    // `updated` es T, la unión relajada del genérico (para evitar el import
+    // circular con tasksTypes.ts); en runtime siempre es un miembro concreto
+    // de la unión real de AppState['tasks'].
     return {
       ...prev,
       tasks: {
         ...prev.tasks,
         [taskId]: updated,
-      },
+      } as AppState['tasks'],
     }
   })
 }
@@ -95,7 +103,10 @@ export function registerTask(task: TaskState, setAppState: SetAppState): void {
             pendingMessages: existing.pendingMessages,
           }
         : task
-    return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } }
+    // `merged` combina el TaskState relajado del parámetro con campos ya
+    // reales de la tarea existente; en runtime siempre resulta un miembro
+    // concreto de la unión real de AppState['tasks'].
+    return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } as AppState['tasks'] }
   })
 
   // Replacement (resume) — not a new start. Skip to avoid double-emit.
@@ -105,8 +116,8 @@ export function registerTask(task: TaskState, setAppState: SetAppState): void {
     type: 'system',
     subtype: 'task_started',
     task_id: task.id,
-    tool_use_id: task.toolUseId,
-    description: task.description,
+    tool_use_id: task.toolUseId as string | undefined,
+    description: String(task.description),
     task_type: task.type,
     workflow_name:
       'workflowName' in task
@@ -308,5 +319,7 @@ function getStatusText(status: TaskStatus): string {
       return 'is running'
     case 'pending':
       return 'is pending'
+    case 'paused':
+      return 'is paused'
   }
 }

@@ -1,0 +1,8 @@
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(356,10): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(356,28): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(356,48): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(356,66): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(357,10): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(357,28): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(357,48): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(357,66): error TS18048: 'marker' is possibly 'undefined'.

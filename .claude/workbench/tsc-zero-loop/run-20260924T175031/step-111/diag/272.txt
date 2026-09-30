@@ -1,0 +1,60 @@
+src/packages/tool-registry/src/notebook.ts(174,38): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/notebook.ts:164-184 ---
+    164  export async function readNotebook(
+    165    notebookPath: string,
+    166    cellId?: string,
+    167  ): Promise<NotebookCellSource[]> {
+    168    const fullPath = expandPath(notebookPath)
+    169    const buffer = await getFsImplementation().readFileBytes(fullPath)
+    170    const content = buffer.toString('utf-8')
+    171    const notebook = jsonParse(content) as NotebookContent
+    172    const language = notebook.metadata.language_info?.name ?? 'python'
+    173    if (cellId) {
+    174>     const cell = notebook.cells.find((c: { id: string }) => c.id === cellId)
+    175      if (!cell) {
+    176        throw new Error(`Cell with ID "${cellId}" not found in notebook`)
+    177      }
+    178      return [processCell(cell, notebook.cells.indexOf(cell), language, true)]
+    179    }
+    180    return notebook.cells.map((cell: unknown, index: number) =>
+    181      processCell(cell, index, language, false),
+    182    )
+    183  }
+    184  
+  Overload 1 of 2, '(predicate: (value: NotebookCell, index: number, obj: NotebookCell[]) => value is NotebookCell, thisArg?: any): NotebookCell | undefined', gave the following error.
+    Argument of type '(c: { id: string; }) => boolean' is not assignable to parameter of type '(value: NotebookCell, index: number, obj: NotebookCell[]) => value is NotebookCell'.
+      Types of parameters 'c' and 'value' are incompatible.
+        Type 'NotebookCell' is not assignable to type '{ id: string; }'.
+          Types of property 'id' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: NotebookCell, index: number, obj: NotebookCell[]) => unknown, thisArg?: any): NotebookCell | undefined', gave the following error.
+    Argument of type '(c: { id: string; }) => boolean' is not assignable to parameter of type '(value: NotebookCell, index: number, obj: NotebookCell[]) => unknown'.
+      Types of parameters 'c' and 'value' are incompatible.
+        Type 'NotebookCell' is not assignable to type '{ id: string; }'.
+          Types of property 'id' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/notebook.ts(181,17): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'NotebookCell'.
+  --- código src/packages/tool-registry/src/notebook.ts:171-191 ---
+    171    const notebook = jsonParse(content) as NotebookContent
+    172    const language = notebook.metadata.language_info?.name ?? 'python'
+    173    if (cellId) {
+    174      const cell = notebook.cells.find((c: { id: string }) => c.id === cellId)
+    175      if (!cell) {
+    176        throw new Error(`Cell with ID "${cellId}" not found in notebook`)
+    177      }
+    178      return [processCell(cell, notebook.cells.indexOf(cell), language, true)]
+    179    }
+    180    return notebook.cells.map((cell: unknown, index: number) =>
+    181>     processCell(cell, index, language, false),
+    182    )
+    183  }
+    184  
+    185  /**
+    186   * Maps notebook cell data to tool result block parameters with sophisticated text block merging
+    187   */
+    188  export function mapNotebookCellsToToolResult(
+    189    data: NotebookCellSource[],
+    190    toolUseID: string,
+    191  ): ToolResultBlockParam {
