@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
-import { cloneName, clonePrefix, cloneRootOf, cloneShortName, cloneSuffixOf, perCloneBase } from '../reach.ts'
+import { cloneName, clonePrefix, cloneShortName, cloneSuffixOf, perCloneBase } from '../reach.ts'
 
 let base: string
 const saved: Record<string, string | undefined> = {}
@@ -66,7 +66,7 @@ describe('a clone without the prefix keeps its whole name', () => {
 
 describe('perCloneBase — el ancla de una clave por clon relativa', () => {
   test('la raíz del clon que contiene start', () => {
-    expect(perCloneBase(join(base, 'kaupamex-docs', 'sub'))).toBe(cloneRootOf(join(base, 'kaupamex-docs', 'sub')))
+    expect(perCloneBase(join(base, 'kaupamex-docs', 'sub'))).toBe(join(base, 'kaupamex-docs'))
   })
   test('fuera de un clon, start mismo, resuelto', () => {
     expect(perCloneBase(base)).toBe(base)
