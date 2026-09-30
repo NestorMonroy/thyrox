@@ -17,9 +17,13 @@ previous_warnings=""
 for out in "${OUTPUTS[@]}"; do baseline[$out]="$(closed_count "$out")"; done
 
 stalled_items() {
-    local now runtime stream age
+    local now runtime stream age launcher_pid
     now="$(date +%s)"
     for runtime in .thyrox/runtime/pool/*/; do
+        # El sufijo del runtime es el pid del lanzador; uno muerto es un
+        # runtime conservado para reconcile, no un ítem que avance.
+        launcher_pid="${runtime%/}"; launcher_pid="${launcher_pid##*-}"
+        kill -0 "$launcher_pid" 2>/dev/null || continue
         for session in "$runtime"*.session; do
             [[ -e "$session" ]] || continue
             stream="${session%.session}.stream.jsonl"
