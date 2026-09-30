@@ -3,7 +3,8 @@ predecessor_item: 1
 worktree: .thyrox/pool-worktrees/0441fd032e06/1
 base_commit: 2fd80a4f261bbfd7bdc49acc971d34ac6fa31e35
 patch: .claude/workbench/podman-execution-primitive-20260930T215755/outputs/interrupted/primitive.patch
-patch_sha256: f93ceff7ca8c354de54f03786fc3114730ea4a3bac57f28e56c0fc946eb8be42
+patch_sha256: 0d46bd1b808d735108935c96db77d555e67efad20ad9ab5f7e9d7237a472db86
+patch_superseded_sha256: f93ceff7ca8c354de54f03786fc3114730ea4a3bac57f28e56c0fc946eb8be42 (extraído con el índice del worktree muerto tras `add -N` y detección de renombres: cabeceras de archivo nuevo sobre rutas que existen en el commit base; no reconstruía)
 ## git status --short
  M bun.lock
  M src/packages/daemon/package.json

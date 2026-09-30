@@ -1,0 +1,326 @@
+caso 1 — contenedor real: sus PIDs, no el cliente; y el pico de su cgroup
+  ok    estado medido
+  ok    el PID principal del contenedor está en sus miembros
+  ok    el cliente `podman run` NO está en sus miembros
+  ok    el árbol del cliente no alcanza al contenedor
+  ok    el pico del cgroup refleja la reserva de ~200 MB
+  ok    y supera lo que GNU Time atribuyó al cliente
+  ok    el uso actual es una cifra
+caso 2 — un contenedor que no existe está AUSENTE, no medido en cero
+  ok    ausente
+  ok    sin PIDs ni cifras
+caso 3 — dobles de cgroup: v1 legible, v2 legible, ilegible y desaparecido
+  ok    v1: medido con sus PIDs y cifras
+  ok    v2: medido con memory.peak y memory.current
+  ok    cgroup ilegible: error con causa
+  ok    cifra no entera: error
+  ok    cgroup desaparecido (el contenedor ya salió): ausente
+  ok    podman que falla (exit 125): error, no ausente
+  ok    podman que no se puede ejecutar: error, no ausente
+caso 4 — la fuente de miembros del contenedor
+  ok    vivo: sus miembros son los del cgroup
+  ok    cgroup ilegible: lanza MembersUnavailable con su causa, no para ni da vacío
+  ok    un contenedor ausente ya no vive: None, no un conjunto vacío
+caso 5 — la CLI: read imprime el estado y sale 0 sólo si midió
+  ok    medido: exit 0 y la línea con pico, uso y PIDs
+  ok    ausente: exit 2 y la palabra absent
+
+test_container_measure: 21 ok, 0 falla(s)
+== 1. el árbol del ítem incluye a sus hijos ==
+  ok    el hijo está en el árbol del padre
+== 2. una muestra: VRAM por PID y uso por GPU ==
+  ok    VRAM por PID
+  ok    uso pico entre GPUs
+== 3. watch cuenta SÓLO el árbol del ítem, y para cuando termina ==
+  ok    pico: los 300 MiB del hijo, no los 5000 ajenos
+  ok    media: positiva y no mayor que el pico
+  ok    uso pico de GPU
+  ok    varias muestras
+  ok    para al terminar el árbol, no después
+  ok    <n>.gpu con las cuatro cifras
+== 4. un árbol que no usó la GPU escribe CERO: eso es una medida ==
+  ok    pico cero, uso cero
+  ok    y el archivo existe
+== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==
+  ok    sin resumen
+  ok    sin archivo
+== 7. la VRAM libre: la de la GPU con más espacio, que es donde cabe un ítem ==
+  ok    la mayor entre GPUs, no la suma: un ítem no se reparte
+  ok    sin nvidia-smi, None
+== 8. TRES estados: medido 0, ausente, y error al medir ==
+  ok    error al medir: sin resumen publicado
+  ok    el archivo declara el error y su causa
+  ok    read_gpu_file lo clasifica como error
+  ok    un .gpu con ceros es una medida
+  ok    sin archivo es ausente
+== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==
+  ok    sin sitio y sin plazo: no admite
+  ok    con sitio: admite enseguida
+  ok    se libera mientras espera: admite
+== 9b. el registro vive en un directorio que aún no existe: admit lo crea ==
+  ok    admite aunque el directorio no exista
+  ok    y release deja el registro vacío
+  ok    release sobre un directorio inexistente no lanza
+== 9c. sin nvidia-smi que responda, admit rehúsa al instante: una ausencia no es una espera ==
+  ok    sin nvidia-smi: GpuUnavailable, no un plazo vencido
+  ok    y en menos de un segundo
+  ok    el registro no se escribe
+== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==
+  ok    uno admitido y el otro esperó
+== 11. una reserva cuenta sólo lo que su árbol aún no usa: sin doble conteo ==
+  ok    el primero reserva
+  ok    con los 3000 ya visibles, 1500 caben en los 2000 libres
+== 12. soltar y dueños muertos liberan lo comprometido ==
+  ok    A reserva 3000
+  ok    B no cabe mientras A tenga su reserva
+  ok    soltada la de A, B cabe
+  ok    con el dueño de B muerto, su reserva no cuenta
+== 13. la decisión es pura: se prueba sin nvidia-smi ni registro ==
+  ok    5000 libres, nada comprometido, pide 3000: cabe
+  ok    5000 libres, 3000 comprometidos, pide 3000: no cabe
+  ok    sin lectura de VRAM libre: no se admite
+  ok    pendiente: cada reserva menos lo que su árbol ya usa
+  ok    una reserva ya visible entera no cuenta
+== 14. el registro: reservar, soltar, descartar dueños muertos ==
+  ok    sólo cuentan los dueños vivos
+  ok    soltada, no queda nada
+== 5b. un proceso que sale a mitad del recorrido no tumba tree() ==
+  ok    el hijo que desapareció cuenta y el recorrido sigue
+== 15. watch con la fuente de un contenedor: mide sus PIDs, no los del cliente ==
+  ok    pico: los 700 MiB del contenedor, no los 5000 del cliente
+  ok    para cuando el cgroup desaparece
+== 16. la fuente de contenedor que no puede dar PIDs: .gpu es error, nunca 0 ==
+  ok    sin resumen publicado
+  ok    el archivo es error con causa, no ceros
+== 17. la CLI: watch --container usa la fuente del contenedor ==
+  ok    la CLI mide el contenedor: pico 700
+== 6. disponible() distingue las dos situaciones ==
+  ok    con el falso: disponible
+  ok    sin él: no disponible
+
+test_gpu_monitor: 51 ok, 0 falla(s)
+== 1. sin historial no se inventa nada ==
+  ok    sin TTL
+  ok    sin memfree
+  ok    y dice por qué
+== 2. record agrega una fila con pared y memoria máximas ==
+  ok    una fila
+  ok    mide los dos ítems
+  ok    pared máxima
+  ok    memoria pico máxima
+== 3. el ítem fallido cuenta: se lee su última línea con cifras ==
+  ok    la memoria del ítem fallido entra
+== 4. derive: el TTL sigue las TRES ramas de choose_cache_ttl ==
+  ok    pared 120 s -> 5m
+  ok    pared 600 s -> 1h
+  ok    pared 4000 s -> 5m
+== 5. derive: --memfree es la memoria pico por el margen, en MiB ==
+  ok    266000 KB x 2 -> 520M
+== 6. manda la ÚLTIMA ejecución, no la primera ==
+  ok    la segunda fila decide
+== 7. sin ningún .time medible, record no agrega fila ==
+  ok    sin fila
+== 8. el hogar del historial se deriva de la plantilla, no se elige ==
+  ok    dos plantillas homónimas en rutas distintas no comparten historial
+  ok    y el nombre es legible
+== 9. la reserva de un vecino se SUMA a lo medido, no lo sustituye ==
+  ok    266000 x 2 + 2 GiB -> 2568M
+== 10. sin historial, la reserva sola es la cota, y se dice ==
+  ok    memfree = la reserva
+  ok    sin TTL inventado
+  ok    nombra la reserva
+== 12. la VRAM: record guarda el pico de los .gpu, y sin ellos no inventa la clave ==
+  ok    pico de VRAM entre ítems
+  ok    sin .gpu no hay clave: ausente no es cero
+== 13. la anchura se acota por VRAM: libre / (pico x margen) ==
+  ok    12000 libres / (3000 x 2) -> 2 a la vez
+  ok    sin VRAM libre medida, sin tope
+  ok    sin pico de VRAM en el historial y con GPU: de a uno hasta calibrar
+  ok    si ni uno cabe, el tope es 1 y se dice
+== 14. el margen de seguridad se RESTA de lo libre: (14000 - 2000) / 3200 = 3 ==
+  ok    tope de VRAM
+== 15. anchura efectiva = min(configurada, RAM, VRAM) ==
+  ok    tope de RAM: MemAvailable / pico
+  ok    el efectivo es el menor de los topes
+  ok    con configurada 8: min(8, 6, 3) = 3
+  ok    con configurada 2 manda la configurada
+  ok    sin ningún tope, la configurada
+== 16. un .gpu con error o ilegible NO entra al pico: sólo lo medido ==
+  ok    el 0 medido es el pico; el error no cuenta
+== 17. la VRAM que pide cada ítem para ser admitido: pico x margen ==
+  ok    3200 x 1.0 -> 3200
+  ok    sin pico de VRAM, sin admisión
+== 18. la CLI: ttl, memfree, anchura efectiva, VRAM por ítem y porqué ==
+  ok    anchura efectiva y VRAM por ítem
+== 19. record guarda la cobertura de la medida: ítems con VRAM medida y pared mínima ==
+  ok    ítems con VRAM medida (el del error no cuenta)
+  ok    la pared del ítem más corto
+== 20. ¿es fiable el historial de VRAM? calibrado, o por qué no ==
+  ok    todos medidos y largos: calibrado
+  ok    sin ejecución previa
+  ok    sin VRAM medida
+  ok    VRAM medida en 1 de 2: no fiable, y lo dice
+  ok    un ítem de 0.6 s con muestras cada 0.5 s: un 0 puede ser un pico no visto
+  ok    fila anterior a la calibración: no fiable
+== 21. lo que se pide: calibrado, piso declarado o exclusiva hasta calibrar ==
+  ok    H-THYROX-192: pico 0 de ítems demasiado cortos -> pide la GPU entera
+  ok    ... y de a uno
+  ok    ... y lo dice
+  ok    sin historial y con GPU: exclusiva y de a uno
+  ok    con piso declarado: pide el piso
+  ok    ... y la anchura la acota el piso: 12000 / 1500 = 8
+  ok    pico 0 calibrado y sin piso: no pide VRAM, y lo dice
+  ok    con piso, el piso manda sobre el 0
+  ok    calibrado: max(pico x margen, piso)
+  ok    sin GPU no cambia nada: ni pedido ni tope
+== 22. la CLI recibe el intervalo y el piso ==
+  ok    anchura 1 y la GPU entera
+== 23. la cota es del BINARIO que corrió: thyrox -p no mide thyrox -p ==
+  ok    record guarda el binario
+  ok    derive usa la última fila DE SU binario, no la última a secas
+  ok    ... y la del otro binario sigue siendo suya
+  ok    una fila sin binario no se aplica a uno declarado
+  ok    ... y dice por qué
+  ok    la CLI recibe --runner en las dos órdenes
+== 24. la cota es del MODELO que corrió los ítems ==
+  ok    record guarda el modelo
+  ok    derive usa la fila de su modelo
+  ok    ... y la del otro modelo es la del otro
+  ok    un modelo sin filas no hereda la de otro
+  ok    ... y lo nombra
+  ok    sin item_model se conserva la conducta anterior
+  ok    la CLI recibe --item-model en las dos órdenes
+== 25. la fila guarda la distribución, la plantilla y la fecha ==
+  ok    mediana de RAM por ítem (rango cercano)
+  ok    p90 de RAM por ítem
+  ok    el pico sigue siendo el máximo
+  ok    mediana de VRAM
+  ok    p90 de VRAM
+  ok    la huella de la plantilla
+  ok    la fecha, en UTC
+  ok    la huella es del CONTENIDO: estable
+  ok    ... y cambia si el contenido cambia
+== 26. calibrado exige ítems suficientes, la misma plantilla y una fila reciente ==
+  ok    con todo en regla: calibrado
+  ok    4 ítems medidos para lanzar 8 a la vez: no representa su dispersión
+  ok    la plantilla cambió desde esa ejecución
+  ok    una fila sin huella no describe a la plantilla de hoy
+  ok    una fila de hace 2 h con límite de 1 h: vieja
+  ok    una fila sin fecha no pasa un límite declarado
+  ok    sin límite declarado, la edad no cuenta
+  ok    derive con pocos ítems: pide la GPU entera, de a uno
+== 27. la CLI recibe la plantilla, los ítems mínimos y la edad máxima ==
+  ok    record --template guarda la huella
+  ok    ... y la fecha
+  ok    derive --template con OTRA plantilla: la GPU entera
+  ok    ... con la MISMA plantilla: el pico medido
+== 28. sólo cuentan los ítems publicados (<n>.closed) ==
+  ok    el ítem sin cerrar no se cuenta
+  ok    ... ni su pico de RAM
+  ok    ... ni su VRAM
+== 28c. control: sin el filtro de cerrados, el ítem sin cerrar vuelve a contar ==
+  ok    control: sin el filtro se cuentan los tres
+== 29. la fuente de medida: host-tree y container-cgroup no se mezclan ==
+  ok    record declara host-tree por defecto
+  ok    una fila host-tree con VRAM 0 no calibra un lanzamiento en contenedor
+  ok    y el porqué nombra las dos fuentes
+  ok    la misma fila sí calibra un lanzamiento local
+  ok    una fila container-cgroup calibra un lanzamiento en contenedor
+  ok    una fila sin fuente cuenta como host-tree
+== 30. derive en contenedor: las filas host-tree no dan cota, y la línea historial lo dice ==
+  ok    sin memfree derivado del cliente
+  ok    pide la GPU entera, no admit(0)
+  ok    el porqué cuenta la fila de otra fuente
+  ok    con su fila container-cgroup: memfree del cgroup
+  ok    y la VRAM calibrada del contenedor
+  ok    un lanzamiento local sigue viendo sólo la fila host-tree
+== 31. la CLI: record y derive aceptan --measurement-source ==
+  ok    la fila impresa declara container-cgroup
+  ok    derive local sobre sólo filas de contenedor: sin memfree
+
+test_pool_history: 107 ok, 0 falla(s)
+caso 1 — el registro es el mismo que usaba la GPU
+  ok    gpu_monitor reutiliza el registro común
+  ok    y la decisión pura
+caso 2 — la reserva de un dueño muerto no compromete nada
+  ok    sólo queda la del vivo
+caso 3 — lo libre de RAM descuenta lo reservado que aún no reside
+  ok    10000 − (3000 − 1000)
+  ok    sin MemAvailable no hay margen
+caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 5 — soltar la reserva deja entrar al siguiente
+  ok    release sale 0
+  ok    el otro entra ahora
+caso 6 — muerto el dueño, su reserva deja de contar
+  ok    el vivo entra sin que nadie haya soltado
+caso 7 — el RSS de un árbol vivo se mide de /proc
+  ok    un proceso vivo reside algo
+  ok    un pid inexistente no suma
+caso 7d — un dueño en contenedor: lo pendiente descuenta el uso de SU cgroup, no el RSS del cliente
+  ok    10000 − (3000 − 2000 del cgroup)
+  ok    un dueño sin contenedor sigue midiéndose por su árbol
+  ok    cgroup ilegible: sin medida, no un cero
+caso 7e — la reserva de un ítem en contenedor la acota su --memory
+  ok    sin límite: la necesidad entera
+  ok    con --memory menor: el límite
+  ok    con --memory mayor: la necesidad
+caso 7f — la CLI: admit-ram --container registra al dueño y reserva acotado
+  ok    5000 pedidos, --memory 2000, 3000 libres: admitido
+  ok    la reserva es la acotada
+  ok    el dueño queda asociado a su contenedor
+  ok    otro de 2500 cabe en 3000 libres: el cgroup ya muestra la reserva
+caso 7b — soltada la última reserva viva, el registro desaparece: en reposo no queda archivo
+  ok    sin reservas vivas no queda el archivo
+  ok    con otra reserva viva el registro sigue
+caso 7c — sin medida, admit_with espera hasta el plazo: rehusar al instante es de la VRAM, no de aquí
+  ok    sin medida no admite
+  ok    y agota el plazo antes de responder
+caso 8 — el registro y la fuente de MemAvailable se declaran por entorno
+  ok    THYROX_RAM_ADMISSION_LEDGER gana
+  ok    THYROX_RAM_ADMISSION_MEMINFO gana
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, MemAvailable sale del kernel
+caso 9 — disco: el techo sale de disk-headroom --ceiling-bytes
+  ok    un entero con exit 3 es el techo
+  ok    con exit 1 (reserva alcanzable) también
+  ok    exit 2 es «sin medida»
+  ok    una salida no entera es «sin medida»
+  ok    un binario ausente es «sin medida»
+caso 10 — disco: lo admisible es techo − piso − reservas vivas
+  ok    10000 − 1000 − 3000
+  ok    sin techo no hay margen
+caso 11 — disk-admit: cabe → 0 y queda la reserva; no cabe → 3
+  ok    cabe → 0
+  ok    la reserva queda registrada
+  ok    el piso en MiB se descuenta: 10 − 7 de piso no deja 4
+  ok    no cabe → 3
+  ok    el vencido publica necesidad y techo
+caso 12 — disk-release suelta la reserva
+  ok    disk-release sale 0
+  ok    el registro ya no la cuenta
+caso 13 — dos dueños vivos cuya suma no cabe: entra uno
+resource_admission disk-admit: no cabe la necesidad 3145728 bytes; techo 5242880 bytes, piso 0 bytes, reservado por otros 3145728 bytes
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 14 — muerto el dueño, su reserva de disco deja de contar
+  ok    entra sin que nadie haya soltado
+caso 15 — disk-headroom rehúsa: 2, con la causa, sin tocar el registro
+  ok    sale 2
+  ok    nombra disk-headroom en stderr
+  ok    no crea el registro
+caso 16 — el registro, el piso y el medidor de disco se declaran por entorno
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, el piso es el default con nombre
+  ok    sin declararlo, el medidor es el disk-headroom del árbol
+  ok    THYROX_DISK_ADMISSION_LEDGER gana
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB gana, en MiB
+  ok    THYROX_DISK_ADMISSION_HEADROOM gana
+caso 17 — .env.example declara las tres variables del disco
+  ok    THYROX_DISK_ADMISSION_LEDGER figura en .env.example
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB figura en .env.example
+  ok    THYROX_DISK_ADMISSION_HEADROOM figura en .env.example
+test_resource_admission: 59 ok, 0 fallos
+ruff: 0 hallazgo(s) (alcance medido: 8 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 8 archivo(s))
