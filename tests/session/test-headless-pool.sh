@@ -245,7 +245,7 @@ saw_key="$(cut -d'|' -f1 "$STORE_PROXY_SAW" 2>/dev/null)"
 check "proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado" "$(store_de)" "key=$saw_key|auth=sin|base=http://127.0.0.1:4242|skey=sin"
 check "proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno" "$([[ -n "$saw_key" && "$saw_key" != sk-user && "$saw_key" != sin ]] && echo propia || echo "no:$saw_key")" "propia"
 check "proxy del store: recibe el modelo del pool" "$(cut -d'|' -f3 "$STORE_PROXY_SAW" 2>/dev/null)" "claude-sonnet-5"
-check "proxy del store: el pool declara la fuente de credencial" "$(printf '%s' "$SALIDA" | gawk '/^credencial: proxy con credenciales del store \(url=http:\/\/127\.0\.0\.1:4242\)$/{n++} END{print n+0}')" "1"
+check "proxy del store: el pool declara la fuente de credencial" "$(printf '%s' "$SALIDA" | gawk '/^credencial: proxy-store-url \(derivada de --store-credential-proxy; /{n++} END{print n+0}')" "1"
 check "proxy del store: al terminar el pool el proxy ya no vive" "$(kill -0 "$(cut -d'|' -f2 "$STORE_PROXY_SAW" 2>/dev/null)" 2>/dev/null && echo vive || echo muerto)" "muerto"
 rm -rf "$F/out"; EXTRA="--store-credential-proxy" HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/credential-proxy-refuses" corre alfa
 check "proxy del store que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy con credenciales del store/{p++} END{print n+0, (p>0)}')" "2 0 1"
