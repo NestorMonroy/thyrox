@@ -33,19 +33,35 @@ Redis          → compartido/efímero
 ## La premisa, si se corrigio al primer comando
 
 El análisis de readiness decía «cluster instalado, parado». Arrancado aquí
-como infraestructura de prueba; lo que cambia el contrato es otra medición:
+como infraestructura de prueba. Lo medido **en esta instalación** —no como
+propiedad general de pgvector—:
 
-| Medición | Valor | Consecuencia para el contrato |
-|---|---|---|
-| pgvector disponible | 0.8.6 (`vector.control`) | cubre `binary_quantize` y `bit_hamming_ops` de ADR-008 |
-| ¿extensión confiable? | **no** (`trusted = f`) | el rol de aplicación no puede crearla: «Must be superuser» |
-| en la base de pruebas | 0.8.6, creada por el administrador del clúster | la habilita la infraestructura, no el store |
+| Medición (este clúster) | Valor |
+|---|---|
+| pgvector que ofrece el paquete instalado | 0.8.6 (`vector.control`) |
+| `pg_available_extension_versions.trusted` | `f` en esta instalación |
+| `CREATE EXTENSION vector` con el rol de pruebas | «Must be superuser» |
+| en la base de pruebas | 0.8.6, habilitada por el administrador del clúster |
 
-**Por tanto el store no crea la extensión.** `migrateVectorSchema` comprueba
-que `vector` exista en la versión mínima y, si falta, rehúsa nombrando el paso
-del administrador. Es la misma forma que en un servicio gestionado, donde la
-extensión la habilita quien administra la instancia. Sus tablas e índices sí
-los migra el store, con el rol de aplicación.
+**Lo que NO se concluye de eso.** Que la extensión sea o no confiable, y cómo
+se habilita, depende de la instalación y del proveedor: `vector.control`
+(0.8.6) no declara `trusted`, y un servicio gestionado puede habilitarla con
+otro mecanismo. Corrección del ejecutor: la observación de este clúster no
+entra al dominio; el store **detecta capacidades**, no asume cómo administra
+cada proveedor sus extensiones.
+
+**Lo que sí se decide (ownership):**
+
+| Pieza | Le pertenece |
+|---|---|
+| bootstrap de infraestructura | PostgreSQL y la habilitación de pgvector |
+| `SemanticSearchStore` | tablas, columnas vectoriales, índices HNSW / IVFFlat, cuantización binaria, consultas vectoriales |
+| `semantic_search_worker` | embeddings, recuperación, reranking por modelo |
+
+`migrateVectorSchema` no ejecuta `CREATE EXTENSION`: comprueba la extensión,
+su versión efectiva contra la mínima, y distingue tres estados con errores
+distintos (no disponible en el servidor · disponible pero no habilitada en la
+base · habilitada con versión incompatible); sólo entonces migra lo suyo.
 
 ## Lo que se construye (TASK-THYROX-0562)
 

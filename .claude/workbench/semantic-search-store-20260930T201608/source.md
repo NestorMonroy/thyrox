@@ -1,64 +1,84 @@
 # TASK-THYROX-0562 — SemanticSearchStore sobre PostgreSQL + pgvector
 
-Decisión y mediciones: `README.md` de este banco (léelo completo). Contrato:
-ADR-THYROX-008 en kaupamex-docs,
+## La tarea (store, fila 319 de la sesión efec8688; cita durable TASK-THYROX-0562)
+
+> «Implementar el store de dominio vectorial que ADR-008 fija: superficie
+> (upsertEmbedding, searchNearest, searchBinaryCandidates, getEmbedding,
+> migrateVectorSchema) sobre la infraestructura PostgreSQL de @thyrox/store;
+> rehúsa sin PostgreSQL + pgvector; reranking matemático en el store. Depende
+> de D5 (modelo/dimensiones) y D2b (versión pgvector).»
+
+Cómo se resuelven aquí sus dos dependencias:
+
+- **D5 (modelo/dimensiones) no está decidido**: el store NO fija ninguna
+  dimensión ni representación. Ambas son configuración del esquema, decidida
+  al crear o migrar el índice.
+- **D2b (versión de pgvector)**: el store declara una versión MÍNIMA como
+  constante con nombre, justificada por las capacidades que usa
+  (`binary_quantize`, `bit_hamming_ops`, `halfvec`), y la comprueba. Se mide
+  aquí 0.8.6; la mínima no se iguala a lo instalado sin razón.
+
+Léelo junto con: `README.md` de este banco (decisión y correcciones del
+ejecutor) y ADR-THYROX-008 en kaupamex-docs,
 `source/thyrox/adr/adr-008-semantic-search-store-sobre-postgresql-y-pgvector.rst`
-(léelo completo: reglas 1-4, superficie y flujo de búsqueda).
+(reglas 1-4, superficie y flujo de búsqueda).
 
-## Reglas que no se negocian
+## Reglas
 
-- PostgreSQL es un servicio **externo y persistente**. El store recibe una URL
-  (`THYROX_SEMANTIC_SEARCH_DATABASE_URL`, declarada en `.env.example` y
-  probada) y no sabe si detrás hay este contenedor, una máquina persistente o
-  un servicio gestionado. Ninguna ruta, socket, puerto ni nombre de este
-  contenedor en el código.
-- El store **no crea** la extensión `vector`: no es confiable (medido:
-  `trusted = f`) y la habilita la infraestructura. `migrateVectorSchema`
-  comprueba que exista en la versión mínima declarada (constante con nombre;
-  0.8.x cubre `binary_quantize` y `bit_hamming_ops`) y, si falta o es menor,
-  rehúsa con un error que nombra la extensión, la versión encontrada y el paso
-  del administrador (`CREATE EXTENSION vector`). Sí migra sus propias tablas e
-  índices con el rol de aplicación, con `runMigrations` de `@thyrox/store`.
-- Sin URL, con una URL `sqlite:`/`file:`, o con un servidor sin la extensión:
-  rehúsa nombrando lo que falta. Nunca degrada a SQLite ni a búsqueda lineal
-  (ADR-008, regla 3).
-- La dimensión del embedding es un parámetro del esquema (el modelo lo decide
-  D5, no está tomado): el store la recibe al migrar y rechaza un vector de otra
-  dimensión con un error que nombra las dos.
-- Nada de ciclo de vida de contenedor ni de worker: el store abre, migra,
-  lee y escribe; no arranca ni detiene servidores.
+- **PostgreSQL es externo y persistente.** El único contrato de conexión es
+  una URL: `THYROX_SEMANTIC_SEARCH_DATABASE_URL` en uso real (declarada en
+  `.env.example` y probada) y `THYROX_TEST_POSTGRES_URL` en las pruebas.
+  Ninguna ruta, socket, puerto, nombre de clúster ni supuesto de «mismo
+  contenedor» en código ni en pruebas: la suite tiene que poder apuntar a
+  otro PostgreSQL sin cambiar una línea.
+- **El store no administra la extensión.** `migrateVectorSchema` NO ejecuta
+  `CREATE EXTENSION`. Hace, en orden: (1) comprobar si `vector` está
+  disponible en el servidor (`pg_available_extensions`); (2) si está
+  habilitada en la base (`pg_extension`); (3) su versión efectiva contra la
+  mínima; (4) sólo entonces migra lo suyo. Tres errores distintos, cada uno
+  con su clase o código y la condición detectada, sin prescribir un único
+  remedio (en un servicio gestionado la habilitación puede ser otra):
+  - no disponible en el servidor → error de infraestructura;
+  - disponible pero no habilitada en la base → error de provisioning;
+  - habilitada con versión menor que la mínima → error de versión, con las
+    dos versiones.
+- **La representación es del store.** La configuración del esquema declara
+  dimensión y representación (`vector(N)`, `halfvec(N)`) y el índice binario
+  (`binary_quantize(...)::bit(N)` con HNSW `bit_hamming_ops`); el worker no
+  ve ninguna. Un vector de otra dimensión se rechaza nombrando las dos.
+- **Nunca degrada**: sin URL, con URL `sqlite:`/`file:` o sin la extensión,
+  rehúsa; no cae a SQLite ni a búsqueda lineal (ADR-008, regla 3).
+- **Sin ciclo de vida de servidor ni de worker**: abre, migra, lee, escribe.
+- `@thyrox/store` aporta conexión y migraciones comunes (`openByUrl`,
+  `runMigrations`, `withDisposableSchema`); el SQL vectorial vive sólo en el
+  paquete nuevo.
 
 ## Qué se pide (TDD)
 
-Un paquete nuevo `src/packages/semantic-search` (`@thyrox/semantic-search`),
-declarado como los demás del workspace (lee uno pequeño, p. ej.
-`src/packages/shared-state`, y replica su `package.json`, tsconfigs y
-enlace), con:
+Paquete nuevo `src/packages/semantic-search` (`@thyrox/semantic-search`),
+declarado como los demás del workspace (replica uno pequeño, p. ej.
+`src/packages/shared-state`: `package.json`, tsconfigs, enlace), con
+`openSemanticSearchStore({ url, schema })` y la superficie de ADR-008:
+`migrateVectorSchema`, `upsertEmbedding(id, embedding, metadata)`,
+`getEmbedding(id)`, `searchBinaryCandidates(query, limit)` y
+`searchNearest(query, k, { candidates })` (candidatos binarios + reranking
+matemático por coseno exacto; el reranking por modelo NO es del store).
 
-1. `SemanticSearchStore` y su fábrica `openSemanticSearchStore({ url,
-   dimensions })`, sobre `openByUrl` de `@thyrox/store`.
-2. La superficie de ADR-008: `migrateVectorSchema`, `upsertEmbedding(id,
-   embedding, metadata)`, `getEmbedding(id)`, `searchBinaryCandidates(query,
-   limit)` (distancia de Hamming sobre `binary_quantize`, con índice HNSW
-   `bit_hamming_ops`) y `searchNearest(query, k, { candidates })`: candidatos
-   binarios y reranking matemático por distancia coseno exacta sobre el
-   embedding original (el reranking por modelo NO es del store).
-3. Pruebas unitarias de la validación (dimensión, URL, versión) sin base.
-4. Pruebas de integración contra `THYROX_TEST_POSTGRES_URL` con
-   `withDisposableSchema` de `@thyrox/store/testing`: la extensión ya está
-   habilitada por el administrador en la base de pruebas (vive en `public`);
-   el esquema desechable de cada prueba debe resolver el tipo `vector`. Sin
-   la URL, las de integración se omiten diciendo por qué (no dan verde en
-   silencio).
+## Controles (del ejecutor), cada uno una prueba
 
-## Controles
+| Caso | Esperado |
+|---|---|
+| pgvector ausente (servidor o base) | rechazo claro, el estado correcto de los tres |
+| pgvector habilitado con versión insuficiente | rechazo claro con las dos versiones (con un doble de la consulta de versión: no se degrada el servidor real) |
+| pgvector compatible | migraciones correctas: tablas, columna, índices |
+| segunda ejecución de las migraciones | idempotente |
+| cambio de host/URL | el mismo `SemanticSearchStore` sobre otra URL, sin cambiar código (dos URLs distintas hacia la base de pruebas, p. ej. `127.0.0.1` y `localhost`, o otro esquema) |
+| worker eliminado y recreado | los datos siguen: cerrar el store, abrir uno nuevo con la misma URL y leer lo escrito |
+| búsqueda | `searchNearest` ordena por coseno exacto en un conjunto conocido; `searchBinaryCandidates` usa el índice (`EXPLAIN`) |
 
-- Integración: upsert y get devuelven el mismo vector; `searchNearest` ordena
-  por coseno exacto y devuelve los K más cercanos de un conjunto conocido;
-  `searchBinaryCandidates` usa el índice (se comprueba con `EXPLAIN`).
-- Rechazos: sin extensión (un esquema/base donde no existe, o un doble que la
-  niegue) → error que nombra `CREATE EXTENSION vector`; dimensión distinta →
-  error con las dos dimensiones; URL `sqlite:` → rehúsa.
-- Anulación, con números: retirar el reranking exacto hace caer exactamente
-  el caso de orden por coseno; retirar la comprobación de la extensión hace
-  caer exactamente su rechazo.
+Integración contra `THYROX_TEST_POSTGRES_URL` con `withDisposableSchema`; la
+extensión ya está habilitada en la base de pruebas. Sin la URL, las de
+integración se omiten diciendo por qué.
+
+Anulación, con números: sin el reranking exacto cae exactamente el caso de
+orden por coseno; sin la comprobación de versión cae exactamente su rechazo.
