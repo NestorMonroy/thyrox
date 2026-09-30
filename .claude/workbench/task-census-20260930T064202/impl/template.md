@@ -43,6 +43,14 @@ Si la tarea resulta mayor de lo que cabe en tu plazo, entrega una fase completa 
 qué fase sigue. Nunca la declares hecha sin sus pruebas en verde. Si está bloqueada por algo que no
 está en tu mano, dilo con la causa medida.
 
+Cómo lo hace la referencia: antes de diseñar, mide cómo resuelve lo mismo el ejecutable en
+`/home/user/thyrox/_references/claude-code-bin/2.1.283/` (sólo lectura: `rg`, `sed -n`, o
+`bash bin/binary symbol|literal|declarations`; nunca `bin/binary extract`). Tu worktree no incluye
+`.claude/workbench/`, así que el análisis NO se escribe en archivos: va en tu respuesta final, en una
+sección «Análisis del binario» con cada símbolo o literal consultado, su chunk y línea, qué hace y
+qué decidiste portar o declarar como divergencia. Esa respuesta queda registrada en la salida del
+pool, dentro del banco del workbench.
+
 Al terminar, tus pruebas y las existentes de los archivos que tocaste deben quedar en verde. Responde
 con: estado (hecha, fase entregada y cuál sigue, o bloqueada y por qué); archivos cambiados; la tabla
 de casos cubierta (caso → prueba); los controles de anulación con sus números; y un resumen de dos
