@@ -1,0 +1,1320 @@
+diff --git a/.typecheck-daemon.log b/.typecheck-daemon.log
+new file mode 100644
+index 000000000..3b77ffd81
+--- /dev/null
++++ b/.typecheck-daemon.log
+@@ -0,0 +1 @@
++rc=124
+diff --git a/src/packages/daemon/src/__tests__/workerExitBranches.test.ts b/src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+new file mode 100644
+index 000000000..ef5401b63
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+@@ -0,0 +1,243 @@
++/**
++ * Ramas de `g7#onExit` (ant `chunk-ygx717jg.js`) que `classifyExitOutcome`
++ * no portaba, más el modo de lanzamiento y el origen del despacho que la
++ * referencia lee de `dispatch.launch.mode` y `dispatch.source`.
++ */
++
++import { describe, expect, test } from 'bun:test'
++
++import { getLocalObservability, installLocalObservability } from '@thyrox/local-observability'
++import {
++  HOST_SLEEP_GAP_MS,
++  HOST_WAKE_GRACE_MS,
++  PRE_INIT_ERROR_TAIL_CHARS,
++  READY_UPTIME_RESET_MS,
++  WorkerVm,
++  classifyExitOutcome,
++  formatPreInitErrorTail,
++  isFastCrash,
++  isHostSleepGap,
++  isWithinHostWakeGrace,
++  readDispatchLaunchMode,
++  readDispatchSource,
++} from '../workerVm.js'
++import { FAST_CRASH_WINDOW_MS, MAX_RESPAWN_ATTEMPTS } from '../bgWorkerRegistry.js'
++
++const baseInput = { phase: 'running' as const, exitCode: 1, attempt: 1, workerReady: true }
++
++describe('readDispatchLaunchMode', () => {
++  test('lee dispatch.launch.mode cuando es un modo conocido', () => {
++    expect(readDispatchLaunchMode({ launch: { mode: 'exec' } })).toBe('exec')
++    expect(readDispatchLaunchMode({ launch: { mode: 'resume' } })).toBe('resume')
++  })
++  test('modo desconocido, sin launch o despacho no objeto -> undefined', () => {
++    expect(readDispatchLaunchMode({ launch: { mode: 'bogus' } })).toBeUndefined()
++    expect(readDispatchLaunchMode({ source: 'shell' })).toBeUndefined()
++    expect(readDispatchLaunchMode({ launch: null })).toBeUndefined()
++    expect(readDispatchLaunchMode(undefined)).toBeUndefined()
++  })
++})
++
++describe('readDispatchSource', () => {
++  test('lee dispatch.source si es texto', () => {
++    expect(readDispatchSource({ source: 'spare' })).toBe('spare')
++  })
++  test('source no textual o ausente -> undefined', () => {
++    expect(readDispatchSource({ source: 3 })).toBeUndefined()
++    expect(readDispatchSource(undefined)).toBeUndefined()
++  })
++})
++
++describe('classifyExitOutcome — ramas de retiro', () => {
++  test('retiring reap -> killed', () => {
++    expect(classifyExitOutcome({ ...baseInput, phase: 'retiring', retireReason: 'reap' })).toBe('killed')
++  })
++  test('retiring grace -> done', () => {
++    expect(classifyExitOutcome({ ...baseInput, phase: 'retiring', retireReason: 'grace' })).toBe('done')
++  })
++  test('retiring stop (desatendido) -> sin desenlace', () => {
++    expect(classifyExitOutcome({ ...baseInput, phase: 'retiring', retireReason: 'stop' })).toBeUndefined()
++  })
++})
++
++describe('classifyExitOutcome — ramas de crash', () => {
++  test('lanzador fork-and-exit precede a exit 0 -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, exitCode: 0, launcherForkAndExit: true })).toBe('crashed')
++  })
++  test('cwd desaparecido -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, cwdGone: true })).toBe('crashed')
++  })
++  test('id de sesión tomado -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, sessionIdTaken: true })).toBe('crashed')
++  })
++  test('no listo con error de preinicio en el primer intento -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, workerReady: false, preInitError: true })).toBe('crashed')
++  })
++  test('racha de fast-crash en el límite -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, fastCrashStreak: 3 })).toBe('crashed')
++  })
++  test('racha por debajo del límite -> sin desenlace', () => {
++    expect(classifyExitOutcome({ ...baseInput, fastCrashStreak: 2 })).toBeUndefined()
++  })
++  test('misma causa de salida repetida -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, repeatedExitCause: true })).toBe('crashed')
++  })
++  test('presupuesto agotado sin uptime largo -> crashed', () => {
++    expect(classifyExitOutcome({ ...baseInput, attempt: 20, procUptimeMs: READY_UPTIME_RESET_MS - 1 })).toBe('crashed')
++  })
++  test('presupuesto agotado pero listo con uptime largo -> sin desenlace', () => {
++    expect(classifyExitOutcome({ ...baseInput, attempt: 20, procUptimeMs: READY_UPTIME_RESET_MS })).toBeUndefined()
++  })
++})
++
++describe('isFastCrash / reloj del anfitrión', () => {
++  test('salida no cero dentro de la ventana y sin despertar -> fast crash', () => {
++    expect(isFastCrash({ procUptimeMs: 100, exitCode: 1, hostWokeRecently: false })).toBe(true)
++  })
++  test('anfitrión recién despertado, exit 0 o uptime desconocido -> no', () => {
++    expect(isFastCrash({ procUptimeMs: 100, exitCode: 1, hostWokeRecently: true })).toBe(false)
++    expect(isFastCrash({ procUptimeMs: 100, exitCode: 0, hostWokeRecently: false })).toBe(false)
++    expect(isFastCrash({ procUptimeMs: undefined, exitCode: 1, hostWokeRecently: false })).toBe(false)
++  })
++  test('un hueco de poll mayor que el umbral delata un anfitrión dormido', () => {
++    expect(isHostSleepGap(HOST_SLEEP_GAP_MS + 1)).toBe(true)
++    expect(isHostSleepGap(HOST_SLEEP_GAP_MS)).toBe(false)
++  })
++  test('la gracia tras despertar dura HOST_WAKE_GRACE_MS', () => {
++    expect(isWithinHostWakeGrace(1000, undefined)).toBe(false)
++    expect(isWithinHostWakeGrace(1000 + HOST_WAKE_GRACE_MS - 1, 1000)).toBe(true)
++    expect(isWithinHostWakeGrace(1000 + HOST_WAKE_GRACE_MS, 1000)).toBe(false)
++  })
++})
++
++describe('formatPreInitErrorTail', () => {
++  test('vacío o sólo espacios -> undefined', () => {
++    expect(formatPreInitErrorTail('')).toBeUndefined()
++    expect(formatPreInitErrorTail(' \n\t ')).toBeUndefined()
++  })
++  test('quita ANSI y colapsa espacios', () => {
++    expect(formatPreInitErrorTail('\x1b[31merror:\x1b[0m\n  no  cwd ')).toBe('error: no cwd')
++  })
++  test('más largo que el tope -> elipsis y la cola', () => {
++    const text = 'a'.repeat(PRE_INIT_ERROR_TAIL_CHARS) + 'Z'
++    const tail = formatPreInitErrorTail(text)
++    expect(tail).toBe(`…${'a'.repeat(PRE_INIT_ERROR_TAIL_CHARS - 1)}Z`)
++  })
++})
++
++function captureEvents(): { events: Array<{ name: string; metadata?: Record<string, unknown> }>; restore: () => void } {
++  const events: Array<{ name: string; metadata?: Record<string, unknown> }> = []
++  const original = getLocalObservability()
++  installLocalObservability({
++    logger: { ...original.logger, event: (name, metadata) => { events.push({ name, metadata }) } },
++  })
++  return { events, restore: () => installLocalObservability(original) }
++}
++
++function makeVm(dispatch?: Record<string, unknown>): WorkerVm {
++  return new WorkerVm({
++    short: 'exec01',
++    cwd: process.cwd(),
++    env: process.env,
++    ptySocket: '',
++    cmd: ['true'],
++    cliVersion: '0.0.0-test',
++    dispatch,
++  })
++}
++
++describe('WorkerVm — modo exec y origen del despacho', () => {
++  test('exec con salida no cero: payload con source/launch_mode y settle crashed sin respawn', () => {
++    const capture = captureEvents()
++    try {
++      const vm = makeVm({ source: 'shell', launch: { mode: 'exec' } })
++      const settled: string[] = []
++      let respawns = 0
++      vm.on('settled', outcome => settled.push(outcome))
++      vm.on('respawn-scheduled', () => { respawns++ })
++      vm.onChildExit(1, undefined)
++      const payload = capture.events.find(e => e.name === 'tengu_bg_worker_exit')?.metadata ?? {}
++      expect(payload.source).toBe('shell')
++      expect(payload.launch_mode).toBe('exec')
++      expect(payload.outcome).toBe('crashed')
++      expect(settled).toEqual(['crashed'])
++      expect(respawns).toBe(0)
++    } finally {
++      capture.restore()
++    }
++  })
++
++  test('sin modo exec la misma salida programa respawn', () => {
++    const capture = captureEvents()
++    try {
++      const vm = makeVm({ source: 'shell', launch: { mode: 'prompt' } })
++      let respawns = 0
++      vm.on('respawn-scheduled', () => { respawns++ })
++      vm.onChildExit(1, undefined)
++      expect(respawns).toBe(1)
++      vm.forceSettle('killed')
++    } finally {
++      capture.restore()
++    }
++  })
++})
++
++function adoptAtBudget(uptimeMs: number): WorkerVm {
++  const vm = makeVm({ source: 'shell', launch: { mode: 'prompt' } })
++  vm.adopt({
++    short: 'exec01',
++    pid: process.pid,
++    cmd: ['true'],
++    cwd: process.cwd(),
++    startedAt: Date.now() - uptimeMs,
++    status: 'running',
++    mode: 'pty',
++    ptySocket: '',
++    attempt: MAX_RESPAWN_ATTEMPTS,
++    fastCrashStreak: 0,
++  })
++  return vm
++}
++
++describe('WorkerVm — uptime sano reinicia el presupuesto de intentos', () => {
++  test('listo con uptime >= READY_UPTIME_RESET_MS en el tope: respawn, no settle', () => {
++    const capture = captureEvents()
++    try {
++      const vm = adoptAtBudget(READY_UPTIME_RESET_MS + 1_000)
++      const settled: string[] = []
++      const respawnAttempts: number[] = []
++      vm.on('settled', outcome => settled.push(outcome))
++      vm.on('respawn-scheduled', attempt => respawnAttempts.push(attempt))
++      vm.onChildExit(1, undefined)
++      expect(settled).toEqual([])
++      expect(respawnAttempts).toEqual([1])
++      vm.forceSettle('killed')
++    } finally {
++      capture.restore()
++    }
++  })
++
++  test('listo con uptime corto en el tope: presupuesto agotado, settle crashed', () => {
++    const capture = captureEvents()
++    try {
++      const vm = adoptAtBudget(FAST_CRASH_WINDOW_MS + 1_000)
++      const settled: string[] = []
++      vm.on('settled', outcome => settled.push(outcome))
++      vm.onChildExit(1, undefined)
++      expect(settled).toEqual(['crashed'])
++      const payload = capture.events.find(e => e.name === 'tengu_bg_worker_exit')?.metadata ?? {}
++      expect(payload.outcome).toBe('crashed')
++    } finally {
++      capture.restore()
++    }
++  })
++})
++
++describe('umbrales de g7 con nombre propio', () => {
++  test('coinciden con los literales de chunk-ygx717jg.js (At, Ke, yt, he)', () => {
++    expect(READY_UPTIME_RESET_MS).toBe(300_000)
++    expect(HOST_SLEEP_GAP_MS).toBe(15_000)
++    expect(HOST_WAKE_GRACE_MS).toBe(60_000)
++    expect(PRE_INIT_ERROR_TAIL_CHARS).toBe(200)
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts b/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+index ec73565ee..c44c2d253 100644
+--- a/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
++++ b/src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+@@ -1,10 +1,8 @@
+ /**
+  * `classifyExitOutcome` — puerto de la clasificación de desenlace K de
+- * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Cubre sólo
+- * las ramas que `WorkerVm` puede evaluar con el estado que ya rastrea; las
+- * ramas que dependen de campos que no rastrea (el lanzador fork-and-exit,
+- * cwd desaparecido, id de sesión tomado, racha de misma causa) se declaran
+- * pendientes en `workerVm.ts` y no tienen aserción aquí.
++ * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Aquí viven
++ * las ramas base; las de retiro, crash y modo exec están en
++ * `workerExitBranches.test.ts`.
+  */
+ 
+ import { describe, expect, test } from 'bun:test'
+diff --git a/src/packages/daemon/src/workerVm.ts b/src/packages/daemon/src/workerVm.ts
+index f67a591c5..91723abb4 100644
+--- a/src/packages/daemon/src/workerVm.ts
++++ b/src/packages/daemon/src/workerVm.ts
+@@ -16,6 +16,7 @@
+ import { spawn } from 'node:child_process'
+ import { EventEmitter } from 'node:events'
+ import { existsSync } from 'node:fs'
++import { stripVTControlCharacters } from 'node:util'
+ import { logEvent } from '@thyrox/local-observability'
+ import { createPtyAdopter } from './internal/pendingCrossPackageDeps.js'
+ import {
+@@ -37,12 +38,113 @@ import { formatPhaseLabel, isLegalPhaseTransition } from './workerPhase.js'
+ 
+ const RING_BUFFER_BYTES = 1024 * 1024
+ 
++/**
++ * Uptime a partir del cual un worker listo se considera sano y su
++ * contador de intentos vuelve a cero antes del respawn. `ant
++ * chunk-ygx717jg.js` variable `At` = 300000 (`u` en `g7#onExit`).
++ */
++export const READY_UPTIME_RESET_MS = 300_000
++
++/**
++ * Hueco entre dos polls de pid que delata un anfitrión dormido (el
++ * intervalo no pudo correr). `ant chunk-ygx717jg.js` variable `Ke` =
++ * `ve*3`, con `ve` el intervalo de poll.
++ */
++export const HOST_SLEEP_GAP_MS = HEARTBEAT_POLL_MS * 3
++
++/**
++ * Gracia tras detectar que el anfitrión despertó: una salida dentro de
++ * ella no cuenta como fast-crash. `ant chunk-ygx717jg.js` variable `yt` =
++ * 60000.
++ */
++export const HOST_WAKE_GRACE_MS = 60_000
++
++/**
++ * Tope de caracteres de la cola de error de preinicio. `ant
++ * chunk-ygx717jg.js` variable `he` = 200 (`preInitErrorTail`).
++ */
++export const PRE_INIT_ERROR_TAIL_CHARS = 200
++
++const ELLIPSIS = '…'
++const SUCCESS_EXIT_CODE = 0
++
+ /** Interfaz mínima de sumidero; los suscriptores pueden ser sockets o stubs de test. */
+ export interface AttacherSink {
+   write(chunk: Buffer | string): boolean | undefined
+   end?(): void
+ }
+ 
++/**
++ * Modos de lanzamiento de un despacho bg (`dispatch.launch.mode` en `ant
++ * chunk-ygx717jg.js`): los cuatro literales que la referencia compara.
++ */
++export type WorkerLaunchMode = 'prompt' | 'resume' | 'fresh' | 'exec'
++
++const LAUNCH_MODES: ReadonlySet<string> = new Set<WorkerLaunchMode>(['prompt', 'resume', 'fresh', 'exec'])
++
++function isLaunchMode(value: unknown): value is WorkerLaunchMode {
++  return typeof value === 'string' && LAUNCH_MODES.has(value)
++}
++
++function isRecord(value: unknown): value is Record<string, unknown> {
++  return typeof value === 'object' && value !== null
++}
++
++/**
++ * Lee `dispatch.launch.mode` del envoltorio de despacho que el supervisor
++ * ya entrega a `WorkerSpawnConfig.dispatch`. Un modo que la referencia no
++ * conoce se descarta en vez de propagarse.
++ */
++export function readDispatchLaunchMode(dispatch: unknown): WorkerLaunchMode | undefined {
++  if (!isRecord(dispatch) || !isRecord(dispatch.launch)) return undefined
++  const { mode } = dispatch.launch
++  return isLaunchMode(mode) ? mode : undefined
++}
++
++/** Lee `dispatch.source` (p. ej. `spare`, `shell`) si es texto. */
++export function readDispatchSource(dispatch: unknown): string | undefined {
++  if (!isRecord(dispatch)) return undefined
++  const { source } = dispatch
++  return typeof source === 'string' ? source : undefined
++}
++
++/**
++ * Fast-crash de `g7#onExit` (`p`): salida no cero antes de
++ * `FAST_CRASH_WINDOW_MS` desde el spawn, salvo que el anfitrión acabe de
++ * despertar (el reloj de pared saltó y el uptime no es fiable).
++ */
++export function isFastCrash(input: {
++  procUptimeMs: number | undefined
++  exitCode: number
++  hostWokeRecently: boolean
++}): boolean {
++  const { procUptimeMs, exitCode, hostWokeRecently } = input
++  if (hostWokeRecently || procUptimeMs === undefined) return false
++  return procUptimeMs < FAST_CRASH_WINDOW_MS && exitCode !== SUCCESS_EXIT_CODE
++}
++
++/** True si el tiempo desde el último poll de pid delata un anfitrión dormido. */
++export function isHostSleepGap(sinceLastCheckMs: number): boolean {
++  return sinceLastCheckMs > HOST_SLEEP_GAP_MS
++}
++
++/** True mientras dure la gracia posterior a un despertar del anfitrión. */
++export function isWithinHostWakeGrace(now: number, hostWokeAt: number | undefined): boolean {
++  return hostWokeAt !== undefined && now - hostWokeAt < HOST_WAKE_GRACE_MS
++}
++
++/**
++ * Cola legible de lo que el worker escribió antes de llegar a listo —
++ * `g7#preInitErrorTail`: sin secuencias ANSI, espacios colapsados, y si
++ * excede `PRE_INIT_ERROR_TAIL_CHARS`, elipsis más la cola.
++ */
++export function formatPreInitErrorTail(text: string): string | undefined {
++  const flat = stripVTControlCharacters(text).replace(/\s+/g, ' ').trim()
++  if (!flat) return undefined
++  if (flat.length <= PRE_INIT_ERROR_TAIL_CHARS) return flat
++  return `${ELLIPSIS}${flat.slice(-PRE_INIT_ERROR_TAIL_CHARS)}`
++}
++
+ /** Payload de tiempo-de-spawn para el hijo ccb interno. */
+ export interface WorkerSpawnConfig {
+   short: string
+@@ -59,7 +161,9 @@ export interface WorkerSpawnConfig {
+   /** Binario ccb + args, p. ej. `[bun, /cli.js, --bg-pty-host, <sock>, ...]`. */
+   cmd: readonly string[]
+   cliVersion: string
+-  /** Envoltorio de despacho original (preservado para respawn). */
++  /** Envoltorio de despacho original (preservado para respawn). Es la
++   *  fuente de `launch.mode` y `source`, igual que `g7#dispatch` en la
++   *  referencia: se leen con `readDispatchLaunchMode`/`readDispatchSource`. */
+   dispatch?: Record<string, unknown>
+ }
+ 
+@@ -69,67 +173,101 @@ export type SettleOutcome = 'done' | 'crashed' | 'killed'
+  * Entrada pura de `classifyExitOutcome` — el subconjunto de estado del
+  * `WorkerVm` que `g7#onExit` consulta para decidir `K` (ant
+  * `chunk-ygx717jg.js`, clase `g7`, método `onExit`, tengu_bg_worker_exit).
++ * Las señales opcionales ausentes equivalen a «no ocurrió».
+  */
+ export interface ExitClassificationInput {
+   /** Fase del VM al momento de la salida (`g7#phase.kind`). */
+   phase: WorkerPhase['kind']
++  /** Motivo del retiro cuando `phase` es `retiring` (`g7#phase.reason`). */
++  retireReason?: 'grace' | 'reap' | 'stop'
+   exitCode: number
+   signal?: NodeJS.Signals
+   /** Cuántos intentos de spawn lleva el worker (`g7#attempt`). */
+   attempt: number
+-  /** True una vez el worker señalizó que arrancó (`g7#workerReady`).
+-   *  `WorkerVm` no tiene ese canal de señal todavía; el llamador aproxima
+-   *  con `phase.kind === 'running'` — ver comentario en `onChildExit`. */
++  /** True una vez el worker señalizó que arrancó (`g7#workerReady`). */
+   workerReady: boolean
+-  /** Modo de lanzamiento (`g7#dispatch.launch.mode`). `WorkerVm` no
+-   *  distingue hoy un modo `exec`; el llamador pasa `undefined` — ver
+-   *  comentario en `onChildExit`. */
+-  launchMode?: 'exec' | 'pty' | 'detached'
++  /** Modo de lanzamiento (`g7#dispatch.launch.mode`). */
++  launchMode?: WorkerLaunchMode
++  /** `_`: el lanzador salió con éxito antes de que el worker llegara a listo. */
++  launcherForkAndExit?: boolean
++  /** `C`: el cwd del worker ya no es un directorio. */
++  cwdGone?: boolean
++  /** `H`: otro worker ya tomó el id de sesión. */
++  sessionIdTaken?: boolean
++  /** `g||k`: hay cola de error de preinicio o del comando lanzador. */
++  preInitError?: boolean
++  /** `g7#fastCrashStreak`, ya actualizado con esta salida. */
++  fastCrashStreak?: number
++  /** `M`: fast-crash con la misma causa de salida que la anterior. */
++  repeatedExitCause?: boolean
++  /** Uptime del proceso en esta salida (`h`). */
++  procUptimeMs?: number
++}
++
++/**
++ * `u` de `g7#onExit`: el worker llegó a listo y vivió al menos
++ * `READY_UPTIME_RESET_MS`. Con esa salida su presupuesto de intentos se
++ * reinicia antes del respawn y no cuenta como agotado.
++ */
++export function hasHealthyUptime(workerReady: boolean, procUptimeMs: number | undefined): boolean {
++  return workerReady && procUptimeMs !== undefined && procUptimeMs >= READY_UPTIME_RESET_MS
++}
++
++function isReadyLongEnough(input: ExitClassificationInput): boolean {
++  return hasHealthyUptime(input.workerReady, input.procUptimeMs)
++}
++
++function isCrashLoopExit(input: ExitClassificationInput): boolean {
++  const notReadyAfterRetryOrError = !input.workerReady && (input.attempt >= 2 || input.preInitError === true)
++  const streakReached = (input.fastCrashStreak ?? 0) >= FAST_CRASH_LIMIT
++  const budgetExhausted = !isReadyLongEnough(input) && input.attempt >= MAX_RESPAWN_ATTEMPTS
++  return (
++    input.cwdGone === true ||
++    input.sessionIdTaken === true ||
++    notReadyAfterRetryOrError ||
++    streakReached ||
++    input.repeatedExitCause === true ||
++    budgetExhausted
++  )
++}
++
++function classifyRetiringExit(retireReason: ExitClassificationInput['retireReason']): SettleOutcome | undefined {
++  if (retireReason === 'reap') return 'killed'
++  if (retireReason === 'grace') return 'done'
++  return undefined
+ }
+ 
+ /**
+  * Puerto de la clasificación `K` de `g7#onExit` (ant `chunk-ygx717jg.js`,
+- * clase `g7`). Decide el desenlace ANTES de emitir `tengu_bg_worker_exit`,
+- * no después — al revés de como `onChildExit` lo hacía antes de este puerto.
+- *
+- * Función pura: no lee ni muta el estado del `WorkerVm`, sólo el `input`.
++ * clase `g7`). Decide el desenlace ANTES de emitir `tengu_bg_worker_exit`.
++ * Función pura: sólo lee `input`.
+  *
+- * Ramas portadas, en el mismo orden que la referencia:
+- *   1. fase `upgrading`             -> sin desenlace (se re-lanza desde cero)
+- *   2. `exitCode === 0`             -> 'done'
+- *   3. `launchMode === 'exec'`      -> 'killed' si la señal es de kill
+- *                                      (SIGINT/SIGQUIT), si no 'crashed'
+- *   4. `!workerReady && attempt>=2` -> 'crashed'
++ * Ramas, en el orden de la referencia:
++ *   1. `retiring`                   -> reap: 'killed'; grace: 'done'
++ *                                      (stop: la referencia ni entra, está
++ *                                      desatendido)
++ *   2. `upgrading`                  -> sin desenlace (se re-lanza)
++ *   3. lanzador fork-and-exit       -> 'crashed'
++ *   4. `exitCode === 0`             -> 'done'
++ *   5. `launchMode === 'exec'`      -> 'killed' ante SIGINT/SIGQUIT, si no
++ *                                      'crashed'
++ *   6. cwd desaparecido, sesión tomada, no listo tras dos intentos o con
++ *      error de preinicio, racha de fast-crash, misma causa repetida, o
++ *      presupuesto de intentos agotado sin uptime largo -> 'crashed'
+  *
+- * Sin desenlace en cualquier otro caso: la referencia cae a `scheduleRespawn`
+- * y no fija `K`.
+- *
+- * Pendiente, no invocado: la referencia evalúa una segunda rama entre (1) y
+- * (2) — `_` en la fuente — que clasifica como 'crashed' cuando el lanzador
+- * ya salió (fork-and-exit en vez de exec) con éxito y sin que el worker
+- * llegara a listo, en menos de un umbral de tiempo. Depende de detectar el
+- * comando del lanzador y su cola de error de preinicio
+- * (`this.preInitErrorTail()`); `WorkerVm` no rastrea ninguno de los dos.
+- * La rama final de la referencia también evalúa cwd desaparecido, id de
+- * sesión ya tomado por otro worker, una racha repetida de la misma causa de
+- * salida y "listo pero agotó el presupuesto de intentos" — ninguna de esas
+- * señales existe hoy en `WorkerVm`; sólo se porta "no listo tras dos
+- * intentos", que sí puede evaluarse con `attempt` y `workerReady`.
++ * En cualquier otro caso no hay desenlace: la referencia cae a
++ * `scheduleRespawn`.
+  */
+ export function classifyExitOutcome(input: ExitClassificationInput): SettleOutcome | undefined {
+-  const { phase, exitCode, signal, attempt, workerReady, launchMode } = input
+-
+-  if (phase === 'upgrading') return undefined
+-
+-  if (exitCode === 0) return 'done'
+-
+-  if (launchMode === 'exec') {
+-    const killedByStopSignal = signal === 'SIGINT' || signal === 'SIGQUIT'
++  if (input.phase === 'retiring') return classifyRetiringExit(input.retireReason)
++  if (input.phase === 'upgrading') return undefined
++  if (input.launcherForkAndExit === true) return 'crashed'
++  if (input.exitCode === 0) return 'done'
++  if (input.launchMode === 'exec') {
++    const killedByStopSignal = input.signal === 'SIGINT' || input.signal === 'SIGQUIT'
+     return killedByStopSignal ? 'killed' : 'crashed'
+   }
+-
+-  if (!workerReady && attempt >= 2) return 'crashed'
+-
++  if (isCrashLoopExit(input)) return 'crashed'
+   return undefined
+ }
+ 
+@@ -153,6 +291,12 @@ export class WorkerVm extends EventEmitter {
+   /** Última vez que el worker emitió datos al ring; lo usa el watchdog de estancamiento. */
+   private lastActivityAt: number = Date.now()
+   private stalledFiredAt: number = 0
++  /** Último poll de pid (`g7#lastCheckPidAt`); un hueco largo delata un anfitrión dormido. */
++  private lastCheckPidAt: number = Date.now()
++  /** Momento en que se detectó que el anfitrión despertó (`g7#hostWokeAt`). */
++  private hostWokeAt: number | undefined = undefined
++  /** Índice del ring al lanzar el intento actual (`g7#ringSpawnMark`). */
++  private ringSpawnMark = 0
+   /** Cliente de rendezvous (control) — ant 5017.js `this.rv`. Canal fuera
+    *  de banda al REPL interno: recibe state/done/heartbeat, manda
+    *  shutdown/repaint/reply. Undefined cuando el worker no tiene socket rv
+@@ -315,6 +459,7 @@ export class WorkerVm extends EventEmitter {
+       procStart: readProcStart(child.pid) || undefined,
+     }
+     writeWorkerRecord(this.record)
++    this.ringSpawnMark = this.ring.length
+     this.transitionTo({ kind: 'running' })
+     this.startHeartbeatPoll()
+     this.startHeartbeatStream()
+@@ -472,6 +617,7 @@ export class WorkerVm extends EventEmitter {
+     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer)
+     this.lastActivityAt = Date.now()
+     this.heartbeatTimer = setInterval(() => {
++      this.notePidCheck()
+       if (!this.isRunning()) return
+       if (!isPidAlive(this.record.pid)) {
+         logEvent('tengu_bg_worker_vanished', { short: this.config.short, pid: String(this.record.pid) })
+@@ -497,6 +643,21 @@ export class WorkerVm extends EventEmitter {
+     this.heartbeatTimer.unref()
+   }
+ 
++  /**
++   * Registra un poll de pid; si el hueco desde el anterior delata un
++   * anfitrión dormido, anota el despertar (`g7#checkPid`).
++   */
++  private notePidCheck(): void {
++    const now = Date.now()
++    if (isHostSleepGap(now - this.lastCheckPidAt)) this.hostWokeAt = now
++    this.lastCheckPidAt = now
++  }
++
++  /** Cola de error escrita desde el spawn actual (`g7#preInitErrorTail`). */
++  private preInitErrorTail(): string | undefined {
++    return formatPreInitErrorTail(Buffer.concat(this.ring.slice(this.ringSpawnMark)).toString('utf8'))
++  }
++
+   /**
+    * Marca la llegada de una trama de control heartbeat del ptyHost.
+    * Actualiza lastActivityAt + resetea stalledFiredAt para que el
+@@ -554,17 +715,40 @@ export class WorkerVm extends EventEmitter {
+       this.heartbeatTimer = null
+     }
+     const uptime = Date.now() - this.record.startedAt
+-    // ant g7#onExit clasifica K ANTES de emitir; workerReady no tiene canal
+-    // propio en este puerto, así que se aproxima con la fase: `running`
+-    // significa que el worker llegó a correr en este intento. launchMode
+-    // queda pendiente: WorkerSpawnConfig no distingue un modo `exec`.
++    this.notePidCheck()
++    const fastCrash = isFastCrash({
++      procUptimeMs: uptime,
++      exitCode,
++      hostWokeRecently: isWithinHostWakeGrace(Date.now(), this.hostWokeAt),
++    })
++    this.fastCrashStreak = fastCrash ? this.fastCrashStreak + 1 : 0
++    const launchMode = readDispatchLaunchMode(this.config.dispatch)
++    // workerReady no tiene canal propio en este puerto: `running` significa
++    // que el worker llegó a correr en este intento.
++    // Divergencias declaradas de lo que se alimenta al clasificador:
++    // - `cwdGone`: la referencia sólo lo evalúa si la causa de salida es
++    //   `setcwd` y comprueba `isDirectory()` de `effectiveCwd`; sin causa de
++    //   salida (ver `exitCause` abajo) se aproxima con salida no cero y cwd
++    //   inexistente.
++    // - `launcherForkAndExit` no se alimenta: depende del lanzador
++    //   configurado (`lu()`, CLAUDE_CODE_PROCESS_WRAPPER), que este paquete
++    //   no conoce. La rama está portada y probada en la función pura.
++    // - `attempt` va desplazado en uno respecto de la referencia (allí
++    //   `doSpawn` incrementa al lanzar; aquí al programar el respawn), así
++    //   que `attempt >= 2` equivale al tercer lanzamiento de la referencia.
++    const workerReady = this.phase.kind === 'running'
+     const outcome = classifyExitOutcome({
+       phase: this.phase.kind,
++      retireReason: this.phase.kind === 'retiring' ? this.phase.reason : undefined,
+       exitCode,
+       signal,
+       attempt: this.attempt,
+-      workerReady: this.phase.kind === 'running',
+-      launchMode: undefined,
++      workerReady,
++      launchMode,
++      cwdGone: exitCode !== SUCCESS_EXIT_CODE && !existsSync(this.config.cwd),
++      preInitError: !workerReady && this.preInitErrorTail() !== undefined,
++      fastCrashStreak: this.fastCrashStreak,
++      procUptimeMs: uptime,
+     })
+     logEvent('tengu_bg_worker_exit', {
+       short: this.config.short,
+@@ -572,16 +756,13 @@ export class WorkerVm extends EventEmitter {
+       signal,
+       attempt: this.attempt,
+       procUptimeMs: uptime,
+-      // pendiente: WorkerSpawnConfig no rastrea el origen del despacho
+-      // (`dispatch.source` en la referencia) — no se inventa.
+-      source: undefined,
+-      // pendiente: WorkerSpawnConfig no distingue un modo de lanzamiento
+-      // `exec` de uno `pty` — no se inventa.
+-      launch_mode: undefined,
++      source: readDispatchSource(this.config.dispatch),
++      launch_mode: launchMode,
+       outcome,
+       // pendiente: la causa de salida (`w` en la referencia, p. ej.
+       // "setcwd") sale de inspeccionar el log del pty-host; este puerto no
+-      // lo hace todavía — no se inventa.
++      // lo hace todavía — no se inventa. Sin ella tampoco se evalúan
++      // `sessionIdTaken` ni `repeatedExitCause`, que derivan de esa causa.
+       exitCause: undefined,
+       // pendiente, declarado explícitamente fuera de este porte: aunque
+       // `WorkerRecord.cliVersion` existe, no está confirmado contra la
+@@ -602,17 +783,20 @@ export class WorkerVm extends EventEmitter {
+       this.settle('done')
+       return
+     }
+-    // Salida distinta de cero. Chequeo de fast-crash.
+-    if (uptime < FAST_CRASH_WINDOW_MS) {
+-      this.fastCrashStreak++
+-      if (this.fastCrashStreak >= FAST_CRASH_LIMIT) {
+-        logEvent('tengu_bg_respawn_exhausted', { short: this.config.short, reason: 'fast_crash', streak: String(this.fastCrashStreak) })
+-        this.settle('crashed')
+-        return
+-      }
+-    } else {
+-      this.fastCrashStreak = 0
++    // Un worker `exec` nunca se re-lanza: su salida es terminal (`g7#onExit`).
++    if (launchMode === 'exec') {
++      this.settle(outcome ?? 'crashed')
++      return
++    }
++    if (this.fastCrashStreak >= FAST_CRASH_LIMIT) {
++      logEvent('tengu_bg_respawn_exhausted', { short: this.config.short, reason: 'fast_crash', streak: String(this.fastCrashStreak) })
++      this.settle('crashed')
++      return
+     }
++    // `if(u)this.attempt=1` de la referencia: allí `doSpawn` incrementa el
++    // contador al lanzar, aquí se incrementa al programar el respawn, así
++    // que el equivalente es volver a cero.
++    if (hasHealthyUptime(workerReady, uptime)) this.attempt = 0
+     if (this.attempt >= MAX_RESPAWN_ATTEMPTS) {
+       logEvent('tengu_bg_respawn_exhausted', { short: this.config.short, reason: 'max_attempts', attempts: String(this.attempt) })
+       this.settle('crashed')
+diff --git a/src/packages/permission/tsconfig.check.json b/src/packages/permission/tsconfig.check.json
+new file mode 100644
+index 000000000..06b7431fe
+--- /dev/null
++++ b/src/packages/permission/tsconfig.check.json
+@@ -0,0 +1,201 @@
++{
++  "compilerOptions": {
++    "noEmit": true,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "paths": {
++      "@thyrox/permission": [
++        "./src/permission.ts"
++      ],
++      "@thyrox/permission/host.js": [
++        "./src/host.ts"
++      ],
++      "@thyrox/permission/errors.js": [
++        "./src/errors.ts"
++      ],
++      "@thyrox/permission/contracts.js": [
++        "./src/contracts.ts"
++      ],
++      "@thyrox/permission/permissionTypes.js": [
++        "./src/permissionTypes.ts"
++      ],
++      "@thyrox/permission/permissionRuleParser.js": [
++        "./src/permissionRuleParser.ts"
++      ],
++      "@thyrox/permission/permissions.js": [
++        "./src/permissions.ts"
++      ],
++      "@thyrox/permission/filesystem.js": [
++        "./src/filesystem.ts"
++      ],
++      "@thyrox/permission/pathValidation.js": [
++        "./src/pathValidation.ts"
++      ],
++      "@thyrox/permission/permissionSetup.js": [
++        "./src/permissionSetup.ts"
++      ],
++      "@thyrox/permission/index.js": [
++        "./src/index.ts"
++      ],
++      "@thyrox/permission/appStateHooks.js": [
++        "./src/appStateHooks.ts"
++      ],
++      "@thyrox/permission/testing": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/permission/testing/index.js": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/permission/commands/add-dir/validation.js": [
++        "./src/commands/add-dir/validation.ts"
++      ],
++      "@thyrox/permission/commands/rename/generateSessionName.js": [
++        "./src/commands/rename/generateSessionName.ts"
++      ],
++      "@thyrox/permission/components/ComputerUseApproval/ComputerUseApproval.js": [
++        "./src/components/ComputerUseApproval/ComputerUseApproval.tsx"
++      ],
++      "@thyrox/permission/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js": [
++        "./src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx"
++      ],
++      "@thyrox/permission/components/FilePermissionDialog/permissionOptions.js": [
++        "./src/components/FilePermissionDialog/permissionOptions.tsx"
++      ],
++      "@thyrox/permission/components/PermissionDialog.js": [
++        "./src/components/PermissionDialog.tsx"
++      ],
++      "@thyrox/permission/components/PermissionRequest.js": [
++        "./src/components/PermissionRequest.tsx"
++      ],
++      "@thyrox/permission/components/SandboxPermissionRequest.js": [
++        "./src/components/SandboxPermissionRequest.tsx"
++      ],
++      "@thyrox/permission/components/WorkerPendingPermission.js": [
++        "./src/components/WorkerPendingPermission.tsx"
++      ],
++      "@thyrox/permission/components/rules/AddWorkspaceDirectory.js": [
++        "./src/components/rules/AddWorkspaceDirectory.tsx"
++      ],
++      "@thyrox/permission/PermissionMode": [
++        "./src/PermissionMode.ts"
++      ],
++      "@thyrox/permission/PermissionPromptToolResultSchema": [
++        "./src/PermissionPromptToolResultSchema.ts"
++      ],
++      "@thyrox/permission/PermissionResult": [
++        "./src/PermissionResult.ts"
++      ],
++      "@thyrox/permission/PermissionRule": [
++        "./src/PermissionRule.ts"
++      ],
++      "@thyrox/permission/PermissionUpdate": [
++        "./src/PermissionUpdate.ts"
++      ],
++      "@thyrox/permission/PermissionUpdateSchema": [
++        "./src/PermissionUpdateSchema.ts"
++      ],
++      "@thyrox/permission/autoModeDenials.js": [
++        "./src/autoModeDenials.ts"
++      ],
++      "@thyrox/permission/autoModeState.js": [
++        "./src/autoModeState.ts"
++      ],
++      "@thyrox/permission/bashClassifier.js": [
++        "./src/bashClassifier.ts"
++      ],
++      "@thyrox/permission/bypassPermissionsKillswitch.js": [
++        "./src/bypassPermissionsKillswitch.ts"
++      ],
++      "@thyrox/permission/classifierApprovals.js": [
++        "./src/classifierApprovals.ts"
++      ],
++      "@thyrox/permission/classifierApprovalsHook.js": [
++        "./src/classifierApprovalsHook.ts"
++      ],
++      "@thyrox/permission/classifierDecision.js": [
++        "./src/classifierDecision.ts"
++      ],
++      "@thyrox/permission/commands/index.js": [
++        "./src/commands/index.ts"
++      ],
++      "@thyrox/permission/dangerousPatterns.js": [
++        "./src/dangerousPatterns.ts"
++      ],
++      "@thyrox/permission/denialTracking": [
++        "./src/denialTracking.ts"
++      ],
++      "@thyrox/permission/filesystem": [
++        "./src/filesystem.ts"
++      ],
++      "@thyrox/permission/getNextPermissionMode.js": [
++        "./src/getNextPermissionMode.ts"
++      ],
++      "@thyrox/permission/permissionRuleParser": [
++        "./src/permissionRuleParser.ts"
++      ],
++      "@thyrox/permission/permissionSetup": [
++        "./src/permissionSetup.ts"
++      ],
++      "@thyrox/permission/permissionTypes": [
++        "./src/permissionTypes.ts"
++      ],
++      "@thyrox/permission/permissions": [
++        "./src/permissions.ts"
++      ],
++      "@thyrox/permission/permissionsLoader.js": [
++        "./src/permissionsLoader.ts"
++      ],
++      "@thyrox/permission/planModeV2.js": [
++        "./src/planModeV2.ts"
++      ],
++      "@thyrox/permission/shadowedRuleDetection.js": [
++        "./src/shadowedRuleDetection.ts"
++      ],
++      "@thyrox/permission/shellRuleMatching.js": [
++        "./src/shellRuleMatching.ts"
++      ],
++      "@thyrox/permission/toolPermission/PermissionContext.js": [
++        "./src/toolPermission/PermissionContext.ts"
++      ],
++      "@thyrox/permission/toolPermission/handlers/coordinatorHandler.js": [
++        "./src/toolPermission/handlers/coordinatorHandler.ts"
++      ],
++      "@thyrox/permission/toolPermission/handlers/interactiveHandler.js": [
++        "./src/toolPermission/handlers/interactiveHandler.ts"
++      ],
++      "@thyrox/permission/toolPermission/handlers/swarmWorkerHandler.js": [
++        "./src/toolPermission/handlers/swarmWorkerHandler.ts"
++      ],
++      "@thyrox/permission/toolPermission/permissionLogging.js": [
++        "./src/toolPermission/permissionLogging.ts"
++      ],
++      "@thyrox/permission/yoloClassifier.js": [
++        "./src/yoloClassifier.ts"
++      ]
++    }
++  },
++  "include": [
++    "src/**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}
+diff --git a/src/packages/provider/tsconfig.check.json b/src/packages/provider/tsconfig.check.json
+new file mode 100644
+index 000000000..7e1a0cd49
+--- /dev/null
++++ b/src/packages/provider/tsconfig.check.json
+@@ -0,0 +1,402 @@
++{
++  "compilerOptions": {
++    "noEmit": true,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "paths": {
++      "@thyrox/provider": [
++        "./src/index.ts"
++      ],
++      "@thyrox/provider/anthropicHttp": [
++        "./src/anthropicHttp.ts"
++      ],
++      "@thyrox/provider/credentials": [
++        "./src/credentials.ts"
++      ],
++      "@thyrox/provider/recorded": [
++        "./src/recorded.ts"
++      ],
++      "@thyrox/provider/anthropicMockServer": [
++        "./src/anthropicMockServer.ts"
++      ],
++      "@thyrox/provider/sse": [
++        "./src/sse.ts"
++      ],
++      "@thyrox/provider/caCerts": [
++        "./src/internal/caCerts.ts"
++      ],
++      "@thyrox/provider/gemini": [
++        "./src/gemini/index.ts"
++      ],
++      "@thyrox/provider/openai": [
++        "./src/openai/index.ts"
++      ],
++      "@thyrox/provider/policyLimits": [
++        "./src/policyLimits/index.ts"
++      ],
++      "@thyrox/provider/commands/logout/logout.js": [
++        "./src/commands/logout/logout.tsx"
++      ],
++      "@thyrox/provider/adminRequests.js": [
++        "./src/adminRequests.ts"
++      ],
++      "@thyrox/provider/advisor.js": [
++        "./src/advisor.ts"
++      ],
++      "@thyrox/provider/antModels.js": [
++        "./src/antModels.ts"
++      ],
++      "@thyrox/provider/apiLimits.js": [
++        "./src/apiLimits.ts"
++      ],
++      "@thyrox/provider/authAlias.js": [
++        "./src/authAlias.ts"
++      ],
++      "@thyrox/provider/authPortable.js": [
++        "./src/authPortable.ts"
++      ],
++      "@thyrox/provider/awsAuthStatusManager.js": [
++        "./src/awsAuthStatusManager.ts"
++      ],
++      "@thyrox/provider/betas.js": [
++        "./src/betas.ts"
++      ],
++      "@thyrox/provider/betasConstants.js": [
++        "./src/betasConstants.ts"
++      ],
++      "@thyrox/provider/billing.js": [
++        "./src/billing.ts"
++      ],
++      "@thyrox/provider/caCerts.js": [
++        "./src/caCerts.ts"
++      ],
++      "@thyrox/provider/claude.js": [
++        "./src/claude.ts"
++      ],
++      "@thyrox/provider/claudeAiLimits.js": [
++        "./src/claudeAiLimits.ts"
++      ],
++      "@thyrox/provider/claudeAiLimitsHook.js": [
++        "./src/claudeAiLimitsHook.ts"
++      ],
++      "@thyrox/provider/claudeLegacy": [
++        "./src/claudeLegacy.ts"
++      ],
++      "@thyrox/provider/claudeLegacyRuntime.js": [
++        "./src/claudeLegacyRuntime.ts"
++      ],
++      "@thyrox/provider/commands/advisor.js": [
++        "./src/commands/advisor.ts"
++      ],
++      "@thyrox/provider/commands/logout/index.js": [
++        "./src/commands/logout/index.ts"
++      ],
++      "@thyrox/provider/commands/provider.js": [
++        "./src/commands/provider.ts"
++      ],
++      "@thyrox/provider/accounts/apiKeyProbe": [
++        "./src/accounts/apiKeyProbe.ts"
++      ],
++      "@thyrox/provider/accounts/connectionTest": [
++        "./src/accounts/connectionTest.ts"
++      ],
++      "@thyrox/provider/accounts/webCookie/webCookieProbe": [
++        "./src/accounts/webCookie/webCookieProbe.ts"
++      ],
++      "@thyrox/provider/accounts/oauth/loginRunner": [
++        "./src/accounts/oauth/loginRunner.ts"
++      ],
++      "@thyrox/provider/accounts/oauth/flowRegistry": [
++        "./src/accounts/oauth/flowRegistry.ts"
++      ],
++      "@thyrox/provider/accounts/oauth/oauthFlows": [
++        "./src/accounts/oauth/oauthFlows.ts"
++      ],
++      "@thyrox/provider/accounts/oauth/callbackServer": [
++        "./src/accounts/oauth/callbackServer.ts"
++      ],
++      "@thyrox/provider/accounts/connectionStoreHome": [
++        "./src/accounts/connectionStoreHome.ts"
++      ],
++      "@thyrox/provider/connections": [
++        "./src/connections.ts"
++      ],
++      "@thyrox/provider/connections.js": [
++        "./src/connections.ts"
++      ],
++      "@thyrox/provider/connectorTextTypes": [
++        "./src/connectorTextTypes.ts"
++      ],
++      "@thyrox/provider/context.js": [
++        "./src/context.ts"
++      ],
++      "@thyrox/provider/cost/cacheBreak": [
++        "./src/cost/cacheBreak.ts"
++      ],
++      "@thyrox/provider/cost/cacheRoutes": [
++        "./src/cost/cacheRoutes.ts"
++      ],
++      "@thyrox/provider/cost/compaction": [
++        "./src/cost/compaction.ts"
++      ],
++      "@thyrox/provider/cost/crossModelRead": [
++        "./src/cost/crossModelRead.ts"
++      ],
++      "@thyrox/provider/cost/policy": [
++        "./src/cost/policy.ts"
++      ],
++      "@thyrox/provider/costTracker.js": [
++        "./src/costTracker.ts"
++      ],
++      "@thyrox/provider/dumpPrompts.js": [
++        "./src/dumpPrompts.ts"
++      ],
++      "@thyrox/provider/errorUtils.js": [
++        "./src/errorUtils.ts"
++      ],
++      "@thyrox/provider/errors.js": [
++        "./src/errors.ts"
++      ],
++      "@thyrox/provider/extraUsage.js": [
++        "./src/extraUsage.ts"
++      ],
++      "@thyrox/provider/fastMode.js": [
++        "./src/fastMode.ts"
++      ],
++      "@thyrox/provider/fastModeAvailability.js": [
++        "./src/fastModeAvailability.ts"
++      ],
++      "@thyrox/provider/fileConstants.js": [
++        "./src/fileConstants.ts"
++      ],
++      "@thyrox/provider/filesApi.js": [
++        "./src/filesApi.ts"
++      ],
++      "@thyrox/provider/fingerprint.js": [
++        "./src/fingerprint.ts"
++      ],
++      "@thyrox/provider/firstTokenDate.js": [
++        "./src/firstTokenDate.ts"
++      ],
++      "@thyrox/provider/gatewayModelDiscovery.js": [
++        "./src/gatewayModelDiscovery.ts"
++      ],
++      "@thyrox/provider/gemini/convertTools.js": [
++        "./src/gemini/convertTools.ts"
++      ],
++      "@thyrox/provider/gemini/types.js": [
++        "./src/gemini/types.ts"
++      ],
++      "@thyrox/provider/grove.js": [
++        "./src/grove.ts"
++      ],
++      "@thyrox/provider/headlessProfiler.js": [
++        "./src/headlessProfiler.ts"
++      ],
++      "@thyrox/provider/http.js": [
++        "./src/http.ts"
++      ],
++      "@thyrox/provider/internal/pendingCrossPackageDeps.js": [
++        "./src/internal/pendingCrossPackageDeps.ts"
++      ],
++      "@thyrox/provider/legacy/api.js": [
++        "./src/legacy/api.ts"
++      ],
++      "@thyrox/provider/logging.js": [
++        "./src/logging.ts"
++      ],
++      "@thyrox/provider/model.js": [
++        "./src/model.ts"
++      ],
++      "@thyrox/provider/foundryCapabilities.js": [
++        "./src/foundryCapabilities.ts"
++      ],
++      "@thyrox/provider/model/aliases.js": [
++        "./src/model/aliases.ts"
++      ],
++      "@thyrox/provider/model/antModels.js": [
++        "./src/model/antModels.ts"
++      ],
++      "@thyrox/provider/model/bedrock.js": [
++        "./src/model/bedrock.ts"
++      ],
++      "@thyrox/provider/model/check1mAccess.js": [
++        "./src/model/check1mAccess.ts"
++      ],
++      "@thyrox/provider/model/configs.js": [
++        "./src/model/configs.ts"
++      ],
++      "@thyrox/provider/model/contextWindowUpgradeCheck.js": [
++        "./src/model/contextWindowUpgradeCheck.ts"
++      ],
++      "@thyrox/provider/model/deprecation.js": [
++        "./src/model/deprecation.ts"
++      ],
++      "@thyrox/provider/model/model.js": [
++        "./src/model/model.ts"
++      ],
++      "@thyrox/provider/model/modelAllowlist.js": [
++        "./src/model/modelAllowlist.ts"
++      ],
++      "@thyrox/provider/model/providers.js": [
++        "./src/model/providers.ts"
++      ],
++      "@thyrox/provider/modelAgent.js": [
++        "./src/modelAgent.ts"
++      ],
++      "@thyrox/provider/modelAliases.js": [
++        "./src/modelAliases.ts"
++      ],
++      "@thyrox/provider/modelCost.js": [
++        "./src/modelCost.ts"
++      ],
++      "@thyrox/provider/modelOptions.js": [
++        "./src/modelOptions.ts"
++      ],
++      "@thyrox/provider/modelStrings.js": [
++        "./src/modelStrings.ts"
++      ],
++      "@thyrox/provider/mtls.js": [
++        "./src/mtls.ts"
++      ],
++      "@thyrox/provider/oauth/client.js": [
++        "./src/oauth/client.ts"
++      ],
++      "@thyrox/provider/oauth/codex-auth.js": [
++        "./src/oauth/codex-auth.ts"
++      ],
++      "@thyrox/provider/oauth/getOauthProfile.js": [
++        "./src/oauth/getOauthProfile.ts"
++      ],
++      "@thyrox/provider/oauth/index.js": [
++        "./src/oauth/index.ts"
++      ],
++      "@thyrox/provider/oauth/types.js": [
++        "./src/oauth/types.ts"
++      ],
++      "@thyrox/provider/oauthConstants": [
++        "./src/oauthConstants.ts"
++      ],
++      "@thyrox/provider/oauthConstants.js": [
++        "./src/oauthConstants.ts"
++      ],
++      "@thyrox/provider/openai/convertTools.js": [
++        "./src/openai/convertTools.ts"
++      ],
++      "@thyrox/provider/overageCreditGrant.js": [
++        "./src/overageCreditGrant.ts"
++      ],
++      "@thyrox/provider/policyLimits/index.js": [
++        "./src/policyLimits/index.ts"
++      ],
++      "@thyrox/provider/promptCacheBreakDetection.js": [
++        "./src/promptCacheBreakDetection.ts"
++      ],
++      "@thyrox/provider/providerHostSetup": [
++        "./src/providerHostSetup.ts"
++      ],
++      "@thyrox/provider/providers.js": [
++        "./src/providers.ts"
++      ],
++      "@thyrox/provider/proxy.js": [
++        "./src/proxy.ts"
++      ],
++      "@thyrox/provider/queryProfiler.js": [
++        "./src/queryProfiler.ts"
++      ],
++      "@thyrox/provider/rateLimitMessages.js": [
++        "./src/rateLimitMessages.ts"
++      ],
++      "@thyrox/provider/rateLimitMocking.js": [
++        "./src/rateLimitMocking.ts"
++      ],
++      "@thyrox/provider/referral.js": [
++        "./src/referral.ts"
++      ],
++      "@thyrox/provider/sessionIngress.js": [
++        "./src/sessionIngress.ts"
++      ],
++      "@thyrox/provider/sessionIngressAuth.js": [
++        "./src/sessionIngressAuth.ts"
++      ],
++      "@thyrox/provider/systemConstants.js": [
++        "./src/systemConstants.ts"
++      ],
++      "@thyrox/provider/systemPrompt.js": [
++        "./src/systemPrompt.ts"
++      ],
++      "@thyrox/provider/systemPromptSections": [
++        "./src/systemPromptSections.ts"
++      ],
++      "@thyrox/provider/systemPromptType.js": [
++        "./src/systemPromptType.ts"
++      ],
++      "@thyrox/provider/thinking.js": [
++        "./src/thinking.ts"
++      ],
++      "@thyrox/provider/ultrareviewQuota.js": [
++        "./src/ultrareviewQuota.ts"
++      ],
++      "@thyrox/provider/usage.js": [
++        "./src/usage.ts"
++      ],
++      "@thyrox/provider/user.js": [
++        "./src/user.ts"
++      ],
++      "@thyrox/provider/userAgent.js": [
++        "./src/userAgent.ts"
++      ],
++      "@thyrox/provider/validateModel.js": [
++        "./src/validateModel.ts"
++      ],
++      "@thyrox/provider/withRetry.js": [
++        "./src/withRetry.ts"
++      ],
++      "@thyrox/provider/workloadContext.js": [
++        "./src/workloadContext.ts"
++      ],
++      "@thyrox/provider/proxy/upstreamHeaders": [
++        "./src/proxy/upstreamHeaders.ts"
++      ],
++      "@thyrox/provider/proxy/proxyEndpoint": [
++        "./src/proxy/proxyEndpoint.ts"
++      ],
++      "@thyrox/provider/sanitize/credentialPatterns": [
++        "./src/sanitize/credentialPatterns.ts"
++      ],
++      "@thyrox/provider/sanitize/errorPathRedaction": [
++        "./src/sanitize/errorPathRedaction.ts"
++      ],
++      "@thyrox/provider/sanitize/errorSanitization": [
++        "./src/sanitize/errorSanitization.ts"
++      ],
++      "@thyrox/provider/sanitize/upstreamErrorPassthrough": [
++        "./src/sanitize/upstreamErrorPassthrough.ts"
++      ]
++    }
++  },
++  "include": [
++    "src/**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}

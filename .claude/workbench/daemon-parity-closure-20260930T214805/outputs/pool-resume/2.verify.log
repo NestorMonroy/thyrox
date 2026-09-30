@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+ 2 pass
+ 0 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [5.61s]
+bun test v1.3.11 (af24e281)
+
+ 18 pass
+ 0 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [2.04s]
+bun test v1.3.11 (af24e281)
+
+ 15 pass
+ 0 fail
+ 16 expect() calls
+Ran 15 tests across 1 file. [2.32s]
+bun test v1.3.11 (af24e281)
+
+ 21 pass
+ 0 fail
+ 35 expect() calls
+Ran 21 tests across 1 file. [5.43s]
+bun test v1.3.11 (af24e281)
+
+ 2 pass
+ 0 fail
+ 4 expect() calls
+Ran 2 tests across 1 file. [1319.00ms]
+check-package-typecheck: 45 provider(s) reconstruido(s) por viejos: agent, audio-capture-napi, claude-for-chrome-mcp, cli, color-diff-napi, command-runtime, computer-use-input, computer-use-mcp, computer-use-swift, config, context-compression, coordination, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, mitm, modifiers-napi, observability, output, paths, permission, plan, provider, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  provider app-host: la reconstruccion no emitio
+  provider bridge: la reconstruccion no emitio
+  SIN TIPAR por un provider roto: daemon
+  NO se emite veredicto: un consumidor bloqueado por un provider roto
+  tiparia contra un contrato que no corresponde a su fuente.

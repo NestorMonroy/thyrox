@@ -1,0 +1,9 @@
+src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+src/packages/daemon/src/__tests__/socketProto.test.ts
+src/packages/daemon/src/bgDaemon.ts
+src/packages/daemon/src/bgDaemonTimers.ts
+src/packages/daemon/src/daemonLock.ts
+src/packages/daemon/src/socketProto.ts
