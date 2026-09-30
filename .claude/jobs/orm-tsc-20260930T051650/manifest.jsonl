@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check_package_typecheck --strict --jobs 2 agent cli command-runtime config ink local-observability paths provider repl shell swarm tool-registry updater workbench", "started_at": "2026-09-30T05:16:50+00:00"}
