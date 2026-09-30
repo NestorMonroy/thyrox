@@ -1,0 +1,16 @@
+# pool-suites-task-class-2
+
+## Qué se lanzó
+
+```
+bash -c for s in test-headless-pool test-headless-pool-worktree test-headless-pool-thyrox-p test-headless-pool-credential-source test-headless-pool-lifecycle test-headless-pool-item-drain test-headless-pool-exit-live-items test-headless-pool-frozen-launcher test-pool-calibrate; do echo "== $s"; bash tests/session/$s.sh 2>&1 | tail -1; done; PYTHONPATH=src uv run --python 3.12 python tests/verify/test_tsc_cycle.py 2>&1 | tail -1; python3 tests/hooks/test_detect_agent_dispatch.py 2>&1 | tail -1
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

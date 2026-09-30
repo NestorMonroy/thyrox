@@ -65,7 +65,7 @@ start_pool() {
       HEADLESS_POOL_HISTORY_DIR="$F/$label.history" HEADLESS_POOL_ITEM_DRAIN_SECONDS=1 \
       HEADLESS_POOL_EXIT_SETTLE_SECONDS=20 \
       setsid bash "$module" --prompt "$F/prompt.md" --out "$REPO/$BENCH/$label" \
-          --model claude-sonnet-5 --width 1 --isolation worktree --cwd "$REPO" "$@" > "$F/$label.log" 2>&1 &
+          --task-class analisis --width 1 --isolation worktree --cwd "$REPO" "$@" > "$F/$label.log" 2>&1 &
   POOL_PID=$!
   exec {started_fd}<> "$F/$label.started"
   read -r -t 60 _ <&"$started_fd" || { echo "el ítem nunca arrancó:"; cat "$F/$label.log"; }

@@ -28,6 +28,15 @@ ledger_reservation_count() {
 F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
 # El pool de prueba abre su runtime aquí, no en el runtime real del árbol.
 export THYROX_RUNTIME_DIR="$F/runtime"
+# El selector de modelo es un doble fijo: las aserciones de abajo leen el
+# modelo que el pool entrega, no cuál elige hoy el catálogo. El selector real
+# se mide aparte, en el caso 4.
+cat > "$F/recommend-fake" <<'EOF'
+#!/usr/bin/env bash
+printf '{"kind":"%s","model":"claude-sonnet-5"}\n' "$1"
+EOF
+chmod +x "$F/recommend-fake"
+export HEADLESS_POOL_RECOMMEND="$F/recommend-fake"
 cat > "$F/claude" <<'SH'
 #!/usr/bin/env bash
 entrada="$(cat)"
@@ -78,7 +87,7 @@ export HEADLESS_POOL_RUNNER="$F/claude"
 # hereda del contenedor: heredado, el `/usr/bin/time` de la máquina grababa
 # filas reales en el historial y el resultado dependía del host
 # (H-THYROX-192). Sin declarar, ninguno.
-corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_TIME="${HEADLESS_POOL_TIME:-$F/no-existe}" HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
+corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_TIME="${HEADLESS_POOL_TIME:-$F/no-existe}" HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
 
 # 1 — tres items: exit 0, una salida por item, y el item llega en el prompt.
 rm -rf "$F/out"; corre alfa beta gamma
@@ -102,29 +111,42 @@ rm -rf "$F/out"; EXTRA="--timeout 1" corre LENTO-uno dos
 check "timeout: exit 1" "$CODE" "1"
 check "timeout: nombra al lento" "$(printf '%s' "$SALIDA" | gawk '/^-- FALLIDO LENTO-uno/{n++} END{print n+0}')" "1"
 
-# 4 — un alias no es un modelo: rehusa sin cifra (model-selection-subagents.md).
-rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model sonnet 2>&1)"; CODE=$?
-check "alias: exit 2" "$CODE" "2"
-check "alias: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+# 4 — el modelo no se declara: se deriva de la clase de tarea con el selector
+# del árbol (model-selection-subagents.md). `--model` rehúsa sin cifra.
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+check "--model: exit 2" "$CODE" "2"
+check "--model: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+check "--model: nombra --task-class" "$(printf '%s' "$SALIDA" | gawk 'index($0, "--task-class"){n++} END{print n+0}')" "1"
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class sonnet 2>&1)"; CODE=$?
+check "clase desconocida: exit 2" "$CODE" "2"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$F/recommend-roto"; chmod +x "$F/recommend-roto"
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RECOMMEND="$F/recommend-roto" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
+check "selector roto: exit 2" "$CODE" "2"
+check "selector roto: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+ESPERADO="$(bash "$RAIZ/bin/agent-recommend" adversarial --json | jq -r .model)"
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RECOMMEND HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class adversarial 2>&1)"; CODE=$?
+check "selector real: exit 0" "$CODE" "0"
+check "selector real: declara el modelo derivado" "$(printf '%s' "$SALIDA" | gawk -v m="modelo: $ESPERADO (derivado de --task-class adversarial)" 'index($0, m){n++} END{print n+0}')" "1"
+check "selector real: el ítem recibe ese modelo" "$(cat "$F"/out/*.json 2>/dev/null | gawk -v m="modelo=$ESPERADO|" 'index($0, m){n++} END{print n+0}')" "1"
 
 # 5 — sin items no hay verde.
-SALIDA="$(printf '' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf '' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin items: exit 2" "$CODE" "2"
 
 # 6 — sin GNU parallel, sin claude o sin plantilla: rehusa nombrando la falta.
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_PARALLEL=/no/existe/parallel bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_PARALLEL=/no/existe/parallel bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin parallel: exit 2" "$CODE" "2"
 check "sin parallel: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/parallel/{n++} END{print (n>0)}')" "1"
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin ejecutor: exit 2" "$CODE" "2"
 # La variable que declaraba `claude` como ejecutor rehúsa entera y nombra la
 # bandera que la reemplaza.
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude HEADLESS_POOL_HISTORY_DIR="$F/hist-legacy" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude HEADLESS_POOL_HISTORY_DIR="$F/hist-legacy" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "HEADLESS_POOL_CLAUDE retirada: exit 2" "$CODE" "2"
 check "HEADLESS_POOL_CLAUDE retirada: nombra --runner claude" \
   "$(printf '%s' "$SALIDA" | gawk '/HEADLESS_POOL_CLAUDE/ && /--runner claude/{n++} END{print n+0}')" "1"
 check "HEADLESS_POOL_CLAUDE retirada: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
-SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
 # Sin ejecutor declarado, el ítem corre con `thyrox -p` (`bin/cli`), no con
 # `thyrox -p`: el pool es del proveedor. Un Parallel falso deja ver con qué
@@ -133,7 +155,7 @@ printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_RUNNER" > "%s/runner.txt"\n' "
 chmod +x "$F/parallel-runner"
 rm -rf "$F/out" "$F/runner.txt"
 printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER HEADLESS_POOL_PARALLEL="$F/parallel-runner" HEADLESS_POOL_TIME="$F/no-existe" \
-  HEADLESS_POOL_HISTORY_DIR="$F/historial-runner" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 >/dev/null 2>&1
+  HEADLESS_POOL_HISTORY_DIR="$F/historial-runner" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis >/dev/null 2>&1
 check "sin ejecutor declarado: thyrox -p (bin/cli)" "$(cat "$F/runner.txt" 2>/dev/null)" "$RAIZ/bin/cli"
 
 # --memfree: la cota llega a GNU Parallel, y una ilegible rehusa sin resumen.
@@ -391,7 +413,7 @@ chmod +x "$F/smi-estado"
 HIST="$F/historial-dos-pools"
 printf 'RAMPA-medida\n' | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/gnu-time" \
   HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-medida" \
-  --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-medida.salida" 2>&1
+  --task-class analisis --width 2 --timeout 20 > "$F/pool-medida.salida" 2>&1
 : > "$RAMPA_LOG"
 check "dos pools: la ejecución de medida deja el pico del ítem" \
   "$(gawk '{print $1}' "$F/out-medida/1.gpu" 2>/dev/null)" "400"
@@ -400,7 +422,7 @@ dos_pools() {
     rm -rf "$F/out-$p"
     printf 'RAMPA-%s\n' "$p" | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/gnu-time" \
       HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-$p" \
-      --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-$p.salida" 2>&1 &
+      --task-class analisis --width 2 --timeout 20 > "$F/pool-$p.salida" 2>&1 &
   done
   wait
 }
@@ -507,7 +529,7 @@ check "reserva ilegible: exit 2" "$CODE" "2"
 # `claude -p` hijo hereda la sesión de quien lo lanza si no se le da otra
 # (.claude/workbench/claude-p-from-shell-20260928T234121).
 mkdir -p "$F/path-claude"; cp "$F/claude" "$F/path-claude/claude"
-run_with_claude() { SALIDA="$(printf '%s\n' "$@" | env -u HEADLESS_POOL_RUNNER PATH="$F/path-claude:$PATH" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 --runner claude ${EXTRA:-} 2>&1)"; CODE=$?; }
+run_with_claude() { SALIDA="$(printf '%s\n' "$@" | env -u HEADLESS_POOL_RUNNER PATH="$F/path-claude:$PATH" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --width 2 --runner claude ${EXTRA:-} 2>&1)"; CODE=$?; }
 rm -rf "$F/out"; run_with_claude alfa beta
 check "runner claude: exit 0" "$CODE" "0"
 check "runner claude: resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
@@ -525,7 +547,7 @@ rm -rf "$F/out"; EXTRA="--max-turns 7" corre alfa
 check "--max-turns declarado llega al ítem" "$(turns_of)" "7"
 rm -rf "$F/out"; run_with_claude alfa
 check "runner claude sin --max-turns: sin tope" "$(turns_of)" "sin"
-SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER PATH="$F/sin-claude:/usr/bin:/bin" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --runner claude 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER PATH="$F/sin-claude:/usr/bin:/bin" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --runner claude 2>&1)"; CODE=$?
 check "runner claude sin claude en el PATH: exit 2" "$CODE" "2"
 check "runner claude sin claude en el PATH: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/REHUSA/ && /claude/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--runner otro" corre alfa
@@ -559,7 +581,11 @@ check "sin filas en el joblog: el total es el del índice" \
 
 # Un pool de prueba vive en su propio runtime: ninguna ejecución del runtime
 # real puede publicar en la salida de esta suite.
-real_runtime="$(env -u THYROX_RUNTIME_DIR THYROX_ROOT="$RAIZ" python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import pool_lifecycle; print(pool_lifecycle.runtime_root())' "$RAIZ/src/session")"
+# El módulo se importa como paquete (`session.pool_lifecycle`): importado
+# suelto muere en su `from session...` y deja la ruta vacía, con lo que el
+# `grep` de abajo buscaba bajo `/pool` y el cero no medía nada.
+real_runtime="$(env -u THYROX_RUNTIME_DIR THYROX_ROOT="$RAIZ" PYTHONPATH="$RAIZ/src" python3 -c 'from session import pool_lifecycle; print(pool_lifecycle.runtime_root())')"
+check "el runtime real se resuelve" "$([[ -n "$real_runtime" && -d "$real_runtime" ]] && echo si || echo no)" "si"
 check "el runtime real no recibe ejecuciones de la suite" \
   "$(grep -ls "\"out_dir\": \"$F/" "$real_runtime"/pool/*/run.json 2>/dev/null | wc -l)" "0"
 

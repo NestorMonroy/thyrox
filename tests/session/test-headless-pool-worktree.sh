@@ -56,7 +56,7 @@ export HEADLESS_POOL_HISTORY_DIR="$F/hist" MAIN_ROOT="$RAIZ" THYROX_RUNTIME_DIR=
 printf 'Implementa.\n' > "$F/prompt.md"
 
 git init -q "$F/repo" && git -C "$F/repo" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base
-pool() { (cd "$F/repo" && bash "$POOL" --prompt "$F/prompt.md" --model claude-sonnet-5 --isolation worktree "$@" 2>&1); }
+pool() { (cd "$F/repo" && bash "$POOL" --prompt "$F/prompt.md" --task-class analisis --isolation worktree "$@" 2>&1); }
 
 echo "caso 1 — cada ítem escribe en su worktree; el árbol principal no cambia"
 output="$(printf '%s\n' 'write a.txt' 'write b.txt' 'noop x' 'write bad.txt' 'fail y' 'write a.txt otro' \
@@ -107,9 +107,9 @@ check "con --unverified se aplica" "$(test -e "$F/repo/c.txt" && echo si || echo
 
 echo "caso 4 — rehúsa fuera de un árbol de git"
 mkdir -p "$F/plain"
-(cd "$F/plain" && export GIT_CEILING_DIRECTORIES="$F" && printf 'noop x\n' | bash "$POOL" --prompt "$F/prompt.md" --model claude-sonnet-5 \
+(cd "$F/plain" && export GIT_CEILING_DIRECTORIES="$F" && printf 'noop x\n' | bash "$POOL" --prompt "$F/prompt.md" --task-class analisis \
   --isolation worktree --out "$F/out4" >/dev/null 2>&1); check "sale 2" "$?" "2"
-printf 'noop x\n' | (cd "$F/repo" && bash "$POOL" --prompt "$F/prompt.md" --model claude-sonnet-5 \
+printf 'noop x\n' | (cd "$F/repo" && bash "$POOL" --prompt "$F/prompt.md" --task-class analisis \
   --isolation otra --out "$F/out5" >/dev/null 2>&1); check "un modo desconocido sale 2" "$?" "2"
 
 echo "caso 5 — un worktree que quedó de la ejecución se retira al terminar el pool"
@@ -226,7 +226,7 @@ cp -r "$RAIZ/src/session" "$F/pool-copy/src/session"
 gawk -i inplace '/# >>> item-root/{skip=1} !skip{print} /# <<< item-root/{skip=0}' "$F/pool-copy/src/session/headless-pool.sh"
 check "control: el bloque se retiró" "$(grep -c 'item-root' "$F/pool-copy/src/session/headless-pool.sh")" "0"
 (cd "$F/repo" && printf '%s\n' 'root x' | PROBE_LOG="$F/root-c.log" THYROX_ROOT="$RAIZ" \
-    bash "$F/pool-copy/src/session/headless-pool.sh" --prompt "$F/prompt.md" --model claude-sonnet-5 \
+    bash "$F/pool-copy/src/session/headless-pool.sh" --prompt "$F/prompt.md" --task-class analisis \
     --isolation worktree --out "$F/out15" --verify true >/dev/null 2>&1)
 check "control: sin el bloque, THYROX_ROOT es el árbol principal" "$(cut -f1 "$F/root-c.log")" "$RAIZ"
 

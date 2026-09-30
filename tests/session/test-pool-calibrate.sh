@@ -22,7 +22,7 @@ printf 'Resume el ítem.\n' > "$F/prompt.md"
 HIST="$F/hist"
 # La credencial del anfitrión, simulada: no debe llegar al proxy.
 SALIDA="$(printf 'alfa\nbeta\n' | ANTHROPIC_AUTH_TOKEN=token-del-anfitrion HEADLESS_POOL_HISTORY_DIR="$HIST" \
-    bash "$CAL" --prompt "$F/prompt.md" --model claude-sonnet-5 --runs 2 --width 2 --out "$F/out" 2>&1)"; CODE=$?
+    bash "$CAL" --prompt "$F/prompt.md" --task-class analisis --runs 2 --width 2 --out "$F/out" 2>&1)"; CODE=$?
 ROWS="$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null)"
 
 check "1. sale 0" "$CODE" "0"
@@ -37,13 +37,13 @@ check "4b. lo dice: peticiones y filas" "$(printf '%s' "$SALIDA" | gawk '/^calib
 # habla con la API da filas que no describen a `thyrox -p`.
 printf '#!/usr/bin/env bash\ncat >/dev/null; echo "{\\"type\\":\\"result\\"}"\n' > "$F/no-habla"; chmod +x "$F/no-habla"
 SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/no-habla" HEADLESS_POOL_HISTORY_DIR="$F/hist-5" \
-    bash "$CAL" --prompt "$F/prompt.md" --model claude-sonnet-5 --runs 1 --out "$F/out-5" 2>&1)"; CODE=$?
+    bash "$CAL" --prompt "$F/prompt.md" --task-class analisis --runs 1 --out "$F/out-5" 2>&1)"; CODE=$?
 check "5. sin peticiones al proxy: exit 1" "$CODE" "1"
 check "5b. lo nombra" "$(printf '%s' "$SALIDA" | gawk '/^pool-calibrate: 0 peticiones al proxy/{n++} END{print n+0}')" "1"
 
 # 6. Sin GNU Time no hay medida: rehúsa antes de lanzar, sin filas.
 SALIDA="$(printf 'alfa\n' | POOL_CALIBRATE_TIME=/no/existe HEADLESS_POOL_HISTORY_DIR="$F/hist-6" \
-    bash "$CAL" --prompt "$F/prompt.md" --model claude-sonnet-5 --runs 1 --out "$F/out-6" 2>&1)"; CODE=$?
+    bash "$CAL" --prompt "$F/prompt.md" --task-class analisis --runs 1 --out "$F/out-6" 2>&1)"; CODE=$?
 check "6. sin GNU Time: exit 2" "$CODE" "2"
 check "6b. sin filas" "$(find "$F/hist-6" -name runs.jsonl 2>/dev/null | wc -l | tr -d ' ')" "0"
 

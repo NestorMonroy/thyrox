@@ -31,7 +31,7 @@ chmod +x "$F/thyrox-p"
 
 SALIDA="$(printf 'alfa\nbeta\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p" HEADLESS_POOL_TIME="$F/no-existe" \
     HEADLESS_POOL_HISTORY_DIR="$F/hist" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" \
-    --model claude-sonnet-5 --width 2 2>&1)"; CODE=$?
+    --task-class analisis --width 2 2>&1)"; CODE=$?
 
 check "el pool sale 0" "$CODE" "0"
 check "resumen del pool" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
@@ -54,7 +54,7 @@ MOCK_URL="$(sed -n 's/^url=//p' "$F/mock.out")"
 SALIDA_PROXY="$(printf 'alfa\n' | env -u ANTHROPIC_AUTH_TOKEN -u THYROX_CODE_OAUTH_TOKEN -u THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
     ANTHROPIC_BASE_URL="$MOCK_URL" ANTHROPIC_API_KEY=local-loopback-marker \
     HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$F/hist-proxy" \
-    bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-proxy" --model claude-sonnet-5 --width 1 --credential-proxy 2>&1)"; CODE_PROXY=$?
+    bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-proxy" --task-class analisis --width 1 --credential-proxy 2>&1)"; CODE_PROXY=$?
 kill "$MOCK_PID" 2>/dev/null; wait "$MOCK_PID" 2>/dev/null
 check "por el túnel: el pool sale 0" "$CODE_PROXY" "0"
 check "por el túnel: el ítem termina bien" "$(printf '%s' "$SALIDA_PROXY" | gawk '/^items=/{print}')" "items=1 ok=1 fallidos=0"

@@ -51,7 +51,7 @@ run_case() {
       HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-time" \
       HEADLESS_POOL_HISTORY_DIR="$F/$label.history" \
       bash "$pool" --prompt "$F/prompt.md" --out "$F/$label.out" \
-          --model claude-sonnet-5 --width 1 > "$F/$label.log" 2>&1 &
+          --task-class analisis --width 1 > "$F/$label.log" 2>&1 &
   pid=$!
   # Se abre en lectura y escritura para que un pool que muere antes de que el
   # ítem arranque no deje la prueba bloqueada en la FIFO; el plazo acota la

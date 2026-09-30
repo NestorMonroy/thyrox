@@ -82,7 +82,7 @@ run() {
   SALIDA="$(printf 'alfa\n' | env "${unset_args[@]}" ${VARS:-} \
       PROXY_SAW="$F/proxy-saw" HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-existe" \
       HEADLESS_POOL_CREDENTIAL_PROXY="${PROXY:-$F/credential-proxy}" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" \
-      bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 1 "$@" 2>&1)"; CODE=$?
+      bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --width 1 "$@" 2>&1)"; CODE=$?
 }
 credential_line() { printf '%s\n' "$SALIDA" | gawk '/^credencial: /{print}'; }
 summary_count() { printf '%s\n' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}'; }
