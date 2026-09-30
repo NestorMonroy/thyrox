@@ -27,7 +27,7 @@ git (`.gitignore:189`).
 | `pool/<run-id>/` | `pool_lifecycle.py` (`open-run`, estado por ítem) | `close_run`; con ítems sin cerrar se conserva para `reconcile` | 2 runs + `locks/` |
 | `pool/locks/` | `pool_lifecycle.py` | no | presente |
 | `snapshots/<run>/<item>/<gen>.json` | `snapshot_store.py` (el manifiesto de cada foto) | nunca (TASK-THYROX-0650) | 9 runs |
-| `recovery/<run>-<item>-g<gen>/` | `recovery_controller.py` | `recover` lo retira al terminar | 0 |
+| `recovery/<run>-<item>-g<gen>/` | `recovery_controller.py` (`recover_to_worktree`, `claim_and_recover`): un worktree y su rama `recovery/…` | nunca: es el worktree donde se continúa el trabajo recuperado; lo retira quien integra. `prune` sólo retira el directorio del run, y sólo si todos sus ítems están `CLOSED` (`recovery_controller.py:194-203`) | 0 |
 | `docs-publisher/locks/` | `documentation_publisher.py` | al soltar el lock | 0 |
 
 Aparte, en otra raíz: los worktrees de los ítems viven en
@@ -54,3 +54,18 @@ Aparte, en otra raíz: los worktrees de los ítems viven en
 *Metrica:* escritores que pasan por `thyrox_runtime_dir` o `runtime_root`,
 entradas del runtime real y menciones en la documentación.
 *Ciega a:* un escritor que componga la ruta a mano sin esas dos funciones.
+
+## Corrección, tras una revisión independiente
+
+La primera versión de la tabla decía que `recovery/` se retira «al terminar
+`recover`». Es falso: el único `rmtree` de `recovery_controller.py` es el de
+`prune` sobre el directorio del run (línea 203), y `recover_to_worktree` y
+`claim_and_recover` dejan el worktree y su rama como resultado de la
+recuperación. Lo había leído del `rmtree` sin leer la función que lo contiene.
+Y el run abandonado tampoco lo retira `prune`: rehúsa si algún ítem no está
+`CLOSED`, que es la laguna de TASK-THYROX-0660.
+
+Cada contenedor tiene su propio runtime: el run `683a1e95cfc3` de
+`impl-pool-a` está en éste; la otra sesión tiene `818692b26e6e` y
+`0fdcdc987313`, que aquí no existen. La decisión sobre cada run abandonado se
+toma en el contenedor que lo tiene.
