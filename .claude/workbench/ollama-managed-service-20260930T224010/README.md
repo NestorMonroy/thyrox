@@ -43,3 +43,17 @@ contenedor viejo no se borra.
 `/api/generate` desde el contenedor recreado, n = 1.
 *Ciega a:* otros modelos (sólo hay uno) y a la calidad de la respuesta más
 allá de «responde».
+
+## Servicio gestionado en marcha y contenedor del probe retirado
+
+`bin/infrastructure_ensure thyrox-ollama` con `THYROX_INFRA_OLLAMA_VOLUME=thyrox-ollama-probe-models`
+(en el `.env` ignorado del clon): `status=absent action=created health=healthy`.
+`outputs/managed-service-running.txt`: etiquetas `io.thyrox.role=infrastructure`
+e `io.thyrox.service=ollama`, red host, el volumen conservado en `/root/.ollama`,
+`ollama list` muestra `qwen2.5:0.5b`, y responde `ready` por `/api/generate` y
+por `/v1/chat/completions` en `127.0.0.1:51434`.
+
+Con las tres condiciones cumplidas, `outputs/probe-container-retired.txt`:
+`podman rm` rehusó («running») porque Podman conservaba el estado del PID
+muerto; se retiró con `-f`. El volumen sigue y el modelo sigue listado por el
+servicio gestionado.

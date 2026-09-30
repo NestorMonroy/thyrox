@@ -1,0 +1,13 @@
+== thyrox-ollama (servicio gestionado)
+labels=map[io.thyrox.role:infrastructure io.thyrox.service:ollama org.opencontainers.image.version:24.04] network=host restart=on-failure
+volume thyrox-ollama-probe-models -> /root/.ollama rw=true
+bind  -> /etc/ssl/certs/proxy-ca.crt rw=false
+
+pid 14968 vivo
+== ollama list
+NAME            ID              SIZE      MODIFIED    
+qwen2.5:0.5b    a8b0c5157701    397 MB    4 hours ago    
+== inferencia mínima por la API del servicio (127.0.0.1:51434)
+{"model":"qwen2.5:0.5b","response":"ready","done":true,"load_s":11.650742601}
+== el mismo modelo por la API OpenAI-compatible del servicio
+{"model":"qwen2.5:0.5b","content":"ready","finish":"stop"}

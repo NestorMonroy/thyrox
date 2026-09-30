@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env THYROX_INFRA_OLLAMA_VOLUME=thyrox-ollama-probe-models THYROX_INFRA_PROXY_CA_BUNDLE=/root/.ccr/ca-bundle.crt THYROX_INFRA_HEALTH_TIMEOUT=120 bash bin/infrastructure_ensure thyrox-ollama", "started_at": "2026-09-30T22:56:04+00:00"}

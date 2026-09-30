@@ -1,0 +1,96 @@
+== ollama --version
+Warning: client version is 0.35.0
+== ollama create --help
+Create a model
+
+Usage:
+  ollama create MODEL [flags]
+
+Flags:
+      --draft-quantize string   Quantize safetensors draft model to this level
+  -f, --file string             Name of the Modelfile (default "Modelfile")
+      --force                   Continue local creation when MLX validation fails
+  -h, --help                    help for create
+  -q, --quantize string         Quantize safetensors model to this level (e.g. nvfp4)
+
+Environment Variables:
+      OLLAMA_HOST                   IP Address for the ollama server (default 127.0.0.1:11434)
+== tipos de cuantización nombrados por el binario (strings)
+     42 F32
+     20 F16
+      9 Q8_0
+      6 Q4_0
+      5 Q4_K_M
+      5 IQ4_NL
+      4 Q4_K
+      4 Q3_K
+      4 BF16
+      3 Q5_K
+      3 Q2_K
+      3 IQ3_S
+      2 Q6_K
+      2 Q5_1
+      2 Q5_0
+      2 Q4_1
+      2 Q2_2
+      2 MXFP4
+      2 IQ4_XS
+      2 IQ3_XXS
+      2 IQ3_XS
+      2 IQ2_XXS
+      2 IQ2_XS
+      2 IQ2_S
+      2 IQ2_M
+      2 IQ1_S
+      2 IQ1_M
+      1 Q5_K_S
+      1 Q5_K_M
+      1 Q4_K_S
+      1 Q3_K_S
+      1 Q3_K_M
+      1 Q3_K_L
+      1 Q2_K_S
+      1 Q2_0
+      1 IQ3_M
+== cadenas de import: safetensors / gguf / quantize
+     59 safetensors
+      2 safetensors imports
+      2 safetensors 
+      2 convertModel
+      1 unsupported quantization type: %s^libcudart\.so\.(\d+)(?:\.(\d+))?system memory discovery
+      1 safetensorstime
+      1 safetensorspytorch
+      1 safetensorsparse 
+      1 safetensorsllama
+      1 safetensorshttps
+      1 safetensorsfailed to decode fp
+      1 safetensorsembed
+      1 safetensors weights in 
+      1 safetensors sourcesplit 
+      1 safetensors source directorybytes
+      1 safetensors modelinvalid base model name
+      1 safetensors model to this level 
+      1 safetensors model pulls
+      1 safetensors model pullfailed to read requ
+      1 safetensors model directoryembedding mode
+      1 safetensors model directory 
+      1 safetensors model 
+      1 safetensors model
+      1 safetensors imports support at most one 
+      1 safetensors imports require exactly one 
+== binarios de llama.cpp en la imagen
+ollama
+/usr/lib/ollama:
+LLAMA_CPP_LICENSE
+LLAMA_CPP_VENDORS_LICENSE
+libllama-common.so
+libllama-common.so.0
+libllama-common.so.0.4.1
+libllama-quantize-impl.so
+libllama-server-impl.so
+libllama.so
+libllama.so.0
+libllama.so.0.4.1
+llama-quantize
+llama-server
+fin
