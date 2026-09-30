@@ -32,6 +32,11 @@ Evidencia (cada línea salió de un comando; vuelve a medir lo que uses):
 - Retirar la divergencia declarada en la cabecera de pathSafety.ts:19-27 y documentar la nueva correspondencia
 - Casos de prueba: archivo bajo sourceProducerPath → sensible; bajo previousProducerPaths → sensible; bajo raíz de plugin en línea → sensible; fuera de todas → no cambia; y control de anulación (retirada la rama caen exactamente esos casos)
 
+## Estado al lanzar (2026-09-30, sesión que integra)
+
+- Su dependencia ya está en `HEAD`: TASK-THYROX-0281 (`fcceea2f6`, resolvedor estructurado de rutas) y TASK-THYROX-0600 (`b1ae180d3`, ListAgents/ListPeers). Léela en el árbol antes de portar; no la reescribas.
+- `thyrox -p` sin credencial ya no delega en `claude -p`: pasa por el proxy local (C7, `0409c7479`).
+
 ## Archivos que te pertenecen
 
 - src/packages/permission/src/pathSafety.ts

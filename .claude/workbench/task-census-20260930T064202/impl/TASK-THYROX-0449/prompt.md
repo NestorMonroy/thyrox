@@ -29,6 +29,11 @@ Evidencia (cada línea salió de un comando; vuelve a medir lo que uses):
 - Prueba del ramal uds: de SendMessageTool.ts: `git grep -n 'uds:' -- src/packages/tool-registry/**/__tests__` sólo da peerAddress.test.ts (parseo) y rootModules.test.ts; ninguna aserción ejercita SendMessage → sendToUdsSocket
 - Prueba del envío CON clave publicada: udsClient.test.ts:211 envía sin token porque authRequiredByDefault(platform) sólo es true en windows (inboxAuth.ts:24-26); `grep -n 'readPeerToken|publishInboxKey' udsClient.test.ts` → 0 hits. El camino readPeerToken→authFrameLine del cliente queda sin aserción directa (publishInboxKey/readPeerToken sí se prueban aislados en udsInboxKeys.test.ts)
 
+## Estado al lanzar (2026-09-30, sesión que integra)
+
+- Su dependencia ya está en `HEAD`: TASK-THYROX-0281 (`fcceea2f6`, resolvedor estructurado de rutas) y TASK-THYROX-0600 (`b1ae180d3`, ListAgents/ListPeers). Léela en el árbol antes de portar; no la reescribas.
+- `thyrox -p` sin credencial ya no delega en `claude -p`: pasa por el proxy local (C7, `0409c7479`).
+
 ## Archivos que te pertenecen
 
 - src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts
