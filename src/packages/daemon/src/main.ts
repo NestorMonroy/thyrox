@@ -6,6 +6,14 @@ import { logEvent } from '@thyrox/local-observability'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import {
+  buildDaemonHelpBanner,
+  resolveDaemonBgInvocation,
+  writeStderrLine,
+  writeStdoutLine,
+  type DaemonHelpFlags,
+  type DaemonHelpSections,
+} from './daemonCli.js'
+import {
   WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
   parseWorkerToSupervisorMessage,
   scheduleForceKill,
@@ -67,6 +75,50 @@ interface WorkerState {
 }
 
 /**
+ * Secciones de texto de `daemon bg --help`, combinadas por
+ * `buildDaemonHelpBanner` (`Bt`, `daemonCli.ts`) segun `DAEMON_BG_HELP_FLAGS`.
+ * A diferencia de la referencia, thyrox instala el servicio sin gate de
+ * feature flag (`serviceInstallEnabled: true` fijo) y todavia no porta
+ * `remote-control` (los dos flags de esa seccion quedan en `false`).
+ */
+const DAEMON_BG_HELP_SECTIONS: DaemonHelpSections = {
+  base: `Usage: claude daemon bg [subcommand] [options]
+
+Service lifecycle:
+  run               Run the supervisor in the foreground (default when piped)
+  status, list      Show daemon pid, uptime and worker jobs
+  log               Tail the local telemetry log
+  stop              Shut down the bg daemon
+`,
+  serviceInstallSection: `  install           Install as a launchd/systemd service (persists across reboot)
+  uninstall         Remove the installed service
+  enable, disable   Start/stop the installed service
+  restart           Restart the installed service
+  is-stale          Check whether the installed service points at a stale binary
+  is-active         Check whether the installed service is currently running
+`,
+  serviceInstallDisabledNotice: `
+  Service install is disabled in this build — the daemon runs on demand
+  and exits when the last client disconnects.
+`,
+  remoteControlSection: `
+Remote Control servers (not yet ported to thyrox):
+  remote-control list|add|remove
+`,
+  optionsSection: `
+Options:
+  --json            Emit machine-readable output where supported
+  --help, -h        Show this help
+`,
+}
+
+const DAEMON_BG_HELP_FLAGS: DaemonHelpFlags = {
+  serviceInstallEnabled: true,
+  remoteControlAvailable: false,
+  remoteControlFeatureEnabled: false,
+}
+
+/**
  * Daemon supervisor entry point. Called from `cli.tsx` via:
  *   `claude daemon [subcommand]`
  *
@@ -96,7 +148,22 @@ export async function daemonMain(args: string[]): Promise<void> {
       break
     case 'bg': {
       // ccb daemon bg [run|status|stop|install|uninstall|start|restart] — bg supervisor.
-      const sub = args[1] || 'run'
+      const bgArgs = args.slice(1)
+      if (bgArgs.includes('--help') || bgArgs.includes('-h')) {
+        writeStdoutLine(buildDaemonHelpBanner(DAEMON_BG_HELP_SECTIONS, DAEMON_BG_HELP_FLAGS))
+        break
+      }
+      // Infiere el subcomando por defecto segun TTY (`hub` interactivo,
+      // `run` si no) y localiza el primero pese a flags por delante —
+      // porte de `on` (`daemonCli.ts`). El corte de argumentos que sigue
+      // (`args.slice(2)`) preserva el contrato previo: ningun llamador
+      // real antepone flags al subcomando (`daemonAdapter.ts` siempre
+      // invoca `daemon bg run` sin flags).
+      const sub = resolveDaemonBgInvocation(bgArgs, {
+        jsonPath: '',
+        logPath: '',
+        isStdinTty: Boolean(process.stdin.isTTY),
+      }).sub
       if (sub === 'run') {
         const { bgDaemonMain } = await import('./bgDaemon.js')
         let code = 1
@@ -124,7 +191,7 @@ export async function daemonMain(args: string[]): Promise<void> {
       ) {
         await daemonLaunchAgentVerb(sub)
       } else {
-        console.error(`Unknown daemon bg subcommand: ${sub}`)
+        writeStderrLine(`Unknown daemon bg subcommand: ${sub}`)
         process.exitCode = 1
       }
       break
@@ -160,8 +227,8 @@ async function bgDaemonTailLog(): Promise<void> {
   const today = new Date().toISOString().slice(0, 10)
   const logPath = join(getConfigHomeDir(), 'telemetry', `events-${today}.jsonl`)
   if (!existsSync(logPath)) {
-    console.error(`bg daemon log: no events file at ${logPath}`)
-    console.error(`(set THYROX_CODE_LOCAL_TELEMETRY=1 + restart daemon to populate)`)
+    writeStderrLine(`bg daemon log: no events file at ${logPath}`)
+    writeStderrLine(`(set THYROX_CODE_LOCAL_TELEMETRY=1 + restart daemon to populate)`)
     process.exitCode = 1
     return
   }
@@ -173,7 +240,7 @@ async function bgDaemonTailLog(): Promise<void> {
       resolve()
     })
     tail.on('error', e => {
-      console.error(`tail failed: ${(e as Error).message}`)
+      writeStderrLine(`tail failed: ${(e as Error).message}`)
       process.exit(1)
     })
   })
@@ -184,9 +251,9 @@ async function bgDaemonStatus(asJson = false): Promise<void> {
   const r = await daemonRequest('ping', {}, { timeoutMs: 1000 })
   if (!r.ok) {
     if (asJson) {
-      console.log(JSON.stringify({ ok: false, running: false, code: r.code }))
+      writeStdoutLine(JSON.stringify({ ok: false, running: false, code: r.code }))
     } else {
-      console.log(`bg daemon: not running (${r.code})`)
+      writeStdoutLine(`bg daemon: not running (${r.code})`)
     }
     process.exitCode = 1
     return
@@ -197,18 +264,18 @@ async function bgDaemonStatus(asJson = false): Promise<void> {
     ? ((list as Record<string, unknown>).jobs as Array<Record<string, unknown>> | undefined) ?? []
     : []
   if (asJson) {
-    console.log(JSON.stringify({ ok: true, running: true, uptime, jobs }, null, 2))
+    writeStdoutLine(JSON.stringify({ ok: true, running: true, uptime, jobs }, null, 2))
     return
   }
-  console.log(`bg daemon: running (uptime ${uptime ?? 'unknown'}ms)`)
+  writeStdoutLine(`bg daemon: running (uptime ${uptime ?? 'unknown'}ms)`)
   if (jobs.length === 0) {
-    console.log('  (no workers)')
+    writeStdoutLine('  (no workers)')
     return
   }
   for (const j of jobs) {
     const cls = j.classifierState ? ` [${j.classifierState}/${j.classifierTempo}]` : ''
     const needs = j.classifierNeeds ? ` needs="${String(j.classifierNeeds).slice(0, 60)}"` : ''
-    console.log(`  ${j.short}  ${j.status}${cls}  pid=${j.pid}  attachers=${j.attachers}${needs}`)
+    writeStdoutLine(`  ${j.short}  ${j.status}${cls}  pid=${j.pid}  attachers=${j.attachers}${needs}`)
   }
 }
 
@@ -224,13 +291,13 @@ async function daemonLaunchAgentVerb(
   }
   if (verb === 'is-stale') {
     const stale = await la.isLaunchAgentStale()
-    console.log(stale ? 'stale' : 'fresh')
+    writeStdoutLine(stale ? 'stale' : 'fresh')
     process.exitCode = stale ? 1 : 0
     return
   }
   if (verb === 'is-active') {
     const active = await la.isLaunchAgentRunning()
-    console.log(active ? 'active' : 'inactive')
+    writeStdoutLine(active ? 'active' : 'inactive')
     process.exitCode = active ? 0 : 1
     return
   }
@@ -241,22 +308,22 @@ async function daemonLaunchAgentVerb(
   else if (verb === 'disable') r = await la.stopLaunchAgent()
   else r = await la.restartLaunchAgent()
   if (!r.ok) {
-    console.error(`bg daemon ${verb}: ${r.error}`)
+    writeStderrLine(`bg daemon ${verb}: ${r.error}`)
     process.exitCode = 1
     return
   }
-  console.log(`bg daemon ${verb}: ok${r.servicePath ? ` (${r.servicePath})` : ''}`)
+  writeStdoutLine(`bg daemon ${verb}: ok${r.servicePath ? ` (${r.servicePath})` : ''}`)
 }
 
 async function bgDaemonStop(): Promise<void> {
   const { daemonRequest } = await import('./daemonClient.js')
   const r = await daemonRequest('shutdown', {}, { timeoutMs: 2000 })
   if (!r.ok) {
-    console.log(`bg daemon: not running (${r.code})`)
+    writeStdoutLine(`bg daemon: not running (${r.code})`)
     process.exitCode = 1
     return
   }
-  console.log('bg daemon: shutdown signal accepted')
+  writeStdoutLine('bg daemon: shutdown signal accepted')
 }
 
 function printHelp(): void {
