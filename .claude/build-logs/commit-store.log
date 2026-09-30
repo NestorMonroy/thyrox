@@ -3,12 +3,22 @@ check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance med
 check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
 check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
 check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
-check_bench_untracked: 0 archivo(s) fuera (alcance medido: 37 banco(s) tocado(s))
-check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)
-check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 53925 ruta(s) versionada(s), 0 admitida(s))
-check_product_word: 0 archivo(s) con deuda nueva; 2671 aparición(es) del producto en 638 archivo(s) (alcance medido: src)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 97 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 308 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 74789 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 289 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1862 lectura(s) en 4052 archivo(s) de producción — propias 853, proveedor 99, cliente ajeno 18, sin prefijo 892)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 124 congelada(s), 0 obsoleta(s) (alcance medido: 363 variable(s) propia(s), 2195 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 523 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 18 clave(s) en 1 archivo(s) ignorado(s), 534 declarada(s) en .env.example)
 reconciliar-todo: raiz /root/.claude/tasks
   sesiones del store        1
   omitidas (sin filas)      0
-  del store: 19 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
-  escritas: 0 fila(s)
+    333534ce-407f-55f0-b451-e1feb02581ab  1 fila(s) con deriva de 57 tarjeta(s)
+  del store: 58 fila(s), 5 sin tarjeta que las nombre (5 abierta(s)) — fuera de los cubos
+  escritas: 1 fila(s)
+OK: 0 fila(s) huérfana(s) · 0 colisión(es) de relleno
+  (alcance medido: 1605 hallazgo(s) en el árbol, 1674 fila(s) en el store; 81 en baseline heredado)
