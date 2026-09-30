@@ -1310,6 +1310,29 @@ def test_real_cli_plan_carries_the_delivery_features() -> None:
           f"faltan: {missing}")
 
 
+def test_typescript_entrypoints_listing_is_the_discovered_map() -> None:
+    """``--typescript-entrypoints`` publica el mismo mapa que el descubrimiento.
+
+    Lo consume ``src/packaging/reachability.ts``: la lista de wrappers TS
+    tiene una sola definición, y la herramienta de alcance la pide aquí en
+    vez de volver a recorrer ``src/``.
+    """
+    r = subprocess.run(
+        [sys.executable, str(ROOT / "src/session/generate_bin.py"), "--typescript-entrypoints"],
+        capture_output=True, text=True, cwd=str(ROOT),
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+    )
+    check("--typescript-entrypoints sale 0", r.returncode == 0, r.stderr)
+    pairs = [line.split("\t", 1) for line in r.stdout.splitlines() if "\t" in line]
+    listed = {name: path for name, path in pairs}
+    expected = {name: str(path.relative_to(ROOT))
+                for name, path in gb.discover_typescript_entrypoints(ROOT).items()}
+    check("el listado TSV coincide con discover_typescript_entrypoints",
+          listed == expected, f"listado={len(listed)} esperado={len(expected)}")
+    check("y la entrada de cli apunta a entry/cli.tsx",
+          listed.get("cli") == "src/packages/cli/src/entry/cli.tsx", listed.get("cli"))
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -1349,6 +1372,7 @@ def main() -> int:
     test_exercise_on_real_tree_is_green()
     test_typescript_entrypoints_reach_bin_on_real_tree()
     test_real_cli_plan_carries_the_delivery_features()
+    test_typescript_entrypoints_listing_is_the_discovered_map()
     test_no_wrapper_asks_to_block_on_the_real_tree()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "

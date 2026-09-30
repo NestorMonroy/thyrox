@@ -727,6 +727,16 @@ def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Pat
     return found
 
 
+def print_typescript_entrypoints(root: pathlib.Path) -> None:
+    """Publica el mapa de ``discover_typescript_entrypoints`` como TSV ordenado.
+
+    Es la única definición de «qué wrappers TS existen»: el grafo de alcance
+    (``src/packaging/``) la consume por aquí en vez de recorrer ``src/`` otra vez.
+    """
+    for name, target in sorted(discover_typescript_entrypoints(root).items()):
+        print(f"{name}\t{target.relative_to(root)}")
+
+
 def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
                             bin_name: str) -> str:
     """El envoltorio de un entrypoint ``.ts``: guarda de bun, luego ``exec``.
@@ -929,6 +939,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="carga cada entrypoint .py por la puerta de su "
                              "envoltorio y sale 1 si alguno no llega a cargar; "
                              "ve lo que --check no puede ver (~5 s)")
+    parser.add_argument("--typescript-entrypoints", action="store_true",
+                        help="imprime nombre<TAB>ruta relativa de cada entrypoint "
+                             ".ts y no escribe; lo consume src/packaging/reachability.ts")
     parser.add_argument("--install-user-bin", nargs="?", const=str(DEFAULT_USER_BIN_DIR),
                         metavar="DIR", default=None,
                         help="además, copia envoltorios de segundo salto a DIR "
@@ -937,6 +950,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = repository_root()
+    if args.typescript_entrypoints:
+        print_typescript_entrypoints(root)
+        return 0
     plan = planned_files(root)
     # Red de seguridad, no aviso esperado: resolve_bin_name() ya prefija todo
     # stem que choque con un builtin, así que esto debería salir SIEMPRE
