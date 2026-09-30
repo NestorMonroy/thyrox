@@ -1,7 +1,7 @@
 # Fuente de verdad — TASK-THYROX-0682: corpus semántico durable
 
 Gobierna: `kaupamex-docs: source/thyrox/adr/adr-008-semantic-search-store-sobre-postgresql-y-pgvector.rst`
-v1.2.0, sección «Corpus durable» (commit `1227f675e`). Léela completa antes de
+v1.2.0, sección «Corpus durable» (commits `1227f675e` y `dd08ac1f3`, aprobada por el ejecutor). Léela completa antes de
 escribir.
 
 ## Lo que existe (P0 de esta tarea, medido)
@@ -62,3 +62,34 @@ separación entre contenido durable y representación derivada.
      versión vieja aparece (cae exactamente ese caso).
 6. **Qué no decide** (ADR-008 1.2.0, del ejecutor): qué fuentes se ingieren y
    la retención del contenido privado. El store no borra por caducidad.
+
+## Precisiones aprobadas (ADR-008 1.2.0, commit `dd08ac1f3`)
+
+7. **«Canónico» es para la recuperación.** El snapshot ingerido es la fuente
+   autosuficiente de semantic search, no la fuente de verdad del dominio. El
+   store no ofrece edición de chunks: una corrección llega por reingesta.
+8. **Resultados persistidos, no sólo reproducibles.** Tabla `analysis_runs`:
+   `analysis_id`, `input` (la consulta), `space_id`, las versiones del corpus
+   usadas, candidatos (`chunk_id` + versión), scores, `reranker` (opcional:
+   lo pasa quien llama, el store no reordena por modelo), `output` (JSONB que
+   aporta quien llama) y `created_at`. API: `recordAnalysisRun(...)` y
+   `getAnalysisRun(id)`. Un chunk citado por un `analysis_run` no se borra:
+   una versión nueva lo deja fuera de la búsqueda pero no del registro, y
+   `dropSpace` no borra `analysis_runs` ni chunks. Un análisis leído después
+   de reingerir y de retirar su espacio devuelve el mismo texto de sus
+   candidatos que cuando se hizo.
+
+## Invariantes que la suite prueba explícitamente
+
+| Invariante | Caso |
+|---|---|
+| ingerir → borrar la fuente → la búsqueda devuelve el texto | fuente desaparece |
+| mismo contenido otra vez → sin versión, chunks ni embeddings nuevos | reingesta idempotente |
+| contenido distinto → versión nueva, la vieja no aparece | cambio de contenido |
+| otro modelo/dimensión → espacio nuevo, re-embebido desde `document_chunks`, sin leer archivos | re-embedding |
+| activar el espacio nuevo → las búsquedas nuevas lo usan | activación |
+| retirar/borrar el espacio anterior → documentos, chunks y `analysis_runs` intactos | retiro |
+| cerrar y abrir otro store sobre la URL → todo permanece | worker recreado |
+| un `analysis_run` sobrevive a reingesta y a retiro del espacio con su texto | análisis persistido |
+
+D5 sigue abierta sólo para qué fuentes se ingieren, su scope y la retención.

@@ -1,0 +1,50 @@
+**«Canónico» es para la recuperación, no para el dominio.** El snapshot
+ingerido es canónico **para semantic search**: la copia autosuficiente con que
+se busca, se recupera texto y se re-embebe aunque la fuente ya no sea
+accesible. **No** sustituye a la fuente de verdad del dominio.
+
+.. code-block:: text
+
+   fuente de verdad del dominio   → el sistema propietario (un ADR: Git)
+   snapshot durable ingerido      → fuente autosuficiente para semantic_search
+
+Una corrección al documento se hace en su sistema propietario y llega al
+corpus por reingesta (versión nueva por hash); nunca editando los chunks.
+
+**Reproducible no es persistido.** Son dos contratos:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Capa
+     - Qué garantiza
+   * - ``documents`` · ``document_chunks``
+     - corpus durable: un análisis se puede **repetir**
+   * - ``embedding_spaces`` · ``embeddings_<space>``
+     - representación para la recuperación, regenerable
+   * - ``analysis_runs``
+     - el resultado de una ejecución concreta queda **guardado**
+
+El requisito dice que los análisis ya hechos siguen disponibles, y eso no lo da
+el corpus: repetir una consulta con otro espacio activo o sobre otra versión
+devuelve otra cosa. Por eso TASK-THYROX-0682 también persiste cada ejecución:
+
+.. code-block:: text
+
+   analysis_runs
+   ├── analysis_id
+   ├── input (consulta)            ├── candidatos (chunk_id + versión)
+   ├── space_id (modelo · dim)     ├── scores
+   ├── versiones del corpus usadas ├── reranker / modelo (si lo hubo)
+   ├── output                      └── created_at
+
+Un ``analysis_run`` guarda referencias a chunks con su versión, y los chunks
+versionados no se borran mientras un análisis los cite: retirar un espacio o
+ingerir una versión nueva no deja un resultado histórico apuntando a nada.
+
+**D5, repartida.** Unidad durable, metadata de identidad y versión, detección
+por hash, reindexado por espacio y persistencia de análisis quedan decididos
+arriba y no esperan a D5. Siguen abiertas, y son del ejecutor: **qué fuentes se
+ingieren**, **con qué scope** y **qué retención aplica** al contenido privado o
+temporal. Hasta decidirlas, nada se ingiere sin una declaración explícita de la
+fuente, y nada se borra por caducidad.

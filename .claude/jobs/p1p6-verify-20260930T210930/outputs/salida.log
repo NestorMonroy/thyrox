@@ -1,0 +1,9 @@
+p1-contract	exit=0
+p6-reachability	exit=0
+p6-generate-bin	exit=0
+p6-matrix-check	exit=0
+generate-bin-check	exit=0
+cli-typecheck	exit=0
+nullified-contract	exit=1	 4 pass  5 fail 
+restored	cli.tsx identical to HEAD
+__BG_EXIT__=0
