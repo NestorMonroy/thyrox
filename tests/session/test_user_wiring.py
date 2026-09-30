@@ -814,5 +814,205 @@ check("18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas",
 
 import shutil as _sh18  # noqa: E402
 _sh18.rmtree(_sandbox18, ignore_errors=True)
+
+print("\n== 19. el consumidor se RESUELVE: explicito > THYROX_CONSUMER > contexto > rehuso ==")
+# MITAD ROJA medida 2026-09-30 (TASK-THYROX-0261): `declared_wiring` caia a
+# `base.parent / "kaupamex-docs"` —un consumidor escrito a mano dentro del
+# proveedor— y `main()` no ofrecia `--consumer`. La decision del ejecutor
+# (`.claude/workbench/decisiones-ejecutor-siete-tareas-20260930T044345/`):
+# explicito -> por reach/contexto si es unico -> REHUSA. El contexto tiene dos
+# formas, las dos derivadas del roster de `reach`: el clon que CONTIENE el
+# punto de partida, o el unico clon declarado. `/home/user` —el cwd del
+# lanzador remoto— no esta dentro de ningun clon y lleva `.claude/`: con dos
+# clones declarados se rehusa en vez de tomar ese hogar por consumidor.
+import tempfile as _tf19  # noqa: E402
+
+_sandbox19 = Path(_tf19.mkdtemp())
+_clone_a19 = _sandbox19 / "kx-a"
+_clone_b19 = _sandbox19 / "kx-b"
+(_clone_a19 / "sub").mkdir(parents=True)
+_clone_b19.mkdir()
+# El hogar del lanzador: lleva `.claude/` y NO es un consumidor.
+_launcher_home19 = _sandbox19 / "home"
+(_launcher_home19 / ".claude").mkdir(parents=True)
+_explicit19 = _sandbox19 / "declared"
+_explicit19.mkdir()
+
+_original_reach19 = w.reach
+_original_consumer_env19 = _os0.environ.get(w.CONSUMER_ROOT_VAR)
+
+
+def _with_roster19(clones: dict) -> None:
+    setattr(w, "reach", lambda: dict(clones))
+
+
+def _without_roster19() -> None:
+    def _no_roster():
+        raise reach.ReachRootError("sin roster (simulado por la suite)")
+    setattr(w, "reach", _no_roster)
+
+
+def _refusal19(*args, **kwargs):
+    """El texto del rehuso, o None si resolvio."""
+    try:
+        w.resolve_consumer(*args, **kwargs)
+    except w.WiringRefused as error:
+        return str(error)
+    return None
+
+
+try:
+    _os0.environ[w.CONSUMER_ROOT_VAR] = str(_clone_b19)
+    _with_roster19({"a": _clone_a19, "b": _clone_b19})
+    check("19.1 el parametro explicito gana a THYROX_CONSUMER",
+          Path(_explicit19), w.resolve_consumer(_explicit19, start=_launcher_home19))
+    check("19.2 THYROX_CONSUMER sola resuelve, aunque el punto de partida este fuera",
+          _clone_b19.resolve(), w.resolve_consumer(start=_launcher_home19))
+
+    _os0.environ.pop(w.CONSUMER_ROOT_VAR, None)
+    check("19.3 sin variable, el clon que CONTIENE el punto de partida es el consumidor",
+          _clone_a19.resolve(), w.resolve_consumer(start=_clone_a19 / "sub"))
+    _with_roster19({"a": _clone_a19})
+    check("19.4 fuera de todo clon, el UNICO clon declarado es el consumidor",
+          _clone_a19.resolve(), w.resolve_consumer(start=_launcher_home19))
+
+    _with_roster19({"a": _clone_a19, "b": _clone_b19})
+    _ambiguous19 = _refusal19(start=_launcher_home19) or ""
+    check("19.5 fuera de todo clon y con dos declarados, REHUSA", True, bool(_ambiguous19))
+    check("19.5b y el rehuso nombra la variable y la opcion", True,
+          w.CONSUMER_ROOT_VAR in _ambiguous19 and "--consumer" in _ambiguous19)
+    check("19.5c y enumera los candidatos entre los que no elige", True,
+          str(_clone_a19.resolve()) in _ambiguous19 and str(_clone_b19.resolve()) in _ambiguous19)
+
+    _without_roster19()
+    _empty19 = _refusal19(start=_launcher_home19) or ""
+    check("19.6 sin roster que derivar, REHUSA nombrando la variable", True,
+          bool(_empty19) and w.CONSUMER_ROOT_VAR in _empty19)
+
+    # `declared_wiring` propaga el rehuso: sin consumidor no se componen rutas.
+    # El cwd de la suite es el proveedor, que no esta dentro de ningun clon.
+    _with_roster19({"a": _clone_a19, "b": _clone_b19})
+    try:
+        w.declared_wiring(root=HERE)
+        _propagated19 = False
+    except w.WiringRefused:
+        _propagated19 = True
+    check("19.7 declared_wiring sin consumidor resoluble REHUSA", True, _propagated19)
+    check("19.8 y con consumidor explicito compone las rutas con el", True,
+          f"{_explicit19}/.claude/agent-results"
+          in _json.dumps(w.declared_wiring(root=HERE, consumer=_explicit19)))
+
+    print("== 19-bis. CONTROL DE ANULACION: la ambiguedad deja de rehusar ==")
+    # Si con varios clones se tomara el primero —la forma del default que esta
+    # tarea retira—, cae 19.5 y SOLO 19.5: 19.3 y 19.4 no pasan por esa rama, y
+    # 19.6 rehusa por otra (sin roster no hay primero que tomar).
+    _original_sole19 = w.is_sole_candidate
+    setattr(w, "is_sole_candidate", lambda candidates: bool(candidates))
+    try:
+        _with_roster19({"a": _clone_a19, "b": _clone_b19})
+        _annulled_ambiguous19 = _refusal19(start=_launcher_home19)
+        _annulled_inside19 = w.resolve_consumer(start=_clone_a19 / "sub")
+        _with_roster19({"a": _clone_a19})
+        _annulled_sole19 = w.resolve_consumer(start=_launcher_home19)
+        _without_roster19()
+        _annulled_empty19 = _refusal19(start=_launcher_home19)
+    finally:
+        setattr(w, "is_sole_candidate", _original_sole19)
+    check("19-bis.1 anulado, la ambiguedad ya NO rehusa (19.5 cae)", None, _annulled_ambiguous19)
+    check("19-bis.2 el clon que contiene el punto de partida SOBREVIVE (19.3)",
+          _clone_a19.resolve(), _annulled_inside19)
+    check("19-bis.3 el unico clon SOBREVIVE (19.4)", _clone_a19.resolve(), _annulled_sole19)
+    check("19-bis.4 y sin roster SIGUE rehusando (19.6)", True, _annulled_empty19 is not None)
+    check("19-bis.5 restaurado, la ambiguedad vuelve a rehusar", False,
+          w.is_sole_candidate((_clone_a19, _clone_b19)))
+finally:
+    setattr(w, "reach", _original_reach19)
+    if _original_consumer_env19 is None:
+        _os0.environ.pop(w.CONSUMER_ROOT_VAR, None)
+    else:
+        _os0.environ[w.CONSUMER_ROOT_VAR] = _original_consumer_env19
+
+print("== 19-ter. main(): --consumer llega a las dos ramas, y el rehuso sale como REHUSA con exit 2 ==")
+# Un roster de dos clones fabricado por variables del localizador, un cwd
+# fuera de ambos y sin THYROX_CONSUMER: las dos ramas de `main` tienen que
+# rehusar igual, y con `--consumer` las dos tienen que trabajar.
+_env19 = {k: v for k, v in _os0.environ.items()
+          if k != w.CONSUMER_ROOT_VAR and not k.startswith("THYROX_REACH")}
+_env19.update({"THYROX_REACH_ROOTS": "a,b", "THYROX_CLONE_PREFIX": "kx-",
+               "THYROX_REACH_ROOT": str(_sandbox19),
+               "THYROX_REACH_A": str(_clone_a19), "THYROX_REACH_B": str(_clone_b19),
+               "PYTHONPATH": str(HERE / "src")})
+
+
+def _main19(*flags, live: dict, consumer=None):
+    live_path = _sandbox19 / "settings.local.json"
+    live_path.write_text(_json.dumps(live))
+    argv = [sys.executable, _MODULO, *flags]
+    if consumer is not None:
+        argv += ["--consumer", str(consumer)]
+    completed = _sp0.run(argv, cwd=str(_launcher_home19), capture_output=True, text=True,
+                         env={**_env19, w.LIVE_SETTINGS_VAR: str(live_path)})
+    return completed.returncode, completed.stdout, completed.stderr
+
+
+_rc_measure19, _, _err_measure19 = _main19(live={"hooks": {}})
+check("19-ter.1 la rama de medicion rehusa con exit 2", 2, _rc_measure19)
+check("19-ter.2 y lo dice como REHUSA nombrando la variable", True,
+      _err_measure19.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _err_measure19)
+_rc_write19, _, _err_write19 = _main19("--write", "--backups", str(_sandbox19), live={"hooks": {}})
+check("19-ter.3 la rama --write rehusa con exit 2", 2, _rc_write19)
+check("19-ter.4 y lo dice como REHUSA", True, _err_write19.startswith("REHUSA"))
+
+# Lo esperado se compone con el MISMO roster que ve el subproceso: con el
+# real, el `--repo` y el barrido de arranque difieren y la deriva seria de
+# la prueba, no del consumidor.
+_with_roster19({"a": _clone_a19, "b": _clone_b19})
+try:
+    _declared_explicit19 = w.declared_wiring(root=HERE, consumer=_explicit19)
+finally:
+    setattr(w, "reach", _original_reach19)
+_rc_ok19, _out_ok19, _err_ok19 = _main19(live=_declared_explicit19, consumer=_explicit19)
+check("19-ter.5 con --consumer la medicion trabaja", True, "roto(s) en la copia viva" in _out_ok19)
+check("19-ter.6 y el consumidor pasado es el que se compara: sin deriva", True,
+      "sin deriva" in _out_ok19)
+
+print("== 19-quater. los dos invocadores propagan el rehuso: el instalador shell y session_restart ==")
+# Los dos llamaban a `declared_wiring` poniendo ellos el consumidor: el
+# instalador shell con `reach.root("docs")` —un clon escrito a mano— y
+# `session_restart` sin ninguno. Con el roster ambiguo de 19-ter los dos
+# tienen que rehusar con exit 2 sin escribir nada; con el consumidor
+# declarado, trabajar.
+_installer19 = HERE / "src" / "session" / "instalar-hooks-sesion-multirepo.sh"
+_target19 = _sandbox19 / "installer-target"
+_installed19 = _target19 / ".claude" / "settings.local.json"
+_r_sh19 = _sp0.run(["bash", str(_installer19), str(_target19)], cwd=str(_launcher_home19),
+                   capture_output=True, text=True, env=_env19)
+check("19-quater.1 el instalador shell rehusa con exit 2", 2, _r_sh19.returncode)
+check("19-quater.2 y lo dice como REHUSA nombrando la variable", True,
+      _r_sh19.stderr.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _r_sh19.stderr)
+check("19-quater.3 y no deja ni un settings vacio detras", False, _installed19.exists())
+_r_sh_ok19 = _sp0.run(["bash", str(_installer19), str(_target19), "--consumer", str(_explicit19)],
+                      cwd=str(_launcher_home19), capture_output=True, text=True, env=_env19)
+check("19-quater.4 con --consumer instala", 0, _r_sh_ok19.returncode)
+check("19-quater.5 y el store apunta al consumidor pasado", True,
+      _installed19.exists() and f"{_explicit19}/.claude/agent-results" in _installed19.read_text())
+
+_restart19 = HERE / "src" / "session" / "session_restart.py"
+_transcript19 = _sandbox19 / "t.jsonl"
+_transcript19.write_text("")
+_restart_argv19 = [sys.executable, str(_restart19), "--transcript", str(_transcript19),
+                   "--root", str(HERE)]
+_r_restart19 = _sp0.run(_restart_argv19, cwd=str(_launcher_home19),
+                        capture_output=True, text=True, env=_env19)
+check("19-quater.6 session_restart rehusa con exit 2", 2, _r_restart19.returncode)
+check("19-quater.7 y lo dice como REHUSA nombrando la variable", True,
+      _r_restart19.stderr.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _r_restart19.stderr)
+_r_restart_ok19 = _sp0.run(_restart_argv19 + ["--consumer", str(_explicit19)],
+                           cwd=str(_launcher_home19), capture_output=True, text=True, env=_env19)
+check("19-quater.8 con --consumer session_restart pasa la resolucion del consumidor",
+      False, "REHUSA" in _r_restart_ok19.stderr)
+
+import shutil as _sh19  # noqa: E402
+_sh19.rmtree(_sandbox19, ignore_errors=True)
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

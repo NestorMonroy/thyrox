@@ -1,0 +1,1 @@
+timeout 300 bash bin/check_lint_zero src/session/instalar-hooks-sesion-multirepo.sh src/session/session_restart.py src/session/user_wiring.py > /home/user/thyrox/.claude/build-logs/rejected-reverify/0261-lint.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/rejected-reverify/0261-lint.log

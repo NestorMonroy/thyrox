@@ -1,0 +1,5 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790762013.979	     2.019	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/rejected-reverify/jobs/job-20260930T095333 job-20260930T095333 job-001
+4	:	1790762016.006	     3.425	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/rejected-reverify/jobs/job-20260930T095333 job-20260930T095333 job-004
+3	:	1790762013.988	     6.170	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/rejected-reverify/jobs/job-20260930T095333 job-20260930T095333 job-003
+2	:	1790762013.985	    44.865	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/rejected-reverify/jobs/job-20260930T095333 job-20260930T095333 job-002

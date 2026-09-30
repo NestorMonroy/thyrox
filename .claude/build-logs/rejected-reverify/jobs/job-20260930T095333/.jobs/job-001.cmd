@@ -1,0 +1,1 @@
+cd src/packages/agent && timeout 600 bun test __tests__/handleMessageFromStream.test.ts > /home/user/thyrox/.claude/build-logs/rejected-reverify/0284-agent.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/rejected-reverify/0284-agent.log
