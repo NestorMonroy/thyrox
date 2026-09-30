@@ -155,6 +155,19 @@ class TraversalCost(unittest.TestCase):
             self.assertIn(str(root), visited, 'el recorrido tiene que pasar por os.walk para poder podarse')
             self.assertFalse([path for path in visited if 'node_modules' in path], visited)
 
+    def test_pool_worktrees_are_runtime_state_not_the_tree(self):
+        # Un worktree de headless-pool vive bajo `.thyrox/` (ignorado por git) y
+        # lleva el código a medio escribir de un ítem en curso: medirlo exigía
+        # declarar en `.env.example` una clave que el árbol aún no lee.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / 'src').mkdir()
+            (root / 'src' / 'reader.py').write_text('import os\nos.environ.get("THYROX_A")\n')
+            item = root / '.thyrox' / 'pool-worktrees' / 'run' / '1' / 'src'
+            item.mkdir(parents=True)
+            (item / 'reader.py').write_text('import os\nos.environ.get("THYROX_IN_FLIGHT")\n')
+            self.assertEqual([root / 'src' / 'reader.py'], self.gate.tree_files(root))
+
     def test_only_files_naming_the_prefix_are_parsed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)

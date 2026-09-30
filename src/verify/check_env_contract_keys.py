@@ -39,8 +39,11 @@ TEST_MARKERS = ("__tests__", "/tests/", "test_", ".test.", "-test.")
 #: --identifiers` excluye `eventos/` y `tools/` «por ser evidencia y corpus
 #: vendorizado». Medido al añadirlo: la unica clave que caia por esta via era
 #: `THYROX_BOARD_DIR`, leida solo por la sonda de un volcado de tablero.
+#: `.thyrox/` es estado de ejecución, ignorado por git: los worktrees de
+#: headless-pool llevan el código a medio escribir de un ítem en curso, y una
+#: clave que sólo lee ese código aún no es obligación del árbol.
 SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/",
-             "/.claude/workbench/", "/.claude/eventos/")
+             "/.claude/workbench/", "/.claude/eventos/", "/.thyrox/")
 
 #: Segunda via: el nombre vive en una CONSTANTE y se pasa a `env_value(name)`.
 #: Un nombre que TERMINA en `_` no es una clave: es el PREFIJO de una familia
