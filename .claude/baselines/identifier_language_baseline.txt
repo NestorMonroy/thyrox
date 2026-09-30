@@ -744,7 +744,6 @@ src/packages/agent/__tests__/hooks.test.ts::cuerpo
 src/packages/agent/__tests__/hooks.test.ts::evento
 src/packages/agent/__tests__/hooks.test.ts::guion
 src/packages/agent/__tests__/hooks.test.ts::salida
-src/packages/agent/__tests__/hooksEngine.test.ts::marca
 src/packages/agent/__tests__/hooksEvents.test.ts::bloqueo
 src/packages/agent/__tests__/hooksEvents.test.ts::carga
 src/packages/agent/__tests__/hooksEvents.test.ts::cargas
@@ -782,7 +781,6 @@ src/packages/agent/__tests__/loop.test.ts::texto
 src/packages/agent/__tests__/loop.test.ts::ultimo
 src/packages/agent/__tests__/loop.test.ts::usaHerramienta
 src/packages/agent/__tests__/loop.test.ts::uso
-src/packages/agent/__tests__/loopCacheTtl.test.ts::texto
 src/packages/agent/__tests__/microcompact.test.ts::asistente
 src/packages/agent/__tests__/microcompact.test.ts::conversacion
 src/packages/agent/__tests__/microcompact.test.ts::copia
@@ -1279,13 +1277,6 @@ src/packages/cli/__tests__/loopStreaming.test.ts::texto
 src/packages/cli/__tests__/loopStreaming.test.ts::tipos
 src/packages/cli/__tests__/loopStreaming.test.ts::turnos
 src/packages/cli/__tests__/loopStreaming.test.ts::uso
-src/packages/cli/__tests__/print.test.ts::capturar
-src/packages/cli/__tests__/print.test.ts::grabacion
-src/packages/cli/__tests__/print.test.ts::sesiones
-src/packages/cli/__tests__/print.test.ts::texto
-src/packages/cli/__tests__/print.test.ts::turnos
-src/packages/cli/__tests__/print.test.ts::usa
-src/packages/cli/__tests__/print.test.ts::uso
 src/packages/cli/__tests__/ptyFrame.test.ts::cabecera
 src/packages/cli/__tests__/ptyFrame.test.ts::conSenal
 src/packages/cli/__tests__/ptyFrame.test.ts::cuerpo
@@ -1681,11 +1672,6 @@ src/packages/provider/__tests__/cost.test.ts::porEquiv
 src/packages/provider/__tests__/cost.test.ts::porUsd
 src/packages/provider/__tests__/cost.test.ts::propioFable
 src/packages/provider/__tests__/cost.test.ts::propioSonnet
-src/packages/provider/__tests__/credentials.test.ts::leidos
-src/packages/provider/__tests__/credentials.test.ts::pedido
-src/packages/provider/__tests__/credentials.test.ts::respuesta
-src/packages/provider/__tests__/credentials.test.ts::resto
-src/packages/provider/__tests__/credentials.test.ts::sinFd
 src/packages/provider/__tests__/crossModelRead.test.ts::pares
 src/packages/provider/__tests__/errorMessageConstants.test.ts::mensaje
 src/packages/provider/__tests__/geminiClient.test.ts::Llamada
@@ -2471,9 +2457,6 @@ src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts::oldTodos
 src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts::previa
 src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts::texto
 src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts::todos
-src/packages/tools/__tests__/planTools.test.ts::contexto
-src/packages/tools/__tests__/planTools.test.ts::modo
-src/packages/tools/__tests__/planTools.test.ts::raiz
 src/packages/tools/__tests__/skillTool.test.ts::hilo
 src/packages/tools/__tests__/subagent.test.ts::actualizar
 src/packages/tools/__tests__/subagent.test.ts::ahora

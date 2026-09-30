@@ -11,18 +11,18 @@ import { join } from 'node:path'
 import { parsePrintArgs, runPrint, streamJsonLines } from '../src/entry/print.ts'
 import { detectMode } from '../src/entry/detect-mode.ts'
 
-const uso = (n: number) => ({ input_tokens: n, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 10 * n })
-const texto = (t: string, n = 1) => ({ id: `m${n}`, model: 'claude-sonnet-5', stop_reason: 'end_turn', content: [{ type: 'text', text: t }], usage: uso(n) })
-const usa = (name: string, input: Record<string, unknown>, n = 1) => ({ id: `m${n}`, model: 'claude-sonnet-5', stop_reason: 'tool_use', content: [{ type: 'tool_use', id: `tu${n}`, name, input }], usage: uso(n) })
+const usageOf = (n: number) => ({ input_tokens: n, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 10 * n })
+const textTurn = (t: string, n = 1) => ({ id: `m${n}`, model: 'claude-sonnet-5', stop_reason: 'end_turn', content: [{ type: 'text', text: t }], usage: usageOf(n) })
+const toolUseTurn = (name: string, input: Record<string, unknown>, n = 1) => ({ id: `m${n}`, model: 'claude-sonnet-5', stop_reason: 'tool_use', content: [{ type: 'tool_use', id: `tu${n}`, name, input }], usage: usageOf(n) })
 
-function grabacion(turnos: unknown[]): string {
+function writeRecording(turns: unknown[]): string {
   const d = mkdtempSync(join(tmpdir(), 'print-rec-'))
   const f = join(d, 'turnos.json')
-  writeFileSync(f, JSON.stringify(turnos))
+  writeFileSync(f, JSON.stringify(turns))
   return f
 }
 
-async function capturar(fn: () => Promise<number>): Promise<{ code: number; out: string; err: string }> {
+async function capture(fn: () => Promise<number>): Promise<{ code: number; out: string; err: string }> {
   let out = ''
   let err = ''
   const w = process.stdout.write.bind(process.stdout)
@@ -96,9 +96,9 @@ describe('parsePrintArgs — el contrato de thyrox -p', () => {
 describe('streamJsonLines — las formas del binario', () => {
   const transcript = [
     { type: 'user', message: { role: 'user', content: [{ type: 'text', text: 'hola' }] } },
-    { type: 'assistant', message: { id: 'm1', model: 'claude-sonnet-5', role: 'assistant', content: [{ type: 'text', text: 'ok' }], usage: uso(1) } },
+    { type: 'assistant', message: { id: 'm1', model: 'claude-sonnet-5', role: 'assistant', content: [{ type: 'text', text: 'ok' }], usage: usageOf(1) } },
   ]
-  const result = { stop: 'end_turn' as const, turns: 1, lastText: 'ok', usage: uso(1), sessionId: 's1', transcriptPath: '/t', usd: 0.5 }
+  const result = { stop: 'end_turn' as const, turns: 1, lastText: 'ok', usage: usageOf(1), sessionId: 's1', transcriptPath: '/t', usd: 0.5 }
   const lines = streamJsonLines({ transcript, result, model: 'claude-sonnet-5', tools: ['Read'], cwd: '/w', startedAt: 0, now: 12 })
 
   test('abre con system/init', () => {
@@ -109,12 +109,12 @@ describe('streamJsonLines — las formas del binario', () => {
     const a = lines.filter((l) => l.type === 'assistant')
     expect(a).toHaveLength(1)
     expect(a[0]).toMatchObject({ type: 'assistant', session_id: 's1', parent_tool_use_id: null })
-    expect((a[0] as { message: { usage: unknown } }).message.usage).toEqual(uso(1))
+    expect((a[0] as { message: { usage: unknown } }).message.usage).toEqual(usageOf(1))
   })
 
   test('cierra con result de éxito, con los campos de S5', () => {
     expect(lines.at(-1)).toMatchObject({ type: 'result', subtype: 'success', is_error: false, num_turns: 1,
-      result: 'ok', session_id: 's1', total_cost_usd: 0.5, usage: uso(1), duration_ms: 12, stop_reason: 'end_turn' })
+      result: 'ok', session_id: 's1', total_cost_usd: 0.5, usage: usageOf(1), duration_ms: 12, stop_reason: 'end_turn' })
   })
 
   test('max_turns da error_max_turns y is_error', () => {
@@ -130,9 +130,9 @@ describe('streamJsonLines — las formas del binario', () => {
 
 describe('runPrint — de punta a punta con proveedor grabado', () => {
   test('stream-json: init, una assistant por petición y result; herramientas filtradas', async () => {
-    const g = grabacion([usa('Read', { file_path: '/etc/hostname' }, 1), texto('listo', 2)])
+    const g = writeRecording([toolUseTurn('Read', { file_path: '/etc/hostname' }, 1), textTurn('listo', 2)])
     const td = mkdtempSync(join(tmpdir(), 'print-td-'))
-    const { code, out } = await capturar(() => runPrint(['-p', 'lee algo', '--provider', 'recorded', '--grabacion', g,
+    const { code, out } = await capture(() => runPrint(['-p', 'lee algo', '--provider', 'recorded', '--grabacion', g,
       '--tools', 'Read', '--output-format', 'stream-json', '--max-turns', '5'], process.cwd(), td, null))
     const lines = out.trim().split('\n').map((l) => JSON.parse(l))
     expect(code).toBe(0)
@@ -142,43 +142,43 @@ describe('runPrint — de punta a punta con proveedor grabado', () => {
   })
 
   test('--no-session-persistence no deja transcript', async () => {
-    const g = grabacion([texto('hecho')])
+    const g = writeRecording([textTurn('hecho')])
     const td = mkdtempSync(join(tmpdir(), 'print-td-'))
-    const { code } = await capturar(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g,
+    const { code } = await capture(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g,
       '--no-session-persistence', '--output-format', 'json'], process.cwd(), td, null))
     expect(code).toBe(0)
     expect(readdirSync(td)).toEqual([])
   })
 
   test('sin --no-session-persistence el transcript queda', async () => {
-    const g = grabacion([texto('hecho')])
+    const g = writeRecording([textTurn('hecho')])
     const td = mkdtempSync(join(tmpdir(), 'print-td-'))
-    await capturar(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, null))
+    await capture(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, null))
     expect(readdirSync(td).length).toBeGreaterThan(0)
   })
 
   test('text: imprime sólo el resultado', async () => {
-    const g = grabacion([texto('la respuesta')])
+    const g = writeRecording([textTurn('la respuesta')])
     const td = mkdtempSync(join(tmpdir(), 'print-td-'))
-    const { out } = await capturar(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, null))
+    const { out } = await capture(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, null))
     expect(out).toBe('la respuesta\n')
   })
 
   test('el prompt por stdin llega al modelo', async () => {
-    const g = grabacion([texto('ok')])
+    const g = writeRecording([textTurn('ok')])
     const td = mkdtempSync(join(tmpdir(), 'print-td-'))
-    const { code } = await capturar(() => runPrint(['-p', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, 'desde stdin'))
+    const { code } = await capture(() => runPrint(['-p', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, 'desde stdin'))
     expect(code).toBe(0)
-    const sesiones = readdirSync(td)
-    expect(sesiones.length).toBe(1)
-    const [session] = sesiones
+    const sessions = readdirSync(td)
+    expect(sessions.length).toBe(1)
+    const [session] = sessions
     expect(session).toBeDefined()
     expect(existsSync(join(td, session as string))).toBe(true)
   })
 
   test('una bandera desconocida sale 2 y lo dice por stderr', async () => {
     const td = mkdtempSync(join(tmpdir(), 'print-td-'))
-    const { code, err } = await capturar(() => runPrint(['-p', 'x', '--bogus'], process.cwd(), td, null))
+    const { code, err } = await capture(() => runPrint(['-p', 'x', '--bogus'], process.cwd(), td, null))
     expect(code).toBe(2)
     expect(err).toContain('--bogus')
   })

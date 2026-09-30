@@ -14,58 +14,58 @@ import { PlanMode } from '@thyrox/plan/mode'
 import { planTools } from '../src/plan.ts'
 import type { ToolContext } from '@thyrox/agent/loop/types'
 
-function raiz(): string {
+function makeRoot(): string {
   return mkdtempSync(join(tmpdir(), 'planmode-'))
 }
 
-function contexto(cwd: string): ToolContext {
+function makeContext(cwd: string): ToolContext {
   return { cwd, sessionId: 's1', abort: new AbortController().signal, messages: [] }
 }
 
 describe('ExitPlanMode lee del archivo, no de un parámetro', () => {
   test('rehúsa sin archivo y rehúsa con archivo vacío', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    modo.enter()
-    const [, exit] = planTools(modo)
-    expect((await exit!.run({}, contexto(root))).isError).toBe(true)
-    modo.write('   \n  ')
-    expect((await exit!.run({}, contexto(root))).isError).toBe(true)
-    expect(modo.current()).toBe('planning')
+    const root = makeRoot()
+    const mode = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
+    mode.enter()
+    const [, exit] = planTools(mode)
+    expect((await exit!.run({}, makeContext(root))).isError).toBe(true)
+    mode.write('   \n  ')
+    expect((await exit!.run({}, makeContext(root))).isError).toBe(true)
+    expect(mode.current()).toBe('planning')
   })
 
   test('con plan escrito pasa a esperar aprobación y devuelve el texto', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    modo.enter()
-    modo.write('# Plan\n\n1. Medir\n2. Portar\n')
-    const [, exit] = planTools(modo)
-    const r = await exit!.run({}, contexto(root))
+    const root = makeRoot()
+    const mode = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
+    mode.enter()
+    mode.write('# Plan\n\n1. Medir\n2. Portar\n')
+    const [, exit] = planTools(mode)
+    const r = await exit!.run({}, makeContext(root))
     expect(r.isError).toBe(false)
     expect(r.content).toContain('2. Portar')
-    expect(modo.current()).toBe('awaitingApproval')
+    expect(mode.current()).toBe('awaitingApproval')
   })
 })
 
 describe('EnterPlanMode', () => {
   test('no recibe parámetros y entrega las instrucciones con la ruta', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    const [enter] = planTools(modo)
+    const root = makeRoot()
+    const mode = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
+    const [enter] = planTools(mode)
     expect(Object.keys(enter!.input_schema.properties ?? {})).toHaveLength(0)
-    const r = await enter!.run({}, contexto(root))
-    expect(r.content).toContain(modo.path)
-    expect(modo.current()).toBe('planning')
+    const r = await enter!.run({}, makeContext(root))
+    expect(r.content).toContain(mode.path)
+    expect(mode.current()).toBe('planning')
   })
 
   test('entrar dos veces es idempotente y no pierde el estado de aprobación', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    const [enter] = planTools(modo)
-    await enter!.run({}, contexto(root))
-    modo.write('# Plan')
-    modo.requestApproval()
-    await enter!.run({}, contexto(root))
-    expect(modo.current()).toBe('awaitingApproval')
+    const root = makeRoot()
+    const mode = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
+    const [enter] = planTools(mode)
+    await enter!.run({}, makeContext(root))
+    mode.write('# Plan')
+    mode.requestApproval()
+    await enter!.run({}, makeContext(root))
+    expect(mode.current()).toBe('awaitingApproval')
   })
 })

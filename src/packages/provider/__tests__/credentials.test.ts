@@ -2,45 +2,45 @@ import { describe, expect, test } from 'bun:test'
 import { authHeaders, OAUTH_BETA, resolveCredential, scrubChildEnv } from '../src/credentials.ts'
 import { AnthropicHttpProvider } from '../src/anthropicHttp.ts'
 
-const sinFd = () => {
+const withoutFd = () => {
   throw new Error('no se esperaba leer un fd')
 }
 
 describe('resolveCredential — la cadena jc()/Qf() de 2.1.282 con nombres THYROX', () => {
   test('sin nada declarado la fuente es none', () => {
-    expect(resolveCredential({}, sinFd)).toEqual({ source: 'none' })
+    expect(resolveCredential({}, withoutFd)).toEqual({ source: 'none' })
   })
 
   test('ANTHROPIC_API_KEY viaja como x-api-key', () => {
-    const c = resolveCredential({ ANTHROPIC_API_KEY: 'k' }, sinFd)
+    const c = resolveCredential({ ANTHROPIC_API_KEY: 'k' }, withoutFd)
     expect(c).toEqual({ source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: 'k' })
     expect(authHeaders(c)).toEqual({ 'x-api-key': 'k' })
   })
 
   test('ANTHROPIC_AUTH_TOKEN gana a la llave y va como Bearer', () => {
-    const c = resolveCredential({ ANTHROPIC_AUTH_TOKEN: 't', ANTHROPIC_API_KEY: 'k' }, sinFd)
+    const c = resolveCredential({ ANTHROPIC_AUTH_TOKEN: 't', ANTHROPIC_API_KEY: 'k' }, withoutFd)
     expect(c).toEqual({ source: 'ANTHROPIC_AUTH_TOKEN', kind: 'bearer', secret: 't' })
     expect(authHeaders(c)).toEqual({ authorization: 'Bearer t' })
   })
 
   test('THYROX_CODE_OAUTH_TOKEN es OAuth: Bearer más la beta oauth', () => {
-    const c = resolveCredential({ THYROX_CODE_OAUTH_TOKEN: 'o' }, sinFd)
+    const c = resolveCredential({ THYROX_CODE_OAUTH_TOKEN: 'o' }, withoutFd)
     expect(c).toEqual({ source: 'THYROX_CODE_OAUTH_TOKEN', kind: 'oauth', secret: 'o' })
     expect(authHeaders(c)).toEqual({ authorization: 'Bearer o', 'anthropic-beta': OAUTH_BETA })
   })
 
   test('el token por descriptor se lee del fd declarado y se recorta', () => {
-    const leidos: number[] = []
+    const readFds: number[] = []
     const c = resolveCredential({ THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '7' }, (fd) => {
-      leidos.push(fd)
+      readFds.push(fd)
       return '  tok\n'
     })
-    expect(leidos).toEqual([7])
+    expect(readFds).toEqual([7])
     expect(c).toEqual({ source: 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR', kind: 'oauth', secret: 'tok' })
   })
 
   test('un descriptor que no es número no se lee y lo dice', () => {
-    const c = resolveCredential({ THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: 'x' }, sinFd)
+    const c = resolveCredential({ THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: 'x' }, withoutFd)
     expect(c.source).toBe('none')
     expect(c.error).toContain('THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')
   })
@@ -52,12 +52,12 @@ describe('resolveCredential — la cadena jc()/Qf() de 2.1.282 con nombres THYRO
   })
 
   test('las variables del cliente ajeno NO se leen: los nombres propios son THYROX_CODE_*', () => {
-    const c = resolveCredential({ CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '3' }, sinFd) // thyrox-rename: keep — el nombre del anfitrión no se lee
+    const c = resolveCredential({ CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '3' }, withoutFd) // thyrox-rename: keep — el nombre del anfitrión no se lee
     expect(c.source).toBe('none')
   })
 
   test('ANTHROPIC_UNIX_SOCKET se declara como transporte', () => {
-    const c = resolveCredential({ ANTHROPIC_UNIX_SOCKET: '/run/a.sock', ANTHROPIC_API_KEY: 'k' }, sinFd)
+    const c = resolveCredential({ ANTHROPIC_UNIX_SOCKET: '/run/a.sock', ANTHROPIC_API_KEY: 'k' }, withoutFd)
     expect(c.unixSocket).toBe('/run/a.sock')
   })
 })
@@ -78,8 +78,8 @@ describe('scrubChildEnv — FNe()/Gct() de 2.1.282', () => {
   })
 
   test('sin la bandera no se quita nada', () => {
-    const { THYROX_CODE_PROVIDER_MANAGED_BY_HOST: _, ...resto } = env
-    expect(scrubChildEnv(resto)).toEqual(resto)
+    const { THYROX_CODE_PROVIDER_MANAGED_BY_HOST: _, ...rest } = env
+    expect(scrubChildEnv(rest)).toEqual(rest)
   })
 
   test('la bandera en 0 cuenta como apagada', () => {
@@ -88,11 +88,11 @@ describe('scrubChildEnv — FNe()/Gct() de 2.1.282', () => {
 })
 
 describe('AnthropicHttpProvider con la cadena de credenciales', () => {
-  const respuesta = () =>
+  const response = () =>
     new Response(JSON.stringify({ content: [{ type: 'text', text: 'ok' }], stop_reason: 'end_turn', usage: {} }), {
       status: 200,
     })
-  const pedido = { model: 'm', system: 's', tools: [], messages: [], maxTokens: 10, cacheTtl: '1h' as const }
+  const request = { model: 'm', system: 's', tools: [], messages: [], maxTokens: 10, cacheTtl: '1h' as const }
 
   test('OAuth por entorno: Bearer y las dos betas juntas', async () => {
     let init: RequestInit | undefined
@@ -100,10 +100,10 @@ describe('AnthropicHttpProvider con la cadena de credenciales', () => {
       env: { THYROX_CODE_OAUTH_TOKEN: 'o' },
       fetchImpl: async (_u, i) => {
         init = i
-        return respuesta()
+        return response()
       },
     })
-    await p.send(pedido as never)
+    await p.send(request as never)
     const h = init?.headers as Record<string, string>
     expect(h.authorization).toBe('Bearer o')
     expect(h['x-api-key']).toBeUndefined()
@@ -120,10 +120,10 @@ describe('AnthropicHttpProvider con la cadena de credenciales', () => {
       env: { ANTHROPIC_UNIX_SOCKET: '/run/a.sock', ANTHROPIC_API_KEY: 'k' },
       fetchImpl: async (_u, i) => {
         init = i
-        return respuesta()
+        return response()
       },
     })
-    await p.send(pedido as never)
+    await p.send(request as never)
     expect(init?.unix).toBe('/run/a.sock')
   })
 })

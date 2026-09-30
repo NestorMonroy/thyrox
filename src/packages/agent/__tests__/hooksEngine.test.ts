@@ -117,8 +117,8 @@ describe('executeHooksOutsideREPL — exit codes y JSON', () => {
   })
   test('el hook recibe el input por stdin', async () => {
     setHooksConfigSnapshot({ ConfigChange: [{ hooks: [cmd('cat')] }] })
-    const [r] = await executeHooksOutsideREPL({ hookInput: { ...input, marca: 'x1' } })
-    expect(JSON.parse(r!.output)).toMatchObject({ hook_event_name: 'ConfigChange', marca: 'x1' })
+    const [r] = await executeHooksOutsideREPL({ hookInput: { ...input, marker: 'x1' } })
+    expect(JSON.parse(r!.output)).toMatchObject({ hook_event_name: 'ConfigChange', marker: 'x1' })
   })
   test('el matcher filtra por matchQuery', async () => {
     setHooksConfigSnapshot({ ConfigChange: [{ matcher: 'skills', hooks: [cmd('true')] }] })
