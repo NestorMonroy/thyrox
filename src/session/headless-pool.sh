@@ -515,6 +515,13 @@ _headless_item_run() {
       | (cd "$workdir" || exit 1
          # Los trabajos que lance un item aislado, su ledger y su archivo van a
          # la salida del item: ni al arbol ni al parche.
+         # La intención documental (`document_intent.py`): el ítem la escribe
+         # donde el pool le dice, con la procedencia que el pool le da, y
+         # `pool_lifecycle` la publica con el resto de sus artefactos. Quien
+         # la consume es `documentation_publisher`, fuera del pool.
+         export THYROX_POOL_DOCUMENT_INTENT="$HP_LIVE/$n.intent.json" \
+                THYROX_POOL_RUN_ID="${HP_LIVE##*/}" THYROX_POOL_ITEM="$n" \
+                THYROX_POOL_ITEM_GENERATION="$HP_ITEM_GENERATION"
          if [[ "$HP_ISOLATION" == worktree ]]; then
              # >>> item-root
              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
