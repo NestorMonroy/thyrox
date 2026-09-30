@@ -19,6 +19,23 @@ import { openExistingConnectionStore } from '../src/accounts/connectionStoreHome
 import { resolveCredential } from '../src/credentials.ts'
 import { startCredentialProxy } from '../src/credentialProxy.ts'
 
+// Las dos vías de dar al proxy una credencial propia, y por qué un pool no la
+// necesita: sin variable de credencial, en `inherit` cada ítem entra al proxy
+// local (C7) y `--credential-proxy` sobra.
+const ENV_ROUTE =
+  'declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ' +
+  'o ANTHROPIC_API_KEY en el entorno del proxy'
+const STORE_ROUTE =
+  'o guárdala cifrada en el store de conexiones con ' +
+  '`bash bin/cli providers add anthropic --credential-env <VAR>` (sin --credential-env, por prompt oculto)'
+const POOL_NOTE =
+  'Un pool no lo exige: --credential-proxy es opcional, y en inherit cada ítem usa el proxy local'
+
+function refusalMessage(cause: string | undefined): string {
+  const detail = cause ? ` (${cause})` : ''
+  return `credentialProxy: sin credencial propia${detail} — ${ENV_ROUTE}, ${STORE_ROUTE}. ${POOL_NOTE}. NO se escucha.\n`
+}
+
 function argument(name: string): string | undefined {
   const index = process.argv.indexOf(name)
   return index >= 0 ? process.argv[index + 1] : undefined
@@ -36,11 +53,7 @@ const opened = openExistingConnectionStore()
 const credential = resolveCredential(process.env, undefined, opened?.store)
 opened?.close()
 if (credential.source === 'none' || credential.source === 'proxy') {
-  process.stderr.write(
-    'credentialProxy: sin credencial propia — declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, ' +
-      'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY en el entorno del proxy' +
-      (credential.error ? ` (${credential.error})` : '') + '. NO se escucha.\n',
-  )
+  process.stderr.write(refusalMessage(credential.error))
   process.exit(2)
 }
 

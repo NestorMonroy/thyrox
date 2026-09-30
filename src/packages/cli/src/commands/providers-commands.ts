@@ -35,8 +35,11 @@ import { createOAuthLogin } from './providers/oauthLogin.ts'
 
 type Row = Record<string, unknown>
 
+type ProvidersStore = { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null; create(data: Row): Row | null }
+type OpenedProvidersStore = { store: ProvidersStore; close(): void }
+
 export interface ProvidersCommandDeps {
-  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null; create(data: Row): Row | null }; close(): void }
+  openStore: () => OpenedProvidersStore
   write: (text: string) => void
   interactive: boolean
   confirm: (question: string) => Promise<boolean>
@@ -138,6 +141,25 @@ async function removeConnection(args: string[], deps: ProvidersCommandDeps, stor
   return EXIT_OK
 }
 
+/**
+ * El store se abre en su primer uso, no al despachar el verbo: abrirlo crea el
+ * archivo, y un verbo que no lo toca —`add --dry-run`— no debe dejarlo creado.
+ * `close` sólo cierra lo que llegó a abrirse.
+ */
+function openOnFirstUse(open: ProvidersCommandDeps['openStore']): OpenedProvidersStore {
+  let opened: OpenedProvidersStore | undefined
+  const current = (): ProvidersStore => (opened ??= open()).store
+  return {
+    store: {
+      list: () => current().list(),
+      delete: id => current().delete(id),
+      update: (id, fields) => current().update(id, fields),
+      create: data => current().create(data),
+    },
+    close: () => opened?.close(),
+  }
+}
+
 /** `thyrox providers <verb>` desde la tabla de modos: el verbo es la segunda palabra. */
 export async function providersCommand(argv: string[], deps: ProvidersCommandDeps = realProvidersCommandDeps): Promise<number> {
   const [, verb, ...args] = argv
@@ -145,7 +167,7 @@ export async function providersCommand(argv: string[], deps: ProvidersCommandDep
     deps.write(`thyrox providers: unknown verb '${verb ?? ''}'; expected one of: ${PROVIDERS_VERBS.join(', ')}\n`)
     return EXIT_USAGE
   }
-  const opened = deps.openStore()
+  const opened = openOnFirstUse(deps.openStore)
   try {
     const testDeps = { store: opened.store, testDeps: deps.testDeps, now: deps.now, write: deps.write }
     switch (verb) {

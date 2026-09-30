@@ -236,7 +236,16 @@ bash bin/check_env_contract_keys --strict   # 3. contrato cerrado
 bash install.sh                             # 4. activa los githooks del proveedor y de cada clon
 bash bin/check_githooks_activos --strict    # 5. ¿corren de verdad? exit 1 nombra el clon y su arreglo
 bash tests/run.sh                           # 6. el árbol funciona
+bash bin/cli providers add anthropic --credential-env <VAR>   # 7. opcional: credencial propia del pool
 ```
+
+**El paso 7 da al pool una credencial propia, por una de dos vías.** Con
+`--credential-env <VAR>` la clave se lee de esa variable; sin la opción, de un
+prompt oculto. En los dos casos queda cifrada en el store de conexiones, y
+`resolveCredential` la lee cuando el entorno no declara ninguna variable de
+credencial. Sin él, un pool corre igual en `inherit` a través del proxy local:
+`--credential-proxy` es opcional, y `bin/provider-credential-proxy` lo recuerda
+al rehusar sin credencial.
 
 **Sin el paso 4 ningún gate de commit corre, y nada lo dice.** `core.hooksPath`
 vive en `.git/config`, que no se clona: un clon nuevo trae `.githooks/` escrito

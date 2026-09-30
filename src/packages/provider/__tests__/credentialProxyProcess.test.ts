@@ -76,4 +76,27 @@ describe('provider-credential-proxy', () => {
     expect(await new Response(child.stderr).text()).toContain('ANTHROPIC_API_KEY')
     expect(existsSync(socket)).toBe(false)
   })
+
+  test('3. el rechazo nombra la vía del store de conexiones, con variable y con prompt oculto', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'credential-proxy-process-'))
+    const child = Bun.spawn(['bun', ENTRY, '--socket', join(dir, 'api.sock'), '--upstream', 'http://127.0.0.1:9'], {
+      env: { PATH: process.env.PATH ?? '', HOME: dir }, stdout: 'pipe', stderr: 'pipe',
+    })
+    expect(await child.exited).toBe(2)
+    const refusal = await new Response(child.stderr).text()
+    expect(refusal).toContain('bash bin/cli providers add anthropic --credential-env <VAR>')
+    expect(refusal).toContain('sin --credential-env')
+    expect(refusal).toContain('prompt oculto')
+  })
+
+  test('4. el rechazo declara que un pool no necesita --credential-proxy', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'credential-proxy-process-'))
+    const child = Bun.spawn(['bun', ENTRY, '--socket', join(dir, 'api.sock'), '--upstream', 'http://127.0.0.1:9'], {
+      env: { PATH: process.env.PATH ?? '', HOME: dir }, stdout: 'pipe', stderr: 'pipe',
+    })
+    expect(await child.exited).toBe(2)
+    const refusal = await new Response(child.stderr).text()
+    expect(refusal).toContain('--credential-proxy es opcional')
+    expect(refusal).toContain('inherit')
+  })
 })
