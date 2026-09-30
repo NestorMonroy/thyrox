@@ -137,5 +137,115 @@ del os.environ["THYROX_RAM_ADMISSION_LEDGER"], os.environ["THYROX_RAM_ADMISSION_
 check("sin declararlo, el registro vive en la caché del repo", "ram-admission.json", ra.ram_ledger_path().name)
 check("sin declararlo, MemAvailable sale del kernel", Path("/proc/meminfo"), ra.meminfo_path())
 
+
+def fake_headroom(path: Path, ceiling: str, code: int = 3, delay_s: float = 0.0) -> Path:
+    """Un disk-headroom falso: imprime CEILING con --ceiling-bytes, espera DELAY_S
+    (para ensanchar la ventana de carrera) y sale con CODE."""
+    path.write_text(f"#!/usr/bin/env bash\nsleep {delay_s}\n"
+                    f"[[ \" $* \" == *' --ceiling-bytes '* ]] && printf '%s\\n' '{ceiling}'\nexit {code}\n")
+    path.chmod(0o755)
+    return path
+
+
+def disk_cli(headroom: Path, ledger: Path, *args: str, floor_mb: str = "0") -> subprocess.CompletedProcess:
+    env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "THYROX_DISK_ADMISSION_HEADROOM": str(headroom),
+           "THYROX_DISK_ADMISSION_LEDGER": str(ledger), "THYROX_DISK_ADMISSION_FLOOR_MB": floor_mb}
+    return subprocess.run([sys.executable, "-m", "session.resource_admission", *args],
+                          cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
+
+
+MIB = 1024 * 1024
+
+print("caso 9 — disco: el techo sale de disk-headroom --ceiling-bytes")
+with tempfile.TemporaryDirectory() as disk_tmp:
+    disk_dir = Path(disk_tmp)
+    check("un entero con exit 3 es el techo", 5000,
+          ra.ceiling_bytes(fake_headroom(disk_dir / "h3", "5000", 3), "/"))
+    check("con exit 1 (reserva alcanzable) también", 7000,
+          ra.ceiling_bytes(fake_headroom(disk_dir / "h1", "7000", 1), "/"))
+    check("exit 2 es «sin medida»", None, ra.ceiling_bytes(fake_headroom(disk_dir / "h2", "", 2), "/"))
+    check("una salida no entera es «sin medida»", None,
+          ra.ceiling_bytes(fake_headroom(disk_dir / "hx", "abc", 0), "/"))
+    check("un binario ausente es «sin medida»", None, ra.ceiling_bytes(disk_dir / "absent", "/"))
+
+    print("caso 10 — disco: lo admisible es techo − piso − reservas vivas")
+    check("10000 − 1000 − 3000", 6000, ra.disk_headroom({"4242": 3000}, 10_000, 1000))
+    check("sin techo no hay margen", None, ra.disk_headroom({}, None, 1000))
+
+    print("caso 11 — disk-admit: cabe → 0 y queda la reserva; no cabe → 3")
+    ledger = disk_dir / "disk.json"
+    fits = fake_headroom(disk_dir / "fits", str(10 * MIB))
+    owner = subprocess.Popen(["sleep", "30"])
+    try:
+        check("cabe → 0", 0, disk_cli(fits, ledger, "disk-admit", "--need-bytes", str(4 * MIB),
+                                      "--owner", str(owner.pid), "--timeout", "0").returncode)
+        check("la reserva queda registrada", {str(owner.pid): 4 * MIB}, ra.ReservationLedger(ledger).live())
+        check("el piso en MiB se descuenta: 10 − 7 de piso no deja 4", 3,
+              disk_cli(fits, disk_dir / "floor.json", "disk-admit", "--need-bytes", str(4 * MIB),
+                       "--owner", str(owner.pid), "--timeout", "0", floor_mb="7").returncode)
+        refused_fit = disk_cli(fits, ledger, "disk-admit", "--need-bytes", str(7 * MIB),
+                               "--owner", str(os.getpid()), "--timeout", "0")
+        check("no cabe → 3", 3, refused_fit.returncode)
+        check("el vencido publica necesidad y techo", True,
+              f"necesidad {7 * MIB} bytes" in refused_fit.stderr and f"techo {10 * MIB} bytes" in refused_fit.stderr)
+
+        print("caso 12 — disk-release suelta la reserva")
+        check("disk-release sale 0", 0, disk_cli(fits, ledger, "disk-release", "--owner", str(owner.pid)).returncode)
+        check("el registro ya no la cuenta", {}, ra.ReservationLedger(ledger).live())
+    finally:
+        owner.kill(); owner.wait()
+
+    print("caso 13 — dos dueños vivos cuya suma no cabe: entra uno")
+    slow = fake_headroom(disk_dir / "slow", str(5 * MIB), delay_s=0.4)
+    race_ledger = disk_dir / "race.json"
+    owners = [subprocess.Popen(["sleep", "30"]) for _ in range(2)]
+    try:
+        env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "THYROX_DISK_ADMISSION_HEADROOM": str(slow),
+               "THYROX_DISK_ADMISSION_LEDGER": str(race_ledger), "THYROX_DISK_ADMISSION_FLOOR_MB": "0"}
+        racers = [subprocess.Popen([sys.executable, "-m", "session.resource_admission", "disk-admit",
+                                    "--need-bytes", str(3 * MIB), "--owner", str(o.pid), "--timeout", "0"],
+                                   cwd=ROOT, env=env) for o in owners]
+        check("uno admitido (0) y uno vencido (3)", [0, 3], sorted(r.wait(timeout=60) for r in racers))
+        check("una sola reserva en el registro", 1, len(ra.ReservationLedger(race_ledger).live()))
+
+        print("caso 14 — muerto el dueño, su reserva de disco deja de contar")
+        for o in owners:
+            o.kill(); o.wait()
+        check("entra sin que nadie haya soltado", 0,
+              disk_cli(fake_headroom(disk_dir / "tight", str(5 * MIB)), race_ledger, "disk-admit",
+                       "--need-bytes", str(4 * MIB),
+                       "--owner", str(os.getpid()), "--timeout", "0").returncode)
+    finally:
+        for o in owners:
+            o.kill(); o.wait()
+
+    print("caso 15 — disk-headroom rehúsa: 2, con la causa, sin tocar el registro")
+    refused_ledger = disk_dir / "refused.json"
+    refused = disk_cli(fake_headroom(disk_dir / "refuse", "", 2), refused_ledger, "disk-admit",
+                       "--need-bytes", "1", "--owner", str(os.getpid()), "--timeout", "5")
+    check("sale 2", 2, refused.returncode)
+    check("nombra disk-headroom en stderr", True, "disk-headroom" in refused.stderr)
+    check("no crea el registro", False, refused_ledger.exists())
+
+print("caso 16 — el registro, el piso y el medidor de disco se declaran por entorno")
+for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
+    os.environ.pop(name, None)
+check("sin declararlo, el registro vive en la caché del repo", "disk-admission.json", ra.disk_ledger_path().name)
+check("sin declararlo, el piso es el default con nombre", ra.DEFAULT_DISK_FLOOR_MB * MIB, ra.disk_floor_bytes())
+check("sin declararlo, el medidor es el disk-headroom del árbol", "disk-headroom.sh", ra.disk_headroom_command().name)
+os.environ["THYROX_DISK_ADMISSION_LEDGER"] = "/x/disk.json"
+os.environ["THYROX_DISK_ADMISSION_FLOOR_MB"] = "3"
+os.environ["THYROX_DISK_ADMISSION_HEADROOM"] = "/x/headroom"
+check("THYROX_DISK_ADMISSION_LEDGER gana", Path("/x/disk.json"), ra.disk_ledger_path())
+check("THYROX_DISK_ADMISSION_FLOOR_MB gana, en MiB", 3 * MIB, ra.disk_floor_bytes())
+check("THYROX_DISK_ADMISSION_HEADROOM gana", Path("/x/headroom"), ra.disk_headroom_command())
+for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
+    del os.environ[name]
+
+print("caso 17 — .env.example declara las tres variables del disco")
+example = (ROOT / ".env.example").read_text()
+for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
+    check(f"{name} figura en .env.example", True, f"\n{name}=" in example)
+
 print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

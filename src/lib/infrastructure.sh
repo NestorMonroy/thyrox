@@ -168,6 +168,58 @@ thyrox_infrastructure_health_check_argv() {
 }
 export -f thyrox_infrastructure_health_check_argv
 
+# --- disco que exige bajar cada imagen (TASK-THYROX-0671) ---
+#
+# Bytes comprimidos de las capas del manifiesto linux/amd64 de cada imagen por
+# defecto, sumados de `podman manifest inspect <imagen>@<digest>` el
+# 2026-09-30 (banco `disk-reserve-reach-20260930T191002`).
+readonly _INFRASTRUCTURE_POSTGRES_COMPRESSED_BYTES=156322638
+readonly _INFRASTRUCTURE_REDIS_COMPRESSED_BYTES=43594077
+# Cuanto disco ocupa un pull por byte comprimido: el blob comprimido se
+# conserva mientras se desempaqueta, y gzip reduce estas capas unas 2-3 veces.
+# 4 es una COTA SUPERIOR declarada, no una medida: ninguna de las dos imagenes
+# estaba bajada para leer su tamaño desempaquetado. Ciega a una imagen
+# sobreescrita por variable, que hereda la necesidad de la imagen por defecto.
+readonly _INFRASTRUCTURE_PULL_EXPANSION_FACTOR=4
+
+# @description Imprime la imagen declarada de un contenedor conocido.
+# @arg $1 string `thyrox-postgres` o `thyrox-redis`.
+# @stdout la referencia de la imagen.
+# @exitcode 0 imagen publicada.
+# @exitcode 2 nombre desconocido.
+thyrox_infrastructure_image() {
+  local name="${1:-}"
+  case "$name" in
+    "$_INFRASTRUCTURE_POSTGRES_NAME") printf '%s\n' "$THYROX_INFRA_POSTGRES_IMAGE" ;;
+    "$_INFRASTRUCTURE_REDIS_NAME") printf '%s\n' "$THYROX_INFRA_REDIS_IMAGE" ;;
+    *)
+      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
+      return 2
+      ;;
+  esac
+}
+export -f thyrox_infrastructure_image
+
+# @description Imprime los bytes de disco que exige bajar la imagen de un
+# contenedor conocido: lo que el ensure reserva antes de `podman create`.
+# @arg $1 string `thyrox-postgres` o `thyrox-redis`.
+# @stdout un entero, en bytes.
+# @exitcode 0 necesidad publicada.
+# @exitcode 2 nombre desconocido.
+thyrox_infrastructure_disk_need_bytes() {
+  local name="${1:-}" compressed
+  case "$name" in
+    "$_INFRASTRUCTURE_POSTGRES_NAME") compressed="$_INFRASTRUCTURE_POSTGRES_COMPRESSED_BYTES" ;;
+    "$_INFRASTRUCTURE_REDIS_NAME") compressed="$_INFRASTRUCTURE_REDIS_COMPRESSED_BYTES" ;;
+    *)
+      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
+      return 2
+      ;;
+  esac
+  printf '%s\n' "$(( compressed * _INFRASTRUCTURE_PULL_EXPANSION_FACTOR ))"
+}
+export -f thyrox_infrastructure_disk_need_bytes
+
 # @description Inspecciona un contenedor y publica su estado reportado y su
 # PID, separados por tab. Usa THYROX_TOOLCHAIN_PODMAN_BIN si esta resuelto
 # (via `thyrox_toolchain_require_podman`), o el `podman` del PATH.

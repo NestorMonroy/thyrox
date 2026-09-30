@@ -13,11 +13,17 @@ contador que se repone en un `trap` pierde el hueco con SIGKILL.
 
 El registro y el bucle no saben de qué recurso se trata. Cada recurso aporta
 su medida: la VRAM, `gpu_monitor` con `nvidia-smi`; la RAM, este módulo con
-`MemAvailable` y el RSS de cada árbol en `/proc`.
+`MemAvailable` y el RSS de cada árbol en `/proc`; el disco, este módulo con el
+techo que publica `disk-headroom --ceiling-bytes` menos un piso de seguridad.
+
+El disco no tiene uso por proceso que leer: lo que un pull ya escribió no se
+puede atribuir a su dueño, así que su reserva cuenta entera hasta que la
+suelta. Es la lectura conservadora —durante el pull esos bytes se descuentan
+dos veces— y el ensure suelta en cuanto el `podman create` termina.
 
 Métrica: lo libre que el sistema declara, menos lo reservado y aún no usado.
-Ciega a: la memoria que un proceso ajeno al registro va a pedir y todavía no
-pidió —ése no reserva—, y al pico de un ítem por encima de lo que reservó.
+Ciega a: lo que un proceso ajeno al registro va a pedir y todavía no pidió
+—ése no reserva—, y al pico de un ítem por encima de lo que reservó.
 """
 from __future__ import annotations
 
@@ -25,6 +31,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from collections.abc import Callable
@@ -39,6 +46,25 @@ _MEM_AVAILABLE = re.compile(r"^MemAvailable:\s+(\d+)\s+kB$", re.M)
 _VM_RSS = re.compile(r"^VmRSS:\s+(\d+)\s+kB$", re.M)
 RAM_LEDGER_VAR = "THYROX_RAM_ADMISSION_LEDGER"
 MEMINFO_VAR = "THYROX_RAM_ADMISSION_MEMINFO"
+DISK_LEDGER_VAR = "THYROX_DISK_ADMISSION_LEDGER"
+DISK_FLOOR_VAR = "THYROX_DISK_ADMISSION_FLOOR_MB"
+DISK_HEADROOM_VAR = "THYROX_DISK_ADMISSION_HEADROOM"
+BYTES_PER_MIB = 1024 * 1024
+#: El piso de disco que ninguna admisión reparte. Worktrees, cachés, logs y las
+#: capas temporales que Podman desempaqueta durante un pull escriben en el mismo
+#: sistema de archivos sin reservar; 2 GiB es del orden de una capa grande más
+#: los worktrees de un pool, y deja margen para que el propio registro y el
+#: `git` de la sesión no mueran con `no space left on device`.
+DEFAULT_DISK_FLOOR_MB = 2048
+#: El `disk-headroom` del árbol, hermano de este módulo en `src/repo/`.
+DEFAULT_DISK_HEADROOM = Path(__file__).resolve().parent.parent / "repo" / "disk-headroom.sh"
+#: Dónde vive el almacén de Podman: el `graphroot` medido está en el sistema de
+#: archivos raíz (banco `disk-reserve-reach-20260930T191002`).
+DEFAULT_DISK_PATH = "/"
+DISK_HEADROOM_TIMEOUT_S = 60
+EXIT_ADMITTED = 0
+EXIT_UNMEASURED = 2
+EXIT_TIMEOUT = 3
 
 
 def ram_ledger_path() -> Path:
@@ -202,7 +228,89 @@ def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
     return free - pending(live, usage, {pid: {pid} for pid in trees})
 
 
-def main(argv: list[str]) -> int:
+def disk_ledger_path() -> Path:
+    """El registro de disco comprometido; uno por máquina, como el de RAM."""
+    declared = os.environ.get(DISK_LEDGER_VAR)
+    return Path(declared) if declared else cache_dir() / "disk-admission.json"
+
+
+def disk_floor_bytes() -> int:
+    """El piso de seguridad en bytes, declarado en MiB."""
+    return int(os.environ.get(DISK_FLOOR_VAR) or DEFAULT_DISK_FLOOR_MB) * BYTES_PER_MIB
+
+
+def disk_headroom_command() -> Path:
+    """El medidor del techo: el `disk-headroom` del árbol, salvo declaración."""
+    declared = os.environ.get(DISK_HEADROOM_VAR)
+    return Path(declared) if declared else DEFAULT_DISK_HEADROOM
+
+
+def ceiling_bytes(headroom_command: Path, target: str) -> int | None:
+    """El techo real de ``target`` según ``disk-headroom --ceiling-bytes``.
+    ``None`` si rehúsa, no responde o no publica un entero: sin medida."""
+    try:
+        result = subprocess.run([str(headroom_command), "--path", target, "--ceiling-bytes"],
+                                capture_output=True, text=True, timeout=DISK_HEADROOM_TIMEOUT_S)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    published = result.stdout.strip()
+    if result.returncode == EXIT_UNMEASURED or not published.isdigit():
+        return None
+    return int(published)
+
+
+def disk_headroom(live: dict[str, int], ceiling: int | None, floor: int) -> int | None:
+    """Lo admisible de disco: el techo menos el piso y lo que los dueños vivos
+    reservaron. Sin uso por proceso que leer, cada reserva cuenta entera."""
+    if ceiling is None:
+        return None
+    return ceiling - floor - pending(live, {}, {})
+
+
+def admit_disk(args: argparse.Namespace) -> int:
+    """``disk-admit`` como código de salida: 0 reservó, 3 venció el plazo sin
+    sitio, 2 ``disk-headroom`` no midió — y entonces no se toca el registro."""
+    command, floor = disk_headroom_command(), disk_floor_bytes()
+    if ceiling_bytes(command, args.path) is None:
+        print(f"resource_admission disk-admit: disk-headroom no midió el techo de {args.path} "
+              f"({command}); sin medida no se espera", file=sys.stderr)
+        return EXIT_UNMEASURED
+    admitted = admit_with(disk_ledger_path(), args.need_bytes, args.owner,
+                          lambda live: disk_headroom(live, ceiling_bytes(command, args.path), floor),
+                          "disk-admission", args.timeout, args.interval)
+    if admitted:
+        return EXIT_ADMITTED
+    report_disk_refusal(args.need_bytes, ceiling_bytes(command, args.path), floor)
+    return EXIT_TIMEOUT
+
+
+def report_disk_refusal(need: int, ceiling: int | None, floor: int) -> None:
+    """Publica por stderr las cifras con que se decidió: quien rehúsa un pull
+    tiene que poder nombrar la necesidad y el techo sin volver a medir."""
+    reserved = pending(ReservationLedger(disk_ledger_path()).live(), {}, {})
+    print(f"resource_admission disk-admit: no cabe la necesidad {need} bytes; techo {ceiling} bytes, "
+          f"piso {floor} bytes, reservado por otros {reserved} bytes", file=sys.stderr)
+
+
+def release_disk(args: argparse.Namespace) -> int:
+    release_from(disk_ledger_path(), args.owner, "disk-admission")
+    return EXIT_ADMITTED
+
+
+def admit_ram(args: argparse.Namespace) -> int:
+    meminfo = args.meminfo or meminfo_path()
+    admitted = admit_with(args.ledger or ram_ledger_path(), args.need, args.owner,
+                          lambda live: ram_headroom(live, meminfo), "ram-admission",
+                          args.timeout, args.interval)
+    return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
+
+
+def release_ram(args: argparse.Namespace) -> int:
+    release_from(args.ledger or ram_ledger_path(), args.owner, "ram-admission")
+    return EXIT_ADMITTED
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="resource_admission", description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="order", required=True)
     p_admit = sub.add_parser("admit-ram", help="reserva NEED kB de RAM; sale 0, o 3 al vencer el plazo")
@@ -212,19 +320,28 @@ def main(argv: list[str]) -> int:
     p_admit.add_argument("--meminfo", type=Path, default=None)
     p_admit.add_argument("--timeout", type=float, default=600.0)
     p_admit.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
-    p_release = sub.add_parser("release", help="suelta la reserva de OWNER")
+    p_admit.set_defaults(handler=admit_ram)
+    p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
     p_release.add_argument("--ledger", type=Path, default=None)
     p_release.add_argument("--owner", type=int, required=True)
-    args = parser.parse_args(argv)
-    ledger = args.ledger or ram_ledger_path()
-    if args.order == "release":
-        release_from(ledger, args.owner, "ram-admission")
-        return 0
-    meminfo = args.meminfo or meminfo_path()
-    admitted = admit_with(ledger, args.need, args.owner,
-                          lambda live: ram_headroom(live, meminfo), "ram-admission",
-                          args.timeout, args.interval)
-    return 0 if admitted else 3
+    p_release.set_defaults(handler=release_ram)
+    p_disk = sub.add_parser("disk-admit", help="reserva NEED bytes de disco; sale 0, 3 al vencer el plazo, "
+                                               "o 2 si disk-headroom no mide")
+    p_disk.add_argument("--need-bytes", type=int, required=True)
+    p_disk.add_argument("--owner", type=int, required=True)
+    p_disk.add_argument("--path", default=DEFAULT_DISK_PATH)
+    p_disk.add_argument("--timeout", type=float, default=600.0)
+    p_disk.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+    p_disk.set_defaults(handler=admit_disk)
+    p_disk_release = sub.add_parser("disk-release", help="suelta la reserva de disco de OWNER")
+    p_disk_release.add_argument("--owner", type=int, required=True)
+    p_disk_release.set_defaults(handler=release_disk)
+    return parser
+
+
+def main(argv: list[str]) -> int:
+    args = build_parser().parse_args(argv)
+    return args.handler(args)
 
 
 if __name__ == "__main__":

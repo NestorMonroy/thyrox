@@ -67,7 +67,12 @@ case "\$1" in
     printf '%s\t%s\n' "\$status" "\$pid"
     exit 0
     ;;
+  image)
+    [[ "\$2" == exists && -f "\$STATE/image-present" ]] && exit 0
+    exit 1
+    ;;
   create)
+    [[ -f "\$STATE/create-fails" ]] && exit 125
     name=""
     prev=""
     for a in "\$@"; do
@@ -114,10 +119,25 @@ exit 0
 STUB
 chmod +x "$WORK/sleep-fake"
 
+# La admision de disco falsa (TASK-THYROX-0671): registra su argv en el mismo
+# calls.log que podman, para medir el ORDEN admitir -> create -> soltar, y
+# admite salvo que el estado declare el disco lleno.
+cat > "$WORK/admission-fake" <<STUB
+#!/usr/bin/env bash
+printf 'admission %s\n' "\$*" >> "$STATE/calls.log"
+if [[ "\$1" == disk-admit && -f "$STATE/disk-full" ]]; then
+  echo "resource_admission disk-admit: no cabe la necesidad; techo 1000 bytes, piso 0 bytes" >&2
+  exit 3
+fi
+exit 0
+STUB
+chmod +x "$WORK/admission-fake"
+
 reset_state() { rm -rf "$STATE"; mkdir -p "$STATE"; }
 run_ensure() {
   THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" \
   THYROX_INFRA_ENSURE_SLEEP_BIN="$WORK/sleep-fake" \
+  THYROX_INFRA_DISK_ADMISSION_BIN="$WORK/admission-fake" \
   THYROX_INFRA_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-6}" \
   THYROX_INFRA_HEALTH_INTERVAL="${TEST_HEALTH_INTERVAL:-2}" \
   THYROX_INFRA_POSTGRES_PASSWORD="${TEST_PASSWORD-secret123}" \
@@ -286,6 +306,87 @@ if tail -n +$((calls_after_first + 1)) "$STATE/calls.log" | grep -qE '^(create|r
   bad "caso 7: la segunda invocacion volvio a crear o borrar algo"
 else
   ok "caso 7: la segunda invocacion no recrea nada"
+fi
+
+# =====================================================================
+# Caso 8 — TASK-THYROX-0671: imagen ausente y cabe -> admitir, crear, soltar.
+# =====================================================================
+reset_state
+echo ok > "$STATE/thyrox-postgres.health"
+echo ok > "$STATE/thyrox-redis.health"
+need_pg="$(bash -c "source '$ROOT/src/lib/infrastructure.sh'; thyrox_infrastructure_disk_need_bytes thyrox-postgres")"
+out="$(run_ensure)"; rc=$?
+thyrox_check "caso 8: cabe -> exit 0" "0" "$rc"
+if [[ "$out" == *"thyrox-postgres"*"action=created"* ]]; then
+  ok "caso 8: con el disco admitido, postgres se crea"
+else
+  bad "caso 8: postgres no se creo: [$out]"
+fi
+if grep -q "^admission disk-admit --need-bytes $need_pg --owner [0-9]" "$STATE/calls.log"; then
+  ok "caso 8: reserva la necesidad declarada de postgres a nombre de un pid"
+else
+  bad "caso 8: no se vio el disk-admit de postgres: $(cat "$STATE/calls.log")"
+fi
+order="$(grep -nE '^(admission disk-admit|create .*thyrox-postgres|admission disk-release)' "$STATE/calls.log" \
+  | head -3 | sed -E 's/^[0-9]+:(admission )?//; s/ .*//' | tr '\n' ' ')"
+thyrox_check "caso 8: el orden es admitir, crear y soltar" "disk-admit create disk-release " "$order"
+
+# =====================================================================
+# Caso 9 — imagen ausente y NO cabe: exit 2 sin podman create, con la causa.
+# =====================================================================
+reset_state
+touch "$STATE/disk-full"
+echo ok > "$STATE/thyrox-postgres.health"
+echo ok > "$STATE/thyrox-redis.health"
+err="$(run_ensure 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 9: no cabe -> exit 2" "2" "$rc"
+if grep -qE '^create ' "$STATE/calls.log"; then
+  bad "caso 9: se llamo podman create sin disco admitido"
+else
+  ok "caso 9: ningun podman create sin disco admitido"
+fi
+for piece in thyrox-postgres "$need_pg" "techo" "disk-reserve-reach-20260930T191002"; do
+  if [[ "$err" == *"$piece"* ]]; then
+    ok "caso 9: el rehuso nombra $piece"
+  else
+    bad "caso 9: el rehuso no nombro $piece: [$err]"
+  fi
+done
+
+# =====================================================================
+# Caso 10 — imagen presente con techo pequeño: crea sin pasar por la admision.
+# =====================================================================
+reset_state
+touch "$STATE/disk-full" "$STATE/image-present"
+echo ok > "$STATE/thyrox-postgres.health"
+echo ok > "$STATE/thyrox-redis.health"
+out="$(run_ensure)"; rc=$?
+thyrox_check "caso 10: imagen presente -> exit 0 aunque el disco no admita" "0" "$rc"
+if grep -q '^admission ' "$STATE/calls.log"; then
+  bad "caso 10: se paso por la admision con la imagen presente"
+else
+  ok "caso 10: con la imagen presente no se pide disco"
+fi
+
+# =====================================================================
+# Caso 11 — el create falla: la reserva se suelta igual.
+# =====================================================================
+reset_state
+touch "$STATE/create-fails"
+out="$(TEST_HEALTH_TIMEOUT=2 run_ensure 2>/dev/null)"
+if grep -q '^admission disk-release --owner [0-9]' "$STATE/calls.log"; then
+  ok "caso 11: con el create fallido, la reserva se suelta"
+else
+  bad "caso 11: no se solto la reserva tras un create fallido: $(cat "$STATE/calls.log")"
+fi
+
+# =====================================================================
+# Caso 12 — la variable de la admision esta declarada en .env.example.
+# =====================================================================
+if grep -q '^THYROX_INFRA_DISK_ADMISSION_BIN=$' "$ROOT/.env.example"; then
+  ok "caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN"
+else
+  bad "caso 12: .env.example no declara THYROX_INFRA_DISK_ADMISSION_BIN"
 fi
 
 thyrox_summary

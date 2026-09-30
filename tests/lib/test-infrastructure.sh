@@ -176,6 +176,26 @@ else
   bad "falta la etiqueta en alguno de los dos"
 fi
 
+# --- TASK-THYROX-0671: necesidad de disco e imagen, por contenedor ---
+need_pg="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-postgres")"; rc=$?
+thyrox_check "disk_need_bytes(postgres) sale 0" "0" "$rc"
+thyrox_check "disk_need_bytes(postgres): capas comprimidas medidas x factor de pull" \
+  "$(( 156322638 * 4 ))" "$need_pg"
+need_redis="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-redis")"
+thyrox_check "disk_need_bytes(redis): capas comprimidas medidas x factor de pull" \
+  "$(( 43594077 * 4 ))" "$need_redis"
+out_unknown_need="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-mongo" 2>/dev/null)"; rc=$?
+thyrox_check "disk_need_bytes de un nombre desconocido sale 2" "2" "$rc"
+thyrox_check "disk_need_bytes de un nombre desconocido no imprime nada" "" "$out_unknown_need"
+
+image_pg="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_image thyrox-postgres")"
+thyrox_check "image(postgres) es la imagen declarada" "docker.io/pgvector/pgvector:0.8.0-pg16" "$image_pg"
+image_redis="$(THYROX_INFRA_REDIS_IMAGE='docker.io/library/redis:7.5' bash -c \
+  "source '$SUBJECT'; thyrox_infrastructure_image thyrox-redis")"
+thyrox_check "image(redis) respeta la variable" "docker.io/library/redis:7.5" "$image_redis"
+bash -c "source '$SUBJECT'; thyrox_infrastructure_image thyrox-mongo" >/dev/null 2>&1
+thyrox_check "image de un nombre desconocido sale 2" "2" "$?"
+
 # --- inspeccion contra un podman falso ---
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
 cat > "$WORK/podman-fake" <<'STUB'
