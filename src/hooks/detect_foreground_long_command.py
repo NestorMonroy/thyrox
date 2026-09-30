@@ -25,6 +25,16 @@ ensambladores ni por un ``nohup`` propio. Las tres condiciones importan:
   quitan las envolturas (``bash``, ``uv run``, ``time``, asignaciones de
   entorno) antes de buscar la familia al principio de lo que queda.
 
+Las esperas se miden aparte
+---------------------------
+
+Una espera (``BLOCKING_WAIT``) nombra el mecanismo, así que el descuento la
+eximiría. Tiene dos defectos distintos, cada uno con su aviso: en el primer
+plano del cliente **bloquea** el turno; desprendida del shell —lista cerrada
+por ``&``, o envuelta en ``nohup``/``setsid``— **no notifica** a nadie y recoge
+el trabajo del ledger en silencio. La desprendida se mide primero porque
+``run_in_background`` no la corrige: el defecto está en el comando.
+
 Qué NO hace, y es deliberado
 ----------------------------
 
@@ -117,6 +127,66 @@ BLOCKING_WAIT = re.compile(
 )
 
 
+#: Separadores de LISTA del shell: ``;``, salto de línea y el ``&`` suelto. El
+#: ``&`` desprende la lista entera que termina —``a && b &`` lanza las dos—, así
+#: que ``&&``, ``||`` y ``|`` quedan dentro. Se excluye el ``&`` de una
+#: redirección (``2>&1``, ``&>log``, ``<&3``): redirige, no desprende.
+_LIST_TERMINATOR = re.compile(r";|\n|(?<![&<>|])&(?![&>])")
+
+#: Envolturas que desprenden sin ``&``: ``setsid -f`` sale en el acto, y
+#: ``nohup`` sólo tiene sentido para un proceso que sobrevive al shell.
+#: ``disown`` no figura: sin un ``&`` previo no desprende nada, y con él ya lo
+#: delata el terminador.
+_DETACHING_WRAPPER = re.compile(r"\b(?:nohup|setsid)\b")
+
+
+def shell_lists(command: str) -> list[tuple[str, str]]:
+    """Cada lista del comando con el terminador que la cierra (``""`` al final)."""
+    lists = []
+    start = 0
+    for terminator in _LIST_TERMINATOR.finditer(command):
+        lists.append((command[start:terminator.start()], terminator.group()))
+        start = terminator.end()
+    lists.append((command[start:], ""))
+    return lists
+
+
+def is_detached(shell_list: str, terminator: str) -> bool:
+    """La lista corre fuera del shell que la lanza: ``&`` final o envoltura."""
+    return terminator == "&" or bool(_DETACHING_WRAPPER.search(shell_list))
+
+
+def detaches_a_wait(command: str) -> bool:
+    """Alguna espera del comando se desprende del shell en vez de esperar en él."""
+    return any(BLOCKING_WAIT.search(shell_list) and is_detached(shell_list, terminator)
+               for shell_list, terminator in shell_lists(command))
+
+
+def blocks_the_turn(command: str, tool_input: dict) -> bool:
+    """Una espera en el primer plano del cliente: retiene el turno hasta terminar."""
+    return bool(BLOCKING_WAIT.search(command)) and not tool_input.get("run_in_background")
+
+
+#: La espera desprendida corre en el segundo plano del SHELL: el cliente no la
+#: ve, nadie recibe aviso al terminar y recoge el trabajo del ledger en
+#: silencio. Es el defecto de TASK-THYROX-0668, distinto de bloquear.
+DETACHED_WAIT_NOTICE = (
+    "GATE DE SEGUNDO PLANO — esta ESPERA se desprende del shell (`&`, `nohup` "
+    "o `setsid`): corre en el segundo plano del SHELL, no en el del cliente, así "
+    "que nadie recibe aviso cuando termina y recoge el trabajo del ledger en "
+    "silencio. Lanza el mismo comando sin `&` ni `disown` (ni `nohup`/`setsid`) "
+    "con `run_in_background` del cliente: es lo único que notifica."
+)
+
+BLOCKING_WAIT_NOTICE = (
+    "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
+    "trabajo termine. Una espera es un comando largo: lánzala con "
+    "`run_in_background` y sigue trabajando; el cliente te notifica "
+    "cuando termina. Para mirar sin bloquear: `thyrox-bg status <nombre>` "
+    "o `wait-jobs status`."
+)
+
+
 def detect(payload: dict) -> str | None:
     """El aviso de segundo plano si el comando lo merece, o ``None``."""
     tool_input = payload.get("tool_input") or {}
@@ -124,15 +194,11 @@ def detect(payload: dict) -> str | None:
     if not isinstance(command, str) or not command.strip():
         return None
 
-    if (BLOCKING_WAIT.search(strip_heredoc_bodies(command))
-            and not tool_input.get("run_in_background")):
-        return (
-            "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
-            "trabajo termine. Una espera es un comando largo: lánzala con "
-            "`run_in_background` y sigue trabajando; el cliente te notifica "
-            "cuando termina. Para mirar sin bloquear: `thyrox-bg status <nombre>` "
-            "o `wait-jobs status`."
-        )
+    executed = strip_heredoc_bodies(command)
+    if detaches_a_wait(executed):
+        return DETACHED_WAIT_NOTICE
+    if blocks_the_turn(executed, tool_input):
+        return BLOCKING_WAIT_NOTICE
 
     # Un comando que ya viaja por el mecanismo cumple la regla: callar.
     if ALREADY_BACKGROUND.search(command):

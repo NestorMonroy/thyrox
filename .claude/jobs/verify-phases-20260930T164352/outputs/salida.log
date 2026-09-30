@@ -1,0 +1,16 @@
+lifecycle-py	rc=0	resultado: 55 de 55 aserciones en verde
+snapshot-recovery	rc=0	resultado: 63 de 63 aserciones en verde
+pool-lifecycle-sh	rc=0	result: 40 of 40 assertions green
+pool-worktree	rc=0	test-headless-pool-worktree: 46 aserciones — 46 ok, 0 falla(s)
+pool-item-drain	rc=0	result: 17 of 17 assertions green
+item-stash	rc=0	item_worktree stash guard: 33/33
+bench-seal-gate	rc=0	test_bench_untracked: 23 aserciones — 23 ok, 0 falla(s)
+store-migrations	rc=0	resultado: 28 de 28 aserciones en verde
+usage-columns	rc=0	31 ok, 0 fallos
+usage-source	rc=0	usage_source: 12 ok, 0 fallos
+infra-ensure	rc=0	25 casos: 25 ok, 0 fallos
+bun-observability	rc=0	Ran 42 tests across 3 files. [526.00ms]
+bun-tools	rc=0	Ran 76 tests across 8 files. [6.32s]
+bun-task	rc=0	Ran 44 tests across 3 files. [190.00ms]
+bun-daemon	rc=0	Ran 567 tests across 33 files. [8.88s]
+__BG_EXIT__=0

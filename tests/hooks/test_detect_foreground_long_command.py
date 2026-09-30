@@ -110,29 +110,6 @@ def test_the_dispatcher_registers_it():
     assert any(name == "detect_foreground_long_command" for name, _ in registry)
 
 
-# Sin este bloque `python3 <suite>` sólo IMPORTA el módulo: las funciones
-# `test_*` no se invocan y el corredor cuenta la suite en verde. El verde no
-# distinguía «las aserciones pasan» de «las aserciones no se ejecutan» —
-# sub-patrón D con la propia suite como sujeto. Medido: 20 funciones inertes en
-# dos archivos de los 117 `test_*.py` (los otros 81 sin bloque asertan a nivel
-# de módulo, y ésas sí corren al importar).
-if __name__ == "__main__":
-    import traceback
-    _failures = 0
-    for _name, _case in sorted(list(globals().items())):
-        if not _name.startswith("test_") or not callable(_case):
-            continue
-        try:
-            _case()
-            print(f"  ok    {_name}")
-        except Exception:
-            _failures += 1
-            print(f"  FALLO {_name}")
-            traceback.print_exc()
-    print(f"resumen: {_failures} fallo(s)")
-    raise SystemExit(1 if _failures else 0)
-
-
 def _payload_bg(command, background):
     return {"tool_name": "Bash",
             "tool_input": {"command": command, "run_in_background": background}}
@@ -166,3 +143,76 @@ def test_a_wait_named_inside_a_heredoc_body_stays_silent():
     """El cuerpo de un heredoc es un dato que se escribe, no una orden."""
     command = "python3 - <<'PY'\nnota = 'usa wait-jobs wait'\nPY"
     assert gate.detect(_payload_bg(command, False)) is None
+
+
+#: El comando real del episodio de TASK-THYROX-0668, citado verbatim.
+EPISODE_DETACHED_WAIT = ("bash bin/wait-jobs wait --only shell-gate-pool --timeout 7500"
+                         " >/dev/null 2>&1 & disown")
+
+
+def _is_detached_notice(notice):
+    return bool(notice) and "desprende" in notice and "run_in_background" in notice
+
+
+def test_the_episode_detached_wait_is_named_as_detached():
+    """La espera con `& disown` no bloquea: el aviso de bloqueo decía lo contrario."""
+    for background in (False, True):
+        notice = gate.detect(_payload_bg(EPISODE_DETACHED_WAIT, background))
+        assert _is_detached_notice(notice), background
+        assert "bloquea el turno" not in notice
+
+
+def test_a_wait_list_ended_by_an_ampersand_is_detached():
+    """El `&` desprende la lista entera, `&&` incluido, no sólo el último comando."""
+    for command in ("bash bin/thyrox-bg wait suite &",
+                    "bash bin/wait-jobs wait && echo listo &",
+                    "nohup bash bin/wait-jobs wait > log 2>&1 &"):
+        assert _is_detached_notice(gate.detect(_payload_bg(command, True))), command
+
+
+def test_a_wait_wrapped_by_setsid_or_nohup_is_detached():
+    """Sin `&`: sólo el envoltorio lo delata; es la rama que carga este caso."""
+    for command in ("setsid -f bash bin/wait-jobs wait --timeout 1800",
+                    "nohup bash bin/thyrox-bg wait suite > log 2>&1"):
+        assert _is_detached_notice(gate.detect(_payload_bg(command, True))), command
+
+
+def test_a_client_background_wait_with_redirections_stays_silent():
+    """`2>&1` y `&>` redirigen; no desprenden. Con `run_in_background`, calla."""
+    for command in ("bash bin/wait-jobs wait --only shell-gate-pool --timeout 7500",
+                    "bash bin/wait-jobs wait --timeout 1800 >log 2>&1",
+                    "bash bin/thyrox-bg wait suite &>log"):
+        assert gate.detect(_payload_bg(command, True)) is None, command
+
+
+def test_a_detached_launch_that_is_not_a_wait_is_not_a_detached_wait():
+    notice = gate.detect(_payload_bg("bash bin/thyrox-bg start x -- bash tests/run.sh &", False))
+    assert not _is_detached_notice(notice)
+
+
+def test_a_detached_wait_inside_a_heredoc_body_stays_silent():
+    command = "cat > nota.md <<'EOF'\nbash bin/wait-jobs wait & disown\nEOF"
+    assert gate.detect(_payload_bg(command, True)) is None
+
+
+# Sin este bloque `python3 <suite>` sólo IMPORTA el módulo: las funciones
+# `test_*` no se invocan y el corredor cuenta la suite en verde. El verde no
+# distinguía «las aserciones pasan» de «las aserciones no se ejecutan» —
+# sub-patrón D con la propia suite como sujeto. Medido: 20 funciones inertes en
+# dos archivos de los 117 `test_*.py` (los otros 81 sin bloque asertan a nivel
+# de módulo, y ésas sí corren al importar).
+if __name__ == "__main__":
+    import traceback
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
+            continue
+        try:
+            _case()
+            print(f"  ok    {_name}")
+        except Exception:
+            _failures += 1
+            print(f"  FALLO {_name}")
+            traceback.print_exc()
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

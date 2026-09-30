@@ -1,0 +1,2 @@
+{"model": "qwen2.5:0.5b", "tools_capability": true, "size_bytes": 397821319, "pull_seconds": 0.7, "load_seconds": 0.0, "ram_idle_bytes": 17383424, "ram_loaded_bytes": 836464640, "ram_peak_bytes": 865083392, "ttft_seconds": 0.12, "tokens_per_second": 36.0, "tool_cases_passed": 6, "tool_cases_total": 6, "concurrency_seconds": {"1": 2.16, "2": 0.55, "4": 1.02}}
+__BG_EXIT__=0

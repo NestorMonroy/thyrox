@@ -1,0 +1,47 @@
+== bash -c cd src/packages/daemon && bun test src/__tests__/podmanWorkerManager.test.ts src/__tests__/podmanWorkerSupervision.test.ts src/__tests__/bgDaemonWorkerSupervision.test.ts src/__tests__/workerContainerLifecycle.test.ts
+bun test v1.3.11 (af24e281)
+
+ 69 pass
+ 0 fail
+ 127 expect() calls
+Ran 69 tests across 4 files. [699.00ms]
+exit=0
+== bash -c cd src/packages/provider && bun test src/proxy/__tests__/claudeCliUpstream.test.ts
+bun test v1.3.11 (af24e281)
+
+ 10 pass
+ 0 fail
+ 55 expect() calls
+Ran 10 tests across 1 file. [1058.00ms]
+exit=0
+== bash tests/daemon/test-podman-worker-manager-real.sh
+  ok    caso 1: launch CPU sale 0 y publica result=launched
+  ok    caso 1: el contenedor del worker existe
+  ok    caso 1: el PID del worker esta vivo en el anfitrion
+  ok    caso 2: retire sale 0 y declara el contenedor retirado
+  ok    caso 2: tras retire el contenedor no existe
+  ok    caso 2: tras retire el PID del worker no existe
+  ok    caso 3: la imagen inexistente falla como WorkerLaunchError
+  ok    caso 3: la etapa que falla es create
+  ok    caso 3: no queda contenedor
+  ok    caso 4: el comando instantaneo falla como WorkerLaunchError
+  ok    caso 4: la etapa que falla es liveness
+  ok    caso 4: no queda contenedor
+  ok    caso 5: el huerfano existe antes de reconciliar
+  ok    caso 5: reconcileOrphans nombra al huerfano como retirado
+  ok    caso 5: tras reconciliar el huerfano no existe
+  ok    caso 5: tras reconciliar su PID no existe
+  ok    caso 6: CUDA rehusa con exit 2 como UnsupportedAcceleratorError
+  ok    caso 6: no se creo contenedor
+
+18 casos: 18 ok, 0 fallos
+exit=0
+== bash bin/check_package_typecheck --strict daemon provider
+check-package-typecheck: 2 provider(s) reconstruido(s) por viejos: daemon, provider
+  daemon: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+exit=0
+suites-fallidas=0
+__BG_EXIT__=0

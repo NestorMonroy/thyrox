@@ -1,0 +1,25 @@
+== bash -c cd src/packages/daemon && bun test src/__tests__/podmanWorkerManager.test.ts src/__tests__/workerContainerLifecycle.test.ts src/__tests__/workerResourceProfile.test.ts src/__tests__/repositoryJobProfile.test.ts src/__tests__/specializedWorkerProfile.test.ts
+bun test v1.3.11 (af24e281)
+
+ 100 pass
+ 0 fail
+ 172 expect() calls
+Ran 100 tests across 5 files. [440.00ms]
+exit=0
+== bash -c cd src/packages/config && bun test __tests__/gpuAdmission.test.ts
+bun test v1.3.11 (af24e281)
+
+ 4 pass
+ 0 fail
+ 8 expect() calls
+Ran 4 tests across 1 file. [3.26s]
+exit=0
+== bash bin/check_package_typecheck --strict daemon config
+check-package-typecheck: 2 provider(s) reconstruido(s) por viejos: config, daemon
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  daemon: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+exit=0
+suites-fallidas=0
+__BG_EXIT__=0

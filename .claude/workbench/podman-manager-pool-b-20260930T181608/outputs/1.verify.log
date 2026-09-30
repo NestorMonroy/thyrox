@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+ 24 pass
+ 0 fail
+ 58 expect() calls
+Ran 24 tests across 1 file. [1440.00ms]
+  ok    caso 1: launch CPU sale 0 y publica result=launched
+  ok    caso 1: el contenedor del worker existe
+  ok    caso 1: el PID del worker esta vivo en el anfitrion
+  ok    caso 2: retire sale 0 y declara el contenedor retirado
+  ok    caso 2: tras retire el contenedor no existe
+  ok    caso 2: tras retire el PID del worker no existe
+  ok    caso 3: la imagen inexistente falla como WorkerLaunchError
+  ok    caso 3: la etapa que falla es create
+  ok    caso 3: no queda contenedor
+  ok    caso 4: el comando instantaneo falla como WorkerLaunchError
+  ok    caso 4: la etapa que falla es liveness
+  ok    caso 4: no queda contenedor
+  ok    caso 5: el huerfano existe antes de reconciliar
+  ok    caso 5: reconcileOrphans nombra al huerfano como retirado
+  ok    caso 5: tras reconciliar el huerfano no existe
+  ok    caso 5: tras reconciliar su PID no existe
+  ok    caso 6: CUDA rehusa con exit 2 como UnsupportedAcceleratorError
+  ok    caso 6: no se creo contenedor
+
+18 casos: 18 ok, 0 fallos
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+  daemon: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))

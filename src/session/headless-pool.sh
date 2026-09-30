@@ -21,9 +21,17 @@
 #     (`model-selection-subagents.md`);
 #   - deja su salida en disco, por item, antes de que nadie la resuma.
 #
+# El modelo de los ítems no se declara: se deriva de `--task-class` con
+# `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
+# fija rango mínimo y compara los registros del catálogo. Un identificador
+# escrito a mano fue la vía por la que un pool corrió en un modelo que el
+# ejecutor había retirado; `--model` rehúsa y nombra la clase a declarar.
+# `HEADLESS_POOL_RECOMMEND` sustituye al selector (dobles de prueba).
+#
 # Contrato
 # --------
-#   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
+#   headless-pool.sh --prompt <plantilla> --out <dir>
+#                    --task-class mecanica|analisis|adversarial|frontera
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
 #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
 #                    [--credential-proxy | --store-credential-proxy]
@@ -182,7 +190,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 #   `--session-id`, porque un `claude -p` hijo hereda la sesión de quien lo
 #   lanza (.claude/workbench/claude-p-from-shell-20260928T234121).
 RUNNER_KIND=thyrox
-PROMPT=""; OUT=""; MODEL=""
+PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
 
@@ -192,7 +200,8 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --prompt) PROMPT="${2:-}"; shift 2 ;;
         --out) OUT="${2:-}"; shift 2 ;;
-        --model) MODEL="${2:-}"; shift 2 ;;
+        --task-class) TASK_CLASS="${2:-}"; shift 2 ;;
+        --model) rehusa "--model no se declara: el modelo se deriva de --task-class mecanica|analisis|adversarial|frontera (bin/agent-recommend)" ;;
         --width) WIDTH="${2:-}"; shift 2 ;;
         --timeout) TIMEOUT="${2:-}"; shift 2 ;;
         --tools) TOOLS="${2:-}"; TOOLS_SET=1; shift 2 ;;
@@ -206,7 +215,7 @@ while [[ $# -gt 0 ]]; do
         --store-credential-proxy) STORE_CREDENTIAL_PROXY=1; shift ;;
         --credential-source) CREDENTIAL_SOURCE="${2:-}"; shift 2 ;;
         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
-        -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
 done
@@ -222,10 +231,20 @@ esac
 command -v "$RUNNER_BIN" >/dev/null 2>&1 || rehusa "falta el ejecutor de los ítems ($RUNNER_BIN)."
 [[ -n "$PROMPT" && -f "$PROMPT" ]] || rehusa "la plantilla de prompt no existe: ${PROMPT:-(sin --prompt)}"
 [[ -n "$OUT" ]] || rehusa "falta --out"
+case "$TASK_CLASS" in
+    mecanica|analisis|adversarial|frontera) ;;
+    *) rehusa "--task-class va mecanica, analisis, adversarial o frontera, no: ${TASK_CLASS:-(vacio)}" ;;
+esac
+RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
+# El selector devuelve el registro completo; sólo su `model` gobierna el ítem.
+# Un selector que falla o devuelve algo que no es un identificador rehúsa sin
+# lanzar nada: un modelo por defecto aquí volvería a escribirlo a mano.
+MODEL="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" --json 2>/dev/null | jq -r '.model // empty' 2>/dev/null)" || MODEL=""
 case "$MODEL" in
     claude-*) ;;
-    *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
+    *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: ${MODEL:-(sin respuesta)}" ;;
 esac
+echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS)"
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
 [[ -z "$CREDENTIAL_PROXY" || -z "$STORE_CREDENTIAL_PROXY" ]] \
     || rehusa "--credential-proxy y --store-credential-proxy no van juntos: son dos fuentes de credencial para el mismo item"

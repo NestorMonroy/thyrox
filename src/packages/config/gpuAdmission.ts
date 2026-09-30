@@ -11,7 +11,8 @@
  *
  *   0 -> 'admitted' (reservó)   3 -> 'timeout' (venció el plazo sin sitio)
  *   cualquier otro -> excepción con el stderr: no pudo medir, y eso no es
- *   un «no admitido».
+ *   un «no admitido». El 2 es el caso de una máquina sin GPU: `nvidia-smi` no
+ *   responde y `admit` rehúsa al instante, sin esperar el plazo.
  */
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'

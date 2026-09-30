@@ -87,7 +87,7 @@ HEADLESS_POOL_NOTICE = (
     "ocupando su anchura; una conversacion `thyrox -p` por item no hereda "
     "nada y queda en disco por item. `.claude/rules/trabajo-en-segundo-plano.md`: "
     "`printf '%s\\n' <items> | bash bin/headless-pool --prompt <plantilla> "
-    "--out <dir> --model <claude-…>`, reparte con GNU Parallel. Si los items no "
+    "--out <dir> --task-class <clase>`, reparte con GNU Parallel. Si los items no "
     "son independientes —uno necesita lo que otro concluye— ignora este aviso."
 )
 

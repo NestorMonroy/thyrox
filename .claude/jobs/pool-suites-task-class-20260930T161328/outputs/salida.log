@@ -1,0 +1,25 @@
+== test-headless-pool
+
+aserciones: 147 de 147 · fallos: 0
+== test-headless-pool-worktree
+  ok    control: sin el bloque, THYROX_ROOT es el árbol principal
+test-headless-pool-worktree: 46 aserciones — 46 ok, 0 falla(s)
+== test-headless-pool-thyrox-p
+
+12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+== test-headless-pool-credential-source
+
+aserciones: 42 de 42 · fallos: 0
+== test-headless-pool-lifecycle
+OK   control: con espera de 6 s, el rechazo tarda al menos 6 s
+result: 40 of 40 assertions green
+== test-headless-pool-item-drain
+OK   control: con el escritor vivo, la publicación rehúsa y el ítem no se cierra
+result: 17 of 17 assertions green
+== test-headless-pool-exit-live-items
+OK   control Bc: sin la guarda, el worktree del ítem no cerrado se barrió
+24/24 aserciones
+== test-headless-pool-frozen-launcher
+OK   control: without the freeze, the rewrite reaches the live pool
+result: 6 of 6 assertions green
+__BG_EXIT__=0

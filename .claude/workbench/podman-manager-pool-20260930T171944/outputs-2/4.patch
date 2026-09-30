@@ -1,0 +1,132 @@
+diff --git a/src/packages/cli/__tests__/providersWriteVerbs.test.ts b/src/packages/cli/__tests__/providersWriteVerbs.test.ts
+index a805cf751..60bf0c8bb 100644
+--- a/src/packages/cli/__tests__/providersWriteVerbs.test.ts
++++ b/src/packages/cli/__tests__/providersWriteVerbs.test.ts
+@@ -11,8 +11,13 @@
+  * `runProviderImportCommand` en `omniroute: bin/cli/commands/provider-crud.mjs` (MIT).
+  */
+ import { describe, expect, test } from 'bun:test'
++import fs from 'node:fs'
++import os from 'node:os'
++import path from 'node:path'
+ 
+-import { providersCommand, type ProvidersCommandDeps } from '../src/commands/providers-commands.ts'
++import { CONNECTIONS_DB_FILE } from '@thyrox/provider/accounts/connectionStoreHome'
++
++import { providersCommand, realProvidersCommandDeps, type ProvidersCommandDeps } from '../src/commands/providers-commands.ts'
+ import { buildConnectionPayload } from '../src/commands/providers/connectionPayload.ts'
+ 
+ type Row = Record<string, unknown>
+@@ -23,8 +28,9 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}, rows: Row[] = []) {
+   const updates: Array<[string, Row]> = []
+   const prompts: string[] = []
+   let serial = 0
++  let opened = 0
+   const d: ProvidersCommandDeps = {
+-    openStore: () => ({
++    openStore: () => (opened++, {
+       store: {
+         list: () => rows,
+         delete: () => true,
+@@ -50,7 +56,25 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}, rows: Row[] = []) {
+     login: async () => ({ ok: false, error: 'not under test' }),
+     ...overrides,
+   }
+-  return { d, out, created, updates, prompts }
++  return { d, out, created, updates, prompts, opened: () => opened }
++}
++
++const PROVIDERS_DATA_DIR_VARIABLE = 'THYROX_PROVIDERS_DATA_DIR'
++
++/** Corre `providers add` con las dependencias reales sobre un hogar vacío y devuelve lo que quedó en él. */
++async function addOverEmptyHome(extraArgs: string[]): Promise<{ code: number; entries: string[] }> {
++  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'providers-add-'))
++  const previous = process.env[PROVIDERS_DATA_DIR_VARIABLE]
++  process.env[PROVIDERS_DATA_DIR_VARIABLE] = home
++  try {
++    const run = { ...realProvidersCommandDeps, write: () => {}, env: { SECRET_VAR: 'sk-from-env' } }
++    const code = await providersCommand(['providers', 'add', 'anthropic', '--credential-env', 'SECRET_VAR', ...extraArgs], run)
++    return { code, entries: fs.readdirSync(home) }
++  } finally {
++    if (previous === undefined) delete process.env[PROVIDERS_DATA_DIR_VARIABLE]
++    else process.env[PROVIDERS_DATA_DIR_VARIABLE] = previous
++    fs.rmSync(home, { recursive: true, force: true })
++  }
+ }
+ 
+ describe('building a connection payload', () => {
+@@ -143,6 +167,22 @@ describe('thyrox providers add', () => {
+     expect(text.out.join('')).toBe('dry-run: would add openai/openai\n')
+   })
+ 
++  test('--dry-run never opens the store, in text or --json', async () => {
++    for (const extra of [[], ['--json']]) {
++      const { d, opened } = deps()
++      expect(await providersCommand(['providers', 'add', 'openai', '--credential-env', 'SECRET_VAR', '--dry-run', ...extra], d)).toBe(0)
++      expect(opened()).toBe(0)
++    }
++  })
++
++  test('--dry-run over an empty providers home leaves it empty', async () => {
++    expect(await addOverEmptyHome(['--dry-run'])).toEqual({ code: 0, entries: [] })
++  })
++
++  test('a real add over an empty providers home creates the store file', async () => {
++    expect(await addOverEmptyHome([])).toEqual({ code: 0, entries: [CONNECTIONS_DB_FILE] })
++  })
++
+   test('without a provider it is a usage error; a flag value is never taken for the provider', async () => {
+     const { d, out } = deps()
+     expect(await providersCommand(['providers', 'add', '--name', 'main'], d)).toBe(2)
+diff --git a/src/packages/cli/src/commands/providers-commands.ts b/src/packages/cli/src/commands/providers-commands.ts
+index 602eca605..41f20eb58 100644
+--- a/src/packages/cli/src/commands/providers-commands.ts
++++ b/src/packages/cli/src/commands/providers-commands.ts
+@@ -35,8 +35,11 @@ import { createOAuthLogin } from './providers/oauthLogin.ts'
+ 
+ type Row = Record<string, unknown>
+ 
++type ProvidersStore = { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null; create(data: Row): Row | null }
++type OpenedProvidersStore = { store: ProvidersStore; close(): void }
++
+ export interface ProvidersCommandDeps {
+-  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null; create(data: Row): Row | null }; close(): void }
++  openStore: () => OpenedProvidersStore
+   write: (text: string) => void
+   interactive: boolean
+   confirm: (question: string) => Promise<boolean>
+@@ -138,6 +141,25 @@ async function removeConnection(args: string[], deps: ProvidersCommandDeps, stor
+   return EXIT_OK
+ }
+ 
++/**
++ * El store se abre en su primer uso, no al despachar el verbo: abrirlo crea el
++ * archivo, y un verbo que no lo toca —`add --dry-run`— no debe dejarlo creado.
++ * `close` sólo cierra lo que llegó a abrirse.
++ */
++function openOnFirstUse(open: ProvidersCommandDeps['openStore']): OpenedProvidersStore {
++  let opened: OpenedProvidersStore | undefined
++  const current = (): ProvidersStore => (opened ??= open()).store
++  return {
++    store: {
++      list: () => current().list(),
++      delete: id => current().delete(id),
++      update: (id, fields) => current().update(id, fields),
++      create: data => current().create(data),
++    },
++    close: () => opened?.close(),
++  }
++}
++
+ /** `thyrox providers <verb>` desde la tabla de modos: el verbo es la segunda palabra. */
+ export async function providersCommand(argv: string[], deps: ProvidersCommandDeps = realProvidersCommandDeps): Promise<number> {
+   const [, verb, ...args] = argv
+@@ -145,7 +167,7 @@ export async function providersCommand(argv: string[], deps: ProvidersCommandDep
+     deps.write(`thyrox providers: unknown verb '${verb ?? ''}'; expected one of: ${PROVIDERS_VERBS.join(', ')}\n`)
+     return EXIT_USAGE
+   }
+-  const opened = deps.openStore()
++  const opened = openOnFirstUse(deps.openStore)
+   try {
+     const testDeps = { store: opened.store, testDeps: deps.testDeps, now: deps.now, write: deps.write }
+     switch (verb) {

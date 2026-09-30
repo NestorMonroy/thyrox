@@ -1,0 +1,131 @@
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 11 expect() calls
+Ran 5 tests across 1 file. [3.46s]
+== 1. dos admisiones simultáneas de 3000 con 5000 libres: entra una ==
+OK   una admitida y otra esperó
+== 2. soltada la reserva, la otra entra ==
+OK   admit sale 0 tras el release
+== 3. sin sitio y con plazo corto, admit sale 3 ==
+OK   vencido: exit 3
+== 4. --nvidia-smi hacia una ruta inexistente: exit 2 al instante, registro intacto ==
+OK   sin nvidia-smi: exit 2
+OK   en menos de un segundo
+OK   el registro no se escribe
+OK   el stderr nombra la ausencia
+== 5. un PATH sin nvidia-smi, con el nombre por defecto: exit 2 al instante ==
+OK   PATH sin nvidia-smi: exit 2
+OK   en menos de un segundo
+OK   el registro no se escribe
+== 6. el nvidia-smi falso con estado, con sitio: exit 0 ==
+OK   con sitio: exit 0
+== 7. el mismo falso sin sitio: exit 3 al vencer el plazo ==
+OK   sin sitio: exit 3
+OK   tras esperar el plazo, no antes
+
+aserciones: 13 de 13 · failures: 0
+== 1. el árbol del ítem incluye a sus hijos ==
+  ok    el hijo está en el árbol del padre
+== 2. una muestra: VRAM por PID y uso por GPU ==
+  ok    VRAM por PID
+  ok    uso pico entre GPUs
+== 3. watch cuenta SÓLO el árbol del ítem, y para cuando termina ==
+  ok    pico: los 300 MiB del hijo, no los 5000 ajenos
+  ok    media: positiva y no mayor que el pico
+  ok    uso pico de GPU
+  ok    varias muestras
+  ok    para al terminar el árbol, no después
+  ok    <n>.gpu con las cuatro cifras
+== 4. un árbol que no usó la GPU escribe CERO: eso es una medida ==
+  ok    pico cero, uso cero
+  ok    y el archivo existe
+== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==
+  ok    sin resumen
+  ok    sin archivo
+== 7. la VRAM libre: la de la GPU con más espacio, que es donde cabe un ítem ==
+  ok    la mayor entre GPUs, no la suma: un ítem no se reparte
+  ok    sin nvidia-smi, None
+== 8. TRES estados: medido 0, ausente, y error al medir ==
+  ok    error al medir: sin resumen publicado
+  ok    el archivo declara el error y su causa
+  ok    read_gpu_file lo clasifica como error
+  ok    un .gpu con ceros es una medida
+  ok    sin archivo es ausente
+== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==
+  ok    sin sitio y sin plazo: no admite
+  ok    con sitio: admite enseguida
+  ok    se libera mientras espera: admite
+== 9b. el registro vive en un directorio que aún no existe: admit lo crea ==
+  ok    admite aunque el directorio no exista
+  ok    y release deja el registro vacío
+  ok    release sobre un directorio inexistente no lanza
+== 9c. sin nvidia-smi que responda, admit rehúsa al instante: una ausencia no es una espera ==
+  ok    sin nvidia-smi: GpuUnavailable, no un plazo vencido
+  ok    y en menos de un segundo
+  ok    el registro no se escribe
+== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==
+  ok    uno admitido y el otro esperó
+== 11. una reserva cuenta sólo lo que su árbol aún no usa: sin doble conteo ==
+  ok    el primero reserva
+  ok    con los 3000 ya visibles, 1500 caben en los 2000 libres
+== 12. soltar y dueños muertos liberan lo comprometido ==
+  ok    A reserva 3000
+  ok    B no cabe mientras A tenga su reserva
+  ok    soltada la de A, B cabe
+  ok    con el dueño de B muerto, su reserva no cuenta
+== 13. la decisión es pura: se prueba sin nvidia-smi ni registro ==
+  ok    5000 libres, nada comprometido, pide 3000: cabe
+  ok    5000 libres, 3000 comprometidos, pide 3000: no cabe
+  ok    sin lectura de VRAM libre: no se admite
+  ok    pendiente: cada reserva menos lo que su árbol ya usa
+  ok    una reserva ya visible entera no cuenta
+== 14. el registro: reservar, soltar, descartar dueños muertos ==
+  ok    sólo cuentan los dueños vivos
+  ok    soltada, no queda nada
+== 5b. un proceso que sale a mitad del recorrido no tumba tree() ==
+  ok    el hijo que desapareció cuenta y el recorrido sigue
+== 6. disponible() distingue las dos situaciones ==
+  ok    con el falso: disponible
+  ok    sin él: no disponible
+
+test_gpu_monitor: 46 ok, 0 falla(s)
+caso 1 — el registro es el mismo que usaba la GPU
+  ok    gpu_monitor reutiliza el registro común
+  ok    y la decisión pura
+caso 2 — la reserva de un dueño muerto no compromete nada
+  ok    sólo queda la del vivo
+caso 3 — lo libre de RAM descuenta lo reservado que aún no reside
+  ok    10000 − (3000 − 1000)
+  ok    sin MemAvailable no hay margen
+caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 5 — soltar la reserva deja entrar al siguiente
+  ok    release sale 0
+  ok    el otro entra ahora
+caso 6 — muerto el dueño, su reserva deja de contar
+  ok    el vivo entra sin que nadie haya soltado
+caso 7 — el RSS de un árbol vivo se mide de /proc
+  ok    un proceso vivo reside algo
+  ok    un pid inexistente no suma
+caso 7b — soltada la última reserva viva, el registro desaparece: en reposo no queda archivo
+  ok    sin reservas vivas no queda el archivo
+  ok    con otra reserva viva el registro sigue
+caso 7c — sin medida, admit_with espera hasta el plazo: rehusar al instante es de la VRAM, no de aquí
+  ok    sin medida no admite
+  ok    y agota el plazo antes de responder
+caso 8 — el registro y la fuente de MemAvailable se declaran por entorno
+  ok    THYROX_RAM_ADMISSION_LEDGER gana
+  ok    THYROX_RAM_ADMISSION_MEMINFO gana
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, MemAvailable sale del kernel
+test_resource_admission: 20 ok, 0 fallos
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+check-package-typecheck: 47 provider(s) reconstruido(s) por viejos: agent, app-host, audio-capture-napi, bridge, claude-for-chrome-mcp, cli, color-diff-napi, command-runtime, computer-use-input, computer-use-mcp, computer-use-swift, context-compression, coordination, daemon, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, mitm, modifiers-napi, observability, output, paths, permission, plan, provider, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))

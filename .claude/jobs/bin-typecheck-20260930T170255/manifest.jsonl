@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check_package_typecheck --strict agent binary cli command-runtime config finding headless-sdk provider shell storage tool-registry; echo rc=$?", "started_at": "2026-09-30T17:02:55+00:00"}

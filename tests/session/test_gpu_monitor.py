@@ -174,6 +174,20 @@ with tempfile.TemporaryDirectory() as raw:
     check("release sobre un directorio inexistente no lanza", None,
           gm.release(tmp / "otra-base" / "vram.json", os.getpid()))
 
+    print("== 9c. sin nvidia-smi que responda, admit rehúsa al instante: una ausencia no es una espera ==")
+    # Sin GPU que medir no falta sitio, falta GPU: esperar el plazo informaría
+    # una causa falsa. El registro no se escribe.
+    absent_ledger = tmp / "absent" / "vram.json"
+    started = time.monotonic()
+    try:
+        gm.admit(100, absent_ledger, os.getpid(), str(tmp / "no-existe"), timeout_s=5, interval_s=0.1)
+        refusal = "admitió o venció"
+    except gm.GpuUnavailable:
+        refusal = "GpuUnavailable"
+    check("sin nvidia-smi: GpuUnavailable, no un plazo vencido", "GpuUnavailable", refusal)
+    check("y en menos de un segundo", True, time.monotonic() - started < 1.0)
+    check("el registro no se escribe", False, absent_ledger.parent.exists())
+
     print("== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==")
     # 5000 libres y dos ítems de 3000 a la vez: comprobar sin reservar deja
     # arrancar a los dos (3000 + 3000 > 5000). Con el registro de lo comprometido,

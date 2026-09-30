@@ -120,6 +120,14 @@ with tempfile.TemporaryDirectory() as idle:
     ra.release_from(idle_ledger, os.getpid(), "ram-admission")
     check("con otra reserva viva el registro sigue", True, idle_ledger.exists())
 
+print("caso 7c — sin medida, admit_with espera hasta el plazo: rehusar al instante es de la VRAM, no de aquí")
+with tempfile.TemporaryDirectory() as unmeasured:
+    started = time.monotonic()
+    waited = ra.admit_with(Path(unmeasured) / "ledger.json", 1, os.getpid(), lambda live: None,
+                           "ram-admission", timeout_s=0.3, interval_s=0.1)
+    check("sin medida no admite", False, waited)
+    check("y agota el plazo antes de responder", True, time.monotonic() - started >= 0.3)
+
 print("caso 8 — el registro y la fuente de MemAvailable se declaran por entorno")
 os.environ["THYROX_RAM_ADMISSION_LEDGER"] = "/x/ledger.json"
 os.environ["THYROX_RAM_ADMISSION_MEMINFO"] = "/x/meminfo"

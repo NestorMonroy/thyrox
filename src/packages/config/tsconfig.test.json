@@ -23,6 +23,7 @@
     "git/**/*",
     "gitFilesystem.ts",
     "global/**/*",
+    "gpuAdmission.ts",
     "hash.ts",
     "host.ts",
     "index.ts",

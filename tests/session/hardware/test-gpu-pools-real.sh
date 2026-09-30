@@ -36,7 +36,7 @@ export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_RUNNER="$OUT/cuda-item"
 export HEADLESS_POOL_HISTORY_DIR="$OUT/history" HEADLESS_POOL_NVIDIA_SMI="$SMI"
 printf 'Ítem de GPU.\n' > "$OUT/prompt.md"
 pool() { bash "$RAIZ/src/session/headless-pool.sh" --prompt "$OUT/prompt.md" --out "$OUT/out-$1" \
-           --model claude-sonnet-5 --width 2 --timeout 120; }
+           --task-class analisis --width 2 --timeout 120; }
 
 # 1. Una ejecución sola, con GNU Time: su pico real alimenta lo que el pool pide.
 printf 'medida\n' | pool medida > "$OUT/pool-medida.salida" 2>&1

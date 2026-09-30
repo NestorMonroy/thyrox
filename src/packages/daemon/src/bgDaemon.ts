@@ -63,6 +63,13 @@ import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from '.
 import type { ProtoOp } from './socketProto.js'
 import { WorkerVm } from './workerVm.js'
 import { getPinnedWorkerShorts } from './workerRegistry.js'
+import {
+  type DaemonPodmanWorkers,
+  type SupervisorLogSink,
+  createDaemonPodmanWorkers,
+  startWorkerSupervision,
+} from './podmanWorkerSupervision.js'
+import { createSupervisorLog } from './supervisorLog.js'
 
 /**
  * Arma un valor con forma de Socket no-op para rutas RPC de dispara-y-
@@ -220,12 +227,38 @@ export function decideDuplicateDispatchOutcome(params: {
   return { action: 'dup-live', escalateToSigkill: false }
 }
 
+/** Dependencias inyectables del daemon; sin ellas se usan las reales. */
+export type BgDaemonDeps = {
+  /** El manager de workers de Podman que el daemon posee, y el ejecutor con que sondea el anfitrión. */
+  podmanWorkers?: DaemonPodmanWorkers
+  /** El log de supervisor; por defecto el de `--log-file`, o stderr sin él. */
+  supervisorLog?: SupervisorLogSink
+}
+
+type OwnedSupervisorLog = SupervisorLogSink & { close(): Promise<void> }
+
+const stderrSupervisorLog: OwnedSupervisorLog = {
+  write(label, message) {
+    process.stderr.write(`[${new Date().toISOString()}] [${label}] ${message}\n`)
+  },
+  async close() {},
+}
+
+/** El log de supervisor del daemon; uno inyectado no es suyo y no lo cierra al salir. */
+async function openSupervisorLog(injected: SupervisorLogSink | undefined, logFile: string | undefined): Promise<OwnedSupervisorLog> {
+  if (injected) return { write: (label, message) => injected.write(label, message), close: async () => {} }
+  if (!logFile) return stderrSupervisorLog
+  mkdirSync(dirname(logFile), { recursive: true })
+  return createSupervisorLog(logFile)
+}
+
 /**
  * Arranca el bg daemon. Se resuelve una vez que el daemon se apagó
- * (señal u op de shutdown recibido). Devuelve el código de salida del
- * daemon (0 en apagado ordenado, distinto de cero ante error).
+ * (señal u op de shutdown recibido) y retiró sus workers de Podman.
+ * Devuelve el código de salida del daemon (0 en apagado ordenado,
+ * distinto de cero ante error).
  */
-export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps = {}): Promise<number> {
   const parsed = parseArgs(args)
   const state: DaemonState = {
     server: undefined,
@@ -988,6 +1021,12 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   }
   process.on('SIGHUP', onSighup)
 
+  // Tras las señales: un SIGTERM durante la reconciliación ya aborta, y el
+  // apagado de abajo igual retira lo que el manager gestione.
+  const supervisorLog = await openSupervisorLog(deps.supervisorLog, parsed.logFile)
+  const workerSupervision = await startWorkerSupervision(
+    deps.podmanWorkers ?? createDaemonPodmanWorkers(process.pid), supervisorLog)
+
   await new Promise<void>(resolve => {
     if (state.abort.signal.aborted) {
       resolve()
@@ -1035,5 +1074,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   }
   spoolWatcher.close()
   await state.server?.close()
+  await workerSupervision.shutdown()
+  await supervisorLog.close()
   return 0
 }

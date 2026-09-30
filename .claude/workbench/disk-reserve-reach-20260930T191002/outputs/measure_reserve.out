@@ -1,0 +1,31 @@
+== disk-headroom
+target              .   (montaje /, /dev/vda)
+capacidad         251.97 GiB
+disponible        17544.62 MiB   ← lo que «df» llama Avail
+reserved           214.92 GiB   (85.3% de la capacidad)
+options          rw,relatime,discard,resv_strict,resuid=65534,resgid=65534
+CAP_SYS_RESOURCE  AUSENTE
+borrado y abierto 0.00 MiB   (espacio que no vuelve hasta cerrar el descriptor)
+VEREDICTO         RESERVA_INALCANZABLE
+  el montaje declara resv_strict, que cierra la reserva incluso a root.
+disk_headroom_exit=3
+== bloque de dispositivos (virtio)
+NAME    SIZE TYPE RO MOUNTPOINT           FSTYPE
+zram0     0B disk  0                      
+vda     256G disk  0 /                    
+vdb     9.6M disk  1 /opt/rclone          
+vdc   256.7M disk  1 /opt/claude-code     
+vdd    47.2M disk  1 /opt/env-runner      
+vde     676K disk  1 /mnt/skills/public   
+vdf     5.7M disk  1 /mnt/skills/examples 
+== montaje raiz
+/dev/vda /      ext4   rw,relatime,discard,resv_strict,resuid=65534,resgid=65534
+== almacen de Podman
+/var/lib/containers/storage overlay
+/dev/vda ext4
+== capacidades efectivas (bit 24 = CAP_SYS_RESOURCE)
+CapEff=000001fffeffffff bit24=0
+== zram
+zram0_disksize=0
+               total        used        free      shared  buff/cache   available
+Mem:     16876515328  3829719040  5612859392    13787136  7814823936 13046796288

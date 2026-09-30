@@ -1,0 +1,74 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 55 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 55 archivo(s) pedido(s))
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+OK: identificadores en inglés (9 archivos medidos, 4217 en deuda heredada).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 27072 especificador(es) en 4936 archivo(s) de 51 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 5 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 55 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 1 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 1 unidad(es) tocada(s) por el commit, de 298 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 73814 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 289 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1855 lectura(s) en 4025 archivo(s) de producción — propias 846, proveedor 99, cliente ajeno 18, sin prefijo 892)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 125 congelada(s), 0 obsoleta(s) (alcance medido: 357 variable(s) propia(s), 2162 archivo(s) de prueba)
+claves leidas del entorno: 5 | declaradas: 511 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 15 clave(s) en 1 archivo(s) ignorado(s), 522 declarada(s) en .env.example)
+  TASK-THYROX-0557 -> PodmanWorkerManager bajo el daemon: crear, inspeccionar, detener y ret
+  TASK-THYROX-0659 -> Name the awaited tool_use ids when the local proxy rejects a tool_resu
+[feature/complete-orm-root 2c4264fd5] Wire PodmanWorkerManager into the daemon
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 55 files changed, 1850 insertions(+), 19 deletions(-)
+ create mode 100644 .claude/cache/headless-pool/template-8d648c810d16/runs.jsonl
+ create mode 100644 .claude/jobs/podman-manager-pool-b-20260930T181644/outputs/salida.log
+ create mode 100644 .claude/jobs/podman-manager-pool-b-20260930T181644/outputs/salida.log.time
+ create mode 100644 .claude/jobs/verify-pool-b-20260930T184356/README.md
+ create mode 100644 .claude/jobs/verify-pool-b-20260930T184356/manifest.jsonl
+ create mode 100644 .claude/jobs/verify-pool-b-20260930T184356/outputs/pid
+ create mode 100644 .claude/jobs/verify-pool-b-20260930T184356/outputs/salida.log
+ create mode 100644 .claude/jobs/verify-pool-b-20260930T184356/outputs/salida.log.time
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.closed
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.err
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.files
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.json
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.lifecycle.err
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.patch
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.prepare.err
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.session
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.snapshot.json
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.stash-baseline
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.stash-started
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.stream.jsonl
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.time
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.verdict
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/2.verify.log
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.closed
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.err
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.files
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.json
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.lifecycle.err
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.patch
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.prepare.err
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.session
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.snapshot.json
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.stash-baseline
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.stash-started
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.stream.jsonl
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.time
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.verdict
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/3.verify.log
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/credential-source
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/index.tsv
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/integration.tsv
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/joblog.tsv
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/outputs/run.closed
+ create mode 100644 .claude/workbench/podman-manager-pool-b-20260930T181608/probes/verify_integrated.sh
+ create mode 100644 src/packages/daemon/src/__tests__/bgDaemonWorkerSupervision.test.ts
+ create mode 100644 src/packages/daemon/src/__tests__/podmanWorkerSupervision.test.ts
+ create mode 100644 src/packages/daemon/src/podmanWorkerSupervision.ts
+ create mode 100644 tests/daemon/podman_worker_manager_probe.ts
+ create mode 100755 tests/daemon/test-podman-worker-manager-real.sh
+__BG_EXIT__=0

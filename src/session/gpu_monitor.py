@@ -184,6 +184,12 @@ def headroom(live: dict[str, int], nvidia_smi: str) -> int | None:
     return free - pending(live, usage, trees)
 
 
+def require_gpu(nvidia_smi: str) -> None:
+    """Lanza ``GpuUnavailable`` con su causa si ``nvidia-smi`` no da la VRAM
+    libre: sin GPU que medir no falta sitio, falta GPU."""
+    _query(nvidia_smi, FREE_QUERY)
+
+
 def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia-smi",
           timeout_s: float = 600.0, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
     """La admisión por VRAM SIN carrera de comprobar-y-usar.
@@ -192,7 +198,13 @@ def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia
     3000 veían sitio los dos y arrancaban los dos (sonda:
     ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). El registro y el
     bucle de comprobar-y-reservar bajo lock son los de ``resource_admission``;
-    la VRAM sólo aporta su medida, ``headroom``."""
+    la VRAM sólo aporta su medida, ``headroom``.
+
+    Una GPU AUSENTE al empezar no es una GPU sin sitio: se rehúsa con
+    ``GpuUnavailable`` antes de tocar el registro, en vez de sondear hasta el
+    plazo para informar una causa falsa. Una lectura que falla a mitad de la
+    espera sigue siendo «sin medida» y no admite."""
+    require_gpu(nvidia_smi)
     return admit_with(ledger, need_mib, owner_pid, lambda live: headroom(live, nvidia_smi),
                       "vram-admission", timeout_s, interval_s)
 
@@ -200,6 +212,23 @@ def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia
 def release(ledger: Path, owner_pid: int) -> None:
     """Suelta la reserva de un ítem que terminó, bajo el lock del registro."""
     release_from(ledger, owner_pid, "vram-admission")
+
+
+EXIT_ADMITTED = 0
+EXIT_ABSENT = 2
+EXIT_TIMEOUT = 3
+
+
+def admit_exit_code(args: argparse.Namespace) -> int:
+    """``admit`` como código de salida: 0 reservó, 3 venció el plazo sin sitio,
+    2 no hay GPU que medir — con la causa por stderr, como ``available``."""
+    try:
+        admitted = admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval)
+    except GpuUnavailable as error:
+        print(f"gpu_monitor admit: nvidia-smi no responde ({args.nvidia_smi}): {error}; "
+              "sin GPU que medir no se espera", file=sys.stderr)
+        return EXIT_ABSENT
+    return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
 
 
 def main(argv: list[str]) -> int:
@@ -212,7 +241,7 @@ def main(argv: list[str]) -> int:
     p_watch.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
     p_avail = sub.add_parser("available", help="sale 0 si hay con qué medir, 2 si no")
     p_avail.add_argument("--nvidia-smi", default="nvidia-smi")
-    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, o 3 al vencer el plazo")
+    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, 3 al vencer el plazo, o 2 sin GPU que medir")
     p_admit.add_argument("need", type=int)
     p_admit.add_argument("--ledger", type=Path, required=True)
     p_admit.add_argument("--owner", type=int, required=True)
@@ -226,7 +255,7 @@ def main(argv: list[str]) -> int:
     p_free.add_argument("--nvidia-smi", default="nvidia-smi")
     args = parser.parse_args(argv)
     if args.order == "admit":
-        return 0 if admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval) else 3
+        return admit_exit_code(args)
     if args.order == "release":
         release(args.ledger, args.owner)
         return 0

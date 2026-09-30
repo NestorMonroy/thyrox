@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/cli && bun test __tests__/providersTestVerbs.test.ts; a=$?; cd ../provider && bun test src/__tests__/credentialProxy.test.ts; b=$?; echo \"exits cli=$a provider=$b\"; exit $(( a || b ))", "started_at": "2026-09-30T18:13:29+00:00"}
