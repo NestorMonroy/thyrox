@@ -1,0 +1,10 @@
+   → sólo entonces el directorio es desechable
+
+**Se mide en cada clon, no en uno.** Que ``.claude/worktrees/`` no exista en el
+clon donde se midió (2026-09-30) no dice nada de los otros contenedores y
+clones, que pueden guardar contenido que todavía no está en el corpus. Por eso
+la migración no es un paso manual de un contenedor: es un comando del proveedor
+que corre en cualquier clon, es idempotente (reingerir lo ya ingerido no cambia
+nada) y decide la desechabilidad de **ese** directorio en **esa** máquina. La
+identidad del documento no incluye la ruta local del clon, para que dos clones
+que ingieren el mismo contenido converjan en la misma versión.
