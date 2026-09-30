@@ -37,7 +37,13 @@ una garantía: léela antes de repetir el patrón.
 | Las fotos del pool no salen del contenedor: refs locales sin push y manifiesto en el runtime ignorado (H-THYROX-290) | TASK-THYROX-0652 (decisión del ejecutor) |
 | Las fotos no caducan nunca | TASK-THYROX-0650 (decisión del ejecutor) |
 
-## Tres hábitos que ningún gate mide
+## Tres hábitos que ningún gate mide todavía
+
+Una regla sin script es prosa: estos tres son advertencias hasta que
+**Empaquetado P9** (TASK-THYROX-0655) les dé su detector o gate. La
+instalación que activa los gates en un clon nuevo es **P8**
+(TASK-THYROX-0654), y que el paquete no herede el `.env` del árbol que lo
+hospeda es **P10** (TASK-THYROX-0656).
 
 - **Una afirmación de verde nombra las suites que corrieron.** «Todo está en
   verde» se publicó con dos de siete suites medidas. Se dice «N de M, y
