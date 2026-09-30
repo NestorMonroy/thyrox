@@ -1,0 +1,25 @@
+== python3 tests/session/test_pool_lifecycle.py
+caso 10b: un runtime sin buzón —anterior al buzón— sigue funcionando
+  ok    sin buzón no se crea uno ni se rehúsa
+resultado: 70 de 70 aserciones en verde
+exit=0
+== bash tests/session/test-headless-pool-lifecycle.sh
+OK   la plantilla del usuario va después del párrafo y antes del ítem
+OK   el orquestador recibió begin, publish y close-run
+result: 48 of 48 assertions green
+exit=0
+== bash tests/session/test-headless-pool.sh
+OK   el runtime real no recibe ejecuciones de la suite
+
+aserciones: 148 de 148 · fallos: 0
+exit=0
+== bash bin/check_lint_zero src/session/headless-pool.sh src/session/pool_lifecycle.py tests/session/test-headless-pool-lifecycle.sh tests/session/test-headless-pool.sh tests/session/test_pool_lifecycle.py
+shellcheck: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+exit=0
+== bash bin/check_identifier_language src/session/headless-pool.sh src/session/pool_lifecycle.py tests/session/test-headless-pool-lifecycle.sh tests/session/test-headless-pool.sh tests/session/test_pool_lifecycle.py
+OK: identificadores en inglés (5 archivos medidos, 5272 en deuda heredada).
+exit=0
+suites-fallidas=0
+__BG_EXIT__=0

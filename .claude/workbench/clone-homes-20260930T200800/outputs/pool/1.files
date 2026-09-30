@@ -1,0 +1,6 @@
+bin/ensure_homes
+install.sh
+src/paths/declarations.py
+src/paths/ensure_homes.py
+tests/install/test_install.sh
+tests/paths/test_ensure_homes.py
