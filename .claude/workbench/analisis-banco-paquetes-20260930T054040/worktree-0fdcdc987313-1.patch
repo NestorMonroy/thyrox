@@ -1,0 +1,233 @@
+diff --git a/src/packages/task/schema.ts b/src/packages/task/schema.ts
+index 5016d33c..84424342 100644
+--- a/src/packages/task/schema.ts
++++ b/src/packages/task/schema.ts
+@@ -66,23 +66,56 @@ export const TABLERO_DDL = `CREATE TABLE IF NOT EXISTS tasks (
+ )`
+ 
+ /**
+- * La marca de agua contra reúso de id (DEC-TASK-02).
++ * La marca de agua contra reúso de id (DEC-TASK-02), por SESIÓN.
+  *
+- * `siguienteOrdinal` numera con `MAX(task_id)` sobre las filas presentes; si la
+- * de id máximo se borrara, el siguiente `TaskCreate` reusaría ese id, con la
+- * ambigüedad de referencia cruzada que el `.highwatermark` de la referencia
+- * previene (`hccw: 11-task-system.md:154-186`). La tabla recuerda el máximo
+- * histórico aunque se borre la fila. Es global —una sola clave— porque el
+- * ordinal también lo es: dos sesiones no deben producir dos «#996».
++ * `nextTaskId` (`tools/tasks.ts`) lee o adopta esta fila y avanza
++ * `next_task_id` en la misma transacción que inserta la tarea, así que la
++ * marca guarda siempre el PRÓXIMO id a asignar, no el mayor ya asignado. Es
++ * la misma forma que la referencia (2.1.283, `chunk-zgfcmyzt.js`): un
++ * `.highwatermark` por LISTA de tareas, no uno global para el proyecto — un
++ * id borrado dentro de una sesión no vuelve a asignarse, pero dos sesiones sí
++ * pueden compartir el mismo `task_id`, porque `(session_id, task_id)` es la
++ * clave primaria de `tasks` y el ordinal del board ya reinicia por sesión.
++ * Medido sobre el store real: 333 `task_id` se repiten entre sesiones
++ * distintas. La identidad durable entre sesiones es `TASK-<LAYER>-NNNN`, no
++ * este id ni el ordinal del board.
+  *
+  * Sólo la declara esta lengua: el lado Python no la conoce, porque su
+  * numeración no pasa por el ordinal de sesión.
+  */
+ export const TASK_HIGHWATER_DDL = `CREATE TABLE IF NOT EXISTS task_highwater (
+-  clave  TEXT NOT NULL PRIMARY KEY DEFAULT '__global__',
+-  max_id INTEGER NOT NULL DEFAULT 0
++  session_id   TEXT NOT NULL PRIMARY KEY,
++  next_task_id INTEGER NOT NULL
+ )`
+ 
++/**
++ * Prepara `task_highwater`, migrando la forma vieja si hace falta.
++ *
++ * La forma vieja (`clave`/`max_id`, PRIMARY KEY `clave`) guardaba una marca
++ * GLOBAL, ajena a cualquier sesión: no hay `session_id` al que atribuirla, así
++ * que se descarta entera en vez de traducirse fila a fila. `nextTaskId`
++ * (`tools/tasks.ts`) adopta el próximo id de cada sesión de sus propias filas
++ * de `tasks` la primera vez que la necesita — el mismo camino que una base sin
++ * ninguna tabla `task_highwater` todavía.
++ */
++export function ensureTaskHighwater(db: Database): void {
++  const columnas = (db.query('PRAGMA table_info(task_highwater)').all() as { name: string }[]).map((c) => c.name)
++  const formaVieja = columnas.length > 0 && !columnas.includes('session_id')
++  if (!formaVieja) {
++    db.run(TASK_HIGHWATER_DDL)
++    return
++  }
++  db.run('BEGIN IMMEDIATE')
++  try {
++    db.run('DROP TABLE task_highwater')
++    db.run(TASK_HIGHWATER_DDL)
++    db.run('COMMIT')
++  } catch (e) {
++    db.run('ROLLBACK')
++    throw e
++  }
++}
++
+ /**
+  * `, citation_id` si la base la tiene, y cadena vacía si no.
+  *
+diff --git a/src/packages/tools/src/tasks.ts b/src/packages/tools/src/tasks.ts
+index ae0a348f..4ae7bd3e 100644
+--- a/src/packages/tools/src/tasks.ts
++++ b/src/packages/tools/src/tasks.ts
+@@ -36,7 +36,7 @@
+ import { Database } from 'bun:sqlite'
+ import { openLocal } from '@thyrox/store/db.ts'
+ import {
+-  selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
++  ensureTaskHighwater, selectCitationId, TABLERO_DDL, TASK_STATUSES, UPDATE_STATUSES,
+ } from '@thyrox/task/schema.ts'
+ import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
+ 
+@@ -62,7 +62,7 @@ function conBase<T>(dbPath: string, fn: (db: Database) => T): T {
+   const db = openLocal(dbPath)
+   try {
+     db.run(TABLERO_DDL)
+-    db.run(TASK_HIGHWATER_DDL)
++    ensureTaskHighwater(db)
+     return fn(db)
+   } finally {
+     db.close()
+@@ -97,29 +97,34 @@ function idsDeclarados(valor: unknown): string[] {
+ }
+ 
+ /**
+- * El ordinal siguiente, sobre TODO el tablero y no sobre la sesión.
++ * El próximo id DE LA SESIÓN, y avanza su marca para que no se repita.
+  *
+- * La cita `#996` es del proyecto, no de la sesión: dos sesiones que numeraran
+- * por separado producirían dos «#996» distintos en los hallazgos, que es el
+- * defecto que la clave compuesta tolera pero la prosa no.
++ * Si la sesión no tiene fila en `task_highwater`, la adopta de sus propias
++ * filas de `tasks`: `MAX(task_id) + 1`, o 1 si no tiene ninguna — ciego a los
++ * ids que la sesión ya borró antes de esta primera adopción, aceptado por
++ * contrato (#311). Filas de otras sesiones no influyen: dos sesiones sí
++ * pueden compartir el mismo `task_id`, porque `(session_id, task_id)` es la
++ * clave primaria de `tasks`.
++ *
++ * Tiene que llamarse dentro de una transacción `BEGIN IMMEDIATE`: leer (o
++ * adoptar) y avanzar la marca son dos sentencias, y sin la transacción dos
++ * `TaskCreate` concurrentes pueden leer el mismo valor y chocar contra la
++ * clave primaria de `tasks` en vez de recibir ids distintos.
+  */
+-function siguienteOrdinal(db: Database): string {
+-  const fila = db.query('SELECT MAX(CAST(task_id AS INTEGER)) AS n FROM tasks').get() as { n: number | null }
+-  const marca = db.query(`SELECT max_id AS n FROM task_highwater WHERE clave = '__global__'`).get() as { n: number | null } | undefined
+-  // El siguiente id supera tanto al máximo presente como al histórico: un id
+-  // borrado no vuelve a asignarse (DEC-TASK-02).
+-  return String(Math.max(fila?.n ?? 0, marca?.n ?? 0) + 1)
+-}
+-
+-/** Sube la marca de agua al id borrado, si es mayor que el histórico. */
+-function subirMarca(db: Database, id: string): void {
+-  const n = Number.parseInt(id, 10)
+-  if (!Number.isFinite(n)) return
+-  db.run(
+-    `INSERT INTO task_highwater (clave, max_id) VALUES ('__global__', ?)
+-     ON CONFLICT(clave) DO UPDATE SET max_id = MAX(max_id, excluded.max_id)`,
+-    [n],
+-  )
++function nextTaskId(db: Database, sessionId: string): string {
++  const marca = db.query('SELECT next_task_id AS n FROM task_highwater WHERE session_id = ?').get(sessionId) as
++    | { n: number }
++    | undefined
++  if (marca) {
++    db.run('UPDATE task_highwater SET next_task_id = ? WHERE session_id = ?', [marca.n + 1, sessionId])
++    return String(marca.n)
++  }
++  const fila = db.query('SELECT MAX(CAST(task_id AS INTEGER)) AS n FROM tasks WHERE session_id = ?').get(sessionId) as {
++    n: number | null
++  }
++  const id = (fila.n ?? 0) + 1
++  db.run('INSERT INTO task_highwater (session_id, next_task_id) VALUES (?, ?)', [sessionId, id + 1])
++  return String(id)
+ }
+ 
+ /** Quita `id` de las dos columnas de aristas de una fila. */
+@@ -138,13 +143,16 @@ function quitarArista(db: Database, sesion: string, fila_id: string, columna: 'b
+ }
+ 
+ /**
+- * Borra una tarea: sube la marca de agua, limpia las aristas que la nombran en
+- * las demás filas y elimina la fila. La referencia lo hace igual — «removes the
+- * file and cleans up references to it from other tasks» (`hccw:` estado
+- * `deleted`, `:65`).
++ * Borra una tarea: limpia las aristas que la nombran en las demás filas y
++ * elimina la fila. La referencia lo hace igual — «removes the file and
++ * cleans up references to it from other tasks» (`hccw:` estado `deleted`,
++ * `:65`).
++ *
++ * No toca `task_highwater`: la marca sólo avanza al crear (`nextTaskId`), así
++ * que un id borrado no vuelve a asignarse mientras la marca ya exista para
++ * esta sesión (DEC-TASK-02).
+  */
+ function borrarTarea(db: Database, sesion: string, id: string): void {
+-  subirMarca(db, id)
+   const otras = db.query('SELECT task_id, blocks_json, blocked_by_json FROM tasks WHERE session_id = ? AND task_id != ?').all(sesion, id) as {
+     task_id: string
+     blocks_json: string | null
+@@ -268,28 +276,40 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
+       const bloqueadas = idsDeclarados(input.blocks)
+       const ahora = new Date().toISOString()
+       const taskId = conBase(opts.dbPath, (db) => {
+-        const id = siguienteOrdinal(db)
+-        db.run(
+-          `INSERT INTO tasks (task_id, subject, description, status, owner, blocks_json, blocked_by_json,
+-                              session_id, source, created_at, updated_at)
+-           VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, 'harness', ?, ?)`,
+-          [
+-            id,
+-            subject,
+-            (input.description as string) ?? null,
+-            (input.owner as string) ?? null,
+-            JSON.stringify(bloqueadas),
+-            JSON.stringify(bloqueantes),
+-            sesion,
+-            ahora,
+-            ahora,
+-          ],
+-        )
+-        // La arista se escribe en los dos extremos: una lista que sólo apunta
+-        // hacia atrás no responde «¿a quién desbloquea cerrar ésta?».
+-        for (const b of bloqueantes) anadirArista(db, sesion, b, 'blocks_json', id)
+-        for (const b of bloqueadas) anadirArista(db, sesion, b, 'blocked_by_json', id)
+-        return id
++        // `BEGIN IMMEDIATE` hace atómica la lectura de la marca, su avance y
++        // el insert: sin esto, dos `TaskCreate` concurrentes en la misma
++        // sesión pueden leer el mismo `next_task_id` y una de las dos falla
++        // con `UNIQUE constraint failed` sobre (session_id, task_id) en vez
++        // de recibir un id distinto.
++        db.run('BEGIN IMMEDIATE')
++        try {
++          const id = nextTaskId(db, sesion)
++          db.run(
++            `INSERT INTO tasks (task_id, subject, description, status, owner, blocks_json, blocked_by_json,
++                                session_id, source, created_at, updated_at)
++             VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, 'harness', ?, ?)`,
++            [
++              id,
++              subject,
++              (input.description as string) ?? null,
++              (input.owner as string) ?? null,
++              JSON.stringify(bloqueadas),
++              JSON.stringify(bloqueantes),
++              sesion,
++              ahora,
++              ahora,
++            ],
++          )
++          // La arista se escribe en los dos extremos: una lista que sólo apunta
++          // hacia atrás no responde «¿a quién desbloquea cerrar ésta?».
++          for (const b of bloqueantes) anadirArista(db, sesion, b, 'blocks_json', id)
++          for (const b of bloqueadas) anadirArista(db, sesion, b, 'blocked_by_json', id)
++          db.run('COMMIT')
++          return id
++        } catch (e) {
++          db.run('ROLLBACK')
++          throw e
++        }
+       })
+       return ok(JSON.stringify({ task_id: taskId, status: 'pending' }))
+     },
