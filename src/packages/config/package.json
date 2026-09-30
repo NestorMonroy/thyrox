@@ -37,6 +37,11 @@
       "types": "./dist/settings/settings.d.ts",
       "default": "./settings/settings.ts"
     },
+    "./gpuAdmission": {
+      "@thyrox/source": "./gpuAdmission.ts",
+      "types": "./dist/gpuAdmission.d.ts",
+      "default": "./gpuAdmission.ts"
+    },
     "./settings/settings.js": {
       "@thyrox/source": "./settings/settings.ts",
       "types": "./dist/settings/settings.d.ts",
