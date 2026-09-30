@@ -60,6 +60,15 @@
  * `getClaudeCodeUserAgent()` — `MACRO.VERSION` es un define de build-time
  * de `ccnmt` ausente en este árbol fuera de un build real. Mismo patrón que
  * ya usan `local-observability/{telemetry/attributes,logging/error-log-sink}.ts`: `typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'`.
+ *
+ * `./loadState.ts` — el estado de carga remota (`Ma`/`em`/`le()` de
+ * 2.1.283) que este módulo alimenta en cada fetch, para que un futuro
+ * consumidor (`readRemotePolicy`) lo lea. Este porte simplificado no tiene
+ * el flujo de consentimiento de 2.1.283 (`ot()`), así que el mapeo es
+ * best-effort: cada desenlace de `fetchAndLoadRemoteManagedSettings()` se
+ * traduce al estado más cercano (`ineligible`/`ok`/`stale_cache`/`failed`),
+ * y `errorKind` se colapsa a `'fetch_failed'` porque este fetch no
+ * distingue `ruled_empty` de un fallo de red o de auth como sí hace 2.1.283.
  */
 
 import { createHash } from 'crypto'
@@ -75,6 +84,7 @@ import {
   type RemoteManagedSettingsFetchResult,
   RemoteManagedSettingsResponseSchema,
 } from './types.js'
+import { getRemoteLoadState, type RemoteSettingsFailure } from './loadState.js'
 
 // --- envoltorios de dependencias bloqueadas — ver docstring del módulo ---
 
@@ -572,6 +582,9 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
   // Limpia la caché de sesión.
   requireRemoteSyncCache().resetSyncCache()
 
+  // Limpia el estado de carga remota (`Ma.reset()`).
+  getRemoteLoadState().reset()
+
   // Limpia el estado de la promesa de carga.
   loadingCompletePromise = null
   loadingCompleteResolve = null
@@ -584,6 +597,27 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
   }
 }
 
+/** `ign()`+`f8e()` con un fallo: deja constancia de la caché usada (si la hay) y del fallo. */
+function recordFetchFailure(cachedSettings: SettingsJson | null, message: string): void {
+  const failure: RemoteSettingsFailure = { errorKind: 'fetch_failed', message }
+  const loadState = getRemoteLoadState()
+  if (cachedSettings) {
+    loadState.recordSessionCache(cachedSettings, false)
+    loadState.recordProjectedView(cachedSettings)
+    loadState.setLastLoadStatus({ state: 'stale_cache', failure, transportEnvWithheld: false })
+    return
+  }
+  loadState.setLastLoadStatus({ state: 'failed', failure })
+}
+
+/** `ign()`+`f8e()` con éxito: deja constancia de los settings servidos y de que la carga fue `'ok'`. */
+function recordFetchSuccess(settings: SettingsJson, verified: boolean): void {
+  const loadState = getRemoteLoadState()
+  loadState.recordSessionCache(settings, verified)
+  loadState.recordProjectedView(settings)
+  loadState.setLastLoadStatus({ state: 'ok', hasSettings: Object.keys(settings).length > 0 })
+}
+
 /**
  * Trae y carga los settings remotos con caché en archivo. Función interna
  * que maneja el flujo completo de carga/fetch. Falla abierto — devuelve
@@ -591,6 +625,10 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
  */
 async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null> {
   if (!requireRemoteSyncCache().isRemoteManagedSettingsEligible()) {
+    getRemoteLoadState().setLastLoadStatus({
+      state: 'ineligible',
+      reason: 'user is not eligible for remote managed settings',
+    })
     return null
   }
 
@@ -614,9 +652,11 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
           'Remote settings: Using stale cache after fetch failure',
         )
         requireRemoteSyncCacheState().setSessionCache(cachedSettings)
+        recordFetchFailure(cachedSettings, result.error ?? 'unknown error')
         return cachedSettings
       }
       // No hay caché disponible — falla abierto, continúa sin settings remotos.
+      recordFetchFailure(null, result.error ?? 'unknown error')
       return null
     }
 
@@ -624,6 +664,7 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
     if (result.settings === null && cachedSettings) {
       getConfigHostBindings().logDebug?.('Remote settings: Cache still valid (304 Not Modified)')
       requireRemoteSyncCacheState().setSessionCache(cachedSettings)
+      recordFetchSuccess(cachedSettings, true)
       return cachedSettings
     }
 
@@ -642,12 +683,14 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
         getConfigHostBindings().logDebug?.(
           'Remote settings: User rejected new settings, using cached settings',
         )
+        if (cachedSettings) recordFetchSuccess(cachedSettings, false)
         return cachedSettings
       }
 
       requireRemoteSyncCacheState().setSessionCache(newSettings)
       await saveSettings(newSettings)
       getConfigHostBindings().logDebug?.('Remote settings: Applied new settings successfully')
+      recordFetchSuccess(newSettings, true)
       return newSettings
     }
 
@@ -667,16 +710,19 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
         )
       }
     }
+    recordFetchSuccess(newSettings, true)
     return newSettings
   } catch {
     // Ante cualquier error, usa el archivo obsoleto si existe (degradación elegante).
     if (cachedSettings) {
       getConfigHostBindings().logDebug?.('Remote settings: Using stale cache after error')
       requireRemoteSyncCacheState().setSessionCache(cachedSettings)
+      recordFetchFailure(cachedSettings, 'unexpected error while loading remote settings')
       return cachedSettings
     }
 
     // No hay caché disponible — falla abierto, continúa sin settings remotos.
+    recordFetchFailure(null, 'unexpected error while loading remote settings')
     return null
   }
 }
