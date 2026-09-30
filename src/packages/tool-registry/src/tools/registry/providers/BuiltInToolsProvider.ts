@@ -138,9 +138,12 @@ const getSnipTool = () =>
     ? require('@thyrox/tool-registry/tools/SnipTool/SnipTool.js').SnipTool as Tool
     : null
 
-// ListPeersTool: src/ shim never replaced with canonical package. Feature
-// gate UDS_INBOX defaults false in this build.
-const getListPeersTool = () => null
+// ListAgents (alias ListPeers) entra siempre, como en 2.1.283
+// (chunk-3pfj38s1.js lo requiere sin compuerta): su visibilidad la decide
+// isEnabled() → isSessionMessagingEnabled(). Require perezoso, como sus
+// vecinos, para no cerrar un ciclo de importación.
+const getListAgentsTool = () =>
+  require('../../ListAgentsTool/ListAgentsTool.js').ListAgentsTool as Tool
 
 // Workflow tool ships in every build (ant parity); runtime visibility is the
 // tool's own isEnabled() → isWorkflowsEnabled(). Unconditional require so DCE
@@ -249,8 +252,7 @@ export function createBuiltInToolsProvider(
       tools.push(SendMessageTool)
 
       // UDS Inbox
-      const listPeers = getListPeersTool()
-      if (listPeers) tools.push(listPeers)
+      tools.push(getListAgentsTool())
 
       // Agent swarms / teams
       if (isAgentSwarmsEnabled()) {

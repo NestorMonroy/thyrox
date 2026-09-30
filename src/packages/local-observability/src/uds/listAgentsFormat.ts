@@ -20,11 +20,10 @@
  * importan los tipos del candidato.
  *
  * Lo que NO se porta, y por qué:
- * - `U` (`chunk-7h1n9jsx.js`): sólo lo usa `clr`/`dlr`, el orquestador
- *   asíncrono que arma `e`/`n` a partir del entorno del proceso — este ítem
- *   excluye ambos explícitamente. Portarlo exigiría importar cuatro
- *   singletons de proceso (`gq`, `Wv`, `dRr`, más `DUe`/`oWr` del otro
- *   ítem) que ninguna función de este módulo necesita.
+ * - `U` (`chunk-7h1n9jsx.js`) y el orquestador `clr`/`dlr` que lo usa: los
+ *   porta `listAllPeers.ts` (`ownSessionInfo`, `listAllPeers` y
+ *   `buildSubagentExtras`, de `chunk-mk0qbzxv.js` de 2.1.283), con sus
+ *   singletons de proceso inyectados.
  * - El parámetro `didWarnings` de `aYo` y la variable `A` (sesiones `did`)
  *   que calculaba: ninguno de los dos se lee en el cuerpo original de
  *   `aYo` — código muerto en la fuente, no portado aquí.
@@ -99,7 +98,7 @@ const TMUX_PANE_NAME_PATTERN = /^[^\s/\\\p{Cc}\p{Cf}]{1,64}$/u
 
 export interface ListAgentsTeammateContextEntry {
   readonly name: string
-  readonly agentType: string
+  readonly agentType?: string
   readonly tmuxPaneId: string
   readonly spawnedAt: number
 }
@@ -137,7 +136,7 @@ export interface ListAgentsAppState {
 export interface TeamFileMember {
   readonly agentId: string
   readonly name: string
-  readonly agentType: string
+  readonly agentType?: string
   readonly joinedAt: number
 }
 
@@ -158,17 +157,25 @@ export interface FormerNameRecord {
   readonly until: number
 }
 
+/**
+ * `r` de `kor`: el registro de una sesión viva tal cual llega del registro
+ * (`LiveSessionRecord`); el formato lee estos campos, y la tabla de refs
+ * `sessionId`, `bridgeSessionId` y `statusUpdatedAt`.
+ */
 export interface UdsSession {
   readonly sock: string
   readonly name?: string
   readonly cwd: string
-  readonly kind: string
-  readonly status: string
+  readonly kind?: string | undefined
+  readonly status?: string | undefined
   readonly hostSessionId?: string
   readonly tmux?: string
   readonly startedAt: number
   readonly nameSource?: string
   readonly formerNames?: readonly FormerNameRecord[]
+  readonly sessionId?: string | undefined
+  readonly bridgeSessionId?: string
+  readonly statusUpdatedAt?: number
 }
 
 export interface CloudSession {
@@ -187,6 +194,8 @@ export interface BridgeSession {
   readonly title?: string
   readonly status?: string
   readonly acceptsPeerMessages?: boolean
+  /** `updated_at` de la fila del puente; sin él, la tabla de refs no calcula `lastActive`. */
+  readonly updatedAt?: string
   readonly environmentKind?: string
   readonly connected?: boolean
 }
@@ -354,7 +363,7 @@ export type TeammateNameShadow = false | 'unreachable' | 'bare-only'
 export interface TeammateEntry {
   readonly teammateId: string
   readonly name: string
-  readonly agentType: string
+  readonly agentType: string | undefined
   readonly status: string | undefined
   readonly backend: TeammateBackend
   readonly since: number
