@@ -14,6 +14,7 @@ import { flag, hasFlag } from '../../entry/flags.ts'
 import { EXIT_FAIL, EXIT_OK, EXIT_USAGE } from '../../exitCodes.ts'
 import { firstPositional } from './commandArgs.ts'
 import { resolveConnection } from './connectionSelector.ts'
+import { canonicalProviderId } from './providerId.ts'
 import { publicConnection } from './publicConnection.ts'
 
 type Row = Record<string, unknown>
@@ -31,7 +32,8 @@ export interface LoginVerbDeps {
 
 export async function runLoginVerb(args: string[], deps: LoginVerbDeps): Promise<number> {
   const available = deps.providers.join(', ')
-  const provider = firstPositional(args, VALUE_FLAGS)
+  const spelled = firstPositional(args, VALUE_FLAGS)
+  const provider = spelled && canonicalProviderId(spelled)
   if (!provider) {
     deps.write(`Provider id is required. Available: ${available}\n`)
     return EXIT_USAGE
