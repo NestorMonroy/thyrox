@@ -27,7 +27,7 @@ Proxy»; y RAG termina en «Proxy → Ollama / Providers». Lo medido:
 | Transporte de `thyrox -p` (`runLoop.ts::providerFor`) | `http` = `AnthropicHttpProvider` (formato Messages) o `recorded` | `--connection` sólo cambia `baseUrl` y clave: el formato sigue siendo Messages |
 | Modelos que el pool puede elegir (`bin/agent-recommend`) | 19 del catálogo, **todos `claude-*`** | `--task-class` no puede derivar un modelo abierto |
 | Servidor de modelo abierto en este contenedor | `ollama`, `llama-server`, `vllm`: ausentes; nada en `:11434` | — |
-| GPU en este contenedor | ninguna: es una microVM Firecracker (`--firecracker-init` en el cmdline), 4 núcleos, 15 G de RAM, sólo dispositivos virtio; `hardware-inventory` da `none` con las ocho señales ausentes | la GPU del ejecutor está en OTRO anfitrión: este contenedor no la ve |
+| GPU en este contenedor | ninguna: es una microVM Firecracker (`--firecracker-init` en el cmdline), 4 núcleos, 15 G de RAM, sólo dispositivos virtio; `hardware-inventory` da `none` con las ocho señales ausentes | aquí no hay GPU: los arneses de nivel 2 (`tests/session/hardware/test_gpu_admission_real.py`) y 3 (`test-gpu-pools-real.sh`) rehúsan con exit 2 («nvidia-smi no responde. No se midió nada») y `test-gpu-hardware-refusal.sh` da 12 de 12. Si la GPU del ejecutor, en otra máquina, se alcanza por red desde aquí es DESCONOCIDO: no existe un script que lo mida |
 
 Conclusión medida: hoy un modelo abierto **no es alcanzable** desde el pool.
 Las piezas de traducción existen, pero ninguna está conectada en el sentido
@@ -51,5 +51,24 @@ Messages → OpenAI dentro del proxy, que es el único camino que la ADR admite.
 
 *Metrica:* upstreams conectados, consumidores de cada traductor, transportes
 de `thyrox -p`, universo del recomendador y servidores presentes.
-*Ciega a:* la GPU del otro anfitrión, que desde aquí no se puede medir; y si Ollama ofrecería un endpoint compatible con Messages, que haría
+*Ciega a:* la GPU del otro anfitrión, que no se ha medido: falta el script que pruebe si se alcanza por red; y si Ollama ofrecería un endpoint compatible con Messages, que haría
 innecesaria la traducción; no hay Ollama aquí que medir.
+
+## ¿Y si el instrumento de la GPU está equivocado?
+
+Pregunta del ejecutor. Dos controles, los dos corridos el 2026-09-30:
+
+- **Un instrumento independiente**, sin el script: `/sys/bus/pci/devices/*`
+  leído a mano da once dispositivos, vendor `0x8086` (el host bridge) y
+  `0x1af4` (virtio); ninguno `0x10de` (NVIDIA) ni de clase `0x03xxxx`
+  (display). Coincide con `hardware-inventory`.
+- **Un control positivo del script**: `tests/session/test-hardware-inventory.sh`
+  (16 de 16) monta un `/sys` sintético con una tarjeta `0x10de` de clase
+  `0x030200` y exige `nvidia-usable`, y la misma sin driver exige
+  `partial`. El script sabe decir «sí»; su «no» aquí no es un cero ciego.
+
+Lo que ninguno de los dos cubre: el árbol sintético es el modelo que el
+autor tiene de un anfitrión con GPU, igual que el `nvidia-smi` falso. Que ese
+modelo corresponda a una GPU real sólo lo prueban los niveles 2 y 3 sobre
+hardware real, y aquí rehúsan por diseño. Y nada de esto mide una GPU en otra
+máquina: TASK-THYROX-0666.
