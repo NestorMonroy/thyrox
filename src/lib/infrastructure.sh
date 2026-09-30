@@ -43,6 +43,9 @@ declare -ga _INFRASTRUCTURE_CONTAINERS=(
 # infraestructura, no COMO se aprovisiona (eso si varia por variable, abajo).
 readonly _INFRASTRUCTURE_NETWORK="thyrox-infra"
 readonly _INFRASTRUCTURE_ROLE_LABEL="io.thyrox.role=infrastructure"
+# La etiqueta de servicio nombra QUE servicio es cada contenedor, para que un
+# selector por etiqueta distinga Ollama de PostgreSQL sin depender del nombre.
+readonly _INFRASTRUCTURE_SERVICE_LABEL_KEY="io.thyrox.service"
 
 # PostgreSQL: la verdad durable vive en el volumen con nombre, el contenedor
 # es descartable.
@@ -52,7 +55,9 @@ readonly _INFRASTRUCTURE_POSTGRES_DATA_DIR="/var/lib/postgresql/data"
 # Ollama: los modelos son su verdad durable, igual que el volumen de
 # postgres; el contenedor es descartable y el `rm -f` del ensure no toca el
 # volumen.
-readonly _INFRASTRUCTURE_OLLAMA_VOLUME="thyrox-ollama-models"
+# El volumen es sobreescribible: un clon que ya tiene modelos en otro volumen
+# lo reutiliza en vez de volver a bajarlos.
+THYROX_INFRA_OLLAMA_VOLUME="${THYROX_INFRA_OLLAMA_VOLUME:-thyrox-ollama-models}"
 readonly _INFRASTRUCTURE_OLLAMA_MODELS_DIR="/root/.ollama"
 
 # Ollama es la UNICA excepcion de red de esta declaracion: la red del
@@ -118,6 +123,7 @@ _thyrox_infrastructure_create_argv_postgres() {
     --name "$_INFRASTRUCTURE_POSTGRES_NAME" \
     --network "$_INFRASTRUCTURE_NETWORK" \
     --label "$_INFRASTRUCTURE_ROLE_LABEL" \
+    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=postgres" \
     --restart=on-failure \
     -p "127.0.0.1:${THYROX_INFRA_POSTGRES_PORT}:5432" \
     -v "${_INFRASTRUCTURE_POSTGRES_VOLUME}:${_INFRASTRUCTURE_POSTGRES_DATA_DIR}" \
@@ -139,6 +145,7 @@ _thyrox_infrastructure_create_argv_redis() {
     --name "$_INFRASTRUCTURE_REDIS_NAME" \
     --network "$_INFRASTRUCTURE_NETWORK" \
     --label "$_INFRASTRUCTURE_ROLE_LABEL" \
+    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=redis" \
     --restart=on-failure \
     -p "127.0.0.1:${THYROX_INFRA_REDIS_PORT}:6379" \
     "$THYROX_INFRA_REDIS_IMAGE" \
@@ -188,8 +195,9 @@ _thyrox_infrastructure_create_argv_ollama() {
     --name "$_INFRASTRUCTURE_OLLAMA_NAME" \
     --network "$_INFRASTRUCTURE_HOST_NETWORK" \
     --label "$_INFRASTRUCTURE_ROLE_LABEL" \
+    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=ollama" \
     --restart=on-failure \
-    -v "${_INFRASTRUCTURE_OLLAMA_VOLUME}:${_INFRASTRUCTURE_OLLAMA_MODELS_DIR}" \
+    -v "${THYROX_INFRA_OLLAMA_VOLUME}:${_INFRASTRUCTURE_OLLAMA_MODELS_DIR}" \
     -e "OLLAMA_HOST=${_INFRASTRUCTURE_LOOPBACK}:${THYROX_INFRA_OLLAMA_PORT}"
   _thyrox_infrastructure_proxy_argv
   printf '%s\n' "$THYROX_INFRA_OLLAMA_IMAGE"

@@ -74,6 +74,7 @@ expected_pg="$(printf '%s\n' \
   --name thyrox-postgres \
   --network thyrox-infra \
   --label io.thyrox.role=infrastructure \
+  --label io.thyrox.service=postgres \
   --restart=on-failure \
   -p 127.0.0.1:55432:5432 \
   -v thyrox-postgres-data:/var/lib/postgresql/data \
@@ -104,6 +105,7 @@ expected_redis="$(printf '%s\n' \
   --name thyrox-redis \
   --network thyrox-infra \
   --label io.thyrox.role=infrastructure \
+  --label io.thyrox.service=redis \
   --restart=on-failure \
   -p 127.0.0.1:56379:6379 \
   docker.io/library/redis:7.4 \
@@ -206,6 +208,7 @@ expected_ollama="$(printf '%s\n' \
   --name thyrox-ollama \
   --network host \
   --label io.thyrox.role=infrastructure \
+  --label io.thyrox.service=ollama \
   --restart=on-failure \
   -v thyrox-ollama-models:/root/.ollama \
   -e OLLAMA_HOST=127.0.0.1:51434 \
@@ -219,6 +222,23 @@ if [[ "$actual_ollama" != *"thyrox-infra"* && "$(grep -cx -- '-p' <<<"$actual_ol
 else
   bad "ollama declara thyrox-infra o -p: [$actual_ollama]"
 fi
+# --- TASK-THYROX-0693: el volumen de modelos se declara por variable ---
+# Un clon que ya tiene modelos en otro volumen (el del probe, medido en
+# `ollama-managed-service-20260930T224010`) lo reutiliza sin copiarlo.
+actual_ollama_volume="$(ollama_argv THYROX_INFRA_OLLAMA_VOLUME=thyrox-ollama-probe-models)"
+if [[ "$(grep -cx -- '-v' <<<"$actual_ollama_volume")" == 1 \
+   && "$actual_ollama_volume" == *"thyrox-ollama-probe-models:/root/.ollama"* \
+   && "$actual_ollama_volume" != *"thyrox-ollama-models:"* ]]; then
+  ok "THYROX_INFRA_OLLAMA_VOLUME gana y monta un solo volumen de modelos"
+else
+  bad "THYROX_INFRA_OLLAMA_VOLUME no tomo efecto: [$actual_ollama_volume]"
+fi
+for service in postgres redis ollama; do
+  labels="$(THYROX_INFRA_POSTGRES_PASSWORD=secret123 env -u HTTPS_PROXY -u https_proxy bash -c \
+    "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-$service" | grep -c '^io\.thyrox\.service=')"
+  thyrox_check "thyrox-$service declara una sola etiqueta io.thyrox.service" "1" "$labels"
+done
+
 for piece in HTTPS_PROXY https_proxy NO_PROXY SSL_CERT_FILE proxy-ca.crt; do
   if [[ "$actual_ollama" != *"$piece"* ]]; then
     ok "sin HTTPS_PROXY, el argv de ollama no lleva $piece"
