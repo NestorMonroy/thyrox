@@ -12,7 +12,7 @@ import type { AgentDefinition } from '../types.ts'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE = join(HERE, '..')
 const REPO_ROOT = join(PACKAGE, '..', '..', '..')
-const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.282', 'claude_strings.txt')
+const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.283', 'claude_strings.txt')
 const CATALOG_FILE = join(PACKAGE, 'models.jsonl')
 
 describe('src/models.jsonl es derivado, no escrito a mano', () => {
@@ -23,7 +23,7 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
    * en H-DOCS-1003: el JSON era válido y estable y llevaba 63 booleanos
    * invertidos.
    */
-  test('coincide byte a byte con la extracción del volcado 2.1.282', () => {
+  test('coincide byte a byte con la extracción del volcado 2.1.283', () => {
     const result = Bun.spawnSync([
       'python3', join(PACKAGE, 'bin', 'extract_model_registry.py'), DUMP, '--stdout',
     ])
@@ -80,7 +80,7 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
   })
 
   test('declara su fuente y su forma', () => {
-    expect(CATALOG.fuente).toContain('claude-code-bin/2.1.282/claude_strings.txt')
+    expect(CATALOG.fuente).toContain('claude-code-bin/2.1.283/claude_strings.txt')
     expect(CATALOG.schema_version).toBe(2)
     expect(MODEL_IDS.length).toBe(CATALOG.models.length)
   })
