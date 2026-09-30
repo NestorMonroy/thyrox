@@ -107,3 +107,27 @@ Llegó con el ítem ya en vuelo, y el buzón no entrega mensajes a un `-p`
   con texto idéntico y distinto `domain_id` son dos identidades;
 - prueba de convergencia: el mismo `domain_id` ingerido desde dos rutas
   distintas da una sola identidad y una sola versión.
+
+## La transición: 0682 no se cierra al integrarse
+
+Lo que entregue este ítem es una implementación intermedia. El contrato del
+corpus durable no se da por satisfecho, y TASK-THYROX-0684 no se lanza, hasta
+este orden:
+
+1. integrar lo verificado;
+2. reemplazar la identidad por fuente/ruta por `domain` + `domain_id`
+   (+ `scope` si el dominio lo exige); `content_hash` es la versión;
+   `source_ref`/`source_revision` sólo procedencia;
+3. migrar o reconciliar las filas escritas con la identidad antigua: mapear a
+   la identidad de dominio, converger versiones, sin dejar colgada ninguna
+   referencia de `analysis_runs`;
+4. correr las seis pruebas de abajo contra PostgreSQL real.
+
+| # | Caso | Esperado |
+|---|---|---|
+| 1 | mismo `domain_id` y mismo contenido desde dos rutas de clon | un documento, una versión |
+| 2 | mismo `domain_id`, contenido cambiado | un documento, dos versiones |
+| 3 | distinto `domain_id`, contenido idéntico | dos documentos |
+| 4 | cambia `source_ref` | la identidad no cambia |
+| 5 | cambia `source_revision` sin cambiar el contenido | sin versión nueva |
+| 6 | filas con la identidad antigua | convergen a la identidad de dominio; ningún `analysis_run` citado queda colgado |

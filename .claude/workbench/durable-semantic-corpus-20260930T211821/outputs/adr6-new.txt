@@ -1,0 +1,97 @@
+Revisión 1.3.0: SQLite vuelve a su responsabilidad
+--------------------------------------------------
+
+Decidido por el ejecutor el 2026-09-30, con PostgreSQL + pgvector y Redis ya
+definidos (ADR-007, ADR-008). SQLite no se elimina: deja de hacer de base de
+datos compartida distribuida.
+
+.. code-block:: text
+
+   SQLite                    → persistencia durable local (sesión o instalación)
+   PostgreSQL                → persistencia durable compartida y corpus semántico
+   Redis                     → coordinación compartida efímera
+   RuntimeWorkspace/Snapshot → estado de ejecución y recuperación
+
+**El patrón que desaparece es «SQLite por sesión + Git como sincronización +
+merge de filas»** para datos que necesitan una autoridad compartida. Medido en
+``thyrox: agent-results/agent_store.sqlite3`` el mismo día: el archivo viaja por
+git con ``merge=sqlite-union`` (``.gitattributes:1``) y tiene una tabla
+``merge_conflicts`` que sólo existe para ese patrón.
+
+``@thyrox/store`` sigue siendo infraestructura común —conexiones,
+migraciones, configuración y transacciones—, con un adaptador SQLite para el
+modo local y uno PostgreSQL para el modo compartido; no es una API de dominio.
+
+**Destino de cada tabla del store**, medido (filas al 2026-09-30):
+
+.. list-table::
+   :header-rows: 1
+
+   * - Tabla
+     - Filas
+     - Destino
+     - Condición
+   * - ``agent_sessions``
+     - 1 911
+     - PostgreSQL compartido
+     - D4-B (TASK-THYROX-0627)
+   * - ``tasks``
+     - 2 298
+     - PostgreSQL compartido
+     - D4-B
+   * - ``findings_history`` (+ ``findings_fts``, su índice)
+     - 1 671
+     - SQLite local, índice reconstruible desde los ``.rst``
+     - hasta entonces es parcialmente autoritativa: el gate de pre-push cuenta
+       1 671 filas contra 1 602 ``.rst`` (81 en baseline). Se vuelve
+       reconstruible con el backfill en 0 pendientes y un gate de cierre de
+       sesión que impida findings sólo en base
+   * - ``documents``
+     - 6 515
+     - SQLite local, caché reconstruible
+     - guarda metadatos de documentos (ruta, fechas, sección, serie,
+       retención), no su texto: se deriva de Git
+   * - ``cleared_tool_results``
+     - 2 305
+     - SQLite local
+     - estado de una sesión
+   * - ``task_session_highwater``
+     - 0
+     - SQLite local
+     - estado de una sesión
+   * - ``merge_conflicts``
+     - 0
+     - desaparece con el patrón
+     - cuando ``agent_sessions`` y ``tasks`` salgan del merge
+   * - corpus semántico
+     - —
+     - PostgreSQL + pgvector
+     - ADR-008; nunca SQLite, porque tiene que sobrevivir a la fuente
+   * - leases y cooldowns
+     - —
+     - Redis
+     - revisión 1.1.0
+
+El archivo no se copia entero a PostgreSQL: se descompone por la naturaleza de
+cada dato.
+
+**Dos PostgreSQL por responsabilidad, no por servidor.** La autoridad
+compartida de D4-B (dominio de agentes: sesiones, tareas) y el corpus
+semántico (documentos, chunks, embeddings, ``analysis_runs``) pueden vivir en
+el mismo servidor, con esquemas, puertos y propiedad separados.
+
+**Modo local y modo compartido, sin fallback silencioso.**
+
+.. code-block:: text
+
+   modo local        → SQLite, a propósito
+   modo compartido   → PostgreSQL obligatorio
+   PostgreSQL caído en modo compartido → error, nunca escribir en SQLite
+
+Escribir en SQLite local cuando la autoridad compartida no responde y
+declarar éxito recrearía el split-brain que el merge de filas existe para
+reparar. Es la misma regla que la revisión 1.1.0 fija para Redis entre
+proxies.
+
+Alternativas descartadas
+------------------------
