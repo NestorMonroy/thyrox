@@ -59,3 +59,22 @@ laboratorio propio, un candidato a la vez (lo borra antes del siguiente), seis
 casos deterministas por `/v1/chat/completions`, RAM del cgroup, carga,
 primer token, tokens/s y 1/2/4 peticiones concurrentes. Corre con contención:
 los tiempos no son la cifra de la máquina en reposo; los aciertos sí se comparan.
+
+## La política de loopback, corregida, y el criterio de aceptación
+
+Directiva del ejecutor: no compensar en el wrapper una política incorrecta de
+una capa inferior. `isSafeUpstreamUrl()` acepta loopback por defecto
+(`97fbdc34e`); `THYROX_GATEWAY_ALLOW_LOOPBACK` se retiró.
+`probes/e2e_local_model.sh` → `outputs/e2e-without-exception.txt`:
+`variables_de_excepcion_en_el_entorno=0`, respuesta `ready`, `exit=0`.
+
+## Los 9,3 GB son la imagen, no el modelo (`outputs/ollama-image-breakdown.txt`)
+
+La necesidad de disco de `thyrox-ollama` (3,75 GB comprimidos + 5,51 GB
+desempaquetados, durante el pull) es del SOFTWARE; los pesos viven aparte en
+el volumen (0,4 GB para el 0.5B Q4_K_M) y cuantizar reduce sólo esos. De los
+5,5 GB de la imagen, 4,7 son backends de GPU: `mlx_cuda_v13` 2,7 GB,
+`cuda_v12` 1,2 GB, `cuda_v13` 0,8 GB. Una imagen CPU derivada y aplanada
+(`probes/ollama-cpu-image/Containerfile`, `outputs/ollama-cpu-image.txt`)
+pesa **520 MB** y sirve el mismo modelo del volumen (`4` a 2+2). Encaja con
+ADR-007 1.6.0: sin evidencia de GPU, la imagen CPU; con ella, la completa.
