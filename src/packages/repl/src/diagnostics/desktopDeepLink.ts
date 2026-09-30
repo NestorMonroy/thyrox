@@ -11,12 +11,8 @@ import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const MIN_DESKTOP_VERSION = '1.1.2396'
 
-function isDevMode(): boolean {
-  if ((process.env.NODE_ENV as string) === 'development') {
-    return true
-  }
-
-  // Local builds from build directories are dev mode even with NODE_ENV=production
+export function isDevMode(): boolean {
+  // Un build local desde un directorio de build es modo dev.
   const pathsToCheck = [process.argv[1] || '', process.execPath || '']
   const buildDirs = [
     '/build-ant/',

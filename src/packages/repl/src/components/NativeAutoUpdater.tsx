@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { logEvent } from '@thyrox/local-observability'
-import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { useInterval } from 'usehooks-ts'
 import { useUpdateNotification } from '../hooks/useUpdateNotification.js'
@@ -96,16 +95,6 @@ export function NativeAutoUpdater({
 
   const checkForUpdates = React.useCallback(async () => {
     if (isUpdatingRef.current) {
-      return
-    }
-
-    if (
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_ENV === 'development'
-    ) {
-      logForDebugging(
-        'NativeAutoUpdater: Skipping update check in test/dev environment',
-      )
       return
     }
 

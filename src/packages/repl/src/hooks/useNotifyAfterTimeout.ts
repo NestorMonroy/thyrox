@@ -16,8 +16,8 @@ function hasRecentInteraction(threshold: number): boolean {
   return getTimeSinceLastInteraction() < threshold
 }
 
-function shouldNotify(threshold: number): boolean {
-  return process.env.NODE_ENV !== 'test' && !hasRecentInteraction(threshold)
+export function shouldNotify(threshold: number): boolean {
+  return !hasRecentInteraction(threshold)
 }
 
 // NOTE: User interaction tracking is now done in App.tsx's processKeysInBatch

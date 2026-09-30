@@ -158,7 +158,6 @@ export async function showSetupScreens(
   devChannels?: ChannelEntry[],
 ): Promise<boolean> {
   if (
-    process.env.NODE_ENV === 'test' ||
     isEnvTruthy(false) ||
     process.env.IS_DEMO // Skip onboarding in demo mode
   ) {
