@@ -15,7 +15,8 @@ export const SWARM_VIEW_WINDOW_NAME = 'swarm-view'
 export const TMUX_COMMAND = 'tmux'
 /**
  * `vFe`: la orden que ocupa un panel recién creado. La referencia la pasa tras
- * `--` en `new-session` y `new-window`, de modo que el panel no abre un shell.
+ * `--` en `new-session`, `new-window` y los tres `split-window` de `Vjo`, de
+ * modo que el panel no abre un shell.
  */
 export const SWARM_PANE_PLACEHOLDER_COMMAND = 'cat'
 export const HIDDEN_SESSION_NAME = 'claude-hidden'
