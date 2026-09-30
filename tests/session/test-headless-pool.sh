@@ -99,6 +99,10 @@ check "sin sesion persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .r
 check "el .json es la linea result del stream, sola" "$(cat "$F/out"/*.json | jq -r .type | sort -u)" "result"
 check "un stream por item, una linea por peticion" "$(cat "$F/out"/*.stream.jsonl 2>/dev/null | jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}' | paste -sd,)" "3x111,3x500"
 check "el indice empareja numero e item" "$(gawk -F'\t' '{print $2}' "$F/out/index.tsv" | paste -sd,)" "alfa,beta,gamma"
+# Sin mensajes, lo único nuevo en la salida es la línea del buzón de la
+# ejecución (TASK-THYROX-0672), que apunta a un directorio que existe.
+mailbox_dir="$(printf '%s\n' "$SALIDA" | gawk 'sub(/^buzón: /, ""){n++; path=$0} END{if (n == 1) print path}')"
+check "sin mensajes: una sola línea buzón, con un directorio real" "$([[ -n "$mailbox_dir" && -d "$mailbox_dir" ]] && echo si || echo no)" "si"
 
 # 2 — un item que falla: exit 1 y se nombra, los demas siguen contando.
 rm -rf "$F/out"; corre alfa FALLA-beta gamma
@@ -585,7 +589,13 @@ check "sin filas en el joblog: el total es el del índice" \
 # suelto muere en su `from session...` y deja la ruta vacía, con lo que el
 # `grep` de abajo buscaba bajo `/pool` y el cero no medía nada.
 real_runtime="$(env -u THYROX_RUNTIME_DIR THYROX_ROOT="$RAIZ" PYTHONPATH="$RAIZ/src" python3 -c 'from session import pool_lifecycle; print(pool_lifecycle.runtime_root())')"
-check "el runtime real se resuelve" "$([[ -n "$real_runtime" && -d "$real_runtime" ]] && echo si || echo no)" "si"
+# Se exige que la ruta se RESUELVA, no que exista: `.thyrox/runtime` es un
+# hogar ignorado por git, así que un clon o un worktree recién hechos no lo
+# tienen hasta el primer pool (o hasta `bin/ensure_homes`, TASK-THYROX-0675).
+# Exigir el directorio hacía fallar esta suite en todo clon nuevo. Sin
+# directorio, ninguna ejecución de la suite pudo publicar ahí: la aserción de
+# abajo cuenta cero sobre un conjunto vacío, que es su respuesta correcta.
+check "el runtime real se resuelve" "$([[ -n "$real_runtime" ]] && echo si || echo no)" "si"
 check "el runtime real no recibe ejecuciones de la suite" \
   "$(grep -ls "\"out_dir\": \"$F/" "$real_runtime"/pool/*/run.json 2>/dev/null | wc -l)" "0"
 

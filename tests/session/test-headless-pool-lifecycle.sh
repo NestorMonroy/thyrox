@@ -25,6 +25,10 @@
 #      suite, no el disco del anfitrión: con una reserva imposible y espera 0,
 #      el pool rehúsa el ítem al instante en vez de esperar los 600 s del
 #      default.
+#   8. (TASK-THYROX-0672) el ítem recibe el buzón de la ejecución y su
+#      dirección, su prompt empieza por el párrafo del buzón, un mensaje
+#      enviado antes de que lea aparece como pendiente para él, y el
+#      orquestador recibe un sobre por cada cambio del ciclo de vida.
 #   Controles de anulación:
 #   1c. con el runtime dentro del banco, el mismo pool ensucia `git status`.
 #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
@@ -37,11 +41,16 @@ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else e
 F="$(mktemp -d)"; trap 'rm -rf "${F:?}"' EXIT
 cat > "$F/runner" <<'SH'
 #!/usr/bin/env bash
-cat > /dev/null
+cat > "${LIFECYCLE_TEST_PROMPT:-/dev/null}"
 jq -cn '{type:"system",subtype:"init"}'
 [[ -z "${LIFECYCLE_TEST_WRITE:-}" ]] || echo "trabajo a mitad" > "$LIFECYCLE_TEST_WRITE"
 echo started > "$LIFECYCLE_TEST_STARTED"
 read -r _ < "$LIFECYCLE_TEST_RELEASE"
+if [[ -n "${LIFECYCLE_TEST_INBOX:-}" ]]; then
+  printf '%s\t%s\n' "${THYROX_MAILBOX_DIR:-sin}" "${THYROX_POOL_ITEM_ADDRESS:-sin}" > "$LIFECYCLE_TEST_INBOX.env"
+  bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS" \
+    > "$LIFECYCLE_TEST_INBOX" 2>/dev/null
+fi
 jq -cn '{type:"result",subtype:"success",result:"done"}'
 SH
 chmod +x "$F/runner"
@@ -263,6 +272,29 @@ check "el ítem rehusado quedó publicado" "$(bash "$ROOT/bin/pool_lifecycle" cl
 # --- caso 7c: control — con la espera declarada, el rechazo tarda esa espera -
 elapsed7c="$(refused_pool run7c THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=6)"
 check "control: con espera de 6 s, el rechazo tarda al menos 6 s" "$([[ "$elapsed7c" -ge 6 ]] && echo yes)" yes
+
+# --- caso 8 (TASK-THYROX-0672): el ítem lee su buzón; el orquestador, el suyo -
+LIFECYCLE_TEST_PROMPT="$F/run8.prompt" LIFECYCLE_TEST_INBOX="$F/run8.inbox" \
+  start_pool run8 "$F/runtime8"
+mailbox8="$(gawk 'sub(/^buzón: /, "")' "$F/run8.log")"
+check "la cabecera publica el buzón de la ejecución" "$([[ -n "$mailbox8" && -d "$mailbox8" ]] && echo yes)" yes
+bash "$ROOT/bin/inbox" --dir "$mailbox8" post --from orchestrator --to item-1 \
+  --body "cambio de especificación" > /dev/null 2>&1
+release run8
+wait "$POOL_PID"; code8=$?
+check "con un mensaje, el pool termina bien" "$code8" 0
+check "el ítem recibe el buzón y su dirección" "$(cat "$F/run8.inbox.env" 2>/dev/null)" "$mailbox8	item-1"
+check "el mensaje enviado antes de que el ítem leyera le aparece pendiente" \
+  "$(jq -r '.[].body' "$F/run8.inbox" 2>/dev/null)" "cambio de especificación"
+check "el prompt empieza por el párrafo del buzón" \
+  "$(head -1 "$F/run8.prompt" | grep -c 'Buzón de esta ejecución')" 1
+check "el párrafo dice cómo leer, acusar y escribir al orquestador" \
+  "$(grep -cE 'pending --as "\$THYROX_POOL_ITEM_ADDRESS"|ack --as "\$THYROX_POOL_ITEM_ADDRESS"|post --from "\$THYROX_POOL_ITEM_ADDRESS" --to orchestrator' "$F/run8.prompt")" 3
+check "la plantilla del usuario va después del párrafo y antes del ítem" \
+  "$(gawk '/Buzón de esta ejecución/{p=NR} /^Read\.$/{t=NR} /^Item: one$/{i=NR} END{print (p && p < t && t < i) ? "yes" : "no"}' "$F/run8.prompt")" yes
+check "el orquestador recibió begin, publish y close-run" \
+  "$(bash "$ROOT/bin/inbox" --dir "$mailbox8" pending --as orchestrator 2>/dev/null \
+      | jq -r '.[].body | fromjson | .event' | grep -cxE 'begin|publish|close-run')" 3
 
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]

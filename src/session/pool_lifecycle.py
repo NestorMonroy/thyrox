@@ -41,6 +41,18 @@ artefacto que ya está en la salida con el hash del plan no se vuelve a mover.
 Un proceso que muere en medio deja el estado en ``PUBLISHING`` y ``reconcile``
 retoma el mismo plan.
 
+Buzón de la ejecución
+---------------------
+Cada ejecución tiene un buzón durable (``<runtime>/mailbox``, el medio de
+``peer_mailbox.inbox``) que sobrevive al cierre de la ejecución. En cada cambio
+—``begin``, ``transition``, ``claim``, ``publish`` y ``close-run``— el ciclo de
+vida deja un sobre al destinatario ``orchestrator`` con ``request_id``
+``<run>:<ítem>:<evento>:<generación>``: un reintento del mismo evento en la
+misma generación no duplica, y por eso una transición repetida en la misma
+generación (las fotos periódicas) se anuncia una sola vez. Las transiciones
+internas de ``begin`` y ``publish`` no se anuncian: el evento es la operación.
+Un runtime sin buzón, anterior a él, no recibe sobres ni se le crea uno.
+
 *Ciega a:* un escritor que no pertenece a la sesión del ítem y escribe en la
 salida por su cuenta; eso lo mide ``writer_inspector``, no este módulo.
 """
@@ -60,6 +72,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from peer_mailbox.inbox import Inbox
 from session.writer_inspector import LiveWriterError, UnprovableAbsenceError, find_open_writers
 
 CREATED = "CREATED"
@@ -91,6 +104,18 @@ PLAN_SUFFIX = ".plan.json"
 CLOSED_SUFFIX = ".closed"
 RUN_METADATA = "run.json"
 RUN_CLOSED = "run.closed"
+#: El buzón de la ejecución, dentro de su runtime.
+MAILBOX_DIR = "mailbox"
+#: Quien recibe los sobres del ciclo de vida, y quien los firma.
+ORCHESTRATOR_ADDRESS = "orchestrator"
+LIFECYCLE_SENDER = "pool-lifecycle"
+#: La dirección de un ítem en el buzón es ``item-<n>``.
+ITEM_ADDRESS_PREFIX = "item-"
+#: El ``request_id`` de un evento de la ejecución entera lleva este ámbito en
+#: el lugar del ítem y esta generación, que la ejecución no tiene.
+RUN_SCOPE = "run"
+RUN_GENERATION = 0
+RUN_PENDING = "PENDING"
 #: Artefactos de la ejecución entera, no de un ítem.
 RUN_ARTIFACTS = ("index.tsv", "joblog.tsv", "unexpected-stashes")
 #: El nombre de un artefacto de ítem tal como lo escriben ``headless-pool`` e
@@ -233,8 +258,52 @@ def _assert_current_generation(state: ItemState, generation: int | None) -> None
             f"un actor de la generación {generation} ya no puede actuar sobre él")
 
 
+def mailbox_dir(live_dir: Path) -> Path:
+    """El buzón de una ejecución."""
+    return live_dir / MAILBOX_DIR
+
+
+def item_address(item: str) -> str:
+    """La dirección de un ítem en el buzón de su ejecución."""
+    return f"{ITEM_ADDRESS_PREFIX}{item}"
+
+
+def _utc_now() -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def _has_mailbox(live_dir: Path) -> bool:
+    """Un runtime abierto antes del buzón no lo tiene, y no se le crea."""
+    return mailbox_dir(live_dir).is_dir()
+
+
+def _notify_orchestrator(live_dir: Path, scope: str, event: str, generation: int,
+                         fields: dict[str, object]) -> None:
+    """Deja un sobre al orquestador; el ``request_id`` estable hace idempotente el reintento."""
+    if not _has_mailbox(live_dir):
+        return
+    body = {"event": event, "run": live_dir.name, **fields, "at": _utc_now()}
+    Inbox(mailbox_dir(live_dir)).post(
+        LIFECYCLE_SENDER, ORCHESTRATOR_ADDRESS, json.dumps(body, sort_keys=True),
+        request_id=f"{live_dir.name}:{scope}:{event}:{generation}")
+
+
+def _notify_item_event(live_dir: Path, event: str, state: ItemState) -> None:
+    _notify_orchestrator(live_dir, state.item, event, state.generation,
+                         {"item": state.item, "address": item_address(state.item),
+                          "state": state.state, "generation": state.generation})
+
+
 def transition(live_dir: Path, item: str, target: str, *, generation: int | None = None,
                **changes: object) -> ItemState:
+    """Cambia el estado del ítem y lo anuncia al orquestador."""
+    updated = _apply_transition(live_dir, item, target, generation=generation, **changes)
+    _notify_item_event(live_dir, f"transition-{target.lower()}", updated)
+    return updated
+
+
+def _apply_transition(live_dir: Path, item: str, target: str, *, generation: int | None = None,
+                      **changes: object) -> ItemState:
     current = read_state(live_dir, item)
     if current is None:
         raise LifecycleError(f"el ítem {item} no tiene estado en {live_dir}")
@@ -307,7 +376,9 @@ def begin(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState
     generation = closed_generation(out_dir, item) + 1
     state = ItemState(item=item, state=CREATED, generation=generation, owner_pid=owner_pid)
     write_state(live_dir, state)
-    return transition(live_dir, item, RUNNING)
+    running = _apply_transition(live_dir, item, RUNNING)
+    _notify_item_event(live_dir, "begin", running)
+    return running
 
 
 def claim(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState:
@@ -327,6 +398,7 @@ def claim(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState
                             generation=max(state.generation, closed_generation(out_dir, item)) + 1,
                             owner_pid=owner_pid, exit_code=state.exit_code)
         write_state(live_dir, claimed)
+        _notify_item_event(live_dir, "claim", claimed)
         return claimed
 
 
@@ -386,9 +458,22 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
             staged: bool = True) -> dict:
     """Cierra y publica el ítem; idempotente y reanudable desde su plan.
 
+    Al terminar lo anuncia al orquestador: repetir la publicación repite el
+    ``request_id`` y no deja un segundo sobre.
+
     ``staged=False`` escribe cada artefacto directamente con su nombre final;
     existe sólo como control de anulación de la etapa oculta.
     """
+    manifest = _publish_item(live_dir, out_dir, item, exit_code=exit_code, generation=generation,
+                             fail_after_moves=fail_after_moves, staged=staged)
+    published = read_state(live_dir, item)
+    if published is not None:
+        _notify_item_event(live_dir, "publish", published)
+    return manifest
+
+
+def _publish_item(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None,
+                  generation: int | None, fail_after_moves: int | None, staged: bool) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     with _out_lock(out_dir, item):
         state = read_state(live_dir, item)
@@ -402,7 +487,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
         plan = _read_json(plan_path)
         if plan is None:
             if state.state in (RUNNING, SNAPSHOTTING, ABANDONED_RECOVERABLE):
-                state = transition(live_dir, item, CLOSING,
+                state = _apply_transition(live_dir, item, CLOSING,
                                    exit_code=exit_code if exit_code is not None else state.exit_code)
             if state.state != CLOSING:
                 raise LifecycleError(f"el ítem {item} está en {state.state}; no se puede publicar")
@@ -417,17 +502,17 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                     "artifacts": {name: artifact_digest(live_dir / name)
                                   for name in item_artifacts(live_dir, item)}}
             _write_atomic(plan_path, json.dumps(plan, sort_keys=True) + "\n")
-            state = transition(live_dir, item, PUBLISHING)
+            state = _apply_transition(live_dir, item, PUBLISHING)
         elif state.state not in (PUBLISHING, PARTIALLY_PUBLISHED):
             raise LifecycleError(f"el ítem {item} tiene plan pero está en {state.state}")
         elif state.state == PARTIALLY_PUBLISHED:
-            state = transition(live_dir, item, PUBLISHING)
+            state = _apply_transition(live_dir, item, PUBLISHING)
         generation = int(plan["generation"])
         # Al reanudar se vuelve a mirar la salida: otra ejecución pudo cerrar una
         # generación posterior entre la caída y este intento.
         published = closed_generation(out_dir, item)
         if published == generation:
-            transition(live_dir, item, CLOSED)
+            _apply_transition(live_dir, item, CLOSED)
             plan_path.unlink(missing_ok=True)
             return read_closed(out_dir, item) or {}
         if published > generation:
@@ -456,7 +541,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                 continue
             if not (staged_path.exists() and artifact_digest(staged_path) == expected):
                 if not (source.exists() or source.is_symlink()):
-                    transition(live_dir, item, PARTIALLY_PUBLISHED)
+                    _apply_transition(live_dir, item, PARTIALLY_PUBLISHED)
                     raise LifecycleError(f"el artefacto {name} del ítem {item} no está ni en el "
                                          f"runtime ni en la salida con el hash del plan")
                 _remove(staged_path)
@@ -484,7 +569,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                 os.replace(staged_path, dest)
                 step()
             if not dest.exists() or artifact_digest(dest) != expected:
-                transition(live_dir, item, PARTIALLY_PUBLISHED)
+                _apply_transition(live_dir, item, PARTIALLY_PUBLISHED)
                 raise LifecycleError(f"el artefacto {name} del ítem {item} no llegó íntegro a {out_dir}")
         _fsync_dir(out_dir)
         manifest = {"item": item, "generation": plan["generation"], "exit_code": plan["exit_code"],
@@ -492,7 +577,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                     "closed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
         _write_atomic(out_dir / f"{item}{CLOSED_SUFFIX}", json.dumps(manifest, sort_keys=True) + "\n")
         step()
-        transition(live_dir, item, CLOSED)
+        _apply_transition(live_dir, item, CLOSED)
         plan_path.unlink(missing_ok=True)
         return manifest
 
@@ -549,6 +634,7 @@ def open_run(out_dir: Path, owner_pid: int, run_id: str | None = None) -> Path:
     run_id = run_id or f"{out_key(out_dir)}-{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{owner_pid}"
     live_dir = runtime_root() / "pool" / run_id
     live_dir.mkdir(parents=True, exist_ok=False)
+    mailbox_dir(live_dir).mkdir()
     _write_atomic(live_dir / RUN_METADATA, json.dumps(
         {"run_id": run_id, "out_dir": str(out_dir.resolve()), "owner_pid": owner_pid}) + "\n")
     return live_dir
@@ -558,7 +644,9 @@ def close_run(live_dir: Path, out_dir: Path) -> list[str]:
     """Publica los artefactos de la ejecución y ``run.closed`` al final.
 
     Rehúsa si algún ítem no llegó a ``CLOSED``: su runtime se conserva y el
-    directorio de la ejecución no se retira.
+    directorio de la ejecución no se retira. En los dos desenlaces lo anuncia
+    al orquestador, y al retirar el runtime conserva el buzón: quien lo espera
+    por la ruta que el pool publicó sigue encontrándolo.
     """
     pending = [s.name[: -len(STATE_SUFFIX)] for s in live_dir.glob(f"*{STATE_SUFFIX}")
                if (read_state(live_dir, s.name[: -len(STATE_SUFFIX)]) or ItemState("", "", 0, 0)).state != CLOSED]
@@ -570,12 +658,27 @@ def close_run(live_dir: Path, out_dir: Path) -> list[str]:
             shutil.rmtree(live_dir / name)
         else:
             _place(live_dir / name, dest)
+    items = closed_items(out_dir)
     if pending:
+        _notify_orchestrator(live_dir, RUN_SCOPE, "close-run-refused", RUN_GENERATION,
+                             {"state": RUN_PENDING, "items": items, "pending": sorted(pending)})
         return sorted(pending)
     _write_atomic(out_dir / RUN_CLOSED, json.dumps(
-        {"run_id": live_dir.name, "items": closed_items(out_dir), "artifacts": names}) + "\n")
-    shutil.rmtree(live_dir)
+        {"run_id": live_dir.name, "items": items, "artifacts": names}) + "\n")
+    _notify_orchestrator(live_dir, RUN_SCOPE, "close-run", RUN_GENERATION,
+                         {"state": CLOSED, "items": items})
+    _retire_run(live_dir)
     return []
+
+
+def _retire_run(live_dir: Path) -> None:
+    """Retira el runtime de una ejecución cerrada salvo su buzón."""
+    if not _has_mailbox(live_dir):
+        shutil.rmtree(live_dir)
+        return
+    for entry in live_dir.iterdir():
+        if entry.name != MAILBOX_DIR:
+            _remove(entry)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -610,6 +713,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("close-run", help="publica index/joblog y run.closed")
     p.add_argument("live_dir", type=Path)
     p.add_argument("out_dir", type=Path)
+    p = sub.add_parser("mailbox-dir", help="el buzón de una ejecución")
+    p.add_argument("live_dir", type=Path)
+    p = sub.add_parser("item-address", help="la dirección de un ítem en el buzón")
+    p.add_argument("item")
     sub.add_parser("reconcile", help="completa publicaciones y declara ítems huérfanos")
     p = sub.add_parser("closed-items", help="los ítems publicados de una salida")
     p.add_argument("out_dir", type=Path)
@@ -640,6 +747,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"pool_lifecycle: ítems sin cerrar, runtime conservado en {args.live_dir}: "
                       + " ".join(pending), file=sys.stderr)
                 return EXIT_UNRECOVERABLE
+        elif args.command == "mailbox-dir":
+            print(mailbox_dir(args.live_dir))
+        elif args.command == "item-address":
+            print(item_address(args.item))
         elif args.command == "reconcile":
             print("\n".join(reconcile()) or "reconcile: nada pendiente")
         elif args.command == "closed-items":

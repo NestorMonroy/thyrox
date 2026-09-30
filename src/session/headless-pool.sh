@@ -121,7 +121,11 @@
 # con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
 # declara y no se mide.
 #
-# El prompt de cada item es la plantilla seguida de `Item: <linea>`. Mientras
+# El prompt de cada item es el párrafo del buzón (`HP_MAILBOX_PREAMBLE`), la
+# plantilla y `Item: <linea>`. Cada ejecución tiene un buzón durable
+# (`bin/inbox`, publicado en la línea `buzón:`): el ítem lo recibe como
+# THYROX_MAILBOX_DIR con su dirección THYROX_POOL_ITEM_ADDRESS=item-<n>, y
+# `pool_lifecycle` deja en él un sobre al orquestador por cada cambio. Mientras
 # corre, el item escribe en el runtime de la ejecución
 # (`$THYROX_RUNTIME_DIR/pool/<run-id>/`, ignorado por git), no en `<out>`: su
 # `<n>.stream.jsonl` (una linea por evento de `--output-format stream-json`,
@@ -541,6 +545,14 @@ export HP_LIFECYCLE="$HP_BIN/pool_lifecycle"
 HP_LIVE="$(bash "$HP_LIFECYCLE" open-run "$OUT" --owner $$)" \
     || rehusa "no se pudo abrir el runtime de la ejecución para $OUT"
 export HP_LIVE
+# El buzón durable de la ejecución (`bin/inbox`): el ciclo de vida deja en él
+# un sobre al orquestador por cada cambio, y el orquestador escribe a un ítem
+# vivo por su dirección `item-<n>`. Se publica en la cabecera para que quien
+# lanzó el pool lo encuentre sin conocer el runtime.
+HP_MAILBOX="$(bash "$HP_LIFECYCLE" mailbox-dir "$HP_LIVE")" \
+    || rehusa "no se pudo resolver el buzón de la ejecución en $HP_LIVE"
+export HP_MAILBOX
+echo "buzón: $HP_MAILBOX"
 : > "$HP_LIVE/index.tsv"
 for i in "${!ITEMS[@]}"; do
     printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$HP_LIVE/index.tsv"
@@ -627,7 +639,7 @@ _headless_item_run() {
             { echo "no se pudo preparar el worktree del item:"; cat "$HP_LIVE/$n.prepare.err"; } > "$HP_LIVE/$n.err"
             : > "$HP_LIVE/$n.json"; return 4; }
     fi
-    { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
+    { printf '%s\n\n' "$HP_MAILBOX_PREAMBLE"; cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$workdir" || exit 1
          # Los trabajos que lance un item aislado, su ledger y su archivo van a
          # la salida del item: ni al arbol ni al parche.
@@ -638,6 +650,9 @@ _headless_item_run() {
          export THYROX_POOL_DOCUMENT_INTENT="$HP_LIVE/$n.intent.json" \
                 THYROX_POOL_RUN_ID="${HP_LIVE##*/}" THYROX_POOL_ITEM="$n" \
                 THYROX_POOL_ITEM_GENERATION="$HP_ITEM_GENERATION"
+         # El buzón de la ejecución y la dirección del ítem en él: el
+         # párrafo que antecede al prompt le dice cómo usarlos.
+         export THYROX_MAILBOX_DIR="$HP_MAILBOX" THYROX_POOL_ITEM_ADDRESS="item-$n"
          if [[ "$HP_ISOLATION" == worktree ]]; then
              # >>> item-root
              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
@@ -812,6 +827,19 @@ _headless_item_periodic_snapshots() {
     done
 }
 export -f _headless_item_periodic_snapshots
+# El párrafo fijo que antecede a la plantilla de cada ítem: entre paso y paso
+# lee su buzón, aplica y acusa lo que llegue, y escribe al orquestador una
+# pregunta o un bloqueo en vez de dejarlo sólo en su salida final. Las
+# variables las resuelve el shell del ítem, no este guion.
+# shellcheck disable=SC2016,SC2089
+HP_MAILBOX_PREAMBLE='Buzón de esta ejecución: el orquestador puede escribirte mientras trabajas. Entre paso y paso, lee tus mensajes con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS"`.
+Aplica lo que llegue y acúsalo con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" ack --as "$THYROX_POOL_ITEM_ADDRESS" --id <id>`.
+Para una pregunta o un bloqueo, escribe al orquestador con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" post --from "$THYROX_POOL_ITEM_ADDRESS" --to orchestrator --body "<texto>"`.'
+# shellcheck disable=SC2090  # texto para el prompt, no palabras de un comando
+export HP_MAILBOX_PREAMBLE
 HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 HP_OUT="$(cd "$OUT" && pwd)"
 HP_RUNNER="$(command -v "$RUNNER_BIN")"
