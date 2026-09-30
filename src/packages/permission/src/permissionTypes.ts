@@ -315,6 +315,8 @@ export type PermissionDenyDecision = {
   message: string
   decisionReason: PermissionDecisionReason
   toolUseID?: string
+  /** La ruta que motiva la negación cuando difiere de la pedida: el aterrizaje de un enlace (2.1.283, `kl`/`Zlt`). */
+  blockedPath?: string
 }
 
 /** `permissionTypes.ts:239-244`. */

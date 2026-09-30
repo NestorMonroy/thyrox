@@ -44,6 +44,7 @@ import {
 } from 'fs/promises'
 import { homedir } from 'os'
 import * as nodePath from 'path'
+import { getOriginalCwd } from './sessionPaths.js'
 
 /**
  * Sustituto local de
@@ -145,6 +146,8 @@ export type FsOperations = {
   ): void
   /** Reads symbolic link */
   readlinkSync(path: string): string
+  /** Abre un directorio sin seguir un enlace en su último componente; lanza si no es un directorio real. */
+  openDirNoFollowSync(path: string): void
   /** Resolves symbolic links and returns the canonical pathname */
   realpathSync(path: string): string
 
@@ -306,116 +309,605 @@ export function resolveDeepestExistingAncestorSync(
   return undefined
 }
 
+// ---- El resolvedor estructurado (≙ `Rt`, 2.1.283) ----
+
 /**
- * Gets all paths that should be checked for permissions.
- * This includes the original path, all intermediate symlink targets in the chain,
- * and the final resolved path.
- *
- * For example, if test.txt -> /etc/passwd -> /private/etc/passwd:
- * - test.txt (original path)
- * - /etc/passwd (intermediate symlink target)
- * - /private/etc/passwd (final resolved path)
- *
- * This is important for security: a deny rule for /etc/passwd should block
- * access even if the file is actually at /private/etc/passwd (as on macOS).
- *
- * @param path - The path to check (will be converted to absolute)
- * @returns An array of absolute paths to check permissions for
+ * Una ruta resuelta salto a salto para el chequeo de permisos
+ * (≙ `Rt(e, 'permission')`, 2.1.283). `spellings` lleva la ruta pedida, el
+ * destino de cada enlace de hoja y el aterrizaje, sin repetir; `landing` es
+ * dónde cae en disco la operación una vez seguidos los enlaces.
+ */
+export type ResolvedPermissionPath =
+  | {
+      unresolved: false
+      requested: string
+      spellings: string[]
+      landing: string
+      leafIsSymlink: boolean
+    }
+  | {
+      unresolved: true
+      requested: string
+      spellings: string[]
+      /** La última ruta que el walker examinó antes de rendirse. */
+      stoppedAt: string
+      leafIsSymlink: boolean
+    }
+
+/** Las grafías de una ruta cribada y si la resolución llegó al final (≙ `H6`). */
+export type ScreenedPath = { paths: string[]; vetted: boolean }
+
+/** Centinela del walker: la ascendencia de la ruta no se pudo verificar (≙ `Fh`). */
+const UNVERIFIED_ANCESTRY = '\0unverified-ancestry'
+const MAX_SYMLINK_HOPS = 64
+const MAX_CLIMBING_LINK_TEXTS = 8
+const PATH_SEPARATORS = /\/+/
+const DOT_SEGMENT = /(^|[\\/])\.{1,2}[. ]*([\\/]|$)/
+const STRICT_DOT_SEGMENT = /(^|\/)\.{1,2}(\/|$)/
+const CLIMBING_SEGMENT = /(^|[\\/])\.\.([\\/]|$)/
+const LEADING_CLIMBS = /^(?:\.\.(?:[\\/]+|$))+/
+const TRAILING_DOT_OR_SPACE = /[. ]$/
+const UNC_PREFIX = /^[\\/]{2}/
+const DEVICE_NAMESPACE_PREFIX = /^[\\/]\?\?[\\/]/
+const LOCAL_WSL_UNC = /^[\\/]{2}wsl(?:\$|\.localhost)[\\/]([^\\/]*)/i
+const EMPTY_OR_DOTS = /^\.{0,2}[. ]*$/
+const KERNEL_RESOLVED_ANYWHERE = /\/\.(?:vol|file|nofollow|resolve)(?:\/|$)/i
+const KERNEL_RESOLVED_SEGMENT = /^\.(?:vol|file|nofollow|resolve)$/i
+const ABSENCE_CODES = new Set(['ENOENT', 'ENOTDIR'])
+const UNREADABLE_CODES = new Set(['EPERM', 'EACCES'])
+const PERMISSION_FAILURE_CODES = new Set(['ENAMETOOLONG', 'EPERM', 'EACCES'])
+const BACKGROUND_SESSION_KIND = 'bg'
+
+// Predicados de forma de ruta. `@thyrox/permission` tiene los mismos en
+// `pathSafety.ts`, pero la dependencia va de `permission` a `storage`
+// (`pathSafety.ts` importa este módulo) y no puede invertirse: el resolvedor
+// lleva su copia mínima, sin caché, con la misma forma que la fuente.
+
+function normalizedSegments(path: string): string[] {
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+  }
+  return stack
+}
+
+function isLocalWslSpelling(path: string): boolean {
+  const match = LOCAL_WSL_UNC.exec(path)
+  return match !== null && !EMPTY_OR_DOTS.test(match[1] ?? '')
+}
+
+/** UNC o espacio de dispositivo, salvo la distro WSL local (≙ `Ln && !Il`). */
+function isForeignUnc(path: string): boolean {
+  return (UNC_PREFIX.test(path) || DEVICE_NAMESPACE_PREFIX.test(path)) && !isLocalWslSpelling(path)
+}
+
+/** La raíz `/net/<host>` o `/Network/Servers/<host>` que la ruta alcanza (≙ `G_e`). */
+function automountRootOf(path: string): string | null {
+  if (!path.startsWith('/')) return null
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+    const underNet = stack.length === 2 && stack[0]!.toLowerCase() === 'net'
+    const underNetworkServers =
+      stack.length === 3 && stack[0]!.toLowerCase() === 'network' && stack[1]!.toLowerCase() === 'servers'
+    if (underNet || underNetworkServers) return `/${stack.join('/')}`
+  }
+  return null
+}
+
+/** `/net` exacto, el mapa de automontaje (≙ `nS`). */
+function isAutomountMap(path: string): boolean {
+  if (!path.startsWith('/')) return false
+  const segments = normalizedSegments(path)
+  return segments.length === 1 && segments[0]!.toLowerCase() === 'net'
+}
+
+/** Bajo `/Network`, la superficie de exploración de macOS (≙ `yN`). */
+function isNetworkBrowseRoot(path: string): boolean {
+  if (!path.startsWith('/')) return false
+  const first = normalizedSegments(path)[0]
+  return first !== undefined && first.toLowerCase() === 'network'
+}
+
+/** `/.vol`, `/.file`, `/.nofollow` o `/.resolve` como primer segmento (≙ `N_`). */
+function isKernelResolvedSpelling(path: string): boolean {
+  if (!KERNEL_RESOLVED_ANYWHERE.test(path) || !path.startsWith('/')) return false
+  const first = normalizedSegments(path)[0]
+  return first !== undefined && KERNEL_RESOLVED_SEGMENT.test(first)
+}
+
+/** Una ruta de red se devuelve tal cual, sin tocar el disco (≙ `Ln&&!Il || Wi || NA`). */
+function skipsDisk(path: string): boolean {
+  return isForeignUnc(path) || automountRootOf(path) !== null
+}
+
+function hasDotSegment(path: string): boolean {
+  return DOT_SEGMENT.test(path)
+}
+
+function hasStrictDotSegment(path: string): boolean {
+  return STRICT_DOT_SEGMENT.test(path)
+}
+
+/** ¿Sube el texto de un enlace con un `..` interior? Los iniciales no cuentan (≙ `Ne`). */
+function linkTextClimbs(text: string): boolean {
+  const interior = nodePath.isAbsolute(text) ? text : text.replace(LEADING_CLIMBS, '')
+  return CLIMBING_SEGMENT.test(interior)
+}
+
+function pathSegments(path: string): string[] {
+  return path.split(PATH_SEPARATORS).filter(Boolean)
+}
+
+/** ¿Es `candidate` un ancestro estricto de `descendant`, con la misma raíz? (≙ `NYn`). */
+function isStrictAncestor(candidate: string, descendant: string): boolean {
+  const ancestor = nodePath.resolve(candidate)
+  const child = nodePath.resolve(descendant)
+  if (nodePath.parse(ancestor).root !== nodePath.parse(child).root) return false
+  const ancestorSegments = pathSegments(ancestor)
+  const childSegments = pathSegments(child)
+  return (
+    ancestorSegments.length < childSegments.length &&
+    ancestorSegments.every((segment, index) => segment === childSegments[index])
+  )
+}
+
+function expandTilde(path: string): string {
+  if (path === '~') return homedir().normalize('NFC')
+  if (path.startsWith('~/')) return nodePath.join(homedir().normalize('NFC'), path.slice(2))
+  return path
+}
+
+type HopRequest = { kind: 'lstat' | 'readlink' | 'opendirNofollow'; path: string }
+type HopReply = fs.Stats | string | { errno: string | undefined }
+type LinkHop = { composed: string; leaf: boolean; text: string }
+type WalkOutcome = { kind: 'absent'; at: string; remaining: string[] } | { kind: 'resolved'; path: string }
+type WalkObserver = {
+  onHop: (hop: LinkHop) => void
+  onOutcome: (outcome: WalkOutcome) => void
+  onCollapsedLanding: (landing: string) => void
+}
+type WalkShape = { hopped: boolean; climbs: boolean; trailingDotOrSpace: boolean }
+
+function isStats(reply: HopReply): reply is fs.Stats {
+  return typeof reply === 'object' && 'isSymbolicLink' in reply
+}
+
+function errnoOf(reply: HopReply): string | undefined {
+  return typeof reply === 'object' && 'errno' in reply ? reply.errno : undefined
+}
+
+/**
+ * El veredicto ante un error de `lstat`/`readlink` (≙ `St` con
+ * `unreadableAncestry: 'unverified'`): la ausencia no es veredicto —es un
+ * outcome—, un nombre demasiado largo sin saltos ni `..` tampoco, y el
+ * resto deja la ascendencia sin verificar.
+ */
+function unverifiedVerdict(errno: string | undefined, shape: WalkShape): string | undefined {
+  if (errno !== undefined && ABSENCE_CODES.has(errno)) return undefined
+  const plainTooLong = errno === 'ENAMETOOLONG' && !shape.hopped && !shape.climbs && !shape.trailingDotOrSpace
+  return plainTooLong ? undefined : UNVERIFIED_ANCESTRY
+}
+
+/** La grafía canónica de una raíz de red (≙ `Un`). */
+function networkRootSpelling(head: string): string {
+  return automountRootOf(head.replace(/^\/+/, '/')) ?? nodePath.normalize(head)
+}
+
+/**
+ * Colapsa el resto de la ruta sobre una raíz de red (≙ `ue`): si no queda
+ * resto o alguien lleva `.`/`..`, se avisa del aterrizaje unido y se
+ * devuelve la raíz; si no, la raíz con el resto.
+ */
+function collapseToNetworkRoot(head: string, rest: string[], onCollapsedLanding: (landing: string) => void): string {
+  const headClimbs = hasDotSegment(head)
+  const restClimbs = rest.some(segment => segment === '.' || segment === '..')
+  if (rest.length === 0 || headClimbs || restClimbs) {
+    if (rest.length > 0 || headClimbs) onCollapsedLanding(nodePath.join(head, ...rest))
+    return headClimbs ? networkRootSpelling(head) : head
+  }
+  return nodePath.join(head, ...rest)
+}
+
+/**
+ * El walker por saltos (≙ `de`, en las ramas que `Rt` alcanza): un `lstat`
+ * por componente, `readlink` en cada enlace y `opendirNofollow` como segunda
+ * oportunidad ante un error que no sea de ausencia. Devuelve una raíz de red
+ * colapsada, el centinela `UNVERIFIED_ANCESTRY`, o `undefined` cuando el
+ * resultado está en el outcome. Los ancestros no legibles del directorio
+ * de lanzamiento se toleran: el proceso ya vive bajo ellos.
+ */
+function* walkPathHops(
+  requested: string,
+  launchAncestry: string | null,
+  observer: WalkObserver,
+): Generator<HopRequest, string | undefined, HopReply> {
+  if (isNetworkBrowseRoot(requested)) return requested
+  if (skipsDisk(requested)) return undefined
+  const absolute = nodePath.resolve(requested)
+  const root = nodePath.parse(absolute).root
+  let current = root
+  let pending = pathSegments(absolute.slice(root.length))
+  let hops = 0
+  let passedUnreadableLaunchAncestor = false
+  let ancestryVerified = false
+  const seen = new Set<string>()
+  const shapeNow = (): WalkShape => ({
+    hopped: hops > 0,
+    climbs: pending.some(hasDotSegment),
+    trailingDotOrSpace: TRAILING_DOT_OR_SPACE.test(pending[0] ?? ''),
+  })
+  const toleratesUnreadableLaunchAncestor = (errno: string | undefined, path: string): boolean =>
+    launchAncestry !== null &&
+    !ancestryVerified &&
+    errno !== undefined &&
+    UNREADABLE_CODES.has(errno) &&
+    isStrictAncestor(path, launchAncestry)
+
+  while (pending.length > 0 && hops < MAX_SYMLINK_HOPS) {
+    const head = pending[0]!
+    if (passedUnreadableLaunchAncestor && hasDotSegment(head)) return UNVERIFIED_ANCESTRY
+    const next = nodePath.join(current, head)
+    if (automountRootOf(next) !== null || isNetworkBrowseRoot(next)) {
+      return collapseToNetworkRoot(next, pending.slice(1), observer.onCollapsedLanding)
+    }
+    if (isKernelResolvedSpelling(next)) return UNVERIFIED_ANCESTRY
+
+    const stat = yield { kind: 'lstat', path: next }
+    if (!isStats(stat)) {
+      const errno = errnoOf(stat)
+      const worthOpening = errno !== undefined && !ABSENCE_CODES.has(errno) && errno !== 'ENAMETOOLONG'
+      if (worthOpening) {
+        const opened = yield { kind: 'opendirNofollow', path: next }
+        if (opened === 'ok') {
+          ancestryVerified = true
+          pending.shift()
+          current = next
+          continue
+        }
+      }
+      if (toleratesUnreadableLaunchAncestor(errno, next)) {
+        passedUnreadableLaunchAncestor = true
+        pending.shift()
+        current = next
+        continue
+      }
+      if (errno !== undefined && ABSENCE_CODES.has(errno)) {
+        observer.onOutcome({ kind: 'absent', at: current, remaining: [...pending] })
+      }
+      return unverifiedVerdict(errno, shapeNow())
+    }
+
+    ancestryVerified = true
+    if (!stat.isSymbolicLink()) {
+      pending.shift()
+      current = next
+      continue
+    }
+    hops++
+    const cycleKey = `${next}\0${pending.join('\0')}`
+    if (seen.has(cycleKey)) return undefined
+    seen.add(cycleKey)
+
+    const text = yield { kind: 'readlink', path: next }
+    if (typeof text !== 'string') return unverifiedVerdict(errnoOf(text), shapeNow())
+    pending.shift()
+    if (!nodePath.isAbsolute(text)) {
+      observer.onHop({ composed: nodePath.resolve(current, text, ...pending), leaf: pending.length === 0, text })
+      pending = [...pathSegments(text), ...pending]
+      continue
+    }
+    if (skipsDisk(text) || isNetworkBrowseRoot(text)) {
+      return collapseToNetworkRoot(text, pending, observer.onCollapsedLanding)
+    }
+    observer.onHop({ composed: pending.length === 0 ? text : nodePath.resolve(text, ...pending), leaf: pending.length === 0, text })
+    const targetRoot = nodePath.parse(text).root || nodePath.sep
+    current = targetRoot
+    ancestryVerified = false
+    pending = [...pathSegments(text.slice(targetRoot.length)), ...pending]
+  }
+
+  if (pending.length > 0) return UNVERIFIED_ANCESTRY
+  if (hops > 0 && isAutomountMap(current)) return current
+  if (isNetworkBrowseRoot(current)) return current
+  observer.onOutcome({ kind: 'resolved', path: current })
+  return undefined
+}
+
+/** Lo que el intérprete anota de cada petición al disco (≙ `S`, `h`, `p`, `g` en `Rt`). */
+type WalkTrace = {
+  stoppedAt: string
+  sawReadlink: boolean
+  readlinkFailed: boolean
+  lastErrno: string | undefined
+}
+
+/** Lo que una resolución acumula entre el walker principal y sus subwalks. */
+type WalkState = {
+  fsImpl: FsOperations
+  launchAncestry: string | null
+  requested: string
+  spellings: Set<string>
+  leafIsSymlink: boolean
+  trace: WalkTrace
+}
+
+type WalkResult = { verdict: string | undefined; outcome: WalkOutcome | undefined; collapsedLanding: string | undefined }
+
+/**
+ * El ancestro común entre el directorio de lanzamiento y el cwd del fs
+ * (≙ `hxe`); null en una sesión en segundo plano o sin ancestro común.
+ */
+function launchAncestryOf(fsImpl: FsOperations): string | null {
+  if (process.env.THYROX_CODE_SESSION_KIND === BACKGROUND_SESSION_KIND) return null
+  const launch = nodePath.resolve(getOriginalCwd())
+  const current = nodePath.resolve(fsImpl.cwd())
+  const root = nodePath.parse(launch).root
+  if (root !== nodePath.parse(current).root) return null
+  const launchSegments = pathSegments(launch.slice(root.length))
+  const currentSegments = pathSegments(current.slice(root.length))
+  let shared = 0
+  while (shared < launchSegments.length && shared < currentSegments.length && launchSegments[shared] === currentSegments[shared]) {
+    shared++
+  }
+  return shared > 0 ? nodePath.join(root, ...launchSegments.slice(0, shared)) : null
+}
+
+function newWalkState(requested: string): WalkState {
+  const fsImpl = getFsImplementation()
+  return {
+    fsImpl,
+    launchAncestry: launchAncestryOf(fsImpl),
+    requested,
+    spellings: new Set([requested]),
+    leafIsSymlink: false,
+    trace: { stoppedAt: requested, sawReadlink: false, readlinkFailed: false, lastErrno: undefined },
+  }
+}
+
+/** Atiende una petición del walker sobre el fs y deja su rastro (≙ `C` en `Rt`). */
+function serveHop(state: WalkState, request: HopRequest): HopReply {
+  state.trace.stoppedAt = request.path
+  if (request.kind === 'readlink') {
+    state.trace.sawReadlink = true
+    try {
+      return state.fsImpl.readlinkSync(request.path)
+    } catch (error) {
+      state.trace.readlinkFailed = true
+      return { errno: getErrnoCode(error) }
+    }
+  }
+  state.trace.lastErrno = undefined
+  try {
+    if (request.kind === 'opendirNofollow') {
+      state.fsImpl.openDirNoFollowSync(request.path)
+      return 'ok'
+    }
+    return state.fsImpl.lstatSync(request.path)
+  } catch (error) {
+    state.trace.lastErrno = getErrnoCode(error)
+    return { errno: state.trace.lastErrno }
+  }
+}
+
+/** Corre el walker sobre el fs hasta su veredicto (≙ `Be(de(...), C)`). */
+function performWalk(state: WalkState, path: string, onHop: (hop: LinkHop) => void): WalkResult {
+  const result: WalkResult = { verdict: undefined, outcome: undefined, collapsedLanding: undefined }
+  const walk = walkPathHops(path, state.launchAncestry, {
+    onHop,
+    onOutcome: outcome => {
+      result.outcome = outcome
+    },
+    onCollapsedLanding: landing => {
+      result.collapsedLanding = landing
+    },
+  })
+  let reply: HopReply | undefined
+  for (;;) {
+    const step = walk.next(reply as HopReply)
+    if (step.done) {
+      result.verdict = step.value
+      return result
+    }
+    reply = serveHop(state, step.value)
+  }
+}
+
+function recordLeafHop(state: WalkState, hop: LinkHop): void {
+  if (!hop.leaf) return
+  state.spellings.add(hop.composed)
+  state.leafIsSymlink = true
+}
+
+function moveToEnd(spellings: Set<string>, spelling: string): void {
+  spellings.delete(spelling)
+  spellings.add(spelling)
+}
+
+function resolvedAt(state: WalkState, landing: string): ResolvedPermissionPath {
+  return {
+    unresolved: false,
+    requested: state.requested,
+    spellings: Array.from(state.spellings),
+    landing,
+    leafIsSymlink: state.leafIsSymlink,
+  }
+}
+
+function resolvedWithoutDisk(requested: string): ResolvedPermissionPath {
+  return { unresolved: false, requested, spellings: [requested], landing: requested, leafIsSymlink: false }
+}
+
+function unresolvedAt(state: WalkState): ResolvedPermissionPath {
+  return {
+    unresolved: true,
+    requested: state.requested,
+    spellings: Array.from(state.spellings),
+    stoppedAt: state.trace.stoppedAt,
+    leafIsSymlink: state.leafIsSymlink,
+  }
+}
+
+/** La ruta pedida como aterrizaje, sin hoja simbólica (≙ `L` en `Rt`). */
+function resolvedAtRequested(state: WalkState): ResolvedPermissionPath {
+  state.spellings.add(state.requested)
+  return { ...resolvedAt(state, state.requested), leafIsSymlink: false }
+}
+
+/** Un fallo de permiso o de longitud sin haber leído ningún enlace (≙ `j`). */
+function unreadableWithoutLinks(trace: WalkTrace): boolean {
+  return !trace.sawReadlink && trace.lastErrno !== undefined && PERMISSION_FAILURE_CODES.has(trace.lastErrno)
+}
+
+/** El aterrizaje por `realpath` del tramo existente, si difiere (≙ `Gn`). */
+function realpathVariant(fsImpl: FsOperations, existing: string, rest: string): string | undefined {
+  let real: string
+  try {
+    real = fsImpl.realpathSync(existing)
+  } catch {
+    return undefined
+  }
+  if (real === existing) return undefined
+  return rest === '' ? real : nodePath.join(real, rest)
+}
+
+/** El aterrizaje a partir del outcome del walker, con su variante por `realpath`. */
+function landingFromOutcome(state: WalkState, outcome: WalkOutcome): string {
+  const existing = outcome.kind === 'absent' ? outcome.at : outcome.path
+  const rest = outcome.kind === 'absent' ? outcome.remaining.join(nodePath.sep) : ''
+  const landing = rest === '' ? existing : nodePath.join(existing, rest)
+  const existingIsRoot = existing === nodePath.parse(existing).root
+  if (state.trace.sawReadlink || !existingIsRoot) state.spellings.add(landing)
+  const variant = realpathVariant(state.fsImpl, existing, rest)
+  if (variant !== undefined && variant !== landing) moveToEnd(state.spellings, variant)
+  return landing
+}
+
+/** El aterrizaje cuando el walker colapsó sobre una raíz de red. */
+function landingFromCollapse(state: WalkState, walk: WalkResult, collapsed: string): string {
+  if (walk.collapsedLanding !== undefined) state.spellings.add(walk.collapsedLanding)
+  moveToEnd(state.spellings, collapsed)
+  return collapsed
+}
+
+/** Un resto ausente con `.`/`..` tras leer un enlace no se sabe por dónde sube. */
+function absentRemainderClimbs(outcome: WalkOutcome, sawReadlink: boolean): boolean {
+  return outcome.kind === 'absent' && sawReadlink && outcome.remaining.some(hasStrictDotSegment)
+}
+
+/**
+ * Resuelve una ruta para el chequeo de permisos (≙ `Ua`, 2.1.283): la ruta
+ * pedida con `~` expandida, sus grafías, dónde aterriza y si la hoja es un
+ * enlace. Una ruta de red no toca el disco. Cuando la ascendencia no se
+ * pudo verificar, el resultado es `unresolved` y nombra dónde se detuvo;
+ * salvo que ningún enlace se haya leído y el fallo sea de permiso o de
+ * longitud, en cuyo caso aterriza en la ruta pedida.
+ */
+export function resolvePathForPermission(inputPath: string): ResolvedPermissionPath {
+  const requested = expandTilde(inputPath)
+  if (skipsDisk(requested)) return resolvedWithoutDisk(requested)
+  const state = newWalkState(requested)
+  const walk = performWalk(state, requested, hop => recordLeafHop(state, hop))
+  const unresolved = (): ResolvedPermissionPath =>
+    unreadableWithoutLinks(state.trace) ? resolvedAtRequested(state) : unresolvedAt(state)
+
+  if (walk.verdict === UNVERIFIED_ANCESTRY) return unresolved()
+  if (walk.verdict !== undefined) return resolvedAt(state, landingFromCollapse(state, walk, walk.verdict))
+  if (walk.outcome === undefined) return unresolved()
+  if (absentRemainderClimbs(walk.outcome, state.trace.sawReadlink)) return unresolved()
+  return resolvedAt(state, landingFromOutcome(state, walk.outcome))
+}
+
+/** Los destinos compuestos de los textos de enlace que suben, sin repetir (≙ `m`/`A`/`w` en `Rt`). */
+class ClimbingTargets {
+  readonly targets: string[] = []
+  private readonly seen = new Set<string>()
+
+  record(hop: LinkHop): void {
+    if (!linkTextClimbs(hop.text)) return
+    const key = nodePath.resolve(hop.composed)
+    if (this.seen.has(key)) return
+    this.seen.add(key)
+    this.targets.push(hop.composed)
+  }
+}
+
+/**
+ * Resuelve aparte cada destino compuesto de un texto de enlace que sube
+ * (≙ `H` en `Rt`): una raíz de red se anota tal cual, un colapso se anota
+ * como grafía, y una ascendencia sin verificar, un `readlink` fallido o más
+ * de ocho destinos dejan la criba sin vetar.
+ */
+function resolveClimbingTargets(state: WalkState, climbing: ClimbingTargets): boolean {
+  for (let index = 0; index < climbing.targets.length; index++) {
+    if (index >= MAX_CLIMBING_LINK_TEXTS) return false
+    const target = climbing.targets[index]!
+    if (skipsDisk(target)) {
+      state.spellings.add(target)
+      continue
+    }
+    const walk = performWalk(state, target, hop => climbing.record(hop))
+    if (walk.verdict === UNVERIFIED_ANCESTRY || state.trace.readlinkFailed) return false
+    if (walk.verdict !== undefined) state.spellings.add(walk.verdict)
+  }
+  return true
+}
+
+/**
+ * Criba una ruta (≙ `H6 = Rt(e, 'screen')`, 2.1.283): las mismas grafías
+ * que el chequeo de permisos más los destinos de los textos de enlace que
+ * suben, y `vetted` sólo si todo se resolvió. A diferencia del modo de
+ * permisos, un fallo de permiso sin enlaces no se toma como resuelto.
+ */
+export function resolvePathForScreen(inputPath: string): ScreenedPath {
+  const requested = expandTilde(inputPath)
+  if (skipsDisk(requested)) return { paths: [requested], vetted: true }
+  const state = newWalkState(requested)
+  const climbing = new ClimbingTargets()
+  const walk = performWalk(state, requested, hop => {
+    recordLeafHop(state, hop)
+    climbing.record(hop)
+  })
+  const screened = (vetted: boolean): ScreenedPath => ({ paths: Array.from(state.spellings), vetted })
+
+  if (walk.verdict === UNVERIFIED_ANCESTRY) return screened(false)
+  if (walk.verdict !== undefined) {
+    if (!resolveClimbingTargets(state, climbing)) return screened(false)
+    landingFromCollapse(state, walk, walk.verdict)
+    return screened(true)
+  }
+  if (walk.outcome === undefined) {
+    const vetted = !state.trace.readlinkFailed && resolveClimbingTargets(state, climbing)
+    return screened(vetted)
+  }
+  if (walk.outcome.kind === 'absent' && walk.outcome.remaining.some(hasDotSegment)) return screened(false)
+  landingFromOutcome(state, walk.outcome)
+  return screened(resolveClimbingTargets(state, climbing))
+}
+
+/**
+ * Las grafías que se chequean contra las reglas (≙ `To`, 2.1.283): las del
+ * resolvedor y, si no pudo resolver, el `realpath` de `safeResolvePath`
+ * cuando es canónico o un enlace y aún no estaba. Es el adaptador para los
+ * consumidores que sólo necesitan grafías; quien necesita el aterrizaje usa
+ * `resolvePathForPermission`.
  */
 export function getPathsForPermissionCheck(inputPath: string): string[] {
-  // Expand tilde notation defensively - tools should do this in getPath(),
-  // but we normalize here as defense in depth for permission checking
-  let path = inputPath
-  if (path === '~') {
-    path = homedir().normalize('NFC')
-  } else if (path.startsWith('~/')) {
-    path = nodePath.join(homedir().normalize('NFC'), path.slice(2))
-  }
-
-  const pathSet = new Set<string>()
-  const fsImpl = getFsImplementation()
-
-  // Always check the original path
-  pathSet.add(path)
-
-  // Block UNC paths before any filesystem access to prevent network
-  // requests (DNS/SMB) during validation on Windows
-  if (path.startsWith('//') || path.startsWith('\\\\')) {
-    return Array.from(pathSet)
-  }
-
-  // Follow the symlink chain, collecting ALL intermediate targets
-  // This handles cases like: test.txt -> /etc/passwd -> /private/etc/passwd
-  // We want to check all three paths, not just test.txt and /private/etc/passwd
-  try {
-    let currentPath = path
-    const visited = new Set<string>()
-    const maxDepth = 40 // Prevent runaway loops, matches typical SYMLOOP_MAX
-
-    for (let depth = 0; depth < maxDepth; depth++) {
-      // Prevent infinite loops from circular symlinks
-      if (visited.has(currentPath)) {
-        break
-      }
-      visited.add(currentPath)
-
-      if (!fsImpl.existsSync(currentPath)) {
-        // Path doesn't exist (new file case). existsSync follows symlinks,
-        // so this is also reached for DANGLING symlinks (link entry exists,
-        // target doesn't). Resolve symlinks in the path and its ancestors
-        // so permission checks see the real destination. Without this,
-        // `./data -> /etc/cron.d/` (live parent symlink) or
-        // `./evil.txt -> ~/.ssh/authorized_keys2` (dangling file symlink)
-        // would allow writes that escape the working directory.
-        if (currentPath === path) {
-          const resolved = resolveDeepestExistingAncestorSync(fsImpl, path)
-          if (resolved !== undefined) {
-            pathSet.add(resolved)
-          }
-        }
-        break
-      }
-
-      const stats = fsImpl.lstatSync(currentPath)
-
-      // Skip special file types that can cause issues
-      if (
-        stats.isFIFO() ||
-        stats.isSocket() ||
-        stats.isCharacterDevice() ||
-        stats.isBlockDevice()
-      ) {
-        break
-      }
-
-      if (!stats.isSymbolicLink()) {
-        break
-      }
-
-      // Get the immediate symlink target
-      const target = fsImpl.readlinkSync(currentPath)
-
-      // If target is relative, resolve it relative to the symlink's directory
-      const absoluteTarget = nodePath.isAbsolute(target)
-        ? target
-        : nodePath.resolve(nodePath.dirname(currentPath), target)
-
-      // Add this intermediate target to the set
-      pathSet.add(absoluteTarget)
-      currentPath = absoluteTarget
-    }
-  } catch {
-    // If anything fails during chain traversal, continue with what we have
-  }
-
-  // Also add the final resolved path using realpathSync for completeness
-  // This handles any remaining symlinks in directory components
-  const { resolvedPath, isSymlink } = safeResolvePath(fsImpl, path)
-  if (isSymlink && resolvedPath !== path) {
-    pathSet.add(resolvedPath)
-  }
-
-  return Array.from(pathSet)
+  const resolved = resolvePathForPermission(inputPath)
+  if (!resolved.unresolved) return resolved.spellings
+  const { resolvedPath, isCanonical, isSymlink } = safeResolvePath(getFsImplementation(), resolved.requested)
+  const worthAdding = (isCanonical || isSymlink) && !resolved.spellings.includes(resolvedPath)
+  return worthAdding ? [...resolved.spellings, resolvedPath] : resolved.spellings
 }
 
 export const NodeFsOperations: FsOperations = {
@@ -555,6 +1047,12 @@ export const NodeFsOperations: FsOperations = {
   readlinkSync(path: string) {
     using _ = slowLogging`fs.readlinkSync(${path})`
     return fs.readlinkSync(path)
+  },
+
+  openDirNoFollowSync(path: string) {
+    using _ = slowLogging`fs.openDirNoFollowSync(${path})`
+    const fd = fs.openSync(path, fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW)
+    fs.closeSync(fd)
   },
 
   realpathSync(path: string) {
