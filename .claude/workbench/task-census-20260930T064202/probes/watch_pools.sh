@@ -27,7 +27,9 @@ stalled_items() {
         for session in "$runtime"*.session; do
             [[ -e "$session" ]] || continue
             stream="${session%.session}.stream.jsonl"
-            [[ -e "$stream" ]] || continue
+            # `thyrox -p` (C7) escribe su stream-json al terminar: vacío no es
+            # atascado. La cota de un ítem así es su --timeout.
+            [[ -s "$stream" ]] || continue
             # Con el `result` emitido el runner ya salió y el ítem verifica: el
             # stream no vuelve a crecer y la verificación tiene su propio timeout.
             tail -n 5 "$stream" | grep -q '"type":"result"' && continue
