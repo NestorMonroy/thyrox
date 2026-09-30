@@ -1,0 +1,10 @@
+== 1. MemAvailable dentro de un contenedor con --memory 512m
+anfitrion: MemAvailable:    6925588 kB
+contenedor: MemAvailable:    6817972 kB
+limite cgroup: 536870912
+== 2. flock entre anfitrion y contenedor sobre un archivo montado
+anfitrion tiene el lock
+contenedor obtuvo el lock
+espero 6 s (>=4 prueba que el lock cruza el montaje)
+== 3. GNU Time dentro del contenedor
+maxrss=392468KB
