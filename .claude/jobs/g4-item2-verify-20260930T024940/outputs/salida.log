@@ -1,0 +1,7 @@
+  ok    no escribe en workbench del árbol principal
+  ok    no escribe en logs del árbol principal
+test-headless-pool-worktree: 42 aserciones — 42 ok, 0 falla(s)
+item_worktree stash guard: 28/28
+item_worktree sparse: 11/11
+item_worktree disk: 8/8
+__BG_EXIT__=0

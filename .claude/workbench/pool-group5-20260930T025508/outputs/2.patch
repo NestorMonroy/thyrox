@@ -1,0 +1,249 @@
+diff --git a/src/packages/config/__tests__/policyRescue.test.ts b/src/packages/config/__tests__/policyRescue.test.ts
+new file mode 100644
+index 00000000..b94c78a2
+--- /dev/null
++++ b/src/packages/config/__tests__/policyRescue.test.ts
+@@ -0,0 +1,57 @@
++/**
++ * La porción de `Ty` (`chunk-379zyrv7.js`, ejecutable 2.1.283; extracción en
++ * `.claude/workbench/policy-settings-port-20260927T083804/`) que
++ * `./policyFieldRescue.ts` no cubre: la lista `removed`, las claves de nivel
++ * superior que el documento traía, contaban como escritura de política real
++ * (`Ed`/`isPolicyNoOp`) y desaparecieron del rescate sin que ningún aviso
++ * previo ya lo explique.
++ */
++import { describe, expect, test } from 'bun:test'
++import * as R from '../settings/policyRescue.ts'
++
++describe('removedPolicyKeys (la porción de Ty no cubierta por policyFieldRescue)', () => {
++  test('una clave puesta a null y ausente del rescate se reporta retirada', () => {
++    expect(R.removedPolicyKeys({ model: null }, {}, [])).toEqual(['model'])
++  })
++
++  test('una clave que sigue presente en el rescate no se reporta, aunque sea un no-op', () => {
++    expect(R.removedPolicyKeys({ model: null }, { model: null }, [])).toEqual([])
++  })
++
++  test('una clave con valor real (no no-op) que desaparece no se reporta: Ed sólo cubre retiros intencionales', () => {
++    expect(R.removedPolicyKeys({ model: 'nope' }, {}, [])).toEqual([])
++  })
++
++  test('un aviso previo NO statusOnly en la misma ruta ya explica la ausencia: no se duplica', () => {
++    const issues = [{ path: 'model', message: 'm' }]
++    expect(R.removedPolicyKeys({ model: null }, {}, issues)).toEqual([])
++  })
++
++  test('un aviso previo statusOnly en la misma ruta NO excluye: sigue siendo una retirada sin explicar', () => {
++    const issues = [{ path: 'model', message: 'm', statusOnly: true }]
++    expect(R.removedPolicyKeys({ model: null }, {}, issues)).toEqual(['model'])
++  })
++
++  test('un aviso previo en una ruta anidada bajo la clave también la excluye', () => {
++    const issues = [{ path: 'model.sub', message: 'm' }]
++    expect(R.removedPolicyKeys({ model: null }, {}, issues)).toEqual([])
++  })
++
++  test('un aviso en otra ruta no excluye la clave retirada', () => {
++    const issues = [{ path: 'other', message: 'm' }]
++    expect(R.removedPolicyKeys({ model: null }, {}, issues)).toEqual(['model'])
++  })
++
++  test('varias claves retiradas sin explicación se reportan todas, en orden del documento', () => {
++    expect(R.removedPolicyKeys({ a: null, b: 'x', c: null }, {}, [])).toEqual(['a', 'c'])
++  })
++
++  test('un documento vacío no reporta nada', () => {
++    expect(R.removedPolicyKeys({}, {}, [])).toEqual([])
++  })
++
++  test('el no-op de una puerta "disable" también cuenta, vía isPolicyNoOp (Ed)', () => {
++    const gates = [{ key: 'disableAutoMode', restrictive: 'disable' as const }]
++    expect(R.removedPolicyKeys({ disableAutoMode: false }, {}, [], gates)).toEqual(['disableAutoMode'])
++  })
++})
+diff --git a/src/packages/config/__tests__/policySources.test.ts b/src/packages/config/__tests__/policySources.test.ts
+index de6e4d1a..b5b0ba04 100644
+--- a/src/packages/config/__tests__/policySources.test.ts
++++ b/src/packages/config/__tests__/policySources.test.ts
+@@ -11,6 +11,11 @@
+  * `readFilePolicy`: que un campo roto no tira el documento, que una puerta
+  * sustituida se ve en `documentHasPolicyContent`, y que el suelo (`pd`)
+  * protege un valor real ya escrito por un fragmento anterior.
++ *
++ * La lista `removed` de `readPolicyDocument` (la porción de `Ty` en
++ * `./policyRescue.ts`) también se prueba aquí, por la misma razón: lo que
++ * importa es su efecto en `readPolicyDocument`, no la función pura, que
++ * `policyRescue.test.ts` ya cubre.
+  */
+ import { afterEach, describe, expect, test } from 'bun:test'
+ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+@@ -83,14 +88,32 @@ describe('un documento de política (HRe)', () => {
+       removed: true,
+     }])
+   })
++  test('una clave puesta a null ya queda explicada por su propio aviso de rescate: no se duplica en removed', () => {
++    // `model` no es `.nullable()`: `null` falla su esquema y `os` ya emite un
++    // aviso en la ruta `model` (`rescueField`). `Ty` sólo añade `removed`
++    // cuando NINGÚN aviso previo explica la ausencia — ver
++    // `policyRescue.test.ts` para el caso en que sí falta esa explicación.
++    const read = S.readPolicyDocument({ model: null }, 'f')
++    expect(read.errors.some(error => error.path === 'model')).toBe(true)
++    expect(read.removed).toEqual([])
++  })
++  test('una retirada ya explicada por un aviso de sustitución no se duplica en removed', () => {
++    const read = S.readPolicyDocument({ disableAutoMode: false }, 'f')
++    expect(read.removed).toEqual([])
++  })
++  test('un documento sin claves retiradas deja removed vacío', () => {
++    expect(S.readPolicyDocument({ model: 'claude-sonnet-5' }, 'f').removed).toEqual([])
++  })
+   test('cada lectura recibe su copia de la caché', () => {
+     const document = { permissions: { allow: ['Read'] } }
+     const first = S.readPolicyDocument(document, 'f')
+     ;(first.settings!.permissions as { allow: string[] }).allow.push('Edit')
+     first.errors.push({ file: 'f', path: 'x', message: 'm' })
++    first.removed.push('bogus')
+     const second = S.readPolicyDocument(document, 'f')
+     expect(second.settings).toEqual({ permissions: { allow: ['Read'] } })
+     expect(second.errors).toEqual([])
++    expect(second.removed).toEqual([])
+   })
+   test('el resultado es una copia: mutarlo no toca el documento', () => {
+     const document = { permissions: { allow: ['Read'] } }
+diff --git a/src/packages/config/settings/policyRescue.ts b/src/packages/config/settings/policyRescue.ts
+new file mode 100644
+index 00000000..12549edb
+--- /dev/null
++++ b/src/packages/config/settings/policyRescue.ts
+@@ -0,0 +1,52 @@
++/**
++ * La composición de `Ty` (`chunk-379zyrv7.js`, ejecutable 2.1.283; extracción
++ * en `.claude/workbench/policy-settings-port-20260927T083804/`,
++ * `symbol-UP-level3.txt`) que `./policyFieldRescue.ts` no cubre todavía: la
++ * lista `removed` que `Ty` devuelve junto al rescate campo a campo (`os`).
++ *
++ * `os` (`./policyFieldRescue.ts: rescuePolicyDocument`) descarta o sustituye
++ * un campo inválido, cada uno con su aviso. `removed` cubre el caso
++ * complementario: una clave cuyo valor original YA contaba como un intento
++ * de no-op — un `null` para retirarla, o un `false` en una puerta
++ * `"disable"` — y desapareció del rescate sin que NINGÚN aviso ya lo
++ * explique. `Ed` (`./policyFieldRescue.ts: isPolicyNoOp`) es el validador que
++ * decide esa condición; un aviso `statusOnly` en la misma ruta NO excluye la
++ * clave, porque un `statusOnly` es una nota, no la explicación de por qué la
++ * clave falta.
++ *
++ * `At` (el filtrado de entradas de servidor MCP que 2.1.283 antepone a este
++ * cálculo, con `{ skipMcpServerEntryFilter: true, policySource: true }`) no
++ * se porta: sus nueve validadores (`Rne`, `ay`, `dy`, `Sy`, `by`, `Ey`, `Oy`,
++ * `Ry`, `py`) no están en la extracción, y el concepto de entrada de servidor
++ * MCP con salvamento parcial no existe en `SettingsSchema`. Con esos flags,
++ * `At` sólo aporta avisos de sus nueve validadores ausentes: no contribuye
++ * ninguno aquí, así que `removedPolicyKeys` recibe únicamente los avisos de
++ * `os` (y, en `policySources.ts`, los de `sanitizeCrossSessionInbound`) donde
++ * el binario habría sumado también los de `At`.
++ */
++import { isPolicyNoOp, type RestrictiveGate } from './policyFieldRescue.ts'
++
++/** Lo mínimo de un aviso que `removedPolicyKeys` necesita para excluir una clave. */
++export type PriorRescueIssue = { path: string; statusOnly?: boolean }
++
++/** Un aviso previo en `path` explica la clave `key` si es la misma ruta o una anidada bajo ella. */
++function explainsKey(issue: PriorRescueIssue, key: string): boolean {
++  return issue.path === key || issue.path.startsWith(`${key}.`)
++}
++
++/**
++ * `Ty`, la porción `removed`: las claves de nivel superior de `document` que
++ * `isPolicyNoOp` (`Ed`) cuenta como no-op, que faltan en `rescued` y que
++ * ningún aviso NO `statusOnly` de `priorIssues` ya explica.
++ */
++export function removedPolicyKeys(
++  document: Record<string, unknown>,
++  rescued: Record<string, unknown>,
++  priorIssues: readonly PriorRescueIssue[],
++  gates?: readonly RestrictiveGate[],
++): string[] {
++  return Object.keys(document).filter(key =>
++    isPolicyNoOp(key, document[key], gates)
++    && rescued[key] === undefined
++    && priorIssues.every(issue => issue.statusOnly === true || !explainsKey(issue, key)))
++}
+diff --git a/src/packages/config/settings/policySources.ts b/src/packages/config/settings/policySources.ts
+index 94f5b803..1a248b75 100644
+--- a/src/packages/config/settings/policySources.ts
++++ b/src/packages/config/settings/policySources.ts
+@@ -18,9 +18,20 @@
+  * entero, y una puerta restrictiva
+  * inválida se sustituye en vez de descartarse (`substituted: true`); una
+  * puerta `"disable"` con un `false` válido se lee como no-op (`removed:
+- * true`). `writesPolicy` usa `isPolicyNoOp` (`Ed`, reducida a claves de nivel
+- * superior — ver el pendiente en `policyFieldRescue.ts`) para no contar un
+- * `null` ni un `false` de no-op como intento de escribir política.
++ * true`, un aviso por CAMPO). `writesPolicy` usa `isPolicyNoOp` (`Ed`,
++ * reducida a claves de nivel superior — ver el pendiente en
++ * `policyFieldRescue.ts`) para no contar un `null` ni un `false` de no-op
++ * como intento de escribir política.
++ *
++ * `readPolicyDocument` también lleva la lista `removed` de `Ty` (porte en
++ * `./policyRescue.ts`, un ARREGLO por DOCUMENTO — no confundir con el aviso
++ * por campo del párrafo anterior): las claves que `Ed` cuenta como no-op,
++ * ausentes del rescate, que ningún aviso previo ya explica. `At` (el filtro
++ * de entradas de servidor MCP que 2.1.283 antepone a ese cálculo) no se
++ * porta — sus nueve validadores no están en la extracción — así que
++ * `removedPolicyKeys` recibe únicamente los avisos de `os` y de
++ * `sanitizeCrossSessionInbound`, donde el binario habría sumado también los
++ * de `At`.
+  *
+  * Divergencias que siguen declaradas:
+  * - El "suelo" entre fragmentos de `readFilePolicy` (`pd`) se generaliza a
+@@ -57,12 +68,18 @@ import {
+ } from './policyComposition.ts'
+ import { mergeManagedValue } from './policyMerge.ts'
+ import { isPolicyNoOp, rescuePolicyDocument } from './policyFieldRescue.ts'
++import { removedPolicyKeys } from './policyRescue.ts'
+ import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
+ 
+ type PolicyDocument = Record<string, unknown>
+ 
+-/** Una fuente leída, con sus errores. */
+-export type PolicySourceRead = PolicyRead & { errors: PolicyError[] }
++/**
++ * Una fuente leída, con sus errores. `removed` (la porción de `Ty` en
++ * `./policyRescue.ts`) sólo lo llevan las lecturas que validan un documento
++ * propio (`readPolicyDocument`): la remota (`Qq`) y la MDM (`Os`) lo
++ * descartan al relayar, igual que 2.1.283.
++ */
++export type PolicySourceRead = PolicyRead & { errors: PolicyError[]; removed?: string[] }
+ 
+ /** Lo que la composición inyecta: las fuentes que no son archivos. */
+ export type PolicySourceContext = {
+@@ -95,7 +112,7 @@ function writesPolicy(document: PolicyDocument, settings: PolicyDocument | null)
+     || (settings !== null && hasPolicyKeys(settings))
+ }
+ 
+-type DocumentRead = PolicySourceRead & { loadState: PolicyLoadState; documentHasPolicyContent: boolean }
++type DocumentRead = PolicySourceRead & { loadState: PolicyLoadState; documentHasPolicyContent: boolean; removed: string[] }
+ 
+ /** `md`: la validación de cada documento, por documento y por nombre de fuente. */
+ const validated = new WeakMap<object, Map<string, DocumentRead>>()
+@@ -122,12 +139,18 @@ function validatePolicyDocument(document: PolicyDocument, file: string): Documen
+     })),
+   ]
+   const settings = Object.keys(rescued).length > 0 ? rescued : null
+-  return { settings, errors, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
++  const removed = removedPolicyKeys(document, rescued, errors)
++  return { settings, errors, removed, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
+ }
+ 
+ /** `gd`: cada llamada recibe su copia, para que nadie mute la de la caché. */
+ function copyOf(read: DocumentRead): DocumentRead {
+-  return { ...read, settings: read.settings && structuredClone(read.settings), errors: read.errors.map(error => ({ ...error })) }
++  return {
++    ...read,
++    settings: read.settings && structuredClone(read.settings),
++    errors: read.errors.map(error => ({ ...error })),
++    removed: [...read.removed],
++  }
+ }
+ 
+ /** `HRe`: valida un documento de política con el nombre de su fuente. */

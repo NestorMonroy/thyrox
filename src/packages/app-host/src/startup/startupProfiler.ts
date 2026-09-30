@@ -37,7 +37,17 @@
 // `reported`) son "decididas una vez al cargar el módulo" por diseño — la
 // fuente lo declara así explícitamente — y sin un reset ningún test
 // posterior al primero puede ejercitar una configuración distinta.
+//
+// El gancho `process.once('exit', …)` que cierra el módulo tampoco existe
+// en la fuente: ahí `profileReport` sólo se invocaba desde el camino del
+// REPL. En este árbol el arranque tiene caminos que nunca pasan por el REPL
+// (`--version`, los modos ligeros de `cli.tsx`, `-p` en modo de impresión;
+// TASK-THYROX-0438, #130-7) y ninguno llamaba a `profileReport`, así que
+// `THYROX_CODE_PROFILE_STARTUP` no dejaba ningún informe fuera del REPL. El
+// gancho cierra el informe al terminar el proceso sin importar el camino,
+// cediendo ante cualquier llamada explícita anterior (la bandera `reported`).
 
+import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { mkdirSync, writeFileSync as writeFileSyncNode } from 'node:fs'
@@ -84,6 +94,27 @@ const PHASE_DEFINITIONS = {
 if (shouldProfile()) {
   profileCheckpoint('profiler_initialized')
 }
+
+/**
+ * Sesión de respaldo para el cierre automático de abajo: no hay una sesión
+ * real que citar cuando el proceso nunca bootstrapeó `bootstrap/state.ts`
+ * (`--version`, los modos ligeros, `-p` en modo de impresión).
+ */
+function fallbackSessionId(): string {
+  return randomUUID()
+}
+
+/**
+ * Cierre de respaldo: nuevo respecto de la fuente, que sólo emitía el
+ * informe desde el camino del REPL (`gracefulShutdown.ts`). `profileReport`
+ * ya se protege sola contra una segunda emisión (bandera `reported`), así
+ * que registrar este gancho para TODO proceso que carga el módulo es
+ * seguro — si alguien ya reportó con su sesión real antes de que el
+ * proceso termine, esta llamada no hace nada. `process.on('exit', …)`
+ * corre incluso después de un `process.exit()` explícito, que salta
+ * cualquier `finally` de la pila que lo llamó.
+ */
+process.once('exit', () => profileReport({ sessionId: fallbackSessionId() }))
 
 /** Registra un checkpoint con el nombre dado. */
 export function profileCheckpoint(name: string): void {

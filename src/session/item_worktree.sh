@@ -96,8 +96,62 @@ if [[ ! "$DISK_WAIT_SECONDS" =~ ^[0-9]+$ ]]; then
     exit 2
 fi
 
+# Checkout disperso. THYROX_ITEM_WORKTREE_SPARSE_EXCLUDE nombra, separados por
+# espacios, prefijos relativos a la raíz del repositorio cuyo contenido
+# EXISTENTE en HEAD no se escribe en el worktree del ítem: en thyrox los bancos,
+# los trabajos y el corpus del ejecutable son el 95 % del checkout y un ítem de
+# implementación no los edita. Se excluyen los hijos que el prefijo tiene en
+# HEAD, no el prefijo entero, para que lo que el ítem cree debajo (un banco
+# nuevo) entre al parche. Lo que el ítem necesite leer de lo excluido lo lee
+# del árbol principal. `git sparse-checkout` activa `extensions.worktreeConfig`
+# en la configuración del repositorio; el árbol principal no queda disperso.
+SPARSE_EXCLUDE="${THYROX_ITEM_WORKTREE_SPARSE_EXCLUDE:-}"
+for prefix in $SPARSE_EXCLUDE; do
+    if [[ "$prefix" == /* || "/$prefix/" == */../* ]]; then
+        echo "item_worktree: THYROX_ITEM_WORKTREE_SPARSE_EXCLUDE admite prefijos relativos dentro del árbol, no: $prefix" >&2
+        exit 2
+    fi
+done
+
+# Patrones de sparse-checkout (modo no-cone): todo, menos cada hijo que los
+# prefijos excluidos tienen en HEAD. El hijo que contiene OUT —el banco del
+# propio pool— nunca se excluye: el verify del ítem llama a sus sondas por
+# ruta relativa dentro del worktree.
+sparse_patterns() {
+    local repo="$1" out="$2" top pool_bench prefix
+    top="$(git -C "$repo" rev-parse --show-toplevel)" || return 2
+    pool_bench="$(realpath -m "$out")/"
+    pool_bench="${pool_bench#"$top"/}"
+    printf '/*\n'
+    for prefix in $SPARSE_EXCLUDE; do
+        git -C "$repo" ls-tree HEAD -- "${prefix%/}/" \
+            | gawk -F'\t' -v keep="$pool_bench" '
+                { split($1, meta, " "); child = $2 "/" }
+                index(keep, child) == 1 { next }
+                { print "!/" $2 (meta[2] == "tree" ? "/" : "") }'
+    done
+}
+
 checkout_bytes() {
-    git -C "$1" ls-tree -r -l HEAD | gawk '$4 ~ /^[0-9]+$/ {s += $4} END {printf "%d\n", s}'
+    local repo="$1" total excluded=0 prefix
+    total="$(git -C "$repo" ls-tree -r -l HEAD | gawk '$4 ~ /^[0-9]+$/ {s += $4} END {printf "%d\n", s}')" || return 2
+    for prefix in $SPARSE_EXCLUDE; do
+        excluded=$(( excluded + $(git -C "$repo" ls-tree -r -l HEAD -- "${prefix%/}/" \
+            | gawk '$4 ~ /^[0-9]+$/ {s += $4} END {printf "%d\n", s}') ))
+    done
+    printf '%d\n' $(( total - excluded ))
+}
+
+# El alta del worktree: completo, o sin checkout y luego disperso.
+add_worktree() {
+    local repo="$1" dir="$2" out="$3"
+    if [[ -z "$SPARSE_EXCLUDE" ]]; then
+        with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD
+        return
+    fi
+    with_retries git -C "$repo" worktree add -q --no-checkout --detach "$dir" HEAD || return 1
+    sparse_patterns "$repo" "$out" | git -C "$dir" sparse-checkout set --no-cone --stdin || return 1
+    git -C "$dir" checkout -q
 }
 
 free_bytes() {
@@ -159,7 +213,7 @@ prepare() {
     (
         flock 9 || exit 2
         admit_disk "$repo" "$root" || exit $?
-        with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD || exit 2
+        add_worktree "$repo" "$dir" "$out" || exit 2
     ) 9> "$root/.admission.lock" || return $?
     printf '%s\n' "$dir"
 }
@@ -303,7 +357,21 @@ finalize() {
     # resuelve su codigo por THYROX_ROOT (p. ej. `paths/reach.py`) carga la
     # copia del arbol principal y el verify mide una mezcla de los dos
     # arboles en vez del worktree solo.
-    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
+    #
+    # Lo mismo con los cuatro hogares que el proveedor declara por variable de
+    # entorno: THYROX_CACHE_DIR, THYROX_JOBS_DIR, THYROX_WORKBENCH_DIR y
+    # THYROX_BACKGROUND_LOG_DIR. Medido (TASK-THYROX-0549): con un item en
+    # marcha, el pool los exporta con la ruta del arbol PRINCIPAL a su propio
+    # proceso, y sin reemplazo un verify que los use —bin/parallel_map,
+    # bin/wait-jobs, un hallazgo— escribe ahi en vez de en el worktree. Se
+    # reemplazan siempre por hogares dentro del worktree, aunque el verify no
+    # los use: es mas barato que distinguir cual los necesita.
+    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" \
+              THYROX_CACHE_DIR="$dir/.claude/cache" \
+              THYROX_JOBS_DIR="$dir/.claude/jobs" \
+              THYROX_WORKBENCH_DIR="$dir/.claude/workbench" \
+              THYROX_BACKGROUND_LOG_DIR="$dir/.claude/background-logs" \
+              bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
         verdict=verificado
     else
         verdict=rechazado
@@ -318,5 +386,6 @@ case "${1:-}" in
     sweep) shift; sweep "$@" ;;
     sweep-orphans) shift; sweep_orphans "$@" ;;
     lock-path) shift; lock_path "$@" ;;
-    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path …" >&2; exit 2 ;;
+    checkout-bytes) shift; checkout_bytes "$@" ;;
+    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path|checkout-bytes …" >&2; exit 2 ;;
 esac

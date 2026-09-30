@@ -18,9 +18,20 @@
  * entero, y una puerta restrictiva
  * inválida se sustituye en vez de descartarse (`substituted: true`); una
  * puerta `"disable"` con un `false` válido se lee como no-op (`removed:
- * true`). `writesPolicy` usa `isPolicyNoOp` (`Ed`, reducida a claves de nivel
- * superior — ver el pendiente en `policyFieldRescue.ts`) para no contar un
- * `null` ni un `false` de no-op como intento de escribir política.
+ * true`, un aviso por CAMPO). `writesPolicy` usa `isPolicyNoOp` (`Ed`,
+ * reducida a claves de nivel superior — ver el pendiente en
+ * `policyFieldRescue.ts`) para no contar un `null` ni un `false` de no-op
+ * como intento de escribir política.
+ *
+ * `readPolicyDocument` también lleva la lista `removed` de `Ty` (porte en
+ * `./policyRescue.ts`, un ARREGLO por DOCUMENTO — no confundir con el aviso
+ * por campo del párrafo anterior): las claves que `Ed` cuenta como no-op,
+ * ausentes del rescate, que ningún aviso previo ya explica. `At` (el filtro
+ * de entradas de servidor MCP que 2.1.283 antepone a ese cálculo) no se
+ * porta — sus nueve validadores no están en la extracción — así que
+ * `removedPolicyKeys` recibe únicamente los avisos de `os` y de
+ * `sanitizeCrossSessionInbound`, donde el binario habría sumado también los
+ * de `At`.
  *
  * Divergencias que siguen declaradas:
  * - El "suelo" entre fragmentos de `readFilePolicy` (`pd`) se generaliza a
@@ -57,12 +68,18 @@ import {
 } from './policyComposition.ts'
 import { mergeManagedValue } from './policyMerge.ts'
 import { isPolicyNoOp, rescuePolicyDocument } from './policyFieldRescue.ts'
+import { removedPolicyKeys } from './policyRescue.ts'
 import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 
 type PolicyDocument = Record<string, unknown>
 
-/** Una fuente leída, con sus errores. */
-export type PolicySourceRead = PolicyRead & { errors: PolicyError[] }
+/**
+ * Una fuente leída, con sus errores. `removed` (la porción de `Ty` en
+ * `./policyRescue.ts`) sólo lo llevan las lecturas que validan un documento
+ * propio (`readPolicyDocument`): la remota (`Qq`) y la MDM (`Os`) lo
+ * descartan al relayar, igual que 2.1.283.
+ */
+export type PolicySourceRead = PolicyRead & { errors: PolicyError[]; removed?: string[] }
 
 /** Lo que la composición inyecta: las fuentes que no son archivos. */
 export type PolicySourceContext = {
@@ -95,7 +112,7 @@ function writesPolicy(document: PolicyDocument, settings: PolicyDocument | null)
     || (settings !== null && hasPolicyKeys(settings))
 }
 
-type DocumentRead = PolicySourceRead & { loadState: PolicyLoadState; documentHasPolicyContent: boolean }
+type DocumentRead = PolicySourceRead & { loadState: PolicyLoadState; documentHasPolicyContent: boolean; removed: string[] }
 
 /** `md`: la validación de cada documento, por documento y por nombre de fuente. */
 const validated = new WeakMap<object, Map<string, DocumentRead>>()
@@ -122,12 +139,18 @@ function validatePolicyDocument(document: PolicyDocument, file: string): Documen
     })),
   ]
   const settings = Object.keys(rescued).length > 0 ? rescued : null
-  return { settings, errors, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
+  const removed = removedPolicyKeys(document, rescued, errors)
+  return { settings, errors, removed, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
 }
 
 /** `gd`: cada llamada recibe su copia, para que nadie mute la de la caché. */
 function copyOf(read: DocumentRead): DocumentRead {
-  return { ...read, settings: read.settings && structuredClone(read.settings), errors: read.errors.map(error => ({ ...error })) }
+  return {
+    ...read,
+    settings: read.settings && structuredClone(read.settings),
+    errors: read.errors.map(error => ({ ...error })),
+    removed: [...read.removed],
+  }
 }
 
 /** `HRe`: valida un documento de política con el nombre de su fuente. */

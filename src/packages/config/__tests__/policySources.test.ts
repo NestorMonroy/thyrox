@@ -11,6 +11,11 @@
  * `readFilePolicy`: que un campo roto no tira el documento, que una puerta
  * sustituida se ve en `documentHasPolicyContent`, y que el suelo (`pd`)
  * protege un valor real ya escrito por un fragmento anterior.
+ *
+ * La lista `removed` de `readPolicyDocument` (la porción de `Ty` en
+ * `./policyRescue.ts`) también se prueba aquí, por la misma razón: lo que
+ * importa es su efecto en `readPolicyDocument`, no la función pura, que
+ * `policyRescue.test.ts` ya cubre.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -83,14 +88,32 @@ describe('un documento de política (HRe)', () => {
       removed: true,
     }])
   })
+  test('una clave puesta a null ya queda explicada por su propio aviso de rescate: no se duplica en removed', () => {
+    // `model` no es `.nullable()`: `null` falla su esquema y `os` ya emite un
+    // aviso en la ruta `model` (`rescueField`). `Ty` sólo añade `removed`
+    // cuando NINGÚN aviso previo explica la ausencia — ver
+    // `policyRescue.test.ts` para el caso en que sí falta esa explicación.
+    const read = S.readPolicyDocument({ model: null }, 'f')
+    expect(read.errors.some(error => error.path === 'model')).toBe(true)
+    expect(read.removed).toEqual([])
+  })
+  test('una retirada ya explicada por un aviso de sustitución no se duplica en removed', () => {
+    const read = S.readPolicyDocument({ disableAutoMode: false }, 'f')
+    expect(read.removed).toEqual([])
+  })
+  test('un documento sin claves retiradas deja removed vacío', () => {
+    expect(S.readPolicyDocument({ model: 'claude-sonnet-5' }, 'f').removed).toEqual([])
+  })
   test('cada lectura recibe su copia de la caché', () => {
     const document = { permissions: { allow: ['Read'] } }
     const first = S.readPolicyDocument(document, 'f')
     ;(first.settings!.permissions as { allow: string[] }).allow.push('Edit')
     first.errors.push({ file: 'f', path: 'x', message: 'm' })
+    first.removed.push('bogus')
     const second = S.readPolicyDocument(document, 'f')
     expect(second.settings).toEqual({ permissions: { allow: ['Read'] } })
     expect(second.errors).toEqual([])
+    expect(second.removed).toEqual([])
   })
   test('el resultado es una copia: mutarlo no toca el documento', () => {
     const document = { permissions: { allow: ['Read'] } }

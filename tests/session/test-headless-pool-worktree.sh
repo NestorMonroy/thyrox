@@ -191,5 +191,25 @@ THYROX_ROOT="$F/repo" PYTHONPATH="$F/repo/src" \
 check "el veredicto lee el worktree, no lo que cambió el árbol principal" "$(cat "$F/out12/1.verdict")" "verificado"
 git -C "$F/repo" checkout -q -- observado.txt
 
+
+echo "caso 12 — el verify no escribe en la cache/jobs/workbench/logs del árbol principal"
+dir12="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" prepare "$F/repo" "$F/out13" 1)"
+mkdir -p "$F/out13"
+printf 'z\n' > "$dir12/nuevo12.txt"
+main_cache="$F/main-cache"; main_jobs2="$F/main-jobs2"
+main_workbench="$F/main-workbench"; main_logs="$F/main-logs"
+mkdir -p "$main_cache" "$main_jobs2" "$main_workbench" "$main_logs"
+verify12='mkdir -p "$THYROX_CACHE_DIR" "$THYROX_JOBS_DIR" "$THYROX_WORKBENCH_DIR" "$THYROX_BACKGROUND_LOG_DIR" \
+  && : > "$THYROX_CACHE_DIR/marca" && : > "$THYROX_JOBS_DIR/marca" \
+  && : > "$THYROX_WORKBENCH_DIR/marca" && : > "$THYROX_BACKGROUND_LOG_DIR/marca"'
+THYROX_ROOT="$F/repo" PYTHONPATH="$F/repo/src" \
+    THYROX_CACHE_DIR="$main_cache" THYROX_JOBS_DIR="$main_jobs2" \
+    THYROX_WORKBENCH_DIR="$main_workbench" THYROX_BACKGROUND_LOG_DIR="$main_logs" \
+    bash "$HEADLESS_POOL_ITEM_WORKTREE" finalize "$F/repo" "$dir12" "$F/out13" 1 0 "$verify12"
+check "veredicto verificado" "$(cat "$F/out13/1.verdict")" "verificado"
+check "no escribe en la cache del árbol principal" "$(test -e "$main_cache/marca" && echo si || echo no)" "no"
+check "no escribe en jobs del árbol principal" "$(test -e "$main_jobs2/marca" && echo si || echo no)" "no"
+check "no escribe en workbench del árbol principal" "$(test -e "$main_workbench/marca" && echo si || echo no)" "no"
+check "no escribe en logs del árbol principal" "$(test -e "$main_logs/marca" && echo si || echo no)" "no"
 echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
 [[ $failures -eq 0 ]]

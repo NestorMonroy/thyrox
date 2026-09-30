@@ -142,5 +142,15 @@ with tempfile.TemporaryDirectory() as tmp:
         check("un archivo corrupto NO pasa la verificacion", False,
               module.verify_archive(result.archive_path))
 
+# El README generado describe el estado real de los `.7z`: se versionan desde
+# que se retiro el `*.7z` global de `.gitignore`. Una frase que dijera lo
+# contrario lleva a buscar la build solo por la via de `git show`.
+with tempfile.TemporaryDirectory() as tmp:
+    readme = module.write_readme(pathlib.Path(tmp)).read_text(encoding="utf-8")
+    check("el README no dice que los .7z quedan fuera de git", False,
+          "NO estan versionados" in readme)
+    check("el README dice que los .7z se versionan", True,
+          "se versionan" in readme)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

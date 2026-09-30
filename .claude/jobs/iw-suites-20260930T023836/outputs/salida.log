@@ -1,0 +1,23 @@
+== tests/session/test-item-worktree-disk.sh
+  ok    plazo inválido: exit 2
+item_worktree disk: 8/8
+== tests/session/test-item-worktree-location.sh
+  ok    lo dice
+item_worktree location: 10/10
+== tests/session/test-item-worktree-lock.sh
+  ok    THYROX_ITEM_WORKTREE_RETRY_SECONDS inválida se rechaza
+item_worktree lock: 7/7
+== tests/session/test-item-worktree-orphans.sh
+  ok    no salva nada
+item_worktree orphans: 9/9
+== tests/session/test-item-worktree-sparse.sh
+  ok    prefijo absoluto: exit 2
+item_worktree sparse: 11/11
+== tests/session/test-item-worktree-stash.sh
+  ok    item2 (anomalía) no se aplica
+item_worktree stash guard: 19/19
+== tests/session/test-headless-pool-worktree.sh
+  ok    el veredicto lee el worktree, no lo que cambió el árbol principal
+test-headless-pool-worktree: 37 aserciones — 37 ok, 0 falla(s)
+bash: line 1: shellcheck: command not found
+__BG_EXIT__=127

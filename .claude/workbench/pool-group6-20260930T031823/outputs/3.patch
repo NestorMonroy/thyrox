@@ -1,0 +1,426 @@
+diff --git a/src/packages/daemon/src/__tests__/specializedWorkerProfile.test.ts b/src/packages/daemon/src/__tests__/specializedWorkerProfile.test.ts
+new file mode 100644
+index 00000000..d4b13edb
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/specializedWorkerProfile.test.ts
+@@ -0,0 +1,212 @@
++import { describe, expect, test } from 'bun:test'
++
++import { DEFAULT_WORKER_RESOURCE_PROFILE, InvalidWorkerResourceProfileError } from '../podman/workerResourceProfile.js'
++import {
++  DEFAULT_SPECIALIZED_WORKER_REGISTRY,
++  SPECIALIZED_WORKER_DIST_PATH,
++  createSpecializedWorkerProfile,
++  specializedWorkerBuildArgv,
++  specializedWorkerContainerfile,
++  specializedWorkerImageReference,
++  specializedWorkerProfileArgv,
++  specializedWorkerRuntimeTag,
++  validateSpecializedWorkerProfile,
++  type SpecializedWorkerProfile,
++  type SpecializedWorkerRuntimeStack,
++} from '../podman/specializedWorkerProfile.js'
++
++const STACK: SpecializedWorkerRuntimeStack = { pythonVersion: '3.11', torchVersion: '2.4.0', cudaVersion: '12.4.1' }
++
++function expectRefusedField(run: () => unknown, field: string): void {
++  try {
++    run()
++    throw new Error('debía rehusar')
++  } catch (error) {
++    expect(error).toBeInstanceOf(InvalidWorkerResourceProfileError)
++    expect((error as InvalidWorkerResourceProfileError).field).toBe(field)
++  }
++}
++
++describe('createSpecializedWorkerProfile', () => {
++  test('usa los límites por defecto y conserva los campos declarados', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', 'daemon/main.js')
++    expect(profile.workerKind).toBe('semantic-search')
++    expect(profile.runtimeStack).toBe(STACK)
++    expect(profile.distHostPath).toBe('/host/dist')
++    expect(profile.entryRelativePath).toBe('daemon/main.js')
++    expect(profile.resources).toBe(DEFAULT_WORKER_RESOURCE_PROFILE)
++  })
++
++  test('valida sin rehusar', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', 'daemon/main.js')
++    expect(() => validateSpecializedWorkerProfile(profile)).not.toThrow()
++  })
++})
++
++describe('specializedWorkerRuntimeTag', () => {
++  test('junta las tres versiones fijadas en el orden py-torch-cuda', () => {
++    expect(specializedWorkerRuntimeTag(STACK)).toBe('py3.11-torch2.4.0-cuda12.4.1')
++  })
++})
++
++describe('specializedWorkerImageReference', () => {
++  test('usa el registro por defecto y el sufijo -worker', () => {
++    expect(specializedWorkerImageReference('semantic-search', STACK)).toBe(
++      `${DEFAULT_SPECIALIZED_WORKER_REGISTRY}/semantic-search-worker:py3.11-torch2.4.0-cuda12.4.1`,
++    )
++  })
++
++  test('acepta un registro declarado explícitamente', () => {
++    expect(specializedWorkerImageReference('semantic-search', STACK, 'registry.example.org/thyrox')).toBe(
++      'registry.example.org/thyrox/semantic-search-worker:py3.11-torch2.4.0-cuda12.4.1',
++    )
++  })
++})
++
++describe('specializedWorkerContainerfile', () => {
++  test('contenido exacto: CUDA base, Python+Torch fijados, COPY de dist/, ENTRYPOINT con bun', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', 'daemon/main.js')
++    expect(specializedWorkerContainerfile(profile)).toBe(
++      [
++        'FROM docker.io/nvidia/cuda:12.4.1-runtime-ubuntu22.04',
++        'RUN apt-get update \\',
++        '    && apt-get install -y --no-install-recommends curl ca-certificates python3.11 python3-pip \\',
++        '    && rm -rf /var/lib/apt/lists/*',
++        'RUN python3.11 -m pip install --no-cache-dir torch==2.4.0',
++        'RUN curl -fsSL https://bun.sh/install | bash',
++        'ENV PATH="/root/.bun/bin:${PATH}"',
++        `COPY . ${SPECIALIZED_WORKER_DIST_PATH}`,
++        `WORKDIR ${SPECIALIZED_WORKER_DIST_PATH}`,
++        `ENTRYPOINT ["bun", "${SPECIALIZED_WORKER_DIST_PATH}/daemon/main.js", "--daemon-worker=semantic-search"]`,
++        '',
++      ].join('\n'),
++    )
++  })
++
++  test('nunca emite --rootfs ni un montaje overlay de la raíz (ADR-THYROX-007)', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', 'daemon/main.js')
++    const content = specializedWorkerContainerfile(profile)
++    expect(content).not.toContain('--rootfs')
++    expect(content).not.toContain(':O')
++  })
++
++  test('rehúsa sin emitir contenido cuando el perfil es inválido', () => {
++    const profile = createSpecializedWorkerProfile('Semantic_Search', STACK, '/host/dist', 'daemon/main.js')
++    expect(() => specializedWorkerContainerfile(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++})
++
++describe('specializedWorkerBuildArgv', () => {
++  test('argv exacto: -f, -t con la imagen fijada, y el contexto es distHostPath', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', 'daemon/main.js')
++    expect(specializedWorkerBuildArgv(profile, '/host/dist/Containerfile')).toEqual([
++      'build',
++      '-f', '/host/dist/Containerfile',
++      '-t', 'docker.io/thyrox/semantic-search-worker:py3.11-torch2.4.0-cuda12.4.1',
++      '/host/dist',
++    ])
++  })
++
++  test('no emite ningún argumento cuando el perfil es inválido', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, 'relative/dist', 'daemon/main.js')
++    expect(() => specializedWorkerBuildArgv(profile, '/host/dist/Containerfile')).toThrow(InvalidWorkerResourceProfileError)
++  })
++})
++
++describe('specializedWorkerProfileArgv', () => {
++  test('argv exacto del perfil por defecto: sólo límites de recursos, sin ningún montaje', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', 'daemon/main.js')
++    expect(specializedWorkerProfileArgv(profile)).toEqual([
++      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
++      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
++      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
++      '--network', 'none',
++      '--read-only', '--read-only-tmpfs=false',
++    ])
++  })
++
++  test('nunca emite --rootfs, con cualquier perfil de recursos declarado', () => {
++    const profile: SpecializedWorkerProfile = {
++      workerKind: 'semantic-search',
++      runtimeStack: STACK,
++      distHostPath: '/host/dist',
++      entryRelativePath: 'daemon/main.js',
++      resources: { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'bridge', readOnlyRootfs: false },
++    }
++    expect(specializedWorkerProfileArgv(profile).join(' ')).not.toContain('--rootfs')
++  })
++
++  test('no emite ningún argumento cuando el perfil es inválido', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', '/absolute/entry.js')
++    expect(() => specializedWorkerProfileArgv(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++})
++
++describe('validateSpecializedWorkerProfile — rehúsos, cada uno nombrando su campo', () => {
++  test('workerKind con mayúsculas', () => {
++    const profile = createSpecializedWorkerProfile('Semantic-Search', STACK, '/host/dist', 'daemon/main.js')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'workerKind')
++  })
++
++  test('workerKind que empieza con un dígito', () => {
++    const profile = createSpecializedWorkerProfile('1-semantic', STACK, '/host/dist', 'daemon/main.js')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'workerKind')
++  })
++
++  test('pythonVersion no numérica', () => {
++    const profile = createSpecializedWorkerProfile(
++      'semantic-search', { ...STACK, pythonVersion: 'three-eleven' }, '/host/dist', 'daemon/main.js',
++    )
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'runtimeStack.pythonVersion')
++  })
++
++  test('torchVersion no numérica', () => {
++    const profile = createSpecializedWorkerProfile(
++      'semantic-search', { ...STACK, torchVersion: 'latest' }, '/host/dist', 'daemon/main.js',
++    )
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'runtimeStack.torchVersion')
++  })
++
++  test('cudaVersion no numérica', () => {
++    const profile = createSpecializedWorkerProfile(
++      'semantic-search', { ...STACK, cudaVersion: 'latest' }, '/host/dist', 'daemon/main.js',
++    )
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'runtimeStack.cudaVersion')
++  })
++
++  test('distHostPath no absoluto', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, 'relative/dist', 'daemon/main.js')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'distHostPath')
++  })
++
++  test('distHostPath es la raíz del anfitrión — el equivalente de --rootfs /', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/', 'daemon/main.js')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'distHostPath')
++  })
++
++  test('entryRelativePath vacío', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', '')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'entryRelativePath')
++  })
++
++  test('entryRelativePath absoluto', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', '/daemon/main.js')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'entryRelativePath')
++  })
++
++  test('entryRelativePath con un segmento ".." intenta salir de dist/', () => {
++    const profile = createSpecializedWorkerProfile('semantic-search', STACK, '/host/dist', '../escape/main.js')
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'entryRelativePath')
++  })
++
++  test('un recurso inválido dentro del perfil también rehúsa, nombrando su propio campo', () => {
++    const profile: SpecializedWorkerProfile = {
++      workerKind: 'semantic-search',
++      runtimeStack: STACK,
++      distHostPath: '/host/dist',
++      entryRelativePath: 'daemon/main.js',
++      resources: { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 },
++    }
++    expectRefusedField(() => validateSpecializedWorkerProfile(profile), 'cpus')
++  })
++})
+diff --git a/src/packages/daemon/src/podman/specializedWorkerProfile.ts b/src/packages/daemon/src/podman/specializedWorkerProfile.ts
+new file mode 100644
+index 00000000..e207a33a
+--- /dev/null
++++ b/src/packages/daemon/src/podman/specializedWorkerProfile.ts
+@@ -0,0 +1,202 @@
++/**
++ * Perfil de worker especializado de Podman (ADR-THYROX-007 Regla 2-bis,
++ * TASK-THYROX-0614): imagen versionada y reproducible —Python, Torch y CUDA
++ * fijados por su versión exacta— que ejecuta Thyrox desde `dist/` con sus
++ * recursos de runtime (H-THYROX-263: cada recurso que un módulo resuelve
++ * relativo a sí mismo queda emitido junto a su `.js`, así que el mecanismo
++ * de build copia el árbol `dist/` COMPLETO, nunca un archivo suelto).
++ *
++ * A diferencia de `repositoryJobProfile.ts` —que opera SOBRE el árbol del
++ * anfitrión con un montaje overlay en tiempo de ejecución—, un worker
++ * especializado (semantic_search_worker es el primero) es un servicio: su
++ * `dist/` se copia DENTRO de la imagen al construirla (`COPY . <ruta>`), no
++ * se monta en cada arranque. Por construcción, este módulo nunca compone
++ * `--rootfs` ni un montaje `:O`: `distHostPath` es el CONTEXTO de build, no
++ * un volumen de contenedor, y `specializedWorkerProfileArgv` reutiliza sólo
++ * los límites de `workerResourceProfile.ts`, sin montajes propios.
++ *
++ * Sólo el mecanismo de build y de fijación de versiones vive aquí. El
++ * modelo de búsqueda semántica y sus dimensiones quedan fuera —esperan a
++ * D5— y no tienen campo en `SpecializedWorkerProfile`.
++ */
++
++import {
++  DEFAULT_WORKER_RESOURCE_PROFILE,
++  InvalidWorkerResourceProfileError,
++  validateWorkerResourceProfile,
++  workerResourceLimitArgv,
++  type WorkerResourceProfile,
++} from './workerResourceProfile.js'
++
++/** Ruta fija, dentro de la imagen, donde el build copia el árbol `dist/`. */
++export const SPECIALIZED_WORKER_DIST_PATH = '/opt/thyrox/dist'
++
++/** Registro por defecto de las imágenes de worker especializado — sobreescribible por parámetro, nunca por edición. */
++export const DEFAULT_SPECIALIZED_WORKER_REGISTRY = 'docker.io/thyrox'
++
++const WORKER_KIND_PATTERN = /^[a-z][a-z0-9-]*$/
++const RUNTIME_VERSION_PATTERN = /^[0-9]+(\.[0-9]+){1,2}$/
++
++/** Versiones fijadas del stack de aprendizaje automático que la imagen pin: nunca `latest`, siempre un número exacto. */
++export type SpecializedWorkerRuntimeStack = {
++  pythonVersion: string
++  torchVersion: string
++  cudaVersion: string
++}
++
++export type SpecializedWorkerProfile = {
++  workerKind: string
++  runtimeStack: SpecializedWorkerRuntimeStack
++  /** Árbol `dist/` en el anfitrión — es el CONTEXTO de `podman build`, no un montaje de `podman run`. */
++  distHostPath: string
++  /** Ruta del entrypoint de Thyrox, relativa a `dist/` dentro de la imagen. */
++  entryRelativePath: string
++  resources: WorkerResourceProfile
++}
++
++/** El perfil por defecto: límites más restrictivos de `workerResourceProfile.ts`, sin montajes. */
++export function createSpecializedWorkerProfile(
++  workerKind: string,
++  runtimeStack: SpecializedWorkerRuntimeStack,
++  distHostPath: string,
++  entryRelativePath: string,
++): SpecializedWorkerProfile {
++  return { workerKind, runtimeStack, distHostPath, entryRelativePath, resources: DEFAULT_WORKER_RESOURCE_PROFILE }
++}
++
++function requireValidWorkerKind(workerKind: string): void {
++  if (!WORKER_KIND_PATTERN.test(workerKind)) {
++    throw new InvalidWorkerResourceProfileError('workerKind', `identificador de worker especializado inválido: ${workerKind}`)
++  }
++}
++
++function requireValidRuntimeVersion(field: string, value: string): void {
++  if (!RUNTIME_VERSION_PATTERN.test(value)) {
++    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser una versión numérica fijada (ej. 3.11), recibido: ${value}`)
++  }
++}
++
++function requireAbsoluteDistHostPath(distHostPath: string): void {
++  if (!distHostPath.startsWith('/')) {
++    throw new InvalidWorkerResourceProfileError('distHostPath', `debe ser una ruta absoluta, recibido: ${distHostPath}`)
++  }
++}
++
++/** La raíz del anfitrión como contexto de build es el equivalente, para este mecanismo, de `--rootfs /:O` — nunca se acepta. */
++function requireDistHostPathNotRoot(distHostPath: string): void {
++  if (distHostPath === '/') {
++    throw new InvalidWorkerResourceProfileError('distHostPath', 'distHostPath no puede ser la raíz del anfitrión (equivalente a --rootfs /)')
++  }
++}
++
++function requireNonEmptyEntryPath(entryRelativePath: string): void {
++  if (!entryRelativePath) {
++    throw new InvalidWorkerResourceProfileError('entryRelativePath', 'entryRelativePath no puede estar vacío')
++  }
++}
++
++function requireEntryPathNotAbsolute(entryRelativePath: string): void {
++  if (entryRelativePath.startsWith('/')) {
++    throw new InvalidWorkerResourceProfileError('entryRelativePath', `debe ser relativa a dist/, no absoluta: ${entryRelativePath}`)
++  }
++}
++
++function requireEntryPathHasNoParentSegment(entryRelativePath: string): void {
++  if (entryRelativePath.split('/').includes('..')) {
++    throw new InvalidWorkerResourceProfileError('entryRelativePath', `no puede salir de dist/ con '..': ${entryRelativePath}`)
++  }
++}
++
++/** Valida el perfil completo; rehúsa en el primer campo inválido, nombrándolo. */
++export function validateSpecializedWorkerProfile(profile: SpecializedWorkerProfile): void {
++  requireValidWorkerKind(profile.workerKind)
++  requireValidRuntimeVersion('runtimeStack.pythonVersion', profile.runtimeStack.pythonVersion)
++  requireValidRuntimeVersion('runtimeStack.torchVersion', profile.runtimeStack.torchVersion)
++  requireValidRuntimeVersion('runtimeStack.cudaVersion', profile.runtimeStack.cudaVersion)
++  requireAbsoluteDistHostPath(profile.distHostPath)
++  requireDistHostPathNotRoot(profile.distHostPath)
++  requireNonEmptyEntryPath(profile.entryRelativePath)
++  requireEntryPathNotAbsolute(profile.entryRelativePath)
++  requireEntryPathHasNoParentSegment(profile.entryRelativePath)
++  validateWorkerResourceProfile(profile.resources)
++}
++
++/** El mecanismo de fijación: la etiqueta de la imagen deriva de las tres versiones, nunca se escribe a mano. */
++export function specializedWorkerRuntimeTag(runtimeStack: SpecializedWorkerRuntimeStack): string {
++  return `py${runtimeStack.pythonVersion}-torch${runtimeStack.torchVersion}-cuda${runtimeStack.cudaVersion}`
++}
++
++export function specializedWorkerImageReference(
++  workerKind: string,
++  runtimeStack: SpecializedWorkerRuntimeStack,
++  registry: string = DEFAULT_SPECIALIZED_WORKER_REGISTRY,
++): string {
++  return `${registry}/${workerKind}-worker:${specializedWorkerRuntimeTag(runtimeStack)}`
++}
++
++function baseImageInstruction(cudaVersion: string): string {
++  return `FROM docker.io/nvidia/cuda:${cudaVersion}-runtime-ubuntu22.04`
++}
++
++function pythonTorchInstallInstructions(pythonVersion: string, torchVersion: string): string[] {
++  return [
++    'RUN apt-get update \\',
++    `    && apt-get install -y --no-install-recommends curl ca-certificates python${pythonVersion} python3-pip \\`,
++    '    && rm -rf /var/lib/apt/lists/*',
++    `RUN python${pythonVersion} -m pip install --no-cache-dir torch==${torchVersion}`,
++  ]
++}
++
++/** Bun no lleva versión fijada aquí: `thyrox_toolchain_require_bun` no fija ninguna (medido, `src/lib/toolchain.sh`). */
++function bunRuntimeInstallInstructions(): string[] {
++  return ['RUN curl -fsSL https://bun.sh/install | bash', 'ENV PATH="/root/.bun/bin:${PATH}"']
++}
++
++function distCopyInstructions(): string[] {
++  return [`COPY . ${SPECIALIZED_WORKER_DIST_PATH}`, `WORKDIR ${SPECIALIZED_WORKER_DIST_PATH}`]
++}
++
++function entrypointInstruction(entryRelativePath: string, workerKind: string): string {
++  const entryPath = `${SPECIALIZED_WORKER_DIST_PATH}/${entryRelativePath}`
++  return `ENTRYPOINT ["bun", "${entryPath}", "--daemon-worker=${workerKind}"]`
++}
++
++/**
++ * Compone el `Containerfile` de un worker especializado — texto puro, nunca
++ * escrito a disco ni construido por este módulo: quien invoca decide cuándo
++ * y dónde. `distHostPath` se copia entero como contexto de build para que
++ * cada recurso de runtime (H-THYROX-263) llegue junto a su `.js`.
++ */
++export function specializedWorkerContainerfile(profile: SpecializedWorkerProfile): string {
++  validateSpecializedWorkerProfile(profile)
++  const { runtimeStack, entryRelativePath, workerKind } = profile
++  const lines = [
++    baseImageInstruction(runtimeStack.cudaVersion),
++    ...pythonTorchInstallInstructions(runtimeStack.pythonVersion, runtimeStack.torchVersion),
++    ...bunRuntimeInstallInstructions(),
++    ...distCopyInstructions(),
++    entrypointInstruction(entryRelativePath, workerKind),
++  ]
++  return `${lines.join('\n')}\n`
++}
++
++/** Traduce un perfil validado al argv de `podman build` — contexto `distHostPath`, imagen fijada por `specializedWorkerImageReference`. */
++export function specializedWorkerBuildArgv(profile: SpecializedWorkerProfile, containerfileHostPath: string): string[] {
++  validateSpecializedWorkerProfile(profile)
++  return [
++    'build',
++    '-f', containerfileHostPath,
++    '-t', specializedWorkerImageReference(profile.workerKind, profile.runtimeStack),
++    profile.distHostPath,
++  ]
++}
++
++/**
++ * Traduce un perfil validado al argv de límites de `podman create`/`run` —
++ * sólo los de `workerResourceProfile.ts`: el `dist/` ya vive dentro de la
++ * imagen, así que este perfil no añade ningún montaje propio.
++ */
++export function specializedWorkerProfileArgv(profile: SpecializedWorkerProfile): string[] {
++  validateSpecializedWorkerProfile(profile)
++  return workerResourceLimitArgv(profile.resources)
++}
