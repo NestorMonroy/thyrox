@@ -1,0 +1,25 @@
+**GNU Parallel sigue siendo el planificador; el contenedor entra dentro del
+wrapper del ítem.** El pool calcula la anchura (``min(configurada, RAM,
+VRAM)``), GNU Parallel lanza cada job y el wrapper admite la VRAM, corre el
+ítem, mide y libera. En modo Podman sólo cambia qué corre el wrapper: un
+contenedor en vez de un proceso local. Planificación, admisión, historial y
+reporte no se reescriben.
+
+**Pero cambia de dónde sale cada medida** (:ref:`h-thyrox-294`). Medido: el
+proceso del contenedor cuelga de ``conmon`` → ``init``, no del ``podman run``
+que lanza el wrapper, y GNU Time sobre ``podman run`` dio 41 MB con el
+contenedor reteniendo ~200 MB. Todo lo que hoy mide el árbol del wrapper —GNU
+Time para el historial y ``--memfree``, la admisión de RAM, ``gpu_monitor
+measure``, ``stdin_probe`` y el drenaje por señal— mediría el cliente. Por eso,
+en modo Podman:
+
+- la RAM pico del ítem sale del cgroup del contenedor, no de GNU Time sobre el
+  cliente;
+- la VRAM se mide sobre el conjunto de PIDs del contenedor, que la primitiva
+  expone; sin ese conjunto el ``.gpu`` es ``error``, nunca ``0``;
+- una fila de historial medida sobre el cliente no calibra: un 0 de VRAM que no
+  midió el contenedor no puede volver a pedir ``admit(0)`` (H-THYROX-192);
+- el límite ``--memory`` declarado del perfil acota lo que la admisión reserva;
+- el drenaje por señal detiene el contenedor, no sólo el wrapper.
+
+**Red, credencial e imagen.**
