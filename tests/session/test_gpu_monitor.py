@@ -19,9 +19,11 @@ Contrato:
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 
@@ -82,7 +84,7 @@ with tempfile.TemporaryDirectory() as raw:
     apps.write_text(f"{child}, 300\n999999, 5000\n")
     out = tmp / "1.gpu"
     started = time.monotonic()
-    summary = gm.watch(parent.pid, out, nvidia_smi=str(smi), interval_s=0.2)
+    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(smi), interval_s=0.2)
     elapsed = time.monotonic() - started
     parent.wait()
     assert summary is not None
@@ -101,7 +103,7 @@ with tempfile.TemporaryDirectory() as raw:
     parent, child = spawn_tree(0.6)
     apps.write_text("999999, 5000\n")
     out = tmp / "2.gpu"
-    summary = gm.watch(parent.pid, out, nvidia_smi=str(smi), interval_s=0.2)
+    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(smi), interval_s=0.2)
     parent.wait()
     assert summary is not None
     check("pico cero, uso cero", (0, 0), (summary.peak_mib, summary.peak_utilization_pct))
@@ -110,7 +112,7 @@ with tempfile.TemporaryDirectory() as raw:
     print("== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==")
     parent, child = spawn_tree(0.3)
     out = tmp / "3.gpu"
-    summary = gm.watch(parent.pid, out, nvidia_smi=str(tmp / "no-existe"), interval_s=0.1)
+    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(tmp / "no-existe"), interval_s=0.1)
     parent.wait()
     check("sin resumen", None, summary)
     check("sin archivo", False, out.exists())
@@ -134,7 +136,7 @@ with tempfile.TemporaryDirectory() as raw:
     parent, child = spawn_tree(1.5)
     apps.write_text(f"{child}, 300\n")
     out = tmp / "4.gpu"
-    summary = gm.watch(parent.pid, out, nvidia_smi=str(flaky), interval_s=0.2)
+    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(flaky), interval_s=0.2)
     parent.wait()
     check("error al medir: sin resumen publicado", None, summary)
     # Se lee sin lanzar una excepción: si el archivo falta, el caso sale FALLA,
@@ -278,6 +280,61 @@ with tempfile.TemporaryDirectory() as raw:
     finally:
         os.scandir = real_scandir
     check("el hijo que desapareció cuenta y el recorrido sigue", {4242, 4243}, walked)
+
+    print("== 15. watch con la fuente de un contenedor: mide sus PIDs, no los del cliente ==")
+    # Doble de Podman y de cgroup v1: `cgroup.procs` lista al proceso del
+    # contenedor; el cliente (este test) también tiene VRAM y no debe contar.
+    relative = "/libpod_parent/libpod-gpu"
+    podman = tmp / "podman"
+    podman.write_text("#!/usr/bin/env bash\n"
+                      'case "$*" in\n'
+                      "  *exists*known*) exit 0 ;;\n  *exists*) exit 1 ;;\n"
+                      f'  *inspect*known*) echo "true {relative}" ;;\n'
+                      '  *) echo "orden no prevista: $*" >&2; exit 125 ;;\nesac\n')
+    podman.chmod(0o755)
+    cgroup_root = tmp / "cgroup"
+    memory = cgroup_root / "memory" / relative.lstrip("/")
+    memory.mkdir(parents=True)
+    worker = subprocess.Popen(["sleep", "30"])
+    (memory / "cgroup.procs").write_text(f"{worker.pid}\n")
+    (memory / "memory.max_usage_in_bytes").write_text("1\n")
+    (memory / "memory.usage_in_bytes").write_text("1\n")
+    apps.write_text(f"{worker.pid}, 700\n{os.getpid()}, 5000\n")
+    source = gm.ContainerMembers("known", str(podman), cgroup_root)
+    threading.Timer(1.0, shutil.rmtree, args=(memory,)).start()
+    out = tmp / "15.gpu"
+    summary = gm.watch(source, out, nvidia_smi=str(smi), interval_s=0.2)
+    check("pico: los 700 MiB del contenedor, no los 5000 del cliente", 700,
+          summary.peak_mib if summary else None)
+    check("para cuando el cgroup desaparece", True, summary is not None and summary.samples >= 2)
+
+    print("== 16. la fuente de contenedor que no puede dar PIDs: .gpu es error, nunca 0 ==")
+    memory.mkdir(parents=True)
+    (memory / "cgroup.procs").mkdir()
+    (memory / "memory.max_usage_in_bytes").write_text("1\n")
+    (memory / "memory.usage_in_bytes").write_text("1\n")
+    out = tmp / "16.gpu"
+    summary = gm.watch(source, out, nvidia_smi=str(smi), interval_s=0.2)
+    check("sin resumen publicado", None, summary)
+    check("el archivo es error con causa, no ceros", "error", gm.read_gpu_file(out).state)
+
+    print("== 17. la CLI: watch --container usa la fuente del contenedor ==")
+    shutil.rmtree(memory)
+    memory.mkdir(parents=True)
+    (memory / "cgroup.procs").write_text(f"{worker.pid}\n")
+    (memory / "memory.max_usage_in_bytes").write_text("1\n")
+    (memory / "memory.usage_in_bytes").write_text("1\n")
+    threading.Timer(1.0, shutil.rmtree, args=(memory,)).start()
+    out = tmp / "17.gpu"
+    done = subprocess.run([sys.executable, "-m", "session.gpu_monitor", "watch", str(os.getpid()), str(out),
+                           "--container", "known", "--podman", str(podman), "--cgroup-root", str(cgroup_root),
+                           "--nvidia-smi", str(smi), "--interval", "0.2"],
+                          env={**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")},
+                          capture_output=True, text=True, timeout=30)
+    reading = gm.read_gpu_file(out)
+    check("la CLI mide el contenedor: pico 700", (0, 700),
+          (done.returncode, reading.summary.peak_mib if reading.summary else None))
+    worker.kill(); worker.wait()
 
     print("== 6. disponible() distingue las dos situaciones ==")
     check("con el falso: disponible", True, gm.available(str(smi)))

@@ -394,5 +394,56 @@ with tempfile.TemporaryDirectory() as raw:
     finally:
         ph.closed_items = original_closed_items
 
+    print("== 29. la fuente de medida: host-tree y container-cgroup no se mezclan ==")
+    out = run_with(["41152 3.0 1 0\n", "41152 3.0 1 0\n"])
+    (out / "1.gpu").write_text("0 0 0 6\n"); (out / "2.gpu").write_text("0 0 0 6\n")
+    host_row = ph.record(TMP / "h-source", out)
+    assert host_row is not None
+    check("record declara host-tree por defecto", "host-tree", host_row.get("measurement_source"))
+    check("una fila host-tree con VRAM 0 no calibra un lanzamiento en contenedor", False,
+          ph.vram_calibration(host_row, gpu_interval_s=0.5, measurement_source=ph.CONTAINER_CGROUP)[0])
+    check("y el porqué nombra las dos fuentes", True,
+          all(word in ph.vram_calibration(host_row, gpu_interval_s=0.5,
+                                          measurement_source=ph.CONTAINER_CGROUP)[1]
+              for word in ("host-tree", "container-cgroup")))
+    check("la misma fila sí calibra un lanzamiento local", True,
+          ph.vram_calibration(host_row, gpu_interval_s=0.5)[0])
+    container_row = {**host_row, "measurement_source": ph.CONTAINER_CGROUP}
+    check("una fila container-cgroup calibra un lanzamiento en contenedor", True,
+          ph.vram_calibration(container_row, gpu_interval_s=0.5, measurement_source=ph.CONTAINER_CGROUP)[0])
+    legacy_row = {k: v for k, v in host_row.items() if k != "measurement_source"}
+    check("una fila sin fuente cuenta como host-tree", ("host-tree", False),
+          (ph.row_source(legacy_row),
+           ph.vram_calibration(legacy_row, gpu_interval_s=0.5, measurement_source=ph.CONTAINER_CGROUP)[0]))
+
+    print("== 30. derive en contenedor: las filas host-tree no dan cota, y la línea historial lo dice ==")
+    decision = ph.derive(TMP / "h-source", MODEL, catalog, free_vram_mib=8000,
+                         measurement_source=ph.CONTAINER_CGROUP)
+    check("sin memfree derivado del cliente", None, decision.memfree)
+    check("pide la GPU entera, no admit(0)", 8000, decision.vram_need_mib)
+    check("el porqué cuenta la fila de otra fuente", True,
+          "1 fila(s) medidas con otra fuente que container-cgroup" in decision.why)
+    out = run_with(["300000 3.0 1 0\n", "300000 3.0 1 0\n"])
+    (out / "1.gpu").write_text("2000 1500 80 6\n"); (out / "2.gpu").write_text("2000 1500 80 6\n")
+    ph.record(TMP / "h-source", out, measurement_source=ph.CONTAINER_CGROUP)
+    decision = ph.derive(TMP / "h-source", MODEL, catalog, free_vram_mib=8000,
+                         measurement_source=ph.CONTAINER_CGROUP)
+    check("con su fila container-cgroup: memfree del cgroup", "586M", decision.memfree)
+    check("y la VRAM calibrada del contenedor", 4000, decision.vram_need_mib)
+    check("un lanzamiento local sigue viendo sólo la fila host-tree", "81M",
+          ph.derive(TMP / "h-source", MODEL, catalog).memfree)
+
+    print("== 31. la CLI: record y derive aceptan --measurement-source ==")
+    out = run_with(["300000 3.0 1 0\n"])
+    printed = io.StringIO()
+    with contextlib.redirect_stdout(printed):
+        ph.main(["record", str(TMP / "h-cli-source"), str(out), "--measurement-source", "container-cgroup"])
+    check("la fila impresa declara container-cgroup", "container-cgroup",
+          json.loads(printed.getvalue())["measurement_source"])
+    printed = io.StringIO()
+    with contextlib.redirect_stdout(printed):
+        ph.main(["derive", str(TMP / "h-cli-source"), MODEL])
+    check("derive local sobre sólo filas de contenedor: sin memfree", "-", printed.getvalue().split("\t")[1])
+
 print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
 raise SystemExit(1 if FAILED else 0)

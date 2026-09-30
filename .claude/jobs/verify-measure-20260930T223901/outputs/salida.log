@@ -1,0 +1,13 @@
+== tests/session/test-gpu-admission-cli.sh exit=0 | aserciones: 13 de 13 · failures: 0
+== tests/session/test-headless-pool.sh exit=0 | aserciones: 148 de 148 · fallos: 0
+== tests/session/test-infrastructure-ensure.sh exit=0 | 39 casos: 39 ok, 0 fallos
+== tests/session/test-parallel-map.sh exit=1 | parallel_map: 28/34
+== tests/session/test_container_measure.py exit=0 | test_container_measure: 21 ok, 0 falla(s)
+== tests/session/test_gpu_monitor.py exit=0 | test_gpu_monitor: 51 ok, 0 falla(s)
+== tests/session/test_gpu_scenarios.py exit=0 | test_gpu_scenarios: 19 ok, 0 falla(s)
+== tests/session/test_parallel_map_history.py exit=1 | test_parallel_map_history: 12 ok, 5 fallos
+== tests/session/test_pool_history.py exit=0 | test_pool_history: 107 ok, 0 falla(s)
+== tests/session/test_resource_admission.py exit=0 | test_resource_admission: 59 ok, 0 fallos
+== tests/verify/test_step_report.py exit=0 | test_step_report: 22 aserciones — 22 ok, 0 falla(s)
+== test-gpu-hardware-refusal exit=0
+__BG_EXIT__=1

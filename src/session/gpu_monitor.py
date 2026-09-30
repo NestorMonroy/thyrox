@@ -6,8 +6,12 @@ vive el ÁRBOL de procesos del ítem y deja ``<n>.gpu``, una línea::
 
     <vram pico MiB> <vram media MiB> <uso pico de GPU %> <muestras>
 
-Cuenta la VRAM de todos los procesos del árbol (el ítem y sus hijos), no la
-de los demás que compartan la GPU. El uso de GPU sólo se atribuye a una
+Cuenta la VRAM de los procesos que da su FUENTE DE MIEMBROS, no la de los
+demás que compartan la GPU. En local la fuente es el árbol ``/proc`` del ítem
+(``HostTree``); en contenedor, el cgroup del contenedor (``ContainerMembers``,
+``--container``), porque su proceso cuelga de ``conmon`` y no del wrapper
+(H-THYROX-294). Una fuente que no puede dar los PIDs deja ``error <causa>``,
+nunca un cero. El uso de GPU sólo se atribuye a una
 muestra en la que el árbol tenía VRAM: ``nvidia-smi`` da el uso por GPU, no
 por proceso.
 
@@ -18,7 +22,7 @@ en el servidor y la GPU local no se usa, así que medirla sólo informa cuando
 el pool corre trabajo local con CUDA.
 
 Métrica: ``used_memory`` de ``nvidia-smi --query-compute-apps`` por PID del
-árbol, sumada por muestra; ``utilization.gpu`` máxima entre GPUs.
+árbol (o del cgroup), sumada por muestra; ``utilization.gpu`` máxima entre GPUs.
 Ciega a: un pico más corto que el intervalo de muestreo; la VRAM de un
 proceso del árbol que ``nvidia-smi`` no lista (contenedores sin espacio de
 PID compartido); y el uso de GPU de OTRO proceso en la misma muestra.
@@ -32,7 +36,9 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 
+from session.container_measure import DEFAULT_CGROUP_ROOT, ContainerMembers, MembersUnavailable
 from session.resource_admission import (  # noqa: F401 — superficie pública de gpu_monitor
     LEDGER_LOCK_RETRIES,
     ReservationLedger as VramLedger,
@@ -109,9 +115,32 @@ def available(nvidia_smi: str = "nvidia-smi") -> bool:
     return True
 
 
-def watch(pid: int, out: Path, nvidia_smi: str = "nvidia-smi",
+class MemberSource(Protocol):
+    """A quién se mide. ``current_members`` da los PIDs que lo forman, o
+    ``None`` si ya no vive; lanza ``MembersUnavailable`` cuando no puede
+    saberlo."""
+
+    def current_members(self) -> set[int] | None: ...
+
+
+class HostTree:
+    """El ítem local: ``pid`` y sus descendientes por ``/proc``."""
+
+    def __init__(self, pid: int):
+        self.pid = pid
+
+    def current_members(self) -> set[int] | None:
+        return tree(self.pid) if _alive(self.pid) else None
+
+
+def write_error(out: Path, cause: object) -> None:
+    """Se intentó medir y falló: ni cero ni ausencia, y sin resumen parcial."""
+    Path(out).write_text(f"error {cause}\n")
+
+
+def watch(source: MemberSource, out: Path, nvidia_smi: str = "nvidia-smi",
           interval_s: float = DEFAULT_INTERVAL_S) -> Summary | None:
-    """Muestrea mientras vive el árbol de ``pid`` y escribe ``out``."""
+    """Muestrea mientras vive ``source`` y escribe ``out``."""
     if not available(nvidia_smi):
         return None
     totals, utils = [], []
@@ -119,17 +148,19 @@ def watch(pid: int, out: Path, nvidia_smi: str = "nvidia-smi",
         try:
             current = sample(nvidia_smi)
         except GpuUnavailable as error:
-            # Se intentó medir y falló: ni cero ni ausencia. No se publica un
-            # resumen parcial como si fuera la medida del ítem.
-            Path(out).write_text(f"error {error}\n")
+            write_error(out, error)
             return None
         # La vida se comprueba ANTES de registrar: una muestra tomada con el
         # árbol ya terminado (el padre zombi, sin hijos) vale 0 MiB y bajaría
         # la media de una medida que no le pertenece. Sonda:
         # `.claude/workbench/gpu-vram-*/probe-tree-lifecycle.sh`.
-        if not _alive(pid):
+        try:
+            members = source.current_members()
+        except MembersUnavailable as error:
+            write_error(out, error)
+            return None
+        if members is None:
             break
-        members = tree(pid)
         used = sum(mib for p, mib in current.vram_by_pid.items() if p in members)
         totals.append(used)
         utils.append(current.utilization_pct if used > 0 else 0)
@@ -231,12 +262,25 @@ def admit_exit_code(args: argparse.Namespace) -> int:
     return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
 
 
+def member_source(args: argparse.Namespace) -> MemberSource:
+    """La fuente de ``watch``: el contenedor declarado, o el árbol de PID. En
+    contenedor, PID es el wrapper que lo lanzó y no se mide: el proceso del
+    contenedor no cuelga de él."""
+    if args.container:
+        return ContainerMembers(args.container, args.podman, args.cgroup_root)
+    return HostTree(args.pid)
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="gpu_monitor", description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="order", required=True)
-    p_watch = sub.add_parser("watch", help="muestrea el árbol de PID y escribe OUT")
+    p_watch = sub.add_parser("watch", help="muestrea el árbol de PID (o el contenedor) y escribe OUT")
     p_watch.add_argument("pid", type=int)
     p_watch.add_argument("out", type=Path)
+    p_watch.add_argument("--container", default=None,
+                         help="mide el cgroup de este contenedor en vez del árbol de PID")
+    p_watch.add_argument("--podman", default="podman")
+    p_watch.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
     p_watch.add_argument("--nvidia-smi", default="nvidia-smi")
     p_watch.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
     p_avail = sub.add_parser("available", help="sale 0 si hay con qué medir, 2 si no")
@@ -267,7 +311,7 @@ def main(argv: list[str]) -> int:
         return 0
     if args.order == "available":
         return 0 if available(args.nvidia_smi) else 2
-    return 0 if watch(args.pid, args.out, args.nvidia_smi, args.interval) else 2
+    return 0 if watch(member_source(args), args.out, args.nvidia_smi, args.interval) else 2
 
 
 if __name__ == "__main__":

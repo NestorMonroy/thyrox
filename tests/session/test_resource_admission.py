@@ -61,11 +61,10 @@ with tempfile.TemporaryDirectory() as tmp:
 
     print("caso 3 — lo libre de RAM descuenta lo reservado que aún no reside")
     free = ra.ram_headroom({"4242": 3000}, meminfo(tmp_path / "meminfo", 10_000),
-                           rss_kb=lambda pids: 1000 if 4242 in pids else 0,
-                           tree=lambda pid: {pid})
+                           usage=lambda pid: 1000 if pid == 4242 else 0)
     check("10000 − (3000 − 1000)", 8000, free)
     check("sin MemAvailable no hay margen", None,
-          ra.ram_headroom({}, tmp_path / "absent", rss_kb=lambda pids: 0, tree=lambda pid: {pid}))
+          ra.ram_headroom({}, tmp_path / "absent", usage=lambda pid: 0))
 
     print("caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno")
     # En kB: el RSS de un `sleep` dueño (1–2 MB) es despreciable frente a lo
@@ -109,6 +108,60 @@ with tempfile.TemporaryDirectory() as tmp:
         check("un pid inexistente no suma", 0, ra.proc_rss_kb({2 ** 22 + 7}))
     finally:
         child.kill(); child.wait()
+
+print("caso 7d — un dueño en contenedor: lo pendiente descuenta el uso de SU cgroup, no el RSS del cliente")
+with tempfile.TemporaryDirectory() as raw:
+    root = Path(raw)
+    relative = "/libpod_parent/libpod-ram"
+    podman = root / "podman"
+    podman.write_text("#!/usr/bin/env bash\n"
+                      'case "$*" in\n'
+                      "  *exists*known*) exit 0 ;;\n  *exists*) exit 1 ;;\n"
+                      f'  *inspect*known*) echo "true {relative}" ;;\n'
+                      '  *) echo "orden no prevista: $*" >&2; exit 125 ;;\nesac\n')
+    podman.chmod(0o755)
+    memory = root / "cgroup" / "memory" / relative.lstrip("/")
+    memory.mkdir(parents=True)
+    (memory / "cgroup.procs").write_text("77\n")
+    (memory / "memory.max_usage_in_bytes").write_text(f"{2500 * 1024}\n")
+    (memory / "memory.usage_in_bytes").write_text(f"{2000 * 1024}\n")
+    source = ra.ContainerMembers("known", str(podman), root / "cgroup")
+    client_rss = lambda pid: 40  # el cliente `podman run`: ~nada frente a la reserva
+    usage = ra.container_aware_usage({4242: source}, client_rss)
+    check("10000 − (3000 − 2000 del cgroup)", 9000,
+          ra.ram_headroom({"4242": 3000}, meminfo(root / "meminfo", 10_000), usage))
+    check("un dueño sin contenedor sigue midiéndose por su árbol", 7040,
+          ra.ram_headroom({"4343": 3000}, meminfo(root / "meminfo", 10_000), usage))
+    (memory / "memory.usage_in_bytes").unlink(); (memory / "memory.usage_in_bytes").mkdir()
+    check("cgroup ilegible: sin medida, no un cero", None,
+          ra.ram_headroom({"4242": 3000}, meminfo(root / "meminfo", 10_000), usage))
+    (memory / "memory.usage_in_bytes").rmdir()
+    (memory / "memory.usage_in_bytes").write_text(f"{2000 * 1024}\n")
+
+    print("caso 7e — la reserva de un ítem en contenedor la acota su --memory")
+    check("sin límite: la necesidad entera", 5000, ra.bounded_need(5000, None))
+    check("con --memory menor: el límite", 2000, ra.bounded_need(5000, 2000))
+    check("con --memory mayor: la necesidad", 5000, ra.bounded_need(5000, 8000))
+
+    print("caso 7f — la CLI: admit-ram --container registra al dueño y reserva acotado")
+    ledger = root / "ram.json"
+    owner = subprocess.Popen(["sleep", "30"])
+    try:
+        code = cli("admit-ram", "5000", "--ledger", str(ledger), "--owner", str(owner.pid),
+                   "--meminfo", str(meminfo(root / "meminfo3", 3000)), "--timeout", "0",
+                   "--container", "known", "--memory-limit-kb", "2000",
+                   "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode
+        check("5000 pedidos, --memory 2000, 3000 libres: admitido", 0, code)
+        check("la reserva es la acotada", {str(owner.pid): 2000}, ra.ReservationLedger(ledger).live())
+        check("el dueño queda asociado a su contenedor", {owner.pid: "known"}, ra.read_container_owners(ledger))
+        # El cgroup ya usa 2000 kB: la reserva del dueño está entera a la vista
+        # y no se resta dos veces. Por su árbol (un `sleep`) se restaría casi entera.
+        check("otro de 2500 cabe en 3000 libres: el cgroup ya muestra la reserva", 0,
+              cli("admit-ram", "2500", "--ledger", str(ledger), "--owner", str(os.getpid()),
+                  "--meminfo", str(root / "meminfo3"), "--timeout", "0",
+                  "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode)
+    finally:
+        owner.kill(); owner.wait()
 
 print("caso 7b — soltada la última reserva viva, el registro desaparece: en reposo no queda archivo")
 with tempfile.TemporaryDirectory() as idle:

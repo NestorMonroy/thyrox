@@ -13,7 +13,9 @@ contador que se repone en un `trap` pierde el hueco con SIGKILL.
 
 El registro y el bucle no saben de qué recurso se trata. Cada recurso aporta
 su medida: la VRAM, `gpu_monitor` con `nvidia-smi`; la RAM, este módulo con
-`MemAvailable` y el RSS de cada árbol en `/proc`; el disco, este módulo con el
+`MemAvailable` y el RSS de cada árbol en `/proc` —o, si el dueño es un ítem en
+contenedor, el uso de memoria del cgroup del contenedor, porque su proceso
+cuelga de `conmon` y no del árbol del dueño (H-THYROX-294)—; el disco, este módulo con el
 techo que publica `disk-headroom --ceiling-bytes` menos un piso de seguridad.
 
 El disco no tiene uso por proceso que leer: lo que un pull ya escribió no se
@@ -39,6 +41,7 @@ from pathlib import Path
 
 from cache.paths import cache_dir
 from session import shared_lock
+from session.container_measure import DEFAULT_CGROUP_ROOT, ContainerMembers, MembersUnavailable
 
 LEDGER_LOCK_RETRIES = 50
 DEFAULT_INTERVAL_S = 1.0
@@ -50,6 +53,9 @@ DISK_LEDGER_VAR = "THYROX_DISK_ADMISSION_LEDGER"
 DISK_FLOOR_VAR = "THYROX_DISK_ADMISSION_FLOOR_MB"
 DISK_HEADROOM_VAR = "THYROX_DISK_ADMISSION_HEADROOM"
 BYTES_PER_MIB = 1024 * 1024
+BYTES_PER_KB = 1024
+#: El sufijo del registro lateral que asocia cada dueño con su contenedor.
+CONTAINER_OWNERS_SUFFIX = ".containers.json"
 #: El piso de disco que ninguna admisión reparte. Worktrees, cachés, logs y las
 #: capas temporales que Podman desempaqueta durante un pull escriben en el mismo
 #: sistema de archivos sin reservar; 2 GiB es del orden de una capa grande más
@@ -216,16 +222,79 @@ def available_ram_kb(meminfo: Path = Path("/proc/meminfo")) -> int | None:
     return int(match.group(1)) if match else None
 
 
+OwnerUsage = Callable[[int], int]
+
+
+def host_tree_usage_kb(owner_pid: int) -> int:
+    """Lo que reside el árbol ``/proc`` de un dueño local."""
+    return proc_rss_kb(tree(owner_pid))
+
+
+def container_aware_usage(containers: dict[int, ContainerMembers],
+                          host_usage: OwnerUsage = host_tree_usage_kb) -> OwnerUsage:
+    """El uso por dueño: el del cgroup de su contenedor si lo tiene, el de su
+    árbol si no. El RSS del cliente ``podman run`` no es lo que el contenedor
+    usa, así que un dueño en contenedor nunca se mide por su árbol. Un cgroup
+    ilegible propaga ``MembersUnavailable``."""
+    def usage_kb(owner_pid: int) -> int:
+        source = containers.get(owner_pid)
+        if source is None:
+            return host_usage(owner_pid)
+        return source.used_bytes() // BYTES_PER_KB
+    return usage_kb
+
+
 def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
-                 rss_kb: Callable[[set[int]], int] = proc_rss_kb,
-                 tree: Callable[[int], set[int]] = tree) -> int | None:
-    """Lo libre de RAM menos lo reservado que los árboles dueños aún no residen."""
+                 usage: OwnerUsage = host_tree_usage_kb) -> int | None:
+    """Lo libre de RAM menos lo reservado que los dueños aún no usan. ``None``
+    sin ``MemAvailable`` o sin poder medir el uso de un dueño."""
     free = available_ram_kb(meminfo)
     if free is None:
         return None
-    trees = {int(pid): tree(int(pid)) for pid in live}
-    usage = {int(pid): rss_kb(trees[int(pid)]) for pid in live}
-    return free - pending(live, usage, {pid: {pid} for pid in trees})
+    try:
+        used = {int(pid): usage(int(pid)) for pid in live}
+    except MembersUnavailable:
+        return None
+    return free - pending(live, used, {pid: {pid} for pid in used})
+
+
+def bounded_need(need_kb: int, memory_limit_kb: int | None) -> int:
+    """Lo que reserva un ítem: su necesidad, acotada por el ``--memory`` de su
+    contenedor si se declaró — el kernel no le deja usar más."""
+    return need_kb if memory_limit_kb is None else min(need_kb, memory_limit_kb)
+
+
+def container_owners_path(ledger_path: Path) -> Path:
+    return Path(ledger_path).with_name(Path(ledger_path).name + CONTAINER_OWNERS_SUFFIX)
+
+
+def read_container_owners(ledger_path: Path) -> dict[int, str]:
+    """``{pid del dueño: nombre del contenedor}``; vacío sin registro lateral."""
+    try:
+        return {int(pid): name for pid, name in json.loads(container_owners_path(ledger_path).read_text()).items()}
+    except (OSError, ValueError):
+        return {}
+
+
+def record_container_owner(ledger_path: Path, owner_pid: int, name: str) -> None:
+    """Declara que ``owner_pid`` reserva para el contenedor ``name``. Se
+    escribe antes de reservar: una entrada sin reserva no compromete nada, y
+    las de dueños muertos se retiran al escribir."""
+    path = container_owners_path(ledger_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with shared_lock.held(path, run_id="ram-admission-containers", retries=LEDGER_LOCK_RETRIES,
+                          min_wait_s=0.01, max_wait_s=0.2):
+        owners = {pid: owner for pid, owner in read_container_owners(ledger_path).items() if is_alive(pid)}
+        owners[owner_pid] = name
+        shared_lock.write_atomic(path, json.dumps({str(pid): owner for pid, owner in owners.items()},
+                                                  sort_keys=True))
+
+
+def ledger_usage(ledger_path: Path, podman: str, cgroup_root: Path) -> OwnerUsage:
+    """El uso por dueño según el registro lateral de contenedores del registro."""
+    containers = {pid: ContainerMembers(name, podman, cgroup_root)
+                  for pid, name in read_container_owners(ledger_path).items()}
+    return container_aware_usage(containers)
 
 
 def disk_ledger_path() -> Path:
@@ -299,9 +368,13 @@ def release_disk(args: argparse.Namespace) -> int:
 
 def admit_ram(args: argparse.Namespace) -> int:
     meminfo = args.meminfo or meminfo_path()
-    admitted = admit_with(args.ledger or ram_ledger_path(), args.need, args.owner,
-                          lambda live: ram_headroom(live, meminfo), "ram-admission",
-                          args.timeout, args.interval)
+    ledger = args.ledger or ram_ledger_path()
+    if args.container:
+        record_container_owner(ledger, args.owner, args.container)
+    admitted = admit_with(ledger, bounded_need(args.need, args.memory_limit_kb), args.owner,
+                          lambda live: ram_headroom(live, meminfo,
+                                                    ledger_usage(ledger, args.podman, args.cgroup_root)),
+                          "ram-admission", args.timeout, args.interval)
     return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
 
 
@@ -320,6 +393,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_admit.add_argument("--meminfo", type=Path, default=None)
     p_admit.add_argument("--timeout", type=float, default=600.0)
     p_admit.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+    p_admit.add_argument("--container", default=None,
+                         help="el dueño reserva para este contenedor: su uso se mide en su cgroup")
+    p_admit.add_argument("--memory-limit-kb", type=int, default=None,
+                         help="el --memory del contenedor en kB: acota lo que se reserva")
+    p_admit.add_argument("--podman", default="podman")
+    p_admit.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
     p_admit.set_defaults(handler=admit_ram)
     p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
     p_release.add_argument("--ledger", type=Path, default=None)
