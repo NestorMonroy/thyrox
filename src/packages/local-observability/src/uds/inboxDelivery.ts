@@ -15,8 +15,18 @@
  * propia: la compuerta de rechazo, el recibo y la aceptación (`C7e`, `nSe`,
  * `kJr`, `fbt`) son F4d; `session.receive` (`Aot`) es F4c-2d; los adjuntos
  * (`nlt` y `chunk-yrfq0b3e.js`) son F4c-2e; el registro de correspondientes
- * (`Wkr`) es F4c-2f; y la cola de la sesión (`gE`) se cablea en F6.
+ * (`Wkr`) es F4c-2f. La cola de la sesión (`gE`) es `enqueue` de
+ * `@thyrox/agent/messageQueueManager.ts` —medido en `chunk-csayct82.js`:
+ * `gE=(...e)=>Eh().enqueue(...e)`—; `inboxServer.ts` la cablea a través de
+ * `toQueuedCommand`, que traduce la forma `D` de la referencia al
+ * `QueuedCommand` de este árbol.
  */
+import type { UUID } from 'node:crypto'
+
+import { asAgentId } from '@thyrox/agent/idTypes'
+import type { enqueue as enqueueSessionCommand } from '@thyrox/agent/messageQueueManager.js'
+
+import type { InboundRefuseCause } from './inboundGate.ts'
 import type { PeerIdentity } from './inboxConnection.ts'
 import { sessionIdMatches } from './inboxRouting.ts'
 import type { InboxState } from './inboxState.ts'
@@ -69,6 +79,43 @@ export type QueuedPrompt = {
   skipAttachments: true
 }
 
+/**
+ * El id con que `qe` nombra al hilo principal en este árbol: vacío, el mismo
+ * valor que `defaultInboundGateDeps` devuelve. La cola representa ese hilo
+ * SIN `agentId` —el drenaje filtra `cmd.agentId === undefined`
+ * (`agent/runtime/queueProcessor.ts`, `agent/query.ts`)—, así que un
+ * `agentId` de texto, aunque vacío, dejaría el mensaje sin drenar.
+ */
+export const MAIN_THREAD_AGENT_ID = ''
+
+/** Lo que la cola de la sesión acepta; se deriva de `enqueue` para no depender de `@thyrox/repl`. */
+export type SessionQueuedCommand = Parameters<typeof enqueueSessionCommand>[0]
+
+function isSubagent(agentId: string): boolean {
+  return agentId !== MAIN_THREAD_AGENT_ID
+}
+
+/**
+ * De `QueuedPrompt` (la forma `D` de la referencia) al `QueuedCommand` de
+ * este árbol. Dos divergencias, medidas: el hilo principal va sin `agentId`
+ * (ver `MAIN_THREAD_AGENT_ID`); y `skipAttachments` no es campo de
+ * `QueuedCommand` —es opción de `processUserInput`, `git grep
+ * skipAttachments -- src/packages`— y se omite. El `uuid` del par viaja tal
+ * cual, como en la referencia.
+ */
+export function toQueuedCommand(prompt: QueuedPrompt): SessionQueuedCommand {
+  return {
+    mode: prompt.mode,
+    value: prompt.value,
+    uuid: prompt.uuid as UUID,
+    priority: prompt.priority,
+    origin: prompt.origin,
+    skipSlashCommands: prompt.skipSlashCommands,
+    isMeta: prompt.isMeta,
+    ...(isSubagent(prompt.agentId) && { agentId: asAgentId(prompt.agentId) }),
+  }
+}
+
 /** El recibo que la referencia arma para `sendPeerReceipt`: un prompt vacío con el origen. */
 export type ReceiptEnvelope = { mode: 'prompt'; agentId: string; value: ''; origin: PeerOrigin }
 
@@ -89,9 +136,9 @@ export interface PeerDeliveryDeps {
   /** `t`: el registro de depuración, con nivel opcional. */
   log: (message: string, level?: 'warn') => void
   /** `C7e`: la causa si la política de entrada rechaza, o `undefined`. */
-  refuseCause: () => string | undefined
+  refuseCause: () => InboundRefuseCause | undefined
   /** `nSe`. */
-  reportRefused: (reason: string, cause: string) => void
+  reportRefused: (reason: string, cause: InboundRefuseCause) => void
   /** `kJr`. */
   sendReceipt: (receipt: ReceiptEnvelope, status: 'refused') => void
   /** `Aot`. */
