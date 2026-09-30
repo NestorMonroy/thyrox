@@ -39,6 +39,7 @@ SAMPLE_INTERVAL_S = 0.2
 GENERATION_TOKENS = 128
 CONCURRENCY_LEVELS = (1, 2, 4)
 API_WAIT_S = 60
+HTTP_NOT_FOUND = 404
 
 DEFAULT_CANDIDATES = (
     "qwen2.5:0.5b", "qwen3:0.6b", "llama3.2:1b", "qwen2.5:1.5b",
@@ -98,11 +99,24 @@ def stop_server() -> None:
     subprocess.run(["podman", "rm", "-f", CONTAINER], capture_output=True, check=False)
 
 
+CGROUP_MEMORY_FILES = (
+    # cgroup v2 unificado.
+    ("", "memory.current"),
+    # Jerarquía híbrida v1 (la de este anfitrión, medido): el controlador de
+    # memoria vive en su propio árbol y expone el uso con otro nombre.
+    ("memory", "memory.usage_in_bytes"),
+)
+
+
 def container_cgroup_memory_file() -> Path:
-    pid = subprocess.run(["podman", "inspect", "--format", "{{.State.Pid}}", CONTAINER],
-                         check=True, capture_output=True, text=True).stdout.strip()
-    relative = Path(f"/proc/{pid}/cgroup").read_text().strip().split("::", 1)[1]
-    return Path("/sys/fs/cgroup") / relative.lstrip("/") / "memory.current"
+    """El archivo de uso de memoria del cgroup del contenedor, en v2 o en v1 híbrido."""
+    cgroup_path = subprocess.run(["podman", "inspect", "--format", "{{.State.CgroupPath}}", CONTAINER],
+                                 check=True, capture_output=True, text=True).stdout.strip().lstrip("/")
+    for controller, name in CGROUP_MEMORY_FILES:
+        candidate = Path("/sys/fs/cgroup") / controller / cgroup_path / name
+        if candidate.is_file():
+            return candidate
+    raise RuntimeError(f"sin archivo de memoria para el cgroup {cgroup_path}: no se mide la RAM")
 
 
 class MemorySampler:
@@ -220,7 +234,17 @@ def concurrent_latency(model: str, level: int) -> float:
     return time.monotonic() - started
 
 
+def delete_if_present(model: str) -> None:
+    """Borra el modelo si ya estaba: una descarga que no descarga nada no mide la descarga."""
+    try:
+        http_json("DELETE", "/api/delete", {"model": model})
+    except urllib.error.HTTPError as error:
+        if error.code != HTTP_NOT_FOUND:
+            raise
+
+
 def measure(model: str) -> dict:
+    delete_if_present(model)
     started = time.monotonic()
     http_json("POST", "/api/pull", {"model": model, "stream": False}, timeout=PULL_TIMEOUT_S)
     pull_seconds = time.monotonic() - started
@@ -228,13 +252,17 @@ def measure(model: str) -> dict:
     capabilities = http_json("POST", "/api/show", {"model": model}).get("capabilities", [])
     memory_file = container_cgroup_memory_file()
     idle_bytes = int(memory_file.read_text())
-    load = http_json("POST", "/api/generate", {"model": model, "prompt": "", "keep_alive": "10m"})
-    load_seconds = load.get("load_duration", 0) / 1e9
+    # Pared de la petición que carga el modelo: con prompt vacío Ollama puede
+    # declarar load_duration en 0 (medido en la prueba del instrumento).
+    load_started = time.monotonic()
+    http_json("POST", "/api/generate", {"model": model, "prompt": "", "keep_alive": "10m"})
+    load_seconds = time.monotonic() - load_started
     loaded_bytes = int(memory_file.read_text())
     with MemorySampler(memory_file) as sampler:
         cases = tool_calling_cases(model)
         ttft = time_to_first_token(model)
         tokens_per_second = generation_speed(model)
+        concurrent_latency(model, 1)  # calentamiento: el primer nivel no paga la preparación
         latencies = {level: concurrent_latency(model, level) for level in CONCURRENCY_LEVELS}
     http_json("DELETE", "/api/delete", {"model": model})
     return {
