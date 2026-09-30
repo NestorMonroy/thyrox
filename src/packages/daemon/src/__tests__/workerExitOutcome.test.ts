@@ -1,10 +1,8 @@
 /**
  * `classifyExitOutcome` — puerto de la clasificación de desenlace K de
- * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Cubre sólo
- * las ramas que `WorkerVm` puede evaluar con el estado que ya rastrea; las
- * ramas que dependen de campos que no rastrea (el lanzador fork-and-exit,
- * cwd desaparecido, id de sesión tomado, racha de misma causa) se declaran
- * pendientes en `workerVm.ts` y no tienen aserción aquí.
+ * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Aquí viven
+ * las ramas base; las de retiro, crash y modo exec están en
+ * `workerExitBranches.test.ts`.
  */
 
 import { describe, expect, test } from 'bun:test'
