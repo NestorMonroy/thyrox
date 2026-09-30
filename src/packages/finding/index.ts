@@ -95,6 +95,22 @@ function qualifiedSource(record: FindingRecord): string {
   return DECLARED_ALIAS.test(source) ? source : `${record.submodule}: ${source}`
 }
 
+/**
+ * Sangra con dos espacios cada línea no vacía tras la primera, para que un
+ * contenido de varios párrafos siga dentro de su viñeta de la lista RST.
+ */
+function indentContinuation(text: string): string {
+  return text.replace(/\n(?=[^\n])/g, '\n  ')
+}
+
+/**
+ * Escapa el `*` que no forma parte de `**`: en texto plano (`workspace:*`)
+ * abriría un énfasis que docutils nunca ve cerrar.
+ */
+function escapeLoneAsterisks(text: string): string {
+  return text.replace(/(?<!\*)\*(?!\*)/g, '\\*')
+}
+
 /** El documento con la plantilla B de `hallazgos-documentacion-obligatoria.md`. */
 export function renderFinding(record: FindingRecord, options: RenderOptions): string {
   const createdAt = options.createdAt ?? utcNow()
@@ -117,7 +133,7 @@ export function renderFinding(record: FindingRecord, options: RenderOptions): st
   ]
   if (record.sourceRef) lines.push(`- **Archivo:** \`\`${qualifiedSource(record)}\`\``)
   lines.push(
-    `- **Descripcion:** ${record.content}`,
+    `- **Descripcion:** ${indentContinuation(escapeLoneAsterisks(record.content))}`,
     `- **Estado:** ${options.resolvedIn ? `RESUELTO en \`\`${options.resolvedIn}\`\`` : 'DOCUMENTADO (sin fix inmediato)'}`,
     '',
   )

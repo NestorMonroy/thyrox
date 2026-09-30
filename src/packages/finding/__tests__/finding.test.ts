@@ -106,6 +106,22 @@ describe('la fila y el archivo', () => {
     expect(other).toContain('``kaupamex-docs: source/index.rst``')
   })
 
+  // El contenido de una fila puede traer varios párrafos. Fuera de la sangría
+  // de su viñeta, docutils cierra la lista y avisa en cada archivo renderizado.
+  test('12. un contenido de varias líneas queda dentro de su viñeta', () => {
+    const base = readFindingRecord(storeFile, 'H-THYROX-9')!
+    const text = renderFinding({ ...base, content: 'primera línea\nsegunda línea\n\ntercer párrafo' }, {})
+    expect(text).toContain('- **Descripcion:** primera línea\n  segunda línea\n\n  tercer párrafo\n- **Estado:**')
+  })
+
+  // El contenido es texto plano: un `*` suelto (`workspace:*`,
+  // `node_modules/@thyrox/*`) abre un énfasis que docutils no ve cerrar.
+  test('13. un asterisco suelto del contenido sale escapado; uno doble no', () => {
+    const base = readFindingRecord(storeFile, 'H-THYROX-9')!
+    const text = renderFinding({ ...base, content: 'usa workspace:* y **todo** en @thyrox/*' }, {})
+    expect(text).toContain('- **Descripcion:** usa workspace:\\* y **todo** en @thyrox/\\*')
+  })
+
   test('3. un identificador que el store no tiene no es una fila', () => {
     expect(readFindingRecord(storeFile, 'H-THYROX-404')).toBeNull()
   })
