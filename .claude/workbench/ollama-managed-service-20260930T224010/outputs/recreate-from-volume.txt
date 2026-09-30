@@ -1,0 +1,13 @@
+contenedor viejo sin proceso vivo (pid=22580): el volumen no está en uso
+version: {"version":"0.35.0"}
+== ollama list (desde el contenedor recreado)
+NAME            ID              SIZE      MODIFIED    
+qwen2.5:0.5b    a8b0c5157701    397 MB    4 hours ago    
+== inferencia mínima (sin pull: el modelo sale del volumen)
+{"model":"qwen2.5:0.5b","response":"ready","done":true,"done_reason":"stop","load_duration":69070531092,"eval_count":2}
+pared_s=101.198976295
+RESULTADO: el modelo del volumen responde desde un contenedor nuevo
+exit=0
+thyrox-ollama-probe-host
+
+[exited with code 0]
