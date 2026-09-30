@@ -23,7 +23,9 @@
  *   futuro hace falta, `update`/`delete` async es el símbolo que falta
  *   portar.
  * - `writeFileSync` (de `slowOperations.ts:124-155`) — reimplementado
- *   fiel a su lógica de `flush` (idéntico al porte anterior).
+ *   fiel a su lógica de `flush`, y crea el archivo ya con modo 0600, como
+ *   `An(n, b(e), 384)` en `Bi.write`, en vez de crearlo con la umask y
+ *   corregirlo después.
  * - `jsonParse`/`jsonStringify` — `JSON.parse`/`JSON.stringify` directos.
  */
 import { chmodSync, closeSync, fsyncSync, openSync, writeFileSync as fsWriteFileSync } from 'fs'
@@ -69,7 +71,7 @@ function writeFileSync(
   if (options.flush) {
     let fd: number | undefined
     try {
-      fd = openSync(filePath, 'w')
+      fd = openSync(filePath, 'w', CREDENTIALS_FILE_MODE)
       fsWriteFileSync(fd, data, { encoding: options.encoding })
       fsyncSync(fd)
     } finally {
@@ -78,9 +80,13 @@ function writeFileSync(
       }
     }
   } else {
-    fsWriteFileSync(filePath, data, options)
+    fsWriteFileSync(filePath, data, { ...options, mode: CREDENTIALS_FILE_MODE })
   }
 }
+
+/** Modo del archivo de credenciales, aplicado al crearlo y reafirmado con
+ * `chmod` (`An(n, b(e), 384)` y `Li(n, 384)` en `Bi.write`). */
+const CREDENTIALS_FILE_MODE = 0o600
 
 /** Puerto de `we`. */
 function getStoragePath(): { storageDir: string; storagePath: string } {
@@ -93,18 +99,27 @@ function defaultBackend(): CredentialBackend {
   return createFileCredentialBackend(getStoragePath)
 }
 
+/** La copia por generación de este host, sólo si se pidió
+ * (`fromStoreCopy`), el proceso es multi-host y la copia es de esta ruta. */
+function storeCopyFor(
+  storagePath: string,
+  options: SecureStorageReadOptions | undefined,
+): { text: string | null } | undefined {
+  const wantsCopy = isMultiHostAware() && options?.fromStoreCopy === true
+  const copy = wantsCopy ? getHostGenerationState().copy : undefined
+  return copy !== undefined && copy.storagePath === storagePath ? copy : undefined
+}
+
 export const plainTextStorage = {
   name: 'plaintext',
   osGuarded: false,
   read(options?: SecureStorageReadOptions): SecureStorageData | null {
     const { storagePath } = getStoragePath()
-    if (isMultiHostAware() && options?.fromStoreCopy === true) {
-      const copy = getHostGenerationState().copy
-      if (copy !== undefined && copy.storagePath === storagePath) {
+    try {
+      const copy = storeCopyFor(storagePath, options)
+      if (copy !== undefined) {
         return copy.text === null ? null : jsonParse(copy.text)
       }
-    }
-    try {
       const data = getFsImplementation().readFileSync(storagePath, {
         encoding: 'utf8',
       })
@@ -124,8 +139,9 @@ export const plainTextStorage = {
   },
   async mutate(
     mutator: (data: SecureStorageData) => SecureStorageData,
+    backend?: CredentialBackend,
   ): Promise<SecureStorageUpdateResult & { transient?: boolean }> {
-    return mutateCredentials(plainTextStorage, mutator)
+    return mutateCredentials(plainTextStorage, mutator, backend)
   },
   invalidateCache(): void {
     invalidateHostCache()
@@ -146,7 +162,7 @@ export const plainTextStorage = {
         encoding: 'utf8',
         flush: false,
       })
-      chmodSync(storagePath, 0o600)
+      chmodSync(storagePath, CREDENTIALS_FILE_MODE)
       return {
         success: true,
         warning: PLAINTEXT_WARNING,
