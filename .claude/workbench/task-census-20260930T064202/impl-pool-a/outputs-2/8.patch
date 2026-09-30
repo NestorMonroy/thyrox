@@ -1,0 +1,1740 @@
+diff --git a/.claude/workbench/task-thyrox-0281-structured-path-resolver-20260930T084511/README.md b/.claude/workbench/task-thyrox-0281-structured-path-resolver-20260930T084511/README.md
+new file mode 100644
+index 000000000..a9eb82103
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0281-structured-path-resolver-20260930T084511/README.md
+@@ -0,0 +1,168 @@
++# TASK-THYROX-0281 — el resolvedor estructurado y la capa de aterrizaje de enlaces
++
++Fuente que gobierna: `/home/user/thyrox/_references/claude-code-bin/2.1.283/`
++(sólo lectura: `bin/binary symbol`, `rg -o`). La tarea nombra 2.1.281; el
++corpus vigente es 2.1.283 y es contra el que se mide. Donde 2.1.281 difería
++se declara en la tabla de veredictos.
++
++Estado de partida (medido antes de tocar nada):
++
++| Suite | Resultado |
++|---|---|
++| `storage/src/__tests__/fsOperations.test.ts` | 23 pass / 0 fail |
++| `permission/src/__tests__/fileToolPermissions.test.ts` + `networkPathRead.test.ts` | 26 pass / 0 fail (18 + 8) |
++
++*Métrica:* salida de `bun test` por paquete, 2026-09-30T08:4x.
++*Ciega a:* cualquier otra suite del árbol que importe estos módulos y no
++haya corrido aquí (la regla de alcance derivado la acota a lo tocado).
++
++## Símbolos consultados en 2.1.283
++
++Todos en `bunfs-root/`; «chunk» y «línea» son los del volcado; el rango
++`[a,b)` es el que `bin/binary symbol` imprime.
++
++### El resolvedor (`chunk-zkn0228z.js`, línea 15)
++
++| Símbolo | Rango | Qué hace | Veredicto |
++|---|---|---|---|
++| `Rt(e,n)` | [43140,…) | Resolvedor estructurado. Expande `~`, corta sin tocar disco si la ruta es UNC no-WSL, automontaje o `/Network`, y si no interpreta el walker `de` sobre el fs activo. Devuelve `{unresolved:false, requested, spellings, landing, leafIsSymlink}` o `{unresolved:true, requested, spellings, stoppedAt, leafIsSymlink}`. Dos modos: `permission` y `screen`. | **Portado** como `resolvePathForPermission` (≙ `Ua`) y `resolvePathForScreen` (≙ `H6`), dos entradas sin argumento selector sobre un núcleo común (`runPathWalk`). |
++| `Ua(e)` | — | `Rt(e,"permission")`. | Portado: `resolvePathForPermission`. |
++| `H6(e)` | — | `Rt(e,"screen")` → `{paths: spellings, vetted: !unresolved}`. | Portado: `resolvePathForScreen`. Su consumidor (la criba de rutas de Bash) queda fuera de esta lista de archivos. |
++| `To(e)` | [47787,47987) | Adaptador: `Ua(e).spellings`; si `unresolved`, añade el `resolvedPath` de `Bo` (≙ `safeResolvePath`) cuando es canónico o enlace y no estaba. | **Portado** como el nuevo cuerpo de `getPathsForPermissionCheck`: mismo nombre y `string[]`, así los cuatro consumidores que sólo necesitan grafías (`pathValidation`, `pathSafety`, `internalPaths`, `filesystem` vía binding) siguen correctos sin cambio de contrato. |
++| `u9e(e)` | — | Resultado trivial `{landing:e, spellings:[e]}`. | No portado: sin consumidor en este alcance. |
++| `Gn(fs,at,rest)` | [47590,47696) | `realpathSync(at)`; si difiere, lo devuelve unido a `rest`. | Portado: `realpathVariant`. |
++| `hxe(fs)` | — | Ancestro común entre el cwd de lanzamiento (`O9e`: null si la sesión es `bg`) y `fs.cwd()`. | Portado: `launchAncestryOf` con `THYROX_CODE_SESSION_KIND === 'bg'` y `getOriginalCwd` de `sessionPaths.ts`. |
++| `Be(gen, fn)` | — | Intérprete síncrono del walker: cada `yield` es una petición al fs; una excepción se convierte en `{errno}`. | Portado: `interpretWalk`. |
++| `de(e,n)` | [39334,42015) | El walker por saltos: `lstat` por componente, `readlink` en cada enlace, `opendirNofollow` como segunda oportunidad ante un error que no sea ENOENT/ENOTDIR/ENAMETOOLONG, ancestros de lanzamiento no legibles tolerados (`NYn`), detección de ciclos por `(ruta, resto)`, tope de 64 saltos, colapso a raíz de red (`ue`), `\0unverified-ancestry` (`Fh`) cuando la ascendencia no se pudo verificar. | **Portado en las ramas que `Rt` alcanza**: `unreadableAncestry:'unverified'` siempre, sin `anchors`, sin `surfaceNetworkRaw`, sin `literalLinkText:'opaque'` (`g1t`). Esas tres opciones sólo las pasan `pf`/`Rde`/`Bo`, otros consumidores; se declaran como divergencia y no se portan a ciegas. La rama `S=!1 … /dev/fd` es código muerto en la fuente (constante `false`). |
++| `St(errno,opts,hops,dots,trailing)` | [36883,37117) | Veredicto ante un error de `lstat`/`readlink`: ENOENT/ENOTDIR → sin veredicto (la ausencia es un `outcome`); ENAMETOOLONG sin saltos, sin `.`/`..` y sin punto/espacio final → sin veredicto; el resto → `Fh`. | Portado: `unverifiedVerdict`. |
++| `ue(head,rest,cb)` | [36155,36326) | Colapso a raíz de red: si `rest` está vacío o alguien lleva `.`/`..`, avisa por `cb` con la ruta unida y devuelve la raíz normalizada (`zn`/`Un`: raíz de automontaje o `normalize`). | Portado: `collapseToNetworkRoot`. |
++| `NYn(a,b)` | [35687,35873) | ¿Es `a` ancestro estricto de `b` (misma raíz, prefijo por segmentos)? | Portado: `isStrictAncestor`. |
++| `Ot/oe/ae/le/M/xt/At/q6` | [37117,37531) | Los anclajes (`anchors`) y los predicados de red por anclaje. Con `anchors` indefinido —lo que `Rt` pasa— `ae`/`xt` son `false` y `le`/`M` son `true`. | No portados como tales: sus valores con `anchors` indefinido están plegados en el walker. |
++| `Fh` / `g1t` | [36359,36385) | Los dos centinelas (`\0unverified-ancestry`, `\0opaque-link-text`). | `Fh` portado como `UNVERIFIED_ANCESTRY`; `g1t` no (rama no alcanzada). |
++| `xn(t)` | `chunk-yqm14hey.js` [7133,7157) | Identidad en esta build. | Se omite: no hay nada que portar. |
++
++### Predicados de forma de ruta (`chunk-yqm14hey.js`)
++
++| Símbolo | Qué hace | Veredicto |
++|---|---|---|
++| `Ln` [7157,7205) | UNC: `^[\\/]{2}` o espacio de dispositivo (`_N`). | En `permission` ya existe como `isUncPath`; `storage` no puede importar `permission` (la dependencia va al revés: `pathSafety.ts` importa `fsOperations.ts`), así que el resolvedor lleva su copia mínima `isUncSpelling` con esa razón declarada. |
++| `Il` [13532,13659) | `\\wsl$\<distro>` local. | Idem: `isLocalWslSpelling`. |
++| `Wi=Yi=G_e!==null` [10544,11151) | Raíz de automontaje `/net/<host>` o `/Network/Servers/<host>`. | Idem: `automountRootOf` (misma forma que `automountRoot` de `pathSafety.ts`, sin la caché). |
++| `nS` [11550,11748) | `/net` exacto (el mapa). | Idem: `isAutomountMap`. |
++| `yN=Pt` [11748,12089) | Primer segmento `network` (`/Network`, macOS). | Idem: `isNetworkBrowseRoot`. |
++| `N_` [7815,8111) | `/.vol`, `/.file`, `/.nofollow`, `/.resolve` como primer segmento. | Idem: `isKernelResolvedSpelling` (misma forma que `isKernelResolvedPath`). |
++| `NA` [12089,12113) | Constante `false` en esta build. | Se omite. |
++| `rl` [7489,7551) | ¿Lleva algún segmento `.`/`..` (con punto/espacio final tolerado)? | Portado: `hasDotSegment`. |
++| `jF=Pyn` [7625,7765) | Igual que `rl` pero estricto (sin la cola `[. ]*`), en linux. | Portado: `hasStrictDotSegment`. |
++| `Ne/Wh` [7205,7259) | Un texto de enlace con `..` interior (tras quitar los `..` iniciales de uno relativo). | Portado: `linkTextClimbs` (sólo modo screen). |
++
++### La capa de aterrizaje (`chunk-d310mfjt.js`, línea 107)
++
++| Símbolo | Rango | Qué hace | Veredicto |
++|---|---|---|---|
++| `ect(r)` | [244464,244562) | `landing` si difiere de `requested` tras plegar alias (`tl`); null si `unresolved` o si son la misma. | Portado: `landingBeyondRequested`. |
++| `tl(e)=H0t(xn(resolve(e)))` | [244562,244599) | Pliega los seis alias de macOS (`/private/tmp`→`/tmp`, …, `/usr/sbin`→`/sbin`) cuando `realpathSync(alias)` confirma el par. | Portado: `aliasFoldedPath` con la misma tabla, calculada una vez. En este contenedor sólo `/usr/bin`→`/bin` y `/usr/lib`→`/lib` confirman (merged-usr). |
++| `n5e(r,ctx,dirs)` | [244289,244464) | `{landing, landingOutside, spellingInside, carriedOut}`: la grafía pedida está dentro y el aterrizaje fuera. | Portado: `symlinkLanding`. |
++| `cln(path,landing)` | [244812,244932) | «X resolves through a symlink to Y[, which is outside the allowed working directories]». | Portado: `landingSentence`. |
++| `Tl(a,b)` | [245587,245662) | «A resolves through a symlink to B». | Portado: `resolvesThroughSymlink`. |
++| `dln(e)` | [245662,245824) | Razón «Where X leads on disk could not be determined (…)». | Portado: `unresolvedTargetReason`. |
++| `xl(op,path)` | [245317,245587) | Deny «Refusing to read/write X: where it leads on disk could not be determined (…)». | Portado: `denyUnresolvedTarget`. |
++| `Ml(op,path,r,ctx)` | [244932,245317) | El `ask` final fuera del trabajo: sin aterrizaje, `workingDir` a secas; con `carriedOut`, la frase, `blockedPath: landing` y —en escritura— `safetyCheck` con `classifierApprovable:false`. | Portado: `outsideWorkingDirectoriesAsk`; la diferencia lectura/escritura va en un descriptor `FileOperation` (`READ_OPERATION`/`WRITE_OPERATION`) en vez de un argumento selector. |
++| `WGn(path,r,ctx)` | [244599,244812) | Para la guarda de seguridad de escritura: `{landing, sentence, personOnly}` con `personOnly = safe(requested sólo) || carriedOut`. | Portado: `writeSafetyLanding`. |
++| `Zlt(path,r)` | [243919,244289) | Deny «Refusing to write X: it is a symbolic link. Write to the link's target path instead: Y». Con `blockedPath: landing` si se resolvió. | Portado y exportado: `denySymlinkLeafWrite`. Sus llamadores (`chunk-csayct82.js:529,3440,3449`: `checkPermissions` de Write/Edit/NotebookEdit, `h.behavior==="deny"?h:Zlt(s,g)??h`) están en `tool-registry`, fuera de la lista; se declara. |
++| `kl(path,r,ctx,internal,reason,dirs)` | [222233,222696) | ≙ `Bs`/`xr`: niega si `unresolved` (con `dln`); si dentro o interno permite, null; si no, deny con la frase de aterrizaje cuando `carriedOut` y `blockedPath` = landing o la ruta. | Portado: `denyOutsideWorkingDirectories` recibe ahora el objeto resuelto. |
++| `ete(e)` | [164594,164630) | Ruta para mostrar: caracteres de control/formato → U+FFFD (`Bm`), recorte a 160 (`Mo`) con «… [+N chars]». | Portado: `displayPath`. Divergencia: la pasada `wt`/`sf` (normalización repetida hasta punto fijo) no se porta; sólo la sustitución y el recorte. |
++| `IE(tool,input,ctx,pre?)` | [239513,241441) | ≙ `Jv`: guarda de lectura. `h = pre ?? Ua(path)`; fuera del modo restringido, `unresolved` → `xl`; cierra con `Ml`. | Portado sobre `checkReadPermissionForTool`; el cuarto parámetro pasa a ser `ResolvedPermissionPath`. Ningún llamador del árbol lo pasa hoy (medido: 7 llamadas en `tool-registry`, todas con 3 argumentos). |
++| `Lb(tool,input,ctx,pre?)` | [241441,243919) | ≙ `ib`: guarda de escritura. Tras las negaciones de almacenes, `unresolved` → `xl`; la consulta de seguridad lleva `WGn`; cierra con `Ml`. | Portado sobre `checkWritePermissionForTool`. |
++| `BGn` | [233380,236966) | ≙ `ULn`: sigue tomando `string[]` (`s ?? To(g)`). | Sin cambio en `checkNetworkPathRead`. |
++| `r5e` | [245824,246246) | ≙ `gyt`: usa `To` (grafías). | Sin cambio en `generateSuggestions`. |
++| `YBr` | `chunk-379zyrv7.js` | «Path is outside allowed working directories». | Ya estaba inline; pasa a constante. |
++| `zy`/`eAe`/`kw` | [221162,221941) | ≙ `isPathInWorkingDirectories`/`workingDirSpellings`/`workingDirectoriesOf`, sobre `To`. | Sin cambio. |
++
++### Deriva 2.1.281 → 2.1.283 (lo que la tarea nombra por su nombre de 2.1.281)
++
++| 2.1.281 | 2.1.283 | Diferencia |
++|---|---|---|
++| `vt(e,n)` | `Rt(e,n)` | 2.1.283 añade `stoppedAt` al resultado `unresolved` y el modo `screen` (`H6`) con la re-resolución de textos de enlace con `..` (`H`, tope 8). Se porta 2.1.283. |
++| `sot` | `ect` | Misma forma. |
++| `WVe` | `n5e` | Misma forma. |
++| `sen`/`Nr` | `cln`/`Tl` | Misma forma. |
++| `ien` | `dln` | Misma forma. |
++| `Ir` | `Ml` | Misma forma. |
++| `Or` | `xl` | Misma forma. |
++| `jLn` | `WGn` | Misma forma. |
++| `xr` | `kl` | Misma forma. |
++| `KY` | `Zlt` | Misma forma. |
++
++*Métrica:* comparación del cuerpo de cada símbolo de 2.1.283 con el volcado
++de 2.1.281 del banco `analizar-qwen-code-para-thyrox-20260924T201614/`.
++*Ciega a:* un cambio de conducta dentro de un helper que ninguno de los dos
++volcados incluye por completo.
++
++## Decisiones de diseño
++
++- **El resolvedor vive en `storage`** (donde estaba `getPathsForPermissionCheck`),
++  y `permission` lo consume. Los predicados de forma de ruta que el walker
++  necesita se copian mínimos en `storage` porque la dependencia va de
++  `permission` a `storage` y no puede invertirse sin tocar archivos ajenos.
++- **Sin argumento selector**: `Rt(e, mode)` se parte en dos entradas; lo que
++  el modo decidía está en cada una, y lo común en `runPathWalk`.
++- **`getPathsForPermissionCheck` conserva nombre y tipo** como el adaptador
++  `To`; así los consumidores que sólo necesitan grafías no cambian, y el
++  binding de `agentHostBindings.ts` (fuera de la lista) sigue válido.
++- **`FsOperations` gana `openDirNoFollowSync`** (`O_DIRECTORY|O_NOFOLLOW`),
++  como `ph` en 2.1.283. El único implementador del tipo en el árbol es
++  `NodeFsOperations` (medido: `rg ': FsOperations'` fuera de
++  `local-observability`, que tiene su propio tipo).
++
++## Verificación (2026-09-30, después del porte)
++
++| Suite | Antes | Después |
++|---|---|---|
++| `storage/src/__tests__/fsOperations.test.ts` | 23 / 0 | 39 / 0 |
++| `permission/src/__tests__/fileToolPermissions.test.ts` | 18 / 0 | 29 / 0 |
++| `permission/src/__tests__/pathLanding.test.ts` (nueva) | — | 9 / 0 |
++| `permission/src/__tests__/networkPathRead.test.ts` | 8 / 0 | 8 / 0 |
++| subconjunto derivado en `permission` (21 archivos que nombran los módulos tocados) | — | 294 / 0 |
++| subconjunto derivado en `storage` (2 archivos) | — | 43 / 0 |
++| `check_package_typecheck --strict --no-rebuild storage` | — | 0 propios |
++| `check_package_typecheck --strict --no-rebuild permission` | — | 0 propios |
++
++*Métrica:* `pass`/`fail` de `bun test` por paquete y el conteo «propio(s)» del
++typecheck. *Ciega a:* los consumidores de `tool-registry`, que importan las
++guardas con tres argumentos y no se recompilaron aquí; y a que el worktree no
++tiene `node_modules`: `@thyrox/storage` se enlazó a mano en
++`node_modules/@thyrox/storage` (ruta ignorada por git) para que `permission`
++compilara contra el `storage` de este parche y no contra el del árbol principal.
++
++`check_lint_zero` sólo mide `.py` y `.sh`; este parche no toca ninguno.
++
++## Controles de anulación
++
++Cada uno: copia con `cp`, retirar la rama con `bin/replace_literal`, correr la
++suite, restaurar con `cat` desde la copia y `cmp` (idénticos al final).
++
++| Rama retirada | Cae | Esperado |
++|---|---|---|
++| A · `else if (resolved.unresolved)` en la guarda de lectura (≙ `xl` en `IE`) | 1: «leer un enlace irresoluble se niega…» | 1 |
++| B · `carriedOut: spellingInside && landingOutside` → `false` (≙ `n5e`) | 4: lectura con aterrizaje fuera (blockedPath), lecturas bloqueadas por enlace, escritura sólo para persona, `symlinkLanding` carriedOut | 4 |
++| F · la rama `unresolved` de `denyOutsideWorkingDirectories` (≙ `kl`) | 1: «en modo restringido, un enlace irresoluble se niega…» | 1 |
++| E · `state.leafIsSymlink = true` en `recordLeafHop` | 3 en `storage` (hoja, colgante, ciclo) + 2 en `permission` (`denySymlinkLeafWrite` resuelto e irresoluble) | 5 |
++| C · `absentRemainderClimbs` en `resolvePathForPermission` | 1: «resto ausente con `..` es irresoluble» | 1 |
++| D · `index >= MAX_CLIMBING_LINK_TEXTS` en `resolveClimbingTargets` (≙ `H`) | 1: «el noveno texto que sube deja la criba sin vetar» | 1 |
++
++Ni una aserción más cayó en ninguno de los seis.
++
++## Lo que NO cierra este parche, declarado
++
++- `denySymlinkLeafWrite` (≙ `Zlt`) se exporta y se prueba, pero sus tres
++  llamadores de 2.1.283 (`checkPermissions` de Write, Edit y NotebookEdit,
++  `chunk-csayct82.js:529,3440,3449`: `h.behavior==="deny"?h:Zlt(s,g)??h`)
++  viven en `tool-registry`, fuera de la lista de archivos.
++- `resolvePathForScreen` (≙ `H6`) se exporta y se prueba; su consumidor (la
++  criba de rutas del Bash tool) está fuera de la lista.
++- El walker no porta `anchors`, `surfaceNetworkRaw` ni `literalLinkText`:
++  sólo los pasan `pf`/`Rde`/`Bo`, que no son entradas de este alcance.
++- La palabra «Claude» aparece una vez en el diff de `src`, dentro del
++  identificador preexistente `allowsClaudeConfigForMode` que la guarda ya
++  llamaba; no es texto nuevo.
+diff --git a/src/packages/permission/src/__tests__/fileToolPermissions.test.ts b/src/packages/permission/src/__tests__/fileToolPermissions.test.ts
+index c8352b3b6..98d1a7968 100644
+--- a/src/packages/permission/src/__tests__/fileToolPermissions.test.ts
++++ b/src/packages/permission/src/__tests__/fileToolPermissions.test.ts
+@@ -13,6 +13,8 @@ import {
+   checkWritePermissionForTool,
+   getClaudeSkillScope,
+ } from '../filesystem.js'
++import { denySymlinkLeafWrite } from '../fileToolPermissions.js'
++import { resolvePathForPermission } from '@thyrox/storage/fsOperations.js'
+ 
+ let base: string
+ let work: string
+@@ -49,6 +51,9 @@ beforeAll(() => {
+   touch(join(work, '.claude', 'skills', 'demo', 'SKILL.md'))
+   touch(join(outside, 'secret.txt'))
+   symlinkSync(join(outside, 'secret.txt'), join(work, 'escape.txt'))
++  symlinkSync(join(work, '.bashrc'), join(work, 'link-to-bashrc'))
++  symlinkSync(join(work, 'loop-b'), join(work, 'loop-a'))
++  symlinkSync(join(work, 'loop-a'), join(work, 'loop-b'))
+   process.env.THYROX_CONFIG_DIR = join(base, 'config-home')
+   previousCwd = getOriginalCwd()
+   setOriginalCwd(work)
+@@ -175,3 +180,84 @@ describe('getClaudeSkillScope (ku)', () => {
+     expect(getClaudeSkillScope(join(work, 'src', 'a.ts'))).toBeNull()
+   })
+ })
++
++describe('aterrizaje de enlaces en las guardas (kl, xl, Ml, WGn de 2.1.283)', () => {
++  test('leer un enlace irresoluble se niega nombrando que su destino no se pudo determinar', () => {
++    const decision = checkReadPermissionForTool(Read, { file_path: join(work, 'loop-a') }, ctx())
++    expect(decision).toMatchObject({ behavior: 'deny', decisionReason: { type: 'other' } })
++    expect((decision as { message: string }).message).toContain('where it leads on disk could not be determined')
++  })
++  test('escribir un enlace irresoluble se niega igual, aun en acceptEdits', () => {
++    const decision = checkWritePermissionForTool(Edit, { file_path: join(work, 'loop-a') }, ctx({ mode: 'acceptEdits' }))
++    expect(decision).toMatchObject({ behavior: 'deny' })
++    expect((decision as { message: string }).message).toContain('Refusing to write')
++  })
++  test('en modo restringido, un enlace irresoluble se niega con la razon del modo', () => {
++    const decision = checkReadPermissionForTool(Read, { file_path: join(work, 'loop-a') }, ctx({ restricted: true }))
++    expect(decision).toMatchObject({ behavior: 'deny' })
++    expect((decision as { message: string }).message).toContain('Where')
++    expect((decision as { message: string }).message).toContain('--restricted')
++  })
++  test('leer un enlace del trabajo que aterriza fuera pide permiso con el aterrizaje como ruta bloqueada', () => {
++    const decision = checkReadPermissionForTool(Read, { file_path: join(work, 'escape.txt') }, ctx())
++    expect(decision).toMatchObject({
++      behavior: 'ask',
++      blockedPath: join(outside, 'secret.txt'),
++      decisionReason: { type: 'workingDir' },
++    })
++    const message = (decision as { message: string }).message
++    expect(message).toContain('resolves through a symlink to')
++    expect(message).toContain('which is outside the allowed working directories')
++  })
++  test('con lecturas fuera bloqueadas, el enlace que sale se niega con el aterrizaje como ruta bloqueada', () => {
++    const decision = checkReadPermissionForTool(
++      Read,
++      { file_path: join(work, 'escape.txt') },
++      ctx({ blockReadsOutsideWorkingDirectories: true }),
++    )
++    expect(decision).toMatchObject({ behavior: 'deny', blockedPath: join(outside, 'secret.txt') })
++    expect((decision as { message: string }).message).toContain('resolves through a symlink to')
++  })
++  test('escribir por un enlace que sale del trabajo es consulta solo para una persona', () => {
++    const decision = checkWritePermissionForTool(Edit, { file_path: join(work, 'escape.txt') }, ctx({ mode: 'acceptEdits' }))
++    expect(decision).toMatchObject({
++      behavior: 'ask',
++      blockedPath: join(outside, 'secret.txt'),
++      decisionReason: { type: 'safetyCheck', classifierApprovable: false },
++    })
++  })
++  test('la guarda de seguridad anade la frase de aterrizaje cuando el peligro llega por el enlace', () => {
++    const decision = checkWritePermissionForTool(Edit, { file_path: join(work, 'link-to-bashrc') }, ctx({ mode: 'acceptEdits' }))
++    expect(decision).toMatchObject({
++      behavior: 'ask',
++      blockedPath: join(work, '.bashrc'),
++      decisionReason: { type: 'safetyCheck', classifierApprovable: false },
++    })
++    expect((decision as { message: string }).message).toContain('resolves through a symlink to')
++  })
++  test('una ruta sin enlace no lleva ruta bloqueada ni frase de aterrizaje', () => {
++    const decision = checkReadPermissionForTool(Read, { file_path: join(outside, 'secret.txt') }, ctx())
++    expect((decision as { blockedPath?: string }).blockedPath).toBeUndefined()
++    expect((decision as { message: string }).message).not.toContain('resolves through a symlink')
++  })
++})
++
++describe('denySymlinkLeafWrite (Zlt)', () => {
++  test('una hoja simbolica resuelta se niega nombrando el destino como ruta bloqueada', () => {
++    const path = join(work, 'escape.txt')
++    const decision = denySymlinkLeafWrite(path, resolvePathForPermission(path))
++    expect(decision).toMatchObject({ behavior: 'deny', blockedPath: join(outside, 'secret.txt') })
++    expect((decision as { message: string }).message).toContain("Write to the link's target path instead")
++  })
++  test('una hoja simbolica irresoluble se niega sin ruta bloqueada', () => {
++    const path = join(work, 'loop-a')
++    const decision = denySymlinkLeafWrite(path, resolvePathForPermission(path))
++    expect(decision).toMatchObject({ behavior: 'deny' })
++    expect((decision as { blockedPath?: string }).blockedPath).toBeUndefined()
++    expect((decision as { message: string }).message).toContain('a target that could not be determined')
++  })
++  test('un archivo que no es enlace no se niega', () => {
++    const path = join(work, 'src', 'a.ts')
++    expect(denySymlinkLeafWrite(path, resolvePathForPermission(path))).toBeNull()
++  })
++})
+diff --git a/src/packages/permission/src/__tests__/pathLanding.test.ts b/src/packages/permission/src/__tests__/pathLanding.test.ts
+new file mode 100644
+index 000000000..611e5e4d8
+--- /dev/null
++++ b/src/packages/permission/src/__tests__/pathLanding.test.ts
+@@ -0,0 +1,89 @@
++/**
++ * Pruebas de la capa de aterrizaje de enlaces de 2.1.283
++ * (`chunk-d310mfjt.js`: `ect`, `n5e`, `cln`, `xl`, `dln`, `ete`), sobre
++ * objetos resueltos construidos a mano: aquí se mide la capa, no el disco.
++ */
++import { describe, expect, test } from 'bun:test'
++import {
++  denyUnresolvedTarget,
++  displayPath,
++  landingBeyondRequested,
++  landingSentence,
++  READ_OPERATION,
++  symlinkLanding,
++  WRITE_OPERATION,
++} from '../fileToolPermissions.js'
++
++const WORK = '/work/project'
++
++function resolvedAt(requested: string, landing: string) {
++  return { unresolved: false as const, requested, spellings: [requested, landing], landing, leafIsSymlink: true }
++}
++function ctx() {
++  return {
++    mode: 'default',
++    additionalWorkingDirectories: new Map(),
++    alwaysAllowRules: {},
++    alwaysDenyRules: {},
++    alwaysAskRules: {},
++  } as never
++}
++
++describe('landingBeyondRequested (ect)', () => {
++  test('un objeto irresoluble no tiene aterrizaje', () => {
++    expect(
++      landingBeyondRequested({ unresolved: true, requested: '/a', spellings: ['/a'], stoppedAt: '/a', leafIsSymlink: true }),
++    ).toBeNull()
++  })
++  test('si el aterrizaje es la misma ruta pedida, no hay aterrizaje que contar', () => {
++    expect(landingBeyondRequested(resolvedAt('/a/b', '/a/b'))).toBeNull()
++  })
++  test('si difiere, es el aterrizaje', () => {
++    expect(landingBeyondRequested(resolvedAt('/a/b', '/c/d'))).toBe('/c/d')
++  })
++})
++
++describe('symlinkLanding (n5e)', () => {
++  test('carriedOut exige grafia pedida dentro y aterrizaje fuera', () => {
++    const landing = symlinkLanding(resolvedAt(`${WORK}/x`, '/etc/passwd'), ctx(), new Set([WORK]))
++    expect(landing).toEqual({ landing: '/etc/passwd', landingOutside: true, spellingInside: true, carriedOut: true })
++  })
++  test('un aterrizaje dentro del trabajo no esta fuera ni sale', () => {
++    const landing = symlinkLanding(resolvedAt(`${WORK}/x`, `${WORK}/y`), ctx(), new Set([WORK]))
++    expect(landing).toMatchObject({ landingOutside: false, carriedOut: false })
++  })
++  test('sin aterrizaje distinto, null', () => {
++    expect(symlinkLanding(resolvedAt(`${WORK}/x`, `${WORK}/x`), ctx(), new Set([WORK]))).toBeNull()
++  })
++})
++
++describe('landingSentence (cln) y displayPath (ete)', () => {
++  test('la frase nombra el enlace y anade la clausula de fuera solo si aterriza fuera', () => {
++    const outside = { landing: '/etc/passwd', landingOutside: true, spellingInside: true, carriedOut: true }
++    expect(landingSentence('/w/x', outside)).toBe(
++      '/w/x resolves through a symlink to /etc/passwd, which is outside the allowed working directories',
++    )
++    expect(landingSentence('/w/x', { ...outside, landingOutside: false })).toBe('/w/x resolves through a symlink to /etc/passwd')
++  })
++  test('displayPath sustituye caracteres de control y recorta a 160', () => {
++    expect(displayPath('/a\u0000b‮')).toBe('/a�b�')
++    const long = `/${'x'.repeat(200)}`
++    const shown = displayPath(long)
++    expect(shown.startsWith(long.slice(0, 160))).toBe(true)
++    expect(shown).toContain('[+41 chars]')
++  })
++})
++
++describe('denyUnresolvedTarget (xl)', () => {
++  test('lectura y escritura conjugan el verbo y llevan la razon de dln', () => {
++    const read = denyUnresolvedTarget(READ_OPERATION, '/w/x')
++    const write = denyUnresolvedTarget(WRITE_OPERATION, '/w/x')
++    expect(read.message.startsWith('Refusing to read /w/x')).toBe(true)
++    expect(write.message.startsWith('Refusing to write /w/x')).toBe(true)
++    expect(read.decisionReason).toEqual({
++      type: 'other',
++      reason:
++        'Where /w/x leads on disk could not be determined (a link or directory on the way could not be examined, or the links do not resolve)',
++    })
++  })
++})
+diff --git a/src/packages/permission/src/fileToolPermissions.ts b/src/packages/permission/src/fileToolPermissions.ts
+index d97fe749f..850c164cc 100644
+--- a/src/packages/permission/src/fileToolPermissions.ts
++++ b/src/packages/permission/src/fileToolPermissions.ts
+@@ -5,8 +5,8 @@
+  *
+  * Reimplementación del contrato de 2.1.275 (`chunk-9apg35nm.js`), no copia:
+  *
+- *   `checkReadPermissionForTool` ≙ `_w` · `checkWritePermissionForTool` ≙ `Wy`
+- *   · `checkNetworkPathRead` ≙ `k_n` (2.1.281: `ULn`) · `denyOutsideWorkingDirectories` ≙ `Bs`
++ *   `checkReadPermissionForTool` ≙ `_w` (2.1.283: `IE`) · `checkWritePermissionForTool` ≙ `Wy` (2.1.283: `Lb`)
++ *   · `checkNetworkPathRead` ≙ `k_n` (2.1.281: `ULn`; 2.1.283: `BGn`) · `denyOutsideWorkingDirectories` ≙ `Bs` (2.1.283: `kl`)
+  *   · `generateSuggestions` ≙ `gyt` · `safetyCheckFields` ≙ `Au`
+  *   · `getClaudeSkillScope` ≙ `ku` · `isClaudeTreeRule` ≙ `zu`
+  *   · `ruleCrossesNestedClaudeDir` ≙ `Nu` · `claudeDirDepth` ≙ `Es`
+@@ -19,8 +19,21 @@
+  * `isPathInWorkingDirectories` (`my`) y los conjuntos de directorios `_b` y
+  * `NGt`, de `pathValidation.ts`.
+  *
++ * Las dos guardas consumen el objeto resuelto de `resolvePathForPermission`
++ * (≙ `Ua`, 2.1.283) y encima llevan la capa de aterrizaje de enlaces de
++ * 2.1.283: `displayPath` ≙ `ete` · `landingBeyondRequested` ≙ `ect` ·
++ * `symlinkLanding` ≙ `n5e` · `landingSentence` ≙ `cln` ·
++ * `denyUnresolvedTarget` ≙ `xl` · `outsideWorkingDirectoriesAsk` ≙ `Ml` ·
++ * `writeSafetyLanding` ≙ `WGn` · `denySymlinkLeafWrite` ≙ `Zlt`.
++ *
+  * Divergencias declaradas:
+  *
++ * - `denySymlinkLeafWrite` lo aplican en 2.1.283 los `checkPermissions` de
++ *   Write, Edit y NotebookEdit (`chunk-csayct82.js`) sobre la decisión de
++ *   `Lb`; esas herramientas viven en `tool-registry` y aquí sólo se exporta.
++ * - `displayPath` porta la sustitución de caracteres y el recorte de `ete`,
++ *   no su pasada de normalización hasta punto fijo (`sf`).
++ *
+  * - Sin divergencia en la pausa de memoria: `/pause-memory` y su indicador
+  *   están portados de 2.1.281, y la rama `EN(y) && Kh()` de `Wy` niega como
+  *   `ib` (`xU(h)&&Yh()` → `Rr`).
+@@ -32,7 +45,11 @@
+  */
+ import * as nodeFs from 'node:fs'
+ import * as nodePath from 'node:path'
+-import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
++import {
++  getPathsForPermissionCheck,
++  resolvePathForPermission,
++  type ResolvedPermissionPath,
++} from '@thyrox/storage/fsOperations.js'
+ import { isMemoryPaused } from '@thyrox/memory/memoryPause'
+ import { expandPath } from '@thyrox/storage/path.js'
+ import {
+@@ -74,7 +91,12 @@ import {
+ } from './pathValidation.js'
+ import { isHardLinkedFile, isShadowExperimentOn, recordShadowFired, shouldLogShadowPath } from './playfulLobster.js'
+ import { permissionRuleValueFromString } from './permissionRuleParser.js'
+-import type { PermissionDecision, PermissionUpdate } from './permissionTypes.js'
++import type {
++  PermissionDecision,
++  PermissionDecisionReason,
++  PermissionDenyDecision,
++  PermissionUpdate,
++} from './permissionTypes.js'
+ import { allPathsMatchAllowRule, escapeForIgnore, matchingRuleForInput } from './ruleMatching.js'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { PRODUCT_NAME } from '@thyrox/config/product'
+@@ -88,6 +110,21 @@ const SYNCED_SKILL_NAME = 'synced'
+ const RESTRICTED_REASON = 'Restricted mode confines the file tools to the working directory'
+ const OUTSIDE_READS_BLOCKED =
+   'Reads outside the working directories are blocked (permissions.blockReadsOutsideWorkingDirectories). Add the directory with /add-dir, or remove that setting.'
++const OUTSIDE_WORKING_DIRECTORIES = 'Path is outside allowed working directories'
++const OUTSIDE_ALLOWED_CLAUSE = ', which is outside the allowed working directories'
++const UNDETERMINED_TARGET = 'a target that could not be determined'
++const DISPLAY_PATH_MAX_CHARS = 160
++const DISPLAY_UNSAFE_CHARS = /[\x00-\x1f\x7f-\x9f\u061c\u2028\u2029\u202a-\u202e\u2066-\u2069\p{Co}\p{Cn}]/gu
++const REPLACEMENT_CHAR = '\uFFFD'
++/** Pares (canónico, enlace) que macOS y merged-usr resuelven; cuenta el que `realpath(enlace)` confirme (≙ `Hf`). */
++const TRUSTED_SYMLINK_EQUIVALENCES: ReadonlyArray<readonly [string, string]> = [
++  ['/private/tmp', '/tmp'],
++  ['/private/var', '/var'],
++  ['/private/etc', '/etc'],
++  ['/usr/bin', '/bin'],
++  ['/usr/lib', '/lib'],
++  ['/usr/sbin', '/sbin'],
++]
+ 
+ /** La herramienta, tal como la ven estas guardas. */
+ export type FileTool = {
+@@ -139,27 +176,210 @@ function folded(path: string): string {
+   return path.normalize('NFC').toLowerCase()
+ }
+ 
++// ---- La capa de aterrizaje de enlaces (2.1.283: `ete`, `tl`, `ect`, `n5e`, `cln`, `Tl`, `dln`, `xl`, `Ml`, `WGn`, `Zlt`) ----
++
++/**
++ * Cómo se nombra una operación en los mensajes y cómo razona su consulta
++ * cuando el enlace la saca del trabajo (el `e` de `Ml` y `xl`).
++ */
++export type FileOperation = {
++  phrase: 'read from' | 'write to'
++  verb: 'read' | 'write'
++  carriedOutReason: (sentence: string) => PermissionDecisionReason
++}
++
++export const READ_OPERATION: FileOperation = {
++  phrase: 'read from',
++  verb: 'read',
++  carriedOutReason: reason => ({ type: 'workingDir', reason }),
++}
++
++export const WRITE_OPERATION: FileOperation = {
++  phrase: 'write to',
++  verb: 'write',
++  carriedOutReason: reason => ({ type: 'safetyCheck', reason, classifierApprovable: false }),
++}
++
++/** La ruta como se muestra: sin caracteres de control ni de formato, recortada (≙ `ete`). */
++export function displayPath(path: string): string {
++  const sanitized = path.replace(DISPLAY_UNSAFE_CHARS, REPLACEMENT_CHAR)
++  if (sanitized.length <= DISPLAY_PATH_MAX_CHARS) return sanitized
++  const shown = sanitized.slice(0, DISPLAY_PATH_MAX_CHARS)
++  return `${shown}… [+${sanitized.length - shown.length} chars]`
++}
++
++function resolvesThroughSymlink(path: string, landing: string): string {
++  return `${displayPath(path)} resolves through a symlink to ${displayPath(landing)}`
++}
++
++function unresolvedTargetReason(path: string): string {
++  return `Where ${displayPath(path)} leads on disk could not be determined (a link or directory on the way could not be examined, or the links do not resolve)`
++}
++
++/** Negación de una ruta cuyo destino en disco no se pudo determinar (≙ `xl`). */
++export function denyUnresolvedTarget(operation: FileOperation, path: string): PermissionDenyDecision {
++  return {
++    behavior: 'deny',
++    message: `Refusing to ${operation.verb} ${displayPath(path)}: where it leads on disk could not be determined (a link on the way could not be examined, or the links do not resolve).`,
++    decisionReason: { type: 'other', reason: unresolvedTargetReason(path) },
++  }
++}
++
++let confirmedEquivalences: ReadonlyArray<readonly [string, string]> | undefined
++
++function confirmedSymlinkEquivalences(): ReadonlyArray<readonly [string, string]> {
++  confirmedEquivalences ??= TRUSTED_SYMLINK_EQUIVALENCES.filter(([canonical, link]) => {
++    try {
++      return nodeFs.realpathSync(link) === canonical
++    } catch {
++      return false
++    }
++  })
++  return confirmedEquivalences
++}
++
++/** La ruta absoluta con los alias confirmados plegados a su enlace (≙ `tl`). */
++function aliasFoldedPath(path: string): string {
++  const resolved = nodePath.resolve(path)
++  for (const [canonical, link] of confirmedSymlinkEquivalences()) {
++    if (resolved === canonical || resolved.startsWith(canonical + nodePath.sep)) return link + resolved.slice(canonical.length)
++  }
++  return resolved
++}
++
++/** El aterrizaje, si difiere de la ruta pedida una vez plegados los alias (≙ `ect`). */
++export function landingBeyondRequested(resolved: ResolvedPermissionPath): string | null {
++  if (resolved.unresolved) return null
++  return aliasFoldedPath(resolved.landing) === aliasFoldedPath(resolved.requested) ? null : resolved.landing
++}
++
++/** Dónde aterriza un enlace respecto de los directorios de trabajo (≙ `n5e`). */
++export type SymlinkLanding = {
++  landing: string
++  landingOutside: boolean
++  spellingInside: boolean
++  /** La grafía pedida está dentro y el aterrizaje fuera: el enlace saca la operación del trabajo. */
++  carriedOut: boolean
++}
++
++export function symlinkLanding(
++  resolved: ResolvedPermissionPath,
++  context: PathPermissionContext,
++  directories: Set<string> = workingDirectoriesOf(context),
++): SymlinkLanding | null {
++  const landing = landingBeyondRequested(resolved)
++  if (landing === null) return null
++  const inside = (path: string) => isPathInWorkingDirectories(path, context, [path], directories)
++  const landingOutside = !inside(landing)
++  const spellingInside = inside(resolved.requested)
++  return { landing, landingOutside, spellingInside, carriedOut: spellingInside && landingOutside }
++}
++
++/** «X resolves through a symlink to Y», con la cláusula de fuera si aterriza fuera (≙ `cln`). */
++export function landingSentence(path: string, landing: SymlinkLanding): string {
++  return `${resolvesThroughSymlink(path, landing.landing)}${landing.landingOutside ? OUTSIDE_ALLOWED_CLAUSE : ''}`
++}
++
++type OutsideWorkingDirectoriesAsk = {
++  message: string
++  decisionReason: PermissionDecisionReason
++  blockedPath?: string
++}
++
++/**
++ * La consulta final de una ruta fuera del trabajo (≙ `Ml`): a secas si el
++ * enlace no la saca; con la frase de aterrizaje, la ruta bloqueada y la
++ * razón propia de la operación cuando sí.
++ */
++function outsideWorkingDirectoriesAsk(
++  operation: FileOperation,
++  path: string,
++  resolved: ResolvedPermissionPath,
++  context: PathPermissionContext,
++): OutsideWorkingDirectoriesAsk {
++  const message = `${PRODUCT_NAME} requested permissions to ${operation.phrase} ${path}, but you haven't granted it yet.`
++  const landing = symlinkLanding(resolved, context)
++  if (landing === null || !landing.carriedOut) {
++    return { message, decisionReason: { type: 'workingDir', reason: OUTSIDE_WORKING_DIRECTORIES } }
++  }
++  const sentence = landingSentence(path, landing)
++  return { message: `${message} ${sentence}.`, blockedPath: landing.landing, decisionReason: operation.carriedOutReason(sentence) }
++}
++
++type WriteSafetyLanding = { landing: string; sentence: string; personOnly: boolean }
++
++/**
++ * Lo que la guarda de seguridad de escritura añade cuando hay aterrizaje
++ * (≙ `WGn`): sólo una persona decide si el peligro llega por el enlace —la
++ * grafía pedida sola es segura— o si el enlace saca la escritura del trabajo.
++ */
++function writeSafetyLanding(
++  path: string,
++  resolved: ResolvedPermissionPath,
++  context: PathPermissionContext,
++): WriteSafetyLanding | null {
++  const landing = symlinkLanding(resolved, context)
++  if (landing === null) return null
++  const requestedAloneSafe = checkPathSafetyForAutoEdit(
++    resolved.requested,
++    [resolved.requested],
++    undefined,
++    allowsClaudeConfigForMode(context),
++    context.trustedNetworkDirectories,
++  ).safe
++  return { landing: landing.landing, sentence: landingSentence(path, landing), personOnly: requestedAloneSafe || landing.carriedOut }
++}
++
++/**
++ * Una escritura cuya hoja es un enlace simbólico se niega y se remite al
++ * destino (≙ `Zlt`). Lo aplican las herramientas de escritura sobre la
++ * decisión de `checkWritePermissionForTool` cuando no fue negación.
++ */
++export function denySymlinkLeafWrite(path: string, resolved: ResolvedPermissionPath): PermissionDenyDecision | null {
++  if (!resolved.leafIsSymlink) return null
++  const target = resolved.unresolved ? UNDETERMINED_TARGET : displayPath(resolved.landing)
++  return {
++    behavior: 'deny',
++    message: `Refusing to write ${displayPath(path)}: it is a symbolic link. Write to the link's target path instead: ${target}.`,
++    decisionReason: { type: 'other', reason: 'Write target is a symbolic link' },
++    ...(!resolved.unresolved && { blockedPath: resolved.landing }),
++  }
++}
++
+ /**
+  * ¿Queda una ruta fuera de los directorios dados? Negación con la ruta
+- * bloqueada; null si está dentro o si la ruta interna la permite (≙ `Bs`).
++ * bloqueada —el aterrizaje, si el enlace la saca—; irresoluble, negación
++ * sin más; null si está dentro o si la ruta interna la permite (≙ `kl`).
+  */
+ export function denyOutsideWorkingDirectories(
+   path: string,
+-  pathsToCheck: readonly string[],
++  resolved: ResolvedPermissionPath,
+   context: PathPermissionContext,
+   internalCheck: () => { behavior: string },
+   reason: OutsideReason,
+   directories: Set<string>,
+-): PermissionDecision & { blockedPath?: string } | null {
+-  if (isPathInWorkingDirectories(path, context, pathsToCheck, directories) || internalCheck().behavior === 'allow') {
++): PermissionDenyDecision | null {
++  if (resolved.unresolved) {
++    return {
++      behavior: 'deny',
++      message: `${unresolvedTargetReason(path)}; ${reason.why}`,
++      decisionReason: { type: 'other', reason: reason.reason },
++    }
++  }
++  if (isPathInWorkingDirectories(path, context, resolved.spellings, directories) || internalCheck().behavior === 'allow') {
+     return null
+   }
++  const listed = Array.from(directories).join(', ')
++  const landing = symlinkLanding(resolved, context, directories)
++  const carried = landing !== null && landing.carriedOut ? landing : null
+   return {
+     behavior: 'deny',
+-    message: `${path} is outside ${Array.from(directories).join(', ')}; ${reason.why}`,
++    message: carried
++      ? `${resolvesThroughSymlink(path, carried.landing)}, which is outside ${listed}; ${reason.why}`
++      : `${path} is outside ${listed}; ${reason.why}`,
+     decisionReason: { type: 'other', reason: reason.reason },
+-    blockedPath: path,
+-  } as PermissionDecision & { blockedPath: string }
++    blockedPath: carried ? carried.landing : path,
++  }
+ }
+ 
+ /** ¿Alguna capa de settings declara las lecturas fuera bloqueadas? (≙ `d_n`). */
+@@ -444,13 +664,14 @@ export function checkReadPermissionForTool(
+   tool: FileTool,
+   input: Input,
+   context: PathPermissionContext,
+-  precomputedPathsToCheck?: readonly string[],
++  precomputed?: ResolvedPermissionPath,
+ ): PermissionDecision {
+   const path = pathOf(tool, input)
+   if (path === undefined) {
+     return { behavior: 'ask', message: `${PRODUCT_NAME} requested permissions to use ${tool.name}, but you haven't granted it yet.` }
+   }
+-  const paths = precomputedPathsToCheck ?? getPathsForPermissionCheck(path)
++  const resolved = precomputed ?? resolvePathForPermission(path)
++  const paths = resolved.spellings
+   let expanded: string | undefined
+   const absolute = () => (expanded ??= expandPath(path))
+ 
+@@ -462,7 +683,7 @@ export function checkReadPermissionForTool(
+   if (context.restricted || context.blockReadsOutsideWorkingDirectories) {
+     const denied = denyOutsideWorkingDirectories(
+       path,
+-      paths,
++      resolved,
+       context,
+       () =>
+         checkReadableInternalPath(absolute(), input, paths, {
+@@ -488,6 +709,8 @@ export function checkReadPermissionForTool(
+       }
+       return denied
+     }
++  } else if (resolved.unresolved) {
++    return denyUnresolvedTarget(READ_OPERATION, path)
+   }
+ 
+   const network = checkNetworkPathRead(tool, input, context, paths)
+@@ -522,7 +745,7 @@ export function checkReadPermissionForTool(
+ 
+   // Poder editar implica poder leer; en plan mode se mide como en default.
+   const writeContext = context.mode === 'plan' ? { ...context, mode: 'default' } : context
+-  const write = checkWritePermissionForTool(tool, input, writeContext as PathPermissionContext, paths)
++  const write = checkWritePermissionForTool(tool, input, writeContext as PathPermissionContext, resolved)
+   if (write.behavior === 'allow') {
+     if (write.decisionReason?.type === 'mode' && shadowFires()) recordShadowFired(expandPath(path), 'editImpliesRead', context.mode)
+     return write
+@@ -546,9 +769,8 @@ export function checkReadPermissionForTool(
+ 
+   return {
+     behavior: 'ask',
+-    message: `${PRODUCT_NAME} requested permissions to read from ${path}, but you haven't granted it yet.`,
+     suggestions: generateSuggestions(path, 'read', context, paths),
+-    decisionReason: { type: 'workingDir', reason: 'Path is outside allowed working directories' },
++    ...outsideWorkingDirectoriesAsk(READ_OPERATION, path, resolved, context),
+   }
+ }
+ 
+@@ -557,13 +779,14 @@ export function checkWritePermissionForTool(
+   tool: FileTool,
+   input: Input,
+   context: PathPermissionContext,
+-  precomputedPathsToCheck?: readonly string[],
++  precomputed?: ResolvedPermissionPath,
+ ): PermissionDecision {
+   const path = pathOf(tool, input)
+   if (path === undefined) {
+     return { behavior: 'ask', message: `${PRODUCT_NAME} requested permissions to use ${tool.name}, but you haven't granted it yet.` }
+   }
+-  const paths = precomputedPathsToCheck ?? getPathsForPermissionCheck(path)
++  const resolved = precomputed ?? resolvePathForPermission(path)
++  const paths = resolved.spellings
+ 
+   for (const p of paths) {
+     const rule = matchingRuleForInput(p, context, 'edit', 'deny')
+@@ -574,7 +797,7 @@ export function checkWritePermissionForTool(
+   if (context.restricted) {
+     const denied = denyOutsideWorkingDirectories(
+       path,
+-      paths,
++      resolved,
+       context,
+       () => checkEditableInternalPath(absolute, input, paths, { permissionMode: context.mode, restricted: true }),
+       RESTRICTED_OUTSIDE,
+@@ -593,6 +816,8 @@ export function checkWritePermissionForTool(
+   if (paths.some(isProfileStorePath)) return PROFILE_STORE_DENIED as PermissionDecision
+   if (paths.some(isSettingsReviewStore)) return SETTINGS_REVIEW_DENIED as PermissionDecision
+ 
++  if (resolved.unresolved) return denyUnresolvedTarget(WRITE_OPERATION, path)
++
+   // Una regla de sesión sobre un árbol `.claude` entero se honra antes de la
+   // guarda de seguridad, salvo en plan mode o si la ruta cruza otro `.claude`.
+   const sessionClaudeRules = (context.alwaysAllowRules.session ?? []).filter(rule => {
+@@ -654,14 +879,18 @@ export function checkWritePermissionForTool(
+           },
+         ]
+       : generateSuggestions(path, 'write', context, paths)
++    const landing = writeSafetyLanding(path, resolved, context)
++    const message = landing === null ? safety.message : `${safety.message} ${landing.sentence}.`
+     return {
+       behavior: 'ask',
+-      message: safety.message,
++      message,
+       suggestions,
++      ...(landing !== null && { blockedPath: landing.landing }),
+       decisionReason: {
+         type: 'safetyCheck',
+-        reason: safety.message,
++        reason: message,
+         ...safetyCheckFields(safety, context.restricted),
++        ...(landing?.personOnly && { classifierApprovable: false }),
+       } as PermissionDecision['decisionReason'] & object,
+     }
+   }
+@@ -682,11 +911,17 @@ export function checkWritePermissionForTool(
+   const rule = allPathsMatchAllowRule(paths, context, 'edit')
+   if (rule) return { behavior: 'allow', updatedInput: input, decisionReason: { type: 'rule', rule } }
+ 
++  if (inWorkingDir) {
++    return {
++      behavior: 'ask',
++      message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
++      suggestions: generateSuggestions(path, 'write', context, paths),
++    }
++  }
+   return {
+     behavior: 'ask',
+-    message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
+     suggestions: generateSuggestions(path, 'write', context, paths),
+-    decisionReason: inWorkingDir ? undefined : { type: 'workingDir', reason: 'Path is outside allowed working directories' },
++    ...outsideWorkingDirectoriesAsk(WRITE_OPERATION, path, resolved, context),
+   }
+ }
+ 
+diff --git a/src/packages/permission/src/permissionTypes.ts b/src/packages/permission/src/permissionTypes.ts
+index a1519eec2..8abe4f772 100644
+--- a/src/packages/permission/src/permissionTypes.ts
++++ b/src/packages/permission/src/permissionTypes.ts
+@@ -315,6 +315,8 @@ export type PermissionDenyDecision = {
+   message: string
+   decisionReason: PermissionDecisionReason
+   toolUseID?: string
++  /** La ruta que motiva la negación cuando difiere de la pedida: el aterrizaje de un enlace (2.1.283, `kl`/`Zlt`). */
++  blockedPath?: string
+ }
+ 
+ /** `permissionTypes.ts:239-244`. */
+diff --git a/src/packages/storage/src/__tests__/fsOperations.test.ts b/src/packages/storage/src/__tests__/fsOperations.test.ts
+index 6ef60649c..b3e9beabc 100644
+--- a/src/packages/storage/src/__tests__/fsOperations.test.ts
++++ b/src/packages/storage/src/__tests__/fsOperations.test.ts
+@@ -1,5 +1,5 @@
+ import { afterEach, describe, expect, test } from 'bun:test'
+-import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'fs'
++import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'fs'
+ import { tmpdir } from 'os'
+ import { join } from 'path'
+ import {
+@@ -10,6 +10,8 @@ import {
+   readFileRange,
+   readLinesReverse,
+   resolveDeepestExistingAncestorSync,
++  resolvePathForPermission,
++  resolvePathForScreen,
+   safeResolvePath,
+   setFsImplementation,
+   setOriginalFsImplementation,
+@@ -270,3 +272,166 @@ describe('readFileRange / tailFile / readLinesReverse', () => {
+     expect(lines[2]).toBe('primera')
+   })
+ })
++
++describe('resolvePathForPermission (Ua = Rt(e,"permission"), 2.1.283)', () => {
++  let dir: string
++  afterEach(() => {
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  })
++  function realTmp(): string {
++    return realpathSync(makeTmpDir())
++  }
++
++  test('un archivo plano aterriza en si mismo, con una sola grafia y sin hoja simbolica', () => {
++    dir = realTmp()
++    const file = join(dir, 'plano.txt')
++    writeFileSync(file, 'x')
++    expect(resolvePathForPermission(file)).toEqual({
++      unresolved: false,
++      requested: file,
++      spellings: [file],
++      landing: file,
++      leafIsSymlink: false,
++    })
++  })
++
++  test('un enlace de hoja aterriza en su destino y marca leafIsSymlink', () => {
++    dir = realTmp()
++    const target = join(dir, 'destino.txt')
++    writeFileSync(target, 'x')
++    const link = join(dir, 'origen.txt')
++    symlinkSync(target, link)
++    const resolved = resolvePathForPermission(link)
++    expect(resolved).toMatchObject({ unresolved: false, landing: target, leafIsSymlink: true })
++    expect(resolved.spellings).toEqual([link, target])
++  })
++
++  test('un enlace de directorio padre aterriza en el destino real aunque la hoja no exista', () => {
++    dir = realTmp()
++    const realDir = join(dir, 'real')
++    mkdirSync(realDir)
++    symlinkSync(realDir, join(dir, 'linked'))
++    const requested = join(dir, 'linked', 'nuevo.txt')
++    const resolved = resolvePathForPermission(requested)
++    expect(resolved).toMatchObject({ unresolved: false, landing: join(realDir, 'nuevo.txt'), leafIsSymlink: false })
++    expect(resolved.spellings).toEqual([requested, join(realDir, 'nuevo.txt')])
++  })
++
++  test('un enlace colgante aterriza en el destino que no existe', () => {
++    dir = realTmp()
++    const missing = join(dir, 'no-existe.txt')
++    const link = join(dir, 'colgante.txt')
++    symlinkSync(missing, link)
++    expect(resolvePathForPermission(link)).toMatchObject({ unresolved: false, landing: missing, leafIsSymlink: true })
++  })
++
++  test('un ciclo de enlaces es irresoluble y nombra donde se detuvo', () => {
++    dir = realTmp()
++    const a = join(dir, 'a')
++    const b = join(dir, 'b')
++    symlinkSync(b, a)
++    symlinkSync(a, b)
++    const resolved = resolvePathForPermission(a)
++    expect(resolved.unresolved).toBe(true)
++    if (resolved.unresolved) expect([a, b]).toContain(resolved.stoppedAt)
++    expect(resolved.leafIsSymlink).toBe(true)
++    expect(resolved.spellings[0]).toBe(a)
++  })
++
++  test('un enlace cuyo resto ausente lleva `..` es irresoluble: no se sabe por donde sube', () => {
++    dir = realTmp()
++    const link = join(dir, 'sube.txt')
++    symlinkSync('no-existe/../secreto.txt', link)
++    const resolved = resolvePathForPermission(link)
++    expect(resolved.unresolved).toBe(true)
++    if (resolved.unresolved) expect(resolved.stoppedAt).toBe(join(dir, 'no-existe'))
++  })
++
++  test('una ruta UNC no toca el disco: aterriza en si misma', () => {
++    expect(resolvePathForPermission('//host/share/file')).toEqual({
++      unresolved: false,
++      requested: '//host/share/file',
++      spellings: ['//host/share/file'],
++      landing: '//host/share/file',
++      leafIsSymlink: false,
++    })
++  })
++
++  test('un prefijo que el nucleo redirige (/.vol) es irresoluble', () => {
++    expect(resolvePathForPermission('/.vol/1/2/x').unresolved).toBe(true)
++  })
++
++  test('la tilde se expande antes de resolver', () => {
++    const resolved = resolvePathForPermission('~')
++    expect(resolved.requested.startsWith('/')).toBe(true)
++    expect(resolved.requested.includes('~')).toBe(false)
++  })
++})
++
++describe('resolvePathForScreen (H6 = Rt(e,"screen"), 2.1.283)', () => {
++  let dir: string
++  afterEach(() => {
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  })
++
++  /** `link0 → sub/../link1 → … → sub/../linkN`, y `linkN` es un archivo: N textos que suben. */
++  function climbingChain(length: number): string {
++    dir = realpathSync(makeTmpDir())
++    mkdirSync(join(dir, 'sub'))
++    writeFileSync(join(dir, `link${length}`), 'x')
++    for (let index = length - 1; index >= 0; index--) {
++      symlinkSync(`sub/../link${index + 1}`, join(dir, `link${index}`))
++    }
++    return join(dir, 'link0')
++  }
++
++  test('un enlace cuyo texto sube con `..` interior aterriza donde el disco lo lleva, vetted', () => {
++    const link = climbingChain(1)
++    const screened = resolvePathForScreen(link)
++    expect(screened.vetted).toBe(true)
++    expect(screened.paths).toContain(link)
++    expect(screened.paths).toContain(join(dir, 'link1'))
++  })
++
++  test('hasta ocho textos que suben se resuelven aparte y la criba queda vetted', () => {
++    expect(resolvePathForScreen(climbingChain(8)).vetted).toBe(true)
++  })
++
++  test('el noveno texto que sube deja la criba sin vetar', () => {
++    expect(resolvePathForScreen(climbingChain(9)).vetted).toBe(false)
++  })
++
++  test('un ciclo sin readlink fallido queda vetted en la ruta pedida, como en la fuente (c===undefined && !p)', () => {
++    dir = realpathSync(makeTmpDir())
++    const a = join(dir, 'a')
++    symlinkSync(a, a)
++    expect(resolvePathForScreen(a)).toEqual({ paths: [a], vetted: true })
++  })
++
++  test('un prefijo que el nucleo redirige deja la criba sin vetar', () => {
++    expect(resolvePathForScreen('/.vol/1/2/x')).toEqual({ paths: ['/.vol/1/2/x'], vetted: false })
++  })
++})
++
++describe('getPathsForPermissionCheck como adaptador de grafias (To, 2.1.283)', () => {
++  let dir: string
++  afterEach(() => {
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('con un ciclo de enlaces devuelve al menos la ruta pedida, sin lanzar', () => {
++    dir = realpathSync(makeTmpDir())
++    const a = join(dir, 'a')
++    symlinkSync(a, a)
++    expect(getPathsForPermissionCheck(a)).toEqual([a])
++  })
++
++  test('openDirNoFollowSync abre un directorio y rehusa un enlace a directorio', () => {
++    dir = realpathSync(makeTmpDir())
++    const real = join(dir, 'real')
++    mkdirSync(real)
++    symlinkSync(real, join(dir, 'link'))
++    expect(() => NodeFsOperations.openDirNoFollowSync(real)).not.toThrow()
++    expect(() => NodeFsOperations.openDirNoFollowSync(join(dir, 'link'))).toThrow()
++  })
++})
+diff --git a/src/packages/storage/src/fsOperations.ts b/src/packages/storage/src/fsOperations.ts
+index 439c64df0..745332c1e 100644
+--- a/src/packages/storage/src/fsOperations.ts
++++ b/src/packages/storage/src/fsOperations.ts
+@@ -44,6 +44,7 @@ import {
+ } from 'fs/promises'
+ import { homedir } from 'os'
+ import * as nodePath from 'path'
++import { getOriginalCwd } from './sessionPaths.js'
+ 
+ /**
+  * Sustituto local de
+@@ -145,6 +146,8 @@ export type FsOperations = {
+   ): void
+   /** Reads symbolic link */
+   readlinkSync(path: string): string
++  /** Abre un directorio sin seguir un enlace en su último componente; lanza si no es un directorio real. */
++  openDirNoFollowSync(path: string): void
+   /** Resolves symbolic links and returns the canonical pathname */
+   realpathSync(path: string): string
+ 
+@@ -306,116 +309,605 @@ export function resolveDeepestExistingAncestorSync(
+   return undefined
+ }
+ 
++// ---- El resolvedor estructurado (≙ `Rt`, 2.1.283) ----
++
+ /**
+- * Gets all paths that should be checked for permissions.
+- * This includes the original path, all intermediate symlink targets in the chain,
+- * and the final resolved path.
+- *
+- * For example, if test.txt -> /etc/passwd -> /private/etc/passwd:
+- * - test.txt (original path)
+- * - /etc/passwd (intermediate symlink target)
+- * - /private/etc/passwd (final resolved path)
+- *
+- * This is important for security: a deny rule for /etc/passwd should block
+- * access even if the file is actually at /private/etc/passwd (as on macOS).
+- *
+- * @param path - The path to check (will be converted to absolute)
+- * @returns An array of absolute paths to check permissions for
++ * Una ruta resuelta salto a salto para el chequeo de permisos
++ * (≙ `Rt(e, 'permission')`, 2.1.283). `spellings` lleva la ruta pedida, el
++ * destino de cada enlace de hoja y el aterrizaje, sin repetir; `landing` es
++ * dónde cae en disco la operación una vez seguidos los enlaces.
+  */
+-export function getPathsForPermissionCheck(inputPath: string): string[] {
+-  // Expand tilde notation defensively - tools should do this in getPath(),
+-  // but we normalize here as defense in depth for permission checking
+-  let path = inputPath
+-  if (path === '~') {
+-    path = homedir().normalize('NFC')
+-  } else if (path.startsWith('~/')) {
+-    path = nodePath.join(homedir().normalize('NFC'), path.slice(2))
++export type ResolvedPermissionPath =
++  | {
++      unresolved: false
++      requested: string
++      spellings: string[]
++      landing: string
++      leafIsSymlink: boolean
++    }
++  | {
++      unresolved: true
++      requested: string
++      spellings: string[]
++      /** La última ruta que el walker examinó antes de rendirse. */
++      stoppedAt: string
++      leafIsSymlink: boolean
++    }
++
++/** Las grafías de una ruta cribada y si la resolución llegó al final (≙ `H6`). */
++export type ScreenedPath = { paths: string[]; vetted: boolean }
++
++/** Centinela del walker: la ascendencia de la ruta no se pudo verificar (≙ `Fh`). */
++const UNVERIFIED_ANCESTRY = '\0unverified-ancestry'
++const MAX_SYMLINK_HOPS = 64
++const MAX_CLIMBING_LINK_TEXTS = 8
++const PATH_SEPARATORS = /\/+/
++const DOT_SEGMENT = /(^|[\\/])\.{1,2}[. ]*([\\/]|$)/
++const STRICT_DOT_SEGMENT = /(^|\/)\.{1,2}(\/|$)/
++const CLIMBING_SEGMENT = /(^|[\\/])\.\.([\\/]|$)/
++const LEADING_CLIMBS = /^(?:\.\.(?:[\\/]+|$))+/
++const TRAILING_DOT_OR_SPACE = /[. ]$/
++const UNC_PREFIX = /^[\\/]{2}/
++const DEVICE_NAMESPACE_PREFIX = /^[\\/]\?\?[\\/]/
++const LOCAL_WSL_UNC = /^[\\/]{2}wsl(?:\$|\.localhost)[\\/]([^\\/]*)/i
++const EMPTY_OR_DOTS = /^\.{0,2}[. ]*$/
++const KERNEL_RESOLVED_ANYWHERE = /\/\.(?:vol|file|nofollow|resolve)(?:\/|$)/i
++const KERNEL_RESOLVED_SEGMENT = /^\.(?:vol|file|nofollow|resolve)$/i
++const ABSENCE_CODES = new Set(['ENOENT', 'ENOTDIR'])
++const UNREADABLE_CODES = new Set(['EPERM', 'EACCES'])
++const PERMISSION_FAILURE_CODES = new Set(['ENAMETOOLONG', 'EPERM', 'EACCES'])
++const BACKGROUND_SESSION_KIND = 'bg'
++
++// Predicados de forma de ruta. `@thyrox/permission` tiene los mismos en
++// `pathSafety.ts`, pero la dependencia va de `permission` a `storage`
++// (`pathSafety.ts` importa este módulo) y no puede invertirse: el resolvedor
++// lleva su copia mínima, sin caché, con la misma forma que la fuente.
++
++function normalizedSegments(path: string): string[] {
++  const stack: string[] = []
++  for (const segment of path.split('/')) {
++    if (segment === '' || segment === '.') continue
++    if (segment === '..') {
++      stack.pop()
++      continue
++    }
++    stack.push(segment)
+   }
++  return stack
++}
+ 
+-  const pathSet = new Set<string>()
+-  const fsImpl = getFsImplementation()
++function isLocalWslSpelling(path: string): boolean {
++  const match = LOCAL_WSL_UNC.exec(path)
++  return match !== null && !EMPTY_OR_DOTS.test(match[1] ?? '')
++}
+ 
+-  // Always check the original path
+-  pathSet.add(path)
++/** UNC o espacio de dispositivo, salvo la distro WSL local (≙ `Ln && !Il`). */
++function isForeignUnc(path: string): boolean {
++  return (UNC_PREFIX.test(path) || DEVICE_NAMESPACE_PREFIX.test(path)) && !isLocalWslSpelling(path)
++}
+ 
+-  // Block UNC paths before any filesystem access to prevent network
+-  // requests (DNS/SMB) during validation on Windows
+-  if (path.startsWith('//') || path.startsWith('\\\\')) {
+-    return Array.from(pathSet)
++/** La raíz `/net/<host>` o `/Network/Servers/<host>` que la ruta alcanza (≙ `G_e`). */
++function automountRootOf(path: string): string | null {
++  if (!path.startsWith('/')) return null
++  const stack: string[] = []
++  for (const segment of path.split('/')) {
++    if (segment === '' || segment === '.') continue
++    if (segment === '..') {
++      stack.pop()
++      continue
++    }
++    stack.push(segment)
++    const underNet = stack.length === 2 && stack[0]!.toLowerCase() === 'net'
++    const underNetworkServers =
++      stack.length === 3 && stack[0]!.toLowerCase() === 'network' && stack[1]!.toLowerCase() === 'servers'
++    if (underNet || underNetworkServers) return `/${stack.join('/')}`
+   }
++  return null
++}
+ 
+-  // Follow the symlink chain, collecting ALL intermediate targets
+-  // This handles cases like: test.txt -> /etc/passwd -> /private/etc/passwd
+-  // We want to check all three paths, not just test.txt and /private/etc/passwd
+-  try {
+-    let currentPath = path
+-    const visited = new Set<string>()
+-    const maxDepth = 40 // Prevent runaway loops, matches typical SYMLOOP_MAX
+-
+-    for (let depth = 0; depth < maxDepth; depth++) {
+-      // Prevent infinite loops from circular symlinks
+-      if (visited.has(currentPath)) {
+-        break
+-      }
+-      visited.add(currentPath)
+-
+-      if (!fsImpl.existsSync(currentPath)) {
+-        // Path doesn't exist (new file case). existsSync follows symlinks,
+-        // so this is also reached for DANGLING symlinks (link entry exists,
+-        // target doesn't). Resolve symlinks in the path and its ancestors
+-        // so permission checks see the real destination. Without this,
+-        // `./data -> /etc/cron.d/` (live parent symlink) or
+-        // `./evil.txt -> ~/.ssh/authorized_keys2` (dangling file symlink)
+-        // would allow writes that escape the working directory.
+-        if (currentPath === path) {
+-          const resolved = resolveDeepestExistingAncestorSync(fsImpl, path)
+-          if (resolved !== undefined) {
+-            pathSet.add(resolved)
+-          }
++/** `/net` exacto, el mapa de automontaje (≙ `nS`). */
++function isAutomountMap(path: string): boolean {
++  if (!path.startsWith('/')) return false
++  const segments = normalizedSegments(path)
++  return segments.length === 1 && segments[0]!.toLowerCase() === 'net'
++}
++
++/** Bajo `/Network`, la superficie de exploración de macOS (≙ `yN`). */
++function isNetworkBrowseRoot(path: string): boolean {
++  if (!path.startsWith('/')) return false
++  const first = normalizedSegments(path)[0]
++  return first !== undefined && first.toLowerCase() === 'network'
++}
++
++/** `/.vol`, `/.file`, `/.nofollow` o `/.resolve` como primer segmento (≙ `N_`). */
++function isKernelResolvedSpelling(path: string): boolean {
++  if (!KERNEL_RESOLVED_ANYWHERE.test(path) || !path.startsWith('/')) return false
++  const first = normalizedSegments(path)[0]
++  return first !== undefined && KERNEL_RESOLVED_SEGMENT.test(first)
++}
++
++/** Una ruta de red se devuelve tal cual, sin tocar el disco (≙ `Ln&&!Il || Wi || NA`). */
++function skipsDisk(path: string): boolean {
++  return isForeignUnc(path) || automountRootOf(path) !== null
++}
++
++function hasDotSegment(path: string): boolean {
++  return DOT_SEGMENT.test(path)
++}
++
++function hasStrictDotSegment(path: string): boolean {
++  return STRICT_DOT_SEGMENT.test(path)
++}
++
++/** ¿Sube el texto de un enlace con un `..` interior? Los iniciales no cuentan (≙ `Ne`). */
++function linkTextClimbs(text: string): boolean {
++  const interior = nodePath.isAbsolute(text) ? text : text.replace(LEADING_CLIMBS, '')
++  return CLIMBING_SEGMENT.test(interior)
++}
++
++function pathSegments(path: string): string[] {
++  return path.split(PATH_SEPARATORS).filter(Boolean)
++}
++
++/** ¿Es `candidate` un ancestro estricto de `descendant`, con la misma raíz? (≙ `NYn`). */
++function isStrictAncestor(candidate: string, descendant: string): boolean {
++  const ancestor = nodePath.resolve(candidate)
++  const child = nodePath.resolve(descendant)
++  if (nodePath.parse(ancestor).root !== nodePath.parse(child).root) return false
++  const ancestorSegments = pathSegments(ancestor)
++  const childSegments = pathSegments(child)
++  return (
++    ancestorSegments.length < childSegments.length &&
++    ancestorSegments.every((segment, index) => segment === childSegments[index])
++  )
++}
++
++function expandTilde(path: string): string {
++  if (path === '~') return homedir().normalize('NFC')
++  if (path.startsWith('~/')) return nodePath.join(homedir().normalize('NFC'), path.slice(2))
++  return path
++}
++
++type HopRequest = { kind: 'lstat' | 'readlink' | 'opendirNofollow'; path: string }
++type HopReply = fs.Stats | string | { errno: string | undefined }
++type LinkHop = { composed: string; leaf: boolean; text: string }
++type WalkOutcome = { kind: 'absent'; at: string; remaining: string[] } | { kind: 'resolved'; path: string }
++type WalkObserver = {
++  onHop: (hop: LinkHop) => void
++  onOutcome: (outcome: WalkOutcome) => void
++  onCollapsedLanding: (landing: string) => void
++}
++type WalkShape = { hopped: boolean; climbs: boolean; trailingDotOrSpace: boolean }
++
++function isStats(reply: HopReply): reply is fs.Stats {
++  return typeof reply === 'object' && 'isSymbolicLink' in reply
++}
++
++function errnoOf(reply: HopReply): string | undefined {
++  return typeof reply === 'object' && 'errno' in reply ? reply.errno : undefined
++}
++
++/**
++ * El veredicto ante un error de `lstat`/`readlink` (≙ `St` con
++ * `unreadableAncestry: 'unverified'`): la ausencia no es veredicto —es un
++ * outcome—, un nombre demasiado largo sin saltos ni `..` tampoco, y el
++ * resto deja la ascendencia sin verificar.
++ */
++function unverifiedVerdict(errno: string | undefined, shape: WalkShape): string | undefined {
++  if (errno !== undefined && ABSENCE_CODES.has(errno)) return undefined
++  const plainTooLong = errno === 'ENAMETOOLONG' && !shape.hopped && !shape.climbs && !shape.trailingDotOrSpace
++  return plainTooLong ? undefined : UNVERIFIED_ANCESTRY
++}
++
++/** La grafía canónica de una raíz de red (≙ `Un`). */
++function networkRootSpelling(head: string): string {
++  return automountRootOf(head.replace(/^\/+/, '/')) ?? nodePath.normalize(head)
++}
++
++/**
++ * Colapsa el resto de la ruta sobre una raíz de red (≙ `ue`): si no queda
++ * resto o alguien lleva `.`/`..`, se avisa del aterrizaje unido y se
++ * devuelve la raíz; si no, la raíz con el resto.
++ */
++function collapseToNetworkRoot(head: string, rest: string[], onCollapsedLanding: (landing: string) => void): string {
++  const headClimbs = hasDotSegment(head)
++  const restClimbs = rest.some(segment => segment === '.' || segment === '..')
++  if (rest.length === 0 || headClimbs || restClimbs) {
++    if (rest.length > 0 || headClimbs) onCollapsedLanding(nodePath.join(head, ...rest))
++    return headClimbs ? networkRootSpelling(head) : head
++  }
++  return nodePath.join(head, ...rest)
++}
++
++/**
++ * El walker por saltos (≙ `de`, en las ramas que `Rt` alcanza): un `lstat`
++ * por componente, `readlink` en cada enlace y `opendirNofollow` como segunda
++ * oportunidad ante un error que no sea de ausencia. Devuelve una raíz de red
++ * colapsada, el centinela `UNVERIFIED_ANCESTRY`, o `undefined` cuando el
++ * resultado está en el outcome. Los ancestros no legibles del directorio
++ * de lanzamiento se toleran: el proceso ya vive bajo ellos.
++ */
++function* walkPathHops(
++  requested: string,
++  launchAncestry: string | null,
++  observer: WalkObserver,
++): Generator<HopRequest, string | undefined, HopReply> {
++  if (isNetworkBrowseRoot(requested)) return requested
++  if (skipsDisk(requested)) return undefined
++  const absolute = nodePath.resolve(requested)
++  const root = nodePath.parse(absolute).root
++  let current = root
++  let pending = pathSegments(absolute.slice(root.length))
++  let hops = 0
++  let passedUnreadableLaunchAncestor = false
++  let ancestryVerified = false
++  const seen = new Set<string>()
++  const shapeNow = (): WalkShape => ({
++    hopped: hops > 0,
++    climbs: pending.some(hasDotSegment),
++    trailingDotOrSpace: TRAILING_DOT_OR_SPACE.test(pending[0] ?? ''),
++  })
++  const toleratesUnreadableLaunchAncestor = (errno: string | undefined, path: string): boolean =>
++    launchAncestry !== null &&
++    !ancestryVerified &&
++    errno !== undefined &&
++    UNREADABLE_CODES.has(errno) &&
++    isStrictAncestor(path, launchAncestry)
++
++  while (pending.length > 0 && hops < MAX_SYMLINK_HOPS) {
++    const head = pending[0]!
++    if (passedUnreadableLaunchAncestor && hasDotSegment(head)) return UNVERIFIED_ANCESTRY
++    const next = nodePath.join(current, head)
++    if (automountRootOf(next) !== null || isNetworkBrowseRoot(next)) {
++      return collapseToNetworkRoot(next, pending.slice(1), observer.onCollapsedLanding)
++    }
++    if (isKernelResolvedSpelling(next)) return UNVERIFIED_ANCESTRY
++
++    const stat = yield { kind: 'lstat', path: next }
++    if (!isStats(stat)) {
++      const errno = errnoOf(stat)
++      const worthOpening = errno !== undefined && !ABSENCE_CODES.has(errno) && errno !== 'ENAMETOOLONG'
++      if (worthOpening) {
++        const opened = yield { kind: 'opendirNofollow', path: next }
++        if (opened === 'ok') {
++          ancestryVerified = true
++          pending.shift()
++          current = next
++          continue
+         }
+-        break
+       }
++      if (toleratesUnreadableLaunchAncestor(errno, next)) {
++        passedUnreadableLaunchAncestor = true
++        pending.shift()
++        current = next
++        continue
++      }
++      if (errno !== undefined && ABSENCE_CODES.has(errno)) {
++        observer.onOutcome({ kind: 'absent', at: current, remaining: [...pending] })
++      }
++      return unverifiedVerdict(errno, shapeNow())
++    }
+ 
+-      const stats = fsImpl.lstatSync(currentPath)
++    ancestryVerified = true
++    if (!stat.isSymbolicLink()) {
++      pending.shift()
++      current = next
++      continue
++    }
++    hops++
++    const cycleKey = `${next}\0${pending.join('\0')}`
++    if (seen.has(cycleKey)) return undefined
++    seen.add(cycleKey)
++
++    const text = yield { kind: 'readlink', path: next }
++    if (typeof text !== 'string') return unverifiedVerdict(errnoOf(text), shapeNow())
++    pending.shift()
++    if (!nodePath.isAbsolute(text)) {
++      observer.onHop({ composed: nodePath.resolve(current, text, ...pending), leaf: pending.length === 0, text })
++      pending = [...pathSegments(text), ...pending]
++      continue
++    }
++    if (skipsDisk(text) || isNetworkBrowseRoot(text)) {
++      return collapseToNetworkRoot(text, pending, observer.onCollapsedLanding)
++    }
++    observer.onHop({ composed: pending.length === 0 ? text : nodePath.resolve(text, ...pending), leaf: pending.length === 0, text })
++    const targetRoot = nodePath.parse(text).root || nodePath.sep
++    current = targetRoot
++    ancestryVerified = false
++    pending = [...pathSegments(text.slice(targetRoot.length)), ...pending]
++  }
+ 
+-      // Skip special file types that can cause issues
+-      if (
+-        stats.isFIFO() ||
+-        stats.isSocket() ||
+-        stats.isCharacterDevice() ||
+-        stats.isBlockDevice()
+-      ) {
+-        break
+-      }
++  if (pending.length > 0) return UNVERIFIED_ANCESTRY
++  if (hops > 0 && isAutomountMap(current)) return current
++  if (isNetworkBrowseRoot(current)) return current
++  observer.onOutcome({ kind: 'resolved', path: current })
++  return undefined
++}
+ 
+-      if (!stats.isSymbolicLink()) {
+-        break
+-      }
++/** Lo que el intérprete anota de cada petición al disco (≙ `S`, `h`, `p`, `g` en `Rt`). */
++type WalkTrace = {
++  stoppedAt: string
++  sawReadlink: boolean
++  readlinkFailed: boolean
++  lastErrno: string | undefined
++}
++
++/** Lo que una resolución acumula entre el walker principal y sus subwalks. */
++type WalkState = {
++  fsImpl: FsOperations
++  launchAncestry: string | null
++  requested: string
++  spellings: Set<string>
++  leafIsSymlink: boolean
++  trace: WalkTrace
++}
+ 
+-      // Get the immediate symlink target
+-      const target = fsImpl.readlinkSync(currentPath)
++type WalkResult = { verdict: string | undefined; outcome: WalkOutcome | undefined; collapsedLanding: string | undefined }
++
++/**
++ * El ancestro común entre el directorio de lanzamiento y el cwd del fs
++ * (≙ `hxe`); null en una sesión en segundo plano o sin ancestro común.
++ */
++function launchAncestryOf(fsImpl: FsOperations): string | null {
++  if (process.env.THYROX_CODE_SESSION_KIND === BACKGROUND_SESSION_KIND) return null
++  const launch = nodePath.resolve(getOriginalCwd())
++  const current = nodePath.resolve(fsImpl.cwd())
++  const root = nodePath.parse(launch).root
++  if (root !== nodePath.parse(current).root) return null
++  const launchSegments = pathSegments(launch.slice(root.length))
++  const currentSegments = pathSegments(current.slice(root.length))
++  let shared = 0
++  while (shared < launchSegments.length && shared < currentSegments.length && launchSegments[shared] === currentSegments[shared]) {
++    shared++
++  }
++  return shared > 0 ? nodePath.join(root, ...launchSegments.slice(0, shared)) : null
++}
+ 
+-      // If target is relative, resolve it relative to the symlink's directory
+-      const absoluteTarget = nodePath.isAbsolute(target)
+-        ? target
+-        : nodePath.resolve(nodePath.dirname(currentPath), target)
++function newWalkState(requested: string): WalkState {
++  const fsImpl = getFsImplementation()
++  return {
++    fsImpl,
++    launchAncestry: launchAncestryOf(fsImpl),
++    requested,
++    spellings: new Set([requested]),
++    leafIsSymlink: false,
++    trace: { stoppedAt: requested, sawReadlink: false, readlinkFailed: false, lastErrno: undefined },
++  }
++}
++
++/** Atiende una petición del walker sobre el fs y deja su rastro (≙ `C` en `Rt`). */
++function serveHop(state: WalkState, request: HopRequest): HopReply {
++  state.trace.stoppedAt = request.path
++  if (request.kind === 'readlink') {
++    state.trace.sawReadlink = true
++    try {
++      return state.fsImpl.readlinkSync(request.path)
++    } catch (error) {
++      state.trace.readlinkFailed = true
++      return { errno: getErrnoCode(error) }
++    }
++  }
++  state.trace.lastErrno = undefined
++  try {
++    if (request.kind === 'opendirNofollow') {
++      state.fsImpl.openDirNoFollowSync(request.path)
++      return 'ok'
++    }
++    return state.fsImpl.lstatSync(request.path)
++  } catch (error) {
++    state.trace.lastErrno = getErrnoCode(error)
++    return { errno: state.trace.lastErrno }
++  }
++}
+ 
+-      // Add this intermediate target to the set
+-      pathSet.add(absoluteTarget)
+-      currentPath = absoluteTarget
++/** Corre el walker sobre el fs hasta su veredicto (≙ `Be(de(...), C)`). */
++function performWalk(state: WalkState, path: string, onHop: (hop: LinkHop) => void): WalkResult {
++  const result: WalkResult = { verdict: undefined, outcome: undefined, collapsedLanding: undefined }
++  const walk = walkPathHops(path, state.launchAncestry, {
++    onHop,
++    onOutcome: outcome => {
++      result.outcome = outcome
++    },
++    onCollapsedLanding: landing => {
++      result.collapsedLanding = landing
++    },
++  })
++  let reply: HopReply | undefined
++  for (;;) {
++    const step = walk.next(reply as HopReply)
++    if (step.done) {
++      result.verdict = step.value
++      return result
+     }
++    reply = serveHop(state, step.value)
++  }
++}
++
++function recordLeafHop(state: WalkState, hop: LinkHop): void {
++  if (!hop.leaf) return
++  state.spellings.add(hop.composed)
++  state.leafIsSymlink = true
++}
++
++function moveToEnd(spellings: Set<string>, spelling: string): void {
++  spellings.delete(spelling)
++  spellings.add(spelling)
++}
++
++function resolvedAt(state: WalkState, landing: string): ResolvedPermissionPath {
++  return {
++    unresolved: false,
++    requested: state.requested,
++    spellings: Array.from(state.spellings),
++    landing,
++    leafIsSymlink: state.leafIsSymlink,
++  }
++}
++
++function resolvedWithoutDisk(requested: string): ResolvedPermissionPath {
++  return { unresolved: false, requested, spellings: [requested], landing: requested, leafIsSymlink: false }
++}
++
++function unresolvedAt(state: WalkState): ResolvedPermissionPath {
++  return {
++    unresolved: true,
++    requested: state.requested,
++    spellings: Array.from(state.spellings),
++    stoppedAt: state.trace.stoppedAt,
++    leafIsSymlink: state.leafIsSymlink,
++  }
++}
++
++/** La ruta pedida como aterrizaje, sin hoja simbólica (≙ `L` en `Rt`). */
++function resolvedAtRequested(state: WalkState): ResolvedPermissionPath {
++  state.spellings.add(state.requested)
++  return { ...resolvedAt(state, state.requested), leafIsSymlink: false }
++}
++
++/** Un fallo de permiso o de longitud sin haber leído ningún enlace (≙ `j`). */
++function unreadableWithoutLinks(trace: WalkTrace): boolean {
++  return !trace.sawReadlink && trace.lastErrno !== undefined && PERMISSION_FAILURE_CODES.has(trace.lastErrno)
++}
++
++/** El aterrizaje por `realpath` del tramo existente, si difiere (≙ `Gn`). */
++function realpathVariant(fsImpl: FsOperations, existing: string, rest: string): string | undefined {
++  let real: string
++  try {
++    real = fsImpl.realpathSync(existing)
+   } catch {
+-    // If anything fails during chain traversal, continue with what we have
++    return undefined
+   }
++  if (real === existing) return undefined
++  return rest === '' ? real : nodePath.join(real, rest)
++}
++
++/** El aterrizaje a partir del outcome del walker, con su variante por `realpath`. */
++function landingFromOutcome(state: WalkState, outcome: WalkOutcome): string {
++  const existing = outcome.kind === 'absent' ? outcome.at : outcome.path
++  const rest = outcome.kind === 'absent' ? outcome.remaining.join(nodePath.sep) : ''
++  const landing = rest === '' ? existing : nodePath.join(existing, rest)
++  const existingIsRoot = existing === nodePath.parse(existing).root
++  if (state.trace.sawReadlink || !existingIsRoot) state.spellings.add(landing)
++  const variant = realpathVariant(state.fsImpl, existing, rest)
++  if (variant !== undefined && variant !== landing) moveToEnd(state.spellings, variant)
++  return landing
++}
+ 
+-  // Also add the final resolved path using realpathSync for completeness
+-  // This handles any remaining symlinks in directory components
+-  const { resolvedPath, isSymlink } = safeResolvePath(fsImpl, path)
+-  if (isSymlink && resolvedPath !== path) {
+-    pathSet.add(resolvedPath)
++/** El aterrizaje cuando el walker colapsó sobre una raíz de red. */
++function landingFromCollapse(state: WalkState, walk: WalkResult, collapsed: string): string {
++  if (walk.collapsedLanding !== undefined) state.spellings.add(walk.collapsedLanding)
++  moveToEnd(state.spellings, collapsed)
++  return collapsed
++}
++
++/** Un resto ausente con `.`/`..` tras leer un enlace no se sabe por dónde sube. */
++function absentRemainderClimbs(outcome: WalkOutcome, sawReadlink: boolean): boolean {
++  return outcome.kind === 'absent' && sawReadlink && outcome.remaining.some(hasStrictDotSegment)
++}
++
++/**
++ * Resuelve una ruta para el chequeo de permisos (≙ `Ua`, 2.1.283): la ruta
++ * pedida con `~` expandida, sus grafías, dónde aterriza y si la hoja es un
++ * enlace. Una ruta de red no toca el disco. Cuando la ascendencia no se
++ * pudo verificar, el resultado es `unresolved` y nombra dónde se detuvo;
++ * salvo que ningún enlace se haya leído y el fallo sea de permiso o de
++ * longitud, en cuyo caso aterriza en la ruta pedida.
++ */
++export function resolvePathForPermission(inputPath: string): ResolvedPermissionPath {
++  const requested = expandTilde(inputPath)
++  if (skipsDisk(requested)) return resolvedWithoutDisk(requested)
++  const state = newWalkState(requested)
++  const walk = performWalk(state, requested, hop => recordLeafHop(state, hop))
++  const unresolved = (): ResolvedPermissionPath =>
++    unreadableWithoutLinks(state.trace) ? resolvedAtRequested(state) : unresolvedAt(state)
++
++  if (walk.verdict === UNVERIFIED_ANCESTRY) return unresolved()
++  if (walk.verdict !== undefined) return resolvedAt(state, landingFromCollapse(state, walk, walk.verdict))
++  if (walk.outcome === undefined) return unresolved()
++  if (absentRemainderClimbs(walk.outcome, state.trace.sawReadlink)) return unresolved()
++  return resolvedAt(state, landingFromOutcome(state, walk.outcome))
++}
++
++/** Los destinos compuestos de los textos de enlace que suben, sin repetir (≙ `m`/`A`/`w` en `Rt`). */
++class ClimbingTargets {
++  readonly targets: string[] = []
++  private readonly seen = new Set<string>()
++
++  record(hop: LinkHop): void {
++    if (!linkTextClimbs(hop.text)) return
++    const key = nodePath.resolve(hop.composed)
++    if (this.seen.has(key)) return
++    this.seen.add(key)
++    this.targets.push(hop.composed)
+   }
++}
+ 
+-  return Array.from(pathSet)
++/**
++ * Resuelve aparte cada destino compuesto de un texto de enlace que sube
++ * (≙ `H` en `Rt`): una raíz de red se anota tal cual, un colapso se anota
++ * como grafía, y una ascendencia sin verificar, un `readlink` fallido o más
++ * de ocho destinos dejan la criba sin vetar.
++ */
++function resolveClimbingTargets(state: WalkState, climbing: ClimbingTargets): boolean {
++  for (let index = 0; index < climbing.targets.length; index++) {
++    if (index >= MAX_CLIMBING_LINK_TEXTS) return false
++    const target = climbing.targets[index]!
++    if (skipsDisk(target)) {
++      state.spellings.add(target)
++      continue
++    }
++    const walk = performWalk(state, target, hop => climbing.record(hop))
++    if (walk.verdict === UNVERIFIED_ANCESTRY || state.trace.readlinkFailed) return false
++    if (walk.verdict !== undefined) state.spellings.add(walk.verdict)
++  }
++  return true
++}
++
++/**
++ * Criba una ruta (≙ `H6 = Rt(e, 'screen')`, 2.1.283): las mismas grafías
++ * que el chequeo de permisos más los destinos de los textos de enlace que
++ * suben, y `vetted` sólo si todo se resolvió. A diferencia del modo de
++ * permisos, un fallo de permiso sin enlaces no se toma como resuelto.
++ */
++export function resolvePathForScreen(inputPath: string): ScreenedPath {
++  const requested = expandTilde(inputPath)
++  if (skipsDisk(requested)) return { paths: [requested], vetted: true }
++  const state = newWalkState(requested)
++  const climbing = new ClimbingTargets()
++  const walk = performWalk(state, requested, hop => {
++    recordLeafHop(state, hop)
++    climbing.record(hop)
++  })
++  const screened = (vetted: boolean): ScreenedPath => ({ paths: Array.from(state.spellings), vetted })
++
++  if (walk.verdict === UNVERIFIED_ANCESTRY) return screened(false)
++  if (walk.verdict !== undefined) {
++    if (!resolveClimbingTargets(state, climbing)) return screened(false)
++    landingFromCollapse(state, walk, walk.verdict)
++    return screened(true)
++  }
++  if (walk.outcome === undefined) {
++    const vetted = !state.trace.readlinkFailed && resolveClimbingTargets(state, climbing)
++    return screened(vetted)
++  }
++  if (walk.outcome.kind === 'absent' && walk.outcome.remaining.some(hasDotSegment)) return screened(false)
++  landingFromOutcome(state, walk.outcome)
++  return screened(resolveClimbingTargets(state, climbing))
++}
++
++/**
++ * Las grafías que se chequean contra las reglas (≙ `To`, 2.1.283): las del
++ * resolvedor y, si no pudo resolver, el `realpath` de `safeResolvePath`
++ * cuando es canónico o un enlace y aún no estaba. Es el adaptador para los
++ * consumidores que sólo necesitan grafías; quien necesita el aterrizaje usa
++ * `resolvePathForPermission`.
++ */
++export function getPathsForPermissionCheck(inputPath: string): string[] {
++  const resolved = resolvePathForPermission(inputPath)
++  if (!resolved.unresolved) return resolved.spellings
++  const { resolvedPath, isCanonical, isSymlink } = safeResolvePath(getFsImplementation(), resolved.requested)
++  const worthAdding = (isCanonical || isSymlink) && !resolved.spellings.includes(resolvedPath)
++  return worthAdding ? [...resolved.spellings, resolvedPath] : resolved.spellings
+ }
+ 
+ export const NodeFsOperations: FsOperations = {
+@@ -557,6 +1049,12 @@ export const NodeFsOperations: FsOperations = {
+     return fs.readlinkSync(path)
+   },
+ 
++  openDirNoFollowSync(path: string) {
++    using _ = slowLogging`fs.openDirNoFollowSync(${path})`
++    const fd = fs.openSync(path, fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW)
++    fs.closeSync(fd)
++  },
++
+   realpathSync(path: string) {
+     using _ = slowLogging`fs.realpathSync(${path})`
+     return fs.realpathSync(path).normalize('NFC')

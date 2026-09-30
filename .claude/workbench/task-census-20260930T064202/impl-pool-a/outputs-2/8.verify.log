@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+ 29 pass
+ 0 fail
+ 44 expect() calls
+Ran 29 tests across 1 file. [1.71s]
+bun test v1.3.11 (af24e281)
+
+ 9 pass
+ 0 fail
+ 14 expect() calls
+Ran 9 tests across 1 file. [1423.00ms]
+bun test v1.3.11 (af24e281)
+
+ 39 pass
+ 0 fail
+ 61 expect() calls
+Ran 39 tests across 1 file. [243.00ms]
+bin/check_package_typecheck: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/8" && uv sync
+check-package-typecheck: 48 provider(s) reconstruido(s) por viejos: agent, app-host, audio-capture-napi, bridge, claude-for-chrome-mcp, cli, color-diff-napi, command-runtime, computer-use-input, computer-use-mcp, computer-use-swift, config, context-compression, coordination, daemon, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, mitm, modifiers-napi, observability, output, paths, permission, plan, provider, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))

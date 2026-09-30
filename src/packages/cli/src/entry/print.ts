@@ -8,6 +8,10 @@
  * pool usa y rehúsa las demás nombrándolas: aceptar en silencio una bandera
  * que no se cumple es peor que no aceptarla.
  *
+ * Sin credencial propia no delega en `claude -p`: entra al túnel del proxy
+ * local con el upstream `claude-cli` (`./printDelegation.ts`), y el bucle
+ * sigue siendo el propio, herramientas incluidas.
+ *
  * Las formas de salida salen del binario 2.1.282 (extractos en
  * `.claude/workbench/print-mode-20260926T225709/`):
  * - `system/init` del constructor de `chunk-q6234ftd.js` (cwd, session_id,
@@ -30,18 +34,20 @@ import type { LoopResult } from '@thyrox/agent/loop/types'
 import { loopSetup } from './runLoop.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { openExistingConnectionStore, type OpenedConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
-import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
+import { credentialEnvironmentFor, decidePrintRoute, type CredentialEnvironment, type SpawnLocalProxy } from './printDelegation.ts'
 import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
 
 /** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
 export type PrintDeps = {
   env?: Record<string, string | undefined>
-  findExecutable?: (name: string) => string | null
   readFd?: (fd: number) => string
-  newSessionId?: () => string
-  /** El store de conexiones, si existe; la decisión de delegar lo consulta. */
+  /** El store de conexiones, si existe; la decisión de ruta lo consulta. */
   openStore?: () => OpenedConnectionStore | undefined
+  /** Cómo se lanza el proxy local cuando hace falta; las pruebas lo sustituyen. */
+  spawnLocalProxy?: SpawnLocalProxy
+  /** Cuánto se espera el anuncio del socket del proxy local. */
+  announceTimeoutMs?: number
 }
 
 export type OutputFormat = 'text' | 'json' | 'stream-json'
@@ -210,14 +216,21 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
     process.stderr.write(`${(e as Error).message}\n`)
     return 2
   }
-  // La línea se valida con el contrato de thyrox antes de delegar: lo que
-  // thyrox -p rehúsa no pasa a claude -p.
+  // La línea se valida con el contrato de thyrox antes de buscar credencial:
+  // lo que thyrox -p rehúsa no levanta ningún proxy.
   const env = deps.env ?? process.env
   const opened = (deps.openStore ?? (() => openExistingConnectionStore({ env })))()
-  const delegation = decidePrintDelegation(argv, env, deps.findExecutable ?? ((name) => Bun.which(name)), deps.readFd, opened?.store)
+  const route = decidePrintRoute(argv, env, deps.readFd, opened?.store)
   opened?.close()
-  if (delegation.delegate) {
-    return runDelegatedPrint(delegation.claudePath, delegatedArgv(argv, deps.newSessionId), stdin, env)
+  let credential: CredentialEnvironment
+  try {
+    credential = await credentialEnvironmentFor(route, {
+      env, cwd, models: [args.model], spawn: deps.spawnLocalProxy, announceTimeoutMs: deps.announceTimeoutMs,
+    })
+  } catch (e) {
+    // Nunca se cae a `claude -p` directo: sin proxy, la causa y exit 2.
+    process.stderr.write(`thyrox -p: sin credencial propia y sin proxy local: ${(e as Error).message}\n`)
+    return 2
   }
   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
   const startedAt = performance.now()
@@ -229,7 +242,7 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
     stopMessaging = await startMessagingInboxAtLaunch(args.messagingSocketPath)
     // Publica sessions/<pid>.json ANTES del turno, igual que el modo bucle.
     await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
-    const { shared } = loopSetup(args.loopArgv, cwd, dir, args.tools)
+    const { shared } = loopSetup(args.loopArgv, cwd, dir, { toolAllow: args.tools, env: credential.env })
     const gen = streamLoop({ ...shared, prompt: args.prompt })
     let step = await gen.next()
     while (!step.done) {
@@ -252,5 +265,6 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
   } finally {
     if (!args.persist) rmSync(dir, { recursive: true, force: true })
     await stopMessaging?.()
+    await credential.close()
   }
 }

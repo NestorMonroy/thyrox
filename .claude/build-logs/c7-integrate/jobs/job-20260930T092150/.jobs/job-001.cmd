@@ -1,0 +1,1 @@
+cd src/packages/cli && timeout 600 bun test __tests__/print __tests__/printDelegation.test.ts __tests__/cliEntry __tests__/modeDispatchContext > ../../../.claude/build-logs/c7-integrate/cli.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/c7-integrate/cli.log

@@ -1,0 +1,459 @@
+diff --git a/.claude/workbench/task-thyrox-0499-credential-source-20260930T091316/README.md b/.claude/workbench/task-thyrox-0499-credential-source-20260930T091316/README.md
+new file mode 100644
+index 000000000..7ccd9b141
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0499-credential-source-20260930T091316/README.md
+@@ -0,0 +1,78 @@
++# TASK-THYROX-0499 — la fuente de credencial del pool, contra 2.1.283
++
++Pregunta: ¿cómo decide el ejecutable de referencia de dónde sale su
++credencial, y cómo lo declara? Sólo lectura sobre
++`/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/` con `rg`;
++`bin/binary literal` devolvió 0 chunks con `--root` apuntando al corpus y a
++la raíz del árbol principal, así que las líneas de abajo salen de `rg -n -o`.
++
++## Símbolos y literales consultados
++
++| Símbolo / literal | Chunk:línea | Qué hace | Decisión |
++|---|---|---|---|
++| `dc()` | `chunk-t6pwageh.js:77` | Devuelve `{source, hasToken}`: `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR`, `CCR_OAUTH_TOKEN_FILE`, `apiKeyHelper`, `profile`, `claude.ai` o `none`. Nombra la fuente por el NOMBRE de la variable; nunca devuelve el valor. | **Portado**: `first_present_credential_variable` recorre los cuatro nombres de la cadena de `credentials.ts` y el pool escribe el nombre, no el valor. |
++| `nf()` / `pb()` | `chunk-t6pwageh.js:77` | La misma cadena para la llave (`key`, `source`); `WLr()` publica `source` y una huella (`Kt(e)`), no la llave. | Portado en espíritu: el pool publica `credencial: <fuente> (<por qué>)`; la huella no se porta (no hay consumidor). |
++| `no = { ANTHROPIC_API_KEY: " from ANTHROPIC_API_KEY", … }` | `chunk-t6pwageh.js:26` | Tabla fuente → texto para el usuario («from the OAuth token file descriptor», «from the saved claude.ai login»). | **Portado** como el `por qué` de la línea: una razón por fuente, en español. |
++| `Tx` (`claude-ai-external-token`) | `chunk-qr9an5z2.js:15` | Aviso «`<source>` overriding Claude subscription login» cuando conviven dos fuentes: la que gana se DECLARA. | **Portado** como principio: cuando `proxy-store` se pide con una variable en el entorno, la línea dice `<VAR> se retira del entorno del proxy`; cuando hay varias, la línea nombra la primera de la cadena, que es la que ganaría. |
++| `i1()` | `chunk-7y2gzc5g.js:20` | El túnel: `ANTHROPIC_UNIX_SOCKET` sin `ANTHROPIC_AUTH_TOKEN` y exactamente un marcador `nRe`. | Ya portado en `tunnelSocket` (`credentials.ts`); el pool sigue entregando socket + marcador sin cambio. |
++| `nRe = "ssh-placeholder"` | `chunk-vmq4raye.js:11` | El marcador del túnel. | Sin cambio (`SSH_PLACEHOLDER`). |
++| Barrido bajo `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` | `chunk-m5drh1xg.js:29` | Borra `[...I0, ...LL, ...G1]` del entorno del hijo cuando el anfitrión administra la credencial. `I0` (`chunk-379zyrv7.js:12`) = `ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, CLAUDE_CODE_OAUTH_TOKEN, AWS_BEARER_TOKEN_BEDROCK, …`. | **Portado en dirección inversa**: para `proxy-store` el pool retira del entorno del PROXY las cuatro variables de la cadena (`env -u …`), para que la fuente usada sea la pedida. **Divergencia**: sólo las cuatro que lee `credentials.ts`, no `I0` entero (Bedrock/Foundry no entran en la cadena de thyrox). |
++| `env=${…OAUTH_TOKEN?"set":"unset"}, fd=${…?"set":"unset"}` | `chunk-bfkwjer3.js:11` (también en el mensaje de `CLAUDE_CODE_REMOTE`) | Diagnóstico por presencia: cada variable de credencial se publica como `set`/`unset`, nunca su valor. | **Portado**: los dobles de la suite registran nombres presentes, y la suite mide 0 apariciones del valor en salida y artefactos. |
++
++## Lo que la referencia NO tiene y el pool sí
++
++- **Una fuente pedida que rehúsa en vez de caer.** `dc()` y `pb()` siempre
++  caen a la siguiente fuente y terminan en `none`; la advertencia `Tx` avisa
++  de la coexistencia pero no rehúsa. El pool, con `--credential-source`,
++  rehúsa con exit 2 si la fuente pedida no está (`proxy-env` sin variable;
++  `proxy-store` si el proxy no resuelve el store). Divergencia declarada:
++  aquí el llamador pide una fuente concreta y el pool es un despachador,
++  no un cliente interactivo que pueda preguntar.
++- **La derivación declarada.** `--credential-proxy` sin `--credential-source`
++  deriva `proxy-env`/`proxy-store` por presencia y la línea dice
++  `derivada de --credential-proxy`; una fuente `declarada` o `por defecto`
++  también lo dice. La referencia no distingue en su salida cómo llegó a la
++  fuente.
++
++## Cifras
++
++- Casos de la suite nueva: 39 aserciones, 17 en rojo antes de implementar,
++  39 en verde después.
++  *Métrica:* `check` de `tests/session/test-headless-pool-credential-source.sh`.
++  *Ciega a:* el proxy real y el store real (la suite usa dobles); el
++  extremo a extremo con proxy real lo mide `test-headless-pool-thyrox-p.sh`.
++- Controles de anulación, una línea cambiada cada uno, y lo que cae:
++  A (sin exigir credencial para `proxy-env`) → 4 de 39, todas del caso 6;
++  B (sin retirar variables para `proxy-store`) → 1 de 39, la del proxy que
++  no debía verlas; C (sin derivar) → 4 de 39, todas del caso 4;
++  D (sin la contradicción `inherit` + `--credential-proxy`) → 2 de 39.
++  *Métrica:* conteo de `FALLA` por ejecución sobre el archivo mutado con
++  `gawk`, restaurado desde una copia `mktemp`.
++  *Ciega a:* una anulación de dos ramas a la vez (no se midió).
++- Literales `ssh-placeholder`, `ANTHROPIC_UNIX_SOCKET`,
++  `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` con `bin/binary literal --root`: 0
++  chunks en las dos raíces probadas; con `rg -l` sobre el corpus: 1, ≥1, ≥1.
++  *Métrica:* salida de cada comando.
++  *Ciega a:* por qué `bin/binary literal` no ve el corpus desde un worktree
++  sin `_references/` (no se investigó: está fuera de los archivos del ítem).
++
++## Lo que la medición corrigió
++
++- **El archivo de la decisión no puede vivir en `<out>` mientras el pool
++  corre.** La primera versión escribía `<out>/credential-source` al decidir,
++  y `tests/session/test-headless-pool-lifecycle.sh` cayó en «en curso, git
++  status del banco no cambia» (0 esperado, 1 obtenido) — la invariante I1:
++  la salida sólo cambia al publicar. Contra HEAD esa suite no tenía ningún
++  `FAIL`, así que el fallo era del cambio. Corrección: la línea sale por
++  stdout al decidir; el archivo se escribe en el runtime junto al índice y se
++  copia a `<out>` justo antes de `close-run`. Un rehúso previo al runtime
++  deja sólo la línea, y la suite lo mide (`sin-archivo`).
++  *Métrica:* `FAIL` de esa suite con la versión de HEAD del pool (copia
++  `mktemp`, sin stash) contra la versión con el cambio.
++  *Ciega a:* la forma más limpia —añadir `credential-source` a
++  `pool_lifecycle.RUN_ARTIFACTS`— toca un archivo que no es de este ítem.
++- **`test-headless-pool-worktree.sh` falla 1 de 46 igual en HEAD** («su
++  node_modules sigue siendo el del runner»: este worktree no tiene
++  `node_modules` y hereda el del árbol principal). No es de este cambio.
++- **`test-headless-pool.sh` falla 7 de 130 igual en HEAD**, todas de
++  `cache-ttl`; ninguna nombra credencial, proxy ni socket.
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index a226175ed..dec7c0b01 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -26,7 +26,8 @@
+ #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
+ #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
+ #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
+-#                    [--credential-proxy] [--isolation worktree [--verify CMD]]
++#                    [--credential-proxy] [--credential-source inherit|proxy-env|proxy-store]
++#                    [--isolation worktree [--verify CMD]]
+ #                    < items (uno por linea)
+ #
+ # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
+@@ -42,13 +43,25 @@
+ # `bin/pool_integrate OUT` aplica lo verificado y disjunto, y el commit es de
+ # quien integra.
+ #
+-# `--credential-proxy` lanza el proxy de credencial
+-# (`bin/provider-credential-proxy`, o HEADLESS_POOL_CREDENTIAL_PROXY) con la
+-# credencial del entorno del pool, y cada item recibe sólo
+-# ANTHROPIC_UNIX_SOCKET y el marcador `ssh-placeholder` como
+-# ANTHROPIC_API_KEY: ningún item ve el secreto. Es el túnel por socket del
+-# ejecutable (`i1` de 2.1.283). Si el proxy no arranca, el pool rehúsa con
+-# exit 2 sin lanzar items; al terminar, el pool lo detiene.
++# `--credential-source` declara de dónde sale la credencial de los ítems. El
++# pool lo decide ANTES de lanzar ninguno y lo escribe —`credencial: <fuente>
++# (<por qué>)` en su salida y en `<out>/credential-source`—:
++#   inherit      cada ítem hereda el entorno del pool tal cual; sin variable
++#                de credencial, `thyrox -p` delega en `claude -p` (la máscara);
++#   proxy-env    el proxy de credencial (`bin/provider-credential-proxy`, o
++#                HEADLESS_POOL_CREDENTIAL_PROXY) con la credencial del entorno
++#                del pool; exige una por nombre, y sin ella rehúsa;
++#   proxy-store  el mismo proxy con las variables de credencial RETIRADAS de
++#                su entorno: resuelve la conexión del store, o rehúsa.
++# Con proxy cada item recibe sólo ANTHROPIC_UNIX_SOCKET y el marcador
++# `ssh-placeholder` como ANTHROPIC_API_KEY: ningún item ve el secreto. Es el
++# túnel por socket del ejecutable (`i1` de 2.1.283). Si el proxy no arranca,
++# el pool rehúsa con exit 2 nombrando la fuente, sin lanzar items; al
++# terminar, el pool lo detiene. Sin `--credential-source`, `--credential-proxy`
++# deriva entre `proxy-env` y `proxy-store` por la PRESENCIA de una variable de
++# credencial —por nombre, nunca por valor— y lo dice; sin ninguna de las dos
++# opciones rige `inherit`. Una fuente pedida que no está rehúsa con exit 2 y
++# su causa: ninguna cae a otra en silencio.
+ #
+ # Con GNU Time (/usr/bin/time, o HEADLESS_POOL_TIME) cada item deja <n>.time
+ # con "memoria-pico-KB pared-s usuario-s sistema-s". La memoria pico incluye
+@@ -156,7 +169,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
+ RUNNER_KIND=thyrox
+ PROMPT=""; OUT=""; MODEL=""
+ WIDTH="$(nproc 2>/dev/null || echo 4)"
+-TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
++TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
+ 
+ rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
+ 
+@@ -175,6 +188,7 @@ while [[ $# -gt 0 ]]; do
+         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
+         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
+         --credential-proxy) CREDENTIAL_PROXY=1; shift ;;
++        --credential-source) CREDENTIAL_SOURCE="${2:-}"; shift 2 ;;
+         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
+         -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+         *) rehusa "opcion desconocida: $1" ;;
+@@ -353,16 +367,83 @@ export HP_VRAM_NEED
+ 
+ mkdir -p "$OUT"
+ 
+-# El proxy de credencial: lo lanza el pool con SU entorno, y los items sólo
+-# reciben la ruta del socket. Se espera su anuncio (`socket=<ruta>`) antes de
+-# lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no se lanza
+-# nada.
++# >>> credential-source
++# La fuente de credencial de los ítems se decide aquí, antes de lanzar
++# ninguno, y se declara (contrato de arriba). La presencia de una credencial
++# se mide por el NOMBRE de la variable, en el orden de la cadena de
++# `@thyrox/provider: credentials.ts` —la primera presente es la que el proxy
++# usaría—, como `dc()` de 2.1.283 nombra su fuente sin tocar el valor.
++# Ningún valor se imprime ni se escribe.
++readonly -a CREDENTIAL_VARIABLE_NAMES=(ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ANTHROPIC_API_KEY)
++readonly CREDENTIAL_VARIABLE_LIST="ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY"
++first_present_credential_variable() {
++    local name
++    for name in "${CREDENTIAL_VARIABLE_NAMES[@]}"; do
++        [[ -z "${!name:-}" ]] || { echo "$name"; return 0; }
++    done
++    return 1
++}
++CREDENTIAL_VARIABLE="$(first_present_credential_variable)" || CREDENTIAL_VARIABLE=""
++# Quién decidió la fuente: la opción (`declarada`), `--credential-proxy` sin
++# opción (`derivada`, entre las dos de proxy según haya credencial en el
++# entorno), o nada (`por defecto`, `inherit`).
++if [[ -n "$CREDENTIAL_SOURCE" ]]; then
++    CREDENTIAL_DECIDED_BY=declarada
++elif [[ -n "$CREDENTIAL_PROXY" ]]; then
++    CREDENTIAL_DECIDED_BY="derivada de --credential-proxy"
++    if [[ -n "$CREDENTIAL_VARIABLE" ]]; then CREDENTIAL_SOURCE=proxy-env; else CREDENTIAL_SOURCE=proxy-store; fi
++else
++    CREDENTIAL_DECIDED_BY="por defecto"
++    CREDENTIAL_SOURCE=inherit
++fi
++# Cada fuente comprueba que lo que exige está, y rehúsa si no: la fuente
++# pedida nunca se sustituye por otra.
++case "$CREDENTIAL_SOURCE" in
++    inherit)
++        [[ -z "$CREDENTIAL_PROXY" ]] || rehusa "--credential-source inherit y --credential-proxy se contradicen: inherit no lanza proxy"
++        if [[ -n "$CREDENTIAL_VARIABLE" ]]; then
++            CREDENTIAL_WHY="$CREDENTIAL_VARIABLE en el entorno del pool: cada ítem la hereda"
++        else
++            CREDENTIAL_WHY="sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p delega en claude -p"
++        fi ;;
++    proxy-env)
++        [[ -n "$CREDENTIAL_VARIABLE" ]] \
++            || rehusa "proxy-env exige una credencial en el entorno del pool ($CREDENTIAL_VARIABLE_LIST) y no hay ninguna; no se cae a proxy-store"
++        CREDENTIAL_WHY="$CREDENTIAL_VARIABLE en el entorno del pool: sólo el proxy la ve" ;;
++    proxy-store)
++        if [[ -n "$CREDENTIAL_VARIABLE" ]]; then
++            CREDENTIAL_WHY="$CREDENTIAL_VARIABLE se retira del entorno del proxy: el proxy resuelve la conexión del store"
++        else
++            CREDENTIAL_WHY="sin variable de credencial en el entorno del pool: el proxy resuelve la conexión del store"
++        fi ;;
++    *) rehusa "--credential-source va inherit, proxy-env o proxy-store, no: $CREDENTIAL_SOURCE" ;;
++esac
++# La línea sale ahora; su archivo espera al runtime de la ejecución, porque
++# la salida no cambia mientras el pool corre (I1, `pool_lifecycle`).
++CREDENTIAL_LINE="credencial: $CREDENTIAL_SOURCE ($CREDENTIAL_DECIDED_BY; $CREDENTIAL_WHY)"
++echo "$CREDENTIAL_LINE"
++
++# El proxy de credencial: lo lanza el pool, y los items sólo reciben la ruta
++# del socket. Con `proxy-store` su entorno va sin las variables de
++# credencial: con ellas, la cadena del proxy las usaría antes que el store y
++# la fuente usada no sería la pedida. Se espera su anuncio (`socket=<ruta>`)
++# antes de lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no
++# se lanza nada.
++credential_proxy_command() {
++    local name
++    if [[ "$CREDENTIAL_SOURCE" == proxy-store ]]; then
++        printf '%s\n' env
++        for name in "${CREDENTIAL_VARIABLE_NAMES[@]}"; do printf '%s\n' -u "$name"; done
++    fi
++    printf '%s\n' "$proxy_bin" --socket "$proxy_socket"
++}
+ HP_PROXY_SOCKET=""
+-if [[ -n "$CREDENTIAL_PROXY" ]]; then
++if [[ "$CREDENTIAL_SOURCE" != inherit ]]; then
+     proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-credential-proxy}"
+     proxy_socket="$OUT/.credential-proxy.sock"
+     proxy_log="$OUT/.credential-proxy.log"
+-    "$proxy_bin" --socket "$proxy_socket" > "$proxy_log" 2>&1 &
++    mapfile -t proxy_command < <(credential_proxy_command)
++    "${proxy_command[@]}" > "$proxy_log" 2>&1 &
+     proxy_pid=$!
+     trap 'kill "$proxy_pid" 2>/dev/null; wait "$proxy_pid" 2>/dev/null' EXIT
+     for _ in $(seq 1 100); do
+@@ -371,10 +452,11 @@ if [[ -n "$CREDENTIAL_PROXY" ]]; then
+         sleep 0.1
+     done
+     grep -q '^socket=' "$proxy_log" 2>/dev/null \
+-        || rehusa "el proxy de credencial no arrancó ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
++        || rehusa "el proxy de credencial no arrancó para la fuente $CREDENTIAL_SOURCE ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
+     HP_PROXY_SOCKET="$proxy_socket"
+ fi
+ export HP_PROXY_SOCKET
++# <<< credential-source
+ # La ejecución vive en su runtime hasta cerrarse: el índice, el joblog y los
+ # artefactos de cada ítem se escriben ahí, y a la salida sólo llega lo publicado
+ # (`pool_lifecycle`). Un pool que muere deja su runtime para `reconcile`.
+@@ -386,6 +468,8 @@ export HP_LIVE
+ for i in "${!ITEMS[@]}"; do
+     printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$HP_LIVE/index.tsv"
+ done
++# La decisión de credencial vive junto al índice y llega a la salida con él.
++printf '%s\n' "$CREDENTIAL_LINE" > "$HP_LIVE/credential-source"
+ 
+ # Un item por trabajo. El cuerpo va en una funcion exportada para que GNU
+ # Parallel no tenga que citar el prompt: recibe numero e item como argumentos.
+@@ -763,6 +847,9 @@ if [[ "$ISOLATION" == worktree ]]; then
+         print "" }'
+     bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT" "$HP_LIVE"
+ fi
++# La decisión de credencial se publica con el cierre: `close-run` publica sólo
++# sus artefactos (`pool_lifecycle.RUN_ARTIFACTS`) y retira el runtime.
++cp "$HP_LIVE/credential-source" "$OUT/credential-source"
+ # El cierre de la ejecución publica el índice y el joblog y deja `run.closed` al
+ # final. Si algún ítem no llegó a cerrarse, su runtime se conserva y el pool
+ # sale con fallo aunque el joblog diga lo contrario.
+diff --git a/tests/session/test-headless-pool-credential-source.sh b/tests/session/test-headless-pool-credential-source.sh
+new file mode 100755
+index 000000000..3445cb2de
+--- /dev/null
++++ b/tests/session/test-headless-pool-credential-source.sh
+@@ -0,0 +1,183 @@
++#!/usr/bin/env bash
++# Suite de la fuente de credencial de headless-pool (TASK-THYROX-0499): el
++# pool decide ANTES de lanzar ningún ítem entre `inherit` (cada ítem hereda el
++# entorno del pool; sin credencial, `thyrox -p` delega en `claude -p`),
++# `proxy-env` (el proxy con la credencial del entorno del pool) y
++# `proxy-store` (el proxy con la conexión del store, sin credencial del
++# entorno), declara cuál usó y por qué, y rehúsa con exit 2 cuando la fuente
++# pedida no está en vez de caer a otra.
++#
++# Ni el proxy ni el runner reales se invocan: HEADLESS_POOL_CREDENTIAL_PROXY
++# y HEADLESS_POOL_RUNNER apuntan a dobles que registran sólo los NOMBRES de
++# las variables de credencial que vieron, nunca su valor. Lo que se mide es
++# la decisión y lo que llega a cada lado; el servicio no entra.
++#
++# Métrica: la línea `credencial:` del pool, el archivo `credential-source` de
++# la salida, los nombres de variable que vieron el proxy y el ítem, el código
++# de salida y la presencia del resumen.
++# Ciega a: si el proxy real resuelve la conexión del store (lo mide
++# `tests/session/test-headless-pool-thyrox-p.sh` con el proxy real) y a si el
++# ítem con máscara encuentra `claude` en el PATH (lo decide `thyrox -p`).
++set -uo pipefail
++ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
++POOL="$ROOT/src/session/headless-pool.sh"
++failures=0; total=0
++check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FALLA $1 — esperado '$3', obtenido '$2'"; failures=$((failures+1)); fi; }
++
++F="$(mktemp -d)"; trap 'rm -rf "${F:?}"' EXIT
++export THYROX_RUNTIME_DIR="$F/runtime"
++CREDENTIAL_NAMES=(ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ANTHROPIC_API_KEY)
++# Un valor que ningún artefacto puede contener: si aparece, se filtró.
++SECRET="sk-secret-9f3a7c"
++
++# Los dobles comparten la sonda: los nombres presentes, en el orden de la
++# cadena, o `none`.
++cat > "$F/present-names.sh" <<'PROBE'
++present_names() {
++  local name out=""
++  for name in ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ANTHROPIC_API_KEY; do
++    [[ -n "${!name:-}" ]] && out="${out:+$out,}$name"
++  done
++  echo "${out:-none}"
++}
++PROBE
++# El proxy doble: anota los nombres que vio y su pid, anuncia el socket y
++# espera a que el pool lo detenga.
++cat > "$F/credential-proxy" <<SH2
++#!/usr/bin/env bash
++source "$F/present-names.sh"
++while [[ \$# -gt 0 ]]; do case "\$1" in --socket) sock="\$2"; shift 2 ;; *) shift ;; esac; done
++printf 'names=%s|pid=%s\n' "\$(present_names)" "\$\$" > "\$PROXY_SAW"
++echo "socket=\$sock"
++exec sleep 300
++SH2
++# El proxy doble que rehúsa, como el real sin credencial propia: anota que lo
++# invocaron y sale 2 sin anunciar socket.
++cat > "$F/credential-proxy-refuses" <<SH2
++#!/usr/bin/env bash
++source "$F/present-names.sh"
++printf 'names=%s|pid=%s\n' "\$(present_names)" "\$\$" > "\$PROXY_SAW"
++echo "credentialProxy: sin credencial propia — NO se escucha." >&2
++exit 2
++SH2
++# El runner doble: devuelve en `result` si vio el socket, si su ANTHROPIC_API_KEY
++# es el marcador y qué nombres de credencial tiene.
++cat > "$F/runner" <<SH2
++#!/usr/bin/env bash
++source "$F/present-names.sh"
++cat > /dev/null
++sock=unset; [[ -z "\${ANTHROPIC_UNIX_SOCKET:-}" ]] || sock=set
++marker=no; [[ "\${ANTHROPIC_API_KEY:-}" != ssh-placeholder ]] || marker=yes
++jq -cn --arg r "sock=\$sock|marker=\$marker|names=\$(present_names)" '{type:"result",result:\$r}'
++SH2
++chmod +x "$F/credential-proxy" "$F/credential-proxy-refuses" "$F/runner"
++printf 'Lee.\n' > "$F/prompt.md"
++
++# Cada caso parte de un entorno SIN ninguna variable de credencial y declara
++# las suyas por `VARS`; el proxy y el historial se declaran por caso.
++run() {
++  local unset_args=() name
++  for name in "${CREDENTIAL_NAMES[@]}"; do unset_args+=(-u "$name"); done
++  rm -rf "$F/out" "$F/proxy-saw"
++  SALIDA="$(printf 'alfa\n' | env "${unset_args[@]}" ${VARS:-} \
++      PROXY_SAW="$F/proxy-saw" HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-existe" \
++      HEADLESS_POOL_CREDENTIAL_PROXY="${PROXY:-$F/credential-proxy}" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" \
++      bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 1 "$@" 2>&1)"; CODE=$?
++}
++credential_line() { printf '%s\n' "$SALIDA" | gawk '/^credencial: /{print}'; }
++summary_count() { printf '%s\n' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}'; }
++item_saw() { jq -r .result "$F/out/1.json" 2>/dev/null; }
++proxy_saw() { cut -d'|' -f1 "$F/proxy-saw" 2>/dev/null || echo "no-invocado"; }
++proxy_alive() { local pid; pid="$(cut -d'|' -f2 "$F/proxy-saw" 2>/dev/null | sed 's/^pid=//')"; [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null && echo vive || echo muerto; }
++leaks() { { printf '%s\n' "$SALIDA"; cat "$F/out"/* "$F/out"/.* 2>/dev/null; } | grep -c "$SECRET"; }
++
++# 1 — sin opción y sin credencial: inherit, y el pool dice que el ítem la resuelve solo.
++VARS="" run
++check "inherit sin credencial: exit 0" "$CODE" "0"
++check "inherit sin credencial: la línea nombra la fuente y el porqué" "$(credential_line)" \
++  "credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p delega en claude -p)"
++check "inherit sin credencial: el ítem no ve socket ni credencial" "$(item_saw)" "sock=unset|marker=no|names=none"
++check "inherit sin credencial: no se lanza ningún proxy" "$(proxy_saw)" "no-invocado"
++check "inherit: la decisión queda en la salida" "$(cat "$F/out/credential-source" 2>/dev/null)" "$(credential_line)"
++
++# 2 — sin opción y con credencial: inherit, cada ítem la hereda; el valor no sale.
++VARS="ANTHROPIC_API_KEY=$SECRET" run
++check "inherit con credencial: la línea nombra la variable" "$(credential_line)" \
++  "credencial: inherit (por defecto; ANTHROPIC_API_KEY en el entorno del pool: cada ítem la hereda)"
++check "inherit con credencial: el ítem la hereda por nombre, sin socket" "$(item_saw)" "sock=unset|marker=no|names=ANTHROPIC_API_KEY"
++check "inherit con credencial: el valor no aparece en la salida ni en los artefactos" "$(leaks)" "0"
++
++# 3 — --credential-proxy con credencial: deriva proxy-env y nombra la variable
++# que gana, en el orden de la cadena; sólo el proxy la ve.
++VARS="ANTHROPIC_AUTH_TOKEN=$SECRET ANTHROPIC_API_KEY=$SECRET-2" run --credential-proxy
++check "proxy-env derivada: exit 0" "$CODE" "0"
++check "proxy-env derivada: la línea nombra la variable que gana" "$(credential_line)" \
++  "credencial: proxy-env (derivada de --credential-proxy; ANTHROPIC_AUTH_TOKEN en el entorno del pool: sólo el proxy la ve)"
++check "proxy-env derivada: el proxy ve las variables del entorno" "$(proxy_saw)" "names=ANTHROPIC_AUTH_TOKEN,ANTHROPIC_API_KEY"
++check "proxy-env derivada: el ítem ve el socket y el marcador, sin credencial" "$(item_saw)" "sock=set|marker=yes|names=ANTHROPIC_API_KEY"
++check "proxy-env derivada: el valor no aparece" "$(leaks)" "0"
++check "proxy-env derivada: al terminar el pool el proxy ya no vive" "$(proxy_alive)" "muerto"
++
++# 4 — --credential-proxy sin credencial: deriva proxy-store y lo dice; el proxy
++# arranca sin ninguna variable de credencial.
++VARS="" run --credential-proxy
++check "proxy-store derivada: exit 0" "$CODE" "0"
++check "proxy-store derivada: la línea lo dice" "$(credential_line)" \
++  "credencial: proxy-store (derivada de --credential-proxy; sin variable de credencial en el entorno del pool: el proxy resuelve la conexión del store)"
++check "proxy-store derivada: el proxy arranca sin variables de credencial" "$(proxy_saw)" "names=none"
++check "proxy-store derivada: el ítem ve el socket y el marcador" "$(item_saw)" "sock=set|marker=yes|names=ANTHROPIC_API_KEY"
++
++# 5 — proxy-store pedida y el proxy no tiene conexión: exit 2 con la causa,
++# sin resumen, y la decisión queda escrita.
++VARS="" PROXY="$F/credential-proxy-refuses" run --credential-source proxy-store
++check "proxy-store sin store: exit 2" "$CODE" "2"
++check "proxy-store sin store: sin resumen" "$(summary_count)" "0"
++check "proxy-store sin store: rehúsa nombrando la fuente y la causa del proxy" \
++  "$(printf '%s\n' "$SALIDA" | gawk '/REHUSA/ && /proxy-store/ && /sin credencial propia/{n++} END{print n+0}')" "1"
++check "proxy-store sin store: la decisión se declaró antes de rehusar, y no queda archivo en la salida" \
++  "$(credential_line) $(test -e "$F/out/credential-source" && echo archivo || echo sin-archivo)" \
++  "credencial: proxy-store (declarada; sin variable de credencial en el entorno del pool: el proxy resuelve la conexión del store) sin-archivo"
++
++# 6 — proxy-env pedida sin credencial en el entorno: rehúsa ANTES de lanzar el
++# proxy, nombra las variables que esperaba, y no cae a proxy-store.
++VARS="" run --credential-source proxy-env
++check "proxy-env sin credencial: exit 2" "$CODE" "2"
++check "proxy-env sin credencial: sin resumen" "$(summary_count)" "0"
++check "proxy-env sin credencial: el proxy no se lanza" "$(proxy_saw)" "no-invocado"
++check "proxy-env sin credencial: nombra las variables esperadas y que no cae a proxy-store" \
++  "$(printf '%s\n' "$SALIDA" | gawk '/REHUSA/ && /ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY/ && /no se cae a proxy-store/{n++} END{print n+0}')" "1"
++
++# 7 — proxy-store pedida CON credencial en el entorno: el proxy arranca sin
++# ella —no la usa en silencio— y la línea lo declara.
++VARS="ANTHROPIC_API_KEY=$SECRET" run --credential-source proxy-store
++check "proxy-store con credencial en el entorno: exit 0" "$CODE" "0"
++check "proxy-store con credencial en el entorno: la línea declara que se retira" "$(credential_line)" \
++  "credencial: proxy-store (declarada; ANTHROPIC_API_KEY se retira del entorno del proxy: el proxy resuelve la conexión del store)"
++check "proxy-store con credencial en el entorno: el proxy no la ve" "$(proxy_saw)" "names=none"
++check "proxy-store con credencial en el entorno: el ítem ve el socket y el marcador" "$(item_saw)" "sock=set|marker=yes|names=ANTHROPIC_API_KEY"
++check "proxy-store con credencial en el entorno: el valor no aparece" "$(leaks)" "0"
++
++# 8 — proxy-env pedida con credencial: declarada, no derivada.
++VARS="THYROX_CODE_OAUTH_TOKEN=$SECRET" run --credential-source proxy-env
++check "proxy-env declarada: exit 0" "$CODE" "0"
++check "proxy-env declarada: la línea la da por declarada" "$(credential_line)" \
++  "credencial: proxy-env (declarada; THYROX_CODE_OAUTH_TOKEN en el entorno del pool: sólo el proxy la ve)"
++check "proxy-env declarada: el proxy ve la variable" "$(proxy_saw)" "names=THYROX_CODE_OAUTH_TOKEN"
++
++# 9 — inherit pedida con credencial: declarada, y --credential-proxy la contradice.
++VARS="ANTHROPIC_API_KEY=$SECRET" run --credential-source inherit
++check "inherit declarada: la línea" "$(credential_line)" \
++  "credencial: inherit (declarada; ANTHROPIC_API_KEY en el entorno del pool: cada ítem la hereda)"
++VARS="ANTHROPIC_API_KEY=$SECRET" run --credential-source inherit --credential-proxy
++check "inherit con --credential-proxy: exit 2" "$CODE" "2"
++check "inherit con --credential-proxy: lo nombra como contradicción, sin lanzar el proxy" \
++  "$(printf '%s\n' "$SALIDA" | gawk '/REHUSA/ && /inherit/ && /--credential-proxy/{n++} END{print n+0}') $(proxy_saw)" "1 no-invocado"
++
++# 10 — una fuente desconocida rehúsa nombrando las tres.
++VARS="" run --credential-source otra
++check "fuente desconocida: exit 2" "$CODE" "2"
++check "fuente desconocida: nombra las tres" \
++  "$(printf '%s\n' "$SALIDA" | gawk '/REHUSA/ && /inherit/ && /proxy-env/ && /proxy-store/{n++} END{print n+0}')" "1"
++
++echo; echo "aserciones: $((total - failures)) de $total · fallos: $failures"
++[[ $failures -eq 0 ]]

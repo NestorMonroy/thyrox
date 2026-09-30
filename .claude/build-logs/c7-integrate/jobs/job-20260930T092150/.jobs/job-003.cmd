@@ -1,0 +1,1 @@
+timeout 900 bash bin/check_package_typecheck --strict cli provider > .claude/build-logs/c7-integrate/typecheck.log 2>&1; echo "rc=$?" >> .claude/build-logs/c7-integrate/typecheck.log

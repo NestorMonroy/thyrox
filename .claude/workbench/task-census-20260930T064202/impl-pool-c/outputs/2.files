@@ -1,0 +1,3 @@
+.claude/workbench/task-thyrox-0499-credential-source-20260930T091316/README.md
+src/session/headless-pool.sh
+tests/session/test-headless-pool-credential-source.sh

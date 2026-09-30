@@ -1,0 +1,4 @@
+bin/ DESACTUALIZADO respecto a src/session, src/verify, src/agents:
+  faltan: unshare_capabilities
+  corre: python3 src/session/generate_bin.py
+rc=1

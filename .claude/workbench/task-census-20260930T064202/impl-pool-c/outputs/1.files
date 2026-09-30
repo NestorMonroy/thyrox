@@ -1,0 +1,9 @@
+.claude/workbench/task-thyrox-0500-local-proxy-route-20260930T091944/README.md
+bin/provider-local-proxy
+src/packages/cli/__tests__/fixtures/fakeCliForLocalProxy.ts
+src/packages/cli/__tests__/printDelegation.test.ts
+src/packages/cli/src/entry/print.ts
+src/packages/cli/src/entry/printDelegation.ts
+src/packages/cli/src/entry/runLoop.ts
+src/packages/provider/__tests__/localProxyProcess.test.ts
+src/packages/provider/bin/localProxy.ts

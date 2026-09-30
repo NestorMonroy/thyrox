@@ -1,0 +1,7 @@
+.claude/workbench/task-thyrox-0281-structured-path-resolver-20260930T084511/README.md
+src/packages/permission/src/__tests__/fileToolPermissions.test.ts
+src/packages/permission/src/__tests__/pathLanding.test.ts
+src/packages/permission/src/fileToolPermissions.ts
+src/packages/permission/src/permissionTypes.ts
+src/packages/storage/src/__tests__/fsOperations.test.ts
+src/packages/storage/src/fsOperations.ts
