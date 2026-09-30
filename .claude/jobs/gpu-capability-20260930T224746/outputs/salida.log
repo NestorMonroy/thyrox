@@ -1,0 +1,14 @@
+modelo: claude-opus-5-5 (derivado de --task-class analisis)
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 305.25 s, pico 282536 KB × 2 -> 552M; TTL 1h: un hueco de 5.0875 min caduca la caché de 5 m; una sola caducidad (≥ 0.60) ya paga la prima; RAM: (3856528 − 0) / (282536 × 2) -> 6
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/94feedb1722c-20260930T224748-9387/mailbox
+cache-ttl: 1h (constant)
+memfree: 552M (history)
+-- FALLIDO gpu-capability — TASK-THYROX-0691, la GPU como capacidad opcional (ADR-007 1.6.0). Fuente de verdad: /home/user/thyrox/.claude/workbench/podman-execution-primitive-20260930T215755/source-gpu-capability.md. Te pertenecen src/session/gpu_monitor.py, src/session/gpu_backend.py (nuevo), src/session/resource_admission.py, src/session/parallel_map_history.py, src/packages/config/gpuAdmission.ts, sus pruebas en tests/session/ y src/packages/config/__tests__/, y bin/ sólo lo que genere generate_bin. No toques headless-pool.sh ni src/packages/daemon/.
+items=1 ok=0 fallidos=1
+verificados=0 rechazados=0 sin-cambios=0 fallidos=0
+item_worktree: se conserva el worktree del ítem 1, sin cerrar: /home/user/thyrox/.thyrox/pool-worktrees/94feedb1722c/1
+pool_lifecycle: ítems sin cerrar, runtime conservado en /home/user/thyrox/.thyrox/runtime/pool/94feedb1722c-20260930T224748-9387: 1
+runtime conservado para pool_lifecycle reconcile: /home/user/thyrox/.thyrox/runtime/pool/94feedb1722c-20260930T224748-9387
+__BG_EXIT__=1
