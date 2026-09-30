@@ -1,0 +1,3 @@
+timeout 900 bash tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-links.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-links.log
+timeout 1200 bash tests/session/test-headless-pool-worktree.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-worktree.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-worktree.log
+timeout 1200 bash tests/session/test-headless-pool-lifecycle.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-lifecycle.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-lifecycle.log

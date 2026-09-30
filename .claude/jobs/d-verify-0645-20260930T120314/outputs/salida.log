@@ -1,0 +1,28 @@
+run-task-pool: 4 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs0645/job-20260930T120315
+  job-20260930T120315/job-001 timeout 900 bash tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-links.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-links.log
+  job-20260930T120315/job-002 timeout 1200 bash tests/session/test-headless-pool-worktree.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-worktree.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-worktree.log
+  job-20260930T120315/job-003 timeout 1200 bash tests/session/test-headless-pool-lifecycle.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lifecycle.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lifecycle.log
+  job-20260930T120315/job-004 timeout 300 bash bin/check_lint_zero src/session/item_worktree.sh tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lint.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lint.log
+run-task-pool: lanzados 4 de 4; esperando en PRIMER PLANO (timeout 1762s)
+asentado: job-20260930T120315_job-001 -> OK (2 de 5)
+asentado: job-20260930T120315_job-002 -> OK (3 de 5)
+asentado: job-20260930T120315_job-003 -> OK (4 de 5)
+asentado: job-20260930T120315_job-004 -> OK (5 de 5)
+== 5 trabajos asentados ==
+OLVIDADO job-20260930T120315
+       | (vacío — no emitió nada)
+OK     job-20260930T120315_job-001 exit=0
+       | EXIT=0
+       memoria pico: 27248 KB (27 MB) · pared 0.82s
+OK     job-20260930T120315_job-002 exit=0
+       | EXIT=0
+       memoria pico: 27436 KB (27 MB) · pared 28.34s
+OK     job-20260930T120315_job-003 exit=0
+       | EXIT=0
+       memoria pico: 27748 KB (27 MB) · pared 37.30s
+OK     job-20260930T120315_job-004 exit=0
+       | EXIT=0
+       memoria pico: 62124 KB (61 MB) · pared 1.14s
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0
+__BG_EXIT__=5

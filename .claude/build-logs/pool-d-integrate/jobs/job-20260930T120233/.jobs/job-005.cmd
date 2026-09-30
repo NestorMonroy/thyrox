@@ -1,0 +1,1 @@
+timeout 1800 bash bin/check_package_typecheck --strict permission config app-host cli local-observability tool-registry > /home/user/thyrox/.claude/build-logs/pool-d-integrate/typecheck.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/typecheck.log

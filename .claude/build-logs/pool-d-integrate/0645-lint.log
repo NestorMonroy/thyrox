@@ -1,0 +1,5 @@
+shellcheck: 3 hallazgo(s) (alcance medido: 2 archivo(s))
+    src/session/item_worktree.sh:188: SC2318 This assignment is used again in this 'local', but won't have taken effect. Use two 'local's.
+    src/session/item_worktree.sh:188: SC2318 This assignment is used again in this 'local', but won't have taken effect. Use two 'local's.
+    src/session/item_worktree.sh:188: SC2318 This assignment is used again in this 'local', but won't have taken effect. Use two 'local's.
+rc=1

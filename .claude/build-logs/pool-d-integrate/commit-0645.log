@@ -1,0 +1,87 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+sin cambios  agentic-reasoning
+sin cambios  agentic-validator
+sin cambios  ba-coordinator
+sin cambios  bpa-coordinator
+sin cambios  cp-coordinator
+sin cambios  deep-dive
+sin cambios  deep-review
+sin cambios  diagrama-ishikawa
+sin cambios  dmaic-coordinator
+sin cambios  gate-consistency-evaluator
+sin cambios  increment-acceptor
+sin cambios  lean-coordinator
+sin cambios  migration-porter
+sin cambios  packaging-porter-high
+sin cambios  packaging-porter-low
+sin cambios  pattern-harvester
+sin cambios  pdca-coordinator
+sin cambios  pm-coordinator
+sin cambios  pps-coordinator
+sin cambios  prueba-palancas
+sin cambios  retro-facilitator
+sin cambios  rm-coordinator
+sin cambios  rup-coordinator
+sin cambios  skill-generator
+sin cambios  sp-coordinator
+sin cambios  task-executor
+sin cambios  task-planner
+sin cambios  task-synthesizer
+sin cambios  tech-detector
+sin cambios  thyrox-coordinator
+sin cambios  workbench-instrumenter
+emit: 31 definición(es); 0 con diferencia (alcance medido: /home/user/thyrox/src/agents/definitions)
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+rutas: 380 pares de modelo, 1140 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
+cross-model-read: 0 lecturas cruzadas (superficie real auditada)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 0 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 296 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 73423 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 288 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1847 lectura(s) en 4020 archivo(s) de producción — propias 838, proveedor 99, cliente ajeno 18, sin prefijo 892)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 126 congelada(s), 0 obsoleta(s) (alcance medido: 356 variable(s) propia(s), 2156 archivo(s) de prueba)
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 15 clave(s) en 1 archivo(s) ignorado(s), 520 declarada(s) en .env.example)
+On branch feature/complete-orm-root
+Your branch is ahead of 'origin/feature/complete-orm-root' by 2 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .claude/cache/headless-pool/template-64756dcc46d6/runs.jsonl
+	modified:   .claude/jobs/impl-pool-d-20260930T095736/manifest.jsonl
+	modified:   agent-results/agent_store.sqlite3
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.claude/build-logs/pool-d-integrate/
+	.claude/jobs/d-verify-0645-20260930T120314/
+	.claude/jobs/d-verify-0645b-20260930T120629/
+	.claude/jobs/d-verify-20260930T120232/
+	.claude/jobs/impl-pool-d-20260930T095736/outputs/salida.log
+	.claude/jobs/impl-pool-d-20260930T095736/outputs/salida.log.time
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.closed
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.err
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.files
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.json
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.lifecycle.err
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.patch
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.prepare.err
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.session
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.snapshot.json
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.stash-attempts
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.stash-baseline
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.stash-started
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.stream.jsonl
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.time
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/3.verdict
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/credential-source
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/index.tsv
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/integration.tsv
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/joblog.tsv
+	.claude/workbench/task-census-20260930T064202/impl-pool-d/outputs/run.closed
+
+no changes added to commit (use "git add" and/or "git commit -a")

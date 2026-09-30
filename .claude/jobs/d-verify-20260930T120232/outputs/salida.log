@@ -1,0 +1,33 @@
+run-task-pool: 5 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs/job-20260930T120233
+  job-20260930T120233/job-001 cd src/packages/permission && timeout 600 bun test src/__tests__/pathSafety.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0251-permission.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0251-permission.log
+  job-20260930T120233/job-002 cd src/packages/config && timeout 600 bun test __tests__/pluginProducerPaths.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0251-config.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0251-config.log
+  job-20260930T120233/job-003 cd src/packages/local-observability && timeout 600 bun test src/uds/__tests__/udsClient.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-uds.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-uds.log
+  job-20260930T120233/job-004 cd src/packages/tool-registry && timeout 600 bun test src/tools/SendMessageTool/__tests__/udsRoute.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-route.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-route.log
+  job-20260930T120233/job-005 timeout 1800 bash bin/check_package_typecheck --strict permission config app-host cli local-observability tool-registry > /home/user/thyrox/.claude/build-logs/pool-d-integrate/typecheck.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/typecheck.log
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1710s)
+asentado: job-20260930T120233_job-001 -> OK (2 de 6)
+asentado: job-20260930T120233_job-002 -> OK (3 de 6)
+asentado: job-20260930T120233_job-003 -> OK (4 de 6)
+asentado: job-20260930T120233_job-004 -> OK (5 de 6)
+asentado: job-20260930T120233_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260930T120233
+       | (vacío — no emitió nada)
+OK     job-20260930T120233_job-001 exit=0
+       | EXIT=0
+       memoria pico: 117668 KB (115 MB) · pared 1.18s
+OK     job-20260930T120233_job-002 exit=0
+       | EXIT=0
+       memoria pico: 128508 KB (125 MB) · pared 1.13s
+OK     job-20260930T120233_job-003 exit=0
+       | EXIT=0
+       memoria pico: 94928 KB (93 MB) · pared 0.74s
+OK     job-20260930T120233_job-004 exit=0
+       | EXIT=0
+       memoria pico: 185832 KB (181 MB) · pared 2.17s
+OK     job-20260930T120233_job-005 exit=0
+       | EXIT=0
+       memoria pico: 813356 KB (794 MB) · pared 88.74s
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0
+__BG_EXIT__=5

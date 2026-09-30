@@ -1,0 +1,4 @@
+timeout 900 bash tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-links.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-links.log
+timeout 1200 bash tests/session/test-headless-pool-worktree.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-worktree.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-worktree.log
+timeout 1200 bash tests/session/test-headless-pool-lifecycle.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lifecycle.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lifecycle.log
+timeout 300 bash bin/check_lint_zero src/session/item_worktree.sh tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lint.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-lint.log

@@ -1,0 +1,1 @@
+timeout 900 bash tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-links.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645-links.log
