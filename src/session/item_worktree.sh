@@ -349,7 +349,21 @@ finalize() {
     # resuelve su codigo por THYROX_ROOT (p. ej. `paths/reach.py`) carga la
     # copia del arbol principal y el verify mide una mezcla de los dos
     # arboles en vez del worktree solo.
-    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
+    #
+    # Lo mismo con los cuatro hogares que el proveedor declara por variable de
+    # entorno: THYROX_CACHE_DIR, THYROX_JOBS_DIR, THYROX_WORKBENCH_DIR y
+    # THYROX_BACKGROUND_LOG_DIR. Medido (TASK-THYROX-0549): con un item en
+    # marcha, el pool los exporta con la ruta del arbol PRINCIPAL a su propio
+    # proceso, y sin reemplazo un verify que los use —bin/parallel_map,
+    # bin/wait-jobs, un hallazgo— escribe ahi en vez de en el worktree. Se
+    # reemplazan siempre por hogares dentro del worktree, aunque el verify no
+    # los use: es mas barato que distinguir cual los necesita.
+    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" \
+              THYROX_CACHE_DIR="$dir/.claude/cache" \
+              THYROX_JOBS_DIR="$dir/.claude/jobs" \
+              THYROX_WORKBENCH_DIR="$dir/.claude/workbench" \
+              THYROX_BACKGROUND_LOG_DIR="$dir/.claude/background-logs" \
+              bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
         verdict=verificado
     else
         verdict=rechazado
