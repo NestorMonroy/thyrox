@@ -1,12 +1,3 @@
----
-paths:
-  - "src/session/**"
-  - "src/verify/**"
-  - "tests/session/**"
-  - "tests/verify/**"
-  - ".githooks/**"
----
-
 # Fallas medidas del pool y de sus suites — y lo que ya las impide
 
 Cada fila es un defecto que ocurrió, se midió y se registró. La columna
@@ -37,10 +28,19 @@ una garantía: léela antes de repetir el patrón.
 | Las fotos del pool no salen del contenedor: refs locales sin push y manifiesto en el runtime ignorado (H-THYROX-290) | TASK-THYROX-0652 (decisión del ejecutor) |
 | Las fotos no caducan nunca | TASK-THYROX-0650 (decisión del ejecutor) |
 
-## Tres hábitos que ningún gate mide todavía
+## Tres hábitos, y qué script los mide hoy
 
-Una regla sin script es prosa: estos tres son advertencias hasta que
-**Empaquetado P9** (TASK-THYROX-0655) les dé su detector o gate. La
+Una regla sin script es prosa. Medido el 2026-09-30:
+
+- el manifiesto de banco **tiene** script —`checkWorkbench`, que se invoca
+  con `thyrox --workbench-check <dir> --strict`, y `bin/manifest scaffold`
+  para crearlo—, pero **no está cableado** a ningún gate de commit;
+- el `git stash` en el árbol principal con un trabajo vivo **no tiene** script
+  (`src/session/item_git_guard/git` cubre sólo los ítems del pool);
+- la afirmación de verde que no nombra sus suites **no tiene** script.
+
+**Empaquetado P9** (TASK-THYROX-0655) cablea el primero y escribe los
+detectores de los otros. La
 instalación que activa los gates en un clon nuevo es **P8**
 (TASK-THYROX-0654), y que el paquete no herede el `.env` del árbol que lo
 hospeda es **P10** (TASK-THYROX-0656).
