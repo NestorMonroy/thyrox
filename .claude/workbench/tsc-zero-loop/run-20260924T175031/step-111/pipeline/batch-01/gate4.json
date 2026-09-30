@@ -1,0 +1,40 @@
+{
+ "reviewed": [
+  {
+   "pattern": "map-number-destructure-under-nouncheckedindexedaccess",
+   "files": [
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts"
+   ]
+  },
+  {
+   "pattern": "screenshot-object-literal-extra-method-not-in-interface",
+   "files": [
+    "src/packages/@ant/computer-use-swift/src/backends/win32.ts"
+   ]
+  },
+  {
+   "pattern": "branded-never-metadata-literal-needs-verified-cast",
+   "files": [
+    "src/packages/agent/__tests__/agentContextGuards.test.ts"
+   ]
+  },
+  {
+   "pattern": "task-tools-called-with-bare-string-instead-of-options",
+   "files": [
+    "src/packages/agent/__tests__/contextGovernance.test.ts"
+   ]
+  },
+  {
+   "pattern": "prompt-command-context-is-unknown",
+   "files": [
+    "src/packages/agent/commands/commit.ts"
+   ]
+  },
+  {
+   "pattern": "record-string-unknown-property-iterated-without-assertion",
+   "files": [
+    "src/packages/agent/fileChangedWatcher.ts"
+   ]
+  }
+ ]
+}

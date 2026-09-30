@@ -1,0 +1,9 @@
+src/packages/agent/__tests__/extractConversationText.test.ts(137,19): error TS2352: Conversion of type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' is not comparable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' but required in type 'MessageBase'.
+src/packages/agent/__tests__/extractConversationText.test.ts(148,19): error TS2352: Conversion of type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' is not comparable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' but required in type 'MessageBase'.
+src/packages/agent/__tests__/extractConversationText.test.ts(153,21): error TS2352: Conversion of type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' is not comparable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; origin: { kind: string; }; message: { content: string; }; }' but required in type 'MessageBase'.

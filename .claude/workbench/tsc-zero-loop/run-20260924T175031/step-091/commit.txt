@@ -1,0 +1,13 @@
+Leave codex out of the model config table
+
+Step 091 of the tsc-zero loop: 1896 -> 1870, accepted net, 26
+targets -> 0, nothing new.
+
+ModelConfig was Record<APIProvider, ModelName>, and APIProvider gained
+'codex'. Codex models come from getDefaultModelsForProtocol('codex'),
+not from this table, so none of the thirteen configs had a codex row
+and each one failed its satisfies check twice. The source has the
+same mismatch. The table's type now excludes codex instead of
+inventing rows.
+
+Memory (gate 3b): record-over-union-with-rowless-member.

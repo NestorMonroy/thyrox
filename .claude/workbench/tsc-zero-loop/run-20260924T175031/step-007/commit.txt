@@ -1,0 +1,9 @@
+Type the repl selectors with the canonical AppState
+
+Seventh step of the agent-compiler loop, accepted-net 3360 -> 3337.
+selectors.ts and teammateViewHelpers.ts declared a minimal
+AppStateShape whose task record demanded an index signature, which the
+canonical task interfaces do not carry, so every caller passing the
+real AppState failed. The shape is now the canonical AppState.
+
+The same commit adds close_step.sh, the script that closes each step.

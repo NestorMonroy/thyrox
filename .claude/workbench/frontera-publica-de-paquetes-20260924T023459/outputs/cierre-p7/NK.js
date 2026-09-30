@@ -1,0 +1,1 @@
+function NK(){return Vb()&&SL()}

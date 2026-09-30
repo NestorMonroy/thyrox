@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/data-home-resolver-20260929T042341/launch.sh", "started_at": "2026-09-29T04:24:01+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T04:27:33+00:00", "duration_seconds": 212.392069}

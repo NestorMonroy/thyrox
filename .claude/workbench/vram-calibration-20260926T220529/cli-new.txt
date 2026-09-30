@@ -1,0 +1,3 @@
+    p_der.add_argument("--available-ram-kb", type=int, default=None)
+    p_der.add_argument("--gpu-interval", type=float, default=DEFAULT_GPU_INTERVAL_S)
+    p_der.add_argument("--vram-floor-mib", type=int, default=0)

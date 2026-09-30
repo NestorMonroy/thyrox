@@ -1,0 +1,4 @@
+    123 actualizar-agentic-ai-thyrox
+     67 construir-harness-propio
+     98 implementar-base-datos-agentes
+EXIT=0

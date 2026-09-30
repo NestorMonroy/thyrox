@@ -1,0 +1,20 @@
+test_absolute_still_rules_with_or_without_declaration (__main__.ConsumerStrictOptIn.test_absolute_still_rules_with_or_without_declaration)
+Lo relativo no le quita nada a lo absoluto. ... ok
+test_declared_does_not_refuse_without_a_starting_point (__main__.ConsumerStrictOptIn.test_declared_does_not_refuse_without_a_starting_point)
+La clausula 1 mira `start`, no el cwd: sin punto de partida la ... ok
+test_declared_refuses_when_the_start_is_the_provider (__main__.ConsumerStrictOptIn.test_declared_refuses_when_the_start_is_the_provider)
+Clausula 1. Medido el 2026-09-23 sobre un arbol real: al declarar ... ok
+test_declared_resolves_relative_against_the_container (__main__.ConsumerStrictOptIn.test_declared_resolves_relative_against_the_container)
+Clausula 2, y su control de anulacion en el mismo caso: se invoca ... ok
+test_values_that_turn_it_on (__main__.ConsumerStrictOptIn.test_values_that_turn_it_on) ... ok
+test_values_that_turn_the_clause_off (__main__.ConsumerStrictOptIn.test_values_that_turn_the_clause_off)
+`0`, `false`, `no` y la cadena vacia NO la encienden. ... ok
+test_without_declaration_behavior_is_unchanged (__main__.ConsumerStrictOptIn.test_without_declaration_behavior_is_unchanged)
+El DEFECTO conserva lo de hoy: devuelve el valor tal cual. ... ok
+test_without_declaration_relative_resolves_against_cwd (__main__.ConsumerStrictOptIn.test_without_declaration_relative_resolves_against_cwd)
+Segunda mitad del defecto: la relativa sigue saliendo del cwd. ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.011s
+
+OK

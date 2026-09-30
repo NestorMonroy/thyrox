@@ -1,0 +1,14 @@
+agent	getLastSummarizedMessageId
+agent	getSessionMemoryContent
+agent	waitForSessionMemoryExtraction
+app-host	createStore
+repl	FAST_MODE_MODEL_DISPLAY
+repl	isFastModeAvailable
+repl	isFastModeCooldown
+repl	isFastModeEnabled
+storage	CREDENTIALS_SERVICE_SUFFIX
+storage	clearKeychainCache
+storage	getMacOsKeychainStorageServiceName
+storage	getUsername
+storage	KEYCHAIN_CACHE_TTL_MS
+storage	keychainCacheState

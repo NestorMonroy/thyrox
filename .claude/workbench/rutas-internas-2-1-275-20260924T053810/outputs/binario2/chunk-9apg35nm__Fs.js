@@ -1,0 +1,1 @@
+Fs={behavior:"deny",message:"adopt.json is the bg-fork handoff carrier and is managed by the harness; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"adopt.json is a code-execution surface for the fork",classifierApprovable:!1}}

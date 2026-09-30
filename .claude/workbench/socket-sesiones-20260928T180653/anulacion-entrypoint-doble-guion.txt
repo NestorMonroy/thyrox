@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+210 | 
+211 | test('launchResumeMode ($Uo) mira sólo lo anterior a --', () => {
+212 |   expect(launchResumeMode(['--resume=x'])).toBe('resume')
+213 |   expect(launchResumeMode(['--from-pr'])).toBe('resume')
+214 |   expect(launchResumeMode(['-c'])).toBe('continue')
+215 |   expect(launchResumeMode(['--', '-r'])).toBe('fresh')
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "fresh"
+Received: "resume"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:215:42)
+(fail) launchResumeMode ($Uo) mira sólo lo anterior a -- [0.37ms]
+
+ 15 pass
+ 1 fail
+ 90 expect() calls
+Ran 16 tests across 1 file. [53.00ms]

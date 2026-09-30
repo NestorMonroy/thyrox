@@ -1,0 +1,12 @@
+# El GNU Time REAL, resuelto por el toolchain como en producción: la medida es
+# de verdad (memoria pico > 0 y cuatro campos numéricos), no la fija del falso.
+if [[ "$(/usr/bin/time --version 2>&1)" == *"GNU Time"* ]]; then
+  rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME=/usr/bin/time corre alfa
+  check "GNU time real: el .time trae cuatro cifras" \
+    "$(gawk 'NF == 4 && $1 ~ /^[0-9]+$/ && $1 > 0 {n++} END{print n+0}' "$F/out/1.time" 2>/dev/null)" "1"
+  check "GNU time real: no declara que falte" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "0"
+else
+  echo "SIN MEDIR: /usr/bin/time no es GNU Time; el caso del GNU Time real no corre"
+fi
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
+check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"

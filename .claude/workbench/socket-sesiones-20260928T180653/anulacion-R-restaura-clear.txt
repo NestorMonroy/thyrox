@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+186 |     const seen = recordArguments()
+187 |     armRefusalFallbackHeader('req')
+188 |     latchRefusalFallbackModel(latch())
+189 |     setMainLoopModelOverride('claude-opus-5')
+190 |     const next = regenerateSessionId()
+191 |     expect(seen).toEqual([[next, 'clear', expect.objectContaining({ restoredToExplicitOverride: true })]])
+                       ^
+error: expect(received).toEqual(expected)
+
+@@ -4,5 +4,3 @@
+      "clear",
+-     ObjectContaining {
+-       "restoredToExplicitOverride": true,
+-     },
+    ],
+
+- Expected  - 3
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:191:18)
+(fail) el tercer argumento de la señal de sesión (fn) > regenerateSessionId olvida, restaura y avisa clear con la restauración [0.43ms]
+
+ 25 pass
+ 1 fail
+ 52 expect() calls
+Ran 26 tests across 2 files. [82.00ms]

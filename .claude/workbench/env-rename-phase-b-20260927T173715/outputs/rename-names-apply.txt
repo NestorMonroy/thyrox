@@ -1,0 +1,2 @@
+renameEnvNames: renombradas 287 en 90 archivo(s) (alcance medido: 2545 archivo(s), 34 nombre(s))
+renameEnvNames: renombradas 145 en 35 archivo(s) (alcance medido: 1564 archivo(s), 34 nombre(s))

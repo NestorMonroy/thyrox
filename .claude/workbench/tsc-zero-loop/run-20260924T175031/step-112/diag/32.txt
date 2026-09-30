@@ -1,0 +1,46 @@
+src/packages/agent/hooks/execAgentHook.ts(266,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:256-276 ---
+    256          // just log and return cancelled (don't show error to user)
+    257          logForDebugging(`Hooks: Agent hook did not return structured output`)
+    258          logEvent('tengu_agent_stop_hook_error', {
+    259            durationMs: Date.now() - hookStartTime,
+    260            turnCount,
+    261            errorType: 1, // 1 = no structured output
+    262            agentName:
+    263              agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    264          })
+    265          return {
+    266>           hook,
+    267            outcome: 'cancelled',
+    268          }
+    269        }
+    270  
+    271        // Return result based on structured output
+    272        if (!structuredOutputResult.ok) {
+    273          logForDebugging(
+    274            `Hooks: Agent hook condition was not met: ${structuredOutputResult.reason}`,
+    275          )
+    276          return {
+src/packages/agent/hooks/execAgentHook.ts(277,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:267-287 ---
+    267            outcome: 'cancelled',
+    268          }
+    269        }
+    270  
+    271        // Return result based on structured output
+    272        if (!structuredOutputResult.ok) {
+    273          logForDebugging(
+    274            `Hooks: Agent hook condition was not met: ${structuredOutputResult.reason}`,
+    275          )
+    276          return {
+    277>           hook,
+    278            outcome: 'blocking',
+    279            blockingError: {
+    280              blockingError: `Agent hook condition was not met: ${structuredOutputResult.reason}`,
+    281              command: hook.prompt,
+    282            },
+    283          }
+    284        }
+    285  
+    286        // Condition was met
+    287        logForDebugging(`Hooks: Agent hook condition was met`)

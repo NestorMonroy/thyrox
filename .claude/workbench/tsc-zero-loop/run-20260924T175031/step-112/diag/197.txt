@@ -1,0 +1,46 @@
+src/packages/repl/src/screens/REPLView.tsx(300,10): error TS2724: '"@thyrox/agent/promptCategory.js"' has no exported member named 'getQuerySourceForREPL'. Did you mean 'getQuerySourceForAgent'?
+  --- código src/packages/repl/src/screens/REPLView.tsx:290-310 ---
+    290  import { useMailboxBridge } from '../hooks/useMailboxBridge.js';
+    291  import { queryCheckpoint, logQueryProfileReport } from '@thyrox/local-observability/aggregates/queryProfiler.js';
+    292  import type {
+    293    Message as MessageType,
+    294    UserMessage,
+    295    HookResultMessage,
+    296    PartialCompactDirection,
+    297  } from '@thyrox/agent/messageShapes';
+    298  import { query } from '@thyrox/agent/query';
+    299  import { mergeClients } from '../hooks/useMergedClients.js';
+    300> import { getQuerySourceForREPL } from '@thyrox/agent/promptCategory.js';
+    301  import { mergeAndFilterTools } from '../toolPool.js';
+    302  import { useCommandReload } from '../hooks/useCommandReload.js';
+    303  import { Messages } from '../components/Messages.js';
+    304  import { TaskListV2 } from '../components/TaskListV2.js';
+    305  import { TeammateViewHeader } from '../components/TeammateViewHeader.js';
+    306  import { useTasksV2WithCollapseEffect } from '../hooks/useTasksV2.js';
+    307  import { maybeMarkProjectOnboardingComplete } from '../projectOnboardingState.js';
+    308  import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js';
+    309  import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js';
+    310  import { randomUUID, type UUID } from 'crypto';
+src/packages/repl/src/screens/REPLView.tsx(348,10): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'partialCompactConversation'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:338-358 ---
+    338  } from '@thyrox/storage/sessionStorage.js';
+    339  import { deserializeMessages } from '../conversationRecovery.js';
+    340  import { extractReadFilesFromMessages, extractBashToolsFromMessages } from '../queryHelpers.js';
+    341  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js';
+    342  import { runPostCompactCleanup } from '@thyrox/agent/compaction/postCompactCleanup.js';
+    343  import {
+    344    provisionContentReplacementState,
+    345    reconstructContentReplacementState,
+    346    type ContentReplacementRecord,
+    347  } from '@thyrox/storage/toolResultStorage.js';
+    348> import { partialCompactConversation } from '@thyrox/agent/compaction/compact.js';
+    349  import type { LogOption } from '@thyrox/agent/logsTypes.js';
+    350  import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js';
+    351  import {
+    352    fileHistoryMakeSnapshot,
+    353    type FileHistoryState,
+    354    fileHistoryRewind,
+    355    type FileHistorySnapshot,
+    356    copyFileHistoryForResume,
+    357    fileHistoryEnabled,
+    358    fileHistoryHasAnyChanges,

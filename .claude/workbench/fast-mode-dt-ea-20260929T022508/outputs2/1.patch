@@ -1,0 +1,241 @@
+diff --git a/src/packages/provider/src/__tests__/fastModeSurface.test.ts b/src/packages/provider/src/__tests__/fastModeSurface.test.ts
+new file mode 100644
+index 00000000..c03edf1c
+--- /dev/null
++++ b/src/packages/provider/src/__tests__/fastModeSurface.test.ts
+@@ -0,0 +1,123 @@
++/**
++ * El canal de control de una superficie remota (`Ea`, `Dt` de
++ * `@thyrox/app-host/state/surfaceCapabilities.js`) cableado en el contexto
++ * de disponibilidad y de selección del modo rápido, y el indicador
++ * `iLr` (`chunk-t6pwageh.js`, 2.1.283).
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++
++import { mkdtempSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { installConfigHostBindings } from '@thyrox/config/host'
++import { InMemoryConfig } from '@thyrox/config/testing'
++import {
++  DEFAULT_SURFACE_CAPS,
++  getSurfaceCaps,
++  markRemoteWorkspace,
++  replaceSurfaceCaps,
++  surfaceCapabilities,
++  type SurfaceCaps,
++} from '@thyrox/app-host/state/surfaceCapabilities.js'
++
++import {
++  processFastModeAvailabilityContext,
++  processFastModeSelectionContext,
++  shouldShowFastModeIndicatorForProcess,
++} from '../fastMode.js'
++import { shouldShowFastModeIndicator } from '../fastModeSelection.js'
++
++const VARIABLES = ['THYROX_CODE_DISABLE_FAST_MODE', 'THYROX_CODE_USE_BEDROCK', 'ANTHROPIC_API_KEY', 'ANTHROPIC_MODEL']
++const home = mkdtempSync(join(tmpdir(), 'fast-mode-surface-'))
++let saved: Record<string, string | undefined> = {}
++let savedCaps: SurfaceCaps
++beforeEach(() => {
++  saved = Object.fromEntries(VARIABLES.map(name => [name, process.env[name]]))
++  for (const name of VARIABLES) delete process.env[name]
++  process.env.ANTHROPIC_API_KEY = 'marcador-local-de-prueba'
++  installConfigHostBindings(new InMemoryConfig({ configHomeDir: home }).bindings)
++  savedCaps = getSurfaceCaps()
++})
++afterEach(() => {
++  for (const name of VARIABLES) {
++    if (saved[name] === undefined) delete process.env[name]
++    else process.env[name] = saved[name]
++  }
++  replaceSurfaceCaps(savedCaps)
++  surfaceCapabilities.reset()
++})
++
++describe('shouldShowFastModeIndicator (iLr)', () => {
++  function context(overrides: Partial<Parameters<typeof shouldShowFastModeIndicator>[2]> = {}) {
++    return {
++      fastModeEnabled: true,
++      remoteSurface: false,
++      isAvailableFor: () => false,
++      ...overrides,
++    }
++  }
++
++  test('sin mo() nunca se muestra, aunque el resto sea verdadero', () => {
++    expect(
++      shouldShowFastModeIndicator(true, true, context({ fastModeEnabled: false, remoteSurface: true, isAvailableFor: () => true })),
++    ).toBe(false)
++  })
++
++  test('sin fastMode (e falso) tampoco, aunque mo() sea verdadero', () => {
++    expect(shouldShowFastModeIndicator(false, true, context({ remoteSurface: true, isAvailableFor: () => true }))).toBe(false)
++    expect(shouldShowFastModeIndicator(undefined, true, context({ remoteSurface: true, isAvailableFor: () => true }))).toBe(false)
++  })
++
++  test('con mo() y e verdaderos: cualquiera de las tres ramas del OR basta', () => {
++    expect(shouldShowFastModeIndicator(true, false, context({ remoteSurface: true }))).toBe(true)
++    expect(shouldShowFastModeIndicator(true, false, context({ isAvailableFor: () => true }))).toBe(true)
++    expect(shouldShowFastModeIndicator(true, true, context())).toBe(true)
++  })
++
++  test('con mo() y e verdaderos, y las tres ramas falsas: no se muestra', () => {
++    expect(shouldShowFastModeIndicator(true, false, context())).toBe(false)
++  })
++})
++
++describe('processFastModeAvailabilityContext refleja el canal de control (Ea)', () => {
++  test('un remoto sin canal de control no lo activa', () => {
++    expect(processFastModeAvailabilityContext().hasRemoteControlChannel).toBe(false)
++  })
++
++  test('un remoto con controlChannel activa hasRemoteControlChannel', () => {
++    replaceSurfaceCaps({ ...getSurfaceCaps(), remote: { isRemoteMode: true, viewerOnly: false, caps: { controlChannel: true } } })
++    expect(processFastModeAvailabilityContext().hasRemoteControlChannel).toBe(true)
++  })
++
++  test('remoto viewerOnly no cuenta como canal de control', () => {
++    replaceSurfaceCaps({ ...getSurfaceCaps(), remote: { isRemoteMode: true, viewerOnly: true, caps: { controlChannel: true } } })
++    expect(processFastModeAvailabilityContext().hasRemoteControlChannel).toBe(false)
++  })
++})
++
++describe('processFastModeSelectionContext', () => {
++  test('remoteSurface sigue a markRemoteWorkspace (Dt)', () => {
++    expect(processFastModeSelectionContext().remoteSurface).toBe(false)
++    markRemoteWorkspace(true)
++    expect(processFastModeSelectionContext().remoteSurface).toBe(true)
++  })
++
++  test('fastModeEnabled sigue a isFastModeEnabled (mo)', () => {
++    expect(processFastModeSelectionContext().fastModeEnabled).toBe(true)
++    process.env.THYROX_CODE_DISABLE_FAST_MODE = '1'
++    expect(processFastModeSelectionContext().fastModeEnabled).toBe(false)
++  })
++})
++
++describe('shouldShowFastModeIndicatorForProcess', () => {
++  test('sigue al DEFAULT_SURFACE_CAPS restaurado (sin canal, sin fast mode disponible): no se muestra', () => {
++    expect(getSurfaceCaps()).toEqual(DEFAULT_SURFACE_CAPS)
++    expect(shouldShowFastModeIndicatorForProcess(true, false)).toBe(false)
++  })
++
++  test('con canal de control remoto activo, se muestra', () => {
++    replaceSurfaceCaps({ ...getSurfaceCaps(), remote: { isRemoteMode: true, viewerOnly: false, caps: { controlChannel: true } } })
++    expect(shouldShowFastModeIndicatorForProcess(true, false)).toBe(true)
++  })
++})
+diff --git a/src/packages/provider/src/fastMode.ts b/src/packages/provider/src/fastMode.ts
+index cfdd6e72..69168932 100644
+--- a/src/packages/provider/src/fastMode.ts
++++ b/src/packages/provider/src/fastMode.ts
+@@ -86,11 +86,17 @@ import { canonicalModelName, MODELS } from '@thyrox/agent/models'
+ import { isCoworkEntrypoint, isTruthyFlag } from '@thyrox/config/entrypoint'
+ import {
+   fastModeUnavailableMessage,
++  isFastModeAvailableFor,
+   type FastModeAvailabilityContext,
+   type FastModeAvailabilityOptions,
+   type FastModeOrgStatusSnapshot,
+ } from './fastModeAvailability.ts'
+ import { isModelAllowed } from './model/modelAllowlist.ts'
++import {
++  fastModePreferenceEnabled,
++  shouldShowFastModeIndicator,
++  type FastModeSelectionContext,
++} from './fastModeSelection.ts'
+ import {
+   getInitialSettings,
+   getSettingsForSource,
+@@ -112,6 +118,19 @@ function requireAppHostBootstrapState(): MissingAppHostState {
+   return require('@thyrox/app-host/bootstrap/state.js') as MissingAppHostState
+ }
+ 
++// El almacén de capacidades de superficie (`ve`/`n().surfaceCapabilities`)
++// SÍ está portado en `@thyrox/app-host/state/surfaceCapabilities.ts` — el
++// `require()` diferido es sólo para no crear una dependencia estática
++// provider → app-host (app-host ya depende de provider).
++type SurfaceCapabilities = {
++  isRemoteSurface: () => boolean
++  hasRemoteControlChannel: () => boolean
++}
++function requireSurfaceCapabilities(): SurfaceCapabilities {
++  // eslint-disable-next-line @typescript-eslint/no-require-imports
++  return require('@thyrox/app-host/state/surfaceCapabilities.js') as SurfaceCapabilities
++}
++
+ type MissingGlobalConfig = {
+   getGlobalConfig: () => { penguinModeOrgEnabled?: boolean }
+   saveGlobalConfig: (
+@@ -180,8 +199,7 @@ export function processFastModeAvailabilityContext(): FastModeAvailabilityContex
+     isModelAllowed,
+     fastModeModel: 'opus' + (isOpus1mMergeEnabled() ? '[1m]' : ''),
+     resolveModel: model => (model !== undefined ? String(model ?? getDefaultMainLoopModelSetting()) : getMainLoopModel()),
+-    // pendiente: `Ea` (canal de control de una sesión remota), fase R-2b-3.
+-    hasRemoteControlChannel: false,
++    hasRemoteControlChannel: requireSurfaceCapabilities().hasRemoteControlChannel(),
+     supportsFastMode: isFastModeSupportedByModel,
+     flagSettingsFastMode: getSettingsForSource('flagSettings')?.fastMode,
+     policyFastMode: policy?.fastMode,
+@@ -200,6 +218,27 @@ export function processFastModeAvailabilityContext(): FastModeAvailabilityContex
+   }
+ }
+ 
++/** El contexto de `Ndn`/`oA` leído del proceso: `Dt`, `Yl` y `Bk` sobre `processFastModeAvailabilityContext()`. */
++export function processFastModeSelectionContext(): FastModeSelectionContext {
++  const settings = getInitialSettings()
++  return {
++    fastModeEnabled: isFastModeEnabled(),
++    remoteSurface: requireSurfaceCapabilities().isRemoteSurface(),
++    supportsFastMode: isFastModeSupportedByModel,
++    isAvailableFor: model => isFastModeAvailableFor(model, processFastModeAvailabilityContext()),
++    preferenceEnabled: fastModePreferenceEnabled(
++      settings,
++      getSettingsForSource('policySettings') ?? undefined,
++      getSettingsForSource('flagSettings') ?? undefined,
++    ),
++  }
++}
++
++/** `iLr` sobre el contexto leído del proceso. */
++export function shouldShowFastModeIndicatorForProcess(fastMode: boolean | undefined, pendingIndicator: boolean): boolean {
++  return shouldShowFastModeIndicator(fastMode, pendingIndicator, processFastModeSelectionContext())
++}
++
+ // Constante para callers que resuelven el nombre a la carga del módulo. El
+ // nombre visible sale del catálogo (`getFastModeModelDisplay`); 2.1.283 ya
+ // no trae la anulación a Opus 4.6, así que no hay variable de entorno que
+diff --git a/src/packages/provider/src/fastModeSelection.ts b/src/packages/provider/src/fastModeSelection.ts
+index f8100e1f..8666760a 100644
+--- a/src/packages/provider/src/fastModeSelection.ts
++++ b/src/packages/provider/src/fastModeSelection.ts
+@@ -46,7 +46,7 @@ export type FastModeSelectionContext = {
+   fastModeEnabled: boolean
+   remoteSurface: boolean
+   supportsFastMode: (model: string | null) => boolean
+-  isAvailableFor: (model: string | null) => boolean
++  isAvailableFor: (model?: string | null) => boolean
+   preferenceEnabled: boolean
+ }
+ 
+@@ -78,3 +78,18 @@ export function resolveFastModeForModel(
+   if (!context.supportsFastMode(model)) return false
+   return !!previousValue || shouldEnableFastModeForModel(model, context)
+ }
++
++/**
++ * `iLr`: sin `fastModeEnabled` nunca se muestra; con él, el indicador exige
++ * `fastMode` encendido y —superficie remota, disponibilidad para el modelo
++ * actual (`Bk()`, sin modelo, es `isAvailableFor(undefined)`), o el
++ * indicador ya pendiente de otro turno— cualquiera de los tres basta.
++ */
++export function shouldShowFastModeIndicator(
++  fastMode: boolean | undefined,
++  pendingIndicator: boolean,
++  context: Pick<FastModeSelectionContext, 'fastModeEnabled' | 'remoteSurface' | 'isAvailableFor'>,
++): boolean {
++  if (!context.fastModeEnabled) return false
++  return !!fastMode && (context.remoteSurface || context.isAvailableFor() || pendingIndicator)
++}

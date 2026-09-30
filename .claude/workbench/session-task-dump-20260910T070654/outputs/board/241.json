@@ -1,0 +1,8 @@
+{
+  "id": "241",
+  "subject": "Triar los 32 rojos de shell que el reparto de tests/legacy dejó citados",
+  "description": "El reparto de #227 movió 75 de 92 archivos de `tests/legacy` a su espejo y corrió las suites de shell en lote. **32 de las 66 medidas volvieron con exit distinto de 0** y quedaron citadas sin triar — la tarea lo permitía explícitamente.\n\nEvidencia verbatim rescatada en `thyrox: .claude/eventos/reparto-tests-legacy-20260907T*/rojos-sh-repoint.txt` (`thyrox@5837ca68`), con código de salida y conteo de líneas por suite. Estaba en `/tmp/sh_results.txt`, que la directiva prohíbe y que muere con el contenedor.\n\nPor cada rojo hay que separar tres causas que hoy están colapsadas: (a) el reapuntado dejó una ruta mal —defecto del movimiento—; (b) la suite mide un sujeto que cambió al portarse —defecto heredado, con su hallazgo—; (c) la suite es correctamente roja porque exige contenido real del repo consumidor, como `test_censar_scripts.py` y `test_error_catalog.py` ya declaran en su docstring.\n\nUn rojo de (c) NO se arregla: se declara. Confundirlo con (a) produce un verde falso, que es el sub-patrón D.\n\nAbierto además, del mismo pase: `test_reach_roots_shim.py` da 17/18 con una discrepancia en el conteo de raíces que el agente marcó y no depuró.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

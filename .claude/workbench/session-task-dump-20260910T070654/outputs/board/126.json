@@ -1,0 +1,9 @@
+{
+  "id": "126",
+  "subject": "Decidir que de las tres capas de .claude se muda a thyrox y en que orden",
+  "description": "Sucesor declarado por analisis-tres-capas-de-claude-en-docs, en la iniciativa actualizar-agentic-ai-thyrox.\n\nEl analisis separa tres capas que hoy se confunden dentro de kaupamex-docs/.claude/**:\n\n1. THYROX la metodologia — skills/, agents/, commands/, references/. Compartida con thyrox/; candidata directa a mudarse.\n2. El bucle de agente nativo — los SIETE directorios que thyrox no tiene (agent-results, config, coordination, eventos, hooks, packages, workflows). No tiene alli donde alojarse.\n3. El piso de reglas siempre-cargado — 113 reglas, 697 179 bytes, CERO con paths:. Es donde esta el costo de sesion, y es independiente del movimiento a thyrox (ya cubierto por la tarea #223).\n\nLa directiva del ejecutor fue «El harness nativo — se tiene que pasar a THYROX», que es la capa 2. Antes de mover nada hay que decidir:\n\n- si la capa 2 se muda tal cual, se adapta, o se queda y lo que viaja es sólo su interfaz\n- el orden: capa 1 primero (barata, ya compartida) o capa 2 primera (la que el ejecutor nombro)\n- si el destino es el repo thyrox o feature/thyrox-l0 dentro de el\n\nBloqueado de facto por dos analisis en vuelo de la misma iniciativa: el del nombre del paquete (packages/harness se renombra, y mudar antes de renombrar duplica el trabajo) y los dos de referencia externa (litellm, claw-code).\n\nLa decision es del ejecutor; esta tarea la instrumenta.",
+  "activeForm": "Decidiendo el orden de mudanza de las tres capas a thyrox",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

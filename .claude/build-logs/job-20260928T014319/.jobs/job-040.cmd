@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/corpus/test_xls_to_text.py

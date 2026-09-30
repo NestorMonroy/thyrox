@@ -1,0 +1,8 @@
+Tipo: SystemPrompt
+Copias:
+  src/packages/agent/internalUtils.ts
+  src/packages/agent/types/deps.ts
+  src/packages/provider/src/systemPromptType.ts
+
+src/packages/agent/QueryEngine.ts(706): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+src/packages/agent/query.ts(1247): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.

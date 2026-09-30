@@ -1,0 +1,20 @@
+# TODAS las resoluciones del lock por dependencia (no solo la primera)
+# El lock resuelve POR PAQUETE: chalk existe en 4.1.2, 5.6.2 y 6.0.0 a la vez.
+# Leer solo la primera entrada seria el sub-patron A: una columna, dos cosas.
+# medido: 2026-09-19T08:23:33
+
+react                        19.3.0 
+figures                      6.1.0 
+@anthropic-ai/sdk            0.124.0 
+chalk                        4.1.2 5.6.2 6.0.0 
+lodash-es                    4.18.1 
+usehooks-ts                  3.1.1 
+diff                         7.0.0 
+strip-ansi                   6.0.1 7.2.0 
+zod                          4.6.2 
+execa                        9.6.1 
+qrcode                       1.5.4 
+ignore                       7.0.9 
+semver                       7.8.5 
+@modelcontextprotocol/sdk    1.30.0 
+lru-cache                    11.5.2 

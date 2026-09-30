@@ -1,0 +1,1 @@
+1	#297 identidad de tarjeta del board. Te pertenecen: src/task/task_ids.py, src/agents/agent_store.py, tests/task/test_task_ids.py, tests/agents/test-agent-store-tareas.sh y un archivo de prueba nuevo tests/task/test_board_ordinal_identity.py si lo necesitas.

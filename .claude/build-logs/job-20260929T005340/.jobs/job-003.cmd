@@ -1,0 +1,1 @@
+bash -c 'cd src/packages/app-host && bun test src/state/__tests__'

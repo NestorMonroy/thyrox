@@ -1,0 +1,64 @@
+== 1: PATCH sin validar el id
+(fail) PATCH /agents/:id of an unknown agent writes nothing [1.03ms]
+ 51 pass
+ 1 fail
+== 2: PUT de asignaciones sin validar el id
+(fail) PUT /agents/:id/mappings of an unknown agent writes nothing [1.15ms]
+ 51 pass
+ 1 fail
+== 3: modelos detectados de cualquier fuente
+(fail) GET /agents/:id/detected-models returns the unique source models, sorted, and the count [2.11ms]
+ 51 pass
+ 1 fail
+== 4: modelos detectados sin ordenar
+(fail) GET /agents/:id/detected-models returns the unique source models, sorted, and the count [2.02ms]
+ 51 pass
+ 1 fail
+== 5: sin copiar las asignaciones al alias
+(fail) PUT /agents/:id/mappings replaces them and mirrors them into the MITM alias [3.16ms]
+ 51 pass
+ 1 fail
+== 6: DNS de un agente sin DNS activado
+(fail) GET /state: dnsConfigured is true only when an agent with DNS enabled has its hosts entry [1.39ms]
+ 51 pass
+ 1 fail
+== 7: sudo pedido también en Windows
+(fail) GET /state: the sudo password is needed only off Windows, uncached and required [1.82ms]
+ 51 pass
+ 1 fail
+== 8: sudo pedido con contraseña en caché
+(fail) GET /state: the sudo password is needed only off Windows, uncached and required [1.41ms]
+ 51 pass
+ 1 fail
+== 9: estado de agentes con la sonda real
+(fail) GET /state keeps the legacy keys next to the new ones [1.20ms]
+ 51 pass
+ 1 fail
+== 10: DELETE de exclusión sin filtrar
+(fail) bypass: DELETE removes one user pattern and keeps the defaults [1.55ms]
+ 51 pass
+ 1 fail
+== 11: cuerpo inválido sin detalles
+(fail) PATCH /agents/:id rejects a malformed or invalid body with 400 [1.27ms]
+(fail) PUT /agents/:id/mappings rejects a body without mappings [1.31ms]
+ 50 pass
+ 2 fail
+== 12: normalizador sin la clave heredada certExists
+(fail) the legacy route shape maps through and serverState is never undefined [0.42ms]
+ 51 pass
+ 1 fail
+== 13: normalizador sin comprobar el tipo
+(fail) a field with the wrong type keeps its default [0.35ms]
+ 51 pass
+ 1 fail
+== 14: normalizador sin la forma nueva serverState
+(fail) a correctly shaped payload passes through intact [0.45ms]
+ 51 pass
+ 1 fail
+== restaurado
+ M src/packages/mitm/src/api/http.ts
+ M src/packages/mitm/src/manager.ts
+?? src/packages/mitm/src/api/routes/
+?? src/packages/mitm/src/client/normalizeState.ts
+ 52 pass
+ 0 fail

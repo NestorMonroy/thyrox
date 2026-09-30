@@ -1,0 +1,1 @@
+function WP(e,n){let s=e?.mcpInfo?.serverName,r=s!==void 0?n.mcpPermissionModeOverrides?.[s]:void 0,i=n.mode==="bypassPermissions"||n.mode==="auto"||UN(n.mode,n.isBypassPermissionsModeAvailable);if(r!==void 0&&i)return r;if(i&&(hl(e?.mcpInfo)||yl(e?.mcpInfo)&&n.chromeClassifierFloorEnabled===!0))return n.canAutoClassifierRun===!0?"auto":"default";return n.mode}

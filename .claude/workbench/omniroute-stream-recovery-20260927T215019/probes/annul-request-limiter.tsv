@@ -1,0 +1,9 @@
+fifo	s/this.start(this.queue.shift()!)/this.start(this.queue.pop()!)/
+concurrency	/if (maxConcurrent != null \&\& this.running >= maxConcurrent) return/d
+reservoir-block	/if (reservoir != null \&\& reservoir <= 0) return/d
+min-gap	s/if (gap > 0) return this.wakeIn(gap)/void gap/
+reservoir-spend	/if (this.settings.reservoir != null) this.settings.reservoir -= 1/d
+refresh-restart	s/if ('reservoirRefreshAmount' in settings || 'reservoirRefreshInterval' in settings) this.restartRefresh()/void 0/
+abort-queue	/if (index >= 0) this.queue.splice(index, 1)/d
+pre-aborted	/if (signal?.aborted) return Promise.reject(signal.reason)/d
+drop-queue	/for (const job of this.queue.splice(0)) this.settle(job, () => job.reject(reason))/d

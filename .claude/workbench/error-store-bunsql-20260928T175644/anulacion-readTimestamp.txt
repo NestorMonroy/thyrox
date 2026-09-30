@@ -1,0 +1,39 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/errorStore.postgres.test.ts:
+30 |           context: { url: 'https://api.example/v1', status: 529, nested: { list: [1, 'a'] } },
+31 |           actions: [{ name: 'tengu_query', metadata: { model: 'm' }, occurredAt: AT }],
+32 |         }))
+33 |         const [row] = await store.list({ limit: 10 })
+34 |         expect(typeof id).toBe('number')
+35 |         expect(row).toMatchObject({
+                         ^
+error: expect(received).toMatchObject(expected)
+
+@@ -7,3 +7,3 @@
+        "name": "tengu_query",
+-       "occurredAt": "2026-09-28T17:40:00.000Z",
++       "occurredAt": "Mon Sep 28 2026 17:40:00 GMT+0000 (Coordinated Universal Time)",
+      },
+@@ -24,6 +24,9 @@
+    "name": "TypeError",
+-   "occurredAt": "2026-09-28T17:40:00.000Z",
++   "occurredAt": "Mon Sep 28 2026 17:40:00 GMT+0000 (Coordinated Universal Time)",
+    "sessionId": "s-1",
+    "source": "log_error",
++   "stack": 
++ "TypeError: boom
++     at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/errorStoreContract.ts:29:22)"
++ ,
+    "version": "1.2.3",
+
+- Expected  - 2
++ Received  + 6
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/errorStoreContract.ts:35:21)
+(fail) contrato de la base de errores — postgres > guarda el error con contexto, tipo y acciones, y lo devuelve igual [35.97ms]
+
+ 13 pass
+ 1 fail
+ 19 expect() calls
+Ran 14 tests across 2 files. [277.00ms]

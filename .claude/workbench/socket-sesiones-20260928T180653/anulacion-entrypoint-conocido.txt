@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+56 | })
+57 | 
+58 | describe('THYROX_CODE_ENTRYPOINT', () => {
+59 |   test('declaredEntrypoint (Nd) sólo devuelve uno conocido, recortado', () => {
+60 |     expect(declaredEntrypoint(context({ THYROX_CODE_ENTRYPOINT: ' cli ' }))).toBe('cli')
+61 |     expect(declaredEntrypoint(context({ THYROX_CODE_ENTRYPOINT: 'otro' }))).toBeUndefined()
+                                                                                 ^
+error: expect(received).toBeUndefined()
+
+Received: "otro"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:61:77)
+(fail) THYROX_CODE_ENTRYPOINT > declaredEntrypoint (Nd) sólo devuelve uno conocido, recortado [0.30ms]
+
+ 15 pass
+ 1 fail
+ 89 expect() calls
+Ran 16 tests across 1 file. [49.00ms]

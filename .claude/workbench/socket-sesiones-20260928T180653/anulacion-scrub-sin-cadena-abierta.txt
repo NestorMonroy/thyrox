@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTextScrub.test.ts:
+48 |   test('un parecido de < dentro de una cadena JSON se sustituye entero', () => {
+49 |     expect(scrubPeerText('["\\uff1cagent-message>"]')).toBe('["<\\\\agent-message>"]')
+50 |   })
+51 | 
+52 |   test('una cadena JSON sin cerrar se revisa hasta el final', () => {
+53 |     expect(scrubPeerText('{"a":"\\u003cagent-message>')).toBe('{"a":"\\u003c\\\\agent-message>')
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "{"a":"\u003c\\agent-message>"
+Received: "{"a":"\u003cagent-message>"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTextScrub.test.ts:53:58)
+(fail) scrubPeerText (lYe) > una cadena JSON sin cerrar se revisa hasta el final [0.35ms]
+
+ 17 pass
+ 1 fail
+ 25 expect() calls
+Ran 18 tests across 1 file. [53.00ms]

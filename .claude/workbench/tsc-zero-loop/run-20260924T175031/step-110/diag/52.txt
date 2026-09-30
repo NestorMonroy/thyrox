@@ -1,0 +1,51 @@
+src/packages/app-host/src/runtime/installCliBindings.ts(55,5): error TS2322: Type '(params: unknown) => HeadlessSessionStore' is not assignable to type '(params: unknown) => HeadlessStateStore<unknown>'.
+  --- código src/packages/app-host/src/runtime/installCliBindings.ts:45-65 ---
+     45  import { runHeadless } from '@thyrox/cli/print.js'
+     46  import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
+     47  import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+     48  
+     49  let cliBindingsInstalled = false
+     50  
+     51  export function installCliBindings(): void {
+     52    if (cliBindingsInstalled) return
+     53  
+     54    installCliHostBindings({
+     55>     createHeadlessStore: params =>
+     56        createHeadlessSessionStore(params as HeadlessStoreParams),
+     57      runHeadless: (...args) =>
+     58        runHeadless(...(args as Parameters<typeof runHeadless>)),
+     59      getStructuredIO,
+     60    })
+     61  
+     62    cliBindingsInstalled = true
+     63  }
+     64  
+     65  installCliBindings()
+  Call signature return types 'HeadlessSessionStore' and 'HeadlessStateStore<unknown>' are incompatible.
+    The types of 'setState' are incompatible between these types.
+      Type '(next: AppState) => void' is not assignable to type '(...args: unknown[]) => unknown'.
+        Types of parameters 'next' and 'args' are incompatible.
+          Type 'unknown' is not assignable to type 'AppState'.
+            Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/app-host/src/runtime/installCliBindings.ts(57,5): error TS2322: Type '(...args: unknown[]) => unknown' is not assignable to type '(...args: unknown[]) => Promise<void>'.
+  --- código src/packages/app-host/src/runtime/installCliBindings.ts:47-65 ---
+     47  import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+     48  
+     49  let cliBindingsInstalled = false
+     50  
+     51  export function installCliBindings(): void {
+     52    if (cliBindingsInstalled) return
+     53  
+     54    installCliHostBindings({
+     55      createHeadlessStore: params =>
+     56        createHeadlessSessionStore(params as HeadlessStoreParams),
+     57>     runHeadless: (...args) =>
+     58        runHeadless(...(args as Parameters<typeof runHeadless>)),
+     59      getStructuredIO,
+     60    })
+     61  
+     62    cliBindingsInstalled = true
+     63  }
+     64  
+     65  installCliBindings()
+  Type 'unknown' is not assignable to type 'Promise<void>'.

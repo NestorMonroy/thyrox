@@ -1,0 +1,39 @@
+# primera medición
+== 1: openai en otro carril -> 2
+== 2: cline sin carril -> 1
+== 3: pausa de 1 s -> 2
+== 4: vacío no es valor por defecto -> 1
+== 5: negativo vale -> 1
+== 6: infinito vale -> 1
+== 7: sin carril -> 1
+== 8: el fallo anterior bloquea -> 0
+== 9: pausa siempre -> 1
+== 10: pausa cero se duerme -> 0
+== 11: sin rotación recordada -> 1
+== 12: sin fila guardada -> 3
+== 13: fila vigente se refresca -> 1
+== 14: margen de vigencia cero -> 1
+== 15: se refresca el token en memoria -> 1
+== 16: fallo de lectura lanza -> 1
+== 17: el mismo token cuenta como más nuevo -> 1
+== 18: recuerda sin refresh token -> 0
+== 19: sin carril en el refresco -> 1
+== 20: guarda sin access token -> 1
+== 21: sin CAS -> 1
+== 22: fallo de guardado se traga -> 1
+== 23: sin guardado del contexto -> 1
+== 24: refresh token no texto pasa -> 1
+== 25: sin mutex por conexión -> 2
+== 26: mutex no se libera -> 2
+== 27: sin contar esperas -> 1
+== 28: sin compartir por token -> 1
+== 29: caché por token no se libera -> 1
+== 30: sin aviso de guardado ausente -> 1
+== 31: todas incluye inactivas -> 1
+== 32: todas incluye nulos -> 1
+== restaurado -> 0
+
+# re-medición tras afinar
+== 10: pausa cero se duerme -> 1
+== 18: recuerda sin refresh token -> 1
+== restaurado -> 0

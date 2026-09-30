@@ -1,0 +1,122 @@
+src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts(181,70): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts:171-191 ---
+    171      // Es la decisión que hace que las dos familias no coexistan: TaskGet y
+    172      // TaskList se encienden con `isTodoV2Enabled()`, éste con su negación.
+    173      setIsInteractive(true)
+    174      expect(TodoWriteTool.isEnabled()).toBe(false)
+    175      setIsInteractive(false)
+    176      expect(TodoWriteTool.isEnabled()).toBe(true)
+    177    })
+    178  
+    179    test('12. no pide permiso: devuelve la entrada intacta', async () => {
+    180      const entrada = { todos: [] }
+    181>     const r = await TodoWriteTool.checkPermissions(entrada as never, ctx())
+    182      expect(r).toEqual({ behavior: 'allow', updatedInput: entrada })
+    183    })
+    184  
+    185    test('13. la lista se guarda bajo el id de sesión cuando no hay agente', async () => {
+    186      const todos = [
+    187        { content: 'una', status: 'pending', activeForm: 'haciendo una' },
+    188      ]
+    189      await TodoWriteTool.call({ todos } as never, ctx())
+    190      const claves = Object.keys(estado.todos)
+    191      expect(claves).toHaveLength(1)
+src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts(223,35): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts:213-233 ---
+    213      expect(estado.todos[clave]).toEqual([])
+    214    })
+    215  
+    216    test('16. pero el resultado devuelve la lista COMPLETA, no la vaciada', async () => {
+    217      // La distinción importa: el estado se vacía para el panel; quien lee el
+    218      // resultado tiene que ver qué se cerró.
+    219      const todos = [
+    220        { content: 'una', status: 'completed', activeForm: 'haciendo una' },
+    221      ]
+    222      const { data } = await TodoWriteTool.call({ todos } as never, ctx())
+    223>     expect(data.newTodos).toEqual(todos)
+    224      expect(data.oldTodos).toEqual([])
+    225    })
+    226  
+    227    test('17. la lista ANTERIOR viaja en el resultado', async () => {
+    228      const previa = [
+    229        { content: 'vieja', status: 'pending', activeForm: 'haciendo vieja' },
+    230      ]
+    231      const c = ctx()
+    232      await TodoWriteTool.call({ todos: previa } as never, c)
+    233      const nueva = [
+  Overload 1 of 2, '(expected: { content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]): void', gave the following error.
+    Argument of type '{ content: string; status: string; activeForm: string; }[]' is not assignable to parameter of type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]'.
+      Type '{ content: string; status: string; activeForm: string; }' is not assignable to type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"pending" | "completed" | "in_progress"'.
+  Overload 2 of 2, '(expected: NoInfer<{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]>): void', gave the following error.
+    Argument of type '{ content: string; status: string; activeForm: string; }[]' is not assignable to parameter of type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]'.
+      Type '{ content: string; status: string; activeForm: string; }' is not assignable to type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"pending" | "completed" | "in_progress"'.
+src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts(237,35): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts:227-247 ---
+    227    test('17. la lista ANTERIOR viaja en el resultado', async () => {
+    228      const previa = [
+    229        { content: 'vieja', status: 'pending', activeForm: 'haciendo vieja' },
+    230      ]
+    231      const c = ctx()
+    232      await TodoWriteTool.call({ todos: previa } as never, c)
+    233      const nueva = [
+    234        { content: 'nueva', status: 'pending', activeForm: 'haciendo nueva' },
+    235      ]
+    236      const { data } = await TodoWriteTool.call({ todos: nueva } as never, c)
+    237>     expect(data.oldTodos).toEqual(previa)
+    238      expect(data.newTodos).toEqual(nueva)
+    239    })
+    240  })
+    241  
+    242  describe('TodoWriteTool — el bloque de resultado, 2 casos', () => {
+    243    test('18. sin empujón, el texto base y nada más', () => {
+    244      const bloque = TodoWriteTool.mapToolResultToToolResultBlockParam(
+    245        { oldTodos: [], newTodos: [], verificationNudgeNeeded: false },
+    246        'uso-1',
+    247      )
+  Overload 1 of 2, '(expected: { content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]): void', gave the following error.
+    Argument of type '{ content: string; status: string; activeForm: string; }[]' is not assignable to parameter of type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]'.
+      Type '{ content: string; status: string; activeForm: string; }' is not assignable to type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"pending" | "completed" | "in_progress"'.
+  Overload 2 of 2, '(expected: NoInfer<{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]>): void', gave the following error.
+    Argument of type '{ content: string; status: string; activeForm: string; }[]' is not assignable to parameter of type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]'.
+      Type '{ content: string; status: string; activeForm: string; }' is not assignable to type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"pending" | "completed" | "in_progress"'.
+src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts(238,35): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts:228-248 ---
+    228      const previa = [
+    229        { content: 'vieja', status: 'pending', activeForm: 'haciendo vieja' },
+    230      ]
+    231      const c = ctx()
+    232      await TodoWriteTool.call({ todos: previa } as never, c)
+    233      const nueva = [
+    234        { content: 'nueva', status: 'pending', activeForm: 'haciendo nueva' },
+    235      ]
+    236      const { data } = await TodoWriteTool.call({ todos: nueva } as never, c)
+    237      expect(data.oldTodos).toEqual(previa)
+    238>     expect(data.newTodos).toEqual(nueva)
+    239    })
+    240  })
+    241  
+    242  describe('TodoWriteTool — el bloque de resultado, 2 casos', () => {
+    243    test('18. sin empujón, el texto base y nada más', () => {
+    244      const bloque = TodoWriteTool.mapToolResultToToolResultBlockParam(
+    245        { oldTodos: [], newTodos: [], verificationNudgeNeeded: false },
+    246        'uso-1',
+    247      )
+    248      expect(String(bloque.content)).toContain('Todos have been modified')
+  Overload 1 of 2, '(expected: { content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]): void', gave the following error.
+    Argument of type '{ content: string; status: string; activeForm: string; }[]' is not assignable to parameter of type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]'.
+      Type '{ content: string; status: string; activeForm: string; }' is not assignable to type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"pending" | "completed" | "in_progress"'.
+  Overload 2 of 2, '(expected: NoInfer<{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]>): void', gave the following error.
+    Argument of type '{ content: string; status: string; activeForm: string; }[]' is not assignable to parameter of type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }[]'.
+      Type '{ content: string; status: string; activeForm: string; }' is not assignable to type '{ content: string; status: "pending" | "completed" | "in_progress"; activeForm: string; }'.
+        Types of property 'status' are incompatible.
+          Type 'string' is not assignable to type '"pending" | "completed" | "in_progress"'.

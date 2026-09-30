@@ -1,0 +1,2 @@
+4. **`-i inplace` en otro awk** — `mawk -i inplace` sale 2 («not an option:
+   -i»), y `awk` a secas resuelve a mawk en Debian (`detect_bare_awk`).

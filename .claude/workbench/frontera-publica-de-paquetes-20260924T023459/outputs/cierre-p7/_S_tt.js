@@ -1,0 +1,1 @@
+function $tt(e){let n=[],r=[];for(let s of e)if(s.startsWith("mcp__"))n.push(s);else r.push(s);return{mcp:n,other:r}}

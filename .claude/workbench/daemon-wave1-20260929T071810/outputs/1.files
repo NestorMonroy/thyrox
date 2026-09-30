@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/daemonLock.test.ts
+src/packages/daemon/src/__tests__/socketServer.test.ts
+src/packages/daemon/src/daemonLock.ts
+src/packages/daemon/src/socketServer.ts

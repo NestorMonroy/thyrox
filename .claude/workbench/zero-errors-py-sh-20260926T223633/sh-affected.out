@@ -1,0 +1,975 @@
+run-task-pool: 60 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260926T225321
+  job-20260926T225321/job-001 pid 20494   PYTHONPATH=src timeout 900 bash tests/agents/test-agent-store-clasificar-documentos.sh
+  job-20260926T225321/job-002 pid 20532   PYTHONPATH=src timeout 900 bash tests/agents/test-agent-store-fecha-apertura.sh
+  job-20260926T225321/job-003 pid 20591   PYTHONPATH=src timeout 900 bash tests/agents/test-agent-store-tareas.sh
+  job-20260926T225321/job-004 pid 20890   PYTHONPATH=src timeout 900 bash tests/agents/test-model-catalog.sh
+  job-20260926T225321/job-005 pid 20921   PYTHONPATH=src timeout 900 bash tests/agents/test-reconciliar-agentes.sh
+  job-20260926T225321/job-006 pid 21205   PYTHONPATH=src timeout 900 bash tests/agents/test-register-agent-session.sh
+  job-20260926T225321/job-007 pid 21483   PYTHONPATH=src timeout 900 bash tests/githooks/test-pre-commit-cache-layout.sh
+  job-20260926T225321/job-008 pid 21606   PYTHONPATH=src timeout 900 bash tests/githooks/test-pre-commit-reconcile-status.sh
+  job-20260926T225321/job-009 pid 21646   PYTHONPATH=src timeout 900 bash tests/install/test_install.sh
+  job-20260926T225321/job-010 pid 21926   PYTHONPATH=src timeout 900 bash tests/lib/test-toolchain-gawk.sh
+  job-20260926T225321/job-011 pid 22342   PYTHONPATH=src timeout 900 bash tests/lib/test-toolchain-gnu-time.sh
+  job-20260926T225321/job-012 pid 22456   PYTHONPATH=src timeout 900 bash tests/lib/test-toolchain-hunspell.sh
+  job-20260926T225321/job-013 pid 22801   PYTHONPATH=src timeout 900 bash tests/lib/test-toolchain-parallel.sh
+  job-20260926T225321/job-014 pid 22973   PYTHONPATH=src timeout 900 bash tests/lib/test-toolchain-pdf-text.sh
+  job-20260926T225321/job-015 pid 22994   PYTHONPATH=src timeout 900 bash tests/lib/test-toolchain-poppler.sh
+  job-20260926T225321/job-016 pid 23045   PYTHONPATH=src timeout 900 bash tests/repo/test-fixture-leak.sh
+  job-20260926T225321/job-017 pid 23407   PYTHONPATH=src timeout 900 bash tests/run.sh
+  job-20260926T225321/job-018 pid 23453   PYTHONPATH=src timeout 900 bash tests/session/hardware/test-gpu-pools-real.sh
+  job-20260926T225321/job-019 pid 23738   PYTHONPATH=src timeout 900 bash tests/session/test-bg-familia.sh
+  job-20260926T225321/job-020 pid 24812   PYTHONPATH=src timeout 900 bash tests/session/test-bg-grace-window.sh
+  job-20260926T225321/job-021 pid 26630   PYTHONPATH=src timeout 900 bash tests/session/test-bg-memfree.sh
+  job-20260926T225321/job-022 pid 26670   PYTHONPATH=src timeout 900 bash tests/session/test-bg-name-flag.sh
+  job-20260926T225321/job-023 pid 27028   PYTHONPATH=src timeout 900 bash tests/session/test-contrato-de-escotilla.sh
+  job-20260926T225321/job-024 pid 27371   PYTHONPATH=src timeout 900 bash tests/session/test-gnu-time-launchers.sh
+  job-20260926T225321/job-025 pid 28100   PYTHONPATH=src timeout 900 bash tests/session/test-gpu-admission-cli.sh
+  job-20260926T225321/job-026 pid 28630   PYTHONPATH=src timeout 900 bash tests/session/test-headless-pool.sh
+  job-20260926T225321/job-027 pid 29447   PYTHONPATH=src timeout 900 bash tests/session/test-jobs-ledger-home.sh
+  job-20260926T225321/job-028 pid 30081   PYTHONPATH=src timeout 900 bash tests/session/test-process-group.sh
+  job-20260926T225321/job-029 pid 1550    PYTHONPATH=src timeout 900 bash tests/session/test-run-task-pool-isolation.sh
+  job-20260926T225321/job-030 pid 4587    PYTHONPATH=src timeout 900 bash tests/session/test-run-task-pool-memfree.sh
+  job-20260926T225321/job-031 pid 8067    PYTHONPATH=src timeout 900 bash tests/session/test-run-task-pool-scope.sh
+  job-20260926T225321/job-032 pid 9600    PYTHONPATH=src timeout 900 bash tests/session/test-run-task-pool.sh
+  job-20260926T225321/job-033 pid 17555   PYTHONPATH=src timeout 900 bash tests/session/test-shared-lock-cli.sh
+  job-20260926T225321/job-034 pid 18269   PYTHONPATH=src timeout 900 bash tests/session/test-tmpdir-faucet.sh
+  job-20260926T225321/job-035 pid 19361   PYTHONPATH=src timeout 900 bash tests/session/test-wait-jobs-dependency.sh
+  job-20260926T225321/job-036 pid 21727   PYTHONPATH=src timeout 900 bash tests/session/test-wait-jobs-probe.sh
+  job-20260926T225321/job-037 pid 23020   PYTHONPATH=src timeout 900 bash tests/session/test-wait-jobs.sh
+  job-20260926T225321/job-038 pid 25921   PYTHONPATH=src timeout 900 bash tests/session/test-write-env-repairs-moved-clone.sh
+  job-20260926T225321/job-039 pid 26213   PYTHONPATH=src timeout 900 bash tests/task/test-refresh-board.sh
+  job-20260926T225321/job-040 pid 26644   PYTHONPATH=src timeout 900 bash tests/verify/test-agent-artifacts.sh
+  job-20260926T225321/job-041 pid 26674   PYTHONPATH=src timeout 900 bash tests/verify/test-assert-no-writes.sh
+  job-20260926T225321/job-042 pid 27119   PYTHONPATH=src timeout 900 bash tests/verify/test-audit-timing.sh
+  job-20260926T225321/job-043 pid 27633   PYTHONPATH=src timeout 900 bash tests/verify/test-cifra-de-artefacto-vivo.sh
+  job-20260926T225321/job-044 pid 27673   PYTHONPATH=src timeout 900 bash tests/verify/test-eventos-hook.sh
+  job-20260926T225321/job-045 pid 28398   PYTHONPATH=src timeout 900 bash tests/verify/test-evidence-tracked.sh
+  job-20260926T225321/job-046 pid 28759   PYTHONPATH=src timeout 900 bash tests/verify/test-generator-determinism.sh
+  job-20260926T225321/job-047 pid 29080   PYTHONPATH=src timeout 900 bash tests/verify/test-githooks-activos.sh
+  job-20260926T225321/job-048 pid 29342   PYTHONPATH=src timeout 900 bash tests/verify/test-hallazgo-submodulo-baseline.sh
+  job-20260926T225321/job-049 pid 29445   PYTHONPATH=src timeout 900 bash tests/verify/test-ids-entre-ramas.sh
+  job-20260926T225321/job-050 pid 29954   PYTHONPATH=src timeout 900 bash tests/verify/test-mutante-en-staging.sh
+  job-20260926T225321/job-051 pid 30124   PYTHONPATH=src timeout 900 bash tests/verify/test-post-commit-store-index.sh
+  job-20260926T225321/job-052 pid 30678   PYTHONPATH=src timeout 900 bash tests/verify/test-pre-commit-docs.sh
+  job-20260926T225321/job-053 pid 32409   PYTHONPATH=src timeout 900 bash tests/verify/test-script-naming.sh
+  job-20260926T225321/job-054 pid 32475   PYTHONPATH=src timeout 900 bash tests/verify/test-toolchain-ready.sh
+  job-20260926T225321/job-055 pid 2471    PYTHONPATH=src timeout 900 bash tests/verify/test-veredicto-de-gate.sh
+  job-20260926T225321/job-056 pid 2599    PYTHONPATH=src timeout 900 bash tests/verify/test-vocabulario-baseline-resolucion.sh
+  job-20260926T225321/job-057 pid 5467    PYTHONPATH=src timeout 900 bash tests/verify/test-vocabulario-prosa.sh
+  job-20260926T225321/job-058 pid 8147    PYTHONPATH=src timeout 900 bash tests/verify/test_audit_delegates.sh
+  job-20260926T225321/job-059 pid 8250    PYTHONPATH=src timeout 900 bash tests/verify/test_package_root_resolution.sh
+  job-20260926T225321/job-060 pid 17648   PYTHONPATH=src timeout 900 bash tests/verify/test_pre_push.sh
+run-task-pool: lanzados 60 de 60; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260926T225321_job-001 -> OK (2 de 61)
+asentado: job-20260926T225321_job-002 -> OK (3 de 61)
+asentado: job-20260926T225321_job-003 -> OK (4 de 61)
+asentado: job-20260926T225321_job-004 -> OK (5 de 61)
+asentado: job-20260926T225321_job-005 -> OK (6 de 61)
+asentado: job-20260926T225321_job-006 -> OK (7 de 61)
+asentado: job-20260926T225321_job-007 -> OK (8 de 61)
+asentado: job-20260926T225321_job-008 -> OK (9 de 61)
+asentado: job-20260926T225321_job-009 -> OK (10 de 61)
+asentado: job-20260926T225321_job-010 -> OK (11 de 61)
+asentado: job-20260926T225321_job-011 -> OK (12 de 61)
+asentado: job-20260926T225321_job-012 -> OK (13 de 61)
+asentado: job-20260926T225321_job-013 -> OK (14 de 61)
+asentado: job-20260926T225321_job-014 -> OK (15 de 61)
+asentado: job-20260926T225321_job-015 -> OK (16 de 61)
+asentado: job-20260926T225321_job-016 -> OK (17 de 61)
+asentado: job-20260926T225321_job-018 -> OK (18 de 61)
+asentado: job-20260926T225321_job-019 -> OK (19 de 61)
+asentado: job-20260926T225321_job-020 -> OK (20 de 61)
+asentado: job-20260926T225321_job-021 -> OK (21 de 61)
+asentado: job-20260926T225321_job-022 -> OK (22 de 61)
+asentado: job-20260926T225321_job-023 -> OK (23 de 61)
+asentado: job-20260926T225321_job-024 -> OK (24 de 61)
+asentado: job-20260926T225321_job-025 -> OK (25 de 61)
+asentado: job-20260926T225321_job-026 -> OK (26 de 61)
+asentado: job-20260926T225321_job-027 -> OK (27 de 61)
+asentado: job-20260926T225321_job-028 -> OK (28 de 61)
+asentado: job-20260926T225321_job-029 -> OK (29 de 61)
+asentado: job-20260926T225321_job-030 -> OK (30 de 61)
+asentado: job-20260926T225321_job-031 -> OK (31 de 61)
+asentado: job-20260926T225321_job-032 -> OK (32 de 61)
+asentado: job-20260926T225321_job-033 -> OK (33 de 61)
+asentado: job-20260926T225321_job-034 -> OK (34 de 61)
+asentado: job-20260926T225321_job-035 -> OK (35 de 61)
+asentado: job-20260926T225321_job-036 -> OK (36 de 61)
+asentado: job-20260926T225321_job-037 -> OK (37 de 61)
+asentado: job-20260926T225321_job-038 -> OK (38 de 61)
+asentado: job-20260926T225321_job-039 -> OK (39 de 61)
+asentado: job-20260926T225321_job-040 -> OK (40 de 61)
+asentado: job-20260926T225321_job-041 -> OK (41 de 61)
+asentado: job-20260926T225321_job-042 -> OK (42 de 61)
+asentado: job-20260926T225321_job-043 -> OK (43 de 61)
+asentado: job-20260926T225321_job-044 -> OK (44 de 61)
+asentado: job-20260926T225321_job-045 -> OK (45 de 61)
+asentado: job-20260926T225321_job-046 -> OK (46 de 61)
+asentado: job-20260926T225321_job-047 -> OK (47 de 61)
+asentado: job-20260926T225321_job-048 -> OK (48 de 61)
+asentado: job-20260926T225321_job-049 -> OK (49 de 61)
+asentado: job-20260926T225321_job-050 -> OK (50 de 61)
+asentado: job-20260926T225321_job-051 -> OK (51 de 61)
+asentado: job-20260926T225321_job-052 -> OK (52 de 61)
+asentado: job-20260926T225321_job-053 -> OK (53 de 61)
+asentado: job-20260926T225321_job-054 -> OK (54 de 61)
+asentado: job-20260926T225321_job-055 -> OK (55 de 61)
+asentado: job-20260926T225321_job-056 -> OK (56 de 61)
+asentado: job-20260926T225321_job-058 -> OK (57 de 61)
+asentado: job-20260926T225321_job-059 -> OK (58 de 61)
+asentado: job-20260926T225321_job-060 -> OK (59 de 61)
+esperando: 59 de 61 asentados, 31s; vivos: job-20260926T225321_job-017 job-20260926T225321_job-057
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=3.04s
+sonda job-20260926T225321_job-017: 23504 bun stdin=channel(pipe:[728576]) sin escritor estado=R cpu=1.06s
+sonda job-20260926T225321_job-017: 24785 bun stdin=channel(pipe:[742380]) sin escritor estado=R cpu=0.67s
+sonda job-20260926T225321_job-017: 24850 bun stdin=channel(pipe:[744516]) sin escritor estado=R cpu=0.62s
+sonda job-20260926T225321_job-017: 25104 bun stdin=channel(pipe:[748935]) sin escritor estado=D cpu=0.48s
+sonda job-20260926T225321_job-057: 5467 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-057: 5470 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-057: 5473 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-057: 5475 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-057: 25289 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-057: 25290 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=1.05s
+sonda job-20260926T225321_job-057: 25291 grep stdin=channel(pipe:[750699]) escritores=1 estado=S cpu=0.00s
+  AVISO job-20260926T225321_job-057: pid 25291 (grep) lee stdin de un canal (pipe:[750699]) — si su productor no escribe ni cierra, espera para siempre
+esperando: 59 de 61 asentados, 63s; vivos: job-20260926T225321_job-017 job-20260926T225321_job-057
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=3.60s
+sonda job-20260926T225321_job-017: 31669 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 32057 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 32061 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 32077 ? stdin=unreadable(-) escritores=- estado=Z cpu=0.03s
+sonda job-20260926T225321_job-017: 31888 bun stdin=channel(pipe:[782175]) sin escritor estado=R cpu=1.08s
+sonda job-20260926T225321_job-017: 31899 bun stdin=channel(pipe:[782179]) sin escritor estado=R cpu=1.11s
+sonda job-20260926T225321_job-017: 31944 bun stdin=channel(pipe:[782206]) sin escritor estado=R cpu=0.89s
+asentado: job-20260926T225321_job-057 -> OK (57 de 61)
+esperando: 60 de 61 asentados, 94s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=3.97s
+sonda job-20260926T225321_job-017: 6065 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 6150 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 6492 bun stdin=channel(pipe:[821110]) sin escritor estado=R cpu=0.61s
+esperando: 60 de 61 asentados, 126s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=4.43s
+sonda job-20260926T225321_job-017: 12830 bun stdin=channel(pipe:[850073]) sin escritor estado=R cpu=1.53s
+sonda job-20260926T225321_job-017: 12876 bun stdin=channel(pipe:[850120]) sin escritor estado=R cpu=0.98s
+sonda job-20260926T225321_job-017: 13258 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 13363 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 60 de 61 asentados, 158s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=4.68s
+sonda job-20260926T225321_job-017: 17362 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 18077 bun stdin=channel(pipe:[870708]) sin escritor estado=S cpu=0.07s
+sonda job-20260926T225321_job-017: 20546 ? stdin=channel(pipe:[885913]) sin escritor estado=R cpu=1.85s
+sonda job-20260926T225321_job-017: 20596 bun stdin=channel(pipe:[885920]) sin escritor estado=R cpu=1.53s
+esperando: 60 de 61 asentados, 189s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=5.14s
+sonda job-20260926T225321_job-017: 26987 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 27557 bun stdin=channel(pipe:[918803]) sin escritor estado=R cpu=0.61s
+sonda job-20260926T225321_job-017: 27727 bun stdin=channel(pipe:[918871]) sin escritor estado=R cpu=0.29s
+sonda job-20260926T225321_job-017: 27871 bun stdin=channel(pipe:[918917]) sin escritor estado=S cpu=0.30s
+esperando: 60 de 61 asentados, 219s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260926T225321_job-017: 23482 bash stdin=channel(pipe:[250299]) sin escritor estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23490 parallel stdin=channel(pipe:[249411]) sin escritor estado=S cpu=5.19s
+sonda job-20260926T225321_job-017: 29262 bun stdin=channel(pipe:[929803]) sin escritor estado=R cpu=15.76s
+sonda job-20260926T225321_job-017: 30285 bun stdin=channel(pipe:[931846]) sin escritor estado=R cpu=10.89s
+sonda job-20260926T225321_job-017: 31026 bun stdin=channel(pipe:[931430]) sin escritor estado=R cpu=7.21s
+sonda job-20260926T225321_job-017: 32415 bun stdin=channel(pipe:[937411]) sin escritor estado=R cpu=2.35s
+esperando: 60 de 61 asentados, 250s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.02s
+sonda job-20260926T225321_job-017: 8626 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 60 de 61 asentados, 280s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.03s
+sonda job-20260926T225321_job-017: 8762 python stdin=channel(pipe:[948606]) sin escritor estado=R cpu=28.50s
+esperando: 60 de 61 asentados, 310s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.04s
+sonda job-20260926T225321_job-017: 17503 python stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.02s
+esperando: 60 de 61 asentados, 340s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.07s
+sonda job-20260926T225321_job-017: 23392 ? stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.04s
+sonda job-20260926T225321_job-017: 23760 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 23766 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 60 de 61 asentados, 370s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.08s
+sonda job-20260926T225321_job-017: 28464 python stdin=channel(pipe:[948606]) sin escritor estado=D cpu=0.19s
+sonda job-20260926T225321_job-017: 28853 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 28854 bash stdin=unreadable(-) escritores=- estado=Z cpu=0.00s
+sonda job-20260926T225321_job-017: 28857 bash stdin=unreadable(-) escritores=- estado=Z cpu=0.01s
+sonda job-20260926T225321_job-017: 28876 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 28877 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 28881 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 29366 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 60 de 61 asentados, 400s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.09s
+sonda job-20260926T225321_job-017: 3591 python stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.05s
+sonda job-20260926T225321_job-017: 3745 sleep stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.00s
+esperando: 60 de 61 asentados, 430s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.10s
+sonda job-20260926T225321_job-017: 7691 python stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.07s
+sonda job-20260926T225321_job-017: 8597 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260926T225321_job-017: 8600 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 60 de 61 asentados, 460s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.12s
+sonda job-20260926T225321_job-017: 12847 python stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.03s
+sonda job-20260926T225321_job-017: 12848 python stdin=channel(pipe:[948606]) sin escritor estado=R cpu=2.42s
+esperando: 60 de 61 asentados, 490s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.12s
+sonda job-20260926T225321_job-017: 12847 python stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.03s
+sonda job-20260926T225321_job-017: 12848 python stdin=channel(pipe:[948606]) sin escritor estado=R cpu=31.96s
+esperando: 60 de 61 asentados, 520s; vivos: job-20260926T225321_job-017
+sonda job-20260926T225321_job-017: 23407 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23411 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225321_job-017: 23414 bash stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.12s
+sonda job-20260926T225321_job-017: 12847 python stdin=channel(pipe:[948606]) sin escritor estado=S cpu=0.03s
+sonda job-20260926T225321_job-017: 17289 python stdin=channel(pipe:[948606]) sin escritor estado=R cpu=28.59s
+asentado: job-20260926T225321_job-017 -> OK (18 de 61)
+== 61 trabajos asentados ==
+OLVIDADO job-20260926T225321
+       | (vacío — no emitió nada)
+OK     job-20260926T225321_job-001
+       |   ok    7b sin filas duplicadas
+       |   ok    8 clasificar no borra la fecha
+       |   ok    9a publica denominador
+       |   ok    9b publica cuantas series salieron
+       |   ok    10 el plazo queda NULO (bloqueado por #760)
+       |   ok    11a reclasificar un arbol intacto no escribe
+       |   ok    11b un documento nuevo SI se escribe
+       | 
+       |   19 ok · 0 fallas
+       | EXIT=0
+       memoria pico: 27660 KB (27 MB) · pared 1.42s
+OK     job-20260926T225321_job-002
+       | == 12. el conteo no cuenta dos veces la misma fila ==
+       |   ok    lo reportado == lo escrito
+       | == 13. el hook sella la fecha EXACTA, no una cota ==
+       |   ok    #700 sellada por hook
+       |   ok    #700 trae instante
+       | == 14. una ingestión masiva NO sella: su instante no es la apertura ==
+       |   ok    #800 NO sellada
+       | 
+       | 25 ok · 0 fallas
+       | EXIT=0
+       memoria pico: 27600 KB (27 MB) · pared 2.13s
+OK     job-20260926T225321_job-003
+       | == 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) ==
+       |   ok    la fila nueva trae submodule, no NULL
+       |   ok    y su procedencia dice que es el respaldo, no una clasificacion
+       | == 16. una capa ya clasificada SOBREVIVE al siguiente volcado ==
+       |   ok    la capa clasificada no se pisa
+       |   ok    ni su procedencia
+       |   ok    y el contenido SI se actualiza — el volcado sigue haciendo su trabajo
+       | 
+       | 33 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24536 KB (24 MB) · pared 2.30s
+OK     job-20260926T225321_job-004
+       | OK   por-modelo sin --store rehusa en vez de componer un default
+       | OK   por-modelo publica alcance medido con universo
+       | OK   sesion deduplica por message.id (2 turnos)
+       | OK   sesion valora la escritura al TTL real (1h) y la lectura a 0.25
+       | OK   sesion estima el coste de reescribir el contexto en el destino
+       | OK   sesion sin transcript: exit 2 y stdout vacío
+       | OK   el espejo NO lleva model_catalog.py, que es el sujeto del caso
+       | OK   agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR
+       | test-model-catalog: 17 ok, 0 fallos (alcance medido: 17 aserciones)
+       | EXIT=0
+       memoria pico: 28984 KB (28 MB) · pared 1.48s
+OK     job-20260926T225321_job-005
+       | == el descubrimiento DISCRIMINA: la sesion, no el mtime mas nuevo ==
+       |   ok    elige el roster de SU sesion, no el senuelo mas nuevo
+       |   ok    y lo declara: el origen no dice heuristica
+       |   ok    sin id de sesion cae al senuelo (y es correcto: no hay con que decidir)
+       |   ok    pero publica que fue conjetura entre N
+       | == roster ilegible falla ruidoso, no en silencio ==
+       |   ok    roster inexistente -> exit 3
+       | 
+       | resultado: 22 ok, 0 fallas
+       | EXIT=0
+       memoria pico: 12976 KB (13 MB) · pared 15.66s
+OK     job-20260926T225321_job-006
+       |   ok    el prompt es el encargo, no el eco del tool_result
+       |   ok    el nivel de retención sigue saliendo del payload
+       |   ok    sin timestamps, duration_s queda NULL
+       |   ok    sin tool_use, tool_uses_total queda NULL
+       |   ok    sin mensaje de usuario, prompt queda NULL
+       |   ok    el hook guarda el conjunto de claves del payload
+       |   ok    un payload de otra forma da otro conjunto de claves
+       | 
+       | 25 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24684 KB (24 MB) · pared 1.72s
+OK     job-20260926T225321_job-007
+       | test-pre-commit-cache-layout:
+       |   ok    el pre-commit llama al gate del caché
+       |   ok    sobre lo preparado y en modo estricto
+       |   ok    su fallo bloquea el commit
+       | test-pre-commit-cache-layout: 3 aserciones — 3 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 8000 KB (8 MB) · pared 0.18s
+OK     job-20260926T225321_job-008
+       | test-pre-commit-reconcile-status:
+       |   ok    el fallo de la reconciliación nombra su código real
+       |   ok    y no bloquea el commit: el store es telemetría
+       | test-pre-commit-reconcile-status: 2 aserciones — 2 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 7764 KB (8 MB) · pared 0.25s
+OK     job-20260926T225321_job-009
+       |   ok   --dry-run no invoca el instalador de clones
+       |   ok   --dry-run dice que prepararia el clon
+       |   ok   sin instalador -> SIN MEDIR
+       |   ok   sin instalador -> nombra el archivo
+       |   ok   exit 3 en el proveedor -> exit 0
+       |   ok   exit 3 en el proveedor -> lo dice
+       |   ok   exit 3 en un consumidor -> exit 1
+       | 
+       | 59 aserciones: 59 ok, 0 fallidas
+       | EXIT=0
+       memoria pico: 17164 KB (17 MB) · pared 3.73s
+OK     job-20260926T225321_job-010
+       |   ok    el rechazo de conducta no emite ningun conteo
+       |   ok    la sonda ve que mawk no compila el constructo
+       |   ok    la sonda ve que gawk SI compila el constructo
+       |   ok    el binario por defecto es 'awk': el eje es cual responde
+       |   ok    el awk de este arbol pasa los dos ejes
+       |   ok    la sonda exportada funciona desde un proceso hijo
+       |   ok    y desde el hijo sigue rechazando mawk
+       | 
+       | 15 casos: 15 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 4012 KB (4 MB) · pared 0.08s
+OK     job-20260926T225321_job-011
+       |   ok    el rechazo nombra la variable de opt-in y el paquete
+       |   ok    un GNU time presente pasa sin opt-in
+       |   ok    un instalador que miente NO se acepta
+       |   ok    el instalador por defecto pide el paquete time
+       |   ok    el binario por defecto es una ruta absoluta
+       |   ok    la palabra reservada time no se acepta como GNU time
+       |   ok    un time que no es GNU rehusa
+       | 
+       | 9 casos: 9 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 3884 KB (4 MB) · pared 0.10s
+OK     job-20260926T225321_job-012
+       |   ok    rehúsa con exit 2 nombrando el binario ausente y el opt-in
+       |   ok    el rechazo de presencia no emite ningún conteo
+       |   ok    un instalador que sale 0 sin instalar no cuenta como éxito
+       |   ok    un diccionario que acepta todo no pasa la sonda
+       |   ok    un diccionario que rechaza todo no pasa la sonda
+       |   ok    hunspell real con el diccionario declarado pasa la sonda
+       |   ok    sin diccionario declarado la sonda se omite con exit 3 y nombra la llave
+       | 
+       | 8 casos: 8 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 5504 KB (5 MB) · pared 0.10s
+OK     job-20260926T225321_job-013
+       |   ok    un binario presente pasa sin opt-in
+       |   ok    un instalador que miente NO se acepta: se re-comprueba el binario
+       |   ok    rehusa un parallel que no implementa GNU parallel
+       |   ok    la adquisicion deja la cita reconocida
+       |   ok    el hogar de la cita es hermano de .venv, no de las reglas
+       |   FALLO estado de herramienta dentro del arbol versionado: .claude/logs/
+       |   ok    el hogar no es /tmp ni el del contenedor
+       | 
+       | 11 casos: 10 ok, 1 fallos
+       | EXIT=1
+       memoria pico: 21088 KB (21 MB) · pared 0.38s
+OK     job-20260926T225321_job-014
+       |   ok    la adquisicion existe
+       |   ok    rehusa con exit 2 cuando falta y no hay opt-in
+       |   ok    el rechazo nombra la variable de opt-in y el paquete
+       |   ok    el rechazo no emite ningun conteo
+       |   ok    un binario presente pasa sin opt-in
+       |   ok    un instalador que miente NO se acepta: se re-comprueba el binario
+       |   ok    el instalador por defecto pide poppler-utils
+       | 
+       | 7 casos: 7 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 3768 KB (4 MB) · pared 0.01s
+OK     job-20260926T225321_job-015
+       |   ok    un pdftotext presente que no extrae el texto rehusa por conducta
+       |   ok    un pdftoppm que sale 0 sin escribir la imagen rehusa
+       |   ok    poppler real extrae el texto y rinde la pagina
+       |   ok    el PDF de la sonda decodifica a un PDF
+       |   ok    la sonda funciona en un proceso hijo
+       |   ok    gemelo: con el default la sonda pasa
+       |   ok    el texto declarado por el consumidor llega a la sonda
+       | 
+       | 11 casos: 11 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18204 KB (18 MB) · pared 0.29s
+OK     job-20260926T225321_job-016
+       |   ok    el caso sano sigue en 0 con y sin el desvio
+       | == 7. NO BORRA: la sonda conserva lo que se fugo ==
+       |   ok    queda al menos una entrada de evidencia
+       | == 8. ATRIBUCION: la entrada de OTRO proceso se imputa a la suite ==
+       |   ok    la suite LIMPIA sale FUGA por la entrada ajena
+       |   ok    la imputacion cae en el eje compartido
+       |   ok    y el confinado queda en 0: no fue ella
+       | 
+       | ok=17 fallo=0
+       | EXIT=0
+       memoria pico: 3376 KB (3 MB) · pared 0.36s
+OK     job-20260926T225321_job-017
+       | test_the_clone_list_is_asked_for_not_written (__main__.DocsRootResolutionTest.test_the_clone_list_is_asked_for_not_written)
+       | #170 — un consumidor que enumera los cinco literalmente. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 2 tests in 0.044s
+       | 
+       | OK
+       | -- tests/verify/test_env_contract_keys.py
+       | F..Terminated
+       | EXIT=124
+       memoria pico: 900340 KB (879 MB) · pared 900.06s
+OK     job-20260926T225321_job-018
+       | test-gpu-pools-real: REHÚSA — nvidia-smi no responde (nvidia-smi). No se midió nada.
+       | EXIT=2
+       memoria pico: 16156 KB (16 MB) · pared 0.08s
+OK     job-20260926T225321_job-019
+       |   ok    un trabajo corto devuelve SU codigo de salida
+       |   ok    un trabajo corto NO se anuncia como demotido
+       |   ok    un trabajo largo devuelve 125 (demotido), no el codigo del trabajo
+       |   ok    y lo dice, en vez de callarlo
+       |   ok    publica su RUN para poder recogerlo despues
+       |   ok    y el trabajo SIGUE VIVO: la democion no lo mata
+       |   ok    el mecanismo PUBLICA su gracia por defecto, y es un entero positivo
+       | 
+       | aserciones: 26  ok: 26  fallo: 0
+       | EXIT=0
+       memoria pico: 15276 KB (15 MB) · pared 16.28s
+OK     job-20260926T225321_job-020
+       | OK   el grace por defecto cae en 20-30 s
+       | OK   start devuelve al vencer el grace, no al terminar
+       | OK   start senala el desprendimiento con su codigo propio
+       | OK   la clave de entorno se declara en .env.example
+       | OK   wait sin segundos NO hereda el grace: recoge el trabajo
+       | 
+       | aserciones: 5 de 5 · fallos: 0
+       | EXIT=0
+       memoria pico: 15264 KB (15 MB) · pared 10.58s
+OK     job-20260926T225321_job-021
+       |   ok    sin memoria, el segundo rehúsa al vencer la espera
+       |   ok    y no lanza nada
+       | bg.sh start: third espera memoria (cota 1073741824)…
+       |   ok    con memoria liberada durante la espera, se admite
+       |   ok    bajo la mitad de la cota se mata al más joven
+       |   ok    y el mayor sigue vivo
+       |   ok    la muerte se declara en su log
+       |   ok    el último trabajo vivo no se mata
+       | test-bg-memfree: 8 aserciones — 8 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15160 KB (15 MB) · pared 5.24s
+OK     job-20260926T225321_job-022
+       | == 3. el mensaje ENUMERA las banderas que start si admite ==
+       |   ok    nombra --grace
+       |   ok    nombra --dir
+       | == 4. CONTROL: un nombre legitimo sigue arrancando ==
+       |   ok    arranca con exit 0
+       |   ok    publica su RUN
+       |   ok    el run no empieza por guion
+       | 
+       | resumen: 9 ok, 0 fallo
+       | EXIT=0
+       memoria pico: 11956 KB (12 MB) · pared 0.49s
+OK     job-20260926T225321_job-023
+       |   ok    el aviso viaja por stderr (sobrevive a >/dev/null)
+       |   ok    el aviso NOMBRA la etiqueta soltada
+       | == 2. la escotilla sobre lo que NO existe — el control que discrimina ==
+       |   ok    NO sale 0: no se absuelve lo que nunca estuvo
+       |   ok    y NO afirma haber olvidado nada
+       | == 3. el ledger queda como debe ==
+       |   ok    el trabajo soltado desaparece del ledger
+       | 
+       | 7 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+       | EXIT=0
+       memoria pico: 13084 KB (13 MB) · pared 0.91s
+OK     job-20260926T225321_job-024
+       | == 5. sin GNU Time: corre igual, no deja .time y lo declara ==
+       |   ok    el trabajo terminó con su marcador
+       |   ok    no deja .time
+       |   ok    y declara que no midió
+       | == 6. medir NO contamina el entorno del trabajo ==
+       |   ok    bg.sh: el trabajo no hereda la cadena de herramientas
+       |   ok    run-task-pool: el trabajo no hereda la cadena de herramientas
+       | 
+       | test-gnu-time-launchers: 13 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 212560 KB (208 MB) · pared 8.23s
+OK     job-20260926T225321_job-025
+       | == 1. dos admisiones simultáneas de 3000 con 5000 libres: entra una ==
+       | OK   una admitida y otra esperó
+       | == 2. soltada la reserva, la otra entra ==
+       | OK   admit sale 0 tras el release
+       | == 3. sin sitio y con plazo corto, admit sale 3 ==
+       | OK   vencido: exit 3
+       | 
+       | aserciones: 3 de 3 · fallos: 0
+       | EXIT=0
+       memoria pico: 16756 KB (16 MB) · pared 2.16s
+OK     job-20260926T225321_job-026
+       | OK   lo declarado gana al historial: TTL
+       | OK   lo declarado gana al historial: memfree
+       | OK   el entorno gana al historial
+       | OK   la reserva del vecino se suma a lo medido
+       | OK   una plantilla, un solo historial
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 86 de 86 · fallos: 0
+       | EXIT=0
+       memoria pico: 21968 KB (21 MB) · pared 68.04s
+OK     job-20260926T225321_job-027
+       |   ok    el hogar de las corridas NO mueve el ledger
+       |   ok    el .job cae bajo la raíz del ledger, en su sesión, y nada en las corridas
+       |   ok    THYROX_SESSION_LEDGER_DIR es el ledger de la sesión, tal cual
+       | 
+       | 3 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13088 KB (13 MB) · pared 0.51s
+OK     job-20260926T225321_job-028
+       | tests/session/test-process-group.sh: line 256: /tmp/fixture-Y7LDLo/zombi.pid: No such file or directory
+       |   ok   control: el grupo del zombi tiene 1 miembro, en estado Z
+       |   ok   control: kill -0 sobre el grupo dice SI (el ingenuo se equivoca)
+       |   ok   cmd_kill lee el cadaver como muerto, no lo señala
+       |   ok   el ledger se suelta: el turno no queda bloqueado por un cadaver
+       |   ok   dispatch: el dependiente es lider de su grupo (pgid==pid)
+       |   ok   dispatch: el .job no repite proc_start
+       |   ok   dispatch: el .job no repite cmd
+       | test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15292 KB (15 MB) · pared 7.82s
+OK     job-20260926T225321_job-029
+       |   ok   el directorio lleva prefijo e ISO
+       |   ok   dos despachos dejan DOS trabajos en el ledger
+       |   ok   el log lleva el nombre declarado, no el ordinal
+       |   ok   y el segundo tambien
+       |   ok   ninguno quedo con nombre de ordinal
+       |   ok   una linea sin tabulador sigue corriendo
+       |   ok   un comando con tabulador no se parte
+       | 
+       | resultado: 11 de 11 aserciones en verde
+       | EXIT=0
+       memoria pico: 15076 KB (15 MB) · pared 7.99s
+OK     job-20260926T225321_job-030
+       |   ok   con memoria escasa el pool termina
+       |   ok   con memoria escasa corre uno a la vez
+       |   ok   con memoria de sobra corren los tres a la vez
+       |   ok   tras la caida el pool termina en verde
+       |   ok   cada trabajo termina exactamente una vez
+       |   ok   el mas viejo no se reencola
+       |   ok   al menos un trabajo se reencolo
+       |   ok   el reencolado se anuncia
+       | test-run-task-pool-memfree: 12 aserciones — 12 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 14988 KB (15 MB) · pared 13.46s
+OK     job-20260926T225321_job-031
+       | == 3. sin --only, la barrera SIGUE viendo todo el ledger ==
+       |   ok    wait sin filtro se topa con el sentinel y sale 3 (timeout)
+       | == 4. --only ve una etiqueta LLANA, no solo un grupo con guion ==
+       |   ok    wait --only <etiqueta llana> la asienta y sale 0
+       |   ok    y NO publica «sin trabajos registrados» sobre un trabajo real
+       | == 5. el grupo con guion sigue funcionando — el default no se rompe ==
+       |   ok    wait --only <prefijo> sigue viendo su grupo <prefijo>-NNN
+       | 
+       | resumen: 8 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 15060 KB (15 MB) · pared 5.79s
+OK     job-20260926T225321_job-032
+       |   ok   el archivo aporta la anchura
+       |   ok   los cuatro trabajos se lanzaron
+       |   ok   releer el archivo admite los cuatro en menos de 3 vueltas
+       |   ok   el drenaje corta antes de los seis
+       |   ok   y los vivos llegaron a su marcador
+       |   ok   publica la anchura EFECTIVA con 2 trabajos y --width 4
+       |   ok   con 6 trabajos y --width 2 publica 2, no 6
+       |   ok   capar no deja trabajos sin lanzar
+       | test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15124 KB (15 MB) · pared 32.00s
+OK     job-20260926T225321_job-033
+       | OK   nombra el pid del dueño
+       | OK   check lo ve tomado
+       | OK   check lo ve libre al soltar
+       | == 3. N shells que leen-modifican-escriben bajo run no pierden cuentas ==
+       | OK   80 incrementos, 80 en el archivo
+       | == 4. sin comando, rehúsa con 2 ==
+       | OK   uso inválido: exit 2
+       | 
+       | aserciones: 9 de 9 · fallos: 0
+       | EXIT=0
+       memoria pico: 16044 KB (16 MB) · pared 12.90s
+OK     job-20260926T225321_job-034
+       |   ok   delta de directorios thyrox-tests- en /tmp
+       | == caso 3: anulacion — retirado el bunfig, el fixture vuelve a /tmp ==
+       |   ok   sin preload la suite SI deja fixture
+       | == caso 4: un TMPDIR heredado sobrevive al preload ==
+       |   ok   el directorio heredado sigue existiendo
+       | == caso 5: el fixture aterriza dentro del TMPDIR heredado ==
+       |   ok   hay fixture dentro del heredado
+       | 
+       | == 5 asercion(es), 0 en rojo ==
+       | EXIT=0
+       memoria pico: 215924 KB (211 MB) · pared 50.85s
+OK     job-20260926T225321_job-035
+       | 
+       | == 6. lo LANZADO sobrevive al shell que lo lanzo: es LIDER de su grupo ==
+       |   ok    el dependiente arrancó y dejó su medición
+       |   ok    y es LIDER de su propio grupo (pgid == pid)
+       | == 9. wait SOLO mueve la cadena: nadie corre dispatch ==
+       |   ok    wait lanza el dependiente y lo recoge OK, sin dispatch a mano
+       |   ok    con el predecesor fallido, wait lo asienta CANCELADO en vez de agotar el timeout
+       | 
+       | resumen: 16 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 13160 KB (13 MB) · pared 15.96s
+OK     job-20260926T225321_job-036
+       |   ok    probe: sondea el árbol del trabajo y ve el canal del nieto
+       |   ok    probe: avisa de quien lee stdin de un canal, nombrando el trabajo
+       |   ok    probe: el trabajo limpio se sondea y no se avisa
+       |   ok    probe: una tubería sin escritor vivo no es un cuelgue: se sondea y no se avisa
+       |   ok    probe sin GNU Parallel: sondea en serie y lo dice
+       |   ok    wait: el latido sondea al vivo sin que se lo pidan
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18676 KB (18 MB) · pared 7.91s
+OK     job-20260926T225321_job-037
+       |   ok    etiqueta completa: queda solo el otro
+       |   ok    etiqueta completa: el que queda es el que no se nombro
+       |   ok    latido: wait sigue saliendo 0
+       |   ok    latido: stdout conserva su cabecera
+       |   ok    latido: stderr anuncia el primero que asienta
+       |   ok    latido: stderr late mientras uno sigue vivo
+       |   ok    latido: nada de progreso contamina stdout
+       | 
+       | 44 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18608 KB (18 MB) · pared 20.24s
+OK     job-20260926T225321_job-038
+       | == caso 1: --force repara la raíz declarada al valor REAL del clon
+       |   ok   exit 0
+       |   ok   THYROX_ROOT queda en el clon real, no en el viejo
+       | == caso 2: NO escribe fuera del clon (el .env viejo no aparece)
+       |   ok   no se creó /no/existe/thyrox-viejo/.env
+       | 
+       | PASS=3 FAIL=0
+       | EXIT=0
+       memoria pico: 12492 KB (12 MB) · pared 0.30s
+OK     job-20260926T225321_job-039
+       |   ok   — el aviso NOMBRA la cita que habría cambiado de sujeto
+       |   ok   — el store conserva el sujeto acuñado: no se escribió nada
+       | caso 3 — --strict convierte la degradación en fallo para el llamador
+       |   ok   — sale 5 con --strict
+       | caso 4 — estado REHUSADO: sin directorio vivo
+       |   ok   — sale 2 sin directorio vivo
+       |   ok   — sale 2 con un team que no existe
+       | 
+       | test-refresh-board: 10 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 26024 KB (25 MB) · pared 1.48s
+OK     job-20260926T225321_job-040
+       | OK   ruta absoluta del .md derivado: el gate MIDE
+       | OK   ruta relativa del paquete: el gate MIDE
+       | OK   archivo fuera de la superficie: el gate SE EXIME
+       | OK   guard sin node_modules/zod: exit 2
+       | OK   guard sin node_modules/zod: nombra la biblioteca y el comando
+       | OK   guard con zod distinta de la fijada: exit 2
+       | OK   guard con zod distinta: nombra la instalada y la fijada
+       | 
+       | aserciones: 8 de 8 · fallos: 0
+       | EXIT=0
+       memoria pico: 68280 KB (67 MB) · pared 0.87s
+OK     job-20260926T225321_job-041
+       |   ok   payload 2: el despacho salio 0
+       |   ok   payload 3: el despacho de los 11 no escribe
+       |   ok   payload 3: el despacho salio 0
+       |   ok   payload 4: el despacho de los 11 no escribe
+       |   ok   payload 4: el despacho salio 0
+       |   ok   payload 5: el despacho de los 11 no escribe
+       |   ok   payload 5: el despacho salio 0
+       | 
+       | OK: todas las aserciones pasan (alcance medido: 5 payload(s) de despacho, 11 detector(es) por payload)
+       | EXIT=0
+       memoria pico: 16284 KB (16 MB) · pared 1.82s
+OK     job-20260926T225321_job-042
+       | === Caso 4 (EL QUE DISCRIMINA): el desglose declara su denominador ===
+       |   OK   declara «alcance medido: 11 de 11 seccion»
+       |   OK   las 11 secciones estan instrumentadas
+       |   OK   el denominador coincide con las secciones reales del guion (11)
+       | === Caso 5: el total del desglose se publica y no excede el reloj ===
+       |   OK   el encabezado trae el total
+       | === Caso 6: --timing NO rompe lo que el hook parsea ===
+       |   OK   la linea Score sigue presente
+       | audit-timing: todo en verde
+       | EXIT=0
+       memoria pico: 28296 KB (28 MB) · pared 0.95s
+OK     job-20260926T225321_job-043
+       |   ok   NO confunde un ID de tarea con un ordinal
+       |   ok   el reporte declara el alcance medido
+       |   ok   --strict sale 1 con un incumplidor
+       |   ok   --strict sale 0 sin incumplidores
+       |   ok   NO marca la evidencia fechada de un episodio (discriminador)
+       |   ok   el baseline se lee y FILTRA (crudo > filtrado)
+       |   ok   y el corpus real tiene deuda que ver (control positivo)
+       | 
+       | 11 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 21384 KB (21 MB) · pared 8.76s
+OK     job-20260926T225321_job-044
+       |   ok   la caja distinta sale con codigo 1
+       |   ok   un evento valido no bloquea
+       |   ok   sin universo derivable sale con codigo 2
+       |   ok   el reporte declara ambos universos
+       |   ok   el reporte nombra los eventos sin consumir
+       |   ok   la raiz del arbol de trabajo entra en el alcance
+       |   ok   lo que SOLO declara el archivo externo no sale sin consumir
+       | 
+       | 9 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 176276 KB (172 MB) · pared 48.03s
+OK     job-20260926T225321_job-045
+       | == caso 6: un glob es una familia, no una ruta -> no se mide
+       |    (la cita ``.claude/eventos/vocabulario-*/terminos.py`` nombra un patrón)
+       |   ok    exit 0: el glob no se trata como ruta
+       |   ok    y queda FUERA del denominador
+       | == caso 7: --quiet emite SÓLO el conteo (lo que thyrox-audit consume)
+       |   ok    la salida es un entero pelado
+       | 
+       | 
+       | 13 casos: 13 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 27948 KB (27 MB) · pared 1.93s
+OK     job-20260926T225321_job-046
+       |   ok   nombra el archivo
+       |   ok   nombra la forma que lo delata
+       | == caso 5: el que NO escribe en source/ queda fuera del universo
+       |    (una sonda que imprime a stdout no rompe la reproducción del artefacto)
+       |   ok   la sonda no lo hace fallar
+       | == caso 6: el árbol vendorizado de un tercero queda fuera
+       |   ok   extraido/ no cuenta como código nuestro
+       | 
+       | 13 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 21816 KB (21 MB) · pared 1.95s
+OK     job-20260926T225321_job-047
+       |   ok    server que no es clon -> AUSENTE
+       | == 2. el conteo y su denominador ==
+       |   ok    cuatro clones incumplen
+       |   ok    publica su denominador
+       | == 3. --strict bloquea, y sale 0 cuando el arbol esta sano ==
+       |   ok    con incumplidores sale 1
+       |   ok    arbol sano sale 0
+       | 
+       | test-githooks-activos: OK — 9 aserciones sobre 5 clones sinteticos
+       | EXIT=0
+       memoria pico: 12328 KB (12 MB) · pared 0.48s
+OK     job-20260926T225321_job-048
+       |     from verify import check_vocabulario_prosa as _parametro  # noqa: E402
+       |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+       | ModuleNotFoundError: No module named 'verify'' — un conteo aqui no separa heredado de nuevo
+       |   FALLA --write-baseline: no aterrizo en /tmp/tmp.hnhk5oydWx/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt (exit=1): Traceback (most recent call last):
+       |   File "/home/user/thyrox/src/verify/check_hallazgo_submodulo.py", line 41, in <module>
+       |     from verify import check_vocabulario_prosa as _parametro  # noqa: E402
+       |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+       | ModuleNotFoundError: No module named 'verify'
+       |   4 caso(s), 4 falla(s)
+       | EXIT=1
+       memoria pico: 10464 KB (10 MB) · pared 0.75s
+OK     job-20260926T225321_job-049
+       |   OK   thyrox NO se rehusa como capa desconocida (exit 0)
+       |   OK   una capa inventada SI se rehusa
+       |   OK   y el rechazo nombra la capa como desconocida
+       | === Caso 4 (positivo real): la colision medida en kaupamex-docs ===
+       |   SKIP el repo real ya no tiene colisiones; la mecanica la cubren 1-3
+       | === Caso 5: sin --strict avisa pero no bloquea ===
+       |   OK   sin --strict sale 0 (surfacing)
+       | 
+       | RESULTADO: todos los casos pasaron.
+       | EXIT=0
+       memoria pico: 27312 KB (27 MB) · pared 1.60s
+OK     job-20260926T225321_job-050
+       | == 5. el mutador REAL del repo pasa su propio guard ==
+       |   ok    check_suite_discrimina.py no se bloquea a si mismo
+       | == 6. sin argumentos, el alcance sale del staging ==
+       |   ok    un mutante en staging bloquea
+       | == 7. el arbol vivo esta limpio (control del repo real) ==
+       |   FALLO ningun .py versionado trae un mutante
+       |         esperado=[0] obtenido=[141]
+       | 
+       | 9 de 10 aserciones en verde
+       | EXIT=1
+       memoria pico: 27524 KB (27 MB) · pared 0.79s
+OK     job-20260926T225321_job-051
+       | 
+       | == 5. un commit cuyo HEAD NO nombra el store: el hook se abstiene ==
+       |   ok    HEAD no registra el store
+       |   ok    el cambio preparado sigue preparado
+       | 
+       | == 6. el FILTRO por arbol de HEAD: preparado que el disco ya no tiene ==
+       |   ok    el contenido preparado sigue en el indice
+       | 
+       | resultado: 12 de 12 aserciones en verde
+       | EXIT=0
+       memoria pico: 27856 KB (27 MB) · pared 1.67s
+OK     job-20260926T225321_job-052
+       |   ok   forma vetada nueva: bloquea
+       |   ok   forma vetada nueva: la nombra
+       |   ok   sintaxis RST rota: bloquea
+       |   ok   prosa limpia: pasa
+       |   ok   el archivo mas citado del repo NO bloquea
+       |   ok   un .md tambien se mide
+       |   ok   el bloqueo nombra el escape hatch
+       | 
+       | 9 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 240860 KB (235 MB) · pared 26.47s
+OK     job-20260926T225321_job-053
+       |   ok   y nombra el PARAMETRO: la firma es parte del eje
+       |   ok   y el eje del NOMBRE de ese mismo archivo pasa
+       |   ok   traducido, el eje de identificadores pasa
+       |   ok   sin lexico el eje de identificadores sale con 2
+       |   ok   y nombra el lexico que le falta
+       |   ok   el reporte de identificadores declara el alcance
+       |   FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [15]
+       | 
+       | 30 ok · 1 falla(s)
+       | EXIT=1
+       memoria pico: 359120 KB (351 MB) · pared 63.91s
+OK     job-20260926T225321_job-054
+       |   ok    mawk presente pero sin intervalos: exit 1 (error, no aviso)
+       |   ok    releva el remedio de la sonda, no compone uno propio
+       |   ok    la forma relativa de la clave se resuelve contra la raiz, no contra el cwd
+       |   ok    sin core.hooksPath, la sonda githooks sale error y el preflight exit 1
+       |   ok    el rechazo nombra el instalador que lo arregla
+       |   ok    un core.hooksPath que no es .githooks tampoco cuenta como activo
+       |   ok    con core.hooksPath=.githooks, la sonda githooks sale ok
+       | 
+       | 15 casos: 15 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18740 KB (18 MB) · pared 10.21s
+OK     job-20260926T225321_job-055
+       | ok   — un 0 medido si publica PASS
+       |      WARN  · 7 defectos
+       | ok   — un conteo distinto de 0 publica WARN
+       | ok   — el conteo llega intacto
+       |      WARN  · prueba: SIN MEDIR — el gate no emitió conteo (código 1)
+       | ok   — un gate mudo no publica PASS y cuenta como sin medir
+       | ok   — ninguna medida de gate usa el idioma ${VAR:-0}
+       | 
+       | test-veredicto-de-gate: 7 ok, 0 fallo(s) (alcance medido: 7 aserciones)
+       | EXIT=0
+       memoria pico: 12320 KB (12 MB) · pared 0.24s
+OK     job-20260926T225321_job-056
+       |   ok    encuentra el baseline del consumidor ascendiendo desde el archivo
+       |   ok    rehusa con exit 2 y nombra el baseline ausente
+       |   ok    --write-baseline no queda atrapado por el rehuso de lectura
+       |   ok    no fabrica el baseline en el hogar del proveedor
+       |   ok    con el archivo fuera del arbol, asciende desde el cwd
+       |   ok    usa la lista canonica del proveedor e ignora la copia del consumidor
+       |   ok    rehusa con la lista declarada y ausente, y la nombra
+       |   ok    la clave es relativa al consumidor y el baseline la absorbe
+       | 9/9 aserciones verdes
+       | EXIT=0
+       memoria pico: 240972 KB (235 MB) · pared 26.13s
+OK     job-20260926T225321_job-057
+       |   ok   guard del lexico: los 3 desenlaces, ninguno termina en cero
+       |   ok   load_forbidden separa forma y sustituto
+       |   ok   el gate ve el falso amigo real (librería)
+       |   ok   el reporte publica el sustituto
+       |   ok   el gate ve el segundo falso amigo real (removido)
+       |   ok   la palabra correcta NO se marca
+       |   ok   una forma sin flecha sigue casando
+       | 
+       | 27 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 240948 KB (235 MB) · pared 185.64s
+OK     job-20260926T225321_job-058
+       |   ok   el audit no enumera ningun gate registrado
+       |   ok   el audit invoca al corredor del registro
+       |   ok   los bloques que ningun gate cubre siguen en el audit
+       |   ok   el corredor alcanza los gates que el registro declara
+       |   ok   la delegacion lee una clave que el corredor emite (summary)
+       | 
+       | test-audit-delegates: 5 ok, 0 falla
+       | EXIT=0
+       memoria pico: 14900 KB (15 MB) · pared 0.69s
+OK     job-20260926T225321_job-059
+       |   ok   agent-artifacts resuelve su paquete dentro del árbol
+       |   ok   cli-typecheck resuelve su paquete dentro del árbol
+       |   ok   cli-typecheck mide los dos proyectos del paquete
+       |   ok   cli-typecheck sale 0 sobre el arbol limpio
+       |   ok   la variable gana sobre la resolución por árbol
+       | 
+       | test-package-root-resolution: 5 ok, 0 falla
+       | EXIT=0
+       memoria pico: 912964 KB (892 MB) · pared 92.78s
+OK     job-20260926T225321_job-060
+       |   ok   con los gates ausentes rehúsa con 2, no con 1
+       |   ok   y nombra el gate que falta
+       |   ok   y NO dice que lo saltó
+       |   ok   con los gates verdes autoriza
+       |   ok   con el gate de IDs rojo bloquea
+       |   ok   un universo vacío (exit 2) no bloquea
+       | 
+       | pre-push: 6 ok, 0 fallo(s) (alcance medido: /home/user/thyrox/src/verify/pre-push.sh)
+       | EXIT=0
+       memoria pico: 3380 KB (3 MB) · pared 0.28s

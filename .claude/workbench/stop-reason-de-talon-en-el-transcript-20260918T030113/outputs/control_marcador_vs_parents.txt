@@ -1,0 +1,10 @@
+=== el gate ya no nombra ninguno de los cuatro ===
+0
+0 — ninguno
+
+=== CONTROL DE CONDUCTA: el marcador sobrevive a mover el archivo ===
+Es la propiedad que parents[N] no tiene: el indice sigue resolviendo y
+apunta a otro sitio, sin error. Se mide moviendo el guion un nivel.
+  desde .claude/workbench/stop-reason-de-talon-en-el-transcript-20260918T030113/  -> build medida: 2.1.266
+  desde .claude/workbench/.control-marcador-ZnpG/ -> build medida: 2.1.266
+  (las dos resuelven la MISMA raiz: el marcador no cuenta niveles)

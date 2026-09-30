@@ -1,0 +1,1 @@
+    FREE_VRAM_MIB="$(bash "$HP_GPU" free --nvidia-smi "$HP_NVIDIA_SMI" 2>/dev/null)"

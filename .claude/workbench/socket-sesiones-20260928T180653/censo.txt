@@ -1,0 +1,10 @@
+## thyrox (versionado, git grep -l)
+uds-messaging	0
+messaging-socket-path	2
+cc-socks	1
+peerToken	0
+cross-session-message	4
+ListAgents	2
+## binario 2.1.283 (bin/binary literal)
+uds-messaging	literal: 0 declaración(es) en 0 de 2138 chunk(s)
+messaging-socket-path	literal: 0 declaración(es) en 0 de 2138 chunk(s)

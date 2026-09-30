@@ -1,0 +1,903 @@
+diff --git a/src/packages/cli/src/bg/__tests__/ptyAdopter.test.ts b/src/packages/cli/src/bg/__tests__/ptyAdopter.test.ts
+new file mode 100644
+index 00000000..0f46e132
+--- /dev/null
++++ b/src/packages/cli/src/bg/__tests__/ptyAdopter.test.ts
+@@ -0,0 +1,27 @@
++/**
++ * `ptyAdopter.ts` reconnect backoff — chunk-ygx717jg.js `ae`'s table is
++ * `Ie=[50,100,250,500,1000,2000]`, NOT the rv/control client's `Me`
++ * (`=[100,250,500,1000,2000]`, one entry shorter and starting 50ms later).
++ * The two tables share four of six/five values, which is exactly what let
++ * the wrong one hide here undetected until measured against the reference.
++ *
++ * No timing-based reconnect test here: under this runtime (Bun 1.3.11),
++ * `net.connect()` against a missing/non-socket Unix path throws
++ * SYNCHRONOUSLY instead of emitting `'error'` (measured — differs from
++ * Node, where the same setup yields an async ECONNREFUSED/ENOENT event).
++ * That makes every reconnect-inducing fixture crash the test process
++ * instead of exercising the retry loop, orthogonal to the backoff table
++ * itself; a value-equality check against the reference array is the
++ * direct, non-flaky way to pin the exact defect (a wrong entry, not
++ * "no backoff at all").
++ */
++
++import { describe, expect, test } from 'bun:test'
++
++import { RECONNECT_BACKOFF_MS } from '../ptyAdopter.js'
++
++describe('ptyAdopter — reconnect backoff table', () => {
++  test('matches chunk-ygx717jg.js Ie verbatim, not Me', () => {
++    expect(RECONNECT_BACKOFF_MS).toEqual([50, 100, 250, 500, 1000, 2000])
++  })
++})
+diff --git a/src/packages/cli/src/bg/ptyAdopter.ts b/src/packages/cli/src/bg/ptyAdopter.ts
+index 6045fa84..2be8f101 100644
+--- a/src/packages/cli/src/bg/ptyAdopter.ts
++++ b/src/packages/cli/src/bg/ptyAdopter.ts
+@@ -3,11 +3,14 @@
+  *
+  * Daemon-less ccb's `ccb attach <short>` opens this directly against
+  * the PTY host's socket; a future Phase C+ daemon would also use it
+- * for cross-process supervision. Mirrors ant 4704.js rj6, but trimmed
+- * down: ccb has no daemon supervisor so the respawn-detection /
+- * upgrade-tracking / roster-hooks branches are removed. What's kept:
++ * for cross-process supervision. Mirrors chunk-ygx717jg.js `ae`, but
++ * trimmed down: ccb has no daemon supervisor so the respawn-detection /
++ * upgrade-tracking / roster-hooks / crash-breadcrumb-file / SIGKILL
++ * -escalation-on-hang branches are removed (that fuller surface belongs
++ * to the daemon-side client, `@thyrox/daemon: workerSocketClient.ts`).
++ * What's kept:
+  *
+- *   - Connect with backoff (WXK=30 attempts, PXK=[100,250,500,1000,2000])
++ *   - Connect with backoff (`Oe`=30 attempts, `Ie`=[50,100,250,500,1000,2000])
+  *   - ENOENT detection (socket file gone) → caller-visible error
+  *   - Hello-handshake receipt (capture replPid + version)
+  *   - Buffer queue while disconnected (cap 2MB before drop)
+@@ -31,7 +34,11 @@ import {
+   FRAME_SIZE_CAP,
+ } from './ptyFrame.js'
+ 
+-const RECONNECT_BACKOFF_MS = [100, 250, 500, 1000, 2000] as const
++/** chunk-ygx717jg.js `Ie` — the PTY client's reconnect table (distinct from
++ *  `Me`, the rv/control client's; both are 5-6 step tables that top out at
++ *  2000ms, but `Ie` alone starts at 50ms, not 100ms). */
++export const RECONNECT_BACKOFF_MS = [50, 100, 250, 500, 1000, 2000] as const
++/** chunk-ygx717jg.js `Oe`. */
+ const MAX_RECONNECT_ATTEMPTS = 30
+ const QUEUE_CAP_BYTES = 2 * FRAME_SIZE_CAP // 2 * qiH = 2 MiB
+ const CLIENT_BACKPRESSURE_BYTES = 1024 * 1024
+diff --git a/src/packages/daemon/src/__tests__/rvChannel.test.ts b/src/packages/daemon/src/__tests__/rvChannel.test.ts
+index 48c8f5aa..af36f3f9 100644
+--- a/src/packages/daemon/src/__tests__/rvChannel.test.ts
++++ b/src/packages/daemon/src/__tests__/rvChannel.test.ts
+@@ -385,3 +385,52 @@ describe('rv channel — state + done persist to disk', () => {
+     client.close()
+   })
+ })
++
++describe('rv channel — malformed line resilience', () => {
++  /**
++   * Raw `node:net` server instead of the fleet rvServer fixture: this test
++   * needs wire-level control (write an invalid JSON line, then a valid one)
++   * that `sendRv`'s typed API doesn't expose.
++   *
++   * Reference: chunk-ygx717jg.js `Be` composes `Zzt` (chunk-y641zpzf.js,
++   * newline-frame reader) with an inline `try{P=J(A)}catch{return}` per
++   * line — one malformed line is dropped silently and the connection stays
++   * open for the next line. `rvClient.ts` used to hand the whole stream to
++   * `socketProto.ts::createLineDecoder`, whose `onError` is wired to
++   * `sock.destroy()` for ANY parse failure — worse coverage than the
++   * reference, which only loses that one line.
++   */
++  test('a malformed JSON line is dropped; the connection and later valid frames survive', async () => {
++    const { createServer } = await import('node:net')
++    const sock = freshSockPath()
++    let rawSocket: import('node:net').Socket | undefined
++    const server = createServer(s => {
++      rawSocket = s
++      // Discard the handshake line (role marker) — nothing to do with it here.
++    })
++    await new Promise<void>(resolve => server.listen(sock, resolve))
++
++    const received: RvServerMessage[] = []
++    let connected = false
++    const client = createRvClient(
++      sock,
++      m => received.push(m),
++      () => {},
++      () => {
++        connected = true
++      },
++    )
++    await until(() => connected)
++    await until(() => rawSocket !== undefined)
++
++    rawSocket!.write('not-json-at-all\n')
++    rawSocket!.write(`${JSON.stringify({ type: 'heartbeat' })}\n`)
++
++    await until(() => received.some(m => m.type === 'heartbeat'))
++    expect(received.filter(m => m.type === 'heartbeat').length).toBe(1)
++    expect(received.length).toBe(1)
++
++    client.close()
++    server.close()
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/workerSocketClient.test.ts b/src/packages/daemon/src/__tests__/workerSocketClient.test.ts
+new file mode 100644
+index 00000000..d95f187b
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerSocketClient.test.ts
+@@ -0,0 +1,232 @@
++/**
++ * `workerSocketClient.ts` — daemon-side PTY client. Port of
++ * chunk-ygx717jg.js `ae` (scoped — see the module's own docstring for
++ * what's declared pending). Real Unix domain sockets, no mocks for the
++ * wire itself: a small fixture host built on `internal/ptyFrame.ts`'s
++ * encoders plays the PTY host side.
++ */
++
++import { describe, expect, test, afterEach } from 'bun:test'
++import { createServer, type Server, type Socket } from 'node:net'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  PTY_RECONNECT_BACKOFF_MS,
++  PTY_MAX_RECONNECT_ATTEMPTS,
++  SIGNAL_EXIT_CODES,
++  extractFirstNonEmptyLine,
++  suffixMatchLen,
++  createWorkerSocketClient,
++  type WorkerSocketClient,
++  type WorkerExitInfo,
++} from '../workerSocketClient.js'
++import { encodeCtrlFrame, encodeDataFrame } from '../internal/ptyFrame.js'
++
++const ISOLATED_DIR = mkdtempSync(join(tmpdir(), 'ccb-workersocket-test-'))
++let sockSeq = 0
++function freshSockPath(): string {
++  return join(ISOLATED_DIR, `ws-${process.pid}-${sockSeq++}.sock`)
++}
++
++let server: Server | undefined
++let client: WorkerSocketClient | undefined
++
++afterEach(() => {
++  client?.dispose()
++  client = undefined
++  server?.close()
++  server = undefined
++})
++
++async function until(pred: () => boolean, ms = 2000): Promise<void> {
++  const deadline = Date.now() + ms
++  while (Date.now() < deadline) {
++    if (pred()) return
++    await new Promise(r => setTimeout(r, 10))
++  }
++  throw new Error(`condition was not met within ${ms}ms`)
++}
++
++describe('workerSocketClient — ported constants', () => {
++  test('PTY_RECONNECT_BACKOFF_MS matches chunk-ygx717jg.js Ie', () => {
++    expect(PTY_RECONNECT_BACKOFF_MS).toEqual([50, 100, 250, 500, 1000, 2000])
++  })
++
++  test('PTY_MAX_RECONNECT_ATTEMPTS matches chunk-ygx717jg.js Oe', () => {
++    expect(PTY_MAX_RECONNECT_ATTEMPTS).toBe(30)
++  })
++
++  test('SIGNAL_EXIT_CODES matches chunk-ygx717jg.js St', () => {
++    expect(SIGNAL_EXIT_CODES.has(129)).toBe(true) // 128 + SIGHUP
++    expect(SIGNAL_EXIT_CODES.has(143)).toBe(true) // 128 + SIGTERM
++    expect(SIGNAL_EXIT_CODES.has(0)).toBe(false)
++    expect(SIGNAL_EXIT_CODES.has(1)).toBe(false)
++    expect(SIGNAL_EXIT_CODES.has(137)).toBe(false) // 128 + SIGKILL — NOT in the set
++    expect(SIGNAL_EXIT_CODES.size).toBe(2)
++  })
++})
++
++describe('workerSocketClient — extractFirstNonEmptyLine (xe)', () => {
++  test('returns the first non-blank, trimmed line', () => {
++    expect(extractFirstNonEmptyLine('\n\n  boom: segfault  \nmore\n')).toBe(
++      'boom: segfault',
++    )
++  })
++
++  test('undefined when every line is blank', () => {
++    expect(extractFirstNonEmptyLine('\n  \n\t\n')).toBeUndefined()
++  })
++
++  test('caps at 2000 characters before splitting', () => {
++    const text = `${' '.repeat(1999)}X\nY`
++    // The cap lands mid-first-line; nothing before it is non-blank until
++    // the very last captured character.
++    expect(extractFirstNonEmptyLine(text)).toBe('X')
++  })
++})
++
++describe('workerSocketClient — suffixMatchLen (lt)', () => {
++  const needle = Buffer.from('\x1b_cc-daemon-detach\x1b\\')
++
++  test('0 when no suffix of buf is a prefix of needle', () => {
++    expect(suffixMatchLen(Buffer.from('hello world'), needle)).toBe(0)
++  })
++
++  test('the longest straddling suffix, not just any match', () => {
++    const partial = needle.subarray(0, 5) // '\x1b_cc-'
++    const buf = Buffer.concat([Buffer.from('prefix '), partial])
++    expect(suffixMatchLen(buf, needle)).toBe(partial.length)
++  })
++
++  test('never returns needle.length — a FULL match is handled by the caller, not by this function', () => {
++    expect(suffixMatchLen(needle, needle)).toBeLessThan(needle.length)
++  })
++})
++
++describe('workerSocketClient — live wire behaviour', () => {
++  test('hello capture, pre-live sentinel stripping, live flush, heartbeat, signalled exit', async () => {
++    const sock = freshSockPath()
++    let hostSocket: Socket | undefined
++    server = createServer(s => {
++      hostSocket = s
++    })
++    await new Promise<void>(resolve => server!.listen(sock, resolve))
++
++    const dataChunks: Buffer[] = []
++    const heartbeats: Array<{ ts: number; state?: string }> = []
++    let exitInfo: WorkerExitInfo | undefined
++    let helloSeen: { replPid: number; version: string } | undefined
++
++    client = createWorkerSocketClient(sock, {
++      workerPid: process.pid, // alive — irrelevant here, the host stays up
++      onData: chunk => dataChunks.push(chunk),
++      onExit: info => {
++        exitInfo = info
++      },
++      onHeartbeat: info => heartbeats.push(info),
++      onHello: info => {
++        helloSeen = info
++      },
++    })
++
++    await until(() => hostSocket !== undefined)
++    hostSocket!.write(encodeCtrlFrame({ t: 'hello', replPid: 777, version: '1.2.3' }))
++    await until(() => helloSeen !== undefined)
++    expect(helloSeen).toEqual({ replPid: 777, version: '1.2.3' })
++    expect(client.replPid()).toBe(777)
++    expect(client.replVersion()).toBe('1.2.3')
++
++    // Pre-live: a detach sentinel straddling two frames must be stripped
++    // from what onData sees, never partially leaked.
++    const sentinel = Buffer.from('\x1b_cc-daemon-detach\x1b\\')
++    const beforeSentinel = Buffer.from('prompt> ')
++    const afterSentinel = Buffer.from('still here')
++    hostSocket!.write(encodeDataFrame(Buffer.concat([beforeSentinel, sentinel.subarray(0, 6)])))
++    hostSocket!.write(encodeDataFrame(Buffer.concat([sentinel.subarray(6), afterSentinel])))
++    hostSocket!.write(encodeCtrlFrame({ t: 'live' }))
++
++    await until(() => dataChunks.length > 0)
++    const flushed = Buffer.concat(dataChunks)
++    expect(flushed.includes(sentinel)).toBe(false)
++    expect(flushed.toString('utf8')).toBe('prompt> still here')
++
++    hostSocket!.write(encodeCtrlFrame({ t: 'heartbeat', ts: 123, state: 'idle' }))
++    await until(() => heartbeats.length > 0)
++    expect(heartbeats[0]).toEqual({ ts: 123, state: 'idle' })
++
++    // 143 = 128 + SIGTERM — SIGNAL_EXIT_CODES classifies it even without
++    // an explicit `signal` field on the exit ctrl frame.
++    hostSocket!.write(encodeCtrlFrame({ t: 'exit', code: 143 }))
++    await until(() => exitInfo !== undefined)
++    expect(exitInfo).toEqual({ exitCode: 143, signal: undefined, killedBySignal: true })
++  })
++
++  test('post-live data passes straight through, unbuffered, sentinel included', async () => {
++    const sock = freshSockPath()
++    let hostSocket: Socket | undefined
++    server = createServer(s => {
++      hostSocket = s
++    })
++    await new Promise<void>(resolve => server!.listen(sock, resolve))
++
++    const dataChunks: Buffer[] = []
++    client = createWorkerSocketClient(sock, {
++      workerPid: process.pid,
++      onData: chunk => dataChunks.push(chunk),
++      onExit: () => {},
++    })
++    await until(() => hostSocket !== undefined)
++    hostSocket!.write(encodeCtrlFrame({ t: 'live' }))
++    await until(() => dataChunks.length === 0) // nothing buffered to flush — sanity
++    const sentinel = Buffer.from('\x1b_cc-daemon-detach\x1b\\')
++    hostSocket!.write(encodeDataFrame(sentinel))
++    await until(() => dataChunks.length > 0)
++    expect(Buffer.concat(dataChunks).equals(sentinel)).toBe(true)
++  })
++
++  test('worker pid gone → reconnect attempts stop and exit fires without touching the process', async () => {
++    const sock = freshSockPath() // nothing listens here — every connect fails
++    let killed = false
++    let exitInfo: WorkerExitInfo | undefined
++    client = createWorkerSocketClient(sock, {
++      workerPid: 999999, // never checked against a real signal — isWorkerAlive is faked
++      isWorkerAlive: () => false,
++      killWorkerGroup: () => {
++        killed = true
++      },
++      onData: () => {},
++      onExit: info => {
++        exitInfo = info
++      },
++    })
++    await until(() => exitInfo !== undefined)
++    expect(exitInfo).toEqual({ exitCode: -1, signal: undefined, killedBySignal: false })
++    expect(killed).toBe(false)
++  })
++})
++
++describe('workerSocketClient — hang escalation', () => {
++  test('attempts exhausted + pid still alive → SIGKILL escalation, then exit', async () => {
++    const sock = freshSockPath() // nothing listens here — every connect fails
++    let killedPid: number | undefined
++    let exitInfo: WorkerExitInfo | undefined
++    client = createWorkerSocketClient(sock, {
++      workerPid: 4321,
++      isWorkerAlive: () => true, // the "worker" never dies — only the socket is unreachable
++      killWorkerGroup: pid => {
++        killedPid = pid
++      },
++      reconnectBackoffMs: [1, 1], // test-only — see the option's own docstring
++      maxReconnectAttempts: 2,
++      onData: () => {},
++      onExit: info => {
++        exitInfo = info
++      },
++    })
++    await until(() => exitInfo !== undefined)
++    expect(killedPid).toBe(4321)
++    expect(exitInfo).toEqual({ exitCode: -1, signal: 'SIGKILL', killedBySignal: true })
++  })
++})
+diff --git a/src/packages/daemon/src/rvClient.ts b/src/packages/daemon/src/rvClient.ts
+index 5ebcd4a8..e4a48da0 100644
+--- a/src/packages/daemon/src/rvClient.ts
++++ b/src/packages/daemon/src/rvClient.ts
+@@ -29,8 +29,12 @@
+  *     about this worker). Returns false when the frame couldn't be written.
+  *
+  * Wire framing matches the rest of the daemon protocol (socketProto.ts):
+- * one JSON object per line, `\n`-terminated. The handshake carries a
+- * `role` field; the server (rvServer.ts) discards any frame that has one,
++ * one JSON object per line, `\n`-terminated. Reading it, though, is its
++ * own local decoder (`createRvLineReader`, ported from `Zzt`/`Be`), not
++ * `socketProto.ts::createLineDecoder` — a single malformed line is
++ * dropped, not fatal to the connection (see the decoder's own docstring).
++ * The handshake carries a `role` field; the server (rvServer.ts) discards
++ * any frame that has one,
+  * so the handshake is a pure marker and never reaches the worker's
+  * command handler (ant kb3: `if("role"in _)return`).
+  *
+@@ -41,7 +45,7 @@ import { Socket } from 'node:net'
+ 
+ import { logEvent } from '@thyrox/local-observability'
+ 
+-import { PROTO_VERSION, createLineDecoder, encodeFrame } from './socketProto.js'
++import { PROTO_VERSION, encodeFrame } from './socketProto.js'
+ 
+ /**
+  * Messages the worker's rv server pushes to the supervisor. Mirrors ant
+@@ -74,11 +78,55 @@ export interface RvClient {
+   close(): void
+ }
+ 
+-/** ant naK backoff (`daK`, assigned in 5017.js iaK init). */
++/** ant naK backoff (`daK`, assigned in 5017.js iaK init) — chunk-ygx717jg.js `Me`. */
+ const RV_BACKOFF_MS = [100, 250, 500, 1000, 2000] as const
+-/** ant naK max attempts (`caK = 30`). */
++/** ant naK max attempts (`caK = 30`) — chunk-ygx717jg.js `Ve`. */
+ const RV_MAX_ATTEMPTS = 30
+ 
++/**
++ * Newline-delimited frame reader with PER-LINE resilience — port of
++ * chunk-y641zpzf.js `Zzt` (generic newline-frame reader over a
++ * `StringDecoder`, cap `p=1048576`) composed with `Be`'s own inline
++ * `try{P=J(A)}catch{return}` (chunk-ygx717jg.js), both cited above `Be`.
++ * A single malformed JSON line is dropped silently and reading continues
++ * on the next line — the connection is never torn down for it. Only a
++ * pending (unterminated) buffer that grows past `MAX_LINE_BYTES` destroys
++ * the socket, matching `Zzt`'s own overflow guard.
++ *
++ * `socketProto.ts::createLineDecoder` is deliberately NOT reused here:
++ * its `onError` permanently latches (`stopped = true`) on the FIRST bad
++ * line, for ANY parse failure, and the caller's only recourse was
++ * `sock.destroy()` — strictly worse coverage than the reference, which
++ * only loses the one corrupt frame. rv frames are heartbeat/state pushes;
++ * losing the whole connection over one corrupt frame is a worse outcome
++ * than losing that one frame, and the reconnect backoff above exists
++ * precisely so losing the whole connection is never free.
++ */
++const MAX_LINE_BYTES = 1024 * 1024
++
++function createRvLineReader(
++  onLine: (raw: string) => void,
++  onOverflow: () => void,
++): (chunk: string | Buffer) => void {
++  let buf = ''
++  let stopped = false
++  return (chunk: string | Buffer) => {
++    if (stopped) return
++    buf += typeof chunk === 'string' ? chunk : chunk.toString('utf8')
++    let idx: number
++    while ((idx = buf.indexOf('\n')) >= 0) {
++      const line = buf.slice(0, idx)
++      buf = buf.slice(idx + 1)
++      if (line.length > 0) onLine(line)
++    }
++    if (buf.length > MAX_LINE_BYTES) {
++      stopped = true
++      buf = ''
++      onOverflow()
++    }
++  }
++}
++
+ /**
+  * Open a rendezvous client against `socketPath`.
+  *
+@@ -135,8 +183,16 @@ export function createRvClient(
+       } catch {
+         // best-effort — a write failure here triggers close/error → retry.
+       }
+-      const decode = createLineDecoder(
+-        msg => {
++      const decode = createRvLineReader(
++        line => {
++          // ant `Be`: `try{P=J(A)}catch{return}` — one bad line, dropped.
++          let msg: unknown
++          try {
++            msg = JSON.parse(line)
++          } catch {
++            sock.destroy()
++            return
++          }
+           if (msg && typeof msg === 'object' && 'type' in msg) {
+             onMessage(msg as RvServerMessage)
+           }
+diff --git a/src/packages/daemon/src/workerSocketClient.ts b/src/packages/daemon/src/workerSocketClient.ts
+new file mode 100644
+index 00000000..9cb8ce10
+--- /dev/null
++++ b/src/packages/daemon/src/workerSocketClient.ts
+@@ -0,0 +1,428 @@
++/**
++ * PTY socket CLIENT — daemon/supervisor side.
++ *
++ * Scoped port of chunk-ygx717jg.js `ae` (the worker-side counterpart to
++ * `Be`/`rvClient.ts`): the daemon's WorkerVm would open one of these
++ * against each worker's PTY socket (`<jobDir>/pty.sock`) to relay
++ * output/liveness independently of the rv control channel. NOT wired
++ * into `workerVm.ts` or `internal/pendingCrossPackageDeps.ts` by this
++ * port — both are outside this task's file list, so `createPtyAdopter`
++ * there still throws until a later task threads this module through.
++ *
++ * What's ported from `ae`, faithfully:
++ *   - Reconnect with backoff `Ie` (`PTY_RECONNECT_BACKOFF_MS`), capped at
++ *     `Oe`=30 attempts (`PTY_MAX_RECONNECT_ATTEMPTS`).
++ *   - Liveness-gated giving-up: before each scheduled retry, and before
++ *     escalating on exhaustion, the worker pid is checked
++ *     (`options.isWorkerAlive`, default a real `process.kill(pid, 0)`
++ *     probe duplicated locally — see its own docstring for why it's not
++ *     imported from `bgWorkerRegistry.ts`). Dead pid → declare exit
++ *     immediately, no more retries (ant `_e()`'s `catch{...me("connect")}`
++ *     branch).
++ *   - Hang escalation: attempts exhausted while the pid is STILL alive →
++ *     `options.killWorkerGroup` (default `process.kill(-pid,'SIGKILL')`,
++ *     falling back to the bare pid) — ant `_e()`'s `P>=Oe` branch.
++ *   - `xe` (`extractFirstNonEmptyLine`) and `SIGNAL_EXIT_CODES` (`St`),
++ *     used to summarise/classify an exit; see `WorkerExitInfo`.
++ *   - `lt` (`suffixMatchLen`) gates the SAME detach-APC-sentinel
++ *     (`c3` = `\x1b_cc-daemon-detach\x1b\\`, chunk-mxz6ht5b.js) out of
++ *     relayed data — but ONLY before the host's `live` control frame
++ *     arrives (ant `rt`'s `fe` flag: once live, data passes straight
++ *     through, unbuffered — the reference does the same, trusting a
++ *     live-stream sentinel to be caught by whoever is actually attached
++ *     via the PTY socket directly, not through this relay).
++ *
++ * Declared divergences (each a `// pendiente:` at its site too):
++ *   - `onData` emits `Buffer`, never a decoded string. Ant's `ae` emits
++ *     strings via a persistent `StringDecoder`; `ptyAdopter.ts` in this
++ *     same tree already documents why that round-trip corrupts multi-byte
++ *     (CJK) input and switched to `Buffer` — this module follows that
++ *     already-established, already-tested divergence rather than
++ *     reintroducing the bug in a second file.
++ *   - Crash-breadcrumb FILE reads (ant's `yw`/`nx`/`cl`/`oe` — pre-connect
++ *     and pre-hello stderr tail, written to `${jobDir}/…`) are NOT ported:
++ *     they depend on the job-directory layout owned by
++ *     `bgWorkerRegistry.ts`, outside this task's file list. `xe`
++ *     (`extractFirstNonEmptyLine`) is ported as a pure function so a
++ *     future caller that DOES own that layout can summarise whatever text
++ *     it reads without re-deriving the algorithm; this module never calls
++ *     it itself, so `WorkerExitInfo.hostStderrSummary` stays `undefined`
++ *     always — see the field's own `// pendiente:`.
++ *   - No auth/ping-pong handshake (`o`/`u`/`t==="ping"`/`"auth-required"`
++ *     in `ae`): this tree's `ptyHost.ts` wire protocol has no auth layer
++ *     today (`internal/ptyFrame.ts`'s `CtrlFrame` has no `auth`/`ping`
++ *     variant either) — nothing to port against.
++ *   - The `se` "swallow data until the next `live`" flag, set when a
++ *     SECOND `hello` arrives on an already-adopted client (ant: worker
++ *     respawned mid-session, discard the stale tail of the old stream) is
++ *     not ported: it exists to support WorkerVm's resume orchestration,
++ *     which lives in `workerVm.ts`/`main.ts`, both excluded here.
++ *   - `hostProc`-vs-socket exit race (ant's `p.exited` promise raced
++ *     against the socket's own exit frame) is not ported: it needs the
++ *     `Bun.Subprocess` handle, owned by whoever spawns the worker
++ *     (`workerVm.ts`, excluded here).
++ *
++ * @dynamicRequire
++ */
++
++import { Socket } from 'node:net'
++
++import { logEvent } from '@thyrox/local-observability'
++
++import {
++  CTRL_TAG,
++  DATA_TAG,
++  FRAME_HEADER_BYTES,
++  FRAME_SIZE_CAP,
++  type CtrlFrame,
++  type DecodedFrame,
++  encodeCtrlFrame,
++  encodeDataFrame,
++} from './internal/ptyFrame.js'
++
++/** chunk-ygx717jg.js `Ie` — the PTY client's own table (distinct from `Me`,
++ *  the rv/control client's — see `rvClient.ts`). */
++export const PTY_RECONNECT_BACKOFF_MS = [50, 100, 250, 500, 1000, 2000] as const
++/** chunk-ygx717jg.js `Oe`. */
++export const PTY_MAX_RECONNECT_ATTEMPTS = 30
++/** chunk-ygx717jg.js `St` — 128+SIGHUP and 128+SIGTERM: a RAW exit code
++ *  that, alone (no explicit `signal` field), already means "a supervisor
++ *  sent a signal", not a crash. Referenced by ant `g7#onExit` (WorkerVm)
++ *  as `St.has(e??-1)`; that consumer lives in `workerVm.ts`/`main.ts`,
++ *  excluded from this task, so it isn't wired up yet — the constant and
++ *  the classification it drives (`WorkerExitInfo.killedBySignal`) are
++ *  ported so a later task can consume them without re-deriving the Set. */
++export const SIGNAL_EXIT_CODES: ReadonlySet<number> = new Set([129, 143])
++
++/** chunk-mxz6ht5b.js `c3` — same detach-request sentinel `attachClient.ts`
++ *  scans for on the client side of a live PTY session. */
++const DETACH_APC_SENTINEL = Buffer.from('\x1b_cc-daemon-detach\x1b\\')
++
++/**
++ * chunk-ygx717jg.js `xe` — first non-empty, trimmed line of up to 2000
++ * characters. Ant uses it to reduce a stderr dump to a one-line crash
++ * summary; ported here as a pure function (no file I/O — see the module
++ * docstring's declared divergence on crash-breadcrumb reads).
++ */
++export function extractFirstNonEmptyLine(text: string): string | undefined {
++  return text
++    .slice(0, 2000)
++    .split(/\r?\n/)
++    .map(line => line.trim())
++    .find(line => line.length > 0)
++}
++
++/**
++ * chunk-ygx717jg.js `lt` — length of the longest suffix of `buf` that is
++ * also a prefix of `needle`, used to hold back a sentinel match that
++ * straddles a chunk boundary. Byte-for-byte the same algorithm as
++ * `attachClient.ts`'s local copy (duplicated, not imported — the two
++ * modules live in different packages, `@thyrox/daemon` and `@thyrox/cli`,
++ * the same boundary `internal/ptyFrame.ts` already duplicates).
++ */
++export function suffixMatchLen(buf: Buffer, needle: Buffer): number {
++  const max = Math.min(buf.length, needle.length - 1)
++  outer: for (let k = max; k > 0; k--) {
++    const start = buf.length - k
++    for (let i = 0; i < k; i++) {
++      if (buf[start + i] !== needle[i]) continue outer
++    }
++    return k
++  }
++  return 0
++}
++
++export interface WorkerExitInfo {
++  exitCode: number
++  signal?: string
++  /** `SIGNAL_EXIT_CODES.has(exitCode) || signal !== undefined`. */
++  killedBySignal: boolean
++  /** pendiente: este módulo nunca la rellena — depende de leer el archivo
++   *  de breadcrumb de crash (ant `yw`/`nx`/`cl`/`oe`), cuya ruta pertenece
++   *  al layout de `bgWorkerRegistry.ts` (fuera de esta tarea). Existe el
++   *  campo, y `extractFirstNonEmptyLine` (`xe`) para producirla, para que
++   *  quien porte ese layout sólo tenga que llamarlo. */
++  hostStderrSummary?: string
++}
++
++export interface WorkerSocketClientOptions {
++  /** pid whose liveness gates giving up (ant `r`). */
++  workerPid: number
++  /** Defaults to a real `process.kill(pid, 0)` probe. Injected — not
++   *  imported from `bgWorkerRegistry.ts`'s `isPidAlive` — so this module
++   *  stays independent of that file's ownership and so tests never need
++   *  a real process to fake liveness. */
++  isWorkerAlive?: (pid: number) => boolean
++  /** Escalates to SIGKILL once retries are exhausted and the pid is
++   *  still alive (ant `_e()`'s `P>=Oe` branch). Default:
++   *  `process.kill(-pid, 'SIGKILL')`, falling back to the bare pid. */
++  killWorkerGroup?: (pid: number) => void
++  onData: (chunk: Buffer) => void
++  onExit: (info: WorkerExitInfo) => void
++  onHeartbeat?: (info: { ts: number; state?: string }) => void
++  onHello?: (info: { replPid: number; version: string }) => void
++  /** Test-only override of `PTY_RECONNECT_BACKOFF_MS` — production callers
++   *  never set this; it exists so a test can exercise attempt-exhaustion
++   *  without waiting out the real ~52s the full 30-attempt table sums to. */
++  reconnectBackoffMs?: readonly number[]
++  /** Test-only override of `PTY_MAX_RECONNECT_ATTEMPTS` — see above. */
++  maxReconnectAttempts?: number
++}
++
++export interface WorkerSocketClient {
++  replPid(): number
++  replVersion(): string
++  write(payload: Buffer): void
++  resize(cols: number, rows: number): void
++  kill(sig: 'SIGTERM' | 'SIGKILL'): void
++  dispose(): void
++}
++
++/** Duplicate of `pendingCrossPackageDeps.ts::isPidAlive` — see the
++ *  `isWorkerAlive` option's own docstring for why this isn't imported
++ *  from there instead. Verbatim to that file's own citation:
++ *  `ccnmt: packages/shell/src/genericProcessUtils.ts:46-54`. */
++function defaultIsWorkerAlive(pid: number): boolean {
++  if (pid <= 1) return false
++  try {
++    process.kill(pid, 0)
++    return true
++  } catch (e) {
++    return (e as NodeJS.ErrnoException).code === 'EPERM'
++  }
++}
++
++function defaultKillWorkerGroup(pid: number): void {
++  try {
++    process.kill(-pid, 'SIGKILL')
++  } catch {
++    try {
++      process.kill(pid, 'SIGKILL')
++    } catch {
++      // best-effort — the process is already gone.
++    }
++  }
++}
++
++/**
++ * Minimal frame decoder, local to this module: `internal/ptyFrame.ts` is
++ * a pure codec (encode only, on purpose — see its own docstring) and
++ * isn't ours to extend with a decoder. Same wire shape as
++ * `@thyrox/cli: bg/ptyFrame.ts::createFrameDecoder`, ported independently
++ * because the two packages don't share a dependency edge (same reason
++ * `internal/ptyFrame.ts` itself is a duplicate, not an import).
++ */
++function createDaemonFrameDecoder(
++  onFrame: (f: DecodedFrame) => void,
++  onError: (msg: string) => void,
++): (chunk: Buffer) => void {
++  let pending = Buffer.alloc(0)
++  let stopped = false
++  return (chunk: Buffer) => {
++    if (stopped) return
++    pending = pending.length === 0 ? Buffer.from(chunk) : Buffer.concat([pending, chunk])
++    while (pending.length >= FRAME_HEADER_BYTES) {
++      const len = pending.readUInt32BE(0)
++      if (len > FRAME_SIZE_CAP) {
++        stopped = true
++        onError(`frame too large (${len} > ${FRAME_SIZE_CAP})`)
++        return
++      }
++      const total = FRAME_HEADER_BYTES + len
++      if (pending.length < total) return
++      const tag = pending.readUInt8(4)
++      const body = pending.subarray(FRAME_HEADER_BYTES, total)
++      pending = pending.subarray(total)
++      if (tag === DATA_TAG) {
++        onFrame({ kind: DATA_TAG, payload: Buffer.from(body) })
++      } else if (tag === CTRL_TAG) {
++        try {
++          const ctrl = JSON.parse(body.toString('utf8')) as CtrlFrame
++          onFrame({ kind: CTRL_TAG, ctrl })
++        } catch {
++          stopped = true
++          onError('bad ctrl frame json')
++          return
++        }
++      } else {
++        stopped = true
++        onError(`unknown frame tag ${tag}`)
++        return
++      }
++    }
++  }
++}
++
++/**
++ * Open a daemon-side PTY client against `socketPath`.
++ */
++export function createWorkerSocketClient(
++  socketPath: string,
++  options: WorkerSocketClientOptions,
++): WorkerSocketClient {
++  const isWorkerAlive = options.isWorkerAlive ?? defaultIsWorkerAlive
++  const killWorkerGroup = options.killWorkerGroup ?? defaultKillWorkerGroup
++  const backoffMs = options.reconnectBackoffMs ?? PTY_RECONNECT_BACKOFF_MS
++  const maxAttempts = options.maxReconnectAttempts ?? PTY_MAX_RECONNECT_ATTEMPTS
++
++  let socket: Socket | undefined
++  let disposed = false
++  let settled = false
++  let attempt = 0
++  let reconnectTimer: NodeJS.Timeout | undefined
++  let helloPid = 0
++  let helloVersion = ''
++  let live = false
++  let pendingData = Buffer.alloc(0)
++
++  function declareExit(info: WorkerExitInfo): void {
++    if (settled) return
++    settled = true
++    if (reconnectTimer) {
++      clearTimeout(reconnectTimer)
++      reconnectTimer = undefined
++    }
++    socket?.destroy()
++    socket = undefined
++    options.onExit(info)
++  }
++
++  function handleData(payload: Buffer): void {
++    if (live) {
++      // ant `rt`: once `fe` (live) is set, data passes straight through —
++      // no sentinel buffering on the hot path.
++      options.onData(payload)
++      return
++    }
++    const combined = pendingData.length > 0 ? Buffer.concat([pendingData, payload]) : payload
++    const stripped = stripSentinelOccurrences(combined, DETACH_APC_SENTINEL)
++    const keep = suffixMatchLen(stripped, DETACH_APC_SENTINEL)
++    pendingData = keep > 0 ? Buffer.from(stripped.subarray(stripped.length - keep)) : Buffer.alloc(0)
++    const emit = keep > 0 ? stripped.subarray(0, stripped.length - keep) : stripped
++    if (emit.length > 0) options.onData(Buffer.from(emit))
++  }
++
++  function handleCtrl(ctrl: CtrlFrame): void {
++    if (ctrl.t === 'hello') {
++      helloPid = ctrl.replPid
++      helloVersion = ctrl.version
++      attempt = 0
++      options.onHello?.({ replPid: ctrl.replPid, version: ctrl.version })
++    } else if (ctrl.t === 'live') {
++      live = true
++      if (pendingData.length > 0) {
++        options.onData(pendingData)
++        pendingData = Buffer.alloc(0)
++      }
++    } else if (ctrl.t === 'exit') {
++      declareExit({
++        exitCode: ctrl.code,
++        signal: ctrl.signal,
++        killedBySignal: ctrl.signal !== undefined || SIGNAL_EXIT_CODES.has(ctrl.code),
++      })
++    } else if (ctrl.t === 'heartbeat') {
++      options.onHeartbeat?.({ ts: ctrl.ts, state: ctrl.state })
++    }
++  }
++
++  function scheduleReconnect(): void {
++    if (disposed || settled || reconnectTimer) return
++    // ant `_e()`: the pid check comes BEFORE the attempt-exhaustion check —
++    // a worker that's already gone doesn't wait out the rest of the table.
++    if (!isWorkerAlive(options.workerPid)) {
++      declareExit({ exitCode: -1, killedBySignal: false })
++      return
++    }
++    if (attempt >= maxAttempts) {
++      logEvent('tengu_bg_ptyhost_hang_sigkill', { pid: String(options.workerPid) })
++      killWorkerGroup(options.workerPid)
++      declareExit({ exitCode: -1, signal: 'SIGKILL', killedBySignal: true })
++      return
++    }
++    const delay = backoffMs[Math.min(attempt, backoffMs.length - 1)]!
++    attempt++
++    reconnectTimer = setTimeout(() => {
++      reconnectTimer = undefined
++      tryConnect()
++    }, delay)
++    reconnectTimer.unref()
++  }
++
++  function tryConnect(): void {
++    if (disposed || settled) return
++    // Two-step `new Socket()` + `.connect()`, not the one-shot `connect()`
++    // factory — matches `rvClient.ts`/`ptyAdopter.ts`'s already-proven-safe
++    // pattern of attaching `'error'` before the connect attempt can settle.
++    const sock = new Socket()
++    sock.on('error', () => scheduleReconnect())
++    sock.once('close', () => {
++      if (socket === sock) socket = undefined
++      if (disposed || settled) return
++      scheduleReconnect()
++    })
++    sock.once('connect', () => {
++      if (disposed || settled) return
++      socket = sock
++      const decoder = createDaemonFrameDecoder(
++        f => {
++          if (f.kind === DATA_TAG) handleData(f.payload)
++          else handleCtrl(f.ctrl)
++        },
++        msg => {
++          logEvent('tengu_bg_ptyhost_frame_error', { error: msg.slice(0, 80) })
++          sock.destroy()
++        },
++      )
++      sock.on('data', decoder)
++    })
++    sock.connect(socketPath)
++  }
++
++  tryConnect()
++
++  return {
++    replPid: () => helloPid,
++    replVersion: () => helloVersion,
++    write(payload: Buffer): void {
++      if (settled || disposed) return
++      const chunkSize = FRAME_SIZE_CAP - 1
++      for (let i = 0; i < payload.length; i += chunkSize) {
++        socket?.write(encodeDataFrame(payload.subarray(i, i + chunkSize)))
++      }
++    },
++    resize(cols: number, rows: number): void {
++      if (settled || disposed) return
++      socket?.write(encodeCtrlFrame({ t: 'resize', cols, rows }))
++    },
++    kill(sig: 'SIGTERM' | 'SIGKILL'): void {
++      if (settled || disposed) return
++      socket?.write(encodeCtrlFrame({ t: 'kill', sig }))
++    },
++    dispose(): void {
++      if (disposed) return
++      disposed = true
++      if (reconnectTimer) {
++        clearTimeout(reconnectTimer)
++        reconnectTimer = undefined
++      }
++      socket?.destroy()
++      socket = undefined
++    },
++  }
++}
++
++/** Replaces every full occurrence of `sentinel` in `buf` with nothing —
++ *  Buffer analogue of ant's `.replaceAll(c3, "")` (which operates on the
++ *  decoded string; this module works in bytes, see the module docstring's
++ *  declared `Buffer`-vs-string divergence). */
++function stripSentinelOccurrences(buf: Buffer, sentinel: Buffer): Buffer {
++  const parts: Buffer[] = []
++  let start = 0
++  let idx: number
++  while ((idx = buf.indexOf(sentinel, start)) >= 0) {
++    parts.push(buf.subarray(start, idx))
++    start = idx + sentinel.length
++  }
++  parts.push(buf.subarray(start))
++  return parts.length === 1 ? buf : Buffer.concat(parts)
++}

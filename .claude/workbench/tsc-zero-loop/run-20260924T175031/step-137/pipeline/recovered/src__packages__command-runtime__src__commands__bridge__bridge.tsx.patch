@@ -1,0 +1,12 @@
+diff --git a/src/packages/command-runtime/src/commands/bridge/bridge.tsx b/src/packages/command-runtime/src/commands/bridge/bridge.tsx
+index 0ea38f63..f11310bf 100644
+--- a/src/packages/command-runtime/src/commands/bridge/bridge.tsx
++++ b/src/packages/command-runtime/src/commands/bridge/bridge.tsx
+@@ -152,7 +152,6 @@ function BridgeDisconnectDialog({ onDone }: Props): React.ReactNode {
+     qrToString(displayUrl, {
+       type: 'utf8',
+       errorCorrectionLevel: 'L',
+-      small: true,
+     })
+       .then(setQrText)
+       .catch(() => setQrText(''))

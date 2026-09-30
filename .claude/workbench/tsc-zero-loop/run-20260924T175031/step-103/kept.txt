@@ -1,0 +1,4 @@
+src/packages/agent/claudeInChromeSetupPortable.ts
+src/packages/app-host/src/init.ts
+src/packages/cli/src/headless/sdk/session/run-streaming.ts
+src/packages/provider/src/contracts.ts

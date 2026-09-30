@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/session-store-onchange-20260929T020417/verify.sh .claude/workbench/session-store-onchange-20260929T020417", "started_at": "2026-09-29T02:06:49+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T02:08:17+00:00", "duration_seconds": 88.840589}

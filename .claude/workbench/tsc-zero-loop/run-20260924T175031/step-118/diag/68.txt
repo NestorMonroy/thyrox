@@ -1,0 +1,23 @@
+src/packages/cli/src/entry/run-program.ts(35,10): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'runModeDispatch'.
+  --- código src/packages/cli/src/entry/run-program.ts:25-45 ---
+     25  import { canUserConfigureAdvisor } from '@thyrox/provider/advisor.js'
+     26  import { ensureMdmSettingsLoaded } from '@thyrox/config/settings/mdm/settings'
+     27  import { ensureKeychainPrefetchCompleted } from '../secureStorage/keychainPrefetch.js'
+     28  import {
+     29    profileCheckpoint,
+     30    profileReport,
+     31  } from '@thyrox/app-host/startup/startupProfiler.js'
+     32  import { isEnvTruthy } from '@thyrox/config/env/utils'
+     33  
+     34  import { createMainProgram } from './commander.js'
+     35> import { runModeDispatch } from './mode-dispatch.js'
+     36  import type { PendingHandles } from './preprocess-argv.js'
+     37  import { registerMcpCommands } from '../commands/mcp-commands.js'
+     38  import { registerMiscCommands } from '../commands/misc-commands.js'
+     39  import { registerProjectCommands } from '../commands/project-commands.js'
+     40  
+     41  /**
+     42   * Attach the preAction hook that runs once per subcommand entry.
+     43   * Handles the shared bootstrap shape: settings ready, sinks installed,
+     44   * migrations applied, remote managed settings kicked off.
+     45   */

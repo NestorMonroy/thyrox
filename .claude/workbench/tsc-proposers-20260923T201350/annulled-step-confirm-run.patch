@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_step.py
++++ b/src/verify/tsc_zero_step.py
+@@ -143,7 +143,7 @@
+         for file, text in applied[pid].items():
+             (root / file).write_text(text)
+     final_lines = after_lines
+-    if accepted and reverted:
++    if False:
+         final_lines = run_tsc(root, tsc, bench / "confirm.log")
+         runs += 1
+         new, _ = _new_diagnostics(before_lines, final_lines)

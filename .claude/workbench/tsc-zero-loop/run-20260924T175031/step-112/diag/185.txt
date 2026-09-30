@@ -1,0 +1,50 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(934,15): error TS2322: Type 'Message[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:924-944 ---
+    924                  ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+    933              return {
+    934>               messages: buildPostCompactMessages(
+    935                  compactionResultWithSlashMessages,
+    936                ),
+    937                shouldQuery: false,
+    938                command,
+    939              }
+    940            }
+    941  
+    942            // Port of ant v2.1.136 3753.js qm5 'query' branch — local command
+    943            // returns visible stdout PLUS an invisible meta-message prompt;
+    944            // `shouldQuery:true` so the agent picks up the directive without
+  Type 'Message' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+    Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+      Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'ProgressMessage'.
+        Property 'data' is missing in type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' but required in type '{ type: "progress"; data: unknown; }'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1196,7): error TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1186-1206 ---
+   1186      const summaryContent: ContentBlockParam[] = [
+   1187        { type: 'text', text: parts.join('\n') },
+   1188      ]
+   1189      return {
+   1190        messages: [
+   1191          createUserMessage({ content: metadata, uuid }),
+   1192          createUserMessage({ content: summaryContent, isMeta: true }),
+   1193        ],
+   1194        shouldQuery: true,
+   1195        model: command.model,
+   1196>       effort: command.effort,
+   1197        command,
+   1198      }
+   1199    }
+   1200  
+   1201    const result = await command.getPromptForCommand(args, context)
+   1202  
+   1203    // ant 3695.js cw_() — fire UserPromptExpansion now that the slash
+   1204    // command (or MCP prompt) has produced its final body. Hooks see
+   1205    // expansion_type, command_name/args/source, and the fully-expanded
+   1206    // prompt as a single string. Failures are advisory; we never block

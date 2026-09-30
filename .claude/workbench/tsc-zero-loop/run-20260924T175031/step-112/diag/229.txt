@@ -1,0 +1,35 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1496,30): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1486-1503 ---
+   1486            showSpinner: true,
+   1487          })
+   1488        }
+   1489        yield {
+   1490          type: 'progress',
+   1491          fullOutput,
+   1492          output: lastProgressOutput,
+   1493          elapsedTimeSeconds: elapsedSeconds,
+   1494          totalLines: lastTotalLines,
+   1495          totalBytes: lastTotalBytes,
+   1496>         taskId: shellCommand.taskOutput.taskId,
+   1497          ...(timeout ? { timeoutMs } : undefined),
+   1498        }
+   1499      }
+   1500    } finally {
+   1501      TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1502    }
+   1503  }
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1501,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1491-1503 ---
+   1491          fullOutput,
+   1492          output: lastProgressOutput,
+   1493          elapsedTimeSeconds: elapsedSeconds,
+   1494          totalLines: lastTotalLines,
+   1495          totalBytes: lastTotalBytes,
+   1496          taskId: shellCommand.taskOutput.taskId,
+   1497          ...(timeout ? { timeoutMs } : undefined),
+   1498        }
+   1499      }
+   1500    } finally {
+   1501>     TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1502    }
+   1503  }

@@ -1,0 +1,46 @@
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34,16): error TS2315: Type 'WizardStepComponent' is not generic.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:24-44 ---
+     24    onCancel: () => void
+     25  }
+     26  
+     27  export function CreateAgentWizard({
+     28    tools,
+     29    existingAgents,
+     30    onComplete,
+     31    onCancel,
+     32  }: Props): ReactNode {
+     33    // Create step components with props
+     34>   const steps: WizardStepComponent<AgentWizardData>[] = [
+     35      LocationStep, // 0
+     36      MethodStep, // 1
+     37      GenerateStep, // 2
+     38      () => <TypeStep existingAgents={existingAgents} />, // 3
+     39      PromptStep, // 4
+     40      DescriptionStep, // 5
+     41      () => <ToolsStep tools={tools} />, // 6
+     42      ModelStep, // 7
+     43      ColorStep, // 8
+     44      // MemoryStep is conditionally included based on GrowthBook gate
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(56,21): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:46-66 ---
+     46      () => (
+     47        <ConfirmStepWrapper
+     48          tools={tools}
+     49          existingAgents={existingAgents}
+     50          onComplete={onComplete}
+     51        />
+     52      ),
+     53    ]
+     54  
+     55    return (
+     56>     <WizardProvider<AgentWizardData>
+     57        steps={steps}
+     58        initialData={{}}
+     59        onComplete={() => {
+     60          // Wizard completion is handled by ConfirmStepWrapper
+     61          // which calls onComplete with the appropriate message
+     62        }}
+     63        onCancel={onCancel}
+     64        title="Create new agent"
+     65        showStepCounter={false}
+     66      />

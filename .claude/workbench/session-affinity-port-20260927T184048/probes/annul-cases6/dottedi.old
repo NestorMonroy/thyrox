@@ -1,0 +1,1 @@
+const lower = (text: string) => text.replaceAll('\u0130', 'i').toLowerCase()

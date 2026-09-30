@@ -1,0 +1,1 @@
+patrones=6 entradas=20000 discrepancias=0

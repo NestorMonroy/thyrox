@@ -1,0 +1,7 @@
+total 202 desaparecidos 6 nuevos 6
+ + src/packages/agent/task/framework.ts: TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | T; }; settings: { [x: string]: unknown; $schema
+ + src/packages/app-host/src/runtime/commandRegistryRuntime.ts: TS2322: Type '({ isEnabled: () => boolean; isHidden: boolean; name: string; } | { type: "prompt"; name: st
+ + src/packages/app-host/src/runtime/commandRegistryRuntime.ts: TS2322: Type 'Set<{ isEnabled: () => boolean; isHidden: boolean; name: string; } | { type: "local"; name: 
+ + src/packages/config/plugin/loadPluginHooks.ts: TS2345: Argument of type 'Partial<Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEn
+ + src/packages/config/plugin/loadPluginHooks.ts: TS2345: Argument of type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "St
+ + src/packages/repl/src/processUserInput/processSlashCommand.tsx: TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage

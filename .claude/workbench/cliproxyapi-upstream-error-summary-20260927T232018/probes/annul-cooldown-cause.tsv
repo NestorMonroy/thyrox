@@ -1,0 +1,6 @@
+no-last-error	s/^    this.lastErrors.set(credential.id, { text: failure.errorText ?? `HTTP \${status}`, at: now.getTime() })$/    void 0/
+no-http-fallback	s/{ text: failure.errorText ?? `HTTP \${status}`/{ text: failure.errorText ?? ''/
+no-clear-error	s/^    this.lastErrors.delete(credential.id)$/    void 0/
+no-quota	s/^      if (status === 429) credential.quota = /      if (false) credential.quota = /
+no-clear-quota	s/^    credential.quota = undefined$/    void 0/
+no-tie-break	s/ || (entry.at === latest.at \&\& id > latest.id))) latest/)) latest/

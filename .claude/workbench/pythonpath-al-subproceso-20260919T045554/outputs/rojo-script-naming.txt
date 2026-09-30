@@ -1,0 +1,34 @@
+  ok   ve el control positivo real (clasificar-agentes.py)
+  ok   propone el nombre en snake
+  ok   no marca el nombre correcto
+  ok   ignora .sh en ambas convenciones
+  ok   excluye node_modules
+  ok   --strict sale 1 con un infractor
+  ok   --strict sale 0 sin infractores
+  ok   el reporte declara el alcance medido
+  ok   el repo real no tiene infractores
+  ok   ve el nombre en espanol de un .py real del arbol
+  ok   el eje de idioma tambien mide .sh
+  ok   no marca el nombre ya traducido
+  ok   el eje de kebab no lo afecta el idioma
+  ok   el eje de idioma no lo afecta el kebab
+  ok   sin lexico sale con codigo 2
+  ok   el guard nombra el lexico que le falta
+  ok   el reporte de idioma declara el alcance
+  FALLA el arbol real no tiene nombres nuevos en espanol — esperado [0] obtenido [8]
+  ok   el lexico ve el infinitivo: esperar-marcador -> esperar, marcador
+  ok   el lexico ve el infinitivo y el sustantivo: refrescar-tablero
+  ok   el lexico ve los sustantivos llanos: check-hallazgo-sucesor
+  ok   traducidos, los tres pasan el eje de idioma
+  ok   el eje de identificadores ve el simbolo en espanol
+  ok   nombra la funcion
+  ok   y nombra el PARAMETRO: la firma es parte del eje
+  ok   y el eje del NOMBRE de ese mismo archivo pasa
+  ok   traducido, el eje de identificadores pasa
+  ok   sin lexico el eje de identificadores sale con 2
+  ok   y nombra el lexico que le falta
+  ok   el reporte de identificadores declara el alcance
+  FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [633]
+
+29 ok · 2 falla(s)
+EXIT=1

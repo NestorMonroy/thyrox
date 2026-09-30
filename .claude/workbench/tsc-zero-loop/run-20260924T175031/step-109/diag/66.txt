@@ -1,0 +1,28 @@
+patron: tool-provider-discover-not-awaited
+senal_del_verificador: TS2339.*Property '(length|map)' does not exist on type '.*Promise<Tools>.*'|TS2488.*must have a '\[Symbol\.iterator\]\(\)' method
+fix_generico: El contrato `ToolProvider.discover()` está tipado como `Promise<Tools> | Tools`, aun cuando una implementación concreta (como `BuiltInToolsProvider`) lo declare como síncrono, porque la constante se anota con el tipo de la interfaz. Cualquier llamador que use el valor devuelto por `discover()` a través de una referencia tipada como `ToolProvider` debe tratarlo como posible promesa: convertir el test/función que lo consume en `async` y hacer `await` de la llamada. El TS7006 sobre el parámetro del `.map()` desaparece solo, porque una vez resuelto el tipo a `Tools` (`readonly Tool[]`), TypeScript infiere el tipo del callback sin anotación explícita.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/provider/__tests__/providerStreaming.test.ts(246,30): error TS2488: Type 'Headers' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:236-256 ---
+    236      usar: (baseUrl: string) => Promise<T>,
+    237    ): Promise<T> {
+    238      const srv = Bun.serve({ port: 0, fetch: manejar })
+    239      try { return await usar(`http://127.0.0.1:${srv.port}`) } finally { srv.stop(true) }
+    240    }
+    241  
+    242    test('la ruta JSON viaja por socket con sus cabeceras reales', async () => {
+    243      const visto: Record<string, string> = {}
+    244      const turno = await conServidor(
+    245        (req) => {
+    246>         for (const [k, v] of req.headers) visto[k] = v
+    247          return new Response(JSON.stringify({ id: 'msg_red', model: 'claude-opus-5', stop_reason: 'end_turn',
+    248            content: [{ type: 'text', text: 'desde el socket' }],
+    249            usage: { input_tokens: 2, output_tokens: 3, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 } }),
+    250            { headers: { 'content-type': 'application/json', 'anthropic-ratelimit-unified-status': 'allowed' } })
+    251        },
+    252        async (baseUrl) => {
+    253          const p = new AnthropicHttpProvider({ apiKey: 'clave-local', baseUrl })
+    254          const t = await p.send({ ...peticion, cacheTtl: '1h' })
+    255          expect(p.lastLimits.status).toBe('allowed')
+    256          return t

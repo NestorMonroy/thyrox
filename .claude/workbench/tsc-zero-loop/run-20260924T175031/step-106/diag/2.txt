@@ -1,0 +1,104 @@
+src/packages/repl/src/screens/REPLView.tsx(300,10): error TS2724: '"@thyrox/agent/promptCategory.js"' has no exported member named 'getQuerySourceForREPL'. Did you mean 'getQuerySourceForAgent'?
+src/packages/repl/src/screens/REPLView.tsx(348,10): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'partialCompactConversation'.
+src/packages/repl/src/screens/REPLView.tsx(506,3): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'getQueuedCommandAttachments'.
+src/packages/repl/src/screens/REPLView.tsx(767,5): error TS2322: Type 'unknown' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<ToolUseConfirm[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: ToolUseConfirm[]) => ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.
+src/packages/repl/src/screens/REPLView.tsx(1553,35): error TS2339: Property 'content' does not exist on type '{}'.
+src/packages/repl/src/screens/REPLView.tsx(1794,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1796,34): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1800,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  Types of parameters 'updater' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/repl/src/screens/REPLView.tsx(1820,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+    Types of property 'color' are incompatible.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.
+src/packages/repl/src/screens/REPLView.tsx(2016,5): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2022,5): error TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.
+  Type 'null' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2447,9): error TS2322: Type '(action: React.SetStateAction<MessageType[]>) => void' is not assignable to type '(updater: (prev: unknown[]) => unknown[]) => void'.
+  Types of parameters 'action' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<Message[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: Message[]) => Message[]'.
+        Type 'unknown[]' is not assignable to type 'Message[]'.
+          Type 'unknown' is not assignable to type 'Message'.
+src/packages/repl/src/screens/REPLView.tsx(2478,9): error TS2322: Type '(config: Record<string, ScopedMcpServerConfig>) => void' is not assignable to type '(config: Record<string, unknown>) => void'.
+  Types of parameters 'config' and 'config' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/repl/src/screens/REPLView.tsx(2479,9): error TS2322: Type 'Dispatch<SetStateAction<IdeType | null>>' is not assignable to type '(ide: unknown) => void'.
+  Types of parameters 'value' and 'ide' are incompatible.
+    Type 'unknown' is not assignable to type 'SetStateAction<IdeType | null>'.
+src/packages/repl/src/screens/REPLView.tsx(2527,9): error TS2322: Type '(sessionId: UUID, log: LogOption, entrypoint: ResumeEntrypoint) => Promise<void>' is not assignable to type '(sessionId: `${string}-${string}-${string}-${string}-${string}`, log: unknown, entrypoint: ResumeEntrypoint) => Promise<void>'.
+  Types of parameters 'log' and 'log' are incompatible.
+    Type 'unknown' is not assignable to type 'LogOption'.
+src/packages/repl/src/screens/REPLView.tsx(2610,9): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/packages/repl/src/screens/REPLView.tsx(2621,11): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/repl/src/screens/REPLView.tsx(2622,11): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2680,80): error TS18046: 'newMessage.data' is of type 'unknown'.
+src/packages/repl/src/screens/REPLView.tsx(2696,17): error TS18046: 'last.data' is of type 'unknown'.
+src/packages/repl/src/screens/REPLView.tsx(2696,36): error TS18046: 'newMessage.data' is of type 'unknown'.
+src/packages/repl/src/screens/REPLView.tsx(2782,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(2821,72): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/packages/repl/src/screens/REPLView.tsx(2821,75): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/packages/repl/src/screens/REPLView.tsx(2925,9): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/repl/src/screens/REPLView.tsx(2926,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/repl/src/screens/REPLView.tsx(3033,36): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(3272,11): error TS2698: Spread types may only be created from object types.
+src/packages/repl/src/screens/REPLView.tsx(3488,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+src/packages/repl/src/screens/REPLView.tsx(3977,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: getQuerySourceForREPL; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.
+src/packages/repl/src/screens/REPLView.tsx(4017,26): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/screens/REPLView.tsx(5028,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.

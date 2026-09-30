@@ -1,0 +1,41 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(6,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:1-16 ---
+      1  // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+      2  import React, { useMemo } from 'react'
+      3  import { Ansi, Box, Text } from '@anthropic/ink'
+      4  import { FilePathLink } from '../FilePathLink.js'
+      5  import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
+      6> import type { Attachment } from '@thyrox/agent/attachments.js'
+      7  import { isBgAgentPanelEnabled } from '../tasks/taskStatusUtils.js'
+      8  import type { NullRenderingAttachmentType } from './nullRenderingAttachments.js'
+      9  import { useAppState } from '../../appStateHooks.js'
+     10  import { getDisplayPath } from '@thyrox/storage/file.js'
+     11  import { formatFileSize } from '@thyrox/output/formatters'
+     12  import { MessageResponse } from '../MessageResponse.js'
+     13  import { basename, sep } from 'path'
+     14  import { UserTextMessage } from './UserTextMessage.js'
+     15  import { DiagnosticsDisplay } from '../DiagnosticsDisplay.js'
+     16  import { getContentText } from '@thyrox/agent/messages.js'
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(63,56): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:53-73 ---
+     53    const bg = useSelectedMessageBg()
+     54    // Hoisted to mount-time — per-message component, re-renders on every scroll.
+     55    const isDemoEnv = feature('EXPERIMENTAL_SKILL_SEARCH')
+     56      ?
+     57        useMemo(() => isEnvTruthy(process.env.IS_DEMO), [])
+     58      : false
+     59    // Handle teammate_mailbox BEFORE switch
+     60    if (isAgentSwarmsEnabled() && attachment.type === 'teammate_mailbox') {
+     61      // Filter out idle notifications BEFORE counting - they are hidden in the UI
+     62      // so showing them in the count would be confusing ("2 messages in mailbox:" with nothing shown)
+     63>     const visibleMessages = attachment.messages.filter(msg => {
+     64        if (isShutdownApproved(msg.text)) {
+     65          return false
+     66        }
+     67        try {
+     68          const parsed = jsonParse(msg.text)
+     69          return (
+     70            parsed?.type !== 'idle_notification' &&
+     71            parsed?.type !== 'teammate_terminated'
+     72          )
+     73        } catch {

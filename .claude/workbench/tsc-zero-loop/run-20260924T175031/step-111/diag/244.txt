@@ -1,0 +1,348 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(48,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:38-58 ---
+     38  import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
+     39  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
+     40  import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+     41  import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+     42  import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
+     43  import type { CommandResultDisplay } from '@thyrox/agent/command.js'
+     44  import { createAbortController } from '@thyrox/agent/abortController.js'
+     45  import { getAgentContext } from '@thyrox/agent/agentContext.js'
+     46  import {
+     47    createAttachmentMessage,
+     48>   getAttachmentMessages,
+     49  } from '@thyrox/agent/attachments.js'
+     50  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     51  import { isEnvTruthy } from '@thyrox/config/env/utils'
+     52  import { AbortError, MalformedCommandError } from '@thyrox/local-observability/errorHelpers.js'
+     53  import { getDisplayPath } from '@thyrox/storage/file.js'
+     54  import {
+     55    extractResultText,
+     56    prepareForkedCommandContext,
+     57  } from '@thyrox/agent/forkedAgent.js'
+     58  import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(138,44): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:128-148 ---
+    128        command.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    129      invocation_trigger:
+    130        'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    131      ...(command.pluginInfo && {
+    132        _PROTO_plugin_name: command.pluginInfo.pluginManifest
+    133          .name as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    134        ...(pluginMarketplace && {
+    135          _PROTO_marketplace_name:
+    136            pluginMarketplace as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    137        }),
+    138>       ...buildPluginCommandTelemetryFields(command.pluginInfo),
+    139      }),
+    140    })
+    141  
+    142    const { skillContent, modifiedGetAppState, baseAgent, promptMessages } =
+    143      await prepareForkedCommandContext(command, args, context)
+    144  
+    145    // Merge skill's effort into the agent definition so runAgent applies it
+    146    const agentDefinition =
+    147      command.effort !== undefined
+    148        ? { ...baseAgent, effort: command.effort }
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(210,9): error TS2322: Type 'BuiltInAgentDefinition | CustomAgentDefinition | PluginAgentDefinition | { effort: {} | null; agentType: string; ... 22 more ...; getSystemPrompt: (params: { ...; }) => string; } | { ...; } | { ...; }' is not assignable to type 'AgentDefinition'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:200-220 ---
+    200        while (Date.now() < deadline) {
+    201          const s = context.getAppState()
+    202          if (!s.mcp.clients.some((c: { type: string }) => c.type === 'pending')) break
+    203          await sleep(MCP_SETTLE_POLL_MS)
+    204        }
+    205        const freshTools =
+    206          context.options.refreshTools?.() ?? context.options.tools
+    207  
+    208        const agentMessages: Message[] = []
+    209        for await (const message of runAgent({
+    210>         agentDefinition,
+    211          promptMessages,
+    212          toolUseContext: {
+    213            ...context,
+    214            getAppState: modifiedGetAppState,
+    215            abortController: bgAbortController,
+    216          },
+    217          canUseTool,
+    218          isAsync: true,
+    219          querySource: 'agent:custom',
+    220          model: command.model as ModelAlias | undefined,
+  Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BuiltInAgentDefinition'.
+      Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BaseAgentDefinition'.
+        Types of property 'effort' are incompatible.
+          Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+            Type 'null' is not assignable to type 'EffortValue | undefined'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(261,9): error TS2322: Type 'AssistantMessage | NormalizedUserMessage' is not assignable to type '(MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:251-271 ---
+    251    let toolUseCounter = 0
+    252  
+    253    // Helper to create a progress message from an agent message
+    254    const createProgressMessage = (
+    255      message: AssistantMessage | NormalizedUserMessage,
+    256    ): ProgressMessage<AgentProgress> => {
+    257      toolUseCounter++
+    258      return {
+    259        type: 'progress',
+    260        data: {
+    261>         message,
+    262          type: 'agent_progress',
+    263          prompt: skillContent,
+    264          agentId,
+    265        },
+    266        parentToolUseID,
+    267        toolUseID: `${parentToolUseID}-${toolUseCounter}`,
+    268        timestamp: new Date().toISOString(),
+    269        uuid: randomUUID(),
+    270      }
+    271    }
+  Type 'AssistantMessage' is not assignable to type '(MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.
+    Type 'AssistantMessage' is not assignable to type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }'.
+      Type 'AssistantMessage' is not assignable to type '{ message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: ContentItem[]; }'.
+              Types of property 'content' are incompatible.
+                Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                  Type 'undefined' is not assignable to type 'ContentItem[]'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(292,7): error TS2322: Type 'BuiltInAgentDefinition | CustomAgentDefinition | PluginAgentDefinition | { effort: {} | null; agentType: string; ... 22 more ...; getSystemPrompt: (params: { ...; }) => string; } | { ...; } | { ...; }' is not assignable to type 'AgentDefinition'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:282-302 ---
+    282        showSpinner: true,
+    283      })
+    284    }
+    285  
+    286    // Show initial "Initializing…" state
+    287    updateProgress()
+    288  
+    289    // Run the sub-agent
+    290    try {
+    291      for await (const message of runAgent({
+    292>       agentDefinition,
+    293        promptMessages,
+    294        toolUseContext: {
+    295          ...context,
+    296          getAppState: modifiedGetAppState,
+    297        },
+    298        canUseTool,
+    299        isAsync: false,
+    300        querySource: 'agent:custom',
+    301        model: command.model as ModelAlias | undefined,
+    302        availableTools: context.options.tools,
+  Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BuiltInAgentDefinition'.
+      Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BaseAgentDefinition'.
+        Types of property 'effort' are incompatible.
+          Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+            Type 'null' is not assignable to type 'EffortValue | undefined'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(543,43): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:533-553 ---
+    533        ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    534        eventData.plugin_name = (
+    535          isOfficial ? pluginManifest.name : 'third-party'
+    536        ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    537        if (isOfficial && pluginManifest.version) {
+    538          eventData.plugin_version =
+    539            pluginManifest.version as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    540        }
+    541        Object.assign(
+    542          eventData,
+    543>         buildPluginCommandTelemetryFields(returnedCommand.pluginInfo),
+    544        )
+    545      }
+    546  
+    547      logEvent('tengu_input_command', {
+    548        ...eventData,
+    549        invocation_trigger:
+    550          'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    551        ...(process.env.USER_TYPE === 'ant' && {
+    552          skill_name:
+    553            commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(636,41): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:626-646 ---
+    626      ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    627      eventData.plugin_name = (
+    628        isOfficial ? pluginManifest.name : 'third-party'
+    629      ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    630      if (isOfficial && pluginManifest.version) {
+    631        eventData.plugin_version =
+    632          pluginManifest.version as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    633      }
+    634      Object.assign(
+    635        eventData,
+    636>       buildPluginCommandTelemetryFields(returnedCommand.pluginInfo),
+    637      )
+    638    }
+    639  
+    640    logEvent('tengu_input_command', {
+    641      ...eventData,
+    642      invocation_trigger:
+    643        'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    644      ...(process.env.USER_TYPE === 'ant' && {
+    645        skill_name:
+    646          commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(855,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:845-865 ---
+    845                }
+    846                // Guard: if onDone fired during mod.call() (early-exit path
+    847                // that calls onDone then returns JSX), skip setToolJSX. This
+    848                // chain is fire-and-forget — the outer Promise resolves when
+    849                // onDone is called, so executeUserInput may have already run
+    850                // its setToolJSX({clearLocalJSX: true}) before we get here.
+    851                // Setting isLocalJSXCommand after clear leaves it stuck true,
+    852                // blocking useQueueProcessor and TextInput focus.
+    853                if (doneWasCalled) return
+    854                setToolJSX({
+    855>                 jsx,
+    856                  shouldHidePromptInput: true,
+    857                  showSpinner: false,
+    858                  isLocalJSXCommand: true,
+    859                  isImmediate: command.immediate === true,
+    860                })
+    861              })
+    862              .catch(e => {
+    863                // If load()/call() throws and onDone never fired, the outer
+    864                // Promise hangs forever, leaving queryGuard stuck in
+    865                // 'dispatching' and deadlocking the queue processor.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(922,15): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:912-932 ---
+    912                        // This is a perf optimization to avoid having to recaculcate the leaf node every time
+    913                        // Since we're creating a bunch of synthetic messages for compact, it's important to set
+    914                        // the timestamp of the last message to be slightly after the current time
+    915                        // This is mostly important for sdk / -p mode
+    916                        timestamp: new Date(Date.now() + 100).toISOString(),
+    917                      }),
+    918                    ]
+    919                  : []),
+    920              ]
+    921              const compactionResultWithSlashMessages = {
+    922>               ...result.compactionResult,
+    923                messagesToKeep: [
+    924                  ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(924,21): error TS18046: 'result.compactionResult' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:914-934 ---
+    914                        // the timestamp of the last message to be slightly after the current time
+    915                        // This is mostly important for sdk / -p mode
+    916                        timestamp: new Date(Date.now() + 100).toISOString(),
+    917                      }),
+    918                    ]
+    919                  : []),
+    920              ]
+    921              const compactionResultWithSlashMessages = {
+    922                ...result.compactionResult,
+    923                messagesToKeep: [
+    924>                 ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+    933              return {
+    934                messages: buildPostCompactMessages(
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(934,15): error TS2322: Type 'Message[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:924-944 ---
+    924                  ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+    933              return {
+    934>               messages: buildPostCompactMessages(
+    935                  compactionResultWithSlashMessages,
+    936                ),
+    937                shouldQuery: false,
+    938                command,
+    939              }
+    940            }
+    941  
+    942            // Port of ant v2.1.136 3753.js qm5 'query' branch — local command
+    943            // returns visible stdout PLUS an invisible meta-message prompt;
+    944            // `shouldQuery:true` so the agent picks up the directive without
+  Type 'Message' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+    Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+      Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'ProgressMessage'.
+        Property 'data' is missing in type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' but required in type '{ type: "progress"; data: unknown; }'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1196,7): error TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1186-1206 ---
+   1186      const summaryContent: ContentBlockParam[] = [
+   1187        { type: 'text', text: parts.join('\n') },
+   1188      ]
+   1189      return {
+   1190        messages: [
+   1191          createUserMessage({ content: metadata, uuid }),
+   1192          createUserMessage({ content: summaryContent, isMeta: true }),
+   1193        ],
+   1194        shouldQuery: true,
+   1195        model: command.model,
+   1196>       effort: command.effort,
+   1197        command,
+   1198      }
+   1199    }
+   1200  
+   1201    const result = await command.getPromptForCommand(args, context)
+   1202  
+   1203    // ant 3695.js cw_() — fire UserPromptExpansion now that the slash
+   1204    // command (or MCP prompt) has produced its final body. Hooks see
+   1205    // expansion_type, command_name/args/source, and the fully-expanded
+   1206    // prompt as a single string. Failures are advisory; we never block
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1325,5): error TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1315-1332 ---
+   1315      }),
+   1316      ...attachmentMessages,
+   1317      createAttachmentMessage({
+   1318        type: 'command_permissions',
+   1319        allowedTools: additionalAllowedTools,
+   1320        model: command.model,
+   1321      }),
+   1322    ]
+   1323  
+   1324    return {
+   1325>     messages, shouldQuery: true,
+   1326      allowedTools: additionalAllowedTools,
+   1327      model: command.model,
+   1328      effort: command.effort,
+   1329      command,
+   1330      ...(command.type === 'prompt' && { activeSkill: command.name }), // ant 5045.js:1623
+   1331    }
+   1332  }
+  Type 'unknown' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1328,5): error TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1318-1332 ---
+   1318        type: 'command_permissions',
+   1319        allowedTools: additionalAllowedTools,
+   1320        model: command.model,
+   1321      }),
+   1322    ]
+   1323  
+   1324    return {
+   1325      messages, shouldQuery: true,
+   1326      allowedTools: additionalAllowedTools,
+   1327      model: command.model,
+   1328>     effort: command.effort,
+   1329      command,
+   1330      ...(command.type === 'prompt' && { activeSkill: command.name }), // ant 5045.js:1623
+   1331    }
+   1332  }

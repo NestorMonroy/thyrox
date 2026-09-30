@@ -1,0 +1,25 @@
+    print("== 14. el margen de seguridad se RESTA de lo libre: (14000 - 2000) / 3200 = 3 ==")
+    h = TMP / "h-ejemplo"
+    out = run_with(["266000 10 1 0\n"])
+    (out / "1.gpu").write_text("3200 3000 90 20\n")
+    ph.record(h, out)
+    d = ph.derive(h, MODEL, catalog, margin=1.0, free_vram_mib=14000, vram_reserve_mib=2000)
+    check("tope de VRAM", 3, d.vram_cap)
+
+    print("== 15. anchura efectiva = min(configurada, RAM, VRAM) ==")
+    d = ph.derive(h, MODEL, catalog, margin=1.0, free_vram_mib=14000, vram_reserve_mib=2000,
+                  available_ram_kb=6 * 266000 + 1000)
+    check("tope de RAM: MemAvailable / pico", 6, d.ram_cap)
+    check("el efectivo es el menor de los topes", 3, d.width_cap)
+    check("con configurada 8: min(8, 6, 3) = 3", 3, ph.effective_width(8, d))
+    check("con configurada 2 manda la configurada", 2, ph.effective_width(2, d))
+    check("sin ningún tope, la configurada", 8, ph.effective_width(8, ph.derive(TMP / "vacio", MODEL, catalog)))
+
+    print("== 16. un .gpu con error o ilegible NO entra al pico: sólo lo medido ==")
+    out = run_with(["266000 10 1 0\n"])
+    (out / "1.gpu").write_text("error NVML: fallo\n")
+    (out / "2.gpu").write_text("0 0 0 9\n")
+    row = ph.record(TMP / "h-tres", out)
+    check("el 0 medido es el pico; el error no cuenta", 0, row.get("peak_vram_mib"))
+
+print(f"\ntest_pool_history:

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/emit_declarations mitm 2>&1 | tail -6; ls src/packages/mitm/dist/api | head -5; bash bin/check-cli-typecheck --strict 2>&1 | tail -10", "started_at": "2026-09-28T08:39:43+00:00"}

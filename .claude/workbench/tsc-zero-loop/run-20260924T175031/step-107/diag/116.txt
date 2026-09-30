@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/messages/AssistantToolUseMessage.tsx(279,7): error TS18046: 'msg.data' is of type 'unknown'.
+  --- código src/packages/repl/src/components/messages/AssistantToolUseMessage.tsx:269-289 ---
+    269      isTranscriptMode,
+    270    }: {
+    271      verbose: boolean
+    272      inProgressToolCallCount?: number
+    273      isTranscriptMode?: boolean
+    274    },
+    275    terminalSize: { columns: number; rows: number },
+    276  ): React.ReactNode {
+    277    const toolProgressMessages = progressMessagesForMessage.filter(
+    278      (msg): msg is ProgressMessage<ToolProgressData> =>
+    279>       msg.data.type !== 'hook_progress',
+    280    )
+    281    try {
+    282      const toolMessages =
+    283        tool.renderToolUseProgressMessage?.(toolProgressMessages, {
+    284          tools,
+    285          verbose,
+    286          terminalSize,
+    287          inProgressToolCallCount: inProgressToolCallCount ?? 1,
+    288          isTranscriptMode,
+    289        }) ?? null

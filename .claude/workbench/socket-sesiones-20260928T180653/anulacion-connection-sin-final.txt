@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+111 |     expect(warnings).toContain('[uds-messaging] Failed to parse JSON line: no-json')
+112 |   })
+113 | 
+114 |   test('el fragmento final sin salto de línea también se enruta', async () => {
+115 |     await exchange(['{"type":"user","text":"fin"}'])
+116 |     expect(routed.map(entry => entry.message)).toEqual([{ type: 'user', text: 'fin' }])
+                                                     ^
+error: expect(received).toEqual(expected)
+
+- [
+-   {
+-     "text": "fin",
+-     "type": "user",
+-   },
+- ]
++ []
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:116:48)
+(fail) sin autenticación exigida > el fragmento final sin salto de línea también se enruta [2.42ms]
+179 |   test('una línea en blanco, una ilegible o un fragmento final ilegible cierran la conexión', async () => {
+180 |     await exchange(['\n'], { waitMs: 400 })
+181 |     await exchange(['nope\n'], { waitMs: 400 })
+182 |     await exchange(['nope'], { waitMs: 400 })
+183 |     const drops = warnings.filter(message => message.startsWith('[uds-messaging] Dropped'))
+184 |     expect(drops).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "[uds-messaging] Dropped an unparseable line from a connection that did not authenticate; closing it",
+-   "[uds-messaging] Dropped an unparseable final fragment from a connection that did not authenticate; closing it",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:184:19)
+(fail) con autenticación exigida > una línea en blanco, una ilegible o un fragmento final ilegible cierran la conexión [5.36ms]
+
+ 15 pass
+ 2 fail
+ 29 expect() calls
+Ran 17 tests across 1 file. [521.00ms]

@@ -1,0 +1,69 @@
+src/packages/cli/src/entry/cli.tsx(175,13): error TS2339: Property 'exitWithError' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/shell/src/process")'.
+  --- código src/packages/cli/src/entry/cli.tsx:165-185 ---
+    165    ) {
+    166      profileCheckpoint('cli_bridge_path')
+    167      const { enableConfigs } = await import('@thyrox/config')
+    168      enableConfigs()
+    169  
+    170      const { getBridgeDisabledReason, checkBridgeMinVersion } = await import(
+    171        '@thyrox/bridge/bridgeEnabled.js'
+    172      )
+    173      const { BRIDGE_LOGIN_ERROR } = await import('@thyrox/bridge/types.js')
+    174      const { bridgeMain } = await import('@thyrox/bridge/bridgeMain.js')
+    175>     const { exitWithError } = await import('@thyrox/shell/process.js')
+    176  
+    177      // Auth check must come before the GrowthBook gate check — without auth,
+    178      // GrowthBook has no user context and would return a stale/default false.
+    179      // getBridgeDisabledReason awaits GB init, so the returned value is fresh
+    180      // (not the stale disk cache), but init still needs auth headers to work.
+    181      const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
+    182      if (!getClaudeAIOAuthTokens()?.accessToken) {
+    183        exitWithError(BRIDGE_LOGIN_ERROR)
+    184      }
+    185      const disabledReason = await getBridgeDisabledReason()
+src/packages/cli/src/entry/cli.tsx(322,15): error TS2339: Property 'execIntoTmuxWorktree' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/swarm/src/index")'.
+  --- código src/packages/cli/src/entry/cli.tsx:312-332 ---
+    312        args.includes('--worktree') ||
+    313        args.some(a => a.startsWith('--worktree=')))
+    314    ) {
+    315      profileCheckpoint('cli_tmux_worktree_fast_path')
+    316      const { enableConfigs } = await import('@thyrox/config')
+    317      enableConfigs()
+    318      const { isWorktreeModeEnabled } = await import(
+    319        '@thyrox/agent/worktreeModeEnabled.js'
+    320      )
+    321      if (isWorktreeModeEnabled()) {
+    322>       const { execIntoTmuxWorktree } = await import('@thyrox/swarm')
+    323        const result = await execIntoTmuxWorktree(args)
+    324        if (result.handled) {
+    325          return
+    326        }
+    327        // If not handled (e.g., error), fall through to normal CLI
+    328        if (result.error) {
+    329          const { exitWithError } = await import('@thyrox/shell/process.js')
+    330          exitWithError(result.error)
+    331        }
+    332      }
+src/packages/cli/src/entry/cli.tsx(329,17): error TS2339: Property 'exitWithError' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/shell/src/process")'.
+  --- código src/packages/cli/src/entry/cli.tsx:319-339 ---
+    319        '@thyrox/agent/worktreeModeEnabled.js'
+    320      )
+    321      if (isWorktreeModeEnabled()) {
+    322        const { execIntoTmuxWorktree } = await import('@thyrox/swarm')
+    323        const result = await execIntoTmuxWorktree(args)
+    324        if (result.handled) {
+    325          return
+    326        }
+    327        // If not handled (e.g., error), fall through to normal CLI
+    328        if (result.error) {
+    329>         const { exitWithError } = await import('@thyrox/shell/process.js')
+    330          exitWithError(result.error)
+    331        }
+    332      }
+    333    }
+    334  
+    335    // Redirect common update flag mistakes to the update subcommand
+    336    if (
+    337      args.length === 1 &&
+    338      (args[0] === '--update' || args[0] === '--upgrade')
+    339    ) {

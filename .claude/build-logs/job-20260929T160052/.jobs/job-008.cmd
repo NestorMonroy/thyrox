@@ -1,0 +1,1 @@
+bash tests/task/test-refresh-board.sh

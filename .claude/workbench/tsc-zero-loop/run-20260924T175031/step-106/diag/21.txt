@@ -1,0 +1,47 @@
+src/packages/storage/src/__tests__/conversationChain.test.ts(95,37): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"u1"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"u2"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"u3"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(140,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"prev"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"prev"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(141,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"aA"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"aA"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(142,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"aB"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"aB"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(143,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"trA"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"trA"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(144,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"trB"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"trB"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(145,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"next"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: `${string}-${string}-${string}-${string}-${string}`): void', gave the following error.
+    Argument of type '"next"' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(152,37): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"u1"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"u2"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/storage/src/__tests__/conversationChain.test.ts(166,37): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"prev"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  Overload 2 of 2, '(expected: NoInfer<`${string}-${string}-${string}-${string}-${string}`[]>): void', gave the following error.
+    Type '"a1"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2481, "total_final": 2471, "tsc_runs": 1, "accepted": ["agent:concrete-mcp-connection"], "files_kept": ["src/packages/cli/src/headless/sdk/control/handlers.ts", "src/packages/cli/src/headless/sdk/session/run-streaming.ts"], "outcomes": {"agent:concrete-mcp-connection": "accepted-net"}}

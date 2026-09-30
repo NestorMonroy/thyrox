@@ -1,0 +1,2 @@
+src/packages/provider/bin/generateStorageKey.ts
+src/packages/provider/src/__tests__/generateStorageKey.test.ts

@@ -1,0 +1,541 @@
+diff --git a/src/packages/daemon/src/__tests__/bgAdopt.test.ts b/src/packages/daemon/src/__tests__/bgAdopt.test.ts
+index 8d08e4ef..475979fc 100644
+--- a/src/packages/daemon/src/__tests__/bgAdopt.test.ts
++++ b/src/packages/daemon/src/__tests__/bgAdopt.test.ts
+@@ -1,6 +1,7 @@
+ // Puerto fiel de `ccnmt: packages/daemon/src/__tests__/bgAdopt.test.ts`.
+ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
+ import {
++  existsSync,
+   mkdirSync,
+   mkdtempSync,
+   readdirSync,
+@@ -25,7 +26,8 @@ afterAll(() => {
+   rmSync(ISOLATED_HOME, { recursive: true, force: true })
+ })
+ 
+-import { adoptFromRoster, adoptRunningPtyRecords } from '../bgAdopt.js'
++import { adoptFromRoster, adoptRunningPtyRecords, reapOrphanPtySockets } from '../bgAdopt.js'
++import { getDaemonScopeDir } from '../socketPaths.js'
+ import {
+   type WorkerRecord,
+   readWorkerRecord,
+@@ -200,3 +202,47 @@ describe('adoptFromRoster', () => {
+     expect(workers.size).toBe(1) // sin cambios
+   })
+ })
++
++describe('reapOrphanPtySockets', () => {
++  test('reaps a .pty.sock with no live handle: unlinks it and marks the record failed', () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    mkdirSync(join(JOBS_DIR, 'orp11111'), { recursive: true })
++    writeWorkerRecord(baseRecord('orp11111', process.pid))
++    const sockPath = join(scope, 'orp11111.pty.sock')
++    writeFileSync(sockPath, '')
++    const logs: string[] = []
++    reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
++    expect(existsSync(sockPath)).toBe(false)
++    const after = readWorkerRecord('orp11111')
++    expect(after?.status).toBe('failed')
++    expect(after?.failedReason).toBe('reaped (roster gap)')
++    expect(logs).toEqual(['bg orphan-reap: 1 roster-less pty host(s)'])
++    rmSync(sockPath, { force: true })
++  })
++
++  test('skips a .pty.sock whose short is already in the live workers map', () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    const sockPath = join(scope, 'orp22222.pty.sock')
++    writeFileSync(sockPath, '')
++    const workers = new Map<string, WorkerVm>()
++    workers.set('orp22222', {} as WorkerVm)
++    const logs: string[] = []
++    reapOrphanPtySockets(workers, (m) => logs.push(m))
++    expect(existsSync(sockPath)).toBe(true)
++    expect(logs).toEqual([])
++    rmSync(sockPath, { force: true })
++  })
++
++  test('no .pty.sock files: no log emitted', () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    for (const f of readdirSync(scope)) {
++      if (f.endsWith('.pty.sock')) rmSync(join(scope, f), { force: true })
++    }
++    const logs: string[] = []
++    reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
++    expect(logs).toEqual([])
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/jobDirectoryCleanup.test.ts b/src/packages/daemon/src/__tests__/jobDirectoryCleanup.test.ts
+new file mode 100644
+index 00000000..64a34db1
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/jobDirectoryCleanup.test.ts
+@@ -0,0 +1,194 @@
++import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { dirname, join } from 'node:path'
++
++const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-jobdircleanup-test-'))
++const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
++
++beforeAll(() => {
++  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
++})
++afterAll(() => {
++  if (ORIGINAL_CONFIG_DIR === undefined) {
++    delete process.env.THYROX_CONFIG_DIR
++  } else {
++    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
++  }
++  rmSync(ISOLATED_HOME, { recursive: true, force: true })
++})
++
++import {
++  cleanupJobDirectory,
++  cleanupPtyPidBreadcrumbs,
++  ensureHostManagedDir,
++  ensurePtyPidsDir,
++  formatRetireMessage,
++  getHostManagedDir,
++  removeLegacyJobFile,
++} from '../jobDirectoryCleanup.js'
++import { getPtyPidsDir, getPtySocketPath } from '../socketPaths.js'
++
++const JOBS_DIR = join(ISOLATED_HOME, 'jobs')
++
++function clearAll(): void {
++  rmSync(JOBS_DIR, { recursive: true, force: true })
++  rmSync(join(ISOLATED_HOME, 'daemon'), { recursive: true, force: true })
++  mkdirSync(JOBS_DIR, { recursive: true, mode: 0o700 })
++}
++
++beforeEach(clearAll)
++afterEach(clearAll)
++
++describe('ensurePtyPidsDir — ref wr (chunk-92tvramn.js)', () => {
++  test('crea el directorio de breadcrumbs pty-pids', async () => {
++    await ensurePtyPidsDir()
++    expect(existsSync(getPtyPidsDir())).toBe(true)
++  })
++
++  test('un mkdir fallido se ignora en silencio (catch vacío)', async () => {
++    // Deja un archivo regular en la ruta del directorio: mkdir({recursive:true})
++    // falla porque el segmento final ya existe y no es un directorio.
++    mkdirSync(join(getPtyPidsDir(), '..'), { recursive: true })
++    writeFileSync(getPtyPidsDir(), 'no-es-un-directorio')
++    await expect(ensurePtyPidsDir()).resolves.toBeUndefined()
++    rmSync(getPtyPidsDir(), { force: true })
++  })
++})
++
++describe('ensureHostManagedDir — ref mr (chunk-92tvramn.js)', () => {
++  test('crea el directorio host-managed con modo 0700', async () => {
++    await ensureHostManagedDir()
++    expect(existsSync(getHostManagedDir())).toBe(true)
++  })
++
++  test('a diferencia de wr, un mkdir fallido SE PROPAGA (sin catch en la referencia)', async () => {
++    mkdirSync(join(getHostManagedDir(), '..'), { recursive: true })
++    writeFileSync(getHostManagedDir(), 'no-es-un-directorio')
++    await expect(ensureHostManagedDir()).rejects.toBeDefined()
++    rmSync(getHostManagedDir(), { force: true })
++  })
++})
++
++describe('removeLegacyJobFile — ref _r (chunk-92tvramn.js)', () => {
++  test('una ruta inexistente no es un residuo: devuelve false', async () => {
++    expect(await removeLegacyJobFile(join(JOBS_DIR, 'no-existe'))).toBe(false)
++  })
++
++  test('un directorio no es un residuo: devuelve false y no lo toca', async () => {
++    const dir = join(JOBS_DIR, 'abc11111')
++    mkdirSync(dir, { recursive: true })
++    writeFileSync(join(dir, 'meta.json'), '{}')
++    expect(await removeLegacyJobFile(dir)).toBe(false)
++    expect(existsSync(join(dir, 'meta.json'))).toBe(true)
++  })
++
++  test('un archivo plano SÍ es un residuo: lo borra y devuelve true', async () => {
++    const file = join(JOBS_DIR, 'legacy-job-file')
++    writeFileSync(file, 'formato antiguo')
++    expect(await removeLegacyJobFile(file)).toBe(true)
++    expect(existsSync(file)).toBe(false)
++  })
++})
++
++describe('cleanupJobDirectory — ref $t (chunk-92tvramn.js)', () => {
++  test('borra el árbol jobs/<jobId> completo', async () => {
++    const dir = join(JOBS_DIR, 'job11111')
++    mkdirSync(dir, { recursive: true })
++    writeFileSync(join(dir, 'meta.json'), '{}')
++    const errors: string[] = []
++    await cleanupJobDirectory('job11111', (code) => errors.push(code))
++    expect(existsSync(dir)).toBe(false)
++    expect(errors).toEqual([])
++  })
++
++  test('si jobs/<jobId> es un residuo de formato antiguo (archivo plano), se borra y no se invoca onError', async () => {
++    const path = join(JOBS_DIR, 'job22222')
++    writeFileSync(path, 'formato antiguo')
++    const errors: string[] = []
++    await cleanupJobDirectory('job22222', (code) => errors.push(code))
++    expect(existsSync(path)).toBe(false)
++    expect(errors).toEqual([])
++  })
++
++  test('un fallo al borrar invoca onError con el código', async () => {
++    // Un jobId con un byte nulo hace que `rm` rechace de forma síncrona
++    // (ERR_INVALID_ARG_VALUE) antes de tocar el disco — dispara la rama de
++    // error sin depender de permisos del sistema de archivos.
++    const errors: string[] = []
++    await cleanupJobDirectory('job\u000033333', (code) => errors.push(code))
++    expect(errors.length).toBe(1)
++  })
++})
++
++describe('cleanupPtyPidBreadcrumbs — ref tt (chunk-92tvramn.js)', () => {
++  test('borra las cuatro variantes de breadcrumb de un job', async () => {
++    mkdirSync(getPtyPidsDir(), { recursive: true })
++    const short = 'pty11111'
++    const pidFile = join(getPtyPidsDir(), `${short}.pid`)
++    const socket = getPtySocketPath(short)
++    mkdirSync(dirname(socket), { recursive: true })
++    writeFileSync(pidFile, '123')
++    writeFileSync(`${socket}.err`, 'e')
++    writeFileSync(`${socket}.late`, 'l')
++    writeFileSync(`${socket}.exec-exit`, '0')
++    await cleanupPtyPidBreadcrumbs(short)
++    expect(existsSync(pidFile)).toBe(false)
++    expect(existsSync(`${socket}.err`)).toBe(false)
++    expect(existsSync(`${socket}.late`)).toBe(false)
++    expect(existsSync(`${socket}.exec-exit`)).toBe(false)
++  })
++
++  test('usa el ptySocket dado, no el derivado del short, cuando se pasa un override', async () => {
++    mkdirSync(getPtyPidsDir(), { recursive: true })
++    const short = 'pty22222'
++    const override = join(getPtyPidsDir(), 'override.sock')
++    writeFileSync(`${override}.exec-exit`, '0')
++    await cleanupPtyPidBreadcrumbs(short, override)
++    expect(existsSync(`${override}.exec-exit`)).toBe(false)
++  })
++
++  test('ninguno de los cuatro archivos existe: no lanza (catch silencioso por iteración)', async () => {
++    await expect(cleanupPtyPidBreadcrumbs('pty-nada')).resolves.toBeUndefined()
++  })
++})
++
++describe('formatRetireMessage — ref Ve (chunk-92tvramn.js)', () => {
++  const worker = { short: 'abc12345', cliVersion: '2.1.283', isVersionStale: false }
++
++  test('sin retiro, devuelve null (ref: `if(!o.retired)return!1`)', () => {
++    const msg = formatRetireMessage(worker, { retired: false, idleMs: 999_999, cause: 'idle' })
++    expect(msg).toBeNull()
++  })
++
++  test('idle en minutos por debajo de 120', () => {
++    const msg = formatRetireMessage(worker, { retired: true, idleMs: 5 * 60_000, cause: 'idle' })
++    expect(msg).toBe('bg retire abc12345: idle, idle 5m')
++  })
++
++  test('idle en horas a partir de 120 minutos', () => {
++    const msg = formatRetireMessage(worker, { retired: true, idleMs: 130 * 60_000, cause: 'idle' })
++    expect(msg).toBe('bg retire abc12345: idle, idle 2h')
++  })
++
++  test('CLI version desactualizada agrega la advertencia con ambas versiones', () => {
++    const stale = { ...worker, isVersionStale: true }
++    const msg = formatRetireMessage(stale, { retired: true, idleMs: 60_000, cause: 'idle' })
++    expect(msg).toContain(', worker 2.1.283 (daemon ')
++  })
++
++  test('una cliVersion con formato inválido se reporta como "unrecognized"', () => {
++    const stale = { short: 'abc12345', cliVersion: 'a b c', isVersionStale: true }
++    const msg = formatRetireMessage(stale, { retired: true, idleMs: 60_000, cause: 'idle' })
++    expect(msg).toContain(', worker unrecognized (daemon ')
++  })
++
++  test('una etiqueta extra se agrega entre corchetes al final', () => {
++    const msg = formatRetireMessage(
++      worker,
++      { retired: true, idleMs: 60_000, cause: 'idle' },
++      'low memory',
++    )
++    expect(msg).toBe('bg retire abc12345: idle, idle 1m [low memory]')
++  })
++})
+diff --git a/src/packages/daemon/src/bgAdopt.ts b/src/packages/daemon/src/bgAdopt.ts
+index b44e1a53..07a68b30 100644
+--- a/src/packages/daemon/src/bgAdopt.ts
++++ b/src/packages/daemon/src/bgAdopt.ts
+@@ -8,7 +8,8 @@
+  * @dynamicRequire
+  */
+ 
+-import { existsSync as existsSyncFn } from 'node:fs'
++import { existsSync as existsSyncFn, readdirSync, unlinkSync } from 'node:fs'
++import { join } from 'node:path'
+ 
+ import { logEvent } from '@thyrox/local-observability'
+ 
+@@ -20,6 +21,7 @@ import {
+   writeWorkerRecord,
+ } from './bgWorkerRegistry.js'
+ import { readRoster } from './roster.js'
++import { getDaemonScopeDir } from './socketPaths.js'
+ import { WorkerVm } from './workerVm.js'
+ 
+ /**
+@@ -191,6 +193,63 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
+   }
+ }
+ 
++/**
++ * Barre `<daemon-scope>/*.pty.sock` en busca de hosts "roster-less": un
++ * socket de PTY en disco sin handle vivo en `workers`. Ref `pr`
++ * (chunk-92tvramn.js), rama no-Windows.
++ *
++ * Simplificaciones frente a la referencia, declaradas porque no se omiten
++ * en silencio:
++ * - pendiente: la referencia también barre huérfanos de `.err`/`.late`/
++ *   `.exec-exit`/`.err.read` sin su `.sock` correspondiente (primera mitad
++ *   del bucle de `pr`) — aquí sólo se reapan los `.sock` sin handle.
++ * - pendiente: antes de marcar `failed` la referencia espera al archivo
++ *   `.exec-exit` (`NIe`/`cl`/`ua`) para no pisar un proceso que está
++ *   terminando de escribir su salida; aquí se marca de inmediato.
++ * - pendiente: la rama `storageV5` (`o.storageV5`) no aplica — ccb no
++ *   tiene ese store.
++ */
++export function reapOrphanPtySockets(
++  workers: Map<string, WorkerVm>,
++  log: (message: string) => void,
++): void {
++  let entries: string[]
++  try {
++    entries = readdirSync(getDaemonScopeDir())
++  } catch {
++    return
++  }
++  let reaped = 0
++  for (const entry of entries) {
++    if (!entry.endsWith('.pty.sock')) continue
++    const short = entry.slice(0, -'.pty.sock'.length)
++    if (workers.has(short)) continue
++    reaped++
++    const record = readWorkerRecord(short)
++    if (record && record.status === 'running') {
++      try {
++        writeWorkerRecord({
++          ...record,
++          status: 'failed',
++          failedReason: 'reaped (roster gap)',
++          exitedAt: Date.now(),
++        })
++      } catch {
++        // best-effort
++      }
++    }
++    try {
++      unlinkSync(join(getDaemonScopeDir(), entry))
++    } catch {
++      // best-effort
++    }
++  }
++  if (reaped > 0) {
++    log(`bg orphan-reap: ${reaped} roster-less pty host(s)`)
++    logEvent('tengu_bg_orphan_reap', { reaped: String(reaped) })
++  }
++}
++
+ /**
+  * Mark a worker's meta.json as `status='failed'` with a human-readable
+  * reason. ant 5166.js UB8 — when the supervisor adopts a roster entry
+diff --git a/src/packages/daemon/src/jobDirectoryCleanup.ts b/src/packages/daemon/src/jobDirectoryCleanup.ts
+new file mode 100644
+index 00000000..2820f3b8
+--- /dev/null
++++ b/src/packages/daemon/src/jobDirectoryCleanup.ts
+@@ -0,0 +1,179 @@
++/**
++ * Limpieza de directorios de job y breadcrumbs de PTY.
++ *
++ * Puerto de chunk-92tvramn.js `mr`, `wr`, `tt`, `_r`, `$t` y `Ve` (ant
++ * 2.1.283). La referencia guarda parte de este estado en un store con
++ * scopes (`storageV5`, activo cuando `N()` es verdadero); ccb no tiene ese
++ * backend, así que sólo se porta la rama de disco de cada función — la
++ * rama `storageV5` se declara `pendiente` en cada sitio donde existía.
++ *
++ * @dynamicRequire
++ */
++
++import { lstat, mkdir, rm, unlink } from 'node:fs/promises'
++import { join, resolve } from 'node:path'
++
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++
++import { getDaemonHomeDir, getPtyPidsDir, getPtySocketPath } from './socketPaths.js'
++
++/**
++ * `<daemon-home>/host-managed` — directorio donde la referencia deja las
++ * tombstones de host (ant `Hae`, no portado en este item: su escritor vive
++ * en el bucle de despacho de `Dt`, chunk-92tvramn.js, fuera del alcance de
++ * este item).
++ */
++export function getHostManagedDir(): string {
++  return join(getDaemonHomeDir(), 'host-managed')
++}
++
++/** `<config-home>/jobs/<jobId>` — duplica la ruta privada de bgWorkerRegistry.ts
++ * porque ese archivo no la exporta y no pertenece a este item. */
++function getJobDir(jobId: string): string {
++  return join(resolve(getConfigHomeDir(), 'jobs'), jobId)
++}
++
++function errorCode(error: unknown): string {
++  const code = (error as NodeJS.ErrnoException | undefined)?.code
++  return code ?? 'unknown'
++}
++
++/**
++ * Asegura el directorio de breadcrumbs pty-pids. Ref `wr`
++ * (chunk-92tvramn.js): dos catch, ambos silenciosos — la rama `storageV5`
++ * (`r.ensureScope(gr).catch(()=>{})`) no aplica (ccb no tiene ese store);
++ * se porta sólo la rama de disco (`Fe(cLe(),{recursive:!0}).catch(()=>{})`),
++ * con el mismo catch silencioso.
++ */
++export async function ensurePtyPidsDir(): Promise<void> {
++  try {
++    await mkdir(getPtyPidsDir(), { recursive: true })
++  } catch {
++    // silencioso — ref wr: sin logError, sin clasificación.
++  }
++}
++
++/**
++ * Asegura el directorio host-managed. Ref `mr` (chunk-92tvramn.js): la
++ * rama de disco (`Fe($Ot(),{recursive:!0,mode:448})`) NO tiene catch — el
++ * error se propaga. La rama `storageV5` (`Hzt(r)`) es pendiente: no existe
++ * ese store en ccb.
++ */
++export async function ensureHostManagedDir(): Promise<void> {
++  await mkdir(getHostManagedDir(), { recursive: true, mode: 0o700 })
++}
++
++/**
++ * Comprueba si `path` es un archivo residual de un formato de job anterior
++ * (no un directorio); si lo es, lo borra forzosamente y devuelve `true`
++ * como señal de formato antiguo. Ref `_r` (chunk-92tvramn.js): el `lstat`
++ * fallido se convierte en `null` de forma silenciosa (1 catch).
++ */
++export async function removeLegacyJobFile(path: string): Promise<boolean> {
++  const stat = await lstat(path).catch(() => null)
++  if (stat === null || stat.isDirectory()) return false
++  await rm(path, { recursive: true, force: true })
++  return true
++}
++
++/**
++ * Borra el árbol `jobs/<jobId>`. Ref `$t` (chunk-92tvramn.js): primero
++ * comprueba si la ruta es un residuo de formato antiguo (`_r`) — si lo es,
++ * ya no hay scope que borrar y vuelve; si no, borra el scope `job/<jobId>`
++ * del store y, si falla, invoca `onError` con el código.
++ *
++ * `$t` recibe la ruta del residuo como parámetro propio (`o`); en los dos
++ * sitios donde la referencia la invoca es siempre `Ir(jobId)` — la misma
++ * ruta del job — así que aquí se deriva de `jobId` en vez de repetirla como
++ * argumento separado.
++ */
++export async function cleanupJobDirectory(
++  jobId: string,
++  onError: (code: string) => void,
++): Promise<void> {
++  const dir = getJobDir(jobId)
++  if (await removeLegacyJobFile(dir)) return
++  try {
++    await rm(dir, { recursive: true, force: true })
++  } catch (error) {
++    onError(errorCode(error))
++  }
++}
++
++/**
++ * Borra las cuatro variantes de breadcrumb pty-pid de un job, una por una,
++ * ignorando errores. Ref `tt` (chunk-92tvramn.js): en la referencia borra
++ * cuatro claves de un store con scopes, derivadas de `Eee`/`yw`/`nx`/`HV`
++ * (chunk-wngxtykq.js); ccb no tiene ese store, así que aquí se borran los
++ * cuatro archivos de disco equivalentes en la rama no-Windows de esos
++ * helpers: `<pty-pids>/<short>.pid` (`Eee`, no depende de plataforma) y
++ * `<ptySocket>.err` / `.late` / `.exec-exit` (`yw`/`nx`/`HV`, rama POSIX).
++ * La rama Windows de `yw`/`nx`/`HV` (breadcrumbs bajo pty-pids en vez de
++ * junto al socket) es pendiente: ccb no soporta daemon en Windows
++ * (socketPaths.ts ya lo declara fuera de alcance).
++ */
++export async function cleanupPtyPidBreadcrumbs(
++  short: string,
++  ptySocket?: string,
++): Promise<void> {
++  const base = ptySocket ?? getPtySocketPath(short)
++  const paths = [
++    join(getPtyPidsDir(), `${short}.pid`),
++    `${base}.err`,
++    `${base}.late`,
++    `${base}.exec-exit`,
++  ]
++  for (const path of paths) {
++    await unlink(path).catch(() => {})
++  }
++}
++
++/** Entrada mínima de un worker para formatear su mensaje de retiro. */
++export interface RetireLogWorker {
++  short: string
++  cliVersion?: string
++  isVersionStale: boolean
++}
++
++/** Resultado de `retireIfSettled` que decide si hubo retiro. */
++export interface RetireOutcome {
++  retired: boolean
++  idleMs: number
++  cause: string
++}
++
++/** Ref `kr` (chunk-92tvramn.js): formato válido de versión de CLI. */
++const CLI_VERSION_PATTERN = /^[0-9A-Za-z.+_-]{1,100}$/
++
++/**
++ * Compone la línea humana "bg retire <short>: <causa>, idle <Nm/h>" para un
++ * worker retirado, agregando una advertencia si el CLI del worker quedó
++ * desactualizado respecto al daemon. Ref `Ve` (chunk-92tvramn.js): sin
++ * `outcome.retired` devuelve `false` sin emitir nada; aquí, al no tener el
++ * callback de emisión `r` de la referencia (vive en workerVm.ts, fuera del
++ * alcance de este item), se devuelve `null` en vez de emitir y `false`, y
++ * el mensaje formateado en caso de haber retiro — quien la invoque decide
++ * cómo emitirla.
++ *
++ * Pendiente: no está conectada a `workerVm.ts:kill` — eso tocaría un
++ * archivo fuera del alcance de este item.
++ */
++export function formatRetireMessage(
++  worker: RetireLogWorker,
++  outcome: RetireOutcome,
++  extraLabel?: string,
++): string | null {
++  if (!outcome.retired) return null
++  const idleMinutes = Math.round(outcome.idleMs / 60000)
++  const idle = idleMinutes >= 120 ? `${Math.round(idleMinutes / 60)}h` : `${idleMinutes}m`
++  const cliVersion =
++    worker.cliVersion && CLI_VERSION_PATTERN.test(worker.cliVersion)
++      ? worker.cliVersion
++      : 'unrecognized'
++  const daemonVersion = process.env.THYROX_CODE_VERSION ?? 'dev'
++  const staleWarning = worker.isVersionStale
++    ? `, worker ${cliVersion} (daemon ${daemonVersion})`
++    : ''
++  const suffix = extraLabel ? ` [${extraLabel}]` : ''
++  return `bg retire ${worker.short}: ${outcome.cause}, idle ${idle}${staleWarning}${suffix}`
++}

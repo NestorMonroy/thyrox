@@ -1,0 +1,47 @@
+src/packages/config/manager.ts(75,12): error TS18047: 'result' is possibly 'null'.
+  --- código src/packages/config/manager.ts:65-85 ---
+     65      source: EditableSettingSource = 'userSettings',
+     66    ): { error: Error | null } {
+     67      return updateSettingsForSource(source, { [key]: value } as Partial<SettingsJson> as SettingsJson)
+     68    },
+     69  
+     70    /**
+     71     * Get the raw settings for a specific source layer.
+     72     */
+     73    getForSource(source: SettingSource): SettingsJson | null {
+     74      const result = getSettingsForSource(source)
+     75>     return result.settings || null
+     76    },
+     77  
+     78    /**
+     79     * Get all enabled source layers with their raw settings, ordered low→high priority.
+     80     */
+     81    getSources(): Array<{ source: SettingSource; settings: SettingsJson }> {
+     82      return getSettingsWithSources().sources
+     83    },
+     84  
+     85    /**
+src/packages/config/manager.ts(113,5): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  --- código src/packages/config/manager.ts:103-123 ---
+    103     * Get settings with validation errors included.
+    104     */
+    105    getWithErrors() {
+    106      return getSettingsWithErrors()
+    107    },
+    108  
+    109    /**
+    110     * Get the file path for a given settings source.
+    111     */
+    112    getFilePath(source: SettingSource): string | null {
+    113>     return getSettingsFilePathForSource(source)
+    114    },
+    115  
+    116    // ── GlobalConfig (single-file user preferences) ─────────────────
+    117  
+    118    /**
+    119     * Read the global config (~/.claude.json).
+    120     */
+    121    getGlobalConfig(): GlobalConfig {
+    122      return getGlobalConfig()
+    123    },
+  Type 'undefined' is not assignable to type 'string | null'.

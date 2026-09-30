@@ -1,0 +1,3 @@
+== anulación B (comodín con any)
+  FAIL un comodin con una declaracion de dos sale 1
+test_check_exports_types: 10 ok, 1 falla(s)

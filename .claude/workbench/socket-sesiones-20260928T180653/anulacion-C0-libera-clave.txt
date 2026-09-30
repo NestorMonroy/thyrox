@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+77 |     expect(order).toEqual(['otra'])
+78 |     release()
+79 |     await Promise.all([first, second])
+80 |     expect(order).toEqual(['otra', 'uno', 'dos'])
+81 |     await locks.settle()
+82 |     expect(locks.size).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:82:24)
+(fail) createKeyedLocks (Fm) > serializa por clave, libera la clave al terminar y sigue tras un fallo [1.17ms]
+91 |       done.push(1)
+92 |       void locks.run('k2', async () => void done.push(2))
+93 |     })
+94 |     await locks.drain()
+95 |     expect(done).toEqual([1, 2])
+96 |     expect(locks.size).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:96:24)
+(fail) createKeyedLocks (Fm) > drain espera también lo que se encola mientras drena, hasta cinco pasadas [0.50ms]
+
+ 8 pass
+ 2 fail
+ 34 expect() calls
+Ran 10 tests across 1 file. [66.00ms]

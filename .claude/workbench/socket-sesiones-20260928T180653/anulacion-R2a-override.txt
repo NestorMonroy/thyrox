@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+83 |     const { deps, events, overrides } = harness()
+84 |     const app = store({ mainLoopModel: 'claude-sonnet-5', mainLoopModelForSession: 'x', fastMode: true, other: 1 })
+85 |     applyRefusalFallbackRestore(restore(), app.setAppState, deps)
+86 |     expect(app.get()).toEqual({ mainLoopModel: 'claude-opus-5', mainLoopModelForSession: null, fastMode: true, other: 1 })
+87 |     expect(events).toEqual([])
+88 |     expect(overrides).toEqual(['claude-opus-5'])
+                           ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "claude-opus-5",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:88:23)
+(fail) applyRefusalFallbackRestore (wt) > lleva el modelo previo al estado, resuelve el modo rápido y fija el override [0.65ms]
+
+ 10 pass
+ 1 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [72.00ms]

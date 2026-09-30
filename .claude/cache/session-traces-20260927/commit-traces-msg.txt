@@ -1,0 +1,4 @@
+Record the traces of the env-rename commits
+
+The commit message, the phase-B bench pointer and the hook log of the
+renamer commits, kept with the rest of the session traces.

@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(175,33): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:165-185 ---
+    165      }
+    166    }
+    167  
+    168    const settings = getSettings()
+    169    const outputStyle = settings?.outputStyle || DEFAULT_OUTPUT_STYLE_NAME
+    170    const availableOutputStyles = await getAllOutputStyles(getCwd())
+    171  
+    172    // Get account information
+    173    const accountInfo = getAccountInformation()
+    174    if (request.hooks) {
+    175>     const hooks: Partial<Record<HookEvent, HookCallbackMatcher[]>> = {}
+    176      for (const [event, matchers] of Object.entries(request.hooks) as [string, Array<{ hookCallbackIds: string[]; timeout?: number; matcher?: string }>][]) {
+    177        hooks[event as HookEvent] = matchers.map(matcher => {
+    178          const callbacks = matcher.hookCallbackIds.map(callbackId => {
+    179            return structuredIO.createHookCallback(callbackId, matcher.timeout)
+    180          })
+    181          return {
+    182            matcher: matcher.matcher,
+    183            hooks: callbacks,
+    184          }
+    185        })
+src/packages/cli/src/headless/sdk/control/handlers.ts(177,13): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:167-187 ---
+    167  
+    168    const settings = getSettings()
+    169    const outputStyle = settings?.outputStyle || DEFAULT_OUTPUT_STYLE_NAME
+    170    const availableOutputStyles = await getAllOutputStyles(getCwd())
+    171  
+    172    // Get account information
+    173    const accountInfo = getAccountInformation()
+    174    if (request.hooks) {
+    175      const hooks: Partial<Record<HookEvent, HookCallbackMatcher[]>> = {}
+    176      for (const [event, matchers] of Object.entries(request.hooks) as [string, Array<{ hookCallbackIds: string[]; timeout?: number; matcher?: string }>][]) {
+    177>       hooks[event as HookEvent] = matchers.map(matcher => {
+    178          const callbacks = matcher.hookCallbackIds.map(callbackId => {
+    179            return structuredIO.createHookCallback(callbackId, matcher.timeout)
+    180          })
+    181          return {
+    182            matcher: matcher.matcher,
+    183            hooks: callbacks,
+    184          }
+    185        })
+    186      }
+    187      registerHookCallbacks(hooks)

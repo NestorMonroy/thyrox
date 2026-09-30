@@ -1,0 +1,10 @@
+== formas de specifier de config, HEAD contra arbol (mismo instrumento) ==
+HEAD: 121 | arbol: 120
+-- desaparecen --
+applySettingsChange.js
+-- aparecen --
+
+== control: la prosa editada era inerte para el compilador ==
+con prosa editada (tsmp):   5684
+tras revertirla  (tsrev):   5684
+antes del cambio (tscfg2):  5704

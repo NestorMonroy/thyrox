@@ -1,0 +1,1 @@
+    const surviving = entry.aliases.filter(alias => alias !== sessionId)

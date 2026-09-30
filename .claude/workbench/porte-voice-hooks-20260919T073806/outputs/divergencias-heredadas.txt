@@ -1,0 +1,49 @@
+=== src/index.ts
+    solo en la FUENTE: 1   solo en el NUESTRO: 0
+    lineas solo en la FUENTE (primeras 6):
+      < // V7 §8.20 — voice integration public surface.
+=== src/voiceModeEnabled.ts
+    solo en la FUENTE: 25   solo en el NUESTRO: 34
+    lineas solo en la FUENTE (primeras 6):
+      < import { feature } from 'bun:bundle'
+      <  * Kill-switch check for voice mode. Returns true unless the
+      <  * `tengu_amber_quartz_disabled` GrowthBook flag is flipped on (emergency
+      <  * off). Default `false` means a missing/stale disk cache reads as "not
+      <  * killed" — so fresh installs get voice working immediately without
+      <  * waiting for GrowthBook init. Use this for deciding whether voice mode
+=== src/voiceKeyterms.ts
+    solo en la FUENTE: 25   solo en el NUESTRO: 23
+    lineas solo en la FUENTE (primeras 6):
+      < // Voice keyterms for improving STT accuracy in the voice_stream endpoint.
+      < //
+      < // Provides domain-specific vocabulary hints (Deepgram "keywords") so the STT
+      < // engine correctly recognises coding terminology, project names, and branch
+      < // names that would otherwise be misheard.
+      < 
+=== src/voice.ts
+    solo en la FUENTE: 107   solo en el NUESTRO: 146
+    lineas solo en la FUENTE (primeras 6):
+      < // Voice service: audio recording for push-to-talk voice input.
+      < //
+      < // Recording uses native audio capture (cpal) on macOS, Linux, and Windows
+      < // for in-process mic access. Falls back to SoX `rec` or arecord (ALSA)
+      < // on Linux if the native module is unavailable.
+      < 
+=== src/voiceStreamSTT.ts
+    solo en la FUENTE: 137   solo en el NUESTRO: 143
+    lineas solo en la FUENTE (primeras 6):
+      < // Anthropic voice_stream speech-to-text client for push-to-talk.
+      < //
+      < // Only reachable in ant builds (gated by feature('VOICE_MODE') in useVoice.ts import).
+      < //
+      < // Connects to Anthropic's voice_stream WebSocket endpoint using the same
+      < // OAuth credentials as Claude Code.  The endpoint uses conversation_engine
+=== src/hooks/__tests__/useVoiceHelpers.behavior.test.ts
+    solo en la FUENTE: 24   solo en el NUESTRO: 11
+    lineas solo en la FUENTE (primeras 6):
+      < import { describe, expect, test } from 'bun:test'
+      < 
+      < import {
+      <   FIRST_PRESS_FALLBACK_MS,
+      <   computeLevel,
+      <   normalizeLanguageForSTT,

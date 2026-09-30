@@ -1,0 +1,3 @@
+daemon: emitio pese a 1443 errores (314 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1443 error(es) que siguen vivos en su propio paquete

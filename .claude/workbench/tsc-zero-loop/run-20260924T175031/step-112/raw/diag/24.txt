@@ -1,0 +1,2 @@
+src/packages/agent/commands/security-review.ts(218,9): error TS2698: Spread types may only be created from object types.
+src/packages/agent/commands/security-review.ts(220,28): error TS18046: 'context' is of type 'unknown'.

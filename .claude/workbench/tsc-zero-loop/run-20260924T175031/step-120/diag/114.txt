@@ -1,0 +1,31 @@
+src/packages/repl/src/components/Message.tsx(177,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:167-187 ---
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+    169          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    170            {message.message.content.map((param, index) => (
+    171              <UserMessage
+    172                key={index}
+    173                message={message}
+    174                addMargin={addMargin}
+    175                tools={tools}
+    176                progressMessagesForMessage={progressMessagesForMessage}
+    177>               param={param}
+    178                style={style}
+    179                verbose={verbose}
+    180                imageIndex={imageIndices[index]!}
+    181                isUserContinuation={isUserContinuation}
+    182                lookups={lookups}
+    183                isTranscriptMode={isTranscriptMode}
+    184              />
+    185            ))}
+    186          </Box>
+    187        )
+  Type 'DocumentBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+    Type 'DocumentBlockParam' is not assignable to type 'ImageBlockParam'.
+      Types of property 'source' are incompatible.
+        Type 'Base64PDFSource | PlainTextSource | ContentBlockSource | URLPDFSource | FileDocumentSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+          Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+            Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource'.
+              Types of property 'media_type' are incompatible.
+                Type '"application/pdf"' is not assignable to type '"image/png" | "image/jpeg" | "image/gif" | "image/webp"'.

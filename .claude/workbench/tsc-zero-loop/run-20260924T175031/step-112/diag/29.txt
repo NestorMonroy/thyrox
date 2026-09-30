@@ -1,0 +1,47 @@
+src/packages/agent/hooks/apiQueryHookHelper.ts(89,9): error TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.
+  --- código src/packages/agent/hooks/apiQueryHookHelper.ts:79-99 ---
+     79        const tools = useTools ? context.toolUseContext.options.tools : []
+     80  
+     81        // Get model (lazy loaded)
+     82        const model = config.getModel(context)
+     83  
+     84        // Make API call
+     85        const response = await queryModelWithoutStreaming({
+     86          messages,
+     87          systemPrompt,
+     88          thinkingConfig: { type: 'disabled' as const },
+     89>         tools,
+     90          signal: createAbortController().signal,
+     91          options: {
+     92            getToolPermissionContext: async () => {
+     93              const appState = context.toolUseContext.getAppState()
+     94              return appState.toolPermissionContext
+     95            },
+     96            model,
+     97            toolChoice: undefined,
+     98            isNonInteractiveSession:
+     99              context.toolUseContext.options.isNonInteractiveSession,
+src/packages/agent/hooks/apiQueryHookHelper.ts(120,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/agent/hooks/apiQueryHookHelper.ts:110-130 ---
+    110        // Parse response
+    111        const content = extractTextContent(Array.isArray(response.message.content) ? response.message.content : []).trim()
+    112  
+    113        try {
+    114          const result = config.parseResponse(content, context)
+    115          config.logResult(
+    116            {
+    117              type: 'success',
+    118              queryName: config.name,
+    119              result,
+    120>             messageId: response.message.id,
+    121              model,
+    122              uuid,
+    123            },
+    124            context,
+    125          )
+    126        } catch (error) {
+    127          config.logResult(
+    128            {
+    129              type: 'error',
+    130              queryName: config.name,
+  Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,1 @@
+function ST(e=V()){let n=Cj(),r=n.scratchpadDirBySessionId.get(e);if(r!==void 0)return r;let s;try{s=se(Zk(),e,"scratchpad")}catch{s=null}return n.scratchpadDirBySessionId.set(e,s),s}

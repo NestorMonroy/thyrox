@@ -1,0 +1,23 @@
+src/packages/cli/src/setup/setup.ts(416,9): error TS18046: 'envDynamic.getIsDocker' is of type 'unknown'.
+  --- código src/packages/cli/src/setup/setup.ts:406-426 ---
+    406        // Skip for Desktop's local agent mode — same trust model as CCR/BYOC
+    407        // (trusted Anthropic-managed launcher intentionally pre-approving everything).
+    408        // Precedent: permissionSetup.ts:861, applySettingsChange.ts:55 (PR #19116)
+    409        process.env.CLAUDE_CODE_ENTRYPOINT !== 'local-agent' &&
+    410        // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+    411        // unconditionally to unlock mid-session bypass switching
+    412        process.env.CLAUDE_CODE_ENTRYPOINT !== 'claude-desktop'
+    413      ) {
+    414        // Only await if permission mode is set to bypass
+    415        const [isDocker, hasInternet] = await Promise.all([
+    416>         envDynamic.getIsDocker(),
+    417          env.hasInternetAccess(),
+    418        ])
+    419        const isBubblewrap = (envDynamic.getIsBubblewrapSandbox as () => boolean)()
+    420        const isSandbox = process.env.IS_SANDBOX === '1'
+    421        const isSandboxed = isDocker || isBubblewrap || isSandbox
+    422        if (!isSandboxed || hasInternet) {
+    423          console.error(
+    424            `--dangerously-skip-permissions can only be used in Docker/sandbox containers with no internet access but got Docker: ${isDocker}, Bubblewrap: ${isBubblewrap}, IS_SANDBOX: ${isSandbox}, hasInternet: ${hasInternet}`,
+    425          )
+    426          process.exit(1)

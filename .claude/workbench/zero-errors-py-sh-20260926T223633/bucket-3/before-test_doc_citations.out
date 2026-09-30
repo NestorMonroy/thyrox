@@ -1,0 +1,65 @@
+  ok    test_a_citation_inside_a_literal_does_NOT_count
+  ok    test_a_valid_relative_citation_is_NOT_published_as_broken
+  FALLO test_publishes_its_denominator
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 180, in test_publishes_its_denominator
+    assert "alcance medido:" in r.stdout and "archivo" in r.stdout, r.stdout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+  FALLO test_refuses_with_exit_2_without_a_baseline
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 198, in test_refuses_with_exit_2_without_a_baseline
+    assert r.returncode == 2, (r.returncode, r.stdout, r.stderr)
+           ^^^^^^^^^^^^^^^^^
+AssertionError: (1, '', 'Traceback (most recent call last):\n  File "/home/user/thyrox/src/verify/check_doc_citations.py", line 58, in <module>\n    from docs import citations                                # noqa: E402\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named \'docs\'\n')
+  FALLO test_refuses_with_exit_2_without_source
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 190, in test_refuses_with_exit_2_without_source
+    assert r.returncode == 2, (r.returncode, r.stdout, r.stderr)
+           ^^^^^^^^^^^^^^^^^
+AssertionError: (1, '', 'Traceback (most recent call last):\n  File "/home/user/thyrox/src/verify/check_doc_citations.py", line 58, in <module>\n    from docs import citations                                # noqa: E402\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named \'docs\'\n')
+  FALLO test_sees_the_broken_absolute_citation_from_the_real_corpus
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 95, in test_sees_the_broken_absolute_citation_from_the_real_corpus
+    assert "requisitos/casos-uso/auth/uc-auth-01-registro-usuario" in r.stdout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+  FALLO test_sees_the_broken_relative_citation_resolved_against_the_citing_directory
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 104, in test_sees_the_broken_relative_citation_resolved_against_the_citing_directory
+    assert "arquitectura-tecnica/perspectivas/modelo-cart" in r.stdout, r.stdout
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+  FALLO test_the_baseline_freezes_inherited_debt
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 168, in test_the_baseline_freezes_inherited_debt
+    assert w.returncode == 0, w.stdout + w.stderr
+           ^^^^^^^^^^^^^^^^^
+AssertionError: Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_doc_citations.py", line 58, in <module>
+    from docs import citations                                # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'docs'
+
+  ok    test_the_relative_branch_carries_its_own_weight
+  FALLO test_the_three_exit_states_are_distinguishable
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 221, in <module>
+    case()
+  File "/home/user/thyrox/tests/verify/test_doc_citations.py", line 210, in test_the_three_exit_states_are_distinguishable
+    assert _run(root, "--strict", baseline=base).returncode == 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+resumen: 7 fallo(s)

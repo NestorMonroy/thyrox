@@ -1,0 +1,20 @@
+  ok   con disco de sobra, el repack completo
+  ok   el repack completo sale 0
+  ok   si no cabe el completo pero si lo suelto, INCREMENTAL
+  ok   el incremental sale 1
+  ok   si no cabe ni lo suelto, INSUFICIENTE — no se lanza nada
+  ok   lo insuficiente NO sale 0
+  ok   el margen es lo que hace fallar al caso al milimetro
+  ok   sin margen, ese mismo caso si cabria
+  ok   el margen declarado es mayor que uno
+  ok   mide objetos sueltos before de empaquetar
+  ok   el disco libre sale del sistema, no de una constante
+  ok   el pico del completo cuenta el paquete Y lo suelto
+  ok   el pico del incremental no cuenta el paquete
+  ok   tras empaquetar, lo suelto baja
+  ok   y aparece un paquete con peso
+  ok   el guion nombra el comando que SI cabe
+  ok   outside de un clon rehusa con 2
+  ok   y la rehusa NO emite cifra
+
+18 aprobada(s) · 0 fallida(s) (alcance medido: pack_headroom.py)

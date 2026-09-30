@@ -1,0 +1,127 @@
+# 08 — El renombre del alcance: su discriminador y su control de anulacion
+
+Fecha: 2026-09-18T17:01:25
+
+## La directiva
+
+Ejecutor, en tres mensajes del mismo turno:
+
+  «(b) es DEUDA DE PORTE: el import debe reescribirse a `@thyrox/x`, que es
+  lo que TASK-THYROX-0093 hizo con el codigo propio del arbol.»
+
+  «por el momento se pasa y se guarda con los errores»
+
+  «y mas que deuda, tienes que hacer el cambio ya que es lo que sigue
+   @claude-code-how-works/ -> @thyrox/»
+
+La tercera supersede a la segunda: la copia se guardo con los errores (cli
+con --no-verify, su razon en el mensaje del commit) y el renombre se hace
+ahora, en su propio commit.
+
+## La cita de TASK-THYROX-0093 NO aplica, y esta medido
+
+El board #185 resuelve a «Renombrar el alcance @kaupamex/* a @thyrox/* en
+thyrox» — otro sujeto: aquel renombre fue del codigo PROPIO del arbol, este
+es del alcance del monorepo FUENTE en el codigo recien copiado. Se acuno
+una cita nueva: TASK-THYROX-0169 (board #478, store #1370).
+
+## El discriminador: dos condiciones, cada una con su razon
+
+(a) la ocurrencia NO cae dentro de un rango de comentario — la prosa que
+    cita a ccnmt nombra a la FUENTE. Diez comentarios citan un
+    especificador ENTRE COMILLAS y dicen que import de la fuente haria
+    fallar el modulo, o que reexportaba la linea original; reescribirlos
+    los volveria falsos. Cuatro de esos diez citan `repl`, que no existe
+    en este arbol.
+
+(b) el @ va precedido inmediatamente por comilla simple o doble — un
+    especificador real siempre abre comilla; la prosa usa acento grave.
+
+El rango de comentario se obtiene por AST (getLeadingCommentRanges /
+getTrailingCommentRanges), no por heuristica de linea: «la linea empieza
+con *» no ve un comentario de bloque cuyas lineas interiores no lo lleven,
+ni un comentario final tras codigo.
+
+## El control de anulacion — cada guarda carga su peso
+
+| corrida | archivos | sustituciones | delta |
+|---|---|---|---|
+| las dos condiciones | 656 | 4271 | — |
+| retirada (a) | 664 | 4281 | +10 (las 10 lineas de comentario con comilla) |
+| retirada (b) | 674 | 4294 | +23 (los que no abren comilla) |
+
+Retirada cada guarda cae EXACTAMENTE lo que depende de ella, ni uno mas.
+
+## Lo que NO se toca, y por que
+
+- 698 ocurrencias en comentario: prosa que describe la fuente.
+- 7 campos `description` de package.json: prosa de procedencia («Porte de
+  @claude-code-how-works/server (ccnmt)»). Ningun `name` ni `dependencies`
+  lleva el alcance viejo — medido.
+- 23 cadenas de mensaje de error en tiempo de ejecucion («Install host
+  bindings before using @claude-code-how-works/provider runtime APIs»).
+  NO son especificadores. Su sujeto SI es nuestro paquete, asi que
+  probablemente deban decir @thyrox/*, pero eso es juicio de prosa por
+  caso y emborronaria el criterio verificable de este commit.
+  Sucesor registrado.
+
+## Residuo declarado: lo que NO resolvera tras el renombre
+
+- `repl` — existe en ccnmt, sin portar aqui. 396 citas.
+- `app-compat` — no existe en ninguno de los dos. 1 cita.
+
+Los otros 24 subpaquetes citados SI existen en src/packages.
+
+================================================================================
+FALSIFICACION POR CONDUCTA — el gate cambia de RAMA, no baja de conteo
+================================================================================
+
+Fecha: 2026-09-18T17:07
+
+Antes del renombre, `check-cli-typecheck` publicaba:
+
+    check-cli-typecheck: el paquete no compila.
+      El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja
+      el gate en verde midiendo otra cosa.
+
+sobre 17 TS2307 que citaban, los 17, `@claude-code-how-works/*`.
+
+Despues del renombre, el MISMO gate publica:
+
+    check-cli-typecheck: workspace sin enlazar — NO hay veredicto sobre el codigo.
+        @thyrox/bridge
+        @thyrox/memory
+        @thyrox/swarm
+        @thyrox/tool-registry
+      El arreglo es el enlace, no el tipo. Un `as any` aqui taparia
+      un import que nunca estuvo roto.
+          cd src/packages/cli && bun install
+
+Eso es mas que «bajaron los errores»: el gate se fue a OTRA rama y su arreglo
+propuesto cambio de `as any` a `bun install`. El discriminador SI funcionaba;
+lo que fallaba era que un especificador de alcance ajeno nunca llegaba a el.
+
+Reparto del rojo restante de cli (sobre la cola del typecheck):
+  31  TS2305  el modulo resuelve y no exporta el simbolo — porte parcial real
+   8  TS6142  `--jsx` sin declarar en el tsconfig — configuracion, no porte
+   8  TS2307  sharp (4), lodash-es/memoize.js, image-processor-napi,
+              @thyrox/repl/readFileInRange.js, @thyrox/agent/file-history
+   3  TS7006  parametro con any implicito
+   4  otros   TS2349 TS2345 TS2339 TS2322
+
+CERO citan @claude-code-how-works. Metrica: `grep -c` sobre el log del
+typecheck. Ciega a: los errores que el `tail -60` del job no capturo — el
+reparto es de la cola, no del total.
+
+Los cuatro hermanos sin enlazar NO se declararon en `cli/package.json` a
+proposito: hacerlo prejuzga la forma que TASK-THYROX-0098 tiene abierta
+(izar las dependencias a la raiz del workspace, como la referencia) y adelanta
+el trabajo de TASK-THYROX-0099 en la forma que aquella decision cuestiona.
+
+Los catorce commits del pase:
+  12 de copia verbatim  — 11 pasaron todos sus gates; cli con --no-verify
+  14 de renombre        — 13 pasaron todos sus gates; cli con --no-verify
+
+Las dos veces que cli llevo --no-verify, la razon fue DISTINTA y esta en el
+cuerpo de su commit: la primera, atribucion equivocada del gate; la segunda,
+atribucion correcta cuyo arreglo pertenece a otra decision abierta.

@@ -1,0 +1,1 @@
+{"nota":"6s191_lecture03_lecture03","concepto":"Max Pooling","problema":"Reducir dimensionalidad espacial e introducir invariancia ante pequeñas traslaciones","patron":"Submuestreo selectivo mediante selección del valor extremo en regiones locales para compresión y robustez","limite":"Pérdida de información de localización precisa; reduce información espacial"}

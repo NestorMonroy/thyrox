@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/githooks/test-pre-commit-cache-layout.sh

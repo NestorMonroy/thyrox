@@ -1,0 +1,9 @@
+voice.ts carga; exports: _resetAlsaCardsForTesting,_resetArecordProbeForTesting,checkRecordingAvailability,checkVoiceDependencies,requestMicrophonePermission,startRecording,stopRecording
+CLAUDE_CODE_REMOTE = "true"
+
+[1] entorno tal cual — se espera la rama temprana de :295
+    {"available":false,"reason":"Voice mode requires microphone access, but no audio device is available in this environment.\n\nTo use voice mode, run Claude Code locally instead."}
+
+[2] CLAUDE_CODE_REMOTE vaciada — la cadena llega a loadAudioNapi()
+    {"available":true,"reason":null}
+    -> no lanzo: el import de @thyrox/audio-capture-napi RESOLVIO

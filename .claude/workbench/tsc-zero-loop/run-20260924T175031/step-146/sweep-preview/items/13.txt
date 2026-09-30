@@ -1,0 +1,29 @@
+Patrón: tool-provider-discover-not-awaited
+Señal del verificador: TS2339.*Property '(length|map)' does not exist on type '.*Promise<Tools>.*'|TS2488.*must have a '\[Symbol\.iterator\]\(\)' method
+Arreglo genérico: El contrato `ToolProvider.discover()` está tipado como `Promise<Tools> | Tools`, aun cuando una implementación concreta (como `BuiltInToolsProvider`) lo declare como síncrono, porque la constante se anota con el tipo de la interfaz. Cualquier llamador que use el valor devuelto por `discover()` a través de una referencia tipada como `ToolProvider` debe tratarlo como posible promesa: convertir el test/función que lo consume en `async` y hacer `await` de la llamada. El TS7006 sobre el parámetro del `.map()` desaparece solo, porque una vez resuelto el tipo a `Tools` (`readonly Tool[]`), TypeScript infiere el tipo del callback sin anotación explícita.
+Ya aplicado en: src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(2372,11): error TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/agent/hooks.ts:2362-2382 ---
+   2362  > {
+   2363    // HookMatcher es {matcher, hooks} sin el envoltorio de zod, así que los
+   2364    // matchers del snapshot se empujan directo sin volver a envolverlos.
+   2365    const hooks: Array<
+   2366      | HookMatcher
+   2367      | HookCallbackMatcher
+   2368      | FunctionHookMatcher
+   2369      | PluginHookMatcher
+   2370      | SkillHookMatcher
+   2371      | SessionDerivedHookMatcher
+   2372>   > = [...(getHooksConfigFromSnapshot()?.[hookEvent] ?? [])]
+   2373  
+   2374    // Si sólo deben correr los hooks administrados (aplica a los registrados y a los de sesión)
+   2375    const managedOnly = shouldAllowManagedHooksOnly()
+   2376  
+   2377    // Procesa los hooks registrados (callbacks del SDK y hooks nativos de plugin)
+   2378    const registeredHooks = getRegisteredHooks()?.[hookEvent]
+   2379    if (registeredHooks) {
+   2380      for (const matcher of registeredHooks) {
+   2381        // Salta los hooks de plugin cuando sólo se permiten los administrados
+   2382        // Los hooks de plugin llevan pluginRoot; los callbacks del SDK no

@@ -1,0 +1,19 @@
+src/packages/command-runtime/src/commands/context/index.ts(23,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/context/context-noninteractive")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/context/index.ts:13-24 ---
+     13    type: 'local',
+     14    name: 'context',
+     15    supportsNonInteractive: true,
+     16    description: 'Show current context usage',
+     17    get isHidden() {
+     18      return !getIsNonInteractiveSession()
+     19    },
+     20    isEnabled() {
+     21      return getIsNonInteractiveSession()
+     22    },
+     23>   load: () => import('./context-noninteractive.js'),
+     24  }
+  Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/context/context-noninteractive")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(_args: string, context: ToolUseContext) => Promise<{ type: "text"; value: string; }>' is not assignable to type 'LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

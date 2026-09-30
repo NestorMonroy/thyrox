@@ -1,0 +1,362 @@
+diff --git a/src/packages/provider/src/__tests__/remoteSessionClaims.test.ts b/src/packages/provider/src/__tests__/remoteSessionClaims.test.ts
+new file mode 100644
+index 00000000..28ffa3cf
+--- /dev/null
++++ b/src/packages/provider/src/__tests__/remoteSessionClaims.test.ts
+@@ -0,0 +1,230 @@
++/**
++ * Claims del token de una sesión de trabajo remota, según 2.1.283
++ * (`chunk-t6pwageh.js`): `eo` con sus internos `Ndt`, `dqn`, `Vi`, `Nl`,
++ * `oF` y `Zr`, más `U6e` de `chunk-1ay853f5.js`.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++
++import {
++  hasByocSessionWorkerClaims,
++  hasRemoteSessionWorkerClaims,
++  hasServiceAgentClaims,
++  isByocRemoteEnvironment,
++  isNonEmptyString,
++  parseSessionTokenClaims,
++  readRemoteSessionClaims,
++  readSessionAccessToken,
++} from '../remoteSessionClaims.js'
++
++function encodeClaims(claims: unknown): string {
++  return Buffer.from(JSON.stringify(claims)).toString('base64url')
++}
++
++function tokenFor(claims: unknown, prefix = ''): string {
++  return `${prefix}header.${encodeClaims(claims)}.signature`
++}
++
++const VARIABLES = ['THYROX_CODE_SESSION_ACCESS_TOKEN', 'THYROX_CODE_REMOTE', 'THYROX_CODE_ENVIRONMENT_KIND']
++let saved: Record<string, string | undefined> = {}
++beforeEach(() => {
++  saved = Object.fromEntries(VARIABLES.map(name => [name, process.env[name]]))
++  for (const name of VARIABLES) delete process.env[name]
++})
++afterEach(() => {
++  for (const name of VARIABLES) {
++    if (saved[name] === undefined) delete process.env[name]
++    else process.env[name] = saved[name]
++  }
++})
++
++describe('isNonEmptyString (Zr)', () => {
++  test('sólo un string no vacío', () => {
++    expect(isNonEmptyString('x')).toBe(true)
++    expect(isNonEmptyString('')).toBe(false)
++    expect(isNonEmptyString(undefined)).toBe(false)
++    expect(isNonEmptyString(1)).toBe(false)
++  })
++})
++
++describe('parseSessionTokenClaims (oF)', () => {
++  test('decodifica el segmento central de un JWT', () => {
++    expect(parseSessionTokenClaims(tokenFor({ sub: 'u1' }))).toEqual({ sub: 'u1' })
++  })
++
++  test('tolera el prefijo sk-ant-si-', () => {
++    expect(parseSessionTokenClaims(tokenFor({ sub: 'u1' }, 'sk-ant-si-'))).toEqual({ sub: 'u1' })
++  })
++
++  test('null sin tres segmentos', () => {
++    expect(parseSessionTokenClaims('sólo-un-segmento')).toBeNull()
++    expect(parseSessionTokenClaims('a.b')).toBeNull()
++  })
++
++  test('null con el segmento central vacío', () => {
++    expect(parseSessionTokenClaims('a..c')).toBeNull()
++  })
++
++  test('null si el segmento central no decodifica a JSON', () => {
++    expect(parseSessionTokenClaims('a.no-es-base64url-json.c')).toBeNull()
++  })
++})
++
++describe('readSessionAccessToken (Nl)', () => {
++  test('la variable de entorno gana', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = 'tok-env'
++    expect(readSessionAccessToken(() => 'tok-fallback')).toBe('tok-env')
++  })
++
++  test('sin variable, cae al fallback inyectado (B, fuera de alcance)', () => {
++    expect(readSessionAccessToken(() => 'tok-fallback')).toBe('tok-fallback')
++  })
++
++  test('una variable vacía también cae al fallback', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = ''
++    expect(readSessionAccessToken(() => 'tok-fallback')).toBe('tok-fallback')
++  })
++
++  test('sin variable ni fallback, undefined', () => {
++    expect(readSessionAccessToken()).toBeUndefined()
++  })
++})
++
++describe('readRemoteSessionClaims (Vi)', () => {
++  test('null sin token', () => {
++    expect(readRemoteSessionClaims()).toBeNull()
++  })
++
++  test('las claims del token, como objeto', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({ sub: 'u1' })
++    expect(readRemoteSessionClaims()).toEqual({ sub: 'u1' })
++  })
++
++  test('null si el cuerpo decodificado no es un objeto plano', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor(['no', 'objeto'])
++    expect(readRemoteSessionClaims()).toBeNull()
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor('texto')
++    expect(readRemoteSessionClaims()).toBeNull()
++  })
++})
++
++describe('isByocRemoteEnvironment (U6e)', () => {
++  test('exige las dos variables', () => {
++    expect(isByocRemoteEnvironment()).toBe(false)
++    process.env.THYROX_CODE_REMOTE = 'true'
++    expect(isByocRemoteEnvironment()).toBe(false)
++    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
++    expect(isByocRemoteEnvironment()).toBe(true)
++  })
++
++  test('otro valor de environment_kind no cuenta', () => {
++    process.env.THYROX_CODE_REMOTE = 'true'
++    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'sdk'
++    expect(isByocRemoteEnvironment()).toBe(false)
++  })
++})
++
++describe('hasServiceAgentClaims (Ndt)', () => {
++  test('org_service_name y code_agent_id, sin account_uuid ni sub', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      org_service_name: 'svc',
++      code_agent_id: 'agent-1',
++    })
++    expect(hasServiceAgentClaims()).toBe(true)
++  })
++
++  test('con account_uuid, falso', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      org_service_name: 'svc',
++      code_agent_id: 'agent-1',
++      account_uuid: 'a1',
++    })
++    expect(hasServiceAgentClaims()).toBe(false)
++  })
++
++  test('con sub, falso', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      org_service_name: 'svc',
++      code_agent_id: 'agent-1',
++      sub: 'u1',
++    })
++    expect(hasServiceAgentClaims()).toBe(false)
++  })
++
++  test('sin org_service_name o vacío, falso', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({ code_agent_id: 'agent-1' })
++    expect(hasServiceAgentClaims()).toBe(false)
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({ org_service_name: '', code_agent_id: 'agent-1' })
++    expect(hasServiceAgentClaims()).toBe(false)
++  })
++
++  test('sin claims, falso', () => {
++    expect(hasServiceAgentClaims()).toBe(false)
++  })
++})
++
++describe('hasByocSessionWorkerClaims (dqn)', () => {
++  function setByoc() {
++    process.env.THYROX_CODE_REMOTE = 'true'
++    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
++  }
++
++  test('ccr:role session_worker, byoc, sin account, con code_agent_id', () => {
++    setByoc()
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      'ccr:role': 'session_worker',
++      code_agent_id: 'agent-1',
++    })
++    expect(hasByocSessionWorkerClaims()).toBe(true)
++  })
++
++  test('fuera de byoc, falso aunque las claims calcen', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      'ccr:role': 'session_worker',
++      code_agent_id: 'agent-1',
++    })
++    expect(hasByocSessionWorkerClaims()).toBe(false)
++  })
++
++  test('con account_uuid o ccr:account_id, falso', () => {
++    setByoc()
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      'ccr:role': 'session_worker',
++      code_agent_id: 'agent-1',
++      'ccr:account_id': 'a1',
++    })
++    expect(hasByocSessionWorkerClaims()).toBe(false)
++  })
++
++  test('otro rol, falso', () => {
++    setByoc()
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      'ccr:role': 'otro',
++      code_agent_id: 'agent-1',
++    })
++    expect(hasByocSessionWorkerClaims()).toBe(false)
++  })
++})
++
++describe('hasRemoteSessionWorkerClaims (eo)', () => {
++  test('verdadero si cualquiera de las dos formas de claims calza', () => {
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      org_service_name: 'svc',
++      code_agent_id: 'agent-1',
++    })
++    expect(hasRemoteSessionWorkerClaims()).toBe(true)
++
++    process.env.THYROX_CODE_REMOTE = 'true'
++    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({
++      'ccr:role': 'session_worker',
++      code_agent_id: 'agent-1',
++    })
++    expect(hasRemoteSessionWorkerClaims()).toBe(true)
++  })
++
++  test('falso sin ninguna de las dos', () => {
++    expect(hasRemoteSessionWorkerClaims()).toBe(false)
++    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = tokenFor({ sub: 'u1' })
++    expect(hasRemoteSessionWorkerClaims()).toBe(false)
++  })
++})
+diff --git a/src/packages/provider/src/remoteSessionClaims.ts b/src/packages/provider/src/remoteSessionClaims.ts
+new file mode 100644
+index 00000000..6d979217
+--- /dev/null
++++ b/src/packages/provider/src/remoteSessionClaims.ts
+@@ -0,0 +1,120 @@
++/**
++ * Claims del token de una sesión de trabajo remota — la mitad que
++ * `isRemoteCoworkSession()` (`fastMode.ts`, `uc() && Iz()`) no cubre: un
++ * token de acceso de sesión puede identificar un agente de servicio o un
++ * worker de sesión sin pasar por el flujo de cowork. Porte de
++ * `chunk-t6pwageh.js` (2.1.283): `eo` (`hasRemoteSessionWorkerClaims`),
++ * con `Ndt` (`hasServiceAgentClaims`), `dqn` (`hasByocSessionWorkerClaims`),
++ * `Vi` (`readRemoteSessionClaims`), `Nl` (`readSessionAccessToken`) y `Zr`
++ * (`isNonEmptyString`) como internos; más `U6e`
++ * (`isByocRemoteEnvironment`, `chunk-1ay853f5.js`).
++ *
++ * Composición con `isRemoteCoworkSession()`: la referencia las junta con un
++ * OR, `function rn(){return uc()&&Iz()||eo()}` — quien integre este módulo
++ * hace lo mismo: `remoteManaged: isRemoteCoworkSession() || hasRemoteSessionWorkerClaims()`.
++ *
++ * Divergencias declaradas:
++ * - `Nl` cae a `B()` (`chunk-3cvbcwb5.js`) cuando la variable de entorno
++ *   falta: token leído de un descriptor de archivo de autenticación
++ *   websocket (`D`, `ane`, `xxe`, `Ixe`), un subsistema propio fuera del
++ *   alcance de este ítem. Aquí llega como dependencia inyectada
++ *   (`SessionAccessTokenSource`), `undefined` por defecto.
++ * - `oF` decodifica con `J` (`chunk-zkn0228z.js`), un `JSON.parse`
++ *   instrumentado para telemetría; aquí es `JSON.parse` liso.
++ */
++import { isTruthyFlag } from '@thyrox/config/entrypoint'
++import { readEnv } from '@thyrox/config/env/utils'
++
++/** Las claims decodificadas del cuerpo del JWT del token de sesión. */
++export type SessionTokenClaims = Record<string, unknown>
++
++/** El sustituto de `B()`: de dónde sale el token cuando la variable de
++ * entorno no está. `undefined` por defecto — sin archivo de sesión, la
++ * sesión no está gestionada de forma remota. */
++export type SessionAccessTokenSource = () => string | undefined
++
++/** `Zr`: no vacío y de tipo string. */
++export function isNonEmptyString(value: unknown): value is string {
++  return typeof value === 'string' && value !== ''
++}
++
++/**
++ * `oF`: decodifica el segmento central de un JWT (`header.payload.firma`),
++ * tolerando el prefijo `sk-ant-si-` que el token de sesión puede llevar.
++ * `null` si el token no tiene tres segmentos, el segmento central está
++ * vacío, o no decodifica a JSON.
++ */
++export function parseSessionTokenClaims(token: string): unknown {
++  const withoutPrefix = token.startsWith('sk-ant-si-') ? token.slice('sk-ant-si-'.length) : token
++  const segments = withoutPrefix.split('.')
++  if (segments.length !== 3 || !segments[1]) return null
++  try {
++    return JSON.parse(Buffer.from(segments[1], 'base64url').toString('utf8'))
++  } catch {
++    return null
++  }
++}
++
++/** `Nl`: la variable de entorno gana; vacía o ausente, cae al `fallback`. */
++export function readSessionAccessToken(fallback: SessionAccessTokenSource = () => undefined): string | undefined {
++  const fromEnv = readEnv('THYROX_CODE_SESSION_ACCESS_TOKEN')
++  if (fromEnv) return fromEnv
++  return fallback()
++}
++
++/**
++ * `Vi`: las claims del token de sesión actual, o `null` si no hay token,
++ * el token no decodifica, o el cuerpo decodificado no es un objeto plano
++ * (ni arreglo, ni primitivo).
++ */
++export function readRemoteSessionClaims(
++  fallback: SessionAccessTokenSource = () => undefined,
++): SessionTokenClaims | null {
++  const token = readSessionAccessToken(fallback)
++  if (token === undefined) return null
++  const claims = parseSessionTokenClaims(token)
++  return claims !== null && typeof claims === 'object' && !Array.isArray(claims) ? (claims as SessionTokenClaims) : null
++}
++
++/** `U6e`: sesión remota gestionada en modo BYOC (traer tu propia nube). */
++export function isByocRemoteEnvironment(): boolean {
++  return isTruthyFlag(readEnv('THYROX_CODE_REMOTE')) && readEnv('THYROX_CODE_ENVIRONMENT_KIND') === 'byoc'
++}
++
++/**
++ * `Ndt`: claims de un agente de servicio — sin `account_uuid` ni `sub`,
++ * con `org_service_name` y `code_agent_id` no vacíos.
++ */
++export function hasServiceAgentClaims(fallback?: SessionAccessTokenSource): boolean {
++  const claims = readRemoteSessionClaims(fallback)
++  if (claims === null) return false
++  if ('account_uuid' in claims || 'sub' in claims) return false
++  return (
++    'org_service_name' in claims &&
++    isNonEmptyString(claims.org_service_name) &&
++    'code_agent_id' in claims &&
++    isNonEmptyString(claims.code_agent_id)
++  )
++}
++
++/**
++ * `dqn`: claims de un worker de sesión BYOC — sólo bajo
++ * `isByocRemoteEnvironment()`, con `ccr:role` en `"session_worker"`, sin
++ * `account_uuid` ni `ccr:account_id`, y `code_agent_id` no vacío.
++ */
++export function hasByocSessionWorkerClaims(fallback?: SessionAccessTokenSource): boolean {
++  if (!isByocRemoteEnvironment()) return false
++  const claims = readRemoteSessionClaims(fallback)
++  if (claims === null) return false
++  const role = 'ccr:role' in claims ? claims['ccr:role'] : undefined
++  const hasAccountId = 'account_uuid' in claims || 'ccr:account_id' in claims
++  return role === 'session_worker' && !hasAccountId && 'code_agent_id' in claims && isNonEmptyString(claims.code_agent_id)
++}
++
++/**
++ * `eo`: verdadero si el token de sesión trae claims de agente de servicio
++ * o de worker de sesión BYOC.
++ */
++export function hasRemoteSessionWorkerClaims(fallback?: SessionAccessTokenSource): boolean {
++  return hasServiceAgentClaims(fallback) || hasByocSessionWorkerClaims(fallback)
++}

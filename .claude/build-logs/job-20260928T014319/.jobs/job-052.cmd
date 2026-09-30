@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/lib/test_pyproject_declares_imports.py

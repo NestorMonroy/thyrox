@@ -1,0 +1,34 @@
+=== 1. La deteccion ve las variantes de redaccion y de caja ===
+  ok    detecta: /** `getAgentHostBindings()`, inexistente en
+  ok    detecta: // `foo()` no existe en este árbol
+  ok    detecta: * Porte PARCIAL de `ccnmt: packages/agent/in
+  ok    detecta: * PORTE PARCIAL declarado: falta `bar`.
+  ok    detecta: // `baz` cuya base no existe en este árbol
+
+=== 1-bis. Y las clasifica en las DOS familias ===
+  ok    ausencia / ausencia / alcance / alcance / ausencia
+  ok    una declaracion de alcance NO se resuelve aqui
+
+=== 2. El simbolo sale del entrecomillado invertido ===
+  ok    extrae getAgentHostBindings
+  ok    extrae los dos simbolos
+
+=== 3. Presente en el arbol -> la afirmacion es FALSE ===
+  ok    simbolo presente -> FALSE
+
+=== 4. Ausente -> UPHELD; sin simbolo -> UNDECIDABLE ===
+  ok    simbolo ausente -> UPHELD
+  ok    sin simbolo -> UNDECIDABLE
+  ok    sin simbolo -> veredicto UNDECIDABLE
+
+=== 5. Control positivo REAL: la cabecera pre-porte de cronTasksCore ===
+  ok    la cabecera real se pudo leer de git
+  ok    la cabecera real dispara al menos una afirmacion
+  ok    y al menos una sale FALSE contra el arbol de hoy
+
+=== 6. Control de discriminacion: otra cosa no dispara ===
+  ok    no dispara: // devuelve la lista de arboles que el censo
+  ok    no dispara: // TODO: revisar el porte parcial de la sema
+  ok    no dispara: /** Este modulo existe en este árbol y en la
+
+OK=19 FAILED=0

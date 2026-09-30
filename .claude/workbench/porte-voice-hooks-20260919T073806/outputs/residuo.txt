@@ -1,0 +1,25 @@
+== residuo del alcance de la fuente (esperado 0, total==from_require en ambos)
+src/packages/voice/src/hooks/useVoice.ts:2
+src/packages/voice/src/hooks/useVoiceIntegration.tsx:1
+== alcances que NO se tocan, siguen presentes
+src/packages/voice/src/hooks/useVoice.ts:3
+src/packages/voice/src/hooks/useVoiceIntegration.tsx:6
+src/packages/voice/src/hooks/useVoice.ts:0
+src/packages/voice/src/hooks/useVoiceIntegration.tsx:2
+== los @thyrox/ nuevos
+      1 @thyrox/config/settings
+      1 @thyrox/config/sleep
+      1 @thyrox/local-observability
+      1 @thyrox/local-observability/debug.js
+      1 @thyrox/local-observability/errorHelpers.js
+      1 @thyrox/local-observability/logging
+      1 @thyrox/output/utils/intl.js
+      1 @thyrox/output/utils/stringUtils.js
+      1 @thyrox/repl
+      1 @thyrox/repl/notifications.js
+      1 @thyrox/repl/overlayContext.js
+== el comentario en ingles de la fuente sobrevive (linea tras nuestro header)
+// React hook for hold-to-talk voice input using Anthropic voice_stream STT.
+//
+// Hold the keybinding to record; release to stop and submit.  Auto-repeat
+// key events reset an internal timer — when no keypress arrives within

@@ -1,0 +1,221 @@
+WARNING: there is a new pyright version available (v1.1.408 -> v1.1.414).
+Please install the new version or set PYRIGHT_PYTHON_FORCE_VERSION to `latest`
+
+/home/user/thyrox/src/typescript/close_exports.py
+  /home/user/thyrox/src/typescript/close_exports.py:198:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/typescript/emit_declarations.py
+  /home/user/thyrox/src/typescript/emit_declarations.py:574:45 - error: Expression of type "None" cannot be assigned to parameter of type "str"
+    "None" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/src/typescript/emit_declarations.py:739:23 - error: "strip" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/corpus/test_archive_build_corpus.py
+  /home/user/thyrox/tests/corpus/test_archive_build_corpus.py:62:42 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/corpus/test_archive_build_corpus.py:64:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/corpus/test_archive_build_corpus.py:64:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/corpus/test_archive_extract.py
+  /home/user/thyrox/tests/corpus/test_archive_extract.py:128:17 - error: Argument of type "str | None" cannot be assigned to parameter "value" of type "str" in function "__setitem__"
+    Type "str | None" is not assignable to type "str"
+      "None" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/corpus/test_archive_extract.py:142:17 - error: Argument of type "str | None" cannot be assigned to parameter "value" of type "str" in function "__setitem__"
+    Type "str | None" is not assignable to type "str"
+      "None" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/tests/corpus/test_archive_extract.py:212:17 - error: Argument of type "str | None" cannot be assigned to parameter "value" of type "str" in function "__setitem__"
+    Type "str | None" is not assignable to type "str"
+      "None" is not assignable to "str" (reportArgumentType)
+/home/user/thyrox/tests/corpus/test_censar_scripts.py
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:64:42 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:65:13 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:66:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:111:8 - error: Cannot assign to attribute "root_dir" for class "ModuleType"
+    Attribute "root_dir" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:115:12 - error: Cannot assign to attribute "root_dir" for class "ModuleType"
+    Attribute "root_dir" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:133:8 - error: Cannot assign to attribute "root_dir" for class "ModuleType"
+    Attribute "root_dir" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/corpus/test_censar_scripts.py:137:12 - error: Cannot assign to attribute "root_dir" for class "ModuleType"
+    Attribute "root_dir" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_agent_dispatch.py
+  /home/user/thyrox/tests/hooks/test_detect_agent_dispatch.py:31:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_agent_dispatch.py:32:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_agent_dispatch.py:32:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_awk_substr_target.py
+  /home/user/thyrox/tests/hooks/test_detect_awk_substr_target.py:28:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_awk_substr_target.py:29:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_awk_substr_target.py:29:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_bare_awk.py
+  /home/user/thyrox/tests/hooks/test_detect_bare_awk.py:29:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_bare_awk.py:30:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_bare_awk.py:30:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_bare_awk.py:76:10 - error: Cannot assign to attribute "invokes_bare_awk" for class "ModuleType"
+    Attribute "invokes_bare_awk" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_bare_awk.py:86:10 - error: Cannot assign to attribute "invokes_bare_awk" for class "ModuleType"
+    Attribute "invokes_bare_awk" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_client_background.py
+  /home/user/thyrox/tests/hooks/test_detect_client_background.py:31:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_client_background.py:32:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_client_background.py:32:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_client_background.py:91:10 - error: Cannot assign to attribute "already_assembled" for class "ModuleType"
+    Attribute "already_assembled" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_client_background.py:99:10 - error: Cannot assign to attribute "already_assembled" for class "ModuleType"
+    Attribute "already_assembled" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_code_language.py
+  /home/user/thyrox/tests/hooks/test_detect_code_language.py:36:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_code_language.py:37:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_code_language.py:37:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_code_language.py:97:10 - error: Cannot assign to attribute "load_forbidden" for class "ModuleType"
+    Attribute "load_forbidden" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_code_language.py:101:14 - error: Cannot assign to attribute "load_forbidden" for class "ModuleType"
+    Attribute "load_forbidden" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_dedicated_tool_usage.py
+  /home/user/thyrox/tests/hooks/test_detect_dedicated_tool_usage.py:29:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_dedicated_tool_usage.py:30:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_dedicated_tool_usage.py:30:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_ephemeral_citation.py
+  /home/user/thyrox/tests/hooks/test_detect_ephemeral_citation.py:23:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_ephemeral_citation.py:24:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_ephemeral_citation.py:24:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_foreground_long_command.py
+  /home/user/thyrox/tests/hooks/test_detect_foreground_long_command.py:22:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_foreground_long_command.py:23:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_foreground_long_command.py:23:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_gawk_opportunity.py
+  /home/user/thyrox/tests/hooks/test_detect_gawk_opportunity.py:37:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_gawk_opportunity.py:38:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_gawk_opportunity.py:38:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_git_grep_opportunity.py
+  /home/user/thyrox/tests/hooks/test_detect_git_grep_opportunity.py:28:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_git_grep_opportunity.py:29:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_git_grep_opportunity.py:29:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_irreversible_operation.py
+  /home/user/thyrox/tests/hooks/test_detect_irreversible_operation.py:88:34 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+/home/user/thyrox/tests/hooks/test_detect_literal_replacement.py
+  /home/user/thyrox/tests/hooks/test_detect_literal_replacement.py:33:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_literal_replacement.py:34:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_literal_replacement.py:34:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_parallel_opportunity.py
+  /home/user/thyrox/tests/hooks/test_detect_parallel_opportunity.py:26:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_parallel_opportunity.py:27:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_parallel_opportunity.py:27:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:39:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:40:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:40:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:104:46 - error: Operator "in" not supported for types "Literal['--pid-only']" and "str | None"
+    Operator "in" not supported for types "Literal['--pid-only']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:105:50 - error: Operator "in" not supported for types "Literal['wait-jobs']" and "str | None"
+    Operator "in" not supported for types "Literal['wait-jobs']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:106:65 - error: Operator "in" not supported for types "Literal['[c]']" and "str | None"
+    Operator "in" not supported for types "Literal['[c]']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:106:84 - error: Operator "in" not supported for types "Literal['[p]']" and "str | None"
+    Operator "in" not supported for types "Literal['[p]']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:130:10 - error: Cannot assign to attribute "has_bracket_class" for class "ModuleType"
+    Attribute "has_bracket_class" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_self_matching_pgrep.py:140:10 - error: Cannot assign to attribute "has_bracket_class" for class "ModuleType"
+    Attribute "has_bracket_class" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_stdin_reading_interpreter.py
+  /home/user/thyrox/tests/hooks/test_detect_stdin_reading_interpreter.py:35:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_stdin_reading_interpreter.py:36:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_stdin_reading_interpreter.py:36:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_stdin_reading_interpreter.py:94:10 - error: Cannot assign to attribute "has_provided_input" for class "ModuleType"
+    Attribute "has_provided_input" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_stdin_reading_interpreter.py:106:10 - error: Cannot assign to attribute "has_provided_input" for class "ModuleType"
+    Attribute "has_provided_input" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_temp_home_write.py
+  /home/user/thyrox/tests/hooks/test_detect_temp_home_write.py:32:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_temp_home_write.py:33:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_temp_home_write.py:33:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_temp_home_write.py:93:10 - error: Cannot assign to attribute "writes_to_temp" for class "ModuleType"
+    Attribute "writes_to_temp" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_temp_home_write.py:105:10 - error: Cannot assign to attribute "writes_to_temp" for class "ModuleType"
+    Attribute "writes_to_temp" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/hooks/test_detect_topic_duplication.py
+  /home/user/thyrox/tests/hooks/test_detect_topic_duplication.py:35:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_topic_duplication.py:36:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_topic_duplication.py:36:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:40:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:42:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:42:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:128:14 - error: Cannot assign to attribute "SYMLINK_FOLLOWING_SHAPES" for class "ModuleType"
+    Attribute "SYMLINK_FOLLOWING_SHAPES" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:134:14 - error: Cannot assign to attribute "SYMLINK_FOLLOWING_SHAPES" for class "ModuleType"
+    Attribute "SYMLINK_FOLLOWING_SHAPES" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:225:44 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:227:13 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_traversal.py:227:20 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_detect_unbounded_wait.py
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_wait.py:104:42 - error: Operator "in" not supported for types "Literal['exited with code']" and "str | None"
+    Operator "in" not supported for types "Literal['exited with code']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_wait.py:106:7 - error: Operator "in" not supported for types "Literal['wait-jobs']" and "str | None"
+    Operator "in" not supported for types "Literal['wait-jobs']" and "None" (reportOperatorIssue)
+  /home/user/thyrox/tests/hooks/test_detect_unbounded_wait.py:106:30 - error: Operator "in" not supported for types "Literal['marker_wait']" and "str | None"
+    Operator "in" not supported for types "Literal['marker_wait']" and "None" (reportOperatorIssue)
+/home/user/thyrox/tests/hooks/test_error_log.py
+  /home/user/thyrox/tests/hooks/test_error_log.py:125:66 - error: "returncode" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/hooks/test_error_log.py:158:66 - error: "returncode" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hooks/test_pretooluse_dispatch.py
+  /home/user/thyrox/tests/hooks/test_pretooluse_dispatch.py:114:40 - error: Argument of type "list[tuple[Literal['pide'], (payload: Unknown) -> dict[str, str]] | tuple[str, (payload: Unknown) -> str]]" cannot be assigned to parameter "detectors" of type "Iterable[Detector]" in function "dispatch"
+    "tuple[Literal['pide'], (payload: Unknown) -> dict[str, str]]" is not assignable to "tuple[str, (dict[Unknown, Unknown]) -> (str | None)]"
+      Tuple entry 2 is incorrect type
+        Type "(payload: Unknown) -> dict[str, str]" is not assignable to type "(dict[Unknown, Unknown]) -> (str | None)"
+          Function return type "dict[str, str]" is incompatible with type "str | None"
+            Type "dict[str, str]" is not assignable to type "str | None" (reportArgumentType)
+  /home/user/thyrox/tests/hooks/test_pretooluse_dispatch.py:123:39 - error: Argument of type "list[tuple[Literal['pide'], (payload: Unknown) -> dict[str, str]] | tuple[Literal['niega'], (payload: Unknown) -> dict[str, str]]]" cannot be assigned to parameter "detectors" of type "Iterable[Detector]" in function "dispatch"
+    "tuple[Literal['pide'], (payload: Unknown) -> dict[str, str]]" is not assignable to "tuple[str, (dict[Unknown, Unknown]) -> (str | None)]"
+      Tuple entry 2 is incorrect type
+        Type "(payload: Unknown) -> dict[str, str]" is not assignable to type "(dict[Unknown, Unknown]) -> (str | None)"
+          Function return type "dict[str, str]" is incompatible with type "str | None"
+            Type "dict[str, str]" is not assignable to type "str | None"
+    "tuple[Literal['niega'], (payload: Unknown) -> dict[str, str]]" is not assignable to "tuple[str, (dict[Unknown, Unknown]) -> (str | None)]"
+      Tuple entry 2 is incorrect type
+        Type "(payload: Unknown) -> dict[str, str]" is not assignable to type "(dict[Unknown, Unknown]) -> (str | None)" (reportArgumentType)
+/home/user/thyrox/tests/repo/test_gitlink_bump.py
+  /home/user/thyrox/tests/repo/test_gitlink_bump.py:100:15 - error: Argument of type "bool | Literal[''] | None" cannot be assigned to parameter "condition" of type "bool" in function "check"
+    Type "bool | Literal[''] | None" is not assignable to type "bool"
+      "Literal['']" is not assignable to "bool" (reportArgumentType)
+/home/user/thyrox/tests/transcript/test_closing.py
+  /home/user/thyrox/tests/transcript/test_closing.py:44:43 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/transcript/test_closing.py:49:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/transcript/test_closing.py:49:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+100 errors, 0 warnings, 0 informations

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+GPU_STATE=".claude/workbench/vram-calibration-20260926T220529/repro-UF4m/state" exec bash "/home/user/thyrox/tests/session/fakes/stateful-nvidia-smi.sh" "$@"

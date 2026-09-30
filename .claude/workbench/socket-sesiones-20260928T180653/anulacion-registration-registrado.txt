@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+118 |       name: 'app-s1',
+119 |       nameSource: 'derived',
+120 |       nameSince: 1000,
+121 |     })
+122 |     expect(statSync(sessionsDir()).mode & 0o777).toBe(0o700)
+123 |     expect(state.registered).toBe(true)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:123:30)
+(fail) registerSession (nD) > una sesión interactiva se publica con nombre derivado y su directorio 0700 [4.96ms]
+
+ 22 pass
+ 1 fail
+ 83 expect() calls
+Ran 23 tests across 1 file. [194.00ms]

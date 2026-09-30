@@ -1,0 +1,44 @@
+### rg version
+ripgrep 14.1.0
+
+features:-simd-accel,+pcre2
+simd(compile):+SSE2,-SSSE3,-AVX2
+simd(runtime):+SSE2,+SSSE3,+AVX2
+
+PCRE2 10.42 is available (JIT is available)
+### --json + --max-columns
+{"type":"begin","data":{"path":{"text":"/tmp/rg-probe-SJ8U/long.txt"}}}
+{"type":"match","data":{"path":{"text":"/tmp/rg-probe-SJ8U/long.txt"},"lines":{"text":"x=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"},"line_number":1,"absolute_offset":0,"submatches":[{"match":{"text":"x="},"start":0,"end":2}]}}
+{"type":"end","data":{"path":{"text":"/tmp/rg-probe-SJ8U/long.txt"},"binary_offset":null,"stats":{"elapsed":{"secs":0,"nanos":22233,"human":"0.000022s"},"searches":1,"searches_with_match":1,"bytes_searched":403,"bytes_printed":661,"matched_lines":1,"matches":1}}}
+{"data":{"elapsed_total":{"human":"0.000883s","nanos":882939,"secs":0},"stats":{"bytes_printed":661,"bytes_searched":403,"elapsed":{"human":"0.000022s","nanos":22233,"secs":0},"matched_lines":1,"matches":1,"searches":1,"searches_with_match":1}},"type":"summary"}
+### -U --multiline-dotall alone (no -U)
+{"data":{"elapsed_total":{"human":"0.001139s","nanos":1138750,"secs":0},"stats":{"bytes_printed":0,"bytes_searched":0,"elapsed":{"human":"0.000000s","nanos":0,"secs":0},"matched_lines":0,"matches":0,"searches":0,"searches_with_match":0}},"type":"summary"}
+exit=1
+### with -U also
+{"type":"begin","data":{"path":{"text":"/tmp/rg-probe-SJ8U/multi.txt"}}}
+{"type":"match","data":{"path":{"text":"/tmp/rg-probe-SJ8U/multi.txt"},"lines":{"text":"foo\nbar\n"},"line_number":1,"absolute_offset":0,"submatches":[{"match":{"text":"foo\nbar"},"start":0,"end":7}]}}
+{"type":"end","data":{"path":{"text":"/tmp/rg-probe-SJ8U/multi.txt"},"binary_offset":null,"stats":{"elapsed":{"secs":0,"nanos":44143,"human":"0.000044s"},"searches":1,"searches_with_match":1,"bytes_searched":8,"bytes_printed":275,"matched_lines":2,"matches":1}}}
+{"data":{"elapsed_total":{"human":"0.001033s","nanos":1033076,"secs":0},"stats":{"bytes_printed":275,"bytes_searched":8,"elapsed":{"human":"0.000044s","nanos":44143,"secs":0},"matched_lines":2,"matches":1,"searches":1,"searches_with_match":1}},"type":"summary"}
+exit=0
+### --files absolute paths?
+/tmp/rg-probe-SJ8U/long.txt
+/tmp/rg-probe-SJ8U/a.md
+/tmp/rg-probe-SJ8U/multi.txt
+### exit code no matches
+{"data":{"elapsed_total":{"human":"0.002478s","nanos":2477682,"secs":0},"stats":{"bytes_printed":0,"bytes_searched":0,"elapsed":{"human":"0.000000s","nanos":0,"secs":0},"matched_lines":0,"matches":0,"searches":0,"searches_with_match":0}},"type":"summary"}
+exit_nomatch=1
+### exit code real error (bad regex)
+rg: regex parse error:
+    (?:()
+    ^
+error: unclosed group
+exit_badregex=2
+### context group break in --json (gap test)
+{"type":"begin","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"}}}
+{"type":"context","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"},"lines":{"text":"l10\n"},"line_number":10,"absolute_offset":27,"submatches":[]}}
+{"type":"match","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"},"lines":{"text":"MATCH1\n"},"line_number":11,"absolute_offset":31,"submatches":[{"match":{"text":"MATCH"},"start":0,"end":5}]}}
+{"type":"context","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"},"lines":{"text":"l12\n"},"line_number":12,"absolute_offset":38,"submatches":[]}}
+{"type":"context","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"},"lines":{"text":"l20\n"},"line_number":20,"absolute_offset":70,"submatches":[]}}
+{"type":"match","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"},"lines":{"text":"MATCH2\n"},"line_number":21,"absolute_offset":74,"submatches":[{"match":{"text":"MATCH"},"start":0,"end":5}]}}
+{"type":"end","data":{"path":{"text":"/tmp/rg-probe-SJ8U/ctx.txt"},"binary_offset":null,"stats":{"elapsed":{"secs":0,"nanos":18023,"human":"0.000018s"},"searches":1,"searches_with_match":1,"bytes_searched":81,"bytes_printed":921,"matched_lines":2,"matches":2}}}
+{"data":{"elapsed_total":{"human":"0.000674s","nanos":673590,"secs":0},"stats":{"bytes_printed":921,"bytes_searched":81,"elapsed":{"human":"0.000018s","nanos":18023,"secs":0},"matched_lines":2,"matches":2,"searches":1,"searches_with_match":1}},"type":"summary"}

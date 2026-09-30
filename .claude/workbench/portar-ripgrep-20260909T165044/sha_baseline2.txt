@@ -1,0 +1,1 @@
+bc14e81afd794197ccab5fbeced77378c6cf1a6ed1670c07768eb564c02aaf8e  src/ripgrep.ts

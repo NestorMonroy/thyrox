@@ -1,0 +1,10 @@
+src/packages/provider/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/extraUsage.test.ts	0
+src/packages/provider/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/gatewayModelDiscovery.test.ts	0
+src/packages/provider/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/providerCommandUnset.test.ts	15
+src/packages/provider/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/providerRouting.test.ts	17
+src/packages/provider/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/thinking.test.ts	15
+src/packages/provider/src/__tests__/providerRouting.test.ts	src/packages/provider/__tests__/providerRouting.test.ts	17
+src/packages/provider/src/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/extraUsage.test.ts	0
+src/packages/provider/src/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/gatewayModelDiscovery.test.ts	0
+src/packages/provider/src/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/providerCommandUnset.test.ts	0
+src/packages/provider/src/__tests__/providerRouting.test.ts	src/packages/provider/src/__tests__/thinking.test.ts	0

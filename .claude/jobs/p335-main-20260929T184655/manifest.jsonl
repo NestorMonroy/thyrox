@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bash tests/lib/test-podman-capabilities.sh 2>&1 | tail -2 && (cd src/packages/daemon && bun test 2>&1 | grep -E \"^ *[0-9]+ (pass|fail)|\\(fail\\)\")", "started_at": "2026-09-29T18:46:55+00:00"}

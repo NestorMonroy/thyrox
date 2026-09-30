@@ -1,0 +1,29 @@
+=== Un sufijo de dos letras necesita a su familia para excusarse ===
+  ok    sin hermanos sigue contando como preposicion
+  ok    el prefijo entra a la familia
+  ok    con su familia evita el hit (H-DOCS-1139 cerrado)
+  ok    dos hermanos no bastan (el umbral es tres)
+  ok    la familia no excusa a otro prefijo (orden_de)
+  ok    la familia no excusa a otro prefijo (lista_en)
+
+=== Control positivo: el espanol real sobrevive a la exencion ===
+  ok    devuelve_el_valor sigue marcado
+  ok    nombre_del_campo sigue marcado
+  ok    crea_una_orden sigue marcado
+  ok    validacion_de_precio sigue marcado
+
+=== La exencion se mide contra un arbol SINTETICO, no el de un consumidor ===
+  ok    la familia SI se detecto (control de que la medicion es real)
+  ok    absuelve al que declara la familia
+
+=== Una clave de dict es un identificador: la regla lo dice, el AST no ===
+  ok    ve la clave espanola
+  ok    ve la clave inglesa (no filtra por idioma, eso es del otro criterio)
+  ok    NO ve un literal que no es identificador (mime)
+  ok    NO ve un literal numerico
+=== La clave de canon del CONSUMIDOR se exime, y la declara el consumidor ===
+  ok    sin declararla, la clave de canon cae como espanol
+  ok    declarada, el gate la exime
+  ok    sin declaracion el conjunto es vacio, no un default inventado
+
+19 ok, 0 fallos (alcance medido: 19 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)

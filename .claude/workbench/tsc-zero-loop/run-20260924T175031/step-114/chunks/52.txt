@@ -1,0 +1,1 @@
+src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts(29,33): error TS2353: Object literal may only specify known properties, and 'expandPath' does not exist in type 'PermissionHostBindings'.

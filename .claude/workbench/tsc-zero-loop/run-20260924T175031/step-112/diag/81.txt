@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(503,24): error TS2339: Property 'meta' does not exist on type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:493-513 ---
+    493        ? (`${entry.name}@${entry.marketplace}` as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)
+    494        : undefined
+    495  
+    496    logMCPDebug(
+    497      connection.name,
+    498      'Channel notifications re-registered after reconnect',
+    499    )
+    500    connection.client.setNotificationHandler(
+    501      ChannelMessageNotificationSchema(),
+    502      async notification => {
+    503>       const { content, meta } = notification.params
+    504        logMCPDebug(
+    505          connection.name,
+    506          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    507        )
+    508        logEvent('tengu_mcp_channel_message', {
+    509          content_length: content.length,
+    510          meta_key_count: Object.keys(meta ?? {}).length,
+    511          entry_kind:
+    512            entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    513          is_dev: entry?.dev ?? false,
+src/packages/cli/src/headless/sdk/control/handlers.ts(513,24): error TS2339: Property 'dev' does not exist on type 'ChannelEntry'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:503-523 ---
+    503        const { content, meta } = notification.params
+    504        logMCPDebug(
+    505          connection.name,
+    506          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    507        )
+    508        logEvent('tengu_mcp_channel_message', {
+    509          content_length: content.length,
+    510          meta_key_count: Object.keys(meta ?? {}).length,
+    511          entry_kind:
+    512            entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    513>         is_dev: entry?.dev ?? false,
+    514          plugin: pluginId,
+    515        })
+    516        enqueue({
+    517          mode: 'prompt',
+    518          value: wrapChannelMessage(connection.name, content, meta),
+    519          priority: 'next',
+    520          isMeta: true,
+    521          origin: { kind: 'channel', server: connection.name } as unknown as string,
+    522          skipSlashCommands: true,
+    523        })

@@ -1,0 +1,12 @@
+Correct H-THYROX-192 and record ADR-005
+
+H-THYROX-192 was marked resolved by a commit that only changed how the
+test was set up; the production gap, a poor history making the pool ask
+for 0 MiB, stayed open. It now points at the calibration policy that
+closes it, says what that run also found, and declares what remains
+unknown until the hardware harnesses run on a real GPU.
+
+ADR-005 records the policy: a calibrated history asks for the measured
+peak (never below the declared floor); an uncalibrated one asks for the
+floor, or else for the whole GPU one item at a time, which also
+serializes across pools through the shared ledger.

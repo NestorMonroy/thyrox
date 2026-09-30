@@ -1,0 +1,3 @@
+base	9 pass, 0 fail	—
+timeout-label	8 pass, 1 fail	el cuelgue cuenta como fallo y dice el plazo
+fixed-limit	7 pass, 2 fail	el cuelgue cuenta como fallo y dice el plazo | no espera el plazo por defecto

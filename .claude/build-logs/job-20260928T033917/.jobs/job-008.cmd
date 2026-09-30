@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/verify/test_package_typecheck.py 2>&1 | tail -2

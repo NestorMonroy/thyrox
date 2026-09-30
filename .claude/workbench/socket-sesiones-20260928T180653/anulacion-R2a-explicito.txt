@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+162 |       previousAppStateModel: null,
+163 |       previousModelForSession: null,
+164 |     })
+165 |     setMainLoopModelOverride('claude-sonnet-5')
+166 |     regenerateSessionId()
+167 |     expect(events.at(-1)).toEqual(['tengu_refusal_fallback_latch_reset', { source: 'clear', restored_to_explicit_override: false, model_scope: 'catalog_flag' }])
+                                ^
+error: expect(received).toEqual(expected)
+
+@@ -4,3 +4,3 @@
+      "model_scope": "catalog_flag",
+-     "restored_to_explicit_override": false,
++     "restored_to_explicit_override": true,
+      "source": "clear",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:167:27)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > sin override previo el reinicio no es explícito [0.56ms]
+
+ 11 pass
+ 1 fail
+ 21 expect() calls
+Ran 12 tests across 1 file. [62.00ms]

@@ -1,0 +1,6 @@
+[bg] illegal worker-phase transition retired:done → retired:killed for phg00003
+
+ 291 pass
+ 0 fail
+ 478 expect() calls
+Ran 291 tests across 20 files. [6.24s]

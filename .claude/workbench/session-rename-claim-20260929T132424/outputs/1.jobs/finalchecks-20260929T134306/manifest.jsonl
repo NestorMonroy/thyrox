@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c \nset -x\nbun test src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts\nbun test src/packages/cli/__tests__/sessionRegistryAtLaunch.e2e.test.ts\nbun test src/packages/local-observability/__tests__/uds*.test.ts\n", "started_at": "2026-09-29T13:43:06+00:00"}

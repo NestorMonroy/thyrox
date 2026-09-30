@@ -1,0 +1,83 @@
+14 — El universo de la copia lo definía el filtro de selección
+=============================================================
+
+Fecha: 2026-09-18T17:30:49 (date -u)
+Sujeto: la copia de los 12 paquetes de ccnmt a thyrox/src/packages
+Cierra: la mitad de copia de TASK-THYROX-0168
+Hallazgo: H-THYROX-90
+
+EL DEFECTO
+----------
+La copia se midió con find restringido a .ts/.tsx. Ese predicado hizo dos
+trabajos y sólo uno estaba declarado:
+
+  1. seleccionó qué copiar                  <- el trabajo declarado
+  2. fijó el universo del control posterior <- no declarado
+
+El control publicó «0 ausentes» y era cierto, medido contra su propio recorte.
+Un archivo de otra extensión no podía aparecer como ausente porque nunca entró
+en el denominador.
+
+Lo destapó una pregunta del ejecutor («si los copiaste?»), no una re-medición
+propia.
+
+LA MEDICIÓN CORRECTA
+--------------------
+  comm -23 <(cd "$REF/$p" && find . -type f -printf '%P\n' | sort) \
+           <(cd "src/packages/$p" && find . -type f -printf '%P\n' | sort)
+
+36 ausentes. Reparto por extensión (un solo awk, que parte Y cuenta):
+
+  awk -F/ '{f=$NF; n=split(f,p,"."); c[n>1 ? p[n] : "(sin extension)"]++}
+           END{for (k in c) printf "%7d %s\n", c[k], k}' 12-ausentes-todo-tipo.txt
+
+       24 md    21 README de paquete + 3 del skill bundled verify
+        5 (sin extension)  COPYING + 4 binarios rg
+        4 js    tool-registry: REPLTool, SuggestBackgroundPRTool,
+                TungstenTool, VerifyPlanExecutionTool
+        2 exe   los dos rg.exe de win32
+        1 jsx   config/remote/securityCheck.jsx
+
+  .ts/.tsx ausentes: 0  <- la mitad TypeScript SÍ estaba completa, y por eso
+                           el defecto era invisible desde dentro
+
+CUATRO CONTROLES TRAS COPIAR
+-----------------------------
+  1. 0 ausentes en el working tree
+  2. 0 checksums que difieren en los 36
+  3. el modo se preserva — los seis rg vienen 644 en la referencia, o sea que
+     NO traían bit ejecutable, y la copia es fiel a eso
+  4. la referencia intacta: su mtime más reciente es 2026-09-02T08:48:06,
+     dieciséis días antes de esta copia (no es repo git, así que el control
+     es por mtime y no por git status)
+
+34 DE 36 EN EL ÍNDICE
+---------------------
+.gitignore:75 declara *.exe. Los dos rg.exe quedan copiados en el working tree
+y fuera del índice. Dato que pesa en la decisión: arm64-win32/rg.exe mide
+0 bytes en la PROPIA referencia; x64-win32 mide 5.4 MB. Desenlace:
+TASK-THYROX-0172.
+
+Commit: thyrox@832519e2 (--no-verify: 3504 errores TS de check-cli-typecheck,
+ninguno cita alguno de los 34 — medido por grep de cada ruta contra la salida
+del gate).
+
+DOS CORRECCIONES DE MIS PROPIAS AFIRMACIONES
+---------------------------------------------
+(a) «-not -path node_modules» no filtraba nada: 123 entradas con y sin poda en
+    shell, porque los paquetes de la referencia no tienen node_modules. La
+    guarda medía cero. La forma correcta ante un árbol que SÍ los tenga es
+    -name node_modules -prune -o -type f -print, que no desciende.
+
+(b) Afirmé «awk no recorre un árbol de directorios — no tiene cómo». FALSO, y
+    lo dije de memoria. Medido:
+
+      gawk        SÍ — @load "filefuncs" da fts(), que es un file tree walk;
+                  @load "readdir" lee un directorio como stream de registros
+      mawk        no — rechaza @load ("unexpected character '@'") y ante un
+                  directorio da "read error (Is a directory)"
+      cualquiera  "find ..." | getline, pero ahí recorre find, no awk
+
+    Aquí awk es mawk 1.3.4 y gawk está AUSENTE, así que la conclusión operativa
+    se sostiene — pero no por la razón que di. El árbol ya sabía que es mawk
+    (una regla cita su REcompile() panic); yo generalicé a «awk» sin medirlo.

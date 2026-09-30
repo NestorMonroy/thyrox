@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/hooks/test-hook-error-log.sh

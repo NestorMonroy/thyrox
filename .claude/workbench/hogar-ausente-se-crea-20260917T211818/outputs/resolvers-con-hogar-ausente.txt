@@ -1,0 +1,4 @@
+log_dir        devuelve=/tmp/tmpe7wdd5_y/no/existe  existe_tras_llamar=False
+cache_dir      devuelve=/tmp/tmpe7wdd5_y/no/existe  existe_tras_llamar=False
+jobs_dir       devuelve=/tmp/tmpe7wdd5_y/no/existe  existe_tras_llamar=False
+workbench_dir  devuelve=/tmp/tmpe7wdd5_y/no/existe  existe_tras_llamar=False

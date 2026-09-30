@@ -1,0 +1,48 @@
+src/packages/provider/__tests__/providerStreaming.test.ts(152,31): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:142-162 ---
+    142        { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
+    143        { type: 'content_block_stop', index: 0 },
+    144        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    145      ])))
+    146      expect((await p.send({ ...peticion, stream: true })).content).toEqual(
+    147        [{ type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} }])
+    148    })
+    149  
+    150    test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
+    151      const p = proveedor(() => new Response(cuerpoSse([
+    152>       EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+    153        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
+    154        { type: 'content_block_stop', index: 0 },
+    155        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    156      ])))
+    157      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/tu_1|JSON/)
+    158    })
+    159  
+    160    test('dos bloques conservan su orden por indice', async () => {
+    161      const p = proveedor(() => new Response(cuerpoSse([
+    162        EVENTOS_TEXTO[0],
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(162,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:152-172 ---
+    152        EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+    153        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
+    154        { type: 'content_block_stop', index: 0 },
+    155        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    156      ])))
+    157      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/tu_1|JSON/)
+    158    })
+    159  
+    160    test('dos bloques conservan su orden por indice', async () => {
+    161      const p = proveedor(() => new Response(cuerpoSse([
+    162>       EVENTOS_TEXTO[0],
+    163        { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
+    164        { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'voy a correr' } },
+    165        { type: 'content_block_stop', index: 0 },
+    166        { type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'tu_9', name: 'Bash', input: {} } },
+    167        { type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"command":"pwd"}' } },
+    168        { type: 'content_block_stop', index: 1 },
+    169        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 9 } },
+    170      ])))
+    171      const turno = await p.send({ ...peticion, stream: true })
+    172      expect(turno.content.map((b) => b.type)).toEqual(['text', 'tool_use'])
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.

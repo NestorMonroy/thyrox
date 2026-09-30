@@ -1,0 +1,16 @@
+src/packages/repl/src/diagnostics/desktopDeepLink.ts(3,40): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  --- código src/packages/repl/src/diagnostics/desktopDeepLink.ts:1-13 ---
+      1  import { readdir } from 'fs/promises'
+      2  import { join } from 'path'
+      3> import { coerce as semverCoerce } from 'semver'
+      4  import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+      5  import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+      6  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+      7  import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+      8  import { pathExists } from '@thyrox/storage/file.js'
+      9  import { gte as semverGte } from '@thyrox/config/semver'
+     10  
+     11  const MIN_DESKTOP_VERSION = '1.1.2396'
+     12  
+     13  function isDevMode(): boolean {
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`

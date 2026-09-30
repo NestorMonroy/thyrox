@@ -1,0 +1,427 @@
+diff --git a/.claude/baselines/identifier_language_baseline.txt b/.claude/baselines/identifier_language_baseline.txt
+index 33f52955..7931e093 100644
+--- a/.claude/baselines/identifier_language_baseline.txt
++++ b/.claude/baselines/identifier_language_baseline.txt
+@@ -2754,7 +2754,6 @@ src/task/asignadas.py::ASIGNADAS
+ src/task/asignadas.py::DEVUELTAS
+ src/task/asignadas.py::DUENOS
+ src/task/asignadas.py::TRABAJO_PARCIAL
+-src/task/board_sync.py::acunar-tarjeta
+ src/task/board_sync.py::reconciliar-estados
+ src/task/board_sync.py::reconciliar-todo
+ src/task/board_sync.py::sincronizar-board
+diff --git a/.claude/baselines/identifier_language_baseline_claude.txt b/.claude/baselines/identifier_language_baseline_claude.txt
+index adede1df..c72d3b9a 100644
+--- a/.claude/baselines/identifier_language_baseline_claude.txt
++++ b/.claude/baselines/identifier_language_baseline_claude.txt
+@@ -750,7 +750,6 @@ src/task/asignadas.py::ASIGNADAS
+ src/task/asignadas.py::DEVUELTAS
+ src/task/asignadas.py::DUENOS
+ src/task/asignadas.py::TRABAJO_PARCIAL
+-src/task/board_sync.py::acunar-tarjeta
+ src/task/board_sync.py::reconciliar-estados
+ src/task/board_sync.py::reconciliar-todo
+ src/task/board_sync.py::sincronizar-board
+diff --git a/src/hooks/task_lifecycle.py b/src/hooks/task_lifecycle.py
+index ba19862f..42340e84 100644
+--- a/src/hooks/task_lifecycle.py
++++ b/src/hooks/task_lifecycle.py
+@@ -2,7 +2,7 @@
+ """El puente entre el ciclo de vida de una tarjeta del cliente y el store.
+ 
+ Cierra el disparo que ``TASK-DOCS-0404`` lleva abierto: el mecanismo de acuñado
+-—``board_sync.mint_created_card``— existia con **cero invocadores de
++—``board_sync.assign_created_card``— existia con **cero invocadores de
+ produccion**, asi que la cita durable se acuñaba a mano y a posteriori. Este
+ modulo es su unico consumidor real.
+ 
+@@ -39,7 +39,7 @@ claves (``hook_event_name``, ``session_id``, ``task_id``).
+ en el alta, no un barrido; la reconciliacion posterior es
+ ``bin/task_ids ingest-board``. Y ciega a que el board haya escrito ya el
+ archivo de la tarjeta: si el cliente despacha el evento antes de escribirlo,
+-``mint_created_card`` no la encuentra y este modulo lo reporta sin fallar.
++``assign_created_card`` no la encuentra y este modulo lo reporta sin fallar.
+ """
+ from __future__ import annotations
+ 
+@@ -93,11 +93,11 @@ def handle(payload: dict, store_path, board_dir=None, layer=None) -> dict:
+                            "dos no se sabe que fila tocar")}
+ 
+     if event == "TaskCreated":
+-        result = board_sync.mint_created_card(
++        result = board_sync.assign_created_card(
+             store_path, session, ordinal, board_dir=board_dir, layer=layer,
+             tool_name=event)
+         return {"acted": result.acted, "reason": result.reason,
+-                "minted": result.minted}
++                "assigned": result.assigned}
+ 
+     # `TaskCompleted`: el estado lo lleva el reconciliador, que aparea la
+     # tarjeta con su fila. No se acuña — la cita ya existe desde el alta.
+@@ -113,7 +113,7 @@ def main(argv=None) -> int:
+                         help="el store destino; por defecto el del proveedor")
+     parser.add_argument("--board", default=None,
+                         help="directorio de tarjetas (default: el de la sesion)")
+-    parser.add_argument("--capa", default=None,
++    parser.add_argument("--layer", default=None,
+                         help="capa declarada de la cita")
+     args = parser.parse_args(argv)
+ 
+@@ -121,7 +121,7 @@ def main(argv=None) -> int:
+     store = Path(args.store) if args.store else agents_paths.agent_store_path()
+     try:
+         result = handle(payload, store, board_dir=args.board,
+-                           layer=args.capa)
++                           layer=args.layer)
+     except Exception as error:                      # noqa: BLE001
+         # Deliberadamente ancho: el contrato del hook es no romper el turno.
+         print(f"task_lifecycle: no se acuño ({error})", file=sys.stderr)
+diff --git a/src/task/board_sync.py b/src/task/board_sync.py
+index 60752893..af85a99a 100644
+--- a/src/task/board_sync.py
++++ b/src/task/board_sync.py
+@@ -159,15 +159,15 @@ class BoardSyncError(RuntimeError):
+ #: lista a secas porque una lista vacia no discrimina: «el evento no era una
+ #: creacion» y «no habia nada nuevo que acuñar» son conductas distintas con la
+ #: misma cifra.
+-MintResult = collections.namedtuple("MintResult", "acted reason minted")
++AssignResult = collections.namedtuple("AssignResult", "acted reason assigned")
+ 
+ 
+ def _resolve_board(session_id: str, declared) -> pathlib.Path:
+     return pathlib.Path(declared) if declared else board_dir(session_id)
+ 
+ 
+-def mint_created_card(store_path, session_id, ordinal, *, board_dir=None,
+-                      layer=None, tool_name=CREATION_EVENTS[0]) -> MintResult:
++def assign_created_card(store_path, session_id, ordinal, *, board_dir=None,
++                      layer=None, tool_name=CREATION_EVENTS[0]) -> AssignResult:
+     """Acuña la cita de la tarjeta **recien creada**, y de ninguna otra.
+ 
+     El acotamiento por evento es el mecanismo, no una comodidad: el hook que
+@@ -175,19 +175,19 @@ def mint_created_card(store_path, session_id, ordinal, *, board_dir=None,
+     renombre insertaria una fila mas con una cita mas para el mismo trabajo.
+     """
+     if tool_name not in CREATION_EVENTS:
+-        return MintResult(
++        return AssignResult(
+             acted=False,
+             reason=(f"no aplica: el evento es {tool_name} y la cita se acuña al "
+                     f"CREAR. Acuñar en un renombre daria al mismo trabajo una "
+                     f"fila y una cita mas."),
+-            minted=[])
+-    minted = task_ids.ingest_board(
++            assigned=[])
++    assigned = task_ids.ingest_board(
+         store_path, _resolve_board(session_id, board_dir), session_id,
+         [str(ordinal)], layer=layer)
+-    return MintResult(
++    return AssignResult(
+         acted=True,
+         reason="evento de creacion: la cita se acuña en el mismo INSERT",
+-        minted=minted)
++        assigned=assigned)
+ 
+ 
+ def sync_card(store_path, session_id, ordinal, citation, *, board_dir=None) -> dict:
+@@ -487,11 +487,11 @@ def reconcile_all_sessions(store_path, *, board_root=None,
+ 
+ 
+ def _cmd_reconcile_status(args: argparse.Namespace) -> int:
+-    result = reconcile_status(args.store, args.sesion, board_dir=args.board,
++    result = reconcile_status(args.store, args.session, board_dir=args.board,
+                               apply_changes=args.aplicar)
+     buckets = result["buckets"]
+     total = result["total_cards"]
+-    print(f"reconciliar-estados: sesion {args.sesion}")
++    print(f"reconciliar-estados: sesion {args.session}")
+     print(f"  universo: {total} tarjeta(s) del board")
+     for name in RECONCILE_BUCKETS:
+         print(f"  {name:14s} {len(buckets[name]):5d}")
+@@ -549,23 +549,23 @@ def _cmd_reconcile_all(args: argparse.Namespace) -> int:
+     return 0
+ 
+ 
+-def _cmd_mint_card(args: argparse.Namespace) -> int:
+-    result = mint_created_card(args.store, args.sesion, args.ordinal,
+-                               board_dir=args.board, layer=args.capa,
+-                               tool_name=args.evento)
++def _cmd_assign_card(args: argparse.Namespace) -> int:
++    result = assign_created_card(args.store, args.session, args.ordinal,
++                               board_dir=args.board, layer=args.layer,
++                               tool_name=args.event)
+     if not result.acted:
+-        print(f"acunar-tarjeta: {result.reason}")
++        print(f"assign-card-id: {result.reason}")
+         return 0
+-    print(f"acunar-tarjeta: {len(result.minted)} cita(s) acuñada(s) "
++    print(f"assign-card-id: {len(result.assigned)} cita(s) acuñada(s) "
+           f"(alcance medido: 1 tarjeta pedida)")
+-    for board_id, store_id, citation, subject in result.minted:
++    for board_id, store_id, citation, subject in result.assigned:
+         print(f"  board #{board_id:<5} -> store #{store_id:<6} {citation}"
+               f"  {subject[:52]}")
+     return 0
+ 
+ 
+ def _cmd_sync_board(args: argparse.Namespace) -> int:
+-    res = sync_card(args.store, args.sesion, args.ordinal, args.cita,
++    res = sync_card(args.store, args.session, args.ordinal, args.cita,
+                     board_dir=args.board)
+     print(f"sincronizar-board: {res['citation']} (store #{res['task_id']}, "
+           f"board #{res['board_ordinal']})")
+@@ -585,25 +585,25 @@ def main(argv=None) -> int:
+     parser.add_argument("--store", default=None)
+     sub = parser.add_subparsers(dest="comando", required=True)
+ 
+-    p_mint = sub.add_parser(
+-        "acunar-tarjeta",
++    p_assign = sub.add_parser(
++        "assign-card-id",
+         help="acuña la cita de UNA tarjeta recien creada (#159)")
+-    p_mint.add_argument("sesion")
+-    p_mint.add_argument("ordinal")
+-    p_mint.add_argument("--capa", default=None,
++    p_assign.add_argument("session")
++    p_assign.add_argument("ordinal")
++    p_assign.add_argument("--layer", default=None,
+                         choices=list(task_ids.LAYERS) + [task_ids.UNKNOWN_LAYER],
+                         help="capa declarada; sin ella la fila nace en «gen»")
+-    p_mint.add_argument("--board", default=None,
++    p_assign.add_argument("--board", default=None,
+                         help="directorio de tarjetas (default: el de la sesion)")
+-    p_mint.add_argument("--evento", default=CREATION_EVENTS[0],
++    p_assign.add_argument("--event", default=CREATION_EVENTS[0],
+                         help="el tool del cliente que disparo; sin uno de "
+                              f"{list(CREATION_EVENTS)} no se acuña")
+-    p_mint.set_defaults(func=_cmd_mint_card)
++    p_assign.set_defaults(func=_cmd_assign_card)
+ 
+     p_sync = sub.add_parser(
+         "sincronizar-board",
+         help="lleva al store el renombre y el cierre de UNA tarjeta (#184)")
+-    p_sync.add_argument("sesion")
++    p_sync.add_argument("session")
+     p_sync.add_argument("ordinal")
+     p_sync.add_argument("--cita", required=True,
+                         help="la fila destino, por su TASK-<CAPA>-NNNN")
+@@ -614,7 +614,7 @@ def main(argv=None) -> int:
+     p_rec = sub.add_parser(
+         "reconciliar-estados",
+         help="lleva al store el estado de TODAS las tarjetas, por sujeto (#184)")
+-    p_rec.add_argument("sesion")
++    p_rec.add_argument("session")
+     p_rec.add_argument("--board", default=None,
+                        help="directorio de tarjetas (default: el de la sesion)")
+     p_rec.add_argument("--aplicar", action="store_true",
+diff --git a/tests/hooks/test_task_lifecycle.py b/tests/hooks/test_task_lifecycle.py
+index 777a92ff..fe4957a1 100644
+--- a/tests/hooks/test_task_lifecycle.py
++++ b/tests/hooks/test_task_lifecycle.py
+@@ -113,7 +113,7 @@ def scenario():
+ def run(event, ordinal, session, board, store, layer="thyrox"):
+     return subprocess.run(
+         [sys.executable, str(HOOK), "--store", str(store), "--board", str(board),
+-         "--capa", layer],
++         "--layer", layer],
+         input=payload(event, ordinal, "Sujeto de la sonda", session),
+         capture_output=True, text=True)
+ 
+@@ -186,6 +186,37 @@ commands = [h["command"] for ev in ("TaskCreated", "TaskCompleted")
+ check("los dos apuntan al mismo guion", 2,
+       sum(1 for c in commands if "task_lifecycle.py" in c))
+ 
++print()
++print("== 7. renombre al ingles (#310): `--layer`, `assign_created_card`, "
++      "`assigned` ==")
++# Decision del ejecutor (la misma de #300): el verbo es `assign`, nunca
++# `mint` ni `acuñar`.
++from hooks import task_lifecycle  # noqa: E402
++
++check("existe `board_sync.assign_created_card`", True,
++      hasattr(board_sync, "assign_created_card"))
++check("y el nombre viejo `mint_created_card` ya no esta", False,
++      hasattr(board_sync, "mint_created_card"))
++
++# `run()` ya envia `--layer`; el sondeo de la opcion vieja va aparte, sin el
++# helper, porque `run()` es justamente lo que se acaba de migrar.
++r6 = subprocess.run(
++    [sys.executable, str(HOOK), "--store", str(store), "--board", str(board),
++     "--capa", "thyrox"],
++    input=payload("TaskCreated", 9, "Sujeto de la sonda", session),
++    capture_output=True, text=True)
++check("la opcion vieja `--capa` ya NO se acepta (exit 2)", 2, r6.returncode)
++
++(board / "10.json").write_text(json.dumps(
++    {"subject": "Sujeto de otra sonda", "status": "pending",
++     "description": "lo que hay que hacer"}))
++result = task_lifecycle.handle(
++    json.loads(payload("TaskCreated", 10, "Sujeto de otra sonda", session)),
++    store, board_dir=board, layer="thyrox")
++check("`handle()` devuelve la clave `assigned`, no `minted`", True,
++      "assigned" in result)
++check("y `minted` ya no esta", False, "minted" in result)
++
+ print()
+ print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
+ sys.exit(0 if FAILED == 0 else 1)
+diff --git a/tests/task/test_board_sync.py b/tests/task/test_board_sync.py
+index e343ec2a..aab06eec 100644
+--- a/tests/task/test_board_sync.py
++++ b/tests/task/test_board_sync.py
+@@ -229,13 +229,13 @@ _, DB = store_con([("1", "Una fila vieja que no se toca", S, "docs",
+ BOARD = board_con({"159": {"id": 159, "subject": SUJETO_BOARD_159,
+                            "status": "pending", "description": ""}})
+ 
+-creado = bs.mint_created_card(DB, S, "159", board_dir=BOARD, layer="docs",
++creado = bs.assign_created_card(DB, S, "159", board_dir=BOARD, layer="docs",
+                               tool_name="TaskCreate")
+ check(creado.acted is True, "2a: un TaskCreate SI acuña")
+-check(len(creado.minted) == 1, "2b: y acuña exactamente la tarjeta pedida")
+-check(creado.minted[0][2].startswith("TASK-DOCS-"),
++check(len(creado.assigned) == 1, "2b: y acuña exactamente la tarjeta pedida")
++check(creado.assigned[0][2].startswith("TASK-DOCS-"),
+       "2c: la cita nace en la capa declarada")
+-_nueva = fila_por_cita(DB, S, creado.minted[0][2])
++_nueva = fila_por_cita(DB, S, creado.assigned[0][2])
+ check(_nueva is not None and _nueva[0] == SUJETO_BOARD_159,
+       "2d: la fila nueva lleva el sujeto de la tarjeta")
+ check(fila(DB, S, "1")[0] == "Una fila vieja que no se toca",
+@@ -244,11 +244,11 @@ check(fila(DB, S, "1")[0] == "Una fila vieja que no se toca",
+ # 2f es el control de anulacion de #159: si se retira el acotamiento a
+ # TaskCreate, esta asercion —y solo esta— cae.
+ _, DB2 = store_con([("1", "Otra fila vieja", S, "docs", "TASK-DOCS-0001", "pending")])
+-actualizado = bs.mint_created_card(DB2, S, "159", board_dir=BOARD, layer="docs",
++actualizado = bs.assign_created_card(DB2, S, "159", board_dir=BOARD, layer="docs",
+                                    tool_name="TaskUpdate")
+ check(actualizado.acted is False,
+       "2f: un TaskUpdate NO acuña — acuñar ahi duplicaria el sujeto en cada renombre")
+-check(actualizado.minted == [], "2g: y no inserta ninguna fila")
++check(actualizado.assigned == [], "2g: y no inserta ninguna fila")
+ _c = sqlite3.connect(DB2)
+ _total = _c.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]
+ _c.close()
+@@ -403,11 +403,11 @@ check("TASK-DOCS-9999" in _mal.stderr,
+       "7f: el motivo va a stderr y nombra la cita que no se pudo resolver")
+ 
+ _crear = subprocess.run(
+-    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "acunar-tarjeta",
+-     S, "159", "--board", str(BOARD), "--capa", "docs",
+-     "--evento", "TaskUpdate"],
++    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "assign-card-id",
++     S, "159", "--board", str(BOARD), "--layer", "docs",
++     "--event", "TaskUpdate"],
+     capture_output=True, text=True)
+-check(_crear.returncode == 0, "7g: `acunar-tarjeta` con TaskUpdate no es un error")
++check(_crear.returncode == 0, "7g: `assign-card-id` con TaskUpdate no es un error")
+ check("TaskUpdate" in _crear.stdout,
+       "7h: y dice por que no acuñó, en vez de imprimir un 0 mudo")
+ 
+@@ -604,7 +604,7 @@ BOARD10 = board_con({
+              "description": "CORREGIDA: la premisa medía otra poblacion"},
+ })
+ 
+-_ns10 = argparse.Namespace(store=DB10, sesion=S, board=BOARD10, aplicar=False)
++_ns10 = argparse.Namespace(store=DB10, session=S, board=BOARD10, aplicar=False)
+ _buf10 = io.StringIO()
+ with contextlib.redirect_stdout(_buf10):
+     _rc10 = bs._cmd_reconcile_status(_ns10)
+@@ -799,7 +799,7 @@ check(res12b.get("store_rows") == 1,
+ _output12 = io.StringIO()
+ with contextlib.redirect_stdout(_output12):
+     bs._cmd_reconcile_status(argparse.Namespace(
+-        store=DB12, sesion=S, board=BOARD12, aplicar=False))
++        store=DB12, session=S, board=BOARD12, aplicar=False))
+ _text12 = _output12.getvalue()
+ _line12 = [l for l in _text12.splitlines() if "sin tarjeta" in l]
+ check(len(_line12) == 1 and "2" in _line12[0] and "3" in _line12[0],
+@@ -821,6 +821,89 @@ check(res12c.get("unpaired_total") == 2,
+       "12j: reconcile_all_sessions agrega las huerfanas de sus sesiones")
+ check(res12c.get("open_unpaired_total") == 1,
+       "12k: y agrega cuantas estan abiertas")
++
++# ---------------------------------------------------------------------------
++# 13 — renombre al ingles (#310). Decision del ejecutor (la misma de #300):
++# el verbo es `assign`, nunca `mint` ni `acuñar`. `acunar-tarjeta` pasa a
++# `assign-card-id`, `--capa` a `--layer`, `--evento` a `--event` y el
++# posicional `sesion` a `session`.
++# ---------------------------------------------------------------------------
++check(hasattr(bs, "assign_created_card"),
++      "13a: existe la funcion con el nombre nuevo")
++check(not hasattr(bs, "mint_created_card"),
++      "13b: y el nombre viejo ya no esta")
++check(hasattr(bs, "AssignResult"),
++      "13c: el tipo del resultado tambien se tradujo")
++check(not hasattr(bs, "MintResult"),
++      "13d: y su nombre viejo tampoco")
++check(hasattr(bs, "_cmd_assign_card"),
++      "13e: el manejador del CLI usa el nombre nuevo")
++check(not hasattr(bs, "_cmd_mint_card"),
++      "13f: y no el viejo")
++
++created13 = bs.assign_created_card(DB, S, "159", board_dir=BOARD, layer="docs",
++                                  tool_name="TaskCreate")
++check(hasattr(created13, "assigned"),
++      "13g: el campo del namedtuple se llama `assigned`, no `minted`")
++
++_new_cli = subprocess.run(
++    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "assign-card-id",
++     S, "159", "--board", str(BOARD), "--layer", "docs",
++     "--event", "TaskUpdate"],
++    capture_output=True, text=True)
++check(_new_cli.returncode == 0,
++      "13h: `assign-card-id` con --layer/--event corre")
++check("TaskUpdate" in _new_cli.stdout, "13i: y respeta --event")
++
++_old_cmd = subprocess.run(
++    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "acunar-tarjeta",
++     S, "159"],
++    capture_output=True, text=True)
++# El codigo de salida solo (2) no discrimina: la MISMA cifra sale si el
++# board no existe en tiempo de ejecucion. Lo que prueba que argparse RECHAZO
++# el nombre viejo es su propio mensaje, no el exit code a secas.
++check(_old_cmd.returncode == 2 and
++      "invalid choice: 'acunar-tarjeta'" in _old_cmd.stderr,
++      "13j: el subcomando viejo `acunar-tarjeta` ya NO se acepta "
++      "(argparse lo rechaza)")
++
++_old_layer_flag = subprocess.run(
++    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "assign-card-id",
++     S, "159", "--capa", "docs"],
++    capture_output=True, text=True)
++check(_old_layer_flag.returncode == 2 and
++      "unrecognized arguments: --capa" in _old_layer_flag.stderr,
++      "13k: la opcion vieja `--capa` ya NO se acepta (argparse la rechaza)")
++
++_old_event_flag = subprocess.run(
++    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "assign-card-id",
++     S, "159", "--evento", "TaskCreate"],
++    capture_output=True, text=True)
++check(_old_event_flag.returncode == 2 and
++      "unrecognized arguments: --evento" in _old_event_flag.stderr,
++      "13l: la opcion vieja `--evento` ya NO se acepta (argparse la rechaza)")
++
++_, DB13 = store_con([("1", "Fila 13", S, "docs", "TASK-DOCS-0910", "pending")])
++BOARD13 = board_con({"1": {"subject": "Fila 13", "status": "pending",
++                           "description": ""}})
++_buf13 = io.StringIO()
++with contextlib.redirect_stdout(_buf13):
++    _rc13 = bs._cmd_reconcile_status(argparse.Namespace(
++        store=DB13, session=S, board=BOARD13, aplicar=False))
++check(_rc13 == 0,
++      "13m: `_cmd_reconcile_status` toma `session`, no `sesion`")
++
++_buf13n = io.StringIO()
++with contextlib.redirect_stdout(_buf13n):
++    _rc13n = bs._cmd_assign_card(argparse.Namespace(
++        store=DB13, session=S, ordinal="1", board=BOARD13, layer="docs",
++        event="TaskUpdate"))
++check(_rc13n == 0,
++      "13n: `_cmd_assign_card` toma `session`, `layer` y `event`, no "
++      "`sesion`/`capa`/`evento`")
++check("TaskUpdate" in _buf13n.getvalue(),
++      "13o: y usa `args.event` para decidir si acuña")
++
+ print(f"{checks} aserciones")
+ if failures:
+     for f in failures:

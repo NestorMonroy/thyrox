@@ -1,0 +1,4 @@
+src/packages/app-host/src/runtime/__tests__/sessionRegistryAtLaunchSweep.test.ts
+src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts
+src/packages/local-observability/src/uds/sessionRegistryState.ts

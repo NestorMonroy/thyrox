@@ -1,0 +1,6 @@
+test-hallazgo-submodulo-baseline
+  ok    el baseline del consumidor congela la ruta (exit 0)
+  ok    la variable declarada resuelve el baseline (exit 0)
+  ok    rehusa sin baseline (exit 2) y no emite conteo
+  ok    --write-baseline aterriza en el consumidor
+  4 caso(s), 0 falla(s)

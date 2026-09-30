@@ -1,0 +1,8 @@
+{
+  "id": "187",
+  "subject": "Triar los 31 WARN del audit ahora que sus gates sí corren",
+  "description": "El audit pasó de 3 PASS/0 FAIL/42 WARN a 16 PASS/0 FAIL/31 WARN/14 SIN MEDIR al reapuntar sus 36 rutas a src/ (H-DOCS-1115). El salto dice que los gates miden, no que midan bien. Separar los 14 SIN MEDIR —precondición ausente en este contenedor, legítimo— de los WARN que son defecto real.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

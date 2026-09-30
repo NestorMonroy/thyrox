@@ -1,0 +1,8 @@
+{
+  "id": "288",
+  "subject": "El roster mide vivacidad, no producción: falta el eje de tool_use mutante",
+  "description": "Directiva del ejecutor 2026-09-09: «una cosa es que esten vivos y otra que esten trabajando, queremos que esten trabajando». Medido ese dia: dos agentes con mtime de transcript avanzando cada pocos segundos y CERO tool_use mutante en 5 minutos — uno de ellos (a39ad3d1d66f97fd6) llevaba 5 min greppeando el transcript de la sesion principal por una atribucion de error, fuera de su tarea por completo. mtime que avanza solo prueba que el transcript crece; crece igual con thinking y lectura. El instrumento que discrimina es contar tool_use MUTANTES (Write/Edit/MultiEdit, y Bash con cat >, tee, >>, sed -i, git) en una ventana, y leer los ultimos comandos verbatim para separar «revisa lo que escribio antes de cerrar» de «se fue de tema». reconcile-agents.sh no tiene ese eje: clasifica vivo/atascado/desaparecido por mtime del .output (y ademas lee el symlink en vez de su destino, que es #285). Entregable: anadir al roster la tasa de mutacion por ventana, con Metrica y Ciega a declaradas — es ciego a un agente que produce fuera de git y a uno que muta en bucle sin avanzar. Contexto: ERR-061 (el tipo del ultimo mensaje tampoco discrimina) y H-DOCS-1004.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

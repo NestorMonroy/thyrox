@@ -1,0 +1,386 @@
+[
+ {
+  "n": 1,
+  "file": "src/packages/@ant/claude-for-chrome-mcp/src/bridgeClient.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 2,
+  "file": "src/packages/@ant/computer-use-input/src/backends/linux.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 3,
+  "file": "src/packages/@ant/computer-use-input/src/backends/win32.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 4,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 5,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/win32/inputIndicator.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 6,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/win32/windowMessage.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 7,
+  "file": "src/packages/@ant/computer-use-swift/src/backends/darwin.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 8,
+  "file": "src/packages/@ant/computer-use-swift/src/backends/win32.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 9,
+  "file": "src/packages/@ant/ink/src/hooks/useSearchInput.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 10,
+  "file": "src/packages/agent/__tests__/claudeInChromeCommon.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 11,
+  "file": "src/packages/agent/claudeInChromeSetupPortable.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 12,
+  "file": "src/packages/agent/effort.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 13,
+  "file": "src/packages/agent/featureFlags.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 14,
+  "file": "src/packages/agent/goalStopHook.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 15,
+  "file": "src/packages/agent/internal/loopDynamicCore.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 16,
+  "file": "src/packages/app-host/src/init.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 17,
+  "file": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 18,
+  "file": "src/packages/color-diff-napi/src/index.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 19,
+  "file": "src/packages/command-runtime/src/commands/plugin/PluginErrors.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 20,
+  "file": "src/packages/command-runtime/src/commands/review/featureFlags.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 21,
+  "file": "src/packages/config/global/config.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 22,
+  "file": "src/packages/config/plugin/gitAvailability.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 23,
+  "file": "src/packages/config/plugin/installedPluginsManager.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 24,
+  "file": "src/packages/config/plugin/lspPluginIntegration.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 25,
+  "file": "src/packages/config/plugin/nameCollision.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 26,
+  "file": "src/packages/config/plugin/pluginVersioning.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 27,
+  "file": "src/packages/config/plugin/zipCache.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 28,
+  "file": "src/packages/config/plugin/zipCacheAdapters.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 29,
+  "file": "src/packages/local-observability/src/__tests__/cleanupHelpers.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 30,
+  "file": "src/packages/memory/src/teamMemSyncTypes.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 31,
+  "file": "src/packages/output/src/__tests__/safeJoinAndTruncate.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 32,
+  "file": "src/packages/provider/src/anthropic/client.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 33,
+  "file": "src/packages/provider/src/codex/fetchAdapter.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 34,
+  "file": "src/packages/provider/src/logging.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 35,
+  "file": "src/packages/provider/src/mockRateLimits.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 9
+ },
+ {
+  "n": 36,
+  "file": "src/packages/provider/src/proxy.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 37,
+  "file": "src/packages/provider/src/vcr.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 38,
+  "file": "src/packages/repl/src/__tests__/relaunch.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 39,
+  "file": "src/packages/repl/src/components/ConsoleOAuthFlow.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 4
+ },
+ {
+  "n": 40,
+  "file": "src/packages/repl/src/components/LogoV2/LogoV2.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 41,
+  "file": "src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 42,
+  "file": "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 43,
+  "file": "src/packages/repl/src/components/Spinner.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 44,
+  "file": "src/packages/repl/src/components/Spinner/SpinnerAnimationRow.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 45,
+  "file": "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 46,
+  "file": "src/packages/repl/src/components/goal/GoalPanel.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 47,
+  "file": "src/packages/repl/src/components/wizard/types.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 48,
+  "file": "src/packages/shell/src/shell/prefix.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 49,
+  "file": "src/packages/tool-registry/src/services/toolExecution.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 50,
+  "file": "src/packages/tool-registry/src/tools/MCPTool/UI.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 51,
+  "file": "src/packages/tool-registry/src/tools/SendMessageTool/UI.tsx",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 52,
+  "file": "src/packages/tool-registry/src/tools/TaskStopTool/TaskStopTool.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 53,
+  "file": "src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 54,
+  "file": "src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 55,
+  "file": "src/packages/updater/src/nativeInstaller/download.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 56,
+  "file": "src/rules/emit/markdown.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 57,
+  "file": "tests/coordination/branchIntegration.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 58,
+  "file": "tests/integration/context-build.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 1
+ },
+ {
+  "n": 59,
+  "file": "tests/unit/utils/treeify.test.ts",
+  "pattern": "dead-local-not-read",
+  "instances": 2
+ },
+ {
+  "n": 60,
+  "file": "src/packages/tool-registry/src/runtime.ts",
+  "pattern": "undefined-name-inherited-from-source",
+  "instances": 4
+ },
+ {
+  "n": 61,
+  "file": "src/packages/agent/query.ts",
+  "pattern": "local-context-with-unknown-tools",
+  "instances": 2
+ },
+ {
+  "n": 62,
+  "file": "src/packages/repl/src/tips/tipRegistry.ts",
+  "pattern": "stub-context-unknown-subset-typed-locally",
+  "instances": 3
+ },
+ {
+  "n": 63,
+  "file": "src/packages/repl/src/tips/tipScheduler.ts",
+  "pattern": "stub-context-unknown-subset-typed-locally",
+  "instances": 4
+ },
+ {
+  "n": 64,
+  "file": "tests/integration/cli-arguments.test.ts",
+  "pattern": "untyped-command-builder-in-test",
+  "instances": 3
+ }
+]

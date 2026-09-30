@@ -1,0 +1,1 @@
+function Il(){return Et()||kb()!==null}

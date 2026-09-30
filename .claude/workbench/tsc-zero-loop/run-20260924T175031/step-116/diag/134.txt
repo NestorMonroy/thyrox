@@ -1,0 +1,46 @@
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(513,9): error TS2322: Type 'string' is not assignable to type 'InternalPermissionMode'.
+  --- código src/packages/repl/src/components/PromptInput/PromptInput.tsx:503-523 ---
+    503  
+    504    // Team mode: all background tasks are in-process teammates
+    505    const isTeammateMode =
+    506      inProcessTeammates.length > 0 || viewedTeammate !== undefined
+    507  
+    508    // When viewing a teammate, show their permission mode in the footer instead of the leader's
+    509    const effectiveToolPermissionContext = useMemo((): ToolPermissionContext => {
+    510      if (viewedTeammate) {
+    511        return {
+    512          ...toolPermissionContext,
+    513>         mode: viewedTeammate.permissionMode,
+    514        }
+    515      }
+    516      return toolPermissionContext
+    517    }, [viewedTeammate, toolPermissionContext])
+    518    const { historyQuery, setHistoryQuery, historyMatch, historyFailedMatch } =
+    519      useHistorySearch(
+    520        entry => {
+    521          setPastedContents(entry.pastedContents)
+    522          void onSubmit(entry.display)
+    523        },
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(1903,9): error TS2322: Type 'string' is not assignable to type 'InternalPermissionMode'.
+  --- código src/packages/repl/src/components/PromptInput/PromptInput.tsx:1893-1913 ---
+   1893        setHelpOpen(false)
+   1894      }
+   1895    }, [helpOpen])
+   1896  
+   1897    // Handler for chat:cycleMode - cycle through permission modes
+   1898    const handleCycleMode = useCallback(() => {
+   1899      // When viewing a teammate, cycle their mode instead of the leader's
+   1900      if (isAgentSwarmsEnabled() && viewedTeammate && viewingAgentTaskId) {
+   1901        const teammateContext: ToolPermissionContext = {
+   1902          ...toolPermissionContext,
+   1903>         mode: viewedTeammate.permissionMode,
+   1904        }
+   1905        // Pass undefined for teamContext (unused but kept for API compatibility)
+   1906        const nextMode = getNextPermissionMode(teammateContext, undefined)
+   1907  
+   1908        logEvent('tengu_mode_cycle', {
+   1909          to: nextMode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+   1910        })
+   1911  
+   1912        const teammateTaskId = viewingAgentTaskId
+   1913        setAppState(prev => {

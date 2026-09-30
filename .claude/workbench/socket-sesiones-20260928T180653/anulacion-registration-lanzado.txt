@@ -1,0 +1,54 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+128 |   test('THYROX_CODE_SESSION_NAME da el nombre de lanzamiento, saneado', async () => {
+129 |     env.THYROX_CODE_SESSION_NAME = '  Mi\u0007 sesión  '
+130 |     await registerSession(undefined, deps())
+131 |     expect(record().name).toBe('Mi  sesión')
+132 |     expect('nameSource' in record()).toBe(false)
+133 |     expect(state.registeredName).toMatchObject({ name: 'Mi  sesión', source: 'user', givenAtLaunch: true })
+                                       ^
+error: expect(received).toMatchObject(expected)
+
+@@ -1,5 +1,6 @@
+  {
+-   "givenAtLaunch": true,
+    "name": "Mi  sesión",
++   "sessionId": "s1",
++   "since": 1000,
+    "source": "user",
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:133:34)
+(fail) registerSession (nD) > THYROX_CODE_SESSION_NAME da el nombre de lanzamiento, saneado [1.29ms]
+282 |   test('un nombre dado al lanzar, o de la misma sesión, sólo cambia de sesión', async () => {
+283 |     env.THYROX_CODE_SESSION_NAME = 'lanzado'
+284 |     await registerSession(undefined, deps())
+285 |     switchListeners[0]!('s2', 'spare_claim')
+286 |     await flush()
+287 |     expect(state.registeredName).toMatchObject({ name: 'lanzado', sessionId: 's2', givenAtLaunch: true })
+                                       ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "givenAtLaunch": true,
+-   "name": "lanzado",
+-   "sessionId": "s2",
++   "name": "app-s2",
++   "sessionId": "s1",
++   "since": 1000,
++   "source": "derived",
+  }
+
+- Expected  - 3
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:287:34)
+(fail) los cambios de sesión y de directorio > un nombre dado al lanzar, o de la misma sesión, sólo cambia de sesión [6.63ms]
+
+ 21 pass
+ 2 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [187.00ms]

@@ -1,0 +1,370 @@
+diff --git a/.env.example b/.env.example
+index ac8d76b1..9ab59d74 100644
+--- a/.env.example
++++ b/.env.example
+@@ -312,6 +312,14 @@ THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=
+ # cada Write y Edit del ítem (`src/session/item_worktree.sh`).
+ THYROX_POOL_WORKTREES_DIR=
+ 
++# Archivo donde el envoltorio de `git` de un ítem de headless-pool
++# --isolation worktree (`src/session/item_git_guard/git`) registra cada
++# intento de `git stash` que rehúsa. `headless-pool.sh` la fija a
++# `<out>/<n>.stash-attempts`; si el archivo existe y no está vacío al
++# finalizar el ítem, su veredicto es `con-stash`
++# (`src/session/item_worktree.sh`).
++THYROX_POOL_STASH_ATTEMPTS_FILE=
++
+ # El TTL de la caché de prompt, en el orden de `QCt` del ejecutable 2.1.282
+ # (`src/packages/agent/promptCacheTtl.ts`): forzar 5m gana a todo; luego la
+ # variable del origen —la conversación principal y los `-p` leen la primera,
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index 3c14b2a3..1d9b30d7 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -36,7 +36,8 @@
+ # `--isolation worktree` hace que cada item implemente: corre en su propio
+ # worktree desde HEAD (`item_worktree.sh`), con Bash como única herramienta por
+ # defecto, y al terminar deja <n>.patch, <n>.files y <n>.verdict
+-# (`verificado`, `rechazado`, `sin-verificar`, `sin-cambios` o `fallido`;
++# (`verificado`, `rechazado`, `sin-verificar`, `sin-cambios`, `fallido` o
++# `con-stash` —el ítem intentó `git stash`, que el pool rehúsa—;
+ # `--verify CMD` corre en el worktree). El arbol principal no cambia:
+ # `bin/pool_integrate OUT` aplica lo verificado y disjunto, y el commit es de
+ # quien integra.
+@@ -392,6 +393,13 @@ _headless_item() {
+              export THYROX_JOBS_DIR="$HP_OUT/$n.jobs" \
+                     THYROX_SESSION_LEDGER_DIR="$HP_OUT/$n.ledger" \
+                     THYROX_JOBS_ARCHIVE_DIR="$HP_OUT/$n.jobs"
++             # El envoltorio de `git` que rehúsa `git stash` (refs/stash es
++             # compartido entre worktrees, TASK-THYROX-0604): va antes en el
++             # PATH del ítem, y el archivo donde registra cada intento
++             # rehusado es el que `item_worktree.sh finalize` lee para dar el
++             # veredicto `con-stash`.
++             export THYROX_POOL_STASH_ATTEMPTS_FILE="$HP_OUT/$n.stash-attempts"
++             export PATH="$HP_ITEM_GIT_GUARD_DIR:$PATH"
+          fi
+          # Cada cliente lee el TTL con su propio nombre: `thyrox -p`
+          # THYROX_CODE_PROMPT_CACHE_TTL, `claude -p` CLAUDE_CODE_PROMPT_CACHE_TTL.
+@@ -456,6 +464,7 @@ export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
+ export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
+ export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
+ export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
++export HP_ITEM_GIT_GUARD_DIR="${HEADLESS_POOL_ITEM_GIT_GUARD_DIR:-$HP_HERE/item_git_guard}"
+ # El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
+ # y mientras alguno viva, el barrido de huérfanos de una sesión nueva no toca
+ # estos worktrees.
+@@ -512,6 +521,7 @@ if [[ "$ISOLATION" == worktree ]]; then
+     cat "$OUT"/*.verdict 2>/dev/null | gawk '{c[$1]++} END {
+         printf "verificados=%d rechazados=%d sin-cambios=%d fallidos=%d", c["verificado"], c["rechazado"], c["sin-cambios"], c["fallido"]
+         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
++        if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
+         print "" }'
+     bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT"
+ fi
+diff --git a/src/session/item_git_guard/git b/src/session/item_git_guard/git
+new file mode 100755
+index 00000000..2bb5edf5
+--- /dev/null
++++ b/src/session/item_git_guard/git
+@@ -0,0 +1,60 @@
++#!/usr/bin/env bash
++# Envoltorio de `git` para un item de headless-pool --isolation worktree:
++# rehusa cualquier forma de `git stash` (TASK-THYROX-0604).
++#
++# `refs/stash` es COMPARTIDO entre todos los worktrees del repositorio —git
++# sólo separa por worktree `refs/bisect`, `refs/worktree` y
++# `refs/rewritten`—, así que un stash del item cae en la pila del árbol
++# principal y, si `finalize` exporta con `git add -A`, el trabajo del item
++# queda fuera de su parche y su veredicto dice `sin-cambios` en silencio
++# (H-THYROX-275). El contrato del pool es: un item no toca `refs/stash`, en
++# ninguna forma.
++#
++# `headless-pool.sh` antepone el directorio de este archivo al PATH del item
++# bajo `--isolation worktree` y exporta THYROX_POOL_STASH_ATTEMPTS_FILE con la
++# ruta donde se registra cada intento rehusado; `item_worktree.sh finalize`
++# lee ese archivo para dar el veredicto `con-stash`.
++set -uo pipefail
++
++self_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++
++# Resuelve el git real quitando este directorio del PATH, para no invocarse
++# a sí mismo.
++IFS=: read -ra path_parts <<< "$PATH"
++real_path=""
++for part in "${path_parts[@]}"; do
++    [[ "$part" == "$self_dir" ]] && continue
++    real_path="${real_path:+$real_path:}$part"
++done
++real_git="$(PATH="$real_path" command -v git)" || {
++    echo "item_git_guard: no se encontró el git real en el PATH" >&2
++    exit 127
++}
++
++# Salta las opciones globales para llegar al subcomando. Las que llevan valor
++# como argumento propio (-C, -c) consumen dos posiciones; las de la forma
++# --clave=valor y las que no llevan valor consumen una.
++args=("$@")
++subcommand=""
++i=0
++while [[ $i -lt ${#args[@]} ]]; do
++    arg="${args[$i]}"
++    case "$arg" in
++        -C|-c) i=$((i + 2)) ;;
++        --git-dir=*|--work-tree=*|--no-pager) i=$((i + 1)) ;;
++        -*) i=$((i + 1)) ;;
++        *) subcommand="$arg"; break ;;
++    esac
++done
++
++if [[ "$subcommand" == stash ]]; then
++    printf 'item_git_guard: REHÚSA — el pool exige dejar los cambios en el working tree, no en refs/stash: git %s\n' \
++        "${args[*]}" >&2
++    if [[ -n "${THYROX_POOL_STASH_ATTEMPTS_FILE:-}" ]]; then
++        mkdir -p "$(dirname "$THYROX_POOL_STASH_ATTEMPTS_FILE")" 2>/dev/null
++        printf 'git %s\n' "${args[*]}" >> "$THYROX_POOL_STASH_ATTEMPTS_FILE"
++    fi
++    exit 2
++fi
++
++exec "$real_git" "${args[@]}"
+diff --git a/src/session/item_worktree.sh b/src/session/item_worktree.sh
+index 157dfb22..dea0cae0 100755
+--- a/src/session/item_worktree.sh
++++ b/src/session/item_worktree.sh
+@@ -13,7 +13,16 @@
+ #
+ # Veredictos: `fallido` (el ítem salió con error), `sin-cambios` (diff vacío),
+ # `verificado` / `rechazado` (VERIFY salió 0 / con error, corrido en el
+-# worktree) y `sin-verificar` (hubo cambios y no se declaró VERIFY).
++# worktree), `sin-verificar` (hubo cambios y no se declaró VERIFY) y
++# `con-stash` (el ítem intentó `git stash`; ver `item_git_guard/git`).
++#
++# Un stash ajeno que aparece en refs/stash durante el intervalo del ítem —sin
++# que el ítem lo haya intentado por el envoltorio— es una ANOMALÍA COMPARTIDA,
++# no una atribución: se deja en `<out>/unexpected-stashes/` y el ítem que la
++# observó deja `<n>.shared-stash-anomaly`, sin cambiar su veredicto. Lo que
++# este mecanismo NO ve: un stash creado y retirado dentro del intervalo del
++# ítem —ya no está en la pila al comparar en `finalize`— ni un
++# `git stash create` sin `store`, que crea el commit sin tocar `refs/stash`.
+ set -uo pipefail
+ 
+ # El worktree de un ítem vive en `.thyrox/pool-worktrees/` de la raíz del
+@@ -135,7 +144,12 @@ prepare() {
+     root="${base%/*}"
+     exclude_default_root "$repo" || return 2
+     dir="$base/$n"
+-    mkdir -p "$base" || return 2
++    mkdir -p "$base" "$out" || return 2
++    # La pila de stash y el instante de arranque, para que `finalize` pueda
++    # distinguir una entrada nueva de una que ya estaba: `refs/stash` es
++    # compartido entre todos los worktrees del repositorio.
++    git -C "$repo" stash list --format=%H > "$out/$n.stash-baseline" 2>/dev/null
++    date -u +%Y-%m-%dT%H:%M:%SZ > "$out/$n.stash-started"
+     # El candado es de la raíz, no de la ejecución: la admisión por disco sólo
+     # vale si ningún otro pool crea un worktree entre la medida y el alta.
+     (
+@@ -217,12 +231,62 @@ sweep_orphans() {
+     done
+ }
+ 
++# Registra en `<out>/unexpected-stashes/` una entrada de refs/stash que
++# apareció durante el intervalo de un ítem sin que ése la haya intentado por
++# el envoltorio. Idempotente bajo un candado propio: si el parche ya existe
++# sólo añade al ítem como observador, nunca vuelve a crearlo ni lo aplica.
++record_unexpected_stash() {
++    local repo="$1" out="$2" n="$3" hash="$4" message="$5" dir="$out/unexpected-stashes" \
++        patch meta started ended
++    mkdir -p "$dir" || return 2
++    patch="$dir/$hash.patch"
++    meta="$dir/$hash.meta"
++    started="$(cat "$out/$n.stash-started" 2>/dev/null || echo desconocido)"
++    ended="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
++    (
++        flock 9
++        if [[ ! -f "$patch" ]]; then
++            git -C "$repo" stash show -p --binary "$hash" > "$patch" 2>/dev/null
++            {
++                printf 'hash: %s\n' "$hash"
++                printf 'mensaje: %s\n' "$message"
++                printf 'primer-item: %s\n' "$n"
++            } > "$meta"
++        fi
++        grep -q "^item: $n intervalo:" "$meta" 2>/dev/null \
++            || printf 'item: %s intervalo: %s-%s\n' "$n" "$started" "$ended" >> "$meta"
++    ) 9> "$dir/.lock"
++}
++
++# Compara la pila de stash actual contra la observada al preparar el ítem
++# (`<n>.stash-baseline`). Una entrada nueva es una ANOMALÍA COMPARTIDA del
++# repositorio, no una atribución al ítem: se registra y se deja
++# `<n>.shared-stash-anomaly`, sin tocar el veredicto.
++check_shared_stash_anomaly() {
++    local repo="$1" out="$2" n="$3" baseline="$out/$n.stash-baseline" hash rest anomalies=()
++    [[ -f "$baseline" ]] || return 0
++    while IFS=' ' read -r hash rest; do
++        [[ -n "$hash" ]] || continue
++        gawk -v h="$hash" '$0 == h {found = 1} END {exit !found}' "$baseline" && continue
++        anomalies+=("$hash")
++        record_unexpected_stash "$repo" "$out" "$n" "$hash" "$rest"
++    done < <(git -C "$repo" stash list --format='%H %gs' 2>/dev/null)
++    [[ "${#anomalies[@]}" -gt 0 ]] && printf '%s\n' "${anomalies[@]}" > "$out/$n.shared-stash-anomaly"
++    return 0
++}
++
+ finalize() {
+     local repo="$1" dir="$2" out="$3" n="$4" rc="$5" verify="${6:-}" verdict
+     git -C "$dir" add -A
+     git -C "$dir" diff --cached --binary HEAD > "$out/$n.patch"
+     git -C "$dir" diff --cached --name-only HEAD > "$out/$n.files"
+-    if [[ "$rc" -ne 0 ]]; then
++    check_shared_stash_anomaly "$repo" "$out" "$n"
++    if [[ -s "$out/$n.stash-attempts" ]]; then
++        # Precedencia sobre cualquier otro veredicto: el ítem intentó stashear
++        # su trabajo, y eso es lo primero que hay que saber de él, gane o
++        # pierda el resto de la evaluación.
++        verdict=con-stash
++    elif [[ "$rc" -ne 0 ]]; then
+         verdict=fallido
+     elif [[ ! -s "$out/$n.patch" ]]; then
+         verdict=sin-cambios
+diff --git a/src/session/pool_integrate.sh b/src/session/pool_integrate.sh
+index aacf9c21..ef7f77d5 100755
+--- a/src/session/pool_integrate.sh
++++ b/src/session/pool_integrate.sh
+@@ -5,11 +5,15 @@
+ # Uso: pool_integrate.sh OUT [--repo REPO] [--unverified]
+ #
+ # Aplica los ítems `verificado` (y `sin-verificar` con --unverified). Un
+-# parche que toca un archivo que otro ítem ya cambió es `conflicto: <archivo>`
+-# y no se aplica; uno que `git apply --check` rechaza es `no-aplica`. No
+-# commitea: los archivos aplicados quedan en el árbol para que quien integra
+-# los commitee por pathspec. Escribe OUT/integration.tsv (ítem, resultado) y
+-# una línea `aplicados=A conflictos=C no-aplicables=X`. Sale 0 si todo lo
++# `con-stash` nunca se aplica —el ítem intentó `git stash`—, y tampoco un
++# ítem con `<n>.shared-stash-anomaly`: su intervalo se solapó con una
++# mutación de refs/stash que no se le puede atribuir, y queda anotado como
++# `anomalia-stash-compartido: <hashes>` para revisión humana. Un parche que
++# toca un archivo que otro ítem ya cambió es `conflicto: <archivo>` y no se
++# aplica; uno que `git apply --check` rechaza es `no-aplica`. No commitea:
++# los archivos aplicados quedan en el árbol para que quien integra los
++# commitee por pathspec. Escribe OUT/integration.tsv (ítem, resultado) y una
++# línea `aplicados=A conflictos=C no-aplicables=X`. Sale 0 si todo lo
+ # aplicable se aplicó, 1 si hubo conflicto o no-aplica, 2 si no pudo medir.
+ set -uo pipefail
+ out="${1:?falta OUT}"; shift
+@@ -34,6 +38,14 @@ while IFS=$'\t' read -r n _; do
+         sin-verificar) [[ -n "$unverified" ]] || { printf '%s\t%s\n' "$n" "$verdict" >> "$out/integration.tsv"; continue; } ;;
+         *) printf '%s\t%s\n' "$n" "$verdict" >> "$out/integration.tsv"; continue ;;
+     esac
++    # Un item cuyo intervalo se solapó con una mutación de refs/stash que no
++    # se le puede atribuir no se integra solo: queda para revisión humana,
++    # con los hashes que la originaron.
++    if [[ -s "$out/$n.shared-stash-anomaly" ]]; then
++        hashes="$(paste -sd, "$out/$n.shared-stash-anomaly")"
++        printf '%s\tanomalia-stash-compartido: %s\n' "$n" "$hashes" >> "$out/integration.tsv"
++        continue
++    fi
+     clash=""
+     while read -r file; do
+         [[ -n "$file" && -n "${touched[$file]:-}" ]] && { clash="$file"; break; }
+diff --git a/tests/session/test-item-worktree-stash.sh b/tests/session/test-item-worktree-stash.sh
+new file mode 100755
+index 00000000..5fb2b1ac
+--- /dev/null
++++ b/tests/session/test-item-worktree-stash.sh
+@@ -0,0 +1,95 @@
++#!/usr/bin/env bash
++# Suite del envoltorio de git que rehúsa `git stash` en un ítem de
++# headless-pool --isolation worktree (TASK-THYROX-0604): `refs/stash` es
++# compartido entre todos los worktrees del repositorio, y un stash del ítem
++# sacaba su trabajo del working tree sin que `finalize` lo viera —el parche
++# quedaba vacío y el veredicto decía `sin-cambios` en silencio (H-THYROX-275).
++#
++# Dos señales de distinta naturaleza: el envoltorio da `con-stash`, evidencia
++# ATRIBUIBLE al ítem que lo intentó; la comparación de la pila da
++# `<n>.shared-stash-anomaly`, evidencia de una mutación COMPARTIDA que no se
++# le puede atribuir a nadie en particular. No se corren con un runner real:
++# llaman a `item_worktree.sh` y al envoltorio de git directamente.
++set -uo pipefail
++RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
++MODULE="${ITEM_WORKTREE_MODULE:-$RAIZ/src/session/item_worktree.sh}"
++GIT_GUARD="${ITEM_GIT_GUARD_MODULE:-$RAIZ/src/session/item_git_guard/git}"
++INTEGRATE="${POOL_INTEGRATE_MODULE:-$RAIZ/src/session/pool_integrate.sh}"
++fallos=0; total=0
++check() {
++    total=$((total + 1))
++    if [[ "$2" == "$3" ]]; then echo "  ok    $1"; else echo "  FALLA $1: esperado «$3», obtenido «$2»"; fallos=$((fallos + 1)); fi
++}
++
++mkdir -p "$HOME/.cache"
++F="$(mktemp -d "$HOME/.cache/thyrox-stash-test.XXXXXX")"
++trap 'git -C "$F/repo" worktree prune 2>/dev/null; rm -rf "${F:?}"' EXIT
++REPO="$F/repo"
++git init -q "$REPO" && git -C "$REPO" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base
++
++echo "caso a — git stash por el envoltorio rehúsa y registra el intento"
++ATTEMPTS_A="$F/attempts-a"
++(cd "$REPO" && THYROX_POOL_STASH_ATTEMPTS_FILE="$ATTEMPTS_A" "$GIT_GUARD" stash) > "$F/out-a" 2> "$F/err-a"; rc_a=$?
++check "sale 2" "$rc_a" "2"
++check "no imprime salida" "$(wc -c < "$F/out-a")" "0"
++check "una línea en el archivo de intentos" "$(wc -l < "$ATTEMPTS_A")" "1"
++
++echo "caso b — otras formas de stash, tras opciones globales, también rehúsan"
++THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b1" "$GIT_GUARD" -C "$REPO" --no-pager stash list > /dev/null 2> "$F/err-b1"; rc_b1=$?
++check "-C --no-pager stash list rehúsa" "$rc_b1" "2"
++THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b2" "$GIT_GUARD" -C "$REPO" stash create > /dev/null 2> "$F/err-b2"; rc_b2=$?
++check "stash create rehúsa" "$rc_b2" "2"
++
++echo "caso c — cualquier otro subcomando pasa al git real"
++"$GIT_GUARD" -C "$REPO" status > "$F/out-c" 2> "$F/err-c"; rc_c=$?
++check "status sale 0" "$rc_c" "0"
++check "status trae salida real" "$(gawk '/nothing to commit|nada para hacer commit/{n++} END{print n+0}' "$F/out-c")" "1"
++
++echo "caso d — un intento registrado da con-stash a ese ítem"
++mkdir -p "$F/outd"
++dird="$(bash "$MODULE" prepare "$REPO" "$F/outd" 1)"
++(cd "$dird" && THYROX_POOL_STASH_ATTEMPTS_FILE="$F/outd/1.stash-attempts" "$GIT_GUARD" stash) > /dev/null 2>&1
++bash "$MODULE" finalize "$REPO" "$dird" "$F/outd" 1 0
++check "veredicto con-stash" "$(cat "$F/outd/1.verdict")" "con-stash"
++
++echo "caso e — anomalía compartida: ningún ítem la atribuye, un solo registro, dos observadores"
++mkdir -p "$F/oute"
++dir1="$(bash "$MODULE" prepare "$REPO" "$F/oute" 1)"
++dir2="$(bash "$MODULE" prepare "$REPO" "$F/oute" 2)"
++REAL_GIT="$(command -v git)"
++echo cambio > "$REPO/sin-guardia.txt"
++"$REAL_GIT" -C "$REPO" stash push -u -m thyrox-test-anomaly > /dev/null 2>&1
++hash="$("$REAL_GIT" -C "$REPO" stash list --format=%H | head -1)"
++bash "$MODULE" finalize "$REPO" "$dir1" "$F/oute" 1 0
++bash "$MODULE" finalize "$REPO" "$dir2" "$F/oute" 2 0
++check "item1 no recibe con-stash" "$(cat "$F/oute/1.verdict")" "sin-cambios"
++check "item2 no recibe con-stash" "$(cat "$F/oute/2.verdict")" "sin-cambios"
++check "item1 deja la anomalía" "$(cat "$F/oute/1.shared-stash-anomaly")" "$hash"
++check "item2 deja la anomalía" "$(cat "$F/oute/2.shared-stash-anomaly")" "$hash"
++check "un solo parche de la anomalía" "$(find "$F/oute/unexpected-stashes" -maxdepth 1 -name '*.patch' | wc -l)" "1"
++check "los dos ítems constan como observadores" \
++    "$(grep -c '^item: ' "$F/oute/unexpected-stashes/$hash.meta")" "2"
++check "la pila conserva la entrada" "$("$REAL_GIT" -C "$REPO" stash list | wc -l)" "1"
++
++echo "caso f — sin stash, los veredictos existentes no cambian"
++mkdir -p "$F/outf"
++dirf="$(bash "$MODULE" prepare "$REPO" "$F/outf" 1)"
++echo hola > "$dirf/nuevo.txt"
++bash "$MODULE" finalize "$REPO" "$dirf" "$F/outf" 1 0 true
++check "veredicto verificado, sin stash de por medio" "$(cat "$F/outf/1.verdict")" "verificado"
++
++echo "caso g — pool_integrate no aplica ni con-stash ni anomalía, y los anota"
++mkdir -p "$F/outg"
++printf '1\t\n2\t\n' > "$F/outg/index.tsv"
++echo con-stash > "$F/outg/1.verdict"
++: > "$F/outg/1.patch"; : > "$F/outg/1.files"
++echo verificado > "$F/outg/2.verdict"
++printf 'deadbeef\n' > "$F/outg/2.shared-stash-anomaly"
++: > "$F/outg/2.patch"; : > "$F/outg/2.files"
++bash "$INTEGRATE" "$F/outg" --repo "$REPO" > "$F/outg.log" 2>&1
++check "item1 (con-stash) no se aplica" "$(gawk -F'\t' '$1 == 1 {print $2}' "$F/outg/integration.tsv")" "con-stash"
++check "item2 (anomalía) no se aplica" \
++    "$(gawk -F'\t' '$1 == 2 {print $2}' "$F/outg/integration.tsv")" "anomalia-stash-compartido: deadbeef"
++
++echo "item_worktree stash guard: $((total - fallos))/$total"
++[[ "$fallos" -eq 0 ]]

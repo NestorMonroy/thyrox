@@ -1,0 +1,6 @@
+base	27 pass, 0 fail	—
+admission	24 pass, 3 fail	el ítem ve una reserva viva | los tres fallan | nombra la admisión
+measure	21 pass, 6 fail	una fila en el historial del comando | con los tres ítems medidos | el ítem ve una reserva viva | los tres fallan | nombra la admisión | anuncia la reserva en kB
+tab-read	25 pass, 2 fail	sin ejecución previa lo dice | anuncia la reserva en kB
+no-time	24 pass, 3 fail	el ítem corre | dice que no mide | sin historial
+release	27 pass, 0 fail	—

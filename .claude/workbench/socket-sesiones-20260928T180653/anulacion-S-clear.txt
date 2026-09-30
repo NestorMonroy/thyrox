@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+90 | 
+91 | describe('regenerateSessionId avisa con el motivo clear', () => {
+92 |   test('el oyente recibe el id estrenado', () => {
+93 |     const seen = recordSwitches()
+94 |     const fresh = regenerateSessionId({ setCurrentAsParent: true })
+95 |     expect(seen).toEqual([[fresh, 'clear']])
+                      ^
+error: expect(received).toEqual(expected)
+
+- [
+-   [
+-     "e832571b-6e8b-4ff3-85b6-ac387160c828",
+-     "clear",
+-   ],
+- ]
++ []
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:95:18)
+(fail) regenerateSessionId avisa con el motivo clear > el oyente recibe el id estrenado [0.67ms]
+
+ 7 pass
+ 1 fail
+ 12 expect() calls
+Ran 8 tests across 1 file. [184.00ms]

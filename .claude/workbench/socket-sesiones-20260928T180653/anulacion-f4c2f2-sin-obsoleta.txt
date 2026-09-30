@@ -1,0 +1,54 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+240 | 
+241 |   test('una adopción durante la espera deja obsoleta la restauración', async () => {
+242 |     registered = { name: 'viejo', source: 'auto' }
+243 |     const adopting = { ...context, registry: { ...context.registry, whenRegistered: async () => (registration.adoptions++, true) } }
+244 |     await restoreSessionName('bar', 'sess', {}, adopting)
+245 |     expect(writes).toEqual([])
+                         ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "bar",
++     "sess",
++     undefined,
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:245:20)
+(fail) restoreSessionName (sae) > una adopción durante la espera deja obsoleta la restauración [0.35ms]
+247 | 
+248 |   test('yieldToLaterRestore cede ante una restauración posterior', async () => {
+249 |     registered = { name: 'viejo', source: 'auto' }
+250 |     const later = { ...context, registry: { ...context.registry, whenRegistered: async () => (registration.restores++, true) } }
+251 |     await restoreSessionName('bar', 'sess', { yieldToLaterRestore: true }, later)
+252 |     expect(writes).toEqual([])
+                         ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "bar",
++     "sess",
++     undefined,
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:252:20)
+(fail) restoreSessionName (sae) > yieldToLaterRestore cede ante una restauración posterior [0.43ms]
+
+ 20 pass
+ 2 fail
+ 56 expect() calls
+Ran 22 tests across 1 file. [49.00ms]

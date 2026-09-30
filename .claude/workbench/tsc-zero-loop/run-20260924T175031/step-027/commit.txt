@@ -1,0 +1,6 @@
+Port HookProgress from the binary producer
+
+Twenty-seventh step of the agent-compiler loop, accepted-net
+2983 -> 2979. types/hooks.ts deferred HookProgress "until its first
+real consumer"; four now import it (toolHooks, toolExecution, Tool.ts,
+stopHookSpinnerSuffix). The shape is the 2.1.275 producer payload.

@@ -1,0 +1,14 @@
+app-host	createStore	existe
+repl	FAST_MODE_MODEL_DISPLAY	existe
+repl	isFastModeAvailable	existe
+agent	waitForSessionMemoryExtraction	existe
+agent	getLastSummarizedMessageId	existe
+storage	CREDENTIALS_SERVICE_SUFFIX	existe
+agent	getSessionMemoryContent	existe
+storage	clearKeychainCache	existe
+storage	getMacOsKeychainStorageServiceName	existe
+storage	getUsername	existe
+repl	isFastModeCooldown	existe
+storage	KEYCHAIN_CACHE_TTL_MS	existe
+storage	keychainCacheState	existe
+repl	isFastModeEnabled	existe

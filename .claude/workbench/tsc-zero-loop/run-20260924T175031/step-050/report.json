@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2594, "total_final": 2592, "tsc_runs": 1, "accepted": ["agent:pool-async-scan"], "files_kept": ["src/packages/@ant/claude-for-chrome-mcp/src/mcpSocketPool.ts", "src/packages/@ant/claude-for-chrome-mcp/src/types.ts"], "outcomes": {"agent:pool-async-scan": "accepted-net"}}

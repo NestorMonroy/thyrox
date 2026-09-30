@@ -1,0 +1,11 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -88,7 +88,7 @@
+             edit.span.start + edit.span.length <= declaration.getEnd() + 1,
+         ),
+     )
+-  return onlyImportDeletions ? 'safe' : 'judgment'
++  return 'safe'
+ }
+ 
+ export function censusFixes(service: ts.LanguageService, files?: string[]): CensusRow[] {

@@ -1,0 +1,8 @@
+{
+  "id": "51",
+  "subject": "Normalizar los 12 coordinadores contra el catálogo flow→hogar",
+  "description": "ID: TASK-API-0031\n\nT-003 de mapear-hogar-documental-por-flow. Poblar el eje del flow en bpa, cp, dmaic, lean, pdca, pm, pps, rm, sp (hoy colapsados a iniciativas/+pm/) tomando rup-coordinator como referencia, y retirar toda cita a source/implementacion/ (H-DOCS-1021). Criterio: grep -rl 'source/implementacion/' .claude/agents/ → 0. Los coordinadores viven ×5 repos: el cambio va a los cinco.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

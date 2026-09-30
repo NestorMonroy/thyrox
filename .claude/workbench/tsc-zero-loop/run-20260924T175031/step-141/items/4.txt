@@ -1,0 +1,92 @@
+src/packages/agent/attachments.ts(1158,27): error TS18048: 'm.message.content' is possibly 'undefined'.
+  --- código src/packages/agent/attachments.ts:1148-1168 ---
+   1148    messages: ReadonlyArray<Message>,
+   1149    lastUserMessage: Message,
+   1150  ): readonly string[] {
+   1151    const useIdToName = new Map<string, string>()
+   1152    const resultByUseId = new Map<string, boolean>()
+   1153    for (let i = messages.length - 1; i >= 0; i--) {
+   1154      const m = messages[i]
+   1155      if (!m) continue
+   1156      if (isHumanTurn(m) && m !== lastUserMessage) break
+   1157      if (m.type === 'assistant' && typeof m.message.content !== 'string') {
+   1158>       for (const block of m.message.content) {
+   1159          if (block.type === 'tool_use') useIdToName.set(block.id, block.name)
+   1160        }
+   1161      } else if (
+   1162        m.type === 'user' &&
+   1163        'message' in m &&
+   1164        Array.isArray(m.message.content)
+   1165      ) {
+   1166        for (const block of m.message.content) {
+   1167          if (isToolResultBlock(block)) {
+   1168            resultByUseId.set(block.tool_use_id, block.is_error === true)
+src/packages/agent/attachments.ts(1896,36): error TS2304: Cannot find name 'getManagedAndUserConditionalRules'.
+  --- código src/packages/agent/attachments.ts:1886-1906 ---
+   1886    try {
+   1887      // Retorno temprano si la ruta no está en el working path permitido
+   1888      if (!pathInAllowedWorkingPath(filePath, appState.toolPermissionContext)) {
+   1889        return attachments
+   1890      }
+   1891  
+   1892      const processedPaths = new Set<string>()
+   1893      const originalCwd = getOriginalCwd()
+   1894  
+   1895      // Fase 1: procesar reglas condicionales Managed y User
+   1896>     const managedUserRules = await getManagedAndUserConditionalRules(
+   1897        filePath,
+   1898        processedPaths,
+   1899      )
+   1900      attachments.push(
+   1901        ...memoryFilesToAttachments(managedUserRules, toolUseContext, filePath),
+   1902      )
+   1903  
+   1904      // Fase 2: obtener los directorios a procesar
+   1905      const { nestedDirs, cwdLevelDirs } = getDirectoriesToProcess(
+   1906        filePath,
+src/packages/agent/attachments.ts(1901,10): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+  --- código src/packages/agent/attachments.ts:1891-1911 ---
+   1891  
+   1892      const processedPaths = new Set<string>()
+   1893      const originalCwd = getOriginalCwd()
+   1894  
+   1895      // Fase 1: procesar reglas condicionales Managed y User
+   1896      const managedUserRules = await getManagedAndUserConditionalRules(
+   1897        filePath,
+   1898        processedPaths,
+   1899      )
+   1900      attachments.push(
+   1901>       ...memoryFilesToAttachments(managedUserRules, toolUseContext, filePath),
+   1902      )
+   1903  
+   1904      // Fase 2: obtener los directorios a procesar
+   1905      const { nestedDirs, cwdLevelDirs } = getDirectoriesToProcess(
+   1906        filePath,
+   1907        originalCwd,
+   1908      )
+   1909  
+   1910      const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
+   1911        'tengu_paper_halyard',
+src/packages/agent/attachments.ts(1919,15): error TS2304: Cannot find name 'getMemoryFilesForNestedDirectory'.
+  --- código src/packages/agent/attachments.ts:1909-1929 ---
+   1909  
+   1910      const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
+   1911        'tengu_paper_halyard',
+   1912        false,
+   1913      )
+   1914  
+   1915      // Fase 3: procesar directorios anidados (CWD → destino)
+   1916      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1917      for (const dir of nestedDirs) {
+   1918        const memoryFiles = (
+   1919>         await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1920        ).filter(
+   1921          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1922        )
+   1923        attachments.push(
+   1924          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1925        )
+   1926      }
+   1927  
+   1928      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1929      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)

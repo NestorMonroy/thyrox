@@ -1,0 +1,4 @@
+  FALLO contextPressure.test.ts cambio el store versionado (5a49606ca694621f11e0099d75bf7fe493a4b707 -> 9e5132c26720092cf8c9e3651cc6029066f78ad5)
+  ok    observability.test.ts sigue leyendo el esquema del store
+
+2 casos: 1 ok, 1 fallos

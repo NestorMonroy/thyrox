@@ -1,0 +1,1 @@
+function Br(e){let n=p3t();if(n===null)return!1;let r=_o(Ee(e));if(n.dirs.some((s)=>{let g=_o(Ee(s));return r===g||r.startsWith(g+oe)}))return!0;return n.files.some((s)=>On(s).some((g)=>_o(Ee(g))===r))}

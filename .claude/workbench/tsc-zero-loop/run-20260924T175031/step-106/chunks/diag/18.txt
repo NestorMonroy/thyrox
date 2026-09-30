@@ -1,0 +1,8 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(511,46): error TS2345: Argument of type '() => void | Promise<void>' is not assignable to parameter of type '() => Promise<void>'.
+  Type 'void | Promise<void>' is not assignable to type 'Promise<void>'.
+    Type 'void' is not assignable to type 'Promise<void>'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(523,22): error TS2345: Argument of type '{ (value: unknown, replacer?: ((this: unknown, key: string, value: unknown) => unknown) | undefined, space?: string | number | undefined): string; (value: unknown, replacer?: (string | number)[] | null | undefined, space?: string | ... 1 more ... | undefined): string; }' is not assignable to parameter of type 'JsonStringifyFn'.
+  Types of parameters 'replacer' and 'replacer' are incompatible.
+    Type '(string | number)[] | ((this: unknown, key: string, value: unknown) => unknown) | null | undefined' is not assignable to type '((this: unknown, key: string, value: unknown) => unknown) | undefined'.
+      Type 'null' is not assignable to type '((this: unknown, key: string, value: unknown) => unknown) | undefined'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(529,32): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.

@@ -1,0 +1,18 @@
+check "dos pools: el registro queda vacío" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
+check "dos pools: la ejecución concurrente también se mide (una fila por pool)" \
+  "$(gawk 'END{print NR}' "$HIST"/*/history.jsonl 2>/dev/null)" "3"
+# H-THYROX-192 en producción, no en el montaje del test: el historial trae un
+# pico 0 de ítems demasiado cortos para haber sido vistos, y NO hay ejecución
+# de medida antes. Sin calibrar, cada ítem pide la GPU entera: los dos pools
+# no corren juntos. Antes, el 0 hacía que no se pidiera nada.
+HIST="$F/historial-cero"
+mkdir -p "$(bash "$RAIZ/bin/pool_history" dir "$F/prompt.md" | sed "s|^.*/|$HIST/|")"
+printf '{"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 0.1, "max_wall_s": 0.1, "peak_kb": 1000, "peak_vram_mib": 0}\n' \
+  > "$(bash "$RAIZ/bin/pool_history" dir "$F/prompt.md" | sed "s|^.*/|$HIST/|")/history.jsonl"
+: > "$RAMPA_LOG"
+dos_pools
+check "pico 0 sin calibrar: los dos terminan" \
+  "$(cat "$F/pool-a.salida" "$F/pool-b.salida" | gawk '/^items=/{print}' | sort -u)" "items=1 ok=1 fallidos=0"
+check "pico 0 sin calibrar: nunca corren juntos" \
+  "$(sort -k2,2n "$RAMPA_LOG" | gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}')" "1"
+check "pico 0 sin calibrar: lo dice" "$(gawk '/hasta calibrar/{n++} END{print n+0}' "$F/pool-a.salida")" "1"

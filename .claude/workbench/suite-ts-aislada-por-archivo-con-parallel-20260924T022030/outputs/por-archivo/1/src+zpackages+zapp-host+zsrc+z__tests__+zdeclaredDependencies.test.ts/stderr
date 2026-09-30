@@ -1,0 +1,7 @@
+
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts:
+
+ 27 pass
+ 0 fail
+ 27 expect() calls
+Ran 27 tests across 1 file. [115.00ms]

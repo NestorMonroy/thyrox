@@ -1,0 +1,1 @@
+src/packages/@ant/ink/src/vim/transitions.ts(251,20): error TS2783: 'type' is specified more than once, so this usage will be overwritten.

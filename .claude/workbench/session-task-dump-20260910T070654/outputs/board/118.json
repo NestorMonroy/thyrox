@@ -1,0 +1,8 @@
+{
+  "id": "118",
+  "subject": "Declarar los tres tipos de costo y qué se cita en cada superficie",
+  "description": "H-DOCS-1063: el ejecutor retiró el USD del reporte de costo — «hay 3 tipos de costos» — y ninguna regla los declara hoy. Falta: nombrar los tres, fijar cuál se cita en qué superficie (chat, hallazgo, tabla de telemetría), y decidir si costo-agente.sh retira usd_5m/usd_1h de su salida. calibration-verified-numbers.md ya fija equiv_cost sobre titular_harness; esto es el eje que le falta.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

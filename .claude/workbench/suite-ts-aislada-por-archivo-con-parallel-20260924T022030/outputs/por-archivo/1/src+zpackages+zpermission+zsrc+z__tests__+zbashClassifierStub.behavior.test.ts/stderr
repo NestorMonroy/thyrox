@@ -1,0 +1,21 @@
+
+src/packages/permission/src/__tests__/bashClassifierStub.behavior.test.ts:
+128 |   test('file declares "ANT-ONLY" stub status', () => {
+129 |     // Fijado: los marcadores del comentario de cabecera ayudan a que quien
+130 |     // llegue entienda por qué todo devuelve un no-op. Un refactor que
+131 |     // retirara ese marcador sin convertir el stub en implementación real
+132 |     // sería confuso.
+133 |     expect(source).toMatch(/Stub for external builds.+ANT-ONLY/i)
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /Stub for external builds.+ANT-ONLY/i
+Received: "/**\n * Porte fiel de `ccnmt: packages/permission/src/bashClassifier.ts`\n * (61 líneas, 7 exports, licencia UNLICENSED — reimplementación, no\n * copia). Porte COMPLETO — y triple: la fuente MISMA es ya el stub\n * externo. Su primera línea lo declara: \"Stub for external builds - the\n * classifier permissions feature is ANT-ONLY\". No hay nada que bloquear\n * aquí porque este archivo ES el punto de apagado del clasificador\n * semántico de Bash — el módulo entero devuelve valores neutros/negativos\n * fijos (nunca clasifica, nunca aprueba nada por su cuenta), que es\n * exactamente el comportamiento fail-closed que corresponde en un árbol\n * sin el subsistema clasificador ML portado.\n *\n * Sin divergencias.\n */\n\nexport const PROMPT_PREFIX = 'prompt:'\n\nexport type ClassifierResult = {\n  matches: boolean\n  matchedDescription?: string\n  confidence: 'high' | 'medium' | 'low'\n  reason: string\n}\n\nexport type ClassifierBehavior = 'deny' | 'ask' | 'allow'\n\nexport function extractPromptDescription(\n  _ruleContent: string | undefined,\n): string | null {\n  return null\n}\n\nexport function createPromptRuleContent(description: string): string {\n  return `${PROMPT_PREFIX} ${description.trim()}`\n}\n\nexport function isClassifierPermissionsEnabled(): boolean {\n  return false\n}\n\nexport function getBashPromptDenyDescriptions(_context: unknown): string[] {\n  return []\n}\n\nexport function getBashPromptAskDescriptions(_context: unknown): string[] {\n  return []\n}\n\nexport function getBashPromptAllowDescriptions(_context: unknown): string[] {\n  return []\n}\n\nexport async function classifyBashCommand(\n  _command: string,\n  _cwd: string,\n  _descriptions: string[],\n  _behavior: ClassifierBehavior,\n  _signal: AbortSignal,\n  _isNonInteractiveSession: boolean,\n): Promise<ClassifierResult> {\n  return {\n    matches: false,\n    confidence: 'high',\n    reason: 'This feature is disabled',\n  }\n}\n\nexport async function generateGenericDescription(\n  _command: string,\n  specificDescription: string | undefined,\n  _signal: AbortSignal,\n): Promise<string | null> {\n  return specificDescription || null\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/bashClassifierStub.behavior.test.ts:133:20)
+(fail) bashClassifier — source pins > file declares "ANT-ONLY" stub status [0.33ms]
+
+ 12 pass
+ 1 fail
+ 20 expect() calls
+Ran 13 tests across 1 file. [116.00ms]

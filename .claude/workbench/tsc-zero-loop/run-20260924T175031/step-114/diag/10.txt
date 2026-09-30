@@ -1,0 +1,23 @@
+src/packages/agent/messages/mappers.ts(212,5): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+  --- código src/packages/agent/messages/mappers.ts:202-222 ---
+    202      .replace(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/, '$1')
+    203      .replace(/<local-command-stderr>([\s\S]*?)<\/local-command-stderr>/, '$1')
+    204      .trim()
+    205    // createAssistantMessage builds a complete APIAssistantMessage with id, type,
+    206    // model: SYNTHETIC_MODEL, role, stop_reason, usage — all fields required by
+    207    // downstream deserializers like Android's SdkAssistantMessage.
+    208    const synthetic = createAssistantMessage({ content: cleanContent })
+    209    return {
+    210      type: 'assistant',
+    211      content: synthetic.message?.content,
+    212>     message: synthetic.message,
+    213      parent_tool_use_id: null,
+    214      session_id: getSessionId(),
+    215      uuid,
+    216    }
+    217  }
+    218  
+    219  /**
+    220   * Maps internal ClaudeAILimits to the SDK-facing SDKRateLimitInfo type,
+    221   * stripping internal-only fields like unifiedRateLimitFallbackAvailable.
+    222   */

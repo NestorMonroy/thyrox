@@ -1,0 +1,60 @@
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts:11:  void executeNotificationHooks({
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts-12-    notificationType: kind,
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts-13-    title: 'Background agent',
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts-14-    message: `${name || 'Background agent'} ${action}${suffix}`,
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts-15-  })
+src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts-16-}
+--
+src/packages/repl/src/notifier.ts:31:  await executeNotificationHooks(notif)
+src/packages/repl/src/notifier.ts-32-
+src/packages/repl/src/notifier.ts-33-  const methodUsed = await sendToChannel(channel, notif, terminal)
+src/packages/repl/src/notifier.ts-34-
+src/packages/repl/src/notifier.ts-35-  logEvent('tengu_notification_method_used', {
+src/packages/repl/src/notifier.ts-36-    configured_channel:
+src/packages/repl/src/notifier.ts-37-      channel as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+src/packages/repl/src/notifier.ts-38-    method_used:
+src/packages/repl/src/notifier.ts-39-      methodUsed as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+src/packages/repl/src/notifier.ts-40-    term: env.terminal as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+src/packages/repl/src/notifier.ts-41-  })
+src/packages/repl/src/notifier.ts-42-}
+src/packages/repl/src/notifier.ts-43-
+src/packages/repl/src/notifier.ts-44-const DEFAULT_TITLE = 'Claude Code'
+src/packages/repl/src/notifier.ts-45-
+--
+src/packages/cli/src/headless/sdk/session/run-streaming.ts:738:            void executeNotificationHooks({
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-739-              message: `MCP server "${serverName}" confirmed elicitation ${elicitationId} complete`,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-740-              notificationType: 'elicitation_complete',
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-741-            })
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-742-            output.enqueue({
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-743-              type: 'system',
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-744-              subtype: 'elicitation_complete',
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-745-              mcp_server_name: serverName,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-746-              elicitation_id: elicitationId,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-747-              uuid: randomUUID(),
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-748-              session_id: getSessionId(),
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-749-            })
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-750-          },
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-751-        )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts-752-
+--
+src/packages/mcp-runtime/src/elicitationHandler.ts:250:        void requireAgentHooks().executeNotificationHooks({
+src/packages/mcp-runtime/src/elicitationHandler.ts-251-          message: `MCP server "${serverName}" confirmed elicitation ${elicitationId} complete`,
+src/packages/mcp-runtime/src/elicitationHandler.ts-252-          notificationType: 'elicitation_complete',
+src/packages/mcp-runtime/src/elicitationHandler.ts-253-        })
+src/packages/mcp-runtime/src/elicitationHandler.ts-254-        let found = false
+src/packages/mcp-runtime/src/elicitationHandler.ts-255-        setAppState(prev => {
+src/packages/mcp-runtime/src/elicitationHandler.ts-256-          const idx = findElicitationInQueue(
+src/packages/mcp-runtime/src/elicitationHandler.ts-257-            prev.elicitation.queue,
+src/packages/mcp-runtime/src/elicitationHandler.ts-258-            serverName,
+src/packages/mcp-runtime/src/elicitationHandler.ts-259-            elicitationId,
+src/packages/mcp-runtime/src/elicitationHandler.ts-260-          )
+src/packages/mcp-runtime/src/elicitationHandler.ts-261-          if (idx === -1) return prev
+src/packages/mcp-runtime/src/elicitationHandler.ts-262-          found = true
+src/packages/mcp-runtime/src/elicitationHandler.ts-263-          const queue = [...prev.elicitation.queue]
+src/packages/mcp-runtime/src/elicitationHandler.ts-264-          queue[idx] = { ...queue[idx]!, completed: true }
+--
+src/packages/mcp-runtime/src/elicitationHandler.ts:351:      void requireAgentHooks().executeNotificationHooks({
+src/packages/mcp-runtime/src/elicitationHandler.ts-352-        message: `Elicitation response for server "${serverName}": decline`,
+src/packages/mcp-runtime/src/elicitationHandler.ts-353-        notificationType: 'elicitation_response',
+src/packages/mcp-runtime/src/elicitationHandler.ts-354-      })
+src/packages/mcp-runtime/src/elicitationHandler.ts-355-      return { action: 'decline' }

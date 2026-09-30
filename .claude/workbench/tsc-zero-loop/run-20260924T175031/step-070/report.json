@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2408, "total_final": 2404, "tsc_runs": 1, "accepted": ["agent:core-reads-flat-only"], "files_kept": ["src/packages/agent/__tests__/AgentLoop.test.ts", "src/packages/agent/core/AgentLoop.ts", "src/packages/agent/messageAdapters.ts"], "outcomes": {"agent:core-reads-flat-only": "accepted-net"}}

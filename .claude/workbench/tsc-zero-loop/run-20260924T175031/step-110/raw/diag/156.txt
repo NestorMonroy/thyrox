@@ -1,0 +1,15 @@
+src/packages/provider/src/__tests__/modelCost.test.ts(57,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: 30): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '30'.
+  Overload 2 of 2, '(expected: 30): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '30'.
+src/packages/provider/src/__tests__/modelCost.test.ts(58,48): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: 150): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '150'.
+  Overload 2 of 2, '(expected: 150): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '150'.
+src/packages/provider/src/__tests__/modelCost.test.ts(129,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: 4 | 5 | 15 | 75 | 25 | 150): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '4 | 5 | 15 | 75 | 25 | 150'.
+  Overload 2 of 2, '(expected: 4 | 5 | 15 | 75 | 25 | 150): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '4 | 5 | 15 | 75 | 25 | 150'.

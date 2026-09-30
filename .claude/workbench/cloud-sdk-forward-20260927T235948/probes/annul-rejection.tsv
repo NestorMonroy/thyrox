@@ -1,0 +1,17 @@
+no-413	s/^  if (status === 413) return message.toLowerCase().includes('context window') || isPromptTooLong(message) ? 'prompt_too_long' : undefined$/  if (status === 413) return undefined/
+no-mid-conv	s/^  if (rejectsMidConversationSystem(message)) return 'mid_conv_system'$/  void 0/
+no-cache-field	s/^  if (rejectsCacheControlField(message)) return 'cache_control_field'$/  void 0/
+no-thinking-signature	s/^  if (rejectsThinkingSignature(message)) return 'thinking_signature'$/  void 0/
+no-thinking-type	s/^  if (thinkingType) return `thinking_type:\${thinkingType}`$/  void thinkingType/
+no-effort	s/^  if (rejectsEffort(message)) return 'effort_unsupported'$/  void 0/
+no-media-budget	s/^  if (message.toLowerCase().includes('too much media')) return 'media_budget'$/  void 0/
+no-media-block	s/^  if (media) return media === 'image' ? 'image_block' : 'document_block'$/  void media/
+no-prompt-400	s/^  if (isPromptTooLong(message)) return 'prompt_too_long'$/  void 0/
+no-max-tokens	s/^  if (message.toLowerCase().includes('input length and `max_tokens` exceed context limit')) return 'max_tokens_context_overflow'$/  void 0/
+no-beta-loop	s/^    if (beta \&\& namesBetaHeader(message, beta)) return `beta_header:\${beta}`$/    void beta/
+beta-without-header-word	s/  return message.includes(beta) \&\& message.includes('anthropic-beta')/  return message.includes(beta)/
+no-ttl-exclusion	s/^  if (\/\\bttl\\b\/i.test(message)) return false$/  void 0/
+no-tool-result-exclusion	s/ || message.includes('tool_result')) return false/) return false/
+no-backtick-strip	s/const lower = message.toLowerCase().replaceAll('`', '')/const lower = message.toLowerCase()/
+no-positioned	s/^  if (positioned) return positioned\[4\] === 'image' ? 'image' : 'document'$/  void positioned/
+no-prefix	s/return `\${CAPABILITY_REJECTED_PREFIX}\${kind}`/return kind/

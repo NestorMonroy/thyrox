@@ -1,0 +1,24 @@
+src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx(347,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx:337-357 ---
+    337    name: string,
+    338    sources: Array<{ source: EditableSettingSource }>,
+    339  ): void {
+    340    for (const { source } of sources) {
+    341      const settings = getSettingsForSource(source)
+    342      if (!settings) continue
+    343  
+    344      const updates: Record<string, unknown> = {}
+    345  
+    346      // Remove from extraKnownMarketplaces
+    347>     if (settings.extraKnownMarketplaces?.[name]) {
+    348        updates.extraKnownMarketplaces = {
+    349          ...settings.extraKnownMarketplaces,
+    350          [name]: undefined,
+    351        }
+    352      }
+    353  
+    354      // Remove associated enabled plugins (format: "plugin@marketplace")
+    355      if (settings.enabledPlugins) {
+    356        const suffix = `@${name}`
+    357        let removedPlugins = false
+  No index signature with a parameter of type 'string' was found on type '{}'.

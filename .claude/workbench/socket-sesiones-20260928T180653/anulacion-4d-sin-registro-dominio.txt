@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+127 |     expect(recordInPidDomain(record(5, { pidDomain: DOMAIN }) as never, DOMAIN, [], d)).toBe(true)
+128 |     expect(recordInPidDomain(record(5, { pidDomain: 'otro' }) as never, DOMAIN, [], d)).toBe(false)
+129 |   })
+130 | 
+131 |   test('sin registro: una clave de otro dominio lo aparta; si no, depende de la plataforma', () => {
+132 |     expect(recordInPidDomain(null, DOMAIN, [undefined, 'otro'], deps())).toBe(false)
+                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:132:74)
+(fail) recordInPidDomain (lpn) e isWindowsPosixCwd (aD) > sin registro: una clave de otro dominio lo aparta; si no, depende de la plataforma [0.32ms]
+249 |     write('8.json', 'roto')
+250 |     write(KEY(8), { peerToken: 'a'.repeat(32), pidDomain: DOMAIN })
+251 |     const d = deps({}, [3, 8])
+252 |     await sweepRegistry(undefined, d)
+253 |     expect(d.recorded.slept).toEqual([25, 25])
+254 |     expect(readdirSync(dir).sort()).toEqual(['3.json', KEY(3)].sort())
+                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "3.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.key",
+-   "3.json",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:254:37)
+(fail) sweepRegistry (xut) > un registro ilegible se relee tras 25 ms; sin registro decide el dominio de sus claves [1.78ms]
+
+ 26 pass
+ 2 fail
+ 77 expect() calls
+Ran 28 tests across 1 file. [190.00ms]

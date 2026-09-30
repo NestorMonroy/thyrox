@@ -1,0 +1,25 @@
+# compressibility — invocado como MODULO, fuera de bin/
+#   .venv/bin/python -m lib.compressibility <rutas>
+# fecha: 2026-09-18T03:35:49
+
+--- agent-results/agent_store.sqlite3  (12963840 B)
+compresibilidad de «agent-results/agent_store.sqlite3»
+  tamaño           12.36 MiB   (12963840 bytes)
+  H0               5.1217 bits/byte de 8   (acota un codificador SIN memoria, no a zlib)
+  sin memoria      7.92 MiB   (razon 0.640)
+  gzip -9 medido   2.74 MiB   (razon 0.222)
+
+--- /root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a44f45584c9bcf191.jsonl  (23860135 B)
+compresibilidad de «/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a44f45584c9bcf191.jsonl»
+  tamaño           22.75 MiB   (23860135 bytes)
+  H0               5.2346 bits/byte de 8   (acota un codificador SIN memoria, no a zlib)
+  sin memoria      14.89 MiB   (razon 0.654)
+  gzip -9 medido   7.51 MiB   (razon 0.330)
+
+--- _references/claude-code-bin/2.1.274/MANIFEST.tsv  (219405 B)
+compresibilidad de «_references/claude-code-bin/2.1.274/MANIFEST.tsv»
+  tamaño           0.21 MiB   (219405 bytes)
+  H0               4.9027 bits/byte de 8   (acota un codificador SIN memoria, no a zlib)
+  sin memoria      0.13 MiB   (razon 0.613)
+  gzip -9 medido   0.10 MiB   (razon 0.490)
+

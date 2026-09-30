@@ -1,0 +1,5 @@
+def pool_cache_ttl(bench: Path, model: str) -> tuple[str | None, str]:
+    """El TTL de la caché de cada `claude -p` del pool y su porqué: el que
+    `choose_cache_ttl` da para la cota del paso anterior. Sin cota, o con un
+    modelo fuera del catálogo, `None`: lo decide el cliente, y se dice."""
+    bound = previous_item_bound(bench)

@@ -1,0 +1,61 @@
+# Control de anulacion de la conversion a JSONL
+
+Fecha: 2026-09-17T06:02:48 · TASK-THYROX-0066 · sujeto: `src/packages/agent/models.jsonl`
+
+El cambio tiene DOS mitades separables, y el control las anula por separado
+porque cada una sostiene aserciones distintas. Anular las dos a la vez habria
+tirado la suite entera y no habria discriminado nada.
+
+Verde de partida: 16 pass, 0 fail, 113 expect() calls.
+
+## Mitad B — el registro se etiqueta con `kind`
+
+Anulacion: el emisor (`tagged_records`) deja de poner la clave; el lector
+(`readCatalog`) clasifica POR POSICION (linea 0 = meta, 1..8 = tier, 9.. = model).
+El archivo sigue teniendo 28 lineas; `grep -c '"kind"'` da 0.
+
+Resultado: **15 pass, 1 fail**. Cae exactamente una:
+
+    (fail) ... > cada registro declara su kind, y la meta no depende de su posicion
+
+Las otras dos aserciones nuevas SOBREVIVEN, y es lo correcto: no dependen de la
+etiqueta. Un archivo de 28 lineas sigue sin ser JSON entero, y el catalogo se
+reconstruye igual si el lector clasifica por posicion. Eso es lo que hace de
+esta anulacion un control y no un adorno: discrimina la mitad que anula.
+
+## Mitad A — el archivo es una linea por registro
+
+Anulacion: el emisor escribe UN documento (`json.dumps(registros[0])`); el
+lector se deja intacto. El archivo baja a 1 linea y
+`python3 -c "json.load(open(...))"` PASA — o sea, ya no es JSONL.
+
+Resultado: **6 pass, 10 fail**. Caen las otras dos aserciones nuevas:
+
+    (fail) ... > es JSONL: una linea por registro, y el archivo entero no es JSON
+    (fail) ... > el catalogo reconstruido conserva sus nueve claves de raiz
+
+y "cada registro declara su kind" NO cae — otra vez el reparto correcto.
+
+Las 7 restantes son CASCADA declarada, no ruido: sin lineas, el lector no
+encuentra ningun registro `tier` ni `model`, asi que `CATALOG.models` queda
+vacio y cae todo lo que consulta el catalogo (los dos de "el catalogo", tres de
+"alias contra identificador", tres de "coste"). Es la dependencia real, no un
+efecto lateral.
+
+## Restauracion, verificada
+
+Los tres archivos se respaldaron antes de tocar nada y se compararon por md5
+al volver. Ademas se borro el bytecode (`__pycache__`) — restaurar el fuente
+no restaura el bytecode, y ese rojo no distingue "el porte esta roto" de "el
+interprete lee una copia vieja".
+
+    md5 tras restaurar == md5 del respaldo, en los tres archivos
+    el extractor REGENERA models.jsonl byte a byte (`cmp` idéntico)
+    16 pass, 0 fail
+
+*Metrica:* aserciones que caen al retirar cada mitad, sobre los 16 casos de
+`__tests__/models.test.ts`.
+*Ciega a:* si el lector de Python (`src/agents/model_catalog.py`) depende de las
+mismas dos mitades — se anulo el lector de TypeScript, no el suyo; su cobertura
+la miden `tests/agents/test_model_catalog_paths.py` y `test-model-catalog.sh`,
+que se corrieron aparte.

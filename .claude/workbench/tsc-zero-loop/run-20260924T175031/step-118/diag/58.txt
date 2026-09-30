@@ -1,0 +1,23 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(504,39): error TS2322: Type '{ resolvedPath: string; isSymlink: boolean; isCanonical: boolean; }' is not assignable to type 'string'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:494-514 ---
+    494      mkdir: async (p, o) => {
+    495        await nodeFsp.mkdir(p, { recursive: true, ...(o ?? {}) })
+    496      },
+    497      readdir: async p =>
+    498        (await nodeFsp.readdir(p, { withFileTypes: true })),
+    499      stat: async p => (await nodeFsp.stat(p)) as any,
+    500      rm: async (p, o) => nodeFsp.rm(p, o),
+    501      rename: async (o, n) => nodeFsp.rename(o, n),
+    502    })
+    503    setPathExistsFn(p => pathExists(p))
+    504>   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+    505    setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
+    506    setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
+    507    setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
+    508  
+    509    // --- git
+    510    setGitExeFn(() => gitExe())
+    511    setGetHeadForDirFn(dir => getHeadForDir(dir))
+    512  
+    513    // --- subproceso
+    514    setExecFileNoThrowFn(execFileNoThrow)

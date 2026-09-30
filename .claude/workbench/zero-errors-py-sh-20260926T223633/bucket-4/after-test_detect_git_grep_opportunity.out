@@ -1,0 +1,15 @@
+test_detect_git_grep_opportunity:
+  ok    grep -rl sobre un subdirectorio del repo
+  ok    grep -R con ruta absoluta dentro del repo
+  ok    grep -rn combinado
+  ok    grep -r fuera de un work tree
+  ok    grep sobre un archivo, sin -r
+  ok    git grep ya es la forma
+  ok    git log --all -S
+  ok    git log -G sin rango
+  ok    git log -S con rango acotado
+  ok    git log sin -S ni -G
+  ok    git log -S dentro de un heredoc
+  ok    grep -r dentro de un heredoc
+  ok    tras el heredoc, un comando real sí avisa
+test_detect_git_grep_opportunity: 13 casos — 13 ok, 0 fallo(s)

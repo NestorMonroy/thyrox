@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.284
+import{w}from"/$bunfs/root/chunk-2bpvr3fa.js";import{n}from"/$bunfs/root/chunk-gjfhbdvy.js";import{zae,Wrn,OS}from"/$bunfs/root/chunk-cxrhvv8v.js";import{Xt}from"/$bunfs/root/chunk-3tevd7bg.js";import{F}from"/$bunfs/root/chunk-pew1y0kj.js";import{e}from"/$bunfs/root/chunk-fr6qx5c3.js";import{ie,C,T,g,L}from"/$bunfs/root/chunk-68gegf2j.js";import{S}from"/$bunfs/root/chunk-2dxhgqgt.js";function S2(i){let u=w(2),{via:o}=i;if(o==="native"){let r;if(u[0]===S)r=e(n,{color:"success",children:"(Copied!)"}),u[0]=r;else r=u[0];return r}if(o===null){let r;if(u[1]===S)r=e(n,{dimColor:!0,children:e(F,{chord:"c",action:"copy",parens:!0})}),u[1]=r;else r=u[1];return r}return null}function w2(i){let u=w(2),{via:o}=i;if(o==="tmux-buffer"){let r;if(u[0]===S)r=e(n,{dimColor:!0,children:"(Copied to tmux buffer \xB7 select the URL manually if paste fails)"}),u[0]=r;else r=u[0];return r}if(o==="osc52"){let r;if(u[1]===S)r=e(n,{dimColor:!0,children:"(Sent via OSC 52 \xB7 select the URL manually if paste fails)"}),u[1]=r;else r=u[1];return r}return null}L();var P=2000,R=2000;function uQ(i){let o=Xt(),[u,r]=g(null),t=T(null),c=T(null),l=T(null),a=T(0),s=T(!0),p=ie(()=>{a.current+=1,l.current?.(),l.current=null,c.current=null,t.current?.(),t.current=null,r(null)},[]);C(()=>{if(p(),i!==null)Wrn()},[i,p]),C(()=>(s.current=!0,()=>{s.current=!1,l.current?.(),l.current=null,c.current=null,t.current?.(),t.current=null}),[]);let y=ie((d)=>{if(c.current===d)return;c.current=d,l.current?.(),l.current=o.setTimeout(()=>{l.current=null,c.current=null},P);let f=zae(),h=a.current;OS(d).then((m)=>{if(!s.current||h!==a.current)return;if(m)process.stdout.write(m);if(t.current?.(),t.current=null,r(f),f==="native")t.current=o.setTimeout(()=>{t.current=null,r(null)},R)})},[o]);return{copiedVia:u,copy:y,reset:p}}
+export{S2,w2,uQ};

@@ -1,0 +1,11 @@
+--- a/src/verify/annulment_control.py
++++ b/src/verify/annulment_control.py
+@@ -63,7 +63,7 @@
+     # mismo segundo dejó la suite en verde: Python valida el `.pyc` por mtime
+     # y tamaño, y corrió el código sin anular. El control no había medido nada.
+     with tempfile.TemporaryDirectory(prefix="annulment-pycache-") as pycache:
+-        env = {**os.environ, "PYTHONPYCACHEPREFIX": pycache}
++        env = dict(os.environ)
+         result = subprocess.run(command, cwd=cwd, capture_output=True, text=True,
+                                 stdin=subprocess.DEVNULL, env=env)
+     output.write_text(result.stdout + result.stderr + f"\n[exit={result.returncode}]\n")

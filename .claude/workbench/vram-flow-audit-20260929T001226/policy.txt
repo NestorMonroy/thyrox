@@ -1,0 +1,95 @@
+def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1,
+                     template_digest: str | None = None, max_age_s: float | None = None,
+                     now: datetime | None = None) -> tuple[bool, str]:
+    """¿Describe el historial la VRAM de los ítems que se van a lanzar? Sólo
+    si la última ejecución midió la VRAM de TODOS sus ítems y cada uno duró lo
+    bastante para ser visto. Un 0 medido es una medida; como predicción sólo
+    vale con esa cobertura (H-THYROX-192).
+
+    Y sólo si es representativa de lo que se lanza: al menos ``min_items``
+    ítems medidos —los que irán a la vez—, la misma plantilla por su huella de
+    contenido, y no más vieja que ``max_age_s``. Cada límite se aplica sólo si
+    se declara."""
+    if row is None:
+        return False, "sin ejecución previa de esta plantilla"
+    if row.get("items_measured", 0) < min_items:
+        return False, (f"{row.get('items_measured', 0)} ítems medidos para lanzar {min_items} "
+                       f"a la vez: no representa su dispersión")
+    if template_digest and row.get("template_digest") != template_digest:
+        return False, "la plantilla cambió desde esa ejecución (o la fila no lleva su huella)"
+    if max_age_s is not None:
+        age = _age_s(row, now)
+        if age is None:
+            return False, "la fila no lleva fecha y hay un límite de edad declarado"
+        if age > max_age_s:
+            return False, f"la fila tiene {age:.0f} s, más que el límite de {max_age_s:.0f} s"
+    if "peak_vram_mib" not in row:
+        return False, "la última ejecución no midió VRAM"
+    if "items_gpu_measured" not in row or "min_wall_s" not in row:
+        return False, "fila anterior a la calibración: sin cobertura de la medida"
+    if row["items_gpu_measured"] < row["items_measured"]:
+        return False, f"VRAM medida en {row['items_gpu_measured']} de {row['items_measured']} ítems"
+    if row["min_wall_s"] < MIN_GPU_SAMPLES * gpu_interval_s:
+        return False, (f"el ítem más corto duró {row['min_wall_s']:g} s, menos de {MIN_GPU_SAMPLES} "
+                       f"muestras de {gpu_interval_s:g} s: un 0 puede ser un pico no visto")
+    return True, "calibrado"
+
+
+def vram_request(row: dict | None, calibrated: bool, margin: float, floor_mib: int,
+                 exclusive_mib: int) -> tuple[int | None, str]:
+    """Lo que pide cada ítem para ser admitido. Calibrado: el pico por el
+    margen, nunca menos que el piso declarado. Sin calibrar: el piso si se
+    declaró; si no, la GPU entera —exclusiva a través del registro, así que
+    protege también entre pools— hasta que una ejecución la calibre."""
+    if calibrated:
+        # ``calibrated`` sólo sale ``True`` de ``vram_calibration`` cuando
+        # ``row`` no es ``None`` (su primera guarda descarta ese caso).
+        assert row is not None
+        need = max(math.ceil(row["peak_vram_mib"] * margin), floor_mib)
+        if need == 0:
+            return None, "pico 0 calibrado y sin piso: no pide VRAM"
+        return need, f"pide {need} MiB (pico × {margin:g}, piso {floor_mib})"
+    if floor_mib:
+        return floor_mib, f"pide el piso declarado, {floor_mib} MiB"
+    return exclusive_mib, f"pide la GPU entera ({exclusive_mib} MiB), de a uno hasta calibrar"
+
+
+def _vram_decision(row: dict | None, free_vram_mib: int | None, vram_reserve_mib: int, margin: float,
+                   floor_mib: int, gpu_interval_s: float,
+                   representativeness: dict) -> tuple[int | None, int | None, str]:
+    """(tope, pedido, porqué) de VRAM. Sin GPU medida, lo de siempre: el pico
+    del historial, sin tope ni política. ``representativeness`` son los
+    límites de ``vram_calibration`` (ítems mínimos, plantilla, edad)."""
+    if free_vram_mib is None:
+        peak = (row or {}).get("peak_vram_mib")
+        return None, (math.ceil(peak * margin) if peak else None), ""
+    calibrated, why_cal = vram_calibration(row, gpu_interval_s, **representativeness)
+    need, why_need = vram_request(row, calibrated, margin, floor_mib, max(free_vram_mib - vram_reserve_mib, 0))
+----
+def pending(reservations: dict[str, int], usage: dict[int, int], trees: dict[int, set[int]]) -> int:
+    """Lo comprometido que la GPU aún NO muestra: de cada reserva, la parte
+    que su árbol todavía no usa. Lo que ya usa ya está restado de lo libre, y
+    contarlo otra vez bloquearía VRAM que sí existe."""
+    total = 0
+    for pid, mib in reservations.items():
+        used = sum(usage.get(p, 0) for p in trees.get(int(pid), {int(pid)}))
+        total += max(0, mib - used)
+    return total
+
+
+def admissible(free_mib: int | None, pending_mib: int, need_mib: int) -> bool:
+    """La decisión, pura: cabe si lo libre menos lo comprometido alcanza."""
+    return free_mib is not None and free_mib - pending_mib >= need_mib
+
+
+def headroom(live: dict[str, int], nvidia_smi: str) -> int | None:
+    """El margen para un ítem nuevo: lo libre menos lo comprometido que la GPU
+    aún no muestra. ``None`` si no hay lectura de la GPU — sin medida no hay
+    margen, y un cero lo afirmaría. Es una consulta: no reserva ni bloquea."""
+    current, free = measure(nvidia_smi)
+    if free is None:
+        return None
+    usage = current.vram_by_pid if current else {}
+    trees = {int(pid): tree(int(pid)) for pid in live}
+    return free - pending(live, usage, trees)
+

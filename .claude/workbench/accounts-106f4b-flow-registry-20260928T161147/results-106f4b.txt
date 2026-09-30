@@ -1,0 +1,11 @@
+== 1: agy comparte el flujo de antigravity -> 0
+== 2: amazon-q sin alias de kiro -> 1
+== 3: kimi ignora la ruta declarada -> 0
+== 4: sin rechazo de proveedor desconocido -> 2
+== 5: --no-browser ignorado -> 2
+== 6: timeout sin validar -> 1
+== 7: plazo vencido como fallo genérico -> 1
+== 8: --connection de otro proveedor aceptada -> 1
+== 9: login no despachado -> 2
+== 10: login sin el store abierto -> 1
+== restaurado -> 0

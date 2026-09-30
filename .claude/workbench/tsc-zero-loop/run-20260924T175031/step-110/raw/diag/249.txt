@@ -1,0 +1,4 @@
+src/packages/repl/src/screens/ResumeConversation.tsx(302,41): error TS2322: Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+  Types of property 'color' are incompatible.
+    Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+      Type 'string' is not assignable to type 'AgentColorName | undefined'.

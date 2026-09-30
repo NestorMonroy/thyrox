@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+83 |   })
+84 | 
+85 |   test('el SDK exige optar por la bandera o por la sesión', () => {
+86 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ sdkOptInRequired: true }))).toBe('sdk_opt_in_required')
+87 |     expect(fastModeUnavailabilityCause(undefined, { sessionOptIn: true }, context({ sdkOptInRequired: true }))).toBeNull()
+88 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ sdkOptInRequired: true, flagSettingsFastMode: true }))).toBeNull()
+                                                                                                                             ^
+error: expect(received).toBeNull()
+
+Received: "sdk_opt_in_required"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:88:121)
+(fail) fastModeUnavailabilityCause (gL) > el SDK exige optar por la bandera o por la sesión [0.31ms]
+
+ 13 pass
+ 1 fail
+ 53 expect() calls
+Ran 14 tests across 1 file. [61.00ms]

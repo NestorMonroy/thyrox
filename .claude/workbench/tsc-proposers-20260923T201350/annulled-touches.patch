@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -86,7 +86,7 @@
+   const end = start + (diagnostic.length ?? 0)
+   // Tramos cerrados: una anotación se INSERTA justo al final del nombre que
+   // el diagnóstico señala, con longitud cero.
+-  return edits.some(edit => edit.span.start <= end && start <= edit.span.start + edit.span.length)
++  return edits.length > 0 || start === end
+ }
+ 
+ function propose(service: ts.LanguageService, files: string[], read: Reader, cwd: string): ProposalRow[] {

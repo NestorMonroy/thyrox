@@ -1,0 +1,1 @@
+# Un nvidia-smi falso: declara 400 MiB para cada proceso del `claude` falso y un

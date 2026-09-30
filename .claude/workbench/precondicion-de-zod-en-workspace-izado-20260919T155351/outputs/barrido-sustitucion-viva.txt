@@ -1,0 +1,10 @@
+# Barrido: sustitucion viva en un echo, en todo el arbol propio
+# fecha: 2026-09-19T16:07:56
+# comando: grep -rn '^[^#]*echo "[^"]*[^\\]`' --include=*.sh src/ tests/ bin/ .githooks/
+
+ANTES: 1 infractor
+  tests/session/test-bg-familia.sh:121  echo "== 4-quinquies. (status) SEPARA ..."
+  -> el backtick ejecutaba 'status' al emitir el encabezado del caso
+
+DESPUES:
+0

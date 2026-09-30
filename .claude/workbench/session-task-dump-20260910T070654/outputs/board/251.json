@@ -1,0 +1,9 @@
+{
+  "id": "251",
+  "subject": "Reconciliar settingsCache.ts con las tres cachés locales de settings.ts",
+  "description": "Reportado por el agente de porte de `config` (`thyrox@9f97e8d7`, 2026-09-07) y **declarado, no silenciado**.\n\n`settings/settingsCache.ts` llegó en ese porte y es una caché **funcional e independiente**. No está cableada a `settings.ts`, que antes de que ese archivo existiera había sustituido su papel con **tres cachés locales propias**.\n\nO sea: hoy conviven cuatro cachés del mismo dato, y ninguna sabe de las otras. Ninguna está mal por separado — el problema es que son cuatro fuentes de verdad para lo mismo, que es la forma que `calibration-verified-numbers.md` prohíbe.\n\nCierre: decidir cuál gobierna —la portada, que es la de la fuente, o las tres locales, que son las que el árbol usa hoy— y retirar la otra. Antes de decidir, medir qué invoca cada una: una caché sin consumidores es una decisión distinta de una caché con tres.\n\n*Ciega a:* si las cuatro guardan exactamente el mismo dato o sólo se solapan. Eso se mide leyendo qué clave usa cada una, no contando invocadores.",
+  "activeForm": "Reconciliando las cachés de settings",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

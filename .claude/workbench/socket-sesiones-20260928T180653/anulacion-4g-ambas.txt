@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+152 |   })
+153 | 
+154 |   test('dentro de la shell del agente: sin historial o sin terminal en las dos puntas', () => {
+155 |     expect(isOnAgentSessionSurface(host({ env: { CLAUDECODE: '1', THYROX_CODE_SKIP_PROMPT_HISTORY: 'true' } }))).toBe(true)
+156 |     expect(isOnAgentSessionSurface(host({ env: { CLAUDECODE: '1' }, stdinIsTTY: false, stdoutIsTTY: false }))).toBe(true)
+157 |     expect(isOnAgentSessionSurface(host({ env: { CLAUDECODE: '1' }, stdinIsTTY: false }))).toBe(false)
+                                                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:157:92)
+(fail) isOnAgentSessionSurface (cFt) > dentro de la shell del agente: sin historial o sin terminal en las dos puntas [0.26ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [132.00ms]

@@ -1,0 +1,4 @@
+==== W1o: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js function W1o [14643,14781)
+function W1o(){let e=a.XDG_RUNTIME_DIR||Sb(),n=ue(L(e,"cc-socks",`${process.pid}.sock`));if(Buffer.byteLength(n)<=z)return n;return p9r()}
+symbol: 1 de 1 nombre(s) resueltos

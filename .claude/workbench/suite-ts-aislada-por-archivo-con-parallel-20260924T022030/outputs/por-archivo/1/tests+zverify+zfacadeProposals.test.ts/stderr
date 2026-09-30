@@ -1,0 +1,9 @@
+
+tests/verify/facadeProposals.test.ts:
+(fail) ts2305 facades > control del arnés: la fixture resuelve sus módulos y tiene sus dos TS2305 [5057.55ms]
+  ^ this test timed out after 5000ms.
+
+ 5 pass
+ 1 fail
+ 13 expect() calls
+Ran 6 tests across 1 file. [14.77s]

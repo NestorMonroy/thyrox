@@ -1,0 +1,2 @@
+     5	tests/lib/test-reach-sh.sh|EXIT=0
+     8	tests/session/test_generate_bin.py|EXIT=0

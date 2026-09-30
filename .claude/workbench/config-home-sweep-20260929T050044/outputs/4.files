@@ -1,0 +1,2 @@
+src/packages/agent/claudeInChrome/__tests__/chromeNativeHost.test.ts
+src/packages/agent/claudeInChrome/chromeNativeHost.ts

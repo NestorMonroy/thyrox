@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --memfree 2G --timeout 1200 --prefix storederived .claude/cache/store-derived-suites.txt", "started_at": "2026-09-22T23:15:11+00:00"}

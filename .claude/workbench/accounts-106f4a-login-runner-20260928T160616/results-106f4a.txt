@@ -1,0 +1,35 @@
+# primera pasada
+== 1: sin puerto fijo -> 1
+== 2: sin timeout al callback -> 1
+== 3: ruta de callback fija -> 1
+== 4: sin navegador -> 1
+== 5: navegador siempre -> 1
+== 6: timeout sin marca -> 1
+== 7: error del proveedor ignorado -> 1
+== 8: sin descripción del error -> 1
+== 9: sin código aceptado -> 1
+== 10: sin verificar state -> 1
+== 11: servidor abierto -> 2
+== 12: PKCE a todos -> 1
+== 13: sin reto PKCE -> 1
+== 14: sin dato extra de kiro -> 1
+== 15: sin código de dispositivo aceptado -> 1
+== 16: sin página completa -> 0
+== 17: sin código de usuario -> 1
+== 18: intervalo por defecto -> 1
+== 19: intervalo del proveedor ignorado -> 2
+== 20: slow_down sin frenar -> 1
+== 21: pendiente termina -> 2
+== 22: sin plazo -> SIN-RESUMEN
+== 23: error sin descripción -> 1
+== 24: token vacío aceptado -> 1
+== 25: token sin validar -> 1
+== 26: token sin recortar -> 2
+== 27: sin mensaje de éxito -> 1
+== 28: excepción sin capturar -> 1
+== restaurado -> 0
+# 16 y 22 tras afinar
+== 16: sin página completa -> 1
+== 22: sin plazo -> 1
+== restaurado -> 0
+28 de 28 discriminan tras afinar: la 16 necesitaba mirar la página de verificación completa; la 22 colgaba en un bucle de microtareas y ahora el reloj falso corta el sondeo sin fin.

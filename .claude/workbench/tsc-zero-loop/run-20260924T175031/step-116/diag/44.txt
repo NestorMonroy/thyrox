@@ -1,0 +1,47 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(161,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'getSkillDirCommands'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:151-171 ---
+    151  import perfIssue from '@thyrox/command-runtime/stubs/stubCommand.js'
+    152  import sandboxToggle from '@thyrox/repl/commands/sandbox-toggle/index.js'
+    153  import chrome from '@thyrox/command-runtime/commands/chrome/index.js'
+    154  import stickers from '@thyrox/repl/commands/stickers/index.js'
+    155  import advisor from '@thyrox/provider/commands/advisor.js'
+    156  import provider from '@thyrox/provider/commands/provider.js'
+    157  import { logError } from '@thyrox/local-observability/logging'
+    158  import { toError } from '@thyrox/local-observability/errorHelpers.js'
+    159  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+    160  import {
+    161>   getSkillDirCommands,
+    162    clearSkillCaches,
+    163    getDynamicSkills,
+    164  } from '@thyrox/command-runtime/skills/loadSkillsDir.js'
+    165  import { getBundledSkills } from '@thyrox/command-runtime/skills/bundledSkills.js'
+    166  import { getBuiltinPluginSkillCommands } from '@thyrox/config/plugin/builtin'
+    167  import {
+    168    getPluginCommands,
+    169    clearPluginCommandCache,
+    170    getPluginSkills,
+    171    clearPluginSkillsCache,
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(469,27): error TS2349: This expression is not callable.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:459-479 ---
+    459   * because loading is expensive (disk I/O, dynamic imports).
+    460   */
+    461  const loadAllCommands = memoize(async (cwd: string): Promise<Command[]> => {
+    462    const [
+    463      { skillDirCommands, pluginSkills, bundledSkills, builtinPluginSkills },
+    464      pluginCommands,
+    465      workflowCommands,
+    466    ] = await Promise.all([
+    467      getSkills(cwd),
+    468      getPluginCommands(),
+    469>     getWorkflowCommands ? getWorkflowCommands(cwd) : Promise.resolve([]),
+    470    ])
+    471  
+    472    return [
+    473      ...bundledSkills,
+    474      ...builtinPluginSkills,
+    475      ...skillDirCommands,
+    476      ...workflowCommands,
+    477      ...pluginCommands,
+    478      ...pluginSkills,
+    479      ...COMMANDS(),
+  Type 'never' has no call signatures.

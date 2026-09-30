@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > .claude/workbench/copia-desde-ccnmt/outputs/tsc-tras-copia.log 2>&1; bun src/verify/message_shape_audit.ts > .claude/workbench/copia-desde-ccnmt/outputs/shape-tras-copia.log 2>&1; echo listo", "started_at": "2026-09-25T00:14:44+00:00"}

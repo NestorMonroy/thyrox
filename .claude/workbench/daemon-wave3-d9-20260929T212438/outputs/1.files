@@ -1,0 +1,8 @@
+src/packages/daemon/src/__tests__/dispatchDedupAndLowMem.test.ts
+src/packages/daemon/src/__tests__/workerIpc.test.ts
+src/packages/daemon/src/__tests__/workerRegistryStatus.test.ts
+src/packages/daemon/src/__tests__/workerSupervision.test.ts
+src/packages/daemon/src/bgDaemon.ts
+src/packages/daemon/src/main.ts
+src/packages/daemon/src/workerIpc.ts
+src/packages/daemon/src/workerRegistry.ts

@@ -1,0 +1,2 @@
+measurable	s/const measurable = windowBytes === 0 || windowBytes >= this.minimumBytes/const measurable = true/
+window-cutoff	/this.samples = this.samples.filter(sample => sample.at >= cutoff)/d

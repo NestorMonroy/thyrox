@@ -1,0 +1,24 @@
+src/packages/agent/query.ts(1247,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+  --- código src/packages/agent/query.ts:1237-1257 ---
+   1237        // real response — hooks evaluating it create a death spiral:
+   1238        // error → hook blocking → retry → error → …
+   1239        if (lastMessage?.isApiErrorMessage) {
+   1240          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1241          return { reason: 'completed' }
+   1242        }
+   1243  
+   1244        const stopHookResult = yield* handleStopHooks(
+   1245          messagesForQuery,
+   1246          assistantMessages,
+   1247>         systemPrompt,
+   1248          userContext,
+   1249          systemContext,
+   1250          toolUseContext,
+   1251          querySource,
+   1252          stopHookActive,
+   1253        )
+   1254  
+   1255        // ant v2.1.143 3999.js: a run of consecutive blocks just ended (this
+   1256        // turn produced none, but earlier ones in the streak did) — record how
+   1257        // long the streak was so dashboards can see /goal blocking pressure.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.

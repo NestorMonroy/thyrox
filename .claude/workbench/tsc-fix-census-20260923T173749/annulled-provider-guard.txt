@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+118 |       } catch (error) {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         throw error
+                    ^
+TypeError: undefined is not an object (evaluating 'type.symbol.declarations')
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:15)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:100:18)
+(fail) tscFixCensus > un proveedor de arreglos que lanza no aborta el censo: queda en su fila [595.83ms]
+
+ 9 pass
+ 1 fail
+ 12 expect() calls
+Ran 10 tests across 1 file. [6.52s]
+
+[exit=1]

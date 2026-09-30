@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash src/verify/check-cli-typecheck.sh --strict src/packages/agent/attachments.ts", "started_at": "2026-09-25T21:20:30+00:00"}

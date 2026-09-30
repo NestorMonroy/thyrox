@@ -1,0 +1,3 @@
+https.request createConnection sin agent ERROR ECONNREFUSED calls= 0
+http.request createConnection (socket TLS) ERROR ECONNREFUSED calls= 0
+https.request agent.createConnection ERROR ECONNREFUSED calls= 0

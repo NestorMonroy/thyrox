@@ -1,0 +1,26 @@
+test_tsc_zero_step:
+  ok    la aceptada queda aplicada
+  ok    la rechazada se revierte
+  ok    la de base vieja no se aplica
+  ok    el registro lleva los tres veredictos
+  ok    el total confirmado baja de 4 a 3
+  ok    revertir exige una pasada de confirmación
+  ok    el paso con alguna aceptada progresa
+  ok    el log final queda en el banco para el paso siguiente
+  ok    sin nada que revertir no hay pasada de confirmación
+  ok    sin ninguna aceptada el lazo se detiene
+  ok    y el árbol queda como estaba
+  ok    tsc sale 0 sin diagnósticos: tsc cero
+  ok    un tsc que falla sin diagnósticos rehúsa
+  FALLA la confirmación trae un diagnóstico nuevo: se revierte todo — esperado ('stalled', 'const a = BAD1\n'), obtenido ('stalled', 'const a = NEEDS\n')
+  ok    y el total final es el de antes
+  ok    dos inserciones en un punto conservan su orden
+  FALLA sin revertir nada, un contrato destapado no se conserva en automático — esperado 'const a = BAD1\n', obtenido 'const a = REVEAL\n'
+  ok    la bisección conserva lo que no revela
+  ok    el registro dice revealed, no accepted
+  ok    la revelada va a la cola residual con sus contratos
+  ok    y el paso progresa por lo conservado
+  FALLA lo que está en la cola residual no se vuelve a aplicar — esperado ('stalled', 'const a = BAD1\n'), obtenido ('stalled', 'const a = REVEAL\n')
+test_tsc_zero_step: 22 aserciones — 19 ok, 3 falla(s)
+
+[exit=1]

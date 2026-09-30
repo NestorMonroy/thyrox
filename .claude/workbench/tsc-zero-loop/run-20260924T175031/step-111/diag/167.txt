@@ -1,0 +1,24 @@
+src/packages/provider/src/thinking.ts(241,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/thinking.ts:231-251 ---
+    231  export function setThinkingTypeOverride(
+    232    model: string,
+    233    override: 'adaptive' | 'enabled' | undefined,
+    234  ): void {
+    235    if (override === undefined) thinkingTypeOverrides.delete(model)
+    236    else thinkingTypeOverrides.set(model, override)
+    237  }
+    238  
+    239  export function shouldEnableThinkingByDefault(): boolean {
+    240    if (readEnv('MAX_THINKING_TOKENS')) {
+    241>     return parseInt(readEnv('MAX_THINKING_TOKENS'), 10) > 0
+    242    }
+    243  
+    244    const { settings } = getSettingsWithErrors()
+    245    if (settings.alwaysThinkingEnabled === false) {
+    246      return false
+    247    }
+    248  
+    249    // IMPORTANT: Do not change default thinking enabled value without notifying
+    250    // the model launch DRI and research. This can greatly affect model quality and
+    251    // bashing.
+  Type 'undefined' is not assignable to type 'string'.

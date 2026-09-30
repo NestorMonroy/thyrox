@@ -1,0 +1,23 @@
+src/packages/provider/src/proxy.ts(249,10): error TS2315: Type 'HttpsProxyAgentOptions' is not generic.
+  --- código src/packages/provider/src/proxy.ts:239-259 ---
+    239        // `api.example.com`: divergencia declarada, no porte parcial.
+    240        return hostname === pattern || hostname.endsWith(`.${pattern}`)
+    241      })
+    242    } catch {
+    243      return false
+    244    }
+    245  }
+    246  
+    247  function createHttpsProxyAgent(
+    248    proxyUrl: string,
+    249>   extra: HttpsProxyAgentOptions<string> = {},
+    250  ): HttpsProxyAgent<string> {
+    251    const mtlsConfig = getMTLSConfig()
+    252    const caCerts = getCACertificates()
+    253  
+    254    const agentOptions: HttpsProxyAgentOptions<string> = {
+    255      ...(mtlsConfig && {
+    256        cert: mtlsConfig.cert,
+    257        key: mtlsConfig.key,
+    258        passphrase: mtlsConfig.passphrase,
+    259      }),

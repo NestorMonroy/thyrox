@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c parallel -j3 -k --colsep ' ' bash .claude/workbench/test-order-leaks-20260927T082148/pair-seeded.sh {1} {2} :::: .claude/workbench/test-order-leaks-20260927T082148/pairs-provider.txt > .claude/workbench/test-order-leaks-20260927T082148/pairs-provider-result.tsv", "started_at": "2026-09-27T08:29:52+00:00"}

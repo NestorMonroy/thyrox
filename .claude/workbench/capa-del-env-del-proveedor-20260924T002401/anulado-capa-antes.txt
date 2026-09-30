@@ -1,0 +1,16 @@
+.....F....
+======================================================================
+FAIL: test_el_consumidor_gana_sobre_el_proveedor (__main__.ProviderLayer.test_el_consumidor_gana_sobre_el_proveedor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 161, in test_el_consumidor_gana_sobre_el_proveedor
+    self.assertEqual(self.chain().declared("THYROX_CAPA_COMPARTIDA"), "del-consumidor")
+AssertionError: 'del-proveedor' != 'del-consumidor'
+- del-proveedor
++ del-consumidor
+
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.006s
+
+FAILED (failures=1)

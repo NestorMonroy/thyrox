@@ -1,0 +1,24 @@
+src/packages/agent/attachments/mailbox.ts(279,48): error TS2345: Argument of type 'AppState' is not assignable to parameter of type 'Pick<AppStateShape, "tasks" | "viewingAgentTaskId">'.
+  --- código src/packages/agent/attachments/mailbox.ts:269-289 ---
+    269    // Usa el nombre de agente del helper (revisa AsyncLocalStorage, luego dynamicTeamContext)
+    270    const envAgentName = getAgentName()
+    271  
+    272    // Obtiene el nombre del equipo (revisa AsyncLocalStorage, dynamicTeamContext, luego AppState)
+    273    const teamName = getTeamName(appState.teamContext)
+    274  
+    275    // Comprueba si somos el team lead (usa la lógica compartida de swarm utils)
+    276    const teamLeadStatus = isTeamLead(appState.teamContext)
+    277  
+    278    // Comprueba si se está viendo el transcript de un compañero (para teammates in-process)
+    279>   const viewedTeammate = getViewedTeammateTask(appState)
+    280  
+    281    // Resuelve el nombre de agente según a QUIÉN estamos viendo:
+    282    // - Si vemos a un compañero, usa SU nombre (para leer de su buzón)
+    283    // - Si no, usa la variable de entorno si está fijada, o el nombre del líder si somos el team lead
+    284    let agentName = viewedTeammate?.identity.agentName ?? envAgentName
+    285    if (!agentName && teamLeadStatus && appState.teamContext) {
+    286      const leadAgentId = appState.teamContext.leadAgentId
+    287      // Busca el nombre del líder en el mapa de agentes (no el UUID)
+    288      agentName = appState.teamContext.teammates[leadAgentId]?.name || 'team-lead'
+    289    }
+  Property 'viewingAgentTaskId' is optional in type 'AppState' but required in type 'Pick<AppStateShape, "tasks" | "viewingAgentTaskId">'.

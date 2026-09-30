@@ -1,0 +1,4 @@
+log=.claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-wait-jobs-dependencia-X47dm0/tmp.RBxU4Mz9w3
+pid=23905
+proc_start=4782899
+cmd=bash -c echo arrancando; sleep 1; kill -9 $$ 

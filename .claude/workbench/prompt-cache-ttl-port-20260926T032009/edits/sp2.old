@@ -1,0 +1,2 @@
+    check("la línea es TSV: pid, destino, clase, estado, cpu",
+          "101\tsocket:[1452327]\tchannel\tS\t0.10", probe(101).tsv())

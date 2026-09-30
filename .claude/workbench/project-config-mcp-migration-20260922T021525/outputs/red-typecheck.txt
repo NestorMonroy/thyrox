@@ -1,0 +1,4 @@
+src/packages/config/__tests__/globalConfig.test.ts(62,7): error TS2353: Object literal may only specify known properties, and 'enableAllProjectMcpServers' does not exist in type 'ProjectConfig'.
+src/packages/config/migrations/migrateEnableAllProjectMcpServersToSettings.ts(21,38): error TS2339: Property 'enableAllProjectMcpServers' does not exist on type 'ProjectConfig'.
+src/packages/config/migrations/migrateEnableAllProjectMcpServersToSettings.ts(52,23): error TS2339: Property 'enableAllProjectMcpServers' does not exist on type 'ProjectConfig'.
+src/packages/config/migrations/migrateEnableAllProjectMcpServersToSettings.ts(100,11): error TS2339: Property 'enableAllProjectMcpServers' does not exist on type 'ProjectConfig'.

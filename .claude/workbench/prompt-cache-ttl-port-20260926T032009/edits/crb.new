@@ -1,0 +1,2 @@
+    command = (f"cd {shlex.quote(str(THYROX))} && bash bin/step_close --bench {shlex.quote(str(bench))} "
+               f"--run {shlex.quote(str(run))}")

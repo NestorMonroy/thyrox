@@ -1,0 +1,4 @@
+provider	src/logging.ts(165,8): error TS2304: Cannot find name 'MACRO'.
+provider	src/logging.ts(166,30): error TS2304: Cannot find name 'MACRO'.
+provider	src/user.ts(109,19): error TS2304: Cannot find name 'MACRO'.
+provider	src/userAgent.ts(9,25): error TS2304: Cannot find name 'MACRO'.

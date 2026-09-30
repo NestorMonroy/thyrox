@@ -1,0 +1,60 @@
+== base
+ 16 pass
+ 0 fail
+== anulado:     if (req.headers['x-thyrox-source'] === 'thyrox') {
+(fail) hosts outside the targets, non-chat URLs and our own traffic pass through [234.31ms]
+ 15 pass
+ 1 fail
+== anulado:     if (!routeConfig.chatUrlPatterns.some(p => (req.url ?? '').includes(p))) {
+(fail) hosts outside the targets, non-chat URLs and our own traffic pass through [171.30ms]
+ 15 pass
+ 1 fail
+== anulado:     if (isSelfLoopDestination(targetIp, upstreamPort, boundPort)) {
+(fail) the loop guard refuses to dial back into the server itself [5313.10ms]
+ 15 pass
+ 1 fail
+== anulado:         rejectUnauthorized: !config.disableTlsVerify,
+(fail) with TLS verification on, an untrusted upstream is a 502 [223.17ms]
+ 15 pass
+ 1 fail
+== anulado:     if (!config.ingestToken) return
+ 16 pass
+ 0 fail
+== anulado:   const match = url?.match(/\/models\/([^/:]+)(?::|\/)/)
+(fail) a model in the URL counts when the body has none [237.23ms]
+ 15 pass
+ 1 fail
+== anulado:       captureError = sanitizeErrorMessage(error)
+(fail) a router failure answers 500 with a sanitized mitm_error [266.61ms]
+ 15 pass
+ 1 fail
+== anulado:     if (config.verbose >= level) writeLine(message)
+(fail) THYROX_MITM_VERBOSE 0 silences the per-request decisions [274.25ms]
+ 15 pass
+ 1 fail
+== anulado:       decision === 'target' ? ['127.0.0.1', boundPort, 'TARGET (TLS terminate locally)'] : [host, port, `${decision.toUpperCase()} (TCP tunnel)`]
+(fail) a CONNECT to a target host is decrypted by the server itself [5003.19ms]
+ 15 pass
+ 1 fail
+== anulado:     const leaf = await issueLeafCertForHosts([...targetHosts.keys()], { key: ca.key, cert: ca.cert })
+(fail) the root-CA mode presents one leaf, signed by the stored CA, for every target host [345.20ms]
+ 15 pass
+ 1 fail
+== anulado:     userBypassPatterns = parseBypassJson(
+(fail) a CONNECT to a host in bypass.json is tunneled without decryption [205.93ms]
+ 15 pass
+ 1 fail
+== anulado:     stats.interceptedRequests++
+(fail) a mapped antigravity chat is rewritten and forwarded to the router as cloudcode [261.66ms]
+(fail) stats are counted and written next to the certificates [204.53ms]
+ 14 pass
+ 2 fail
+== anulado:   const payload = applyAntigravityOverride(
+(fail) a mapped antigravity chat is rewritten and forwarded to the router as cloudcode [218.62ms]
+(fail) a model in the URL counts when the body has none [190.68ms]
+(fail) an agent declared in targets.json that speaks Anthropic goes to /v1/messages [209.89ms]
+ 13 pass
+ 3 fail
+== base final
+ 16 pass
+ 0 fail

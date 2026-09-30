@@ -1,0 +1,7 @@
+def _gpu_peak(gpu_file: Path) -> int | None:
+    """El pico de VRAM de un ``<n>.gpu`` de ``gpu_monitor``; ``None`` si no se lee."""
+    try:
+        fields = gpu_file.read_text(errors="replace").split()
+    except OSError:
+        return None
+    return int(fields[0]) if len(fields) == 4 and all(f.isdigit() for f in fields) else None

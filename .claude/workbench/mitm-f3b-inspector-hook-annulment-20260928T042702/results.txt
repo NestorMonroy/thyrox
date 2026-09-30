@@ -1,0 +1,23 @@
+== A1 sin la consulta de host personalizado
+(fail) recordRequestStart: custom-host entry → source=custom-host, agent=undefined [7.48ms]
+ 123 pass
+ 1 fail
+== A2 cabeceras de respuesta sin sanear
+(fail) recordRequestComplete: masks the response and sums the latencies [1.99ms]
+ 123 pass
+ 1 fail
+== A3 error sin sanear
+(fail) recordRequestError: stores a sanitized error [1.72ms]
+ 123 pass
+ 1 fail
+== A4 atribución que no reconoce el socket
+(fail) attributeProcess resolves a live connection to this process [13.88ms]
+ 123 pass
+ 1 fail
+== A5 instalación que no registra el gancho
+(fail) installAgentBridgeHook: a handler run lands in the process buffer [9.18ms]
+ 123 pass
+ 1 fail
+== restored
+ 124 pass
+ 0 fail

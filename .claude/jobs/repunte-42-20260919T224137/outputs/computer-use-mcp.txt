@@ -1,0 +1,3 @@
+computer-use-mcp: emitio pese a 6474 errores (187 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 6474 error(es) que siguen vivos en su propio paquete

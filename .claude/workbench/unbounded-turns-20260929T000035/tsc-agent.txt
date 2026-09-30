@@ -1,0 +1,6 @@
+error TS6053: File '/home/user/thyrox/src/packages/@ant/ink/src/types/ink-elements.d.ts' not found.
+  The file is in the program because:
+    Part of 'files' list in tsconfig.json
+error TS6053: File '/home/user/thyrox/src/packages/@ant/ink/src/types/ink-jsx.d.ts' not found.
+  The file is in the program because:
+    Part of 'files' list in tsconfig.json

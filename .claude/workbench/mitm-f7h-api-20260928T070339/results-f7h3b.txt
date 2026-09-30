@@ -1,0 +1,64 @@
+== 1: ingesta al enrutador
+(fail) the capture goes to the MITM API, not to the router [392.12ms]
+ 144 pass
+ 1 fail
+== 3: ingesta sin token
+(fail) ingest without the token, or with another one, is a 403 and stores nothing [1.40ms]
+ 144 pass
+ 1 fail
+== 4: ingesta sin sanear cabeceras
+(fail) ingest with the token puts the entry in the buffer, masked and without hop headers [4.19ms]
+ 144 pass
+ 1 fail
+== 5: ingesta sin enmascarar el cuerpo
+(fail) ingest with the token puts the entry in the buffer, masked and without hop headers [4.54ms]
+ 144 pass
+ 1 fail
+== 6: token corto aceptado
+(fail) the ingest token comes from the environment only when it is long enough [0.83ms]
+ 144 pass
+ 1 fail
+== 7: proxy HTTP arrancado dos veces
+(fail) http-proxy: start opens it on the default port, and a second start reuses it [1.84ms]
+ 144 pass
+ 1 fail
+== 8: parar sin olvidar el manejador
+(fail) http-proxy: stop closes it and forgets it, and stopping nothing is fine [1.05ms]
+ 144 pass
+ 1 fail
+== 9: puerto ocupado como 500
+(fail) http-proxy: a busy port is a 409 naming it [1.74ms]
+ 144 pass
+ 1 fail
+== 10: revertir sin estado anterior
+(fail) system-proxy: revert restores the previous state, and without one only clears [1.11ms]
+ 144 pass
+ 1 fail
+== 11: guarda sin su valor por defecto
+(fail) system-proxy: apply without port or guard uses the defaults [0.87ms]
+ 144 pass
+ 1 fail
+== 12: canal sin guarda de loopback
+(fail) the live stream refuses a forwarded request like the rest of the API [3.20ms]
+ 144 pass
+ 1 fail
+== 13: canal sin pedir la negociación
+(fail) a plain GET to the live stream asks for the upgrade with a 426 [7.17ms]
+ 144 pass
+ 1 fail
+== 14: cerrar sin soltar la suscripción
+(fail) closing the socket drops its subscription [533.72ms]
+ 144 pass
+ 1 fail
+== restaurado
+ M src/packages/mitm/src/api/router.ts
+ M src/packages/mitm/src/api/server.ts
+ M src/packages/mitm/src/inspector/buffer.ts
+ M src/packages/mitm/src/inspector/httpProxyServer.ts
+ M src/packages/mitm/src/server/mitmServer.ts
+ M src/packages/mitm/src/server/serverConfig.ts
+?? src/packages/mitm/src/api/liveStream.ts
+?? src/packages/mitm/src/api/routes/inspectorCapture.ts
+?? src/packages/mitm/src/envNumber.ts
+ 145 pass
+ 0 fail

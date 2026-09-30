@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+ 97 |     expect(await isSpareClaimed(found, deps())).toBe(true)
+ 98 |     expect(asked).toEqual([{ namespace: 'job', jobId: 'j1', relPath: ['state.json'] }])
+ 99 |     expect(await isSpareClaimed(statStorage(async () => ({ ok: false, error: { code: 'NotFound' } })), deps())).toBe(false)
+100 |     expect(await isSpareClaimed(statStorage(async () => ({ ok: false, error: { code: 'Unavailable' } })), deps())).toBe(false)
+101 |     expect(await isSpareClaimed(statStorage(async () => ({ ok: false, error: { code: 'EIO' } })), deps())).toBe(true)
+102 |     expect(await isSpareClaimed(statStorage(async () => Promise.reject(new Error('x'))), deps())).toBe(false)
+                                                                                 ^
+error: x
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:102:76)
+      at isSpareClaimed (/home/user/thyrox/src/packages/local-observability/src/uds/spareSession.ts:54:36)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:102:18)
+(fail) isSpareClaimed (jy) > con backend de storage mira la clave del trabajo [0.87ms]
+
+ 10 pass
+ 1 fail
+ 26 expect() calls
+Ran 11 tests across 1 file. [130.00ms]

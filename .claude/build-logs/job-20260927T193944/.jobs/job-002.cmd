@@ -1,0 +1,1 @@
+cd src/packages/provider && bun test __tests__/ 2>&1 | tail -4

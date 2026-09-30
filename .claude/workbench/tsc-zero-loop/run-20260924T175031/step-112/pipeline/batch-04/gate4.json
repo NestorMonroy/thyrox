@@ -1,0 +1,70 @@
+{
+ "reviewed": [
+  {
+   "pattern": "mock-fetch-missing-bun-preconnect-member",
+   "files": [
+    "src/packages/provider/__tests__/adapters.test.ts"
+   ]
+  },
+  {
+   "pattern": "command-type-cross-package-mismatch",
+   "files": [
+    "src/packages/provider/src/commands/advisor.ts"
+   ]
+  },
+  {
+   "pattern": "callback-param-con-tipo-ad-hoc-en-vez-del-contrato-real",
+   "files": [
+    "src/packages/repl/src/commands/plan/plan.tsx"
+   ]
+  },
+  {
+   "pattern": "timestamp-unknown-por-index-signature-de-messagebase",
+   "files": [
+    "src/packages/repl/src/components/MessageSelector.tsx"
+   ]
+  },
+  {
+   "pattern": "type-guard-a-union-member-excede-su-alcance-y-remueve-el-tipo-entero",
+   "files": [
+    "src/packages/repl/src/components/MessageSelector.tsx"
+   ]
+  },
+  {
+   "pattern": "predicate-narrows-away-discriminant-member",
+   "files": [
+    "src/packages/repl/src/components/MessageSelector.tsx"
+   ]
+  },
+  {
+   "pattern": "coleccion-usada-como-set-pero-recibe-array-plano",
+   "files": [
+    "src/packages/repl/src/components/Messages.tsx"
+   ]
+  },
+  {
+   "pattern": "normalized-array-widened-by-fixed-return-type-helper",
+   "files": [
+    "src/packages/repl/src/components/Messages.tsx"
+   ]
+  },
+  {
+   "pattern": "local-jsx-context-index-signature-unknown",
+   "files": [
+    "src/packages/repl/src/components/Settings/Config.tsx"
+   ]
+  },
+  {
+   "pattern": "normalized-message-union-not-narrowed-to-known-variant",
+   "files": [
+    "src/packages/repl/src/conversationRecovery.tsx"
+   ]
+  },
+  {
+   "pattern": "local-jsx-call-returns-unknown",
+   "files": [
+    "src/packages/repl/src/handlePromptSubmit.tsx"
+   ]
+  }
+ ]
+}

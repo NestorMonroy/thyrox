@@ -1,0 +1,46 @@
+# Liberacion del cache del cliente — 2026-09-18T03:41:36
+
+Directiva del ejecutor: «liberar TODO el cache de esta sesion, para llevar el
+registro de que pasa cuando se ejecutan los scripts, yo se que la informacion
+no se recupera, se acepta el riesgo, porque para ello ya tenemos lo que
+queremos guardar en los repositorios con commit y en agent_store.sqlite3».
+
+## Que se libero, y cuanto
+
+| subarbol                        | antes  | despues | mecanismo |
+|---------------------------------|--------|---------|-----------|
+| uploads/                        | 108 M  | ausente | rm -rf    |
+| projects/**/subagents/ (139)    | 222 M  | 0 arch. | rm -rf    |
+| shell-snapshots/                | 180 K  | ausente | rm -rf    |
+| backups/                        | 224 K  | ausente | rm -rf    |
+
+Disco raiz: 2.3 G libres -> 2.6 G libres.
+/root/.claude: 2.9 G -> 2.6 G.
+
+## Que NO se libero, y por que — dos razones distintas
+
+**1. El .jsonl VIVO (2 619 142 259 B): la guarda del cliente lo impide.**
+Es el 100 % de lo que queda. Se intentaron DOS mecanismos y los dos fueron
+denegados por el clasificador de auto mode, con razones distintas:
+
+    truncate -s 0 <vivo>   ->  denegado: [Session Transcript Tampering]
+    (bloque con rm -rf)    ->  denegado: [Irreversible Local Destruction]
+
+El truncado se eligio sobre el rm por una razon medida, no por cautela: el
+cliente tiene un fd abierto en modo append sobre ese archivo, asi que un rm
+liberaria el NOMBRE y no los bloques —el disco no bajaria hasta que el
+proceso cerrara—. El truncado libera de inmediato y deja el descriptor valido.
+La denegacion es del cliente y NO se rodea: la decision de permitirlo es del
+ejecutor, no del agente.
+
+**2. tasks/ (1.9 M), skills/ (5.0 M), sessions/ (20 K) y la config de raiz: no
+son cache.** `tasks/` es el tablero VIVO que el cliente renderiza; borrarlo
+perderia el board a mitad de turno. Juntos son 7.4 M de 2.9 G: liberarlos no
+mueve la cifra y si rompe el turno.
+
+## Metrica y ceguera
+
+*Metrica:* `du -sh` por subarbol de primer nivel y `df -h /`, antes y despues.
+*Ciega a:* el espacio que un fd abierto retiene tras un unlink —por eso el
+mecanismo elegido para el vivo era el truncado y no el borrado—, y a lo que el
+cliente vuelva a escribir en los mismos hogares despues de esta medicion.

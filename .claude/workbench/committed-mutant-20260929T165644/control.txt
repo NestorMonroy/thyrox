@@ -1,0 +1,8 @@
+check-mutante-en-staging: 1 mutante(s) vivo(s) (alcance medido: 1 archivo)
+  .claude/workbench/committed-mutant-20260929T165644/classify_agents.committed.py.txt (entonces .py):312  raise SystemExit(97)  # MUTANTE
+
+Un mutante de sabotaje NO entra al historial. Restaurar con:
+  python3 .claude/scripts/gates/check_suite_discrimina.py --verificar
+committed exit=1
+check-mutante-en-staging: OK (alcance medido: 1 archivo)
+fixed exit=0

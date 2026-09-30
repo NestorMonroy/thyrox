@@ -1,0 +1,25 @@
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(67,45): error TS2352: Conversion of type '{ apiKeyHelper: string; awsAuthRefresh: string; awsCredentialExport: string; gcpAuthRefresh: string; otelHeadersHelper: string; statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:57-77 ---
+     57    })
+     58  
+     59    test('statusLine extracted', () => {
+     60      const result = extractDangerousSettings({
+     61        statusLine: 'echo $USER',
+     62      } as SettingsJson)
+     63      expect(result.shellSettings.statusLine).toBe('echo $USER')
+     64    })
+     65  
+     66    test('all 6 dangerous shell settings extracted', () => {
+     67>     const result = extractDangerousSettings({
+     68        apiKeyHelper: 'a',
+     69        awsAuthRefresh: 'b',
+     70        awsCredentialExport: 'c',
+     71        gcpAuthRefresh: 'd',
+     72        otelHeadersHelper: 'e',
+     73        statusLine: 'f',
+     74      } as SettingsJson)
+     75      expect(Object.keys(result.shellSettings).sort()).toEqual([
+     76        'apiKeyHelper',
+     77        'awsAuthRefresh',
+  Types of property 'statusLine' are incompatible.
+    Type 'string' is not comparable to type '{ type: "command"; command: string; }'.

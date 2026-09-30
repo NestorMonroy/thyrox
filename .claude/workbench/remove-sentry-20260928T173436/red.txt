@@ -1,0 +1,46 @@
+bun test v1.3.11 (af24e281)
+
+tests/package/no_external_error_sink.test.ts:
+40 | describe('sin envío externo de errores', () => {
+41 |   test('ningún archivo de src importa @sentry', () => {
+42 |     const offenders = [...walk(join(ROOT, 'src'), name => /\.(ts|tsx|mts)$/.test(name))]
+43 |       .filter(path => importsSentry(readFileSync(path, 'utf8')))
+44 |       .map(path => relative(ROOT, path))
+45 |     expect(offenders).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/local-observability/src/sentry.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/no_external_error_sink.test.ts:45:23)
+(fail) sin envío externo de errores > ningún archivo de src importa @sentry [152.84ms]
+48 |   test('ningún manifiesto declara @sentry', () => {
+49 |     const manifests = [join(ROOT, 'package.json'), ...walk(join(ROOT, 'src'), name => name === 'package.json')]
+50 |     const offenders = manifests
+51 |       .filter(path => declaresSentry(readFileSync(path, 'utf8')))
+52 |       .map(path => relative(ROOT, path))
+53 |     expect(offenders).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/local-observability/package.json",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/no_external_error_sink.test.ts:53:23)
+(fail) sin envío externo de errores > ningún manifiesto declara @sentry [42.81ms]
+
+ 2 pass
+ 2 fail
+ 6 expect() calls
+Ran 4 tests across 1 file. [230.00ms]

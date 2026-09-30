@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 1200 .claude/workbench/entry-point-20260927T015546/green2.cmds", "started_at": "2026-09-27T02:06:56+00:00"}

@@ -1,0 +1,1 @@
+config	sync/index.ts(42,67): error TS2304: Cannot find name 'MACRO'.

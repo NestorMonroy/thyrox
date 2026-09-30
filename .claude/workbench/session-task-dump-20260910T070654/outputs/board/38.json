@@ -1,0 +1,9 @@
+{
+  "id": "38",
+  "subject": "Separar el separador de millar del separador de lista en compactionFidelity",
+  "description": "`{408,429,500,502,503,529}` se funde en un numero de 18 digitos inexistente: el separador de millar y el de lista son el mismo caracter. Es 1 de 256 en la corrida del 2026-09-02, unica cifra sin antecedente que queda. Cierre: leer los delimitadores de coleccion alrededor sin ensanchar la superficie del normalizador.",
+  "activeForm": "Arreglando el separador en compactionFidelity",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

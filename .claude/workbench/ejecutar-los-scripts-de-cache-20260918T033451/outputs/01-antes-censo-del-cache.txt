@@ -1,0 +1,57 @@
+# Censo ANTES de liberar — 2026-09-18T03:35:30
+
+## /root/.claude por subarbol de primer nivel
+4.0K	/root/.claude/launcher-settings.json
+4.0K	/root/.claude/policy-limits.json
+4.0K	/root/.claude/remote-settings.json
+4.0K	/root/.claude/user-prompt-submit-reply-reminder.py
+8.0K	/root/.claude/daemon
+8.0K	/root/.claude/environment-manager
+8.0K	/root/.claude/session-env
+8.0K	/root/.claude/session-start-git-identity.sh
+8.0K	/root/.claude/stop-hook-git-check.sh
+20K	/root/.claude/sessions
+20K	/root/.claude/stop-hook-reply-gate.py
+28K	/root/.claude/telemetry
+180K	/root/.claude/shell-snapshots
+224K	/root/.claude/backups
+1.9M	/root/.claude/tasks
+5.0M	/root/.claude/skills
+108M	/root/.claude/uploads
+2.8G	/root/.claude/projects
+
+## total
+2.9G	/root/.claude
+
+## conteo de archivos
+1187
+
+## transcripts de projects/, por tamano
+2619142259	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a.jsonl
+23860135	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a44f45584c9bcf191.jsonl
+16669903	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a39ad3d1d66f97fd6.jsonl
+14256237	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-aae4cc0398d13f372.jsonl
+7881366	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a60863e21d0e57928.jsonl
+7032841	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a8a4d1d81be6a47c1.jsonl
+5629066	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-aab42ba08f7848d25.jsonl
+5337062	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-aee846c7197786167.jsonl
+4814799	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a97ebe1254b7375b6.jsonl
+4694720	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a4bce1fe961edb94d.jsonl
+4512172	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a3a77397ffaea02f2.jsonl
+4346420	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a70ca33b1a6bd1a6d.jsonl
+4106631	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a0bddf5aa3ee6b89d.jsonl
+3891622	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a88c0dc4955853685.jsonl
+3838776	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a8481faa922524381.jsonl
+3252303	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a34e3f2cb35dcc3ee.jsonl
+3185696	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a0aeb6b0a3df274b9.jsonl
+3018347	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a06c62889a9f039fb.jsonl
+2856392	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a821e63cc331fbeee.jsonl
+2684831	/root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-acd0ab74e0374b0f4.jsonl
+
+## el VIVO de esta sesion
+-rw------- 1 root root 2619142259 Sep 18 03:35 /root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a.jsonl
+
+## disco
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda        252G   35G  2.3G  94% /
+/dev/vda        252G   35G  2.3G  94% /

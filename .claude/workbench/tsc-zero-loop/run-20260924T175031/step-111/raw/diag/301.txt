@@ -1,0 +1,6 @@
+tests/integration/tool-chain.test.ts(116,7): error TS2322: Type 'string' is not assignable to type '(input: any, options: { isNonInteractiveSession: boolean; toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; tools: Tools; }) => Promise<...>'.
+tests/integration/tool-chain.test.ts(122,25): error TS2322: Type 'Promise<{ output: string; }>' is not assignable to type 'Promise<ToolResult<any>>'.
+  Property 'data' is missing in type '{ output: string; }' but required in type 'ToolResult<any>'.
+tests/integration/tool-chain.test.ts(132,7): error TS2322: Type 'string' is not assignable to type '(input: any, options: { isNonInteractiveSession: boolean; toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; tools: Tools; }) => Promise<...>'.
+tests/integration/tool-chain.test.ts(137,25): error TS2322: Type 'Promise<{}>' is not assignable to type 'Promise<ToolResult<any>>'.
+  Property 'data' is missing in type '{}' but required in type 'ToolResult<any>'.

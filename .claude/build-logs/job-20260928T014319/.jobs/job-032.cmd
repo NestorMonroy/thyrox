@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/agents/test_table_census.py

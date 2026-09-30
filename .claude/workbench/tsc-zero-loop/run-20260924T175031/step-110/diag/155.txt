@@ -1,0 +1,24 @@
+src/packages/provider/src/__tests__/advisor.test.ts(145,27): error TS2352: Conversion of type 'BetaUsage & { model: string; }' to type '{ type: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/__tests__/advisor.test.ts:135-155 ---
+    135    test('extracts only advisor_message-typed iterations', () => {
+    136      const usage = {
+    137        iterations: [
+    138          { type: 'advisor_message', model: 'claude-opus-4-7' },
+    139          { type: 'main_message', model: 'claude-sonnet-4-6' },
+    140          { type: 'advisor_message', model: 'claude-opus-4-7' },
+    141        ],
+    142      } as never
+    143      const r = getAdvisorUsage(usage)
+    144      expect(r).toHaveLength(2)
+    145>     expect(r.every(it => (it as { type: string }).type === 'advisor_message')).toBe(true)
+    146    })
+    147  
+    148    test('preserves model field on each result', () => {
+    149      const usage = {
+    150        iterations: [
+    151          { type: 'advisor_message', model: 'claude-opus-4-7' },
+    152        ],
+    153      } as never
+    154      const r = getAdvisorUsage(usage)
+    155      expect(r[0]?.model).toBe('claude-opus-4-7')
+  Property 'type' is missing in type 'BetaUsage & { model: string; }' but required in type '{ type: string; }'.

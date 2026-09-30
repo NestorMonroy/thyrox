@@ -1,0 +1,1 @@
+PYTHONDONTWRITEBYTECODE=1 python3 tests/verify/test_tsc_cycle.py

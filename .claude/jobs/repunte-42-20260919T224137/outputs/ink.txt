@@ -1,0 +1,3 @@
+ink: emitio pese a 370 errores (190 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 370 error(es) que siguen vivos en su propio paquete

@@ -1,0 +1,23 @@
+src/packages/command-runtime/src/commands/fast/fast.tsx(245,7): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '() => AppState'.
+  --- código src/packages/command-runtime/src/commands/fast/fast.tsx:235-255 ---
+    235  
+    236    // Fetch org fast mode status before showing the picker. We must know
+    237    // whether the org has disabled fast mode before allowing any toggle.
+    238    // If a startup prefetch is already in flight, this awaits it.
+    239    await prefetchFastModeStatus()
+    240  
+    241    const arg = args?.trim().toLowerCase()
+    242    if (arg === 'on' || arg === 'off') {
+    243      const result = await handleFastModeShortcut(
+    244        arg === 'on',
+    245>       context.getAppState,
+    246        context.setAppState,
+    247      )
+    248      onDone(result)
+    249      return null
+    250    }
+    251  
+    252    const unavailableReason = getFastModeUnavailableReason()
+    253    logEvent('tengu_fast_mode_picker_shown', {
+    254      unavailable_reason: (unavailableReason ??
+    255        '') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

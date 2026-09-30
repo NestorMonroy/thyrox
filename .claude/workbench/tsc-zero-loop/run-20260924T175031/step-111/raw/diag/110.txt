@@ -1,0 +1,2 @@
+src/packages/config/plugin/PluginInstallationManager.ts(42,9): error TS2322: Type '{ name: string; }[]' is not assignable to type '{ name: string; status: "pending" | "failed" | "installed" | "installing"; error?: string | undefined; }[]'.
+  Property 'status' is missing in type '{ name: string; }' but required in type '{ name: string; status: "pending" | "failed" | "installed" | "installing"; error?: string | undefined; }'.

@@ -1,0 +1,9 @@
+{
+  "id": "256",
+  "subject": "Reconciliar el estado del index de hallazgos con el :estado: de cada archivo",
+  "description": "Medido 2026-09-07 al añadir H-DOCS-1234/1235 al index de\n`actualizar-agentic-ai-thyrox/hallazgos/`: la columna Estado de la tabla y el\n`:estado:` del bloque `.. meta::` de cada archivo **divergen en 5 de 114**.\n\n  h-docs-1070: archivo=RESUELTO      index=DOCUMENTADO\n  h-docs-1081: archivo=DOCUMENTADO   index=RESUELTO (parcial)\n  h-docs-1107: archivo=DOCUMENTADO   index=RESUELTO\n  h-docs-1120: archivo=DOCUMENTADO   index=RESUELTO\n  h-docs-1230: archivo=DOCUMENTADO   index=RESUELTO\n\nCuatro de las cinco van en la misma direccion —el index dice RESUELTO y el\narchivo dice DOCUMENTADO—, que es la direccion cara: el index es la vista\nagregada que alguien lee para saber que queda abierto, y ahi cuatro hallazgos\nabiertos se leen como cerrados.\n\nEl mismo pase destapo un segundo defecto y lo cerro: H-DOCS-1234 se habia\nescrito **sin fila ni entrada de toctree**. Tras el arreglo, el control de\ncobertura en ambas direcciones da 114 entradas / 114 archivos / 0\ndiscrepancias — y discrimina, porque acababa de reportar 1.\n\nLo que falta es el control del ESTADO, que es otro eje:\n\n  for f in hallazgo-*.rst; do comparar :estado: contra la fila del index; done\n\nDos mitades:\n(a) triar las 5 —el archivo manda, salvo que su propio texto contradiga su\n    `:estado:`, que es el caso a mirar en h-docs-1070;\n(b) cablearlo como gate junto al de cobertura, para que la divergencia no\n    vuelva a crecer en silencio. Sin gate esto reincide: la tabla se edita a\n    mano y el `:estado:` vive en otro archivo.\n\nAlcance: sólo la iniciativa medida. Si el gate se cablea, medir antes cuántas\niniciativas más tienen el mismo par tabla/archivo — el numero de arriba es de\nUNA, y no se extrapola.",
+  "activeForm": "Reconciliando el estado del index de hallazgos",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

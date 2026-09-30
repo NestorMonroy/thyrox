@@ -1,0 +1,19 @@
+src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	aserción: fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > the gate triages v
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/integration/agent-loop.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/integration/plugin-load.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/integration/slash-commands.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/smoke/bg-cycle-smoke.test.ts	aserción: smoke:bg cycle (detached) > --bg-detached spawns child + writes meta.json [7.11ms]
+tests/smoke/headless-smoke.test.ts	aserción: smoke:headless boot > --version prints something and exits 0 [6.73ms]
+tests/smoke/live-fire-smoke.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/smoke/plugin-hooks-smoke.test.ts	aserción: smoke:plugin dispatch path > dispatch probe ran for every queried event [1450.61ms]
+tests/smoke/repl-smoke.test.ts	aserción: smoke:repl boot path > bootstrap completes without errors [1720.29ms]
+tests/smoke/resume-smoke.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/smoke/swarm-smoke.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/unit/state/replSelectors.test.ts	falta discoverSkillDirsForPaths en loadSkillsDir.ts
+tests/unit/utils/messages.test.ts	falta normalizeMessagesForAPI en messages.ts

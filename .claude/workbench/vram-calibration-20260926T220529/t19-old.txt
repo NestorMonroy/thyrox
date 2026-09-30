@@ -1,0 +1,1 @@
+    check("anchura efectiva y VRAM por ítem", ["3", "3200"], fields[2:4])

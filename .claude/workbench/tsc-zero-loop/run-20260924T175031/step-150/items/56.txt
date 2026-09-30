@@ -1,0 +1,29 @@
+Patrón: optional-array-attachment-spread
+Señal del verificador: TS2488:.*must have a '\[Symbol\.iterator\]\(\)' method
+Arreglo genérico: Un campo opcional (`memories?: T[]`) de un tipo de mensaje se pasa a un spread (`push(...x)`, `[...x]`) sin resolver el `undefined`. Aplicar `?? []` antes de esparcirlo, sin cambiar el tipo del campo ni el contrato del productor.
+Ya aplicado en: src/packages/tool-registry/src/collapseReadSearch.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(2168,11): error TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/agent/hooks.ts:2158-2178 ---
+   2158  > {
+   2159    // HookMatcher es {matcher, hooks} sin el envoltorio de zod, así que los
+   2160    // matchers del snapshot se empujan directo sin volver a envolverlos.
+   2161    const hooks: Array<
+   2162      | HookMatcher
+   2163      | HookCallbackMatcher
+   2164      | FunctionHookMatcher
+   2165      | PluginHookMatcher
+   2166      | SkillHookMatcher
+   2167      | SessionDerivedHookMatcher
+   2168>   > = [...(getHooksConfigFromSnapshot()?.[hookEvent] ?? [])]
+   2169  
+   2170    // Si sólo deben correr los hooks administrados (aplica a los registrados y a los de sesión)
+   2171    const managedOnly = shouldAllowManagedHooksOnly()
+   2172  
+   2173    // Procesa los hooks registrados (callbacks del SDK y hooks nativos de plugin)
+   2174    const registeredHooks = getRegisteredHooks()?.[hookEvent]
+   2175    if (registeredHooks) {
+   2176      for (const matcher of registeredHooks) {
+   2177        // Salta los hooks de plugin cuando sólo se permiten los administrados
+   2178        // Los hooks de plugin llevan pluginRoot; los callbacks del SDK no

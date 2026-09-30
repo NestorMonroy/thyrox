@@ -1,0 +1,56 @@
+Estrechar el cono de odoo-tools
+
+QUE SE HIZO
+El clon /home/user/odoo-tools ya estaba en modo cono. Se estrecho su
+sparse-checkout a las siete rutas que el arbol consume de verdad:
+
+    git sparse-checkout set 19.x/odoo-19.0 19.x/odoo19-enterprise-main \
+        18.x/odoo-18 18.x/odoo.enterprise docs scripts utils
+
+Las cuatro primeras son exactamente los cuatro alias que
+kaupamex-api: scripts/reference_roots.py declara (odoo19c, odoo19e,
+odoo18c, odoo18e).
+
+RESULTADO (medido, no estimado)
+    odoo-tools        15G  ->  8.3G     (.git 1.6G + arbol 6.7G)
+    disco libre      285M  ->  9.3G     (df -h /: 76% usado)
+    alias resueltos     4  ->  4        (reference_roots.py los lista)
+    working tree        limpio          (porcelain vacio)
+
+Desglose del arbol por raiz, con timeout 300:
+    18.x/odoo-18                2.7G
+    18.x/odoo.enterprise        1.5G
+    19.x/odoo19-enterprise-main 1.3G
+    19.x/odoo-19.0              1.2G
+    scripts                      88M
+    utils                        68M
+    docs                         72K
+
+POR QUE ES REVERSIBLE SIN RED
+El modo cono retira del working tree; los objetos siguen en .git. Un
+"sparse-checkout add <ruta>" los vuelve a materializar sin fetch. Eso es
+lo que hace admisible tocar un repo declarado READ ONLY: no se borro
+historia, no se commiteo, no se empujo nada. Autorizado por el ejecutor
+en este mismo hilo.
+
+LO QUE NO SE HIZO, Y POR QUE
+docs/git-sparse-clone/setup.md describe un clon PARCIAL
+(--filter=blob:none --no-checkout) en una carpeta nueva. No se ejecuto:
+el ejecutor lo detuvo -- "ya con 76% estamos bien por el momento" -- y la
+aritmetica lo respalda. El clon parcial tendria que materializar los
+mismos ~6.7G de arbol ANTES de poder borrar el viejo, y quedan 9.3G:
+cabe por poco, y el margen no compra nada medible. Los cuatro alias son
+la mayor parte del contenido del repo, asi que --filter=blob:none ahorra
+sobre lo que NO se checkoutea, que aqui ya no se checkoutea.
+
+    Metrica: du -sh por raiz y df -h / antes y despues del estrechamiento;
+      salida de reference_roots.py.
+    Ciega a: cuanto del 1.6G de .git corresponde a blobs de rutas ya
+      retiradas del cono. Eso solo lo separaria un count-objects contra un
+      clon parcial real, que es justo lo que no se hizo.
+
+SUCESOR
+Si el disco vuelve a apretar, el siguiente paso barato NO es el clon
+parcial sino retirar del cono un arbol de referencia entero: 18.x/odoo-18
+son 2.7G y su alias odoo18c es el menos citado de los cuatro. Es un
+comando, y se revierte con otro.

@@ -1,0 +1,2 @@
+renameEnvPrefix: renombradas 1087 en 276 archivo(s) (alcance medido: 2547 archivo(s))
+renameEnvPrefix: renombradas 328 en 113 archivo(s) (alcance medido: 1431 archivo(s))

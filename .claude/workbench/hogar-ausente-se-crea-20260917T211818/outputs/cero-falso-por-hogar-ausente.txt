@@ -1,0 +1,4 @@
+== un LISTADO sobre un hogar ausente: cero falso o error? ==
+hogar: /tmp/tmp.9AIPWkMdFa/ausente/wb existe: False
+glob sobre el hogar ausente -> 0 entradas
+   ^ un CERO, no un error: indistinguible de «el hogar esta vacio»

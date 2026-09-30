@@ -1,0 +1,23 @@
+src/packages/command-runtime/src/skills/bundled/keybindings.ts(42,9): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/command-runtime/src/skills/bundled/keybindings.ts:32-52 ---
+     32   */
+     33  function generateActionsTable(): string {
+     34    // Build a lookup: action -> { keys, context }
+     35    const actionInfo: Record<string, { keys: string[]; context: string }> = {}
+     36    for (const block of DEFAULT_BINDINGS) {
+     37      for (const [key, action] of Object.entries(block.bindings)) {
+     38        if (action) {
+     39          if (!actionInfo[action as string]) {
+     40            actionInfo[action as string] = { keys: [], context: block.context }
+     41          }
+     42>         actionInfo[action as string].keys.push(key)
+     43        }
+     44      }
+     45    }
+     46  
+     47    return markdownTable(
+     48      ['Action', 'Default Key(s)', 'Context'],
+     49      KEYBINDING_ACTIONS.map(action => {
+     50        const info = actionInfo[action]
+     51        const keys = info ? info.keys.map(k => `\`${k}\``).join(', ') : '(none)'
+     52        const context = info ? info.context : inferContextFromAction(action)

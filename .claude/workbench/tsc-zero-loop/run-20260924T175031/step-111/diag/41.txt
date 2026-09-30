@@ -1,0 +1,23 @@
+src/packages/agent/sessionTools/transcriptSearch.ts(86,15): error TS18048: 'msg.attachment.memories' is possibly 'undefined'.
+  --- código src/packages/agent/sessionTools/transcriptSearch.ts:76-96 ---
+     76            })
+     77            .join('\n')
+     78        }
+     79        break
+     80      }
+     81      case 'attachment': {
+     82        // relevant_memories renders full m.content in transcript mode
+     83        // (AttachmentMessage.tsx <Ansi>{m.content}</Ansi>). Visible but
+     84        // unsearchable without this — [ dump finds it, / doesn't.
+     85        if (msg.attachment.type === 'relevant_memories') {
+     86>         raw = msg.attachment.memories.map(m => m.content).join('\n')
+     87        } else if (
+     88          // Mid-turn prompts — queued while an agent is running. Render via
+     89          // UserTextMessage (AttachmentMessage.tsx:~348). stickyPromptText
+     90          // (VirtualMessageList.tsx:~103) has the same guards — mirror here.
+     91          msg.attachment.type === 'queued_command' &&
+     92          msg.attachment.commandMode !== 'task-notification' &&
+     93          !msg.attachment.isMeta
+     94        ) {
+     95          const p = msg.attachment.prompt
+     96          raw =

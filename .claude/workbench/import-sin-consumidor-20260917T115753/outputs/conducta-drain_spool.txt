@@ -1,0 +1,5 @@
+--- conducta 1: import sin consumidor ---
+import OK
+--- conducta 3: con consumidor, carrete real (1 evento pendiente) ---
+/home/user/kaupamex-docs/.claude/agent-results/carrete-store.jsonl
+{'medidos': 1, 'reenviados': 0, 'pendientes': 1, 'abandonados': 0}

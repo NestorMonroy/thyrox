@@ -1,0 +1,5 @@
+==== Be: 1 definicion(es) de nivel superior
+---- chunk-ygx717jg.js function Be [10046,10964)
+function Be(e,r,s,h,n){let p,o=!1,u=0,g=!1,f;function S(){if(o)return;let _=new pt,w=!1;_.on("error",()=>k()),_.once("close",()=>{if(p===_)p=void 0;if(o)return;if(w)s();k()}),_.once("connect",()=>{w=!0,u=0,g=!1,p=_,_.write(b({proto:wc,role:"supervisor",supervisorPid:process.pid,auth:n})+`
+`),h?.(),Zzt(_,(A)=>{let P;try{P=J(A)}catch{return}if(P&&typeof P==="object"&&"type"in P)r(P)})}),_.connect(e)}function k(){if(o||f||g)return;if(u>=Ve){g=!0,t(`[bg-rv] ${e}: ${u} connect attempts failed \u2014 giving up (pid-poll is liveness backstop)`,{level:"warn"}),i("tengu_bg_rv_connect_exhausted",{attempts:u});return}let _=Me[Math.min(u,Me.length-1)];u++,f=setTimeout(()=>{f=void 0,S()},_),f.unref()}return S(),{send(_){if(!p||p.destroyed){if(u>=Ve)u=0,g=!1,k();return!1}try{return p.write(b(_)+`
+`),!0}catch(w){return t(`[bg-rv] send failed: ${String(w)}`),!1}},close(){if(o=!0,f)clearTimeout(f);p?.destroy(),p=void 0}}}

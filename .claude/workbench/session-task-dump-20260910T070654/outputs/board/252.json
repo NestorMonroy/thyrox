@@ -1,0 +1,11 @@
+{
+  "id": "252",
+  "subject": "Declarar el bin de thyrox: hoy los tres niveles dicen bin: null",
+  "description": "Medido 2026-09-07: el package.json raíz de thyrox declara `bin: null` y sólo cuatro scripts (test, test:ts, test:py, typecheck). `@thyrox/cli` declara `main: ./src/index.ts` y `bin: null`.\n\nACTUALIZADO 2026-09-08 con la medición de #205, que reencuadra la mitad (a) sin cerrarla:\n\n  package.json de ccnmt que declaran `bin`:  0 de todos sus paquetes\n  directorios `bin/` en ccnmt:               0\n  directorios `bin/` en restored-src:        0\n  punto de entrada en ccnmt:        packages/cli/src/entry/main.tsx\n  punto de entrada en restored-src: src/main.tsx\n\nO sea: `bin: null` NO es divergencia con la referencia — es fidelidad. La\nreferencia no expone su comando por el campo `bin` de un package.json de\nworkspace; su entrada es un MÓDULO (`main`), y el comando `claude` sale de\nsu empaquetado, que es otro mecanismo.\n\nConsecuencia para este task: la mitad (a) deja de ser «rellenar un hueco» y\npasa a ser «declarar por qué mecanismo se expone el comando», que es una\npregunta distinta y sigue abierta. Lo que #205 sí cerró es el sitio y el\nnombre de la entrada: `@thyrox/cli: src/entry/main.ts`, con\n`scripts.start` y el subpath `./entry/main` en `exports`. Ya no hay\n`bin/harness.ts` que confunda el candidato.\n\nLa mitad (b) NO se toca y sigue siendo lo más valioso del task: un control\nque falle si un cableado vivo apunta a una ruta inexistente. Es lo que\nhabría atrapado el hook PreModelSwitch de\n/home/user/.claude/settings.local.json apuntando a\n`kaupamex-docs/.claude/packages/agent/bin/preModelSwitch.ts` — AUSENTE en\ndisco; el real es `thyrox/src/packages/agent/bin/preModelSwitch.ts`. Esa\nmitad es independiente de (a) y no depende de ningún porte.\n\nCierra cuando: (a) esté declarado por qué mecanismo thyrox expone su\ncomando —medido contra la referencia, no supuesto— y (b) exista el control\nde cableado-a-ruta-inexistente.",
+  "activeForm": "Declarando el bin de thyrox",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "205"
+  ]
+}

@@ -1,0 +1,65 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+sin cambios  agentic-reasoning
+sin cambios  agentic-validator
+sin cambios  ba-coordinator
+sin cambios  bpa-coordinator
+sin cambios  cp-coordinator
+sin cambios  deep-dive
+sin cambios  deep-review
+sin cambios  diagrama-ishikawa
+sin cambios  dmaic-coordinator
+sin cambios  gate-consistency-evaluator
+sin cambios  increment-acceptor
+sin cambios  lean-coordinator
+sin cambios  migration-porter
+sin cambios  packaging-porter-high
+sin cambios  packaging-porter-low
+sin cambios  pattern-harvester
+sin cambios  pdca-coordinator
+sin cambios  pm-coordinator
+sin cambios  pps-coordinator
+sin cambios  prueba-palancas
+sin cambios  retro-facilitator
+sin cambios  rm-coordinator
+sin cambios  rup-coordinator
+sin cambios  skill-generator
+sin cambios  sp-coordinator
+sin cambios  task-executor
+sin cambios  task-planner
+sin cambios  task-synthesizer
+sin cambios  tech-detector
+sin cambios  thyrox-coordinator
+sin cambios  workbench-instrumenter
+emit: 31 definición(es); 0 con diferencia (alcance medido: /home/user/thyrox/src/agents/definitions)
+check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+../agent/internal/macroFallback.ts(3,23): error TS7017: Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature.
+../agent/internal/macroFallback.ts(4,55): error TS2304: Cannot find name 'MACRO'.
+src/bg.ts(597,17): error TS2304: Cannot find name 'MACRO'.
+src/bg/spawnPty.ts(215,17): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(6,12): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(7,12): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(7,36): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(8,9): error TS2304: Cannot find name 'MACRO'.
+src/entry/mcp.ts(51,16): error TS2304: Cannot find name 'MACRO'.
+src/entry/run-program.ts(387,17): error TS2304: Cannot find name 'MACRO'.
+src/handlers/auth.ts(73,28): error TS2304: Cannot find name 'MACRO'.
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+../agent/internal/macroFallback.ts(3,23): error TS7017: Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature.
+../agent/internal/macroFallback.ts(4,55): error TS2304: Cannot find name 'MACRO'.
+src/bg.ts(597,17): error TS2304: Cannot find name 'MACRO'.
+src/bg/spawnPty.ts(215,17): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(6,12): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(7,12): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(7,36): error TS2304: Cannot find name 'MACRO'.
+src/commands/version.ts(8,9): error TS2304: Cannot find name 'MACRO'.
+src/entry/mcp.ts(51,16): error TS2304: Cannot find name 'MACRO'.
+src/entry/run-program.ts(387,17): error TS2304: Cannot find name 'MACRO'.
+src/handlers/auth.ts(73,28): error TS2304: Cannot find name 'MACRO'.
+check-cli-typecheck: tsconfig.json CRECE — 11 sobre un baseline de 0.
+check-cli-typecheck: tsconfig.tests.json CRECE — 11 sobre un baseline de 0.
+check-cli-typecheck: proyectos medidos: 2 de 2
+rutas: 380 pares de modelo, 1140 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
+cross-model-read: 0 lecturas cruzadas (superficie real auditada)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)

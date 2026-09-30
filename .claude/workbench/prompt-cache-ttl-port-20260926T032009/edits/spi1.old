@@ -1,0 +1,6 @@
+    state: str | None
+    cpu_seconds: float | None
+
+    def tsv(self) -> str:
+        cpu = "-" if self.cpu_seconds is None else f"{self.cpu_seconds:.2f}"
+        return "\t".join((str(self.pid), self.stdin or "-", self.kind, self.state or "-", cpu))

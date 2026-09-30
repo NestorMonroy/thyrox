@@ -1,0 +1,400 @@
+diff --git a/src/packages/config/__tests__/remoteLoadState.test.ts b/src/packages/config/__tests__/remoteLoadState.test.ts
+new file mode 100644
+index 00000000..fdaf09e3
+--- /dev/null
++++ b/src/packages/config/__tests__/remoteLoadState.test.ts
+@@ -0,0 +1,153 @@
++/**
++ * `remote/loadState.ts` porta `Ma`/`em`/`le()` de 2.1.283
++ * (`chunk-379zyrv7.js`), recortado a los cuatro campos que un consumidor
++ * futuro (`readRemotePolicy`, hoy sin este estado) necesita: `sessionCache`,
++ * `verifiedPayload`, `projectedView` y `lastLoadStatus`.
++ *
++ * Los primeros dos `describe` prueban el contenedor solo, sin `host`
++ * instalado ni fetch de por medio. El bloque de `remote/index.ts` prueba el
++ * cableado: cada rama de `fetchAndLoadRemoteManagedSettings()` que SÍ se
++ * puede alcanzar sin red real.
++ *
++ * Ciega a: la rama `{state:'ok', ...}` de una descarga que SÍ tuvo éxito —
++ * en este árbol `getSettingsSyncAuth` de las pruebas nunca da credenciales
++ * reales, así que todo fetch cae por la rama de auth antes de tocar la red.
++ * Esa rama llama exactamente a los mismos tres métodos
++ * (`recordSessionCache`/`recordProjectedView`/`setLastLoadStatus`) que las
++ * pruebas 1-5 ya cubren con el estado 'ok' pasado directamente.
++ */
++import { afterAll, afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { installConfigHostBindings } from '../host.js'
++import { clearRemoteManagedSettingsCache, loadRemoteManagedSettings } from '../remote/index.js'
++import { getRemoteLoadState, RemoteLoadState } from '../remote/loadState.js'
++import { resetSyncCache } from '../remote/syncCache.js'
++import { getSettingsPath } from '../remote/syncCacheState.js'
++import type { SettingsJson } from '../settings/types.js'
++import { InMemoryConfig } from '../testing/index.js'
++
++const home = mkdtempSync(join(tmpdir(), 'remote-load-state-'))
++
++function installBindings(eligible: boolean): void {
++  installConfigHostBindings({
++    ...new InMemoryConfig({ configHomeDir: home }).bindings,
++    checkRemoteSettingsEligibility: () => eligible,
++  })
++}
++
++beforeEach(() => {
++  installBindings(true)
++  resetSyncCache()
++  getRemoteLoadState().reset()
++  rmSync(join(home, 'remote-settings.json'), { force: true })
++})
++
++afterEach(async () => {
++  await clearRemoteManagedSettingsCache()
++})
++
++afterAll(() => {
++  rmSync(home, { recursive: true, force: true })
++})
++
++describe('RemoteLoadState', () => {
++  test('1. recordSessionCache(valor, true) marca sessionCache y verifiedPayload', () => {
++    const state = new RemoteLoadState<SettingsJson>()
++    state.recordSessionCache({ model: 'a' }, true)
++    expect(state.sessionCache).toEqual({ model: 'a' })
++    expect(state.verifiedPayload).toEqual({ model: 'a' })
++  })
++
++  test('2. recordSessionCache(valor, false) sólo toca sessionCache', () => {
++    const state = new RemoteLoadState<SettingsJson>()
++    state.recordSessionCache({ model: 'verified' }, true)
++    state.recordSessionCache({ model: 'stale' }, false)
++    expect(state.sessionCache).toEqual({ model: 'stale' })
++    expect(state.verifiedPayload).toEqual({ model: 'verified' })
++  })
++
++  test('3. recordProjectedView memoiza por identidad del crudo, como Xk()', () => {
++    const state = new RemoteLoadState<SettingsJson>()
++    const raw = { model: 'a' }
++    const first = state.recordProjectedView(raw)
++    const second = state.recordProjectedView(raw)
++    expect(second).toBe(first)
++    const third = state.recordProjectedView({ model: 'a' })
++    expect(third).not.toBe(first)
++  })
++
++  test('4. setLastLoadStatus/lastLoadStatus hacen ida y vuelta con las cuatro variantes', () => {
++    const state = new RemoteLoadState<SettingsJson>()
++    state.setLastLoadStatus({ state: 'ineligible', reason: 'x' })
++    expect(state.lastLoadStatus).toEqual({ state: 'ineligible', reason: 'x' })
++    state.setLastLoadStatus({ state: 'ok', hasSettings: true })
++    expect(state.lastLoadStatus).toEqual({ state: 'ok', hasSettings: true })
++    const failure = { errorKind: 'fetch_failed', message: 'boom' }
++    state.setLastLoadStatus({ state: 'stale_cache', failure, transportEnvWithheld: false })
++    expect(state.lastLoadStatus).toEqual({ state: 'stale_cache', failure, transportEnvWithheld: false })
++    state.setLastLoadStatus({ state: 'failed', failure })
++    expect(state.lastLoadStatus).toEqual({ state: 'failed', failure })
++  })
++
++  test('5. reset() vacía los cuatro campos', () => {
++    const state = new RemoteLoadState<SettingsJson>()
++    state.recordSessionCache({ model: 'a' }, true)
++    state.recordProjectedView({ model: 'a' })
++    state.setLastLoadStatus({ state: 'ok', hasSettings: true })
++    state.reset()
++    expect(state.sessionCache).toBeNull()
++    expect(state.verifiedPayload).toBeNull()
++    expect(state.projectedView).toBeNull()
++    expect(state.lastLoadStatus).toBeUndefined()
++  })
++})
++
++describe('getRemoteLoadState', () => {
++  test('6. con el mismo host instalado, devuelve siempre la misma instancia', () => {
++    expect(getRemoteLoadState()).toBe(getRemoteLoadState())
++  })
++
++  test('7. un host nuevo obtiene una instancia nueva (se clava por identidad, no por una llave fija)', () => {
++    const first = getRemoteLoadState()
++    installConfigHostBindings(new InMemoryConfig({ configHomeDir: home }).bindings)
++    const second = getRemoteLoadState()
++    expect(second).not.toBe(first)
++  })
++})
++
++describe('remote/index.ts registra el desenlace de cada carga en getRemoteLoadState()', () => {
++  test('8. sin elegibilidad, la carga deja lastLoadStatus "ineligible"', async () => {
++    installBindings(false)
++    await loadRemoteManagedSettings()
++    expect(getRemoteLoadState().lastLoadStatus).toEqual({
++      state: 'ineligible',
++      reason: 'user is not eligible for remote managed settings',
++    })
++  })
++
++  test('9. elegible, sin auth instalada y sin caché en disco: "failed" y sessionCache intacto', async () => {
++    await loadRemoteManagedSettings()
++    const status = getRemoteLoadState().lastLoadStatus
++    expect(status?.state).toBe('failed')
++    expect(getRemoteLoadState().sessionCache).toBeNull()
++  })
++
++  test('10. elegible, sin auth instalada, con caché en disco: "stale_cache" y sessionCache servido', async () => {
++    writeFileSync(getSettingsPath(), JSON.stringify({ model: 'cached' }))
++    await loadRemoteManagedSettings()
++    const status = getRemoteLoadState().lastLoadStatus
++    expect(status?.state).toBe('stale_cache')
++    expect(getRemoteLoadState().sessionCache).toEqual({ model: 'cached' })
++    expect(getRemoteLoadState().verifiedPayload).toBeNull()
++  })
++
++  test('11. clearRemoteManagedSettingsCache() también resetea el estado de carga remota', async () => {
++    getRemoteLoadState().recordSessionCache({ model: 'a' }, true)
++    getRemoteLoadState().setLastLoadStatus({ state: 'ok', hasSettings: true })
++    await clearRemoteManagedSettingsCache()
++    expect(getRemoteLoadState().sessionCache).toBeNull()
++    expect(getRemoteLoadState().lastLoadStatus).toBeUndefined()
++  })
++})
+diff --git a/src/packages/config/remote/index.ts b/src/packages/config/remote/index.ts
+index 4d2ac193..7f00ecdf 100644
+--- a/src/packages/config/remote/index.ts
++++ b/src/packages/config/remote/index.ts
+@@ -60,6 +60,15 @@
+  * `getClaudeCodeUserAgent()` — `MACRO.VERSION` es un define de build-time
+  * de `ccnmt` ausente en este árbol fuera de un build real. Mismo patrón que
+  * ya usan `local-observability/{telemetry/attributes,logging/error-log-sink}.ts`: `typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'`.
++ *
++ * `./loadState.ts` — el estado de carga remota (`Ma`/`em`/`le()` de
++ * 2.1.283) que este módulo alimenta en cada fetch, para que un futuro
++ * consumidor (`readRemotePolicy`) lo lea. Este porte simplificado no tiene
++ * el flujo de consentimiento de 2.1.283 (`ot()`), así que el mapeo es
++ * best-effort: cada desenlace de `fetchAndLoadRemoteManagedSettings()` se
++ * traduce al estado más cercano (`ineligible`/`ok`/`stale_cache`/`failed`),
++ * y `errorKind` se colapsa a `'fetch_failed'` porque este fetch no
++ * distingue `ruled_empty` de un fallo de red o de auth como sí hace 2.1.283.
+  */
+ 
+ import { createHash } from 'crypto'
+@@ -75,6 +84,7 @@ import {
+   type RemoteManagedSettingsFetchResult,
+   RemoteManagedSettingsResponseSchema,
+ } from './types.js'
++import { getRemoteLoadState, type RemoteSettingsFailure } from './loadState.js'
+ 
+ // --- envoltorios de dependencias bloqueadas — ver docstring del módulo ---
+ 
+@@ -572,6 +582,9 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
+   // Limpia la caché de sesión.
+   requireRemoteSyncCache().resetSyncCache()
+ 
++  // Limpia el estado de carga remota (`Ma.reset()`).
++  getRemoteLoadState().reset()
++
+   // Limpia el estado de la promesa de carga.
+   loadingCompletePromise = null
+   loadingCompleteResolve = null
+@@ -584,6 +597,27 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
+   }
+ }
+ 
++/** `ign()`+`f8e()` con un fallo: deja constancia de la caché usada (si la hay) y del fallo. */
++function recordFetchFailure(cachedSettings: SettingsJson | null, message: string): void {
++  const failure: RemoteSettingsFailure = { errorKind: 'fetch_failed', message }
++  const loadState = getRemoteLoadState()
++  if (cachedSettings) {
++    loadState.recordSessionCache(cachedSettings, false)
++    loadState.recordProjectedView(cachedSettings)
++    loadState.setLastLoadStatus({ state: 'stale_cache', failure, transportEnvWithheld: false })
++    return
++  }
++  loadState.setLastLoadStatus({ state: 'failed', failure })
++}
++
++/** `ign()`+`f8e()` con éxito: deja constancia de los settings servidos y de que la carga fue `'ok'`. */
++function recordFetchSuccess(settings: SettingsJson, verified: boolean): void {
++  const loadState = getRemoteLoadState()
++  loadState.recordSessionCache(settings, verified)
++  loadState.recordProjectedView(settings)
++  loadState.setLastLoadStatus({ state: 'ok', hasSettings: Object.keys(settings).length > 0 })
++}
++
+ /**
+  * Trae y carga los settings remotos con caché en archivo. Función interna
+  * que maneja el flujo completo de carga/fetch. Falla abierto — devuelve
+@@ -591,6 +625,10 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
+  */
+ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null> {
+   if (!requireRemoteSyncCache().isRemoteManagedSettingsEligible()) {
++    getRemoteLoadState().setLastLoadStatus({
++      state: 'ineligible',
++      reason: 'user is not eligible for remote managed settings',
++    })
+     return null
+   }
+ 
+@@ -614,9 +652,11 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
+           'Remote settings: Using stale cache after fetch failure',
+         )
+         requireRemoteSyncCacheState().setSessionCache(cachedSettings)
++        recordFetchFailure(cachedSettings, result.error ?? 'unknown error')
+         return cachedSettings
+       }
+       // No hay caché disponible — falla abierto, continúa sin settings remotos.
++      recordFetchFailure(null, result.error ?? 'unknown error')
+       return null
+     }
+ 
+@@ -624,6 +664,7 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
+     if (result.settings === null && cachedSettings) {
+       getConfigHostBindings().logDebug?.('Remote settings: Cache still valid (304 Not Modified)')
+       requireRemoteSyncCacheState().setSessionCache(cachedSettings)
++      recordFetchSuccess(cachedSettings, true)
+       return cachedSettings
+     }
+ 
+@@ -642,12 +683,14 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
+         getConfigHostBindings().logDebug?.(
+           'Remote settings: User rejected new settings, using cached settings',
+         )
++        if (cachedSettings) recordFetchSuccess(cachedSettings, false)
+         return cachedSettings
+       }
+ 
+       requireRemoteSyncCacheState().setSessionCache(newSettings)
+       await saveSettings(newSettings)
+       getConfigHostBindings().logDebug?.('Remote settings: Applied new settings successfully')
++      recordFetchSuccess(newSettings, true)
+       return newSettings
+     }
+ 
+@@ -667,16 +710,19 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
+         )
+       }
+     }
++    recordFetchSuccess(newSettings, true)
+     return newSettings
+   } catch {
+     // Ante cualquier error, usa el archivo obsoleto si existe (degradación elegante).
+     if (cachedSettings) {
+       getConfigHostBindings().logDebug?.('Remote settings: Using stale cache after error')
+       requireRemoteSyncCacheState().setSessionCache(cachedSettings)
++      recordFetchFailure(cachedSettings, 'unexpected error while loading remote settings')
+       return cachedSettings
+     }
+ 
+     // No hay caché disponible — falla abierto, continúa sin settings remotos.
++    recordFetchFailure(null, 'unexpected error while loading remote settings')
+     return null
+   }
+ }
+diff --git a/src/packages/config/remote/loadState.ts b/src/packages/config/remote/loadState.ts
+new file mode 100644
+index 00000000..dd1da5a7
+--- /dev/null
++++ b/src/packages/config/remote/loadState.ts
+@@ -0,0 +1,103 @@
++/**
++ * Puerto de `Ma`/`em`/`le()` de 2.1.283 (`chunk-379zyrv7.js`): el estado de
++ * la última carga remota, guardado por host. Recortado a los cuatro campos
++ * que un consumidor futuro necesita para el aviso de servidores MCP
++ * retenidos, los fallos `ruled_empty` y `servedSnapshot`
++ * (`lastLoadStatus`, `projectedView`, `sessionCache`, `verifiedPayload`);
++ * el resto de `Ma` (el asistente diferido, la elegibilidad memoizada, el
++ * listener de reset, `consentedPayload`/`deferredPayload`) no tiene
++ * consumidor portado en este árbol y queda fuera.
++ *
++ * DIVERGENCIA — `Ma.lastLoadStatusChanged`: la fuente emite un evento en
++ * cada cambio de estado; aquí no hay suscriptor (el futuro consumidor lee
++ * `lastLoadStatus` de forma síncrona), así que el emisor no se porta.
++ *
++ * DIVERGENCIA — `Xk()`/`om()`: la fuente deriva `projectedView.view` del
++ * crudo con una transformación (`om`) que no está portada en este árbol;
++ * aquí la vista es el propio crudo, y `recordProjectedView` conserva sólo
++ * la memoización por identidad de referencia.
++ */
++
++import { getConfigHostBindings } from '../host.js'
++import type { SettingsJson } from '../settings/types.js'
++
++/** Motivo por el que un fetch remoto no llegó a `'ok'`. */
++export type RemoteSettingsFailure = {
++  errorKind: string
++  message: string
++}
++
++/** `lastLoadStatus` de `Ma`, tal como lo deja `ign()` en la fuente. */
++export type RemoteLoadStatus =
++  | { state: 'ineligible'; reason: string }
++  | { state: 'ok'; hasSettings: boolean }
++  | { state: 'stale_cache'; failure: RemoteSettingsFailure; transportEnvWithheld: boolean }
++  | { state: 'failed'; failure: RemoteSettingsFailure }
++
++/** `raw`/`view` de `Xk()` — ver la divergencia del docstring del módulo. */
++export type RemoteProjectedView<T> = {
++  raw: T
++  view: T
++}
++
++/** Puerto de `Ma`, recortado a los cuatro campos que este árbol consume. */
++export class RemoteLoadState<T> {
++  private cache: T | null = null
++  private verified: T | null = null
++  private projected: RemoteProjectedView<T> | null = null
++  private status: RemoteLoadStatus | undefined = undefined
++
++  get sessionCache(): T | null {
++    return this.cache
++  }
++
++  get verifiedPayload(): T | null {
++    return this.verified
++  }
++
++  get projectedView(): RemoteProjectedView<T> | null {
++    return this.projected
++  }
++
++  get lastLoadStatus(): RemoteLoadStatus | undefined {
++    return this.status
++  }
++
++  /** `Ma.replaceSessionCache`, sin la rama de `consentDeferred` (fuera de alcance). */
++  recordSessionCache(value: T, verified: boolean): void {
++    this.cache = value
++    if (verified) this.verified = value
++  }
++
++  /** `Xk()`: memoiza por identidad del crudo, como hace la fuente. */
++  recordProjectedView(raw: T): RemoteProjectedView<T> {
++    if (this.projected === null || this.projected.raw !== raw) {
++      this.projected = { raw, view: raw }
++    }
++    return this.projected
++  }
++
++  setLastLoadStatus(status: RemoteLoadStatus): void {
++    this.status = status
++  }
++
++  /** `Ma.reset()`, recortado a los cuatro campos portados. */
++  reset(): void {
++    this.cache = null
++    this.verified = null
++    this.projected = null
++    this.status = undefined
++  }
++}
++
++const remoteLoadStatesByHost = new WeakMap<object, RemoteLoadState<SettingsJson>>()
++
++/** `le() = em.of(j().host)`: el estado de carga remota del host instalado. */
++export function getRemoteLoadState(): RemoteLoadState<SettingsJson> {
++  const host = getConfigHostBindings()
++  const existing = remoteLoadStatesByHost.get(host)
++  if (existing) return existing
++  const created = new RemoteLoadState<SettingsJson>()
++  remoteLoadStatesByHost.set(host, created)
++  return created
++}

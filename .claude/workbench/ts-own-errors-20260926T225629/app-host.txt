@@ -1,0 +1,1 @@
+app-host	src/heapDumpService.ts(255,16): error TS2304: Cannot find name 'MACRO'.

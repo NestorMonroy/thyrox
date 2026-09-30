@@ -1,0 +1,1 @@
+    printf 'RAMPA-%s\n' "$p" | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/no-existe" \

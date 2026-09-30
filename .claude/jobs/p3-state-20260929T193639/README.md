@@ -1,0 +1,16 @@
+# p3-state
+
+## Qué se lanzó
+
+```
+bash -c for t in tests/session/test-headless-pool-worktree.sh tests/session/test-headless-pool-lifecycle.sh tests/session/test-headless-pool.sh; do bash "$t" > /dev/null 2>"$t.err.tmp"; echo "$t exit=$?"; done; rm -f tests/session/*.err.tmp
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

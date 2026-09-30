@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+ 98 |   test('una sonda que lanza queda en unknown', () => {
+ 99 |     setAmbientMarkerProbe(() => {
+100 |       throw new Error('x')
+101 |     })
+102 |     expect(isNestedInteractiveSession(host({ env: { THYROX_CODE_CHILD_SESSION: '1' } }))).toBe(true)
+103 |     expect(isHeadlessToolCallOfAgentSession(host({ env: { THYROX_CODE_CHILD_SESSION: '1' }, stdinIsTTY: false, stdoutIsTTY: false, spawnedByAttendedSession: true }))).toBe(false)
+                                                                                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:103:168)
+(fail) setAmbientMarkerProbe (sYo) > una sonda que lanza queda en unknown [0.38ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [149.00ms]

@@ -1,0 +1,4 @@
+==== Qq: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Qq [374817,375656)
+function Qq(e){let n=e?.remote?e.remote():Xk(),s=!e?.remote&&!MRe("managedMcpServers")&&agn()?[{file:"remote managed settings",path:"managedMcpServers",message:"The organization's MCP servers in the cached remote settings are withheld until the server confirms them this session; they connect as soon as it does.",severity:"warning",statusOnly:!0}]:[],r=e?.remote?void 0:jx(),i=(r?.state==="stale_cache"||r?.state==="failed")&&r.failure.errorKind==="ruled_empty"?pUe(r.failure.rulings??[]):[];if(!n||Object.keys(n).length===0)return{settings:null,errors:[...s,...i],servedSnapshot:!1,documentHasPolicyContent:!1};let{settings:d,errors:c,documentHasPolicyContent:p,onlySubstitutes:g}=HRe(n,"remote managed settings");return{settings:d,errors:[...s,...i,...pUe(c)],servedSnapshot:S$o(n),documentHasPolicyContent:p,...g&&{onlySubstitutes:g}}}
+symbol: 1 de 1 nombre(s) resueltos

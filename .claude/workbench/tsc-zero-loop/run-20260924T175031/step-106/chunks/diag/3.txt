@@ -1,0 +1,12 @@
+src/packages/agent/QueryEngine.ts(748,11): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type 'SystemPrompt[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/QueryEngine.ts(757,9): error TS2739: Type 'NonNullableUsage' is missing the following properties from type 'Usage': input_tokens, output_tokens
+src/packages/agent/QueryEngine.ts(864,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.
+src/packages/agent/QueryEngine.ts(889,74): error TS2339: Property 'tailUuid' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(954,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(969,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(975,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(984,13): error TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.
+  Index signature for type 'string' is missing in type 'BetaUsage'.

@@ -1,0 +1,32 @@
+# ANULACION 2 — la cabecera vuelve a publicar su propio cubo en vez de
+# la suma. El guard sigue puesto. Esperado: cae SOLO la de terminado.
+
+== conteos del reporte ==
+  FALLA terminado = 3 (cerrado + harness + propio)
+        esperado: 3
+        obtenido: 2
+  ok    desaparecido = 1 (el cortado y congelado; NO el vivo de enlace viejo)
+  ok    indecidible = 1 (bash mudo y congelado)
+  ok    reciente = 3 (pegado + fresco + vivo con enlace viejo)
+  ok    atascado = 0 sin --vigilar (no se afirma sin segunda muestra)
+  ok    TOTAL = 8
+== el guard: sólo 'desaparecido' autoriza relanzar ==
+  ok    desaparecido -> exit 0 (confirma)
+  ok    indecidible  -> exit 2 (BAIL)
+  ok    reciente     -> exit 2 (BAIL)
+  ok    terminado    -> exit 2 (BAIL)
+  ok    id ausente   -> exit 2 (BAIL)
+== el contador de intentos: la segunda vez se rinde ==
+  ok    segundo relanzamiento del mismo id -> exit 2
+  ok    el BAIL nombra la reincidencia, no la muerte
+== el BAIL explica POR QUÉ, no sólo que no ==
+  ok    reciente nombra el riesgo de duplicar
+== --quiet publica su denominador ==
+  ok    --quiet declara sobre cuántas midió
+== --vigilar separa vivo de atascado ==
+  ok    sin avance de mtime -> vivo = 0
+  ok    con avance de mtime -> vivo >= 1
+== roster ilegible falla ruidoso, no en silencio ==
+  ok    roster inexistente -> exit 3
+
+resultado: 17 ok, 1 fallas

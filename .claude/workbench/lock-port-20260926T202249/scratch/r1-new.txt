@@ -1,0 +1,28 @@
+only="${1:-}"
+
+# --- La huella del arbol: ¿cambio mientras se media? ------------------------
+#
+# Una suite larga mide un arbol que puede cambiar mientras corre: una edicion
+# del orquestador, un commit de otro escritor, el mutante que otra suite deja
+# a medias (2026-09-26: `classify_agents.py` aparecio modificado a mitad de un
+# cierre). Si el arbol del final no es el del principio, el veredicto no
+# corresponde a ningun estado: se sale 3 y se dice cual habria sido, en vez de
+# publicarlo como rojo o verde. Alcance y ceguera: `src/verify/tree_fingerprint.py`.
+huella() { "$PYTHON_BIN" -m verify.tree_fingerprint . 2>/dev/null; }
+HUELLA_INICIO=""
+case "$only" in
+  --list|--changed-list) ;;
+  *) HUELLA_INICIO="$(huella)" || echo "run.sh: sin huella del arbol; el veredicto no se podra atribuir" ;;
+esac
+veredicto_final() {
+  local code="$1" veredicto="$2" fin
+  fin="$(huella)"
+  if [ -n "$HUELLA_INICIO" ] && [ "$fin" != "$HUELLA_INICIO" ]; then
+    echo
+    echo "ÁRBOL MUTADO durante la medición: el veredicto no es atribuible a ningún estado."
+    echo "  habría sido: $veredicto"
+    echo "  (huella al empezar ${HUELLA_INICIO:0:12}, al terminar ${fin:0:12})"
+    exit 3
+  fi
+  exit "$code"
+}

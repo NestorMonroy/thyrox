@@ -1,0 +1,8 @@
+{
+  "id": "177",
+  "subject": "Decidir cómo thyrox aloja un skill, sabiendo que ccnmt no tiene cargador de skills",
+  "description": "Medido: el enum PluginComponent declara skills y no existe loadPluginSkills.ts — un skill es un comando con isSkillMode. Condición de cierre: la decisión escrita en decisiones-actualizar-agentic-ai-thyrox.rst. Sucesor declarado por analisis-superficie-de-extension-en-ccnmt.rst; relacionada con la tarea #165.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

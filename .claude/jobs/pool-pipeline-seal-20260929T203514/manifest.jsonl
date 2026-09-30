@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c PYTHONPATH=src python3 tests/verify/test_pool_pipeline.py 2>&1 | grep -E \"sello|FALLA|aserciones\"", "started_at": "2026-09-29T20:35:14+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T20:35:22+00:00", "duration_seconds": 8.38873}

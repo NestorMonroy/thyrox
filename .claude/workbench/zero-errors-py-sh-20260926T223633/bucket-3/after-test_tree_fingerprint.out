@@ -1,0 +1,18 @@
+== 1. el mismo estado da la misma huella ==
+  ok    dos tomas iguales
+== 2. un archivo versionado editado la cambia ==
+  ok    cambia
+== 3. y dos ediciones distintas dan huellas distintas ==
+  ok    no basta con saber que está sucio
+  ok    deshecha, vuelve a la base (ciega a lo deshecho, declarado)
+== 4. un archivo nuevo dentro del alcance la cambia ==
+  ok    cambia
+== 5. lo que la medición escribe fuera del alcance NO la cambia ==
+  ok    .claude/jobs no cuenta
+  ok    lo ignorado no cuenta
+== 6. un commit de otro escritor la cambia ==
+  ok    HEAD movido: cambia
+== 7. fuera de un repo git, rehúsa en vez de dar una huella ==
+  ok    rehúsa
+
+test_tree_fingerprint: 9 ok, 0 falla(s)

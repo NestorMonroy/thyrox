@@ -1,0 +1,71 @@
+CORRECCION del veredicto — 2026-09-10T22:37:35
+Origen: el ejecutor senala los ejemplos de `find … | parallel` y responde
+«estas en lo incorrecto». Lo esta: el veredicto anterior colapso DOS
+poblaciones bajo un solo rotulo («trabajo en paralelo»), que es el
+sub-patron A de metrica-decide-la-conclusion.md.
+
+LAS DOS POBLACIONES
+  1. Trabajo largo y DESPRENDIDO que cruza turnos (suite, build, gate de
+     corpus). Lo cubren bg.sh / run-task-pool.sh / wait-jobs.sh. Aqui el
+     veredicto anterior SIGUE EN PIE: parallel es un orquestador en primer
+     plano que posee a sus hijos y bloquea — incompatible con R-1, con
+     nohup+disown, con el marcador EXIT= en shell EXTERIOR y con el registro
+     en el ledger que el Stop gate exige.
+  2. Fan-out POR ARCHIVO dentro de un comando: `for f in *.rst; do awk … "$f"`.
+     Esta forma EXISTE en el arbol, esta EN SERIE, y es exactamente la que
+     los ejemplos del ejecutor atacan. Aqui el veredicto anterior era FALSO
+     por omision: nunca midio esta poblacion.
+
+MEDICION DE LA POBLACION 2 (la que faltaba)
+  Sujeto: el cuerpo del bucle por archivo de check-hallazgo-sucesor.sh
+          (un awk + un grep POR ARCHIVO, en serie).
+  Universo: 1366 .rst de hallazgos en kaupamex-docs.  nproc = 4.
+
+    serie    5.3195 s
+    xargs -P 1   5.0020 s
+    xargs -P 4   1.7500 s      <- 3.04x
+    xargs -P 8   1.7488 s      <- satura en nproc, igual que run-task-pool
+
+  El gate entero en serie: 10.1388 s (16 incumplidores).
+
+PARALLEL CONTRA XARGS -P, MEDIDO EN NUESTRA FORMA
+  El diferenciador que GNU parallel anuncia es «la salida es la misma que
+  tendrias en serie». Medido sobre las 943 lineas que emite este fan-out:
+
+    misma poblacion (ordenada)          SI
+    lineas truncadas o mezcladas        0        <- xargs NO corrompe aqui
+    mismo ORDEN entre dos corridas      NO
+    mismo ORDEN que la serie            NO
+
+  Es decir: a nuestro tamano de linea (~90 ch, muy por debajo de PIPE_BUF)
+  el diferenciador de parallel compra ORDEN, no INTEGRIDAD. Y el orden lo
+  fija un `| sort` — que el escritor de baseline necesita igual, porque sin
+  el cada corrida produce un diff distinto.
+
+VEREDICTO CORREGIDO
+  Poblacion 1 -> NO parallel. Sin cambio.
+  Poblacion 2 -> SI paralelizar, y el instrumento aqui es `xargs -P $(nproc)`,
+                 ya instalado (findutils 4.9.0), + `| sort` para estabilizar
+                 el orden. 3.04x medido, coste de adopcion cero.
+
+  parallel se GANA su instalacion cuando aparezca un caso que xargs no cubre,
+  y son cuatro concretos, no genericos:
+    a) --resume / --joblog  : reanudar un barrido de miles de archivos que
+                              murio a medias. Choca con el ledger: seria una
+                              segunda fuente de verdad (calibration-verified-numbers).
+    b) --dry-run            : run-task-pool.sh NO lo tiene. Medido: 0 hits de
+                              dry|orden|order|keep en el guion. Es una carencia
+                              REAL, y son ~5 lineas en nuestro propio pool.
+    c) {.} {/} {//}         : cuando la ruta de salida se deriva de la de
+                              entrada. xargs exige un envoltorio.
+    d) --halt now,fail=1    : abortar el fan-out al primer fallo.
+  Ninguno de los cuatro tiene consumidor HOY. Los dos primeros ademas
+  duplicarian mecanismo que el arbol ya tiene.
+
+Metrica: reloj de pared sobre el cuerpo del bucle por archivo de un gate real,
+  1366 archivos, nproc=4, cuatro modos con la misma poblacion de entrada; mas
+  la comparacion de poblacion/orden/integridad de su salida entre serie y -P 4.
+Ciega a: cargas dominadas por E/S (aqui es CPU + spawn), donde la anchura util
+  supera nproc; al comportamiento real de parallel, que NO se ejecuto porque no
+  esta instalado — toda afirmacion sobre el es de su documentacion, no medida;
+  y a lineas de salida por encima de PIPE_BUF, donde xargs SI puede mezclar.

@@ -1,0 +1,23 @@
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(222,41): error TS2345: Argument of type 'string' is not assignable to parameter of type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:212-232 ---
+    212          )}
+    213          {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    214          {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    215        </>
+    216      )
+    217    }
+    218  
+    219    // Calculate layout and display values
+    220    const layoutMode = getLayoutMode(columns)
+    221  
+    222>   const userTheme = resolveThemeSetting(getGlobalConfig().theme)
+    223    const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
+    224    const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+    225  
+    226    // Early return for compact mode
+    227    if (layoutMode === 'compact') {
+    228      const layoutWidth = 4 // border + padding
+    229      let welcomeMessage = formatWelcomeMessage(username)
+    230      if (stringWidth(welcomeMessage) > columns - layoutWidth) {
+    231        welcomeMessage = formatWelcomeMessage(null)
+    232      }

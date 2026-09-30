@@ -1,0 +1,2 @@
+src/packages/shell/src/legacy/prefix.ts(251,89): error TS2339: Property 'text' does not exist on type 'ContentBlockParam | ContentBlock'.
+  Property 'text' does not exist on type 'ToolResultBlockParam'.

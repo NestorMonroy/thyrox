@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+132 |     expect(token).toBe('Mon Sep 28 17:00:00 2026')
+133 |     expect(calls).toHaveLength(1)
+134 |     expect(calls[0]!.command).toBe('ps')
+135 |     expect(calls[0]!.args).toEqual(['-o', 'lstart=', '-p', '77'])
+136 |     expect(calls[0]!.options.timeout).toBe(1000)
+137 |     expect(calls[0]!.options.env.LC_ALL).toBe('C')
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "C"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:137:42)
+(fail) readProcessStartToken (b) fuera de Linux: `ps -o lstart=` > corre ps con el pid, un segundo de plazo, LC_ALL=C y TZ=UTC, y recorta la salida [0.59ms]
+165 |       env: { PATH: '/opt/bin', HOME: '/h' },
+166 |       which: (command, path) => (path === '/opt/bin' ? `/opt/bin/${command}` : null),
+167 |       runCommand: runner({ code: 0, stdout: 'x' }, calls),
+168 |     })
+169 |     expect(calls[0]!.command).toBe('/opt/bin/ps')
+170 |     expect(calls[0]!.options.env).toEqual({ PATH: '/opt/bin', HOME: '/h', LC_ALL: 'C', TZ: 'UTC' })
+                                        ^
+error: expect(received).toEqual(expected)
+
+@@ -2,5 +2,5 @@
+    "HOME": "/h",
+-   "LC_ALL": "C",
+    "PATH": "/opt/bin",
+-   "TZ": "UTC",
+  }
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:170:35)
+(fail) readProcessStartToken (b) fuera de Linux: `ps -o lstart=` > con un entorno dado, ps se resuelve en su PATH y el entorno no hereda el del proceso [0.57ms]
+
+ 20 pass
+ 2 fail
+ 54 expect() calls
+Ran 22 tests across 1 file. [113.00ms]

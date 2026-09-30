@@ -1,0 +1,28 @@
+src/packages/app-host/src/runtime/bootstrap.ts(131,9): error TS2322: Type 'InteractiveSessionStore' is not assignable to type 'HostSessionStore'.
+  --- código src/packages/app-host/src/runtime/bootstrap.ts:121-141 ---
+    121  export function installRuntimeSkeletonBindings(): void {
+    122    if (runtimeSkeletonBindingsInstalled) {
+    123      return
+    124    }
+    125  
+    126    const agentExtra = requireAgentHostBindings()
+    127  
+    128    installPackageHostBindings(
+    129      {
+    130        createInteractiveStore: initialState =>
+    131>         createInteractiveSessionStore(initialState as never),
+    132        getConfigHomeDir: () => requireClaudeConfigHomeDir()(),
+    133        getGlobalClaudeFile: () => requireGlobalClaudeFile()(),
+    134        getProjectRoot: () => requireFindCanonicalGitRoot()(getCwd()),
+    135        logDebug: (message, metadata) => logForDebugging(message, metadata as never),
+    136        now: () => Date.now(),
+    137        syncRuntimeHandlesFromAppState: (handles, state) =>
+    138          requireSyncRuntimeHandlesFromAppState()(handles, state),
+    139        extraAgentBindings: agentExtra?.buildAgentHostExtraBindings(),
+    140        extraPermissionBindings: agentExtra?.buildPermissionHostExtraBindings(),
+    141        extraMemoryBindings: agentExtra?.buildMemoryHostExtraBindings(),
+  Types of property 'setState' are incompatible.
+    Type '(next: AppState) => void' is not assignable to type '(updater: (prev: unknown) => unknown) => void'.
+      Types of parameters 'next' and 'updater' are incompatible.
+        Type '(prev: unknown) => unknown' is not assignable to type 'AppState'.
+          Type '(prev: unknown) => unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

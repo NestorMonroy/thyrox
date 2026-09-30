@@ -1,0 +1,5 @@
+numpy 2.4.6 · n = 300000 · seed = 21
+  ok    el brief reproduce sus digitos con numpy
+  ok    nuestro muestreador con el flujo de numpy da los mismos digitos
+
+2 casos: 2 ok, 0 fallos

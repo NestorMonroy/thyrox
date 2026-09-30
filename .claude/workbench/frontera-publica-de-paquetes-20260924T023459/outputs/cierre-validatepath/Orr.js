@@ -1,0 +1,1 @@
+function Orr(){if(!Wo())return!1;return GB()==="tracked_in_index"}

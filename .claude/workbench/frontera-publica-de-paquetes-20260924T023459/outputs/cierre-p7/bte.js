@@ -1,0 +1,1 @@
+function bte(e){return e.type==="queued_command"&&Vo(e.forwardedIntent)!==void 0}

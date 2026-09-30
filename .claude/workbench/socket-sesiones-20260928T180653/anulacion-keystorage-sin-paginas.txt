@@ -1,0 +1,46 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+329 |     const throwing = memoryStorage({ listEntries: async () => { throw new Error('x') } })
+330 |     expect(await readPeerToken(ADDRESS, { storage: throwing.storage }, active())).toEqual({ kind: 'unusable' })
+331 |     const endless = memoryStorage({
+332 |       listEntries: async () => ({ ok: true, value: { items: [], cursor: 'otra' } }),
+333 |     })
+334 |     expect(await readPeerToken(ADDRESS, { storage: endless.storage }, active({ storagePageLimit: 3 }))).toEqual({ kind: 'unusable' })
+                                                                                                              ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "kind": "unusable",
++   "kind": "no-key",
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:334:105)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > un listado que falla, o que se corta en el tope de páginas, deja la clave inusable [1.41ms]
+360 |   test('recorre hasta que no hay cursor, se corta en maxPages y propaga el error', async () => {
+361 |     const seen: number[] = []
+362 |     const pages = [{ items: [1], cursor: 'a' }, { items: [2], cursor: undefined }]
+363 |     let index = 0
+364 |     expect(await paginateStorage(async () => ({ ok: true, value: pages[index++]! }), items => void seen.push(...items))).toEqual({ status: 'done' })
+365 |     expect(seen).toEqual([1, 2])
+                       ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    1,
+-   2,
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:365:18)
+(fail) paginateStorage (Ks) > recorre hasta que no hay cursor, se corta en maxPages y propaga el error [0.92ms]
+
+ 32 pass
+ 2 fail
+ 57 expect() calls
+Ran 34 tests across 1 file. [169.00ms]

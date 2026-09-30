@@ -1,0 +1,3 @@
+src/packages/repl/src/promptSuggestion.tsx(245,23): error TS18048: 'usage' is possibly 'undefined'.
+src/packages/repl/src/promptSuggestion.tsx(246,28): error TS18048: 'usage' is possibly 'undefined'.
+src/packages/repl/src/promptSuggestion.tsx(248,24): error TS18048: 'usage' is possibly 'undefined'.

@@ -1,0 +1,21 @@
+=== 2026-09-18T15:10:05 — CONTROL DE ANULACION: por que NO se emite -m para los 137 ===
+
+Los cuatro que importan un hermano por nombre PLANO viven de que sys.path[0]
+sea el directorio del guion. '-m' lo sustituye por el cwd. Si el criterio
+fuera universal, estos cuatro pasarian de verde a rojo.
+
+entrypoint             modulo                     por RUTA     con -m      
+census_open_tasks      task.census_open_tasks     exit=0       exit=1      
+gitlink_bump           repo.gitlink_bump          exit=0       exit=1      
+object_footprint       repo.object_footprint      exit=0       exit=1      
+pack_headroom          repo.pack_headroom         exit=0       exit=1      
+
+Y la direccion contraria, los dos del arreglo:
+entrypoint             modulo                     por RUTA     con -m      
+cache_probe            transcript.cache_probe     exit=1       exit=0      
+manifest               workbench.manifest         exit=1       exit=0      
+
+-P (3.11+, no antepone el cwd): medido, NO se adopta.
+  El impostor cwd/paths.py no dispara ni sin -P, porque un import RELATIVO
+  nunca consulta sys.path[0]. Sin diferencia medible, -P seria un segundo
+  cambio sin control que pueda fallar.

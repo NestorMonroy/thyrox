@@ -1,0 +1,3 @@
+sin CA: FAIL self signed certificate in certificate chain
+con setGlobalDispatcher: FAIL self signed certificate in certificate chain
+con tls.ca de Bun: 200 ok

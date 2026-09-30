@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistryState.test.ts:
+150 |     expect([state.uncleanExitsScanned, [...state.reportedUncleanExitPaths], state.watchedCache, state.pidFileWriteChain === chain]).toEqual([true, ['/p'], { at: 1, value: true }, true])
+151 |     let probes = 0
+152 |     const probing = new SessionRegistryState({ now: () => 0, sessionId: () => 's', stableAddress: () => false, probeRegistrySweep: async () => (probes++, true) })
+153 |     expect(await probing.isRegistrySweepPermitted()).toBe(true)
+154 |     expect(await probing.isRegistrySweepPermitted()).toBe(true)
+155 |     expect(probes).toBe(1)
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts:155:20)
+(fail) el resto del estado > marcas, caché de vigilancia, cadena de escritura y sondeo de barrido memorizado [0.46ms]
+
+ 13 pass
+ 1 fail
+ 36 expect() calls
+Ran 14 tests across 1 file. [75.00ms]

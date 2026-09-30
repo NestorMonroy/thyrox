@@ -1,0 +1,28 @@
+{
+ "reviewed": [
+  {
+   "pattern": "settings-passthrough-key-collapses-to-empty-object",
+   "files": [
+    "src/packages/repl/src/components/LogoV2/LogoV2.tsx"
+   ]
+  },
+  {
+   "pattern": "index-signature-unknown-narrowed-to-empty-object",
+   "files": [
+    "src/packages/repl/src/components/PromptInput/PromptInput.tsx"
+   ]
+  },
+  {
+   "pattern": "global-config-theme-is-wide-string-not-theme-setting-literal",
+   "files": [
+    "src/packages/repl/src/components/Stats.tsx"
+   ]
+  },
+  {
+   "pattern": "generic-arg-fails-record-constraint-on-stub-unknown-type",
+   "files": [
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx"
+   ]
+  }
+ ]
+}

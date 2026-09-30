@@ -1,0 +1,20 @@
+Wire the PreToolUse detectors into declared hooks
+
+declared_wiring() declared SubagentStart/Stop, PreModelSwitch and the
+task lifecycle, and no PreToolUse: the ten detectors of
+pretooluse_dispatch.py, the foreground long-command warning among
+them, could not fire in any session. This session ran a five-minute
+typecheck in the foreground and nothing warned.
+
+The wiring now declares PreToolUse over Bash, Agent and the file
+tools. Its command carries PYTHONPATH: run from the session cwd
+without it, 4 of 17 detectors failed to load, and the dispatcher only
+said so on stderr. broken_targets skips a leading VAR=value token,
+which it used to read as the invoked path.
+
+The rule's threshold drops from half a minute to ten seconds, per the
+executor's directive of 2026-09-24.
+
+Controls: dropping the PreToolUse block fails exactly the four 1b
+cases; dropping the assignment skip fails exactly the own-wiring
+health case. Suite: 78 ok, 0 failures with the runner's PYTHONPATH.

@@ -1,0 +1,9 @@
+   * - :ref:`h-thyrox-276`
+     - MEDIA
+     - DOCUMENTADO
+   * - :ref:`h-thyrox-277`
+     - BAJA
+     - DOCUMENTADO
+   * - :ref:`h-thyrox-278`
+     - MEDIA
+     - DOCUMENTADO

@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeModelSupport.test.ts:
+57 |     expect(isFastModeSupportedByModel('claude-opus-4-7')).toBe(false)
+58 |   })
+59 | 
+60 |   test('la anulación del entorno gana sobre el catálogo', () => {
+61 |     process.env.THYROX_CODE_MODEL_CAPABILITIES = 'claude-opus-5=-fast_mode;claude-fable-5-1=fast_mode'
+62 |     expect(isFastModeSupportedByModel('claude-opus-5')).toBe(false)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeModelSupport.test.ts:62:57)
+(fail) isFastModeSupportedByModel (qy) > la anulación del entorno gana sobre el catálogo [0.24ms]
+70 |   })
+71 | 
+72 |   test('la consulta servida ve el modelo pedido y su forma resuelta', () => {
+73 |     const asked: unknown[] = []
+74 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+75 |     expect(isFastModeSupportedByModel('proxy/claude-sonnet-5-x')).toBe(true)
+                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeModelSupport.test.ts:75:67)
+(fail) isFastModeSupportedByModel (qy) > la consulta servida ve el modelo pedido y su forma resuelta [0.23ms]
+
+ 6 pass
+ 2 fail
+ 15 expect() calls
+Ran 8 tests across 1 file. [285.00ms]

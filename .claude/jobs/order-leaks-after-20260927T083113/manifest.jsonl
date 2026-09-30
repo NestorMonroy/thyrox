@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 1200 .claude/workbench/test-order-leaks-20260927T082148/jobs-after.txt", "started_at": "2026-09-27T08:31:13+00:00"}

@@ -1,0 +1,4 @@
+VRAM libre cambia mientras los ítems arrancan, cada ítem espera antes de
+lanzarse a que haya sitio para su pico: la admisión de `--memfree`
+(`parallel` 20231122, 4113-4118). Su otra mitad —matar al más joven cuando lo
+libre cae a la mitad— no se porta: mataría un `claude -p` a media petición.

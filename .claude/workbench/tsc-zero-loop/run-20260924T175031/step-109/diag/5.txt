@@ -1,0 +1,458 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+patron: spread-of-never-typed-test-double
+senal_del_verificador: TS2698: Spread types may only be created from object types
+fix_generico: Un doble de prueba declarado como `const x = {...} as never` no se puede esparcir directamente (`{ ...x, extra }`): `never` no es un tipo objeto para el spread. Se castea la variable a un tipo objeto concreto (p. ej. `Record<string, unknown>`) sólo en el punto del spread, dejando el `as never` exterior para el literal combinado que viaja como argumento.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/QueryEngine.ts(317,40): error TS18046: 'tool' is of type 'unknown'.
+  --- código src/packages/agent/QueryEngine.ts:307-327 ---
+    307          toolUseContext,
+    308          assistantMessage,
+    309          toolUseID,
+    310          forceDecision,
+    311        )
+    312  
+    313        // Track denials for SDK reporting
+    314        if (result.behavior !== 'allow') {
+    315          this.permissionDenials.push({
+    316            type: 'permission_denial',
+    317>           tool_name: sdkCompatToolName(tool.name),
+    318            tool_use_id: toolUseID,
+    319            tool_input: input,
+    320          })
+    321        }
+    322  
+    323        return result
+    324      }
+    325  
+    326      const initialAppState = getAppState()
+    327      const initialMainLoopModel = userSpecifiedModel
+src/packages/agent/QueryEngine.ts(349,9): error TS18046: 'initialAppState.toolPermissionContext.additionalWorkingDirectories' is of type 'unknown'.
+  --- código src/packages/agent/QueryEngine.ts:339-359 ---
+    339      const customPrompt =
+    340        typeof customSystemPrompt === 'string' ? customSystemPrompt : undefined
+    341      const {
+    342        defaultSystemPrompt,
+    343        userContext: baseUserContext,
+    344        systemContext,
+    345      } = await fetchSystemPromptParts({
+    346        tools,
+    347        mainLoopModel: initialMainLoopModel,
+    348        additionalWorkingDirectories: Array.from(
+    349>         initialAppState.toolPermissionContext.additionalWorkingDirectories.keys(),
+    350        ),
+    351        mcpClients,
+    352        customSystemPrompt: customPrompt,
+    353      })
+    354      headlessProfilerCheckpoint('after_getSystemPrompt')
+    355      const userContext = {
+    356        ...baseUserContext,
+    357        ...getCoordinatorUserContext(
+    358          mcpClients,
+    359          isScratchpadEnabled() ? getScratchpadDir() : undefined,
+src/packages/agent/QueryEngine.ts(445,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AttributionState'.
+  --- código src/packages/agent/QueryEngine.ts:435-455 ---
+    435          setAppState(prev => {
+    436            const updated = updater(prev.fileHistory)
+    437            if (updated === prev.fileHistory) return prev
+    438            return { ...prev, fileHistory: updated }
+    439          })
+    440        },
+    441        updateAttributionState: (
+    442          updater: (prev: AttributionState) => AttributionState,
+    443        ) => {
+    444          setAppState(prev => {
+    445>           const updated = updater(prev.attribution)
+    446            if (updated === prev.attribution) return prev
+    447            return { ...prev, attribution: updated }
+    448          })
+    449        },
+    450        setSDKStatus,
+    451      }
+    452  
+    453      // Handle orphaned permission (only once per engine lifetime)
+    454      if (orphanedPermission && !this.hasHandledOrphanedPermission) {
+    455        this.hasHandledOrphanedPermission = true
+src/packages/agent/QueryEngine.ts(538,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/QueryEngine.ts:528-548 ---
+    528          (msg.type === 'system' && msg.subtype === 'compact_boundary'), // Always ack compact boundaries
+    529      )
+    530      const messagesToAck = replayUserMessages ? replayableMessages : []
+    531  
+    532      // Update the ToolPermissionContext based on user input processing (as necessary)
+    533      setAppState(prev => ({
+    534        ...prev,
+    535        toolPermissionContext: {
+    536          ...prev.toolPermissionContext,
+    537          alwaysAllowRules: {
+    538>           ...prev.toolPermissionContext.alwaysAllowRules,
+    539            command: allowedTools,
+    540          },
+    541        },
+    542      }))
+    543  
+    544      const mainLoopModel = modelFromUserInput ?? initialMainLoopModel
+    545  
+    546      // Recreate after processing the prompt to pick up updated messages and
+    547      // model (from slash commands).
+    548      processUserInputContext = {
+src/packages/agent/QueryEngine.ts(622,18): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:612-632 ---
+    612      // Record when system message is yielded for headless latency tracking
+    613      headlessProfilerCheckpoint('system_message_yielded')
+    614  
+    615      if (!shouldQuery) {
+    616        // Return the results of local slash commands.
+    617        // Use messagesFromUserInput (not replayableMessages) for command output
+    618        // because selectableUserMessagesFilter excludes local-command-stdout tags.
+    619        for (const msg of messagesFromUserInput) {
+    620          if (
+    621            msg.type === 'user' &&
+    622>           typeof msg.message.content === 'string' &&
+    623            (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624              msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631                content: stripAnsi(msg.message.content),
+    632              },
+src/packages/agent/QueryEngine.ts(623,12): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:613-633 ---
+    613      headlessProfilerCheckpoint('system_message_yielded')
+    614  
+    615      if (!shouldQuery) {
+    616        // Return the results of local slash commands.
+    617        // Use messagesFromUserInput (not replayableMessages) for command output
+    618        // because selectableUserMessagesFilter excludes local-command-stdout tags.
+    619        for (const msg of messagesFromUserInput) {
+    620          if (
+    621            msg.type === 'user' &&
+    622            typeof msg.message.content === 'string' &&
+    623>           (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624              msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631                content: stripAnsi(msg.message.content),
+    632              },
+    633              session_id: getSessionId(),
+src/packages/agent/QueryEngine.ts(624,13): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:614-634 ---
+    614  
+    615      if (!shouldQuery) {
+    616        // Return the results of local slash commands.
+    617        // Use messagesFromUserInput (not replayableMessages) for command output
+    618        // because selectableUserMessagesFilter excludes local-command-stdout tags.
+    619        for (const msg of messagesFromUserInput) {
+    620          if (
+    621            msg.type === 'user' &&
+    622            typeof msg.message.content === 'string' &&
+    623            (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624>             msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631                content: stripAnsi(msg.message.content),
+    632              },
+    633              session_id: getSessionId(),
+    634              parent_tool_use_id: null,
+src/packages/agent/QueryEngine.ts(631,34): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:621-641 ---
+    621            msg.type === 'user' &&
+    622            typeof msg.message.content === 'string' &&
+    623            (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624              msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631>               content: stripAnsi(msg.message.content),
+    632              },
+    633              session_id: getSessionId(),
+    634              parent_tool_use_id: null,
+    635              uuid: msg.uuid,
+    636              timestamp: msg.timestamp,
+    637              isReplay: !msg.isCompactSummary,
+    638              isSynthetic: msg.isMeta || msg.isVisibleInTranscriptOnly,
+    639            } as unknown as SDKUserMessageReplay
+    640          }
+    641  
+src/packages/agent/QueryEngine.ts(655,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/QueryEngine.ts:645-665 ---
+    645          // system subtype) so mobile clients + session-ingress can parse it.
+    646          if (
+    647            msg.type === 'system' &&
+    648            msg.subtype === 'local_command' &&
+    649            typeof msg.content === 'string' &&
+    650            (msg.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    651              msg.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`))
+    652          ) {
+    653            yield localCommandOutputToSDKAssistantMessage(
+    654              msg.content,
+    655>             msg.uuid,
+    656              getSessionId(),
+    657              LOCAL_COMMAND_STDOUT_TAG,
+    658              LOCAL_COMMAND_STDERR_TAG,
+    659            )
+    660          }
+    661  
+    662          if (msg.type === 'system' && msg.subtype === 'compact_boundary') {
+    663            const compactMsg = msg as SystemCompactBoundaryMessage
+    664            yield {
+    665              type: 'system',
+src/packages/agent/QueryEngine.ts(889,74): error TS2339: Property 'tailUuid' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:879-899 ---
+    879          // If the SDK subprocess restarts before then (claude-desktop kills
+    880          // between turns), tailUuid points to a never-written message →
+    881          // applyPreservedSegmentRelinks fails its tail→head walk → returns
+    882          // without pruning → resume loads full pre-compact history.
+    883          if (
+    884            persistSession &&
+    885            message.type === 'system' &&
+    886            message.subtype === 'compact_boundary'
+    887          ) {
+    888            const compactMsg = message as SystemCompactBoundaryMessage
+    889>           const tailUuid = compactMsg.compactMetadata?.preservedSegment?.tailUuid
+    890            if (tailUuid) {
+    891              const tailIdx = this.mutableMessages.findLastIndex(
+    892                m => m.uuid === tailUuid,
+    893              )
+    894              if (tailIdx !== -1) {
+    895                await recordTranscript(this.mutableMessages.slice(0, tailIdx + 1))
+    896              }
+    897            }
+    898          }
+    899          messages.push(message as Message)
+src/packages/agent/QueryEngine.ts(985,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  --- código src/packages/agent/QueryEngine.ts:975-995 ---
+    975            yield* normalizeMessage(msg)
+    976            break
+    977          }
+    978          case 'stream_event': {
+    979            const event = (message as unknown as { event: Record<string, unknown> }).event
+    980            if (event.type === 'message_start') {
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984              currentMessageUsage = updateUsage(
+    985>               currentMessageUsage,
+    986                eventMessage.usage,
+    987              )
+    988            }
+    989            if (event.type === 'message_delta') {
+    990              currentMessageUsage = updateUsage(
+    991                currentMessageUsage,
+    992                event.usage as BetaMessageDeltaUsage,
+    993              )
+    994              // Capture stop_reason from message_delta. The assistant message
+    995              // is yielded at content_block_stop with stop_reason=null; the
+src/packages/agent/QueryEngine.ts(991,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  --- código src/packages/agent/QueryEngine.ts:981-1001 ---
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984              currentMessageUsage = updateUsage(
+    985                currentMessageUsage,
+    986                eventMessage.usage,
+    987              )
+    988            }
+    989            if (event.type === 'message_delta') {
+    990              currentMessageUsage = updateUsage(
+    991>               currentMessageUsage,
+    992                event.usage as BetaMessageDeltaUsage,
+    993              )
+    994              // Capture stop_reason from message_delta. The assistant message
+    995              // is yielded at content_block_stop with stop_reason=null; the
+    996              // real value only arrives here (see claude.ts message_delta
+    997              // handler). Without this, result.stop_reason is always null.
+    998              const delta = event.delta as { stop_reason?: string | null }
+    999              if (delta.stop_reason != null) {
+   1000                lastStopReason = delta.stop_reason
+   1001              }
+src/packages/agent/QueryEngine.ts(1270,17): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1260-1280 ---
+   1260      // valid successful terminal state).
+   1261      const result = messages.findLast(
+   1262        m => m.type === 'assistant' || m.type === 'user',
+   1263      )
+   1264      // Capture for the error_during_execution diagnostic — isResultSuccessful
+   1265      // is a type predicate (message is Message), so inside the false branch
+   1266      // `result` narrows to never and these accesses don't typecheck.
+   1267      const edeResultType = result?.type ?? 'undefined'
+   1268      const edeLastContentType =
+   1269        result?.type === 'assistant'
+   1270>         ? (last(result.message.content)?.type ?? 'none')
+   1271          : 'n/a'
+   1272  
+   1273      // Flush buffered transcript writes before yielding result.
+   1274      // The desktop app kills the CLI process immediately after receiving the
+   1275      // result message, so any unflushed writes would be lost.
+   1276      if (persistSession) {
+   1277        if (
+   1278          isEnvTruthy(readEnv('CLAUDE_CODE_EAGER_FLUSH')) ||
+   1279          isEnvTruthy(readEnv('CLAUDE_CODE_IS_COWORK'))
+   1280        ) {
+src/packages/agent/QueryEngine.ts(1270,42): error TS2339: Property 'type' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1260-1280 ---
+   1260      // valid successful terminal state).
+   1261      const result = messages.findLast(
+   1262        m => m.type === 'assistant' || m.type === 'user',
+   1263      )
+   1264      // Capture for the error_during_execution diagnostic — isResultSuccessful
+   1265      // is a type predicate (message is Message), so inside the false branch
+   1266      // `result` narrows to never and these accesses don't typecheck.
+   1267      const edeResultType = result?.type ?? 'undefined'
+   1268      const edeLastContentType =
+   1269        result?.type === 'assistant'
+   1270>         ? (last(result.message.content)?.type ?? 'none')
+   1271          : 'n/a'
+   1272  
+   1273      // Flush buffered transcript writes before yielding result.
+   1274      // The desktop app kills the CLI process immediately after receiving the
+   1275      // result message, so any unflushed writes would be lost.
+   1276      if (persistSession) {
+   1277        if (
+   1278          isEnvTruthy(readEnv('CLAUDE_CODE_EAGER_FLUSH')) ||
+   1279          isEnvTruthy(readEnv('CLAUDE_CODE_IS_COWORK'))
+   1280        ) {
+src/packages/agent/QueryEngine.ts(1316,42): error TS18046: '_' is of type 'unknown'.
+  --- código src/packages/agent/QueryEngine.ts:1306-1326 ---
+   1306          // tool_result, and stop_reason isn't end_turn, that's why this fired.
+   1307          // errors[] is turn-scoped via the watermark; previously it dumped the
+   1308          // entire process's logError buffer (ripgrep timeouts, ENOENT, etc).
+   1309          errors: (() => {
+   1310            const all = getInMemoryErrors()
+   1311            const start = errorLogWatermark
+   1312              ? all.lastIndexOf(errorLogWatermark) + 1
+   1313              : 0
+   1314            return [
+   1315              `[ede_diagnostic] result_type=${edeResultType} last_content_type=${edeLastContentType} stop_reason=${lastStopReason}`,
+   1316>             ...all.slice(start).map(_ => _.error),
+   1317            ]
+   1318          })(),
+   1319        }
+   1320        return
+   1321      }
+   1322  
+   1323      // isResultSuccessful() valida la forma del mensaje pero no es un type
+   1324      // predicate, así que tsc no descarta undefined aunque el runtime ya lo
+   1325      // garantice — se hace visible con una guarda explícita.
+   1326      if (result === undefined) {
+src/packages/agent/QueryEngine.ts(1335,32): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1325-1345 ---
+   1325      // garantice — se hace visible con una guarda explícita.
+   1326      if (result === undefined) {
+   1327        return
+   1328      }
+   1329  
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335>       const lastContent = last(result.message.content)
+   1336        if (
+   1337          lastContent?.type === 'text' &&
+   1338          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340          textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {
+src/packages/agent/QueryEngine.ts(1337,22): error TS2339: Property 'type' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1327-1347 ---
+   1327        return
+   1328      }
+   1329  
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335        const lastContent = last(result.message.content)
+   1336        if (
+   1337>         lastContent?.type === 'text' &&
+   1338          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340          textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {
+   1346        type: 'result',
+   1347        subtype: 'success',
+src/packages/agent/QueryEngine.ts(1338,45): error TS2339: Property 'text' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1328-1348 ---
+   1328      }
+   1329  
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335        const lastContent = last(result.message.content)
+   1336        if (
+   1337          lastContent?.type === 'text' &&
+   1338>         !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340          textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {
+   1346        type: 'result',
+   1347        subtype: 'success',
+   1348        is_error: isApiError,
+src/packages/agent/QueryEngine.ts(1340,34): error TS2339: Property 'text' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1330-1350 ---
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335        const lastContent = last(result.message.content)
+   1336        if (
+   1337          lastContent?.type === 'text' &&
+   1338          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340>         textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {
+   1346        type: 'result',
+   1347        subtype: 'success',
+   1348        is_error: isApiError,
+   1349        duration_ms: Date.now() - startTime,
+   1350        duration_api_ms: getTotalAPIDuration(),

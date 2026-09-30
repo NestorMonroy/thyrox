@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/errorRecordingWiring.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../src/logging/httpErrorContext.ts' from '/home/user/thyrox/src/packages/local-observability/__tests__/errorRecordingWiring.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [34.00ms]

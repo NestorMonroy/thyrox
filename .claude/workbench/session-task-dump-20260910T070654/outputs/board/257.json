@@ -1,0 +1,9 @@
+{
+  "id": "257",
+  "subject": "Medir cuántas de las 1989 citas durables del árbol resuelven a su sujeto",
+  "description": "Sucesor de :ref:`h-docs-1236`, que sólo corrigió las 3 citas de su propio pase.\n\nMedido hoy: **3 de 3** citas durables escritas en la sesión eran fabricadas —\nprefijo mecánico del ordinal del tablero. Ninguna nombraba el sujeto pretendido.\n\nLo que NO está medido: cuántas de las **1989 citas `TASK-<CAPA>-NNNN` en 93\narchivos** de `source/` resuelven a su sujeto contra `tasks.citation_id`.\n\n    python3 -c \"\n    import sqlite3, re, pathlib\n    c = sqlite3.connect('.claude/agent-results/agent_store.sqlite3')\n    for f in pathlib.Path('source').rglob('*.rst'):\n        for cid in set(re.findall(r'TASK-[A-Z]+-\\\\d{4}', f.read_text(errors='ignore'))):\n            r = c.execute('select subject from tasks where citation_id=?', (cid,)).fetchone()\n            if not r: print('NO EXISTE', cid, f)\"\n\nTres cubos esperados, y **no se colapsan**:\n  (a) resuelve y el sujeto encaja con el contexto donde se cita  → correcta\n  (b) resuelve pero nombra otro sujeto                            → fabricada, como las 3 de hoy\n  (c) no existe en el registro                                    → fabricada o citada antes de acuñarse\n\nEl cubo (a) exige juicio de tema: que la cita resuelva no prueba que sea la\ncorrecta, sólo que existe. El instrumento sólo puede separar (c) de (a)+(b)\nmecánicamente; separar (a) de (b) es lectura.\n\n*Ciega a:* una cita correcta cuyo sujeto se reencuadró después (se lee como (b)\nsin serlo), y a las citas en mensajes de commit, que no se pueden corregir.\n\nBloqueada de facto por #113: mientras el board no llegue al store, una cita\nnueva no se puede acuñar y el barrido tendría que reescribirse. Hacerla después\nde #113, no antes.",
+  "activeForm": "Midiendo qué citas durables resuelven a su sujeto",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

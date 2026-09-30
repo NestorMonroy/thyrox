@@ -1,0 +1,29 @@
+# Anulaciones 106e-5c-1 — primera pasada
+== 1: margen de 10 min -> 3
+== 2: sin caducidad vale -> 1
+== 3: subtoken vacío vale -> 0
+== 4: sin subtoken no renueva -> 0
+== 5: sin host de empresa -> 1
+== 6: rechazo de GitHub pasa -> 1
+== 7: renueva sin hacer falta -> 1
+== 8: sin curar el estado -> 4
+== 9: fallo sin error -> 1
+== 10: reintentos sin limpiar -> 1
+== 11: otro estado sin subtoken -> 1
+== 12: registra cada minuto -> 1
+== 13: sin releer la fila -> 2
+== 14: lectura fallida lanza -> 1
+== 15: sin access token nuevo -> 0
+== 16: sin respaldo de caducidad -> 0
+== 17: renueva siempre -> 2
+== 18: sin guardar subtoken -> 2
+== 19: datos previos perdidos -> 1
+== 20: error se propaga -> 1
+== restaurado -> 0
+
+# Repetición tras afilar 3, 4, 15, 16
+== 3: subtoken vacío vale -> 1
+== 4: sin subtoken no renueva -> 1
+== 15: sin access token nuevo -> 1
+== 16: sin respaldo de caducidad -> 1
+== restaurado -> 0

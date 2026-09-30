@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env THYROX_ROOT=/home/user/thyrox python3 .claude/workbench/izar-dependencias-a-la-raiz-20260919T103301/probes/classify_undeclared_deps.py --sin-resolucion", "started_at": "2026-09-19T12:05:27+00:00"}

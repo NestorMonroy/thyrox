@@ -1,0 +1,7 @@
+==== F: 1 definicion(es) de nivel superior
+---- chunk-fyjk3yda.js variable F [2327,2517)
+F=new Set(["ANTHROPIC_UNIX_SOCKET","ANTHROPIC_BASE_URL","ANTHROPIC_API_KEY","ANTHROPIC_AUTH_TOKEN","CLAUDE_CODE_OAUTH_TOKEN",...LL.filter((e)=>e.startsWith("CLAUDE_CODE_ARTIFACT")||Hye(e))])
+==== f: 1 definicion(es) de nivel superior
+---- chunk-fyjk3yda.js function f [2518,2672)
+function f(e){if(!e||!process.env.ANTHROPIC_UNIX_SOCKET)return e||{};let n={};for(let[o,r]of Object.entries(e))if(!F.has(o.toUpperCase()))n[o]=r;return n}
+symbol: 2 de 2 nombre(s) resueltos

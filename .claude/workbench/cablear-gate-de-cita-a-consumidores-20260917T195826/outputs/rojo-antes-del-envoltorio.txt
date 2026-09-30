@@ -1,0 +1,28 @@
+== 1. la cita que resuelve: exit 0 ==
+  FALLO exit 0
+        esperado=[0] obtenido=[127]
+== 2. la cita ROTA avisa y NO bloquea: exit 0 con WARN ==
+  FALLO exit 0 — un 1 abortaria el hook del consumidor bajo set -e
+        esperado=[0] obtenido=[127]
+  FALLO pero AVISA
+        esperado=[1] obtenido=[0]
+  FALLO y la nombra
+        esperado=[1] obtenido=[0]
+== 3. sin citas: exit 0 y EN SILENCIO (el camino comun) ==
+  FALLO exit 0
+        esperado=[0] obtenido=[127]
+  FALLO sin una sola linea de salida
+        esperado=[] obtenido=[bash: src/verify/commit-msg-citation.sh: No such file or directory]
+== 4. el proveedor inalcanzable REHUSA sin emitir veredicto ==
+  FALLO exit 2
+        esperado=[2] obtenido=[127]
+  ok    NO emite conteo
+  FALLO nombra lo que falta
+        esperado=[1] obtenido=[0]
+== 5. el mensaje ilegible tambien REHUSA ==
+  FALLO exit 2 ante un mensaje que no se puede leer
+        esperado=[2] obtenido=[127]
+== 6. NO escribe: el envoltorio mide, no muta ==
+  ok    el mensaje queda intacto
+
+resultado: 2 de 11 aserciones en verde

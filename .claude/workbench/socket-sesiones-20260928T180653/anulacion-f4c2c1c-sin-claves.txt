@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+83 |   test('sanitizeUnicodeToFixedPoint (Njr) normaliza en NFKC y quita formato hasta que el texto no cambie', () => {
+84 |     expect(sanitizeUnicodeToFixedPoint('ﬁ\u200bx\ud800')).toBe('fix')
+85 |   })
+86 | 
+87 |   test('sanitizeUnicodeDeep (H_) recorre cadenas, listas y claves', () => {
+88 |     expect(sanitizeUnicodeDeep({ 'k\u200b': ['a\u200b', 1, null, { x: 'ﬁ' }] })).toEqual({ k: ['a', 1, null, { x: 'fi' }] })
+                                                                                     ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
+-   "k": [
++   "k​": [
+      "a",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:88:81)
+(fail) el resto de chunk-pbnxt79v.js > sanitizeUnicodeDeep (H_) recorre cadenas, listas y claves [0.43ms]
+
+ 17 pass
+ 1 fail
+ 35 expect() calls
+Ran 18 tests across 1 file. [41.00ms]

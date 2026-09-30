@@ -1,0 +1,12 @@
+Scan the Chrome bridge sockets asynchronously
+
+The ported getAllSocketPaths reads the socket directory and is async,
+as in 2.1.275, but the vendored socket pool typed getSocketPaths as
+synchronous and called it without awaiting. The pool now awaits the
+scan the way 2.1.275 does: concurrent ensureConnected calls share one
+scan in flight, and a scan that throws is logged instead of breaking
+the connection. The generation and orphaned-client tracking of
+2.1.275 is not ported.
+
+Annulled in turn, the shared refresh and the scan-failure catch each
+dropped exactly their test.

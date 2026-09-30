@@ -1,0 +1,8 @@
+base	8 pass, 0 fail	—
+no-fence	6 pass, 2 fail	sin enlaces rotos sale 0 — esperado 0, obtenido 1 | publica el alcance medido
+no-code-span	6 pass, 2 fail	sin enlaces rotos sale 0 — esperado 0, obtenido 1 | publica el alcance medido
+no-scheme	6 pass, 2 fail	sin enlaces rotos sale 0 — esperado 0, obtenido 1 | publica el alcance medido
+no-anchor	7 pass, 1 fail	publica el alcance medido
+no-placeholder	6 pass, 2 fail	sin enlaces rotos sale 0 — esperado 0, obtenido 1 | publica el alcance medido
+no-fragment	7 pass, 1 fail	sin enlaces rotos sale 0 — esperado 0, obtenido 1
+no-refuse	5 pass, 3 fail	una raíz ausente rehúsa con exit 2 — esperado 2, obtenido 0 | y no publica un conteo — esperado False, obtenido True | nombra la raíz ausente — esperado True, obtenido False

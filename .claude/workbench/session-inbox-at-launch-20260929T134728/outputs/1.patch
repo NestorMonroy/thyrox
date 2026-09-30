@@ -1,0 +1,8 @@
+diff --git a/.claude/cache/tasks-PYXxk7/sessions/30170.json b/.claude/cache/tasks-PYXxk7/sessions/30170.json
+new file mode 100644
+index 00000000..2e97aff9
+--- /dev/null
++++ b/.claude/cache/tasks-PYXxk7/sessions/30170.json
+@@ -0,0 +1 @@
++{"pid":30170,"sessionId":"c1b7a4f9-76cc-4654-924a-b83451c52adf","cwd":"/home/user/thyrox/.thyrox/pool-worktrees/d6f5357c8e48/1","startedAt":1790691601396,"procStart":"5511991","version":"0.0.0-dev","peerProtocol":1,"peerFeatures":["notify_idle","artifact_yield"],"kind":"interactive","pidDomain":"linux:0d0af05ee8fd4dc29275718f2ce4dff1:pid:[4026531836]","name":"1-4a","nameSource":"derived","nameSince":1790691601396,"updatedAt":1790691601397}
+\ No newline at end of file

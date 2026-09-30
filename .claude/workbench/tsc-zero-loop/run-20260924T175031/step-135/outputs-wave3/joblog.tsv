@@ -1,0 +1,6 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+2	:	1790369626.299	    26.731	0	0	0	0	_headless_item 2 'module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-135/items/24.txt'
+5	:	1790369626.382	    41.772	0	0	0	0	_headless_item 5 'module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-135/items/48.txt'
+4	:	1790369626.347	    69.549	0	0	0	0	_headless_item 4 'module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-135/items/33.txt'
+3	:	1790369626.320	    82.315	0	0	0	0	_headless_item 3 'module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-135/items/31.txt'
+1	:	1790369626.284	   312.413	0	0	1	0	_headless_item 1 'module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-135/items/12.txt'

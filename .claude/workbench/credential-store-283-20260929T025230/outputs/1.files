@@ -1,0 +1,5 @@
+src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
+src/packages/storage/src/secureStorage/credentialStoreInternals.ts
+src/packages/storage/src/secureStorage/index.ts
+src/packages/storage/src/secureStorage/plainTextStorage.ts
+src/packages/storage/src/secureStorage/types.ts

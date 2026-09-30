@@ -1,0 +1,5 @@
+src/packages/bridge/src/index.ts
+src/packages/command-runtime/src/runtime.ts
+src/packages/config/plugin/pluginLoader.ts
+src/packages/storage/src/sessionStorage.ts
+src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts

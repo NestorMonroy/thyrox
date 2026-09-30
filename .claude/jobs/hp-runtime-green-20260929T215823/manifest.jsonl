@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for s in test-headless-pool.sh test-pool-calibrate.sh test-headless-pool-thyrox-p.sh; do echo \"== $s\"; bash tests/session/$s || echo \"SUITE_FAILED $s\"; done", "started_at": "2026-09-29T21:58:23+00:00"}

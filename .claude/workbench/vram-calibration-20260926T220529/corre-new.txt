@@ -1,0 +1,5 @@
+# GNU Time se DECLARA en cada caso —el falso, el real o ninguno—, nunca se
+# hereda del contenedor: heredado, el `/usr/bin/time` de la máquina grababa
+# filas reales en el historial y el resultado dependía del host
+# (H-THYROX-192). Sin declarar, ninguno.
+corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_TIME="${HEADLESS_POOL_TIME:-$F/no-existe}" HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }

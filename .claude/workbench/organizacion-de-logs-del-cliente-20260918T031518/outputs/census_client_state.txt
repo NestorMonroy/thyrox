@@ -1,0 +1,26 @@
+raiz del cliente: /root/.claude
+
+subarbol                  archivos      peso  mas reciente         extensiones
+----------------------------------------------------------------------------------------------------
+projects                       387      2.8G  2026-09-18T03:17:05  .jsonl:162 .json:140 .txt:85
+uploads                         12    107.0M  2026-09-17T14:57:03  .7z:3 .md:2 .sqlite3_020926210323:1 .001:1
+environment-manager              2     29.7M  2026-09-18T01:04:33  (sin extension):1 .json:1
+skills                         291      4.1M  2026-09-18T03:14:48  .xsd:117 .md:98 .py:60 .txt:6
+tasks                          471    633.7K  2026-09-18T02:47:36  .json:469 (sin extension):2
+backups                          5    205.1K  2026-09-18T01:04:42  .1789655419745:1 .1789693482327:1 .1789661163207:1 .1789688051007:1
+shell-snapshots                  1    173.8K  2026-09-18T01:07:42  .sh:1
+(raiz)                           8     32.7K  2026-09-18T01:14:47  .json:3 .py:2 .sh:2 (sin extension):1
+telemetry                        6      7.4K  2026-09-17T18:39:51  .jsonl:6
+sessions                         4      1.3K  2026-09-18T02:50:00  .json:2 .key:2
+----------------------------------------------------------------------------------------------------
+TOTAL                         1187      2.9G   (10 subarboles)
+
+== LOS TRES HOGARES DE THYROX, contra los del cliente ==
+  THYROX_WORKBENCH_DIR           1181 archivos     5.8M  [banco de evidencia] /home/user/thyrox/.claude/workbench
+  THYROX_JOBS_DIR                 384 archivos     5.0M  [trabajos] /home/user/thyrox/.claude/jobs
+  THYROX_CACHE_DIR                  0 archivos       0B  [cache] /home/user/thyrox/.claude/cache
+  THYROX_BACKGROUND_LOG_DIR        29 archivos    25.7K  [logs de segundo plano] /home/user/thyrox/.claude/build-logs
+
+recorrido COMPLETO: 1272 entradas en 0.01 s
+  Ese plazo es el del RECORRIDO, no el del censo: el `stat` de
+  cada archivo corre despues y no entra en la cifra.

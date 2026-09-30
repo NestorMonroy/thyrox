@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/paths/test_consumer_env_layer.py

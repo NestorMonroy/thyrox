@@ -1,0 +1,50 @@
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts(61,42): error TS2345: Argument of type '{ agentType: string; source: string; name: string; }[]' is not assignable to parameter of type 'AgentDefinition[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts:51-71 ---
+     51      const agents = [
+     52        makeAgent("builder", "userSettings"),
+     53        makeAgent("builder", "userSettings"), // duplicate
+     54      ];
+     55      const result = resolveAgentOverrides(agents, agents.slice(0, 1));
+     56      expect(result).toHaveLength(1);
+     57    });
+     58  
+     59    test("preserves agent definition properties", () => {
+     60      const agents = [{ agentType: "a", source: "userSettings", name: "Agent A" }];
+     61>     const result = resolveAgentOverrides(agents, agents);
+     62      expect(result[0]!.name).toBe("Agent A");
+     63      expect(result[0]!.agentType).toBe("a");
+     64    });
+     65  
+     66    test("handles empty arrays", () => {
+     67      expect(resolveAgentOverrides([], [])).toEqual([]);
+     68    });
+     69  
+     70    test("handles agent from git worktree (duplicate detection)", () => {
+     71      const agents = [
+  Type '{ agentType: string; source: string; name: string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ agentType: string; source: string; name: string; }' is not assignable to type 'PluginAgentDefinition'.
+      Property 'whenToUse' is missing in type '{ agentType: string; source: string; name: string; }' but required in type 'BaseAgentDefinition'.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts(62,23): error TS2339: Property 'name' does not exist on type 'ResolvedAgent'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts:52-72 ---
+     52        makeAgent("builder", "userSettings"),
+     53        makeAgent("builder", "userSettings"), // duplicate
+     54      ];
+     55      const result = resolveAgentOverrides(agents, agents.slice(0, 1));
+     56      expect(result).toHaveLength(1);
+     57    });
+     58  
+     59    test("preserves agent definition properties", () => {
+     60      const agents = [{ agentType: "a", source: "userSettings", name: "Agent A" }];
+     61      const result = resolveAgentOverrides(agents, agents);
+     62>     expect(result[0]!.name).toBe("Agent A");
+     63      expect(result[0]!.agentType).toBe("a");
+     64    });
+     65  
+     66    test("handles empty arrays", () => {
+     67      expect(resolveAgentOverrides([], [])).toEqual([]);
+     68    });
+     69  
+     70    test("handles agent from git worktree (duplicate detection)", () => {
+     71      const agents = [
+     72        makeAgent("builder", "projectSettings"),
+  Property 'name' does not exist on type 'BaseAgentDefinition & { source: "built-in"; baseDir: "built-in"; callback?: (() => void) | undefined; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; } & { ...; }'.

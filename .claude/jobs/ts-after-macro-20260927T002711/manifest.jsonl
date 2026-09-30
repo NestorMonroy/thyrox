@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 1300 .claude/workbench/ts-own-errors-20260926T225629/after-macro.cmds", "started_at": "2026-09-27T00:27:11+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T00:28:41+00:00", "duration_seconds": 90.401789}

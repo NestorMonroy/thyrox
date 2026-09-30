@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+14 | beforeEach(() => {
+15 |   dir = mkdtempSync(join(tmpdir(), 'uds-atomic-'))
+16 | })
+17 | afterEach(() => rmSync(dir, { recursive: true, force: true }))
+18 | 
+19 | const errno = (code: string) => Object.assign(new Error(code), { code })
+                                                       ^
+error: ETXTBSY
+ code: "ETXTBSY"
+
+      at errno (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:19:51)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:332:30)
+      at renameWithRetry (/home/user/thyrox/src/packages/local-observability/src/uds/atomicWrite.ts:283:13)
+      at writeFileAtomicWithMode (/home/user/thyrox/src/packages/local-observability/src/uds/atomicWrite.ts:442:13)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:336:11)
+(fail) opciones completas de Jne > shouldRetryRename reintenta el rename; un destino de sólo lectura corta el primer reintento [1.11ms]
+
+ 26 pass
+ 1 fail
+ 68 expect() calls
+Ran 27 tests across 1 file. [133.00ms]

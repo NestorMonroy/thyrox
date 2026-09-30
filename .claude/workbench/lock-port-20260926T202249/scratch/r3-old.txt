@@ -1,0 +1,5 @@
+  echo "FALLA: $failures lengua(s) en rojo"
+  exit 1
+fi
+echo
+echo "OK: las tres lenguas en verde"

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/run_ts_isolated < .claude/jobs/cs-tests.txt", "started_at": "2026-09-29T03:25:07+00:00"}

@@ -1,0 +1,5 @@
+# cada item deja <n>.gpu con su pico, media y uso de GPU, y antes de arrancar
+# RESERVA su pico en un registro compartido (HEADLESS_POOL_VRAM_LEDGER) bajo
+# lock: libre menos lo comprometido y aún no usado por otros items o pools
+# (la admision de --memfree, que Parallel no tiene para la GPU). Al terminar
+# suelta la reserva. La anchura con que se lanza es

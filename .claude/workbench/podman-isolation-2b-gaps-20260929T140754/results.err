@@ -1,0 +1,3 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+parallel_map: memoria: reserva 87144 kB por ítem (última ejecución: 9 ítems, pared máx 0.89 s, pico 43572 KB × 2 -> 86M; RAM: (13606976 − 0) / (43572 × 2) -> 156)
+rc_parallel=0 rc_cpu=0

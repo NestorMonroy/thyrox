@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+154 |   })
+155 | 
+156 |   test('sin entrypoint declarado: mcp serve, THYROX_CODE_ACTION, o cli / sdk-cli', () => {
+157 |     const mcp = context({}, { argv: () => ['bun', 'cli', 'mcp', 'serve'] })
+158 |     resolveEntrypoint(false, mcp)
+159 |     expect(mcp.env.THYROX_CODE_ENTRYPOINT).toBe('mcp')
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "mcp"
+Received: "cli"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:159:44)
+(fail) initializeEntrypointHostState (NUo) y resolveEntrypoint (D) > sin entrypoint declarado: mcp serve, THYROX_CODE_ACTION, o cli / sdk-cli [0.45ms]
+
+ 15 pass
+ 1 fail
+ 87 expect() calls
+Ran 16 tests across 1 file. [61.00ms]

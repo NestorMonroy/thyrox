@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json --pretty false > .claude/workbench/tsc-zero-loop/run-20260924T175031/step-153/before.log 2>&1; true", "started_at": "2026-09-25T23:06:53+00:00"}

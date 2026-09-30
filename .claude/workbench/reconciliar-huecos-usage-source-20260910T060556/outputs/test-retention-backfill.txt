@@ -1,0 +1,17 @@
+== A. La procedencia decide el nivel, no el estado ==
+  ok    a-irrecuperable-completed -> 4
+  ok    a-irrecuperable-failed -> 4
+  ok    a-leido-completed -> 3
+  ok    a-leido-failed -> 4
+== B. La procedencia del desenlace se declara, no se deja en blanco ==
+  ok    irrecuperable declara el instrumento que lo decidió
+  ok    la leída NO se etiqueta sin_transcript: su desenlace vino del JSONL
+== C. El conteo publica su alcance ==
+  ok    cuatro filas tocadas, no seis
+== D. Lo que NO se toca — el control que puede fallar ==
+  ok    usage_source NULL sigue NULL: «nadie ha pasado todavía»
+  ok    un agente vivo no recibe nivel
+== E. Idempotencia: un segundo pase no reescribe nada ==
+  ok    segunda pasada toca 0
+
+RESULTADO: 10 ok, 0 fallo(s)

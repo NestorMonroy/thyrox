@@ -1,0 +1,31 @@
+src/packages/agent/agentHostBindings.ts:624:        return require('./hooks.js').getTaskCompletedHookMessage(blockingError)
+src/packages/agent/agentHostBindings.ts-625-      } catch {
+src/packages/agent/agentHostBindings.ts-626-        return ''
+src/packages/agent/agentHostBindings.ts-627-      }
+src/packages/agent/agentHostBindings.ts-628-    },
+src/packages/agent/agentHostBindings.ts-629-    getTeammateIdleHookMessage: (blockingError: unknown) => {
+src/packages/agent/agentHostBindings.ts-630-      try {
+src/packages/agent/agentHostBindings.ts-631-        return require('./hooks.js').getTeammateIdleHookMessage(blockingError)
+src/packages/agent/agentHostBindings.ts-632-      } catch {
+src/packages/agent/agentHostBindings.ts-633-        return ''
+src/packages/agent/agentHostBindings.ts-634-      }
+src/packages/agent/agentHostBindings.ts-635-    },
+src/packages/agent/agentHostBindings.ts-636-
+src/packages/agent/agentHostBindings.ts-637-    // ── Message factories ────────────────────────────────────────────────────
+src/packages/agent/agentHostBindings.ts-638-    // stopHooksCore.ts feeds the hook's `reason` back into the loop by
+--
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts:260:                getTaskCompletedHookMessage(result.blockingError),
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-261-              )
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-262-            }
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-263-          }
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-264-
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-265-          if (blockingErrors.length > 0) {
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-266-            return {
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-267-              data: {
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-268-                success: false,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-269-                taskId,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-270-                updatedFields: [],
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-271-                error: blockingErrors.join('\n'),
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-272-              },
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-273-            }
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-274-          }

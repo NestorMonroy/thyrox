@@ -1,0 +1,45 @@
+src/packages/repl/src/screens/repl/onlySleepToolActive.ts(18,30): error TS18048: 'lastAssistant.message.content' is possibly 'undefined'.
+  --- código src/packages/repl/src/screens/repl/onlySleepToolActive.ts:8-27 ---
+      8   *
+      9   * V7 §3.3 — extracted from REPLView.tsx (iter 22) as a pure helper so the
+     10   * host doesn't carry inline useMemo logic that depends only on its inputs.
+     11   */
+     12  export function isOnlySleepToolActive(
+     13    messages: ReadonlyArray<Message>,
+     14    inProgressToolUseIDs: ReadonlySet<string>,
+     15  ): boolean {
+     16    const lastAssistant = messages.findLast(m => m.type === 'assistant')
+     17    if (lastAssistant?.type !== 'assistant') return false
+     18>   const inProgressToolUses = lastAssistant.message.content.filter(
+     19  (    b: { type: string; id: string }) => b.type === 'tool_use' && inProgressToolUseIDs.has(b.id),
+     20    )
+     21    return (
+     22      inProgressToolUses.length > 0 &&
+     23      inProgressToolUses.every(
+     24  (      b: { type: string; name: string }) => b.type === 'tool_use' && b.name === SLEEP_TOOL_NAME,
+     25      )
+     26    )
+     27  }
+src/packages/repl/src/screens/repl/onlySleepToolActive.ts(18,60): error TS2339: Property 'filter' does not exist on type 'MessageContent'.
+  --- código src/packages/repl/src/screens/repl/onlySleepToolActive.ts:8-27 ---
+      8   *
+      9   * V7 §3.3 — extracted from REPLView.tsx (iter 22) as a pure helper so the
+     10   * host doesn't carry inline useMemo logic that depends only on its inputs.
+     11   */
+     12  export function isOnlySleepToolActive(
+     13    messages: ReadonlyArray<Message>,
+     14    inProgressToolUseIDs: ReadonlySet<string>,
+     15  ): boolean {
+     16    const lastAssistant = messages.findLast(m => m.type === 'assistant')
+     17    if (lastAssistant?.type !== 'assistant') return false
+     18>   const inProgressToolUses = lastAssistant.message.content.filter(
+     19  (    b: { type: string; id: string }) => b.type === 'tool_use' && inProgressToolUseIDs.has(b.id),
+     20    )
+     21    return (
+     22      inProgressToolUses.length > 0 &&
+     23      inProgressToolUses.every(
+     24  (      b: { type: string; name: string }) => b.type === 'tool_use' && b.name === SLEEP_TOOL_NAME,
+     25      )
+     26    )
+     27  }
+  Property 'filter' does not exist on type 'string'.

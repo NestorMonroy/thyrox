@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(622,18): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:612-632 ---
+    612      // Record when system message is yielded for headless latency tracking
+    613      headlessProfilerCheckpoint('system_message_yielded')
+    614  
+    615      if (!shouldQuery) {
+    616        // Return the results of local slash commands.
+    617        // Use messagesFromUserInput (not replayableMessages) for command output
+    618        // because selectableUserMessagesFilter excludes local-command-stdout tags.
+    619        for (const msg of messagesFromUserInput) {
+    620          if (
+    621            msg.type === 'user' &&
+    622>           typeof msg.message.content === 'string' &&
+    623            (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624              msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631                content: stripAnsi(msg.message.content),
+    632              },
+src/packages/agent/QueryEngine.ts(623,12): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:613-633 ---
+    613      headlessProfilerCheckpoint('system_message_yielded')
+    614  
+    615      if (!shouldQuery) {
+    616        // Return the results of local slash commands.
+    617        // Use messagesFromUserInput (not replayableMessages) for command output
+    618        // because selectableUserMessagesFilter excludes local-command-stdout tags.
+    619        for (const msg of messagesFromUserInput) {
+    620          if (
+    621            msg.type === 'user' &&
+    622            typeof msg.message.content === 'string' &&
+    623>           (msg.message.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    624              msg.message.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`) ||
+    625              msg.isCompactSummary)
+    626          ) {
+    627            yield {
+    628              type: 'user',
+    629              message: {
+    630                ...msg.message,
+    631                content: stripAnsi(msg.message.content),
+    632              },
+    633              session_id: getSessionId(),

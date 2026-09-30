@@ -1,0 +1,33 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(631,14): error TS2322: Type 'Set<{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; } | ... 4 more ... | { ...; }>' is not assignable to type 'Set<Command>'.
+  Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; } | ... 4 more ... | { ...; }' is not assignable to type 'Command'.
+    Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'Command'.
+      Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'CommandBase & LocalJSXCommand'.
+        Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'LocalJSXCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+              Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")' is not assignable to type 'LocalJSXCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type '(onDone: LocalJSXCommandOnDone, context: ProcessUserInputContext, args: string) => Promise<ReactNode>' is not assignable to type 'LocalJSXCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'ProcessUserInputContext'.
+                        Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'LocalJSXCommandContext'.
+                          Types of property 'setMessages' are incompatible.
+                            Types of parameters 'updater' and 'updater' are incompatible.
+                              Type 'unknown[]' is not assignable to type 'Message[]'.
+                                Type 'unknown' is not assignable to type 'Message'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(662,14): error TS2322: Type 'Set<{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }>' is not assignable to type 'Set<Command>'.
+  Type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'Command'.
+    Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'Command'.
+      Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'CommandBase & LocalCommand'.
+        Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>' is not assignable to type 'Promise<LocalCommandModule>'.
+              Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")' is not assignable to type 'LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext'.
+                        Types of property 'setMessages' are incompatible.
+                          Types of parameters 'updater' and 'updater' are incompatible.
+                            Type 'unknown[]' is not assignable to type 'Message[]'.
+                              Type 'unknown' is not assignable to type 'Message'.

@@ -1,0 +1,4 @@
+width	s/print(width_cap())/print(7)/
+source	s/^declares_input_source "\$@" || refuse/true || refuse/
+order	s/ -k "\$@"$/ "$@"/
+validate	s/\[\[ "\$width" =~ \^\[1-9\]\[0-9\]\*\$ \]\] || refuse/true || refuse/

@@ -1,0 +1,1 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx(13,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.

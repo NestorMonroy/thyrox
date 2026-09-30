@@ -1,0 +1,69 @@
+src/packages/agent/hooks.ts(27,46): error TS2724: '"./types/hooks.js"' has no exported member named 'promptRequestSchema'. Did you mean 'PromptRequest'?
+  --- código src/packages/agent/hooks.ts:17-37 ---
+     17   * `HookBlockingError` se declara con `command` opcional porque el test de
+     18   * los formateadores construye el objeto sin él; el motor siempre lo rellena.
+     19   */
+     20  
+     21  import { getHooksConfigFromSnapshot, shouldDisableAllHooksIncludingManaged, shouldAllowManagedHooksOnly } from './hooksConfigSnapshot.js'
+     22  import { createAttachmentMessage } from './internal/queryRuntime.js'
+     23  import { getSessionId as runtimeSessionId, getCwdState } from './internal/sessionRuntime.js'
+     24  import { execHttpHook } from './hooks/execHttpHook.js'
+     25  import type { AgentMessage } from './internalTypes.js'
+     26  import { buildHookProgressMessage, type HookDisplaySource, type HookProgressMessage } from './hooks/hookProgress.js'
+     27> import { isHookEvent, isAsyncHookJSONOutput, promptRequestSchema, type HookCommand, type HookEvent, type PromptRequest, type PromptResponse, isSyncHookJSONOutput, hookJSONOutputSchema } from './types/hooks.js'
+     28  import type { PermissionUpdate } from '@thyrox/permission/permissionTypes.js'
+     29  import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+     30  import {
+     31    DEFAULT_HOOK_SHELL,
+     32    buildPowerShellArgs,
+     33    formatShellPrefixCommand,
+     34    getCachedPowerShellPath,
+     35    quote,
+     36    subprocessEnv,
+     37    wrapSpawn,
+src/packages/agent/hooks.ts(69,47): error TS2724: '"@thyrox/config/settings/types.js"' has no exported member named 'SkillHookMatcher'. Did you mean 'HookMatcher'?
+  --- código src/packages/agent/hooks.ts:59-79 ---
+     59  import type { ToolUseContext, Tools } from '@thyrox/tool-registry/Tool.js'
+     60  import type { ShellCommand } from '@thyrox/shell/shellCommand.js'
+     61  import type { AsyncHookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
+     62  import { registerPendingAsyncHook } from './hooks/AsyncHookRegistry.js'
+     63  import { enqueuePendingNotification } from './messageQueueManager.js'
+     64  import { wrapInSystemReminder, extractTextContent, getLastAssistantMessage } from './messages.js'
+     65  import { emitHookResponse } from './hooks/hookEvents.js'
+     66  import { getAgentTranscriptPath } from '@thyrox/storage/sessionStorage.js'
+     67  import { asAgentId } from './idTypes.js'
+     68  import type { AppState } from '@thyrox/app-host/state/AppState.js'
+     69> import type { HookMatcher, PluginHookMatcher, SkillHookMatcher } from '@thyrox/config/settings/types.js'
+     70  import { getSessionHooks, getSessionFunctionHooks, type SessionDerivedHookMatcher } from './hooks/sessionHooks.js'
+     71  import { basename } from 'node:path'
+     72  import { ALLOWED_OFFICIAL_MARKETPLACE_NAMES } from '@thyrox/config/plugin/schemas.js'
+     73  import { normalizeLegacyToolName, getLegacyToolNames } from '@thyrox/permission/permissionRuleParser.js'
+     74  import { findToolByName } from '@thyrox/tool-registry/Tool.js'
+     75  import { permissionRuleValueFromString } from '@thyrox/permission/permissionRuleParser'
+     76  import { checkHasTrustDialogAccepted } from '@thyrox/config/global/config.js'
+     77  import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+     78  import type { ElicitResult } from '@modelcontextprotocol/sdk/types.js'
+     79  
+src/packages/agent/hooks.ts(72,52): error TS2307: Cannot find module '@thyrox/config/plugin/schemas.js' or its corresponding type declarations.
+  --- código src/packages/agent/hooks.ts:62-82 ---
+     62  import { registerPendingAsyncHook } from './hooks/AsyncHookRegistry.js'
+     63  import { enqueuePendingNotification } from './messageQueueManager.js'
+     64  import { wrapInSystemReminder, extractTextContent, getLastAssistantMessage } from './messages.js'
+     65  import { emitHookResponse } from './hooks/hookEvents.js'
+     66  import { getAgentTranscriptPath } from '@thyrox/storage/sessionStorage.js'
+     67  import { asAgentId } from './idTypes.js'
+     68  import type { AppState } from '@thyrox/app-host/state/AppState.js'
+     69  import type { HookMatcher, PluginHookMatcher, SkillHookMatcher } from '@thyrox/config/settings/types.js'
+     70  import { getSessionHooks, getSessionFunctionHooks, type SessionDerivedHookMatcher } from './hooks/sessionHooks.js'
+     71  import { basename } from 'node:path'
+     72> import { ALLOWED_OFFICIAL_MARKETPLACE_NAMES } from '@thyrox/config/plugin/schemas.js'
+     73  import { normalizeLegacyToolName, getLegacyToolNames } from '@thyrox/permission/permissionRuleParser.js'
+     74  import { findToolByName } from '@thyrox/tool-registry/Tool.js'
+     75  import { permissionRuleValueFromString } from '@thyrox/permission/permissionRuleParser'
+     76  import { checkHasTrustDialogAccepted } from '@thyrox/config/global/config.js'
+     77  import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+     78  import type { ElicitResult } from '@modelcontextprotocol/sdk/types.js'
+     79  
+     80  
+     81  
+     82  

@@ -1,0 +1,9 @@
+{
+  "id": "114",
+  "subject": "Decide el corte del tablero de tareas y repara la cita de cap16",
+  "description": "El tablero generado `source/gestion/pm/reportes/tablero-de-tareas.rst` es un archivo unico de 213 KB / 8602 lineas con 1420 tareas de 3 sesiones — el tercer .rst mas grande del repo. El analisis `analisis-el-tablero-como-archivo-unico.rst` mide el tamano y tabula cuatro cortes posibles (por sesion, por estado, por capa, un archivo por tarea) pero NO decide cual se adopta: eso es decision del ejecutor, porque depende de que se lee a diario.\n\nAdemas deja un defecto concreto con dueno: `source/quality/cap16-pruebas-automatizadas.rst:271` cita `tablero-de-tareas.rst:853-857` afirmando que ahi vive la tarea #210; esas lineas hoy contienen otra tarea. La cita por rango de lineas a un archivo REGENERADO esta rota por construccion — se repara citando por identificador de cita (`TASK-<CAPA>-NNNN`), no por rango.\n\nEntregable: (a) el corte adoptado, con su generador y su indice; (b) la cita de cap16 reparada; (c) un check que impida citar el tablero por rango de lineas.",
+  "activeForm": "Decidiendo el corte del tablero",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

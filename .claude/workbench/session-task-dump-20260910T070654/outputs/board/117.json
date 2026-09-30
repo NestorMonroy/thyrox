@@ -1,0 +1,8 @@
+{
+  "id": "117",
+  "subject": "Fijar la conducta ante --amend cuando otro escritor comparte el repo",
+  "description": "H-DOCS-1061: el `--amend` de un agente reescribió el commit del orquestador porque HEAD había dejado de ser suyo (docs reflog HEAD@{5}, api HEAD@{1}). El pathspec protege el CONTENIDO, no la posición de HEAD. Dos salidas: (1) el prompt del agente prohíbe --amend y manda commit aditivo; (2) el orquestador no commitea en un repo con agente vivo. Decisión del ejecutor; luego escribirla en bash-background-tasks.md.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

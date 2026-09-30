@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+47 |   })
+48 | 
+49 |   test('en Windows el token viaja en procStartFt, y un registro con procStart no es comparable', () => {
+50 |     expect(procStartFields('42', true)).toEqual({ procStart: undefined, procStartFt: '42' })
+51 |     expect(recordedStartToken({ procStartFt: '42' }, true)).toBe('42')
+52 |     expect(recordedStartToken({ procStart: '7', procStartFt: '42' }, true)).toBeUndefined()
+                                                                                 ^
+error: expect(received).toBeUndefined()
+
+Received: "42"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:52:77)
+(fail) procStartFields (n6), recordedStartToken (Hx) y sameStartToken (TFe) > en Windows el token viaja en procStartFt, y un registro con procStart no es comparable [0.31ms]
+
+ 21 pass
+ 1 fail
+ 55 expect() calls
+Ran 22 tests across 1 file. [104.00ms]

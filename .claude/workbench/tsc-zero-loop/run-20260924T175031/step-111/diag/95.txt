@@ -1,0 +1,20 @@
+src/packages/command-runtime/src/commands/rename/index.ts(9,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/rename/rename")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/rename/index.ts:1-12 ---
+      1  import type { Command } from '../../runtime.js'
+      2  
+      3  const rename = {
+      4    type: 'local-jsx',
+      5    name: 'rename',
+      6    description: 'Rename the current conversation',
+      7    immediate: true,
+      8    argumentHint: '[name]',
+      9>   load: () => import('./rename.js'),
+     10  } satisfies Command
+     11  
+     12  export default rename
+  Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/rename/rename")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(onDone: LocalJSXCommandOnDone, context: ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; ... 4 more ...; resume?: ((sessionId: `${string}-${string}-${string}-${string}-${string}`, log: LogOption, entrypoint: ResumeEntrypoint) => Promise<...>) ...' is not assignable to type 'LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

@@ -1,0 +1,155 @@
+{
+  "server": {
+    "running": false,
+    "pid": null,
+    "dnsConfigured": false,
+    "certExists": false,
+    "orphanedStateDetected": false,
+    "certTrusted": false,
+    "hasCachedPassword": false,
+    "needsSudoPassword": false,
+    "isWin": false
+  },
+  "agents": [
+    {
+      "id": "antigravity",
+      "name": "Antigravity IDE",
+      "hosts": [
+        "daily-cloudcode-pa.googleapis.com",
+        "cloudcode-pa.googleapis.com",
+        "daily-cloudcode-pa.sandbox.googleapis.com",
+        "autopush-cloudcode-pa.sandbox.googleapis.com"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro IDE",
+      "hosts": [
+        "api.anthropic.com"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "copilot",
+      "name": "GitHub Copilot",
+      "hosts": [
+        "api.githubcopilot.com",
+        "copilot-proxy.githubusercontent.com"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "ghe-copilot",
+      "name": "GitHub Enterprise Copilot",
+      "hosts": [],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "codex",
+      "name": "OpenAI Codex",
+      "hosts": [
+        "chatgpt.com"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor IDE",
+      "hosts": [
+        "api2.cursor.sh"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "zed",
+      "name": "Zed",
+      "hosts": [
+        "api.zed.dev"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "claude-code",
+      "name": "claude-code",
+      "hosts": [
+        "api.anthropic.com"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": true,
+        "path": "/root/.claude"
+      }
+    },
+    {
+      "id": "open-code",
+      "name": "OpenCode",
+      "hosts": [
+        "opencode.ai"
+      ],
+      "viability": "supported",
+      "detection": {
+        "installed": false
+      }
+    },
+    {
+      "id": "trae",
+      "name": "Trae",
+      "hosts": [
+        "trae.invalid"
+      ],
+      "viability": "investigating",
+      "detection": {
+        "installed": false
+      }
+    }
+  ],
+  "serverState": {
+    "running": false,
+    "pid": null,
+    "dnsConfigured": false,
+    "certExists": false,
+    "orphanedStateDetected": false,
+    "certTrusted": false,
+    "hasCachedPassword": false,
+    "needsSudoPassword": false,
+    "isWin": false
+  },
+  "agentStates": [],
+  "bypassPatterns": [],
+  "mappings": {
+    "antigravity": [],
+    "kiro": [],
+    "copilot": [],
+    "ghe-copilot": [],
+    "codex": [],
+    "cursor": [],
+    "zed": [],
+    "claude-code": [],
+    "open-code": [],
+    "trae": []
+  }
+}
+LOADED_MODULES=1812
+TIME 0.60 s 144036 KB

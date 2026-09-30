@@ -1,0 +1,53 @@
+Patrón: spread-of-unknown-typed-value
+Señal del verificador: TS2698: Spread types may only be created from object types\.
+Arreglo genérico: Cuando se hace spread de un valor cuyo tipo declarado es `unknown` (p. ej. la respuesta de un fetch tipado como alias `unknown`), se castea a `Record<string, unknown>` antes del spread — es honesto sobre que no se conoce la forma exacta, a diferencia de castear a campos concretos, y basta para que TS acepte el spread sin cambiar la conducta en runtime.
+Ya aplicado en: src/packages/provider/src/referral.ts
+Archivos donde la señal sigue viva: src/packages/agent/query.ts, src/packages/repl/src/screens/REPLView.tsx
+
+src/packages/agent/query.ts(762,19): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/query.ts:752-772 ---
+    752                      )
+    753                      if (addedFields) {
+    754                        clonedContent ??= [...contentArr]
+    755                        clonedContent[i] = { ...block, input: inputCopy }
+    756                      }
+    757                    }
+    758                  }
+    759                }
+    760                if (clonedContent) {
+    761                  yieldMessage = {
+    762>                   ...message,
+    763                    message: { ...(assistantMsg.message ?? {}), content: clonedContent },
+    764                  } as typeof message
+    765                }
+    766              }
+    767              // Withhold recoverable errors (prompt-too-long, max-output-tokens)
+    768              // until we know whether recovery (collapse drain / reactive
+    769              // compact / truncation retry) can succeed. Still pushed to
+    770              // assistantMessages so the recovery checks below find them.
+    771              // Either subsystem's withhold is sufficient — they're
+    772              // independent so turning one off doesn't break the other's
+
+src/packages/repl/src/screens/REPLView.tsx(3290,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3280-3300 ---
+   3280              ...updatedToolPermissionContext,
+   3281              mode: 'auto',
+   3282              prePlanMode: undefined,
+   3283            });
+   3284          }
+   3285  
+   3286          return {
+   3287            ...prev,
+   3288            initialMessage: null,
+   3289            toolPermissionContext: updatedToolPermissionContext,
+   3290>           ...(shouldStorePlanForVerification && {
+   3291              pendingPlanVerification: {
+   3292                plan: initialMsg.message.planContent!,
+   3293                verificationStarted: false,
+   3294                verificationCompleted: false,
+   3295              },
+   3296            }),
+   3297          };
+   3298        });
+   3299  
+   3300        // Create file history snapshot for code rewind

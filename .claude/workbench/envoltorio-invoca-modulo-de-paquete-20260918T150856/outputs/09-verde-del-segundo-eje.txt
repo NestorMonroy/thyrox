@@ -1,0 +1,47 @@
+=== 2026-09-18T15:17:14 — VERDE del segundo eje ===
+
+--- --exercise sobre el arbol real ---
+bin/ ejercitado: 137 entrypoint(s) .py cargan
+exit=0
+
+--- compone con --check ---
+bin/ ejercitado: 137 entrypoint(s) .py cargan
+bin/ al día: 179 entrypoint(s)
+exit=0
+
+--- suite completa ---
+  ok   src/lib/assert.sh no entra al plan
+  ok   src/lib/logging.sh no entra al plan
+  ok   src/lib/toolchain.sh no entra al plan
+  ok   src/lib/workbench.sh no entra al plan
+  ok   el árbol tiene al menos un entrypoint con import relativo
+  ok   bin/cache_probe --help sale 0
+  ok   bin/manifest --help sale 0
+  ok   0 envoltorios .py fallan al cargar en el arbol real
+
+89 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+
+--- los controles de anulacion, verbatim ---
+  ok   anulado: la comilla doble sigue contando
+  ok   anulado: la comilla simple YA NO cuenta — cae exactamente ella
+  ok   restaurado: la comilla simple vuelve a contar
+  ok   anulado: sin bg en BASH_BUILTINS, deja de prefijarse
+  ok   restaurado: bg vuelve a resolver a thyrox-bg
+  ok   un import relativo exige contexto de paquete
+  ok   anulado: el relativo cae a la forma de ruta — cae exactamente él
+  ok   anulado: el plano no se mueve
+  ok   restaurado: el relativo vuelve a -m
+  ok   un objetivo fuera de src/ levanta ValueError
+  ok   con el plan correcto, el de import relativo NO falla
+  ok   y el que rehusa por politica TAMPOCO se reporta
+  ok   anulado: el de import relativo SI falla — cae exactamente el
+  ok   anulado: y el ImportError es la razon reportada
+  ok   anulado: el que rehusa por politica sigue sin reportarse
+  ok   los 2 modulos de paquete rehusan con ImportError
+  ok   el árbol tiene al menos un entrypoint con import relativo
+
+--- la linea base de la suite, medida y no recordada ---
+$ git show HEAD:tests/session/test_generate_bin.py > .claude/cache/orig_test_generate_bin.py
+$ .venv/bin/python .claude/cache/orig_test_generate_bin.py | tail -1
+68 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+  (la version de este pase da 89)

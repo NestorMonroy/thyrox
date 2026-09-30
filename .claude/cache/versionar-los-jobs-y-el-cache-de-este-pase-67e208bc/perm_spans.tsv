@@ -1,0 +1,97 @@
+228	src/yoloClassifier.ts	56-58,71-75,105-108,117-122,129-135,153,220-225,228-230,255-260,275-277,297-298,300-301,333-341,351-355,388-391,402-417,426-429,444-448,456-458,460-475,508-509,513-515,532-534,544-545,548-550,556-557,597,617,647,667,844-857,865-868,890-891,932-934,945-949,971-972,974-978,987,1011-1012,1014-1015,1064,1071,1089,1096-1098,1130,1172-1174,1211-1212,1242-1245,1247-1250,1252-1255,1259-1263,1265-1266,1276-1283,1287-1290,1306-1309,1313-1315,1334-1337,1343-1347
+167	src/yoloSystemPrompt.ts	11-23,25-27,37-38,43-49,56-63,67-71,75-79,84-91,95-98,124-128,130-134,156-164,167-172,175-182,203-210,214-215,231-263,272-273,283-284,315-324,336-340,346-353,380-383,387-391
+94	src/toolPermission/handlers/interactiveHandler.ts	43-56,73-74,77-80,109-114,160,214-221,234-243,259,300-315,329-333,342,357-362,366-367,371,410,412-413,433,440-442,469,495-497,503-505,524-525,533
+88	src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx	116-119,132,152-156,168-170,173-175,180-182,210-212,223-226,293-296,303,308,312-315,330-332,335,343,384,398-400,428-430,433-434,440-442,458-460,474,485-486,491,502-504,510,540-541,546-548,579-583,616,642,645,657,689-694,767,872,938,976
+71	src/classifierStallTracking.ts	9-33,46-55,57-60,62-66,68-73,76,79-82,90-97,153-160
+61	src/components/BashPermissionRequest/BashPermissionRequest.tsx	50-55,96-97,114,129,167-168,174,186,190-203,207-214,218-220,243-244,256,262-266,273-278,337,345,353,365,443,461,473,482
+56	src/classifierDecision.ts	27-33,53-59,61,63,70,78,82-83,85,88,90,92,96,104-111,128-132,139-155,182
+52	src/__tests__/classifierProtectedPaths.contract.test.ts	5-25,36-42,55,57,59,62,81-82,92-93,99-102,121-122,139-140,150-152,157-159,164-165
+44	src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx	45,83-89,98-100,105,108,114-117,124-125,131-133,137-139,146,156,158,163,254,258,373,385,391,461,471,504,509,522-526,594
+37	src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx	49-52,83,86,89,142,159-163,172-173,190-191,231-234,245,254,263,299,305-312,315-318
+37	src/components/PermissionExplanation.tsx	1-17,36,45,47,49,51,55-58,75,100,106-109,143,168-171
+36	src/__tests__/bashClassifierStub.behavior.test.ts	17-28,31-33,38-39,44-45,52-54,60-62,75-76,91-92,99,108,121-123,140-141
+33	src/__tests__/classifierProviderSkip.behavior.test.ts	6-31,40-41,57-58,65-67
+33	src/permissionExplainer.ts	1-16,32,35,49,77,85-87,92,102-105,137-139,223,235
+32	src/__tests__/autoModeDenials.behavior.test.ts	11-24,32-33,42,47-49,52,64-65,70-71,82-84,91,99-101
+31	src/__tests__/classifierOperatorModel.contract.test.ts	5-26,39,47-48,54-57,68-69
+30	src/components/rules/PermissionRuleList.tsx	60,72,83,104,172,217,273-275,289,351,359,375,381,417,424-427,434,486,552-554,563,571,575,578,648,668
+29	src/toolPermission/handlers/swarmWorkerHandler.ts	26-39,49-51,59,70,79-80,90,93,122,125,135-136,151,153
+28	src/__tests__/shellRuleMatching-edge.test.ts	8,32,41-44,50,55,59-60,70,91-93,108,117-119,125-126,199,229,235,239,246-248,262
+26	src/__tests__/dangerousPaths.behavior.test.ts	9-19,23-24,37-38,45,50-51,56,65-66,94-95,105-107
+26	src/__tests__/permissionSchemas.behavior.test.ts	12-27,37-38,50,64-65,88,102,147-149
+26	src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx	13-14,16,18,20,22,37-41,71,74-76,84,89-90,101,106,108,110,113,116,132-133
+26	src/components/shellPermissionHelpers.tsx	31,42,63,73-78,84,89,93,98,103,115,120,122,134,143,155,165,175,177,180,191,194
+25	src/components/PermissionPrompt.tsx	42-51,65,71,75,80,85,98,110,118,154,160,173,206,219,222,242
+24	src/__tests__/shadowedRuleDetection.test.ts	1-15,105-106,136,184-185,206-207,230,253
+23	src/__tests__/permissionErrors.behavior.test.ts	12-28,57,76,106-107,137,163
+23	src/components/FilePermissionDialog/permissionOptions.tsx	14-17,22,27,32,37-41,94,118,122-125,136,140,152,180,192
+22	src/components/BashPermissionRequest/bashToolUseOptions.tsx	18-21,32-34,38,62,67,69,90,92-95,135-140
+21	src/__tests__/permissionUpdatePure.test.ts	3-6,65,132-134,182-184,189-191,193,210-211,213-214,219-220
+21	src/bypassPermissionsKillswitch.ts	23-24,49-52,61,90-93,119-122,135-140
+21	src/components/FilePermissionDialog/FilePermissionDialog.tsx	31,37,41,43,45,47,52,55,76-79,117,129,132-135,144,241,247
+20	src/__tests__/classifierTranscriptMeta.test.ts	1-18,119-120
+20	src/toolPermission/PermissionContext.ts	1-7,57-58,68-73,354-358
+20	src/toolPermission/permissionLogging.ts	1-3,28,39-40,47,67,101,106,114,151,159,168,178-180,194,213,220
+19	src/__tests__/isAutoModeAllowlistedTool.test.ts	1-16,69,79,87
+19	src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx	63-71,78-81,133,142,186,204,216,225
+19	src/components/hooks.ts	98-101,107-114,123,132,150,160,168-169,177
+18	src/__tests__/automodeAntAlignment.contract.test.ts	6-17,46-47,107-108,118-119
+18	src/__tests__/classifierShared.test.ts	22-23,54,59-60,68-70,107,123-125,134,143-144,164-166
+18	src/toolPermission/handlers/coordinatorHandler.ts	16-25,32,40,48-51,59-60
+17	src/__tests__/dangerousPermissions.test.ts	1-11,41,68,150,207-209
+16	src/__tests__/dangerousBashPermission.behavior.test.ts	7-16,24,59,64,80-82
+16	src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx	23,25,29-30,35,39,46,54,57,62,67-68,70,74,83,87
+15	src/components/ComputerUseApproval/ComputerUseApproval.tsx	28-33,48,98-99,133,150-153,217
+14	src/__tests__/parseToolListFromCLI.test.ts	1-12,58,81
+13	src/components/useShellPermissionFeedback.ts	11-15,44,48,50,84,87,115-116,120
+12	src/__tests__/PermissionMode.test.ts	3-4,35,53,82,98,110,123,147,164,188,192
+12	src/components/FilePermissionDialog/useFilePermissionDialog.ts	50-52,69,73,88,103,138,147,153,156,168
+11	src/__tests__/permissions.test.ts	3,21,42,52-53,72,93-94,101,121,141
+11	src/components/SedEditPermissionRequest/SedEditPermissionRequest.tsx	29-31,35-37,72,77,91,99-100
+10	src/__tests__/getNextPermissionMode.test.ts	3,11,32-33,92-97
+9	src/components/permissionRequestTypes.ts	1-5,23-26
+8	src/__tests__/denialTracking.test.ts	29,73-76,79,84,93
+8	src/components/PermissionDecisionDebugInfo.tsx	144,147,161,192,275,278-279,290
+7	src/__tests__/getRuleBehaviorDescription.test.ts	5-8,23-25
+7	src/components/PermissionRequest.tsx	47-51,149,159
+7	src/components/PowerShellPermissionRequest/powershellToolUseOptions.tsx	48-49,51-55
+7	src/components/rules/AddWorkspaceDirectory.tsx	26,122,147,164-165,171,181
+6	src/__tests__/autoModeState.test.ts	79-83,118
+6	src/__tests__/shellRuleMatching.test.ts	11,35,63,101,125,138
+6	src/components/AskUserQuestionPermissionRequest/QuestionView.tsx	114,180,182,210-211,215
+5	src/__tests__/pathValidation.test.ts	4-6,14,120
+5	src/classifierApprovalsHook.ts	1-5
+5	src/components/FilePermissionDialog/usePermissionHandler.ts	72,104,131,137,162
+5	src/components/SkillPermissionRequest/SkillPermissionRequest.tsx	46,75,78,89,177
+4	src/components/FilesystemPermissionRequest/FilesystemPermissionRequest.tsx	40,43,46,60
+4	src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx	40-41,93-94
+4	src/components/WebFetchPermissionRequest/WebFetchPermissionRequest.tsx	37,40,50,98
+4	src/components/WorkerBadge.tsx	11-14
+4	src/components/WorkerPendingPermission.tsx	16-19
+4	src/components/rules/RecentDenialsTab.tsx	14,31-32,66
+3	src/components/FileWritePermissionRequest/FileWritePermissionRequest.tsx	59-61
+3	src/components/SandboxPermissionRequest.tsx	28-30
+3	src/components/rules/AddPermissionRules.tsx	89,105,113
+3	src/components/rules/WorkspaceTab.tsx	38,71,86
+2	src/components/rules/PermissionRuleInput.tsx	38-39
+1	src/components/FallbackPermissionRequest.tsx	29
+1	src/components/MonitorPermissionRequest/MonitorPermissionRequest.ts	1
+1	src/components/NotebookEditPermissionRequest/NotebookEditPermissionRequest.tsx	24
+1	src/components/PermissionRuleExplanation.tsx	22
+1	src/components/ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.ts	1
+0	src/__tests__/dangerousPatterns.test.ts	
+0	src/__tests__/permissionRuleParser.test.ts	
+0	src/commands/index.ts	
+0	src/commands/permissions.tsx	
+0	src/components/AskUserQuestionPermissionRequest/SubmitQuestionsView.tsx	
+0	src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state.ts	
+0	src/components/AskUserQuestionPermissionRequest/useQuestionAutoContinue.ts	
+0	src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx	
+0	src/components/FileEditPermissionRequest/FileEditPermissionRequest.tsx	
+0	src/components/FilePermissionDialog/ideDiffConfig.ts	
+0	src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx	
+0	src/components/PermissionDialog.tsx	
+0	src/components/PermissionRequestTitle.tsx	
+0	src/components/rules/PermissionRuleDescription.tsx	
+0	src/components/rules/RemoveWorkspaceDirectory.tsx	
+0	src/components/utils.ts	

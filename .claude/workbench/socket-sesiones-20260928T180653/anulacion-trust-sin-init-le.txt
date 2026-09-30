@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTrust.test.ts:
+18 | 
+19 | describe('ancestryIncludes (Le)', () => {
+20 |   test('el pid propio en la cadena; siendo init nunca', () => {
+21 |     expect(ancestryIncludes([10, 20], 20)).toBe(true)
+22 |     expect(ancestryIncludes([10, 20], 30)).toBe(false)
+23 |     expect(ancestryIncludes([1, 20], 1)).toBe(false)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTrust.test.ts:23:42)
+(fail) ancestryIncludes (Le) > el pid propio en la cadena; siendo init nunca [0.61ms]
+
+ 16 pass
+ 1 fail
+ 48 expect() calls
+Ran 17 tests across 1 file. [140.00ms]

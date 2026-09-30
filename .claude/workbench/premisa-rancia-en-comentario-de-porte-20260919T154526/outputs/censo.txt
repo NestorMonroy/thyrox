@@ -1,0 +1,38 @@
+RANCIA: 5
+    src/packages/agent/messageShapes.ts:87  @anthropic-ai/sdk
+    src/packages/agent/messages.ts:435  @claude-code-how-works/output/utils/stringUtils.js
+    src/packages/agent/messages.ts:511  @anthropic-ai/sdk, ContentBlockParam
+    src/packages/agent/messages.ts:702  @claude-code-how-works/output/utils/displayTags.js
+    src/packages/swarm/src/runtime/spawnInProcess.ts:13  lodash-es, sample
+INDECIDIBLE: 0
+VIGENTE: 1
+DISENO: 69
+NINGUNA: 0
+check-stale-divergence: 5 afirmacion(es) de ausencia que YA resuelven (alcance medido: 75 bloque(s) con el rotulo)
+
+--- COMO SE LEE ---
+RANCIA      la razon declara una AUSENCIA y lo que nombra YA resuelve hoy
+VIGENTE     declara una ausencia y sigue siendo cierta
+DISENO      declara una decision, que no caduca porque el arbol crezca
+INDECIDIBLE declara una ausencia sin nombrar su referente: no se afirma nada
+NINGUNA     el bloque dice «ninguna»
+
+DOS CEGUERAS QUE EL PROPIO CENSO DESTAPO, Y SE CORRIGIERON
+1. Tomaba el acento grave MAS CERCANO a la frase de ausencia, que a veces es
+   el CONTENEDOR y no el sujeto: «`Progress` vive en `tool-registry`,
+   ausente de este arbol» nombra los dos. Ahora se prueban todos los
+   candidatos y basta que uno resuelva.
+2. No sabia que el alcance se renombro (#478). Un comentario que aun nombre
+   `@claude-code-how-works/...` describe un arbol que ya no existe, y se
+   clasificaba VIGENTE -- justo al reves. Es la clase MAS rancia que hay.
+La correccion movio 2 bloques de VIGENTE a RANCIA: sin ella el censo
+publicaba 3 donde hay 5.
+
+    Metrica: bloques de comentario con el rotulo DIVERGENCIA DECLARADA bajo
+      src/packages, clasificados por la FORMA de su razon; y, solo para los
+      de ausencia, la resolucion de los referentes que nombran contra
+      hermanos de workspace, node_modules y simbolos exportados.
+    Ciega a: un bloque cuyo `*/` quede a mas de 900 caracteres del rotulo;
+      una ausencia escrita en prosa sin acentos graves (cae en INDECIDIBLE,
+      no en VIGENTE); y un referente que resuelva por un camino que el
+      modulo no conoce.

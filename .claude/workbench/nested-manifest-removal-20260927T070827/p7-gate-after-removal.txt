@@ -1,0 +1,2 @@
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 52601 ruta(s) versionada(s), 0 admitida(s))
+exit=0

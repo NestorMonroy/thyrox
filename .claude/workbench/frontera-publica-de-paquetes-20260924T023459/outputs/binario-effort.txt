@@ -1,0 +1,84 @@
+// nQn @11894
+function nQn(e){if(typeof e==="string"){let n=ne(e);if(e==="high"&&iye()&&I("tengu_slate_finch",!1))return`${n} \xB7 burns fastest \u2014 medium handles most tasks`;return n}return"Balanced approach with standard implementation and testing"}
+
+// TT @11105
+function TT(e,n,o){let r=Sw(e,n,{turnEffort:o})??"high";return tN(r)}
+
+// Nj @6069
+function Nj(e){return String(e)}
+
+// Eee @5365
+function Eee(e){return _u.filter((n)=>VTe(n,e))}
+
+// o9e @6101
+function o9e(e){let n=e.trim().toLowerCase(),o=H[n]??n;return YC(o)?o:void 0}
+
+// kee @6658
+function kee(e){if(e==="low"||e==="medium"||e==="high"||e==="xhigh")return e;return}
+
+// Lj @5413
+function Lj(e,n){let o=Fyt(n);return o!==null&&y(e)>y(o)?o:e}
+
+// SM @6826
+function SM(){let e=a.CLAUDE_CODE_EFFORT_LEVEL;return e?.toLowerCase()==="unset"||e?.toLowerCase()==="auto"?null:o0(e)}
+
+// Aee @7439
+function Aee(e){return e===void 0?Q:Dx(e)}
+
+// i3 @7582
+function i3(e,n){return e===n||e.kind===n.kind&&(e.kind!=="level"||n.kind==="level"&&e.value===n.value)}
+
+// hqt @8660
+function hqt(e){if(!tbn(e))return null;return tN(_(J(G(),e)??C(e),e))}
+
+// qTe @4969
+function qTe(e){if(He()!=="firstParty")return null;let n=LUe();if(n===null)return null;let o=n.default_effort_level;if(o==null||!YC(o))return null;let r=We(PM(e.trim().toLowerCase()),{identity:!0});return We(PM(n.name.trim().toLowerCase()),{identity:!0})===r?o:null}
+
+// Sw @9759
+function Sw(e,n,{honorLaunchPin:o=!0,turnEffort:r,hookEffortValue:s}
+
+// wM @10375
+function wM(e){return tN(_(C(e),e))}
+
+// $j @6945
+function $j(e){if(TCn())return!1;let n=We(e);if(n.includes("opus-4-7"))return!ie().unpinOpus47LaunchEffort;if(n.includes("opus-4-8"))return!ie().unpinOpus48LaunchEffort;if(Gt(n)==="claude-fable-5"||V1(e)&&!a1e(n))return!ie().unpinFable5LaunchEffort;return!1}
+
+// s3 @3201
+function s3(e){if($8t(e))return!1;let n=jae(e,"xhigh_effort");if(n!==void 0)return n;let o=We(e),r=N("xhigh_effort",e,o);if(r!==void 0)return r;let s=Iwn(e,o);if(s!==void 0)return s.includes("xhigh");if(o.includes("claude-3-")||o==="claude-opus-4-0"||o==="claude-opus-4-1"||o==="claude-opus-4-5"||o==="claude-opus-4-6"||o==="claude-sonnet-4-0"||o==="claude-sonnet-4-5"||o==="claude-sonnet-4-6"||o==="claude-haiku-4-5")return!1;if(Tm(o,"xhigh_effort",e)||o==="claude-mythos-5")return!0;return M0(cc(e))}
+
+// VTe @5306
+function VTe(e,n){let o=Fyt(n);return o===null||y(e)<=y(o)}
+
+// AT @3932
+function AT(e,n,o,r){return o===!0&&Gu()&&Sw(e,n,{turnEffort:r})==="xhigh"}
+
+// ebn @2110
+var ebn="Fable 5, Opus 4.7+, Sonnet 5",Aqr="Fable 5, Opus 4.6+, Sonnet 4.6+",GY="May use excessive tokens resulting in long response times or overthinking. Use sparingly for the hardest tasks."
+
+// Aqr @2148
+,Aqr="Fable 5, Opus 4.6+, Sonnet 4.6+",GY="May use excessive tokens resulting in long response times or overthinking. Use sparingly for the hardest tasks."
+
+// NE @3806
+function NE(e){return Gu()&&(e===void 0||s3(e)&&VTe("xhigh",e))}
+
+// Sw @9759
+function Sw(e,n,{honorLaunchPin:o=!0,turnEffort:r,hookEffortValue:s}
+
+// I_ @2304
+function I_(e){if($8t(e))return!1;let n=jae(e,"effort");if(n!==void 0)return n;let o=We(e),r=w3t("effort",o);if(r!==void 0)return r;let s=Iwn(e,o);if(s!==void 0)return s.length>0;if(o.includes("claude-3-")||o==="claude-opus-4-0"||o==="claude-opus-4-1"||o==="claude-sonnet-4-0"||o==="claude-sonnet-4-5"||o==="claude-haiku-4-5")return!1;if(a.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT)return!0;if(Tm(o,"effort",e)||o==="claude-mythos-5")return!0;return M0(cc(e))}
+
+// Dj @2755
+function Dj(e){if($8t(e))return!1;let n=jae(e,"max_effort");if(n!==void 0)return n;let o=We(e),r=N("max_effort",e,o);if(r!==void 0)return r;let s=Iwn(e,o);if(s!==void 0)return s.includes("max");if(o.includes("claude-3-")||o==="claude-opus-4-0"||o==="claude-opus-4-1"||o==="claude-opus-4-5"||o==="claude-sonnet-4-0"||o==="claude-sonnet-4-5"||o==="claude-haiku-4-5")return!1;if(Tm(o,"max_effort",e)||o==="claude-mythos-5")return!0;return M0(cc(e))}
+
+// oe @12177
+function oe(e){let n=xKr(e,We(e));return n!==void 0&&YC(n)?n:void 0}
+
+// re @12245
+function re(e){return lc(We(e))?.default_effort??"high"}
+
+// El @9106
+function El(e,n){let o=e.sessionEffort??W;switch(o.kind){case"level":return o.value;case"default":return;case"inherit":if(e.settingsEffortTable===void 0)return;if(!ee(e.settingsEffortTable))return e.settingsEffortTable.default;return J(e.settingsEffortTable,n??e.mainLoopModelForSession??e.mainLoopModel??Tl())}}
+
+// W @7323
+var W=Object.freeze({kind:"inherit"}),Q=Object.freeze({kind:"default"})
+

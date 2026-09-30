@@ -1,0 +1,32 @@
+== 1: sin el filtro de sólo en curso
+(fail) liveOnly keeps in-flight requests and drops finished ones [4.31ms]
+ 8 pass
+ 1 fail
+== 2: HAR sin enmascarar cabeceras
+(fail) a bearer token in a header is masked [0.52ms]
+ 6 pass
+ 1 fail
+== 3: exportar también los patrones por defecto
+(fail) the default bypass patterns are not exported [1.07ms]
+ 3 pass
+ 1 fail
+== 4: borrar la sesión sin sus peticiones
+(fail) deleting a session also deletes its requests [1.29ms]
+ 10 pass
+ 1 fail
+== 5: la contraseña de sudo siempre en el cuerpo
+ 7 pass
+ 0 fail
+== 6: sin clave, el marcador de la referencia en vez de null
+(fail) with no key and no stored key the start has no key [0.25ms]
+ 5 pass
+ 1 fail
+== restaurado
+ M src/packages/mitm/src/state/rows.ts
+ M src/packages/mitm/src/state/schema.ts
+?? src/packages/mitm/src/client/
+?? src/packages/mitm/src/inspector/configPortability.ts
+?? src/packages/mitm/src/inspector/harExport.ts
+?? src/packages/mitm/src/inspector/matchesTrafficFilter.ts
+?? src/packages/mitm/src/schemas/
+?? src/packages/mitm/src/state/inspectorSessions.ts

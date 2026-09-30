@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/typescript-build-javascript src/packages/agent src/packages/cli src/packages/permission src/packages/provider", "started_at": "2026-09-29T18:16:50+00:00"}

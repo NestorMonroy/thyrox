@@ -1,0 +1,43 @@
+# Anulaciones 106e-5c-4b — primera pasada
+== 1: sin compartir en vuelo -> 1
+== 2: en vuelo sin olvidar -> 2
+== 3: empujón como status -> 1
+== 4: empujón con otra orden -> 2
+== 5: sin SIGKILL posterior -> 2
+== 6: PATH permitido -> 5
+== 7: sin binario disponible -> 1
+== 8: spawn fallido lanza -> 1
+== 9: autenticado laxo -> 0
+== 10: texto siempre disponible -> 1
+== 11: stderr ignorado -> 1
+== 12: caché sin caducar -> 1
+== 13: sin caché -> 1
+== 14: caché inclusiva -> 1
+== 15: IDE sin compartir -> 1
+== 16: IDE ignora el home -> 1
+== 17: espera larga -> 1
+== 18: sin empujón -> 1
+== 19: empuja no disponible -> 1
+== 20: empujón fallido corta -> 1
+== 21: IDE igual renueva -> 2
+== 22: sin agente -> 1
+== 23: agente sin token renueva -> 1
+== 24: sin machineId -> 1
+== 25: error sin sanear -> 1
+== 26: circuito conservado -> 1
+== 27: machineId no se guarda -> 1
+== 28: vida de una hora -> 1
+== 29: reintentos sin limpiar -> 1
+== 30: sin candado -> 1
+== 31: machineId no se pasa -> 1
+== 32: renovada no se guarda -> 1
+== 33: estancada caduca -> 0
+== 34: sin código propio -> 1
+== 35: error como aviso -> 1
+== 36: sin mensaje de error -> 1
+== restaurado -> 0
+
+# 9 y 33 afiladas
+== 9: autenticado laxo -> 1
+== 33: estancada caduca -> 1
+== restaurado -> 0

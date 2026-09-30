@@ -1,0 +1,4 @@
+REPRODUCE con src/packages/agent/__tests__/internalUtils.test.ts
+REPRODUCE con src/packages/config/__tests__/permissionPromptOptIn.test.ts
+REPRODUCE con src/packages/provider/__tests__/classifyAPIError.test.ts
+REPRODUCE con NINGUNA

@@ -1,0 +1,1 @@
+function Ie(e,n,r){let i=Ya(e);if(n.length===0||i||n.some((o)=>o==="."||o==="..")){if(r!==void 0&&(n.length>0||i))r(d.join(e,...n));return i?Gt(e):e}return d.join(e,...n)}

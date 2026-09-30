@@ -1,0 +1,23 @@
+src/packages/repl/src/components/InvalidConfigDialog.tsx(89,8): error TS2741: Property 'initialState' is missing in type '{ children: Element; }' but required in type '{ initialState: AppState; children: ReactNode; }'.
+  --- código src/packages/repl/src/components/InvalidConfigDialog.tsx:79-99 ---
+     79    const renderOptions: SafeRenderOptions = {
+     80      ...getBaseRenderOptions(false),
+     81      // IMPORTANT: Use hardcoded theme name to avoid circular dependency with getGlobalConfig()
+     82      // This allows the error dialog to show even when config file has JSON syntax errors
+     83      theme: SAFE_ERROR_THEME_NAME,
+     84    }
+     85  
+     86    // biome-ignore lint/suspicious/noAsyncPromiseExecutor: decompiled code
+     87    await new Promise<void>(async resolve => {
+     88      const { unmount } = await render(
+     89>       <AppStateProvider>
+     90          <KeybindingSetup>
+     91            <InvalidConfigDialog
+     92              filePath={error.filePath}
+     93              errorDescription={error.message}
+     94              onExit={() => {
+     95                unmount()
+     96                void resolve()
+     97                process.exit(1)
+     98              }}
+     99              onReset={() => {

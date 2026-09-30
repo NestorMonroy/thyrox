@@ -1,0 +1,30 @@
+Patrón: undeclared-passthrough-settings-field-indexed
+Señal del verificador: : TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '\{\}'\.
+Arreglo genérico: El campo viene de `SettingsJson`/`Settings`, cuyo schema usa `.passthrough()`: las claves no declaradas en el `z.object({...})` (p. ej. `extraKnownMarketplaces`, que `settings/inventory.ts` documenta explícitamente como fuera del shape) no tienen tipo indexable, aunque en runtime sí son un mapa por clave. Se afirma esa forma real con un `as Record<string, V> | undefined` una sola vez, en una constante local, y se indexa esa constante en vez de repetir el acceso a la propiedad del objeto original.
+Ya aplicado en: src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx
+Archivos donde la señal sigue viva: src/packages/config/plugin/marketplaceManager.ts
+
+src/packages/config/plugin/marketplaceManager.ts(1994,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/config/plugin/marketplaceManager.ts:1984-2004 ---
+   1984      const settings = getSettingsForSource(source)
+   1985      if (!settings) continue
+   1986  
+   1987      let needsUpdate = false
+   1988      const updates: {
+   1989        extraKnownMarketplaces?: typeof settings.extraKnownMarketplaces
+   1990        enabledPlugins?: typeof settings.enabledPlugins
+   1991      } = {}
+   1992  
+   1993      // Remove from extraKnownMarketplaces if present
+   1994>     if (settings.extraKnownMarketplaces?.[name]) {
+   1995        const updatedMarketplaces: Partial<
+   1996          SettingsJson['extraKnownMarketplaces']
+   1997        > = { ...settings.extraKnownMarketplaces }
+   1998        // Use undefined values (NOT delete) to signal key removal via mergeWith
+   1999        updatedMarketplaces[name] = undefined
+   2000        updates.extraKnownMarketplaces =
+   2001          updatedMarketplaces as SettingsJson['extraKnownMarketplaces']
+   2002        needsUpdate = true
+   2003      }
+   2004  
+  No index signature with a parameter of type 'string' was found on type '{}'.

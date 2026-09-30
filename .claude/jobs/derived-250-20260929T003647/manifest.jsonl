@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --timeout 900 .claude/cache/derived-250.txt", "started_at": "2026-09-29T00:36:47+00:00"}
+{"kind": "settle", "exit_code": 5, "finished_at": "2026-09-29T00:37:58+00:00", "duration_seconds": 71.348749}

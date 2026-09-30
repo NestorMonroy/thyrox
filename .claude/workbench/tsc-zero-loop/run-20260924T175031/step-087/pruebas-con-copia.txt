@@ -1,0 +1,13 @@
+0 src/packages/config/__tests__/autoModeConfig.test.ts
+0 src/packages/config/__tests__/config.test.ts
+0 src/packages/config/__tests__/inventory.test.ts
+0 src/packages/config/__tests__/permissionPromptOptIn.test.ts
+0 src/packages/config/__tests__/policySettingsOrigin.test.ts
+0 src/packages/config/__tests__/settingsCache.test.ts
+0 src/packages/config/__tests__/settingsValidation.test.ts
+0 src/packages/config/__tests__/testImpact.test.ts
+0 src/packages/config/__tests__/validationTips.test.ts
+0 src/packages/config/plugin/__tests__/ineffectiveDisables.test.ts
+0 src/packages/permission/__tests__/permissionPersistence.test.ts
+0 tests/unit/settings/config.test.ts
+0 tests/unit/utils/effort.test.ts

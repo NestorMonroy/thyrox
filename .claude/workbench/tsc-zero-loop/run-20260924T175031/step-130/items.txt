@@ -1,0 +1,2 @@
+module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-130/items/1.txt src/packages/repl/src/components/messages/AttachmentMessage.tsx src/packages/repl/src/processUserInput/processSlashCommand.tsx src/packages/repl/src/processUserInput/processUserInput.ts src/packages/repl/src/screens/REPLView.tsx
+module:src/packages/cli/src/entry/mode-dispatch.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-130/items/2.txt src/packages/cli/src/entry/run-program.ts

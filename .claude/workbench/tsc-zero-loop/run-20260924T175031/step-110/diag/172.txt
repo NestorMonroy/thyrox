@@ -1,0 +1,92 @@
+src/packages/repl/src/__tests__/killRing.test.ts(121,12): error TS18047: 'popped1' is possibly 'null'.
+  --- código src/packages/repl/src/__tests__/killRing.test.ts:111-131 ---
+    111    })
+    112  
+    113    test('yankPop returns previous entries and tracks position', () => {
+    114      pushToKillRing('a')
+    115      resetKillAccumulation()
+    116      pushToKillRing('b')
+    117      resetKillAccumulation()
+    118      pushToKillRing('c')
+    119      recordYank(0, 1)
+    120      const popped1 = yankPop()
+    121>     expect(popped1.text).toBe('b')
+    122      const popped2 = yankPop()
+    123      expect(popped2.text).toBe('a')
+    124    })
+    125  
+    126    test('updateYankLength affects subsequent yankPop replacement range', () => {
+    127      pushToKillRing('aa')
+    128      resetKillAccumulation()
+    129      pushToKillRing('bbbb')
+    130      recordYank(5, 2)
+    131      updateYankLength(4) // simulate yank insertion of 'bbbb'
+src/packages/repl/src/__tests__/killRing.test.ts(123,12): error TS18047: 'popped2' is possibly 'null'.
+  --- código src/packages/repl/src/__tests__/killRing.test.ts:113-133 ---
+    113    test('yankPop returns previous entries and tracks position', () => {
+    114      pushToKillRing('a')
+    115      resetKillAccumulation()
+    116      pushToKillRing('b')
+    117      resetKillAccumulation()
+    118      pushToKillRing('c')
+    119      recordYank(0, 1)
+    120      const popped1 = yankPop()
+    121      expect(popped1.text).toBe('b')
+    122      const popped2 = yankPop()
+    123>     expect(popped2.text).toBe('a')
+    124    })
+    125  
+    126    test('updateYankLength affects subsequent yankPop replacement range', () => {
+    127      pushToKillRing('aa')
+    128      resetKillAccumulation()
+    129      pushToKillRing('bbbb')
+    130      recordYank(5, 2)
+    131      updateYankLength(4) // simulate yank insertion of 'bbbb'
+    132      const popped = yankPop()
+    133      // length-replacement window now covers the 4 we typed
+src/packages/repl/src/__tests__/killRing.test.ts(134,12): error TS18047: 'popped' is possibly 'null'.
+  --- código src/packages/repl/src/__tests__/killRing.test.ts:124-144 ---
+    124    })
+    125  
+    126    test('updateYankLength affects subsequent yankPop replacement range', () => {
+    127      pushToKillRing('aa')
+    128      resetKillAccumulation()
+    129      pushToKillRing('bbbb')
+    130      recordYank(5, 2)
+    131      updateYankLength(4) // simulate yank insertion of 'bbbb'
+    132      const popped = yankPop()
+    133      // length-replacement window now covers the 4 we typed
+    134>     expect(popped.start).toBe(5)
+    135      expect(popped.length).toBe(4)
+    136    })
+    137  
+    138    test('pushing a new kill clears yank state', () => {
+    139      pushToKillRing('a')
+    140      resetKillAccumulation()
+    141      pushToKillRing('b')
+    142      recordYank(0, 1)
+    143      expect(canYankPop()).toBe(true)
+    144      pushToKillRing('c')
+src/packages/repl/src/__tests__/killRing.test.ts(135,12): error TS18047: 'popped' is possibly 'null'.
+  --- código src/packages/repl/src/__tests__/killRing.test.ts:125-145 ---
+    125  
+    126    test('updateYankLength affects subsequent yankPop replacement range', () => {
+    127      pushToKillRing('aa')
+    128      resetKillAccumulation()
+    129      pushToKillRing('bbbb')
+    130      recordYank(5, 2)
+    131      updateYankLength(4) // simulate yank insertion of 'bbbb'
+    132      const popped = yankPop()
+    133      // length-replacement window now covers the 4 we typed
+    134      expect(popped.start).toBe(5)
+    135>     expect(popped.length).toBe(4)
+    136    })
+    137  
+    138    test('pushing a new kill clears yank state', () => {
+    139      pushToKillRing('a')
+    140      resetKillAccumulation()
+    141      pushToKillRing('b')
+    142      recordYank(0, 1)
+    143      expect(canYankPop()).toBe(true)
+    144      pushToKillRing('c')
+    145      expect(canYankPop()).toBe(false)

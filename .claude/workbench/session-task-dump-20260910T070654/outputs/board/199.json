@@ -1,0 +1,11 @@
+{
+  "id": "199",
+  "subject": "Portar storage de ccnmt: 35/35 tests hechos, faltan 29 módulos sin test",
+  "description": "Cerrado: los 35/35 tests de la fuente mas los 29 modulos que la fuente NO testea (#208). Cobertura de modulo medida contra la fuente: 64 de 64, 0 ausentes. Suite del paquete en serie: 1024 pass, 0 fail, 2309 expect(), 62 archivos.\n\nLos nueve paquetes de thyrox medidos en serie tras esta tanda: agent 1906, app-host 185, binary 43, command-runtime 176, config 41, harness 710, shell 118, storage 1024, tasks 25 — 0 fail en todos.",
+  "activeForm": "Portando storage a thyrox por capas",
+  "status": "completed",
+  "blocks": [
+    "205"
+  ],
+  "blockedBy": []
+}

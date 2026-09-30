@@ -1,0 +1,25 @@
+src/packages/provider/__tests__/runtimeHelpers.test.ts(210,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(220,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(229,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(247,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(255,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(263,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(271,17): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(278,17): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+src/packages/provider/__tests__/runtimeHelpers.test.ts(280,9): error TS2698: Spread types may only be created from object types.

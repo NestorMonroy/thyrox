@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/measurement/test_normalizer_magnitude.py", line 36, in <module>
+    import normalizer_magnitude as nm  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'normalizer_magnitude'
+EXIT=1

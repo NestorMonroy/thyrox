@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bun install 2>&1 | tail -5", "started_at": "2026-09-24T18:53:09+00:00"}

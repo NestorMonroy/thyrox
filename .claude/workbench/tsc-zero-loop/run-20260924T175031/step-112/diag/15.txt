@@ -1,0 +1,48 @@
+src/packages/agent/QueryEngine.ts(864,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+  --- código src/packages/agent/QueryEngine.ts:854-874 ---
+    854          yield {
+    855            type: 'system',
+    856            subtype: 'compact_boundary' as const,
+    857            session_id: getSessionId(),
+    858            uuid: compactBoundary.uuid,
+    859            compact_metadata: toSDKCompactMetadata(compactBoundary.compactMetadata),
+    860          }
+    861          continue
+    862        }
+    863  
+    864>       const message = fromAgentEvent(event)
+    865        if (!message) {
+    866          continue
+    867        }
+    868  
+    869        // Record assistant, user, and compact boundary messages
+    870        if (
+    871          message.type === 'assistant' ||
+    872          message.type === 'user' ||
+    873          (message.type === 'system' && message.subtype === 'compact_boundary')
+    874        ) {
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.
+src/packages/agent/QueryEngine.ts(889,74): error TS2339: Property 'tailUuid' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:879-899 ---
+    879          // If the SDK subprocess restarts before then (claude-desktop kills
+    880          // between turns), tailUuid points to a never-written message →
+    881          // applyPreservedSegmentRelinks fails its tail→head walk → returns
+    882          // without pruning → resume loads full pre-compact history.
+    883          if (
+    884            persistSession &&
+    885            message.type === 'system' &&
+    886            message.subtype === 'compact_boundary'
+    887          ) {
+    888            const compactMsg = message as SystemCompactBoundaryMessage
+    889>           const tailUuid = compactMsg.compactMetadata?.preservedSegment?.tailUuid
+    890            if (tailUuid) {
+    891              const tailIdx = this.mutableMessages.findLastIndex(
+    892                m => m.uuid === tailUuid,
+    893              )
+    894              if (tailIdx !== -1) {
+    895                await recordTranscript(this.mutableMessages.slice(0, tailIdx + 1))
+    896              }
+    897            }
+    898          }
+    899          messages.push(message as Message)

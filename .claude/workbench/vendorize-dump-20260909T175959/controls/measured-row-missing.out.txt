@@ -1,0 +1,5 @@
+128 |       esperado ?? `build ${version} sin medir — anadir su fila a MEASURED tras extraerla`,
+Received: "build 2.1.266 sin medir — anadir su fila a MEASURED tras extraerla"
+(fail) fidelidad contra la build medida > las cifras de la build viva coinciden con las medidas [151.58ms]
+ 10 pass
+ 1 fail

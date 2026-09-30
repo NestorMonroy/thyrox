@@ -1,0 +1,49 @@
+src/packages/agent/messages/mappers.ts(134,13): error TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.
+  --- código src/packages/agent/messages/mappers.ts:124-144 ---
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127              error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134>             message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+    138              timestamp:
+    139                typeof message.timestamp === 'string' ? message.timestamp : undefined,
+    140              isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+    141              // Structured tool output (not the string content sent to the
+    142              // model — the full Output object). Rides the protobuf catchall
+    143              // so web viewers can read things like BriefTool's file_uuid
+    144              // without it polluting model context.
+  Types of property 'content' are incompatible.
+    Type 'MessageContent | undefined' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'undefined' is not assignable to type 'string | ContentBlockParam[]'.
+src/packages/agent/messages/mappers.ts(213,5): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+  --- código src/packages/agent/messages/mappers.ts:203-223 ---
+    203      .replace(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/, '$1')
+    204      .replace(/<local-command-stderr>([\s\S]*?)<\/local-command-stderr>/, '$1')
+    205      .trim()
+    206    // createAssistantMessage builds a complete APIAssistantMessage with id, type,
+    207    // model: SYNTHETIC_MODEL, role, stop_reason, usage — all fields required by
+    208    // downstream deserializers like Android's SdkAssistantMessage.
+    209    const synthetic = createAssistantMessage({ content: cleanContent })
+    210    return {
+    211      type: 'assistant',
+    212      content: synthetic.message?.content,
+    213>     message: synthetic.message,
+    214      parent_tool_use_id: null,
+    215      session_id: getSessionId(),
+    216      uuid,
+    217    }
+    218  }
+    219  
+    220  /**
+    221   * Maps internal ClaudeAILimits to the SDK-facing SDKRateLimitInfo type,
+    222   * stripping internal-only fields like unifiedRateLimitFallbackAvailable.
+    223   *

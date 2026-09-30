@@ -1,0 +1,28 @@
+patron: spread-of-never-typed-test-double
+senal_del_verificador: TS2698: Spread types may only be created from object types
+fix_generico: Un doble de prueba declarado como `const x = {...} as never` no se puede esparcir directamente (`{ ...x, extra }`): `never` no es un tipo objeto para el spread. Se castea la variable a un tipo objeto concreto (p. ej. `Record<string, unknown>`) sólo en el punto del spread, dejando el `as never` exterior para el literal combinado que viaja como argumento.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/provider/src/referral.ts(194,9): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/provider/src/referral.ts:184-204 ---
+    184    if (!orgId) {
+    185      return null
+    186    }
+    187  
+    188    // Store the promise to share with concurrent calls
+    189    fetchInProgress = (async () => {
+    190      try {
+    191        const response = await fetchReferralEligibility()
+    192  
+    193        const cacheEntry = {
+    194>         ...response,
+    195          timestamp: Date.now(),
+    196        }
+    197  
+    198        saveGlobalConfig(current => ({
+    199          ...current,
+    200          passesEligibilityCache: {
+    201            ...current.passesEligibilityCache,
+    202            [orgId]: cacheEntry,
+    203          },
+    204        }))

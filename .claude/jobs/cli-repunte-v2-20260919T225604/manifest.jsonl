@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox/src/packages/cli && bunx tsc --noEmit -p tsconfig.json 2>&1 | grep -c \"error TS\"", "started_at": "2026-09-19T22:56:04+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-19T22:56:14+00:00", "duration_seconds": 10.772315}

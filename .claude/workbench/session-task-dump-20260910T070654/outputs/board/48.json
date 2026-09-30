@@ -1,0 +1,8 @@
+{
+  "id": "48",
+  "subject": "Cablear verifyAdoption al store: cerrar la fila running de un proceso muerto",
+  "description": "T-094 del bloque 21. La primitiva verifyAdoption/readProcStart/isPidAlive ya existe y está probada en reconcile.ts. Falta el cableado: capturar pid+procStart en la fila de agent_sessions al registrar la sesión, y una pasada que marque como failed las filas en running cuyo proceso ya no está (verifyAdoption → dead/recycled). Toca el esquema compartido de agent_sessions (dónde va el pid: columna o metadata_json) — decisión del ejecutor.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

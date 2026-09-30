@@ -1,0 +1,24 @@
+src/packages/config/plugin/loadPluginHooks.ts(176,25): error TS2345: Argument of type 'Partial<Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:166-186 ---
+    166    const survivors: Partial<Record<HookEvent, PluginHookMatcher[]>> = {}
+    167    for (const [event, matchers] of Object.entries(current)) {
+    168      const kept = matchers.filter(
+    169        (m: { pluginRoot: string }): m is PluginHookMatcher =>
+    170          'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
+    171      )
+    172      if (kept.length > 0) survivors[event as HookEvent] = kept
+    173    }
+    174  
+    175    clearRegisteredPluginHooks()
+    176>   registerHookCallbacks(survivors)
+    177  }
+    178  
+    179  /**
+    180   * Reset hot reload subscription state. Only for testing.
+    181   */
+    182  export function resetHotReloadState(): void {
+    183    hotReloadSubscribed = false
+    184    lastPluginSettingsSnapshot = undefined
+    185  }
+    186  
+  Type 'Partial<Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.

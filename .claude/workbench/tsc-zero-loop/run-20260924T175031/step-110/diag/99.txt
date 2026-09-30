@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/session/index.ts(13,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/session/session")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/session/index.ts:3-16 ---
+      3  
+      4  const session = {
+      5    type: 'local-jsx',
+      6    name: 'session',
+      7    aliases: ['remote'],
+      8    description: 'Show remote session URL and QR code',
+      9    isEnabled: () => getIsRemoteMode(),
+     10    get isHidden() {
+     11      return !getIsRemoteMode()
+     12    },
+     13>   load: () => import('./session.js'),
+     14  } satisfies Command
+     15  
+     16  export default session
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/session/session")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

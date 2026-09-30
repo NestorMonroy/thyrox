@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 .claude/workbench/sustitutos-20260927T025549/rst-205-207/cmds", "started_at": "2026-09-27T06:13:59+00:00"}

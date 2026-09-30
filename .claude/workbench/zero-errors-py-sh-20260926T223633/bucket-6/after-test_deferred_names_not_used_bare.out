@@ -1,0 +1,10 @@
+test_1_ningun_modulo_lee_desnudo_lo_que_difiere (__main__.TestDeferredNamesNotUsedBare.test_1_ningun_modulo_lee_desnudo_lo_que_difiere) ... ok
+test_2_el_recorrido_ve_el_defecto_cuando_existe (__main__.TestDeferredNamesNotUsedBare.test_2_el_recorrido_ve_el_defecto_cuando_existe)
+El control positivo: sin esto, el caso 1 pasaria por no mirar nada. ... ok
+test_3_el_acceso_por_atributo_no_es_defecto (__main__.TestDeferredNamesNotUsedBare.test_3_el_acceso_por_atributo_no_es_defecto)
+`modulo.RAIZ` desde fuera SI lo resuelve PEP 562: no se marca. ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.359s
+
+OK

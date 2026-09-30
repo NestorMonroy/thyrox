@@ -1,0 +1,6 @@
+patron: tool-provider-discover-not-awaited
+senal_del_verificador: TS2339.*Property '(length|map)' does not exist on type '.*Promise<Tools>.*'|TS2488.*must have a '\[Symbol\.iterator\]\(\)' method
+fix_generico: El contrato `ToolProvider.discover()` está tipado como `Promise<Tools> | Tools`, aun cuando una implementación concreta (como `BuiltInToolsProvider`) lo declare como síncrono, porque la constante se anota con el tipo de la interfaz. Cualquier llamador que use el valor devuelto por `discover()` a través de una referencia tipada como `ToolProvider` debe tratarlo como posible promesa: convertir el test/función que lo consume en `async` y hacer `await` de la llamada. El TS7006 sobre el parámetro del `.map()` desaparece solo, porque una vez resuelto el tipo a `Tools` (`readonly Tool[]`), TypeScript infiere el tipo del callback sin anotación explícita.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/__tests__/providerStreaming.test.ts(246,30): error TS2488: Type 'Headers' must have a '[Symbol.iterator]()' method that returns an iterator.

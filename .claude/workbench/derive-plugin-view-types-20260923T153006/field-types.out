@@ -1,0 +1,75 @@
+== add-marketplace
+  initialValue: string | undefined
+== browse-marketplace
+  targetMarketplace: string
+  targetPlugin: string | undefined
+== configuring-options
+  schema: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; default?: string | number | boolean | string[] | undefined; multiple?: boolean | undefined; sensitive?: boolean | undefined; min?: number | undefined; max?: number | undefined; }>
+== confirm-data-cleanup
+  size: { bytes: number; human: string; }
+== discover-plugins
+  targetPlugin: string
+== failed-plugin
+  id: string
+  name: string
+  marketplace: string
+  scope: "user" | "project" | "local" | "managed"
+  errorCount: number
+  errors: import("/home/user/thyrox/src/packages/config/plugin/types").PluginError[]
+== failed-plugin-details
+  plugin: { id: any; name: any; marketplace: any; errors: any; scope: any; }
+== flagged-detail
+  plugin: { id: any; name: any; marketplace: any; reason: any; text: any; flaggedAt: any; }
+== flagged-plugin
+  id: string
+  name: string
+  marketplace: string
+  scope: "flagged"
+  reason: "delisted"
+  text: "Removed from marketplace"
+  flaggedAt: string
+== help
+== manage-marketplaces
+  targetMarketplace: string | string | undefined
+  action: "remove" | "update"
+== manage-plugins
+  targetPlugin: string | string | undefined
+  targetMarketplace: string
+  action: "uninstall" | "enable" | "disable"
+== marketplace-list
+== marketplace-menu
+== mcp
+  id: string
+  name: string
+  description: undefined
+  scope: "user" | "project" | "local" | "managed" | "dynamic" | "enterprise" | "claudeai" | "user" | "project" | "local" | "managed"
+  status: "connected" | "disabled" | "pending" | "needs-auth" | "failed"
+  client: import("/home/user/thyrox/src/packages/mcp-runtime/src/types").MCPServerConnection
+  indented: true
+== mcp-detail
+  client: import("/home/user/thyrox/src/packages/mcp-runtime/src/types").MCPServerConnection | any
+== mcp-tool-detail
+  client: import("/home/user/thyrox/src/packages/mcp-runtime/src/types").MCPServerConnection
+  tool: import("/home/user/thyrox/src/packages/tool-registry/src/Tool").Tool
+== mcp-tools
+  client: import("/home/user/thyrox/src/packages/mcp-runtime/src/types").MCPServerConnection
+== menu
+== plugin
+  id: string
+  name: string
+  description: string | undefined
+  marketplace: string
+  scope: "builtin" | "user" | "project" | "local" | "managed"
+  isEnabled: boolean
+  errorCount: number
+  errors: import("/home/user/thyrox/src/packages/config/plugin/types").PluginError[]
+  plugin: import("/home/user/thyrox/src/packages/config/plugin/types").LoadedPlugin
+  pendingEnable: boolean | undefined
+  pendingUpdate: boolean | undefined
+  pendingToggle: "will-enable" | "will-disable" | undefined
+== plugin-options
+  plugin: import("/home/user/thyrox/src/packages/config/plugin/types").LoadedPlugin
+  pluginId: string
+== validate
+  path: string | undefined
+__BG_EXIT__=0

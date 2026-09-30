@@ -1,0 +1,5 @@
+src/packages/agent/__tests__/isSyntheticMessage.test.ts(18,3): error TS2352: Conversion of type '{ type: "user"; uuid: "uuid"; message: { role: string; content: { type: "text"; text: string; }[]; }; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; uuid: "uuid"; message: { role: string; content: { type: "text"; text: string; }[]; }; }' is not comparable to type 'UserMessage'.
+    Type '{ type: "user"; uuid: "uuid"; message: { role: string; content: { type: "text"; text: string; }[]; }; }' is not comparable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type '"uuid"' is not comparable to type '`${string}-${string}-${string}-${string}-${string}`'.

@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/gemini/indexImpl.ts(63,11): error TS2322: Type 'readonly ProviderAgentDefinition[] | undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+  --- código src/packages/provider/src/gemini/indexImpl.ts:53-73 ---
+     53        hostBindings.session.logForDebugging ??
+     54        hostBindings.anthropic.logForDebugging
+     55      const geminiModel = resolveGeminiModel(options.model)
+     56      const messagesForAPI = normalizeMessagesForAPI(messages, tools)
+     57  
+     58      const toolSchemas = await Promise.all(
+     59        tools.map(tool =>
+     60          toolToAPISchema(tool, {
+     61            getToolPermissionContext: options.getToolPermissionContext,
+     62            tools,
+     63>           agents: options.agents,
+     64            allowedAgentTypes: options.allowedAgentTypes,
+     65            model: options.model,
+     66          }),
+     67        ),
+     68      )
+     69  
+     70      const standardTools = toolSchemas.filter(
+     71        (tool): tool is BetaToolUnion & { type: string } => {
+     72          const anyTool = tool as unknown as Record<string, unknown>
+     73          return (
+  Type 'undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.

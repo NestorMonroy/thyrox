@@ -1,0 +1,1 @@
+check "admision: la causa queda en su .err" "$(gawk '/admision por VRAM/{n++} END{print n+0}' "$F/out/1.err")" "1"

@@ -1,0 +1,53 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/queryHelpers.ts(120,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:110-130 ---
+    110  export function* normalizeMessage(message: Message): Generator<SDKMessage> {
+    111    switch (message.type) {
+    112      case 'assistant':
+    113        for (const _ of normalizeMessages([message])) {
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120>           message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124            error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+  Type 'undefined' is not assignable to type 'BetaMessage'.
+src/packages/repl/src/queryHelpers.ts(217,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:207-227 ---
+    207              uuid: message.uuid,
+    208            }
+    209          }
+    210        }
+    211        break
+    212      }
+    213      case 'user':
+    214        for (const _ of normalizeMessages([message])) {
+    215          yield {
+    216            type: 'user',
+    217>           message: _.message,
+    218            parent_tool_use_id: null,
+    219            session_id: getSessionId(),
+    220            uuid: _.uuid,
+    221            timestamp: _.timestamp,
+    222            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    223            tool_use_result: _.mcpMeta
+    224              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    225              : _.toolUseResult,
+    226          }
+    227        }
+  Type 'undefined' is not assignable to type 'MessageParam'.

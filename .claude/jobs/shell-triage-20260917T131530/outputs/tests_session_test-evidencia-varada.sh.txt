@@ -1,0 +1,16 @@
+== stranded-evidence ==
+  ok   1. volatil sin artefactos sale 0
+  ok   2. un .py varado sale 1
+  ok   2b. y lo nombra
+  ok   3. .txt y .log no son artefactos varados
+  ok   4. olvidar suelta el archivo
+  ok   5. asentar calla lo ya triado
+  ok   6. tras asentar, uno nuevo sale 1
+  ok   6b. y es el nuevo, no el viejo
+  ok   7. sin volatil que medir sale 2
+  ok   8. el reporte declara su alcance
+  FALLO 9. existe el censo de #858 como control positivo
+       esperado: si
+       obtenido: no
+
+aciertos: 10 · fallos: 1

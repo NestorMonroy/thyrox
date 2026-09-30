@@ -1,0 +1,1 @@
+src/packages/cli/src/setup/setup.ts(419,28): error TS18046: 'envDynamic.getIsBubblewrapSandbox' is of type 'unknown'.

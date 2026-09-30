@@ -1,0 +1,29 @@
+src/packages/agent/task/framework.ts(53,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: T | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'T | TaskState' is not assignable to type 'TaskState'.
+              Type 'T' is not assignable to type 'TaskState'.
+                Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                  Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                    Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                      Type 'T' is not assignable to type 'DreamTaskState'.
+                        Type 'TaskState' is not assignable to type 'DreamTaskState'.
+                          Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                            Type 'T' is not assignable to type 'TaskStateBase'.
+                              Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/agent/task/framework.ts(79,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: TaskState | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'TaskState | TaskState' is not assignable to type 'TaskState'.
+              Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                  Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/agent/task/framework.ts(108,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/agent/task/framework.ts(109,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/packages/agent/task/framework.ts(299,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.

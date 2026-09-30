@@ -1,0 +1,7 @@
+==== H9: 1 definicion(es) de nivel superior
+---- chunk-nqsdwfmt.js function H9 [5278,6009)
+function H9(t){let n=/[\p{Cc}\p{Cf}\p{Default_Ignorable_Code_Point}\u2028\u2029]/gu;if(!n.test(t))return t;let e="";for(let{segment:r}of new Intl.Segmenter(void 0,{granularity:"grapheme"}).segment(t)){let i=/\p{Extended_Pictographic}|\p{Regional_Indicator}|^[#*0-9]\uFE0F?\u20E3$/u.test(r),o=/^\u{1F3F4}[\u{E0030}-\u{E0039}\u{E0061}-\u{E007A}]{1,6}\u{E007F}$/u.test(r);n.lastIndex=0,e+=r.replace(n,(u,c)=>{if(u===`
+`||u==="\t")return u;let s=u.codePointAt(0)??0;if(i&&(u==="\uFE0F"||u==="\uFE0E"||u==="\u20E3"||u==="\u200D"&&c+u.length<r.length||o&&s>=917536&&s<=917631))return u;if(s===27)return"\u241B";if(s<32)return String.fromCodePoint(9216+s);if(s===127)return"\u2421";return`\\u{${s.toString(16).toUpperCase()}}`})}return e}
+==== wm: 1 definicion(es) de nivel superior
+---- chunk-nqsdwfmt.js function wm [6009,6085)
+function wm(t){return H9(t).replace(/\n/g,"\u2424").replace(/\t/g,"\u2409")}

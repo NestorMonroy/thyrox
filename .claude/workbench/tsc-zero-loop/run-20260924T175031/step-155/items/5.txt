@@ -1,0 +1,23 @@
+src/packages/agent/commands/brief.ts(16,8): error TS2307: Cannot find module '../types/command.js' or its corresponding type declarations.
+  --- código src/packages/agent/commands/brief.ts:6-26 ---
+      6    type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+      7    logEvent,
+      8  } from '@thyrox/local-observability'
+      9  import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+     10  import { isBriefEntitled } from '@thyrox/tool-registry/tools/BriefTool/BriefTool.js'
+     11  import { BRIEF_TOOL_NAME } from '@thyrox/tool-registry/tools/BriefTool/prompt.js'
+     12  import type {
+     13    Command,
+     14    LocalJSXCommandContext,
+     15    LocalJSXCommandOnDone,
+     16> } from '../types/command.js'
+     17  import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+     18  
+     19  // Zod guards against fat-fingered GB pushes (same pattern as pollConfig.ts /
+     20  // cronScheduler.ts). A malformed config falls back to DEFAULT_BRIEF_CONFIG
+     21  // entirely rather than being partially trusted.
+     22  const briefConfigSchema = lazySchema(() =>
+     23    z.object({
+     24      enable_slash_command: z.boolean(),
+     25    }),
+     26  )

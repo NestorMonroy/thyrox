@@ -1,0 +1,26 @@
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_client_background.py
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_foreground_long_command.py
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_literal_replacement.py
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_self_matching_pgrep.py
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_unbounded_wait.py
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_stop_gate.py
+timeout 600 bash tests/lib/test-replace-literal.sh
+timeout 600 bash tests/lib/test-toolchain-parallel.sh
+PYTHONPATH=src timeout 600 python3 tests/roster/test_process_liveness.py
+timeout 600 bash tests/session/test-contrato-de-escotilla.sh
+timeout 600 bash tests/session/test-gnu-time-launchers.sh
+timeout 600 bash tests/session/test-jobs-ledger-home.sh
+timeout 600 bash tests/session/test-process-group.sh
+timeout 600 bash tests/session/test-run-task-pool-isolation.sh
+timeout 600 bash tests/session/test-run-task-pool-scope.sh
+timeout 600 bash tests/session/test-run-task-pool.sh
+timeout 600 bash tests/session/test-wait-jobs-dependency.sh
+timeout 600 bash tests/session/test-wait-jobs-ledger-home.sh
+timeout 600 bash tests/session/test-wait-jobs-probe.sh
+PYTHONPATH=src timeout 600 python3 tests/session/test_job_ledger.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_job_runs.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_ledger_home_consumer.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_user_wiring.py
+PYTHONPATH=src timeout 600 python3 tests/verify/test_tsc_cycle.py
+PYTHONPATH=src timeout 300 python3 tests/verify/test_runner.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_generate_bin.py

@@ -1,0 +1,30 @@
+src/packages/repl/src/components/Message.tsx(511,24): error TS2345: Argument of type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+  --- código src/packages/repl/src/components/Message.tsx:501-521 ---
+    501  }
+    502  
+    503  /** Exported for testing */
+    504  export function areMessagePropsEqual(prev: Props, next: Props): boolean {
+    505    if (prev.message.uuid !== next.message.uuid) return false
+    506    // Only re-render on lastThinkingBlockId change if this message actually
+    507    // has thinking content — otherwise every message in scrollback re-renders
+    508    // whenever streaming thinking starts/stops (CC-941).
+    509    if (
+    510      prev.lastThinkingBlockId !== next.lastThinkingBlockId &&
+    511>     hasThinkingContent(next.message)
+    512    ) {
+    513      return false
+    514    }
+    515    // Verbose toggle changes thinking block visibility/expansion
+    516    if (prev.verbose !== next.verbose) return false
+    517    // Only re-render if this message's "is latest bash output" status changed,
+    518    // not when the global latestBashOutputUUID changes to a different message
+    519    const prevIsLatest = prev.latestBashOutputUUID === prev.message.uuid
+    520    const nextIsLatest = next.latestBashOutputUUID === next.message.uuid
+    521    if (prevIsLatest !== nextIsLatest) return false
+  Type 'AssistantMessage' is not assignable to type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; } | undefined'.
+        Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; }'.
+          Types of property 'content' are incompatible.
+            Type 'MessageContent | undefined' is not assignable to type '{ type: string; }[]'.
+              Type 'undefined' is not assignable to type '{ type: string; }[]'.

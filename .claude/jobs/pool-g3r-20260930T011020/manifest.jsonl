@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/headless-pool --prompt .claude/workbench/pool-group3-20260929T234149/template.md --out .claude/workbench/pool-group3-20260929T234149/outputs-relaunch --model claude-sonnet-5 --isolation worktree --width 2 --timeout 3600 --verify bash .claude/workbench/pool-group3-20260929T234149/probes/verify-item.sh --items-file .claude/workbench/pool-group3-20260929T234149/items.txt", "started_at": "2026-09-30T01:10:20+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-30T01:10:26+00:00", "duration_seconds": 6.782634}

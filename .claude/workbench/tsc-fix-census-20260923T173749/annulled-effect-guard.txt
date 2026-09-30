@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+37 | 
+38 |   test('un parámetro sin uso NO es seguro: retirarlo cambia la firma', () => {
+39 |     const rows = rowsFor('export function f(p: number) { return 1 }\n')
+40 |     const row = rows.find(r => r.code === 6133)!
+41 |     expect(row.fixes.length).toBeGreaterThan(0)
+42 |     expect(row.fixes.every(fix => fix.klass !== 'safe')).toBe(true)
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:42:58)
+(fail) tscFixCensus > un parámetro sin uso NO es seguro: retirarlo cambia la firma [610.66ms]
+
+ 7 pass
+ 1 fail
+ 10 expect() calls
+Ran 8 tests across 1 file. [4.67s]
+
+[exit=1]

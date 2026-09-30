@@ -1,0 +1,12 @@
+## anulación: sin la regla de ninguna señal
+FALLA veredicto none — esperado 'none', obtenido 'partial'
+FALLA exit 1 — esperado '1', obtenido '3'
+FALLA la evidencia queda en --out — esperado 'none', obtenido 'partial'
+FALLA el host no tiene GPU NVIDIA: none — esperado 'none', obtenido 'partial'
+aserciones: 12 de 16 · fallos: 4
+## anulación: basta la tarjeta
+FALLA veredicto partial — esperado 'partial', obtenido 'nvidia-usable'
+FALLA exit 3 — esperado '3', obtenido '0'
+FALLA nombra el driver y los nodos que faltan — esperado '1', obtenido '0'
+aserciones: 13 de 16 · fallos: 3
+restaurado

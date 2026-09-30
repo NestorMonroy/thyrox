@@ -1,0 +1,7 @@
+tests/verify/test_env_contract_keys.py
+tests/roster/test_stdin_probe.py
+tests/lib/test_pyproject_declares_imports.py
+tests/paths/test_ensure_home.py
+tests/verify/test_tsc_sweep_breadth.py
+tests/verify/test_pre_commit_hook.py
+tests/corpus/test_censo_contraparte.py

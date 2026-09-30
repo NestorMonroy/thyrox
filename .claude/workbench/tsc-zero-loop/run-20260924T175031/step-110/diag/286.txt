@@ -1,0 +1,210 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(714,71): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:704-724 ---
+    704        // If backgrounded, return immediately with task ID. Strip hints first
+    705        // so interrupt-backgrounded fullOutput doesn't leak the tag to the
+    706        // model (BashTool has no early return, so all paths flow through its
+    707        // single extraction site).
+    708        if (result.backgroundTaskId) {
+    709          const bgExtracted = extractClaudeCodeHints(
+    710            result.stdout || '',
+    711            input.command,
+    712          )
+    713          if (isMainThread && bgExtracted.hints.length > 0) {
+    714>           for (const hint of bgExtracted.hints) maybeRecordPluginHint(hint)
+    715          }
+    716          return {
+    717            data: {
+    718              stdout: bgExtracted.stripped,
+    719              stderr: [result.stderr || '', stderrForShellReset]
+    720                .filter(Boolean)
+    721                .join('\n'),
+    722              interrupted: false,
+    723              backgroundTaskId: result.backgroundTaskId,
+    724              backgroundedByUser: result.backgroundedByUser,
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(762,67): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:752-772 ---
+    752  
+    753        // Claude Code hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
+    754        // `<claude-code-hint />` tag to stderr (merged into stdout here). Scan,
+    755        // record for useClaudeCodeHintRecommendation to surface, then strip
+    756        // so the model never sees the tag — a zero-token side channel.
+    757        // Stripping runs unconditionally (subagent output must stay clean too);
+    758        // only the dialog recording is main-thread-only.
+    759        const extracted = extractClaudeCodeHints(stdout, input.command)
+    760        stdout = extracted.stripped
+    761        if (isMainThread && extracted.hints.length > 0) {
+    762>         for (const hint of extracted.hints) maybeRecordPluginHint(hint)
+    763        }
+    764  
+    765        // preSpawnError means exec() succeeded but the inner shell failed before
+    766        // the command ran (e.g. CWD deleted). createFailedCommand sets code=1,
+    767        // which interpretCommandResult can mistake for grep-no-match / findstr
+    768        // string-not-found. Throw it directly. Matches BashTool.tsx:957.
+    769        if (result.preSpawnError) {
+    770          throw new Error(result.preSpawnError)
+    771        }
+    772        if (interpretation.isError && !isInterrupt) {
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(992,9): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:982-1002 ---
+    982    }
+    983  
+    984    const resultPromise = shellCommand.result
+    985  
+    986    // Helper to spawn a background task and return its ID
+    987    async function spawnBackgroundTask(): Promise<string> {
+    988      const handle = await spawnShellTask(
+    989        {
+    990          command,
+    991          description: description || command,
+    992>         shellCommand,
+    993          toolUseId,
+    994          agentId,
+    995        },
+    996        {
+    997          abortController,
+    998          getAppState: () => {
+    999            throw new Error(
+   1000              'getAppState not available in runPowerShellCommand context',
+   1001            )
+   1002          },
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1022,11): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/shell/src/types").ShellCommand' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1012-1032 ---
+   1012      backgroundFn?: (shellId: string) => void,
+   1013    ): void {
+   1014      // If a foreground task is already registered (via registerForeground in the
+   1015      // progress loop), background it in-place instead of re-spawning. Re-spawning
+   1016      // would overwrite tasks[taskId], emit a duplicate task_started SDK event,
+   1017      // and leak the first cleanup callback.
+   1018      if (foregroundTaskId) {
+   1019        if (
+   1020          !backgroundExistingForegroundTask(
+   1021            foregroundTaskId,
+   1022>           shellCommand,
+   1023            description || command,
+   1024            setAppState,
+   1025            toolUseId,
+   1026          )
+   1027        ) {
+   1028          return
+   1029        }
+   1030        backgroundShellId = foregroundTaskId
+   1031        logEvent(eventName, {
+   1032          command_type: getCommandTypeForLogging(command),
+  Property 'taskOutput' is missing in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1115,40): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1105-1125 ---
+   1105      return {
+   1106        stdout: '',
+   1107        stderr: '',
+   1108        code: 0,
+   1109        interrupted: false,
+   1110        backgroundTaskId: shellId,
+   1111      }
+   1112    }
+   1113  
+   1114    // Start polling the output file for progress
+   1115>   TaskOutput.startPolling(shellCommand.taskOutput.taskId)
+   1116  
+   1117    // Set up progress yielding with periodic checks
+   1118    const startTime = Date.now()
+   1119    let nextProgressTime = startTime + PROGRESS_THRESHOLD_MS
+   1120    let foregroundTaskId: string | undefined 
+   1121  
+   1122    // Progress loop: wrap in try/finally so stopPolling is called on every exit
+   1123    // path — normal completion, timeout/interrupt backgrounding, and Ctrl+B
+   1124    // (matches BashTool pattern; see PR #18887 review thread at :560)
+   1125    try {
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1157,19): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1147-1167 ---
+   1147          // Check result.backgroundTaskId (not the closure var) to also cover
+   1148          // Ctrl+B, which calls shellCommand.background() directly.
+   1149          if (result.backgroundTaskId !== undefined) {
+   1150            markTaskNotified(result.backgroundTaskId, setAppState)
+   1151            const fixedResult: ExecResult = {
+   1152              ...result,
+   1153              backgroundTaskId: undefined,
+   1154            }
+   1155            // Mirror ShellCommand.#handleExit's large-output branch that was
+   1156            // skipped because #backgroundTaskId was set.
+   1157>           const { taskOutput } = shellCommand
+   1158            if (taskOutput.stdoutToFile && !taskOutput.outputFileRedundant) {
+   1159              fixedResult.outputFilePath = taskOutput.path
+   1160              fixedResult.outputFileSize = taskOutput.outputFileSize
+   1161              fixedResult.outputTaskId = taskOutput.taskId
+   1162            }
+   1163            // Command completed — cleanup stream listeners here. The finally
+   1164            // block's guard (!backgroundShellId && status !== 'backgrounded')
+   1165            // correctly skips cleanup for *running* backgrounded tasks, but
+   1166            // in this race the process is done. Matches BashTool.tsx:1399.
+   1167            shellCommand.cleanup()
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1234,15): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox-medicion/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1224-1244 ---
+   1224          !isBackgroundTasksDisabled &&
+   1225          backgroundShellId === undefined &&
+   1226          elapsedSeconds >= PROGRESS_THRESHOLD_MS / 1000 &&
+   1227          setToolJSX
+   1228        ) {
+   1229          if (!foregroundTaskId) {
+   1230            foregroundTaskId = registerForeground(
+   1231              {
+   1232                command,
+   1233                description: description || command,
+   1234>               shellCommand,
+   1235                agentId,
+   1236              },
+   1237              setAppState,
+   1238              toolUseId,
+   1239            )
+   1240          }
+   1241  
+   1242          setToolJSX({
+   1243            jsx: <BackgroundHint />,
+   1244            shouldHidePromptInput: false,
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1257,30): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1247-1267 ---
+   1247          })
+   1248        }
+   1249  
+   1250        yield {
+   1251          type: 'progress',
+   1252          fullOutput,
+   1253          output: lastProgressOutput,
+   1254          elapsedTimeSeconds: elapsedSeconds,
+   1255          totalLines: lastTotalLines,
+   1256          totalBytes: lastTotalBytes,
+   1257>         taskId: shellCommand.taskOutput.taskId,
+   1258          ...(timeout ? { timeoutMs } : undefined),
+   1259        }
+   1260  
+   1261        nextProgressTime = Date.now() + PROGRESS_INTERVAL_MS
+   1262      }
+   1263    } finally {
+   1264      TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1265      // Ensure cleanup runs on every exit path (success, rejection, abort).
+   1266      // Skip when backgrounded — LocalShellTask owns cleanup for those.
+   1267      // Matches main #21105.
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1264,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1254-1274 ---
+   1254          elapsedTimeSeconds: elapsedSeconds,
+   1255          totalLines: lastTotalLines,
+   1256          totalBytes: lastTotalBytes,
+   1257          taskId: shellCommand.taskOutput.taskId,
+   1258          ...(timeout ? { timeoutMs } : undefined),
+   1259        }
+   1260  
+   1261        nextProgressTime = Date.now() + PROGRESS_INTERVAL_MS
+   1262      }
+   1263    } finally {
+   1264>     TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1265      // Ensure cleanup runs on every exit path (success, rejection, abort).
+   1266      // Skip when backgrounded — LocalShellTask owns cleanup for those.
+   1267      // Matches main #21105.
+   1268      if (!backgroundShellId && shellCommand.status !== 'backgrounded') {
+   1269        if (foregroundTaskId) {
+   1270          unregisterForeground(foregroundTaskId, setAppState)
+   1271        }
+   1272        shellCommand.cleanup()
+   1273      }
+   1274    }

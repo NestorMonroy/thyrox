@@ -1,0 +1,6 @@
+Conjuntos que el mock parcial de powershellSecurity.test.ts sobrescribe, vistos por el archivo siguiente
+(DANGEROUS_SCRIPT_BLOCK_CMDLETS.size MODULE_LOADING_CMDLETS.size):
+real:          10 7
+con afterAll:  10 7
+sin afterAll:  12 4
+Sin precargar el real, el archivo siguiente ni siquiera resuelve NEVER_SUGGEST (SyntaxError).

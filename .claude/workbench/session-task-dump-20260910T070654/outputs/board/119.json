@@ -1,0 +1,8 @@
+{
+  "id": "119",
+  "subject": "Dar a reconciliar-agentes.sh un camino a «vivo» que discrimine",
+  "description": "H-DOCS-1064: con los defaults (WINDOW_SECONDS=900, WATCH_SECONDS=0) la rama de classify() no tiene salida a «vivo» — todo agente que escribió en los últimos 15 min sale «atascado». Y con --vigilar 20 tampoco basta: la cadencia medida del agente del léxico trae ocho huecos de 73-116 s. Dos formas: (1) ventana de muestreo derivada del hueco máximo observado; (2) medir el crecimiento del transcript en líneas, no la mtime del .output — la dirección que bash-background-tasks.md ya anticipa. Instrumento de apoyo ya existe: .claude/scripts/agents/agent_timeline.py",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

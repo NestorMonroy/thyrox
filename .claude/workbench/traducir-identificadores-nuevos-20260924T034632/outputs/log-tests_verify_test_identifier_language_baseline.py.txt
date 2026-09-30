@@ -1,0 +1,27 @@
+=== BASELINE: sin declaracion, rehusa — nunca un 0 silencioso ===
+  ok    rehusa sin declaracion
+  ok    nombra la variable en el mensaje
+
+=== BASELINE: declarada por PROCESO, se usa tal cual ===
+  ok    la ruta del proceso gana
+
+=== BASELINE: declarada por .env, PROCESO le gana ===
+  ok    sin var de proceso, lee el .env
+  ok    con var de proceso, el proceso gana sobre el .env
+
+=== ROOTS: sin declaracion, el default que YA usaba api ===
+  ok    default = (src, tests, addons)
+
+=== ROOTS: declaradas, separadas por ":" como PATH ===
+  ok    se parte por :
+
+=== CLI: sin baseline declarado, exit 2 y SIN cifra ===
+  ok    sale con 2 (no emitio veredicto)
+  ok    nombra la variable que falta
+  ok    NO hay cifra de archivos medidos
+
+=== CLI: CON baseline declarado (vacio), mide y da veredicto ===
+  ok    sale con 1 (bien es espanol y el baseline esta vacio)
+  ok    cita el archivo:linea
+
+12 ok, 0 fallos (alcance medido: 12 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)

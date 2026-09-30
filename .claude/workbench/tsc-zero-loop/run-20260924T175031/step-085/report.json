@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1974, "total_final": 1964, "tsc_runs": 1, "accepted": ["agent:agent:typed-stream-event"], "files_kept": ["src/packages/agent/createDeps.ts"], "outcomes": {"agent:agent:typed-stream-event": "accepted-net"}}

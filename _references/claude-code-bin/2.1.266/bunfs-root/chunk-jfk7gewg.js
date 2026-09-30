@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.266
+import{t}from"/$bunfs/root/chunk-fy3j7rz0.js";import{m}from"/$bunfs/root/chunk-7tpgnqqk.js";import{W2e}from"/$bunfs/root/chunk-hfjb09vk.js";import{I}from"/$bunfs/root/chunk-btbsn9s4.js";import{jn,Sg,bme}from"/$bunfs/root/chunk-hzw08x3w.js";import{s,se,c,pe}from"/$bunfs/root/chunk-44xw78rx.js";var f=m(()=>c({server_instructions:s().optional(),server_instructions_by_server:pe(s(),s()).optional(),tools:pe(s(),s()).optional(),search_hints:pe(s(),s()).optional(),param_descriptions:pe(s(),pe(s(),s())).optional(),prompts:pe(s(),s()).optional(),skills:pe(s(),s()).optional()})),l=m(()=>pe(s(),se()));function z6(e){if(!e.pluginSource)return;let{name:r,marketplace:n}=jn(e.pluginSource);if(!Sg(n)&&!bme(r,n))return;let u=I("tengu_official_plugin_prompt_overrides",{}),i=l().safeParse(u);if(!i.success){t("tengu_official_plugin_prompt_overrides: GB payload is not an object; ignoring",{level:"error"});return}let a=i.data[r];if(a===void 0)return;let p=f().safeParse(a);if(!p.success){t(`tengu_official_plugin_prompt_overrides: entry for '${r}' failed schema (${p.error.issues[0]?.message}); using baked-in text`,{level:"error"});return}let o=p.data;if(Object.keys(o).length===0)return;return{...o,server_instructions_by_server:d(o.server_instructions_by_server),tools:d(o.tools),search_hints:d(o.search_hints),param_descriptions:d(o.param_descriptions),prompts:d(o.prompts),skills:d(o.skills)}}function d(e){if(e===void 0)return;let r=Object.create(null);return Object.assign(r,e)}function Tpt(e,r){if(!e)return;let n=e.server_instructions_by_server;if(n){let u=W2e(r),i=u&&n[u.serverName];if(i!==void 0)return i}return e.server_instructions}function Cpt(e,r){if(!r||!e.properties)return e;let n={...e.properties},u=!1;for(let[i,a]of Object.entries(r)){let p=n[i];if(p!==null&&typeof p==="object")n[i]={...p,description:a},u=!0}if(!u)return e;return{...e,properties:n}}
+export{z6,Tpt,Cpt};

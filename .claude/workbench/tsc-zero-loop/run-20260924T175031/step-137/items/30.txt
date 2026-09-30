@@ -1,0 +1,69 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,10): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:782-802 ---
+    782          if (!currentServerNames.has(client.name)) {
+    783            if (client.type === 'connected') {
+    784              await client.cleanup()
+    785            }
+    786          }
+    787        }
+    788  
+    789        // Re-initialize all SDK MCP servers with current config
+    790        const sdkSetup = await setupSdkMcpClients(
+    791          sdkMcpConfigs,
+    792>         (serverName, message) =>
+    793            structuredIO.sendMcpMessage(serverName, message),
+    794        )
+    795        sdkClients = sdkSetup.clients
+    796        sdkTools = sdkSetup.tools
+    797  
+    798        // Store SDK MCP tools in appState so subagents can access them via
+    799        // assembleToolPool. Only tools are stored here — SDK clients are already
+    800        // merged separately in the query loop (allMcpClients) and mcp_status handler.
+    801        // Use both old (connectedServerNames) and new (currentServerNames) to remove
+    802        // stale SDK tools when servers are added or removed.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,22): error TS7006: Parameter 'message' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:782-802 ---
+    782          if (!currentServerNames.has(client.name)) {
+    783            if (client.type === 'connected') {
+    784              await client.cleanup()
+    785            }
+    786          }
+    787        }
+    788  
+    789        // Re-initialize all SDK MCP servers with current config
+    790        const sdkSetup = await setupSdkMcpClients(
+    791          sdkMcpConfigs,
+    792>         (serverName, message) =>
+    793            structuredIO.sendMcpMessage(serverName, message),
+    794        )
+    795        sdkClients = sdkSetup.clients
+    796        sdkTools = sdkSetup.tools
+    797  
+    798        // Store SDK MCP tools in appState so subagents can access them via
+    799        // assembleToolPool. Only tools are stored here — SDK clients are already
+    800        // merged separately in the query loop (allMcpClients) and mcp_status handler.
+    801        // Use both old (connectedServerNames) and new (currentServerNames) to remove
+    802        // stale SDK tools when servers are added or removed.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }

@@ -1,0 +1,8 @@
+cd src/packages/agent && bun test > ../../../.claude/build-logs/fail-agent.log 2>&1; echo EXIT=$?
+cd src/packages/app-host && bun test > ../../../.claude/build-logs/fail-app-host.log 2>&1; echo EXIT=$?
+cd src/packages/cli && bun test > ../../../.claude/build-logs/fail-cli.log 2>&1; echo EXIT=$?
+cd src/packages/config && bun test > ../../../.claude/build-logs/fail-config.log 2>&1; echo EXIT=$?
+cd src/packages/permission && bun test > ../../../.claude/build-logs/fail-permission.log 2>&1; echo EXIT=$?
+cd src/packages/provider && bun test > ../../../.claude/build-logs/fail-provider.log 2>&1; echo EXIT=$?
+cd src/packages/storage && bun test > ../../../.claude/build-logs/fail-storage.log 2>&1; echo EXIT=$?
+cd src/packages/tool-registry && bun test > ../../../.claude/build-logs/fail-tool-registry.log 2>&1; echo EXIT=$?

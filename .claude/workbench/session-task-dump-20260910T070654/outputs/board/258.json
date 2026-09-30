@@ -1,0 +1,9 @@
+{
+  "id": "258",
+  "subject": "Decidir el hogar del store y fusionar antes de retirar: hay dos versionados",
+  "description": "CERRADA 2026-09-07. Un solo store, en el proveedor.\n\n**(a) confirmado POR CONDUCTA** (`thyrox@87fc4ba2`, `docs@252e56395`). No era\nque el hook no hubiera disparado — era que si disparaba iba al silo. **Dos\nrehúses en cadena** lo sostenían, y sólo el primero era visible desde un\ncontrol unitario:\n\n    resolve_store_dir      rehusaba sin --repo ni --claude-dir\n    register_session.main  rehusaba ANTES de llegar a él\n\nMientras rehusaban, todo llamador tenía que declarar destino, y el hook vivo\ndeclaraba `--repo docs` — el peldaño **más específico**, que gana sobre\n`storePath()` y `agent_store_path()`. Reapuntar los dos localizadores no\nalcanzaba al escritor mayoritario. El silo sobrevivía al arreglo hecho para\ncerrarlo.\n\nLo destapó una **sonda de conducta**: invocar el hook real y mirar dónde\naterriza la fila. Persistida como caso 8 de `test_store_home.py`.\n\n**(b) y (c) hechos** (`docs@d4eceb953`). Control antes de retirar, en las cinco\ntablas: de 1210 · 1336 · 1466 · 5428 · 1305 claves del consumidor, **cero sin\nllegar**. Retirados el archivo y la declaración del driver `sqlite-union`.\n\nNO se tocó `agent_results_dir()`: sigue siendo del consumidor y es correcto —\n`registro-de-agentes.md`, `delta-de-agentes.md` y los `.base-*.json` son lo que\nlos hooks del **cliente** escriben, y fueron además el instrumento que midió si\nel hook había disparado. Tampoco se reapuntaron los 6 guiones de\n`.claude/eventos/` que citan la ruta vieja: son evidencia fechada.\n\nVerde: 8/8 `test_store_home`, 5/5 `test_store_dir_default`, 9/9\n`test_merge_stores`. Anulaciones: quitar el peldaño 3 tira 2 de 5; devolver el\nrehúse aguas arriba tira 1 de 8, y es el único que mide conducta.",
+  "activeForm": "Decidiendo el hogar del store",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

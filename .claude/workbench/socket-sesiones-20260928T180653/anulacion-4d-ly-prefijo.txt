@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+163 |     write(KEY(9, 'b'), { peerToken: 'b'.repeat(32) })
+164 |     write(KEY(9, 'c'), { peerToken: 'c'.repeat(32), pidDomain: 'otro' })
+165 |     write(KEY(19, 'a'), { peerToken: 'a'.repeat(32) })
+166 |     write('9.json', record(9))
+167 |     await sweepDeadPidKeys(dir, 9, DOMAIN, undefined, deps({}, [9, 19]))
+168 |     expect(readdirSync(dir).sort()).toEqual([KEY(19, 'a'), KEY(9, 'c'), '9.json'].sort())
+                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   "19.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.key",
+    "9.cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.key",
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:168:37)
+(fail) sweepDeadPidKeys (ZKn, Ly) > borra las claves de un pid muerto en este dominio o sin dominio [4.51ms]
+
+ 27 pass
+ 1 fail
+ 81 expect() calls
+Ran 28 tests across 1 file. [195.00ms]

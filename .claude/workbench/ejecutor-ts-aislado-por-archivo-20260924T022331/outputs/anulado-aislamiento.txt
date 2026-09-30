@@ -1,0 +1,12 @@
+OK   control: en un solo proceso b falla por el mock de a
+FALLA aislado: a y b pasan — esperado '0', obtenido '1'
+FALLA aislado: el resumen cuenta 2 pass — esperado '2', obtenido '0'
+OK   un fallo real: exit 1
+OK   un fallo real: nombra el archivo
+OK   un aborto: exit 1
+OK   un aborto: nombra el archivo
+FALLA un aborto: los otros dos siguen contando — esperado '2', obtenido '0'
+OK   sin archivos: rehusa con exit 2
+OK   sin archivos: no publica pass=
+
+aserciones: 7 de 10 · fallos: 3

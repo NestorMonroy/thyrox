@@ -1,0 +1,17 @@
+== control: el subconjunto derivado no se mueve ==
+derivado con: grep -rlE 'effortLevel|applySettingsChange|SettingsChangeTarget' --include=*.ts --include=*.tsx
+  -> un solo directorio: src/packages/config/__tests__
+
+-- en HEAD --
+
+ 523 pass
+ 15 fail
+ 1 error
+ 1096 expect() calls
+Ran 538 tests across 27 files. [2.29s]
+-- con el cambio --
+ 523 pass / 15 fail / 1 error / 538 tests
+
+Los 15 rojos son pre-existentes: una cascada del error de modulo
+'Export named tryParseShellCommand not found in shellQuote.ts', ajena a
+este cambio.

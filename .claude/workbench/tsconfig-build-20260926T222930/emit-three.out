@@ -1,0 +1,9 @@
+agent: OK
+cli: emitio pese a 1 errores (0 propio(s))
+cli: repunte INERTE — 1 destino(s) de types no existen:
+  ./entry/main -> ./dist/entry/main.d.ts
+  Corre la emision antes del repunte: emit_declarations <paquete>
+config: OK
+
+emit_declarations: 3 paquete(s) medido(s), 1 error(es) que siguen vivos en su propio paquete
+EXIT=0

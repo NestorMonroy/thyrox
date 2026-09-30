@@ -1,0 +1,18 @@
+# commitconc
+
+## Qué se lanzó
+
+```
+bash -c cd /home/user/thyrox && GIT_AUTHOR_NAME='Nestor Monroy' GIT_AUTHOR_EMAIL='46802445+NestorMonroy@users.noreply.github.com' git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -m 'Record the concept extraction of the 365 course notes' -m 'One claude -p per note through GNU Parallel, the run the headless-pool
+mechanism generalizes: 365 notes, 0 failed, 4849 concepts, 3 notes
+with none. Mapping the concepts to thyrox is the next pass.' -- .claude/workbench/notas-ai-course-aplicables-a-thyrox-20260924T030740 .claude/jobs/conceptos-todas-20260924T032936 .claude/jobs/commithl-20260924T043713 .claude/jobs/commit-headless-* && git push
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

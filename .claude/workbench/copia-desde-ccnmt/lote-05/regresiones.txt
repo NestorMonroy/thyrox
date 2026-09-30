@@ -1,0 +1,5 @@
+src/packages/agent/__tests__/goalStopHook.test.ts
+src/packages/agent/__tests__/idleCollapse.test.ts
+src/packages/bridge/src/__tests__/trustedDevice.test.ts
+src/packages/permission/__tests__/planModeV2.test.ts
+src/packages/tool-registry/src/__tests__/undercover.test.ts

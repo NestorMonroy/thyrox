@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+259 |     write(KEY(11), { peerToken: 'a'.repeat(32), pidDomain: 'otro' })
+260 |     write(KEY(12), { peerToken: 'a'.repeat(32) })
+261 |     write(KEY(13), { peerToken: 'a'.repeat(32) })
+262 |     write('13.json', record(13))
+263 |     await sweepRegistry(undefined, deps({ platform: () => 'macos' }, [10, 11, 12, 13]))
+264 |     expect(readdirSync(dir).sort()).toEqual([KEY(11), KEY(12)].sort())
+                                          ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "12.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.key",
++   "13.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.key",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:264:37)
+(fail) sweepRegistry (xut) > limpia las claves huérfanas: con dominio si coincide; sin dominio en linux o si su registro se borró [3.08ms]
+
+ 27 pass
+ 1 fail
+ 81 expect() calls
+Ran 28 tests across 1 file. [198.00ms]

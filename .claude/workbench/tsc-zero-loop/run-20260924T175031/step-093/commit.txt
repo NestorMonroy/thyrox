@@ -1,0 +1,14 @@
+Prefix the unread signal parameters with underscore
+
+Step 093 of the tsc-zero loop: 1834 -> 1815, accepted net, nothing
+new.
+
+Nineteen functions in memory, shell and provider declare
+signal?: AbortSignal and never read it. The source does the same:
+the name's use count matches file by file, and the source compiles
+without noUnusedParameters. The parameter keeps its place in the
+signature with a leading underscore, the form the checker exempts.
+The destructured `signal` in anthropic/client.ts is left alone,
+since renaming it would change the property it reads.
+
+Memory (gate 3b): unused-parameter-as-in-source.

@@ -1,0 +1,39 @@
+export async function shutdownDbInstance(): Promise<boolean> {
+  clearDbHealthCheckScheduler();
+  await managedHealth.stop(() => healthShutdown.abort());
+  return closeDbInstance();
+}
+
+export function closeDbInstance(options?: { checkpointMode?: WalCheckpointMode | null }): boolean {
+  if (managedHealth.busy) throw new Error("Database health check already in progress");
+  managedHealth.invalidate();
+  clearDbHealthCheckScheduler();
+  const streakBefore = getWalMaintenanceState().busyStreak;
+  stopWalMaintenance();
+  const db = getDb();
+  if (!db) return false;
+
+  const checkpointMode = options?.checkpointMode ?? "TRUNCATE";
+
+  try {
+    if (checkpointMode) {
+      try {
+        const outcome = runCheckpointNow(db, checkpointMode, {
+          sqliteFile: SQLITE_FILE,
+          isCloud,
+          isBuildPhase,
+        });
+        logCheckpointOutcome(outcome, checkpointMode, streakBefore);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`[DB] WAL checkpoint failed during close (${checkpointMode}):`, message);
+      }
+    }
+  } finally {
+    try {
+      if (db.open) db.close();
+    } finally {
+      setDb(null);
+      // Module-level caches (prepared statements, schema-check memos — e.g.
+      // apiKeys.ts) are bound to the closed connection. Without this, a recreated
+      // DB (tests, backup restore of an older snapshot) hits "no such column"

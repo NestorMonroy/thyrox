@@ -1,0 +1,8 @@
+{"ts":"2026-09-18T00:54:13","paso":"defecto","que":"merge() recorria _real_tables(target): una tabla presente SOLO en el origen no se visitaba, no se fusionaba y no aparecia en el informe","archivo":"src/agents/merge_stores.py"}
+{"ts":"2026-09-18T00:54:13","paso":"origen","que":"el ejecutor cuestiono el verde de 'merge_stores --dry-run: 0 filas cambiadas' sobre la cascara de api — el 0 era correcto y el instrumento no podia discriminar en general"}
+{"ts":"2026-09-18T00:54:13","paso":"rojo","que":"caso 10 anadido a tests/agents/test_merge_stores.py","salida":"AssertionError: 0 != 1 : la tabla del origen no aparece en el informe"}
+{"ts":"2026-09-18T00:54:13","paso":"par","que":"caso 11 — la tabla que solo esta en el destino sigue reportandose; hace discriminar al 10 y ya pasaba antes del arreglo"}
+{"ts":"2026-09-18T00:54:13","paso":"arreglo","que":"el bucle recorre sorted(set(en_origen) | set(en_destino)); la tabla solo-en-origen se REPORTA con filas_en_el_origen, no se crea (el DDL esta fuera del alcance de merge)"}
+{"ts":"2026-09-18T00:54:13","paso":"verde","salida":"Ran 11 tests — OK","archivo":"outputs/verde.txt"}
+{"ts":"2026-09-18T00:54:13","paso":"anulacion","que":"restaurado el bucle sobre _real_tables(target); __pycache__ purgado antes de leer el veredicto","salida":"Ran 11 — FAILED (failures=1), solo test_10","archivo":"outputs/anulacion.txt"}
+{"ts":"2026-09-18T00:54:13","paso":"restauracion","que":"copiado desde outputs/merge_stores.py.intacto; suite de nuevo en verde"}

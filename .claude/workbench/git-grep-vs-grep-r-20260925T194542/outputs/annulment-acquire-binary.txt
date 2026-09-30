@@ -1,0 +1,8 @@
+== parallel
+  FALLO esperaba exit 2 con instalador mentiroso, dio 0
+11 casos: 10 ok, 1 fallos
+== gawk
+15 casos: 15 ok, 0 fallos
+== pdf-text
+  FALLO esperaba exit 2 con instalador mentiroso, dio 0
+7 casos: 6 ok, 1 fallos

@@ -1,0 +1,1 @@
+function ce(){if(Vkt())return W;if(a.CLAUDE_CODE_USE_COWORK_PLUGINS)return W;return de}

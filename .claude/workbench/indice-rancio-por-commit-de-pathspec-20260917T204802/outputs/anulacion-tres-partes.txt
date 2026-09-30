@@ -1,0 +1,20 @@
+Control de anulacion — cada parte del sujeto se retira y se mide que cae.
+Base: 12 de 12 en verde.
+
+=== anulada: reset
+      FALLO el arbol queda limpio
+      FALLO HEAD e indice coinciden
+      FALLO y el hook lo dejo limpio
+    resultado: 9 de 12 aserciones en verde
+
+=== anulada: guarda
+      FALLO el cambio preparado sobrevive al hook (PREPARADO, no revertido)
+    resultado: 11 de 12 aserciones en verde
+
+=== anulada: filtro
+      FALLO el contenido preparado sigue en el indice
+    resultado: 11 de 12 aserciones en verde
+
+=== restaurado (diff contra la copia previa a las anulaciones):
+    identico
+    resultado: 12 de 12 aserciones en verde

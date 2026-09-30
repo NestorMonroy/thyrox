@@ -1,0 +1,2 @@
+tests/verify/test-premise-drift.sh
+tests/verify/test-verificar-premisa.sh

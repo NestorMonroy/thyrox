@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/mitm && bun test __tests__/manager 2>&1 | tail -6", "started_at": "2026-09-28T05:54:35+00:00"}

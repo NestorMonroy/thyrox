@@ -1,0 +1,1 @@
+function ufe(){if(a.CLAUDE_CODE_SANDBOXED)return!0;if(hne())return!0;if(Et())return!0;let e=ie(),n=RJe();if(e.projects?.[n]?.hasTrustDialogAccepted)return!0;return KB(e,ye())}

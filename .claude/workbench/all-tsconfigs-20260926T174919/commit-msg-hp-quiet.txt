@@ -1,0 +1,12 @@
+Write headless-pool timings without the exit line
+
+Without -q, GNU Time puts "Command exited with non-zero status N" before
+the measurement of an item that fails. The consumer ai-course-notes
+copied the reader into tools/scripts/translation_loop.py and parses the
+first word with int(), so a failed chunk -- the one most worth
+measuring -- crashes its usage report instead of being counted. The
+launchers already pass -q; headless-pool now does too, which protects
+any consumer that copied the reader without touching its code.
+
+The fake GNU Time in the suite now behaves like the real one, so the
+new case fails without -q and passes with it.

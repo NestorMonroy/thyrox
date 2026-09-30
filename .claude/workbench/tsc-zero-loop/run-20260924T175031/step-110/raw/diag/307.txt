@@ -1,0 +1,6 @@
+tests/unit/utils/collapseTeammateShutdowns.test.ts(38,12): error TS2571: Object is of type 'unknown'.
+tests/unit/utils/collapseTeammateShutdowns.test.ts(48,12): error TS2571: Object is of type 'unknown'.
+tests/unit/utils/collapseTeammateShutdowns.test.ts(59,12): error TS2571: Object is of type 'unknown'.
+tests/unit/utils/collapseTeammateShutdowns.test.ts(60,12): error TS2571: Object is of type 'unknown'.
+tests/unit/utils/collapseTeammateShutdowns.test.ts(86,12): error TS2571: Object is of type 'unknown'.
+tests/unit/utils/collapseTeammateShutdowns.test.ts(93,12): error TS2571: Object is of type 'unknown'.

@@ -1,0 +1,1 @@
+declarations: 67 de nivel superior en chunk-ygx717jg.js (29 function, 1 class, 37 variable)

@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_step.py
++++ b/src/verify/tsc_zero_step.py
+@@ -85,7 +85,7 @@
+         # detrás de la anterior: `inferFromUsage` inserta la anotación y el `)`
+         # en el mismo punto (el mismo orden que `tsLanguageService.applyEdits`).
+         indexed = [(i, e) for i, e in enumerate(row["edits"]) if e["file"] == file]
+-        edits = [e for _, e in sorted(indexed, key=lambda pair: (-pair[1]["start"], -pair[0]))]
++        edits = [e for _, e in sorted(indexed, key=lambda pair: (-pair[1]["start"], pair[0]))]
+         for edit in edits:
+             text = text[: edit["start"]] + edit["newText"] + text[edit["start"] + edit["length"]:]
+         (root / file).write_text(text)

@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/binary/bin/binary.ts(40,34): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/binary/bin/binary.ts:30-50 ---
+     30  const EXIT_GUARD = 2
+     31  
+     32  /** Muere con 2 y SIN emitir cifra: un 0 aqui seria un verde falso. */
+     33  function guard(mensaje: string): never {
+     34    console.error(`ERROR — ${mensaje}. NO se emite un conteo.`)
+     35    process.exit(EXIT_GUARD)
+     36  }
+     37  
+     38  function opcion(argv: string[], nombre: string, defecto: string): string {
+     39    const i = argv.indexOf(nombre)
+     40>   return i >= 0 && argv[i + 1] ? argv[i + 1] : defecto
+     41  }
+     42  
+     43  function abrir(argv: string[]) {
+     44    const ruta = opcion(argv, '--bin', BINARIO_DEFECTO)
+     45    if (!existsSync(ruta)) guard(`no existe el ejecutable ${ruta}`)
+     46    const bytes = readFileSync(ruta)
+     47    const seccion = findSection(bytes, '.bun')
+     48    if (seccion === null) guard(`${ruta} no declara una seccion .bun`)
+     49    const payload = bytes.subarray(seccion.offset + SECTION_HEADER, seccion.offset + seccion.size)
+     50    const version = deriveVersion(bytes.subarray(seccion.offset, seccion.offset + seccion.size))
+  Type 'undefined' is not assignable to type 'string'.

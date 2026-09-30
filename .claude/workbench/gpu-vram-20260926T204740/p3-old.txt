@@ -1,0 +1,11 @@
+def _width_cap(row: dict | None, margin: float, free_vram_mib: int | None) -> tuple[int | None, str]:
+    """Cuántos ítems caben a la vez en la VRAM libre: GNU Parallel no tiene un
+    ``--memfree`` de GPU, así que la anchura es la única palanca. Sin pico de
+    VRAM en el historial o sin VRAM libre medida, no hay tope."""
+    peak = (row or {}).get("peak_vram_mib")
+    if not peak or free_vram_mib is None:
+        return None, ""
+    fits = int(free_vram_mib // (peak * margin))
+    if fits < 1:
+        return 1, f"; VRAM: {free_vram_mib} MiB libres y el ítem pide {peak} × {margin:g}, no cabe ni uno: anchura 1"
+    return fits, f"; VRAM: {free_vram_mib} MiB libres / ({peak} × {margin:g}) -> anchura {fits}"

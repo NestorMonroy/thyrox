@@ -1,0 +1,22 @@
+==== be: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function be [5940,6201)
+async function be(e,n){if(!n)return;let r;try{r=await q(e)}catch{return}let i=await HP();await Promise.all(r.map(async(d)=>{let a=ke.exec(d);if(!a||!Nh(parseInt(a[1],10)))return;let c=await ifn(_(e,d));if(c!==void 0&&c!==i)return;try{await F(_(e,d))}catch{}}))}
+==== N: 1 definicion(es) de nivel superior
+---- chunk-8nz62976.js function N [1137,1164)
+function N(){return t===!0}
+==== sz: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function sz [4580,4620)
+function sz(){return _(Se(),"sessions")}
+==== ye: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function ye [5233,5793)
+async function ye(e,n,r){let i=Q(process.pid,n),d=await e.ensureScope({namespace:"session"});if(!d.ok)throw t(`[uds-auth] sessions scope unavailable: ${rt(d.error)}`),Error("messaging key folder could not be made through storage");try{await e.delete(Re.session(i))}catch{}let a=await e.write(Re.session(i),b({peerToken:r,...n6(await Pv()),pidDomain:await HP()}),{publishDiscipline:"atomic",mode:384,exactMode:384});if(!a.ok)throw t(`[uds-auth] key publish failed: ${rt(a.error)}`),Error("messaging key could not be published through storage");return _(sz(),i)}
+==== ifn: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function ifn [5793,5940)
+async function ifn(e){try{let n=await cl(e,x);if(n===null)return;let r=W().safeParse(zo(n));return r.success?r.data.pidDomain:void 0}catch{return}}
+==== QDo: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function QDo [6320,7661)
+async function QDo(e,n,r){let i=sz(),d;if(N()&&n!==void 0){let p=await J4n(n,{partialOnCap:!1});if(p===void 0)return{kind:"unusable"};d=p}else try{d=await q(i)}catch(p){return U(p)?{kind:"no-key"}:{kind:"unusable"}}let a=J(e);if(a===void 0)return{kind:"no-key"};let c=`.${a}.key`,g=d.filter((p)=>p.endsWith(c)).map((p)=>{let h=rfn.exec(p);return h?{file:p,pid:parseInt(h[1],10)}:void 0}).filter((p)=>p!==void 0);if(g.length===0)return{kind:"no-key"};let S=async(p)=>{let h=N()&&n!==void 0?await Ee(n,p):await cl(_(i,p),x);if(h===null)return;try{let E=W().safeParse(zo(h));return E.success?E.data:void 0}catch{return}};if(g.length===1){let p=g[0];if(r?.requireLiveOwner&&Nh(p.pid))return{kind:"dead-owner"};let h=await S(p.file);if(h===void 0)return{kind:"unusable"};if(r?.requireLiveOwner){let E=Hx(h);if(E!==void 0){let w=await nc(p.pid,{skipCache:!0});if(w!==void 0&&!TFe(E,w))return{kind:"dead-owner"}}}return{kind:"token",token:h.peerToken}}let k;for(let{file:p,pid:h}of g){let E=await S(p);if(E===void 0)continue;let w=0;if(!Nh(h)){let I=Hx(E),R=I===void 0?void 0:await nc(h,{skipCache:!0});if(I===void 0||R===void 0)w=1;else w=TFe(I,R)?2:0}if(k===void 0||w>k.rank)k={rank:w,peerToken:E.peerToken}}if(k===void 0)return{kind:"unusable"};if(r?.requireLiveOwner&&k.rank===0)return{kind:"dead-owner"};return{kind:"token",token:k.peerToken}}
+==== Q: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function Q [4810,4960)
+function Q(e,n){let r=J(n);if(r===void 0)throw Error("refusing to derive a messaging key name for a non-canonical socket path");return`${e}.${r}.key`}
+symbol: 7 de 7 nombre(s) resueltos

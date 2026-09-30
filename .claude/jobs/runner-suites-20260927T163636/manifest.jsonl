@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 --timeout 900 .claude/cache/session-traces-20260927/runner-suites.jobs", "started_at": "2026-09-27T16:36:36+00:00"}

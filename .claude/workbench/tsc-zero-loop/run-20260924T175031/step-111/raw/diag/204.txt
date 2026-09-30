@@ -1,0 +1,3 @@
+src/packages/repl/src/components/StatusLine.tsx(97,44): error TS2339: Property 'rate_limits' does not exist on type 'unknown'.
+src/packages/repl/src/components/StatusLine.tsx(347,29): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+src/packages/repl/src/components/StatusLine.tsx(389,42): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.

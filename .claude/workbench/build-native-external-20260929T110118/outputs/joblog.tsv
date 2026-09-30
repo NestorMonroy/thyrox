@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790679685.528	   205.308	0	0	0	0	_headless_item 1 'Nativos externos en el build JS: src/typescript/buildJavascript.ts y tests/typescript/buildJavascript.test.ts'

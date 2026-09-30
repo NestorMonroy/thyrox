@@ -1,0 +1,29 @@
+Patrón: message-content-optional-in-union-message
+Señal del verificador: TS18048: '.*\.message\.content' is possibly 'undefined'
+Arreglo genérico: En `AssistantMessage`/`UserMessage` (`@thyrox/agent/messageShapes`), `message` es requerido pero `message.content` es `MessageContent | undefined` por divergencia declarada de toolchain (la fuente compila con `strict: false`). Al iterar `msg.message.content` con `for...of` sin guarda, TS18048 dispara: se aplica `?? []` (o `?.` si sólo se lee, no se itera) en el punto de uso, sin tocar el tipo declarado ni el paquete `agent`.
+Ya aplicado en: src/packages/permission/src/yoloClassifier.ts
+Archivos donde la señal sigue viva: src/packages/repl/src/components/Message.tsx
+
+src/packages/repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:106-126 ---
+    106          <AttachmentMessage
+    107            addMargin={addMargin}
+    108            attachment={message.attachment}
+    109            verbose={verbose}
+    110            isTranscriptMode={isTranscriptMode}
+    111          />
+    112        )
+    113      case 'assistant':
+    114        return (
+    115          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    116>           {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+    117              <AssistantMessageBlock
+    118                key={index}
+    119                param={_}
+    120                addMargin={addMargin}
+    121                tools={tools}
+    122                commands={commands}
+    123                verbose={verbose}
+    124                inProgressToolUseIDs={inProgressToolUseIDs}
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}

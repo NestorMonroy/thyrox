@@ -1,0 +1,1 @@
+src/packages/tool-registry/src/tools/TaskOutputTool/TaskOutputTool.tsx(75,50): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.

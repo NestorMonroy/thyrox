@@ -1,0 +1,47 @@
+src/packages/agent/agentHostBindings.ts:894:    executePermissionRequestHooks: (...a: unknown[]) => { try { return require('./hooks.js').executePermissionRequestHooks(...a) } catch { return Promise.resolve(null) } },
+src/packages/agent/agentHostBindings.ts-895-    buildClassifierUnavailableMessage: () => { try { return require('./messages.js').buildClassifierUnavailableMessage() } catch { return '' } },
+src/packages/agent/agentHostBindings.ts-896-    buildYoloRejectionMessage: (...a: unknown[]) => { try { return require('./messages.js').buildYoloRejectionMessage(...a) } catch { return '' } },
+src/packages/agent/agentHostBindings.ts-897-    calculateCostFromTokens: (...a: unknown[]) => { try { return require('@thyrox/provider/modelCost.js').calculateCostFromTokens(...a) } catch { return 0 } },
+src/packages/agent/agentHostBindings.ts-898-    isSandboxingEnabled: () => { try { return require('@thyrox/shell/sandbox/sandbox-adapter.js').SandboxManager.isSandboxingEnabled() } catch { return false } },
+src/packages/agent/agentHostBindings.ts-899-    isAutoAllowBashIfSandboxedEnabled: () => { try { return require('@thyrox/shell/sandbox/sandbox-adapter.js').SandboxManager.isAutoAllowBashIfSandboxedEnabled() } catch { return false } },
+src/packages/agent/agentHostBindings.ts-900-    classifyYoloAction: (...a: unknown[]) => { try { return require('@thyrox/permission/yoloClassifier.js').classifyYoloAction(...a) } catch { return null } },
+src/packages/agent/agentHostBindings.ts-901-    formatActionForClassifier: (...a: unknown[]) => { try { return require('@thyrox/permission/yoloClassifier.js').formatActionForClassifier(...a) } catch { return '' } },
+src/packages/agent/agentHostBindings.ts-902-    getToolsForDefaultPreset: () => { try { return require('@thyrox/tool-registry/runtime').getToolsForDefaultPreset() } catch { return [] } },
+src/packages/agent/agentHostBindings.ts-903-    handleAutoModeTransition: (mode: unknown) => { try { require('@thyrox/app-host/bootstrap/state.js').handleAutoModeTransition(mode) } catch {} },
+src/packages/agent/agentHostBindings.ts-904-    handlePlanModeTransition: (mode: unknown) => { try { require('@thyrox/app-host/bootstrap/state.js').handlePlanModeTransition(mode) } catch {} },
+src/packages/agent/agentHostBindings.ts-905-    setHasExitedPlanMode: (v: unknown) => { try { require('@thyrox/app-host/bootstrap/state.js').setHasExitedPlanMode(v) } catch {} },
+src/packages/agent/agentHostBindings.ts-906-    setNeedsAutoModeExitAttachment: (v: unknown) => { try { require('@thyrox/app-host/bootstrap/state.js').setNeedsAutoModeExitAttachment(v) } catch {} },
+src/packages/agent/agentHostBindings.ts-907-    loadAllPermissionRulesFromDisk: () => { try { return require('@thyrox/permission/permissionsLoader.js').loadAllPermissionRulesFromDisk() } catch { return [] } },
+src/packages/agent/agentHostBindings.ts-908-    addDirHelpMessage: () => { try { return require('@thyrox/permission/commands/add-dir/validation.js').addDirHelpMessage() } catch { return '' } },
+--
+src/packages/cli/src/structuredIO.ts:801:  const hookGenerator = executePermissionRequestHooks(
+src/packages/cli/src/structuredIO.ts-802-    toolName,
+src/packages/cli/src/structuredIO.ts-803-    toolUseID,
+src/packages/cli/src/structuredIO.ts-804-    input,
+src/packages/cli/src/structuredIO.ts-805-    toolUseContext,
+src/packages/cli/src/structuredIO.ts-806-    permissionMode,
+src/packages/cli/src/structuredIO.ts-807-    suggestions as unknown as SDKPermissionUpdate[] | undefined,
+src/packages/cli/src/structuredIO.ts-808-    toolUseContext.abortController.signal,
+src/packages/cli/src/structuredIO.ts-809-  )
+src/packages/cli/src/structuredIO.ts-810-
+src/packages/cli/src/structuredIO.ts-811-  for await (const hookResult of hookGenerator) {
+src/packages/cli/src/structuredIO.ts-812-    if (
+src/packages/cli/src/structuredIO.ts-813-      hookResult.permissionRequestResult &&
+src/packages/cli/src/structuredIO.ts-814-      (hookResult.permissionRequestResult.behavior === 'allow' ||
+src/packages/cli/src/structuredIO.ts-815-        hookResult.permissionRequestResult.behavior === 'deny')
+--
+src/packages/permission/src/toolPermission/PermissionContext.ts:228:      for await (const hookResult of executePermissionRequestHooks(
+src/packages/permission/src/toolPermission/PermissionContext.ts-229-        tool.name,
+src/packages/permission/src/toolPermission/PermissionContext.ts-230-        toolUseID,
+src/packages/permission/src/toolPermission/PermissionContext.ts-231-        input,
+src/packages/permission/src/toolPermission/PermissionContext.ts-232-        toolUseContext,
+src/packages/permission/src/toolPermission/PermissionContext.ts-233-        permissionMode,
+src/packages/permission/src/toolPermission/PermissionContext.ts-234-        suggestions as any,
+src/packages/permission/src/toolPermission/PermissionContext.ts-235-        toolUseContext.abortController.signal,
+src/packages/permission/src/toolPermission/PermissionContext.ts-236-      )) {
+src/packages/permission/src/toolPermission/PermissionContext.ts-237-        if (hookResult.permissionRequestResult) {
+src/packages/permission/src/toolPermission/PermissionContext.ts-238-          const decision = hookResult.permissionRequestResult
+src/packages/permission/src/toolPermission/PermissionContext.ts-239-          if (decision.behavior === 'allow') {
+src/packages/permission/src/toolPermission/PermissionContext.ts-240-            const finalInput = decision.updatedInput ?? updatedInput ?? input
+src/packages/permission/src/toolPermission/PermissionContext.ts-241-            return await this.handleHookAllow(
+src/packages/permission/src/toolPermission/PermissionContext.ts-242-              finalInput,

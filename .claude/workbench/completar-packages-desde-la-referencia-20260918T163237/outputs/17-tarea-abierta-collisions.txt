@@ -1,0 +1,4 @@
+/home/user/thyrox/src/packages/config/remote/securityCheck.jsx
+  ensombrece a  /home/user/thyrox/src/packages/config/remote/securityCheck.ts
+/home/user/thyrox/src/packages/tool-registry/src/tools/TungstenTool/TungstenTool.js
+  ensombrece a  /home/user/thyrox/src/packages/tool-registry/src/tools/TungstenTool/TungstenTool.ts

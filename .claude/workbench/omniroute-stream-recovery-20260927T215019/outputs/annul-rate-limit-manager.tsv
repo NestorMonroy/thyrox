@@ -1,0 +1,16 @@
+base	20 pass, 0 fail	—
+bypass-disabled	19 pass, 1 fail	una credencial sin protección pasa directa y no aparece en el estado
+anthropic-names	20 pass, 0 fail	—
+retire-on-429	0 pass, 1 fail	agotó el plazo (20 s)
+over-limit	19 pass, 1 fail	el aviso de exceso separa las peticiones 200 ms
+low-remaining	19 pass, 1 fail	con poco cupo restante, el limitador se ciñe a lo que queda hasta el reinicio
+high-remaining	19 pass, 1 fail	con holgura, el limitador vuelve al suelo y suelta el cupo; Anthropic usa sus cabeceras
+minute-margin	18 pass, 2 fail	con poco cupo restante, el limitador se ciñe a lo que queda hasta el reinicio | un remanente intermedio sólo ajusta minTime
+body-retry	19 pass, 1 fail	una pista de reintento en el cuerpo vacía el cupo hasta que pase
+cap-only-429	19 pass, 1 fail	una respuesta que no es 429 no enseña ningún tope
+cap-floor	19 pass, 1 fail	un tope nunca separa las peticiones menos que el suelo de minTime
+cap-reapplied	19 pass, 1 fail	el tope aprendido sobrevive al retiro del limitador por el 429 siguiente
+model-scope	19 pass, 1 fail	gemini y github llevan un limitador por modelo; el resto uno por credencial
+disable-forgets	19 pass, 1 fail	desactivar olvida lo aprendido de la credencial
+record-merges	19 pass, 1 fail	lo aprendido de las cabeceras conserva el tope aprendido del cuerpo
+queue-defaults	19 pass, 1 fail	los ajustes de cola se aplican al crear cada limitador

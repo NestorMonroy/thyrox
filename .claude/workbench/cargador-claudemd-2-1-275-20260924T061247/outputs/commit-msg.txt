@@ -1,0 +1,25 @@
+Port the CLAUDE.md hierarchy loader from 2.1.275
+
+getMemoryFiles has consumers in context building, compaction cleanup,
+context analysis, status and the repl, and storage declared it not
+ported, so every suite reaching them failed at import.
+
+2.1.275 (ob/qwo, hF, AEe, x7e/Gtn, Iwo, Hwo, Qtn) loads managed, then
+user CLAUDE.md and rules, then CLAUDE.md, .claude/CLAUDE.md,
+.claude/rules and CLAUDE.local.md from the filesystem root down to the
+session's original cwd, plus additional directories when enabled.
+Includes follow @paths outside code and comments to depth 5, once
+each; a target outside the original cwd needs external includes,
+checked on the written path and again on the resolved one. Rules
+with paths: frontmatter are conditional and left out; files over
+4 MiB or with non-text extensions are skipped; claudeMdExcludes
+drops matches. The prompt text of getClaudeMds is our own.
+
+Pending, with no producer in this tree: the policy-helper content,
+the worktree main-root skip, auto-memory and the InstructionsLoaded
+echo.
+
+Annulment: each of six guards (conditional filter, inline code,
+fences, excludes, both external checks) fails exactly its one case.
+Two controls did not discriminate at first and the fixtures were
+fixed until they did.

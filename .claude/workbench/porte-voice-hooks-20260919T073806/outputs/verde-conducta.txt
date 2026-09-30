@@ -1,0 +1,12 @@
+== stubs restantes en TODO el paquete (esperado: ninguno)
+(ninguno)
+
+== residuo de specifier del alcance de la fuente en TODO el paquete
+(ninguno)
+
+== sonda de conducta, criterio discriminante
+useVoice: PORTADO -> null is not an object (evaluating 'resolveDispatcher().useSt
+useVoiceIntegration: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+useVoiceKeybindingHandler: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+VoiceKeybindingHandler: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+stubs restantes: 0 de 4

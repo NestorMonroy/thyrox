@@ -1,0 +1,12 @@
+# El historial es DE este ítem: una ejecución sola, medida con GNU Time y la
+# GPU simulada, deja su pico (400 MiB -> pide 800). Heredar el de otro ítem lo
+# falseaba: un pico 0 de una ejecución rápida hacía que no se pidiera nada, y
+# los dos pools corrían juntos sin que la admisión llegara a actuar.
+HIST="$F/historial-dos-pools"
+printf 'RAMPA-medida\n' | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/gnu-time" \
+  HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-medida" \
+  --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-medida.salida" 2>&1
+: > "$RAMPA_LOG"
+check "dos pools: la ejecución de medida deja el pico del ítem" \
+  "$(gawk '{print $1}' "$F/out-medida/1.gpu" 2>/dev/null)" "400"
+dos_pools() {

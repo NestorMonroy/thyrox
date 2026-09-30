@@ -1,0 +1,1 @@
+function Vo(e){let n=Hj().safeParse(e);if(!n.success)return;let{lineage:r,source:s}=n.data;return{lineage:r,source:s==="typed"||s==="relay"||s==="owner"?s:"unattributed"}}

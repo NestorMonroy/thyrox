@@ -1,0 +1,104 @@
+../../filesystem.js generateSuggestions
+../../permissions.js hasPermissionsToUseTool
+../../skills/loadSkillsDir.js clearDynamicSkills
+../config/plugin/lspPluginIntegration.ts(6,3): error TS2724: '"./_deps.js"' has no exported member named 'ScopedLspServerConfig'. Did you mean 'ScopedMcpServerConfig'?
+../global/config.js getMemoryPath
+../index.js shouldSkipPluginAutoupdate
+../prompts.js SYSTEM_PROMPT_DYNAMIC_BOUNDARY
+../prompts.js getSystemPrompt
+../repl/src/components/Messages.tsx(40,3): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'getToolUseIDs'. Did you mean 'getToolUseID'?
+../repl/src/components/ultraplan/UltraplanChoiceDialog.tsx(21,15): error TS2724: '"@thyrox/agent/uuid.js"' has no exported member named 'UUID'. Did you mean 'Uuid'?
+../repl/src/processUserInput/processSlashCommand.tsx(48,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+../repl/src/processUserInput/processUserInput.ts(36,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+../repl/src/screens/REPLView.tsx(300,10): error TS2724: '"@thyrox/agent/promptCategory.js"' has no exported member named 'getQuerySourceForREPL'. Did you mean 'getQuerySourceForAgent'?
+../settings/types.js ExtraKnownMarketplaceSchema
+../tool-registry/src/Tool.ts(154,15): error TS2724: '"@thyrox/permission/permissionTypes"' has no exported member named 'ToolPermissionRulesBySource'. Did you mean 'PermissionRuleSource'?
+./_deps.js AgentDefinition
+./claudeInChromeCommon.js getAllBrowserDataPaths
+./claudeInChromeCommon.js getAllNativeMessagingHostsDirs
+./claudeInChromeCommon.js getAllWindowsRegistryKeys
+./claudeInChromeCommon.js openInChrome
+./common.js getAllSocketPaths
+./common.js getSecureSocketPath
+./compact.js compactConversation
+./compact.js createPlanAttachmentIfNeeded
+./mode-dispatch.js PendingAssistantChat
+./mode-dispatch.js PendingConnect
+./mode-dispatch.js PendingSSH
+./mode-dispatch.js runModeDispatch
+./permissionTypes.js YoloClassifierResult
+./prompts.js getSystemPrompt
+@thyrox/agent/attachments.js AgentMentionAttachment
+@thyrox/agent/attachments.js Attachment
+@thyrox/agent/attachments.js getQueuedCommandAttachments
+@thyrox/agent/attachments.js resetSentSkillNames
+@thyrox/agent/attachments.js suppressNextSkillListing
+@thyrox/agent/compaction/compact.js compactConversation
+@thyrox/agent/compaction/compact.js partialCompactConversation
+@thyrox/agent/context.js calculateContextPercentages
+@thyrox/agent/context.js getModelMaxOutputTokens
+@thyrox/agent/effort.js getOpusDefaultEffortConfig
+@thyrox/agent/eventMetadata.js extractToolInputForTelemetry
+@thyrox/agent/inProcessTeammateHelpers.js handlePlanApprovalResponse
+@thyrox/agent/inProcessTeammateHelpers.js setAwaitingPlanApproval
+@thyrox/agent/messages.js EMPTY_LOOKUPS
+@thyrox/agent/messages.js EMPTY_STRING_SET
+@thyrox/agent/messages.js StreamingThinking
+@thyrox/agent/messages.js StreamingToolUse
+@thyrox/agent/messages.js buildMessageLookups
+@thyrox/agent/messages.js buildSubagentLookups
+@thyrox/agent/messages.js filterOrphanedThinkingOnlyMessages
+@thyrox/agent/messages.js filterWhitespaceOnlyAssistantMessages
+@thyrox/agent/messages.js getMessagesAfterCompactBoundary
+@thyrox/agent/messages.js getProgressMessagesFromLookup
+@thyrox/agent/messages.js getSiblingToolUseIDsFromLookup
+@thyrox/agent/messages.js handleMessageFromStream
+@thyrox/agent/messages.js hasUnresolvedHooksFromLookup
+@thyrox/agent/messages.js isSystemLocalCommandMessage
+@thyrox/agent/messages.js reorderMessagesInUI
+@thyrox/agent/messages.js shouldShowUserMessage
+@thyrox/agent/messages.js stripSignatureBlocks
+@thyrox/agent/messages.js withMemoryCorrectionHint
+@thyrox/agent/messages/systemInit.js buildSystemInitMessage
+@thyrox/agent/prompts.js SYSTEM_PROMPT_DYNAMIC_BOUNDARY
+@thyrox/agent/prompts.js enhanceSystemPromptWithEnvDetails
+@thyrox/agent/prompts.js getSystemPrompt
+@thyrox/agent/sessionTitle.js generateSessionTitle
+@thyrox/agent/sessionTools/transcriptSearch.js renderableSearchText
+@thyrox/agent/tasks.js claimTask
+@thyrox/agent/tasks.js resetTaskList
+@thyrox/agent/tokenEstimation.js countTokensWithAPI
+@thyrox/agent/toolSearch.js isToolSearchEnabledOptimistic
+@thyrox/agent/toolSearch.js isToolSearchToolAvailable
+@thyrox/agent/types/hooks.js HookProgress
+@thyrox/command-runtime/skills/loadSkillsDir.js activateConditionalSkillsForPaths
+@thyrox/command-runtime/skills/loadSkillsDir.js addSkillDirectories
+@thyrox/command-runtime/skills/loadSkillsDir.js clearSkillCaches
+@thyrox/command-runtime/skills/loadSkillsDir.js discoverSkillDirsForPaths
+@thyrox/command-runtime/skills/loadSkillsDir.js onDynamicSkillsLoaded
+@thyrox/config formatAutoUpdaterDisabledReason
+@thyrox/config getAutoUpdaterDisabledReason
+@thyrox/config isAutoUpdaterDisabled
+@thyrox/config markHasUsedAgentsFleet
+@thyrox/config recordFirstStartTime
+@thyrox/config/settings getManagedFileSettingsPresence
+@thyrox/config/settings getManagedSettingsKeysForLogging
+@thyrox/config/settings getPolicySettingsOrigin
+@thyrox/config/settings getUseAutoModeDuringPlan
+@thyrox/permission hasPermissionsToUseTool
+@thyrox/permission/filesystem checkReadPermissionForTool
+@thyrox/permission/filesystem checkWritePermissionForTool
+@thyrox/permission/getNextPermissionMode.js cyclePermissionMode
+@thyrox/permission/permissions hasPermissionsToUseTool
+@thyrox/shell/process.js registerProcessOutputErrorHandlers
+@thyrox/shell/process.js writeToStderr
+@thyrox/shell/process.js writeToStdout
+@thyrox/storage/claudemd.js clearMemoryFileCaches
+@thyrox/storage/claudemd.js getMemoryFiles
+@thyrox/storage/claudemd.js resetGetMemoryFilesCache
+@thyrox/storage/sessionRestore.js exitRestoredWorktree
+@thyrox/storage/sessionRestore.js restoreAgentFromSession
+@thyrox/storage/sessionRestore.js restoreSessionStateFromLog
+@thyrox/storage/sessionRestore.js restoreWorktreeForResume
+src/headless/sdk/session/run-streaming.ts(6,3): error TS2724: '"@thyrox/config/settings"' has no exported member named 'getSettingsWithSources'. Did you mean 'getSettingsWithErrors'?
+src/structuredIO.ts(25,29): error TS2724: '"@thyrox/agent/types/hooks.js"' has no exported member named 'hookJSONOutputSchema'. Did you mean 'HookJSONOutput'?

@@ -1,0 +1,1 @@
+secuencias=3000 discrepancias=0

@@ -1,0 +1,1 @@
+function pQn(e){if(!e.startsWith("auto:"))return null;let r=e.slice(5),o=Bl(r);if(isNaN(o))return t(`Invalid ENABLE_TOOL_SEARCH value "${e}": expected auto:N where N is a number.`),null;return Math.max(0,Math.min(100,o))}

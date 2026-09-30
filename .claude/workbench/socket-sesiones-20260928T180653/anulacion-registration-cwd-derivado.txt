@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+294 |     await flush()
+295 |     expect(record()).toMatchObject({ cwd: '/work/otro', name: 'otro-s1' })
+296 |     state.setRegisteredName('propio', 'user')
+297 |     cwdListeners[0]!('/work/tercero')
+298 |     await flush()
+299 |     expect(record()).toMatchObject({ cwd: '/work/tercero', name: 'otro-s1' })
+                           ^
+error: expect(received).toMatchObject(expected)
+
+@@ -2,3 +2,18 @@
+    "cwd": "/work/tercero",
+-   "name": "otro-s1",
++   "kind": "interactive",
++   "name": "tercero-s1",
++   "nameSince": 1000,
++   "nameSource": "derived",
++   "peerFeatures": [
++     "notify_idle",
++     "artifact_yield",
++   ],
++   "peerProtocol": 1,
++   "pid": 4242,
++   "pidDomain": "linux:m:ns",
++   "procStart": "start-4242",
++   "sessionId": "s1",
++   "startedAt": 1000,
++   "updatedAt": 1000,
++   "version": "9.9.9",
+  }
+
+- Expected  - 1
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:299:22)
+(fail) los cambios de sesión y de directorio > un cambio de directorio publica el nuevo y renombra el nombre derivado [13.00ms]
+
+ 22 pass
+ 1 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [185.00ms]

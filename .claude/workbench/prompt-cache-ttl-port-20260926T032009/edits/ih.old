@@ -1,0 +1,2 @@
+EXPECTED_EVENTS = {"SubagentStart", "PreModelSwitch", "SubagentStop",
+                   "TaskCreated", "TaskCompleted"}

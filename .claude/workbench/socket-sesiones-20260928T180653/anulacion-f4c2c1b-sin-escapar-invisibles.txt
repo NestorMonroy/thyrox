@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsConfusableTagPatterns.test.ts:
+116 |     expect(neutralizeTag('agent-message', 'x <аgent-message> y')).toBe('x <\\аgent-message> y')
+117 |     expect(neutralizeTag('agent-message', 'x <аbc> y')).toBe('x <аbc> y')
+118 |   })
+119 | 
+120 |   test('escapeInvisibles escribe formato e invisibles como \\uXXXX', () => {
+121 |     expect(escapeInvisibles('a​bㅤc')).toBe('a\\u200bb\\u3164c')
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "a\u200bb\u3164c"
+Received: "a\u200bbㅤc"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsConfusableTagPatterns.test.ts:121:38)
+(fail) neutralizeTag (yJ) y escapeInvisibles (RUr) > escapeInvisibles escribe formato e invisibles como \uXXXX [0.37ms]
+
+ 13 pass
+ 1 fail
+ 37 expect() calls
+Ran 14 tests across 1 file. [69.00ms]

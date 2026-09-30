@@ -1,0 +1,11 @@
+{
+  "id": "92",
+  "subject": "Gate del paso 7: un puerto no cierra sin su PROVEN persistido",
+  "description": "ID: TASK-API-0043\n\nPaso 7 de proc-construccion-guiada-por-referencia (aprobado 2026-09-04): «persistir PROVEN antes de resumir». En `api` lo sostienen `registro-reportes-agentes.md` + los hallazgos; en el harness se cumple POR PROSA — los análisis en docs y los eventos en .claude/eventos/ — y nada lo verifica.\n\nEs el único paso del procedimiento que queda sin mecanismo tras este pase (1 y 4 los cierra src/reference/triple.ts, 5 lo cerró #80, 2/3/6 son #81, 8 es #88).\n\nFORMA CANDIDATA, sin decidir: el gate no puede medir «hay PROVEN» sobre prosa libre sin caer en el sub-patrón C (medir el significante y concluir sobre el significado). Lo que SÍ es medible: que un commit que toca un puerto traiga en el mismo pase (a) un `.rst` nuevo o modificado bajo source/gestion/pm/**, o (b) un banco de trabajo con su manifiesto conforme. Eso mide PERSISTENCIA, que es el fenómeno del paso, no calidad de la evidencia — y su ceguera se declara.\n\nAntes de construirlo hay que medir cuántos commits de puerto ya lo cumplen: un gate cuyo día 1 sea 0/N arranca avisando, como los otros dos.",
+  "activeForm": "Construyendo el gate del paso 7",
+  "status": "pending",
+  "blocks": [
+    "265"
+  ],
+  "blockedBy": []
+}

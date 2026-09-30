@@ -1,0 +1,8 @@
+{
+  "id": "237",
+  "subject": "Triar las filas de nivel 4 sin procedencia, que no distinguen «murió» de «no se supo»",
+  "description": "CERRADA 2026-09-07 — el triaje se hizo y la población era otra. Medido sobre el store fusionado (H-DOCS-1239, docs@c1cef3c43):\n\nDe las 32 filas en nivel 4, **31 declaran outcome_source** — api_error 16, journal 11, transcript 4. La única con NULL es `probe-muerto`, una fila sintética de un control, no un agente. Así que «las de nivel 4 sin procedencia» son 1 de 32, y esa 1 es un artefacto de prueba.\n\nEl residuo real era otro y más grande: **93 filas con retention_level NULL**, de las cuales 56 eran completed nacidas del hook y YA marcadas usage_source='no_medido' — dos columnas de la misma fila diciendo cosas distintas.\n\nCerrado con `_backfill_retention_level` (thyrox@e2485ba2), que reparte por la PROCEDENCIA de la medición y no por el estado: no_medido -> 4 con outcome_source='sin_transcript'; transcript -> el nivel que su estado implica; NULL -> no se toca. Tras correrlo: 93 niveladas, 0 filas sin nivel, 0 sin usage_source.\n\nSuite: thyrox/tests/agents/test_retention_backfill.py, con anulación medida (4 de 10 caen).\n\nNO se tocan las 700 filas en nivel 3 con usage_source='no_medido': registran dos momentos —el transcript existía al fijar el nivel y no existe al medir el costo— y las dos afirmaciones son ciertas.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

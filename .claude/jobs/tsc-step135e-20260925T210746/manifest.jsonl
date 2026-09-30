@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json --pretty false > /home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-135/after-wave4.log 2>&1; echo EXIT=$?", "started_at": "2026-09-25T21:07:46+00:00"}

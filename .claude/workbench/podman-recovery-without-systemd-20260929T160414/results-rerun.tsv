@@ -1,0 +1,3 @@
+health-runs-alone	log_after_10s=0 status=healthy manual_rc=0 log_after_manual=1
+health-on-failure-restart	restarts_after_10s=0 manual_rc=1 restarts_after_manual=1 status=starting
+whole-tree-dies	defined_after=yes stale_state=running synced_state=running old_pid_alive=no restarts=0 volume_file_kept=yes podman_start_rc=0 new_pid_alive=no new_pid_differs=no

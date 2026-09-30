@@ -1,0 +1,14 @@
+{
+  "id": "79",
+  "subject": "Decidir si el harness necesita marco de gates y cuáles de los 7 candidatos débiles portar a TS",
+  "description": "Register gate-framework decision",
+  "activeForm": "Decidiendo el marco de gates del harness",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "analisis": "analisis-scripts-de-api-candidatos-al-harness",
+    "decision_del_ejecutor": true
+  }
+}

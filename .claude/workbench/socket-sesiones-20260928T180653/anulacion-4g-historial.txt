@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+150 |   test('una hija siempre lo está', () => {
+151 |     expect(isOnAgentSessionSurface(host({ env: { THYROX_CODE_CHILD_SESSION: '1' } }))).toBe(true)
+152 |   })
+153 | 
+154 |   test('dentro de la shell del agente: sin historial o sin terminal en las dos puntas', () => {
+155 |     expect(isOnAgentSessionSurface(host({ env: { CLAUDECODE: '1', THYROX_CODE_SKIP_PROMPT_HISTORY: 'true' } }))).toBe(true)
+                                                                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:155:114)
+(fail) isOnAgentSessionSurface (cFt) > dentro de la shell del agente: sin historial o sin terminal en las dos puntas [0.25ms]
+
+ 17 pass
+ 1 fail
+ 37 expect() calls
+Ran 18 tests across 1 file. [128.00ms]

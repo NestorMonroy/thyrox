@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 .claude/workbench/sustitutos-20260927T025549/sweep-derived.cmds", "started_at": "2026-09-27T04:59:02+00:00"}

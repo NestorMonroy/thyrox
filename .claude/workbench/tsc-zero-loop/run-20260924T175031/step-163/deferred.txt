@@ -1,0 +1,7 @@
+src/packages/agent/commands/brief.ts	0 de 9 aceptadas (media 0.09)	ruta: modules o manual
+src/packages/app-host/src/launchRepl.tsx	0 de 4 aceptadas (media 0.17)	ruta: modules o manual
+src/packages/provider/src/claudeLegacyRuntime.ts	0 de 8 aceptadas (media 0.10)	ruta: modules o manual
+src/packages/provider/src/openai/streamAdapter.ts	0 de 7 aceptadas (media 0.11)	ruta: modules o manual
+src/packages/storage/src/sessionStorage.ts	0 de 4 aceptadas (media 0.17)	ruta: modules o manual
+src/packages/tool-registry/src/tools/BashTool/UI.tsx	0 de 5 aceptadas (media 0.14)	ruta: modules o manual
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts	0 de 8 aceptadas (media 0.10)	ruta: modules o manual

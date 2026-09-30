@@ -1,0 +1,24 @@
+src/packages/repl/src/commands/plan/plan.tsx(58,35): error TS2345: Argument of type '{ [key: string]: unknown; permissionRules: unknown; }' is not assignable to parameter of type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:48-68 ---
+     48    const { getAppState, setAppState } = context
+     49    const appState = getAppState()
+     50    const currentMode = appState.toolPermissionContext.mode
+     51  
+     52    // If not in plan mode, enable it
+     53    if (currentMode !== 'plan') {
+     54      handlePlanModeTransition(currentMode, 'plan')
+     55      setAppState((prev: { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } }) => ({
+     56        ...prev,
+     57        toolPermissionContext: applyPermissionUpdate(
+     58>         prepareContextForPlanMode(prev.toolPermissionContext),
+     59          { type: 'setMode', mode: 'plan', destination: 'session' },
+     60        ),
+     61      }))
+     62      const description = args.trim()
+     63      if (description && description !== 'open') {
+     64        onDone('Enabled plan mode', { shouldQuery: true })
+     65      } else {
+     66        onDone('Enabled plan mode')
+     67      }
+     68      return null
+  Type '{ [key: string]: unknown; permissionRules: unknown; }' is missing the following properties from type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }': mode, additionalWorkingDirectories, alwaysAllowRules, alwaysDenyRules, and 2 more.

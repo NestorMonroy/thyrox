@@ -1,0 +1,23 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(512,55): error TS2345: Argument of type 'string' is not assignable to parameter of type 'FsOperations'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:502-522 ---
+    502        (await nodeFsp.readdir(p, { withFileTypes: true })) as Array<{
+    503          name: string
+    504          isFile(): boolean
+    505          isDirectory(): boolean
+    506        }>,
+    507      stat: async p => (await nodeFsp.stat(p)) as any,
+    508      rm: async (p, o) => nodeFsp.rm(p, o),
+    509      rename: async (o, n) => nodeFsp.rename(o, n),
+    510    })
+    511    setPathExistsFn(p => pathExists(p))
+    512>   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+    513    setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
+    514    setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
+    515    setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
+    516  
+    517    // --- git
+    518    setGitExeFn(() => gitExe())
+    519    setGetHeadForDirFn(dir => getHeadForDir(dir))
+    520  
+    521    // --- subproceso
+    522    setExecFileNoThrowFn(execFileNoThrow)

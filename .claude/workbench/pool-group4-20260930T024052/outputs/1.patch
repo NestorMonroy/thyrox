@@ -1,0 +1,208 @@
+diff --git a/src/packages/app-host/src/startup/__tests__/startupProfilerReport.test.ts b/src/packages/app-host/src/startup/__tests__/startupProfilerReport.test.ts
+new file mode 100644
+index 00000000..ba39e8b6
+--- /dev/null
++++ b/src/packages/app-host/src/startup/__tests__/startupProfilerReport.test.ts
+@@ -0,0 +1,118 @@
++/**
++ * El informe del perfilador de arranque se cierra al TERMINAR el proceso,
++ * sin importar el camino que lo cierre — hoy sólo el REPL invocaba
++ * `profileReport` explícitamente (`gracefulShutdown.ts`, `run-program.ts`);
++ * `--version`, los modos ligeros (`providers`, `mitm`) y `-p` en modo de
++ * impresión nunca lo llamaban, así que `THYROX_CODE_PROFILE_STARTUP` no
++ * dejaba ningún informe fuera de ese camino (TASK-THYROX-0438, #130-7).
++ *
++ * Se prueba con un proceso aparte, no con `resetProfilerStateForTests`: el
++ * gancho de cierre se registra una sola vez al cargar el módulo
++ * (`process.once('exit', …)`), y su comportamiento frente a un
++ * `process.exit()` explícito —que salta cualquier `finally` de la pila— sólo
++ * se puede observar dejando morir un proceso real.
++ */
++import { describe, expect, test } from 'bun:test'
++import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++const STARTUP_PROFILER_MODULE = join(import.meta.dir, '..', 'startupProfiler.ts')
++
++function reportFileNames(configDir: string): string[] {
++  try {
++    return readdirSync(join(configDir, 'startup-perf'))
++  } catch {
++    return []
++  }
++}
++
++function runProbe(script: string, configDir: string): number | null {
++  const done = Bun.spawnSync(['bun', '-e', script], {
++    env: {
++      ...process.env,
++      THYROX_CODE_PROFILE_STARTUP: '1',
++      THYROX_CONFIG_DIR: configDir,
++      STARTUP_PROFILER_MODULE_PATH: STARTUP_PROFILER_MODULE,
++    },
++    stdout: 'pipe',
++    stderr: 'pipe',
++  })
++  return done.exitCode
++}
++
++describe('profileReport al cierre del proceso, sin llamarlo explícitamente', () => {
++  test('un camino que llama a process.exit() directo deja exactamente un informe', () => {
++    const configDir = mkdtempSync(join(tmpdir(), 'startup-profiler-report-exit-'))
++    try {
++      const exitCode = runProbe(
++        `const { profileCheckpoint } = await import(process.env.STARTUP_PROFILER_MODULE_PATH)
++profileCheckpoint('cli_entry')
++process.exit(0)`,
++        configDir,
++      )
++      expect(exitCode).toBe(0)
++      expect(reportFileNames(configDir).length).toBe(1)
++    } finally {
++      rmSync(configDir, { recursive: true, force: true })
++    }
++  })
++
++  test('un camino que retorna sin llamar a process.exit() también deja un informe', () => {
++    const configDir = mkdtempSync(join(tmpdir(), 'startup-profiler-report-return-'))
++    try {
++      const exitCode = runProbe(
++        `const { profileCheckpoint } = await import(process.env.STARTUP_PROFILER_MODULE_PATH)
++profileCheckpoint('cli_entry')`,
++        configDir,
++      )
++      expect(exitCode).toBe(0)
++      expect(reportFileNames(configDir).length).toBe(1)
++    } finally {
++      rmSync(configDir, { recursive: true, force: true })
++    }
++  })
++
++  test('si el camino ya reportó con su propia sesión, el cierre no agrega un segundo informe', () => {
++    const configDir = mkdtempSync(join(tmpdir(), 'startup-profiler-report-dedupe-'))
++    try {
++      const exitCode = runProbe(
++        `const { profileCheckpoint, profileReport } = await import(process.env.STARTUP_PROFILER_MODULE_PATH)
++profileCheckpoint('cli_entry')
++profileReport({ sessionId: 'sesion-real' })
++process.exit(0)`,
++        configDir,
++      )
++      expect(exitCode).toBe(0)
++      const files = reportFileNames(configDir)
++      expect(files.length).toBe(1)
++      expect(files[0]).toBe('sesion-real.txt')
++    } finally {
++      rmSync(configDir, { recursive: true, force: true })
++    }
++  })
++
++  test('sin THYROX_CODE_PROFILE_STARTUP, el cierre no escribe ningún archivo', () => {
++    const configDir = mkdtempSync(join(tmpdir(), 'startup-profiler-report-off-'))
++    try {
++      const done = Bun.spawnSync(['bun', '-e',
++        `const { profileCheckpoint } = await import(process.env.STARTUP_PROFILER_MODULE_PATH)
++profileCheckpoint('cli_entry')
++process.exit(0)`,
++      ], {
++        env: {
++          ...process.env,
++          THYROX_CODE_PROFILE_STARTUP: '',
++          THYROX_CONFIG_DIR: configDir,
++          STARTUP_PROFILER_MODULE_PATH: STARTUP_PROFILER_MODULE,
++        },
++        stdout: 'pipe',
++        stderr: 'pipe',
++      })
++      expect(done.exitCode).toBe(0)
++      expect(reportFileNames(configDir).length).toBe(0)
++    } finally {
++      rmSync(configDir, { recursive: true, force: true })
++    }
++  })
++})
+diff --git a/src/packages/app-host/src/startup/startupProfiler.ts b/src/packages/app-host/src/startup/startupProfiler.ts
+index fc8ae12d..785790c5 100644
+--- a/src/packages/app-host/src/startup/startupProfiler.ts
++++ b/src/packages/app-host/src/startup/startupProfiler.ts
+@@ -37,7 +37,17 @@
+ // `reported`) son "decididas una vez al cargar el módulo" por diseño — la
+ // fuente lo declara así explícitamente — y sin un reset ningún test
+ // posterior al primero puede ejercitar una configuración distinta.
+-
++//
++// El gancho `process.once('exit', …)` que cierra el módulo tampoco existe
++// en la fuente: ahí `profileReport` sólo se invocaba desde el camino del
++// REPL. En este árbol el arranque tiene caminos que nunca pasan por el REPL
++// (`--version`, los modos ligeros de `cli.tsx`, `-p` en modo de impresión;
++// TASK-THYROX-0438, #130-7) y ninguno llamaba a `profileReport`, así que
++// `THYROX_CODE_PROFILE_STARTUP` no dejaba ningún informe fuera del REPL. El
++// gancho cierra el informe al terminar el proceso sin importar el camino,
++// cediendo ante cualquier llamada explícita anterior (la bandera `reported`).
++
++import { randomUUID } from 'node:crypto'
+ import { homedir } from 'node:os'
+ import { dirname, join } from 'node:path'
+ import { mkdirSync, writeFileSync as writeFileSyncNode } from 'node:fs'
+@@ -85,6 +95,27 @@ if (shouldProfile()) {
+   profileCheckpoint('profiler_initialized')
+ }
+ 
++/**
++ * Sesión de respaldo para el cierre automático de abajo: no hay una sesión
++ * real que citar cuando el proceso nunca bootstrapeó `bootstrap/state.ts`
++ * (`--version`, los modos ligeros, `-p` en modo de impresión).
++ */
++function fallbackSessionId(): string {
++  return randomUUID()
++}
++
++/**
++ * Cierre de respaldo: nuevo respecto de la fuente, que sólo emitía el
++ * informe desde el camino del REPL (`gracefulShutdown.ts`). `profileReport`
++ * ya se protege sola contra una segunda emisión (bandera `reported`), así
++ * que registrar este gancho para TODO proceso que carga el módulo es
++ * seguro — si alguien ya reportó con su sesión real antes de que el
++ * proceso termine, esta llamada no hace nada. `process.on('exit', …)`
++ * corre incluso después de un `process.exit()` explícito, que salta
++ * cualquier `finally` de la pila que lo llamó.
++ */
++process.once('exit', () => profileReport({ sessionId: fallbackSessionId() }))
++
+ /** Registra un checkpoint con el nombre dado. */
+ export function profileCheckpoint(name: string): void {
+   if (!shouldProfile()) return
+diff --git a/src/packages/cli/src/entry/cli.tsx b/src/packages/cli/src/entry/cli.tsx
+index 843630ed..a2ed1f18 100644
+--- a/src/packages/cli/src/entry/cli.tsx
++++ b/src/packages/cli/src/entry/cli.tsx
+@@ -76,12 +76,17 @@ if (feature('ABLATION_BASELINE') && process.env.THYROX_CODE_ABLATION_BASELINE) {
+ /**
+  * Bootstrap entrypoint - checks for special flags before loading the full CLI.
+  * All imports are dynamic to minimize module evaluation for fast paths.
+- * Fast-path for --version has zero imports beyond this file.
++ * El perfilador de arranque es la única excepción a eso: se carga antes que
++ * cualquier camino, `--version` incluido, porque su sola carga registra el
++ * cierre del informe al terminar el proceso (`startupProfiler.ts`), y ese
++ * cierre tiene que alcanzar a todo camino, no sólo al REPL (#130-7).
+  */
+ async function main(): Promise<void> {
+   const args = process.argv.slice(2)
+ 
+-  // Fast-path for --version/-v: zero module loading needed
++  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
++
++  // Fast-path for --version/-v: no further module loading beyond the profiler above
+   if (
+     args.length === 1 &&
+     (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')
+@@ -104,8 +109,6 @@ async function main(): Promise<void> {
+     return
+   }
+ 
+-  // For all other paths, load the startup profiler
+-  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
+   profileCheckpoint('cli_entry')
+ 
+   // Fast-path for --dump-system-prompt: output the rendered system prompt and exit.

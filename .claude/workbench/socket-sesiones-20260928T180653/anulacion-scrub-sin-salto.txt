@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTextScrub.test.ts:
+100 |     expect(scrubToolMessageContent(blocks, 'other')).toEqual([{ type: 'text', text: 'a<\\agent-message' }, { type: 'text', text: '>' }])
+101 |   })
+102 | 
+103 |   test('bloques: una etiqueta que sólo se completa con el salto de línea entre bloques', () => {
+104 |     const blocks = [{ type: 'text', text: 'a<agent-message' }, { type: 'text', text: 'x>' }]
+105 |     expect(scrubToolMessageContent(blocks, 'other')).toEqual([{ type: 'text', text: 'a<\\agent-message' }, { type: 'text', text: 'x>' }])
+                                                           ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    {
+-     "text": "a<\agent-message",
++     "text": "a<agent-message",
+      "type": "text",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTextScrub.test.ts:105:54)
+(fail) scrubToolMessageContent (ioe) > bloques: una etiqueta que sólo se completa con el salto de línea entre bloques [0.42ms]
+
+ 17 pass
+ 1 fail
+ 25 expect() calls
+Ran 18 tests across 1 file. [53.00ms]

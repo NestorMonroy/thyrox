@@ -1,0 +1,9 @@
+{
+  "id": "147",
+  "subject": "Medir por conducta la escalera TERM→KILL de maintenance_chain",
+  "description": "El caso 14 de tests/hooks/test_maintenance_chain.py prueba que el grupo del paso agotado muere (testigo en disco), pero NO distingue «murió por SIGTERM» de «murió por SIGKILL»: el testigo cae igual en ambos. La escalera TERM→gracia→KILL de _kill_group se sostiene hoy por fidelidad declarada a timeout(1), no por medición — es un DESCONOCIDO declarado en H-DOCS-1082.\n\nCondición de cierre: un paso de sonda que atrape SIGTERM (trap en sh) y deje rastro en disco antes de salir. Con él, el control discrimina: con la escalera el rastro aparece; con SIGKILL directo, no. Añadir como caso 15 y correr su anulación (sustituir la escalera por un killpg(SIGKILL) único → debe caer exactamente esa aserción).",
+  "activeForm": "Midiendo la escalera TERM→KILL por conducta",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

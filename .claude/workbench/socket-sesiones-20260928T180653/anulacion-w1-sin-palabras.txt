@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+117 |   })
+118 | })
+119 | 
+120 | describe('slugFromText (E$t) — un slug a partir de texto libre', () => {
+121 |   test('primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado', () => {
+122 |     expect(slugFromText('Fix the Login Bug in production now')).toBe('fix-the-login-bug')
+                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "fix-the-login-bug"
+Received: "fix-the-login-bug-in-production-now"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:122:65)
+(fail) slugFromText (E$t) — un slug a partir de texto libre > primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado [0.76ms]
+124 |     expect(slugFromText('[...Truncated text #4 +10 lines...] [Audio #1] hola')).toBe('hola')
+125 |     expect(slugFromText('  ¡Hola, mundo!  ')).toBe('hola-mundo')
+126 |   })
+127 | 
+128 |   test('opciones de palabras y largo, sin guiones en los bordes', () => {
+129 |     expect(slugFromText('uno dos tres', { words: 2 })).toBe('uno-dos')
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "uno-dos"
+Received: "uno-dos-tres"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:129:56)
+(fail) slugFromText (E$t) — un slug a partir de texto libre > opciones de palabras y largo, sin guiones en los bordes [0.16ms]
+
+ 14 pass
+ 2 fail
+ 189 expect() calls
+Ran 16 tests across 1 file. [94.00ms]

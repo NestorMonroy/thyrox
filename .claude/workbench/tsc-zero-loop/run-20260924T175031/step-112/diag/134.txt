@@ -1,0 +1,46 @@
+src/packages/provider/src/claudeLegacy.ts(64,43): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+  --- código src/packages/provider/src/claudeLegacy.ts:54-74 ---
+     54  type ClaudeLegacyRuntime = {
+     55    getExtraBodyParams: (betaHeaders?: string[]) => JsonObject
+     56    getPromptCachingEnabled: (model: string) => boolean
+     57    getCacheControl: (args?: { scope?: string; querySource?: string }) => {
+     58      type: 'ephemeral'
+     59      ttl?: '1h'
+     60      scope?: string
+     61    }
+     62    configureTaskBudgetParams: (
+     63      taskBudget: Options['taskBudget'],
+     64>     outputConfig: BetaMessageStreamParams['output'] & {
+     65        task_budget?: { type: 'tokens'; total: number; remaining?: number }
+     66      },
+     67      betas: string[],
+     68    ) => void
+     69    getAPIMetadata: () => Record<string, unknown>
+     70    verifyApiKey: (...args: unknown[]) => Promise<unknown>
+     71    userMessageToMessageParam: (...args: unknown[]) => MessageParam
+     72    assistantMessageToMessageParam: (...args: unknown[]) => MessageParam
+     73    queryModelWithoutStreaming: (args: {
+     74      messages: unknown[]
+src/packages/provider/src/claudeLegacy.ts(139,41): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+  --- código src/packages/provider/src/claudeLegacy.ts:129-149 ---
+    129  
+    130  export function getCacheControl(args?: {
+    131    scope?: string
+    132    querySource?: string
+    133  }): { type: 'ephemeral'; ttl?: '1h'; scope?: string } {
+    134    return getLegacyRuntime().getCacheControl(args)
+    135  }
+    136  
+    137  export function configureTaskBudgetParams(
+    138    taskBudget: Options['taskBudget'],
+    139>   outputConfig: BetaMessageStreamParams['output'] & {
+    140      task_budget?: { type: 'tokens'; total: number; remaining?: number }
+    141    },
+    142    betas: string[],
+    143  ): void {
+    144    return getLegacyRuntime().configureTaskBudgetParams(taskBudget, outputConfig, betas)
+    145  }
+    146  
+    147  export function getAPIMetadata(): Record<string, unknown> {
+    148    return getLegacyRuntime().getAPIMetadata()
+    149  }

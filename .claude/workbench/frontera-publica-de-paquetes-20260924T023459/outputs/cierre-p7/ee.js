@@ -1,0 +1,1 @@
+function ee(e,r){try{gIe.dispatch({type:"mcpDebug",serverName:e,message:r})}catch{}}

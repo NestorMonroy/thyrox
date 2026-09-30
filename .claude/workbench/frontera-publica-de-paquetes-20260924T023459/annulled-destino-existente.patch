@@ -1,0 +1,11 @@
+--- a/src/typescript/close_exports.py
++++ b/src/typescript/close_exports.py
+@@ -180,7 +180,7 @@
+                 continue
+             target = substitute(exports[key], star)
+             runtime = runtime_target(target)
+-            if runtime and (package_dir / runtime).is_file():
++            if runtime:
+                 closed[subpath] = target
+                 plan.added.append(subpath)
+             else:

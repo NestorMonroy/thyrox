@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.285
+import{Tl}from"/$bunfs/root/chunk-f74xvn8g.js";import{xt,hn,Ue,wt}from"/$bunfs/root/chunk-7y7h3m02.js";import{yt}from"/$bunfs/root/chunk-hyjyjanz.js";import{at}from"/$bunfs/root/chunk-bs3zmfqf.js";var r=null,s=null,n=null,e={name:import.meta.require("/$bunfs/root/chunk-ssjd8snc.js").ARTIFACT_TOOL_NAME,names:import.meta.require("/$bunfs/root/chunk-ssjd8snc.js"),ui:import.meta.require("/$bunfs/root/chunk-jgwx2v5v.js")},M=[yt,Ue,xt,hn,at,Tl,wt,...r?[r.name]:[],...s?[s.name]:[],...n?[n.name]:[],...e?[e.name,e.names.ARTIFACT_COMMENTS_TOOL_NAME,e.names.ARTIFACT_DATA_TOOL_NAME,e.names.ARTIFACT_CHECK_TOOL_NAME]:[]],T={get[yt](){return import.meta.require("/$bunfs/root/chunk-sgw73wwd.js").renderToolUseMessage},get[Ue](){return import.meta.require("/$bunfs/root/chunk-f5k3jg82.js").renderToolUseMessage},get[xt](){return import.meta.require("/$bunfs/root/chunk-w05rjvda.js").renderToolUseMessage},get[hn](){return import.meta.require("/$bunfs/root/chunk-5mf9kz90.js").renderToolUseMessage},get[at](){return import.meta.require("/$bunfs/root/chunk-dxccprr8.js").renderToolUseMessage},get[Tl](){return import.meta.require("/$bunfs/root/chunk-znbk84sf.js").renderToolUseMessage},get[wt](){return import.meta.require("/$bunfs/root/chunk-k8yk9rtv.js").renderToolUseMessage},...r&&{[r.name]:r.ui.renderToolUseMessage},...s&&{[s.name]:s.ui.renderToolUseMessage},...n&&{[n.name]:n.ui.renderToolUseMessage},...e&&{[e.name]:e.ui.renderToolUseMessage,[e.names.ARTIFACT_COMMENTS_TOOL_NAME]:e.ui.renderCommentsToolUseMessage,[e.names.ARTIFACT_DATA_TOOL_NAME]:e.ui.renderDataToolUseMessage,[e.names.ARTIFACT_CHECK_TOOL_NAME]:e.ui.renderCheckToolUseMessage}};function uWe(o,t,l){if(o.renderToolUseMessage)return o.renderToolUseMessage(t,l);return B7e(o.name,t,l)}function B7e(o,t,l){if(Object.hasOwn(T,o))return T[o]?.(t,l);return null}
+export{uWe,B7e};

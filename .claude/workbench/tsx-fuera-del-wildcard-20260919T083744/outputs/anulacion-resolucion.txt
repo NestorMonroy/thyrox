@@ -1,0 +1,17 @@
+@thyrox/agent/claudeInChrome/toolRendering.js	FALLA Cannot find module '@thyrox/agent/claudeInChrome/toolRenderi
+@thyrox/agent/localAgentTask.js	FALLA Cannot find module '@thyrox/agent/localAgentTask.js' from '/
+@thyrox/agent/services/mcpServerApproval.js	FALLA Cannot find module '@thyrox/agent/services/mcpServerApproval
+@thyrox/agent/statusAlias.js	FALLA Cannot find module '@thyrox/agent/statusAlias.js' from '/hom
+@thyrox/agent/tasks/LocalMainSessionTask.js	FALLA Cannot find module '@thyrox/agent/tasks/LocalMainSessionTask
+@thyrox/agent/tasks/LocalShellTask.js	FALLA Cannot find module '@thyrox/agent/tasks/LocalShellTask.js' f
+@thyrox/app-host/context/QueuedMessageContext.js	FALLA Cannot find module '@thyrox/app-host/context/QueuedMessageCo
+@thyrox/config/plugin/core/performStartupChecks.js	FALLA Cannot find module '@thyrox/config/plugin/core/performStartu
+@thyrox/permission/components/ComputerUseApproval/ComputerUseApproval.js	FALLA Cannot find module '@thyrox/permission/components/ComputerUs
+@thyrox/permission/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js	FALLA Cannot find module '@thyrox/permission/components/ExitPlanMo
+@thyrox/permission/components/FilePermissionDialog/permissionOptions.js	FALLA Cannot find module '@thyrox/permission/components/FilePermis
+@thyrox/permission/components/PermissionDialog.js	FALLA Cannot find module '@thyrox/permission/components/Permission
+@thyrox/permission/components/PermissionRequest.js	FALLA Cannot find module '@thyrox/permission/components/Permission
+@thyrox/permission/components/SandboxPermissionRequest.js	FALLA Cannot find module '@thyrox/permission/components/SandboxPer
+@thyrox/permission/components/WorkerPendingPermission.js	FALLA Cannot find module '@thyrox/permission/components/WorkerPend
+@thyrox/permission/components/rules/AddWorkspaceDirectory.js	FALLA Cannot find module '@thyrox/permission/components/rules/AddW
+@thyrox/provider/commands/logout/logout.js	FALLA Cannot find module '@thyrox/provider/commands/logout/logout.

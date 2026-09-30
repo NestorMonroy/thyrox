@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/openai/indexImpl.ts(106,11): error TS2322: Type 'readonly ProviderAgentDefinition[] | undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+  --- código src/packages/provider/src/openai/indexImpl.ts:96-116 ---
+     96          if (providerToolMatchesName(tool, TOOL_SEARCH_TOOL_NAME)) return true
+     97          return discoveredToolNames.has(tool.name)
+     98        })
+     99      }
+    100  
+    101      const toolSchemas = await Promise.all(
+    102        filteredTools.map(tool =>
+    103          toolToAPISchema(tool, {
+    104            getToolPermissionContext: options.getToolPermissionContext,
+    105            tools,
+    106>           agents: options.agents,
+    107            allowedAgentTypes: options.allowedAgentTypes,
+    108            model: options.model,
+    109            deferLoading: useToolSearch && deferredToolNames.has(tool.name),
+    110          }),
+    111        ),
+    112      )
+    113  
+    114      // Las herramientas de servidor con tipo propio no son llamadas a funcion.
+    115      const standardTools = toolSchemas.filter(
+    116        (tool): tool is BetaToolUnion & { type: string } => {
+  Type 'undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.

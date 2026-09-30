@@ -1,0 +1,2 @@
+    assert_equal("la VRAM de los items: pico máximo, mediana, uso pico y cuántos se midieron",
+                 {"measured": 3, "vram_max_mib": 4700, "vram_median_mib": 3200, "util_max_pct": 91},

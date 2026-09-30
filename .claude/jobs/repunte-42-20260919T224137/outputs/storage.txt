@@ -1,0 +1,3 @@
+storage: emitio pese a 7062 errores (769 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 7062 error(es) que siguen vivos en su propio paquete

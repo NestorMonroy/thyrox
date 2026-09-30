@@ -1,0 +1,7 @@
+{"kind": "launch", "instrument": "check_package(src/packages/storage) y check_package(src/packages/headless-sdk), con su salida cruda guardada", "started_at": "2026-09-19T22:21:38+00:00"}
+{"kind": "question", "text": "El campo EmitResult.errors que check_package publica, ¿cuenta los errores DEL PAQUETE o los de su cierre entero?"}
+{"kind": "metric", "text": "lineas que casan ^<ruta>(<linea>,<columna>): error TS<N>, repartidas por si su ruta cae dentro del paquete o llega por node_modules/@thyrox/<hermano>"}
+{"kind": "blind_to", "text": "1) el reparto se midio con un prefijo de ruta ($1 == node_modules), que es correcto para un paquete con node_modules/@thyrox propio (26 de 43) y NO para los 17 que resuelven por la raiz, cuya ruta reportada empieza por `..`; 2) headless-sdk, elegido como control del segundo caso, no lo ejercita: sus tres hermanos dan TS2307 y no resuelven, asi que su salida no trae ninguna ruta ajena; 3) no se midio si un error de hermano aparece DOS veces cuando dos paquetes lo alcanzan."}
+{"kind": "finding", "text": "storage: 7062 errores totales, 769 propios (10.9 %) y 6293 ajenos (89.1 %). El peor hermano es @thyrox/tool-registry con 5262. El docstring de check_package dice «cuenta los errores de UN paquete» y cuenta su cierre — sub-patron A con el propio mecanismo de sujeto."}
+{"kind": "destination", "text": "own_errors en EmitResult, con clasificador por resolucion de ruta (no por prefijo) y tercer cubo `escaped`; baseline por paquete sobre own_errors"}
+{"kind": "task", "text": "TASK-THYROX-0239"}

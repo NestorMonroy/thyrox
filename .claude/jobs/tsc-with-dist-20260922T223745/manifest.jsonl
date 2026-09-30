@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/emit_declarations --all > .claude/jobs/emit-all.log 2>&1; echo EMIT_EXIT=$?; bunx tsc --noEmit --pretty false", "started_at": "2026-09-22T22:37:45+00:00"}

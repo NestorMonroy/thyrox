@@ -1,0 +1,1 @@
+F2b-2 red (20260928T090422): Cannot find module requestAntigravityToOpenAI.ts and responseOpenAIToAntigravity.ts; the 6 /v1/antigravity route tests fail (the proxy answers 404)

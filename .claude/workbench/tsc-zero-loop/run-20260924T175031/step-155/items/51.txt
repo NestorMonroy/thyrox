@@ -1,0 +1,24 @@
+src/packages/config/plugin/pluginLoader.ts(3191,5): error TS2322: Type 'unknown[]' is not assignable to type 'LoadedPlugin[]'.
+  --- código src/packages/config/plugin/pluginLoader.ts:3181-3201 ---
+   3181    ])
+   3182    // 3. Load built-in plugins that ship with the CLI
+   3183    const builtinResult = getBuiltinPlugins()
+   3184  
+   3185    // Session plugins (--plugin-dir) override installed ones by name,
+   3186    // UNLESS the installed plugin is locked by managed settings
+   3187    // (policySettings). See mergePluginSources() for details.
+   3188    const { plugins: allPlugins, errors: mergeErrors } = mergePluginSources({
+   3189      session: sessionResult.plugins,
+   3190      marketplace: marketplaceResult.plugins,
+   3191>     builtin: [...builtinResult.enabled, ...builtinResult.disabled],
+   3192      managedNames: getManagedPluginNames(),
+   3193    })
+   3194    const allErrors = [
+   3195      ...marketplaceResult.errors,
+   3196      ...sessionResult.errors,
+   3197      ...mergeErrors,
+   3198    ]
+   3199  
+   3200    // Verify dependencies. Runs AFTER the parallel load — deps are presence
+   3201    // checks, not load-order, so no topological sort needed. Demotion is
+  Type 'unknown' is not assignable to type 'LoadedPlugin'.

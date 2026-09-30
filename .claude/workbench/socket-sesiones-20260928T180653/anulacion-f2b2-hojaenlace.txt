@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketsDir.test.ts:
+87 |     mkdirSync(target)
+88 |     symlinkSync(target, join(base, 'enlace'))
+89 |     const linkError = await prepareSocketsDirectory(join(base, 'enlace'), deps()).then(() => undefined, (e: unknown) => e)
+90 |     expect((linkError as SocketsDirError).kind).toBe('leaf_shape')
+91 |     expect((linkError as SocketsDirError).message).toContain('is a symlink')
+92 |     writeFileSync(join(base, 'archivo'), '')
+                                                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "is a symlink"
+Received: "sockets directory exists but is not a directory"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketsDir.test.ts:92:52)
+(fail) prepareSocketsDirectory (Re) > un enlace o un archivo en lugar del directorio se rehúsan [1.16ms]
+
+ 17 pass
+ 1 fail
+ 33 expect() calls
+Ran 18 tests across 1 file. [58.00ms]

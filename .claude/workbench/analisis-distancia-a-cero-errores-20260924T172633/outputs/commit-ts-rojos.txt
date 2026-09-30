@@ -1,0 +1,6 @@
+Record the red TypeScript suites by first cause
+
+The TypeScript half of tests/run.sh ended at 19 red files of 993;
+13 of them stop at the same missing export,
+discoverSkillDirsForPaths. The suite log is partial here: the
+shell half is still running.

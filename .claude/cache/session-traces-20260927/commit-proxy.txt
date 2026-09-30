@@ -1,0 +1,24 @@
+Add the local proxy: selectors, server, forwarder, chat
+
+The local proxy serves /v1/messages and /v1/chat/completions from
+upstreams that speak the Messages API, behind a local access key, with
+per-upstream credential selection and failover. Everything that runs is
+thyrox code; the executable's gateway, CLIProxyAPI and OmniRoute were
+read as design references only, and the proxy tests pass with no
+Claude Code on PATH.
+
+- credentialSelectors: fill-first, round-robin by identity successor,
+  smooth weighted round-robin, priority tiers and model cooldown.
+- server: access, routing, failover ranking (429 > 401/403 > 404 >
+  501 > 502), security headers and request id.
+- upstreamForwarder: HTTP forward with the client header allowlist,
+  credential auth (api key or OAuth), a first-byte deadline joined to
+  the client signal, response header filtering and an SSRF guard on
+  every request.
+- startServer: Bun.serve on loopback only; refuses to start without a
+  local key, since the proxy carries upstream credentials.
+- translators and chatCompletions: OpenAI Chat Completions to and from
+  the Messages API, streaming included, tool names restored.
+
+Every guard has its annulment control: removing it drops exactly the
+case that depends on it. Results in the proxy bench README.

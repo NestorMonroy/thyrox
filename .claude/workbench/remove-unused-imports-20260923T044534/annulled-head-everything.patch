@@ -1,0 +1,16 @@
+--- a/src/verify/removeUnusedImports.ts
++++ b/src/verify/removeUnusedImports.ts
+@@ -147,12 +147,7 @@
+     // defecto (`;`, sangría, espacios): 230 archivos de churn en el primer
+     // lote. Y `unusedIdentifier_delete` —el id vecino— NO toca imports:
+     // retira locales y parámetros, que aquí no se tocan.
+-    const { changes } = service.getCombinedCodeFix(
+-      { type: 'file', fileName },
+-      'unusedIdentifier_deleteImports',
+-      {},
+-      {},
+-    )
++    const changes = ['unusedIdentifier_deleteImports', 'unusedIdentifier_delete'].flatMap(id => service.getCombinedCodeFix({ type: 'file', fileName }, id, {}, {}).changes)
+     const edits = changes.filter(change => change.fileName === fileName).flatMap(c => c.textChanges)
+     if (edits.length === 0) continue
+     const next = applyEdits(text, edits)

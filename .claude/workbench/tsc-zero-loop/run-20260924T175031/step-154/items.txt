@@ -1,0 +1,5 @@
+pattern:provider-host-bindings-stub-falta-campo-247 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/1.txt src/packages/agent/hooks.ts
+pattern:option-stub-resolves-to-unknown-301 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/2.txt src/packages/agent/query.ts
+pattern:unknown-via-in-operator-on-index-signature .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/3.txt src/packages/agent/task/framework.ts
+pattern:untyped-passthrough-field-indexed-on-settings-json .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/4.txt src/packages/repl/src/components/Message.tsx
+pattern:passthrough-field-indexed-as-empty-object .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/5.txt src/packages/repl/src/components/Message.tsx

@@ -1,0 +1,4 @@
+test-bg-memfree:
+bg.sh start: first espera memoria (cota 1073741824)…
+
+[exit=124]

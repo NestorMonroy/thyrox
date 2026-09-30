@@ -1,0 +1,1 @@
+whole-tree-dies-recover	stop_rc=0 start_rc=125 alive_after_stop_start=no alive_after_recreate=yes

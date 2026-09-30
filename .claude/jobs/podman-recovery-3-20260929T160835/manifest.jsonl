@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env RECOVERY_CASES=whole-tree-dies-recover RECOVERY_RESULTS=results-recover.tsv bash .claude/workbench/podman-recovery-without-systemd-20260929T160414/launch.sh", "started_at": "2026-09-29T16:08:35+00:00"}

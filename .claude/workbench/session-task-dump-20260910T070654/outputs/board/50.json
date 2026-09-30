@@ -1,0 +1,9 @@
+{
+  "id": "50",
+  "subject": "Migrar los skills clase-a al sustrato, declarando su destino via src/paths/docs.ts",
+  "description": "ID: TASK-API-0030\n\nMigrar los skills clase-a al sustrato, declarando su destino via src/paths/docs.ts.\n\nAMPLIADA 2026-09-04 con los dos huecos que destapa analisis-plantillas-y-hogar-documental-para-el-harness.rst (no son tareas nuevas: sin ellos la migración de un skill que escribe normativa no tiene a dónde apuntar):\n\nHUECO 1 — Home no distingue género dentro de una capa. `Home = UniqueArtifact | 'analisis' | Bin | DocsLayer` trata `normativa` como capa entera, sin sub-hogar. Un skill que escriba una política, un procedimiento o un estándar recibe hoy `source/normativa/` y SE INVENTA el nombre del archivo — el defecto que docs.ts existe para cerrar. Falta declarar el sub-hogar por género: procedimientos / estandares / restricciones / principios (+ politicas si #84 lo adopta).\n\nHUECO 2 — no hay sustrato de renderizado de plantilla. Medido sobre los 44 archivos de src/: ninguno renderiza. Lo más cercano es src/tasks/rst.ts, que LEE los `- [ ]` de un tareas-<slug>.rst y se declara explícitamente de una sola dirección. Adoptar las plantillas de #52 sin sustrato deja doce .rst que un humano copia a mano, no una capacidad del harness.\n\nAmbos quedan fuera del pase 2026-09-04 por la directiva \"por el momento no nos vamos a meter con implementaciones de api, solo docs\": docs.ts NO se tocó.",
+  "activeForm": "Migrando los skills clase-a al sustrato",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

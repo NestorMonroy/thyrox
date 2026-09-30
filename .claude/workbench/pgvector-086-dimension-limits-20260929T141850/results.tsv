@@ -1,0 +1,12 @@
+extversion|0.8.6
+hnsw vector(2000)|ok
+hnsw vector(2001)|error: column cannot have more than 2000 dimensions for hnsw index
+hnsw halfvec(4000)|ok
+hnsw halfvec(4001)|error: column cannot have more than 4000 dimensions for hnsw index
+hnsw bit(64000)|ok
+hnsw bit(64001)|error: column cannot have more than 64000 dimensions for hnsw index
+ivfflat bit(64000)|ok
+ivfflat bit(64001)|error: column cannot have more than 64000 dimensions for ivfflat index
+hnsw vector(3072) directo|error: column cannot have more than 2000 dimensions for hnsw index
+hnsw binary_quantize(vector(3072))::bit(3072)|ok
+hnsw halfvec(3072) por expresion|ok

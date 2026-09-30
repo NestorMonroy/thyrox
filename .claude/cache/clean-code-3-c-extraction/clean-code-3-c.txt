@@ -1,0 +1,529 @@
+Comentarios
+“El unico comentario bueno es el
+   que no deberia ser escrito”
+• Nada mejor que un comentario bien puesto...
+• Nada puede ser tan danino como un comentario
+  desinformante por no estar actualizado...
+• El uso de comentarios compensa la incapacidad de
+  ser descriptivos con el codigo. En este sentido, los
+  comentarios son siempre una falla nuestra, el hecho de no
+  poder expresarnos sin ellos.
+Un mal codigo no se compensa con
+comentarios
+• Una de las principales motivaciones para escribir comentarios es el
+  codigo malo. Luego de escribir un modulo complejo, confuso,
+  desorganizado, sentimos la necesidad de “mejorarlo” escribiendo
+  un comentario que intente explicar Io que no es obvio.
+• Si el codigo es limpio y expresivo, no hacen falta comentarios!
+• En vez de perder tiempo escribiendo un comentario que intente
+  explicar que esta pasando, invertirlo en limpiar el codigo
+Se expresivo
+• ^Cual opcion es mas expresiva?
+
+
+// Check to see if the employee is eligible for full benefits
+if ((employee.flags & HOURLY_FLAG) &&
+     (employee.age > 65))
+
+VS
+
+
+if (employee.isEligibleForFullBenefits())
+Buenos comentarios
+• Algunos comentarios son necesarios o beneficiosos:
+  • Interfaces de modulos: Javadocs.
+  • Comentarios Legales: Copyright y autoria.
+  • Comentarios informativos: A veces es necesario
+     aclarar informacion basica (solo cuando no es posible
+     ser expresivo a traves del codigo)
+       // format matched kk:mm:ss EEE, MMM dd, yyyy
+       Pattern timeMatcher = Pattern.compile(
+             "\\d*:\\d*:\\d* \\w*, \\w* \\d*, \\d*");
+Explication de la intencion: A veces hacen falta comentarios para
+explicar mejor la intencion del codigo. Por ejemplo, casos particulares
+que no son obvios o pertenecen a la logica de negocio.
+     public void testConcurrentAddWidgets() throws Exception {
+        WidgetBuilder widgetBuilder =
+           new WidgetBuilder(new Class[]{Boldwidget.class});
+
+       String text = "'1'bold text1' '
+       Parentwidget parent =
+          new BoldWidget(new MockWidgetRoot(), "'''bold text
+       AtomicBoolean failFlag = new AtomicBoolean();
+       failFlag.set(false);
+
+        //This is our best attempt to get a race condition
+        //by creating large number of threads,
+        for (int i = 0; i < 25000; i++) {
+          WidgetBuilderThread widgetBuilderThread =
+                new WidgetBuilderThread(widgetBuilder, text, parent, failFlag);
+          Thread thread = new Thread(widgetBuilderThread);
+           thread.start();
+        } / ------------------------------------------------------------------------------------------------------------------------------
+        assertEquals(false, failFlag.get());
+private fun selectAndTriggerUnSupportedCity(city: CityResult.CityLocation) =
+     setSelectedCity(city)
+           .andThen(
+                // This is needed to position map to the unsupported location
+                putMapCameraPosition.execute(city.location.toMapCameraPosition()).toCompletable())
+           .andThen(
+                // Save UnsupportedCitySelected flag, in order to show the proper alert.
+                isUnsupportedCitySelectedRepository.setIsUnsupportedCitySelected(true))
+           .andThen(Observable.fromCallable {
+              UnsupportedCitySelected.call(Unit)
+           })
+Clarificacion: A veces es bueno traducir el significado de algo. Por
+ejemplo, cuando se utilizan librerias externas.
+         public void testCompareTo() throws Exception
+         {
+           WikiPagePath a = PathParser.parse("PageA");
+           WikiPagePath ab = PathParser.parse("PageA.PageB");
+           WikiPagePath b = PathParser.parse("PageB");
+           WikiPagePath aa = PathParser.parse("PageA.PageA");
+           WikiPagePath bb = PathParser.parse("PageB.PageB");
+           WikiPagePath ba = PathParser.parse("PageB.PageA");
+
+            assertTrue(a.compareTo(a) == 0) 1•     // 8. - = a
+            assertTrue(a.compareTo(b) ! = 0) f•    // 8 ! = b
+            assertTrue(ab.compareTo(ab) ==   0) ; // ab == ab
+            assertTrue(a.compareTo(b) == -1 );     // a < b
+            assertTrue(aa.compareTo(ab) ==   -1) ; // aa < ab
+            assertTrue(ba.compareTo(bb) ==   -1); // ba < bb
+            assertTrue(b.compareTo(a) == 1) 1•     // b > a
+            assertTrue(ab.compareTo(aa) ==   1); // ab > aa
+            assertTrue(bb.compareTo(ba) ==   1); // bb > ba
+• Advertir consecuencias: A veces es bueno advertir a otros de
+  posibles consecuencias.
+
+
+public static SimpleDateFormat makeStandardHttpDateFormat()
+{
+   //SimpleDateFormat is not thread safef
+   //so we need to create each instance independently.
+  SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+  df.setTimeZone(TimeZone.getTimeZone("GMT"));
+  return df;
+• TODOs: Los comentarios TODO a veces son necesarios. Sobre todo,
+  cuando alguna funcionalidad no es posible de implementar por alguna
+  dependencia por ejemplo.
+• Amplification: Un comentario se puede utilizar para amplificar la
+  importancia de algo.
+
+   String listltemContent = match.group(3).trim();
+   // the trim is real important. It removes the starting
+   // spaces that could cause the item to be recognized
+   //as another list.
+   new ListltemWidget(this, listltemContent, this.level + 1);
+   return buildList(text.substring(match.end()));
+
+• Javadocs en APIs publicas: Este tipo de comentario si es
+  importante. Pero solo aplican a las interfaces publicas de las apis.
+ Malos comentarios
+• Comentarios “porque sf”: Escribir un comentario solo porque nos
+  “parece” que hace falta, o porque el proceso Io requiere es un hack.
+  Si decidimos escribir un comentario tenemos que tomarnos el
+  tiempo necesario para asegurarnos de que es el mejor comentario
+  que se puede hacer. Por ejemplo, un comentario que nos obliga a
+  estudiar el codigo para entenderlo.
+• Comentarios redundantes: No sirve de nada destacar Io obvio.
+
+
+// Utility method that returns when this.closed is true. Throws an exception
+// if the timeout is reached.
+public synchronized void waitForClose(final long timeoutMillis)
+throws Exception
+ {
+   if(Iclosed)
+   {
+     wait(timeoutMillis);
+     if(Iclosed)
+         throw new Exception("MockResponseSender could not be closed");
+/ * *
+                                   /** The name. */
+ * Default constructor.
+                                   private String name;
+ */
+protected AnnualDateRule() {
+                                   /** The version. */
+                                   private String version;
+
+
+/** The day of the month. */       /** The licenceName. */
+    private int dayOfMonth;        private String licenceName;
+
+
+/**
+ * Returns the day of the month.
+ *
+ * ^return the day of the month.
+ */
+public int getDayOfMonth() {
+  return dayOfMonth;
+}
+Historia de cambios: Una vieja practica dictaba que cada cambio
+que se hacfa en un archivo de codigo debia tener un comentario
+explicando el cambio. Esto ya no es necesario gracias a los
+controladores de versiones.
+     * Changes (from 11-Oct-2001)
+     *   ______________________________________________________
+
+
+     * ll-Oct-2001                : Re-organised the class and moved it to new package
+     *                              com.jrefinery.date (DG);
+     * 05-Nov-2301                : Added a getDescription() method, and eliminated NotableDate
+     *                              class (DG);
+    * 12-Nov-2301                 : IBD requires sezDescripzion() method, now that NotableDaze
+     *                              class is gone (DG); Changed getPreviousDayOfWeek(),
+                                    gezFollowingDayOfWeekO and getNearestDayOfWeek() to correct
+     k
+                                    bugs (DG);
+    * 05-Dec-2301                 : Fixed bug in SpreadsheezDate class (DG);
+    * 29-May-2302                 : Moved the month constants into a separate interface
+    *                               (MonthConstants) (DG);
+    * 27-Aug-2302                 : Fixed bug in addMonthsO method, thanks co N???levka Petr (DG);
+    * 03-0ct-2302                 : Fixed errors reported by Checkstyle (DG);
+    * 13-Mar-2303                 : Implemented Serializable (DG);
+    * 29-May-2303                 : Fixed bug in addMonths method (DG);
+    * 04-Sep-2003                 : Implemented Comparable. Updated the isInRange javadocs (DG);
+    * 05-Jan-2305                 : Fixed bug in addYears() method (1096282) (DG);
+• No usar comentarios cuando se puede usar una variable o
+  funcion: De nuevo, la expresividad del codigo suplanta los
+  comentarios.
+
+// does the module from the global list <mod> depend on the
+// subsystem we are part of?
+if (smodule.getDependSubsystems().contains(subSysMod.getSubSystern()))
+
+
+
+Podria refactorizarse a:
+
+ArrayList moduleDependees = smodule.getDependSubsystems();
+String ourSubSystem = subSysMod.getSubSystem();
+if (moduleDependees.contains(ourSubSystem))
+• Atribuciones del codigo: Generalmente los IDEs agregan un
+  comentario en el encabezado de las clases que agregamos.
+  Esto no es necesario gracias al controlador de versiones.
+• Codigo comentado: A veces, comentamos codigo en nuestro
+  proceso de desarrollo... Nunca subir estos cambios!! El codigo
+  comentado debe ser eliminado SIEMPRE.
+
+       InputStreamResponse response = new InputStreamResponse();
+       response.setBody(formatter.getResultStream(), formatter.getByteCount());
+   // Inputstream resultsStream = formatter.getResultStreamf);
+   // StreamReader reader = new StreamReader(resultsStream);
+   / / response.setcontent(reader.read(formatter.getByteCount()));
+Informacion no local: Si hace falta escribir un comentario,
+asegurarse de que sea sobre el contexto al que pertenece. No ofrecer
+informacion sobre contextos externos, ya que es dificil de mantener.
+
+/kk
+
+  * Port on which fitnesse would run. Defaults to <b>8082</b>.
+  *
+ * @param fitnessePort
+ */
+public void setFitnessePort(int fitnessePort)
+{
+   this.fitnessePort = fitnessePort;
+• Demasiada informacion: No agregar datos historicos o
+  irrelevantes. Ser concisos y directos, y recordar que los comentarios
+  deben ser minimizados al maximo! Nuestro codigo debe ser el mejor
+  documento.
+Formatting
+• El codigo deberia estar siempre correctamente formateado. El
+  formato implica tanto la indentacion como la disponibilidad de los
+  elementos del codigo.
+• Esto facilita la lectura y demuestra profesionalismo.
+• The Newspaper Metaphor: Las funciones y subfunciones deben
+  aparecer en el orden que se utilizan. Esto simplifica la legibilidad del
+  codigo.
+• Dejar siempre solo un “enter” de separacion entre conceptos
+  diferentes (secciones de variables, metodos, definicion de clase, etc).
+• Indentacion: Es fundamental y obligatoria!
+• Reglas del equipo: Las reglas de formatting deben ser acordadas y
+  utilizadas por TODO el equipo de manera uniforme.
+Manejo de Errores
+• Usar excepciones en vez de codigos de error: Viejos lenguajes de
+  programacion no tenian manejo de excepciones, por Io que se
+  utilizaban variables o parametros para indicar errores.
+• Escribir la sentencia try-catch-finally primero: El metodo de nivel
+  superior deberia tener la sentencia try-catch-f inally de
+  manera que los errores de capturen a ese nivel y se simplifiquen las
+  sub funciones.
+• Utilizar excepciones no checkeadas: Las checked exceptions
+  generan acoplamiento y no mejoran realmente el manejo de errores.
+  En los lenguajes modernos (como Kotlin) todas las excepciones son
+  no checkeadas.
+• Proveer contexto significativo con las Excepciones: Las
+  excepciones que se disparan deben tener la informacion suficiente
+  para poder entender la razon y origen del error. Evitar sentencias
+  COmothrow new Exception ();
+• No retornar null ni pasar null como parametro: Los punteros nulos
+  son siempre fuente de errores. Debemos tratar de evitarlos Io
+  maximo posible. Por ejemplo, si manejamos listas es mejor retornar
+  una lista vacia a una lista null. Tambien, utilizar las herramientas que
+  nos provee el framework de desarrollo (por ejemplo, markers de java
+  SNotNull).
+Clases
+ Organization de las clases
+• Siguiendo las convenciones standard de Java, una clase deberia
+  seguir el siguiente orden:
+  • Lista de variables:
+    • Constantes estaticas publicas
+    • Variables estaticas privadas
+    • Variables de instancia privadas
+• Luego de la lista de variables, de definen las funciones publicas. Es
+  preferible definir las funciones privadas inmediatamente despues de
+  la funcion publica que la llama, para seguir la regia de lectura
+  “newspaper article”.
+Las Clases deben ser pequenas!
+
+• 1 ra regia: las clases deberian ser pequenas.
+• 2da regia: las clases deberian ser aun mas pequenas!
+• i,Que tan pequenas? Lo minimo indispensables para que las
+  clases tengan una sola responsabilidad.
+Principio de Responsabilidad Unica
+
+
+* El Principio de Responsabilidad Unica (SRP) enuncia que
+  una clase o modulo debe tener una unica razon de cambio.
+• El principio nos da la definicion de responsabilidad como
+  guia del tamano de una clase.
+Cohesion
+• Las clases deberian manejar una lista pequena de variables
+  de instancia.
+• Cada uno de los metodos de la clase deberia manipular una o
+  mas de esas variables.
+• En general, mientras mas variables manipula un metodo, mas
+  cohesiva es a la clase.
+• Una clase en donde todos los metodos manipulan todas las
+  variables es altamente cohesivo.
+public class Stack {
+  private int topOfStack = 0;
+  List<Integer> elements = new LinkedList<Integer>();
+
+  public int size() {
+    return topOfStack;
+  }
+
+  public void push(int element) {
+    topOfStack++;
+    elements.add(element);
+  }
+
+  public int pop() throws PoppedWhenEmpty {
+    if (topOfStack == 0)
+      throw new PoppedWhenEmpty();
+    int element = elements.get(—topOfStack);
+    elements.remove(topOfStack);
+    return element;
+Mantener la Cohesion da como
+resultado muchas clases pequenas
+Transformar una funcion grande en pequenas funciones puede dar
+como resultado la proliferacion de clases pequenas cuando tratamos de
+maximizar la cohesion.
+Por ejemplo, partimos una funcion en varios pedazos. Eso implica enviar
+parametros a las distintas funciones. Pero, intentamos minimizar el uso
+de parametros, por Io que creamos variables de instancia que
+compartan esas funciones.
+Ahora, esas variables son usadas solo por esas funciones, Io que
+compromete la cohesion. Pero, si sacamos esas funciones relacionadas
+a clases mas pequenas, mantenemos la cohesion y el principio SRP.
+Smells and Heuristics
+• La siguiente es una lista de “code smells”.
+• Son indicaciones de que el codigo no es limpio y deberia ser
+  limpiado (boy scout rule).
+Comentarios
+• Informacion inapropiada: Un comentario tiene informacion
+  que deberfa mantenerse en otro lado, por ejemplo el control
+  de versiones.
+• Comentario obsoleto: Un comentario que es viejo,
+  irrelevante o incorrecto.
+• Comentario redundante: Describe Io mismo sin agregar
+  valor informativo.
+• Comentario pobremente escrito: Todo comentario que valga
+  la pena debe estar bien escrito.
+• Codigo comentado!!
+Entorno
+• El build requiere mas de un paso: Hacer build del proyecto
+  deberia ser trivial. Si requiere de demasiados pasos (por
+  ejemplo generar archivos de recursos, pre procesar data, todo
+  de manera manual), puede ser que tenga una complejidad
+  excesiva que puede conducir a errores (por ejemplo, omitir un
+  paso por equivocation).
+• Los tests requieren mas de un paso: Los tests deberian
+  ejecutarse con un solo comando.
+Funciones
+• Demasiados argumentos: Las funciones deberfan tener un
+  numero pequeno de argumentos.
+• Argumentos de salida: Los argumentos de salida no son
+  intuitivos.
+• Argumentos bandera: Indicacion de que la funcion hace mas
+  de una cosa.
+• Funcion muerta: Metodos que nunca son llamados deberian
+  ser eliminados.
+General
+• Multiples lenguajes en un solo archivo: Por ejemplo, un
+  archivo de java con snippets de xml.
+• Comportamiento obvio no implementado: Siguiendo el
+  “Principio de la Menor Sorpresa”, cada funcion o clase
+  deberia implementar comportamiento esperado. Por ejemplo,
+  una lista mutable deberia implementar el metodo “add”.
+• Comportamiento incorrecto en los limites: A veces no esta
+  claro cuando un algoritmo contempla todos los caminos, en
+  especial los limites. Para este smell, la accion es implementar
+  tests que cubran todos los caminos.
+• Duplicacion: DRY!
+• Codigo en el nivel de abstraction incorrecto: Queremos
+  que todos los conceptos de bajo nivel deriven de todos los
+  conceptos de alto nivel. Inversion de Dependencias.
+• Demasiada informacion: Segregacion de Interfaces.
+• Codigo muerto: Codigo que no se ejecuta, por ejemplo, un
+  “else” que nunca se cumple.
+• Separacion vertical: Las funciones y variables que definimos
+  deberian estar cerca del lugar donde se utilizan. No queremos
+  buscar definiciones con cientos de lineas de separacion.
+• Inconsistencia: Si se hace algo de una forma, cuestiones
+  similares deberian seguir esa forma. Por ejemplo, sufijos de
+  nombres (xRequest, yRequest, zSendMessage).
+• Las funciones deben hacer una sola cosa: SRP.
+Envidia de comportamiento: Los metodos de una clase
+deberian interesarse por variables y funciones de la clase a la
+que pertenecen, y no por variables y funciones otras clases.
+
+     public class HourlyPayCalculator {
+        public Money calculateWeeklyPay(HourlyEmployee e) {
+           int tenthRate = e.getTenthRateO.getPennies();
+           int tenthsWorked = e.getTenthsWorked();
+           int straightTime = Math.min(400, tenthsWorked);
+           int overTime = Math.maxfO, tenthsWorked - straightTime);
+           int straightPay = straightTime * tenthRate;
+           int overtimePay = (int)Math.round(overTime*tenthRate*l.5);
+           return new Money(straightPay + overtimePay);
+• Argumentos selectores: Argumentos que se utilizan para
+  decidir la distintos caminos en un algoritmo son indicadores
+  de que la funcion hace mas de una cosa (banderas,
+  enumerados, etc).
+• Intento oscuro: El codigo debe ser Io mas expresivo posible,
+  y “gritar” su intencion.
+• Responsabilidad fuera de lugar: Una de las desiciones mas
+  importante de los desarrolladores es decidir donde ubicar el
+  codigo. El principio de la minima sorpresa aplica en este
+  caso.
+• Estaticos inapropiados: A veces escribimos funciones
+  estaticas que no deberian serlo.
+ HourlyPayCalculator.calculatePay(employee, overtimeRate).
+
+
+* Uso de variables explicativas: Ser conciso puede llevar a
+  complicar la legibilidad.
+          Matcher match = headerPattern.matcher(line);
+          if(match.find())
+          {
+              String key = match.group(1);
+              String value = match.group(2);
+              headers.put(key.toLowerCase(), value);
+• Los nombres de las funciones deben decir que cosa hacen.
+                 Date newDate = date.add(5);
+
+• Polimorfismo sobre estructuras if-else o switch-case:
+  Open Closed Principle.
+• Seguir las convenciones standard: Cada equipo debe
+  definir sus propias reglas, y todos los miembros seguirlas.
+• Remplazar numeros magicos por constantes.
+• Ser preciso: Todas las desiciones que se toman al desarrollar
+  tiene que ser precisas y sin ambiguedades. Si retornamos
+  null, tiene que haber una razon. Si se dispara una excepcion,
+  todos los caminos posibles, etc.
+• Encapsular condiciones: La logica boolean puede ser Io
+  suficientemente compleja como para que tambien haya que
+  leerla dentro de un if. Extraerlas a funciones que expliquen el
+  intento de dicha condicion. Por ejemplo, que es mejor?
+       if (shouldBeDeleted(timer))
+     if (timer.hasExpired() && !timer.isRecurrent())
+• Evitar condiciones negativas: Los negativos son un poco
+  mas complicados de entender que los positivos.
+     if (buffer.shouldCompact())
+     if (!buffer.shouldNotCompact())
+Encapsular condiciones lirnite.
+
+ if(level + 1 < tags.length)
+ {
+     parts = new Parse(body, tags, level + 1, offset + endTag);
+     body = null;
+ }
+
+
+ int nextLevel = level + 1;
+ if(nextLevel < tags.length)
+ {
+   parts = new Parse(body, tags, nextLevel, offset + endTag);
+   body = null;
+ }
+• Las funciones deberian descender solo un nivel de
+  abstraccion: Las sentencias dentro de una funcion deberian
+  estar todas al mismo nivel de abstraccion.
+• Mantener los datos de configuracion en los niveles altos:
+  Por ejemplo, constantes globales, settings, deberian estar en
+  clases faciles de encontrar, no metidas en funciones de bajo
+  nivel.
+• Evitar la navegacion transitiva: Un modulo no deberia
+  conocer demasiado sobre sus colaboradores. Si a colabora
+  con b y b colabora con c, no queremos que a conozca c (Por
+  ejemplo, a . getB () . getC () . doSomething () ).
+Nombres
+• Usar nombres descriptivos.
+• Usar nombres en el nivel de abstraccion apropiado: Por
+  ejemplo, nombres con detalle de implementacion a nivel alto.
+• Usar nomenclatura standard cuando sea posible:
+  Nombres de patrones, estilos, etc.
+• No usar nombres ambiguos.
+• Usar nombres largos para scopes grandes.
+• Evitar encodings.
+• Si hay efectos secundarios, indicarlos en el nombre.
+                                              •   PRENTICE
+                                              •   HALL
+
+      Robert C. Martin Series
+                                   II
+
+                                                                 Pent son New Inferncttonol Edition
+
+
+
+             Clean Code                                                   Qqte dcAuorc Oc W4opmcnt
+                                                                      PnrxocA Pottrou ond Aoctco
+                                                                                     Prized
+                                                                                                             Refactoring
+                                                                                          PntEdBon                     Improving the Design
+     A Handbook of Agile Software Craftsmanship                                                                        of Existing Code
+                                                             ♦
+                                          ♦
+
+                                                                                                            MARTIN FOWLER
+                                                                                                            WMi   rnntrUmtinm   b>   Kmt   IlCCk,   JotUl   I   Ulin   I
+                                    «•
+                                          *                                                                 William Opdyke, und I Jon Roberts
+
+                                                                                                            M«»w«r<9 b« Erich Gamma
+                                                                                                            Object Technotogw n»em«lion«l. Inc.
+
+
+
+
+                                                                                                                                                            KOBSON
+*
+
+                                                                                                                                                        HVKMlijH
+
+
+
+
+                                                                                                      ALWAYS LEARN l NO                                                    PEARSON
+
+
+
+
+    Foreword by James 0. Coplien         Robert C. Martin
+

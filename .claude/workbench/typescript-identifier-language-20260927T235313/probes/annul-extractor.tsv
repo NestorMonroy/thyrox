@@ -1,0 +1,5 @@
+no-import-alias	s/if (ts.isImportSpecifier(node)) return node.propertyName ? node.name : undefined/if (ts.isImportSpecifier(node)) return node.name/
+no-property-assignment	s/^  if (ts.isPropertyAssignment(node)) {$/  if (false) {/
+no-parse-check	s/^  if (diagnostics.length > 0) return/  if (false) return/
+no-enum-member	s/|| ts.isEnumMember(node) //
+no-parameter	s/|| ts.isParameter(node) //

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bin/tsc_proposers > .claude/workbench/tsc-proposers-20260923T201350/candidates-root.jsonl 2> .claude/workbench/tsc-proposers-20260923T201350/candidates-root.stderr", "started_at": "2026-09-23T20:16:08+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-23T20:18:57+00:00", "duration_seconds": 169.787464}

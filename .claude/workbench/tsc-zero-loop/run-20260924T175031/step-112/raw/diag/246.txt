@@ -1,0 +1,4 @@
+tests/unit/utils/treeify.test.ts(49,44): error TS2322: Type 'number' is not assignable to type 'string | TreeNode | undefined'.
+tests/unit/utils/treeify.test.ts(57,28): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'TreeNode'.
+  'string' index signatures are incompatible.
+    Type 'unknown' is not assignable to type 'string | TreeNode | undefined'.

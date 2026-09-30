@@ -1,0 +1,20 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/logs/job-20260927T191347
+  job-20260927T191347/job1 echo x >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/attempts-1; sleep 3; echo x >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/done-1
+  job-20260927T191347/job2 echo x >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/attempts-2; sleep 3; echo x >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/done-2
+  job-20260927T191347/job3 echo x >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/attempts-3; sleep 3; echo x >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/oldest-under-load-3/r2/done-3
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1794s)
+asentado: job-20260927T191347_job1 -> OK (2 de 4)
+asentado: job-20260927T191347_job2 -> OK (3 de 4)
+asentado: job-20260927T191347_job3 -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T191347
+       | (vacío — no emitió nada)
+OK     job-20260927T191347_job1 exit=0
+       | EXIT=0
+       memoria pico: 3376 KB (3 MB) · pared 3.00s
+OK     job-20260927T191347_job2 exit=0
+       | EXIT=0
+       memoria pico: 3488 KB (3 MB) · pared 3.00s
+OK     job-20260927T191347_job3 exit=0
+       | EXIT=0
+       memoria pico: 3460 KB (3 MB) · pared 3.00s

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bun test src/packages/repl src/packages/config src/packages/tool-registry/src/tools/shared/__tests__", "started_at": "2026-09-19T09:04:05+00:00"}

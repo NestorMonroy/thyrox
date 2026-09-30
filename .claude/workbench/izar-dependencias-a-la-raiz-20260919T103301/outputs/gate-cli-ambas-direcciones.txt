@@ -1,0 +1,7 @@
+# Gate check-cli-typecheck, medido en las dos direcciones
+# fecha: 2026-09-19T10:42:25
+con el cambio: 1871
+en HEAD:      1871  (medido en el pase anterior, mismo comando)
+
+# Y la atribucion del arbol ENTERO es mas fuerte que el conteo de cli:
+# 0 ubicaciones desaparecidas, 0 aparecidas sobre 5624.

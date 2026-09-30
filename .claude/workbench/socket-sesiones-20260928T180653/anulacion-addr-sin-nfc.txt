@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerAddress.test.ts:
+83 | 
+84 |   test('en macOS, mayúsculas y /private dan quizá o lo mismo', () => {
+85 |     expect(compareSocketAddresses('/tmp/A.sock', '/tmp/a.sock', 'macos')).toBe('maybe')
+86 |     expect(compareSocketAddresses('/private/tmp/a.sock', '/tmp/a.sock', 'macos')).toBe('same')
+87 |     expect(compareSocketAddresses('/private/tmp/a.sock', '/tmp/a.sock', 'linux')).toBe('different')
+88 |     expect(compareSocketAddresses('/tmp/e\u0301.sock', '/tmp/\u00e9.sock', 'macos')).toBe('maybe')
+                                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "maybe"
+Received: "different"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerAddress.test.ts:88:86)
+(fail) compareSocketAddresses (T) > en macOS, mayúsculas y /private dan quizá o lo mismo [1.02ms]
+
+ 15 pass
+ 1 fail
+ 68 expect() calls
+Ran 16 tests across 1 file. [40.00ms]

@@ -1,0 +1,101 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/cli/src/structuredIO.ts(210,9): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | "now" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; }'.
+  --- código src/packages/cli/src/structuredIO.ts:200-220 ---
+    200  
+    201    /**
+    202     * Queue a user turn to be yielded before the next message from this.input.
+    203     * Works before iteration starts and mid-stream — read() re-checks
+    204     * prependedLines between each yielded message.
+    205     */
+    206    prependUserMessage(content: string): void {
+    207      this.prependedLines.push(
+    208        jsonStringify({
+    209          type: 'user',
+    210>         content,
+    211          uuid: '',
+    212          session_id: '',
+    213          message: { role: 'user', content },
+    214          parent_tool_use_id: null,
+    215        } satisfies SDKUserMessage) + '\n',
+    216      )
+    217    }
+    218  
+    219    private async *read() {
+    220      let content = ''
+src/packages/cli/src/structuredIO.ts(632,13): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/structuredIO.ts:622-642 ---
+    622              sdkPromise.catch(() => {})
+    623              hookAbortController.abort()
+    624              return winner.decision
+    625            }
+    626            // Hook passed through (no decision) — wait for the SDK prompt
+    627            const sdkResult = await sdkPromise
+    628            return permissionPromptToolResultToPermissionDecision(
+    629              sdkResult.result,
+    630              tool,
+    631              input,
+    632>             toolUseContext,
+    633            )
+    634          }
+    635  
+    636          // SDK prompt responded first — use its result (hook still running
+    637          // in background but its result will be ignored)
+    638          return permissionPromptToolResultToPermissionDecision(
+    639            winner.result,
+    640            tool,
+    641            input,
+    642            toolUseContext,
+src/packages/cli/src/structuredIO.ts(642,11): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/structuredIO.ts:632-652 ---
+    632              toolUseContext,
+    633            )
+    634          }
+    635  
+    636          // SDK prompt responded first — use its result (hook still running
+    637          // in background but its result will be ignored)
+    638          return permissionPromptToolResultToPermissionDecision(
+    639            winner.result,
+    640            tool,
+    641            input,
+    642>           toolUseContext,
+    643          )
+    644        } catch (error) {
+    645          return permissionPromptToolResultToPermissionDecision(
+    646            {
+    647              behavior: 'deny',
+    648              message: `Tool permission request failed: ${error}`,
+    649              toolUseID,
+    650            },
+    651            tool,
+    652            input,
+src/packages/cli/src/structuredIO.ts(653,11): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/structuredIO.ts:643-663 ---
+    643          )
+    644        } catch (error) {
+    645          return permissionPromptToolResultToPermissionDecision(
+    646            {
+    647              behavior: 'deny',
+    648              message: `Tool permission request failed: ${error}`,
+    649              toolUseID,
+    650            },
+    651            tool,
+    652            input,
+    653>           toolUseContext,
+    654          )
+    655        } finally {
+    656          // Only transition back to 'running' if no other permission prompts
+    657          // are pending (concurrent tool execution can have multiple in-flight).
+    658          if (this.getPendingPermissionRequests().length === 0) {
+    659            notifySessionStateChanged('running')
+    660          }
+    661          parentSignal.removeEventListener('abort', onParentAbort)
+    662        }
+    663      }

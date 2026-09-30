@@ -1,0 +1,48 @@
+src/packages/skills/src/fromDir.ts(45,49): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/skills/src/fromDir.ts:35-55 ---
+     35    let end = -1
+     36    for (let i = 1; i < lines.length; i++) {
+     37      if ((lines[i] ?? '').trimEnd() === close) { end = i; break }
+     38    }
+     39    if (end === -1) return { meta: new Map(), body: raw } // frontmatter sin cerrar
+     40  
+     41    const meta = new Map<string, string>()
+     42    for (let i = 1; i < end; i++) {
+     43      const line = lines[i]
+     44      // Sólo claves en columna cero: las anidadas (metadata:) llevan sangría.
+     45>     const m = /^([A-Za-z][\w-]*):\s?(.*)$/.exec(line)
+     46      if (m && !/^\s/.test(line)) {
+     47        const key = m[1]
+     48        const value = m[2]
+     49        if (key !== undefined && value !== undefined) meta.set(key, value)
+     50      }
+     51    }
+     52  
+     53    // El cuerpo empieza tras el cierre; se recortan las líneas en blanco iniciales.
+     54    let start = end + 1
+     55    while (start < lines.length && (lines[start] ?? '').trim() === '') start++
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/skills/src/fromDir.ts(46,26): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/skills/src/fromDir.ts:36-56 ---
+     36    for (let i = 1; i < lines.length; i++) {
+     37      if ((lines[i] ?? '').trimEnd() === close) { end = i; break }
+     38    }
+     39    if (end === -1) return { meta: new Map(), body: raw } // frontmatter sin cerrar
+     40  
+     41    const meta = new Map<string, string>()
+     42    for (let i = 1; i < end; i++) {
+     43      const line = lines[i]
+     44      // Sólo claves en columna cero: las anidadas (metadata:) llevan sangría.
+     45      const m = /^([A-Za-z][\w-]*):\s?(.*)$/.exec(line)
+     46>     if (m && !/^\s/.test(line)) {
+     47        const key = m[1]
+     48        const value = m[2]
+     49        if (key !== undefined && value !== undefined) meta.set(key, value)
+     50      }
+     51    }
+     52  
+     53    // El cuerpo empieza tras el cierre; se recortan las líneas en blanco iniciales.
+     54    let start = end + 1
+     55    while (start < lines.length && (lines[start] ?? '').trim() === '') start++
+     56    return { meta, body: lines.slice(start).join('\n') }
+  Type 'undefined' is not assignable to type 'string'.

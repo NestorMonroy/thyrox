@@ -1,0 +1,21 @@
+Type the AgentMessage boundary from its readers
+
+AgentMessage stays a model of its own, separate from Message, as the
+executor directed. qwen-code keeps its AgentMessage apart from the API
+type the same way. A type-checker census of what the loop reads showed
+that two fields contradicted their own readers. message.content was
+declared unknown[] but read after typeof === 'string', and
+message.usage was declared { [k]: number } but cast by its only
+reader. With those two fixed, the canonical Message satisfies
+AgentMessage structurally, as the header of internalTypes.ts promises,
+and the six inbound call sites compile without casts.
+
+countToolCalls goes back to a narrow type of its own, as in the
+source, with a guard that actually narrows; step 065 had tied it to
+Message. toCoreMessages and fromCoreMessages recover the typed
+signatures of the source instead of a generic identity, which named no
+boundary.
+
+tsc: 2431 -> 2407. One diagnostic revealed: QueryEngine passes a
+CoreMessage from coreMessages.ts where AgentCore expects the one from
+agentMessages.ts.

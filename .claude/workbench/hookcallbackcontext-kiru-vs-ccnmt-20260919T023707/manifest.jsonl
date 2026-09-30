@@ -1,0 +1,7 @@
+{"ts": "2026-09-19T02:37:07", "tipo": "sujeto", "que": "Analizar kaioken: packages/lib/src/hooks/utils.ts para el tema de HookCallbackContext"}
+{"ts": "2026-09-19T02:37:07", "tipo": "medicion", "que": "kaioken es kiru-monorepo, libreria de RENDERIZADO; sus hooks son useState/useEffect. PreToolUse|SessionStart|lifecycle hook|hook_event da 0 archivos en packages/"}
+{"ts": "2026-09-19T02:37:07", "tipo": "conclusion", "que": "Los dos HookCallbackContext son HOMONIMOS: mismo significante, referente distinto. No es una variante comparable campo a campo"}
+{"ts": "2026-09-19T02:37:07", "tipo": "medicion", "que": "Kiru: (context)=>any, un bolso de 7 campos, generico. ccnmt: (input,toolUseID,abort,hookIndex?,context?), cinco posicionales, no generico"}
+{"ts": "2026-09-19T02:37:07", "tipo": "medicion", "que": "0 importadores de HookCallbackContext en ccnmt Y en thyrox; 5 hooks type:'callback' en ccnmt, 4 en thyrox; 1 solo sitio pasa el contexto, en la ruta rapida (-70% medido por la fuente)"}
+{"ts": "2026-09-19T02:37:07", "tipo": "veredicto", "que": "NO se adopta: la referencia gobierna la forma, son homonimos, y la poblacion que se beneficiaria es minuscula"}
+{"ts": "2026-09-19T02:37:07", "tipo": "pregunta-abierta", "que": "El hueco de isInit es real: nuestro mecanismo no dice al cuerpo del hook si es su primera invocacion. once? es una DECLARACION, no una consulta. Si hiciera falta, va al contexto, no a un sexto posicional"}

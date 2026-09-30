@@ -1,0 +1,2 @@
+tests/hooks/test_detect_literal_replacement.py
+tests/lib/test-replace-literal.sh

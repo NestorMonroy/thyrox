@@ -1,0 +1,2 @@
+== useVoice.ts  total=7  anclados=6  from_require=7
+== useVoiceIntegration.tsx  total=3  anclados=3  from_require=3

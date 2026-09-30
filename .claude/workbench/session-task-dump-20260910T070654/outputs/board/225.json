@@ -1,0 +1,8 @@
+{
+  "id": "225",
+  "subject": "Reanudar a88c0dc cuando #224 aterrice",
+  "description": "Directiva del ejecutor: cuando terminen los tramos 2-5 de la tarea #224, avisar por SendMessage al agente que dejo aterrizado el tramo 1 (branchIntegration y claims -> src/coordination/) para que reanude lo que le queda. Su tarea NO esta cerrada: esta en pausa con punto de reanudacion declarado, porque lo que le queda depende de que los cuatro tramos existan. Un subagente no puede bloquearse esperando a otro — no tiene superficie de coordinacion — asi que la espera se implementa terminando el turno y siendo reanudado.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores",
+  "description": "Directiva del ejecutor 2026-09-02: el paquete @kaupamex/agent no debió vivir en kaupamex-docs/packages/agent sino en kaupamex-docs/.claude/packages/agent (canon de .claude/CLAUDE.md: todo tooling de Claude Code bajo .claude/). Flujo medido en analisis-hogar-del-paquete-agent.rst: git mv con historia; bin/emit.ts:15 REPO_ROOT de 3 a 4 niveles; reapuntar .githooks/pre-commit:120, check-agent-artifacts.sh:2,27,45,53,57, test-agent-artifacts.sh:26,42 y el README; bun install --frozen-lockfile + bun test (36) + emit --check (0 diff) + test-agent-artifacts.sh; grep del sitio viejo debe devolver sólo las 2 citas a ccb. Sobre feature/kaupamex-l2.",
+  "activeForm": "Mudando packages/agent a .claude/packages/agent",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

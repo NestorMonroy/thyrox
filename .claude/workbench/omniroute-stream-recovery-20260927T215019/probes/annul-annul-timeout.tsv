@@ -1,0 +1,2 @@
+timeout-label	s/if (status == 124) { f = 1; names = "agotó el plazo (" limit " s)" }/if (0) { }/
+fixed-limit	s/^limit="${THYROX_ANNUL_TEST_TIMEOUT:-300}"/limit=300/

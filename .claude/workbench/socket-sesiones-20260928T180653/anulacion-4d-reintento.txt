@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+258 | 
+259 |   test('el registro releído tras la espera es el que decide', async () => {
+260 |     write('3.json', 'roto')
+261 |     const d = deps({ sleep: async () => write('3.json', record(3, { pidDomain: 'otro' })) }, [3])
+262 |     await sweepRegistry(undefined, d)
+263 |     expect(existsSync(join(dir, '3.json'))).toBe(true)
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:263:45)
+(fail) sweepRegistry (xut) > el registro releído tras la espera es el que decide [0.98ms]
+
+ 28 pass
+ 1 fail
+ 83 expect() calls
+Ran 29 tests across 1 file. [217.00ms]

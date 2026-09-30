@@ -1,0 +1,30 @@
+base	8 pass, 0 fail	—
+trim-tools	8 pass, 0 fail	—
+prune-images	8 pass, 0 fail	—
+compress-thinking	8 pass, 0 fail	—
+thinking-keep-last	8 pass, 0 fail	—
+purify	8 pass, 0 fail	—
+purify-repair	8 pass, 0 fail	—
+notice-merge	8 pass, 0 fail	—
+notice-bytes	8 pass, 0 fail	—
+image-budget	8 pass, 0 fail	—
+document-budget	8 pass, 0 fail	—
+openai-image	8 pass, 0 fail	—
+claude-image	8 pass, 0 fail	—
+gemini-image	8 pass, 0 fail	—
+responses-placeholder	8 pass, 0 fail	—
+prune-target-stop	8 pass, 0 fail	—
+pairs-keep-last	8 pass, 0 fail	—
+pairs-orphan-result	8 pass, 0 fail	—
+pairs-empty-assistant	8 pass, 0 fail	—
+adjacency	8 pass, 0 fail	—
+strip-trailing	7 pass, 1 fail	stripTrailingAssistantForProvider (#3396) > existing stripTrailingAssistantOrphanToolUse still works after change
+mistral	6 pass, 2 fail	stripTrailingAssistantForProvider (#3396) > strips trailing text-only assistant message for mistral | stripTrailingAssistantForProvider (#3396) > strips trailing assistant with array-string content for mistral
+env-provider	0 pass, 1 fail	—
+env-default	8 pass, 0 fail	—
+env-reserve	8 pass, 0 fail	—
+env-keep	8 pass, 0 fail	—
+keep-zero	8 pass, 0 fail	—
+injected	8 pass, 0 fail	—
+name-hints	8 pass, 0 fail	—
+reserve-scale	8 pass, 0 fail	—

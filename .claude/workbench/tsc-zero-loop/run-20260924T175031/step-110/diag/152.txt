@@ -1,0 +1,23 @@
+src/packages/plan/src/mode.ts(126,51): error TS6138: Property 'options' is declared but its value is never read.
+  --- código src/packages/plan/src/mode.ts:116-136 ---
+    116  /**
+    117   * El modo vivo de una sesión: su estado, su archivo, y la puerta que impone.
+    118   *
+    119   * No persiste el estado: vive lo que vive la sesión. Lo durable es el archivo,
+    120   * que es justamente lo que sobrevive a un reinicio y lo que `ExitPlanMode` lee.
+    121   */
+    122  export class PlanMode {
+    123    private state: PlanState = 'inactive'
+    124    readonly path: string
+    125  
+    126>   constructor(sessionId: string, private readonly options: PlanBackendOptions) {
+    127      this.path = planFilePath(sessionId, options)
+    128    }
+    129  
+    130    current(): PlanState {
+    131      return this.state
+    132    }
+    133  
+    134    active(): boolean {
+    135      return this.state !== 'inactive'
+    136    }

@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+188 |   test('varias claves: gana la de dueño vivo con el mismo inicio, luego la de inicio desconocido', async () => {
+189 |     keyFile(10, { peerToken: 'c'.repeat(32), procStart: '1' })
+190 |     keyFile(11, { peerToken: OTHER })
+191 |     keyFile(12, { peerToken: TOKEN, procStart: '5' })
+192 |     const startTokenOf = async (pid: number) => ({ 10: '999', 12: '5' })[pid as 10 | 12]
+193 |     expect(await readPeerToken(ADDRESS, undefined, deps({ startTokenOf }))).toEqual({ kind: 'token', token: TOKEN })
+                                                                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "kind": "token",
+-   "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
++   "token": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:193:77)
+(fail) readPeerToken (QDo) > varias claves: gana la de dueño vivo con el mismo inicio, luego la de inicio desconocido [1.93ms]
+
+ 23 pass
+ 1 fail
+ 31 expect() calls
+Ran 24 tests across 1 file. [111.00ms]

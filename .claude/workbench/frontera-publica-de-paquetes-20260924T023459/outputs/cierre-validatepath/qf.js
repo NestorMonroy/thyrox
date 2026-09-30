@@ -1,0 +1,1 @@
+function qf(t,e,{alreadyComparable:r=!1,foldCase:n}

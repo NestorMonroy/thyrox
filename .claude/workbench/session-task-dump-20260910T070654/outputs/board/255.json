@@ -1,0 +1,9 @@
+{
+  "id": "255",
+  "subject": "Medir por qué el cliente declara una ruta de transcript que no escribe",
+  "description": "RE-ENUNCIADA 2026-09-07 sobre el eje que la medición dejó vivo (H-DOCS-1239, docs@c1cef3c43; thyrox@e2485ba2).\n\nSus tres hipótesis quedaron resueltas, y ninguna era la que se pensaba:\n\n- «el --stop no dispara» — FALSO: las 424 marcas `transcript_presente` las escribe él.\n- «dispara y no encuentra la fila» — FALSO: la escribe.\n- «el transcript no está disponible al leerlo» — **CIERTA**, y sin un solo caso discrepante: 363 filas declararon el transcript ausente y ninguna tiene modelo; 61 lo declararon presente y las 61 lo tienen. Cero fuera de la diagonal.\n\nY el marco era otro: **ninguna de las 757 filas nacidas del hook lleva modelo, nunca**. El hook no enriquece y no está previsto que lo haga — quien llena modelo, turnos y telemetría es el barrido de disco. «Enriquecer en SubagentStop» describía un mecanismo que no existe.\n\nTampoco es una carrera que un pase posterior pueda ganar: las 363 rutas siguen ausentes hoy, y los nombres que declaran son disjuntos de los 122 .jsonl que sí están en subagents/ (intersección 0).\n\nLa mitad (b) de su condición de cierre está cumplida: `usage_source='no_medido'` marca 759 filas y `retention_level` ya no tiene NULL, así que el store distingue «nadie ha pasado todavía» de «nadie podrá ya» en cada fila.\n\nLO QUE QUEDA, y es lo único: **por qué el cliente declara una ruta que no escribe**. `getAgentTranscriptPath` la calcula sin comprobar el archivo, y de ahí no se sigue si el cliente decide no escribirlo, lo escribe con otro id, o lo borra. Se mide en el EJECUTABLE, no en el store.\n\nCierra cuando: esté medido cuál de las tres, o declarado DESCONOCIDO con el instrumento que haría falta.",
+  "activeForm": "Enriqueciendo las filas sin modelo ni tipo",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

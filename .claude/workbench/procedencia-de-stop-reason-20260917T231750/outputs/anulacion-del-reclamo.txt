@@ -1,0 +1,24 @@
+ANULACION — se devuelve `stop_reason` al reclamo llano de `_ids_incompletos`
+(la linea `"stop_reason",` en la tupla de columnas NULL de reconcile_store.py).
+
+Lo que tiene que caer: SOLO la asercion que depende de la retirada. Si cayera
+otra, el cambio estaria tocando algo que no dice tocar; si no cayera ninguna,
+la suite no estaria midiendo el cambio (sub-patron D).
+
+test_stop_reason_provenance:
+
+== 6. el barrido NO reclama una fila cuyo stop_reason ya se leyo ==
+  ok    la fila sana no se reclama
+  FALLA stop_reason NULL leido por el extractor actual NO se reclama
+        esperado=[False] obtenido=[True]
+  ok    la que nunca se leyo si se reclama
+
+resultado: 18 de 19 aserciones en verde
+exit=1
+
+Cae 1 de 19, y es la del sujeto. Los bloques 1-5 (el reparto del censo) no
+dependen del reclamo: miden `stop_reason_provenance`, que es otro simbolo.
+
+Restaurado: `git diff --stat` vuelve a 23 inserciones / 11 borrados sobre
+reconcile_store.py —el cambio real, sin la linea anulada— y la suite da 19/19.
+El __pycache__ se borro ANTES de leer el veredicto de la restauracion.

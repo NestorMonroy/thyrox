@@ -1,0 +1,29 @@
+paquete: @thyrox/repl   declaradas: 26
+SIN DECLARAR con forma de paquete: 20
+    530  react                            en el lock
+     63  figures                          en el lock
+     34  @anthropic-ai/sdk                en el lock
+     19  chalk                            en el lock
+     17  lodash-es                        en el lock
+     11  usehooks-ts                      en el lock
+     10  diff                             en el lock
+      5  strip-ansi                       en el lock
+      4  zod                              en el lock
+      3  fuse.js                          NO esta en el lock
+      2  execa                            en el lock
+      2  qrcode                           en el lock
+      2  marked                           NO esta en el lock
+      2  ignore                           en el lock
+      2  semver                           en el lock
+      1  downloading                      NO esta en el lock
+      1  asciichart                       NO esta en el lock
+      1  @modelcontextprotocol/sdk        en el lock
+      1  chokidar                         NO esta en el lock
+      1  lru-cache                        en el lock
+
+descartados por forma (texto capturado por el recorrido): 5
+         ' keeps scrollback; '
+         'Jump to bottom'
+         'OC & Bulk Overages copy'
+         'current session'
+         'empty auth'

@@ -1,0 +1,18 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsStorageBackendPin.test.ts:
+23 |   test('sólo el booleano true activa; cualquier otro valor servido cuenta como apagado y se avisa', () => {
+24 |     const warnings: string[] = []
+25 |     const pin = new StorageBackendPin(message => warnings.push(message))
+26 |     expect(pin.pinServed('true')).toBe('pinned')
+27 |     expect(pin.isActive()).toBe(false)
+28 |     expect(warnings[0]).toContain('served a string, not a boolean; treating it as off')
+                             ^
+error: Received value must be an array type, or both received and expected values must be strings.
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsStorageBackendPin.test.ts:28:25)
+(fail) StorageBackendPin (N/DBo/dVn) > sólo el booleano true activa; cualquier otro valor servido cuenta como apagado y se avisa [0.28ms]
+
+ 3 pass
+ 1 fail
+ 12 expect() calls
+Ran 4 tests across 1 file. [83.00ms]

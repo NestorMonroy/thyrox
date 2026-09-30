@@ -1,0 +1,1 @@
+lowercase-names	s/plain\[k.toLowerCase()\] = v$/plain[k] = v/

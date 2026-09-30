@@ -1,0 +1,23 @@
+test-hallazgo-submodulo-baseline
+  FALLA baseline del consumidor: exit=1 — la ruta congelada se publico como nueva: Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_hallazgo_submodulo.py", line 41, in <module>
+    from verify import check_vocabulario_prosa as _parametro  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'verify'
+  FALLA variable declarada: exit=1 — Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_hallazgo_submodulo.py", line 41, in <module>
+    from verify import check_vocabulario_prosa as _parametro  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'verify'
+  FALLA rehuso sin baseline: exit=1, salida='Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_hallazgo_submodulo.py", line 41, in <module>
+    from verify import check_vocabulario_prosa as _parametro  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'verify'' — un conteo aqui no separa heredado de nuevo
+  FALLA --write-baseline: no aterrizo en /tmp/tmp.nLnJSZprS6/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt (exit=1): Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_hallazgo_submodulo.py", line 41, in <module>
+    from verify import check_vocabulario_prosa as _parametro  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'verify'
+  4 caso(s), 4 falla(s)
+EXIT=1

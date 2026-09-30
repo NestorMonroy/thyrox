@@ -1,0 +1,5 @@
+base	5 pass, 0 fail	—
+not-enabled	4 pass, 1 fail	apagada por defecto: el corte llega al cliente y no se reabre
+sse-only	4 pass, 1 fail	una respuesta que no es SSE no se envuelve
+reopen-any-status	4 pass, 1 fail	una reapertura que no devuelve 2xx suelta lo retenido y cierra
+not-wrapped	3 pass, 2 fail	activada, un corte antes del primer byte reabre el mismo upstream con la misma credencial | una reapertura que no devuelve 2xx suelta lo retenido y cierra

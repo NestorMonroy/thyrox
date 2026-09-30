@@ -1,0 +1,24 @@
+src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts(3,31): error TS2307: Cannot find module '../../state/AppState.js' or its corresponding type declarations.
+  --- código src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts:1-10 ---
+      1  // Auto-generated stub — replace with real implementation
+      2  import type { TaskStateBase, SetAppState } from '@thyrox/tool-registry/Task.js';
+      3> import type { AppState } from '../../state/AppState.js';
+      4  import type { AgentId } from '../../types/ids.js';
+      5  
+      6  export type MonitorMcpTaskState = TaskStateBase & {
+      7    type: 'monitor_mcp';
+      8  };
+      9  export const killMonitorMcp: (taskId: string, setAppState: SetAppState) => void = (() => {});
+     10  export const killMonitorMcpTasksForAgent: (agentId: AgentId, getAppState: () => AppState, setAppState: SetAppState) => void = (() => {});
+src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts(4,30): error TS2307: Cannot find module '../../types/ids.js' or its corresponding type declarations.
+  --- código src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts:1-10 ---
+      1  // Auto-generated stub — replace with real implementation
+      2  import type { TaskStateBase, SetAppState } from '@thyrox/tool-registry/Task.js';
+      3  import type { AppState } from '../../state/AppState.js';
+      4> import type { AgentId } from '../../types/ids.js';
+      5  
+      6  export type MonitorMcpTaskState = TaskStateBase & {
+      7    type: 'monitor_mcp';
+      8  };
+      9  export const killMonitorMcp: (taskId: string, setAppState: SetAppState) => void = (() => {});
+     10  export const killMonitorMcpTasksForAgent: (agentId: AgentId, getAppState: () => AppState, setAppState: SetAppState) => void = (() => {});

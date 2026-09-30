@@ -1,0 +1,1 @@
+function VZn(){return HTs.of(W().host).logged}

@@ -1,0 +1,15 @@
+src/packages/agent/agentHostBindings.ts:617:        return require('./hooks.js').getStopHookMessage(blockingError)
+src/packages/agent/agentHostBindings.ts-618-      } catch {
+src/packages/agent/agentHostBindings.ts-619-        return ''
+src/packages/agent/agentHostBindings.ts-620-      }
+src/packages/agent/agentHostBindings.ts-621-    },
+src/packages/agent/agentHostBindings.ts-622-    getTaskCompletedHookMessage: (blockingError: unknown) => {
+src/packages/agent/agentHostBindings.ts-623-      try {
+src/packages/agent/agentHostBindings.ts-624-        return require('./hooks.js').getTaskCompletedHookMessage(blockingError)
+src/packages/agent/agentHostBindings.ts-625-      } catch {
+src/packages/agent/agentHostBindings.ts-626-        return ''
+src/packages/agent/agentHostBindings.ts-627-      }
+src/packages/agent/agentHostBindings.ts-628-    },
+src/packages/agent/agentHostBindings.ts-629-    getTeammateIdleHookMessage: (blockingError: unknown) => {
+src/packages/agent/agentHostBindings.ts-630-      try {
+src/packages/agent/agentHostBindings.ts-631-        return require('./hooks.js').getTeammateIdleHookMessage(blockingError)

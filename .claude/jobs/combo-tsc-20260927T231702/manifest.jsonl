@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && timeout 300 bunx tsc --noEmit -p tsconfig.test.json 2>&1 | grep -E \"proxy|combo\" | head -20; echo tsc-done", "started_at": "2026-09-27T23:17:02+00:00"}

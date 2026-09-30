@@ -1,0 +1,2 @@
+src/packages/provider/__tests__/openaiModelMappingSourcePinning.test.ts
+src/packages/storage/src/__tests__/fileEncoding.test.ts

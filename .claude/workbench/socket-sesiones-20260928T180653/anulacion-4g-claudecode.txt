@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+156 |     expect(isOnAgentSessionSurface(host({ env: { CLAUDECODE: '1' }, stdinIsTTY: false, stdoutIsTTY: false }))).toBe(true)
+157 |     expect(isOnAgentSessionSurface(host({ env: { CLAUDECODE: '1' }, stdinIsTTY: false }))).toBe(false)
+158 |   })
+159 | 
+160 |   test('fuera de la shell del agente no lo está', () => {
+161 |     expect(isOnAgentSessionSurface(host({ env: { THYROX_CODE_SKIP_PROMPT_HISTORY: 'true' }, stdinIsTTY: false, stdoutIsTTY: false }))).toBe(false)
+                                                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:161:136)
+(fail) isOnAgentSessionSurface (cFt) > fuera de la shell del agente no lo está [0.22ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [124.00ms]

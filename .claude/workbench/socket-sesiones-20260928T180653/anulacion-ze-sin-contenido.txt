@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+55 | describe('deliverPeerUserMessage (ze)', () => {
+56 |   test('sin contenido de texto se ignora con aviso', async () => {
+57 |     const { deps, enqueued, logs } = harness()
+58 |     await deliverPeerUserMessage({ type: 'user', message: { content: '' } }, peer, deps)
+59 |     await deliverPeerUserMessage({ type: 'user', message: { content: [] } }, peer, deps)
+60 |     expect(enqueued).toEqual([])
+                          ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   {
++     "agentId": "agent-1",
++     "isMeta": true,
++     "mode": "prompt",
++     "origin": {
++       "from": "unknown",
++       "kind": "peer",
++       "verifiedPeerPid": 42,
++       "verifiedPeerProcStart": "tok",
++     },
++     "priority": "next",
++     "skipAttachments": true,
++     "skipSlashCommands": true,
++     "uuid": "generated",
++     "value": "",
++   },
++ ]
+
+- Expected  - 1
++ Received  + 18
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:60:22)
+(fail) deliverPeerUserMessage (ze) > sin contenido de texto se ignora con aviso [5.14ms]
+
+ 15 pass
+ 1 fail
+ 36 expect() calls
+Ran 16 tests across 1 file. [64.00ms]

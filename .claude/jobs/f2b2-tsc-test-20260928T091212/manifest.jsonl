@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc -p tsconfig.test.json --noEmit 2>&1 | gawk '/Antigravity|GeminiToolCall/' > /home/user/thyrox/.claude/cache/f2b2-tsc-errors.txt; echo DONE", "started_at": "2026-09-28T09:12:12+00:00"}

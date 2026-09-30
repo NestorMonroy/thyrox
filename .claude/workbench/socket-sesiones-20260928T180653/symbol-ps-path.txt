@@ -1,0 +1,7 @@
+==== RGr: 1 definicion(es) de nivel superior
+---- chunk-v49zfq06.js function RGr [3815,3893)
+function RGr(o){return o.split(K).map((t)=>Thn(t)).filter((t)=>so(t)).join(K)}
+==== xGr: 1 definicion(es) de nivel superior
+---- chunk-v49zfq06.js function xGr [4004,4056)
+function xGr(o,t){return g(o,Bun.which(o,{PATH:t}))}
+symbol: 2 de 2 nombre(s) resueltos

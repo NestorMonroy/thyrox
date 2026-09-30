@@ -1,0 +1,16 @@
+Gate THYROX_* env names and their test coverage
+
+thyrox is the only client, so the configuration it reads carries its
+own prefix, as OmniRoute reads OMNIROUTE_*. checkEnvPrefix measures
+every environment read in versioned production code (TypeScript,
+Python, and shell in its environment-contract forms) and every own
+THYROX_* variable against the test files that name it.
+
+The 494 inherited CLAUDE_* reads are frozen per file; the rename pays
+them. A new one, an own variable without a test, or a stale baseline
+entry blocks the pre-commit.
+
+Seven own variables had no test. Each has one now, with an annulment
+that drops exactly the case depending on it. Two first drafts did not
+discriminate: toolchain.sh's idempotence guard made the child source a
+no-op, so the cases read the inherited environment; env -i fixes it.

@@ -1,0 +1,159 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+73 | 
+74 | describe('updatePidFile (Vt)', () => {
+75 |   test('mezcla el parche sobre el registro del archivo local y lo reescribe', async () => {
+76 |     writeFileSync(pidFile(), JSON.stringify({ pid: 4242, name: 'a' }))
+77 |     expect(await updatePidFile({ name: 'b', extra: 1 }, undefined, deps())).toBe(true)
+78 |     expect(readRecord()).toEqual({ pid: 4242, name: 'b', extra: 1 })
+                              ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "name": "b",
+-   "pid": 4242,
+  }
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:78:26)
+(fail) updatePidFile (Vt) > mezcla el parche sobre el registro del archivo local y lo reescribe [3.44ms]
+87 | 
+88 |   test('las escrituras se encadenan en orden aunque se pidan a la vez', async () => {
+89 |     writeFileSync(pidFile(), JSON.stringify({ n: 0 }))
+90 |     const results = await Promise.all([updatePidFile({ a: 1 }, undefined, deps()), updatePidFile({ b: 2 }, undefined, deps()), updatePidFile({ a: 3 }, undefined, deps())])
+91 |     expect(results).toEqual([true, true, true])
+92 |     expect(readRecord()).toEqual({ n: 0, a: 3, b: 2 })
+                              ^
+error: expect(received).toEqual(expected)
+
+@@ -2,4 +2,3 @@
+    "a": 3,
+-   "b": 2,
+-   "n": 0,
+  }
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:92:26)
+(fail) updatePidFile (Vt) > las escrituras se encadenan en orden aunque se pidan a la vez [0.91ms]
+102 |     }
+103 |     const first = updatePidFile({ a: 1 }, throwing, deps())
+104 |     const second = updatePidFile({ b: 2 }, undefined, deps())
+105 |     expect(await first).toBe(false)
+106 |     expect(await second).toBe(true)
+107 |     expect(readRecord()).toEqual({ n: 0, b: 2 })
+                               ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "b": 2,
+-   "n": 0,
+  }
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:107:26)
+(fail) updatePidFile (Vt) > una lectura que lanza no rompe la cadena [1.17ms]
+130 | 
+131 | describe('setSessionName (eF)', () => {
+132 |   test('registra el nombre y publica nombre, origen, fecha y anteriores', async () => {
+133 |     writeFileSync(pidFile(), JSON.stringify({ pid: 4242 }))
+134 |     expect(await setSessionName('uno', undefined, undefined, undefined, deps())).toBe(true)
+135 |     expect(readRecord()).toEqual({ pid: 4242, name: 'uno', nameSource: 'user', nameSince: clock, updatedAt: clock })
+                               ^
+error: expect(received).toEqual(expected)
+
+@@ -4,3 +4,3 @@
+    "nameSource": "user",
+-   "pid": 4242,
+    "updatedAt": 1000000,
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:135:26)
+(fail) setSessionName (eF) > registra el nombre y publica nombre, origen, fecha y anteriores [1.20ms]
+220 | 
+221 |   test('publishMessagingSocketPath (X5o), recordBridgeSessionId (ipn), recordParkedJob (GNr) y clearParkedJob (apn)', async () => {
+222 |     await publishMessagingSocketPath('/tmp/s.sock', undefined, deps())
+223 |     await recordBridgeSessionId('bridge_1', undefined, deps())
+224 |     await recordParkedJob('job_1', undefined, deps())
+225 |     expect(readRecord()).toEqual({ pid: 4242, messagingSocketPath: '/tmp/s.sock', bridgeSessionId: 'bridge_1', parkedJobId: 'job_1', updatedAt: clock })
+                               ^
+error: expect(received).toEqual(expected)
+
+@@ -1,6 +1,5 @@
+  {
+-   "bridgeSessionId": "bridge_1",
+-   "messagingSocketPath": "/tmp/s.sock",
+    "parkedJobId": "job_1",
+-   "pid": 4242,
+    "updatedAt": 1000000,
+
+- Expected  - 3
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:225:26)
+(fail) los demás campos del registro > publishMessagingSocketPath (X5o), recordBridgeSessionId (ipn), recordParkedJob (GNr) y clearParkedJob (apn) [1.78ms]
+228 |     expect(readRecord()).toEqual({ pid: 4242, messagingSocketPath: '/tmp/s.sock', bridgeSessionId: 'bridge_1', updatedAt: clock })
+229 |   })
+230 | 
+231 |   test('updateSessionStatus (kCe) sella la hora del estado y publica el parche', async () => {
+232 |     expect(await updateSessionStatus({ status: 'idle', detail: 'x' }, undefined, deps())).toBe(true)
+233 |     expect(readRecord()).toEqual({ pid: 4242, status: 'idle', detail: 'x', updatedAt: clock, statusUpdatedAt: clock })
+                               ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "detail": "x",
+-   "pid": 4242,
+    "status": "idle",
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:233:26)
+(fail) los demás campos del registro > updateSessionStatus (kCe) sella la hora del estado y publica el parche [0.73ms]
+239 |   test('una sesión de reserva que pasa a ocupada deja de serlo y detiene su sondeo', async () => {
+240 |     state.bornSpare = true
+241 |     state.spareClaimPoll = setInterval(() => {}, 1_000_000)
+242 |     writeFileSync(pidFile(), JSON.stringify({ pid: 4242, spare: true }))
+243 |     expect(await updateSessionStatus({ status: 'idle' }, undefined, deps())).toBe(true)
+244 |     expect(readRecord().spare).toBe(true)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:244:32)
+(fail) los demás campos del registro > una sesión de reserva que pasa a ocupada deja de serlo y detiene su sondeo [0.66ms]
+263 |     writeFileSync(pidFile(), JSON.stringify({ pid: 4242, spare: true }))
+264 |     expect(await releaseSpare(undefined, deps())).toBe(true)
+265 |     expect(readRecord().spare).toBe(true)
+266 |     state.bornSpare = true
+267 |     expect(await releaseSpare(undefined, deps())).toBe(true)
+268 |     expect(readRecord()).toEqual({ pid: 4242, updatedAt: clock })
+                               ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
+-   "pid": 4242,
+    "updatedAt": 1000000,
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:268:26)
+(fail) los demás campos del registro > releaseSpare (rD) sólo escribe en una sesión nacida de reserva [1.94ms]
+
+ 14 pass
+ 8 fail
+ 63 expect() calls
+Ran 22 tests across 1 file. [123.00ms]

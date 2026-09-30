@@ -1,0 +1,3 @@
+El store del mapa se declara, no se deriva por aritmetica
+68 aserciones
+  FALLA — capa: el citation_id NO se mueve — es identidad, no clasificacion

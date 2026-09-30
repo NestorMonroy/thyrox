@@ -1,0 +1,30 @@
+#: El orden de `QCt` (2.1.282) para una petición `-p`, que el ejecutable cuenta
+#: como conversación principal. Porte TS: `src/packages/agent/promptCacheTtl.ts`.
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def declared_cache_ttl(env) -> tuple[str | None, str]:
+    """El TTL que el entorno declara, o `None` si no declara ninguno.
+    Un valor que no es 5m ni 1h lanza `ValueError` nombrando la variable."""
+    if env.get("THYROX_FORCE_PROMPT_CACHING_5M", "").strip().lower() in _TRUTHY:
+        return "5m", "force_5m_env: THYROX_FORCE_PROMPT_CACHING_5M"
+    value = env.get("THYROX_CODE_PROMPT_CACHE_TTL", "")
+    if value:
+        if value not in ("5m", "1h"):
+            raise ValueError(f"THYROX_CODE_PROMPT_CACHE_TTL={value}: el TTL es \"5m\" o \"1h\"")
+        return value, "env: THYROX_CODE_PROMPT_CACHE_TTL"
+    if env.get("THYROX_ENABLE_PROMPT_CACHING_1H", "").strip().lower() in _TRUTHY:
+        return "1h", "enable_1h_env: THYROX_ENABLE_PROMPT_CACHING_1H"
+    return None, ""
+
+
+def pool_cache_ttl(bench: Path, model: str, env=None) -> tuple[str | None, str]:
+    """El TTL de la caché de cada `claude -p` del pool y su porqué. Primero lo
+    que el entorno DECLARA (`declared_cache_ttl`); si nada, el que
+    `choose_cache_ttl` da para la cota del paso anterior — un default derivado,
+    no una declaración, así que va por debajo. Sin cota, o con un modelo
+    fuera del catálogo, `None`: lo decide el cliente, y se dice."""
+    declared, why = declared_cache_ttl(os.environ if env is None else env)
+    if declared is not None:
+        return declared, why
+    bound = previous_item_bound(bench)

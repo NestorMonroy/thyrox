@@ -1,0 +1,3 @@
+bash bin/render_finding rst H-THYROX-208 --resolved-in thyrox@14341dee --body .claude/workbench/platform-wsl-20260927T061837/finding-bodies/H-THYROX-208.rst
+bash bin/render_finding rst H-THYROX-209 --resolved-in thyrox@4bfc4f35 --body .claude/workbench/platform-wsl-20260927T061837/finding-bodies/H-THYROX-209.rst
+bash bin/render_finding rst H-THYROX-210 --resolved-in thyrox@3fbe582b --body .claude/workbench/platform-wsl-20260927T061837/finding-bodies/H-THYROX-210.rst

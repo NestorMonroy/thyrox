@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/agents/test-agent-store-tareas.sh

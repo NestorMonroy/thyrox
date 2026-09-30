@@ -1,0 +1,8 @@
+{
+  "id": "72",
+  "subject": "ConflictResolver para conflicto de código por análisis (no juicio humano):",
+  "description": "ConflictResolver para conflicto de código por análisis (no juicio humano): produce análisis + resolución candidata, estado resolved-unverified (nivel 3), aceptación por verificationPlan fuera de integrate(). Decisiones del ejecutor pendientes (determinista vs agente; commitea marcado o holdea; verificación en línea o pase aparte). Análisis: construir-harness-propio/analisis-resolucion-de-conflictos-de-codigo-por-analisis.rst",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

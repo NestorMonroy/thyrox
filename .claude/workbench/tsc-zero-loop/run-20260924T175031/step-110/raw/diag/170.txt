@@ -1,0 +1,1 @@
+src/packages/repl/src/__tests__/history.test.ts(89,7): error TS2741: Property 'content' is missing in type '{ id: number; type: "image"; mediaType: string; }' but required in type 'PastedContent'.

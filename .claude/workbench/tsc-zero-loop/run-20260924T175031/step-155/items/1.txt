@@ -1,0 +1,48 @@
+src/packages/agent/QueryEngine.ts(557,11): error TS2322: Type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 24 more ... | undefined' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }'.
+  --- código src/packages/agent/QueryEngine.ts:547-567 ---
+    547      // Cache-only: headless/SDK/CCR startup must not block on network for
+    548      // ref-tracked plugins. CCR populates the cache via CLAUDE_CODE_SYNC_PLUGIN_INSTALL
+    549      // (headlessPluginInstall) or CLAUDE_CODE_PLUGIN_SEED_DIR before this runs;
+    550      // SDK callers that need fresh source can call /reload-plugins.
+    551      const [skills, { enabled: enabledPlugins }] = await Promise.all([
+    552        getSlashCommandToolSkills(getCwd()),
+    553        loadAllPluginsCacheOnly(),
+    554      ])
+    555      headlessProfilerCheckpoint('after_skills_plugins')
+    556  
+    557>     yield buildSystemInitMessage({
+    558        tools,
+    559        mcpClients,
+    560        model: mainLoopModel,
+    561        permissionMode: initialAppState.toolPermissionContext
+    562          .mode as PermissionMode, // TODO: avoid the cast
+    563        commands,
+    564        agents,
+    565        skills,
+    566        plugins: enabledPlugins,
+    567        fastMode: initialAppState.fastMode,
+  Type 'undefined' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }'.
+src/packages/agent/QueryEngine.ts(706,11): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+  --- código src/packages/agent/QueryEngine.ts:696-716 ---
+    696        ? countToolCalls(this.mutableMessages, SYNTHETIC_OUTPUT_TOOL_NAME)
+    697        : 0
+    698  
+    699      const agent = new AgentCore(
+    700        createProductionDeps({
+    701          tools,
+    702          toolUseContext: processUserInputContext,
+    703          canUseTool: wrappedCanUseTool,
+    704          querySource: 'sdk',
+    705          contextOverrides: {
+    706>           systemPrompt,
+    707            userContext,
+    708            systemContext,
+    709          },
+    710        }),
+    711        {
+    712          messages: toCoreMessages(messages),
+    713          model: mainLoopModel,
+    714          sessionId: getSessionId(),
+    715          totalUsage: this.totalUsage,
+    716        },
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type 'SystemPrompt[]': pop, push, reverse, shift, and 5 more.

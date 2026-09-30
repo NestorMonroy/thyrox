@@ -1,0 +1,1 @@
+    return Decision(ttl, memfree, why + ram_why + vram_why, min(caps) if caps else None, ram_cap, vram_cap)

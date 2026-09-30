@@ -1,0 +1,4 @@
+crossSessionInbound:G(tft).optional().catch(void 0).describe("Inbound cross-session peer messages (SendMessage from your other sessions): 'accept' delivers them, 'hold' parks them for your review without letting Claude act, 'refuse' opts this session out. An explicit value always wins. Unset (mode parity): a message au
+crossSessionInbound:He("crossSessionInbound")?.value,modelProposedGoals:NYe(),enableArtifact:slt().enabled
+crossSessionInbound:d
+crossSessionInbound:d

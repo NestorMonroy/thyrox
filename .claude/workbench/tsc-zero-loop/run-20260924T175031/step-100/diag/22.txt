@@ -1,0 +1,9 @@
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(29,10): error TS6133: 'osascriptSync' is declared but its value is never read.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(364,10): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(364,28): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(364,48): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(364,66): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(365,10): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(365,28): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(365,48): error TS18048: 'marker' is possibly 'undefined'.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(365,66): error TS18048: 'marker' is possibly 'undefined'.

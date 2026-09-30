@@ -1,0 +1,23 @@
+src/packages/repl/src/hooksConfigManager.ts(327,34): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/hooksConfigManager.ts:317-337 ---
+    317        }
+    318        eventGroup[matcherKey].push(hook)
+    319      }
+    320    })
+    321  
+    322    // Include registered hooks (e.g., plugin hooks)
+    323    const registeredHooks = getRegisteredHooks()
+    324    if (registeredHooks) {
+    325      for (const [event, matchers] of Object.entries(registeredHooks)) {
+    326        const hookEvent = event as HookEvent
+    327>       const eventGroup = grouped[hookEvent]
+    328        if (!eventGroup) continue
+    329  
+    330        for (const matcher of matchers) {
+    331          const matcherKey = matcher.matcher || ''
+    332  
+    333          // Only PluginHookMatcher has pluginRoot; HookCallbackMatcher (internal
+    334          // callbacks like attributionHooks, sessionFileAccessHooks) does not.
+    335          if ('pluginRoot' in matcher) {
+    336            eventGroup[matcherKey] ??= []
+    337            for (const hook of matcher.hooks) {

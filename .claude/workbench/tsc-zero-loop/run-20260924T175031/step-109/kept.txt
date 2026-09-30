@@ -1,0 +1,17 @@
+src/packages/@ant/computer-use-mcp/src/legacy/win32/uiAutomation.ts
+src/packages/agent/__tests__/emit.test.ts
+src/packages/agent/commands/commit-push-pr.ts
+src/packages/agent/loop/context/systemPrompt.ts
+src/packages/binary/bin/binary.ts
+src/packages/binary/src/freshness.ts
+src/packages/binary/src/graph.ts
+src/packages/cli/src/structuredIOHelper.ts
+src/packages/config/plugin/loadPluginCommands.ts
+src/packages/permission/src/permission.ts
+src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts
+src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts
+src/packages/skills/src/fromDir.ts
+src/packages/swarm/src/install/installSwarmHost.ts
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+src/task/rst.ts
+tests/skills/markdown.test.ts

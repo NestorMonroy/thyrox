@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2362,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2352-2372 ---
+   2352            const sdkClient = sdkClients.find(
+   2353              client => client.name === mcpRequest.server_name,
+   2354            )
+   2355            // Check client exists - dynamically added SDK servers may have
+   2356            // placeholder clients with null client until updateSdkMcp() runs
+   2357            if (
+   2358              sdkClient &&
+   2359              sdkClient.type === 'connected' &&
+   2360              sdkClient.client?.transport?.onmessage
+   2361            ) {
+   2362>             sdkClient.client.transport.onmessage(mcpRequest.message)
+   2363            }
+   2364            sendControlResponseSuccess(message)
+   2365          } else if (message.request.subtype === 'rewind_files') {
+   2366            const appState = getAppState()
+   2367            const result = await handleRewindFiles(
+   2368              message.request.user_message_id as UUID,
+   2369              appState,
+   2370              setAppState,
+   2371              message.request.dry_run ?? false,
+   2372            )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2713,17): error TS7006: Parameter 'url' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2703-2723 ---
+   2703                // Capture the auth URL from the callback
+   2704                let resolveAuthUrl: (url: string) => void
+   2705                const authUrlPromise = new Promise<string>(resolve => {
+   2706                  resolveAuthUrl = resolve
+   2707                })
+   2708  
+   2709                // Start the OAuth flow in the background
+   2710                const oauthPromise = performMCPOAuthFlow(
+   2711                  serverName,
+   2712                  config,
+   2713>                 url => resolveAuthUrl!(url),
+   2714                  controller.signal,
+   2715                  {
+   2716                    skipBrowserOpen: true,
+   2717                    onWaitingForCallback: submit => {
+   2718                      oauthCallbackSubmitters.set(serverName, submit)
+   2719                    },
+   2720                  },
+   2721                )
+   2722  
+   2723                // Wait for the auth URL (or the flow to complete without needing redirect)

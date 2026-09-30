@@ -1,0 +1,10 @@
+==== ibt: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js function ibt [1609815,1609863)
+function ibt(e,n,r){s3n(e,"SIGKILL"),Kee(n),r()}
+==== V5t: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js function V5t [3698097,3698525)
+async function V5t(e,n,r){try{let s=await a2([yt(),...pWe(),...n],mWe(e.gitDirectory,e.repoRoot),e.gitDirectory);if(s===null)return null;try{let g=rR(s.file,s.args,{cwd:e.repoRoot,env:s.env,input:r,timeout:TWe,stderr:"ignore",windowsHide:!0}),h=[],S=0;return g.stdout?.on("data",(M)=>{if(S+=M.length,S>bWe)g.kill("SIGKILL");else h.push(M)}),(await g).exitCode===0&&S<=bWe?Buffer.concat(h):null}finally{l2(s)}}catch{return null}}
+==== A2e: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js function A2e [71606,71814)
+async function A2e(e,n="SIGKILL"){let r=Ntn(e);if(r.length===0)return r;return t(`agentProcessRegistry: killing ${r.length} process group(s) of agent ${e} with ${n}`),await Promise.all(r.map((s)=>mb(s,n))),r}
+symbol: 3 de 3 nombre(s) resueltos

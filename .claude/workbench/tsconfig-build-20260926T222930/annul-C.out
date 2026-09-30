@@ -1,0 +1,4 @@
+== anulación C (no exige proyectos)
+  FAIL declarar dist/ sin tsconfig.build.json sale 1
+  FAIL y nombra los dos proyectos que faltan
+test_check_exports_types: 9 ok, 2 falla(s)

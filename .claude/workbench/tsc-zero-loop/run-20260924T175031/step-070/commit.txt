@@ -1,0 +1,25 @@
+Let the core read flat messages only
+
+With every crossing going through the adapters, the core receives only
+flat messages, and its compensation for the nested shape goes:
+
+- stop_reason and tool-use content are read at the root. The reads
+  that tried both shapes are gone.
+- buildAssistantMessage stops building each message twice, flat and
+  nested at once.
+
+aggregateUsage reads usage at the root, so it never counted the usage
+of the provider's own assistant messages. Those arrived nested, cast
+as core messages. The adapters of the previous step fix that. Two
+tests pin it: the adapted message reaches the done event with its
+usage, and the same message unadapted loses it. Annulment: dropping
+usage from toCoreMessage fails exactly the first case.
+
+fromCoreMessage builds the rebuilt body from a map of overrides, so
+the fields the core changed win over the carried body without an
+unsound indexed assignment.
+
+Verifiers: tsc plus message_shape_audit.ts. SHAPE001 3 -> 0; the audit
+reports 0 findings over the agent package, down from 10. Together
+2408 -> 2404, nothing revealed. Runtime suite of the loop: 77 pass, 0
+fail.

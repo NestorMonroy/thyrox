@@ -1,0 +1,87 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+43 | describe('switchSession (mh) avisa con el motivo', () => {
+44 |   test('cada oyente recibe el id nuevo y el motivo', () => {
+45 |     const seen = recordSwitches()
+46 |     switchSession(id('s1'), 'resume', '/proyectos/a')
+47 |     switchSession(id('s2'), 'hydrate')
+48 |     expect(seen).toEqual([
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -7,3 +7,3 @@
+      "s2",
+-     "hydrate",
++     "resume",
+    ],
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:48:18)
+(fail) switchSession (mh) avisa con el motivo > cada oyente recibe el id nuevo y el motivo [4.11ms]
+55 | 
+56 |   test('avisa también cuando la sesión no cambia', () => {
+57 |     switchSession(id('igual'), 'resume')
+58 |     const seen = recordSwitches()
+59 |     switchSession(id('igual'), 'cd')
+60 |     expect(seen).toEqual([[id('igual'), 'cd']])
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+      "igual",
+-     "cd",
++     "resume",
+    ],
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:60:18)
+(fail) switchSession (mh) avisa con el motivo > avisa también cuando la sesión no cambia [0.60ms]
+64 |     const seen: SessionSwitchReason[] = []
+65 |     const unsubscribe = onSessionSwitch((_, reason) => void seen.push(reason))
+66 |     switchSession(id('a'), 'fork')
+67 |     unsubscribe()
+68 |     switchSession(id('b'), 'resume')
+69 |     expect(seen).toEqual(['fork'])
+                      ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "fork",
++   "resume",
+  ]
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:69:18)
+(fail) switchSession (mh) avisa con el motivo > desuscribirse deja de recibir [0.53ms]
+90 | 
+91 | describe('regenerateSessionId avisa con el motivo clear', () => {
+92 |   test('el oyente recibe el id estrenado', () => {
+93 |     const seen = recordSwitches()
+94 |     const fresh = regenerateSessionId({ setCurrentAsParent: true })
+95 |     expect(seen).toEqual([[fresh, 'clear']])
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+      "0e335f7e-e5e9-4008-94d8-7867b458500e",
+-     "clear",
++     "resume",
+    ],
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:95:18)
+(fail) regenerateSessionId avisa con el motivo clear > el oyente recibe el id estrenado [0.41ms]
+
+ 4 pass
+ 4 fail
+ 10 expect() calls
+Ran 8 tests across 1 file. [289.00ms]

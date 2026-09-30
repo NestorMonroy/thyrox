@@ -1,0 +1,69 @@
+src/packages/agent/query.ts(386,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:376-396 ---
+    376      const microcompactResult = await deps.microcompact(
+    377        messagesForQuery,
+    378        toolUseContext,
+    379        querySource,
+    380      )
+    381      messagesForQuery = microcompactResult.messages
+    382      // For cached microcompact (cache editing), defer boundary message until after
+    383      // the API response so we can use actual cache_deleted_input_tokens.
+    384      // Gated behind feature() so the string is eliminated from external builds.
+    385      const pendingCacheEdits = feature('CACHED_MICROCOMPACT')
+    386>       ? microcompactResult.compactionInfo?.pendingCacheEdits
+    387        : undefined
+    388      queryCheckpoint('query_microcompact_end')
+    389  
+    390      // Project the collapsed context view and maybe commit more collapses.
+    391      // Runs BEFORE autocompact so that if collapse gets us under the
+    392      // autocompact threshold, autocompact is a no-op and we keep granular
+    393      // context instead of a single summary.
+    394      //
+    395      // Nothing is yielded — the collapsed view is a read-time projection
+    396      // over the REPL's full history. Summary messages live in the collapse
+src/packages/agent/query.ts(448,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:438-458 ---
+    438      // The compactor already logged + emitted telemetry; we don't yield a
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448>         preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+src/packages/agent/query.ts(449,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:439-459 ---
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449>         postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,

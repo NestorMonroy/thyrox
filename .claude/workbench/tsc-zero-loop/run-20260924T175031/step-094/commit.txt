@@ -1,0 +1,20 @@
+Prefix unread parameters the source leaves unread too
+
+Step 094 of the tsc-zero loop: 1815 -> 1787, accepted net, nothing
+new.
+
+The pattern from step 093, applied across the tree: 28 parameters
+flagged TS6133, each the name of a ParameterDeclaration on the AST
+and used exactly as often in the source file, get the underscore
+prefix the checker exempts. prefix_unused_params.ts in the bench
+decides each site and logs why the other 75 were skipped.
+
+The first run (intento-1/) chose sites by the text of the line. It
+renamed a class property and a signal destructured over several
+lines, which broke their uses: 23 new diagnostics that the net
+policy accepted anyway. That run was reverted by hand and its bench
+kept.
+
+The memory pattern is closed: what TS6133 has left are locals,
+properties, destructured names and parameters the source does read,
+and none of those is fixed by the prefix.

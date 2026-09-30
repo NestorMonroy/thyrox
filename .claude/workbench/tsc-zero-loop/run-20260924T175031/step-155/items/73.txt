@@ -1,0 +1,46 @@
+src/packages/repl/src/processUserInput/processTextPrompt.ts(79,7): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+  --- código src/packages/repl/src/processUserInput/processTextPrompt.ts:69-89 ---
+     69      const textContent =
+     70        typeof input === 'string'
+     71          ? input.trim()
+     72            ? [{ type: 'text' as const, text: input }]
+     73            : []
+     74          : input
+     75      const userMessage = createUserMessage({
+     76        content: [...textContent, ...imageContentBlocks],
+     77        uuid: uuid,
+     78        imagePasteIds: imagePasteIds.length > 0 ? imagePasteIds : undefined,
+     79>       permissionMode,
+     80        isMeta: isMeta || undefined,
+     81      })
+     82  
+     83      return {
+     84        messages: [userMessage, ...attachmentMessages],
+     85        shouldQuery: true,
+     86      }
+     87    }
+     88  
+     89    const userMessage = createUserMessage({
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.
+src/packages/repl/src/processUserInput/processTextPrompt.ts(92,5): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+  --- código src/packages/repl/src/processUserInput/processTextPrompt.ts:82-100 ---
+     82  
+     83      return {
+     84        messages: [userMessage, ...attachmentMessages],
+     85        shouldQuery: true,
+     86      }
+     87    }
+     88  
+     89    const userMessage = createUserMessage({
+     90      content: input,
+     91      uuid,
+     92>     permissionMode,
+     93      isMeta: isMeta || undefined,
+     94    })
+     95  
+     96    return {
+     97      messages: [userMessage, ...attachmentMessages],
+     98      shouldQuery: true,
+     99    }
+    100  }
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.

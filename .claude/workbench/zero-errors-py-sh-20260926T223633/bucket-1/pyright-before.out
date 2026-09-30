@@ -1,0 +1,238 @@
+WARNING: there is a new pyright version available (v1.1.408 -> v1.1.414).
+Please install the new version or set PYRIGHT_PYTHON_FORCE_VERSION to `latest`
+
+/home/user/thyrox/src/lib/compressibility.py
+  /home/user/thyrox/src/lib/compressibility.py:127:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/task/board_sync.py
+  /home/user/thyrox/src/task/board_sync.py:584:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/task/census_open_tasks.py
+  /home/user/thyrox/src/task/census_open_tasks.py:267:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/task/task_ids.py
+  /home/user/thyrox/src/task/task_ids.py:943:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/task/vecinos_de_tarea.py
+  /home/user/thyrox/src/task/vecinos_de_tarea.py:253:28 - error: Argument of type "list[int] | int" cannot be assigned to parameter "iterable" of type "Iterable[Unknown]" in function "extend"
+    Type "list[int] | int" is not assignable to type "Iterable[Unknown]"
+      "int" is incompatible with protocol "Iterable[Unknown]"
+        "__iter__" is not present (reportArgumentType)
+  /home/user/thyrox/src/task/vecinos_de_tarea.py:254:25 - error: Argument of type "list[float] | int" cannot be assigned to parameter "iterable" of type "Iterable[Unknown]" in function "extend"
+    Type "list[float] | int" is not assignable to type "Iterable[Unknown]"
+      "int" is incompatible with protocol "Iterable[Unknown]"
+        "__iter__" is not present (reportArgumentType)
+  /home/user/thyrox/src/task/vecinos_de_tarea.py:254:37 - error: Argument of type "list[int] | int" cannot be assigned to parameter "obj" of type "Sized" in function "len"
+    Type "list[int] | int" is not assignable to type "Sized"
+      "int" is incompatible with protocol "Sized"
+        "__len__" is not present (reportArgumentType)
+  /home/user/thyrox/src/task/vecinos_de_tarea.py:474:44 - error: Argument of type "list[int] | int" cannot be assigned to parameter "iter1" of type "Iterable[_T1@__new__]" in function "__new__"
+    Type "list[int] | int" is not assignable to type "Iterable[_T1@__new__]"
+      "int" is incompatible with protocol "Iterable[_T1@__new__]"
+        "__iter__" is not present (reportArgumentType)
+  /home/user/thyrox/src/task/vecinos_de_tarea.py:474:55 - error: Argument of type "list[float] | int" cannot be assigned to parameter "iter2" of type "Iterable[_T2@__new__]" in function "__new__"
+    Type "list[float] | int" is not assignable to type "Iterable[_T2@__new__]"
+      "int" is incompatible with protocol "Iterable[_T2@__new__]"
+        "__iter__" is not present (reportArgumentType)
+/home/user/thyrox/src/verify/agent_proposal.py
+  /home/user/thyrox/src/verify/agent_proposal.py:80:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/analyze_typescript_diagnostics.py
+  /home/user/thyrox/src/verify/analyze_typescript_diagnostics.py:198:46 - error: Cannot access attribute "items" for class "object"
+    Attribute "items" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/analyze_typescript_diagnostics.py:200:46 - error: Argument of type "object" cannot be assigned to parameter "obj" of type "Sized" in function "len"
+    "object" is incompatible with protocol "Sized"
+      "__len__" is not present (reportArgumentType)
+/home/user/thyrox/src/verify/annulment_control.py
+  /home/user/thyrox/src/verify/annulment_control.py:155:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/annulment_control.py:168:54 - error: Expected 7 positional arguments (reportCallIssue)
+/home/user/thyrox/src/verify/batch_verification.py
+  /home/user/thyrox/src/verify/batch_verification.py:105:17 - error: "object" is not iterable
+    "__iter__" method not defined (reportGeneralTypeIssues)
+  /home/user/thyrox/src/verify/batch_verification.py:163:24 - error: Argument of type "list[Verdict]" cannot be assigned to parameter "verdicts" of type "list[Verdict | ProposalVerdict]" in function "__init__"
+    "list[Verdict]" is not assignable to "list[Verdict | ProposalVerdict]"
+      Type parameter "_T@list" is invariant, but "Verdict" is not the same as "Verdict | ProposalVerdict"
+      Consider switching from "list" to "Sequence" which is covariant (reportArgumentType)
+  /home/user/thyrox/src/verify/batch_verification.py:163:34 - error: Argument of type "object" cannot be assigned to parameter "total_before" of type "int" in function "__init__"
+    "object" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/src/verify/batch_verification.py:163:48 - error: Argument of type "object" cannot be assigned to parameter "total_after" of type "int" in function "__init__"
+    "object" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/src/verify/batch_verification.py:213:9 - error: Argument of type "list[ProposalVerdict]" cannot be assigned to parameter "verdicts" of type "list[Verdict | ProposalVerdict]" in function "__init__"
+    "list[ProposalVerdict]" is not assignable to "list[Verdict | ProposalVerdict]"
+      Type parameter "_T@list" is invariant, but "ProposalVerdict" is not the same as "Verdict | ProposalVerdict"
+      Consider switching from "list" to "Sequence" which is covariant (reportArgumentType)
+  /home/user/thyrox/src/verify/batch_verification.py:214:9 - error: Argument of type "object" cannot be assigned to parameter "total_before" of type "int" in function "__init__"
+    "object" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/src/verify/batch_verification.py:215:9 - error: Argument of type "object" cannot be assigned to parameter "total_after" of type "int" in function "__init__"
+    "object" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/src/verify/batch_verification.py:272:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_absence_claim.py
+  /home/user/thyrox/src/verify/check_absence_claim.py:112:25 - error: Type "None" is not assignable to declared type "ClaimKind"
+    "None" is not assignable to "ClaimKind" (reportAssignmentType)
+  /home/user/thyrox/src/verify/check_absence_claim.py:203:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_bench_untracked.py
+  /home/user/thyrox/src/verify/check_bench_untracked.py:51:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_cache_layout.py
+  /home/user/thyrox/src/verify/check_cache_layout.py:75:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_cifra_de_artefacto_vivo.py
+  /home/user/thyrox/src/verify/check_cifra_de_artefacto_vivo.py:264:54 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_corpus_al_dia.py
+  /home/user/thyrox/src/verify/check_corpus_al_dia.py:94:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_eventos_hook.py
+  /home/user/thyrox/src/verify/check_eventos_hook.py:87:12 - error: No overloads for "max" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/src/verify/check_eventos_hook.py:87:28 - error: Argument of type "Overload[(key: Unknown, default: None = None, /) -> (Unknown | None), (key: Unknown, default: Unknown, /) -> Unknown, (key: Unknown, default: _T@get, /) -> (Unknown | _T@get)]" cannot be assigned to parameter "key" of type "(_T@max) -> SupportsRichComparison" in function "max"
+    No overloaded function matches type "(Unknown) -> SupportsRichComparison" (reportArgumentType)
+/home/user/thyrox/src/verify/check_generator_determinism.py
+  /home/user/thyrox/src/verify/check_generator_determinism.py:156:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_hallazgos_index.py
+  /home/user/thyrox/src/verify/check_hallazgos_index.py:94:28 - error: "group" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/check_hallazgos_index.py:95:28 - error: "group" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_identifier_language.py
+  /home/user/thyrox/src/verify/check_identifier_language.py:575:43 - error: Argument of type "set[Unknown]" cannot be assigned to parameter "code_families" of type "frozenset[Unknown]" in function "spanish_words_in"
+    "set[Unknown]" is not assignable to "frozenset[Unknown]" (reportArgumentType)
+/home/user/thyrox/src/verify/check_ids_entre_ramas.py
+  /home/user/thyrox/src/verify/check_ids_entre_ramas.py:99:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_manifest_language.py
+  /home/user/thyrox/src/verify/check_manifest_language.py:174:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_package_typecheck.py
+  /home/user/thyrox/src/verify/check_package_typecheck.py:84:73 - error: "strip" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_reference_root_resolution.py
+  /home/user/thyrox/src/verify/check_reference_root_resolution.py:133:54 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_rst_sintaxis.py
+  /home/user/thyrox/src/verify/check_rst_sintaxis.py:284:48 - error: Argument of type "type[Parser]" cannot be assigned to parameter "components" of type "SettingsSpec" in function "get_default_settings"
+    Type "type[Parser]" is not assignable to type "SettingsSpec" (reportArgumentType)
+/home/user/thyrox/src/verify/check_script_naming.py
+  /home/user/thyrox/src/verify/check_script_naming.py:175:46 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/verify/check_script_naming.py:176:10 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/check_script_naming.py:176:17 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/check_script_naming.py:252:46 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/verify/check_script_naming.py:253:10 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/check_script_naming.py:253:17 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/check_script_naming.py:344:54 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/check_suite_discrimina.py
+  /home/user/thyrox/src/verify/check_suite_discrimina.py:152:30 - error: Cannot access attribute "value" for class "expr"
+    Attribute "value" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/src/verify/check_vocabulario_prosa.py
+  /home/user/thyrox/src/verify/check_vocabulario_prosa.py:678:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/class_header.py
+  /home/user/thyrox/src/verify/class_header.py:68:49 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/verify/class_header.py:69:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/class_header.py:69:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/class_header.py:97:16 - error: Object of type "object" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+  /home/user/thyrox/src/verify/class_header.py:102:21 - error: Object of type "object" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+/home/user/thyrox/src/verify/commit_identity.py
+  /home/user/thyrox/src/verify/commit_identity.py:155:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/counterpart_body.py
+  /home/user/thyrox/src/verify/counterpart_body.py:51:49 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/verify/counterpart_body.py:52:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/counterpart_body.py:52:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/detect_broken_references.py
+  /home/user/thyrox/src/verify/detect_broken_references.py:131:52 - error: Argument of type "str | Any | None" cannot be assigned to parameter "pattern" of type "AnyStr@escape" in function "escape"
+    Type "str | Any | None" is not assignable to constrained type variable "AnyStr" (reportArgumentType)
+/home/user/thyrox/src/verify/gitattributes.py
+  /home/user/thyrox/src/verify/gitattributes.py:165:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/hook_script_token.py
+  /home/user/thyrox/src/verify/hook_script_token.py:149:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/package_boundary.py
+  /home/user/thyrox/src/verify/package_boundary.py:218:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/pool_pipeline.py
+  /home/user/thyrox/src/verify/pool_pipeline.py:133:89 - error: "encode" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/pool_pipeline.py:439:85 - error: Argument of type "Path | None" cannot be assigned to parameter "before_log" of type "Path" in function "_speculative_batch"
+    Type "Path | None" is not assignable to type "Path"
+      "None" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/src/verify/pool_pipeline.py:446:41 - error: Argument of type "Path | None" cannot be assigned to parameter "before_log" of type "Path" in function "step_command"
+    Type "Path | None" is not assignable to type "Path"
+      "None" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/src/verify/pool_pipeline.py:488:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/renumerar_colision.py
+  /home/user/thyrox/src/verify/renumerar_colision.py:84:54 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/script_deprecated.py
+  /home/user/thyrox/src/verify/script_deprecated.py:134:54 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/step_report.py
+  /home/user/thyrox/src/verify/step_report.py:128:16 - error: "peak_mib" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/step_report.py:131:35 - error: "peak_util_pct" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/step_report.py:206:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/symbol_home.py
+  /home/user/thyrox/src/verify/symbol_home.py:62:49 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/verify/symbol_home.py:63:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/symbol_home.py:63:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/symbol_presence.py
+  /home/user/thyrox/src/verify/symbol_presence.py:68:49 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/verify/symbol_presence.py:69:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/verify/symbol_presence.py:69:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/tsc_cycle.py
+  /home/user/thyrox/src/verify/tsc_cycle.py:228:28 - error: Argument of type "str | None" cannot be assigned to parameter "key" of type "str" in function "setdefault"
+    Type "str | None" is not assignable to type "str"
+      "None" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_cycle.py:756:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/tsc_reflect.py
+  /home/user/thyrox/src/verify/tsc_reflect.py:217:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/tsc_routes.py
+  /home/user/thyrox/src/verify/tsc_routes.py:305:9 - error: Argument of type "str | None" cannot be assigned to parameter "key" of type "str" in function "__getitem__"
+    Type "str | None" is not assignable to type "str"
+      "None" is not assignable to "str" (reportArgumentType)
+/home/user/thyrox/src/verify/tsc_schedule.py
+  /home/user/thyrox/src/verify/tsc_schedule.py:129:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/tsc_sweep.py
+  /home/user/thyrox/src/verify/tsc_sweep.py:532:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/tsc_zero_loop.py
+  /home/user/thyrox/src/verify/tsc_zero_loop.py:93:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/tsc_zero_step.py
+  /home/user/thyrox/src/verify/tsc_zero_step.py:152:66 - error: Cannot access attribute "new_diagnostics" for class "Verdict"
+    Attribute "new_diagnostics" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:153:36 - error: Cannot access attribute "targets_after" for class "Verdict"
+    Attribute "targets_after" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:153:60 - error: Cannot access attribute "targets_before" for class "Verdict"
+    Attribute "targets_before" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:156:37 - error: Cannot access attribute "new_diagnostics" for class "Verdict"
+    Attribute "new_diagnostics" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:185:13 - error: Argument of type "dict[str, str | None]" cannot be assigned to parameter "value" of type "dict[str, str]" in function "__setitem__"
+    "dict[str, str | None]" is not assignable to "dict[str, str]"
+      Type parameter "_VT@dict" is invariant, but "str | None" is not the same as "str"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:199:24 - error: Cannot access attribute "proposal_id" for class "Verdict"
+    Attribute "proposal_id" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:204:34 - error: Cannot access attribute "proposal_id" for class "Verdict"
+    Attribute "proposal_id" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:248:27 - error: Argument of type "dict[str, str]" cannot be assigned to parameter "texts" of type "dict[str, str | None]" in function "write"
+    "dict[str, str]" is not assignable to "dict[str, str | None]"
+      Type parameter "_VT@dict" is invariant, but "str" is not the same as "str | None"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:254:24 - error: Argument of type "dict[str, str]" cannot be assigned to parameter "texts" of type "dict[str, str | None]" in function "write"
+    "dict[str, str]" is not assignable to "dict[str, str | None]"
+      Type parameter "_VT@dict" is invariant, but "str" is not the same as "str | None"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:257:24 - error: Argument of type "dict[str, str]" cannot be assigned to parameter "texts" of type "dict[str, str | None]" in function "write"
+    "dict[str, str]" is not assignable to "dict[str, str | None]"
+      Type parameter "_VT@dict" is invariant, but "str" is not the same as "str | None"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:291:32 - error: Argument of type "dict[str, str]" cannot be assigned to parameter "texts" of type "dict[str, str | None]" in function "write"
+    "dict[str, str]" is not assignable to "dict[str, str | None]"
+      Type parameter "_VT@dict" is invariant, but "str" is not the same as "str | None"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:300:32 - error: Argument of type "dict[str, str]" cannot be assigned to parameter "texts" of type "dict[str, str | None]" in function "write"
+    "dict[str, str]" is not assignable to "dict[str, str | None]"
+      Type parameter "_VT@dict" is invariant, but "str" is not the same as "str | None"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+  /home/user/thyrox/src/verify/tsc_zero_step.py:338:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/verify/verificar_rutas_de_hook.py
+  /home/user/thyrox/src/verify/verificar_rutas_de_hook.py:53:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/hallazgo/test_finding_id_collision.py
+  /home/user/thyrox/tests/hallazgo/test_finding_id_collision.py:194:31 - error: Argument of type "Path | None" cannot be assigned to parameter "root" of type "Path" in function "tree_fingerprint"
+    Type "Path | None" is not assignable to type "Path"
+      "None" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/hallazgo/test_finding_id_collision.py:202:30 - error: Argument of type "Path | None" cannot be assigned to parameter "root" of type "Path" in function "tree_fingerprint"
+    Type "Path | None" is not assignable to type "Path"
+      "None" is not assignable to "Path" (reportArgumentType)
+/home/user/thyrox/tests/hallazgo/test_hallazgo_ids.py
+  /home/user/thyrox/tests/hallazgo/test_hallazgo_ids.py:180:7 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+100 errors, 0 warnings, 0 informations

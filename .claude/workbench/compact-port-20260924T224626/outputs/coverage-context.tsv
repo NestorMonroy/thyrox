@@ -1,0 +1,14 @@
+MODEL_CONTEXT_WINDOW_DEFAULT	export	presente
+COMPACT_MAX_OUTPUT_TOKENS	export	AUSENTE
+MAX_OUTPUT_TOKENS_DEFAULT	local	AUSENTE
+MAX_OUTPUT_TOKENS_UPPER_LIMIT	local	AUSENTE
+CAPPED_DEFAULT_MAX_TOKENS	export	AUSENTE
+ESCALATED_MAX_TOKENS	export	AUSENTE
+is1mContextDisabled	export	presente
+has1mContext	export	presente
+modelSupports1M	export	presente
+getContextWindowForModel	export	presente
+getSonnet1mExpTreatmentEnabled	export	AUSENTE
+calculateContextPercentages	export	presente
+getModelMaxOutputTokens	export	presente
+getMaxThinkingTokensForModel	export	AUSENTE

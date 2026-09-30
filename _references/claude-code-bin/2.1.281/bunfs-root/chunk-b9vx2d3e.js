@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.281
+import{t}from"/$bunfs/root/chunk-wfscmafr.js";import{sQ,gj,lVe,HDn,t0e}from"/$bunfs/root/chunk-wbd83hbn.js";import{qa}from"/$bunfs/root/chunk-b7h8pwnv.js";import{wke}from"/$bunfs/root/chunk-6j512bza.js";import{ee}from"/$bunfs/root/chunk-v8ayv6rk.js";import{hVe}from"/$bunfs/root/chunk-n6mnwwn5.js";var g="/_warmup",f=3000,u=600000,E=262144;function Ibr(r){let e=ee();return e.contentHostEgressDenied.has(r.env)||e.contentHostEgressUnanswered.has(wke(r))}function h(r){let e=ee().contentHostEgressProbed.get(r);return e!==void 0&&Date.now()-e<u}async function KOe(r,e){let o=ee(),s=wke(r);if(o.contentHostEgressDenied.has(r.env)){o.contentHostEgressProbed.delete(s),o.contentHostEgressUnanswered.add(s);return}if(h(s))return;let c=o.contentHostEgressInFlight.get(s);if(c!==void 0)return c.catch((d)=>{if(e.aborted)throw d;return KOe(r,e)});let i=p(r,s,e).finally(()=>{o.contentHostEgressInFlight.delete(s)});return o.contentHostEgressInFlight.set(s,i),i}async function p(r,e,o){let s=ee(),c=()=>{s.contentHostEgressUnanswered.delete(e),s.contentHostEgressProbed.set(e,Date.now())},i=(a)=>{t(`[artifact] egress probe of ${e}: ${a}; reading the host as unreachable for this check`),s.contentHostEgressProbed.delete(e),s.contentHostEgressUnanswered.add(e)},d=()=>{s.contentHostEgressProbed.delete(e),s.contentHostEgressUnanswered.add(e),s.contentHostEgressDenied.add(r.env)},n;try{n=await qa.get(`${e}${g}`,{signal:AbortSignal.any([o,AbortSignal.timeout(f)]),timeout:f,maxRedirects:0,maxContentLength:E,responseType:"text",validateStatus:()=>!0})}catch(a){if(o.aborted)throw a;if(lVe(a))return d();return i(hVe(a)?"an answer larger than the cap":"no answer")}if(gj(n.status,n.headers))return d();let l=()=>sQ(n.headers,n.data,(a)=>a);if(!(n.status>=200&&n.status<300||n.status===403&&t0e(n.headers,l())||n.status===404&&HDn(n.headers,l())))return i(`unrecognised HTTP ${n.status}`);return c()}
+export{Ibr,KOe};

@@ -1,0 +1,9 @@
+escenarios=3000 discrepancias=1764
+Gkr#0: ours=[[["foo-brave-otter","sess","user"]],[],null,"foo-brave-otter",[],[],0] ref=[[["foo-brave-otter","sess","user"]],[],null,"foo-brave-otter",[],[],1]
+Gkr#2: ours=[[["foo","sess","user"]],[],null,"foo",[],[],0] ref=[[["foo","sess","user"]],[],null,"foo",[],[],1]
+Gkr#5: ours=[[["foo","sess","user"]],[],null,"foo",[],[],0] ref=[[["foo","sess","user"]],[],null,"foo",[],[],1]
+Gkr#6: ours=[[],[],null,"foo",[],[],0] ref=[[],[],null,"foo",[],[],1]
+Gkr#9: ours=[[["foo-quick-fox","sess","user"]],[],null,"foo-quick-fox",[],[],0] ref=[[["foo-quick-fox","sess","user"]],[],null,"foo-quick-fox",[],[],1]
+Gkr#10: ours=[[["foo-calm-heron-2","sess","user"]],[],null,"foo-calm-heron-2",[],[],0] ref=[[["foo-calm-heron-2","sess","user"]],[],null,"foo-calm-heron-2",[],[],1]
+Gkr#12: ours=[[],[],null,"bar",[],[],0] ref=[[],[],null,"bar",[],[],1]
+Gkr#13: ours=[[],[],null,"Foo",[],[],0] ref=[[],[],null,"Foo",[],[],1]

@@ -1,0 +1,24 @@
+Warn on blocking waits run in the foreground
+
+A thyrox-bg wait in the foreground held the turn for minutes, and the
+foreground detector stayed silent: it exempted every command naming
+the mechanism, blocking waits included. The executor's directive of
+2026-09-24: a wait is a long command and goes to the background on
+its own.
+
+detect_foreground_long_command now warns on thyrox-bg/bg.sh wait,
+wait-jobs wait and marker_wait unless run_in_background is set, and
+skips heredoc bodies, which are data. The rule drops the foreground
+barrier it allowed "when the result is needed next": the job goes to
+the ledger through thyrox-bg, and the wait to the client background,
+which is what notifies.
+
+Also: agentToolUtils.test.ts mocked ../../../Tool.js without spreading
+the real exports, which its own header asks for; the mock hid
+buildTool from every module importing it. The full TypeScript run
+(968 files, 49 red) and its per-file cause table are recorded, and the
+typecheck baseline drops to 2424.
+
+Controls: dropping the wait branch fails exactly the warning case;
+dropping the run_in_background exemption fails exactly the silent
+case.

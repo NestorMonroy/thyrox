@@ -1,0 +1,7 @@
+patron: dead-local-not-read
+senal_del_verificador: TS6133: '[^']+' is declared but its value is never read
+fix_generico: Un import, local o función que nadie lee: se retira si la fuente tampoco lo lee; un parámetro se conserva con prefijo _ (unused-parameter-as-in-source).
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(349,20): error TS6133: 'waitForPendingMcpServers' is declared but its value is never read.
+src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(382,14): error TS6133: 'extractTargetMcpServer' is declared but its value is never read.

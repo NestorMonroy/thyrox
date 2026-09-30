@@ -1,0 +1,61 @@
+==== E2e: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js function E2e [162166,162233)
+function E2e(e){return e==="now"||e==="next"||e==="later"?e:void 0}
+==== g9r: 1 definicion(es) de nivel superior
+---- chunk-zgj26xgq.js function g9r [1411,1442)
+function g9r(e){return m(e,!0)}
+==== pYe: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function pYe [2151,2253)
+function pYe(e){if(typeof e!=="string")return;let n=ky(e.replace(/["<>]/g,""));return n===""?void 0:n}
+==== qCe: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function qCe [5266,5525)
+function qCe(e){let n=_(e);if(!n)return{};let r=n.fromName?ky(n.fromName):"";return{...r&&{name:r},...n.fromSession!==void 0&&{fromSession:n.fromSession},...n.hopChain!==void 0&&{hopChain:n.hopChain},...n.fromMode!==void 0&&{fromMode:n.fromMode},body:n.body}}
+==== B4e: 1 definicion(es) de nivel superior
+---- chunk-mwe1v51h.js function B4e [769,823)
+function B4e(t){return typeof t==="string"&&s.test(t)}
+==== zce: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function zce [5183,5266)
+function zce(e,n,r){if(e.body===void 0||n===r)return e;let{body:s,...t}=e;return t}
+==== C7e: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function C7e [7761,7837)
+function C7e(){let e=H();if(e.policy!=="refuse")return;return e.refuseCause}
+==== nSe: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function nSe [8011,8318)
+function nSe(e,n){if(k7e(),n==="kill-switch"){t(`[cross-session-inbound] refused inbound peer message \u2014 cross-session messaging disabled (kill switch) (${e})`),p("peer_inbound_gate","kill_switch");return}t(`[cross-session-inbound] refused inbound peer message (${e})`),p("peer_inbound_gate","refused")}
+==== kJr: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function kJr [1970,2069)
+function kJr(e,n){ti().inbound.sendPeerReceipt?.({mode:"prompt",agentId:qe(),value:"",origin:e},n)}
+==== Aot: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js function Aot [474388,474987)
+async function Aot(e){let{origin:n,content:r,event:s,agentId:g}=e,h={origin:n,...g!==void 0&&{agentId:g}};if(!Vp("session.receive",h))return{content:r,queueing:HXe};let S=NXe(n,r),w=WCt($Xe),M=await jCt(w,Ml("session.receive",{core:{"session.receive":Q0n(w)}})({origin:n,text:S,...s!==void 0&&{event:s},...g!==void 0&&{agentId:g}}));if(!M.arrived){let V=M.answered.consumed??FXe;return t(`session.receive (${n.kind}): consumed by a hook (${V}; hooked by `+Xot("session.receive",h).join("+")+"); not queued"),{consumed:V}}let{arrived:F}=M;return{content:F.text===S?r:jXe(r,F.text),queueing:BXe(w,F)}}
+==== nlt: 1 definicion(es) de nivel superior
+---- chunk-5ttwp861.js function nlt [730,782)
+function nlt(){return Ws()&&x("tengu_send_file",!1)}
+==== ce: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js function ce [35639,35772)
+function ce(e,n,i){return ye({selfSentAncestry:n,verifiedPeerPid:e,childTokenPresented:i==="child",needsVerdict:unr(),platform:O()})}
+==== fbt: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function fbt [5540,5576)
+function fbt(e){return v(e,P(b(e)))}
+==== gE: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js variable gE [185276,185305)
+gE=(...e)=>Eh().enqueue(...e)
+==== Wkr: 1 definicion(es) de nivel superior
+---- chunk-bhsyyycy.js function Wkr [2999,3049)
+function Wkr(e,n,s){wS().noteCorrespondent(e,n,s)}
+==== eUr: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function eUr [7929,8153)
+function eUr(e,n,r){if(qce(n)!==void 0){let s=qce(e);return s!==void 0&&ne.test(s)}if(Wh(e))return!1;if(S(u(e))===S(u(n)))return e.endsWith(".sock");return r?.verifiedPeerPid!==void 0&&r.ownerUids!==void 0&&D(e,r.ownerUids)}
+==== fJ: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function fJ [5828,5860)
+function fJ(e){return K.test(e)}
+==== lh: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function lh [5965,6258)
+function lh(e){if(e.startsWith("uds:"))return{scheme:"uds",target:E(e.slice(4))};if(e.startsWith("bridge:"))return{scheme:"bridge",target:E(e.slice(7))};if(e.startsWith("did:"))return{scheme:"did",target:e};if(Y.test(e)||q.test(e))return{scheme:"uds",target:e};return{scheme:"other",target:e}}
+==== qe: 1 definicion(es) de nivel superior
+---- chunk-nvht7ckf.js function qe [68712,68811)
+function qe(){let e=p()?.sessionId;if(e)return go(e);let t=n();return t.identity.mainAgentId(t.id)}
+==== We: 1 definicion(es) de nivel superior
+---- crypto external randomUUID [2164,2219)
+import{randomBytes as _e,randomUUID as We}from"crypto";
+symbol: 20 de 20 nombre(s) resueltos

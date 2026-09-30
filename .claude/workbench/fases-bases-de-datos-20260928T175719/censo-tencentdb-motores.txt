@@ -1,0 +1,12 @@
+## archivos por patron (git grep -liE, universo: lo versionado)
+pgvector	0
+postgres	2
+sqlite	148
+mysql	4
+tencentdb|tdsql|tcvector|vectordb	106
+create (virtual )?table	17
+embedding	83
+hnsw|ivfflat	3
+fts5	23
+sqlite-vec|vec0	13
+better-sqlite3|bun:sqlite|node:sqlite	27

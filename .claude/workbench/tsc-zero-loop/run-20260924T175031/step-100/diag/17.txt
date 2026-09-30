@@ -1,0 +1,11 @@
+src/packages/provider/src/mockRateLimits.ts(101,10): error TS6133: 'setMockHeader' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(250,10): error TS6133: 'addExceededLimit' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(277,10): error TS6133: 'setMockEarlyWarning' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(322,10): error TS6133: 'setMockRateLimitScenario' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(609,5): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/provider/src/mockRateLimits.ts(628,10): error TS6133: 'getMockStatus' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(721,10): error TS6133: 'getCurrentMockScenario' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(759,10): error TS6133: 'getScenarioDescription' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(807,10): error TS6133: 'setMockSubscriptionType' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(835,10): error TS6133: 'setMockBillingAccess' is declared but its value is never read.

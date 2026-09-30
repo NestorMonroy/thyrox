@@ -1,0 +1,16 @@
+# commit-reexportes
+
+## Qué se lanzó
+
+```
+bash -c git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -F .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-reexportes.txt -- src/packages/@ant/ink/src/hooks/use-input.ts src/packages/agent/agentDeps.ts src/packages/agent/compaction/compact.ts src/packages/agent/index.ts src/packages/agent/messages.ts src/packages/agent/types/hooks.ts src/packages/cli/src/index.ts src/packages/config/env/index.ts src/packages/config/plugin/_deps.ts src/packages/config/settings/settings.ts src/packages/config/settings/types.ts src/packages/mcp-runtime/src/types.ts src/packages/repl/src/appStateHooks.ts src/packages/repl/src/screens/agentFleet/mountFleetView.tsx src/packages/swarm/src/adapters/appRuntime.ts src/packages/swarm/src/index.ts  .claude/baselines/cli_typecheck_baseline.txt && git add -- .claude/jobs/commit-cierre-20260924T025636/ .claude/jobs/commit-docs-20260924T030026/ .claude/jobs/commit-nombres-20260924T024940/ .claude/jobs/commit-reach-20260924T025902/ .claude/jobs/push-l6-20260924T025954/ .claude/jobs/trinquete-cierre-20260924T025009/ .claude/jobs/trinquete-reexportes-20260924T030648/ .claude/jobs/ts-cierre-20260924T025009/ .claude/jobs/ts-reexportes-20260924T030205/ .claude/jobs/tsc-reexportes-20260924T031027/ .claude/jobs/tsc-reexportes2-20260924T031141/  .claude/workbench/frontera-publica-de-paquetes-20260924T023459 && git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -F .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-evidencia-2.txt -- .claude/jobs/commit-cierre-20260924T025636/ .claude/jobs/commit-docs-20260924T030026/ .claude/jobs/commit-nombres-20260924T024940/ .claude/jobs/commit-reach-20260924T025902/ .claude/jobs/push-l6-20260924T025954/ .claude/jobs/trinquete-cierre-20260924T025009/ .claude/jobs/trinquete-reexportes-20260924T030648/ .claude/jobs/ts-cierre-20260924T025009/ .claude/jobs/ts-reexportes-20260924T030205/ .claude/jobs/tsc-reexportes-20260924T031027/ .claude/jobs/tsc-reexportes2-20260924T031141/  .claude/workbench/frontera-publica-de-paquetes-20260924T023459 && git push -u origin feature/thyrox-l6
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

@@ -1,0 +1,6 @@
+base	5 pass, 0 fail	—
+abort-not-retryable	4 pass, 1 fail	una cancelación del cliente nunca se reintenta, aunque su mensaje parezca de transporte
+restart-reject	4 pass, 1 fail	una continuación que no solapa lo emitido se toma por reinicio y no se cose
+empty-stop-needs-reasoning	4 pass, 1 fail	un stop vacío sin razonamiento es un turno vacío normal: no se continúa
+cancel-no-reopen	5 pass, 0 fail	—
+finalize-once	5 pass, 0 fail	—

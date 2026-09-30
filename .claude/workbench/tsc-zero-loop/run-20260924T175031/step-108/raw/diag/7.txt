@@ -1,0 +1,8 @@
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(50,20): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(56,20): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(65,12): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(68,12): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(74,20): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(86,20): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(92,15): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(93,15): error TS2554: Expected 1 arguments, but got 0.

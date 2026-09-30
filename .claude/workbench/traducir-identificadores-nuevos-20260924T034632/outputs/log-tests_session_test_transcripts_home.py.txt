@@ -1,0 +1,18 @@
+  ok   el hogar declarado gana
+  ok   el compuesto cuelga del hogar del usuario
+  ok   y queda anotado que nadie lo declaro
+  ok   halla los dos
+  ok   y el primero es el mayor
+  ok   el menor no se pierde, queda listado
+  ok   elige el mayor, no el primero ni el ultimo por ruta
+  ok   y coincide con la cabeza del plural
+  ok   el plural es vacio
+  ok   y el singular es None
+  ok   un id vacio tampoco compone nada
+  ok   model_catalog elige el mayor
+  ok   session_restart elige el mismo
+  ok   y los dos coinciden sobre un archivo real
+  ok   el censo tiene corpus
+  ok   ningun modulo compone el hogar de transcripts por su cuenta
+
+16 aprobada(s) · 0 fallida(s) (alcance medido: session/transcripts.py y sus dos consumidores)

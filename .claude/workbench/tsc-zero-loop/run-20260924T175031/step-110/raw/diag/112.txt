@@ -1,0 +1,2 @@
+src/packages/config/plugin/headlessPluginInstall.ts(114,9): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/packages/config/plugin/headlessPluginInstall.ts(114,9): error TS2554: Expected 2 arguments, but got 3.

@@ -1,0 +1,15 @@
+src/packages/config/settings/inventory.ts(171,75): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }

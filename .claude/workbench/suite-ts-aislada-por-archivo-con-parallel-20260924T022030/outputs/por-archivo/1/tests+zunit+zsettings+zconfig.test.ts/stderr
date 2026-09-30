@@ -1,0 +1,245 @@
+
+tests/unit/settings/config.test.ts:
+27 | 
+28 | // ─── Settings Schema Validation ──────────────────────────────────────────
+29 | 
+30 | describe('SettingsSchema', () => {
+31 |   test('accepts empty object', () => {
+32 |     const result = SettingsSchema().safeParse({})
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:32:20)
+(fail) SettingsSchema > accepts empty object [0.33ms]
+32 |     const result = SettingsSchema().safeParse({})
+33 |     expect(result.success).toBe(true)
+34 |   })
+35 | 
+36 |   test('accepts model string', () => {
+37 |     const result = SettingsSchema().safeParse({ model: 'sonnet' })
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:37:20)
+(fail) SettingsSchema > accepts model string [0.11ms]
+37 |     const result = SettingsSchema().safeParse({ model: 'sonnet' })
+38 |     expect(result.success).toBe(true)
+39 |   })
+40 | 
+41 |   test('accepts permissions block with allow rules', () => {
+42 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:42:20)
+(fail) SettingsSchema > accepts permissions block with allow rules [0.05ms]
+44 |     })
+45 |     expect(result.success).toBe(true)
+46 |   })
+47 | 
+48 |   test('accepts permissions block with deny rules', () => {
+49 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:49:20)
+(fail) SettingsSchema > accepts permissions block with deny rules [0.08ms]
+51 |     })
+52 |     expect(result.success).toBe(true)
+53 |   })
+54 | 
+55 |   test('accepts env variables', () => {
+56 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:56:20)
+(fail) SettingsSchema > accepts env variables [0.05ms]
+58 |     })
+59 |     expect(result.success).toBe(true)
+60 |   })
+61 | 
+62 |   test('accepts hooks configuration', () => {
+63 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:63:20)
+(fail) SettingsSchema > accepts hooks configuration [0.04ms]
+72 |     })
+73 |     expect(result.success).toBe(true)
+74 |   })
+75 | 
+76 |   test('accepts attribution settings', () => {
+77 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:77:20)
+(fail) SettingsSchema > accepts attribution settings [0.03ms]
+82 |     })
+83 |     expect(result.success).toBe(true)
+84 |   })
+85 | 
+86 |   test('accepts worktree settings', () => {
+87 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:87:20)
+(fail) SettingsSchema > accepts worktree settings [0.03ms]
+92 |     })
+93 |     expect(result.success).toBe(true)
+94 |   })
+95 | 
+96 |   test('accepts $schema field', () => {
+97 |     const result = SettingsSchema().safeParse({
+                        ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:97:20)
+(fail) SettingsSchema > accepts $schema field [0.04ms]
+ 99 |     })
+100 |     expect(result.success).toBe(true)
+101 |   })
+102 | 
+103 |   test('passes through unknown keys (passthrough mode)', () => {
+104 |     const result = SettingsSchema().safeParse({ unknownKey: 'value' })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:104:20)
+(fail) SettingsSchema > passes through unknown keys (passthrough mode) [0.03ms]
+107 |       expect((result.data as any).unknownKey).toBe('value')
+108 |     }
+109 |   })
+110 | 
+111 |   test('coerces env var numbers to strings', () => {
+112 |     const result = EnvironmentVariablesSchema().safeParse({ PORT: 3000 })
+                         ^
+TypeError: EnvironmentVariablesSchema is not a function. (In 'EnvironmentVariablesSchema()', 'EnvironmentVariablesSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:112:20)
+(fail) SettingsSchema > coerces env var numbers to strings [0.04ms]
+115 |       expect(result.data.PORT).toBe('3000')
+116 |     }
+117 |   })
+118 | 
+119 |   test('accepts boolean settings', () => {
+120 |     const result = SettingsSchema().safeParse({
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:120:20)
+(fail) SettingsSchema > accepts boolean settings [0.04ms]
+124 |     })
+125 |     expect(result.success).toBe(true)
+126 |   })
+127 | 
+128 |   test('accepts cleanupPeriodDays', () => {
+129 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: 30 })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:129:20)
+(fail) SettingsSchema > accepts cleanupPeriodDays [0.03ms]
+129 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: 30 })
+130 |     expect(result.success).toBe(true)
+131 |   })
+132 | 
+133 |   test('rejects negative cleanupPeriodDays', () => {
+134 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: -1 })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:134:20)
+(fail) SettingsSchema > rejects negative cleanupPeriodDays [0.04ms]
+134 |     const result = SettingsSchema().safeParse({ cleanupPeriodDays: -1 })
+135 |     expect(result.success).toBe(false)
+136 |   })
+137 | 
+138 |   test('accepts statusLine configuration', () => {
+139 |     const result = SettingsSchema().safeParse({
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:139:20)
+(fail) SettingsSchema > accepts statusLine configuration [0.12ms]
+141 |     })
+142 |     expect(result.success).toBe(true)
+143 |   })
+144 | 
+145 |   test('accepts sshConfigs', () => {
+146 |     const result = SettingsSchema().safeParse({
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:146:20)
+(fail) SettingsSchema > accepts sshConfigs [0.04ms]
+159 | 
+160 | // ─── Permissions Schema ─────────────────────────────────────────────────
+161 | 
+162 | describe('PermissionsSchema', () => {
+163 |   test('accepts defaultMode', () => {
+164 |     const result = PermissionsSchema().safeParse({
+                         ^
+TypeError: PermissionsSchema is not a function. (In 'PermissionsSchema()', 'PermissionsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:164:20)
+(fail) PermissionsSchema > accepts defaultMode [0.27ms]
+166 |     })
+167 |     expect(result.success).toBe(true)
+168 |   })
+169 | 
+170 |   test('accepts additionalDirectories', () => {
+171 |     const result = PermissionsSchema().safeParse({
+                         ^
+TypeError: PermissionsSchema is not a function. (In 'PermissionsSchema()', 'PermissionsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:171:20)
+(fail) PermissionsSchema > accepts additionalDirectories [0.12ms]
+173 |     })
+174 |     expect(result.success).toBe(true)
+175 |   })
+176 | 
+177 |   test('accepts disableBypassPermissionsMode', () => {
+178 |     const result = PermissionsSchema().safeParse({
+                         ^
+TypeError: PermissionsSchema is not a function. (In 'PermissionsSchema()', 'PermissionsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:178:20)
+(fail) PermissionsSchema > accepts disableBypassPermissionsMode [0.08ms]
+387 |       'projectSettings',
+388 |     ])
+389 |   })
+390 | 
+391 |   test('throws for invalid source name', () => {
+392 |     expect(() => parseSettingSourcesFlag('invalid')).toThrow(
+                                                           ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "Invalid setting source"
+Received message: "fuente de settings desconocida: 'invalid' (válidas: user, project, local, flag, policy)"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:392:54)
+(fail) parseSettingSourcesFlag > throws for invalid source name [4.82ms]
+430 | })
+431 | 
+432 | describe('validateSettingsFileContent', () => {
+433 |   test('accepts valid JSON settings', () => {
+434 |     const result = validateSettingsFileContent('{"model": "sonnet"}')
+435 |     expect(result.isValid).toBe(true)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:435:28)
+(fail) validateSettingsFileContent > accepts valid JSON settings [19.49ms]
+454 |   })
+455 | })
+456 | 
+457 | describe('formatZodError', () => {
+458 |   test('formats invalid type error', () => {
+459 |     const result = SettingsSchema().safeParse({ model: 123 })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:459:20)
+(fail) formatZodError > formats invalid type error [1.01ms]
+467 |   })
+468 | })
+469 | 
+470 | describe('gemini settings', () => {
+471 |   test('accepts gemini modelType', () => {
+472 |     const result = SettingsSchema().safeParse({ modelType: 'gemini' })
+                         ^
+TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+      at <anonymous> (/home/user/thyrox/tests/unit/settings/config.test.ts:472:20)
+(fail) gemini settings > accepts gemini modelType [0.17ms]
+
+ 40 pass
+ 23 fail
+ 47 expect() calls
+Ran 63 tests across 1 file. [274.00ms]

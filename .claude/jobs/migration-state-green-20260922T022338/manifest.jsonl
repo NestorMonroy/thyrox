@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bunx tsc --noEmit", "started_at": "2026-09-22T02:23:38+00:00", "question": "¿Desaparecen los diagnósticos de guards y timestamps de migración con tipos concretos?", "metric": "5 225 diagnósticos en 1 033 archivos; cero diagnósticos de las seis propiedades.", "blind_to": "La conducta end-to-end de cada migración contra servicios externos."}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-22T02:25:24+00:00", "duration_seconds": 106.409857}

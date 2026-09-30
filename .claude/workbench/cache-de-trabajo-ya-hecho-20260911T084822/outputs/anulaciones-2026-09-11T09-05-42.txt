@@ -1,0 +1,63 @@
+# Anulaciones del cache de dos escalones
+# fecha: 2026-09-11T09:05:42
+# sujeto: src/cache/work_cache.py   control: tests/cache/test_work_cache.py
+
+== BASE ==
+   test_work_cache: 23 aserciones — 23 ok, 0 falla(s)
+   exit=0 fallan=0
+
+== 1-presencia ==
+     ok   y el otro sigue dentro
+   CAE: las 14 piezas del porte estan presentes
+   stderr: AttributeError: module 'cache.work_cache' has no attribute 'has_changes'
+
+== 2-escalon1-consulta-unverified ==
+   test_work_cache: 23 aserciones — 20 ok, 3 falla(s)
+   CAE: escalon 1 entre procesos: nada que reindexar
+   CAE: escalon 1 entre procesos: los dos cuentan como sin cambio
+   CAE: escalon 1 discrimina: entra solo el que cambio de stat
+
+== 3-escalon1-ignora-stat ==
+   test_work_cache: 23 aserciones — 19 ok, 4 falla(s)
+   CAE: escalon 1 discrimina: entra solo el que cambio de stat
+   CAE: escalon 2 tras disco: re-extrae y cuenta como actualizado
+   CAE: escalon 2 tras disco: y ya no queda sin verificar
+   CAE: escalon 2 en proceso: ataja la extraccion
+
+== 4-escalon2-no-consulta-unverified ==
+   test_work_cache: 23 aserciones — 20 ok, 3 falla(s)
+   CAE: escalon 2 tras disco: NO ataja (el doc esta sin verificar)
+   CAE: escalon 2 tras disco: re-extrae y cuenta como actualizado
+   CAE: escalon 2 tras disco: y ya no queda sin verificar
+
+== 5-escalon2-no-existe ==
+   test_work_cache: 23 aserciones — 21 ok, 2 falla(s)
+   CAE: escalon 2 en proceso: ataja la extraccion
+   CAE: escalon 2 en proceso: no cuenta como actualizado
+
+== 6-sin-guard-root-missing ==
+   test_work_cache: 23 aserciones — 22 ok, 1 falla(s)
+   CAE: raiz ausente: el ledger no declara barrido completo
+
+== 7-persist-sin-scan-completed ==
+   test_work_cache: 23 aserciones — 21 ok, 2 falla(s)
+   CAE: barrido incompleto: no persiste
+   CAE: barrido incompleto: no dejo archivo
+
+== 8-huella-por-documento ==
+   test_work_cache: 23 aserciones — 22 ok, 1 falla(s)
+   CAE: otra huella: el indice entero se rechaza
+
+== RESTAURADO ==
+   identico al pristino: True
+   test_work_cache: 23 aserciones — 23 ok, 0 falla(s)
+EXIT=0
+
+== 9-sin-NINGUNA-de-las-dos-defensas ==
+   test_work_cache: 23 aserciones — 21 ok, 2 falla(s)
+   CAE: raiz ausente: el indice conserva sus documentos
+   CAE: raiz ausente: el ledger no declara barrido completo
+
+== RESTAURADO (tras la 9) ==
+   identico: True
+   test_work_cache: 23 aserciones — 23 ok, 0 falla(s)

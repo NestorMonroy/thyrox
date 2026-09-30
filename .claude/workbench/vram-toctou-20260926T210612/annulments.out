@@ -1,0 +1,10 @@
+== anulación A
+  FALLA uno admitido y el otro esperó — esperado ['admitido', 'esperó'], obtenido ['admitido', 'admitido']
+test_gpu_monitor: 31 ok, 1 falla(s)
+== anulación B
+  FALLA uno admitido y el otro esperó — esperado ['admitido', 'esperó'], obtenido ['admitido', 'admitido']
+  FALLA B no cabe mientras A tenga su reserva — esperado False, obtenido True
+test_gpu_monitor: 30 ok, 2 falla(s)
+== anulación C
+  FALLA con los 3000 ya visibles, 1500 caben en los 2000 libres — esperado True, obtenido False
+test_gpu_monitor: 31 ok, 1 falla(s)

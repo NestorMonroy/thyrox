@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/Settings/Config.tsx(1593,20): error TS18046: 'context.messages' is of type 'unknown'.
+  --- código src/packages/repl/src/components/Settings/Config.tsx:1583-1603 ---
+   1583      }
+   1584  
+   1585      if (setting.type === 'boolean') {
+   1586        isDirty.current = true
+   1587        setting.onChange(!setting.value)
+   1588        if (setting.id === 'thinkingEnabled') {
+   1589          const newValue = !setting.value
+   1590          const backToInitial = newValue === initialThinkingEnabled.current
+   1591          if (backToInitial) {
+   1592            setShowThinkingWarning(false)
+   1593>         } else if (context.messages.some((m: { type: string }) => m.type === 'assistant')) {
+   1594            setShowThinkingWarning(true)
+   1595          }
+   1596        }
+   1597        return
+   1598      }
+   1599  
+   1600      if (
+   1601        setting.id === 'theme' ||
+   1602        setting.id === 'model' ||
+   1603        setting.id === 'teammateDefaultModel' ||

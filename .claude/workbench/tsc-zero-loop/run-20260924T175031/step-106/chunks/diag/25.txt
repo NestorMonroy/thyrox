@@ -1,0 +1,21 @@
+src/packages/agent/messages/mappers.ts(35,11): error TS2352: Conversion of type '{ type: "assistant"; message: BetaMessage; uuid: string; requestId: undefined; timestamp: string; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "assistant"; message: BetaMessage; uuid: string; requestId: undefined; timestamp: string; }' is not comparable to type 'AssistantMessage'.
+    Type '{ type: "assistant"; message: BetaMessage; uuid: string; requestId: undefined; timestamp: string; }' is not comparable to type 'MessageBase'.
+      Types of property 'message' are incompatible.
+        Type 'BetaMessage' is not comparable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }'.
+          Index signature for type 'string' is missing in type 'BetaMessage'.
+src/packages/agent/messages/mappers.ts(45,11): error TS2352: Conversion of type '{ type: "user"; message: MessageParam; uuid: string; timestamp: string; isMeta: boolean | undefined; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; message: MessageParam; uuid: string; timestamp: string; isMeta: boolean | undefined; }' is not comparable to type 'UserMessage'.
+    Type '{ type: "user"; message: MessageParam; uuid: string; timestamp: string; isMeta: boolean | undefined; }' is not comparable to type 'MessageBase'.
+      Types of property 'message' are incompatible.
+        Type 'MessageParam' is not comparable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }'.
+          Index signature for type 'string' is missing in type 'MessageParam'.
+src/packages/agent/messages/mappers.ts(124,13): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+src/packages/agent/messages/mappers.ts(128,13): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+src/packages/agent/messages/mappers.ts(135,13): error TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.
+  Types of property 'content' are incompatible.
+    Type 'MessageContent | undefined' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'undefined' is not assignable to type 'string | ContentBlockParam[]'.
+src/packages/agent/messages/mappers.ts(139,13): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/agent/messages/mappers.ts(213,5): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+src/packages/agent/messages/mappers.ts(231,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '{ status: "allowed" | "rejected" | "allowed_warning"; resetsAt?: number | undefined; rateLimitType?: "five_hour" | "seven_day" | "seven_day_opus" | "seven_day_sonnet" | "overage" | undefined; ... 5 more ...; surpassedThreshold?: number | undefined; }'.

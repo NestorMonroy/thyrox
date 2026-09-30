@@ -1,0 +1,4 @@
+src/packages/app-host/package.json
+src/packages/app-host/src/runtime/installCliBindings.ts
+src/packages/cli/src/headless/sdk/session/__tests__/activeUserSpecifiedModelMirror.test.ts
+src/packages/cli/src/headless/sdk/session/run-streaming.ts

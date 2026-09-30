@@ -1,0 +1,36 @@
+== tests/session/test-run-task-pool.sh
+  ok   con 6 trabajos y --width 2 publica 2, no 6
+  FALLA capar no deja trabajos sin lanzar — esperado «2», obtenido «0»
+test-run-task-pool: 23 aserciones — 17 ok, 6 falla(s)
+== tests/session/test-run-task-pool-alcance.sh
+  ok    wait --only <prefijo> sigue viendo su grupo <prefijo>-NNN
+
+resumen: 8 ok, 0 fallo(s)
+== tests/session/test-wait-jobs.sh
+  ok    un BAIL real -> status sigue en exit 1
+
+33 ok, 0 fallos
+== tests/session/test-wait-jobs-dependencia.sh
+  ok    pero status SIGUE mostrandolo
+
+resumen: 9 ok, 0 fallo(s)
+== tests/session/test-process-group.sh
+  ok   cmd_kill lee el cadaver como muerto, no lo señala
+  ok   el ledger se suelta: el turno no queda bloqueado por un cadaver
+test-process-group: 12 aserciones — 10 ok, 2 falla(s)
+== tests/session/test-contrato-de-escotilla.sh
+  ok    el trabajo soltado desaparece del ledger
+
+6 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+== tests/session/test_task_pool.py
+  ok    shell exterior: el marcador sobrevive al exit del comando
+
+27 ok, 0 fallos
+== tests/session/test_job_ledger.py
+  ok    por eso el marcador se ve desde el otro cwd (control de anulación: con la ruta relativa, esto daría 'bailed')
+
+38 ok, 0 fallos
+== tests/session/test_background.py
+  ok    y publica su anchura por defecto
+
+21 ok, 0 fallos

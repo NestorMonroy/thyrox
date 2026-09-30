@@ -1,0 +1,482 @@
+diff --git a/src/packages/agent/__tests__/systemInitUdsInbox.test.ts b/src/packages/agent/__tests__/systemInitUdsInbox.test.ts
+new file mode 100644
+index 00000000..f489ae77
+--- /dev/null
++++ b/src/packages/agent/__tests__/systemInitUdsInbox.test.ts
+@@ -0,0 +1,37 @@
++/**
++ * TASK-THYROX-0450 — el ramal `feature('UDS_INBOX')` de
++ * `messages/systemInit.ts:88-93` resuelve su función real en vez de morir
++ * con `TypeError: … is not a function`. Antes de completar
++ * `udsMessaging.ts`, `getUdsMessagingSocketPath` no existía en ese módulo
++ * (sólo `getDefaultUdsSocketPath` y `startUdsMessaging`) — este archivo se
++ * queda en rojo si ese hueco vuelve.
++ *
++ * `buildSystemInitMessage` en sí exige los bindings de host de
++ * `@thyrox/config` instalados (fuera de alcance de esta prueba: es un
++ * bootstrap de proceso completo, no de este módulo); lo que se mide aquí es
++ * el límite real — el `require()` exacto que ese archivo ejecuta, desde el
++ * contexto de paquete de `@thyrox/agent` (su propio `package.json` declara
++ * `@thyrox/local-observability` como dependencia) — y, en la misma prueba,
++ * que el texto fuente sigue pidiendo esa función por nombre (mismo patrón
++ * de control estático que `internalHeadlessRuntime.behavior.test.ts` ya usa
++ * para esta función).
++ */
++import { describe, expect, test } from 'bun:test'
++import { readFileSync } from 'node:fs'
++import { join } from 'node:path'
++
++describe('systemInit.ts — el ramal UDS_INBOX resuelve getUdsMessagingSocketPath', () => {
++  test('require(@thyrox/local-observability/uds/udsMessaging.js).getUdsMessagingSocketPath existe y es invocable', () => {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    const m = require('@thyrox/local-observability/uds/udsMessaging.js') as {
++      getUdsMessagingSocketPath?: () => string | undefined
++    }
++    expect(typeof m.getUdsMessagingSocketPath).toBe('function')
++    expect(() => m.getUdsMessagingSocketPath?.()).not.toThrow()
++  })
++
++  test('el código fuente sigue pidiendo getUdsMessagingSocketPath (no otro nombre)', () => {
++    const source = readFileSync(join(import.meta.dir, '..', 'messages', 'systemInit.ts'), 'utf8')
++    expect(source).toContain("require('@thyrox/local-observability/uds/udsMessaging.js').getUdsMessagingSocketPath()")
++  })
++})
+diff --git a/src/packages/app-host/src/runtime/__tests__/messagingInboxAtLaunch.test.ts b/src/packages/app-host/src/runtime/__tests__/messagingInboxAtLaunch.test.ts
+new file mode 100644
+index 00000000..4c2cd43f
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/__tests__/messagingInboxAtLaunch.test.ts
+@@ -0,0 +1,95 @@
++/**
++ * `startMessagingInboxAtLaunch` (TASK-THYROX-0450): sus dos guardas —
++ * `feature('UDS_INBOX')` y `isBareMode()`— y su publicación en el pid file.
++ *
++ * AISLAMIENTO DE BANDERA (mismo idioma que
++ * `permission/__tests__/permissionSetupAutoMode.test.ts`). Este archivo se
++ * corre DOS veces: sin bandera (`bun test`), donde `feature('UDS_INBOX')`
++ * es `false` y la única aserción posible es «nunca arranca»; y con ella
++ * (`bun test --feature=UDS_INBOX`), donde se ejercitan la ruta explícita,
++ * el respaldo por defecto, la guarda `--bare` y la publicación en
++ * `sessions/<pid>.json`. `feature()` sólo se puede leer directo en un
++ * `if`/ternario — no se puede activar a mitad de test — así que el propio
++ * valor de `feature('UDS_INBOX')` decide qué rama de aserciones corre.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { feature } from 'bun:bundle'
++
++import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '../messagingInboxAtLaunch.ts'
++
++const dirs: string[] = []
++const stops: MessagingInboxStop[] = []
++const originalArgv = [...process.argv]
++const originalSimple = process.env.THYROX_CODE_SIMPLE
++const originalConfigDir = process.env.THYROX_CONFIG_DIR
++
++function tempSocketPath(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'mial-'))
++  dirs.push(dir)
++  return join(dir, 's.sock')
++}
++
++afterEach(async () => {
++  for (const stop of stops.splice(0)) await stop().catch(() => {})
++  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
++  process.argv = [...originalArgv]
++  if (originalSimple === undefined) delete process.env.THYROX_CODE_SIMPLE
++  else process.env.THYROX_CODE_SIMPLE = originalSimple
++  if (originalConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
++  else process.env.THYROX_CONFIG_DIR = originalConfigDir
++})
++
++if (!feature('UDS_INBOX')) {
++  describe('startMessagingInboxAtLaunch — sin feature(UDS_INBOX)', () => {
++    test('nunca arranca, con o sin ruta explícita', async () => {
++      expect(await startMessagingInboxAtLaunch()).toBeUndefined()
++      expect(await startMessagingInboxAtLaunch(tempSocketPath())).toBeUndefined()
++    })
++  })
++} else {
++  describe('startMessagingInboxAtLaunch — con feature(UDS_INBOX)', () => {
++    test('sin ruta explícita, arranca con la ruta por defecto', async () => {
++      const stop = await startMessagingInboxAtLaunch()
++      expect(stop).toBeDefined()
++      if (stop) stops.push(stop)
++    })
++
++    test('con ruta explícita, arranca bindeando exactamente esa ruta', async () => {
++      const socketPath = tempSocketPath()
++      const stop = await startMessagingInboxAtLaunch(socketPath)
++      expect(stop).toBeDefined()
++      if (stop) stops.push(stop)
++      expect(existsSync(socketPath)).toBe(true)
++    })
++
++    test('--bare sin ruta explícita: no arranca (mismo gate que setup.ts)', async () => {
++      process.argv = [...originalArgv, '--bare']
++      expect(await startMessagingInboxAtLaunch()).toBeUndefined()
++    })
++
++    test('--bare CON ruta explícita: arranca de todos modos (vía de escape #23222)', async () => {
++      process.argv = [...originalArgv, '--bare']
++      const socketPath = tempSocketPath()
++      const stop = await startMessagingInboxAtLaunch(socketPath)
++      expect(stop).toBeDefined()
++      if (stop) stops.push(stop)
++    })
++
++    test('un arranque exitoso publica messagingSocketPath en sessions/<pid>.json', async () => {
++      const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++      dirs.push(cfg)
++      process.env.THYROX_CONFIG_DIR = cfg
++      const { registerSessionAtLaunch } = await import('../sessionRegistryAtLaunch.ts')
++      const socketPath = tempSocketPath()
++      const stop = await startMessagingInboxAtLaunch(socketPath)
++      if (stop) stops.push(stop)
++      await registerSessionAtLaunch()
++      const pidFile = join(cfg, 'sessions', `${process.pid}.json`)
++      const record = JSON.parse(readFileSync(pidFile, 'utf8')) as Record<string, unknown>
++      expect(record.messagingSocketPath).toBe(socketPath)
++    })
++  })
++}
+diff --git a/src/packages/app-host/src/runtime/messagingInboxAtLaunch.ts b/src/packages/app-host/src/runtime/messagingInboxAtLaunch.ts
+new file mode 100644
+index 00000000..248158ea
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/messagingInboxAtLaunch.ts
+@@ -0,0 +1,82 @@
++/**
++ * El arranque del buzón por socket de la sesión (`mn`, vía
++ * `@thyrox/local-observability/uds/udsMessaging.js`) desde el módulo de
++ * arranque compartido de `bin/cli`, junto a `registerSessionAtLaunch`
++ * (`sessionRegistryAtLaunch.ts`) — TASK-THYROX-0450.
++ *
++ * Medido contra 2.1.283 (`_references/claude-code-bin/2.1.283/bunfs-root/`)
++ * antes de cablear:
++ *
++ *   - **El orden**: `chunk-65294ky5.js` (`setup()`) arranca el buzón con
++ *     `await h.startCrossSessionInbox(y,n,{profileStartup:!0})` ANTES de
++ *     que corra ningún hook — el propio `startMessagingInbox` ya portado
++ *     (`inboxServer.ts:447`) fija `process.env[MESSAGING_SOCKET_ENV]` sólo
++ *     tras bindear, chmod-ear y publicar la clave, y siempre antes de
++ *     devolver. Aquí `bin/cli` (`runLoop.ts`, `print.ts`) llama esta
++ *     función ANTES de la primera llamada a `streamLoop` — el único punto
++ *     donde corren los hooks `SessionStart` (`@thyrox/agent/loop/
++ *     index.ts:206`) —, así que el env queda exportado antes de que
++ *     cualquier hook pueda hacer un snapshot de `process.env`.
++ *   - **`--bare` / `THYROX_CODE_SIMPLE`**: `setup.ts:96` guarda el mismo
++ *     gate que la referencia (`!isBareMode() || messagingSocketPath !==
++ *     undefined` — `--messaging-socket-path` es la vía de escape también en
++ *     modo bare, mismo patrón que el resto del árbol declara para `#23222`).
++ *     Se reproduce aquí verbatim en vez de reexportar `setup.ts`, que trae
++ *     consigo instalación de swarm, snapshot de teammates y restauración de
++ *     terminal — nada de eso es de este módulo.
++ *   - **`--messaging-socket-path`**: en la referencia llega como
++ *     `o.messagingSocketPath` (argv ya parseado) hasta `setup(cwd, …, ei)`
++ *     (`chunk-bdv29443.js`). Aquí el llamador (`runLoop.ts`/`print.ts`) lee
++ *     `flag(argv, 'messaging-socket-path')` de SU propio argv y lo pasa
++ *     como `explicitSocketPath`.
++ *   - **La publicación en el pid file**: la referencia sólo llama
++ *     `updateSessionMessagingSocketPath`/`getUdsMessagingSocketPath` en el
++ *     camino de "late bind" (`chunk-65294ky5.js`, función `ie`, gateada por
++ *     un refresco de GrowthBook — fuera de alcance, no portado). En el
++ *     camino eager que sí se porta aquí, la referencia deja que
++ *     `registerAtLaunch` (que corre ANTES que `setup()` en su bootstrap
++ *     monolítico) componga el registro sin este campo, y algún consumidor
++ *     posterior no medido lo completa. Este árbol tiene los dos pasos
++ *     desacoplados —`registerSessionAtLaunch` no sabe nada del buzón—, así
++ *     que la pieza que SÍ está portada y sin llamador
++ *     (`publishMessagingSocketPath`, `pidFileRecord.ts`) se invoca aquí con
++ *     la ruta ya bindeada, inmediatamente después de arrancar el buzón:
++ *     mismo campo (`messagingSocketPath`) y mismo mecanismo (`X5o`/
++ *     `updateSessionMessagingSocketPath`) que usa el camino de "late bind"
++ *     de la referencia, aplicado también al camino eager — divergencia
++ *     declarada, exigida por el desacople de este puerto.
++ *
++ * `feature('UDS_INBOX')` es un macro de compilación de `bun:bundle`: se
++ * resuelve con la bandera `--feature` de `bun`, ausente en `bin/cli`
++ * (apagado por defecto, igual que en `setup.ts`) y presente en
++ * `scripts/dev.ts` para otras banderas (`DEV_FEATURES`). Una sesión de
++ * prueba la enciende con el mismo mecanismo:
++ * `bun --feature=UDS_INBOX run <entry>`.
++ */
++import { feature } from 'bun:bundle'
++import { isBareMode } from '@thyrox/config/env/utils.js'
++import { publishMessagingSocketPath } from '@thyrox/local-observability/uds/pidFileRecord.js'
++
++/** El mismo contrato estructural que `MessagingStop` de `inboxServer.ts`: cierra el buzón y desregistra su limpieza de apagado. */
++export type MessagingInboxStop = () => Promise<void>
++
++/**
++ * Arranca el buzón de esta sesión si `feature('UDS_INBOX')` está encendida
++ * y el modo no es `--bare` (salvo que `explicitSocketPath` la traiga como
++ * vía de escape), y publica la ruta bindeada en `sessions/<pid>.json`.
++ * `undefined` si no arrancó por cualquiera de esas causas — el mismo
++ * significado que `startUdsMessaging` ya usa.
++ */
++export async function startMessagingInboxAtLaunch(explicitSocketPath?: string): Promise<MessagingInboxStop | undefined> {
++  if (isBareMode() && explicitSocketPath === undefined) return undefined
++  if (!feature('UDS_INBOX')) return undefined
++  const m = await import('@thyrox/local-observability/uds/udsMessaging.js')
++  const stop = await m.startUdsMessaging(
++    explicitSocketPath ?? m.getDefaultUdsSocketPath(),
++    { isExplicit: explicitSocketPath !== undefined },
++  )
++  if (stop === undefined) return undefined
++  const boundPath = m.getUdsMessagingSocketPath()
++  if (boundPath !== undefined) await publishMessagingSocketPath(boundPath)
++  return stop
++}
+diff --git a/src/packages/cli/__tests__/messagingInboxAtLaunch.e2e.test.ts b/src/packages/cli/__tests__/messagingInboxAtLaunch.e2e.test.ts
+new file mode 100644
+index 00000000..315c55d7
+--- /dev/null
++++ b/src/packages/cli/__tests__/messagingInboxAtLaunch.e2e.test.ts
+@@ -0,0 +1,106 @@
++/**
++ * TASK-THYROX-0450 — el buzón por socket de la sesión al arrancar `bin/cli`,
++ * de punta a punta: un proceso REAL (no una llamada en el mismo proceso de
++ * test), con `--provider recorded` y `THYROX_CONFIG_DIR` propio, igual que
++ * `sessionRegistryAtLaunch.e2e.test.ts` — misma forma, otro eje.
++ *
++ * `feature('UDS_INBOX')` es un macro de `bun:bundle`: se enciende con la
++ * bandera de línea de comando del propio `bun` (`--feature=UDS_INBOX`), el
++ * mismo mecanismo que `scripts/dev.ts` ya usa para `BG_SESSIONS`
++ * (`messagingInboxAtLaunch.ts`, docstring). `Bun.spawn` antepone esa
++ * bandera al `run`.
++ *
++ * Mientras el proceso vive: el socket existe con modo 0600 dentro de un
++ * directorio 0700, y `sessions/<pid>.json` publica `messagingSocketPath`
++ * con esa misma ruta. Al salir (cierre de stdin, sin señal), el socket ya
++ * no existe — lo cierra el `finally` de `runLoop`/`print.ts`, no un
++ * handler de señal.
++ */
++import { describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join, dirname } from 'node:path'
++
++const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
++const usage = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
++
++/** Sondea `predicate` hasta que sea verdadera, o rinde tras `timeoutMs`. */
++async function waitUntil(predicate: () => boolean, timeoutMs = 10000, stepMs = 20): Promise<void> {
++  const deadline = Date.now() + timeoutMs
++  while (!predicate()) {
++    if (Date.now() > deadline) throw new Error('tiempo agotado esperando la condición')
++    await Bun.sleep(stepMs)
++  }
++}
++
++function readRecord(path: string): Record<string, unknown> {
++  return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
++}
++
++describe('bin/cli arranca el buzón de la sesión (TASK-THYROX-0450)', () => {
++  test('--chat con UDS_INBOX: el socket existe con 0600/0700 mientras vive, sessions/<pid>.json publica su ruta, y desaparece al salir', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'chat-buzon-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const tr = join(cwd, 'tr')
++    writeFileSync(join(cwd, 'turnos.json'), JSON.stringify([
++      { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage, content: [{ type: 'text', text: 'ok' }] },
++    ]))
++
++    const proc = Bun.spawn(
++      ['bun', '--feature=UDS_INBOX', 'run', BIN, '--chat', '--provider', 'recorded', '--grabacion', join(cwd, 'turnos.json'),
++        '--cwd', cwd, '--transcript-dir', tr, '--output-style', 'quiet'],
++      { stdin: 'pipe', stdout: 'ignore', stderr: 'pipe', env: { ...process.env, THYROX_CONFIG_DIR: cfg } },
++    )
++    try {
++      proc.stdin.write('hola\n')
++      proc.stdin.flush()
++
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      await waitUntil(() => existsSync(pidFile))
++      await waitUntil(() => typeof readRecord(pidFile).messagingSocketPath === 'string')
++      const socketPath = readRecord(pidFile).messagingSocketPath as string
++
++      await waitUntil(() => existsSync(socketPath))
++      const socketStat = statSync(socketPath)
++      expect(socketStat.isSocket()).toBe(true)
++      expect(socketStat.mode & 0o777).toBe(0o600)
++      const dirStat = statSync(dirname(socketPath))
++      expect(dirStat.mode & 0o777).toBe(0o700)
++
++      await proc.stdin.end()
++      const exitCode = await proc.exited
++      expect(exitCode).toBe(0)
++      expect(existsSync(pidFile)).toBe(false)
++      expect(existsSync(socketPath)).toBe(false)
++    } finally {
++      proc.kill()
++    }
++  })
++
++  test('--chat SIN la bandera --feature=UDS_INBOX: ningún socket se publica', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'chat-sin-buzon-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const tr = join(cwd, 'tr')
++    writeFileSync(join(cwd, 'turnos.json'), JSON.stringify([
++      { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage, content: [{ type: 'text', text: 'ok' }] },
++    ]))
++
++    const proc = Bun.spawn(
++      ['bun', 'run', BIN, '--chat', '--provider', 'recorded', '--grabacion', join(cwd, 'turnos.json'),
++        '--cwd', cwd, '--transcript-dir', tr, '--output-style', 'quiet'],
++      { stdin: 'pipe', stdout: 'ignore', stderr: 'pipe', env: { ...process.env, THYROX_CONFIG_DIR: cfg } },
++    )
++    try {
++      proc.stdin.write('hola\n')
++      proc.stdin.flush()
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      await waitUntil(() => existsSync(pidFile))
++      expect(readRecord(pidFile).messagingSocketPath).toBeUndefined()
++
++      await proc.stdin.end()
++      await proc.exited
++    } finally {
++      proc.kill()
++    }
++  })
++})
+diff --git a/src/packages/cli/__tests__/runStreamingUdsInbox.test.ts b/src/packages/cli/__tests__/runStreamingUdsInbox.test.ts
+new file mode 100644
+index 00000000..c1104377
+--- /dev/null
++++ b/src/packages/cli/__tests__/runStreamingUdsInbox.test.ts
+@@ -0,0 +1,38 @@
++/**
++ * TASK-THYROX-0450 — el ramal `feature('UDS_INBOX')` de
++ * `headless/sdk/session/run-streaming.ts:2064-2072` resuelve su función
++ * real (`setOnEnqueue`) en vez de morir con `TypeError: … is not a
++ * function`. Antes de completar `udsMessaging.ts`, ese nombre no existía
++ * en el módulo — este archivo se queda en rojo si el hueco vuelve.
++ *
++ * `run-streaming.ts` exporta el arranque completo del bucle SDK, que exige
++ * un `Query`/proveedor real en marcha (fuera de alcance de esta prueba: es
++ * un bootstrap de sesión entero, no de este módulo). Lo que se mide aquí es
++ * el límite real: el `require()` exacto que ese archivo ejecuta, desde el
++ * contexto de paquete de `@thyrox/cli` (su propio `package.json` declara
++ * `@thyrox/local-observability` como dependencia), invocado con la misma
++ * forma (`setOnEnqueue(() => …)`, sin `InboxState`) que el archivo usa — y,
++ * en la misma prueba, que el texto fuente sigue pidiendo esa función por
++ * nombre.
++ */
++import { describe, expect, test } from 'bun:test'
++import { readFileSync } from 'node:fs'
++import { join } from 'node:path'
++
++describe('run-streaming.ts — el ramal UDS_INBOX resuelve setOnEnqueue', () => {
++  test('require(@thyrox/local-observability/uds/udsMessaging.js).setOnEnqueue existe y acepta un callback sin InboxState', () => {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    const { setOnEnqueue } = require('@thyrox/local-observability/uds/udsMessaging.js') as {
++      setOnEnqueue?: (handler: (() => void) | undefined) => void
++    }
++    expect(typeof setOnEnqueue).toBe('function')
++    expect(() => setOnEnqueue?.(() => {})).not.toThrow()
++    setOnEnqueue?.(undefined)
++  })
++
++  test('el código fuente sigue pidiendo setOnEnqueue (no otro nombre)', () => {
++    const source = readFileSync(
++      join(import.meta.dir, '..', 'src', 'headless', 'sdk', 'session', 'run-streaming.ts'), 'utf8')
++    expect(source).toContain("const { setOnEnqueue } = require('@thyrox/local-observability/uds/udsMessaging.js')")
++  })
++})
+diff --git a/src/packages/local-observability/__tests__/udsMessaging.test.ts b/src/packages/local-observability/__tests__/udsMessaging.test.ts
+new file mode 100644
+index 00000000..99e1e797
+--- /dev/null
++++ b/src/packages/local-observability/__tests__/udsMessaging.test.ts
+@@ -0,0 +1,88 @@
++/**
++ * `udsMessaging.ts`: el buzón por defecto de la sesión (`mn`, con las
++ * dependencias por defecto de este proceso) y los dos accesores que
++ * `chunk-9d7mkc64.js` exporta junto a él y que TASK-THYROX-0450 completa
++ * porque ya tienen consumidor real: `getUdsMessagingSocketPath` (`Dqo`,
++ * `@thyrox/agent/messages/systemInit.ts`) y `setOnEnqueue` (`Mqo`,
++ * `@thyrox/cli: headless/sdk/session/run-streaming.ts`). Los dos escriben y
++ * leen sobre el MISMO `InboxState` singleton que usa `startUdsMessaging`
++ * —`state`—, así que la prueba mide justamente eso: que el accesor de este
++ * módulo alcanza el mismo estado que arranca el buzón, no una copia.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  getDefaultUdsSocketPath,
++  getUdsMessagingSocketPath,
++  setOnEnqueue,
++  startUdsMessaging,
++  udsMessagingStateForTesting,
++  type MessagingStop,
++} from '../src/uds/udsMessaging.ts'
++import { processInboxKeyDeps } from '../src/uds/inboxKeys.ts'
++import { resetIdleNotificationState } from '../src/uds/idleNotification.ts'
++import { artifactYieldState } from '../src/uds/artifactReplyYield.ts'
++import { messagingState } from '../src/uds/messagingState.ts'
++import { sessionNameState } from '../src/uds/sessionNameState.ts'
++
++const dirs: string[] = []
++const stops: MessagingStop[] = []
++
++function tempSocketPath(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'uds-messaging-'))
++  dirs.push(dir)
++  return join(dir, 'session.sock')
++}
++
++afterEach(async () => {
++  for (const stop of stops.splice(0)) await stop().catch(() => {})
++  for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
++  setOnEnqueue(undefined)
++  resetIdleNotificationState()
++  artifactYieldState().reset()
++  sessionNameState().reset()
++  messagingState().inbound.reset()
++  messagingState().ingress.reset()
++})
++
++describe('getDefaultUdsSocketPath (W1o)', () => {
++  test('devuelve una ruta bajo el tmpdir de esta sesión', () => {
++    expect(getDefaultUdsSocketPath().length).toBeGreaterThan(0)
++  })
++})
++
++describe('getUdsMessagingSocketPath (Dqo)', () => {
++  test('sin buzón arrancado, undefined', () => {
++    expect(getUdsMessagingSocketPath()).toBeUndefined()
++  })
++
++  test('con el buzón arrancado, la ruta bindeada de ESTE módulo; tras cerrarlo, undefined de nuevo', async () => {
++    const socketPath = tempSocketPath()
++    const stop = await startUdsMessaging(socketPath, { isExplicit: true },
++      { inboxKeyDeps: { ...processInboxKeyDeps, sessionsDir: () => join(dirs.at(-1)!, 'sessions') } })
++    expect(stop).toBeDefined()
++    if (stop) stops.push(stop)
++    expect(getUdsMessagingSocketPath()).toBe(socketPath)
++    await stop?.()
++    stops.pop()
++    expect(getUdsMessagingSocketPath()).toBeUndefined()
++  })
++})
++
++describe('setOnEnqueue (Mqo)', () => {
++  test('fija el handler sobre el InboxState que startUdsMessaging usa de verdad', () => {
++    let called = 0
++    setOnEnqueue(() => { called += 1 })
++    udsMessagingStateForTesting.onEnqueue?.()
++    expect(called).toBe(1)
++  })
++
++  test('undefined retira el handler', () => {
++    setOnEnqueue(() => {})
++    setOnEnqueue(undefined)
++    expect(udsMessagingStateForTesting.onEnqueue).toBeUndefined()
++  })
++})

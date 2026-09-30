@@ -1,0 +1,14 @@
+  File "/home/user/thyrox/tests/session/test_installed_hooks_resolve.py", line 227, in test_the_two_older_assertions_cannot_see_the_topology
+    self.assertEqual(missing_files(contrario), [])
+AssertionError: Lists differ: ['SubagentStart: no existe — /home/user/th[649 chars].py'] != []
+
+First list contains 5 additional elements.
+First extra element 0:
+'SubagentStart: no existe — /home/user/thyrox/.claude/eventos/hooks-contrario-5c6hbdng/stubs-topologia-contraria/medir_delta_subagente.py'
+
+Diff is 746 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.398s
+
+FAILED (failures=1)

@@ -1,0 +1,9 @@
+  ok    el selector existe
+  FALLO el proveedor deberia usar /home/user/thyrox-toolchain-wt/.venv/bin/python, dio '/home/user/thyrox/.venv/bin/python'
+  ok    sin entorno rehusa y nombra uv sync
+  ok    el consumidor se invoca por su propio proyecto (api)
+  ok    proveedor y consumidor son entornos distintos
+  ok    un consumidor desconocido se rehusa
+
+6 casos: 5 ok, 1 fallos
+EXIT=1

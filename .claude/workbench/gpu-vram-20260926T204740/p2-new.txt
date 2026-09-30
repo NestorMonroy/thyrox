@@ -1,0 +1,6 @@
+def _gpu_peak(gpu_file: Path) -> int | None:
+    """El pico de VRAM de un ``<n>.gpu`` MEDIDO —el cero incluido—; ``None``
+    si el archivo es un error o está ausente: los tres estados de
+    ``gpu_monitor.read_gpu_file``, sin colapsar."""
+    reading = gpu_monitor.read_gpu_file(gpu_file)
+    return reading.summary.peak_mib if reading.state == "measured" else None

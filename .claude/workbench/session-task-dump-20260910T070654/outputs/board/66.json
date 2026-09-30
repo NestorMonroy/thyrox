@@ -1,0 +1,8 @@
+{
+  "id": "66",
+  "subject": "T-103 Activar el driver de merge sqlite-union en el clon",
+  "description": "Aplicar sólo las dos líneas de driver-config de scripts/install-hooks.sh (git config merge.sqlite-union.name + .driver), NUNCA core.hooksPath. .gitattributes:12 declara merge=sqlite-union sobre agent_store.sqlite3 pero la definición no estaba en .git/config de este clon: sin ella git conflicta el merge binario y pierde el lado del otro (medido en repo sintético). Sucesor de #63, cierra h-docs-1025.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

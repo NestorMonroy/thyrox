@@ -1,0 +1,1 @@
+function yw(){if(I("tengu_scratch",!1))return!0;{let{isArtifactToolEligible:e}=import.meta.require("/$bunfs/root/chunk-thgff887.js");return e()}return!1}

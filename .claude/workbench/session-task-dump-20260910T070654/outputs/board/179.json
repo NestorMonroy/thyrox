@@ -1,0 +1,8 @@
+{
+  "id": "179",
+  "subject": "El README del corpus de builds transcribe su árbol en vez de derivarlo",
+  "description": "thyrox: _references/claude-code-bin/README.md dibuja seis builds y el directorio tiene ocho (faltan 2.1.259 y 2.1.261), y describe 2.1.258 como «SÓLO claude_strings.txt» cuando trae MANIFEST.tsv y bunfs-root. Es la forma que calibration-verified-numbers.md prohíbe: una propiedad de un artefacto vivo transcrita a prosa. El arreglo NO es actualizar el árbol —trata el síntoma, lección de H-DOCS-139— sino que el README nombre el comando que lo publica, como ya hace con el tamaño del volcado. Exige tocar thyrox. Ver h-docs-1106.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

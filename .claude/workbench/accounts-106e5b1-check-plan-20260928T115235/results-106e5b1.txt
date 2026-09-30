@@ -1,0 +1,59 @@
+# primera medición
+== 1: sin id pasa -> 0
+== 2: sin exclusión por proveedor -> 0
+== 3: intervalo cero comprueba -> 1
+== 4: inactiva expirada no se reintenta -> 1
+== 5: sin guarda terminal -> 1
+== 6: baneada sin minúsculas -> 1
+== 7: copilot expirada es terminal -> 1
+== 8: cursor expirada es terminal -> 1
+== 9: cuenta desactivada se reintenta -> 1
+== 10: retirado no se marca -> 1
+== 11: cursor siempre -> 1
+== 12: cursor ignora el circuito -> 1
+== 13: margen de 10 min -> 3
+== 14: sin kimi_web -> 1
+== 15: kimi sin minúsculas -> 2
+== 16: cookie sin intervalo -> 1
+== 17: refresh no texto vale -> 1
+== 18: copilot pide reautenticar -> 2
+== 19: sin refresco no pide reautenticar -> 1
+== 20: otro estado pide reautenticar -> 1
+== 21: clave de API pide reautenticar -> 1
+== 22: agotada no se desactiva -> 0
+== 23: reintento sin espera -> 1
+== 24: espera sin doblar -> 1
+== 25: sin número de intento -> 2
+== 26: sin ruta se refresca -> 1
+== 27: rota por calendario -> 1
+== 28: calendario con caducidad conocida -> 1
+== 29: calendario de 30 min -> 1
+== 30: circuito ignorado -> 1
+== 31: token del estado nuevo gana -> NOMATCH
+== 32: sin aborto -> 1
+== 33: sin causa -> 0
+== 34: sin código -> 1
+== 35: sin fetch failed -> 1
+== 36: nombre de objeto ignorado -> 1
+== 37: refresh token vacío se guarda -> 1
+== 38: expiresIn gana -> 1
+== 39: sin tokenExpiresAt -> 2
+== 40: circuito no se limpia -> 0
+== 41: datos siempre -> 1
+== 42: cambio no se detecta -> 1
+== 43: sólo el refresh cuenta como cambio -> 1
+== 44: token vigente expira -> 1
+== 45: sin desactivar a la tercera -> 1
+== 46: refresh muerto se conserva -> 1
+== 47: sin código gana el error -> 1
+== 48: rota sin consumido -> 2
+== 49: sin contar el reintento -> 2
+== restaurado -> 0
+
+# re-medición tras afinar (contando el total de fallos, no las líneas (fail))
+== 1: sin id pasa -> 1
+== 2: sin exclusión por proveedor -> 1
+== 22: agotada no se desactiva -> 1
+== 33: sin causa -> 1
+== 40: circuito no se limpia -> 1
+== restaurado -> 0

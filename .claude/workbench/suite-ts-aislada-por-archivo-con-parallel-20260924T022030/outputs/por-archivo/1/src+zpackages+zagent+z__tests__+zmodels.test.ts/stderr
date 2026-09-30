@@ -1,0 +1,21 @@
+
+src/packages/agent/__tests__/models.test.ts:
+25 |    */
+26 |   test('coincide byte a byte con la extracción del volcado 2.1.258', () => {
+27 |     const result = Bun.spawnSync([
+28 |       'python3', join(PACKAGE, 'bin', 'extract_model_registry.py'), DUMP, '--stdout',
+29 |     ])
+30 |     expect(result.exitCode).toBe(0)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/models.test.ts:30:29)
+(fail) src/models.jsonl es derivado, no escrito a mano > coincide byte a byte con la extracción del volcado 2.1.258 [30.55ms]
+
+ 15 pass
+ 1 fail
+ 112 expect() calls
+Ran 16 tests across 1 file. [191.00ms]

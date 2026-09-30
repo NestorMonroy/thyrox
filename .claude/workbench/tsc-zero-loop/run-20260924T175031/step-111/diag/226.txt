@@ -1,0 +1,65 @@
+src/packages/repl/src/components/messages/HookProgressMessage.tsx(22,54): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/components/messages/HookProgressMessage.tsx:12-32 ---
+     12    isTranscriptMode?: boolean
+     13  }
+     14  
+     15  export function HookProgressMessage({
+     16    hookEvent,
+     17    lookups,
+     18    toolUseID,
+     19    isTranscriptMode,
+     20  }: Props): React.ReactNode {
+     21    const inProgressHookCount =
+     22>     lookups.inProgressHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     23    const resolvedHookCount =
+     24      lookups.resolvedHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     25    if (inProgressHookCount === 0) {
+     26      return null
+     27    }
+     28  
+     29    if (hookEvent === 'PreToolUse' || hookEvent === 'PostToolUse') {
+     30      // In transcript mode, show a static summary since messages never re-render
+     31      // (so a transient "Running..." would get stuck).
+     32      if (isTranscriptMode) {
+src/packages/repl/src/components/messages/HookProgressMessage.tsx(24,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/components/messages/HookProgressMessage.tsx:14-34 ---
+     14  
+     15  export function HookProgressMessage({
+     16    hookEvent,
+     17    lookups,
+     18    toolUseID,
+     19    isTranscriptMode,
+     20  }: Props): React.ReactNode {
+     21    const inProgressHookCount =
+     22      lookups.inProgressHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     23    const resolvedHookCount =
+     24>     lookups.resolvedHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     25    if (inProgressHookCount === 0) {
+     26      return null
+     27    }
+     28  
+     29    if (hookEvent === 'PreToolUse' || hookEvent === 'PostToolUse') {
+     30      // In transcript mode, show a static summary since messages never re-render
+     31      // (so a transient "Running..." would get stuck).
+     32      if (isTranscriptMode) {
+     33        return (
+     34          <MessageResponse>
+src/packages/repl/src/components/messages/HookProgressMessage.tsx(61,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/components/messages/HookProgressMessage.tsx:51-67 ---
+     51  
+     52    if (resolvedHookCount === inProgressHookCount) {
+     53      return null
+     54    }
+     55  
+     56    return (
+     57      <MessageResponse>
+     58        <Box flexDirection="row">
+     59          <Text dimColor>Running </Text>
+     60          <Text dimColor bold>
+     61>           {hookEvent}
+     62          </Text>
+     63          <Text dimColor>{inProgressHookCount === 1 ? ' hook…' : ' hooks…'}</Text>
+     64        </Box>
+     65      </MessageResponse>
+     66    )
+     67  }

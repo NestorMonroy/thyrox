@@ -1,0 +1,1 @@
+uv run --quiet python tests/verify/test_citation_resolution.py

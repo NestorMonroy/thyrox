@@ -1,0 +1,10 @@
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(194,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(215,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(223,20): error TS2339: Property 'behavior' does not exist on type 'PermissionUpdate'.
+  Property 'behavior' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(224,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/permissionUpdatePure.test.ts(225,20): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.

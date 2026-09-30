@@ -1,0 +1,4 @@
+src/packages/cli/src/__tests__/childEnv.test.ts
+src/packages/cli/src/__tests__/spawnPty.test.ts
+src/packages/cli/src/bg/childEnv.ts
+src/packages/cli/src/bg/spawnPty.ts

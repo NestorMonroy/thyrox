@@ -1,0 +1,40 @@
+== base
+ 56 pass
+ 0 fail
+== anulada: la SNI no se lee
+(fail) lee el nombre del servidor de un ClientHello real [20.06ms]
+(fail) decrypts an intercepted HTTPS request and captures it as source 'tproxy' [311.62ms]
+(fail) the forward dials its upstream through connectRaw — the bypass-marked seam (anti-loop regression) [264.88ms]
+(fail) a forward failure is recorded as an error entry and the client gets 502 [193.39ms]
+ 52 pass
+ 4 fail
+== anulada: sin decodificar chunked
+(fail) decodifica transfer-encoding chunked [1.70ms]
+ 55 pass
+ 1 fail
+== anulada: el reenvío espera a que el socket conecte
+(fail) decrypts an intercepted HTTPS request and captures it as source 'tproxy' [418.87ms]
+(fail) the forward dials its upstream through connectRaw — the bypass-marked seam (anti-loop regression) [540.57ms]
+ 54 pass
+ 2 fail
+== anulada: sin destino por puerto de loopback
+(fail) decrypts an intercepted HTTPS request and captures it as source 'tproxy' [368.54ms]
+(fail) the forward dials its upstream through connectRaw — the bypass-marked seam (anti-loop regression) [459.24ms]
+ 54 pass
+ 2 fail
+== anulada: reenvío crudo sin cabecera a la salida
+(fail) lee el destino original de la cabecera, lo informa y reenvía por la salida marcada [20.28ms]
+ 55 pass
+ 1 fail
+== anulada: sin retirar la CA si el puente falla
+(fail) en modo de descifrado instala la CA, y stop() la retira y revierte [4.93ms]
+(fail) si el puente no arranca, retira la CA, detiene la salida y revierte [2.18ms]
+ 54 pass
+ 2 fail
+== anulada: dos sesiones simultáneas
+(fail) startCaptureMode refuses to start a second concurrent session [0.68ms]
+ 55 pass
+ 1 fail
+== restaurado
+ 56 pass
+ 0 fail

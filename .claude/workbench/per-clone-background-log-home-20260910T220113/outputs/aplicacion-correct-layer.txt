@@ -1,0 +1,38 @@
+# Aplicacion de correct_layer a las filas reales — 2026-09-10T22:20:10
+
+## La medicion que decide la capa: commits por repo que citan cada tarea
+
+thyrox           TASK-API-0395    2
+kaupamex-docs    TASK-API-0395    5
+kaupamex-docs    TASK-DOCS-0534   1
+kaupamex-docs    TASK-DOCS-0535   1
+kaupamex-api     TASK-API-0395    2
+
+Metrica: commits (todas las ramas) cuyo mensaje cita el citation_id, por repo.
+Ciega a: el trabajo que aterrizo sin citar la tarea en el mensaje, y al trabajo
+  FUTURO que la tarea declara y aun no existe — que es lo que decide TASK-DOCS-0534,
+  cuyo unico commit hoy es el que la declara. Ahi la capa sale de DONDE VIVE el
+  mecanismo (thyrox/src/verify/check_script_naming.py) contra donde vive su
+  parametro (docs/.claude/baselines/script_naming_language_baseline.txt).
+
+## Correccion previa: mi primera atribucion de TASK-API-0395 era FALSA
+
+Afirme «los commits cayeron en thyrox y docs; ninguno en api». Medido: api tiene DOS
+(55393778 congela el baseline de claves de manifiesto; f39f3c41 la cita en su cuerpo).
+El veredicto gen no cambia — cruza repos igual — pero la razon si, y la razon es lo
+que queda escrito en submodule_source.
+
+## Lectura de vuelta
+
+TASK-API-0395 | gen | corregida 2026-09-10T22:19:35: commits medidos en TRES repos: thyrox 2, docs 5, api 2 — cruza repos
+TASK-DOCS-0534 | gen | corregida 2026-09-10T22:19:35: el mecanismo es check_script_naming.py en thyrox/src/verify y el baseline vive en docs/.claude/baselines: cruza repos
+TASK-DOCS-0535 | docs | acuñado al ingerir el board
+
+## El subconjunto derivado, tras aplicar
+
+$ grep -rlE "correct_layer|task_ids|corregir-capa" tests/ | sed "s|/[^/]*$||" | sort | uniq -c
+      3 tests/task
+
+tests/task/test_board_sync.py      rc=0 | OK: todas las aserciones pasan
+tests/task/test_layer_axis.py      rc=0 | OK
+tests/task/test_task_ids.py        rc=0 | OK: todas las aserciones pasan

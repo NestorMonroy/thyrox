@@ -1,0 +1,14 @@
+def _cap(label: str, unit: str, free: int | None, reserve: int, peak: int | None,
+         margin: float) -> tuple[int | None, str]:
+    """Cuántos ítems caben a la vez: ``(libre − reserva) / (pico × margen)``.
+    La reserva se RESTA de lo libre —lo que queda para el resto del sistema—
+    y el margen multiplica el pico medido. Sin pico o sin libre medido, no hay
+    tope; un pico de 0 (el ítem no usó el recurso) tampoco lo acota."""
+    if not peak or free is None:
+        return None, ""
+    usable = free - reserve
+    fits = int(usable // (peak * margin))
+    if fits < 1:
+        return 1, (f"; {label}: {usable} {unit} utilizables y el ítem pide {peak} × {margin:g}, "
+                   f"no cabe ni uno: anchura 1")
+    return fits, f"; {label}: ({free} − {reserve}) / ({peak} × {margin:g}) -> {fits}"

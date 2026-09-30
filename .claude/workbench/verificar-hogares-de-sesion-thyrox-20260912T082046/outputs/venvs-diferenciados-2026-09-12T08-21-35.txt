@@ -1,0 +1,10 @@
+=== .venv thyrox ===
+Python 3.11.15
+=== .venv kaupamex-api ===
+Python 3.12.3
+=== sys.path distintos ===
+1c1
+< ['', '/usr/lib/python311.zip', '/usr/lib/python3.11', '/usr/lib/python3.11/lib-dynload', '/home/user/thyrox/.venv/lib/python3.11/site-packages']
+---
+> ['', '/usr/lib/python312.zip', '/usr/lib/python3.12', '/usr/lib/python3.12/lib-dynload', '/home/user/kaupamex-api/.venv/lib/python3.12/site-packages']
+DIFERENTES (correcto)

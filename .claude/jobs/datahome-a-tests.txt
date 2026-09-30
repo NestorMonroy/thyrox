@@ -1,0 +1,7 @@
+src/packages/config/__tests__/configHome.test.ts
+src/packages/local-observability/__tests__/errorRecordingWiring.test.ts
+src/packages/local-observability/__tests__/errorStore.sqlite.test.ts
+src/packages/local-observability/__tests__/errorStore.test.ts
+src/packages/mitm/__tests__/dataDir.test.ts
+src/packages/mitm/__tests__/state/agentBridgeStore.test.ts
+src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts

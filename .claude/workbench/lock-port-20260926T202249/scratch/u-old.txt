@@ -1,0 +1,1 @@
+# Uso:  OLD='<texto>' NEW='<texto>' bash src/lib/replace_literal.sh [--all] <archivo>

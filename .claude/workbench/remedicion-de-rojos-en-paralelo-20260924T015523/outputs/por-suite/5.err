@@ -1,0 +1,11 @@
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+thyrox_work_file: se exigen el run y el nombre
+tests/lib/test-workbench-sh.sh: line 95: : No such file or directory
+cat: /nota.txt: No such file or directory

@@ -1,0 +1,52 @@
+src/packages/agent/workflow/namedWorkflows.ts(104,3): error TS2322: Type '({ source: "userSettings" | "projectSettings"; name: string; description: string; whenToUse: string | undefined; script: string; filePath: string; } | null)[]' is not assignable to type 'NamedWorkflow[]'.
+  --- código src/packages/agent/workflow/namedWorkflows.ts:94-114 ---
+     94        return {
+     95          source,
+     96          name: parsed.meta.name,
+     97          description: parsed.meta.description,
+     98          whenToUse: parsed.meta.whenToUse,
+     99          script,
+    100          filePath,
+    101        } satisfies NamedWorkflow
+    102      }),
+    103    )
+    104>   return loaded.filter((w): w is NamedWorkflow => w !== null)
+    105  }
+    106  
+    107  // ant 3889 MHK — user (~/.claude/workflows) + project (<root>/.claude/workflows)
+    108  // directories, gated by isSettingSourceEnabled. Project overrides user by name.
+    109  async function loadUserAndProjectWorkflows(): Promise<NamedWorkflow[]> {
+    110    const userDir = join(getClaudeConfigHomeDir(), 'workflows')
+    111    const projectDirs = getAdditionalDirectoriesForClaudeMd().map(root =>
+    112      join(root, '.claude', 'workflows'),
+    113    )
+    114    const [userWorkflows, ...projectWorkflowLists] = await Promise.all([
+  Type '{ source: "userSettings" | "projectSettings"; name: string; description: string; whenToUse: string | undefined; script: string; filePath: string; } | null' is not assignable to type 'NamedWorkflow'.
+    Type 'null' is not assignable to type 'NamedWorkflow'.
+src/packages/agent/workflow/namedWorkflows.ts(104,34): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  --- código src/packages/agent/workflow/namedWorkflows.ts:94-114 ---
+     94        return {
+     95          source,
+     96          name: parsed.meta.name,
+     97          description: parsed.meta.description,
+     98          whenToUse: parsed.meta.whenToUse,
+     99          script,
+    100          filePath,
+    101        } satisfies NamedWorkflow
+    102      }),
+    103    )
+    104>   return loaded.filter((w): w is NamedWorkflow => w !== null)
+    105  }
+    106  
+    107  // ant 3889 MHK — user (~/.claude/workflows) + project (<root>/.claude/workflows)
+    108  // directories, gated by isSettingSourceEnabled. Project overrides user by name.
+    109  async function loadUserAndProjectWorkflows(): Promise<NamedWorkflow[]> {
+    110    const userDir = join(getClaudeConfigHomeDir(), 'workflows')
+    111    const projectDirs = getAdditionalDirectoriesForClaudeMd().map(root =>
+    112      join(root, '.claude', 'workflows'),
+    113    )
+    114    const [userWorkflows, ...projectWorkflowLists] = await Promise.all([
+  Type 'NamedWorkflow' is not assignable to type '{ source: "userSettings" | "projectSettings"; name: string; description: string; whenToUse: string | undefined; script: string; filePath: string; }'.
+    Types of property 'source' are incompatible.
+      Type '"userSettings" | "projectSettings" | "built-in"' is not assignable to type '"userSettings" | "projectSettings"'.
+        Type '"built-in"' is not assignable to type '"userSettings" | "projectSettings"'.

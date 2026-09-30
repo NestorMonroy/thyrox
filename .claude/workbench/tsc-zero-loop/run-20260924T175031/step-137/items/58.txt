@@ -1,0 +1,78 @@
+src/packages/repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:125-145 ---
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+    127                shouldShowDot={shouldShowDot}
+    128                width={width}
+    129                inProgressToolCallCount={inProgressToolUseIDs.size}
+    130                isTranscriptMode={isTranscriptMode}
+    131                lookups={lookups}
+    132                onOpenRateLimitOptions={onOpenRateLimitOptions}
+    133                thinkingBlockId={`${message.uuid}:${index}`}
+    134                lastThinkingBlockId={lastThinkingBlockId}
+    135>               advisorModel={message.advisorModel}
+    136              />
+    137            ))}
+    138          </Box>
+    139        )
+    140      case 'user': {
+    141        if (message.isCompactSummary) {
+    142          return (
+    143            <CompactSummary
+    144              message={message}
+    145              screen={isTranscriptMode ? 'transcript' : 'prompt'}
+src/packages/repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/Message.tsx:148-168 ---
+    148        }
+    149        // Precompute the imageIndex prop for each content block. The previous
+    150        // version incremented a counter inside the .map() callback, which
+    151        // React Compiler bails on ("UpdateExpression to variables captured
+    152        // within lambdas"). A plain for loop keeps the mutation out of a
+    153        // closure so the compiler can memoize MessageImpl.
+    154        const imageIndices: number[] = []
+    155        let imagePosition = 0
+    156        for (const param of message.message.content) {
+    157          if (param.type === 'image') {
+    158>           const id = message.imagePasteIds?.[imagePosition]
+    159            imagePosition++
+    160            imageIndices.push(id ?? imagePosition)
+    161          } else {
+    162            imageIndices.push(imagePosition)
+    163          }
+    164        }
+    165        // Check if this message is the latest bash output - if so, wrap content
+    166        // with provider so OutputLine can show full output via context
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/components/Message.tsx(177,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:167-187 ---
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+    169          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    170            {message.message.content.map((param, index) => (
+    171              <UserMessage
+    172                key={index}
+    173                message={message}
+    174                addMargin={addMargin}
+    175                tools={tools}
+    176                progressMessagesForMessage={progressMessagesForMessage}
+    177>               param={param}
+    178                style={style}
+    179                verbose={verbose}
+    180                imageIndex={imageIndices[index]!}
+    181                isUserContinuation={isUserContinuation}
+    182                lookups={lookups}
+    183                isTranscriptMode={isTranscriptMode}
+    184              />
+    185            ))}
+    186          </Box>
+    187        )
+  Type 'DocumentBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+    Type 'DocumentBlockParam' is not assignable to type 'ImageBlockParam'.
+      Types of property 'source' are incompatible.
+        Type 'Base64PDFSource | PlainTextSource | ContentBlockSource | URLPDFSource | FileDocumentSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+          Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+            Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource'.
+              Types of property 'media_type' are incompatible.
+                Type '"application/pdf"' is not assignable to type '"image/png" | "image/jpeg" | "image/gif" | "image/webp"'.

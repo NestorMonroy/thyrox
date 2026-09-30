@@ -1,0 +1,8 @@
+Give the notebook types the nbformat v4 shape
+
+Ninth step of the agent-compiler loop, accepted-net 3331 -> 3283.
+notebookTypes declared all seven types unknown, copying the
+decompiler's placeholders: the decompile lost the types, it did not
+choose them. The shape is the public Jupyter nbformat v4 format,
+trimmed to the fields notebook.ts, NotebookEditTool and the permission
+diff read or write.

@@ -1,0 +1,362 @@
+#!/usr/bin/env bash
+# Pruebas de check-vocabulario-inventado.py — el gate de la cuarta prueba de
+# vocabulario (``redaccion-tecnica-es.md``).
+#
+# El control positivo NO está fabricado: es «democión», la palabra inventada
+# que se escribió de verdad en el hallazgo H-DOCS-230 y que el ejecutor
+# corrigió. Se recupera de ``docs@e12c9300`` y se cita verbatim abajo. Es lo
+# que ``hallazgo-abierto-genera-sucesor.md`` exige tras haber publicado tres
+# ceros falsos: un incumplidor real del repo, no uno escrito por quien escribió
+# el patrón.
+set -uo pipefail
+
+# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
+# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
+# necesita van tras constantes que el entorno tambien fija: cablearlos le
+# quitaria al consumidor la decision de donde van las cosas.
+_thyrox_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
+    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
+        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
+fi
+if [[ -z "$_thyrox_root" ]]; then
+    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+        _thyrox_root="$(dirname "$_thyrox_root")"
+    done
+fi
+source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+RAIZ="$(thyrox_root)" || exit 2
+GATE="$RAIZ/src/verify/check_vocabulario_prosa.py"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+# El ARBOL DE FIXTURE, y por que no se mide el del proveedor.
+#
+# El gate compone la clave del baseline relativa a `consumer_root()`, y su
+# baseline vive en `<consumidor>/.claude/baselines/` — es parametro del
+# CONSUMIDOR (DEC-04), no del proveedor. Corrido desde thyrox el ascenso
+# aterriza aqui, no encuentra baseline y REHUSA con exit 2 sin emitir cifra,
+# que es su conducta correcta: sin baseline toda la deuda heredada se
+# publicaria como nueva.
+#
+# La suite media eso como si fuera un fallo del gate. Se construye en su lugar
+# un arbol minimo con las tres piezas que el mecanismo necesita —`.claude/`
+# para que el ascenso pare, un baseline propio, y un subdirectorio hermano
+# para el caso de la ruta con `..`— y se declaran las dos entradas de entorno
+# que el propio rehuse nombra.
+ARBOL="$TMP/arbol"
+mkdir -p "$ARBOL/.claude/rules" "$ARBOL/.claude/baselines" "$ARBOL/source"
+export VOCAB_GATE_ROOT="$ARBOL"
+export VOCAB_GATE_BASELINE="$ARBOL/.claude/baselines/vocabulario_prosa_baseline.txt"
+
+OK=0
+FALLO=0
+afirmar() { # afirmar <descripción> <esperado> <obtenido>
+    if [[ "$2" == "$3" ]]; then OK=$((OK + 1)); printf '  ok   %s\n' "$1"
+    else FALLO=$((FALLO + 1)); printf '  FALLA %s — esperado [%s] obtenido [%s]\n' "$1" "$2" "$3"; fi
+}
+
+# ---------------------------------------------------------------- caso 1
+# El guard de librería: sin el léxico NO se emite conteo. Se fuerza con un
+# PYTHONPATH que antepone un paquete falso cuyo import revienta.
+mkdir -p "$TMP/sin-lexico/spacy_lookups_data"
+printf 'raise ModuleNotFoundError("spacy_lookups_data")\n' \
+    > "$TMP/sin-lexico/spacy_lookups_data/__init__.py"
+SALIDA=$(PYTHONPATH="$TMP/sin-lexico" python3 "$GATE" --quiet 2>&1)
+CODIGO=$?
+afirmar "guard de librería: exit 2, no 0" "2" "$CODIGO"
+afirmar "guard de librería: no emite cifra" "0" "$(printf '%s' "$SALIDA" | grep -cE '^[0-9]+$')"
+afirmar "guard de librería: nombra la librería" "1" \
+    "$(printf '%s' "$SALIDA" | grep -c 'spacy-lookups-data')"
+
+# ---------------------------------------------------------------- caso 2
+# Control positivo REAL — la línea 47 de docs@e12c9300, verbatim.
+#
+# Va con --no-baseline a propósito: «democión» ESTÁ en el baseline, porque la
+# regla que la prohíbe la cita como ejemplo. Con el baseline puesto este
+# control no podría fallar nunca, y un control que no puede fallar no
+# discrimina (sub-patrón D). Aquí se mide el DETECTOR; la política se mide en
+# el caso 3.
+cat > "$ARBOL/control-positivo.rst" <<'RST'
+Descripción — la compactación es una democión silenciosa a nivel 4
+RST
+afirmar "el detector ve el control positivo real (democión)" "1" \
+    "$(python3 "$GATE" --quiet --no-baseline "$ARBOL/control-positivo.rst" 2>/dev/null)"
+
+# ---------------------------------------------------------------- caso 3
+# La otra mitad: el baseline SÍ silencia lo congelado. Sin este caso no
+# constaría que el baseline hace algo, sólo que el detector dispara.
+# El baseline del fixture lo compone el propio gate con `--write-baseline`:
+# la clave es `<relativa a VOCAB_GATE_ROOT>::<forma>` y transcribirla a mano
+# seria una segunda fuente de verdad que caduca al cambiar la composicion.
+# No es circular: el caso 2 ya probo con `--no-baseline` que el detector
+# dispara sobre este archivo, asi que lo que aqui se mide es el SILENCIO.
+python3 "$GATE" --quiet --write-baseline "$ARBOL/control-positivo.rst" >/dev/null 2>&1
+afirmar "el baseline del fixture tiene una entrada" "1" \
+    "$(grep -c '::' "$VOCAB_GATE_BASELINE" 2>/dev/null)"
+afirmar "el baseline silencia lo congelado" "0" \
+    "$(python3 "$GATE" --quiet "$ARBOL/control-positivo.rst" 2>/dev/null)"
+
+# ---------------------------------------------------------------- caso 4
+# Control negativo — la corrección que se aplicó en docs@ce05be7f. La palabra
+# real está atestiguada y el gate NO la marca ni ignorando el baseline. Sin
+# este caso el verde no discriminaría «no hay inventos» de «el instrumento no
+# ve nada».
+cat > "$ARBOL/control-negativo.rst" <<'RST'
+Descripción — la compactación es una degradación silenciosa a nivel 4
+RST
+afirmar "no marca la palabra real (degradación)" "0" \
+    "$(python3 "$GATE" --quiet --no-baseline "$ARBOL/control-negativo.rst" 2>/dev/null)"
+
+# ---------------------------------------------------------------- caso 5
+# --strict devuelve 1 ante un nuevo, 0 cuando no hay.
+python3 "$GATE" --quiet --strict --no-baseline "$ARBOL/control-positivo.rst" >/dev/null 2>&1
+afirmar "--strict sale 1 con un inventado" "1" "$?"
+python3 "$GATE" --quiet --strict --no-baseline "$ARBOL/control-negativo.rst" >/dev/null 2>&1
+afirmar "--strict sale 0 sin inventados" "0" "$?"
+
+# ---------------------------------------------------------------- caso 5
+# EL ARBOL VIVO ES EL DEL CONSUMIDOR, y lo que se mide es OTRA cosa.
+#
+# Este caso decia «el arbol con su baseline no reporta nuevos» y corria el
+# gate pelado. Dos defectos en uno: el cwd es thyrox, asi que medía el
+# PROVEEDOR —sin baseline, exit 2, sin cifra— y ademas su asercion era que el
+# corpus del consumidor esta limpio HOY, que es el veredicto de su pre-commit
+# y no una propiedad del gate. Con esa forma el caso se pone rojo por
+# cualquier commit ajeno, que es el sub-patron D: el veredicto no discrimina
+# «el gate esta roto» de «alguien escribio prosa nueva».
+#
+# Lo que si es del gate: que SOPORTE el arbol real, o sea que mida y emita un
+# veredicto (0 o 1) en vez de rehusar (2). Se declara el consumidor con la
+# variable que el propio rehuse nombra, y sin consumidor se dice SIN MEDIR en
+# vez de pasar callando. Mismo patron que `test-hooks-timeout.sh` caso 7.
+CONSUMIDOR="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+if [[ -d "$CONSUMIDOR/.claude/baselines" ]]; then
+    (cd "$CONSUMIDOR" && env -u VOCAB_GATE_ROOT -u VOCAB_GATE_BASELINE \
+        python3 "$GATE" --quiet >/dev/null 2>&1)
+    CODIGO_VIVO=$?
+    afirmar "mide el arbol real del consumidor (0 o 1, no 2)" "si" \
+        "$( [[ $CODIGO_VIVO -eq 0 || $CODIGO_VIVO -eq 1 ]] && echo si || echo "no (exit $CODIGO_VIVO)")"
+else
+    afirmar "SIN MEDIR — declara THYROX_CONSUMER" "si" \
+        "no hay consumidor con .claude/baselines en $CONSUMIDOR"
+fi
+
+# ---------------------------------------------------------------- caso 6
+# El reporte publica su denominador: un conteo sin alcance no es un resultado.
+afirmar "el reporte declara el alcance medido" "1" \
+    "$(python3 "$GATE" "$ARBOL/control-negativo.rst" 2>/dev/null | grep -c 'alcance medido')"
+
+# El denominador nombra ARCHIVOS, y ese es su significado. Decía
+# `{len(found)} de {len(files)} archivos` con `found` = hallazgos: dos
+# magnitudes bajo un rótulo. Una sonda de 1 archivo imprimía «0 de 1
+# archivos» y se leyó como «no midió nada». El caso mide el rótulo, no la
+# presencia de la frase.
+afirmar "y el denominador cuenta archivos, no hallazgos" "1" \
+    "$(python3 "$GATE" "$ARBOL/control-negativo.rst" 2>/dev/null \
+       | grep -c 'alcance medido: 1 archivo(s)')"
+
+# ---------------------------------------------------------------- caso 7
+# EL TERCER EJE: los términos resueltos de la tabla de sustitución. El gate
+# tenía dos detectores —inventado y prohibido— y la regla enumera TRES
+# fenómenos; `corrida` no la ve ninguno de los dos: está atestiguada, así que
+# el léxico la acepta, y no estaba en la lista cerrada. Medido: se escribió
+# «primera corrida» en un hallazgo NUEVO con la regla cargada y el gate salió
+# verde. Ver :ref:`h-docs-244`.
+cat > "$ARBOL/terminos-resueltos.rst" <<'RST'
+La primera corrida del generador falló; la tanda de agentes también.
+RST
+afirmar "ve corrida y tanda en prosa nueva" "2" \
+    "$(python3 "$GATE" --quiet --no-baseline "$ARBOL/terminos-resueltos.rst" 2>/dev/null)"
+
+# La otra mitad, que es la que evita el falso positivo: NO se vetan `guion`
+# ni `lote`. El censo (`terminos.py`) les mide sentidos legítimos que dominan
+# —el signo, `stock.lot`, «edición en lote»— y vetarlos marcaría como defecto
+# el uso correcto. Sin este caso, alguien añadiría los cuatro «por simetría».
+cat > "$ARBOL/sentido-legitimo.rst" <<'RST'
+El guion bajo separa las palabras; el lote de stock caduca en marzo.
+RST
+afirmar "NO veta guion ni lote — su sentido legítimo domina" "0" \
+    "$(python3 "$GATE" --quiet --no-baseline "$ARBOL/sentido-legitimo.rst" 2>/dev/null)"
+
+# ---------------------------------------------------------------- caso 8
+# La clave del baseline no depende de la FORMA con que se nombre el archivo.
+# Control positivo real, medido el 2026-08-26 durante #905: el mismo archivo,
+# el mismo contenido y el mismo baseline daban **11 contra 0** segun se
+# invocara con ruta relativa o con el barrido completo. Los once son las citas
+# de anti-patron que la propia regla enumera, ya congeladas bajo la clave que
+# produce el barrido — que es absoluta.
+#
+# Un gate cuyo veredicto cambia con la forma del argumento no sirve en un hook
+# de escritura (solo conoce la ruta que el cliente le pasa) ni en un
+# pre-commit (pasa rutas relativas al repo). Ver H-DOCS-460.
+# El sujeto es una regla del ARBOL DE FIXTURE, no una del proveedor: la que
+# se citaba (`redaccion-tecnica-es.md`) vive en el consumidor y su deuda esta
+# congelada en el baseline del consumidor, asi que desde aqui el caso medía
+# un archivo cuyo baseline no estaba. Y el rodeo hacia `cd "$RAIZ/source"`,
+# un subdirectorio que el CONSUMIDOR tiene y el proveedor no.
+# El sujeto lleva una forma VETADA (`corrida`), no una INVENTADA
+# (`democión`), y la diferencia decide si el caso mide algo.
+#
+# Medido: `--write-baseline` congela un inventado por su PALABRA SUELTA
+# —`democión` a secas— porque el léxico no lo atestigua en ningún archivo;
+# congela un vetado por `archivo::forma`, que es la clave cuya normalización
+# este caso existe para medir. Con un inventado como sujeto, el baseline que
+# el caso 3 escribe lo silencia GLOBALMENTE y las cuatro afirmaciones pasan
+# sin ejercitar ninguna clave: anulando el `--write-baseline` de este bloque
+# seguían en verde — sub-patrón D con el caso como sujeto, el mismo que
+# H-THYROX-55 registró en la suite hermana.
+CONTROL=".claude/rules/control-forma.md"
+cat > "$ARBOL/$CONTROL" <<'MD'
+La primera corrida del generador falló.
+MD
+python3 "$GATE" --quiet --write-baseline "$ARBOL/$CONTROL" >/dev/null 2>&1
+CUENTA_ABS=$(cd "$ARBOL" && python3 "$GATE" --quiet "$ARBOL/$CONTROL" 2>/dev/null)
+CUENTA_REL=$(cd "$ARBOL" && python3 "$GATE" --quiet "$CONTROL" 2>/dev/null)
+CUENTA_PUNTO=$(cd "$ARBOL" && python3 "$GATE" --quiet "./$CONTROL" 2>/dev/null)
+CUENTA_RODEO=$(cd "$ARBOL/source" && python3 "$GATE" --quiet "../$CONTROL" 2>/dev/null)
+
+afirmar "ruta absoluta: lo congelado sigue congelado" "0" "$CUENTA_ABS"
+afirmar "ruta relativa a la raiz: mismo veredicto" "0" "$CUENTA_REL"
+afirmar "ruta con ./ delante: mismo veredicto" "0" "$CUENTA_PUNTO"
+afirmar "ruta con .. desde otro directorio: mismo veredicto" "0" "$CUENTA_RODEO"
+
+# Y la otra mitad: la normalizacion NO puede volver ciego al detector. Un
+# archivo NUEVO fuera del baseline sigue reportando, se le nombre como se le
+# nombre. Sin este caso, «normalizar» podria implementarse devolviendo siempre
+# la misma clave y las cuatro afirmaciones de arriba pasarian en falso —
+# el sub-patron D de metrica-decide-la-conclusion.md.
+cat > "$ARBOL/forma-nueva.rst" <<'RST'
+La primera corrida del generador fallo.
+RST
+NUEVO_ABS=$(cd "$ARBOL" && python3 "$GATE" --quiet "$ARBOL/forma-nueva.rst" 2>/dev/null)
+NUEVO_REL=$(cd "$ARBOL" && python3 "$GATE" --quiet "forma-nueva.rst" 2>/dev/null)
+afirmar "un archivo nuevo SI reporta, por ruta absoluta" "1" "$NUEVO_ABS"
+afirmar "un archivo nuevo SI reporta, por ruta relativa" "1" "$NUEVO_REL"
+
+# --- El guard del lexico: sus TRES desenlaces, no dos.
+#
+# Paso de un `if` sin `else` a tres ramas (2026-09-05). Un control que solo
+# comprobara el camino feliz —el lexico presente— pasaria igual con la rama
+# nueva y sin ella: no discriminaria. Por eso la sonda bloquea el import con un
+# buscador propio en sys.meta_path, que es la unica forma de ejercitar las
+# otras dos sin desinstalar el paquete del contenedor.
+#
+# La propiedad que se vigila NO es «instala»: es que **ninguna rama termina en
+# un cero**. Si la instalacion no consigue el modulo, el guion rehusa igual que
+# si nadie lo hubiera intentado.
+GUARD_OUT=$(python3 - "$GATE" <<'PY' 2>&1
+import importlib.util, sys
+
+spec = importlib.util.spec_from_file_location('gate_vocab', sys.argv[1])
+gate = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gate)
+
+class Block:
+    def find_spec(self, name, path=None, target=None):
+        if name == 'spacy_lookups_data':
+            raise ModuleNotFoundError(f"No module named {name!r}")
+        return None
+
+fallos = 0
+if gate.require_lexicon() is None:
+    fallos += 1                                  # [1] presente -> lo devuelve
+
+sys.modules.pop('spacy_lookups_data', None)
+sys.meta_path.insert(0, Block())
+try:
+    for etiqueta, kwargs, parche in (
+            ('sin opt-in', {'auto_install': False}, None),
+            ('opt-in + instalacion fallida', {'auto_install': True},
+             lambda: None),
+    ):
+        previo = gate.install_lexicon
+        if parche is not None:
+            gate.install_lexicon = parche
+        try:
+            gate.require_lexicon(**kwargs)
+            fallos += 1                          # no rehuso: fallo
+        except SystemExit as e:
+            if e.code != 2:
+                fallos += 1
+        finally:
+            gate.install_lexicon = previo
+finally:
+    sys.meta_path[:] = [f for f in sys.meta_path if not isinstance(f, Block)]
+
+print(f'DESENLACES_FALLIDOS={fallos}')
+PY
+)
+GUARD_FALLOS=$(printf '%s' "$GUARD_OUT" | sed -n 's/^DESENLACES_FALLIDOS=//p')
+afirmar "guard del lexico: los 3 desenlaces, ninguno termina en cero" "0" "$GUARD_FALLOS"
+
+# --------------------------------------------------- caso del SUSTITUTO
+# El eje de FALSO AMIGO: una palabra que el corpus SI atestigua —asi que el
+# detector de inventados la deja pasar— y que es la traduccion equivocada de
+# un termino tecnico. `libreria` por *library*, `removido` por *removed*.
+#
+# El registro admite `forma -> sustituto`: sin parsear la flecha, la linea se
+# lee LITERAL y no casa nunca. El control de anulacion lo mide.
+#
+# Los dos controles positivos son REALES y del repo, no fabricados
+# (`hallazgo-abierto-genera-sucesor.md`): la propia regla que veta el
+# vocabulario escribe «librería» en su prosa, y un hallazgo de api escribe
+# «campos removidos».
+REGISTRY="$TMP/vetadas-con-sustituto.txt"
+cat > "$REGISTRY" <<'TXT'
+librería → biblioteca
+libreria → biblioteca
+removido → retirado
+removidos → retirados
+TXT
+
+PARSED=$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 - "$GATE" <<'PARSE_EOF'
+import importlib.util, os, pathlib, sys
+ruta = pathlib.Path(sys.argv[1])
+spec = importlib.util.spec_from_file_location('gate', ruta)
+gate = importlib.util.module_from_spec(spec)
+sys.modules['gate'] = gate
+spec.loader.exec_module(gate)
+formas = gate.load_forbidden(pathlib.Path(os.environ['VOCAB_GATE_FORBIDDEN']))
+print(';'.join(f'{f}|{s}' for f, s in formas))
+PARSE_EOF
+)
+afirmar "load_forbidden separa forma y sustituto" \
+    "librería|biblioteca;libreria|biblioteca;removido|retirado;removidos|retirados" "$PARSED"
+
+cat > "$TMP/falso-amigo.rst" <<'TXT'
+sólo se puede ejecutar si tiene la librería [x] instalada
+TXT
+afirmar "el gate ve el falso amigo real (librería)" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --quiet --no-baseline \
+        "$TMP/falso-amigo.rst" 2>/dev/null)"
+
+afirmar "el reporte publica el sustituto" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --no-baseline \
+        "$TMP/falso-amigo.rst" 2>/dev/null | grep -c 'biblioteca')"
+
+cat > "$TMP/falso-amigo-2.rst" <<'TXT'
+Las referencias a campos removidos quedan como AttributeError en runtime.
+TXT
+afirmar "el gate ve el segundo falso amigo real (removido)" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --quiet --no-baseline \
+        "$TMP/falso-amigo-2.rst" 2>/dev/null)"
+
+cat > "$TMP/falso-amigo-correcto.rst" <<'TXT'
+sólo se puede ejecutar si tiene la biblioteca [x] instalada, ya retirada
+TXT
+afirmar "la palabra correcta NO se marca" "0" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --quiet --no-baseline \
+        "$TMP/falso-amigo-correcto.rst" 2>/dev/null)"
+
+printf 'regla de oro\n' > "$TMP/vetadas-sin-flecha.txt"
+cat > "$TMP/sin-flecha.rst" <<'TXT'
+La regla de oro del proyecto es medir antes de concluir.
+TXT
+afirmar "una forma sin flecha sigue casando" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$TMP/vetadas-sin-flecha.txt" python3 "$GATE" \
+        --quiet --no-baseline "$TMP/sin-flecha.rst" 2>/dev/null)"
+
+printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
+[[ "$FALLO" -eq 0 ]]

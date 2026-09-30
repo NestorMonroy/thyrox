@@ -1,0 +1,2 @@
+src/packages/local-observability/src/aggregates/stats.ts(245,48): error TS2339: Property 'timeSavedMs' does not exist on type 'Entry'.
+  Property 'timeSavedMs' does not exist on type 'TranscriptMessage'.

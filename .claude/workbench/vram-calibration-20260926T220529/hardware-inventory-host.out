@@ -1,0 +1,34 @@
+pci	0000:00:00.0	0x8086	0x0d57	0x060000	none
+pci	0000:00:01.0	0x1af4	0x1045	0xffff00	virtio-pci
+pci	0000:00:02.0	0x1af4	0x1042	0x018000	virtio-pci
+pci	0000:00:03.0	0x1af4	0x1042	0x018000	virtio-pci
+pci	0000:00:04.0	0x1af4	0x1042	0x018000	virtio-pci
+pci	0000:00:05.0	0x1af4	0x1042	0x018000	virtio-pci
+pci	0000:00:06.0	0x1af4	0x1042	0x018000	virtio-pci
+pci	0000:00:07.0	0x1af4	0x1042	0x018000	virtio-pci
+pci	0000:00:08.0	0x1af4	0x1041	0x020000	virtio-pci
+pci	0000:00:09.0	0x1af4	0x1053	0xffff00	virtio-pci
+pci	0000:00:0a.0	0x1af4	0x1044	0xffff00	virtio-pci
+virtio	virtio0	virtio_balloon	0x0005
+virtio	virtio1	virtio_blk	0x0002
+virtio	virtio2	virtio_blk	0x0002
+virtio	virtio3	virtio_blk	0x0002
+virtio	virtio4	virtio_blk	0x0002
+virtio	virtio5	virtio_blk	0x0002
+virtio	virtio6	virtio_blk	0x0002
+virtio	virtio7	virtio_net	0x0001
+virtio	virtio8	vmw_vsock_virtio_transport	0x0013
+virtio	virtio9	virtio_rng	0x0004
+context	cmdline	deferred_init=lazy dhash_entries=131072 ihash_entries=65536 console=ttyS0 reboot=k panic=1 nomodule random.trust_cpu=1 ipv6.disable=1 swiotlb=noforce psi=1 rdinit=/process_api -- --firecracker-init --addr 0.0.0.0:2024 --max-ws-buffer-size 32768 --block-local-connections --listen-vsock-port 2024 --log-vsock-port 5002
+context	kernel	6.18.44-fc-v37
+context	virt	docker
+context	lspci	ausente
+signal	pci_nvidia	absent	-
+signal	pci_display	absent	-
+signal	dev_nvidia	absent	-
+signal	dev_dri	absent	-
+signal	proc_driver_nvidia	absent	-
+signal	libcuda	absent	-
+signal	libnvml	absent	-
+signal	nvidia_smi	absent	-
+verdict	none	missing=pci_nvidia dev_nvidia proc_driver_nvidia libcuda nvidia_smi 

@@ -1,0 +1,3 @@
+{"kind": "launch", "instrument": "bash tests/run.sh", "started_at": "2026-09-13T18:26:31+00:00"}
+{"kind": "settle", "finished_at": "2026-09-13T18:38:48", "exit_code": 1}
+{"kind": "declaration", "question": "al cerrar el bloque de T-9 (fix de exports maps en 12 paquetes hermanos), sigue en verde la suite completa de thyrox?", "metric": "salida de bash tests/run.sh: recuento TypeScript/Python/shell y lista de suites ROJO, mas su exit code", "blind_to": "si algun rojo pre-existente de Python/shell tiene una causa comun con exports maps que el grep por nombre de paquete no detecte (p. ej. un import indirecto sin mencionar el paquete por nombre)"}

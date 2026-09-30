@@ -1,0 +1,1 @@
+function Wo(){let e=te();if(e.trustAccepted)return!0;let n=ufe();if(n)e.setTrustAccepted(!0);return n}

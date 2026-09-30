@@ -1,0 +1,52 @@
+src/packages/storage/src/sessionStorage.ts(94,3): error TS2440: Import declaration conflicts with local declaration of 'SerializedMessage'.
+  --- código src/packages/storage/src/sessionStorage.ts:84-104 ---
+     84  } from '@thyrox/agent/idTypes'
+     85  import type { AttributionSnapshotMessage } from '@thyrox/agent/logsTypes.js'
+     86  import {
+     87    type ContentReplacementEntry,
+     88    type ContextCollapseCommitEntry,
+     89    type ContextCollapseSnapshotEntry,
+     90    type Entry,
+     91    type FileHistorySnapshotMessage,
+     92    type LogOption,
+     93    type PersistedWorktreeSession,
+     94>   type SerializedMessage,
+     95    sortLogs,
+     96    type TranscriptMessage,
+     97  } from '@thyrox/agent/logsTypes.js'
+     98  import type {
+     99    AssistantMessage,
+    100    AttachmentMessage,
+    101    Message,
+    102    SystemCompactBoundaryMessage,
+    103    SystemMessage,
+    104    UserMessage,
+src/packages/storage/src/sessionStorage.ts(740,15): error TS2322: Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 14 more ...; agentId: string | undefined; } | ... 17 more ... | { ...; }' is not assignable to type 'TranscriptMessage'.
+  --- código src/packages/storage/src/sessionStorage.ts:730-750 ---
+    730          // if available (set at creation time), otherwise fall back to sequential parent
+    731          let effectiveParentUuid = parentUuid
+    732          if (
+    733            message.type === 'user' &&
+    734            'sourceToolAssistantUUID' in message &&
+    735            message.sourceToolAssistantUUID
+    736          ) {
+    737            effectiveParentUuid = message.sourceToolAssistantUUID as UUID
+    738          }
+    739  
+    740>         const transcriptMessage: TranscriptMessage = {
+    741            parentUuid: isCompactBoundary ? null : effectiveParentUuid,
+    742            logicalParentUuid: isCompactBoundary ? parentUuid : undefined,
+    743            isSidechain,
+    744            teamName: teamInfo?.teamName,
+    745            agentName: teamInfo?.agentName,
+    746            promptId:
+    747              message.type === 'user' ? (getPromptId() ?? undefined) : undefined,
+    748            agentId,
+    749            ...message,
+    750            // Session-stamp fields MUST come after the spread. On --fork-session
+  Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type 'TranscriptMessage'.
+    Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type 'MessageBase & { type: "system"; subtype: "compact_boundary"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; } & { ...; }'.
+      Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type '{ content?: string | undefined; logicalParentUuid?: `${string}-${string}-${string}-${string}-${string}` | undefined; compactMetadata: { [key: string]: unknown; preservedSegment?: { [key: string]: unknown; headUuid: `${string}-${string}-${string}-${string}-${string}`; tailUuid: `${string}-${string}-${string}-${string...'.
+        Types of property 'logicalParentUuid' are incompatible.
+          Type '`${string}-${string}-${string}-${string}-${string}` | null | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+            Type 'null' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.

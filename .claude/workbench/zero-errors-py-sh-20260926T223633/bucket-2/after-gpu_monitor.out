@@ -1,0 +1,60 @@
+== 1. el árbol del ítem incluye a sus hijos ==
+  ok    el hijo está en el árbol del padre
+== 2. una muestra: VRAM por PID y uso por GPU ==
+  ok    VRAM por PID
+  ok    uso pico entre GPUs
+== 3. watch cuenta SÓLO el árbol del ítem, y para cuando termina ==
+  ok    pico: los 300 MiB del hijo, no los 5000 ajenos
+  ok    media: positiva y no mayor que el pico
+  ok    uso pico de GPU
+  ok    varias muestras
+  ok    para al terminar el árbol, no después
+  ok    <n>.gpu con las cuatro cifras
+== 4. un árbol que no usó la GPU escribe CERO: eso es una medida ==
+  ok    pico cero, uso cero
+  ok    y el archivo existe
+== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==
+  ok    sin resumen
+  ok    sin archivo
+== 7. la VRAM libre: la de la GPU con más espacio, que es donde cabe un ítem ==
+  ok    la mayor entre GPUs, no la suma: un ítem no se reparte
+  ok    sin nvidia-smi, None
+== 8. TRES estados: medido 0, ausente, y error al medir ==
+  ok    error al medir: sin resumen publicado
+  ok    el archivo declara el error y su causa
+  ok    read_gpu_file lo clasifica como error
+  ok    un .gpu con ceros es una medida
+  ok    sin archivo es ausente
+== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==
+  ok    sin sitio y sin plazo: no admite
+  ok    con sitio: admite enseguida
+  ok    se libera mientras espera: admite
+== 9b. el registro vive en un directorio que aún no existe: admit lo crea ==
+  ok    admite aunque el directorio no exista
+  ok    y release deja el registro vacío
+  ok    release sobre un directorio inexistente no lanza
+== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==
+  ok    uno admitido y el otro esperó
+== 11. una reserva cuenta sólo lo que su árbol aún no usa: sin doble conteo ==
+  ok    el primero reserva
+  ok    con los 3000 ya visibles, 1500 caben en los 2000 libres
+== 12. soltar y dueños muertos liberan lo comprometido ==
+  ok    A reserva 3000
+  ok    B no cabe mientras A tenga su reserva
+  ok    soltada la de A, B cabe
+  ok    con el dueño de B muerto, su reserva no cuenta
+== 13. la decisión es pura: se prueba sin nvidia-smi ni registro ==
+  ok    5000 libres, nada comprometido, pide 3000: cabe
+  ok    5000 libres, 3000 comprometidos, pide 3000: no cabe
+  ok    sin lectura de VRAM libre: no se admite
+  ok    pendiente: cada reserva menos lo que su árbol ya usa
+  ok    una reserva ya visible entera no cuenta
+== 14. el registro: reservar, soltar, descartar dueños muertos ==
+  ok    sólo cuentan los dueños vivos
+  ok    soltada, no queda nada
+== 6. disponible() distingue las dos situaciones ==
+  ok    con el falso: disponible
+  ok    sin él: no disponible
+
+test_gpu_monitor: 42 ok, 0 falla(s)
+exit=0

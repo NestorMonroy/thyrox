@@ -1,0 +1,1 @@
+function g(){return X??=new L({platform:"linux",env:process.env,readProcVersionSync:iCn,readProcVersion:()=>b("/proc/version",{encoding:"utf8"}),osRelease:Y,readOsRelease:()=>b("/etc/os-release","utf8")})}

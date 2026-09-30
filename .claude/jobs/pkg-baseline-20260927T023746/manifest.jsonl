@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check_package_typecheck --jobs 2 --write-baseline > .claude/workbench/frontera-publica-20260927T023207/package-baseline.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/package-baseline.out", "started_at": "2026-09-27T02:37:46+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T02:40:28+00:00", "duration_seconds": 162.658368}

@@ -1,0 +1,1 @@
+messages\.ts: TS2322: Type 'Message\[\]' is not assignable to type 'NormalizedMessage\[\]'

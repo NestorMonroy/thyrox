@@ -1,0 +1,7 @@
+    return {
+      'content-type': 'application/json',
+      'x-api-key': this.apiKey,
+      'anthropic-version': this.version,
+      // sólo cuando se va a usar: pedir la beta para 5 m no compra nada
+      ...(request.cacheTtl === '1h' ? { 'anthropic-beta': 'extended-cache-ttl-2025-04-11' } : {}),
+    }

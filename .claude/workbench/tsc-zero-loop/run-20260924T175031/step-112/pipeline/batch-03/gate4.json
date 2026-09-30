@@ -1,0 +1,106 @@
+{
+ "reviewed": [
+  {
+   "pattern": "unported-zod-schema-companion-of-stub-type",
+   "files": [
+    "src/packages/cli/src/structuredIO.ts"
+   ]
+  },
+  {
+   "pattern": "excess-property-not-in-real-schema",
+   "files": [
+    "src/packages/cli/src/structuredIO.ts"
+   ]
+  },
+  {
+   "pattern": "undeclared-passthrough-settings-field-indexed",
+   "files": [
+    "src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx"
+   ]
+  },
+  {
+   "pattern": "context-field-only-via-index-signature",
+   "files": [
+    "src/packages/command-runtime/src/commands/recap/recap.ts"
+   ]
+  },
+  {
+   "pattern": "local-jsx-command-context-index-signature-unknown",
+   "files": [
+    "src/packages/command-runtime/src/commands/recap/recap.ts"
+   ]
+  },
+  {
+   "pattern": "possibly-null-value-accessed-without-guard",
+   "files": [
+    "src/packages/config/manager.ts"
+   ]
+  },
+  {
+   "pattern": "undefined-to-null-contract-mismatch",
+   "files": [
+    "src/packages/config/manager.ts"
+   ]
+  },
+  {
+   "pattern": "stat-result-missing-isfile-in-narrow-fs-contract",
+   "files": [
+    "src/packages/config/plugin/loadPluginCommands.ts"
+   ]
+  },
+  {
+   "pattern": "plugin-fs-impl-readdir-missing-dirent-method",
+   "files": [
+    "src/packages/config/plugin/loadPluginCommands.ts"
+   ]
+  },
+  {
+   "pattern": "record-literal-uses-upstream-hook-vocabulary-instead-of-harness-emitted-subset",
+   "files": [
+    "src/packages/config/plugin/loadPluginHooks.ts"
+   ]
+  },
+  {
+   "pattern": "passthrough-field-untyped-as-unknown",
+   "files": [
+    "src/packages/config/plugin/loadPluginHooks.ts"
+   ]
+  },
+  {
+   "pattern": "spread-of-unknown-stub-type",
+   "files": [
+    "src/packages/config/plugin/lspPluginIntegration.ts"
+   ]
+  },
+  {
+   "pattern": "record-string-unknown-stub-hides-array-shape",
+   "files": [
+    "src/packages/config/plugin/pluginLoader.ts"
+   ]
+  },
+  {
+   "pattern": "assistant-message-id-optional-vs-logunaryevent-string",
+   "files": [
+    "src/packages/permission/src/components/hooks.ts"
+   ]
+  },
+  {
+   "pattern": "beta-message-stream-params-output-vs-output-config",
+   "files": [
+    "src/packages/provider/src/claudeLegacy.ts"
+   ]
+  },
+  {
+   "pattern": "generator-yield-star-missing-return",
+   "files": [
+    "src/packages/provider/src/claudeLegacy.ts"
+   ]
+  },
+  {
+   "pattern": "optional-agents-into-required-field",
+   "files": [
+    "src/packages/provider/src/gemini/indexImpl.ts"
+   ]
+  }
+ ]
+}

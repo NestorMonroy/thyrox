@@ -1,0 +1,33 @@
+check_bench_untracked: .claude/jobs/task-identity-pool-20260929T080145 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/task-identity-pool-20260929T080145/README.md
+  .claude/jobs/task-identity-pool-20260929T080145/manifest.jsonl
+  .claude/jobs/task-identity-pool-20260929T080145/outputs/pid
+  .claude/jobs/task-identity-pool-20260929T080145/outputs/salida.log
+  .claude/jobs/task-identity-pool-20260929T080145/outputs/salida.log.time
+check_bench_untracked: .claude/workbench/check-bench-untracked-cost-20260929T080344 deja fuera 3 archivo(s) nuevo(s):
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/paths.txt
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/profile.txt
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/staged-like.txt
+check_bench_untracked: .claude/workbench/task-identity-board-ordinal-20260929T080000 deja fuera 1 archivo(s) nuevo(s):
+  .claude/workbench/task-identity-board-ordinal-20260929T080000/baseline-note.md
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 9 archivo(s) fuera (alcance medido: 11 banco(s) tocado(s))
+Tue Sep 29 08:03:59 2026    .claude/workbench/check-bench-untracked-cost-20260929T080344/profile.out
+
+         590899 function calls (590817 primitive calls) in 4.580 seconds
+
+   Ordered by: cumulative time
+   List reduced from 397 to 8 due to restriction <8>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      5/1    0.000    0.000    4.580    4.580 {built-in method builtins.exec}
+        1    0.000    0.000    4.580    4.580 /home/user/thyrox/src/verify/check_bench_untracked.py:100(main)
+        2    0.001    0.001    4.367    2.183 /home/user/thyrox/src/verify/check_bench_untracked.py:83(touched_benches)
+        2    0.000    0.000    4.365    2.183 /home/user/thyrox/src/verify/check_bench_untracked.py:67(cited_benches)
+        2    0.012    0.006    2.517    1.258 /home/user/thyrox/src/verify/check_bench_untracked.py:79(<setcomp>)
+     3690    0.039    0.000    2.505    0.001 {built-in method builtins.any}
+   239670    2.427    0.000    2.467    0.000 /home/user/thyrox/src/verify/check_bench_untracked.py:80(<genexpr>)
+        1    0.000    0.000    2.352    2.352 /home/user/thyrox/src/verify/check_bench_untracked.py:88(untracked_in_benches)
+
+
+pared=4.79s rss=27088KB

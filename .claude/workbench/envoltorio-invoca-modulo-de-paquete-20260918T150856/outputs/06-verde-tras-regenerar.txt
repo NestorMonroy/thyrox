@@ -1,0 +1,49 @@
+=== 2026-09-18T15:12:50 — regenerar y verificar ===
+
+--- regenerar ---
+bin/: 179 entrypoint(s) totales, 2 escrito(s)/actualizado(s), 0 retirado(s)
+exit=0
+
+--- --check DESPUES ---
+bin/ al día: 179 entrypoint(s)
+exit=0
+
+--- los dos envoltorios, por conducta ---
+cache_probe exit=0
+manifest   exit=0
+
+--- y desde un cwd ajeno (el envoltorio no depende del cwd) ---
+desde /home/user exit=0
+
+--- los 4 de nombre plano NO se movieron ---
+  bin/census_open_tasks exit=0
+  bin/gitlink_bump exit=0
+  bin/object_footprint exit=0
+  bin/pack_headroom exit=0
+
+--- la linea de invocacion de cada envoltorio cambiado ---
+exec "$INTERPRETER" -m transcript.cache_probe "$@"
+exec "$INTERPRETER" -m workbench.manifest "$@"
+exec "$INTERPRETER" "$THYROX_ROOT/src/hallazgo/census_findings.py" "$@"
+
+--- la suite completa ---
+  ok   bin/disk-headroom esta en el plan
+  ok   bin/disk-usage esta en el plan
+  ok   bin/pack_headroom existe en el arbol
+  ok   bin/disk-headroom existe en el arbol
+  ok   bin/disk-usage existe en el arbol
+  ok   bin/task_ids esta en el plan
+  ok   bin/task_ids existe en el arbol
+  ok   bin/hallazgo_ids esta en el plan
+  ok   bin/hallazgo_ids existe en el arbol
+  ok   ningun entrypoint de src/ queda fuera del universo de SOURCE_DIRS
+  ok   bin/reach resuelve a la mitad Python, no a la de shell
+  ok   src/lib/assert.sh no entra al plan
+  ok   src/lib/logging.sh no entra al plan
+  ok   src/lib/toolchain.sh no entra al plan
+  ok   src/lib/workbench.sh no entra al plan
+  ok   el árbol tiene al menos un entrypoint con import relativo
+  ok   bin/cache_probe --help sale 0
+  ok   bin/manifest --help sale 0
+
+83 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)

@@ -1,0 +1,53 @@
+Control de anulacion — TASK-THYROX-0020 / board #363
+=====================================================
+
+Que se retira
+-------------
+La discriminacion pareada/huerfana de `reconcile_status`. El cubo se sigue
+publicando, pero mete a TODAS las filas de la sesion — mide «hay filas» en vez
+de «hay filas que ninguna tarjeta nombra».
+
+    viejo = '''            if subject in subjects_on_board:
+                    continue
+    '''
+
+Linea base (sujeto restaurado)
+------------------------------
+100 aserciones
+OK: todas las aserciones pasan
+exit=0
+
+Con la discriminacion anulada
+-----------------------------
+100 aserciones
+  FALLA — 12b: la fila que ninguna tarjeta nombra cae en unpaired_rows
+  FALLA — 12c: y separa la ABIERTA de la cerrada — 614 de 888 es el dato que decide
+  FALLA — 12d: la fila que SI tiene tarjeta no cae en unpaired_rows
+  FALLA — 12f: con todo pareado el cubo esta PRESENTE y vacio, no ausente
+  FALLA — 12i: y cuantas de ellas estan abiertas, que es el dato accionable
+  FALLA — 12j: reconcile_all_sessions agrega las huerfanas de sus sesiones
+  FALLA — 12k: y agrega cuantas estan abiertas
+exit=1
+
+Veredicto: 7 de 11 caen, y las 3 que sobreviven NO dependen de la causa
+-----------------------------------------------------------------------
+12a  `store_rows` cuenta las filas de la SESION            -> cuenta filas, pareadas o no
+12g  el denominador del store se sigue publicando          -> imprime `store_rows`, no el cubo
+12h  la linea de la CLI nombra «sin tarjeta» con sus cifras-> el rotulo no depende del filtro
+
+Las tres miden el DENOMINADOR, que es el otro eje de la tarea: la fila que
+declara cuantas filas hay en la sesion sigue siendo correcta aunque el cubo
+deje de discriminar. Que sobrevivan es el resultado esperado — si hubieran
+caido, el control estaria midiendo dos causas a la vez.
+
+Restauracion verificada por CONDUCTA, no por suposicion
+--------------------------------------------------------
+    cp /tmp/bs.orig src/task/board_sync.py
+    find src tests -name __pycache__ -type d -exec rm -rf {} +
+    python3 tests/task/test_board_sync.py   -> 100 aserciones, OK
+    cmp -s /tmp/bs.orig src/task/board_sync.py -> IDENTICO al respaldo
+    git diff --stat -> 121 insertions(+), 0 deletions — solo mis cambios
+
+El borrado del bytecode no es ceremonia: restaurar el fuente NO restaura el
+`__pycache__`, y un rojo tras restaurar no distingue «el cambio esta roto» de
+«el interprete lee una copia vieja» (`niveles-de-retencion.md`).

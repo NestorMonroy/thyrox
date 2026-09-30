@@ -1,0 +1,3 @@
+bridge: emitio pese a 6425 errores (138 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 6425 error(es) que siguen vivos en su propio paquete

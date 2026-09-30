@@ -1,0 +1,26 @@
+src/packages/cli/src/entry/commander.ts(40,3): error TS2322: Type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to type 'Command<[], {}, {}>'.
+  --- código src/packages/cli/src/entry/commander.ts:30-50 ---
+     30        getOptionSortKey(a).localeCompare(getOptionSortKey(b)),
+     31    })
+     32  }
+     33  
+     34  /**
+     35   * Creates and configures the main Commander program with all CLI options.
+     36   * Returns the program without .action() or preAction hook attached —
+     37   * those are wired in main.tsx's run() function.
+     38   */
+     39  export function createMainProgram(): CommanderCommand {
+     40>   return new CommanderCommand()
+     41      .configureHelp(createSortedHelpConfig())
+     42      .enablePositionalOptions()
+     43      .name('claude')
+     44      .description(
+     45        `Claude Code - starts an interactive session by default, use -p/--print for non-interactive output`,
+     46      )
+     47      .argument('[prompt]', 'Your prompt', String)
+     48      // Subcommands inherit helpOption via commander's copyInheritedSettings —
+     49      // setting it once here covers mcp, plugin, auth, and all other subcommands.
+     50      .helpOption('-h, --help', 'Display help for command')
+  Types of property 'processedArgs' are incompatible.
+    Type '[string | undefined]' is not assignable to type '[]'.
+      Source has 1 element(s) but target allows only 0.

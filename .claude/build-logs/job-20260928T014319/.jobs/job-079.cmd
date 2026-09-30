@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/skills/test-evals-use-thyrox-p.sh

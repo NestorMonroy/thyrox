@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+102 | 
+103 |   test('el slug de plan se olvida sólo cuando la sesión cambia', () => {
+104 |     switchSession(id('p'), 'resume')
+105 |     getPlanSlugCache().set('p', 'plan-p')
+106 |     switchSession(id('p'), 'cd')
+107 |     expect(getPlanSlugCache().get('p')).toBe('plan-p')
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "plan-p"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:107:41)
+(fail) switchSession fija las rutas y olvida el slug de plan > el slug de plan se olvida sólo cuando la sesión cambia [0.32ms]
+
+ 9 pass
+ 1 fail
+ 16 expect() calls
+Ran 10 tests across 1 file. [67.00ms]

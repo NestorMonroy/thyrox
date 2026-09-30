@@ -1,0 +1,14 @@
+  ok    la señal que acepta los 6 TS2769 de 3 archivos no discrimina
+  ok    la que rechaza parte de sus TS2345 sí discrimina
+  ok    pasa los umbrales (6 en 6 archivos) y rechaza 1 de 7: discrimina
+  ok    3 instancias en 3 archivos no bastan para decidir: queda abierta
+  ok    con 2 instancias en 1 archivo no se puede decidir: queda abierta
+  ok    un patrón ya cerrado no se vuelve a evaluar
+  ok    publica población y archivos de la decisión
+  ok    close-broad sale 0
+  ok    cierra el patrón que no discrimina
+  ok    y su razón cita el paso y las cifras
+  ok    el que discrimina sigue abierto
+  ok    el gate 4 deja de contar el patrón cerrado
+  ok    close-broad publica cuántos cerró sobre cuántos evaluó
+test_tsc_sweep_breadth: 13 aserciones — 13 ok, 0 falla(s)

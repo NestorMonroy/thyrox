@@ -1,0 +1,53 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/command-runtime/src/commands/memory/memory.tsx(48,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/command-runtime/src/commands/memory/memory.tsx:38-58 ---
+     38          }
+     39        }
+     40  
+     41        await editFileInEditor(memoryPath)
+     42  
+     43        // Determine which environment variable controls the editor
+     44        let editorSource = 'default'
+     45        let editorValue = ''
+     46        if (readEnv('VISUAL')) {
+     47          editorSource = '$VISUAL'
+     48>         editorValue = readEnv('VISUAL')
+     49        } else if (readEnv('EDITOR')) {
+     50          editorSource = '$EDITOR'
+     51          editorValue = readEnv('EDITOR')
+     52        }
+     53  
+     54        const editorInfo =
+     55          editorSource !== 'default'
+     56            ? `Using ${editorSource}="${editorValue}".`
+     57            : ''
+     58  
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/command-runtime/src/commands/memory/memory.tsx(51,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/command-runtime/src/commands/memory/memory.tsx:41-61 ---
+     41        await editFileInEditor(memoryPath)
+     42  
+     43        // Determine which environment variable controls the editor
+     44        let editorSource = 'default'
+     45        let editorValue = ''
+     46        if (readEnv('VISUAL')) {
+     47          editorSource = '$VISUAL'
+     48          editorValue = readEnv('VISUAL')
+     49        } else if (readEnv('EDITOR')) {
+     50          editorSource = '$EDITOR'
+     51>         editorValue = readEnv('EDITOR')
+     52        }
+     53  
+     54        const editorInfo =
+     55          editorSource !== 'default'
+     56            ? `Using ${editorSource}="${editorValue}".`
+     57            : ''
+     58  
+     59        const editorHint = editorInfo
+     60          ? `> ${editorInfo} To change editor, set $EDITOR or $VISUAL environment variable.`
+     61          : `> To use a different editor, set the $EDITOR or $VISUAL environment variable.`
+  Type 'undefined' is not assignable to type 'string'.

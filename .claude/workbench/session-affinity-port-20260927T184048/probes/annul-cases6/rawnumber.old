@@ -1,0 +1,2 @@
+    const raw = toBytes(value.raw)
+    return [part({ kind: 'value', value: raw, originalSize: raw.length })]

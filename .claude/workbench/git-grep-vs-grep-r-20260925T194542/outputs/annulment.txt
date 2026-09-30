@@ -1,0 +1,9 @@
+== REQUIRE_GIT_TREE anulada
+  FALLO grep -r fuera de un work tree — esperado False, obtenido True
+test_detect_git_grep_opportunity: 10 casos — 9 ok, 1 fallo(s)
+== SKIP_BOUNDED_RANGE anulada
+  FALLO git log -S con rango acotado — esperado False, obtenido True
+test_detect_git_grep_opportunity: 10 casos — 9 ok, 1 fallo(s)
+  FALLO git log -S dentro de un heredoc — esperado False, obtenido True
+  FALLO grep -r dentro de un heredoc — esperado False, obtenido True
+test_detect_git_grep_opportunity: 13 casos — 11 ok, 2 fallo(s)

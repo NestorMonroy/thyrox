@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(99,29): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(107,28): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(113,28): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(120,28): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.

@@ -1,0 +1,14 @@
+    print("== 17. la VRAM que pide cada ítem para ser admitido: pico x margen ==")
+    check("3200 x 1.0 -> 3200", 3200, ph.derive(TMP / "h-ejemplo", MODEL, catalog, margin=1.0).vram_need_mib)
+    check("sin pico de VRAM, sin admisión", None, ph.derive(TMP / "h-sin-gpu", MODEL, catalog).vram_need_mib)
+
+    print("== 18. la CLI: ttl, memfree, anchura efectiva, VRAM por ítem y porqué ==")
+    import io, contextlib
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["derive", str(TMP / "h-ejemplo"), MODEL, "--margin", "1", "--configured-width", "8",
+                 "--free-vram-mib", "14000", "--vram-reserve-mib", "2000"])
+    fields = buffer.getvalue().rstrip("\n").split("\t")
+    check("anchura efectiva y VRAM por ítem", ["3", "3200"], fields[2:4])
+
+print(f"\ntest_pool_history:

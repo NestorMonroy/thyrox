@@ -1,0 +1,11 @@
+  ok    test_a_complete_walk_exits_zero
+  ok    test_a_truncated_walk_declares_itself_and_does_not_pass_for_complete
+  ok    test_finds_the_file_outside_the_pruned_directories
+  ok    test_refuses_a_root_that_does_not_exist
+bounded_scan: SALIDA PARCIAL — se agoto «max_entries» tras 2 entradas y 0.0s. Las 0 rutas de arriba NO son todas.
+  ok    test_the_cli_prints_the_notice_to_stderr_when_it_truncates
+  ok    test_the_deadline_stops_a_walk_that_the_entry_cap_would_not
+  ok    test_the_default_prune_list_carries_its_own_weight
+  ok    test_the_symlink_loop_does_not_hang_the_walk
+resumen: 0 fallo(s)
+exit=0

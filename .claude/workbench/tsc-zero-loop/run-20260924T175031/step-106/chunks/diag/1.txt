@@ -1,0 +1,14 @@
+src/packages/agent/QueryEngine.ts(317,40): error TS18046: 'tool' is of type 'unknown'.
+src/packages/agent/QueryEngine.ts(349,9): error TS18046: 'initialAppState.toolPermissionContext.additionalWorkingDirectories' is of type 'unknown'.
+src/packages/agent/QueryEngine.ts(358,9): error TS2345: Argument of type 'MCPServerConnection[]' is not assignable to parameter of type 'readonly { name: string; }[]'.
+  Type 'MCPServerConnection' is not assignable to type '{ name: string; }'.
+    Types of property 'name' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/QueryEngine.ts(385,43): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: unknown) => unknown) => void'.
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'unknown' is not assignable to type 'AppState'.
+src/packages/agent/QueryEngine.ts(445,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AttributionState'.
+src/packages/agent/QueryEngine.ts(462,15): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(538,11): error TS2698: Spread types may only be created from object types.
+src/packages/agent/QueryEngine.ts(599,11): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.

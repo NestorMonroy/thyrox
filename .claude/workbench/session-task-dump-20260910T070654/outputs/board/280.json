@@ -1,0 +1,9 @@
+{
+  "id": "280",
+  "subject": "Portar los 23 exports restantes de permissionSetup.ts",
+  "description": "Cerrada en thyrox@45895093. Medido con `comm -23` entre los exports de la fuente y los del puerto: 35 declarados alla, 34 aqui. El unico ausente es `initializeToolPermissionContext`, y su bloqueo es real y verificado por separado — `applyPermissionRulesToPermissionContext` esta declarada OMITIDA en `permissions.ts:35`, citando la linea de la fuente. Cerrarlo exige tocar `permissions.ts`, que es alcance de TASK-DOCS-0250. Suite en serie: permission 381 pass / 0 fail en 25 archivos.",
+  "activeForm": "Portando el resto de permissionSetup.ts",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

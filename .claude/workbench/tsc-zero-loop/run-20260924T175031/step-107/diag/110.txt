@@ -1,0 +1,166 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/Passes/Passes.tsx(71,50): error TS2339: Property 'eligible' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:61-81 ---
+     61        })
+     62      }
+     63    })
+     64  
+     65    useEffect(() => {
+     66      async function loadPassesData() {
+     67        try {
+     68          // Check eligibility first (uses cache if available)
+     69          const eligibilityData = await getCachedOrFetchPassesEligibility()
+     70  
+     71>         if (!eligibilityData || !eligibilityData.eligible) {
+     72            setIsAvailable(false)
+     73            setLoading(false)
+     74            return
+     75          }
+     76  
+     77          setIsAvailable(true)
+     78  
+     79          // Store the referral link if available
+     80          if (eligibilityData.referral_code_details?.referral_link) {
+     81            setReferralLink(eligibilityData.referral_code_details.referral_link)
+src/packages/repl/src/components/Passes/Passes.tsx(80,29): error TS2339: Property 'referral_code_details' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:70-90 ---
+     70  
+     71          if (!eligibilityData || !eligibilityData.eligible) {
+     72            setIsAvailable(false)
+     73            setLoading(false)
+     74            return
+     75          }
+     76  
+     77          setIsAvailable(true)
+     78  
+     79          // Store the referral link if available
+     80>         if (eligibilityData.referral_code_details?.referral_link) {
+     81            setReferralLink(eligibilityData.referral_code_details.referral_link)
+     82          }
+     83  
+     84          // Store referrer reward info for v1 campaign messaging
+     85          setReferrerReward(eligibilityData.referrer_reward)
+     86  
+     87          // Use the campaign returned from eligibility for redemptions
+     88          const campaign =
+     89            eligibilityData.referral_code_details?.campaign ??
+     90            'claude_code_guest_pass'
+src/packages/repl/src/components/Passes/Passes.tsx(81,43): error TS2339: Property 'referral_code_details' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:71-91 ---
+     71          if (!eligibilityData || !eligibilityData.eligible) {
+     72            setIsAvailable(false)
+     73            setLoading(false)
+     74            return
+     75          }
+     76  
+     77          setIsAvailable(true)
+     78  
+     79          // Store the referral link if available
+     80          if (eligibilityData.referral_code_details?.referral_link) {
+     81>           setReferralLink(eligibilityData.referral_code_details.referral_link)
+     82          }
+     83  
+     84          // Store referrer reward info for v1 campaign messaging
+     85          setReferrerReward(eligibilityData.referrer_reward)
+     86  
+     87          // Use the campaign returned from eligibility for redemptions
+     88          const campaign =
+     89            eligibilityData.referral_code_details?.campaign ??
+     90            'claude_code_guest_pass'
+     91  
+src/packages/repl/src/components/Passes/Passes.tsx(85,43): error TS2339: Property 'referrer_reward' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:75-95 ---
+     75          }
+     76  
+     77          setIsAvailable(true)
+     78  
+     79          // Store the referral link if available
+     80          if (eligibilityData.referral_code_details?.referral_link) {
+     81            setReferralLink(eligibilityData.referral_code_details.referral_link)
+     82          }
+     83  
+     84          // Store referrer reward info for v1 campaign messaging
+     85>         setReferrerReward(eligibilityData.referrer_reward)
+     86  
+     87          // Use the campaign returned from eligibility for redemptions
+     88          const campaign =
+     89            eligibilityData.referral_code_details?.campaign ??
+     90            'claude_code_guest_pass'
+     91  
+     92          // Fetch redemptions data
+     93          let redemptionsData: ReferralRedemptionsResponse
+     94          try {
+     95            redemptionsData = await fetchReferralRedemptions(campaign)
+src/packages/repl/src/components/Passes/Passes.tsx(89,27): error TS2339: Property 'referral_code_details' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:79-99 ---
+     79          // Store the referral link if available
+     80          if (eligibilityData.referral_code_details?.referral_link) {
+     81            setReferralLink(eligibilityData.referral_code_details.referral_link)
+     82          }
+     83  
+     84          // Store referrer reward info for v1 campaign messaging
+     85          setReferrerReward(eligibilityData.referrer_reward)
+     86  
+     87          // Use the campaign returned from eligibility for redemptions
+     88          const campaign =
+     89>           eligibilityData.referral_code_details?.campaign ??
+     90            'claude_code_guest_pass'
+     91  
+     92          // Fetch redemptions data
+     93          let redemptionsData: ReferralRedemptionsResponse
+     94          try {
+     95            redemptionsData = await fetchReferralRedemptions(campaign)
+     96          } catch (err) {
+     97            logError(err as Error)
+     98            setIsAvailable(false)
+     99            setLoading(false)
+src/packages/repl/src/components/Passes/Passes.tsx(104,29): error TS18046: 'redemptionsData' is of type 'unknown'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:94-114 ---
+     94          try {
+     95            redemptionsData = await fetchReferralRedemptions(campaign)
+     96          } catch (err) {
+     97            logError(err as Error)
+     98            setIsAvailable(false)
+     99            setLoading(false)
+    100            return
+    101          }
+    102  
+    103          // Build pass statuses array
+    104>         const redemptions = redemptionsData.redemptions || []
+    105          const maxRedemptions = redemptionsData.limit || 3
+    106          const statuses: PassStatus[] = []
+    107  
+    108          for (let i = 0; i < maxRedemptions; i++) {
+    109            const redemption = redemptions[i]
+    110            statuses.push({
+    111              passNumber: i + 1,
+    112              isAvailable: !redemption,
+    113            })
+    114          }
+src/packages/repl/src/components/Passes/Passes.tsx(105,32): error TS18046: 'redemptionsData' is of type 'unknown'.
+  --- código src/packages/repl/src/components/Passes/Passes.tsx:95-115 ---
+     95            redemptionsData = await fetchReferralRedemptions(campaign)
+     96          } catch (err) {
+     97            logError(err as Error)
+     98            setIsAvailable(false)
+     99            setLoading(false)
+    100            return
+    101          }
+    102  
+    103          // Build pass statuses array
+    104          const redemptions = redemptionsData.redemptions || []
+    105>         const maxRedemptions = redemptionsData.limit || 3
+    106          const statuses: PassStatus[] = []
+    107  
+    108          for (let i = 0; i < maxRedemptions; i++) {
+    109            const redemption = redemptions[i]
+    110            statuses.push({
+    111              passNumber: i + 1,
+    112              isAvailable: !redemption,
+    113            })
+    114          }
+    115  

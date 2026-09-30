@@ -1,0 +1,5 @@
+src/packages/tools	 __tests__/subagent.test.ts
+src/packages/provider	 __tests__/provider.test.ts __tests__/providerStreaming.test.ts __tests__/cost.test.ts __tests__/compaction.test.ts
+src/packages/cli	 __tests__/cli.test.ts __tests__/systemPromptLayering.test.ts __tests__/loopStreaming.test.ts __tests__/impact.test.ts __tests__/bin.test.ts __tests__/thinking.test.ts __tests__/compressToolResultsWiring.test.ts
+src/packages/agent	 __tests__/cacheTtl.test.ts __tests__/loopCacheTtl.test.ts __tests__/tokenBudgetLoop.test.ts __tests__/contextGovernance.test.ts __tests__/emit.test.ts __tests__/cacheRoutes.test.ts __tests__/equivalentTokens.test.ts __tests__/attachments.test.ts __tests__/hooksEvents.test.ts __tests__/contextCompressionWiring.test.ts __tests__/loop.test.ts __tests__/taskReminder.test.ts __tests__/contextPressure.test.ts __tests__/stream.test.ts __tests__/compat.test.ts __tests__/causalChain.test.ts
+src/packages/config	 __tests__/config.test.ts

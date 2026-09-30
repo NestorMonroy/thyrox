@@ -1,0 +1,54 @@
+src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts(262,30): error TS2769: No overload matches this call.
+  --- código src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts:252-272 ---
+    252      expect(typeof cb.resolve).toBe('function')
+    253    })
+    254  
+    255    test('onResponse + resolve happy path', () => {
+    256      const cb = createChannelPermissionCallbacks()
+    257      let received: { behavior: string; fromServer: string } | null = null
+    258      cb.onResponse('abcde', r => {
+    259        received = r
+    260      })
+    261      expect(cb.resolve('abcde', 'allow', 'tg')).toBe(true)
+    262>     expect(received).toEqual({ behavior: 'allow', fromServer: 'tg' })
+    263    })
+    264  
+    265    test('resolve unknown id → false', () => {
+    266      const cb = createChannelPermissionCallbacks()
+    267      expect(cb.resolve('xxxxx', 'allow', 'tg')).toBe(false)
+    268    })
+    269  
+    270    test('resolve is idempotent: second call returns false (already deleted)', () => {
+    271      const cb = createChannelPermissionCallbacks()
+    272      cb.onResponse('abcde', () => {})
+  Overload 1 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.
+  Overload 2 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.
+src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts(308,28): error TS2769: No overload matches this call.
+  --- código src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts:298-318 ---
+    298      expect(cb.resolve('AbCdE', 'allow', 'tg')).toBe(true)
+    299    })
+    300  
+    301    test('resolver receives the right behavior + fromServer', () => {
+    302      const cb = createChannelPermissionCallbacks()
+    303      let result: { behavior: string; fromServer: string } | null = null
+    304      cb.onResponse('xyzab', r => {
+    305        result = r
+    306      })
+    307      cb.resolve('xyzab', 'deny', 'plugin:imessage')
+    308>     expect(result).toEqual({ behavior: 'deny', fromServer: 'plugin:imessage' })
+    309    })
+    310  
+    311    test('separate IDs are independent', () => {
+    312      const cb = createChannelPermissionCallbacks()
+    313      let aHit = 0
+    314      let bHit = 0
+    315      cb.onResponse('aaaaa', () => {
+    316        aHit++
+    317      })
+    318      cb.onResponse('bbbbb', () => {
+  Overload 1 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.
+  Overload 2 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.

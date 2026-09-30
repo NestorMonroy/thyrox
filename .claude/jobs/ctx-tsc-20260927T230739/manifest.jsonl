@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && for c in tsconfig.json tsconfig.test.json; do echo \"== $c\"; timeout 300 bunx tsc --noEmit -p $c 2>&1 | grep -E \"error\" | head -20; done", "started_at": "2026-09-27T23:07:39+00:00"}

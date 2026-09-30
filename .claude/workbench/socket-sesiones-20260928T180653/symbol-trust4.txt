@@ -1,0 +1,8 @@
+==== NL: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable NL [2812,2884)
+NL=["acceptEdits","auto","bypassPermissions","default","dontAsk","plan"]
+symbol: 1 de 1 nombre(s) resueltos
+==== N5n: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable N5n [366821,366846)
+N5n="crossSessionInbound"
+symbol: 1 de 1 nombre(s) resueltos

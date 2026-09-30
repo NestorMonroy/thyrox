@@ -1,0 +1,55 @@
+caso 5: la foto guarda todo y no toca HEAD, rama ni índice
+  ok    HEAD, rama e índice real intactos
+  ok    git status intacto
+  ok    lo preparado está en la foto
+  ok    lo modificado sin preparar está en la foto
+  ok    lo nuevo sin seguir está en la foto
+  ok    lo binario está en la foto, byte a byte
+  ok    el árbol del índice guarda sólo lo preparado
+  ok    la ref apunta a la foto
+  ok    el manifiesto está íntegro y en disco
+  ok    base_head es el HEAD de partida
+caso 5c: control — sin capturar el árbol, la foto se queda en lo preparado
+  ok    control: lo modificado sin preparar falta
+  ok    control: lo nuevo sin seguir falta
+  ok    control: lo binario falta
+caso 6: dos fotos concurrentes desde dos worktrees no chocan
+  ok    las dos refs existen
+  ok    cada ref apunta a su propia foto
+  ok    cada foto trae el archivo de su worktree
+  ok    ningún HEAD, rama o índice cambió
+  ok    repetir una ref existente se rehúsa
+  ok    ... y la ref sigue en la primera foto
+caso 6c: control — sin exigir que la ref no exista, la segunda la reemplaza
+  ok    control: la ref ya no apunta a la primera foto
+caso 11: recuperar abre un worktree aparte y no toca el árbol del usuario
+  ok    el árbol del usuario conserva su trabajo posterior
+  ok    HEAD, rama e índice del usuario intactos
+  ok    el worktree de recuperación trae la foto
+  ok    la recuperación trabaja en una rama temporal propia
+  ok    la rama temporal parte de base_head
+  FALLO el índice recuperado es original_index_tree
+        esperado=[e317a1d41e2154d7ee57a6addb224fc342cc3546] obtenido=[ca6ab20e335ea0f1c64474e7b3382e2ed7822c3e]
+  FALLO preparado, sin preparar y sin seguir quedan como estaban al tomar la foto
+        esperado=[M  staged.txt
+ M unstaged.txt
+?? blob.bin
+?? untracked.txt] obtenido=[M staged.txt
+ M unstaged.txt
+?? blob.bin
+?? untracked.txt]
+  ok    recuperar dos veces al mismo destino se rehúsa
+  ok    restaurar en el árbol sin confirmar se rehúsa
+  ok    ... y el árbol sigue intacto
+caso 11c: control — restaurar en el árbol con confirmación pisa el trabajo del usuario
+  ok    control: el trabajo posterior se perdió
+  ok    control: la foto de m11 era la restaurada
+caso 13: un ítem cancelado queda recuperable y su runtime no se retira
+  ok    con dueño muerto: abandoned-recoverable
+  ok    con dueño vivo: active
+  ok    prune rehúsa un runtime sin publicar
+  ok    ... y el runtime sigue
+  ok    publicados, los dos se clasifican closed
+  ok    prune retira el runtime ya publicado
+resultado: 36 de 38 aserciones en verde
+exit=1

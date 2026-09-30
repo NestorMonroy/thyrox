@@ -1,0 +1,40 @@
+run-task-pool: 7 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T022448
+  job-20260927T022448/job-001 pid 5718    npx tsc --noEmit -p tsconfig.json > .claude/workbench/entry-point-20260927T015546/green6/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/root-tsc.out
+  job-20260927T022448/job-002 pid 5743    bash bin/check-cli-typecheck > .claude/workbench/entry-point-20260927T015546/green6/cli-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/cli-typecheck.out
+  job-20260927T022448/job-003 pid 5880    npx tsc --noEmit -p src/paths/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/paths.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/paths.out
+  job-20260927T022448/job-004 pid 5921    npx tsc --noEmit -p src/store/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/store.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/store.out
+  job-20260927T022448/job-005 pid 5960    npx tsc --noEmit -p src/task/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/task.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/task.out
+  job-20260927T022448/job-006 pid 5999    npx tsc --noEmit -p src/coordination/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/coordination.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/coordination.out
+  job-20260927T022448/job-007 pid 6039    npx tsc --noEmit -p src/workbench/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/workbench.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/workbench.out
+run-task-pool: lanzados 7 de 7; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T022448_job-002 -> OK (2 de 8)
+asentado: job-20260927T022448_job-003 -> OK (3 de 8)
+asentado: job-20260927T022448_job-004 -> OK (4 de 8)
+asentado: job-20260927T022448_job-005 -> OK (5 de 8)
+asentado: job-20260927T022448_job-006 -> OK (6 de 8)
+asentado: job-20260927T022448_job-007 -> OK (7 de 8)
+asentado: job-20260927T022448_job-001 -> OK (2 de 8)
+== 8 trabajos asentados ==
+OLVIDADO job-20260927T022448
+       | (vacío — no emitió nada)
+OK     job-20260927T022448_job-001
+       | EXIT=0
+       memoria pico: 2395588 KB (2339 MB) · pared 41.74s
+OK     job-20260927T022448_job-002
+       | EXIT=0
+       memoria pico: 816372 KB (797 MB) · pared 15.73s
+OK     job-20260927T022448_job-003
+       | EXIT=0
+       memoria pico: 231528 KB (226 MB) · pared 1.46s
+OK     job-20260927T022448_job-004
+       | EXIT=0
+       memoria pico: 223352 KB (218 MB) · pared 1.30s
+OK     job-20260927T022448_job-005
+       | EXIT=0
+       memoria pico: 235284 KB (230 MB) · pared 1.37s
+OK     job-20260927T022448_job-006
+       | EXIT=0
+       memoria pico: 234432 KB (229 MB) · pared 1.42s
+OK     job-20260927T022448_job-007
+       | EXIT=0
+       memoria pico: 234092 KB (229 MB) · pared 1.33s

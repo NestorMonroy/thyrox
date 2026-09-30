@@ -1,0 +1,1 @@
+function f(t,o){let _=Object.create(o);for(let[r,e]of Object.entries(t)){let n=_,s;Object.defineProperty(_,r,{get:()=>{let C=process.env[r];if(C!==n)s=e.parse(C),n=C;return s},enumerable:!0,configurable:!0})}return Object.defineProperties(_,{set:{value:(r,e)=>{process.env[r]=yJr(e)}},unset:{value:(r)=>{delete process.env[r]}}}),_}

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3059, "total_final": 3044, "tsc_runs": 1, "accepted": ["agent:spinner-types"], "files_kept": ["src/packages/repl/src/components/Spinner/types.ts"], "outcomes": {"agent:spinner-types": "accepted-net"}}

@@ -1,0 +1,299 @@
+diff --git a/src/packages/app-host/package.json b/src/packages/app-host/package.json
+index ff77b91a..cc5e9088 100644
+--- a/src/packages/app-host/package.json
++++ b/src/packages/app-host/package.json
+@@ -251,6 +251,11 @@
+       "types": "./dist/runtime/sessionRegistryAtLaunch.d.ts",
+       "default": "./src/runtime/sessionRegistryAtLaunch.ts"
+     },
++    "./runtime/messagingInboxAtLaunch.js": {
++      "@thyrox/source": "./src/runtime/messagingInboxAtLaunch.ts",
++      "types": "./dist/runtime/messagingInboxAtLaunch.d.ts",
++      "default": "./src/runtime/messagingInboxAtLaunch.ts"
++    },
+     "./runtime/commandRegistryRuntime.js": {
+       "@thyrox/source": "./src/runtime/commandRegistryRuntime.ts",
+       "types": "./dist/runtime/commandRegistryRuntime.d.ts",
+diff --git a/src/packages/cli/src/entry/print.ts b/src/packages/cli/src/entry/print.ts
+index 3f43fb4a..8ec6f299 100644
+--- a/src/packages/cli/src/entry/print.ts
++++ b/src/packages/cli/src/entry/print.ts
+@@ -31,6 +31,7 @@ import { loopSetup } from './runLoop.ts'
+ import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+ import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
+ import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
++import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+ 
+ /** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
+ export type PrintDeps = {
+@@ -53,11 +54,14 @@ export type PrintArgs = {
+   outputFormat: OutputFormat
+   /** El `argv` que entiende `loopSetup`. */
+   loopArgv: string[]
++  /** `--messaging-socket-path`, si llegó — la vía de escape también bajo `--bare`. */
++  messagingSocketPath: string | undefined
+ }
+ 
+ /** Banderas con valor que se traducen o se pasan al bucle tal cual. */
+ const WITH_VALUE = new Set(['--model', '--max-turns', '--setting-sources', '--tools', '--allowedTools',
+-  '--allowed-tools', '--output-format', '--provider', '--grabacion', '--system', '--connection', '--store'])
++  '--allowed-tools', '--output-format', '--provider', '--grabacion', '--system', '--connection', '--store',
++  '--messaging-socket-path'])
+ /** Banderas sin valor que se aceptan. `--verbose` no cambia nada aquí. */
+ const FLAGS = new Set(['-p', '--print', '--no-session-persistence', '--verbose'])
+ 
+@@ -121,7 +125,7 @@ export function parsePrintArgs(argv: string[], stdin: string | null, env: Record
+     const v = values.get(passthrough)
+     if (v !== undefined) loopArgv.push(passthrough, v)
+   }
+-  return { prompt, model, maxTurns, tools, persist, outputFormat, loopArgv }
++  return { prompt, model, maxTurns, tools, persist, outputFormat, loopArgv, messagingSocketPath: values.get('--messaging-socket-path') }
+ }
+ 
+ /**
+@@ -212,7 +216,12 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
+   }
+   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
+   const startedAt = performance.now()
++  let stopMessaging: MessagingInboxStop | undefined
+   try {
++    // El buzón arranca ANTES del registro y del turno, igual que el modo
++    // bucle: su env tiene que estar exportado antes de cualquier hook
++    // SessionStart.
++    stopMessaging = await startMessagingInboxAtLaunch(args.messagingSocketPath)
+     // Publica sessions/<pid>.json ANTES del turno, igual que el modo bucle.
+     await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
+     const { shared } = loopSetup(args.loopArgv, cwd, dir, args.tools)
+@@ -237,5 +246,6 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
+     return 1
+   } finally {
+     if (!args.persist) rmSync(dir, { recursive: true, force: true })
++    await stopMessaging?.()
+   }
+ }
+diff --git a/src/packages/cli/src/entry/runLoop.ts b/src/packages/cli/src/entry/runLoop.ts
+index 8b801f37..d80381b5 100644
+--- a/src/packages/cli/src/entry/runLoop.ts
++++ b/src/packages/cli/src/entry/runLoop.ts
+@@ -39,6 +39,7 @@ import { flag, hasFlag } from './flags.ts'
+ import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+ import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
+ import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
++import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+ 
+ /**
+  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
+@@ -220,71 +221,79 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
+   const prompt = flag(argv, 'prompt')
+   const style = outputStyleOf(argv)
+   const { shared, modelo } = loopSetup(argv, cwd, transcriptDir)
++  // El buzon arranca ANTES del registro y del primer turno: su env
++  // (THYROX_CODE_MESSAGING_SOCKET) tiene que estar exportado antes de que
++  // cualquier hook SessionStart pueda hacer un snapshot de process.env.
++  const stopMessaging = await startMessagingInboxAtLaunch(flag(argv, 'messaging-socket-path'))
+   // Publica sessions/<pid>.json ANTES del primer turno: quien lista
+   // sesiones ve ésta desde que arranca, no sólo tras la primera respuesta.
+   await registerSessionAtLaunch(flag(argv, 'name') ?? process.env.THYROX_CODE_SESSION_NAME)
+ 
+-  /** Un turno completo: dibuja su flujo y devuelve su resultado. */
+-  const runTurn = async (texto: string, resume: string | undefined) => {
+-    const gen = streamLoop({ ...shared, prompt: texto, resume })
+-    /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
+-    const drawnByDelta = new Set<number>()
+-    let turn = 0
+-    let usage: Usage = { ...USAGE_CERO }
+-    let step = await gen.next()
+-    while (!step.done) {
+-      const e = step.value
+-      if (e.type === 'turn_start') turn = e.turn
+-      if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
+-      if (e.type === 'done') usage = e.result.usage
+-      // El `--json` final y el flujo `json` son cosas distintas: el primero
+-      // imprime el resultado, el segundo la conversación entera.
+-      if (!(hasFlag(argv, 'json') && style !== 'json')) {
+-        // El delta se escribe SIN salto de línea y marca el turno como ya
+-        // dibujado, para que su `text` no lo repita. Sin esa marca el usuario
+-        // leería la misma respuesta dos veces.
+-        if (e.type === 'text_delta' && style === 'text') {
+-          process.stdout.write(e.text)
+-          drawnByDelta.add(e.turn)
+-        } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
+-          process.stdout.write('\n')
+-        } else {
+-          const line = renderEvent(e, style)
+-          if (line !== null) process.stdout.write(`${line}\n`)
++  try {
++    /** Un turno completo: dibuja su flujo y devuelve su resultado. */
++    const runTurn = async (texto: string, resume: string | undefined) => {
++      const gen = streamLoop({ ...shared, prompt: texto, resume })
++      /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
++      const drawnByDelta = new Set<number>()
++      let turn = 0
++      let usage: Usage = { ...USAGE_CERO }
++      let step = await gen.next()
++      while (!step.done) {
++        const e = step.value
++        if (e.type === 'turn_start') turn = e.turn
++        if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
++        if (e.type === 'done') usage = e.result.usage
++        // El `--json` final y el flujo `json` son cosas distintas: el primero
++        // imprime el resultado, el segundo la conversación entera.
++        if (!(hasFlag(argv, 'json') && style !== 'json')) {
++          // El delta se escribe SIN salto de línea y marca el turno como ya
++          // dibujado, para que su `text` no lo repita. Sin esa marca el usuario
++          // leería la misma respuesta dos veces.
++          if (e.type === 'text_delta' && style === 'text') {
++            process.stdout.write(e.text)
++            drawnByDelta.add(e.turn)
++          } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
++            process.stdout.write('\n')
++          } else {
++            const line = renderEvent(e, style)
++            if (line !== null) process.stdout.write(`${line}\n`)
++          }
+         }
++        step = await gen.next()
+       }
+-      step = await gen.next()
+-    }
+-    const r = step.value
+-    if (hasFlag(argv, 'json')) process.stdout.write(`${JSON.stringify(r, null, 2)}\n`)
+-    if (hasFlag(argv, 'status-line')) {
+-      process.stdout.write(`${renderStatusLine({ model: modelo, turn, usage, usd: r.usd })}\n`)
++      const r = step.value
++      if (hasFlag(argv, 'json')) process.stdout.write(`${JSON.stringify(r, null, 2)}\n`)
++      if (hasFlag(argv, 'status-line')) {
++        process.stdout.write(`${renderStatusLine({ model: modelo, turn, usage, usd: r.usd })}\n`)
++      }
++      return r
+     }
+-    return r
+-  }
+ 
+-  if (!chat) {
+-    const r = await runTurn(prompt as string, flag(argv, 'resume'))
+-    return r.stop === 'end_turn' ? 0 : 1
+-  }
++    if (!chat) {
++      const r = await runTurn(prompt as string, flag(argv, 'resume'))
++      return r.stop === 'end_turn' ? 0 : 1
++    }
+ 
+-  // Conversación: una línea de stdin por turno, reanudando SIEMPRE la misma
+-  // sesión. Reanudar es lo que hace que el segundo turno vea al primero; sin
+-  // eso serían N sesiones sueltas que comparten terminal y nada más.
+-  let sesion = flag(argv, 'resume')
+-  let ultimo = 0
+-  for await (const line of stdinLines()) {
+-    const texto = line.trim()
+-    if (!texto) continue
+-    if (texto === '/salir' || texto === '/exit') break
+-    if (texto === '/rename' || texto.startsWith('/rename ')) {
+-      const requestedName = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
+-      process.stdout.write(`${await renameCurrentSession(requestedName)}\n`)
+-      continue
++    // Conversación: una línea de stdin por turno, reanudando SIEMPRE la misma
++    // sesión. Reanudar es lo que hace que el segundo turno vea al primero; sin
++    // eso serían N sesiones sueltas que comparten terminal y nada más.
++    let sesion = flag(argv, 'resume')
++    let ultimo = 0
++    for await (const line of stdinLines()) {
++      const texto = line.trim()
++      if (!texto) continue
++      if (texto === '/salir' || texto === '/exit') break
++      if (texto === '/rename' || texto.startsWith('/rename ')) {
++        const requestedName = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
++        process.stdout.write(`${await renameCurrentSession(requestedName)}\n`)
++        continue
++      }
++      const r = await runTurn(texto, sesion)
++      sesion = r.sessionId
++      ultimo = r.stop === 'end_turn' ? 0 : 1
+     }
+-    const r = await runTurn(texto, sesion)
+-    sesion = r.sessionId
+-    ultimo = r.stop === 'end_turn' ? 0 : 1
++    return ultimo
++  } finally {
++    await stopMessaging?.()
+   }
+-  return ultimo
+ }
+diff --git a/src/packages/local-observability/src/uds/udsMessaging.ts b/src/packages/local-observability/src/uds/udsMessaging.ts
+index e5fe7823..824398bd 100644
+--- a/src/packages/local-observability/src/uds/udsMessaging.ts
++++ b/src/packages/local-observability/src/uds/udsMessaging.ts
+@@ -1,8 +1,49 @@
+ /**
+  * El buzón por socket de la sesión: arranca `mn` con las dependencias por
+- * defecto del proceso, sobre un `InboxState` propio de este módulo.
++ * defecto del proceso, sobre un `InboxState` propio de este módulo, y expone
++ * los accesores que sus consumidores reales necesitan sobre ESE mismo
++ * estado.
++ *
++ * `chunk-9d7mkc64.js` (2.1.283) exporta quince nombres —`export{f9r as
++ * currentSenderClass,W1o as getDefaultUdsSocketPath,p9r as
++ * getPerUidFallbackUdsSocketPath,oEn as getUdsInboxUnavailableReason,Dqo as
++ * getUdsMessagingSocketPath,Oqo as getUdsStartDegradedCause,Pqo as
++ * getUdsStartFailureCause,Hqo as setOnEnableRemoteControl,Mqo as
++ * setOnEnqueue,iEn as setOnPeerMessageStatus,sEn as setOnRename,Lqo as
++ * startCrossSessionInbox,z1o as startUdsMessaging,m9r as
++ * unlinkActiveKeyFileSync,G1o as validateExplicitMessagingSocketPath,aEn as
++ * vettedPeerReplyTarget}`—, pero este módulo sólo porta los que tienen
++ * consumidor de producción en este árbol (`git grep -n
++ * "local-observability/uds/udsMessaging"`): `getDefaultUdsSocketPath` y
++ * `startUdsMessaging` (ya portados, para `setup.ts`), más
++ * `getUdsMessagingSocketPath` (`@thyrox/agent/messages/systemInit.ts`) y
++ * `setOnEnqueue` (`@thyrox/cli:
++ * headless/sdk/session/run-streaming.ts`). Los once restantes no se portan
++ * aquí — no se inventa un nombre que ningún llamador pide; cuando uno lo
++ * pida, cada accesor es una línea de delegación sobre `inboxState.ts`, que
++ * ya los porta todos (`readLastStartFailureCause`/`Pqo`,
++ * `readLastStartDegradedCause`/`Oqo`, `readStartFailureMessage`/`oEn`,
++ * `setOnRename`/`sEn`, `setOnEnableRemoteControl`/`Hqo`,
++ * `setOnPeerMessageStatus`/`iEn`, `removeActiveKeyFileSync`/`m9r`).
++ * `startCrossSessionInbox`/`Lqo` (el default-y-`isExplicit` derivados de si
++ * llegó ruta) tampoco se porta como export propio: `setup.ts` ya inlinea
++ * exactamente esa derivación al llamar a `startUdsMessaging`.
++ *
++ * `getUdsMessagingSocketPath` (`Dqo`, `chunk-yg53q7yp.js`) es
++ * `readActiveSocketPath(state)`: la ruta bindeada de ESTA sesión, o
++ * `undefined` si el buzón no arrancó. `chunk-1q6c162b.js` la llama al
++ * construir `system/init` (`Fgt()`:
++ * `r=import.meta.require("/$bunfs/root/chunk-9d7mkc64.js").
++ * getUdsMessagingSocketPath()`), el mismo punto que porta
++ * `@thyrox/agent/messages/systemInit.ts`.
++ *
++ * `setOnEnqueue` (`Mqo`, `inboxState.ts`) toma `(state, handler)`; el export
++ * de este módulo lo cierra sobre el `state` de ESTA sesión para que
++ * `run-streaming.ts` —que llama `setOnEnqueue(cb)` sin estado, como hace
++ * `chunk-ycnq45th.js`: `let{setOnEnqueue:S}=import.meta.require(...);
++ * S(()=>{...})`— reciba la misma firma sin conocer el `InboxState` interno.
+  */
+-import { createInboxState, type InboxState } from './inboxState.ts'
++import { createInboxState, setOnEnqueue as setStateOnEnqueue, readActiveSocketPath, type InboxState } from './inboxState.ts'
+ import {
+   type MessagingStartDeps,
+   type MessagingStartOptions,
+@@ -14,6 +55,9 @@ import { defaultUdsSocketPath } from './socketPath.ts'
+ 
+ const state: InboxState = createInboxState()
+ 
++/** Sólo para pruebas: el `InboxState` de este módulo, para verificar que un accesor (`setOnEnqueue`) escribe sobre el mismo estado que `startUdsMessaging` lee. */
++export const udsMessagingStateForTesting: InboxState = state
++
+ export const getDefaultUdsSocketPath = (): string => defaultUdsSocketPath()
+ 
+ /** `mn`, con las dependencias por defecto de esta sesión; `deps` sobreescribe lo que haga falta. */
+@@ -22,3 +66,11 @@ export const startUdsMessaging = (
+   options: MessagingStartOptions,
+   deps: Partial<MessagingStartDeps> = {},
+ ): Promise<MessagingStop | undefined> => startMessagingInbox(socketPath, options, { ...processMessagingStartDeps(state), ...deps })
++
++/** `Dqo`: la ruta del socket activo de esta sesión, si el buzón está arrancado. */
++export const getUdsMessagingSocketPath = (): string | undefined => readActiveSocketPath(state)
++
++/** `Mqo`: fija (o retira, con `undefined`) el aviso de mensaje de un par encolado. */
++export const setOnEnqueue = (handler: (() => void) | undefined): void => setStateOnEnqueue(state, handler)
++
++export type { MessagingStop }

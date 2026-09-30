@@ -1,0 +1,192 @@
+Patrón: in-operator-no-estrecha-por-indice-signature-291
+Señal del verificador: : TS18048: .+?\ is\ possibly\ .+?\.$
+Arreglo genérico: Derivado de los objetivos de src/packages/output/src/render/exportRenderer.tsx; ver su diff en el paso.
+Ya aplicado en: src/packages/output/src/render/exportRenderer.tsx, src/packages/provider/src/openai/convertMessages.ts
+Archivos donde la señal sigue viva: src/packages/agent/messages.ts, src/packages/agent/query.ts, src/packages/repl/src/components/Message.tsx
+
+src/packages/agent/messages.ts(4472,17): error TS18048: '_.attachment' is possibly 'undefined'.
+  --- código src/packages/agent/messages.ts:4462-4482 ---
+   4462    hookEvent: HookEvent,
+   4463  ): number {
+   4464    const uniqueHookNames = new Set(
+   4465      messages
+   4466        .filter(
+   4467          (_): _ is AttachmentMessage =>
+   4468            isHookAttachmentMessage(_) &&
+   4469            _.attachment.toolUseID === toolUseID &&
+   4470            _.attachment.hookEvent === hookEvent,
+   4471        )
+   4472>       .map(_ => _.attachment.hookName),
+   4473    )
+   4474    return uniqueHookNames.size
+   4475  }
+   4476  
+   4477  export function hasUnresolvedHooks(
+   4478    messages: NormalizedMessage[],
+   4479    toolUseID: string,
+   4480    hookEvent: HookEvent,
+   4481  ) {
+   4482    const inProgressHookCount = getInProgressHookCount(
+
+src/packages/agent/query.ts(1461,27): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1451-1471 ---
+   1451      // rollup point hooks need for batch-level bookkeeping. Skipped on
+   1452      // empty batches and when aborted (the next model request never happens
+   1453      // anyway in the abort path).
+   1454      if (
+   1455        toolUseBlocks.length > 0 &&
+   1456        !toolUseContext.abortController.signal.aborted
+   1457      ) {
+   1458        const batchToolCalls = toolUseBlocks.map(block => {
+   1459          const toolResult = toolResults.find(result => {
+   1460            if (result.type !== 'user') return false
+   1461>           const content = result.message.content
+   1462            if (!Array.isArray(content)) return false
+   1463            return (content as ToolResultBlockParam[]).some(
+   1464              c => c.type === 'tool_result' && c.tool_use_id === block.id,
+   1465            )
+   1466          })
+   1467          const messageContent =
+   1468            toolResult?.type === 'user' ? toolResult.message.content : undefined
+   1469          const resultContent = Array.isArray(messageContent)
+   1470            ? (messageContent as ToolResultBlockParam[]).find(
+   1471                (c): c is ToolResultBlockParam =>
+src/packages/agent/query.ts(1468,41): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1458-1478 ---
+   1458        const batchToolCalls = toolUseBlocks.map(block => {
+   1459          const toolResult = toolResults.find(result => {
+   1460            if (result.type !== 'user') return false
+   1461            const content = result.message.content
+   1462            if (!Array.isArray(content)) return false
+   1463            return (content as ToolResultBlockParam[]).some(
+   1464              c => c.type === 'tool_result' && c.tool_use_id === block.id,
+   1465            )
+   1466          })
+   1467          const messageContent =
+   1468>           toolResult?.type === 'user' ? toolResult.message.content : undefined
+   1469          const resultContent = Array.isArray(messageContent)
+   1470            ? (messageContent as ToolResultBlockParam[]).find(
+   1471                (c): c is ToolResultBlockParam =>
+   1472                  c.type === 'tool_result' && c.tool_use_id === block.id,
+   1473              )
+   1474            : undefined
+   1475          return {
+   1476            tool_name: block.name,
+   1477            tool_input: block.input,
+   1478            tool_use_id: block.id,
+src/packages/agent/query.ts(1553,27): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1543-1563 ---
+   1543          }
+   1544        }
+   1545  
+   1546        // Collect tool info for summary generation
+   1547        const toolUseIds = toolUseBlocks.map(block => block.id)
+   1548        const toolInfoForSummary = toolUseBlocks.map(block => {
+   1549          // Find the corresponding tool result
+   1550          const toolResult = toolResults.find(
+   1551            result =>
+   1552              result.type === 'user' &&
+   1553>             Array.isArray(result.message.content) &&
+   1554              result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562            Array.isArray(toolResult.message.content)
+   1563              ? toolResult.message.content.find(
+src/packages/agent/query.ts(1554,13): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1544-1564 ---
+   1544        }
+   1545  
+   1546        // Collect tool info for summary generation
+   1547        const toolUseIds = toolUseBlocks.map(block => block.id)
+   1548        const toolInfoForSummary = toolUseBlocks.map(block => {
+   1549          // Find the corresponding tool result
+   1550          const toolResult = toolResults.find(
+   1551            result =>
+   1552              result.type === 'user' &&
+   1553              Array.isArray(result.message.content) &&
+   1554>             result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562            Array.isArray(toolResult.message.content)
+   1563              ? toolResult.message.content.find(
+   1564                  (c): c is ToolResultBlockParam =>
+src/packages/agent/query.ts(1562,25): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1552-1572 ---
+   1552              result.type === 'user' &&
+   1553              Array.isArray(result.message.content) &&
+   1554              result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562>           Array.isArray(toolResult.message.content)
+   1563              ? toolResult.message.content.find(
+   1564                  (c): c is ToolResultBlockParam =>
+   1565                    c.type === 'tool_result' && c.tool_use_id === block.id,
+   1566                )
+   1567              : undefined
+   1568          return {
+   1569            name: block.name,
+   1570            input: block.input,
+   1571            output:
+   1572              resultContent && 'content' in resultContent
+src/packages/agent/query.ts(1563,15): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1553-1573 ---
+   1553              Array.isArray(result.message.content) &&
+   1554              result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562            Array.isArray(toolResult.message.content)
+   1563>             ? toolResult.message.content.find(
+   1564                  (c): c is ToolResultBlockParam =>
+   1565                    c.type === 'tool_result' && c.tool_use_id === block.id,
+   1566                )
+   1567              : undefined
+   1568          return {
+   1569            name: block.name,
+   1570            input: block.input,
+   1571            output:
+   1572              resultContent && 'content' in resultContent
+   1573                ? resultContent.content
+
+src/packages/repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:106-126 ---
+    106          <AttachmentMessage
+    107            addMargin={addMargin}
+    108            attachment={message.attachment}
+    109            verbose={verbose}
+    110            isTranscriptMode={isTranscriptMode}
+    111          />
+    112        )
+    113      case 'assistant':
+    114        return (
+    115          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    116>           {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+    117              <AssistantMessageBlock
+    118                key={index}
+    119                param={_}
+    120                addMargin={addMargin}
+    121                tools={tools}
+    122                commands={commands}
+    123                verbose={verbose}
+    124                inProgressToolUseIDs={inProgressToolUseIDs}
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}

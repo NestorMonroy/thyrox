@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check_lint_zero > .claude/workbench/frontera-publica-20260927T023207/lint-zero.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/lint-zero.out", "started_at": "2026-09-27T02:32:07+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T02:37:21+00:00", "duration_seconds": 314.808362}

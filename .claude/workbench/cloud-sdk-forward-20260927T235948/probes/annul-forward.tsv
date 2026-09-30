@@ -1,0 +1,18 @@
+no-wire-model-json	s/return Response.json(wireModel !== undefined ? { ...(message as object), model: wireModel } : message)/return Response.json(message)/
+no-wire-model-sse	s/const rewritten = wireModel !== undefined \&\& event.type === 'message_start'/const rewritten = false \&\& event.type === 'message_start'/
+no-stream	s/^        if (prepared.body.stream) {$/        if (false) {/
+no-bedrock-501	s/^  if (path === '\/v1\/messages\/count_tokens' \&\& provider === 'bedrock') {$/  if (false) {/
+no-count-tokens	s/^        return Response.json(await client.messages.countTokens(prepared.body, options))$/        return undefined/
+no-bedrock-body	s/^  if (provider !== 'bedrock' || !betaHeader) return/  if (true) return/
+no-dedupe	s/anthropic_beta: \[...new Set(\[...current, ...betas\])\]/anthropic_beta: [...current, ...betas]/
+no-empty-betas	s/^  if (betas.length === 0) return { body, betaHeader: undefined }$/  void betas/
+no-options-guard	s/...(Object.keys(headers).length > 0 \&\& { headers })/headers/
+no-known-message	s/    return truncateUtf16(inner.message, MAX_UPSTREAM_MESSAGE)$/    return ERROR_MESSAGES[status] ?? 'upstream error'/
+no-truncate	s/    return truncateUtf16(inner.message, MAX_UPSTREAM_MESSAGE)$/    return inner.message/
+no-rejection-kind	s/  return kind !== undefined ? capabilityRejectedMessage(kind) : ERROR_MESSAGES\[status\] ?? 'upstream error'/  return ERROR_MESSAGES[status] ?? 'upstream error'/
+leak-upstream-text	s/^  if (status !== 400 \&\& status !== 413) return ERROR_MESSAGES\[status\] ?? 'upstream error'$/  if (status !== 400 \&\& status !== 413) return error.message/
+no-error-details	s/^    upstreamErrorDetails.set(response, /    void (response, /
+no-rethrow	s/^    if (!(error instanceof APIError)) throw error$/    if (!(error instanceof APIError)) return undefined/
+no-api-error-type	s/^  return ERROR_TYPES\[status\] ?? 'api_error'$/  return 'api_error'/
+no-stream-error-event	s/        controller.enqueue(encoder.encode(`event: error\\ndata: \${JSON.stringify(payload)}\\n\\n`))/        void payload/
+no-keepalive	s/^          controller.enqueue(ping)$/          void ping/

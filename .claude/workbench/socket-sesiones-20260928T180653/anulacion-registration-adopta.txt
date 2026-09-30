@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+241 |   test('un cambio que no adopta sólo publica la sesión nueva', async () => {
+242 |     await registerSession(undefined, deps())
+243 |     await updatePidFile({ parkedJobId: 'job' }, undefined, deps())
+244 |     switchListeners[0]!('s2', 'clear')
+245 |     await flush()
+246 |     expect(record()).toMatchObject({ sessionId: 's2', name: 'app-s1' })
+                           ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "name": "app-s1",
++   "cwd": "/work/app",
++   "kind": "interactive",
++   "name": "app-s2",
++   "nameSince": 1000,
++   "nameSource": "derived",
++   "peerFeatures": [
++     "notify_idle",
++     "artifact_yield",
++   ],
++   "peerProtocol": 1,
++   "pid": 4242,
++   "pidDomain": "linux:m:ns",
++   "procStart": "start-4242",
+    "sessionId": "s2",
++   "startedAt": 1000,
++   "updatedAt": 1000,
++   "version": "9.9.9",
+  }
+
+- Expected  - 1
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:246:22)
+(fail) los cambios de sesión y de directorio > un cambio que no adopta sólo publica la sesión nueva [8.00ms]
+
+ 22 pass
+ 1 fail
+ 82 expect() calls
+Ran 23 tests across 1 file. [179.00ms]

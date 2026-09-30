@@ -1,0 +1,8 @@
+src/packages/cli/src/headless/sdk/session/load.ts(169,44): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/cli/src/headless/sdk/session/load.ts(369,42): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.

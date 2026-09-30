@@ -1,0 +1,4 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1524,15): error TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1531,15): error TS2322: Type 'import("/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool").CanUseToolFn' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.

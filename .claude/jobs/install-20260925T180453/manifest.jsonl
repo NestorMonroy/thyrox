@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun install --frozen-lockfile", "started_at": "2026-09-25T18:04:53+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-25T18:05:28+00:00", "duration_seconds": 35.61432}

@@ -1,0 +1,10 @@
+  FALLA — store: sin constante, el default es el de thyrox
+  FALLA — store: sin constante, el directorio se crea (idempotente)
+  FALLA — 7g: `acunar-tarjeta` con TaskUpdate no es un error
+  FALLA — 7h: y dice por que no acuñó, en vez de imprimir un 0 mudo
+
+OK
+
+33 ok, 0 fallos
+
+18 ok · 0 falla(s)

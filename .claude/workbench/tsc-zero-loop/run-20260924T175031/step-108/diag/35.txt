@@ -1,0 +1,115 @@
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(155,24): error TS2345: Argument of type 'true' is not assignable to parameter of type 'FleetOutcome | null'.
+  --- código src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts:145-165 ---
+    145        isSelfDriving(mockState({ inFlight: { kinds: ['session_cron'] } })),
+    146      ).toBe(true)
+    147      expect(isSelfDriving(mockState({ intent: '/loop x' }))).toBe(true)
+    148      expect(isSelfDriving(mockState({ intent: 'fix' }))).toBe(false)
+    149    })
+    150  })
+    151  
+    152  describe('pickIcon', () => {
+    153    test('pinned + idle + no presence → "∙"', () => {
+    154      const s = mockState({ tempo: 'idle' })
+    155>     expect(pickIcon(s, true, undefined)).toBe('∙')
+    156    })
+    157  
+    158    test('busy/shell presence → null (no glyph)', () => {
+    159      expect(pickIcon(mockState(), false, 'busy')).toBeNull()
+    160      expect(pickIcon(mockState(), false, 'shell')).toBeNull()
+    161    })
+    162  
+    163    test('/loop job → completed glyph', () => {
+    164      expect(pickIcon(mockState({ intent: '/loop x' }), false, undefined)).toBe('✢')
+    165    })
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(159,34): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+  --- código src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts:149-169 ---
+    149    })
+    150  })
+    151  
+    152  describe('pickIcon', () => {
+    153    test('pinned + idle + no presence → "∙"', () => {
+    154      const s = mockState({ tempo: 'idle' })
+    155      expect(pickIcon(s, true, undefined)).toBe('∙')
+    156    })
+    157  
+    158    test('busy/shell presence → null (no glyph)', () => {
+    159>     expect(pickIcon(mockState(), false, 'busy')).toBeNull()
+    160      expect(pickIcon(mockState(), false, 'shell')).toBeNull()
+    161    })
+    162  
+    163    test('/loop job → completed glyph', () => {
+    164      expect(pickIcon(mockState({ intent: '/loop x' }), false, undefined)).toBe('✢')
+    165    })
+    166  
+    167    test('default → steady glyph', () => {
+    168      expect(pickIcon(mockState(), false, undefined)).toBe('✻')
+    169    })
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(160,34): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+  --- código src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts:150-170 ---
+    150  })
+    151  
+    152  describe('pickIcon', () => {
+    153    test('pinned + idle + no presence → "∙"', () => {
+    154      const s = mockState({ tempo: 'idle' })
+    155      expect(pickIcon(s, true, undefined)).toBe('∙')
+    156    })
+    157  
+    158    test('busy/shell presence → null (no glyph)', () => {
+    159      expect(pickIcon(mockState(), false, 'busy')).toBeNull()
+    160>     expect(pickIcon(mockState(), false, 'shell')).toBeNull()
+    161    })
+    162  
+    163    test('/loop job → completed glyph', () => {
+    164      expect(pickIcon(mockState({ intent: '/loop x' }), false, undefined)).toBe('✢')
+    165    })
+    166  
+    167    test('default → steady glyph', () => {
+    168      expect(pickIcon(mockState(), false, undefined)).toBe('✻')
+    169    })
+    170  })
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(164,55): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+  --- código src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts:154-174 ---
+    154      const s = mockState({ tempo: 'idle' })
+    155      expect(pickIcon(s, true, undefined)).toBe('∙')
+    156    })
+    157  
+    158    test('busy/shell presence → null (no glyph)', () => {
+    159      expect(pickIcon(mockState(), false, 'busy')).toBeNull()
+    160      expect(pickIcon(mockState(), false, 'shell')).toBeNull()
+    161    })
+    162  
+    163    test('/loop job → completed glyph', () => {
+    164>     expect(pickIcon(mockState({ intent: '/loop x' }), false, undefined)).toBe('✢')
+    165    })
+    166  
+    167    test('default → steady glyph', () => {
+    168      expect(pickIcon(mockState(), false, undefined)).toBe('✻')
+    169    })
+    170  })
+    171  
+    172  describe('glyphColor', () => {
+    173    test('terminal+success → success undimmed', () => {
+    174      const c = glyphColor(mockState({ state: 'done', tempo: 'idle' }), 'success', undefined)
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(168,34): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+  --- código src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts:158-178 ---
+    158    test('busy/shell presence → null (no glyph)', () => {
+    159      expect(pickIcon(mockState(), false, 'busy')).toBeNull()
+    160      expect(pickIcon(mockState(), false, 'shell')).toBeNull()
+    161    })
+    162  
+    163    test('/loop job → completed glyph', () => {
+    164      expect(pickIcon(mockState({ intent: '/loop x' }), false, undefined)).toBe('✢')
+    165    })
+    166  
+    167    test('default → steady glyph', () => {
+    168>     expect(pickIcon(mockState(), false, undefined)).toBe('✻')
+    169    })
+    170  })
+    171  
+    172  describe('glyphColor', () => {
+    173    test('terminal+success → success undimmed', () => {
+    174      const c = glyphColor(mockState({ state: 'done', tempo: 'idle' }), 'success', undefined)
+    175      expect(c).toEqual({ color: 'success', dim: false })
+    176    })
+    177  
+    178    test('busy presence → undimmed undefined', () => {

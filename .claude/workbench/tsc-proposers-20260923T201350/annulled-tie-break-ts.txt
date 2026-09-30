@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscProposers.test.ts:
+56 |     const edits = [
+57 |       { span: { start: 0, length: 0 }, newText: '(' },
+58 |       { span: { start: 1, length: 0 }, newText: ': T' },
+59 |       { span: { start: 1, length: 0 }, newText: ')' },
+60 |     ]
+61 |     expect(applyEdits('b => b', edits)).toBe('(b: T) => b')
+                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "(b: T) => b"
+Received: "(b): T => b"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscProposers.test.ts:61:41)
+(fail) applyEdits > two insertions at one position keep their order [0.41ms]
+
+ 21 pass
+ 1 fail
+ 43 expect() calls
+Ran 22 tests across 3 files. [16.22s]
+
+[exit=1]

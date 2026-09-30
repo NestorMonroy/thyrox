@@ -1,0 +1,171 @@
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(107,4): error TS1354: 'readonly' type modifier is only permitted on array and tuple literal types.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:97-117 ---
+     97   *
+     98   * El nombre en el mensaje no es cortesía: sin él, un anfitrión incompleto
+     99   * produce un error que no dice cuál de las trece superficies hay que traer.
+    100   */
+    101  function notImplemented(name: string): never {
+    102    throw new Error(`Swarm host dependency not implemented: ${name}`)
+    103  }
+    104  
+    105  function getToolsFromContext(
+    106    context?: Partial<ToolUseContext>,
+    107> ): readonly NonNullable<ToolUseContext['options']>['tools'] {
+    108    return context?.options?.tools ?? []
+    109  }
+    110  
+    111  /**
+    112   * Colapsa los cinco estados de la fuente en los tres del anfitrión.
+    113   *
+    114   * `running`, `failed` y `killed` caen los tres en `in_progress`. NO es una
+    115   * pérdida accidental: `HostTask` sólo distingue «no ha empezado», «en curso» y
+    116   * «terminó bien», y una tarea muerta sigue siendo una tarea que empezó. Quien
+    117   * necesite el desenlace lo lee del sistema de tareas, no de esta proyección.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(184,36): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:174-194 ---
+    174        },
+    175        async execute(tool, input, toolContext) {
+    176          // Sin puerta de permisos inyectada, el default permite: la decisión de
+    177          // negar es del anfitrión, y fabricarla aquí la escondería.
+    178          const canUseTool = options.permissions?.canUseTool
+    179            ? async (
+    180                requestedTool: typeof tool,
+    181                requestedInput: unknown,
+    182                requestedContext: typeof toolContext,
+    183              ) => {
+    184>               const result = await options.permissions!.canUseTool(
+    185                  requestedTool,
+    186                  requestedInput,
+    187                  requestedContext,
+    188                )
+    189                return {
+    190                  behavior: result.allowed ? 'allow' : 'deny',
+    191                  message: result.reason,
+    192                  updatedInput: requestedInput,
+    193                }
+    194              }
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(184,36): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:174-194 ---
+    174        },
+    175        async execute(tool, input, toolContext) {
+    176          // Sin puerta de permisos inyectada, el default permite: la decisión de
+    177          // negar es del anfitrión, y fabricarla aquí la escondería.
+    178          const canUseTool = options.permissions?.canUseTool
+    179            ? async (
+    180                requestedTool: typeof tool,
+    181                requestedInput: unknown,
+    182                requestedContext: typeof toolContext,
+    183              ) => {
+    184>               const result = await options.permissions!.canUseTool(
+    185                  requestedTool,
+    186                  requestedInput,
+    187                  requestedContext,
+    188                )
+    189                return {
+    190                  behavior: result.allowed ? 'allow' : 'deny',
+    191                  message: result.reason,
+    192                  updatedInput: requestedInput,
+    193                }
+    194              }
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(187,17): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ [key: string]: unknown; mode: string; input: unknown; }'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:177-197 ---
+    177          // negar es del anfitrión, y fabricarla aquí la escondería.
+    178          const canUseTool = options.permissions?.canUseTool
+    179            ? async (
+    180                requestedTool: typeof tool,
+    181                requestedInput: unknown,
+    182                requestedContext: typeof toolContext,
+    183              ) => {
+    184                const result = await options.permissions!.canUseTool(
+    185                  requestedTool,
+    186                  requestedInput,
+    187>                 requestedContext,
+    188                )
+    189                return {
+    190                  behavior: result.allowed ? 'allow' : 'deny',
+    191                  message: result.reason,
+    192                  updatedInput: requestedInput,
+    193                }
+    194              }
+    195            : async () => ({ behavior: 'allow' as const, updatedInput: input })
+    196  
+    197          if (!context) {
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(205,30): error TS18046: 'tool' is of type 'unknown'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:195-215 ---
+    195            : async () => ({ behavior: 'allow' as const, updatedInput: input })
+    196  
+    197          if (!context) {
+    198            notImplemented('tools.execute without ToolUseContext')
+    199          }
+    200          const parentMessage = {
+    201            type: 'assistant',
+    202            message: { id: 'swarm-host-deps', content: [] },
+    203            uuid: '00000000-0000-0000-0000-000000000000',
+    204          } as const
+    205>         const result = await tool.call(
+    206            input as never,
+    207            context as ToolUseContext,
+    208            canUseTool as never,
+    209            parentMessage as never,
+    210          )
+    211          return { content: result.data, metadata: result.mcpMeta } as never
+    212        },
+    213        ...options.tools,
+    214      } satisfies HostToolRegistry,
+    215  
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(265,5): error TS2322: Type '{ readFile: (path: string) => Promise<string>; writeFile: (path: string, content: string) => Promise<void>; mkdir: ((path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>) | ((path: string, mkdirOptions: { ...; } | undefined) => Promise<...>); exists: (path: string) => Promise<......' is not assignable to type 'HostFileSystem'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:255-275 ---
+    255  
+    256      hooks: {
+    257        async onTurnStart() {},
+    258        async onTurnEnd() {},
+    259        async onStop() {
+    260          return { blockingErrors: [], preventContinuation: false }
+    261        },
+    262        ...options.hooks,
+    263      } satisfies HostHookCallbacks,
+    264  
+    265>     fs: {
+    266        readFile(path) {
+    267          return fsReadFile(path, 'utf8')
+    268        },
+    269        writeFile(path, content) {
+    270          return fsWriteFile(path, content)
+    271        },
+    272        mkdir(path, mkdirOptions) {
+    273          return mkdir(path, mkdirOptions)
+    274        },
+    275        exists(path) {
+  Types of property 'mkdir' are incompatible.
+    Type '((path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>) | ((path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<...>)' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+      Type '(path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<string | undefined>' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+        Type 'Promise<string | undefined>' is not assignable to type 'Promise<void>'.
+          Type 'string | undefined' is not assignable to type 'void'.
+            Type 'string' is not assignable to type 'void'.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(272,7): error TS2322: Type '((path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>) | ((path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<...>)' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:262-282 ---
+    262        ...options.hooks,
+    263      } satisfies HostHookCallbacks,
+    264  
+    265      fs: {
+    266        readFile(path) {
+    267          return fsReadFile(path, 'utf8')
+    268        },
+    269        writeFile(path, content) {
+    270          return fsWriteFile(path, content)
+    271        },
+    272>       mkdir(path, mkdirOptions) {
+    273          return mkdir(path, mkdirOptions)
+    274        },
+    275        exists(path) {
+    276          return Promise.resolve(existsSync(path))
+    277        },
+    278        rm(path, rmOptions) {
+    279          return fsRm(path, rmOptions)
+    280        },
+    281        readdir(path) {
+    282          return fsReaddir(path)
+  Type '(path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<string | undefined>' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+    Type 'Promise<string | undefined>' is not assignable to type 'Promise<void>'.
+      Type 'string | undefined' is not assignable to type 'void'.
+        Type 'string' is not assignable to type 'void'.

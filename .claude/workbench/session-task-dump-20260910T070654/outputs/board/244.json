@@ -1,0 +1,9 @@
+{
+  "id": "244",
+  "subject": "Cablear check_provider_evidence a un hook que dispare al commitear en THYROX",
+  "description": "Causa 1 de L-028, y la única suficiente: el gate existe desde `thyrox@93e51d5d` (2026-09-07T00:59:23), discrimina —nombra los 11 bancos, publica su alcance, sale 1 con `--strict`— y **nadie lo corre**.\n\nMedido:\n- `thyrox` NO tiene `.githooks/` y `git config core.hooksPath` está vacío: un commit en THYROX no dispara ningún gate.\n- Está en `src/gates/registry.py:111`, y al registro sólo lo alcanza `src/gates/doctor.py`, que ningún hook invoca.\n- El único hook vivo es `kaupamex-docs/.githooks/pre-commit`, que corre SEIS gates de `thyrox/src/gates/` (mutante-en-staging, vocabulario-prosa, agent-artifacts, harness-typecheck, rst-sintaxis, rst-convenciones) y éste no es ninguno. Y aunque lo fuera, dispara al commitear en `kaupamex-docs`, no en THYROX, que es donde los bancos aterrizan.\n\nEl arreglo es el hook en THYROX, no añadirlo a los seis del consumidor: el sujeto que hay que medir es el árbol del proveedor.\n\nDecidir en el mismo pase si THYROX estrena `.githooks/` con su `install-hooks.sh` (como `db` y `docs`) o si se cuelga del corredor de suite. Las dos no se excluyen — la tarea hermana cubre la segunda para un clon sin hooks instalados.\n\nCierre: crear un banco de prueba en `thyrox/.claude/eventos/` y comprobar que el commit se rechaza; retirarlo y comprobar que pasa. Control positivo real, no fabricado.\n\nSupersede #220. Ver L-028.",
+  "activeForm": "Cableando el gate de evidencia del proveedor",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

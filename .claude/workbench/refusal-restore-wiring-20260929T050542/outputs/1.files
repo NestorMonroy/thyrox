@@ -1,0 +1,7 @@
+src/packages/app-host/src/runtime/__tests__/bootstrapRefusalFallbackRestore.test.ts
+src/packages/app-host/src/runtime/__tests__/installCliBindingsRefusalFallbackRestore.test.ts
+src/packages/app-host/src/runtime/__tests__/refusalFallbackRestoreWiring.test.ts
+src/packages/app-host/src/runtime/bootstrap.ts
+src/packages/app-host/src/runtime/installCliBindings.ts
+src/packages/app-host/src/state/__tests__/refusalFallbackRestoreDeps.test.ts
+src/packages/app-host/src/state/refusalFallbackRestoreDeps.ts

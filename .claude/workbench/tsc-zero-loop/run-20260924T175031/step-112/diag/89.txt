@@ -1,0 +1,47 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1611,32): error TS2345: Argument of type 'SDKMessage' is not assignable to parameter of type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; } | ... 30 more ... | { ...; }'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1601-1621 ---
+   1601                  } else {
+   1602                    heldBackResult = null
+   1603                    output.enqueue(message)
+   1604                  }
+   1605                } else {
+   1606                  // Flush SDK events (task_started, task_progress) so background
+   1607                  // agent progress is streamed in real-time, not batched until result.
+   1608                  for (const event of drainSdkEvents()) {
+   1609                    output.enqueue(event)
+   1610                  }
+   1611>                 output.enqueue(message)
+   1612                }
+   1613              }
+   1614            }) // end runWithWorkload
+   1615  
+   1616            for (const uuid of batchUuids) {
+   1617              notifyCommandLifecycle(uuid, 'completed')
+   1618            }
+   1619  
+   1620            // Forward messages to bridge after each turn
+   1621            forwardMessagesToBridge()
+  Type 'SDKMessage' is missing the following properties from type '{ type: "system"; subtype: "init"; apiKeySource: "user" | "project" | "oauth" | "org" | "temporary"; claude_code_version: string; cwd: string; tools: string[]; mcp_servers: { name: string; status: string; }[]; ... 10 more ...; fast_mode_state?: "on" | ... 2 more ... | undefined; }': subtype, apiKeySource, claude_code_version, cwd, and 10 more.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2070,56): error TS2694: Namespace '"/home/user/thyrox/src/packages/agent/scheduler"' has no exported member 'CronScheduler'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2060-2080 ---
+   2060        }
+   2061      })
+   2062    }
+   2063  
+   2064    // Cron scheduler: runs scheduled_tasks.json tasks in SDK/-p mode.
+   2065    // Mirrors REPL's useScheduledTasks hook. Fired prompts enqueue + kick
+   2066    // off run() directly — unlike REPL, there's no queue subscriber here
+   2067    // that drains on enqueue while idle. The run() mutex makes this safe
+   2068    // during an active turn: the call no-ops and the post-run recheck at
+   2069    // the end of run() picks up the queued command.
+   2070>   let cronScheduler: import('@thyrox/agent/scheduler').CronScheduler | null =
+   2071      null
+   2072    if (
+   2073      cronGate.isKairosCronEnabled()
+   2074    ) {
+   2075      cronScheduler = cronSchedulerModule.createCronScheduler({
+   2076        onFire: prompt => {
+   2077          if (inputClosed) return
+   2078          enqueue({
+   2079            mode: 'prompt',
+   2080            value: prompt,

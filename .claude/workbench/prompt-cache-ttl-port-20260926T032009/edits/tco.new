@@ -1,0 +1,4 @@
+    assert_equal("overlap también encadena su cierre a su propio pipeline", True,
+                 any("wait-jobs register step-201-close" in line and "--after-ok step-201-pipeline" in line
+                     for line in commands))
+    assert_equal("el comando de la arista es el pipeline de la ruta 3, con su marcador", (True, True, True),

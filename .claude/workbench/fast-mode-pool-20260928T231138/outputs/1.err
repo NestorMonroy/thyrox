@@ -1,0 +1,1 @@
+thyrox -p: AnthropicHttpProvider exige credencial: ninguna de ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ni ANTHROPIC_API_KEY está en el entorno. Sin ella, usa RecordedProvider.

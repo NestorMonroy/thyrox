@@ -1,0 +1,69 @@
+src/packages/agent/hooks.ts(2000,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1990-2010 ---
+   1990    const json = await hook.callback(
+   1991      hookInput,
+   1992      toolUseID,
+   1993      signal,
+   1994      hookIndex,
+   1995      context,
+   1996    )
+   1997    if (isAsyncHookJSONOutput(json)) {
+   1998      return {
+   1999        outcome: 'success',
+   2000>       hook,
+   2001      }
+   2002    }
+   2003  
+   2004    const processed = processHookJSONOutput({
+   2005      json,
+   2006      command: 'callback',
+   2007      // TODO: si el hook viene de un plugin, usar la ruta completa al plugin para depurar mejor
+   2008      hookName: `${hookEvent}:Callback`,
+   2009      toolUseID,
+   2010      hookEvent,
+src/packages/agent/hooks.ts(2020,5): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:2010-2030 ---
+   2010      hookEvent,
+   2011      expectedHookEvent: hookEvent,
+   2012      // Los callbacks no tienen stdout/stderr/exitCode
+   2013      stdout: undefined,
+   2014      stderr: undefined,
+   2015      exitCode: undefined,
+   2016    })
+   2017    return {
+   2018      ...processed,
+   2019      outcome: 'success',
+   2020>     hook,
+   2021    }
+   2022  }
+   2023  /**
+   2024   * Pone un hook a correr en segundo plano: lo saca del camino bloqueante y
+   2025   * registra su seguimiento en el registro de hooks asíncronos. Devuelve
+   2026   * `false` si el comando ya no estaba en estado `running`.
+   2027   */
+   2028  function executeInBackground({
+   2029    processId,
+   2030    hookId,
+src/packages/agent/hooks.ts(2323,10): error TS6133: 'getHookDefinitionsForTelemetry' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2313-2333 ---
+   2313      team_name: teamName,
+   2314    }
+   2315  
+   2316    yield* executeHooks({
+   2317      hookInput,
+   2318      toolUseID: crypto.randomUUID(),
+   2319      signal,
+   2320      timeoutMs,
+   2321    })
+   2322  }
+   2323> function getHookDefinitionsForTelemetry(
+   2324    matchedHooks: MatchedHook[],
+   2325  ): Array<{ type: string; command?: string; prompt?: string; name?: string }> {
+   2326    return matchedHooks.map(({ hook }) => {
+   2327      if (hook.type === 'command') {
+   2328        return { type: 'command', command: hook.command }
+   2329      } else if (hook.type === 'prompt') {
+   2330        return { type: 'prompt', prompt: hook.prompt }
+   2331      } else if (hook.type === 'http') {
+   2332        return { type: 'http', command: hook.url }
+   2333      } else if (hook.type === 'function') {

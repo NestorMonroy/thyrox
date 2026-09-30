@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bunx tsc --noEmit", "started_at": "2026-09-22T20:38:48+00:00", "question": "¿Desaparecen las 81 aristas TS2305 de @thyrox/swarm al publicar implementaciones canónicas?", "metric": "4 971 diagnósticos en 941 archivos; TS2305=538; aristas del provider=0.", "blind_to": "Contratos aguas abajo revelados después de que el barrel empieza a resolver."}

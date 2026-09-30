@@ -1,0 +1,5 @@
+# Las herramientas Python se invocan por su interfaz en `bin/`, no por su
+# fuente: el envoltorio resuelve el intérprete y PYTHONPATH.
+HP_BIN="$HP_HERE/../../bin"
+pool_history() { bash "$HP_BIN/pool_history" "$@"; }
+HISTORY="$(pool_history dir "$PROMPT")" || rehusa "no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)"

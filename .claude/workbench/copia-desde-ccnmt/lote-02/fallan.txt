@@ -1,0 +1,9 @@
+src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts
+src/packages/cli/__tests__/binAgentWiring.test.ts
+src/packages/cli/__tests__/binSkillWiring.test.ts
+src/packages/cli/__tests__/compressToolResultsWiring.test.ts
+src/packages/cli/__tests__/impactCli.test.ts
+src/packages/cli/__tests__/loopStreaming.test.ts
+src/packages/permission/src/__tests__/pathSafety.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts

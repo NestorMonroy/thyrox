@@ -1,0 +1,13 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 674 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 674 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 674 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 5 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)
+reconciliar-todo: raiz /root/.claude/tasks
+  sesiones del store        1
+  omitidas (sin filas)      0
+    efec8688-6a45-5d65-b899-cd988aa8816f  2 fila(s) con deriva de 50 tarjeta(s)
+  del store: 14 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
+  escritas: 2 fila(s)

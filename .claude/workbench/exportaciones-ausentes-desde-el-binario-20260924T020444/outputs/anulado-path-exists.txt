@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/internalUtils.test.ts:
+206 | })
+207 | 
+208 | describe('pathExists — la consume fileHistoryCore', () => {
+209 |   test('una ruta que existe da true y una ausente da false, sin lanzar', async () => {
+210 |     expect(await pathExists(import.meta.path)).toBe(true)
+211 |     expect(await pathExists(`${import.meta.path}.no-existe`)).toBe(false)
+                                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/internalUtils.test.ts:211:63)
+(fail) pathExists — la consume fileHistoryCore > una ruta que existe da true y una ausente da false, sin lanzar [0.42ms]
+
+ 33 pass
+ 1 fail
+ 72 expect() calls
+Ran 34 tests across 1 file. [136.00ms]

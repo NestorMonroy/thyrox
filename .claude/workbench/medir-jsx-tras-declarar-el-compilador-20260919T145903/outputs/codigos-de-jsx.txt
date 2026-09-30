@@ -1,0 +1,39 @@
+Medido 2026-09-19T14:59:03 sobre bunx tsc --noEmit (tsconfig.json:16 declara "jsx": "react-jsx").
+Log completo: .claude/jobs/tsc-20260919T145610/outputs/salida.log
+
+LOS OCHO CODIGOS PROPIOS DE JSX ESTAN EN CERO
+  TS6142   0   (era 320 antes de TASK-THYROX-0506: "--jsx is not set")
+  TS17004  0   ("Cannot use JSX unless the '--jsx' flag is provided")
+  TS7026   0
+  TS2874   0
+  TS2875   0
+  TS2876   0
+  TS2607   0
+  TS2786   0
+
+PERO .tsx EN CERO NO ES LO MISMO QUE JSX EN CERO
+  .tsx que el compilador INCLUYE hoy en el programa (--listFiles)   593
+  .tsx con al menos un error                                        281
+  errores que viven DENTRO de un .tsx                              1609
+  ninguno de esos 1609 es de los ocho codigos de arriba.
+
+  Sus codigos, top 7:
+     370 TS18046   ('x' is of type 'unknown')
+     226 TS2305    (el modulo no exporta el miembro)
+     191 TS2345    (argumento no asignable)
+     169 TS7006    (parametro con 'any' implicito)
+     162 TS2339    (la propiedad no existe en el tipo)
+     152 TS2322    (tipo no asignable)
+     151 TS6133    (declarado y nunca usado)
+
+TOTAL DEL ARBOL
+  5395 errores en 1062 archivos distintos.
+  La cifra 2931 / 449 que se venia citando es ANTERIOR a declarar jsx,
+  allowImportingTsExtensions y los cuatro @types.
+
+Metrica: salida de `bunx tsc --noEmit` con el tsconfig de la raiz, agrupada
+por codigo y por extension del archivo que la emite.
+Ciega a: la DESCOMPOSICION de por que el total sube de 2931 a 5395. Que la
+causa sea "el compilador ahora lee 593 .tsx que antes rechazaba" es INFERRED,
+no medido: exigiria correr el tsc con el jsx retirado y restar, que es el
+control de anulacion y NO se corrio.

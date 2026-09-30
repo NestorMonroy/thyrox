@@ -1,0 +1,8 @@
+bun test v1.3.11 (af24e281)
+
+ 10 pass
+ 0 fail
+ 17 expect() calls
+Ran 10 tests across 1 file. [6.50s]
+
+[exit=0]

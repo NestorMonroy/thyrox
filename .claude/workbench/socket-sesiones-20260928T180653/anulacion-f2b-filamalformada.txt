@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUidNamespace.test.ts:
+31 |       { innerStart: 1, hostStart: 100000, count: 65536 },
+32 |     ])
+33 |   })
+34 | 
+35 |   test('una fila malformada invalida el mapa entero', () => {
+36 |     expect(parseUidMap('0 1000\n')).toBeUndefined()
+                                         ^
+error: expect(received).toBeUndefined()
+
+Received: []
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUidNamespace.test.ts:36:37)
+(fail) parseUidMap (F) > una fila malformada invalida el mapa entero [0.24ms]
+
+ 14 pass
+ 1 fail
+ 19 expect() calls
+Ran 15 tests across 1 file. [36.00ms]

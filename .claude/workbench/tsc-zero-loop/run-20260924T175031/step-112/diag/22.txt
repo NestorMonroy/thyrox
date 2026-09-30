@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(1337,22): error TS2339: Property 'type' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1327-1347 ---
+   1327        return
+   1328      }
+   1329  
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335        const lastContent = last(result.message.content)
+   1336        if (
+   1337>         lastContent?.type === 'text' &&
+   1338          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340          textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {
+   1346        type: 'result',
+   1347        subtype: 'success',
+src/packages/agent/QueryEngine.ts(1338,45): error TS2339: Property 'text' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1328-1348 ---
+   1328      }
+   1329  
+   1330      // Extract the text result based on message type
+   1331      let textResult = ''
+   1332      let isApiError = false
+   1333  
+   1334      if (result.type === 'assistant') {
+   1335        const lastContent = last(result.message.content)
+   1336        if (
+   1337          lastContent?.type === 'text' &&
+   1338>         !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1339        ) {
+   1340          textResult = lastContent.text
+   1341        }
+   1342        isApiError = Boolean(result.isApiErrorMessage)
+   1343      }
+   1344  
+   1345      yield {
+   1346        type: 'result',
+   1347        subtype: 'success',
+   1348        is_error: isApiError,

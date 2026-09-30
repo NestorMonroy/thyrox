@@ -1,0 +1,22 @@
+### literal //root/audio-capture.node
+literal: 0 declaración(es) en 0 de 2138 chunk(s)
+### literal com.anthropic.claude-code-url-handler
+chunk-b6231k7z.js FirstStatement E [1256,1477)
+literal: 1 declaración(es) en 1 de 2138 chunk(s)
+### literal isNativeAudioAvailable
+chunk-11jfjeh3.js FunctionDeclaration f [2099,2351)
+chunk-11jfjeh3.js FunctionDeclaration me [3513,3895)
+chunk-11jfjeh3.js FunctionDeclaration ve [3895,4058)
+chunk-11jfjeh3.js FunctionDeclaration we [4058,5534)
+chunk-11jfjeh3.js FunctionDeclaration F [5534,6017)
+literal: 5 declaración(es) en 1 de 2138 chunk(s)
+### literal readClipboardImage
+literal: 0 declaración(es) en 0 de 2138 chunk(s)
+### literal hasClipboardImage
+literal: 0 declaración(es) en 0 de 2138 chunk(s)
+### literal processImage
+literal: 0 declaración(es) en 0 de 2138 chunk(s)
+### literal isModifierPressed
+literal: 0 declaración(es) en 0 de 2138 chunk(s)
+### literal waitForUrlEvent
+literal: 0 declaración(es) en 0 de 2138 chunk(s)

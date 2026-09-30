@@ -1,0 +1,1 @@
+aws-pairs-not-suppressed	s/key === 'awsPairs' \&\& Array.isArray(target) ? \[...source, ...suppressedAwsPairs(target, source)\] : \[...source\]/[...source]/

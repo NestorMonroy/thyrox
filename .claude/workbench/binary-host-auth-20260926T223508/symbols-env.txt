@@ -1,0 +1,30 @@
+== Vct
+==== Vct: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js function Vct [50675,50802)
+function Vct(e){return!!e.ANTHROPIC_UNIX_SOCKET||Oe(e.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST)||!!e.CLAUDE_CODE_HOST_AUTH_ENV_VAR}
+symbol: 1 de 1 nombre(s) resueltos
+
+== FNe
+==== FNe: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js function FNe [50802,51175)
+function FNe(e){if(!Oe(e.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST))return[];let n=Kn.some((i)=>Oe(e[i])),s=!!e.CLAUDE_CODE_HOST_AUTH_ENV_VAR||$d.some((i)=>!!e[i])||!!e.AWS_PROFILE||!!e.AWS_CONFIG_FILE||!!e.AWS_SHARED_CREDENTIALS_FILE,r=zct.filter((i)=>e[i]==="");return["ANTHROPIC_CUSTOM_HEADERS",...vB,...n&&s?Fn:[],...r,yAe(e),"CLAUDE_CODE_HOST_CREDS_FILE"].filter((i)=>!!i)}
+symbol: 1 de 1 nombre(s) resueltos
+
+== yAe
+==== yAe: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js function yAe [51175,51284)
+function yAe(e){let n=e.CLAUDE_CODE_HOST_AUTH_ENV_VAR;if(!n||PLt.includes(n)||D5.includes(n))return;return n}
+symbol: 1 de 1 nombre(s) resueltos
+
+== Gct
+==== Gct: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js function Gct [48971,49057)
+function Gct(e,n){for(let s of Fn)delete e[s];for(let s of zct)if(!n?.[s])delete e[s]}
+symbol: 1 de 1 nombre(s) resueltos
+
+== jr
+==== jr: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js function jr [115603,115724)
+function jr(){return{claudeaiPluginId:o().max(128).optional().catch(void 0),archiveSha256:ri().optional().catch(void 0)}}
+symbol: 1 de 1 nombre(s) resueltos
+

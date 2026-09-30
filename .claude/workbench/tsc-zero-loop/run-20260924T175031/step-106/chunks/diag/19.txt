@@ -1,0 +1,13 @@
+src/packages/repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
+src/packages/repl/src/components/Message.tsx(116,36): error TS2339: Property 'map' does not exist on type 'MessageContent'.
+  Property 'map' does not exist on type 'string'.
+src/packages/repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/components/Message.tsx(177,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  Type 'SearchResultBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+    Property 'tool_use_id' is missing in type 'SearchResultBlockParam' but required in type 'ToolResultBlockParam'.
+src/packages/repl/src/components/Message.tsx(321,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/repl/src/components/Message.tsx(323,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/repl/src/components/Message.tsx(419,11): error TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.
+  Type 'ConnectorTextBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name

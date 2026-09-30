@@ -1,0 +1,19 @@
+=== ANULACION A: sin el cuadrado (center_gap) ===
+== 1. el mismo centro para las dos distribuciones ==
+  ok    centro del estable = 30.0
+  ok    centro del erratico = 30.0
+== 2. el hueco SI las distingue — forma 1 ==
+  FALLO hueco del estable = 1.2
+        esperado=[1.2] obtenido=[0.0]
+  FALLO hueco del erratico = 120.0
+        esperado=[120.0] obtenido=[0.0]
+== 3. el hueco tipico, en las unidades originales ==
+  FALLO hueco tipico del erratico ~ 10.954451150103322
+        esperado=[10.954451150103322] obtenido=[0.0]
+== 4. la forma 2 da lo mismo, en una sola pasada ==
+  FALLO una pasada sobre el erratico
+        esperado=[0.0] obtenido=[120.0]
+  FALLO una pasada sobre el estable
+        esperado=[0.0] obtenido=[1.2000000000000455]
+
+2 ok, 5 fallos

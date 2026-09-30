@@ -1,0 +1,11 @@
+{"bytes": 33524, "extensions": {"(sin extension)": 1, ".json": 3, ".py": 2, ".sh": 2}, "files": 8, "kind": "subtree", "name": "(raiz)", "newest": "2026-09-18T01:14:47.602534"}
+{"bytes": 210031, "extensions": {".1789655419745": 1, ".1789661163207": 1, ".1789666450968": 1, ".1789688051007": 1, ".1789693482327": 1}, "files": 5, "kind": "subtree", "name": "backups", "newest": "2026-09-18T01:04:42.322498"}
+{"bytes": 31183153, "extensions": {"(sin extension)": 1, ".json": 1}, "files": 2, "kind": "subtree", "name": "environment-manager", "newest": "2026-09-18T01:04:33.103735"}
+{"bytes": 2968124319, "extensions": {".json": 140, ".jsonl": 162, ".txt": 85}, "files": 387, "kind": "subtree", "name": "projects", "newest": "2026-09-18T03:17:05.050970"}
+{"bytes": 1320, "extensions": {".json": 2, ".key": 2}, "files": 4, "kind": "subtree", "name": "sessions", "newest": "2026-09-18T02:50:00.094873"}
+{"bytes": 177943, "extensions": {".sh": 1}, "files": 1, "kind": "subtree", "name": "shell-snapshots", "newest": "2026-09-18T01:07:42.852088"}
+{"bytes": 4271965, "extensions": {"(sin extension)": 1, ".html": 2, ".json": 1, ".md": 98, ".py": 60, ".txt": 6, ".woff2": 1, ".xml": 5, ".xsd": 117}, "files": 291, "kind": "subtree", "name": "skills", "newest": "2026-09-18T03:14:48.245000"}
+{"bytes": 648872, "extensions": {"(sin extension)": 2, ".json": 469}, "files": 471, "kind": "subtree", "name": "tasks", "newest": "2026-09-18T02:47:36.178865"}
+{"bytes": 7599, "extensions": {".jsonl": 6}, "files": 6, "kind": "subtree", "name": "telemetry", "newest": "2026-09-17T18:39:51.434565"}
+{"bytes": 112201404, "extensions": {".001": 1, ".002": 1, ".003": 1, ".004": 1, ".005": 1, ".7z": 3, ".md": 2, ".pdf": 1, ".sqlite3_020926210323": 1}, "files": 12, "kind": "subtree", "name": "uploads", "newest": "2026-09-17T14:57:03.737074"}
+{"complete": true, "home": "/root/.claude", "kind": "meta", "reason": null, "visited": 1272}

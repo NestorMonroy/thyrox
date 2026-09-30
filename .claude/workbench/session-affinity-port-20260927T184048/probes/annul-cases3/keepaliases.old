@@ -1,0 +1,1 @@
+      aliases = mergeAliases(aliases, ...entry.aliases)

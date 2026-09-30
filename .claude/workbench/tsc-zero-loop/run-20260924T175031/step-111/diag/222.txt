@@ -1,0 +1,96 @@
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(29,5): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/components/hooks/SelectMatcherMode.tsx:19-39 ---
+     19  type MatcherWithSource = {
+     20    matcher: string
+     21    sources: HookSource[]
+     22    hookCount: number
+     23  }
+     24  
+     25  type Props = {
+     26    selectedEvent: HookEvent
+     27    matchersForSelectedEvent: string[]
+     28    hooksByEventAndMatcher: Record<
+     29>     HookEvent,
+     30      Record<string, IndividualHookConfig[]>
+     31    >
+     32    eventDescription: string
+     33    onSelect: (matcher: string) => void
+     34    onCancel: () => void
+     35  }
+     36  
+     37  export function SelectMatcherMode({
+     38    selectedEvent,
+     39    matchersForSelectedEvent,
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(46,9): error TS2322: Type '{ matcher: string; sources: unknown[]; hookCount: any; }[]' is not assignable to type 'MatcherWithSource[]'.
+  --- código src/packages/repl/src/components/hooks/SelectMatcherMode.tsx:36-56 ---
+     36  
+     37  export function SelectMatcherMode({
+     38    selectedEvent,
+     39    matchersForSelectedEvent,
+     40    hooksByEventAndMatcher,
+     41    eventDescription,
+     42    onSelect,
+     43    onCancel,
+     44  }: Props): React.ReactNode {
+     45    // Group matchers with their sources (already sorted by priority in parent)
+     46>   const matchersWithSources: MatcherWithSource[] = React.useMemo(() => {
+     47      return matchersForSelectedEvent.map(matcher => {
+     48        const hooks = hooksByEventAndMatcher[selectedEvent]?.[matcher] || []
+     49        const sources = Array.from(new Set(hooks.map(h => h.source)))
+     50        return {
+     51          matcher,
+     52          sources,
+     53          hookCount: hooks.length,
+     54        }
+     55      })
+     56    }, [matchersForSelectedEvent, hooksByEventAndMatcher, selectedEvent])
+  Type '{ matcher: string; sources: unknown[]; hookCount: any; }' is not assignable to type 'MatcherWithSource'.
+    Types of property 'sources' are incompatible.
+      Type 'unknown[]' is not assignable to type 'HookSource[]'.
+        Type 'unknown' is not assignable to type 'HookSource'.
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(48,44): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/SelectMatcherMode.tsx:38-58 ---
+     38    selectedEvent,
+     39    matchersForSelectedEvent,
+     40    hooksByEventAndMatcher,
+     41    eventDescription,
+     42    onSelect,
+     43    onCancel,
+     44  }: Props): React.ReactNode {
+     45    // Group matchers with their sources (already sorted by priority in parent)
+     46    const matchersWithSources: MatcherWithSource[] = React.useMemo(() => {
+     47      return matchersForSelectedEvent.map(matcher => {
+     48>       const hooks = hooksByEventAndMatcher[selectedEvent]?.[matcher] || []
+     49        const sources = Array.from(new Set(hooks.map(h => h.source)))
+     50        return {
+     51          matcher,
+     52          sources,
+     53          hookCount: hooks.length,
+     54        }
+     55      })
+     56    }, [matchersForSelectedEvent, hooksByEventAndMatcher, selectedEvent])
+     57  
+     58    if (matchersForSelectedEvent.length === 0) {
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(49,52): error TS7006: Parameter 'h' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/hooks/SelectMatcherMode.tsx:39-59 ---
+     39    matchersForSelectedEvent,
+     40    hooksByEventAndMatcher,
+     41    eventDescription,
+     42    onSelect,
+     43    onCancel,
+     44  }: Props): React.ReactNode {
+     45    // Group matchers with their sources (already sorted by priority in parent)
+     46    const matchersWithSources: MatcherWithSource[] = React.useMemo(() => {
+     47      return matchersForSelectedEvent.map(matcher => {
+     48        const hooks = hooksByEventAndMatcher[selectedEvent]?.[matcher] || []
+     49>       const sources = Array.from(new Set(hooks.map(h => h.source)))
+     50        return {
+     51          matcher,
+     52          sources,
+     53          hookCount: hooks.length,
+     54        }
+     55      })
+     56    }, [matchersForSelectedEvent, hooksByEventAndMatcher, selectedEvent])
+     57  
+     58    if (matchersForSelectedEvent.length === 0) {
+     59      return (

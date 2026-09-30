@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+64 |     expect(hasBackgroundJob(host({ bgTakeover: () => ({}) }))).toBe(true)
+65 |     expect(hasBackgroundJob(host({ env: { THYROX_CODE_SESSION_KIND: 'bg' } }))).toBe(true)
+66 |   })
+67 | 
+68 |   test('currentJobDir (tz): el de la toma de control, y si no THYROX_JOB_DIR', () => {
+69 |     expect(currentJobDir(host({ env: { THYROX_JOB_DIR: '/env' } }))).toBe('/env')
+                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "/env"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:69:70)
+(fail) sessionKind (oJ) y los predicados por tipo > currentJobDir (tz): el de la toma de control, y si no THYROX_JOB_DIR [0.24ms]
+
+ 8 pass
+ 1 fail
+ 34 expect() calls
+Ran 9 tests across 1 file. [39.00ms]

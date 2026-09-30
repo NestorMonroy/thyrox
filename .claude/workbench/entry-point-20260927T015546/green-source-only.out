@@ -1,0 +1,20 @@
+== case_resolved_passes
+  ok   un types que existe sale 0
+  ok   y publica su denominador
+== case_missing_declaration_fails
+  ok   un types al vacio sale 1
+  ok   y nombra paquete y subpath
+== case_wildcard_partial_fails
+  ok   un comodin con una declaracion de dos sale 1
+== case_missing_build_project_fails
+  ok   declarar dist/ sin tsconfig.build.json sale 1
+  ok   y nombra los dos proyectos que faltan
+== case_source_only_without_projects_fails
+  ok   un paquete sólo-fuente sin proyectos sale 1
+  ok   y nombra los dos proyectos que faltan
+  ok   y SÍ cuenta como medido: la lista sale de workspaces
+== case_nothing_to_measure_refuses
+  ok   sin paquetes rehúsa con 2
+  ok   y sin publicar un conteo
+
+test_check_exports_types: 12 ok, 0 falla(s)

@@ -1,0 +1,28 @@
+python3, 1 KB (un solo flush)                               0/20
+python3, 20 KB (varios flush de 8 KB)                       0/20
+python3, 200 KB                                            20/20
+gawk, 22 KB                                                11/20
+gawk, 220 KB                                               20/20
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+MARK
+printf + head/tr, 200 KB (tr escribe tras la marca)        20/20
+printf builtin, 200 KB                                      0/20
+echo builtin, 200 KB                                        0/20

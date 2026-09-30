@@ -1,0 +1,18 @@
+== 1. en curso, el run versionado no tiene el log vivo ==
+  ok    el run no tiene salida.log
+  ok    el run no tiene salida.log.time
+  ok    ningún proceso escribe bajo el run
+== 2. en curso, el log vive en el runtime ==
+  ok    el runtime tiene el log vivo
+  ok    status dice running
+== 3. al terminar, el log completo está en el run ==
+  ok    el run tiene las dos líneas
+  ok    y el marcador
+  ok    el log del runtime se retiró
+  ok    status asienta el código
+== 4. la barrera recoge el trabajo por el log del run ==
+  ok    wait-jobs lo recoge OK
+== 5. la forma plana no cambia ==
+  ok    el log flat_home está en su hogar
+test-bg-live-log: 11 aserciones — 11 ok, 0 falla(s)
+exit=0

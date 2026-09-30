@@ -1,0 +1,142 @@
+-- ROJO src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts:
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) isBgAgentPanelEnabled — ant F6H alignment > true in an interactive session (panel is the local_agent surface) [1151.39ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) isBgAgentPanelEnabled — ant F6H alignment > false in a non-interactive (headless) session — ant !nonInteractive guard [0.37ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) shouldHideTasksFooter — panel-agent exclusion > panel-agent is excluded from the footer when the panel is active [0.17ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) shouldHideTasksFooter — panel-agent exclusion > teammate task keeps the footer logic engaged (not a panel agent) [0.22ms]
+
+ 0 pass
+ 4 fail
+Ran 4 tests across 1 file. [1242.00ms]
+-- ROJO src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1364.00ms]
+-- ROJO tests/integration/agent-loop.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/agent-loop.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) agent message queue e2e > enqueue + getCommandQueue round-trip [1700.83ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [1.81s]
+-- ROJO tests/integration/plugin-load.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/plugin-load.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) plugin loading e2e (guards against setter-shim regressions) > McpServerConfigSchema is a callable function (catches null-literal bug) [1693.25ms]
+
+ 5 pass
+ 1 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [1.82s]
+-- ROJO tests/integration/slash-commands.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/slash-commands.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) slash command popup e2e > getCommands returns at least built-in commands [1403.41ms]
+3169 |   // getInlinePlugins() is a synchronous state read with no dependency on
+3170 |   // marketplace loading, so these two sources can be fetched concurrently.
+3171 |   const inlinePlugins = getInlinePlugins()
+3172 |   const [marketplaceResult, sessionResult] = await Promise.all([
+3173 |     marketplaceLoader(),
+3174 |     inlinePlugins.length > 0
+           ^
+TypeError: undefined is not an object (evaluating 'inlinePlugins.length')
+      at assemblePluginLoadResult (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3174:5)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3149:12)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/loadPluginCommands.ts:424:37)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/tests/integration/slash-commands.test.ts:51:24)
+(fail) slash command popup e2e > getPluginCommands + getPluginSkills aggregate cleanly [5.72ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [1.53s]
+-- ROJO tests/smoke/live-fire-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/live-fire-smoke.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) (unnamed) [1426.52ms]
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [1.55s]
+-- ROJO tests/smoke/resume-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/resume-smoke.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) smoke:resume session persistence > bootstrap loads storage subsystem [1238.46ms]
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) smoke:resume session persistence > write+flush+read roundtrip via storage API [0.43ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [1342.00ms]
+-- ROJO tests/smoke/swarm-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/swarm-smoke.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) smoke:swarm boot > agentHostBindings teammate wires resolve to functions [1302.95ms]
+64 |     ]
+65 |     for (const name of requiredExports) {
+66 |       expect(
+67 |         typeof (mod as Record<string, unknown>)[name],
+68 |         `swarm.${name} should be a function`,
+69 |       ).toBe('function')
+             ^
+error: swarm.markMessagesAsReadByPredicate should be a function
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/swarm-smoke.test.ts:69:9)
+(fail) smoke:swarm boot > mailbox module loads without error [4.24ms]
+
+ 2 pass
+ 2 fail
+ 14 expect() calls
+Ran 4 tests across 1 file. [1429.00ms]
+pass=9 fail=14 errores=1 caidas=0 archivos=8 en_rojo=8

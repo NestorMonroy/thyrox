@@ -1,0 +1,7 @@
+Record in-flight pool evidence and plan's build config
+
+Three worktree pools are running (config-home sweep, R-2d, UDS C);
+their benches and job logs are committed as they stand so the tree
+is never left dirty between turns. plan's tsconfig.build.json now
+references @thyrox/config, following the dependency declared in
+baa52c26.

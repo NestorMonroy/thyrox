@@ -1,0 +1,2 @@
+  [ "$rojas" -eq 0 ] || veredicto_final 1 rojo
+  veredicto_final 0 verde

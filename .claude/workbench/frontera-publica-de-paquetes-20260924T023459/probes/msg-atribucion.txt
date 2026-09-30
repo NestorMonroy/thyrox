@@ -1,0 +1,17 @@
+Port attribution texts and the enhanced PR footer
+
+attribution.ts declared a partial port for want of six packages that
+now exist; eight red test files stopped loading on its missing names.
+
+buildAttributionTexts follows MMo: Co-Authored-By and the PR footer,
+settings.attribution overriding each field, includeCoAuthoredBy false
+emptying both. getEnhancedPRAttribution follows UMo: Claude's share,
+prompts since the last compaction and memory accesses, with every data
+source injectable so the tests need no module mocks.
+
+Declared divergences: getAttributionTexts stays synchronous as its
+callers expect, and the remote Claude-Session line is not composed for
+lack of the remote session URL builder (TASK-THYROX-0250).
+
+Annulments: ignoring the compaction boundary and overriding the whole
+object instead of each field each drop exactly their case.

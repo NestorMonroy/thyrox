@@ -1,0 +1,4 @@
+==== Fdt: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js variable Fdt [231698,231728)
+Fdt="X-Claude-Code-Session-Id"
+symbol: 1 de 1 nombre(s) resueltos

@@ -1,0 +1,1 @@
+bash tests/session/test-gpu-admission-cli.sh

@@ -1,0 +1,13 @@
+==== p9r: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js function p9r [14781,14930)
+function p9r(e=process.getuid?.()??0){let n=a.TERMUX_VERSION?a.PREFIX:void 0,i=n?L(n,"tmp"):"/tmp";return L(i,`cc-socks-${e}`,`${process.pid}.sock`)}
+==== IL: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function IL [6556,6613)
+function IL(e){if(!Ln(e))return!0;return qce(e)!==void 0}
+==== Sb: 1 definicion(es) de nivel superior
+---- chunk-nzbykwxn.js function Sb [1153,1219)
+function Sb(){let e=a.CLAUDE_CODE_TMPDIR;if(e)return e;return p()}
+==== z: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js variable z [14637,14642)
+z=103
+symbol: 4 de 4 nombre(s) resueltos

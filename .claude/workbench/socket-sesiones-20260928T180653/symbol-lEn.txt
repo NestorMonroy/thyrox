@@ -1,0 +1,4 @@
+==== lEn: 1 definicion(es) de nivel superior
+---- chunk-4v3yb6t3.js variable lEn [665,674)
+lEn=30000
+symbol: 1 de 1 nombre(s) resueltos

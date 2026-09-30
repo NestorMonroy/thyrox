@@ -1,0 +1,2 @@
+src/packages/config/bin/__tests__/settings.test.ts
+src/packages/config/bin/settings.ts

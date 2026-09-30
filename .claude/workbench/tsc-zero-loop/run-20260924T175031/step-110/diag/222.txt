@@ -1,0 +1,46 @@
+src/packages/repl/src/components/hooks/SelectHookMode.tsx(45,9): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/components/hooks/SelectHookMode.tsx:35-55 ---
+     35    onCancel,
+     36  }: Props): React.ReactNode {
+     37    const title =
+     38      hookEventMetadata.matcherMetadata !== undefined
+     39        ? `${selectedEvent} - Matcher: ${selectedMatcher || '(all)'}`
+     40        : selectedEvent
+     41  
+     42    if (hooksForSelectedMatcher.length === 0) {
+     43      return (
+     44        <Dialog
+     45>         title={title}
+     46          subtitle={hookEventMetadata.description}
+     47          onCancel={onCancel}
+     48          inputGuide={() => <Text>Esc to go back</Text>}
+     49        >
+     50          <Box flexDirection="column" gap={1}>
+     51            <Text dimColor>No hooks configured for this event.</Text>
+     52            <Text dimColor>
+     53              To add hooks, edit settings.json directly or ask Claude.
+     54            </Text>
+     55          </Box>
+src/packages/repl/src/components/hooks/SelectHookMode.tsx(62,7): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/components/hooks/SelectHookMode.tsx:52-72 ---
+     52            <Text dimColor>
+     53              To add hooks, edit settings.json directly or ask Claude.
+     54            </Text>
+     55          </Box>
+     56        </Dialog>
+     57      )
+     58    }
+     59  
+     60    return (
+     61      <Dialog
+     62>       title={title}
+     63        subtitle={hookEventMetadata.description}
+     64        onCancel={onCancel}
+     65      >
+     66        <Box flexDirection="column">
+     67          <Select
+     68            options={hooksForSelectedMatcher.map((hook, index) => ({
+     69              label: `[${hook.config.type}] ${getHookDisplayText(hook.config)}`,
+     70              value: index.toString(),
+     71              description:
+     72                hook.source === 'pluginHook' && hook.pluginName

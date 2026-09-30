@@ -1,0 +1,3 @@
+cli: NO EMITIO — 7 import(s) salen de su rootDir: ../../coordination/branchIntegration.ts, ../../coordination/claims.ts, ../../coordination/ledger.ts, ../../task/io.ts, ../../task/premises.ts, ../../task/rst.ts, ../../workbench/manifest.ts
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete

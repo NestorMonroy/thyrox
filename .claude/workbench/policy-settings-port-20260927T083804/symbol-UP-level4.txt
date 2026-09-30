@@ -1,0 +1,43 @@
+==== Qe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Qe [32859,36545)
+Qe=f(()=>[{path:["allowManagedPermissionRulesOnly"],restrictive:!0},{path:["allowManagedHooksOnly"],restrictive:!0},{path:["allowManagedMcpServersOnly"],restrictive:!0},{path:["enforceAvailableModels"],restrictive:!0},{path:["disableAllHooks"],restrictive:!0},{path:["disableClaudeAiConnectors"],restrictive:!0},{path:["disableCommandPluginSources"],restrictive:!0},{path:["disableSideloadFlags"],restrictive:!0},{path:["disableSkillShellExecution"],restrictive:!0},{path:["disableRemoteControl"],restrictive:!0},{path:["disableAgentView"],restrictive:!0},{path:["disableWorkflows"],restrictive:!0},{path:["disableArtifact"],restrictive:!0},{path:["disableBundledSkills"],restrictive:!0},{path:["fastModePerSessionOptIn"],restrictive:!0},{path:["isolatePeerMachines"],restrictive:!0},{path:["strictPluginOnlyCustomization"],restrictive:!0},{path:["disableAutoMode"],restrictive:"disable"},{path:["disableDeepLinkRegistration"],restrictive:"disable"},{path:["permissions","disableBypassPermissionsMode"],restrictive:"disable"},{path:["permissions","disableAutoMode"],restrictive:"disable"},{path:["permissions","blockReadsOutsideWorkingDirectories"],restrictive:!0},{path:["autoMode","classifyAllShell"],restrictive:!0},...[],{path:["worktree","bgIsolation"],restrictive:"worktree"},{path:["enableArtifact"],restrictive:!1},{path:["enableWorkflows"],restrictive:!1},{path:["syncClaudeAiSkills"],restrictive:!1},{path:["syncClaudeAiPlugins"],restrictive:!1},{path:["useAutoModeDuringPlan"],restrictive:!1},{path:["skipDangerousModePermissionPrompt"],restrictive:!1},{path:["skipAutoPermissionPrompt"],restrictive:!1},{path:["enableAllProjectMcpServers"],restrictive:!1},{path:["channelsEnabled"],restrictive:!1},{path:["skipWebFetchPreflight"],restrictive:!1},{path:["skipWorkflowUsageWarning"],restrictive:!1},{path:["autoUploadSessions"],restrictive:!1},{path:["remoteControlAtStartup"],restrictive:!1},{path:["remoteTools","allowUnattendedServing"],restrictive:!1},{path:["autoContinueAtUsageLimit"],restrictive:!1},...[],{path:["attribution","sessionUrl"],restrictive:!1},{path:["crossSessionInbound"],restrictive:["refuse","hold"]},{path:["remoteControl","shareHostProfile"],restrictive:["off","basic"]},{path:["modelProposedGoals"],restrictive:["disabled","alwaysAsk"]},{path:["maxEffortLevel"],restrictive:wd},{path:["feedbackDrafts"],restrictive:"off"},{path:["availableModelsMatch"],restrictive:"exact"},{path:["askUserQuestionTimeout"],restrictive:"never"},{path:["dialogExpiry"],restrictive:"never"},{path:["sandbox","enabled"],restrictive:!0},{path:["sandbox","failIfUnavailable"],restrictive:!0},{path:["sandbox","autoAllowBashIfSandboxed"],restrictive:!1},{path:["sandbox","allowUnsandboxedCommands"],restrictive:!1},{path:["sandbox","enableWeakerNestedSandbox"],restrictive:!1},{path:["sandbox","enableWeakerNetworkIsolation"],restrictive:!1},{path:["sandbox","allowAppleEvents"],restrictive:!1},{path:["sandbox","network","allowManagedDomainsOnly"],restrictive:!0},{path:["sandbox","network","strictAllowlist"],restrictive:!0},{path:["sandbox","network","allowAllUnixSockets"],restrictive:!1},{path:["sandbox","network","allowLocalBinding"],restrictive:!1},{path:["sandbox","filesystem","allowManagedReadPathsOnly"],restrictive:!0},{path:["sandbox","filesystem","disabled"],restrictive:!1},{path:["sandbox","credentials","allowPlaintextInject"],restrictive:!1},{path:["sandbox","credentials","sigv4","streaming"],restrictive:"deny"},{path:["sandbox","credentials","sigv4","presigned"],restrictive:"deny"},{path:["sandbox","credentials","sigv4","sigv4a"],restrictive:"deny"},{path:["isolation","required"],restrictive:!0},{path:["isolation","persistHome"],restrictive:!1}])
+==== st: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function st [36546,36591)
+function st(e){return Array.isArray(e)?e:[e]}
+==== D: 1 definicion(es) de nivel superior
+---- chunk-153dnzje.js function D [883,919)
+function D(n){return[...new Set(n)]}
+==== Td: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Td [396996,397088)
+Td=["allowedMcpServers","availableModels","strictKnownMarketplaces","allowedChannelPlugins"]
+==== $y: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable $y [397089,397114)
+$y=["awsPairs","ripgrep"]
+==== xd: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function xd [397115,397304)
+function xd(e,n,s){if(n===void 0)return e;if(Array.isArray(n))return s==="awsPairs"&&Array.isArray(e)?[...n,...Pd(e,n)]:[...n];if(!z(n))return n;return io(n,(r)=>Array.isArray(r)?[...r]:r)}
+==== Md: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Md [397848,397965)
+function Md(e,n,s){if(Array.isArray(e)&&Array.isArray(n)&&s!=="fallbackModel")return D([...n,...e]);return S6(e,n,s)}
+==== Ym: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Ym [327669,327706)
+Ym=il(function(e,n,s,r){Qa(e,n,s,r)})
+==== X5n: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable X5n [402486,402535)
+X5n=[...zd,"otelHeadersHelper","proxyAuthHelper"]
+==== uft: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function uft [408176,408212)
+function uft(e,n){return{...e,...n}}
+==== Hd: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Hd [408464,408583)
+function Hd(e){if(!z(e))return e;let n=e.options;return{...e,...Array.isArray(n)&&{options:n.map((s)=>z(s)?{...s}:s)}}}
+==== dgn: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable dgn [374022,374059)
+dgn=["managedMcpServers","isolation"]
+==== _8e: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable _8e [375660,375689)
+_8e="parent managed settings"
+==== J1r: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function J1r [342792,342862)
+function J1r(e){return e!==void 0&&(e.commit!==void 0||e.pr!==void 0)}
+symbol: 14 de 14 nombre(s) resueltos

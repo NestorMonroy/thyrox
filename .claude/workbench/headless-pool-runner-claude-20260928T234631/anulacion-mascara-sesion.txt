@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/printDelegation.test.ts:
+38 | })
+39 | 
+40 | describe('delegatedArgv — la línea que recibe claude -p', () => {
+41 |   test('conserva la invocación y le da su propia sesión', () => {
+42 |     const argv = ['-p', '--model', 'claude-sonnet-5', '--no-session-persistence', '--output-format', 'stream-json', '--verbose']
+43 |     expect(delegatedArgv(argv, () => 'uuid-1')).toEqual([...argv, '--session-id', 'uuid-1'])
+                                                     ^
+error: expect(received).toEqual(expected)
+
+@@ -8,4 +8,3 @@
+    "--verbose",
+-   "--session-id",
+-   "uuid-1",
+  ]
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/printDelegation.test.ts:43:49)
+(fail) delegatedArgv — la línea que recibe claude -p > conserva la invocación y le da su propia sesión [0.87ms]
+thyrox -p: la bandera --bogus no se admite. Se admiten: -p, --print, --no-session-persistence, --verbose, --model, --max-turns, --setting-sources, --tools, --allowedTools, --allowed-tools, --output-format, --provider, --grabacion, --system, --connection, --store
+83 |       process.stdout.write = write
+84 |     }
+85 |     expect(code).toBe(3)
+86 |     expect(out).toContain('desde claude')
+87 |     const [line, input] = readFileSync(log, 'utf8').split('\n')
+88 |     expect(line).toBe('-p --model claude-sonnet-5 --session-id uuid-x')
+                      ^
+error: expect(received).toBe(expected)
+
+Expected: "-p --model claude-sonnet-5 --session-id uuid-x"
+Received: "-p --model claude-sonnet-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/printDelegation.test.ts:88:18)
+(fail) runPrint — delega de punta a punta > pasa argumentos y stdin, devuelve su salida y su código [20.10ms]
+
+ 7 pass
+ 2 fail
+ 15 expect() calls
+Ran 9 tests across 1 file. [1191.00ms]

@@ -1,0 +1,62 @@
+F401 [*] `paths.reach` imported but unused
+   --> tests/session/test_adopt_background.py:156:19
+    |
+154 | # aqui con `parents[N]` era la aritmetica por offset que TASK-THYROX-0228
+155 | # prohibe, y ademas redundante.
+156 | from paths import reach  # noqa: E402
+    |                   ^^^^^
+157 | check("5.1 compone <raiz>/<sesion>/tasks/<id>.output",
+158 |       "/r/s7/tasks/j1.output", str(derived_output("j1", "/r", "s7")))
+    |
+help: Remove unused import: `paths.reach`
+
+F401 [*] `session.task_pool` imported but unused
+   --> tests/session/test_background.py:133:25
+    |
+131 |     ledger_dir = logs / "ledger"
+132 |     from session.job_ledger import JobLedger
+133 |     from session import task_pool
+    |                         ^^^^^^^^^
+134 |     ledger = JobLedger(ledger_dir)
+135 |     log = logs / "job-001.log"
+    |
+help: Remove unused import: `session.task_pool`
+
+F841 Local variable `segundo` is assigned to but never used
+  --> tests/session/test_job_runs.py:81:9
+   |
+79 |     with tempfile.TemporaryDirectory() as base:
+80 |         job_runs.scaffold_run(base, "suite")
+81 |         segundo = job_runs.scaffold_run(base, "suite")
+   |         ^^^^^^^
+82 |         # dos runs del mismo slug conviven; el cajón plano los pisaba
+83 |         assert len(list(pathlib.Path(base).iterdir())) >= 1
+   |
+help: Remove assignment to unused variable `segundo`
+
+F401 [*] `os` imported but unused
+   --> tests/session/test_session_restart.py:140:8
+    |
+138 | # proyecto, y tomar el primero del glob daba el vacio. Elegir por orden de
+139 | # listado es adivinar cuando hay una medicion a mano.
+140 | import os, time  # noqa: E402
+    |        ^^
+141 | root = pathlib.Path(tempfile.mkdtemp())
+142 | old = root / "proyecto-a"
+    |
+help: Remove unused import: `os`
+
+F401 [*] `sqlite3` imported but unused
+  --> tests/store/test_agent_sessions.py:90:8
+   |
+88 | from __future__ import annotations
+89 |
+90 | import sqlite3
+   |        ^^^^^^^
+91 | import sys
+92 | import tempfile
+   |
+help: Remove unused import: `sqlite3`
+
+Found 5 errors.
+[*] 4 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

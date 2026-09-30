@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/hallazgo/test_finding_id_collision.py

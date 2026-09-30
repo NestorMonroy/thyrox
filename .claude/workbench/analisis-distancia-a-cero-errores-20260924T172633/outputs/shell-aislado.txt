@@ -1,0 +1,15 @@
+== tests/verify/test-premise-drift.sh exit=2
+== sin el clon de la aplicacion: el gate REHUSA
+== tests/lib/test-workbench-sh.sh exit=0
+  ok    REHUSA si el run no existe, en vez de crearlo
+  ok    rehusa un nombre con separador — escaparia del run
+  ok    rehusa sin nombre
+== tests/verify/test-verificar-premisa.sh exit=2
+== 2'. sin el clon de la aplicacion: el gate REHUSA ==
+== tests/session/test-bg-memfree.sh exit=0
+test-bg-memfree: 8 aserciones — 8 ok, 0 falla(s)
+== tests/verify/test-script-naming.sh exit=1
+  FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [15]
+30 ok · 1 falla(s)
+== tests/verify/test_package_root_resolution.sh exit=0
+test-package-root-resolution: 5 ok, 0 falla

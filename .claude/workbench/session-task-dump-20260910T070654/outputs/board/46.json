@@ -1,0 +1,15 @@
+{
+  "id": "46",
+  "subject": "Escribir el documento de tareas de la reconciliación tras reinicio a partir de los tres análisis",
+  "description": "Directiva del ejecutor 2026-09-02: «con base a esos documentos, generas un documento de tareas para poder implementarlo». Bloque nuevo en tareas-construir-harness-propio.rst con T-NNN atómicas, cada una con su entregable verificable, su test escrito antes (TDD) y su control que discrimina. Depende de #43, #44 y #45.",
+  "activeForm": "Escribiendo el documento de tareas de reconciliación",
+  "status": "completed",
+  "blocks": [
+    "47"
+  ],
+  "blockedBy": [
+    "43",
+    "44",
+    "45"
+  ]
+}

@@ -1,0 +1,11 @@
+== 0. SIN anular — la linea base ==
+resultado: 13 de 13 aserciones en verde
+
+== 1. el cubo 0|1 anulado: el aviso pasa a ser un 1 que aborta ==
+resultado: 12 de 13 aserciones en verde
+
+== 2. la refusal del gate ausente anulada: devuelve 0 ==
+resultado: 11 de 13 aserciones en verde
+
+== 3. el guard del mensaje ausente anulado ==
+resultado: 12 de 13 aserciones en verde

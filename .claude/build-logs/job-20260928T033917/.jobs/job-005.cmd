@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/typescript/test_build_javascript.py 2>&1 | tail -2

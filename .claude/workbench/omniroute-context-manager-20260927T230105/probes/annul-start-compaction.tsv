@@ -1,0 +1,2 @@
+no-windows	s/    contextCompaction: config.contextCompaction \&\& { contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.\[model\] },/    contextCompaction: config.contextCompaction \&\& {},/
+always-on	s/    contextCompaction: config.contextCompaction \&\& { contextWindowOf/    contextCompaction: { contextWindowOf/

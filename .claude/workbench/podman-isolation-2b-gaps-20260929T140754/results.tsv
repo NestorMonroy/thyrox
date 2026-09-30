@@ -1,0 +1,13 @@
+net6-with	net6_connect=fail errno=Bad file descriptor 
+net6-without	net6_connect=fail errno=Bad file descriptor 
+dns-with	dns_send=fail dns_answer=fail errno=Network is unreachable 
+dns-without	dns_send=ok dns_answer=ok errno=- 
+tmp-ro	write=ok errno=- 
+run-ro	write=ok errno=- 
+varTmp-ro	write=ok errno=- 
+shm-ro	write=ok errno=- 
+tmp-ro-notmpfs	write=fail errno=Read-only file system 
+cpu1-with	threads=1 cpu_ratio=0.50 cpu_s=1.20 wall_s=2.38 
+cpu1-without	threads=1 cpu_ratio=0.97 cpu_s=2.01 wall_s=2.08 
+cpu2-with	threads=2 cpu_ratio=0.51 cpu_s=1.51 wall_s=2.98 
+cpu2-without	threads=2 cpu_ratio=1.94 cpu_s=5.57 wall_s=2.87 

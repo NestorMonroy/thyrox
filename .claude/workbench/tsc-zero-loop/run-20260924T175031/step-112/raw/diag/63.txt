@@ -1,0 +1,8 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(161,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'getSkillDirCommands'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(397,7): error TS2322: Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command[]' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").Command[]'.
+  Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").Command'.
+    Type 'Command' is not assignable to type 'CommandBase & PromptCommand'.
+      Type 'Command' is not assignable to type 'CommandBase'.
+        Types of property 'description' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.

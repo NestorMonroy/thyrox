@@ -1,0 +1,48 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(561,9): error TS18046: 'm' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:551-571 ---
+    551      )
+    552      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    553    }
+    554  
+    555    // Log agent mention queries for analysis
+    556    if (inputString !== null && mode === 'prompt') {
+    557      const trimmedInput = inputString.trim()
+    558  
+    559      const agentMention = attachmentMessages.find(
+    560        (m): m is AttachmentMessage<AgentMentionAttachment> =>
+    561>         m.attachment.type === 'agent_mention',
+    562      )
+    563  
+    564      if (agentMention) {
+    565        const agentMentionString = `@agent-${agentMention.attachment.agentType}`
+    566        const isSubagentOnly = trimmedInput === agentMentionString
+    567        const isPrefix =
+    568          trimmedInput.startsWith(agentMentionString) && !isSubagentOnly
+    569  
+    570        // Log whenever users use @agent-<name> syntax
+    571        logEvent('tengu_subagent_at_mention', {
+src/packages/repl/src/processUserInput/processUserInput.ts(584,7): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:574-594 ---
+    574        })
+    575      }
+    576    }
+    577  
+    578    // Regular user prompt
+    579    return addImageMetadataMessage(
+    580      processTextPrompt(
+    581        normalizedInput,
+    582        imageContentBlocks,
+    583        imagePasteIds,
+    584>       attachmentMessages,
+    585        uuid,
+    586        permissionMode,
+    587        isMeta,
+    588      ),
+    589      imageMetadataTexts,
+    590    )
+    591  }
+    592  
+    593  // Adds image metadata texts as isMeta message to result
+    594  function addImageMetadataMessage(
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.

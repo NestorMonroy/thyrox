@@ -1,0 +1,1 @@
+    return None, f"pide la GPU entera

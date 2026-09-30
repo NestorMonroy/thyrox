@@ -1,0 +1,12 @@
+  ok    el resumen dice 'estado:'
+== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) ==
+  ok    un VIVO sano -> status exit 0
+  ok    un BAIL real -> status sigue en exit 1
+  ok    nombre corto sin ambiguedad: suelta el ledger
+  ok    ambiguo: nombra el primer candidato
+  ok    ambiguo: nombra el segundo candidato
+  ok    ambiguo: los dos siguen anotados
+  ok    etiqueta completa: queda solo el otro
+  ok    etiqueta completa: el que queda es el que no se nombro
+
+39 ok, 0 fallos

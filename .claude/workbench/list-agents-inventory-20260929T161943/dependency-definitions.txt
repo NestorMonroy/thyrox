@@ -1,0 +1,143 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+==== Jy: 1 definicion(es) de nivel superior
+---- chunk-0mnhvjjf.js function Jy [2753,3253)
+async function Jy(e,r){if(r){let n=await r.read([I(e)]);if(!n.ok)return t(`[TeammateTool] Failed to read team file for ${e}: ${n.error.code}`),null;let i=n.value.items[0];if(!i.found)return null;try{return S(J(Buffer.from(i.value).toString("utf8")))}catch(a){return t(`[TeammateTool] Failed to read team file for ${e}: ${l(a)}`),null}}try{let n=await O(eAe(e),"utf-8");return S(J(n))}catch(n){if(v(n)==="ENOENT")return null;return t(`[TeammateTool] Failed to read team file for ${e}: ${l(n)}`),null}}
+symbol: 1 de 1 nombre(s) resueltos
+==== f8: 1 definicion(es) de nivel superior
+---- chunk-3663c8a7.js function f8 [2103,2209)
+function f8(e){let s=hr(e);return[U3e()?.bridgeSessionId,Tle()].some((n)=>typeof n==="string"&&hr(n)===s)}
+symbol: 1 de 1 nombre(s) resueltos
+==== Um: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js variable Um [3686,3695)
+Um="main"
+==== yK: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function yK [8379,8549)
+function yK(){let{getFeatureValue_SESSION_PINNED:e}=import.meta.require("/$bunfs/root/chunk-n94w2vce.js");try{return e("tengu_session_stable_address",!1)}catch{return!1}}
+==== OUe: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function OUe [8843,8923)
+function OUe(e){return e.environmentKind!==void 0&&e.environmentKind!=="bridge"}
+==== nWr: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function nWr [8923,8971)
+function nWr(e){return!OUe(e)&&e.connected===!1}
+==== Ir: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function Ir [8971,9105)
+function Ir(e){return e.normalize("NFKC").replace(/[\p{Cc}\p{Cf}]/gu,(n)=>/\s/.test(n)?n:"").trim().toLowerCase().replace(/\s+/g,"-")}
+==== HUe: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function HUe [9105,9155)
+function HUe(e){return typeof e!=="string"||VI(e)}
+==== G8e: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function G8e [9155,9219)
+function G8e(e,n){return e.name===_i&&n!==void 0&&e.agentId===n}
+==== H6: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function H6 [9219,9347)
+function H6(e){let n=e.teamContext;if(n?.leadAgentId&&n.isLeader!==!1)return n.leadAgentId;let r=fa(n);return r?L0(_i,r):void 0}
+==== tj: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function tj [9661,12597)
+function tj(e,n){let r=[];r.push({name:Um,id:Ve(),kind:"main",where:"in-process",lastActive:void 0,sock:void 0});let i=new Set;for(let[s,m]of Object.entries(e.teamContext?.teammates??{}))i.add(s),r.push({name:m.name,id:s,kind:"teammate",where:"in-process",lastActive:void 0,sock:void 0});for(let[s,m]of e.agentNameRegistry){let y=e.tasks[m],A=y?.type==="local_agent"?y:void 0;r.push({name:s,id:m,kind:"subagent",where:"in-process",lastActive:A?.startTime,sock:void 0})}for(let s of n.teamFile?.members??[]){if(i.has(s.agentId))continue;i.add(s.agentId),r.push({name:s.name,id:s.agentId,kind:"teammate",where:"this-machine",lastActive:void 0,sock:void 0})}let d=yK(),a=n.sessions.filter(IUe),c=d?re(a):void 0,p=d?se(Y(),a,c):void 0;for(let s of a){let m=c?.get(s)?.claims;r.push({name:s.name||Ae(s.cwd),id:s.sock,kind:"session",where:"this-machine",lastActive:s.statusUpdatedAt,sock:s.sock,...m!==void 0&&m.size>0&&{claimedSessionIds:[...m].sort()},...d&&s.sessionId!==void 0&&!p.has(s.sessionId)&&{stableId:mmt(s.sessionId)},...d&&s.nameSource==="derived"&&{derivedName:!0},...s.hostSessionId!==void 0&&{hostSessionId:s.hostSessionId}})}let k=new Map;for(let s of n.sessions)if(s.bridgeSessionId!==void 0){let m=hr(s.bridgeSessionId);k.set(m,[...k.get(m)??[],s.sock])}let S=[];for(let s of n.cloud??[]){if(PBt(n.sessions,s.id)){S.push({rawName:s.title||"untitled",socks:k.get(hr(s.id))??[]});continue}r.push({name:s.title||"untitled",id:s.id,kind:"cloud-session",...NYn(s.title)&&{derivedName:!0},...s.acceptsPeerMessages===!0&&{reportsInbound:!0},where:s.remoteControl?"remote":"cloud",lastActive:s.lastActive,sock:void 0,...s.offline&&{offline:!0}})}let g=new Set((n.cloud??[]).map((s)=>hr(s.id))),h=hmt(n.sessions);for(let s of n.bridge??[]){let m=hr(s.id);if(g.has(m))continue;if(h.has(m)){S.push({rawName:s.title||"untitled",socks:k.get(m)??[]});continue}let y=Date.parse(s.updated_at);r.push({name:s.title||"untitled",id:s.id,kind:"bridge-session",...NYn(s.title)&&{derivedName:!0},...s.acceptsPeerMessages===!0&&{reportsInbound:!0},...s.inboundReportUnavailable&&{inboundReportUnavailable:!0},where:OUe(s)?"cloud":"remote",lastActive:Number.isNaN(y)?void 0:y,sock:void 0,...nWr(s)&&{offline:!0}})}let E=H6(e),w=r.flatMap((s)=>{let m=jne(s.name);if(m===null||!L(m))return[];let y=s.kind==="main"||s.kind==="teammate"&&G8e({name:s.name,agentId:s.id},E),A=(s.kind==="session"||s.kind==="cloud-session"||s.kind==="bridge-session")&&Ir(m)===Um;return y||A||!HUe(m)?[{...s,name:m}]:[]}),I=new Set,_=Re(w.filter((s)=>{if(s.kind!=="session")return!0;let m=`${Ir(s.name)}\x00${Kv(s.id)??s.id}`;if(I.has(m))return!1;return I.add(m),!0})),P=new Map;for(let s of _){let m=Ir(s.name),y=P.get(m);if(y)y.push(s);else P.set(m,[s])}let C=new Map;for(let{rawName:s,socks:m}of S){let y=jne(s);if(y===null||!L(y))continue;let A=Ir(y),G=C.get(A)??new Set;for(let ie of m)G.add(ie);C.set(A,G)}return{candidates:_,byName:P,remoteNamesClaimedLocally:C}}
+==== M6: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function M6 [12809,12853)
+function M6(e){return`${e.name} [${e.ref}]`}
+==== jne: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function jne [13465,13655)
+function jne(e){if(typeof e!=="string")return null;return[...e.replace(/[\p{Cc}\p{Cf}]/gu,(r)=>/\s/.test(r)?r:"").replace(/\s+/g," ").trim()].slice(0,_e).join("").trim()||"untitled session"}
+==== Wne: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function Wne [13734,13802)
+function Wne(e){let n=jne(e);return n!==null&&!gmt(n)&&tN(n)?n:null}
+==== RBt: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function RBt [13802,13868)
+function RBt(e){let n=jne(e);return n!==null&&L(n)&&!VI(n)?n:null}
+==== gmt: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function gmt [13930,14028)
+function gmt(e){let n=Ir(e);return Eh(e).scheme!=="other"||Eh(n).scheme!=="other"||cWr(e)||cWr(n)}
+==== oWr: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function oWr [14603,14642)
+function oWr(e){return yK()?mmt(Y()):e}
+==== oBo: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function oBo [15400,15540)
+function oBo(e,n,r){if(r)return!0;let i=Y(),d=e.filter(IUe);if(n!==void 0)d.push({sock:n,sessionId:i});let a=re(d);return se("",d,a).has(i)}
+==== DUe: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function DUe [15540,15583)
+function DUe(e,n){return R(e,n).slice(0,M)}
+==== PBt: 1 definicion(es) de nivel superior
+---- chunk-6vtp2w5r.js function PBt [15736,15840)
+function PBt(e,n){let r=hr(n);return e.some((i)=>i.bridgeSessionId!==void 0&&hr(i.bridgeSessionId)===r)}
+symbol: 18 de 18 nombre(s) resueltos
+==== KMt: 1 definicion(es) de nivel superior
+---- chunk-8w33tksh.js class KMt [17969,18114)
+class KMt extends Error{code;constructor(e){super("session records directory unreadable");this.code=e;this.name="SessionRecordsUnreadableError"}}
+==== gq: 1 definicion(es) de nivel superior
+---- chunk-8w33tksh.js function gq [21367,21420)
+function gq(){return iv.CLAUDE_CODE_MESSAGING_SOCKET}
+==== uOr: 1 definicion(es) de nivel superior
+---- chunk-8w33tksh.js function uOr [21420,21692)
+async function uOr(){let e=gq();if(e===void 0)return!1;let n=await F(),r=await KI(),i=n.filter((m)=>m.sock&&m.pid!==process.pid&&!ne(m)&&IUe({sock:m.sock})&&JJ(m.sock,e));return(await Promise.all(i.map(async(m)=>await ee(m,r)==="present"&&await Y(m.sock)))).some(Boolean)}
+==== pOr: 1 definicion(es) de nivel superior
+---- chunk-8w33tksh.js function pOr [21952,22419)
+async function pOr(e){let n=gq(),r=(await F({rejectUnreadable:!0})).filter((d)=>d.sock&&!(n&&zde(d.sock,n))&&!ne(d)),[i,s]=await Promise.all([LRe(),KI()]),[m,g]=await Promise.all([Promise.all(r.map((d)=>Y(d.sock))),Promise.all(r.map((d)=>ee(d,s)))]),l=[];for(let d=0;d<r.length;d++){let{file:o,...c}=r[d];if(g[d]==="gone"){if(i&&ey(c.pid))V(o,c.pid,s,e)}else if(g[d]==="recycled")continue;else if(m[d])l.push(c);else if(i&&sgn(c,s)&&ey(c.pid))V(o,c.pid,s,e)}return l}
+symbol: 4 de 4 nombre(s) resueltos
+==== qs: 1 definicion(es) de nivel superior
+---- chunk-9pdtyt3q.js function qs [803,969)
+function qs(){let e=a.CLAUDE_CODE_HARBOR_KITE;if(e!==void 0)return Le(e);if(O()==="windows"&&!x("tengu_harbor_kite_win",!0))return!1;return x("tengu_harbor_kite",!0)}
+symbol: 1 de 1 nombre(s) resueltos
+==== oT: 1 definicion(es) de nivel superior
+---- chunk-cap10ns2.js function oT [1803,1889)
+function oT(){let e=nk();if(e)return e.agentId;return n().dynamicTeamContext?.agentId}
+==== fa: 1 definicion(es) de nivel superior
+---- chunk-cap10ns2.js function fa [1979,2110)
+function fa(e){let t=nk();if(t)return t.teamName;let{dynamicTeamContext:r}=n();if(r?.teamName)return r.teamName;return e?.teamName}
+symbol: 2 de 2 nombre(s) resueltos
+==== rjn: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js variable rjn [1101,1121)
+rjn="Remote Control"
+==== sRr: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function sRr [1122,1164)
+function sRr(e){return OUe(e)?"cloud":rjn}
+==== Jvo: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function Jvo [1164,1208)
+function Jvo(e){return Wne(e)??"(untitled)"}
+==== D4e: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function D4e [1466,1598)
+async function D4e(e={refresh:!0}){{let{primePeerIdentityOwner:r}=import.meta.require("/$bunfs/root/chunk-3j3yrw53.js");await r(e)}}
+==== fon: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function fon [1726,2587)
+async function fon(e,r){{let n=p();if(!n)return{rows:[],failed:!1,identityKey:null};let i=S.of(e),s=i.inFlight;if(s!==void 0&&s.identityKey===n)return s.promise;let{listBridgePeerSessions:o}=import.meta.require("/$bunfs/root/chunk-25bwaefz.js"),u={record:void 0},c=Date.now(),f=(async()=>{try{let g={failed:!1,truncated:!1},y;try{y=await o(g,r)}catch(b){return t(`[bridge:population] fetch threw: ${l(b)} \u2014 treated as failed`,{level:"warn"}),{rows:[],failed:!0,identityKey:n}}return t(`[bridge:population] fetched ${y.length} rows in ${Date.now()-c}ms${g.failed?" (FAILED \u2014 not recordable)":""}${g.truncated?" (truncated at page budget)":""}`),{rows:y,failed:g.failed,...g.truncated&&{truncated:!0},identityKey:n}}finally{i.settle(u.record)}})();return u.record={identityKey:n,promise:f},i.begin(u.record),f}return{rows:[],failed:!1,identityKey:null}}
+==== mon: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function mon [2587,2658)
+function mon(e){{let r=p();return r!==null&&e.identityKey===r}return!1}
+==== nHt: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function nHt [2658,3133)
+function nHt(e,r,n){{let i=p();if(!i)return;if(r.identityKey!==i){t("[bridge:population] walk ran under a previous identity \u2014 ignoring its outcome for the current one");return}let s=S.of(e);if(r.failed){let o=s.listed;if(o!==void 0&&o.identityKey===i)s.forget(),t("[bridge:population] failed walk \u2014 cleared the printed set (going cold, never sticky)");return}s.record(n,i,r.truncated===!0),t(`[bridge:population] recorded ${n.length} bridge rows (cloud-deduped)`)}}
+==== gon: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function gon [3133,3353)
+function gon(e,r){{let n=p();if(!n||r.identityKey!==n)return;let i=S.of(e),s=i.listed;if(s!==void 0&&s.identityKey===n)i.forget(),t("[bridge:population] forgot the recorded set (an unrecordable listing superseded it)")}}
+==== aRr: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function aRr [3645,3802)
+function aRr(e,r,n){let i=hmt(r),s=new Set(n.filter((o)=>!PBt(r,o.id)).map((o)=>hr(o.id)));return e.filter((o)=>{let u=hr(o.id);return!i.has(u)&&!s.has(u)})}
+==== rHt: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function rHt [3802,3839)
+function rHt(e,r){return aRr(e,[],r)}
+==== cat: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function cat [3839,3896)
+function cat(e){return e==="timeout"||e==="fetch_failed"}
+==== kLe: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js function kLe [4395,5231)
+async function kLe(e,r){{let{hasCloudPeerAccess:n}=import.meta.require("/$bunfs/root/chunk-xxtkh182.js");if(!n())return{sessions:[],unavailable:"gate_off"};let{walkCcrSessionList:i}=import.meta.require("/$bunfs/root/chunk-p5rq1vwz.js"),s=v.of(e),o=h(),u=s.warm(o);if(u!==void 0)return{sessions:u.sessions,unavailable:void 0,...u.truncated&&{truncated:!0}};let c=s.inFlight,f=c!==void 0&&c.credential===o?c.promise:D(s,i,o,r),g=await tt(f,B);if(g===void 0)return t(`[agents:cloud] session list not ready within ${B}ms \u2014 not searched this call, disclosing`,{level:"warn"}),{sessions:[],unavailable:"timeout"};if(o!==h())return t("[agents:cloud] session list walk ran under a superseded credential \u2014 not served, disclosing",{level:"warn"}),{sessions:[],unavailable:"fetch_failed"};return g}return{sessions:[],unavailable:void 0}}
+==== oHt: 1 definicion(es) de nivel superior
+---- chunk-jzr0ww3p.js variable oHt [7083,7147)
+oHt="can't receive cross-session messages (off in that session)"
+symbol: 13 de 13 nombre(s) resueltos
+==== Zt: 1 definicion(es) de nivel superior
+---- chunk-rx56hxr8.js function Zt [8941,9641)
+function Zt(e,t){if(e<60000){if(e===0)return"0s";if(e<1)return`${(e/1000).toFixed(1)}s`;return`${Math.floor(e/1000).toString()}s`}let r=Math.floor(e/86400000),n=Math.floor(e%86400000/3600000),o=Math.floor(e%3600000/60000),s=Math.round(e%60000/1000);if(s===60)s=0,o++;if(o===60)o=0,n++;if(n===24)n=0,r++;let c=t?.hideTrailingZeros;if(t?.mostSignificantOnly){if(r>0)return`${r}d`;if(n>0)return`${n}h`;if(o>0)return`${o}m`;return`${s}s`}if(r>0){if(c&&n===0&&o===0)return`${r}d`;if(c&&o===0)return`${r}d ${n}h`;return`${r}d ${n}h ${o}m`}if(n>0){if(c&&o===0&&s===0)return`${n}h`;if(c&&s===0)return`${n}h ${o}m`;return`${n}h ${o}m ${s}s`}if(o>0){if(c&&s===0)return`${o}m`;return`${o}m ${s}s`}return`${s}s`}
+symbol: 1 de 1 nombre(s) resueltos
+==== JBr: 1 definicion(es) de nivel superior
+---- chunk-swk3rjnt.js variable JBr [389745,389755)
+JBr=600000
+==== Wv: 1 definicion(es) de nivel superior
+---- chunk-swk3rjnt.js function Wv [392539,392580)
+function Wv(){return zH().registeredName}
+symbol: 2 de 2 nombre(s) resueltos
+==== dRr: 1 definicion(es) de nivel superior
+---- chunk-xna1pefd.js function dRr [2867,2999)
+function dRr(){let e=Wv();return e!==void 0&&(e.source==="user"||e.source==="collision")&&MS().userTypedName===e.name?e.name:void 0}
+symbol: 1 de 1 nombre(s) resueltos

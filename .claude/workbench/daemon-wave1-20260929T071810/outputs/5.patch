@@ -1,0 +1,983 @@
+diff --git a/.env.example b/.env.example
+index 9ceb7ed5..98afa1a9 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1030,6 +1030,8 @@ THYROX_CODE_BG_SPARE_POOL=
+ # src/packages/daemon/src/classifier/orchestrator.ts
+ THYROX_CODE_BG_CLASSIFIER=
+ THYROX_CODE_BG_CLASSIFIER_ENGINE=
++# src/packages/daemon/src/spareClaim.ts
++THYROX_BG_CLAIM_AUTH=
+ # src/packages/ide/src/hooks/useIDEIntegration.tsx
+ THYROX_CODE_AUTO_CONNECT_IDE=
+ THYROX_CODE_SSE_PORT=
+diff --git a/src/packages/daemon/src/__tests__/spareClaim.test.ts b/src/packages/daemon/src/__tests__/spareClaim.test.ts
+new file mode 100644
+index 00000000..9d1f6bcc
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/spareClaim.test.ts
+@@ -0,0 +1,354 @@
++/**
++ * Protocolo de claim del spare pool — puerto de `chunk-ygx717jg.js`
++ * `xt`/`Bt`/`Ft`/`Ut`/`P9n`/`O9n` (ant 4644.js). Cada bloque de tests
++ * ejercita la pieza contra un socket Unix real en un tmpdir aislado: el
++ * baile de trama/backoff/limpieza ES la lógica bajo prueba.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { createServer, type Server, type Socket } from 'node:net'
++import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { installLocalObservability } from '@thyrox/local-observability'
++
++import {
++  CWD_PROBE_TIMEOUT_MS,
++  DISPATCH_SWEEP_INTERVAL_MS,
++  PREWARM_BURST_STEP_DELAY_MS,
++  PREWARM_BURST_WINDOW_MS,
++  SPARE_REFILL_MIN_GAP_MS,
++  WORKER_RETIRE_AGE_LOW_MEM_MS,
++  WORKER_RETIRE_AGE_MS,
++  WORKER_RETIRE_HARD_AGE_MS,
++  WORKER_RETIRE_MONITOR_ONLY_AGE_MS,
++} from '../sparePool.js'
++import {
++  SPARE_CLAIM_AUTH_ENV,
++  SPARE_CLAIM_RETRY_BACKOFF_MS,
++  SPARE_CLAIM_SEND_BUDGET_MS,
++  buildSpareClaimFrame,
++  claimSpareWorker,
++  resolveClaimAuth,
++  sendSpareFrameOnce,
++  sendSpareFrameWithRetry,
++  startPpidWatchdog,
++  sweepOrphanSpareSockets,
++  terminateSpareSocket,
++} from '../spareClaim.js'
++
++const ISOLATED_DIR = mkdtempSync(join(tmpdir(), 'ccb-spare-claim-test-'))
++let sockSeq = 0
++function freshSockPath(): string {
++  return join(ISOLATED_DIR, `spare-${process.pid}-${sockSeq++}.sock`)
++}
++
++const noOpLogger = {
++  debug: () => {},
++  info: () => {},
++  warn: () => {},
++  error: () => {},
++  event: () => {},
++}
++afterEach(() => {
++  installLocalObservability({ logger: noOpLogger })
++})
++
++describe('umbrales-y-estado-de-spare-pool (chunk-92tvramn.js DECL)', () => {
++  test('valores fieles a la referencia', () => {
++    expect(WORKER_RETIRE_AGE_MS).toBe(3_600_000)
++    expect(WORKER_RETIRE_AGE_LOW_MEM_MS).toBe(60_000)
++    expect(WORKER_RETIRE_MONITOR_ONLY_AGE_MS).toBe(28_800_000)
++    expect(WORKER_RETIRE_HARD_AGE_MS).toBe(28_800_000)
++    expect(DISPATCH_SWEEP_INTERVAL_MS).toBe(60_000)
++    expect(PREWARM_BURST_STEP_DELAY_MS).toBe(2_000)
++    expect(PREWARM_BURST_WINDOW_MS).toBe(300_000)
++    expect(SPARE_REFILL_MIN_GAP_MS).toBe(2_000)
++    expect(CWD_PROBE_TIMEOUT_MS).toBe(1_000)
++  })
++})
++
++describe('resolveClaimAuth (xt)', () => {
++  const original = process.env[SPARE_CLAIM_AUTH_ENV]
++  afterEach(() => {
++    if (original === undefined) delete process.env[SPARE_CLAIM_AUTH_ENV]
++    else process.env[SPARE_CLAIM_AUTH_ENV] = original
++  })
++
++  test('lee el secreto y lo borra del entorno', () => {
++    process.env[SPARE_CLAIM_AUTH_ENV] = 'sekret-123'
++    expect(resolveClaimAuth()).toBe('sekret-123')
++    expect(process.env[SPARE_CLAIM_AUTH_ENV]).toBeUndefined()
++  })
++
++  test('undefined cuando no hay env var', () => {
++    delete process.env[SPARE_CLAIM_AUTH_ENV]
++    expect(resolveClaimAuth()).toBeUndefined()
++  })
++})
++
++describe('buildSpareClaimFrame (Bt)', () => {
++  test('arma cwd/env/argv/sessionId/auth', () => {
++    const frame = buildSpareClaimFrame({
++      cwd: '/repo',
++      sessionId: 'sess-1',
++      env: { FOO: 'bar' },
++      argv: ['ccb', '--bg-pty'],
++      auth: 'auth-1',
++    })
++    expect(frame).toEqual({
++      t: 'claim',
++      cwd: '/repo',
++      sessionId: 'sess-1',
++      env: { FOO: 'bar' },
++      argv: ['ccb', '--bg-pty'],
++      auth: 'auth-1',
++    })
++  })
++})
++
++/** Decodifica UNA trama del layout de `internal/ptyFrame.ts` (4B len BE + 1B tag + JSON). */
++function readOneCtrlFrame(sock: Socket): Promise<unknown> {
++  return new Promise((resolve, reject) => {
++    let buf = Buffer.alloc(0)
++    sock.on('data', (chunk: Buffer) => {
++      buf = Buffer.concat([buf, chunk])
++      if (buf.length < 5) return
++      const len = buf.readUInt32BE(0)
++      if (buf.length < 5 + len) return
++      try {
++        resolve(JSON.parse(buf.subarray(5, 5 + len).toString('utf8')))
++      } catch (e) {
++        reject(e)
++      }
++    })
++    sock.on('error', reject)
++  })
++}
++
++describe('sendSpareFrameOnce (Ft)', () => {
++  let server: Server
++  let sockPath: string
++
++  beforeEach(() => {
++    sockPath = freshSockPath()
++  })
++  afterEach(() => {
++    server?.close()
++  })
++
++  test('conecta una vez, escribe la trama y cierra', async () => {
++    const received = new Promise<unknown>((resolve) => {
++      server = createServer((sock) => {
++        readOneCtrlFrame(sock).then(resolve)
++      })
++    })
++    await new Promise<void>((resolve) => server.listen(sockPath, resolve))
++
++    await sendSpareFrameOnce(sockPath, buildSpareClaimFrame({ cwd: '/x', sessionId: 's' }))
++    expect(await received).toEqual({ t: 'claim', cwd: '/x', sessionId: 's' })
++  })
++
++  test('rechaza cuando el socket no existe', async () => {
++    await expect(sendSpareFrameOnce(join(ISOLATED_DIR, 'nope.sock'), buildSpareClaimFrame({}))).rejects.toBeDefined()
++  })
++})
++
++describe('sendSpareFrameWithRetry (Ut)', () => {
++  let server: Server | undefined
++  let sockPath: string
++
++  beforeEach(() => {
++    sockPath = freshSockPath()
++    server = undefined
++  })
++  afterEach(() => {
++    server?.close()
++  })
++
++  test('reintenta ENOENT hasta que el socket aparece, dentro del presupuesto', async () => {
++    const received = new Promise<unknown>((resolve) => {
++      server = createServer((sock) => {
++        readOneCtrlFrame(sock).then(resolve)
++      })
++    })
++    setTimeout(() => {
++      server!.listen(sockPath)
++    }, 120)
++
++    await sendSpareFrameWithRetry(sockPath, buildSpareClaimFrame({ sessionId: 'late' }), 2000)
++    expect(await received).toEqual({ t: 'claim', sessionId: 'late' })
++  })
++
++  test('agota el presupuesto y lanza si el socket nunca aparece', async () => {
++    await expect(
++      sendSpareFrameWithRetry(join(ISOLATED_DIR, 'never.sock'), buildSpareClaimFrame({}), 150),
++    ).rejects.toThrow(/timeout/)
++  })
++})
++
++describe('control de anulación: SPARE_CLAIM_RETRY_BACKOFF_MS / SPARE_CLAIM_SEND_BUDGET_MS existen y se usan', () => {
++  test('la tabla de backoff es la de la referencia (it)', () => {
++    expect(SPARE_CLAIM_RETRY_BACKOFF_MS).toEqual([50, 100, 150, 200, 250, 300, 400, 500, 500, 500])
++  })
++  test('el presupuesto por defecto es 5s', () => {
++    expect(SPARE_CLAIM_SEND_BUDGET_MS).toBe(5000)
++  })
++})
++
++describe('terminateSpareSocket (mitad de limpieza de P9n)', () => {
++  test('manda una trama kill SIGTERM', async () => {
++    const sockPath = freshSockPath()
++    const received = new Promise<unknown>((resolve) => {
++      const server = createServer((sock) => {
++        readOneCtrlFrame(sock).then((f) => {
++          resolve(f)
++          server.close()
++        })
++      })
++      server.listen(sockPath)
++    })
++    // Espera a que el listener esté atado antes de conectar.
++    await new Promise((r) => setTimeout(r, 50))
++    terminateSpareSocket(sockPath)
++    expect(await received).toEqual({ t: 'kill', sig: 'SIGTERM' })
++  })
++
++  test('no lanza cuando el socket no existe (fire-and-forget)', () => {
++    expect(() => terminateSpareSocket(join(ISOLATED_DIR, 'ghost.sock'))).not.toThrow()
++  })
++})
++
++describe('claimSpareWorker (P9n)', () => {
++  test('ok:true cuando el envío tiene éxito', async () => {
++    const sockPath = freshSockPath()
++    const server = createServer((sock) => {
++      readOneCtrlFrame(sock).catch(() => {})
++    })
++    await new Promise<void>((resolve) => server.listen(sockPath, resolve))
++
++    const r = await claimSpareWorker({ short: 'abc12345', ptySocket: sockPath, cwd: '/x', sessionId: 's' })
++    expect(r).toEqual({ ok: true })
++    server.close()
++  })
++
++  test('ok:false clasificado (timeout de presupuesto → "error") + limpieza SIGTERM cuando el envío falla', async () => {
++    // ant 4644.js P9n: un `Ut` que agota el presupuesto lanza un Error
++    // llano ("send-claim timeout"), sin `.code` — clasifica como "error",
++    // no "enoent" (ese código sólo llega si Ut relanza el ENOENT crudo
++    // tras agotar la TABLA de backoff, no el presupuesto).
++    const events: Array<{ name: string; metadata: Record<string, unknown> }> = []
++    installLocalObservability({
++      logger: {
++        debug: () => {},
++        info: () => {},
++        warn: () => {},
++        error: () => {},
++        event: (name, metadata) => events.push({ name, metadata: metadata as Record<string, unknown> }),
++      },
++    })
++
++    const r = await claimSpareWorker(
++      { short: 'dead0001', ptySocket: join(ISOLATED_DIR, 'never2.sock'), cwd: '/x', sessionId: 's' },
++      { budgetMs: 150 },
++    )
++    expect(r.ok).toBe(false)
++    if (!r.ok) expect(r.reason).toBe('error')
++    expect(events).toEqual([
++      { name: 'tengu_bg_sendclaim_failed', metadata: { reason: 'error', short: 'dead0001' } },
++    ])
++  })
++
++  test('ok:false clasificado "enoent" cuando la tabla de backoff se agota sin presupuesto de por medio', async () => {
++    // Presupuesto generoso (10s) para que el límite real sea la TABLA
++    // (10 intentos, suma de backoff ~2.95s) y no el reloj: el error que
++    // llega al clasificador es el ENOENT crudo del último intento.
++    const r = await claimSpareWorker(
++      { short: 'dead0002', ptySocket: join(ISOLATED_DIR, 'never3.sock'), cwd: '/x', sessionId: 's' },
++      { budgetMs: 10_000 },
++    )
++    expect(r.ok).toBe(false)
++    if (!r.ok) expect(r.reason).toBe('enoent')
++  }, 10_000)
++})
++
++describe('startPpidWatchdog (mitad de AVo)', () => {
++  test('dispara onOrphan cuando el ppid cambia', async () => {
++    let orphaned = false
++    let ppid = 111
++    const stop = startPpidWatchdog(() => { orphaned = true }, 10, () => ppid)
++    await new Promise((r) => setTimeout(r, 25))
++    expect(orphaned).toBe(false)
++    ppid = 999
++    await new Promise((r) => setTimeout(r, 25))
++    expect(orphaned).toBe(true)
++    stop()
++  })
++
++  test('stop() detiene la vigilancia', async () => {
++    let orphaned = false
++    let ppid = 111
++    const stop = startPpidWatchdog(() => { orphaned = true }, 10, () => ppid)
++    stop()
++    ppid = 999
++    await new Promise((r) => setTimeout(r, 30))
++    expect(orphaned).toBe(false)
++  })
++})
++
++describe('sweepOrphanSpareSockets (O9n)', () => {
++  let dir: string
++
++  beforeEach(() => {
++    dir = mkdtempSync(join(tmpdir(), 'ccb-spare-sweep-'))
++  })
++  afterEach(() => {
++    rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('borra archivos huérfanos .err/.late/.claim.sock sin su .pty.sock, cuenta sólo repuestos muertos', async () => {
++    const { readdirSync } = await import('node:fs')
++    const live = join(dir, 'live12345.pty.sock')
++    writeFileSync(live, '')
++    const orphanErr = join(dir, 'gone99999.pty.sock.err')
++    const orphanClaim = join(dir, 'gone99999.claim.sock')
++    writeFileSync(orphanErr, '')
++    writeFileSync(orphanClaim, '')
++
++    const reaped = await sweepOrphanSpareSockets(dir, new Set([live]))
++    // `live` es un .pty.sock activo: no cuenta como huérfano aunque el
++    // archivo exista sin un servidor real escuchando detrás.
++    expect(reaped).toBe(0)
++    const remaining = readdirSync(dir)
++    expect(remaining).toContain('live12345.pty.sock')
++    expect(remaining).not.toContain('gone99999.pty.sock.err')
++    expect(remaining).not.toContain('gone99999.claim.sock')
++  })
++
++  test('manda SIGTERM a un .pty.sock huérfano y lo cuenta', async () => {
++    const sockPath = join(dir, 'orphan55555.pty.sock')
++    const received = new Promise<unknown>((resolve) => {
++      const server = createServer((sock) => {
++        readOneCtrlFrame(sock).then((f) => {
++          resolve(f)
++          server.close()
++        })
++      })
++      server.listen(sockPath)
++    })
++    await new Promise((r) => setTimeout(r, 50))
++
++    const reaped = await sweepOrphanSpareSockets(dir, new Set())
++    expect(reaped).toBe(1)
++    expect(await received).toEqual({ t: 'kill', sig: 'SIGTERM' })
++  })
++
++  test('en windows no barre nada (plataforma inyectada)', async () => {
++    const sockPath = join(dir, 'orphan-win.pty.sock')
++    writeFileSync(sockPath, '')
++    const reaped = await sweepOrphanSpareSockets(dir, new Set(), () => 'win32')
++    expect(reaped).toBe(0)
++    const { readdirSync } = await import('node:fs')
++    expect(readdirSync(dir)).toContain('orphan-win.pty.sock')
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/sparePool.test.ts b/src/packages/daemon/src/__tests__/sparePool.test.ts
+index a6a09a0a..b43a9acb 100644
+--- a/src/packages/daemon/src/__tests__/sparePool.test.ts
++++ b/src/packages/daemon/src/__tests__/sparePool.test.ts
+@@ -1,5 +1,6 @@
+ import { afterEach, describe, expect, test } from 'bun:test'
+ import {
++  SPARE_REFILL_MIN_GAP_MS,
+   _resetSparePoolForTest,
+   claimSpare,
+   clearSpare,
+@@ -7,6 +8,7 @@ import {
+   getSpareSlot,
+   isSparePoolEnabled,
+   markSpareReady,
++  recordSpareExit,
+   recordSpareSpawn,
+   setPrewarmInFlight,
+   shouldPrewarm,
+@@ -72,10 +74,22 @@ describe('claimSpare', () => {
+       expect(r.short).toBe('abc12345')
+       expect(r.sessionId).toBe('sess-1')
+       expect(r.ptySocket).toBe('/tmp/sock')
++      // ant 4644.js I9n genera un claimAuth de 16 bytes hex por repuesto;
++      // claimSpare lo entrega para que el emisor arme la trama con `auth`.
++      expect(r.claimAuth).toMatch(/^[0-9a-f]{32}$/)
+     }
+     // Slot consumed.
+     expect(getSpareSlot()).toBe(null)
+   })
++
++  test('claimAuth explícito (pasado por el llamador) se respeta tal cual', () => {
++    enableSparePool()
++    recordSpareSpawn('abc12345', '/cwd', 'sess-1', '/tmp/sock', 'fixed-auth')
++    markSpareReady('abc12345')
++    const r = claimSpare('/cwd')
++    expect(r.ok).toBe(true)
++    if (r.ok) expect(r.claimAuth).toBe('fixed-auth')
++  })
+ })
+ 
+ describe('recordSpareSpawn', () => {
+@@ -149,3 +163,20 @@ describe('shouldPrewarm', () => {
+     expect(shouldPrewarm()).toBe(true)
+   })
+ })
++
++describe('recordSpareExit + SPARE_REFILL_MIN_GAP_MS (ant 4644.js cr, min-gap de refill tras un exit)', () => {
++  test('false justo tras un exit, true una vez pasado el hueco mínimo', () => {
++    enableSparePool()
++    recordSpareExit(1_000)
++    expect(shouldPrewarm(1_000)).toBe(false)
++    expect(shouldPrewarm(1_000 + SPARE_REFILL_MIN_GAP_MS - 1)).toBe(false)
++    expect(shouldPrewarm(1_000 + SPARE_REFILL_MIN_GAP_MS)).toBe(true)
++  })
++
++  test('un slot existente sigue ganando aunque el hueco ya haya pasado', () => {
++    enableSparePool()
++    recordSpareExit(1_000)
++    recordSpareSpawn('a', '/c', 's1', '/t1')
++    expect(shouldPrewarm(1_000 + SPARE_REFILL_MIN_GAP_MS)).toBe(false)
++  })
++})
+diff --git a/src/packages/daemon/src/bgDaemon.ts b/src/packages/daemon/src/bgDaemon.ts
+index e16c71a8..911c0f55 100644
+--- a/src/packages/daemon/src/bgDaemon.ts
++++ b/src/packages/daemon/src/bgDaemon.ts
+@@ -50,10 +50,13 @@ import {
+   claimSpare,
+   enableSparePool,
+   markSpareReady,
++  recordSpareExit,
+   recordSpareSpawn,
+   setPrewarmInFlight,
+   shouldPrewarm,
+ } from './sparePool.js'
++import { claimSpareWorker, sweepOrphanSpareSockets } from './spareClaim.js'
++import { getDaemonScopeDir } from './socketPaths.js'
+ import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
+ import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
+ import type { ProtoOp } from './socketProto.js'
+@@ -210,6 +213,14 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+           }
+         } catch (e) {
+           logEventFn('tengu_bg_spare_claim_fail', { reason: 'prewarm-spawn-failed', error: (e as Error).message.slice(0, 80) })
++          // ant 4644.js `ne()`/`cr` — un spawn de repuesto fallido no
++          // reintenta en tight-loop: se exige `SPARE_REFILL_MIN_GAP_MS`
++          // antes del próximo refill. Divergencia declarada: la referencia
++          // arma este gate sobre el EXIT del proceso host ya spawneado
++          // (`_.exited.then(...)`, `I9n`); aquí `spawnPtyHost` no expone un
++          // hook de salida del proceso, así que el gate sólo cubre el
++          // fallo SÍNCRONO de spawn — pendiente cuando ese hook exista.
++          recordSpareExit()
+         } finally {
+           setPrewarmInFlight(false)
+         }
+@@ -233,6 +244,17 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+     r.workers = {}
+     for (const [s, vm] of state.workers) r.workers[s] = recordToRosterEntry(vm.getRecord())
+   }).catch(() => {})
++  // `ant 4644.js` O9n — barrido de sockets de repuesto huérfanos (sin
++  // worker vivo detrás) que hayan quedado del spool de una corrida
++  // anterior del daemon. Best-effort: no bloquea el arranque.
++  void sweepOrphanSpareSockets(
++    getDaemonScopeDir(),
++    new Set(
++      Array.from(state.workers.values())
++        .map(vm => vm.getRecord().ptySocket)
++        .filter((s): s is string => Boolean(s)),
++    ),
++  ).catch(() => {})
+   const adoptTimer = setInterval(() => adoptRunningPtyRecords(state.workers), 5000)
+   adoptTimer.unref()
+   // Refresco periódico del roster (atrapa cambios de estado que no pasan
+@@ -444,23 +466,25 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+       } catch {
+         // El chequeo de baja memoria no debe bloquear un dispatch legítimo — se sigue adelante.
+       }
+-      // `ant 4644.js`: intenta reclamar un repuesto antes de un spawn
+-      // fresco. Si un repuesto listo coincide en cwd, manda una trama de
+-      // control 'claim' con el intent despachado para que el repuesto
+-      // corriendo lo recoja; se salta el spawn fresco.
++      // `ant 4644.js` P9n: intenta reclamar un repuesto antes de un spawn
++      // fresco. Si un repuesto listo coincide en cwd, manda la trama de
++      // claim (Bt) con reintento y presupuesto (Ut/Ft, en spareClaim.ts)
++      // para que el repuesto corriendo la recoja; se salta el spawn
++      // fresco. Ante fallo, claimSpareWorker ya clasifica el motivo, loguea
++      // `tengu_bg_sendclaim_failed` y manda SIGTERM de limpieza al pty del
++      // repuesto.
+       const claim = claimSpare((d.cwd as string) ?? process.cwd())
+       if (claim.ok) {
+-        const intent = (d.intent as string) ?? (d.directive as string) ?? ''
+-        try {
+-          await new Promise<void>((resolve, reject) => {
+-            const sock = connect(claim.ptySocket)
+-            sock.once('connect', () => {
+-              sock.write(encodeCtrlFrame({ t: 'claim', intent, cwd: (d.cwd as string), sessionId: claim.sessionId }))
+-              sock.end()
+-              resolve()
+-            })
+-            sock.once('error', e => reject(e))
+-          })
++        const result = await claimSpareWorker({
++          short: claim.short,
++          ptySocket: claim.ptySocket,
++          cwd: d.cwd as string | undefined,
++          sessionId: claim.sessionId,
++          env: d.env as NodeJS.ProcessEnv | undefined,
++          argv: d.cmd as string[] | undefined,
++          auth: claim.claimAuth,
++        })
++        if (result.ok) {
+           // El worker de repuesto sigue corriendo con su short existente
+           // — se devuelve su short en vez de generar uno fresco.
+           state.pending.set(claim.short, { nonce, acked: true, pid: undefined, startedAt: Date.now() })
+@@ -471,10 +495,8 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+             ms: '0',
+           })
+           return ok({ op: 'dispatch', short: claim.short, nonce, pid: -1, via: 'spare-claim' })
+-        } catch (e) {
+-          // El envío del claim falló → se cae al spawn fresco.
+-          logEventFn('tengu_bg_sendclaim_failed', { reason: 'connect-error', short: claim.short, error: (e as Error).message.slice(0, 80) })
+         }
++        // El envío del claim falló del todo → se cae al spawn fresco.
+       }
+       const vm = new WorkerVm({
+         short,
+diff --git a/src/packages/daemon/src/spareClaim.ts b/src/packages/daemon/src/spareClaim.ts
+new file mode 100644
+index 00000000..f043ab0f
+--- /dev/null
++++ b/src/packages/daemon/src/spareClaim.ts
+@@ -0,0 +1,298 @@
++/**
++ * Protocolo de claim del spare pool — puerto de `chunk-ygx717jg.js`
++ * (ant 4644.js) `xt`, `Bt`, `Ft`, `Ut`, `P9n` y `O9n`.
++ *
++ * `sparePool.ts` reserva el slot (quién puede reclamar qué); este archivo
++ * es el CABLE: arma la trama de claim, la envía con reintento y
++ * presupuesto, y limpia el socket del repuesto cuando el envío falla del
++ * todo. `bgDaemon.ts` es el único llamador (bloque de claim en `dispatch`
++ * + scheduler de prewarm).
++ *
++ * Divergencia estructural declarada: la referencia usa DOS sockets por
++ * repuesto — un `ptySock` (E/S normal) y un `claimSock` efímero, sólo
++ * vivo mientras el repuesto espera claim, con su propio receptor
++ * autenticado (`Kjt`/`AVo`, ver abajo). `@thyrox/daemon` no tiene ese
++ * segundo socket: reutiliza el `ptySock` del repuesto (ya bindeado por
++ * `spawnPtyHost`) para todo, incluida la trama de claim. El protocolo de
++ * cable de `Ft`/`Ut` (JSON + salto de línea sobre el `claimSock`) se porta
++ * aquí ADAPTADO al framing binario que `@thyrox/daemon` ya usa en el
++ * `ptySock` (`internal/ptyFrame.ts::encodeCtrlFrame`), no verbatim.
++ *
++ * Pendiente, declarado y no silenciado:
++ *  - `AVo` (entrypoint del proceso hijo `--bg-spare` que escucha el
++ *    `claimSock` autenticado) no existe: no hay hoy un modo `--bg-spare`
++ *    real en `@thyrox/daemon`/`@thyrox/cli`, así que no hay receptor que
++ *    verifique `auth`. La trama SÍ lleva `auth` (ver `buildSpareClaimFrame`)
++ *    pero nada del lado del repuesto la comprueba todavía.
++ *  - `Kjt`/`Yjt` (recepción autenticada del claim + bootstrap post-claim
++ *    del REPL) — mismo motivo, ausentes.
++ *  - `I9n` (refill con jerarquía `bg-pty-host` → `--bg-spare`, detección
++ *    OOM/cgroup vs fork-and-exit del lanzador, `discardSpentCredentialFile`)
++ *    — `bgDaemon.ts` spawnea el repuesto directo vía `spawnPtyHost`, sin
++ *    esa jerarquía ni esa clasificación de fallo; sólo se porta aquí la
++ *    mitad de `I9n` que es de este archivo: el hueco mínimo de refill tras
++ *    un exit (`SPARE_REFILL_MIN_GAP_MS`, en `sparePool.ts`) y la vigilancia
++ *    de orfandad por ppid (`startPpidWatchdog`, lista para cuando exista
++ *    un entrypoint `--bg-spare` real que la invoque).
++ */
++
++import { readdir, unlink } from 'node:fs/promises'
++import { connect, type Socket } from 'node:net'
++import { platform as osPlatform } from 'node:os'
++import { join } from 'node:path'
++
++import { logEvent } from '@thyrox/local-observability'
++
++import { encodeCtrlFrame, type CtrlFrame } from './internal/ptyFrame.js'
++
++/** ant 4644.js `xt` — nombre de la env var del secreto de claim (era `CLAUDE_BG_CLAIM_AUTH`). */
++export const SPARE_CLAIM_AUTH_ENV = 'THYROX_BG_CLAIM_AUTH'
++
++/**
++ * ant 4644.js `xt` — resuelve el `claimAuth` del proceso `--bg-spare`
++ * desde el entorno y lo BORRA tras leerlo, para que no quede visible a
++ * subprocesos ni en `/proc/<pid>/environ`.
++ *
++ * Pendiente: la referencia también acepta `CLAUDE_BG_SOCKET_TOKENS_PATH`
++ * (un archivo de tokens rotable, leído vía `hYe`, con aviso
++ * `level:"warn"` si es ilegible) cuando la env var directa está ausente.
++ * Ese archivo de tokens no tiene hoy equivalente en `@thyrox/*`; se omite
++ * y sólo se porta la vía directa de la env var.
++ */
++export function resolveClaimAuth(): string | undefined {
++  const auth = process.env[SPARE_CLAIM_AUTH_ENV]
++  delete process.env[SPARE_CLAIM_AUTH_ENV]
++  return auth
++}
++
++/** ant 4644.js `it` — tabla de backoff (ms) entre reintentos de envío de la trama de claim. */
++export const SPARE_CLAIM_RETRY_BACKOFF_MS = [50, 100, 150, 200, 250, 300, 400, 500, 500, 500]
++
++/** ant 4644.js `Ut` — presupuesto total (ms) para el envío de la trama de claim. */
++export const SPARE_CLAIM_SEND_BUDGET_MS = 5000
++
++/**
++ * Forma de la trama de claim que este puerto envía. El tipo `CtrlFrame`
++ * declarado en `internal/ptyFrame.ts` (archivo fuera de este porte, ver
++ * `Item`) no incluye `env`/`argv`/`auth` en su variante `claim` — sólo
++ * `intent`/`cwd`/`sessionId`. `encodeCtrlFrame` únicamente serializa JSON,
++ * así que los campos de más viajan igual por el cable; el cast a
++ * `CtrlFrame` en `sendSpareFrameOnce` declara esa divergencia de tipo en
++ * vez de esconderla. Pendiente: ampliar `CtrlFrame` cuando `ptyFrame.ts`
++ * entre en el alcance de otra tarea.
++ */
++export interface SpareClaimFrame {
++  t: 'claim'
++  cwd?: string
++  sessionId?: string
++  env?: NodeJS.ProcessEnv
++  argv?: string[]
++  auth?: string
++}
++
++/**
++ * ant 4644.js `Bt` — arma el payload de la trama de claim. La referencia
++ * rearma `env`/`argv` vía `g7.buildClaimFrame`, un helper de spawn del
++ * worker (`@claude-code-how-works/cli/bg/*`) sin equivalente hoy en
++ * `@thyrox/*`; aquí se reenvían tal cual el `env` y el `argv` que el
++ * llamador ya tiene (los mismos con que se habría lanzado un worker
++ * fresco), en vez de reconstruirlos desde cero.
++ */
++export function buildSpareClaimFrame(args: {
++  cwd?: string
++  sessionId?: string
++  env?: NodeJS.ProcessEnv
++  argv?: string[]
++  auth?: string
++}): SpareClaimFrame {
++  return {
++    t: 'claim',
++    cwd: args.cwd,
++    sessionId: args.sessionId,
++    env: args.env,
++    argv: args.argv,
++    auth: args.auth,
++  }
++}
++
++/**
++ * ant 4644.js `Ft` — conecta una vez al socket del repuesto, escribe la
++ * trama codificada y cierra. Resuelve cuando el `end()` termina de
++ * volcar el buffer; rechaza en `error`. Sin catch propio, igual que la
++ * referencia: el clasificador de fallo vive en el llamador (`P9n`).
++ */
++export function sendSpareFrameOnce(ptySocket: string, frame: SpareClaimFrame): Promise<void> {
++  return new Promise((resolve, reject) => {
++    const sock: Socket = connect(ptySocket)
++    sock.once('error', reject)
++    sock.once('connect', () => {
++      sock.end(encodeCtrlFrame(frame as unknown as CtrlFrame), () => resolve())
++    })
++  })
++}
++
++/**
++ * ant 4644.js `Ut` — reintenta el envío de la trama de claim ante
++ * `ENOENT`/`ECONNREFUSED` (el repuesto puede seguir bindeando su socket)
++ * con la tabla de backoff `SPARE_CLAIM_RETRY_BACKOFF_MS`, hasta agotar
++ * `budgetMs` o la tabla; cualquier otro error se relanza de inmediato sin
++ * esperar.
++ */
++export async function sendSpareFrameWithRetry(
++  ptySocket: string,
++  frame: SpareClaimFrame,
++  budgetMs: number = SPARE_CLAIM_SEND_BUDGET_MS,
++): Promise<void> {
++  const startedAt = Date.now()
++  for (let attempt = 0; ; attempt++) {
++    if (Date.now() - startedAt > budgetMs) throw new Error('send-claim timeout')
++    try {
++      await sendSpareFrameOnce(ptySocket, frame)
++      return
++    } catch (e) {
++      const code = (e as NodeJS.ErrnoException).code
++      const retryable = code === 'ENOENT' || code === 'ECONNREFUSED'
++      if (!retryable || attempt >= SPARE_CLAIM_RETRY_BACKOFF_MS.length) throw e
++      await sleep(SPARE_CLAIM_RETRY_BACKOFF_MS[attempt] ?? 500)
++    }
++  }
++}
++
++function sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms))
++}
++
++/**
++ * Mitad de limpieza de `P9n`: tras un fallo de envío de claim, manda
++ * SIGTERM al socket pty del repuesto para no dejarlo huérfano corriendo
++ * en vacío. Fire-and-forget — un error de conexión aquí ya no cambia el
++ * desenlace del dispatch (que cayó a spawn fresco), así que se descarta
++ * en silencio, igual que la referencia (`g.on('error',()=>{})`).
++ */
++export function terminateSpareSocket(ptySocket: string): void {
++  const sock: Socket = connect(ptySocket)
++  sock.on('error', () => {})
++  sock.once('connect', () => {
++    sock.write(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
++    sock.end()
++  })
++}
++
++export type SpareClaimFailReason = 'enoent' | 'econnrefused' | 'error' | 'unknown'
++
++function classifySpareClaimFailure(e: unknown): SpareClaimFailReason {
++  const code = (e as NodeJS.ErrnoException)?.code
++  if (code === 'ENOENT') return 'enoent'
++  if (code === 'ECONNREFUSED') return 'econnrefused'
++  if (e instanceof Error) return 'error'
++  return 'unknown'
++}
++
++/**
++ * ant 4644.js `P9n` — orquesta el claim de un worker de repuesto: arma la
++ * trama (`Bt`), la envía con reintento (`Ut`) y, si falla del todo,
++ * loguea `tengu_bg_sendclaim_failed` clasificado y manda SIGTERM de
++ * limpieza al pty socket del repuesto. La referencia arma el estado del
++ * claim vía `g7.claim` antes de enviar; aquí ese estado ya lo resolvió
++ * `claimSpare()` de `sparePool.ts` (slot consumido), así que esta función
++ * sólo cubre el envío y la limpieza.
++ */
++export async function claimSpareWorker(
++  args: {
++    short: string
++    ptySocket: string
++    cwd?: string
++    sessionId?: string
++    env?: NodeJS.ProcessEnv
++    argv?: string[]
++    auth?: string
++  },
++  opts: { budgetMs?: number } = {},
++): Promise<{ ok: true } | { ok: false; reason: SpareClaimFailReason }> {
++  const frame = buildSpareClaimFrame(args)
++  try {
++    await sendSpareFrameWithRetry(args.ptySocket, frame, opts.budgetMs)
++    return { ok: true }
++  } catch (e) {
++    const reason = classifySpareClaimFailure(e)
++    logEvent('tengu_bg_sendclaim_failed', { reason, short: args.short })
++    terminateSpareSocket(args.ptySocket)
++    return { ok: false, reason }
++  }
++}
++
++/**
++ * Mitad de `AVo` — vigilancia de orfandad del proceso `--bg-spare`: cada
++ * `intervalMs` comprueba que su ppid siga siendo el que tenía al
++ * arrancar y, si el padre murió (daemon reiniciado/matado), dispara
++ * `onOrphan` para que el propio repuesto se cierre en vez de quedar
++ * corriendo sin supervisor. Puerto de la LÓGICA, no del proceso: no
++ * existe hoy un entrypoint `--bg-spare` real en `@thyrox/daemon` que la
++ * invoque (ver "pendiente" de cabecera) — queda lista para cuando exista.
++ */
++export function startPpidWatchdog(
++  onOrphan: () => void,
++  intervalMs = 2000,
++  getPpid: () => number = () => process.ppid,
++): () => void {
++  const startedPpid = getPpid()
++  const timer = setInterval(() => {
++    if (getPpid() !== startedPpid) onOrphan()
++  }, intervalMs)
++  timer.unref()
++  return () => clearInterval(timer)
++}
++
++const ORPHAN_FILE_SUFFIXES = ['.err', '.late', '.err.read']
++
++/**
++ * ant 4644.js `O9n` — en no-windows, barre `dir` (el directorio de
++ * sockets del daemon, `getDaemonScopeDir()` en el llamador) buscando
++ * `.pty.sock` que no pertenecen a ningún worker vivo, les manda SIGTERM
++ * (destruyéndolos a los 2s si no cerraron) y borra los archivos huérfanos
++ * asociados: `.err`/`.late`/`.err.read` sin su `.pty.sock`, y
++ * `.claim.sock` sin un `.pty.sock` activo. Los tres `catch` silenciosos
++ * (lectura del directorio y los dos `unlink`) son fieles a la referencia.
++ * `dir` y `platformFn` son parámetros (no `getDaemonScopeDir()`/`os.platform`
++ * fijos) para que la prueba corra sobre un tmpdir aislado y pueda inyectar
++ * la plataforma sin tocar el proceso real.
++ */
++export async function sweepOrphanSpareSockets(
++  dir: string,
++  activePtySockets: ReadonlySet<string>,
++  platformFn: () => NodeJS.Platform = osPlatform,
++): Promise<number> {
++  if (platformFn() === 'win32') return 0
++  const entries = await readdir(dir).catch(() => [] as string[])
++  let reaped = 0
++  for (const name of entries) {
++    if (!name.endsWith('.pty.sock')) continue
++    const full = join(dir, name)
++    if (activePtySockets.has(full)) continue
++    reaped++
++    const sock: Socket = connect(full)
++    sock.on('error', () => {
++      void unlink(full).catch(() => {})
++    })
++    sock.once('connect', () => {
++      sock.resume()
++      sock.write(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
++      sock.end()
++      setTimeout(() => sock.destroy(), 2000).unref()
++    })
++  }
++  for (const name of entries) {
++    const suffix = ORPHAN_FILE_SUFFIXES.find(s => name.endsWith(`.pty.sock${s}`))
++    if (suffix) {
++      const base = name.slice(0, -suffix.length)
++      if (!entries.includes(base)) await unlink(join(dir, name)).catch(() => {})
++      continue
++    }
++    if (name.endsWith('.claim.sock')) {
++      const ptyName = `${name.slice(0, -'.claim.sock'.length)}.pty.sock`
++      if (!activePtySockets.has(join(dir, ptyName))) await unlink(join(dir, name)).catch(() => {})
++    }
++  }
++  return reaped
++}
++
+diff --git a/src/packages/daemon/src/sparePool.ts b/src/packages/daemon/src/sparePool.ts
+index 45ba3809..c5493fc7 100644
+--- a/src/packages/daemon/src/sparePool.ts
++++ b/src/packages/daemon/src/sparePool.ts
+@@ -16,8 +16,43 @@
+  * @dynamicRequire
+  */
+ 
++import { randomBytes } from 'node:crypto'
++
+ import { logEvent } from '@thyrox/local-observability'
+ 
++/**
++ * Umbrales de sintonía del pool de workers "spare" — `chunk-92tvramn.js`
++ * DECL `ar,Je,yt,sr,xe,dr,lr,cr,Et` (ant 4644.js `Dt`, el manager general
++ * de dispatch/sweep). La referencia los consume dentro de `Dt`, que NO es
++ * el alcance de este archivo (protocolo de claim, no el sweep general de
++ * retiro/adopción) — se declaran aquí con sus valores fieles porque es la
++ * única forma que este porte tiene hoy de nombrarlos. Sólo
++ * `SPARE_REFILL_MIN_GAP_MS` se usa en este archivo; el resto queda
++ * pendiente de que el sweep de `Dt` se porte (otra tarea) y los consuma.
++ */
++/** ant `ar` — edad de retiro (ms) de un worker asentado en el sweep normal (1h). */
++export const WORKER_RETIRE_AGE_MS = 3_600_000
++/** ant `Je` — edad de retiro (ms) bajo presión de memoria (1m). */
++export const WORKER_RETIRE_AGE_LOW_MEM_MS = 60_000
++/** ant `yt` — edad de retiro (ms) del paso "sólo monitoreo" bajo presión sostenida (8h). */
++export const WORKER_RETIRE_MONITOR_ONLY_AGE_MS = 28_800_000
++/** ant `sr` — umbral "duro" de retiro en el sweep normal (8h). */
++export const WORKER_RETIRE_HARD_AGE_MS = 28_800_000
++/** ant `xe` — cadencia del sweep general (ms) y timeout base de los probes de cwd (1m). */
++export const DISPATCH_SWEEP_INTERVAL_MS = 60_000
++/** ant `dr` — pausa (ms) entre reintentos del burst de prewarm tras un takeover (2s). */
++export const PREWARM_BURST_STEP_DELAY_MS = 2_000
++/** ant `lr` — ventana total (ms) del burst de prewarm tras un takeover (5m). */
++export const PREWARM_BURST_WINDOW_MS = 300_000
++/**
++ * ant `cr` — pausa mínima (ms) antes de reintentar un refill de repuesto
++ * tras un exit sin claim, cuando no hay lanzador propio configurado (2s).
++ * Wired: `shouldPrewarm()` la exige contra `recordSpareExit()`.
++ */
++export const SPARE_REFILL_MIN_GAP_MS = 2_000
++/** ant `Et` — timeout (ms) del probe de cwd al iniciar un dispatch (1s). */
++export const CWD_PROBE_TIMEOUT_MS = 1_000
++
+ interface SpareSlot {
+   short: string
+   cwd: string
+@@ -25,11 +60,15 @@ interface SpareSlot {
+   ptySocket: string
+   spawnedAt: number
+   ready: boolean
++  /** ant 4644.js I9n `p=Re(16).toString('hex')` — secreto que el claim entrante tiene que traer. */
++  claimAuth: string
+ }
+ 
+ let slot: SpareSlot | null = null
+ let enabled = false
+ let prewarmInFlight = false
++/** ant 4644.js `ne()` — instante del último exit de un repuesto sin claim; gate de `SPARE_REFILL_MIN_GAP_MS`. */
++let lastExitAt = 0
+ 
+ export function isSparePoolEnabled(): boolean {
+   return enabled
+@@ -59,7 +98,7 @@ export function getSpareSlot(): SpareSlot | null {
+  * The actual ctrl-frame send is done by the daemon's `sendclaim` op
+  * after this returns ok — this fn just reserves the slot.
+  */
+-export function claimSpare(cwd: string): { ok: false; reason: string } | { ok: true; short: string; sessionId: string; ptySocket: string } {
++export function claimSpare(cwd: string): { ok: false; reason: string } | { ok: true; short: string; sessionId: string; ptySocket: string; claimAuth: string } {
+   if (!enabled || !slot) {
+     logEvent('tengu_bg_spare_claim_fail', { reason: 'no-spare' })
+     return { ok: false, reason: 'no-spare' }
+@@ -72,7 +111,7 @@ export function claimSpare(cwd: string): { ok: false; reason: string } | { ok: t
+     logEvent('tengu_bg_spare_claim_fail', { reason: 'cwd-mismatch', spare_cwd: slot.cwd, want_cwd: cwd })
+     return { ok: false, reason: 'cwd-mismatch' }
+   }
+-  const claimed = { short: slot.short, sessionId: slot.sessionId, ptySocket: slot.ptySocket }
++  const claimed = { short: slot.short, sessionId: slot.sessionId, ptySocket: slot.ptySocket, claimAuth: slot.claimAuth }
+   logEvent('tengu_bg_spare_claim', { short: slot.short, age_ms: String(Date.now() - slot.spawnedAt) })
+   slot = null
+   return { ok: true, ...claimed }
+@@ -83,10 +122,16 @@ export function claimSpare(cwd: string): { ok: false; reason: string } | { ok: t
+  * the daemon's pre-warm scheduler. Returns false if a spare already
+  * exists.
+  */
+-export function recordSpareSpawn(short: string, cwd: string, sessionId: string, ptySocket: string): boolean {
++export function recordSpareSpawn(
++  short: string,
++  cwd: string,
++  sessionId: string,
++  ptySocket: string,
++  claimAuth: string = randomBytes(16).toString('hex'),
++): boolean {
+   if (!enabled) return false
+   if (slot) return false
+-  slot = { short, cwd, sessionId, ptySocket, spawnedAt: Date.now(), ready: false }
++  slot = { short, cwd, sessionId, ptySocket, spawnedAt: Date.now(), ready: false, claimAuth }
+   logEvent('tengu_bg_spare_spawn', { short, cwd, sessionId })
+   return true
+ }
+@@ -109,19 +154,34 @@ export function clearSpare(): void {
+ 
+ /**
+  * Pre-warm scheduler tick — call from daemon idle loop (e.g. every 30s).
+- * Returns whether a spare should be spawned now.
++ * Returns whether a spare should be spawned now. `now` es inyectable para
++ * pruebas deterministas del hueco mínimo de `SPARE_REFILL_MIN_GAP_MS`.
+  */
+-export function shouldPrewarm(): boolean {
+-  return enabled && !slot && !prewarmInFlight
++export function shouldPrewarm(now: number = Date.now()): boolean {
++  return enabled && !slot && !prewarmInFlight && now - lastExitAt >= SPARE_REFILL_MIN_GAP_MS
+ }
+ 
+ export function setPrewarmInFlight(v: boolean): void {
+   prewarmInFlight = v
+ }
+ 
++/**
++ * ant 4644.js `ne()` — registra que un repuesto salió sin ser reclamado
++ * (spawn fallido o proceso muerto), para que `shouldPrewarm` no reintente
++ * en tight-loop antes de `SPARE_REFILL_MIN_GAP_MS`. La referencia usa
++ * `zNe` (12s) en vez de `cr` cuando hay un lanzador propio configurado
++ * (`lu().length>0`) — pendiente: `@thyrox/daemon` no tiene hoy el
++ * concepto de lanzador de repuesto configurable, así que siempre se usa
++ * `SPARE_REFILL_MIN_GAP_MS`.
++ */
++export function recordSpareExit(now: number = Date.now()): void {
++  lastExitAt = now
++}
++
+ /** Test helper. */
+ export function _resetSparePoolForTest(): void {
+   slot = null
+   enabled = false
+   prewarmInFlight = false
++  lastExitAt = 0
+ }

@@ -1,0 +1,2 @@
+src/runtime/toolRegistryRuntime.ts(155,17): error TS2742: The inferred type of 'getToolRegistry' cannot be named without a reference to '../../../../../node_modules/@thyrox/tool-registry/dist/ToolRegistry'. This is likely not portable. A type annotation is necessary.
+src/runtime/toolRegistryRuntime.ts(155,17): error TS2742: The inferred type of 'getToolRegistry' cannot be named without a reference to '../../../../../node_modules/@thyrox/tool-registry/dist/contracts'. This is likely not portable. A type annotation is necessary.

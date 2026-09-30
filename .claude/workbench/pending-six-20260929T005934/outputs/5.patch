@@ -1,0 +1,136 @@
+diff --git a/src/packages/agent/__tests__/sessionStoresImports.test.ts b/src/packages/agent/__tests__/sessionStoresImports.test.ts
+new file mode 100644
+index 00000000..b78b513d
+--- /dev/null
++++ b/src/packages/agent/__tests__/sessionStoresImports.test.ts
+@@ -0,0 +1,50 @@
++/**
++ * `sessionStores.ts` nombraba `@thyrox/repl/onChangeAppState.js` en un
++ * `require()` dentro de `createInteractiveSessionStore`/
++ * `createHeadlessSessionStore` — perezoso en EJECUCIÓN (nunca se invocaba
++ * con sólo importar el módulo), pero el especificador literal igual
++ * quedaba en el grafo ESTÁTICO que arma `Bun.build`: antes del corte,
++ * `metafile.inputs[sessionStores.ts].imports` listaba
++ * `@thyrox/repl/onChangeAppState.js` dos veces (`kind: 'require-call'`), y
++ * ese archivo por sí solo arrastra ~151 módulos de `repl` al bundle del
++ * bootstrap (medido con este mismo `Bun.build`, entrypoint aislado). El
++ * corte invierte la dependencia: `createInteractiveSessionStore`/
++ * `createHeadlessSessionStore` reciben `onChange` como parámetro (default
++ * no-op) y ya no nombran `repl` en ninguna forma.
++ *
++ * *Ciega a:* esta prueba mide sólo las aristas DIRECTAS de `sessionStores.ts`
++ * — no que ningún módulo de `repl` sea alcanzable transitivamente desde
++ * cualquier import suyo. Medido aparte: `appStateCompatShim.ts` (import
++ * estático necesario, fuera de este archivo) llega a
++ * `repl/promptSuggestion.js` vía `state/AppStateCompat.ts`, y ese camino
++ * por sí solo ya arrastra ~150 módulos de `repl` — independiente de
++ * `onChangeAppState` y fuera del alcance de este corte (no es
++ * `sessionStores.ts` ni un consumidor de `repl`).
++ */
++import { describe, expect, test } from 'bun:test'
++import { join } from 'node:path'
++
++const ENTRY = join(import.meta.dir, '..', 'sessionStores.ts')
++
++describe('sessionStores.ts no nombra el paquete repl', () => {
++  test('ninguna arista DIRECTA del grafo estático apunta a repl', async () => {
++    const result = await Bun.build({
++      entrypoints: [ENTRY],
++      target: 'bun',
++      metafile: true,
++    })
++    expect(result.success).toBe(true)
++    const inputs = result.metafile!.inputs
++    const entry = Object.keys(inputs).find(p => p.endsWith('sessionStores.ts'))!
++    const directRepl = inputs[entry]!.imports
++      .map(i => i.path)
++      .filter(p => p.includes('/packages/repl/'))
++    expect(directRepl).toEqual([])
++  })
++
++  test('importar el módulo no ejecuta repl/onChangeAppState.ts', async () => {
++    await import(ENTRY)
++    const loaded = Object.keys(require.cache)
++    expect(loaded.some(p => p.endsWith('/packages/repl/src/onChangeAppState.ts'))).toBe(false)
++  })
++})
+diff --git a/src/packages/agent/sessionStores.ts b/src/packages/agent/sessionStores.ts
+index fd9f8ce6..fc5d04df 100644
+--- a/src/packages/agent/sessionStores.ts
++++ b/src/packages/agent/sessionStores.ts
+@@ -33,11 +33,16 @@
+  *     (`.../app-host/state/hostSessionState.js`) — SÍ resuelve tal cual
+  *     (medido: `Bun.resolveSync` OK).
+  *   - `onChangeAppState` (`@claude-code-how-works/repl/onChangeAppState.js`)
+- *     — el paquete `repl` NO existía como miembro del workspace (medido
+- *     entonces: ausente del agregador anidado `src/packages/package.json`,
+- *     retirado en la tarea #62; hoy es miembro y el diferido espera la
+- *     tarea #53). Se deja SIN traducir y se
+- *     difiere con `require()`.
++ *     — ya no se importa aquí en ninguna forma (Arranque #182). El
++ *     `require()` que la traía era perezoso en EJECUCIÓN, pero su
++ *     especificador literal seguía entrando al grafo ESTÁTICO que arma el
++ *     bundle del bootstrap: `Bun.build({entrypoints:['sessionStores.ts'],
++ *     metafile:true})` medía ~151 módulos de `repl` reachable por esa sola
++ *     arista. Se invierte la dependencia: `createInteractiveSessionStore` y
++ *     `createHeadlessSessionStore` reciben `onChange` como parámetro
++ *     (default no-op), y quien las llama decide si escucha. Ningún
++ *     consumidor de este árbol pasa el `onChangeAppState` real todavía —
++ *     cablearlo es trabajo de otra tarea, no de este corte.
+  *   - `createStore` / `Store` (`.../app-host/state/store.js`) — el tipo
+  *     `Store<T>` se importa de ahí (el paquete ya exporta `./state/store.js`,
+  *     que reexporta `@thyrox/repl/stateStore`); `createStore`, el valor,
+@@ -119,21 +124,22 @@ export type HeadlessSessionStore = Store<AppState>
+ 
+ export function createInteractiveSessionStore(
+   initialState?: AppState,
++  // Arranque #182: `onChangeAppState` (`@thyrox/repl`) ya no se `require()`
++  // aquí — el `require()` era perezoso en ejecución, pero el especificador
++  // literal igual entraba al grafo estático que arma el bundle del
++  // bootstrap (~151 módulos de `repl`, medidos con
++  // `Bun.build({metafile:true})`). Se invierte: quien crea el store decide
++  // qué escucha. `bootstrap.ts` no pasa ninguno todavía — cablear el
++  // `onChangeAppState` real ahí es trabajo de otra tarea, no de este corte.
++  onChange: (state: AppState) => void = () => {},
+ ): InteractiveSessionStore {
+-  // `createStore` y `onChangeAppState`: @thyrox/app-host no expone
+-  // `state/store.ts` y @thyrox/repl no existe — ver docstring del módulo.
++  // `createStore`: @thyrox/app-host no expone `state/store.ts` — ver
++  // docstring del módulo.
+   // eslint-disable-next-line @typescript-eslint/no-require-imports
+   const { createStore } = require('@thyrox/app-host/state/store.js') as {
+     createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
+   }
+-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+-  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
+-    onChangeAppState: (state: AppState) => void
+-  }
+-  return createStore<AppState>(
+-    initialState ?? getDefaultAppState(),
+-    onChangeAppState,
+-  )
++  return createStore<AppState>(initialState ?? getDefaultAppState(), onChange)
+ }
+ 
+ function buildHeadlessCompatState(
+@@ -198,16 +204,15 @@ function buildHeadlessCompatState(
+ 
+ export function createHeadlessSessionStore(
+   params: HeadlessStoreParams,
++  // Ver el mismo comentario en `createInteractiveSessionStore` — el corte es
++  // idéntico y por la misma razón (Arranque #182).
++  onChange: (state: AppState) => void = () => {},
+ ): HeadlessSessionStore {
+   // eslint-disable-next-line @typescript-eslint/no-require-imports
+   const { createStore } = require('@thyrox/app-host/state/store.js') as {
+     createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
+   }
+-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+-  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
+-    onChangeAppState: (state: AppState) => void
+-  }
+-  return createStore<AppState>(buildHeadlessCompatState(params), onChangeAppState)
++  return createStore<AppState>(buildHeadlessCompatState(params), onChange)
+ }
+ 
+ export function projectInteractiveHostSessionState(

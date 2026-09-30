@@ -1,0 +1,18 @@
+=== A. sin la forma de bg.sh (el estado anterior) ===
+  FALLO la que escribe bg.sh: __BG_EXIT__=0
+25 ok, 1 fallos
+
+=== B. sin la forma a mano ===
+  FALLO marcador presente -> 0
+  FALLO marcador escrito tras la muerte -> 0, no BAIL
+  FALLO y la razon nombra que se escribio al salir
+  FALLO con la guarda daba PRESENT — el control DISCRIMINA
+  FALLO sale 0 como guion
+  FALLO y publica la razon del veredicto
+  FALLO la que escribe el envoltorio a mano: EXIT=0
+19 ok, 7 fallos
+
+=== C. ensanchado a «cualquier cosa con EXIT» — el arreglo perezoso ===
+  FALLO la que escribe bg.sh: __BG_EXIT__=0
+  FALLO un renglon parecido no es un marcador
+24 ok, 2 fallos

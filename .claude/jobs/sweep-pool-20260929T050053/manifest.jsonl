@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/config-home-sweep-20260929T050044/launch.sh", "started_at": "2026-09-29T05:00:53+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T05:18:12+00:00", "duration_seconds": 1039.126618}

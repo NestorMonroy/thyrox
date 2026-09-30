@@ -1,0 +1,45 @@
+src/packages/agent/internal/stopHooksCore.ts(695,44): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ blockingError: string; }'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:685-705 ---
+    685          task.subject,
+    686          task.description,
+    687          teammateName,
+    688          teamName,
+    689          permissionMode,
+    690          toolUseContext.abortController.signal,
+    691          undefined,
+    692          toolUseContext,
+    693        ) ?? (async function* (): AsyncGenerator<StopHookExecutionResult, void> {})()
+    694      const abortado = yield* consumir(gen, 'TaskCompleted', e =>
+    695>       host().getTaskCompletedHookMessage?.(e) ?? '',
+    696      )
+    697      if (abortado) return { blockingErrors: [], preventContinuation: true }
+    698    }
+    699  
+    700    const idle =
+    701      host().executeTeammateIdleHooks?.(
+    702        teammateName,
+    703        teamName,
+    704        permissionMode,
+    705        toolUseContext.abortController.signal,
+src/packages/agent/internal/stopHooksCore.ts(708,41): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ blockingError: string; }'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:698-717 ---
+    698    }
+    699  
+    700    const idle =
+    701      host().executeTeammateIdleHooks?.(
+    702        teammateName,
+    703        teamName,
+    704        permissionMode,
+    705        toolUseContext.abortController.signal,
+    706      ) ?? (async function* (): AsyncGenerator<StopHookExecutionResult, void> {})()
+    707    const abortado = yield* consumir(idle, 'TeammateIdle', e =>
+    708>     host().getTeammateIdleHookMessage?.(e) ?? '',
+    709    )
+    710    if (abortado) return { blockingErrors: [], preventContinuation: true }
+    711  
+    712    if (corta) return { blockingErrors: [], preventContinuation: true }
+    713    if (bloqueos.length > 0) {
+    714      return { blockingErrors: bloqueos, preventContinuation: false }
+    715    }
+    716    return { blockingErrors: [], preventContinuation: false }
+    717  }

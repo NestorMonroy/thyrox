@@ -1,0 +1,8 @@
+{
+  "id": "228",
+  "subject": "Prohibir Y barrer la aritmética parents[N] que cruza la distribución",
+  "description": "Cerrada y verificada en serie por el orquestador (thyrox@a46c4616→b3c23901, docs@154148e17). Las dos mitades entregadas: el gate `src/gates/check_path_arithmetic.py` registrado como `path-arithmetic`, y el barrido de 28 de 30 sitios al localizador declarado.\n\nControles que el orquestador re-corrió, no leyó del resumen: el gate publica su denominador (0 nuevos, 2 congelados sobre 230 archivos); su suite da 17/17; y la ANULACIÓN discrimina — replantando `.parents[2]` en `verificar_persistencia.py` el gate lo nombra con file:line y `--strict` sale 1; restaurado, sale 0 con `git diff` vacío y la suite sigue en 17/17.\n\nLos 2 exentos llevan su razón en el código y en el baseline: un control negativo deliberado, y un remapeo de dos segmentos que cruza al repo consumidor (ése va a #227).",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

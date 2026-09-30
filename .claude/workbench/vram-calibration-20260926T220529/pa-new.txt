@@ -1,0 +1,20 @@
+    local owner="$BASHPID" admit_rc=0
+    if [[ -n "$HP_VRAM_NEED" ]]; then
+        bash "$HP_GPU" admit "$HP_VRAM_NEED" --ledger "$HP_VRAM_LEDGER" --owner "$owner" \
+            --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL" \
+            2> "$HP_OUT/$n.admit.err" || admit_rc=$?
+    fi
+    # 3 es el plazo vencido, una medida; cualquier otro código es que la
+    # admisión no pudo decidir, y decir «no hubo sitio» afirmaría lo que no
+    # se midió.
+    if [[ "$admit_rc" -ne 0 ]]; then
+        if [[ "$admit_rc" -eq 3 ]]; then
+            echo "admision por VRAM vencida: el item pide $HP_VRAM_NEED MiB y no hubo sitio en ${HP_TIMEOUT}s"
+        else
+            echo "la admision por VRAM fallo (exit $admit_rc); el item no se lanzo:"
+            cat "$HP_OUT/$n.admit.err"
+        fi > "$HP_OUT/$n.err"
+        : > "$HP_OUT/$n.json"
+        return 3
+    fi
+    rm -f "$HP_OUT/$n.admit.err"

@@ -1,0 +1,42 @@
+== 1: sin client id se usa la cadena vacía
+(fail) client credentials > without the variable the flow refuses by naming it [1.08ms]
+ 10 pass
+ 1 fail
+== 2: claude sin reautenticar
+(fail) claude > the authorize URL carries the scopes, the challenge and a forced login [0.43ms]
+ 10 pass
+ 1 fail
+== 3: el código pegado no se separa de su state
+(fail) claude > a pasted code#state is split, exchanged as JSON and the bootstrap names the account [1.45ms]
+ 10 pass
+ 1 fail
+== 4: un bootstrap inalcanzable tumba el login
+(fail) claude > an unreachable bootstrap does not fail the login [0.53ms]
+ 10 pass
+ 1 fail
+== 5: el bootstrap no nombra la organización
+(fail) claude > a pasted code#state is split, exchanged as JSON and the bootstrap names the account [1.50ms]
+ 10 pass
+ 1 fail
+== 6: el user agent por defecto sin versión
+(fail) claude > a code without state keeps its own state; a failed bootstrap does not fail the login [1.76ms]
+ 10 pass
+ 1 fail
+== 7: el plan gratuito no se vincula al equipo
+(fail) codex > a free plan with a team organization binds the team workspace [3.39ms]
+ 10 pass
+ 1 fail
+== 8: el plan de equipo cede a otra organización
+ 11 pass
+ 0 fail
+== 9: el intercambio de codex en JSON
+(fail) codex > the exchange is form-encoded and the id_token names the workspace and the email [1.19ms]
+ 10 pass
+ 1 fail
+== 10: el id_token se lee como base64 sin UTF-8
+(fail) codex > the exchange is form-encoded and the id_token names the workspace and the email [1.76ms]
+ 10 pass
+ 1 fail
+== restaurado
+ 11 pass
+ 0 fail

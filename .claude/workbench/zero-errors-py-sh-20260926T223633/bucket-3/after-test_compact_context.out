@@ -1,0 +1,10 @@
+  ok    tras compactar, el evento declarado es SessionStart
+  ok    nombra el clon con trabajo sin publicar
+  ok    y lo que tiene sin versionar
+  ok    nombra el trabajo del ledger sin recoger
+  ok    nombra el banco más reciente, que es donde vive lo que se hacía
+  ok    fuera de una compactación no inyecta nada
+  ok    sin trabajo pendiente no inyecta nada
+  ok    una sesión sin ledger no lo crea al leerlo
+  ok    por conducta, el hook no intenta escribir nada
+test_compact_context: 9 aserciones — 9 ok, 0 falla(s)

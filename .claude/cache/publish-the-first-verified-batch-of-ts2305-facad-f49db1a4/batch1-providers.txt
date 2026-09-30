@@ -1,0 +1,8 @@
+@thyrox/permission
+@thyrox/output/capture
+@thyrox/provider/claudeAiLimits.js
+@thyrox/agent/messages/systemInit.js
+@thyrox/agent/sessionTitle.js
+@thyrox/app-host/state/AppState.js
+@thyrox/config/env
+@thyrox/shell

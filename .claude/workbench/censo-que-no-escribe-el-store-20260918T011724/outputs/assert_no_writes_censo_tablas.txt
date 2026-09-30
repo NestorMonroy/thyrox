@@ -1,0 +1,7 @@
+assert_no_writes: 6 escritura(s) intentada(s) (alcance medido: 1115 linea(s) de traza, 3 proceso(s); subject_exit=0)
+  mkdir        /home/user/thyrox/agent-results 
+  openat       /home/user/thyrox/agent-results/agent_store.sqlite3 O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC
+  openat       /home/user/thyrox/agent-results/agent_store.sqlite3-shm O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC
+  openat       /home/user/thyrox/agent-results/agent_store.sqlite3-wal O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC
+  unlink       /home/user/thyrox/agent-results/agent_store.sqlite3-shm 
+  unlink       /home/user/thyrox/agent-results/agent_store.sqlite3-wal 

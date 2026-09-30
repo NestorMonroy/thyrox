@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bun test $(ls __tests__/proxy*.test.ts) 2>&1 | tail -15", "started_at": "2026-09-27T22:58:25+00:00"}

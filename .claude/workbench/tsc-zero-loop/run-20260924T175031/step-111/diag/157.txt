@@ -1,0 +1,24 @@
+src/packages/provider/src/modelAgent.ts(52,36): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/modelAgent.ts:42-62 ---
+     42   * This ensures subagents use the same region as the parent, which is necessary when
+     43   * IAM permissions are scoped to specific cross-region inference profiles.
+     44   */
+     45  export function getAgentModel(
+     46    agentModel: string | undefined,
+     47    parentModel: string,
+     48    toolSpecifiedModel?: ModelAlias,
+     49    permissionMode?: PermissionMode,
+     50  ): string {
+     51    if (readEnv('CLAUDE_CODE_SUBAGENT_MODEL')) {
+     52>     return parseUserSpecifiedModel(readEnv('CLAUDE_CODE_SUBAGENT_MODEL'))
+     53    }
+     54  
+     55    // Unpack the parent model to detect which connection it routes through.
+     56    // Non-Anthropic connections (ant-compatible URLs, OpenAI, Gemini, Codex)
+     57    // need subagent model resolution to follow the same connection so API
+     58    // calls land on the correct endpoint with the correct auth.
+     59    const { connectionId: parentConnId } = unpackModelId(parentModel)
+     60    const parentConn = parentConnId
+     61      ? resolveConnectionForModel(parentModel)
+     62      : undefined
+  Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/hooksEngine.test.ts:
+65 |     expect(hookMatcherMatches('', 'Write')).toBe(true)
+66 |     expect(hookMatcherMatches('*', 'Write')).toBe(true)
+67 |   })
+68 |   test('una lista simple es pertenencia exacta, no subcadena', () => {
+69 |     expect(hookMatcherMatches('Write|Edit', 'Edit')).toBe(true)
+70 |     expect(hookMatcherMatches('Write|Edit', 'MultiEdit')).toBe(false)
+                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/hooksEngine.test.ts:70:59)
+(fail) hookMatcherMatches — el matcher del cliente > una lista simple es pertenencia exacta, no subcadena [0.32ms]
+
+ 22 pass
+ 1 fail
+ 45 expect() calls
+Ran 23 tests across 1 file. [703.00ms]

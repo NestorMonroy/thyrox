@@ -1,0 +1,173 @@
+Patrón: standalone-agent-context-color-string-vs-literal-union
+Señal del verificador: REPLView\.tsx|ResumeConversation\.tsx.*TS2322.*StandaloneAgentContext.*not assignable
+Arreglo genérico: computeStandaloneAgentContext devuelve `color: string | undefined` porque el log de sesión guarda el color como texto libre; el estado de la app exige `AgentColorName` (unión literal de 8 colores). Se extrae el resultado a una variable, y al construirlo en el nuevo estado se afirma `color as AgentColorName | undefined` sólo en ese campo — mismo patrón ya usado en ResumeConversation.tsx:306 — sin tocar el resto de los campos ni la función productora.
+Ya aplicado en: src/packages/repl/src/screens/REPLView.tsx
+Archivos donde la señal sigue viva: src/packages/repl/src/screens/REPLView.tsx
+
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1157-1177 ---
+   1157    // 3P default: off — OSC 21337 is ant-only while the spec stabilizes.
+   1158    // Gated so we can roll back if the sidebar indicator conflicts with
+   1159    // the title spinner in terminals that render both. When the flag is
+   1160    // on, the user-facing config setting controls whether it's active.
+   1161    const tabStatusGateEnabled = getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false);
+   1162    const showStatusInTerminalTab = tabStatusGateEnabled && (getGlobalConfig().showStatusInTerminalTab ?? false);
+   1163    useTabStatus(titleDisabled || !showStatusInTerminalTab ? null : sessionStatus);
+   1164  
+   1165    // Register the leader's setToolUseConfirmQueue for in-process teammates
+   1166    useEffect(() => {
+   1167>     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+   1168      return () => unregisterLeaderToolUseConfirmQueue();
+   1169    }, [setToolUseConfirmQueue]);
+   1170  
+   1171    const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
+   1172    const messagesRef = useRef(messages);
+   1173  
+   1174    // Bg-session FleetView sync (see hook JSDoc for ant 3988.js lineage):
+   1175    // state.json disk writes + rv-channel mirror on each turn transition.
+   1176    useBgFleetStateSync(isLoading, messages);
+   1177    useBgRendezvousServer(isLoading); // ant 4291.js rv server: 30s heartbeat + startup-wedge (no-op unless bg+rv-sock)
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<ToolUseConfirm[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: ToolUseConfirm[]) => ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.
+src/packages/repl/src/screens/REPLView.tsx(1800,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1790-1810 ---
+   1790            agentType: mainThreadAgentDefinition?.agentType,
+   1791            model: mainLoopModel,
+   1792          });
+   1793  
+   1794          // Append hook messages to the conversation
+   1795          messages.push(...hookMessages);
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800>           void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802            void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806          // restoreSessionStateFromLog opera sobre AppStateLike (contrato
+   1807          // estructural que storage usa para no importar el AppState real);
+   1808          // se adapta al setAppState concreto en el borde de la llamada.
+   1809          restoreSessionStateFromLog(log, update =>
+   1810            setAppState(prev => update(prev) as AppState),
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { cwd: string; userType: string; entrypoint?: string | undefined; sessionId: string; timestamp: string; version: string; gitBranch?: string | undefined; slug?: string | undefined; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1802,34): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1792-1812 ---
+   1792          });
+   1793  
+   1794          // Append hook messages to the conversation
+   1795          messages.push(...hookMessages);
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800            void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802>           void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806          // restoreSessionStateFromLog opera sobre AppStateLike (contrato
+   1807          // estructural que storage usa para no importar el AppState real);
+   1808          // se adapta al setAppState concreto en el borde de la llamada.
+   1809          restoreSessionStateFromLog(log, update =>
+   1810            setAppState(prev => update(prev) as AppState),
+   1811          );
+   1812          if (log.fileHistorySnapshots) {
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { cwd: string; userType: string; entrypoint?: string | undefined; sessionId: string; timestamp: string; version: string; gitBranch?: string | undefined; slug?: string | undefined; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(2960,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2950-2970 ---
+   2950  
+   2951        for await (const event of query({
+   2952          messages: messagesIncludingNewMessages,
+   2953          systemPrompt,
+   2954          userContext,
+   2955          systemContext,
+   2956          canUseTool,
+   2957          toolUseContext,
+   2958          querySource: getQuerySourceForREPL(),
+   2959        })) {
+   2960>         onQueryEvent(event);
+   2961        }
+   2962  
+   2963        queryCheckpoint('query_end');
+   2964  
+   2965        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2966        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2967        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2968          const entries = apiMetricsRef.current;
+   2969  
+   2970          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/repl/src/screens/REPLView.tsx(3303,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3293-3313 ---
+   3293              ...updatedToolPermissionContext,
+   3294              mode: 'auto',
+   3295              prePlanMode: undefined,
+   3296            });
+   3297          }
+   3298  
+   3299          return {
+   3300            ...prev,
+   3301            initialMessage: null,
+   3302            toolPermissionContext: updatedToolPermissionContext,
+   3303>           ...(shouldStorePlanForVerification && {
+   3304              pendingPlanVerification: {
+   3305                plan: initialMsg.message.planContent!,
+   3306                verificationStarted: false,
+   3307                verificationCompleted: false,
+   3308              },
+   3309            }),
+   3310          };
+   3311        });
+   3312  
+   3313        // Create file history snapshot for code rewind
+src/packages/repl/src/screens/REPLView.tsx(4008,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3998-4018 ---
+   3998          (
+   3999            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   4000          ).resetContextCollapse();
+   4001          /* eslint-enable @typescript-eslint/no-require-imports */
+   4002        }
+   4003  
+   4004        // Restore state from the message we're rewinding to
+   4005        setAppState(prev => ({
+   4006          ...prev,
+   4007          // Restore permission mode from the message
+   4008>         toolPermissionContext:
+   4009            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   4010              ? {
+   4011                  ...prev.toolPermissionContext,
+   4012                  mode: message.permissionMode,
+   4013                }
+   4014              : prev.toolPermissionContext,
+   4015          // Clear stale prompt suggestion from previous conversation state
+   4016          promptSuggestion: {
+   4017            text: null,
+   4018            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.

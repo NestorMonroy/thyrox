@@ -1,0 +1,13 @@
+HEADLESS_POOL_MEMFREE_RESERVE=
+
+# La VRAM de cada ítem (`gpu_monitor.py`), que GNU Time no ve. El binario de
+# nvidia-smi; sin él el pool lo declara y no mide la VRAM. Default: `nvidia-smi`.
+HEADLESS_POOL_NVIDIA_SMI=
+
+# Cada cuántos segundos se muestrea la VRAM de un ítem. Un pico más corto que
+# el intervalo no se ve. Default: 0.5.
+HEADLESS_POOL_GPU_INTERVAL=
+
+# VRAM (MiB enteros) que se RESTA de la libre antes de calcular cuántos ítems
+# caben a la vez: lo que queda para el resto de lo que usa la GPU. Default: 0.
+HEADLESS_POOL_VRAM_RESERVE_MIB=

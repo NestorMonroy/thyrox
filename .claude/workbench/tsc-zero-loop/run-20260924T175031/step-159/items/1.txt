@@ -1,0 +1,59 @@
+Patrón: optional-host-binding-yielded-without-guard
+Señal del verificador: (?:TS2322: Type '\{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string \| null; uuid: string; session_id: string; error\?: "unknown" \| "max_output_tokens" \| "authentication_failed" \| \.\.\. 10 more \.\.\. \| undefined; \} \| \.\.\. 24 more \.\.\. \| undefined' is not assignable to type '\{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string \| null; uuid: string; session_id: string; error\?: "unknown" \| "max_output_tokens" \| "authentication_failed" \| \.\.\. 10 more \.\.\. \| undefined; \} \| \.\.\. 23 more \.\.\. \| \{ \.\.\.; \}'\.|TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt\[\] \| undefined'\.|TS2322: Type 'AgentMessage\[\]' is not assignable to type 'Message\[\]'\.|TS2322: Type 'Record<string, unknown>' is not assignable to type 'BetaRawMessageStreamEvent'\.)
+Arreglo genérico: Cuando un wrapper de host binding (`internal/headlessRuntime.ts` u otro puente similar) devuelve `T | undefined` porque el binding es opcional, no se pasa/yield-ea directo: se asigna a una variable y se envuelve en un `if (valor) { ... }` antes de usarlo, siguiendo el contrato ya fijado por el test de comportamiento del módulo ("caller checks before sending").
+Ya aplicado en: src/packages/agent/QueryEngine.ts
+Archivos donde la señal sigue viva: src/packages/agent/QueryEngine.ts, src/packages/agent/query.ts
+
+src/packages/agent/QueryEngine.ts(980,15): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'BetaRawMessageStreamEvent'.
+  --- código src/packages/agent/QueryEngine.ts:970-990 ---
+    970              // Accumulate current message usage into total
+    971              this.totalUsage = accumulateUsage(
+    972                this.totalUsage,
+    973                currentMessageUsage,
+    974              )
+    975            }
+    976  
+    977            if (includePartialMessages) {
+    978              yield {
+    979                type: 'stream_event' as const,
+    980>               event,
+    981                session_id: getSessionId(),
+    982                parent_tool_use_id: null,
+    983                uuid: randomUUID(),
+    984              }
+    985            }
+    986  
+    987            break
+    988          }
+    989          case 'attachment': {
+    990            const msg = message as Message
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaRawMessageDeltaEvent': context_management, delta, type, usage
+
+src/packages/agent/query.ts(528,7): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/query.ts:518-538 ---
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+    526      toolUseContext = {
+    527        ...toolUseContext,
+    528>       messages: messagesForQuery,
+    529      }
+    530  
+    531      const assistantMessages: AssistantMessage[] = []
+    532      const toolResults: (UserMessage | AttachmentMessage)[] = []
+    533      // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    534      // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+    535      // Set during streaming whenever a tool_use block arrives — the sole
+    536      // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
+    537      const toolUseBlocks: ToolUseBlock[] = []
+    538      let needsFollowUp = false
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
