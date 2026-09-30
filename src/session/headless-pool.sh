@@ -672,8 +672,8 @@ fi
 # >>> exit-drain
 # Ningún ítem sobrevive al pool. Cada ítem en curso deja `<n>.session` con la
 # sesión de su runner y el pid del shell que lo publica; el pool, al recibir
-# una señal o al volver Parallel con ítems aún vivos —murió solo, como en
-# H-THYROX-283—, drena esas sesiones y espera a que sus shells publiquen. El
+# una señal o al volver Parallel con ítems aún vivos —porque murió solo—,
+# drena esas sesiones y espera a que sus shells publiquen. El
 # shell que murió con Parallel no publica: su ítem queda para `reconcile`, y
 # el barrido de abajo conserva su worktree.
 HP_EXIT_SETTLE_SECONDS="${HEADLESS_POOL_EXIT_SETTLE_SECONDS:-60}"
@@ -715,8 +715,8 @@ trap 'on_exit_signal' TERM INT HUP
 PARALLEL_PID=$!
 PARALLEL_RC=0
 while kill -0 "$PARALLEL_PID" 2>/dev/null; do wait "$PARALLEL_PID"; PARALLEL_RC=$?; done
-# Un Parallel que muere por señal sale con 128+N: es el rastro que H-THYROX-283
-# no tuvo, y se deja escrito antes de que el joblog lo esconda.
+# Un Parallel que muere por señal sale con 128+N. El joblog no lo registra, así
+# que el código de salida se escribe aquí: es lo único que nombra la señal.
 [[ "$PARALLEL_RC" -lt 128 ]] || echo "headless-pool: GNU Parallel salió por señal (exit $PARALLEL_RC); los ítems vivos se drenan"
 # >>> exit-drain
 trap - TERM INT HUP

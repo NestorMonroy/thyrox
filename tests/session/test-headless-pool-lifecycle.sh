@@ -21,9 +21,14 @@
 #   6. (TASK-THYROX-0622) con THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS, el ítem en
 #      curso tiene foto antes de terminar, con el trabajo que lleva hecho; la
 #      foto final la avanza y conserva lo último.
+#   7. (TASK-THYROX-0640) la admisión por disco del worktree la declara la
+#      suite, no el disco del anfitrión: con una reserva imposible y espera 0,
+#      el pool rehúsa el ítem al instante en vez de esperar los 600 s del
+#      default.
 #   Controles de anulación:
 #   1c. con el runtime dentro del banco, el mismo pool ensucia `git status`.
 #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
+#   7c. con la espera declarada en segundos, el mismo rechazo tarda esa espera.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 failures=0; total=0
@@ -41,6 +46,11 @@ jq -cn '{type:"result",subtype:"success",result:"done"}'
 SH
 chmod +x "$F/runner"
 printf 'Read.\n' > "$F/prompt.md"
+
+# La admisión por disco de un worktree se declara aquí y no se hereda del
+# anfitrión: con su default (reserva 1024 MiB, espera 600 s) cada caso con
+# worktree esperaba hasta diez minutos en una máquina con poco disco libre.
+export THYROX_ITEM_WORKTREE_DISK_RESERVE_MB=0 THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=0
 
 # Un repositorio con un banco versionado y el runtime ignorado, como el árbol.
 REPO="$F/repo"
@@ -227,6 +237,32 @@ check "la foto final existe" "$([[ -n "$final6" ]] && echo yes)" yes
 check "la foto final conserva el trabajo" "$(git -C "$REPO" show "$final6:mid-run.txt" 2>/dev/null)" "trabajo a mitad"
 check "el manifiesto de la foto describe la final" \
   "$(THYROX_RUNTIME_DIR="$F/runtime6" bash "$ROOT/bin/snapshot_store" show "${live6##*/}" 1 1 | jq -r .snapshot_commit)" "$final6"
+
+# --- caso 7 (TASK-THYROX-0640): la admisión por disco la declara la suite ---
+# Con una reserva que ningún anfitrión tiene y la espera en 0, el pool rehúsa el
+# ítem al instante: el veredicto sale de lo declarado, no del disco libre.
+# refused_pool <label> [variables]: corre un pool con worktree en primer plano
+# bajo una reserva imposible e imprime los segundos que tardó.
+refused_pool() {
+  local label="$1" started="$SECONDS"
+  shift
+  printf 'one\n' | env THYROX_ROOT="$ROOT" THYROX_RUNTIME_DIR="$F/$label.runtime" \
+      LIFECYCLE_TEST_STARTED="$F/$label.started" LIFECYCLE_TEST_RELEASE="$F/$label.release" \
+      HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-time" \
+      HEADLESS_POOL_HISTORY_DIR="$F/$label.history" THYROX_ITEM_WORKTREE_DISK_RESERVE_MB=1000000000 "$@" \
+      timeout 120 bash "$ROOT/src/session/headless-pool.sh" --prompt "$F/prompt.md" \
+          --out "$REPO/$BENCH/$label" --model claude-sonnet-5 --width 1 --isolation worktree --cwd "$REPO" \
+          > "$F/$label.log" 2>&1
+  echo $((SECONDS - started))
+}
+elapsed7="$(refused_pool run7)"
+check "sin disco declarado, el ítem se rehúsa sin esperar" "$([[ "$elapsed7" -lt 10 ]] && echo yes)" yes
+check "el rechazo nombra la admisión por disco" "$(grep -c 'no hay disco para el worktree' "$REPO/$BENCH/run7/1.err")" 1
+check "el ítem rehusado quedó publicado" "$(bash "$ROOT/bin/pool_lifecycle" closed-items "$REPO/$BENCH/run7")" 1
+
+# --- caso 7c: control — con la espera declarada, el rechazo tarda esa espera -
+elapsed7c="$(refused_pool run7c THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=6)"
+check "control: con espera de 6 s, el rechazo tarda al menos 6 s" "$([[ "$elapsed7c" -ge 6 ]] && echo yes)" yes
 
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]

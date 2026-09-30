@@ -242,7 +242,7 @@ sweep() {
         # >>> sweep-closed-guard
         # El worktree de un ítem que no publicó su `<n>.closed` no se retira: es
         # lo único que conserva su trabajo hasta que `pool_lifecycle reconcile`
-        # lo recupere. Retirarlo debajo de un ítem vivo fue H-THYROX-283.
+        # lo recupere, y puede pertenecer a un ítem que sigue vivo.
         item="${path##*/}"
         if run_item "$live_dir" "$item" && ! bash "$LIFECYCLE_BIN" is-closed "$out" "$item"; then
             echo "item_worktree: se conserva el worktree del ítem $item, sin cerrar: $path" >&2
