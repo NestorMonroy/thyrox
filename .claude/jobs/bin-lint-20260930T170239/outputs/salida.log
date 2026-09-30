@@ -1,0 +1,5 @@
+shellcheck: 0 hallazgo(s) (alcance medido: 60 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 211 archivo(s))
+pyright: 1 hallazgo(s) (alcance medido: 211 archivo(s))
+    src/corpus/pdf_to_text.py:87: reportMissingImports Import "pdfplumber" could not be resolved
+__BG_EXIT__=1
