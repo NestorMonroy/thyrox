@@ -1,0 +1,22 @@
+predecessor_run: .thyrox/runtime/pool/3fea51d3d513-20260930T214907-2267
+predecessor_item: 3
+worktree: .thyrox/pool-worktrees/3fea51d3d513/3
+base_commit: 4ffa8a6271c4270572ccf2a2c2de6f1b81ba29fd
+patch: .claude/workbench/daemon-parity-closure-20260930T214805/outputs/interrupted/workers.patch
+patch_sha256: 0540b9f6cdb9ea5d850acff16e71d25da4adeb23fdf5a5ac40d960c0826aefb7
+## git status --short
+ M src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+ M src/packages/daemon/src/workerVm.ts
+?? src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+?? src/packages/daemon/tsconfig.check.json
+## git diff --name-only HEAD
+src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+src/packages/daemon/src/workerVm.ts
+## git ls-files --others --exclude-standard
+src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+src/packages/daemon/tsconfig.check.json
+## archivos del patch
+src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+src/packages/daemon/src/workerVm.ts
+src/packages/daemon/tsconfig.check.json

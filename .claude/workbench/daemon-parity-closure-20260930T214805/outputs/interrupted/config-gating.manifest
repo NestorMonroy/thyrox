@@ -1,0 +1,28 @@
+predecessor_run: .thyrox/runtime/pool/3fea51d3d513-20260930T214907-2267
+predecessor_item: 1
+worktree: .thyrox/pool-worktrees/3fea51d3d513/1
+base_commit: a218cf142f82edc52755a05deb76dc6cdfad74a7
+patch: .claude/workbench/daemon-parity-closure-20260930T214805/outputs/interrupted/config-gating.patch
+patch_sha256: 2808b834884e2cb5db58960aea89265292ceddf5d317cf5356b9bb78e6c43536
+## git status --short
+ M src/packages/daemon/src/daemonCli.ts
+ M src/packages/daemon/src/daemonConfig.ts
+ M src/packages/daemon/src/main.ts
+?? src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+?? src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+?? src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts
+## git diff --name-only HEAD
+src/packages/daemon/src/daemonCli.ts
+src/packages/daemon/src/daemonConfig.ts
+src/packages/daemon/src/main.ts
+## git ls-files --others --exclude-standard
+src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts
+## archivos del patch
+src/packages/daemon/src/daemonCli.ts
+src/packages/daemon/src/daemonConfig.ts
+src/packages/daemon/src/main.ts
+src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts
