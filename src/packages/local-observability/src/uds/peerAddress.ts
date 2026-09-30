@@ -1,7 +1,7 @@
 /**
  * Las direcciones de un par: cómo se escriben (`uds:`, `bridge:`, `did:`),
  * cómo se comparan dos sockets, y a qué socket se puede responder. Porte de
- * `R`, `vye`, `M1`, `E`, `K`/`fJ`, `j`/`cLo`, `J`/`ZFr`, `lh`, `ffn`, `T`,
+ * `R`, `vye`, `M1`, `E`, `K`/`fJ`, `j`/`cLo`/`JFr`, `J`/`ZFr`, `lh`, `ffn`, `T`,
  * `Vce`, `mJ`, `p`, `r3n`, `P`, `N`, `m`, `Q`, `a`, `eUr`, `ee`/`D`, `dLo`,
  * `tUr`, `M`, `ne` e `I` (`chunk-q8a07cv0.js`), y de `Wh`, `zF` y `wn`
  * (`chunk-yqm14hey.js`) de 2.1.283.
@@ -27,8 +27,10 @@ const GLOBAL_INBOX_PIPE = new RegExp(`^${INBOX_PIPE_PREFIX}[0-9a-f]{32}$`, 'i')
 
 /** `K`. */
 const PEER_ADDRESS = new RegExp(`^(?:uds|bridge|did):[${ADDRESS_CHARS}]{1,200}$`)
+/** `JFr`: la longitud máxima de una dirección desnuda; SendMessage la usa de piso para su campo `to`. */
+export const MAX_BARE_ADDRESS_LENGTH = 300
 /** `j`. */
-const BARE_ADDRESS = new RegExp(`^[${ADDRESS_CHARS}]{1,300}$`)
+const BARE_ADDRESS = new RegExp(`^[${ADDRESS_CHARS}]{1,${MAX_BARE_ADDRESS_LENGTH}}$`)
 /** `Y`, `q` y `J`: una ruta de socket, un pipe, y el prefijo de una ruta de socket. */
 const SOCKET_PATH = /^\/\S*\.sock$/
 const PIPE_PATH = /^[\\/]{2}[.?][\\/]pipe[\\/]/i
