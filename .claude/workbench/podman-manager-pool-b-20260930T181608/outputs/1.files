@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+src/packages/daemon/src/podman/podmanWorkerManager.ts
+tests/daemon/podman_worker_manager_probe.ts
+tests/daemon/test-podman-worker-manager-real.sh
