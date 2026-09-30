@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790794278.356	   729.052	0	0	0	0	_headless_item 1 'item1 — TASK-THYROX-0664, el gate de idioma de identificadores cubre shell. Fuente de verdad: /home/user/thyrox/.claude/workbench/shell-identifier-gate-20260930T185047/source.md. Te pertenecen src/verify/check_identifier_language.py, el módulo nuevo de extracción bajo src/verify/, tests/verify/test_identifier_language_shell.py, .githooks/pre-commit y .claude/baselines/identifier_language_baseline.txt.'
