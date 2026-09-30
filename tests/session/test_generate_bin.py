@@ -301,6 +301,28 @@ def test_python_wrapper_missing_interpreter(base: pathlib.Path) -> None:
           "no debería correr" not in r.stdout)
 
 
+def test_inherited_root_does_not_redirect_the_generator(base: pathlib.Path) -> None:
+    """Una copia del árbol construye SU ``bin/``, aunque herede otro ``THYROX_ROOT``.
+
+    Medido (TASK-THYROX-0245): ``generate_bin.py`` corrido en una copia
+    escribió en el ``bin/`` del clon original, porque la variable heredada del
+    proceso gana a la ubicación en ``reach.thyrox_root()``.
+    """
+    elsewhere = base / "other-clone"
+    elsewhere.mkdir()
+    previous = os.environ.get("THYROX_ROOT")
+    os.environ["THYROX_ROOT"] = str(elsewhere)
+    try:
+        resolved = gb.repository_root()
+    finally:
+        if previous is None:
+            os.environ.pop("THYROX_ROOT", None)
+        else:
+            os.environ["THYROX_ROOT"] = previous
+    check("con THYROX_ROOT heredado de otro clon, el generador resuelve su propio árbol",
+          resolved == ROOT, resolved)
+
+
 def test_no_wrapper_asks_to_block_on_the_real_tree() -> None:
     """Ningun envoltorio del arbol real pide bloqueo por falta de utillaje.
 
@@ -1198,6 +1220,7 @@ def main() -> int:
         test_typescript_names_resolve_stem_collisions(base)
         test_typescript_wrapper_degrades_without_bun(base)
         test_wrapper_exports_root_across_exec(base)
+        test_inherited_root_does_not_redirect_the_generator(base)
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
     test_library_modules_are_silent_when_run_as_scripts()

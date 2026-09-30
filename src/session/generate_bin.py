@@ -230,14 +230,21 @@ BASH_BUILTINS: frozenset[str] = frozenset({
 
 
 def repository_root() -> pathlib.Path:
-    """La raíz de thyrox, por el localizador y no por aritmética de ruta.
+    """La raíz del árbol que contiene este archivo: el ``bin/`` que se genera es el suyo.
 
-    ``parents[2]`` acertaba mientras este archivo viviera en ``src/session/`` y
-    fallaba **en silencio** al moverlo: el generador compondría su plan contra
-    otro árbol y publicaría un ``bin/`` vacío sin reventar. ``thyrox_root()``
-    resuelve por variable declarada o por ascenso hasta el marcador, así que
-    sobrevive a la mudanza del archivo.
+    Se localiza por ascenso hasta el marcador de thyrox, no por aritmética de
+    ruta: ``parents[2]`` fallaba en silencio al mover el archivo.
+
+    No se consulta ``THYROX_ROOT`` antes del ascenso, a diferencia de
+    ``reach.thyrox_root()``: en una copia o un worktree la variable heredada
+    nombra el clon original, y el generador escribía en SU ``bin/``
+    (TASK-THYROX-0245). Sin marcador en ningún ancestro, se delega en el
+    localizador general.
     """
+    here = pathlib.Path(__file__).resolve().parent
+    for level in (here, *here.parents):
+        if (level / reach.THYROX_MARKER).is_file():
+            return level
     return reach.thyrox_root()
 
 
