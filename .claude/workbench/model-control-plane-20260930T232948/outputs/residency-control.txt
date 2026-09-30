@@ -1,0 +1,4 @@
+inicial: []
+tras keep_alive 0:  []
+tras keep_alive -1: [{"name":"thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701","size_vram":236432916,"expires_at":"2319-01-10T23:18:43.873685881Z"}]
+tras descarga explicita (sin prompt, keep_alive 0): []

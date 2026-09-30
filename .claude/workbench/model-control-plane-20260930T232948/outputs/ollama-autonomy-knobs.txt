@@ -1,0 +1,16 @@
+== variables OLLAMA_* con descripcion
+OLLAMA_CONTEXT_LENGTHloading base model %sreading temp 
+OLLAMA_FLASH_ATTENTIONSet 'nowordwrap' mode.  /bye            
+OLLAMA_KEEP_ALIVEHEAD check %s
+OLLAMA_KV_CACHE_TYPELLAMA_ARG_FIT_TARGETretrying blob upload
+OLLAMA_LLM_LIBRARY to override), skipping
+OLLAMA_LLM_LIBRARYOLLAMA_IGPU_ENABLEtrans
+OLLAMA_MAX_LOADED_MODELSstat 
+OLLAMA_NOPRUNEOLLAMA_ORIGINS on zero 
+OLLAMA_NUM_PARALLELOLLAMA_SCHED_SPREADOLLAMA_GPU_OVERHEADOLLAMA_LOAD_TIMEOUTchat_template.jinja
+== dispositivos
+      1 CUDA_VISIBLE_DEVICES
+      1 GPU_DEVICE_ORDINAL
+      1 HIP_VISIBLE_DEVICES
+      1 ROCR_VISIBLE_DEVICES
+== parametros de peticion

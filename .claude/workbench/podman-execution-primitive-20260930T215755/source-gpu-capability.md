@@ -170,3 +170,26 @@ Gobiernan sobre las secciones anteriores donde difieran.
 
    Pruebas: límite en un ancestro más restrictivo que el propio; el sentinela
    de v1 da `unlimited`; uso por encima del límite da `0`, no negativo.
+
+## Enmienda ADR-007 1.7.0 — lo que cambia para este ítem (`kaupamex-docs@fd4860384`)
+
+Thyrox es la autoridad del model scheduling; los runtimes de modelos son
+adapters. Este ítem NO construye el plano de control de modelos (catálogo,
+resolver, scheduler, grant: otras tareas), pero **no puede cerrar el ledger
+con la unidad `trabajo → reserva → PID`**, porque esas tareas lo extienden:
+
+1. **Cada reserva nombra su dispositivo** (UUID de la GPU que da el backend).
+   La admisión compara contra la memoria libre DE ESE dispositivo, nunca
+   contra la suma del anfitrión: 4 GiB libres en una GPU y 10 en otra no
+   admiten 12 GiB. Prueba: dos dispositivos falsos con 4 y 10 GiB, un pedido
+   de 12 → rehusado; de 8 → admitido en el de 10.
+2. **Cada reserva declara su tipo**: `worker` (lo de hoy), `residency` y
+   `request` (reservados para el scheduler de modelos). El dueño de una
+   `residency` no es un PID efímero sino una identidad de instancia con
+   generación; una `request` apunta a su `residency`. Este ítem implementa el
+   esquema y las operaciones con los tres tipos y prueba que liberar una
+   `residency` con `request` vivas se rehúsa; el uso real de `residency`/`request`
+   llega con el scheduler.
+3. **La atribución por PIDs del cgroup sigue valiendo para workers**; para un
+   runtime compartido la atribución sale del grant (otra tarea). No se
+   generaliza aquí la regla de PIDs a modelos.
