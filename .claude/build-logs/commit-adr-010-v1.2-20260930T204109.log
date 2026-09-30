@@ -1,0 +1,11 @@
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /home/user/kaupamex-docs/.claude/cache)
+0 hallazgo(s) nuevo(s): 0 inventado(s) · 0 prohibido(s) (alcance medido: 1 archivo(s); 1 hallazgo(s) en total; 820 en baseline; léxico: 1000000 formas; vetadas: 53)
+check-rst-sintaxis: 0 archivo(s) con errores de sintaxis
+  (alcance medido: 1 de 5879 — archivos indicados)
+check-rst-convenciones: OK — autoría canónica y tablas en list-table
+  (alcance medido: 1 archivos .rst pedidos por ruta; 0 declaraciones :autor:; bloques literales excluidos del check de tabla)
+  TASK-THYROX-0678 -> Give the Empaquetado series a governing document in kaupamex-docs
+  TASK-THYROX-0680 -> Measure which entry points reach each operational dependency
+[feature/complete-orm-root c58f56c88] Separate packaging, dependency, reach and role in ADR-010
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 1 file changed, 122 insertions(+), 60 deletions(-)
