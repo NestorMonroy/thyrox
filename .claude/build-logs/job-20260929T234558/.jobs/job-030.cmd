@@ -1,0 +1,1 @@
+bash bin/finding rst H-THYROX-219

@@ -1,0 +1,2 @@
+/home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-233-bun-no-adopta-descriptores-de-socket-ni-server-listen-fd-ni-new-net-socket-fd-asi-que-el-modo-tproxy-de-la-referencia-no-funciona-bajo-bun.rst
+EXIT=0
