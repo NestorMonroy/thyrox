@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -12,6 +12,7 @@ import {
   WorkerLaunchError,
   createPodmanExecutor,
   parseHardwareVerdict,
+  readHardwareVerdict,
   type HardwareVerdict,
   type PodmanWorkerManagerDeps,
   type VramAdmissionPort,
@@ -305,5 +306,50 @@ describe('createPodmanExecutor', () => {
       if (previous === undefined) delete process.env.THYROX_TOOLCHAIN_PODMAN_BIN
       else process.env.THYROX_TOOLCHAIN_PODMAN_BIN = previous
     }
+  })
+})
+
+/** Corre `readHardwareVerdict` contra un `bin/hardware-inventory` falso bajo un THYROX_ROOT temporal. */
+async function withFakeInventory<T>(script: string, body: () => Promise<T>): Promise<T> {
+  const root = mkdtempSync(join(tmpdir(), 'hardware-inventory-'))
+  mkdirSync(join(root, 'bin'))
+  writeFileSync(join(root, 'bin/hardware-inventory'), `#!/usr/bin/env bash\n${script}\n`)
+  const previous = process.env.THYROX_ROOT
+  process.env.THYROX_ROOT = root
+  try {
+    return await body()
+  } finally {
+    if (previous === undefined) delete process.env.THYROX_ROOT
+    else process.env.THYROX_ROOT = previous
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+describe('readHardwareVerdict — contrato de salida de hardware-inventory', () => {
+  test('exit 0 con verdict nvidia-usable es un veredicto medido', async () => {
+    const verdict = await withFakeInventory("printf 'verdict\\tnvidia-usable\\t\\n'; exit 0", readHardwareVerdict)
+    expect(verdict).toBe('nvidia-usable')
+  })
+
+  test('exit 1 con verdict none es un veredicto medido, no un error', async () => {
+    const verdict = await withFakeInventory(
+      "printf 'signal\\tlibcuda\\tabsent\\t-\\nverdict\\tnone\\tmissing=pci_nvidia\\n'; exit 1", readHardwareVerdict)
+    expect(verdict).toBe('none')
+  })
+
+  test('exit 3 con verdict partial es un veredicto medido', async () => {
+    const verdict = await withFakeInventory(
+      "printf 'verdict\\tpartial\\tmissing=libcuda\\n'; exit 3", readHardwareVerdict)
+    expect(verdict).toBe('partial')
+  })
+
+  test('exit 2 lanza con su stderr: no poder medir no es «none»', async () => {
+    const outcome = withFakeInventory("echo 'sin /sys legible' >&2; exit 2", readHardwareVerdict)
+    await expect(outcome).rejects.toThrow('sin /sys legible')
+  })
+
+  test('una línea verdict que contradice su código de salida lanza', async () => {
+    const outcome = withFakeInventory("printf 'verdict\\tnvidia-usable\\t\\n'; exit 1", readHardwareVerdict)
+    await expect(outcome).rejects.toThrow('contradice')
   })
 })

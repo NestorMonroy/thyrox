@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/bgDaemonWorkerSupervision.test.ts
+src/packages/daemon/src/__tests__/podmanWorkerSupervision.test.ts
+src/packages/daemon/src/bgDaemon.ts
+src/packages/daemon/src/podmanWorkerSupervision.ts

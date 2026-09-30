@@ -301,13 +301,36 @@ export function createPodmanExecutor(): PodmanExecutor {
   }
 }
 
-/** Veredicto real: corre `bin/hardware-inventory`, la misma combinación de ocho señales que usa el pool. */
+/**
+ * Contrato de salida de `bin/hardware-inventory` (`src/session/hardware-inventory.sh`):
+ * cada veredicto medido tiene su código; 2, o cualquier otro, es «no pude medir».
+ */
+const VERDICT_EXIT_CODES: Readonly<Record<HardwareVerdict, number>> = {
+  'nvidia-usable': 0,
+  none: 1,
+  partial: 3,
+}
+
+function isMeasuredExitCode(exitCode: number): boolean {
+  return Object.values(VERDICT_EXIT_CODES).includes(exitCode)
+}
+
+/**
+ * Veredicto real: corre `bin/hardware-inventory`, la misma combinación de ocho señales que usa el pool.
+ * Exige que la línea `verdict` y el código de salida digan lo mismo: si discrepan, ninguno es fiable.
+ */
 export async function readHardwareVerdict(): Promise<HardwareVerdict> {
   const result = await runProcess('bash', [join(thyroxRoot(), 'bin/hardware-inventory')])
-  if (result.exitCode !== 0) {
-    throw new Error(`hardware-inventory salió ${result.exitCode}: ${commandDetail(result)}`)
+  if (!isMeasuredExitCode(result.exitCode)) {
+    throw new Error(`hardware-inventory no pudo medir (salió ${result.exitCode}): ${commandDetail(result)}`)
   }
-  return parseHardwareVerdict(result.stdout)
+  const verdict = parseHardwareVerdict(result.stdout)
+  if (VERDICT_EXIT_CODES[verdict] !== result.exitCode) {
+    throw new Error(
+      `hardware-inventory da «${verdict}», que contradice su salida ${result.exitCode} ` +
+      `(esperada ${VERDICT_EXIT_CODES[verdict]})`)
+  }
+  return verdict
 }
 
 /** Admisión real: `gpu_monitor` sobre el registro compartido `ledger`. */

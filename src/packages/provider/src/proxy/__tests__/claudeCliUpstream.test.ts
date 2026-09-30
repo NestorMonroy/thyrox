@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { startProxyServer, type ProxyStartConfig, type RunningProxy } from '../startServer.ts'
-import { createCliUpstreamForwarder } from '../claudeCli/forwarder.ts'
+import { createCliUpstreamForwarder, unexpectedToolUseMessage } from '../claudeCli/forwarder.ts'
 import type { ForwardRequest } from '../server.ts'
 
 const KEY = 'sk-local'
@@ -204,6 +204,38 @@ describe('C5b y C5c: el puente devuelve el tool_use y el tool_result reanuda la 
     })
     expect(response.status).toBe(400)
     expect(((await response.json()) as { error: { message: string } }).error.message).toContain('toolu_ajeno')
+  })
+
+  test('un tool_result que el turno vivo no espera es un 400 que nombra lo que sí espera, sin entregar nada a claude', async () => {
+    const dir = logDir()
+    const proxy = proxyWith(dir)
+    const first = await send(proxy, { model: 'local-model', tools: [LS_TOOL], messages: [{ role: 'user', content: 'TOOL' }] })
+    const firstBody = await first.json() as { content: Record<string, unknown>[] }
+    const prefix = [{ role: 'user', content: 'TOOL' }, { role: 'assistant', content: firstBody.content }]
+    const mixed = await send(proxy, {
+      model: 'local-model', tools: [LS_TOOL],
+      messages: [...prefix, { role: 'user', content: [
+        { type: 'tool_result', tool_use_id: 'toolu_fake_1', content: 'a.txt' },
+        { type: 'tool_result', tool_use_id: 'toolu_intruso', content: 'b.txt' },
+      ] }],
+    })
+    expect(mixed.status).toBe(400)
+    const message = ((await mixed.json()) as { error: { message: string } }).error.message
+    expect(message).toContain('toolu_intruso')
+    expect(message).toContain('espera: toolu_fake_1')
+    expect(invocations(dir).some(i => i.phase === 'tool_result_received')).toBe(false)
+
+    const retried = await send(proxy, {
+      model: 'local-model', tools: [LS_TOOL],
+      messages: [...prefix, { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_fake_1', content: 'a.txt' }] }],
+    })
+    expect(retried.status).toBe(200)
+    expect(((await retried.json()) as { content: unknown }).content).toEqual([{ type: 'text', text: 'resultado: a.txt' }])
+  })
+
+  test('el mensaje del tool_use inesperado dice cuando el turno no espera ninguno', () => {
+    expect(unexpectedToolUseMessage('toolu_x', [])).toBe('ninguna llamada suspendida espera el tool_use toolu_x; el turno vivo no espera ninguno')
+    expect(unexpectedToolUseMessage('toolu_x', ['toolu_a', 'toolu_b'])).toBe('ninguna llamada suspendida espera el tool_use toolu_x; el turno vivo espera: toolu_a, toolu_b')
   })
 
   test('si el cliente no vuelve antes del plazo, el proceso suspendido termina y el tool_result tardío es 400', async () => {

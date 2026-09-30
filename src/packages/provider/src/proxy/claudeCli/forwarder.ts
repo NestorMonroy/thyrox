@@ -116,6 +116,28 @@ function bridgeContentOf(content: unknown): unknown[] {
   })
 }
 
+/**
+ * El 400 de un `tool_result` que el turno vivo no espera: nombra también lo
+ * que sí espera, para que el error traiga su evidencia sin log del proxy.
+ */
+export function unexpectedToolUseMessage(unexpectedId: string, awaitingIds: readonly string[]): string {
+  const awaited = awaitingIds.length === 0 ? 'no espera ninguno' : `espera: ${awaitingIds.join(', ')}`
+  return `ninguna llamada suspendida espera el tool_use ${unexpectedId}; el turno vivo ${awaited}`
+}
+
+function toolResultBlocksOf(message: ConversationMessage): ContentBlock[] {
+  return contentBlocksOf(message.content).filter(block => block.type === 'tool_result')
+}
+
+/**
+ * El primer `tool_result` que ninguna llamada suspendida espera. Se mide
+ * antes de entregar nada: una entrega parcial dejaría a claude con parte de
+ * los resultados y al cliente sin forma de reintentar la petición entera.
+ */
+function unexpectedResultOf(turn: RunningTurn, last: ConversationMessage): string | undefined {
+  return toolResultBlocksOf(last).map(block => String(block.tool_use_id)).find(id => !turn.awaiting.has(id))
+}
+
 function failureCause(turn: RunningTurn, finish: TurnFinish): string {
   const stderr = turn.process.stderrTail()
   if (finish.kind === 'result') {
@@ -189,18 +211,15 @@ export function createCliUpstreamForwarder(config: CliUpstreamForwarderConfig): 
     }
   }
 
-  /** Entrega cada `tool_result` a la llamada que lo espera; el id que ninguna espera es un error. */
-  function deliverResults(turn: RunningTurn, last: ConversationMessage): string | undefined {
-    for (const block of contentBlocksOf(last.content)) {
-      if (block.type !== 'tool_result') continue
+  /** Entrega cada `tool_result` a la llamada que lo espera; `unexpectedResultOf` ya descartó los que ninguna espera. */
+  function deliverResults(turn: RunningTurn, last: ConversationMessage): void {
+    for (const block of toolResultBlocksOf(last)) {
       const id = String(block.tool_use_id)
-      const call: BridgeCall | undefined = turn.awaiting.get(id)
-      if (!call) return id
+      const call = turn.awaiting.get(id) as BridgeCall
       turn.awaiting.delete(id)
       call.deliver({ content: bridgeContentOf(block.content), isError: block.is_error === true })
     }
     turn.resetAssistant()
-    return undefined
   }
 
   function respond(request: ForwardRequest, response: MessagesResponse): Response {
@@ -250,11 +269,12 @@ export function createCliUpstreamForwarder(config: CliUpstreamForwarderConfig): 
     let turn: RunningTurn
     if (located.kind === 'live') {
       turn = located.turn
-      const unexpected = deliverResults(turn, last)
+      const unexpected = unexpectedResultOf(turn, last)
       if (unexpected !== undefined) {
         registry.hold(turn, upstream.pendingResultTtlMs ?? DEFAULT_PENDING_RESULT_TTL_MS, held => abandon(held, ABANDONED_REASON))
-        return errorResponse(400, 'invalid_request_error', `ninguna llamada suspendida espera el tool_use ${unexpected}`, request.requestId)
+        return errorResponse(400, 'invalid_request_error', unexpectedToolUseMessage(unexpected, [...turn.awaiting.keys()]), request.requestId)
       }
+      deliverResults(turn, last)
     } else {
       if (located.kind === 'resume') {
         const suspended = registry.take(located.sessionId)
