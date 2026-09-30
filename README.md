@@ -233,8 +233,23 @@ bash bin/declarations                    # 2. ¿qué falta declarar?
 # THYROX_JOBS_<CLON> (ver .env.example, sección «Hogares que el consumidor
 # declara y thyrox NO inventa» para el resto de la familia)
 bash bin/check_env_contract_keys --strict   # 3. contrato cerrado
-bash tests/run.sh                                     # 4. el árbol funciona
+bash install.sh                             # 4. activa los githooks del proveedor y de cada clon
+bash bin/check_githooks_activos --strict    # 5. ¿corren de verdad? exit 1 nombra el clon y su arreglo
+bash tests/run.sh                           # 6. el árbol funciona
 ```
+
+**Sin el paso 4 ningún gate de commit corre, y nada lo dice.** `core.hooksPath`
+vive en `.git/config`, que no se clona: un clon nuevo trae `.githooks/` escrito
+y git no lo mira. Medido el 2026-09-30: `kaupamex-docs` tenía los hooks
+inactivos y sus commits pasaron sin ningún gate. El paso 5 es el que lo
+detecta; su salida trae la orden exacta que lo arregla.
+
+**Una suite que lanza procesos aísla sus hogares con
+`src/lib/test_homes.sh::thyrox_isolate_homes`, no exportando la clave global.**
+La clave por clon del `.env` (`THYROX_JOBS_THYROX`…) le gana a la global, así
+que `export THYROX_JOBS_DIR=$TMP/jobs` deja que la suite escriba en el
+`.claude/jobs/` real. El pre-commit lo rehúsa (`check_test_home_isolation`)
+en cada suite que el commit toca.
 
 ### Y para usar TODOS los guiones de `src/session/`, `src/verify/`, `src/agents/`
 

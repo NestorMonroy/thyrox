@@ -28,11 +28,19 @@ ok=0; failures=0
 check() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
         else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; failures=$((failures+1)); fi; }
 
+# El hogar REAL de trabajos, resuelto antes de aislar nada: la suite no puede
+# dejar ahí ninguna ejecución. Medido 2026-09-30: con `THYROX_JOBS_THYROX`
+# declarado en el `.env`, la clave del clon le ganaba a la global de abajo y
+# `vivo`, `plana` y `barrera` aterrizaban en `.claude/jobs/` del árbol.
+real_jobs_home="$(PYTHONPATH=src python3 -c 'from session import job_runs; print(job_runs.jobs_dir())')"
+real_jobs_before="$(ls "$real_jobs_home" 2>/dev/null | sort)"
 TMP="$(mktemp -d)"; pid=""
 # Si una aserción deja el trabajo bloqueado en la FIFO, la limpieza lo termina
 # por grupo: el trabajo nace líder de su sesión.
 trap '[[ -z "$pid" ]] || kill -- "-$pid" 2>/dev/null; rm -rf "${TMP:?}"' EXIT
-export THYROX_JOBS_DIR="$TMP/jobs"
+# shellcheck source=src/lib/test_homes.sh
+source src/lib/test_homes.sh
+thyrox_isolate_homes "$TMP/homes"
 export THYROX_SESSION_LEDGER_DIR="$TMP/ledger"
 export THYROX_RUNTIME_DIR="$TMP/runtime"
 unset BG_DIR
@@ -90,6 +98,11 @@ BG_DIR="$flat_home" $BG start plana --grace 0 -- bash -c 'echo plana' >/dev/null
 flat_pid="$(cat "$flat_home/plana.pid")"
 timeout 30 tail --pid="$flat_pid" -f /dev/null
 check "el log flat_home está en su hogar" "$(grep -c '^plana$' "$flat_home/plana.log" 2>/dev/null)" "1"
+
+echo "== 6. el hogar real de trabajos no gana ejecuciones =="
+check "ninguna ejecución de la suite aterrizó en $real_jobs_home" \
+  "$(comm -13 <(printf '%s\n' "$real_jobs_before") <(ls "$real_jobs_home" 2>/dev/null | sort) \
+      | grep -cE '^(vivo|plana|barrera)-')" "0"
 
 echo "test-bg-live-log: $((ok + failures)) aserciones — $ok ok, $failures falla(s)"
 [[ "$failures" -eq 0 ]]

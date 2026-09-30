@@ -127,10 +127,10 @@ principio de este archivo.
 
 Uso::
 
-    python3 src/session/generate_bin.py                    # escribe/actualiza bin/
-    python3 src/session/generate_bin.py --check             # 0 si bin/ ya está al día
-    python3 src/session/generate_bin.py --dry-run           # imprime el plan, no escribe
-    python3 src/session/generate_bin.py --install-user-bin  # además, copia a ~/.local/bin
+    bash bin/generate_bin                                  # escribe/actualiza bin/
+    bash bin/generate_bin --check                          # 0 si bin/ ya está al día
+    bash bin/generate_bin --dry-run                        # imprime el plan, no escribe
+    bash bin/generate_bin --install-user-bin               # además, copia a ~/.local/bin
 """
 from __future__ import annotations
 
@@ -958,7 +958,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  sobran: {', '.join(stale)}", file=sys.stderr)
         if diverged:
             print(f"  contenido distinto: {', '.join(diverged)}", file=sys.stderr)
-        print("  corre: python3 src/session/generate_bin.py", file=sys.stderr)
+        # Por ruta el módulo no compone PYTHONPATH y muere con ModuleNotFoundError:
+        # el remedio que se publica es el envoltorio, que sí lo compone.
+        print("  corre: bash bin/generate_bin", file=sys.stderr)
         return 1
 
     if args.dry_run:

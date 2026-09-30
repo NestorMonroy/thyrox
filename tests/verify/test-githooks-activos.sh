@@ -29,6 +29,11 @@ GUION="$RAIZ/src/verify/check_githooks_activos.py"
 
 ARBOL=$(mktemp -d)
 trap 'rm -rf "$ARBOL"' EXIT
+# Ningún `.env` del árbol gobierna la suite: el real puede declarar el roster
+# (`THYROX_REACH_ROOTS`), y entonces el caso «sin roster» lo encuentra y no
+# rehúsa. Un archivo vacío como única fuente de declaraciones lo aísla.
+: > "$ARBOL/isolated.env"
+export THYROX_ENV_FILE="$ARBOL/isolated.env"
 
 # api  -> OK        (hooksPath fijado, directorio con hook ejecutable)
 # db   -> SIN-FIJAR (clon de git sin el config)

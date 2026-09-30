@@ -227,6 +227,11 @@ python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
 # es un verde.
 python3 "$GATES/check_staged_live_writers.py" --repo "$ROOT" || CODE=1
 
+# Una suite que exporta sólo la clave GLOBAL de un hogar (`THYROX_JOBS_DIR`…)
+# escribe en el hogar real si el `.env` declara la clave por clon, que gana.
+# Mira sólo las suites que el commit toca: la deuda heredada se paga al tocar.
+python3 "$GATES/check_test_home_isolation.py" --repo "$ROOT" || CODE=1
+
 # Cada unidad de `.claude/cache/` en su carpeta con un README que dice qué
 # guarda, de qué episodio sale y cómo se regenera. Estaba cableado sólo en el
 # pre-commit compartido de los consumidores (`src/verify/pre-commit.sh`), así
