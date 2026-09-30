@@ -28,6 +28,9 @@ stalled_items() {
             [[ -e "$session" ]] || continue
             stream="${session%.session}.stream.jsonl"
             [[ -e "$stream" ]] || continue
+            # Con el `result` emitido el runner ya salió y el ítem verifica: el
+            # stream no vuelve a crecer y la verificación tiene su propio timeout.
+            tail -n 5 "$stream" | grep -q '"type":"result"' && continue
             age=$(( now - $(stat -c %Y "$stream") ))
             (( age > STALL_SECONDS )) && echo "sin avance ${age}s: $stream"
         done
