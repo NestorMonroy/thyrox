@@ -7,8 +7,8 @@ cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)" || exit 2
 readonly STALL_SECONDS="${WATCH_STALL_SECONDS:-900}"
 readonly POLL_SECONDS="${WATCH_POLL_SECONDS:-60}"
 readonly BENCH=.claude/workbench/task-census-20260930T064202
-readonly OUTPUTS=("$BENCH/impl-pool-a/outputs-2" "$BENCH/impl-pool-b/outputs")
-readonly JOBS=(impl-pool-a2 impl-pool-b)
+readonly OUTPUTS=("$BENCH/impl-pool-a/outputs-2" "$BENCH/impl-pool-b/outputs" "$BENCH/impl-pool-c/outputs")
+readonly JOBS=(impl-pool-a2 impl-pool-b impl-pool-c)
 
 closed_count() { bash bin/pool_lifecycle closed-items "$1" | wc -l; }
 
