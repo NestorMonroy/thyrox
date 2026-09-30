@@ -6,7 +6,9 @@ import {
   KV_CACHE_BYTES_PER_ELEMENT,
   MissingGgufKeyError,
   SERVING_BUFFER_MARGIN_BYTES,
+  attentionShapeOf,
   estimateServingMemory,
+  estimateServingMemoryFromShape,
 } from '../memoryEstimate.js'
 
 const QWEN2_METADATA: GgufMetadata = {
@@ -87,5 +89,25 @@ describe('estimateServingMemory — rehúsa entradas sin sentido', () => {
 
   test('tipo de caché KV desconocido', () => {
     expect(() => estimateServingMemory({ ...valid, kvCacheType: 'q2_k' as 'f16' })).toThrow(/q2_k/)
+  })
+})
+
+describe('estimateServingMemoryFromShape — la ruta del catálogo, sin metadata', () => {
+  test('attentionShapeOf extrae capas, cabezas KV y dimensión de cabeza', () => {
+    expect(attentionShapeOf(QWEN2_METADATA)).toEqual({ blockCount: 24, kvHeadCount: 2, headDimension: 64 })
+  })
+
+  test('da la misma cifra que la estimación desde la metadata', () => {
+    const fromMetadata = estimateServingMemory({ ggufBytes: Q4_K_M_BYTES, metadata: QWEN2_METADATA, contextLength: 8192, kvCacheType: 'q8_0' })
+    const fromShape = estimateServingMemoryFromShape({
+      ggufBytes: Q4_K_M_BYTES, attention: attentionShapeOf(QWEN2_METADATA), contextLength: 8192, kvCacheType: 'q8_0',
+    })
+    expect(fromShape).toEqual(fromMetadata)
+  })
+
+  test('una forma con un campo que no es entero positivo se rehúsa con su nombre', () => {
+    const attention = { blockCount: 24, kvHeadCount: 0, headDimension: 64 }
+    expect(() => estimateServingMemoryFromShape({ ggufBytes: Q4_K_M_BYTES, attention, contextLength: 2048, kvCacheType: 'f16' }))
+      .toThrow(new InvalidMemoryEstimateInputError('attention.kvHeadCount', 'se espera un entero positivo, llegó 0'))
   })
 })

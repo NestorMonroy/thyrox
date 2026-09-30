@@ -62,17 +62,37 @@ export class InvalidMemoryEstimateInputError extends Error {
   }
 }
 
-interface AttentionShape {
+/** Forma de la atención: lo único de la metadata que la caché KV necesita. */
+export interface AttentionShape {
   readonly blockCount: number
   readonly kvHeadCount: number
   readonly headDimension: number
 }
 
+/** La misma estimación a partir de una forma ya extraída (la del catálogo). */
+export interface ShapeServingMemoryInput {
+  readonly ggufBytes: number
+  readonly attention: AttentionShape
+  readonly contextLength: number
+  readonly kvCacheType: KvCacheType
+}
+
 /** Peso + caché KV + margen de buffers, en bytes. */
 export function estimateServingMemory(input: ServingMemoryInput): ServingMemoryEstimate {
+  return estimateServingMemoryFromShape({
+    ggufBytes: input.ggufBytes,
+    attention: attentionShapeOf(input.metadata),
+    contextLength: input.contextLength,
+    kvCacheType: input.kvCacheType,
+  })
+}
+
+/** Peso + caché KV + margen de buffers, sin releer la metadata. */
+export function estimateServingMemoryFromShape(input: ShapeServingMemoryInput): ServingMemoryEstimate {
   requirePositiveInteger('ggufBytes', input.ggufBytes)
   requirePositiveInteger('contextLength', input.contextLength)
-  const kvCacheBytes = kvCacheSize(attentionShape(input.metadata), input.contextLength, kvBytesPerElement(input.kvCacheType))
+  requireAttentionShape(input.attention)
+  const kvCacheBytes = kvCacheSize(input.attention, input.contextLength, kvBytesPerElement(input.kvCacheType))
   return {
     weightsBytes: input.ggufBytes,
     kvCacheBytes,
@@ -86,7 +106,8 @@ function kvCacheSize(shape: AttentionShape, contextLength: number, bytesPerEleme
   return Math.ceil(elements * bytesPerElement)
 }
 
-function attentionShape(metadata: GgufMetadata): AttentionShape {
+/** Forma de la atención desde la metadata GGUF; una clave ausente se rehúsa con su nombre. */
+export function attentionShapeOf(metadata: GgufMetadata): AttentionShape {
   const architecture = architectureOf(metadata)
   const headCountKey = `${architecture}.attention.head_count`
   const embeddingKey = `${architecture}.embedding_length`
@@ -100,6 +121,12 @@ function attentionShape(metadata: GgufMetadata): AttentionShape {
     kvHeadCount: positiveIntegerKey(metadata, `${architecture}.attention.head_count_kv`),
     headDimension: embeddingLength / headCount,
   }
+}
+
+function requireAttentionShape(shape: AttentionShape): void {
+  requirePositiveInteger('attention.blockCount', shape.blockCount)
+  requirePositiveInteger('attention.kvHeadCount', shape.kvHeadCount)
+  requirePositiveInteger('attention.headDimension', shape.headDimension)
 }
 
 function architectureOf(metadata: GgufMetadata): string {
