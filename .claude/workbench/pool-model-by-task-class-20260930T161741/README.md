@@ -197,3 +197,35 @@ Lo que no se vio:
    (`F=`, línea 20) y su `trap` lo retira al salir. Hoy no existe. Era
    inocuo, pero el flujo lo dejó como «lo reviso cuando termine» y no consta
    que se revisara.
+
+## Quinto flujo analizado: «¿dónde escribe cada cosa?» (tras `597bec85`, 2026-09-29 20:13)
+
+La respuesta de aquella sesión, contrastada con el código y el disco hoy:
+
+1. **«`.claude/build-logs/` — ahí escribe `run-task-pool`» no sale del código.**
+   `run-task-pool.sh` no tiene hogar por defecto: lo resuelve
+   `background.py --log-home` desde `THYROX_BACKGROUND_LOG_<CLONE>` o
+   `THYROX_BACKGROUND_LOG_DIR`, y sin declaración **rehúsa** (medido hoy:
+   «NO se emite un hogar por defecto»; no hay `.env` en el árbol y la variable
+   no está en el proceso). Que haya `job-*` en `build-logs` sólo prueba que
+   alguna invocación lo declaró así. Además `build-logs` tiene hoy 127
+   entradas `job-*` y **218** que no lo son, escritas a mano (entre ellas
+   `stash-guard`, `pool-d-integrate` y `rejected-reverify`, de esta sesión).
+   «La separación está en el código, no la decidí yo» es falso para ese
+   directorio: la decide cada invocación.
+2. **«La carpeta pasajera de `.claude/cache/` salió de `cache_dir()`» es
+   falso.** `tests/session/test-headless-pool-worktree.sh:20` compone
+   `F="$RAIZ/.claude/cache/test-headless-pool-worktree/$$"` a mano, sin
+   `cache.paths.cache_dir()` ni `THYROX_CACHE_DIR`. Es un hogar escrito en
+   una prueba que el mecanismo de caché no ve (`check_cache_layout` no la
+   cuenta porque la prueba la borra al salir).
+3. **«`.claude/cache/` tiene 30 entradas»** mezcla dos unidades con el gate
+   que corrió dos líneas antes: `ls` cuenta 30 entradas de primer nivel;
+   `check_cache_layout` publicó 285 unidades versionadas. Las dos cifras son
+   ciertas, pero con una sola rotulada «entradas» no se pueden comparar.
+4. **`salida.log` vivo en `.claude/jobs/`** era cierto a las 20:13.
+   `845e3e47f` (20:37) lo llevó al runtime: hoy `thyrox-bg start` imprime
+   `LIVE=<runtime>/jobs/<run>/salida.log`, y el log de `.claude/jobs/…`
+   aparece al asentar el trabajo.
+5. **`.claude/logs/` no existe y nada lo nombra.** Medido: 0 referencias
+   fuera de bancos y trabajos. Es correcto que no exista; no es un hueco.
