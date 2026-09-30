@@ -8,10 +8,25 @@
 
 ## La premisa, si se corrigio al primer comando
 
-La premisa era que los 252 GiB del disco están disponibles para quien sepa
-pedirlos. `disk-headroom` la corrige: **214.92 GiB (85.3 %) son reserva del
-ext4 y la reserva es inalcanzable** (`RESERVA_INALCANZABLE`, exit 3). El techo
-real es el `Avail`: 17.5 GiB al medir.
+La premisa era que el tamaño de `/dev/vda` es capacidad disponible para quien
+sepa pedirla. **El tamaño nominal del dispositivo no representa capacidad
+asignable al workload**: el techo operativo es el espacio que el sistema de
+archivos reporta accesible para el proceso, 17.5 GiB al medir.
+
+El reparto, medido con `statvfs` (no `total − Avail`):
+
+| Componente | GiB | De dónde sale |
+|---|---|---|
+| capacidad (`f_blocks`) | 251.97 | |
+| en uso (`f_blocks − f_bfree`) | 20.15 | archivos, metadata, sistema |
+| libre pero no disponible (`f_bfree − f_bavail`) | 214.92 | lo que `disk-headroom` llama reserva |
+| disponible para el proceso (`f_bavail`) | 16.90 | el techo operativo |
+
+`disk-headroom` usa exactamente `f_bfree − f_bavail`
+(`src/repo/disk-headroom.sh:109`), así que el uso real no entra en la cifra de
+reserva. Lo que la cifra NO distingue es el sobrecoste interno del ext4 que el
+superbloque no expone como libre: queda fuera de las tres filas, no dentro de
+la reserva.
 
 ## Las piezas
 
@@ -31,16 +46,27 @@ real es el `Avail`: 17.5 GiB al medir.
 | virtio | `vdb`–`vdf` son de sólo lectura y de MiB; añadir un disco es decisión del hipervisor, no del invitado | no |
 | zram | `zram0` de 0 B; es RAM comprimida (16 GiB totales), no disco | no: no es la reserva, y restaría memoria a la inferencia |
 
-**Conclusión: los 252 GiB no se pueden usar desde dentro.** La reserva está
-cerrada en dos capas independientes (`resv_strict` y la capacidad retirada), y
-ambas las fija la plataforma. Reabrirla —`tune2fs -r`, remontar sin
+**Conclusión: no hay capacidad adicional disponible para el workload más allá
+del `Avail` que reporta el sistema de archivos.** La evidencia es la
+combinación —sistema de archivos, opciones de montaje, `statvfs`, capacidades
+y el almacén real de Podman—, no una sola de ellas: el montaje declara
+`resv_strict`; la reserva pertenece a `resuid=65534`/`resgid=65534` y el
+proceso corre como uid 0 con grupos {0}; y a `CapEff` le falta
+`CAP_SYS_RESOURCE`. Las tres las fija la plataforma.
+
+**Un hueco del instrumento, declarado:** el veredicto de `disk-headroom` no
+consulta `resuid`/`resgid`. Aquí no cambia el resultado (el proceso no es
+65534), pero un proceso que corriera como ese uid o grupo tendría otra
+respuesta. Se corrige en TASK-THYROX-0671. Reabrirla —`tune2fs -r`, remontar sin
 `resv_strict`, escribir el dispositivo en crudo— sería eludir el límite de
 recursos del entorno, no usarlo: no se implementa.
 
-**Lo que sí se implementa en TDD:** que el pull de infraestructura (imagen y
-modelo) se admita contra el techo real que `disk-headroom` mide, y rehúse
-antes de empezar con la necesidad y el techo nombrados, en vez de fallar a
-mitad de 5.5 GB con `no space left on device`.
+**Lo que sí se implementa en TDD:** la admisión de disco, paralela a la de
+VRAM. Lo admisible es `disponible − piso de seguridad − reservas vivas de
+otros dueños`, y medir y reservar ocurren bajo el mismo lock —el registro de
+`resource_admission`—, para que dos pulls concurrentes no vean los dos el
+mismo espacio libre. Un pull que no cabe rehúsa antes de empezar, en vez de
+fallar a mitad de 5.5 GB con `no space left on device`.
 
 *Metrica:* `statvfs`, opciones de montaje, `CapEff`, `lsblk` y `podman info`,
 una vez, en este contenedor.
