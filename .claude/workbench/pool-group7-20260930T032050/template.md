@@ -27,6 +27,9 @@ Ejecución en modo -p, sin nadie que te reanude:
   que retirarla hace caer exactamente las aserciones que dependen de ella, y dilo con números.
 - Nada de `/tmp` fijo: `tempfile.mkdtemp()` o `mktemp -d`, y se limpian. No leas stdin.
 - No añadas dependencias. No corras `tests/run.sh` ni lances trabajos en segundo plano.
+- No ejecutes `bin/binary extract`: escribe un corpus nuevo en `_references/` del árbol principal. El
+  corpus de 2.1.283 ya está extraído en `/home/user/thyrox/_references/claude-code-bin/2.1.283/`: léelo
+  con `rg`/`sed -n`, o con `bin/binary symbol|literal|declarations`.
 - No escribas bajo `_references/`, ni en `agent-results/agent_store.sqlite3`, ni en ningún repo
   fuera de tu worktree. No commitees: deja los archivos en tu worktree.
 - No termines tu turno esperando una notificación.
