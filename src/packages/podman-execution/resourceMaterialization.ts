@@ -332,9 +332,23 @@ function volumesDrifted(existing: InspectedResource, desired: DesiredResource): 
   return JSON.stringify(mounted) !== JSON.stringify(declared)
 }
 
+/** Etiqueta que Podman añade a una referencia sin etiqueta ni digest al guardarla. */
+const DEFAULT_IMAGE_TAG = 'latest'
+
+/**
+ * La referencia tal como Podman la guarda en el contenedor: una sin etiqueta ni
+ * digest queda con `:latest` (medido en 4.9.3 sobre una imagen local); una
+ * calificada y etiquetada queda igual.
+ */
+export function normalizeImageReference(reference: string): string {
+  if (reference.includes('@')) return reference
+  const lastSegment = reference.slice(reference.lastIndexOf('/') + 1)
+  return lastSegment.includes(':') ? reference : `${reference}:${DEFAULT_IMAGE_TAG}`
+}
+
 function driftOf(existing: InspectedResource, desired: DesiredResource, secretReplaced: boolean): DriftReason[] {
   const drift: DriftReason[] = []
-  if (existing.image !== desired.image) drift.push('image')
+  if (normalizeImageReference(existing.image) !== normalizeImageReference(desired.image)) drift.push('image')
   if (volumesDrifted(existing, desired)) drift.push('volume')
   if (existing.labels[CONFIG_DIGEST_LABEL_KEY] !== configDigest(desired)) drift.push('configuration')
   if (existing.labels[SECRETS_DIGEST_LABEL_KEY] !== secretsDeclarationDigest(desired)) drift.push('secret-declaration')

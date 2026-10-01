@@ -136,6 +136,16 @@ describe('ensureResource — convergencia', () => {
     expect(outcome.drift).toEqual(['image'])
   })
 
+  test('una imagen sin etiqueta es la misma que Podman guarda con :latest: no hay deriva de imagen', async () => {
+    const untagged = desired({ image: 'localhost/thyrox-helper' })
+    await ensureHealthy(untagged)
+    const container = host.containers.get(NAME)
+    if (container) container.image = 'localhost/thyrox-helper:latest'
+    const outcome = await ensureHealthy(untagged)
+    expect(outcome.action).toBe('kept')
+    expect(outcome.drift).toEqual([])
+  })
+
   test('entorno distinto: recreated por deriva de configuración', async () => {
     await ensureHealthy()
     const resource = desired({ environment: { POSTGRES_USER: 'other', POSTGRES_DB: 'thyrox', POSTGRES_PASSWORD_FILE: '/run/secrets/postgres-password' } })

@@ -5,7 +5,11 @@
  * binario que `thyrox_toolchain_require_podman` resolvió, o `podman` del PATH.
  */
 
-import { spawn } from 'node:child_process'
+import { spawn, type ChildProcess } from 'node:child_process'
+import { closeSync, constants, mkdtempSync, openSync, rmSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 export interface PodmanCommandResult {
   readonly exitCode: number
@@ -29,15 +33,62 @@ const DEFAULT_PODMAN_BIN = 'podman'
 const NO_EXIT_CODE = -1
 
 /**
- * Corre un binario y recoge su salida completa; rechaza sólo si no se pudo
- * lanzar. Sin `stdin` declarado no abre la entrada; con él, la escribe y la
- * cierra, así un valor sensible nunca viaja en argv.
+ * El shell intermedio recibe la ruta de la FIFO como primer argumento —nunca
+ * el valor—, la abre como fd 0 y reemplaza su proceso por el binario: el hijo
+ * hereda un pipe con nombre.
  */
-export function runCommand(bin: string, args: readonly string[], options: PodmanRunOptions = {}): Promise<PodmanCommandResult> {
+const EXEC_WITH_FIFO_STDIN = 'fifo="$1"; shift; exec "$@" < "$fifo"'
+/** Nombre de `$0` del shell intermedio, sólo para sus mensajes de error. */
+const FIFO_SHELL_NAME = 'thyrox-stdin'
+
+/**
+ * Corre un binario y recoge su salida completa; rechaza sólo si no se pudo
+ * lanzar. Sin `stdin` declarado el hijo no recibe entrada.
+ *
+ * Con `stdin`, el valor llega al hijo por una FIFO en un directorio privado
+ * (0700): Podman 4.9.3 rehúsa `-` si su stdin no es un pipe con nombre, y Bun
+ * entrega un socket (medido en el banco
+ * `podman-resource-materialization-20261001T145908`). El valor pasa por el
+ * kernel: nunca por argv, entorno ni disco.
+ */
+export async function runCommand(bin: string, args: readonly string[], options: PodmanRunOptions = {}): Promise<PodmanCommandResult> {
+  if (options.stdin === undefined) return collect(spawn(bin, [...args], { stdio: ['ignore', 'pipe', 'pipe'] }))
+  const directory = mkdtempSync(join(tmpdir(), 'thyrox-stdin-'))
+  const fifo = join(directory, 'stdin')
+  try {
+    const made = await collect(spawn('mkfifo', ['-m', '600', fifo], { stdio: ['ignore', 'pipe', 'pipe'] }))
+    if (made.exitCode !== 0) throw new Error(`mkfifo ${fifo}: ${made.stderr.trim()}`)
+    const child = spawn('sh', ['-c', EXEC_WITH_FIFO_STDIN, FIFO_SHELL_NAME, fifo, bin, ...args], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    const delivered = writeFile(fifo, options.stdin)
+    const result = await collect(child)
+    const reader = openFifoReader(fifo)
+    await delivered.catch(() => undefined)
+    if (reader !== null) closeSync(reader)
+    return result
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Si el hijo salió sin abrir su stdin, la escritura sigue bloqueada esperando
+ * un lector. Un lector sin bloqueo, abierto hasta que la escritura termina, la
+ * deja vaciarse en el búfer del pipe y el llamador no queda colgado. Cubre un
+ * valor que cabe en el búfer del pipe (64 KiB en Linux), que es el caso de un
+ * secreto.
+ */
+function openFifoReader(fifo: string): number | null {
+  try {
+    return openSync(fifo, constants.O_RDONLY | constants.O_NONBLOCK)
+  } catch {
+    return null
+  }
+}
+
+function collect(child: ChildProcess): Promise<PodmanCommandResult> {
   return new Promise((resolve, reject) => {
-    const stdio: ['ignore' | 'pipe', 'pipe', 'pipe'] = [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe']
-    const child = spawn(bin, [...args], { stdio })
-    if (options.stdin !== undefined) child.stdin?.end(options.stdin)
     let stdout = ''
     let stderr = ''
     child.stdout?.on('data', chunk => { stdout += chunk })

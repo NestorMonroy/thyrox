@@ -8,7 +8,8 @@
  *   exit <n>            sale con el código n;
  *   term <n>            instala un manejador de SIGTERM que sale con n,
  *                       escribe `ready` en stdout y espera la señal;
- *   write <ruta> <txt>  escribe txt en ruta y sale 0 (3 si no pudo).
+ *   write <ruta> <txt>  escribe txt en ruta y sale 0 (3 si no pudo);
+ *   read <ruta>         escribe en stdout el contenido de ruta (3 si no pudo).
  *
  * El manejador es obligatorio en `term`: el proceso es el PID 1 del
  * contenedor y el kernel descarta una señal sin manejador dirigida a él.
@@ -51,6 +52,15 @@ int main(int argc, char **argv) {
         if (write(fd, argv[3], length) != (ssize_t) length) return 3;
         close(fd);
         return 0;
+    }
+    if (argc >= 3 && strcmp(argv[1], "read") == 0) {
+        char buffer[4096];
+        int fd = open(argv[2], O_RDONLY);
+        if (fd < 0) return 3;
+        ssize_t count;
+        while ((count = read(fd, buffer, sizeof buffer)) > 0) write(1, buffer, (size_t) count);
+        close(fd);
+        return count < 0 ? 3 : 0;
     }
     return 1;
 }
