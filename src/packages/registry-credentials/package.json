@@ -1,0 +1,20 @@
+{
+  "name": "@thyrox/registry-credentials",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Credenciales de registro de imágenes por rol (TASK-THYROX-0725): resuelve la del publicador, la entrega a Podman en un authfile temporal fuera del workspace y lo retira siempre. La primitiva de Podman sólo recibe la ruta.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/podman-execution": "0.1.0"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

@@ -381,6 +381,16 @@
       "name": "@thyrox/image-processor-napi",
       "version": "1.0.0",
     },
+    "src/packages/image-registry": {
+      "name": "@thyrox/image-registry",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/podman-execution": "0.1.0",
+      },
+      "devDependencies": {
+        "@thyrox/registry-credentials": "0.1.0",
+      },
+    },
     "src/packages/ink": {
       "name": "@anthropic/ink",
       "version": "1.0.0",
@@ -623,6 +633,13 @@
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
+      },
+    },
+    "src/packages/registry-credentials": {
+      "name": "@thyrox/registry-credentials",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/podman-execution": "0.1.0",
       },
     },
     "src/packages/repl": {
@@ -1279,6 +1296,8 @@
 
     "@thyrox/image-processor-napi": ["@thyrox/image-processor-napi@workspace:src/packages/image-processor-napi"],
 
+    "@thyrox/image-registry": ["@thyrox/image-registry@workspace:src/packages/image-registry"],
+
     "@thyrox/local-models": ["@thyrox/local-models@workspace:src/packages/local-models"],
 
     "@thyrox/local-observability": ["@thyrox/local-observability@workspace:src/packages/local-observability"],
@@ -1306,6 +1325,8 @@
     "@thyrox/podman-execution": ["@thyrox/podman-execution@workspace:src/packages/podman-execution"],
 
     "@thyrox/provider": ["@thyrox/provider@workspace:src/packages/provider"],
+
+    "@thyrox/registry-credentials": ["@thyrox/registry-credentials@workspace:src/packages/registry-credentials"],
 
     "@thyrox/repl": ["@thyrox/repl@workspace:src/packages/repl"],
 

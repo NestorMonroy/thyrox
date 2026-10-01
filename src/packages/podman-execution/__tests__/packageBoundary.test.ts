@@ -14,12 +14,12 @@ function importSpecifiers(file: string): string[] {
 }
 
 describe('frontera del paquete — la primitiva funciona sin el daemon', () => {
-  test('ningún módulo del paquete importa el daemon ni sale del paquete por ruta relativa', () => {
+  test('ningún módulo del paquete importa el daemon, el registro ni las credenciales, ni sale del paquete por ruta relativa', () => {
     const files = sourceFiles()
     expect(files.length).toBeGreaterThan(0)
     const offenders = files.flatMap(file =>
       importSpecifiers(file)
-        .filter(specifier => specifier.includes('daemon') || specifier.startsWith('../'))
+        .filter(specifier => specifier.includes('daemon') || specifier.startsWith('../') || /image-registry|registry-credentials/.test(specifier))
         .map(specifier => `${file}: ${specifier}`))
     expect(offenders).toEqual([])
   })
