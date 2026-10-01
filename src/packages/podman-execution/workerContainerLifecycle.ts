@@ -98,7 +98,7 @@ function requireNonEmptyImage(image: string): void {
   }
 }
 
-function requireValidOwner(owner: ContainerOwner): void {
+export function requireValidOwner(owner: ContainerOwner): void {
   if (!isOwnerKind(owner.kind)) {
     throw new InvalidWorkerContainerSpecError('owner.kind', `tipo de dueño desconocido: ${owner.kind}`)
   }
@@ -134,7 +134,7 @@ function labelArgv(key: string, value: string): string[] {
   return ['--label', `${key}=${value}`]
 }
 
-function ownerLabelArgv(owner: ContainerOwner): string[] {
+export function ownerLabelArgv(owner: ContainerOwner): string[] {
   return [
     ...labelArgv(OWNER_KIND_LABEL_KEY, owner.kind),
     ...labelArgv(OWNER_ID_LABEL_KEY, owner.id),

@@ -35,13 +35,13 @@ const NO_EXIT_CODE = -1
  */
 export function runCommand(bin: string, args: readonly string[], options: PodmanRunOptions = {}): Promise<PodmanCommandResult> {
   return new Promise((resolve, reject) => {
-    const stdinMode = options.stdin === undefined ? 'ignore' : 'pipe'
-    const child = spawn(bin, [...args], { stdio: [stdinMode, 'pipe', 'pipe'] })
+    const stdio: ['ignore' | 'pipe', 'pipe', 'pipe'] = [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe']
+    const child = spawn(bin, [...args], { stdio })
     if (options.stdin !== undefined) child.stdin?.end(options.stdin)
     let stdout = ''
     let stderr = ''
-    child.stdout.on('data', chunk => { stdout += chunk })
-    child.stderr.on('data', chunk => { stderr += chunk })
+    child.stdout?.on('data', chunk => { stdout += chunk })
+    child.stderr?.on('data', chunk => { stderr += chunk })
     child.on('error', reject)
     child.on('close', code => resolve({ exitCode: code ?? NO_EXIT_CODE, stdout, stderr }))
   })
