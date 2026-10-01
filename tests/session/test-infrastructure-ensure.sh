@@ -58,14 +58,28 @@ case "\$1" in
     for f in "\$STATE"/*.status; do [[ -e "\$f" ]] && basename "\$f" .status; done
     exit 0
     ;;
-  pod) cat "\$STATE/pods" 2>/dev/null; exit 0 ;;
-  volume) cat "\$STATE/volumes" 2>/dev/null; exit 0 ;;
+  container)
+    # container inspect --format '{{.LockNumber}}' <nombres...>: el lock que
+    # la base guarda por contenedor (\$STATE/<nombre>.lock, 0 si no se declara).
+    shift 3
+    for name in "\$@"; do cat "\$STATE/\${name}.lock" 2>/dev/null || echo 0; done
+    exit 0
+    ;;
+  pod|volume)
+    # \$STATE/pods y \$STATE/volumes: una línea «nombre lock» por objeto.
+    # ls -q da los nombres; inspect --all --format da los locks.
+    file="\$STATE/\${1}s"
+    [[ "\$2" == inspect ]] && { cut -d' ' -f2 "\$file" 2>/dev/null; exit 0; }
+    cut -d' ' -f1 "\$file" 2>/dev/null
+    exit 0
+    ;;
   system)
-    # renumber reasigna un lock a cada objeto: los asignados pasan a ser
-    # tantos como objetos, salvo que el caso declare que no corrige nada.
+    # renumber deja asignado un lock por número distinto que la base
+    # referencia (medido en 4.9.3: los volúmenes comparten números), salvo
+    # que el caso declare que no corrige nada.
     if [[ "\$2" == renumber && ! -f "\$STATE/renumber-noop" ]]; then
-      objects=\$(( \$(ls "\$STATE"/*.status 2>/dev/null | wc -l) + \$(cat "\$STATE/pods" "\$STATE/volumes" 2>/dev/null | wc -l) ))
-      echo \$(( 2048 - objects )) > "\$STATE/free-locks"
+      referenced=\$(cat "\$STATE"/*.lock 2>/dev/null; cut -d' ' -f2 "\$STATE/pods" "\$STATE/volumes" 2>/dev/null)
+      echo \$(( 2048 - \$(printf '%s\n' "\$referenced" | grep . | sort -u | wc -l) )) > "\$STATE/free-locks"
     fi
     exit 0
     ;;
@@ -573,7 +587,8 @@ seed_stale_base() {
   touch "$STATE/network-thyrox-infra"
   echo running > "$STATE/thyrox-postgres.status"
   echo 999999 > "$STATE/thyrox-postgres.pid"
-  printf 'vol-a\nvol-b\n' > "$STATE/volumes"
+  echo 0 > "$STATE/thyrox-postgres.lock"
+  printf 'vol-a 1\nvol-b 1\n' > "$STATE/volumes"
   echo 2048 > "$STATE/free-locks"
   echo ok > "$STATE/thyrox-postgres.health"
 }
@@ -592,7 +607,7 @@ if [[ -n "$renumber_at" && -n "$mutation_at" && "$renumber_at" -lt "$mutation_at
 else
   bad "caso 19: el orden no es renumerar primero: $(cat "$STATE/calls.log")"
 fi
-if [[ "$out" == *"locks"*"asignados 0"*"objetos 3"*"renumerados"* ]]; then
+if [[ "$out" == *"locks"*"asignados 0"*"referenciados 2"*"renumerados"* ]]; then
   ok "caso 19: publica la medida y la acción"
 else
   bad "caso 19: no publica asignados, objetos y acción: [$out]"
@@ -600,8 +615,8 @@ fi
 
 reset_state
 touch "$STATE/network-thyrox-infra"
-printf 'vol-a\nvol-b\n' > "$STATE/volumes"
-echo 2046 > "$STATE/free-locks"
+printf 'vol-a 1\nvol-b 1\n' > "$STATE/volumes"
+echo 2047 > "$STATE/free-locks"
 echo ok > "$STATE/thyrox-postgres.health"
 run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
 thyrox_check "caso 20: base coherente -> exit 0" "0" "$rc"
@@ -636,10 +651,26 @@ seed_stale_base
 touch "$STATE/renumber-noop"
 err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
 thyrox_check "caso 23: renumerar no corrige -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
-if [[ "$err" == *"asignados 0"*"objetos 3"* ]]; then
+if [[ "$err" == *"asignados 0"*"referenciados 2"* ]]; then
   ok "caso 23: el diagnóstico publica la medida tras renumerar"
 else
   bad "caso 23: el diagnóstico no publica la medida: [$err]"
 fi
+
+# Caso 24 — el estado REAL medido el 2026-10-01 tras `podman system renumber`
+# en Podman 4.9.3: los contenedores tienen los locks 0 y 1, y los cinco
+# volúmenes comparten números (1, 1, 0, 4, 1). Distintos referenciados {0,1,4}
+# = 3 = asignados 3: coherente. Contar objetos (7) lo declaraba desfasado.
+reset_state
+touch "$STATE/network-thyrox-infra"
+echo running > "$STATE/thyrox-postgres.status"; echo 999999 > "$STATE/thyrox-postgres.pid"
+echo 0 > "$STATE/thyrox-postgres.lock"
+echo exited > "$STATE/thyrox-redis.status"; echo 1 > "$STATE/thyrox-redis.lock"
+printf 'probe 1\nlab-models 1\nlab-artifacts 0\nbench 4\nanon 1\n' > "$STATE/volumes"
+echo 2045 > "$STATE/free-locks"
+echo ok > "$STATE/thyrox-postgres.health"
+run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
+thyrox_check "caso 24: estado real tras renumerar -> exit 0" "0" "$rc"
+thyrox_check "caso 24: estado real tras renumerar -> no renumera" "0" "$(grep -c '^system ' "$STATE/calls.log")"
 
 thyrox_summary
