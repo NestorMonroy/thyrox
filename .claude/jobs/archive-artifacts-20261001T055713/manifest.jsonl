@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun .claude/workbench/archive-volumes-to-hub-20261001T055233/probes/archive_volume.ts thyrox-quantization-lab-artifacts quantization-lab-artifacts b37561cd760d5d3deb2ecb747eacd0bc53fe3470", "started_at": "2026-10-01T05:57:13+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-01T06:00:59+00:00", "duration_seconds": 226.715467}
