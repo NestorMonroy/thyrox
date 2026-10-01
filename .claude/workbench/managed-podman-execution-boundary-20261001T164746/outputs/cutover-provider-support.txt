@@ -1,0 +1,62 @@
+# HEAD d95bca492
+## upstream OpenAI-compatible en el proxy local
+src/packages/provider/src/proxy/openaiCompat/admittedUpstream.ts
+src/packages/provider/src/proxy/openaiCompat/forwarder.ts
+src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts
+## claves de entorno que lo configuran (declaradas en .env.example)
+THYROX_OPENAI_COMPAT_API_KEY
+THYROX_OPENAI_COMPAT_BASE_URL
+THYROX_OPENAI_COMPAT_MODEL
+## asignadas en .env (nombre=asignada|vacía; sin valor)
+THYROX_OPENAI_COMPAT_API_KEY=asignada
+## almacén de credenciales de proveedores
+src/packages/provider/src/accounts/connectionColumns.ts
+src/packages/provider/src/accounts/connectionDeletion.ts
+src/packages/provider/src/accounts/connectionIdentity.ts
+src/packages/provider/src/accounts/connectionSchema.ts
+src/packages/provider/src/accounts/connectionStore.ts
+src/packages/provider/src/accounts/connectionStoreHome.ts
+src/packages/provider/src/accounts/connectionTest.ts
+src/packages/provider/src/accounts/imports/credentialBlob.ts
+src/packages/provider/src/accounts/imports/pasteCredentials.ts
+src/packages/provider/src/accounts/kiro/kiroConnectionIdentity.ts
+src/packages/provider/src/accounts/lazyConnectionRow.ts
+src/packages/provider/src/accounts/proxyCredentials.ts
+src/packages/provider/src/accounts/refresh/health/connectionExpiry.ts
+src/packages/provider/src/accounts/refresh/health/connectionHealthCheck.ts
+src/packages/provider/src/accounts/refresh/providerCredentials.ts
+src/packages/provider/src/connectionToolCompression.ts
+src/packages/provider/src/connections.ts
+src/packages/provider/src/credentialProxy.ts
+src/packages/provider/src/credentials.ts
+src/packages/provider/src/proxy/connectionRefresh.ts
+## secretos en la autorización de ejecución (no por argv)
+src/packages/podman-execution/executionAuthorization.ts:72:export type ExecutionSecret = {
+src/packages/podman-execution/executionAuthorization.ts:93:  secrets?: readonly ExecutionSecret[]
+src/packages/podman-execution/executionAuthorization.ts:175:function requireSecretsByName(secrets: readonly ExecutionSecret[]): void {
+src/packages/podman-execution/executionAuthorization.ts:223:function secretArgv(secrets: readonly ExecutionSecret[]): string[] {
+src/packages/podman-execution/executionAuthorization.ts:224:  return secrets.flatMap(secret => ['--secret', `${secret.name},type=mount,target=${secret.target}`])
+src/packages/podman-execution/repositoryJobProfile.ts:49: * `--secret NAME,type=env,target=NAME` entregan el valor al proceso, pero
+src/packages/podman-execution/repositoryJobProfile.ts:59:      `la credencial '${credentialName}' no se declara: ni --env ni --secret miden efectivo hoy en ` +
+src/packages/podman-execution/resourceMaterialization.ts:285:    ...(desired.secrets ?? []).flatMap(mount => ['--secret', `${mount.secret},type=mount,target=${mount.target}`]),
+src/packages/podman-execution/testing/fakePodmanHost.ts:58:const CREATE_VALUE_FLAGS = new Set(['--name', '--label', '--mount', '--secret', '-e', '--network', '-p', '--restart'])
+src/packages/podman-execution/testing/fakePodmanHost.ts:133:        if (flag === '--secret') container.secrets.push(parseSecret(value))
+## cómo pasa --env del CLI a podman (¿valor en argv?)
+src/packages/podman-execution/executionCommand.ts:100:function proxyEgress(env: ExecutionCommandDeps['env']): { environment: Record<string, string>; mounts: WorkerResourceMount[] } {
+src/packages/podman-execution/executionCommand.ts:102:  const environment = forwardedEnvironment(env, PROXY_KEYS)
+src/packages/podman-execution/executionCommand.ts:103:  if (!ca) return { environment, mounts: [] }
+src/packages/podman-execution/executionCommand.ts:105:    environment: { ...environment, [PROXY_CA_KEY]: ca, SSL_CERT_FILE: ca, NODE_EXTRA_CA_CERTS: ca },
+src/packages/podman-execution/executionCommand.ts:140:  const egress = network === 'host' ? proxyEgress(deps.env) : { environment: {}, mounts: [] }
+src/packages/podman-execution/executionCommand.ts:156:    environment: { ...forwardedEnvironment(deps.env, GIT_IDENTITY_KEYS), ...egress.environment, ...requestedEnvironment(deps.env, values.env ?? []) },
+## selección de modelo en thyrox -p / proxy por nombre
+src/packages/provider/bin/localProxy.ts
+src/packages/provider/src/proxy/startServer.ts
+## rastros de Claude en el pool por defecto
+187:# El ejecutor de cada ítem se declara con `--runner`:
+221:        --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
+229:[[ -z "${HEADLESS_POOL_CLAUDE+x}" ]] || rehusa "HEADLESS_POOL_CLAUDE se retiró: el ejecutor se declara con --runner claude."
+233:    *) rehusa "--runner va thyrox o claude, no: $RUNNER_KIND" ;;
+245:readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE=thyrox-ollama
+248:# `claude-cli`. Un selector que falla, o un modelo que no casa con su runtime
+265:# (decisión del ejecutor 2026-10-01: local por defecto y respaldo en claude-cli).
+392:    [[ "$RUNNER_KIND" != claude ]] || rehusa "--runner claude no sirve el modelo local $MODEL: el runtime $LOCAL_RUNTIME va con --runner thyrox"

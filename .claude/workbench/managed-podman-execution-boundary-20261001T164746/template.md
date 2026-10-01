@@ -61,3 +61,20 @@ No se extiende código productivo alrededor de ese CLI.
   banco; `src/` se devolvió al HEAD y p1 lo rehace con RED/GREEN/anulación propios.
 - `outputs/deferred-g3g4-execution-policy.patch`: la política de runtimes permitidos, retirada de la
   rama por diseñar la API alrededor de `ollama | claude-cli`. Referencia para el paso 7, no código vigente.
+
+## Directiva operativa: corte de Claude (separada del futuro G3/G4)
+
+Desde 2026-10-01T18:01:51 UTC, commit `d95bca492`: las nuevas ejecuciones de juicio de TASK-THYROX-0743 no usan Claude
+(`claude -p`, `--runner claude`, `Agent`/subagentes). Proveedores permitidos: Qwen3.8-Flash y
+DeepSeek-V4.1-Flash por API. Sin proveedor permitido disponible: `no_candidate` /
+`runtime_unavailable`, fallo cerrado con la causa registrada; nunca respaldo a `claude-cli`. Los
+modelos caros (Qwen3.8-Max) sólo como escalamiento explícito. Las tarifas son evidencia económica, no
+constantes del scheduler. La autoridad de aceptación de P2–P5 son las pruebas deterministas de cada
+ítem (RED, GREEN, typecheck, invariantes, anulación, PID/cgroup, gates, diff), nunca un revisor Claude.
+
+Cada ejecución de juicio deja una línea en `outputs/cutover-executions.jsonl`: proveedor, modelo,
+unidad, salida, uso de tokens y entrada cacheada si el proveedor los informa, y conteo de
+invocaciones de Claude. Ninguna clave se guarda.
+
+Límite declarado: la sesión que orquesta este banco es en sí una sesión de Claude; el corte cubre lo
+que ella delega. Desde el corte no lanza `Agent`, `claude -p` ni `--runner claude`.
