@@ -14,7 +14,7 @@
  * coordinación.
  */
 import type { ModelSchedulingCoordination } from './coordination.ts'
-import type { ModelCoordinatorServer, ServedCoordinator } from './coordinatorServer.ts'
+import { startModelCoordinatorServer, type ModelCoordinatorServer, type ServedCoordinator } from './coordinatorServer.ts'
 import type { ModelExecutionPrimitive } from './executionPrimitive.ts'
 import type { ModelSchedulingCoordinator } from './hostCoordinator.ts'
 
@@ -44,6 +44,27 @@ export class OrphanUnitSurvivedError extends Error {
 }
 
 export async function startHostCoordinatorService(options: HostCoordinatorServiceOptions): Promise<HostCoordinatorService> {
-  void options
-  throw new Error('startHostCoordinatorService: por implementar')
+  const sweptUnits = await sweepOrphanUnits(options.primitive)
+  const server = await startModelCoordinatorServer(options.coordinator, { socketPath: options.socketPath })
+  return { server, sweptUnits, stop: () => stopService(options, server) }
+}
+
+/** Destruye cada unidad listada y comprueba que ya no lo esté; una que sobrevive impide arrancar. */
+async function sweepOrphanUnits(primitive: ModelExecutionPrimitive): Promise<string[]> {
+  const orphans = await primitive.units()
+  for (const unit of orphans) {
+    const outcome = await primitive.destroy(unit.unitId)
+    if (outcome === 'failed') throw new OrphanUnitSurvivedError(unit.unitId, outcome)
+  }
+  const survivors = await primitive.units()
+  const survivor = survivors[0]
+  if (survivor) throw new OrphanUnitSurvivedError(survivor.unitId, 'sigue listada tras destruirse')
+  return orphans.map(unit => unit.unitId)
+}
+
+async function stopService(options: HostCoordinatorServiceOptions, server: ModelCoordinatorServer): Promise<void> {
+  const residencies = new Set(options.coordinator.admissions().map(ticket => ticket.unit.residencyKey))
+  for (const residencyKey of residencies) await options.coordinator.evict(residencyKey)
+  await server.close()
+  await options.coordination.close()
 }
