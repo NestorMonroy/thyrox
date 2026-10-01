@@ -71,10 +71,12 @@ INFRASTRUCTURE_RETRIES = 1
 #: Código de salida con que ``delegate.sh`` declara un trabajador sin actividad medida.
 STALLED_EXIT = 125
 TIMEOUT_EXIT = 124
+#: Código propio: thyrox-bg rehusó lanzar la unidad.
+LAUNCH_FAILED_EXIT = 97
 
 TRANSIENT_PATTERN = re.compile(r"\b(429|500|502|503|504)\b|upstream request failed|ECONNRESET|ETIMEDOUT|socket hang up|overloaded", re.I)
 PERMANENT_PATTERN = re.compile(r"\b(401|403)\b|invalid api key|model[^\n]{0,40}not (found|exist)|does not exist", re.I)
-INFRASTRUCTURE_PATTERN = re.compile(r"credencial ausente|no se admite|autorización rehusada|podman-execution-execute:|Unable to create .*index\.lock", re.I)
+INFRASTRUCTURE_PATTERN = re.compile(r"lanzamiento rehusado|credencial ausente|no se admite|autorización rehusada|podman-execution-execute:|Unable to create .*index\.lock", re.I)
 
 
 @dataclass(frozen=True)
@@ -266,10 +268,13 @@ def run_in_unit(name: str, task: str, argv: list[str], network: str | None = Non
         start += ["--secret-from-env", secret]
     launched = subprocess.run([*start, "--", *argv], capture_output=True, text=True, cwd=ROOT)
     if launched.returncode != 0:
-        return launched.returncode, launched.stdout + launched.stderr
-    subprocess.run([*BG, "wait", name], capture_output=True, text=True, cwd=ROOT)
+        # No hubo unidad: es un fallo de lanzamiento, no del trabajo ni del proveedor.
+        return LAUNCH_FAILED_EXIT, f"lanzamiento rehusado: {launched.stdout}{launched.stderr}"
+    wait_for_job(name)
     status = subprocess.run([*BG, "status", name], capture_output=True, text=True, cwd=ROOT).stdout.strip()
-    log = subprocess.run([*BG, "log", name], capture_output=True, text=True, cwd=ROOT).stdout
+    # `log` imprime la RUTA del log, no su contenido.
+    path = Path(subprocess.run([*BG, "log", name], capture_output=True, text=True, cwd=ROOT).stdout.strip())
+    log = path.read_text(errors="replace") if path.is_file() else ""
     match = re.search(r"done:(-?\d+)", status)
     return (int(match.group(1)) if match else 1), log
 
@@ -280,6 +285,11 @@ def wait_for_job(name: str, poll_seconds: int = 30) -> str:
     while (status := subprocess.run([*BG, "status", name], capture_output=True, text=True, cwd=ROOT).stdout.strip()) == "running":
         time.sleep(poll_seconds)
     return status
+
+
+def job_suffix() -> str:
+    """Sufijo único de un trabajo: segundos de época. thyrox-bg añade el ISO y rehúsa un slug que ya lo trae."""
+    return str(time.time_ns() // 1000)
 
 
 def reconcile_orphans() -> str:
@@ -306,7 +316,7 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
     log = read_log(workbench)
     # Reanudar: si lo declarado ya se verifica (un intento previo, o un controlador
     # que murió antes de commitear), se acepta sin volver a despachar.
-    stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+    stamp = job_suffix()
     verify_code, verify_log = run_in_unit(f"cont-{item.id}-preverify-{stamp}", task, ["bash", "-c", item.verify])
     if verify_code == 0:
         append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": 0, "model": None, "taskClass": item.task_class,
@@ -322,16 +332,19 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
     for attempt in range(1, item.attempts + 1):
         if model is None:
             break
-        stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+        stamp = job_suffix()
         prompt = attempt_prompt(workbench, item, failures, attempt)
-        started = time.monotonic()
+        started, launched_at = time.monotonic(), time.time()
         code, worker_log = run_in_unit(
             f"cont-{item.id}-{attempt}-{stamp}", task,
             ["bash", str(workbench / "probes" / "delegate.sh"), str(workbench), item.id, model, str(prompt), str(item.max_turns)],
             network="host", secrets=("THYROX_OPENAI_COMPAT_API_KEY",))
         elapsed = time.monotonic() - started
+        # El stderr del trabajador sólo es evidencia si lo escribió ESTE intento; uno
+        # viejo de otra ejecución clasificaría con un error que ya no ocurre.
         stderr_file = workbench / "outputs" / f"{item.id}-{model}.stderr.log"
-        stderr_tail = tail(stderr_file.read_text(errors="replace")) if stderr_file.is_file() else tail(worker_log)
+        fresh = stderr_file.is_file() and stderr_file.stat().st_mtime >= launched_at
+        stderr_tail = tail(stderr_file.read_text(errors="replace")) if fresh else tail(worker_log)
         verify_code, verify_log = run_in_unit(f"cont-{item.id}-{attempt}-verify-{stamp}", task, ["bash", "-c", item.verify])
         evidence = Evidence(item=item.id, model=model, exit=code, stderr_tail=stderr_tail, verify_exit=verify_code,
                             verify_tail=tail(verify_log), elapsed_seconds=round(elapsed, 1),
@@ -343,6 +356,7 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": attempt, "model": model,
                                "taskClass": item.task_class, "outcome": outcome, "source": source, "exit": code,
                                "verifyExit": verify_code, "elapsedSeconds": evidence.elapsed_seconds,
+                               "stderrTail": stderr_tail[-600:],
                                "transition": step, "orphans": reconcile_orphans()})
         if step == "commit":
             commit_code, commit_log = commit_item(workbench, item, task, model)
@@ -380,7 +394,7 @@ git commit -q -m "Accept {item.id} of {task} from the continuation controller" \
 for i in 1 2 3 4; do git push -q origin HEAD && exit 0; sleep $((2**i)); done
 exit 1
 """
-    return run_in_unit(f"cont-{item.id}-commit-{time.strftime('%H%M%S')}", task, ["bash", "-c", script], network="host")
+    return run_in_unit(f"cont-{item.id}-commit-{job_suffix()}", task, ["bash", "-c", script], network="host")
 
 
 def main(argv: list[str] | None = None) -> int:

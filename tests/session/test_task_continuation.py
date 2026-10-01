@@ -101,6 +101,11 @@ with tempfile.TemporaryDirectory() as tmp:
     (wb / "plan.jsonl").write_text(json.dumps({"id": "p2a", "prompt": "p2a.md", "verify": "true", "candidates": ["qwen3.8-flash"]}) + "\n")
     check("lee el plan declarado", ["p2a"], [item.id for item in load_plan(wb)])
 
+# un nombre de trabajo no puede traer sufijo ISO: thyrox-bg añade el suyo y rehúsa el slug
+import re as _re  # noqa: E402
+from session.task_continuation import job_suffix  # noqa: E402
+check("el sufijo del trabajo no es ISO", None, _re.search(r"\d{8}T\d{6}", f"cont-p2a-1-{job_suffix()}"))
+
 # las dos claves del entorno: el clasificador externo y la tarea por defecto
 import os  # noqa: E402
 from session.task_continuation import learned_classifier_from_environment, main  # noqa: E402
