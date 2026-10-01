@@ -3,7 +3,8 @@
  * PostgreSQL real: el índice no depende de la fuente, la reingesta es
  * idempotente por hash, una versión nueva oculta la anterior, el cambio de
  * modelo re-embebe desde los chunks persistidos y un análisis guardado
- * sobrevive a la reingesta y al retiro de su espacio.
+ * sobrevive a la reingesta y al retiro de su espacio. Un worker que muere con
+ * SIGKILL, sin cerrar el store, no se lleva el corpus que ya escribió.
  *
  * Sin `THYROX_TEST_POSTGRES_URL` la suite se declara NO MEDIDA en vez de pasar.
  */
@@ -18,6 +19,7 @@ import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/test
 import { EmbeddingSpaceStateError, NoActiveEmbeddingSpaceError } from '../errors.ts'
 import type { SemanticSearchStore } from '../store.ts'
 import { countRows, currentSchema, embedPending, embedText, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
+import { WORKER_READY_PREFIX } from './support/killedWorker.ts'
 
 const url = resolvePostgresTestUrl()
 
@@ -268,6 +270,39 @@ if (!url) {
           expect((await recreated.ingestDocument({ domain: DOMAIN, domainId: 'beta.md', sourceRef: 'tmp:beta.md', sourceRevision: null, metadata: {}, chunks: NOTES['beta.md'] })).status).toBe('unchanged')
         } finally {
           await recreated.close()
+        }
+      })
+    })
+
+    test('un worker que ingiere y muere con SIGKILL, sin close(), deja corpus, espacio y embeddings', async () => {
+      await withDisposableSchema(testUrl, async sql => {
+        const schema = await currentSchema(sql)
+        const directory = writeSourceDirectory()
+        const worker = Bun.spawn(['bun', join(import.meta.dir, 'support', 'killedWorker.ts'), testUrl, schema, directory], {
+          stdout: 'pipe',
+          stderr: 'pipe',
+        })
+        try {
+          const reader = worker.stdout.getReader()
+          const { value } = await reader.read()
+          const announced = new TextDecoder().decode(value ?? new Uint8Array())
+          expect(announced.startsWith(WORKER_READY_PREFIX)).toBe(true)
+          const spaceId = announced.slice(WORKER_READY_PREFIX.length).trim()
+          worker.kill('SIGKILL')
+          expect(await worker.exited).not.toBe(0)
+          expect(worker.signalCode).toBe('SIGKILL')
+          rmSync(directory, { recursive: true, force: true })
+          const recreated = openStoreFor(testUrl, schema)
+          try {
+            expect(String((await recreated.activeEmbeddingSpace())?.spaceId)).toBe(spaceId)
+            expect(await topText(recreated, target, MODEL_A.dimensions)).toBe(target)
+            expect([await countRows(sql, 'documents'), await countRows(sql, 'document_chunks')]).toEqual([2, 3])
+          } finally {
+            await recreated.close()
+          }
+        } finally {
+          worker.kill('SIGKILL')
+          rmSync(directory, { recursive: true, force: true })
         }
       })
     })

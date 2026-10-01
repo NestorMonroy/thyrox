@@ -56,7 +56,7 @@ export function embedText(text: string, dimensions: number): number[] {
 }
 
 /** Embebe en el espacio todo chunk vigente que aún no tiene vector; devuelve cuántos embebió. */
-export async function embedPending(store: SemanticSearchStore, spaceId: string, dimensions: number): Promise<number> {
+export async function embedPending(store: SemanticSearchStore, spaceId: number, dimensions: number): Promise<number> {
   const pending = await store.chunksWithoutEmbedding(spaceId, PENDING_BATCH)
   await store.putEmbeddings(
     spaceId,
