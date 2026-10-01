@@ -83,5 +83,11 @@ export interface ArtifactRegistry {
   inspectArtifact(pinned: PinnedArtifact): Promise<ArtifactResult<ArtifactManifest>>
   /** Materializa cada blob en `targetDir`, verificando su sha256 antes de seguir con el siguiente. */
   pullArtifact(pinned: PinnedArtifact, targetDir: string, options?: PullOptions): Promise<ArtifactResult<readonly MaterializedFile[]>>
+  /**
+   * Materializa en `destination` sólo la capa `layerDigest`, que tiene que
+   * pertenecer al manifest verificado de `pinned` (si no, `not_found`). El
+   * destino aparece sólo si el sha256 y el tamaño coinciden.
+   */
+  pullLayer(pinned: PinnedArtifact, layerDigest: string, destination: string): Promise<ArtifactResult<MaterializedFile>>
   deleteArtifact?(pinned: PinnedArtifact): Promise<ArtifactResult<void>>
 }

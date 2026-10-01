@@ -142,6 +142,15 @@
         "signal-exit": "^4.1.0",
       },
     },
+    "src/packages/artifact-registry": {
+      "name": "@thyrox/artifact-registry",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/paths": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
+        "@thyrox/registry-credentials": "0.1.0",
+      },
+    },
     "src/packages/audio-capture-napi": {
       "name": "@thyrox/audio-capture-napi",
       "version": "1.0.0",
@@ -426,6 +435,7 @@
       "name": "@thyrox/local-models",
       "version": "0.1.0",
       "dependencies": {
+        "@thyrox/artifact-registry": "0.1.0",
         "@thyrox/model-artifacts": "0.1.0",
         "@thyrox/podman-execution": "0.1.0",
         "@thyrox/shared-state": "0.1.0",
@@ -1267,6 +1277,8 @@
     "@thyrox/agent": ["@thyrox/agent@workspace:src/packages/agent"],
 
     "@thyrox/app-host": ["@thyrox/app-host@workspace:src/packages/app-host"],
+
+    "@thyrox/artifact-registry": ["@thyrox/artifact-registry@workspace:src/packages/artifact-registry"],
 
     "@thyrox/audio-capture-napi": ["@thyrox/audio-capture-napi@workspace:src/packages/audio-capture-napi"],
 

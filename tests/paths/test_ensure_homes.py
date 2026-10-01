@@ -45,6 +45,7 @@ from workbench import paths as workbench  # noqa: E402
 ENSURE_HOMES = ROOT / "src" / "paths" / "ensure_homes.py"
 CONTRACT = ROOT / declarations.CONTRACT_FILE_NAME
 NEW_KEY = "THYROX_BRAND_NEW_THING_DIR"
+MODEL_ARTIFACT_CACHE_KEY = "THYROX_MODEL_ARTIFACT_CACHE_DIR"
 EXIT_REFUSED = 2
 RESTRICTIVE_UMASK = 0o077
 PERMISSION_BITS = 0o777
@@ -217,6 +218,20 @@ def case_unwritable_declaration_refuses(base: Path) -> None:
     check("no crea nada antes de rehusar", before, snapshot(root))
 
 
+def case_model_artifact_cache_matches_its_owner() -> None:
+    print("\n== la caché de artefactos de modelo: mismo default que su dueño TS ==")
+    home = next((h for h in declarations.HOMES if h.key == MODEL_ARTIFACT_CACHE_KEY), None)
+    check("registrada como hogar", True, home is not None)
+    if home is None:
+        return
+    check("es un directorio", False, home.is_file)
+    owner_text = (ROOT / "src" / home.owner).read_text(encoding="utf-8")
+    check("el dueño declara la clave", True, MODEL_ARTIFACT_CACHE_KEY in owner_text)
+    check("el dueño compone el mismo default", True,
+          home.default.startswith(".thyrox/models/")
+          and f"${{base}}/{Path(home.default).name}`" in owner_text)
+
+
 def main() -> int:
     base = Path(tempfile.mkdtemp(prefix="ensure-homes-"))
     try:
@@ -227,6 +242,7 @@ def main() -> int:
         case_resolve_single_key(base)
         case_declared_outside_tree(base)
         case_unwritable_declaration_refuses(base)
+        case_model_artifact_cache_matches_its_owner()
     finally:
         shutil.rmtree(base, ignore_errors=True)
     print(f"\n{PASSED + FAILED} aserciones: {PASSED} ok, {FAILED} fallidas")

@@ -10,6 +10,8 @@
  * El valor viaja como `--env` y queda en `podman inspect`, así que una URL
  * con usuario o contraseña se rehúsa en vez de propagarse.
  */
+import type { WorkerNetworkMode, WorkerResourceMount } from '@thyrox/podman-execution/workerResourceProfile.ts'
+
 export const JOB_EGRESS_ENV = {
   proxyUrl: 'THYROX_JOB_EGRESS_PROXY_URL',
   caBundle: 'THYROX_JOB_EGRESS_CA_BUNDLE',
@@ -52,4 +54,29 @@ export function resolveJobEgress(env: Environment): JobEgress {
   if (!proxyUrl) return { kind: 'direct' }
   const caBundlePath = firstDeclared(env, [JOB_EGRESS_ENV.caBundle, ...INHERITED_CA_ENV])
   return { kind: 'proxy', proxyUrl: requirePublicProxyUrl(proxyUrl), ...(caBundlePath ? { caBundlePath } : {}) }
+}
+
+/** Dónde ve el contenedor el bundle de CA del anfitrión, montado de sólo lectura. */
+export const CONTAINER_CA_BUNDLE = '/certs/ca-bundle.crt'
+
+/** La parte del perfil del trabajo que decide la salida: red, entorno del proxy y montaje del CA. */
+export interface JobNetworkProfile {
+  readonly network: Extract<WorkerNetworkMode, 'bridge' | 'host'>
+  readonly environment: Readonly<Record<string, string>>
+  readonly mounts: readonly WorkerResourceMount[]
+}
+
+/**
+ * Directa, la red es `bridge`. Con proxy es `host`, porque el proxy declarado
+ * vive en el loopback del anfitrión, y el trabajo recibe `HTTPS_PROXY` y, si
+ * se declaró, el CA montado de sólo lectura.
+ */
+export function jobNetworkProfile(egress: JobEgress): JobNetworkProfile {
+  if (egress.kind === 'direct') return { network: 'bridge', environment: {}, mounts: [] }
+  const caBundle = egress.caBundlePath
+  return {
+    network: 'host',
+    environment: { HTTPS_PROXY: egress.proxyUrl, ...(caBundle ? { NODE_EXTRA_CA_CERTS: CONTAINER_CA_BUNDLE } : {}) },
+    mounts: caBundle ? [{ source: caBundle, destination: CONTAINER_CA_BUNDLE, mode: 'ro' }] : [],
+  }
 }

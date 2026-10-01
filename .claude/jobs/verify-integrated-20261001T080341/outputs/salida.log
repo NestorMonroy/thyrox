@@ -1,0 +1,8 @@
+suite model-artifacts exit=0  203 pass  0 fail 
+suite local-models exit=1  147 pass  1 fail 
+suite artifact-registry exit=0  59 pass  0 fail 
+suite podman-execution exit=0  101 pass  0 fail 
+suite test_ensure_homes exit=0 37 aserciones: 37 ok, 0 fallidas
+check-package-typecheck: 4 error(es) propio(s) (alcance medido: 4 de 4 paquete(s))
+verify_integrated exit=1
+__BG_EXIT__=1

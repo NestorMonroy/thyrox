@@ -7,16 +7,18 @@
  * manifest con `artifactType`: no hay imagen, capa de build ni tar intermedio,
  * así que el disco que cuesta es el de los archivos que ya existen.
  * Materializar baja y verifica un blob a la vez, en un temporal que se
- * renombra sólo si su sha256 coincide.
+ * renombra sólo si su sha256 coincide; `pullLayer` hace lo mismo con una
+ * sola capa del manifest verificado.
  */
 import { createHash } from 'node:crypto'
 import { createWriteStream } from 'node:fs'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
+import type { ReadableStream as WebReadableStream } from 'node:stream/web'
 
 import {
   OCI_MANIFEST_MEDIA_TYPE,
@@ -47,6 +49,7 @@ export function createOciArtifactRegistry(options: OciArtifactRegistryOptions): 
     resolveArtifact: location => resolveArtifact(client, location),
     inspectArtifact: pinned => inspectArtifact(client, pinned),
     pullArtifact: (pinned, targetDir, pullOptions) => pullArtifact(client, pinned, targetDir, pullOptions ?? {}),
+    pullLayer: (pinned, layerDigest, destination) => pullLayer(client, pinned, layerDigest, destination),
   }
   if (options.supportsDelete ?? true) {
     registry.deleteArtifact = pinned => client.deleteManifest(pinned.repository, pinned.digest)
@@ -168,24 +171,46 @@ async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifac
       materialized.push(file)
       continue
     }
-    const blob = await client.getBlob(pinned.repository, layer.digest)
-    if (blob.status !== 'success') return blob
-    const partialPath = `${finalPath}.partial`
-    const hash = createHash('sha256')
-    let size = 0
-    const body = Readable.fromWeb(blob.value.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>)
-    body.on('data', (chunk: Buffer) => { hash.update(chunk); size += chunk.length })
-    await pipeline(body, createWriteStream(partialPath))
-    const digest = `sha256:${hash.digest('hex')}`
-    if (digest !== layer.digest || size !== layer.size) {
-      await rm(partialPath, { force: true })
-      return { status: 'integrity_error', detail: `${layer.title}: se leyó ${digest} (${size} bytes), el manifest declara ${layer.digest} (${layer.size} bytes)` }
-    }
-    await rename(partialPath, finalPath)
-    const file: MaterializedFile = { title: layer.title, digest, size, path: options.discardAfterVerify ? undefined : finalPath }
+    const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, finalPath)
+    if (downloaded.status !== 'success') return downloaded
+    const file: MaterializedFile = { title: layer.title, digest: layer.digest, size: layer.size, path: options.discardAfterVerify ? undefined : finalPath }
     await options.onVerified?.({ ...file, verifiedPath: finalPath })
     if (options.discardAfterVerify) await rm(finalPath, { force: true })
     materialized.push(file)
   }
   return { status: 'success', value: materialized }
+}
+
+/**
+ * Baja el blob de `layer` a un temporal hermano de `finalPath`, midiendo su
+ * sha256 en flujo, y lo renombra a `finalPath` sólo si digest y tamaño son
+ * los del manifest; si no, borra el temporal.
+ */
+async function downloadVerifiedLayer(client: OciDistributionClient, repository: string, layer: ArtifactLayer, finalPath: string): Promise<ArtifactResult<void>> {
+  const blob = await client.getBlob(repository, layer.digest)
+  if (blob.status !== 'success') return blob
+  const partialPath = `${finalPath}.partial`
+  const hash = createHash('sha256')
+  let size = 0
+  const body = Readable.fromWeb(blob.value.body as unknown as WebReadableStream<Uint8Array>)
+  body.on('data', (chunk: Buffer) => { hash.update(chunk); size += chunk.length })
+  await pipeline(body, createWriteStream(partialPath))
+  const digest = `sha256:${hash.digest('hex')}`
+  if (digest !== layer.digest || size !== layer.size) {
+    await rm(partialPath, { force: true })
+    return { status: 'integrity_error', detail: `${layer.title}: se leyó ${digest} (${size} bytes), el manifest declara ${layer.digest} (${layer.size} bytes)` }
+  }
+  await rename(partialPath, finalPath)
+  return { status: 'success', value: undefined }
+}
+
+async function pullLayer(client: OciDistributionClient, pinned: PinnedArtifact, layerDigest: string, destination: string): Promise<ArtifactResult<MaterializedFile>> {
+  const manifest = await inspectArtifact(client, pinned)
+  if (manifest.status !== 'success') return manifest
+  const layer = manifest.value.layers.find(candidate => candidate.digest === layerDigest)
+  if (!layer) return { status: 'not_found', detail: `la capa ${layerDigest} no pertenece al manifest ${pinned.digest}` }
+  await mkdir(dirname(destination), { recursive: true })
+  const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, destination)
+  if (downloaded.status !== 'success') return downloaded
+  return { status: 'success', value: { title: layer.title, digest: layer.digest, size: layer.size, path: destination } }
 }

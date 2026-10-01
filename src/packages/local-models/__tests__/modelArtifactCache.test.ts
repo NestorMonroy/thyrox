@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -43,8 +43,18 @@ describe('materializeArtifact', () => {
   test('una caché vacía descarga una vez, verifica y publica en la ruta por digest', async () => {
     const fetcher = fetcherWriting(CONTENT)
     const outcome = await materializeArtifact({ artifact: ARTIFACT, pinned: PINNED, cacheDir, fetcher })
-    expect(outcome).toEqual({ status: 'fetched', path: cachedArtifactPath(cacheDir, SHA) })
+    expect(outcome).toEqual({ status: 'fetched', path: cachedArtifactPath(cacheDir, SHA), sha256: SHA })
     expect(fetcher.calls).toHaveLength(1)
+  })
+
+  test('el sha256 devuelto es el medido sobre el archivo publicado, en los dos caminos', async () => {
+    const fetched = await materializeArtifact({ artifact: ARTIFACT, pinned: PINNED, cacheDir, fetcher: fetcherWriting(CONTENT) })
+    const cached = await materializeArtifact({ artifact: ARTIFACT, pinned: PINNED, cacheDir, fetcher: fetcherWriting(CONTENT) })
+    for (const outcome of [fetched, cached]) {
+      if (!('path' in outcome)) throw new Error(`se esperaba materialización, salió ${outcome.status}`)
+      expect(outcome.sha256).toBe(createHash('sha256').update(readFileSync(outcome.path)).digest('hex'))
+    }
+    expect([fetched.status, cached.status]).toEqual(['fetched', 'cached'])
   })
 
   test('una caché correcta no descarga', async () => {

@@ -1,9 +1,16 @@
 /**
  * Cliente mínimo de la API nativa de Ollama: lo que necesitan declarar un
- * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`) y cualificarlo
- * (`/api/chat`). Un estado HTTP distinto de 2xx es un error con la ruta y el
- * cuerpo, nunca una respuesta vacía.
+ * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`), cualificarlo
+ * (`/api/chat`) e instalarlo desde un GGUF (`/api/blobs`, `/api/create`,
+ * TASK-THYROX-0729). Un estado HTTP distinto de 2xx es un error con la ruta y
+ * el cuerpo, nunca una respuesta vacía.
+ *
+ * Este módulo sólo importa por ruta relativa: `bin/installModel.ts` lo carga
+ * dentro del trabajo de Podman, con el repositorio montado en `/w`, donde los
+ * enlaces absolutos de `node_modules/@thyrox` no resuelven.
  */
+
+import type { InstallOutcome, ModelInstallRequest } from './modelInstaller.js'
 
 export class OllamaRequestError extends Error {
   constructor(readonly path: string, readonly status: number, body: string) {
@@ -37,6 +44,11 @@ export interface ChatReply {
 }
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
+const HTTP_OK = 200
+const HTTP_NOT_FOUND = 404
+/** Nombre del archivo del modelo en `/api/create`: el que la sonda de cuantización midió. */
+const CREATE_MODEL_FILE = 'model.gguf'
+const SHA256_HEX = /^[0-9a-f]{64}$/
 
 type JsonObject = Record<string, unknown>
 
@@ -59,6 +71,38 @@ export class OllamaApi {
     }
   }
 
+  /** Como `modelDetails`, pero un 404 de `/api/show` es «no instalado»; cualquier otro error se propaga. */
+  async findModelDetails(model: string): Promise<ModelDetails | undefined> {
+    try {
+      return await this.modelDetails(model)
+    } catch (error) {
+      if (isNotFound(error)) return undefined
+      throw error
+    }
+  }
+
+  /** `HEAD /api/blobs/sha256:<hex>`: 200 es presente, 404 ausente, otro estado es error. */
+  async hasBlob(sha256: string): Promise<boolean> {
+    const path = blobPath(sha256)
+    const response = await fetch(`${this.baseUrl}${path}`, { method: 'HEAD' })
+    if (response.status === HTTP_OK) return true
+    if (response.status === HTTP_NOT_FOUND) return false
+    throw new OllamaRequestError(path, response.status, await response.text())
+  }
+
+  /**
+   * Sube el archivo como blob. El cuerpo es `Bun.file`, con longitud
+   * declarada: una subida en flujo se midió colgada (H-THYROX-303).
+   */
+  async pushBlob(sha256: string, artifactPath: string): Promise<void> {
+    await this.send(blobPath(sha256), { method: 'POST', body: Bun.file(artifactPath) })
+  }
+
+  /** Crea `name` desde un blob ya subido, sin respuesta en flujo. */
+  async createModel(name: string, sha256: string): Promise<void> {
+    await this.request('/api/create', { model: name, files: { [CREATE_MODEL_FILE]: `sha256:${sha256}` }, stream: false })
+  }
+
   async copyModel(source: string, destination: string): Promise<void> {
     await this.request('/api/copy', { source, destination })
   }
@@ -78,9 +122,42 @@ export class OllamaApi {
   /** GET sin cuerpo, POST con él; el cuerpo de respuesta vacío (`/api/copy`) es un objeto vacío. */
   private async request(path: string, body: JsonObject | undefined): Promise<JsonObject> {
     const init: RequestInit = body === undefined ? { method: 'GET' } : { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) }
+    const text = await this.send(path, init)
+    return text === '' ? {} : JSON.parse(text) as JsonObject
+  }
+
+  /** Envía la petición y devuelve el cuerpo; un estado distinto de 2xx es `OllamaRequestError`. */
+  private async send(path: string, init: RequestInit): Promise<string> {
     const response = await fetch(`${this.baseUrl}${path}`, init)
     const text = await response.text()
     if (!response.ok) throw new OllamaRequestError(path, response.status, text)
-    return text === '' ? {} : JSON.parse(text) as JsonObject
+    return text
+  }
+}
+
+function blobPath(sha256: string): string {
+  return `/api/blobs/sha256:${sha256}`
+}
+
+function isNotFound(error: unknown): boolean {
+  return error instanceof OllamaRequestError && error.status === HTTP_NOT_FOUND
+}
+
+/**
+ * Deja `request.name` creado en Ollama desde el GGUF de `request.artifactPath`:
+ * sube el blob sólo si Ollama no lo tiene y crea el modelo. Es la lógica que
+ * corre dentro del trabajo de instalación. Que `/api/create` responda 200 no
+ * prueba el contenido servido: quien la invoca vuelve a inspeccionar.
+ */
+export async function installModelIntoOllama(api: OllamaApi, request: ModelInstallRequest): Promise<InstallOutcome> {
+  if (!SHA256_HEX.test(request.contentSha256)) {
+    return { status: 'failed', reason: `el digest «${request.contentSha256}» no es un sha256 de 64 hex` }
+  }
+  try {
+    if (!await api.hasBlob(request.contentSha256)) await api.pushBlob(request.contentSha256, request.artifactPath)
+    await api.createModel(request.name, request.contentSha256)
+    return { status: 'installed' }
+  } catch (error) {
+    return { status: 'failed', reason: error instanceof Error ? error.message : String(error) }
   }
 }

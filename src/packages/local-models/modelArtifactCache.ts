@@ -31,7 +31,7 @@ export interface ArtifactFetcher {
 }
 
 export type MaterializationOutcome =
-  | { readonly status: 'cached' | 'fetched'; readonly path: string }
+  | { readonly status: 'cached' | 'fetched'; readonly path: string; readonly sha256: string }
   | { readonly status: 'rejected' | 'failed'; readonly reason: string }
 
 export interface MaterializationRequest {
@@ -46,13 +46,14 @@ export function cachedArtifactPath(cacheDir: string, sha256: string): string {
   return join(cacheDir, `sha256-${sha256}.gguf`)
 }
 
-async function hasContent(path: string, sha256: string): Promise<boolean> {
+/** El sha256 medido del archivo, o `undefined` si no existe. */
+async function measuredSha256(path: string): Promise<string | undefined> {
   try {
     await stat(path)
   } catch {
-    return false
+    return undefined
   }
-  return (await sha256OfFile(path)) === sha256
+  return sha256OfFile(path)
 }
 
 export async function materializeArtifact(request: MaterializationRequest): Promise<MaterializationOutcome> {
@@ -61,7 +62,10 @@ export async function materializeArtifact(request: MaterializationRequest): Prom
     return { status: 'rejected', reason: `el artefacto fijado apunta a ${pinned.blobDigest}, no al contenido sha256:${artifact.sha256} del catálogo` }
   }
   const path = cachedArtifactPath(cacheDir, artifact.sha256)
-  if (await hasContent(path, artifact.sha256)) return { status: 'cached', path }
+  // El sha256 que se devuelve es el MEDIDO sobre el archivo, no el declarado:
+  // es la segunda igualdad de READY y no puede ser una copia del catálogo.
+  const cached = await measuredSha256(path)
+  if (cached === artifact.sha256) return { status: 'cached', path, sha256: cached }
 
   await mkdir(cacheDir, { recursive: true })
   await rm(path, { force: true })
@@ -72,7 +76,7 @@ export async function materializeArtifact(request: MaterializationRequest): Prom
     const actual = await sha256OfFile(partial)
     if (actual !== artifact.sha256) return { status: 'rejected', reason: `se descargó sha256:${actual}, el catálogo declara sha256:${artifact.sha256}` }
     await rename(partial, path)
-    return { status: 'fetched', path }
+    return { status: 'fetched', path, sha256: actual }
   } finally {
     await rm(partial, { force: true })
   }

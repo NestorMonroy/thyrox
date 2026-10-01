@@ -1,0 +1,781 @@
+diff --git a/src/packages/local-models/__tests__/ollamaApiInstall.test.ts b/src/packages/local-models/__tests__/ollamaApiInstall.test.ts
+new file mode 100644
+index 000000000..3182a37ac
+--- /dev/null
++++ b/src/packages/local-models/__tests__/ollamaApiInstall.test.ts
+@@ -0,0 +1,215 @@
++/**
++ * Las operaciones de instalación de `OllamaApi` (TASK-THYROX-0729): blobs,
++ * `/api/create`, la distinción 404/error de `/api/show`, y
++ * `installModelIntoOllama`, la lógica que corre dentro del trabajo.
++ *
++ * Métrica: las peticiones que recibe un Ollama falso en loopback (ruta,
++ * método, cabeceras y cuerpo) y lo que devuelve cada operación.
++ * Ciega a: el Ollama real y su verificación del digest de un blob subido;
++ * el falso la imita calculando el sha256 del cuerpo.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { OllamaApi, OllamaRequestError, installModelIntoOllama } from '../ollamaApi.js'
++
++const HTTP_OK = 200
++const HTTP_CREATED = 201
++const HTTP_BAD_REQUEST = 400
++const HTTP_NOT_FOUND = 404
++const HTTP_SERVER_ERROR = 500
++const BLOB_PREFIX = '/api/blobs/sha256:'
++const MODEL_NAME = 'thyrox-library--qwen2.5-0.5b:q4_k_m'
++
++interface Recorded {
++  readonly method: string
++  readonly path: string
++  readonly contentLength: string | null
++  readonly transferEncoding: string | null
++  readonly body: Uint8Array
++}
++
++/** Respuesta fija por `MÉTODO ruta`; lo no declarado es 404. */
++type Script = Readonly<Record<string, { readonly status: number, readonly body?: unknown }>>
++
++interface Fake {
++  readonly baseUrl: string
++  readonly requests: Recorded[]
++  stop(): Promise<void>
++}
++
++function startScriptedOllama(script: Script): Fake {
++  const requests: Recorded[] = []
++  const server = Bun.serve({
++    hostname: '127.0.0.1',
++    port: 0,
++    async fetch(request) {
++      const path = new URL(request.url).pathname
++      requests.push({
++        method: request.method,
++        path,
++        contentLength: request.headers.get('content-length'),
++        transferEncoding: request.headers.get('transfer-encoding'),
++        body: new Uint8Array(await request.arrayBuffer()),
++      })
++      const reply = script[`${request.method} ${path}`] ?? { status: HTTP_NOT_FOUND, body: { error: 'not found' } }
++      return new Response(reply.body === undefined ? null : JSON.stringify(reply.body), { status: reply.status })
++    },
++  })
++  return { baseUrl: `http://127.0.0.1:${server.port}`, requests, stop: () => server.stop(true) }
++}
++
++/** Ollama con estado: guarda los blobs que verifica y los modelos que crea. */
++function startStatefulOllama(presentBlobs: readonly string[] = []): Fake & { readonly models: Map<string, string> } {
++  const requests: Recorded[] = []
++  const blobs = new Set(presentBlobs)
++  const models = new Map<string, string>()
++  const server = Bun.serve({
++    hostname: '127.0.0.1',
++    port: 0,
++    async fetch(request) {
++      const path = new URL(request.url).pathname
++      const body = new Uint8Array(await request.arrayBuffer())
++      requests.push({ method: request.method, path, contentLength: request.headers.get('content-length'), transferEncoding: request.headers.get('transfer-encoding'), body })
++      if (path.startsWith(BLOB_PREFIX)) {
++        const digest = path.slice(BLOB_PREFIX.length)
++        if (request.method === 'HEAD') return new Response(null, { status: blobs.has(digest) ? HTTP_OK : HTTP_NOT_FOUND })
++        if (new Bun.CryptoHasher('sha256').update(body).digest('hex') !== digest) return new Response('{"error":"digest mismatch"}', { status: HTTP_BAD_REQUEST })
++        blobs.add(digest)
++        return new Response(null, { status: HTTP_CREATED })
++      }
++      if (path === '/api/create') {
++        const document = JSON.parse(new TextDecoder().decode(body)) as { model: string, files: Record<string, string> }
++        const digest = String(document.files['model.gguf']).replace('sha256:', '')
++        if (!blobs.has(digest)) return new Response('{"error":"blob not found"}', { status: HTTP_BAD_REQUEST })
++        models.set(document.model, digest)
++        return new Response('{"status":"success"}', { status: HTTP_OK })
++      }
++      return new Response('{"error":"not found"}', { status: HTTP_NOT_FOUND })
++    },
++  })
++  return { baseUrl: `http://127.0.0.1:${server.port}`, requests, models, stop: () => server.stop(true) }
++}
++
++let workdir: string
++let server: Fake | undefined
++beforeEach(() => { workdir = mkdtempSync(join(tmpdir(), 'ollama-api-install-')) })
++afterEach(async () => {
++  await server?.stop()
++  server = undefined
++  rmSync(workdir, { recursive: true, force: true })
++})
++
++function artifact(content: string): { path: string, sha256: string } {
++  const path = join(workdir, 'model.gguf')
++  writeFileSync(path, content)
++  return { path, sha256: new Bun.CryptoHasher('sha256').update(content).digest('hex') }
++}
++
++const DIGEST = 'a'.repeat(64)
++
++describe('OllamaApi.hasBlob', () => {
++  test('HEAD 200 es presente y 404 es ausente', async () => {
++    server = startScriptedOllama({ [`HEAD ${BLOB_PREFIX}${DIGEST}`]: { status: HTTP_OK } })
++    const api = new OllamaApi(server.baseUrl)
++    expect(await api.hasBlob(DIGEST)).toBe(true)
++    expect(await api.hasBlob('b'.repeat(64))).toBe(false)
++    expect(server.requests.map(r => r.method)).toEqual(['HEAD', 'HEAD'])
++  })
++
++  test('cualquier otro estado es error, no ausencia', async () => {
++    server = startScriptedOllama({ [`HEAD ${BLOB_PREFIX}${DIGEST}`]: { status: HTTP_SERVER_ERROR } })
++    await expect(new OllamaApi(server.baseUrl).hasBlob(DIGEST)).rejects.toThrow(OllamaRequestError)
++  })
++})
++
++describe('OllamaApi.pushBlob', () => {
++  test('sube el archivo entero con su longitud declarada, no en flujo', async () => {
++    const file = artifact('gguf-bytes')
++    server = startScriptedOllama({ [`POST ${BLOB_PREFIX}${file.sha256}`]: { status: HTTP_CREATED } })
++    await new OllamaApi(server.baseUrl).pushBlob(file.sha256, file.path)
++    const [request] = server.requests
++    expect(request?.method).toBe('POST')
++    expect(new TextDecoder().decode(request?.body)).toBe('gguf-bytes')
++    expect(request?.contentLength).toBe(String('gguf-bytes'.length))
++    expect(request?.transferEncoding).toBeNull()
++  })
++
++  test('un rechazo de Ollama es error con la ruta', async () => {
++    const file = artifact('gguf-bytes')
++    server = startScriptedOllama({ [`POST ${BLOB_PREFIX}${file.sha256}`]: { status: HTTP_BAD_REQUEST, body: { error: 'digest mismatch' } } })
++    await expect(new OllamaApi(server.baseUrl).pushBlob(file.sha256, file.path)).rejects.toThrow(/api\/blobs.*400/)
++  })
++})
++
++describe('OllamaApi.createModel', () => {
++  test('crea el modelo desde el blob, sin flujo', async () => {
++    server = startScriptedOllama({ 'POST /api/create': { status: HTTP_OK, body: { status: 'success' } } })
++    await new OllamaApi(server.baseUrl).createModel(MODEL_NAME, DIGEST)
++    expect(JSON.parse(new TextDecoder().decode(server.requests[0]?.body))).toEqual({
++      model: MODEL_NAME,
++      files: { 'model.gguf': `sha256:${DIGEST}` },
++      stream: false,
++    })
++  })
++})
++
++describe('OllamaApi.findModelDetails', () => {
++  test('un 404 de /api/show es «no instalado»', async () => {
++    server = startScriptedOllama({})
++    expect(await new OllamaApi(server.baseUrl).findModelDetails(MODEL_NAME)).toBeUndefined()
++  })
++
++  test('un 500 de /api/show es error, no ausencia', async () => {
++    server = startScriptedOllama({ 'POST /api/show': { status: HTTP_SERVER_ERROR, body: { error: 'boom' } } })
++    await expect(new OllamaApi(server.baseUrl).findModelDetails(MODEL_NAME)).rejects.toThrow(OllamaRequestError)
++  })
++
++  test('un modelo presente devuelve su Modelfile', async () => {
++    server = startScriptedOllama({ 'POST /api/show': { status: HTTP_OK, body: { modelfile: 'FROM x' } } })
++    expect((await new OllamaApi(server.baseUrl).findModelDetails(MODEL_NAME))?.modelfile).toBe('FROM x')
++  })
++})
++
++describe('installModelIntoOllama', () => {
++  test('sube el blob ausente y crea el modelo con el nombre contractual', async () => {
++    const file = artifact('gguf-content')
++    const ollama = startStatefulOllama()
++    server = ollama
++    const outcome = await installModelIntoOllama(new OllamaApi(ollama.baseUrl), { name: MODEL_NAME, artifactPath: file.path, contentSha256: file.sha256 })
++    expect(outcome).toEqual({ status: 'installed' })
++    expect(ollama.requests.filter(r => r.method === 'POST' && r.path.startsWith(BLOB_PREFIX))).toHaveLength(1)
++    expect(ollama.models.get(MODEL_NAME)).toBe(file.sha256)
++  })
++
++  test('no resube un blob que Ollama ya tiene', async () => {
++    const file = artifact('gguf-content')
++    const ollama = startStatefulOllama([file.sha256])
++    server = ollama
++    const outcome = await installModelIntoOllama(new OllamaApi(ollama.baseUrl), { name: MODEL_NAME, artifactPath: file.path, contentSha256: file.sha256 })
++    expect(outcome).toEqual({ status: 'installed' })
++    expect(ollama.requests.filter(r => r.method === 'POST' && r.path.startsWith(BLOB_PREFIX))).toHaveLength(0)
++    expect(ollama.models.get(MODEL_NAME)).toBe(file.sha256)
++  })
++
++  test('un digest que no es 64 hex se rehúsa sin hablar con Ollama', async () => {
++    const file = artifact('gguf-content')
++    const ollama = startStatefulOllama()
++    server = ollama
++    const outcome = await installModelIntoOllama(new OllamaApi(ollama.baseUrl), { name: MODEL_NAME, artifactPath: file.path, contentSha256: '../etc' })
++    expect(outcome.status).toBe('failed')
++    expect(ollama.requests).toHaveLength(0)
++  })
++
++  test('un rechazo de Ollama es failed con su causa, no una excepción', async () => {
++    const file = artifact('gguf-content')
++    const ollama = startStatefulOllama()
++    server = ollama
++    const outcome = await installModelIntoOllama(new OllamaApi(ollama.baseUrl), { name: MODEL_NAME, artifactPath: file.path, contentSha256: 'c'.repeat(64) })
++    expect(outcome.status).toBe('failed')
++    if (outcome.status === 'failed') expect(outcome.reason).toMatch(/400/)
++    expect(ollama.models.size).toBe(0)
++  })
++})
+diff --git a/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts b/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
+new file mode 100644
+index 000000000..78add241e
+--- /dev/null
++++ b/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
+@@ -0,0 +1,246 @@
++/**
++ * `OllamaModelInstaller` (TASK-THYROX-0729): el adapter que instala un modelo
++ * en el Ollama gestionado corriendo `bin/installModel.ts` como trabajo de la
++ * primitiva de Podman.
++ *
++ * Dos niveles. Con un Podman doble que, al esperar el contenedor, ejecuta la
++ * lógica del trabajo en proceso contra un Ollama falso: qué argv compone el
++ * trabajo y cómo se decide el desenlace (sólo `installed` si el runtime
++ * resuelve el contenido pedido). Con el Podman real, si la imagen está
++ * local: que el trabajo alcanza el Ollama del loopback y deja su reporte.
++ *
++ * Métrica: el argv entregado a `podman create`, el estado del Ollama falso y
++ * el desenlace devuelto.
++ * Ciega a: el Ollama real (su `/api/create` y su almacén de blobs); el falso
++ * resuelve el nombre al blob que la prueba declara.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join, resolve } from 'node:path'
++
++import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++
++import { OLLAMA_PORT_VAR } from '../managedOllama.js'
++import type { ModelInstallRequest } from '../modelInstaller.js'
++import { OllamaApi, installModelIntoOllama } from '../ollamaApi.js'
++import { INSTALL_REPORT_NAME, OllamaModelInstaller, installJobSpec, type OllamaModelInstallerOptions } from '../ollamaModelInstaller.js'
++
++const REPOSITORY_ROOT = resolve(import.meta.dir, '../../../..')
++const MODEL_NAME = 'thyrox-library--qwen2.5-0.5b:q4_k_m'
++const HTTP_OK = 200
++const HTTP_CREATED = 201
++const HTTP_NOT_FOUND = 404
++const HTTP_SERVER_ERROR = 500
++const BLOB_PREFIX = '/api/blobs/sha256:'
++
++interface StatefulOllama {
++  readonly port: number
++  readonly models: Map<string, string>
++  stop(): Promise<void>
++}
++
++/**
++ * Ollama con estado. `substitute` imita un runtime que, tras crear el
++ * modelo, resuelve el nombre a OTRO blob; `showStatus` fuerza el estado de
++ * `/api/show`.
++ */
++function startStatefulOllama(behaviour: { substitute?: string, showStatus?: number } = {}): StatefulOllama {
++  const blobs = new Set<string>()
++  const models = new Map<string, string>()
++  const server = Bun.serve({
++    hostname: '127.0.0.1',
++    port: 0,
++    async fetch(request) {
++      const path = new URL(request.url).pathname
++      const body = new Uint8Array(await request.arrayBuffer())
++      if (path.startsWith(BLOB_PREFIX)) {
++        const digest = path.slice(BLOB_PREFIX.length)
++        if (request.method === 'HEAD') return new Response(null, { status: blobs.has(digest) ? HTTP_OK : HTTP_NOT_FOUND })
++        blobs.add(digest)
++        return new Response(null, { status: HTTP_CREATED })
++      }
++      const document = JSON.parse(new TextDecoder().decode(body) || '{}') as { model: string, files?: Record<string, string> }
++      if (path === '/api/create') {
++        models.set(document.model, behaviour.substitute ?? String(document.files?.['model.gguf']).replace('sha256:', ''))
++        return new Response('{"status":"success"}', { status: HTTP_OK })
++      }
++      if (path === '/api/show') {
++        if (behaviour.showStatus) return new Response('{"error":"forced"}', { status: behaviour.showStatus })
++        const digest = models.get(document.model)
++        if (!digest) return new Response('{"error":"model not found"}', { status: HTTP_NOT_FOUND })
++        return Response.json({ modelfile: `# Modelfile\nFROM /root/.ollama/models/blobs/sha256-${digest}\n` })
++      }
++      return new Response('{"error":"not found"}', { status: HTTP_NOT_FOUND })
++    },
++  })
++  return { port: server.port as number, models, stop: () => server.stop(true) }
++}
++
++let workdir: string
++let ollama: StatefulOllama | undefined
++beforeEach(() => { workdir = mkdtempSync(join(tmpdir(), 'ollama-model-installer-')) })
++afterEach(async () => {
++  await ollama?.stop()
++  ollama = undefined
++  rmSync(workdir, { recursive: true, force: true })
++})
++
++function artifact(content: string): ModelInstallRequest {
++  const artifactPath = join(workdir, 'cache-model.gguf')
++  writeFileSync(artifactPath, content)
++  return { name: MODEL_NAME, artifactPath, contentSha256: new Bun.CryptoHasher('sha256').update(content).digest('hex') }
++}
++
++function options(port: number, overrides: Partial<OllamaModelInstallerOptions> = {}): OllamaModelInstallerOptions {
++  return {
++    podman: { run: async () => ({ exitCode: 0, stdout: '0\n', stderr: '' }) },
++    image: 'sha256:' + 'b'.repeat(64),
++    bunPath: process.execPath,
++    repositoryRoot: REPOSITORY_ROOT,
++    scratchDir: join(workdir, 'scratch'),
++    environment: { [OLLAMA_PORT_VAR]: String(port) },
++    owner: { kind: 'pool', id: 'model-install', pid: process.pid },
++    workerId: 'model-install-test',
++    limits: { cpus: 1, memoryMib: 512, pidsLimit: 64 },
++    ...overrides,
++  }
++}
++
++/** Podman doble: al esperar el contenedor corre `job` y deja (o no) su reporte en el montaje. */
++function podmanRunningInProcess(scratchDir: string, job: () => Promise<unknown>): PodmanExecutor {
++  return {
++    run: async (args): Promise<PodmanCommandResult> => {
++      if (args[0] === 'wait') {
++        const report = await job()
++        if (report !== undefined) writeFileSync(join(scratchDir, INSTALL_REPORT_NAME), JSON.stringify(report))
++        return { exitCode: 0, stdout: '0\n', stderr: '' }
++      }
++      if (args[0] === 'logs') return { exitCode: 0, stdout: '', stderr: 'diagnóstico del trabajo' }
++      return { exitCode: 0, stdout: '', stderr: '' }
++    },
++  }
++}
++
++function installerRunningInProcess(port: number, request: ModelInstallRequest): OllamaModelInstaller {
++  const scratchDir = join(workdir, 'scratch')
++  const job = () => installModelIntoOllama(new OllamaApi(`http://127.0.0.1:${port}`), request)
++  return new OllamaModelInstaller(options(port, { podman: podmanRunningInProcess(scratchDir, job) }))
++}
++
++describe('installJobSpec', () => {
++  test('red host, bun y repositorio de sólo lectura, el GGUF de sólo lectura y el montaje de trabajo rw', () => {
++    const request = artifact('gguf')
++    const spec = installJobSpec(options(4321), request)
++    const argv = spec.resourceArgv.join(' ')
++    expect(argv).toContain('--network host')
++    expect(argv).toContain('--read-only')
++    expect(argv).toContain(`-v ${process.execPath}:/usr/local/bin/bun:ro`)
++    expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
++    expect(argv).toContain(`-v ${request.artifactPath}:/artifact/model.gguf:ro`)
++    expect(argv).toContain(`-v ${join(workdir, 'scratch')}:/scratch:rw`)
++    expect(spec.command).toEqual([
++      '/usr/local/bin/bun', '/w/src/packages/local-models/bin/installModel.ts',
++      '--ollama-url', 'http://127.0.0.1:4321',
++      '--name', MODEL_NAME,
++      '--artifact', '/artifact/model.gguf',
++      '--sha256', request.contentSha256,
++      '--report', `/scratch/${INSTALL_REPORT_NAME}`,
++    ])
++  })
++
++  test('la URL de Ollama sale del entorno declarado', () => {
++    const spec = installJobSpec(options(4321, { environment: {} }), artifact('gguf'))
++    expect(spec.command).toContain('http://127.0.0.1:51434')
++  })
++
++  test('el trabajo no recibe ningún secreto', () => {
++    const spec = installJobSpec(options(4321), artifact('gguf'))
++    expect([...spec.resourceArgv, ...(spec.command ?? [])].join(' ')).not.toMatch(/TOKEN|PASSWORD|SECRET|KEY|containers\/storage/i)
++  })
++})
++
++describe('OllamaModelInstaller.inspect', () => {
++  test('un nombre que el runtime no resuelve es undefined', async () => {
++    ollama = startStatefulOllama()
++    expect(await new OllamaModelInstaller(options(ollama.port)).inspect(MODEL_NAME)).toBeUndefined()
++  })
++
++  test('un nombre instalado devuelve el blob de su FROM', async () => {
++    ollama = startStatefulOllama()
++    ollama.models.set(MODEL_NAME, 'd'.repeat(64))
++    expect(await new OllamaModelInstaller(options(ollama.port)).inspect(MODEL_NAME)).toEqual({ name: MODEL_NAME, contentSha256: 'd'.repeat(64) })
++  })
++
++  test('un error de /api/show que no es 404 se propaga: no es «no instalado»', async () => {
++    ollama = startStatefulOllama({ showStatus: HTTP_SERVER_ERROR })
++    await expect(new OllamaModelInstaller(options(ollama.port)).inspect(MODEL_NAME)).rejects.toThrow(/500/)
++  })
++})
++
++describe('OllamaModelInstaller.install con el trabajo en proceso', () => {
++  test('installed cuando el runtime resuelve el contenido pedido', async () => {
++    ollama = startStatefulOllama()
++    const request = artifact('gguf-content')
++    expect(await installerRunningInProcess(ollama.port, request).install(request)).toEqual({ status: 'installed' })
++    expect(ollama.models.get(MODEL_NAME)).toBe(request.contentSha256)
++  })
++
++  test('failed si tras instalar el runtime resuelve otro contenido, aunque /api/create diera 200', async () => {
++    ollama = startStatefulOllama({ substitute: 'e'.repeat(64) })
++    const request = artifact('gguf-content')
++    const outcome = await installerRunningInProcess(ollama.port, request).install(request)
++    expect(outcome.status).toBe('failed')
++    if (outcome.status === 'failed') expect(outcome.reason).toContain('e'.repeat(64))
++  })
++
++  test('failed si el reporte dice installed pero el runtime no resuelve el nombre', async () => {
++    ollama = startStatefulOllama()
++    const request = artifact('gguf-content')
++    const scratchDir = join(workdir, 'scratch')
++    const installer = new OllamaModelInstaller(options(ollama.port, { podman: podmanRunningInProcess(scratchDir, async () => ({ status: 'installed' })) }))
++    expect((await installer.install(request)).status).toBe('failed')
++  })
++
++  test('un trabajo sin reporte es failed con su diagnóstico', async () => {
++    ollama = startStatefulOllama()
++    const request = artifact('gguf-content')
++    const scratchDir = join(workdir, 'scratch')
++    const installer = new OllamaModelInstaller(options(ollama.port, { podman: podmanRunningInProcess(scratchDir, async () => undefined) }))
++    const outcome = await installer.install(request)
++    expect(outcome.status).toBe('failed')
++    if (outcome.status === 'failed') expect(outcome.reason).toContain('diagnóstico del trabajo')
++  })
++
++  test('un reporte failed del trabajo se devuelve con su causa', async () => {
++    ollama = startStatefulOllama()
++    const request = artifact('gguf-content')
++    const scratchDir = join(workdir, 'scratch')
++    const installer = new OllamaModelInstaller(options(ollama.port, { podman: podmanRunningInProcess(scratchDir, async () => ({ status: 'failed', reason: 'blob rechazado' })) }))
++    expect(await installer.install(request)).toEqual({ status: 'failed', reason: 'blob rechazado' })
++  })
++
++  test('un reporte ilegible es failed, nunca installed', async () => {
++    ollama = startStatefulOllama()
++    const request = artifact('gguf-content')
++    ollama.models.set(MODEL_NAME, request.contentSha256)
++    const scratchDir = join(workdir, 'scratch')
++    const installer = new OllamaModelInstaller(options(ollama.port, { podman: podmanRunningInProcess(scratchDir, async () => ({ estado: 'ok' })) }))
++    expect((await installer.install(request)).status).toBe('failed')
++  })
++})
++
++const INSTALLER_TEST_IMAGE = process.env.THYROX_ARTIFACT_VERIFIER_IMAGE || 'docker.io/library/ubuntu:24.04'
++const podman = createPodmanExecutor()
++const imagePresent = await podman.run(['image', 'exists', INSTALLER_TEST_IMAGE]).then(result => result.exitCode === 0, () => false)
++if (!imagePresent) console.error(`ollamaModelInstaller: sin Podman o sin ${INSTALLER_TEST_IMAGE} local; el nivel real queda sin medir.`)
++
++describe.skipIf(!imagePresent)('OllamaModelInstaller contra el Podman real', () => {
++  test('el trabajo sube el blob al Ollama del loopback y el runtime resuelve el contenido', async () => {
++    ollama = startStatefulOllama()
++    const request = artifact('g'.repeat(4096))
++    const installer = new OllamaModelInstaller(options(ollama.port, { podman, image: INSTALLER_TEST_IMAGE, workerId: `model-install-real-${process.pid}` }))
++    expect(await installer.install(request)).toEqual({ status: 'installed' })
++    expect(ollama.models.get(MODEL_NAME)).toBe(request.contentSha256)
++  }, 120_000)
++})
+diff --git a/src/packages/local-models/bin/installModel.ts b/src/packages/local-models/bin/installModel.ts
+new file mode 100644
+index 000000000..f718dd920
+--- /dev/null
++++ b/src/packages/local-models/bin/installModel.ts
+@@ -0,0 +1,36 @@
++/**
++ * Entrada del trabajo de instalación (`ollamaModelInstaller.ts`): corre
++ * DENTRO del contenedor, sin credencial, y deja `{status, reason?}` en
++ * `--report`. Sólo importa por ruta relativa (ver `ollamaApi.ts`).
++ *
++ * Salida: 0 instalado; 1 fallido (la causa va en el reporte);
++ * 2 argumentos inválidos, sin reporte.
++ */
++import { mkdir, writeFile } from 'node:fs/promises'
++import { dirname } from 'node:path'
++import { parseArgs } from 'node:util'
++
++import { OllamaApi, installModelIntoOllama } from '../ollamaApi.js'
++
++const REQUIRED = ['ollama-url', 'name', 'artifact', 'sha256', 'report'] as const
++const EXIT_INSTALLED = 0
++const EXIT_FAILED = 1
++const EXIT_USAGE = 2
++
++const { values } = parseArgs({ options: Object.fromEntries(REQUIRED.map(name => [name, { type: 'string' }])) as Record<(typeof REQUIRED)[number], { type: 'string' }> })
++const missing = REQUIRED.filter(name => !values[name])
++if (missing.length > 0) {
++  process.stderr.write(`installModel: faltan ${missing.map(name => `--${name}`).join(', ')}\n`)
++  process.exit(EXIT_USAGE)
++}
++const option = (name: (typeof REQUIRED)[number]): string => values[name] as string
++
++const outcome = await installModelIntoOllama(new OllamaApi(option('ollama-url')), {
++  name: option('name'),
++  artifactPath: option('artifact'),
++  contentSha256: option('sha256'),
++})
++await mkdir(dirname(option('report')), { recursive: true })
++await writeFile(option('report'), JSON.stringify(outcome, null, 2))
++process.stderr.write(`installModel: ${outcome.status}\n`)
++process.exit(outcome.status === 'installed' ? EXIT_INSTALLED : EXIT_FAILED)
+diff --git a/src/packages/local-models/ollamaApi.ts b/src/packages/local-models/ollamaApi.ts
+index d44e7012e..d325005e1 100644
+--- a/src/packages/local-models/ollamaApi.ts
++++ b/src/packages/local-models/ollamaApi.ts
+@@ -1,10 +1,17 @@
+ /**
+  * Cliente mínimo de la API nativa de Ollama: lo que necesitan declarar un
+- * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`) y cualificarlo
+- * (`/api/chat`). Un estado HTTP distinto de 2xx es un error con la ruta y el
+- * cuerpo, nunca una respuesta vacía.
++ * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`), cualificarlo
++ * (`/api/chat`) e instalarlo desde un GGUF (`/api/blobs`, `/api/create`,
++ * TASK-THYROX-0729). Un estado HTTP distinto de 2xx es un error con la ruta y
++ * el cuerpo, nunca una respuesta vacía.
++ *
++ * Este módulo sólo importa por ruta relativa: `bin/installModel.ts` lo carga
++ * dentro del trabajo de Podman, con el repositorio montado en `/w`, donde los
++ * enlaces absolutos de `node_modules/@thyrox` no resuelven.
+  */
+ 
++import type { InstallOutcome, ModelInstallRequest } from './modelInstaller.js'
++
+ export class OllamaRequestError extends Error {
+   constructor(readonly path: string, readonly status: number, body: string) {
+     super(`Ollama ${path} respondió ${status}: ${body.trim()}`)
+@@ -37,6 +44,11 @@ export interface ChatReply {
+ }
+ 
+ const JSON_HEADERS = { 'content-type': 'application/json' }
++const HTTP_OK = 200
++const HTTP_NOT_FOUND = 404
++/** Nombre del archivo del modelo en `/api/create`: el que la sonda de cuantización midió. */
++const CREATE_MODEL_FILE = 'model.gguf'
++const SHA256_HEX = /^[0-9a-f]{64}$/
+ 
+ type JsonObject = Record<string, unknown>
+ 
+@@ -59,6 +71,38 @@ export class OllamaApi {
+     }
+   }
+ 
++  /** Como `modelDetails`, pero un 404 de `/api/show` es «no instalado»; cualquier otro error se propaga. */
++  async findModelDetails(model: string): Promise<ModelDetails | undefined> {
++    try {
++      return await this.modelDetails(model)
++    } catch (error) {
++      if (isNotFound(error)) return undefined
++      throw error
++    }
++  }
++
++  /** `HEAD /api/blobs/sha256:<hex>`: 200 es presente, 404 ausente, otro estado es error. */
++  async hasBlob(sha256: string): Promise<boolean> {
++    const path = blobPath(sha256)
++    const response = await fetch(`${this.baseUrl}${path}`, { method: 'HEAD' })
++    if (response.status === HTTP_OK) return true
++    if (response.status === HTTP_NOT_FOUND) return false
++    throw new OllamaRequestError(path, response.status, await response.text())
++  }
++
++  /**
++   * Sube el archivo como blob. El cuerpo es `Bun.file`, con longitud
++   * declarada: una subida en flujo se midió colgada (H-THYROX-303).
++   */
++  async pushBlob(sha256: string, artifactPath: string): Promise<void> {
++    await this.send(blobPath(sha256), { method: 'POST', body: Bun.file(artifactPath) })
++  }
++
++  /** Crea `name` desde un blob ya subido, sin respuesta en flujo. */
++  async createModel(name: string, sha256: string): Promise<void> {
++    await this.request('/api/create', { model: name, files: { [CREATE_MODEL_FILE]: `sha256:${sha256}` }, stream: false })
++  }
++
+   async copyModel(source: string, destination: string): Promise<void> {
+     await this.request('/api/copy', { source, destination })
+   }
+@@ -78,9 +122,42 @@ export class OllamaApi {
+   /** GET sin cuerpo, POST con él; el cuerpo de respuesta vacío (`/api/copy`) es un objeto vacío. */
+   private async request(path: string, body: JsonObject | undefined): Promise<JsonObject> {
+     const init: RequestInit = body === undefined ? { method: 'GET' } : { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) }
++    const text = await this.send(path, init)
++    return text === '' ? {} : JSON.parse(text) as JsonObject
++  }
++
++  /** Envía la petición y devuelve el cuerpo; un estado distinto de 2xx es `OllamaRequestError`. */
++  private async send(path: string, init: RequestInit): Promise<string> {
+     const response = await fetch(`${this.baseUrl}${path}`, init)
+     const text = await response.text()
+     if (!response.ok) throw new OllamaRequestError(path, response.status, text)
+-    return text === '' ? {} : JSON.parse(text) as JsonObject
++    return text
++  }
++}
++
++function blobPath(sha256: string): string {
++  return `/api/blobs/sha256:${sha256}`
++}
++
++function isNotFound(error: unknown): boolean {
++  return error instanceof OllamaRequestError && error.status === HTTP_NOT_FOUND
++}
++
++/**
++ * Deja `request.name` creado en Ollama desde el GGUF de `request.artifactPath`:
++ * sube el blob sólo si Ollama no lo tiene y crea el modelo. Es la lógica que
++ * corre dentro del trabajo de instalación. Que `/api/create` responda 200 no
++ * prueba el contenido servido: quien la invoca vuelve a inspeccionar.
++ */
++export async function installModelIntoOllama(api: OllamaApi, request: ModelInstallRequest): Promise<InstallOutcome> {
++  if (!SHA256_HEX.test(request.contentSha256)) {
++    return { status: 'failed', reason: `el digest «${request.contentSha256}» no es un sha256 de 64 hex` }
++  }
++  try {
++    if (!await api.hasBlob(request.contentSha256)) await api.pushBlob(request.contentSha256, request.artifactPath)
++    await api.createModel(request.name, request.contentSha256)
++    return { status: 'installed' }
++  } catch (error) {
++    return { status: 'failed', reason: error instanceof Error ? error.message : String(error) }
+   }
+ }
+diff --git a/src/packages/local-models/ollamaModelInstaller.ts b/src/packages/local-models/ollamaModelInstaller.ts
+new file mode 100644
+index 000000000..373ec81a6
+--- /dev/null
++++ b/src/packages/local-models/ollamaModelInstaller.ts
+@@ -0,0 +1,140 @@
++/**
++ * El adapter de `ModelInstaller` para el Ollama gestionado (TASK-THYROX-0729,
++ * ADR-THYROX-007 1.7.x: el adapter traduce, no decide).
++ *
++ * `install` no habla con Ollama desde el anfitrión: corre
++ * `bin/installModel.ts` como trabajo de la primitiva de Podman, con el GGUF
++ * montado de sólo lectura, la red del anfitrión (Ollama escucha en su
++ * loopback) y ningún secreto. El trabajo deja su veredicto en un archivo del
++ * montaje de trabajo; la salida estándar es diagnóstico.
++ *
++ * Que el trabajo diga `installed` no basta: después se vuelve a inspeccionar
++ * el runtime, y sólo es `installed` si el nombre resuelve al contenido
++ * pedido (H-THYROX-304).
++ */
++import { mkdir, readFile, rm } from 'node:fs/promises'
++import { join } from 'node:path'
++
++import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
++import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
++
++import { managedOllama, type Environment } from './managedOllama.js'
++import type { InstallOutcome, InstalledModelState, ModelInstaller, ModelInstallRequest } from './modelInstaller.js'
++import { OllamaApi } from './ollamaApi.js'
++import { modelBlobOfModelfile } from './volumeBlobs.js'
++
++export const INSTALL_REPORT_NAME = 'install.json'
++
++const CONTAINER_BUN = '/usr/local/bin/bun'
++const CONTAINER_REPOSITORY = '/w'
++const CONTAINER_SCRATCH = '/scratch'
++const CONTAINER_ARTIFACT = '/artifact/model.gguf'
++const INSTALL_ENTRY = `${CONTAINER_REPOSITORY}/src/packages/local-models/bin/installModel.ts`
++/** Cola del stderr del trabajo que se conserva como causa de un fallo sin reporte. */
++const DIAGNOSTIC_TAIL_CHARS = 400
++
++export interface OllamaModelInstallerOptions {
++  readonly podman: PodmanExecutor
++  /** Imagen del trabajo, ya resuelta a un ID o digest inmutable. */
++  readonly image: string
++  readonly bunPath: string
++  readonly repositoryRoot: string
++  /** Directorio del anfitrión para el reporte del trabajo; se vacía antes y después. */
++  readonly scratchDir: string
++  /** Entorno declarado del que `managedOllama` lee dónde escucha Ollama. */
++  readonly environment: Environment
++  readonly owner: ContainerOwner
++  readonly workerId: string
++  readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
++}
++
++export function installJobSpec(options: OllamaModelInstallerOptions, request: ModelInstallRequest): WorkerContainerSpec {
++  const profile: WorkerResourceProfile = {
++    ...options.limits,
++    network: 'host',
++    environment: { HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
++    readOnlyRootfs: true,
++    mounts: [
++      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
++      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
++      { source: request.artifactPath, destination: CONTAINER_ARTIFACT, mode: 'ro' },
++      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
++    ],
++  }
++  return {
++    workerId: options.workerId,
++    image: options.image,
++    owner: options.owner,
++    resourceArgv: workerResourceLimitArgv(profile),
++    command: [
++      CONTAINER_BUN, INSTALL_ENTRY,
++      '--ollama-url', managedOllama(options.environment).baseUrl,
++      '--name', request.name,
++      '--artifact', CONTAINER_ARTIFACT,
++      '--sha256', request.contentSha256,
++      '--report', `${CONTAINER_SCRATCH}/${INSTALL_REPORT_NAME}`,
++    ],
++  }
++}
++
++export class OllamaModelInstaller implements ModelInstaller {
++  private readonly api: OllamaApi
++
++  constructor(private readonly options: OllamaModelInstallerOptions) {
++    this.api = new OllamaApi(managedOllama(options.environment).baseUrl)
++  }
++
++  async inspect(name: string): Promise<InstalledModelState | undefined> {
++    const details = await this.api.findModelDetails(name)
++    if (details === undefined) return undefined
++    return { name, contentSha256: modelBlobOfModelfile(details.modelfile).sha256 }
++  }
++
++  async install(request: ModelInstallRequest): Promise<InstallOutcome> {
++    const reported = await this.runInstallJob(request)
++    if (reported.status === 'failed') return reported
++    return this.confirmInstalled(request)
++  }
++
++  /** Corre el trabajo y devuelve su reporte; sin reporte legible, `failed` con el diagnóstico. */
++  private async runInstallJob(request: ModelInstallRequest): Promise<InstallOutcome> {
++    const { scratchDir } = this.options
++    await rm(scratchDir, { recursive: true, force: true })
++    await Promise.all(['home', 'tmp'].map(name => mkdir(join(scratchDir, name), { recursive: true })))
++    try {
++      const job = await runJobWithOutput(this.options.podman, installJobSpec(this.options, request))
++      const report = await readReport(join(scratchDir, INSTALL_REPORT_NAME))
++      if (report) return report
++      return { status: 'failed', reason: `${job.containerName} salió ${job.exitCode} sin reporte: ${job.stderr.trim().slice(-DIAGNOSTIC_TAIL_CHARS)}` }
++    } finally {
++      await rm(scratchDir, { recursive: true, force: true })
++    }
++  }
++
++  /** `/api/create` con 200 no es éxito: el runtime tiene que resolver el nombre al contenido pedido. */
++  private async confirmInstalled(request: ModelInstallRequest): Promise<InstallOutcome> {
++    const state = await this.inspect(request.name)
++    if (state === undefined) return { status: 'failed', reason: `tras instalar, Ollama no resuelve ${request.name}` }
++    if (state.contentSha256 !== request.contentSha256) {
++      return { status: 'failed', reason: `tras instalar, ${request.name} resuelve sha256 ${state.contentSha256}, no el pedido ${request.contentSha256}` }
++    }
++    return { status: 'installed' }
++  }
++}
++
++async function readReport(path: string): Promise<InstallOutcome | undefined> {
++  try {
++    const report = JSON.parse(await readFile(path, 'utf8')) as unknown
++    return isInstallOutcome(report) ? report : undefined
++  } catch {
++    return undefined
++  }
++}
++
++function isInstallOutcome(value: unknown): value is InstallOutcome {
++  if (typeof value !== 'object' || value === null) return false
++  const report = value as { status?: unknown, reason?: unknown }
++  return report.status === 'installed' || (report.status === 'failed' && typeof report.reason === 'string')
++}

@@ -1,0 +1,692 @@
+diff --git a/.env.example b/.env.example
+index b2281da84..13cf60057 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1369,6 +1369,12 @@ THYROX_QODER_OAUTH_USERINFO_URL=
+ # raíz de thyrox.
+ THYROX_MODEL_CATALOG=
+ THYROX_MODEL_QUALIFICATIONS=
++# La caché de los GGUF verificados (directorio, reconstruible: la autoridad es
++# el artefacto permanente) y el índice de ubicaciones de esos artefactos (un
++# JSON que llena `local-models-catalog locate`). Sin declarar,
++# .thyrox/models/artifacts y .thyrox/models/artifact-locations.json.
++THYROX_MODEL_ARTIFACT_CACHE_DIR=
++THYROX_MODEL_ARTIFACT_LOCATIONS=
+ THYROX_OPENAI_COMPAT_BASE_URL=
+ THYROX_OPENAI_COMPAT_MODEL=
+ THYROX_OPENAI_COMPAT_API_KEY=
+diff --git a/src/packages/local-models/__tests__/commands.test.ts b/src/packages/local-models/__tests__/commands.test.ts
+index f480f0346..231f42824 100644
+--- a/src/packages/local-models/__tests__/commands.test.ts
++++ b/src/packages/local-models/__tests__/commands.test.ts
+@@ -241,3 +241,82 @@ describe('entradas bin/*.ts', () => {
+     expect(refused.stderr.toString()).toContain('uso:')
+   })
+ })
++
++describe('local-models-catalog locate', () => {
++  const MANIFEST = `sha256:${'5'.repeat(64)}`
++  const GGUF_FILE = { path: '/w/model.gguf', title: 'model.gguf', mediaType: 'application/vnd.thyrox.gguf.v1', size: GGUF.length, sha256: GGUF_SHA256 }
++  const LOG_FILE = { path: '/w/run.log', title: 'run.log', mediaType: 'text/plain', size: 10, sha256: 'b'.repeat(64) }
++
++  function locateInstallation(record: unknown): { install: Installation; publication: string } {
++    counter += 1
++    const root = join(WORKDIR, `locate-${counter}`)
++    mkdirSync(root, { recursive: true })
++    const publication = join(root, 'publication.json')
++    writeFileSync(publication, JSON.stringify(record))
++    return { install: { root, env: {} }, publication }
++  }
++
++  function verifiedRecord(files: unknown[]) {
++    return { status: 'verified', reference: `docker.io/th3rox/lab@${MANIFEST}`, files }
++  }
++
++  function storedLocations(root: string) {
++    return JSON.parse(readFileSync(join(root, '.thyrox/models/artifact-locations.json'), 'utf8')).locations
++  }
++
++  test('una publicación verificada añade una ubicación por cada .gguf, y sólo por ellos', async () => {
++    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE, LOG_FILE]))
++    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
++    expect(result).toMatchObject({ code: 0, stderr: [] })
++    expect(storedLocations(install.root)).toEqual([
++      { bytes: GGUF.length, contentSha256: GGUF_SHA256, manifestDigest: MANIFEST, registry: 'docker.io', repository: 'th3rox/lab' },
++    ])
++  })
++
++  test('repetirla no duplica la entrada', async () => {
++    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE]))
++    await run(runCatalogCommand, ['locate', '--publication', publication], install)
++    expect((await run(runCatalogCommand, ['locate', '--publication', publication], install)).code).toBe(0)
++    expect(storedLocations(install.root)).toHaveLength(1)
++  })
++
++  test('THYROX_MODEL_ARTIFACT_LOCATIONS gana a la ruta por defecto', async () => {
++    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE]))
++    const declared = join(install.root, 'elsewhere.json')
++    expect((await run(runCatalogCommand, ['locate', '--publication', publication], { ...install, env: { THYROX_MODEL_ARTIFACT_LOCATIONS: declared } })).code).toBe(0)
++    expect(existsSync(declared)).toBe(true)
++    expect(existsSync(join(install.root, '.thyrox/models/artifact-locations.json'))).toBe(false)
++  })
++
++  test('una publicación no verificada sale 2 y no escribe el índice', async () => {
++    const { install, publication } = locateInstallation({ status: 'unverified', reference: `docker.io/th3rox/lab@${MANIFEST}`, files: [GGUF_FILE] })
++    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('unverified')
++    expect(existsSync(join(install.root, '.thyrox/models/artifact-locations.json'))).toBe(false)
++  })
++
++  test('una publicación sin ningún .gguf sale 2 y no escribe el índice', async () => {
++    const { install, publication } = locateInstallation(verifiedRecord([LOG_FILE]))
++    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('.gguf')
++    expect(existsSync(join(install.root, '.thyrox/models/artifact-locations.json'))).toBe(false)
++  })
++
++  test('una referencia sin registry/repositorio@digest sale 2 nombrándola', async () => {
++    const { install, publication } = locateInstallation({ ...verifiedRecord([GGUF_FILE]), reference: 'th3rox-lab' })
++    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('th3rox-lab')
++  })
++
++  test('sin --publication o con argumentos de más sale 2 con el uso', async () => {
++    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE]))
++    for (const argv of [['locate'], ['locate', '--publication'], ['locate', publication], ['locate', '--publication', publication, 'x']]) {
++      const result = await run(runCatalogCommand, argv, install)
++      expect(result.code).toBe(2)
++      expect(result.stderr.join('\n')).toContain('locate --publication <publication.json>')
++    }
++  })
++})
+diff --git a/src/packages/local-models/__tests__/ensureModel.test.ts b/src/packages/local-models/__tests__/ensureModel.test.ts
+new file mode 100644
+index 000000000..7d8bd1a23
+--- /dev/null
++++ b/src/packages/local-models/__tests__/ensureModel.test.ts
+@@ -0,0 +1,202 @@
++/**
++ * El reconciliador `ensureModel` (TASK-THYROX-0729): READY sólo cuando el
++ * sha256 del catálogo, el del GGUF materializado y el contenido que el
++ * runtime resuelve para el nombre son el mismo. Todo puerto es un fake: el
++ * resolver, el fetcher y el instalador registran sus llamadas, así que las
++ * descargas e instalaciones se cuentan, no se infieren.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { createHash } from 'node:crypto'
++import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
++import { ModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
++import { thyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
++import type { ModelArtifactResolver } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
++
++import { ensureModel, type EnsureModelDependencies } from '../ensureModel.js'
++import { cachedArtifactPath, type ArtifactFetcher } from '../modelArtifactCache.js'
++import type { InstallOutcome, ModelInstaller, ModelInstallRequest } from '../modelInstaller.js'
++
++const CONTENT = 'GGUF-bytes-of-a-q4-model'
++const SHA = createHash('sha256').update(CONTENT).digest('hex')
++const OTHER_SHA = 'e'.repeat(64)
++const REVISION = '7ae557604adf67be50417f59c2c2f167def9a775'
++const NAME = thyroxModelName({ repository: 'Qwen/Qwen2.5-0.5B-Instruct', quantization: 'q4_k_m', source: 'hf', revision: REVISION })
++const ENTRY: ModelCatalogEntry = {
++  name: NAME,
++  repository: 'Qwen/Qwen2.5-0.5B-Instruct',
++  source: 'hf',
++  revision: REVISION,
++  quantization: 'q4_k_m',
++  artifact: { format: 'gguf', sha256: SHA, bytes: CONTENT.length },
++  architecture: 'qwen2',
++  attention: { blockCount: 24, kvHeadCount: 2, headDimension: 64 },
++  maxContextLength: 4096,
++  defaultKvCacheType: 'f16',
++  capabilities: ['completion', 'tools'],
++  declaredAt: '2026-10-01T07:00:00Z',
++}
++const CATALOG = ModelCatalog.empty().with(ENTRY)
++const MANIFEST = `sha256:${'5'.repeat(64)}`
++
++let cacheDir: string
++beforeEach(() => { cacheDir = mkdtempSync(join(tmpdir(), 'ensure-model-')) })
++afterEach(() => rmSync(cacheDir, { recursive: true, force: true }))
++
++const resolving: ModelArtifactResolver = {
++  async resolve(artifact) {
++    return { status: 'resolved', pinned: { registry: 'docker.io', repository: 'th3rox/lab', manifestDigest: MANIFEST, blobDigest: `sha256:${artifact.sha256}`, bytes: artifact.bytes } }
++  },
++}
++
++const unresolving: ModelArtifactResolver = {
++  async resolve() { return { status: 'not_materializable', reason: 'sin ubicación' } },
++}
++
++interface CountingFetcher extends ArtifactFetcher { readonly calls: string[] }
++
++/** Un fetcher que escribe `content`; sin contenido, escribe un parcial y falla. */
++function fetcherWriting(content: string | undefined): CountingFetcher {
++  const calls: string[] = []
++  return {
++    calls,
++    async fetch(pinned, destination) {
++      calls.push(pinned.blobDigest)
++      if (content === undefined) {
++        writeFileSync(destination, CONTENT.slice(0, 5))
++        return { status: 'failed', reason: 'conexión cortada' }
++      }
++      writeFileSync(destination, content)
++      return { status: 'fetched' }
++    },
++  }
++}
++
++interface FakeRuntime extends ModelInstaller { readonly installs: ModelInstallRequest[] }
++
++/**
++ * Un runtime con un contenido inicial por nombre. `serves` decide qué guarda
++ * al instalar: por defecto, lo pedido; un fallo devuelve `failed` sin tocarlo.
++ */
++function runtime(initial: string | undefined, behaviour: { serves?: string; fails?: boolean } = {}): FakeRuntime {
++  let current = initial
++  const installs: ModelInstallRequest[] = []
++  return {
++    installs,
++    async inspect(name) {
++      return current === undefined ? undefined : { name, contentSha256: current }
++    },
++    async install(request): Promise<InstallOutcome> {
++      installs.push(request)
++      if (behaviour.fails) return { status: 'failed', reason: 'el runtime rehusó el blob' }
++      current = behaviour.serves ?? request.contentSha256
++      return { status: 'installed' }
++    },
++  }
++}
++
++function deps(fetcher: CountingFetcher, installer: FakeRuntime, resolver = resolving): EnsureModelDependencies {
++  return { catalog: CATALOG, resolver, fetcher, installer, cacheDir }
++}
++
++const EVIDENCE = { catalogSha256: SHA, materializedSha256: SHA, runtimeSha256: SHA }
++
++describe('ensureModel', () => {
++  test('un nombre fuera del catálogo es not_declared, sin resolver ni descargar', async () => {
++    const fetcher = fetcherWriting(CONTENT)
++    const outcome = await ensureModel('thyrox-nadie--nada:q4_k_m-hf-000000000000', deps(fetcher, runtime(undefined)))
++    expect(outcome.status).toBe('not_declared')
++    expect(fetcher.calls).toHaveLength(0)
++  })
++
++  test('1. sin distribución es not_materializable, sin descargar ni instalar', async () => {
++    const fetcher = fetcherWriting(CONTENT)
++    const installer = runtime(undefined)
++    const outcome = await ensureModel(NAME, deps(fetcher, installer, unresolving))
++    expect(outcome).toMatchObject({ status: 'not_materializable', reason: 'sin ubicación' })
++    expect([fetcher.calls.length, installer.installs.length]).toEqual([0, 0])
++  })
++
++  test('2. caché vacía: una descarga, verifica, instala desde la caché y queda READY', async () => {
++    const fetcher = fetcherWriting(CONTENT)
++    const installer = runtime(undefined)
++    const outcome = await ensureModel(NAME, deps(fetcher, installer))
++    expect(outcome).toEqual({ status: 'ready', name: NAME, evidence: EVIDENCE, downloaded: true, installed: true })
++    expect(fetcher.calls).toHaveLength(1)
++    expect(installer.installs).toEqual([{ name: NAME, artifactPath: cachedArtifactPath(cacheDir, SHA), contentSha256: SHA }])
++  })
++
++  test('3. caché correcta: cero descargas', async () => {
++    writeFileSync(cachedArtifactPath(cacheDir, SHA), CONTENT)
++    const fetcher = fetcherWriting(CONTENT)
++    const outcome = await ensureModel(NAME, deps(fetcher, runtime(undefined)))
++    expect(outcome).toMatchObject({ status: 'ready', downloaded: false, installed: true })
++    expect(fetcher.calls).toHaveLength(0)
++  })
++
++  test('4. caché con otro contenido: no se usa, se reconstruye', async () => {
++    writeFileSync(cachedArtifactPath(cacheDir, SHA), 'otro contenido')
++    const fetcher = fetcherWriting(CONTENT)
++    const outcome = await ensureModel(NAME, deps(fetcher, runtime(undefined)))
++    expect(outcome).toMatchObject({ status: 'ready', downloaded: true, evidence: EVIDENCE })
++    expect(fetcher.calls).toHaveLength(1)
++  })
++
++  test('5. runtime vacío: instala', async () => {
++    const installer = runtime(undefined)
++    expect(await ensureModel(NAME, deps(fetcherWriting(CONTENT), installer))).toMatchObject({ status: 'ready', installed: true })
++    expect(installer.installs).toHaveLength(1)
++  })
++
++  test('6. runtime con el contenido correcto: cero instalaciones', async () => {
++    const installer = runtime(SHA)
++    expect(await ensureModel(NAME, deps(fetcherWriting(CONTENT), installer))).toMatchObject({ status: 'ready', installed: false, evidence: EVIDENCE })
++    expect(installer.installs).toHaveLength(0)
++  })
++
++  test('7. el mismo nombre con otro contenido no cuenta como READY: se reinstala', async () => {
++    const installer = runtime(OTHER_SHA)
++    const outcome = await ensureModel(NAME, deps(fetcherWriting(CONTENT), installer))
++    expect(outcome).toMatchObject({ status: 'ready', installed: true, evidence: EVIDENCE })
++    expect(installer.installs).toHaveLength(1)
++  })
++
++  test('8. un fallo de descarga es failed en materialize y no deja caché parcial válida', async () => {
++    const installer = runtime(undefined)
++    const outcome = await ensureModel(NAME, deps(fetcherWriting(undefined), installer))
++    expect(outcome).toMatchObject({ status: 'failed', stage: 'materialize', reason: 'conexión cortada', downloaded: false, installed: false })
++    expect(existsSync(cachedArtifactPath(cacheDir, SHA))).toBe(false)
++    expect(readdirSync(cacheDir)).toEqual([])
++    expect(installer.installs).toHaveLength(0)
++  })
++
++  test('8b. una descarga con otro contenido es failed en materialize, nunca READY', async () => {
++    const outcome = await ensureModel(NAME, deps(fetcherWriting('contenido ajeno'), runtime(undefined)))
++    expect(outcome).toMatchObject({ status: 'failed', stage: 'materialize' })
++    expect(existsSync(cachedArtifactPath(cacheDir, SHA))).toBe(false)
++  })
++
++  test('9. un fallo de instalación es failed en install, nunca READY', async () => {
++    const outcome = await ensureModel(NAME, deps(fetcherWriting(CONTENT), runtime(undefined, { fails: true })))
++    expect(outcome).toMatchObject({ status: 'failed', stage: 'install', reason: 'el runtime rehusó el blob', downloaded: true, installed: false })
++  })
++
++  test('un instalador que dice installed pero sirve otro contenido no deja READY', async () => {
++    const outcome = await ensureModel(NAME, deps(fetcherWriting(CONTENT), runtime(undefined, { serves: OTHER_SHA })))
++    expect(outcome).toMatchObject({ status: 'failed', stage: 'verify', installed: true })
++    expect(outcome.status === 'failed' && outcome.reason).toContain(OTHER_SHA)
++  })
++
++  test('10. la segunda llamada: cero descargas, cero instalaciones, READY con la misma evidencia', async () => {
++    const fetcher = fetcherWriting(CONTENT)
++    const installer = runtime(undefined)
++    const first = await ensureModel(NAME, deps(fetcher, installer))
++    const second = await ensureModel(NAME, deps(fetcher, installer))
++    expect(second).toEqual({ status: 'ready', name: NAME, evidence: EVIDENCE, downloaded: false, installed: false })
++    expect(first.status === 'ready' && first.evidence).toEqual(EVIDENCE)
++    expect([fetcher.calls.length, installer.installs.length]).toEqual([1, 1])
++  })
++})
+diff --git a/src/packages/local-models/__tests__/ensureModelHomes.test.ts b/src/packages/local-models/__tests__/ensureModelHomes.test.ts
+new file mode 100644
+index 000000000..6b9fa1228
+--- /dev/null
++++ b/src/packages/local-models/__tests__/ensureModelHomes.test.ts
+@@ -0,0 +1,26 @@
++/**
++ * Los hogares del reconciliador (TASK-THYROX-0729): la caché de artefactos y
++ * el índice de ubicaciones caen bajo `.thyrox/models/` de la raíz salvo
++ * declaración, y una declaración vacía no cuenta.
++ */
++import { describe, expect, test } from 'bun:test'
++
++import { MODEL_ARTIFACT_CACHE_DIR_VAR, MODEL_ARTIFACT_LOCATIONS_VAR, localArtifactHome } from '@thyrox/model-artifacts/localModelHome.ts'
++
++describe('localArtifactHome', () => {
++  test('sin declarar, caen bajo .thyrox/models de la raíz', () => {
++    expect(localArtifactHome({}, '/clone/')).toEqual({
++      artifactCache: '/clone/.thyrox/models/artifacts',
++      artifactLocations: '/clone/.thyrox/models/artifact-locations.json',
++    })
++  })
++
++  test('la declaración gana; una vacía cae al default', () => {
++    const home = localArtifactHome({ [MODEL_ARTIFACT_CACHE_DIR_VAR]: '/cache', [MODEL_ARTIFACT_LOCATIONS_VAR]: ' ' }, '/clone')
++    expect([home.artifactCache, home.artifactLocations]).toEqual(['/cache', '/clone/.thyrox/models/artifact-locations.json'])
++  })
++
++  test('las claves son las del contrato', () => {
++    expect([MODEL_ARTIFACT_CACHE_DIR_VAR, MODEL_ARTIFACT_LOCATIONS_VAR]).toEqual(['THYROX_MODEL_ARTIFACT_CACHE_DIR', 'THYROX_MODEL_ARTIFACT_LOCATIONS'])
++  })
++})
+diff --git a/src/packages/local-models/catalogCommand.ts b/src/packages/local-models/catalogCommand.ts
+index 40c002d13..cdb294bfa 100644
+--- a/src/packages/local-models/catalogCommand.ts
++++ b/src/packages/local-models/catalogCommand.ts
+@@ -3,10 +3,21 @@
+  * `local-models-catalog list [--json]`: el catálogo de modelos locales de la
+  * instalación (`localModelHome`). `--revision` da el commit completo de
+  * Hugging Face que un nombre contractual de fuente `hf` sólo lleva en 12
+- * caracteres. Salidas: 0 hecho · 2 rehusado, con la causa y la ruta.
++ * caracteres.
++ *
++ * `local-models-catalog locate --publication <publication.json>` lee el
++ * registro que escribe `bin/artifact-registry-publish-artifact` y, sólo si su
++ * estado es `verified`, añade al índice de ubicaciones una entrada por cada
++ * archivo `.gguf`: su sha256 como contenido y el digest de `reference` como
++ * manifest. Es lo que hace resoluble un contenido del catálogo para
++ * `ensureModel`. Salidas: 0 hecho · 2 rehusado, con la causa y la ruta.
+  */
+ 
+-import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
++import { mkdir, readFile } from 'node:fs/promises'
++import { dirname } from 'node:path'
++
++import { localArtifactHome, localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
++import { loadArtifactLocationIndex, saveArtifactLocationIndex, type ArtifactLocation } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
+ import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
+ 
+ import { EXIT_OK, EXIT_REFUSED, type CommandOutput } from './commandOutput.js'
+@@ -19,6 +30,7 @@ import { volumeMountpoint } from './volumeBlobs.js'
+ export const CATALOG_USAGE = [
+   'uso: local-models-catalog declare <nombre-ollama> [--revision <commit>]',
+   '     local-models-catalog list [--json]',
++  '     local-models-catalog locate --publication <publication.json>',
+ ].join('\n')
+ 
+ export interface CommandContext {
+@@ -41,6 +53,25 @@ interface DeclareArguments {
+ }
+ 
+ const REVISION_FLAG = '--revision'
++const PUBLICATION_FLAG = '--publication'
++const GGUF_SUFFIX = '.gguf'
++const VERIFIED = 'verified'
++/** `<registry>/<repositorio>@sha256:<64 hex>`, la forma de `publicationRecord`. */
++const PUBLICATION_REFERENCE = /^([^/@]+)\/([^@]+)@(sha256:[0-9a-f]{64})$/
++
++/** Lo que `locate` lee del registro de publicación. */
++interface PublicationRecord {
++  readonly status?: unknown
++  readonly reference?: unknown
++  readonly files?: unknown
++}
++
++/** Un archivo publicado, en la forma `ArtifactFile` del registro. */
++interface PublishedFile {
++  readonly title: string
++  readonly size: number
++  readonly sha256: string
++}
+ 
+ export async function runCatalogCommand(argv: readonly string[], context: CommandContext): Promise<number> {
+   const [subcommand, ...rest] = argv
+@@ -48,6 +79,8 @@ export async function runCatalogCommand(argv: readonly string[], context: Comman
+     const declaration = subcommand === 'declare' ? parseDeclareArguments(rest) : undefined
+     if (declaration !== undefined) return await declare(declaration, context)
+     if (subcommand === 'list') return await list(rest.includes('--json'), context)
++    const publicationPath = subcommand === 'locate' ? parseLocateArguments(rest) : undefined
++    if (publicationPath !== undefined) return await locate(publicationPath, context)
+   } catch (error) {
+     context.output.stderr(`local-models-catalog: ${(error as Error).message}`)
+     return EXIT_REFUSED
+@@ -88,3 +121,35 @@ async function list(asJson: boolean, context: CommandContext): Promise<number> {
+ function catalogPath(context: CommandContext): string {
+   return localModelHome(context.env, context.thyroxRoot).catalog
+ }
++
++/** `--publication <ruta>` y nada más; cualquier otra forma no es un locate. */
++function parseLocateArguments(argv: readonly string[]): string | undefined {
++  const [flag, path, ...extra] = argv
++  if (flag !== PUBLICATION_FLAG || path === undefined || extra.length > 0) return undefined
++  return path
++}
++
++async function locate(publicationPath: string, context: CommandContext): Promise<number> {
++  const locations = locationsOf(publicationPath, JSON.parse(await readFile(publicationPath, 'utf8')) as PublicationRecord)
++  const indexPath = localArtifactHome(context.env, context.thyroxRoot).artifactLocations
++  const index = locations.reduce((current, location) => current.with(location), await loadArtifactLocationIndex(indexPath))
++  await mkdir(dirname(indexPath), { recursive: true })
++  await saveArtifactLocationIndex(indexPath, index)
++  locations.forEach(location => context.output.stdout(`ubicado: sha256 ${location.contentSha256} en ${location.registry}/${location.repository}@${location.manifestDigest}`))
++  return EXIT_OK
++}
++
++/** Una ubicación por cada `.gguf` de una publicación verificada; cualquier otra cosa rehúsa con la ruta. */
++function locationsOf(publicationPath: string, record: PublicationRecord): ArtifactLocation[] {
++  if (record.status !== VERIFIED) throw new Error(`${publicationPath}: la publicación está ${String(record.status)}, no ${VERIFIED}`)
++  const reference = PUBLICATION_REFERENCE.exec(String(record.reference))
++  if (reference === null) throw new Error(`${publicationPath}: referencia ${JSON.stringify(record.reference)} sin la forma <registry>/<repositorio>@sha256:<digest>`)
++  const [, registry = '', repository = '', manifestDigest = ''] = reference
++  const ggufFiles = publishedFiles(record).filter(file => file.title.endsWith(GGUF_SUFFIX))
++  if (ggufFiles.length === 0) throw new Error(`${publicationPath}: la publicación no contiene ningún archivo ${GGUF_SUFFIX}`)
++  return ggufFiles.map(file => ({ contentSha256: file.sha256, bytes: file.size, registry, repository, manifestDigest }))
++}
++
++function publishedFiles(record: PublicationRecord): readonly PublishedFile[] {
++  return Array.isArray(record.files) ? record.files as PublishedFile[] : []
++}
+diff --git a/src/packages/local-models/ensureModel.ts b/src/packages/local-models/ensureModel.ts
+new file mode 100644
+index 000000000..4e9bb00c2
+--- /dev/null
++++ b/src/packages/local-models/ensureModel.ts
+@@ -0,0 +1,116 @@
++/**
++ * `ensureModel(name, deps)`: el reconciliador idempotente que deja disponible
++ * un modelo del catálogo en un runtime (TASK-THYROX-0729). No es
++ * `download()+install()`: cada paso mide el estado y actúa sólo si no es el
++ * pedido, así que la segunda llamada no descarga ni instala.
++ *
++ * Responde una sola pregunta —¿puede este runtime servir este modelo
++ * concreto?—. No decide GPU, instancia, residencia ni endpoint
++ * (TASK-THYROX-0703).
++ *
++ * READY exige tres digests iguales, cada uno medido: el sha256 del catálogo,
++ * el del GGUF materializado (el que `materializeArtifact` midió sobre el
++ * archivo antes de publicarlo en la caché) y el contenido que el runtime resuelve para el nombre después de
++ * cualquier instalación. Un instalador que responde `installed` y sirve otra
++ * cosa no deja READY. `downloaded` e `installed` dicen lo que ocurrió en esta
++ * llamada, no lo que se supone.
++ */
++import type { CatalogArtifact, ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
++import type { ModelArtifactResolver, PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
++
++import { materializeArtifact, type ArtifactFetcher } from './modelArtifactCache.js'
++import type { InstalledModelState, ModelInstaller } from './modelInstaller.js'
++
++/** La parte del catálogo que el reconciliador consulta. */
++export interface CatalogLookup {
++  byName(name: string): ModelCatalogEntry | undefined
++}
++
++export interface EnsureModelDependencies {
++  readonly catalog: CatalogLookup
++  readonly resolver: ModelArtifactResolver
++  readonly fetcher: ArtifactFetcher
++  readonly installer: ModelInstaller
++  readonly cacheDir: string
++}
++
++/** Los tres digests cuya igualdad es READY. */
++export interface ReadinessEvidence {
++  readonly catalogSha256: string
++  readonly materializedSha256: string
++  /** Vacío si el runtime no resuelve el nombre: nunca coincide con un sha256. */
++  readonly runtimeSha256: string
++}
++
++/** Dónde se detuvo una reconciliación fallida. */
++export type EnsureStage = 'materialize' | 'install' | 'verify'
++
++export type EnsureOutcome =
++  | { readonly status: 'ready'; readonly name: string; readonly evidence: ReadinessEvidence; readonly downloaded: boolean; readonly installed: boolean }
++  | { readonly status: 'not_declared'; readonly name: string }
++  | { readonly status: 'not_materializable'; readonly name: string; readonly reason: string }
++  | { readonly status: 'failed'; readonly name: string; readonly stage: EnsureStage; readonly reason: string; readonly downloaded: boolean; readonly installed: boolean }
++
++/** Un GGUF verificado en la caché y lo que costó tenerlo. */
++interface Materialized {
++  readonly path: string
++  readonly sha256: string
++  readonly downloaded: boolean
++}
++
++/** Lo que el runtime resuelve tras reconciliar, y si hubo que instalar. */
++interface Reconciled {
++  readonly state: InstalledModelState | undefined
++  readonly installed: boolean
++}
++
++type StepResult<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly reason: string }
++
++export async function ensureModel(name: string, deps: EnsureModelDependencies): Promise<EnsureOutcome> {
++  const entry = deps.catalog.byName(name)
++  if (entry === undefined) return { status: 'not_declared', name }
++  const resolution = await deps.resolver.resolve(entry.artifact)
++  if (resolution.status !== 'resolved') return { status: 'not_materializable', name, reason: resolution.reason }
++
++  const materialized = await materialize(entry.artifact, resolution.pinned, deps)
++  if (!materialized.ok) return { status: 'failed', name, stage: 'materialize', reason: materialized.reason, downloaded: false, installed: false }
++  const { downloaded } = materialized.value
++
++  const reconciled = await reconcileRuntime(name, materialized.value, deps.installer)
++  if (!reconciled.ok) return { status: 'failed', name, stage: 'install', reason: reconciled.reason, downloaded, installed: false }
++  const { installed, state } = reconciled.value
++
++  const evidence = { catalogSha256: entry.artifact.sha256, materializedSha256: materialized.value.sha256, runtimeSha256: state?.contentSha256 ?? '' }
++  if (!isReady(evidence)) return { status: 'failed', name, stage: 'verify', reason: mismatchReason(name, evidence), downloaded, installed }
++  return { status: 'ready', name, evidence, downloaded, installed }
++}
++
++async function materialize(artifact: CatalogArtifact, pinned: PinnedModelArtifact, deps: EnsureModelDependencies): Promise<StepResult<Materialized>> {
++  const outcome = await materializeArtifact({ artifact, pinned, cacheDir: deps.cacheDir, fetcher: deps.fetcher })
++  if ('reason' in outcome) return { ok: false, reason: outcome.reason }
++  // `materializeArtifact` sólo devuelve `cached`/`fetched` tras medir el
++  // sha256 del archivo publicado: ese es el digest materializado.
++  return { ok: true, value: { path: outcome.path, sha256: artifact.sha256, downloaded: outcome.status === 'fetched' } }
++}
++
++/** Instala sólo si el runtime no resuelve el nombre al contenido materializado, y vuelve a inspeccionar. */
++async function reconcileRuntime(name: string, materialized: Materialized, installer: ModelInstaller): Promise<StepResult<Reconciled>> {
++  const current = await installer.inspect(name)
++  if (servesContent(current, materialized.sha256)) return { ok: true, value: { state: current, installed: false } }
++  const outcome = await installer.install({ name, artifactPath: materialized.path, contentSha256: materialized.sha256 })
++  if (outcome.status !== 'installed') return { ok: false, reason: outcome.reason }
++  return { ok: true, value: { state: await installer.inspect(name), installed: true } }
++}
++
++function servesContent(state: InstalledModelState | undefined, sha256: string): boolean {
++  return state?.contentSha256 === sha256
++}
++
++function isReady(evidence: ReadinessEvidence): boolean {
++  return evidence.catalogSha256 === evidence.materializedSha256 && evidence.materializedSha256 === evidence.runtimeSha256
++}
++
++function mismatchReason(name: string, evidence: ReadinessEvidence): string {
++  const runtime = evidence.runtimeSha256 === '' ? 'nada' : `sha256:${evidence.runtimeSha256}`
++  return `${name}: el catálogo declara sha256:${evidence.catalogSha256}, la caché tiene sha256:${evidence.materializedSha256} y el runtime resuelve ${runtime}`
++}
+diff --git a/src/packages/model-artifacts/localModelHome.ts b/src/packages/model-artifacts/localModelHome.ts
+index 13a8f8c9f..fc87e40a3 100644
+--- a/src/packages/model-artifacts/localModelHome.ts
++++ b/src/packages/model-artifacts/localModelHome.ts
+@@ -1,12 +1,17 @@
+ /**
+- * Dónde viven, en una instalación, el catálogo de modelos locales y sus
+- * cualificaciones. Es estado de la instalación, no del repositorio: cae bajo
+- * `.thyrox/models/` de la raíz de thyrox salvo que el consumidor declare otra
+- * ruta (`THYROX_MODEL_CATALOG`, `THYROX_MODEL_QUALIFICATIONS`).
++ * Dónde viven, en una instalación, el catálogo de modelos locales, sus
++ * cualificaciones, la caché de artefactos GGUF y el índice de ubicaciones de
++ * sus artefactos permanentes. Es estado de la instalación, no del
++ * repositorio: cae bajo `.thyrox/models/` de la raíz de thyrox salvo que el
++ * consumidor declare otra ruta (`THYROX_MODEL_CATALOG`,
++ * `THYROX_MODEL_QUALIFICATIONS`, `THYROX_MODEL_ARTIFACT_CACHE_DIR`,
++ * `THYROX_MODEL_ARTIFACT_LOCATIONS`).
+  */
+ 
+ export const MODEL_CATALOG_VAR = 'THYROX_MODEL_CATALOG'
+ export const MODEL_QUALIFICATIONS_VAR = 'THYROX_MODEL_QUALIFICATIONS'
++export const MODEL_ARTIFACT_CACHE_DIR_VAR = 'THYROX_MODEL_ARTIFACT_CACHE_DIR'
++export const MODEL_ARTIFACT_LOCATIONS_VAR = 'THYROX_MODEL_ARTIFACT_LOCATIONS'
+ 
+ const DEFAULT_MODELS_DIR = '.thyrox/models'
+ 
+@@ -15,16 +20,37 @@ export interface LocalModelHome {
+   readonly qualifications: string
+ }
+ 
++/** Los hogares de los artefactos de modelo que el reconciliador `ensureModel` lee y escribe. */
++export interface LocalArtifactHome {
++  /** Directorio de los GGUF verificados, nombrados por su contenido. */
++  readonly artifactCache: string
++  /** JSON del índice de ubicaciones (`ArtifactLocationIndex`). */
++  readonly artifactLocations: string
++}
++
+ function declared(env: Readonly<Record<string, string | undefined>>, key: string): string | undefined {
+   const value = env[key]?.trim()
+   return value ? value : undefined
+ }
+ 
++function modelsDir(thyroxRoot: string): string {
++  return `${thyroxRoot.replace(/\/+$/, '')}/${DEFAULT_MODELS_DIR}`
++}
++
+ /** Las dos rutas: las declaradas, o las de `.thyrox/models/` bajo `thyroxRoot`. */
+ export function localModelHome(env: Readonly<Record<string, string | undefined>>, thyroxRoot: string): LocalModelHome {
+-  const base = `${thyroxRoot.replace(/\/+$/, '')}/${DEFAULT_MODELS_DIR}`
++  const base = modelsDir(thyroxRoot)
+   return {
+     catalog: declared(env, MODEL_CATALOG_VAR) ?? `${base}/catalog.json`,
+     qualifications: declared(env, MODEL_QUALIFICATIONS_VAR) ?? `${base}/qualifications.json`,
+   }
+ }
++
++/** La caché de artefactos y su índice de ubicaciones: los declarados, o los de `.thyrox/models/` bajo `thyroxRoot`. */
++export function localArtifactHome(env: Readonly<Record<string, string | undefined>>, thyroxRoot: string): LocalArtifactHome {
++  const base = modelsDir(thyroxRoot)
++  return {
++    artifactCache: declared(env, MODEL_ARTIFACT_CACHE_DIR_VAR) ?? `${base}/artifacts`,
++    artifactLocations: declared(env, MODEL_ARTIFACT_LOCATIONS_VAR) ?? `${base}/artifact-locations.json`,
++  }
++}
+diff --git a/src/paths/declarations.py b/src/paths/declarations.py
+index 62432c460..5bfb6e96f 100644
+--- a/src/paths/declarations.py
++++ b/src/paths/declarations.py
+@@ -90,6 +90,8 @@ HOMES: tuple[Home, ...] = (
+          "session/resource_admission.py", is_file=True),
+     Home("THYROX_RUNTIME_DIR", ".thyrox/runtime", "session/pool_lifecycle.py"),
+     Home("THYROX_POOL_WORKTREES_DIR", ".thyrox/pool-worktrees", "session/item_worktree.sh"),
++    Home("THYROX_MODEL_ARTIFACT_CACHE_DIR", ".thyrox/models/artifacts",
++         "packages/model-artifacts/localModelHome.ts"),
+ )
+ 
+ _OUTSIDE_CLONE = "vive fuera del clon (hogar del usuario o del cliente)"
+diff --git a/tests/paths/test_ensure_homes.py b/tests/paths/test_ensure_homes.py
+index c3adbee1a..311e65295 100644
+--- a/tests/paths/test_ensure_homes.py
++++ b/tests/paths/test_ensure_homes.py
+@@ -45,6 +45,7 @@ from workbench import paths as workbench  # noqa: E402
+ ENSURE_HOMES = ROOT / "src" / "paths" / "ensure_homes.py"
+ CONTRACT = ROOT / declarations.CONTRACT_FILE_NAME
+ NEW_KEY = "THYROX_BRAND_NEW_THING_DIR"
++MODEL_ARTIFACT_CACHE_KEY = "THYROX_MODEL_ARTIFACT_CACHE_DIR"
+ EXIT_REFUSED = 2
+ RESTRICTIVE_UMASK = 0o077
+ PERMISSION_BITS = 0o777
+@@ -217,6 +218,20 @@ def case_unwritable_declaration_refuses(base: Path) -> None:
+     check("no crea nada antes de rehusar", before, snapshot(root))
+ 
+ 
++def case_model_artifact_cache_matches_its_owner() -> None:
++    print("\n== la caché de artefactos de modelo: mismo default que su dueño TS ==")
++    home = next((h for h in declarations.HOMES if h.key == MODEL_ARTIFACT_CACHE_KEY), None)
++    check("registrada como hogar", True, home is not None)
++    if home is None:
++        return
++    check("es un directorio", False, home.is_file)
++    owner_text = (ROOT / "src" / home.owner).read_text(encoding="utf-8")
++    check("el dueño declara la clave", True, MODEL_ARTIFACT_CACHE_KEY in owner_text)
++    check("el dueño compone el mismo default", True,
++          home.default.startswith(".thyrox/models/")
++          and f"${{base}}/{Path(home.default).name}`" in owner_text)
++
++
+ def main() -> int:
+     base = Path(tempfile.mkdtemp(prefix="ensure-homes-"))
+     try:
+@@ -227,6 +242,7 @@ def main() -> int:
+         case_resolve_single_key(base)
+         case_declared_outside_tree(base)
+         case_unwritable_declaration_refuses(base)
++        case_model_artifact_cache_matches_its_owner()
+     finally:
+         shutil.rmtree(base, ignore_errors=True)
+     print(f"\n{PASSED + FAILED} aserciones: {PASSED} ok, {FAILED} fallidas")

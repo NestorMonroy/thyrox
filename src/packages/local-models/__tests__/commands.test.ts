@@ -241,3 +241,82 @@ describe('entradas bin/*.ts', () => {
     expect(refused.stderr.toString()).toContain('uso:')
   })
 })
+
+describe('local-models-catalog locate', () => {
+  const MANIFEST = `sha256:${'5'.repeat(64)}`
+  const GGUF_FILE = { path: '/w/model.gguf', title: 'model.gguf', mediaType: 'application/vnd.thyrox.gguf.v1', size: GGUF.length, sha256: GGUF_SHA256 }
+  const LOG_FILE = { path: '/w/run.log', title: 'run.log', mediaType: 'text/plain', size: 10, sha256: 'b'.repeat(64) }
+
+  function locateInstallation(record: unknown): { install: Installation; publication: string } {
+    counter += 1
+    const root = join(WORKDIR, `locate-${counter}`)
+    mkdirSync(root, { recursive: true })
+    const publication = join(root, 'publication.json')
+    writeFileSync(publication, JSON.stringify(record))
+    return { install: { root, env: {} }, publication }
+  }
+
+  function verifiedRecord(files: unknown[]) {
+    return { status: 'verified', reference: `docker.io/th3rox/lab@${MANIFEST}`, files }
+  }
+
+  function storedLocations(root: string) {
+    return JSON.parse(readFileSync(join(root, '.thyrox/models/artifact-locations.json'), 'utf8')).locations
+  }
+
+  test('una publicación verificada añade una ubicación por cada .gguf, y sólo por ellos', async () => {
+    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE, LOG_FILE]))
+    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
+    expect(result).toMatchObject({ code: 0, stderr: [] })
+    expect(storedLocations(install.root)).toEqual([
+      { bytes: GGUF.length, contentSha256: GGUF_SHA256, manifestDigest: MANIFEST, registry: 'docker.io', repository: 'th3rox/lab' },
+    ])
+  })
+
+  test('repetirla no duplica la entrada', async () => {
+    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE]))
+    await run(runCatalogCommand, ['locate', '--publication', publication], install)
+    expect((await run(runCatalogCommand, ['locate', '--publication', publication], install)).code).toBe(0)
+    expect(storedLocations(install.root)).toHaveLength(1)
+  })
+
+  test('THYROX_MODEL_ARTIFACT_LOCATIONS gana a la ruta por defecto', async () => {
+    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE]))
+    const declared = join(install.root, 'elsewhere.json')
+    expect((await run(runCatalogCommand, ['locate', '--publication', publication], { ...install, env: { THYROX_MODEL_ARTIFACT_LOCATIONS: declared } })).code).toBe(0)
+    expect(existsSync(declared)).toBe(true)
+    expect(existsSync(join(install.root, '.thyrox/models/artifact-locations.json'))).toBe(false)
+  })
+
+  test('una publicación no verificada sale 2 y no escribe el índice', async () => {
+    const { install, publication } = locateInstallation({ status: 'unverified', reference: `docker.io/th3rox/lab@${MANIFEST}`, files: [GGUF_FILE] })
+    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
+    expect(result.code).toBe(2)
+    expect(result.stderr.join('\n')).toContain('unverified')
+    expect(existsSync(join(install.root, '.thyrox/models/artifact-locations.json'))).toBe(false)
+  })
+
+  test('una publicación sin ningún .gguf sale 2 y no escribe el índice', async () => {
+    const { install, publication } = locateInstallation(verifiedRecord([LOG_FILE]))
+    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
+    expect(result.code).toBe(2)
+    expect(result.stderr.join('\n')).toContain('.gguf')
+    expect(existsSync(join(install.root, '.thyrox/models/artifact-locations.json'))).toBe(false)
+  })
+
+  test('una referencia sin registry/repositorio@digest sale 2 nombrándola', async () => {
+    const { install, publication } = locateInstallation({ ...verifiedRecord([GGUF_FILE]), reference: 'th3rox-lab' })
+    const result = await run(runCatalogCommand, ['locate', '--publication', publication], install)
+    expect(result.code).toBe(2)
+    expect(result.stderr.join('\n')).toContain('th3rox-lab')
+  })
+
+  test('sin --publication o con argumentos de más sale 2 con el uso', async () => {
+    const { install, publication } = locateInstallation(verifiedRecord([GGUF_FILE]))
+    for (const argv of [['locate'], ['locate', '--publication'], ['locate', publication], ['locate', '--publication', publication, 'x']]) {
+      const result = await run(runCatalogCommand, argv, install)
+      expect(result.code).toBe(2)
+      expect(result.stderr.join('\n')).toContain('locate --publication <publication.json>')
+    }
+  })
+})

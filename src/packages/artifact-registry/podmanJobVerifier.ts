@@ -21,12 +21,11 @@ import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/pod
 
 import type { ArtifactLocation, PinnedArtifact } from './artifactRegistry.js'
 import type { ArtifactVerifier, VerificationOutcome } from './artifactVerifier.js'
-import type { JobEgress } from './jobEgress.js'
+import { jobNetworkProfile, type JobEgress } from './jobEgress.js'
 
 export const VERIFICATION_REPORT_NAME = 'verification.json'
 
 const CONTAINER_BUN = '/usr/local/bin/bun'
-const CONTAINER_CA_BUNDLE = '/certs/ca-bundle.crt'
 const CONTAINER_REPOSITORY = '/w'
 const CONTAINER_SCRATCH = '/scratch'
 const VERIFY_ENTRY = `${CONTAINER_REPOSITORY}/src/packages/artifact-registry/bin/verifyArtifact.ts`
@@ -46,30 +45,18 @@ export interface PodmanJobVerifierOptions {
   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
 }
 
-function egressProfile(egress: JobEgress): Pick<WorkerResourceProfile, 'network' | 'environment'> & { caMount?: string } {
-  if (egress.kind === 'direct') return { network: 'bridge', environment: {} }
-  return {
-    network: 'host',
-    environment: {
-      HTTPS_PROXY: egress.proxyUrl,
-      ...(egress.caBundlePath ? { NODE_EXTRA_CA_CERTS: CONTAINER_CA_BUNDLE } : {}),
-    },
-    ...(egress.caBundlePath ? { caMount: egress.caBundlePath } : {}),
-  }
-}
-
 export function verificationJobSpec(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): WorkerContainerSpec {
-  const { caMount, ...network } = egressProfile(options.egress)
+  const network = jobNetworkProfile(options.egress)
   const profile: WorkerResourceProfile = {
     ...options.limits,
-    ...network,
+    network: network.network,
     environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
     readOnlyRootfs: true,
     mounts: [
       { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
       { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
       { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
-      ...(caMount ? [{ source: caMount, destination: CONTAINER_CA_BUNDLE, mode: 'ro' as const }] : []),
+      ...network.mounts,
     ],
   }
   return {

@@ -90,6 +90,8 @@ HOMES: tuple[Home, ...] = (
          "session/resource_admission.py", is_file=True),
     Home("THYROX_RUNTIME_DIR", ".thyrox/runtime", "session/pool_lifecycle.py"),
     Home("THYROX_POOL_WORKTREES_DIR", ".thyrox/pool-worktrees", "session/item_worktree.sh"),
+    Home("THYROX_MODEL_ARTIFACT_CACHE_DIR", ".thyrox/models/artifacts",
+         "packages/model-artifacts/localModelHome.ts"),
 )
 
 _OUTSIDE_CLONE = "vive fuera del clon (hogar del usuario o del cliente)"
