@@ -8,6 +8,12 @@
  * residencia, generación, digest— para que `units()` la reconstruya al
  * reconciliar sin otra fuente. No borra imágenes ni volúmenes: `destroy`
  * retira el contenedor de la unidad y nada más.
+ *
+ * El contenedor lo compone la primitiva neutral `@thyrox/podman-execution`
+ * (ADR-007 1.7.1): dueño `model-coordinator` en las etiquetas de dueño,
+ * límites de recursos del perfil, red `bridge` con el puerto del runtime
+ * publicado sólo en `127.0.0.1` y los dispositivos del grant en forma CDI.
+ * Nunca red `host`: el runtime no escucha en la red del anfitrión.
  */
 import type { ExecutionGrant, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
@@ -15,11 +21,12 @@ import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
 import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { type ContainerOwner, WORKER_CONTAINER_NAME_PREFIX } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
 
 /** Prefijo del nombre de contenedor de una unidad de modelo. */
-export const MODEL_UNIT_CONTAINER_PREFIX = 'thyrox-model-'
+export const MODEL_UNIT_CONTAINER_PREFIX = WORKER_CONTAINER_NAME_PREFIX
 
 /** Las etiquetas con que una unidad se identifica en Podman. */
 export const MODEL_UNIT_LABELS = {
@@ -58,7 +65,17 @@ const REQUIRED_LABEL_KEYS: readonly ModelUnitLabelKey[] = [
 export interface RuntimeContainerProfile {
   /** Referencia local; la primitiva no descarga imágenes. */
   readonly image: string
-  environment(port: number): Readonly<Record<string, string>>
+  /** El puerto donde escucha el runtime dentro del contenedor. */
+  readonly containerPort: number
+  /** Entorno del runtime; sólo valores públicos (la primitiva neutral rehúsa nombres de credencial). */
+  readonly environment: Readonly<Record<string, string>>
+}
+
+/** Límites de recursos de un contenedor de unidad. */
+export interface ModelUnitLimits {
+  readonly cpus: number
+  readonly memoryMib: number
+  readonly pidsLimit: number
 }
 
 export interface PodmanModelExecutionPrimitiveOptions {
@@ -69,6 +86,9 @@ export interface PodmanModelExecutionPrimitiveOptions {
   /** Un puerto de loopback libre para la unidad. */
   allocatePort(): Promise<number>
   readonly now: () => Date
+  /** El coordinador dueño de las unidades: `kind` es `model-coordinator`. */
+  readonly owner: ContainerOwner
+  readonly limits: ModelUnitLimits
 }
 
 const UNIT_ID_PREFIX = 'unit-'

@@ -36,7 +36,7 @@ export const WORKER_ID_LABEL_KEY = 'thyrox.worker-id'
 /** Plazo por defecto de `podman stop` antes de que Podman escale a SIGKILL. */
 export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
 
-export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab'
+export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator'
 
 const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab']
 const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
@@ -67,6 +67,11 @@ export type WorkerContainerSpec = {
   /** Argv de límites ya compuesto por `workerResourceProfile.ts`/`repositoryJobProfile.ts`. */
   resourceArgv: readonly string[]
   command?: readonly string[]
+  /**
+   * Etiquetas propias del dueño, además de las de dueño y worker; no pueden
+   * reescribir ninguna de `thyrox.owner-*` ni `thyrox.worker-id`.
+   */
+  labels?: Readonly<Record<string, string>>
 }
 
 function isOwnerKind(value: string): value is ContainerOwnerKind {

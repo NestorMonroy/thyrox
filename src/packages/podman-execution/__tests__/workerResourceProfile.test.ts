@@ -191,3 +191,46 @@ describe('red host y entorno declarado', () => {
     expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
   })
 })
+
+describe('puertos publicados en loopback y dispositivos CDI', () => {
+  const bridge: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'bridge', readOnlyRootfs: false }
+
+  function rejectedField(profile: WorkerResourceProfile): string | undefined {
+    try {
+      validateWorkerResourceProfile(profile)
+      return undefined
+    } catch (error) {
+      return (error as InvalidWorkerResourceProfileError).field
+    }
+  }
+
+  test('un puerto se publica sólo en 127.0.0.1', () => {
+    const argv = workerResourceLimitArgv({ ...bridge, publishedPorts: [{ hostAddress: '127.0.0.1', hostPort: 61_234, containerPort: 11_434 }] })
+    expect(argv.join(' ')).toContain('-p 127.0.0.1:61234:11434')
+  })
+
+  test('una dirección que no es loopback se rehúsa', () => {
+    expect(rejectedField({ ...bridge, publishedPorts: [{ hostAddress: '0.0.0.0' as '127.0.0.1', hostPort: 61_234, containerPort: 11_434 }] })).toBe('publishedPorts.0.hostAddress')
+  })
+
+  test('un puerto fuera de 1–65535 se rehúsa', () => {
+    expect(rejectedField({ ...bridge, publishedPorts: [{ hostAddress: '127.0.0.1', hostPort: 0, containerPort: 11_434 }] })).toBe('publishedPorts.0.hostPort')
+    expect(rejectedField({ ...bridge, publishedPorts: [{ hostAddress: '127.0.0.1', hostPort: 61_234, containerPort: 70_000 }] })).toBe('publishedPorts.0.containerPort')
+  })
+
+  test('publicar puertos exige red bridge: sin red no hay a dónde, y en host no hace falta', () => {
+    const port = [{ hostAddress: '127.0.0.1' as const, hostPort: 61_234, containerPort: 11_434 }]
+    expect(rejectedField({ ...bridge, network: 'none', publishedPorts: port })).toBe('publishedPorts')
+    expect(rejectedField({ ...bridge, network: 'host', publishedPorts: port })).toBe('publishedPorts')
+  })
+
+  test('un dispositivo se emite en forma CDI', () => {
+    const argv = workerResourceLimitArgv({ ...bridge, devices: ['nvidia.com/gpu=GPU-6a9c1d2e-0000-0000-0000-000000000000'] })
+    expect(argv.join(' ')).toContain('--device nvidia.com/gpu=GPU-6a9c1d2e-0000-0000-0000-000000000000')
+  })
+
+  test('una ruta de /dev o un nombre que no es CDI se rehúsa', () => {
+    expect(rejectedField({ ...bridge, devices: ['/dev/nvidia0'] })).toBe('devices.0')
+    expect(rejectedField({ ...bridge, devices: ['gpu0'] })).toBe('devices.0')
+  })
+})

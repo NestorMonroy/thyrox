@@ -38,6 +38,7 @@ import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
 import { ResidencyController, type Admission } from '@thyrox/model-scheduling/residencyController.ts'
 import type { ExecutionPlan } from '@thyrox/model-scheduling/scheduler.ts'
 import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { removeWorkerContainerArgv, workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 import { OllamaRuntimeAdapter } from '../ollamaRuntimeAdapter.ts'
 
@@ -50,6 +51,9 @@ const OWNER = `e2e-coordinator-${process.pid}`
 const LEASE_TTL_MS = 10 * 60_000
 const GRANT_TTL_MS = 10 * 60_000
 const HEALTH = { attempts: 120, intervalMs: 500 }
+const OLLAMA_CONTAINER_PORT = 11_434
+/** Límites de la unidad: el modelo de 0.5B cabe holgado en 2 GiB de RAM del contenedor. */
+const UNIT_LIMITS = { cpus: 2, memoryMib: 2_048, pidsLimit: 256 }
 const E2E_TIMEOUT_MS = 10 * 60_000
 const PROMPT = 'Reply with one word: hello.'
 const MAX_PREDICTED_TOKENS = 8
@@ -122,7 +126,7 @@ const unitsToClean: string[] = []
 
 afterAll(async () => {
   // Una unidad que la prueba no llegó a destruir no se deja viva.
-  for (const unitId of unitsToClean) await podman.run(['rm', '--force', `${MODEL_UNIT_CONTAINER_PREFIX}${unitId}`])
+  for (const unitId of unitsToClean) await podman.run(removeWorkerContainerArgv(workerContainerName(unitId)))
 })
 
 describe.skipIf(skipReason !== undefined)('residencia real: Podman + Ollama', () => {
@@ -143,7 +147,9 @@ describe.skipIf(skipReason !== undefined)('residencia real: Podman + Ollama', ()
     const primitive = new PodmanModelExecutionPrimitive({
       podman,
       currentGeneration,
-      profiles: { ollama: { image: RUNTIME_IMAGE, environment: port => ({ OLLAMA_HOST: `127.0.0.1:${port}` }) } },
+      profiles: { ollama: { image: RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },
+      owner: { kind: 'model-coordinator', id: OWNER, pid: process.pid },
+      limits: UNIT_LIMITS,
       allocatePort: freeLoopbackPort,
       now: () => new Date(),
     })
@@ -177,6 +183,14 @@ describe.skipIf(skipReason !== undefined)('residencia real: Podman + Ollama', ()
       [MODEL_UNIT_LABELS.sha256]: artifact.artifactId,
     })
     expect(first.unit.endpoint).toBe(`http://127.0.0.1:${labels[MODEL_UNIT_LABELS.port]}`)
+    // Lo compuso la primitiva neutral: dueño model-coordinator, red bridge, puerto sólo en loopback.
+    expect(labels).toMatchObject({ 'thyrox.owner-kind': 'model-coordinator', 'thyrox.owner-id': OWNER, 'thyrox.worker-id': first.unit.unitId })
+    const hostConfig = JSON.parse((await podman.run(['inspect', `${MODEL_UNIT_CONTAINER_PREFIX}${first.unit.unitId}`, '--format', '{{json .HostConfig}}'])).stdout) as {
+      NetworkMode: string; PortBindings: Record<string, { HostIp: string; HostPort: string }[]>; Memory: number
+    }
+    expect(hostConfig.NetworkMode).toBe('bridge')
+    expect(hostConfig.PortBindings[`${OLLAMA_CONTAINER_PORT}/tcp`]).toEqual([{ HostIp: '127.0.0.1', HostPort: labels[MODEL_UNIT_LABELS.port] as string }])
+    expect(hostConfig.Memory).toBe(UNIT_LIMITS.memoryMib * BYTES_PER_MIB)
     expect(await coordination.currentGeneration(residencyKey)).toBe(first.unit.generation)
 
     // 3. Una petición real contra la unidad.

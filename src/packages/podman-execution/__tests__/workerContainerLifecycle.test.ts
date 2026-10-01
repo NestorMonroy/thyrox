@@ -348,3 +348,30 @@ describe('lab owner', () => {
     })).not.toThrow()
   })
 })
+
+describe('dueño model-coordinator y etiquetas propias del dueño', () => {
+  test('el coordinador de model scheduling es un dueño válido y se inspecciona como tal', () => {
+    expect(() => validateWorkerContainerSpec(baseSpec({ owner: { kind: 'model-coordinator', id: 'host', pid: 7 } }))).not.toThrow()
+    expect(parseWorkerContainerInspection(inspectOutput('running', { kind: 'model-coordinator' }))).toMatchObject({ owner: { kind: 'model-coordinator' } })
+  })
+
+  test('las etiquetas propias se emiten como --label, ordenadas por clave', () => {
+    const argv = createWorkerContainerArgv(baseSpec({ labels: { 'thyrox.model.unit': 'u1', 'thyrox.model.generation': '3' } }))
+    const labels = argv.flatMap((token, index) => (token === '--label' ? [argv[index + 1]] : []))
+    expect(labels).toContain('thyrox.model.generation=3')
+    expect(labels).toContain('thyrox.model.unit=u1')
+    expect(labels.indexOf('thyrox.model.generation=3')).toBeLessThan(labels.indexOf('thyrox.model.unit=u1'))
+    expect(argv.indexOf('thyrox-worker:latest')).toBeGreaterThan(argv.lastIndexOf('--label'))
+  })
+
+  test('una etiqueta propia no puede reescribir el dueño ni el worker', () => {
+    for (const key of [OWNER_KIND_LABEL_KEY, OWNER_ID_LABEL_KEY, OWNER_PID_LABEL_KEY, WORKER_ID_LABEL_KEY]) {
+      expectSpecRejected(baseSpec({ labels: { [key]: 'otro' } }), `labels.${key}`)
+    }
+  })
+
+  test('una clave de etiqueta con espacios o vacía se rehúsa', () => {
+    expectSpecRejected(baseSpec({ labels: { 'a b': 'x' } }), 'labels.a b')
+    expectSpecRejected(baseSpec({ labels: { '': 'x' } }), 'labels.')
+  })
+})

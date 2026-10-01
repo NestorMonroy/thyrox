@@ -40,6 +40,23 @@ export type WorkerResourceProfile = {
    * sólo admite valores públicos: un nombre de credencial se rehúsa.
    */
   environment?: Readonly<Record<string, string>>
+  /**
+   * Puertos del contenedor publicados en el anfitrión. Sólo en loopback
+   * (`127.0.0.1`): un servicio de un worker nunca escucha en la red del
+   * anfitrión. Se emiten como `-p 127.0.0.1:<host>:<contenedor>`.
+   */
+  publishedPorts?: readonly WorkerPublishedPort[]
+  /**
+   * Dispositivos concedidos, en forma CDI (`nvidia.com/gpu=<uuid>`). Una ruta
+   * de `/dev` se rehúsa: el dispositivo lo nombra el grant, no el anfitrión.
+   */
+  devices?: readonly string[]
+}
+
+export type WorkerPublishedPort = {
+  hostAddress: '127.0.0.1'
+  hostPort: number
+  containerPort: number
 }
 
 const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge', 'host']

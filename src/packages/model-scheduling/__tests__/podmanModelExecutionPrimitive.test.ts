@@ -11,6 +11,8 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { createWorkerContainerArgv, removeWorkerContainerArgv, workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+import { workerResourceLimitArgv } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
 import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelExecutionPrimitive } from '../podmanModelExecutionPrimitive.ts'
 
@@ -63,7 +65,9 @@ function primitiveWith(podman: RecordingPodman): PodmanModelExecutionPrimitive {
   return new PodmanModelExecutionPrimitive({
     podman,
     currentGeneration: async () => generation,
-    profiles: { ollama: { image: 'docker.io/ollama/ollama:0.35.0', environment: port => ({ OLLAMA_HOST: `127.0.0.1:${port}` }) } },
+    profiles: { ollama: { image: 'docker.io/ollama/ollama:0.35.0', containerPort: 11_434, environment: { OLLAMA_HOST: '0.0.0.0:11434' } } },
+    owner: { kind: 'model-coordinator', id: 'host-coordinator', pid: 4321 },
+    limits: { cpus: 2, memoryMib: 4_096, pidsLimit: 256 },
     allocatePort: async () => PORT,
     now: () => NOW,
   })
@@ -124,9 +128,24 @@ describe('PodmanModelExecutionPrimitive: materializar', () => {
     const outcome = await primitiveWith(podman).materialize(GRANT)
     if (outcome.status !== 'materialized') throw new Error(JSON.stringify(outcome))
     const create = podman.calls[0]!.join(' ')
-    expect(create).toContain('--network host')
-    expect(create).toContain(`OLLAMA_HOST=127.0.0.1:${PORT}`)
-    expect(create).toContain(`nvidia.com/gpu=${GPU}`)
+    // Compuesto por la primitiva neutral: dueño, worker, límites, red bridge y puerto sólo en loopback.
+    expect(podman.calls[0]).toEqual(createWorkerContainerArgv({
+      workerId: outcome.unit.unitId,
+      image: 'docker.io/ollama/ollama:0.35.0',
+      owner: { kind: 'model-coordinator', id: 'host-coordinator', pid: 4321 },
+      resourceArgv: workerResourceLimitArgv({
+        cpus: 2, memoryMib: 4_096, pidsLimit: 256, network: 'bridge', readOnlyRootfs: false, mounts: [],
+        environment: { OLLAMA_HOST: '0.0.0.0:11434' },
+        publishedPorts: [{ hostAddress: '127.0.0.1', hostPort: PORT, containerPort: 11_434 }],
+        devices: [`nvidia.com/gpu=${GPU}`],
+      }),
+      labels: Object.fromEntries(Object.entries(MODEL_UNIT_LABELS).map(([field, key]) => [key, labelOf(create, key) ?? `<${field}>`])),
+    }))
+    expect(create).not.toContain('--network host')
+    expect(create).toContain(`-p 127.0.0.1:${PORT}:11434`)
+    expect(create).toContain('--label thyrox.owner-kind=model-coordinator')
+    expect(create).toContain(`--label thyrox.worker-id=${outcome.unit.unitId}`)
+    expect(create).toContain(`--device nvidia.com/gpu=${GPU}`)
     expect(create).toContain(`--name ${MODEL_UNIT_CONTAINER_PREFIX}${outcome.unit.unitId}`)
     for (const [key, value] of [
       [MODEL_UNIT_LABELS.unit, outcome.unit.unitId], [MODEL_UNIT_LABELS.grant, GRANT.grantId],
@@ -168,8 +187,7 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
     const podman = healthyPodman()
     await primitiveWith(podman).destroy('unit-a')
     expect(podman.calls).toHaveLength(1)
-    expect(podman.calls[0]![0]).toBe('rm')
-    expect(podman.calls[0]).toContain(`${MODEL_UNIT_CONTAINER_PREFIX}unit-a`)
+    expect(podman.calls[0]).toEqual(removeWorkerContainerArgv(workerContainerName('unit-a')))
   })
 
   test('units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos', async () => {
@@ -211,3 +229,8 @@ describe('PodmanModelExecutionPrimitive: identidad completa', () => {
     expect(await primitiveWith(healthyPodman({ ps: ok(listed) })).units()).toEqual([])
   })
 })
+
+/** El valor de una etiqueta en un argv de `podman create`, si la lleva. */
+function labelOf(argv: string, key: string): string | undefined {
+  return new RegExp(`--label ${key.replace(/\./g, '\\.')}=(\\S+)`).exec(argv)?.[1]
+}
