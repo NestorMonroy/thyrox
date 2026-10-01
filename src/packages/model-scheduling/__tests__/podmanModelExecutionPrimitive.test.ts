@@ -139,7 +139,13 @@ describe('PodmanModelExecutionPrimitive: materializar', () => {
         publishedPorts: [{ hostAddress: '127.0.0.1', hostPort: PORT, containerPort: 11_434 }],
         devices: [`nvidia.com/gpu=${GPU}`],
       }),
-      labels: Object.fromEntries(Object.entries(MODEL_UNIT_LABELS).map(([field, key]) => [key, labelOf(create, key) ?? `<${field}>`])),
+      labels: {
+        ...Object.fromEntries(Object.entries(MODEL_UNIT_LABELS).map(([field, key]) => [key, labelOf(create, key) ?? `<${field}>`])),
+        // La autorización canónica: el runtime de modelo se autoriza por su grant.
+        'thyrox.execution-kind': 'model-runtime',
+        'thyrox.execution-reference': `grant:${GRANT.grantId}`,
+        'thyrox.execution-id': outcome.unit.unitId,
+      },
     }))
     expect(create).not.toContain('--network host')
     expect(create).toContain(`-p 127.0.0.1:${PORT}:11434`)

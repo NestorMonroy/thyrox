@@ -1,29 +1,32 @@
 /**
- * Autorización de una ejecución local gestionada (ADR-THYROX-007, enmienda
- * 1.16.0).
+ * La autorización canónica de una ejecución local gestionada (ADR-THYROX-007,
+ * enmienda 1.16.0).
  *
  * Todo trabajo local que thyrox gestiona —crear un banco, escribir o editar
- * archivos, instalar dependencias, compilar, probar, sondear, materializar
- * infraestructura, servir o cuantizar un modelo, commitear— corre dentro de
- * una ExecutionUnit que esta primitiva materializa. El anfitrión es plano de
- * control: compone la autorización, la entrega aquí y observa el resultado.
+ * archivos, instalar dependencias, compilar, probar, sondear, servir o
+ * cuantizar un modelo, commitear— corre dentro de un contenedor de ejecución
+ * que esta primitiva materializa. El anfitrión es plano de control: compone la
+ * autorización, la entrega aquí y observa el resultado.
  *
- * La autorización es general. La de un modelo la especializa con modelo,
- * revisión, cuantización, placement y VRAM; un trabajo que sólo escribe un
- * archivo no carga esos campos.
+ * La autorización es la del contenedor. Una decisión de dominio la COMPONE,
+ * no la hereda: un `ExecutionGrant` de modelo (model-artifacts) se traduce en
+ * una autorización `model-runtime` con referencia al grant; este paquete es
+ * neutral y no conoce modelos. La identidad de un runtime de modelo ya
+ * materializado es la `ExecutionUnit` de model-scheduling.
  *
- * El repositorio puede montarse de escritura: la mutación llega al árbol
- * real, pero el proceso que la hace vive en la unidad, no en el shell que la
+ * El repositorio puede montarse de escritura: la mutación llega al árbol real,
+ * pero el proceso que la hace vive en el contenedor, no en el shell que la
  * pidió.
  */
 
-import { runJobWithOutput, type JobOutput } from './containerRun.js'
+import { materializeContainer, runJobWithOutput, type JobOutput, type MaterializedContainer } from './containerRun.js'
 import type { PodmanExecutor } from './podmanExecutor.js'
 import { requireValidOwner, type ContainerOwner, type WorkerContainerSpec } from './workerContainerLifecycle.js'
 import {
   InvalidWorkerResourceProfileError,
   workerResourceLimitArgv,
   type WorkerNetworkMode,
+  type WorkerPublishedPort,
   type WorkerResourceMount,
 } from './workerResourceProfile.js'
 
@@ -42,14 +45,22 @@ export const EXECUTION_KINDS = [
 export type ExecutionKind = (typeof EXECUTION_KINDS)[number]
 
 export const EXECUTION_KIND_LABEL_KEY = 'thyrox.execution-kind'
-export const EXECUTION_TASK_LABEL_KEY = 'thyrox.task'
+export const EXECUTION_REFERENCE_LABEL_KEY = 'thyrox.execution-reference'
 export const EXECUTION_ID_LABEL_KEY = 'thyrox.execution-id'
+const EXECUTION_LABEL_KEYS = [EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY, EXECUTION_ID_LABEL_KEY]
 
 /** La cita durable de una tarea; el ordinal del board reinicia por sesión y no identifica nada. */
 export const TASK_CITATION_PATTERN = /^TASK-[A-Z]+-\d{4}$/
-const EXECUTION_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/
+const EXECUTION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/
+const REFERENCE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/
 const SECRET_NAME_PATTERN = /^[a-z0-9][a-z0-9_.-]*$/
 const SECRET_TARGET_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
+
+/** Lo que autoriza la ejecución: la tarea, el grant de modelo o el recurso de infraestructura. */
+export type ExecutionReference =
+  | { kind: 'task'; citation: string }
+  | { kind: 'grant'; grantId: string }
+  | { kind: 'infrastructure'; resource: string }
 
 export type ExecutionResources = {
   cpus: number
@@ -64,20 +75,28 @@ export type ExecutionSecret = {
 }
 
 export type ExecutionAuthorization = {
+  /** Nombra el contenedor (`thyrox-worker-<executionId>`). */
   executionId: string
-  task: string
+  reference: ExecutionReference
   owner: ContainerOwner
   kind: ExecutionKind
   image: string
-  command: readonly string[]
-  workdir: string
+  /** Sin comando, el de la imagen. */
+  command?: readonly string[]
+  /** Sin directorio, el de la imagen; declarado, vive dentro de un montaje. */
+  workdir?: string
   mounts: readonly WorkerResourceMount[]
   resources: ExecutionResources
   network: WorkerNetworkMode
   /** Sólo valores públicos: quedan en `podman inspect`. */
   environment?: Readonly<Record<string, string>>
   secrets?: readonly ExecutionSecret[]
-  /** Rutas que la unidad produce; cada una bajo un montaje de escritura. */
+  publishedPorts?: readonly WorkerPublishedPort[]
+  /** Dispositivos en forma CDI. */
+  devices?: readonly string[]
+  /** Etiquetas propias del dueño; no reescriben las de la ejecución. */
+  labels?: Readonly<Record<string, string>>
+  /** Rutas que el trabajo produce; cada una bajo un montaje de escritura. */
   outputs?: readonly string[]
   /** Instante, en milisegundos Unix, a partir del cual la autorización no vale. */
   expiresAt?: number
@@ -107,11 +126,42 @@ function isKnownKind(kind: string): kind is ExecutionKind {
   return (EXECUTION_KINDS as readonly string[]).includes(kind)
 }
 
+/** El tipo de referencia que cada tipo de ejecución exige. */
+function expectedReferenceKind(kind: ExecutionKind): ExecutionReference['kind'] {
+  if (kind === 'model-runtime') return 'grant'
+  if (kind === 'infrastructure') return 'infrastructure'
+  return 'task'
+}
+
+function referenceLabel(reference: ExecutionReference): string {
+  if (reference.kind === 'task') return `task:${reference.citation}`
+  if (reference.kind === 'grant') return `grant:${reference.grantId}`
+  return `infrastructure:${reference.resource}`
+}
+
+function requireReference(kind: ExecutionKind, reference: ExecutionReference): void {
+  const expected = expectedReferenceKind(kind)
+  if (reference.kind !== expected) refuse('reference', `una ejecución ${kind} se autoriza por ${expected}, recibido: ${reference.kind}`)
+  if (reference.kind === 'task' && !TASK_CITATION_PATTERN.test(reference.citation)) {
+    refuse('reference', `la tarea se cita como TASK-<CAPA>-NNNN, recibido: ${reference.citation}`)
+  }
+  const identifier = referenceLabel(reference).slice(reference.kind.length + 1)
+  if (!REFERENCE_ID_PATTERN.test(identifier)) refuse('reference', `identificador de referencia inválido: ${identifier}`)
+}
+
 function requireOwner(owner: ContainerOwner): void {
   try {
     requireValidOwner(owner)
   } catch (error) {
     refuse('owner', error instanceof Error ? error.message : String(error))
+  }
+}
+
+function requireWorkdir(authorization: ExecutionAuthorization): void {
+  const { workdir } = authorization
+  if (workdir === undefined) return
+  if (!authorization.mounts.some(mount => isUnder(workdir, mount.destination))) {
+    refuse('workdir', `el directorio de trabajo ${workdir} no vive dentro de ningún montaje`)
   }
 }
 
@@ -129,19 +179,23 @@ function requireSecretsByName(secrets: readonly ExecutionSecret[]): void {
   })
 }
 
+function requireOwnLabels(labels: Readonly<Record<string, string>>): void {
+  const overridden = Object.keys(labels).filter(key => EXECUTION_LABEL_KEYS.includes(key))
+  if (overridden.length > 0) refuse('labels', `las etiquetas ${overridden.join(', ')} son de la ejecución, no del dueño`)
+}
+
 /** Valida la autorización completa; rehúsa en el primer campo inválido, nombrándolo. */
 export function validateExecutionAuthorization(authorization: ExecutionAuthorization, now = Date.now()): void {
   if (!EXECUTION_ID_PATTERN.test(authorization.executionId)) refuse('executionId', `id de ejecución inválido: ${authorization.executionId}`)
-  if (!TASK_CITATION_PATTERN.test(authorization.task)) refuse('task', `la tarea se cita como TASK-<CAPA>-NNNN, recibido: ${authorization.task}`)
   if (!isKnownKind(authorization.kind)) refuse('kind', `tipo de ejecución desconocido: ${authorization.kind}`)
+  requireReference(authorization.kind, authorization.reference)
   requireOwner(authorization.owner)
   if (!authorization.image) refuse('image', 'la imagen no puede estar vacía')
-  if (!authorization.command[0]) refuse('command', 'el comando no puede estar vacío')
-  if (!authorization.mounts.some(mount => isUnder(authorization.workdir, mount.destination))) {
-    refuse('workdir', `el directorio de trabajo ${authorization.workdir} no vive dentro de ningún montaje`)
-  }
+  if (authorization.command !== undefined && !authorization.command[0]) refuse('command', 'un comando declarado no puede estar vacío')
+  requireWorkdir(authorization)
   requireOutputsWritable(authorization)
   requireSecretsByName(authorization.secrets ?? [])
+  requireOwnLabels(authorization.labels ?? {})
   if (authorization.expiresAt !== undefined && authorization.expiresAt <= now) refuse('expiresAt', 'la autorización expiró')
 }
 
@@ -153,6 +207,8 @@ function resourceArgv(authorization: ExecutionAuthorization): string[] {
       readOnlyRootfs: false,
       mounts: [...authorization.mounts],
       environment: authorization.environment,
+      publishedPorts: authorization.publishedPorts,
+      devices: authorization.devices,
     })
   } catch (error) {
     if (error instanceof InvalidWorkerResourceProfileError) refuse(error.field, error.message)
@@ -160,28 +216,42 @@ function resourceArgv(authorization: ExecutionAuthorization): string[] {
   }
 }
 
+function workdirArgv(workdir: string | undefined): string[] {
+  return workdir === undefined ? [] : ['--workdir', workdir]
+}
+
 function secretArgv(secrets: readonly ExecutionSecret[]): string[] {
   return secrets.flatMap(secret => ['--secret', `${secret.name},type=mount,target=${secret.target}`])
 }
 
-/** Traduce una autorización válida a la unidad que la primitiva materializa. No ejecuta nada. */
-export function executionUnitSpec(authorization: ExecutionAuthorization, now = Date.now()): WorkerContainerSpec {
+/** Traduce una autorización válida al contenedor que la primitiva materializa. No ejecuta nada. */
+export function executionContainerSpec(authorization: ExecutionAuthorization, now = Date.now()): WorkerContainerSpec {
   validateExecutionAuthorization(authorization, now)
   return {
-    workerId: `exec-${authorization.executionId}`,
+    workerId: authorization.executionId,
     image: authorization.image,
     owner: authorization.owner,
-    resourceArgv: [...resourceArgv(authorization), '--workdir', authorization.workdir, ...secretArgv(authorization.secrets ?? [])],
+    resourceArgv: [...resourceArgv(authorization), ...workdirArgv(authorization.workdir), ...secretArgv(authorization.secrets ?? [])],
     command: authorization.command,
     labels: {
+      ...authorization.labels,
       [EXECUTION_KIND_LABEL_KEY]: authorization.kind,
-      [EXECUTION_TASK_LABEL_KEY]: authorization.task,
+      [EXECUTION_REFERENCE_LABEL_KEY]: referenceLabel(authorization.reference),
       [EXECUTION_ID_LABEL_KEY]: authorization.executionId,
     },
   }
 }
 
-/** Materializa la unidad, la corre hasta que termine y la retira; devuelve su veredicto y su diagnóstico. */
-export async function runExecution(podman: PodmanExecutor, authorization: ExecutionAuthorization): Promise<JobOutput> {
-  return runJobWithOutput(podman, executionUnitSpec(authorization))
+/** Corre el trabajo autorizado hasta que termine y retira su contenedor; devuelve su veredicto y su diagnóstico. */
+export async function runExecution(podman: PodmanExecutor, authorization: ExecutionAuthorization, now = Date.now()): Promise<JobOutput> {
+  return runJobWithOutput(podman, executionContainerSpec(authorization, now))
+}
+
+/** Crea y arranca el contenedor de una ejecución de vida larga; no lo espera ni lo retira. */
+export async function materializeExecution(
+  podman: PodmanExecutor,
+  authorization: ExecutionAuthorization,
+  now = Date.now(),
+): Promise<MaterializedContainer> {
+  return materializeContainer(podman, executionContainerSpec(authorization, now))
 }

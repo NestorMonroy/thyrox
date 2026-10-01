@@ -21,14 +21,15 @@ import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
 import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { ContainerRunError } from '@thyrox/podman-execution/containerRun.ts'
+import { type ExecutionAuthorization, materializeExecution } from '@thyrox/podman-execution/executionAuthorization.ts'
 import {
   type ContainerOwner,
-  createWorkerContainerArgv,
   removeWorkerContainerArgv,
   WORKER_CONTAINER_NAME_PREFIX,
   workerContainerName,
 } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
-import { type WorkerPublishedPort, workerResourceLimitArgv } from '@thyrox/podman-execution/workerResourceProfile.ts'
+import type { WorkerPublishedPort } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
 import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
 
@@ -183,31 +184,27 @@ function cdiDevices(grant: ExecutionGrant): string[] {
 }
 
 /**
- * Argv de límites del contenedor: red `bridge` —nunca `host`— con el puerto
- * del runtime publicado sólo en loopback, rootfs escribible porque el
- * runtime escribe su caché, y el entorno del perfil.
+ * El grant compuesto en la autorización canónica del contenedor: red
+ * `bridge` —nunca `host`— con el puerto del runtime publicado sólo en
+ * loopback, el entorno del perfil, los dispositivos concedidos y las
+ * etiquetas de la unidad. La caducidad del grant viaja con ella.
  */
-function unitResourceArgv(spec: ModelUnitContainerSpec): string[] {
-  return workerResourceLimitArgv({
-    ...spec.limits,
-    network: 'bridge',
-    readOnlyRootfs: false,
+export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionAuthorization {
+  return {
+    executionId: spec.unitId,
+    reference: { kind: 'grant', grantId: spec.grant.grantId },
+    owner: spec.owner,
+    kind: 'model-runtime',
+    image: spec.profile.image,
     mounts: [],
+    resources: spec.limits,
+    network: 'bridge',
     environment: spec.profile.environment,
     publishedPorts: [{ hostAddress: LOOPBACK_HOST, hostPort: spec.port, containerPort: spec.profile.containerPort }],
     devices: cdiDevices(spec.grant),
-  })
-}
-
-/** argv de `podman create`, compuesto por la primitiva neutral con la unidad como worker. */
-export function modelUnitCreateArgv(spec: ModelUnitContainerSpec): string[] {
-  return createWorkerContainerArgv({
-    workerId: spec.unitId,
-    image: spec.profile.image,
-    owner: spec.owner,
     labels: unitLabelArguments(spec),
-    resourceArgv: unitResourceArgv(spec),
-  })
+    expiresAt: Date.parse(spec.grant.expiresAt),
+  }
 }
 
 /** Lo que `podman inspect` aporta a la unidad: su proceso y su cgroup en el anfitrión. */
@@ -333,10 +330,16 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
     const port = await this.options.allocatePort()
     const createdAt = this.options.now().toISOString()
     const { owner, limits } = this.options
-    const created = await podman.run(modelUnitCreateArgv({ grant, unitId, port, createdAt, profile, owner, limits }))
-    if (!succeeded(created)) return { status: 'failed', reason: `podman create ${name}: ${podmanDiagnostic(created)}`, partial: false }
-    const started = await podman.run(['start', name])
-    if (!succeeded(started)) return partialFailure(unitId, `podman start ${name}: ${podmanDiagnostic(started)}`)
+    const authorization = modelUnitAuthorization({ grant, unitId, port, createdAt, profile, owner, limits })
+    let containerId: string
+    try {
+      ;({ containerId } = await materializeExecution(podman, authorization, this.options.now().getTime()))
+    } catch (error) {
+      if (!(error instanceof ContainerRunError)) throw error
+      // `create` que falla no deja nada; `start` que falla deja el contenedor creado.
+      if (error.stage === 'create') return { status: 'failed', reason: `podman create ${name}: ${error.message}`, partial: false }
+      return partialFailure(unitId, `podman start ${name}: ${error.message}`)
+    }
     const state = await this.inspectContainer(name)
     if (typeof state === 'string') return partialFailure(unitId, state)
     const unit: ExecutionUnit = {
@@ -347,7 +350,7 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
       generation: grant.residency.generation,
       runtime: grant.runtime,
       endpoint: loopbackEndpoint(port),
-      containerId: created.stdout.trim(),
+      containerId,
       devices: grantedDevices(grant),
       ...(state.cgroup === undefined ? {} : { cgroup: state.cgroup }),
       hostPids: state.hostPids,

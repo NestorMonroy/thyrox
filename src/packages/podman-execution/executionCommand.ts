@@ -140,7 +140,7 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
   const egress = network === 'host' ? proxyEgress(deps.env) : { environment: {}, mounts: [] }
   const authorization: ExecutionAuthorization = {
     executionId: `${kind}-${deps.now().toString(36)}-${deps.pid}`,
-    task,
+    reference: { kind: 'task', citation: task },
     owner: { kind: 'task', id: task.toLowerCase(), pid: deps.pid },
     kind,
     image: values.image ?? deps.env[EXECUTION_IMAGE_KEY] ?? DEFAULT_EXECUTION_IMAGE,

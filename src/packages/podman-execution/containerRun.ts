@@ -68,15 +68,32 @@ function parseWaitExitCode(name: string, result: PodmanCommandResult): number {
   return Number(printed)
 }
 
+/** Un contenedor creado y arrancado: su nombre y el id que imprimió `podman create`. */
+export type MaterializedContainer = {
+  containerName: string
+  containerId: string
+}
+
+/**
+ * Crea y arranca el contenedor sin esperarlo: la materialización de una unidad
+ * de vida larga. Es el único sitio del árbol que emite `create` y `start`.
+ * Si `start` falla, el contenedor queda creado y el error nombra la etapa:
+ * retirarlo es decisión de su dueño.
+ */
+export async function materializeContainer(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<MaterializedContainer> {
+  const containerName = workerContainerName(spec.workerId)
+  const created = await requireSuccess(podman, 'create', containerName, createWorkerContainerArgv(spec))
+  await requireSuccess(podman, 'start', containerName, ['start', containerName])
+  return { containerName, containerId: created.stdout.trim() }
+}
+
 type CompletedContainer = { containerId: string; exitCode: number }
 
-/** Crea, arranca y espera el contenedor; devuelve el id que imprimió `podman create` y el código de su proceso. */
+/** Materializa y espera el contenedor; devuelve el id que imprimió `podman create` y el código de su proceso. */
 async function runAndIdentify(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<CompletedContainer> {
-  const name = workerContainerName(spec.workerId)
-  const created = await requireSuccess(podman, 'create', name, createWorkerContainerArgv(spec))
-  await requireSuccess(podman, 'start', name, ['start', name])
-  const exitCode = parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
-  return { containerId: created.stdout.trim(), exitCode }
+  const { containerName, containerId } = await materializeContainer(podman, spec)
+  const exitCode = parseWaitExitCode(containerName, await requireSuccess(podman, 'wait', containerName, ['wait', containerName]))
+  return { containerId, exitCode }
 }
 
 /** Crea, arranca y espera el contenedor; devuelve el código de salida de su proceso. No lo retira. */

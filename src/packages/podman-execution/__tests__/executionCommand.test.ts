@@ -97,7 +97,7 @@ describe('thyrox-exec run', () => {
   test('una cita de tarea inválida rehúsa con 2 nombrando el campo', async () => {
     const h = harness()
     expect(await runExecutionCommand(['run', '--task', '#5', '--kind', 'test', '--', 'true'], h.deps)).toBe(2)
-    expect(h.stderr.join('')).toContain('(task)')
+    expect(h.stderr.join('')).toContain('(reference)')
     expect(h.calls).toEqual([])
   })
 

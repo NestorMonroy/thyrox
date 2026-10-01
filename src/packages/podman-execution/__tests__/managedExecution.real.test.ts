@@ -53,7 +53,7 @@ async function podmanReady(): Promise<boolean> {
 }
 
 const available = await podmanReady()
-if (!available) console.error(`executionUnit.real: sin Podman o sin la imagen ${image}; sin medir.`)
+if (!available) console.error(`managedExecution.real: sin Podman o sin la imagen ${image}; sin medir.`)
 
 const repository = mkdtempSync(join(tmpdir(), 'thyrox-exec-e2e-'))
 afterAll(() => rmSync(repository, { recursive: true, force: true }))
@@ -83,7 +83,7 @@ function sampled(step: string, work: string): string {
 function authorization(step: string, kind: ExecutionKind, work: string): ExecutionAuthorization {
   return {
     executionId: `e2e-${step}-${process.pid}-${Date.now().toString(36)}`,
-    task: TASK,
+    reference: { kind: 'task', citation: TASK },
     owner: { kind: 'task', id: TASK.toLowerCase(), pid: process.pid },
     kind,
     image,
@@ -131,7 +131,7 @@ function cgroupRows(): string[][] {
   return readFileSync(join(repository, CGROUP_LOG), 'utf8').trim().split('\n').map(line => line.split('\t'))
 }
 
-describe.skipIf(!available)('una tarea completa corre dentro de unidades de la primitiva', () => {
+describe.skipIf(!available)('una tarea completa corre dentro de contenedores de ejecución de la primitiva', () => {
   const identities = new Map<string, string>()
   const exits = new Map<string, number>()
   let finalizeOutput = ''
