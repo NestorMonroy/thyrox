@@ -122,8 +122,8 @@ describe('errores del upstream', () => {
     expect((await errorOf(response)).message).toContain('ocupado')
   })
 
-  test('una baseUrl insegura se rehúsa sin conectar', async () => {
-    const forward = createOpenAICompatForwarder({ next: () => Promise.resolve(new Response('')), upstreams: { open: { name: 'open', baseUrl: 'http://127.0.0.1:9/v1' } }, env: {} })
+  test('una baseUrl insegura (un nombre de metadatos) se rehúsa sin conectar', async () => {
+    const forward = createOpenAICompatForwarder({ next: () => Promise.resolve(new Response('')), upstreams: { open: { name: 'open', baseUrl: 'http://metadata.google.internal/v1' } }, env: {} })
     const response = await forward(routed(HELLO))
     expect(response.status).toBe(502)
     expect((await errorOf(response)).message).toContain('insegura')

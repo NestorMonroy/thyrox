@@ -83,9 +83,9 @@ export const DEPENDENCY_OPENERS: readonly DependencyOpener[] = [
   { file: 'src/packages/shared-state/factory.ts', symbol: 'factory', dependency: 'almacén efímero' },
   { file: 'src/packages/semantic-search/store.ts', symbol: 'store', dependency: 'base de datos + pgvector' },
   {
-    file: 'src/packages/provider/src/proxy/openaiCompat/declaration.ts',
-    symbol: 'declaration',
-    dependency: 'upstream de modelo',
+    file: 'src/packages/model-scheduling/coordinatorClient.ts',
+    symbol: 'coordinatorClient',
+    dependency: 'coordinador de modelos',
   },
   {
     file: 'src/packages/daemon/src/podman/podmanWorkerManager.ts',

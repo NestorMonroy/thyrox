@@ -152,11 +152,11 @@ describe('createHttpForwarder (Mv)', () => {
     await expect(forward(forwardRequest())).rejects.toThrow(/"u"/)
   })
 
-  test('una baseUrl insegura (loopback sin permiso) rehúsa antes de conectar', async () => {
-    const upstream = stub()
-    const forward = createHttpForwarder({ upstreams: { u: { baseUrl: upstream.baseUrl } }, env: {}, version: '0.1.0' })
+  // El loopback es un destino válido desde 97fbdc34e; inseguro es, por ejemplo,
+  // un nombre de metadatos que netGuards bloquea.
+  test('una baseUrl insegura (un nombre de metadatos) rehúsa antes de conectar', async () => {
+    const forward = createHttpForwarder({ upstreams: { u: { baseUrl: 'http://metadata.google.internal' } }, env: {}, version: '0.1.0' })
     await expect(forward(forwardRequest())).rejects.toThrow(/insegura|unsafe/)
-    expect(upstream.seen).toHaveLength(0)
   })
 
   test('un upstream que no manda cabeceras dentro del plazo se aborta (wj)', async () => {

@@ -138,11 +138,25 @@ export type ProxyServerConfig = {
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
+/**
+ * La cabecera con que un error fabricado por el proxy declara su mensaje: el
+ * enrutador la lee para nombrar la causa de cada intento fallido sin leer el
+ * cuerpo de un 5xx, que puede no terminar. Va codificada porque una cabecera
+ * no admite caracteres fuera de ISO-8859-1.
+ */
+const ERROR_MESSAGE_HEADER = 'x-thyrox-error-message'
+
 export function errorResponse(status: number, type: string, message: string, requestId?: string): Response {
   return Response.json(
     { type: 'error', ...(requestId && { request_id: requestId }), error: { type, message } },
-    { status },
+    { status, headers: { [ERROR_MESSAGE_HEADER]: encodeURIComponent(message) } },
   )
+}
+
+/** El mensaje que un error del proxy declara; `undefined` en una respuesta ajena. */
+export function errorMessageOf(response: Response): string | undefined {
+  const encoded = response.headers.get(ERROR_MESSAGE_HEADER)
+  return encoded === null ? undefined : decodeURIComponent(encoded)
 }
 
 /**
@@ -281,7 +295,7 @@ async function forwardBody(
       if (response.status < 400) config.cooldown?.clear(credential)
       else config.cooldown?.markUnavailable({ credential, provider: upstream.provider, model: resolved.model, status: response.status, errorText, headers: response.headers })
       if (fallsOver(response.status)) {
-        reasons.push(`${response.status} ${response.statusText}`)
+        reasons.push(`${response.status} ${errorMessageOf(response) ?? response.statusText}`)
         if (response.status === 501) { discard(notImplemented); notImplemented = response }
         else if (response.status === 429) { discard(rateLimited); rateLimited = response }
         else if (response.status === 401 || response.status === 403) { discard(unauthorized); unauthorized = response }
@@ -310,7 +324,7 @@ async function forwardBody(
   if (notFound) { discard(notImplemented); return notFound }
   if (notImplemented) return notImplemented
   if (cooling) return cooldownResponse(config, cooling.error, cooling.credentials)
-  return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted)`, requestId)
+  return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted): ${reasons.join('; ')}`, requestId)
 }
 
 type ComboPlan = {
