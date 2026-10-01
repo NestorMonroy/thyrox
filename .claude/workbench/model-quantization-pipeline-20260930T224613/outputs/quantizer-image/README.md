@@ -28,3 +28,21 @@ Comprobado dentro de la imagen: `llama-quantize --help`,
 *Ciega a:* la memoria de cada `RUN` (corre en su propio cgroup, no como hijo
 esperado de `podman build`), y a la caché de capas que podman conserve fuera
 de `podman images`.
+
+## Segunda construcción: `llama-simple` para la inferencia de validación
+
+La validación de un artefacto genera texto dentro del laboratorio; registrarlo
+en un runtime de inferencia y llamarlo por nombre es la ruta que ADR-007 1.7.0
+prohíbe sin `ExecutionGrant`. `llama-simple` sólo depende de `libllama`,
+`libggml` y `libggml-base`, ya presentes, y va como última capa: las anteriores
+salen de caché.
+
+| Medida | Valor | Fuente |
+|---|---|---|
+| Imagen vigente | id `ddf16d444d8b…`, digest `sha256:7bbe1b609ecf553fffa28443c41c1ba27ec02a8b45f856dc231166da0eac40ad` | `../quantizer-image-rebuild/image.json` |
+| Tamaño | 1 279 513 437 bytes (+30 266 bytes) | ídem |
+| Duración de la construcción | 1,92 s (capas en caché) | `../quantizer-image-rebuild/build.time` |
+| Libre tras retirar la etapa de compilación | 9 484 931 072 bytes | `df` |
+
+Herramientas en la imagen: `gguf-dump`, `llama-quantize`,
+`llama-perplexity`, `llama-simple`, `convert_hf_to_gguf.py`.
