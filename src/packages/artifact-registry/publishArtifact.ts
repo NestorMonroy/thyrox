@@ -8,19 +8,19 @@
  *    escribe nada, así que el pico es el blob mayor que la verificación
  *    materializa; el margen de seguridad lo suma la admisión, no este módulo;
  * 2. publicación con la credencial de publicación;
- * 3. resolución por HEAD con un consumidor anónimo: el repositorio es legible
- *    sin credencial y el tag apunta al digest publicado;
- * 4. lectura del manifest y materialización blob a blob, verificando cada
+ * 3. verificación por un `ArtifactVerifier` (`artifactVerifier.ts`): resolver
+ *    por HEAD sin credencial y materializar blob a blob, verificando cada
  *    sha256 y borrando cada blob antes de bajar el siguiente.
  *
  * Sólo `verified` autoriza tratar la copia local como caché. Un límite del
  * provider durante la verificación deja `unverified` con su causa intacta.
  */
-import { readdir, rm, stat } from 'node:fs/promises'
+import { readdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { describeArtifactFile, type ArtifactFile } from './artifactFiles.js'
-import type { ArtifactLocation, ArtifactRegistry, ArtifactResult, MaterializedFile, PinnedArtifact } from './artifactRegistry.js'
+import type { ArtifactLocation, ArtifactRegistry, ArtifactResult, PinnedArtifact } from './artifactRegistry.js'
+import type { ArtifactVerifier, Verification, VerificationFailure } from './artifactVerifier.js'
 
 export interface PublishPlan {
   readonly sourceDir: string
@@ -37,30 +37,18 @@ export type AdmissionVerdict = 'admitted' | 'refused' | 'unmeasured'
 
 export interface PublishDependencies {
   readonly publisher: ArtifactRegistry
-  /** Consumidor anónimo: lo que prueba que el artefacto es legible sin credencial. */
-  readonly consumer: ArtifactRegistry
+  readonly verifier: ArtifactVerifier
   readonly admitDisk: (needBytes: number) => Promise<AdmissionVerdict>
   readonly releaseDisk: () => Promise<void>
-  /** Directorio donde la verificación materializa cada blob, uno a la vez. */
-  readonly verifyDir: string
-  /** Bytes libres del disco donde verifica; se muestrean para medir el pico real. */
-  readonly freeBytes: () => number
 }
 
 export const RECORD_MEDIA_TYPE = 'application/vnd.thyrox.permanent-artifact-record.v1+json'
-
-export interface Verification {
-  readonly resolvedDigest: string
-  readonly blobsVerified: readonly MaterializedFile[]
-  /** Disco consumido como máximo durante la verificación, medido. */
-  readonly measuredPeakBytes: number
-}
 
 export type PublicationOutcome =
   | { readonly status: 'verified'; readonly pinned: PinnedArtifact; readonly files: readonly ArtifactFile[]; readonly verification: Verification }
   | { readonly status: 'refused'; readonly reason: string }
   | { readonly status: 'unpublished'; readonly result: ArtifactResult<unknown> }
-  | { readonly status: 'unverified'; readonly pinned: PinnedArtifact; readonly result: ArtifactResult<unknown> }
+  | { readonly status: 'unverified'; readonly pinned: PinnedArtifact; readonly result: VerificationFailure }
 
 export async function describeDirectory(plan: PublishPlan): Promise<ArtifactFile[]> {
   const names = (await readdir(plan.sourceDir)).filter(name => !plan.exclude.includes(name)).sort()
@@ -82,21 +70,10 @@ export async function publishAndVerify(plan: PublishPlan, deps: PublishDependenc
     const pushed = await deps.publisher.pushArtifact({ artifactType: plan.artifactType, files, config, annotations: {} }, plan.location)
     if (pushed.status !== 'success') return { status: 'unpublished', result: pushed }
     const pinned = pushed.value
-    const resolved = await deps.consumer.resolveArtifact(plan.location)
-    if (resolved.status !== 'success') return { status: 'unverified', pinned, result: resolved }
-    if (resolved.value.digest !== pinned.digest) {
-      return { status: 'unverified', pinned, result: { status: 'integrity_error', detail: `el tag resuelve a ${resolved.value.digest}, no a ${pinned.digest}` } }
-    }
-    const startFree = deps.freeBytes()
-    let lowestFree = startFree
-    const pulled = await deps.consumer.pullArtifact(pinned, deps.verifyDir, {
-      discardAfterVerify: true,
-      onVerified: () => { lowestFree = Math.min(lowestFree, deps.freeBytes()) },
-    })
-    if (pulled.status !== 'success') return { status: 'unverified', pinned, result: pulled }
-    return { status: 'verified', pinned, files, verification: { resolvedDigest: resolved.value.digest, blobsVerified: pulled.value, measuredPeakBytes: startFree - lowestFree } }
+    const verified = await deps.verifier.verify(pinned, plan.location)
+    if (verified.status !== 'verified') return { status: 'unverified', pinned, result: verified.result }
+    return { status: 'verified', pinned, files, verification: verified.verification }
   } finally {
-    await rm(deps.verifyDir, { recursive: true, force: true })
     await deps.releaseDisk()
   }
 }

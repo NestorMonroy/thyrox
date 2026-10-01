@@ -119,7 +119,7 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     if (!bytes) return new Response('blob unknown', { status: 404 })
     const served = corrupted.has(digest) ? Uint8Array.from(bytes, (byte, index) => (index === 0 ? byte ^ 0xff : byte)) : bytes
     const headers = { 'content-length': String(bytes.length), 'docker-content-digest': digest }
-    return new Response(request.method === 'HEAD' ? null : served, { status: 200, headers })
+    return new Response(request.method === 'HEAD' ? null : new Uint8Array(served), { status: 200, headers })
   }
 
   async function handleManifest(request: Request, reference: string): Promise<Response> {
@@ -137,7 +137,7 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     const manifest = digest ? manifests.get(digest) : undefined
     if (!digest || !manifest) return new Response('manifest unknown', { status: 404 })
     const headers = { 'content-type': manifest.mediaType, 'docker-content-digest': digest, 'content-length': String(manifest.bytes.length) }
-    return new Response(request.method === 'HEAD' ? null : manifest.bytes, { status: 200, headers })
+    return new Response(request.method === 'HEAD' ? null : new Uint8Array(manifest.bytes), { status: 200, headers })
   }
 
   return {

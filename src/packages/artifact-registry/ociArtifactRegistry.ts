@@ -173,7 +173,7 @@ async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifac
     const partialPath = `${finalPath}.partial`
     const hash = createHash('sha256')
     let size = 0
-    const body = Readable.fromWeb(blob.value.body as import('node:stream/web').ReadableStream<Uint8Array>)
+    const body = Readable.fromWeb(blob.value.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>)
     body.on('data', (chunk: Buffer) => { hash.update(chunk); size += chunk.length })
     await pipeline(body, createWriteStream(partialPath))
     const digest = `sha256:${hash.digest('hex')}`

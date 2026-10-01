@@ -9,6 +9,8 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import type { ArtifactRegistry } from '../artifactRegistry.js'
+import { createInProcessVerifier } from '../artifactVerifier.js'
 import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
 import { publishAndVerify, type PublishDependencies, type PublishPlan } from '../publishArtifact.js'
 import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '../testing/fakeOciRegistry.js'
@@ -34,17 +36,22 @@ function plan(): PublishPlan {
   }
 }
 
-function dependencies(overrides: Partial<PublishDependencies> = {}): PublishDependencies & { readonly admitted: number[] } {
+function verifyDir(): string {
+  return join(workdir, 'verify')
+}
+
+function anonymousConsumer(): ArtifactRegistry {
+  return createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'anonymous' } })
+}
+
+function dependencies(overrides: Partial<PublishDependencies> = {}, consumer = anonymousConsumer()): PublishDependencies & { readonly admitted: number[] } {
   const admitted: number[] = []
-  const verifyDir = join(workdir, 'verify')
   return {
     admitted,
     publisher: createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'basic', username: FAKE_PUBLISHER.username, secret: () => FAKE_PUBLISHER.token } }),
-    consumer: createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'anonymous' } }),
+    verifier: createInProcessVerifier({ consumer, verifyDir: verifyDir(), freeBytes: () => 1_000_000 }),
     admitDisk: async needBytes => { admitted.push(needBytes); return 'admitted' },
     releaseDisk: async () => {},
-    verifyDir,
-    freeBytes: () => 1_000_000,
     ...overrides,
   }
 }
@@ -57,7 +64,7 @@ describe('publishAndVerify', () => {
     if (outcome.status !== 'verified') return
     expect(outcome.verification.resolvedDigest).toBe(outcome.pinned.digest)
     expect(outcome.verification.blobsVerified.map(blob => blob.title).sort()).toEqual(['model-Q4_K_M.gguf', 'quantize.log'])
-    expect(existsSync(deps.verifyDir)).toBe(false)
+    expect(existsSync(verifyDir())).toBe(false)
   })
 
   test('lo excluido no viaja: la clave privada no es un blob del artefacto', async () => {
@@ -79,15 +86,13 @@ describe('publishAndVerify', () => {
   })
 
   test('un límite del provider al verificar deja rate_limited, no verified', async () => {
-    const deps = dependencies({
-      consumer: createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'anonymous' }, retry: { maxAttempts: 1, maxWaitSeconds: 0 } }),
-      admitDisk: async () => { registry.rateLimit = undefined; return 'admitted' },
-    })
-    const original = deps.consumer.resolveArtifact
-    deps.consumer.resolveArtifact = async location => {
+    const consumer = createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'anonymous' }, retry: { maxAttempts: 1, maxWaitSeconds: 0 } })
+    const original = consumer.resolveArtifact
+    consumer.resolveArtifact = async location => {
       registry.rateLimit = { remainingResponses: 3, headers: { 'ratelimit-limit': '5;w=60', 'ratelimit-remaining': '0;w=60' } }
       return original(location)
     }
+    const deps = dependencies({ admitDisk: async () => { registry.rateLimit = undefined; return 'admitted' } }, consumer)
     const outcome = await publishAndVerify(plan(), deps)
     expect(outcome.status).toBe('unverified')
     if (outcome.status === 'unverified') expect(outcome.result.status).toBe('rate_limited')

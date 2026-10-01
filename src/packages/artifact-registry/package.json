@@ -16,5 +16,8 @@
   },
   "scripts": {
     "test": "bun test"
+  },
+  "dependencies": {
+    "@thyrox/podman-execution": "0.1.0"
   }
 }

@@ -66,7 +66,7 @@ export class OciDistributionClient {
   }
 
   async putManifest(repository: string, reference: string, mediaType: string, bytes: Uint8Array): Promise<RegistryResult<string>> {
-    const response = await this.#request(repository, 'pull,push', 'PUT', `manifests/${reference}`, { 'content-type': mediaType }, bytes)
+    const response = await this.#request(repository, 'pull,push', 'PUT', `manifests/${reference}`, { 'content-type': mediaType }, new Uint8Array(bytes))
     if (!response.ok) return failure(response)
     return { status: 'success', value: response.headers.get(DIGEST_HEADER) ?? '' }
   }
@@ -91,7 +91,7 @@ export class OciDistributionClient {
     if (!location) return { status: 'provider_error', httpStatus: started.status, detail: 'el registry no devolvió Location para la subida' }
     const target = new URL(location, this.#options.baseUrl)
     target.searchParams.set('digest', digest)
-    const body = Readable.toWeb(createReadStream(path)) as ReadableStream<Uint8Array>
+    const body = Readable.toWeb(createReadStream(path)) as unknown as ReadableStream<Uint8Array>
     const finished = await this.#send(repository, 'pull,push', 'PUT', target.toString(),
       { 'content-type': 'application/octet-stream', 'content-length': String(size) }, body)
     return finished.ok ? { status: 'success', value: undefined } : failure(finished)
