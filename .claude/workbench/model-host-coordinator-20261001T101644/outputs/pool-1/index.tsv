@@ -1,0 +1,2 @@
+1	Fuente: .claude/workbench/model-host-coordinator-20261001T101644/p1-coordinator-core.md. Archivos: src/packages/model-scheduling/residencyController.ts, hostCoordinator.ts. Orden: controlador, coordinador.
+2	Fuente: .claude/workbench/model-host-coordinator-20261001T101644/p2-coordinator-transport.md. Archivos: src/packages/model-scheduling/coordinatorServer.ts, coordinatorClient.ts, coordinatorProtocol.ts.

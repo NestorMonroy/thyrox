@@ -1,0 +1,75 @@
+Corpus durable: el índice no depende de la fuente (enmienda 1.2.0)
+-------------------------------------------------------------------
+
+Decidido por el ejecutor el 2026-09-30. **Requisito:** si desaparecen el
+contenedor, el worktree o el directorio original, el corpus ya ingerido y los
+análisis hechos sobre él siguen disponibles.
+
+**Lo que había, medido.** La tabla de ``SemanticSearchStore``
+(``thyrox: src/packages/semantic-search/vectorSql.ts``, commit ``02d99b4da``)
+guarda ``id``, ``embedding``, ``metadata JSONB`` y ``updated_at``: no guarda
+texto, ni hash de contenido, ni el modelo que produjo el vector. Con eso un
+resultado es un ``id`` cuyo contenido vive en otro sitio, y ese sitio puede ser
+efímero. Tampoco se puede cambiar de modelo sin volver a la fuente. No satisface
+el requisito.
+
+**Una base vectorial indexa vectores; aquí también guarda el contenido.**
+PostgreSQL + pgvector persiste el texto de los chunks y su metadata, no sólo el
+embedding. Tres capas, con durabilidad distinta:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Capa
+     - Dónde vive
+     - Durabilidad
+   * - fuente original
+     - Git, worktree, directorio del usuario, contenedor
+     - puede desaparecer
+   * - snapshot canónico ingerido (documento y chunks)
+     - PostgreSQL
+     - durable
+   * - representación derivada (embedding e índice)
+     - PostgreSQL + pgvector
+     - regenerable desde los chunks
+
+.. code-block:: text
+
+   PostgreSQL
+   ├── documents          document_id · scope · source identity · version ·
+   │                      content_hash · metadata · ingested_at
+   ├── document_chunks    chunk_id · document_id · position · text ·
+   │                      content_hash
+   ├── embedding_spaces   space_id · model · dimensions · representation ·
+   │                      estado (building · active · retired)
+   └── embeddings_<space> chunk_id · embedding  (un índice HNSW por espacio)
+
+**Reglas.**
+
+- ``source_ref`` ≠ dependencia de la fuente. La identidad de origen se
+  conserva para trazar, pero buscar, reordenar por distancia exacta y devolver
+  el resultado no vuelven al filesystem: el texto viene de ``document_chunks``.
+- El contenido durable y la representación derivada se separan. Un vector está
+  tipado por su dimensión, así que cada par modelo · dimensión es un **espacio**
+  propio con su tabla y su índice. Cambiar de modelo es crear un espacio nuevo,
+  embeber los chunks persistidos, activarlo y retirar el anterior, sin
+  recuperar los archivos originales.
+- Un cambio se detecta por ``content_hash``: un documento cuyo hash no cambió no
+  se re-chunkea ni se re-embebe; uno que cambió crea versión nueva y sus
+  embeddings se recalculan. Reingerir el mismo contenido es idempotente.
+- Un worktree no se empaqueta ni es almacenamiento durable (ADR-010), pero **sí
+  puede ser fuente de ingestión**: lo que persiste es el contenido lógico
+  ingerido, con su identidad, hash, fecha y origen, no el directorio operativo.
+- PostgreSQL sigue fuera del lifecycle del worker (enmienda 1.1.0): borrar o
+  recrear un worker o un contenedor no elimina el corpus.
+
+**D5, repartida.** Unidad durable, metadata de identidad y versión, detección
+por hash y reindexado por espacio quedan decididos arriba. Siguen abiertas, y
+son del ejecutor: **qué fuentes se ingieren** y **qué retención aplica al
+contenido privado o temporal**. Hasta decidirlas, nada se ingiere sin una
+declaración explícita de la fuente, y nada se borra por caducidad.
+
+Implementación: **TASK-THYROX-0682**.
+
+Qué cambia de ADR-007
+---------------------

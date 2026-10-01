@@ -1,0 +1,9 @@
+  ok    probe: sondea el árbol del trabajo y ve el canal del nieto
+  ok    probe: avisa de quien lee stdin de un canal, nombrando el trabajo
+  ok    probe: el trabajo limpio se sondea y no se avisa
+  ok    probe: una tubería sin escritor vivo no es un cuelgue: se sondea y no se avisa
+  ok    probe sin GNU Parallel: sondea en serie y lo dice
+  ok    wait: el latido sondea al vivo sin que se lo pidan
+
+6 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,1 @@
+cd src/packages/local-observability && timeout 600 bun test src/uds/__tests__/udsClient.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-uds.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-uds.log

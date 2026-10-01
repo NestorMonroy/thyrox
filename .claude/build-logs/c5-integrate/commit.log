@@ -1,0 +1,38 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 67 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 67 archivo(s) pedido(s))
+FAIL — 1 identificador(es) en español fuera del baseline:
+
+  src/packages/provider/src/proxy/__tests__/claudeCliBridge.test.ts:36  hola   →  hola
+
+Los identificadores van en INGLÉS; los comentarios y docstrings, en
+español. Traducir el nombre, no buscarle un sinónimo más evocador:
+  Modelo → Model (no Probe) · _Base se queda _Base.
+OJO: un modelo CONCRETO no puede empezar ni terminar en guion bajo
+  (Django models.E023). Lo vigila check_model_name_lookup.py.
+
+Medido: 14 archivos. Deuda heredada congelada: 4217 (tarea #147).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 26850 especificador(es) en 4914 archivo(s) de 51 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 89 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 67 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 295 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 72947 ruta(s) versionada(s), 0 admitida(s))
+  src/packages/provider/src/proxy/__tests__/claudeCliUpstream.test.ts: 4 (baseline 0)
+  src/packages/provider/src/proxy/claudeCli/claudeProcess.ts: 10 (baseline 0)
+  src/packages/provider/src/proxy/claudeCli/forwarder.ts: 20 (baseline 0)
+  src/packages/provider/src/proxy/claudeCli/requestTranslation.ts: 5 (baseline 0)
+  src/packages/provider/src/proxy/claudeCli/turn.ts: 3 (baseline 0)
+  src/packages/provider/src/proxy/startServer.ts: 6 (baseline 0)
+check_product_word: 6 archivo(s) con deuda nueva; 1597 aparición(es) del producto en 343 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 288 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1846 lectura(s) en 4012 archivo(s) de producción — propias 837, proveedor 94, cliente ajeno 18, sin prefijo 897)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 129 congelada(s), 0 obsoleta(s) (alcance medido: 354 variable(s) propia(s), 2141 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 501 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 15 clave(s) en 1 archivo(s) ignorado(s), 512 declarada(s) en .env.example)
+reconciliar-todo: raiz /root/.claude/tasks
+  sesiones del store        1
+  omitidas (sin filas)      0
+  del store: 3 fila(s), 0 sin tarjeta que las nombre (0 abierta(s)) — fuera de los cubos
+  escritas: 0 fila(s)

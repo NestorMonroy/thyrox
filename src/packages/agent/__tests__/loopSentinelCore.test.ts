@@ -36,7 +36,7 @@ import {
 
 afterEach(() => {
   resetAutonomousLoopDelivered()
-  delete process.env.CLAUDE_CODE_LOOP_PERSISTENT
+  delete process.env.THYROX_CODE_LOOP_PERSISTENT
 })
 
 describe('constantes de sentinel (ant zBH / KzH / z67 / rz_)', () => {
@@ -111,44 +111,44 @@ describe('AUTONOMOUS_LOOP_PREAMBLE (ant EY8 — default / steward)', () => {
 })
 
 describe('preámbulo persistente (ant q67)', () => {
-  test('se selecciona vía la env CLAUDE_CODE_LOOP_PERSISTENT=1', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '1'
+  test('se selecciona vía la env THYROX_CODE_LOOP_PERSISTENT=1', () => {
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '1'
     const got = getAutonomousLoopPreamble()
     expect(got).not.toBe(AUTONOMOUS_LOOP_PREAMBLE)
   })
   test('el preámbulo persistente tiene la misma cabecera "# Autonomous loop check"', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '1'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '1'
     const got = getAutonomousLoopPreamble()
     expect(got.startsWith('# Autonomous loop check\n')).toBe(true)
   })
   test('la variante persistente contiene "following through on the *spirit*"', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '1'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '1'
     const got = getAutonomousLoopPreamble()
     expect(got).toContain('following through on the *spirit*')
   })
   test('la variante persistente contiene el framing de reversibilidad', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '1'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '1'
     const got = getAutonomousLoopPreamble()
     expect(got).toContain('For irreversible actions (push, delete, send)')
     expect(got).toContain('For reversible actions (edits, tests, drafts, exploration)')
   })
   test('la variante persistente dice "keep the loop alive" y no "stop" en la rama quieta', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '1'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '1'
     const got = getAutonomousLoopPreamble()
     expect(got).toContain('keep the loop alive')
     expect(got).toContain('Persistence is the point of autonomous mode')
   })
   test('la variante persistente dice "broaden scope once before considering stopping"', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '1'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '1'
     const got = getAutonomousLoopPreamble()
     expect(got).toContain('broaden scope once before considering stopping')
   })
   test('env="0" fuerza el default aunque otras compuertas activarían', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = '0'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = '0'
     expect(getAutonomousLoopPreamble()).toBe(AUTONOMOUS_LOOP_PREAMBLE)
   })
   test('env="false" también fuerza el default', () => {
-    process.env.CLAUDE_CODE_LOOP_PERSISTENT = 'false'
+    process.env.THYROX_CODE_LOOP_PERSISTENT = 'false'
     expect(getAutonomousLoopPreamble()).toBe(AUTONOMOUS_LOOP_PREAMBLE)
   })
   test('sin env devuelve el preámbulo default (con la bandera apagada)', () => {
@@ -165,12 +165,12 @@ describe('resetAutonomousLoopDelivered', () => {
   })
 })
 
-// ─── readLoopFile (ant $67) — el fallback al config home de Claude ────────
+// ─── readLoopFile (ant $67) — el fallback al config home de thyrox ────────
 //
 // Fijan el fix CRITICO: el segundo candidato de ant es `~/.claude/loop.md`
-// (via `getClaudeConfigHomeDir()`), NO `~/loop.md` (via `homedir()`). La
+// (via `getConfigHomeDir()`), NO `~/loop.md` (via `homedir()`). La
 // implementacion previa de ccb tenia la base equivocada y perdia el archivo
-// en silencio cuando `CLAUDE_CONFIG_DIR` estaba sobreescrito.
+// en silencio cuando `THYROX_CONFIG_DIR` estaba sobreescrito.
 //
 // Hasta el porte completo del modulo estos cinco casos eran pines de FUENTE
 // —verificaban que el recorte estuviera declarado en el docstring— porque
@@ -191,7 +191,7 @@ describe('readLoopFile (ant $67) — fallback al config home de Claude', () => {
 
   beforeEach(() => {
     homeDir = mkdtempSync(join(tmpdir(), 'thyrox-loop-home-'))
-    process.env.CLAUDE_CONFIG_DIR = homeDir
+    process.env.THYROX_CONFIG_DIR = homeDir
     // `readLoopFile` resuelve el cwd con el `getCwd` de app-host, que lee
     // STATE.cwd y no `process.cwd`. Se guarda el cwd del estado y se
     // sobreescribe con el directorio temporal de la prueba.
@@ -204,7 +204,7 @@ describe('readLoopFile (ant $67) — fallback al config home de Claude', () => {
     setCwdState(cwdBackup)
     rmSync(projectCwd, { recursive: true, force: true })
     rmSync(homeDir, { recursive: true, force: true })
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.THYROX_CONFIG_DIR
   })
 
   test('devuelve null cuando no existe ninguno de los dos candidatos', () => {
@@ -226,7 +226,7 @@ describe('readLoopFile (ant $67) — fallback al config home de Claude', () => {
 
   test('cae a ~/.claude/loop.md (NO a ~/loop.md)', () => {
     // El pin del fix critico: la base del segundo candidato es el config
-    // home de Claude —que `CLAUDE_CONFIG_DIR` sobreescribe al temporal de
+    // home de thyrox —que `THYROX_CONFIG_DIR` sobreescribe al temporal de
     // la prueba—, no `os.homedir()`.
     writeFileSync(join(homeDir, 'loop.md'), 'fallback content', 'utf8')
     const got = readLoopFile()

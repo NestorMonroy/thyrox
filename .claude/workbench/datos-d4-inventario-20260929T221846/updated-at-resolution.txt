@@ -1,0 +1,4 @@
+trigger: CREATE TRIGGER agent_sessions_stamp_updated     AFTER UPDATE OF status ON agent_sessions     WHEN NEW.status <> OLD.status     BEGIN       UPDATE agent_sessions       SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')       WHERE rowid = NEW.rowid;     END
+agent_sessions: 1837 valores | con fracción de segundo 42 | con zona 42 | repetidos 359 | ej. '2026-09-29T22:14:41.456Z'
+tasks: 2240 valores | con fracción de segundo 0 | con zona 0 | repetidos 1681 | ej. '2026-09-29T22:24:22'
+findings_history: 1659 valores | con fracción de segundo 0 | con zona 0 | repetidos 1537 | ej. '2026-09-29T22:21:25'

@@ -1,0 +1,1 @@
+Abandonado 2026-09-29: lanzado sobre c671a1df, antes de que e7e47630 (arreglo de 17.3) entrara en HEAD; su verify habría fallado en 17.3 por la precondición de H-THYROX-259, no por el parche. Relanzado como board-sync-310-uv2.

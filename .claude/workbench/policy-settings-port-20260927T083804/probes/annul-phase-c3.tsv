@@ -1,0 +1,6 @@
+base	settings/settings.ts	s/^$//
+source-returns-null	settings/settings.ts	s/^    return policySettingsDocument(defaultPolicyContext()) as SettingsJson | null$/    return null/
+merge-skips-policy	settings/settings.ts	s/^        if (policy) mergedSettings = mergeWith(mergedSettings, policy, settingsMergeCustomizer)$//
+parent-not-read	settings/policySettings.ts	s/^    parentManaged: tryGetConfigHostBindings()?.getParentManagedSettings?.(),$//
+tiers-without-parent	settings/policySettings.ts	s/^  return policyTierDocuments(defaultPolicyContext())$/  return composePolicySettings(defaultPolicyContext()).tiers/
+admin-from-hkcu-always	settings/policySettings.ts	s/^  return policySettingsDocument(defaultPolicyContext())$/  return composePolicySettings(defaultPolicyContext()).admin ?? {}/

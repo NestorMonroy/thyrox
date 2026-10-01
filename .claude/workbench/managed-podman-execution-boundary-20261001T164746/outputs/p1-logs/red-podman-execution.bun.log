@@ -1,0 +1,330 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/imageStore.test.ts:
+(pass) almacén local de imágenes > build pasa cada etiqueta y devuelve el id [0.72ms]
+(pass) almacén local de imágenes > exists responde por el código de salida, sin traer nada [0.26ms]
+(pass) almacén local de imágenes > list filtra por cada etiqueta y traduce el JSON de Podman [0.62ms]
+(pass) almacén local de imágenes > un fallo nombra la operación [0.52ms]
+(pass) etiquetas de una imagen > readLabels traduce el JSON y una imagen sin etiquetas da un objeto vacío [0.25ms]
+(pass) construcción con egreso por el proxy del anfitrión > red, argumentos y montajes de sólo lectura van antes del contexto [0.28ms]
+(pass) construcción con egreso por el proxy del anfitrión > un argumento que nombra una credencial se rehúsa antes de invocar Podman [0.25ms]
+
+__tests__/imageTransfer.test.ts:
+(pass) push > pasa el authfile y el digestfile, y devuelve el digest que asignó el registro [1.28ms]
+(pass) push > sin authfile no añade la opción [0.58ms]
+(pass) push > un digest ilegible rehúsa [0.81ms]
+(pass) push > un rechazo nombra la etapa y lo que dijo Podman [0.57ms]
+(pass) pull y digest del almacén > pull usa el authfile sólo si se da [0.27ms]
+(pass) pull y digest del almacén > storedDigest lee el digest del almacén y rehúsa uno ilegible [0.22ms]
+
+__tests__/executionAuthorization.test.ts:
+(pass) ExecutionAuthorization > una autorización de tarea completa se acepta [0.81ms]
+(pass) ExecutionAuthorization > una autorización de modelo, sin comando ni directorio, se acepta [0.15ms]
+(pass) ExecutionAuthorization > la tarea se cita con su forma durable, no con el ordinal del board [0.11ms]
+(pass) ExecutionAuthorization > un runtime de modelo se autoriza por un grant, no por una tarea [0.07ms]
+(pass) ExecutionAuthorization > un trabajo de tarea no se autoriza por un grant [0.03ms]
+(pass) ExecutionAuthorization > el tipo de ejecución es uno de los declarados [0.03ms]
+(pass) ExecutionAuthorization > un comando declarado no puede estar vacío [0.03ms]
+(pass) ExecutionAuthorization > un directorio de trabajo declarado vive dentro de un montaje [0.04ms]
+(pass) ExecutionAuthorization > una salida declarada vive bajo un montaje de escritura [0.12ms]
+(pass) ExecutionAuthorization > una autorización vencida se rehúsa [0.04ms]
+(pass) ExecutionAuthorization > el dueño se valida [0.11ms]
+(pass) ExecutionAuthorization > una etiqueta propia no reescribe las de la ejecución [0.06ms]
+(pass) ExecutionAuthorization > una variable que nombra una credencial se rehúsa: su valor quedaría en podman inspect [0.56ms]
+(pass) el contenedor que materializa una autorización > lleva tipo, referencia e id en sus etiquetas, su directorio de trabajo, su montaje y su red [0.58ms]
+(pass) el contenedor que materializa una autorización > el de un modelo publica su puerto en loopback, concede sus dispositivos y lleva sus etiquetas [0.41ms]
+(pass) el contenedor que materializa una autorización > un secreto se monta como archivo, nunca como variable [0.26ms]
+(pass) el contenedor que materializa una autorización > runExecution corre el contenedor hasta que termina y lo retira [1.00ms]
+167 |   })
+168 | 
+169 |   test('materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira', async () => {
+170 |     const calls: string[][] = []
+171 |     const unit = await materializeExecution(recordingPodman(calls, { inspect: INSPECTED }), modelAuthorization(), Date.parse(CREATED_AT))
+172 |     expect(unit).toEqual({
+                       ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "cgroup": "/machine.slice/libpod-c0ffee.scope",
+    "containerId": "c0ffee",
+    "containerName": "thyrox-worker-unit-g1",
+-   "createdAt": "2026-10-01T00:00:00.000Z",
+-   "hostPids": [
+-     9001,
+-   ],
+-   "kind": "model-runtime",
+-   "owner": {
+-     "id": "coordinator",
+-     "kind": "model-coordinator",
+-     "pid": 7,
+-   },
+-   "reference": {
+-     "grantId": "g1",
+-     "kind": "grant",
+-   },
+-   "unitId": "unit-g1",
+  }
+
+- Expected  - 16
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:172:18)
+(fail) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.80ms]
+184 |   })
+185 | 
+186 |   test('un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup', async () => {
+187 |     const stopped = { exitCode: 0, stdout: JSON.stringify([{ State: { Pid: 0, CgroupPath: '' } }]), stderr: '' }
+188 |     const unit = await materializeExecution(recordingPodman([], { inspect: stopped }), modelAuthorization(), Date.parse(CREATED_AT))
+189 |     expect(unit.hostPids).toEqual([])
+                                ^
+error: expect(received).toEqual(expected)
+
+Expected: []
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:189:27)
+(fail) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.43ms]
+192 | 
+193 |   test('si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño', async () => {
+194 |     const calls: string[][] = []
+195 |     const podman = recordingPodman(calls, { inspect: { exitCode: 125, stdout: '', stderr: 'no inspect' } })
+196 |     const error = await materializeExecution(podman, modelAuthorization()).catch(caught => caught)
+197 |     expect(error).toBeInstanceOf(ContainerRunError)
+                        ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class ContainerRunError extends Error]
+Received value: {
+  containerName: "thyrox-worker-unit-g1",
+  containerId: "c0ffee",
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:197:19)
+(fail) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.41ms]
+200 |   })
+201 | 
+202 |   test('una inspección ilegible también es la etapa inspect, no un éxito sin identidad', async () => {
+203 |     const podman = recordingPodman([], { inspect: { exitCode: 0, stdout: 'no es json', stderr: '' } })
+204 |     const error = await materializeExecution(podman, modelAuthorization()).catch(caught => caught)
+205 |     expect(error).toBeInstanceOf(ContainerRunError)
+                        ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class ContainerRunError extends Error]
+Received value: {
+  containerName: "thyrox-worker-unit-g1",
+  containerId: "c0ffee",
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:205:19)
+(fail) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.33ms]
+(pass) el contenedor que materializa una autorización > si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño [0.45ms]
+(pass) el contenedor que materializa una autorización > una autorización inválida no llega a Podman [0.22ms]
+
+__tests__/workerResourceProfile.test.ts:
+(pass) DEFAULT_WORKER_RESOURCE_PROFILE > es el perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin montajes [0.05ms]
+(pass) DEFAULT_WORKER_RESOURCE_PROFILE > valida sin rehusar [0.05ms]
+(pass) workerResourceLimitArgv > argv exacto del perfil por defecto [0.12ms]
+(pass) workerResourceLimitArgv > argv exacto de un perfil relajado, con red bridge, rootfs escribible y montajes [0.08ms]
+(pass) workerResourceLimitArgv > no emite ningún argumento cuando el perfil es inválido [0.08ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > cpus <= 0 [0.09ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > cpus negativo [0.12ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > memoryMib <= 0 [0.07ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > pidsLimit < 1 [0.05ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > pidsLimit no entero [0.05ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > montaje sin destino absoluto [0.15ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > montaje con origen vacío [0.06ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > modo de montaje desconocido [0.09ms]
+(pass) validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo > red desconocida [0.05ms]
+(pass) red host y entorno declarado > la red host se declara y se emite tal cual [0.06ms]
+(pass) red host y entorno declarado > el entorno declarado se emite como --env, en orden de nombre [0.09ms]
+(pass) red host y entorno declarado > rehúsa un nombre de credencial: su valor quedaría en podman inspect [0.17ms]
+(pass) red host y entorno declarado > rehúsa un nombre de variable inválido [0.07ms]
+(pass) puertos publicados en loopback y dispositivos CDI > un puerto se publica sólo en 127.0.0.1 [0.07ms]
+(pass) puertos publicados en loopback y dispositivos CDI > una dirección que no es loopback se rehúsa [0.10ms]
+(pass) puertos publicados en loopback y dispositivos CDI > un puerto fuera de 1–65535 se rehúsa [0.06ms]
+(pass) puertos publicados en loopback y dispositivos CDI > publicar puertos exige red bridge: sin red no hay a dónde, y en host no hace falta [0.05ms]
+(pass) puertos publicados en loopback y dispositivos CDI > un dispositivo se emite en forma CDI [0.05ms]
+(pass) puertos publicados en loopback y dispositivos CDI > una ruta de /dev o un nombre que no es CDI se rehúsa [0.35ms]
+
+__tests__/resourceMaterialization.real.test.ts:
+resourceMaterialization.real: sin Podman o sin gcc en el anfitrión; sin medir.
+(skip) ensureResource contra Podman real > (unnamed)
+(skip) ensureResource contra Podman real > crea, monta el secreto como archivo y no publica su valor
+(skip) ensureResource contra Podman real > la misma declaración se conserva
+(skip) ensureResource contra Podman real > recrear por deriva de configuración conserva el contenido del volumen
+(skip) ensureResource contra Podman real > (unnamed)
+
+__tests__/repositoryJobProfile.test.ts:
+(pass) createRepositoryJobProfile > monta el repositorio en /w y usa los límites por defecto [0.06ms]
+(pass) createRepositoryJobProfile > valida sin rehusar [0.13ms]
+(pass) repositoryJobProfileArgv > argv exacto del perfil por defecto: límites de recursos + montaje overlay del repo [0.15ms]
+(pass) repositoryJobProfileArgv > REPOSITORY_CONTAINER_PATH es /w [0.03ms]
+(pass) repositoryJobProfileArgv > argv de un perfil con red y montajes adicionales declarados explícitamente [0.07ms]
+(pass) repositoryJobProfileArgv > no emite ningún argumento cuando el perfil es inválido [0.06ms]
+(pass) validateRepositoryJobProfile — rehúsos > repositoryHostPath no absoluto nombra el campo [0.06ms]
+(pass) validateRepositoryJobProfile — rehúsos > un recurso inválido dentro del perfil también rehúsa, nombrando su propio campo [0.08ms]
+(pass) validateRepositoryJobProfile — rehúsos > declarar una credencial rehúsa: hoy ningún mecanismo mide efectivo [0.11ms]
+(pass) validateRepositoryJobProfile — rehúsos > el valor de una credencial nunca aparece en el argv — el rehúso ocurre antes de componer nada [0.04ms]
+
+__tests__/podmanExecutor.test.ts:
+(pass) runCommand > con stdin declarado, el hijo lo recibe por una FIFO: Podman exige un pipe con nombre para `-` [6.98ms]
+(pass) runCommand > el valor no viaja en argv ni en el entorno del hijo [8.85ms]
+(pass) runCommand > si el hijo sale sin leer su stdin, la entrega no deja colgado al llamador [5.83ms]
+(pass) runCommand > sin stdin declarado, el hijo no recibe entrada [3.33ms]
+
+__tests__/packageBoundary.test.ts:
+(pass) frontera del paquete — la primitiva funciona sin el daemon > ningún módulo del paquete importa el daemon, el registro ni las credenciales, ni sale del paquete por ruta relativa [1.59ms]
+
+__tests__/executionCommand.test.ts:
+(pass) parseMount > sin destino ni modo: la misma ruta, sólo lectura [0.15ms]
+(pass) parseMount > con modo y sin destino [0.04ms]
+(pass) parseMount > con destino y modo [0.01ms]
+(pass) thyrox-exec run > el payload corre en la unidad, con el repositorio montado de escritura en su propia ruta [1.30ms]
+(pass) thyrox-exec run > THYROX_EXEC_IMAGE elige la imagen [0.34ms]
+(pass) thyrox-exec run > --script-stdin entrega el guion a bash dentro de la unidad [0.29ms]
+(pass) thyrox-exec run > la red host lleva el proxy y monta su CA de sólo lectura [0.45ms]
+(pass) thyrox-exec run > sin red, el proxy no viaja [0.29ms]
+(pass) thyrox-exec run > sin payload rehúsa con 2 y no invoca Podman [0.27ms]
+(pass) thyrox-exec run > una cita de tarea inválida rehúsa con 2 nombrando el campo [0.14ms]
+(pass) thyrox-exec run > el veredicto de la unidad es el de la orden [0.29ms]
+
+__tests__/podmanLockCollision.test.ts:
+(pass) isLockCollision > reconoce el literal de Podman dentro del stderr [0.04ms]
+(pass) isLockCollision > reconoce el lock que Podman no puede liberar al retirar un objeto desfasado [0.02ms]
+(pass) isLockCollision > un stderr distinto no es colisión [0.02ms]
+(pass) lockCollisionRemedy > nombra el objeto, retirar el anterior y renumerar con Podman parado [0.04ms]
+(pass) ContainerRunError ante una colisión de locks > exit 126 con el literal en create: lockCollision y remedio en el mensaje, sin reintento [0.48ms]
+(pass) ContainerRunError ante una colisión de locks > exit 126 con el literal en start: lockCollision y remedio en el mensaje, sin reintento [0.05ms]
+(pass) ContainerRunError ante una colisión de locks > exit 126 con otro stderr: no es colisión y el mensaje no lleva remedio [0.11ms]
+
+__tests__/workerContainerLifecycle.test.ts:
+(pass) workerContainerName > antepone el prefijo declarado al identificador del worker [0.02ms]
+(pass) validateWorkerContainerSpec — rehúsos > un workerId vacío rehúsa nombrando el campo [0.13ms]
+(pass) validateWorkerContainerSpec — rehúsos > un workerId con caracteres fuera del patrón seguro rehúsa [0.02ms]
+(pass) validateWorkerContainerSpec — rehúsos > una imagen vacía rehúsa nombrando el campo [0.02ms]
+(pass) validateWorkerContainerSpec — rehúsos > un tipo de dueño desconocido rehúsa nombrando el campo [0.02ms]
+(pass) validateWorkerContainerSpec — rehúsos > un identificador de dueño fuera del patrón seguro rehúsa [0.02ms]
+(pass) validateWorkerContainerSpec — rehúsos > un PID de dueño <= 0 rehúsa nombrando el campo [0.02ms]
+(pass) validateWorkerContainerSpec — rehúsos > un spec válido no rehúsa, con dueño daemon o pool [0.07ms]
+(pass) createWorkerContainerArgv > compone nombre, las tres etiquetas del dueño, la del worker, límites e imagen [0.09ms]
+(pass) createWorkerContainerArgv > añade el comando declarado al final del argv [0.05ms]
+(pass) createWorkerContainerArgv > no emite ningún argumento cuando el spec es inválido [0.08ms]
+(pass) inspect / stop / remove / list — argv > inspect pide status, pid, las tres etiquetas del dueño y la del worker en una sola llamada [0.12ms]
+(pass) inspect / stop / remove / list — argv > stop lleva el plazo declarado [0.04ms]
+(pass) inspect / stop / remove / list — argv > remove siempre fuerza el retiro [0.01ms]
+(pass) inspect / stop / remove / list — argv > list filtra por el prefijo de nombre declarado [0.03ms]
+(pass) parseWorkerContainerInspection > un contenedor ausente (exit != 0) no está presente [0.03ms]
+(pass) parseWorkerContainerInspection > un contenedor presente reporta status, pid, dueño y worker [0.05ms]
+(pass) parseWorkerContainerInspection > etiquetas ausentes ("<no value>") o un tipo de dueño desconocido se leen como null [0.03ms]
+(pass) isWorkerContainerProcessAlive — la vivacidad se mide sobre el PID, no sobre el status > running + pid vivo => vivo [0.04ms]
+(pass) isWorkerContainerProcessAlive — la vivacidad se mide sobre el PID, no sobre el status > TASK-THYROX-0605: running reportado pero el PID ya no existe => NO vivo [0.03ms]
+(pass) isWorkerContainerProcessAlive — la vivacidad se mide sobre el PID, no sobre el status > ausente => no vivo, sin llegar a consultar el PID [0.03ms]
+(pass) createWorkerContainer > crea y arranca el contenedor cuando el create sale 0 [0.26ms]
+(pass) createWorkerContainer > no arranca el contenedor si el create falla [0.09ms]
+(pass) inspectWorkerContainer / stopWorkerContainer / removeWorkerContainer > inspectWorkerContainer invoca el argv exacto sobre el nombre dado [0.17ms]
+(pass) inspectWorkerContainer / stopWorkerContainer / removeWorkerContainer > stopWorkerContainer respeta el plazo declarado [0.10ms]
+(pass) inspectWorkerContainer / stopWorkerContainer / removeWorkerContainer > removeWorkerContainer siempre fuerza el retiro [0.08ms]
+(pass) retireWorkerContainer — ningún contenedor ni proceso sobrevive a su worker > un contenedor ausente no invoca stop ni remove [0.22ms]
+(pass) retireWorkerContainer — ningún contenedor ni proceso sobrevive a su worker > caso normal: stop y remove salen 0, y el PID ya no vive tras el retiro [0.16ms]
+(pass) retireWorkerContainer — ningún contenedor ni proceso sobrevive a su worker > usa el plazo por defecto declarado cuando no se pasa ninguno [0.08ms]
+(pass) retireWorkerContainer — ningún contenedor ni proceso sobrevive a su worker > TASK-THYROX-0605: si el PID sigue vivo tras stop+rm, se le manda SIGKILL directo [0.10ms]
+(pass) findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el dueño decide > el predicado del dueño decide: lo que marca huérfano se devuelve con su dueño [0.35ms]
+(pass) findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el dueño decide > lo que el predicado no marca no es huérfano, aunque su dueño haya muerto [0.09ms]
+(pass) findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el dueño decide > un contenedor que desaparece entre listar e inspeccionar no se consulta al predicado [0.10ms]
+(pass) findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el dueño decide > una lista vacía no produce huérfanos ni inspecciona nada [0.10ms]
+(pass) findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el dueño decide > retireOrphanedWorkerContainers retira cada huérfano que el predicado marca [0.22ms]
+(pass) lab owner > a lab is a valid container owner [0.05ms]
+(pass) dueño model-coordinator y etiquetas propias del dueño > el coordinador de model scheduling es un dueño válido y se inspecciona como tal [0.09ms]
+(pass) dueño model-coordinator y etiquetas propias del dueño > las etiquetas propias se emiten como --label, ordenadas por clave [0.17ms]
+(pass) dueño model-coordinator y etiquetas propias del dueño > una etiqueta propia no puede reescribir el dueño ni el worker [0.12ms]
+(pass) dueño model-coordinator y etiquetas propias del dueño > una clave de etiqueta con espacios o vacía se rehúsa [0.05ms]
+
+__tests__/resourceMaterialization.test.ts:
+(pass) ensureResource — primera materialización > ausente: crea el volumen, el secreto y el contenedor, arranca y comprueba la salud por separado [3.50ms]
+(pass) ensureResource — primera materialización > el secreto viaja por stdin, nunca en argv [0.39ms]
+(pass) ensureResource — primera materialización > una red con nombre ausente se crea antes del contenedor [0.30ms]
+(pass) ensureResource — primera materialización > sin salud declarada no ejecuta exec y lo dice [0.36ms]
+(pass) ensureResource — convergencia > contenedor y volumen correctos: kept, sin create/rm/start, volumen preservado [0.77ms]
+(pass) ensureResource — convergencia > contenedor sobre otro volumen: recreated por deriva de volumen, el volumen anterior no se toca [0.63ms]
+(pass) ensureResource — convergencia > imagen distinta: recreated por deriva de imagen [0.51ms]
+(pass) ensureResource — convergencia > una imagen sin etiqueta es la misma que Podman guarda con :latest: no hay deriva de imagen [0.49ms]
+(pass) ensureResource — convergencia > entorno distinto: recreated por deriva de configuración [0.48ms]
+(pass) ensureResource — convergencia > declaración de secretos distinta: recreated por deriva de declaración de secretos [0.40ms]
+(pass) ensureResource — convergencia > valor del secreto distinto: se reemplaza por stdin y el contenedor se recrea [0.80ms]
+(pass) ensureResource — convergencia > running con el PID muerto: recreated por proceso stale [0.54ms]
+(pass) ensureResource — convergencia > detenido sin deriva: started, sin recrear [0.46ms]
+(pass) ensureResource — ownership > un contenedor con ese nombre y otro dueño es una colisión: failed, sin tocarlo [0.28ms]
+(pass) ensureResource — ownership > un contenedor sin etiquetas de dueño y sin la etiqueta heredada declarada también es colisión [0.13ms]
+(pass) ensureResource — ownership > el predecesor que la declaración reconoce por su etiqueta heredada se migra: recreated [0.51ms]
+(pass) ensureResource — salud y fallos > running no es ready: sin salud, failed con su razón y created/started reportados aparte [0.44ms]
+(pass) ensureResource — salud y fallos > un fallo de create que repite el secreto no lo publica en el mensaje [0.53ms]
+(pass) ensureResource — validación antes de tocar Podman > infraestructura con el prefijo de worker se rehúsa [0.18ms]
+(pass) ensureResource — validación antes de tocar Podman > un worker sin el prefijo de worker se rehúsa [0.09ms]
+(pass) ensureResource — validación antes de tocar Podman > infraestructura con un dueño que no es infrastructure se rehúsa [0.10ms]
+(pass) ensureResource — validación antes de tocar Podman > un secreto declarado sin valor se rehúsa sin crear nada [0.17ms]
+(pass) ensureResource — validación antes de tocar Podman > un valor de entorno igual a un secreto se rehúsa: el secreto no viaja como entorno [0.11ms]
+(pass) ensureResource — validación antes de tocar Podman > la red del anfitrión con puertos publicados se rehúsa [0.09ms]
+
+__tests__/podmanExecution.real.test.ts:
+podmanExecution.real: sin Podman o sin gcc en el anfitrión; sin medir.
+(skip) primitiva de ejecución contra Podman real, sin daemon > (unnamed)
+(skip) primitiva de ejecución contra Podman real, sin daemon > el código de salida del proceso (42) llega al llamador
+(skip) primitiva de ejecución contra Podman real, sin daemon > SIGTERM llega al proceso y el código es el que el proceso eligió
+(skip) primitiva de ejecución contra Podman real, sin daemon > una escritura en /w (overlay) no aparece en el anfitrión
+(skip) primitiva de ejecución contra Podman real, sin daemon > un artefacto se exporta antes de limpiar, sigue ahí tras la limpieza, y no queda contenedor
+(skip) primitiva de ejecución contra Podman real, sin daemon > tras limpiar no queda ningún contenedor de esta ejecución listado
+(skip) primitiva de ejecución contra Podman real, sin daemon > (unnamed)
+
+__tests__/managedExecution.real.test.ts:
+managedExecution.real: sin Podman o sin la imagen localhost/thyrox-task-runner:dev; sin medir.
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > cada paso se materializa y termina con su veredicto
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > cada proceso muestreado vive en el cgroup del contenedor de su paso
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > el trabajo de cada paso se observó dentro de su unidad
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > las mutaciones llegaron al árbol del anfitrión y el commit lo cierra
+
+__tests__/containerRun.test.ts:
+(pass) runToCompletion > crea, arranca y espera, y devuelve el código que da `podman wait` [0.33ms]
+(pass) runToCompletion > un create fallido rechaza en la etapa create y no arranca nada [0.53ms]
+(pass) runToCompletion > un start fallido rechaza en la etapa start y no espera [0.21ms]
+(pass) runToCompletion > una salida de `wait` que no es un entero rechaza: no poder leer el código no es 0 [0.37ms]
+(pass) signalContainer > envía la señal nombrada con `podman kill --signal` [0.16ms]
+(pass) signalContainer > un kill fallido rechaza en la etapa signal [0.12ms]
+(pass) exportArtifacts > copia cada ruta con `podman cp` y devuelve su ruta en el anfitrión [0.28ms]
+(pass) exportArtifacts > un cp fallido rechaza en la etapa export nombrando la ruta [0.39ms]
+(pass) runJobAndCollect — exportar antes de limpiar > corre, exporta y sólo después retira el contenedor [0.59ms]
+(pass) runJobAndCollect — exportar antes de limpiar > si la ejecución falla, igual retira lo creado y propaga el error [0.22ms]
+(pass) runJobAndCollect — exportar antes de limpiar > si la exportación falla, igual retira el contenedor, después de intentarla [0.42ms]
+(pass) runJobWithOutput > returns the exit code and both streams read with podman logs [0.23ms]
+(pass) runJobWithOutput > removes the container even when a stage fails [0.24ms]
+
+16 tests skipped:
+(skip) ensureResource contra Podman real > (unnamed)
+(skip) ensureResource contra Podman real > crea, monta el secreto como archivo y no publica su valor
+(skip) ensureResource contra Podman real > la misma declaración se conserva
+(skip) ensureResource contra Podman real > recrear por deriva de configuración conserva el contenido del volumen
+(skip) ensureResource contra Podman real > (unnamed)
+(skip) primitiva de ejecución contra Podman real, sin daemon > (unnamed)
+(skip) primitiva de ejecución contra Podman real, sin daemon > el código de salida del proceso (42) llega al llamador
+(skip) primitiva de ejecución contra Podman real, sin daemon > SIGTERM llega al proceso y el código es el que el proceso eligió
+(skip) primitiva de ejecución contra Podman real, sin daemon > una escritura en /w (overlay) no aparece en el anfitrión
+(skip) primitiva de ejecución contra Podman real, sin daemon > un artefacto se exporta antes de limpiar, sigue ahí tras la limpieza, y no queda contenedor
+(skip) primitiva de ejecución contra Podman real, sin daemon > tras limpiar no queda ningún contenedor de esta ejecución listado
+(skip) primitiva de ejecución contra Podman real, sin daemon > (unnamed)
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > cada paso se materializa y termina con su veredicto
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > cada proceso muestreado vive en el cgroup del contenedor de su paso
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > el trabajo de cada paso se observó dentro de su unidad
+(skip) una tarea completa corre dentro de contenedores de ejecución de la primitiva > las mutaciones llegaron al árbol del anfitrión y el commit lo cierra
+
+
+4 tests failed:
+(fail) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.80ms]
+(fail) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.43ms]
+(fail) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.41ms]
+(fail) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.33ms]
+
+ 166 pass
+ 16 skip
+ 4 fail
+ 378 expect() calls
+Ran 186 tests across 15 files. [289.00ms]

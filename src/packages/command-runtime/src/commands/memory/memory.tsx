@@ -7,7 +7,7 @@ import { getRelativeMemoryPath } from '@thyrox/repl/components/memory/MemoryUpda
 import { Box, Link, Text } from '@anthropic/ink'
 import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
 import { clearMemoryFileCaches, getMemoryFiles } from '@thyrox/storage/claudemd.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { logError } from '@thyrox/local-observability/log.js'
 import { editFileInEditor } from '@thyrox/repl/promptEditor.js'
@@ -24,8 +24,8 @@ function MemoryCommand({
   const handleSelectMemoryFile = async (memoryPath: string) => {
     try {
       // Create claude directory if it doesn't exist (idempotent with recursive)
-      if (memoryPath.includes(getClaudeConfigHomeDir())) {
-        await mkdir(getClaudeConfigHomeDir(), { recursive: true })
+      if (memoryPath.includes(getConfigHomeDir())) {
+        await mkdir(getConfigHomeDir(), { recursive: true })
       }
 
       // Create file if it doesn't exist (wx flag fails if file exists,

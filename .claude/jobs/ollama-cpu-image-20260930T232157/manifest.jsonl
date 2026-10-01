@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/local-models-for-thyrox-work-20260930T231038/probes/build_ollama_cpu_image.sh", "started_at": "2026-09-30T23:21:57+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-30T23:23:18+00:00", "duration_seconds": 81.764546}

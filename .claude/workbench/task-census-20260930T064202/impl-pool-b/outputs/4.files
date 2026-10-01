@@ -1,0 +1,8 @@
+.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/README.md
+.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/annulment.log
+.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/symbols-2.1.283.txt
+src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
+src/packages/storage/src/secureStorage/__tests__/writeLock.test.ts
+src/packages/storage/src/secureStorage/credentialStoreInternals.ts
+src/packages/storage/src/secureStorage/plainTextStorage.ts
+src/packages/storage/src/secureStorage/types.ts

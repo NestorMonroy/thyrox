@@ -1,0 +1,19 @@
+== 8: el método sólo del documento
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > a unix-ms `expiry_date` counts; an unreadable ISO or nothing leaves it null [50.12ms]
+ 26 pass
+ 1 fail
+== 25: sin proyecto no se degrada
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [49.16ms]
+ 26 pass
+ 1 fail
+== 27: el correo declarado no gana
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > the declared email and name win over the discovered ones [53.02ms]
+ 26 pass
+ 1 fail
+== restaurado
+ 27 pass
+ 0 fail
+__BG_EXIT__=0

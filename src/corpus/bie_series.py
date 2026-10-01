@@ -302,7 +302,7 @@ def read_series(rows: list[list[str]]) -> list[tuple[str, float]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("entrada", help="la serie del BIE, .xls o .csv")
     parser.add_argument("--json", action="store_true", help="salida legible por maquina")
     parser.add_argument("--rows", action="store_true",

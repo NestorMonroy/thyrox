@@ -1,0 +1,22 @@
+check "sin nvidia-smi: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/^gpu: sin nvidia-smi/{n++} END{print n+0}')" "1"
+
+# --- la anchura efectiva: min(configurada, RAM, VRAM), y la admision por VRAM ---
+# El historial compartido de estos casos toma su pico de VRAM (400 MiB) de la
+# primera ejecucion; con margen 2 cada item pide 800 MiB.
+HIST="$F/historial-gpu"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre LENTO-alfa
+rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=500 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admision: sin VRAM para su pico el item no arranca" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admision: la causa queda en su .err" "$(gawk '/admision por VRAM/{n++} END{print n+0}' "$F/out/1.err")" "1"
+unset HIST
+# RAM: MemAvailable 30000 KB y el item pico 12345 KB x 2 -> cabe 1.
+printf 'MemTotal: 100000 kB\nMemAvailable: 30000 kB\n' > "$F/meminfo"
+HIST="$F/historial-ram"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+rm -rf "$F/out"; EXTRA="--width 4" THYROX_POOL_MEMINFO_PATH="$F/meminfo" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa beta
+check "RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
+unset HIST

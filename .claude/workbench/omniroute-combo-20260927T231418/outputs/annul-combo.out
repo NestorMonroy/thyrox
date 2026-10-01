@@ -1,0 +1,28 @@
+== comboMetrics
+base	11 pass, 0 fail	—
+evict	10 pass, 1 fail	desalojo > al pasar del máximo de combos se desaloja el de uso más antiguo
+expire	10 pass, 1 fail	desalojo > un combo sin uso durante más de una hora se descarta al leer
+fallbacks	10 pass, 1 fail	record / get > la vista deriva la latencia media, la tasa de éxito y la de conmutación
+strategy	10 pass, 1 fail	record / get > guarda la estrategia del último registro
+no-model	10 pass, 1 fail	record / get > sin modelo cuenta el total, no por modelo ni por destino
+target-key	10 pass, 1 fail	record / get > por destino, la clave es el executionKey, y si falta, el modelo
+target-provider	10 pass, 1 fail	record / get > por destino, la clave es el executionKey, y si falta, el modelo
+rates	10 pass, 1 fail	record / get > la vista deriva la latencia media, la tasa de éxito y la de conmutación
+== comboRouter
+base	15 pass, 0 fail	—
+weighted	14 pass, 1 fail	orden > weighted pone primero al sorteado por peso y el resto por peso descendente
+random	15 pass, 0 fail	—
+strict-random	14 pass, 1 fail	orden > strict-random reparte con una baraja: cada destino una vez por vuelta
+p2c	14 pass, 1 fail	orden > p2c elige entre dos por éxito y latencia del modelo
+least-used	14 pass, 1 fail	orden > least-used pone primero al destino con menos peticiones del combo
+cost	14 pass, 1 fail	orden > cost-optimized ordena por el precio de entrada inyectado; sin precio, al final
+context	14 pass, 1 fail	orden > context-optimized pone primero la ventana mayor; sin ventana conocida, el orden declarado
+context-unknown	15 pass, 0 fail	—
+lkgp	14 pass, 1 fail	orden > lkgp adelanta al último destino que respondió bien
+lkgp-only-success	14 pass, 1 fail	orden > lkgp adelanta al último destino que respondió bien
+rr-advance	14 pass, 1 fail	round-robin > cada petición empieza en el destino siguiente
+rr-served	14 pass, 1 fail	round-robin > la rotación sigue al destino que de verdad sirvió, no al programado
+rr-sticky	15 pass, 0 fail	—
+rr-record	13 pass, 2 fail	round-robin > la rotación sigue al destino que de verdad sirvió, no al programado | round-robin > con lote pegajoso, un destino sirve N aciertos seguidos antes de rotar
+metrics-record	14 pass, 1 fail	recordOutcome alimenta las métricas del combo con el destino que sirvió
+known-strategies	14 pass, 1 fail	las estrategias conocidas, y ninguna más

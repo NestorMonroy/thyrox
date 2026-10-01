@@ -116,18 +116,18 @@ describe('argument-hint', () => {
 })
 
 describe('skills-path', () => {
-  test('userSettings + skills → ~/.claude/skills (con CLAUDE_CONFIG_DIR fijado)', () => {
-    const p = run(['skills-path', 'userSettings', 'skills'], { env: { CLAUDE_CONFIG_DIR: '/home/user/.claude' } })
+  test('userSettings + skills → ~/.claude/skills (con THYROX_CONFIG_DIR fijado)', () => {
+    const p = run(['skills-path', 'userSettings', 'skills'], { env: { THYROX_CONFIG_DIR: '/home/user/.claude' } })
     expect(p.exitCode).toBe(0)
     expect(p.stdout.toString().trim()).toBe('/home/user/.claude/skills')
   })
 
-  test('userSettings SIN CLAUDE_CONFIG_DIR declarado — el caso real del entorno', () => {
+  test('userSettings SIN THYROX_CONFIG_DIR declarado — el caso real del entorno', () => {
     // Control positivo de H-COMMAND-RUNTIME-01: sin la variable, `key` es
     // `undefined` en la PRIMERA llamada — exactamente la rama que el
     // centinela SIN_CACHE tenía que cubrir.
     const env = { ...process.env }
-    delete (env as Record<string, string | undefined>).CLAUDE_CONFIG_DIR
+    delete (env as Record<string, string | undefined>).THYROX_CONFIG_DIR
     const p = Bun.spawnSync(['bun', 'run', BIN, 'skills-path', 'userSettings', 'skills'], { env })
     expect(p.exitCode).toBe(0)
     expect(p.stdout.toString().trim()).toContain('.claude/skills')

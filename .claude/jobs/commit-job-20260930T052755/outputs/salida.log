@@ -1,0 +1,20 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 5 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 5 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 5 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 6 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 5 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 293 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 71974 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1549 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 288 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1839 lectura(s) en 4003 archivo(s) de producción — propias 830, proveedor 94, cliente ajeno 18, sin prefijo 897)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 129 congelada(s), 0 obsoleta(s) (alcance medido: 351 variable(s) propia(s), 2135 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 501 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 21 clave(s) en 1 archivo(s) ignorado(s), 511 declarada(s) en .env.example)
+commit-rc=0
+OK: 0 fila(s) huérfana(s) · 0 colisión(es) de relleno
+  (alcance medido: 1666 hallazgo(s) en el árbol, 1661 fila(s) en el store; 7 en baseline heredado)
+push-rc=0
+__BG_EXIT__=0

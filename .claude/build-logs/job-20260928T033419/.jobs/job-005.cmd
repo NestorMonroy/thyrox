@@ -1,0 +1,1 @@
+cd src/packages/ide && echo == ide && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20

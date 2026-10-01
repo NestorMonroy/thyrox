@@ -13,7 +13,7 @@ clon, que es lo único que la resolución añade, y que una ABSOLUTA siga
 colisionando, que es lo que impide sobre-afirmar «nunca colisiona».
 
 Ciega a: la mitad TypeScript, cuyo cuerpo no se compara aquí — la ata
-`tests/workbench/paths.test.ts`. Y ciega a
+`src/packages/workbench/__tests__/paths.test.ts`. Y ciega a
 los clones que declaran su clave POR CLON: sobre ellos la de familia no es
 observable, y `_sin_clave_por_clon` los excluye del universo en vez de
 contarlos como fallos.
@@ -185,6 +185,7 @@ class WorkbenchHomeResolution(unittest.TestCase):
         —los otros cuatro sobreviven— acusando al mecanismo de componer
         distinto cuando lo que difiere es qué clave responde.
         """
+        assert _RAIZ is not None  # ya lo verifico el guard del modulo
         sys.path.insert(0, str(_RAIZ / "src"))
         from rules import paths as rules  # noqa: PLC0415
 

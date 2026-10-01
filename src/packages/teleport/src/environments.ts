@@ -5,6 +5,7 @@ import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
 import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { getOAuthHeaders } from './api.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
 export type EnvironmentState = 'active'
@@ -33,7 +34,7 @@ export async function fetchEnvironments(): Promise<EnvironmentResource[]> {
   const accessToken = getClaudeAIOAuthTokens()?.accessToken
   if (!accessToken) {
     throw new Error(
-      'Claude Code web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.',
+      `${PRODUCT_NAME} web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.`,
     )
   }
 

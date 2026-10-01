@@ -32,8 +32,7 @@ describe('distinctiveNumbers — qué cuenta como un hecho rastreable', () => {
 
   test('una lista {408,429,500} son cifras separadas, no un número de 18 dígitos (#38)', () => {
     // El separador de millar y el de lista son el mismo carácter. Dentro de una
-    // colección, la coma NO agrupa millares. Medido: 1 de 256, la única cifra
-    // sin antecedente que quedaba en la corrida 2026-09-02.
+    // colección, la coma NO agrupa millares.
     const s = distinctiveNumbers('los códigos {408,429,500,502,503,529}')
     expect(s.has('408429500502503529')).toBe(false)
     expect(s.has('408')).toBe(true)
@@ -157,9 +156,9 @@ describe('analyzeCompactions — supervivencia y fabricación', () => {
 /**
  * Los dos defectos que la medición de #21 destapó — y por qué importan.
  *
- * Corrida del 2026-09-02T20:06:33 sobre 9420 líneas: **6 cifras del resumen
- * sin antecedente**, presentadas como fabricadas. Verificadas una a una
- * contra la fuente, **las seis existían**. Un instrumento que dice
+ * Una cifra del resumen sin antecedente en la ventana medida no es por eso
+ * fabricada: puede existir en la fuente fuera de esa ventana, y así ocurrió
+ * con las seis que la medición de #21 señaló. Un instrumento que dice
  * «fabricada» sobre algo que la fuente contiene mide el fenómeno equivocado:
  * es el sub-patrón D de `metrica-decide-la-conclusion.md` con el signo
  * invertido — no un verde que no discrimina, un rojo que no discrimina.

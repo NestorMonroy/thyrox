@@ -195,13 +195,17 @@ def citation_index(records, store_path=None, session_id=None):
         columns = {row[1] for row in conn.execute('PRAGMA table_info(tasks)')}
         if 'citation_id' not in columns:
             return {}
+        # La cita que se publica es la de capa cuando existe: es la que un texto
+        # nuevo debe usar, y la original sigue resolviendo por su cuenta.
+        shown = ('COALESCE(layer_citation_id, citation_id)'
+                 if 'layer_citation_id' in columns else 'citation_id')
         if session_id:
             rows = conn.execute(
-                'SELECT subject, citation_id FROM tasks '
+                f'SELECT subject, {shown} FROM tasks '
                 ' WHERE session_id = ? AND citation_id IS NOT NULL', (session_id,))
         else:
             rows = conn.execute(
-                'SELECT subject, citation_id FROM tasks '
+                f'SELECT subject, {shown} FROM tasks '
                 ' WHERE citation_id IS NOT NULL')
         by_subject = {}
         for subject, citation in rows:
@@ -209,8 +213,9 @@ def citation_index(records, store_path=None, session_id=None):
             if key is None:
                 continue
             # Un sujeto con DOS citas no desambigua: se descarta en vez de
-            # elegir una al azar. Es el mismo criterio que `mint` aplica, y lo
-            # que `task_ids duplicados` mide (93 sujetos hoy, TASK-DB-0002).
+            # elegir una al azar. Es el mismo criterio que `assign_missing_ids`
+            # aplica, y lo que `task_ids duplicates` mide (93 sujetos hoy,
+            # TASK-DB-0002).
             by_subject[key] = None if key in by_subject else citation
     except sqlite3.Error:
         return {}

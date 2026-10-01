@@ -1,0 +1,55 @@
+STEP 1/6: FROM docker.io/library/python:3.11-slim
+STEP 2/6: ARG HTTPS_PROXY
+--> Using cache 1fdeb9ef2d39537bd6d124ed40008a2329610f71f4be2a08008110bc9c664a59
+--> 1fdeb9ef2d39
+STEP 3/6: ARG https_proxy
+--> Using cache 5c4fb533cd9837193e0096a182a0965efe2db5e13f78d24c6ab4a459c3f3d88d
+--> 5c4fb533cd98
+STEP 4/6: ARG PIP_CERT
+--> Using cache 040264152ca4d3a686de67b550c931db6f33b051e9f93286c1081be5d065c7f7
+--> 040264152ca4
+STEP 5/6: RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1  && pip install --no-cache-dir transformers==4.46.3 trl==0.14.0 peft==0.13.2 datasets==3.1.0 accelerate==1.1.1
+--> Using cache 2442e5984266b612de82ea3b8f75579475164925307178d3f147a016a3e50c2a
+--> 2442e5984266
+STEP 6/6: WORKDIR /work
+--> Using cache ed13a77ab633c7a5eabe8a06ba84d705d769251558a66202bcb178681f24e73d
+COMMIT localhost/thyrox-rlvr-lab:cpu
+--> ed13a77ab633
+Successfully tagged localhost/thyrox-rlvr-lab:cpu
+ed13a77ab633c7a5eabe8a06ba84d705d769251558a66202bcb178681f24e73d
+/usr/local/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:612: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
+  warnings.warn(
+max_steps is given, it will override any value given in num_train_epochs
+  0%|          | 0/2 [00:00<?, ?it/s]`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`...
+/usr/local/lib/python3.11/site-packages/torch/utils/checkpoint.py:87: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+Traceback (most recent call last):
+  File "/probes/grpo_feasibility.py", line 122, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/probes/grpo_feasibility.py", line 111, in main
+    trainer.train()
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 2123, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 2481, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/transformers/trainer.py", line 3612, in training_step
+    self.accelerator.backward(loss, **kwargs)
+  File "/usr/local/lib/python3.11/site-packages/accelerate/accelerator.py", line 2241, in backward
+    loss.backward(**kwargs)
+  File "/usr/local/lib/python3.11/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/usr/local/lib/python3.11/site-packages/torch/autograd/__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "/usr/local/lib/python3.11/site-packages/torch/autograd/graph.py", line 825, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn
+  0%|          | 0/2 [00:23<?, ?it/s]
+__BG_EXIT__=1

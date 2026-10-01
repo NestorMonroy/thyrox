@@ -1,0 +1,18 @@
+## rutas construidas por partes hacia packages/package.json o packages/bun.lock
+tests/reference/home.test.ts:57:    const manifest = JSON.parse(readFileSync(join(ROOT, 'src', 'packages', 'package.json'), 'utf-8'))
+tests/task/extraction.test.ts:77:    const m = JSON.parse(readFileSync(join(ROOT, 'src', 'packages', 'package.json'), 'utf8'))
+tests/verify/test_package_boundary.py:222:    write(src / "packages" / "package.json", json.dumps({"name": "agregador", "workspaces": ["agent"]}))
+## lectores de la clave workspaces en codigo
+src/packages/permission/__tests__/filesystem.test.ts:60:    // (falta "workspaces"); el respaldo documentado es `false`.
+src/packages/permission/src/filesystem.ts:58: *   paquete no depende de `"workspaces"` en la raíz (a diferencia de
+src/packages/permission/src/filesystem.ts:86: *   resuelve hasta que exista `"workspaces"`), con respaldo `false`
+src/packages/permission/src/pathValidation.ts:34: * especificador `@thyrox/*` no resuelve todavía (falta `"workspaces"` en
+src/packages/permission/src/permissions.ts:40: *   no resuelve todavía en este árbol (falta `"workspaces"` en la raíz,
+src/packages/shell/src/execFileNoThrow.ts:39: * árbol — la raíz no declara `"workspaces"` (medido con
+src/packages/shell/src/execFileNoThrowPortable.ts:31: * `/home/user/thyrox/package.json` no declara `"workspaces"`, así que no
+src/verify/check_stale_divergence.py:122:    for patron in json.loads(manifest.read_text()).get("workspaces", []):
+tests/typescript/test_emit_declarations.py:741:        write_manifest("src/packages", {"name": "@p/agregador", "workspaces": ["dentro"]})
+tests/typescript/test_emit_declarations.py:743:        (root / "package.json").write_text(json.dumps({"name": "r", "workspaces": []}))
+tests/verify/test_check_exports_types.py:127:    (base / "package.json").write_text(json.dumps({"name": "r", "workspaces": []}))
+tests/verify/test_check_exports_types.py:128:    (base / "src" / "package.json").write_text(json.dumps({"name": "@p/agregador", "workspaces": ["f"]}))
+tests/verify/test_package_boundary.py:222:    write(src / "packages" / "package.json", json.dumps({"name": "agregador", "workspaces": ["agent"]}))

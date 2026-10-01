@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/local-models-ensure thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf", "started_at": "2026-10-01T08:11:07+00:00"}

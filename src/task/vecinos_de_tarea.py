@@ -46,6 +46,7 @@ import pathlib
 import re
 import sys
 from collections import Counter
+from typing import Literal, overload
 
 # El lector único vive junto a este guion; se resuelve por __file__ y no por
 # CWD, porque los tests cargan estos módulos por ruta con importlib.
@@ -191,6 +192,14 @@ class NearestNeighbors:
         return [(index, max(0.0, 1.0 - score))
                 for index, score in enumerate(scores) if index != exclude]
 
+    @overload
+    def kneighbors(self, query, n_neighbors=None, exclude=None,
+                   return_distance: Literal[True] = True) -> tuple[list[float], list[int]]: ...
+
+    @overload
+    def kneighbors(self, query, n_neighbors=None, exclude=None,
+                   *, return_distance: Literal[False]) -> list[int]: ...
+
     def kneighbors(self, query, n_neighbors=None, exclude=None,
                    return_distance=True):
         """Los *k* vecinos más cercanos, del más cercano al más lejano.
@@ -214,6 +223,14 @@ class NearestNeighbors:
         if return_distance:
             return [distance for _, distance in ranked], [i for i, _ in ranked]
         return [index for index, _ in ranked]
+
+    @overload
+    def radius_neighbors(self, query, radius=None, exclude=None,
+                         return_distance: Literal[True] = True) -> tuple[list[float], list[int]]: ...
+
+    @overload
+    def radius_neighbors(self, query, radius=None, exclude=None,
+                         *, return_distance: Literal[False]) -> list[int]: ...
 
     def radius_neighbors(self, query, radius=None, exclude=None,
                          return_distance=True):

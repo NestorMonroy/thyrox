@@ -2,10 +2,10 @@
  * Utilidad de espera sobre streams tipo stdin.
  *
  * `registerProcessOutputErrorHandlers`, `writeToStdout` y `writeToStderr`
- * se portan (2026-09-24) desde 2.1.275 (`pur`, `dr`, `OX` y sus auxiliares
+ * se portan desde 2.1.275 (`pur`, `dr`, `OX` y sus auxiliares
  * `pkt`, `v`, `HQe` en `chunk-q4s29khb.js`). `exitWithError` (`tlo`) y
- * su marcador de causa de salida `writeExitCause` (`Om`) se portan
- * (2026-09-25) al aparecer su consumidor, `cli/src/entry/cli.tsx`. De la
+ * su marcador de causa de salida `writeExitCause` (`Om`) se portan para su
+ * consumidor, `cli/src/entry/cli.tsx`. De la
  * contabilidad de vaciado de stdout sólo se porta el conteo de bytes
  * pendientes: la espera de vaciado al salir (`OQe`) vive con el cierre del
  * proceso, que no está.
@@ -121,14 +121,14 @@ export function writeToStderr(data: string): void {
 }
 
 // Nombre del archivo que un trabajo en segundo plano deja en su directorio
-// (`CLAUDE_JOB_DIR`) para declarar por qué terminó (`y` en la fuente).
+// (`THYROX_JOB_DIR`) para declarar por qué terminó (`y` en la fuente).
 const EXIT_CAUSE_FILE = 'exit-cause'
 
 // Anota la causa de salida en el directorio del trabajo (`Om`). Sin
 // directorio no hay trabajo que la lea; un fallo de escritura se traga
 // porque el proceso ya va de salida y la causa es informativa.
 export function writeExitCause(cause: string, jobDir?: string): void {
-  const dir = jobDir ?? process.env.CLAUDE_JOB_DIR
+  const dir = jobDir ?? process.env.THYROX_JOB_DIR
   if (!dir) return
   try {
     writeFileSync(join(dir, EXIT_CAUSE_FILE), cause)

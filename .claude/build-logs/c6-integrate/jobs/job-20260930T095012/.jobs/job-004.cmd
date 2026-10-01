@@ -1,0 +1,1 @@
+timeout 300 bash bin/check_lint_zero src/session/headless-pool.sh tests/session/test-headless-pool-credential-source.sh tests/session/test-headless-pool.sh > /home/user/thyrox/.claude/build-logs/c6-integrate/lint.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/c6-integrate/lint.log

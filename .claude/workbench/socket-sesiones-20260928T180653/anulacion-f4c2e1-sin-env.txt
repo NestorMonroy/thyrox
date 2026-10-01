@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerFiles.test.ts:
+214 |     ])
+215 |   })
+216 | 
+217 |   test('isSessionMessagingEnabled (Ws): THYROX_CODE_HARBOR_KITE manda; si no, las banderas', () => {
+218 |     const flags = (values: Record<string, boolean>) => (name: string, fallback: boolean) => values[name] ?? fallback
+219 |     expect(isSessionMessagingEnabled({ env: { THYROX_CODE_HARBOR_KITE: '1' }, platform: 'linux', flag: flags({ tengu_harbor_kite: false }) })).toBe(true)
+                                                                                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:219:144)
+(fail) telemetría y bandera > isSessionMessagingEnabled (Ws): THYROX_CODE_HARBOR_KITE manda; si no, las banderas [0.46ms]
+226 | 
+227 |   test('isPeerFileTransferEnabled (nlt): mensajería y tengu_send_file, que por defecto está apagada', () => {
+228 |     const flags = (values: Record<string, boolean>) => (name: string, fallback: boolean) => values[name] ?? fallback
+229 |     expect(isPeerFileTransferEnabled({ env: {}, platform: 'linux', flag: flags({}) })).toBe(false)
+230 |     expect(isPeerFileTransferEnabled({ env: {}, platform: 'linux', flag: flags({ tengu_send_file: true }) })).toBe(true)
+231 |     expect(isPeerFileTransferEnabled({ env: { THYROX_CODE_HARBOR_KITE: 'false' }, platform: 'linux', flag: flags({ tengu_send_file: true }) })).toBe(false)
+                                                                                                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:231:145)
+(fail) telemetría y bandera > isPeerFileTransferEnabled (nlt): mensajería y tengu_send_file, que por defecto está apagada [0.28ms]
+
+ 15 pass
+ 2 fail
+ 53 expect() calls
+Ran 17 tests across 1 file. [125.00ms]

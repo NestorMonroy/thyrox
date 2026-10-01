@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+178 |   })
+179 | })
+180 | 
+181 | describe('absolutePathEntries (RGr), whichInSanitizedPath (lxe) y envValue (ya)', () => {
+182 |   test('conserva sólo las entradas absolutas del PATH', () => {
+183 |     expect(absolutePathEntries('/a:rel:/b::./c', 'linux')).toBe('/a:/b')
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "/a:/b"
+Received: "/a:rel:/b::./c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:183:60)
+(fail) absolutePathEntries (RGr), whichInSanitizedPath (lxe) y envValue (ya) > conserva sólo las entradas absolutas del PATH [1.88ms]
+182 |   test('conserva sólo las entradas absolutas del PATH', () => {
+183 |     expect(absolutePathEntries('/a:rel:/b::./c', 'linux')).toBe('/a:/b')
+184 |   })
+185 | 
+186 |   test('en win32 retira las comillas de cada entrada antes de juzgarla', () => {
+187 |     expect(absolutePathEntries('"/x";rel', 'win32', ';')).toBe('/x')
+                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "/x"
+Received: "/x;rel"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:187:59)
+(fail) absolutePathEntries (RGr), whichInSanitizedPath (lxe) y envValue (ya) > en win32 retira las comillas de cada entrada antes de juzgarla [0.15ms]
+187 |     expect(absolutePathEntries('"/x";rel', 'win32', ';')).toBe('/x')
+188 |     expect(absolutePathEntries('"/x";rel', 'linux', ';')).toBe('')
+189 |   })
+190 | 
+191 |   test('sin entradas absolutas no hay comando', () => {
+192 |     expect(whichInSanitizedPath('ps', 'rel', () => '/x/ps')).toBeNull()
+                                                                   ^
+error: expect(received).toBeNull()
+
+Received: "/x/ps"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:192:62)
+(fail) absolutePathEntries (RGr), whichInSanitizedPath (lxe) y envValue (ya) > sin entradas absolutas no hay comando [0.09ms]
+
+ 19 pass
+ 3 fail
+ 53 expect() calls
+Ran 22 tests across 1 file. [91.00ms]

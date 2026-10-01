@@ -1,0 +1,11 @@
+  ok    la adquisicion existe
+  ok    un binario presente que responde --version pasa y resuelve THYROX_TOOLCHAIN_REDIS_BIN
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    sin opt-in no ejecuta el instalador
+  ok    el rechazo nombra la variable de opt-in y el paquete
+  ok    un instalador que miente sin dejar el binario NO se acepta
+  ok    un binario que resuelve pero no responde --version NO se acepta
+  ok    un binario real, ya presente, se acepta sin instalar
+  ok    el instalador por defecto pide el paquete redis-server
+
+9 casos: 9 ok, 0 fallos

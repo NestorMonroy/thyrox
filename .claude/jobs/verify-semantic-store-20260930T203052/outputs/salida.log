@@ -1,0 +1,26 @@
+== bun install --frozen-lockfile
+bun install v1.3.11 (af24e281)
+
+1 package installed [28.00ms]
+exit=0
+== bash -c cd src/packages/semantic-search && bun test
+ 0 fail
+ 66 expect() calls
+Ran 34 tests across 4 files. [1169.00ms]
+exit=0
+== bash bin/check_package_typecheck --strict semantic-search
+  semantic-search: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+exit=0
+== bash bin/check_identifier_language src/packages/semantic-search/config.ts src/packages/semantic-search/extension.ts src/packages/semantic-search/rerank.ts src/packages/semantic-search/store.ts src/packages/semantic-search/vectorSql.ts
+OK: identificadores en inglés (5 archivos medidos, 5272 en deuda heredada).
+exit=0
+== bash bin/check_product_word --strict
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+exit=0
+== python3 src/verify/check_env_example_coverage.py
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 16 clave(s) en 1 archivo(s) ignorado(s), 531 declarada(s) en .env.example)
+exit=0
+suites-fallidas=0
+__BG_EXIT__=0

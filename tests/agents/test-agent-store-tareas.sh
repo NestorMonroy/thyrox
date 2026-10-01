@@ -92,8 +92,8 @@ cat > "$TASKS/447.json" <<'EOF'
 {"id":"447","subject":"DECISIÓN: dónde vive el corpus","description":"cuerpo largo",
  "status":"pending","blocks":[],"blockedBy":[]}
 EOF
-salida=$(python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
-         --tasks-dir "$TASKS" --session-id SES1 2>&1)
+python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+         --tasks-dir "$TASKS" --session-id SES1 >/dev/null 2>&1
 afirmar "el snapshot reporta 3 tareas" "3" \
         "$(python3 -c "
 import sqlite3
@@ -271,7 +271,7 @@ afirmar "null->sin dato, []->vacio, lista->ids, None->vacio" \
 
 echo "== 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) =="
 # El camino de insercion compartido escribia quince columnas y `submodule` no
-# era una de ellas: solo `ingerir-board` la escribia. Medido el 2026-09-12
+# era una de ellas: solo `ingest-board` la escribia. Medido el 2026-09-12
 # sobre el store vivo: 404 de 1636 filas con `submodule` NULL, todas con cita
 # TASK-GEN-, y 402 de esas 404 indecidibles por evidencia de commit — o sea que
 # la clasificacion retroactiva no las alcanza y el universo de una consulta por

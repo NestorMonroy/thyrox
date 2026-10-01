@@ -32,7 +32,7 @@ const announced = (attachment: { type: string; [key: string]: unknown }): Messag
 
 const savedEnv: Record<string, string | undefined> = {}
 beforeEach(() => {
-  for (const key of ['CLAUDE_CODE_MCP_INSTR_DELTA']) {
+  for (const key of ['THYROX_CODE_MCP_INSTR_DELTA', 'THYROX_CODE_DISABLE_AUTO_MEMORY']) {
     savedEnv[key] = process.env[key]
   }
 })
@@ -48,12 +48,12 @@ describe('getMcpInstructionsDeltaAttachment', () => {
     ({ type: 'connected', name, instructions }) as MCPServerConnection
 
   test('con el gate cerrado no anuncia nada', () => {
-    process.env.CLAUDE_CODE_MCP_INSTR_DELTA = 'false'
+    process.env.THYROX_CODE_MCP_INSTR_DELTA = 'false'
     expect(getMcpInstructionsDeltaAttachment([connected('srv', 'haz x')], [], 'claude-opus-5', [])).toEqual([])
   })
 
   test('un servidor conectado con instrucciones se anuncia una vez', () => {
-    process.env.CLAUDE_CODE_MCP_INSTR_DELTA = 'true'
+    process.env.THYROX_CODE_MCP_INSTR_DELTA = 'true'
     const [delta] = getMcpInstructionsDeltaAttachment([connected('srv', 'haz x')], [], 'claude-opus-5', [])
     expect(delta).toMatchObject({
       type: 'mcp_instructions_delta',
@@ -64,7 +64,7 @@ describe('getMcpInstructionsDeltaAttachment', () => {
   })
 
   test('lo que el historial ya anunció no se repite', () => {
-    process.env.CLAUDE_CODE_MCP_INSTR_DELTA = 'true'
+    process.env.THYROX_CODE_MCP_INSTR_DELTA = 'true'
     const history = [announced({ type: 'mcp_instructions_delta', addedNames: ['srv'], removedNames: [] })]
     expect(
       getMcpInstructionsDeltaAttachment([connected('srv', 'haz x')], [], 'claude-opus-5', history),
@@ -76,6 +76,10 @@ describe('generateFileAttachment', () => {
   let dir: string
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), 'thyrox-file-attachment-'))
+    // La lectura consulta la memoria automática, que exige sus enlaces de
+    // anfitrión. El adjunto no depende de ella: se apaga aquí para que el
+    // resultado no dependa del entorno que hereda la prueba.
+    process.env.THYROX_CODE_DISABLE_AUTO_MEMORY = '1'
   })
   afterEach(() => rmSync(dir, { recursive: true, force: true }))
 

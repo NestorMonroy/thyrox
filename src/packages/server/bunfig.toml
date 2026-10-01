@@ -1,0 +1,5 @@
+# `bun test` lee sólo el bunfig del cwd: sin este archivo, una suite corrida
+# desde el paquete no pasaría por los grifos de la raíz y escribiría en el
+# store versionado. Los preloads son los mismos, en el mismo orden.
+[test]
+preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]

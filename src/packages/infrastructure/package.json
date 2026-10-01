@@ -1,0 +1,20 @@
+{
+  "name": "@thyrox/infrastructure",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "InfrastructureBootstrap (ADR-007 1.15.0): dueño de la infraestructura gestionada —PostgreSQL, Redis, Ollama—; declara su estado deseado y lo materializa sólo por la primitiva Podman.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/podman-execution": "0.1.0"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

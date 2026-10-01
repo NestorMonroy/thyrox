@@ -51,9 +51,12 @@ def entorno_limpio():
     codigo.
     """
     env = dict(os.environ)
-    for var in ('IDENTIFIER_LANGUAGE_BASELINE', 'IDENTIFIER_LANGUAGE_ROOTS',
-                'THYROX_ENV_FILE'):
+    for var in ('IDENTIFIER_LANGUAGE_BASELINE', 'IDENTIFIER_LANGUAGE_ROOTS'):
         env.pop(var, None)
+    # Quitar la variable no basta: el `.env` de thyrox declara su propio
+    # baseline y se encuentra por ascenso. Declarado sin archivo detrás, el
+    # mecanismo no lee ningún `.env`.
+    env['THYROX_ENV_FILE'] = str(ROOT / '.env.absent-for-test')
     return env
 
 
@@ -142,6 +145,28 @@ with tempfile.TemporaryDirectory() as tmp:
     check('sale con 1 (bien es espanol y el baseline esta vacio)',
           done.returncode, 1)
     check('cita el archivo:linea', 'algo.py:1' in (done.stdout + done.stderr), True)
+
+print('=== Recorrer raíces que no existen NO es un verde ===')
+# Medido 2026-09-27: con IDENTIFIER_LANGUAGE_ROOTS=src,tests (el separador es
+# `:`) el gate recorrió una raíz inexistente y publicó «OK … (0 archivos
+# medidos)» con exit 0. Un cero ahí no distingue «no hay español» de «no medí».
+with tempfile.TemporaryDirectory() as tmp:
+    env = {**os.environ, 'PYTHONPATH': str(GATE.parent.parent),
+           'IDENTIFIER_LANGUAGE_BASELINE': os.devnull,
+           'IDENTIFIER_LANGUAGE_ROOTS': 'no-existe,tampoco'}
+    done = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True,
+                          cwd=tmp, env=env)
+    salida = done.stdout + done.stderr
+    check('raíces sin ningún .py: sale con 2', done.returncode, 2)
+    check('y NO publica un OK', 'OK:' in salida, False)
+    check('nombra las raíces que recorrió', 'no-existe,tampoco' in salida, True)
+    # Una lista explícita sin .py es otra cosa: el pre-commit de un consumidor
+    # la pasa cuando el commit no toca Python, y ahí no hay nada que medir.
+    listado = Path(tmp) / 'nota.rst'
+    listado.write_text('texto\n')
+    done = subprocess.run([sys.executable, str(GATE), str(listado)], capture_output=True,
+                          text=True, cwd=tmp, env=env)
+    check('una lista explícita sin .py sale 0', done.returncode, 0)
 
 print()
 print(f'{ok} ok, {fallos} fallos (alcance medido: {ok + fallos} aserciones sobre {GATE})')

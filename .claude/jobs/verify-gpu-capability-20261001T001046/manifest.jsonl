@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/podman-execution-primitive-20260930T215755/probes/verify_gpu_capability_integrated.sh", "started_at": "2026-10-01T00:10:46+00:00"}

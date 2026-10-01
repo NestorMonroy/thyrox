@@ -14,7 +14,7 @@
  *    conversación entera al asesor. El hilo no cambia de modelo ni de clave.
  *    Literales: «the advisor must be at least as capable as the main model»,
  *    «the advisor bills to usage credits», `advisor_fable_consent`,
- *    `CLAUDE_CODE_DISABLE_ADVISOR_TOOL` / `_ENABLE_EXPERIMENTAL_ADVISOR_TOOL`.
+ *    `THYROX_CODE_DISABLE_ADVISOR_TOOL` / `_ENABLE_EXPERIMENTAL_ADVISOR_TOOL`.
  *    Su disponibilidad la decide una bandera remota (`tengu_sage_compass2`):
  *    aquí se valora, no se afirma que exista para la cuenta.
  * 2. **Subagente** con `model:` en su definición: clave propia (su prompt de

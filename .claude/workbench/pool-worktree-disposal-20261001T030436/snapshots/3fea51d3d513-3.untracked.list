@@ -1,0 +1,2 @@
+src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+src/packages/daemon/tsconfig.check.json

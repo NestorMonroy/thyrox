@@ -7,8 +7,9 @@
  *
  * `--provider recorded` corre contra turnos grabados en un JSON: es la unica
  * via ejecutable en este contenedor, que no tiene credencial de modelo.
- * `--provider http` exige `ANTHROPIC_API_KEY` y falla diciendo por que si no
- * esta — nunca en silencio.
+ * `--provider http` exige una credencial de la cadena de `credentials.ts` —o
+ * el túnel de un proxy local— y falla diciendo por qué si no hay: nunca en
+ * silencio.
  *
  * Extraido de `bin/harness.ts` en #205. Es el UNICO modo que no vive en
  * `commands/`, y por una razon medida: los siete comandos son autocontenidos
@@ -36,7 +37,14 @@ import { OUTPUT_STYLES, renderEvent, renderStatusLine, type OutputStyle } from '
 import { settingsFor } from './settings.ts'
 import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
+import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+import { openExistingConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
+import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+import { peerMessagingTools } from './peerMessagingTools.ts'
+
+type Env = Record<string, string | undefined>
 
 /**
  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
@@ -46,15 +54,24 @@ import { getConnection, getConnectionContextOptions, type ConnectionRecord } fro
  * dejo nombrado. `AnthropicHttpProvider` ya aceptaba `opts.baseUrl`/`opts.apiKey`
  * (`anthropicHttp.ts:68,60`); lo que faltaba era pasarselos desde aqui.
  *
- * Sólo `auth.type === 'api_key'` alimenta `apiKey`: OAuth no tiene una llave
- * estatica que reenviar tal cual -- ese camino queda sin cerrar, declarado,
- * no en silencio (ninguna conexion de este arbol usa OAuth todavia).
+ * Sólo `auth.type === 'api_key'` alimenta `apiKey`. Sin conexión con llave, el
+ * proveedor resuelve la credencial del entorno con la cadena portada de
+ * 2.1.282 (`@thyrox/provider: credentials.ts` — ANTHROPIC_AUTH_TOKEN,
+ * THYROX_CODE_OAUTH_TOKEN, su descriptor, ANTHROPIC_API_KEY y el transporte
+ * ANTHROPIC_UNIX_SOCKET).
  */
-function providerFor(argv: string[], connection: ConnectionRecord | undefined): Provider {
+function providerFor(argv: string[], connection: ConnectionRecord | undefined, env: Env): Provider {
   const cual = flag(argv, 'provider') ?? 'recorded'
   if (cual === 'http') {
     const apiKey = connection?.auth.type === 'api_key' ? connection.auth.key : undefined
-    return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey })
+    // El proveedor resuelve su credencial al construirse: el store se abre sólo
+    // para esa resolución, y sólo si existe.
+    const opened = openExistingConnectionStore({ env })
+    try {
+      return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey, store: opened?.store, env })
+    } finally {
+      opened?.close()
+    }
   }
   const ruta = flag(argv, 'grabacion')
   if (!ruta) throw new Error('--provider recorded exige --grabacion <ruta a JSON con los turnos>')
@@ -119,14 +136,29 @@ async function* stdinLines(): AsyncGenerator<string> {
 }
 
 /**
- * Corre el modo bucle. `transcriptDir` llega resuelto desde el arranque: quien
- * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
- * la regla cambie.
+ * Tope de turnos del bucle: la bandera, luego THYROX_CODE_MAX_TURNS, y si no
+ * hay ninguna, ninguno. Un ítem del pool lo acota su plazo, no un conteo.
  */
-export async function runLoop(argv: string[], cwd: string, transcriptDir: string): Promise<number> {
-  const chat = hasFlag(argv, 'chat')
-  const prompt = flag(argv, 'prompt')
-  const style = outputStyleOf(argv)
+export function loopMaxTurns(argv: string[], env: Record<string, string | undefined> = process.env): number {
+  const declared = flag(argv, 'max-turns')
+  return resolveMaxTurnsFromEnv(declared === undefined ? undefined : Number(declared), env) ?? Infinity
+}
+
+export type LoopSetupOptions = {
+  /** Las herramientas permitidas por nombre (el `--tools` de `thyrox -p`); sin declarar o `null`, todas. */
+  toolAllow?: readonly string[] | null
+  /** El entorno del que el proveedor http resuelve su credencial; por defecto, el del proceso. */
+  env?: Env
+}
+
+/**
+ * Lo que el bucle necesita para correr, resuelto de `argv`: proveedor,
+ * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
+ * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado y en
+ * el entorno del que sale la credencial: el del túnel, cuando pasa por el
+ * proxy local.
+ */
+export function loopSetup(argv: string[], cwd: string, transcriptDir: string, options: LoopSetupOptions = {}) {
   const conf = settingsFor(argv, cwd)
   // `--connection <id>` es opcional: sin él, ningún ajuste por conexión
   // aplica y el comportamiento es idéntico al de antes de este cambio. Se
@@ -134,7 +166,7 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
   // transporte http depende de ella.
   const connectionId = flag(argv, 'connection')
   const connection = connectionId ? getConnection(connectionId) : undefined
-  const provider = providerFor(argv, connection)
+  const provider = providerFor(argv, connection, options.env ?? process.env)
   const connectionContext = connection ? getConnectionContextOptions(connection) : {}
   const modelo = flag(argv, 'model') ?? 'claude-opus-5'
   // La herramienta `Agent` se cablea AQUÍ, no en `CORE_TOOLS`: necesita datos de
@@ -152,7 +184,7 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
   // que las herramientas escribieron (DEC-TASK-01).
   const taskStore = flag(argv, 'store') ?? STORE_PATH
   const taskSession = flag(argv, 'session') ?? flag(argv, 'resume') ?? 'harness'
-  const tools = [
+  const allTools = [
     ...CORE_TOOLS,
     ...taskTools({ dbPath: taskStore, sessionId: taskSession }),
     agentTool({
@@ -165,7 +197,12 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
       storePath,
     }),
     skillTool(buildSkillRegistry()),
+    // `SendMessage` y `ListAgents` sólo si el buzón de esta sesión ya arrancó
+    // (`print.ts` lo arranca antes de llamar aquí); si no, la lista no cambia.
+    ...peerMessagingTools(),
   ]
+  const toolAllow = options.toolAllow
+  const tools = toolAllow ? allTools.filter((t) => toolAllow.includes(t.name)) : allTools
   const shared = {
     provider,
     model: modelo,
@@ -173,7 +210,7 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
     tools,
     cwd,
     transcriptDir,
-    maxTurns: Number(flag(argv, 'max-turns') ?? 20),
+    maxTurns: loopMaxTurns(argv),
     hooks: conf.hooks,
     permissions: conf.permissions,
     journalPath: flag(argv, 'journal'),
@@ -192,62 +229,92 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
         connectionContext.compressToolResults === true,
     },
   }
+  return { shared, modelo }
+}
 
-  /** Un turno completo: dibuja su flujo y devuelve su resultado. */
-  const runTurn = async (texto: string, resume: string | undefined) => {
-    const gen = streamLoop({ ...shared, prompt: texto, resume })
-    /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
-    const drawnByDelta = new Set<number>()
-    let turn = 0
-    let usage: Usage = { ...USAGE_CERO }
-    let step = await gen.next()
-    while (!step.done) {
-      const e = step.value
-      if (e.type === 'turn_start') turn = e.turn
-      if (e.type === 'done') usage = e.result.usage
-      // El `--json` final y el flujo `json` son cosas distintas: el primero
-      // imprime el resultado, el segundo la conversación entera.
-      if (!(hasFlag(argv, 'json') && style !== 'json')) {
-        // El delta se escribe SIN salto de línea y marca el turno como ya
-        // dibujado, para que su `text` no lo repita. Sin esa marca el usuario
-        // leería la misma respuesta dos veces.
-        if (e.type === 'text_delta' && style === 'text') {
-          process.stdout.write(e.text)
-          drawnByDelta.add(e.turn)
-        } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
-          process.stdout.write('\n')
-        } else {
-          const line = renderEvent(e, style)
-          if (line !== null) process.stdout.write(`${line}\n`)
+/**
+ * Corre el modo bucle. `transcriptDir` llega resuelto desde el arranque: quien
+ * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
+ * la regla cambie.
+ */
+export async function runLoop(argv: string[], cwd: string, transcriptDir: string): Promise<number> {
+  const chat = hasFlag(argv, 'chat')
+  const prompt = flag(argv, 'prompt')
+  const style = outputStyleOf(argv)
+  const { shared, modelo } = loopSetup(argv, cwd, transcriptDir)
+  // El buzon arranca ANTES del registro y del primer turno: su env
+  // (THYROX_CODE_MESSAGING_SOCKET) tiene que estar exportado antes de que
+  // cualquier hook SessionStart pueda hacer un snapshot de process.env.
+  const stopMessaging = await startMessagingInboxAtLaunch(flag(argv, 'messaging-socket-path'))
+  // Publica sessions/<pid>.json ANTES del primer turno: quien lista
+  // sesiones ve ésta desde que arranca, no sólo tras la primera respuesta.
+  await registerSessionAtLaunch(flag(argv, 'name') ?? process.env.THYROX_CODE_SESSION_NAME)
+
+  try {
+    /** Un turno completo: dibuja su flujo y devuelve su resultado. */
+    const runTurn = async (texto: string, resume: string | undefined) => {
+      const gen = streamLoop({ ...shared, prompt: texto, resume })
+      /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
+      const drawnByDelta = new Set<number>()
+      let turn = 0
+      let usage: Usage = { ...USAGE_CERO }
+      let step = await gen.next()
+      while (!step.done) {
+        const e = step.value
+        if (e.type === 'turn_start') turn = e.turn
+        if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
+        if (e.type === 'done') usage = e.result.usage
+        // El `--json` final y el flujo `json` son cosas distintas: el primero
+        // imprime el resultado, el segundo la conversación entera.
+        if (!(hasFlag(argv, 'json') && style !== 'json')) {
+          // El delta se escribe SIN salto de línea y marca el turno como ya
+          // dibujado, para que su `text` no lo repita. Sin esa marca el usuario
+          // leería la misma respuesta dos veces.
+          if (e.type === 'text_delta' && style === 'text') {
+            process.stdout.write(e.text)
+            drawnByDelta.add(e.turn)
+          } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
+            process.stdout.write('\n')
+          } else {
+            const line = renderEvent(e, style)
+            if (line !== null) process.stdout.write(`${line}\n`)
+          }
         }
+        step = await gen.next()
       }
-      step = await gen.next()
+      const r = step.value
+      if (hasFlag(argv, 'json')) process.stdout.write(`${JSON.stringify(r, null, 2)}\n`)
+      if (hasFlag(argv, 'status-line')) {
+        process.stdout.write(`${renderStatusLine({ model: modelo, turn, usage, usd: r.usd })}\n`)
+      }
+      return r
     }
-    const r = step.value
-    if (hasFlag(argv, 'json')) process.stdout.write(`${JSON.stringify(r, null, 2)}\n`)
-    if (hasFlag(argv, 'status-line')) {
-      process.stdout.write(`${renderStatusLine({ model: modelo, turn, usage, usd: r.usd })}\n`)
+
+    if (!chat) {
+      const r = await runTurn(prompt as string, flag(argv, 'resume'))
+      return r.stop === 'end_turn' ? 0 : 1
     }
-    return r
-  }
 
-  if (!chat) {
-    const r = await runTurn(prompt as string, flag(argv, 'resume'))
-    return r.stop === 'end_turn' ? 0 : 1
+    // Conversación: una línea de stdin por turno, reanudando SIEMPRE la misma
+    // sesión. Reanudar es lo que hace que el segundo turno vea al primero; sin
+    // eso serían N sesiones sueltas que comparten terminal y nada más.
+    let sesion = flag(argv, 'resume')
+    let ultimo = 0
+    for await (const line of stdinLines()) {
+      const texto = line.trim()
+      if (!texto) continue
+      if (texto === '/salir' || texto === '/exit') break
+      if (texto === '/rename' || texto.startsWith('/rename ')) {
+        const requestedName = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
+        process.stdout.write(`${await renameCurrentSession(requestedName)}\n`)
+        continue
+      }
+      const r = await runTurn(texto, sesion)
+      sesion = r.sessionId
+      ultimo = r.stop === 'end_turn' ? 0 : 1
+    }
+    return ultimo
+  } finally {
+    await stopMessaging?.()
   }
-
-  // Conversación: una línea de stdin por turno, reanudando SIEMPRE la misma
-  // sesión. Reanudar es lo que hace que el segundo turno vea al primero; sin
-  // eso serían N sesiones sueltas que comparten terminal y nada más.
-  let sesion = flag(argv, 'resume')
-  let ultimo = 0
-  for await (const line of stdinLines()) {
-    const texto = line.trim()
-    if (!texto) continue
-    if (texto === '/salir' || texto === '/exit') break
-    const r = await runTurn(texto, sesion)
-    sesion = r.sessionId
-    ultimo = r.stop === 'end_turn' ? 0 : 1
-  }
-  return ultimo
 }

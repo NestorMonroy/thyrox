@@ -1,0 +1,70 @@
+== 1: la plataforma sólo en el cuerpo
+ 1 fail
+== 2: cualquier código de estado sirve
+ 0 fail
+== 3: el sondeo de codebuddy por POST
+SIN COINCIDENCIA ÚNICA en src/accounts
+== 4: sin caducidad por defecto de un día
+ 1 fail
+== 5: el tabulador pasa a la cabecera
+ 1 fail
+== 6: todo id se escribe como UUID
+ 3 fail
+== 7: la versión sin variable propia
+ 1 fail
+== 8: macOS sin su versión de producto
+ 1 fail
+== 9: el id declarado no gana
+ 1 fail
+== 10: el id persistido no se reusa
+ 1 fail
+== 11: el id persistido legible por todos
+ 1 fail
+== 12: sin exigir la URI completa
+ 1 fail
+== 13: la página de error se pierde
+ 1 fail
+== 14: la cuenta sin el id de dispositivo
+ 1 fail
+== 15: kimi sin variable no rehúsa
+ 1 fail
+== 16: cualquier token es dca
+ 1 fail
+== 17: la URL base con su barra final
+ 2 fail
+== 18: sin clave no es error
+ 1 fail
+== 19: la caducidad cero se acepta
+ 1 fail
+== 20: sin intervalo por defecto
+ 1 fail
+== 21: la clave acuñada hereda la caducidad
+ 1 fail
+== 22: un canje fallido tumba el login
+ 1 fail
+== 23: la caducidad del dca sin su duración
+ 1 fail
+== 24: openference sin variable no rehúsa
+ 1 fail
+== 25: el userinfo gana al id token
+ 1 fail
+== 26: sin nombre no hay etiqueta
+ 1 fail
+== 27: el correo con sus espacios
+SIN COINCIDENCIA ÚNICA en src/accounts
+== 28: un token de cuatro partes se decodifica
+ 1 fail
+== 29: un userinfo caído rompe el login
+ 1 fail
+== restaurado
+ 0 fail
+
+== re-medición (annul-106d5b1-rerun-20260928T100744)
+== 2: cualquier código de estado sirve
+ 1 fail
+== 3: el sondeo de codebuddy por POST
+ 1 fail
+== 27: el correo con sus espacios
+ 1 fail
+== restaurado
+ 0 fail

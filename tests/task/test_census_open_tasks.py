@@ -52,6 +52,7 @@ MODULE_PATH = SRC / "census_open_tasks.py"
 
 sys.path.insert(0, str(SRC))
 _spec = importlib.util.spec_from_file_location("census_open_tasks", MODULE_PATH)
+assert _spec is not None and _spec.loader is not None
 cot = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cot)
 

@@ -1,0 +1,22 @@
+1. Cada desenlace tiene su acción
+  ok    entregó -> recoger
+  ok    cortado -> reanudar
+  ok    indecidible -> leer el transcript
+2. Un 429 se reanuda YA; la hora declarada es un dato, no una espera
+  ok    antes del reinicio declarado -> reanudar igual
+  ok    y conserva la hora que el servidor declaró
+  ok    y la razón nombra el tipo de límite y la hora
+  ok    pasado el reinicio -> reanudar
+3. Un 429 sin hora conocida se reanuda (no hay a qué esperar)
+  ok    429 sin quotaLimits -> reanudar
+4. Un 400 no se reanuda
+  FALLA 400 -> relanzar con el prompt corregido
+          esperado: 'relaunch'
+          real:     'resume'
+  FALLA y lo explica
+          esperado: True
+          real:     False
+5. La hora se publica en ISO
+  ok    iso de resetsAt
+
+resultado: 9 de 11 aserciones en verde

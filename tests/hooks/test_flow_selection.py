@@ -21,11 +21,9 @@ coordinators.
 """
 from __future__ import annotations
 
-import io
 import json
 import subprocess
 import sys
-from contextlib import redirect_stderr
 from pathlib import Path
 from tempfile import TemporaryDirectory
 

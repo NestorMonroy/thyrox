@@ -1,0 +1,4 @@
+app-host: emitio pese a 2 errores (2 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 2 error(es) que siguen vivos en su propio paquete
+EXIT=0

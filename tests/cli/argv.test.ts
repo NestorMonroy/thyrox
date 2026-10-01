@@ -3,9 +3,9 @@
  *
  * Mitad ROJA escrita ANTES del mecanismo: `src/packages/cli/src/argv.ts`
  * no existía todavía. El import de abajo es RELATIVO — ver la nota de
- * `exitCodes.test.ts` sobre por qué (medido: `@thyrox/cli` no resuelve por
- * nombre desde ningún sitio hasta que `src/packages/bun.lock` registre el
- * workspace, y ese archivo no está entre las rutas de este agente).
+ * `exitCodes.test.ts` sobre por qué se escribió así (entonces `@thyrox/cli`
+ * no resolvía por nombre: el lockfile anidado de `src/packages/` no lo
+ * registraba). Hoy el lockfile es sólo el de la raíz y resuelve por nombre.
  *
  * Por qué éste es un REEXPORT y no una reimplementación
  * -------------------------------------------------------

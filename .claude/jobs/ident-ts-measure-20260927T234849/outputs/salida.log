@@ -1,0 +1,5 @@
+exit=1
+  (Django models.E023). Lo vigila check_model_name_lookup.py.
+
+Medido: 7880 archivos. Deuda heredada congelada: 2081 (tarea #147).
+__BG_EXIT__=0

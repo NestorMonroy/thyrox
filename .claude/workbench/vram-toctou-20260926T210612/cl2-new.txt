@@ -1,0 +1,5 @@
+    if args.order == "admit":
+        return 0 if admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval) else 3
+    if args.order == "release":
+        release(args.ledger, args.owner)
+        return 0

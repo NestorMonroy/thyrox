@@ -1,0 +1,24 @@
+caso 1 — el contenido existente bajo el prefijo no se escribe; el resto sí
+  ok    prepare sale 0
+  ok    el subárbol excluido no está
+  ok    lo no excluido está
+caso 2 — un banco nuevo bajo el prefijo entra al parche; lo excluido no sale como borrado
+  ok    el archivo nuevo está en el parche
+  ok    lo excluido no aparece como cambio
+caso 3 — la admisión mide el checkout disperso, no el completo
+  ok    sin exclusión mide todo
+  ok    con exclusión descuenta el prefijo
+caso 4 — sin la variable, el checkout es completo
+  ok    el subárbol está
+item_worktree: se conserva el worktree del ítem 1, sin cerrar: /root/.cache/thyrox-sparse-test.iPWwvB/root/d496262ead90/1
+caso 5 — el árbol principal no queda disperso
+  ok    sparse-checkout list rehúsa en el principal
+caso 6 — un prefijo que sale del árbol se rechaza
+  ok    prefijo con ..: exit 2
+  ok    prefijo absoluto: exit 2
+caso 7 — el banco del propio pool nunca se excluye
+  ok    el banco del pool está
+  ok    los demás hijos del prefijo siguen fuera
+item_worktree: se conserva el worktree del ítem 1, sin cerrar: /root/.cache/thyrox-sparse-test.iPWwvB/root/b1683bb95693/1
+item_worktree sparse: 13/13
+EXIT=0

@@ -1,0 +1,1 @@
+{"items_measured": 1, "max_wall_s": 573.09, "min_wall_s": 573.09, "peak_kb": 280392, "median_kb": 280392, "p90_kb": 280392, "recorded_at": "2026-09-30T19:27:04Z", "template_digest": "53c4c869042346d3d3999f502895ff77ab90cd55dfe15a3db1f70766e3bd1339", "runner": "/home/user/thyrox/bin/cli", "item_model": "claude-opus-5-5", "items_gpu_measured": 0}

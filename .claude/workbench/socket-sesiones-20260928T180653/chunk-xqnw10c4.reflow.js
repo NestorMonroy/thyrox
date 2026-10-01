@@ -1,0 +1,195 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+// Version: 2.1.283
+import{
+  c
+}from"/$bunfs/root/chunk-vyyazxfq.js";
+import{
+  I
+}from"/$bunfs/root/chunk-ern0s5ks.js";
+import{
+  Ln
+}from"/$bunfs/root/chunk-yqm14hey.js";
+import{
+  Se
+}from"/$bunfs/root/chunk-4cnes656.js";
+import{
+  i
+}from"/$bunfs/root/chunk-ab7mw5d9.js";
+import{
+  _,m,p
+}from"/$bunfs/root/chunk-d09a8ccq.js";
+import{
+  f
+}from"/$bunfs/root/chunk-bnk68ax9.js";
+import{
+  t
+}from"/$bunfs/root/chunk-zkn0228z.js";
+import{
+  Kt
+}from"/$bunfs/root/chunk-nzbykwxn.js";
+import{
+  Mur,ZOe,Dur
+}from"/$bunfs/root/chunk-d6ekr2rh.js";
+import{
+  qV,XD,can,dan
+}from"/$bunfs/root/chunk-5ttwp861.js";
+import{
+  met
+}from"/$bunfs/root/chunk-k1ds5bv1.js";
+import{
+  G3
+}from"/$bunfs/root/chunk-c98zkdh2.js";
+import{
+  o,k,A,u
+}from"/$bunfs/root/chunk-dk5kbfrn.js";
+import{
+  randomUUID as O
+}from"crypto";
+import{
+  lstat as L,mkdir as R,readdir as U,stat as T,unlink as N,writeFile as M
+}from"fs/promises";
+import{
+  basename as S,dirname as B,isAbsolute as C,join as y,resolve as j
+}from"path";
+var X=dan*24*60*60*1000,H="file-transfers";
+function v(r){
+  t(`[peer-file-transfer] ${r}`)
+}function DEt(r){
+  let e=S(r).replace(/[^a-zA-Z0-9._-]/g,"_")||"attachment",n=e.lastIndexOf("."),a=n>0&&e.length-n<=16?e.slice(n):"",s=a?e.slice(0,n):e,l=200-a.length;
+  return(s.length>l?s.slice(0,l):s)+a
+}function cYt(r,e){
+  return`[SendFile: "${DEt(r)}" was not delivered \u2014 ${e}]`
+}function dYt(r){
+  return`[SendFile: ${r} additional attachment(s) were dropped \u2014 max ${XD} per message]`
+}function uYt(r,e){
+  if(typeof e.file_size==="number"&&r.length!==e.file_size)return!1;
+  return Kt(r)===e.sha256
+}function wxn(r,e,n){
+  if(i("tengu_send_file_received",{
+    transport:c(r),file_count:e,verified_count:n
+  }),n===e)_("peer_file_receive");
+  else if(n>0)p("peer_file_receive","partial_failed");
+  else m("peer_file_receive","all_failed")
+}async function sze(r,e){
+  try{
+    let a=await T(r);
+    if(!a.isFile()||a.size>e)return null
+  }catch{
+    return null
+  }let n;
+  try{
+    n=await Dur(r)
+  }catch{
+    return null
+  }try{
+    let a=await n.stat();
+    if(!a.isFile()||a.size>e)return null;
+    let s=await ZOe(n,e,a.size);
+    return s.overLimit?null:s.bytes
+  }catch{
+    return null
+  }finally{
+    await n.close().catch(()=>{
+    })
+  }
+}function vxn(r,e){
+  if(!e)return r;
+  let n=/^<cross-session-message\b[^>]*>\n?/.exec(r);
+  return n?n[0]+e+r.slice(n[0].length):e+r
+}function LEt(){
+  return y(Se(),H)
+}function Y(){
+  return G3()
+}var G=/^[0-9a-f]{64}$/,V=f(()=>u({
+  path:o(),file_name:o(),file_size:k().int().nonnegative(),sha256:o().regex(G),media_type:o().optional()
+})),Z=f(()=>A(V()));
+async function Our(r){
+  let e=await sze(r,qV);
+  if(e===null)throw new I(can,"peer file transfer: source unreadable or over the size limit");
+  let n=Kt(e),a=LEt();
+  await R(a,{
+    recursive:!0,mode:448
+  });
+  let s=S(r),l=y(a,`${n.slice(0,8)}-${O().slice(0,8)}-${DEt(s)}`);
+  return await M(l,e,{
+    mode:384
+  }),{
+    path:l,file_name:s,file_size:e.length,sha256:n,media_type:met(s)
+  }
+}async function Hur(){
+  let r=LEt();
+  try{
+    let e=await U(r),n=Date.now()-X;
+    for(let a of e.slice(0,200)){
+      let s=y(r,a);
+      try{
+        let l=await T(s);
+        if(l.isFile()&&l.mtimeMs<n)await N(s)
+      }catch{
+      }
+    }
+  }catch{
+  }
+}var q={
+  prefix:"",received:0,verified:0
+};
+async function o4o(r){
+  let e=Z().safeParse(r);
+  if(!e.success||e.data.length===0){
+    if(!e.success)v(`ignoring malformed file_attachments: ${e.error.message}`);
+    return q
+  }let n=[],a=e.data;
+  if(a.length>XD)n.push(dYt(a.length-XD)),a=a.slice(0,XD);
+  let s=Y(),l=LEt(),b=!1,z=[],x=0;
+  for(let d of a){
+    let g=(F)=>{
+      v(`${d.file_name}: ${F}`),n.push(cYt(d.file_name,F))
+    };
+    if(Ln(d.path)||Mur(d.path)||!C(d.path)){
+      g("invalid transfer path");
+      continue
+    }let h=j(d.path),P=B(h);
+    if(Ln(h)||Mur(h)||S(P)!==H){
+      g("transfer path is outside the file-transfer spool");
+      continue
+    }try{
+      if(!(await L(P)).isDirectory()||!(await L(h)).isFile()){
+        g("the transfer copy is not a regular file");
+        continue
+      }
+    }catch{
+      g("the transfer copy could not be read (it may have expired)");
+      continue
+    }let w=await sze(h,qV);
+    if(w===null){
+      g("the transfer copy could not be read (it may have expired)");
+      continue
+    }if(!uYt(w,d)){
+      g("it failed integrity verification");
+      continue
+    }let E=y(s,`${d.sha256.slice(0,8)}-${O().slice(0,8)}-${DEt(d.file_name)}`);
+    try{
+      if(!b)await R(s,{
+        recursive:!0,mode:448
+      }),b=!0;
+      await M(E,w,{
+        mode:384,flag:"wx"
+      })
+    }catch(F){
+      g("it could not be written to the uploads directory"),v(`write ${E} failed: ${F}`);
+      continue
+    }if(x++,z.push(`@"${E}"`),P===l)N(h).catch(()=>{
+    })
+  }let D=[...z,...n];
+  return{
+    prefix:D.length>0?D.join(" ")+" ":"",received:a.length,verified:x
+  }
+} export{
+  DEt,cYt,dYt,uYt,wxn,sze,vxn,LEt,Our,Hur,o4o
+};

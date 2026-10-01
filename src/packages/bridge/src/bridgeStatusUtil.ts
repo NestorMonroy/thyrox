@@ -6,6 +6,7 @@ import { stringWidth } from '@anthropic/ink'
 import { formatDuration } from '@thyrox/output/formatters'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import { getGraphemeSegmenter } from '@thyrox/output/utils/intl.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** Bridge status state machine states. */
 export type StatusState =
@@ -143,12 +144,12 @@ export function getBridgeStatus({
 
 /** Footer text shown when bridge is idle (Ready state). */
 export function buildIdleFooterText(url: string): string {
-  return `Code everywhere with the Claude app or ${url}`
+  return `Code everywhere with the ${PRODUCT_NAME} app or ${url}`
 }
 
 /** Footer text shown when a session is active (Connected state). */
 export function buildActiveFooterText(url: string): string {
-  return `Continue coding in the Claude app or ${url}`
+  return `Continue coding in the ${PRODUCT_NAME} app or ${url}`
 }
 
 /** Footer text shown when the bridge has failed. */

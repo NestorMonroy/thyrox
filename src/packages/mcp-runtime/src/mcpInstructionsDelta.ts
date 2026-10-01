@@ -2,27 +2,10 @@
  * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/mcpInstructionsDelta.ts`
  * — sus 3 exportaciones, ninguna omitida.
  *
- * Repuntado (subpath declarado y símbolo verificado con resolución real):
- * `@thyrox/local-observability` (`logEvent`). `isEnvTruthy` se toma de
- * `@thyrox/config/env/utils` (SÍ resuelve — porte parcial TASK-DOCS-0200,
- * y `isEnvTruthy` es uno de los tres símbolos que sí trae). `isEnvDefinedFalsy`
- * usa el sustituto local de `./internal/pendingCrossPackageDeps.ts` (no
- * está entre esos tres — mismo símbolo que `claudeai.ts` de este puerto
- * dejaba como especificador colgante antes de que se creara ese sustituto).
- *
- * Se dejan como especificadores colgantes (deuda documentada, filtro de
- * dos pasos — ninguno de los dos subpaths existe en el `exports` del
- * paquete correspondiente): `@claude-code-how-works/config/feature-flags`
- * (`getFeatureValue_CACHED_MAY_BE_STALE` — no está en `@thyrox/config`) y
- * `@claude-code-how-works/agent/messageShapes` (tipo `Message` — no está
- * en `@thyrox/agent`; queda como anotación de tipo, que Bun no evalúa en
- * runtime, así que no hace falta envolverla en `require()`).
- *
- * `getFeatureValue_CACHED_MAY_BE_STALE` se usa dentro del cuerpo de
- * `isMcpInstructionsDeltaEnabled`, nunca a nivel de módulo, así que se
- * envuelve con `require()` diferido — un `import` estático habría hecho
- * fallar la carga del módulo ENTERO (medido con `bun -e "import(...)"`
- * antes de esta corrección), no sólo esa función.
+ * `logEvent` viene de `@thyrox/local-observability`; `isEnvTruthy` e
+ * `isEnvDefinedFalsy` de `@thyrox/config/env/utils`;
+ * `getFeatureValue_CACHED_MAY_BE_STALE` de `@thyrox/config/feature-flags`, y
+ * el tipo `Message` de `@thyrox/agent/messageShapes`.
  */
 import { logEvent } from '@thyrox/local-observability'
 import type {
@@ -32,7 +15,7 @@ import type {
 import type { Message } from '@thyrox/agent/messageShapes'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
-import { isEnvDefinedFalsy } from './internal/pendingCrossPackageDeps.js'
+import { isEnvDefinedFalsy } from '@thyrox/config/env/utils'
 
 export type McpInstructionsDelta = {
   /** Nombres de servidor — para reconstrucción de escaneo sin estado. */
@@ -61,12 +44,12 @@ export type ClientSideInstruction = {
  * caché en conexión tardía).
  *
  * Override por variable de entorno para pruebas locales:
- * CLAUDE_CODE_MCP_INSTR_DELTA=true/false gana sobre el bypass de ant y
+ * THYROX_CODE_MCP_INSTR_DELTA=true/false gana sobre el bypass de ant y
  * sobre el gate de GrowthBook.
  */
 export function isMcpInstructionsDeltaEnabled(): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_MCP_INSTR_DELTA)) return true
-  if (isEnvDefinedFalsy(process.env.CLAUDE_CODE_MCP_INSTR_DELTA)) return false
+  if (isEnvTruthy(process.env.THYROX_CODE_MCP_INSTR_DELTA)) return true
+  if (isEnvDefinedFalsy(process.env.THYROX_CODE_MCP_INSTR_DELTA)) return false
   return (
     process.env.USER_TYPE === 'ant' ||
     getFeatureValue_CACHED_MAY_BE_STALE('tengu_basalt_3kr', false)

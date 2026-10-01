@@ -1,0 +1,48 @@
+caso 1 — la anchura sale de width_cap y el orden se conserva
+parallel_map: memoria: reserva 6688 kB por ítem (última ejecución: 3 ítems, pared máx 0 s, pico 3344 KB × 2 -> 7M; RAM: (15368560 − 0) / (3344 × 2) -> 2297)
+  ok    pasa -j con width_cap
+  ok    pasa -k
+caso 2 — GNU Parallel real conserva el orden; stdin se lee sólo con :::: -
+parallel_map: memoria: reserva 6688 kB por ítem (última ejecución: 3 ítems, pared máx 0 s, pico 3344 KB × 2 -> 7M; RAM: (15386812 − 0) / (3344 × 2) -> 2300)
+  ok    salida en orden
+caso 3 — --width declarado gana a la derivada
+parallel_map: memoria: reserva 6704 kB por ítem (última ejecución: 3 ítems, pared máx 0 s, pico 3352 KB × 2 -> 7M; RAM: (15398672 − 0) / (3352 × 2) -> 2296)
+  ok    -j 1 declarado
+caso 4 — una anchura inválida rehúsa con exit 2
+  ok    --width 0
+  ok    --width no entera
+caso 5 — sin fuente de ítems declarada, con stdin del anfitrión: rehúsa sin girar
+  ok    exit 2
+  ok    nombra stdin
+  ok    no invoca a parallel
+caso 5b — una tubería sin fuente declarada también rehúsa: el criterio no es el tipo
+  ok    exit 2
+  ok    no invoca a parallel
+caso 6 — con ::: la fuente es explícita y el socket no importa
+  ok    invoca a parallel
+caso 7 — sin GNU Parallel y sin opt-in, rehúsa con exit 2
+  ok    exit 2
+caso 8 — un parallel que no es GNU rehúsa con exit 2
+  ok    exit 2
+caso 9 — el código de salida es el de GNU Parallel: cuántos ítems fallaron
+  ok    dos fallos
+caso 10 — con GNU Time cada ítem se mide y la ejecución deja una fila
+  ok    sin ejecución previa lo dice
+  ok    una fila en el historial del comando
+  ok    con los tres ítems medidos
+caso 11 — la siguiente ejecución reserva antes de correr cada ítem y suelta al terminar
+  ok    el ítem ve una reserva viva
+  ok    al terminar no queda reserva viva
+caso 12 — nunca pasa --memfree: medir no es reservar
+parallel_map: memoria: reserva 6776 kB por ítem (última ejecución: 3 ítems, pared máx 0 s, pico 3388 KB × 2 -> 7M; RAM: (15389280 − 0) / (3388 × 2) -> 2271)
+  ok    sin --memfree
+caso 13 — sin sitio en RAM y con plazo 0, el ítem no corre y lo dice
+  ok    los tres fallan
+  ok    nombra la admisión
+caso 13b — sin tope de RAM medible, la reserva por ítem se lee igual: un campo vacío no corre los demás
+  ok    anuncia la reserva en kB
+caso 14 — sin GNU Time corre igual, lo dice y no graba historial
+  ok    el ítem corre
+  ok    dice que no mide
+  ok    sin historial
+parallel_map: 27/27

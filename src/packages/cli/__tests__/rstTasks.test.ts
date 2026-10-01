@@ -11,10 +11,11 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { parseRstTasks } from '../../../task/rst.ts'
+import { parseRstTasks } from '@thyrox/task/rst.ts'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
-import { runCli } from '../src/entry/main.ts'
-import { docsRoot } from '../../../paths/docs.ts'
+import { runCli } from '../src/entry/run-cli.ts'
+import { docsRoot } from '@thyrox/paths/docs.ts'
 
 /** El archivo de tareas de esta misma iniciativa: control positivo real. */
 // El .rst vive en kaupamex-docs. La aritmetica resolvia a thyrox y el
@@ -88,7 +89,11 @@ describe('puente RST → tablero (T-062)', () => {
 })
 
 describe('--import-tasks: el puente como comando (T-062)', () => {
-  const tablero = () => join(mkdtempSync(join(tmpdir(), 'import-')), 'tablero.sqlite3')
+  const tablero = () => {
+    const p = join(mkdtempSync(join(tmpdir(), 'import-')), 'tablero.sqlite3')
+    createMigratedTaskDb(p)
+    return p
+  }
 
   async function correr(argv: string[]) {
     const out: string[] = []

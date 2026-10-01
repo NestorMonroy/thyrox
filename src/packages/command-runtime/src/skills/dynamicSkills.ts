@@ -1,7 +1,7 @@
 /**
  * Skills dinámicas: las que aparecen al tocar archivos y no al arrancar.
  *
- * Porte del contrato de Claude Code 2.1.275 (`chunk-q2gh92k2.js` del
+ * Porte del contrato del ejecutable 2.1.275 (`chunk-q2gh92k2.js` del
  * bundle, `_references/claude-code-bin/2.1.275/bunfs-root/`); los nombres
  * minificados van entre paréntesis para rastrearlos:
  *

@@ -1,0 +1,5 @@
+ 1967 pass
+ 0 fail
+ 3029 expect() calls
+Ran 1967 tests across 58 files. [2.20s]
+__BG_EXIT__=0

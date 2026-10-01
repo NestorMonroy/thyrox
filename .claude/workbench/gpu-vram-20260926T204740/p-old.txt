@@ -1,0 +1,1 @@
+  *--query-compute-apps=pid,used_memory*) pgrep -f "[h]eadless-falso/claude" | gawk '{print $1 ", 400"}' ;;

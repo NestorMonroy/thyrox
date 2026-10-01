@@ -78,7 +78,7 @@ export function installToolRegistryRuntimeBindings(): void {
       const filterByDeny = (tools: readonly Tool[]): Tool[] =>
         filterToolsByDenyRules(tools as Tool[], permissionCtx) as Tool[]
 
-      if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+      if (isEnvTruthy(process.env.THYROX_CODE_SIMPLE)) {
         if (isReplModeEnabled() && REPLTool) {
           const replSimple: Tool[] = [REPLTool]
           if (
@@ -152,7 +152,7 @@ export function getToolsForDefaultPreset(): string[] {
   return getToolsForDefaultPresetFromPackage()
 }
 
-export function getToolRegistry() {
+export function getToolRegistry(): ReturnType<typeof getToolRegistryFromPackage> {
   installToolRegistryRuntimeBindings()
   return getToolRegistryFromPackage()
 }

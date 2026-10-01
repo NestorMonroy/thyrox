@@ -1,0 +1,7 @@
+tests/session/test-infrastructure-ensure.sh: line 482: /tmp/tmp.DEPfhRlLvP/state/calls.log: No such file or directory
+tests/session/test-infrastructure-ensure.sh: line 491: /tmp/tmp.DEPfhRlLvP/state/calls.log: No such file or directory
+86 casos: 86 ok, 0 fallos
+69 casos: 69 ok, 0 fallos
+ 174 expect() calls
+Ran 97 tests across 9 files. [3.47s]
+__BG_EXIT__=0

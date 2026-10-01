@@ -113,7 +113,7 @@ export const ShareOnboardingGuideTool = buildTool({
   },
   isEnabled() {
     // Port of ant v2.1.136 qA6 (3948.js):
-    //   1. essential-traffic mode (`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
+    //   1. essential-traffic mode (`THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
     //      or `DISABLE_TELEMETRY` or `DO_NOT_TRACK`) → false (uploading is
     //      non-essential).
     //   2. No accessToken on the stored OAuth tokens → false (sharing

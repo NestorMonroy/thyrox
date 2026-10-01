@@ -1,0 +1,6 @@
+.claude/workbench/task-thyrox-0496-store-credential-proxy-20260930T085227/README.md
+bin/provider-store-credential-proxy
+src/packages/provider/__tests__/storeCredentialProxyProcess.test.ts
+src/packages/provider/bin/storeCredentialProxy.ts
+src/session/headless-pool.sh
+tests/session/test-headless-pool.sh

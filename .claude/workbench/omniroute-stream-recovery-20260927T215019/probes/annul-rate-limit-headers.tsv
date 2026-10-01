@@ -1,0 +1,4 @@
+whole-number-only	s/if (PLAIN_NUMBER.test(text)) {/if (!Number.isNaN(Number.parseFloat(text))) {/
+unix-floor	s/return seconds > UNIX_SECONDS_FLOOR ? Math.max(0, seconds \* 1000 - Date.now()) : seconds \* 1000/return seconds * 1000/
+minutes-not-ms	s/(?:(\\d+)m(?!s))?/(?:(\\d+)m)?/
+lowercase-names	s/plain\[k.toLowerCase()\] = v$/plain[k] = v/

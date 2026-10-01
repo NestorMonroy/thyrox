@@ -45,7 +45,7 @@ import { join } from 'path'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { readEnv } from '@thyrox/config/env'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
 import { getInitialSettings } from '@thyrox/config/settings'
@@ -184,14 +184,14 @@ export function isLoopDefaultPromptEnabled(): boolean {
 
 /**
  * Ant `_66` (verbatim). Env var beats the flag.
- *   - `CLAUDE_CODE_LOOP_PERSISTENT` set truthy → persistent
+ *   - `THYROX_CODE_LOOP_PERSISTENT` set truthy → persistent
  *   - else `tengu_kairos_loop_persistent` feature flag → persistent
  *   - else default (steward)
  *
  * Public so the activation telemetry can report the resolved variant.
  */
 export function isLoopPersistentPreambleEnabled(): boolean {
-  const env = readEnv('CLAUDE_CODE_LOOP_PERSISTENT')
+  const env = readEnv('THYROX_CODE_LOOP_PERSISTENT')
   if (env && /^(1|true|yes)$/i.test(env)) return true
   if (env && /^(0|false|no)$/i.test(env)) return false
   return getFeatureValue_CACHED_MAY_BE_STALE(
@@ -328,21 +328,21 @@ function truncateLoopFile(content: string): string {
 
 /**
  * Ant `$67` — find a loop.md to use. Project-local takes priority over
- * the Claude config home (NOT $HOME — ant explicitly resolves the
- * fallback via `n6()`, i.e. `getClaudeConfigHomeDir()` so users with
- * `CLAUDE_CONFIG_DIR` set get the right base. Returns null if neither
+ * the thyrox config home (NOT $HOME — ant explicitly resolves the
+ * fallback via `n6()`, i.e. `getConfigHomeDir()` so users with
+ * `THYROX_CONFIG_DIR` set get the right base. Returns null if neither
  * path exists or both are empty after trim.
  *
  * Critical: ant's second candidate is `~/.claude/loop.md`, NOT
  * `~/loop.md`. The prior ccb impl used `homedir()` which would
- * silently miss the file for anyone with `CLAUDE_CONFIG_DIR` set, and
+ * silently miss the file for anyone with `THYROX_CONFIG_DIR` set, and
  * also write to / read from a different path than the rest of the
- * Claude state tree.
+ * thyrox state tree.
  */
 export function readLoopFile(): { path: string; content: string } | null {
   const candidates = [
     join(getCwd(), '.claude', 'loop.md'),
-    join(getClaudeConfigHomeDir(), 'loop.md'),
+    join(getConfigHomeDir(), 'loop.md'),
   ]
   for (const path of candidates) {
     if (!existsSync(path)) continue

@@ -1,0 +1,21 @@
+## a) materializeExecution sin inspección
+(fail) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [1.32ms]
+(fail) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [1.04ms]
+(fail) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.34ms]
+(fail) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [1.32ms]
+(fail) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [1.04ms]
+(fail) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.34ms]
+ 167 pass
+ 3 fail
+(fail) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [4.48ms]
+ 13 pass
+ 1 fail
+## b) ownerFromLabels inventa un dueño cuando falta la etiqueta
+(fail) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [1.14ms]
+(fail) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [1.14ms]
+ 107 pass
+ 2 fail
+ 170 pass
+ 0 fail
+## restauración
+diff contra HEAD idéntico al de GREEN

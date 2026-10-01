@@ -1,0 +1,56 @@
+== 1: una opción de filtro desconocida aceptada
+   (src/commands/mitm/inspectVerbs.ts)
+(fail) an argument that does not reach refuses with a usage exit and never calls the API [1.04ms]
+ 26 pass
+ 1 fail
+== 2: una opción sin valor aceptada
+   (src/commands/mitm/inspectVerbs.ts)
+(fail) an argument that does not reach refuses with a usage exit and never calls the API [0.79ms]
+ 26 pass
+ 1 fail
+== 3: el id de la petición sin codificar
+   (src/commands/mitm/inspectVerbs.ts)
+(fail) the request verbs map to their API requests, with the list filters as the query [1.27ms]
+ 26 pass
+ 1 fail
+== 4: un entero de system-proxy sin validar
+   (src/commands/mitm/inspectVerbs.ts)
+(fail) an argument that does not reach refuses with a usage exit and never calls the API [0.77ms]
+ 26 pass
+ 1 fail
+== 5: sin API publicada, llamar igual
+   (src/commands/mitm/publishedApi.ts)
+(fail) without a running API the verb refuses, naming serve [0.42ms]
+(fail) without a running API the verb refuses, naming serve [0.41ms]
+(fail) a privileged verb without a running API refuses, naming serve [1.52ms]
+ 24 pass
+ 3 fail
+== 6: una respuesta sin contenido impresa
+   (src/commands/mitm/verbResult.ts)
+(fail) an answer without content prints nothing [1.00ms]
+ 26 pass
+ 1 fail
+== 7: tail sin abrir el canal en vivo
+   (src/commands/mitm/inspectVerbs.ts)
+(fail) inspect verbs read the buffer of the running serve, and tail streams its snapshot [8.98ms]
+ 26 pass
+ 1 fail
+== 8: inspect fuera de la tabla de modos
+   (src/commands/mitm-commands.ts)
+(fail) inspect verbs read the buffer of the running serve, and tail streams its snapshot [5.09ms]
+ 26 pass
+ 1 fail
+== 9: inspect fuera del programa completo
+   (src/commands/mitm-commands.ts)
+(fail) the full program exposes inspect under mitm [0.79ms]
+ 26 pass
+ 1 fail
+== restaurado
+ M src/packages/cli/src/commands/mitm-commands.ts
+ M src/packages/cli/src/commands/mitm/privilegedVerbs.ts
+ M src/packages/cli/src/commands/mitm/verbResult.ts
+?? src/packages/cli/src/commands/mitm/inspectVerbs.ts
+?? src/packages/cli/src/commands/mitm/liveTail.ts
+?? src/packages/cli/src/commands/mitm/publishedApi.ts
+ 27 pass
+ 0 fail

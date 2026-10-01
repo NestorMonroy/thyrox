@@ -10,7 +10,7 @@
  *
  * PERO esa razon vale para UNA de las dos, y el propio analisis lo dice tres
  * tablas mas arriba: la fila de `reference/triple.ts` declara «Quien la
- * consume: **solo su test**». Medido 2026-09-08 sobre todo el clon, sus
+ * consume: **solo su test**». Medido sobre todo el clon, sus
  * cuatro simbolos exportados —`checkPortDeclaration`, `declaredAlias`,
  * `canonicalAlias`, `sameCorpus`— tienen CERO consumidores fuera del propio
  * paquete. Su destino no lo decide un consumidor que no tiene: lo decide
@@ -24,7 +24,7 @@
  * claves no se solapan en ninguna posicion— y ordena que su retiro sea «su
  * propio pase y con su propia suite … para que no se cuele como parte de un
  * git mv». Ese pase fue #266, y NO lo mudo: lo RETIRO, reapuntando el
- * binario al sucesor que ya vivia en `thyrox: src/workbench/manifest.ts`.
+ * binario al sucesor que ya vivia en `thyrox: src/packages/workbench/manifest.ts`.
  * Por eso el caso 3 ya no necesita excepcion para el workbench, y la unica
  * que admite es la de `reference/`.
  *

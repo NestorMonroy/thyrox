@@ -21,6 +21,8 @@ Uso:
   measure_worktree.py prepare <main> <wt>     crea o reusa el worktree y lo sincroniza
   measure_worktree.py sync <main> <wt>        el worktree = HEAD del principal + sus cambios sin commitear
   measure_worktree.py export <wt> <main> <archivo>...   copia archivos del worktree al principal
+  measure_worktree.py release <main> <wt>     lo retira si todo lo suyo ya está en el principal;
+                                              si no, sale 1 y nombra lo que falta exportar
 """
 from __future__ import annotations
 
@@ -98,8 +100,31 @@ def export(wt: Path, main: Path, files: list[str]) -> None:
         shutil.copy2(wt / rel, main / rel)
 
 
+def unexported(main: Path, wt: Path) -> list[str]:
+    """Los archivos de `src/` y `tests/` del worktree que el principal no tiene
+    iguales: cambiados, nuevos o borrados sólo aquí."""
+    status = _git(wt, "status", "--porcelain", "--untracked-files=all", "--", "src", "tests").decode()
+    pending = []
+    for line in status.splitlines():
+        rel = line[3:].split(" -> ")[-1]
+        mine, theirs = wt / rel, main / rel
+        if mine.exists() != theirs.exists() or (mine.exists() and mine.read_bytes() != theirs.read_bytes()):
+            pending.append(rel)
+    return sorted(pending)
+
+
+def release(main: Path, wt: Path) -> list[str]:
+    """Retira el worktree cuando cumplió su función: todo lo suyo ya está en
+    el principal. Si queda algo sin exportar no lo retira y lo devuelve, para
+    que nada se pierda en silencio."""
+    pending = unexported(main, wt)
+    if not pending:
+        _git(main, "worktree", "remove", "--force", str(wt))
+    return pending
+
+
 def main(argv: list[str]) -> int:
-    if len(argv) < 3 or argv[0] not in ("prepare", "sync", "export"):
+    if len(argv) < 3 or argv[0] not in ("prepare", "sync", "export", "release"):
         print(__doc__, file=sys.stderr)
         return 2
     command, a, b = argv[0], Path(argv[1]).resolve(), Path(argv[2]).resolve()
@@ -107,6 +132,11 @@ def main(argv: list[str]) -> int:
         prepare(a, b)
     elif command == "sync":
         sync(a, b)
+    elif command == "release":
+        pending = release(a, b)
+        if pending:
+            print("measure_worktree: no se retira, falta exportar: " + " ".join(pending), file=sys.stderr)
+            return 1
     else:
         export(a, b, argv[3:])
     return 0

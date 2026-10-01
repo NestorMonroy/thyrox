@@ -1,0 +1,14 @@
+{
+  "stop": "end_turn",
+  "turns": 1,
+  "lastText": "ya",
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 1,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0
+  },
+  "sessionId": "c6a271b5-66af-4232-9d85-24307a494c25",
+  "transcriptPath": ".claude/workbench/new-session-check-20260929T010424/outputs/tr/c6a271b5-66af-4232-9d85-24307a494c25.jsonl",
+  "usd": 0.00003
+}

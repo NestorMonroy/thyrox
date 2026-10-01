@@ -1,0 +1,34 @@
+predecessor_run: .thyrox/runtime/pool/cb9db2cfe55f-20260930T220540-6352
+predecessor_item: 1
+worktree: .thyrox/pool-worktrees/cb9db2cfe55f/1
+base_commit: e0fb06b9d250e51dddc2d09a38590a04877e82a6
+patch: .claude/workbench/podman-execution-primitive-20260930T215755/outputs/interrupted/measure.patch
+patch_sha256: a3a25c9a0117f5dbeb11d2c2bfd244e5c3e29367163a8ff98943ab62eac13eae
+## git status --short
+ M src/session/gpu_monitor.py
+ M src/session/pool_history.py
+ M src/session/resource_admission.py
+ M tests/session/test_gpu_monitor.py
+ M tests/session/test_pool_history.py
+ M tests/session/test_resource_admission.py
+?? src/session/container_measure.py
+?? tests/session/test_container_measure.py
+## git diff --name-only HEAD
+src/session/gpu_monitor.py
+src/session/pool_history.py
+src/session/resource_admission.py
+tests/session/test_gpu_monitor.py
+tests/session/test_pool_history.py
+tests/session/test_resource_admission.py
+## git ls-files --others --exclude-standard
+src/session/container_measure.py
+tests/session/test_container_measure.py
+## archivos del patch
+src/session/container_measure.py
+src/session/gpu_monitor.py
+src/session/pool_history.py
+src/session/resource_admission.py
+tests/session/test_container_measure.py
+tests/session/test_gpu_monitor.py
+tests/session/test_pool_history.py
+tests/session/test_resource_admission.py

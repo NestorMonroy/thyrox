@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:
+31 |     await Bun.sleep(stepMs)
+32 |   }
+33 | }
+34 | 
+35 | function readRecord(path: string): Record<string, unknown> {
+36 |   return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
+                         ^
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-d5j9sx/thyrox-config-eVP9MS/sessions/25754.json'
+    path: "/tmp/thyrox-tests-d5j9sx/thyrox-config-eVP9MS/sessions/25754.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at readRecord (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:36:21)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:110:14)
+(fail) bin/cli: /rename en el chat (TASK-THYROX-0505) > /rename sin argumento muestra el nombre actual (divergencia declarada: no genera con el modelo) [1402.97ms]
+31 |     await Bun.sleep(stepMs)
+32 |   }
+33 | }
+34 | 
+35 | function readRecord(path: string): Record<string, unknown> {
+36 |   return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
+                         ^
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-d5j9sx/thyrox-config-4hkddK/sessions/25829.json'
+    path: "/tmp/thyrox-tests-d5j9sx/thyrox-config-4hkddK/sessions/25829.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at readRecord (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:36:21)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:135:14)
+(fail) bin/cli: /rename en el chat (TASK-THYROX-0505) > /rename con sólo caracteres invisibles: mensaje verbatim de la referencia, sin escribir [1385.01ms]
+
+ 2 pass
+ 2 fail
+ 8 expect() calls
+Ran 4 tests across 1 file. [6.30s]
+__BG_EXIT__=1

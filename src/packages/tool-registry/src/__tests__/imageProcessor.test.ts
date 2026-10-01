@@ -2,11 +2,9 @@
  * Prueba de conducta para `../tools/FileReadTool/imageProcessor.js` — el
  * porte de `ccnmt: packages/tool-registry/src/tools/FileReadTool/imageProcessor.ts`.
  *
- * CORREGIDO 2026-09-24: esta prueba suponía que ni `image-processor-napi` ni
- * `sharp` estaban instalados, y medía el ENTORNO. `sharp` llegó con las
- * dependencias (`require.resolve('sharp')` resuelve), y los rechazos dejaron de
- * ocurrir. Ahora la ausencia de los dos se simula con `mock.module`, así que las
- * dos funciones SIEMPRE rechazan aquí — el punto de la prueba no es "resuelve una
+ * La ausencia de `image-processor-napi` y `sharp` se simula con `mock.module`:
+ * depender de lo instalado mediría el ENTORNO. Así las dos funciones SIEMPRE
+ * rechazan aquí — el punto de la prueba no es "resuelve una
  * imagen" sino la CONDUCTA que las distingue una de otra: sólo
  * `getImageProcessor` intenta primero el binario nativo y avisa por
  * `console.warn` antes de caer a `sharp`; `getImageCreator` va derecho a

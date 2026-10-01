@@ -16,8 +16,8 @@ import {
 import { OUTPUTS_SUBDIR } from '../types.js'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_ENVIRONMENT_KIND',
-  'CLAUDE_CODE_REMOTE_SESSION_ID',
+  'THYROX_CODE_ENVIRONMENT_KIND',
+  'THYROX_CODE_REMOTE_SESSION_ID',
 ] as const
 
 let savedEnv: Record<string, string | undefined> = {}
@@ -69,46 +69,46 @@ function makeOutputsDirWithFile(sessionId: string, name: string, content: string
 
 describe('isFilePersistenceEnabled', () => {
   test('siempre false — el gateo de feature("FILE_PERSISTENCE") esta omitido (bun:bundle ausente)', () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = 'sess-1'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = 'sess-1'
     setGetSessionIngressAuthTokenFn(() => 'tok')
     expect(isFilePersistenceEnabled()).toBe(false)
   })
 
   test('sigue false incluso sin ninguna condicion cumplida', () => {
-    delete process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+    delete process.env.THYROX_CODE_ENVIRONMENT_KIND
     expect(isFilePersistenceEnabled()).toBe(false)
   })
 })
 
 describe('runFilePersistence — condiciones de salida temprana', () => {
   test('environmentKind distinto de byoc devuelve null', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'anthropic_cloud'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'anthropic_cloud'
     const result = await runFilePersistence({ turnStartTime: Date.now() })
     expect(result).toBeNull()
   })
 
   test('byoc sin token de sesion (default null) devuelve null', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     const result = await runFilePersistence({ turnStartTime: Date.now() })
     expect(result).toBeNull()
   })
 
-  test('byoc + token pero SIN CLAUDE_CODE_REMOTE_SESSION_ID devuelve null y reporta logError', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    delete process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+  test('byoc + token pero SIN THYROX_CODE_REMOTE_SESSION_ID devuelve null y reporta logError', async () => {
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    delete process.env.THYROX_CODE_REMOTE_SESSION_ID
     setGetSessionIngressAuthTokenFn(() => 'tok')
     const result = await runFilePersistence({ turnStartTime: Date.now() })
     expect(result).toBeNull()
     expect(loggedErrors).toHaveLength(1)
     expect(String((loggedErrors[0] as Error).message)).toContain(
-      'CLAUDE_CODE_REMOTE_SESSION_ID',
+      'THYROX_CODE_REMOTE_SESSION_ID',
     )
   })
 
   test('con signal ya abortado antes de procesar, devuelve null', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = 'sess-abort'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = 'sess-abort'
     setGetSessionIngressAuthTokenFn(() => 'tok')
     const controller = new AbortController()
     controller.abort()
@@ -123,8 +123,8 @@ describe('runFilePersistence — condiciones de salida temprana', () => {
 describe('runFilePersistence — camino feliz BYOC', () => {
   test('sube archivos modificados y devuelve files/failed poblados; emite los dos eventos', async () => {
     const sessionId = 'sess-happy'
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = sessionId
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = sessionId
     setGetSessionIngressAuthTokenFn(() => 'tok-123')
 
     const turnStartTime = { turnStartTime: Date.now() - 1000 }
@@ -160,8 +160,8 @@ describe('runFilePersistence — camino feliz BYOC', () => {
 
   test('sin archivos modificados, devuelve null (nada que reportar) y NO emite el evento de cierre', async () => {
     const sessionId = 'sess-empty'
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = sessionId
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = sessionId
     setGetSessionIngressAuthTokenFn(() => 'tok')
     mkdirSync(join(dir, sessionId, OUTPUTS_SUBDIR), { recursive: true })
 
@@ -176,8 +176,8 @@ describe('runFilePersistence — camino feliz BYOC', () => {
 
   test('excede FILE_COUNT_LIMIT: devuelve failed con el mensaje de limite, SIN llamar a uploadSessionFiles', async () => {
     const sessionId = 'sess-limit'
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = sessionId
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = sessionId
     setGetSessionIngressAuthTokenFn(() => 'tok')
 
     const outputsDir = join(dir, sessionId, OUTPUTS_SUBDIR)
@@ -207,8 +207,8 @@ describe('runFilePersistence — camino feliz BYOC', () => {
 
   test('un error dentro de executeBYOCPersistence se atrapa y se reporta como failed', async () => {
     const sessionId = 'sess-throw'
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = sessionId
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = sessionId
     setGetSessionIngressAuthTokenFn(() => 'tok')
     makeOutputsDirWithFile(sessionId, 'x.txt', 'x')
 
@@ -228,8 +228,8 @@ describe('runFilePersistence — camino feliz BYOC', () => {
 describe('executeFilePersistence', () => {
   test('llama a onResult con el resultado cuando hay uno', async () => {
     const sessionId = 'sess-callback'
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = sessionId
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = sessionId
     setGetSessionIngressAuthTokenFn(() => 'tok')
     const filePath = makeOutputsDirWithFile(sessionId, 'cb.txt', 'y')
     setUploadSessionFilesFn(async files =>
@@ -252,8 +252,8 @@ describe('executeFilePersistence', () => {
 
   test('un throw ANTES del try interno de runFilePersistence lo atrapa executeFilePersistence, via logError', async () => {
     const sessionId = 'sess-outer-throw'
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = sessionId
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_REMOTE_SESSION_ID = sessionId
     setGetSessionIngressAuthTokenFn(() => 'tok')
 
     // logEvent('tengu_file_persistence_started', …) se llama ANTES del

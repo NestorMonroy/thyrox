@@ -31,8 +31,8 @@
  * su interfaz y no del contrato; y a si existe un conjunto de fases más rico
  * que el binario no expone como literal.
  */
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { isAbsolute, join, resolve } from 'node:path'
 
 /**
@@ -51,7 +51,7 @@ export type PlanVariant = 'subagent' | 'sparse' | 'full'
 export type PlanBackendOptions = {
   /** Raíz del proyecto; una `plansDir` relativa se resuelve contra ella. */
   projectRoot: string
-  /** Dónde viven los archivos de plan. Sin ella, `~/.claude/plans/`. */
+  /** Dónde viven los archivos de plan. Sin ella, `plans/` bajo el hogar de configuración. */
   plansDir?: string
 }
 
@@ -65,7 +65,8 @@ export function planFilePath(sessionId: string, options: PlanBackendOptions): st
   const configured = options.plansDir
   const dir = configured
     ? (isAbsolute(configured) ? configured : resolve(options.projectRoot, configured))
-    : join(homedir(), '.claude', 'plans')
+    // el binario resuelve `join(Se(), "plans")`; Se() es getConfigHomeDir() aquí.
+    : join(getConfigHomeDir(), 'plans')
   return join(dir, `${sessionId}.md`)
 }
 

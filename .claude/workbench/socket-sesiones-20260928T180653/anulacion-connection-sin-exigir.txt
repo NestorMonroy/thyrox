@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+170 |     expect(warnings).toContain('[uds-messaging] Dropped a bad auth frame from a connection that did not authenticate; closing it')
+171 |   })
+172 | 
+173 |   test('sin marco de auth, la primera línea cierra la conexión y nombra su tipo', async () => {
+174 |     await exchange([line({ type: 'user' })], { waitMs: 400 })
+175 |     expect(routed).toEqual([])
+                         ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   {
++     "message": {
++       "type": "user",
++     },
++     "peer": {
++       "ancestry": undefined,
++       "origin": undefined,
++       "pid": 77,
++       "startToken": "start-77",
++     },
++   },
++ ]
+
+- Expected  - 1
++ Received  + 13
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:175:20)
+(fail) con autenticación exigida > sin marco de auth, la primera línea cierra la conexión y nombra su tipo [4.70ms]
+
+ 16 pass
+ 1 fail
+ 28 expect() calls
+Ran 17 tests across 1 file. [532.00ms]

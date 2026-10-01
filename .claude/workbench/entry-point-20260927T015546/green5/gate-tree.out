@@ -1,0 +1,7 @@
+  @thyrox/coordination: sin tsconfig.build.json ni tsconfig.test.json
+  @thyrox/paths: sin tsconfig.build.json ni tsconfig.test.json
+  @thyrox/store: sin tsconfig.build.json ni tsconfig.test.json
+  @thyrox/task: sin tsconfig.build.json ni tsconfig.test.json
+  @thyrox/workbench: sin tsconfig.build.json ni tsconfig.test.json
+check_exports_types: 5 destino(s) o proyecto(s) ausente(s) (alcance medido: 1530 entrada(s) types en 47 paquete(s))
+EXIT=1

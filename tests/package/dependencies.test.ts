@@ -111,7 +111,13 @@ function llamadas(texto: string): string[] {
 
 function especificadoresExternos(texto: string): string[] {
   const fuera: string[] = []
-  const estaticos = [...texto.matchAll(DESDE)].map((m) => m[1] as string)
+  // `DESDE` puede cruzar líneas —un import multilínea lo necesita—, así que
+  // desde un `export` sin comillas llegaba al `from "…"` de un comentario
+  // posterior (`repl/…/OverageCreditUpsell.tsx`: «Copy from "OC & Bulk
+  // Overages copy" doc»). Una línea que EMPIEZA con `//`, `/*` o `*` nunca es
+  // parte de un import real, y se retira antes de buscar.
+  const sinComentarios = texto.replace(/^\s*(?:\/\/|\/\*|\*).*$/gm, '')
+  const estaticos = [...sinComentarios.matchAll(DESDE)].map((m) => m[1] as string)
   for (const lista of [estaticos, llamadas(texto)]) {
     for (const spec of lista) {
       if (!spec || spec.startsWith('.') || spec.startsWith('/')) continue
@@ -121,6 +127,10 @@ function especificadoresExternos(texto: string): string[] {
       // (`shell/.../loadFigSpec.test.ts:29`): `LLAMADA` no distingue código de
       // comentario, y ésta es la barrera barata que sí es una regla real.
       if (spec.startsWith('-')) continue
+      // Un import no admite interpolación: un especificador con `${` es texto
+      // de una plantilla (`binary/__tests__/namespaceReferences.test.ts` arma
+      // así sus módulos de prueba), nunca un import que resolver.
+      if (spec.includes('${')) continue
       fuera.push(spec)
     }
   }
@@ -226,6 +236,35 @@ describe('el detector discrimina — control positivo y negativo', () => {
     const dir = fixture("function f() { return require('otro-paquete-inexistente') }\n")
     const { noResuelven } = clasificar(dir, new Set())
     expect([...noResuelven]).toEqual(['otro-paquete-inexistente'])
+  })
+
+  test('NEGATIVO: un «from "x"» dentro de un comentario no es un import', () => {
+    // El caso real: `repl/src/components/LogoV2/OverageCreditUpsell.tsx`. El
+    // patrón estático cruzaba líneas desde un `export` sin comillas hasta el
+    // `from "…"` de un comentario posterior.
+    const dir = fixture(
+      'export const a = 1\n' +
+      '// Copy from "OC & Bulk Overages copy" doc\n' +
+      'export function b() {}\n' +
+      '/**\n * Copy from "otro documento" doc\n */\n' +
+      'export const c = 2\n')
+    const { noResuelven } = clasificar(dir, new Set())
+    expect([...noResuelven]).toEqual([])
+  })
+
+  test('NEGATIVO: un «from"${X}"» dentro de una plantilla es texto, no un import', () => {
+    // El caso real: `binary/__tests__/references.test.ts` arma módulos de
+    // prueba en una plantilla. Un import estático no admite interpolación,
+    // así que un especificador con `${` sólo puede ser texto de una plantilla.
+    const dir = fixture('const DEF = "./def.js"\nexport const code = `import{Pf as q}from"${DEF}";let m=await import("${DEF}")`\n')
+    const { noResuelven } = clasificar(dir, new Set())
+    expect([...noResuelven]).toEqual([])
+  })
+
+  test('POSITIVO: un import multilínea que no resuelve sigue apareciendo', () => {
+    const dir = fixture("import {\n  a,\n  b,\n} from 'paquete-multilinea-inexistente'\n")
+    const { noResuelven } = clasificar(dir, new Set())
+    expect([...noResuelven]).toEqual(['paquete-multilinea-inexistente'])
   })
 
   test('NEGATIVO: sólo builtins no produce ningún hallazgo', () => {

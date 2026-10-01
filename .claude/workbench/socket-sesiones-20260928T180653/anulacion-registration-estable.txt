@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+252 |   test('sin dirección estable un cambio que adopta tampoco renombra', async () => {
+253 |     stable = false
+254 |     await registerSession(undefined, deps())
+255 |     switchListeners[0]!('s2', 'resume')
+256 |     await flush()
+257 |     expect(state.adoptions).toBe(0)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:257:29)
+(fail) los cambios de sesión y de directorio > sin dirección estable un cambio que adopta tampoco renombra [6.75ms]
+
+ 22 pass
+ 1 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [248.00ms]

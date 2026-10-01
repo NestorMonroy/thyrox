@@ -1,0 +1,52 @@
+== 1. turns — extrae los cuatro componentes y la marca de tiempo ==
+  ok    un turno
+  ok    cache_read
+  ok    cache_creation
+  ok    timestamp
+== 2. turns — deduplica por message.id ==
+  ok    tres fragmentos cuentan UN turno
+== 3. turns — un turno SIN id no se deduplica, se cuenta igual ==
+  ok    los dos cuentan
+== 4. turns — lo que no es assistant con usage no entra en la serie ==
+  ok    un user no aporta
+  ok    un assistant sin usage tampoco
+== 5. links — n turnos dan n-1 enlaces; menos de dos dan cero ==
+  ok    cinco turnos
+  ok    cuatro enlaces
+  ok    un turno solo no tiene enlace
+  ok    cero turnos tampoco
+== 6. LA INVARIANTE sobre los cinco turnos REALES: 4 de 4 ==
+  ok    todos reconocidos
+  ok    el primer esperado es read+write del anterior
+  ok    y coincide con el read observado
+  ok    delta cero en todos
+== 7. DISCRIMINA: un enlace ROTO se ve, con su delta exacto ==
+  ok    no reconocido
+  ok    esperado
+  ok    observado
+  ok    delta negativo: no se reconoció ese tramo
+== 8. DISCRIMINA: cero enlaces REHÚSA, no publica «0 incumplimientos» ==
+  ok    rehúsa con NoLinksError
+  ok    y el motivo nombra el riesgo del cero
+== 9. probe sobre un hilo real de disco: 4 de 4 ==
+  ok    cuatro enlaces desde el archivo (con fragmentos duplicados)
+  ok    los cuatro reconocidos
+== 10. main — códigos de salida 0 / 1 / 2 ==
+  ok    0 cuando todos reconocen
+  ok    publica el denominador
+  ok    1 cuando hay un enlace roto
+  ok    2 cuando rehúsa
+  ok    y NO publica ningún conteo de enlaces
+== 11. ANULACIÓN: sin la dedupe, los fragmentos fabrican falsos rotos ==
+  ok    con dedupe: 4 enlaces, 0 rotos
+  ok    sin dedupe: 9 enlaces, 5 rotos falsos
+  ok    la anulación SÍ cambia el veredicto
+== 12. select — el tramo centrado; sin --around devuelve la serie ==
+  ok    sin around, la serie entera
+  ok    around con span 1 da tres turnos
+  ok    y el del centro es el pedido
+  ok    span 0 da un turno solo — que NO tiene enlace
+  ok    sobre una serie vacía no falla
+
+37 ok, 0 fallos
+EXIT=0

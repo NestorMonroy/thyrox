@@ -13,23 +13,23 @@ import {
 import { setSessionId } from '../sessionPaths.js'
 
 let configDir: string
-const ORIGINAL_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR
-const ORIGINAL_ENV_FILE = process.env.CLAUDE_ENV_FILE
+const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
+const ORIGINAL_ENV_FILE = process.env.THYROX_ENV_FILE
 
 beforeEach(async () => {
   configDir = await mkdtemp(join(tmpdir(), 'session-environment-'))
-  process.env.CLAUDE_CONFIG_DIR = configDir
-  delete process.env.CLAUDE_ENV_FILE
+  process.env.THYROX_CONFIG_DIR = configDir
+  delete process.env.THYROX_ENV_FILE
   setSessionId('sesion-env-1')
   setGetPlatformFn(() => 'linux')
   invalidateSessionEnvCache()
 })
 
 afterEach(async () => {
-  if (ORIGINAL_CONFIG_DIR === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = ORIGINAL_CONFIG_DIR
-  if (ORIGINAL_ENV_FILE === undefined) delete process.env.CLAUDE_ENV_FILE
-  else process.env.CLAUDE_ENV_FILE = ORIGINAL_ENV_FILE
+  if (ORIGINAL_CONFIG_DIR === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
+  if (ORIGINAL_ENV_FILE === undefined) delete process.env.THYROX_ENV_FILE
+  else process.env.THYROX_ENV_FILE = ORIGINAL_ENV_FILE
   setGetPlatformFn(() => 'linux')
   invalidateSessionEnvCache()
   await rm(configDir, { recursive: true, force: true })
@@ -84,10 +84,10 @@ describe('getSessionEnvironmentScript', () => {
     expect(await getSessionEnvironmentScript()).toBeNull()
   })
 
-  test('junta CLAUDE_ENV_FILE + los .sh de hook, en orden de prioridad y no por índice puro', async () => {
+  test('junta THYROX_ENV_FILE + los .sh de hook, en orden de prioridad y no por índice puro', async () => {
     const envFile = join(configDir, 'env-padre.sh')
     await writeFile(envFile, 'export FROM_PARENT=1')
-    process.env.CLAUDE_ENV_FILE = envFile
+    process.env.THYROX_ENV_FILE = envFile
 
     const dir = await getSessionEnvDirPath()
     // Fuera de orden a propósito: cwdchanged-hook-0 antes que

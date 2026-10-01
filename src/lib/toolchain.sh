@@ -39,6 +39,28 @@ _THYROX_TOOLCHAIN_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$_THYROX_TOOLCHAIN_HERE/reach.sh"
 
+# @description Exporta las claves `THYROX_TOOLCHAIN_*` y `THYROX_INSTALL_*` que
+# la cadena de `.env` declara y el proceso no fija. Las lecturas de este
+# archivo son `${CLAVE:-default}` y sólo veían el proceso: un consumidor que
+# declaraba `THYROX_INSTALL_TEXLIVE=1` en su `.env` no era oído (H-THYROX-178).
+# Un solo proceso para toda la familia, y la precedencia la decide `env_value`.
+#
+# Una clave FIJADA en el proceso, aunque vacía, no se pisa: vacía es como una
+# prueba pide el default.
+thyrox_toolchain_load_declared() {
+  local line key
+  # `|| [[ -n "$line" ]]`: el delegado imprime sin salto final, y sin esta
+  # guarda `read` descarta la última clave.
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" == *=* ]] || continue
+    key="${line%%=*}"
+    [[ "$key" =~ ^THYROX_(TOOLCHAIN|INSTALL)_[A-Z0-9_]+$ ]] || continue
+    [[ -n "${!key+x}" ]] && continue
+    export "$key=${line#*=}"
+  done < <(_thyrox_delegate --prefixed THYROX_TOOLCHAIN_ THYROX_INSTALL_ 2>/dev/null)
+}
+thyrox_toolchain_load_declared
+
 # @description Ruta del interprete dentro de un entorno declarado, relativa a
 # su raiz. Se declara una vez: escribirla en cada funcion seria la segunda
 # fuente de verdad que `calibration-verified-numbers.md` prohibe para una cifra
@@ -134,6 +156,49 @@ function thyrox_toolchain_declare() {
   printf 'consumer=%s\n' "$(thyrox_toolchain_consumer_argv "$name")" || return $?
 }
 export -f thyrox_toolchain_declare
+
+# @description La politica UID-aware que decide si un comando de instalacion
+# lleva `sudo`: una funcion reutilizada por TODOS los defaults de apt de este
+# archivo, en vez de copiar la condicion en cada uno.
+#
+# Un contenedor minimo puede correr con uid efectivo 0 y sin `sudo`
+# instalado: un default con `sudo` hardcodeado ahi no falla por el paquete,
+# falla por `sudo: command not found`, y la causa real queda enmascarada
+# detras de una herramienta que ni hacia falta invocar. Tres desenlaces,
+# ninguno silencioso:
+#
+#   uid efectivo 0            -> sin prefijo: el proceso ya tiene privilegio;
+#   otro uid, `sudo` resuelve -> prefijo `sudo ` (con espacio final, para
+#                                 anteponerse tal cual al resto del comando);
+#   otro uid, `sudo` ausente  -> REHUSA con exit 2, sin imprimir nada por
+#                                 stdout — un prefijo vacio ahi se leeria
+#                                 como la rama de uid 0, que es el desenlace
+#                                 equivocado.
+#
+# El uid y el binario de `sudo` se leen de forma inyectable
+# (THYROX_TOOLCHAIN_EFFECTIVE_UID, THYROX_TOOLCHAIN_SUDO_BIN) para que un
+# control pueda forzar cada rama sin cambiar de usuario real.
+# @noargs
+# @stdout El prefijo a anteponer al comando (`""` o `"<binario> "`).
+# @exitcode 0 Resuelto. @exitcode 2 Ni uid 0 ni `sudo` disponible. REHUSA.
+function thyrox_toolchain_sudo_prefix() {
+  local uid="${THYROX_TOOLCHAIN_EFFECTIVE_UID:-$(id -u)}"
+  if [[ "$uid" == "0" ]]; then
+    printf ''
+    return 0
+  fi
+  local sudo_bin="${THYROX_TOOLCHAIN_SUDO_BIN:-sudo}"
+  if command -v "$sudo_bin" >/dev/null 2>&1; then
+    printf '%s ' "$sudo_bin"
+    return 0
+  fi
+  echo "thyrox_toolchain: uid $uid sin privilegio y '$sudo_bin' no resuelve." >&2
+  echo "                  Declara THYROX_TOOLCHAIN_SUDO_BIN con un sudo valido," >&2
+  echo "                  o corre el proceso con uid 0." >&2
+  return 2
+}
+export -f thyrox_toolchain_sudo_prefix
+
 # @description El nombre del binario de fan-out por elemento. Declarado, no
 # escrito en la funcion, por la misma razon que la ruta del interprete: un
 # control necesita poder apuntar la busqueda a un nombre ausente sin vaciar el
@@ -145,7 +210,7 @@ export THYROX_TOOLCHAIN_PARALLEL_BIN
 # control necesita inyectar un instalador que MIENTA —que salga cero sin
 # instalar nada— para comprobar que el exito se prueba re-comprobando el
 # binario y no leyendo el codigo de salida del instalador.
-THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
+THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y parallel}"
 export THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD
 
 # @description El hogar de estado de GNU parallel: hermano de `.venv`, en la
@@ -180,6 +245,20 @@ function thyrox_toolchain_parallel_home() {
 }
 export -f thyrox_toolchain_parallel_home
 
+# @description El comando que refresca el indice de paquetes. Declarado para
+# que un control inyecte uno falso sin tocar la red.
+THYROX_TOOLCHAIN_INDEX_REFRESH_CMD="${THYROX_TOOLCHAIN_INDEX_REFRESH_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get update -q}"
+export THYROX_TOOLCHAIN_INDEX_REFRESH_CMD
+
+# @description ¿Instala con apt? Sólo entonces un fallo puede deberse a un
+# indice viejo; el fallo de otro instalador no se arregla con `apt-get update`.
+# @arg $1 string El comando de instalacion.
+# @exitcode 0 Es `apt-get install`. @exitcode 1 No lo es.
+function thyrox_toolchain_is_apt_install() {
+  [[ "$1" =~ (^|/|[[:space:]])apt-get[[:space:]]+install([[:space:]]|$) ]]
+}
+export -f thyrox_toolchain_is_apt_install
+
 # @description Adquiere un binario externo: el contrato comun de todo
 # `require_*` de esta cadena, en un solo sitio. Tres desenlaces:
 #
@@ -209,6 +288,13 @@ function thyrox_toolchain_acquire_binary() {
     return 2
   fi
   $install_cmd >&2 2>&1 || true
+  if ! command -v "$bin" >/dev/null 2>&1 && thyrox_toolchain_is_apt_install "$install_cmd"; then
+    # Un contenedor recien creado trae un indice de apt viejo: el mirror ya no
+    # sirve esas versiones y `install` sale con 404. Se refresca una sola vez
+    # y se reintenta; si tampoco basta, el rechazo de abajo lo dice.
+    $THYROX_TOOLCHAIN_INDEX_REFRESH_CMD >&2 2>&1 || true
+    $install_cmd >&2 2>&1 || true
+  fi
   if ! command -v "$bin" >/dev/null 2>&1; then
     echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
     echo "                  Se re-comprueba el binario, no se lee su exit." >&2
@@ -278,7 +364,7 @@ export -f thyrox_toolchain_require_parallel
 # @description El comando que instala el extractor de texto de PDF. Declarado
 # por la misma razon que su hermano de parallel: un control necesita inyectar
 # un instalador que MIENTA para probar que el exito se re-comprueba.
-export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y poppler-utils}"
 
 # @description Asegura `pdftotext` (poppler-utils), el extractor primario de
 # `src/corpus/pdf_to_text.py`. Mismo contrato que
@@ -298,9 +384,409 @@ function thyrox_toolchain_require_pdf_text() {
 }
 export -f thyrox_toolchain_require_pdf_text
 
+# @description El comando que instala rsync. Declarado para que un control
+# pueda inyectar un instalador que MIENTA y probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD="${THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y rsync}"
+
+# @description Asegura `rsync`, que copia un arbol respetando exclusiones
+# (`--exclude node_modules`) sin rodearlo con `cp` o `tar`. Mismo contrato que
+# `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_RSYNC=1`), el rechazo no emite conteo y el exito se prueba
+# re-comprobando el binario, no leyendo el exit del instalador.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_rsync() {
+  thyrox_toolchain_acquire_binary "${THYROX_TOOLCHAIN_RSYNC_BIN:-rsync}" \
+    THYROX_INSTALL_RSYNC "$THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD" rsync
+}
+export -f thyrox_toolchain_require_rsync
+
+# @description El `pg_config` que dice que servidor hay y donde viven sus
+# extensiones. Declarado para que un control apunte a uno falso.
+export THYROX_TOOLCHAIN_PG_CONFIG_BIN="${THYROX_TOOLCHAIN_PG_CONFIG_BIN:-pg_config}"
+
+# @description La version mayor del servidor que `pg_config` declara
+# (`PostgreSQL 16.13 …` -> `16`). El paquete de pgvector depende de ella.
+# @stdout La version mayor. @exitcode 1 Sin `pg_config` o sin version legible.
+function thyrox_toolchain_pg_major() {
+  local version
+  version="$("$THYROX_TOOLCHAIN_PG_CONFIG_BIN" --version 2>/dev/null)" || return 1
+  [[ "$version" =~ PostgreSQL\ ([0-9]+) ]] || return 1
+  printf '%s' "${BASH_REMATCH[1]}"
+}
+export -f thyrox_toolchain_pg_major
+
+# @description La version fijada de pgvector (`vector.control` declara
+# `default_version`). Decision del ejecutor 2026-09-29: compilar 0.8.6 desde
+# el fuente, porque PGDG arrastra el servidor a su propio repositorio
+# (H-THYROX-256) y el paquete de Ubuntu instalado hoy es 0.6.0.
+export THYROX_PGVECTOR_VERSION="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+
+# @description El repositorio del que se clona la etiqueta `v<version>`.
+export THYROX_PGVECTOR_SOURCE_URL="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
+
+# @description Lee `default_version` de un `vector.control`. Vacio si el
+# archivo no existe o no declara la clave — nunca un error: la ausencia es un
+# valor legitimo para comparar contra la version pedida.
+# @arg $1 string La ruta de `vector.control`.
+# @stdout La version instalada, o nada.
+function thyrox_toolchain_pgvector_installed_version() {
+  local control="$1" line
+  [[ -f "$control" ]] || return 0
+  line="$(grep -m1 '^default_version' "$control" 2>/dev/null)" || return 0
+  [[ "$line" =~ \'([0-9]+\.[0-9]+\.[0-9]+)\' ]] && printf '%s' "${BASH_REMATCH[1]}"
+  return 0
+}
+export -f thyrox_toolchain_pgvector_installed_version
+
+# @description El `dpkg` y el `apt-get` con que se detecta y retira el
+# paquete de Ubuntu de pgvector antes de compilar encima. Declarados para que
+# un control apunte a uno falso, mismo patron que `THYROX_TOOLCHAIN_PG_CONFIG_BIN`.
+export THYROX_TOOLCHAIN_DPKG_BIN="${THYROX_TOOLCHAIN_DPKG_BIN:-dpkg}"
+export THYROX_TOOLCHAIN_APT_GET_BIN="${THYROX_TOOLCHAIN_APT_GET_BIN:-apt-get}"
+
+# @description El nombre del paquete de Ubuntu que compite con la extension
+# compilada desde el fuente para la version mayor dada.
+# @arg $1 string La version mayor del servidor.
+# @stdout `postgresql-<major>-pgvector`.
+function thyrox_toolchain_pgvector_apt_package() {
+  printf 'postgresql-%s-pgvector' "$1"
+}
+export -f thyrox_toolchain_pgvector_apt_package
+
+# @description Si `postgresql-<major>-pgvector` esta instalado por apt, lo
+# retira ANTES de que `make install` escriba encima sus archivos (`vector.so`,
+# `vector.control`): sin esto, apt sigue atribuyendose esos archivos y un
+# `apt upgrade`/`apt remove` posterior los pisa o los borra (H-THYROX-273,
+# medido con `dpkg -S` sobre checksums distintos). Re-comprueba con `dpkg -s`
+# tras el `remove` — no confia en el exit de `apt-get`.
+# @arg $1 string La version mayor del servidor.
+# @exitcode 0 El paquete no estaba instalado, o se quito y se re-comprobo.
+# @exitcode 3 Sigue instalado tras el intento de quitarlo. REHUSA sin compilar.
+function thyrox_toolchain_pgvector_purge_apt_package() {
+  local major="$1" package prefix
+  package="$(thyrox_toolchain_pgvector_apt_package "$major")"
+  "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1 || return 0
+  prefix="$(thyrox_toolchain_sudo_prefix)" || return 2
+  $prefix "$THYROX_TOOLCHAIN_APT_GET_BIN" remove -y "$package" >&2
+  if "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: '$package' sigue instalado tras 'apt-get remove -y';" >&2
+    echo "                  no se compila encima. Quitalo a mano y reintenta." >&2
+    return 3
+  fi
+  return 0
+}
+export -f thyrox_toolchain_pgvector_purge_apt_package
+
+# @description El instalador por defecto de pgvector: NO el paquete de Ubuntu
+# (0.6.0, desactualizado) ni PGDG (arrastra el servidor a otro repositorio,
+# H-THYROX-256), sino compilar la etiqueta `v$THYROX_PGVECTOR_VERSION` contra
+# el PostgreSQL de Ubuntu ya instalado. Efecto colateral MEDIDO: el paquete
+# `postgresql-server-dev-<mayor>` que este paso instala arrastra el servidor y
+# el cliente de Ubuntu (no PGDG) a su ultima version MENOR — hoy 16.13 ->
+# 16.15 — porque `apt` resuelve la dependencia de version junto con el resto
+# del paquete. Esta funcion NO ejecuta `ALTER EXTENSION vector UPDATE` en
+# ninguna base: una extension ya creada en una base existente sigue en su
+# version anterior hasta que alguien con privilegios en esa base lo pida.
+# @noargs
+function thyrox_toolchain_pgvector_install_default() {
+  local major; major="$(thyrox_toolchain_pg_major)" || return 1
+  thyrox_toolchain_pgvector_purge_apt_package "$major" || return $?
+  local prefix; prefix="$(thyrox_toolchain_sudo_prefix)" || return 2
+  local version="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+  local source_url="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
+  local dir; dir="$(mktemp -d)" || return 1
+  $prefix apt-get install -y "postgresql-server-dev-$major" \
+    && git clone --branch "v$version" --depth 1 "$source_url" "$dir" \
+    && make -C "$dir" "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN" \
+    && $prefix make -C "$dir" install "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN"
+  local rc=$?
+  rm -rf "${dir:?}"
+  return $rc
+}
+export -f thyrox_toolchain_pgvector_install_default
+
+# @description El comando que instala pgvector: el declarado en
+# THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD, o `thyrox_toolchain_pgvector_install_default`.
+function thyrox_toolchain_pgvector_install_cmd() {
+  if [[ -n "${THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD:-}" ]]; then
+    printf '%s' "$THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD"; return 0
+  fi
+  printf 'thyrox_toolchain_pgvector_install_default'
+}
+export -f thyrox_toolchain_pgvector_install_cmd
+
+# @description Asegura la version FIJADA de pgvector en el servidor local. No
+# es un binario: lo que su paquete entrega es `vector.control` en el
+# directorio de extensiones (`pg_config --sharedir`/extension), y su clave
+# `default_version` es lo que se re-comprueba — que el archivo exista ya NO
+# basta, porque el paquete de Ubuntu instala 0.6.0 y la version fijada es
+# `THYROX_PGVECTOR_VERSION` (0.8.6 por defecto). Mismo contrato que
+# `thyrox_toolchain_require_rsync`: instalar es opt-in
+# (`THYROX_INSTALL_PGVECTOR=1`), el rechazo no emite conteo y el exito no se
+# lee del exit del instalador.
+#
+# No instala el servidor: sin `pg_config` rehusa nombrandolo. Tampoco corre
+# `ALTER EXTENSION vector UPDATE` en ninguna base — ver el docstring de
+# `thyrox_toolchain_pgvector_install_default`.
+#
+# Ciega a: que la base concreta tenga la extension creada, y a si esa base ya
+# corrio el `ALTER EXTENSION … UPDATE` hacia la version fijada. Eso lo hace
+# `CREATE EXTENSION vector` / `ALTER EXTENSION vector UPDATE`, que exigen una
+# conexion y privilegios que esta cadena no tiene.
+# @noargs
+# @exitcode 0 La version pedida esta disponible para el servidor.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_pgvector() {
+  local sharedir control requested installed
+  if ! sharedir="$("$THYROX_TOOLCHAIN_PG_CONFIG_BIN" --sharedir 2>/dev/null)" || [[ -z "$sharedir" ]]; then
+    echo "thyrox_toolchain: pg_config ('$THYROX_TOOLCHAIN_PG_CONFIG_BIN') no resuelve: no hay servidor PostgreSQL" >&2
+    echo "                  al que añadir pgvector. Esta cadena no instala el servidor." >&2
+    return 2
+  fi
+  control="$sharedir/extension/vector.control"
+  requested="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+  installed="$(thyrox_toolchain_pgvector_installed_version "$control")"
+  [[ "$installed" == "$requested" ]] && return 0
+  if [[ "${THYROX_INSTALL_PGVECTOR:-}" != "1" ]]; then
+    echo "thyrox_toolchain: pgvector instalada es '${installed:-ninguna}', se pide '$requested', y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_PGVECTOR=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+  local cmd; cmd="$(thyrox_toolchain_pgvector_install_cmd)" || return 2
+  $cmd >&2 2>&1 || true
+  installed="$(thyrox_toolchain_pgvector_installed_version "$control")"
+  if [[ "$installed" != "$requested" ]]; then
+    echo "thyrox_toolchain: el instalador termino y 'vector.control' declara '${installed:-ninguna}', no '$requested'." >&2
+    echo "                  Se re-comprueba la version, no se lee su exit." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_pgvector
+
+# @description El cliente con que se re-comprueba la base de pruebas. Declarado
+# para que una prueba inyecte uno falso sin tocar el servidor real.
+export THYROX_TOOLCHAIN_PSQL_BIN="${THYROX_TOOLCHAIN_PSQL_BIN:-psql}"
+
+# @description Cómo se ejecuta SQL como administrador del clúster: lee el SQL
+# por stdin. Declarado por la misma razón que los instaladores hermanos: un
+# control necesita inyectar un administrador que MIENTA —que salga cero sin
+# crear nada— para probar que el éxito se re-comprueba.
+export THYROX_TOOLCHAIN_POSTGRES_ADMIN_CMD="${THYROX_TOOLCHAIN_POSTGRES_ADMIN_CMD:-su postgres -s /bin/sh -c 'psql -X -q -v ON_ERROR_STOP=1'}"
+
+# @description Si la URL da acceso a una base donde el rol puede crear
+# esquemas: es lo que el arnés de `@thyrox/store` necesita, un esquema de usar
+# y tirar por prueba. Conectar sin ese privilegio no basta.
+# @arg $1 string La URL de PostgreSQL.
+# @exitcode 0 Conecta y el rol tiene CREATE sobre la base.
+function thyrox_toolchain_postgres_url_usable() {
+  local verdict
+  verdict="$("$THYROX_TOOLCHAIN_PSQL_BIN" "$1" -X -tAc \
+    "SELECT has_database_privilege(current_database(), 'CREATE')" 2>/dev/null)" || return 1
+  [[ "$verdict" == "t" ]]
+}
+export -f thyrox_toolchain_postgres_url_usable
+
+# @description Asegura la base PostgreSQL de las pruebas de integración
+# (`THYROX_TEST_POSTGRES_URL`): un rol y una base desechables, `thyrox_test`,
+# sobre el clúster local que ya existe. Mismo contrato que
+# `thyrox_toolchain_require_pgvector`: provisionar es opt-in
+# (`THYROX_INSTALL_POSTGRES_TEST_DB=1`), el rechazo no emite conteo, y el éxito
+# NO se lee del exit del administrador: se RE-COMPRUEBA conectando con la URL
+# resultante y pidiendo el privilegio CREATE sobre la base.
+#
+# La contraseña se genera en cada provisión (`ALTER ROLE` si el rol ya existe),
+# así que repetirla es idempotente. La URL queda exportada y se imprime por
+# stdout una sola línea `THYROX_TEST_POSTGRES_URL=…` para el `.env`, que esta
+# función no escribe.
+#
+# Una URL ya declarada se usa si sirve; si no sirve, se rehúsa en vez de
+# provisionar encima: esa base la eligió otro.
+#
+# No instala el servidor. Ciega a: que el clúster acepte conexiones TCP con
+# contraseña desde 127.0.0.1 (lo decide su pg_hba.conf); si no, la
+# re-comprobación falla y se rehúsa.
+# @noargs
+# @exitcode 0 La base sirve; THYROX_TEST_POSTGRES_URL exportada.
+# @exitcode 2 No sirve, y no se pudo o no se quiso provisionar. REHUSA.
+function thyrox_toolchain_require_postgres_test_db() {
+  local declared="${THYROX_TEST_POSTGRES_URL:-}"
+  if [[ -n "$declared" ]]; then
+    if thyrox_toolchain_postgres_url_usable "$declared"; then
+      export THYROX_TEST_POSTGRES_URL="$declared"
+      return 0
+    fi
+    echo "thyrox_toolchain: THYROX_TEST_POSTGRES_URL (${declared//\/\/*@/\/\/***@}) no conecta o no da CREATE sobre la base." >&2
+    echo "                  No se provisiona encima de una base declarada: corrígela o vacíala." >&2
+    return 2
+  fi
+  if [[ "${THYROX_INSTALL_POSTGRES_TEST_DB:-}" != "1" ]]; then
+    echo "thyrox_toolchain: no hay base PostgreSQL de pruebas (THYROX_TEST_POSTGRES_URL vacía) y provisionarla es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_POSTGRES_TEST_DB=1." >&2
+    echo "                  NO se emite conteo: un cero aquí no distinguiría" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+  local password url
+  password="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+  url="postgres://thyrox_test:${password}@127.0.0.1:5432/thyrox_test"
+  bash -c "$THYROX_TOOLCHAIN_POSTGRES_ADMIN_CMD" >&2 2>&1 <<SQL || true
+DO \$\$
+BEGIN
+  IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'thyrox_test') THEN
+    ALTER ROLE thyrox_test LOGIN PASSWORD '${password}';
+  ELSE
+    CREATE ROLE thyrox_test LOGIN PASSWORD '${password}';
+  END IF;
+END
+\$\$;
+SELECT 'CREATE DATABASE thyrox_test OWNER thyrox_test'
+ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'thyrox_test')\gexec
+SQL
+  if ! thyrox_toolchain_postgres_url_usable "$url"; then
+    echo "thyrox_toolchain: el administrador terminó y la base thyrox_test no sirve con la URL provisionada." >&2
+    echo "                  Se re-comprueba conectando, no se lee su exit." >&2
+    return 2
+  fi
+  export THYROX_TEST_POSTGRES_URL="$url"
+  printf 'THYROX_TEST_POSTGRES_URL=%s\n' "$url"
+  return 0
+}
+export -f thyrox_toolchain_require_postgres_test_db
+
+# @description El comando que instala redis-server. Declarado por la misma
+# razon que sus hermanos: un control necesita inyectar un instalador que
+# MIENTA —que salga cero sin instalar nada— para probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_REDIS_INSTALL_CMD="${THYROX_TOOLCHAIN_REDIS_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y redis-server}"
+
+# @description Asegura `redis-server`, un adaptador posible de
+# `SharedStateStore` (ADR-THYROX-006) para el estado compartido en caliente
+# entre proxies. Mismo contrato que `thyrox_toolchain_require_pgvector` y
+# `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_REDIS=1`), el rechazo no emite conteo, y el exito NO se lee
+# del codigo de salida de apt: se RE-COMPRUEBA invocando `redis-server
+# --version`, porque `command -v` sólo prueba que el nombre resuelve en el
+# PATH, no que el binario responda. La ruta resuelta queda exportada en
+# THYROX_TOOLCHAIN_REDIS_BIN para quien la necesite sin volver a buscarla.
+# @noargs
+# @exitcode 0 El binario responde; THYROX_TOOLCHAIN_REDIS_BIN resuelto.
+# @exitcode 2 No esta, o no responde, y no se pudo o no se quiso instalar.
+function thyrox_toolchain_require_redis() {
+  local bin="${THYROX_TOOLCHAIN_REDIS_BIN:-redis-server}"
+  local resolved
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -n "$resolved" ]] && "$resolved" --version >/dev/null 2>&1; then
+    THYROX_TOOLCHAIN_REDIS_BIN="$resolved"
+    export THYROX_TOOLCHAIN_REDIS_BIN
+    return 0
+  fi
+
+  if [[ "${THYROX_INSTALL_REDIS:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin' (paquete redis-server) y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_REDIS=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+
+  $THYROX_TOOLCHAIN_REDIS_INSTALL_CMD >&2 2>&1 || true
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -z "$resolved" ]] || ! "$resolved" --version >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin responder --version." >&2
+    echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+    return 2
+  fi
+
+  THYROX_TOOLCHAIN_REDIS_BIN="$resolved"
+  export THYROX_TOOLCHAIN_REDIS_BIN
+  return 0
+}
+export -f thyrox_toolchain_require_redis
+
+# @description El comando que instala podman. Declarado por la misma razon
+# que sus hermanos: un control necesita inyectar un instalador que MIENTA
+# —que salga cero sin instalar nada— para probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD="${THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y podman}"
+
+# @description Asegura `podman`, motor de contenedores sin daemon. Mismo
+# contrato que `thyrox_toolchain_require_redis`: instalar es opt-in
+# (`THYROX_INSTALL_PODMAN=1`), el rechazo no emite conteo, y el exito NO se
+# lee del codigo de salida de apt ni de `--version`: se RE-COMPRUEBA
+# invocando `podman info`, porque `command -v` sólo prueba que el nombre
+# resuelve en el PATH y `--version` sólo prueba que el binario arranca —
+# ninguno de los dos ejercita el runtime OCI ni el almacenamiento, que es
+# donde un cgroups mal montado o un `runc` ausente rompen en la practica. La
+# ruta resuelta queda exportada en THYROX_TOOLCHAIN_PODMAN_BIN para quien la
+# necesite sin volver a buscarla.
+# @noargs
+# @exitcode 0 El binario responde a `info`; THYROX_TOOLCHAIN_PODMAN_BIN resuelto.
+# @exitcode 2 No esta, o `info` falla, y no se pudo o no se quiso instalar.
+function thyrox_toolchain_require_podman() {
+  local bin="${THYROX_TOOLCHAIN_PODMAN_BIN:-podman}"
+  local resolved
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -n "$resolved" ]] && "$resolved" info >/dev/null 2>&1; then
+    THYROX_TOOLCHAIN_PODMAN_BIN="$resolved"
+    export THYROX_TOOLCHAIN_PODMAN_BIN
+    return 0
+  fi
+
+  if [[ "${THYROX_INSTALL_PODMAN:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin' (paquete podman) y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_PODMAN=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+
+  $THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD >&2 2>&1 || true
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -z "$resolved" ]] || ! "$resolved" info >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin responder info." >&2
+    echo "                  Se re-comprueba inicializando runtime y almacenamiento," >&2
+    echo "                  no se lee su exit." >&2
+    return 2
+  fi
+
+  THYROX_TOOLCHAIN_PODMAN_BIN="$resolved"
+  export THYROX_TOOLCHAIN_PODMAN_BIN
+  return 0
+}
+export -f thyrox_toolchain_require_podman
+
+# @description El comando que instala iproute2. Declarado para que un control
+# pueda inyectar un instalador que MIENTA y probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD="${THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y iproute2}"
+
+# @description Asegura `ip` (iproute2), que la captura TPROXY necesita para su
+# regla de politica y su ruta local (`ip rule`, `ip route`). Mismo contrato
+# que `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_IPROUTE2=1`), el rechazo no emite conteo y el exito se
+# prueba re-comprobando el binario, no leyendo el exit del instalador.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_iproute2() {
+  thyrox_toolchain_acquire_binary "${THYROX_TOOLCHAIN_IP_BIN:-ip}" \
+    THYROX_INSTALL_IPROUTE2 "$THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD" iproute2
+}
+export -f thyrox_toolchain_require_iproute2
+
 # @description El comando que instala GNU Time. Declarado por la misma razon
 # que sus hermanos: un control necesita un instalador que MIENTA.
-export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-sudo apt-get install -y time}"
+export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y time}"
 
 # @description La ruta de GNU Time. Absoluta a proposito: `time` es tambien
 # una palabra reservada de bash, y `command -v time` la responde aunque el
@@ -358,7 +844,7 @@ export THYROX_TOOLCHAIN_AWK_BIN
 # su hermano de parallel: un control necesita inyectar un instalador que
 # MIENTA —que salga cero sin instalar nada— para comprobar que el exito se
 # prueba re-comprobando el binario y no leyendo el exit del instalador.
-export THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-sudo apt-get install -y gawk}"
+export THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y gawk}"
 
 # @description El programa que separa gawk de mawk por CONDUCTA.
 #
@@ -467,16 +953,23 @@ export THYROX_TOOLCHAIN_PDFTOPPM_BIN="${THYROX_TOOLCHAIN_PDFTOPPM_BIN:-pdftoppm}
 
 # @description El comando que instala poppler. Declarado para que un control
 # inyecte un instalador que MIENTA.
-export THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD="${THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+export THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD="${THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y poppler-utils}"
 
 # @description El PDF de la sonda, en base64: una pagina con el texto
 # THYROX-PDF-PROBE en Helvetica, 589 bytes, con su tabla xref correcta. Va
 # dentro de la biblioteca y no se genera: generarlo exigiria TeX u otra
 # herramienta, y la sonda de poppler no puede depender de lo que no mide.
-# No lleva `${VAR:-...}`: la sonda no es parametro, y un llamador que la
-# reemplazara podria desactivar el eje de conducta.
-export THYROX_TOOLCHAIN_POPPLER_PROBE_PDF_B64='JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyMDAgNTBdIC9Db250ZW50cyA0IDAgUiAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+PiA+PgplbmRvYmoKNCAwIG9iago8PCAvTGVuZ3RoIDQ2ID4+CnN0cmVhbQpCVCAvRjEgMTIgVGYgMTAgMjAgVGQgKFRIWVJPWC1QREYtUFJPQkUpIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MCAwMDAwMCBuIAowMDAwMDAwMzM2IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKNDA2CiUlRU9GCg=='
-export THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT='THYROX-PDF-PROBE'
+# Es PARAMETRO del consumidor, con este PDF como default: thyrox es el
+# proveedor y expone la sonda; como la usa lo decide quien la consume
+# (directiva del ejecutor 2026-09-26). Va en PAR con
+# THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT —el PDF tiene que contener ese texto—, y
+# un par que no coincida hace fallar la sonda en vez de pasarla: reemplazarla
+# por algo que no ejercite los binarios desactivaria el eje de conducta, y esa
+# responsabilidad es de quien la reemplaza.
+_thyrox_toolchain_poppler_probe_pdf_b64_default='JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyMDAgNTBdIC9Db250ZW50cyA0IDAgUiAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+PiA+PgplbmRvYmoKNCAwIG9iago8PCAvTGVuZ3RoIDQ2ID4+CnN0cmVhbQpCVCAvRjEgMTIgVGYgMTAgMjAgVGQgKFRIWVJPWC1QREYtUFJPQkUpIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MCAwMDAwMCBuIAowMDAwMDAwMzM2IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKNDA2CiUlRU9GCg=='
+export THYROX_TOOLCHAIN_POPPLER_PROBE_PDF_B64="${THYROX_TOOLCHAIN_POPPLER_PROBE_PDF_B64:-$_thyrox_toolchain_poppler_probe_pdf_b64_default}"
+_thyrox_toolchain_poppler_probe_text_default='THYROX-PDF-PROBE'
+export THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT="${THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT:-$_thyrox_toolchain_poppler_probe_text_default}"
 
 # @description ¿Hacen los dos binarios lo que se les pide sobre el PDF de la
 # sonda? Mide CONDUCTA: `pdftotext` tiene que devolver el texto y `pdftoppm`
@@ -562,8 +1055,11 @@ export -f thyrox_toolchain_require_poppler
 export THYROX_TOOLCHAIN_XELATEX_BIN="${THYROX_TOOLCHAIN_XELATEX_BIN:-xelatex}"
 
 # @description El documento minimo con que se sondea cuando el consumidor no
-# declara el suyo. No lleva `${VAR:-...}`: la sonda no es parametro.
-export THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC='\documentclass{article}\begin{document}THYROX\end{document}'
+# declara el suyo. Es parametro del consumidor con este default, como las
+# sondas de poppler; para compilar un archivo propio esta
+# THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE.
+_thyrox_toolchain_texlive_probe_doc_default='\documentclass{article}\begin{document}THYROX\end{document}'
+export THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC="${THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC:-$_thyrox_toolchain_texlive_probe_doc_default}"
 
 # @description Que paquetes de TeX Live se instalan. Es parametro del
 # CONSUMIDOR, no del proveedor: thyrox no compila documentos, y cada consumidor
@@ -617,7 +1113,7 @@ export -f thyrox_toolchain_texlive_compiles
 # @exitcode 0 Compila. @exitcode 2 No resuelve o no compila. REHUSA.
 function thyrox_toolchain_require_texlive() {
   local bin="$THYROX_TOOLCHAIN_XELATEX_BIN" installed=0
-  local cmd="${THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD:-sudo apt-get install -y --no-install-recommends $(thyrox_toolchain_texlive_packages)}"
+  local cmd="${THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y --no-install-recommends $(thyrox_toolchain_texlive_packages)}"
 
   if ! command -v "$bin" >/dev/null 2>&1; then
     if [[ "${THYROX_INSTALL_TEXLIVE:-}" != "1" ]]; then
@@ -676,7 +1172,7 @@ export -f thyrox_toolchain_probe_texlive
 # diccionario que acepta todo, o que rechaza todo, resuelve como binario y no
 # mide nada; por eso la sonda exige las dos mitades.
 export THYROX_TOOLCHAIN_HUNSPELL_BIN="${THYROX_TOOLCHAIN_HUNSPELL_BIN:-hunspell}"
-export THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD="${THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD:-sudo apt-get install -y hunspell}"
+export THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD="${THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y hunspell}"
 
 # @description ¿Acepta el diccionario la palabra buena y rechaza la mala?
 # @exitcode 0 Las dos mitades se cumplen.
@@ -1220,11 +1716,15 @@ function thyrox_toolchain_python_package_declared() {
     in_arr {
       line = $0
       while (match(line, /"[^"]+"/)) {
-        spec = substr(line, RSTART + 1, RLENGTH - 2)
+        # La posicion de la cadena se guarda ANTES del `match` del nombre,
+        # que sobrescribe RSTART/RLENGTH: avanzar con los del nombre volvia a
+        # casar la misma cadena y el bucle no terminaba.
+        at = RSTART; width = RLENGTH
+        spec = substr(line, at + 1, width - 2)
         # El nombre es el prefijo hasta el primer caracter que no le
         # pertenece: un marcador, un extra o un especificador de version.
         if (match(spec, /^[A-Za-z0-9._-]+/)) print substr(spec, RSTART, RLENGTH)
-        line = substr(line, RSTART + RLENGTH)
+        line = substr(line, at + width)
       }
       if ($0 ~ /\]/) in_arr = 0
     }

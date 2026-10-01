@@ -12,6 +12,7 @@ import { OAuthService } from '@thyrox/provider/oauth/index.js'
 import { LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS } from '@thyrox/provider/oauthConstants.js'
 import { saveOAuthTokensIfNeeded } from '@thyrox/provider/authAlias.js'
 import { logError } from '@thyrox/local-observability/log.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 interface OAuthFlowStepProps {
   onSuccess: (token: string) => void
@@ -108,7 +109,7 @@ export function OAuthFlowStep({
           timersRef.current.add(timer)
         },
         {
-          loginWithClaudeAi: true, // Always use Claude AI for subscription tokens
+          loginWithClaudeAi: true, // Always use thyrox AI for subscription tokens
           inferenceOnly: true,
           expiresIn: LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS,
         },
@@ -223,7 +224,7 @@ export function OAuthFlowStep({
               <Box>
                 <Spinner />
                 <Text>
-                  Opening browser to sign in with your Claude account…
+                  Opening browser to sign in with your {PRODUCT_NAME} account…
                 </Text>
               </Box>
             )}

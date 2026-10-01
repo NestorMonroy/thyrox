@@ -6,7 +6,7 @@
     tsc_cycle reject   --run RUN --bench STEP --file F --lesson L
     tsc_cycle modules plan   --log L --bench STEP
     tsc_cycle modules launch --bench STEP --worktree W --ledger L --seed N
-                             [--model M] [--width N] [--dry-run]
+                             [--task-class C] [--width N] [--dry-run]
     tsc_cycle shared plan    --log L --bench STEP [--top N]
     tsc_cycle shared launch  (mismas opciones que modules launch)
     tsc_cycle next     --log L [--root R]
@@ -31,6 +31,7 @@ from pathlib import Path
 
 from agents import model_catalog
 from paths import reach
+from session.pool_lifecycle import closed_glob
 from verify import step_setup, tsc_reflect, tsc_routes, tsc_sweep
 from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
@@ -86,7 +87,7 @@ def cmd_status(args) -> int:
     items_file = args.bench / "items.txt"
     items = [l for l in items_file.read_text().splitlines() if l.strip()] if items_file.is_file() else []
     endings: collections.Counter = collections.Counter()
-    outputs = sorted((args.bench / "outputs").glob("*.json"))
+    outputs = sorted(closed_glob(args.bench / "outputs", "*.json"))
     for path in outputs:
         try:
             endings[json.loads(path.read_text()).get("subtype", "unknown")] += 1
@@ -225,7 +226,11 @@ def shared_units(diagnostics, duplicates: dict[str, list[str]], prefix: str) -> 
     routes = tsc_routes.classify(diagnostics, duplicates)
     by_type: dict[str, list] = {}
     for d in routes["shared"]:
-        by_type.setdefault(tsc_routes.shared_type(d, duplicates), []).append(d)
+        type_name = tsc_routes.shared_type(d, duplicates)
+        # `d` viene de `routes["shared"]`: `classify()` sólo lo pone ahí
+        # cuando `shared_type` ya dio un valor — nunca None en este contrato.
+        assert type_name is not None
+        by_type.setdefault(type_name, []).append(d)
     units = []
     for entry in tsc_routes.shared_queue(routes["shared"], duplicates):
         definitions = [f"{prefix}{f}" for f in entry["definitions"]]
@@ -261,9 +266,8 @@ def cmd_shared_plan(args) -> int:
 
 
 # Ruta 3: el ítem es un archivo y un trozo de sus diagnósticos, con el código
-# que los rodea. Antes vivía como guion de banco (step-120/build_items.py): el
-# contexto en el ítem evita que el `claude -p` gaste turnos leyendo, lo que en
-# el paso 114 dejó sin salida 19 de 29 ítems.
+# que los rodea: el contexto en el ítem evita que el `thyrox -p` gaste turnos
+# leyendo, que es lo que deja un ítem sin salida (paso 114).
 LOCAL_CONTEXT_LINES = 10
 LOCAL_HEAD = re.compile(r"^(?P<file>[^\s(]+)\((?P<line>\d+),(?P<col>\d+)\): error TS\d+:")
 
@@ -416,12 +420,13 @@ def cmd_local_overlap(args) -> int:
               file=sys.stderr)
         return 2
     name, previous = args.bench.name, args.after.name
-    cache_ttl, ttl_why = pool_cache_ttl(args.bench, args.model)
+    model = derive_model(args.task_class)
+    cache_ttl, ttl_why = pool_cache_ttl(args.bench, model)
     print(f"cache-ttl: {cache_ttl or '(del cliente)'} — {ttl_why}", file=sys.stderr)
-    setup = step_setup_of(args.bench, args.model, args.worktree, "local", cache_ttl=cache_ttl)
+    setup = step_setup_of(args.bench, model, args.worktree, "local", cache_ttl=cache_ttl)
     if not args.dry_run:
         step_setup.register(args.ledger.parent, setup)
-    pool, pipeline = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
+    pool, pipeline = launch_commands(args.bench, args.task_class, args.worktree, args.ledger, args.seed, args.width,
                                      route="local", setup_id=setup["setup_id"], cache_ttl=cache_ttl)
     run = f"cd {shlex.quote(str(THYROX))} && {shlex.join(pipeline[pipeline.index('--') + 1:])}"
     commands = [pool, ["bash", "bin/thyrox-bg", "register", f"{name}-pool"],
@@ -599,7 +604,7 @@ def _step_number(bench: Path) -> int | None:
 def previous_item_bound(bench: Path) -> float | None:
     """La duración, en minutos, del ítem más largo del paso anterior medido.
 
-    Ningún hueco entre dos turnos de un `claude -p` supera la duración de su
+    Ningún hueco entre dos turnos de un `thyrox -p` supera la duración de su
     ítem, así que el más largo acota el hueco que decide el TTL. `None` si no
     hay paso anterior con salidas: sin medición no se inventa una cota."""
     current = _step_number(bench)
@@ -609,7 +614,7 @@ def previous_item_bound(bench: Path) -> float | None:
                       if (n := _step_number(p)) is not None and n < current)
     for _, step in reversed(previous):
         durations = []
-        for path in (step / "outputs").glob("*.json"):
+        for path in closed_glob(step / "outputs", "*.json"):
             try:
                 duration = json.loads(path.read_text()).get("duration_ms")
             except (ValueError, AttributeError):
@@ -641,8 +646,23 @@ def declared_cache_ttl(env) -> tuple[str | None, str]:
     return None, ""
 
 
+TASK_CLASSES = ("mecanica", "analisis", "adversarial", "frontera")
+
+
+def derive_model(task_class: str) -> str:
+    """El modelo del pool sale de la clase de tarea con `bin/agent-recommend`,
+    el mismo selector que usa `headless-pool`: el paso no lo escribe a mano, y
+    así el TTL y el registro del paso nombran el modelo que el ítem recibe."""
+    out = subprocess.run(["bash", str(THYROX / "bin" / "agent-recommend"), task_class, "--json"],
+                         capture_output=True, text=True, check=True).stdout
+    model = json.loads(out).get("model", "")
+    if not model.startswith("claude-"):
+        raise SystemExit(f"tsc_cycle: el selector no devolvió un modelo para {task_class}: {model!r}")
+    return model
+
+
 def pool_cache_ttl(bench: Path, model: str, env=None) -> tuple[str | None, str]:
-    """El TTL de la caché de cada `claude -p` del pool y su porqué. Primero lo
+    """El TTL de la caché de cada `thyrox -p` del pool y su porqué. Primero lo
     que el entorno DECLARA (`declared_cache_ttl`); si nada, el que
     `choose_cache_ttl` da para la cota del paso anterior — un default derivado,
     no una declaración, así que va por debajo. Sin cota, o con un modelo
@@ -676,10 +696,16 @@ def step_setup_of(bench: Path, model: str, worktree: Path | list[Path], route: s
                                            "cache_ttl": cache_ttl})
 
 
-def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger: Path, seed: int,
+#: La memoria que el pool deja al `tsc` completo que el pipeline corre a su
+#: lado: 2.0 GB medidos (cabecera de `headless-pool.sh`). La del ítem ya no se
+#: fija aquí —la deriva el historial del pool—; esto es sólo el vecino.
+TSC_MEMORY_RESERVE = "2G"
+
+
+def launch_commands(bench: Path, task_class: str, worktree: Path | list[Path], ledger: Path, seed: int,
                     width: int = 8, route: str = "modules", setup_id: str | None = None,
                     cache_ttl: str | None = None) -> list[list[str]]:
-    """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
+    """Los dos trabajos del paso: el pool (juicio, un `thyrox -p` por módulo,
     repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
     `worktree` mientras el pool sigue). Ninguno es un subagente."""
     items, outputs = bench / "items.txt", bench / "outputs"
@@ -690,8 +716,8 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
     worktrees = worktrees if shared else worktrees[:1]
     prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT, "sweep": SWEEP_PROMPT}.get(route, MODULE_PROMPT)
     unit = "file" if route == "local" else "module"
-    pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
-            f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
+    pool = (f"HEADLESS_POOL_MEMFREE_RESERVE={TSC_MEMORY_RESERVE} bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
+            f" --task-class {shlex.quote(task_class)} --width {width} --timeout 900"
             f" --tools Read,Grep,Glob --max-turns 30"
             + (f" --cache-ttl {cache_ttl}" if cache_ttl else "")
             + f" < {shlex.quote(str(items))}")
@@ -727,12 +753,13 @@ def cmd_modules_launch(args) -> int:
               file=sys.stderr)
         return 2
     route = getattr(args, "route", "modules")
-    cache_ttl, ttl_why = pool_cache_ttl(args.bench, args.model)
+    model = derive_model(args.task_class)
+    cache_ttl, ttl_why = pool_cache_ttl(args.bench, model)
     print(f"cache-ttl: {cache_ttl or '(del cliente)'} — {ttl_why}", file=sys.stderr)
-    setup = step_setup_of(args.bench, args.model, args.worktree, route, cache_ttl=cache_ttl)
+    setup = step_setup_of(args.bench, model, args.worktree, route, cache_ttl=cache_ttl)
     if not args.dry_run:
         step_setup.register(args.ledger.parent, setup)
-    commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
+    commands = launch_commands(args.bench, args.task_class, args.worktree, args.ledger, args.seed, args.width,
                                route=route, setup_id=setup["setup_id"], cache_ttl=cache_ttl)
     # Al ledger, para que la barrera los recoja y una arista `--after-ok` de
     # `local overlap` tenga predecesor: sin registrar, `dispatch` lo reporta
@@ -747,7 +774,7 @@ def cmd_modules_launch(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("classify", help="reparte los diagnósticos de un log en las tres rutas")
     p.add_argument("--log", type=Path, required=True)
@@ -764,7 +791,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--file", required=True)
     p.add_argument("--lesson", required=True)
     p.set_defaults(func=cmd_reject)
-    modules = sub.add_parser("modules", help="el módulo como unidad: pool de claude -p y pipeline de medición")
+    modules = sub.add_parser("modules", help="el módulo como unidad: pool de thyrox -p y pipeline de medición")
     msub = modules.add_subparsers(dest="modules_command", required=True)
     p = msub.add_parser("plan", help="deriva un ítem por módulo con exportaciones ausentes")
     p.add_argument("--log", type=Path, required=True)
@@ -776,7 +803,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--worktree", type=Path, required=True)
     p.add_argument("--ledger", type=Path, required=True)
     p.add_argument("--seed", type=int, required=True)
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--task-class", choices=TASK_CLASSES, default="analisis")
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true", help="imprime los comandos sin lanzarlos")
     p.set_defaults(func=cmd_modules_launch, route="modules")
@@ -794,7 +821,7 @@ def main(argv: list[str] | None = None) -> int:
                    help="repetible: dos worktrees miden dos prefijos a la vez")
     p.add_argument("--ledger", type=Path, required=True)
     p.add_argument("--seed", type=int, required=True)
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--task-class", choices=TASK_CLASSES, default="analisis")
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="shared")
@@ -814,7 +841,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--worktree", type=Path, required=True)
     p.add_argument("--ledger", type=Path, required=True)
     p.add_argument("--seed", type=int, required=True)
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--task-class", choices=TASK_CLASSES, default="analisis")
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="local")
@@ -829,7 +856,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--worktree", type=Path, required=True)
     p.add_argument("--ledger", type=Path, required=True)
     p.add_argument("--seed", type=int, required=True)
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--task-class", choices=TASK_CLASSES, default="analisis")
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_local_overlap)
@@ -846,7 +873,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--worktree", type=Path, required=True)
     p.add_argument("--ledger", type=Path, required=True)
     p.add_argument("--seed", type=int, required=True)
-    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--task-class", choices=TASK_CLASSES, default="analisis")
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="sweep")

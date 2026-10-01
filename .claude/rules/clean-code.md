@@ -95,6 +95,24 @@ Descriptivos, del nivel de abstracción del sitio donde viven, con la
 nomenclatura estándar (nombres de patrón) cuando exista, sin codificaciones,
 sin ambigüedad, y más largos cuanto mayor sea su alcance.
 
+**Cuando el nombre de patrón y el nivel de abstracción chocan.** La fuente
+trae las dos cláusulas seguidas —«Usar nombres en el nivel de abstracción
+apropiado» y «Usar nomenclatura standard: nombres de patrones»— y no dice cuál
+gana. Gana el papel que el LLAMADOR ve:
+
+- el nombre de patrón va cuando la unidad **es** ese patrón para quien la usa:
+  un `…Decorator` que se envuelve, un `…Visitor` que se acepta;
+- si el patrón sólo describe **cómo** la unidad cumple su papel, es detalle de
+  implementación: va en el docstring, no en el nombre. La prueba es cambiar el
+  mecanismo: si el papel sigue siendo el mismo, el nombre no debía nombrar el
+  mecanismo.
+
+Ejemplo del árbol: el hook de `PreToolUse` reparte el evento a todos los
+detectores y junta sus respuestas (Scatter-Gather), pero para el cliente que lo
+ejecuta es lo que se consulta antes de cada llamada a herramienta. Su nombre
+nombra ese papel, no `scatter_gather`; cuál es el nombre lo decide la tarea de
+su renombre.
+
 ## Lo que esta regla NO decide
 
 No tiene gate: un catálogo de *smells* no se detecta por sintaxis sin

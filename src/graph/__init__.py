@@ -1,1 +1,1 @@
-"""Mudado desde ``kaupamex-docs: .claude/scripts/graph/`` — el mecanismo vive aquí."""
+"""El mecanismo de grafo; su procedencia es ``kaupamex-docs: .claude/scripts/graph/``."""

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "timeout 600 bash tests/session/test-headless-pool.sh", "started_at": "2026-09-27T04:51:56+00:00"}

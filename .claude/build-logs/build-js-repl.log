@@ -1,0 +1,22 @@
+: bun build salió 1
+10 |   FAST_MODE_MODEL_DISPLAY,
+       ^
+error: No matching export in "src/fastMode.ts" for import "FAST_MODE_MODEL_DISPLAY"
+    at /home/user/thyrox/src/packages/repl/src/components/ModelPicker.tsx:10:3
+
+11 |   isFastModeAvailable,
+       ^
+error: No matching export in "src/fastMode.ts" for import "isFastModeAvailable"
+    at /home/user/thyrox/src/packages/repl/src/components/ModelPicker.tsx:11:3
+
+12 |   isFastModeCooldown,
+       ^
+error: No matching export in "src/fastMode.ts" for import "isFastModeCooldown"
+    at /home/user/thyrox/src/packages/repl/src/components/ModelPicker.tsx:12:3
+
+13 |   isFastModeEnabled,
+       ^
+error: No matching export in "src/fastMode.ts" for import "isFastModeEnabled"
+    at /home/user/thyrox/src/packages/repl/src/components/ModelPicker.tsx:13:3
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

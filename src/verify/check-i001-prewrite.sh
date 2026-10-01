@@ -15,7 +15,7 @@ fi
 FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" 2>/dev/null || echo "")
 
 # Solo interceptar escrituras en plan-execution/
-if ! echo "$FILE_PATH" | grep -q "plan-execution/"; then
+if ! grep -q "plan-execution/" <<<"$FILE_PATH"; then
   echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}'
   exit 0
 fi
@@ -24,7 +24,7 @@ fi
 WP_DIR=$(dirname "$(dirname "$FILE_PATH")")
 
 # Verificar que existe discover/ con un -analysis.md
-if [ ! -d "$WP_DIR/discover" ] || ! ls "$WP_DIR/discover/"*-analysis.md 2>/dev/null | head -1 | grep -q "."; then
+if [ ! -d "$WP_DIR/discover" ] || ! grep -q "." <<<"$(ls "$WP_DIR/discover/"*-analysis.md 2>/dev/null | head -1)"; then
   REASON="I-001 VIOLADO: No existe discover/*-analysis.md en el WP.
 WP: $WP_DIR
 THYROX requiere Stage 1 DISCOVER completo antes de crear task-plan en plan-execution/.

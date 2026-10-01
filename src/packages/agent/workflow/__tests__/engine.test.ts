@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { createRecordingCanUseTool } from '@thyrox/repl/testing'
 
 // MOCK_FULL_REPLACE: runAgent is fully replaced (not spread from the real
 // module) on purpose. The real runAgent pulls a heavy transitive graph
@@ -76,10 +77,7 @@ function fakeCtx(): {
   return { toolUseContext }
 }
 
-const noopCanUseTool = (async () => ({
-  behavior: 'allow',
-  updatedInput: {},
-})) as unknown as import('@thyrox/repl/hooks/useCanUseTool.js').CanUseToolFn
+const noopCanUseTool = createRecordingCanUseTool().canUseTool
 
 describe('runWorkflow (engine integration)', () => {
   afterEach(() => {

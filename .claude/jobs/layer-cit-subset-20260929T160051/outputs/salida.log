@@ -1,0 +1,195 @@
+run-task-pool: 16 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260929T160052
+  job-20260929T160052/job-001 uv run --quiet python tests/task/test_task_ids.py
+  job-20260929T160052/job-002 uv run --quiet python tests/task/test_task_ids_cli_names.py
+  job-20260929T160052/job-003 uv run --quiet python tests/task/test_task_source_citas.py
+  job-20260929T160052/job-004 uv run --quiet python tests/task/test_board_ordinal_identity.py
+  job-20260929T160052/job-005 uv run --quiet python tests/task/test_board_sync.py
+  job-20260929T160052/job-006 uv run --quiet python tests/task/test_census_open_tasks.py
+  job-20260929T160052/job-007 uv run --quiet python tests/task/test_layer_axis.py
+  job-20260929T160052/job-008 bash tests/task/test-refresh-board.sh
+  job-20260929T160052/job-009 uv run --quiet python tests/hooks/test_task_lifecycle.py
+  job-20260929T160052/job-010 uv run --quiet python tests/verify/test_citation_resolution.py
+  job-20260929T160052/job-011 uv run --quiet python tests/verify/test_pre_commit_hook.py
+  job-20260929T160052/job-012 bash tests/verify/test-commit-msg-citation.sh
+  job-20260929T160052/job-013 bash tests/agents/test-agent-store-reassignment-guard.sh
+  job-20260929T160052/job-014 bash tests/agents/test-agent-store-tareas.sh
+  job-20260929T160052/job-015 uv run --quiet python tests/agents/test_merge_stores.py
+  job-20260929T160052/job-016 uv run --quiet python tests/agents/test_store_home.py
+run-task-pool: lanzados 16 de 16; esperando en PRIMER PLANO (timeout 375s)
+asentado: job-20260929T160052_job-001 -> OK (2 de 17)
+asentado: job-20260929T160052_job-002 -> OK (3 de 17)
+asentado: job-20260929T160052_job-003 -> OK (4 de 17)
+asentado: job-20260929T160052_job-004 -> OK (5 de 17)
+asentado: job-20260929T160052_job-005 -> OK (6 de 17)
+asentado: job-20260929T160052_job-006 -> OK (7 de 17)
+asentado: job-20260929T160052_job-007 -> OK (8 de 17)
+asentado: job-20260929T160052_job-008 -> OK (9 de 17)
+asentado: job-20260929T160052_job-009 -> OK (10 de 17)
+asentado: job-20260929T160052_job-010 -> OK (11 de 17)
+asentado: job-20260929T160052_job-011 -> OK (12 de 17)
+asentado: job-20260929T160052_job-012 -> OK (13 de 17)
+asentado: job-20260929T160052_job-013 -> OK (14 de 17)
+asentado: job-20260929T160052_job-014 -> OK (15 de 17)
+asentado: job-20260929T160052_job-015 -> OK (16 de 17)
+asentado: job-20260929T160052_job-016 -> OK (17 de 17)
+== 17 trabajos asentados ==
+OLVIDADO job-20260929T160052
+       | (vacío — no emitió nada)
+OK     job-20260929T160052_job-001 exit=0
+       | El store del mapa se declara, no se deriva por aritmetica
+       | 91 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 36576 KB (36 MB) · pared 0.92s
+OK     job-20260929T160052_job-002 exit=1
+       | 18 aserciones
+       |   FALLA — 1f: `fix-layer` (antes `corregir-capa`) es un subcomando valido
+       |   FALLA — 3b: `--layer`/`--reason` (antes `--capa`/`--razon`) se aceptan en `fix-layer`
+       | EXIT=1
+       memoria pico: 36640 KB (36 MB) · pared 1.30s
+OK     job-20260929T160052_job-003 exit=0
+       | 13 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 36536 KB (36 MB) · pared 0.14s
+OK     job-20260929T160052_job-004 exit=0
+       | snapshot-tareas: 1 nuevas · 0 actualizadas · 0 sin cambio (origen: /tmp/tmp7ul4j_1v/sesion-identidad)
+       | snapshot-tareas: 1 nuevas · 0 actualizadas · 0 sin cambio (origen: /tmp/tmpedngir07/sesion-identidad)
+       | 20 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 36368 KB (36 MB) · pared 0.47s
+OK     job-20260929T160052_job-005 exit=0
+       | 111 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 36968 KB (36 MB) · pared 0.72s
+OK     job-20260929T160052_job-006 exit=0
+       | 30 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 56752 KB (55 MB) · pared 224.42s
+OK     job-20260929T160052_job-007 exit=0
+       | test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+       | Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+       | test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+       | CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 3.556s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 36428 KB (36 MB) · pared 3.75s
+OK     job-20260929T160052_job-008 exit=0
+       |   ok   — el aviso NOMBRA la cita que habría cambiado de sujeto
+       |   ok   — el store conserva el sujeto acuñado: no se escribió nada
+       | caso 3 — --strict convierte la degradación en fallo para el llamador
+       |   ok   — sale 5 con --strict
+       | caso 4 — estado REHUSADO: sin directorio vivo
+       |   ok   — sale 2 sin directorio vivo
+       |   ok   — sale 2 con un team que no existe
+       | 
+       | test-refresh-board: 10 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 26420 KB (26 MB) · pared 5.75s
+OK     job-20260929T160052_job-009 exit=1
+       |   ok    `TaskCompleted` esta declarado
+       |   FALLA los dos apuntan al mismo guion
+       |         esperado=[2] obtenido=[0]
+       | 
+       | == 7. el CLI usa --layer, no --capa (#310) ==
+       |   ok    `--capa` (el nombre viejo) ya no se acepta (exit 2)
+       |   ok    `--layer` (el nombre nuevo) sale 0
+       | 
+       | resultado: 16 de 17 aserciones en verde
+       | EXIT=1
+       memoria pico: 37012 KB (36 MB) · pared 4.84s
+OK     job-20260929T160052_job-010 exit=0
+       |   ok    NO emite veredicto de citas
+       |   ok    nombra el store ausente
+       | == 7. REFUSAL — sin archivo de mensaje tampoco ==
+       |   ok    exit 2 al rehusar
+       | == 8. --history mide el corpus, que es OTRA superficie ==
+       |   ok    exit 0: medir no es juzgar
+       |   ok    publica su denominador
+       | 
+       | resultado: 15 de 15 aserciones en verde
+       | EXIT=0
+       memoria pico: 36272 KB (35 MB) · pared 1.46s
+OK     job-20260929T160052_job-011 exit=1
+       | ERROR: no existe /tmp/tmpm0s8g3hk/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+       | check_env_example_coverage: REHUSA — no existe /tmp/tmpm0s8g3hk/.env.example; sin él no hay contra qué medir
+       | commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+       | 
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 12 tests in 69.903s
+       | 
+       | FAILED (failures=5)
+       | EXIT=1
+       memoria pico: 344660 KB (337 MB) · pared 70.02s
+OK     job-20260929T160052_job-012 exit=1
+       |   ok    nombra DONDE busco
+       |   ok    y COMO generarlo
+       | == 5. el mensaje ilegible tambien REHUSA ==
+       |   ok    exit 2 ante un mensaje que no se puede leer
+       |   ok    sin argumento, el envoltorio se nombra a si mismo
+       | == 6. NO escribe: el envoltorio mide, no muta ==
+       |   ok    el mensaje queda intacto
+       | 
+       | resultado: 12 de 13 aserciones en verde
+       | EXIT=1
+       memoria pico: 20740 KB (20 MB) · pared 0.63s
+OK     job-20260929T160052_job-013 exit=0
+       |   ok    y la cita viajó CON su sujeto
+       |   ok    al ordinal nuevo (2), no al 1 que reciclaron
+       |   ok    y la segunda cita también, al ordinal 3
+       |   ok    ninguna cita quedó duplicada
+       |   ok    5d: el mutante SÍ anuló la línea (si no, el control no mide nada)
+       |   ok    5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)
+       |   ok    5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto
+       | 
+       | 18 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 24832 KB (24 MB) · pared 3.42s
+OK     job-20260929T160052_job-014 exit=0
+       | == 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) ==
+       |   ok    la fila nueva trae submodule, no NULL
+       |   ok    y su procedencia dice que es el respaldo, no una clasificacion
+       | == 16. una capa ya clasificada SOBREVIVE al siguiente volcado ==
+       |   ok    la capa clasificada no se pisa
+       |   ok    ni su procedencia
+       |   ok    y el contenido SI se actualiza — el volcado sigue haciendo su trabajo
+       | 
+       | 33 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24904 KB (24 MB) · pared 6.17s
+OK     job-20260929T160052_job-015 exit=0
+       | test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto (__main__.TestUnion.test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto)
+       | CONTROL POSITIVO, con la forma del defecto real de H-DOCS-1236: una ... ok
+       | test_9_citation_is_stable_deja_pasar_lo_que_no_desliza (__main__.TestUnion.test_9_citation_is_stable_deja_pasar_lo_que_no_desliza)
+       | Falla si el resolvedor rehusa TODO — un guard que siempre rehusa no ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 11 tests in 2.706s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 36596 KB (36 MB) · pared 2.80s
+OK     job-20260929T160052_job-016 exit=0
+       | test_7_toda_tarea_del_hogar_tiene_cita_durable (__main__.TestHogarUnico.test_7_toda_tarea_del_hogar_tiene_cita_durable)
+       | Falla si una fila de `tasks` nace sin `citation_id`. ... ok
+       | test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar (__main__.TestHogarUnico.test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar)
+       | SONDA DE CONDUCTA: invoca el hook real y mira donde aterriza la fila. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 8 tests in 8.054s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 51988 KB (51 MB) · pared 8.14s
+salida distinta de 0: 4 (job-20260929T160052_job-002 job-20260929T160052_job-009 job-20260929T160052_job-011 job-20260929T160052_job-012)
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0
+__BG_EXIT__=5

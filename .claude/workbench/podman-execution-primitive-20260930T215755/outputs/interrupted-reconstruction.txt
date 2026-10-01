@@ -1,0 +1,20 @@
+== measure
+resultado: 0 ruta(s) difieren de 8 comprobadas
+== primitive
+resultado: 0 ruta(s) difieren de 27 comprobadas
+== config-gating
+resultado: 0 ruta(s) difieren de 6 comprobadas
+== startup
+resultado: 0 ruta(s) difieren de 10 comprobadas
+== workers
+resultado: 0 ruta(s) difieren de 4 comprobadas
+
+## Control de anulación (misma sesión)
+measure.patch sin su segundo `diff --git` (src/session/gpu_monitor.py):
+DIFIERE src/session/gpu_monitor.py | reconstruido=[100644 3e737ff19d8a…] preservado=[100644 33c624c42d74…]
+resultado: 1 ruta(s) difieren de 8 comprobadas  (exit 1)
+
+Métrica: modo y blob (`git hash-object --no-filters`) por ruta de las cuatro
+vistas del manifest, índice reconstruido contra worktree muerto.
+Ciega a: rutas que ninguna de las cuatro vistas nombra (un archivo ignorado
+por .gitignore que el ítem hubiera escrito no se compara).

@@ -185,7 +185,7 @@ export class InMemoryConfig {
       if (idx === -1) return { toolName: rule }
       return { toolName: rule.substring(0, idx), ruleContent: rule.substring(idx + 1, rule.length - 1) }
     },
-    isClaudeSettingsPath: () => false,
+    isSettingsFilePath: () => false,
     reconcilePermissionContext: (prev: unknown) => prev,
     getAutoMemEntrypoint: () => '/test-config-home/memory/auto.md',
   }

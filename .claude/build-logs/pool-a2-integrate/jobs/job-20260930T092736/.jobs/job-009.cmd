@@ -1,0 +1,1 @@
+PYTHONDONTWRITEBYTECODE=1 timeout 600 python3 tests/verify/test_stand_ins_cleared.py > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-stand-ins.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-stand-ins.log

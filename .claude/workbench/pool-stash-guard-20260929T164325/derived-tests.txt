@@ -1,0 +1,13 @@
+tests/hooks/test_detect_foreground_long_command.py
+tests/session/hardware/test-gpu-pools-real.sh
+tests/session/test-gnu-time-launchers.sh
+tests/session/test-gpu-admission-cli.sh
+tests/session/test-headless-pool-worktree.sh
+tests/session/test-headless-pool.sh
+tests/session/test-item-worktree-disk.sh
+tests/session/test-item-worktree-location.sh
+tests/session/test-item-worktree-lock.sh
+tests/session/test-item-worktree-orphans.sh
+tests/session/test-item-worktree-stash.sh
+tests/session/test_gpu_scenarios.py
+tests/session/test_user_wiring.py

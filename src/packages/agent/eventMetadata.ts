@@ -18,7 +18,7 @@
  * booleano (`isEnvTruthy`, importado de `./internalUtils.ts` en vez de
  * duplicarlo — ya está en este árbol con idéntica lógica).
  *
- * `extractToolInputForTelemetry` se porta (2026-09-24) desde 2.1.275
+ * `extractToolInputForTelemetry` se porta desde 2.1.275
  * (`T3r` + `Dm`, `chunk-xbd48fav.js`); `JSON.stringify` sustituye al
  * `jsonStringify` de la fuente, que no añade nada a una entrada ya recortada.
  *

@@ -8,16 +8,73 @@
  *
  * Extracted from bg.ts to keep that file under the LOC budget.
  *
+ * Porte adicional de chunk-ygx717jg.js 2.1.283:
+ *   - `R9n` [11493,11579) — `describeCwdGone`: mensaje exacto cuando el
+ *     cwd del worker ya no existe. En la referencia lo usa un probe async
+ *     previo al spawn, dentro del bucle de disparo del daemon (`ue` en
+ *     `Dt`), que thyrox no tiene; aquí se usa como guarda SÍNCRONA justo
+ *     antes de construir el comando — mismo mensaje, disparo más simple.
+ *   - `x9n` [11772,12633) — el `Bun.spawn` con stderr redirigido a un
+ *     archivo breadcrumb (`<sock>.err`, misma convención que
+ *     `ptyHost.ts:breadcrumbPath`) y reintento clasificado por errno si
+ *     abrirlo falla. Portado como `resolveSpawnStdio` +
+ *     `classifyBreadcrumbOpenErrno`. // pendiente: el reintento de la
+ *     referencia también quita la colocación de cgroup
+ *     (`{cgroup:S,...k}=o`) — `node:child_process` no tiene esa opción,
+ *     así que no hay nada que retirar del lado de thyrox; el reintento
+ *     aquí es sólo de stdio.
+ *
  * @dynamicRequire
  */
 
 import { spawn } from 'node:child_process'
-import { mkdirSync, rmSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 import chalk from 'chalk'
 
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getDefaultLauncher } from '@thyrox/repl/relaunch.js'
+
+import { buildPtyHostChildEnv } from './childEnv.js'
+
+/** `R9n` — mensaje cuando el cwd del worker ya no existe o no es accesible. */
+export function describeCwdGone(cwd: string): string {
+  return `working directory no longer exists or is not accessible: ${cwd}`
+}
+
+/** Los cuatro errno que `x9n` clasifica con un aviso en vez de relanzar. */
+const CLASSIFIED_BREADCRUMB_ERRNO_CODES = new Set(['ENOENT', 'ENOSPC', 'EACCES', 'EROFS'])
+
+/** Parte de `x9n`: qué errno de abrir el breadcrumb se degrada a aviso. */
+export function classifyBreadcrumbOpenErrno(error: unknown): string | undefined {
+  const code = (error as NodeJS.ErrnoException | undefined)?.code
+  return code !== undefined && CLASSIFIED_BREADCRUMB_ERRNO_CODES.has(code) ? code : undefined
+}
+
+/**
+ * `x9n`: intenta abrir el breadcrumb de stderr para el pty host; si falla
+ * con un errno clasificado, degrada a stdio completamente ignorado con un
+ * aviso — igual que la referencia degrada a `stdio:["ignore","ignore","ignore"]`
+ * sin cgroup. Un errno NO clasificado se relanza (`throw g` en la referencia).
+ */
+export function resolveSpawnStdio(breadcrumbPath: string): {
+  stdio: ['ignore', 'ignore', 'ignore' | number]
+  warning?: string
+} {
+  try {
+    const fd = openSync(breadcrumbPath, 'a')
+    return { stdio: ['ignore', 'ignore', fd] }
+  } catch (error) {
+    const code = classifyBreadcrumbOpenErrno(error)
+    if (code === undefined) throw error
+    const detail = error instanceof Error ? error.message : String(error)
+    return {
+      stdio: ['ignore', 'ignore', 'ignore'],
+      warning: `bg: ptyHost stderr breadcrumb open failed (${code}) at ${breadcrumbPath} — spawning with stderr discarded (crash diagnostics degraded): ${detail}`,
+    }
+  }
+}
 
 export interface SpawnPtyResult {
   short: string
@@ -65,12 +122,21 @@ export function spawnPtyHost(opts: {
   spare?: boolean
 }): SpawnPtyResult {
   mkdirSync(opts.jobDir, { recursive: true })
+  // `R9n`/guarda de cwd: en la referencia esto es un probe ASÍNCRONO previo
+  // al spawn dentro del bucle de disparo del daemon; aquí, sin ese bucle,
+  // basta una comprobación síncrona — mismo mensaje, mismo desenlace (no
+  // spawnea, limpia el jobDir, sale con 1).
+  if (!existsSync(opts.cwd)) {
+    rmSync(opts.jobDir, { recursive: true, force: true })
+    process.stderr.write(`${describeCwdGone(opts.cwd)}\n`)
+    process.exit(1)
+  }
   const socketPath = join(opts.jobDir, 'pty.sock')
   // Rendezvous (control) socket — the out-of-band channel the inner REPL
   // binds to push authoritative state/done/heartbeat to the daemon
   // supervisor (ant 4291.js server ← 5016.js naK client). Sits alongside
   // pty.sock in the flat per-job dir; the inner REPL reads
-  // CLAUDE_BG_RENDEZVOUS_SOCK to know where to bind. See
+  // THYROX_BG_RENDEZVOUS_SOCK to know where to bind. See
   // daemon/socketPaths.ts getRendezvousSocketPath.
   const rendezvousSocketPath = join(opts.jobDir, 'rv.sock')
 
@@ -130,23 +196,26 @@ export function spawnPtyHost(opts: {
   ]
   const fullCmd = [cmd, ...hostArgs]
 
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    CLAUDE_CODE_SESSION_KIND: 'bg',
-    CLAUDE_CODE_BG_JOB_SHORT: opts.short,
+  // `qe`/`Vt`: parte del entorno heredado, retira el
+  // ENV_FORWARD_ALLOWLIST salvo lo reenviado explícito abajo, y si
+  // THYROX_CODE_PROVIDER_MANAGED_BY_HOST está activo retira además las
+  // credenciales (`childEnv.ts:buildPtyHostChildEnv`).
+  const env: NodeJS.ProcessEnv = buildPtyHostChildEnv(process.env, {
+    THYROX_CODE_SESSION_KIND: 'bg',
+    THYROX_CODE_BG_JOB_SHORT: opts.short,
     FORCE_COLOR: '3',
     COLORTERM: 'truecolor',
     BROWSER: 'true',
-    CLAUDE_JOB_DIR: opts.jobDir,
-    CLAUDE_BG_BACKEND: 'pty',
+    THYROX_JOB_DIR: opts.jobDir,
+    THYROX_BG_BACKEND: 'pty',
     // Rendezvous control socket the inner REPL binds (ant eaK sets the same
-    // CLAUDE_BG_RENDEZVOUS_SOCK env). The bg REPL's useBgRendezvousServer
+    // THYROX_BG_RENDEZVOUS_SOCK env). The bg REPL's useBgRendezvousServer
     // hook reads this to start the out-of-band control channel; absent it,
     // the worker degrades to the legacy disk-poll path.
-    CLAUDE_BG_RENDEZVOUS_SOCK: rendezvousSocketPath,
-    CLAUDE_BG_SOURCE: 'cli',
+    THYROX_BG_RENDEZVOUS_SOCK: rendezvousSocketPath,
+    THYROX_BG_SOURCE: 'cli',
     CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
-    CLAUDE_CODE_SESSION_NAME: opts.short,
+    THYROX_CODE_SESSION_NAME: opts.short,
     // Spare-pool marker: an EXPLICIT spare flag (ant `i1O` mode "spare"),
     // not inferred from an empty directive. Read by useSpareReadyMarker
     // (writes spare-ready.flag) + useBgFleetStateSync (skips its own
@@ -155,7 +224,7 @@ export function spawnPtyHost(opts: {
     // run with `m_H(..., "spare", ...)`. The left-arrow resume path also
     // spawns directive='' but is a real REPL, so it must stay UNmarked.
     ...(opts.spare === true ? { CCB_SPARE: '1' } : {}),
-  }
+  })
 
   // Strip the FleetView-subsystem reader marker so it NEVER leaks into a
   // dispatched worker. `CCB_FLEET_INPROCESS_REMOUNT=1` activates the rust
@@ -169,12 +238,28 @@ export function spawnPtyHost(opts: {
   // bgDaemon all funnel here), so deleting once here covers every path.
   delete env.CCB_FLEET_INPROCESS_REMOUNT
 
+  // `x9n`: stderr del pty host a un breadcrumb junto al socket
+  // (`<sock>.err`, misma convención que ptyHost.ts:breadcrumbPath — el
+  // host escribe ahí su propio crash best-effort; esto captura además lo
+  // que el host nunca llega a manejar en JS). Si abrirlo falla con un
+  // errno clasificado, se degrada a stdio ignorado con aviso; si no, se
+  // relanza.
+  const { stdio, warning } = resolveSpawnStdio(`${socketPath}.err`)
+  if (warning !== undefined) logForDebugging(warning, { level: 'warn' })
+
   const child = spawn(cmd, hostArgs, {
     cwd: opts.cwd,
     env,
     detached: true,
-    stdio: ['ignore', 'ignore', 'ignore'],
+    stdio,
   })
+  if (typeof stdio[2] === 'number') {
+    try {
+      closeSync(stdio[2])
+    } catch {
+      // best-effort — el hijo ya tiene su propio dup del fd
+    }
+  }
   child.unref()
 
   if (child.pid === undefined) {

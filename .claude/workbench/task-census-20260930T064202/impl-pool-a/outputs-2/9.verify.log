@@ -1,0 +1,180 @@
+== 1. la declaracion existe y tiene la forma del settings del cliente ==
+  ok    es un settings con hooks
+  ok    declara sus eventos, todos y solo ellos
+== 1b. PreToolUse llega al despachador de los detectores ==
+  ok    el matcher cubre Bash y Agent, los dos despachos que se miden
+  ok    el matcher cubre la escritura y la lectura de archivos
+  ok    el comando es el preflight del proveedor, por su envoltorio de bin/
+  FALLO el comando cableado carga todos los detectores sin PYTHONPATH
+        esperado=[]
+        obtenido=[bin/tool_use_preflight: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9" && uv sync]
+  ok    SessionStart se declara con el matcher de la compactación
+  ok    el comando es el hook de restauración del proveedor, por bin/
+  FALLO el comando cableado corre sin PYTHONPATH y calla fuera de una compactación
+        esperado=[('{}', '')]
+        obtenido=[('{}', 'bin/compact_context: sin entorno del proveedor; corre con /usr/local/bin/python3.\n              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9" && uv sync')]
+  ok    SessionStart declara el barrido de huérfanos al arrancar
+  ok    el barrido cubre el árbol del proveedor
+  ok    sin huérfanos, cada barrido sale 0 y calla
+== 2. el control VE una ruta que no existe ==
+  ok    nombra el comando roto
+  ok    cita la ruta
+  ok    cita su evento
+== 3. un comando cuyo archivo SI existe no se reporta ==
+  ok    sin rotos
+== 4. lo declarado en thyrox no apunta a ninguna ruta ausente ==
+  ok    la declaracion propia esta sana
+== 5. sin cableado que medir REHUSA, no publica un cero ==
+  ok    exit 2
+  ok    no emite conteo
+  ok    nombra la variable con que declararlo
+== 6. instalar es una FUSION: sustituye lo propio y conserva lo ajeno ==
+  ok    conserva permissions verbatim
+  ok    sustituye advisorModel
+  ok    sustituye hooks por lo declarado
+  ok    el acta nombra lo conservado
+== 7. respalda ANTES de escribir, y el respaldo es del contenido viejo ==
+  ok    pidio el respaldo una vez
+  ok    respaldo el archivo vivo
+  ok    el destino lleva el sello
+== 8. si el respaldo NO aterriza, el archivo vivo queda INTACTO ==
+  ok    lanza WiringRefused
+  ok    no escribio nada
+== 9. lo declarado con una ruta ausente NO se instala ==
+  ok    rehusa antes de tocar nada
+  ok    ni siquiera pidio el respaldo
+== 10. el adaptador real deja el respaldo en disco (nohup + ledger) ==
+  ok    el respaldo aterrizo
+  ok    con el contenido de la fuente
+== 11. un trabajo ajeno DETENIDO no toma de rehen al respaldo ==
+  ok    el ledger compartido lo clasifica DETENIDO
+  ok    el respaldo aterrizo igual
+  ok    y NO espero al timeout (< 15 s)
+  ok    pero REPORTA al atascado, no lo esconde
+== 12. TODO ejecutable declarado vive en el PRODUCTOR ==
+  ok    todo comando declarado nombra su ejecutable
+  ok    ninguno ejecuta desde el consumidor
+  ok    y todos existen
+== 13. la deriva entre lo DECLARADO y lo INSTALADO ==
+  ok    dos cableados identicos no derivan
+  ok    un comando cambiado se reporta en su evento
+  ok    cita el lado vivo
+  ok    cita el lado declarado
+  ok    un evento declarado y no instalado se reporta
+  ok    y no inventa un lado vivo
+  ok    stub y llamada directa se reportan como deriva (ciega al destino)
+
+14. main publica la deriva sin tocar su codigo de salida
+  ok    14.1 sin deriva lo dice, no calla
+  ok    14.2 con deriva nombra el evento
+  ok    14.3 el codigo de salida NO cambia por la deriva
+  ok    14.4 y sigue publicando el conteo de rotos
+
+== 15. la clave de la cache se mide por VALOR, no por escritura ==
+  ok    15.1 mismo advisor -> delta vacio
+  ok    15.2 otro advisor -> delta lo nombra
+  ok    15.3 hooks distintos, advisor igual -> delta vacio
+  ok    15.4 rehusa ante cambio de valor, y NOMBRA el campo
+  ok    15.5 y deja el archivo intacto
+  ok    15.6 hooks-solo procede sin permiso
+  ok    15.7 y declara el delta vacio en el acta
+  ok    15.8 conservando lo ajeno
+  ok    15.9 la segunda instalacion no escribe
+  ok    15.10 ni pide respaldo
+== 15-bis. CONTROL DE ANULACION: se retira el campo de la clave ==
+  ok    15-bis.1 anulado, la negativa de 15.4 desaparece
+  ok    15-bis.2 y la idempotencia de 15.9 SOBREVIVE
+  ok    15-bis.3 restaurado, la constante vuelve a su valor
+== 16. el destino del store en el CUERPO del hook, no en su cableado ==
+  ok    16.1 el control positivo real da DOS incumplidores
+  ok    16.2 y los separa por forma
+  ok    16.3 el override sin default NO se reporta
+  ok    16.4 mencionar el directorio no es declararlo destino
+== 16-bis. CONTROL DE ANULACION: se retira la bandera del destino ==
+  ok    16-bis.1 anulado, los dos incumplidores dejan de verse
+  ok    16-bis.2 y el cuerpo sano SOBREVIVE en verde
+  ok    16-bis.3 restaurado, la constante vuelve a su valor
+== 17. el objetivo RELATIVO, que el control no veia ==
+  ok    17.1 el relativo se resuelve contra el cwd declarado
+  ok    17.2 y entra al universo como roto
+  ok    17.3 el mismo comando desde el cwd correcto NO se reporta
+  ok    17.3-anulacion.1 sin el archivo, el comando SI se reporta roto
+  ok    17.3-anulacion.2 restaurado el archivo, vuelve a verse sano
+  ok    17.4 el prefijo `~/` usa la casa, no el cwd
+  ok    17.5 un prefijo cuya raiz el entorno no declara REHUSA
+  ok    17.6 el interprete no se confunde con el objetivo
+== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==
+  ok    17-bis.1 anulado el sufijo, el relativo SIGUE viendose (lleva `/`)
+  ok    17-bis.2 anulados los prefijos, `~/` deja de resolver a la casa
+  ok    17-bis.3 y el interprete sano SOBREVIVE en None
+  ok    17-bis.4 restaurado, el sufijo vuelve a casar un `.ts`
+  ok    17-bis.5 con la version vieja, 17.1 CAE
+  ok    17-bis.6 y 17.2 CAE: el comando roto sale del universo
+  ok    17-bis.7 restaurada, vuelve a verlo
+  ok    --hooks-only instala sin rehusar
+  ok    --hooks-only escribe los hooks declarados
+  ok    --hooks-only no toca advisorModel
+  ok    --hooks-only conserva permissions
+
+== 18. TODO comando de declared_wiring corre sin ModuleNotFoundError, aislado del disco real (H-THYROX-268) ==
+  ok    18.1 midio los mismos comandos que declara el cableado
+  ok    18.2 ningun command declarado falla por import sin PYTHONPATH
+   comandos measured, aislados del disco real (ninguno excluido):
+     SubagentStart    rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/measure_delta --start --repo docs=/home/user/kaupamex-docs --results-dir /tmp/tmpyy57dsfc/consumer/.claude/agent-results
+     SubagentStart    rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/register_session --start
+     SessionStart     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/compact_context --root /home/user/kaupamex-docs
+     SessionStart     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/item_worktree sweep-orphans /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9
+     SessionStart     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/item_worktree sweep-orphans /home/user/kaupamex-docs
+     PreModelSwitch   rc=0  bun run /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/src/packages/agent/bin/preModelSwitch.ts
+     PreToolUse       rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/tool_use_preflight
+     SubagentStop     rc=0  node /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/src/agents/save_result.mjs --log-dir /tmp/tmpyy57dsfc/consumer/.claude/agent-results
+     SubagentStop     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/measure_delta --stop --repo docs=/home/user/kaupamex-docs --results-dir /tmp/tmpyy57dsfc/consumer/.claude/agent-results
+     SubagentStop     rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/register_session --stop
+     TaskCreated      rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/task_lifecycle
+     TaskCompleted    rc=0  bash /home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9/bin/task_lifecycle
+== 18-bis. CONTROL DE ANULACION: task_lifecycle vuelve a su .py sin bin/ ==
+  ok    18-bis.0 el command original esta presente antes de anular
+  ok    18-bis.1 la anulacion tocó exactamente los dos comandos de task_lifecycle
+  ok    18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas
+
+== 19. el consumidor se RESUELVE: explicito > THYROX_CONSUMER > contexto > rehuso ==
+  ok    19.1 el parametro explicito gana a THYROX_CONSUMER
+  ok    19.2 THYROX_CONSUMER sola resuelve, aunque el punto de partida este fuera
+  ok    19.3 sin variable, el clon que CONTIENE el punto de partida es el consumidor
+  ok    19.4 fuera de todo clon, el UNICO clon declarado es el consumidor
+  ok    19.5 fuera de todo clon y con dos declarados, REHUSA
+  ok    19.5b y el rehuso nombra la variable y la opcion
+  ok    19.5c y enumera los candidatos entre los que no elige
+  ok    19.6 sin roster que derivar, REHUSA nombrando la variable
+  ok    19.7 declared_wiring sin consumidor resoluble REHUSA
+  ok    19.8 y con consumidor explicito compone las rutas con el
+== 19-bis. CONTROL DE ANULACION: la ambiguedad deja de rehusar ==
+  ok    19-bis.1 anulado, la ambiguedad ya NO rehusa (19.5 cae)
+  ok    19-bis.2 el clon que contiene el punto de partida SOBREVIVE (19.3)
+  ok    19-bis.3 el unico clon SOBREVIVE (19.4)
+  ok    19-bis.4 y sin roster SIGUE rehusando (19.6)
+  ok    19-bis.5 restaurado, la ambiguedad vuelve a rehusar
+== 19-ter. main(): --consumer llega a las dos ramas, y el rehuso sale como REHUSA con exit 2 ==
+  ok    19-ter.1 la rama de medicion rehusa con exit 2
+  ok    19-ter.2 y lo dice como REHUSA nombrando la variable
+  ok    19-ter.3 la rama --write rehusa con exit 2
+  ok    19-ter.4 y lo dice como REHUSA
+  ok    19-ter.5 con --consumer la medicion trabaja
+  ok    19-ter.6 y el consumidor pasado es el que se compara: sin deriva
+== 19-quater. los dos invocadores propagan el rehuso: el instalador shell y session_restart ==
+  ok    19-quater.1 el instalador shell rehusa con exit 2
+  ok    19-quater.2 y lo dice como REHUSA nombrando la variable
+  ok    19-quater.3 y no deja ni un settings vacio detras
+  ok    19-quater.4 con --consumer instala
+  ok    19-quater.5 y el store apunta al consumidor pasado
+  ok    19-quater.6 session_restart rehusa con exit 2
+  ok    19-quater.7 y lo dice como REHUSA nombrando la variable
+  ok    19-quater.8 con --consumer session_restart pasa la resolucion del consumidor
+
+122 ok, 2 fallos
+bin/check_lint_zero: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/9" && uv sync
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 3 archivo(s))

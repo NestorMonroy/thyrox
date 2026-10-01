@@ -131,8 +131,8 @@ PY
 afirmar "siembra sin error" 0 $?
 
 echo "== 4. DISCRIMINADOR — gana la cota MÁS TEMPRANA, no cualquiera =="
-salida=$(python3 "$STORE" fechar-apertura --claude-dir "$CLAUDE_DIR" \
-    --tasks-dir "$FICHAS" --repo-tablero "$REPO" 2>&1)
+python3 "$STORE" fechar-apertura --claude-dir "$CLAUDE_DIR" \
+    --tasks-dir "$FICHAS" --repo-tablero "$REPO" >/dev/null 2>&1
 #   100: ficha 08-05 · tablero 08-10 · ingestion 08-12  -> ficha
 #   200: ficha 08-20 · tablero 08-10 · ingestion 08-09  -> ingestion
 #   300: ficha 08-14 · tablero 08-16 · ingestion 08-22  -> ficha
@@ -248,7 +248,8 @@ python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" --tasks-dir "$VIVAS"
     --session-id ses-viva --source hook-post-tool >/dev/null 2>&1
 afirmar "#700 sellada por hook" "hook" "$(leer 700 opened_at_source)"
 sellada=$(leer 700 opened_at)
-[[ -n "$sellada" && "$sellada" != "<NULO>" ]]; afirmar "#700 trae instante" 0 $?
+trae=1; [[ -n "$sellada" && "$sellada" != "<NULO>" ]] && trae=0
+afirmar "#700 trae instante" 0 "$trae"
 
 echo "== 14. una ingestión masiva NO sella: su instante no es la apertura =="
 echo '{"id":"800","subject":"ingerida en lote","status":"pending","blocks":[],"blockedBy":[]}' \

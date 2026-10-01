@@ -92,5 +92,21 @@ with tempfile.TemporaryDirectory() as directory:
                  True, (wt / "node_modules/@types/new/index.d.ts").exists())
     assert_equal("y el que ya estaba sigue", True, (wt / "node_modules/@types/old").exists())
 
+    # Un worktree de medición que cumplió su función se retira: si queda vivo
+    # ocupa una copia del árbol sin aportar nada (thyrox-control y
+    # thyrox-medicion, 2.8 GB, tres días después de su último uso). Sólo se
+    # retira cuando todo lo suyo ya está en el principal.
+    (wt / "src/a.ts").write_text("export const a = 4\n")
+    (wt / "src/only-here.ts").write_text("export const h = 1\n")
+    pending = mw.release(main, wt)
+    assert_equal("con cambios sin exportar, release los nombra", ["src/a.ts", "src/only-here.ts"], pending)
+    assert_equal("y no retira el worktree", True, (wt / ".git").exists())
+    mw.export(wt, main, ["src/a.ts", "src/only-here.ts"])
+    assert_equal("exportado todo, release no deja nada pendiente", [], mw.release(main, wt))
+    assert_equal("y el worktree ya no existe", False, wt.exists())
+    listed = subprocess.run(["git", "worktree", "list", "--porcelain"], cwd=main, capture_output=True,
+                            text=True).stdout
+    assert_equal("ni git lo lista", False, f"worktree {wt}" in listed)
+
 print(f"test_measure_worktree: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

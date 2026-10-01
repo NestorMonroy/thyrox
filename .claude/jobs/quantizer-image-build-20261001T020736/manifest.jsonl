@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash src/packages/model-artifacts/quantizer-image/build.sh .claude/workbench/model-quantization-pipeline-20260930T224613/outputs/quantizer-image", "started_at": "2026-10-01T02:07:36+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T02:09:32+00:00", "duration_seconds": 116.234969}

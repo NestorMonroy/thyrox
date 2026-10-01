@@ -1,0 +1,85 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/context-compression": [
+        "./src/index.ts"
+      ],
+      "@thyrox/context-compression/lite.js": [
+        "./src/lite.ts"
+      ],
+      "@thyrox/context-compression/rtk": [
+        "./src/rtk/index.ts"
+      ],
+      "@thyrox/context-compression/rtk.js": [
+        "./src/rtk/index.ts"
+      ],
+      "@thyrox/context-compression/lite": [
+        "./src/lite.ts"
+      ],
+      "@thyrox/context-compression/rtk/commandDetector": [
+        "./src/rtk/commandDetector.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/buildTypescript": [
+        "./src/rtk/filters/buildTypescript.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/genericOutput": [
+        "./src/rtk/filters/genericOutput.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/gitDiff": [
+        "./src/rtk/filters/gitDiff.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/gitLog": [
+        "./src/rtk/filters/gitLog.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/gitStatus": [
+        "./src/rtk/filters/gitStatus.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/testBun": [
+        "./src/rtk/filters/testBun.ts"
+      ],
+      "@thyrox/context-compression/rtk/filters/testPytest": [
+        "./src/rtk/filters/testPytest.ts"
+      ],
+      "@thyrox/context-compression/rtk/lineFilter": [
+        "./src/rtk/lineFilter.ts"
+      ],
+      "@thyrox/context-compression/rtk/smartTruncate": [
+        "./src/rtk/smartTruncate.ts"
+      ],
+      "@thyrox/context-compression/rtk/types": [
+        "./src/rtk/types.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

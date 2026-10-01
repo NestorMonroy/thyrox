@@ -1,0 +1,14 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+modelo: claude-opus-5-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: sin cualificación aprobada vigente de la clase analisis entre los 1 modelo(s) del catálogo local
+historial: última ejecución: 1 ítems, pared máx 602.7 s, pico 512416 KB × 2 -> 1001M; TTL 1h: un hueco de 10.045 min caduca la caché de 5 m; una sola caducidad (≥ 0.60) ya paga la prima; RAM: (15652860 − 0) / (512416 × 2) -> 15
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/2ee65843e844-20261001T021519-21388/mailbox
+cache-ttl: 1h (constant)
+memfree: 1001M (history)
+headless-pool: señal recibida; se drenan los ítems vivos antes de salir
+headless-pool: señal recibida; se drenan los ítems vivos antes de salir
+headless-pool: señal recibida; se drenan los ítems vivos antes de salir
+-- FALLIDO quantization-pipeline — TASK-THYROX-0723, TASK-THYROX-0718 y la parte de software de TASK-THYROX-0722, en ese orden: lease de la ejecución por @thyrox/shared-state, pipeline idempotente BF16 -> F16 -> Q4_K_M con plan durable y hashes por paso, y --scratch-dir con su preflight. Fuente de verdad: /home/user/thyrox/.claude/workbench/model-quantization-pipeline-20260930T224613/source-pipeline.md (y .claude/workbench/model-quantization-pipeline-20260930T224613/source-capacity.md). Te pertenecen src/packages/model-artifacts/quantization/** (nuevo), src/packages/model-artifacts/package.json, su envoltorio en bin/ y, sólo vía bun install, package.json raíz y bun.lock. No ejecutes el pipeline real sobre el modelo: pruebas con dobles. No toques otros paquetes ni src/session/.
+items=1 ok=0 fallidos=1
+verificados=0 rechazados=0 sin-cambios=0 fallidos=1
+__BG_EXIT__=1

@@ -142,7 +142,7 @@ def main(argv=None) -> int:
     import argparse  # noqa: PLC0415
     import json      # noqa: PLC0415
 
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 

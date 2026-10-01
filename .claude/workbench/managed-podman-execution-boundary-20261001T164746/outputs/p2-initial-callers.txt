@@ -1,0 +1,28 @@
+# p2 — llamadas a funciones por spec fuera de podman-execution, HEAD d95bca492
+# Métrica: líneas de código productivo que llaman o importan runJobWithOutput, materializeContainer, WorkerContainerSpec, ensureResource.
+# Ciega a: una llamada indirecta a través de un helper de otro paquete.
+src/packages/artifact-registry/podmanJobVerifier.ts:17:import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+src/packages/artifact-registry/podmanJobVerifier.ts:19:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+src/packages/artifact-registry/podmanJobVerifier.ts:48:export function verificationJobSpec(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): WorkerContainerSpec {
+src/packages/artifact-registry/podmanJobVerifier.ts:93:        const job = await runJobWithOutput(options.podman, verificationJobSpec(options, pinned, location))
+src/packages/daemon/src/podman/podmanWorkerManager.ts:44:import { ContainerRunError, materializeContainer } from '@thyrox/podman-execution/containerRun.ts'
+src/packages/daemon/src/podman/podmanWorkerManager.ts:61:  type WorkerContainerSpec,
+src/packages/daemon/src/podman/podmanWorkerManager.ts:211:  private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+src/packages/daemon/src/podman/podmanWorkerManager.ts:245:  private async materialize(request: WorkerLaunchRequest, spec: WorkerContainerSpec): Promise<ManagedWorker> {
+src/packages/daemon/src/podman/podmanWorkerManager.ts:249:      await materializeContainer(podman, spec)
+src/packages/infrastructure/infrastructureBootstrap.ts:6: * `ensureResource` de `@thyrox/podman-execution`, con dueño `infrastructure`.
+src/packages/infrastructure/infrastructureBootstrap.ts:16:  ensureResource,
+src/packages/infrastructure/infrastructureBootstrap.ts:160:      outcome = await ensureResource(deps, desiredOf(declaration, ownerPid), values)
+src/packages/local-models/ollamaModelInstaller.ts:18:import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+src/packages/local-models/ollamaModelInstaller.ts:20:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+src/packages/local-models/ollamaModelInstaller.ts:53:export function installJobSpec(options: OllamaModelInstallerOptions, request: ModelInstallRequest): WorkerContainerSpec {
+src/packages/local-models/ollamaModelInstaller.ts:107:      const job = await runJobWithOutput(this.options.podman, installJobSpec(this.options, request))
+src/packages/local-models/podmanArtifactFetcher.ts:26:import { ContainerRunError, runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+src/packages/local-models/podmanArtifactFetcher.ts:28:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+src/packages/local-models/podmanArtifactFetcher.ts:66:export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): WorkerContainerSpec {
+src/packages/local-models/podmanArtifactFetcher.ts:119:    const job = await runJobWithOutput(options.podman, fetchJobSpec(options, pinned, destination, scratchDir))
+src/packages/local-models/quantizationLab.ts:11:import { runJobWithOutput, type JobOutput } from '@thyrox/podman-execution/containerRun.ts'
+src/packages/local-models/quantizationLab.ts:13:import { workerContainerName, type WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+src/packages/local-models/quantizationLab.ts:51: * (`runJobWithOutput`): crear, arrancar, esperar, leer salidas y retirar,
+src/packages/local-models/quantizationLab.ts:71:      const output = await runJobWithOutput(this.podman, this.specOf(step))
+src/packages/local-models/quantizationLab.ts:78:  private specOf(step: LabStep): WorkerContainerSpec {

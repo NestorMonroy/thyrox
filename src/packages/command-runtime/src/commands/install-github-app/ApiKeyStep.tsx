@@ -3,6 +3,7 @@ import TextInput from '@thyrox/repl/components/TextInput.js'
 import { useTerminalSize } from '@anthropic/ink'
 import { Box, color, Text, useTheme } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 interface ApiKeyStepProps {
   existingApiKey: string | null
@@ -108,7 +109,7 @@ export function ApiKeyStep({
               {selectedOption === 'existing'
                 ? color('success', theme)('> ')
                 : '  '}
-              Use your existing Claude Code API key
+              Use your existing {PRODUCT_NAME} API key
             </Text>
           </Box>
         )}
@@ -118,7 +119,7 @@ export function ApiKeyStep({
               {selectedOption === 'oauth'
                 ? color('success', theme)('> ')
                 : '  '}
-              Create a long-lived token with your Claude subscription
+              Create a long-lived token with your {PRODUCT_NAME} subscription
             </Text>
           </Box>
         )}

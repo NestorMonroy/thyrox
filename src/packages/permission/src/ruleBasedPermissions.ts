@@ -12,7 +12,7 @@
  *
  * - La decisión de sandbox de una orden de Bash (`Xg`) se delega en
  *   `shouldUseSandbox` de tool-registry, que no lee el aislamiento del
- *   entorno de subprocesos (`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`) del binario.
+ *   entorno de subprocesos (`THYROX_CODE_SUBPROCESS_ENV_SCRUB`) del binario.
  * - La revisión de `allowed_domains` (`Alt`) exige que el sandbox ofrezca
  *   `registerCommandNetworkLists` (`$Q`); el de este árbol no lo ofrece, y
  *   la pasada no se dispara — igual que en el binario sin esa capacidad.

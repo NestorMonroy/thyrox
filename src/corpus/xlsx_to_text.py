@@ -20,10 +20,8 @@ paquetes               **0**           2, o 54 si se usa LibreOffice
 precedente en el arbol **si**          no
 =====================  ==============  ================================
 
-**Corregido 2026-09-21.** Aqui decia *"LibreOffice ya esta instalado —215 154
-KB en 54 paquetes— y convierte .xlsx a CSV sin instalar nada"*. Las dos
-mitades eran falsas, y por la misma razon: se midio el **nombre** y se
-concluyo sobre la **capacidad**.
+**LibreOffice no es una via disponible aunque su nombre resuelva.** Que el
+comando exista mide el **nombre**, no la **capacidad**:
 
 - ``command -v libreoffice`` resuelve, y es un enlace a un envoltorio de
   6656 bytes. El filtro de Calc (``libscfiltlo.so``) **no existe**.
@@ -34,9 +32,8 @@ concluyo sobre la **capacidad**.
   real sale **0** y no produce ni un archivo; con el perfil explicito imprime
   ``Error: source file could not be loaded`` **y sigue saliendo 0**.
 
-La cifra no se sustituye por otra: **se retira y se nombra el comando**, que
-es lo que `calibration-verified-numbers.md` exige para una propiedad de un
-artefacto vivo. Quien quiera el estado de hoy lo mide::
+El estado de hoy no se transcribe: se mide con el comando
+(`calibration-verified-numbers.md`)::
 
     bash src/verify/check-toolchain-ready.sh          # la sonda, por conducta
     dpkg-query -W -f='${Package} ${Status}\n' 'libreoffice*' | gawk '$3=="installed"'
@@ -175,7 +172,8 @@ def sheets(source) -> list[tuple[str, str]]:
     sheets = []
     root = ET.fromstring(file_path.read(WORKBOOK))
     for sheet_name_value in root.iter(SML + "sheet"):
-        path = targets.get(sheet_name_value.get(REL + "id"))
+        rel_id = sheet_name_value.get(REL + "id")
+        path = targets.get(rel_id) if rel_id is not None else None
         if path is None:
             continue
         sheets.append((sheet_name_value.get("name", ""), path))
@@ -249,7 +247,7 @@ def to_tsv(row_list: list[list[str]]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("entrada", help="el .xlsx de origen")
     parser.add_argument("salida", nargs="?", help="el .tsv de destino")
     parser.add_argument("--sheet", help="el nombre visible de una hoja")

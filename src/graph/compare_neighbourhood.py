@@ -37,6 +37,9 @@ from collections import Counter, defaultdict
 
 _HERE = pathlib.Path(__file__).resolve().parent
 _SPEC = importlib.util.spec_from_file_location("graph_metrics", _HERE / "graph_metrics.py")
+assert _SPEC is not None and _SPEC.loader is not None, (
+    "no se pudo construir el spec para graph_metrics.py"
+)
 _GRAPH = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_GRAPH)
 
@@ -103,7 +106,7 @@ def lexical_neighbours(vectors, seed, k):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--manifests", required=True, help="raíz con <addon>/__manifest__.py")
     parser.add_argument("-k", type=int, default=5, help="vecinos léxicos por nodo")
     parser.add_argument("--inflation", type=float, default=2.0)
@@ -195,11 +198,11 @@ def main(argv=None):
         f"inflación {args.inflation}"
         + (f" · sin {', '.join(summary['dropped_hubs'])}" if dropped else "")
     )
-    for label, block in (("léxico", summary["lexical"]), ("comunidad", summary["community"])):
+    for label, entry in (("léxico", summary["lexical"]), ("comunidad", summary["community"])):
         print(
-            f"  {label:10s} {block['adjacent']:4d} de {block['proposed']:4d} propuestos "
-            f"son adyacentes  (precisión {block['precision']:.1%} · "
-            f"cobertura {block['recall']:.1%} de {summary['real_adjacencies']})"
+            f"  {label:10s} {entry['adjacent']:4d} de {entry['proposed']:4d} propuestos "
+            f"son adyacentes  (precisión {entry['precision']:.1%} · "
+            f"cobertura {entry['recall']:.1%} de {summary['real_adjacencies']})"
         )
     if args.seed:
         for row in rows:

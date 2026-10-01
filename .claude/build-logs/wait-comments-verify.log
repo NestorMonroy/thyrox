@@ -1,0 +1,204 @@
+asentado: job-20260927T155232_job-003 -> OK (1 de 5)
+asentado: job-20260927T155232_job-004 -> OK (2 de 5)
+asentado: job-20260927T155232_job-002 -> OK (1 de 5)
+esperando: 3 de 5 asentados, 30s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.02s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.33s
+sonda comments-verify: 28785 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28786 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.26s
+sonda comments-verify: 29076 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 29077 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=4.03s
+sonda comments-verify: 22393 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 22398 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 22400 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 22402 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.38s
+sonda comments-verify: 29267 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=1.91s
+sonda comments-verify: 28718 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28721 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28723 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28725 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.05s
+sonda comments-verify: 29154 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 29292 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.34s
+sonda job-20260927T155232_job-001: 28785 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 28786 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.49s
+sonda job-20260927T155232_job-001: 29424 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 29425 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.59s
+esperando: 3 de 5 asentados, 60s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.38s
+sonda comments-verify: 30856 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 30857 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.61s
+sonda comments-verify: 31121 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 31122 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 22393 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 22398 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 22400 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 22402 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.47s
+sonda comments-verify: 31131 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=1.76s
+sonda comments-verify: 28718 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28721 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28723 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28725 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.06s
+sonda comments-verify: 31200 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.36s
+sonda comments-verify: 31143 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.38s
+sonda job-20260927T155232_job-001: 30856 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 30857 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.52s
+sonda job-20260927T155232_job-001: 31309 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 31310 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.68s
+esperando: 3 de 5 asentados, 90s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda comments-verify: 354 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.40s
+sonda comments-verify: 326 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 327 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.51s
+sonda comments-verify: 32551 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 32552 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.68s
+sonda comments-verify: 28718 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28721 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28723 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 28725 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.09s
+sonda comments-verify: 338 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 32337 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 32339 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 32342 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 32343 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 302 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 303 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 437 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.40s
+sonda job-20260927T155232_job-001: 326 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 327 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.94s
+sonda job-20260927T155232_job-001: 32551 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 32552 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.47s
+esperando: 3 de 5 asentados, 121s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.10s
+sonda comments-verify: 2977 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 2981 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 2982 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 2984 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.48s
+sonda comments-verify: 3139 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 3005 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 3007 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 3009 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 3011 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=1.18s
+sonda comments-verify: 3050 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 3037 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.47s
+sonda comments-verify: 2574 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 2575 node stdin=devnull(/dev/null) escritores=- estado=R cpu=10.14s
+sonda comments-verify: 2700 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 2701 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.67s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.47s
+sonda job-20260927T155232_job-001: 2574 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 2575 node stdin=devnull(/dev/null) escritores=- estado=R cpu=10.69s
+sonda job-20260927T155232_job-001: 2700 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 2701 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.26s
+esperando: 3 de 5 asentados, 151s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.11s
+sonda comments-verify: 4129 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.13s
+sonda comments-verify: 5976 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.54s
+sonda comments-verify: 5738 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 5739 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 5825 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 5826 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.55s
+sonda job-20260927T155232_job-001: 6100 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 6101 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.63s
+sonda job-20260927T155232_job-001: 6110 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 6111 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.42s
+esperando: 3 de 5 asentados, 182s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.11s
+sonda comments-verify: 4129 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.28s
+sonda comments-verify: 8320 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.73s
+sonda comments-verify: 7865 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 7866 node stdin=devnull(/dev/null) escritores=- estado=R cpu=12.42s
+sonda comments-verify: 7946 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 7947 node stdin=devnull(/dev/null) escritores=- estado=R cpu=10.03s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.73s
+sonda job-20260927T155232_job-001: 7865 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 7866 node stdin=devnull(/dev/null) escritores=- estado=R cpu=12.92s
+sonda job-20260927T155232_job-001: 7946 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 7947 node stdin=devnull(/dev/null) escritores=- estado=R cpu=10.61s
+esperando: 3 de 5 asentados, 212s; vivos: comments-verify job-20260927T155232_job-001
+sonda comments-verify: 21381 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21387 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21389 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.11s
+sonda comments-verify: 4129 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.41s
+sonda comments-verify: 10565 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.75s
+sonda comments-verify: 10150 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 10154 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda comments-verify: 10242 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda comments-verify: 10243 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.57s
+sonda job-20260927T155232_job-001: 21432 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21437 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 21441 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.75s
+sonda job-20260927T155232_job-001: 10242 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 10243 node stdin=devnull(/dev/null) escritores=- estado=R cpu=9.09s
+sonda job-20260927T155232_job-001: 10664 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T155232_job-001: 10665 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.86s
+asentado: job-20260927T155232_job-001 -> OK (1 de 5)
+asentado: comments-verify -> OK (1 de 5)
+== 5 trabajos asentados ==
+OK     comments-verify exit=0
+       |        memoria pico: 253248 KB (247 MB) · pared 8.24s
+       | OK     job-20260927T155232_job-029 exit=0
+       |        | EXIT=0
+       |        | EXIT=0
+       |        memoria pico: 133608 KB (130 MB) · pared 0.70s
+       | OK     job-20260927T155232_job-030 exit=0
+       |        | EXIT=0
+       |        | EXIT=0
+       |        memoria pico: 146720 KB (143 MB) · pared 0.94s
+       | __BG_EXIT__=0
+       memoria pico: 852756 KB (833 MB) · pared 245.97s
+OK     job-20260927T155232_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T155232_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T155232_job-003
+       | (vacío — no emitió nada)
+OK     job-20260927T155232_job-004
+       | (vacío — no emitió nada)

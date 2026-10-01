@@ -1,0 +1,13 @@
+== ownership-refusal
+(fail) bootstrapInfrastructure > un contenedor con ese nombre y otro dueño se rehúsa con exit 2 y queda intacto [0.77ms]
+ 9 pass
+ 1 fail
+== missing-secret
+(fail) bootstrapInfrastructure > sin el valor de un secreto declarado rehúsa con exit 2, nombra la variable y no toca Podman [0.62ms]
+ 9 pass
+ 1 fail
+ 1 file changed, 125 insertions(+), 8 deletions(-)
+== restaurado
+ 10 pass
+ 0 fail
+__BG_EXIT__=0

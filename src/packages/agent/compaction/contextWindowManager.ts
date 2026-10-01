@@ -34,7 +34,7 @@ export function getEffectiveContextWindowSize(
   )
   let contextWindow = deps.getContextWindowSize(model, deps.getSdkBetas())
 
-  const autoCompactWindow = deps.getEnv('CLAUDE_CODE_AUTO_COMPACT_WINDOW')
+  const autoCompactWindow = deps.getEnv('THYROX_CODE_AUTO_COMPACT_WINDOW')
   if (autoCompactWindow) {
     const parsed = parseInt(autoCompactWindow, 10)
     if (!isNaN(parsed) && parsed > 0) {
@@ -57,7 +57,7 @@ export function getAutoCompactThreshold(
     effectiveContextWindow - AUTOCOMPACT_BUFFER_TOKENS
 
   // Override for easier testing of autocompact
-  const envPercent = deps.getEnv('CLAUDE_AUTOCOMPACT_PCT_OVERRIDE')
+  const envPercent = deps.getEnv('THYROX_AUTOCOMPACT_PCT_OVERRIDE')
   if (envPercent) {
     const parsed = parseFloat(envPercent)
     if (!isNaN(parsed) && parsed > 0 && parsed <= 100) {
@@ -103,7 +103,7 @@ export function calculateTokenWarningState(
     actualContextWindow - MANUAL_COMPACT_BUFFER_TOKENS
 
   // Allow override for testing
-  const blockingLimitOverride = deps.getEnv('CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE')
+  const blockingLimitOverride = deps.getEnv('THYROX_CODE_BLOCKING_LIMIT_OVERRIDE')
   const parsedOverride = blockingLimitOverride
     ? parseInt(blockingLimitOverride, 10)
     : NaN

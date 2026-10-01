@@ -1,0 +1,32 @@
+: bun build salió 1
+25 |   CREDENTIALS_SERVICE_SUFFIX,
+       ^
+error: No matching export in "src/secureStorage/macOsKeychainHelpers.ts" for import "CREDENTIALS_SERVICE_SUFFIX"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/macOsKeychainStorage.ts:25:3
+
+26 |   clearKeychainCache,
+       ^
+error: No matching export in "src/secureStorage/macOsKeychainHelpers.ts" for import "clearKeychainCache"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/macOsKeychainStorage.ts:26:3
+
+27 |   getMacOsKeychainStorageServiceName,
+       ^
+error: No matching export in "src/secureStorage/macOsKeychainHelpers.ts" for import "getMacOsKeychainStorageServiceName"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/macOsKeychainStorage.ts:27:3
+
+28 |   getUsername,
+       ^
+error: No matching export in "src/secureStorage/macOsKeychainHelpers.ts" for import "getUsername"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/macOsKeychainStorage.ts:28:3
+
+29 |   KEYCHAIN_CACHE_TTL_MS,
+       ^
+error: No matching export in "src/secureStorage/macOsKeychainHelpers.ts" for import "KEYCHAIN_CACHE_TTL_MS"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/macOsKeychainStorage.ts:29:3
+
+30 |   keychainCacheState,
+       ^
+error: No matching export in "src/secureStorage/macOsKeychainHelpers.ts" for import "keychainCacheState"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/macOsKeychainStorage.ts:30:3
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

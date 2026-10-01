@@ -1,0 +1,9 @@
+check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+src/commands/mitm-commands.ts(59,40): error TS2322: Type 'import("/home/user/thyrox/src/packages/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/src/packages/mitm/src/inspector/buffer").TrafficBuffer'.
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+__tests__/mitmCommands.test.ts(11,37): error TS2305: Module '"@thyrox/mitm/manager"' has no exported member 'getInspectorIngest'.
+src/commands/mitm-commands.ts(59,40): error TS2322: Type 'import("/home/user/thyrox/src/packages/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/src/packages/mitm/src/inspector/buffer").TrafficBuffer'.
+check-cli-typecheck: tsconfig.json CRECE — 1 sobre un baseline de 0.
+check-cli-typecheck: tsconfig.tests.json CRECE — 2 sobre un baseline de 0.
+check-cli-typecheck: proyectos medidos: 2 de 2
+__BG_EXIT__=1

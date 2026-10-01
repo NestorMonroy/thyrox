@@ -29,20 +29,23 @@ function getManagedSettingsPlatform(): 'macos' | 'windows' | 'other' {
  * Ruta al directorio de settings administrados, según la plataforma
  * actual.
  */
+/** El directorio administrado en Windows; WSL lo lee por su montaje. */
+export const WINDOWS_MANAGED_DIRECTORY = 'C:\\Program Files\\ClaudeCode'
+
 export const getManagedFilePath = memoize(function (): string {
   // Permite override para testing/demos (sólo ant, eliminado en builds externos).
   if (
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_CODE_MANAGED_SETTINGS_PATH
+    process.env.THYROX_CODE_MANAGED_SETTINGS_PATH
   ) {
-    return process.env.CLAUDE_CODE_MANAGED_SETTINGS_PATH
+    return process.env.THYROX_CODE_MANAGED_SETTINGS_PATH
   }
 
   switch (getManagedSettingsPlatform()) {
     case 'macos':
       return '/Library/Application Support/ClaudeCode'
     case 'windows':
-      return 'C:\\Program Files\\ClaudeCode'
+      return WINDOWS_MANAGED_DIRECTORY
     default:
       return '/etc/claude-code'
   }

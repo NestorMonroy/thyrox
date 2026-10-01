@@ -21,8 +21,8 @@ import { setGetCwdFn } from '../internal/pendingCrossPackageDeps.js'
 import { setSessionId } from '../sessionPaths.js'
 
 let configDir: string
-const ORIGINAL_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR
-const ORIGINAL_ENV_KIND = process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
+const ORIGINAL_ENV_KIND = process.env.THYROX_CODE_ENVIRONMENT_KIND
 
 // `getCwd()` (de `./internal/pendingCrossPackageDeps.js`) es un singleton
 // de proceso que otros archivos de test (p. ej. `path.test.ts`) también
@@ -33,18 +33,18 @@ const FAKE_CWD = '/home/user/cwd-de-prueba-plans'
 
 beforeEach(async () => {
   configDir = await mkdtemp(join(tmpdir(), 'plans-'))
-  process.env.CLAUDE_CONFIG_DIR = configDir
-  delete process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+  process.env.THYROX_CONFIG_DIR = configDir
+  delete process.env.THYROX_CODE_ENVIRONMENT_KIND
   setInitialSettingsForTest({})
   setGetCwdFn(() => FAKE_CWD)
   clearAllPlanSlugs()
 })
 
 afterEach(async () => {
-  if (ORIGINAL_CONFIG_DIR === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = ORIGINAL_CONFIG_DIR
-  if (ORIGINAL_ENV_KIND === undefined) delete process.env.CLAUDE_CODE_ENVIRONMENT_KIND
-  else process.env.CLAUDE_CODE_ENVIRONMENT_KIND = ORIGINAL_ENV_KIND
+  if (ORIGINAL_CONFIG_DIR === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
+  if (ORIGINAL_ENV_KIND === undefined) delete process.env.THYROX_CODE_ENVIRONMENT_KIND
+  else process.env.THYROX_CODE_ENVIRONMENT_KIND = ORIGINAL_ENV_KIND
   setInitialSettingsForTest({})
   setGetCwdFn(() => process.cwd())
   clearAllPlanSlugs()
@@ -52,7 +52,7 @@ afterEach(async () => {
 })
 
 describe('getPlansDirectory', () => {
-  test('sin settings, usa CLAUDE_CONFIG_DIR/plans y lo crea', async () => {
+  test('sin settings, usa THYROX_CONFIG_DIR/plans y lo crea', async () => {
     const dir = getPlansDirectory()
     expect(dir).toBe(join(configDir, 'plans'))
     expect((await stat(dir)).isDirectory()).toBe(true)
@@ -163,7 +163,7 @@ describe('copyPlanForResume', () => {
   })
 
   test('archivo faltante, entorno remoto, recupera desde snapshot de archivo', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     const log: LogOption = {
       messages: [
         { type: 'user', slug: 'slug-recuperado-snap' },
@@ -186,7 +186,7 @@ describe('copyPlanForResume', () => {
   })
 
   test('archivo faltante, entorno remoto, recupera desde tool_use de ExitPlanMode', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     const log: LogOption = {
       messages: [
         {
@@ -210,7 +210,7 @@ describe('copyPlanForResume', () => {
   })
 
   test('archivo faltante, entorno remoto, recupera desde planContent de un mensaje de usuario', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     const log: LogOption = {
       messages: [
         { type: 'user', planContent: '# desde planContent' },
@@ -223,7 +223,7 @@ describe('copyPlanForResume', () => {
   })
 
   test('archivo faltante, entorno remoto, recupera desde attachment plan_file_reference', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     const log: LogOption = {
       messages: [
         {
@@ -239,7 +239,7 @@ describe('copyPlanForResume', () => {
   })
 
   test('archivo faltante, entorno remoto, SIN nada que recuperar devuelve false', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     const ok = await copyPlanForResume(
       logCon('slug-sin-recuperacion-posible'),
       'sesion-resume-7',
@@ -289,13 +289,13 @@ describe('persistFileSnapshotIfRemote', () => {
   })
 
   test('con entorno remoto pero sin plan, resuelve (nada que snapshotear)', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     setSessionId('sesion-snapshot-vacio')
     await expect(persistFileSnapshotIfRemote()).resolves.toBeUndefined()
   })
 
   test('con entorno remoto y un plan existente, no lanza — recordTranscript aún no existe en este árbol', async () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     setSessionId('sesion-snapshot-con-plan')
     await writeFile(getPlanFilePath(), '# un plan')
     // recordTranscript (./sessionStorage.js) no está portado todavía —

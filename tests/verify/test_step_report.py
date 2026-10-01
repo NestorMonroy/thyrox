@@ -25,6 +25,18 @@ from verify import step_report as sr
 passed = failed = 0
 
 
+def publish_all(bench: Path) -> Path:
+    """Cierra cada ítem de ``outputs``, como hace el pool al publicarlo.
+
+    El informe lee sólo ítems con ``<n>.closed`` (``pool_lifecycle``); las
+    salidas de estas pruebas simulan un paso ya terminado.
+    """
+    outputs = bench / "outputs"
+    for item in {p.name.split(".", 1)[0] for p in outputs.iterdir() if p.name[0].isdigit()}:
+        (outputs / f"{item}.closed").write_text(json.dumps({"item": item, "generation": 1, "artifacts": {}}))
+    return bench
+
+
 def assert_equal(name: str, expected, obtained) -> None:
     global passed, failed
     if expected == obtained:
@@ -56,7 +68,7 @@ with tempfile.TemporaryDirectory() as tmp:
         (pipeline / f"batch-0{n}").mkdir(parents=True)
         (pipeline / f"batch-0{n}/report.json").write_text(json.dumps(
             {"total_before": before, "total_final": final, "outcomes": outcomes, "tsc_runs": 2}))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("cuatro capas separadas", ["capability", "cost", "data", "system"], sorted(report))
     assert_equal("sistema: pared del pool y fracción a ancho completo, del joblog",
                  (40.0, 0.25), (report["system"]["pool_wall_s"], report["system"]["full_width_share"]))
@@ -77,9 +89,30 @@ with tempfile.TemporaryDirectory() as tmp:
     for n, peak in ((1, 300000), (2, 900000), (3, 600000)):
         (bench / f"outputs/{n}.time").write_text(f"{peak} 12.00 3.00 1.00\n")
     (bench / "outputs/4.time").write_text("no es una medida\n")
-    report = sr.step_report(bench, pipeline)
+    # El item que FALLO: sin `-q`, GNU Time antepone esta linea (bytes reales de
+    # `/usr/bin/time -f ... -o f bash -c "exit 7"`). Es el que mas importa medir
+    # —un `thyrox -p` que agota su plazo suele ser el mas pesado— y leer solo la
+    # primera palabra lo descartaba como ilegible.
+    (bench / "outputs/5.time").write_text(
+        "Command exited with non-zero status 124\n1200000 600.00 50.00 4.00\n")
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("la memoria pico de los items: máxima, mediana y cuántos se midieron",
-                 {"measured": 3, "max": 900000, "median": 600000}, report["system"]["memory_kb"])
+                 {"measured": 4, "max": 1200000, "median": 750000}, report["system"]["memory_kb"])
+    # La VRAM, de los `<n>.gpu` que escribe `gpu_monitor`: `pico media uso% muestras`.
+    # Sin ninguno —no hubo nvidia-smi— se declara no medida, igual que la RAM.
+    assert_equal("sin archivos .gpu la VRAM se declara no medida, no cero", {"measured": 0},
+                 report["system"]["gpu"])
+    for n, (peak, utilization) in ((1, (3200, 80)), (2, (4700, 91)), (3, (0, 0))):
+        (bench / f"outputs/{n}.gpu").write_text(f"{peak} {peak // 2} {utilization} 12\n")
+    (bench / "outputs/4.gpu").write_text("ilegible\n")
+    report = sr.step_report(publish_all(bench), pipeline)
+    (bench / "outputs/6.gpu").write_text("error NVML: Driver/library version mismatch\n")
+    report = sr.step_report(publish_all(bench), pipeline)
+    # TRES estados, sin colapsar: el 0 medido cuenta (mediana 3200, no 3950);
+    # lo ilegible y el fallo de nvidia-smi son ERRORES, no medidas ni ausencias.
+    assert_equal("la VRAM de los items: pico máximo, mediana, uso pico, medidos y errores",
+                 {"measured": 3, "errors": 2, "vram_max_mib": 4700, "vram_median_mib": 3200, "utilization_max_pct": 91},
+                 report["system"]["gpu"])
     assert_equal("sin modelUsage la base es la fórmula fija, declarada", {"(sin modelo)": "fija-3-15"},
                  report["cost"]["basis"])
 
@@ -89,7 +122,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for n in (1, 2, 3):
         (bench / f"outputs/{n}.json").write_text(json.dumps(
             {"usage": opus_usage, "modelUsage": {"claude-opus-5-5": {"inputTokens": 10}}}))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("costo con los cocientes del tier del modelo de cada salida", (1080.0, 540.0),
                  (report["cost"]["equiv_tokens"], report["cost"]["equiv_per_accepted"]))
     assert_equal("la base de cada modelo se publica", {"claude-opus-5-5": "tier_4_20_cache_read_0_20"},
@@ -111,13 +144,13 @@ with tempfile.TemporaryDirectory() as tmp:
             "".join(json.dumps(line) + "\n" for line in lines) + '{"type":"res\n')
 
     stream(1, (0, 5000), (5000, 900))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa)",
                  {"measured": 1, "first_item": {"item": 1, "read": 0, "write": 5000}},
                  report["cost"]["cache_prefix"])
     stream(2, (4800, 200), (6000, 50))
     stream(3, (5000, 300))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("el prefijo: primer ítem frío, su tamaño por la lectura de los demás",
                  {"measured": 3, "first_item": {"item": 1, "read": 0, "write": 5000},
                   "prefix_tokens": 4900, "first_item_read_share": 0.0, "write_median": 300},
@@ -134,7 +167,7 @@ with tempfile.TemporaryDirectory() as tmp:
             {"type": "assistant", "message": {"usage": {"cache_read_input_tokens": request[0],
                                                         "cache_creation_input_tokens": request[1]}}}) + "\n")
     assert_equal("el primer ítem es el primero en arrancar, no el de Seq menor",
-                 {"item": 2, "read": 0, "write": 4000}, sr._cache_prefix(late)["first_item"])
+                 {"item": 2, "read": 0, "write": 4000}, sr._cache_prefix(publish_all(late))["first_item"])
 
     empty = Path(tmp) / "empty"
     (empty / "outputs").mkdir(parents=True)
@@ -144,6 +177,23 @@ with tempfile.TemporaryDirectory() as tmp:
     except Exception as error:  # noqa: BLE001 — la negativa tiene que ser ValueError, no otro fallo
         refused = type(error) is ValueError
     assert_equal("sin lotes medidos rehúsa en vez de publicar ceros", True, refused)
+
+    # Un ítem sin `<n>.closed` todavía corre o murió a medio publicar: el
+    # informe no lo lee aunque su `.time` ya esté en la salida.
+    unsealed = Path(tmp) / "unsealed"
+    (unsealed / "outputs").mkdir(parents=True)
+    for n, peak in ((1, 1000), (2, 9000)):
+        (unsealed / f"outputs/{n}.time").write_text(f"{peak} 1.0 0.5 0.1\n")
+    (unsealed / "outputs/1.closed").write_text(json.dumps({"item": "1", "generation": 1, "artifacts": {}}))
+    assert_equal("sin <n>.closed, el ítem no entra en la medida",
+                 {"measured": 1, "max": 1000, "median": 1000}, sr._memory(unsealed))
+    sealed_glob = sr.closed_glob
+    sr.closed_glob = lambda directory, pattern: sorted(Path(directory).glob(pattern))
+    try:
+        assert_equal("control: sin el filtro de cerrados, el ítem sin sello vuelve a contar",
+                     2, sr._memory(unsealed)["measured"])
+    finally:
+        sr.closed_glob = sealed_glob
 
 print(f"test_step_report: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

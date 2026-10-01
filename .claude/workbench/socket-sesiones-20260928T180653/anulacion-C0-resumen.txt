@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+17 | const entry = (msgId: string | undefined, text = 't') => ({ msg_id: msgId, from: 'a', timestamp: '1', text })
+18 | 
+19 | describe('mailboxEntryDigest (t)', () => {
+20 |   test('sha256 del JSON de remitente, hora, texto, resumen, color y plugin', () => {
+21 |     const expected = createHash('sha256').update(JSON.stringify(['a', '1', 't', null, null, null])).digest('hex')
+22 |     expect(mailboxEntryDigest(entry('m'))).toBe(expected)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "56522952a1d0a678965cc3db8ebab334f6a16acc27622c3358ae8f6f2542658f"
+Received: "2aaa54f92685507ed42eede31cdcc9275f758f0489c1776b73eb43c67c70af89"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:22:44)
+(fail) mailboxEntryDigest (t) > sha256 del JSON de remitente, hora, texto, resumen, color y plugin [0.62ms]
+
+ 9 pass
+ 1 fail
+ 36 expect() calls
+Ran 10 tests across 1 file. [58.00ms]

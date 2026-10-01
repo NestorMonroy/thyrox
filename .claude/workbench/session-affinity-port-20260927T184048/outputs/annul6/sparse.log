@@ -1,0 +1,5 @@
+(fail) comparador LCP: diferencial contra Go > línea 21 (turns) [1.62ms]
+(fail) comparador LCP: diferencial contra Go > línea 22 (turns) [1.80ms]
+(fail) comparador LCP: diferencial contra Go > línea 24 (turns) [5.18ms]
+ 1036 pass
+ 3 fail

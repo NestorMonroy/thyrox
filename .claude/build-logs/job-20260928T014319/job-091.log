@@ -1,0 +1,20 @@
+== 1. el guion existe y parsea ==
+  ok    check_mutante_en_staging.py parsea
+== 2. archivo limpio -> exit 0 ==
+  ok    un .py sin mutante sale 0
+  ok    publica su denominador
+== 3. CONTROL POSITIVO — el mutante REAL, con la forma que el mutador escribe ==
+  ok    un .py con mutante sale 1
+  ok    nombra el archivo sucio
+  ok    nombra la linea
+== 4. CONTROL NEGATIVO — la constante del propio mutador NO es un mutante ==
+  ok    la declaracion a nivel de modulo NO cuenta
+== 5. el mutador REAL del repo pasa su propio guard ==
+  ok    check_suite_discrimina.py no se bloquea a si mismo
+== 6. sin argumentos, el alcance sale del staging ==
+  ok    un mutante en staging bloquea
+== 7. el arbol vivo esta limpio (control del repo real) ==
+  ok    ningun .py versionado trae un mutante
+
+10 de 10 aserciones en verde
+EXIT=0

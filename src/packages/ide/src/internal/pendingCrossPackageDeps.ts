@@ -5,27 +5,9 @@
  *
  * 1. **Envoltorios de `require()` diferido** hacia paquetes hermanos que YA
  *    existen en este árbol (`config`, `local-observability`, `storage`,
- *    `app-host`, `agent`, `shell`) pero no resuelven de forma estática desde
- *    aquí: `@thyrox/ide` **no es miembro** de `src/packages/package.json:
- *    workspaces` todavía, así que ningún `node_modules/@thyrox/*` symlink
- *    existe en este paquete — verificado en vivo, no de memoria:
- *
- *    ```
- *    $ cd src/packages/ide && bun -e \
- *        "require.resolve('@thyrox/local-observability/debug.js')"
- *    Cannot find module '@thyrox/local-observability/debug.js' …
- *    $ bun install   # con una dependencia "workspace:*" en package.json
- *    error: Workspace dependency "@thyrox/local-observability" not found
- *    ```
- *
- *    Un `import` estático de un especificador que no resuelve hace fallar la
- *    carga del MÓDULO ENTERO, no sólo la función que lo usa — mismo patrón
- *    que documentan `@thyrox/config` y `@thyrox/mcp-runtime:
- *    src/xaaIdpLogin.ts`. Cuando el orquestador registre `ide` en
- *    `workspaces` y corra `bun install`, estos envoltorios empiezan a
- *    resolver contra los símbolos REALES ya portados — no son un stub que
- *    sustituye comportamiento, son un indirect call a un módulo hermano que
- *    hoy no se puede enlazar estáticamente.
+ *    `app-host`, `agent`, `shell`). `@thyrox/*` resuelve desde este paquete,
+ *    así que cada envoltorio llama al símbolo REAL ya portado —no es un stub
+ *    que sustituya conducta— y se retira importándolo de forma estática.
  *
  * 2. **Reimplementación fiel recortada** de símbolos que NO existen en
  *    NINGÚN paquete hermano de este árbol todavía — el paquete completo
@@ -228,95 +210,15 @@ export function requireLocalObservabilityRoot(): {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// 2a. Reimplementación fiel — config/env/utils.ts: dos símbolos que
-//     `@thyrox/config/env/utils.ts` no exporta todavía (sólo declara
-//     isEnvTruthy/readEnv/getAllEnv). Verbatim contra ccnmt.
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts` (`isEnvDefinedFalsy`).
- * Idéntica reimplementación a la que ya usa
- * `@thyrox/mcp-runtime: src/internal/pendingCrossPackageDeps.ts` (mismo
- * origen, mismo cuerpo) — no se consume de ahí porque `mcp-runtime` tampoco
- * lo exporta como subpath público.
- */
-export function isEnvDefinedFalsy(
-  envVar: string | boolean | undefined,
-): boolean {
-  if (envVar === undefined) return false
-  if (typeof envVar === 'boolean') return !envVar
-  if (!envVar) return false
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['0', 'false', 'no', 'off'].includes(normalizedValue)
-}
-
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts` (`isBareMode`). `--bare` /
- * `CLAUDE_CODE_SIMPLE`: sin LSP, porque LSP es para integración de editor
- * (diagnostics, hover, ir-a-definición) y las llamadas `-p` guionadas no lo
- * usan.
- */
-export function isBareMode(): boolean {
-  return (
-    requireConfigEnvUtils().isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
-    process.argv.includes('--bare')
-  )
-}
-
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts:20-27`
- * (`getClaudeConfigHomeDir`). Memoizado por `CLAUDE_CONFIG_DIR` — mismo
- * cuerpo que ya usan `@thyrox/memory` y `@thyrox/mcp-runtime` en sus propios
- * `pendingCrossPackageDeps.ts` (mismo origen).
- */
-let _claudeConfigHomeDirCache: { key: string | undefined; value: string } | null =
-  null
-export function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  if (_claudeConfigHomeDirCache && _claudeConfigHomeDirCache.key === key) {
-    return _claudeConfigHomeDirCache.value
-  }
-  const value = (key ?? pathJoin(homedir(), '.claude')).normalize('NFC')
-  _claudeConfigHomeDirCache = { key, value }
-  return value
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// 2b. Reimplementación fiel — config/env/paths.ts y config/env/dynamic.ts
-//     (`env`/`envDynamic`): NINGUNO de los dos existe en `@thyrox/config`
-//     todavía. `ide.ts` sólo lee `env.terminal`/`envDynamic.terminal`; el
-//     propio `@thyrox/config/env/dynamic.ts` ya degrada a
-//     `{ platform: ..., terminal: null, ... }` cuando `./paths.js` no
-//     resuelve (ver su docstring) — aquí se reproduce esa MISMA rama
-//     degradada, recortada a lo que `ide` necesita.
+// 2b. Reimplementación fiel — config/env/paths.ts (`env`): su original,
+//     `@thyrox/config/env`, cerraría un ciclo de módulos con este paquete
+//     (`hooks/useIdeSelection.ts`). `ide.ts` sólo lee `env.terminal`; el
+//     propio `@thyrox/config/env/dynamic.ts` ya degrada a `terminal: null`
+//     cuando `./paths.js` no resuelve — aquí se reproduce esa MISMA rama
+//     degradada. `envDynamic` sí se importa de `@thyrox/config/env/dynamic`.
 // ─────────────────────────────────────────────────────────────────────────
 
 export const env: { terminal: string | null } = { terminal: null }
-export const envDynamic: { terminal: string | null } = { terminal: null }
-
-// ─────────────────────────────────────────────────────────────────────────
-// 2c. Reimplementación fiel — config/semver.ts (`lt`): el archivo no existe
-//     en `@thyrox/config`. `Bun.semver` es nativo del runtime (siempre
-//     disponible aquí — `bun test`), así que no hace falta el fallback a la
-//     dependencia npm `semver` que usa `ccnmt: packages/config/semver.ts`
-//     para el caso Node.
-// ─────────────────────────────────────────────────────────────────────────
-
-export function lt(a: string, b: string): boolean {
-  return Bun.semver.order(a, b) === -1
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// 2d. Reimplementación fiel — tool-registry/utils/lazySchema.ts: el paquete
-//     `tool-registry` no existe en este árbol. Fábrica singleton perezosa,
-//     idéntica a la que ya usa `@thyrox/headless-sdk` en su propio
-//     `pendingCrossPackageDeps.ts` (mismo origen, mismo cuerpo de 3 líneas).
-// ─────────────────────────────────────────────────────────────────────────
-
-export function lazySchema<T>(factory: () => T): () => T {
-  let cached: T | undefined
-  return () => (cached ??= factory())
-}
 
 // ─────────────────────────────────────────────────────────────────────────
 // 2e. Reimplementación fiel — lodash-es/{memoize,capitalize}.js: siguiendo
@@ -344,6 +246,7 @@ export function memoize<Args extends unknown[], Result>(
   }
 }
 
+// homonym capitalize: 2.1.283 (`chunk-5t3x93y6.js`, `QPt = x4`) usa la de lodash, que baja el resto a minúsculas; `@thyrox/output/utils/stringUtils.js` no lo hace (`str.charAt(0).toUpperCase() + str.slice(1)`), así que importarla cambiaría `toIDEDisplayName`.
 /** Mismo contrato que `lodash-es/capitalize.js`: primera letra en mayúscula, resto en minúscula. */
 export function capitalize(str: string): string {
   if (!str) return ''
@@ -953,79 +856,6 @@ export function getIsScrollDraining(): boolean {
 }
 export function setGetIsScrollDrainingFn(fn: () => boolean): void {
   _getIsScrollDraining = fn
-}
-
-/**
- * `callIdeRpc` — de `mcp-runtime/clientRuntime.ts`. Ese archivo está
- * BLOQUEADO dentro del propio `@thyrox/mcp-runtime` (13 de 48 símbolos, por
- * ausencia de `tool-registry` — ver el `description` de su `package.json`).
- * `callIdeRpc` depende de `callMCPTool`, que a su vez es parte del mismo
- * archivo de 3179 líneas: reimplementarlo aquí duplicaría un mecanismo que
- * no le pertenece a `ide`. Default: lanza con un mensaje que nombra la
- * causa exacta, en vez de fabricar un resultado silencioso
- * (`porte-completo-no-parcial.md`: "un módulo fabricado es peor que uno
- * ausente"). Setter para inyectar la implementación real cuando exista, o
- * un doble de test.
- */
-let _callIdeRpc: (
-  toolName: string,
-  args: Record<string, unknown>,
-  client: unknown,
-) => Promise<string | unknown[] | undefined> = () => {
-  throw new Error(
-    'callIdeRpc: no implementado — @thyrox/mcp-runtime/clientRuntime.ts ' +
-      'está bloqueado (13/48 símbolos, por ausencia de @thyrox/tool-registry). ' +
-      'Inyectar con setCallIdeRpcFn() para tests, o esperar a que mcp-runtime ' +
-      'porte clientRuntime.ts.',
-  )
-}
-export function callIdeRpc(
-  toolName: string,
-  args: Record<string, unknown>,
-  client: unknown,
-): Promise<string | unknown[] | undefined> {
-  return _callIdeRpc(toolName, args, client)
-}
-export function setCallIdeRpcFn(
-  fn: (
-    toolName: string,
-    args: Record<string, unknown>,
-    client: unknown,
-  ) => Promise<string | unknown[] | undefined>,
-): void {
-  _callIdeRpc = fn
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// 4. Sustituto in-memory — config (getGlobalConfig/saveGlobalConfig): el
-//    subsistema real (`ccnmt: packages/config/global/config.ts`, >1100
-//    líneas) lee/escribe `~/.claude.json`. `ide.ts` sólo toca dos campos
-//    (`diffTool`, `autoInstallIdeExtension`) y los hooks uno más
-//    (`autoConnectIde`). Mismo patrón DI que `@thyrox/memory`'s
-//    `getInitialSettings`/`setInitialSettingsForTesting`: estado en memoria
-//    de módulo, sin tocar disco, con setter para tests.
-// ─────────────────────────────────────────────────────────────────────────
-
-export type IdeGlobalConfigShape = {
-  diffTool?: string
-  autoInstallIdeExtension?: boolean
-  autoConnectIde?: boolean
-}
-
-let _globalConfig: IdeGlobalConfigShape = {}
-
-export function getGlobalConfig(): IdeGlobalConfigShape {
-  return _globalConfig
-}
-
-export function saveGlobalConfig(
-  updater: (current: IdeGlobalConfigShape) => IdeGlobalConfigShape,
-): void {
-  _globalConfig = updater(_globalConfig)
-}
-
-export function setGlobalConfigForTesting(config: IdeGlobalConfigShape): void {
-  _globalConfig = config
 }
 
 // Re-exportado para que otros módulos del paquete puedan citar el tipo sin

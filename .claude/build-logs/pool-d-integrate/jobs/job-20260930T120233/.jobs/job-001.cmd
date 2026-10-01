@@ -1,0 +1,1 @@
+cd src/packages/permission && timeout 600 bun test src/__tests__/pathSafety.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0251-permission.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0251-permission.log

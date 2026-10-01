@@ -1,0 +1,27 @@
+caso 0 — la fuga: sin enlaces, un consumidor del worktree resuelve el paquete del principal
+  ok    la resolución asciende hasta el principal
+  ok    y THYROX_ITEM_WORKTREE_LINK vacío no enlaza nada
+caso 1 — con los enlaces por defecto, el verify mide el código del worktree
+  ok    prepare sale 0
+  ok    el paquete de workspace resuelve dentro del worktree
+  ok    y es la copia editada por el ítem
+  ok    una dependencia externa resuelve a la real del principal
+  ok    el .bin del principal sigue sirviendo
+  ok    .venv es un enlace al del principal
+  ok    y su enlace interno sigue resolviendo
+  ok    el node_modules de un paquete también llega
+caso 2 — el worktree arranca limpio y el principal no cambia
+  ok    git status del worktree sólo nombra lo editado
+  ok    el principal queda limpio
+caso 3 — los enlaces no entran al parche del ítem
+  ok    sólo el archivo editado está en el parche
+  ok    ningún enlace aparece
+caso 4 — un nombre ausente en el principal se salta sin fallar
+  ok    prepare sale 0
+  ok    lo dice por stderr
+  ok    y enlaza los que sí existen
+caso 5 — un nombre absoluto o con .. se rehúsa
+  ok    exit 2
+  ok    lo dice
+item_worktree links: 19/19
+rc=0

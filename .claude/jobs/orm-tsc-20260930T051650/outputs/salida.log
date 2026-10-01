@@ -1,0 +1,18 @@
+check-package-typecheck: 14 provider(s) reconstruido(s) por viejos: agent, cli, command-runtime, config, ink, local-observability, paths, provider, repl, shell, swarm, tool-registry, updater, workbench
+  agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  cli: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  command-runtime: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  ink: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  paths: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  repl: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  swarm: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  updater: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  workbench: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 14 de 14 paquete(s))
+__BG_EXIT__=0

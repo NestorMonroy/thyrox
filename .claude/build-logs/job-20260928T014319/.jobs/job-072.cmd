@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/session/test_generate_bin.py

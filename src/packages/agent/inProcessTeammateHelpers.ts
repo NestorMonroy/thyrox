@@ -15,9 +15,8 @@ import { updateTaskState } from './task/framework.js'
  * `InProcessTeammateTaskState`, `isInProcessTeammateTask`,
  * `isPermissionResponse`, `isSandboxPermissionResponse` y
  * `PlanApprovalResponseMessage` de `@claude-code-how-works/swarm`, y
- * `updateTaskState` de `./task/framework.js`. Cuando se escribió este porte
- * ninguno de los dos existía; hoy los dos existen y de `@thyrox/swarm` se toma
- * el tipo de la tarea (2026-09-26). Se portan sólo `findInProcessTeammateTaskId` y su
+ * `updateTaskState` de `./task/framework.js`; de `@thyrox/swarm` se toma el
+ * tipo de la tarea. Se portan sólo `findInProcessTeammateTaskId` y su
  * discriminador de tipo `isInProcessTeammateTask`, porque son el único
  * símbolo que ejercita el test que este archivo porta
  * (`__tests__/findInProcessTeammateTaskId.test.ts`).

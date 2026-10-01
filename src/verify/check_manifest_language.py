@@ -31,8 +31,8 @@ import json
 import pathlib
 
 
-from verify.check_identifier_language import (  # noqa: E402
-    corpus_available,
+from verify.check_identifier_language import (  # noqa: E402,F401
+    corpus_available,  # re-exportado: lo consume test_manifest_language.py como gate.corpus_available()
     refuse_without_corpus,
     spanish_words_in,
 )
@@ -171,7 +171,7 @@ def scan(root: pathlib.Path,
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument('root', nargs='?', default='.',
                         help='raiz medida (default: el directorio actual)')
     parser.add_argument('--quiet', action='store_true',

@@ -1,0 +1,5 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+4	:	1790754117.596	  2530.749	0	0	0	0	_headless_item 4 'TASK-THYROX-0508 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0508/prompt.md'
+3	:	1790754117.586	  3267.260	0	0	0	0	_headless_item 3 'TASK-THYROX-0497 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0497/prompt.md'
+1	:	1790754117.581	  3403.205	0	0	0	0	_headless_item 1 'TASK-THYROX-0498 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0498/prompt.md'
+2	:	1790754117.583	  4425.924	0	0	0	0	_headless_item 2 'TASK-THYROX-0496 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0496/prompt.md'

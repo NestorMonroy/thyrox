@@ -1,0 +1,5 @@
+bash bin/emit_declarations --repoint paths > .claude/workbench/entry-point-20260927T015546/emit5/paths.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/paths.out
+bash bin/emit_declarations --repoint store > .claude/workbench/entry-point-20260927T015546/emit5/store.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/store.out
+bash bin/emit_declarations --repoint task > .claude/workbench/entry-point-20260927T015546/emit5/task.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/task.out
+bash bin/emit_declarations --repoint coordination > .claude/workbench/entry-point-20260927T015546/emit5/coordination.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/coordination.out
+bash bin/emit_declarations --repoint workbench > .claude/workbench/entry-point-20260927T015546/emit5/workbench.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/workbench.out

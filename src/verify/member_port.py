@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """El porte de un módulo grande, repartido por miembros.
 
-POR QUÉ. Un módulo demasiado grande para un `claude -p` no cabe en un ítem:
+POR QUÉ. Un módulo demasiado grande para un `thyrox -p` no cabe en un ítem:
 el porte entero de `attachments.ts` (3824 líneas en la fuente) agotó 31
 turnos en el paso 130. Se reparte en ítems, uno por miembro, que corren a la
 vez y escriben el MISMO archivo. Para que no choquen, cada ítem tiene dos
@@ -290,7 +290,6 @@ def main(argv: list[str] | None = None) -> int:
     original de cada uno. Escribe el destino y el informe en JSON por stdout.
     """
     import argparse
-    import sys
     parser = argparse.ArgumentParser(description="porte de un módulo por miembros")
     parser.add_argument("command", choices=("assemble", "plan"))
     parser.add_argument("--target", type=Path, required=True)

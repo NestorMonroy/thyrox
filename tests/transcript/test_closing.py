@@ -41,6 +41,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "closing", HERE / "src" / "transcript" / "closing.py")
+assert spec is not None and spec.loader is not None
 closing = importlib.util.module_from_spec(spec)
 # Se registra ANTES de ejecutar: `dataclasses._is_type` resuelve la anotacion
 # buscando `sys.modules[cls.__module__]`, y sin esta linea encuentra None y

@@ -10,8 +10,7 @@
  * (séptimo binding `_b()`, `filesystem.ts:34`) y su envoltorio memoizado
  * `getResolvedWorkingDirPaths` (`filesystem.ts:687`). Las dos dependencias
  * restantes de `pathInAllowedWorkingPath` — `allWorkingDirectories` y
- * `pathInWorkingPath` — ya estaban portadas (pase de 2026-09-08,
- * `workspaceAndRename.test.ts`).
+ * `pathInWorkingPath` — tienen su suite en `workspaceAndRename.test.ts`.
  *
  * Métrica: el veredicto de `pathInAllowedWorkingPath` sobre rutas reales del
  * sistema de archivos, con y sin el binding `getPathsForPermissionCheck`
@@ -52,7 +51,7 @@ describe('pathInAllowedWorkingPath — con getPathsForPermissionCheck identidad'
 
   beforeEach(() => {
     llamadas = 0
-    getResolvedWorkingDirPaths.cache.clear()
+    getResolvedWorkingDirPaths.cache.clear!()
     installPermissionHostBindings({
       getOriginalCwd: () => RAIZ,
       expandPath: (p: string) => p,
@@ -113,7 +112,7 @@ describe('pathInAllowedWorkingPath — control: sin getPathsForPermissionCheck',
     // Aisla del describe anterior: `getResolvedWorkingDirPaths` es un
     // memoize de MÓDULO — sin limpiar, `RAIZ` seguiría cacheado con el
     // stub identidad de arriba y este control no mediría nada.
-    getResolvedWorkingDirPaths.cache.clear()
+    getResolvedWorkingDirPaths.cache.clear!()
   })
 
   test('7. CONTROL — sin el binding, pathsToCheck vacío da allow vacuo', () => {

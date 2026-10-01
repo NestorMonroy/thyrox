@@ -1,0 +1,3 @@
+TASK-THYROX-0500 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0500/prompt.md
+TASK-THYROX-0499 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0499/prompt.md
+TASK-THYROX-0644 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0644/prompt.md

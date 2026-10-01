@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+78 |       },
+79 |     })
+80 |     await deliverPeerUserMessage({ type: 'user', from: 'uds:/x.sock', msg_id: MSG_ID, message: { content: 'hola' } }, peer, deps)
+81 |     expect(received).toBe(false)
+82 |     expect(enqueued).toEqual([])
+83 |     expect(events).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "refused:uds: dropped before attachment materialization:kill-switch",
+-   "receipt:refused:{"kind":"peer","from":"uds:/x.sock","verifiedPeerPid":42,"msg_id":"0f8fad5b-d9cb-469f-a165-70867728950e"}",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:83:20)
+(fail) deliverPeerUserMessage (ze) > con la política en refuse se rechaza antes de todo y se envía el recibo [0.85ms]
+
+ 15 pass
+ 1 fail
+ 38 expect() calls
+Ran 16 tests across 1 file. [74.00ms]

@@ -1,0 +1,17 @@
+bun.lock
+src/packages/model-artifacts/__tests__/artifactManifest.test.ts
+src/packages/model-artifacts/__tests__/ggufMetadata.test.ts
+src/packages/model-artifacts/__tests__/memoryEstimate.test.ts
+src/packages/model-artifacts/__tests__/modelName.test.ts
+src/packages/model-artifacts/__tests__/packageBoundary.test.ts
+src/packages/model-artifacts/__tests__/quantizationLevel.test.ts
+src/packages/model-artifacts/artifactManifest.ts
+src/packages/model-artifacts/bunfig.toml
+src/packages/model-artifacts/ggufMetadata.ts
+src/packages/model-artifacts/memoryEstimate.ts
+src/packages/model-artifacts/modelName.ts
+src/packages/model-artifacts/package.json
+src/packages/model-artifacts/quantizationLevel.ts
+src/packages/model-artifacts/testing/syntheticGguf.ts
+src/packages/model-artifacts/tsconfig.build.json
+src/packages/model-artifacts/tsconfig.test.json

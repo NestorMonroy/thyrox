@@ -13,6 +13,7 @@ import { openBrowser } from '@thyrox/storage/browser.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { logError } from '@thyrox/local-observability/log.js'
 import type { Workflow } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 async function createWorkflowFile(
   repoName: string,
@@ -41,11 +42,11 @@ async function createWorkflowFile(
   }
 
   let content = workflowContent
-  if (secretName === 'CLAUDE_CODE_OAUTH_TOKEN') {
+  if (secretName === 'THYROX_CODE_OAUTH_TOKEN') {
     // For OAuth tokens, use the claude_code_oauth_token parameter
     content = workflowContent.replace(
       /anthropic_api_key: \$\{\{ secrets\.ANTHROPIC_API_KEY \}\}/g,
-      `claude_code_oauth_token: \${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}`,
+      `claude_code_oauth_token: \${{ secrets.THYROX_CODE_OAUTH_TOKEN }}`,
     )
   } else if (secretName !== 'ANTHROPIC_API_KEY') {
     // For other custom secret names, keep using anthropic_api_key parameter
@@ -86,7 +87,7 @@ async function createWorkflowFile(
         ...context,
       })
       throw new Error(
-        `Failed to create workflow file ${workflowPath}: A Claude workflow file already exists in this repository. Please remove it first or update it manually.`,
+        `Failed to create workflow file ${workflowPath}: A ${PRODUCT_NAME} workflow file already exists in this repository. Please remove it first or update it manually.`,
       )
     }
 
@@ -225,7 +226,7 @@ export async function setupGitHubActions(
         workflows.push({
           path: '.github/workflows/claude.yml',
           content: WORKFLOW_CONTENT,
-          message: 'Claude PR Assistant workflow',
+          message: `${PRODUCT_NAME} PR Assistant workflow`,
         })
       }
 
@@ -233,7 +234,7 @@ export async function setupGitHubActions(
         workflows.push({
           path: '.github/workflows/claude-code-review.yml',
           content: CODE_REVIEW_PLUGIN_WORKFLOW_CONTENT,
-          message: 'Claude Code Review workflow',
+          message: `${PRODUCT_NAME} Review workflow`,
         })
       }
 

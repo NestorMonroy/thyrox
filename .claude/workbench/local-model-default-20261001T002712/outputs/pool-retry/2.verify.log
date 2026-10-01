@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+ 6 pass
+ 0 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [4.71s]
+OK   ollama: exit 0
+OK   ollama: asegura el servicio gestionado
+OK   ollama: el ítem recibe modelo y upstream
+OK   ollama: la línea modelo dice el runtime
+OK   puerto declarado: la URL lo lleva
+OK   respaldo por servicio: exit 0
+OK   respaldo por servicio: pide el proveedor forzado
+OK   respaldo por servicio: el ítem va a claude sin upstream abierto
+OK   respaldo por servicio: la línea nombra runtime y motivo
+OK   respaldo del selector: exit 0
+OK   respaldo del selector: no asegura el servicio
+OK   respaldo del selector: la línea lleva su motivo
+OK   respaldo del selector: sin upstream abierto
+OK   ollama con id claude: exit 2
+OK   ollama con id claude: no asegura el servicio
+OK   claude-cli con nombre thyrox: exit 2
+OK   runtime desconocido: exit 2
+OK   runtime desconocido: lo nombra
+OK   sin runtime: exit 0
+OK   sin runtime: claude-cli sin motivo
+OK   runner claude con ollama: exit 2
+OK   runner claude con ollama: no asegura el servicio
+22/22 aserciones
+shellcheck: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+check-package-typecheck: 48 provider(s) reconstruido(s) por viejos: agent, app-host, audio-capture-napi, bridge, claude-for-chrome-mcp, cli, color-diff-napi, command-runtime, computer-use-input, computer-use-mcp, computer-use-swift, config, context-compression, coordination, daemon, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, mitm, modifiers-napi, observability, output, paths, permission, plan, podman-execution, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))

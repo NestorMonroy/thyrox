@@ -1,0 +1,16 @@
+# green HEAD 9429f0984 dirty=20
+suite podman-execution exit=0  170 pass 0 fail  distinct_fail_lines=0
+tsc podman-execution tsconfig.build.json errors=0
+tsc podman-execution tsconfig.test.json errors=0
+suite model-scheduling exit=1  108 pass 1 fail  distinct_fail_lines=0
+tsc model-scheduling tsconfig.build.json errors=0
+tsc model-scheduling tsconfig.test.json errors=1
+suite local-models exit=1  178 pass 5 fail  distinct_fail_lines=5
+tsc local-models tsconfig.build.json errors=0
+tsc local-models tsconfig.test.json errors=4
+suite daemon exit=0  693 pass 0 fail  distinct_fail_lines=0
+tsc daemon tsconfig.build.json errors=0
+tsc daemon tsconfig.test.json errors=2
+suite provider exit=1  4942 pass 0 fail  distinct_fail_lines=0
+tsc provider tsconfig.build.json errors=0
+tsc provider tsconfig.test.json errors=9

@@ -32,13 +32,15 @@ import sys
 from pathlib import Path
 
 from agents import model_catalog
+from session import gpu_monitor
+from session.pool_lifecycle import closed_glob
 
 #: La etiqueta de una salida que no declara su modelo.
 NO_MODEL = "(sin modelo)"
 
 
 def _item_costs(result: dict, catalog: dict | None) -> list[tuple[str, float, str]]:
-    """(modelo, tokens equivalentes, base) de una salida de ``claude -p``.
+    """(modelo, tokens equivalentes, base) de una salida de ``thyrox -p``.
     Con un solo modelo se usa ``usage``, que trae el reparto de la escritura
     por TTL; con varios, el ``modelUsage`` de cada uno, sin ese reparto."""
     models = result.get("modelUsage") or {}
@@ -81,7 +83,7 @@ def _system(bench: Path, batches: list[dict]) -> dict:
     wall = (max(s + r for _, s, r, _ in jobs) - min(s for _, s, _, _ in jobs)) if jobs else 0.0
     runtimes = [run for _, _, run, _ in jobs]
     failed = {seq for seq, _, _, code in jobs if code != 0}
-    for path in (bench / "outputs").glob("*.json"):
+    for path in closed_glob(bench / "outputs", "*.json"):
         try:
             if path.stem.isdigit() and json.loads(path.read_text()).get("is_error"):
                 failed.add(int(path.stem))
@@ -91,21 +93,45 @@ def _system(bench: Path, batches: list[dict]) -> dict:
             "full_width_share": round(at_width.get(peak, 0.0) / wall, 4) if wall else 0.0,
             "straggler_ratio": round(max(runtimes) / statistics.median(runtimes), 3) if runtimes else 0.0,
             "failed_items": len(failed), "tsc_runs": sum(b.get("tsc_runs", 0) for b in batches),
-            "memory_kb": _memory(bench)}
+            "memory_kb": _memory(bench), "gpu": _gpu(bench)}
 
 
 def _memory(bench: Path) -> dict:
     """La memoria pico de los ítems, de los ``<n>.time`` que ``headless-pool``
     escribe con GNU Time. Sin ninguno, ``measured: 0`` y nada más: una medida
-    ausente no es un cero. Una línea ilegible no cuenta como medida."""
+    ausente no es un cero. Una línea ilegible no cuenta como medida.
+
+    Se lee la ÚLTIMA línea con cifras, no la primera palabra del archivo: sin
+    ``-q``, GNU Time antepone ``Command exited with non-zero status N`` a la
+    medida de un ítem que falló, y ése —un ``thyrox -p`` que agotó su plazo—
+    suele ser el más pesado."""
     peaks = []
-    for path in (bench / "outputs").glob("*.time"):
-        first = path.read_text(errors="ignore").split()
-        if first and first[0].isdigit():
-            peaks.append(int(first[0]))
+    for path in closed_glob(bench / "outputs", "*.time"):
+        lines = [l.split() for l in path.read_text(errors="ignore").splitlines()]
+        measured = [fields for fields in lines if fields and fields[0].isdigit()]
+        if measured:
+            peaks.append(int(measured[-1][0]))
     if not peaks:
         return {"measured": 0}
     return {"measured": len(peaks), "max": max(peaks), "median": int(statistics.median(peaks))}
+
+
+def _gpu(bench: Path) -> dict:
+    """La VRAM de los ítems, de los ``<n>.gpu`` que ``gpu_monitor`` escribe:
+    ``<pico MiB> <media MiB> <uso pico %> <muestras>``. Sin ninguno —no hubo
+    ``nvidia-smi``— ``measured: 0``: una medida ausente no es un cero. Un ítem
+    que no usó la GPU sí cuenta, con 0 MiB, porque eso SÍ se midió."""
+    readings = [gpu_monitor.read_gpu_file(path) for path in closed_glob(bench / "outputs", "*.gpu")]
+    # `state == "measured"` ya implica `summary is not None` en la fuente
+    # (gpu_monitor.py); se repite aquí porque el tipo no lo codifica.
+    measured = [r.summary for r in readings if r.state == "measured" and r.summary is not None]
+    errors = sum(1 for r in readings if r.state == "error")
+    if not measured:
+        return {"measured": 0, **({"errors": errors} if errors else {})}
+    peaks = [s.peak_mib for s in measured]
+    return {"measured": len(measured), "errors": errors, "vram_max_mib": max(peaks),
+            "vram_median_mib": int(statistics.median(peaks)),
+            "utilization_max_pct": max(s.peak_utilization_pct for s in measured)}
 
 
 def _first_request(path: Path) -> tuple[int, int] | None:
@@ -130,7 +156,7 @@ def _cache_prefix(bench: Path) -> dict:
     demás estima su tamaño. Sin streams, ``measured: 0``; con uno solo no
     hay tamaño que estimar y la clave no se publica."""
     first = {}
-    for path in (bench / "outputs").glob("*.stream.jsonl"):
+    for path in closed_glob(bench / "outputs", "*.stream.jsonl"):
         stem = path.name.split(".")[0]
         request = _first_request(path) if stem.isdigit() else None
         if request:
@@ -160,7 +186,7 @@ def step_report(bench: Path, pipeline: Path) -> dict:
     accepted = sum(1 for o in outcomes if o.startswith("accepted"))
     catalog, _ = model_catalog.try_catalog()
     equiv, basis = 0.0, {}
-    for path in sorted((bench / "outputs").glob("*.json")):
+    for path in sorted(closed_glob(bench / "outputs", "*.json")):
         try:
             result = json.loads(path.read_text())
         except ValueError:
@@ -180,7 +206,7 @@ def step_report(bench: Path, pipeline: Path) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--bench", type=Path, required=True)
     parser.add_argument("--pipeline", type=Path, help="el directorio del pipeline (por defecto <bench>/pipeline)")
     args = parser.parse_args(argv)

@@ -4,7 +4,7 @@ Es el gate de ``.claude/CLAUDE.md`` — Flujo de sesión, pasos 4/5 — y del
 episodio que los originó: un turno entero citó ``#9``/``#10`` en dos
 commits y en el propio banco de evidencia (``.claude/workbench/``) antes
 de acuñar su ``TASK-THYROX-NNNN`` con ``src/task/task_ids.py
-ingerir-board``. La prosa que lo corrigió no lo previene — "la lección
+ingest-board``. La prosa que lo corrigió no lo previene — "la lección
 escrita no previene la reincidencia; sólo un gate ejecutable integrado en
 el flujo lo hace" (``gitlink-bump-gate.md``, citado en varios rules de
 este mismo árbol) — así que esto es lo que la hace mecánica.
@@ -93,11 +93,11 @@ def detect(payload: dict) -> str | None:
         + place
         + " nombra "
         + ", ".join(f"`{e}`" for e in ephemeral)
-        + " (el ordinal del board) sin ninguna cita durable `TASK-<CAPA>-NNNN` "
+        + " (el ordinal del board) sin ninguna cita durable `TASK-<LAYER>-NNNN` "
           "que la acompañe. `.claude/CLAUDE.md` (Flujo de sesión, paso 4): el "
           "`#N` reinicia por sesión y colisiona 332 de 337 veces entre dos "
           "(`src/task/task_ids.py`) — citarlo solo fabrica una referencia "
           "rota desde este mismo commit. Acuñar antes de citar: "
-          "`python3 -m src.task.task_ids ingerir-board <session_id> <ordinal> "
-          "--capa thyrox`."
+          "`python3 -m src.task.task_ids ingest-board <session_id> <ordinal> "
+          "--layer thyrox`."
     )

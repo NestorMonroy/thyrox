@@ -1,0 +1,38 @@
+**Las primeras fuentes (enmienda 1.3.0).** Decidido por el ejecutor el
+2026-09-30: ``.claude/worktrees/`` y ``.thyrox/`` guardan en carpetas lo que
+sirve a semantic search porque cuando se decidió no había PostgreSQL +
+pgvector. Son **fuentes de ingestión**, no almacenamiento: su contenido pasa al
+corpus durable antes de que el contenedor lo pierda.
+
+Lo que se ingiere es contenido lógico, no el directorio. Medido en el clon de
+thyrox el mismo día:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Fuente
+     - Se ingiere
+     - No se ingiere, y por qué
+   * - ``.thyrox/runtime/`` (476 archivos)
+     - el transcript de cada ítem (``stream.jsonl``), su informe (``N.json``)
+       y los mensajes del buzón
+     - locks, ``.pyc``, estado de lifecycle y marcadores de stash: estado
+       operativo, sin contenido
+   * - ``.thyrox/pool-worktrees/`` (34 741 archivos)
+     - el diff de cada ítem (``N.patch``)
+     - el checkout: es una copia del árbol que ya vive en git
+   * - ``.claude/worktrees/`` (no existía en el clon medido)
+     - el transcript y el diff de cada worktree de agente
+     - el checkout, por la misma razón
+
+La identidad de origen es estable y no es una ruta
+(``pool:<run>/<item>/<artefacto>``). La ingestión corre antes de que el pool
+publique o retire su runtime. Implementación: **TASK-THYROX-0684**, que depende
+de TASK-THYROX-0682.
+
+**D5, repartida.** Unidad durable, metadata de identidad y versión, detección
+por hash, reindexado por espacio, persistencia de análisis y las primeras
+fuentes quedan decididos arriba. Siguen abiertas, y son del ejecutor: **otras
+fuentes**, **su scope** y **qué retención aplica** al contenido privado o
+temporal. Hasta decidirlas, nada más se ingiere sin una declaración explícita
+de la fuente, y nada se borra por caducidad.

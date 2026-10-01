@@ -2,12 +2,8 @@
  * Utilidades de teammate para la coordinación del swarm de agentes —
  * porte de `ccnmt: packages/swarm/src/teammateState.ts`.
  *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `isEnvTruthy` de
- * `@claude-code-how-works/config/env/utils`, paquete `config` que en este
- * árbol (`@thyrox/config`) no expone ese módulo (medido con
- * `ls src/packages/config`). Se reimplementa localmente — mismo criterio
- * que `api: agent/internalUtils.ts:59` ya declara para su propia
- * reimplementación del mismo wrapper trivial sobre variables de entorno.
+ * `isEnvTruthy` se importa de `@thyrox/config/env/utils`, como en la
+ * fuente.
  *
  * `AppState` se tipa localmente como `{ tasks: Record<string, unknown> }`
  * — la fuente lo importa de `adapters/appRuntime.ts` (donde también es
@@ -15,7 +11,7 @@
  * binding), así que no hay pérdida de fidelidad: el shim de la fuente ya
  * era opaco.
  *
- * Estos helpers identifican si esta instancia de Claude Code corre como
+ * Estos helpers identifican si esta instancia de thyrox corre como
  * un teammate lanzado dentro de un swarm. Los teammates reciben su
  * identidad vía argumentos CLI (--agent-id, --team-name, etc.), que se
  * guardan en `dynamicTeamContext`.
@@ -41,14 +37,7 @@ export {
 import { getTeammateContext } from './teammateContextAlias.js'
 import type { InProcessTeammateTaskState } from './tasks/types.js'
 
-/** Reimplementación local mínima de `isEnvTruthy` (ver divergencia arriba). */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 type InProcessTeammateTaskLike = {
   type: string
   status: string
@@ -59,14 +48,22 @@ type InProcessTeammateTaskLike = {
 type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 /**
- * Devuelve el session ID del padre para este teammate. Para teammates
+ * Devuelve el session ID del padre (`zE`). Para teammates
  * in-process, es el session ID del team lead. Prioridad: AsyncLocalStorage
- * (in-process) > dynamicTeamContext (teammates tmux).
+ * (in-process) > dynamicTeamContext (teammates tmux) > línea de comandos.
  */
 export function getParentSessionId(): string | undefined {
   const inProcessCtx = getTeammateContext()
   if (inProcessCtx) return inProcessCtx.parentSessionId
-  return dynamicTeamContext?.parentSessionId
+  return dynamicTeamContext?.parentSessionId ?? cliParentSessionId
+}
+
+/** El padre que la línea de comandos declaró (`--parent-session-id`); el último recurso. */
+let cliParentSessionId: string | undefined
+
+/** `nYo`. */
+export function setCliParentSessionId(sessionId: string | undefined): void {
+  cliParentSessionId = sessionId
 }
 
 /**
@@ -161,7 +158,7 @@ export function isTeammate(): boolean {
 /**
  * Devuelve el color asignado al teammate, o `undefined` si no corre como
  * teammate o no tiene color asignado. Prioridad: AsyncLocalStorage
- * (in-process) > dynamicTeamContext (teammates tmux).
+ * (in-process) > dynamicTeamContext (teammates tmux) > línea de comandos.
  */
 export function getTeammateColor(): string | undefined {
   const inProcessCtx = getTeammateContext()
@@ -181,7 +178,7 @@ export function isPlanModeRequired(): boolean {
   if (dynamicTeamContext !== null) {
     return dynamicTeamContext.planModeRequired
   }
-  return isEnvTruthy(process.env.CLAUDE_CODE_PLAN_MODE_REQUIRED)
+  return isEnvTruthy(process.env.THYROX_CODE_PLAN_MODE_REQUIRED)
 }
 
 /**
@@ -190,8 +187,8 @@ export function isPlanModeRequired(): boolean {
  * Una sesión se considera team lead si:
  * 1. Existe un contexto de equipo con `leadAgentId`, Y
  * 2. O bien:
- *    - nuestro `CLAUDE_CODE_AGENT_ID` coincide con `leadAgentId`, O
- *    - no tenemos `CLAUDE_CODE_AGENT_ID` fijado (compatibilidad hacia
+ *    - nuestro `THYROX_CODE_AGENT_ID` coincide con `leadAgentId`, O
+ *    - no tenemos `THYROX_CODE_AGENT_ID` fijado (compatibilidad hacia
  *      atrás: la sesión original que creó el equipo antes de que los
  *      agent IDs se estandarizaran).
  *

@@ -1,0 +1,170 @@
+== 1: sin segundos
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) token expiry > epoch seconds and milliseconds, as numbers or text, and ISO dates [0.43ms]
+ 15 pass
+ 1 fail
+== 2: cero es un instante
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) token expiry > anything without a usable time is zero [0.38ms]
+ 15 pass
+ 1 fail
+== 3: texto numérico como fecha
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) token expiry > epoch seconds and milliseconds, as numbers or text, and ISO dates [0.57ms]
+(fail) token expiry > anything without a usable time is zero [36.14ms]
+ 14 pass
+ 2 fail
+== 4: sin recortar
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) token expiry > epoch seconds and milliseconds, as numbers or text, and ISO dates [0.66ms]
+ 15 pass
+ 1 fail
+== 5: fecha inválida pasa
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) token expiry > anything without a usable time is zero [0.48ms]
+ 15 pass
+ 1 fail
+== 6: la conexión gana al token
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) token expiry > the token expiry wins over the connection expiry [0.52ms]
+ 15 pass
+ 1 fail
+== 7: sin columna vieja de reintentos
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) expired retries > the count and time live in the connection data, with the old columns as fallback [0.38ms]
+ 15 pass
+ 1 fail
+== 8: la columna vieja gana
+   (src/accounts/refresh/health/connectionExpiry.ts)
+ 16 pass
+ 0 fail
+== 9: borrar muta el original
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) expired retries > setting and clearing the retry keeps the rest of the data [0.51ms]
+ 15 pass
+ 1 fail
+== 10: sin ghe-copilot
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) GitHub Copilot connections > github and ghe-copilot with an access token have no refresh token by design [0.63ms]
+ 15 pass
+ 1 fail
+== 11: sin minúsculas
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) GitHub Copilot connections > github and ghe-copilot with an access token have no refresh token by design [0.41ms]
+ 15 pass
+ 1 fail
+== 12: token en blanco vale
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) GitHub Copilot connections > github and ghe-copilot with an access token have no refresh token by design [0.37ms]
+ 15 pass
+ 1 fail
+== 13: ghe sin /api/v3
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) GitHub Copilot connections > the Copilot token comes from the enterprise host for ghe-copilot [0.51ms]
+ 15 pass
+ 1 fail
+== 14: expirado con otro error se limpia
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) GitHub Copilot connections > only an active, untested or no-refresh-token state may be cleared [0.36ms]
+ 15 pass
+ 1 fail
+== 15: base de 10 min
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > the backoff doubles from five minutes and stops at four hours [0.80ms]
+(fail) refresh circuit > a failed refresh keeps an active connection active and opens the circuit [0.63ms]
+(fail) refresh circuit > an expired connection stays expired and counts the retry; overrides win [0.36ms]
+ 13 pass
+ 3 fail
+== 16: sin tope
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > the backoff doubles from five minutes and stops at four hours [0.61ms]
+ 15 pass
+ 1 fail
+== 17: escalera desde el primero
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > the backoff doubles from five minutes and stops at four hours [0.49ms]
+(fail) refresh circuit > a failed refresh keeps an active connection active and opens the circuit [0.32ms]
+(fail) refresh circuit > an expired connection stays expired and counts the retry; overrides win [0.24ms]
+ 13 pass
+ 3 fail
+== 18: reintento de red de 5 min
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a transient failure retries in two minutes without growing the streak [0.61ms]
+(fail) refresh circuit > a transient failure keeps a longer backoff already in place, and ignores a malformed one [0.30ms]
+ 14 pass
+ 2 fail
+== 19: anthropic se descarta
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > rotating providers drop a dead refresh token, except Anthropic, which keeps it for the retries [0.40ms]
+ 15 pass
+ 1 fail
+== 20: openference no rota
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > rotating providers drop a dead refresh token, except Anthropic, which keeps it for the retries [0.64ms]
+ 15 pass
+ 1 fail
+== 21: espera inválida cuenta
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a connection is in backoff only while a valid window is still open [0.49ms]
+ 15 pass
+ 1 fail
+== 22: espera no texto cuenta
+   (src/accounts/refresh/health/refreshCircuit.ts)
+ 16 pass
+ 0 fail
+== 23: expirado pasa a activo
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a transient failure keeps a longer backoff already in place, and ignores a malformed one [0.69ms]
+ 15 pass
+ 1 fail
+== 24: sin contar el reintento
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > an expired connection stays expired and counts the retry; overrides win [0.46ms]
+(fail) refresh circuit > a transient failure keeps a longer backoff already in place, and ignores a malformed one [0.20ms]
+ 14 pass
+ 2 fail
+== 25: la escalera no crece
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a failed refresh keeps an active connection active and opens the circuit [0.66ms]
+ 15 pass
+ 1 fail
+== 26: sin anulaciones
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > an expired connection stays expired and counts the retry; overrides win [0.40ms]
+ 15 pass
+ 1 fail
+== 27: datos previos perdidos
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a failed refresh keeps an active connection active and opens the circuit [0.58ms]
+ 15 pass
+ 1 fail
+== 28: red alarga la escalera
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a transient failure retries in two minutes without growing the streak [0.43ms]
+(fail) refresh circuit > a transient failure keeps a longer backoff already in place, and ignores a malformed one [0.16ms]
+ 14 pass
+ 2 fail
+== 29: red pisa la espera larga
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a transient failure keeps a longer backoff already in place, and ignores a malformed one [0.36ms]
+ 15 pass
+ 1 fail
+== 30: espera malformada cuenta
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a transient failure keeps a longer backoff already in place, and ignores a malformed one [0.39ms]
+ 15 pass
+ 1 fail
+== 31: limpiar sin nada devuelve copia
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a successful refresh clears the circuit and the retries, and nothing else [0.35ms]
+ 15 pass
+ 1 fail
+== 32: limpiar deja reintentos
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a successful refresh clears the circuit and the retries, and nothing else [0.34ms]
+ 15 pass
+ 1 fail
+== restaurado
+ 16 pass
+ 0 fail
+__BG_EXIT__=0

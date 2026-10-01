@@ -5,70 +5,178 @@
   "type": "module",
   "description": "Porte del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205). Aloja el punto de entrada (src/entry/main.ts), el despacho por modo (entry/), los siete comandos autocontenidos (commands/), el dibujo del flujo de eventos (render.ts), el selector de reanudacion (resume.ts) y el selector de pruebas por impacto (testing/). Sin dependencia de @thyrox/harness desde #266; sin bin/harness.ts desde #205.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./exitCodes.js": "./src/exitCodes.ts",
-    "./argv.js": "./src/argv.ts",
-    "./print": "./src/print.ts",
-    "./secureStorage/keychainPrefetch": "./src/secureStorage/keychainPrefetch.ts",
-    "./structuredIOHelper": "./src/structuredIOHelper.ts",
-    "./render": "./src/render.ts",
-    "./resume": "./src/resume.ts",
-    "./testing/impact": "./src/testing/impact.ts",
-    "./testing/io": "./src/testing/io.ts",
-    "./entry/main": "./src/entry/main.ts",
-    "./entry/detect-mode": "./src/entry/detect-mode.ts",
-    "./entry/mode-dispatch": "./src/entry/mode-dispatch.ts",
-    "./bg/daemonAdapter.js": "./src/bg/daemonAdapter.ts",
-    "./bg/fleetReplyHelpers.js": "./src/bg/fleetReplyHelpers.ts",
-    "./bg/openAgentsFromRepl.js": "./src/bg/openAgentsFromRepl.ts",
-    "./bg/ptyFrame.js": "./src/bg/ptyFrame.ts",
-    "./commands/version.js": "./src/commands/version.ts",
-    "./bg.js": "./src/bg.ts",
-    "./handlers/auth.js": "./src/handlers/auth.ts",
-    "./mcpServersHandlers.js": "./src/mcpServersHandlers.ts",
-    "./print.js": "./src/print.ts",
-    "./secureStorage/keychainPrefetch.js": "./src/secureStorage/keychainPrefetch.ts",
-    "./ssh/SSHSessionManager.js": "./src/ssh/SSHSessionManager.ts",
-    "./ssh/createSSHSession.js": "./src/ssh/createSSHSession.ts",
-    "./structuredIO.js": "./src/structuredIO.ts",
-    "./structuredIOHelper.js": "./src/structuredIOHelper.ts",
-    "./transports/HybridTransport.js": "./src/transports/HybridTransport.ts"
+    ".": {
+      "@thyrox/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./exitCodes.js": {
+      "@thyrox/source": "./src/exitCodes.ts",
+      "types": "./dist/exitCodes.d.ts",
+      "default": "./src/exitCodes.ts"
+    },
+    "./argv.js": {
+      "@thyrox/source": "./src/argv.ts",
+      "types": "./dist/argv.d.ts",
+      "default": "./src/argv.ts"
+    },
+    "./print": {
+      "@thyrox/source": "./src/print.ts",
+      "types": "./dist/print.d.ts",
+      "default": "./src/print.ts"
+    },
+    "./secureStorage/keychainPrefetch": {
+      "@thyrox/source": "./src/secureStorage/keychainPrefetch.ts",
+      "types": "./dist/secureStorage/keychainPrefetch.d.ts",
+      "default": "./src/secureStorage/keychainPrefetch.ts"
+    },
+    "./structuredIOHelper": {
+      "@thyrox/source": "./src/structuredIOHelper.ts",
+      "types": "./dist/structuredIOHelper.d.ts",
+      "default": "./src/structuredIOHelper.ts"
+    },
+    "./render": {
+      "@thyrox/source": "./src/render.ts",
+      "types": "./dist/render.d.ts",
+      "default": "./src/render.ts"
+    },
+    "./resume": {
+      "@thyrox/source": "./src/resume.ts",
+      "types": "./dist/resume.d.ts",
+      "default": "./src/resume.ts"
+    },
+    "./testing/impact": {
+      "@thyrox/source": "./src/testing/impact.ts",
+      "types": "./dist/testing/impact.d.ts",
+      "default": "./src/testing/impact.ts"
+    },
+    "./testing/io": {
+      "@thyrox/source": "./src/testing/io.ts",
+      "types": "./dist/testing/io.d.ts",
+      "default": "./src/testing/io.ts"
+    },
+    "./bg/daemonAdapter.js": {
+      "@thyrox/source": "./src/bg/daemonAdapter.ts",
+      "types": "./dist/bg/daemonAdapter.d.ts",
+      "default": "./src/bg/daemonAdapter.ts"
+    },
+    "./bg/fleetReplyHelpers.js": {
+      "@thyrox/source": "./src/bg/fleetReplyHelpers.ts",
+      "types": "./dist/bg/fleetReplyHelpers.d.ts",
+      "default": "./src/bg/fleetReplyHelpers.ts"
+    },
+    "./bg/openAgentsFromRepl.js": {
+      "@thyrox/source": "./src/bg/openAgentsFromRepl.ts",
+      "types": "./dist/bg/openAgentsFromRepl.d.ts",
+      "default": "./src/bg/openAgentsFromRepl.ts"
+    },
+    "./bg/ptyFrame.js": {
+      "@thyrox/source": "./src/bg/ptyFrame.ts",
+      "types": "./dist/bg/ptyFrame.d.ts",
+      "default": "./src/bg/ptyFrame.ts"
+    },
+    "./commands/version.js": {
+      "@thyrox/source": "./src/commands/version.ts",
+      "types": "./dist/commands/version.d.ts",
+      "default": "./src/commands/version.ts"
+    },
+    "./bg.js": {
+      "@thyrox/source": "./src/bg.ts",
+      "types": "./dist/bg.d.ts",
+      "default": "./src/bg.ts"
+    },
+    "./handlers/auth.js": {
+      "@thyrox/source": "./src/handlers/auth.ts",
+      "types": "./dist/handlers/auth.d.ts",
+      "default": "./src/handlers/auth.ts"
+    },
+    "./mcpServersHandlers.js": {
+      "@thyrox/source": "./src/mcpServersHandlers.ts",
+      "types": "./dist/mcpServersHandlers.d.ts",
+      "default": "./src/mcpServersHandlers.ts"
+    },
+    "./print.js": {
+      "@thyrox/source": "./src/print.ts",
+      "types": "./dist/print.d.ts",
+      "default": "./src/print.ts"
+    },
+    "./secureStorage/keychainPrefetch.js": {
+      "@thyrox/source": "./src/secureStorage/keychainPrefetch.ts",
+      "types": "./dist/secureStorage/keychainPrefetch.d.ts",
+      "default": "./src/secureStorage/keychainPrefetch.ts"
+    },
+    "./ssh/SSHSessionManager.js": {
+      "@thyrox/source": "./src/ssh/SSHSessionManager.ts",
+      "types": "./dist/ssh/SSHSessionManager.d.ts",
+      "default": "./src/ssh/SSHSessionManager.ts"
+    },
+    "./ssh/createSSHSession.js": {
+      "@thyrox/source": "./src/ssh/createSSHSession.ts",
+      "types": "./dist/ssh/createSSHSession.d.ts",
+      "default": "./src/ssh/createSSHSession.ts"
+    },
+    "./structuredIO.js": {
+      "@thyrox/source": "./src/structuredIO.ts",
+      "types": "./dist/structuredIO.d.ts",
+      "default": "./src/structuredIO.ts"
+    },
+    "./structuredIOHelper.js": {
+      "@thyrox/source": "./src/structuredIOHelper.ts",
+      "types": "./dist/structuredIOHelper.d.ts",
+      "default": "./src/structuredIOHelper.ts"
+    },
+    "./transports/HybridTransport.js": {
+      "@thyrox/source": "./src/transports/HybridTransport.ts",
+      "types": "./dist/transports/HybridTransport.d.ts",
+      "default": "./src/transports/HybridTransport.ts"
+    },
+    "./host.js": {
+      "@thyrox/source": "./src/host.ts",
+      "types": "./dist/host.d.ts",
+      "default": "./src/host.ts"
+    }
   },
   "scripts": {
     "test": "bun test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
-    "start": "bun run src/entry/main.ts"
+    "start": "bun run src/entry/cli.tsx"
   },
   "dependencies": {
-    "@ant/computer-use-mcp": "workspace:*",
-    "@anthropic/ink": "workspace:*",
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/bridge": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/daemon": "workspace:*",
-    "@thyrox/headless-sdk": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/mcp-runtime": "workspace:*",
-    "@thyrox/memory": "workspace:*",
-    "@thyrox/observability": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/permission": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/server": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/skills": "workspace:*",
-    "@thyrox/stdin-napi": "workspace:*",
-    "@thyrox/storage": "workspace:*",
-    "@thyrox/swarm": "workspace:*",
-    "@thyrox/teleport": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*",
-    "@thyrox/tools": "workspace:*",
-    "@thyrox/updater": "workspace:*"
+    "@ant/computer-use-mcp": "1.0.0",
+    "@anthropic/ink": "1.0.0",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/bridge": "0.1.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/coordination": "0.1.0",
+    "@thyrox/daemon": "0.1.0",
+    "@thyrox/headless-sdk": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/mcp-runtime": "0.1.0",
+    "@thyrox/memory": "0.1.0",
+    "@thyrox/mitm": "0.1.0",
+    "@thyrox/model-artifacts": "0.1.0",
+    "@thyrox/observability": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/paths": "0.1.0",
+    "@thyrox/permission": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/server": "0.1.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/skills": "0.1.0",
+    "@thyrox/stdin-napi": "1.0.0",
+    "@thyrox/storage": "0.1.0",
+    "@thyrox/swarm": "0.1.0",
+    "@thyrox/task": "0.1.0",
+    "@thyrox/teleport": "0.1.0",
+    "@thyrox/tool-registry": "0.1.0",
+    "@thyrox/tools": "0.1.0",
+    "@thyrox/updater": "0.1.0",
+    "@thyrox/workbench": "0.1.0"
   }
 }

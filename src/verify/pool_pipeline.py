@@ -32,6 +32,7 @@ import sys
 import time
 from pathlib import Path
 
+from session.pool_lifecycle import is_closed
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 from verify import measure_worktree, prefix_speculation, tsc_reflect, tsc_sweep
 from verify.file_edits import apply_files
@@ -126,12 +127,14 @@ def build_module_candidate(unit: str, root: Path, edits: list[dict], before_keys
     files = sorted(texts)
     reach = set(files) | set(target_files)
     targets = sorted(k for k in before_keys if k.split(": ", 1)[0] in reach)
+    def _base(before: str | None) -> str:
+        return ABSENT_BASE if before is None else hashlib.sha256(before.encode()).hexdigest()
+
     candidate = {
         "proposal_id": f"agent:pool:{unit}", "proposer": "agent", "targets": targets, "files": files,
         "edits": [{"file": f, "start": 0, "length": len(texts[f][0] or ""), "newText": texts[f][1]}
                   for f in files],
-        "bases": {f: ABSENT_BASE if texts[f][0] is None else hashlib.sha256(texts[f][0].encode()).hexdigest()
-                  for f in files}}
+        "bases": {f: _base(texts[f][0]) for f in files}}
     return candidate, dropped
 
 
@@ -261,7 +264,7 @@ def backfill_provenance(run: Path) -> int:
         for n, file in enumerate(files, 1):
             path = step / "outputs" / f"{n}.json"
             try:
-                output = json.loads(path.read_text()) if path.is_file() else {}
+                output = json.loads(path.read_text()) if is_closed(step / "outputs", str(n)) else {}
             except ValueError:
                 continue
             for pattern in output_patterns(output):
@@ -403,7 +406,9 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
         finished, outputs = set(), {}
         for directory in args.outputs:
             for n in range(1, len(items) + 1):
-                data = read_output(directory / f"{n}.json")
+                # Sólo lo publicado: `<n>.json` sin su `<n>.closed` es de un ítem
+                # que no terminó de cerrarse (`pool_lifecycle`).
+                data = read_output(directory / f"{n}.json") if is_closed(directory, str(n)) else None
                 if data is not None:
                     finished.add(n)
                     outputs.setdefault(n, []).append(data)
@@ -421,6 +426,10 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                 result = subprocess.run(tsc, cwd=wt, capture_output=True, text=True)
                 before.write_text(result.stdout)
                 before_log, keys = before, log_keys(result.stdout.splitlines())
+            # Si `keys` llegó no vacío, `before_log` ya era un `Path` (el
+            # `if before_log else []` de arriba lo exige); si llegó vacío, el
+            # bloque de encima lo asignó. En los dos casos deja de ser None.
+            assert before_log is not None
             rows: list[dict] = []
             with (bench / "candidates.jsonl").open("w") as out:
                 for file in ready:
@@ -475,6 +484,19 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
         time.sleep(args.poll)
     measure_worktree.export(wt, main_tree, sorted(kept))
     result = {"batches": summary, "files_kept": sorted(kept), "final_log": str(before_log) if before_log else None}
+    # Exportado lo conservado, los worktrees de medición ya no aportan nada y
+    # cada uno ocupa una copia del árbol. Se retiran salvo que se pida
+    # conservarlos; uno con algo sin exportar se deja y se nombra.
+    if not getattr(args, "keep_worktrees", True):
+        result["released"], result["not_released"] = [], {}
+        for worktree in worktrees:
+            pending = measure_worktree.release(main_tree, worktree)
+            if pending:
+                result["not_released"][str(worktree)] = pending
+                print(f"pool_pipeline: no se retira {worktree}, falta exportar: {' '.join(pending)}",
+                      file=sys.stderr)
+            else:
+                result["released"].append(str(worktree))
     (args.bench / "pipeline.json").write_text(json.dumps(result, ensure_ascii=False, indent=1))
     return result
 
@@ -485,7 +507,7 @@ def main(argv: list[str] | None = None) -> int:
         print("pool_pipeline: falta `--` antes del comando de tsc", file=sys.stderr)
         return 2
     split = argv.index("--")
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--main", type=Path, required=True)
     parser.add_argument("--worktree", type=Path, action="append", required=True,
                         help="repetible: con más de uno y --net, cada lote mide prefijos a la vez")
@@ -499,6 +521,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--poll", type=float, default=20)
     parser.add_argument("--unit", choices=("file", "module"), default="file",
                         help="unidad de un ítem: un archivo, o un módulo que edita varios")
+    parser.add_argument("--keep-worktrees", action="store_true",
+                        help="conserva los worktrees de medición al terminar; por defecto se retiran")
     parser.add_argument("--net", action="store_true",
                         help="política neta del paso: conserva lo que baja el total aunque destape contratos")
     args = parser.parse_args(argv[:split])

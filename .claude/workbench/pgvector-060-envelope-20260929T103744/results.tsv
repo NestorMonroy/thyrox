@@ -1,0 +1,10 @@
+384	insert=ok	bytes=1544 	hnsw=ok	ivfflat=ok
+768	insert=ok	bytes=3076 	hnsw=ok	ivfflat=ok
+1024	insert=ok	bytes=4100 	hnsw=ok	ivfflat=ok
+1536	insert=ok	bytes=6148 	hnsw=ok	ivfflat=ok
+2000	insert=ok	bytes=8004 	hnsw=ok	ivfflat=ERROR:  memory required is 77 MB, maintenance_work_mem is 64 MB 
+2001	insert=ok	bytes=8008 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 	ivfflat=ERROR:  column cannot have more than 2000 dimensions for ivfflat index 
+3072	insert=ok	bytes=12292 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 	ivfflat=ERROR:  column cannot have more than 2000 dimensions for ivfflat index 
+4096	insert=ok	bytes=16388 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 	ivfflat=ERROR:  column cannot have more than 2000 dimensions for ivfflat index 
+16000	insert=ok	bytes=64004 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 	ivfflat=ERROR:  column cannot have more than 2000 dimensions for ivfflat index 
+16001	insert=ERROR:  relation "env060_d16001.v" does not exist LINE 1: INSERT INTO env060_d16001.v SELECT g, (SELECT array_agg(rand...                     ^ 	bytes=ERROR:  relation "env060_d16001.v" does not exist LINE 1: SELECT pg_column_size(e) FROM env060_d16001.v LIMIT 1;                                       ^ 	hnsw=ERROR:  relation "env060_d16001.v" does not exist 	ivfflat=ERROR:  relation "env060_d16001.v" does not exist 

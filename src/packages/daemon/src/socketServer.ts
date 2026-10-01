@@ -9,6 +9,7 @@
  * @dynamicRequire
  */
 
+import { randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import {
@@ -19,6 +20,15 @@ import {
 import { dirname } from 'node:path'
 
 import { logEvent } from '@thyrox/local-observability'
+import {
+  type DaemonLockInfo,
+  acquireDaemonLock,
+  classifyListenError,
+  formatLockRefusalMessage,
+  getDaemonLockPath,
+  releaseDaemonLock,
+  writeSocketTokensFile,
+} from './daemonLock.js'
 import { checkPeerUid } from './peerUid.js'
 import {
   type ErrorResponse,
@@ -55,12 +65,26 @@ export interface DaemonServer {
  */
 export async function startSocketServer(
   handlers: Partial<Record<ProtoOp, OpHandler>>,
-  opts: { socketPath?: string } = {},
+  opts: { socketPath?: string; origin?: DaemonLockInfo['origin'] } = {},
 ): Promise<DaemonServer> {
   const socketPath = opts.socketPath ?? getControlSocketPath()
+  const scopeDir = dirname(socketPath)
   // Ensure parent dir exists (mode 0o700 — owner only).
-  mkdirSync(dirname(socketPath), { recursive: true, mode: 0o700 })
-  // Pre-clean stale socket.
+  mkdirSync(scopeDir, { recursive: true, mode: 0o700 })
+
+  // chunk-92tvramn.js xt — adquiere daemon.lock ANTES de tocar el socket:
+  // un lock vivo ajeno rehúsa en vez de robarle el socket a otro daemon
+  // (el riesgo de crash-loop que Wt/Vt/Ft existen para evitar).
+  const lockResult = await acquireDaemonLock(scopeDir, opts.origin ?? 'transient')
+  if (!lockResult.ok) {
+    throw new Error(
+      formatLockRefusalMessage('daemon start', lockResult, getDaemonLockPath(scopeDir)),
+    )
+  }
+  const ownedLock = lockResult.lock
+
+  // Pre-clean stale socket. Seguro recién acá: el lock ya prueba que
+  // ningún daemon vivo lo sostiene.
   if (existsSync(socketPath)) {
     await unlink(socketPath).catch(() => {})
   }
@@ -175,10 +199,25 @@ export async function startSocketServer(
     socket.on('data', decoder)
   })
 
-  await new Promise<void>((resolve, reject) => {
-    server.once('error', reject)
-    server.listen(socketPath, () => resolve())
-  })
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(socketPath, () => resolve())
+    })
+  } catch (error) {
+    // chunk-92tvramn.js jr — EADDRINUSE/EACCES es el caso esperado de dos
+    // daemons compitiendo por el mismo bind; cualquier otro fallo es un
+    // crash real. Clasifica igual, y libera el lock que acabamos de ganar
+    // antes de propagar.
+    classifyListenError(error)
+    releaseDaemonLock(scopeDir, ownedLock.pid, ownedLock.startedAt)
+    throw error
+  }
+
+  // chunk-ygx717jg.js Ae — archivo de tokens del socket de control, mejor
+  // esfuerzo (writeSocketTokensFile ya clasifica y registra su propio
+  // fallo). Pendiente: nadie lo verifica todavía (ver daemonLock.ts).
+  writeSocketTokensFile(scopeDir, { controlAuth: randomBytes(32).toString('hex') })
 
   return {
     get clientCount(): number {
@@ -191,6 +230,7 @@ export async function startSocketServer(
       if (process.platform !== 'win32') {
         await unlink(socketPath).catch(() => {})
       }
+      releaseDaemonLock(scopeDir, ownedLock.pid, ownedLock.startedAt)
     },
   }
 }

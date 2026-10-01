@@ -1,0 +1,85 @@
+run-task-pool: 5 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T163637
+  job-20260927T163637/job-001 pid 26830   bash tests/session/test-headless-pool.sh
+  job-20260927T163637/job-002 pid 26886   bash tests/session/test-headless-pool-thyrox-p.sh
+  job-20260927T163637/job-003 pid 26952   bash tests/session/test-pool-calibrate.sh
+  job-20260927T163637/job-004 pid 29911   python3 tests/session/test_pool_history.py
+  job-20260927T163637/job-005 pid 30518   cd src/packages/cli && bun test __tests__/print.test.ts
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260927T163637_job-002 -> OK (2 de 6)
+asentado: job-20260927T163637_job-004 -> OK (3 de 6)
+asentado: job-20260927T163637_job-003 -> OK (3 de 6)
+asentado: job-20260927T163637_job-005 -> OK (5 de 6)
+esperando: 5 de 6 asentados, 31s; vivos: job-20260927T163637_job-001
+sonda job-20260927T163637_job-001: 26830 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 26834 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 26835 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+sonda job-20260927T163637_job-001: 3446 bash stdin=channel(pipe:[235764]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 3497 parallel stdin=channel(pipe:[235764]) sin escritor estado=S cpu=0.11s
+sonda job-20260927T163637_job-001: 3506 bash stdin=channel(pipe:[237579]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 3518 bash stdin=channel(pipe:[236662]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 3521 timeout stdin=channel(pipe:[236662]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 3522 bash stdin=channel(pipe:[236662]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 3525 sleep stdin=channel(pipe:[236662]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T163637_job-001: 3519 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+asentado: job-20260927T163637_job-001 -> OK (2 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T163637
+       | (vacío — no emitió nada)
+OK     job-20260927T163637_job-001 exit=0
+       | OK   una plantilla, un solo historial
+       | OK   otro binario: no deriva memfree de su fila
+       | OK   otro binario: lo dice
+       | OK   otro modelo: no deriva memfree de su fila
+       | OK   otro modelo: lo dice
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 108 de 108 · fallos: 0
+       | EXIT=0
+       memoria pico: 22420 KB (22 MB) · pared 69.32s
+OK     job-20260927T163637_job-002 exit=0
+       |   ok   el stream abre con system/init
+       |   ok   las herramientas del pool llegan acotadas
+       |   ok   una línea assistant por petición, con su uso
+       |   ok   por el túnel: el pool sale 0
+       |   ok   por el túnel: el ítem termina bien
+       |   ok   por el túnel: el servicio recibe la llave que puso el proxy
+       |   ok   por el túnel: el socket no queda al terminar
+       | 
+       | 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+       | EXIT=0
+       memoria pico: 231236 KB (226 MB) · pared 7.72s
+OK     job-20260927T163637_job-003 exit=0
+       |   ok   3. cada ítem llegó al proxy con el marcador local, no con la credencial del anfitrión
+       |   ok   4. el proxy no queda vivo
+       |   ok   4b. lo dice: peticiones y filas
+       |   ok   5. sin peticiones al proxy: exit 1
+       |   ok   5b. lo nombra
+       |   ok   6. sin GNU Time: exit 2
+       |   ok   6b. sin filas
+       | 
+       | 10 ok · 0 falla(s) (alcance medido: pool-calibrate contra el proxy local)
+       | EXIT=0
+       memoria pico: 231104 KB (226 MB) · pared 9.78s
+OK     job-20260927T163637_job-004 exit=0
+       |   ok    sin límite declarado, la edad no cuenta
+       |   ok    derive con pocos ítems: pide la GPU entera, de a uno
+       | == 27. la CLI recibe la plantilla, los ítems mínimos y la edad máxima ==
+       |   ok    record --template guarda la huella
+       |   ok    ... y la fecha
+       |   ok    derive --template con OTRA plantilla: la GPU entera
+       |   ok    ... con la MISMA plantilla: el pico medido
+       | 
+       | test_pool_history: 89 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 23048 KB (23 MB) · pared 0.19s
+OK     job-20260927T163637_job-005 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  23 pass
+       |  0 fail
+       |  40 expect() calls
+       | Ran 23 tests across 1 file. [1422.00ms]
+       | EXIT=0
+       memoria pico: 225968 KB (221 MB) · pared 1.44s
+__BG_EXIT__=0

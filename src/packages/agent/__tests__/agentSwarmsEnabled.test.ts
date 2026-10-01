@@ -7,7 +7,7 @@
  * La Fase W1 simplificó la puerta a sólo el killswitch de GrowthBook
  * `tengu_amber_flint` (default true). El corte anterior por
  * USER_TYPE='ant' + la variable de entorno
- * CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS + el flag de CLI --agent-teams ya
+ * THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS + el flag de CLI --agent-teams ya
  * no existen — swarm es una feature de primera clase de ccb, no un
  * opt-in experimental.
  *
@@ -40,13 +40,13 @@ const { isAgentSwarmsEnabled } = await import('../agentSwarmsEnabled.ts')
 const realArgv = process.argv
 const realUserType = process.env.USER_TYPE
 const realExperimentalEnv =
-  process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS
+  process.env.THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS
 
 beforeEach(() => {
   growthBookValue = true
   process.argv = ['bun', 'cli.ts']
   delete process.env.USER_TYPE
-  delete process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS
+  delete process.env.THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS
 })
 
 afterEach(() => {
@@ -57,9 +57,9 @@ afterEach(() => {
     delete process.env.USER_TYPE
   }
   if (realExperimentalEnv !== undefined) {
-    process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = realExperimentalEnv
+    process.env.THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS = realExperimentalEnv
   } else {
-    delete process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS
+    delete process.env.THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS
   }
 })
 
@@ -87,10 +87,10 @@ describe('isAgentSwarmsEnabled — default-on para el operador ccb', () => {
 })
 
 describe('isAgentSwarmsEnabled — los mecanismos históricos de opt-in están muertos', () => {
-  test('la variable de entorno CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS no tiene efecto', () => {
-    process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = '0'
+  test('la variable de entorno THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS no tiene efecto', () => {
+    process.env.THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS = '0'
     expect(isAgentSwarmsEnabled()).toBe(true)
-    process.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = 'false'
+    process.env.THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS = 'false'
     expect(isAgentSwarmsEnabled()).toBe(true)
   })
 

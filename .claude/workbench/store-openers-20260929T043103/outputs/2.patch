@@ -1,0 +1,346 @@
+diff --git a/bun.lock b/bun.lock
+index 36055425..3da65fa8 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -585,6 +585,7 @@
+         "@thyrox/repl": "0.0.0",
+         "@thyrox/shell": "0.1.0",
+         "@thyrox/storage": "0.1.0",
++        "@thyrox/store": "0.1.0",
+         "@thyrox/teleport": "0.1.0",
+         "@thyrox/tool-registry": "0.1.0",
+         "axios": "^1.20.0",
+diff --git a/src/packages/finding/index.ts b/src/packages/finding/index.ts
+index 92f1c265..82fda60e 100644
+--- a/src/packages/finding/index.ts
++++ b/src/packages/finding/index.ts
+@@ -16,10 +16,10 @@
+  * Un hallazgo publicado es evidencia fechada: `writeFinding` no escribe sobre
+  * un archivo que ya existe.
+  */
+-import { Database } from 'bun:sqlite'
+ import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { basename, dirname, join } from 'node:path'
+ import { findingPath, type Submodule } from '@thyrox/paths/docs.ts'
++import { openLocal } from '@thyrox/store/db.ts'
+ 
+ export type FindingRecord = {
+   findingId: string
+@@ -46,7 +46,7 @@ export function slugOf(summary: string): string {
+ /** La fila de `findingId`, o `null` si el store no la tiene. Abre en sólo lectura. */
+ export function readFindingRecord(storeFile: string, findingId: string): FindingRecord | null {
+   if (!existsSync(storeFile)) return null
+-  const db = new Database(storeFile, { readonly: true })
++  const db = openLocal(storeFile, { readonly: true })
+   try {
+     const found = db
+       .query(
+diff --git a/src/packages/mitm/src/state/stateStore.ts b/src/packages/mitm/src/state/stateStore.ts
+index aed66adb..527c5f8c 100644
+--- a/src/packages/mitm/src/state/stateStore.ts
++++ b/src/packages/mitm/src/state/stateStore.ts
+@@ -10,7 +10,7 @@ import type { Database } from 'bun:sqlite'
+ import { mkdirSync } from 'node:fs'
+ import { dirname, join } from 'node:path'
+ 
+-import { openStore } from '@thyrox/store/db.ts'
++import { openLocal } from '@thyrox/store/db.ts'
+ 
+ import { resolveMitmDataDir } from '../dataDir.ts'
+ import { ensureAgentBridgeSchema } from './schema.ts'
+@@ -24,7 +24,7 @@ export function mitmStateStorePath(): string {
+ /** Abre la base (por defecto la del directorio del MITM) con el esquema aplicado. */
+ export function openMitmStateStore(path: string = mitmStateStorePath()): Database {
+   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
+-  const db = openStore(path)
++  const db = openLocal(path)
+   ensureAgentBridgeSchema(db)
+   return db
+ }
+diff --git a/src/packages/observability/src/clearedResults.ts b/src/packages/observability/src/clearedResults.ts
+index 5db6fc2e..57f85d7a 100644
+--- a/src/packages/observability/src/clearedResults.ts
++++ b/src/packages/observability/src/clearedResults.ts
+@@ -26,7 +26,7 @@
+  * `.rst`, por `build-logs.md`.
+  */
+ import { Database } from 'bun:sqlite'
+-import { openStore } from '@thyrox/store/db.ts'
++import { openLocal } from '@thyrox/store/db.ts'
+ import { createHash } from 'node:crypto'
+ import type { Message } from '@thyrox/agent/loop/types'
+ import { CLEARED_MARKER } from '@thyrox/agent/loop/context/microcompact'
+@@ -117,7 +117,7 @@ export function makeClearedPersister(opts: ClearedPersisterOptions): ClearedPers
+   const failures = new Map<string, { reason: UnpersistedReason; detail?: string }>()
+   let db: Database
+   try {
+-    db = openStore(opts.dbPath)
++    db = openLocal(opts.dbPath)
+     ensureClearedTable(db)
+   } catch (e) {
+     // Sin store no hay registro, y sin registro no se limpia: devolver un
+diff --git a/src/packages/observability/src/store.ts b/src/packages/observability/src/store.ts
+index 21f5e53c..42214ebc 100644
+--- a/src/packages/observability/src/store.ts
++++ b/src/packages/observability/src/store.ts
+@@ -17,7 +17,7 @@
+  *   promoverse a sí mismo (`niveles-de-retencion.md`).
+  */
+ import { Database } from 'bun:sqlite'
+-import { openStore } from '@thyrox/store/db.ts'
++import { openLocal } from '@thyrox/store/db.ts'
+ import { join, resolve } from 'node:path'
+ import { thyroxRoot } from '@thyrox/paths/reach.ts'
+ import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '@thyrox/paths/reach.ts'
+@@ -163,7 +163,7 @@ export type HarnessSessionRow = {
+  * inflaría cualquier agregado del store con la misma sesión contada dos veces.
+  */
+ export function recordHarnessSession(dbPath: string, row: HarnessSessionRow): void {
+-  const db = openStore(dbPath)
++  const db = openLocal(dbPath)
+   try {
+     const ahora = new Date().toISOString()
+     db.run(
+@@ -236,7 +236,7 @@ export type StaleRow = { agentId: string; verdict: Adoption }
+  * harness, que es un momento conocido; no necesita disparo.
+  */
+ export function reconcileStaleRunningRows(dbPath: string): StaleRow[] {
+-  const db = openStore(dbPath)
++  const db = openLocal(dbPath)
+   try {
+     ensureUpdatedAtTrigger(db)
+     const rows = db.query(
+diff --git a/src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts b/src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
+index f82bfc80..fab2204b 100644
+--- a/src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
++++ b/src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
+@@ -9,6 +9,7 @@ import fs from 'node:fs'
+ import os from 'node:os'
+ import path from 'node:path'
+ 
++import { BUSY_TIMEOUT_MS } from '@thyrox/store/db.ts'
+ import { CONNECTIONS_DB_FILE, openConnectionStore, resolveProvidersDataDir } from '../../src/accounts/connectionStoreHome.ts'
+ 
+ const dirs: string[] = []
+@@ -55,4 +56,14 @@ describe('opening the connection store', () => {
+     openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: dir } }).close()
+     expect(fs.statSync(dir).mode & 0o777).toBe(0o700)
+   })
++
++  // La base la lee el proxy en cada petición mientras la CLI escribe: sin
++  // busy_timeout, esa contención fallaría al instante en vez de esperar.
++  test('opens with busy_timeout fijado (ADR-THYROX-006 regla 3)', () => {
++    const dir = path.join(tempDir(), 'providers')
++    const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: dir } })
++    const timeout = (opened.db.query('PRAGMA busy_timeout').get() as { timeout: number }).timeout
++    opened.close()
++    expect(timeout).toBe(BUSY_TIMEOUT_MS)
++  })
+ })
+diff --git a/src/packages/provider/bin/generateStorageKey.ts b/src/packages/provider/bin/generateStorageKey.ts
+index c4fedaa9..1777ebdd 100644
+--- a/src/packages/provider/bin/generateStorageKey.ts
++++ b/src/packages/provider/bin/generateStorageKey.ts
+@@ -29,10 +29,10 @@
+  * thyrox para el valor por defecto), o el `.env` rotado no se pudo publicar.
+  */
+ import { randomBytes } from 'node:crypto'
+-import { Database } from 'bun:sqlite'
+ import { existsSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
+ import { join } from 'node:path'
+ import { thyroxRoot } from '@thyrox/paths/reach.ts'
++import { openLocal } from '@thyrox/store/db.ts'
+ 
+ import { CONNECTIONS_DB_FILE, resolveProvidersDataDir } from '../src/accounts/connectionStoreHome.ts'
+ import { STORAGE_KEY_VARIABLE } from '../src/accounts/fieldCipher.ts'
+@@ -132,7 +132,7 @@ function rotate(envFile: string, deps: GenerateStorageKeyDeps): number {
+   writeFileSync(staged, withKeyReplaced(readFileSync(envFile, 'utf8'), next), { mode: statSync(envFile).mode })
+ 
+   const storePath = join(resolveProvidersDataDir(process.env), CONNECTIONS_DB_FILE)
+-  const db = existsSync(storePath) ? new Database(storePath) : null
++  const db = existsSync(storePath) ? openLocal(storePath) : null
+   try {
+     const outcome: RotationOutcome = db ? rotateStorageKey(db, previous, next) : { kind: 'rotated', fields: 0 }
+     if (outcome.kind === 'refused') {
+diff --git a/src/packages/provider/package.json b/src/packages/provider/package.json
+index 3157a1ff..1408b459 100644
+--- a/src/packages/provider/package.json
++++ b/src/packages/provider/package.json
+@@ -645,6 +645,7 @@
+     "@thyrox/repl": "0.0.0",
+     "@thyrox/shell": "0.1.0",
+     "@thyrox/storage": "0.1.0",
++    "@thyrox/store": "0.1.0",
+     "@thyrox/teleport": "0.1.0",
+     "@thyrox/tool-registry": "0.1.0",
+     "axios": "^1.20.0",
+diff --git a/src/packages/provider/src/accounts/connectionStoreHome.ts b/src/packages/provider/src/accounts/connectionStoreHome.ts
+index ebf6b87f..43249aef 100644
+--- a/src/packages/provider/src/accounts/connectionStoreHome.ts
++++ b/src/packages/provider/src/accounts/connectionStoreHome.ts
+@@ -7,13 +7,18 @@
+  * El directorio se crea sólo para el dueño: la base guarda credenciales, y las
+  * cifra con la clave que el entorno declare (`fieldCipherFromEnv`).
+  *
++ * La conexión se abre con `openLocal` (`@thyrox/store`, ADR-THYROX-006 regla
++ * 3): el proxy la lee en cada petición mientras la CLI escribe, y sin
++ * `busy_timeout` esa contención fallaba al instante en vez de esperar.
++ *
+  * Porte de `omniroute: bin/cli/data-dir.mjs` y `bin/cli/sqlite.mjs` (MIT).
+  */
+-import { Database } from 'bun:sqlite'
++import type { Database } from 'bun:sqlite'
+ import fs from 'node:fs'
+ import { join } from 'node:path'
+ 
+ import { resolveDataDir } from '@thyrox/config/env/configHome'
++import { openLocal } from '@thyrox/store/db.ts'
+ 
+ import { createConnectionStore, type ConnectionStore } from './connectionStore.ts'
+ import { fieldCipherFromEnv } from './fieldCipher.ts'
+@@ -28,6 +33,8 @@ export function resolveProvidersDataDir(env: Record<string, string | undefined>
+ 
+ export interface OpenedConnectionStore {
+   store: ConnectionStore
++  /** La conexión subyacente; expuesta para inspeccionar su `PRAGMA` en pruebas. */
++  db: Database
+   close(): void
+ }
+ 
+@@ -37,7 +44,7 @@ export function openConnectionStore(options: { env?: Record<string, string | und
+   const dir = resolveProvidersDataDir(env)
+   fs.mkdirSync(dir, { recursive: true, mode: OWNER_ONLY })
+   fs.chmodSync(dir, OWNER_ONLY)
+-  const db = new Database(join(dir, CONNECTIONS_DB_FILE), { create: true })
++  const db = openLocal(join(dir, CONNECTIONS_DB_FILE), { create: true })
+   const store = createConnectionStore({ db, cipher: fieldCipherFromEnv(env, options.report) })
+-  return { store, close: () => db.close() }
++  return { store, db, close: () => db.close() }
+ }
+diff --git a/src/packages/store/__tests__/db.test.ts b/src/packages/store/__tests__/db.test.ts
+index 66a96a37..5bda4f26 100644
+--- a/src/packages/store/__tests__/db.test.ts
++++ b/src/packages/store/__tests__/db.test.ts
+@@ -6,14 +6,14 @@ import { Database } from 'bun:sqlite'
+ import { mkdtempSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+-import { openStore, probeStore, BUSY_TIMEOUT_MS } from '../db.ts'
++import { openLocal, probeStore, BUSY_TIMEOUT_MS } from '../db.ts'
+ 
+ const tmp = () => join(mkdtempSync(join(tmpdir(), 'db-')), 's.sqlite3')
+ 
+-describe('openStore fija busy_timeout (#28)', () => {
+-  test('un store abierto con openStore tiene busy_timeout > 0', () => {
++describe('openLocal fija busy_timeout (#28)', () => {
++  test('un store abierto con openLocal tiene busy_timeout > 0', () => {
+     const p = tmp(); new Database(p).run('CREATE TABLE t(x)')
+-    const db = openStore(p)
++    const db = openLocal(p)
+     const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
+     db.close()
+     expect(bt).toBe(BUSY_TIMEOUT_MS)
+@@ -26,6 +26,29 @@ describe('openStore fija busy_timeout (#28)', () => {
+     db.close()
+     expect(bt).toBe(0)
+   })
++  test('con { readonly: true } también fija busy_timeout, y la conexión rehúsa escribir', () => {
++    const p = tmp(); new Database(p).run('CREATE TABLE t(x)')
++    const db = openLocal(p, { readonly: true })
++    const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
++    expect(bt).toBe(BUSY_TIMEOUT_MS)
++    expect(() => db.run('INSERT INTO t VALUES (1)')).toThrow()
++    db.close()
++  })
++  // CONTROL: sin pasar `readonly`, la misma conexión sí escribe — la
++  // guarda de arriba mide la opción, no un defecto de bun:sqlite.
++  test('sin { readonly: true } la conexión escribe', () => {
++    const p = tmp(); new Database(p).run('CREATE TABLE t(x)')
++    const db = openLocal(p)
++    expect(() => db.run('INSERT INTO t VALUES (1)')).not.toThrow()
++    db.close()
++  })
++  test('con { create: true } crea el archivo si falta, con busy_timeout fijado', () => {
++    const p = tmp() // mkdtempSync crea el directorio; el archivo no existe todavía
++    const db = openLocal(p, { create: true })
++    const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
++    db.close()
++    expect(bt).toBe(BUSY_TIMEOUT_MS)
++  })
+ })
+ 
+ describe('probeStore detecta el store muerto al arranque (#26)', () => {
+diff --git a/src/packages/store/db.ts b/src/packages/store/db.ts
+index ed2a23ab..e52e617c 100644
+--- a/src/packages/store/db.ts
++++ b/src/packages/store/db.ts
+@@ -27,6 +27,12 @@
+  * día, por el veredicto del análisis de la referencia. Las tres raíces del
+  * árbol que alojan un mecanismo de dos lenguas —`paths/`, `store/`, `task/`—
+  * comparten hoy la misma forma.
++ *
++ * ADR-THYROX-006 regla 3: es el ÚNICO módulo que abre una conexión SQLite
++ * local. `openLocal` reemplaza a los `new Database(...)` que vivían sueltos
++ * en `connectionStoreHome.ts`, `generateStorageKey.ts` y `finding/index.ts` —
++ * mismo `busy_timeout`, con `readonly`/`create` como opciones pasadas tal
++ * cual al driver.
+  */
+ import { Database } from 'bun:sqlite'
+ 
+@@ -37,13 +43,20 @@ import { Database } from 'bun:sqlite'
+  */
+ export const BUSY_TIMEOUT_MS = 3000
+ 
++export type OpenLocalOptions = {
++  /** Abre sin permiso de escritura; no crea el archivo si falta. */
++  readonly?: boolean
++  /** Crea el archivo si no existe. */
++  create?: boolean
++}
++
+ /**
+- * Abre el store con `busy_timeout` fijado. Es el único sitio que construye una
+- * `Database` sobre el store: así la política de contención vale para los tres
+- * escritores sin repetirla.
++ * Abre una base SQLite local con `busy_timeout` fijado. Es el único sitio que
++ * construye una `Database`: así la política de contención vale para todo
++ * escritor sin repetirla.
+  */
+-export function openStore(dbPath: string): Database {
+-  const db = new Database(dbPath)
++export function openLocal(dbPath: string, options?: OpenLocalOptions): Database {
++  const db = new Database(dbPath, options)
+   db.run(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS}`)
+   return db
+ }
+@@ -58,7 +71,7 @@ export type StoreProbe = { ok: true } | { ok: false; detail: string }
+ export function probeStore(dbPath: string): StoreProbe {
+   let db: Database | undefined
+   try {
+-    db = openStore(dbPath)
++    db = openLocal(dbPath)
+     db.query('SELECT 1').get()
+     return { ok: true }
+   } catch (e) {
+diff --git a/src/packages/tools/src/tasks.ts b/src/packages/tools/src/tasks.ts
+index e81a7e4e..ae0a348f 100644
+--- a/src/packages/tools/src/tasks.ts
++++ b/src/packages/tools/src/tasks.ts
+@@ -34,7 +34,7 @@
+  * único que impide que el tablero acumule estados que nadie sabe leer.
+  */
+ import { Database } from 'bun:sqlite'
+-import { openStore } from '@thyrox/store/db.ts'
++import { openLocal } from '@thyrox/store/db.ts'
+ import {
+   selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
+ } from '@thyrox/task/schema.ts'
+@@ -59,7 +59,7 @@ const err = (content: string): ToolResult => ({ content, isError: true })
+ 
+ /** Abre, opera y cierra: el tablero es de todos, no se retiene el descriptor. */
+ function conBase<T>(dbPath: string, fn: (db: Database) => T): T {
+-  const db = openStore(dbPath)
++  const db = openLocal(dbPath)
+   try {
+     db.run(TABLERO_DDL)
+     db.run(TASK_HIGHWATER_DDL)

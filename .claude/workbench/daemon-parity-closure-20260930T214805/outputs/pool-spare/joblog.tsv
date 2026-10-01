@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790812669.686	  1289.555	0	0	0	0	_headless_item 1 'spare — TASK-THYROX-0689, paridad del daemon D15. Fuente de verdad: /home/user/thyrox/.claude/workbench/daemon-parity-closure-20260930T214805/source.md, sección spare. Te pertenecen src/packages/daemon/src/spareClaim.ts, sparePool.ts, la rama --bg-spare de src/packages/cli/src/entry/cli.tsx (sólo esa rama), y sus pruebas en src/packages/daemon/src/__tests__/ (existentes o nuevas con nombre propio).'

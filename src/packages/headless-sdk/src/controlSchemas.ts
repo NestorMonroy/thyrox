@@ -1,8 +1,7 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/controlSchemas.ts` (verbatim
- * en estructura; `lazySchema` se importa del sustituto local — ver
- * `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no es
- * miembro del bun workspace; el import de `coreSchemas.js` en la fuente es
+ * en estructura; `lazySchema` se importa del original,
+ * `@thyrox/config/lazySchema`; el import de `coreSchemas.js` en la fuente es
  * una auto-referencia al propio paquete por nombre y se porta como import
  * relativo, `./coreSchemas.ts` — es un módulo hermano del MISMO paquete).
  *
@@ -15,7 +14,7 @@
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import { lazySchema } from '@thyrox/config/lazySchema'
 import {
   AccountInfoSchema,
   AgentDefinitionSchema,
@@ -35,6 +34,7 @@ import {
   SDKUserMessageSchema,
   SlashCommandSchema,
 } from './coreSchemas.ts'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ============================================================================
 // External Type Placeholders
@@ -602,7 +602,7 @@ export const SDKControlClaudeAuthenticateRequestSchema = lazySchema(() =>
       subtype: z.literal('claude_authenticate'),
       loginWithClaudeAi: z.boolean().optional(),
     })
-    .describe('Starts the Claude account login flow.'),
+    .describe(`Starts the ${PRODUCT_NAME} account login flow.`),
 )
 
 export const SDKControlClaudeOAuthCallbackRequestSchema = lazySchema(() =>
@@ -612,13 +612,13 @@ export const SDKControlClaudeOAuthCallbackRequestSchema = lazySchema(() =>
       authorizationCode: z.string(),
       state: z.string(),
     })
-    .describe('Delivers the authorization code of the Claude login flow.'),
+    .describe(`Delivers the authorization code of the ${PRODUCT_NAME} login flow.`),
 )
 
 export const SDKControlClaudeOAuthWaitForCompletionRequestSchema = lazySchema(() =>
   z
     .object({ subtype: z.literal('claude_oauth_wait_for_completion') })
-    .describe('Waits until the Claude login flow completes.'),
+    .describe(`Waits until the ${PRODUCT_NAME} login flow completes.`),
 )
 
 export const SDKControlGenerateSessionTitleRequestSchema = lazySchema(() =>

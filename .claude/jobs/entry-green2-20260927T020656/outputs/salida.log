@@ -1,0 +1,38 @@
+run-task-pool: 5 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T020656
+  job-20260927T020656/job-001 pid 20541   cd /home/user/thyrox/src/packages/cli && timeout 600 bun test > /home/user/thyrox/.claude/workbench/entry-point-20260927T015546/green2/bun-cli.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/entry-point-20260927T015546/green2/bun-cli.out
+  job-20260927T020656/job-002 pid 20577   cd /home/user/thyrox && timeout 300 bash tests/session/test-headless-pool-thyrox-p.sh > .claude/workbench/entry-point-20260927T015546/green2/pool-thyrox-p.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green2/pool-thyrox-p.out
+  job-20260927T020656/job-003 pid 20955   cd /home/user/thyrox && PYTHONPATH=src timeout 300 python3 tests/session/test_generate_bin.py > .claude/workbench/entry-point-20260927T015546/green2/generate-bin.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green2/generate-bin.out
+  job-20260927T020656/job-004 pid 22139   cd /home/user/thyrox && timeout 600 bash bin/emit_declarations --repoint cli > .claude/workbench/entry-point-20260927T015546/green2/emit-cli.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green2/emit-cli.out; bash bin/check_exports_types >> .claude/workbench/entry-point-20260927T015546/green2/emit-cli.out 2>&1; echo GATE=$? >> .claude/workbench/entry-point-20260927T015546/green2/emit-cli.out
+  job-20260927T020656/job-005 pid 22563   cd /home/user/thyrox && timeout 900 bunx tsc -p tsconfig.json --noEmit > .claude/workbench/entry-point-20260927T015546/green2/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green2/root-tsc.out
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1200s)
+asentado: job-20260927T020656_job-002 -> OK (2 de 6)
+asentado: job-20260927T020656_job-003 -> OK (3 de 6)
+asentado: job-20260927T020656_job-004 -> OK (4 de 6)
+asentado: job-20260927T020656_job-001 -> OK (2 de 6)
+esperando: 5 de 6 asentados, 30s; vivos: job-20260927T020656_job-005
+sonda job-20260927T020656_job-005: 22563 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T020656_job-005: 22567 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T020656_job-005: 22569 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T020656_job-005: 22570 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T020656_job-005: 22571 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T020656_job-005: 22572 node stdin=devnull(/dev/null) escritores=- estado=R cpu=42.31s
+asentado: job-20260927T020656_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T020656
+       | (vacío — no emitió nada)
+OK     job-20260927T020656_job-001
+       | EXIT=0
+       memoria pico: 252556 KB (247 MB) · pared 52.79s
+OK     job-20260927T020656_job-002
+       | EXIT=0
+       memoria pico: 227884 KB (223 MB) · pared 2.14s
+OK     job-20260927T020656_job-003
+       | EXIT=0
+       memoria pico: 27164 KB (27 MB) · pared 16.14s
+OK     job-20260927T020656_job-004
+       | EXIT=0
+       memoria pico: 812168 KB (793 MB) · pared 10.64s
+OK     job-20260927T020656_job-005
+       | EXIT=0
+       memoria pico: 2540640 KB (2481 MB) · pared 42.60s
+__BG_EXIT__=0

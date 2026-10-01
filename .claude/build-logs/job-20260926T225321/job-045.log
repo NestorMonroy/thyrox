@@ -1,0 +1,26 @@
+== caso 1: evidencia citada, existente y versionada -> 0 incumplidores
+  ok    exit 0 con el árbol limpio
+  ok    publica su denominador
+== caso 2: la ruta citada NO existe -> incumplidor
+  ok    exit 1 ante la cita fantasma
+  ok    nombra la ruta ausente
+== caso 3: la ruta EXISTE pero no está versionada -> incumplidor
+   (control de discriminación: sólo difiere del caso 2 en que existe)
+  ok    exit 1 ante la evidencia sólo local
+  ok    la distingue de la ausente
+== caso 4: el baseline congela la deuda heredada
+  ok    exit 0 con el incumplidor en baseline
+== caso 5: sin git, rehúsa SIN emitir conteo
+  ok    exit 2 fuera de un repo git
+  ok    NO publica conteo (un 0 sería verde falso)
+  ok    nombra la precondición ausente
+== caso 6: un glob es una familia, no una ruta -> no se mide
+   (la cita ``.claude/eventos/vocabulario-*/terminos.py`` nombra un patrón)
+  ok    exit 0: el glob no se trata como ruta
+  ok    y queda FUERA del denominador
+== caso 7: --quiet emite SÓLO el conteo (lo que thyrox-audit consume)
+  ok    la salida es un entero pelado
+
+
+13 casos: 13 ok, 0 fallos
+EXIT=0

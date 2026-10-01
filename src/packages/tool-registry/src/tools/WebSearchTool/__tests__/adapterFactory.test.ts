@@ -6,6 +6,19 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 // the env override through real `process.env.WEB_SEARCH_ADAPTER`,
 // which the factory reads via the live `readEnv()`.
 
+// `mock.restore()` NO deshace un `mock.module`, y el namespace importado antes
+// de mockear se parchea en su sitio (medido en Bun 1.3.11, banco
+// `test-isolation-leaks-20260927T080507`). Sin reponerlos, el mock de
+// `supportsAnthropicServerWebSearch` seguía vivo en el siguiente archivo y
+// `adapterFactory.integration.test.ts` recibía ApiSearchAdapter para OpenAI.
+// Se guarda una COPIA de los exports reales y se repone al salir.
+//
+// Anulación, medida: sin reponer `providers.js` vuelve a caer el caso OpenAI
+// de la integración. Reponer `model.js` no cae con ese archivo, que lo mockea
+// de nuevo en su cabecera; protege a cualquier otro que lo importe después.
+const realModelExports = { ...(await import('@thyrox/provider/model.js')) }
+const realProvidersExports = { ...(await import('@thyrox/provider/providers.js')) }
+
 let mockMainLoopModel: string | undefined
 let mockMainLoopModelThrows = false
 let mockSupportsServerWebSearch = false
@@ -55,6 +68,8 @@ afterEach(() => {
     process.env[ENV_KEY] = envBackup
   }
   mock.restore()
+  mock.module('@thyrox/provider/model.js', () => realModelExports)
+  mock.module('@thyrox/provider/providers.js', () => realProvidersExports)
 })
 
 async function freshFactory() {

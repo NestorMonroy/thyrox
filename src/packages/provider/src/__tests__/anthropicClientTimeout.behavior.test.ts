@@ -9,7 +9,7 @@ import { resolve } from 'path'
  * symptoms:
  * - Wrong default timeout → users with slow networks see "timeout" before
  *   the API actually returned
- * - Lost CLAUDE_CODE_USE_BEDROCK / VERTEX / FOUNDRY branch → users on
+ * - Lost THYROX_CODE_USE_BEDROCK / VERTEX / FOUNDRY branch → users on
  *   those clouds silently get firstParty client (Bearer leaks to wrong
  *   endpoint, then 401 confuses them)
  * - Wrong ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION precedence → background
@@ -33,9 +33,9 @@ describe('anthropic/client.ts timeout + routing (ant bx)', () => {
     expect(source).toMatch(/dangerouslyAllowBrowser:\s*true/)
   })
 
-  test('Bedrock branch dispatches on CLAUDE_CODE_USE_BEDROCK env', () => {
+  test('Bedrock branch dispatches on THYROX_CODE_USE_BEDROCK env', () => {
     expect(source).toMatch(
-      /if\s*\(anthropic\.isEnvTruthy\(readEnv\('CLAUDE_CODE_USE_BEDROCK'\)\)\)/,
+      /if\s*\(anthropic\.isEnvTruthy\(readEnv\('THYROX_CODE_USE_BEDROCK'\)\)\)/,
     )
     expect(source).toMatch(/await import\('@anthropic-ai\/bedrock-sdk'\)/)
   })

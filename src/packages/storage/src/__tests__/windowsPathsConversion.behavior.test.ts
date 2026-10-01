@@ -199,10 +199,10 @@ describe('source pins', () => {
     )
   })
 
-  test('CLAUDE_CODE_GIT_BASH_PATH env var checked first (user override)', () => {
+  test('THYROX_CODE_GIT_BASH_PATH env var checked first (user override)', () => {
     // Pin: env var → default locations → where.exe.
     expect(source).toMatch(
-      /findGitBashPath = memoize[\s\S]+?process\.env\.CLAUDE_CODE_GIT_BASH_PATH/,
+      /findGitBashPath = memoize[\s\S]+?process\.env\.THYROX_CODE_GIT_BASH_PATH/,
     )
   })
 

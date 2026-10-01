@@ -40,9 +40,12 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Mapping
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC
-from verify.batch_verification import Proposal, _new_diagnostics, ledger_rows, verify_proposals
+from verify.batch_verification import (
+    Proposal, ProposalVerdict, _new_diagnostics, ledger_rows, verify_proposals,
+)
 from verify.source_copy_step import reachable_copies
 from verify.tsc_schedule import Candidate, schedule
 
@@ -148,6 +151,8 @@ def net_outcome(before_lines: list[str], after_lines: list[str], row: dict) -> t
     report = verify_proposals(before_lines, after_lines, [
         Proposal(row["proposal_id"], row["proposer"], frozenset(row["targets"]), frozenset(row["files"]))])
     verdict = report.verdicts[0]
+    # `verify_proposals` sólo produce `ProposalVerdict` (nunca `Verdict`).
+    assert isinstance(verdict, ProposalVerdict)
     own = set(row["files"])
     breaks_own = any(d.split(": ", 1)[0] in own for d in verdict.new_diagnostics)
     if (not breaks_own and verdict.targets_after < verdict.targets_before
@@ -175,7 +180,7 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
     by_id = {row["proposal_id"]: row for row in candidates}
     plan = schedule([Candidate(r["proposal_id"], r["proposer"], len(r["targets"]), frozenset(r["files"]))
                      for r in candidates], _read_jsonl(ledger), epsilon, alpha0, seed, max_batch)
-    applied: dict[str, dict[str, str]] = {}
+    applied: dict[str, dict[str, str | None]] = {}
     infrastructure = []
     for candidate in plan.selected:
         originals = _apply(root, by_id[candidate.proposal_id])
@@ -196,12 +201,16 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
     report = verify_proposals(before_lines, after_lines, [
         Proposal(pid, by_id[pid]["proposer"], frozenset(by_id[pid]["targets"]), frozenset(by_id[pid]["files"]))
         for pid in applied])
-    outcomes.update({v.proposal_id: v.outcome for v in report.verdicts})
+    # `verify_proposals` sólo produce `ProposalVerdict` (nunca `Verdict`).
+    outcomes.update({v.proposal_id: v.outcome for v in report.verdicts
+                     if isinstance(v, ProposalVerdict)})
     # Política neta: sólo con una propuesta por lote, porque el total no se
     # puede repartir entre varias (`net_outcome`).
     net_kept: str | None = None
     if net and len(applied) == 1 and len(report.verdicts) == 1:
-        pid = report.verdicts[0].proposal_id
+        first_verdict = report.verdicts[0]
+        assert isinstance(first_verdict, ProposalVerdict)
+        pid = first_verdict.proposal_id
         if net_outcome(before_lines, after_lines, by_id[pid])[0] == "accepted-net":
             net_kept = pid
             outcomes[net_kept] = "accepted-net"
@@ -231,7 +240,7 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
     revealed: dict[str, list[str]] = {}
     counter = {"n": 0}
 
-    def write(pid: str, texts: dict[str, str | None]) -> None:
+    def write(pid: str, texts: Mapping[str, str | None]) -> None:
         for file, text in texts.items():
             _write(root, file, text)
 
@@ -335,7 +344,7 @@ def main(argv: list[str] | None = None) -> int:
         print("tsc_zero_step: falta `--` antes del comando de tsc", file=sys.stderr)
         return 2
     split = argv.index("--")
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=Path, required=True, help="directorio desde donde corre tsc")
     parser.add_argument("--candidates", type=Path, required=True, help="JSONL de bin/tsc_proposers")
     parser.add_argument("--ledger", type=Path, required=True)

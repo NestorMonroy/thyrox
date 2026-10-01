@@ -1,0 +1,5 @@
+(fail) runCommand > con stdin declarado, el hijo lo recibe por una FIFO: Podman exige un pipe con nombre para `-` [9.79ms]
+ 3 pass
+ 1 fail
+TEST_EXIT=1
+__BG_EXIT__=0

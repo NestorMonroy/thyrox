@@ -31,7 +31,7 @@ fi
 MISSING="thyrox-binario-que-no-existe-$$"
 
 # Caso 2 — ausente y sin opt-in: REHUSA con exit 2.
-out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$MISSING" THYROX_INSTALL_PDF_TEXT= \
+out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$MISSING" THYROX_INSTALL_PDF_TEXT='' \
        thyrox_toolchain_require_pdf_text 2>&1)"; rc=$?
 if [[ $rc -eq 2 ]]; then ok "rehusa con exit 2 cuando falta y no hay opt-in"
 else bad "esperaba exit 2 sin opt-in, dio $rc"; fi
@@ -53,7 +53,7 @@ else
 fi
 
 # Caso 5 — control positivo: un binario presente pasa sin instalar nada.
-if THYROX_TOOLCHAIN_PDFTOTEXT_BIN=sh THYROX_INSTALL_PDF_TEXT= \
+if THYROX_TOOLCHAIN_PDFTOTEXT_BIN=sh THYROX_INSTALL_PDF_TEXT='' \
    thyrox_toolchain_require_pdf_text >/dev/null 2>&1; then
   ok "un binario presente pasa sin opt-in"
 else

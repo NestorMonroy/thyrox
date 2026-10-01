@@ -1,0 +1,24 @@
+Measure each pool item's VRAM and bound the width
+
+GNU Time measures an item's RAM and cannot see the GPU, and GNU
+Parallel has no --memfree for it. gpu_monitor.py samples nvidia-smi
+over the item's process tree while it lives and writes <n>.gpu with
+peak and mean VRAM, peak GPU use and the sample count, in three
+states that are never collapsed: a measurement (zero included),
+absent (no nvidia-smi, no file) and error (tried and failed).
+
+step_report publishes max and median VRAM and counts errors apart.
+The pool history keeps each run's VRAM peak, and the pool launches at
+min(configured, RAM, VRAM) width, each bound being (free - reserve) /
+(peak x margin) with the reserve subtracted from what is free. Since
+free VRAM moves while items start, each item waits for room for its
+peak before starting: the admission half of Parallel's --memfree,
+read from /usr/bin/parallel 20231122. Its other half, killing the
+youngest job, is not ported: it would kill a claude -p mid-request.
+
+There is no GPU in this container; the suites use a fake nvidia-smi
+and prove the mechanism, not nvidia-smi's accuracy.
+
+Annulment: counting every GPU process instead of the tree, summing
+free VRAM across GPUs, dropping the error record, skipping admission
+or not applying the width each fail exactly their cases.

@@ -191,6 +191,8 @@ export const SettingsSchema = lazySchema(() => z
     $schema: z.string().optional(),
     model: IDENTIFICADOR_DE_MODELO.optional(),
     advisorModel: IDENTIFICADOR_DE_MODELO.optional(),
+    /** Mensajes entrantes de otras sesiones: `accept` los entrega, `hold` los retiene para revisarlos, `refuse` los rechaza. Un valor inválido cuenta como ausente. */
+    crossSessionInbound: z.enum(['accept', 'hold', 'refuse']).optional().catch(undefined),
     effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).optional(),
     cacheTtl: z.enum(['5m', '1h']).optional(),
     maxTurns: z.number().int().positive().optional(),
@@ -202,7 +204,7 @@ export const SettingsSchema = lazySchema(() => z
     disableAllHooks: z.boolean().optional(),
     // El cliente las declara para PONER el remolque de autoría; aquí existen
     // para poder apagarlo, que es lo que `git-author-identity.md` manda:
-    // ni `Co-Authored-By: Claude …` ni `Claude-Session:` en ningún mensaje.
+    // ni `Co-Authored-By: thyrox …` ni `Claude-Session:` en ningún mensaje.
     // Por eso `includeCoAuthoredBy` sólo admite `false`: aceptar `true`
     // permitiría escribir en un archivo lo que la regla prohíbe.
     includeCoAuthoredBy: z.literal(false).optional(),
@@ -356,7 +358,7 @@ export const SettingsSchema = lazySchema(() => z
         .enum(['default', 'fullscreen'])
         .optional()
         .describe(
-          'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting CLAUDE_CODE_NO_FLICKER, but persistent across sessions.',
+          'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting THYROX_CODE_NO_FLICKER, but persistent across sessions.',
         ),
     spinnerTipsEnabled: z.boolean().optional(),
     // Forma de 2.1.281: `append` añade los verbos a los de fábrica y

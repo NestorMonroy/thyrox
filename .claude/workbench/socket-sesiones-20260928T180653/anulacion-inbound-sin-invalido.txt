@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboundPolicy.test.ts:
+63 |     expect(resolveInboundPolicy(readers({ userSettings: 'accept', projectSettings: 'accept' }))).toEqual({ value: 'accept', decidedBy: 'userSettings' })
+64 |   })
+65 | 
+66 |   test('un valor inválido en algún archivo retiene (hold) si nada decidió algo más estricto', () => {
+67 |     const invalid = { hasInvalidSettingWarning: () => true }
+68 |     expect(resolveInboundPolicy(readers({}, invalid))).toEqual({ value: 'hold', decidedBy: 'invalidSetting' })
+                                                            ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "decidedBy": "invalidSetting",
+-   "value": "hold",
++   "decidedBy": undefined,
++   "value": undefined,
+  }
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboundPolicy.test.ts:68:56)
+(fail) resolveInboundPolicy (I) > un valor inválido en algún archivo retiene (hold) si nada decidió algo más estricto [0.39ms]
+
+ 11 pass
+ 1 fail
+ 37 expect() calls
+Ran 12 tests across 1 file. [149.00ms]

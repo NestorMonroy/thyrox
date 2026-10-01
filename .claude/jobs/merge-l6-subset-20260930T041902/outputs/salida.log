@@ -1,0 +1,11 @@
+== cd src/packages/swarm && bun test
+RESULT 1 exit=0
+== cd src/packages/local-observability && bun test
+RESULT 2 exit=0
+== cd src/packages/swarm && ../../../node_modules/.bin/tsc --noEmit -p tsconfig.test.json
+RESULT 3 exit=2
+== cd src/packages/local-observability && ../../../node_modules/.bin/tsc --noEmit -p tsconfig.test.json
+RESULT 4 exit=2
+== PATH=/home/user/thyrox/.venv/bin:$PATH bash tests/lib/test-toolchain-index-refresh.sh
+RESULT 5 exit=0
+__BG_EXIT__=0

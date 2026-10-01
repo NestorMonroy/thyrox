@@ -1,0 +1,3 @@
+src/runtime/bootstrap.ts(136,62): error TS2554: Expected 0-1 arguments, but got 2.
+src/runtime/installCliBindings.ts(37,79): error TS2554: Expected 1 arguments, but got 2.
+src/runtime/runtimeHandles.ts(166,11): error TS2554: Expected 1 arguments, but got 2.

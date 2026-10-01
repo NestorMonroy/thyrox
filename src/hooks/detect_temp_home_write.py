@@ -23,7 +23,7 @@ Ciega a: una escritura hecha por un programa (``python -c "open('/tmp/x','w')"``
 y una variable asignada en otro comando. Mide la sintaxis del shell, no lo que
 cada programa hace con sus argumentos.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 
@@ -95,8 +95,8 @@ def detect(payload: dict) -> str | None:
         "va cada cosa: la evidencia de un banco en `THYROX_WORKBENCH_DIR`, lo "
         "regenerable en `THYROX_CACHE_DIR` y los logs en "
         "`THYROX_BACKGROUND_LOG_DIR`. Una copia del árbol (`git worktree`) "
-        "fuera del clon además hereda el `.env` versionado y actúa sobre el "
-        "clon original."
+        "fuera del clon no trae el `.env`, que no se versiona, así que sus "
+        "lectores caen al ascenso."
     )
 
 

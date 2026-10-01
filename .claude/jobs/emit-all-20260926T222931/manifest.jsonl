@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bash bin/emit_declarations --all > .claude/workbench/tsconfig-build-20260926T222930/emit-all.out 2>&1; echo rc=$?; tail -3 .claude/workbench/tsconfig-build-20260926T222930/emit-all.out", "started_at": "2026-09-26T22:29:31+00:00"}

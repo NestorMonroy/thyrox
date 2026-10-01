@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_generate_bin.py 2>&1 | tail -3", "started_at": "2026-09-26T21:57:57+00:00"}

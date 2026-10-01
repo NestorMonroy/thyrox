@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Control de `src/verify/member_port.py`: el porte de un módulo grande por miembros.
 
-Un módulo demasiado grande para un `claude -p` (`attachments.ts`, 3824 líneas:
+Un módulo demasiado grande para un `thyrox -p` (`attachments.ts`, 3824 líneas:
 el ítem único agotó 31 turnos en el paso 130) se reparte en ítems, uno por
 miembro, que escriben el MISMO archivo a la vez. Cada ítem reemplaza sólo sus
 dos anclas; esta pieza pone las anclas, aplica las salidas y deja el archivo

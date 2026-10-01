@@ -32,9 +32,9 @@ Que cubre cada bloque:
 2. **El control PUEDE fallar**: el mismo gate por la via del pre-commit SI
    publica su conteo. Sin ese gemelo, el bloque 1 pasaria con un gate que
    rehusara siempre (sub-patron D).
-3. **El discriminador es `sys.prefix`, no la ruta real del ejecutable** — los
-   tres interpretes comparten `realpath` (`/usr/bin/python3.11`), asi que
-   compararla da «son el mismo» para los tres.
+3. **El discriminador es `sys.prefix`, no la ruta real del ejecutable** — el
+   venv del proveedor y el del consumidor comparten `realpath`, asi que
+   compararla no separa el par que el guard tiene que distinguir.
 4. **La precondicion que el guard mide son las EXTENSIONES**, no `import
    sphinx`: el proveedor no resuelve cuatro de las nueve que el `conf.py` del
    consumidor declara, y el consumidor resuelve las nueve.
@@ -116,25 +116,37 @@ def test_the_via_of_pre_commit_WHETHER_publishes_su_count():
     assert r.returncode in (0, 1), f'exit inesperado: {r.returncode}'
 
 
-def test_the_path_real_of_executable_NOT_discriminates():
-    """Bloque 3 — por que el discriminador es `sys.prefix`.
+def _real_and_prefix(interpreter: pathlib.Path | str) -> tuple[str, str]:
+    """La ruta real del ejecutable y su `sys.prefix`, medidos por conducta."""
+    out = subprocess.run(
+        [str(interpreter), '-c',
+         'import os,sys,pathlib;'
+         'print(os.path.realpath(sys.executable));'
+         'print(pathlib.Path(sys.prefix).resolve())'],
+        capture_output=True, text=True, check=False).stdout.splitlines()
+    return out[0], out[1]
 
-    Medido: los tres interpretes del arbol resuelven al mismo binario real.
-    Comparar `os.path.realpath(sys.executable)` daria «son el mismo» para los
-    tres, y el guard no re-lanzaria nunca.
+
+def test_the_path_real_of_executable_NOT_discriminates():
+    """Bloque 3 — por que el discriminador es `sys.prefix`, no la ruta real.
+
+    El par que el guard tiene que distinguir es el venv del PROVEEDOR contra
+    el del CONSUMIDOR: los dos comparten binario real (medido: el mismo
+    interprete que `uv` instalo), asi que compararla no los separa. El
+    python del sistema queda fuera de esa comparacion: la premisa que este
+    bloque prueba es sobre el par de venvs, no sobre los tres interpretes.
+    `sys.prefix` si discrimina, y lo hace para los TRES interpretes del
+    arbol, python del sistema incluido.
     """
-    real = set()
-    prefixes = set()
-    for p in ('/usr/bin/python3', PROVIDER_PYTHON, CONSUMER_PYTHON):
-        out = subprocess.run(
-            [str(p), '-c',
-             'import os,sys,pathlib;'
-             'print(os.path.realpath(sys.executable));'
-             'print(pathlib.Path(sys.prefix).resolve())'],
-            capture_output=True, text=True, check=False).stdout.splitlines()
-        real.add(out[0])
-        prefixes.add(out[1])
-    assert len(real) == 1, f'la premisa del bloque cambio: {real}'
+    provider_real, provider_prefix = _real_and_prefix(PROVIDER_PYTHON)
+    consumer_real, consumer_prefix = _real_and_prefix(CONSUMER_PYTHON)
+    _, system_prefix = _real_and_prefix('/usr/bin/python3')
+
+    assert provider_real == consumer_real, (
+        'la premisa del bloque cambio: el par proveedor/consumidor deja de '
+        f'compartir binario real: {provider_real!r} != {consumer_real!r}')
+
+    prefixes = {provider_prefix, consumer_prefix, system_prefix}
     assert len(prefixes) == 3, f'sys.prefix dejo de discriminar: {prefixes}'
 
 

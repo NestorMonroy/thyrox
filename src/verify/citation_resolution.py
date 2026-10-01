@@ -88,8 +88,13 @@ def known_citations(store_path) -> dict[str, str]:
         mapping = task_ids.mapping_from_store(store_path)
     except task_ids.MappingError as error:
         raise StoreUnavailable(str(error)) from error
-    return {citation: entry.get("subject", "")
-            for citation, entry in mapping.ids.items()}
+    known = {citation: entry.get("subject", "")
+             for citation, entry in mapping.ids.items()}
+    # La cita de capa (`layer_citation_id`) resuelve a la misma fila que su
+    # `citation_id`: citarla en un commit es tan valido como citar la original.
+    for layer_citation, identifier in mapping.aliases.items():
+        known[layer_citation] = known.get(identifier, "")
+    return known
 
 
 def classify(text: str, known: dict[str, str]) -> tuple[list[str], list[str]]:
@@ -165,7 +170,7 @@ def _report_message(path: str, store_path, verbose: bool) -> int:
     print("  rellenar el ordinal a cuatro digitos fabrica una cita que PARECE "
           "durable y no resuelve.", file=sys.stderr)
     print("  La cita del sujeto se busca con: "
-          "bin/task_ids cita <session_id> <ordinal-del-board>", file=sys.stderr)
+          "bin/task_ids lookup <session_id> <ordinal-del-board>", file=sys.stderr)
     return 1
 
 

@@ -1,15 +1,7 @@
 /**
- * TDD del resto de `@thyrox/config/env/utils.ts` — pase de 2026-09-09
- * («completar `env/utils.ts` sobre la excepción declarada»; sin task
- * asignada en el encargo — `TASK-DOCS-0200`/`TASK-DOCS-0250` citados en un
- * borrador previo de este docstring NO corresponden a este trabajo, medido
- * contra `agent_store.sqlite3` (0200 = censar tengu_team_mem_*; 0250 =
- * re-encuadre de un catálogo documental) — retirados). Cierra los 13
- * exports que faltaban de los 18 de la fuente (`ccnmt:
- * packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
- * reimplementación, no copia). Sin dependencias transitivas nuevas: los 13
- * sólo usan `process.env`/`process.argv` y los cinco ya portados
- * (`isEnvTruthy`, `getClaudeConfigHomeDir`).
+ * Los 18 exports de `@thyrox/config/env/utils.ts`, contra la fuente
+ * (`ccnmt: packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
+ * reimplementación, no copia).
  *
  * `getPermissionHostBindings`-style no aplica aquí — no hay shim de host,
  * son lectores/escritores puros de `process.env`. El riesgo real es la
@@ -21,7 +13,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import {
   deleteEnv,
   getAWSRegion,
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   getDefaultVertexRegion,
   getTeamsDir,
   getVertexRegionForModel,
@@ -56,9 +48,9 @@ function withEnv(vars: Record<string, string | undefined>, fn: () => void) {
 }
 
 describe('getTeamsDir', () => {
-  test('anida "teams" bajo getClaudeConfigHomeDir', () => {
-    withEnv({ CLAUDE_CONFIG_DIR: '/tmp/config-envutils-teams' }, () => {
-      expect(getTeamsDir()).toBe(`${getClaudeConfigHomeDir()}/teams`)
+  test('anida "teams" bajo getConfigHomeDir', () => {
+    withEnv({ THYROX_CONFIG_DIR: '/tmp/config-envutils-teams' }, () => {
+      expect(getTeamsDir()).toBe(`${getConfigHomeDir()}/teams`)
       expect(getTeamsDir().endsWith('/teams')).toBe(true)
     })
   })
@@ -88,16 +80,16 @@ describe('hasNodeOption', () => {
 
 describe('isBareMode', () => {
   afterEach(() => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.THYROX_CODE_SIMPLE
   })
 
-  test('CLAUDE_CODE_SIMPLE truthy activa el modo', () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+  test('THYROX_CODE_SIMPLE truthy activa el modo', () => {
+    process.env.THYROX_CODE_SIMPLE = '1'
     expect(isBareMode()).toBe(true)
   })
 
   test('sin la variable y sin --bare en argv: false', () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.THYROX_CODE_SIMPLE
     expect(process.argv.includes('--bare')).toBe(false)
     expect(isBareMode()).toBe(false)
   })
@@ -145,11 +137,11 @@ describe('getAWSRegion / getDefaultVertexRegion', () => {
 })
 
 describe('shouldMaintainProjectWorkingDir', () => {
-  test('delega en isEnvTruthy sobre CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR', () => {
-    withEnv({ CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR: 'true' }, () => {
+  test('delega en isEnvTruthy sobre THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR', () => {
+    withEnv({ THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR: 'true' }, () => {
       expect(shouldMaintainProjectWorkingDir()).toBe(true)
     })
-    withEnv({ CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR: undefined }, () => {
+    withEnv({ THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR: undefined }, () => {
       expect(shouldMaintainProjectWorkingDir()).toBe(false)
     })
   })

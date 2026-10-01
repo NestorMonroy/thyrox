@@ -1,0 +1,15 @@
+  ok   el primer registro entra
+  ok   el segundo REHÚSA con exit 2
+  ok   y nombra el id en conflicto
+  ok   el primero SIGUE en el store
+  ok   con --force el registro entra
+  ok   y el contenido converge
+  ok   el siguiente id no colisiona con la fila del store
+  ok   sin el store, el verificador lo ve libre (la mitad ciega)
+  ok   con el store, el verificador lo ve OCUPADO
+  ok   el .rst del consumidor sigue contando
+  ok   no aparecen archivos nuevos en el árbol
+  FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/build-logs/job-20260928T013616/job-011.log']
+
+11 aprobada(s) · 1 fallida(s) (alcance medido: hallazgo_ids.next_id + agent_store agregar-hallazgo)
+EXIT=1

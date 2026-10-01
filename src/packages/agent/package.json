@@ -5,224 +5,1093 @@
   "type": "module",
   "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y —en loop/— el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
   "main": "./index.ts",
-  "types": "./index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./index.ts",
-    "./file-history": "./fileHistory.ts",
-    "./types": "./types.ts",
-    "./schema": "./schema.ts",
-    "./registry": "./registry.ts",
-    "./emit/markdown": "./emit/markdown.ts",
-    "./emit/agentsJson": "./emit/agentsJson.ts",
-    "./models": "./models.ts",
-    "./taggedId": "./taggedId.ts",
-    "./idTypes": "./idTypes.ts",
-    "./uuid": "./uuid.ts",
-    "./agentIdUtils": "./agentIdUtils.ts",
-    "./commitAttribution": "./commitAttribution.ts",
-    "./sanitizePathComponent": "./sanitizePathComponent.ts",
-    "./eventMetadata": "./eventMetadata.ts",
-    "./promptCategory": "./promptCategory.ts",
-    "./internal/tokenBudget": "./internal/tokenBudget.ts",
-    "./contentArray": "./contentArray.ts",
-    "./errors": "./errors.ts",
-    "./abortController": "./abortController.ts",
-    "./combinedAbortSignal": "./combinedAbortSignal.ts",
-    "./tee": "./tee.ts",
-    "./loop": "./loop/index.ts",
-    "./loop/types": "./loop/types.ts",
-    "./loop/hooks": "./loop/hooks.ts",
-    "./loop/transcript": "./loop/transcript.ts",
-    "./loop/session": "./loop/session.ts",
-    "./loop/session/reconcile": "./loop/session/reconcile.ts",
-    "./loop/sessions": "./loop/sessions/index.ts",
-    "./loop/sessions/modelSwitch": "./loop/sessions/modelSwitch.ts",
-    "./compaction": "./compaction/index.ts",
-    "./coordinatorMode": "./coordinatorMode.ts",
-    "./frontmatterParser": "./frontmatterParser.ts",
-    "./proactive": "./proactive/index.ts",
-    "./sessionStores": "./sessionStores.ts",
-    "./yaml": "./yaml.ts",
-    "./claudeInChrome/toolRendering.js": "./claudeInChrome/toolRendering.tsx",
-    "./localAgentTask.js": "./localAgentTask.tsx",
-    "./services/mcpServerApproval.js": "./services/mcpServerApproval.tsx",
-    "./statusAlias.js": "./statusAlias.tsx",
-    "./tasks/LocalMainSessionTask.js": "./tasks/LocalMainSessionTask.tsx",
-    "./tasks/LocalShellTask.js": "./tasks/LocalShellTask.tsx",
-    "./AgentSummary/agentSummary.js": "./AgentSummary/agentSummary.ts",
-    "./MagicDocs/magicDocs.js": "./MagicDocs/magicDocs.ts",
-    "./SessionMemory/sessionMemory.js": "./SessionMemory/sessionMemory.ts",
-    "./SessionMemory/sessionMemoryUtils.js": "./SessionMemory/sessionMemoryUtils.ts",
-    "./abortController.js": "./abortController.ts",
-    "./agentContext.js": "./agentContext.ts",
-    "./agentDeps.js": "./agentDeps.ts",
-    "./agentHostBindings.js": "./agentHostBindings.ts",
-    "./agentSwarmsEnabled.js": "./agentSwarmsEnabled.ts",
-    "./assistant/AssistantSessionChooser.js": "./assistant/AssistantSessionChooser.ts",
-    "./assistant/index.js": "./assistant/index.ts",
-    "./assistant/sessionDiscovery.js": "./assistant/sessionDiscovery.ts",
-    "./assistant/sessionHistory.js": "./assistant/sessionHistory.ts",
-    "./attachments.js": "./attachments.ts",
-    "./attribution.js": "./attribution.ts",
-    "./awaySummary.js": "./awaySummary.ts",
-    "./background/fleet/fleetStore.js": "./background/fleet/fleetStore.ts",
-    "./background/fleet/fleetTypes.js": "./background/fleet/fleetTypes.ts",
-    "./background/fleet/generateJobName.js": "./background/fleet/generateJobName.ts",
-    "./background/fleet/listFleetJobs.js": "./background/fleet/listFleetJobs.ts",
-    "./background/fleet/pinFleetJob.js": "./background/fleet/pinFleetJob.ts",
-    "./background/fleet/renameFleetJob.js": "./background/fleet/renameFleetJob.ts",
-    "./background/fleet/replBridgeSeed.js": "./background/fleet/replBridgeSeed.ts",
-    "./background/fleet/replyToFleetJob.js": "./background/fleet/replyToFleetJob.ts",
-    "./background/fleet/rvServer.js": "./background/fleet/rvServer.ts",
-    "./background/fleet/sortFleetJobs.js": "./background/fleet/sortFleetJobs.ts",
-    "./background/preconditions.js": "./background/preconditions.ts",
-    "./background/remote/remoteSession.js": "./background/remote/remoteSession.ts",
-    "./claudeInChrome/chromeNativeHost.js": "./claudeInChrome/chromeNativeHost.ts",
-    "./claudeInChrome/common.js": "./claudeInChrome/common.ts",
-    "./claudeInChrome/mcpServer.js": "./claudeInChrome/mcpServer.ts",
-    "./claudeInChrome/prompt.js": "./claudeInChrome/prompt.ts",
-    "./claudeInChrome/setup.js": "./claudeInChrome/setup.ts",
-    "./claudeInChromeCommon.js": "./claudeInChromeCommon.ts",
-    "./claudeInChromeSetup.js": "./claudeInChromeSetup.ts",
-    "./combinedAbortSignal.js": "./combinedAbortSignal.ts",
-    "./command.js": "./command.ts",
-    "./commands/brief.js": "./commands/brief.ts",
-    "./commands/commit-push-pr.js": "./commands/commit-push-pr.ts",
-    "./commands/commit.js": "./commands/commit.ts",
-    "./commands/pr_comments/index.js": "./commands/pr_comments/index.ts",
-    "./commands/security-review.js": "./commands/security-review.ts",
-    "./commands/tasks/index.js": "./commands/tasks/index.ts",
-    "./commitAttribution.js": "./commitAttribution.ts",
-    "./compaction/autoCompact.js": "./compaction/autoCompact.ts",
-    "./compaction/compact.js": "./compaction/compact.ts",
-    "./compaction/compactWarningHook.js": "./compaction/compactWarningHook.ts",
-    "./compaction/compactWarningState.js": "./compaction/compactWarningState.ts",
-    "./compaction/microCompact.js": "./compaction/microCompact.ts",
-    "./compaction/postCompactCleanup.js": "./compaction/postCompactCleanup.ts",
-    "./compaction/reactiveCompact.js": "./compaction/reactiveCompact.ts",
-    "./compaction/sessionMemoryCompact.js": "./compaction/sessionMemoryCompact.ts",
-    "./compaction/snipCompact.js": "./compaction/snipCompact.ts",
-    "./compaction/snipProjection.js": "./compaction/snipProjection.ts",
-    "./concurrentSessions.js": "./concurrentSessions.ts",
-    "./constants/github-app.js": "./constants/github-app.ts",
-    "./constants/messages.js": "./constants/messages.ts",
-    "./constants/oauth.js": "./constants/oauth.ts",
-    "./constants/product.js": "./constants/product.ts",
-    "./constants/prompts.js": "./constants/prompts.ts",
-    "./constants/spinnerVerbs.js": "./constants/spinnerVerbs.ts",
-    "./constants/systemPromptSections.js": "./constants/systemPromptSections.ts",
-    "./constants/turnCompletionVerbs.js": "./constants/turnCompletionVerbs.ts",
-    "./contentArray.js": "./contentArray.ts",
-    "./context": "./context.ts",
-    "./context.js": "./context.ts",
-    "./contextCollapse/index.js": "./contextCollapse/index.ts",
-    "./contextCollapse/operations.js": "./contextCollapse/operations.ts",
-    "./contextCollapse/persist.js": "./contextCollapse/persist.ts",
-    "./coordinatorMode.js": "./coordinatorMode.ts",
-    "./coreMessages.js": "./coreMessages.ts",
-    "./diff.js": "./diff.ts",
-    "./effort.js": "./effort.ts",
-    "./eventMetadata.js": "./eventMetadata.ts",
-    "./fileChangedWatcher.js": "./fileChangedWatcher.ts",
-    "./fileHistory.js": "./fileHistory.ts",
-    "./forkedAgent.js": "./forkedAgent.ts",
-    "./frontmatterParser.js": "./frontmatterParser.ts",
-    "./git/gitConfigParser.js": "./git/gitConfigParser.ts",
-    "./git/gitFilesystem.js": "./git/gitFilesystem.ts",
-    "./goalStopHook.js": "./goalStopHook.ts",
-    "./hooks.js": "./hooks.ts",
-    "./hooks/AsyncHookRegistry.js": "./hooks/AsyncHookRegistry.ts",
-    "./hooks/attributionHooks.js": "./hooks/attributionHooks.ts",
-    "./hooks/fileChangedWatcher.js": "./hooks/fileChangedWatcher.ts",
-    "./hooks/hooksConfigSnapshot.js": "./hooks/hooksConfigSnapshot.ts",
-    "./hooks/registerFrontmatterHooks.js": "./hooks/registerFrontmatterHooks.ts",
-    "./hooks/registerSkillHooks.js": "./hooks/registerSkillHooks.ts",
-    "./hooks/sessionHooks.js": "./hooks/sessionHooks.ts",
-    "./hooksConfigSnapshot.js": "./hooksConfigSnapshot.ts",
-    "./idleTimeout.js": "./idleTimeout.ts",
-    "./inProcessTeammateHelpers.js": "./inProcessTeammateHelpers.ts",
-    "./jetbrains.js": "./jetbrains.ts",
-    "./logsTypes.js": "./logsTypes.ts",
-    "./loop/context/basePrompt": "./loop/context/basePrompt.ts",
-    "./loop/context/microcompact": "./loop/context/microcompact.ts",
-    "./loop/context/systemPrompt": "./loop/context/systemPrompt.ts",
-    "./messagePredicates.js": "./messagePredicates.ts",
-    "./messageQueueManager.js": "./messageQueueManager.ts",
-    "./messageQueueTypes": "./messageQueueTypes.ts",
-    "./messageShapes": "./messageShapes.ts",
-    "./messageShapes.js": "./messageShapes.ts",
-    "./messages.js": "./messages.ts",
-    "./messages/mappers.js": "./messages/mappers.ts",
-    "./messages/systemInit.js": "./messages/systemInit.ts",
-    "./messagesMappers.js": "./messagesMappers.ts",
-    "./misc/cronJitterConfig.js": "./misc/cronJitterConfig.ts",
-    "./misc/directMemberMessage.js": "./misc/directMemberMessage.ts",
-    "./misc/systemDirectories.js": "./misc/systemDirectories.ts",
-    "./postSamplingHooks.js": "./postSamplingHooks.ts",
-    "./proactive/index.js": "./proactive/index.ts",
-    "./proactive/useProactive.js": "./proactive/useProactive.ts",
-    "./promptCategory.js": "./promptCategory.ts",
-    "./prompts.js": "./prompts.ts",
-    "./query": "./query.ts",
-    "./queryContext.js": "./queryContext.ts",
-    "./querySource": "./querySource.ts",
-    "./replHydration.js": "./replHydration.ts",
-    "./runtime/QueryGuard.js": "./runtime/QueryGuard.ts",
-    "./runtime/backgroundHousekeeping.js": "./runtime/backgroundHousekeeping.ts",
-    "./runtime/mailbox.js": "./runtime/mailbox.ts",
-    "./runtime/queueProcessor.js": "./runtime/queueProcessor.ts",
-    "./scheduler": "./scheduler.ts",
-    "./sdkControlSchemas.js": "./sdkControlSchemas.ts",
-    "./sdkEventQueue.js": "./sdkEventQueue.ts",
-    "./sdkProgress.js": "./sdkProgress.ts",
-    "./services/preventSleep.js": "./services/preventSleep.ts",
-    "./services/privacyConfig.js": "./services/privacyConfig.ts",
-    "./sessionFileAccessHooks.js": "./sessionFileAccessHooks.ts",
-    "./sessionStores.js": "./sessionStores.ts",
-    "./sessionTitle.js": "./sessionTitle.ts",
-    "./sessionTools/agenticSessionSearch.js": "./sessionTools/agenticSessionSearch.ts",
-    "./sessionTools/analyzeContext.js": "./sessionTools/analyzeContext.ts",
-    "./sessionTools/contextSuggestions.js": "./sessionTools/contextSuggestions.ts",
-    "./sessionTools/crossProjectResume.js": "./sessionTools/crossProjectResume.ts",
-    "./sessionTools/transcriptSearch.js": "./sessionTools/transcriptSearch.ts",
-    "./sessionUrl.js": "./sessionUrl.ts",
-    "./sideQuery.js": "./sideQuery.ts",
-    "./sideQuestion.js": "./sideQuestion.ts",
-    "./skillSearch/localSearch.js": "./skillSearch/localSearch.ts",
-    "./skillSearch/remoteSkillLoader.js": "./skillSearch/remoteSkillLoader.ts",
-    "./skillSearch/remoteSkillState.js": "./skillSearch/remoteSkillState.ts",
-    "./skillSearch/telemetry.js": "./skillSearch/telemetry.ts",
-    "./standalone/standaloneAgent.js": "./standalone/standaloneAgent.ts",
-    "./taggedId.js": "./taggedId.ts",
-    "./task/framework.js": "./task/framework.ts",
-    "./taskFramework.js": "./taskFramework.ts",
-    "./tasks.js": "./tasks.ts",
-    "./tasks/DreamTask/DreamTask.js": "./tasks/DreamTask/DreamTask.ts",
-    "./tasks/LocalShellTask/killShellTasks.js": "./tasks/LocalShellTask/killShellTasks.ts",
-    "./tasks/LocalWorkflowTask/LocalWorkflowTask.js": "./tasks/LocalWorkflowTask/LocalWorkflowTask.ts",
-    "./tasks/MonitorMcpTask/MonitorMcpTask.js": "./tasks/MonitorMcpTask/MonitorMcpTask.ts",
-    "./tasks/pillLabel.js": "./tasks/pillLabel.ts",
-    "./tasks/stopTask.js": "./tasks/stopTask.ts",
-    "./teamTasks.js": "./teamTasks.ts",
-    "./tokenBudget": "./tokenBudget.ts",
-    "./tokenEstimation.js": "./tokenEstimation.ts",
-    "./tokens.js": "./tokens.ts",
-    "./toolSearch.js": "./toolSearch.ts",
-    "./types/hooks.js": "./types/hooks.ts",
-    "./userPromptKeywords/userPromptKeywords.js": "./userPromptKeywords/userPromptKeywords.ts",
-    "./uuid.js": "./uuid.ts",
-    "./workflow/engine.js": "./workflow/engine.ts",
-    "./workflow/journal.js": "./workflow/journal.ts",
-    "./workflow/metaParser.js": "./workflow/metaParser.ts",
-    "./workflow/namedWorkflows.js": "./workflow/namedWorkflows.ts",
-    "./workflow/paths.js": "./workflow/paths.ts",
-    "./workflow/sandbox.js": "./workflow/sandbox.ts",
-    "./workflow/types.js": "./workflow/types.ts",
-    "./worktreeModeEnabled.js": "./worktreeModeEnabled.ts",
-    "./yaml.js": "./yaml.ts",
-    "./zodSchema/zodToJsonSchema.js": "./zodSchema/zodToJsonSchema.ts",
-    "./query-engine": "./QueryEngine.ts",
-    "./subagentLimits.js": "./subagentLimits.ts"
+    ".": {
+      "@thyrox/source": "./index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./index.ts"
+    },
+    "./file-history": {
+      "@thyrox/source": "./fileHistory.ts",
+      "types": "./dist/fileHistory.d.ts",
+      "default": "./fileHistory.ts"
+    },
+    "./types": {
+      "@thyrox/source": "./types.ts",
+      "types": "./dist/types.d.ts",
+      "default": "./types.ts"
+    },
+    "./schema": {
+      "@thyrox/source": "./schema.ts",
+      "types": "./dist/schema.d.ts",
+      "default": "./schema.ts"
+    },
+    "./registry": {
+      "@thyrox/source": "./registry.ts",
+      "types": "./dist/registry.d.ts",
+      "default": "./registry.ts"
+    },
+    "./emit/markdown": {
+      "@thyrox/source": "./emit/markdown.ts",
+      "types": "./dist/emit/markdown.d.ts",
+      "default": "./emit/markdown.ts"
+    },
+    "./emit/agentsJson": {
+      "@thyrox/source": "./emit/agentsJson.ts",
+      "types": "./dist/emit/agentsJson.d.ts",
+      "default": "./emit/agentsJson.ts"
+    },
+    "./models": {
+      "@thyrox/source": "./models.ts",
+      "types": "./dist/models.d.ts",
+      "default": "./models.ts"
+    },
+    "./modelCapabilities": {
+      "@thyrox/source": "./modelCapabilities.ts",
+      "types": "./dist/modelCapabilities.d.ts",
+      "default": "./modelCapabilities.ts"
+    },
+    "./modelScope": {
+      "@thyrox/source": "./modelScope.ts",
+      "types": "./dist/modelScope.d.ts",
+      "default": "./modelScope.ts"
+    },
+    "./taggedId": {
+      "@thyrox/source": "./taggedId.ts",
+      "types": "./dist/taggedId.d.ts",
+      "default": "./taggedId.ts"
+    },
+    "./idTypes": {
+      "@thyrox/source": "./idTypes.ts",
+      "types": "./dist/idTypes.d.ts",
+      "default": "./idTypes.ts"
+    },
+    "./uuid": {
+      "@thyrox/source": "./uuid.ts",
+      "types": "./dist/uuid.d.ts",
+      "default": "./uuid.ts"
+    },
+    "./agentIdUtils": {
+      "@thyrox/source": "./agentIdUtils.ts",
+      "types": "./dist/agentIdUtils.d.ts",
+      "default": "./agentIdUtils.ts"
+    },
+    "./commitAttribution": {
+      "@thyrox/source": "./commitAttribution.ts",
+      "types": "./dist/commitAttribution.d.ts",
+      "default": "./commitAttribution.ts"
+    },
+    "./sanitizePathComponent": {
+      "@thyrox/source": "./sanitizePathComponent.ts",
+      "types": "./dist/sanitizePathComponent.d.ts",
+      "default": "./sanitizePathComponent.ts"
+    },
+    "./eventMetadata": {
+      "@thyrox/source": "./eventMetadata.ts",
+      "types": "./dist/eventMetadata.d.ts",
+      "default": "./eventMetadata.ts"
+    },
+    "./promptCategory": {
+      "@thyrox/source": "./promptCategory.ts",
+      "types": "./dist/promptCategory.d.ts",
+      "default": "./promptCategory.ts"
+    },
+    "./internal/tokenBudget": {
+      "@thyrox/source": "./internal/tokenBudget.ts",
+      "types": "./dist/internal/tokenBudget.d.ts",
+      "default": "./internal/tokenBudget.ts"
+    },
+    "./contentArray": {
+      "@thyrox/source": "./contentArray.ts",
+      "types": "./dist/contentArray.d.ts",
+      "default": "./contentArray.ts"
+    },
+    "./errors": {
+      "@thyrox/source": "./errors.ts",
+      "types": "./dist/errors.d.ts",
+      "default": "./errors.ts"
+    },
+    "./abortController": {
+      "@thyrox/source": "./abortController.ts",
+      "types": "./dist/abortController.d.ts",
+      "default": "./abortController.ts"
+    },
+    "./combinedAbortSignal": {
+      "@thyrox/source": "./combinedAbortSignal.ts",
+      "types": "./dist/combinedAbortSignal.d.ts",
+      "default": "./combinedAbortSignal.ts"
+    },
+    "./tee": {
+      "@thyrox/source": "./tee.ts",
+      "types": "./dist/tee.d.ts",
+      "default": "./tee.ts"
+    },
+    "./loop": {
+      "@thyrox/source": "./loop/index.ts",
+      "types": "./dist/loop/index.d.ts",
+      "default": "./loop/index.ts"
+    },
+    "./loop/types": {
+      "@thyrox/source": "./loop/types.ts",
+      "types": "./dist/loop/types.d.ts",
+      "default": "./loop/types.ts"
+    },
+    "./loop/hooks": {
+      "@thyrox/source": "./loop/hooks.ts",
+      "types": "./dist/loop/hooks.d.ts",
+      "default": "./loop/hooks.ts"
+    },
+    "./loop/transcript": {
+      "@thyrox/source": "./loop/transcript.ts",
+      "types": "./dist/loop/transcript.d.ts",
+      "default": "./loop/transcript.ts"
+    },
+    "./loop/session": {
+      "@thyrox/source": "./loop/session.ts",
+      "types": "./dist/loop/session.d.ts",
+      "default": "./loop/session.ts"
+    },
+    "./loop/session/reconcile": {
+      "@thyrox/source": "./loop/session/reconcile.ts",
+      "types": "./dist/loop/session/reconcile.d.ts",
+      "default": "./loop/session/reconcile.ts"
+    },
+    "./loop/sessions": {
+      "@thyrox/source": "./loop/sessions/index.ts",
+      "types": "./dist/loop/sessions/index.d.ts",
+      "default": "./loop/sessions/index.ts"
+    },
+    "./loop/sessions/modelSwitch": {
+      "@thyrox/source": "./loop/sessions/modelSwitch.ts",
+      "types": "./dist/loop/sessions/modelSwitch.d.ts",
+      "default": "./loop/sessions/modelSwitch.ts"
+    },
+    "./compaction": {
+      "@thyrox/source": "./compaction/index.ts",
+      "types": "./dist/compaction/index.d.ts",
+      "default": "./compaction/index.ts"
+    },
+    "./coordinatorMode": {
+      "@thyrox/source": "./coordinatorMode.ts",
+      "types": "./dist/coordinatorMode.d.ts",
+      "default": "./coordinatorMode.ts"
+    },
+    "./frontmatterParser": {
+      "@thyrox/source": "./frontmatterParser.ts",
+      "types": "./dist/frontmatterParser.d.ts",
+      "default": "./frontmatterParser.ts"
+    },
+    "./proactive": {
+      "@thyrox/source": "./proactive/index.ts",
+      "types": "./dist/proactive/index.d.ts",
+      "default": "./proactive/index.ts"
+    },
+    "./sessionStores": {
+      "@thyrox/source": "./sessionStores.ts",
+      "types": "./dist/sessionStores.d.ts",
+      "default": "./sessionStores.ts"
+    },
+    "./yaml": {
+      "@thyrox/source": "./yaml.ts",
+      "types": "./dist/yaml.d.ts",
+      "default": "./yaml.ts"
+    },
+    "./claudeInChrome/toolRendering.js": {
+      "@thyrox/source": "./claudeInChrome/toolRendering.tsx",
+      "types": "./dist/claudeInChrome/toolRendering.d.ts",
+      "default": "./claudeInChrome/toolRendering.tsx"
+    },
+    "./localAgentTask.js": {
+      "@thyrox/source": "./localAgentTask.tsx",
+      "types": "./dist/localAgentTask.d.ts",
+      "default": "./localAgentTask.tsx"
+    },
+    "./services/mcpServerApproval.js": {
+      "@thyrox/source": "./services/mcpServerApproval.tsx",
+      "types": "./dist/services/mcpServerApproval.d.ts",
+      "default": "./services/mcpServerApproval.tsx"
+    },
+    "./statusAlias.js": {
+      "@thyrox/source": "./statusAlias.tsx",
+      "types": "./dist/statusAlias.d.ts",
+      "default": "./statusAlias.tsx"
+    },
+    "./tasks/LocalMainSessionTask.js": {
+      "@thyrox/source": "./tasks/LocalMainSessionTask.tsx",
+      "types": "./dist/tasks/LocalMainSessionTask.d.ts",
+      "default": "./tasks/LocalMainSessionTask.tsx"
+    },
+    "./tasks/LocalShellTask.js": {
+      "@thyrox/source": "./tasks/LocalShellTask.tsx",
+      "types": "./dist/tasks/LocalShellTask.d.ts",
+      "default": "./tasks/LocalShellTask.tsx"
+    },
+    "./AgentSummary/agentSummary.js": {
+      "@thyrox/source": "./AgentSummary/agentSummary.ts",
+      "types": "./dist/AgentSummary/agentSummary.d.ts",
+      "default": "./AgentSummary/agentSummary.ts"
+    },
+    "./MagicDocs/magicDocs.js": {
+      "@thyrox/source": "./MagicDocs/magicDocs.ts",
+      "types": "./dist/MagicDocs/magicDocs.d.ts",
+      "default": "./MagicDocs/magicDocs.ts"
+    },
+    "./SessionMemory/sessionMemory.js": {
+      "@thyrox/source": "./SessionMemory/sessionMemory.ts",
+      "types": "./dist/SessionMemory/sessionMemory.d.ts",
+      "default": "./SessionMemory/sessionMemory.ts"
+    },
+    "./SessionMemory/sessionMemoryUtils.js": {
+      "@thyrox/source": "./SessionMemory/sessionMemoryUtils.ts",
+      "types": "./dist/SessionMemory/sessionMemoryUtils.d.ts",
+      "default": "./SessionMemory/sessionMemoryUtils.ts"
+    },
+    "./abortController.js": {
+      "@thyrox/source": "./abortController.ts",
+      "types": "./dist/abortController.d.ts",
+      "default": "./abortController.ts"
+    },
+    "./agentContext.js": {
+      "@thyrox/source": "./agentContext.ts",
+      "types": "./dist/agentContext.d.ts",
+      "default": "./agentContext.ts"
+    },
+    "./agentDeps.js": {
+      "@thyrox/source": "./agentDeps.ts",
+      "types": "./dist/agentDeps.d.ts",
+      "default": "./agentDeps.ts"
+    },
+    "./agentHostBindings.js": {
+      "@thyrox/source": "./agentHostBindings.ts",
+      "types": "./dist/agentHostBindings.d.ts",
+      "default": "./agentHostBindings.ts"
+    },
+    "./agentSwarmsEnabled.js": {
+      "@thyrox/source": "./agentSwarmsEnabled.ts",
+      "types": "./dist/agentSwarmsEnabled.d.ts",
+      "default": "./agentSwarmsEnabled.ts"
+    },
+    "./assistant/AssistantSessionChooser.js": {
+      "@thyrox/source": "./assistant/AssistantSessionChooser.ts",
+      "types": "./dist/assistant/AssistantSessionChooser.d.ts",
+      "default": "./assistant/AssistantSessionChooser.ts"
+    },
+    "./assistant/index.js": {
+      "@thyrox/source": "./assistant/index.ts",
+      "types": "./dist/assistant/index.d.ts",
+      "default": "./assistant/index.ts"
+    },
+    "./assistant/sessionDiscovery.js": {
+      "@thyrox/source": "./assistant/sessionDiscovery.ts",
+      "types": "./dist/assistant/sessionDiscovery.d.ts",
+      "default": "./assistant/sessionDiscovery.ts"
+    },
+    "./assistant/sessionHistory.js": {
+      "@thyrox/source": "./assistant/sessionHistory.ts",
+      "types": "./dist/assistant/sessionHistory.d.ts",
+      "default": "./assistant/sessionHistory.ts"
+    },
+    "./attachments.js": {
+      "@thyrox/source": "./attachments.ts",
+      "types": "./dist/attachments.d.ts",
+      "default": "./attachments.ts"
+    },
+    "./attribution.js": {
+      "@thyrox/source": "./attribution.ts",
+      "types": "./dist/attribution.d.ts",
+      "default": "./attribution.ts"
+    },
+    "./awaySummary.js": {
+      "@thyrox/source": "./awaySummary.ts",
+      "types": "./dist/awaySummary.d.ts",
+      "default": "./awaySummary.ts"
+    },
+    "./background/fleet/fleetStore.js": {
+      "@thyrox/source": "./background/fleet/fleetStore.ts",
+      "types": "./dist/background/fleet/fleetStore.d.ts",
+      "default": "./background/fleet/fleetStore.ts"
+    },
+    "./background/fleet/fleetTypes.js": {
+      "@thyrox/source": "./background/fleet/fleetTypes.ts",
+      "types": "./dist/background/fleet/fleetTypes.d.ts",
+      "default": "./background/fleet/fleetTypes.ts"
+    },
+    "./background/fleet/generateJobName.js": {
+      "@thyrox/source": "./background/fleet/generateJobName.ts",
+      "types": "./dist/background/fleet/generateJobName.d.ts",
+      "default": "./background/fleet/generateJobName.ts"
+    },
+    "./background/fleet/listFleetJobs.js": {
+      "@thyrox/source": "./background/fleet/listFleetJobs.ts",
+      "types": "./dist/background/fleet/listFleetJobs.d.ts",
+      "default": "./background/fleet/listFleetJobs.ts"
+    },
+    "./background/fleet/pinFleetJob.js": {
+      "@thyrox/source": "./background/fleet/pinFleetJob.ts",
+      "types": "./dist/background/fleet/pinFleetJob.d.ts",
+      "default": "./background/fleet/pinFleetJob.ts"
+    },
+    "./background/fleet/renameFleetJob.js": {
+      "@thyrox/source": "./background/fleet/renameFleetJob.ts",
+      "types": "./dist/background/fleet/renameFleetJob.d.ts",
+      "default": "./background/fleet/renameFleetJob.ts"
+    },
+    "./background/fleet/replBridgeSeed.js": {
+      "@thyrox/source": "./background/fleet/replBridgeSeed.ts",
+      "types": "./dist/background/fleet/replBridgeSeed.d.ts",
+      "default": "./background/fleet/replBridgeSeed.ts"
+    },
+    "./background/fleet/replyToFleetJob.js": {
+      "@thyrox/source": "./background/fleet/replyToFleetJob.ts",
+      "types": "./dist/background/fleet/replyToFleetJob.d.ts",
+      "default": "./background/fleet/replyToFleetJob.ts"
+    },
+    "./background/fleet/rvServer.js": {
+      "@thyrox/source": "./background/fleet/rvServer.ts",
+      "types": "./dist/background/fleet/rvServer.d.ts",
+      "default": "./background/fleet/rvServer.ts"
+    },
+    "./background/fleet/sortFleetJobs.js": {
+      "@thyrox/source": "./background/fleet/sortFleetJobs.ts",
+      "types": "./dist/background/fleet/sortFleetJobs.d.ts",
+      "default": "./background/fleet/sortFleetJobs.ts"
+    },
+    "./background/preconditions.js": {
+      "@thyrox/source": "./background/preconditions.ts",
+      "types": "./dist/background/preconditions.d.ts",
+      "default": "./background/preconditions.ts"
+    },
+    "./background/remote/remoteSession.js": {
+      "@thyrox/source": "./background/remote/remoteSession.ts",
+      "types": "./dist/background/remote/remoteSession.d.ts",
+      "default": "./background/remote/remoteSession.ts"
+    },
+    "./claudeInChrome/chromeNativeHost.js": {
+      "@thyrox/source": "./claudeInChrome/chromeNativeHost.ts",
+      "types": "./dist/claudeInChrome/chromeNativeHost.d.ts",
+      "default": "./claudeInChrome/chromeNativeHost.ts"
+    },
+    "./claudeInChrome/common.js": {
+      "@thyrox/source": "./claudeInChrome/common.ts",
+      "types": "./dist/claudeInChrome/common.d.ts",
+      "default": "./claudeInChrome/common.ts"
+    },
+    "./claudeInChrome/mcpServer.js": {
+      "@thyrox/source": "./claudeInChrome/mcpServer.ts",
+      "types": "./dist/claudeInChrome/mcpServer.d.ts",
+      "default": "./claudeInChrome/mcpServer.ts"
+    },
+    "./claudeInChrome/prompt.js": {
+      "@thyrox/source": "./claudeInChrome/prompt.ts",
+      "types": "./dist/claudeInChrome/prompt.d.ts",
+      "default": "./claudeInChrome/prompt.ts"
+    },
+    "./claudeInChrome/setup.js": {
+      "@thyrox/source": "./claudeInChrome/setup.ts",
+      "types": "./dist/claudeInChrome/setup.d.ts",
+      "default": "./claudeInChrome/setup.ts"
+    },
+    "./claudeInChromeCommon.js": {
+      "@thyrox/source": "./claudeInChromeCommon.ts",
+      "types": "./dist/claudeInChromeCommon.d.ts",
+      "default": "./claudeInChromeCommon.ts"
+    },
+    "./claudeInChromeSetup.js": {
+      "@thyrox/source": "./claudeInChromeSetup.ts",
+      "types": "./dist/claudeInChromeSetup.d.ts",
+      "default": "./claudeInChromeSetup.ts"
+    },
+    "./combinedAbortSignal.js": {
+      "@thyrox/source": "./combinedAbortSignal.ts",
+      "types": "./dist/combinedAbortSignal.d.ts",
+      "default": "./combinedAbortSignal.ts"
+    },
+    "./command.js": {
+      "@thyrox/source": "./command.ts",
+      "types": "./dist/command.d.ts",
+      "default": "./command.ts"
+    },
+    "./commands/brief.js": {
+      "@thyrox/source": "./commands/brief.ts",
+      "types": "./dist/commands/brief.d.ts",
+      "default": "./commands/brief.ts"
+    },
+    "./commands/commit-push-pr.js": {
+      "@thyrox/source": "./commands/commit-push-pr.ts",
+      "types": "./dist/commands/commit-push-pr.d.ts",
+      "default": "./commands/commit-push-pr.ts"
+    },
+    "./commands/commit.js": {
+      "@thyrox/source": "./commands/commit.ts",
+      "types": "./dist/commands/commit.d.ts",
+      "default": "./commands/commit.ts"
+    },
+    "./commands/pr_comments/index.js": {
+      "@thyrox/source": "./commands/pr_comments/index.ts",
+      "types": "./dist/commands/pr_comments/index.d.ts",
+      "default": "./commands/pr_comments/index.ts"
+    },
+    "./commands/security-review.js": {
+      "@thyrox/source": "./commands/security-review.ts",
+      "types": "./dist/commands/security-review.d.ts",
+      "default": "./commands/security-review.ts"
+    },
+    "./commands/tasks/index.js": {
+      "@thyrox/source": "./commands/tasks/index.ts",
+      "types": "./dist/commands/tasks/index.d.ts",
+      "default": "./commands/tasks/index.ts"
+    },
+    "./commitAttribution.js": {
+      "@thyrox/source": "./commitAttribution.ts",
+      "types": "./dist/commitAttribution.d.ts",
+      "default": "./commitAttribution.ts"
+    },
+    "./compaction/autoCompact.js": {
+      "@thyrox/source": "./compaction/autoCompact.ts",
+      "types": "./dist/compaction/autoCompact.d.ts",
+      "default": "./compaction/autoCompact.ts"
+    },
+    "./compaction/compact.js": {
+      "@thyrox/source": "./compaction/compact.ts",
+      "types": "./dist/compaction/compact.d.ts",
+      "default": "./compaction/compact.ts"
+    },
+    "./compaction/compactWarningHook.js": {
+      "@thyrox/source": "./compaction/compactWarningHook.ts",
+      "types": "./dist/compaction/compactWarningHook.d.ts",
+      "default": "./compaction/compactWarningHook.ts"
+    },
+    "./compaction/compactWarningState.js": {
+      "@thyrox/source": "./compaction/compactWarningState.ts",
+      "types": "./dist/compaction/compactWarningState.d.ts",
+      "default": "./compaction/compactWarningState.ts"
+    },
+    "./compaction/microCompact.js": {
+      "@thyrox/source": "./compaction/microCompact.ts",
+      "types": "./dist/compaction/microCompact.d.ts",
+      "default": "./compaction/microCompact.ts"
+    },
+    "./compaction/postCompactCleanup.js": {
+      "@thyrox/source": "./compaction/postCompactCleanup.ts",
+      "types": "./dist/compaction/postCompactCleanup.d.ts",
+      "default": "./compaction/postCompactCleanup.ts"
+    },
+    "./compaction/reactiveCompact.js": {
+      "@thyrox/source": "./compaction/reactiveCompact.ts",
+      "types": "./dist/compaction/reactiveCompact.d.ts",
+      "default": "./compaction/reactiveCompact.ts"
+    },
+    "./compaction/sessionMemoryCompact.js": {
+      "@thyrox/source": "./compaction/sessionMemoryCompact.ts",
+      "types": "./dist/compaction/sessionMemoryCompact.d.ts",
+      "default": "./compaction/sessionMemoryCompact.ts"
+    },
+    "./compaction/snipCompact.js": {
+      "@thyrox/source": "./compaction/snipCompact.ts",
+      "types": "./dist/compaction/snipCompact.d.ts",
+      "default": "./compaction/snipCompact.ts"
+    },
+    "./compaction/snipProjection.js": {
+      "@thyrox/source": "./compaction/snipProjection.ts",
+      "types": "./dist/compaction/snipProjection.d.ts",
+      "default": "./compaction/snipProjection.ts"
+    },
+    "./constants/github-app.js": {
+      "@thyrox/source": "./constants/github-app.ts",
+      "types": "./dist/constants/github-app.d.ts",
+      "default": "./constants/github-app.ts"
+    },
+    "./constants/messages.js": {
+      "@thyrox/source": "./constants/messages.ts",
+      "types": "./dist/constants/messages.d.ts",
+      "default": "./constants/messages.ts"
+    },
+    "./constants/oauth.js": {
+      "@thyrox/source": "./constants/oauth.ts",
+      "types": "./dist/constants/oauth.d.ts",
+      "default": "./constants/oauth.ts"
+    },
+    "./constants/product.js": {
+      "@thyrox/source": "./constants/product.ts",
+      "types": "./dist/constants/product.d.ts",
+      "default": "./constants/product.ts"
+    },
+    "./constants/prompts.js": {
+      "@thyrox/source": "./constants/prompts.ts",
+      "types": "./dist/constants/prompts.d.ts",
+      "default": "./constants/prompts.ts"
+    },
+    "./constants/spinnerVerbs.js": {
+      "@thyrox/source": "./constants/spinnerVerbs.ts",
+      "types": "./dist/constants/spinnerVerbs.d.ts",
+      "default": "./constants/spinnerVerbs.ts"
+    },
+    "./constants/systemPromptSections.js": {
+      "@thyrox/source": "./constants/systemPromptSections.ts",
+      "types": "./dist/constants/systemPromptSections.d.ts",
+      "default": "./constants/systemPromptSections.ts"
+    },
+    "./constants/turnCompletionVerbs.js": {
+      "@thyrox/source": "./constants/turnCompletionVerbs.ts",
+      "types": "./dist/constants/turnCompletionVerbs.d.ts",
+      "default": "./constants/turnCompletionVerbs.ts"
+    },
+    "./contentArray.js": {
+      "@thyrox/source": "./contentArray.ts",
+      "types": "./dist/contentArray.d.ts",
+      "default": "./contentArray.ts"
+    },
+    "./context": {
+      "@thyrox/source": "./context.ts",
+      "types": "./dist/context.d.ts",
+      "default": "./context.ts"
+    },
+    "./context.js": {
+      "@thyrox/source": "./context.ts",
+      "types": "./dist/context.d.ts",
+      "default": "./context.ts"
+    },
+    "./contextCollapse/index.js": {
+      "@thyrox/source": "./contextCollapse/index.ts",
+      "types": "./dist/contextCollapse/index.d.ts",
+      "default": "./contextCollapse/index.ts"
+    },
+    "./contextCollapse/operations.js": {
+      "@thyrox/source": "./contextCollapse/operations.ts",
+      "types": "./dist/contextCollapse/operations.d.ts",
+      "default": "./contextCollapse/operations.ts"
+    },
+    "./contextCollapse/persist.js": {
+      "@thyrox/source": "./contextCollapse/persist.ts",
+      "types": "./dist/contextCollapse/persist.d.ts",
+      "default": "./contextCollapse/persist.ts"
+    },
+    "./coordinatorMode.js": {
+      "@thyrox/source": "./coordinatorMode.ts",
+      "types": "./dist/coordinatorMode.d.ts",
+      "default": "./coordinatorMode.ts"
+    },
+    "./coreMessages.js": {
+      "@thyrox/source": "./coreMessages.ts",
+      "types": "./dist/coreMessages.d.ts",
+      "default": "./coreMessages.ts"
+    },
+    "./diff.js": {
+      "@thyrox/source": "./diff.ts",
+      "types": "./dist/diff.d.ts",
+      "default": "./diff.ts"
+    },
+    "./effort.js": {
+      "@thyrox/source": "./effort.ts",
+      "types": "./dist/effort.d.ts",
+      "default": "./effort.ts"
+    },
+    "./eventMetadata.js": {
+      "@thyrox/source": "./eventMetadata.ts",
+      "types": "./dist/eventMetadata.d.ts",
+      "default": "./eventMetadata.ts"
+    },
+    "./fileChangedWatcher.js": {
+      "@thyrox/source": "./fileChangedWatcher.ts",
+      "types": "./dist/fileChangedWatcher.d.ts",
+      "default": "./fileChangedWatcher.ts"
+    },
+    "./fileHistory.js": {
+      "@thyrox/source": "./fileHistory.ts",
+      "types": "./dist/fileHistory.d.ts",
+      "default": "./fileHistory.ts"
+    },
+    "./forkedAgent.js": {
+      "@thyrox/source": "./forkedAgent.ts",
+      "types": "./dist/forkedAgent.d.ts",
+      "default": "./forkedAgent.ts"
+    },
+    "./frontmatterParser.js": {
+      "@thyrox/source": "./frontmatterParser.ts",
+      "types": "./dist/frontmatterParser.d.ts",
+      "default": "./frontmatterParser.ts"
+    },
+    "./git/gitConfigParser.js": {
+      "@thyrox/source": "./git/gitConfigParser.ts",
+      "types": "./dist/git/gitConfigParser.d.ts",
+      "default": "./git/gitConfigParser.ts"
+    },
+    "./git/gitFilesystem.js": {
+      "@thyrox/source": "./git/gitFilesystem.ts",
+      "types": "./dist/git/gitFilesystem.d.ts",
+      "default": "./git/gitFilesystem.ts"
+    },
+    "./goalStopHook.js": {
+      "@thyrox/source": "./goalStopHook.ts",
+      "types": "./dist/goalStopHook.d.ts",
+      "default": "./goalStopHook.ts"
+    },
+    "./hooks.js": {
+      "@thyrox/source": "./hooks.ts",
+      "types": "./dist/hooks.d.ts",
+      "default": "./hooks.ts"
+    },
+    "./hooks/AsyncHookRegistry.js": {
+      "@thyrox/source": "./hooks/AsyncHookRegistry.ts",
+      "types": "./dist/hooks/AsyncHookRegistry.d.ts",
+      "default": "./hooks/AsyncHookRegistry.ts"
+    },
+    "./hooks/attributionHooks.js": {
+      "@thyrox/source": "./hooks/attributionHooks.ts",
+      "types": "./dist/hooks/attributionHooks.d.ts",
+      "default": "./hooks/attributionHooks.ts"
+    },
+    "./hooks/fileChangedWatcher.js": {
+      "@thyrox/source": "./hooks/fileChangedWatcher.ts",
+      "types": "./dist/hooks/fileChangedWatcher.d.ts",
+      "default": "./hooks/fileChangedWatcher.ts"
+    },
+    "./hooks/hooksConfigSnapshot.js": {
+      "@thyrox/source": "./hooks/hooksConfigSnapshot.ts",
+      "types": "./dist/hooks/hooksConfigSnapshot.d.ts",
+      "default": "./hooks/hooksConfigSnapshot.ts"
+    },
+    "./hooks/registerFrontmatterHooks.js": {
+      "@thyrox/source": "./hooks/registerFrontmatterHooks.ts",
+      "types": "./dist/hooks/registerFrontmatterHooks.d.ts",
+      "default": "./hooks/registerFrontmatterHooks.ts"
+    },
+    "./hooks/registerSkillHooks.js": {
+      "@thyrox/source": "./hooks/registerSkillHooks.ts",
+      "types": "./dist/hooks/registerSkillHooks.d.ts",
+      "default": "./hooks/registerSkillHooks.ts"
+    },
+    "./hooks/sessionHooks.js": {
+      "@thyrox/source": "./hooks/sessionHooks.ts",
+      "types": "./dist/hooks/sessionHooks.d.ts",
+      "default": "./hooks/sessionHooks.ts"
+    },
+    "./hooksConfigSnapshot.js": {
+      "@thyrox/source": "./hooksConfigSnapshot.ts",
+      "types": "./dist/hooksConfigSnapshot.d.ts",
+      "default": "./hooksConfigSnapshot.ts"
+    },
+    "./idleTimeout.js": {
+      "@thyrox/source": "./idleTimeout.ts",
+      "types": "./dist/idleTimeout.d.ts",
+      "default": "./idleTimeout.ts"
+    },
+    "./inProcessTeammateHelpers.js": {
+      "@thyrox/source": "./inProcessTeammateHelpers.ts",
+      "types": "./dist/inProcessTeammateHelpers.d.ts",
+      "default": "./inProcessTeammateHelpers.ts"
+    },
+    "./jetbrains.js": {
+      "@thyrox/source": "./jetbrains.ts",
+      "types": "./dist/jetbrains.d.ts",
+      "default": "./jetbrains.ts"
+    },
+    "./logsTypes.js": {
+      "@thyrox/source": "./logsTypes.ts",
+      "types": "./dist/logsTypes.d.ts",
+      "default": "./logsTypes.ts"
+    },
+    "./loop/context/basePrompt": {
+      "@thyrox/source": "./loop/context/basePrompt.ts",
+      "types": "./dist/loop/context/basePrompt.d.ts",
+      "default": "./loop/context/basePrompt.ts"
+    },
+    "./loop/context/microcompact": {
+      "@thyrox/source": "./loop/context/microcompact.ts",
+      "types": "./dist/loop/context/microcompact.d.ts",
+      "default": "./loop/context/microcompact.ts"
+    },
+    "./loop/context/systemPrompt": {
+      "@thyrox/source": "./loop/context/systemPrompt.ts",
+      "types": "./dist/loop/context/systemPrompt.d.ts",
+      "default": "./loop/context/systemPrompt.ts"
+    },
+    "./messagePredicates.js": {
+      "@thyrox/source": "./messagePredicates.ts",
+      "types": "./dist/messagePredicates.d.ts",
+      "default": "./messagePredicates.ts"
+    },
+    "./messageQueueManager.js": {
+      "@thyrox/source": "./messageQueueManager.ts",
+      "types": "./dist/messageQueueManager.d.ts",
+      "default": "./messageQueueManager.ts"
+    },
+    "./messageQueueTypes": {
+      "@thyrox/source": "./messageQueueTypes.ts",
+      "types": "./dist/messageQueueTypes.d.ts",
+      "default": "./messageQueueTypes.ts"
+    },
+    "./messageShapes": {
+      "@thyrox/source": "./messageShapes.ts",
+      "types": "./dist/messageShapes.d.ts",
+      "default": "./messageShapes.ts"
+    },
+    "./messageShapes.js": {
+      "@thyrox/source": "./messageShapes.ts",
+      "types": "./dist/messageShapes.d.ts",
+      "default": "./messageShapes.ts"
+    },
+    "./messages.js": {
+      "@thyrox/source": "./messages.ts",
+      "types": "./dist/messages.d.ts",
+      "default": "./messages.ts"
+    },
+    "./messages/mappers.js": {
+      "@thyrox/source": "./messages/mappers.ts",
+      "types": "./dist/messages/mappers.d.ts",
+      "default": "./messages/mappers.ts"
+    },
+    "./messages/systemInit.js": {
+      "@thyrox/source": "./messages/systemInit.ts",
+      "types": "./dist/messages/systemInit.d.ts",
+      "default": "./messages/systemInit.ts"
+    },
+    "./messagesMappers.js": {
+      "@thyrox/source": "./messagesMappers.ts",
+      "types": "./dist/messagesMappers.d.ts",
+      "default": "./messagesMappers.ts"
+    },
+    "./misc/cronJitterConfig.js": {
+      "@thyrox/source": "./misc/cronJitterConfig.ts",
+      "types": "./dist/misc/cronJitterConfig.d.ts",
+      "default": "./misc/cronJitterConfig.ts"
+    },
+    "./misc/directMemberMessage.js": {
+      "@thyrox/source": "./misc/directMemberMessage.ts",
+      "types": "./dist/misc/directMemberMessage.d.ts",
+      "default": "./misc/directMemberMessage.ts"
+    },
+    "./misc/systemDirectories.js": {
+      "@thyrox/source": "./misc/systemDirectories.ts",
+      "types": "./dist/misc/systemDirectories.d.ts",
+      "default": "./misc/systemDirectories.ts"
+    },
+    "./postSamplingHooks.js": {
+      "@thyrox/source": "./postSamplingHooks.ts",
+      "types": "./dist/postSamplingHooks.d.ts",
+      "default": "./postSamplingHooks.ts"
+    },
+    "./proactive/index.js": {
+      "@thyrox/source": "./proactive/index.ts",
+      "types": "./dist/proactive/index.d.ts",
+      "default": "./proactive/index.ts"
+    },
+    "./proactive/useProactive.js": {
+      "@thyrox/source": "./proactive/useProactive.ts",
+      "types": "./dist/proactive/useProactive.d.ts",
+      "default": "./proactive/useProactive.ts"
+    },
+    "./promptCategory.js": {
+      "@thyrox/source": "./promptCategory.ts",
+      "types": "./dist/promptCategory.d.ts",
+      "default": "./promptCategory.ts"
+    },
+    "./prompts.js": {
+      "@thyrox/source": "./prompts.ts",
+      "types": "./dist/prompts.d.ts",
+      "default": "./prompts.ts"
+    },
+    "./query": {
+      "@thyrox/source": "./query.ts",
+      "types": "./dist/query.d.ts",
+      "default": "./query.ts"
+    },
+    "./queryContext.js": {
+      "@thyrox/source": "./queryContext.ts",
+      "types": "./dist/queryContext.d.ts",
+      "default": "./queryContext.ts"
+    },
+    "./querySource": {
+      "@thyrox/source": "./querySource.ts",
+      "types": "./dist/querySource.d.ts",
+      "default": "./querySource.ts"
+    },
+    "./replHydration.js": {
+      "@thyrox/source": "./replHydration.ts",
+      "types": "./dist/replHydration.d.ts",
+      "default": "./replHydration.ts"
+    },
+    "./runtime/QueryGuard.js": {
+      "@thyrox/source": "./runtime/QueryGuard.ts",
+      "types": "./dist/runtime/QueryGuard.d.ts",
+      "default": "./runtime/QueryGuard.ts"
+    },
+    "./runtime/backgroundHousekeeping.js": {
+      "@thyrox/source": "./runtime/backgroundHousekeeping.ts",
+      "types": "./dist/runtime/backgroundHousekeeping.d.ts",
+      "default": "./runtime/backgroundHousekeeping.ts"
+    },
+    "./runtime/mailbox.js": {
+      "@thyrox/source": "./runtime/mailbox.ts",
+      "types": "./dist/runtime/mailbox.d.ts",
+      "default": "./runtime/mailbox.ts"
+    },
+    "./runtime/queueProcessor.js": {
+      "@thyrox/source": "./runtime/queueProcessor.ts",
+      "types": "./dist/runtime/queueProcessor.d.ts",
+      "default": "./runtime/queueProcessor.ts"
+    },
+    "./scheduler": {
+      "@thyrox/source": "./scheduler.ts",
+      "types": "./dist/scheduler.d.ts",
+      "default": "./scheduler.ts"
+    },
+    "./sdkControlSchemas.js": {
+      "@thyrox/source": "./sdkControlSchemas.ts",
+      "types": "./dist/sdkControlSchemas.d.ts",
+      "default": "./sdkControlSchemas.ts"
+    },
+    "./sdkEventQueue.js": {
+      "@thyrox/source": "./sdkEventQueue.ts",
+      "types": "./dist/sdkEventQueue.d.ts",
+      "default": "./sdkEventQueue.ts"
+    },
+    "./sdkProgress.js": {
+      "@thyrox/source": "./sdkProgress.ts",
+      "types": "./dist/sdkProgress.d.ts",
+      "default": "./sdkProgress.ts"
+    },
+    "./services/preventSleep.js": {
+      "@thyrox/source": "./services/preventSleep.ts",
+      "types": "./dist/services/preventSleep.d.ts",
+      "default": "./services/preventSleep.ts"
+    },
+    "./services/privacyConfig.js": {
+      "@thyrox/source": "./services/privacyConfig.ts",
+      "types": "./dist/services/privacyConfig.d.ts",
+      "default": "./services/privacyConfig.ts"
+    },
+    "./sessionFileAccessHooks.js": {
+      "@thyrox/source": "./sessionFileAccessHooks.ts",
+      "types": "./dist/sessionFileAccessHooks.d.ts",
+      "default": "./sessionFileAccessHooks.ts"
+    },
+    "./sessionStores.js": {
+      "@thyrox/source": "./sessionStores.ts",
+      "types": "./dist/sessionStores.d.ts",
+      "default": "./sessionStores.ts"
+    },
+    "./sessionTitle.js": {
+      "@thyrox/source": "./sessionTitle.ts",
+      "types": "./dist/sessionTitle.d.ts",
+      "default": "./sessionTitle.ts"
+    },
+    "./sessionTools/agenticSessionSearch.js": {
+      "@thyrox/source": "./sessionTools/agenticSessionSearch.ts",
+      "types": "./dist/sessionTools/agenticSessionSearch.d.ts",
+      "default": "./sessionTools/agenticSessionSearch.ts"
+    },
+    "./sessionTools/analyzeContext.js": {
+      "@thyrox/source": "./sessionTools/analyzeContext.ts",
+      "types": "./dist/sessionTools/analyzeContext.d.ts",
+      "default": "./sessionTools/analyzeContext.ts"
+    },
+    "./sessionTools/contextSuggestions.js": {
+      "@thyrox/source": "./sessionTools/contextSuggestions.ts",
+      "types": "./dist/sessionTools/contextSuggestions.d.ts",
+      "default": "./sessionTools/contextSuggestions.ts"
+    },
+    "./sessionTools/crossProjectResume.js": {
+      "@thyrox/source": "./sessionTools/crossProjectResume.ts",
+      "types": "./dist/sessionTools/crossProjectResume.d.ts",
+      "default": "./sessionTools/crossProjectResume.ts"
+    },
+    "./sessionTools/transcriptSearch.js": {
+      "@thyrox/source": "./sessionTools/transcriptSearch.ts",
+      "types": "./dist/sessionTools/transcriptSearch.d.ts",
+      "default": "./sessionTools/transcriptSearch.ts"
+    },
+    "./sessionUrl.js": {
+      "@thyrox/source": "./sessionUrl.ts",
+      "types": "./dist/sessionUrl.d.ts",
+      "default": "./sessionUrl.ts"
+    },
+    "./sideQuery.js": {
+      "@thyrox/source": "./sideQuery.ts",
+      "types": "./dist/sideQuery.d.ts",
+      "default": "./sideQuery.ts"
+    },
+    "./sideQuestion.js": {
+      "@thyrox/source": "./sideQuestion.ts",
+      "types": "./dist/sideQuestion.d.ts",
+      "default": "./sideQuestion.ts"
+    },
+    "./skillSearch/localSearch.js": {
+      "@thyrox/source": "./skillSearch/localSearch.ts",
+      "types": "./dist/skillSearch/localSearch.d.ts",
+      "default": "./skillSearch/localSearch.ts"
+    },
+    "./skillSearch/remoteSkillLoader.js": {
+      "@thyrox/source": "./skillSearch/remoteSkillLoader.ts",
+      "types": "./dist/skillSearch/remoteSkillLoader.d.ts",
+      "default": "./skillSearch/remoteSkillLoader.ts"
+    },
+    "./skillSearch/remoteSkillState.js": {
+      "@thyrox/source": "./skillSearch/remoteSkillState.ts",
+      "types": "./dist/skillSearch/remoteSkillState.d.ts",
+      "default": "./skillSearch/remoteSkillState.ts"
+    },
+    "./skillSearch/telemetry.js": {
+      "@thyrox/source": "./skillSearch/telemetry.ts",
+      "types": "./dist/skillSearch/telemetry.d.ts",
+      "default": "./skillSearch/telemetry.ts"
+    },
+    "./standalone/standaloneAgent.js": {
+      "@thyrox/source": "./standalone/standaloneAgent.ts",
+      "types": "./dist/standalone/standaloneAgent.d.ts",
+      "default": "./standalone/standaloneAgent.ts"
+    },
+    "./taggedId.js": {
+      "@thyrox/source": "./taggedId.ts",
+      "types": "./dist/taggedId.d.ts",
+      "default": "./taggedId.ts"
+    },
+    "./task/framework.js": {
+      "@thyrox/source": "./task/framework.ts",
+      "types": "./dist/task/framework.d.ts",
+      "default": "./task/framework.ts"
+    },
+    "./taskFramework.js": {
+      "@thyrox/source": "./taskFramework.ts",
+      "types": "./dist/taskFramework.d.ts",
+      "default": "./taskFramework.ts"
+    },
+    "./tasks.js": {
+      "@thyrox/source": "./tasks.ts",
+      "types": "./dist/tasks.d.ts",
+      "default": "./tasks.ts"
+    },
+    "./tasks/DreamTask/DreamTask.js": {
+      "@thyrox/source": "./tasks/DreamTask/DreamTask.ts",
+      "types": "./dist/tasks/DreamTask/DreamTask.d.ts",
+      "default": "./tasks/DreamTask/DreamTask.ts"
+    },
+    "./tasks/LocalShellTask/killShellTasks.js": {
+      "@thyrox/source": "./tasks/LocalShellTask/killShellTasks.ts",
+      "types": "./dist/tasks/LocalShellTask/killShellTasks.d.ts",
+      "default": "./tasks/LocalShellTask/killShellTasks.ts"
+    },
+    "./tasks/LocalWorkflowTask/LocalWorkflowTask.js": {
+      "@thyrox/source": "./tasks/LocalWorkflowTask/LocalWorkflowTask.ts",
+      "types": "./dist/tasks/LocalWorkflowTask/LocalWorkflowTask.d.ts",
+      "default": "./tasks/LocalWorkflowTask/LocalWorkflowTask.ts"
+    },
+    "./tasks/MonitorMcpTask/MonitorMcpTask.js": {
+      "@thyrox/source": "./tasks/MonitorMcpTask/MonitorMcpTask.ts",
+      "types": "./dist/tasks/MonitorMcpTask/MonitorMcpTask.d.ts",
+      "default": "./tasks/MonitorMcpTask/MonitorMcpTask.ts"
+    },
+    "./tasks/pillLabel.js": {
+      "@thyrox/source": "./tasks/pillLabel.ts",
+      "types": "./dist/tasks/pillLabel.d.ts",
+      "default": "./tasks/pillLabel.ts"
+    },
+    "./tasks/stopTask.js": {
+      "@thyrox/source": "./tasks/stopTask.ts",
+      "types": "./dist/tasks/stopTask.d.ts",
+      "default": "./tasks/stopTask.ts"
+    },
+    "./teamTasks.js": {
+      "@thyrox/source": "./teamTasks.ts",
+      "types": "./dist/teamTasks.d.ts",
+      "default": "./teamTasks.ts"
+    },
+    "./tokenBudget": {
+      "@thyrox/source": "./tokenBudget.ts",
+      "types": "./dist/tokenBudget.d.ts",
+      "default": "./tokenBudget.ts"
+    },
+    "./tokenEstimation.js": {
+      "@thyrox/source": "./tokenEstimation.ts",
+      "types": "./dist/tokenEstimation.d.ts",
+      "default": "./tokenEstimation.ts"
+    },
+    "./tokens.js": {
+      "@thyrox/source": "./tokens.ts",
+      "types": "./dist/tokens.d.ts",
+      "default": "./tokens.ts"
+    },
+    "./toolSearch.js": {
+      "@thyrox/source": "./toolSearch.ts",
+      "types": "./dist/toolSearch.d.ts",
+      "default": "./toolSearch.ts"
+    },
+    "./types/hooks.js": {
+      "@thyrox/source": "./types/hooks.ts",
+      "types": "./dist/types/hooks.d.ts",
+      "default": "./types/hooks.ts"
+    },
+    "./userPromptKeywords/userPromptKeywords.js": {
+      "@thyrox/source": "./userPromptKeywords/userPromptKeywords.ts",
+      "types": "./dist/userPromptKeywords/userPromptKeywords.d.ts",
+      "default": "./userPromptKeywords/userPromptKeywords.ts"
+    },
+    "./uuid.js": {
+      "@thyrox/source": "./uuid.ts",
+      "types": "./dist/uuid.d.ts",
+      "default": "./uuid.ts"
+    },
+    "./workflow/engine.js": {
+      "@thyrox/source": "./workflow/engine.ts",
+      "types": "./dist/workflow/engine.d.ts",
+      "default": "./workflow/engine.ts"
+    },
+    "./workflow/journal.js": {
+      "@thyrox/source": "./workflow/journal.ts",
+      "types": "./dist/workflow/journal.d.ts",
+      "default": "./workflow/journal.ts"
+    },
+    "./workflow/metaParser.js": {
+      "@thyrox/source": "./workflow/metaParser.ts",
+      "types": "./dist/workflow/metaParser.d.ts",
+      "default": "./workflow/metaParser.ts"
+    },
+    "./workflow/namedWorkflows.js": {
+      "@thyrox/source": "./workflow/namedWorkflows.ts",
+      "types": "./dist/workflow/namedWorkflows.d.ts",
+      "default": "./workflow/namedWorkflows.ts"
+    },
+    "./workflow/paths.js": {
+      "@thyrox/source": "./workflow/paths.ts",
+      "types": "./dist/workflow/paths.d.ts",
+      "default": "./workflow/paths.ts"
+    },
+    "./workflow/sandbox.js": {
+      "@thyrox/source": "./workflow/sandbox.ts",
+      "types": "./dist/workflow/sandbox.d.ts",
+      "default": "./workflow/sandbox.ts"
+    },
+    "./workflow/types.js": {
+      "@thyrox/source": "./workflow/types.ts",
+      "types": "./dist/workflow/types.d.ts",
+      "default": "./workflow/types.ts"
+    },
+    "./worktreeModeEnabled.js": {
+      "@thyrox/source": "./worktreeModeEnabled.ts",
+      "types": "./dist/worktreeModeEnabled.d.ts",
+      "default": "./worktreeModeEnabled.ts"
+    },
+    "./yaml.js": {
+      "@thyrox/source": "./yaml.ts",
+      "types": "./dist/yaml.d.ts",
+      "default": "./yaml.ts"
+    },
+    "./zodSchema/zodToJsonSchema.js": {
+      "@thyrox/source": "./zodSchema/zodToJsonSchema.ts",
+      "types": "./dist/zodSchema/zodToJsonSchema.d.ts",
+      "default": "./zodSchema/zodToJsonSchema.ts"
+    },
+    "./query-engine": {
+      "@thyrox/source": "./QueryEngine.ts",
+      "types": "./dist/QueryEngine.d.ts",
+      "default": "./QueryEngine.ts"
+    },
+    "./subagentLimits.js": {
+      "@thyrox/source": "./subagentLimits.ts",
+      "types": "./dist/subagentLimits.d.ts",
+      "default": "./subagentLimits.ts"
+    }
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",
@@ -234,32 +1103,35 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
-    "@ant/claude-for-chrome-mcp": "workspace:*",
+    "@ant/claude-for-chrome-mcp": "1.0.0",
     "@anthropic-ai/sdk": "^0.124.0",
-    "@anthropic/ink": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/context-compression": "workspace:*",
-    "@thyrox/daemon": "workspace:*",
-    "@thyrox/headless-sdk": "workspace:*",
-    "@thyrox/ide": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/mcp-runtime": "workspace:*",
-    "@thyrox/memory": "workspace:*",
-    "@thyrox/observability": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/permission": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*",
-    "@thyrox/swarm": "workspace:*",
-    "@thyrox/teleport": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*",
-    "@thyrox/tools": "workspace:*",
-    "@thyrox/updater": "workspace:*",
+    "@anthropic/ink": "1.0.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/context-compression": "0.1.0",
+    "@thyrox/daemon": "0.1.0",
+    "@thyrox/headless-sdk": "0.1.0",
+    "@thyrox/ide": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/mcp-runtime": "0.1.0",
+    "@thyrox/memory": "0.1.0",
+    "@thyrox/observability": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/permission": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/storage": "0.1.0",
+    "@thyrox/swarm": "0.1.0",
+    "@thyrox/teleport": "0.1.0",
+    "@thyrox/tool-registry": "0.1.0",
+    "@thyrox/tools": "0.1.0",
+    "@thyrox/updater": "0.1.0",
     "diff": "^8.0.4",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@thyrox/paths": "0.1.0",
+    "@thyrox/task": "0.1.0",
+    "@thyrox/store": "0.1.0"
   }
 }

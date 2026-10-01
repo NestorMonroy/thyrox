@@ -1,0 +1,8 @@
+check-package-typecheck: 48 provider(s) reconstruido(s) por viejos: agent, app-host, audio-capture-napi, bridge, claude-for-chrome-mcp, cli, color-diff-napi, command-runtime, computer-use-input, computer-use-mcp, computer-use-swift, config, context-compression, coordination, daemon, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, mitm, modifiers-napi, observability, output, paths, permission, plan, provider, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  cli: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 1 propio(s) · 0 de hermano · 0 fuera (total 1)  <- sube desde 0
+
+check-package-typecheck: 1 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+  1 paquete(s) suben sobre su baseline:
+    provider: 0 -> 1
+EXIT=1

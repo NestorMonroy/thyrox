@@ -1,0 +1,1 @@
+{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"printf '%s' 'python3 src/verify/check_rst_sintaxis.py' > nota.txt"}}

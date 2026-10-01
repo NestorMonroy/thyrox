@@ -1,0 +1,7 @@
+El store del mapa se declara, no se deriva por aritmetica
+74 aserciones
+  FALLA — 10b: NO aterriza en un ordinal nuevo — es la MISMA fila que ya existia
+  FALLA — 10c: sigue habiendo UNA sola fila — el defecto de H-THYROX-252 no reaparece
+  FALLA — 10d: el sujeto de la fila es el NUEVO — se actualizo en su sitio
+  FALLA — 10k: una sesion no reconciliada debe REHUSAR
+  FALLA — 10l: y no escribe nada — ni siquiera la tarjeta nueva

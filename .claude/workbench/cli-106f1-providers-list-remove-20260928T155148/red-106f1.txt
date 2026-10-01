@@ -1,0 +1,3 @@
+connectionStoreHome.test.ts: error: Cannot find module '../../src/accounts/connectionStoreHome.ts' (capturado antes de escribir el módulo)
+error: Cannot find module '../src/commands/providers-commands.ts' from '/home/user/thyrox/src/packages/cli/__tests__/providersCommands.test.ts'
+ 1 fail

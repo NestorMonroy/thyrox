@@ -6,174 +6,217 @@
   "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) — porte parcial, ver docstrings por modulo.",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./cache-paths": {
+      "@thyrox/source": "./src/cache-paths.ts",
       "types": "./dist/cache-paths.d.ts",
       "default": "./src/cache-paths.ts"
     },
     "./tempfile.js": {
+      "@thyrox/source": "./src/tempfile.ts",
       "types": "./dist/tempfile.d.ts",
       "default": "./src/tempfile.ts"
     },
     "./path.js": {
+      "@thyrox/source": "./src/path.ts",
       "types": "./dist/path.d.ts",
       "default": "./src/path.ts"
     },
     "./windowsPaths.js": {
+      "@thyrox/source": "./src/windowsPaths.ts",
       "types": "./dist/windowsPaths.d.ts",
       "default": "./src/windowsPaths.ts"
     },
     "./xdg.js": {
+      "@thyrox/source": "./src/xdg.ts",
       "types": "./dist/xdg.d.ts",
       "default": "./src/xdg.ts"
     },
     "./glob.js": {
+      "@thyrox/source": "./src/glob.ts",
       "types": "./dist/glob.d.ts",
       "default": "./src/glob.ts"
     },
     "./testing": {
+      "@thyrox/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./browser.js": {
+      "@thyrox/source": "./src/browser.ts",
       "types": "./dist/browser.d.ts",
       "default": "./src/browser.ts"
     },
     "./claudemd.js": {
+      "@thyrox/source": "./src/claudemd.ts",
       "types": "./dist/claudemd.d.ts",
       "default": "./src/claudemd.ts"
     },
     "./detectRepository.js": {
+      "@thyrox/source": "./src/detectRepository.ts",
       "types": "./dist/detectRepository.d.ts",
       "default": "./src/detectRepository.ts"
     },
     "./editor.js": {
+      "@thyrox/source": "./src/editor.ts",
       "types": "./dist/editor.d.ts",
       "default": "./src/editor.ts"
     },
     "./file.js": {
+      "@thyrox/source": "./src/file.ts",
       "types": "./dist/file.d.ts",
       "default": "./src/file.ts"
     },
     "./filePersistence/filePersistence.js": {
+      "@thyrox/source": "./src/filePersistence/filePersistence.ts",
       "types": "./dist/filePersistence/filePersistence.d.ts",
       "default": "./src/filePersistence/filePersistence.ts"
     },
     "./filePersistence/types.js": {
+      "@thyrox/source": "./src/filePersistence/types.ts",
       "types": "./dist/filePersistence/types.d.ts",
       "default": "./src/filePersistence/types.ts"
     },
     "./fileRead.js": {
+      "@thyrox/source": "./src/fileRead.ts",
       "types": "./dist/fileRead.d.ts",
       "default": "./src/fileRead.ts"
     },
     "./findGitRoot.js": {
+      "@thyrox/source": "./src/findGitRoot.ts",
       "types": "./dist/findGitRoot.d.ts",
       "default": "./src/findGitRoot.ts"
     },
     "./fsOperations": {
+      "@thyrox/source": "./src/fsOperations.ts",
       "types": "./dist/fsOperations.d.ts",
       "default": "./src/fsOperations.ts"
     },
     "./fsOperations.js": {
+      "@thyrox/source": "./src/fsOperations.ts",
       "types": "./dist/fsOperations.d.ts",
       "default": "./src/fsOperations.ts"
     },
     "./getWorktreePaths.js": {
+      "@thyrox/source": "./src/getWorktreePaths.ts",
       "types": "./dist/getWorktreePaths.d.ts",
       "default": "./src/getWorktreePaths.ts"
     },
     "./git.js": {
+      "@thyrox/source": "./src/git.ts",
       "types": "./dist/git.d.ts",
       "default": "./src/git.ts"
     },
     "./imageResizer.js": {
+      "@thyrox/source": "./src/imageResizer.ts",
       "types": "./dist/imageResizer.d.ts",
       "default": "./src/imageResizer.ts"
     },
     "./imageValidation.js": {
+      "@thyrox/source": "./src/imageValidation.ts",
       "types": "./dist/imageValidation.d.ts",
       "default": "./src/imageValidation.ts"
     },
     "./json.js": {
+      "@thyrox/source": "./src/json.ts",
       "types": "./dist/json.d.ts",
       "default": "./src/json.ts"
     },
     "./lockfile.js": {
+      "@thyrox/source": "./src/lockfile.ts",
       "types": "./dist/lockfile.d.ts",
       "default": "./src/lockfile.ts"
     },
     "./pdfUtils.js": {
+      "@thyrox/source": "./src/pdfUtils.ts",
       "types": "./dist/pdfUtils.d.ts",
       "default": "./src/pdfUtils.ts"
     },
     "./plans.js": {
+      "@thyrox/source": "./src/plans.ts",
       "types": "./dist/plans.d.ts",
       "default": "./src/plans.ts"
     },
     "./projectPurge.js": {
+      "@thyrox/source": "./src/projectPurge.ts",
       "types": "./dist/projectPurge.d.ts",
       "default": "./src/projectPurge.ts"
     },
     "./secureStorage.js": {
+      "@thyrox/source": "./src/secureStorage.ts",
       "types": "./dist/secureStorage.d.ts",
       "default": "./src/secureStorage.ts"
     },
     "./secureStorage/keychainPrefetch.js": {
+      "@thyrox/source": "./src/secureStorage/keychainPrefetch.ts",
       "types": "./dist/secureStorage/keychainPrefetch.d.ts",
       "default": "./src/secureStorage/keychainPrefetch.ts"
     },
     "./secureStorage/macOsKeychainHelpers.js": {
+      "@thyrox/source": "./src/secureStorage/macOsKeychainHelpers.ts",
       "types": "./dist/secureStorage/macOsKeychainHelpers.d.ts",
       "default": "./src/secureStorage/macOsKeychainHelpers.ts"
     },
     "./secureStorage/macOsKeychainStorage.js": {
+      "@thyrox/source": "./src/secureStorage/macOsKeychainStorage.ts",
       "types": "./dist/secureStorage/macOsKeychainStorage.d.ts",
       "default": "./src/secureStorage/macOsKeychainStorage.ts"
     },
     "./secureStorage/types.js": {
+      "@thyrox/source": "./src/secureStorage/types.ts",
       "types": "./dist/secureStorage/types.d.ts",
       "default": "./src/secureStorage/types.ts"
     },
     "./sessionActivity.js": {
+      "@thyrox/source": "./src/sessionActivity.ts",
       "types": "./dist/sessionActivity.d.ts",
       "default": "./src/sessionActivity.ts"
     },
     "./sessionEnvVars.js": {
+      "@thyrox/source": "./src/sessionEnvVars.ts",
       "types": "./dist/sessionEnvVars.d.ts",
       "default": "./src/sessionEnvVars.ts"
     },
     "./sessionEnvironment.js": {
+      "@thyrox/source": "./src/sessionEnvironment.ts",
       "types": "./dist/sessionEnvironment.d.ts",
       "default": "./src/sessionEnvironment.ts"
     },
     "./sessionRestore.js": {
+      "@thyrox/source": "./src/sessionRestore.ts",
       "types": "./dist/sessionRestore.d.ts",
       "default": "./src/sessionRestore.ts"
     },
     "./sessionStart.js": {
+      "@thyrox/source": "./src/sessionStart.ts",
       "types": "./dist/sessionStart.d.ts",
       "default": "./src/sessionStart.ts"
     },
     "./sessionState.js": {
+      "@thyrox/source": "./src/sessionState.ts",
       "types": "./dist/sessionState.d.ts",
       "default": "./src/sessionState.ts"
     },
     "./sessionStorage.js": {
+      "@thyrox/source": "./src/sessionStorage.ts",
       "types": "./dist/sessionStorage.d.ts",
       "default": "./src/sessionStorage.ts"
     },
     "./sessionStoragePortable.js": {
+      "@thyrox/source": "./src/sessionStoragePortable.ts",
       "types": "./dist/sessionStoragePortable.d.ts",
       "default": "./src/sessionStoragePortable.ts"
     },
     "./task/diskOutput.js": {
+      "@thyrox/source": "./src/task/diskOutput.ts",
       "types": "./dist/task/diskOutput.d.ts",
       "default": "./src/task/diskOutput.ts"
     },
     "./toolResultStorage.js": {
+      "@thyrox/source": "./src/toolResultStorage.ts",
       "types": "./dist/toolResultStorage.d.ts",
       "default": "./src/toolResultStorage.ts"
     }
@@ -184,24 +227,25 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/cli": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/permission": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/cli": "0.1.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/permission": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/tool-registry": "0.1.0",
     "env-paths": "^4.0.0",
     "ignore": "^7.0.8",
     "jsonc-parser": "^3.3.1",
     "lodash-es": "^4.18.1",
     "marked": "^17.0.5",
     "picomatch": "^4.0.7",
-    "proper-lockfile": "^4.1.2"
+    "proper-lockfile": "^4.1.2",
+    "@thyrox/paths": "0.1.0"
   },
   "main": "./src/index.ts",
   "types": "./dist/index.d.ts"

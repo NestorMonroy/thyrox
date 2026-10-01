@@ -22,15 +22,13 @@
  * `settingsMergeCustomizer`, `getSettingsWithErrors`, `getInitialSettings`,
  * `getSettings` (alias).
  *
+ * La fuente `policySettings` es la composición de `./policySettings.ts`
+ * (`UP` y `Zy` de 2.1.283): remota o asistente, MDM, archivo administrado,
+ * proceso padre y HKCU como último recurso. Sus errores entran en
+ * `getSettingsWithErrors` junto a los de las demás fuentes.
+ *
  * NO portados — bloqueado, declarado por nombre:
  *
- * - Resolución de `policySettings` (remote > MDM/plist/HKLM >
- *   managed-settings.json > HKCU): depende de `../remote/syncCacheState.js`
- *   (`getRemoteManagedSettingsSyncFromCache`), `./mdm/settings.js`
- *   (`getHkcuSettings`, `getMdmSettings`) y `./managedPath.js` +
- *   `loadManagedFileSettings` — ninguno existe en `@thyrox/config`.
- *   `getSettingsForSource('policySettings')` devuelve `null`, el mismo
- *   valor que la fuente cuando las cuatro capas están vacías.
  * - Capa de plugin settings (`getPluginSettingsBase`, `plugin/*` como base
  *   de menor precedencia): no portada. `loadSettingsFromDisk` arranca el
  *   merge desde `{}` en vez de la base de plugins.
@@ -45,16 +43,16 @@
  *   (`['default', 'acceptEdits', 'bypass']`) no incluye `'auto'` — el guard
  *   sería inerte con el esquema actual.
  * - `getManagedFileSettingsPresence` y `getPolicySettingsOrigin` se portan
- *   al final (2026-09-24, `Ysr`/`wS` de 2.1.275), acotados a la capa de
+ *   al final (`Ysr`/`wS` de 2.1.275), acotados a la capa de
  *   archivo: las otras capas de política no existen aquí.
  * - `loadManagedFileSettings`, `getManagedSettingsKeysForLogging`,
  *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
- * - Caché: `./settingsCache.ts` no existe en `@thyrox/config`. Se sustituye
- *   por tres cachés de módulo equivalentes (`Map` + variable), ámbito local
- *   a este archivo — mismo contrato observable (`resetSettingsCache`
- *   invalida las tres).
+ * - Caché: `./settingsCache.ts`, el módulo de la fuente. Hubo aquí una copia
+ *   local de sus tres cachés con la nota «ausente»; el módulo ya existía, y
+ *   un `resetSettingsCache` importado desde fuera limpiaba otras cachés que
+ *   las que este archivo leía.
  * - `markInternalWrite` (`./internalWrites.ts`, ausente): se omite; una
  *   escritura vía `updateSettingsForSource` puede ser tratada como externa
  *   por un detector de cambios que la consulte. Declarado, no fabricado.
@@ -79,11 +77,22 @@ import {
   formatZodError,
   type SettingsError,
 } from './validation.ts'
+import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 import { SETTING_SOURCES, type SettingSource } from './constants.ts'
 import { getManagedFilePath } from './managedPath.ts'
+import { composePolicySettings, defaultPolicyContext, policySettingsDocument } from './policySettings.ts'
 import { SettingsSchema, type Settings as SettingsJson } from './types.ts'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
 import { feature } from 'bun:bundle'
+import {
+  getCachedParsedFile,
+  getCachedSettingsForSource,
+  getSessionSettingsCache,
+  resetSettingsCache,
+  setCachedParsedFile,
+  setCachedSettingsForSource,
+  setSessionSettingsCache,
+} from './settingsCache.js'
 
 // Excluye 'policySettings' (resolución MDM/remota, no portada) y
 // 'flagSettings' (sólo lectura, viene del flag/SDK) — mismo recorte que la
@@ -134,20 +143,6 @@ function handleFileSystemError(error: unknown, path: string): void {
   }
 }
 
-/** Sustituto local de `./settingsCache.ts` (ausente) — mismo contrato: */
-const parsedFileCache = new Map<
-  string,
-  { settings: SettingsJson | null; errors: SettingsError[] }
->()
-const settingsForSourceCache = new Map<SettingSource, SettingsJson | null>()
-let sessionSettingsCache: { settings: SettingsJson; errors: SettingsError[] } | null = null
-
-function resetSettingsCache(): void {
-  parsedFileCache.clear()
-  settingsForSourceCache.clear()
-  sessionSettingsCache = null
-}
-
 function getManagedSettingsFilePath(): string {
   return join(getConfigHostBindings().getConfigHomeDir?.() ?? '.', 'managed-settings.json')
 }
@@ -166,7 +161,7 @@ function parseSettingsFileUncached(path: string): {
 
     const data = safeParseJSON(content)
 
-    const ruleWarnings = filterInvalidPermissionRules(data, path)
+    const ruleWarnings = [...filterInvalidPermissionRules(data, path), ...sanitizeCrossSessionInbound(data, path)]
 
     const result = SettingsSchema().safeParse(data)
 
@@ -190,7 +185,7 @@ export function parseSettingsFile(path: string): {
   settings: SettingsJson | null
   errors: SettingsError[]
 } {
-  const cached = parsedFileCache.get(path)
+  const cached = getCachedParsedFile(path)
   if (cached) {
     return {
       settings: cached.settings ? structuredClone(cached.settings) : null,
@@ -198,7 +193,7 @@ export function parseSettingsFile(path: string): {
     }
   }
   const result = parseSettingsFileUncached(path)
-  parsedFileCache.set(path, result)
+  setCachedParsedFile(path, result)
   return {
     settings: result.settings ? structuredClone(result.settings) : null,
     errors: result.errors,
@@ -269,11 +264,8 @@ export function getSettingsFilePathForSource(
 function getSettingsForSourceUncached(
   source: SettingSource,
 ): SettingsJson | null {
-  // policySettings: la cadena remote > MDM/plist > managed-settings.json >
-  // HKCU no está portada (ver docstring del módulo) — se devuelve `null`,
-  // el mismo valor que la fuente cuando las cuatro capas están vacías.
   if (source === 'policySettings') {
-    return null
+    return policySettingsDocument(defaultPolicyContext()) as SettingsJson | null
   }
 
   const settingsFilePath = getSettingsFilePathForSource(source)
@@ -299,11 +291,10 @@ function getSettingsForSourceUncached(
 }
 
 export function getSettingsForSource(source: SettingSource): SettingsJson | null {
-  if (settingsForSourceCache.has(source)) {
-    return settingsForSourceCache.get(source) ?? null
-  }
+  const cached = getCachedSettingsForSource(source)
+  if (cached !== undefined) return cached
   const result = getSettingsForSourceUncached(source)
-  settingsForSourceCache.set(source, result)
+  setCachedSettingsForSource(source, result)
   return result
 }
 
@@ -440,7 +431,15 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
     // portada) — se recorren TODAS las fuentes declaradas.
     for (const source of SETTING_SOURCES) {
       if (source === 'policySettings') {
-        // Cadena remote/MDM/managed-file/HKCU no portada — 0 aporte.
+        for (const error of composePolicySettings(defaultPolicyContext()).errors) {
+          const errorKey = `${error.file}:${error.path}:${error.message}`
+          if (!seenErrors.has(errorKey)) {
+            seenErrors.add(errorKey)
+            allErrors.push(error)
+          }
+        }
+        const policy = getSettingsForSource('policySettings')
+        if (policy) mergedSettings = mergeWith(mergedSettings, policy, settingsMergeCustomizer)
         continue
       }
 
@@ -490,12 +489,13 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
 }
 
 export function getSettingsWithErrors(): { settings: SettingsJson; errors: SettingsError[] } {
-  if (sessionSettingsCache !== null) {
-    return sessionSettingsCache
+  const cached = getSessionSettingsCache()
+  if (cached !== null) {
+    return cached
   }
   const result = loadSettingsFromDisk()
   tryGetConfigHostBindings().profileCheckpoint?.('loadSettingsFromDisk_end')
-  sessionSettingsCache = result
+  setSessionSettingsCache(result)
   return result
 }
 

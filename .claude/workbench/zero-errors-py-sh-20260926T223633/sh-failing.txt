@@ -1,0 +1,5 @@
+tests/lib/test-toolchain-parallel.sh
+tests/run.sh
+tests/session/hardware/test-gpu-pools-real.sh
+tests/verify/test-hallazgo-submodulo-baseline.sh
+tests/verify/test-script-naming.sh

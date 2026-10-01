@@ -1,0 +1,4 @@
+.env.example
+src/packages/binary/__tests__/bunfs.test.ts
+src/packages/binary/__tests__/liveBuild.test.ts
+src/packages/binary/src/liveBuild.ts

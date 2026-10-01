@@ -24,6 +24,7 @@ import {
 } from '@thyrox/provider/authAlias.js'
 import { loadInstalledPluginsV2 } from '@thyrox/config/plugin/installedPluginsManager'
 import { getSettingsForSource } from '@thyrox/config/settings'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** @dynamicRequire */
 export function ChannelsNotice(): React.ReactNode {
@@ -126,7 +127,7 @@ export function ChannelsNotice(): React.ReactNode {
       <Text color="error">Listening for channel messages from: {list}</Text>
       <Text dimColor>
         Experimental · inbound messages will be pushed into this session, this
-        carries prompt injection risks. Restart Claude Code without {flag} to
+        carries prompt injection risks. Restart {PRODUCT_NAME} without {flag} to
         disable.
       </Text>
       {unmatched.map(u => (

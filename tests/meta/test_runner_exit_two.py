@@ -39,6 +39,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'src'))
 from paths import reach  # noqa: E402
 
 RUNNER = reach.thyrox_root() / 'tests' / 'run.sh'
+SUITE_RUNNER = reach.thyrox_root() / 'src' / 'verify' / 'run_suites_isolated.sh'
 
 SUITES = {
     'test_green.py': 0,
@@ -60,6 +61,10 @@ class RunnerExitTwoTestCase(unittest.TestCase):
         tree = pathlib.Path(self._tree.name)
         (tree / 'tests').mkdir()
         shutil.copy(RUNNER, tree / 'tests' / 'run.sh')
+        # El corredor reparte las mitades Python y shell con este guion: sin
+        # él en el árbol sintético, las mitades no se medirían.
+        (tree / 'src' / 'verify').mkdir(parents=True)
+        shutil.copy(SUITE_RUNNER, tree / 'src' / 'verify' / 'run_suites_isolated.sh')
         for name, code in SUITES.items():
             (tree / 'tests' / name).write_text(
                 f'import sys\nprint({name!r})\nsys.exit({code})\n', encoding='utf-8')
@@ -75,12 +80,12 @@ class RunnerExitTwoTestCase(unittest.TestCase):
 
     def test_names_the_refusal_as_unmeasured_not_red(self) -> None:
         proc = self._run()
-        self.assertIn('SIN MEDIR (exit 2) tests/test_refuses.py', proc.stdout)
-        self.assertNotIn('ROJO tests/test_refuses.py', proc.stdout)
+        self.assertIn('UNMEASURED (exit 2) tests/test_refuses.py', proc.stdout)
+        self.assertNotIn('FAIL tests/test_refuses.py', proc.stdout)
 
     def test_still_names_the_real_red(self) -> None:
         proc = self._run()
-        self.assertIn('ROJO tests/test_red.py', proc.stdout)
+        self.assertIn('FAIL tests/test_red.py', proc.stdout)
 
     def test_counts_one_red_and_one_unmeasured(self) -> None:
         proc = self._run()
@@ -100,20 +105,25 @@ class RunnerExitTwoTestCase(unittest.TestCase):
     def test_provider_virtualenv_interpreter_is_used_when_present(self) -> None:
         interpreter = self.tree / '.venv' / 'bin' / 'python'
         interpreter.parent.mkdir(parents=True)
+        # La evidencia va a un archivo y no a la salida: el corredor sólo
+        # muestra la salida de las suites que no salen en verde.
+        marker = self.tree / 'provider-interpreter-used'
         interpreter.write_text(
             '#!/usr/bin/env bash\n'
-            'echo PROVIDER_INTERPRETER\n'
+            f'touch {marker!s}\n'
             f'exec {sys.executable!s} "$@"\n', encoding='utf-8')
         interpreter.chmod(0o755)
-        proc = self._run()
-        self.assertIn('PROVIDER_INTERPRETER', proc.stdout)
+        self._run()
+        self.assertTrue(marker.exists())
 
     def test_runner_declares_the_tree_it_is_measuring(self) -> None:
+        seen = self.tree / 'root-seen'
         (self.tree / 'tests' / 'test_green.py').write_text(
-            'import os\nprint("ROOT=" + os.environ.get("THYROX_ROOT", ""))\n',
+            'import os, pathlib\n'
+            f'pathlib.Path({str(seen)!r}).write_text(os.environ.get("THYROX_ROOT", ""))\n',
             encoding='utf-8')
-        proc = self._run()
-        self.assertIn(f'ROOT={self.tree}', proc.stdout)
+        self._run()
+        self.assertEqual(seen.read_text(), str(self.tree))
 
 
 if __name__ == '__main__':

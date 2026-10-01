@@ -1,0 +1,10 @@
+src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+src/packages/semantic-search/__tests__/identity.postgres.test.ts
+src/packages/semantic-search/__tests__/store.postgres.test.ts
+src/packages/semantic-search/__tests__/support/legacyCorpus.ts
+src/packages/semantic-search/analysisRuns.ts
+src/packages/semantic-search/corpus.ts
+src/packages/semantic-search/corpusSql.ts
+src/packages/semantic-search/legacyIdentity.ts
+src/packages/semantic-search/store.ts
+src/packages/semantic-search/vectorSql.ts

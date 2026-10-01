@@ -1,0 +1,12 @@
+nolcp session/affinitySelector.ts
+noscopeguard session/affinitySelector.ts
+nopublish session/affinitySelector.ts
+nolcpresult session/affinitySelector.ts
+nolcpreturn session/affinitySelector.ts
+matchunavailable session/affinitySelector.ts
+nolookuplcp session/affinitySelector.ts
+noalias session/affinitySelector.ts
+noprecomputed session/affinitySelector.ts
+noinvalidate session/affinitySelector.ts
+noscope server.ts
+noenrich server.ts

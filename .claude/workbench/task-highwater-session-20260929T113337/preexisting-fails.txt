@@ -1,0 +1,3 @@
+(fail) el invariante: piso ⊂ base, y el delta lo cubre un ALTER > el delta medido hoy son exactamente las dos columnas de capa
+(fail) el invariante: piso ⊂ base, y el delta lo cubre un ALTER > ninguna columna de la base queda fuera del piso sin ALTER que la añada
+(fail) las dos declaraciones del esquema de tareas > la base del Python declara 15 — el piso más las dos de capa

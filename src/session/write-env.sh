@@ -6,11 +6,9 @@
 # declaraba nada, así que la segunda entrada era una rama que nunca se ejecutó y
 # todo consumidor caía al ascenso, que es el último recurso.
 #
-# `.env` SÍ se versiona desde 2026-09-10 (directiva del ejecutor). Antes decía
-# aquí que no, por la DEC-04 aplicada a sí misma: su valor es del CONSUMIDOR.
-# Ese razonamiento no se retira, se paga — un clon en otra ruta hereda el
-# `THYROX_ROOT` de este árbol, y quien clone corre `--force` para reescribirlo.
-# El contrato sigue siendo `.env.example`; ahora además se lee el valor vigente.
+# `.env` no se versiona: por DEC-04 su valor es del CONSUMIDOR y puede llevar
+# secretos. El contrato es `.env.example`, que declara cada clave; este guion
+# escribe el valor vigente de las que se derivan del árbol.
 #
 # Salidas: 0 escrito · 1 ya existía y no se pisa (usar --force) · 2 no pudo
 # derivar la raíz.
@@ -63,10 +61,23 @@ if [[ -f "$DEST" && "$FORCE" != true ]]; then
     exit 1
 fi
 
+# Las claves POR CLON del propio proveedor. Las globales `THYROX_WORKBENCH_DIR` /
+# `THYROX_JOBS_DIR` NO se emiten: `workbench_dir()` y `jobs_dir()` caen a la
+# global cuando un clon no declara la suya, y un consumidor sin clave por clon
+# resolveria DENTRO del arbol de thyrox (L-028). La composicion calca
+# `workbench_home_name` / `jobs_home_name`: nombre corto del clon, mayusculas,
+# `-` a `_`; sin prefijo de multi-repo el clon se nombra entero.
+_clone="$(basename "$ROOT")"
+_clone="${_clone#"${THYROX_CLONE_PREFIX:-kaupamex-}"}"
+_clone="$(printf '%s' "$_clone" | tr 'a-z' 'A-Z' | tr -c 'A-Z0-9_\n' '_')"
+WORKBENCH_KEY="THYROX_WORKBENCH_${_clone}"
+JOBS_KEY="THYROX_JOBS_${_clone}"
+
 # Las claves que ESTE guion emite. Se declaran una vez para que la
 # conservacion de abajo sepa que es suyo y que es del ejecutor.
 OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
-       THYROX_LAYER_SIGNALS THYROX_WORKBENCH_DIR THYROX_JOBS_DIR)
+       THYROX_LAYER_SIGNALS THYROX_WORKBENCH_DIR THYROX_JOBS_DIR
+       "$WORKBENCH_KEY" "$JOBS_KEY")
 
 # Lo que el guion NO puede derivar se conserva. Una clave de POLITICA —el hogar
 # por clon de una familia, `THYROX_JOBS_API`, cuyo valor decide el ejecutor— no
@@ -74,13 +85,17 @@ OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
 # segunda entrada de la DEC-04 en una nota que caduca, y el fallo era silencioso:
 # el `.env` seguia siendo valido, sólo que sin la declaracion.
 #
+# Se conserva toda clave declarada, no sólo las `THYROX_*`: un gate lee la
+# suya con su nombre (`IDENTIFIER_LANGUAGE_BASELINE`) y perderla lo devolvía a
+# rehusar en silencio.
+#
 # Se lee ANTES del `>`, que trunca. Las claves propias NO se conservan: se
 # regeneran, que es para lo que existe `--force`.
 PRESERVED=""
 if [[ -f "$DEST" ]]; then
     PRESERVED="$(awk -v owned="${OWNED[*]}" '
         BEGIN { split(owned, o, " "); for (i in o) mine[o[i]] = 1 }
-        /^THYROX_[A-Z0-9_]*=/ {
+        /^[A-Z][A-Z0-9_]*=/ {
             k = substr($0, 1, index($0, "=") - 1)
             if (!(k in mine)) print
         }' "$DEST")"
@@ -109,12 +124,12 @@ fi
     # de un consumidor este valor seria el hogar de otro arbol, que es el
     # defecto que la familia `THYROX_WORKBENCH_<CLONE>` existe para evitar.
     if [[ "$DEST" == "$ROOT/.env" ]]; then
-        echo "THYROX_WORKBENCH_DIR=${THYROX_WORKBENCH_DIR:-$ROOT/.claude/workbench}"
+        echo "${WORKBENCH_KEY}=${!WORKBENCH_KEY:-$ROOT/.claude/workbench}"
         # El hogar de los TRABAJOS, hermano del banco y con la misma guarda.
         # Sin el, `jobs_dir()` cae al default y devuelve un SEGMENTO relativo
         # —`.claude/jobs`— que resuelve contra el CWD. El de cada consumidor
         # vive en SU `.env` como `THYROX_JOBS_<CLONE>`; aqui va solo el propio.
-        echo "THYROX_JOBS_DIR=${THYROX_JOBS_DIR:-$ROOT/.claude/jobs}"
+        echo "${JOBS_KEY}=${!JOBS_KEY:-$ROOT/.claude/jobs}"
     fi
     if [[ -n "$PRESERVED" ]]; then
         echo

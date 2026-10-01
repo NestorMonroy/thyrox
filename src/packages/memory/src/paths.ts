@@ -2,11 +2,11 @@
  * Puerto de `ccnmt: packages/memory/src/paths.ts`, con dos ajustes
  * declarados:
  *
- * 1. `getFeatureValue_CACHED_MAY_BE_STALE` / `getInitialSettings` /
- *    `getSettingsForSource` vienen del sustituto local
+ * 1. `getInitialSettings` / `getSettingsForSource` vienen del sustituto local
  *    `./internal/pendingCrossPackageDeps.js` (ver su docstring de
- *    procedencia) — el paquete `config` de origen no existe todavía en
- *    `@thyrox`.
+ *    procedencia): sus originales cerrarían un ciclo de módulos.
+ *    `getFeatureValue_CACHED_MAY_BE_STALE` y `getConfigHomeDir` se importan
+ *    de `@thyrox/config`.
  * 2. `readEnv` se guarda en una constante local antes de usarse dos veces
  *    en `getMemoryBaseDir` y en `getLocalAgentMemoryDir` (ver
  *    `agentMemory.ts`) — la fuente llama `readEnv(...)` dos veces con el
@@ -18,24 +18,22 @@ import { homedir } from 'node:os'
 import { isAbsolute, join, normalize, sep } from 'node:path'
 import { readEnv } from '@thyrox/config/env/utils'
 import { isMemoryPaused } from './memoryPause.js'
-import {
-  getFeatureValue_CACHED_MAY_BE_STALE,
-  getInitialSettings,
-  getSettingsForSource,
-} from './internal/pendingCrossPackageDeps.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getInitialSettings, getSettingsForSource } from './internal/pendingCrossPackageDeps.js'
 import { isEnvDefinedFalsy, isEnvTruthy, sanitizePath } from './internalUtils.js'
 import { getMemoryHostBindings } from './host.js'
 
 export function isAutoMemoryEnabled(): boolean {
   // 2.1.281 (`Va`): con la memoria en pausa por `/pause-memory`, apagada.
   if (isMemoryPaused()) return false
-  const envVal = readEnv('CLAUDE_CODE_DISABLE_AUTO_MEMORY')
+  const envVal = readEnv('THYROX_CODE_DISABLE_AUTO_MEMORY')
   if (isEnvTruthy(envVal)) return false
   if (isEnvDefinedFalsy(envVal)) return true
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))) return false
+  if (isEnvTruthy(readEnv('THYROX_CODE_SIMPLE'))) return false
   if (
-    isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
-    !readEnv('CLAUDE_CODE_REMOTE_MEMORY_DIR')
+    isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
+    !readEnv('THYROX_CODE_REMOTE_MEMORY_DIR')
   ) {
     return false
   }
@@ -58,17 +56,14 @@ export function isExtractModeActive(): boolean {
 }
 
 export function getMemoryBaseDir(): string {
-  const remoteMemoryDir = readEnv('CLAUDE_CODE_REMOTE_MEMORY_DIR')
+  const remoteMemoryDir = readEnv('THYROX_CODE_REMOTE_MEMORY_DIR')
   if (remoteMemoryDir) {
     return remoteMemoryDir
   }
   const bindings = getMemoryHostBindings()
-  return (
-    bindings.getConfigHomeDir?.() ??
-    (readEnv('CLAUDE_CONFIG_DIR') ?? join(homedir(), '.claude')).normalize(
-      'NFC',
-    )
-  )
+  // `Se()` en 2.1.283 (`claude_strings.txt`): mismo resolutor que
+  // `@thyrox/config/env/configHome.ts`, no un cómputo manual de `~/.claude`.
+  return bindings.getConfigHomeDir?.() ?? getConfigHomeDir()
 }
 
 const AUTO_MEM_DIRNAME = 'memory'
@@ -107,7 +102,7 @@ function validateMemoryPath(
 
 function getAutoMemPathOverride(): string | undefined {
   return validateMemoryPath(
-    readEnv('CLAUDE_COWORK_MEMORY_PATH_OVERRIDE'),
+    readEnv('THYROX_COWORK_MEMORY_PATH_OVERRIDE'),
     false,
   )
 }

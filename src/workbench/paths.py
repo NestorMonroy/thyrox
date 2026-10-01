@@ -136,22 +136,12 @@ def repo_of(path: str | Path) -> str | None:
     punto de partida: un gate se invoca desde cualquier subdirectorio, y el
     basename ahi nombra la carpeta, no el repositorio.
     """
-    from paths.reach import clone_prefix  # noqa: PLC0415 — evita el ciclo de import
+    from paths.reach import clone_short_name  # noqa: PLC0415 — evita el ciclo de import
 
-    # Sin prefijo derivable ni declarado no hay clon que nombrar: se devuelve
-    # None, que es «no se de que clon es esta ruta». Reventar aqui haria que un
-    # arbol sintetico —una prueba, un contenedor recien hecho— muriera al
-    # preguntar algo que tiene respuesta: ninguna.
-    try:
-        CLONE_PREFIX = clone_prefix()
-    except KeyError:
-        return None
-
-    here = Path(path).resolve()
-    for level in (here, *here.parents):
-        if level.name.startswith(CLONE_PREFIX):
-            return level.name[len(CLONE_PREFIX):]
-    return None
+    # El prefijo del multi-repo es opcional: un clon que no lo lleva se nombra
+    # entero. Antes sólo contaba un clon con el prefijo, y la clave por clon
+    # de cualquier otro se ignoraba sin aviso (H-THYROX-176).
+    return clone_short_name(path)
 
 #: Entrada 2, y es **una sola para las tres**: la ruta del archivo que puede
 #: declararlas. Se re-exporta del localizador del ``.env`` en vez de
@@ -231,7 +221,7 @@ def workbench_dir(start: str | Path | None = None) -> Path:
     # manda, y es lo unico que impide que una variable exportada para un arbol
     # se aplique a otro. Ver `workbench_home_name`.
     from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
-        ConsumerUnknownError, consumer_root, resolve_home, root as repo_root,
+        ConsumerUnknownError, consumer_root, resolve_home, per_clone_base,
     )
     from paths.declarations import record_fallback  # noqa: PLC0415
 
@@ -248,7 +238,7 @@ def workbench_dir(start: str | Path | None = None) -> Path:
     if repo:
         per_clone = env_value(workbench_home_name(repo), inicio)
         if per_clone:
-            return resolve_home(per_clone, repo_root(repo))
+            return resolve_home(per_clone, per_clone_base(inicio))
 
     declared = env_value(WORKBENCH_DIR_VAR, inicio)
     if declared:

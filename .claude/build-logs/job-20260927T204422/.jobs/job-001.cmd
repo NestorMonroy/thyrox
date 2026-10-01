@@ -1,0 +1,1 @@
+bash tests/verify/test-assert-no-writes.sh > .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_verify_test-assert-no-writes_sh.log 2>&1; echo EXIT=$? >> .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_verify_test-assert-no-writes_sh.log

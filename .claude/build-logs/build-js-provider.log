@@ -1,0 +1,12 @@
+: bun build salió 1
+92 |   return require('./commands/logout/logout.ts')
+                      ^
+error: Could not resolve: "./commands/logout/logout.ts"
+    at /home/user/thyrox/src/packages/provider/src/connections.ts:92:18
+
+37 |   return require('./internal/adapters.ts')
+                      ^
+error: Could not resolve: "./internal/adapters.ts"
+    at /home/user/thyrox/src/packages/provider/src/claude.ts:37:18
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

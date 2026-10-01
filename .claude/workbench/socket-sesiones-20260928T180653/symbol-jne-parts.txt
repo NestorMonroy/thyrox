@@ -1,0 +1,16 @@
+==== XL: 1 definicion(es) de nivel superior
+---- chunk-797phdpb.js function XL [7185,7370)
+async function XL(e,t,n,r="linux"){return j(e,r,async(o)=>{try{return await oe(o,t,{encoding:"utf8",mode:n,flag:"wx"}),o}catch(i){if(v(i)!=="EEXIST")await F(o).catch(()=>{});throw i}})}
+==== Me: 1 definicion(es) de nivel superior
+---- chunk-797phdpb.js function Me [6307,6584)
+async function Me(e,t){if(t===void 0)return e;try{await(await A(t,a.O_RDONLY|a.O_DIRECTORY|a.O_NOFOLLOW)).close()}catch(n){switch(v(n)){case"ENOENT":case"ELOOP":case"ENOTDIR":return e;case"EACCES":case"EPERM":if(await Ue(t))return e;throw n;default:throw n}}return ve(t,Fe(e))}
+==== ts: 1 definicion(es) de nivel superior
+---- chunk-797phdpb.js function ts [4160,4206)
+function ts(e,t,n=ie){return Ez(()=>n(e,t),t)}
+==== XS: 1 definicion(es) de nivel superior
+---- chunk-797phdpb.js variable XS [3027,3073)
+XS=new Set(["EXDEV","EPERM","EEXIST","EBUSY"])
+==== ie: 1 definicion(es) de nivel superior
+---- fs/promises external rename [2782,2880)
+import{lstat as C,open as A,rename as ie,stat as Pe,unlink as F,writeFile as oe}from"fs/promises";
+symbol: 5 de 5 nombre(s) resueltos

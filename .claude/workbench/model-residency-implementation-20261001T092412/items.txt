@@ -1,0 +1,4 @@
+Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p1-residency-ledger.md. Archivo: src/packages/model-scheduling/memoryVramLedger.ts.
+Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p2-residency-controller.md. Archivos: src/packages/model-scheduling/residency.ts, residencyController.ts. Orden: registro, controlador.
+Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p3-podman-primitive.md. Archivo: src/packages/model-scheduling/podmanModelExecutionPrimitive.ts.
+Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p4-ollama-adapter.md. Archivos: src/packages/local-models/ollamaRuntimeAdapter.ts, ollamaApi.ts.

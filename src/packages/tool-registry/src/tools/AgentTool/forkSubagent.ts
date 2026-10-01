@@ -27,9 +27,9 @@ import type { BuiltInAgentDefinition } from './loadAgentsDir.js'
  * - `/fork <directive>` slash command is available
  *
  * Ordered precedence — byte-for-byte ant `VP5` (2672.js):
- *   1. `CLAUDE_CODE_FORK_SUBAGENT` env truthy → enabled (BEFORE the
+ *   1. `THYROX_CODE_FORK_SUBAGENT` env truthy → enabled (BEFORE the
  *      non-interactive check, so the env arm forces fork on even in `-p`
- *      headless sessions — ant `mH(process.env.CLAUDE_CODE_FORK_SUBAGENT)`
+ *      headless sessions — ant `mH(process.env.THYROX_CODE_FORK_SUBAGENT)`
  *      precedes `h8()`).
  *   2. non-interactive session → disabled (ant `h8()`).
  *   3. GrowthBook `tengu_copper_fox` (default false) → ccb's
@@ -41,7 +41,7 @@ import type { BuiltInAgentDefinition } from './loadAgentsDir.js'
  * term was a ccb-addition — removed for parity).
  */
 export function isForkSubagentEnabled(): boolean {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_FORK_SUBAGENT'))) return true
+  if (isEnvTruthy(readEnv('THYROX_CODE_FORK_SUBAGENT'))) return true
   if (getIsNonInteractiveSession()) return false
   return feature('FORK_SUBAGENT') ? true : false
 }

@@ -29,6 +29,7 @@ import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import TextInput from '../TextInput.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   event: ElicitationRequestEvent
@@ -284,7 +285,7 @@ function ElicitationFormDialog({
   const isEditingTextField = currentFieldIsText && !focusedButton
 
   useRegisterOverlay('elicitation')
-  useNotifyAfterTimeout('Claude Code needs your input', 'elicitation_dialog')
+  useNotifyAfterTimeout(`${PRODUCT_NAME} needs your input`, 'elicitation_dialog')
 
   // Sync textInputValue when the focused field changes
   const syncTextInput = useCallback(
@@ -1308,7 +1309,7 @@ function ElicitationURLDialog({
   const showCancel = waitingState?.showCancel ?? false
 
   useNotifyAfterTimeout(
-    'Claude Code needs your input',
+    `${PRODUCT_NAME} needs your input`,
     'elicitation_url_dialog',
   )
   useRegisterOverlay('elicitation-url')

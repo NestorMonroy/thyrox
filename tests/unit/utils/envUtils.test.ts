@@ -9,8 +9,9 @@ import {
   getVertexRegionForModel,
   isBareMode,
   shouldMaintainProjectWorkingDir,
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
 } from '@thyrox/config/env/utils'
+import { resolveConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ─── isEnvTruthy ───────────────────────────────────────────────────────
 
@@ -269,18 +270,18 @@ describe('getVertexRegionForModel', () => {
 // ─── isBareMode ────────────────────────────────────────────────────────
 
 describe('isBareMode', () => {
-  const saved = process.env.CLAUDE_CODE_SIMPLE
+  const saved = process.env.THYROX_CODE_SIMPLE
   const originalArgv = [...process.argv]
 
   afterEach(() => {
-    if (saved === undefined) delete process.env.CLAUDE_CODE_SIMPLE
-    else process.env.CLAUDE_CODE_SIMPLE = saved
+    if (saved === undefined) delete process.env.THYROX_CODE_SIMPLE
+    else process.env.THYROX_CODE_SIMPLE = saved
     process.argv.length = 0
     process.argv.push(...originalArgv)
   })
 
-  test('returns true when CLAUDE_CODE_SIMPLE=1', () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+  test('returns true when THYROX_CODE_SIMPLE=1', () => {
+    process.env.THYROX_CODE_SIMPLE = '1'
     expect(isBareMode()).toBe(true)
   })
 
@@ -290,7 +291,7 @@ describe('isBareMode', () => {
   })
 
   test('returns false when neither set', () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.THYROX_CODE_SIMPLE
     // argv doesn't have --bare by default
     expect(isBareMode()).toBe(false)
   })
@@ -299,44 +300,47 @@ describe('isBareMode', () => {
 // ─── shouldMaintainProjectWorkingDir ───────────────────────────────────
 
 describe('shouldMaintainProjectWorkingDir', () => {
-  const saved = process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR
+  const saved = process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR
 
   afterEach(() => {
     if (saved === undefined)
-      delete process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR
-    else process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR = saved
+      delete process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR
+    else process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR = saved
   })
 
   test('returns true when set to truthy', () => {
-    process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR = '1'
+    process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR = '1'
     expect(shouldMaintainProjectWorkingDir()).toBe(true)
   })
 
   test('returns false when not set', () => {
-    delete process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR
+    delete process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR
     expect(shouldMaintainProjectWorkingDir()).toBe(false)
   })
 })
 
-// ─── getClaudeConfigHomeDir ────────────────────────────────────────────
+// ─── getConfigHomeDir ─────────────────────────────────────────────────
 
-describe('getClaudeConfigHomeDir', () => {
-  const saved = process.env.CLAUDE_CONFIG_DIR
+describe('getConfigHomeDir', () => {
+  const saved = { own: process.env.THYROX_CONFIG_DIR, legacy: process.env.CLAUDE_CONFIG_DIR }
 
   afterEach(() => {
-    if (saved === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = saved
+    for (const [name, value] of [['THYROX_CONFIG_DIR', saved.own], ['CLAUDE_CONFIG_DIR', saved.legacy]] as const) {
+      if (value === undefined) delete process.env[name]
+      else process.env[name] = value
+    }
   })
 
-  test('uses CLAUDE_CONFIG_DIR when set', () => {
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/test-claude'
-    // Memoized by CLAUDE_CONFIG_DIR key, so changing env gives fresh value
-    expect(getClaudeConfigHomeDir()).toBe('/tmp/test-claude')
+  test('uses THYROX_CONFIG_DIR when set', () => {
+    process.env.THYROX_CONFIG_DIR = '/tmp/test-thyrox'
+    // Memoizado por la clave del entorno: cambiarlo da un valor nuevo.
+    expect(getConfigHomeDir()).toBe('/tmp/test-thyrox')
   })
 
-  test('returns a string ending with .claude by default', () => {
-    delete process.env.CLAUDE_CONFIG_DIR
-    const result = getClaudeConfigHomeDir()
-    expect(result).toMatch(/\.claude$/)
+  test('without a declared directory it is .thyrox, and .claude only when that is the one present', () => {
+    const exists = (present: string[]) => (path: string) => present.includes(path)
+    expect(resolveConfigHomeDir({ env: {}, home: '/h', exists: exists([]) })).toBe('/h/.thyrox')
+    expect(resolveConfigHomeDir({ env: {}, home: '/h', exists: exists(['/h/.claude']) })).toBe('/h/.claude')
+    expect(resolveConfigHomeDir({ env: {}, home: '/h', exists: exists(['/h/.claude', '/h/.thyrox']) })).toBe('/h/.thyrox')
   })
 })

@@ -10,7 +10,7 @@ import {
   parseAutoToolSearchPercentage,
 } from '../toolSearch.js'
 
-const KEYS = ['ENABLE_TOOL_SEARCH', 'CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS', 'ANTHROPIC_BASE_URL', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX']
+const KEYS = ['ENABLE_TOOL_SEARCH', 'THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS', 'ANTHROPIC_BASE_URL', 'THYROX_CODE_USE_BEDROCK', 'THYROX_CODE_USE_VERTEX']
 const saved = Object.fromEntries(KEYS.map(k => [k, process.env[k]]))
 afterEach(() => {
   for (const k of KEYS) {
@@ -55,7 +55,7 @@ describe('getToolSearchMode (u9e)', () => {
     expect(getToolSearchMode()).toBe('standard')
   })
   test('las betas experimentales desactivadas fuerzan standard', () => {
-    env({ ENABLE_TOOL_SEARCH: 'true', CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS: '1' })
+    env({ ENABLE_TOOL_SEARCH: 'true', THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS: '1' })
     expect(getToolSearchMode()).toBe('standard')
   })
 })

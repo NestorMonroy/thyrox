@@ -1,0 +1,80 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/ide": [
+        "./src/index.ts"
+      ],
+      "@thyrox/ide/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/ide/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/ide/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/ide/ide.js": [
+        "./src/ide.ts"
+      ],
+      "@thyrox/ide/hooks/useIDEIntegration": [
+        "./src/hooks/useIDEIntegration.tsx"
+      ],
+      "@thyrox/ide/hooks/useIDEIntegration.js": [
+        "./src/hooks/useIDEIntegration.tsx"
+      ],
+      "@thyrox/ide/hooks/useDiffInIDE.js": [
+        "./src/hooks/useDiffInIDE.ts"
+      ],
+      "@thyrox/ide/hooks/useIdeAtMentioned.js": [
+        "./src/hooks/useIdeAtMentioned.ts"
+      ],
+      "@thyrox/ide/hooks/useIdeConnectionStatus.js": [
+        "./src/hooks/useIdeConnectionStatus.ts"
+      ],
+      "@thyrox/ide/hooks/useIdeLogging.js": [
+        "./src/hooks/useIdeLogging.ts"
+      ],
+      "@thyrox/ide/hooks/useIdeSelection.js": [
+        "./src/hooks/useIdeSelection.ts"
+      ],
+      "@thyrox/ide/lsp/LSPDiagnosticRegistry.js": [
+        "./src/lsp/LSPDiagnosticRegistry.ts"
+      ],
+      "@thyrox/ide/lsp/manager.js": [
+        "./src/lsp/manager.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

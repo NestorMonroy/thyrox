@@ -1,0 +1,4 @@
+src/packages/local-models/__tests__/commands.test.ts
+src/packages/local-models/__tests__/declareInstalledModel.test.ts
+src/packages/local-models/catalogCommand.ts
+src/packages/local-models/declareInstalledModel.ts

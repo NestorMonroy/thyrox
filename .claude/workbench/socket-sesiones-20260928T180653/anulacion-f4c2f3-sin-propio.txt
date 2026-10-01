@@ -1,0 +1,58 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRenameNotice.test.ts:
+43 | 
+44 | describe('notifyCorrespondentsOfRename (zkr)', () => {
+45 |   test('avisa a cada correspondiente cuyo socket sigue siendo el de su pid en el registro', async () => {
+46 |     await notifyCorrespondentsOfRename('foo', 'foo-brave-otter', 'foo', 'scope', deps)
+47 |     expect(queries).toEqual(['scope'])
+48 |     expect(sent).toEqual([
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -28,3 +28,15 @@
+    ],
++   [
++     "/tmp/self.sock",
++     "This session was renamed from "foo" to "foo-brave-otter" ("foo" is held by another live session on this machine). Address this one as "foo-brave-otter" from now on.",
++     "scope",
++     "foo-brave-otter",
++     undefined,
++     undefined,
++     "bypass",
++     {
++       "expectPeerPid": 14,
++       "trackReceipts": false,
++     },
++   ],
+  ]
+
+- Expected  - 0
++ Received  + 13
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:48:18)
+(fail) notifyCorrespondentsOfRename (zkr) > avisa a cada correspondiente cuyo socket sigue siendo el de su pid en el registro [1.61ms]
+90 |   })
+91 | 
+92 |   test('una dirección que no es uds no recibe aviso', async () => {
+93 |     deps.state.correspondents.set('bridge:session_x', { pid: 11, procStart: undefined })
+94 |     await notifyCorrespondentsOfRename('foo', 'b', 'foo', 's', deps)
+95 |     expect(sent.map(call => call[0])).toEqual(['/tmp/a.sock', '/tmp/b.sock'])
+                                           ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "/tmp/b.sock",
++   "/tmp/self.sock",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:95:39)
+(fail) notifyCorrespondentsOfRename (zkr) > una dirección que no es uds no recibe aviso [0.26ms]
+
+ 5 pass
+ 2 fail
+ 10 expect() calls
+Ran 7 tests across 1 file. [90.00ms]

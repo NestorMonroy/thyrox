@@ -1,0 +1,61 @@
+caso 1: un ítem cerrado con intención válida se publica en la rama del publicador
+  ok    el commit queda en la rama del publicador
+  ok    ... y la rama contiene el objetivo
+  ok    ... con el cuerpo del artefacto, verbatim
+  ok    la rama principal del consumidor no se mueve
+  ok    el árbol de trabajo del consumidor queda limpio
+  ok    el worktree temporal se retiró
+  ok    los tres gates se invocan una vez cada uno, por su envoltorio
+  ok    el pre-commit del consumidor corrió sobre el objetivo
+  ok    el author y el committer son los declarados
+  ok    el mensaje cita la procedencia
+  ok    <n>.closed queda byte a byte igual
+  ok    el resultado se publica junto al ítem
+  ok    ... y el resultado no es un artefacto de ítem para quien lee la salida
+  ok    publicar de nuevo la misma generación no crea otro commit
+  ok    ... ni vuelve a invocar los gates
+caso 2: sin <n>.closed válido no se lee ninguna intención
+  ok    un ítem sin cerrar se rehúsa
+  ok    2b: un artefacto alterado tras el cierre se rehúsa
+  ok    ... y nada llega a la rama
+caso 3: una intención de otra generación o de otra ejecución se rehúsa
+  ok    generación rancia
+  ok    ejecución ajena
+  ok    ... y ninguna de las dos toca el ítem cerrado
+caso 4: la concurrencia optimista mira el blob del objetivo, no la punta del repositorio
+  ok    con otro archivo cambiado, se publica sobre la punta nueva
+  ok    ... y el blob previo es el esperado
+  ok    el objetivo ya cambió: conflicto
+  ok    esperar que no exista cuando existe: conflicto
+  ok    un conflicto no deja commit ni resultado
+caso 5: un gate rojo rehúsa sin commit y sin tocar el ítem
+  ok    gate rojo
+  ok    ... sin commit
+  ok    ... con <n>.closed intacto y coherente
+  ok    ... y el worktree temporal retirado
+caso 6: el pre-commit del consumidor rehúsa el commit
+  ok    hook rojo
+  ok    ... sin commit
+  ok    con el hook en verde, el mismo ítem se publica
+caso 7: el candado es por archivo objetivo
+  ok    con el candado del objetivo tomado, se rehúsa
+  ok    el candado de OTRO objetivo no estorba
+caso 8: la intención se valida contra la estructura real
+  ok    objetivo fuera de la iniciativa
+  ok    markdown nunca
+  ok    clase desconocida
+  ok    nombre que no lleva su clase
+  ok    cuerpo sin cabecera meta
+  ok    una iniciativa alojada en otra raíz se rehúsa nombrándola
+caso 9: la línea de órdenes
+  ok    publica y sale 0 imprimiendo el commit
+  ok    un conflicto sale con el código de rechazo
+  ok    sin <n>.closed sale con el código de rechazo
+  ok    write-intent toma la procedencia del entorno del ítem
+  ok    ... y sin ese entorno rehúsa nombrando la variable
+resultado: 46 de 46 aserciones en verde
+bin/check_lint_zero: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/2" && uv sync
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 3 archivo(s))

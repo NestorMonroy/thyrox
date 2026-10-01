@@ -22,7 +22,7 @@
  * archivo no añada NINGÚN gap nuevo de su propia cosecha más que los ya
  * declarados aquí:
  *
- * - `@claude-code-how-works/config/env/utils` → `getClaudeConfigHomeDir`.
+ * - `@claude-code-how-works/config/env/utils` → `getConfigHomeDir`.
  *   `@thyrox/config/env/utils.ts` sólo porta `isEnvTruthy`/`readEnv`/
  *   `getAllEnv` (3 de 17 símbolos de la fuente) — medido:
  *   `grep -c "^export function" src/packages/config/env/utils.ts` → 3.
@@ -49,7 +49,10 @@
  *   Fuera de los 16 (no es state/AppState, state/store, ni runtime/bootstrap).
  */
 import { installPackageHostBindings } from '../packageHostSetup.ts'
-import { createInteractiveSessionStore } from '@thyrox/agent/sessionStores'
+import { createInteractiveSessionStore, type InteractiveSessionStore } from '@thyrox/agent/sessionStores'
+import { subscribeRefusalFallbackReset } from '../state/refusalFallbackRestore.ts'
+import { createRefusalFallbackRestoreDeps } from '../state/refusalFallbackRestoreDeps.ts'
+import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { getCwd } from '../bootstrap/cwd.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations'
@@ -74,8 +77,8 @@ setDjb2HashFn(s => requireDjb2Hash()(s))
 function requireClaudeConfigHomeDir(): () => string {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   return (require('@thyrox/config/env/utils.js') as {
-    getClaudeConfigHomeDir: () => string
-  }).getClaudeConfigHomeDir
+    getConfigHomeDir: () => string
+  }).getConfigHomeDir
 }
 
 function requireGlobalClaudeFile(): () => string {
@@ -116,6 +119,18 @@ function requireSyncRuntimeHandlesFromAppState(): (
   }).syncRuntimeHandlesFromAppState
 }
 
+/**
+ * `Pyt(Z.setState)`: 2.1.283 suscribe la restauración del modelo de respaldo
+ * al store interactivo justo tras crearlo, antes de resolver permisos
+ * (`chunk-fa2jy0nf.js`). Exportada aparte para poder medirla sin levantar la
+ * cadena entera de `installRuntimeSkeletonBindings`.
+ */
+export function wireRefusalFallbackRestoreForInteractiveStore(
+  store: InteractiveSessionStore,
+): () => void {
+  return subscribeRefusalFallbackReset(store.setState, createRefusalFallbackRestoreDeps())
+}
+
 let runtimeSkeletonBindingsInstalled = false
 
 export function installRuntimeSkeletonBindings(): void {
@@ -131,8 +146,11 @@ export function installRuntimeSkeletonBindings(): void {
       // adaptador que había aplicaba el actualizador y le pasaba el VALOR al
       // store, que lo habría invocado como función: nació de una copia local
       // de `Store` con `setState(next)` que no era la real.
-      createInteractiveStore: initialState =>
-        createInteractiveSessionStore(initialState as never),
+      createInteractiveStore: initialState => {
+        const store = createInteractiveSessionStore(initialState as never, onChangeAppState)
+        wireRefusalFallbackRestoreForInteractiveStore(store)
+        return store
+      },
       getConfigHomeDir: () => requireClaudeConfigHomeDir()(),
       getGlobalClaudeFile: () => requireGlobalClaudeFile()(),
       getProjectRoot: () => requireFindCanonicalGitRoot()(getCwd()),
@@ -173,8 +191,7 @@ export function installRuntimeSkeletonBindings(): void {
   // seam de runtime bootstrap.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./installBridgeBindings.js')
-  // config/plugin (subárbol Wave-1) — cablea los 50+ setters del
-  // subsistema de plugins migrado fuera de src/utils/plugins/ en Round 4.
+  // config/plugin — cablea los 50+ setters del subsistema de plugins.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./installPluginBindings.js')
   // Lector de stdin nativo (stdin-napi) → App de @anthropic/ink. Evita el
@@ -183,7 +200,7 @@ export function installRuntimeSkeletonBindings(): void {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./installNativeStdinReader.js')
   // Logger de eventos local-only — nunca manda nada a la red. OFF por
-  // defecto; se habilita con CLAUDE_CODE_LOCAL_TELEMETRY=1 para escribir
+  // defecto; se habilita con THYROX_CODE_LOCAL_TELEMETRY=1 para escribir
   // eventos tengu_bg_* en ~/.claude/debug/<sid>.txt.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { isLocalTelemetryEnabled, installLocalEventLogger } =

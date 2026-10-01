@@ -195,13 +195,13 @@ export function excludeResourcesByServer<T>(
 }
 
 export function isXaaEnabled(): boolean {
-  return process.env.CLAUDE_CODE_ENABLE_XAA === '1' ||
-    process.env.CLAUDE_CODE_ENABLE_XAA === 'true'
+  return process.env.THYROX_CODE_ENABLE_XAA === '1' ||
+    process.env.THYROX_CODE_ENABLE_XAA === 'true'
 }
 
 export function isChannelsEnabled(): boolean {
-  return process.env.CLAUDE_CODE_ENABLE_CHANNELS === '1' ||
-    process.env.CLAUDE_CODE_ENABLE_CHANNELS === 'true'
+  return process.env.THYROX_CODE_ENABLE_CHANNELS === '1' ||
+    process.env.THYROX_CODE_ENABLE_CHANNELS === 'true'
 }
 
 export function isChannelAllowlisted(pluginSource: string | undefined): boolean {

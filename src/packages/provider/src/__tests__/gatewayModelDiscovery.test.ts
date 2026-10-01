@@ -16,6 +16,7 @@
  * read-side contracts plus the eligibility predicate.
  */
 import {
+  afterAll,
   afterEach,
   beforeEach,
   describe,
@@ -42,14 +43,27 @@ let mockedAPIProvider: 'firstParty' | 'bedrock' | 'vertex' | 'openai' =
 let mockedIsFirstPartyBaseUrl = false
 let mockedApiKey: string | null = 'test-api-key'
 
+// `mock.module` sobrevive al archivo y `mock.restore()` no lo deshace; además
+// el namespace importado arriba se parchea en su sitio al mockear (medido en
+// Bun 1.3.11, banco `test-isolation-leaks-20260927T080507`). Sin reponer una
+// COPIA tomada antes, el `getAPIProvider` fijo en 'firstParty' seguía vivo en
+// `buildRequestTools.test.ts`, cuyo caso de Foundry recibía los esquemas con
+// `strict`.
+const realProvidersExports = { ...realProviders }
+const realAuthExports = { ...realAuth }
+afterAll(() => {
+  mock.module('../providers.js', () => realProvidersExports)
+  mock.module('../authAlias.js', () => realAuthExports)
+})
+
 mock.module('../providers.js', () => ({
-  ...realProviders,
+  ...realProvidersExports,
   getAPIProvider: () => mockedAPIProvider,
   isFirstPartyAnthropicBaseUrl: () => mockedIsFirstPartyBaseUrl,
 }))
 
 mock.module('../authAlias.js', () => ({
-  ...realAuth,
+  ...realAuthExports,
   getAnthropicApiKey: () => mockedApiKey,
   getAnthropicApiKeyWithSource: () => ({
     key: mockedApiKey,
@@ -73,8 +87,8 @@ function restore(): void {
 
 beforeEach(() => {
   for (const k of [
-    'CLAUDE_CONFIG_DIR',
-    'CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY',
+    'THYROX_CONFIG_DIR',
+    'THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY',
     'ANTHROPIC_BASE_URL',
     'ANTHROPIC_AUTH_TOKEN',
     'ANTHROPIC_API_KEY',
@@ -83,7 +97,7 @@ beforeEach(() => {
     delete process.env[k]
   }
   claudeHome = mkdtempSync(join(tmpdir(), 'ccb-gw-test-'))
-  process.env.CLAUDE_CONFIG_DIR = claudeHome
+  process.env.THYROX_CONFIG_DIR = claudeHome
 })
 
 afterEach(() => {
@@ -117,14 +131,14 @@ describe('isGatewayModelDiscoveryEnabled (ant ZHK)', () => {
 
   test('returns false when env-flag is falsy', async () => {
     const m = await freshImport()
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '0'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '0'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     expect(m.isGatewayModelDiscoveryEnabled()).toBe(false)
   })
 
   test('returns false when ANTHROPIC_BASE_URL is missing', async () => {
     const m = await freshImport()
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     expect(m.isGatewayModelDiscoveryEnabled()).toBe(false)
   })
 })
@@ -142,14 +156,14 @@ describe('readCachedGatewayModels (ant VHK)', () => {
   })
 
   test('returns [] when no cache file exists', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     const m = await freshImport()
     expect(m.readCachedGatewayModels()).toEqual([])
   })
 
   test('returns models when baseUrl matches', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     writeCacheFile({
       baseUrl: 'https://gw.example/v1',
@@ -174,7 +188,7 @@ describe('readCachedGatewayModels (ant VHK)', () => {
   test('returns [] when cached baseUrl mismatches current env', async () => {
     // CRITICAL: ant explicitly tags the cache with baseUrl so switching
     // gateways doesn't leak stale models from the previous one.
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://NEW-gateway.example/v1'
     writeCacheFile({
       baseUrl: 'https://OLD-gateway.example/v1',
@@ -186,7 +200,7 @@ describe('readCachedGatewayModels (ant VHK)', () => {
   })
 
   test('returns [] when cache file is missing required fields (schema fail)', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     // Old ccb shape `{data: models}` lacks baseUrl + fetchedAt → invalid.
     writeCacheFile({ data: [{ id: 'claude-foo' }] })
@@ -195,7 +209,7 @@ describe('readCachedGatewayModels (ant VHK)', () => {
   })
 
   test('returns [] when cache file is malformed JSON', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     const dir = join(claudeHome, 'cache')
     mkdirSync(dir, { recursive: true })
@@ -205,7 +219,7 @@ describe('readCachedGatewayModels (ant VHK)', () => {
   })
 
   test('falls back to model.id when display_name absent (ant VHK label)', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     writeCacheFile({
       baseUrl: 'https://gw.example/v1',
@@ -223,7 +237,7 @@ describe('readCachedGatewayModels (ant VHK)', () => {
 
 describe('readCachedGatewayModelList (auth/connection raw read)', () => {
   test('returns model list when cache valid', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://gw.example/v1'
     writeCacheFile({
       baseUrl: 'https://gw.example/v1',
@@ -238,7 +252,7 @@ describe('readCachedGatewayModelList (auth/connection raw read)', () => {
   })
 
   test('returns [] when baseUrl mismatches', async () => {
-    process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
+    process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = '1'
     process.env.ANTHROPIC_BASE_URL = 'https://different.example/v1'
     writeCacheFile({
       baseUrl: 'https://gw.example/v1',

@@ -1,0 +1,26 @@
+src/packages/agent/tasks.ts(59,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/app-host/src/commands/__tests__/initCommand.test.ts(25,46): error TS2554: Expected 0 arguments, but got 2.
+src/packages/app-host/src/commands/__tests__/initCommand.test.ts(28,46): error TS2554: Expected 0 arguments, but got 2.
+src/packages/app-host/src/startup/startupProfiler.ts(41,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/bridge/src/internal/pendingCrossPackageDeps.ts(28,1): error TS6133: 'memoize' is declared but its value is never read.
+src/packages/bridge/src/internal/pendingCrossPackageDeps.ts(29,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/command-runtime/src/skills/loadSkillsDir.ts(2,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/config/env/utils.ts(38,1): error TS6133: 'memoize' is declared but its value is never read.
+src/packages/config/env/utils.ts(39,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/finding/index.ts(63,7): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/finding/index.ts(66,7): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/memory/src/internal/pendingCrossPackageDeps.ts(81,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/provider/__tests__/anthropicMockServerBin.test.ts(26,23): error TS2532: Object is possibly 'undefined'.
+src/packages/provider/__tests__/proxyUpstreamRouting.test.ts(107,80): error TS2339: Property 'error' does not exist on type 'UpstreamModelResolution'.
+  Property 'error' does not exist on type '{ ok: true; model: string; }'.
+src/packages/provider/src/proxy/chatCompletions.ts(95,35): error TS2504: Type 'ReadableStream<Uint8Array<ArrayBufferLike>>' must have a '[Symbol.asyncIterator]()' method that returns an async iterator.
+src/packages/storage/src/plans.ts(64,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/storage/src/secureStorage/plainTextStorage.ts(33,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/storage/src/sessionEnvironment.ts(28,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/storage/src/sessionPaths.ts(50,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/updater/src/internal/envCompat.ts(24,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/updater/src/internal/envCompat.ts(25,1): error TS6133: 'join' is declared but its value is never read.
+src/packages/updater/src/internal/envCompat.ts(26,1): error TS6133: 'memoize' is declared but its value is never read.
+tests/unit/utils/envUtils.test.ts(12,3): error TS2724: '"@thyrox/config/env/utils"' has no exported member named 'getClaudeConfigHomeDir'. Did you mean 'getConfigHomeDir'?

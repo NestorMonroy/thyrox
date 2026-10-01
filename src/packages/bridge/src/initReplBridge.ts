@@ -27,10 +27,11 @@
  * `logForDebugging`, `stripDisplayTagsAllowEmpty`, `errorMessage`,
  * `getBranch`/`getRemoteUrl`, `toSDKMessages`, `getContentText`,
  * `getMessagesAfterCompactBoundary`, `isSyntheticMessage`,
- * `PermissionMode`, `getCurrentSessionTitle`, `extractConversationText`,
+ * `getCurrentSessionTitle`, `extractConversationText`,
  * `generateSessionTitle`, `generateShortWordSlug` son PUNTOS DE
  * INYECCIÓN / REIMPLEMENTACIÓN FIEL ya existentes en
- * `./internal/pendingCrossPackageDeps.ts`.
+ * `./internal/pendingCrossPackageDeps.ts`; `PermissionMode` viene de
+ * `@thyrox/permission`.
  *
  * El `require('@claude-code-how-works/agent/assistant/index.js')` de la
  * fuente (bajo `feature('KAIROS')`) se preserva como `require()` diferido
@@ -49,9 +50,14 @@ import { hostname } from 'node:os'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { SDKControlResponse } from '@thyrox/headless-sdk/controlTypes.js'
 import type { Message } from '@thyrox/agent/messageShapes.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getFeatureValue_CACHED_WITH_REFRESH } from '@thyrox/config/feature-flags'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { stripDisplayTagsAllowEmpty } from '@thyrox/output/utils/displayTags.js'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
-  errorMessage,
   extractConversationText,
   generateSessionTitle,
   generateShortWordSlug,
@@ -59,8 +65,6 @@ import {
   getClaudeAIOAuthTokens,
   getContentText,
   getCurrentSessionTitle,
-  getFeatureValue_CACHED_WITH_REFRESH,
-  getGlobalConfig,
   getMessagesAfterCompactBoundary,
   getOrganizationUUID,
   getOriginalCwd,
@@ -70,17 +74,14 @@ import {
   isPolicyAllowed,
   isSyntheticMessage,
   logForDebugging,
-  readEnv,
-  saveGlobalConfig,
-  stripDisplayTagsAllowEmpty,
   toSDKMessages,
   waitForPolicyLimitsToLoad,
   feature,
-  type PermissionMode,
 } from './internal/pendingCrossPackageDeps.js'
 import {
   getBridgeAccessToken,
   getBridgeBaseUrl,
+  getBridgeSessionIngressUrlOverride,
   getBridgeTokenOverride,
 } from './bridgeConfig.js'
 import {
@@ -218,7 +219,7 @@ export async function initReplBridge(
     return null
   }
 
-  // Cuando CLAUDE_BRIDGE_OAUTH_TOKEN está fijo (dev local ant-only), el
+  // Cuando THYROX_BRIDGE_OAUTH_TOKEN está fijo (dev local ant-only), el
   // bridge usa ese token directamente vía getBridgeAccessToken() — el
   // estado del keychain es irrelevante. Salta 2b/2c para preservar ese
   // desacople: un token de keychain expirado no debe bloquear una
@@ -294,7 +295,7 @@ export async function initReplBridge(
   // vs. hasTitle (cualquier título, incluido el auto-derivado —
   // bloquea la re-derivación de conteo-1 pero no la de conteo-3).
   const titlePrefix =
-    readEnv('CLAUDE_CODE_REMOTE_CONTROL_SESSION_NAME_PREFIX')?.trim() ||
+    readEnv('THYROX_CODE_REMOTE_CONTROL_SESSION_NAME_PREFIX')?.trim() ||
     'remote-control'
   let title = `${titlePrefix}-${generateShortWordSlug()}`
   let hasTitle = false
@@ -525,11 +526,7 @@ export async function initReplBridge(
   // bridgeCore.
   const branch = await getBranch()
   const gitRepoUrl = await getRemoteUrl()
-  const sessionIngressUrl =
-    process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      : baseUrl
+  const sessionIngressUrl = getBridgeSessionIngressUrlOverride() ?? baseUrl
 
   // Las sesiones modo-asistente anuncian un worker_type distinto para
   // que la UI web pueda filtrarlas a un selector dedicado. La guarda

@@ -7,7 +7,8 @@ import { getAllEnv, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
  */
 const GHA_SUBPROCESS_SCRUB = [
   'ANTHROPIC_API_KEY',
-  'CLAUDE_CODE_OAUTH_TOKEN',
+  'THYROX_CODE_OAUTH_TOKEN',
+  'CLAUDE_CODE_OAUTH_TOKEN', // thyrox-rename: keep — la del cliente anfitrión
   'ANTHROPIC_AUTH_TOKEN',
   'ANTHROPIC_FOUNDRY_API_KEY',
   'ANTHROPIC_CUSTOM_HEADERS',
@@ -45,18 +46,19 @@ const GHA_SUBPROCESS_SCRUB = [
  */
 const ALWAYS_SCRUB = [
   // Auth — daemon-injected on macOS (4706.js xXK)
-  'CLAUDE_CODE_OAUTH_TOKEN',
-  'CLAUDE_CODE_SUBSCRIPTION_TYPE',
-  'CLAUDE_CODE_RATE_LIMIT_TIER',
+  'THYROX_CODE_OAUTH_TOKEN',
+  'CLAUDE_CODE_OAUTH_TOKEN', // thyrox-rename: keep — la del cliente anfitrión
+  'THYROX_CODE_SUBSCRIPTION_TYPE',
+  'THYROX_CODE_RATE_LIMIT_TIER',
   // Process-control markers
-  'CLAUDE_CODE_SESSION_KIND',
-  'CLAUDE_BG_SOURCE',
+  'THYROX_CODE_SESSION_KIND',
+  'THYROX_BG_SOURCE',
   'CLAUDE_BG_ISOLATION',
-  'CLAUDE_BG_BACKEND',
-  'CLAUDE_CODE_SESSION_NAME',
-  'CLAUDE_CODE_BG_JOB_SHORT',
-  'CLAUDE_CODE_RESUME_INTERRUPTED_TURN',
-  'CLAUDE_JOB_DIR',
+  'THYROX_BG_BACKEND',
+  'THYROX_CODE_SESSION_NAME',
+  'THYROX_CODE_BG_JOB_SHORT',
+  'THYROX_CODE_RESUME_INTERRUPTED_TURN',
+  'THYROX_JOB_DIR',
 ] as const
 
 // Registered by init.ts after the upstreamproxy module is dynamically imported
@@ -80,7 +82,7 @@ export function subprocessEnv(
   env?: Record<string, string | undefined>,
 ): NodeJS.ProcessEnv {
   const baseEnv = env ?? getAllEnv()
-  const scrubFlag = env ? env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB : readEnv('CLAUDE_CODE_SUBPROCESS_ENV_SCRUB')
+  const scrubFlag = env ? env.THYROX_CODE_SUBPROCESS_ENV_SCRUB : readEnv('THYROX_CODE_SUBPROCESS_ENV_SCRUB')
   const proxyEnv = _getUpstreamProxyEnv?.() ?? {}
 
   // ALWAYS_SCRUB applies regardless of the GHA flag — process-control

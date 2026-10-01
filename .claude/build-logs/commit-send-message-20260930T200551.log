@@ -1,0 +1,24 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 45 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 45 archivo(s) pedido(s))
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+check-mutante-en-staging: OK (alcance medido: 2 archivos)
+OK: identificadores en inglés (6 archivos medidos, 5272 en deuda heredada).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 27115 especificador(es) en 4946 archivo(s) de 51 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 7 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 45 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 2 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 303 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 74129 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 289 archivo(s))
+  entrada obsoleta del baseline de cobertura: THYROX_CODE_DEBUG_LOGS_DIR
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1856 lectura(s) en 4030 archivo(s) de producción — propias 847, proveedor 99, cliente ajeno 18, sin prefijo 892)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 124 congelada(s), 1 obsoleta(s) (alcance medido: 358 variable(s) propia(s), 2170 archivo(s) de prueba)
+claves leidas del entorno: 4 | declaradas: 518 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 15 clave(s) en 1 archivo(s) ignorado(s), 529 declarada(s) en .env.example)
+exit=1

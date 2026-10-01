@@ -23,8 +23,7 @@ export type EffortValue = (typeof EFFORT_LEVELS)[number] | number
  *
  * Se exportan para RESOLVERLOS, no para declararlos: un alias no determina
  * la versión —resuelve distinto según el proveedor (H-DOCS-220), y con ella
- * el tier, la ventana y el coste—. Directiva del ejecutor 2026-09-02: los
- * agentes se nombran por identificador completo (`claude-sonnet-5`), nunca
+ * el tier, la ventana y el coste—. Los agentes se nombran por identificador completo (`claude-sonnet-5`), nunca
  * por alias; `registry.ts` rehúsa el alias.
  */
 export const MODEL_ALIASES = ['opus', 'sonnet', 'haiku', 'fable'] as const

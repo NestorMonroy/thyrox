@@ -1,0 +1,7 @@
+version={"version":"0.35.0"}
+head_blob=200
+create={"status":"success"}
+show_from=['FROM /root/.ollama/models/blobs/sha256-b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88']
+generate=True '2 + 2' None
+linked_after=2
+__BG_EXIT__=0

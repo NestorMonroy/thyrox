@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Anulaciones de #106d-6a: se retira cada mitad de juicio del pegado y los ZIP.
+set -u
+T=${T:-/home/user/thyrox}; cd "$T/src/packages/provider"
+I="src/accounts/imports"; CB="$I/credentialBlob.ts"; PC="$I/pasteCredentials.ts"; GP="$I/grokCliPaste.ts"; JZ="$I/jsonZipExtract.ts"
+run() { timeout 120 bun test ./__tests__/accounts/imports/pasteImports.test.ts 2>&1 | gawk '/^\(fail\)|^ *[0-9]+ (pass|fail)$/'; }
+source "$T/.claude/workbench/mitm-f7h-api-20260928T070339/annul-lib.sh"
+echo "== 1: cualquier prefijo"; annul "$CB" "typeof blob !== 'string' || !blob.startsWith(CREDENTIAL_BLOB_PREFIX)" "typeof blob !== 'string'"
+echo "== 2: el salto final rompe el blob"; annul "$CB" "blob.slice(CREDENTIAL_BLOB_PREFIX.length).trim()" "blob.slice(CREDENTIAL_BLOB_PREFIX.length)"
+echo "== 3: cualquier alfabeto"; annul "$CB" "  if (!BASE64URL.test(payload)) throw" "  if (false) throw"
+echo "== 4: cualquier versión"; annul "$CB" "  if (parsed.v !== CREDENTIAL_BLOB_VERSION) {" "  if (false) {"
+echo "== 5: un proveedor en blanco basta"; annul "$CB" "if (typeof parsed.provider !== 'string' || !parsed.provider.trim()) throw" "if (typeof parsed.provider !== 'string') throw"
+echo "== 6: sin tokens no es error"; annul "$CB" "  if (!tokens || typeof tokens !== 'object') throw" "  if (false) throw"
+echo "== 7: sin access_token no es error"; annul "$CB" "  if (typeof tokens.access_token !== 'string' || !tokens.access_token) throw" "  if (false) throw"
+echo "== 8: el proveedor se codifica sin recortar"; annul "$CB" "provider: input.provider.trim(), tokens: input.tokens" "provider: input.provider, tokens: input.tokens"
+echo "== 9: se codifica sin proveedor"; annul "$CB" "if (!input || typeof input.provider !== 'string' || !input.provider.trim()) throw" "if (!input) throw"
+echo "== 10: cualquier proveedor admite el pegado"; annul "$PC" "  if (!PASTE_CREDENTIAL_PROVIDERS.has(routeProvider)) {" "  if (false) {"
+echo "== 11: el blob de otro proveedor se acepta"; annul "$PC" "  if (decoded.provider !== routeProvider) {" "  if (false) {"
+echo "== 12: sólo la forma key"; annul "$GP" "isJwt(entry.key) || isJwt(entry.access_token)" "isJwt(entry.key)"
+echo "== 13: sin exigir refresco"; annul "$GP" "        if (hasRefreshToken(entry)) {" "        if (true) {"
+echo "== 14: el JWT suelto se lee como basura"; annul "$GP" "  if (trimmed.startsWith(JWT_PREFIX)) {" "  if (false) {"
+echo "== 15: lo vacío sin recortar"; annul "$GP" "  const trimmed = raw.trim()" "  const trimmed = raw"
+echo "== 16: todos los archivos del ZIP"; annul "$JZ" "data !== undefined && isJsonName(name)" "data !== undefined"
+echo "== 17: sin tope de archivos"; annul "$JZ" "  if (jsonEntries.length > maxFiles) throw" "  if (false) throw"
+echo "== 18: con rutas que suben"; annul "$JZ" "isJsonName(name) && !name.includes('..') &&" "isJsonName(name) &&"
+echo "== 19: sin tope por archivo"; annul "$JZ" "    if (data.byteLength > maxFileSize) throw" "    if (false) throw"
+echo "== 20: sin tope total"; annul "$JZ" "    if (totalBytes > maxTotal) throw" "    if (false) throw"
+echo "== 21: la ruta entera como nombre"; annul "$JZ" "result.push({ name: baseName," "result.push({ name: entryName,"
+echo "== 22: un ZIP roto sin decirlo"; annul "$JZ" "    throw new Error('Could not parse ZIP archive — file may be corrupt or not a valid ZIP')" "    unzipped = {}"
+echo "== 23: un ZIP sin JSON devuelve vacío"; annul "$JZ" "  if (jsonEntries.length === 0) throw" "  if (false) throw"
+echo "== restaurado"; git -C "$T" status --short -- src/packages/provider/src/accounts/imports; run

@@ -23,7 +23,7 @@
  * entre builds, el ancla correcta es un literal (`extractByLiteral`); éste
  * sirve para leer una build concreta una vez localizado el nombre.
  */
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import ts from 'typescript'
 
@@ -157,3 +157,255 @@ function exportedLocalName(source: string, exported: string): string | null {
   return null
 }
 
+
+/** Un uso de un símbolo: dónde está y qué miembro llama. */
+export type SymbolReference = {
+  file: string
+  start: number
+  /** El tipo de la declaración de nivel superior que contiene el uso. */
+  kind: string
+  binding: string | null
+  /** `x().m` o `x.m`: el miembro al que el uso accede; null si ninguno. */
+  member: string | null
+}
+
+/** Los nombres con que `export{local as exported}` publica `local`. */
+function exportedNamesOf(source: string, local: string): string[] {
+  const file = parseSource(source)
+  const names: string[] = []
+  for (const statement of file.statements) {
+    if (!ts.isExportDeclaration(statement) || !statement.exportClause) continue
+    if (!ts.isNamedExports(statement.exportClause)) continue
+    for (const element of statement.exportClause.elements) {
+      if ((element.propertyName ?? element.name).text === local) names.push(element.name.text)
+    }
+  }
+  return names
+}
+
+/** Los nombres locales con que `source` importa alguno de `exported` desde `specifier`. */
+function localNamesImported(file: ts.SourceFile, specifier: string, exported: ReadonlySet<string>): string[] {
+  const names: string[] = []
+  for (const statement of file.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue
+    if (statement.moduleSpecifier.text !== specifier) continue
+    const bindings = statement.importClause?.namedBindings
+    if (!bindings || !ts.isNamedImports(bindings)) continue
+    for (const element of bindings.elements) {
+      if (exported.has((element.propertyName ?? element.name).text)) names.push(element.name.text)
+    }
+  }
+  return names
+}
+
+function topLevelStatement(node: ts.Node): ts.Node {
+  let current = node
+  while (current.parent && !ts.isSourceFile(current.parent)) current = current.parent
+  return current
+}
+
+function bindingOfStatement(statement: ts.Node): string | null {
+  if ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && statement.name) return statement.name.text
+  if (ts.isVariableStatement(statement)) {
+    const first = statement.declarationList.declarations[0]
+    if (first && ts.isIdentifier(first.name)) return first.name.text
+  }
+  return null
+}
+
+function memberAccessed(node: ts.Identifier): string | null {
+  const parent = node.parent
+  if (ts.isPropertyAccessExpression(parent) && parent.expression === node) return parent.name.text
+  if (ts.isCallExpression(parent) && parent.expression === node) {
+    const outer = parent.parent
+    if (ts.isPropertyAccessExpression(outer) && outer.expression === parent) return outer.name.text
+  }
+  return null
+}
+
+/** ¿Es este identificador un USO, y no la declaración, un import/export o un nombre de propiedad? */
+function isUse(node: ts.Identifier): boolean {
+  const parent = node.parent
+  if (ts.isImportSpecifier(parent) || ts.isExportSpecifier(parent)) return false
+  if ((ts.isFunctionDeclaration(parent) || ts.isClassDeclaration(parent) || ts.isVariableDeclaration(parent)
+       || ts.isParameter(parent)) && parent.name === node) return false
+  if ((ts.isPropertyAccessExpression(parent) || ts.isPropertyAssignment(parent)) && parent.name === node) return false
+  return true
+}
+
+function usesIn(file: ts.SourceFile, fileName: string, locals: ReadonlySet<string>): SymbolReference[] {
+  const found: SymbolReference[] = []
+  const visit = (node: ts.Node): void => {
+    if (ts.isIdentifier(node) && locals.has(node.text) && isUse(node)) {
+      const statement = topLevelStatement(node)
+      found.push({ file: fileName, start: node.getStart(file), kind: ts.SyntaxKind[statement.kind],
+                   binding: bindingOfStatement(statement), member: memberAccessed(node) })
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return found
+}
+
+/** La expresión sin `await` ni paréntesis: `(await f(o))` es `f(o)`. */
+function unwrap(node: ts.Expression): ts.Expression {
+  let current = node
+  while (ts.isAwaitExpression(current) || ts.isParenthesizedExpression(current)) current = current.expression
+  return current
+}
+
+/** El último término de una lista con comas: `return a(),b,r` devuelve `r`. */
+function lastOfComma(node: ts.Expression): ts.Expression {
+  let current = unwrap(node)
+  while (ts.isBinaryExpression(current) && current.operatorToken.kind === ts.SyntaxKind.CommaToken) {
+    current = unwrap(current.right)
+  }
+  return current
+}
+
+function isDynamicImportOf(node: ts.Expression, specifier: string): boolean {
+  const call = unwrap(node)
+  if (!ts.isCallExpression(call) || call.expression.kind !== ts.SyntaxKind.ImportKeyword) return false
+  const argument = call.arguments[0]
+  return argument !== undefined && ts.isStringLiteralLike(argument) && argument.text === specifier
+}
+
+/** La función o el archivo que delimita el alcance de una declaración. */
+function scopeOf(node: ts.Node): ts.Node {
+  let current = node.parent
+  while (current && !ts.isFunctionLike(current) && !ts.isSourceFile(current)) current = current.parent
+  return current ?? node.getSourceFile()
+}
+
+function within(node: ts.Node, scope: ts.Node): boolean {
+  for (let current: ts.Node | undefined = node; current; current = current.parent) {
+    if (current === scope) return true
+  }
+  return false
+}
+
+type ScopedName = { name: string; scope: ts.Node }
+
+function visible(names: readonly ScopedName[], node: ts.Identifier): boolean {
+  return names.some(n => n.name === node.text && within(node, n.scope))
+}
+
+/**
+ * Los usos de un módulo que llega como NAMESPACE, no por nombre: el consumidor
+ * accede a `ns.<export>`. Tres formas, las tres medidas en 2.1.283:
+ *
+ * 1. `import*as ns from DEF`, o `ns=await import(DEF)` ligado a una variable;
+ * 2. un cargador: la función cuyo `return` entrega ese namespace (también
+ *    como último término de una lista con comas), llamada como
+ *    `(await load(e)).<export>`;
+ * 3. una variable ligada al resultado del cargador: `i=await load(e); i.<export>`.
+ *
+ * Cada nombre vale sólo dentro de la función que lo declara: en código
+ * minificado `i` o `r` se repiten entre funciones con valores distintos.
+ */
+function namespaceUsesIn(file: ts.SourceFile, fileName: string, specifier: string,
+                         exported: ReadonlySet<string>): SymbolReference[] {
+  const namespaces: ScopedName[] = []
+  for (const statement of file.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue
+    const bindings = statement.importClause?.namedBindings
+    if (statement.moduleSpecifier.text === specifier && bindings && ts.isNamespaceImport(bindings)) {
+      namespaces.push({ name: bindings.name.text, scope: file })
+    }
+  }
+  const collectNamespaces = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer
+        && isDynamicImportOf(node.initializer, specifier)) {
+      namespaces.push({ name: node.name.text, scope: scopeOf(node) })
+    }
+    ts.forEachChild(node, collectNamespaces)
+  }
+  collectNamespaces(file)
+
+  const loaders = new Set<string>()
+  for (const statement of file.statements) {
+    if (!ts.isFunctionDeclaration(statement) || !statement.name) continue
+    let returnsNamespace = false
+    const visit = (node: ts.Node): void => {
+      if (ts.isReturnStatement(node) && node.expression) {
+        const returned = lastOfComma(node.expression)
+        if (ts.isIdentifier(returned) && visible(namespaces, returned)) returnsNamespace = true
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(statement)
+    if (returnsNamespace) loaders.add(statement.name.text)
+  }
+  const isLoaderCall = (node: ts.Expression): boolean => {
+    const call = unwrap(node)
+    return ts.isCallExpression(call) && ts.isIdentifier(call.expression) && loaders.has(call.expression.text)
+  }
+
+  const bound: ScopedName[] = []
+  const collectBound = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer
+        && isLoaderCall(node.initializer)) {
+      bound.push({ name: node.name.text, scope: scopeOf(node) })
+    }
+    ts.forEachChild(node, collectBound)
+  }
+  collectBound(file)
+
+  const found: SymbolReference[] = []
+  const visit = (node: ts.Node): void => {
+    if (ts.isPropertyAccessExpression(node) && exported.has(node.name.text)) {
+      const target = unwrap(node.expression)
+      const isNamespace = ts.isIdentifier(target)
+        ? visible(namespaces, target) || visible(bound, target)
+        : isLoaderCall(target)
+      if (isNamespace) {
+        const statement = topLevelStatement(node)
+        found.push({ file: fileName, start: node.getStart(file), kind: ts.SyntaxKind[statement.kind],
+                     binding: bindingOfStatement(statement), member: memberAfter(node) })
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return found
+}
+
+/** `x.m` o `x().m` sobre el uso: el miembro que se accede a continuación. */
+function memberAfter(node: ts.Expression): string | null {
+  const parent = node.parent
+  if (ts.isPropertyAccessExpression(parent) && parent.expression === node) return parent.name.text
+  if (ts.isCallExpression(parent) && parent.expression === node) {
+    const outer = parent.parent
+    if (ts.isPropertyAccessExpression(outer) && outer.expression === parent) return outer.name.text
+  }
+  return null
+}
+
+/** Los usos de `name` vistos desde su chunk y en todo chunk que lo importa. */
+export type ReferenceScan = { references: SymbolReference[]; exportedAs: string[]; chunks: number }
+
+export function scanReferences(root: string, chunk: string, name: string): ReferenceScan {
+  const source = readFileSync(join(root, chunk), 'utf8')
+  const exportedAs = exportedNamesOf(source, name)
+  const specifier = `/$bunfs/root/${chunk}`
+  const chunks = readdirSync(root).filter(f => f.endsWith('.js')).sort()
+  const references: SymbolReference[] = []
+  for (const fileName of chunks) {
+    if (fileName === chunk) {
+      references.push(...usesIn(parseSource(source), fileName, new Set([name])))
+      continue
+    }
+    if (exportedAs.length === 0) continue
+    const text = readFileSync(join(root, fileName), 'utf8')
+    if (!text.includes(specifier)) continue
+    const file = parseSource(text)
+    const locals = localNamesImported(file, specifier, new Set(exportedAs))
+    if (locals.length > 0) references.push(...usesIn(file, fileName, new Set(locals)))
+    references.push(...namespaceUsesIn(file, fileName, specifier, new Set(exportedAs)))
+  }
+  return { references, exportedAs, chunks: chunks.length }
+}
+
+export function referencesOf(root: string, chunk: string, name: string): SymbolReference[] {
+  return scanReferences(root, chunk, name).references
+}

@@ -25,7 +25,7 @@ describe('decide — la razón que el diálogo mostrará', () => {
     const out = decide(warm) as { hookSpecificOutput: Record<string, string> }
     expect(out.hookSpecificOutput.hookEventName).toBe('PreModelSwitch')
     expect(out.hookSpecificOutput.permissionDecision).toBe('ask')
-    // El ejecutor pide tokens, no USD (directiva 2026-09-02): la razón cuenta
+    // La razón se da en tokens, no en USD: cuenta
     // tokens y el múltiplo es el peso relativo del tier, adimensional.
     expect(out.hookSpecificOutput.permissionDecisionReason).toContain('508,503 tokens')
     expect(out.hookSpecificOutput.permissionDecisionReason).toContain('pesa 20× uno leído')
@@ -38,8 +38,7 @@ describe('decide — la razón que el diálogo mostrará', () => {
     expect(out.hookSpecificOutput.permissionDecisionReason).not.toContain('USD')
   })
   test('nombra la compactación como la palanca previa: lo que se reescribe es el contexto vivo', () => {
-    // Medido 2026-09-02: compactar bajó el contexto de 787 053 a 16 743
-    // tokens; el cambio aplicado diez minutos después reescribió 475 287.
+    // Compactar antes del cambio reduce lo que se reescribe (H-DOCS-1012).
     // La caché no es portable entre modelos (la clave lleva el modelo), pero
     // el resumen de la compactación sí lo es: es texto.
     const out = decide(warm) as { hookSpecificOutput: Record<string, string> }

@@ -1,0 +1,5 @@
+ * Sólo `auth.type === 'api_key'` alimenta `apiKey`. Sin conexión con llave, el
+ * proveedor resuelve la credencial del entorno con la cadena portada de
+ * 2.1.282 (`@thyrox/provider: credentials.ts` — ANTHROPIC_AUTH_TOKEN,
+ * THYROX_CODE_OAUTH_TOKEN, su descriptor, ANTHROPIC_API_KEY y el transporte
+ * ANTHROPIC_UNIX_SOCKET).

@@ -1,0 +1,48 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+ 96 |   test('cede ante una sesión más antigua con el mismo nombre', async () => {
+ 97 |     live.push(holder('foo'))
+ 98 |     expect(await resolveUniqueName('foo', 'startup', context)).toEqual({ name: 'foo-brave-otter', yielded: true })
+ 99 |     expect(logs).toEqual([['info', '[session-name] "foo" is held by live pid 7; this session takes "foo-brave-otter"']])
+100 |     expect(events).toEqual([['tengu_feature_ok', { feature_name: 'session_name_collision' }]])
+101 |     expect(context.state.lastYield).toEqual({ base: 'foo', name: 'foo-brave-otter' })
+                                          ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "base": "foo",
+-   "name": "foo-brave-otter",
+- }
++ undefined
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:101:37)
+(fail) resolveUniqueName (tPt) > cede ante una sesión más antigua con el mismo nombre [1.21ms]
+107 |     expect(await resolveUniqueName('foo', 'startup', context)).toEqual({ name: 'foo-calm-heron', yielded: true })
+108 |     live[0] = { pid: SELF, startedAt: 20, name: 'foo-brave-otter' }
+109 |     live.push(holder('foo-brave-otter', 5))
+110 |     const result = await resolveUniqueName('foo-brave-otter', 'recheck', { ...context, slug: () => 'quick-fox' }, 'foo-brave-otter')
+111 |     expect(result).toEqual({ name: 'foo-quick-fox', yielded: true })
+112 |     expect(context.state.lastYield).toEqual({ base: 'foo', name: 'foo-quick-fox' })
+                                          ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "base": "foo",
+-   "name": "foo-quick-fox",
+- }
++ undefined
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:112:37)
+(fail) resolveUniqueName (tPt) > conserva el sufijo que ya lleva y usa la base del sufijo [0.61ms]
+
+ 20 pass
+ 2 fail
+ 57 expect() calls
+Ran 22 tests across 1 file. [57.00ms]

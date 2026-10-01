@@ -1,0 +1,21 @@
+test_worktree_state:
+  ok    el motivo del candado del cliente nombra al agente y al pid del CLIENTE
+  ok    un candado ajeno no nombra agente
+  ok    entregó, limpio y fusionado: retirable
+  ok    entregó pero su rama no está en HEAD: sin fusionar
+  ok    entregó con cambios seguidos sin commitear: sin fusionar
+  ok    cortado: sin entregar, no se toca
+  ok    indecidible: sin entregar, no se toca
+  ok    scan: un worktree con candado del cliente, entregado y fusionado, es retirable
+  ok    scan: la rama sin fusionar se detecta
+  ok    scan: los cambios seguidos se detectan
+  ok    scan: un agente cortado no se declara retirable
+  ok    scan: sólo mira worktrees de agente, no el árbol principal
+  ok    sin transcript no hay veredicto de entrega: no se declara retirable
+  ok    retirable: se retira
+  ok    sin fusionar con commits: se mide y se fusiona
+  ok    sin fusionar con cambios sueltos: se commitean en su rama antes de fusionar
+  ok    sin entregar: se reanuda al agente, su trabajo queda intacto
+  ok    ninguna acción de un worktree con trabajo fuera de HEAD es retirarlo
+test_worktree_state: 18 aserciones — 18 ok, 0 falla(s)
+EXIT=0

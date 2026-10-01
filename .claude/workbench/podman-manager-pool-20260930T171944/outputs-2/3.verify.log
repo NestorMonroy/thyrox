@@ -1,0 +1,9 @@
+bun test v1.3.11 (af24e281)
+
+ 4 pass
+ 0 fail
+ 15 expect() calls
+Ran 4 tests across 1 file. [432.00ms]
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))

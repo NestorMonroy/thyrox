@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check_package_typecheck --strict daemon cli agent command-runtime", "started_at": "2026-09-29T04:38:36+00:00"}

@@ -1,0 +1,2 @@
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1828 lectura(s) en 3864 archivo(s) de producción — propias 790, proveedor 93, cliente ajeno 17, sin prefijo 928)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 142 congelada(s), 0 obsoleta(s) (alcance medido: 323 variable(s) propia(s), 1901 archivo(s) de prueba)

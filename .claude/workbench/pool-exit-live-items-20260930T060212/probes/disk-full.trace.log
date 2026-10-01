@@ -1,0 +1,31 @@
+tmpfs            24M   24M     0 100% /tmp/tmp.KXrkwg1kys
+con el disco lleno, 15 s de observación
+pool vivo: yes
+parallel vivo: 1
+pool exit: (en curso)
+.claude/workbench/pool-exit-live-items-20260930T060212/probes/common.sh: line 50: /tmp/tmp.KXrkwg1kys/repo/.claude/workbench/b/out/joblog.tsv: No such file or directory
+joblog lines (out): ausente
+joblog lines (runtime): 1
+worktrees del ítem: 1
+runners vivos: 2
+items cerrados: 0
+runtime conservado: 1
+--- pool.log
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.KXrkwg1kys/runner en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+tras soltar el ítem:
+pool exit: salió
+joblog lines (out): 2
+joblog lines (runtime): 0
+worktrees del ítem: 0
+runners vivos: 0
+items cerrados: 1
+runtime conservado: 0
+--- pool.log
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.KXrkwg1kys/runner en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO one
+items=1 ok=0 fallidos=1
+verificados=0 rechazados=0 sin-cambios=0 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+__BG_EXIT__=0

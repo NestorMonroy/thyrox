@@ -23,10 +23,11 @@
  * que este archivo lee; se accede vía el índice `[key: string]: unknown`
  * que el tipo ya declara, con narrowing local (no se amplía
  * `messageShapes.ts` — fuera del alcance de este pase: sólo
- * `src/packages/{daemon,bridge}/**`). `logForDebugging`, `errorMessage`,
- * `logEvent`, `jsonParse` son PUNTOS DE INYECCIÓN ya existentes en
- * `./internal/pendingCrossPackageDeps.ts`. `EMPTY_USAGE` y `PermissionMode`
- * se añaden a ese mismo archivo en este pase (ver sus docstrings ahí:
+ * `src/packages/{daemon,bridge}/**`). `logForDebugging` y `jsonParse` son
+ * PUNTOS DE INYECCIÓN en `./internal/pendingCrossPackageDeps.ts`;
+ * `errorMessage` y `logEvent` vienen de `@thyrox/local-observability`.
+ * `EMPTY_USAGE` vive en ese mismo archivo y `PermissionMode` en
+ * `@thyrox/permission` (ver el docstring de `EMPTY_USAGE` ahí:
  * `EMPTY_USAGE` NO es el mismo símbolo que el ya portado en
  * `@thyrox/provider`, y `PermissionMode` es un tipo estructural nuevo
  * porque `@thyrox/permission` aún no porta `PermissionMode.ts`).
@@ -41,15 +42,15 @@ import type {
 } from '@thyrox/headless-sdk/controlTypes.js'
 import type { SDKResultSuccess } from '@thyrox/headless-sdk/coreTypes.js'
 import type { Message } from '@thyrox/agent/messageShapes.js'
+import { normalizeControlMessageKeys } from '@thyrox/headless-sdk/controlMessageCompat'
+import { logEvent } from '@thyrox/local-observability'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { stripDisplayTagsAllowEmpty } from '@thyrox/output/utils/displayTags.js'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes'
 import {
   EMPTY_USAGE,
-  errorMessage,
   jsonParse,
-  logEvent,
   logForDebugging,
-  normalizeControlMessageKeys,
-  stripDisplayTagsAllowEmpty,
-  type PermissionMode,
 } from './internal/pendingCrossPackageDeps.js'
 import type { ReplBridgeTransport } from './replBridgeTransport.js'
 
@@ -272,8 +273,7 @@ const OUTBOUND_ONLY_ERROR =
  * para coordinación a nivel de turno (interrupt, set_max_thinking_tokens).
  * Si no respondemos, el servidor cuelga y mata el WS tras ~10-14s.
  *
- * Antes era un closure dentro de onWorkReceived de initBridgeCore; ahora
- * toma los colaboradores como parámetros para que ambos cores lo usen.
+ * Toma los colaboradores como parámetros para que ambos cores lo usen.
  */
 export function handleServerControlRequest(
   request: SDKControlRequest,

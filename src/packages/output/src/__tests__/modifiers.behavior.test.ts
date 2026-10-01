@@ -6,7 +6,7 @@ import { resolve } from 'path'
 
 /**
  * Pin `modifiers.ts` — bun:ffi shim (despite the "napi" name) for macOS
- * modifier key state via Carbon. Misnamed historically; CLAUDE.md
+ * modifier key state via Carbon. Misnamed historically; THYROX.md
  * documents this.
  *
  * Critical invariants:

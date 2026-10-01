@@ -1,0 +1,10 @@
+==== bko: 1 definicion(es) de nivel superior
+---- chunk-wngxtykq.js function bko [2033,2239)
+async function bko(){let e=process.getuid?.(),t=await D();if(t===void 0){let n=await S()??m;return e===n?{unmappedOwnerUid:void 0,uidCollapses:!0,rootUidAmbiguous:n===0}:void 0}if(h(t))return;return L(t,e)}
+==== _ko: 1 definicion(es) de nivel superior
+---- chunk-wngxtykq.js function _ko [1163,1187)
+function _ko(){return A}
+==== LOt: 1 definicion(es) de nivel superior
+---- chunk-wngxtykq.js function LOt [2384,2742)
+async function LOt(){let e=process.getuid?.();if(e===void 0)return;let t=await D();if(t===void 0)return;if(h(t))return e;let n=await S()??m;if(t.length===0||e===n)return;if(((s)=>t.some((u)=>s>=u.innerStart&&s<u.innerStart+u.count))(n))return e;let o=t.find((s)=>e>=s.innerStart&&e<s.innerStart+s.count);return o===void 0?void 0:o.hostStart+(e-o.innerStart)}
+symbol: 3 de 3 nombre(s) resueltos

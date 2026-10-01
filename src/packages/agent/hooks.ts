@@ -302,7 +302,7 @@ export function createBaseHookInput(
   const id = sessionId ?? safeSessionId()
   return {
     session_id: id,
-    transcript_path: process.env.CLAUDE_TRANSCRIPT_PATH ?? '',
+    transcript_path: process.env.THYROX_TRANSCRIPT_PATH ?? '',
     cwd: safeCwd(),
     ...(permissionMode !== undefined && { permission_mode: permissionMode }),
     ...(agentInfo?.agentId !== undefined && { agent_id: agentInfo.agentId }),
@@ -979,7 +979,7 @@ export async function executePostCompactHooks(
  * techo de 60 000 ms.
  */
 export function getSessionEndHookTimeoutMs(): number {
-  const declared = process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
+  const declared = process.env.THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
   if (declared !== undefined && declared !== '' && Number.isFinite(Number(declared))) return Number(declared)
   let longest = 0
   for (const group of configuredMatchers('SessionEnd')) {
@@ -1078,7 +1078,7 @@ export async function executeFileSuggestionCommand(
  * Resolución de shell: `hook.shell` → 'bash'. Los hooks de PowerShell
  * lanzan `pwsh` con -NoProfile -NonInteractive -Command y se saltan la
  * preparación específica de bash (conversión de rutas POSIX, auto-prepend
- * de `.sh`, `CLAUDE_CODE_SHELL_PREFIX`). Porte verbatim de
+ * de `.sh`, `THYROX_CODE_SHELL_PREFIX`). Porte verbatim de
  * `ccnmt: packages/agent/hooks.ts:925-1602`.
  */
 export async function execCommandHook(
@@ -1215,12 +1215,12 @@ export async function execCommandHook(
     }
   }
 
-  // CLAUDE_CODE_SHELL_PREFIX envuelve el comando con quoting POSIX
+  // THYROX_CODE_SHELL_PREFIX envuelve el comando con quoting POSIX
   // (formatShellPrefixCommand usa shell-quote). Esto no tiene sentido para
   // PowerShell — ver diseño §8.1. Por ahora los hooks de PS ignoran el
-  // prefijo; un CLAUDE_CODE_PS_SHELL_PREFIX (o un prefijo consciente del
+  // prefijo; un THYROX_CODE_PS_SHELL_PREFIX (o un prefijo consciente del
   // shell) queda como trabajo futuro.
-  const shellPrefix = readEnv('CLAUDE_CODE_SHELL_PREFIX')
+  const shellPrefix = readEnv('THYROX_CODE_SHELL_PREFIX')
   const finalCommand =
     !execArgs && !isPowerShell && shellPrefix
       ? formatShellPrefixCommand(shellPrefix, command)
@@ -1284,7 +1284,7 @@ export async function execCommandHook(
     envVars.CLAUDE_PLUGIN_ROOT = toHookPath(skillRoot)
   }
 
-  // CLAUDE_ENV_FILE apunta a un archivo .sh donde el hook escribe
+  // THYROX_ENV_FILE apunta a un archivo .sh donde el hook escribe
   // definiciones de variables de entorno; getHookEnvFilePath() las
   // concatena y el proveedor de bash inyecta el contenido en los comandos
   // de bash. Un hook de PS naturalmente escribiría sintaxis PS ($env:FOO =
@@ -1298,7 +1298,7 @@ export async function execCommandHook(
       hookEvent === 'FileChanged') &&
     hookIndex !== undefined
   ) {
-    envVars.CLAUDE_ENV_FILE = await getHookEnvFilePath(hookEvent, hookIndex)
+    envVars.THYROX_ENV_FILE = await getHookEnvFilePath(hookEvent, hookIndex)
   }
 
   // Cuando se eliminan worktrees de agente, getCwd() puede devolver una
@@ -1406,7 +1406,7 @@ export async function execCommandHook(
     // hooks de PowerShell evitan esto).
     if (isWindows && !findGitBashPath()) {
       throw new Error(
-        `Hook "${hook.command}" requires git-bash. Install: https://git-scm.com/downloads/win, set CLAUDE_CODE_GIT_BASH_PATH, or use "shell":"powershell".`,
+        `Hook "${hook.command}" requires git-bash. Install: https://git-scm.com/downloads/win, set THYROX_CODE_GIT_BASH_PATH, or use "shell":"powershell".`,
       )
     }
     const shell = isWindows ? findGitBashPath()! : true
@@ -1977,14 +1977,14 @@ function executeInBackground({
 }
 /**
  * Ejecuta los hooks InstructionsLoaded cuando se carga un archivo de
- * instrucciones (CLAUDE.md o .claude/rules/*.md) en el contexto.
+ * instrucciones (THYROX.md o .claude/rules/*.md) en el contexto.
  * Fire-and-forget — sólo para observabilidad/auditoría, no soporta bloqueo.
  *
  * Sitios de despacho:
  * - Carga eager al inicio de sesión (getMemoryFiles en claudemd.ts)
  * - Recarga eager tras compactación (caché de getMemoryFiles limpiada por
  *   runPostCompactCleanup; la siguiente llamada reporta load_reason: 'compact')
- * - Carga lazy cuando Claude toca un archivo que dispara un CLAUDE.md anidado
+ * - Carga lazy cuando thyrox toca un archivo que dispara un THYROX.md anidado
  *   o reglas condicionales con frontmatter paths: (memoryFilesToAttachments en
  *   attachments.ts)
  */

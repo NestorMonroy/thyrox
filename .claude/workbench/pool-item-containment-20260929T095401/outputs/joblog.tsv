@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790675641.853	  3204.314	0	0	0	0	_headless_item 1 'src/session/item_containment.sh src/session/headless-pool.sh src/session/item_worktree.sh tests/session/test-item-containment.sh .env.example'

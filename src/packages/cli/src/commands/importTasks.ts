@@ -5,7 +5,7 @@
  * docstring de `commands/checkPremises.ts` para la forma del reparto.
  */
 import { readFileSync } from 'node:fs'
-import { parseRstTasks } from '../../../../task/rst.ts'
+import { parseRstTasks } from '@thyrox/task/rst.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import { storePath } from '@thyrox/observability/store'
 import { flag, hasFlag } from '../entry/flags.ts'
@@ -13,14 +13,14 @@ import { flag, hasFlag } from '../entry/flags.ts'
 /**
  * Dónde escribe el puente — por el localizador, nunca por `cwd`.
  *
- * H-THYROX-41. Componía `join(cwd, '.claude', 'agent-results', …)`, que no
- * pasa por ninguna de las cuatro precedencias declaradas y apunta al hogar
- * que `LEGACY_CONSUMER_STORE_DIR` dice NO ser destino de escritura. Y como
- * `connect()` hace `mkdir` sin condición, un `cwd` equivocado no falla: crea
- * una cáscara vacía y la deja en el árbol.
+ * Componer `join(cwd, '.claude', 'agent-results', …)` saltaría las cuatro
+ * precedencias declaradas y apuntaría al hogar que `LEGACY_CONSUMER_STORE_DIR`
+ * dice NO ser destino de escritura; como `connect()` hace `mkdir` sin
+ * condición, un `cwd` equivocado no fallaría: dejaría una cáscara vacía en el
+ * árbol (H-THYROX-41).
  *
- * `cwd` sigue en la firma porque el comando lo recibe, y porque declararlo y
- * NO usarlo es lo que hace verificable que ya no gobierna.
+ * `cwd` sigue en la firma porque el comando lo recibe, y declararlo sin usarlo
+ * es lo que hace verificable que no gobierna.
  */
 export function resolveTaskStore(declared: string | undefined, _cwd: string): string {
   return storePath(declared)

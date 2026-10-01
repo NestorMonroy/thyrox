@@ -30,7 +30,7 @@ describe('profundidad', () => {
     expect(maxSubagentSpawnDepth({}, noFlag)).toBe(3)
   })
   test('la variable gana a la bandera', () => {
-    expect(maxSubagentSpawnDepth({ CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(1)
+    expect(maxSubagentSpawnDepth({ THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(1)
   })
   test('la bandera vale solo si es entera y >= 1', () => {
     expect(maxSubagentSpawnDepth({}, () => 5)).toBe(5)
@@ -39,12 +39,12 @@ describe('profundidad', () => {
     expect(maxSubagentSpawnDepth({}, () => 'x')).toBe(3)
   })
   test('rehusa cuando la profundidad alcanza el maximo, con el texto del binario', () => {
-    const env = { CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }
+    const env = { THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }
     expect(depthRefusal({ agentType: 'main' }, env, noFlag)).toBeUndefined()
     const refusal = depthRefusal({ agentType: 'subagent', depth: 1 }, env, noFlag)
     expect(refusal?.reason).toBe('depth_limit')
     expect(refusal?.message).toBe(
-      'Subagent nesting limit reached (depth 1 of 1). Complete this task directly using your tools instead of spawning another agent. If the user explicitly requested deeper nesting, ask them to raise CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH.',
+      'Subagent nesting limit reached (depth 1 of 1). Complete this task directly using your tools instead of spawning another agent. If the user explicitly requested deeper nesting, ask them to raise THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH.',
     )
   })
 })
@@ -53,19 +53,31 @@ describe('anchura', () => {
   test('el maximo por defecto es 20 y la variable lo cambia', () => {
     expect(DEFAULT_MAX_CONCURRENT_SUBAGENTS).toBe(20)
     expect(maxConcurrentSubagents({})).toBe(20)
-    expect(maxConcurrentSubagents({ CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBe(4)
+    expect(maxConcurrentSubagents({ THYROX_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBe(4)
   })
   test('por debajo del maximo no rehusa', () => {
-    expect(concurrencyRefusal(3, { CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBeUndefined()
+    expect(concurrencyRefusal(3, { THYROX_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBeUndefined()
   })
   test('al alcanzarlo rehusa, sin encolar, con el texto del binario', () => {
-    const refusal = concurrencyRefusal(4, { CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })
+    const refusal = concurrencyRefusal(4, { THYROX_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })
     expect(refusal?.reason).toBe('concurrency_limit')
     expect(refusal?.message).toBe(
-      'Concurrent subagent limit reached. You can run 4 subagents at once. Do not retry. If the user wants more concurrent subagents, ask them to increase CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS.',
+      'Concurrent subagent limit reached. You can run 4 subagents at once. Do not retry. If the user wants more concurrent subagents, ask them to increase THYROX_CODE_MAX_CONCURRENT_SUBAGENTS.',
     )
   })
   test('la exencion (bandera o modelo) deja pasar', () => {
     expect(concurrencyRefusal(99, {}, () => true)).toBeUndefined()
+  })
+})
+
+// Las variables del cliente (`CLAUDE_CODE_*`) son de otro proceso: su valor
+// no gobierna a thyrox, que lee las suyas (`THYROX_CODE_*`), como el TTL de
+// caché en `promptCacheTtl.ts`.
+describe('las variables del cliente no gobiernan', () => {
+  test('CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH no fija la profundidad', () => { // thyrox-rename: keep — el nombre del anfitrión no gobierna
+    expect(maxSubagentSpawnDepth({ CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(5) // thyrox-rename: keep — el nombre del anfitrión no gobierna
+  })
+  test('CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS no fija la anchura', () => { // thyrox-rename: keep — el nombre del anfitrión no gobierna
+    expect(maxConcurrentSubagents({ CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBe(20) // thyrox-rename: keep — el nombre del anfitrión no gobierna
   })
 })

@@ -1,0 +1,21 @@
+test_source_copy_step:
+  ok    la copia limpia queda
+  ok    la que rompe su archivo se revierte
+  ok    la que rompe a un consumidor se revierte
+  ok    el alias de la fuente se reescribe
+  ok    la copia que quita un diagnóstico previo queda
+  ok    el registro lleva un veredicto por archivo
+  ok    el total final no sube
+  ok    el log final queda en el banco
+  ok    el log final no trae el diagnóstico del consumidor
+  ok    el grafo de imports culpa sin bisecar
+  ok    lo ya decidido no se vuelve a decidir
+  ok    un tsc que sale distinto de 0 sin diagnósticos es una medición rota
+  ok    dos culpables: cada uno rechazado y las inocentes copiadas
+  ok    el import de `index` no culpa por el nombre
+  ok    un import relativo culpa a su ruta, no a la homónima
+  ok    el residuo se biseca sólo entre lo alcanzable
+  ok    la cadena de imports cruza el `exports` de un paquete
+
+17 ok, 0 fallos
+EXIT=0

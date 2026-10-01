@@ -36,6 +36,8 @@ export type ConfigHostBindings = {
   getSessionTrustAccepted?: () => boolean
   getFlagSettingsPath?: () => string | undefined
   getFlagSettingsInline?: () => Record<string, unknown> | null
+  /** Los ajustes administrados que pasa el proceso padre (`TVr` de 2.1.283). */
+  getParentManagedSettings?: () => Record<string, unknown> | undefined
   getUseCoworkPlugins?: () => boolean
   // V7 §8.6 — event logging bridge (config cannot import eventLogger).
   logEvent?: (event: string, metadata?: Record<string, unknown>) => void
@@ -95,7 +97,7 @@ export type ConfigHostBindings = {
   // V7 §11.4 — permission rule parsing bridge (config cannot import permission in Wave 1).
   parsePermissionRule?: (rule: string) => { toolName: string; ruleContent?: string }
   // V7 §11.4 — settings path check bridge.
-  isClaudeSettingsPath?: (filePath: string) => boolean
+  isSettingsFilePath?: (filePath: string) => boolean
   // V7 §11.4 — permission context reconciliation after settings change.
   // Encapsulates syncPermissionRulesFromDisk + overly-broad filtering +
   // bypass-mode check + plan-auto-mode transition.

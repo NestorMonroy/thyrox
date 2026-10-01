@@ -1,0 +1,11 @@
+caso 1 — tres prepares a la vez sobre el mismo repositorio terminan los tres
+  ok    los tres salen 0
+  ok    tres worktrees de ítem más el principal
+  ok    cada uno nombra su directorio
+caso 2 — un escritor ajeno retiene el candado 4 s y el alta espera en vez de rendirse
+  FALLA el alta sale 0 tras el escritor ajeno: esperado «0», obtenido «2»
+caso 3 — agotado el plazo, el alta rehúsa y dice por qué
+  ok    sale distinto de 0
+  FALLA el stderr trae el motivo de git: esperado «1», obtenido «0»
+  FALLA THYROX_ITEM_WORKTREE_RETRY_SECONDS inválida se rechaza: esperado «2», obtenido «0»
+item_worktree lock: 4/7

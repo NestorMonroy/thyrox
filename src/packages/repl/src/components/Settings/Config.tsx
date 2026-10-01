@@ -108,6 +108,7 @@ import {
   isFastModeSupportedByModel,
 } from '../../fastMode.js'
 import { isFullscreenEnvEnabled } from '../../fullscreen.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onClose: (
@@ -289,7 +290,7 @@ export function Config({
   )
 
   const isFileCheckpointingAvailable = !isEnvTruthy(
-    process.env.CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING,
+    process.env.THYROX_CODE_DISABLE_FILE_CHECKPOINTING,
   )
 
   const memoryFiles = React.use(getMemoryFiles(true))
@@ -797,7 +798,7 @@ export function Config({
           },
           {
             id: 'agentPushNotifEnabled',
-            label: 'Notify when Claude decides',
+            label: `Notify when ${PRODUCT_NAME} decides`,
             value: globalConfig.agentPushNotifEnabled ?? false,
             type: 'boolean' as const,
             onChange(agentPushNotifEnabled: boolean) {
@@ -1002,7 +1003,7 @@ export function Config({
       : []),
     {
       id: 'claudeInChromeDefaultEnabled',
-      label: 'Claude in Chrome enabled by default',
+      label: `${PRODUCT_NAME} in Chrome enabled by default`,
       value: globalConfig.claudeInChromeDefaultEnabled ?? true,
       type: 'boolean' as const,
       onChange(enabled: boolean) {
@@ -1127,7 +1128,7 @@ export function Config({
       ? [
           {
             id: 'showExternalIncludesDialog',
-            label: 'External CLAUDE.md includes',
+            label: 'External THYROX.md includes',
             value: (() => {
               const projectConfig = getCurrentProjectConfig()
               if (projectConfig.hasClaudeMdExternalIncludesApproved) {
@@ -1290,7 +1291,7 @@ export function Config({
     )
     // Check for API key changes
     // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
-    // processes but ignored by Claude Code itself (see auth.ts).
+    // processes but ignored by thyrox itself (see auth.ts).
     const effectiveApiKey = isRunningOnHomespace()
       ? undefined
       : process.env.ANTHROPIC_API_KEY
@@ -1340,7 +1341,7 @@ export function Config({
       initialConfig.current.agentPushNotifEnabled
     ) {
       formattedChanges.push(
-        `${globalConfig.agentPushNotifEnabled ? 'Enabled' : 'Disabled'} Claude-decision notifications`,
+        `${globalConfig.agentPushNotifEnabled ? 'Enabled' : 'Disabled'} ${PRODUCT_NAME}-decision notifications`,
       )
     }
     if (currentOutputStyle !== initialOutputStyle.current) {

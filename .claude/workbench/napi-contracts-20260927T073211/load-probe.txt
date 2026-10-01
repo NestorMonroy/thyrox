@@ -1,0 +1,6 @@
+== audio-capture-napi/vendor/x64-linux/audio-capture.node
+ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, stri
+isPlaying,isRecording,microphoneAuthorizationStatus,startPlayback,startRecording,stopPlayback,stopRecording,writePlaybackData
+== image-processor-napi/vendor/x64-linux/image-processor.node
+ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, stri
+ImageProcessor,hasClipboardImage,processImage,readClipboardImage

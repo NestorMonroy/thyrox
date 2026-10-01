@@ -1,0 +1,14 @@
+(fail) local-models-catalog > declare inspecciona el volumen declarado y guarda bajo .thyrox/models de la raíz [6.10ms]
+(fail) local-models-catalog > THYROX_MODEL_CATALOG gana a la ruta por defecto [3.80ms]
+(fail) local-models-catalog > un modelo no instalado sale 2 con la causa [3.78ms]
+(fail) local-models-catalog > declare <nombre-hf> --revision <commit> conserva la identidad hf y no copia [3.56ms]
+(fail) local-models-catalog > declare <nombre-hf> sin --revision sale 2 nombrando la opción [3.73ms]
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [4.56ms]
+(fail) local-models-qualify > --context declarado viaja como num_ctx [4.75ms]
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [4.06ms]
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [3.60ms]
+(fail) local-models-qualify > --context por encima del máximo del modelo sale 2 sin medir [3.76ms]
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [4.09ms]
+ 82 pass
+ 11 fail
+__BG_EXIT__=0

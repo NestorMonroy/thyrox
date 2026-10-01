@@ -5,8 +5,8 @@
  *
  * Reimplementación del contrato de 2.1.275 (`chunk-9apg35nm.js`), no copia:
  *
- *   `checkReadPermissionForTool` ≙ `_w` · `checkWritePermissionForTool` ≙ `Wy`
- *   · `checkNetworkPathRead` ≙ `k_n` (2.1.281: `ULn`) · `denyOutsideWorkingDirectories` ≙ `Bs`
+ *   `checkReadPermissionForTool` ≙ `_w` (2.1.283: `IE`) · `checkWritePermissionForTool` ≙ `Wy` (2.1.283: `Lb`)
+ *   · `checkNetworkPathRead` ≙ `k_n` (2.1.281: `ULn`; 2.1.283: `BGn`) · `denyOutsideWorkingDirectories` ≙ `Bs` (2.1.283: `kl`)
  *   · `generateSuggestions` ≙ `gyt` · `safetyCheckFields` ≙ `Au`
  *   · `getClaudeSkillScope` ≙ `ku` · `isClaudeTreeRule` ≙ `zu`
  *   · `ruleCrossesNestedClaudeDir` ≙ `Nu` · `claudeDirDepth` ≙ `Es`
@@ -19,22 +19,37 @@
  * `isPathInWorkingDirectories` (`my`) y los conjuntos de directorios `_b` y
  * `NGt`, de `pathValidation.ts`.
  *
+ * Las dos guardas consumen el objeto resuelto de `resolvePathForPermission`
+ * (≙ `Ua`, 2.1.283) y encima llevan la capa de aterrizaje de enlaces de
+ * 2.1.283: `displayPath` ≙ `ete` · `landingBeyondRequested` ≙ `ect` ·
+ * `symlinkLanding` ≙ `n5e` · `landingSentence` ≙ `cln` ·
+ * `denyUnresolvedTarget` ≙ `xl` · `outsideWorkingDirectoriesAsk` ≙ `Ml` ·
+ * `writeSafetyLanding` ≙ `WGn` · `denySymlinkLeafWrite` ≙ `Zlt`.
+ *
  * Divergencias declaradas:
  *
- * - (Retirada 2026-09-24.) Decía que la memoria nunca está en pausa y que
- *   la rama `EN(y) && Kh()` de `Wy` no podía dispararse. Era una omisión:
- *   `/pause-memory` y su indicador están portados de 2.1.281, y la rama
- *   niega como `ib` (`xU(h)&&Yh()` → `Rr`).
- * - (Retirada 2026-09-24.) Decía que el experimento en sombra
- *   `tengu_playful_lobster` no se portaba por ser sólo telemetría. Era una
- *   omisión: este árbol tiene dónde registrar (`logEvent`), y está portado
- *   de 2.1.281 en `playfulLobster.ts`.
+ * - `denySymlinkLeafWrite` lo aplican en 2.1.283 los `checkPermissions` de
+ *   Write, Edit y NotebookEdit (`chunk-csayct82.js`) sobre la decisión de
+ *   `Lb`; esas herramientas viven en `tool-registry` y aquí sólo se exporta.
+ * - `displayPath` porta la sustitución de caracteres y el recorte de `ete`,
+ *   no su pasada de normalización hasta punto fijo (`sf`).
+ *
+ * - Sin divergencia en la pausa de memoria: `/pause-memory` y su indicador
+ *   están portados de 2.1.281, y la rama `EN(y) && Kh()` de `Wy` niega como
+ *   `ib` (`xU(h)&&Yh()` → `Rr`).
+ * - Sin divergencia en el experimento en sombra `tengu_playful_lobster`:
+ *   está portado de 2.1.281 en `playfulLobster.ts` y registra por
+ *   `logEvent`.
  * - `servedCall` no lo fija ningún productor en este árbol; la rama que
  *   convierte la negación en consulta se porta igual, leyendo las settings.
  */
 import * as nodeFs from 'node:fs'
 import * as nodePath from 'node:path'
-import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
+import {
+  getPathsForPermissionCheck,
+  resolvePathForPermission,
+  type ResolvedPermissionPath,
+} from '@thyrox/storage/fsOperations.js'
 import { isMemoryPaused } from '@thyrox/memory/memoryPause'
 import { expandPath } from '@thyrox/storage/path.js'
 import {
@@ -76,8 +91,15 @@ import {
 } from './pathValidation.js'
 import { isHardLinkedFile, isShadowExperimentOn, recordShadowFired, shouldLogShadowPath } from './playfulLobster.js'
 import { permissionRuleValueFromString } from './permissionRuleParser.js'
-import type { PermissionDecision, PermissionUpdate } from './permissionTypes.js'
+import type {
+  PermissionDecision,
+  PermissionDecisionReason,
+  PermissionDenyDecision,
+  PermissionUpdate,
+} from './permissionTypes.js'
 import { allPathsMatchAllowRule, escapeForIgnore, matchingRuleForInput } from './ruleMatching.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const FILE_READ_TOOL_NAME = 'Read'
 const FILE_EDIT_TOOL_NAME = 'Edit'
@@ -88,6 +110,21 @@ const SYNCED_SKILL_NAME = 'synced'
 const RESTRICTED_REASON = 'Restricted mode confines the file tools to the working directory'
 const OUTSIDE_READS_BLOCKED =
   'Reads outside the working directories are blocked (permissions.blockReadsOutsideWorkingDirectories). Add the directory with /add-dir, or remove that setting.'
+const OUTSIDE_WORKING_DIRECTORIES = 'Path is outside allowed working directories'
+const OUTSIDE_ALLOWED_CLAUSE = ', which is outside the allowed working directories'
+const UNDETERMINED_TARGET = 'a target that could not be determined'
+const DISPLAY_PATH_MAX_CHARS = 160
+const DISPLAY_UNSAFE_CHARS = /[\x00-\x1f\x7f-\x9f\u061c\u2028\u2029\u202a-\u202e\u2066-\u2069\p{Co}\p{Cn}]/gu
+const REPLACEMENT_CHAR = '\uFFFD'
+/** Pares (canónico, enlace) que macOS y merged-usr resuelven; cuenta el que `realpath(enlace)` confirme (≙ `Hf`). */
+const TRUSTED_SYMLINK_EQUIVALENCES: ReadonlyArray<readonly [string, string]> = [
+  ['/private/tmp', '/tmp'],
+  ['/private/var', '/var'],
+  ['/private/etc', '/etc'],
+  ['/usr/bin', '/bin'],
+  ['/usr/lib', '/lib'],
+  ['/usr/sbin', '/sbin'],
+]
 
 /** La herramienta, tal como la ven estas guardas. */
 export type FileTool = {
@@ -127,12 +164,7 @@ function originalCwd(): string {
 }
 
 function claudeConfigHome(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/env/utils.js') as { getClaudeConfigHomeDir: () => string }).getClaudeConfigHomeDir()
-  } catch {
-    return nodePath.join(require('node:os').homedir(), '.claude').normalize('NFC')
-  }
+  return getConfigHomeDir()
 }
 
 function userHome(): string {
@@ -144,27 +176,210 @@ function folded(path: string): string {
   return path.normalize('NFC').toLowerCase()
 }
 
+// ---- La capa de aterrizaje de enlaces (2.1.283: `ete`, `tl`, `ect`, `n5e`, `cln`, `Tl`, `dln`, `xl`, `Ml`, `WGn`, `Zlt`) ----
+
+/**
+ * Cómo se nombra una operación en los mensajes y cómo razona su consulta
+ * cuando el enlace la saca del trabajo (el `e` de `Ml` y `xl`).
+ */
+export type FileOperation = {
+  phrase: 'read from' | 'write to'
+  verb: 'read' | 'write'
+  carriedOutReason: (sentence: string) => PermissionDecisionReason
+}
+
+export const READ_OPERATION: FileOperation = {
+  phrase: 'read from',
+  verb: 'read',
+  carriedOutReason: reason => ({ type: 'workingDir', reason }),
+}
+
+export const WRITE_OPERATION: FileOperation = {
+  phrase: 'write to',
+  verb: 'write',
+  carriedOutReason: reason => ({ type: 'safetyCheck', reason, classifierApprovable: false }),
+}
+
+/** La ruta como se muestra: sin caracteres de control ni de formato, recortada (≙ `ete`). */
+export function displayPath(path: string): string {
+  const sanitized = path.replace(DISPLAY_UNSAFE_CHARS, REPLACEMENT_CHAR)
+  if (sanitized.length <= DISPLAY_PATH_MAX_CHARS) return sanitized
+  const shown = sanitized.slice(0, DISPLAY_PATH_MAX_CHARS)
+  return `${shown}… [+${sanitized.length - shown.length} chars]`
+}
+
+function resolvesThroughSymlink(path: string, landing: string): string {
+  return `${displayPath(path)} resolves through a symlink to ${displayPath(landing)}`
+}
+
+function unresolvedTargetReason(path: string): string {
+  return `Where ${displayPath(path)} leads on disk could not be determined (a link or directory on the way could not be examined, or the links do not resolve)`
+}
+
+/** Negación de una ruta cuyo destino en disco no se pudo determinar (≙ `xl`). */
+export function denyUnresolvedTarget(operation: FileOperation, path: string): PermissionDenyDecision {
+  return {
+    behavior: 'deny',
+    message: `Refusing to ${operation.verb} ${displayPath(path)}: where it leads on disk could not be determined (a link on the way could not be examined, or the links do not resolve).`,
+    decisionReason: { type: 'other', reason: unresolvedTargetReason(path) },
+  }
+}
+
+let confirmedEquivalences: ReadonlyArray<readonly [string, string]> | undefined
+
+function confirmedSymlinkEquivalences(): ReadonlyArray<readonly [string, string]> {
+  confirmedEquivalences ??= TRUSTED_SYMLINK_EQUIVALENCES.filter(([canonical, link]) => {
+    try {
+      return nodeFs.realpathSync(link) === canonical
+    } catch {
+      return false
+    }
+  })
+  return confirmedEquivalences
+}
+
+/** La ruta absoluta con los alias confirmados plegados a su enlace (≙ `tl`). */
+function aliasFoldedPath(path: string): string {
+  const resolved = nodePath.resolve(path)
+  for (const [canonical, link] of confirmedSymlinkEquivalences()) {
+    if (resolved === canonical || resolved.startsWith(canonical + nodePath.sep)) return link + resolved.slice(canonical.length)
+  }
+  return resolved
+}
+
+/** El aterrizaje, si difiere de la ruta pedida una vez plegados los alias (≙ `ect`). */
+export function landingBeyondRequested(resolved: ResolvedPermissionPath): string | null {
+  if (resolved.unresolved) return null
+  return aliasFoldedPath(resolved.landing) === aliasFoldedPath(resolved.requested) ? null : resolved.landing
+}
+
+/** Dónde aterriza un enlace respecto de los directorios de trabajo (≙ `n5e`). */
+export type SymlinkLanding = {
+  landing: string
+  landingOutside: boolean
+  spellingInside: boolean
+  /** La grafía pedida está dentro y el aterrizaje fuera: el enlace saca la operación del trabajo. */
+  carriedOut: boolean
+}
+
+export function symlinkLanding(
+  resolved: ResolvedPermissionPath,
+  context: PathPermissionContext,
+  directories: Set<string> = workingDirectoriesOf(context),
+): SymlinkLanding | null {
+  const landing = landingBeyondRequested(resolved)
+  if (landing === null) return null
+  const inside = (path: string) => isPathInWorkingDirectories(path, context, [path], directories)
+  const landingOutside = !inside(landing)
+  const spellingInside = inside(resolved.requested)
+  return { landing, landingOutside, spellingInside, carriedOut: spellingInside && landingOutside }
+}
+
+/** «X resolves through a symlink to Y», con la cláusula de fuera si aterriza fuera (≙ `cln`). */
+export function landingSentence(path: string, landing: SymlinkLanding): string {
+  return `${resolvesThroughSymlink(path, landing.landing)}${landing.landingOutside ? OUTSIDE_ALLOWED_CLAUSE : ''}`
+}
+
+type OutsideWorkingDirectoriesAsk = {
+  message: string
+  decisionReason: PermissionDecisionReason
+  blockedPath?: string
+}
+
+/**
+ * La consulta final de una ruta fuera del trabajo (≙ `Ml`): a secas si el
+ * enlace no la saca; con la frase de aterrizaje, la ruta bloqueada y la
+ * razón propia de la operación cuando sí.
+ */
+function outsideWorkingDirectoriesAsk(
+  operation: FileOperation,
+  path: string,
+  resolved: ResolvedPermissionPath,
+  context: PathPermissionContext,
+): OutsideWorkingDirectoriesAsk {
+  const message = `${PRODUCT_NAME} requested permissions to ${operation.phrase} ${path}, but you haven't granted it yet.`
+  const landing = symlinkLanding(resolved, context)
+  if (landing === null || !landing.carriedOut) {
+    return { message, decisionReason: { type: 'workingDir', reason: OUTSIDE_WORKING_DIRECTORIES } }
+  }
+  const sentence = landingSentence(path, landing)
+  return { message: `${message} ${sentence}.`, blockedPath: landing.landing, decisionReason: operation.carriedOutReason(sentence) }
+}
+
+type WriteSafetyLanding = { landing: string; sentence: string; personOnly: boolean }
+
+/**
+ * Lo que la guarda de seguridad de escritura añade cuando hay aterrizaje
+ * (≙ `WGn`): sólo una persona decide si el peligro llega por el enlace —la
+ * grafía pedida sola es segura— o si el enlace saca la escritura del trabajo.
+ */
+function writeSafetyLanding(
+  path: string,
+  resolved: ResolvedPermissionPath,
+  context: PathPermissionContext,
+): WriteSafetyLanding | null {
+  const landing = symlinkLanding(resolved, context)
+  if (landing === null) return null
+  const requestedAloneSafe = checkPathSafetyForAutoEdit(
+    resolved.requested,
+    [resolved.requested],
+    undefined,
+    allowsClaudeConfigForMode(context),
+    context.trustedNetworkDirectories,
+  ).safe
+  return { landing: landing.landing, sentence: landingSentence(path, landing), personOnly: requestedAloneSafe || landing.carriedOut }
+}
+
+/**
+ * Una escritura cuya hoja es un enlace simbólico se niega y se remite al
+ * destino (≙ `Zlt`). Lo aplican las herramientas de escritura sobre la
+ * decisión de `checkWritePermissionForTool` cuando no fue negación.
+ */
+export function denySymlinkLeafWrite(path: string, resolved: ResolvedPermissionPath): PermissionDenyDecision | null {
+  if (!resolved.leafIsSymlink) return null
+  const target = resolved.unresolved ? UNDETERMINED_TARGET : displayPath(resolved.landing)
+  return {
+    behavior: 'deny',
+    message: `Refusing to write ${displayPath(path)}: it is a symbolic link. Write to the link's target path instead: ${target}.`,
+    decisionReason: { type: 'other', reason: 'Write target is a symbolic link' },
+    ...(!resolved.unresolved && { blockedPath: resolved.landing }),
+  }
+}
+
 /**
  * ¿Queda una ruta fuera de los directorios dados? Negación con la ruta
- * bloqueada; null si está dentro o si la ruta interna la permite (≙ `Bs`).
+ * bloqueada —el aterrizaje, si el enlace la saca—; irresoluble, negación
+ * sin más; null si está dentro o si la ruta interna la permite (≙ `kl`).
  */
 export function denyOutsideWorkingDirectories(
   path: string,
-  pathsToCheck: readonly string[],
+  resolved: ResolvedPermissionPath,
   context: PathPermissionContext,
   internalCheck: () => { behavior: string },
   reason: OutsideReason,
   directories: Set<string>,
-): PermissionDecision & { blockedPath?: string } | null {
-  if (isPathInWorkingDirectories(path, context, pathsToCheck, directories) || internalCheck().behavior === 'allow') {
+): PermissionDenyDecision | null {
+  if (resolved.unresolved) {
+    return {
+      behavior: 'deny',
+      message: `${unresolvedTargetReason(path)}; ${reason.why}`,
+      decisionReason: { type: 'other', reason: reason.reason },
+    }
+  }
+  if (isPathInWorkingDirectories(path, context, resolved.spellings, directories) || internalCheck().behavior === 'allow') {
     return null
   }
+  const listed = Array.from(directories).join(', ')
+  const landing = symlinkLanding(resolved, context, directories)
+  const carried = landing !== null && landing.carriedOut ? landing : null
   return {
     behavior: 'deny',
-    message: `${path} is outside ${Array.from(directories).join(', ')}; ${reason.why}`,
+    message: carried
+      ? `${resolvesThroughSymlink(path, carried.landing)}, which is outside ${listed}; ${reason.why}`
+      : `${path} is outside ${listed}; ${reason.why}`,
     decisionReason: { type: 'other', reason: reason.reason },
-    blockedPath: path,
-  } as PermissionDecision & { blockedPath: string }
+    blockedPath: carried ? carried.landing : path,
+  }
 }
 
 /** ¿Alguna capa de settings declara las lecturas fuera bloqueadas? (≙ `d_n`). */
@@ -391,13 +606,13 @@ export function checkNetworkPathRead(
   const automount = (p: string) =>
     (automountRoot(p) !== null || isAutomountMapRoot(p)) && !isInTrustedNetworkDirectory(p, trusted)
   const automountMessage = (p: string) =>
-    `Claude requested permissions to read from ${p}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`
+    `${PRODUCT_NAME} requested permissions to read from ${p}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`
   const AUTOMOUNT_REASON = 'Automount -hosts path detected (defense-in-depth check)'
   const kernelResolved = (p: string) => isKernelResolvedPath(p) && !isInTrustedNetworkDirectory(p, trusted)
   const kernelResolvedTail =
     'which is under /.vol, /.file, /.nofollow or /.resolve (paths the macOS kernel redirects) and could reach a network mount, triggering a DNS lookup and mount to a remote host.'
   const KERNEL_RESOLVED_REASON = 'Kernel-resolved path prefix (/.vol etc.) detected (defense-in-depth check)'
-  const kernelResolvedMessage = `Claude requested permissions to read from ${path}, ${kernelResolvedTail}`
+  const kernelResolvedMessage = `${PRODUCT_NAME} requested permissions to read from ${path}, ${kernelResolvedTail}`
   // La superficie `/Network` (`XT`) es constante `false` en la build de Linux.
   if (automount(path)) return ask(automountMessage(path), AUTOMOUNT_REASON)
   if (kernelResolved(path)) return ask(kernelResolvedMessage, KERNEL_RESOLVED_REASON)
@@ -405,7 +620,7 @@ export function checkNetworkPathRead(
   for (const p of paths) {
     if (isUncPath(p) && !isLocalWslUncPath(p) && !isInTrustedNetworkDirectory(p, trusted)) {
       return ask(
-        `Claude requested permissions to read from ${path}, which appears to be a UNC path that could access network resources.`,
+        `${PRODUCT_NAME} requested permissions to read from ${path}, which appears to be a UNC path that could access network resources.`,
         'UNC path detected (defense-in-depth check)',
       )
     }
@@ -416,19 +631,19 @@ export function checkNetworkPathRead(
     const pattern = input.pattern
     if (typeof pattern === 'string' && isUncPath(pattern) && !isLocalWslUncPath(pattern) && !isInTrustedNetworkDirectory(pattern, trusted)) {
       return ask(
-        `Claude requested permissions to glob ${pattern}, which appears to be a UNC pattern that could access network resources.`,
+        `${PRODUCT_NAME} requested permissions to glob ${pattern}, which appears to be a UNC pattern that could access network resources.`,
         'UNC glob pattern detected (defense-in-depth check)',
       )
     }
     if (typeof pattern === 'string' && automount(pattern)) {
       return ask(
-        `Claude requested permissions to glob ${pattern}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`,
+        `${PRODUCT_NAME} requested permissions to glob ${pattern}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`,
         'Automount -hosts glob pattern detected (defense-in-depth check)',
       )
     }
     if (typeof pattern === 'string' && kernelResolved(pattern)) {
       return ask(
-        `Claude requested permissions to glob ${pattern}, ${kernelResolvedTail}`,
+        `${PRODUCT_NAME} requested permissions to glob ${pattern}, ${kernelResolvedTail}`,
         'Kernel-resolved path prefix (/.vol etc.) glob pattern detected (defense-in-depth check)',
       )
     }
@@ -436,7 +651,7 @@ export function checkNetworkPathRead(
   for (const p of paths) {
     if (isSuspiciousWindowsPath(p, trusted)) {
       return ask(
-        `Claude requested permissions to read from ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
+        `${PRODUCT_NAME} requested permissions to read from ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
         'Path contains suspicious Windows-specific patterns (alternate data streams, short names, long path prefixes, or three or more consecutive dots) that require manual verification',
       )
     }
@@ -449,13 +664,14 @@ export function checkReadPermissionForTool(
   tool: FileTool,
   input: Input,
   context: PathPermissionContext,
-  precomputedPathsToCheck?: readonly string[],
+  precomputed?: ResolvedPermissionPath,
 ): PermissionDecision {
   const path = pathOf(tool, input)
   if (path === undefined) {
-    return { behavior: 'ask', message: `Claude requested permissions to use ${tool.name}, but you haven't granted it yet.` }
+    return { behavior: 'ask', message: `${PRODUCT_NAME} requested permissions to use ${tool.name}, but you haven't granted it yet.` }
   }
-  const paths = precomputedPathsToCheck ?? getPathsForPermissionCheck(path)
+  const resolved = precomputed ?? resolvePathForPermission(path)
+  const paths = resolved.spellings
   let expanded: string | undefined
   const absolute = () => (expanded ??= expandPath(path))
 
@@ -467,7 +683,7 @@ export function checkReadPermissionForTool(
   if (context.restricted || context.blockReadsOutsideWorkingDirectories) {
     const denied = denyOutsideWorkingDirectories(
       path,
-      paths,
+      resolved,
       context,
       () =>
         checkReadableInternalPath(absolute(), input, paths, {
@@ -493,6 +709,8 @@ export function checkReadPermissionForTool(
       }
       return denied
     }
+  } else if (resolved.unresolved) {
+    return denyUnresolvedTarget(READ_OPERATION, path)
   }
 
   const network = checkNetworkPathRead(tool, input, context, paths)
@@ -503,7 +721,7 @@ export function checkReadPermissionForTool(
     if (rule) {
       return {
         behavior: 'ask',
-        message: `Claude requested permissions to read from ${path}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to read from ${path}, but you haven't granted it yet.`,
         decisionReason: { type: 'rule', rule },
       }
     }
@@ -527,7 +745,7 @@ export function checkReadPermissionForTool(
 
   // Poder editar implica poder leer; en plan mode se mide como en default.
   const writeContext = context.mode === 'plan' ? { ...context, mode: 'default' } : context
-  const write = checkWritePermissionForTool(tool, input, writeContext as PathPermissionContext, paths)
+  const write = checkWritePermissionForTool(tool, input, writeContext as PathPermissionContext, resolved)
   if (write.behavior === 'allow') {
     if (write.decisionReason?.type === 'mode' && shadowFires()) recordShadowFired(expandPath(path), 'editImpliesRead', context.mode)
     return write
@@ -551,9 +769,8 @@ export function checkReadPermissionForTool(
 
   return {
     behavior: 'ask',
-    message: `Claude requested permissions to read from ${path}, but you haven't granted it yet.`,
     suggestions: generateSuggestions(path, 'read', context, paths),
-    decisionReason: { type: 'workingDir', reason: 'Path is outside allowed working directories' },
+    ...outsideWorkingDirectoriesAsk(READ_OPERATION, path, resolved, context),
   }
 }
 
@@ -562,13 +779,14 @@ export function checkWritePermissionForTool(
   tool: FileTool,
   input: Input,
   context: PathPermissionContext,
-  precomputedPathsToCheck?: readonly string[],
+  precomputed?: ResolvedPermissionPath,
 ): PermissionDecision {
   const path = pathOf(tool, input)
   if (path === undefined) {
-    return { behavior: 'ask', message: `Claude requested permissions to use ${tool.name}, but you haven't granted it yet.` }
+    return { behavior: 'ask', message: `${PRODUCT_NAME} requested permissions to use ${tool.name}, but you haven't granted it yet.` }
   }
-  const paths = precomputedPathsToCheck ?? getPathsForPermissionCheck(path)
+  const resolved = precomputed ?? resolvePathForPermission(path)
+  const paths = resolved.spellings
 
   for (const p of paths) {
     const rule = matchingRuleForInput(p, context, 'edit', 'deny')
@@ -579,7 +797,7 @@ export function checkWritePermissionForTool(
   if (context.restricted) {
     const denied = denyOutsideWorkingDirectories(
       path,
-      paths,
+      resolved,
       context,
       () => checkEditableInternalPath(absolute, input, paths, { permissionMode: context.mode, restricted: true }),
       RESTRICTED_OUTSIDE,
@@ -597,6 +815,8 @@ export function checkWritePermissionForTool(
   if (paths.some(isHostCredentialsFile)) return HOST_CREDENTIALS_DENIED as PermissionDecision
   if (paths.some(isProfileStorePath)) return PROFILE_STORE_DENIED as PermissionDecision
   if (paths.some(isSettingsReviewStore)) return SETTINGS_REVIEW_DENIED as PermissionDecision
+
+  if (resolved.unresolved) return denyUnresolvedTarget(WRITE_OPERATION, path)
 
   // Una regla de sesión sobre un árbol `.claude` entero se honra antes de la
   // guarda de seguridad, salvo en plan mode o si la ruta cruza otro `.claude`.
@@ -622,7 +842,7 @@ export function checkWritePermissionForTool(
     if (rule) {
       return {
         behavior: 'ask',
-        message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
         decisionReason: { type: 'rule', rule },
       }
     }
@@ -659,14 +879,18 @@ export function checkWritePermissionForTool(
           },
         ]
       : generateSuggestions(path, 'write', context, paths)
+    const landing = writeSafetyLanding(path, resolved, context)
+    const message = landing === null ? safety.message : `${safety.message} ${landing.sentence}.`
     return {
       behavior: 'ask',
-      message: safety.message,
+      message,
       suggestions,
+      ...(landing !== null && { blockedPath: landing.landing }),
       decisionReason: {
         type: 'safetyCheck',
-        reason: safety.message,
+        reason: message,
         ...safetyCheckFields(safety, context.restricted),
+        ...(landing?.personOnly && { classifierApprovable: false }),
       } as PermissionDecision['decisionReason'] & object,
     }
   }
@@ -687,11 +911,17 @@ export function checkWritePermissionForTool(
   const rule = allPathsMatchAllowRule(paths, context, 'edit')
   if (rule) return { behavior: 'allow', updatedInput: input, decisionReason: { type: 'rule', rule } }
 
+  if (inWorkingDir) {
+    return {
+      behavior: 'ask',
+      message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
+      suggestions: generateSuggestions(path, 'write', context, paths),
+    }
+  }
   return {
     behavior: 'ask',
-    message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
     suggestions: generateSuggestions(path, 'write', context, paths),
-    decisionReason: inWorkingDir ? undefined : { type: 'workingDir', reason: 'Path is outside allowed working directories' },
+    ...outsideWorkingDirectoriesAsk(WRITE_OPERATION, path, resolved, context),
   }
 }
 

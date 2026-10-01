@@ -42,13 +42,14 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 # La raiz la declaran `bin/` (`export PYTHONPATH="$THYROX_ROOT/src"`) y
 # `tests/run.sh`, asi que este modulo NO se abre el camino solo. El
 # `sys.path.insert(0, ... parents[1])` que vivia aqui es la deuda de
 # TASK-THYROX-0018, y se paga al tocar el archivo.
-from paths.reach import reach, thyrox_root
+from paths.reach import (CONSUMER_ROOT_VAR, ReachRootError, consumer_root,
+                         env_value, reach, thyrox_root)
 
 #: El archivo que el lanzador remoto carga. El cwd de la sesion es
 #: `/home/user`, no un clon, asi que este es el unico settings de proyecto que
@@ -79,6 +80,109 @@ def live_settings(root: Path | None = None) -> Path:
 DEFAULT_ADVISOR = "claude-fable-5-1"
 
 
+def _how_to_declare_consumer() -> str:
+    """La frase que todo rehuso del consumidor termina nombrando."""
+    return (f"Declaralo con {CONSUMER_ROOT_VAR}=<raiz del clon> o con "
+            f"--consumer <raiz>.")
+
+
+def _starting_point(start: Path | None) -> Path:
+    """Desde donde se mira el contexto: lo declarado, o el cwd del proceso."""
+    return Path.cwd() if start is None else Path(start)
+
+
+def declared_consumer_candidates() -> tuple[Path, ...]:
+    """Los clones que el localizador declara, resueltos.
+
+    De ahi sale el consumidor cuando nadie lo declara. Sin roster no hay de
+    donde derivarlo y se rehusa diciendo como declararlo: un cero de candidatos
+    que cayera a «ninguno» se leeria igual que «no pude medir».
+    """
+    try:
+        clones = reach()
+    except ReachRootError as error:
+        raise WiringRefused(
+            f"no hay roster del que derivar el consumidor ({error}). "
+            + _how_to_declare_consumer()) from error
+    return tuple(Path(path).resolve() for _, path in sorted(clones.items()))
+
+
+def clone_containing(start: Path, candidates: tuple[Path, ...]) -> Path | None:
+    """El clon dentro del cual esta `start`, o None.
+
+    Es el consumidor que INVOCA: un hook del cliente corre con el cwd en el
+    clon, y un gate se invoca desde cualquier subdirectorio suyo.
+    """
+    here = Path(start).resolve()
+    return next((clone for clone in candidates
+                 if here == clone or clone in here.parents), None)
+
+
+def is_sole_candidate(candidates: tuple[Path, ...]) -> bool:
+    """Un solo clon declarado no es ambiguo: es el consumidor."""
+    return len(candidates) == 1
+
+
+def contextual_consumer(candidates: tuple[Path, ...],
+                        start: Path | None = None) -> Path | None:
+    """El consumidor que el contexto fija SIN ambiguedad, o None.
+
+    Dos formas, en este orden: el clon que contiene el punto de partida, y el
+    unico clon declarado. `/home/user` —el cwd del lanzador remoto— no esta
+    dentro de ningun clon y lleva `.claude/`, asi que el ascenso por marcador
+    de `reach.consumer_root` lo tomaria por consumidor; aqui no es candidato
+    porque el roster no lo lista.
+    """
+    containing = clone_containing(_starting_point(start), candidates)
+    if containing is not None:
+        return containing
+    if is_sole_candidate(candidates):
+        return candidates[0]
+    return None
+
+
+def _consumer_refusal(candidates: tuple[Path, ...], start: Path | None) -> str:
+    listed = ", ".join(str(candidate) for candidate in candidates) or "ninguno"
+    return (f"no se pudo resolver el consumidor: {_starting_point(start)} no "
+            f"esta dentro de ningun clon declarado y el localizador declara "
+            f"{len(candidates)} ({listed}), asi que no hay uno solo que tomar. "
+            + _how_to_declare_consumer()
+            + " NO se adivina: el hogar del lanzador tambien lleva .claude/ "
+              "y no es un consumidor.")
+
+
+def resolve_consumer(declared: str | Path | None = None,
+                     start: Path | None = None) -> Path:
+    """El clon consumidor: explicito, declarado, del contexto, o rehuso.
+
+    Decision del ejecutor 2026-09-30 (TASK-THYROX-0261): ningun consumidor
+    escrito a mano en el proveedor. La cadena, y por que cada peldano:
+
+    1. **explicito** (`consumer=`, `--consumer`): se usa tal cual.
+    2. **`THYROX_CONSUMER`** —la variable de `reach`, no una segunda que
+       pueda divergir—, resuelta por `reach.consumer_root`, que aplica sus
+       clausulas estrictas si estan encendidas.
+    3. **el contexto**, si es unico (`contextual_consumer`).
+    4. **rehuso** que nombra la variable y la opcion. Antes se caia a
+       `<padre>/kaupamex-docs`: dominio del producto dentro del proveedor, y
+       un cableado que apuntaba a un clon que podia no existir.
+
+    Es la cadena que el ejecutable de referencia aplica a su directorio de
+    proyecto (2.1.283, `CLAUDE_PROJECT_DIR: Ho() ?? Er()`): el declarado, si
+    no el de la sesion, y sin sesion `NoProjectDirectoryError` — nunca un
+    hermano fijo.
+    """
+    if declared:
+        return Path(declared)
+    if env_value(CONSUMER_ROOT_VAR):
+        return consumer_root()
+    candidates = declared_consumer_candidates()
+    contextual = contextual_consumer(candidates, start)
+    if contextual is None:
+        raise WiringRefused(_consumer_refusal(candidates, start))
+    return contextual
+
+
 def declared_wiring(root: Path | None = None,
                     consumer: str | Path | None = None,
                     advisor: str | None = None) -> dict:
@@ -92,18 +196,16 @@ def declared_wiring(root: Path | None = None,
     cuenta. Eso es lo que dejo DOS cableados contradictorios en el arbol.
     """
     base = Path(root) if root else Path(thyrox_root())
-    # El literal `kaupamex-docs` sortea al localizador, que existe justamente
-    # para derivar el prefijo del clon (`reach.derive_clone_prefix`). Es dominio
-    # del producto dentro del proveedor y su barrido es la tarea #249; aqui
-    # queda como DEFAULT porque `install()` corre sin argumentos, y lo gana
-    # cualquier `consumer=` que el consumidor declare.
-    consumer = Path(consumer) if consumer else base.parent / "kaupamex-docs"
+    # Sin default en el proveedor: `resolve_consumer` lo toma explicito, de
+    # `THYROX_CONSUMER` o del contexto, y rehusa ANTES de componer una sola
+    # ruta si no puede (TASK-THYROX-0261).
+    consumer_dir = resolve_consumer(consumer)
 
     def cmd(command: str, timeout: int | None = None) -> dict:
-        entrada = {"type": "command", "command": command}
+        entry: dict[str, Any] = {"type": "command", "command": command}
         if timeout is not None:
-            entrada["timeout"] = timeout
-        return entrada
+            entry["timeout"] = timeout
+        return entry
 
     # EL CABLEADO APUNTA AL PRODUCTOR. Antes nombraba los tres envoltorios de
     # `kaupamex-docs/.claude/hooks/`, que era verdad cuando el mecanismo vivia
@@ -121,17 +223,27 @@ def declared_wiring(root: Path | None = None,
     #   register_session  0 — el mecanismo ya lee AGENT_STORE_CLAUDE_DIR (:713)
     #   measure_delta     --repo <n>=<ruta> (de `reach`) y --results-dir
     #   save_result       --log-dir
-    agentes = f"{base}/src/agents"
-    resultados = f"{consumer}/.claude/agent-results"
-    repos = " ".join(f"--repo {nombre}={ruta}"
-                     for nombre, ruta in sorted(reach().items()))
-    delta = f"python3 {agentes}/measure_delta.py"
-    registro = f"python3 {agentes}/register_session.py"
+    #
+    # Todo comando Python va por su envoltorio de `bin/`, nunca por `python3
+    # <ruta>.py` directo. H-THYROX-268: `declared_wiring` invocaba el `.py` sin
+    # `PYTHONPATH`, y bajo el entorno del cliente —que no lo declara— eso
+    # muere con `ModuleNotFoundError` (`agents`/`hooks`) en cuanto el modulo
+    # importa otro paquete del arbol. El envoltorio resuelve `THYROX_ROOT`, el
+    # interprete del proveedor y `PYTHONPATH` por si mismo
+    # (`src/session/generate_bin.py`), asi que invocarlo por su nombre corto
+    # es correcto pase lo que pase con las importaciones internas del modulo.
+    agents_dir = f"{base}/src/agents"
+    binroot = f"{base}/bin"
+    results_dir = f"{consumer_dir}/.claude/agent-results"
+    repo_flags = " ".join(f"--repo {name}={path}"
+                     for name, path in sorted(reach().items()))
+    delta = f"bash {binroot}/measure_delta"
+    registration = f"bash {binroot}/register_session"
     return {
         "hooks": {
             "SubagentStart": [{"hooks": [
-                cmd(f"{delta} --start {repos} --results-dir {resultados}"),
-                cmd(f"{registro} --start"),
+                cmd(f"{delta} --start {repo_flags} --results-dir {results_dir}"),
+                cmd(f"{registration} --start"),
             ]}],
             # Tras compactar, el estado de trabajo (clones sin publicar,
             # trabajos del ledger sin recoger) vuelve al modelo por aqui y no
@@ -141,37 +253,47 @@ def declared_wiring(root: Path | None = None,
             # aqui seria otra fuente de verdad del hogar.
             "SessionStart": [{
                 "matcher": "compact",
-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
-                              f"{base}/src/hooks/compact_context.py "
-                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
+                # Por su envoltorio de `bin/` (H-THYROX-268): sin él, y sin el
+                # `PYTHONPATH` que este comando antes anteponia a mano, el
+                # `.py` muere por `ModuleNotFoundError` bajo el entorno del
+                # cliente, que no lo declara.
+                "hooks": [cmd(f"bash {binroot}/compact_context "
+                              + " ".join(f"--root {path}" for _, path in sorted(reach().items())),
                               timeout=20)],
+            }, {
+                # Un pool que muere no llega a su `sweep`: sus worktrees —cada
+                # uno una copia del árbol— quedan en disco para la sesión
+                # siguiente. Al arrancar se retiran los de pools sin dueño vivo,
+                # y lo que dejaron sin entregar se salva como parche.
+                "matcher": "startup",
+                "hooks": [cmd(f"bash {base}/bin/item_worktree sweep-orphans {repo}",
+                              timeout=120)
+                          for repo in dict.fromkeys([str(base), *(str(path) for _, path in sorted(reach().items()))])],
             }],
             "PreModelSwitch": [{"hooks": [
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
                     timeout=10),
             ]}],
-            # Los diez detectores de `pretooluse_dispatch.py` —comando largo en
-            # primer plano, despacho a agente de trabajo determinista, recorrido
-            # sin cota, herramienta dedicada donde bastaba Bash…— existian y
-            # este cableado NO los declaraba: ninguna sesion podia dispararlos.
-            # Medido 2026-09-24 con los dos en la mano: `declared_wiring()` sin
-            # `PreToolUse`, y el aviso de comando largo nunca salio en una
-            # sesion que corrio un typecheck de cinco minutos en primer plano.
-            # El matcher nombra las herramientas que algun detector mide; el
-            # despachador descarta en proceso lo que no le toca.
+            # El preflight de cada `tool_use`: sin esta entrada, ningun
+            # detector de `tool_use_preflight.py` puede dispararse en una
+            # sesion. El matcher nombra las herramientas que algun detector
+            # mide; el preflight descarta en proceso lo que no le toca.
             "PreToolUse": [{
                 "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
-                # El PYTHONPATH va en el comando: el hook corre desde el cwd de
-                # la sesion y sin el entorno del corredor, y sin el cuatro de
-                # los diecisiete detectores no cargaban (su suite lo mide).
-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
-                              f"{base}/src/hooks/pretooluse_dispatch.py",
+                # El envoltorio de `bin/` resuelve el `PYTHONPATH`: el hook
+                # corre desde el cwd de la sesion y sin el entorno del
+                # corredor, y sin el cuatro de los diecisiete detectores no
+                # cargaban (su suite lo mide). Antes este comando anteponia
+                # `PYTHONPATH={base}/src` a mano; el mismo defecto que dejaba
+                # sin PYTHONPATH a `task_lifecycle`/`register_session` podia
+                # repetirse aqui por el mismo camino (H-THYROX-268).
+                "hooks": [cmd(f"bash {binroot}/tool_use_preflight",
                               timeout=10)],
             }],
             "SubagentStop": [{"hooks": [
-                cmd(f"node {agentes}/save_result.mjs --log-dir {resultados}"),
-                cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
-                cmd(f"{registro} --stop"),
+                cmd(f"node {agents_dir}/save_result.mjs --log-dir {results_dir}"),
+                cmd(f"{delta} --stop {repo_flags} --results-dir {results_dir}"),
+                cmd(f"{registration} --stop"),
             ]}],
             # El ciclo de vida de una tarjeta. Son eventos DEDICADOS del
             # cliente —no un `PostToolUse` con matcher— y su payload trae
@@ -183,11 +305,18 @@ def declared_wiring(root: Path | None = None,
             # Sin esto, `mint_created_card` tenia CERO invocadores de
             # produccion y la cita durable se acuñaba a mano y a posteriori,
             # que es justo lo que TASK-DOCS-0404 existe para cerrar.
+            #
+            # Por su envoltorio de `bin/`, no por `python3 <ruta>.py`: el
+            # modulo importa `agents.agents_paths` y `task.board_sync`, y
+            # sin `PYTHONPATH` esas importaciones mueren con
+            # `ModuleNotFoundError` en cuanto el cliente lo invoca por ruta
+            # (H-THYROX-268 — 289 tarjetas y 26 subagentes reconciliados a
+            # mano en la sesion que lo destapo).
             "TaskCreated": [{"hooks": [
-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+                cmd(f"bash {binroot}/task_lifecycle"),
             ]}],
             "TaskCompleted": [{"hooks": [
-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+                cmd(f"bash {binroot}/task_lifecycle"),
             ]}],
         },
         "advisorModel": advisor or DEFAULT_ADVISOR,
@@ -479,7 +608,9 @@ def _bases() -> dict:
     """Las raices de los tres prefijos; `None` cuando el entorno no la declara."""
     return {
         "home": os.path.expanduser("~"),
+        # thyrox-rename: keep — marcador de los settings del anfitrión
         "project": os.environ.get("CLAUDE_PROJECT_DIR"),
+        # thyrox-rename: keep — marcador de los settings del anfitrión
         "plugin": os.environ.get("CLAUDE_PLUGIN_ROOT"),
     }
 
@@ -619,9 +750,8 @@ def wiring_drift(live: dict, declared: dict) -> dict:
     incluye los eventos que difieren; sin deriva, ``{}``.
 
     *Métrica:* cadenas de ``command`` por evento, comparadas como conjuntos.
-    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Medido 2026-09-07 sobre
-    el archivo vivo: ``SubagentStart`` y ``SubagentStop`` dan **cero** literales
-    en común con lo declarado, y las dos formas resuelven al MISMO destino — el
+    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Sobre un archivo vivo,
+    ``SubagentStart`` y ``SubagentStop`` pueden dar **cero** literales en común con lo declarado, y las dos formas resuelven al MISMO destino — el
     stub compone ``reach.root("docs")/.claude/agent-results`` donde el declarado
     escribe ``--results-dir`` con esa misma ruta, y ninguna de las dos pasa
     destino al store. Por eso un rojo de este instrumento autoriza a concluir
@@ -643,6 +773,108 @@ def wiring_drift(live: dict, declared: dict) -> dict:
     return deriva
 
 
+def _print_refusal(error: Exception) -> int:
+    """El rehuso, por stderr y con el codigo que las dos ramas comparten."""
+    print(f"REHUSA — {error}", file=sys.stderr)
+    return 2
+
+
+def _live_command_count(live_wiring: dict) -> int:
+    return sum(len(group.get("hooks", []))
+               for groups in (live_wiring.get("hooks") or {}).values()
+               for group in groups)
+
+
+def _print_drift(drift: dict) -> None:
+    """La deriva se publica AQUI y no en un host de surfacing, porque ese host
+    no existe: `session-start.sh` tiene cero invocadores ejecutables y el
+    settings vivo no declara `SessionStart`. Inventarle uno seria afirmar una
+    superficie sin medirla; publicarla en el comando que ya se corre no.
+    """
+    if not drift:
+        print("  sin deriva: los dos cableados coinciden literalmente por evento")
+    for event, sides in drift.items():
+        print(f"  deriva en {event}")
+        for command in sides["only_live"]:
+            print(f"    solo vivo      {command}")
+        for command in sides["only_declared"]:
+            print(f"    solo declarado {command}")
+
+
+def _install_command(args, live: Path) -> int:
+    """La rama `--write`: instala lo declarado, o rehusa sin tocar nada."""
+    import datetime  # noqa: PLC0415 - sello del respaldo
+
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S")
+    try:
+        declared = declared_wiring(consumer=args.consumer)
+        owned = OWNED_KEYS
+        if args.hooks_only:
+            # Solo lo que no enfria la cache: quien opera decide el advisor, y
+            # cambiarlo a mitad de sesion reescribe el contexto entero
+            # (H-DOCS-1012).
+            declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
+        record = install(
+            live, declared, BackgroundBackup(), stamp, owned=owned,
+            backups=args.backups,
+            allow_cache_key_change=args.allow_cache_key_change)
+    except WiringRefused as error:
+        return _print_refusal(error)
+    if record["unchanged"]:
+        # Se distingue de «instalado» a proposito: son estados distintos del
+        # mundo, y colapsarlos deja sin saber si hubo evento de settings.
+        print(f"sin cambio en {record['live']}")
+        print("  lo declarado ya estaba vivo; no se escribio, no se "
+              "respaldo, y no hubo evento de recarga de settings")
+        return 0
+    print(f"instalado en {record['live']}")
+    print(f"  respaldo   {record['backup'] or '(no existia; nada que respaldar)'}")
+    print(f"  escritas   {', '.join(record['written']) or '(ninguna)'}")
+    print(f"  conservadas {', '.join(record['preserved']) or '(ninguna)'}")
+    if record["cache_key_delta"]:
+        print("  AVISO: cambio de valor en "
+              f"{', '.join(record['cache_key_delta'])} — es campo de la "
+              "clave de la cache. Con contexto caliente se reescribe entero.")
+    else:
+        print("  cache-safe: ningun campo de la clave cambio de valor")
+    return 0
+
+
+def _measure_command(args, live: Path) -> int:
+    """La rama de medicion: rotos en lo vivo y en lo declarado, y su deriva."""
+    if not live.exists():
+        # REHUSA en vez de publicar un cero. Un «0 rotos» sobre un archivo que
+        # no se encontro no se distingue de un «0 rotos» sobre uno sano, y esa
+        # confusion es el defecto que este modulo existe para no repetir.
+        print(f"ERROR — no se encuentra el cableado vivo en {live}. "
+              f"Declaralo con {LIVE_SETTINGS_VAR}. NO se emite conteo: un 0 "
+              f"aqui seria un verde falso.", file=sys.stderr)
+        return 2
+    try:
+        declared = declared_wiring(consumer=args.consumer)
+    except WiringRefused as error:
+        return _print_refusal(error)
+    live_wiring = json.loads(live.read_text())
+    broken_live = broken_targets(live_wiring)
+    broken_declared = broken_targets(declared)
+
+    for broken in broken_live:
+        print(f"  roto en la copia viva  {broken['event']:16} {broken['path']}", file=sys.stderr)
+    for broken in broken_declared:
+        print(f"  roto en lo declarado   {broken['event']:16} {broken['path']}", file=sys.stderr)
+    print(f"{len(broken_live)} roto(s) en la copia viva sobre "
+          f"{_live_command_count(live_wiring)} comandos ({live}) · "
+          f"{len(broken_declared)} en lo que thyrox declara")
+
+    # La deriva NO entra al codigo de salida a proposito. El codigo lo gobierna
+    # `broken_targets` de lo declarado, que mide ALCANZABILIDAD; la deriva mide
+    # COINCIDENCIA LITERAL, y su propio docstring declara que un rojo suyo
+    # autoriza a decir «no son la misma cadena» y nunca «la instalacion esta
+    # atrasada» — un stub que delega en el mismo mecanismo deriva sin estar mal.
+    _print_drift(wiring_drift(live_wiring, declared))
+    return 1 if broken_declared else 0
+
+
 def main() -> int:
     import argparse  # noqa: PLC0415 - superficie de linea de comandos
 
@@ -650,6 +882,11 @@ def main() -> int:
         description="Mide el cableado vivo, o instala el que thyrox declara.")
     parser.add_argument("--write", action="store_true",
                         help="instala: respalda en segundo plano y fusiona")
+    parser.add_argument("--consumer", default=None,
+                        help="la raiz del clon consumidor contra el que se "
+                             f"resuelven las rutas; sin ella, {CONSUMER_ROOT_VAR}, "
+                             "y si no el contexto (el clon que contiene el cwd, "
+                             "o el unico declarado). Ambiguo o ausente: rehusa")
     parser.add_argument("--backups", default=None,
                         help="donde dejar el respaldo (por defecto, el estado)")
     parser.add_argument("--allow-cache-key-change", action="store_true",
@@ -661,88 +898,10 @@ def main() -> int:
                              "de la cache: deja `advisorModel` como este")
     args = parser.parse_args()
 
-    ruta = live_settings()
-
+    live = live_settings()
     if args.write:
-        import datetime  # noqa: PLC0415 - sello del respaldo
-
-        stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
-            "%Y%m%dT%H%M%S")
-        try:
-            declared = declared_wiring()
-            owned = OWNED_KEYS
-            if args.hooks_only:
-                # Solo lo que no enfria la cache: quien opera decide el
-                # advisor, y cambiarlo a mitad de sesion reescribe el
-                # contexto entero (H-DOCS-1012).
-                declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
-            record = install(
-                ruta, declared, BackgroundBackup(), stamp, owned=owned,
-                backups=args.backups,
-                allow_cache_key_change=args.allow_cache_key_change)
-        except WiringRefused as e:
-            print(f"REHUSA — {e}", file=sys.stderr)
-            return 2
-        if record["unchanged"]:
-            # Se distingue de «instalado» a proposito: son estados distintos del
-            # mundo, y colapsarlos deja sin saber si hubo evento de settings.
-            print(f"sin cambio en {record['live']}")
-            print("  lo declarado ya estaba vivo; no se escribio, no se "
-                  "respaldo, y no hubo evento de recarga de settings")
-            return 0
-        print(f"instalado en {record['live']}")
-        print(f"  respaldo   {record['backup'] or '(no existia; nada que respaldar)'}")
-        print(f"  escritas   {', '.join(record['written']) or '(ninguna)'}")
-        print(f"  conservadas {', '.join(record['preserved']) or '(ninguna)'}")
-        if record["cache_key_delta"]:
-            print("  AVISO: cambio de valor en "
-                  f"{', '.join(record['cache_key_delta'])} — es campo de la "
-                  "clave de la cache. Con contexto caliente se reescribe entero.")
-        else:
-            print("  cache-safe: ningun campo de la clave cambio de valor")
-        return 0
-
-    if not ruta.exists():
-        # REHUSA en vez de publicar un cero. Un «0 rotos» sobre un archivo que
-        # no se encontro no se distingue de un «0 rotos» sobre uno sano, y esa
-        # confusion es el defecto que este modulo existe para no repetir.
-        print(f"ERROR — no se encuentra el cableado vivo en {ruta}. "
-              f"Declaralo con {LIVE_SETTINGS_VAR}. NO se emite conteo: un 0 "
-              f"aqui seria un verde falso.", file=sys.stderr)
-        return 2
-    viva = json.loads(ruta.read_text())
-    rotos_vivos = broken_targets(viva)
-    rotos_declarados = broken_targets(declared_wiring())
-    n_viva = sum(len(g.get("hooks", [])) for gs in (viva.get("hooks") or {}).values() for g in gs)
-
-    for r in rotos_vivos:
-        print(f"  roto en la copia viva  {r['event']:16} {r['path']}", file=sys.stderr)
-    for r in rotos_declarados:
-        print(f"  roto en lo declarado   {r['event']:16} {r['path']}", file=sys.stderr)
-    print(f"{len(rotos_vivos)} roto(s) en la copia viva sobre {n_viva} comandos "
-          f"({ruta}) · {len(rotos_declarados)} en lo que thyrox declara")
-
-    # La deriva se publica AQUI y no en un host de surfacing, porque ese host
-    # no existe: `session-start.sh` tiene cero invocadores ejecutables y el
-    # settings vivo no declara `SessionStart`. Inventarle uno seria afirmar una
-    # superficie sin medirla; publicarla en el comando que ya se corre no.
-    #
-    # Y NO entra al codigo de salida a proposito. El codigo lo gobierna
-    # `broken_targets` de lo declarado, que mide ALCANZABILIDAD; la deriva mide
-    # COINCIDENCIA LITERAL, y su propio docstring declara que un rojo suyo
-    # autoriza a decir «no son la misma cadena» y nunca «la instalacion esta
-    # atrasada» — un stub que delega en el mismo mecanismo deriva sin estar mal.
-    deriva = wiring_drift(viva, declared_wiring())
-    if not deriva:
-        print("  sin deriva: los dos cableados coinciden literalmente por evento")
-    for evento, lados in deriva.items():
-        print(f"  deriva en {evento}")
-        for c in lados["only_live"]:
-            print(f"    solo vivo      {c}")
-        for c in lados["only_declared"]:
-            print(f"    solo declarado {c}")
-
-    return 1 if rotos_declarados else 0
+        return _install_command(args, live)
+    return _measure_command(args, live)
 
 
 if __name__ == "__main__":

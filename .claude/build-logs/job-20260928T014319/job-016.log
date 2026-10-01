@@ -1,0 +1,13 @@
+== caso 0: el registro de prosa NO cae en el arbol del consumidor ==
+== caso 1: la escritura falla de verdad y el evento se encola ==
+== caso 2: reparado el destino, el drenado reenvia y la fila aparece ==
+== caso 3: CONTROL ANULADO — sin carrete, el dato se pierde ==
+== caso 4: un evento irreenviable se abandona al agotar los intentos ==
+== caso 5: el carrete no crece sin fin ==
+== caso 6: una escritura que funciona NO encola nada ==
+== caso 7: CONTROL ANULADO — el hook real encola su propio fallo ==
+== caso 8: una linea corrupta no tumba el drenado ==
+== caso 9: CONTROL ANULADO — el hook de CIERRE DE TURNO tambien drena ==
+
+OK: 10 de 10 casos en verde
+EXIT=0

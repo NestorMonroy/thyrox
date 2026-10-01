@@ -2,7 +2,7 @@
  * V7 §8.12 — diag-log: `logForDiagnosticsNoPII` + `withDiagnosticsTiming`.
  *
  * Moved from src/utils/diagLogs.ts. Writes diagnostic entries (no PII) to
- * a file pointed to by `$CLAUDE_CODE_DIAGNOSTICS_FILE`. Used by the
+ * a file pointed to by `$THYROX_CODE_DIAGNOSTICS_FILE`. Used by the
  * environment manager to monitor container-side issues.
  */
 
@@ -58,7 +58,7 @@ export function logForDiagnosticsNoPII(
 }
 
 function getDiagnosticLogFile(): string | undefined {
-  return process.env.CLAUDE_CODE_DIAGNOSTICS_FILE
+  return process.env.THYROX_CODE_DIAGNOSTICS_FILE
 }
 
 /**

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash tests/lib/test-infrastructure-desired.sh; echo SUITE_EXIT=$?", "started_at": "2026-10-01T15:23:07+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:23:09+00:00", "duration_seconds": 2.741053}

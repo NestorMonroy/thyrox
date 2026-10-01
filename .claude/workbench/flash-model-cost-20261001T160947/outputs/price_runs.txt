@@ -1,0 +1,17 @@
+columnas: input_tokens, cache_creation_tokens, cache_read_tokens, output_tokens
+n = 505 agentes medidos de 1942 en el store
+tokens totales: fallo 293,175,154 · acierto de caché 17,145,592,690 · salida 7,239,839
+fracción de caché sobre la entrada: 0.9832 · salida sobre todo: 0.0004
+agente mediano: fallo 490,446 · acierto 22,115,099 · salida 4,491
+
+modelo | caché | USD agente mediano | USD medio por agente | USD de los n agentes
+qwen3.7-flash (min) | sin descuento | 0.6788 | 1.0378 | 524.10
+qwen3.5-flash | sin descuento | 2.2624 | 3.4590 | 1746.77
+qwen3.8-flash | sin descuento | 3.3929 | 5.1866 | 2619.22
+deepseek-v4.1-flash off-peak | publicado | 0.1426 | 0.1975 | 99.76
+qwen3.7-flash (max) | sin descuento | 4.5247 | 6.9179 | 3493.55
+deepseek-v4.1-flash peak | publicado | 0.2852 | 0.3951 | 199.51
+deepseek-v4-pro | sin descuento | 14.9286 | 22.8196 | 11523.92
+qwen3.8-max | sin descuento | 45.2380 | 69.1504 | 34920.97
+
+precio de caché de qwen3.8-flash que empata con deepseek off-peak: 0.0031 USD/M (2.0% de su entrada)

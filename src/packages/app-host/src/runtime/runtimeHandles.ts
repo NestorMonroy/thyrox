@@ -26,6 +26,7 @@ import { getEmptyToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type { AppState } from './appStateCompatShim.js'
 import { getDefaultAppState } from './appStateCompatShim.js'
 import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { createStore, type Store } from '@thyrox/repl/stateStore.js'
 import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import type { LoadedPlugin, PluginError } from '@thyrox/config/plugin/types'
@@ -162,6 +163,7 @@ export function createRuntimeHandles(
             effort: undefined,
             effectiveModel: null,
           }) as HeadlessStoreParams,
+          onChangeAppState,
         ),
     },
   }

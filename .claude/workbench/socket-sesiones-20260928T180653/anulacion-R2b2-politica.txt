@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+74 |     fastModeUnavailabilityCause(undefined, {}, ctx)
+75 |     expect(seen).toEqual(['pedido', 'default-setting', 'main-loop'])
+76 |   })
+77 | 
+78 |   test('la política de la organización', () => {
+79 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ policyFastMode: false }))).toBe('preference')
+                                                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "preference"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:79:92)
+(fail) fastModeUnavailabilityCause (gL) > la política de la organización [0.22ms]
+148 |     expect(logged).toEqual(['Fast mode unavailable: Checking fast mode availability'])
+149 |   })
+150 | 
+151 |   test('Bk exige el modo rápido habilitado y ninguna causa', () => {
+152 |     expect(isFastModeAvailableFor(undefined, context())).toBe(true)
+153 |     expect(isFastModeAvailableFor(undefined, context({ policyFastMode: false }))).toBe(false)
+                                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:153:83)
+(fail) fastModeUnavailableMessage (D5) e isFastModeAvailableFor (Bk) > Bk exige el modo rápido habilitado y ninguna causa [0.11ms]
+
+ 12 pass
+ 2 fail
+ 49 expect() calls
+Ran 14 tests across 1 file. [49.00ms]

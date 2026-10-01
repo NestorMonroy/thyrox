@@ -1,0 +1,1 @@
+src/packages/updater	src/packages/updater/src/__tests__,src/packages/updater/src/nativeInstaller/__tests__	bun test src/packages/updater/src/__tests__ src/packages/updater/src/nativeInstaller/__tests__	0	57	PASS

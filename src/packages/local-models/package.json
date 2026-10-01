@@ -1,0 +1,24 @@
+{
+  "name": "@thyrox/local-models",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Herramientas de los modelos locales (TASK-THYROX-0707): declarar en el catálogo un modelo instalado en el Ollama gestionado y cualificarlo por suite. Habla con Ollama por HTTP y con Podman para localizar el blob GGUF.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/artifact-registry": "0.1.0",
+    "@thyrox/model-artifacts": "0.1.0",
+    "@thyrox/model-scheduling": "0.1.0",
+    "@thyrox/podman-execution": "0.1.0",
+    "@thyrox/shared-state": "0.1.0"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

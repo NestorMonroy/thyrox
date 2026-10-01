@@ -31,7 +31,7 @@ const CCR_API_KEY_PATH = `${CCR_TOKEN_DIR}/.api_key`
 export const CCR_SESSION_INGRESS_TOKEN_PATH = `${CCR_TOKEN_DIR}/.session_ingress_token`
 
 export function maybePersistTokenForSubprocesses(path: string, token: string, tokenName: string): void {
-  if (!isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE'))) return
+  if (!isEnvTruthy(readEnv('THYROX_CODE_REMOTE'))) return
   try {
     mkdirSync(CCR_TOKEN_DIR, { recursive: true, mode: 0o700 })
     writeFileSync(path, token, { encoding: 'utf8', mode: 0o600 })
@@ -112,7 +112,7 @@ function getCredentialFromFd({
 
 export function getOAuthTokenFromFileDescriptor(): string | null {
   return getCredentialFromFd({
-    envVar: 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR',
+    envVar: 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR',
     wellKnownPath: CCR_OAUTH_TOKEN_PATH,
     label: 'OAuth token',
     getCached: () => oauthTokenFdCache,
@@ -128,7 +128,7 @@ export function setOauthTokenFromFd(value: string | null): void {
 
 export function getApiKeyFromFileDescriptor(): string | null {
   return getCredentialFromFd({
-    envVar: 'CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR',
+    envVar: 'THYROX_CODE_API_KEY_FILE_DESCRIPTOR',
     wellKnownPath: CCR_API_KEY_PATH,
     label: 'API key',
     getCached: () => apiKeyFdCache,

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/crossSessionInbound.test.ts:
+13 | 
+14 | describe('describeInvalidLevel (ud)', () => {
+15 |   test('nombra los valores válidos y el recibido; una cadena rara o larga no se reproduce', () => {
+16 |     expect(CROSS_SESSION_INBOUND_LEVELS).toEqual(['accept', 'hold', 'refuse'])
+17 |     expect(describeInvalidLevel('maybe')).toBe('must be one of "accept", "hold", "refuse"; received "maybe"')
+18 |     expect(describeInvalidLevel('with space')).toBe('must be one of "accept", "hold", "refuse"; received "<value>"')
+                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: "must be one of "accept", "hold", "refuse"; received "<value>""
+Received: "must be one of "accept", "hold", "refuse"; received "with space""
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/crossSessionInbound.test.ts:18:48)
+(fail) describeInvalidLevel (ud) > nombra los valores válidos y el recibido; una cadena rara o larga no se reproduce [0.45ms]
+
+ 5 pass
+ 1 fail
+ 18 expect() calls
+Ran 6 tests across 1 file. [195.00ms]

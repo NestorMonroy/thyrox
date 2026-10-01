@@ -56,7 +56,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'service',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -70,7 +71,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -83,7 +85,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -96,7 +99,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 30,
+      idleGraceMs: 30,
+      startupIdleGraceMs: 30,
       countActivity: () => activity,
     })
     wd.probe()
@@ -112,7 +116,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -127,7 +132,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 30,
+      idleGraceMs: 30,
+      startupIdleGraceMs: 30,
       countActivity: () => activity,
     })
     wd.probe()
@@ -154,5 +160,67 @@ describe('setupUpgradeWatchdog', () => {
     const abort = new AbortController()
     const w = setupUpgradeWatchdog(abort)
     expect(() => w.dispose()).not.toThrow()
+  })
+})
+
+describe('setupUpgradeWatchdog — It/Fr fidelity (injected resolveBinaryStat/hasBinaryChanged)', () => {
+  test('a detected change aborts and logs old/new mtime', async () => {
+    const abort = new AbortController()
+    const statSequence = [
+      { target: '/bin/ccb', mtimeMs: 100 },
+      { target: '/bin/ccb', mtimeMs: 200 },
+    ]
+    let call = 0
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => statSequence[Math.min(call++, statSequence.length - 1)]!,
+      hasBinaryChanged: (previous, current) => previous.mtimeMs !== current.mtimeMs,
+    })
+    await new Promise(r => setTimeout(r, 40))
+    expect(abort.signal.aborted).toBe(true)
+    w.dispose()
+  })
+
+  test('an unreadable binary (resolveBinaryStat -> null) never aborts', async () => {
+    const abort = new AbortController()
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => null,
+      hasBinaryChanged: () => true,
+    })
+    await new Promise(r => setTimeout(r, 30))
+    expect(abort.signal.aborted).toBe(false)
+    w.dispose()
+  })
+
+  test('no change (hasBinaryChanged -> false) never aborts', async () => {
+    const abort = new AbortController()
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => ({ target: '/bin/ccb', mtimeMs: 100 }),
+      hasBinaryChanged: () => false,
+    })
+    await new Promise(r => setTimeout(r, 30))
+    expect(abort.signal.aborted).toBe(false)
+    w.dispose()
+  })
+
+  test('dispose() before the initial stat resolves prevents any later abort (disposed guard)', async () => {
+    const abort = new AbortController()
+    const w = setupUpgradeWatchdog(abort, {
+      intervalMs: 5,
+      binaryPath: '/bin/ccb',
+      resolveBinaryStat: async () => {
+        await new Promise(r => setTimeout(r, 10))
+        return { target: '/bin/ccb', mtimeMs: 100 }
+      },
+      hasBinaryChanged: () => true,
+    })
+    w.dispose()
+    await new Promise(r => setTimeout(r, 60))
+    expect(abort.signal.aborted).toBe(false)
   })
 })

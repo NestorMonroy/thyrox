@@ -34,7 +34,7 @@ function requireProviderAdapter(): {
   }
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./internal/adapters.ts')
+  return require('./adapters.ts')
 }
 
 export async function queryModelWithoutStreaming({

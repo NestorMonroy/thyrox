@@ -20,7 +20,7 @@
  *   (`n0`: Bash, PowerShell, Agent, REPL y herramientas de MCP). Este
  *   compilador sólo lee reglas de `Read` y `Edit`, que ese filtro nunca
  *   retira, así que omitirlo no cambia ningún veredicto. La variante
- *   `CLAUDE_CODE_EVAL_CONFINED`, que sí cambia el resultado (el permiso se
+ *   `THYROX_CODE_EVAL_CONFINED`, que sí cambia el resultado (el permiso se
  *   reduce a `cliArg`), está portada.
  * - La resolución del prefijo de un gemelo físico usa
  *   `resolveDeepestExistingAncestorSync` de `@thyrox/storage`; el `uI` del
@@ -48,6 +48,7 @@ import type {
   PermissionRule,
   PermissionRuleSource,
 } from './permissionTypes.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 export type FileToolType = 'edit' | 'read'
 
@@ -114,13 +115,8 @@ function getOriginalCwdDeferred(): string {
   }
 }
 
-function getClaudeConfigHomeDirDeferred(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/env/utils.js') as { getClaudeConfigHomeDir: () => string }).getClaudeConfigHomeDir()
-  } catch {
-    return nodePath.join(homedir(), '.claude')
-  }
+function getConfigHomeDirDeferred(): string {
+  return getConfigHomeDir()
 }
 
 function expandPathDeferred(path: string, baseDir?: string): string {
@@ -388,7 +384,7 @@ function physicalTwinOf(root: string, pattern: string): string | null {
 function rulesForBehavior(context: ToolPermissionContext, behavior: PermissionBehavior): PermissionRule[] {
   switch (behavior) {
     case 'allow':
-      return process.env.CLAUDE_CODE_EVAL_CONFINED
+      return process.env.THYROX_CODE_EVAL_CONFINED
         ? getAllowRules({ ...context, alwaysAllowRules: { cliArg: context.alwaysAllowRules.cliArg } })
         : getAllowRules(context)
     case 'deny':
@@ -434,8 +430,8 @@ export function compileRuleMatchers(
           behavior,
           platform(),
           homedir(),
-          getClaudeConfigHomeDirDeferred(),
-          process.env.CLAUDE_CODE_EVAL_CONFINED ?? '',
+          getConfigHomeDirDeferred(),
+          process.env.THYROX_CODE_EVAL_CONFINED ?? '',
           getOriginalCwdDeferred(),
         ].join('\x00')
       : null

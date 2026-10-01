@@ -164,7 +164,7 @@ export const PushNotificationTool: Tool<InputSchema, Output> = buildTool({
     // user is unambiguously elsewhere; user_present + config_off branches
     // partially short-circuit.
     const forcedRemote =
-      isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode()
+      isEnvTruthy(process.env.THYROX_CODE_REMOTE) || getIsRemoteMode()
     // O — push transport active. K OR an active REPL bridge means we have
     // a way to reach the user's mobile.
     const transportActive = forcedRemote || isReplBridgeActive()

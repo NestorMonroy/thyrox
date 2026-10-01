@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+38 | 
+39 |   test('retire olvida los ids dados; retain conserva sólo los dados; forget el buzón', () => {
+40 |     const ledger = new MailboxWriteLedger()
+41 |     for (const id of ['a', 'b', 'c']) ledger.record('box', entry(id))
+42 |     ledger.retire('box', ['a'])
+43 |     expect(['a', 'b', 'c'].map(id => ledger.wrote('box', entry(id)))).toEqual([false, true, true])
+                                                                           ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   false,
++   true,
+    true,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:43:71)
+(fail) MailboxWriteLedger (i) > retire olvida los ids dados; retain conserva sólo los dados; forget el buzón [0.48ms]
+
+ 9 pass
+ 1 fail
+ 35 expect() calls
+Ran 10 tests across 1 file. [55.00ms]

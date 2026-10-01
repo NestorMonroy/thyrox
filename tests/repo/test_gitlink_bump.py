@@ -97,7 +97,7 @@ def main() -> int:
               drifted.submodule_head == tip,
               f"{drifted.submodule_head} != {tip}")
         check("nombra el hash que el gitlink lleva hoy",
-              drifted.recorded_head and drifted.recorded_head != tip)
+              bool(drifted.recorded_head and drifted.recorded_head != tip))
 
         # Forma 2, la que produce el FALSO VERDE: en kaupamex el trabajo no
         # pasa por el arbol del padre sino por el clon hermano

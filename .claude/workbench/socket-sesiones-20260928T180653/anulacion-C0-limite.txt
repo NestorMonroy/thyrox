@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+50 |   test('sin retain, cada buzón guarda como mucho 2048 y olvida el más antiguo', () => {
+51 |     expect(MAILBOX_LEDGER_LIMIT).toBe(2048)
+52 |     const ledger = new MailboxWriteLedger()
+53 |     for (let index = 0; index <= MAILBOX_LEDGER_LIMIT; index++) ledger.record('box', entry(String(index)))
+54 |     expect(ledger.wrote('box', entry('0'))).toBe(false)
+55 |     expect(ledger.wrote('box', entry('1'))).toBe(true)
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:55:45)
+(fail) MailboxWriteLedger (i) > sin retain, cada buzón guarda como mucho 2048 y olvida el más antiguo [5.71ms]
+
+ 9 pass
+ 1 fail
+ 36 expect() calls
+Ran 10 tests across 1 file. [60.00ms]

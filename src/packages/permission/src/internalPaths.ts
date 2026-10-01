@@ -13,11 +13,9 @@
  *
  * Divergencias declaradas:
  *
- * - (Retirada 2026-09-24.) Esta línea decía que el árbol no tenía
- *   `/pause-memory` ni su indicador y que las dos ramas no podían
- *   dispararse. Era una omisión, no una divergencia: el comando y el
- *   indicador están portados de 2.1.281 (`@thyrox/memory/memoryPause`), y
- *   las dos ramas niegan como en el binario (`vQ` → `qs`, `Mxt` → `Rr`).
+ * - Sin divergencia en la pausa de memoria: el comando y el indicador están
+ *   portados de 2.1.281 (`@thyrox/memory/memoryPause`), y las dos ramas
+ *   niegan como en el binario (`vQ` → `qs`, `Mxt` → `Rr`).
  * - El documento de taller del plan (`<slug>.workshop.md`) exige que el
  *   taller esté disponible (`Ji.isAvailable()`); este árbol no lo tiene y
  *   la rama queda cerrada.
@@ -39,6 +37,9 @@ import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { getPermissionHostBindings } from './host.js'
 import { SENSITIVE_FILES, automountRoot, comparableSegment, isUncPath } from './pathSafety.js'
 import { foldPathCase, trustedSpellingOf } from './ruleMatching.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { INSTRUCTIONS_FILE_NAMES } from '@thyrox/config/env/instructionFiles.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type SafetyDecisionReason = {
   type: 'safetyCheck'
@@ -91,7 +92,7 @@ export const HOST_CREDENTIALS_DENIED: InternalPathDecision = {
 export const SEED_ADMIN_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
-    '~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by Claude Code; it cannot be written directly',
+    `~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by ${PRODUCT_NAME}; it cannot be written directly`,
   decisionReason: {
     type: 'safetyCheck',
     reason: 'seed-admin git configuration is a code-execution surface for the upload',
@@ -111,7 +112,7 @@ export const PROFILE_STORE_DENIED: InternalPathDecision = {
 export const SETTINGS_REVIEW_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
-    'Staged Claude Code settings changes are the owner’s to review in /settings-review; the review store cannot be written directly',
+    `Staged ${PRODUCT_NAME} settings changes are the owner’s to review in /settings-review; the review store cannot be written directly`,
   decisionReason: {
     type: 'safetyCheck',
     reason: 'settings review store write substitutes a proposal the owner is about to accept',
@@ -172,15 +173,12 @@ function projectRoot(): string {
 }
 
 function claudeConfigHome(): string {
-  return (
-    load<{ getClaudeConfigHomeDir: () => string }>('@thyrox/config/env/utils.js')?.getClaudeConfigHomeDir() ??
-    nodePath.join(homedir(), '.claude').normalize('NFC')
-  )
+  return getConfigHomeDir()
 }
 
 /** La raíz de la memoria remota, o el directorio de configuración (≙ `r2`). */
 function memoryRoot(): string {
-  return process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR || claudeConfigHome()
+  return process.env.THYROX_CODE_REMOTE_MEMORY_DIR || claudeConfigHome()
 }
 
 function projectStorageDir(cwd: string): string {
@@ -249,7 +247,7 @@ function isAtOrUnder(path: string, dirWithSep: string): boolean {
 function resolvedSpellings(dir: string): string[] {
   const hit = workingDirSpellings.get(dir)
   if (hit !== undefined) return hit
-  const spellings = process.env.CLAUDE_CODE_EVAL_CONFINED && dir === originalCwd() ? [dir] : getPathsForPermissionCheck(dir)
+  const spellings = process.env.THYROX_CODE_EVAL_CONFINED && dir === originalCwd() ? [dir] : getPathsForPermissionCheck(dir)
   workingDirSpellings.set(dir, spellings)
   return spellings
 }
@@ -328,8 +326,8 @@ function isSessionScratchpadPath(path: string): boolean {
 
 /** Dentro del `tmp/` del trabajo en segundo plano actual (≙ `js`). */
 function isBackgroundJobTmpPath(path: string): boolean {
-  if (process.env.CLAUDE_CODE_SESSION_KIND !== 'bg') return false
-  const jobDir = process.env.CLAUDE_JOB_DIR
+  if (process.env.THYROX_CODE_SESSION_KIND !== 'bg') return false
+  const jobDir = process.env.THYROX_JOB_DIR
   if (!jobDir) return false
   const jobsRoot = nodePath.join(claudeConfigHome(), 'jobs') + SEP
   const job = normalized(jobDir)
@@ -345,8 +343,8 @@ function agentMemoryRoot(path: string): string | null {
   if (path.startsWith(shared)) return shared
   const project = nodePath.join(currentCwd(), '.claude', 'agent-memory') + SEP
   if (path.startsWith(project)) return project
-  if (process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR) {
-    const remote = nodePath.join(process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR, 'projects') + SEP
+  if (process.env.THYROX_CODE_REMOTE_MEMORY_DIR) {
+    const remote = nodePath.join(process.env.THYROX_CODE_REMOTE_MEMORY_DIR, 'projects') + SEP
     if (path.includes(SEP + 'agent-memory-local' + SEP) && path.startsWith(remote)) return remote
     return null
   }
@@ -405,7 +403,7 @@ export function isUnderAutoMemoryDir(path: string): boolean {
 
 /** La memoria de Cowork redirigida por variable (≙ `sle`). */
 function hasCoworkMemoryOverride(): boolean {
-  return Boolean(process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE)
+  return Boolean(process.env.THYROX_COWORK_MEMORY_PATH_OVERRIDE)
 }
 
 /** El directorio de almacenamiento de este proyecto (≙ `Ou`). */
@@ -430,7 +428,7 @@ export function getBundledSkillsRoot(): string {
 
 /** El archivo de credenciales que el anfitrión declara (≙ `Gr`). */
 export function isHostCredentialsFile(path: string): boolean {
-  const declared = process.env.CLAUDE_CODE_HOST_CREDS_FILE
+  const declared = process.env.THYROX_CODE_HOST_CREDS_FILE
   if (!declared) return false
   const trimmed = declared.replace(getPlatform() === 'windows' ? /[\\/]+$/ : /\/+$/, '') || declared
   const target = foldPathCase(normalized(path))
@@ -461,7 +459,8 @@ export function isSeedAdminPath(path: string): boolean {
 /** El almacén de revisión de settings (≙ `zr`). */
 export function isSettingsReviewStore(path: string): boolean {
   const target = comparableSessionPath(path)
-  const stateDir = nodePath.join(homedir(), '.claude', 'state')
+  // en 2.1.283 el store vive en <config>/state (`Xe(Se(),"state")`, claude_strings.txt), no homedir()/.claude a mano
+  const stateDir = nodePath.join(claudeConfigHome(), 'state')
   return [stateDir, nodePath.join(stateDir, 'settings-review.json')].some(p =>
     getPathsForPermissionCheck(p).some(spelled => comparableSessionPath(spelled) === target),
   )
@@ -713,7 +712,9 @@ export function checkReadableInternalPath(
   const teams = nodePath.join(claudeConfigHome(), 'teams') + SEP
   if (!fenced && isAtOrUnder(file, teams)) return allowed(input, 'Team files are allowed for reading')
   if (options?.readBlockFence && !options.restricted) {
-    if (file === nodePath.join(claudeConfigHome(), 'CLAUDE.md')) return allowed(input, 'The user memory file is allowed for reading')
+    if (INSTRUCTIONS_FILE_NAMES.some(name => file === nodePath.join(claudeConfigHome(), name))) {
+      return allowed(input, 'The user memory file is allowed for reading')
+    }
     for (const kind of ['skills', 'plugins', 'rules', 'agents', 'commands']) {
       if (isAtOrUnder(file, nodePath.join(claudeConfigHome(), kind) + SEP)) {
         return allowed(input, `User ${kind} files are allowed for reading`)

@@ -1,0 +1,14 @@
+== HEAD: los dos signos del aislamiento coinciden en todo agente ==
+  ok    exit 0 sobre 1 directorio(s)
+  ok    --quiet imprime 0 incoherentes
+  ok    declarantes y anunciantes coinciden
+== el gate publica su denominador ==
+  ok    el reporte declara el alcance medido
+== control positivo: SIN MEDIR — ningun arbol reciente tiene los 2 mudos ==
+   (se buscaron 10 commits por clon con `log -S`; el caso NO se da por verde)
+== el contrato declara el criterio (#751) ==
+  ok    nombra cuándo se declara el aislamiento
+  ok    cita la condición del tool Agent
+  ok    declara el pase de consolidación
+
+Resultado: 7 ok, 1 fallas

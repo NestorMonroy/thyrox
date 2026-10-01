@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+73 |     const order: string[] = []
+74 |     unsubscribers.push(onSessionSwitch(sessionId => void order.push(`switch:${sessionId}`)))
+75 |     unsubscribers.push(onOriginalCwdChange(cwd => void order.push(`cwd:${cwd}`)))
+76 |     switchSession(id('r'), 'remote_attach', null, { originalCwd: '/remoto/ré' })
+77 |     expect(getOriginalCwd()).toBe('/remoto/ré')
+78 |     expect(order).toEqual(['switch:r', 'cwd:/remoto/ré'])
+                       ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "switch:r",
+    "cwd:/remoto/ré",
++   "switch:r",
+  ]
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:78:19)
+(fail) switchSession (mh) avisa con el motivo > con originalCwd en las rutas, lo fija y avisa de él después del cambio [1.05ms]
+
+ 7 pass
+ 1 fail
+ 12 expect() calls
+Ran 8 tests across 1 file. [149.00ms]

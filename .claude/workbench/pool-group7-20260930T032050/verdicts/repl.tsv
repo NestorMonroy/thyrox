@@ -1,0 +1,16 @@
+file:line	simbolo del ejecutable	veredicto	prueba
+AutoUpdater.tsx:74	chunk-051q05er.js Or (sin NODE_ENV; dev se decide por installationType)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+AutoUpdater.tsx:75	chunk-051q05er.js Or	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+DevBar.tsx:9	no localizado (literales ANT-ONLY, slow sync, DevBar: 0 hits; barra ant-only eliminada del build externo)	desconocido	sin tocar
+NativeAutoUpdater.tsx:103	chunk-051q05er.js Tr (sin NODE_ENV)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+NativeAutoUpdater.tsx:104	chunk-051q05er.js Tr	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+PackageManagerAutoUpdater.tsx:150	chunk-051q05er.js Kn (sin NODE_ENV)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+PackageManagerAutoUpdater.tsx:151	chunk-051q05er.js Kn	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+diagnostics/desktopDeepLink.ts:15	chunk-c0wpq1sm.js c (isDevMode sin NODE_ENV)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts isDevMode
+diagnostics/desktopDeepLink.ts:19	chunk-c0wpq1sm.js c	fiel	comentario, no rama; texto reescrito
+doctorDiagnostic.ts:92	chunk-panycawb.js se (getCurrentInstallationType sin rama development)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts getCurrentInstallationType
+doctorDiagnostic.ts:156	chunk-panycawb.js oe (getInstallationPath sin rama development)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+hooks/useNotifyAfterTimeout.ts:20	chunk-de3xpxbw.js rW (notificación idle sin NODE_ENV)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts shouldNotify
+hooks/useTypeahead.tsx:618	chunk-de3xpxbw.js bee	fiel	comentario, no rama; retirado con la rama
+hooks/useTypeahead.tsx:624	chunk-de3xpxbw.js bee (b4t se llama sin NODE_ENV; solo Dt())	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)
+interactiveHelpers/interactiveHelpers.tsx:161	chunk-3w4t8w1y.js OVo (solo Le(!1)||IS_DEMO)	portada	src/packages/repl/src/__tests__/nodeEnvBranches.test.ts (guarda de fuente)

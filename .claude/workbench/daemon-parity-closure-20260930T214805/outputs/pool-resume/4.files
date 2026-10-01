@@ -1,0 +1,6 @@
+src/packages/daemon/src/__tests__/bgAdopt.test.ts
+src/packages/daemon/src/__tests__/roster.test.ts
+src/packages/daemon/src/bgAdopt.ts
+src/packages/daemon/src/jobDirectoryCleanup.ts
+src/packages/daemon/src/roster.ts
+src/packages/tool-registry/tsconfig.check.json

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/verify/test_identifier_language*.py; do echo \"== $t\"; PYTHONPATH=src uv run python $t 2>&1 | tail -3; done", "started_at": "2026-09-28T10:19:58+00:00"}

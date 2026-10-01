@@ -1,0 +1,4 @@
+(fail) afinidad por historia (LCP) en el reenvío > sin sesión explícita, una conversación compactada vuelve a su credencial [2.88ms]
+(fail) afinidad por historia (LCP) en el reenvío > el espacio LCP es por clave de acceso [3.20ms]
+ 98 pass
+ 2 fail

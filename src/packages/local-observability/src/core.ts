@@ -13,6 +13,7 @@ import type {
   Span,
   Tracer,
 } from './contracts.js'
+import { recordAction } from './errorStore/errorRecorder.js'
 
 const noOpLogger: Logger = {
   debug: () => {},
@@ -73,6 +74,7 @@ export function getLocalObservability(): LocalObservability {
 }
 
 export function logEvent(name: string, metadata: EventMetadata = {}): void {
+  recordAction(name, metadata)
   observability.logger.event(name, metadata)
 }
 

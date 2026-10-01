@@ -1,0 +1,42 @@
+# Runtime del laboratorio de cuantización: sólo convert_hf_to_gguf.py, gguf-py,
+# llama-quantize, llama-perplexity y llama-simple, con las dependencias de Python que el
+# convertidor declara. Las dos etapas parten de digests fijos, así que la
+# imagen es reproducible; su digest final se registra al construirla.
+#
+# La etapa de compilación es la imagen oficial de llama.cpp; de ella sólo se
+# copian los binarios, sus bibliotecas y el convertidor de la MISMA
+# compilación. La etapa final usa la misma base (Ubuntu 24.04) para que la
+# glibc de los binarios coincida.
+ARG LLAMA_CPP_IMAGE=ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc
+ARG BASE_IMAGE=docker.io/library/ubuntu:24.04
+FROM ${LLAMA_CPP_IMAGE} AS llama
+
+FROM ${BASE_IMAGE}
+# Proxy de salida y su CA, sólo si el anfitrión los da: un ARG no declarado no
+# llega al entorno del RUN.
+ARG HTTPS_PROXY
+ARG https_proxy
+ARG PIP_CERT
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 libssl3t64 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=llama /app/llama-quantize /app/llama-perplexity /app/
+COPY --from=llama /app/libllama-quantize-impl.so /app/libllama-perplexity-impl.so /app/
+COPY --from=llama /app/libllama-common.so.0 /app/libllama.so.0 /app/libggml.so.0 /app/libggml-base.so.0 /app/
+COPY --from=llama /app/libggml-cpu-*.so /app/
+COPY --from=llama /app/convert_hf_to_gguf.py /app/
+COPY --from=llama /app/conversion /app/conversion
+COPY --from=llama /app/gguf-py /app/gguf-py
+# Versiones exactas de la etapa de compilación (pip list sobre su digest).
+RUN python3 -m venv /opt/venv \
+ && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.11.0 \
+ && /opt/venv/bin/pip install --no-cache-dir numpy==2.2.6 sentencepiece==0.2.2 transformers==4.57.6 \
+      protobuf==4.25.9 safetensors==0.8.0 tokenizers==0.22.2 huggingface_hub==0.36.2 regex==2026.9.29 \
+      pyyaml==6.0.3 tqdm==4.70.1 requests==2.32.5 \
+ && /opt/venv/bin/pip install --no-cache-dir --no-deps /app/gguf-py
+# Inferencia mínima de validación dentro del laboratorio: el artefacto se
+# prueba aquí, nunca llamando a un runtime de inferencia por nombre de modelo.
+COPY --from=llama /app/llama-simple /app/
+ENV PATH=/opt/venv/bin:/app:$PATH \
+    LD_LIBRARY_PATH=/app
+WORKDIR /work

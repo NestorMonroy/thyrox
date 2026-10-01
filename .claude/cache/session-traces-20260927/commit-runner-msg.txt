@@ -1,0 +1,18 @@
+Run pool items only with thyrox -p
+
+The executor's directive: thyrox is the only client. Talking to
+Anthropic or any other provider is thyrox's job, through its
+translators and credential selection, not a second client's.
+
+headless-pool no longer lets HEADLESS_POOL_CLAUDE point the items at
+claude -p: declaring it refuses with exit 2 and names
+HEADLESS_POOL_RUNNER, which only declares a test double that speaks the
+thyrox -p contract. Items receive the cache TTL as
+THYROX_CODE_PROMPT_CACHE_TTL alone; the CLAUDE_CODE_ copy had no reader
+left. The list of host credentials the pool strips from an item's
+environment is unchanged.
+
+print.ts, pool_history, the rule and .env.example now call thyrox -p
+the contract and cite the executable's --print mode as its source. The
+Bedrock switch keeps CLAUDE_CODE_USE_BEDROCK because the provider still
+reads that name; both move together in the identifier phase.

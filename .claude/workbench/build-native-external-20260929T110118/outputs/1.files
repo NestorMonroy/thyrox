@@ -1,0 +1,2 @@
+src/typescript/buildJavascript.ts
+tests/typescript/buildJavascript.test.ts

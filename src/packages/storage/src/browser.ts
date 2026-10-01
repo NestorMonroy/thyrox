@@ -19,12 +19,11 @@
  *   `bun test` (no sólo el archivo de test), rompiendo a otros
  *   consumidores reales del `execFile` verdadero
  *   (`getWorktreePathsPortable.ts`, vía git) — medido al intentarlo.
- * - `readEnv` (de `@claude-code-how-works/config/env/utils`) — la de
- *   `./internal/pendingCrossPackageDeps.js` (ya establecida para todo el
- *   paquete).
+ * - `readEnv` (de `@claude-code-how-works/config/env/utils`) — se importa
+ *   del original, `@thyrox/config/env/utils`.
  */
 import { execFile } from 'node:child_process'
-import { readEnv } from './internal/pendingCrossPackageDeps.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 function defaultExecFileNoThrow(
   file: string,

@@ -23,8 +23,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { extractByLiteral, findLiteralSites, parsesClean } from '../src/declaration.ts'
 
-const CORPUS = join(import.meta.dir, '../../../../_references/claude-code-bin/2.1.274/bunfs-root')
-const RATE_LIMIT_CHUNK = join(CORPUS, 'chunk-ayyj05ne.js')
+const CORPUS = join(import.meta.dir, '../../../../_references/claude-code-bin/2.1.283/bunfs-root')
+const RATE_LIMIT_CHUNK = join(CORPUS, 'chunk-csayct82.js')
 const hayCorpus = existsSync(RATE_LIMIT_CHUNK)
 
 describe('sitios de literal — la guarda de texto completo', () => {
@@ -81,7 +81,7 @@ describe('extraccion de la declaracion que contiene el literal', () => {
   })
 })
 
-describe.if(hayCorpus)('contra el corpus REAL de 2.1.274', () => {
+describe.if(hayCorpus)('contra el corpus REAL de 2.1.283', () => {
   const src = readFileSync(RATE_LIMIT_CHUNK, 'utf8')
 
   test('la tabla de ventanas se recupera sin conocer su binding', () => {

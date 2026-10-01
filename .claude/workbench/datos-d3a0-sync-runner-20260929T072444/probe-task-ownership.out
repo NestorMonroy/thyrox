@@ -1,0 +1,30 @@
+== bun-first
+-- tras bun
+  task_highwater: 2 cols
+  tasks: 13 cols
+python: ok
+-- final
+  agent_sessions: 39 cols
+  documents: 8 cols
+  findings_history: 13 cols
+  sqlite_sequence: 2 cols
+  task_highwater: 2 cols
+  tasks: 18 cols
+== python-first
+python: ok
+-- tras python
+  agent_sessions: 39 cols
+  documents: 8 cols
+  findings_history: 13 cols
+  sqlite_sequence: 2 cols
+  tasks: 18 cols
+-- final
+  agent_sessions: 39 cols
+  documents: 8 cols
+  findings_history: 13 cols
+  sqlite_sequence: 2 cols
+  task_highwater: 2 cols
+  tasks: 18 cols
+== observability-first
+observability: ERROR undefined is not an object (evaluating 'row.usage.input_tokens')
+-- final

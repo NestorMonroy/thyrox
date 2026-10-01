@@ -13,7 +13,7 @@ import { STORE_PATH } from '@thyrox/observability/store'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { alterColumns } from '../../../task/schema.ts'
+import { alterColumns, createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { agentTool } from '../src/agent.ts'
 import { taskTools } from '../src/tasks.ts'
 import { readJournal } from '@thyrox/observability/journal'
@@ -211,14 +211,15 @@ describe('la captura nativa en el store (rama B, H-DOCS-1024)', () => {
 })
 
 describe('herramientas de tablero Task* (T-019)', () => {
+  /**
+   * Una base migrada por el dueño del schema (`agent_store.py`), no una copia
+   * del DDL de `tasks` leído del store real: `conBase` sólo VALIDA el ledger
+   * desde DEC-TASK 2026-09-29, así que el fixture tiene que migrar como lo
+   * haría un despliegue real.
+   */
   function tableroTemporal(): string {
     const destino = join(dir(), 'store.sqlite3')
-    const real = new Database(STORE_PATH, { readonly: true })
-    const ddl = real.query("select sql from sqlite_master where type='table' and name='tasks'").get() as { sql: string }
-    real.close()
-    const db = new Database(destino)
-    db.run(ddl.sql)
-    db.close()
+    createMigratedTaskDb(destino)
     return destino
   }
 
@@ -275,9 +276,11 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     return fila.sql
   }
 
-  /** Una base vacía creada por el propio harness, sin copiar nada del store. */
+  /** Una base vacía, migrada por el dueño del schema — nada que copiar del store. */
   function tableroPropio(): string {
-    return join(dir(), 'propio.sqlite3')
+    const p = join(dir(), 'propio.sqlite3')
+    createMigratedTaskDb(p)
+    return p
   }
 
   function util(dbPath: string, nombre: string, sessionId?: string) {
@@ -298,7 +301,7 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     const columnas = (db.query('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
     db.close()
     // El piso es el CREATE del store; las columnas que el store añade por
-    // `ALTER` (`src/task/schema.ts`, «Piso, no contrato») quedan fuera a
+    // `ALTER` (`src/packages/task/schema.ts`, «Piso, no contrato») quedan fuera a
     // propósito y se leen sondeando. El SQL del store real ya las incluye.
     const migradas = new Set(alterColumns())
     const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)]

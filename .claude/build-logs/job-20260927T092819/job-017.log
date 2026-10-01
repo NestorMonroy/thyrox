@@ -1,0 +1,13 @@
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+
+ 288 pass
+ 0 fail
+ 432 expect() calls
+Ran 288 tests across 17 files. [1.62s]
+EXIT=0

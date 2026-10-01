@@ -36,6 +36,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { isEnvTruthy, isRunningOnHomespace } from '@thyrox/config/env/utils'
 import { logError } from '@thyrox/local-observability/logging'
 import { getPlatform } from '@thyrox/config/platform'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Modulo nativo de audio, cargado perezosamente. audio-capture.node
 // enlaza contra CoreAudio.framework + AudioUnit.framework; dlopen es
@@ -292,11 +293,11 @@ export async function requestMicrophonePermission(): Promise<boolean> {
 
 export async function checkRecordingAvailability(): Promise<RecordingAvailability> {
   // Los entornos remotos no tienen microfono local
-  if (isRunningOnHomespace() || isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) {
+  if (isRunningOnHomespace() || isEnvTruthy(process.env.THYROX_CODE_REMOTE)) {
     return {
       available: false,
       reason:
-        'Voice mode requires microphone access, but no audio device is available in this environment.\n\nTo use voice mode, run Claude Code locally instead.',
+        `Voice mode requires microphone access, but no audio device is available in this environment.\n\nTo use voice mode, run ${PRODUCT_NAME} locally instead.`,
     }
   }
 
@@ -316,7 +317,7 @@ export async function checkRecordingAvailability(): Promise<RecordingAvailabilit
   }
 
   const wslNoAudioReason =
-    'Voice mode could not access an audio device in WSL.\n\nWSL2 with WSLg (Windows 11) provides audio via PulseAudio — if you are on Windows 10 or WSL1, run Claude Code in native Windows instead.'
+    `Voice mode could not access an audio device in WSL.\n\nWSL2 with WSLg (Windows 11) provides audio via PulseAudio — if you are on Windows 10 or WSL1, run ${PRODUCT_NAME} in native Windows instead.`
 
   // En Linux (incluido WSL), sondea arecord. hasCommand() es
   // insuficiente: el binario puede existir mientras el open() del

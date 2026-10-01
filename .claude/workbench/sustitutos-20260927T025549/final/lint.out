@@ -1,0 +1,5 @@
+shellcheck: 0 hallazgo(s) (alcance medido: 197 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 569 archivo(s))
+pyright: 1 hallazgo(s) (alcance medido: 569 archivo(s))
+    tests/session/test_pool_history.py:252: reportOptionalSubscript Object of type "None" is not subscriptable
+EXIT=1

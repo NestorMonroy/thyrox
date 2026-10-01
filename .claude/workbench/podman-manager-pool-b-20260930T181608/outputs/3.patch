@@ -1,0 +1,123 @@
+diff --git a/src/packages/provider/src/proxy/__tests__/claudeCliUpstream.test.ts b/src/packages/provider/src/proxy/__tests__/claudeCliUpstream.test.ts
+index bccad848d..408b4c540 100644
+--- a/src/packages/provider/src/proxy/__tests__/claudeCliUpstream.test.ts
++++ b/src/packages/provider/src/proxy/__tests__/claudeCliUpstream.test.ts
+@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
+ import { startProxyServer, type ProxyStartConfig, type RunningProxy } from '../startServer.ts'
+-import { createCliUpstreamForwarder } from '../claudeCli/forwarder.ts'
++import { createCliUpstreamForwarder, unexpectedToolUseMessage } from '../claudeCli/forwarder.ts'
+ import type { ForwardRequest } from '../server.ts'
+ 
+ const KEY = 'sk-local'
+@@ -206,6 +206,38 @@ describe('C5b y C5c: el puente devuelve el tool_use y el tool_result reanuda la
+     expect(((await response.json()) as { error: { message: string } }).error.message).toContain('toolu_ajeno')
+   })
+ 
++  test('un tool_result que el turno vivo no espera es un 400 que nombra lo que sí espera, sin entregar nada a claude', async () => {
++    const dir = logDir()
++    const proxy = proxyWith(dir)
++    const first = await send(proxy, { model: 'local-model', tools: [LS_TOOL], messages: [{ role: 'user', content: 'TOOL' }] })
++    const firstBody = await first.json() as { content: Record<string, unknown>[] }
++    const prefix = [{ role: 'user', content: 'TOOL' }, { role: 'assistant', content: firstBody.content }]
++    const mixed = await send(proxy, {
++      model: 'local-model', tools: [LS_TOOL],
++      messages: [...prefix, { role: 'user', content: [
++        { type: 'tool_result', tool_use_id: 'toolu_fake_1', content: 'a.txt' },
++        { type: 'tool_result', tool_use_id: 'toolu_intruso', content: 'b.txt' },
++      ] }],
++    })
++    expect(mixed.status).toBe(400)
++    const message = ((await mixed.json()) as { error: { message: string } }).error.message
++    expect(message).toContain('toolu_intruso')
++    expect(message).toContain('espera: toolu_fake_1')
++    expect(invocations(dir).some(i => i.phase === 'tool_result_received')).toBe(false)
++
++    const retried = await send(proxy, {
++      model: 'local-model', tools: [LS_TOOL],
++      messages: [...prefix, { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_fake_1', content: 'a.txt' }] }],
++    })
++    expect(retried.status).toBe(200)
++    expect(((await retried.json()) as { content: unknown }).content).toEqual([{ type: 'text', text: 'resultado: a.txt' }])
++  })
++
++  test('el mensaje del tool_use inesperado dice cuando el turno no espera ninguno', () => {
++    expect(unexpectedToolUseMessage('toolu_x', [])).toBe('ninguna llamada suspendida espera el tool_use toolu_x; el turno vivo no espera ninguno')
++    expect(unexpectedToolUseMessage('toolu_x', ['toolu_a', 'toolu_b'])).toBe('ninguna llamada suspendida espera el tool_use toolu_x; el turno vivo espera: toolu_a, toolu_b')
++  })
++
+   test('si el cliente no vuelve antes del plazo, el proceso suspendido termina y el tool_result tardío es 400', async () => {
+     const dir = logDir()
+     const proxy = proxyWith(dir, {}, 150)
+diff --git a/src/packages/provider/src/proxy/claudeCli/forwarder.ts b/src/packages/provider/src/proxy/claudeCli/forwarder.ts
+index c814418ae..a2e0132ef 100644
+--- a/src/packages/provider/src/proxy/claudeCli/forwarder.ts
++++ b/src/packages/provider/src/proxy/claudeCli/forwarder.ts
+@@ -116,6 +116,28 @@ function bridgeContentOf(content: unknown): unknown[] {
+   })
+ }
+ 
++/**
++ * El 400 de un `tool_result` que el turno vivo no espera: nombra también lo
++ * que sí espera, para que el error traiga su evidencia sin log del proxy.
++ */
++export function unexpectedToolUseMessage(unexpectedId: string, awaitingIds: readonly string[]): string {
++  const awaited = awaitingIds.length === 0 ? 'no espera ninguno' : `espera: ${awaitingIds.join(', ')}`
++  return `ninguna llamada suspendida espera el tool_use ${unexpectedId}; el turno vivo ${awaited}`
++}
++
++function toolResultBlocksOf(message: ConversationMessage): ContentBlock[] {
++  return contentBlocksOf(message.content).filter(block => block.type === 'tool_result')
++}
++
++/**
++ * El primer `tool_result` que ninguna llamada suspendida espera. Se mide
++ * antes de entregar nada: una entrega parcial dejaría a claude con parte de
++ * los resultados y al cliente sin forma de reintentar la petición entera.
++ */
++function unexpectedResultOf(turn: RunningTurn, last: ConversationMessage): string | undefined {
++  return toolResultBlocksOf(last).map(block => String(block.tool_use_id)).find(id => !turn.awaiting.has(id))
++}
++
+ function failureCause(turn: RunningTurn, finish: TurnFinish): string {
+   const stderr = turn.process.stderrTail()
+   if (finish.kind === 'result') {
+@@ -189,18 +211,15 @@ export function createCliUpstreamForwarder(config: CliUpstreamForwarderConfig):
+     }
+   }
+ 
+-  /** Entrega cada `tool_result` a la llamada que lo espera; el id que ninguna espera es un error. */
+-  function deliverResults(turn: RunningTurn, last: ConversationMessage): string | undefined {
+-    for (const block of contentBlocksOf(last.content)) {
+-      if (block.type !== 'tool_result') continue
++  /** Entrega cada `tool_result` a la llamada que lo espera; `unexpectedResultOf` ya descartó los que ninguna espera. */
++  function deliverResults(turn: RunningTurn, last: ConversationMessage): void {
++    for (const block of toolResultBlocksOf(last)) {
+       const id = String(block.tool_use_id)
+-      const call: BridgeCall | undefined = turn.awaiting.get(id)
+-      if (!call) return id
++      const call = turn.awaiting.get(id) as BridgeCall
+       turn.awaiting.delete(id)
+       call.deliver({ content: bridgeContentOf(block.content), isError: block.is_error === true })
+     }
+     turn.resetAssistant()
+-    return undefined
+   }
+ 
+   function respond(request: ForwardRequest, response: MessagesResponse): Response {
+@@ -250,11 +269,12 @@ export function createCliUpstreamForwarder(config: CliUpstreamForwarderConfig):
+     let turn: RunningTurn
+     if (located.kind === 'live') {
+       turn = located.turn
+-      const unexpected = deliverResults(turn, last)
++      const unexpected = unexpectedResultOf(turn, last)
+       if (unexpected !== undefined) {
+         registry.hold(turn, upstream.pendingResultTtlMs ?? DEFAULT_PENDING_RESULT_TTL_MS, held => abandon(held, ABANDONED_REASON))
+-        return errorResponse(400, 'invalid_request_error', `ninguna llamada suspendida espera el tool_use ${unexpected}`, request.requestId)
++        return errorResponse(400, 'invalid_request_error', unexpectedToolUseMessage(unexpected, [...turn.awaiting.keys()]), request.requestId)
+       }
++      deliverResults(turn, last)
+     } else {
+       if (located.kind === 'resume') {
+         const suspended = registry.take(located.sessionId)

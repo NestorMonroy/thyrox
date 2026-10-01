@@ -1,10 +1,10 @@
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import type { Command } from '../../runtime.js'
 
 /**
  * `/stop` — terminate this background session, preserving transcript and
  * worktree. Mirrors ant v2.1.131 4656.js (ff3 / Xf3) — only enabled when
- * the REPL is running inside a `--bg` session (CLAUDE_CODE_SESSION_KIND=bg).
+ * the REPL is running inside a `--bg` session (THYROX_CODE_SESSION_KIND=bg).
  *
  * On a regular interactive session this command is hidden (`isEnabled`
  * returns false); on a bg session, calling it persists the worker's
@@ -17,7 +17,7 @@ const stop = {
   name: 'stop',
   description:
     'Stop this background session; transcript and worktree are kept',
-  isEnabled: () => isBgSession(),
+  isEnabled: () => isBackgroundSession(),
   load: () => import('./stop.js'),
 } satisfies Command
 

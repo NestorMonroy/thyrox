@@ -34,25 +34,12 @@
  *    el catch de `processSessionStartHooks`; se nombra y se exporta para
  *    poder probarla aislada del resto de la orquestación.
  *
- * `isBareMode` SÍ es fiel a `@thyrox/config: env/utils.ts` (que existe de
- * verdad en este monorepo) — no se importa cruzando de paquete (mismo
- * criterio que `sessionActivity.ts`/`sessionState.ts`); se reimplementa
- * fiel a esa fuente real: `CLAUDE_CODE_SIMPLE` truthy o `--bare` en
- * `process.argv`. `isEnvTruthy`, que esa fórmula consume, también se
- * duplica aquí en vez de importarse — el shim de este paquete
- * (`./internal/pendingCrossPackageDeps.ts`) no lo exporta.
+ * `isBareMode` e `isEnvTruthy` se importan de `@thyrox/config/env/utils`,
+ * su hogar canónico y un módulo hoja.
  */
 import { randomUUID } from 'node:crypto'
 import { logForDebugging } from './internal/pendingCrossPackageDeps.js'
 import { logError } from './logging.js'
-
-/** Fiel a `@thyrox/config: env/utils.ts::isEnvTruthy` — ver docstring. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
-}
 
 // ---------------------------------------------------------------------------
 // Tipos mínimos — ver docstring del archivo.
@@ -76,6 +63,7 @@ function isEnvTruthy(envVar: string | boolean | undefined): boolean {
  * `agent/compaction/sessionMemoryCompact.ts` publicaba como TS2345.
  */
 import type { HookResultMessage } from '@thyrox/agent/messageShapes'
+import { isBareMode, isEnvTruthy } from '@thyrox/config/env/utils'
 export type { HookResultMessage }
 
 type SessionStartHooksOptions = {
@@ -88,14 +76,6 @@ type SessionStartHooksOptions = {
 // ---------------------------------------------------------------------------
 // Sustitutos — ver docstring del archivo.
 // ---------------------------------------------------------------------------
-
-/** Fiel a `@thyrox/config: env/utils.ts::isBareMode` — ver docstring. */
-function isBareMode(): boolean {
-  return (
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
-    process.argv.includes('--bare')
-  )
-}
 
 let _shouldAllowManagedHooksOnly: () => boolean = () => false
 export function setShouldAllowManagedHooksOnlyFn(fn: () => boolean): void {

@@ -32,12 +32,12 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import {
   hasAutoModeOptIn,
   hasSkipDangerousModePermissionPrompt,
 } from '@thyrox/config/settings'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { splitBgArgs } from './bg/argParse.js'
 import {
   formatRelativeTime,
@@ -96,10 +96,7 @@ interface JobMeta {
 const JOB_SHORT_LENGTH = 8
 
 function getJobsRoot(): string {
-  // CLAUDE_CONFIG_HOME env override mirrors the rest of the CLI's
-  // config-dir convention; default to ~/.claude.
-  const root = process.env.CLAUDE_CONFIG_HOME
-  return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return resolve(getConfigHomeDir(), 'jobs')
 }
 
 function ensureJobsRoot(): string {
@@ -543,21 +540,21 @@ export async function spawnBgJob(opts: {
   const fullCmd = [cmd, ...nodeArgs]
 
   // Marker env (parity with ant 4706.js xXK):
-  // - CLAUDE_CODE_SESSION_KIND/CLAUDE_CODE_BG_JOB_SHORT: read by
-  //   concurrentSessions.isBgSession() and by ps reconciliation.
+  // - THYROX_CODE_SESSION_KIND/THYROX_CODE_BG_JOB_SHORT: read by
+  //   isBackgroundSession() in @thyrox/local-observability and by ps reconciliation.
   // - FORCE_COLOR/COLORTERM/BROWSER: child stdio is wired to a file fd
   //   (non-TTY), so chalk would strip colors and any "open in browser"
   //   path would try to spawn a browser. Force colors on, browser off.
-  // - CLAUDE_JOB_DIR: ant compat marker recording the job's on-disk
+  // - THYROX_JOB_DIR: ant compat marker recording the job's on-disk
   //   directory so future tooling can find it without re-deriving.
   // ant 4706.js xXK env. BG_BACKEND='detached' (ant 'daemon') = daemon-less.
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    CLAUDE_CODE_SESSION_KIND: 'bg', CLAUDE_CODE_BG_JOB_SHORT: short,
+    THYROX_CODE_SESSION_KIND: 'bg', THYROX_CODE_BG_JOB_SHORT: short,
     FORCE_COLOR: '3', COLORTERM: 'truecolor', BROWSER: 'true',
-    CLAUDE_JOB_DIR: jobDir, CLAUDE_BG_BACKEND: 'detached',
-    CLAUDE_BG_SOURCE: 'cli', CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
-    CLAUDE_CODE_SESSION_NAME: short,
+    THYROX_JOB_DIR: jobDir, THYROX_BG_BACKEND: 'detached',
+    THYROX_BG_SOURCE: 'cli', CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
+    THYROX_CODE_SESSION_NAME: short,
   }
 
   const spawnOpts: SpawnOptions = {

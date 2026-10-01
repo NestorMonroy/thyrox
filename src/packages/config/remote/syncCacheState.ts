@@ -1,24 +1,35 @@
 /**
- * Leaf state module for the remote-managed-settings sync cache.
+ * La lectura síncrona de la caché de ajustes remotos — porte de `lgn`/`sm`
+ * de 2.1.283 (`chunk-379zyrv7.js`) sobre el estado de carga remota de
+ * `./loadState.ts` (`Ma`), que es la única caché de sesión: este módulo ya no
+ * guarda la suya. Hoja del grafo: importa `../host.js`, `./loadState.js` y
+ * `../settings/settingsCache.js`, todos hojas, para que `settings.ts` pueda
+ * leerla sin arrastrar `auth.ts` al SCC de arranque (la razón original de
+ * separarla de `syncCache.ts`, que sigue vigente).
  *
- * Split from syncCache.ts to break the settings.ts → syncCache.ts → auth.ts →
- * settings.ts cycle. auth.ts sits inside the large settings SCC; importing it
- * from settings.ts's own dependency chain pulls hundreds of modules into the
- * eagerly-evaluated SCC at startup.
+ * `lgn`: sin elegibilidad registrada no hay crudo; con caché de sesión, ésa;
+ * si no, el disco (`sm`) siembra el estado (`Ma.seedFromDisk`) y vacía la
+ * caché fusionada (`Ss`), porque todo `getSettings()` cacheado antes de este
+ * momento carecía de la capa `policySettings`. Ocurre como mucho una vez: las
+ * llamadas siguientes salen por la caché de sesión. La rama de `cs()` —el
+ * `backendView` que invalida sólo la capa de política— no se toma: ver la
+ * divergencia `backendView` en `./loadState.ts`.
  *
- * This module imports only leaves (path, envUtils, file, json, types,
- * settings/settingsCache — also a leaf, only type-imports validation). settings.ts
- * reads the cache from here. syncCache.ts keeps isRemoteManagedSettingsEligible
- * (the auth-touching part) and re-exports everything from here for callers that
- * don't care about the cycle.
+ * `sm` lee el archivo con `node:fs` y descarta lo que no sea un objeto;
+ * `I5n` (la normalización del crudo de disco) y `La`/`gz` (el tope de tamaño)
+ * no están extraídos: el crudo se sirve tal cual y sin tope.
  *
- * Eligibility is a tri-state here: undefined (not yet determined — return
- * null), false (ineligible — return null), true (proceed). managedEnv.ts
- * calls isRemoteManagedSettingsEligible() just before the policySettings
- * read — after userSettings/flagSettings env vars are applied, so the check
- * sees config-provided CLAUDE_CODE_USE_BEDROCK/ANTHROPIC_BASE_URL. That call
- * computes once and mirrors the result here via setEligibility(). Every
- * subsequent read hits the cached bool instead of re-running the auth chain.
+ * gh-23085: `isBridgeEnabled()`, evaluado al definir los comandos de Commander
+ * (antes de `preAction → init() → isRemoteManagedSettingsEligible()`), llegaba
+ * a `getSettings()` desde auth. El try/catch de bridgeEnabled se tragaba el
+ * fallo posterior de `getGlobalConfig()`, pero la caché fusionada ya estaba
+ * envenenada. La mitad unitaria del control es
+ * `__tests__/remoteSettingsFirstHitFlush.test.ts`; la de integración,
+ * `__tests__/policySettingsWiring.test.ts`.
+ *
+ * `setEligibility` y `resetSyncCache` se conservan como superficie: la primera
+ * es `V1r` (registra y memoiza) y la segunda `W1r` (el reset completo, con su
+ * listener), que no hace nada si aún no hay host instalado.
  */
 
 import { readFileSync as fsReadFileSync } from 'node:fs'
@@ -27,30 +38,33 @@ import { HostBindingsError } from '../errors.js'
 import { getConfigHostBindings } from '../host.js'
 import { resetSettingsCache } from '../settings/settingsCache.js'
 import type { SettingsJson } from '../settings/types.js'
+import {
+  getRemoteLoadState,
+  getRemoteSettingsOverridePath,
+  recordRemoteEligibility,
+  resetRemoteLoadState,
+  tryGetRemoteLoadState,
+} from './loadState.js'
 
 // V7 §11.4 — inlined 1-liners to avoid src/ imports.
-const UTF8_BOM = '\uFEFF'
+const UTF8_BOM = '﻿'
 function stripBOM(content: string): string {
   return content.startsWith(UTF8_BOM) ? content.slice(1) : content
 }
 
 const SETTINGS_FILENAME = 'remote-settings.json'
 
-let sessionCache: SettingsJson | null = null
-let eligible: boolean | undefined
+/** La razón que `MUt` publica cuando el host niega la elegibilidad: el binding no da otra. */
+export const INELIGIBLE_REASON = 'user is not eligible for remote managed settings'
 
-export function setSessionCache(value: SettingsJson | null): void {
-  sessionCache = value
-}
-
+/** `W1r`, si hay host: sin él no hay estado que resetear. */
 export function resetSyncCache(): void {
-  sessionCache = null
-  eligible = undefined
+  if (tryGetRemoteLoadState() !== undefined) resetRemoteLoadState()
 }
 
-export function setEligibility(v: boolean): boolean {
-  eligible = v
-  return v
+/** `V1r` con la razón fija de este árbol; devuelve lo registrado. */
+export function setEligibility(eligible: boolean): boolean {
+  return recordRemoteEligibility(eligible, eligible ? undefined : INELIGIBLE_REASON)
 }
 
 export function getSettingsPath(): string {
@@ -63,8 +77,7 @@ export function getSettingsPath(): string {
   return join(homeDir, SETTINGS_FILENAME)
 }
 
-// sync IO — settings pipeline is sync. fileRead and jsonRead are leaves;
-// file.ts and json.ts both sit in the settings SCC.
+/** `sm`: el crudo de disco, o null si falta o no es un objeto. */
 function loadSettings(): SettingsJson | null {
   try {
     const content = fsReadFileSync(getSettingsPath(), 'utf8')
@@ -78,30 +91,14 @@ function loadSettings(): SettingsJson | null {
   }
 }
 
+/** `lgn`. */
 export function getRemoteManagedSettingsSyncFromCache(): SettingsJson | null {
-  if (eligible !== true) return null
-  if (sessionCache) return sessionCache
+  const state = getRemoteLoadState()
+  if (!getRemoteSettingsOverridePath() && state.eligible !== true) return null
+  if (state.sessionCache) return state.sessionCache
   const cachedSettings = loadSettings()
-  if (cachedSettings) {
-    sessionCache = cachedSettings
-    // Remote settings just became available for the first time. Any merged
-    // getSettings() result cached before this moment is missing
-    // the policySettings layer (the `eligible !== true` guard above returned
-    // null). Flush so the next merged read re-merges with this layer visible.
-    //
-    // Fires at most once: subsequent calls hit `if (sessionCache)` above.
-    // When called from loadSettingsFromDisk() (settings.ts:546), the merged
-    // cache is still null (setSessionSettingsCache runs at :732 after
-    // loadSettingsFromDisk returns) — no-op. The async-fetch arm (index.ts
-    // setSessionCache + notifyChange) already handles its own reset.
-    //
-    // gh-23085: isBridgeEnabled() at main.tsx Commander-definition time
-    // (before preAction → init() → isRemoteManagedSettingsEligible()) reached
-    // getSettings() at auth.ts:115. The try/catch in bridgeEnabled
-    // swallowed the later getGlobalConfig() throw, but the merged settings
-    // cache was already poisoned. See managedSettingsHeadless.int.test.ts.
-    resetSettingsCache()
-    return cachedSettings
-  }
-  return null
+  if (!cachedSettings) return null
+  state.seedFromDisk(cachedSettings)
+  resetSettingsCache()
+  return cachedSettings
 }

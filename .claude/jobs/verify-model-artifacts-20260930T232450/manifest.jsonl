@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bun install --frozen-lockfile >/dev/null 2>&1; echo install=$?; cd src/packages/model-artifacts && bun test 2>&1 | grep -E \"^ *[0-9]+ (pass|fail|skip)|\\(fail\\)|\\(skip\\)\"; cd ../../.. && bash bin/check_package_typecheck --strict model-artifacts 2>&1 | tail -2", "started_at": "2026-09-30T23:24:50+00:00"}

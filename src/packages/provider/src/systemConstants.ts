@@ -7,12 +7,13 @@ import { isEnvDefinedFalsy } from '@thyrox/config/env/utils'
 import { getAPIProvider } from './providers.js'
 import { getWorkload } from './workloadContext.js'
 import { readEnv } from '@thyrox/config/env/utils'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 declare const MACRO: { VERSION: string }
 
-const DEFAULT_PREFIX = `You are Claude Code, Anthropic's official CLI for Claude.`
-const AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX = `You are Claude Code, Anthropic's official CLI for Claude, running within the Claude Agent SDK.`
-const AGENT_SDK_PREFIX = `You are a Claude agent, built on Anthropic's Claude Agent SDK.`
+const DEFAULT_PREFIX = `You are ${PRODUCT_NAME}, Anthropic's official CLI for ${PRODUCT_NAME}.`
+const AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX = `You are ${PRODUCT_NAME}, Anthropic's official CLI for ${PRODUCT_NAME}, running within the Agent SDK.`
+const AGENT_SDK_PREFIX = `You are a ${PRODUCT_NAME} agent, built on Anthropic's Agent SDK.`
 
 const CLI_SYSPROMPT_PREFIX_VALUES = [
   DEFAULT_PREFIX,
@@ -51,7 +52,7 @@ export function getCLISyspromptPrefix(options?: {
 /**
  * Port of ant v2.1.150 `T2()` (resolved in 5452.js / 5166.js / 5072.js etc.
  * as the `anthropic-client-platform` request header value). Maps the
- * `CLAUDE_CODE_ENTRYPOINT` env var to a coarse platform identifier sent on
+ * `THYROX_CODE_ENTRYPOINT` env var to a coarse platform identifier sent on
  * every first-party request so server analytics can split traffic by
  * surface (CLI vs VS Code vs SDK vs MCP vs remote …).
  *
@@ -59,7 +60,7 @@ export function getCLISyspromptPrefix(options?: {
  * `claude_code_cli` (ant's `case "cli": default:`).
  */
 export function getClientPlatform(): string {
-  switch (readEnv('CLAUDE_CODE_ENTRYPOINT')) {
+  switch (readEnv('THYROX_CODE_ENTRYPOINT')) {
     case 'claude-vscode':
       return 'claude_code_vscode'
     case 'remote':
@@ -90,7 +91,7 @@ export function getClientPlatform(): string {
  * Enabled by default, can be disabled via env var or GrowthBook killswitch.
  */
 function isAttributionHeaderEnabled(): boolean {
-  if (isEnvDefinedFalsy(readEnv('CLAUDE_CODE_ATTRIBUTION_HEADER'))) {
+  if (isEnvDefinedFalsy(readEnv('THYROX_CODE_ATTRIBUTION_HEADER'))) {
     return false
   }
   return getFeatureValue_CACHED_MAY_BE_STALE('tengu_attribution_header', true)
@@ -104,7 +105,7 @@ function isAttributionHeaderEnabled(): boolean {
  * When NATIVE_CLIENT_ATTESTATION is enabled, includes a `cch=00000` placeholder.
  * Before the request is sent, Bun's native HTTP stack finds this placeholder
  * in the request body and overwrites the zeros with a computed hash. The
- * server verifies this token to confirm the request came from a real Claude
+ * server verifies this token to confirm the request came from a real thyrox
  * Code client. See bun-anthropic/src/http/Attestation.zig for implementation.
  *
  * We use a placeholder (instead of injecting from Zig) because same-length
@@ -116,7 +117,7 @@ export function getAttributionHeader(fingerprint: string): string {
   }
 
   const version = `${MACRO.VERSION}.${fingerprint}`
-  const entrypoint = readEnv('CLAUDE_CODE_ENTRYPOINT') ?? 'unknown'
+  const entrypoint = readEnv('THYROX_CODE_ENTRYPOINT') ?? 'unknown'
 
   // cch=00000 placeholder is overwritten by Bun's HTTP stack with attestation token
   const cch = feature('NATIVE_CLIENT_ATTESTATION') ? ' cch=00000;' : ''

@@ -1,0 +1,23 @@
+== 1: sin créditos agotados -> 1
+== 2: sin baneada -> 2
+== 3: sin caducada -> 1
+== 4: sin recorte -> 1
+== 5: sin minúsculas -> 1
+== 6: prioridad sin invertir -> 2
+== 7: prioridad por defecto -> 1
+== 8: clave en blanco -> 1
+== 9: sin api_key -> 1
+== 10: sin access_token -> 1
+== 11: sin proyecto -> 1
+== 12: inactiva habilitada -> 1
+== 13: terminal habilitada -> 1
+== 14: sin tokenExpiresAt -> 1
+== 15: sin expiresAt -> 1
+== 16: fecha inválida -> 1
+== 17: enfriamiento vencido cuenta -> 1
+== 18: sin nextRetryAfter -> 1
+== 19: fila sin id -> 1
+== 20: fila sin proveedor -> 1
+== 21: sin proveedor en atributos -> 1
+== restaurado -> 0
+21 de 21 anulaciones discriminan; restaurado 0 fail.

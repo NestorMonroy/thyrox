@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/daemon && timeout 900 bun test 2>&1 | tail -6", "started_at": "2026-09-29T18:01:58+00:00"}

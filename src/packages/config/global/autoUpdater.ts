@@ -20,7 +20,7 @@ export type AutoUpdaterDisabledReason =
 
 /** `qje`: la variable que apagó el tráfico no esencial, si la hay. */
 function nonEssentialTrafficDisabledBy(): string | null {
-  if (process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) return 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'
+  if (process.env.THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC) return 'THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC'
   return null
 }
 

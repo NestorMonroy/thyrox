@@ -141,7 +141,7 @@ function withoutSSHTunnelVars(
     ANTHROPIC_BASE_URL: _2,
     ANTHROPIC_API_KEY: _3,
     ANTHROPIC_AUTH_TOKEN: _4,
-    CLAUDE_CODE_OAUTH_TOKEN: _5,
+    THYROX_CODE_OAUTH_TOKEN: _5,
     ...rest
   } = env
   return rest
@@ -149,7 +149,7 @@ function withoutSSHTunnelVars(
 
 /**
  * Cuando el host es dueño del ruteo de inferencia (setea
- * `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` en el entorno de arranque), se
+ * `THYROX_CODE_PROVIDER_MANAGED_BY_HOST` en el entorno de arranque), se
  * descartan del entorno proveniente de settings las variables de
  * selección de proveedor / modelo por defecto, para que un
  * `~/.claude/settings.json` de usuario no pueda redirigir requests fuera
@@ -159,7 +159,7 @@ function withoutHostManagedProviderVars(
   env: Record<string, string> | undefined,
 ): Record<string, string> {
   if (!env) return {}
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST)) {
+  if (!isEnvTruthy(process.env.THYROX_CODE_PROVIDER_MANAGED_BY_HOST)) {
     return env
   }
   const out: Record<string, string> = {}
@@ -247,7 +247,7 @@ export function applySafeConfigEnvironmentVariables(): void {
   // cualquier settings.env (una sola vez).
   if (ccdSpawnEnvKeys === undefined) {
     ccdSpawnEnvKeys =
-      process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-desktop'
+      process.env.THYROX_CODE_ENTRYPOINT === 'claude-desktop'
         ? new Set(Object.keys(process.env))
         : null
   }
@@ -279,7 +279,7 @@ export function applySafeConfigEnvironmentVariables(): void {
 
   // Calcula la elegibilidad de settings gestionados remotos ahora, con
   // userSettings y flagSettings ya aplicados. La elegibilidad lee
-  // CLAUDE_CODE_USE_BEDROCK, ANTHROPIC_BASE_URL — ambas seteables vía
+  // THYROX_CODE_USE_BEDROCK, ANTHROPIC_BASE_URL — ambas seteables vía
   // settings.env. getSettingsForSource('policySettings') abajo consulta la
   // caché remota, que se guarda por esto. La estructura en dos fases hace
   // visible la dependencia de orden: env no-policy → elegibilidad → env de
@@ -300,7 +300,7 @@ export function applySafeConfigEnvironmentVariables(): void {
   // están garantizados de sobrevivir sin cambio (tiene la mayor prioridad
   // de fusión en ambos loops) — excepto las variables de ruteo de
   // proveedor, que filterSettingsEnv descarta de toda fuente cuando
-  // CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST está seteado.
+  // THYROX_CODE_PROVIDER_MANAGED_BY_HOST está seteado.
   const settingsEnv = filterSettingsEnv(getSettings()?.env)
   for (const [key, value] of Object.entries(settingsEnv)) {
     if (SAFE_ENV_VARS.has(key.toUpperCase())) {
@@ -312,7 +312,7 @@ export function applySafeConfigEnvironmentVariables(): void {
 /**
  * Aplica variables de entorno de settings a `process.env`. Aplica TODAS las
  * variables (salvo las de ruteo de proveedor cuando
- * `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` está seteado — ver
+ * `THYROX_CODE_PROVIDER_MANAGED_BY_HOST` está seteado — ver
  * `filterSettingsEnv`) y sólo debe llamarse tras establecer la confianza.
  * Aplica variables potencialmente peligrosas como `LD_PRELOAD`, `PATH`,
  * etc.

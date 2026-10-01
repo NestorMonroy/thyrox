@@ -300,7 +300,7 @@ function SaveModelAndClose({
         (mainLoopModel ?? 'default') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     // Strip the `<connId>:` prefix before writing — settings.json is shared
-    // with the official Claude Code CLI, which only understands bare model
+    // with the official thyrox CLI, which only understands bare model
     // names. The connection routing is recovered on next read by picking the
     // first enabled connection that exposes this model.
     const bareModelId =
@@ -409,7 +409,7 @@ function renderModelLabel(model: string | null): string {
   }
   // Default-selection path: prefer the first model of the first enabled
   // connection over the global setting, so subscribers see "Opus 4.7"
-  // not "Opus 4.6" when their Claude account is the active connection.
+  // not "Opus 4.6" when their thyrox account is the active connection.
   if (model === null) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { getEnabledConnections, prettyModelLabel } = require(

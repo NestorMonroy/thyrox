@@ -4,7 +4,7 @@ import sample from 'lodash-es/sample.js'
 import * as React from 'react'
 import { ExitFlow } from '../../components/ExitFlow.js'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { getCurrentWorktreeSession } from '@thyrox/swarm'
 
@@ -20,7 +20,7 @@ export async function call(
   // Inside a `claude --bg` tmux session: detach instead of kill. The REPL
   // keeps running; `claude attach` can reconnect. Covers /exit, /quit,
   // ctrl+c, ctrl+d — all funnel through here via REPL's handleExit.
-  if (feature('BG_SESSIONS') && isBgSession()) {
+  if (feature('BG_SESSIONS') && isBackgroundSession()) {
     onDone()
     spawnSync('tmux', ['detach-client'], { stdio: 'ignore' })
     return null

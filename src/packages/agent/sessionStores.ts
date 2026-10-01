@@ -33,9 +33,9 @@
  *     (`.../app-host/state/hostSessionState.js`) — SÍ resuelve tal cual
  *     (medido: `Bun.resolveSync` OK).
  *   - `onChangeAppState` (`@claude-code-how-works/repl/onChangeAppState.js`)
- *     — el paquete `repl` NO existe como miembro del workspace (medido:
- *     ausente de `src/packages/package.json`). Se deja SIN traducir y se
- *     difiere con `require()`.
+ *     — no se importa: los dos creadores reciben el oyente como parámetro
+ *     (`AppStateChange`) y el anfitrión les pasa `onChangeAppState`. Así
+ *     `@thyrox/agent` no depende de `repl`.
  *   - `createStore` / `Store` (`.../app-host/state/store.js`) — el tipo
  *     `Store<T>` se importa de ahí (el paquete ya exporta `./state/store.js`,
  *     que reexporta `@thyrox/repl/stateStore`); `createStore`, el valor,
@@ -112,26 +112,28 @@ export type HeadlessStoreParams = {
 // firma que no es la real —la real recibe un actualizador— y el store
 // headless no cabía en `HostSessionStore`.
 
+/**
+ * El oyente de cambios de un store de sesión: recibe el estado anterior y el
+ * nuevo tras cada `setState`. Lo pasa quien crea el store — en el anfitrión,
+ * `onChangeAppState` de `@thyrox/repl` —, de modo que este paquete no
+ * depende de `repl`.
+ */
+export type AppStateChange = (change: { newState: AppState; oldState: AppState }) => void
+
 export type InteractiveSessionStore = Store<AppState>
 export type HeadlessSessionStore = Store<AppState>
 
 export function createInteractiveSessionStore(
   initialState?: AppState,
+  onChange?: AppStateChange,
 ): InteractiveSessionStore {
-  // `createStore` y `onChangeAppState`: @thyrox/app-host no expone
-  // `state/store.ts` y @thyrox/repl no existe — ver docstring del módulo.
+  // `createStore`: @thyrox/app-host no expone `state/store.ts` — ver
+  // docstring del módulo.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createStore } = require('@thyrox/app-host/state/store.js') as {
-    createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
+    createStore: <T>(initial: T, onChange?: (change: { newState: T; oldState: T }) => void) => Store<T>
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
-    onChangeAppState: (state: AppState) => void
-  }
-  return createStore<AppState>(
-    initialState ?? getDefaultAppState(),
-    onChangeAppState,
-  )
+  return createStore<AppState>(initialState ?? getDefaultAppState(), onChange)
 }
 
 function buildHeadlessCompatState(
@@ -196,16 +198,13 @@ function buildHeadlessCompatState(
 
 export function createHeadlessSessionStore(
   params: HeadlessStoreParams,
+  onChange?: AppStateChange,
 ): HeadlessSessionStore {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createStore } = require('@thyrox/app-host/state/store.js') as {
-    createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
+    createStore: <T>(initial: T, onChange?: (change: { newState: T; oldState: T }) => void) => Store<T>
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
-    onChangeAppState: (state: AppState) => void
-  }
-  return createStore<AppState>(buildHeadlessCompatState(params), onChangeAppState)
+  return createStore<AppState>(buildHeadlessCompatState(params), onChange)
 }
 
 export function projectInteractiveHostSessionState(

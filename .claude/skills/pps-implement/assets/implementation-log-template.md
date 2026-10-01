@@ -68,7 +68,7 @@ Resumen de avance global:
 
 ---
 
-## Sección 3 — Bloqueadores y escalaciones
+## Sección 3 — Bloqueadores y escalamientos
 
 | # | CM bloqueada | Descripción del bloqueador | Fecha detectado | Escalado a | Estado del bloqueador |
 |---|-------------|--------------------------|----------------|-----------|----------------------|

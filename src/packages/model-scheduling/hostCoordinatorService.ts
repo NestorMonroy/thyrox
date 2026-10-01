@@ -1,0 +1,70 @@
+/**
+ * El servicio del coordinador de model scheduling de un anfitrión (ADR-007
+ * 1.14.0, TASK-THYROX-0734): lo que el daemon arranca y detiene.
+ *
+ * Al arrancar, ANTES de abrir el socket, destruye cada unidad de modelo que
+ * la primitiva lista: son de una encarnación anterior del coordinador, sus
+ * leases y generaciones no sobreviven (o ya no tienen dueño vivo), y ninguna
+ * admisión nueva puede reutilizarlas con fencing válido. Las residencias se
+ * reconstruyen a demanda. Si una no se deja destruir, el servicio no arranca:
+ * servir junto a una unidad que no controla rompería la cuenta de memoria.
+ *
+ * Al detenerse, desaloja cada residencia con admisiones vivas, cierra el
+ * servidor (que suelta los tickets de sus conexiones) y cierra la
+ * coordinación.
+ */
+import type { ModelSchedulingCoordination } from './coordination.ts'
+import { startModelCoordinatorServer, type ModelCoordinatorServer, type ServedCoordinator } from './coordinatorServer.ts'
+import type { ModelUnitMaterializer } from './modelUnitMaterializer.ts'
+import type { ModelSchedulingCoordinator } from './hostCoordinator.ts'
+
+/** Lo que el servicio necesita del coordinador: servirlo y desalojar al detenerse. */
+export type ServiceCoordinator = ServedCoordinator & Pick<ModelSchedulingCoordinator, 'evict'>
+
+export interface HostCoordinatorServiceOptions {
+  readonly socketPath: string
+  readonly primitive: ModelUnitMaterializer
+  readonly coordinator: ServiceCoordinator
+  readonly coordination: ModelSchedulingCoordination
+}
+
+export interface HostCoordinatorService {
+  readonly server: ModelCoordinatorServer
+  /** Las unidades de una encarnación anterior destruidas al arrancar. */
+  readonly sweptUnits: readonly string[]
+  stop(): Promise<void>
+}
+
+/** Una unidad anterior no se dejó destruir: el servicio no arranca. */
+export class OrphanUnitSurvivedError extends Error {
+  constructor(readonly unitId: string, readonly outcome: string) {
+    super(`la unidad de modelo ${unitId} de una encarnación anterior no se destruyó (${outcome}): el coordinador no arranca junto a una unidad que no controla`)
+    this.name = 'OrphanUnitSurvivedError'
+  }
+}
+
+export async function startHostCoordinatorService(options: HostCoordinatorServiceOptions): Promise<HostCoordinatorService> {
+  const sweptUnits = await sweepOrphanUnits(options.primitive)
+  const server = await startModelCoordinatorServer(options.coordinator, { socketPath: options.socketPath })
+  return { server, sweptUnits, stop: () => stopService(options, server) }
+}
+
+/** Destruye cada unidad listada y comprueba que ya no lo esté; una que sobrevive impide arrancar. */
+async function sweepOrphanUnits(primitive: ModelUnitMaterializer): Promise<string[]> {
+  const orphans = await primitive.units()
+  for (const unit of orphans) {
+    const outcome = await primitive.destroy(unit.unitId)
+    if (outcome === 'failed') throw new OrphanUnitSurvivedError(unit.unitId, outcome)
+  }
+  const survivors = await primitive.units()
+  const survivor = survivors[0]
+  if (survivor) throw new OrphanUnitSurvivedError(survivor.unitId, 'sigue listada tras destruirse')
+  return orphans.map(unit => unit.unitId)
+}
+
+async function stopService(options: HostCoordinatorServiceOptions, server: ModelCoordinatorServer): Promise<void> {
+  const residencies = new Set(options.coordinator.admissions().map(ticket => ticket.unit.residencyKey))
+  for (const residencyKey of residencies) await options.coordinator.evict(residencyKey)
+  await server.close()
+  await options.coordination.close()
+}

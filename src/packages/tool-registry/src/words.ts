@@ -26,7 +26,10 @@
  * cifras el sesgo es del orden de 10^-8 y no cambia ninguna conducta —
  * pero se dice, en vez de dejarlo como una propiedad que nadie midió.
  */
-import { randomBytes } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
+import { basename } from 'path'
+
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const ADJECTIVES = [
   'amber', 'azure', 'balmy', 'blithe', 'brisk', 'candid', 'clement',
@@ -76,12 +79,66 @@ function pickRandom<T>(array: readonly T[]): T {
   return array[randomInt(array.length)]!
 }
 
-/** `adjetivo-verbo-sustantivo`, p. ej. `gilded-weaves-lantern`. */
+/** `M4n`: `adjetivo-verbo-sustantivo`, p. ej. `gilded-weaves-lantern`. */
 export function generateWordSlug(): string {
   return `${pickRandom(ADJECTIVES)}-${pickRandom(VERBS)}-${pickRandom(NOUNS)}`
 }
 
-/** `adjetivo-sustantivo`, sin verbo. */
+/** `Q5`: `adjetivo-sustantivo`, sin verbo. */
 export function generateShortWordSlug(): string {
   return `${pickRandom(ADJECTIVES)}-${pickRandom(NOUNS)}`
+}
+
+const ADJECTIVE_SET: ReadonlySet<string> = new Set(ADJECTIVES)
+const NOUN_SET: ReadonlySet<string> = new Set(NOUNS)
+
+/**
+ * `ADo` (`chunk-fvmr4qjr.js` de 2.1.283): si el texto tiene la forma de
+ * `generateShortWordSlug` con estas listas.
+ */
+export function isShortWordSlug(text: string): boolean {
+  const [adjective, noun, ...rest] = text.split('-')
+  return rest.length === 0 && adjective !== undefined && noun !== undefined && ADJECTIVE_SET.has(adjective) && NOUN_SET.has(noun)
+}
+
+/** `TDo`: el slug corto que fijan los dos primeros u32 big-endian de `seed`. */
+export function shortWordSlugFromSeed(seed: Uint8Array): string {
+  if (seed.length < 8) throw Error('shortWordSlugFromSeed needs at least 8 seed bytes')
+  const view = new DataView(seed.buffer, seed.byteOffset, seed.byteLength)
+  const adjective = ADJECTIVES[view.getUint32(0) % ADJECTIVES.length]
+  const noun = NOUNS[view.getUint32(4) % NOUNS.length]
+  return `${adjective}-${noun}`
+}
+
+/** `c`: las marcas que el editor pone en lugar de un pegado, una imagen, un audio o un texto recortado. */
+const PASTE_PLACEHOLDER = /\[(?:Pasted text #\d+(?: \+\d+ lines)?|Image #\d+|Audio #\d+|\.\.\.Truncated text #\d+ \+\d+ lines\.\.\.)\]/g
+
+export type SlugFromTextOptions = { words?: number; maxLen?: number }
+
+/** `E$t`: las primeras palabras del texto como slug, sin las marcas de pegado. */
+export function slugFromText(text: string, options: SlugFromTextOptions = {}): string {
+  const { words = 4, maxLen = 40 } = options
+  return text
+    .replace(PASTE_PLACEHOLDER, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, words)
+    .join(' ')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .slice(0, maxLen)
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
+ * `xs`: el nombre derivado de una sesión — el slug de su carpeta y un sufijo.
+ * Con dirección estable el sufijo sale del sha256 del id de sesión, así que
+ * la misma sesión vuelve a llamarse igual; sin ella es un byte aleatorio. Una
+ * carpeta sin slug toma el nombre del producto, donde la referencia pone el
+ * suyo.
+ */
+export function derivedSessionName(cwd: string, sessionId: string, stableAddress: boolean): string {
+  const folder = slugFromText(basename(cwd)) || PRODUCT_NAME
+  const suffix = stableAddress ? shortWordSlugFromSeed(createHash('sha256').update(sessionId).digest()) : randomBytes(1).toString('hex')
+  return `${folder}-${suffix}`
 }

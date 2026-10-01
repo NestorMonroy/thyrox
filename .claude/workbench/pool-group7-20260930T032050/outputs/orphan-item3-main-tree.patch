@@ -1,0 +1,46 @@
+diff --git a/src/packages/agent/attachments.ts b/src/packages/agent/attachments.ts
+index 86edbd8d..f42d2b20 100644
+--- a/src/packages/agent/attachments.ts
++++ b/src/packages/agent/attachments.ts
+@@ -2849,10 +2849,6 @@ async function getRelevantMemoryAttachments(
+ async function getSkillListingAttachments(
+   toolUseContext: ToolUseContext,
+ ): Promise<Attachment[]> {
+-  if (readEnv('NODE_ENV') === 'test') {
+-    return []
+-  }
+-
+   // Skip skill listing for agents that don't have the Skill tool — they can't use skills directly.
+   if (
+     !toolUseContext.options.tools.some(t => toolMatchesName(t, SKILL_TOOL_NAME))
+diff --git a/src/packages/provider/src/context.ts b/src/packages/provider/src/context.ts
+index bf981550..51ebbba1 100644
+--- a/src/packages/provider/src/context.ts
++++ b/src/packages/provider/src/context.ts
+@@ -35,11 +35,6 @@ export function setSystemPromptInjection(value: string | null): void {
+ }
+ 
+ export const getGitStatus = memoize(async (): Promise<string | null> => {
+-  if (readEnv('NODE_ENV') === 'test') {
+-    // Avoid cycles in tests
+-    return null
+-  }
+-
+   const startTime = Date.now()
+   logForDiagnosticsNoPII('info', 'git_status_started')
+ 
+diff --git a/src/packages/provider/src/legacy/api.ts b/src/packages/provider/src/legacy/api.ts
+index f030c64a..3372e098 100644
+--- a/src/packages/provider/src/legacy/api.ts
++++ b/src/packages/provider/src/legacy/api.ts
+@@ -581,10 +581,6 @@ export function prependUserContext(
+   messages: Message[],
+   context: { [k: string]: string },
+ ): Message[] {
+-  if (readEnv('NODE_ENV') === 'test') {
+-    return messages
+-  }
+-
+   if (Object.entries(context).length === 0) {
+     return messages
+   }

@@ -103,11 +103,16 @@ from __future__ import annotations
 
 import argparse
 import ast
+import json
+import os
 import pathlib
 import re
+import shutil
+import subprocess
 import sys
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
+from verify.shell_declared_identifiers import is_shell_script, shell_declared_identifiers  # noqa: E402
 
 #: Entrada 1 (VALOR) — dónde vive la deuda heredada de ESTE consumidor.
 BASELINE_VAR = 'IDENTIFIER_LANGUAGE_BASELINE'
@@ -305,8 +310,8 @@ def code_suffix_families(names):
         head, separator, tail = name.rpartition('_')
         if separator and len(tail) == 2 and tail.isalpha():
             by_prefix.setdefault(head.lower(), set()).add(tail.lower())
-    return {prefix for prefix, tails in by_prefix.items()
-            if len(tails) >= MINIMUM_FAMILY_SIZE}
+    return frozenset(prefix for prefix, tails in by_prefix.items()
+                     if len(tails) >= MINIMUM_FAMILY_SIZE)
 
 
 # ── Cuarto criterio: el CORPUS, que es abierto ───────────────────────────────
@@ -427,6 +432,25 @@ TECHNICAL_VOCABULARY = frozenset({
     'sep',       # la abreviatura de *separator*; el corpus la lee *septiembre*
     'bie',       # el Banco de Informacion Economica de INEGI, un nombre propio
     'posterior', # el termino bayesiano; se escribe igual en ingles
+    'hunspell',  # el corrector ortografico, un nombre de producto
+                 # (`src/lib/toolchain.sh::thyrox_toolchain_require_hunspell`)
+    'resolver',  # quien resuelve un nombre o un conflicto (`ConflictResolver`)
+    'invocable', # el campo `user-invocable` de una skill (`userInvocable`)
+    'paren',     # la abreviatura de *parenthesis* (`closeParen`)
+    # Abreviaturas y nombres propios del código TypeScript portado:
+    'cant', 'clm', 'consec', 'coord', 'enc', 'hist', 'mar', 'rej', 'segs', 'tuc',
+    'aki',       # clave de una tabla de subcomandos
+    'dle', 'efe', 'sos',  # códigos de control ANSI (`termio/ansi.ts`)
+    'eur',       # código de divisa ISO 4217
+    'napi',      # la interfaz N-API de Node
+    'uds',       # *Unix domain socket*
+    'trae',      # un editor de ByteDance, nombre de producto (`mitm/handlers/trae.ts`)
+    'nss',       # Network Security Services, la base de certificados de Chromium y Firefox (`mitm/cert/install.ts`)
+    'windsurf',  # un editor, nombre de producto
+    'llama',     # llama.cpp y la arquitectura `llama` de GGUF, nombres propios
+                 # (`model-artifacts/quantizationLevel.ts`)
+    'yates',     # el barajado de Fisher-Yates
+    'principal', # la identidad de seguridad; se escribe igual en inglés (`principal_type` de xAI)
 })
 
 #: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no
@@ -537,6 +561,30 @@ def declared_identifiers(tree):
                 if (isinstance(key, ast.Constant) and isinstance(key.value, str)
                         and key.value.isidentifier()):
                     yield key.value, key.lineno
+        elif _is_subparser_call(node):
+            yield from _subcommand_names(node)
+
+
+def _is_subparser_call(node) -> bool:
+    """``<subparsers>.add_parser('nombre', …)``: la declaración de un subcomando."""
+    return (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+            and node.func.attr == 'add_parser' and bool(node.args)
+            and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str))
+
+
+def _subcommand_names(node):
+    """El nombre de un subcomando y sus alias, con su línea.
+
+    Un subcomando es el nombre público de una operación —el mismo papel que el
+    de una función—, pero llega a ``add_parser`` como cadena y el recorrido de
+    nombres declarados no lo veía: ``hallazgo_ids.py acunar`` tenía su
+    manejador en inglés (``_cmd_mint``) y el nombre expuesto en español."""
+    yield node.args[0].value, node.lineno
+    for keyword in node.keywords:
+        if keyword.arg == 'aliases' and isinstance(keyword.value, (ast.List, ast.Tuple)):
+            for alias in keyword.value.elts:
+                if isinstance(alias, ast.Constant) and isinstance(alias.value, str):
+                    yield alias.value, alias.lineno
 
 
 def load_baseline(start: pathlib.Path | None = None) -> set[str]:
@@ -545,6 +593,57 @@ def load_baseline(start: pathlib.Path | None = None) -> set[str]:
         return set()
     return {line.strip() for line in path.read_text().splitlines()
             if line.strip() and not line.startswith('#')}
+
+
+TYPESCRIPT_SUFFIXES = ('.ts', '.tsx', '.mts')
+#: El recorrido del AST de TypeScript; `THYROX_TS_IDENTIFIER_EXTRACTOR` lo sustituye
+#: (una copia anulada, o el gate copiado lejos de `src/verify/`).
+TYPESCRIPT_EXTRACTOR_VAR = 'THYROX_TS_IDENTIFIER_EXTRACTOR'
+TYPESCRIPT_EXTRACTOR = pathlib.Path(__file__).resolve().parent / 'ts_declared_identifiers.ts'
+
+
+class TypeScriptUnavailable(RuntimeError):
+    """No hay con qué recorrer un `.ts`: medirlo sin él publicaría un cero falso."""
+
+
+def typescript_identifiers(paths):
+    """``{ruta: [(nombre, línea)] | None}`` de cada `.ts`; ``None`` si no se pudo recorrer.
+
+    El AST lo recorre ``ts_declared_identifiers.ts`` con el compilador del
+    árbol, en una sola invocación de `bun` para todos los archivos.
+    """
+    if not paths:
+        return {}
+    bun = shutil.which('bun')
+    if bun is None:
+        raise TypeScriptUnavailable('falta `bun` para recorrer los .ts')
+    extractor = os.environ.get(TYPESCRIPT_EXTRACTOR_VAR) or str(TYPESCRIPT_EXTRACTOR)
+    done = subprocess.run([bun, extractor, *map(str, paths)],
+                          capture_output=True, text=True, check=False)
+    if done.returncode != 0:
+        raise TypeScriptUnavailable(f'el recorrido de los .ts salió {done.returncode}: {done.stderr.strip()[:300]}')
+    return {entry['path']: ([tuple(n) for n in entry['names']] if entry['parsed'] else None)
+            for entry in json.loads(done.stdout)}
+
+
+def declared_in(path, typescript):
+    """Los identificadores declarados en ``path``, o ``None`` si no se pudo leer."""
+    if path.suffix in TYPESCRIPT_SUFFIXES:
+        return typescript.get(str(path))
+    if is_shell_script(path):
+        return _shell_declared_in(path)
+    try:
+        return list(declared_identifiers(ast.parse(path.read_text(encoding='utf-8'))))
+    except (SyntaxError, UnicodeDecodeError):
+        return None
+
+
+def _shell_declared_in(path):
+    """Los identificadores declarados en un guion de shell, o ``None`` si no es texto."""
+    try:
+        return shell_declared_identifiers(path.read_text(encoding='utf-8'))
+    except UnicodeDecodeError:
+        return None
 
 
 def scan(paths, canon=frozenset()):
@@ -556,16 +655,14 @@ def scan(paths, canon=frozenset()):
     como variable que la construye.
     """
     findings, measured = [], 0
+    paths = [p for p in paths if 'migrations' not in p.parts]
+    typescript = typescript_identifiers([p for p in paths if p.suffix in TYPESCRIPT_SUFFIXES])
     for path in paths:
-        if 'migrations' in path.parts:
-            continue
-        try:
-            tree = ast.parse(path.read_text(encoding='utf-8'))
-        except (SyntaxError, UnicodeDecodeError):
+        declared = declared_in(path, typescript)
+        if declared is None:
             continue
         measured += 1
         seen = set()
-        declared = list(declared_identifiers(tree))
         families = code_suffix_families(n for n, _ in declared)
         for name, lineno in declared:
             if name in seen or name in canon:
@@ -579,11 +676,41 @@ def scan(paths, canon=frozenset()):
 
 def collect(argv_paths, start: pathlib.Path | None = None):
     if argv_paths:
-        return [pathlib.Path(p) for p in argv_paths if p.endswith('.py')]
+        return [path for path in map(pathlib.Path, argv_paths) if is_measured_source(path)]
     files = []
     for root in roots(start):
-        files += sorted(pathlib.Path(root).rglob('*.py'))
+        files += source_files(pathlib.Path(root))
     return files
+
+
+SOURCE_SUFFIXES = ('.py', *TYPESCRIPT_SUFFIXES)
+
+
+def is_measured_source(path: pathlib.Path) -> bool:
+    """¿Lo mide el gate? `.py`, `.ts` y guiones de shell (`.sh` o shebang de shell)."""
+    return path.name.endswith(SOURCE_SUFFIXES) or is_shell_script(path)
+
+
+def source_files(root: pathlib.Path):
+    """Los `.py`, `.ts` y guiones de shell versionados bajo ``root``.
+
+    Lo versionado, no lo que hay en disco: los `dist/` de `src/packages` son
+    salida de compilación sin versionar (2963 `.d.ts` medidos) y medirlos
+    publicaría deuda de un código que nadie escribe. Fuera de un árbol de git,
+    el recorrido sin bajar a `node_modules` ni seguir enlaces, podado en el
+    recorrido y no filtrado después.
+    """
+    listed = subprocess.run(['git', 'ls-files', '-z', '--', str(root)],
+                            capture_output=True, text=True, check=False)
+    if listed.returncode == 0:
+        return sorted(path for path in map(pathlib.Path, listed.stdout.split('\0'))
+                      if path.name and is_measured_source(path))
+    found = []
+    for directory, subdirs, names in os.walk(root):
+        subdirs[:] = sorted(d for d in subdirs if d not in ('node_modules', '.git'))
+        found += [path for path in (pathlib.Path(directory, n) for n in sorted(names))
+                  if is_measured_source(path)]
+    return found
 
 
 def main():
@@ -605,7 +732,23 @@ def main():
     if refused is not None:
         return refused
 
-    findings, measured = scan(collect(args.paths, start), canon_keys(start))
+    try:
+        findings, measured = scan(collect(args.paths, start), canon_keys(start))
+    except TypeScriptUnavailable as exc:
+        print(f'ERROR — {exc}. NO se emite un veredicto: un .ts sin recorrer no está medido.',
+              file=sys.stderr)
+        return 2
+
+    # Recorrer las raíces y no encontrar ningún .py no es un verde: con
+    # `IDENTIFIER_LANGUAGE_ROOTS=src,tests` (el separador es `:`) el gate
+    # publicaba «OK … (0 archivos medidos)». Una lista explícita sin .py sí es
+    # legítima —el commit no toca Python— y no llega aquí.
+    if not args.paths and measured == 0:
+        print(f'ERROR — ningún .py bajo las raíces {":".join(roots(start))} '
+              f'({ROOTS_VAR}, separadas por «:»). NO se emite un veredicto: un 0 '
+              'aquí no distinguiría «no hay español» de «no medí nada».',
+              file=sys.stderr)
+        return 2
 
     if args.write_baseline:
         lines = sorted({f'{path}::{name}' for path, name, _, _ in findings})

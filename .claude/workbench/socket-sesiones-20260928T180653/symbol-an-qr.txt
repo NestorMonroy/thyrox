@@ -1,0 +1,7 @@
+==== an: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js function an [1124,1245)
+function an(e,n=160){return lde(YC(y(e,n)).normalize("NFC").replace(/[`\uff40\u02cb\u1fef\u2035]/g,"'").replace(p,""),n)}
+==== qr: 1 definicion(es) de nivel superior
+---- chunk-0qxzxz5e.js function qr [615,784)
+function qr(r){return r.map((t)=>{let n=String(t);if(n==="")return"''";if(/^[A-Za-z0-9_./:=@+,-]+$/.test(n))return n;return"'"+n.replaceAll("'",`'"'"'`)+"'"}).join(" ")}
+symbol: 2 de 2 nombre(s) resueltos

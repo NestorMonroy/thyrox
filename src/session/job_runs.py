@@ -30,7 +30,6 @@ conforme**, y ése es el estado correcto hasta que alguien recoge su resultado.
 """
 from __future__ import annotations
 
-import json
 import pathlib
 from collections.abc import Sequence
 from datetime import datetime, timezone
@@ -126,7 +125,7 @@ def jobs_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     """
     from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
         ConsumerUnknownError, consumer_root, env_value, resolve_home,
-        root as repo_root,
+        per_clone_base,
     )
 
     # UN ancla para toda la resolucion. Habia dos: el clon se derivaba del
@@ -143,7 +142,7 @@ def jobs_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     if repo:
         per_clone = env_value(jobs_home_name(repo), ancla)
         if per_clone:
-            return resolve_home(per_clone, repo_root(repo))
+            return resolve_home(per_clone, per_clone_base(ancla))
 
     declared = env_value(JOBS_DIR_VAR, ancla)
     if declared:

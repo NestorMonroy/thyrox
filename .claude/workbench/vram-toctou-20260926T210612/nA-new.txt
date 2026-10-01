@@ -1,0 +1,2 @@
+        if True:
+            reservations = {pid: mib for pid, mib in _reservations(ledger).items() if _alive(int(pid))}

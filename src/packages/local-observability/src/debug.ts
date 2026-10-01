@@ -10,7 +10,7 @@ import {
   parseDebugFilter,
   shouldShowDebugMessage,
 } from '@thyrox/repl/diagnostics/debugFilter.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { writeToStderr } from '@thyrox/shell/process.js'
 // Plain JSON.stringify — debug only uses it for newline-escape on single
@@ -29,12 +29,12 @@ const LEVEL_ORDER: Record<DebugLogLevel, number> = {
 
 /**
  * Minimum log level to include in debug output. Defaults to 'debug', which
- * filters out 'verbose' messages. Set CLAUDE_CODE_DEBUG_LOG_LEVEL=verbose to
+ * filters out 'verbose' messages. Set THYROX_CODE_DEBUG_LOG_LEVEL=verbose to
  * include high-volume diagnostics (e.g. full statusLine command, shell, cwd,
  * stdout/stderr) that would otherwise drown out useful debug output.
  */
 export const getMinDebugLogLevel = memoize((): DebugLogLevel => {
-  const raw = process.env.CLAUDE_CODE_DEBUG_LOG_LEVEL?.toLowerCase().trim()
+  const raw = process.env.THYROX_CODE_DEBUG_LOG_LEVEL?.toLowerCase().trim()
   if (raw && Object.hasOwn(LEVEL_ORDER, raw)) {
     return raw as DebugLogLevel
   }
@@ -103,8 +103,12 @@ export const getDebugFilePath = memoize((): string | null => {
   return null
 })
 
-function shouldLogDebugMessage(message: string): boolean {
-  if (process.env.NODE_ENV === 'test' && !isDebugToStdErr()) {
+export function shouldLogDebugMessage(message: string): boolean {
+  if (
+    process.env.NODE_ENV === 'test' &&
+    !isDebugToStdErr() &&
+    getDebugFilePath() === null
+  ) {
     return false
   }
 
@@ -232,8 +236,8 @@ export function logForDebugging(
 export function getDebugLogPath(): string {
   return (
     getDebugFilePath() ??
-    process.env.CLAUDE_CODE_DEBUG_LOGS_DIR ??
-    join(getClaudeConfigHomeDir(), 'debug', `${getSessionId()}.txt`)
+    process.env.THYROX_CODE_DEBUG_LOGS_DIR ??
+    join(getConfigHomeDir(), 'debug', `${getSessionId()}.txt`)
   )
 }
 

@@ -1,0 +1,5 @@
+.claude/baselines/identifier_language_baseline.txt
+.githooks/pre-commit
+src/verify/check_identifier_language.py
+src/verify/shell_declared_identifiers.py
+tests/verify/test_identifier_language_shell.py

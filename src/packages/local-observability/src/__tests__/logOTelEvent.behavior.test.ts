@@ -25,7 +25,7 @@ import {
  *   3. Sequence number is monotonic.
  *   4. Undefined metadata values are dropped (NOT serialized as
  *      "undefined").
- *   5. CLAUDE_CODE_WORKSPACE_HOST_PATHS env var is split on '|' and
+ *   5. THYROX_CODE_WORKSPACE_HOST_PATHS env var is split on '|' and
  *      shipped as a string array on workspace.host_paths.
  *   6. redactIfDisabled returns "<REDACTED>" unless OTEL_LOG_USER_PROMPTS
  *      is truthy. Pin the gate string.
@@ -131,21 +131,21 @@ describe('logOTelEvent — emits via installed logger', () => {
     expect('error_category' in attrs).toBe(false)
   })
 
-  test('CLAUDE_CODE_WORKSPACE_HOST_PATHS is split on "|" into a string array', async () => {
+  test('THYROX_CODE_WORKSPACE_HOST_PATHS is split on "|" into a string array', async () => {
     const fake = makeFakeLogger()
     // biome-ignore lint/suspicious/noExplicitAny: test stub
     setEventLogger(fake as any)
-    const orig = process.env.CLAUDE_CODE_WORKSPACE_HOST_PATHS
-    process.env.CLAUDE_CODE_WORKSPACE_HOST_PATHS = '/a|/b|/c'
+    const orig = process.env.THYROX_CODE_WORKSPACE_HOST_PATHS
+    process.env.THYROX_CODE_WORKSPACE_HOST_PATHS = '/a|/b|/c'
     try {
       await logOTelEvent('test_event')
       const attrs = fake.emitted[0]!.attributes
       expect(attrs['workspace.host_paths']).toEqual(['/a', '/b', '/c'])
     } finally {
       if (orig === undefined) {
-        delete process.env.CLAUDE_CODE_WORKSPACE_HOST_PATHS
+        delete process.env.THYROX_CODE_WORKSPACE_HOST_PATHS
       } else {
-        process.env.CLAUDE_CODE_WORKSPACE_HOST_PATHS = orig
+        process.env.THYROX_CODE_WORKSPACE_HOST_PATHS = orig
       }
     }
   })

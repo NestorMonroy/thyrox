@@ -6,7 +6,7 @@
 import {
   appendClaim, findOverlaps, ledgerPathFor, newClaimId, readLedger, whoHas,
   type ClaimRecord,
-} from '../../../../coordination/claims.ts'
+} from '@thyrox/coordination/claims.ts'
 import { flag, hasFlag } from '../entry/flags.ts'
 
 export function claimsCommand(argv: string[], cwd: string): number {

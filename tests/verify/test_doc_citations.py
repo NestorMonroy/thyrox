@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import importlib.util
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -34,6 +33,7 @@ sys.path.insert(0, str(_ROOT / "src"))
 
 _MODULE = _ROOT / "src/verify/check_doc_citations.py"
 _spec = importlib.util.spec_from_file_location("_gate_doc_citations", _MODULE)
+assert _spec is not None and _spec.loader is not None  # el archivo existe en este árbol
 gate = importlib.util.module_from_spec(_spec)
 sys.modules["_gate_doc_citations"] = gate
 _spec.loader.exec_module(gate)

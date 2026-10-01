@@ -36,8 +36,11 @@ export const MODE_KINDS = [
   'claims',
   'configOrigin',
   'sessions',
+  'mitm',
+  'providers',
   'help',
   'loop',
+  'print',
 ] as const
 
 export type ModeKind = (typeof MODE_KINDS)[number]
@@ -58,6 +61,9 @@ export type Mode = {
  * cambiaría la conducta de esas combinaciones, así que se conserva.
  */
 export function detectMode(argv: string[]): Mode {
+  // Un subcomando nombrado en la primera palabra gana sobre cualquier bandera.
+  if (argv[0] === 'mitm') return { kind: 'mitm' }
+  if (argv[0] === 'providers') return { kind: 'providers' }
   if (hasFlag(argv, 'workbench-new') || hasFlag(argv, 'workbench-check')) {
     return { kind: 'workbench' }
   }
@@ -72,9 +78,13 @@ export function detectMode(argv: string[]): Mode {
   }
   if (hasFlag(argv, 'config-origin')) return { kind: 'configOrigin' }
   if (hasFlag(argv, 'sessions')) return { kind: 'sessions' }
+  // `thyrox -p`: el prompt llega posicional o por stdin, así que no pasa por
+  // la regla de `--prompt` de abajo.
+  if (argv.includes('-p') || hasFlag(argv, 'print')) return { kind: 'print' }
 
   const pide = hasFlag(argv, 'prompt') || hasFlag(argv, 'chat')
-  if (hasFlag(argv, 'help')) return { kind: 'help', usage: !pide }
+  // Pedir la ayuda no es un uso incorrecto: sale 0, como `claude --help`.
+  if (hasFlag(argv, 'help')) return { kind: 'help', usage: false }
   if (!pide) return { kind: 'help', usage: true }
   return { kind: 'loop' }
 }
@@ -84,18 +94,18 @@ export function detectMode(argv: string[]): Mode {
  */
 function resolveClientType(): string {
   if (isEnvTruthy(process.env.GITHUB_ACTIONS)) return 'github-action'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'sdk-ts') return 'sdk-typescript'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'sdk-py') return 'sdk-python'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'sdk-cli') return 'sdk-cli'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-vscode') return 'claude-vscode'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'local-agent') return 'local-agent'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-desktop') return 'claude-desktop'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'sdk-ts') return 'sdk-typescript'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'sdk-py') return 'sdk-python'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'sdk-cli') return 'sdk-cli'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'claude-vscode') return 'claude-vscode'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'local-agent') return 'local-agent'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'claude-desktop') return 'claude-desktop'
 
   // Check if session-ingress token is provided (indicates remote session)
   const hasSessionIngressToken =
-    process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN ||
-    process.env.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'remote' || hasSessionIngressToken) {
+    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN ||
+    process.env.THYROX_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'remote' || hasSessionIngressToken) {
     return 'remote'
   }
 
@@ -127,7 +137,7 @@ export function detectRuntimeMode(): void {
   const clientType = resolveClientType()
   setClientType(clientType)
 
-  const previewFormat = process.env.CLAUDE_CODE_QUESTION_PREVIEW_FORMAT
+  const previewFormat = process.env.THYROX_CODE_QUESTION_PREVIEW_FORMAT
   if (previewFormat === 'markdown' || previewFormat === 'html') {
     setQuestionPreviewFormat(previewFormat)
   } else if (
@@ -142,7 +152,7 @@ export function detectRuntimeMode(): void {
   }
 
   // Tag sessions created via `claude remote-control` so the backend can identify them
-  if (process.env.CLAUDE_CODE_ENVIRONMENT_KIND === 'bridge') {
+  if (process.env.THYROX_CODE_ENVIRONMENT_KIND === 'bridge') {
     setSessionSource('remote-control')
   }
 }

@@ -19,13 +19,10 @@
  * en su paquete real. `runBridgeHeadless` —la ruta que sí usa el daemon
  * worker— NO pasa por esas cuatro (su config llega por parámetro,
  * `HeadlessBridgeOpts`, no por settings.json de proyecto), pero SÍ llama
- * a `enableConfigs()`/`checkHasTrustDialogAccepted()` — que TAMBIÉN
- * faltan en `@thyrox/config` (medido: mismo 0 hits) y por eso son puntos
- * de inyección en `pendingCrossPackageDeps.ts`, con
- * `checkHasTrustDialogAccepted` en default `false` (conservador: sin
- * wiring real, `runBridgeHeadless` falla honesto con
- * `BridgeHeadlessPermanentError` en vez de fingir que la confianza del
- * workspace ya se verificó). `bridgeMain()` existe con su firma exacta y
+ * a `enableConfigs()`/`checkHasTrustDialogAccepted()`, que vienen de
+ * `@thyrox/config/global/config.js` y leen la configuración real (sin
+ * confianza aceptada, `runBridgeHeadless` falla honesto con
+ * `BridgeHeadlessPermanentError`). `bridgeMain()` existe con su firma exacta y
  * lanza al invocarse — mismo patrón que `createV2ReplTransport` en
  * `./replBridgeTransport.ts`. Se retira cuando `@thyrox/config` porte
  * las cuatro funciones de config de proyecto/global.
@@ -37,7 +34,7 @@
  * Import cruzado: la enorme mayoría de los símbolos foráneos de este
  * archivo (`checkGate_CACHED_OR_BLOCKING`, `logEvent`, `logEventAsync`,
  * `shutdownEventLoggers`, `isInBundledMode`, `logForDebugging`,
- * `logForDiagnosticsNoPII`, `isEnvTruthy`, `isInProtectedNamespace`,
+ * `logForDiagnosticsNoPII`, `isInProtectedNamespace`,
  * `errorMessage`, `truncateToWidth`, `logError`, `sleep`,
  * `createAgentWorktree`, `removeAgentWorktree`, `installSwarmHost`,
  * `getRemoteSessionUrl`, `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`,
@@ -54,30 +51,28 @@
 import { randomUUID } from 'node:crypto'
 import { hostname, tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata'
+import { isInBundledMode } from '@thyrox/config/bundledMode'
+import { isInProtectedNamespace } from '@thyrox/config/env/utils'
+import { checkGate_CACHED_OR_BLOCKING } from '@thyrox/config/feature-flags'
+import { checkHasTrustDialogAccepted, enableConfigs } from '@thyrox/config/global/config.js'
+import { sleep } from '@thyrox/config/sleep'
+import { logEvent } from '@thyrox/local-observability'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import {
-  checkHasTrustDialogAccepted,
   createAgentWorktree,
-  enableConfigs,
-  errorMessage,
   getMacroVersion,
   getRemoteSessionUrl,
   initSinks,
   installSwarmHost,
-  isEnvTruthy,
-  isInBundledMode,
-  isInProtectedNamespace,
   logError,
-  logEvent,
   logForDebugging,
   logForDiagnosticsNoPII,
   removeAgentWorktree,
   setCwdState,
   setOriginalCwd,
-  sleep,
-  truncateToWidth,
-  checkGate_CACHED_OR_BLOCKING,
   feature,
-  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 } from './internal/pendingCrossPackageDeps.js'
 import {
   BridgeFatalError,
@@ -1023,7 +1018,7 @@ export async function runBridgeLoop(
           // antes de que el flag del servidor esté prendido).
           if (
             secret.use_code_sessions === true ||
-            isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+            isBridgeCcrV2Forced()
           ) {
             sdkUrl = buildCCRv2SdkUrl(config.apiBaseUrl, sessionId)
             // Reintenta una vez ante fallo transitorio (blip de red,
@@ -2087,10 +2082,10 @@ ${serverOptions}
 DESCRIPTION
   Remote Control allows you to control sessions on your local device from
   claude.ai/code (https://claude.ai/code). Run this command in the
-  directory you want to work in, then connect from the Claude app or web.
+  directory you want to work in, then connect from the ${PRODUCT_NAME} app or web.
 ${serverDescription}
 NOTES
-  - You must be logged in with a Claude account that has a subscription
+  - You must be logged in with a ${PRODUCT_NAME} account that has a subscription
   - Run \`claude\` first in the directory to accept the workspace trust dialog
 ${serverNote}`
   console.log(help)
@@ -2242,11 +2237,7 @@ export async function runBridgeHeadless(
       'Remote Control base URL uses HTTP. Only HTTPS or localhost HTTP is allowed.',
     )
   }
-  const sessionIngressUrl =
-    process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      : baseUrl
+  const sessionIngressUrl = getBridgeSessionIngressUrlOverride() ?? baseUrl
 
   if (opts.spawnMode === 'worktree') {
     const worktreeAvailable =
@@ -2366,7 +2357,12 @@ export async function runBridgeHeadless(
  * porque son de un solo consumidor: sólo runBridgeHeadless los usa,
  * bridgeMain() está bloqueado).
  */
-import { getBridgeBaseUrl as _getBridgeBaseUrl } from './bridgeConfig.js'
+import {
+  getBridgeBaseUrl as _getBridgeBaseUrl,
+  getBridgeSessionIngressUrlOverride,
+  isBridgeCcrV2Forced,
+} from './bridgeConfig.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getBridgeBaseUrlForHeadless(): string {
   return _getBridgeBaseUrl()

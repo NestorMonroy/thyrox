@@ -1,0 +1,1 @@
+bash tests/session/test-item-worktree-stash.sh

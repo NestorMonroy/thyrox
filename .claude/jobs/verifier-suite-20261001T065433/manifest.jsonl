@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts 2>&1", "started_at": "2026-10-01T06:54:33+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T06:54:38+00:00", "duration_seconds": 5.066432}

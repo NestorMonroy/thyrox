@@ -1,0 +1,2 @@
+src/session/item_worktree.sh
+tests/session/test-headless-pool-worktree.sh

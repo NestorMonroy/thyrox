@@ -162,7 +162,7 @@ def review(repo: str, tree_root: Path | None = None) -> tuple[str, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--quiet", action="store_true", help="sólo el conteo")
     parser.add_argument("--strict", action="store_true", help="exit 1 si hay divergencias")
     parser.add_argument("--tree-root", default=None,

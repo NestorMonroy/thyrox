@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { AGENTS, migrationPorter, toAgentsJson, toMarkdown } from '../index.ts'
-import { agentsDir } from '../../../paths/reach.ts'
+import { agentsDir } from '@thyrox/paths/reach.ts'
 
 // El control lee el hogar por el mismo mecanismo que el emisor escribe. Si
 // leyera una ruta propia, los dos podrían divergir sin que nada lo dijera —

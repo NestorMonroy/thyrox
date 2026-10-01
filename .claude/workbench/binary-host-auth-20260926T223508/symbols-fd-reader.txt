@@ -1,0 +1,18 @@
+== y
+==== y: 1 definicion(es) de nivel superior
+---- chunk-qd0gs1zk.js function y [2786,3888)
+function y({envVar:e,wellKnownPath:n,readPath:r=n,label:o,fileLabel:s=o,getCached:p,setCached:c,skipInReviewOrigin:E=!1}){let m=p();if(m!==void 0)return m;let g=process.env[e];if(!g){let i=F(r,s);return c(i),i}let f=parseInt(g,10);if(Number.isNaN(f))return t(`${e} must be a valid file descriptor number, got: ${g}`,{level:"error"}),c(null),null;if(m2n(f)){let i=!a.CLAUDE_CODE_REMOTE&&typeof process.send!=="function",u=i?S(f,o):F(r,s);if(i)delete process.env[e],Upn(e);if(c(u),u&&i)k(n,u,s,{skipInReviewOrigin:E});return u}try{let i=`/proc/self/fd/${f}`,u=ONe(i,{maxBytes:Age}).trim();if(!u)return t(`File descriptor contained empty ${o}`,{level:"error"}),c(null),null;return t(`Successfully read ${o} from file descriptor ${f}`),c(u),k(n,u,s,{skipInReviewOrigin:E}),u}catch(i){t(`Failed to read ${o} from file descriptor ${f}: ${l(i)}`,{level:"error"});let u=F(r,s);if(u)return c(u),u;let A=v(i);if((A==="EACCES"||A==="EPERM")&&!a.CLAUDE_CODE_REMOTE&&typeof process.send!=="function"){let d=S(f,o);if(delete process.env[e],Upn(e),d)return c(d),k(n,d,s,{skipInReviewOrigin:E}),d}return c(null),null}}
+symbol: 1 de 1 nombre(s) resueltos
+
+== Cct
+==== Cct: 1 definicion(es) de nivel superior
+---- chunk-qd0gs1zk.js variable Cct [1234,1257)
+Cct=`${O}/.oauth_token`
+symbol: 1 de 1 nombre(s) resueltos
+
+== lBr
+==== lBr: 1 definicion(es) de nivel superior
+---- chunk-zwm3fybx.js function lBr [90169,90251)
+function lBr(e){return n().host.credentialSlots.descriptorAnnouncementConsumed(e)}
+symbol: 1 de 1 nombre(s) resueltos
+

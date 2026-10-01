@@ -7,70 +7,87 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./autoUpdater.js": {
+      "@thyrox/source": "./src/autoUpdater.ts",
       "types": "./dist/src/autoUpdater.d.ts",
       "default": "./src/autoUpdater.ts"
     },
     "./binaryCheck.js": {
+      "@thyrox/source": "./src/binaryCheck.ts",
       "types": "./dist/src/binaryCheck.d.ts",
       "default": "./src/binaryCheck.ts"
     },
     "./githubReleases.js": {
+      "@thyrox/source": "./src/githubReleases.ts",
       "types": "./dist/src/githubReleases.d.ts",
       "default": "./src/githubReleases.ts"
     },
     "./completionCache.js": {
+      "@thyrox/source": "./src/completionCache.ts",
       "types": "./dist/src/completionCache.d.ts",
       "default": "./src/completionCache.ts"
     },
     "./nativeInstaller/index.js": {
+      "@thyrox/source": "./src/nativeInstaller/index.ts",
       "types": "./dist/src/nativeInstaller/index.d.ts",
       "default": "./src/nativeInstaller/index.ts"
     },
     "./nativeInstaller/download.js": {
+      "@thyrox/source": "./src/nativeInstaller/download.ts",
       "types": "./dist/src/nativeInstaller/download.d.ts",
       "default": "./src/nativeInstaller/download.ts"
     },
     "./nativeInstaller/installer.js": {
+      "@thyrox/source": "./src/nativeInstaller/installer.ts",
       "types": "./dist/src/nativeInstaller/installer.d.ts",
       "default": "./src/nativeInstaller/installer.ts"
     },
     "./nativeInstaller/launcherOwnership.js": {
+      "@thyrox/source": "./src/nativeInstaller/launcherOwnership.ts",
       "types": "./dist/src/nativeInstaller/launcherOwnership.d.ts",
       "default": "./src/nativeInstaller/launcherOwnership.ts"
     },
     "./nativeInstaller/packageManagers.js": {
+      "@thyrox/source": "./src/nativeInstaller/packageManagers.ts",
       "types": "./dist/src/nativeInstaller/packageManagers.d.ts",
       "default": "./src/nativeInstaller/packageManagers.ts"
     },
     "./nativeInstaller/pidLock.js": {
+      "@thyrox/source": "./src/nativeInstaller/pidLock.ts",
       "types": "./dist/src/nativeInstaller/pidLock.d.ts",
       "default": "./src/nativeInstaller/pidLock.ts"
     },
     "./nativeInstaller/platform.js": {
+      "@thyrox/source": "./src/nativeInstaller/platform.ts",
       "types": "./dist/src/nativeInstaller/platform.d.ts",
       "default": "./src/nativeInstaller/platform.ts"
     },
     "./nativeInstaller/streamBinaryDownload.js": {
+      "@thyrox/source": "./src/nativeInstaller/streamBinaryDownload.ts",
       "types": "./dist/src/nativeInstaller/streamBinaryDownload.d.ts",
       "default": "./src/nativeInstaller/streamBinaryDownload.ts"
     },
     "./nativeInstaller": {
+      "@thyrox/source": "./src/nativeInstaller/index.ts",
       "types": "./dist/src/nativeInstaller/index.d.ts",
       "default": "./src/nativeInstaller/index.ts"
     }
@@ -79,12 +96,12 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/storage": "0.1.0",
     "axios": "^1.20.0",
     "chalk": "^6.0.0",
     "lodash-es": "^4.18.1",

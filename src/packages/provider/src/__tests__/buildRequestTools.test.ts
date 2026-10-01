@@ -9,7 +9,7 @@ import { installAgentHostBindings } from '@thyrox/agent'
 import { buildRequestTools } from '../claudeLegacyRuntime.js'
 import { recordUnsupportedCapabilities, resetFoundryCapabilities } from '../foundryCapabilities.js'
 
-const KEYS = ['ENABLE_TOOL_SEARCH', 'CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_API_KEY']
+const KEYS = ['ENABLE_TOOL_SEARCH', 'THYROX_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_RESOURCE', 'ANTHROPIC_API_KEY']
 const saved = Object.fromEntries(KEYS.map(k => [k, process.env[k]]))
 beforeAll(() => {
   installAgentHostBindings({} as never)
@@ -68,7 +68,7 @@ describe('buildRequestTools', () => {
 
   test('un despliegue de Foundry que rechazó la búsqueda recibe las herramientas sin diferir', async () => {
     process.env.ENABLE_TOOL_SEARCH = 'true'
-    process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+    process.env.THYROX_CODE_USE_FOUNDRY = '1'
     process.env.ANTHROPIC_FOUNDRY_RESOURCE = 'mi-recurso'
     recordUnsupportedCapabilities('claude-sonnet-4-5', ['tool_search'])
     const schemas = await buildRequestTools(
@@ -82,7 +82,7 @@ describe('buildRequestTools', () => {
   // Lo anterior ya lo apaga la decisión de búsqueda (`qpe`); esto sólo lo
   // hace el recorte sobre la lista (`Apo`).
   test('un despliegue que rechazó structured_outputs recibe los esquemas sin strict', async () => {
-    process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+    process.env.THYROX_CODE_USE_FOUNDRY = '1'
     process.env.ANTHROPIC_FOUNDRY_RESOURCE = 'mi-recurso'
     recordUnsupportedCapabilities('claude-sonnet-4-5', ['structured_outputs'])
     const schemas = await buildRequestTools([] as never, {

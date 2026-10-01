@@ -1,0 +1,3 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790535996.283	     2.020	0	0	0	0	/home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/selfedit/copia/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/selfedit/mut/mut-20260927T190635 mut-20260927T190635 mut-001
+2	:	1790535996.286	     2.019	0	0	0	0	/home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/selfedit/copia/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/selfedit/mut/mut-20260927T190635 mut-20260927T190635 mut-002

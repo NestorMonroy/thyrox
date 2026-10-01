@@ -95,6 +95,7 @@ def live_settings_path() -> pathlib.Path:
     if override:
         return pathlib.Path(override)
     cwd = pathlib.Path("/home/user")
+    # thyrox-rename: keep — el pid del cliente anfitrión
     pid = os.environ.get("CLAUDE_PID")
     if pid and pid.isdigit():
         try:
@@ -153,6 +154,7 @@ def bridged_hooks(include_stop: bool):
 
 
 def main(argv: list[str]) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--apply", action="store_true",
                         help="escribe la fuente viva (por defecto sólo muestra el diff)")

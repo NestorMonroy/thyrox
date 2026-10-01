@@ -1,0 +1,23 @@
+test_agent_proposal:
+  ok    aplicada sobre la base reproduce la edición del agente
+  ok    la base es la de HEAD
+  ok    el archivo vuelve a su base
+  ok    los objetivos son sólo los que nombra el patrón
+  ok    el proponente se llama agent y el id se prefija
+  ok    una sola edición mínima por archivo
+  ok    un archivo sin cambios rehúsa
+  ok    un patrón sin objetivos rehúsa
+  ok    y al rehusar deja la edición del agente en su sitio
+agent_proposal: REHÚSA — [Errno 2] No such file or directory: '/tmp/tmpf7y9imag/no-log'
+  ok    un log ausente rehúsa con 2, sin traza
+agent_proposal: REHÚSA — missing ), unterminated subpattern at position 0
+  ok    un patrón mal formado rehúsa con 2, sin traza
+  ok    con --run la propuesta sigue saliendo
+  ok    recuerda la lección de su archivo
+  ok    no recuerda la de otro archivo
+  ok    nombra cada archivo donde el patrón sigue vivo fuera, el mayor primero
+  ok    gate 4: lo pendiente bloquea con 4
+  ok    gate 4: dice por qué
+  ok    gate 4: la edición del agente sigue en el árbol
+  ok    gate 4: con el patrón cerrado la propuesta sale
+test_agent_proposal: 19 aserciones — 19 ok, 0 falla(s)

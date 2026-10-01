@@ -130,7 +130,7 @@ def offenders(roots, skip_control=True):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument('raices', nargs='*', default=None,
                     help='raices a barrer; por omision las cuatro del arbol')
     ap.add_argument('--strict', action='store_true',

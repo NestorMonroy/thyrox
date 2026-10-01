@@ -1,0 +1,12 @@
+== 1: la ruta guardada antes que la variable
+(fail) THYROX_MITM_UPSTREAM_CA_CERT wins over the stored path [1.55ms]
+ 4 pass
+ 1 fail
+== 2: sin try/catch alrededor de configureUpstreamCa
+(fail) an invalid path is logged and does not stop the start [0.40ms]
+ 4 pass
+ 1 fail
+== restaurado
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+ 5 pass
+ 0 fail

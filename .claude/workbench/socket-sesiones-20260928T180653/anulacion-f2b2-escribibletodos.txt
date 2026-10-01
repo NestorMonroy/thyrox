@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketsDir.test.ts:
+101 |     const base = tempDir()
+102 |     const shared = join(base, 'compartido')
+103 |     mkdirSync(shared)
+104 |     chmodSync(shared, 0o777)
+105 |     expect(await kindOf(prepareSocketsDirectory(join(shared, 'cc-socks'), deps()))).toBe('directory_rule')
+106 |     // fs.chmod de Bun descarta el sticky bit (H-THYROX-240); se pone con el binario.
+                                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "directory_rule"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketsDir.test.ts:106:85)
+(fail) prepareSocketsDirectory (Re) > un ancestro escribible por todos sin sticky se rehúsa; con sticky, no [1.15ms]
+
+ 17 pass
+ 1 fail
+ 31 expect() calls
+Ran 18 tests across 1 file. [55.00ms]

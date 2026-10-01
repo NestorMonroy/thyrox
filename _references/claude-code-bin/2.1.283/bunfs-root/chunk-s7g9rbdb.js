@@ -1,0 +1,18 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.283
+import{a}from"/$bunfs/root/chunk-v49zfq06.js";import{cf,Ry}from"/$bunfs/root/chunk-0jw7026c.js";import{isIP as p}from"net";var n={debug:0,info:1,warn:2,error:3};function c(){let e=a.CLAUDE_GATEWAY_LOG_LEVEL?.toLowerCase();return e&&e in n?n[e]:n.info}var m={"\n":"\\n","\r":"\\r","\t":"\\t"};function g(e){return e.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g,(t)=>m[t]??`\\u${t.charCodeAt(0).toString(16).padStart(4,"0")}`)}function yr(e,t){if(n[e]<c())return;process.stderr.write(`[gateway] ${new Date().toISOString()} ${e} ${g(t)}
+`)}function Wz(e,t){process.stderr.write(`${JSON.stringify({ts:new Date().toISOString(),evt:e,...t})}
+`)}function XKr(e,t){process.stderr.write(`
+\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
+`+`\u2502  Claude Code Gateway                \u2502
+`+`\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
+`);let l=t.tls?"https":"http",d=["metrics","logs","traces"].filter((r)=>e.telemetry.forward_to.some((o)=>o[r]));if(yr("info",`claude gateway listening on ${l}://${t.hostname}:${t.port}`),e.listen.public_url)yr("info",`public_url ${e.listen.public_url}`);let s=e.listen.trusted_proxies.length;if(yr("info",s===0?"client IPs: TCP peer address (listen.trusted_proxies empty)":`client IPs: X-Forwarded-For via listen.trusted_proxies (${s} ${s===1?"entry":"entries"})`),e.oidc){yr("info",`oidc issuer ${e.oidc.issuer}`);let r=e.oidc.allowed_email_domains??[];yr("info",`email domains ${r.length>0?r.join(","):"(unrestricted)"}`);let o=e.oidc.allowed_groups??[];yr("info",`allowed groups ${o.length>0?o.join(","):"(unrestricted)"}`)}else yr("info","oidc: not configured (customer-routed inference only)");if(e.cri?.enabled)yr("info",`customer-routed inference: enabled (${e.cri.org_allowlist.length} allowed org(s), policy webhook ${e.cri.policy?.webhook?"configured":"not configured"})`);yr("info",`upstreams ${e.upstreams.length}: ${e.upstreams.map((r)=>`${r.name}(${r.provider})`).join(", ")}`),yr("info",e.telemetry.forward_to.length===0?"telemetry relay: not configured":`telemetry relay: ${e.telemetry.forward_to.length} destination(s), signals enabled: ${d.join(",")||"none"}`);for(let r of e.telemetry.forward_to){let{host:o,hostname:u}=new URL(r.url);if(!p(u.replace(/^\[|\]$/g,""))&&cf()&&Ry(r.url))yr("info",`telemetry relay: ${o} matches NO_PROXY; exports to it skip the proxy`)}yr("info",`managed settings: ${t.managed?"configured":"not configured"}`),yr("info",`upstream requests: at most ${t.outboundLimit} at once per process (set BUN_CONFIG_MAX_HTTP_REQUESTS to change)`);let i=e.store.readiness_grace_seconds;if(i>0)yr("info",`readiness: /readyz keeps reporting ready for up to ${i}s after Postgres stops answering (store.readiness_grace_seconds)`)}
+export{yr,Wz,XKr};

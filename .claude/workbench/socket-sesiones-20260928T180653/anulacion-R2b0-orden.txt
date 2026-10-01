@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+80 | })
+81 | 
+82 | describe('modelHasCapability ($h)', () => {
+83 |   test('la anulación por entorno gana sobre el catálogo', () => {
+84 |     process.env[ENV] = 'claude-opus-5=-fast_mode'
+85 |     expect(modelHasCapability('claude-opus-5', 'fast_mode', 'claude-opus-5')).toBe(false)
+                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:85:79)
+(fail) modelHasCapability ($h) > la anulación por entorno gana sobre el catálogo [0.29ms]
+
+ 10 pass
+ 1 fail
+ 28 expect() calls
+Ran 11 tests across 1 file. [62.00ms]

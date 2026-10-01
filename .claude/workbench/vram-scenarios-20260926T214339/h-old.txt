@@ -1,0 +1,12 @@
+def _try_admit(ledger: VramLedger, need_mib: int, owner_pid: int, nvidia_smi: str) -> bool:
+    """Una pasada de comprobar-y-reservar. Se llama CON el lock sostenido: la
+    atomicidad es del lock, no de juntar las responsabilidades en una función."""
+    live = ledger.live()
+    current, free = measure(nvidia_smi)
+    usage = current.vram_by_pid if current else {}
+    trees = {int(pid): tree(int(pid)) for pid in live}
+    if admissible(free, pending(live, usage, trees), need_mib):
+        ledger.reserve(owner_pid, need_mib)
+        return True
+    ledger.save(live)
+    return False

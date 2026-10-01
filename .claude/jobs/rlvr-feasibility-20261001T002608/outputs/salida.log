@@ -1,0 +1,35 @@
+STEP 1/3: FROM docker.io/library/python:3.11-slim
+Trying to pull docker.io/library/python:3.11-slim...
+Getting image source signatures
+Copying blob sha256:0526d5e29bf341cb1941d46a6d4ab64fcde4fca3dc3adccfb4dbf5728b88b61e
+Copying blob sha256:6b37362b3da78869050b894b799ad4df04f1f3b52774087db0d81151570244c8
+Copying blob sha256:41e7217c2e506d048f89ca0c5cfef848c05ef990900627c19f99938c4aae57f8
+Copying blob sha256:58abdd9670ca8c69d03432ce188995dee67f0979357caf83866fe1ef2ec37138
+Copying config sha256:274d131132dbdc6058ed77088525d77adaf0749a6d99f2cf7d42feb9a10737c8
+Writing manifest to image destination
+STEP 2/3: RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1  && pip install --no-cache-dir transformers==4.46.3 trl==0.12.2 peft==0.13.2 datasets==3.1.0 accelerate==1.1.1
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_CHOWN: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_DAC_OVERRIDE: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_FOWNER: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_FSETID: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_KILL: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_NET_BIND_SERVICE: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_SETFCAP: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_SETGID: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_SETPCAP: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_SETUID: operation not permitted"
+time="2026-10-01T00:26:12Z" level=warning msg="can't raise ambient capability CAP_SYS_CHROOT: operation not permitted"
+Looking in indexes: https://download.pytorch.org/whl/cpu
+Collecting torch==2.5.1
+  Downloading https://download-r2.pytorch.org/whl/cpu/torch-2.5.1%2Bcpu-cp311-cp311-linux_x86_64.whl (174.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 174.7/174.7 MB 89.1 MB/s eta 0:00:00
+Collecting filelock (from torch==2.5.1)
+  WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)'))': /packages/a7/8e/50f46a9c0ce8d2861a394c1347caae037ea0431d2f67d7feb151cbc4649a/filelock-3.32.3-py3-none-any.whl.metadata
+  WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)'))': /packages/a7/8e/50f46a9c0ce8d2861a394c1347caae037ea0431d2f67d7feb151cbc4649a/filelock-3.32.3-py3-none-any.whl.metadata
+  WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)'))': /packages/a7/8e/50f46a9c0ce8d2861a394c1347caae037ea0431d2f67d7feb151cbc4649a/filelock-3.32.3-py3-none-any.whl.metadata
+  WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)'))': /packages/a7/8e/50f46a9c0ce8d2861a394c1347caae037ea0431d2f67d7feb151cbc4649a/filelock-3.32.3-py3-none-any.whl.metadata
+  WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)'))': /packages/a7/8e/50f46a9c0ce8d2861a394c1347caae037ea0431d2f67d7feb151cbc4649a/filelock-3.32.3-py3-none-any.whl.metadata
+ERROR: Could not install packages due to an OSError: HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packages/a7/8e/50f46a9c0ce8d2861a394c1347caae037ea0431d2f67d7feb151cbc4649a/filelock-3.32.3-py3-none-any.whl.metadata (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1016)')))
+
+Error: building at STEP "RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1  && pip install --no-cache-dir transformers==4.46.3 trl==0.12.2 peft==0.13.2 datasets==3.1.0 accelerate==1.1.1": while running runtime: exit status 1
+__BG_EXIT__=1

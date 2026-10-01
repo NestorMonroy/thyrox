@@ -166,6 +166,7 @@ def report(headroom: Headroom, advice: Advice,
 
 
 def main(argv: list[str] | None = None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", default=".", help="raiz del clon")
     parser.add_argument("--margin", type=float, default=SAFETY_MARGIN,

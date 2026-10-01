@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/workerPhaseGuard.test.ts:
+[bg] illegal worker-phase transition retired:killed → retiring:reap for phg00002
+[bg] illegal worker-phase transition retired:done → retired:killed for phg00003
+
+ 315 pass
+ 0 fail
+ 509 expect() calls
+Ran 315 tests across 22 files. [6.25s]
+__BG_EXIT__=0

@@ -1,0 +1,7 @@
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /home/user/kaupamex-docs/.claude/cache)
+0 hallazgo(s) nuevo(s): 0 inventado(s) · 0 prohibido(s) (alcance medido: 1 archivo(s); 0 hallazgo(s) en total; 820 en baseline; léxico: 1000000 formas; vetadas: 53)
+check-rst-sintaxis: 0 archivo(s) con errores de sintaxis
+  (alcance medido: 1 de 5882 — archivos indicados)
+check-rst-convenciones: OK — autoría canónica y tablas en list-table
+  (alcance medido: 1 archivos .rst pedidos por ruta; 0 declaraciones :autor:; bloques literales excluidos del check de tabla)
+  TASK-THYROX-0667 -> Run repository/job items as Podman workers through the manager

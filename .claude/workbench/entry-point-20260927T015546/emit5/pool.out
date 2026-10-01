@@ -1,0 +1,30 @@
+run-task-pool: 5 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T022404
+  job-20260927T022404/job-001 pid 5119    bash bin/emit_declarations --repoint paths > .claude/workbench/entry-point-20260927T015546/emit5/paths.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/paths.out
+  job-20260927T022404/job-002 pid 5140    bash bin/emit_declarations --repoint store > .claude/workbench/entry-point-20260927T015546/emit5/store.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/store.out
+  job-20260927T022404/job-003 pid 5193    bash bin/emit_declarations --repoint task > .claude/workbench/entry-point-20260927T015546/emit5/task.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/task.out
+  job-20260927T022404/job-004 pid 5211    bash bin/emit_declarations --repoint coordination > .claude/workbench/entry-point-20260927T015546/emit5/coordination.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/coordination.out
+  job-20260927T022404/job-005 pid 5266    bash bin/emit_declarations --repoint workbench > .claude/workbench/entry-point-20260927T015546/emit5/workbench.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/emit5/workbench.out
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T022404_job-001 -> OK (2 de 6)
+asentado: job-20260927T022404_job-002 -> OK (3 de 6)
+asentado: job-20260927T022404_job-003 -> OK (4 de 6)
+asentado: job-20260927T022404_job-004 -> OK (5 de 6)
+asentado: job-20260927T022404_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T022404
+       | (vacío — no emitió nada)
+OK     job-20260927T022404_job-001
+       | EXIT=0
+       memoria pico: 235696 KB (230 MB) · pared 2.35s
+OK     job-20260927T022404_job-002
+       | EXIT=0
+       memoria pico: 229008 KB (224 MB) · pared 2.19s
+OK     job-20260927T022404_job-003
+       | EXIT=0
+       memoria pico: 235160 KB (230 MB) · pared 2.37s
+OK     job-20260927T022404_job-004
+       | EXIT=0
+       memoria pico: 236440 KB (231 MB) · pared 2.41s
+OK     job-20260927T022404_job-005
+       | EXIT=0
+       memoria pico: 234452 KB (229 MB) · pared 1.83s

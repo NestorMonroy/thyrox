@@ -1,0 +1,2 @@
+storage	src/sessionStorage.ts(143,24): error TS2304: Cannot find name 'MACRO'.
+storage	src/sessionStorage.ts(143,48): error TS2304: Cannot find name 'MACRO'.

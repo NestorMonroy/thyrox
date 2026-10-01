@@ -1,0 +1,15 @@
+=== 1. CASO (a): diferencia real ===
+  ok    diferencia real -> significant=True
+  ok    el IC no cruza cero
+=== 2. CASO (b): ruido, sin diferencia real ===
+  ok    diferencia del orden del ruido -> significant=False
+  ok    el IC SÍ cruza cero
+=== 3. N=1 rehúsa ===
+  ok    N=1 en una muestra -> ValueError
+=== 4. determinismo — mismo seed, mismo resultado exacto ===
+  ok    dos corridas con el mismo seed dan el mismo IC exacto
+=== 5. ANULACIÓN — n_resamples=1 vuelve el veredicto un falso positivo sistemático ===
+  ok    con n_resamples=1, el caso (b) SIN diferencia real da significant=True en las 8 semillas -- el 'intervalo' de un solo punto casi nunca cae en cero, así que deja de discriminar y siempre marca 'real'
+
+OK=7 FAILED=0
+EXIT=0

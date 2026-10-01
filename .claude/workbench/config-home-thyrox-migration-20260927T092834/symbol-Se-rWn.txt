@@ -1,0 +1,7 @@
+==== Se: 1 definicion(es) de nivel superior
+---- chunk-4cnes656.js variable Se [2595,2648)
+Se=Fo(()=>(o()??u(R(),".claude")).normalize("NFC"),o)
+==== rWn: 1 definicion(es) de nivel superior
+---- chunk-gpsyc3w1.js function rWn [775262,775932)
+function rWn(){let e=Se(),r=[em(e,"ide")];if(a.CLAUDE_CONFIG_DIR||e.trim()==="")r.push(em(yD.homedir(),".claude","ide").normalize("NFC"));if(O()==="wsl"){let n=a.USERPROFILE?fMt(a.USERPROFILE):null;if(n)r.push(em(n,".claude","ide"));try{let h=ce().readdirSync("/mnt/c/Users");for(let g of h){if(!g.isDirectory()&&!g.isSymbolicLink())continue;if(g.name==="Public"||g.name==="Default"||g.name==="Default User"||g.name==="All Users")continue;r.push(em("/mnt/c/Users",g.name,".claude","ide"))}}catch(s){if(kt(s))t(`WSL IDE lockfile path detection failed (${s.code}): ${l(s)}`);else t(`WSL IDE lockfile path detection failed unexpectedly: ${l(s)}`,{level:"error"})}}return r}
+symbol: 2 de 2 nombre(s) resueltos

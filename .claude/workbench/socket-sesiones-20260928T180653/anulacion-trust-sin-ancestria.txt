@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTrust.test.ts:
+107 |   })
+108 | })
+109 | 
+110 | describe('isSelfSent (ye)', () => {
+111 |   test('con ancestría verificada decide la ancestría, salvo siendo init', async () => {
+112 |     expect(await isSelfSent({ selfSentAncestry: [10, 4242], selfPid: 4242, needsVerdict: false, childTokenPresented: false, platform: 'linux' })).toBe(true)
+                                                                                                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTrust.test.ts:112:147)
+(fail) isSelfSent (ye) > con ancestría verificada decide la ancestría, salvo siendo init [0.33ms]
+
+ 16 pass
+ 1 fail
+ 48 expect() calls
+Ran 17 tests across 1 file. [126.00ms]

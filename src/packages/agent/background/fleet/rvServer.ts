@@ -4,7 +4,7 @@
  * 1:1 port of ant 4291.js (`w06` module: startRendezvousServer / sendRv /
  * stopRendezvousServer / the kb3 command handler / the startup-wedge
  * watchdog / markStartupDialogBlocked). Runs INSIDE the inner bg REPL
- * process. Binds the Unix socket named by `CLAUDE_BG_RENDEZVOUS_SOCK`
+ * process. Binds the Unix socket named by `THYROX_BG_RENDEZVOUS_SOCK`
  * (set by spawnPty.ts) and gives the worker an out-of-band channel to
  * push authoritative lifecycle to its supervising daemon — the channel
  * ccb previously lacked, forcing the disk-poll heuristic in
@@ -129,7 +129,7 @@ const WEDGE_DETAIL = 'stuck on a startup dialog'
 const WEDGE_NEEDS = 'open this session to continue setup'
 /** ant heartbeat cadence (4291.js `setInterval(...,30000)`). */
 const RV_HEARTBEAT_MS = 30_000
-/** ant default startup-wedge timeout (CLAUDE_BG_STARTUP_WEDGE_MS || 45000). */
+/** ant default startup-wedge timeout (THYROX_BG_STARTUP_WEDGE_MS || 45000). */
 const STARTUP_WEDGE_MS_DEFAULT = 45_000
 
 /**
@@ -156,18 +156,18 @@ export function sendRv(frame: OutboundFrame): boolean {
 }
 
 /**
- * Start the rendezvous server. No-op if `CLAUDE_BG_RENDEZVOUS_SOCK` is
+ * Start the rendezvous server. No-op if `THYROX_BG_RENDEZVOUS_SOCK` is
  * unset (foreground / detached sessions) or if already running. ant Rb3.
  */
 export async function startRendezvousServer(
   installedHost: RvServerHost = {},
 ): Promise<void> {
-  const sockPath = readEnv('CLAUDE_BG_RENDEZVOUS_SOCK')
+  const sockPath = readEnv('THYROX_BG_RENDEZVOUS_SOCK')
   if (!sockPath || server) return
   host = installedHost
   // ant deletes the env var after reading so a nested spawn doesn't
   // inherit + try to bind the same socket.
-  deleteEnv('CLAUDE_BG_RENDEZVOUS_SOCK')
+  deleteEnv('THYROX_BG_RENDEZVOUS_SOCK')
   await unlink(sockPath).catch(() => {})
 
   server = createServer(socket => {
@@ -306,7 +306,7 @@ function handleReply(text: string): void {
  * boot-phase detail string ccb doesn't have.
  */
 async function runStartupSettle(): Promise<void> {
-  const jobDir = readEnv('CLAUDE_JOB_DIR')
+  const jobDir = readEnv('THYROX_JOB_DIR')
   if (!jobDir) return
   // Wait up to 30s (60 × 500ms) for the renderer to come up. ant loops on
   // `j5.has(process.stdout)`; ccb uses the injected isRendererReady probe.
@@ -318,12 +318,18 @@ async function runStartupSettle(): Promise<void> {
   armStartupWedge(jobDir)
 }
 
+/**
+ * El plazo del vigilante de arranque: `THYROX_BG_STARTUP_WEDGE_MS` si es un
+ * número positivo, si no el valor por defecto de ant.
+ */
+export function startupWedgeMs(): number {
+  return Number(readEnv('THYROX_BG_STARTUP_WEDGE_MS')) || STARTUP_WEDGE_MS_DEFAULT
+}
+
 /** ant Nb3 — arm the startup-wedge watchdog (idempotent while armed). */
 function armStartupWedge(jobDir: string): void {
   if (wedgeDisarmed || wedgeTimer) return
-  const ms =
-    Number(readEnv('CLAUDE_BG_STARTUP_WEDGE_MS')) || STARTUP_WEDGE_MS_DEFAULT
-  wedgeTimer = setTimeout(() => void fireStartupWedge(jobDir), ms)
+  wedgeTimer = setTimeout(() => void fireStartupWedge(jobDir), startupWedgeMs())
   wedgeTimer.unref()
 }
 
@@ -374,7 +380,7 @@ export function disarmStartupWedgeWatchdog(): void {
  * timeout. Flips state to blocked + pushes it.
  */
 export async function markStartupDialogBlocked(detail?: string): Promise<void> {
-  const jobDir = readEnv('CLAUDE_JOB_DIR')
+  const jobDir = readEnv('THYROX_JOB_DIR')
   if (!jobDir || wedgeDisarmed) return
   const current = await readJobState(jobDir).catch(() => null)
   if (!current || current.tempo === 'blocked') return
@@ -408,7 +414,7 @@ export async function markStartupDialogBlocked(detail?: string): Promise<void> {
  * emits one; a turn ending is not a process exit.
  */
 export async function pushRvState(patch: Partial<FleetJobState>): Promise<void> {
-  const jobDir = readEnv('CLAUDE_JOB_DIR')
+  const jobDir = readEnv('THYROX_JOB_DIR')
   if (!jobDir) return
   const current = await readJobState(jobDir).catch(() => null)
   if (current) {

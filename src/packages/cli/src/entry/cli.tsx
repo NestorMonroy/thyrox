@@ -1,5 +1,17 @@
 #!/usr/bin/env bun
+import { PRODUCT_NAME } from './productName.ts'
 import { feature } from 'bun:bundle'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+// La versión de thyrox es la de su propio manifiesto. Antes se leía del
+// entorno, y el anfitrión fija ahí la SUYA (CLAUDE_CODE_VERSION): thyrox se
+// presentaba con la identidad de otro cliente en --version y en cabeceras.
+// THYROX_CODE_VERSION queda para que una construcción la fije.
+function manifestVersion(): string {
+  const manifest = JSON.parse(readFileSync(join(import.meta.dir, '..', '..', 'package.json'), 'utf8')) as { version?: string }
+  return manifest.version ?? '0.0.0'
+}
 
 // Runtime fallback for MACRO.* when not injected by build/dev defines.
 // This happens when running cli.tsx directly (not via `bun run dev` or built dist/).
@@ -16,7 +28,7 @@ type MacroShape = Record<
 const macroSlot = globalThis as typeof globalThis & { MACRO?: MacroShape }
 if (typeof macroSlot.MACRO === 'undefined') {
   macroSlot.MACRO = {
-    VERSION: process.env.CLAUDE_CODE_VERSION || '1.carus.000',
+    VERSION: process.env.THYROX_CODE_VERSION || manifestVersion(),
     BUILD_TIME: new Date().toISOString(),
     FEEDBACK_CHANNEL: '',
     ISSUES_EXPLAINER: '',
@@ -32,7 +44,7 @@ process.env.COREPACK_ENABLE_AUTO_PIN = '0'
 
 // Set max heap size for child processes in CCR environments (containers have 16GB)
 // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level, custom-rules/safe-env-boolean-check
-if (process.env.CLAUDE_CODE_REMOTE === 'true') {
+if (process.env.THYROX_CODE_REMOTE === 'true') {
   // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
   const existing = process.env.NODE_OPTIONS || ''
   // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
@@ -46,15 +58,15 @@ if (process.env.CLAUDE_CODE_REMOTE === 'true') {
 // module-level consts at import time — init() runs too late. feature() gate
 // DCEs this entire block from external builds.
 // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
-if (feature('ABLATION_BASELINE') && process.env.CLAUDE_CODE_ABLATION_BASELINE) {
+if (feature('ABLATION_BASELINE') && process.env.THYROX_CODE_ABLATION_BASELINE) {
   for (const k of [
-    'CLAUDE_CODE_SIMPLE',
-    'CLAUDE_CODE_DISABLE_THINKING',
+    'THYROX_CODE_SIMPLE',
+    'THYROX_CODE_DISABLE_THINKING',
     'DISABLE_INTERLEAVED_THINKING',
     'DISABLE_COMPACT',
     'DISABLE_AUTO_COMPACT',
-    'CLAUDE_CODE_DISABLE_AUTO_MEMORY',
-    'CLAUDE_CODE_DISABLE_BACKGROUND_TASKS',
+    'THYROX_CODE_DISABLE_AUTO_MEMORY',
+    'THYROX_CODE_DISABLE_BACKGROUND_TASKS',
   ]) {
     // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
     process.env[k] ??= '1'
@@ -64,23 +76,39 @@ if (feature('ABLATION_BASELINE') && process.env.CLAUDE_CODE_ABLATION_BASELINE) {
 /**
  * Bootstrap entrypoint - checks for special flags before loading the full CLI.
  * All imports are dynamic to minimize module evaluation for fast paths.
- * Fast-path for --version has zero imports beyond this file.
+ * El perfilador de arranque es la única excepción a eso: se carga antes que
+ * cualquier camino, `--version` incluido, porque su sola carga registra el
+ * cierre del informe al terminar el proceso (`startupProfiler.ts`), y ese
+ * cierre tiene que alcanzar a todo camino, no sólo al REPL (#130-7).
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
 
-  // Fast-path for --version/-v: zero module loading needed
+  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
+
+  // Fast-path for --version/-v: no further module loading beyond the profiler above
   if (
     args.length === 1 &&
     (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')
   ) {
     // MACRO.VERSION is inlined at build time
-    console.log(`${MACRO.VERSION} (Claude Code)`)
+    console.log(`${MACRO.VERSION} (${PRODUCT_NAME})`)
     return
   }
 
-  // For all other paths, load the startup profiler
-  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
+  // El cwd se mide antes que nada, como en la capa `cli` del binario (`rt`):
+  // uno borrado revienta mas adentro con un rastro que no dice que hacer.
+  await (await import('./cwdCheck.ts')).exitIfCwdUnavailable()
+
+  // Los comandos autocontenidos (`providers`, `mitm`) no necesitan el
+  // arranque completo: por `main.tsx` cargaban miles de módulos para leer una
+  // tabla (#130). Se resuelven aquí y salen.
+  const lightExitCode = await (await import('./lightModes.ts')).runLightMode(args)
+  if (lightExitCode !== undefined) {
+    process.exitCode = lightExitCode
+    return
+  }
+
   profileCheckpoint('cli_entry')
 
   // Fast-path for --dump-system-prompt: output the rendered system prompt and exit.
@@ -349,8 +377,8 @@ async function main(): Promise<void> {
   }
 
   if (args.includes('--ax-screen-reader')) {
-    process.env.CLAUDE_CODE_AX_SCREEN_READER = '1'
-    process.env.CLAUDE_CODE_ACCESSIBILITY = '1'
+    process.env.THYROX_CODE_AX_SCREEN_READER = '1'
+    process.env.THYROX_CODE_ACCESSIBILITY = '1'
     process.argv = process.argv.filter(arg => arg !== '--ax-screen-reader')
     args.splice(0, args.length, ...process.argv.slice(2))
   }
@@ -358,7 +386,7 @@ async function main(): Promise<void> {
   // --bare: set SIMPLE early so gates fire during module eval / commander
   // option building (not just inside the action handler).
   if (args.includes('--bare')) {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.THYROX_CODE_SIMPLE = '1'
   }
 
   // No special flags detected, load and run the full CLI

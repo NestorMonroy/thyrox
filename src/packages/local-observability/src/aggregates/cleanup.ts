@@ -42,10 +42,10 @@
  * exporta `./cache-paths`.
  *
  * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`):
- * `getFsImplementation`, `getClaudeConfigHomeDir`, `getProjectsDir`,
  * `TOOL_RESULTS_SUBDIR`, `getSettings`/`rawSettingsContainsKey`/
- * `getSettingsWithAllErrors`, `lock`/`unlock` (proper-lockfile),
- * los 4 puntos de inyección de arriba.
+ * `getSettingsWithAllErrors` y los 4 puntos de inyección de arriba.
+ * `getFsImplementation`, `getProjectsDir`, `lock`/`unlock` vienen de
+ * `@thyrox/storage`; `getConfigHomeDir`, de `@thyrox/config`.
  */
 
 import * as fs from 'fs/promises'
@@ -55,21 +55,19 @@ import { logEvent } from '../index.js'
 import { CACHE_PATHS } from '@thyrox/storage/cache-paths'
 import { logForDebugging } from '../debug.js'
 import { logError } from '../log.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+import { type FsOperations, getFsImplementation } from '@thyrox/storage/fsOperations'
+import { getProjectsDir } from '@thyrox/storage/sessionStoragePortable.js'
+import { lock, unlock } from '@thyrox/storage/lockfile.js'
 import {
   cleanupOldImageCaches,
   cleanupOldPastes,
   cleanupOldVersions,
   cleanupStaleAgentWorktrees,
-  getClaudeConfigHomeDir,
-  getFsImplementation,
-  getProjectsDir,
   getSettings,
   getSettingsWithAllErrors,
-  lock,
   rawSettingsContainsKey,
   TOOL_RESULTS_SUBDIR,
-  unlock,
-  type FsOperations,
 } from '../internal/pendingCrossPackageDeps.js'
 
 const DEFAULT_CLEANUP_PERIOD_DAYS = 30
@@ -348,7 +346,7 @@ async function cleanupSingleDirectory(
 }
 
 export function cleanupOldPlanFiles(): Promise<CleanupResult> {
-  const plansDir = join(getClaudeConfigHomeDir(), 'plans')
+  const plansDir = join(getConfigHomeDir(), 'plans')
   return cleanupSingleDirectory(plansDir, '.md')
 }
 
@@ -358,7 +356,7 @@ export async function cleanupOldFileHistoryBackups(): Promise<CleanupResult> {
   const fsImpl = getFsImplementation()
 
   try {
-    const configDir = getClaudeConfigHomeDir()
+    const configDir = getConfigHomeDir()
     const fileHistoryStorageDir = join(configDir, 'file-history')
 
     let dirents
@@ -403,7 +401,7 @@ export async function cleanupOldSessionEnvDirs(): Promise<CleanupResult> {
   const fsImpl = getFsImplementation()
 
   try {
-    const configDir = getClaudeConfigHomeDir()
+    const configDir = getConfigHomeDir()
     const sessionEnvBaseDir = join(configDir, 'session-env')
 
     let dirents
@@ -445,7 +443,7 @@ export async function cleanupOldDebugLogs(): Promise<CleanupResult> {
   const cutoffDate = getCutoffDate()
   const result: CleanupResult = { messages: 0, errors: 0 }
   const fsImpl = getFsImplementation()
-  const debugDir = join(getClaudeConfigHomeDir(), 'debug')
+  const debugDir = join(getConfigHomeDir(), 'debug')
 
   let dirents
   try {
@@ -485,7 +483,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000
  * desarrollo por día. Sólo corre una vez al día para usuarios Ant.
  */
 export async function cleanupNpmCacheForAnthropicPackages(): Promise<void> {
-  const markerPath = join(getClaudeConfigHomeDir(), '.npm-cache-cleanup')
+  const markerPath = join(getConfigHomeDir(), '.npm-cache-cleanup')
 
   try {
     const stat = await fs.stat(markerPath)
@@ -591,7 +589,7 @@ export async function cleanupNpmCacheForAnthropicPackages(): Promise<void> {
  * instalador.
  */
 export async function cleanupOldVersionsThrottled(): Promise<void> {
-  const markerPath = join(getClaudeConfigHomeDir(), '.version-cleanup')
+  const markerPath = join(getConfigHomeDir(), '.version-cleanup')
 
   try {
     const stat = await fs.stat(markerPath)

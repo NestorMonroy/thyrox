@@ -19,6 +19,7 @@ import {
   DESCRIPTION,
   PREVIEW_FEATURE_PROMPT,
 } from './prompt.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const questionOptionSchema = lazySchema(() =>
   z.object({
@@ -181,7 +182,7 @@ function AskUserQuestionResultMessage({
     <Box flexDirection="column" marginTop={1}>
       <Box flexDirection="row">
         <Text color={getModeColor('default')}>{BLACK_CIRCLE}&nbsp;</Text>
-        <Text>User answered Claude&apos;s questions:</Text>
+        <Text>User answered {PRODUCT_NAME}&apos;s questions:</Text>
       </Box>
       <MessageResponse>
         <Box flexDirection="column">

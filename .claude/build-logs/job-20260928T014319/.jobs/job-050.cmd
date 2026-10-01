@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/hooks/test_task_lifecycle.py

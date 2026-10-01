@@ -26,7 +26,7 @@ import type { ShellProvider } from './shellProvider.js'
  * Extended globs (bash extglob, zsh EXTENDED_GLOB) can be exploited via
  * malicious filenames that expand after our security validation.
  *
- * When CLAUDE_CODE_SHELL_PREFIX is set, the actual executing shell may differ
+ * When THYROX_CODE_SHELL_PREFIX is set, the actual executing shell may differ
  * from shellPath (e.g., shellPath is zsh but the wrapper runs bash). In this
  * case, we include commands for BOTH shells. We redirect both stdout and stderr
  * to /dev/null because zsh's command_not_found_handler writes to STDOUT.
@@ -34,9 +34,9 @@ import type { ShellProvider } from './shellProvider.js'
  * When no shell prefix is set, we use the appropriate command for the detected shell.
  */
 function getDisableExtglobCommand(shellPath: string): string | null {
-  // When CLAUDE_CODE_SHELL_PREFIX is set, the wrapper may use a different shell
+  // When THYROX_CODE_SHELL_PREFIX is set, the wrapper may use a different shell
   // than shellPath, so we include both bash and zsh commands
-  if (process.env.CLAUDE_CODE_SHELL_PREFIX) {
+  if (process.env.THYROX_CODE_SHELL_PREFIX) {
     // Redirect both stdout and stderr because zsh's command_not_found_handler
     // writes to stdout instead of stderr
     return '{ shopt -u extglob || setopt NO_EXTENDED_GLOB; } >/dev/null 2>&1 || true'
@@ -184,10 +184,10 @@ export async function createBashShellProvider(
       commandParts.push(`pwd -P >| ${quote([shellCwdFilePath])}`)
       let commandString = commandParts.join(' && ')
 
-      // Apply CLAUDE_CODE_SHELL_PREFIX if set
-      if (process.env.CLAUDE_CODE_SHELL_PREFIX) {
+      // Apply THYROX_CODE_SHELL_PREFIX if set
+      if (process.env.THYROX_CODE_SHELL_PREFIX) {
         commandString = formatShellPrefixCommand(
-          process.env.CLAUDE_CODE_SHELL_PREFIX,
+          process.env.THYROX_CODE_SHELL_PREFIX,
           commandString,
         )
       }
@@ -207,12 +207,12 @@ export async function createBashShellProvider(
       command: string,
     ): Promise<Record<string, string>> {
       // TMUX SOCKET ISOLATION (DEFERRED):
-      // We initialize Claude's tmux socket ONLY AFTER the Tmux tool has been used
+      // We initialize thyrox's tmux socket ONLY AFTER the Tmux tool has been used
       // at least once, OR if the current command appears to use tmux.
       // This defers the startup cost until tmux is actually needed.
       //
       // Once the Tmux tool is used (or a tmux command runs), all subsequent Bash
-      // commands will use Claude's isolated socket via the TMUX env var override.
+      // commands will use thyrox's isolated socket via the TMUX env var override.
       //
       // See tmuxSocket.ts for the full isolation architecture documentation.
       const commandUsesTmux = command.includes('tmux')
@@ -224,8 +224,8 @@ export async function createBashShellProvider(
       }
       const claudeTmuxEnv = await ctx.getTmuxEnv?.(command) ?? null
       const env: Record<string, string> = {}
-      // CRITICAL: Override TMUX to isolate ALL tmux commands to Claude's socket.
-      // This is NOT the user's TMUX value - it points to Claude's isolated socket.
+      // CRITICAL: Override TMUX to isolate ALL tmux commands to thyrox's socket.
+      // This is NOT the user's TMUX value - it points to thyrox's isolated socket.
       // When null (before socket initializes), user's TMUX is preserved.
       if (claudeTmuxEnv) {
         env.TMUX = claudeTmuxEnv
@@ -236,7 +236,7 @@ export async function createBashShellProvider(
           posixTmpDir = windowsPathToPosixPath(posixTmpDir)
         }
         env.TMPDIR = posixTmpDir
-        env.CLAUDE_CODE_TMPDIR = posixTmpDir
+        env.THYROX_CODE_TMPDIR = posixTmpDir
         // Zsh uses TMPPREFIX (default /tmp/zsh) for heredoc temp files,
         // not TMPDIR. Set it to a path inside the sandbox tmp dir so
         // heredocs work in sandboxed zsh commands.

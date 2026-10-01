@@ -1,0 +1,14 @@
+repository Qwen/Qwen2.5-Coder-1.5B-Instruct
+revision 2e1fd397ee46e1388853d2af2c993145b0f1098a
+license apache-2.0
+.gitattributes 1519 blob:a6344aac8c09253b3b630fb776ae94478aa0275b
+LICENSE 11343 blob:6634c8cc3133b3848ec74b9f275acaaa1ea618ab
+README.md 5258 blob:ae7c2e1a888ccc658813a6779ba63625ceeac946
+config.json 660 blob:b4831594221a81ea1540f0c6aeae93b6a8aeae56
+generation_config.json 242 blob:b7849b3dad857bc1e227afd6ca21d1e4cb3f8f82
+merges.txt 1671839 blob:20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0
+model.safetensors 3087467144 c1b9b30e907950516ba3c646bdf570d8084c25a6410a0cdca80cf04b11bc13a8
+tokenizer.json 7031645 blob:443909a61d429dff23010e5bddd28ff530edda00
+tokenizer_config.json 7305 blob:acee076f49bf3c0298e15de0909d1da7b392f0c3
+vocab.json 2776833 blob:4783fe10ac3adce15ac8f358ef5462739852c569
+total_bytes 3098973788

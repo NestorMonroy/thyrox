@@ -259,10 +259,10 @@ export type ToolUseContext = {
   }) => void
   nestedMemoryAttachmentTriggers?: Set<string>
   /**
-   * Rutas de CLAUDE.md ya inyectadas como adjuntos nested_memory en esta
+   * Rutas de THYROX.md ya inyectadas como adjuntos nested_memory en esta
    * sesión. Deduplica para memoryFilesToAttachments — readFileState es un
    * LRU que desaloja entradas en sesiones ocupadas, así que su chequeo
-   * .has() solo puede re-inyectar el mismo CLAUDE.md docenas de veces.
+   * .has() solo puede re-inyectar el mismo THYROX.md docenas de veces.
    */
   loadedNestedMemoryPaths?: Set<string>
   dynamicSkillDirTriggers?: Set<string>
@@ -509,14 +509,14 @@ export type Tool<
    * Para herramientas MCP: los nombres de servidor y herramienta tal como
    * los recibió el servidor MCP (sin normalizar). Presente en toda
    * herramienta MCP sin importar si `name` lleva prefijo
-   * (mcp__server__tool) o no (modo CLAUDE_AGENT_SDK_MCP_NO_PREFIX).
+   * (mcp__server__tool) o no (modo THYROX_AGENT_SDK_MCP_NO_PREFIX).
    */
   mcpInfo?: { serverName: string; toolName: string }
   readonly name: string
   /**
    * Tamaño máximo en caracteres para el resultado de la herramienta antes
    * de persistirlo a disco. Cuando se excede, el resultado se guarda en un
-   * archivo y Claude recibe una vista previa con la ruta del archivo en
+   * archivo y thyrox recibe una vista previa con la ruta del archivo en
    * vez del contenido completo.
    *
    * Se fija a Infinity para herramientas cuya salida nunca debe
@@ -667,9 +667,9 @@ export type Tool<
    *
    * Opcional: si se omite → heurística por nombre de campo en
    * transcriptSearch.ts. El drift lo atrapa
-   * test/utils/transcriptSearch.renderFidelity.test.tsx, que renderiza
+   * `src/__tests__/searchTextRenderFidelity.test.tsx`, que renderiza
    * salidas de muestra y marca texto indexado-pero-no-renderizado
-   * (fantasma) o renderizado-pero-no-indexado (aviso de subconteo).
+   * (fantasma). El subconteo está permitido y no se mide.
    */
   extractSearchText?(out: Output): string
   /**

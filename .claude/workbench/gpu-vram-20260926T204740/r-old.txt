@@ -1,0 +1,1 @@
+                 {"measured": 4, "max": 1200000, "median": 750000}, report["system"]["memory_kb"])

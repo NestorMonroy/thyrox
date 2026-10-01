@@ -96,6 +96,7 @@ import {
 } from './pidLock.js'
 import { getBinaryName, getPlatform } from './platform.js'
 import { getLauncherOwnership } from './launcherOwnership.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** Ver docstring del módulo — sustituto local del global `MACRO` de ccnmt. */
 const MACRO = {
@@ -966,7 +967,7 @@ export async function checkInstall(
       const absoluteTarget = resolve(dirname(dirs.executable), target)
       if (!(await isPossibleClaudeBinary(absoluteTarget))) {
         messages.push({
-          message: `Claude symlink points to missing or invalid binary: ${target}`,
+          message: `${PRODUCT_NAME} symlink points to missing or invalid binary: ${target}`,
           userActionRequired: true,
           type: 'error',
         })
@@ -982,7 +983,7 @@ export async function checkInstall(
         // EINVAL (no es symlink) u otro — chequea como binario regular
         if (!(await isPossibleClaudeBinary(dirs.executable))) {
           messages.push({
-            message: `${dirs.executable} exists but is not a valid Claude binary`,
+            message: `${dirs.executable} exists but is not a valid ${PRODUCT_NAME} binary`,
             userActionRequired: true,
             type: 'error',
           })

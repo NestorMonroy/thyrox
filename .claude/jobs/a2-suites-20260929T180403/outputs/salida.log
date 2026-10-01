@@ -1,0 +1,30 @@
+tools:  76 pass
+tools:  0 fail
+tools: Ran 76 tests across 8 files. [5.72s]
+agent:  2711 pass
+agent:  0 fail
+agent: Ran 2711 tests across 204 files. [17.86s]
+cli:  499 pass
+cli:  0 fail
+cli: Ran 500 tests across 53 files. [66.96s]
+task:  40 pass
+task:  4 fail
+task: Ran 44 tests across 3 files. [61.00ms]
+tests/agents/test-agent-store-auto-recall-limit.sh :: 4 ok, 0 fallos
+tests/agents/test-agent-store-buscar-tareas.sh :: 22 ok · 0 fallas
+tests/agents/test-agent-store-clasificar-documentos.sh ::   19 ok · 0 fallas
+tests/agents/test-agent-store-compara-antes-de-escribir.sh :: 13 ok, 0 fallos
+tests/agents/test-agent-store-fecha-apertura.sh :: 25 ok · 0 fallas
+tests/agents/test-agent-store-fecha-documento.sh ::   30 ok · 0 fallas
+tests/agents/test-agent-store-fts-degradation.sh :: 9 ok, 0 fallos
+tests/agents/test-agent-store-reassignment-guard.sh :: 18 ok · 0 falla(s)
+tests/agents/test-agent-store-render-tablero.sh :: 18 ok, 0 fallos
+tests/agents/test-agent-store-sessions.sh :: 9 ok, 0 fallos
+tests/agents/test-agent-store-tareas.sh :: 33 ok, 0 fallos
+tests/agents/test-agent-store-transcript-path.sh :: 13 ok · 0 falla(s)  (alcance medido: 13 aserciones)
+tests/agents/test-agent-store-type-source.sh :: 19 ok · 0 falla(s)  (alcance medido: 19 aserciones)
+tests/agents/test-agent-store-usage-columns.sh :: 10 ok, 21 fallos
+tests/agents/test-agent-store-usage-source.sh :: usage_source: 11 ok, 1 fallos
+
+resultado: 18 de 18 aserciones en verde
+__BG_EXIT__=0

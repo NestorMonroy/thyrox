@@ -54,7 +54,7 @@ export type FileHistoryState = {
 // exacta que la fuente (`contracts.ts`) declara para cada uno.
 type FileHistoryHostBindings = AgentHostBindings & {
   getIsNonInteractiveSession?: () => boolean
-  getClaudeConfigHomeDir?: () => string
+  getConfigHomeDir?: () => string
   recordFileHistorySnapshot?: (
     messageId: string,
     snapshot: FileHistorySnapshot,
@@ -86,14 +86,14 @@ export function fileHistoryEnabled(): boolean {
   }
   return (
     getGlobalConfig().fileCheckpointingEnabled !== false &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FILE_CHECKPOINTING'))
   )
 }
 
 function fileHistoryEnabledSdk(): boolean {
   return (
-    isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING')) &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+    isEnvTruthy(readEnv('THYROX_CODE_ENABLE_SDK_FILE_CHECKPOINTING')) &&
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FILE_CHECKPOINTING'))
   )
 }
 
@@ -227,7 +227,7 @@ export async function fileHistoryMakeSnapshot(
 
   // Phase 1: capture current state with a no-op updater so we know which
   // files to back up. Returning the same reference keeps this a true no-op
-  // for any wrapper that honors same-ref returns (src/CLAUDE.md wrapper
+  // for any wrapper that honors same-ref returns (src/THYROX.md wrapper
   // rule). Wrappers that unconditionally spread will trigger one extra
   // re-render; acceptable for a once-per-turn call.
   let captured: FileHistoryState | undefined
@@ -751,7 +751,7 @@ function getBackupFileName(filePath: string, version: number): string {
 }
 
 function resolveBackupPath(backupFileName: string, sessionId?: string): string {
-  const configDir = getFileHistoryHostBindings().getClaudeConfigHomeDir?.() ?? ''
+  const configDir = getFileHistoryHostBindings().getConfigHomeDir?.() ?? ''
   return join(
     configDir,
     'file-history',
@@ -973,7 +973,7 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
     // All backups share the same directory: {configDir}/file-history/{sessionId}/
     // Create it once upfront instead of once per backup file
     const newBackupDir = join(
-      getFileHistoryHostBindings().getClaudeConfigHomeDir?.() ?? '',
+      getFileHistoryHostBindings().getConfigHomeDir?.() ?? '',
       'file-history',
       sessionId,
     )

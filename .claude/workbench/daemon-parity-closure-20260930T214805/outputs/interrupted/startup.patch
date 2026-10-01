@@ -1,0 +1,1833 @@
+diff --git a/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts b/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+index ad35a3a20..fb3e70609 100644
+--- a/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
++++ b/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+@@ -56,7 +56,8 @@ describe('setupIdleExitWatchdog', () => {
+     const wd = setupIdleExitWatchdog({
+       origin: 'service',
+       abort,
+-      graceMs: 10,
++      idleGraceMs: 10,
++      startupIdleGraceMs: 10,
+       countActivity: () => activity,
+     })
+     wd.probe()
+@@ -70,7 +71,8 @@ describe('setupIdleExitWatchdog', () => {
+     const wd = setupIdleExitWatchdog({
+       origin: 'transient',
+       abort,
+-      graceMs: 10,
++      idleGraceMs: 10,
++      startupIdleGraceMs: 10,
+       countActivity: () => activity,
+     })
+     wd.probe()
+@@ -83,7 +85,8 @@ describe('setupIdleExitWatchdog', () => {
+     const wd = setupIdleExitWatchdog({
+       origin: 'transient',
+       abort,
+-      graceMs: 10,
++      idleGraceMs: 10,
++      startupIdleGraceMs: 10,
+       countActivity: () => activity,
+     })
+     wd.probe()
+@@ -96,7 +99,8 @@ describe('setupIdleExitWatchdog', () => {
+     const wd = setupIdleExitWatchdog({
+       origin: 'transient',
+       abort,
+-      graceMs: 30,
++      idleGraceMs: 30,
++      startupIdleGraceMs: 30,
+       countActivity: () => activity,
+     })
+     wd.probe()
+@@ -112,7 +116,8 @@ describe('setupIdleExitWatchdog', () => {
+     const wd = setupIdleExitWatchdog({
+       origin: 'transient',
+       abort,
+-      graceMs: 10,
++      idleGraceMs: 10,
++      startupIdleGraceMs: 10,
+       countActivity: () => activity,
+     })
+     wd.probe()
+@@ -127,7 +132,8 @@ describe('setupIdleExitWatchdog', () => {
+     const wd = setupIdleExitWatchdog({
+       origin: 'transient',
+       abort,
+-      graceMs: 30,
++      idleGraceMs: 30,
++      startupIdleGraceMs: 30,
+       countActivity: () => activity,
+     })
+     wd.probe()
+diff --git a/src/packages/daemon/src/bgDaemon.ts b/src/packages/daemon/src/bgDaemon.ts
+index 9844ca03c..8eb59e169 100644
+--- a/src/packages/daemon/src/bgDaemon.ts
++++ b/src/packages/daemon/src/bgDaemon.ts
+@@ -35,10 +35,15 @@ import { spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
+ import { encodeCtrlFrame } from './internal/ptyFrame.js'
+ import { adoptFromRoster, adoptRunningPtyRecords } from './bgAdopt.js'
+ import {
++  type DaemonStartupThresholds,
+   makeIdleActivityCount,
++  resolveStartupThresholds,
++  setupDisplacementWatchdog,
+   setupIdleExitWatchdog,
+   setupUpgradeWatchdog,
+ } from './bgDaemonTimers.js'
++import { daemonRequest } from './daemonClient.js'
++import { getDaemonLockPath, probeLockDisplacement, requestTransientYield } from './daemonLock.js'
+ import {
+   type WorkerRecord,
+   readAllWorkerRecords,
+@@ -57,7 +62,7 @@ import {
+   shouldPrewarm,
+ } from './sparePool.js'
+ import { claimSpareWorker, sweepOrphanSpareSockets } from './spareClaim.js'
+-import { getDaemonScopeDir } from './socketPaths.js'
++import { getControlSocketPath, getDaemonScopeDir } from './socketPaths.js'
+ import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
+ import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
+ import type { ProtoOp } from './socketProto.js'
+@@ -188,6 +193,9 @@ export function retirePinnedSettledWorkers<W extends RetirableWorker>(
+   return retiredShorts
+ }
+ 
++/** Cadencia del sondeo de inactividad (`ant 5170.js` iFK). */
++const IDLE_PROBE_INTERVAL_MS = 2_000
++
+ /** Presupuesto de reintentos del dedup de dispatch — `T<30` en `ue`. */
+ export const DUPLICATE_DISPATCH_MAX_ATTEMPTS = 30
+ 
+@@ -233,6 +241,35 @@ export type BgDaemonDeps = {
+   podmanWorkers?: DaemonPodmanWorkers
+   /** El log de supervisor; por defecto el de `--log-file`, o stderr sin él. */
+   supervisorLog?: SupervisorLogSink
++  /** Umbrales de arranque (`Lr`/`Mt`/`Nr`/`Vr`); los no declarados toman su valor de referencia. */
++  startupThresholds?: Partial<DaemonStartupThresholds>
++}
++
++/**
++ * Workers con un turno a mitad (`tempo === 'active'` en su state.json):
++ * el equivalente de `busyWorkerCount()` que difiere el upgrade en `xt`.
++ */
++function countBusyWorkers(workers: Map<string, WorkerVm>): number {
++  let busy = 0
++  for (const vm of workers.values()) {
++    if (readState(vm.getRecord().short)?.tempo === 'active') busy++
++  }
++  return busy
++}
++
++/**
++ * `chunk-92tvramn.js` `xt` — antes de adquirir el lock, un daemon no
++ * transitorio pide el relevo al transitorio que lo sostiene. Si el relevo
++ * falla, la adquisición posterior rehúsa con su propio mensaje; aquí sólo
++ * queda registrado el desenlace.
++ */
++async function negotiateTransientYield(origin: NonNullable<ParsedArgs['origin']>, lockPath: string): Promise<void> {
++  const result = await requestTransientYield({
++    lockPath,
++    origin,
++    sendYield: () => daemonRequest('yield', {}, { socketPath: getControlSocketPath() }),
++  })
++  if (result.kind !== 'not-needed') logEventFn('tengu_daemon_yield_handshake', { kind: result.kind })
+ }
+ 
+ type OwnedSupervisorLog = SupervisorLogSink & { close(): Promise<void> }
+@@ -271,6 +308,10 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   }
+ 
+   process.title = 'ccb daemon'
++  const origin = parsed.origin ?? 'transient'
++  const thresholds = resolveStartupThresholds(deps.startupThresholds)
++  const lockPath = getDaemonLockPath(dirname(getControlSocketPath()))
++  await negotiateTransientYield(origin, lockPath)
+ 
+   // `ant 4639.js` j2() lee esto; ccb lo escribe al arrancar para que el
+   // tooling externo (reinicio de zombis, detección de version-skew)
+@@ -283,7 +324,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+         JSON.stringify({
+           pid: process.pid,
+           startedAt: state.startedAt,
+-          origin: parsed.origin ?? 'transient',
++          origin,
+           version: process.env.THYROX_CODE_VERSION ?? 'dev',
+           spawnedBy: parsed.spawnedBy,
+         }),
+@@ -296,7 +337,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   /* adoptFromRoster + adoptRunningPtyRecords viven en ./bgAdopt.ts */
+   logEventFn('tengu_bg_daemon_boot', {
+     pid: String(process.pid),
+-    origin: parsed.origin ?? 'transient',
++    origin,
+   })
+   // `ant 5170.js` iFK:219 — daemon_start dispara una vez tras que el
+   // supervisor ató su socket de control y está listo para aceptar ops.
+@@ -305,7 +346,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   logEventFn('tengu_daemon_start', {
+     worker_kinds: '0',
+     worker_count: '0',
+-    origin: parsed.origin ?? 'transient',
++    origin,
+   })
+   if (process.env.THYROX_CODE_BG_SPARE_POOL === '1') {
+     enableSparePool()
+@@ -399,15 +440,26 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   // inactividad + auto-reinicio al actualizar el binario. Las
+   // implementaciones viven en ./bgDaemonTimers.ts para mantener este
+   // archivo bajo el presupuesto de 800 LOC.
++  const upgradeWatchdog = setupUpgradeWatchdog(state.abort, {
++    busyWorkerCount: () => countBusyWorkers(state.workers),
++    busyDeferCapMs: thresholds.upgradeBusyDeferCapMs,
++  })
+   const idleExit = setupIdleExitWatchdog({
+-    origin: parsed.origin ?? 'transient',
++    origin,
+     abort: state.abort,
+-    graceMs: 5_000,
++    idleGraceMs: thresholds.idleGraceMs,
++    startupIdleGraceMs: thresholds.startupIdleGraceMs,
+     countActivity: makeIdleActivityCount(state),
++    isUpgradePending: upgradeWatchdog.isUpgradePending,
+   })
+-  const idleProbeTimer = setInterval(idleExit.probe, 2_000)
++  const idleProbeTimer = setInterval(idleExit.probe, IDLE_PROBE_INTERVAL_MS)
+   idleProbeTimer.unref()
+-  const upgradeWatchdog = setupUpgradeWatchdog(state.abort)
++  const displacementWatchdog = setupDisplacementWatchdog({
++    origin,
++    abort: state.abort,
++    intervalMs: thresholds.staleCheckIntervalMs,
++    probeDisplacement: () => probeLockDisplacement(lockPath, process.pid),
++  })
+ 
+   // Cablea los manejadores de op de socket. Capturado en una variable
+   // para que el watcher de spool de despacho por archivo (`ant 5165.js`)
+@@ -918,7 +970,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+      * la liberación de nuestro lock y emite tengu_daemon_yield_takeover.
+      */
+     yield: async () => {
+-      const myOrigin = parsed.origin ?? 'transient'
++      const myOrigin = origin
+       if (myOrigin !== 'transient') {
+         return ok({ op: 'yield', yielding: false, origin: myOrigin })
+       }
+@@ -985,7 +1037,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+       return undefined
+     },
+   }
+-  state.server = await startSocketServer(opHandlers)
++  state.server = await startSocketServer(opHandlers, { origin })
+ 
+   // `ant 5165.js` — fallback de despacho por spool de archivos. La CLI
+   // escribe envoltorios a ~/.claude/daemon/dispatch/ cuando el socket no
+@@ -1045,6 +1097,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   clearInterval(idleProbeTimer)
+   idleExit.dispose()
+   upgradeWatchdog.dispose()
++  displacementWatchdog.dispose()
+ 
+   // ant tengu_bg_dispatch_stale_drop: despachos en vuelo que el daemon ya
+   // no puede ver a través. Marca las entradas pendientes como fallidas
+diff --git a/src/packages/daemon/src/bgDaemonTimers.ts b/src/packages/daemon/src/bgDaemonTimers.ts
+index 6ad2f4477..91bff10ee 100644
+--- a/src/packages/daemon/src/bgDaemonTimers.ts
++++ b/src/packages/daemon/src/bgDaemonTimers.ts
+@@ -1,8 +1,21 @@
+ /**
+- * Bg-daemon idle-exit + binary-upgrade watchdog timers. Extracted from
+- * bgDaemon.ts so the entry file stays under the 800-LOC budget. ant
+- * 5170.js iFK:172-244 — these run for the lifetime of the daemon and
+- * abort the AbortController when their condition fires.
++ * Temporizadores del ciclo de vida del bg-daemon: salida por inactividad,
++ * auto-reinicio al actualizar el binario (con diferimiento por workers
++ * ocupados) y sondeo de desplazamiento. Viven fuera de `bgDaemon.ts` para
++ * que el punto de entrada no crezca; todos terminan abortando el
++ * `AbortController` del daemon cuando su condición se cumple.
++ *
++ * Puerto de `chunk-92tvramn.js` `xt` (referencia 2.1.283): los umbrales
++ * `Lr`/`Mt`/`Nr`/`Vr`, el temporizador de inactividad `q`, la máquina de
++ * diferimiento `V` dentro de `Be` y el sondeo `L` del intervalo `ge`.
++ *
++ * Divergencias declaradas:
++ * - Los gates `tengu_daemon_upgrade_defer_busy` y
++ *   `tengu_daemon_refuse_stale_upgrade` (feature flags, por defecto
++ *   activos) no existen aquí: el diferimiento siempre está activo y el
++ *   rechazo de un binario más viejo no se porta.
++ * - La referencia difiere mientras `busyWorkerCount()` de los workers del
++ *   registro reporta un turno a mitad; aquí el llamador inyecta el conteo.
+  *
+  * @dynamicRequire
+  */
+@@ -16,11 +29,48 @@ import {
+ } from './upgradeProbe.js'
+ import type { WorkerVm } from './workerVm.js'
+ 
++type LogEventFn = (name: string, metadata?: Record<string, unknown>) => void
++
+ /**
+- * idleActivityCount counts everything that pins the supervisor —
+- * leases (active client connections), live workers, and detached
+- * workers (still running but no longer supervised). Zero means the
+- * daemon is idle and a transient origin can self-shutdown.
++ * `chunk-m5drh1xg.js` `QF` — presupuesto con que la CLI espera a que un
++ * daemon recién lanzado conteste `ping`. La gracia de arranque lo cubre.
++ */
++const SPAWN_READY_BUDGET_MS = 45_000
++/** `chunk-92tvramn.js` `Mt` — gracia de inactividad tras haber tenido clientes. */
++const IDLE_GRACE_MS = 5_000
++/** `xt` — cadencia por defecto del sondeo de upgrade, si no se configura. */
++const UPGRADE_POLL_INTERVAL_MS = 30_000
++
++/** Umbrales de arranque del daemon; cada uno se configura por separado. */
++export interface DaemonStartupThresholds {
++  /** `Lr` — cadencia del sondeo de desplazamiento y de binario. */
++  staleCheckIntervalMs: number
++  /** `Mt` — gracia de inactividad una vez que hubo un cliente. */
++  idleGraceMs: number
++  /** `Nr` — tope del diferimiento de upgrade por workers ocupados. */
++  upgradeBusyDeferCapMs: number
++  /** `Vr` — gracia de inactividad mientras nunca hubo cliente (`QF + Mt`). */
++  startupIdleGraceMs: number
++}
++
++export const DEFAULT_STARTUP_THRESHOLDS: Readonly<DaemonStartupThresholds> = Object.freeze({
++  staleCheckIntervalMs: 60_000,
++  idleGraceMs: IDLE_GRACE_MS,
++  upgradeBusyDeferCapMs: 1_800_000,
++  startupIdleGraceMs: SPAWN_READY_BUDGET_MS + IDLE_GRACE_MS,
++})
++
++/** Los umbrales por defecto con los que el llamador declare, como los parámetros de `xt`. */
++export function resolveStartupThresholds(
++  overrides: Partial<DaemonStartupThresholds> = {},
++): DaemonStartupThresholds {
++  return { ...DEFAULT_STARTUP_THRESHOLDS, ...overrides }
++}
++
++/**
++ * Cuenta todo lo que retiene al supervisor: leases (clientes conectados),
++ * workers vivos y workers desatendidos. Cero significa inactivo, y un
++ * daemon transitorio puede apagarse solo.
+  */
+ export function makeIdleActivityCount(state: {
+   leases: { readonly size: number }
+@@ -33,123 +83,251 @@ export function makeIdleActivityCount(state: {
+ export interface IdleExitOptions {
+   origin: string
+   abort: AbortController
+-  graceMs: number
++  /** `Mt` — gracia una vez que hubo actividad. */
++  idleGraceMs: number
++  /** `Vr` — gracia mientras nunca hubo actividad. */
++  startupIdleGraceMs: number
+   countActivity: () => number
++  /** Un upgrade diferido rearma la espera en vez de salir (`xt`: `if(V!==null){q();return}`). */
++  isUpgradePending?: () => boolean
++  logEventFn?: LogEventFn
+ }
+ 
+ /**
+- * Set up the idle-exit watchdog. Returns a probe-tick callback caller
+- * should fire every ~2s + a clear function to teardown. When the
+- * activity count is 0 for `graceMs`, emits tengu_daemon_idle_exit and
+- * aborts the controller (graceful shutdown).
+- *
+- * Service/shell origins pin the supervisor — they never idle-exit.
++ * Temporizador de salida por inactividad (`xt` `q`). `probe` se llama en
++ * cada tick; con actividad 0 durante la gracia vigente emite
++ * `tengu_daemon_idle_exit` y aborta. La gracia es la de arranque hasta
++ * que se ve la primera actividad, y la corta desde entonces. Un origen de
++ * servicio o shell retiene al supervisor y nunca sale por inactividad.
+  */
+ export function setupIdleExitWatchdog(opts: IdleExitOptions): {
+   probe: () => void
+   dispose: () => void
+ } {
++  const emit = opts.logEventFn ?? logEvent
+   let idleExitTimer: NodeJS.Timeout | null = null
++  let everHadActivity = false
++  const clearIdleTimer = (): void => {
++    if (idleExitTimer) clearTimeout(idleExitTimer)
++    idleExitTimer = null
++  }
++  const onGraceElapsed = (graceMs: number): void => {
++    idleExitTimer = null
++    if (opts.countActivity() > 0) {
++      everHadActivity = true
++      return
++    }
++    if (opts.abort.signal.aborted) return
++    if (opts.isUpgradePending?.()) {
++      probe()
++      return
++    }
++    emit('tengu_daemon_idle_exit', {
++      grace_ms: String(graceMs),
++      never_had_client: String(!everHadActivity),
++      cfg_workers: '0',
++    })
++    opts.abort.abort()
++  }
+   const probe = (): void => {
+     if (opts.origin !== 'transient') return
+     if (opts.abort.signal.aborted) return
+     if (opts.countActivity() > 0) {
+-      if (idleExitTimer) {
+-        clearTimeout(idleExitTimer)
+-        idleExitTimer = null
+-      }
++      everHadActivity = true
++      clearIdleTimer()
+       return
+     }
+     if (idleExitTimer) return
+-    idleExitTimer = setTimeout(() => {
+-      idleExitTimer = null
+-      if (opts.abort.signal.aborted) return
+-      if (opts.countActivity() > 0) return
+-      logEvent('tengu_daemon_idle_exit', {
+-        grace_ms: String(opts.graceMs),
+-        cfg_workers: '0',
+-      })
+-      opts.abort.abort()
+-    }, opts.graceMs)
++    const graceMs = everHadActivity ? opts.idleGraceMs : opts.startupIdleGraceMs
++    idleExitTimer = setTimeout(() => onGraceElapsed(graceMs), graceMs)
+     idleExitTimer.unref()
+   }
+-  return {
+-    probe,
+-    dispose() {
+-      if (idleExitTimer) {
+-        clearTimeout(idleExitTimer)
+-        idleExitTimer = null
+-      }
+-    },
++  return { probe, dispose: clearIdleTimer }
++}
++
++export type UpgradeDeferralDecision = 'defer' | 'proceed'
++
++interface DeferralState {
++  target: string
++  start: number
++  logged: boolean
++  suspendedAt: number | null
++  capExpiredEmitted: boolean
++}
++
++/**
++ * Máquina de diferimiento de upgrade por workers ocupados (`xt`, la
++ * variable `V` dentro de `Be`). Difiere mientras haya workers ocupados y
++ * no se haya alcanzado el tope `Nr`; el reloj se suspende mientras el
++ * binario no se puede leer. Cada transición emite
++ * `tengu_daemon_upgrade_deferred_busy` con su fase.
++ */
++export class UpgradeBusyDeferral {
++  private state: DeferralState | null = null
++  private readonly now: () => number
++  private readonly emit: LogEventFn
++
++  constructor(
++    private readonly capMs: number,
++    deps: { now?: () => number; logEventFn?: LogEventFn } = {},
++  ) {
++    this.now = deps.now ?? Date.now
++    this.emit = deps.logEventFn ?? logEvent
++  }
++
++  isPending(): boolean {
++    return this.state !== null
++  }
++
++  /** El binario volvió a coincidir: no hay upgrade que diferir. */
++  reset(): void {
++    this.state = null
++  }
++
++  /** Decide, ante un binario cambiado hacia `target`, si reiniciar ya o esperar. */
++  evaluate(target: string, busyWorkers: number): UpgradeDeferralDecision {
++    this.resumeClock()
++    if (busyWorkers === 0) {
++      this.resolve(busyWorkers, this.now())
++      return 'proceed'
++    }
++    const state = this.trackTarget(target)
++    if (this.now() - state.start < this.capMs) {
++      this.logStartOnce(state, busyWorkers)
++      return 'defer'
++    }
++    this.emitCapExpiredOnce(state, busyWorkers)
++    return 'proceed'
++  }
++
++  /** Un sondeo fallido suspende el reloj; sin workers ocupados, resuelve. */
++  suspend(busyWorkers: number): void {
++    const state = this.state
++    if (state === null) return
++    if (busyWorkers === 0) {
++      this.resolve(busyWorkers, state.suspendedAt ?? this.now())
++      return
++    }
++    if (state.suspendedAt === null) state.suspendedAt = this.now()
++  }
++
++  private resumeClock(): void {
++    const state = this.state
++    if (state === null || state.suspendedAt === null) return
++    state.start += this.now() - state.suspendedAt
++    state.suspendedAt = null
++  }
++
++  private resolve(busyWorkers: number, endedAt: number): void {
++    const state = this.state
++    this.state = null
++    if (state === null || state.capExpiredEmitted) return
++    this.emit('tengu_daemon_upgrade_deferred_busy', {
++      busy_workers: String(busyWorkers),
++      deferred_ms: String(endedAt - state.start),
++      cap_expired: 'false',
++      phase: 'resolved',
++    })
++  }
++
++  private trackTarget(target: string): DeferralState {
++    if (this.state === null) {
++      this.state = { target, start: this.now(), logged: false, suspendedAt: null, capExpiredEmitted: false }
++    } else if (this.state.target !== target) {
++      this.state.target = target
++      this.state.logged = false
++    }
++    return this.state
++  }
++
++  private logStartOnce(state: DeferralState, busyWorkers: number): void {
++    if (state.logged) return
++    state.logged = true
++    this.emit('tengu_daemon_upgrade_deferred_busy', {
++      busy_workers: String(busyWorkers),
++      cap_expired: 'false',
++      phase: 'start',
++    })
++  }
++
++  private emitCapExpiredOnce(state: DeferralState, busyWorkers: number): void {
++    if (state.capExpiredEmitted) return
++    state.capExpiredEmitted = true
++    this.emit('tengu_daemon_upgrade_deferred_busy', {
++      busy_workers: String(busyWorkers),
++      deferred_ms: String(this.now() - state.start),
++      cap_expired: 'true',
++      phase: 'cap_expired',
++    })
+   }
+ }
+ 
+ /**
+- * Set up the binary-upgrade watchdog. Resuelve argv[1] (el binario ccb)
+- * con `It` (`resolveBinaryStat`, sigue symlinks) y compara sucesivas
+- * lecturas con `Fr` (`hasBinaryChanged`) — target distinto siempre
+- * cuenta, mtime distinto cuenta salvo en un build administrado por
+- * versión (`Kat`/`isManagedVersionedBuild`). Al detectar cambio, emite
+- * tengu_daemon_self_restart_on_upgrade y aborta el controller para que
+- * el wrapper / launchAgent reinicie el supervisor bajo el binario
+- * nuevo. Los bg workers se re-adoptan desde el roster en el arranque
+- * del siguiente supervisor.
+- *
+- * Si argv[1] es ilegible (ENOENT — pasa en algunas rutas de build
+- * compilado), `resolveBinaryStat` da `null` y el sondeo periódico ni se
+- * arma.
+- *
+- * pendiente: la máquina de estados de `xt` alrededor de `Fr`/`It` en la
+- * referencia —defer mientras el daemon está ocupado
+- * (`upgradeBusyDeferCapMs`), rechazo de upgrade obsoleto
+- * (`tengu_daemon_refuse_stale_upgrade`)— no se porta aquí; este sondeo
+- * dispara en cuanto detecta el cambio, sin ese margen.
++ * Sondeo de upgrade del binario. Resuelve argv[1] con `It`
++ * (`resolveBinaryStat`, sigue symlinks) y compara lecturas sucesivas con
++ * `Fr` (`hasBinaryChanged`). Ante un cambio consulta la máquina de
++ * diferimiento: con workers ocupados espera hasta el tope `Nr`; si no,
++ * emite `tengu_daemon_self_restart_on_upgrade` y aborta para que el
++ * wrapper reinicie el supervisor bajo el binario nuevo (los workers se
++ * re-adoptan desde el roster). Un binario ilegible al arrancar deja el
++ * sondeo sin armar.
+  */
+ export interface UpgradeWatchdogOptions {
+-  /** Cadencia del sondeo; 30_000ms en la referencia. */
++  /** Cadencia del sondeo; 30_000ms si no se declara. */
+   intervalMs?: number
+   binaryPath?: string
+   /** Punto de inyección para pruebas — por defecto `It` (./upgradeProbe.ts). */
+   resolveBinaryStat?: (path: string) => Promise<BinaryStat | null>
+   /** Punto de inyección para pruebas — por defecto `Fr` (./upgradeProbe.ts). */
+   hasBinaryChanged?: (previous: BinaryStat, current: BinaryStat) => boolean
++  /** Workers con un turno a mitad; sin él, nunca se difiere. */
++  busyWorkerCount?: () => number
++  /** `Nr` — tope del diferimiento. */
++  busyDeferCapMs?: number
+ }
+ 
+ export function setupUpgradeWatchdog(
+   abort: AbortController,
+   opts: UpgradeWatchdogOptions = {},
+-): { dispose: () => void } {
++): { dispose: () => void; isUpgradePending: () => boolean } {
+   const binaryPath = opts.binaryPath ?? process.argv[1] ?? process.execPath
+   const resolveStat = opts.resolveBinaryStat ?? resolveBinaryStatDefault
+   const changed = opts.hasBinaryChanged ?? hasBinaryChangedDefault
+-  let initialStat: BinaryStat | null = null
++  const busyWorkers = opts.busyWorkerCount ?? (() => 0)
++  const deferral = new UpgradeBusyDeferral(
++    opts.busyDeferCapMs ?? DEFAULT_STARTUP_THRESHOLDS.upgradeBusyDeferCapMs,
++  )
+   let timer: ReturnType<typeof setInterval> | null = null
+   let disposed = false
+ 
+-  // `It` — el primer stat es asíncrono (sigue symlinks vía
+-  // fs/promises.realpath); si el binario es ilegible (ENOENT), el
+-  // sondeo periódico ni se arma, igual que la referencia deja
+-  // `initialMtime=null` y el probe queda como no-op.
+-  void resolveStat(binaryPath).then(stat => {
+-    if (disposed || stat === null) return
+-    initialStat = stat
++  const onPoll = (initialStat: BinaryStat, current: BinaryStat | null): void => {
++    if (current === null || abort.signal.aborted) return
++    if (!changed(initialStat, current)) {
++      deferral.reset()
++      return
++    }
++    if (deferral.evaluate(current.target, busyWorkers()) === 'defer') return
++    logEvent('tengu_daemon_self_restart_on_upgrade', {
++      old_mtime: String(initialStat.mtimeMs),
++      new_mtime: String(current.mtimeMs),
++    })
++    abort.abort()
++  }
++
++  // `It` — el primer stat es asíncrono; con el binario ilegible el sondeo
++  // no se arma, igual que la referencia deja la identidad inicial en null.
++  void resolveStat(binaryPath).then(initialStat => {
++    if (disposed || initialStat === null) return
+     timer = setInterval(() => {
+       if (abort.signal.aborted) return
+       void resolveStat(binaryPath)
+-        .then(current => {
+-          if (current === null || initialStat === null) return
+-          if (changed(initialStat, current)) {
+-            logEvent('tengu_daemon_self_restart_on_upgrade', {
+-              old_mtime: String(initialStat.mtimeMs),
+-              new_mtime: String(current.mtimeMs),
+-            })
+-            abort.abort()
+-          }
+-        })
++        .then(current => onPoll(initialStat, current))
+         .catch(() => {
+-          // best-effort — un error transitorio de stat no debe tumbar el watchdog
++          // Manejo esperado: la referencia registra el fallo del stat y
++          // suspende el reloj del diferimiento; el sondeo sigue vivo.
++          deferral.suspend(busyWorkers())
+         })
+-    }, opts.intervalMs ?? 30_000)
++    }, opts.intervalMs ?? UPGRADE_POLL_INTERVAL_MS)
+     timer.unref()
+   })
+ 
+@@ -158,12 +336,55 @@ export function setupUpgradeWatchdog(
+       disposed = true
+       if (timer) clearInterval(timer)
+     },
++    isUpgradePending: () => deferral.isPending(),
++  }
++}
++
++export interface DisplacementWatchdogOptions {
++  origin: string
++  abort: AbortController
++  /** `Lr` — cadencia del sondeo. */
++  intervalMs: number
++  /** Pid del daemon que sostiene el lock en nuestro lugar, o `null`. */
++  probeDisplacement: () => Promise<number | null>
++  logEventFn?: LogEventFn
++}
++
++/**
++ * Sondeo de desplazamiento (`xt`, intervalo `ge` con `L`): un daemon
++ * transitorio cuyo lock pasó a otro pid se hace a un lado, emite
++ * `tengu_daemon_yield` con `displaced` y aborta. `wasDisplaced` le dice
++ * al cierre que el lock y el socket ya son del sucesor.
++ */
++export function setupDisplacementWatchdog(opts: DisplacementWatchdogOptions): {
++  dispose: () => void
++  wasDisplaced: () => boolean
++} {
++  const emit = opts.logEventFn ?? logEvent
++  let displaced = false
++  if (opts.origin !== 'transient') return { dispose() {}, wasDisplaced: () => false }
++  const onProbe = (holderPid: number | null): void => {
++    if (holderPid === null || displaced || opts.abort.signal.aborted) return
++    displaced = true
++    emit('tengu_daemon_yield', { displaced: 'true', displaced_by_pid: String(holderPid) })
++    opts.abort.abort()
++  }
++  const timer = setInterval(() => {
++    if (displaced || opts.abort.signal.aborted) return
++    // probeDisplacement ya registra su propio fallo de lectura; un
++    // rechazo inesperado se descarta para no tumbar el intervalo.
++    void opts.probeDisplacement().then(onProbe, () => {})
++  }, opts.intervalMs)
++  timer.unref()
++  return {
++    dispose: () => clearInterval(timer),
++    wasDisplaced: () => displaced,
+   }
+ }
+ 
+ /**
+- * Worker map type for makeIdleActivityCount — exported so callers can
+- * type-narrow without pulling WorkerVm into bgDaemonTimers.
++ * Tipo de los mapas de workers para `makeIdleActivityCount`; exportado
++ * para que el llamador lo estreche sin arrastrar `WorkerVm` hasta aquí.
+  */
+ export type WorkerMaps = {
+   workers: Map<string, WorkerVm>
+diff --git a/src/packages/daemon/src/daemonLock.ts b/src/packages/daemon/src/daemonLock.ts
+index 7244334b0..35d693ddd 100644
+--- a/src/packages/daemon/src/daemonLock.ts
++++ b/src/packages/daemon/src/daemonLock.ts
+@@ -18,10 +18,21 @@
+  * por `pid_recycled` comparando el tiempo de arranque del proceso
+  * (`Hx`/`nc`, que leen `/proc/<pid>/stat` con caché). Ese seguimiento no
+  * existe en thyrox — aquí cualquier lock cuyo pid ya no responde a la señal
+- * 0 se trata como obsoleto sin distinguir la causa. `Vt`'s outcome
+- * `"timed-out"` tampoco es alcanzable desde `acquireDaemonLock`: sólo lo
+- * produce un intento activo de parada (`kyt`, `chunk-kfkmbq3a.js`), que no
+- * está portado — no hay wiring de `daemon stop` en esta tarea.
++ * 0 se trata como obsoleto sin distinguir la causa.
++ *
++ * El outcome `"timed-out"` de `Vt` lo produce el intento activo de parada
++ * (`kyt`/`Ayt`, `chunk-kfkmbq3a.js`): `stopDaemonHolder`,
++ * `stopTransientLockHolder` y `acquireDaemonLockStoppingTransient`. La
++ * referencia lo invoca desde los subcomandos de servicio (`wa`:
++ * `install`/`start`); thyrox no los tiene, así que su llamador natural es
++ * un futuro `daemon stop` en `daemonCli.ts`. Divergencia: `EJe` (verificar
++ * que el pid es de verdad el daemon por su `procStart`) no existe aquí, y
++ * un pid vivo se trata como verificado.
++ *
++ * El lado que PIDE el relevo del handshake `yield` (`xt`, antes de
++ * adquirir) es `requestTransientYield`; el lado que responde vive en
++ * `bgDaemon.ts`. El sondeo de desplazamiento del loop (`xt` `L`) es
++ * `probeLockDisplacement`.
+  *
+  * @dynamicRequire
+  */
+@@ -33,6 +44,8 @@ import { PRODUCT_NAME } from '@thyrox/config/product'
+ import { logEvent } from '@thyrox/local-observability'
+ import { logError } from '@thyrox/local-observability/logging'
+ 
++import { isYieldAck, type Response } from './socketProto.js'
++
+ /** Contenido persistido en `daemon.lock`. */
+ export interface DaemonLockInfo {
+   pid: number
+@@ -78,6 +91,26 @@ export function readDaemonLock(lockPath: string): DaemonLockInfo | null {
+   } catch {
+     return null
+   }
++  return parseDaemonLock(raw)
++}
++
++/**
++ * Lectura del lock que distingue «no hay lock» (`ENOENT` → `null`) de un
++ * fallo de lectura, que se propaga: el sondeo de desplazamiento reintenta
++ * ese fallo en vez de confundirlo con un lock ausente.
++ */
++export function readDaemonLockOrThrow(lockPath: string): DaemonLockInfo | null {
++  let raw: string
++  try {
++    raw = readFileSync(lockPath, 'utf8')
++  } catch (error) {
++    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
++    throw error
++  }
++  return parseDaemonLock(raw)
++}
++
++function parseDaemonLock(raw: string): DaemonLockInfo | null {
+   let parsed: unknown
+   try {
+     parsed = JSON.parse(raw)
+@@ -352,3 +385,185 @@ export function writeSocketTokensFile(
+     return undefined
+   }
+ }
++
++/** `chunk-kfkmbq3a.js` `kyt` — gracia por defecto tras SIGTERM. */
++const STOP_GRACEFUL_MS = 2_000
++/** `chunk-kfkmbq3a.js` `kyt` — cadencia del sondeo de salida tras SIGTERM. */
++const STOP_POLL_MS = 50
++/** `chunk-92tvramn.js` `xt` — plazo para que el transitorio suelte el lock. */
++const YIELD_TAKEOVER_TIMEOUT_MS = 5_000
++/** `chunk-92tvramn.js` `xt` — cadencia del sondeo del lock durante el relevo. */
++const YIELD_POLL_MS = 100
++
++export type StopHolderOutcome = 'exited' | 'eperm' | 'timed-out'
++
++export interface StopHolderOptions {
++  gracefulMs?: number
++}
++
++/**
++ * `chunk-kfkmbq3a.js` `kyt` — SIGTERM al titular y espera activa a que
++ * salga. `EPERM` es el caso esperado de un titular de otro usuario; otro
++ * fallo de la señal (`ESRCH`) significa que ya no existe.
++ */
++export async function stopDaemonHolder(
++  pid: number,
++  opts: StopHolderOptions = {},
++): Promise<StopHolderOutcome> {
++  try {
++    process.kill(pid, 'SIGTERM')
++  } catch (error) {
++    if ((error as NodeJS.ErrnoException).code === 'EPERM') return 'eperm'
++    return 'exited'
++  }
++  const deadline = Date.now() + (opts.gracefulMs ?? STOP_GRACEFUL_MS)
++  while (Date.now() < deadline) {
++    if (!isProcessAlive(pid)) return 'exited'
++    await delay(STOP_POLL_MS)
++  }
++  return 'timed-out'
++}
++
++export type StopTransientResult =
++  | { kind: 'none' }
++  | { kind: 'service' | 'shell'; lock: DaemonLockInfo }
++  | { kind: 'stopped'; pid: number }
++  | { kind: 'not-stopped'; lock: DaemonLockInfo; outcome: Exclude<StopHolderOutcome, 'exited'> }
++
++/**
++ * `chunk-kfkmbq3a.js` `Ayt` — sólo un titular transitorio se puede parar
++ * para quitarle el lock; uno de servicio o en shell se devuelve intacto.
++ * Un lock ausente o de un pid muerto no tiene a quién parar.
++ */
++export async function stopTransientLockHolder(
++  lockPath: string,
++  opts: StopHolderOptions = {},
++): Promise<StopTransientResult> {
++  const held = readDaemonLock(lockPath)
++  if (!held || !isProcessAlive(held.pid)) return { kind: 'none' }
++  if (held.origin === 'service' || held.origin === 'shell') return { kind: held.origin, lock: held }
++  const outcome = await stopDaemonHolder(held.pid, opts)
++  if (outcome === 'exited') return { kind: 'stopped', pid: held.pid }
++  return { kind: 'not-stopped', lock: held, outcome }
++}
++
++/**
++ * Adquisición que, ante un lock vivo de un daemon transitorio, intenta
++ * pararlo (`Ayt`) y reintenta. Es el camino por el que el outcome
++ * `"timed-out"` de `Vt` llega al llamador: el titular recibió SIGTERM y
++ * no salió dentro de la gracia.
++ */
++export async function acquireDaemonLockStoppingTransient(
++  scopeDir: string,
++  origin: DaemonLockInfo['origin'],
++  opts: StopHolderOptions = {},
++): Promise<LockAcquireResult | LockConflictResult> {
++  const first = await acquireDaemonLock(scopeDir, origin)
++  if (first.ok) return first
++  const stop = await stopTransientLockHolder(getDaemonLockPath(scopeDir), opts)
++  if (stop.kind === 'stopped') return acquireDaemonLock(scopeDir, origin)
++  if (stop.kind === 'not-stopped') return { ok: false, lock: stop.lock, outcome: stop.outcome }
++  return first
++}
++
++export interface DisplacementProbeDeps {
++  readLock?: (lockPath: string) => DaemonLockInfo | null
++  retryDelayMs?: number
++  logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
++}
++
++/**
++ * `chunk-92tvramn.js` `xt` (`L`) — pid del daemon que nos desplazó (el
++ * lock lo sostiene otro pid), o `null`. Un fallo de lectura se reintenta
++ * una vez; el segundo se registra con nivel y cuenta como no desplazado,
++ * igual que la referencia (`level:"warn"`).
++ */
++export async function probeLockDisplacement(
++  lockPath: string,
++  ownPid: number,
++  deps: DisplacementProbeDeps = {},
++): Promise<number | null> {
++  const { readLock = readDaemonLockOrThrow, retryDelayMs = RETRY_DELAY_MS, logEventFn = logEvent } = deps
++  for (let attempt = 0; ; attempt++) {
++    try {
++      const held = readLock(lockPath)
++      return held !== null && held.pid !== ownPid ? held.pid : null
++    } catch (error) {
++      if (attempt === 0) {
++        await delay(retryDelayMs)
++        continue
++      }
++      logEventFn('tengu_daemon_displacement_probe_failed', {
++        error: String(error instanceof Error ? error.message : error).slice(0, 120),
++      })
++      return null
++    }
++  }
++}
++
++export type YieldHandshakeResult =
++  | { kind: 'not-needed' }
++  | { kind: 'taken-over'; message: string }
++  | { kind: 'still-held' | 'refused' | 'unreachable'; message: string }
++
++export interface YieldHandshakeOptions {
++  lockPath: string
++  origin: DaemonLockInfo['origin']
++  sendYield: () => Promise<Response>
++  pollIntervalMs?: number
++  takeoverTimeoutMs?: number
++  logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
++}
++
++function readLiveLock(lockPath: string): DaemonLockInfo | null {
++  const held = readDaemonLock(lockPath)
++  return held && isProcessAlive(held.pid) ? held : null
++}
++
++function needsYieldHandshake(held: DaemonLockInfo | null, origin: DaemonLockInfo['origin']): boolean {
++  return held !== null && held.origin === 'transient' && origin !== 'transient'
++}
++
++async function waitForLockRelease(lockPath: string, pollMs: number, timeoutMs: number): Promise<boolean> {
++  const deadline = Date.now() + timeoutMs
++  while (Date.now() < deadline) {
++    await delay(pollMs)
++    if (readLiveLock(lockPath) === null) return true
++  }
++  return readLiveLock(lockPath) === null
++}
++
++/**
++ * `chunk-92tvramn.js` `xt` — lado que PIDE el relevo: un daemon no
++ * transitorio que encuentra el lock en manos de uno transitorio le manda
++ * `yield` y sondea hasta que el lock se libera, antes de adquirirlo. El
++ * resultado describe el relevo; quien llama sigue con la adquisición, que
++ * rehúsa con su propio mensaje si el lock sigue tomado.
++ */
++export async function requestTransientYield(opts: YieldHandshakeOptions): Promise<YieldHandshakeResult> {
++  const held = readLiveLock(opts.lockPath)
++  if (!held || !needsYieldHandshake(held, opts.origin)) return { kind: 'not-needed' }
++  const response = await opts.sendYield()
++  if (!isYieldAck(response)) {
++    if (response.ok) {
++      return { kind: 'refused', message: 'existing daemon refused to yield (it reports origin!=transient)' }
++    }
++    return {
++      kind: 'unreachable',
++      message: `existing daemon unreachable on control socket (${response.error}); not taking over`,
++    }
++  }
++  const released = await waitForLockRelease(
++    opts.lockPath,
++    opts.pollIntervalMs ?? YIELD_POLL_MS,
++    opts.takeoverTimeoutMs ?? YIELD_TAKEOVER_TIMEOUT_MS,
++  )
++  ;(opts.logEventFn ?? logEvent)('tengu_daemon_yield_takeover', {
++    ok: String(released),
++    new_origin: opts.origin,
++  })
++  if (released) {
++    return { kind: 'taken-over', message: `transient daemon (pid=${held.pid}) yielded to origin=${opts.origin}` }
++  }
++  return { kind: 'still-held', message: 'yield acked but lock still held after the takeover window — refusing to start' }
++}
+diff --git a/src/packages/daemon/src/socketProto.ts b/src/packages/daemon/src/socketProto.ts
+index a54f6aed3..7ad2210f9 100644
+--- a/src/packages/daemon/src/socketProto.ts
++++ b/src/packages/daemon/src/socketProto.ts
+@@ -140,3 +140,12 @@ export function createLineDecoder(
+     }
+   }
+ }
++
++/**
++ * `chunk-92tvramn.js` `xt` — el daemon que pide el relevo sólo lo toma si
++ * la respuesta a `yield` es ok, del op `yield` y con `yielding: true`;
++ * cualquier otra forma (rechazo, error de conexión) no es un acuse.
++ */
++export function isYieldAck(response: Response): boolean {
++  return response.ok && response.op === 'yield' && response.yielding === true
++}
+diff --git a/src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts b/src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+new file mode 100644
+index 000000000..2b7c219d2
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+@@ -0,0 +1,90 @@
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { dirname, join } from 'node:path'
++
++import { bgDaemonMain } from '../bgDaemon.js'
++import { getDaemonLockPath, readDaemonLock } from '../daemonLock.js'
++import type { SupervisorLogSink, WorkerManagerLifecycle } from '../podmanWorkerSupervision.js'
++import type { PodmanExecutor } from '../podman/workerContainerLifecycle.js'
++import { getControlSocketPath } from '../socketPaths.js'
++
++const READY_TIMEOUT_MS = 5_000
++const READY_POLL_MS = 20
++const IDLE_EXIT_TIMEOUT_MS = 8_000
++const ISOLATED_ENV_KEYS = ['THYROX_CONFIG_DIR', 'TMPDIR', 'THYROX_CODE_BG_SPARE_POOL'] as const
++
++let sandbox = ''
++const originalEnv = new Map<string, string | undefined>()
++
++beforeEach(() => {
++  sandbox = mkdtempSync(join(tmpdir(), 'bg-daemon-startup-'))
++  for (const key of ISOLATED_ENV_KEYS) originalEnv.set(key, process.env[key])
++  process.env.THYROX_CONFIG_DIR = join(sandbox, 'config')
++  process.env.TMPDIR = join(sandbox, 'tmp')
++  delete process.env.THYROX_CODE_BG_SPARE_POOL
++})
++
++afterEach(() => {
++  for (const [key, value] of originalEnv) {
++    if (value === undefined) delete process.env[key]
++    else process.env[key] = value
++  }
++  rmSync(sandbox, { recursive: true, force: true })
++})
++
++const noPodman: PodmanExecutor = {
++  async run() {
++    throw new Error('spawn podman ENOENT')
++  },
++}
++
++const idleManager: WorkerManagerLifecycle = {
++  async reconcileOrphans() {
++    return []
++  },
++  async retireAll() {
++    return []
++  },
++}
++
++function memoryLog(): SupervisorLogSink & { readonly lines: string[] } {
++  const lines: string[] = []
++  return { lines, write: (label, message) => lines.push(`${label}: ${message}`) }
++}
++
++async function waitUntil(condition: () => boolean, timeoutMs: number): Promise<void> {
++  const deadline = Date.now() + timeoutMs
++  while (!condition()) {
++    if (Date.now() > deadline) throw new Error('condición no alcanzada a tiempo')
++    await new Promise(resolve => setTimeout(resolve, READY_POLL_MS))
++  }
++}
++
++describe('bgDaemonMain — arranque', () => {
++  test('the lock records the daemon origin, not a fixed transient', async () => {
++    const log = memoryLog()
++    const running = bgDaemonMain(['--origin', 'service'], {
++      podmanWorkers: { podman: noPodman, manager: idleManager },
++      supervisorLog: log,
++    })
++    await waitUntil(() => log.lines.length > 0, READY_TIMEOUT_MS)
++    const lock = readDaemonLock(getDaemonLockPath(dirname(getControlSocketPath())))
++    process.emit('SIGTERM', 'SIGTERM')
++    expect(await running).toBe(0)
++    expect(lock?.origin).toBe('service')
++  })
++
++  test('a transient daemon with no client exits after the configured startup grace', async () => {
++    let settled = false
++    const running = bgDaemonMain([], {
++      podmanWorkers: { podman: noPodman, manager: idleManager },
++      supervisorLog: memoryLog(),
++      startupThresholds: { startupIdleGraceMs: 10 },
++    }).finally(() => {
++      settled = true
++    })
++    await waitUntil(() => settled, IDLE_EXIT_TIMEOUT_MS)
++    expect(await running).toBe(0)
++  }, IDLE_EXIT_TIMEOUT_MS + 2_000)
++})
+diff --git a/src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts b/src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+new file mode 100644
+index 000000000..55fd2b9fc
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+@@ -0,0 +1,270 @@
++import { afterEach, describe, expect, test } from 'bun:test'
++
++import {
++  DEFAULT_STARTUP_THRESHOLDS,
++  resolveStartupThresholds,
++  setupDisplacementWatchdog,
++  setupIdleExitWatchdog,
++  setupUpgradeWatchdog,
++  UpgradeBusyDeferral,
++} from '../bgDaemonTimers.js'
++
++const LONG_MS = 10_000
++const aborts: AbortController[] = []
++
++afterEach(() => {
++  while (aborts.length) aborts.pop()?.abort()
++})
++
++function newAbort(): AbortController {
++  const abort = new AbortController()
++  aborts.push(abort)
++  return abort
++}
++
++const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
++
++describe('startup thresholds (Lr / Mt / Nr / Vr)', () => {
++  test('defaults are the reference constants', () => {
++    expect(DEFAULT_STARTUP_THRESHOLDS).toEqual({
++      staleCheckIntervalMs: 60_000,
++      idleGraceMs: 5_000,
++      upgradeBusyDeferCapMs: 1_800_000,
++      startupIdleGraceMs: 50_000,
++    })
++  })
++
++  test('each threshold is configurable on its own', () => {
++    const resolved = resolveStartupThresholds({ staleCheckIntervalMs: 1_000 })
++    expect(resolved.staleCheckIntervalMs).toBe(1_000)
++    expect(resolved.upgradeBusyDeferCapMs).toBe(1_800_000)
++  })
++})
++
++describe('setupIdleExitWatchdog — startup grace vs idle grace', () => {
++  test('before any client the startup grace applies', async () => {
++    const abort = newAbort()
++    const events: Array<Record<string, unknown> | undefined> = []
++    const wd = setupIdleExitWatchdog({
++      origin: 'transient',
++      abort,
++      idleGraceMs: LONG_MS,
++      startupIdleGraceMs: 10,
++      countActivity: () => 0,
++      logEventFn: (_name, metadata) => events.push(metadata),
++    })
++    wd.probe()
++    await sleep(40)
++    expect(abort.signal.aborted).toBe(true)
++    expect(events[0]?.never_had_client).toBe('true')
++    wd.dispose()
++  })
++
++  test('after a client was seen the idle grace applies', async () => {
++    const abort = newAbort()
++    let activity = 1
++    const events: Array<Record<string, unknown> | undefined> = []
++    const wd = setupIdleExitWatchdog({
++      origin: 'transient',
++      abort,
++      idleGraceMs: 10,
++      startupIdleGraceMs: LONG_MS,
++      countActivity: () => activity,
++      logEventFn: (_name, metadata) => events.push(metadata),
++    })
++    wd.probe()
++    activity = 0
++    wd.probe()
++    await sleep(40)
++    expect(abort.signal.aborted).toBe(true)
++    expect(events[0]?.never_had_client).toBe('false')
++    wd.dispose()
++  })
++
++  test('a pending upgrade re-arms instead of exiting', async () => {
++    const abort = newAbort()
++    let pending = true
++    const wd = setupIdleExitWatchdog({
++      origin: 'transient',
++      abort,
++      idleGraceMs: 10,
++      startupIdleGraceMs: 10,
++      countActivity: () => 0,
++      isUpgradePending: () => pending,
++    })
++    wd.probe()
++    await sleep(40)
++    expect(abort.signal.aborted).toBe(false)
++    pending = false
++    await sleep(40)
++    expect(abort.signal.aborted).toBe(true)
++    wd.dispose()
++  })
++})
++
++describe('UpgradeBusyDeferral (Nr)', () => {
++  function deferral(capMs = 100): { d: UpgradeBusyDeferral; events: Array<Record<string, unknown>>; clock: { now: number } } {
++    const events: Array<Record<string, unknown>> = []
++    const clock = { now: 1_000 }
++    const d = new UpgradeBusyDeferral(capMs, {
++      now: () => clock.now,
++      logEventFn: (_name, metadata) => events.push(metadata ?? {}),
++    })
++    return { d, events, clock }
++  }
++
++  test('no busy workers proceeds at once with no event', () => {
++    const { d, events } = deferral()
++    expect(d.evaluate('/bin/b', 0)).toBe('proceed')
++    expect(events).toEqual([])
++    expect(d.isPending()).toBe(false)
++  })
++
++  test('busy workers defer, logging the start once', () => {
++    const { d, events } = deferral()
++    expect(d.evaluate('/bin/b', 2)).toBe('defer')
++    expect(d.evaluate('/bin/b', 2)).toBe('defer')
++    expect(d.isPending()).toBe(true)
++    expect(events).toEqual([{ busy_workers: '2', cap_expired: 'false', phase: 'start' }])
++  })
++
++  test('workers going idle resolve the deferral', () => {
++    const { d, events, clock } = deferral()
++    d.evaluate('/bin/b', 1)
++    clock.now += 30
++    expect(d.evaluate('/bin/b', 0)).toBe('proceed')
++    expect(events[1]).toEqual({ busy_workers: '0', deferred_ms: '30', cap_expired: 'false', phase: 'resolved' })
++    expect(d.isPending()).toBe(false)
++  })
++
++  test('the cap proceeds while still busy', () => {
++    const { d, events, clock } = deferral(100)
++    d.evaluate('/bin/b', 1)
++    clock.now += 100
++    expect(d.evaluate('/bin/b', 1)).toBe('proceed')
++    expect(events[1]).toEqual({ busy_workers: '1', deferred_ms: '100', cap_expired: 'true', phase: 'cap_expired' })
++  })
++
++  test('a new target re-logs the start without restarting the clock', () => {
++    const { d, events, clock } = deferral(100)
++    d.evaluate('/bin/a', 1)
++    clock.now += 60
++    expect(d.evaluate('/bin/b', 1)).toBe('defer')
++    expect(events).toHaveLength(2)
++    clock.now += 40
++    expect(d.evaluate('/bin/b', 1)).toBe('proceed')
++  })
++
++  test('a suspended clock does not count toward the cap', () => {
++    const { d, clock } = deferral(100)
++    d.evaluate('/bin/b', 1)
++    d.suspend(1)
++    clock.now += 500
++    expect(d.evaluate('/bin/b', 1)).toBe('defer')
++  })
++
++  test('suspending with no busy workers resolves', () => {
++    const { d, events } = deferral()
++    d.evaluate('/bin/b', 1)
++    d.suspend(0)
++    expect(d.isPending()).toBe(false)
++    expect(events[1]?.phase).toBe('resolved')
++  })
++
++  test('reset drops the deferral silently', () => {
++    const { d, events } = deferral()
++    d.evaluate('/bin/b', 1)
++    d.reset()
++    expect(d.isPending()).toBe(false)
++    expect(events).toHaveLength(1)
++  })
++})
++
++describe('setupUpgradeWatchdog — busy defer', () => {
++  test('a change with busy workers defers and reports pending', async () => {
++    const abort = newAbort()
++    let call = 0
++    const w = setupUpgradeWatchdog(abort, {
++      intervalMs: 5,
++      binaryPath: '/bin/ccb',
++      resolveBinaryStat: async () => ({ target: '/bin/ccb', mtimeMs: call++ === 0 ? 100 : 200 }),
++      hasBinaryChanged: (a, b) => a.mtimeMs !== b.mtimeMs,
++      busyWorkerCount: () => 1,
++      busyDeferCapMs: LONG_MS,
++    })
++    await sleep(40)
++    expect(abort.signal.aborted).toBe(false)
++    expect(w.isUpgradePending()).toBe(true)
++    w.dispose()
++  })
++
++  test('the deferred upgrade proceeds once the workers are idle', async () => {
++    const abort = newAbort()
++    let busy = 1
++    let call = 0
++    const w = setupUpgradeWatchdog(abort, {
++      intervalMs: 5,
++      binaryPath: '/bin/ccb',
++      resolveBinaryStat: async () => ({ target: '/bin/ccb', mtimeMs: call++ === 0 ? 100 : 200 }),
++      hasBinaryChanged: (a, b) => a.mtimeMs !== b.mtimeMs,
++      busyWorkerCount: () => busy,
++      busyDeferCapMs: LONG_MS,
++    })
++    await sleep(30)
++    busy = 0
++    await sleep(30)
++    expect(abort.signal.aborted).toBe(true)
++    w.dispose()
++  })
++})
++
++describe('setupDisplacementWatchdog', () => {
++  test('a transient daemon displaced by another pid aborts', async () => {
++    const abort = newAbort()
++    const events: Array<Record<string, unknown> | undefined> = []
++    const w = setupDisplacementWatchdog({
++      origin: 'transient',
++      abort,
++      intervalMs: 5,
++      probeDisplacement: async () => 4242,
++      logEventFn: (_name, metadata) => events.push(metadata),
++    })
++    await sleep(30)
++    expect(abort.signal.aborted).toBe(true)
++    expect(w.wasDisplaced()).toBe(true)
++    expect(events[0]).toEqual({ displaced: 'true', displaced_by_pid: '4242' })
++    w.dispose()
++  })
++
++  test('holding our own lock keeps running', async () => {
++    const abort = newAbort()
++    const w = setupDisplacementWatchdog({
++      origin: 'transient',
++      abort,
++      intervalMs: 5,
++      probeDisplacement: async () => null,
++    })
++    await sleep(30)
++    expect(abort.signal.aborted).toBe(false)
++    expect(w.wasDisplaced()).toBe(false)
++    w.dispose()
++  })
++
++  test('a non-transient daemon is never displaced by polling', async () => {
++    const abort = newAbort()
++    let probes = 0
++    const w = setupDisplacementWatchdog({
++      origin: 'service',
++      abort,
++      intervalMs: 5,
++      probeDisplacement: async () => {
++        probes++
++        return 4242
++      },
++    })
++    await sleep(30)
++    expect(abort.signal.aborted).toBe(false)
++    expect(probes).toBe(0)
++    w.dispose()
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/daemonLockStartup.test.ts b/src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+new file mode 100644
+index 000000000..dde71d879
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+@@ -0,0 +1,261 @@
++import { afterEach, describe, expect, spyOn, test } from 'bun:test'
++import { type ChildProcess, spawn } from 'node:child_process'
++import { mkdtempSync, rmSync, unlinkSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  acquireDaemonLockStoppingTransient,
++  getDaemonLockPath,
++  isProcessAlive,
++  probeLockDisplacement,
++  readDaemonLock,
++  requestTransientYield,
++  stopDaemonHolder,
++  stopTransientLockHolder,
++  type DaemonLockInfo,
++} from '../daemonLock.js'
++import type { Response } from '../socketProto.js'
++
++const SHORT_GRACE_MS = 150
++const dirs: string[] = []
++const children: ChildProcess[] = []
++
++afterEach(() => {
++  while (children.length) children.pop()?.kill('SIGKILL')
++  while (dirs.length) {
++    const dir = dirs.pop()
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  }
++})
++
++function tmpScope(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'daemon-lock-startup-'))
++  dirs.push(dir)
++  return dir
++}
++
++/** Proceso hijo real; con `ignoreSigterm` sobrevive a SIGTERM como un daemon atascado. */
++async function spawnHolder(ignoreSigterm = false): Promise<number> {
++  const script = ignoreSigterm
++    ? "process.on('SIGTERM', () => {}); console.log('ready'); setInterval(() => {}, 1000)"
++    : "console.log('ready'); setInterval(() => {}, 1000)"
++  const child = spawn(process.execPath, ['-e', script], { stdio: ['ignore', 'pipe', 'ignore'] })
++  children.push(child)
++  await new Promise<void>(resolve => child.stdout?.once('data', () => resolve()))
++  if (!child.pid) throw new Error('spawn failed to allocate a pid')
++  return child.pid
++}
++
++async function writeLock(scope: string, lock: DaemonLockInfo): Promise<string> {
++  const lockPath = getDaemonLockPath(scope)
++  await Bun.write(lockPath, JSON.stringify(lock))
++  return lockPath
++}
++
++describe('stopDaemonHolder (kyt)', () => {
++  test('a holder that honours SIGTERM exits', async () => {
++    const pid = await spawnHolder()
++    expect(await stopDaemonHolder(pid, { gracefulMs: 2_000 })).toBe('exited')
++    expect(isProcessAlive(pid)).toBe(false)
++  })
++
++  test('a holder that ignores SIGTERM times out', async () => {
++    const pid = await spawnHolder(true)
++    expect(await stopDaemonHolder(pid, { gracefulMs: SHORT_GRACE_MS })).toBe('timed-out')
++    expect(isProcessAlive(pid)).toBe(true)
++  })
++
++  test('EPERM on SIGTERM is reported as eperm', async () => {
++    const kill = spyOn(process, 'kill').mockImplementation(() => {
++      throw Object.assign(new Error('Operation not permitted'), { code: 'EPERM' })
++    })
++    try {
++      expect(await stopDaemonHolder(424242, { gracefulMs: SHORT_GRACE_MS })).toBe('eperm')
++    } finally {
++      kill.mockRestore()
++    }
++  })
++})
++
++describe('stopTransientLockHolder (Ayt)', () => {
++  test('no lock means nothing to stop', async () => {
++    const lockPath = getDaemonLockPath(tmpScope())
++    expect(await stopTransientLockHolder(lockPath)).toEqual({ kind: 'none' })
++  })
++
++  test('a shell holder is never signalled', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'shell' })
++    const result = await stopTransientLockHolder(lockPath)
++    expect(result.kind).toBe('shell')
++    expect(isProcessAlive(pid)).toBe(true)
++  })
++
++  test('a transient holder that exits is stopped', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    expect(await stopTransientLockHolder(lockPath)).toEqual({ kind: 'stopped', pid })
++  })
++
++  test('a transient holder that ignores SIGTERM is not-stopped / timed-out', async () => {
++    const pid = await spawnHolder(true)
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    const result = await stopTransientLockHolder(lockPath, { gracefulMs: SHORT_GRACE_MS })
++    expect(result).toMatchObject({ kind: 'not-stopped', outcome: 'timed-out' })
++  })
++})
++
++describe('acquireDaemonLockStoppingTransient', () => {
++  test('the timed-out outcome is reachable from acquisition', async () => {
++    const scope = tmpScope()
++    const pid = await spawnHolder(true)
++    await writeLock(scope, { pid, startedAt: 1, origin: 'transient' })
++    const result = await acquireDaemonLockStoppingTransient(scope, 'service', { gracefulMs: SHORT_GRACE_MS })
++    expect(result.ok).toBe(false)
++    if (!result.ok) {
++      expect(result.outcome).toBe('timed-out')
++      expect(result.lock.pid).toBe(pid)
++    }
++  })
++
++  test('a stopped transient holder hands the lock over', async () => {
++    const scope = tmpScope()
++    const pid = await spawnHolder()
++    await writeLock(scope, { pid, startedAt: 1, origin: 'transient' })
++    const result = await acquireDaemonLockStoppingTransient(scope, 'service')
++    expect(result.ok).toBe(true)
++    expect(readDaemonLock(getDaemonLockPath(scope))?.pid).toBe(process.pid)
++  })
++
++  test('a service holder keeps the original conflict (unverified)', async () => {
++    const scope = tmpScope()
++    const pid = await spawnHolder()
++    await writeLock(scope, { pid, startedAt: 1, origin: 'service' })
++    const result = await acquireDaemonLockStoppingTransient(scope, 'service')
++    expect(result.ok).toBe(false)
++    if (!result.ok) expect(result.outcome).toBe('unverified')
++    expect(isProcessAlive(pid)).toBe(true)
++  })
++})
++
++describe('probeLockDisplacement', () => {
++  const lock = (pid: number): DaemonLockInfo => ({ pid, startedAt: 1, origin: 'service' })
++
++  test('no lock or our own lock is not a displacement', async () => {
++    expect(await probeLockDisplacement('/x', 10, { readLock: () => null, retryDelayMs: 0 })).toBeNull()
++    expect(await probeLockDisplacement('/x', 10, { readLock: () => lock(10), retryDelayMs: 0 })).toBeNull()
++  })
++
++  test('another pid holding the lock is the displacer', async () => {
++    expect(await probeLockDisplacement('/x', 10, { readLock: () => lock(77), retryDelayMs: 0 })).toBe(77)
++  })
++
++  test('a single read failure is retried', async () => {
++    let calls = 0
++    const readLock = (): DaemonLockInfo | null => {
++      calls++
++      if (calls === 1) throw new Error('EIO')
++      return lock(77)
++    }
++    expect(await probeLockDisplacement('/x', 10, { readLock, retryDelayMs: 0 })).toBe(77)
++    expect(calls).toBe(2)
++  })
++
++  test('two read failures warn and count as not displaced', async () => {
++    const events: string[] = []
++    const readLock = (): DaemonLockInfo | null => {
++      throw new Error('EIO')
++    }
++    const result = await probeLockDisplacement('/x', 10, {
++      readLock,
++      retryDelayMs: 0,
++      logEventFn: name => events.push(name),
++    })
++    expect(result).toBeNull()
++    expect(events).toEqual(['tengu_daemon_displacement_probe_failed'])
++  })
++})
++
++describe('requestTransientYield (handshake yield → takeover)', () => {
++  const unused = async (): Promise<Response> => {
++    throw new Error('sendYield must not be called')
++  }
++  const yielding: Response = { ok: true, op: 'yield', yielding: true, origin: 'transient' }
++
++  test('not needed when this daemon is transient', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    const result = await requestTransientYield({ lockPath, origin: 'transient', sendYield: unused })
++    expect(result.kind).toBe('not-needed')
++  })
++
++  test('not needed when the holder is not transient', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'service' })
++    const result = await requestTransientYield({ lockPath, origin: 'shell', sendYield: unused })
++    expect(result.kind).toBe('not-needed')
++  })
++
++  test('not needed when the lock holder is dead or absent', async () => {
++    const lockPath = getDaemonLockPath(tmpScope())
++    expect((await requestTransientYield({ lockPath, origin: 'shell', sendYield: unused })).kind).toBe('not-needed')
++  })
++
++  test('a yielding holder that releases the lock is taken over', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    const events: Array<Record<string, unknown> | undefined> = []
++    const result = await requestTransientYield({
++      lockPath,
++      origin: 'shell',
++      sendYield: async () => {
++        setTimeout(() => unlinkSync(lockPath), 30)
++        return yielding
++      },
++      pollIntervalMs: 10,
++      logEventFn: (_name, metadata) => events.push(metadata),
++    })
++    expect(result.kind).toBe('taken-over')
++    expect(events).toEqual([{ ok: 'true', new_origin: 'shell' }])
++  })
++
++  test('a yielding holder that keeps the lock is still-held', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    const events: Array<Record<string, unknown> | undefined> = []
++    const result = await requestTransientYield({
++      lockPath,
++      origin: 'shell',
++      sendYield: async () => yielding,
++      pollIntervalMs: 10,
++      takeoverTimeoutMs: SHORT_GRACE_MS,
++      logEventFn: (_name, metadata) => events.push(metadata),
++    })
++    expect(result.kind).toBe('still-held')
++    expect(events).toEqual([{ ok: 'false', new_origin: 'shell' }])
++  })
++
++  test('a holder that answers yielding:false refused', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    const result = await requestTransientYield({
++      lockPath,
++      origin: 'shell',
++      sendYield: async () => ({ ok: true, op: 'yield', yielding: false, origin: 'service' }),
++    })
++    expect(result.kind).toBe('refused')
++  })
++
++  test('an unreachable control socket is reported with its cause', async () => {
++    const pid = await spawnHolder()
++    const lockPath = await writeLock(tmpScope(), { pid, startedAt: 1, origin: 'transient' })
++    const result = await requestTransientYield({
++      lockPath,
++      origin: 'shell',
++      sendYield: async () => ({ ok: false, code: 'ENOCONN', error: 'connect ENOENT' }),
++    })
++    expect(result.kind).toBe('unreachable')
++    expect(result.message).toContain('connect ENOENT')
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/socketProto.test.ts b/src/packages/daemon/src/__tests__/socketProto.test.ts
+new file mode 100644
+index 000000000..9a923a628
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/socketProto.test.ts
+@@ -0,0 +1,15 @@
++import { describe, expect, test } from 'bun:test'
++
++import { isYieldAck } from '../socketProto.js'
++
++describe('isYieldAck', () => {
++  test('an ok yield reply with yielding:true is an ack', () => {
++    expect(isYieldAck({ ok: true, op: 'yield', yielding: true })).toBe(true)
++  })
++
++  test('a refusal, another op or an error is not an ack', () => {
++    expect(isYieldAck({ ok: true, op: 'yield', yielding: false })).toBe(false)
++    expect(isYieldAck({ ok: true, op: 'ping', yielding: true })).toBe(false)
++    expect(isYieldAck({ ok: false, code: 'ENOCONN', error: 'x' })).toBe(false)
++  })
++})
+diff --git a/src/packages/local-observability/tsconfig.check.json b/src/packages/local-observability/tsconfig.check.json
+new file mode 100644
+index 000000000..16b2f8b9c
+--- /dev/null
++++ b/src/packages/local-observability/tsconfig.check.json
+@@ -0,0 +1,201 @@
++{
++  "compilerOptions": {
++    "noEmit": true,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "paths": {
++      "@thyrox/local-observability": [
++        "./src/index.ts"
++      ],
++      "@thyrox/local-observability/contracts": [
++        "./src/contracts.ts"
++      ],
++      "@thyrox/local-observability/errors": [
++        "./src/errors.ts"
++      ],
++      "@thyrox/local-observability/testing": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/local-observability/compat": [
++        "./src/compat.ts"
++      ],
++      "@thyrox/local-observability/spans": [
++        "./src/spans.ts"
++      ],
++      "@thyrox/local-observability/logging": [
++        "./src/logging/index.ts"
++      ],
++      "@thyrox/local-observability/telemetry": [
++        "./src/telemetry/index.ts"
++      ],
++      "@thyrox/local-observability/slowOperations.js": [
++        "./src/slowOperations.ts"
++      ],
++      "@thyrox/local-observability/slowLoggingTag.js": [
++        "./src/slowLoggingTag.ts"
++      ],
++      "@thyrox/local-observability/errorHelpers.js": [
++        "./src/errorHelpers.ts"
++      ],
++      "@thyrox/local-observability/fileOperationAnalytics": [
++        "./src/fileOperationAnalytics.ts"
++      ],
++      "@thyrox/local-observability/debug.js": [
++        "./src/debug.ts"
++      ],
++      "@thyrox/local-observability/log.js": [
++        "./src/log.ts"
++      ],
++      "@thyrox/local-observability/telemetryEvents.js": [
++        "./src/telemetryEvents.ts"
++      ],
++      "@thyrox/local-observability/betaSessionTracing.js": [
++        "./src/betaSessionTracing.ts"
++      ],
++      "@thyrox/local-observability/errorIds.js": [
++        "./src/errorIds.ts"
++      ],
++      "@thyrox/local-observability/errorIds": [
++        "./src/errorIds.ts"
++      ],
++      "@thyrox/local-observability/utils/withResolvers.js": [
++        "./src/utils/withResolvers.ts"
++      ],
++      "@thyrox/local-observability/sinks.js": [
++        "./src/sinks.ts"
++      ],
++      "@thyrox/local-observability/eventLoopStallDetector.js": [
++        "./src/eventLoopStallDetector.ts"
++      ],
++      "@thyrox/local-observability/uds/udsMessaging.js": [
++        "./src/uds/udsMessaging.ts"
++      ],
++      "@thyrox/local-observability/uds/peerAddress.js": [
++        "./src/uds/peerAddress.ts"
++      ],
++      "@thyrox/local-observability/uds/peerFiles.js": [
++        "./src/uds/peerFiles.ts"
++      ],
++      "@thyrox/local-observability/uds/confusableTagPatterns.js": [
++        "./src/uds/confusableTagPatterns.ts"
++      ],
++      "@thyrox/local-observability/uds/unicodeSanitize.js": [
++        "./src/uds/unicodeSanitize.ts"
++      ],
++      "@thyrox/local-observability/uds/stringUnits.js": [
++        "./src/uds/stringUnits.ts"
++      ],
++      "@thyrox/local-observability/uds/sessionRename.js": [
++        "./src/uds/sessionRename.ts"
++      ],
++      "@thyrox/local-observability/uds/renameNotice.js": [
++        "./src/uds/renameNotice.ts"
++      ],
++      "@thyrox/local-observability/storageKeys.js": [
++        "./src/storageKeys.ts"
++      ],
++      "@thyrox/local-observability/uds/fleetHeartbeat.js": [
++        "./src/uds/fleetHeartbeat.ts"
++      ],
++      "@thyrox/local-observability/uds/messagingState.js": [
++        "./src/uds/messagingState.ts"
++      ],
++      "@thyrox/local-observability/uds/pidFileRecord.js": [
++        "./src/uds/pidFileRecord.ts"
++      ],
++      "@thyrox/local-observability/uds/registrySweep.js": [
++        "./src/uds/registrySweep.ts"
++      ],
++      "@thyrox/local-observability/uds/registrySweepPermission.js": [
++        "./src/uds/registrySweepPermission.ts"
++      ],
++      "@thyrox/local-observability/uds/spareSession.js": [
++        "./src/uds/spareSession.ts"
++      ],
++      "@thyrox/local-observability/uds/sessionKind.js": [
++        "./src/uds/sessionKind.ts"
++      ],
++      "@thyrox/local-observability/uds/sessionRegistration.js": [
++        "./src/uds/sessionRegistration.ts"
++      ],
++      "@thyrox/local-observability/uds/sessionRegistryState.js": [
++        "./src/uds/sessionRegistryState.ts"
++      ],
++      "@thyrox/local-observability/uds/launchRegistration.js": [
++        "./src/uds/launchRegistration.ts"
++      ],
++      "@thyrox/local-observability/uds/sessionNameState.js": [
++        "./src/uds/sessionNameState.ts"
++      ],
++      "@thyrox/local-observability/uds/liveSessionRegistry.js": [
++        "./src/uds/liveSessionRegistry.ts"
++      ],
++      "@thyrox/local-observability/uds/udsClient.js": [
++        "./src/uds/udsClient.ts"
++      ],
++      "@thyrox/local-observability/sdkHeapDumpMonitor.js": [
++        "./src/sdkHeapDumpMonitor.ts"
++      ],
++      "@thyrox/local-observability/sessionDataUploader.js": [
++        "./src/sessionDataUploader.ts"
++      ],
++      "@thyrox/local-observability/telemetry/perfettoTracing.js": [
++        "./src/telemetry/perfettoTracing.ts"
++      ],
++      "@thyrox/local-observability/aggregates/cleanup.js": [
++        "./src/aggregates/cleanup.ts"
++      ],
++      "@thyrox/local-observability/aggregates/headlessProfiler.js": [
++        "./src/aggregates/headlessProfiler.ts"
++      ],
++      "@thyrox/local-observability/aggregates/heatmap.js": [
++        "./src/aggregates/heatmap.ts"
++      ],
++      "@thyrox/local-observability/aggregates/queryProfiler.js": [
++        "./src/aggregates/queryProfiler.ts"
++      ],
++      "@thyrox/local-observability/aggregates/stats.js": [
++        "./src/aggregates/stats.ts"
++      ],
++      "@thyrox/local-observability/localEventLogger.js": [
++        "./src/localEventLogger.ts"
++      ],
++      "@thyrox/local-observability/internal/pendingCrossPackageDeps.js": [
++        "./src/internal/pendingCrossPackageDeps.ts"
++      ],
++      "@thyrox/local-observability/logging/error-log.js": [
++        "./src/logging/error-log.ts"
++      ],
++      "@thyrox/local-observability/errorRecorder.js": [
++        "./src/errorStore/errorRecorder.ts"
++      ],
++      "@thyrox/local-observability/errorStore.js": [
++        "./src/errorStore/errorStoreHome.ts"
++      ]
++    }
++  },
++  "include": [
++    "src/**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}

@@ -29,6 +29,7 @@ import importlib.util
 import pathlib
 import subprocess
 import sys
+import types
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 from paths import reach  # noqa: E402
@@ -54,8 +55,9 @@ def check(label: str, expected, actual) -> None:
         print(f"  FALLA {label}\n          esperado: {expected!r}\n          real:     {actual!r}")
 
 
-def load() -> object:
+def load() -> types.ModuleType:
     spec = importlib.util.spec_from_file_location("reach_roots_bajo_prueba", MODULE)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

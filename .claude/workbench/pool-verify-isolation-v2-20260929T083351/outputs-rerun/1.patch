@@ -1,0 +1,65 @@
+diff --git a/src/session/item_worktree.sh b/src/session/item_worktree.sh
+index 07c3e9fa..157dfb22 100755
+--- a/src/session/item_worktree.sh
++++ b/src/session/item_worktree.sh
+@@ -228,7 +228,13 @@ finalize() {
+         verdict=sin-cambios
+     elif [[ -z "$verify" ]]; then
+         verdict=sin-verificar
+-    elif (cd "$dir" && bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
++    # El verify corre en el worktree, y con SU codigo: THYROX_ROOT y
++    # PYTHONPATH se reemplazan por los del worktree, no se conservan los del
++    # arbol principal que el pool exporta. Sin este reemplazo, un modulo que
++    # resuelve su codigo por THYROX_ROOT (p. ej. `paths/reach.py`) carga la
++    # copia del arbol principal y el verify mide una mezcla de los dos
++    # arboles en vez del worktree solo.
++    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
+         verdict=verificado
+     else
+         verdict=rechazado
+diff --git a/tests/session/test-headless-pool-worktree.sh b/tests/session/test-headless-pool-worktree.sh
+index c3e9cd60..f1c521fb 100644
+--- a/tests/session/test-headless-pool-worktree.sh
++++ b/tests/session/test-headless-pool-worktree.sh
+@@ -142,5 +142,41 @@ run="$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out10" | sha1sum | cut -c1-12)
+ check "sin directorio de la ejecución al terminar" "$(test -e "$run" && echo si || echo no)" "no"
+ check "sin candado de la ejecución al terminar" "$(test -e "$run.lock" && echo si || echo no)" "no"
+ 
++echo "caso 10 — durante el verify: cwd, THYROX_ROOT y PYTHONPATH son los del worktree"
++dir10="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" prepare "$F/repo" "$F/out11" 1)"
++mkdir -p "$F/out11"
++printf 'x\n' > "$dir10/nuevo10.txt"
++dir10_real="$(cd "$dir10" && pwd -P)"
++ctrl10="$F/out11/ctrl.env"
++# El propio verify vuelca lo que observa a un archivo FUERA del worktree,
++# porque el worktree se retira al terminar `finalize` y no queda nada que leer.
++verify10='{ pwd -P; printf "%s\n" "$THYROX_ROOT"; printf "%s\n" "$PYTHONPATH"; } > "'"$ctrl10"'"'
++# Simula lo que el pool exporta antes de correr un item aislado: THYROX_ROOT y
++# PYTHONPATH resueltos contra el arbol PRINCIPAL, tal como los hereda `finalize`.
++THYROX_ROOT="$F/repo" PYTHONPATH="$F/repo/src:/una/ruta/ajena" \
++    bash "$HEADLESS_POOL_ITEM_WORKTREE" finalize "$F/repo" "$dir10" "$F/out11" 1 0 "$verify10"
++cwd_visto="$(sed -n '1p' "$ctrl10")"
++root_visto="$(sed -n '2p' "$ctrl10")"
++pythonpath_visto="$(sed -n '3p' "$ctrl10")"
++check "el verify corre con el cwd en el worktree del item" "$cwd_visto" "$dir10_real"
++check "THYROX_ROOT durante el verify es el worktree, no el arbol principal" "$root_visto" "$dir10_real"
++check "PYTHONPATH durante el verify es solo el src del worktree" "$pythonpath_visto" "$dir10_real/src"
++
++echo "caso 11 — modificar solo el árbol principal no cambia el veredicto del verify"
++printf 'original\n' > "$F/repo/observado.txt"
++git -C "$F/repo" add observado.txt
++git -C "$F/repo" -c user.email=t@t -c user.name=t commit -q -m observado
++dir11="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" prepare "$F/repo" "$F/out12" 1)"
++mkdir -p "$F/out12"
++printf 'y\n' > "$dir11/nuevo11.txt"
++# Se toca SOLO el árbol principal, sin comprometer el cambio: el worktree ya
++# tiene su propia copia de `observado.txt`, independiente desde que se preparó.
++printf 'modificado\n' > "$F/repo/observado.txt"
++verify11='test "$(cat "$THYROX_ROOT/observado.txt")" = original'
++THYROX_ROOT="$F/repo" PYTHONPATH="$F/repo/src" \
++    bash "$HEADLESS_POOL_ITEM_WORKTREE" finalize "$F/repo" "$dir11" "$F/out12" 1 0 "$verify11"
++check "el veredicto lee el worktree, no lo que cambió el árbol principal" "$(cat "$F/out12/1.verdict")" "verificado"
++git -C "$F/repo" checkout -q -- observado.txt
++
+ echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
+ [[ $failures -eq 0 ]]

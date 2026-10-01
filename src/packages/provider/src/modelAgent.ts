@@ -48,7 +48,7 @@ export function getAgentModel(
   toolSpecifiedModel?: ModelAlias,
   permissionMode?: PermissionMode,
 ): string {
-  const subagentModelEnv = readEnv('CLAUDE_CODE_SUBAGENT_MODEL')
+  const subagentModelEnv = readEnv('THYROX_CODE_SUBAGENT_MODEL')
   if (subagentModelEnv) {
     return parseUserSpecifiedModel(subagentModelEnv)
   }

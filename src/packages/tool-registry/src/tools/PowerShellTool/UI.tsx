@@ -12,6 +12,7 @@ import type { ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { PowerShellProgress } from '../../progressTypes.js'
 import type { ThemeName } from '@anthropic/ink'
 import type { Out, PowerShellToolInput } from './PowerShellTool.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Constants for command display
 const MAX_COMMAND_DISPLAY_LINES = 2
@@ -129,7 +130,7 @@ export function renderToolResultMessage(
   if (isImage) {
     return (
       <MessageResponse height={1}>
-        <Text dimColor>[Image data detected and sent to Claude]</Text>
+        <Text dimColor>[Image data detected and sent to {PRODUCT_NAME}]</Text>
       </MessageResponse>
     )
   }

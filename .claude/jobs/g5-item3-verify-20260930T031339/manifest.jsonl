@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/daemon && bun test src/__tests__/workerContainerLifecycle.test.ts 2>&1 | tail -5; cd ../../.. && bash bin/check_package_typecheck --strict daemon 2>&1 | tail -2", "started_at": "2026-09-30T03:13:39+00:00"}

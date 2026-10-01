@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     first = argv.index("--")
     second = argv.index("--", first + 1)
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--loop-dir", type=Path, required=True)
     parser.add_argument("--max-steps", type=int, default=20)

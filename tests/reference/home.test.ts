@@ -5,14 +5,16 @@
  * que `reference/triple.ts` NO tiene consumidor —sus cuatro simbolos
  * exportados dan cero fuera del propio paquete—, asi que su hogar no lo
  * decide un consumidor. Lo decide el PRECEDENTE, y el precedente esta
- * ejecutado: `src/workbench/manifest.ts` es un primitivo de la misma clase
- * —procedimiento de construccion, no producto ni estado— y vive en
+ * ejecutado entonces: `workbench/manifest.ts` era un primitivo de la misma
+ * clase —procedimiento de construccion, no producto ni estado— y vivia en
  * `src/<dominio>/` a nivel de raiz, con su suite en `tests/<dominio>/`.
- * `triple.ts` toma la misma forma: `src/reference/triple.ts` +
- * `tests/reference/`.
+ * `triple.ts` tomo la misma forma: `src/reference/triple.ts` +
+ * `tests/reference/`. El workbench es hoy el paquete `src/packages/workbench`
+ * porque tiene manifiesto y consumidores; la triple no tiene ninguno de los
+ * dos y por eso se queda en su raiz de dominio.
  *
  * Las otras dos suites del paquete —`claims` y `branchIntegration`— ya no
- * miden nada que viva en el: sus imports apuntan a `src/coordination/` desde
+ * miden nada que viva en el: sus imports apuntan a `coordination` desde
  * hace tramos. Se quedaron atras cuando su sujeto se mudo, y viajan a
  * `tests/coordination/`, con su sujeto.
  *
@@ -26,31 +28,37 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { thyroxRoot } from '../../src/paths/reach.ts'
+import { thyroxRoot } from '../../src/packages/paths/reach.ts'
 
 const ROOT = thyroxRoot()
 
-describe('el paquete harness deja de existir', () => {
-  test('1. la triple de referencia vive en src/reference, como el workbench', () => {
+describe('the harness package ceases to exist', () => {
+  test('1. the reference triple lives in src/reference', () => {
     expect(existsSync(join(ROOT, 'src', 'reference', 'triple.ts'))).toBe(true)
-    // El precedente que fija la forma, no una preferencia: el mismo layout.
-    expect(existsSync(join(ROOT, 'src', 'workbench', 'manifest.ts'))).toBe(true)
+    // El workbench es un paquete (`src/packages/workbench`) porque tiene
+    // manifiesto y consumidores. La triple no tiene ninguno de los dos, así
+    // que no es un paquete y se queda en su raíz de dominio.
+    expect(existsSync(join(ROOT, 'src', 'packages', 'workbench', 'manifest.ts'))).toBe(true)
   })
 
-  test('2. las dos suites huerfanas viajan con su sujeto a coordination', () => {
+  test('2. the two orphan suites travel with their subject to coordination', () => {
     for (const name of ['claims.test.ts', 'branchIntegration.test.ts']) {
-      expect(existsSync(join(ROOT, 'tests', 'coordination', name))).toBe(true)
+      expect(existsSync(join(ROOT, 'src', 'packages', 'coordination', '__tests__', name))).toBe(true)
     }
-    expect(existsSync(join(ROOT, 'src', 'coordination', 'claims.ts'))).toBe(true)
+    expect(existsSync(join(ROOT, 'src', 'packages', 'coordination', 'claims.ts'))).toBe(true)
   })
 
-  test('3. el directorio del paquete ya no esta', () => {
+  test('3. the package directory is gone', () => {
     expect(existsSync(join(ROOT, 'src', 'packages', 'harness'))).toBe(false)
   })
 
-  test('4. el workspace ya no lo declara, y nadie lo cita', () => {
-    const manifest = JSON.parse(readFileSync(join(ROOT, 'src', 'packages', 'package.json'), 'utf-8'))
-    expect(manifest.workspaces ?? []).not.toContain('harness')
+  test('4. the workspace no longer declares it, and nobody cites it', () => {
+    // La raiz es la unica declaracion del workspace (tarea #62): miembro es lo
+    // que sus globos alcanzan.
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'))
+    const members = (manifest.workspaces as string[]).flatMap(pattern =>
+      [...new Bun.Glob(pattern).scanSync({ cwd: ROOT, onlyFiles: false })])
+    expect(members).not.toContain('src/packages/harness')
     // Metrica: especificadores de modulo que nombren el paquete, en todo `.ts`
     // de `src/` y `tests/`.
     // Ciega a: la prosa que lo mencione —este archivo lo nombra— y a una cita

@@ -1,0 +1,4 @@
+floatf rawJson.ts
+kelvin canonicalTurns.ts
+dottedi canonicalTurns.ts
+gotrim canonicalTurns.ts

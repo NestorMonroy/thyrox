@@ -1,0 +1,16 @@
+== 1. run corre el comando con el lock tomado y devuelve su código ==
+OK   el comando vio el lock y su código sale tal cual
+OK   al terminar no queda lock
+== 2. con el lock de otro, sale 3 sin correr el comando ==
+OK   ocupado: exit 3
+OK   el comando no corrió
+OK   nombra el pid del dueño
+OK   check lo ve tomado
+OK   check lo ve libre al soltar
+== 3. N shells que leen-modifican-escriben bajo run no pierden cuentas ==
+OK   80 incrementos, 80 en el archivo
+== 4. sin comando, rehúsa con 2 ==
+OK   uso inválido: exit 2
+
+aserciones: 9 de 9 · fallos: 0
+EXIT=0

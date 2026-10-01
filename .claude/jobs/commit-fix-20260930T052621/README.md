@@ -1,0 +1,16 @@
+# commit-fix
+
+## Qué se lanzó
+
+```
+bash -c eval "$(bash bin/commit_identity env)"; git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -F '/home/user/thyrox/.claude/workbench/.m1' -- src/packages/command-runtime/src/skills/__tests__/loadSkillsDir.loader.test.ts; echo commit-rc=$?
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

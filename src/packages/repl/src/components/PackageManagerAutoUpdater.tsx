@@ -146,13 +146,6 @@ export function PackageManagerAutoUpdater({
   }, [])
 
   const checkForUpdates = React.useCallback(async () => {
-    if (
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_ENV === 'development'
-    ) {
-      return
-    }
-
     if (isAutoUpdaterDisabled()) {
       return
     }
@@ -229,14 +222,14 @@ export function PackageManagerAutoUpdater({
     )
 
     // Ant `MyK`: actually run the upgrade only when:
-    //   - `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE` env is truthy
+    //   - `THYROX_CODE_PACKAGE_MANAGER_AUTO_UPDATE` env is truthy
     //   - `buildUpgradeArgv(pm)` returns a non-null argv (i.e. pm is
     //     homebrew or winget — the others get a banner-only hint)
     //   - we didn't cap (`s = true` in ant): when capped, the user is
     //     already at/above maxVersion's "upgrade" semantics — running
     //     `brew upgrade` would re-fetch a possibly older cask without
     //     advancing the user. Ant gates on `!s`.
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_PACKAGE_MANAGER_AUTO_UPDATE)) {
       return
     }
     const argv = buildUpgradeArgv(pm, formulaName)

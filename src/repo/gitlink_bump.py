@@ -60,7 +60,6 @@ import argparse
 import dataclasses
 import enum
 import pathlib
-import sys
 
 import clone
 
@@ -176,6 +175,7 @@ def report(verdict: Verdict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("submodule", help="ruta del submodulo dentro del padre")
     parser.add_argument("--root", default=".", help="raiz del superproyecto")

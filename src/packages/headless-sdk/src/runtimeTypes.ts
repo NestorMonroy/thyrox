@@ -63,7 +63,7 @@ export interface InternalQuery extends Query {
 // Cross-provider effort levels. `none` is exposed only when connection
 // metadata explicitly declares support (currently GPT-5.6 Codex models).
 //   low / medium / high — supported on all effort-capable models
-//   xhigh                — extended reasoning on supported Claude/Codex models
+//   xhigh                — extended reasoning on supported thyrox/Codex models
 //   max                  — Mythos / Opus 4.7 / Opus 4.6 / Sonnet 4.6
 // Order matters: ascending intelligence, used by the picker UI.
 export type EffortLevel = 'none' | 'low' | 'medium' | 'high' | 'xhigh' | 'max'

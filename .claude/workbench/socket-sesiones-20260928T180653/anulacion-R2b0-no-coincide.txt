@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+44 |   })
+45 | 
+46 |   test('modelo exacto o prefijo con asterisco, sobre el nombre sin [1m]', () => {
+47 |     process.env[ENV] = 'claude-opus-5=fast_mode;claude-sonnet-*=-effort; =effort'
+48 |     expect(capabilityOverrideFromEnv('fast_mode', 'claude-opus-5[1m]')).toBe(true)
+49 |     expect(capabilityOverrideFromEnv('fast_mode', 'claude-opus-5-5')).toBeUndefined()
+                                                                           ^
+error: expect(received).toBeUndefined()
+
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:49:71)
+(fail) capabilityOverrideFromEnv (UYe) — THYROX_CODE_MODEL_CAPABILITIES > modelo exacto o prefijo con asterisco, sobre el nombre sin [1m] [0.23ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [75.00ms]

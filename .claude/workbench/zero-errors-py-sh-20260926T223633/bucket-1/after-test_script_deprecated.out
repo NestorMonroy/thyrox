@@ -1,0 +1,33 @@
+
+== review ==
+  ok    un script que no declara nada NO es asunto del gate
+  ok    la declaración completa no tiene motivos
+  ok    cabecera sin guard: falta el guard
+  ok    guard sin cabecera: faltan las tres claves
+  ok    y cada clave ausente se NOMBRA por separado
+  ok    OBSOLETE vale igual que DEPRECATED
+  ok    una clave vacía no cuenta como declarada
+  ok    la cabecera fuera de inicio de línea no cuenta
+
+== controles de anulación ==
+  ok    retirar el guard de una declaración completa cambia el veredicto
+  ok    retirar una clave de la cabecera cambia el veredicto
+
+== scan ==
+  ok    mide las tres raíces y ninguna más
+  ok    y encuentra los dos incompletos
+  ok    el guard NO se mide a sí mismo
+  ok    node_modules queda excluido
+  ok    completar los dos cambia el veredicto
+
+== main ==
+  ok    una raíz nombrada sale 0
+  ok    y el desglose por raíz va AUNQUE el total sea cero
+  ok    el conteo publica cuántas raíces y cuántos scripts
+  ok    --strict con un infractor sale 1
+  ok    y sin --strict sigue saliendo 0
+  ok    --quiet publica sólo el conteo
+  ok    con un árbol sin clones REHÚSA con código propio
+  ok    y NO emite ninguna cifra por stdout
+
+resultado: 23 de 23 aserciones en verde

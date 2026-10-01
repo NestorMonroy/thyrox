@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+142 |     expect(ctx.state.spawnedByAttendedSession).toBe(false)
+143 |     expect(spawnedByAttendedSession(ctx)).toBe(false)
+144 |     expect(isChildSession(ctx)).toBe(true)
+145 |     expect(isInsideAgentShell(ctx)).toBe(true)
+146 |     expect(coworkFrameArtifacts(ctx)).toBe(true)
+147 |     expect(isHostScheduledRun(ctx)).toBe(true)
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:147:37)
+(fail) initializeEntrypointHostState (NUo) y resolveEntrypoint (D) > lee THYROX_CODE_SESSION_ATTENDED (tres estados), THYROX_CODE_CHILD_SESSION, CLAUDECODE, THYROX_CODE_COWORK_FRAME_ARTIFACTS y THYROX_CODE_HOST_SCHEDULED_RUN [0.77ms]
+
+ 15 pass
+ 1 fail
+ 88 expect() calls
+Ran 16 tests across 1 file. [69.00ms]

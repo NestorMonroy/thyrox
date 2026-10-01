@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsExplicitPath.test.ts:
+35 | 
+36 | describe('validateExplicitSocketPath (G1o): forma de la ruta', () => {
+37 |   test('vacía, relativa, con .. o sin nombre de archivo', async () => {
+38 |     expect(await refusal('')).toContain('was given an empty value')
+39 |     expect(await refusal('rel/x.sock')).toContain('must be an absolute path')
+40 |     expect(await refusal('/tmp/a/../x.sock')).toContain("must not contain '..' segments")
+                                                   ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "must not contain '..' segments"
+Received: "aceptada"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsExplicitPath.test.ts:40:47)
+(fail) validateExplicitSocketPath (G1o): forma de la ruta > vacía, relativa, con .. o sin nombre de archivo [2.52ms]
+
+ 6 pass
+ 1 fail
+ 28 expect() calls
+Ran 7 tests across 1 file. [86.00ms]

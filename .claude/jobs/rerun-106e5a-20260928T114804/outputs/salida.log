@@ -1,0 +1,14 @@
+== 8: la columna vieja gana
+   (src/accounts/refresh/health/connectionExpiry.ts)
+(fail) expired retries > the count and time live in the connection data, with the old columns as fallback [0.49ms]
+ 15 pass
+ 1 fail
+== 22: espera no texto cuenta
+   (src/accounts/refresh/health/refreshCircuit.ts)
+(fail) refresh circuit > a connection is in backoff only while a valid window is still open [0.72ms]
+ 15 pass
+ 1 fail
+== restaurado
+ 16 pass
+ 0 fail
+__BG_EXIT__=0

@@ -1,0 +1,73 @@
+predecessor_run: .thyrox/runtime/pool/0441fd032e06-20260930T215829-11520
+predecessor_item: 1
+worktree: .thyrox/pool-worktrees/0441fd032e06/1
+base_commit: 2fd80a4f261bbfd7bdc49acc971d34ac6fa31e35
+patch: .claude/workbench/podman-execution-primitive-20260930T215755/outputs/interrupted/primitive.patch
+patch_sha256: 0d46bd1b808d735108935c96db77d555e67efad20ad9ab5f7e9d7237a472db86
+patch_superseded_sha256: f93ceff7ca8c354de54f03786fc3114730ea4a3bac57f28e56c0fc946eb8be42 (extraído con el índice del worktree muerto tras `add -N` y detección de renombres: cabeceras de archivo nuevo sobre rutas que existen en el commit base; no reconstruía)
+## git status --short
+ M bun.lock
+ M src/packages/daemon/package.json
+ M src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+ D src/packages/daemon/src/__tests__/repositoryJobProfile.test.ts
+ M src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
+ D src/packages/daemon/src/__tests__/workerResourceProfile.test.ts
+ M src/packages/daemon/src/podman/podmanWorkerManager.ts
+ M src/packages/daemon/src/podman/repositoryJobProfile.ts
+ M src/packages/daemon/src/podman/workerContainerLifecycle.ts
+ M src/packages/daemon/src/podman/workerResourceProfile.ts
+?? src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts
+?? src/packages/podman-execution/
+## git diff --name-only HEAD
+bun.lock
+src/packages/daemon/package.json
+src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+src/packages/daemon/src/__tests__/repositoryJobProfile.test.ts
+src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
+src/packages/daemon/src/__tests__/workerResourceProfile.test.ts
+src/packages/daemon/src/podman/podmanWorkerManager.ts
+src/packages/daemon/src/podman/repositoryJobProfile.ts
+src/packages/daemon/src/podman/workerContainerLifecycle.ts
+src/packages/daemon/src/podman/workerResourceProfile.ts
+## git ls-files --others --exclude-standard
+src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts
+src/packages/podman-execution/__tests__/containerRun.test.ts
+src/packages/podman-execution/__tests__/packageBoundary.test.ts
+src/packages/podman-execution/__tests__/podmanExecution.real.test.ts
+src/packages/podman-execution/__tests__/repositoryJobProfile.test.ts
+src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts
+src/packages/podman-execution/__tests__/workerResourceProfile.test.ts
+src/packages/podman-execution/bunfig.toml
+src/packages/podman-execution/containerRun.ts
+src/packages/podman-execution/package.json
+src/packages/podman-execution/podmanExecutor.ts
+src/packages/podman-execution/repositoryJobProfile.ts
+src/packages/podman-execution/testing/helperImage.ts
+src/packages/podman-execution/tsconfig.build.json
+src/packages/podman-execution/tsconfig.test.json
+src/packages/podman-execution/workerContainerLifecycle.ts
+src/packages/podman-execution/workerResourceProfile.ts
+## archivos del patch
+bun.lock
+src/packages/daemon/package.json
+src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts
+src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
+src/packages/daemon/src/podman/podmanWorkerManager.ts
+src/packages/daemon/src/podman/repositoryJobProfile.ts
+src/packages/daemon/src/podman/workerContainerLifecycle.ts
+src/packages/daemon/src/podman/workerResourceProfile.ts
+src/packages/podman-execution/__tests__/containerRun.test.ts
+src/packages/podman-execution/__tests__/packageBoundary.test.ts
+src/packages/podman-execution/__tests__/podmanExecution.real.test.ts
+src/packages/podman-execution/__tests__/repositoryJobProfile.test.ts
+src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts
+src/packages/podman-execution/__tests__/workerResourceProfile.test.ts
+src/packages/podman-execution/bunfig.toml
+src/packages/podman-execution/containerRun.ts
+src/packages/podman-execution/package.json
+src/packages/podman-execution/podmanExecutor.ts
+src/packages/podman-execution/testing/helperImage.ts
+src/packages/podman-execution/tsconfig.build.json
+src/packages/podman-execution/tsconfig.test.json
+src/packages/podman-execution/workerContainerLifecycle.ts

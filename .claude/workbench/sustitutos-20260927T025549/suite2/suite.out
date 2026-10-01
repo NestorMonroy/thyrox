@@ -1,0 +1,325 @@
+== TypeScript (bun) ==
+-- ROJO tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+201 |     test(`${m.name}: todo import externo resuelve`, () => {
+202 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+203 |         .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+204 |           && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
+205 |         .sort()
+206 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "OC & Bulk Overages copy",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:206:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/repl: todo import externo resuelve [69.87ms]
+
+ 87 pass
+ 1 fail
+ 89 expect() calls
+Ran 88 tests across 1 file. [1.79s]
+-- ROJO tests/package/exports.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/exports.test.ts:
+162 |   test('cada modulo .ts de src/ resuelve a si mismo por el mapa', () => {
+163 |     const exports = manifest().exports as Record<string, string>
+164 |     const sinCubrir = sourceModules().filter(
+165 |       (m) => resolveSubpath(exports, subpathFor(m)) !== './' + m,
+166 |     )
+167 |     expect(sinCubrir).toEqual([])
+                            ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/task/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/exports.test.ts:167:23)
+(fail) 2 — el mapa esta completo y su forma se deriva > cada modulo .ts de src/ resuelve a si mismo por el mapa [212.24ms]
+
+ 6 pass
+ 1 fail
+ 554 expect() calls
+Ran 7 tests across 1 file. [387.00ms]
+-- ROJO tests/smoke/headless-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/headless-smoke.test.ts:
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+70 |   }, 35_000)
+71 | 
+72 |   test('--help exits 0 and prints usage', async () => {
+73 |     const r = await runCli(['--help'], 30_000)
+74 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:74:24)
+(fail) smoke:headless boot > --help exits 0 and prints usage [2056.41ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [2.39s]
+pass=15653 fail=3 errores=0 caidas=0 archivos=1057 en_rojo=3
+
+== Python (stdlib) ==
+-- ROJO tests/paths/test_reach.py
+
+1. La constante por raíz se LEE (H-DOCS-1070)
+  ok    THYROX_REACH_API gana sobre el árbol
+  ok    control — sin la constante por raíz cae al clon del árbol
+
+2. El proceso gana al archivo .env
+  ok    el proceso gana
+  ok    control — sin proceso, manda el .env
+
+3. El ascenso NO depende de la profundidad
+  ok    desde 2 niveles
+  ok    desde 5 niveles
+  ok    control — los dos coinciden (un offset fijo daría distinto)
+
+4. El .env se lee sin librería de terceros
+  ok    ignora el comentario y la línea en blanco
+  ok    acepta el prefijo export
+  ok    quita la comilla doble
+  ok    quita la comilla simple
+  ok    descarta la línea sin '='
+
+5. Las variables nombran al LECTOR, como el binario
+  ok    la primera es la del lector
+  ok    la heredada queda de segunda
+  ok    el tramo extra sigue la misma forma
+  ok    y su heredada
+  ok    la constante por raíz nombra al lector
+  ok    y admite la heredada
+  ok    gana la primera de la tupla
+  ok    control — retirada la primera, manda la segunda
+
+6. El tramo extra exige rutas absolutas
+  ok    una raíz extra absoluta entra
+  ok    una relativa rehúsa
+
+7. Rehúsa nombrando, nunca devuelve un conjunto corto
+  ok    raíz desconocida rehúsa
+  ok    require_all rehúsa si falta una raíz
+
+8. El CLI sobrevive a que le cierren la salida
+  ok    no vuelca traceback por stderr
+  ok    y sale sin error
+
+9. thyrox se localiza a SÍ MISMO por mecanismo, no por aritmética (#146)
+  ok    THYROX_ROOT declarada gana
+  ok    control — sin la variable, asciende hasta el marcador
+  ok    y acierta desde cualquier profundidad
+  ok    un directorio llamado thyrox sin el marcador no cuenta
+
+10. desde un consumidor, lo resuelve el MECANISMO multi-repo (#146)
+  ok    sin THYROX_ROOT, lo halla como hermano de los clones
+  ok    control — un hermano llamado thyrox sin marcador no basta
+
+11. El CLI publica la raíz de THYROX — el bootstrap que shell necesita
+  ok    desde su sitio, sale 0
+  ok    y publica la raíz real de thyrox
+  ok    la variable declarada gana sobre el ascenso
+  ok    una copia fuera del árbol halla al proveedor por el hermano
+  FALLA y publica su raíz
+          esperado: '/tmp/thyrox-tests-Ckdxxh/tmpw388kyzh/arbol/thyrox'
+          real:     '/home/user/thyrox'
+  FALLA control — sin marcador en ningún hermano, rehúsa con 2
+          esperado: 2
+          real:     0
+  FALLA control — y NO publica una ruta
+          esperado: ''
+          real:     '/home/user/thyrox'
+  FALLA control — el motivo nombra el marcador, no «modo desconocido»
+          esperado: (True, False)
+          real:     (False, False)
+
+12. --env se bootstrapea a sí mismo: exporta las dos entradas de DEC-04
+  ok    exporta THYROX_ROOT
+  ok    exporta THYROX_ENV_FILE
+  ok    sigue exportando una raíz por clon del roster
+== el prefijo de clon se declara o se deriva, no se codifica ==
+  ok    en un arbol ajeno DERIVA su prefijo, no el nuestro
+  ok    la declaracion GANA sobre la derivacion
+  ok    y ningun literal de multi-repo se ASIGNA en el mecanismo
+
+resultado: 42 de 46 aserciones en verde
+-- SIN MEDIR (exit 2) tests/session/hardware/test_gpu_admission_real.py
+-- ROJO tests/verify/test_env_contract_keys.py
+F...
+======================================================================
+FAIL: test_arbol_real_sin_claves_sin_declarar (__main__.EnvContractKeysGate.test_arbol_real_sin_claves_sin_declarar)
+El positivo: el árbol tal como está pasa en estricto.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_env_contract_keys.py", line 39, in test_arbol_real_sin_claves_sin_declarar
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : claves leidas del entorno: 103 | declaradas: 109 | sin declarar: 6
+  SIN DECLARAR  THYROX_CODE_HOST_CREDS_FILE  <- src/packages/provider/src/credentials.ts
+  SIN DECLARAR  THYROX_CODE_OAUTH_TOKEN  <- src/packages/provider/dist/credentials.d.ts
+  SIN DECLARAR  THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR  <- src/packages/provider/dist/credentials.d.ts
+  SIN DECLARAR  THYROX_LINT_BIN_DIR  <- src/verify/check_lint_zero.py
+  SIN DECLARAR  THYROX_SUITE_TIMEOUT  <- src/verify/run_suites_isolated.sh
+  SIN DECLARAR  THYROX_SUITE_WIDTH  <- src/verify/run_suites_isolated.sh
+
+Cada una es una obligacion que el consumidor no puede conocer. Declararla en .env.example con el comentario que la explique.
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 108.156s
+
+FAILED (failures=1)
+-- ROJO tests/verify/test_path_arithmetic.py
+== 1. el árbol real, contra el baseline declarado ==
+  ok    midió archivos (un 0 aquí sería un verde ciego)
+  FALLO son EXACTAMENTE los del baseline declarado, ninguno mas
+        esperado=[{'.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12', '.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11', '.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', '.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3', 'tests/verify/test_rst_gate_root.py:57', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19', '.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', '.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14'}] obtenido=[{'tests/verify/test_stand_ins_cleared.py:21', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', 'src/typescript/emit_declarations.py:284', 'tests/session/test_gpu_scenarios.py:31', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21', '.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11', 'src/verify/check_lint_zero.py:54', 'tests/session/test_gpu_monitor.py:190', 'tests/verify/test_check_lint_zero.py:18', '.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', '.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21', 'tests/verify/test_check_exports_types.py:24', 'src/verify/check_lint_zero.py:113', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14', 'tests/paths/test_unprefixed_clone.py:26', '.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29', '.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23', 'tests/verify/test_rst_gate_root.py:57', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment.py:284', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment2.py:284', 'tests/session/hardware/test_gpu_admission_real.py:29', 'tests/verify/test_check_stand_ins.py:23', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189', 'tests/package/test_packages_home.py:17', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19', 'tests/verify/test_step_setup.py:136', 'tests/session/test_gpu_trace.py:21', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', 'tests/verify/test_step_close.py:147', 'tests/session/test_shared_lock.py:80', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51'}]
+
+2. CONTROL POSITIVO — la línea REAL que el árbol tenía antes de #228
+  ok    marca la aritmética vieja
+
+3. El GEMELO — la misma línea, ya arreglada, NO se marca
+  ok    el bootstrap admitido no genera hallazgo
+
+4. El bootstrap partido en DOS líneas SÍ se marca
+  ok    variable-y-luego-insert SÍ genera hallazgo
+
+5. La mención en PROSA no es un uso
+  ok    el docstring que lo menciona no cuenta
+
+6. Denominador y rehúse
+  ok    publica su alcance medido
+  ok    exit 0 con sólo lo congelado
+  ok    sin ninguna raíz medible, exit 2
+  ok    y NO emite conteo en stdout
+
+7. --strict / baseline / --quiet
+  ok    sin --strict, un incumplidor nuevo NO bloquea
+  ok    pero se nombra en la salida
+  ok    con --strict, el incumplidor nuevo bloquea
+  ok    --write-baseline sale 0
+  ok    y congela la entrada
+  ok    congelada, la deuda heredada NO bloquea
+  ok    --quiet publica sólo el conteo, pelado
+
+resultado: 16 de 17 aserciones en verde
+-- ROJO tests/verify/test_runner.py
+test_json_is_machine_readable (__main__.CliTest.test_json_is_machine_readable) ... ok
+test_list_prints_the_registry_and_exits_0 (__main__.CliTest.test_list_prints_the_registry_and_exits_0) ... ok
+test_only_without_match_exits_2 (__main__.CliTest.test_only_without_match_exits_2) ... ok
+test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered) ... FAIL
+test_every_registered_gate_is_on_disk (__main__.CoverageTest.test_every_registered_gate_is_on_disk) ... ok
+test_every_registered_check_declares_its_rule (__main__.RegistryTest.test_every_registered_check_declares_its_rule)
+Sin la regla que lo documenta, un fallo no dice contra que mide. ... ok
+test_every_registered_id_is_unique (__main__.RegistryTest.test_every_registered_id_is_unique) ... ok
+test_the_registry_is_not_empty (__main__.RegistryTest.test_the_registry_is_not_empty) ... ok
+test_a_gate_that_refuses_with_2_is_not_measured (__main__.RunnerTest.test_a_gate_that_refuses_with_2_is_not_measured)
+Exit 2 = «no emití veredicto». Ni pass ni fail: sin medir. ... ok
+test_failing_gate_is_reported_as_fail (__main__.RunnerTest.test_failing_gate_is_reported_as_fail) ... ok
+test_missing_blocks_the_verdict (__main__.RunnerTest.test_missing_blocks_the_verdict)
+`missing` NO es un aprobado: sin esto, un gate borrado pasa en verde. ... ok
+test_passing_gate_is_reported_as_pass (__main__.RunnerTest.test_passing_gate_is_reported_as_pass) ... ok
+test_registered_arguments_reach_the_gate (__main__.RunnerTest.test_registered_arguments_reach_the_gate) ... ok
+test_registered_gate_absent_from_disk_is_missing_not_pass (__main__.RunnerTest.test_registered_gate_absent_from_disk_is_missing_not_pass)
+El caso que la referencia resuelve con un tercer estado. ... ok
+test_the_consumer_is_passed_to_the_gate_as_its_cwd (__main__.RunnerTest.test_the_consumer_is_passed_to_the_gate_as_its_cwd)
+thyrox es proveedor: el arbol medido es un parametro, no su propio cwd. ... ok
+test_verdict_publishes_every_bucket (__main__.RunnerTest.test_verdict_publishes_every_bucket)
+El denominador. Un conteo sin el reparto no es un resultado. ... ok
+test_only_filters_by_substring_of_the_id (__main__.SelectionTest.test_only_filters_by_substring_of_the_id) ... ok
+test_only_with_no_match_refuses (__main__.SelectionTest.test_only_with_no_match_refuses)
+Un filtro que no selecciona nada NO aprueba en vacio. ... ok
+
+======================================================================
+FAIL: test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_runner.py", line 164, in test_every_gate_on_disk_is_registered
+    self.assertEqual(missing, [], f'{len(missing)} gate(s) en disco sin registrar')
+AssertionError: Lists differ: ['check_exports_types.py', 'check_lint_zero.py', 'check_stand_ins.py'] != []
+
+First list contains 3 additional elements.
+First extra element 0:
+'check_exports_types.py'
+
+- ['check_exports_types.py', 'check_lint_zero.py', 'check_stand_ins.py']
++ [] : 3 gate(s) en disco sin registrar
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.230s
+
+FAILED (failures=1)
+  (268 suite(s) de Python, 4 en rojo, 1 sin medir)
+
+== shell (bash) ==
+-- ROJO tests/githooks/test-pre-commit-reconcile-status.sh
+test-pre-commit-reconcile-status:
+  ok    el fallo de la reconciliación nombra su código real
+  FALLA y no bloquea el commit: el store es telemetría — esperado 0, obtenido 1
+test-pre-commit-reconcile-status: 2 aserciones — 1 ok, 1 falla(s)
+-- SIN MEDIR (exit 2) tests/session/hardware/test-gpu-pools-real.sh
+-- ROJO tests/verify/test-mutante-en-staging.sh
+== 1. el guion existe y parsea ==
+  ok    check_mutante_en_staging.py parsea
+== 2. archivo limpio -> exit 0 ==
+  ok    un .py sin mutante sale 0
+  ok    publica su denominador
+== 3. CONTROL POSITIVO — el mutante REAL, con la forma que el mutador escribe ==
+  ok    un .py con mutante sale 1
+  ok    nombra el archivo sucio
+  ok    nombra la linea
+== 4. CONTROL NEGATIVO — la constante del propio mutador NO es un mutante ==
+  ok    la declaracion a nivel de modulo NO cuenta
+== 5. el mutador REAL del repo pasa su propio guard ==
+  ok    check_suite_discrimina.py no se bloquea a si mismo
+== 6. sin argumentos, el alcance sale del staging ==
+  ok    un mutante en staging bloquea
+== 7. el arbol vivo esta limpio (control del repo real) ==
+
+9 de 10 aserciones en verde
+  FALLO ningun .py versionado trae un mutante
+        esperado=[0] obtenido=[141]
+-- ROJO tests/verify/test-run-tree-mutation.sh
+== 1. gemelo quieto: el árbol no cambia y el veredicto sale ==
+FALLA exit 0 — esperado '0', obtenido '1'
+OK   sin aviso de árbol mutado
+== 2. una suite escribe en src/: el veredicto no es atribuible ==
+FALLA exit 3, ni verde ni rojo — esperado '3', obtenido '1'
+FALLA lo declara — esperado '1', obtenido '0'
+FALLA y dice qué veredicto habría dado — esperado '1', obtenido '0'
+== 3. también en --changed ==
+OK   --changed con árbol mutado: exit 3
+
+aserciones: 2 de 6 · fallos: 4
+  (129 suite(s) de shell, 3 en rojo, 1 sin medir)
+
+== alcance ==
+  TypeScript: 1057 archivo(s), EN ROJO
+  Python: 268 suite(s), 4 en rojo, 1 sin medir
+  shell: 129 suite(s), 3 en rojo, 1 sin medir
+
+FALLA: 3 lengua(s) en rojo
+
+ÁRBOL MUTADO durante la medición: el veredicto no es atribuible a ningún estado.
+  habría sido: rojo
+  (huella al empezar 6ba8220e5940, al terminar 406fec276d61)
+EXIT=3

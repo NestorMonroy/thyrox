@@ -6,38 +6,17 @@
  * `@thyrox/local-observability: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts`: un
  * archivo consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/daemon` no es
- * miembro del bun workspace (`src/packages/package.json`) — se probó en
- * vivo antes de escribir este archivo (`Cannot find module
- * '@thyrox/local-observability'` al resolver desde `src/packages/daemon`) —
- * así que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano
- * ya exporte el símbolo real.
+ * divergencia exacta y su condición de retiro. `@thyrox/*` resuelve desde
+ * este paquete, así que cada envoltorio se retira importando el símbolo real
+ * que el hermano ya exporta.
  *
- * Una sola forma aquí — PUNTO DE INYECCIÓN, no reimplementación: `logEvent`
- * pertenece de verdad al pipeline de telemetría de `local-observability`.
- * Default inocuo (no-op) + setter. Se retira cuando `@thyrox/daemon` sea
- * miembro del workspace (`@thyrox/local-observability` YA exporta `.` con
- * `logEvent(name, metadata?)` — `src/core.ts:79-81` — sólo falta la
- * membresía).
+ * Lo que ya NO vive aquí, porque su original se importa directo:
+ * `logEvent` (`@thyrox/local-observability`), `errorMessage`
+ * (`@thyrox/local-observability/errorHelpers.js`), `asSystemPrompt`
+ * (`@thyrox/provider/systemPromptType.js`) y el tipo `OAuthTokens`
+ * (`@thyrox/provider/oauth/types.js`). Cada punto de inyección que sigue
+ * aquí declara su condición de retiro.
  */
-
-let _logEvent: (name: string, metadata?: Record<string, unknown>) => void =
-  () => {}
-
-/** Sustituto de `@claude-code-how-works/local-observability`'s `logEvent` — no-op hasta que se inyecte. */
-export function logEvent(
-  name: string,
-  metadata?: Record<string, unknown>,
-): void {
-  _logEvent(name, metadata)
-}
-
-/** Inyecta el `logEvent` real (o un capturador de test). Mismo patrón DI que `setGetCwdFn` en `@thyrox/storage`. */
-export function setLogEventFn(
-  fn: (name: string, metadata?: Record<string, unknown>) => void,
-): void {
-  _logEvent = fn
-}
 
 /**
  * Segunda forma — REIMPLEMENTACIÓN FIEL Y ACOTADA: el almacén de estado de
@@ -69,8 +48,10 @@ export function setLogEventFn(
  */
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync, promises as fsPromises } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import type { OAuthTokens } from '@thyrox/provider/oauth/types.js'
 
 export type FleetJobStatus = 'working' | 'blocked' | 'done' | 'failed' | 'stopped'
 export type FleetTempo = 'active' | 'blocked' | 'idle'
@@ -124,8 +105,7 @@ const STATE_FILE = 'state.json'
 
 /** Fiel a `ccnmt: fleetStore.ts:38-41` (ant `b0()`). */
 function getJobsRoot(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return join(getConfigHomeDir(), 'jobs')
 }
 
 /** Fiel a `ccnmt: fleetStore.ts:49-51` (ant `V4(short)`). */
@@ -171,7 +151,7 @@ export function writeJobStateSync(jobDir: string, state: FleetJobState): void {
  * lanza. Se inyecta la real (o un doble de test) con los setters.
  *
  * Se retira cuando exista un `@thyrox/provider` con
- * `queryModelWithoutStreaming`/`getSmallFastModel`/`asSystemPrompt` de esta
+* `queryModelWithoutStreaming`/`getSmallFastModel` de esta
  * forma exacta, un `@thyrox/tool-registry` con
  * `getEmptyToolPermissionContext`, y un `@thyrox/agent` con
  * `createUserMessage`/`getAssistantMessageText` — Y `@thyrox/daemon` sea
@@ -234,17 +214,6 @@ export function getSmallFastModel(): string {
 
 export function setGetSmallFastModelFn(fn: () => string): void {
   _getSmallFastModel = fn
-}
-
-let _asSystemPrompt: (parts: string[]) => unknown = (parts) => parts.join('\n')
-
-/** Sustituto de `@claude-code-how-works/provider/systemPromptType`'s `asSystemPrompt`. */
-export function asSystemPrompt(parts: string[]): unknown {
-  return _asSystemPrompt(parts)
-}
-
-export function setAsSystemPromptFn(fn: (parts: string[]) => unknown): void {
-  _asSystemPrompt = fn
 }
 
 let _getEmptyToolPermissionContext: () => Promise<unknown> = async () => ({})
@@ -328,24 +297,6 @@ export function setGenerateJobNameFn(
 }
 
 /**
- * Quinta forma — REIMPLEMENTACIÓN FIEL: `isPidAlive`, de
- * `@claude-code-how-works/shell/genericProcessUtils.js` (no existe
- * `@thyrox/shell` con esta forma exacta). Verbatim a
- * `ccnmt: packages/shell/src/genericProcessUtils.ts:46-54` — `kill(pid, 0)`
- * no manda señal, sólo verifica que el proceso exista; `EPERM` significa
- * que existe pero pertenece a otro usuario.
- */
-export function isPidAlive(pid: number): boolean {
-  if (pid <= 1) return false
-  try {
-    process.kill(pid, 0)
-    return true
-  } catch (e) {
-    return (e as NodeJS.ErrnoException).code === 'EPERM'
-  }
-}
-
-/**
  * Sexta forma — PUNTO DE INYECCIÓN: el adoptador de PTY que
  * `workerVm.ts` usa para escuchar heartbeats/datos del socket PTY del
  * propio worker. En `ccnmt` vive en
@@ -386,24 +337,12 @@ export function setCreatePtyAdopterFn(
 }
 
 /**
- * Séptima forma — REIMPLEMENTACIÓN FIEL: `errorMessage`, de
- * `@claude-code-how-works/local-observability/errorHelpers.js`. Verbatim a
- * `ccnmt: packages/local-observability/src/errorHelpers.ts:106-108`. Ya
- * existe idéntica en `@thyrox/local-observability: src/errorHelpers.ts`
- * (línea 114 según la búsqueda de esta sesión); se retira cuando
- * `@thyrox/daemon` sea miembro del workspace.
- */
-export function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e)
-}
-
-/**
  * Octava forma — PUNTO DE INYECCIÓN: `spawnPtyHost`, de
  * `@claude-code-how-works/cli/bg/spawnPty.js` (paquete `@thyrox/cli`, sin
  * esta forma portada todavía — y es un subsistema con estado real, spawnea
  * un proceso PTY-host — a diferencia de `ptyFrame.ts`, que sí se portó
  * entero por ser puro). Sólo lo usa el scheduler de pre-calentamiento del
- * spare pool (gate `CLAUDE_CODE_BG_SPARE_POOL=1`, default OFF). Default:
+ * spare pool (gate `THYROX_CODE_BG_SPARE_POOL=1`, default OFF). Default:
  * lanza, así el `catch` que ya envuelve la llamada en `bgDaemon.ts` absorbe
  * el fallo y sólo emite la telemetría `tengu_bg_spare_claim_fail`
  * `reason: 'prewarm-spawn-failed'` — el daemon sigue funcionando sin
@@ -454,14 +393,6 @@ export function setSpawnPtyHostFn(fn: (opts: SpawnPtyOpts) => SpawnPtyResult): v
  * el propio bridge headless decide qué hacer sin token. Se retira cuando
  * `@thyrox/daemon` sea miembro del workspace.
  */
-export interface OAuthTokens {
-  accessToken?: string
-  refreshToken?: string
-  expiresAt?: number
-  scopes?: readonly string[]
-  subscriptionType?: string | null
-  clientId?: string
-}
 
 let _getClaudeAIOAuthTokens: () => OAuthTokens | null = () => null
 

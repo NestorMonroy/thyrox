@@ -1,0 +1,461 @@
+diff --git a/src/packages/app-host/src/runtime/__tests__/bootstrapRefusalFallbackRestore.test.ts b/src/packages/app-host/src/runtime/__tests__/bootstrapRefusalFallbackRestore.test.ts
+new file mode 100644
+index 00000000..7b4c5767
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/__tests__/bootstrapRefusalFallbackRestore.test.ts
+@@ -0,0 +1,81 @@
++/**
++ * `installRuntimeSkeletonBindings` suscribe la restauración del modelo de
++ * respaldo (`Pyt`/`subscribeRefusalFallbackReset`) al store interactivo justo
++ * tras crearlo — en 2.1.283, `Pyt(Z.setState)` corre pegado a
++ * `Me.engineStore.adopt(Z)` (`chunk-fa2jy0nf.js`), antes de resolver
++ * permisos. Aquí se mide la función que hace ese cableado, sin levantar la
++ * cadena entera de `installRuntimeSkeletonBindings` (que exige
++ * `@thyrox/agent` con sus dependencias de host completas).
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++
++import {
++  getMainLoopModelOverride,
++  latchRefusalFallbackModel,
++  resetStateForTests,
++  setMainLoopModelOverride,
++  switchSession,
++  type RefusalFallbackRestore,
++} from '../../bootstrap/state.js'
++import { wireRefusalFallbackRestoreForInteractiveStore } from '../bootstrap.js'
++import type { SessionId } from '@thyrox/agent/idTypes'
++
++type FakeAppState = {
++  mainLoopModel: RefusalFallbackRestore['appStateModel']
++  mainLoopModelForSession: RefusalFallbackRestore['forSessionValue']
++  fastMode?: boolean
++}
++
++function fakeStore(initial: FakeAppState) {
++  let state = initial
++  return {
++    getState: () => state,
++    setState: (updater: (prev: FakeAppState) => FakeAppState) => void (state = updater(state)),
++    subscribe: () => () => {},
++  }
++}
++
++let unsubscribers: Array<() => void> = []
++const originalDisableFastMode = process.env.THYROX_CODE_DISABLE_FAST_MODE
++
++beforeEach(() => {
++  resetStateForTests()
++  // `isFastModeEnabled` exige credenciales reales para consultar la
++  // suscripción cuando el modo rápido está encendido; se apaga aquí para
++  // medir sólo la reescritura de `mainLoopModel`/`mainLoopModelForSession`.
++  process.env.THYROX_CODE_DISABLE_FAST_MODE = '1'
++})
++afterEach(() => {
++  for (const unsubscribe of unsubscribers) unsubscribe()
++  unsubscribers = []
++  if (originalDisableFastMode === undefined) delete process.env.THYROX_CODE_DISABLE_FAST_MODE
++  else process.env.THYROX_CODE_DISABLE_FAST_MODE = originalDisableFastMode
++})
++
++describe('wireRefusalFallbackRestoreForInteractiveStore', () => {
++  test('una restauración de sesión reescribe el estado del store interactivo', () => {
++    const store = fakeStore({ mainLoopModel: 'claude-sonnet-5', mainLoopModelForSession: null, fastMode: false })
++    unsubscribers.push(wireRefusalFallbackRestoreForInteractiveStore(store as never))
++
++    latchRefusalFallbackModel({
++      fallbackModel: 'claude-sonnet-5',
++      previousOverride: 'claude-opus-5',
++      previousAppStateModel: 'claude-opus-5',
++      previousModelForSession: null,
++    })
++    setMainLoopModelOverride('claude-sonnet-5')
++
++    switchSession('otra' as SessionId, 'resume')
++
++    expect(store.getState().mainLoopModel).toBe('claude-opus-5')
++    expect(getMainLoopModelOverride()).toBe('claude-opus-5')
++  })
++
++  test('sin restauración no toca el store', () => {
++    const store = fakeStore({ mainLoopModel: 'm', mainLoopModelForSession: null })
++    unsubscribers.push(wireRefusalFallbackRestoreForInteractiveStore(store as never))
++    switchSession('nueva' as SessionId, 'resume')
++    expect(store.getState().mainLoopModel).toBe('m')
++  })
++})
++
+diff --git a/src/packages/app-host/src/runtime/__tests__/installCliBindingsRefusalFallbackRestore.test.ts b/src/packages/app-host/src/runtime/__tests__/installCliBindingsRefusalFallbackRestore.test.ts
+new file mode 100644
+index 00000000..4eb6738c
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/__tests__/installCliBindingsRefusalFallbackRestore.test.ts
+@@ -0,0 +1,58 @@
++/**
++ * `installCliBindings` cablea `b8r`/`onRefusalFallbackRestored` al store
++ * headless que crea `createHeadlessStore`. En 2.1.283, `b8r(() => {_r =
++ * void 0})` limpia, en el runner headless (`chunk-ycnq45th.js`), un espejo
++ * local del override de sesión que este árbol no porta todavía (vive en el
++ * subsistema SDK headless de `cli`, fuera del alcance de este ítem — ver
++ * docstring de `installCliBindings.ts`). El espejo equivalente que este
++ * árbol SÍ tiene es `mainLoopModelForSession` en el propio `AppState` del
++ * store headless, así que el callback lo limpia ahí.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++
++import { latchRefusalFallbackModel, resetStateForTests, setMainLoopModelOverride, switchSession } from '../../bootstrap/state.js'
++import { wireRefusalFallbackRestoreForHeadlessStore } from '../installCliBindings.js'
++import type { SessionId } from '@thyrox/agent/idTypes'
++
++type FakeHeadlessState = { mainLoopModel: string | null; mainLoopModelForSession: string | null }
++
++function fakeStore(initial: FakeHeadlessState) {
++  let state = initial
++  return {
++    getState: () => state,
++    setState: (updater: (prev: FakeHeadlessState) => FakeHeadlessState) => void (state = updater(state)),
++  }
++}
++
++let unsubscribers: Array<() => void> = []
++beforeEach(() => resetStateForTests())
++afterEach(() => {
++  for (const unsubscribe of unsubscribers) unsubscribe()
++  unsubscribers = []
++})
++
++describe('wireRefusalFallbackRestoreForHeadlessStore', () => {
++  test('una restauración de sesión dispara el callback y limpia el override de sesión', () => {
++    const store = fakeStore({ mainLoopModel: 'claude-opus-5', mainLoopModelForSession: 'claude-opus-5' })
++    unsubscribers.push(wireRefusalFallbackRestoreForHeadlessStore(store as never))
++
++    latchRefusalFallbackModel({
++      fallbackModel: 'claude-sonnet-5',
++      previousOverride: 'claude-opus-5',
++      previousAppStateModel: 'claude-opus-5',
++      previousModelForSession: 'claude-opus-5',
++    })
++    setMainLoopModelOverride('claude-sonnet-5')
++
++    switchSession('otra' as SessionId, 'resume')
++
++    expect(store.getState().mainLoopModelForSession).toBeNull()
++  })
++
++  test('sin restauración no toca el store', () => {
++    const store = fakeStore({ mainLoopModel: 'm', mainLoopModelForSession: 'm' })
++    unsubscribers.push(wireRefusalFallbackRestoreForHeadlessStore(store as never))
++    switchSession('nueva' as SessionId, 'resume')
++    expect(store.getState().mainLoopModelForSession).toBe('m')
++  })
++})
+diff --git a/src/packages/app-host/src/runtime/__tests__/refusalFallbackRestoreWiring.test.ts b/src/packages/app-host/src/runtime/__tests__/refusalFallbackRestoreWiring.test.ts
+new file mode 100644
+index 00000000..639a9106
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/__tests__/refusalFallbackRestoreWiring.test.ts
+@@ -0,0 +1,34 @@
++/**
++ * `bootstrap.ts` e `installCliBindings.ts` tienen que LLAMAR a sus
++ * funciones de cableado (`wireRefusalFallbackRestoreForInteractiveStore`,
++ * `wireRefusalFallbackRestoreForHeadlessStore`) dentro del propio factory de
++ * store, no sólo exportarlas: exportarlas sin invocarlas deja el mismo hueco
++ * que este ítem (R-2d) vino a cerrar ("ya portada pero sin llamador").
++ *
++ * Ejecutar la cadena entera de `installRuntimeSkeletonBindings`/
++ * `installCliBindings` para probar esto exigiría un `AppState` real
++ * completo y el orden de arranque de `@thyrox/config` (medido: la fuente
++ * real de `getDefaultAppState()` exige "Config accessed before allowed"
++ * incluso con `bootstrap.ts` ya importado) — fuera del alcance de este
++ * ítem. Se mide el texto fuente, como ya hace `sessionStoreOnChangeWiring.
++ * test.ts` para el mismo tipo de hueco (un creador de store invocado sin su
++ * argumento obligatorio).
++ */
++import { describe, expect, test } from 'bun:test'
++import { readFileSync } from 'node:fs'
++import { join } from 'node:path'
++
++const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8')
++
++test('bootstrap.ts invoca wireRefusalFallbackRestoreForInteractiveStore dentro de createInteractiveStore', () => {
++  const text = source('bootstrap.ts')
++  const start = text.indexOf('createInteractiveStore: initialState =>')
++  const factory = text.slice(start, text.indexOf('getConfigHomeDir: () =>', start))
++  expect(factory).toMatch(/wireRefusalFallbackRestoreForInteractiveStore\(store\)/)
++})
++
++test('installCliBindings.ts invoca wireRefusalFallbackRestoreForHeadlessStore dentro de createHeadlessStore', () => {
++  const text = source('installCliBindings.ts')
++  const factory = text.slice(text.indexOf('createHeadlessStore: params =>'), text.indexOf('runHeadless: (...args) =>'))
++  expect(factory).toMatch(/wireRefusalFallbackRestoreForHeadlessStore\(store\)/)
++})
+diff --git a/src/packages/app-host/src/runtime/bootstrap.ts b/src/packages/app-host/src/runtime/bootstrap.ts
+index 70580384..4c2887f7 100644
+--- a/src/packages/app-host/src/runtime/bootstrap.ts
++++ b/src/packages/app-host/src/runtime/bootstrap.ts
+@@ -49,7 +49,9 @@
+  *   Fuera de los 16 (no es state/AppState, state/store, ni runtime/bootstrap).
+  */
+ import { installPackageHostBindings } from '../packageHostSetup.ts'
+-import { createInteractiveSessionStore } from '@thyrox/agent/sessionStores'
++import { createInteractiveSessionStore, type InteractiveSessionStore } from '@thyrox/agent/sessionStores'
++import { subscribeRefusalFallbackReset } from '../state/refusalFallbackRestore.ts'
++import { createRefusalFallbackRestoreDeps } from '../state/refusalFallbackRestoreDeps.ts'
+ import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
+ import { getCwd } from '../bootstrap/cwd.ts'
+ import { logForDebugging } from '@thyrox/local-observability/debug.js'
+@@ -117,6 +119,18 @@ function requireSyncRuntimeHandlesFromAppState(): (
+   }).syncRuntimeHandlesFromAppState
+ }
+ 
++/**
++ * `Pyt(Z.setState)`: 2.1.283 suscribe la restauración del modelo de respaldo
++ * al store interactivo justo tras crearlo, antes de resolver permisos
++ * (`chunk-fa2jy0nf.js`). Exportada aparte para poder medirla sin levantar la
++ * cadena entera de `installRuntimeSkeletonBindings`.
++ */
++export function wireRefusalFallbackRestoreForInteractiveStore(
++  store: InteractiveSessionStore,
++): () => void {
++  return subscribeRefusalFallbackReset(store.setState, createRefusalFallbackRestoreDeps())
++}
++
+ let runtimeSkeletonBindingsInstalled = false
+ 
+ export function installRuntimeSkeletonBindings(): void {
+@@ -132,8 +146,11 @@ export function installRuntimeSkeletonBindings(): void {
+       // adaptador que había aplicaba el actualizador y le pasaba el VALOR al
+       // store, que lo habría invocado como función: nació de una copia local
+       // de `Store` con `setState(next)` que no era la real.
+-      createInteractiveStore: initialState =>
+-        createInteractiveSessionStore(initialState as never, onChangeAppState),
++      createInteractiveStore: initialState => {
++        const store = createInteractiveSessionStore(initialState as never, onChangeAppState)
++        wireRefusalFallbackRestoreForInteractiveStore(store)
++        return store
++      },
+       getConfigHomeDir: () => requireClaudeConfigHomeDir()(),
+       getGlobalClaudeFile: () => requireGlobalClaudeFile()(),
+       getProjectRoot: () => requireFindCanonicalGitRoot()(getCwd()),
+diff --git a/src/packages/app-host/src/runtime/installCliBindings.ts b/src/packages/app-host/src/runtime/installCliBindings.ts
+index e5697738..eb7b02e2 100644
+--- a/src/packages/app-host/src/runtime/installCliBindings.ts
++++ b/src/packages/app-host/src/runtime/installCliBindings.ts
+@@ -23,10 +23,28 @@
+ import { installCliHostBindings } from '@thyrox/cli/host.js'
+ import { runHeadless } from '@thyrox/cli/print.js'
+ import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
+-import { createHeadlessSessionStore, type HeadlessStoreParams } from '@thyrox/agent/sessionStores.js'
++import { createHeadlessSessionStore, type HeadlessSessionStore, type HeadlessStoreParams } from '@thyrox/agent/sessionStores.js'
+ import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
++import { onRefusalFallbackRestored } from '../state/refusalFallbackRestore.js'
+ import type { AppState } from './appStateCompatShim.js'
+ 
++/**
++ * `b8r(() => {_r = void 0})`: en 2.1.283 limpia, en el runner headless
++ * (`chunk-ycnq45th.js`), un espejo local del override de modelo de sesión
++ * que este árbol no porta todavía (vive en el subsistema SDK headless de
++ * `cli`, fuera del alcance de este ítem — ver docstring de arriba). El
++ * espejo equivalente que este árbol sí tiene es `mainLoopModelForSession`
++ * en el propio `AppState` del store headless: el callback lo limpia ahí.
++ * Exportada aparte para medirla sin pasar por `installCliHostBindings`.
++ */
++export function wireRefusalFallbackRestoreForHeadlessStore(
++  store: HeadlessSessionStore,
++): () => void {
++  return onRefusalFallbackRestored(() => {
++    store.setState(prev => ({ ...prev, mainLoopModelForSession: null }))
++  })
++}
++
+ let cliBindingsInstalled = false
+ 
+ export function installCliBindings(): void {
+@@ -35,6 +53,7 @@ export function installCliBindings(): void {
+   installCliHostBindings({
+     createHeadlessStore: params => {
+       const store = createHeadlessSessionStore(params as HeadlessStoreParams, onChangeAppState)
++      wireRefusalFallbackRestoreForHeadlessStore(store)
+       return {
+         getState: () => store.getState(),
+         // Lo que llega es el actualizador de `setAppState`; el store lo aplica.
+diff --git a/src/packages/app-host/src/state/__tests__/refusalFallbackRestoreDeps.test.ts b/src/packages/app-host/src/state/__tests__/refusalFallbackRestoreDeps.test.ts
+new file mode 100644
+index 00000000..236ce5c7
+--- /dev/null
++++ b/src/packages/app-host/src/state/__tests__/refusalFallbackRestoreDeps.test.ts
+@@ -0,0 +1,97 @@
++/**
++ * `createRefusalFallbackRestoreDeps` cablea `RefusalFallbackRestoreDeps`
++ * (`refusalFallbackRestore.ts`) contra las piezas reales del host: cada
++ * campo delega en su implementación real, no en una copia local.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++
++import { getMainLoopModelOverride, resetStateForTests } from '../../bootstrap/state.js'
++import { DEFAULT_SURFACE_CAPS, replaceSurfaceCaps, surfaceCapabilities } from '../surfaceCapabilities.js'
++import {
++  createRefusalFallbackRestoreDeps,
++  resolveFastMode,
++  shouldEnableFastModeForModel,
++  type FastModeContext,
++} from '../refusalFallbackRestoreDeps.js'
++
++beforeEach(() => resetStateForTests())
++afterEach(() => surfaceCapabilities.reset())
++
++describe('createRefusalFallbackRestoreDeps', () => {
++  test('overrideMainLoopModel delega en setMainLoopModelOverride', () => {
++    const deps = createRefusalFallbackRestoreDeps()
++    deps.overrideMainLoopModel('claude-opus-5')
++    expect(getMainLoopModelOverride()).toBe('claude-opus-5')
++    deps.overrideMainLoopModel(undefined)
++    expect(getMainLoopModelOverride()).toBeUndefined()
++  })
++
++  test('modelScope delega en classifyModelScope (vV), y null se pide como cadena vacía', () => {
++    const deps = createRefusalFallbackRestoreDeps()
++    expect(deps.modelScope('claude-opus-5')).toBe('catalog_flag')
++    expect(deps.modelScope(null)).toBe('other')
++  })
++
++  test('hasRemoteControlChannel delega en surfaceCapabilities', () => {
++    const deps = createRefusalFallbackRestoreDeps()
++    expect(deps.hasRemoteControlChannel()).toBe(false)
++    replaceSurfaceCaps({
++      ...DEFAULT_SURFACE_CAPS,
++      remote: { isRemoteMode: true, viewerOnly: false, caps: { controlChannel: true } },
++    })
++    expect(deps.hasRemoteControlChannel()).toBe(true)
++  })
++
++  test('fastModeEnabled delega en isFastModeEnabled', () => {
++    const deps = createRefusalFallbackRestoreDeps()
++    expect(typeof deps.fastModeEnabled()).toBe('boolean')
++  })
++})
++
++function context(overrides: Partial<FastModeContext> = {}): FastModeContext {
++  return {
++    fastModeEnabled: true,
++    remoteSurface: false,
++    supportsFastMode: () => true,
++    isAvailableFor: () => true,
++    preferenceEnabled: true,
++    ...overrides,
++  }
++}
++
++describe('shouldEnableFastModeForModel (Ndn)', () => {
++  test('exige habilitado, disponible y soportado, en ese orden', () => {
++    expect(shouldEnableFastModeForModel('m', context({ fastModeEnabled: false }))).toBe(false)
++    expect(shouldEnableFastModeForModel('m', context({ isAvailableFor: () => false }))).toBe(false)
++    expect(shouldEnableFastModeForModel('m', context({ supportsFastMode: () => false }))).toBe(false)
++    expect(shouldEnableFastModeForModel('m', context({ preferenceEnabled: false }))).toBe(false)
++    expect(shouldEnableFastModeForModel('m', context())).toBe(true)
++  })
++})
++
++describe('resolveFastMode (oA)', () => {
++  test('en superficie remota sin modelo conserva el valor previo SIN exigir soporte', () => {
++    const ctx = context({ remoteSurface: true, supportsFastMode: model => model !== null })
++    expect(resolveFastMode(null, true, ctx)).toBe(true)
++    expect(resolveFastMode(null, undefined, ctx)).toBe(false)
++  })
++
++  test('en superficie remota con modelo exige valor previo Y soporte', () => {
++    expect(resolveFastMode('m', true, context({ remoteSurface: true, supportsFastMode: () => false }))).toBe(false)
++    expect(resolveFastMode('m', true, context({ remoteSurface: true, supportsFastMode: () => true }))).toBe(true)
++    expect(resolveFastMode('m', undefined, context({ remoteSurface: true }))).toBe(false)
++  })
++
++  test('en local sin soporte se apaga aunque el previo fuera verdadero', () => {
++    expect(resolveFastMode('m', true, context({ supportsFastMode: () => false }))).toBe(false)
++  })
++
++  test('en local con soporte conserva el previo si lo hubo', () => {
++    expect(resolveFastMode('m', true, context({ fastModeEnabled: false }))).toBe(true)
++  })
++
++  test('en local sin previo lo decide shouldEnableFastModeForModel', () => {
++    expect(resolveFastMode('m', undefined, context())).toBe(true)
++    expect(resolveFastMode('m', undefined, context({ preferenceEnabled: false }))).toBe(false)
++  })
++})
+diff --git a/src/packages/app-host/src/state/refusalFallbackRestoreDeps.ts b/src/packages/app-host/src/state/refusalFallbackRestoreDeps.ts
+new file mode 100644
+index 00000000..652d1f65
+--- /dev/null
++++ b/src/packages/app-host/src/state/refusalFallbackRestoreDeps.ts
+@@ -0,0 +1,71 @@
++/**
++ * Compone las dependencias reales de `subscribeRefusalFallbackReset` /
++ * `applyRefusalFallbackRestore` (`./refusalFallbackRestore.ts`) a partir de
++ * lo que este árbol ya porta: el modo rápido (`@thyrox/provider/fastMode.js`),
++ * el canal remoto propio del host (`./surfaceCapabilities.ts`), el registro
++ * de eventos (`@thyrox/local-observability`), el override del modelo del
++ * bucle principal (`../bootstrap/state.ts`) y el alcance del modelo (`vV`,
++ * `@thyrox/agent/modelScope.js`).
++ *
++ * DIVERGENCIA DECLARADA: la pieza real de `resolveFastMode` es
++ * `resolveFastModeForModel` (`oA`, `chunk-t6pwageh.js`,
++ * `provider/src/fastModeSelection.ts`), pero `provider/package.json` no
++ * expone ese archivo como subpath propio (medido: `Bun.resolveSync` y
++ * `require.resolve` fallan los dos contra
++ * `@thyrox/provider/fastModeSelection.js`), y ese `package.json` queda
++ * fuera de los archivos que el ítem R-2d nombra. Se reimplementa aquí su
++ * misma lógica —y la de su ayudante `shouldEnableFastModeForModel`— contra
++ * un `FastModeContext` estructural, alimentado por
++ * `processFastModeSelectionContext()`, que sí exporta `fastMode.ts`.
++ */
++import { isFastModeEnabled, processFastModeSelectionContext } from '@thyrox/provider/fastMode.js'
++import type { ModelSetting } from '@thyrox/provider/model.js'
++import { classifyModelScope } from '@thyrox/agent/modelScope.js'
++import { logEvent } from '@thyrox/local-observability'
++
++import { setMainLoopModelOverride } from '../bootstrap/state.js'
++import { hasRemoteControlChannel } from './surfaceCapabilities.js'
++import type { RefusalFallbackRestoreDeps } from './refusalFallbackRestore.js'
++
++/** Forma estructural de `FastModeSelectionContext` — ver DIVERGENCIA DECLARADA. */
++export type FastModeContext = {
++  fastModeEnabled: boolean
++  remoteSurface: boolean
++  supportsFastMode: (model: string | null) => boolean
++  isAvailableFor: (model?: string | null) => boolean
++  preferenceEnabled: boolean
++}
++
++/** `Ndn`: el modo habilitado, disponible y soportado, y por último la preferencia. */
++export function shouldEnableFastModeForModel(model: string | null, context: FastModeContext): boolean {
++  if (!context.fastModeEnabled) return false
++  if (!context.isAvailableFor(model)) return false
++  if (!context.supportsFastMode(model)) return false
++  return context.preferenceEnabled
++}
++
++/** `oA`: en superficie remota se conserva el valor previo; en local, sin soporte se apaga. */
++export function resolveFastMode(
++  model: ModelSetting,
++  previousValue: boolean | undefined,
++  context: FastModeContext,
++): boolean {
++  if (context.remoteSurface) {
++    if (model === null) return !!previousValue
++    return !!previousValue && context.supportsFastMode(model)
++  }
++  if (!context.supportsFastMode(model)) return false
++  return !!previousValue || shouldEnableFastModeForModel(model, context)
++}
++
++/** Las piezas reales del host, listas para `subscribeRefusalFallbackReset`/`applyRefusalFallbackRestore`. */
++export function createRefusalFallbackRestoreDeps(): RefusalFallbackRestoreDeps {
++  return {
++    fastModeEnabled: isFastModeEnabled,
++    resolveFastMode: (model, fastMode) => resolveFastMode(model, fastMode, processFastModeSelectionContext()),
++    hasRemoteControlChannel,
++    logEvent,
++    overrideMainLoopModel: setMainLoopModelOverride,
++    modelScope: model => classifyModelScope(model ?? ''),
++  }
++}

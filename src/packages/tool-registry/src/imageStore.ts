@@ -3,7 +3,7 @@ import { join } from 'path'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import type { PastedContent } from '@thyrox/config'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
 const IMAGE_STORE_DIR = 'image-cache'
@@ -16,7 +16,7 @@ const storedImagePaths = new Map<number, string>()
  * Get the image store directory for the current session.
  */
 function getImageStoreDir(): string {
-  return join(getClaudeConfigHomeDir(), IMAGE_STORE_DIR, getSessionId())
+  return join(getConfigHomeDir(), IMAGE_STORE_DIR, getSessionId())
 }
 
 /**
@@ -128,7 +128,7 @@ function evictOldestIfAtCap(): void {
  */
 export async function cleanupOldImageCaches(): Promise<void> {
   const fsImpl = getFsImplementation()
-  const baseDir = join(getClaudeConfigHomeDir(), IMAGE_STORE_DIR)
+  const baseDir = join(getConfigHomeDir(), IMAGE_STORE_DIR)
   const currentSessionId = getSessionId()
 
   try {

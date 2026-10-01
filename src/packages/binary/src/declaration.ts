@@ -33,6 +33,8 @@
  * No requiere instalar nada: `typescript` ya es dependencia declarada del
  * arbol, y su analizador da posiciones de byte sobre JavaScript.
  */
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import ts from 'typescript'
 
 /** Un sitio donde el literal aparece como NODO, no como subcadena. */
@@ -189,6 +191,37 @@ export function extractByLiteral(source: string, literal: string): Declaration[]
     })
   }
   return out
+}
+
+/** Una declaración del corpus que contiene un literal, con su chunk. */
+export type DeclarationSite = Omit<Declaration, 'text'> & { file: string; text: string }
+
+/**
+ * Las declaraciones de TODOS los chunks de `root` que contienen `literal`,
+ * ordenadas por chunk y posición. Sólo se analiza el chunk que lleva el
+ * literal como subcadena: analizar los cientos de chunks de una build para
+ * encontrar dos es el costo que el prefiltro evita, y un chunk sin la
+ * subcadena no puede tener el nodo.
+ */
+export function scanLiteral(root: string, literal: string): LiteralScan {
+  const chunks = readdirSync(root).filter(name => name.endsWith('.js')).sort()
+  const sites: DeclarationSite[] = []
+  let chunksWithLiteral = 0
+  for (const file of chunks) {
+    const source = readFileSync(join(root, file), 'utf8')
+    if (!source.includes(literal)) continue
+    const found = extractByLiteral(source, literal)
+    if (found.length > 0) chunksWithLiteral++
+    for (const d of found) sites.push({ file, ...d })
+  }
+  return { sites, chunks: chunks.length, chunksWithLiteral }
+}
+
+/** El recorrido con su denominador: cuántos chunks se midieron y en cuántos estaba. */
+export type LiteralScan = { sites: DeclarationSite[]; chunks: number; chunksWithLiteral: number }
+
+export function declarationsByLiteral(root: string, literal: string): DeclarationSite[] {
+  return scanLiteral(root, literal).sites
 }
 
 /** ¿El fragmento es, por si solo, sintacticamente completo? */

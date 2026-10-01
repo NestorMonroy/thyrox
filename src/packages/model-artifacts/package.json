@@ -1,0 +1,17 @@
+{
+  "name": "@thyrox/model-artifacts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Núcleo agnóstico del modelo local (TASK-THYROX-0694): contrato de nombre thyrox-, catálogo de niveles de cuantización, manifiesto de procedencia, lector de metadata GGUF y estimación de memoria al servir. Lógica pura, sin Podman ni red.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

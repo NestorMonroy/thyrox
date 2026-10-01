@@ -41,6 +41,15 @@ def refuses(call) -> bool:
     return False
 
 
+def _sample_traced(draft, target, rng) -> tuple[int, bool]:
+    """``rs.sample(..., trace=True)`` — anotado, porque la fuente no lo esta
+    y su inferencia por sitio de llamada no distingue el par de un ``int``.
+    """
+    result = rs.sample(draft, target, rng=rng, trace=True)
+    assert isinstance(result, tuple)
+    return result
+
+
 print("test_speculative_speedup:")
 DRAFT = [0.35, 0.30, 0.15, 0.10, 0.10]
 TARGET = [0.10, 0.10, 0.40, 0.30, 0.10]
@@ -49,7 +58,7 @@ assert_equal("alpha del brief es sum(min(p, q))", 0.55, round(rs.acceptance_rate
 
 rng = random.Random(21)
 N = 200_000
-accepted = sum(rs.sample(DRAFT, TARGET, rng=rng, trace=True)[1] for _ in range(N))
+accepted = sum(_sample_traced(DRAFT, TARGET, rng)[1] for _ in range(N))
 assert_equal("el muestreador real acepta esa fraccion", True,
              abs(accepted / N - rs.acceptance_rate(DRAFT, TARGET)) < 0.005)
 
@@ -70,7 +79,7 @@ rng = random.Random(7)
 produced = 0
 for _ in range(CALLS):
     run = 0
-    while run < GAMMA and rs.sample(DRAFT, TARGET, rng=rng, trace=True)[1]:
+    while run < GAMMA and _sample_traced(DRAFT, TARGET, rng)[1]:
         run += 1
     produced += run + 1
 assert_equal("la formula coincide con la simulacion del mecanismo", True,

@@ -1,0 +1,214 @@
+/**
+ * La orden `bin/podman-execution-execute`: compone una ExecutionAuthorization desde la línea
+ * de comandos y la entrega a la primitiva (ADR-THYROX-007, enmienda 1.16.0).
+ *
+ * El payload —el comando tras `--`, o el guion leído de stdin con
+ * `--script-stdin`— corre dentro de la ExecutionUnit, nunca en el shell que
+ * invoca la orden. Esta orden es plano de control: decide qué se autoriza y
+ * publica el veredicto.
+ *
+ * `build-image` construye una imagen por `buildImage` de la primitiva; sus
+ * RUN son también ejecución gestionada.
+ */
+
+import { parseArgs } from 'node:util'
+
+import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind } from './executionAuthorization.js'
+import { buildImage } from './imageStore.js'
+import type { PodmanExecutor } from './podmanExecutor.js'
+import type { WorkerMountMode, WorkerNetworkMode, WorkerResourceMount } from './workerResourceProfile.js'
+
+export const DEFAULT_EXECUTION_IMAGE = 'localhost/thyrox-task-runner:dev'
+export const PROXY_CA_BUILD_PATH = '/etc/ssl/certs/proxy-ca.crt'
+const EXECUTION_IMAGE_KEY = 'THYROX_EXEC_IMAGE'
+const PROXY_CA_KEY = 'GIT_SSL_CAINFO'
+const PROXY_KEYS = ['HTTPS_PROXY', 'https_proxy', 'HTTP_PROXY', 'http_proxy', 'NO_PROXY', 'no_proxy']
+const GIT_IDENTITY_KEYS = ['GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_TERMINAL_PROMPT', 'GIT_EDITOR']
+const IMAGE_LIFECYCLE_LABEL = 'io.thyrox.image.lifecycle'
+const EXIT_FAILED = 1
+const EXIT_USAGE = 2
+const DEFAULT_CPUS = 4
+const DEFAULT_MEMORY_MIB = 4096
+const DEFAULT_PIDS = 4096
+
+export type ExecutionCommandOutput = {
+  stdout(text: string): void
+  stderr(text: string): void
+}
+
+export type ExecutionCommandDeps = {
+  env: Readonly<Record<string, string | undefined>>
+  readStdin(): Promise<string>
+  output: ExecutionCommandOutput
+  pid: number
+  now(): number
+  podman: PodmanExecutor
+  repositoryRoot: string
+}
+
+const USAGE = [
+  'uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host]',
+  '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
+  '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... (--script-stdin | -- ARGV...)',
+  '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
+].join('\n')
+
+class UsageError extends Error {}
+
+function requireValue(value: string | undefined, name: string): string {
+  if (!value) throw new UsageError(`falta --${name}`)
+  return value
+}
+
+function parseCount(value: string | undefined, fallback: number, name: string): number {
+  if (value === undefined) return fallback
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) throw new UsageError(`--${name} debe ser un número > 0, recibido: ${value}`)
+  return parsed
+}
+
+function isMountMode(value: string | undefined): value is WorkerMountMode {
+  return value === 'ro' || value === 'rw'
+}
+
+/** `ORIGEN[:DESTINO][:ro|rw]`; sin destino, la misma ruta; sin modo, sólo lectura. */
+export function parseMount(text: string): WorkerResourceMount {
+  const parts = text.split(':')
+  const source = parts[0] ?? ''
+  const last = parts[parts.length - 1]
+  const mode: WorkerMountMode = parts.length > 1 && isMountMode(last) ? last : 'ro'
+  const destination = parts.length > 2 || (parts.length === 2 && !isMountMode(last)) ? (parts[1] ?? source) : source
+  if (!source.startsWith('/')) throw new UsageError(`el origen del montaje debe ser absoluto: ${text}`)
+  return { source, destination, mode }
+}
+
+function forwardedEnvironment(env: ExecutionCommandDeps['env'], keys: readonly string[]): Record<string, string> {
+  const forwarded: Record<string, string> = {}
+  for (const key of keys) {
+    const value = env[key]
+    if (value !== undefined) forwarded[key] = value
+  }
+  return forwarded
+}
+
+function requestedEnvironment(env: ExecutionCommandDeps['env'], names: readonly string[]): Record<string, string> {
+  const missing = names.filter(name => env[name] === undefined)
+  if (missing.length > 0) throw new UsageError(`--env nombra variables ausentes: ${missing.join(', ')}`)
+  return forwardedEnvironment(env, names)
+}
+
+function proxyEgress(env: ExecutionCommandDeps['env']): { environment: Record<string, string>; mounts: WorkerResourceMount[] } {
+  const ca = env[PROXY_CA_KEY]
+  const environment = forwardedEnvironment(env, PROXY_KEYS)
+  if (!ca) return { environment, mounts: [] }
+  return {
+    environment: { ...environment, [PROXY_CA_KEY]: ca, SSL_CERT_FILE: ca, NODE_EXTRA_CA_CERTS: ca },
+    mounts: [{ source: ca, destination: ca, mode: 'ro' }],
+  }
+}
+
+function parseNetwork(value: string | undefined): WorkerNetworkMode {
+  if (value === undefined || value === 'none' || value === 'host') return value ?? 'none'
+  throw new UsageError(`--network admite none o host, recibido: ${value}`)
+}
+
+async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    strict: true,
+    options: {
+      task: { type: 'string' },
+      kind: { type: 'string' },
+      image: { type: 'string' },
+      network: { type: 'string' },
+      mount: { type: 'string', multiple: true },
+      workdir: { type: 'string' },
+      env: { type: 'string', multiple: true },
+      cpus: { type: 'string' },
+      'memory-mib': { type: 'string' },
+      pids: { type: 'string' },
+      output: { type: 'string', multiple: true },
+      'script-stdin': { type: 'boolean' },
+    },
+  })
+  const task = requireValue(values.task, 'task')
+  const kind = requireValue(values.kind, 'kind') as ExecutionKind
+  const command = values['script-stdin'] ? ['bash', '-c', await deps.readStdin()] : positionals
+  if (command.length === 0) throw new UsageError('falta el payload: --script-stdin o -- ARGV')
+  const network = parseNetwork(values.network)
+  const egress = network === 'host' ? proxyEgress(deps.env) : { environment: {}, mounts: [] }
+  const authorization: ExecutionAuthorization = {
+    executionId: `${kind}-${deps.now().toString(36)}-${deps.pid}`,
+    reference: { kind: 'task', citation: task },
+    owner: { kind: 'task', id: task.toLowerCase(), pid: deps.pid },
+    kind,
+    image: values.image ?? deps.env[EXECUTION_IMAGE_KEY] ?? DEFAULT_EXECUTION_IMAGE,
+    command,
+    workdir: values.workdir ?? deps.repositoryRoot,
+    mounts: [{ source: deps.repositoryRoot, destination: deps.repositoryRoot, mode: 'rw' }, ...egress.mounts, ...(values.mount ?? []).map(parseMount)],
+    resources: {
+      cpus: parseCount(values.cpus, DEFAULT_CPUS, 'cpus'),
+      memoryMib: parseCount(values['memory-mib'], DEFAULT_MEMORY_MIB, 'memory-mib'),
+      pidsLimit: parseCount(values.pids, DEFAULT_PIDS, 'pids'),
+    },
+    network,
+    environment: { ...forwardedEnvironment(deps.env, GIT_IDENTITY_KEYS), ...egress.environment, ...requestedEnvironment(deps.env, values.env ?? []) },
+    outputs: values.output,
+  }
+  const result = await runExecution(deps.podman, authorization)
+  deps.output.stdout(result.stdout)
+  deps.output.stderr(result.stderr)
+  deps.output.stderr(`execution ${result.containerName} kind=${kind} task=${task} exit=${result.exitCode}\n`)
+  return result.exitCode
+}
+
+async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
+  const { values } = parseArgs({
+    args: argv,
+    strict: true,
+    options: {
+      task: { type: 'string' },
+      context: { type: 'string' },
+      containerfile: { type: 'string' },
+      tag: { type: 'string' },
+      network: { type: 'string' },
+    },
+  })
+  const task = requireValue(values.task, 'task')
+  const network = parseNetwork(values.network)
+  const ca = deps.env[PROXY_CA_KEY]
+  const egress = network === 'host'
+  const id = await buildImage(deps.podman, {
+    context: requireValue(values.context, 'context'),
+    containerfile: values.containerfile,
+    tag: requireValue(values.tag, 'tag'),
+    labels: { 'thyrox.task': task, [IMAGE_LIFECYCLE_LABEL]: 'cache' },
+    network: egress ? 'host' : undefined,
+    buildArgs: egress ? { ...forwardedEnvironment(deps.env, ['HTTPS_PROXY', 'https_proxy']), ...(ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : {}) } : undefined,
+    readOnlyMounts: egress && ca ? [{ source: ca, destination: PROXY_CA_BUILD_PATH }] : undefined,
+  })
+  deps.output.stdout(`${id}\n`)
+  return 0
+}
+
+/** Despacha la orden; devuelve el código de salida. 2 es uso inválido o autorización rehusada. */
+export async function runExecutionCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
+  const [subcommand, ...rest] = argv
+  try {
+    if (subcommand === 'run') return await runCommand(rest, deps)
+    if (subcommand === 'build-image') return await buildImageCommand(rest, deps)
+    throw new UsageError(`orden desconocida: ${subcommand ?? '(ninguna)'}`)
+  } catch (error) {
+    if (error instanceof UsageError) {
+      deps.output.stderr(`podman-execution-execute: ${error.message}\n${USAGE}\n`)
+      return EXIT_USAGE
+    }
+    if (error instanceof InvalidExecutionAuthorizationError) {
+      deps.output.stderr(`podman-execution-execute: autorización rehusada (${error.field}): ${error.message}\n`)
+      return EXIT_USAGE
+    }
+    deps.output.stderr(`podman-execution-execute: ${error instanceof Error ? error.message : String(error)}\n`)
+    return EXIT_FAILED
+  }
+}

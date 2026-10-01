@@ -82,6 +82,7 @@ if str(HERE / "src") not in sys.path:
 
 spec = importlib.util.spec_from_file_location(
     "register_session", HERE / "src" / "agents" / "register_session.py")
+assert spec is not None and spec.loader is not None
 register_session = importlib.util.module_from_spec(spec)
 sys.modules["register_session"] = register_session
 spec.loader.exec_module(register_session)
@@ -91,6 +92,7 @@ spec.loader.exec_module(register_session)
 #: por agente— sino esta suite, para comprobar que los dos coinciden.
 _spec_closing = importlib.util.spec_from_file_location(
     "closing", HERE / "src" / "transcript" / "closing.py")
+assert _spec_closing is not None and _spec_closing.loader is not None
 closing = importlib.util.module_from_spec(_spec_closing)
 sys.modules["closing"] = closing
 _spec_closing.loader.exec_module(closing)

@@ -352,9 +352,8 @@ with tempfile.TemporaryDirectory() as tmp:
 
 # La raíz de los ledgers es un HOGAR y pasa por una constante con sus dos
 # entradas de entorno (directiva del ejecutor 2026-09-06): el valor en el
-# proceso, o la declaración del `.env` que `THYROX_ENV_FILE` nombra. Antes vivía
-# como literal `.claude/jobs-ledger` en `wait-jobs.sh`, y el hook de
-# compactación lo copió.
+# proceso, o la declaración del `.env` que `THYROX_ENV_FILE` nombra. Un
+# literal en `wait-jobs.sh` sería una copia que otro script repetiría.
 import subprocess  # noqa: E402
 from paths.reach import thyrox_root  # noqa: E402
 from workbench.paths import state_dir  # noqa: E402

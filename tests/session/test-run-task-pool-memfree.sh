@@ -108,7 +108,15 @@ for i in 1 2 3; do
     printf 'job%s\techo x >> %s/attempts-%s; sleep 3; echo x >> %s/done-%s\n' \
         "$i" "$T" "$i" "$T" "$i"
 done > "$T/drop.txt"
-( sleep 1; write_meminfo "$T/drop.meminfo" 200000
+# La caída empieza cuando los TRES ya arrancaron, no a un segundo fijo del
+# lanzamiento: bajo carga el despacho tarda en admitirlos, y una caída que
+# llegara antes mediría la admisión, no la aplicación. El plazo de 30 s acota
+# la espera si alguno nunca arranca.
+( for _ in $(seq 150); do
+      [ -e "$T/attempts-1" ] && [ -e "$T/attempts-2" ] && [ -e "$T/attempts-3" ] && break
+      sleep 0.2
+  done
+  write_meminfo "$T/drop.meminfo" 200000
   sleep 2; write_meminfo "$T/drop.meminfo" 8000000 ) &
 DRIVER=$!
 OUT="$(THYROX_POOL_MEMINFO_PATH="$T/drop.meminfo" BG_DIR="$T/drop" \

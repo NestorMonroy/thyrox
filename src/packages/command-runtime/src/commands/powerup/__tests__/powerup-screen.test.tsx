@@ -1,4 +1,5 @@
 import { describe, expect, test, beforeEach, mock } from 'bun:test'
+import { selectStubModule } from '@thyrox/repl/testing'
 
 // `mock.module()` is GLOBAL across the entire bun test run — see
 // `feedback_bun_mock_module_global_scope.md`. The neighbouring
@@ -28,9 +29,7 @@ mock.module('@thyrox/local-observability', () => ({
 // that PowerupScreen *constructs* the right options and exposes the
 // `onChange` / `onCancel` callbacks.
 // MOCK_FULL_REPLACE: Select stub avoids needing the real Ink keyboard context, which bun:test cannot provide.
-mock.module('@thyrox/repl/components/CustomSelect/index.js', () => ({
-  Select: (props: unknown) => ({ props, _stub: 'select' }),
-}))
+mock.module('@thyrox/repl/components/CustomSelect/index.js', selectStubModule)
 
 describe('PowerupScreen', () => {
   beforeEach(() => {

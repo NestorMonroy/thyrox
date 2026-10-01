@@ -1,0 +1,14 @@
+
+In src/lib/podman_capabilities.sh line 76:
+_podman_cap_cleanup() {
+^-- SC2329 (info): This function is never invoked. Check usage (or ignored if invoked indirectly).
+
+
+In tests/lib/test-podman-capabilities.sh line 18:
+source "$ROOT/src/lib/assert.sh"
+       ^-----------------------^ SC1091 (info): Not following: ./src/lib/assert.sh was not specified as input (see shellcheck -x).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC1091 -- Not following: ./src/lib/assert.s...
+  https://www.shellcheck.net/wiki/SC2329 -- This function is never invoked. C...
+VERIFY FAIL: shellcheck

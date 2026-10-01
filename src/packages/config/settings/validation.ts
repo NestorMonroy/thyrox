@@ -15,6 +15,12 @@ export type SettingsError = {
   path: string
   message: string
   invalidValue?: unknown
+  /** Gravedad declarada; sin ella el error se trata como hasta ahora. */
+  severity?: 'fatal' | 'error' | 'warning'
+  /** Sólo se muestra en el estado, no como aviso de arranque. */
+  statusOnly?: boolean
+  /** Los valores admitidos, cuando el error es de dominio. */
+  expected?: string
 }
 
 /** Nombre público conservado por los consumers anteriores al rename. */

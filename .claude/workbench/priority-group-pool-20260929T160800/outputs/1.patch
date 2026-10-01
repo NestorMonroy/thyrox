@@ -1,0 +1,188 @@
+diff --git a/.env.example b/.env.example
+index 4bcc01ba..ac8d76b1 100644
+--- a/.env.example
++++ b/.env.example
+@@ -818,11 +818,14 @@ THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD=
+ # Ubuntu — PGDG queda descartado, H-THYROX-256), opt-in de instalación, el
+ # pg_config que decide servidor y extensiones, el repositorio de origen y el
+ # instalador (por defecto: postgresql-server-dev-<mayor> + clonar y compilar
+-# la etiqueta v<version>).
++# la etiqueta v<version>), y el dpkg/apt-get con que se detecta y retira antes
++# el paquete de Ubuntu de pgvector, para que no pise lo compilado (H-THYROX-273).
+ THYROX_PGVECTOR_VERSION=
+ THYROX_PGVECTOR_SOURCE_URL=
+ THYROX_INSTALL_PGVECTOR=
+ THYROX_TOOLCHAIN_PG_CONFIG_BIN=
++THYROX_TOOLCHAIN_DPKG_BIN=
++THYROX_TOOLCHAIN_APT_GET_BIN=
+ THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD=
+ # Base PostgreSQL de pruebas (thyrox_toolchain_require_postgres_test_db):
+ # opt-in de provisión del rol y la base thyrox_test, el psql con que se
+diff --git a/src/lib/toolchain.sh b/src/lib/toolchain.sh
+index 87aad8b9..56d8eb40 100644
+--- a/src/lib/toolchain.sh
++++ b/src/lib/toolchain.sh
+@@ -377,6 +377,12 @@ function thyrox_toolchain_pgvector_installed_version() {
+ }
+ export -f thyrox_toolchain_pgvector_installed_version
+ 
++# @description El `dpkg` y el `apt-get` con que se detecta y retira el
++# paquete de Ubuntu de pgvector antes de compilar encima. Declarados para que
++# un control apunte a uno falso, mismo patron que `THYROX_TOOLCHAIN_PG_CONFIG_BIN`.
++export THYROX_TOOLCHAIN_DPKG_BIN="${THYROX_TOOLCHAIN_DPKG_BIN:-dpkg}"
++export THYROX_TOOLCHAIN_APT_GET_BIN="${THYROX_TOOLCHAIN_APT_GET_BIN:-apt-get}"
++
+ # @description El instalador por defecto de pgvector: NO el paquete de Ubuntu
+ # (0.6.0, desactualizado) ni PGDG (arrastra el servidor a otro repositorio,
+ # H-THYROX-256), sino compilar la etiqueta `v$THYROX_PGVECTOR_VERSION` contra
+@@ -388,8 +394,42 @@ export -f thyrox_toolchain_pgvector_installed_version
+ # ninguna base: una extension ya creada en una base existente sigue en su
+ # version anterior hasta que alguien con privilegios en esa base lo pida.
+ # @noargs
++
++# @description El nombre del paquete de Ubuntu que compite con la extension
++# compilada desde el fuente para la version mayor dada.
++# @arg $1 string La version mayor del servidor.
++# @stdout `postgresql-<major>-pgvector`.
++function thyrox_toolchain_pgvector_apt_package() {
++  printf 'postgresql-%s-pgvector' "$1"
++}
++export -f thyrox_toolchain_pgvector_apt_package
++
++# @description Si `postgresql-<major>-pgvector` esta instalado por apt, lo
++# retira ANTES de que `make install` escriba encima sus archivos (`vector.so`,
++# `vector.control`): sin esto, apt sigue atribuyendose esos archivos y un
++# `apt upgrade`/`apt remove` posterior los pisa o los borra (H-THYROX-273,
++# medido con `dpkg -S` sobre checksums distintos). Re-comprueba con `dpkg -s`
++# tras el `remove` — no confia en el exit de `apt-get`.
++# @arg $1 string La version mayor del servidor.
++# @exitcode 0 El paquete no estaba instalado, o se quito y se re-comprobo.
++# @exitcode 3 Sigue instalado tras el intento de quitarlo. REHUSA sin compilar.
++function thyrox_toolchain_pgvector_purge_apt_package() {
++  local major="$1" package
++  package="$(thyrox_toolchain_pgvector_apt_package "$major")"
++  "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1 || return 0
++  sudo "$THYROX_TOOLCHAIN_APT_GET_BIN" remove -y "$package" >&2
++  if "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1; then
++    echo "thyrox_toolchain: '$package' sigue instalado tras 'apt-get remove -y';" >&2
++    echo "                  no se compila encima. Quitalo a mano y reintenta." >&2
++    return 3
++  fi
++  return 0
++}
++export -f thyrox_toolchain_pgvector_purge_apt_package
++
+ function thyrox_toolchain_pgvector_install_default() {
+   local major; major="$(thyrox_toolchain_pg_major)" || return 1
++  thyrox_toolchain_pgvector_purge_apt_package "$major" || return $?
+   local version="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+   local source_url="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
+   local dir; dir="$(mktemp -d)" || return 1
+diff --git a/tests/lib/test-toolchain-pgvector.sh b/tests/lib/test-toolchain-pgvector.sh
+index 8c745c58..0b5ef98f 100755
+--- a/tests/lib/test-toolchain-pgvector.sh
++++ b/tests/lib/test-toolchain-pgvector.sh
+@@ -190,4 +190,103 @@ else
+   bad "falta THYROX_PGVECTOR_SOURCE_URL en .env.example"
+ fi
+ 
++
++# --- Guarda de apt: el paquete instalado se quita ANTES de `make install` --
++FAKEBIN2="$WORK/fakebin-apt-guard"; mkdir -p "$FAKEBIN2"
++export APT_TRACE="$WORK/apt-trace.log"; : > "$APT_TRACE"
++STATE="$WORK/pkg-installed-marker"
++
++cat > "$FAKEBIN2/sudo" <<'STUB'
++#!/usr/bin/env bash
++exec "$@"
++STUB
++cat > "$FAKEBIN2/dpkg" <<STUB
++#!/usr/bin/env bash
++echo "dpkg \$*" >> "$APT_TRACE"
++if [[ "\$1" == "-s" ]]; then
++  [[ -f "$STATE" ]] && exit 0 || exit 1
++fi
++exit 1
++STUB
++cat > "$FAKEBIN2/apt-get" <<STUB
++#!/usr/bin/env bash
++echo "apt-get \$*" >> "$APT_TRACE"
++if [[ "\$1" == "remove" ]]; then
++  if [[ "\${THYROX_TEST_STUBBORN:-}" != "1" ]]; then
++    rm -f "$STATE"
++  fi
++fi
++STUB
++cat > "$FAKEBIN2/git" <<'STUB'
++#!/usr/bin/env bash
++exec true
++STUB
++cat > "$FAKEBIN2/make" <<STUB
++#!/usr/bin/env bash
++echo "make \$*" >> "$APT_TRACE"
++STUB
++chmod +x "$FAKEBIN2"/sudo "$FAKEBIN2"/dpkg "$FAKEBIN2"/apt-get "$FAKEBIN2"/git "$FAKEBIN2"/make
++
++# Caso A — paquete de apt PRESENTE: se quita antes de compilar/instalar, y el
++# resto de la cadena (git/make/make install) sigue corriendo.
++: > "$STATE"
++: > "$APT_TRACE"
++( PATH="$FAKEBIN2:$PATH" THYROX_PGVECTOR_VERSION=0.8.6 \
++  THYROX_TOOLCHAIN_PG_CONFIG_BIN="$WORK/pg_config" \
++  THYROX_TOOLCHAIN_DPKG_BIN="$FAKEBIN2/dpkg" \
++  THYROX_TOOLCHAIN_APT_GET_BIN="$FAKEBIN2/apt-get" \
++  thyrox_toolchain_pgvector_install_default )
++rc=$?
++trace="$(cat "$APT_TRACE" 2>/dev/null)"
++if [[ $rc -eq 0 ]]; then ok "paquete de apt presente: el instalador termina 0"
++else bad "paquete de apt presente: esperaba rc 0, dio $rc: '$trace'"; fi
++if [[ "$trace" == *"apt-get remove -y postgresql-16-pgvector"* ]]; then
++  ok "paquete de apt presente: se llama a 'apt-get remove' antes de compilar"
++else bad "no se llamo a apt-get remove: '$trace'"; fi
++if [[ "$trace" == *"make -C"*"install"* ]]; then
++  ok "paquete de apt presente: make sigue corriendo tras quitar el paquete"
++else bad "make no corrio tras quitar el paquete: '$trace'"; fi
++if [[ ! -f "$STATE" ]]; then
++  ok "paquete de apt presente: la re-comprobacion confirma que ya no esta"
++else bad "el marcador de paquete instalado seguia presente"; fi
++
++# Caso B — paquete de apt AUSENTE: no se llama a 'apt-get remove'.
++rm -f "$STATE"
++: > "$APT_TRACE"
++( PATH="$FAKEBIN2:$PATH" THYROX_PGVECTOR_VERSION=0.8.6 \
++  THYROX_TOOLCHAIN_PG_CONFIG_BIN="$WORK/pg_config" \
++  THYROX_TOOLCHAIN_DPKG_BIN="$FAKEBIN2/dpkg" \
++  THYROX_TOOLCHAIN_APT_GET_BIN="$FAKEBIN2/apt-get" \
++  thyrox_toolchain_pgvector_install_default )
++rc=$?
++trace="$(cat "$APT_TRACE" 2>/dev/null)"
++if [[ $rc -eq 0 ]]; then ok "paquete de apt ausente: el instalador termina 0"
++else bad "paquete de apt ausente: esperaba rc 0, dio $rc: '$trace'"; fi
++if [[ "$trace" != *"apt-get remove"* ]]; then
++  ok "paquete de apt ausente: no se llama a 'apt-get remove'"
++else bad "se llamo a apt-get remove sin necesidad: '$trace'"; fi
++
++# Caso C — LA RE-COMPROBACION FALLA (el paquete sigue instalado tras
++# 'apt-get remove'): rehusa con exit distinto de 0, nombra el paquete, y NO
++# compila (ni git ni make corren).
++: > "$STATE"
++: > "$APT_TRACE"
++( PATH="$FAKEBIN2:$PATH" THYROX_PGVECTOR_VERSION=0.8.6 THYROX_TEST_STUBBORN=1 \
++  THYROX_TOOLCHAIN_PG_CONFIG_BIN="$WORK/pg_config" \
++  THYROX_TOOLCHAIN_DPKG_BIN="$FAKEBIN2/dpkg" \
++  THYROX_TOOLCHAIN_APT_GET_BIN="$FAKEBIN2/apt-get" \
++  thyrox_toolchain_pgvector_install_default ) >"$WORK/stubborn.out" 2>&1
++rc=$?
++out="$(cat "$WORK/stubborn.out" 2>/dev/null)"
++trace="$(cat "$APT_TRACE" 2>/dev/null)"
++if [[ $rc -ne 0 ]]; then ok "re-comprobacion fallida: rehusa con exit distinto de 0"
++else bad "re-comprobacion fallida: esperaba exit distinto de 0, dio $rc"; fi
++if [[ "$out" == *"postgresql-16-pgvector"* ]]; then
++  ok "re-comprobacion fallida: el rechazo nombra el paquete"
++else bad "el rechazo no nombro postgresql-16-pgvector: '$out'"; fi
++if [[ "$trace" != *"make"* ]]; then
++  ok "re-comprobacion fallida: no se compila (make no corre)"
++else bad "make corrio pese a que el paquete seguia instalado: '$trace'"; fi
++rm -f "$STATE"
++
+ thyrox_summary

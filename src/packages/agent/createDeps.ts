@@ -2,11 +2,11 @@
  * Frontera SDK ↔ runtime del agente — porte de
  * `ccnmt: packages/agent/createDeps.ts` (471 líneas en la fuente).
  *
- * PORTE COMPLETO desde 2026-09-08 (#263). Entran `createProductionDeps` y
- * sus siete clases `*DepImpl` —`ProviderDepImpl`, `ToolDepImpl`,
- * `PermissionDepImpl`, `OutputDepImpl`, `HookDepImpl`, `ContextDepImpl`,
- * `SessionDepImpl`— junto a los tres símbolos autocontenidos que ya estaban
- * (`fromAgentEvent`, `toCoreMessages`, `fromCoreMessages`).
+ * PORTE COMPLETO: `createProductionDeps` y sus siete clases `*DepImpl`
+ * —`ProviderDepImpl`, `ToolDepImpl`, `PermissionDepImpl`, `OutputDepImpl`,
+ * `HookDepImpl`, `ContextDepImpl`, `SessionDepImpl`— junto a los tres
+ * símbolos autocontenidos (`fromAgentEvent`, `toCoreMessages`,
+ * `fromCoreMessages`).
  *
  * SU LISTA DE BLOQUEOS ESTABA MAL EN LOS TRES PUNTOS, y la corrección es la
  * que autoriza el porte:
@@ -365,7 +365,7 @@ class ContextDepImpl {
       return await this.pipeline().getUserContext()
     } catch (e) {
       // Un fallo al construir el contexto no debe tumbar el bucle, pero
-      // tampoco puede ser invisible: un CLAUDE.md ausente o un git que falla
+      // tampoco puede ser invisible: un THYROX.md ausente o un git que falla
       // cambian la conducta del prompt en silencio.
       logError(e)
       return {}

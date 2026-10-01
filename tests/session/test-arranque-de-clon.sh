@@ -133,10 +133,15 @@ comprobar "1b-i-bis. y hay comandos de mecanismo que medir" "5" \
 
 # Sus ARGUMENTOS son parametro del consumidor: `--repo` en el clon, `--viva` y
 # `--base` bajo la raiz que se le declaro.
+# La salida se captura ANTES de buscar: con `pipefail`, `grep -q` cierra la
+# tuberia en la primera coincidencia y el `python` de `comandos` muere con
+# BrokenPipeError, asi que el pipeline fallaba aunque la coincidencia
+# existiera. Dependia del ritmo: aparecio al repartir la suite en paralelo.
+COMANDOS_VIVA="$(comandos "$VIVA")"
 comprobar "1b-ii. --repo cita al consumidor" "si" \
-    "$(comandos "$VIVA" | grep -q -- "--repo $CLON/" && echo si || echo no)"
+    "$(grep -q -- "--repo $CLON/" <<<"$COMANDOS_VIVA" && echo si || echo no)"
 comprobar "1b-ii-bis. --viva cita la raiz declarada" "si" \
-    "$(comandos "$VIVA" | grep -q -- "--viva $TMP/" && echo si || echo no)"
+    "$(grep -q -- "--viva $TMP/" <<<"$COMANDOS_VIVA" && echo si || echo no)"
 
 # Y nada cita el arbol REAL del consumidor, que es el literal congelado en los
 # datos del sincronizador. Esa fuga es un fallo distinto de una sustitucion
@@ -174,8 +179,8 @@ comprobar "2. anulado el marcador, el guion avisa del script inexistente" "si" \
 # produce es que el script del MECANISMO se busque FUERA del proveedor — la
 # negacion exacta de 1b-i, que es lo que esta asercion mide.
 comprobar "2-bis. y el mecanismo se busca fuera del proveedor" "si" \
-    "$(printf '%s' "$SALIDA_ANULADA" | grep "sync_local_settings.py" \
-       | grep -qv "^ *$DOCS_ROOT/" && echo si || echo no)"
+    "$(grep -qv "^ *$DOCS_ROOT/" <<<"$(grep "sync_local_settings.py" <<<"$SALIDA_ANULADA")" \
+       && echo si || echo no)"
 
 # --- Caso 3: union, nunca reemplazo -----------------------------------------
 python3 - "$VIVA" <<'PY'
@@ -229,7 +234,7 @@ PY
 # Control positivo: en el clon sintetico ningun hook existe todavia, asi que el
 # aviso debe dispararse. Si se crean los archivos, debe callarse.
 comprobar "8a. con los hooks ausentes, el guion avisa" "si" \
-    "$(arranque --solo-mostrar 2>&1 | grep -q "AVISO" && echo si || echo no)"
+    "$(grep -q "AVISO" <<<"$(arranque --solo-mostrar 2>&1)" && echo si || echo no)"
 python3 - "$CLON" <<'PY'
 import json, pathlib, sys
 clon = pathlib.Path(sys.argv[1])
@@ -248,7 +253,7 @@ PY
 # ese archivo justo antes de la asercion, y por eso la suite no veia H-DOCS-303
 # — el positivo real era exactamente el estado que la prueba borraba.
 comprobar "8b. con los scripts presentes, se calla aunque falte la base" "no" \
-    "$(arranque --solo-mostrar 2>&1 | grep -q "AVISO" && echo si || echo no)"
+    "$(grep -q "AVISO" <<<"$(arranque --solo-mostrar 2>&1)" && echo si || echo no)"
 comprobar "8b-bis. y la base sigue sin existir" "no" \
     "$([ -e "$CLON/.claude/agent-results/settings_local.base.json" ] && echo si || echo no)"
 
@@ -269,9 +274,9 @@ PY
 )"
 rm -f "$CLON/$VICTIMA"
 comprobar "8c. retirado un script real, el aviso vuelve" "si" \
-    "$(arranque --solo-mostrar 2>&1 | grep -q "AVISO" && echo si || echo no)"
+    "$(grep -q "AVISO" <<<"$(arranque --solo-mostrar 2>&1)" && echo si || echo no)"
 comprobar "8c-bis. y nombra al que falta" "si" \
-    "$(arranque --solo-mostrar 2>&1 | grep -qF "$VICTIMA" && echo si || echo no)"
+    "$(grep -qF "$VICTIMA" <<<"$(arranque --solo-mostrar 2>&1)" && echo si || echo no)"
 
 printf 'test-arranque-de-clon: %d de %d aserciones en verde\n' "$OK" "$((OK + FALLOS))"
 [ "$FALLOS" -eq 0 ]

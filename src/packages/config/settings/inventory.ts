@@ -1,11 +1,9 @@
 /**
  * Las 80 claves de settings del cliente, con veredicto por clave.
  *
- * El criterio lo fijó el ejecutor (2026-09-02): *«yo quitaría la de aws, pero
- * dejaría las de git, y creo que sólo quitaría las de servicios externos como
- * aws»*. Es más inclusivo que la primera clasificación —que adoptaba 8 de 80—
- * y cambia la pregunta: ya no es «¿qué usamos?» sino «¿qué apunta a un
- * servicio que no es nuestro?».
+ * Criterio: se retira lo que apunta a un servicio externo (aws) y se conserva
+ * el resto, incluidas las de git. La pregunta no es «¿qué usamos?» sino «¿qué
+ * apunta a un servicio que no es nuestro?».
  *
  * Tres estados, y el del medio es el que evita la mentira por omisión:
  *

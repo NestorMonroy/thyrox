@@ -370,9 +370,9 @@ function createPluginCommand(
           )
         }
 
-        // Replace ${CLAUDE_SESSION_ID} with the current session ID
+        // Replace ${THYROX_SESSION_ID} with the current session ID
         finalContent = finalContent.replace(
-          /\$\{CLAUDE_SESSION_ID\}/g,
+          /\$\{THYROX_SESSION_ID\}/g,
           getSessionId(),
         )
 

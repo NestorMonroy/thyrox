@@ -2,6 +2,7 @@ import { getSessionMemoryContent } from '@thyrox/agent/SessionMemory/sessionMemo
 import type { Message } from '@thyrox/agent/messageShapes'
 import { getMessagesAfterCompactBoundary } from '@thyrox/agent/messages.js'
 import { registerBundledSkill } from '../bundledSkills.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function extractUserMessages(messages: Message[]): string[] {
   return messages
@@ -100,7 +101,7 @@ name: {{skill-name}}
 description: {{one-line description}}
 allowed-tools:
   {{list of tool permission patterns observed during session}}
-when_to_use: {{detailed description of when Claude should automatically invoke this skill, including trigger phrases and example user messages}}
+when_to_use: {{detailed description of when ${PRODUCT_NAME} should automatically invoke this skill, including trigger phrases and example user messages}}
 argument-hint: "{{hint showing argument placeholders}}"
 arguments:
   {{list of argument names}}

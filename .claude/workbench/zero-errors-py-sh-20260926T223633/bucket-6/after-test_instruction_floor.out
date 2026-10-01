@@ -1,0 +1,23 @@
+== 1. mide bytes y archivos de las reglas más el CLAUDE.md ==
+  ok    dos reglas
+  ok    bytes = 100 + 50 + 10
+  ok    ninguna condicional
+== 2. una regla con paths: NO entra al piso ==
+  ok    una siempre-cargada
+  ok    una condicional
+  ok    los bytes de la condicional no suman
+== 3. paths: en el CUERPO no la hace condicional ==
+  ok    sigue cargando siempre
+  ok    y no cuenta como condicional
+== 4. un clon sin .claude/rules da un piso vacío, no una excepción ==
+  ok    ceros
+== 5. los tokens son ESTIMACIÓN, con su divisor nombrado ==
+  ok    divisor declarado
+  ok    400 bytes ~ 100 tokens
+== 6. el barrido suma los clones y conserva el detalle por clon ==
+  ok    cuatro filas
+  ok    bytes totales 160+100+100
+  ok    siempre-cargadas totales
+  ok    condicionales totales
+
+15 ok, 0 fallos

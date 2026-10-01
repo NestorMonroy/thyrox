@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+50 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ fastModeEnabled: false, apiProvider: 'bedrock' }))).toBe('not_first_party')
+51 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ fastModeEnabled: false }))).toBe('disabled_by_env')
+52 |   })
+53 | 
+54 |   test('la bandera de apagado gana sobre todo lo que sigue', () => {
+55 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ penguinsOffMessage: 'x', orgStatus: { status: 'pending' } }))).toBe('unknown')
+                                                                                                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: "unknown"
+Received: "pending"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:55:128)
+(fail) fastModeUnavailabilityCause (gL) > la bandera de apagado gana sobre todo lo que sigue [0.40ms]
+
+ 13 pass
+ 1 fail
+ 53 expect() calls
+Ran 14 tests across 1 file. [75.00ms]

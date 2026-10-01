@@ -138,8 +138,6 @@ def _cli() -> int:
     gana o pierde un clon, y sería la segunda fuente de verdad que nadie
     sincroniza.
     """
-    import sys
-
     from paths.reach import clone_names, thyrox_root, tree_root
 
     # `clone_names()` da los consumidores CON su prefijo; `reach_roots()` da

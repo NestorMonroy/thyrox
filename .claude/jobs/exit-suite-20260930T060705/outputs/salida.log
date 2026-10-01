@@ -1,0 +1,5 @@
+el ítem nunca arrancó:
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+headless-pool: REHUSA — no recibio ningun item por stdin.
+sin runtime del ítem en runA
+__BG_EXIT__=1

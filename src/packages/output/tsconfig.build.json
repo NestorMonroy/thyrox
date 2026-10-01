@@ -1,0 +1,145 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/output": [
+        "./src/index.ts"
+      ],
+      "@thyrox/output/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/output/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/output/testing": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/output/buffers": [
+        "./src/buffers/index.ts"
+      ],
+      "@thyrox/output/buffers/buffered-writer.js": [
+        "./src/buffers/buffered-writer.ts"
+      ],
+      "@thyrox/output/buffers/circular-buffer.js": [
+        "./src/buffers/circular-buffer.ts"
+      ],
+      "@thyrox/output/formatters": [
+        "./src/formatters/index.ts"
+      ],
+      "@thyrox/output/formatters/format.js": [
+        "./src/formatters/format.ts"
+      ],
+      "@thyrox/output/formatters/brief-timestamp.js": [
+        "./src/formatters/brief-timestamp.ts"
+      ],
+      "@thyrox/output/capture": [
+        "./src/capture/index.ts"
+      ],
+      "@thyrox/output/capture/ansi-to-svg.js": [
+        "./src/capture/ansi-to-svg.ts"
+      ],
+      "@thyrox/output/constants/figures.js": [
+        "./src/constants/figures.ts"
+      ],
+      "@thyrox/output/targets/json.js": [
+        "./src/targets/json.ts"
+      ],
+      "@thyrox/output/targets/silent.js": [
+        "./src/targets/silent.ts"
+      ],
+      "@thyrox/output/targets/terminal.js": [
+        "./src/targets/terminal.ts"
+      ],
+      "@thyrox/output/utils/intl.js": [
+        "./src/utils/intl.ts"
+      ],
+      "@thyrox/output/utils/stringUtils.js": [
+        "./src/utils/stringUtils.ts"
+      ],
+      "@thyrox/output/utils/displayTags.js": [
+        "./src/utils/displayTags.ts"
+      ],
+      "@thyrox/output/utils/cliHighlight.js": [
+        "./src/utils/cliHighlight.ts"
+      ],
+      "@thyrox/output/setUtils.js": [
+        "./src/setUtils.ts"
+      ],
+      "@thyrox/output/fpsTracker.js": [
+        "./src/fpsTracker.ts"
+      ],
+      "@thyrox/output/xml.js": [
+        "./src/xml.ts"
+      ],
+      "@thyrox/output/render": [
+        "./src/render/index.ts"
+      ],
+      "@thyrox/output/render/exportRenderer.js": [
+        "./src/render/exportRenderer.tsx"
+      ],
+      "@thyrox/output/constants/figures": [
+        "./src/constants/figures.ts"
+      ],
+      "@thyrox/output/formatters/truncate.js": [
+        "./src/formatters/truncate.ts"
+      ],
+      "@thyrox/output/hyperlink.js": [
+        "./src/hyperlink.ts"
+      ],
+      "@thyrox/output/markdown.js": [
+        "./src/markdown.ts"
+      ],
+      "@thyrox/output/modifiers.js": [
+        "./src/modifiers.ts"
+      ],
+      "@thyrox/output/render-options": [
+        "./src/render-options.ts"
+      ],
+      "@thyrox/output/terminal.js": [
+        "./src/terminal.ts"
+      ],
+      "@thyrox/output/textHighlighting.js": [
+        "./src/textHighlighting.ts"
+      ],
+      "@thyrox/output/utils/sliceAnsi.js": [
+        "./src/utils/sliceAnsi.ts"
+      ],
+      "@thyrox/output/utils/stringUtils": [
+        "./src/utils/stringUtils.ts"
+      ],
+      "@thyrox/output/xml": [
+        "./src/xml.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

@@ -1,0 +1,3 @@
+(fail) SessionCache: caducidad y alias > get no refresca; getAndRefresh refresca el grupo entero [0.55ms]
+ 12 pass
+ 1 fail

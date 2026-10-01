@@ -1,0 +1,4 @@
+src/packages/audio-capture-napi/vendor/x64-linux/audio-capture.node	isPlaying,isRecording,microphoneAuthorizationStatus,startPlayback,startRecording,stopPlayback,stopRecording,writePlaybackData
+_references/claude-code-bin/2.1.283/bunfs-root/audio-capture.node	isPlaying,isRecording,microphoneAuthorizationStatus,startPlayback,startRecording,stopPlayback,stopRecording,writePlaybackData
+_references/claude-code-bin/2.1.283/bunfs-root/clipboard-napi.node	getLinuxClipboardText,setLinuxClipboardText
+src/packages/image-processor-napi/vendor/x64-linux/image-processor.node	ImageProcessor,hasClipboardImage,processImage,readClipboardImage

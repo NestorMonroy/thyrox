@@ -14,7 +14,7 @@ packages must go through this surface (`readEnv`, `getInitialSettings`,
 | `./settings` | `getInitialSettings` (renamed from `getSettings_DEPRECATED` 2026-04-29), settings layering (user/project/local/managed/policy), schema validation |
 | `./feature-flags` | `getFeatureValue_CACHED_MAY_BE_STALE` + GrowthBook stub fallback |
 | `./platform` | `getPlatform()` — process.platform with a single source of truth |
-| `./env/*` | `readEnv`, `isEnvTruthy`, `getClaudeConfigHomeDir`, env-truthy parsing |
+| `./env/*` | `readEnv`, `isEnvTruthy`, `getConfigHomeDir`, env-truthy parsing |
 | `./plugin/*` | Plugin loader, marketplace manager, manifest validation |
 | `./frontmatterParser` | YAML frontmatter parsing for skills/commands/agents (V8 — moved here from agent/ to break the agent → config cycle) |
 | `./yaml` | `parseYaml` wrapper around Bun.YAML / npm yaml |

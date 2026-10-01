@@ -17,7 +17,7 @@ import {
 } from '../messages.ts'
 
 /**
- * Pin the EXACT wire format of protocol strings between Claude Code and
+ * Pin the EXACT wire format of protocol strings between thyrox and
  * the model. Three classes of constants here:
  *
  *  1. Interrupt/cancel: the model sees these as user-role messages and
@@ -112,7 +112,7 @@ describe('Message contract strings (Claude Code ↔ model protocol)', () => {
 
     test('DONT_ASK_REJECT_MESSAGE mentions "don\'t ask mode" for self-explanatory denial', () => {
       const msg = DONT_ASK_REJECT_MESSAGE('Write')
-      expect(msg).toContain("Claude Code is running in don't ask mode")
+      expect(msg).toContain("thyrox is running in don't ask mode")
       expect(msg).toContain('Permission to use Write has been denied')
     })
   })

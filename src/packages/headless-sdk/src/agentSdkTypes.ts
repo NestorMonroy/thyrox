@@ -6,7 +6,7 @@
  * no una dependencia cruzada. `@modelcontextprotocol/sdk` es un paquete npm
  * genuino, declarado como dependencia real de este paquete.)
  *
- * Main entrypoint for Claude Code Agent SDK types.
+ * Main entrypoint for thyrox Agent SDK types.
  *
  * This file re-exports the public SDK API from:
  * - sdk/coreTypes.ts - Common serializable types (messages, configs)
@@ -115,7 +115,7 @@ type CreateSdkMcpServerOptions = {
  * Creates an MCP server instance that can be used with the SDK transport.
  * This allows SDK users to define custom tools that run in the same process.
  *
- * If your SDK MCP calls will run longer than 60s, override CLAUDE_CODE_STREAM_CLOSE_TIMEOUT
+ * If your SDK MCP calls will run longer than 60s, override THYROX_CODE_STREAM_CLOSE_TIMEOUT
  */
 export function createSdkMcpServer(
   _options: CreateSdkMcpServerOptions,

@@ -39,7 +39,7 @@ RULES_DIR_VAR = "THYROX_RULES_DIR"
 
 #: El prefijo de la constante POR CLON. Misma forma que
 #: `workbench.WORKBENCH_CLONE_PREFIX`, y no por simetria: la razon esta medida
-#: en el docstring de `workbench_home_name` con dos episodios silenciosos.
+#: en el docstring de `workbench_home_name`.
 RULES_CLONE_PREFIX = "THYROX_RULES_"
 
 #: El segmento propio de esta familia, dentro del tramo de estado.

@@ -1,0 +1,3 @@
+README.md
+src/packages/provider/__tests__/credentialProxyProcess.test.ts
+src/packages/provider/bin/credentialProxy.ts

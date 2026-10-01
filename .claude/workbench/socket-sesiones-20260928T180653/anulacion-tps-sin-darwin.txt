@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/transferPathSafety.test.ts:
+40 |     expect(networkPathPrefixes('/home/ana/x', 'darwin', false).complete).toEqual([])
+41 |     expect(networkPathPrefixes('rel', 'darwin', true)).toEqual({ complete: [], partial: [] })
+42 |   })
+43 | 
+44 |   test('isDarwinNetworkPath (GF): sólo en darwin; /network, /.vol y el /home de otro usuario', () => {
+45 |     expect(isDarwinNetworkPath('/Network/x', 'linux')).toBe(false)
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:45:56)
+(fail) rutas de red de macOS (yN, tt, GF) > isDarwinNetworkPath (GF): sólo en darwin; /network, /.vol y el /home de otro usuario [0.37ms]
+55 | 
+56 | describe('isUnsafeTransferPath (Mur)', () => {
+57 |   test('en su forma por omisión es Linux: la rama de macOS no cuenta', () => {
+58 |     expect(isUnsafeTransferPath('//s/x')).toBe(true)
+59 |     expect(isUnsafeTransferPath('/Network/Servers/h/x')).toBe(true)
+60 |     expect(isUnsafeTransferPath('/Network/x')).toBe(false)
+                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:60:48)
+(fail) isUnsafeTransferPath (Mur) > en su forma por omisión es Linux: la rama de macOS no cuenta [0.18ms]
+
+ 3 pass
+ 2 fail
+ 26 expect() calls
+Ran 5 tests across 1 file. [53.00ms]

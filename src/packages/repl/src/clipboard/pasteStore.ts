@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 
 const PASTE_STORE_DIR = 'paste-cache'
@@ -11,7 +11,7 @@ const PASTE_STORE_DIR = 'paste-cache'
  * Get the paste store directory (persistent across sessions).
  */
 function getPasteStoreDir(): string {
-  return join(getClaudeConfigHomeDir(), PASTE_STORE_DIR)
+  return join(getConfigHomeDir(), PASTE_STORE_DIR)
 }
 
 /**

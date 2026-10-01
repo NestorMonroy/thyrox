@@ -11,11 +11,17 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '../src/tasks.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'todo-'))
 const ctx = () => ({ cwd: dir(), sessionId: 'x', abort: new AbortController().signal, messages: [] })
-const tablero = () => join(dir(), 'tablero.sqlite3')
+/** Una base lista para operar: `conBase` sólo valida, así que el fixture migra ANTES de crearla. */
+const tablero = () => {
+  const p = join(dir(), 'tablero.sqlite3')
+  createMigratedTaskDb(p)
+  return p
+}
 const util = (dbPath: string, nombre: string, sessionId = 'sesion') =>
   taskTools({ dbPath, sessionId }).find((t) => t.name === nombre)!
 

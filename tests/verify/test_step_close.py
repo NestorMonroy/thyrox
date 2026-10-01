@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """El cierre de un paso del lazo, sin manos: informe, commit por pathspec
 de lo que el paso conservó más su banco, sus jobs y la memoria de la
-corrida, el trinquete bajado cuando el gate lo pide, y push.
+ejecución, el trinquete bajado cuando el gate lo pide, y push.
 
 Antes se hacía a mano y cada eslabón tropezó una vez en el paso 159:
 `step_report` con el argumento equivocado, la lista de archivos escrita a
@@ -17,6 +17,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from paths import reach
+from session import shared_lock
 from verify import step_close
 
 passed = failed = 0
@@ -106,7 +108,7 @@ with tempfile.TemporaryDirectory() as tmp:
     plan = step_close.close_plan(repo, run, bench)
     assert_equal("el asunto nombra el paso y los totales del pipeline",
                  "Apply tsc-zero step 7: 20 -> 15", plan.subject)
-    assert_equal("lo que se commitea: lo conservado, el banco, sus jobs y la memoria de la corrida",
+    assert_equal("lo que se commitea: lo conservado, el banco, sus jobs y la memoria de la ejecución",
                  ["a.ts", "b.ts", ".claude/jobs/step-7-pipeline-20260101T000001",
                   ".claude/jobs/step-7-pool-20260101T000000", ".claude/workbench/tsc-zero-loop/run-1/ledger.jsonl",
                   ".claude/workbench/tsc-zero-loop/run-1/patterns.jsonl",
@@ -128,6 +130,35 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("empuja la rama actual a su upstream",
                  git(repo, "rev-parse", "HEAD").strip(), git(repo, "rev-parse", "origin/feature/x").strip())
     assert_equal("el resultado nombra los commits", 2, len(result.commits))
+    assert_equal("el cierre suelta el lock de commit del repo", False,
+                 shared_lock.lock_path(step_close.commit_lock_target(repo)).exists())
+
+# --- un solo escritor de git por repo: con el lock de commit en manos de otro
+# dueño vivo, el cierre rehúsa ANTES de commitear, en vez de chocar con su
+# `index.lock` a medio camino (el paso 156).
+HOLDER = """
+import sys, time
+from session import shared_lock as sl
+with sl.held(sys.argv[1], run_id="otro-cierre", stale_s=60):
+    print("tomado", flush=True)
+    time.sleep(10)
+"""
+with tempfile.TemporaryDirectory() as tmp:
+    repo, run, bench = fixture(Path(tmp))
+    env = {**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")}
+    holder = subprocess.Popen([sys.executable, "-c", HOLDER, str(step_close.commit_lock_target(repo))],
+                              stdout=subprocess.PIPE, text=True, env=env)
+    assert holder.stdout is not None  # se pidió stdout=PIPE arriba
+    holder.stdout.readline()
+    try:
+        step_close.close_step(repo, run, bench, lock_retries=0)
+        outcome = "cerró"
+    except shared_lock.LockHeld as busy:
+        outcome = "rehúsa:" + str(busy.owner.get("pid"))
+    finally:
+        holder.kill(); holder.wait()
+    assert_equal("con el lock de otro, rehúsa nombrando a su dueño", f"rehúsa:{holder.pid}", outcome)
+    assert_equal("y no commitea nada", 1, len(git(repo, "log", "--format=%s").splitlines()))
 
 with tempfile.TemporaryDirectory() as tmp:
     repo, run, bench = fixture(Path(tmp))

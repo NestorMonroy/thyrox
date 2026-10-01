@@ -1,0 +1,5 @@
+.claude/workbench/task-thyrox-0261-consumer-resolution-20260930T085950/README.md
+src/session/instalar-hooks-sesion-multirepo.sh
+src/session/session_restart.py
+src/session/user_wiring.py
+tests/session/test_user_wiring.py

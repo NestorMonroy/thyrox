@@ -1,0 +1,11 @@
+- RAM disponible = ``max(0, límite efectivo − uso)``, donde el límite efectivo
+  es el más restrictivo del cgroup y sus ancestros; sin límite acotado, la del
+  anfitrión. El «sin límite» de cgroup v1 (el número enorme de
+  ``memory.limit_in_bytes``) y ``max`` de v2 se normalizan antes de restar:
+  nunca se leen como RAM disponible. v1: ``memory.limit_in_bytes`` /
+  ``usage_in_bytes`` / ``max_usage_in_bytes``; v2: ``memory.max`` /
+  ``current`` / ``peak``.
+- Tras 0691, **ningún archivo de producción** fuera de una lista explícita (el
+  backend NVIDIA, la sonda de hardware y la configuración permitida) nombra
+  ``nvidia-smi``, en Python, shell o TypeScript. La prueba compara archivos,
+  no un conteo, así que una referencia nueva en cualquier sitio la rompe.

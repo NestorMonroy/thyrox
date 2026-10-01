@@ -1,0 +1,22 @@
+error: bootstrapInfrastructure: sin implementar
+(fail) bootstrapInfrastructure > materializa por la primitiva con dueño infrastructure y reporta una línea por recurso [0.67ms]
+error: bootstrapInfrastructure: sin implementar
+(fail) bootstrapInfrastructure > sin el valor de un secreto declarado rehúsa con exit 2, nombra la variable y no toca Podman [0.20ms]
+error: bootstrapInfrastructure: sin implementar
+(fail) bootstrapInfrastructure > un contenedor con ese nombre y otro dueño se rehúsa con exit 2 y queda intacto [0.23ms]
+error: bootstrapInfrastructure: sin implementar
+(fail) bootstrapInfrastructure > un recurso que no llega a sano sale con exit 1 y nombra su etapa [0.12ms]
+error: bootstrapInfrastructure: sin implementar
+(fail) bootstrapInfrastructure > una colisión de locks sale con exit 3 y publica el remedio, sin el valor secreto [0.13ms]
+error: bootstrapInfrastructure: sin implementar
+(fail) bootstrapInfrastructure > el exit refleja el fallo más severo: colisión de locks sobre fallo de salud [0.14ms]
+error: parseInfrastructureDeclarations: sin implementar
+(fail) parseInfrastructureDeclarations > lee un arreglo JSON de declaraciones [0.12ms]
+error: expect(received).toThrow(expected)
+(fail) parseInfrastructureDeclarations > un JSON que no es un arreglo se rehúsa [0.59ms]
+error: expect(received).toThrow(expected)
+(fail) parseInfrastructureDeclarations > una declaración sin nombre o sin imagen se rehúsa nombrando el campo [1.80ms]
+error: expect(received).toThrow(expected)
+(fail) parseInfrastructureDeclarations > un secreto declarado con su valor en vez de la variable se rehúsa [0.29ms]
+TEST_EXIT=1
+__BG_EXIT__=0

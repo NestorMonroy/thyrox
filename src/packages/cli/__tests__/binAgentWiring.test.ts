@@ -21,7 +21,7 @@ import { Database } from 'bun:sqlite'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runCli } from '../src/entry/main.ts'
+import { runCli } from '../src/entry/run-cli.ts'
 import type { AssistantTurn } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'bin-agent-'))

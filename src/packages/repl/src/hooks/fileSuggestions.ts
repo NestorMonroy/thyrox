@@ -439,7 +439,7 @@ function collectDirectoryNames(
 }
 
 /**
- * Gets additional files from Claude config directories
+ * Gets additional files from thyrox config directories
  */
 async function getClaudeConfigFiles(cwd: string): Promise<string[]> {
   const markdownFileArrays = await Promise.all(

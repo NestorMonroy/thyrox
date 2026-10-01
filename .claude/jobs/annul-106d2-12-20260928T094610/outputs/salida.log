@@ -1,0 +1,14 @@
+== 12: tras el onboarding no se vuelve a consultar
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+(fail) antigravity flow > a project created after the onboarding is found by the second discovery [0.62ms]
+ 20 pass
+ 1 fail
+== restaurado
+ M src/packages/provider/src/accounts/oauth/oauthPersistence.ts
+?? src/packages/provider/src/accounts/antigravity/
+?? src/packages/provider/src/accounts/oauth/antigravityProjectGate.ts
+?? src/packages/provider/src/accounts/oauth/browserRedirect.ts
+?? src/packages/provider/src/accounts/oauth/flows/antigravityFlow.ts
+ 21 pass
+ 0 fail
+__BG_EXIT__=0

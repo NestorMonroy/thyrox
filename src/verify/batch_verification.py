@@ -43,6 +43,7 @@ import json
 import sys
 from collections import Counter
 from dataclasses import dataclass, field
+from typing import Sequence
 from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze, diagnostic_key, stable_key
@@ -78,7 +79,7 @@ class ProposalVerdict:
 
 @dataclass(frozen=True)
 class BatchReport:
-    verdicts: list[Verdict | ProposalVerdict]
+    verdicts: Sequence[Verdict | ProposalVerdict]
     total_before: int
     total_after: int
     new_diagnostics: list[str] = field(default_factory=list)
@@ -269,7 +270,7 @@ def read_proposals(path: Path) -> list[Proposal]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--before", type=Path, required=True, help="log de tsc antes del lote")
     parser.add_argument("--after", type=Path, required=True, help="log de tsc despues del lote")
     parser.add_argument("--proposals", type=Path,

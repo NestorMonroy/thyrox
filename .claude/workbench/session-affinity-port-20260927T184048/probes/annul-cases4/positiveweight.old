@@ -1,0 +1,1 @@
+    const candidates = this.fallback instanceof WeightedRoundRobinSelector ? positiveWeightCredentials(credentials) : credentials

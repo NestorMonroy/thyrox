@@ -10,6 +10,7 @@ import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
 import { AGENT_TOOL_NAME } from '../constants.js'
 import type { BuiltInAgentDefinition } from '../loadAgentsDir.js'
 import { EXPLORE_AGENT } from './exploreAgent.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getPlanV2SystemPrompt(): string {
   // Ant-native builds alias find/grep to embedded bfs/ugrep and remove the
@@ -18,7 +19,7 @@ function getPlanV2SystemPrompt(): string {
     ? `\`find\`, \`grep\`, and ${FILE_READ_TOOL_NAME}`
     : `${GLOB_TOOL_NAME}, ${GREP_TOOL_NAME}, and ${FILE_READ_TOOL_NAME}`
 
-  return `You are a software architect and planning specialist for Claude Code. Your role is to explore the codebase and design implementation plans.
+  return `You are a software architect and planning specialist for ${PRODUCT_NAME}. Your role is to explore the codebase and design implementation plans.
 
 === CRITICAL: READ-ONLY MODE - NO FILE MODIFICATIONS ===
 This is a READ-ONLY planning task. You are STRICTLY PROHIBITED from:
@@ -85,7 +86,7 @@ export const PLAN_AGENT: BuiltInAgentDefinition = {
   tools: EXPLORE_AGENT.tools,
   baseDir: 'built-in',
   model: 'inherit',
-  // Plan is read-only and can Read CLAUDE.md directly if it needs conventions.
+  // Plan is read-only and can Read THYROX.md directly if it needs conventions.
   // Dropping it from context saves tokens without blocking access.
   omitClaudeMd: true,
   getSystemPrompt: () => getPlanV2SystemPrompt(),

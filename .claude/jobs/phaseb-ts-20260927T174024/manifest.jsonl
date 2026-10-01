@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bash src/verify/run_ts_isolated.sh < .claude/workbench/env-rename-phase-b-20260927T173715/outputs/ts-test-files.txt > /home/user/thyrox/.claude/workbench/env-rename-phase-b-20260927T173715/outputs/ts-suite.log 2>&1", "started_at": "2026-09-27T17:40:24+00:00"}

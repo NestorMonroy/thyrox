@@ -445,7 +445,7 @@ export const GrepTool = buildTool({
     // The timeout is handled by ripgrep itself via execFile timeout option
     // We don't use AbortController for timeout to avoid interrupting the agent loop
     // If ripgrep times out, it throws RipgrepTimeoutError which propagates up
-    // so Claude knows the search didn't complete (rather than thinking there were no matches)
+    // so thyrox knows the search didn't complete (rather than thinking there were no matches)
     const results = await ripGrep(args, absolutePath, abortController.signal)
 
     if (output_mode === 'content') {
@@ -547,10 +547,6 @@ export const GrepTool = buildTool({
         ] as const
       })
       .sort((a, b) => {
-        if (process.env.NODE_ENV === 'test') {
-          // In tests, we always want to sort by filename, so that results are deterministic
-          return a[0].localeCompare(b[0])
-        }
         const timeComparison = b[1] - a[1]
         if (timeComparison === 0) {
           // Sort by filename as a tiebreaker

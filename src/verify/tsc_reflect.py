@@ -190,7 +190,7 @@ def sweep_gate(run: Path, step: Path, log: Path | None = None) -> list[str]:
     excluida con razón o cerrada. Devuelve los motivos de bloqueo; vacío si pasa.
 
     Antes el gate 4 vivía sólo en `agent_proposal`, y un camino de propuestas
-    que no pasara por ahí (un pool de `claude -p` por archivo) lo saltaba.
+    que no pasara por ahí (un pool de `thyrox -p` por archivo) lo saltaba.
 
     `log` es el log que describe el árbol al cerrar. Por defecto es el del
     paso; cuando un paso se cierra después de otro que ya midió el árbol con
@@ -214,7 +214,7 @@ def sweep_gate(run: Path, step: Path, log: Path | None = None) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     add_p = sub.add_parser("add", help="escribe la reflexión de un paso no aceptado")
     add_p.add_argument("--run", type=Path, required=True)

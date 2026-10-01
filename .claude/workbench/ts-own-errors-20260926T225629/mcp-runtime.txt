@@ -1,0 +1,3 @@
+mcp-runtime	src/clientRuntime.ts(716,20): error TS2304: Cannot find name 'MACRO'.
+mcp-runtime	src/clientRuntime.ts(3130,20): error TS2304: Cannot find name 'MACRO'.
+mcp-runtime	src/headersHelper.ts(113,146): error TS2304: Cannot find name 'MACRO'.

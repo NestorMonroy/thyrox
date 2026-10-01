@@ -1,0 +1,9 @@
+== retiro del contenedor del probe (el volumen se conserva)
+antes: thyrox-ollama-probe-host labels=map[org.opencontainers.image.version:24.04] pid=22580
+Error: cannot remove container 29ee027ccddeee521bd4543afe230518f933c36d62dbd3d0f97d3b54a17e2af9 as it is running - running or paused containers cannot be removed without force: container state improper
+thyrox-ollama-probe-host
+después:
+thyrox-ollama Up About a minute map[io.thyrox.role:infrastructure io.thyrox.service:ollama org.opencontainers.image.version:24.04]
+volumen conservado: thyrox-ollama-probe-models
+NAME            ID              SIZE      MODIFIED    
+qwen2.5:0.5b    a8b0c5157701    397 MB    4 hours ago    

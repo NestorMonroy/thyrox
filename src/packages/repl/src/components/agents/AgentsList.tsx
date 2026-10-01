@@ -13,6 +13,7 @@ import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/load
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { Dialog, Divider } from '@anthropic/ink'
 import { getAgentSourceDisplayName } from './utils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   source: SettingSource | 'all' | 'built-in' | 'plugin'
@@ -249,7 +250,7 @@ export function AgentsList({
         >
           {onCreateNew && <Box>{renderCreateNewOption()}</Box>}
           <Text dimColor>
-            No agents found. Create specialized subagents that Claude can
+            No agents found. Create specialized subagents that {PRODUCT_NAME} can
             delegate to.
           </Text>
           <Text dimColor>

@@ -1,0 +1,84 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+(fail) registerSession (nD) > una escritura pedida durante el alta espera detrás de ella [5000.24ms]
+  ^ this test timed out after 5000ms.
+(fail) registerSession (nD) > un fallo al preparar el alta se registra y deja la cadena libre [5000.25ms]
+  ^ this test timed out after 5000ms.
+(fail) los cambios de sesión y de directorio > un cambio que no adopta sólo publica la sesión nueva [5000.25ms]
+  ^ this test timed out after 5000ms.
+262 |     await registerSession(undefined, deps())
+263 |     switchListeners[0]!('s2', 'resume')
+264 |     await flush()
+265 |     expect(state.adoptions).toBe(1)
+266 |     expect(state.registeredName).toMatchObject({ name: 'app-s2', source: 'derived' })
+267 |     expect(record()).toMatchObject({ name: 'app-s2', sessionId: 's2' })
+                           ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "name": "app-s2",
+-   "sessionId": "s2",
++   "cwd": "/work/app",
++   "kind": "interactive",
++   "name": "app-s1",
++   "nameSince": 1000,
++   "nameSource": "derived",
++   "peerFeatures": [
++     "notify_idle",
++     "artifact_yield",
++   ],
++   "peerProtocol": 1,
++   "pid": 4242,
++   "pidDomain": "linux:m:ns",
++   "procStart": "start-4242",
++   "sessionId": "s1",
++   "startedAt": 1000,
++   "version": "9.9.9",
+  }
+
+- Expected  - 2
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:267:22)
+(fail) los cambios de sesión y de directorio > un cambio que adopta renombra el nombre derivado con la sesión nueva [7.05ms]
+290 | 
+291 |   test('un cambio de directorio publica el nuevo y renombra el nombre derivado', async () => {
+292 |     await registerSession(undefined, deps())
+293 |     cwdListeners[0]!('/work/otro')
+294 |     await flush()
+295 |     expect(record()).toMatchObject({ cwd: '/work/otro', name: 'otro-s1' })
+                           ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "cwd": "/work/otro",
+-   "name": "otro-s1",
++   "cwd": "/work/app",
++   "kind": "interactive",
++   "name": "app-s1",
++   "nameSince": 1000,
++   "nameSource": "derived",
++   "peerFeatures": [
++     "notify_idle",
++     "artifact_yield",
++   ],
++   "peerProtocol": 1,
++   "pid": 4242,
++   "pidDomain": "linux:m:ns",
++   "procStart": "start-4242",
++   "sessionId": "s1",
++   "startedAt": 1000,
++   "version": "9.9.9",
+  }
+
+- Expected  - 2
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:295:22)
+(fail) los cambios de sesión y de directorio > un cambio de directorio publica el nuevo y renombra el nombre derivado [7.70ms]
+
+ 18 pass
+ 5 fail
+ 76 expect() calls
+Ran 23 tests across 1 file. [15.17s]

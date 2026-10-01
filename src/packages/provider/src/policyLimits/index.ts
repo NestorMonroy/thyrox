@@ -29,7 +29,7 @@ import {
 } from '../authAlias.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { classifyAxiosError } from '@thyrox/local-observability/errorHelpers.js'
 import { safeParseJSON } from '@thyrox/storage/json.js'
 import {
@@ -124,7 +124,7 @@ export function initializePolicyLimitsLoadingPromise(): void {
  * Get the path to the policy limits cache file
  */
 function getCachePath(): string {
-  return join(getClaudeConfigHomeDir(), CACHE_FILENAME)
+  return join(getConfigHomeDir(), CACHE_FILENAME)
 }
 
 /**

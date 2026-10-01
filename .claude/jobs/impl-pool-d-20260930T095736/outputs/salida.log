@@ -1,0 +1,9 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 9 ítems, pared máx 3437.71 s, pico 883860 KB × 2 -> 1727M; TTL 1h: un hueco de 57.2952 min caduca la caché de 5 m; una sola caducidad (≥ 0.60) ya paga la prima; RAM: (15172652 − 0) / (883860 × 2) -> 8
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+cache-ttl: 1h (constant)
+memfree: 1727M (history)
+-- FALLIDO TASK-THYROX-0645 — prompt: /home/user/thyrox/.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0645/prompt.md
+items=3 ok=2 fallidos=1
+verificados=2 rechazados=0 sin-cambios=0 fallidos=0 con-stash=1
+__BG_EXIT__=1

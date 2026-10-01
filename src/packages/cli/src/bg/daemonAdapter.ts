@@ -18,6 +18,7 @@
 
 import { spawn } from 'node:child_process'
 
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { logEvent } from '@thyrox/local-observability'
 import {
   daemonRequest,
@@ -114,10 +115,9 @@ interface DaemonStateFile {
  */
 export async function readDaemonState(): Promise<DaemonStateFile | null> {
   try {
-    const { homedir } = await import('node:os')
     const { join } = await import('node:path')
     const { readFile } = await import('node:fs/promises')
-    const path = join(homedir(), '.claude', 'daemon', 'state.json')
+    const path = join(getConfigHomeDir(), 'daemon', 'state.json')
     const raw = await readFile(path, 'utf8')
     return JSON.parse(raw) as DaemonStateFile
   } catch {
@@ -176,7 +176,7 @@ function spawnTransient(): void {
     const child = spawn(cmd, [...prefixArgs, 'daemon', 'bg', 'run'], {
       detached: true,
       stdio: ['ignore', 'ignore', 'ignore'],
-      env: { ...process.env, CLAUDE_CODE_DAEMON_TRANSIENT: '1' },
+      env: { ...process.env, THYROX_CODE_DAEMON_TRANSIENT: '1' },
     })
     child.once('error', err => {
       const code = (err as NodeJS.ErrnoException).code ?? 'unknown'
@@ -270,14 +270,13 @@ export async function ensureDaemonInteractive(): Promise<boolean> {
     answer_never: String(answer === 'never'),
   })
   if (answer === 'yes') {
-    const { homedir } = await import('node:os')
     const { join } = await import('node:path')
     const { installLaunchAgent, isLaunchAgentStale } = await import('@thyrox/daemon/launchAgent.js')
     // ant 4639.js: detect stale plist (deleted binary path) before install.
     if (await isLaunchAgentStale()) {
       logEvent('tengu_bg_daemon_service_stale_exec', {})
     }
-    const ccbDir = join(homedir(), '.claude', 'daemon')
+    const ccbDir = join(getConfigHomeDir(), 'daemon')
     const r = await installLaunchAgent({
       jsonPath: join(ccbDir, 'state.json'),
       logPath: join(ccbDir, 'daemon.log'),

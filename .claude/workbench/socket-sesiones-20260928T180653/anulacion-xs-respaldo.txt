@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+157 |   test('sin dirección estable: un byte aleatorio en hexadecimal', () => {
+158 |     expect(derivedSessionName('/tmp/app', 's', false)).toMatch(/^app-[0-9a-f]{2}$/)
+159 |   })
+160 | 
+161 |   test('una carpeta sin slug toma el nombre del producto', () => {
+162 |     expect(derivedSessionName('/', 's', false)).toMatch(new RegExp(`^${PRODUCT_NAME}-[0-9a-f]{2}$`))
+                                                      ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /^thyrox-[0-9a-f]{2}$/
+Received: "x-0e"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:162:49)
+(fail) derivedSessionName (xs) > una carpeta sin slug toma el nombre del producto [0.38ms]
+
+ 18 pass
+ 1 fail
+ 198 expect() calls
+Ran 19 tests across 1 file. [98.00ms]

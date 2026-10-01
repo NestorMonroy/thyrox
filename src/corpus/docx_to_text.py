@@ -233,7 +233,10 @@ def _chart_parts(file_path) -> list[str]:
               and re.fullmatch(r"chart\d+\.xml", n[len(CHART_DIR):])]
 
     def key(name_text: str) -> int:
-        return int(re.search(r"(\d+)", name_text[len(CHART_DIR):]).group(1))
+        # El filtro de arriba ya exige `chart\d+.xml`, así que el número existe.
+        match = re.search(r"(\d+)", name_text[len(CHART_DIR):])
+        assert match is not None
+        return int(match.group(1))
 
     return sorted(parts, key=key)
 
@@ -413,7 +416,7 @@ def format_charts(chart_list: list[Chart]) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("entrada", help="el .docx de origen")
     parser.add_argument("gathered", nargs="?", help="el .txt de destino")
     parser.add_argument("--charts", action="store_true",
@@ -428,8 +431,12 @@ def main(argv: list[str] | None = None) -> int:
         print("              NO se emite conteo.", file=sys.stderr)
         return 2
     try:
-        chart_list = charts(source) if args.charts else None
-        block_list = format_charts(chart_list) if args.charts else blocks(source)
+        if args.charts:
+            chart_list = charts(source)
+            block_list = format_charts(chart_list)
+        else:
+            chart_list = None
+            block_list = blocks(source)
     except ooxml.NotOoxml as err:
         print("docx_to_text: %s" % err, file=sys.stderr)
         print("              El sufijo del nombre NO decide.", file=sys.stderr)
@@ -449,6 +456,8 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(text)
     if args.charts:
+        # El guard de arriba ya descartó None y vacio para este camino.
+        assert chart_list is not None
         series = sum(len(g.series) for g in chart_list)
         gap_ones = sum(1 for g in chart_list if not g.series)
         incomplete = sum(1 for g in chart_list for s in g.series

@@ -161,24 +161,24 @@ export function isFullscreenEnvEnabled(): boolean {
   // 1. Background workers are always fullscreen — the attach pipeline requires
   //    alt-screen. ant `j9` short-circuits here (2218.js:53) ahead of its own
   //    opt-out for exactly this reason.
-  if (process.env.CLAUDE_CODE_SESSION_KIND === 'bg') return true
+  if (process.env.THYROX_CODE_SESSION_KIND === 'bg') return true
   // 2. Explicit opt-out (ant V$8): NO_FLICKER set falsy OR DISABLE_ALTERNATE_SCREEN
   //    set truthy. The DISABLE_ALTERNATE_SCREEN arm was missing in ccb.
   if (
-    isEnvDefinedFalsy(process.env.CLAUDE_CODE_NO_FLICKER) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN)
+    isEnvDefinedFalsy(process.env.THYROX_CODE_NO_FLICKER) ||
+    isEnvTruthy(process.env.THYROX_CODE_DISABLE_ALTERNATE_SCREEN)
   ) {
     return false
   }
   // 3. Explicit opt-in (escape hatch).
-  if (isEnvTruthy(process.env.CLAUDE_CODE_NO_FLICKER)) return true
+  if (isEnvTruthy(process.env.THYROX_CODE_NO_FLICKER)) return true
   // 4. Auto-disable under tmux -CC: alt-screen + mouse tracking corrupts
   //    terminal state on double-click and mouse wheel is dead.
   if (isTmuxControlMode()) {
     if (!loggedTmuxCcDisable) {
       loggedTmuxCcDisable = true
       logForDebugging(
-        'fullscreen disabled: tmux -CC (iTerm2 integration mode) detected · set CLAUDE_CODE_NO_FLICKER=1 to override',
+        'fullscreen disabled: tmux -CC (iTerm2 integration mode) detected · set THYROX_CODE_NO_FLICKER=1 to override',
       )
     }
     return false
@@ -189,7 +189,7 @@ export function isFullscreenEnvEnabled(): boolean {
     if (!loggedWinSshDisable) {
       loggedWinSshDisable = true
       logForDebugging(
-        'fullscreen disabled: Windows over SSH (ConPTY re-rendering) detected · set CLAUDE_CODE_NO_FLICKER=1 to override',
+        'fullscreen disabled: Windows over SSH (ConPTY re-rendering) detected · set THYROX_CODE_NO_FLICKER=1 to override',
       )
     }
     return false
@@ -206,26 +206,26 @@ export function isFullscreenEnvEnabled(): boolean {
 
 /**
  * Whether fullscreen mode should enable SGR mouse tracking (DEC 1000/1002/1006).
- * Set CLAUDE_CODE_DISABLE_MOUSE=1 to keep alt-screen + virtualized scroll
+ * Set THYROX_CODE_DISABLE_MOUSE=1 to keep alt-screen + virtualized scroll
  * (keyboard PgUp/PgDn/Ctrl+Home/End still work) but skip mouse capture,
  * so tmux/kitty/terminal-native copy-on-select keeps working.
  *
- * Compare with CLAUDE_CODE_NO_FLICKER=0 which is all-or-nothing — it also
+ * Compare with THYROX_CODE_NO_FLICKER=0 which is all-or-nothing — it also
  * disables alt-screen and virtualized scrollback.
  */
 export function isMouseTrackingEnabled(): boolean {
-  return !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_MOUSE)
+  return !isEnvTruthy(process.env.THYROX_CODE_DISABLE_MOUSE)
 }
 
 /**
  * Whether mouse click handling is disabled (clicks/drags ignored, wheel still
- * works). Set CLAUDE_CODE_DISABLE_MOUSE_CLICKS=1 to prevent accidental clicks
+ * works). Set THYROX_CODE_DISABLE_MOUSE_CLICKS=1 to prevent accidental clicks
  * from triggering cursor positioning, text selection, or message expansion.
  *
- * Fullscreen-specific — only reachable when CLAUDE_CODE_NO_FLICKER is active.
+ * Fullscreen-specific — only reachable when THYROX_CODE_NO_FLICKER is active.
  */
 export function isMouseClicksDisabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_MOUSE_CLICKS)
+  return isEnvTruthy(process.env.THYROX_CODE_DISABLE_MOUSE_CLICKS)
 }
 
 /**

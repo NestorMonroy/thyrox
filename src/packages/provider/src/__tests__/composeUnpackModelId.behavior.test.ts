@@ -7,7 +7,7 @@ import { composeModelId, unpackModelId } from '../connections.ts'
  * V7 §11.6 multi-connection routing — internally ccb uses
  * `<connectionId>:<modelId>` (e.g. `claude-account:claude-opus-4-7`) so
  * the same bare wire id (`claude-opus-4-7`) can come from multiple
- * connections (Claude Account, OpenAI-compat proxy, etc.).
+ * connections (thyrox Account, OpenAI-compat proxy, etc.).
  *
  * Bug history: doctor:arch ships verify-no-packed-modelid-leak that
  * catches packed strings leaking into user-facing surfaces (system

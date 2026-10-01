@@ -29,12 +29,25 @@ GUION="$RAIZ/src/verify/check_githooks_activos.py"
 
 ARBOL=$(mktemp -d)
 trap 'rm -rf "$ARBOL"' EXIT
+# Ningún `.env` del árbol gobierna la suite: el real puede declarar el roster
+# (`THYROX_REACH_ROOTS`), y entonces el caso «sin roster» lo encuentra y no
+# rehúsa. Un archivo vacío como única fuente de declaraciones lo aísla.
+: > "$ARBOL/isolated.env"
+export THYROX_ENV_FILE="$ARBOL/isolated.env"
 
 # api  -> OK        (hooksPath fijado, directorio con hook ejecutable)
 # db   -> SIN-FIJAR (clon de git sin el config)
 # docs -> ROTO      (config apunta a un directorio inexistente)
 # ui   -> VACIO     (directorio sin ningun hook ejecutable)
 # server -> AUSENTE (no es un clon)
+# El proveedor es otro clon del roster, con sus hooks activos: se pasa con
+# --provider para no depender del config del clon real.
+PROVEEDOR="$ARBOL/proveedor"
+git init -q "$PROVEEDOR"
+mkdir -p "$PROVEEDOR/.githooks"
+printf '#!/bin/sh\nexit 0\n' > "$PROVEEDOR/.githooks/pre-commit"
+chmod +x "$PROVEEDOR/.githooks/pre-commit"
+git -C "$PROVEEDOR" config core.hooksPath .githooks
 for c in api db docs ui; do
     git init -q "$ARBOL/kaupamex-$c"
 done
@@ -63,24 +76,41 @@ afirmar() {  # <titulo> <esperado> <obtenido>
     fi
 }
 
-SALIDA=$(KAUPAMEX_ARBOL="$ARBOL" python3 "$GUION")
-veredicto_de() { echo "$SALIDA" | grep -E "kaupamex-$1( |$)" | awk '{print $1}'; }
+gate() {
+    THYROX_REACH_ROOT="$ARBOL" THYROX_CLONE_PREFIX=kaupamex- \
+        THYROX_REACH_ROOTS=api,db,docs,server,ui \
+        python3 "$GUION" --provider "$PROVEEDOR" "$@"
+}
+SALIDA=$(gate)
+veredicto_de() { gawk -v n="$1" '$2 == n {print $1}' <<<"$SALIDA"; }
 
 echo "== 1. los cinco estados se distinguen =="
-afirmar "api con hook ejecutable -> OK"         "OK"        "$(veredicto_de api)"
-afirmar "db sin el config -> SIN-FIJAR"         "SIN-FIJAR" "$(veredicto_de db)"
-afirmar "docs con ruta inexistente -> ROTO"     "ROTO"      "$(veredicto_de docs)"
-afirmar "ui con directorio inerte -> VACIO"     "VACIO"     "$(veredicto_de ui)"
-afirmar "server que no es clon -> AUSENTE"      "AUSENTE"   "$(veredicto_de server)"
+afirmar "api con hook ejecutable -> OK"         "OK"        "$(veredicto_de kaupamex-api)"
+afirmar "db sin el config -> SIN-FIJAR"         "SIN-FIJAR" "$(veredicto_de kaupamex-db)"
+afirmar "docs con ruta inexistente -> ROTO"     "ROTO"      "$(veredicto_de kaupamex-docs)"
+afirmar "ui con directorio inerte -> VACIO"     "VACIO"     "$(veredicto_de kaupamex-ui)"
+afirmar "server que no es clon -> AUSENTE"      "AUSENTE"   "$(veredicto_de kaupamex-server)"
 
-echo "== 2. el conteo y su denominador =="
-afirmar "cuatro clones incumplen" "4" \
-        "$(KAUPAMEX_ARBOL="$ARBOL" python3 "$GUION" --quiet)"
+afirmar "el proveedor se mide también"          "OK"        "$(veredicto_de proveedor)"
+
+echo "== 2. el conteo: inactivos y ausentes son dos cifras =="
+# Un clon que no existe en este árbol no tiene los hooks «inactivos»: no
+# está. Sumarlo a los inactivos publicaba 4 cuando incumplían 3.
+afirmar "tres clones con los hooks inactivos" "3" "$(gate --quiet)"
+afirmar "el ausente se cuenta aparte" "1" \
+        "$(grep -c '3 clon(es) con los hooks inactivos, 1 ausente(s)' <<<"$SALIDA")"
 afirmar "publica su denominador" "1" \
-        "$(echo "$SALIDA" | grep -c 'alcance medido: 5 de 5')"
+        "$(grep -c 'alcance medido: 5 presente(s) de 6, el proveedor incluido' <<<"$SALIDA")"
+
+echo "== 2-bis. sin roster no hay cifra =="
+SIN_ROSTER=$(THYROX_REACH_ROOT="$ARBOL" THYROX_CLONE_PREFIX=sin-hermanos- THYROX_REACH_ROOTS='' \
+    python3 "$GUION" --provider "$PROVEEDOR" 2>&1); COD_SR=$?
+afirmar "sin roster sale 2" "2" "$COD_SR"
+afirmar "y no publica un conteo" "0" "$(grep -c 'clon(es) con los hooks inactivos' <<<"$SIN_ROSTER")"
+afirmar "y nombra la variable que falta" "1" "$(grep -c 'THYROX_REACH_ROOTS' <<<"$SIN_ROSTER")"
 
 echo "== 3. --strict bloquea, y sale 0 cuando el arbol esta sano =="
-KAUPAMEX_ARBOL="$ARBOL" python3 "$GUION" --strict >/dev/null 2>&1
+gate --strict >/dev/null 2>&1
 afirmar "con incumplidores sale 1" "1" "$?"
 
 for c in db docs ui; do
@@ -89,6 +119,8 @@ for c in db docs ui; do
     chmod +x "$ARBOL/kaupamex-$c/.githooks/pre-commit"
     git -C "$ARBOL/kaupamex-$c" config core.hooksPath .githooks
 done
+gate --strict >/dev/null 2>&1
+afirmar "un clon ausente no bloquea --strict" "0" "$?"
 rm -rf "$ARBOL/kaupamex-server"
 mkdir -p "$ARBOL/kaupamex-server/.githooks"
 git -C "$ARBOL/kaupamex-server" init -q
@@ -96,12 +128,12 @@ printf '#!/bin/sh\nexit 0\n' > "$ARBOL/kaupamex-server/.githooks/commit-msg"
 chmod +x "$ARBOL/kaupamex-server/.githooks/commit-msg"
 git -C "$ARBOL/kaupamex-server" config core.hooksPath .githooks
 
-KAUPAMEX_ARBOL="$ARBOL" python3 "$GUION" --strict >/dev/null 2>&1
+gate --strict >/dev/null 2>&1
 afirmar "arbol sano sale 0" "0" "$?"
 
 echo
 if [[ $FALLOS -eq 0 ]]; then
-    echo "test-githooks-activos: OK — $TOTAL aserciones sobre 5 clones sinteticos"
+    echo "test-githooks-activos: OK — $TOTAL aserciones sobre 6 clones sinteticos"
 else
     echo "test-githooks-activos: $FALLOS asercion(es) FALLAN"
 fi

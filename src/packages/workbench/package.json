@@ -1,0 +1,17 @@
+{
+  "name": "@thyrox/workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Manifiesto y rutas del banco de evidencia.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/paths": "0.1.0"
+  }
+}

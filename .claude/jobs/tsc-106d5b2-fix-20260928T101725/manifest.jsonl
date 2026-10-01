@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc -p tsconfig.test.json --noEmit 2>&1 | gawk '/error TS/' | cut -c1-160", "started_at": "2026-09-28T10:17:25+00:00"}

@@ -1,0 +1,136 @@
+diff --git a/src/packages/swarm/__tests__/swarmConstants.test.ts b/src/packages/swarm/__tests__/swarmConstants.test.ts
+index 244d0341f..9cd8d52b9 100644
+--- a/src/packages/swarm/__tests__/swarmConstants.test.ts
++++ b/src/packages/swarm/__tests__/swarmConstants.test.ts
+@@ -43,3 +43,12 @@ describe('TEAMMATE_NAME_PATTERN (sLo)', () => {
+     expect(TEAMMATE_NAME_PATTERN.test('a'.repeat(65))).toBe(false)
+   })
+ })
++
++describe('índice del paquete', () => {
++  test('re-exporta la orden de relleno del panel para consumidores externos', async () => {
++    const { SWARM_PANE_PLACEHOLDER_COMMAND: barrelPlaceholder } = await import(
++      '../src/index.js'
++    )
++    expect(barrelPlaceholder).toBe(SWARM_PANE_PLACEHOLDER_COMMAND)
++  })
++})
+diff --git a/src/packages/swarm/src/index.ts b/src/packages/swarm/src/index.ts
+index 6b8fcd4fa..4b7b76a5a 100644
+--- a/src/packages/swarm/src/index.ts
++++ b/src/packages/swarm/src/index.ts
+@@ -67,6 +67,7 @@ export {
+   SWARM_SESSION_NAME,
+   SWARM_VIEW_WINDOW_NAME,
+   TMUX_COMMAND,
++  SWARM_PANE_PLACEHOLDER_COMMAND,
+   HIDDEN_SESSION_NAME,
+   getSwarmSocketName,
+   TEAMMATE_COMMAND_ENV_VAR,
+diff --git a/src/packages/tool-registry/src/tools/shared/__tests__/spawnMultiAgentWindowArgs.test.ts b/src/packages/tool-registry/src/tools/shared/__tests__/spawnMultiAgentWindowArgs.test.ts
+new file mode 100644
+index 000000000..a7c10d4b8
+--- /dev/null
++++ b/src/packages/tool-registry/src/tools/shared/__tests__/spawnMultiAgentWindowArgs.test.ts
+@@ -0,0 +1,35 @@
++/**
++ * TASK-THYROX-0636 — la ruta `ue` de `chunk-rggb24sh.js` (2.1.283) crea la
++ * ventana separada de un compañero con `new-window … -- ${vFe}`: el panel
++ * arranca con la orden de relleno hasta que el `send-keys` posterior la
++ * sustituye por la orden real. El puerto sólo llevaba la constante; nunca
++ * cerraba el `new-window` con ella.
++ *
++ * Métrica: los argumentos exactos que `buildTeammateWindowArgs` produce.
++ * Ciega a: si un tmux real acepta `-- cat` en `new-window`.
++ */
++import { describe, expect, test } from 'bun:test'
++import { buildTeammateWindowArgs } from '../spawnMultiAgent.js'
++
++describe('buildTeammateWindowArgs', () => {
++  test('cierra con -- cat, como el resto de sitios de creación de panel', () => {
++    expect(buildTeammateWindowArgs('claude-swarm', 'teammate-ana')).toEqual([
++      'new-window',
++      '-t',
++      'claude-swarm',
++      '-n',
++      'teammate-ana',
++      '-P',
++      '-F',
++      '#{pane_id}',
++      '--',
++      'cat',
++    ])
++  })
++
++  test('la sesión y la ventana viajan en su propio sitio, no en el de la otra', () => {
++    const args = buildTeammateWindowArgs('otra-sesion', 'teammate-bea')
++    expect(args[args.indexOf('-t') + 1]).toBe('otra-sesion')
++    expect(args[args.indexOf('-n') + 1]).toBe('teammate-bea')
++  })
++})
+diff --git a/src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts b/src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts
+index 95591f305..e933efc63 100644
+--- a/src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts
++++ b/src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts
+@@ -39,6 +39,7 @@ import { getTeammateModeFromSnapshot } from '@thyrox/swarm'
+ import type { BackendType } from '@thyrox/swarm'
+ import { isPaneBackend } from '@thyrox/swarm'
+ import {
++  SWARM_PANE_PLACEHOLDER_COMMAND,
+   SWARM_SESSION_NAME,
+   TEAM_LEAD_NAME,
+   TEAMMATE_COMMAND_ENV_VAR,
+@@ -557,6 +558,32 @@ async function handleSpawnSplitPane(
+   }
+ }
+ 
++/**
++ * Los argumentos de `new-window` para la ventana separada de un compañero.
++ *
++ * Cierra con la orden de relleno (`SWARM_PANE_PLACEHOLDER_COMMAND`), como el
++ * resto de sitios de creación de panel del backend de tmux: sin ella, la
++ * ventana arranca con un shell que el `send-keys` posterior nunca sustituye.
++ * Exportada para pruebas.
++ */
++export function buildTeammateWindowArgs(
++  sessionName: string,
++  windowName: string,
++): string[] {
++  return [
++    'new-window',
++    '-t',
++    sessionName,
++    '-n',
++    windowName,
++    '-P',
++    '-F',
++    '#{pane_id}',
++    '--',
++    SWARM_PANE_PLACEHOLDER_COMMAND,
++  ]
++}
++
+ /**
+  * Handle spawn operation using separate windows (legacy behavior).
+  * Creates each teammate in its own tmux window.
+@@ -603,16 +630,10 @@ async function handleSpawnSeparateWindow(
+   const teammateColor = assignTeammateColor(teammateId)
+ 
+   // Create a new window for this teammate
+-  const createWindowResult = await execFileNoThrow(TMUX_COMMAND, [
+-    'new-window',
+-    '-t',
+-    SWARM_SESSION_NAME,
+-    '-n',
+-    windowName,
+-    '-P',
+-    '-F',
+-    '#{pane_id}',
+-  ])
++  const createWindowResult = await execFileNoThrow(
++    TMUX_COMMAND,
++    buildTeammateWindowArgs(SWARM_SESSION_NAME, windowName),
++  )
+ 
+   if (createWindowResult.code !== 0) {
+     throw new Error(

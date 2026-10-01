@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerEnvelope.test.ts:
+63 |         hopChain: [HOP],
+64 |         fromMode: 'bypass',
+65 |         fromPlugin: 'p<>',
+66 |       }),
+67 |     ).toBe(
+68 |       `<${ENVELOPE_TAG} from="uds:/tmp/x.sock" from-session="sess_1" hop-chain="${HOP}" from-name="ana" from-mode="bypass" from-plugin="p">\nhola <\\/cross-session-message> fin\n</${ENVELOPE_TAG}>`,
+           ^
+error: expect(received).toBe(expected)
+
+  "<cross-session-message from="uds:/tmp/x.sock" from-session="sess_1" hop-chain="aaaaaaaaaaaaaaaaaaaaaaaa" from-name="ana" from-mode="bypass" from-plugin="p">
+- hola <\/cross-session-message> fin
++ hola </cross-session-message> fin
+  </cross-session-message>"
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerEnvelope.test.ts:68:7)
+(fail) formatEnvelope (mYe/V) > pone los atributos en su orden y escapa el cierre del cuerpo [0.43ms]
+81 |     expect(parseEnvelope(text)).toEqual({ from: 'uds:/tmp/x.sock', fromSession: 's', hopChain: [HOP, HOP], fromName: 'ana', fromMode: 'prompting', fromPlugin: 'p', body: 'l1\nl2' })
+82 |   })
+83 | 
+84 |   test('un sobre que no se reproduce igual al formatearlo de nuevo no es un sobre', () => {
+85 |     expect(parseEnvelope(`<${ENVELOPE_TAG}>\nhola </cross-session-message> fin\n</${ENVELOPE_TAG}>`)).toBeUndefined()
+86 |     expect(parseEnvelope(`<${ENVELOPE_TAG} from-name="  ana">\nb\n</${ENVELOPE_TAG}>`)).toBeUndefined()
+                                                                                                           ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  body: "hola </cross-session-message> fin",
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerEnvelope.test.ts:86:103)
+(fail) parseEnvelope (_) > un sobre que no se reproduce igual al formatearlo de nuevo no es un sobre [0.21ms]
+
+ 14 pass
+ 2 fail
+ 39 expect() calls
+Ran 16 tests across 1 file. [47.00ms]

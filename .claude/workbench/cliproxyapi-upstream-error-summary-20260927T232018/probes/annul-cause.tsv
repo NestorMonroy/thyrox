@@ -1,0 +1,2 @@
+no-cause	s/^    if (causeText) {$/    if (false) {/
+no-cause-message	s/^      body.message = `\${message} (last error: \${causeText})`$/      void 0/

@@ -1,0 +1,9 @@
+# PGDG queda por debajo del paquete instalado para todo...
+Package: *
+Pin: origin apt.postgresql.org
+Pin-Priority: 100
+
+# ...salvo pgvector, que se toma de PGDG.
+Package: postgresql-16-pgvector
+Pin: origin apt.postgresql.org
+Pin-Priority: 600

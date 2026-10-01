@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/local-observability && bunx tsc --noEmit -p tsconfig.test.json 2>&1 | grep -E \"launchRegistration|udsLaunchRegistration|error TS\" | head -20; echo \"tsc-exit=${PIPESTATUS[0]}\"", "started_at": "2026-09-29T01:26:49+00:00"}

@@ -18,7 +18,7 @@ no se pudo leer; no es un stdin vacío).
 La sexta columna son los escritores de una tubería: cuántos OTROS procesos
 la tienen abierta para escribir (``fdinfo``, modo de acceso). Sin ninguno,
 leer da EOF —cada ítem del pool: ``{ cat plantilla; printf item; } |
-claude -p``—; con uno vivo que no escribe, espera para siempre (``sleep |
+thyrox -p``—; con uno vivo que no escribe, espera para siempre (``sleep |
 cat``). ``-`` si no es tubería.
 
 Ciega a: el otro extremo de un socket, que no se ve en ``/proc/<pid>/fd``
@@ -118,7 +118,7 @@ def probe(pid: int, proc_root: str = "/proc", ticks_per_second: int | None = Non
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("pids", nargs="+")
     parser.add_argument("--proc-root", default="/proc", help="raíz de /proc (para probar sin procesos reales)")
     args = parser.parse_args(argv)

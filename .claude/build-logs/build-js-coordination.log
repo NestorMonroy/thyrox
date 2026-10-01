@@ -1,0 +1,7 @@
+: bun build salió 1
+36 | export { CoordinationRootError, gitTopLevel, ledgerPathFor } from './ledger.ts';
+                                                                       ^
+error: Could not resolve: "./ledger.ts"
+    at /home/user/thyrox/src/packages/coordination/dist/claims.d.ts:36:67
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

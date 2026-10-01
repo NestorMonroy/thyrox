@@ -44,7 +44,6 @@ from __future__ import annotations
 import importlib.util
 import pathlib
 import shutil
-import subprocess
 import sys
 import tempfile
 
@@ -59,6 +58,7 @@ sys.path.insert(0, str(HERE / "src"))
 
 spec = importlib.util.spec_from_file_location(
     "archive_build_corpus", HERE / "src" / "corpus" / "archive_build_corpus.py")
+assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 sys.modules["archive_build_corpus"] = module
 spec.loader.exec_module(module)
@@ -141,6 +141,16 @@ with tempfile.TemporaryDirectory() as tmp:
             handle.write(b"\x00" * 64)
         check("un archivo corrupto NO pasa la verificacion", False,
               module.verify_archive(result.archive_path))
+
+# El README generado describe el estado real de los `.7z`: se versionan desde
+# que se retiro el `*.7z` global de `.gitignore`. Una frase que dijera lo
+# contrario lleva a buscar la build solo por la via de `git show`.
+with tempfile.TemporaryDirectory() as tmp:
+    readme = module.write_readme(pathlib.Path(tmp)).read_text(encoding="utf-8")
+    check("el README no dice que los .7z quedan fuera de git", False,
+          "NO estan versionados" in readme)
+    check("el README dice que los .7z se versionan", True,
+          "se versionan" in readme)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

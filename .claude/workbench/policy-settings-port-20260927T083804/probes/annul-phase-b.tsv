@@ -1,0 +1,19 @@
+schema-failure-loads	s/documentHasPolicyContent: false, loadState: 'didNotLoad' }$/documentHasPolicyContent: false, loadState: 'loaded' }/
+empty-document-kept	s/^  const settings = Object.keys(data).length > 0 ? data : null$/  const settings = data/
+no-copy-on-read	s/^  return { ...read, settings: read.settings \&\& structuredClone(read.settings), errors: .*/  return read/
+remote-source-name	s/^const REMOTE_SOURCE = 'remote managed settings'$/const REMOTE_SOURCE = 'remote'/
+mdm-absent-loaded	s/^  if (!mdm) return { settings: null, errors: \[\], documentHasPolicyContent: false, loadState: 'absent' }$/  if (!mdm) return { settings: null, errors: [], documentHasPolicyContent: false, loadState: 'loaded' }/
+mdm-empty-kept	s/^    settings: mdm.settings \&\& Object.keys(mdm.settings).length > 0 ? mdm.settings : null,$/    settings: mdm.settings,/
+mdm-no-wsl-downgrade	s/^    errors: downgradeWslInheritErrors(mdm.errors, () => readRemotePolicy(context)),$/    errors: mdm.errors,/
+enoent-fails-closed	s/^    if (errnoOf(error) === 'ENOENT') return { settings: null, errors: \[\], loadState: 'absent' }$//
+unreadable-absent	s/^    return { settings: null, errors: \[unreadable(path, error)\], loadState: 'didNotLoad' }$/    return { settings: null, errors: [], loadState: 'absent' }/
+blank-not-empty	s/^  if (content.trim() === '') return .*$//
+not-object-accepted	s/^  if (typeof document !== 'object' || document === null || Array.isArray(document)) {$/  if (document === null) {/
+fragment-merge-default	s/^    merged = mergeWith(merged, settings, mergeManagedValue)$/    merged = mergeWith(merged, settings)/
+fragments-unsorted	s/.map(entry => entry.name).sort()$/.map(entry => entry.name)/
+hidden-fragments	s/ \&\& !entry.name.startsWith('.')$//
+non-json-fragments	s/ \&\& entry.name.endsWith('.json') \&\& / \&\& /
+dir-error-ignored	s/^    if (code !== 'ENOENT' \&\& code !== 'ENOTDIR') {$/    if (false) {/
+enotdir-fails	s/ \&\& code !== 'ENOTDIR') {$/) {/
+control-only-kept	s/^  const settings = found \&\& hasPolicyKeys(merged) ? merged : null$/  const settings = found ? merged : null/
+state-not-combined	s/^    loadState = combineLoadState(loadState, loadStateOf(read))$//

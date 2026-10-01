@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/local-models && bun test 2>&1 | tail -3; cd ../podman-execution && bun test 2>&1 | tail -3; cd ../../.. && bash bin/check_package_typecheck local-models podman-execution daemon 2>&1 | tail -5", "started_at": "2026-10-01T02:31:47+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T02:32:51+00:00", "duration_seconds": 64.797056}

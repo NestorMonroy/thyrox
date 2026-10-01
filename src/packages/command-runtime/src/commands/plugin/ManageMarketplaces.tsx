@@ -39,6 +39,7 @@ import {
 } from '@thyrox/config/settings'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import type { ViewState } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   setViewState: (state: ViewState) => void
@@ -786,7 +787,7 @@ export function ManageMarketplaces({
           selectedMarketplace.autoUpdate && (
             <Box marginTop={1}>
               <Text dimColor>
-                Auto-update enabled. Claude Code will automatically update this
+                Auto-update enabled. {PRODUCT_NAME} will automatically update this
                 marketplace and its installed plugins.
               </Text>
             </Box>

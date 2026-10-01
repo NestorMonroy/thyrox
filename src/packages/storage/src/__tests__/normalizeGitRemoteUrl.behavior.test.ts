@@ -12,7 +12,7 @@ import { normalizeGitRemoteUrl } from '../git.ts'
  * Una normalización equivocada → el mismo repo se trata como distinto,
  * rompiendo:
  *   - El resume de sesión entre las formas de clon SSH/HTTPS
- *   - La configuración por-repo (búsqueda en la jerarquía CLAUDE.md,
+ *   - La configuración por-repo (búsqueda en la jerarquía THYROX.md,
  *     indexada por el id del repo)
  *   - La deduplicación de analítica (el mismo repo contado varias veces)
  *

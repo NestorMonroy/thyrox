@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env THYROX_BACKGROUND_LOG_DIR=/home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs bash bin/run-task-pool --width 3 .claude/build-logs/pool-d-integrate/commands.txt", "started_at": "2026-09-30T12:02:32+00:00"}

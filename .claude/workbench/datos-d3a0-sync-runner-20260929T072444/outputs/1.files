@@ -1,0 +1,5 @@
+src/packages/store/__tests__/migrationRunnerContract.ts
+src/packages/store/__tests__/migrations.test.ts
+src/packages/store/migrationContract.ts
+src/packages/store/migrations.ts
+src/packages/store/migrationsSync.ts

@@ -3,7 +3,7 @@
 
 `.claude/cache/` es el material reconstruible que existe para no rehacer
 trabajo (`cache/paths.py`): sondas, listas de símbolos, logs de antes y
-después de una medición. Se versiona para que cualquier `claude -p`, con el
+después de una medición. Se versiona para que cualquier `thyrox -p`, con el
 modelo que sea, retome sin rehacerlo: la caché de prompt es por modelo y no
 sobrevive a un cambio, el disco sí.
 
@@ -72,7 +72,7 @@ def _git_paths(root: Path, home: Path, *args: str) -> list[str] | None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--cache", type=Path, help="el hogar; por defecto el que resuelve cache_dir()")
     parser.add_argument("--staged", action="store_true", help="sólo las unidades que el commit prepara")

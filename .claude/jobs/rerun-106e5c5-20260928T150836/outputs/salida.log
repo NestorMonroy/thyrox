@@ -1,0 +1,17 @@
+== 24: reinicio sin parar
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > stopping clears the timer, twice is harmless, and restart starts again [0.33ms]
+ 12 pass
+ 1 fail
+== 25: estado comparte lista
+   (src/accounts/webCookie/autoRefreshDaemon.ts)
+(fail) the credential validity daemon > an unregistered credential is no longer checked, and the expired list can be cleared [0.41ms]
+ 12 pass
+ 1 fail
+== restaurado
+ 13 pass
+ 0 fail
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+__BG_EXIT__=0

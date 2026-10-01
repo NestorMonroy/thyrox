@@ -45,7 +45,7 @@ C-1: Java Only
 Limitaciones de infraestructura/plataforma.
 
 **Preguntas:**
-- ¿Dónde debe correr el sistema?
+- ¿Dónde debe ejecutarse el sistema?
 - ¿On-premises o cloud?
 - ¿Qué sistemas operativos?
 - ¿Qué bases de datos?

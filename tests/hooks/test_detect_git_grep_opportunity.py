@@ -25,6 +25,7 @@ if not _MODULE.exists():
     print(f"  FALLO falta {_MODULE}")
     sys.exit(1)
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
+assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 

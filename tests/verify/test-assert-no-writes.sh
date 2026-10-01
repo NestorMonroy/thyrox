@@ -18,7 +18,10 @@
 #
 # Uso:  bash tests/verify/test-assert-no-writes.sh
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../session/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
+cd "$(dirname "$0")/../.." || exit 1
 
 SUJETO="src/verify/assert_no_writes.sh"
 fallos=0
@@ -36,6 +39,8 @@ command -v strace >/dev/null 2>&1 || { echo 'ERROR — strace no esta instalado'
   exit 2; }
 
 T="$(mktemp -d "${TMPDIR:-/tmp}/test-anw-XXXXXX")"
+# Sin esto la clave por clon del .env gana a la global y la suite escribe en el hogar real.
+source "$(dirname "$THYROX_MANAGED_EXECUTION_RUNNER")/../../../src/lib/test_homes.sh"; thyrox_isolate_homes "$T"
 trap 'rm -rf "$T"' EXIT
 # Los runs de la familia `jobs` —bg.sh crea su run-puntero aun con `--dir`— van
 # al temporal: sin esto la suite dejaba un `sonda-*` en el árbol en cada corrida.
@@ -63,7 +68,7 @@ echo '3. el positivo REAL — un escritor del repo, no uno fabricado'
 # de esta sesion, y se le da `--dir` para que aterrice en el temporal del caso
 # y no en `.claude/jobs/`. El sujeto de la prueba es un escritor de verdad; lo
 # unico que se fabrica es su DESTINO, que es lo que aisla el eje.
-salida="$(bash "$SUJETO" -- bash bin/thyrox-bg start sonda --dir "$T/bg" --grace 0 -- /bin/true 2>&1)"
+salida="$(bash "$SUJETO" -- bash bin/thyrox-bg start sonda --dir "$T/bg" --grace 0 --task TASK-THYROX-0001 --kind test -- /bin/true 2>&1)"
 codigo=$?
 afirmar "$(veredicto $codigo 1)" 'el escritor real sale 1'
 case "$salida" in *"$T/bg"*) afirmar ok 'nombra la ruta que escribio' ;;
@@ -100,7 +105,7 @@ for p in "${payloads[@]}"; do
   i=$((i + 1))
   printf '%s' "$p" > "$T/payload.$i.json"
   salida="$(bash "$SUJETO" -- /bin/sh -c \
-      "python3 src/hooks/pretooluse_dispatch.py < $T/payload.$i.json" 2>&1)"
+      "python3 src/hooks/tool_use_preflight.py < $T/payload.$i.json" 2>&1)"
   codigo=$?
   afirmar "$(veredicto $codigo 0)" "payload $i: el despacho de los 11 no escribe"
   case "$salida" in *'subject_exit=0'*) afirmar ok "payload $i: el despacho salio 0" ;;

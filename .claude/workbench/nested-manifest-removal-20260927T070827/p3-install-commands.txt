@@ -1,0 +1,40 @@
+## bun/npm lanzado con cwd src/packages (cd, --cwd, cwd=)
+## invocaciones de bun install en el arbol versionado
+src/lib/node_resolution.sh:63:# bajo el linker izado. Medido en este arbol tras un `bun install` sin `linker`
+src/lib/toolchain.sh:1004:# no se deduce del eje 1: bun puede estar y `bun install` no haberse corrido.
+src/lib/toolchain.sh:1012:#      `bun install`, y NO es el mismo: bun instalado sin dependencias deja
+src/lib/toolchain.sh:1041:  # El eje 2. Un directorio VACIO cuenta como ausente: `bun install` lo crea
+src/lib/toolchain.sh:1052:      "cd $root_bun && bun install" >&2
+src/lib/toolchain.sh:1105:    bun.lock)     printf 'correr bun install' ;;
+src/packages/app-host/src/main/startup/settings.ts:28:// hermano no existiera. Con la dependencia declarada y `bun install`
+src/packages/cli/README.md:45:paquete. `bun install --dry-run` en `src/packages/` confirma que el registro
+src/packages/cli/README.md:47:vez que alguien corra ese `bun install`, es de una línea — marcado con
+src/packages/command-runtime/src/exampleCommands.ts:24: * `bun install` disponible en esta tarea). Se sustituyen por
+src/packages/command-runtime/src/internal/lodashCompat.ts:6: * `lodash-es` como dependencia y no hay `bun install` disponible en esta
+src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts:15: *    `bun install`, estos envoltorios empiezan a resolver contra los
+src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts:183: * `command-runtime` declare la dependencia y corra `bun install`.
+src/packages/config/internal/pendingCrossPackageDeps.ts:281:// `bun install` nunca corrió aquí; verificado con `Bun.resolveSync`).
+src/packages/ide/src/internal/pendingCrossPackageDeps.ts:17: *    $ bun install   # con una dependencia "workspace:*" en package.json
+src/packages/ide/src/internal/pendingCrossPackageDeps.ts:25: *    `workspaces` y corra `bun install`, estos envoltorios empiezan a
+src/packages/permission/src/PermissionMode.ts:15: * `bun install` … otros dos agentes tienen el lockfile en vuelo»*. Ese aviso
+src/packages/permission/src/PermissionRule.ts:11: * exige `bun install` … otros dos agentes tienen el lockfile en vuelo ahora
+src/packages/permission/src/PermissionUpdate.ts:12: * `bun install`, fuera de alcance)»*. Medido hoy:
+src/packages/permission/src/permissionTypes.ts:15: * hermano ausente nunca se autosana con `bun install`.
+src/packages/permission/src/permissionTypes.ts:39: * linkeados en `node_modules` de este paquete sin correr `bun install`, fuera
+src/packages/swarm/src/worktree/index.ts:594:  // (`git config core.hooksPath .husky`) runs on every `bun install` and
+src/verify/check-agent-artifacts.sh:92:    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+src/verify/check-agent-artifacts.sh:110:    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+src/verify/check-agent-artifacts.sh:121:    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+src/verify/check-cli-typecheck.sh:167:        echo "      cd $PACKAGE_REL && bun install"
+src/verify/check-cross-model-read.sh:61:    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+src/verify/check-cross-model-read.sh:72:# coinciden bajo el linker izado. Con el aislado —el que un `bun install` sin
+src/verify/check-cross-model-read.sh:89:    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+tests/cli/exitCodes.test.ts:16: * `bun install --dry-run`: aditivo, sin red, sin tocar ninguna entrada
+tests/lib/test-node-resolution.sh:72:# codificaba el linker IZADO como premisa, y un `bun install` sin `linker`
+tests/lib/test-toolchain-degraded.sh:71:aviso="$(thyrox_toolchain_degraded_notice "los 14 entrypoints .ts" "cd \$THYROX_ROOT && bun install")"
+tests/lib/test-toolchain-degraded.sh:88:if [[ "$aviso" == *"bun install"* ]]; then
+tests/lib/test-toolchain-degraded.sh:152:# Caso 11 — ausente: rehusa nombrando la instalacion, no `bun install`.
+tests/lib/test-toolchain-degraded.sh:167:if [[ $rc -eq 2 && "$salida_nm" == *"bun install"* ]]; then
+tests/lib/test-toolchain-degraded.sh:168:  ok "bun presente sin node_modules: rehusa nombrando bun install"
+tests/package/sibling_exports.test.ts:113:    // `workspaces` no entra en la resolucion de `bun install`, asi que sus
+tests/verify/test-agent-artifacts.sh:113:    *"node_modules/zod"*"bun install --frozen-lockfile"*) NAMES=si ;;

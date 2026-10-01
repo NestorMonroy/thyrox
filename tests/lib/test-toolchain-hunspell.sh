@@ -44,7 +44,7 @@ export THYROX_TOOLCHAIN_HUNSPELL_PROBE_REJECT="senal"
 
 # Caso 2 — presencia: ausente y sin opt-in rehúsa con exit 2 y nombra el
 # binario y la variable de opt-in.
-out="$(THYROX_TOOLCHAIN_HUNSPELL_BIN="$MISSING" THYROX_INSTALL_HUNSPELL= \
+out="$(THYROX_TOOLCHAIN_HUNSPELL_BIN="$MISSING" THYROX_INSTALL_HUNSPELL='' \
        thyrox_toolchain_require_hunspell 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *"$MISSING"* && "$out" == *THYROX_INSTALL_HUNSPELL* ]]; then
   ok "rehúsa con exit 2 nombrando el binario ausente y el opt-in"
@@ -85,7 +85,7 @@ else
 fi
 
 # Caso 8 — sin diccionario declarado la sonda del preflight se omite (exit 3).
-out="$(THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY= thyrox_toolchain_probe_hunspell 2>&1)"; rc=$?
+out="$(THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY='' thyrox_toolchain_probe_hunspell 2>&1)"; rc=$?
 if [[ $rc -eq 3 && "$out" == *THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY* ]]; then
   ok "sin diccionario declarado la sonda se omite con exit 3 y nombra la llave"
 else bad "esperaba exit 3 nombrando la llave; dio $rc: '$out'"; fi

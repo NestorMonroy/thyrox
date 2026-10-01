@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { prefetchSystemContextIfSafe, startDeferredPrefetches, type PrefetchDeps } from '../context.js'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_EXIT_AFTER_FIRST_RENDER',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_SKIP_BEDROCK_AUTH',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_SKIP_VERTEX_AUTH',
+  'THYROX_CODE_EXIT_AFTER_FIRST_RENDER',
+  'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_SKIP_BEDROCK_AUTH',
+  'THYROX_CODE_USE_VERTEX',
+  'THYROX_CODE_SKIP_VERTEX_AUTH',
   'USER_TYPE',
 ] as const
 let snapshot: Record<string, string | undefined>
@@ -107,8 +107,8 @@ function rastrear(): { deps: PrefetchDeps; llamados: Set<string> } {
 }
 
 describe('startDeferredPrefetches', () => {
-  test('CLAUDE_CODE_EXIT_AFTER_FIRST_RENDER: no llama a ningún colaborador', () => {
-    process.env.CLAUDE_CODE_EXIT_AFTER_FIRST_RENDER = '1'
+  test('THYROX_CODE_EXIT_AFTER_FIRST_RENDER: no llama a ningún colaborador', () => {
+    process.env.THYROX_CODE_EXIT_AFTER_FIRST_RENDER = '1'
     const { deps, llamados } = rastrear()
     startDeferredPrefetches(deps)
     expect(llamados.size).toBe(0)
@@ -135,16 +135,16 @@ describe('startDeferredPrefetches', () => {
     expect(llamados.has('gcp')).toBe(false)
   })
 
-  test('CLAUDE_CODE_USE_BEDROCK=1 sin skip: dispara el prefetch de AWS', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+  test('THYROX_CODE_USE_BEDROCK=1 sin skip: dispara el prefetch de AWS', () => {
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     const { deps, llamados } = rastrear()
     startDeferredPrefetches(deps)
     expect(llamados.has('aws')).toBe(true)
   })
 
-  test('CLAUDE_CODE_USE_BEDROCK=1 con CLAUDE_CODE_SKIP_BEDROCK_AUTH=1: NO dispara AWS', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-    process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH = '1'
+  test('THYROX_CODE_USE_BEDROCK=1 con THYROX_CODE_SKIP_BEDROCK_AUTH=1: NO dispara AWS', () => {
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_SKIP_BEDROCK_AUTH = '1'
     const { deps, llamados } = rastrear()
     startDeferredPrefetches(deps)
     expect(llamados.has('aws')).toBe(false)

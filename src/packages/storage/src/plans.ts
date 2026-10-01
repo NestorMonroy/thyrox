@@ -25,14 +25,14 @@
  *    cuyo VALOR es su contrato (`'ExitPlanMode'`), se inlinea verbatim.
  *  - `getCwd` y `logForDebugging` — SÍ se reusan de verdad, importados de
  *    `./internal/pendingCrossPackageDeps.js`.
- *  - `getClaudeConfigHomeDir` (`config/env/utils`) — reimplementación
+ *  - `getConfigHomeDir` (`config/env/utils`) — reimplementación
  *    PRIVADA fiel, mismo cuerpo que ya usan `projectPurge.ts` y
  *    `sessionPaths.ts` de este paquete.
  *  - `isENOENT` (`local-observability/errorHelpers.js`) — fiel, una línea.
  *  - `getEnvironmentKind` (`./filePersistence/outputsScanner.js`, hermano
  *    del propio paquete `storage` pero NO uno de mis 14 módulos ni
  *    presente todavía en este árbol) — se reimplementa aquí, fiel a su
- *    cuerpo real (lee `CLAUDE_CODE_ENVIRONMENT_KIND`, 8 líneas).
+ *    cuerpo real (lee `THYROX_CODE_ENVIRONMENT_KIND`, 8 líneas).
  *  - `getFsImplementation` (`./fsOperations.js`, archivo de 23801 B en la
  *    fuente, AUSENTE de este árbol y fuera de mis 14 módulos) — se usa
  *    `fs`/`fs/promises` DIRECTO en vez de la capa de abstracción
@@ -53,8 +53,8 @@
  *
  * `getPlansDirectory` NO se memoiza (la fuente sí, con `lodash-es/
  * memoize.js` sin argumentos) — mismo criterio que YA declara
- * `projectPurge.ts` de este paquete para `getClaudeConfigHomeDir`: cada
- * test de este pase cambia `CLAUDE_CONFIG_DIR`/settings/cwd a un valor
+ * `projectPurge.ts` de este paquete para `getConfigHomeDir`: cada
+ * test de este pase cambia `THYROX_CONFIG_DIR`/settings/cwd a un valor
  * nuevo, así que memoizar no ahorraría nada y rompería el aislamiento
  * entre casos.
  */
@@ -67,6 +67,7 @@ import { logForDebugging, getCwd } from './internal/pendingCrossPackageDeps.js'
 import { logError } from './logging.js'
 import { generateWordSlug } from '@thyrox/tool-registry/words.js'
 import { getSessionId } from './sessionPaths.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 type AgentId = string
 type SessionId = string
@@ -85,11 +86,6 @@ function getPlanSlugCache(): Map<SessionId, string> {
   return _planSlugCache
 }
 
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize(
-    'NFC',
-  )
-}
 
 function isENOENT(e: unknown): boolean {
   return Boolean(
@@ -100,7 +96,7 @@ function isENOENT(e: unknown): boolean {
 /** Fiel a `filePersistence/outputsScanner.ts::getEnvironmentKind` — ver
  * docstring del archivo. */
 function getEnvironmentKind(): 'byoc' | 'anthropic_cloud' | null {
-  const kind = process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+  const kind = process.env.THYROX_CODE_ENVIRONMENT_KIND
   if (kind === 'byoc' || kind === 'anthropic_cloud') {
     return kind
   }
@@ -208,13 +204,13 @@ export function getPlansDirectory(): string {
       logError(
         new Error(`plansDirectory must be within project root: ${settingsDir}`),
       )
-      plansPath = join(getClaudeConfigHomeDir(), 'plans')
+      plansPath = join(getConfigHomeDir(), 'plans')
     } else {
       plansPath = resolved
     }
   } else {
     // Por defecto.
-    plansPath = join(getClaudeConfigHomeDir(), 'plans')
+    plansPath = join(getConfigHomeDir(), 'plans')
   }
 
   // Asegura que el directorio exista (mkdirSync con recursive:true es

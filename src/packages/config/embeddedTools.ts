@@ -4,17 +4,17 @@ import { isEnvTruthy, readEnv } from './env/utils.js'
  * Whether this build has bfs/ugrep embedded in the bun binary (ant-native only).
  *
  * When true:
- * - `find` and `grep` in Claude's Bash shell are shadowed by shell functions
+ * - `find` and `grep` in thyrox's Bash shell are shadowed by shell functions
  *   that invoke the bun binary with argv0='bfs' / argv0='ugrep' (same trick
  *   as embedded ripgrep)
  * - The dedicated Glob/Grep tools are removed from the tool registry
- * - Prompt guidance steering Claude away from find/grep is omitted
+ * - Prompt guidance steering thyrox away from find/grep is omitted
  *
  * Set as a build-time define in scripts/build-with-plugins.ts for ant-native builds.
  */
 export function hasEmbeddedSearchTools(): boolean {
   if (!isEnvTruthy(readEnv('EMBEDDED_SEARCH_TOOLS'))) return false
-  const e = readEnv('CLAUDE_CODE_ENTRYPOINT')
+  const e = readEnv('THYROX_CODE_ENTRYPOINT')
   return (
     e !== 'sdk-ts' && e !== 'sdk-py' && e !== 'sdk-cli' && e !== 'local-agent'
   )

@@ -1,0 +1,1 @@
+timeout 900 bash tests/session/test-headless-pool-credential-source.sh > /home/user/thyrox/.claude/build-logs/c6-integrate/credential-source.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/c6-integrate/credential-source.log

@@ -90,11 +90,35 @@ describe('el emisor consume la derivación', () => {
 })
 
 describe('resolveRequestCacheTtl — el TTL de UNA petición, siempre decidido', () => {
-  const pedido = { model: 'claude-sonnet-5', source: 'sdk' as const }
+  const suscriptor = { isSubscriber: true, isUsingOverage: false }
+  const pedido = { model: 'claude-sonnet-5', source: 'sdk' as const, subscription: suscriptor }
 
-  test('5. sin TTL declarado ni hueco, el default del origen: sdk 1h, subagente 5m', () => {
+  test('5. sin TTL declarado ni hueco, un suscriptor: sdk 1h, subagente 5m', () => {
     expect(resolveRequestCacheTtl(pedido).ttl).toBe('1h')
     expect(resolveRequestCacheTtl({ ...pedido, source: 'agent:custom' }).ttl).toBe('5m')
+  })
+
+  // `should1hCacheTTL`/`EPt`: la lista de 1 h sólo aplica a un usuario
+  // elegible —suscriptor y no en excedente—. Una tabla por origen que da 1 h
+  // a todo `sdk` hace pagar a una clave de API la escritura a 1.6× sin que el
+  // ejecutable la pida nunca.
+  test('5b. con clave de API, sdk NO pide 1 h: no es suscriptor', () => {
+    const r = resolveRequestCacheTtl({ ...pedido, subscription: { isSubscriber: false, isUsingOverage: false } })
+    expect(r.ttl).toBe('5m')
+    expect(r.why).toContain('suscri')
+  })
+
+  test('5c. un suscriptor en excedente tampoco', () => {
+    expect(resolveRequestCacheTtl({ ...pedido, subscription: { isSubscriber: true, isUsingOverage: true } }).ttl)
+      .toBe('5m')
+  })
+
+  test('5d. sin suscripción declarada, la deduce de la credencial del entorno', () => {
+    const sinSuscripcion = { model: 'claude-sonnet-5', source: 'sdk' as const }
+    expect(resolveRequestCacheTtl({ ...sinSuscripcion, env: { ANTHROPIC_API_KEY: 'clave-local' } }).ttl).toBe('5m')
+    expect(resolveRequestCacheTtl({ ...sinSuscripcion, env: { THYROX_CODE_OAUTH_TOKEN: 'token' } }).ttl).toBe('1h')
+    // Sin credencial alguna no hay suscripción que afirmar: 5 m, el default.
+    expect(resolveRequestCacheTtl({ ...sinSuscripcion, env: {} }).ttl).toBe('5m')
   })
 
   test('6. un hueco declarado gana sobre el origen: turnos seguidos no pagan la prima de 1h', () => {

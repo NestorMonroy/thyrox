@@ -23,26 +23,26 @@ import { getClaudeCodeUserAgent, getWorkload } from './internal/pendingCrossPack
 // ADVERTENCIA: se depende de `claude-cli` en el user agent para filtrar
 // logs. No cambiar sin actualizar también el filtrado.
 export function getUserAgent(): string {
-  const agentSdkVersion = readEnv('CLAUDE_AGENT_SDK_VERSION')
-    ? `, agent-sdk/${readEnv('CLAUDE_AGENT_SDK_VERSION')}`
+  const agentSdkVersion = readEnv('THYROX_AGENT_SDK_VERSION')
+    ? `, agent-sdk/${readEnv('THYROX_AGENT_SDK_VERSION')}`
     : ''
-  const clientApp = readEnv('CLAUDE_AGENT_SDK_CLIENT_APP')
-    ? `, client-app/${readEnv('CLAUDE_AGENT_SDK_CLIENT_APP')}`
+  const clientApp = readEnv('THYROX_AGENT_SDK_CLIENT_APP')
+    ? `, client-app/${readEnv('THYROX_AGENT_SDK_CLIENT_APP')}`
     : ''
   const workload = getWorkload()
   const workloadSuffix = workload ? `, workload/${workload}` : ''
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const version = (require('../package.json') as { version: string }).version
-  return `claude-cli/${version} (${process.env.USER_TYPE}, ${readEnv('CLAUDE_CODE_ENTRYPOINT') ?? 'cli'}${agentSdkVersion}${clientApp}${workloadSuffix})`
+  return `claude-cli/${version} (${process.env.USER_TYPE}, ${readEnv('THYROX_CODE_ENTRYPOINT') ?? 'cli'}${agentSdkVersion}${clientApp}${workloadSuffix})`
 }
 
 export function getMCPUserAgent(): string {
   const parts: string[] = []
-  const entrypoint = readEnv('CLAUDE_CODE_ENTRYPOINT')
+  const entrypoint = readEnv('THYROX_CODE_ENTRYPOINT')
   if (entrypoint) parts.push(entrypoint)
-  const sdkVersion = readEnv('CLAUDE_AGENT_SDK_VERSION')
+  const sdkVersion = readEnv('THYROX_AGENT_SDK_VERSION')
   if (sdkVersion) parts.push(`agent-sdk/${sdkVersion}`)
-  const clientApp = readEnv('CLAUDE_AGENT_SDK_CLIENT_APP')
+  const clientApp = readEnv('THYROX_AGENT_SDK_CLIENT_APP')
   if (clientApp) parts.push(`client-app/${clientApp}`)
   const suffix = parts.length > 0 ? ` (${parts.join(', ')})` : ''
   // eslint-disable-next-line @typescript-eslint/no-require-imports

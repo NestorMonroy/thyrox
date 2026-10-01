@@ -152,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         print("annulment_control: falta `--` antes del comando de la suite", file=sys.stderr)
         return 2
     split = argv.index("--")
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--bench", type=Path, required=True)
     parser.add_argument("--name", required=True)
     parser.add_argument("--subject", type=Path, required=True)
@@ -164,8 +164,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv[:split])
     try:
         if args.replace:
+            old, new = args.replace
             report = run_substitution(args.repo, args.bench, args.name, args.subject,
-                                      *args.replace, argv[split + 1:])
+                                      old, new, argv[split + 1:])
         else:
             report = run_annulment(args.repo, args.bench, args.name, args.subject,
                                    args.patch, argv[split + 1:])

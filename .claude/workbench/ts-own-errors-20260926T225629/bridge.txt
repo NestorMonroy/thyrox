@@ -1,0 +1,3 @@
+bridge	src/bridgeUI.ts(302,50): error TS2304: Cannot find name 'MACRO'.
+bridge	src/envLessBridgeConfig.ts(147,29): error TS2304: Cannot find name 'MACRO'.
+bridge	src/envLessBridgeConfig.ts(148,44): error TS2304: Cannot find name 'MACRO'.

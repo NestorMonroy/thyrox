@@ -410,19 +410,8 @@ export function setWhichFn(fn: typeof _which): void {
 // Helpers puros (inlineados desde varios src/utils)
 // ---------------------------------------------------------------------------
 
-/** de src/utils/envUtils */
-export function isEnvTruthy(v: string | boolean | undefined): boolean {
-  if (!v) return false
-  if (typeof v === 'boolean') return v
-  return ['1', 'true', 'yes', 'on'].includes(v.toLowerCase().trim())
-}
-
-export function isEnvDefinedFalsy(v: string | boolean | undefined): boolean {
-  if (v === undefined) return false
-  if (typeof v === 'boolean') return !v
-  if (!v) return false
-  return ['0', 'false', 'no', 'off'].includes(v.toLowerCase().trim())
-}
+/** de src/utils/envUtils — su hogar en este paquete es `env/utils.ts`. */
+export { isEnvDefinedFalsy, isEnvTruthy } from '../env/utils.js'
 
 /** de src/utils/errors */
 export function toError(value: unknown): Error {
@@ -1291,9 +1280,9 @@ export function setGracefulShutdownFn(fn: typeof _gracefulShutdown): void {
 
 // ---------------------------------------------------------------------------
 // Tipos de capa superior: `Command` (agent) y `BundledSkillDefinition`
-// (command-runtime). Se re-exportan sólo como tipos; hasta 2026-09-25 eran
-// ranuras de campos `unknown` con índice abierto, y los consumidores que les
-// pasaban los tipos reales fallaban (ver H-THYROX-176).
+// (command-runtime). Se re-exportan sólo como tipos: una ranura de campos
+// `unknown` con índice abierto rechaza a los consumidores que le pasan los
+// tipos reales (H-THYROX-176).
 // ---------------------------------------------------------------------------
 
 // El `Command` real vive en `@thyrox/agent/command.js`. Esta ranura lo

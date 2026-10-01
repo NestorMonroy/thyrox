@@ -1,0 +1,4 @@
+pass=951 fail=0 errors=0 crashes=0 files=83 failed=0
+typecheck daemon: 0 errores
+typecheck cli: 0 errores
+__BG_EXIT__=0

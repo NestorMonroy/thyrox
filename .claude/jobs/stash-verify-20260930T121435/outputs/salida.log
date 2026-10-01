@@ -1,0 +1,21 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/stash-guard/jobs/job-20260930T121436
+  job-20260930T121436/job-001 timeout 1200 bash tests/session/test-headless-pool-worktree.sh > /home/user/thyrox/.claude/build-logs/stash-guard/worktree.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/stash-guard/worktree.log
+  job-20260930T121436/job-002 timeout 1200 bash tests/session/test-headless-pool-lifecycle.sh > /home/user/thyrox/.claude/build-logs/stash-guard/lifecycle.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/stash-guard/lifecycle.log
+  job-20260930T121436/job-003 timeout 900 bash tests/session/test-headless-pool.sh > /home/user/thyrox/.claude/build-logs/stash-guard/headless-pool.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/stash-guard/headless-pool.log
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1681s)
+asentado: job-20260930T121436_job-001 -> OK (2 de 4)
+asentado: job-20260930T121436_job-002 -> OK (3 de 4)
+asentado: job-20260930T121436_job-003 -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260930T121436
+       | (vacío — no emitió nada)
+OK     job-20260930T121436_job-001 exit=0
+       | EXIT=0
+       memoria pico: 27420 KB (27 MB) · pared 18.34s
+OK     job-20260930T121436_job-002 exit=0
+       | EXIT=0
+       memoria pico: 27624 KB (27 MB) · pared 30.42s
+OK     job-20260930T121436_job-003 exit=0
+       | EXIT=0
+       memoria pico: 22328 KB (22 MB) · pared 118.26s
+__BG_EXIT__=0

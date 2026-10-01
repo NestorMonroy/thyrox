@@ -1,0 +1,66 @@
+# primera medición
+== 1: el marcador distingue mayúsculas -> 1
+== 2: sin extremo se acepta -> 1
+== 3: http se acepta -> 1
+== 4: cualquier host -> 1
+== 5: el host exacto como sufijo -> 1
+== 6: el sufijo como host exacto -> 1
+== 7: el mensaje no nombra el host -> 1
+== 8: alcances vacíos se unen -> 2
+== 9: sin preferred_username -> 1
+== 10: sin upn -> 1
+== 11: sin el alias client_id -> 1
+== 12: sin el alias token_endpoint -> 1
+== 13: sin scopes -> 3
+== 14: sin refresh token pasa -> 1
+== 15: sin clientId pasa -> 1
+== 16: sin scope pasa -> 1
+== 17: el registro sin validar la región -> 1
+== 18: el registro sin issuerUrl -> 1
+== 19: el registro rechazado pasa -> 1
+== 20: IdP externo por OIDC -> 2
+== 21: IdP como JSON -> 1
+== 22: IdP rechazado pasa -> 1
+== 23: IdP sin refresh rotado -> 1
+== 24: IdP sin vida declarada -> 1
+== 25: importado por OIDC -> 1
+== 26: OIDC sin secreto -> 0
+== 27: región fija -> 4
+== 28: OIDC sin validar la región -> 1
+== 29: sin re-registro -> 3
+== 30: el reintento rechazado pasa -> 1
+== 31: sin informar el cliente nuevo -> 1
+== 32: el reintento con el cliente viejo -> 1
+== 33: OIDC sin refresh rotado -> 2
+== 34: social sin perfil -> 2
+== 35: social rechazado pasa -> 2
+== 36: caché — el hint no gana -> 2
+== 37: caché — sin preferir la región -> 1
+== 38: caché — la caducidad más temprana -> 1
+== 39: caché — sin clientSecretExpiresAt -> 1
+== 40: caché — entradas sin secreto -> 1
+== 41: caché — cualquier archivo -> 1
+== 42: importar — cualquier token -> 1
+== 43: importar — sin validar la región -> 1
+== 44: importar — sin caché -> 3
+== 45: importar — la caché sin la región -> 1
+== 46: importar — sin el hint -> 1
+== 47: importar — sin cliente propio -> 1
+== 48: importar — el rechazo sin prefijo -> 1
+== 49: importar — sin el cliente de la caché en el resultado -> 1
+== 50: perfiles — sin preferir la región -> 1
+== 51: perfiles — sin profileArn -> 1
+== 52: perfiles — rechazo pasa -> 2
+== 53: perfiles — sin tokentype -> 1
+== 54: perfiles — sin validar la región -> 1
+== 55: clave — sin recortar -> 1
+== 56: clave — cualquier negativa se tolera -> 1
+== 57: clave — ninguna negativa se tolera -> 1
+== 58: clave — sin validar la región -> 0
+== 59: correo — sin preferred_username -> 1
+== 60: correo — sin sub -> 1
+== restaurado -> 0
+# re-medición tras afinar
+== 26: OIDC sin secreto -> 1
+== 58: clave — sin validar la región -> 1
+== restaurado -> 0

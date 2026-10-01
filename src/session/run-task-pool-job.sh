@@ -1,0 +1,73 @@
+#!/bin/bash
+# =============================================================================
+# run-task-pool-job.sh — un trabajo de `run-task-pool`, lanzado por GNU Parallel
+# =============================================================================
+#
+# GNU Parallel decide CUANDO corre cada trabajo; este envoltorio pone lo que
+# Parallel no trae y la barrera de thyrox necesita:
+#
+#   - el marcador `EXIT=<codigo>` al final del log, escrito por un shell
+#     EXTERIOR al comando: un `exit 7` dentro del comando termina su propio
+#     shell y el exterior sigue escribiendo el marcador;
+#   - el proceso del trabajo como lider de su grupo (`setsid`), registrado en
+#     el ledger con ese pid, para que `wait-jobs kill` barra a sus hijos;
+#   - GNU Time, que deja memoria pico, pared y CPU en `<log>.time`.
+#
+# Uso: run-task-pool-job.sh <dir-del-despacho> <despacho> <nombre>
+#
+# El comando se lee de `<dir>/.jobs/<nombre>.cmd`: pasarlo por la linea de
+# Parallel exigiria citarlo, y un comando con tabuladores o comillas ya rompio
+# esa forma.
+#
+# Sale 0 siempre que el trabajo llego a su fin por su cuenta, con el codigo que
+# sea: ese codigo vive en el marcador, no aqui. Sale 143 SOLO cuando Parallel lo
+# mato por memoria (`--limit` devolvio 2): es la unica salida que `--retries`
+# debe reintentar. Un trabajo matado desde fuera (`wait-jobs kill`) sale 0 y no
+# se relanza.
+# =============================================================================
+
+set -uo pipefail
+
+# El cuerpo entero va dentro de un bloque `{ … exit; }`: bash lo analiza
+# completo antes de ejecutarlo. Sin el bloque, bash lee el guion por
+# desplazamiento a medida que avanza, y reescribirlo en su sitio mientras
+# corre (`cat >`, `bin/replace_literal`, que conservan el inodo) hace que el
+# proceso vivo siga leyendo el archivo nuevo desde el byte viejo.
+{
+
+RUN_DIR="$1" DISPATCH="$2" NAME="$3"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WAIT_JOBS="$HERE/wait-jobs.sh"
+JOBS="$RUN_DIR/.jobs"
+
+# El intento. Un reintento lleva sufijo propio: su etiqueta y su log no pisan
+# los del intento matado, que se conservan como evidencia.
+ATTEMPT_FILE="$JOBS/$NAME.attempts"
+ATTEMPT=$(( $(cat "$ATTEMPT_FILE" 2>/dev/null || echo 0) + 1 ))
+echo "$ATTEMPT" > "$ATTEMPT_FILE"
+LABEL_NAME="$NAME"
+[ "$ATTEMPT" -gt 1 ] && LABEL_NAME="$NAME-retry$(( ATTEMPT - 1 ))"
+# La etiqueta lleva el despacho: es la clave del ledger, y sin el discriminante
+# dos despachos que comparten prefijo se pisaban la fila.
+LABEL="$DISPATCH/$LABEL_NAME"
+LOG="$RUN_DIR/$LABEL_NAME.log"
+
+# Parallel mata por memoria con TERM. Se suelta la fila del ledger —si no, la
+# barrera leeria el intento matado como un trabajo muerto sin marcador— y se
+# sale con el codigo que `--retries` reintenta.
+released_by_parallel() {
+    bash "$WAIT_JOBS" kill "$LABEL" >/dev/null 2>&1
+    echo "run-task-pool: $LABEL matado por memoria y reencolado" >&2
+    exit 143
+}
+trap released_by_parallel TERM
+
+nohup setsid bash -c 'if [ -n "$3" ]; then "$3" -q -f "%M %e %U %S" -o "$2" bash -c "$1"; else bash -c "$1"; fi; echo EXIT=$?' \
+    _ "$(cat "$JOBS/$NAME.cmd")" "$LOG.time" "${RUN_TASK_POOL_TIME_BIN:-}" > "$LOG" 2>&1 &
+PID=$!
+bash "$WAIT_JOBS" register "$LABEL" "$LOG" "$PID" >/dev/null
+# `wait` devuelve al llegar una senal, asi que la trampa corre en cuanto
+# Parallel envia TERM, sin esperar a que el trabajo termine.
+wait "$PID"
+exit 0
+}

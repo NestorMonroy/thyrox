@@ -52,7 +52,7 @@ discriminación produce.
 from __future__ import annotations
 
 from collections import deque
-from typing import Iterable, Iterator, Mapping, Sequence
+from typing import Iterable, Iterator, Mapping
 
 
 class CycleError(ValueError):

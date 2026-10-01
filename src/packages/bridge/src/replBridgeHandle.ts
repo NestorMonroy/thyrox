@@ -1,4 +1,4 @@
-import { updateSessionBridgeId } from '@thyrox/agent/concurrentSessions.js'
+import { recordBridgeSessionId } from '@thyrox/local-observability/uds/pidFileRecord.js'
 import type { ReplBridgeHandle } from './replBridge.js'
 import { toCompatSessionId } from './sessionIdCompat.js'
 
@@ -19,7 +19,7 @@ export function setReplBridgeHandle(h: ReplBridgeHandle | null): void {
   handle = h
   // Publish (or clear) our bridge session ID in the session record so other
   // local peers can dedup us out of their bridge list — local is preferred.
-  void updateSessionBridgeId(getSelfBridgeCompatId() ?? null).catch(() => {})
+  void recordBridgeSessionId(getSelfBridgeCompatId() ?? null).catch(() => {})
 }
 
 export function getReplBridgeHandle(): ReplBridgeHandle | null {

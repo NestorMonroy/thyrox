@@ -130,16 +130,21 @@ with tempfile.TemporaryDirectory() as d:
     logs.mkdir(parents=True)
     ledger_dir = logs / "ledger"
     from session.job_ledger import JobLedger
-    from session import task_pool
     ledger = JobLedger(ledger_dir)
     log = logs / "job-001.log"
     pid = background.spawn_detached("sleep 2", log)
     job = ledger.register("job-001", log, pid=pid)
     os.kill(pid, 9)
     time.sleep(0.3)
+    def _alive(j):
+        # Este ledger solo aloja "job-001", registrado con el pid real de
+        # `spawn_detached`; nunca llega aqui un `Job` sin pid.
+        assert j.pid is not None
+        return background.pid_is_alive(j.pid)
+
     asentamientos = ledger.wait(
         marker_pattern=background.MARKER_PATTERN,
-        alive=lambda j: background.pid_is_alive(j.pid),
+        alive=_alive,
         timeout=10.0, interval=0.2)
     check("el trabajo muerto sin marcador asienta como bailed",
           "bailed", asentamientos["job-001"])

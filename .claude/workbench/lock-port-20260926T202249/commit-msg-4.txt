@@ -1,0 +1,21 @@
+Put the shared writers under the lock
+
+step_setup.register is read, check, append: with eight concurrent
+writers and a slow read injected into the workers, 30 setups left 54
+rows. Under the lock of setups.jsonl they leave 30.
+
+step_close is now the only git writer of a step, and it commits and
+pushes under a per-repo commit lock that lives in the git directory,
+next to git's own index.lock. With another live owner holding it the
+close refuses before committing and names that owner, instead of
+colliding half way as step 156 did.
+
+pool_history.record stays without the lock on purpose: it is one
+append of a line under 4 KB, which Linux writes whole, and no case
+could tell the lock apart.
+
+Also replaces the forbidden word "corrida" with "ejecución" in the
+files this touches.
+
+Annulment: without the lock register leaves 54 rows, and close_step
+commits twice over the other owner.

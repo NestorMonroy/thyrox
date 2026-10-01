@@ -20,6 +20,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from typing import Any
 
 # El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
 # deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
@@ -61,7 +62,8 @@ CONSUMER = reach.root('docs')
 # dentro de este proceso de prueba, que es quien sabe de que corpus habla.
 os.environ.setdefault('THYROX_CONSUMER', str(CONSUMER))
 spec = importlib.util.spec_from_file_location("censar", HERE / "corpus" / "census_scripts.py")
-censar = importlib.util.module_from_spec(spec)
+assert spec is not None and spec.loader is not None
+censar: Any = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(censar)
 

@@ -1,0 +1,216 @@
+diff --git a/src/packages/cli/__tests__/printDelegation.test.ts b/src/packages/cli/__tests__/printDelegation.test.ts
+index b15fb8717..2c050d6ea 100644
+--- a/src/packages/cli/__tests__/printDelegation.test.ts
++++ b/src/packages/cli/__tests__/printDelegation.test.ts
+@@ -14,7 +14,8 @@ import { join } from 'node:path'
+ import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
+ import { SSH_PLACEHOLDER } from '@thyrox/provider/credentials'
+ import {
+-  credentialEnvironmentFor, decidePrintRoute, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
++  credentialEnvironmentFor, decidePrintRoute, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, OPENAI_COMPAT_BASE_URL_ENV, OPENAI_COMPAT_MODEL_ENV,
++  type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
+ } from '../src/entry/printDelegation.ts'
+ import { runPrint } from '../src/entry/print.ts'
+ 
+@@ -153,6 +154,55 @@ describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
+   })
+ })
+ 
++describe('credentialEnvironmentFor — un modelo thyrox- va al Ollama gestionado', () => {
++  const launch: PrintRoute = { kind: 'launch-proxy' }
++  const managed = 'thyrox-qwen--qwen3-8b-gguf:q4_k_m-hf-0123456789ab'
++
++  /** El entorno con que se lanzó el proxy, y el del túnel, para `models` sobre `env`. */
++  async function launchedWith(env: Record<string, string>, models: string[]): Promise<{ proxyEnv: Record<string, string | undefined>; tunnel: Record<string, string | undefined> }> {
++    let proxyEnv: Record<string, string | undefined> = {}
++    const credential = await credentialEnvironmentFor(launch, {
++      env, cwd: '/', models,
++      spawn: (_args, options) => { proxyEnv = options.env; return shellChild('echo socket=/run/anunciado.sock; sleep 30') },
++    })
++    await credential.close()
++    return { proxyEnv, tunnel: credential.env }
++  }
++
++  test('sin upstream declarado, el proxy recibe el Ollama gestionado en el puerto por defecto', async () => {
++    const { proxyEnv } = await launchedWith({ PATH: '/bin' }, [managed])
++    expect(proxyEnv[OPENAI_COMPAT_BASE_URL_ENV]).toBe('http://127.0.0.1:51434/v1')
++    expect(proxyEnv[OPENAI_COMPAT_MODEL_ENV]).toBe(managed)
++  })
++  test('el puerto del Ollama gestionado sale de THYROX_INFRA_OLLAMA_PORT', async () => {
++    const { proxyEnv } = await launchedWith({ PATH: '/bin', THYROX_INFRA_OLLAMA_PORT: '6123' }, [managed])
++    expect(proxyEnv[OPENAI_COMPAT_BASE_URL_ENV]).toBe('http://127.0.0.1:6123/v1')
++  })
++  test('una URL base declarada gana: el entorno del proxy queda como estaba', async () => {
++    const env = { PATH: '/bin', [OPENAI_COMPAT_BASE_URL_ENV]: 'http://127.0.0.1:9/v1' }
++    const { proxyEnv } = await launchedWith(env, [managed])
++    expect(proxyEnv).toEqual(env)
++  })
++  test('un modelo declarado gana: el entorno del proxy queda como estaba', async () => {
++    const env = { PATH: '/bin', [OPENAI_COMPAT_MODEL_ENV]: 'otro-modelo' }
++    const { proxyEnv } = await launchedWith(env, [managed])
++    expect(proxyEnv).toEqual(env)
++  })
++  test('un modelo claude- no cambia de camino', async () => {
++    const { proxyEnv } = await launchedWith({ PATH: '/bin' }, ['claude-sonnet-5'])
++    expect(proxyEnv).toEqual({ PATH: '/bin' })
++  })
++  test('un nombre con prefijo thyrox- que no es contractual no cambia de camino', async () => {
++    const { proxyEnv } = await launchedWith({ PATH: '/bin' }, ['thyrox-a-mano'])
++    expect(proxyEnv).toEqual({ PATH: '/bin' })
++  })
++  test('el upstream es sólo del proxy: el túnel del bucle no lo lleva', async () => {
++    const { tunnel } = await launchedWith({ PATH: '/bin' }, [managed])
++    expect(tunnel[OPENAI_COMPAT_BASE_URL_ENV]).toBeUndefined()
++    expect(tunnel[OPENAI_COMPAT_MODEL_ENV]).toBeUndefined()
++  })
++})
++
+ describe('runPrint — sin credencial pasa por el proxy local, nunca por claude -p directo', () => {
+   function invocations(dir: string): { argv: string[]; stdin: string }[] {
+     const path = join(dir, 'invocations.jsonl')
+@@ -183,6 +233,20 @@ describe('runPrint — sin credencial pasa por el proxy local, nunca por claude
+     rmSync(dir, { recursive: true, force: true })
+   })
+ 
++  test('thyrox -p --model thyrox-… lanza el proxy declarándole el Ollama gestionado', async () => {
++    const dir = scratch()
++    const managed = 'thyrox-qwen--qwen3-8b-gguf:q4_k_m-hf-0123456789ab'
++    let proxyEnv: Record<string, string | undefined> = {}
++    const spawnLocalProxy = (_args: string[], options: { env: Record<string, string | undefined> }): LocalProxyChild => {
++      proxyEnv = options.env
++      return shellChild('echo "sin upstream" >&2; exit 2')
++    }
++    const { code } = await capture(() => runPrint(['-p', 'hola', '--model', managed, '--no-session-persistence'], dir, dir, null, { env: { PATH: '/bin', HOME: dir }, readFd: noFd, openStore: () => undefined, spawnLocalProxy }))
++    rmSync(dir, { recursive: true, force: true })
++    expect(code).toBe(2)
++    expect(proxyEnv).toMatchObject({ [OPENAI_COMPAT_BASE_URL_ENV]: 'http://127.0.0.1:51434/v1', [OPENAI_COMPAT_MODEL_ENV]: managed })
++  })
++
+   test('una herramienta que claude pide por el puente la ejecuta el bucle de thyrox', async () => {
+     const dir = scratch()
+     const env = { PATH: `${fakeCliDirectory(dir)}:${process.env.PATH ?? ''}`, HOME: dir, FAKE_CLI_LOG: dir }
+diff --git a/src/packages/cli/src/entry/printDelegation.ts b/src/packages/cli/src/entry/printDelegation.ts
+index 89ebfd0fb..dc421e563 100644
+--- a/src/packages/cli/src/entry/printDelegation.ts
++++ b/src/packages/cli/src/entry/printDelegation.ts
+@@ -20,6 +20,8 @@ import { join } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+ import type { ConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
+ import { resolveCredential, SSH_PLACEHOLDER, type ReadFd } from '@thyrox/provider/credentials'
++import { managedOllama } from '@thyrox/local-models/managedOllama.ts'
++import { parseThyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
+ 
+ type Env = Record<string, string | undefined>
+ 
+@@ -40,6 +42,12 @@ export const TUNNEL_BASE_URL = 'http://localhost'
+ /** Las credenciales propias que el túnel sustituye; ninguna viaja por el socket. */
+ const OWN_CREDENTIAL_VARS = ['ANTHROPIC_AUTH_TOKEN', 'THYROX_CODE_OAUTH_TOKEN', 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR']
+ 
++/** El upstream compatible con OpenAI que el proxy conecta (`proxy/openaiCompat/declaration.ts`). */
++export const OPENAI_COMPAT_BASE_URL_ENV = 'THYROX_OPENAI_COMPAT_BASE_URL'
++export const OPENAI_COMPAT_MODEL_ENV = 'THYROX_OPENAI_COMPAT_MODEL'
++/** La API compatible con OpenAI de Ollama cuelga de esta ruta de su URL base. */
++const OPENAI_COMPAT_PATH = '/v1'
++
+ export type PrintRoute =
+   | { kind: 'own'; reason: string }
+   | { kind: 'declared-proxy'; socketPath: string }
+@@ -129,12 +137,33 @@ function announcedSocket(outcome: LaunchOutcome): string | undefined {
+   return outcome.kind === 'announced' ? outcome.socketPath : undefined
+ }
+ 
++function isDeclared(env: Env, name: string): boolean {
++  const value = env[name]
++  return value !== undefined && value !== ''
++}
++
++function declaresOpenAICompatUpstream(env: Env): boolean {
++  return isDeclared(env, OPENAI_COMPAT_BASE_URL_ENV) || isDeclared(env, OPENAI_COMPAT_MODEL_ENV)
++}
++
++/**
++ * El entorno del proxy: un modelo con nombre contractual `thyrox-…` se sirve
++ * del Ollama gestionado, salvo que el upstream ya esté declarado, que gana.
++ * Un modelo `claude-…` deja el entorno como está.
++ */
++export function localProxyEnv(env: Env, models: readonly string[]): Env {
++  if (declaresOpenAICompatUpstream(env)) return env
++  const managedModel = models.find(model => parseThyroxModelName(model) !== undefined)
++  if (managedModel === undefined) return env
++  return { ...env, [OPENAI_COMPAT_BASE_URL_ENV]: `${managedOllama(env).baseUrl}${OPENAI_COMPAT_PATH}`, [OPENAI_COMPAT_MODEL_ENV]: managedModel }
++}
++
+ async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<{ socketPath: string; stop: () => Promise<void> }> {
+   const dir = mkdtempSync(join(tmpdir(), 'thyrox-local-proxy-'))
+   const requestedSocket = join(dir, 'proxy.sock')
+   const spawn = options.spawn ?? spawnLocalProxy
+   const argv = ['--socket', requestedSocket, ...options.models.flatMap(model => ['--model', model])]
+-  const child = spawn(argv, { env: options.env, cwd: options.cwd })
++  const child = spawn(argv, { env: localProxyEnv(options.env, options.models), cwd: options.cwd })
+   const stop = async (): Promise<void> => {
+     child.kill()
+     await child.exited
+diff --git a/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts b/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+index 3b464105f..b30242bfe 100644
+--- a/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
++++ b/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+@@ -40,6 +40,11 @@ function withoutCliExecutable(env: Record<string, string>): { args: string[]; en
+   return { args: [], env: { ...env, PATH: emptyPath } }
+ }
+ 
++/** Sin `claude` y pidiendo además el paso tal cual de un modelo del proveedor. */
++function withoutCliExecutableAndPassthrough(env: Record<string, string>): { args: string[]; env: Record<string, string> } {
++  return { ...withoutCliExecutable(env), args: ['--model', 'claude-sonnet-5'] }
++}
++
+ const WITH_CLAUDE = (env: Record<string, string>) => ({ args: ['--cli', process.execPath], env: { PATH: process.env.PATH ?? '', ...env } })
+ 
+ function launch(env: Record<string, string>, setup = WITH_CLAUDE) {
+@@ -80,6 +85,12 @@ function sendOverSocket(socket: string, body: unknown): Promise<Response> {
+   })
+ }
+ 
++/** Los ids que el proxy publica en `/v1/models` por el socket. */
++async function listedModels(socket: string): Promise<string[]> {
++  const response = await fetch('http://localhost/v1/models', { unix: socket, headers: { 'x-api-key': 'ssh-placeholder' } })
++  return ((await response.json()) as { data: { id: string }[] }).data.map(model => model.id)
++}
++
+ const HELLO = { model: OPEN_MODEL, max_tokens: 16, messages: [{ role: 'user', content: 'hola' }] }
+ 
+ describe('localProxy con upstream compatible con OpenAI', () => {
+@@ -119,6 +130,34 @@ describe('localProxy con upstream compatible con OpenAI', () => {
+     expect(upstream.received).toHaveLength(0)
+   })
+ 
++  test('declarado y sin claude, el modelo abierto se reconoce sin distinguir mayúsculas', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutCliExecutable)
++    const response = await sendOverSocket(socket, { ...HELLO, model: OPEN_MODEL.toUpperCase() })
++    expect(response.status).toBe(200)
++    expect(upstream.received).toHaveLength(1)
++  })
++
++  test('declarado y sin claude, un cuerpo sin modelo lo rechaza el servidor, no la guarda', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutCliExecutable)
++    const response = await sendOverSocket(socket, { max_tokens: 16, messages: HELLO.messages })
++    expect(response.status).toBe(400)
++    expect(((await response.json()) as { error: { message: string } }).error.message).toBe('model is required')
++  })
++
++  test('declarado y sin claude, sólo se publica el modelo abierto', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutCliExecutable)
++    expect(await listedModels(socket)).toEqual([OPEN_MODEL])
++  })
++
++  test('declarado y sin claude, un --model de paso no se publica: no hay claude-cli que lo sirva', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutCliExecutableAndPassthrough)
++    expect(await listedModels(socket)).toEqual([OPEN_MODEL])
++  })
++
+   test('sin declarar y sin claude rehúsa con exit 2 nombrando --cli', async () => {
+     const child = launch({}, withoutCliExecutable)
+     expect(await child.exited).toBe(REFUSAL_EXIT_CODE)

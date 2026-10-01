@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 --timeout 900 .claude/cache/rename.jobs", "started_at": "2026-09-27T09:36:50+00:00"}

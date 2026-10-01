@@ -39,7 +39,7 @@ const ClaudeInChromePromptNotificationSchema = lazySchema(() =>
 )
 
 /**
- * A hook that listens for prompt notifications from the Claude for Chrome extension,
+ * A hook that listens for prompt notifications from the thyrox for Chrome extension,
  * enqueues them as user prompts, and syncs permission mode changes to the extension.
  */
 export function usePromptsFromClaudeInChrome(

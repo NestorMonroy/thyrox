@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+156 | 
+157 |   test('usa la medida guardada si es reciente', async () => {
+158 |     state.setWatchedCache({ at: 10_000, value: true })
+159 |     times = [10_500]
+160 |     let asked = 0
+161 |     expect(await isWatchedFromStorage(storageWith(async () => (asked++, { ok: true, value: { mtimeMs: 0 } })), deps())).toBe(true)
+                                                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:161:121)
+(fail) isWatchedFromStorage (qNt) > usa la medida guardada si es reciente [0.39ms]
+
+ 10 pass
+ 1 fail
+ 41 expect() calls
+Ran 11 tests across 1 file. [121.00ms]

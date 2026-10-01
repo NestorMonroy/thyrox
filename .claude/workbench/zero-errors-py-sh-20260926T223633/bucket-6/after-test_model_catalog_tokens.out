@@ -1,0 +1,30 @@
+== 1. tier 3/15: idéntico a la fórmula que el store usaba ==
+  ok    mismo valor que in + escritura por TTL + 0.1 lectura + 5 salida
+== 2. el peso sale del precio del modelo ==
+  ok    Fable 5.1: la lectura de caché pesa 0.025×, no 0.1×
+== 3. sin reparto de TTL, la escritura va al cociente 5m (como el store) ==
+  ok    cache_creation_tokens sin reparto
+== 4. un modelo desconocido rehúsa, no se pondera con otro tier ==
+  ok    KeyError
+== 5. el usage de claude -p se lee con sus claves ==
+  ok    usage_from_result da las claves del store con el reparto de TTL
+== 6. usage_equivalent_tokens es el gemelo de usageEquivalentTokens (agent/models.ts) ==
+  ok    sin opciones: TTL 1h y el propio tier como vara
+  ok    cache_ttl 5m
+  ok    basis: los precios de otro modelo
+  ok    unit: los precios propios con la entrada de otro como vara
+  ok    basis y unit a la vez no tienen respuesta única: rehúsa
+  ok    equivalent_tokens con todo a 1h es el gemelo con su TTL por defecto
+== 7. equivalent_tokens_with_basis: el valor y la base con que se ponderó ==
+  ok    modelo del catálogo: los cocientes de su tier, y el tier como base
+  ok    fuera del catálogo: la fórmula fija con la escritura repartida por TTL, declarada
+  ok    sin reparto de TTL la escritura fija pesa 1.25×
+  ok    sin catálogo ni modelo: la fórmula fija, declarada
+== 8. choose_cache_ttl: gemelo de chooseCacheTtl (provider/src/cost/policy.ts) ==
+  ok    umbral de caducidades: (1h − 5m) / 5m, del precio del tier
+  ok    turnos seguidos (hueco ≤ 5 min): 5m
+  ok    un hueco entre 5 y 60 min: 1h
+  ok    un hueco de más de una hora: 5m, ninguna caché sobrevive
+  ok    el porqué se publica junto a la decisión
+
+20 ok, 0 fallos

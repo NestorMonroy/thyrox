@@ -1,0 +1,18 @@
+OK   el hijo sigue vivo después de que salió el principal
+OK   el hijo es escritor vivo del stream
+FAIL mientras el hijo vive, el ítem no tiene .json — expected 'no', got 'yes'
+OK   el pool termina bien
+FAIL la línea tardía está en el stream — expected '1', got '0'
+OK   el .json es la línea result
+OK   nadie escribe ya en las salidas del ítem
+OK   el hijo ya no vive
+FAIL el pool termina aunque el hijo no saliera — expected '1', got '0'
+FAIL el hijo fue retirado — expected 'no', got 'yes'
+FAIL el ítem declara que tuvo que terminar procesos — expected '1', got '0'
+FAIL el resumen cuenta el ítem como fallido — expected '1', got '0'
+FAIL nadie escribe ya en las salidas del ítem — expected '0', got '1'
+OK   control: el bloque de drenaje se retiró
+OK   control: sin drenaje el pool cierra con el hijo vivo
+OK   control: y el hijo sigue escribiendo en la salida
+result: 9 of 16 assertions green
+__BG_EXIT__=1

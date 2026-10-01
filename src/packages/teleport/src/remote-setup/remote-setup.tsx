@@ -18,6 +18,7 @@ import {
   isSignedIn,
   RedactedGithubToken,
 } from './api.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type CheckResult =
   | { status: 'not_signed_in' }
@@ -82,7 +83,7 @@ function Web({ onDone }: { onDone: LocalJSXCommandOnDone }) {
           logEvent('tengu_remote_setup_result', {
             result: 'not_signed_in' as SafeString,
           })
-          onDone('Not signed in to Claude. Run /login first.')
+          onDone(`Not signed in to ${PRODUCT_NAME}. Run /login first.`)
           return
         case 'gh_not_installed':
         case 'gh_not_authenticated': {
@@ -145,19 +146,19 @@ function Web({ onDone }: { onDone: LocalJSXCommandOnDone }) {
   }
 
   if (step.name === 'uploading') {
-    return <LoadingState message="Connecting GitHub to Claude…" />
+    return <LoadingState message={`Connecting GitHub to ${PRODUCT_NAME}…`} />
   }
 
   const token = step.token
   return (
     <Dialog
-      title="Connect Claude on the web to GitHub?"
+      title={`Connect ${PRODUCT_NAME} on the web to GitHub?`}
       onCancel={handleCancel}
       hideInputGuide
     >
       <Box flexDirection="column">
         <Text>
-          Claude on the web requires connecting to your GitHub account to clone
+          {PRODUCT_NAME} on the web requires connecting to your GitHub account to clone
           and push code on your behalf.
         </Text>
         <Text dimColor>

@@ -1,0 +1,76 @@
+run-task-pool: 5 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260929T004136
+  job-20260929T004136/job-001 bash tests/session/test-headless-pool-worktree.sh
+  job-20260929T004136/job-002 bash tests/session/test-headless-pool.sh
+  job-20260929T004136/job-003 bash tests/session/test-headless-pool-thyrox-p.sh
+  job-20260929T004136/job-004 bash tests/session/test-gnu-time-launchers.sh
+  job-20260929T004136/job-005 python3 tests/hooks/test_detect_agent_dispatch.py
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 829s)
+asentado: job-20260929T004136_job-001 -> OK (2 de 6)
+asentado: job-20260929T004136_job-002 -> OK (3 de 6)
+asentado: job-20260929T004136_job-003 -> OK (4 de 6)
+asentado: job-20260929T004136_job-004 -> OK (5 de 6)
+asentado: job-20260929T004136_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260929T004136
+       | (vacío — no emitió nada)
+OK     job-20260929T004136_job-001 exit=0
+       |   ok    sin barrido, el worktree ya no está
+       |   ok    su parche nombra el archivo
+       | caso 7 — si el worktree no se prepara, el .err del ítem trae el motivo
+       |   ok    el ítem sale sin json de resultado
+       |   ok    el .err nombra el motivo de git
+       | caso 8 — los trabajos que lanza un ítem aislado quedan en su salida, no en el árbol principal
+       |   ok    el trabajo aparece bajo la salida del ítem
+       |   ok    el árbol principal no recibe el trabajo
+       | test-headless-pool-worktree: 25 aserciones — 25 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 26716 KB (26 MB) · pared 3.97s
+OK     job-20260929T004136_job-002 exit=0
+       | OK   runner claude sin claude en el PATH: lo nombra
+       | OK   runner desconocido: exit 2
+       | OK   runner claude con --cache-ttl: exit 0
+       | OK   runner claude con --cache-ttl: la variable de claude, no la de thyrox
+       | OK   runner claude con proxy: exit 0
+       | OK   runner claude con proxy: el ítem ve el socket y el marcador, sin credencial
+       | OK   runner claude con proxy: la credencial la recibe el proxy
+       | 
+       | aserciones: 125 de 125 · fallos: 0
+       | EXIT=0
+       memoria pico: 22564 KB (22 MB) · pared 70.79s
+OK     job-20260929T004136_job-003 exit=0
+       |   ok   el stream abre con system/init
+       |   ok   las herramientas del pool llegan acotadas
+       |   ok   una línea assistant por petición, con su uso
+       |   ok   por el túnel: el pool sale 0
+       |   ok   por el túnel: el ítem termina bien
+       |   ok   por el túnel: el servicio recibe la llave que puso el proxy
+       |   ok   por el túnel: el socket no queda al terminar
+       | 
+       | 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+       | EXIT=0
+       memoria pico: 222536 KB (217 MB) · pared 5.29s
+OK     job-20260929T004136_job-004 exit=0
+       | == 5. sin GNU Time: corre igual, no deja .time y lo declara ==
+       |   ok    el trabajo terminó con su marcador
+       |   ok    no deja .time
+       |   ok    y declara que no midió
+       | == 6. medir NO contamina el entorno del trabajo ==
+       |   ok    bg.sh: el trabajo no hereda la cadena de herramientas
+       |   ok    run-task-pool: el trabajo no hereda la cadena de herramientas
+       | 
+       | test-gnu-time-launchers: 13 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 212720 KB (208 MB) · pared 11.30s
+OK     job-20260929T004136_job-005 exit=0
+       | ok   test_stays_silent_on_a_payload_without_prompt
+       | ok   test_stays_silent_when_the_work_needs_judgment
+       | ok   test_suggests_the_headless_pool_for_judgment_over_many_items
+       | ok   test_the_judgment_half_carries_its_own_weight
+       | ok   test_the_notice_states_the_measured_cost_asymmetry
+       | ok   test_the_real_captured_payload_stays_silent
+       | ok   test_warns_when_the_dispatched_work_is_a_suite
+       | 
+       | 11 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 11828 KB (12 MB) · pared 0.04s
+__BG_EXIT__=0

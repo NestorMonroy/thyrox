@@ -1,0 +1,30 @@
+== case_clean_shell_passes
+  ok   un .sh limpio sale 0
+  ok   y publica el conteo con su denominador
+== case_shell_warning_blocks
+  ok   un .sh con variable sin uso sale 1
+  ok   y nombra el código y la línea
+== case_python_undefined_name_blocks
+  ok   un .py con nombre indefinido sale 1
+  ok   ruff lo nombra (F821)
+  ok   pyright lo nombra
+== case_python_type_error_blocks
+  ok   un Optional sin estrechar sale 1 aunque ruff calle
+  ok   y es pyright quien lo ve
+== case_clean_python_passes
+  ok   un .py limpio sale 0
+  ok   ruff publica su denominador
+== case_missing_tool_refuses
+  FAIL sin shellcheck rehúsa con exit 2
+       shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+
+  FAIL y NO publica un cero
+       shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+
+  FAIL y nombra la herramienta y el remedio
+       
+== case_other_files_ignored
+  ok   un archivo que no es .sh ni .py no se mide y sale 0
+  ok   y lo dice
+
+13 aprobada(s) · 3 fallida(s) (alcance medido: check_lint_zero.py)

@@ -1,0 +1,10 @@
+live-store	tabla_highwater	0
+live-store	max_task_id_numerico	1440
+live-store	filas_tasks	1917
+live-store	sesiones_con_filas	6
+live-store	error	no such table: task_highwater
+ordinal-collisions	ids_repetidos_entre_sesiones	333
+ordinal-collisions	ids_distintos	1439
+schema-history	tablas	agent_sessions,findings_history,sqlite_sequence,findings_fts_data,findings_fts_idx,findings_fts_docsize,findings_fts_config,documents,findings_fts,cleared_tool_results,tasks
+schema-history	python_menciona_highwater	0
+tests	pruebas_que_nombran_highwater	src/packages/agent/__tests__/resetTaskList.test.ts,src/packages/agent/tasks.ts,src/packages/task/__tests__/schema.test.ts,src/packages/task/schema.ts,src/packages/tools/src/tasks.ts,

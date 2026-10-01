@@ -1,0 +1,38 @@
+== 1. sintaxis ==
+  ok    agent-cost.sh parsea
+== 2. agent_id inexistente: error claro, exit 1 ==
+  ok    exit 1 sin transcript
+  ok    mensaje de error nombra la causa
+== 3. sin argumentos: uso + exit 2 ==
+  ok    exit 2 sin args
+== 4. aritmetica de equiv_cost — el calculo a mano ==
+  ok    turnos
+  ok    input
+  ok    cache_creation
+  ok    cache_read
+  ok    output
+  ok    titular_harness excluye el cache_read
+  ok    equiv_cost pondera los cuatro
+  ok    factor = equiv/titular
+== 5. CONTROL — el dedup por message.id ==
+  ok    el turno repetido no se cuenta dos veces
+  ok    el uso repetido no se suma dos veces
+  ok    equiv_cost con dedup
+== 6. reset de cache detectado (H-DOCS-171) ==
+  ok    resets_de_cache: 1 en el turno 2
+== 7. CONTROL — las dos guardas que NO deben disparar ==
+  ok    sin reset: ni el piso ni el umbral disparan
+== 8. control positivo REAL — transcripts VERSIONADOS (#657, H-DOCS-242) ==
+  ok    equiv_cost del fixture de contabilidad
+  ok    titular_harness (in+cc+out)
+  ok    factor equiv/titular
+  ok    turnos, sin contar <synthetic>
+  ok    sin reset de cache
+  ok    equiv_cost con dedup por ULTIMA aparicion
+  ok    output completo (1144, no 87)
+  ok    reset de cache en el turno 3
+  ok    publica el alcance de la suma
+  ok    y nombra la causa del hueco
+
+27 ok, 0 fallos, 0 omitidos
+EXIT=0

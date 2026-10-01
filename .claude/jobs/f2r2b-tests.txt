@@ -1,0 +1,12 @@
+src/packages/agent/__tests__/internalSdkRuntime.behavior.test.ts
+src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts
+src/packages/local-observability/__tests__/udsBind.test.ts
+src/packages/local-observability/__tests__/udsSocketPath.test.ts
+src/packages/provider/__tests__/adapters.test.ts
+src/packages/provider/src/__tests__/extraUsage.test.ts
+src/packages/provider/src/__tests__/fastModeAvailability.test.ts
+src/packages/provider/src/__tests__/fastModeModel.test.ts
+src/packages/provider/src/__tests__/fastModeModelSupport.test.ts
+src/packages/provider/src/__tests__/fastModeProcessContext.test.ts
+src/packages/provider/src/__tests__/fastModeSelection.test.ts
+src/packages/provider/src/__tests__/fastModeSurface.test.ts

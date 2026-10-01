@@ -114,7 +114,7 @@ export function truncateEntrypointContent(raw: string): EntrypointTruncation {
 
 /**
  * Shared guidance text appended to each memory directory prompt line.
- * Shipped because Claude was burning turns on `ls`/`mkdir -p` before writing.
+ * Shipped because thyrox was burning turns on `ls`/`mkdir -p` before writing.
  * Harness guarantees the directory exists via ensureMemoryDirExists().
  */
 export const DIR_EXISTS_GUIDANCE =
@@ -367,7 +367,7 @@ export async function loadMemoryPrompt(_signal?: AbortSignal): Promise<string | 
   }
 
   const coworkExtraGuidelines =
-    readEnv('CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES')
+    readEnv('THYROX_COWORK_MEMORY_EXTRA_GUIDELINES')
   const extraGuidelines =
     coworkExtraGuidelines && coworkExtraGuidelines.trim().length > 0
       ? [coworkExtraGuidelines]
@@ -410,10 +410,10 @@ export async function loadMemoryPrompt(_signal?: AbortSignal): Promise<string | 
 
   bindings.logEvent?.('tengu_memdir_disabled', {
     disabled_by_env_var: isEnvTruthy(
-      readEnv('CLAUDE_CODE_DISABLE_AUTO_MEMORY'),
+      readEnv('THYROX_CODE_DISABLE_AUTO_MEMORY'),
     ),
     disabled_by_setting:
-      !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_AUTO_MEMORY')) &&
+      !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_AUTO_MEMORY')) &&
       getInitialSettings().autoMemoryEnabled === false,
   })
   if (getFeatureValue_CACHED_MAY_BE_STALE('tengu_herring_clock', false)) {

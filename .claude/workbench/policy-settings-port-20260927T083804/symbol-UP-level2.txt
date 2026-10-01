@@ -1,0 +1,103 @@
+==== cft: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function cft [395955,396020)
+function cft(e){return Object.keys(e).some((n)=>!lt.includes(n))}
+==== Lt: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Lt [263805,263860)
+function Lt(e){return z(e)&&Object.values(e).every(Lt)}
+==== Fy: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Fy [397308,397469)
+Fy=["allowedMcpServers","availableModels","strictKnownMarketplaces","allowedChannelPlugins","allowedMarketplaces","allowedHttpHookUrls","httpHookAllowedEnvVars"]
+==== vh: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable vh [332422,332469)
+vh=Nn(function(e,n){return e==null?{}:zl(e,n)})
+==== wh: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable wh [332133,332337)
+wh=Nn(function(e,n){var s={};if(e==null)return s;var r=!1;if(n=Exe(n,function(d){return d=lre(d,e),r||(r=d.length>1),d}),Pe(e,JBt(e),s),r)s=Pl(s,kh|Ah|Oh,xl);var i=n.length;while(i--)In(s,n[i]);return s})
+==== Rz: 1 definicion(es) de nivel superior
+---- chunk-jwddn0q9.js function Rz [2613,2772)
+function Rz(){{let e=a.CLAUDE_CODE_ENTRYPOINT;return a.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST&&a.CLAUDE_CODE_USE_GATEWAY&&(e!==void 0&&EYn.has(e)||i())}return!1}
+==== X2o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable X2o [383553,383628)
+X2o=[["permissions","defaultMode"],["modelPicker","replaceBuiltInOptions"]]
+==== Ee: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Ee [36591,36688)
+function Ee(e,n){let s=e;for(let r of n){if(s===null||typeof s!=="object")return;s=s[r]}return s}
+==== Ve: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Ve [36688,36931)
+function Ve(e,n,s){let r=[e],i=e;for(let c of n.slice(0,-1)){let p={...i[c]};i[c]=p,i=p,r.push(i)}let d=n.at(-1);if(s!==void 0){i[d]=s;return}delete i[d];for(let c=r.length-1;c>0;c--){if(Object.keys(r[c]).length>0)break;delete r[c-1][n[c-1]]}}
+==== _d: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function _d [397965,398492)
+function _d(e,n){let s=n[0],r=e;for(let{path:i,restrictive:d}of Qe()){let c=st(d),p=Math.min(...n.map((g)=>c.indexOf(Ee(g,i))).filter((g)=>g!==-1));if(Number.isFinite(p))Ve(r,i,c[p]);else if(Ee(s,i)===void 0&&Ee(e,i)!==void 0)Ve(r,i,void 0)}if(e.strictPluginOnlyCustomization!==!0){let i=D(n.flatMap((d)=>Array.isArray(d.strictPluginOnlyCustomization)?d.strictPluginOnlyCustomization:[]));if(i.length>0)e.strictPluginOnlyCustomization=i;else if(s?.strictPluginOnlyCustomization===void 0)delete e.strictPluginOnlyCustomization}}
+==== W1: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable W1 [327707,327712)
+W1=Ym
+==== ks: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function ks [397664,397765)
+function ks(e,n,s){if(s!==void 0&&(Td.includes(s)||$y.includes(s)))return xd(e,n,s);return Md(e,n,s)}
+==== Wy: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Wy [397765,397848)
+function Wy(e,n,s){if(s!==void 0&&Td.includes(s))return xd(e,n,s);return Md(e,n,s)}
+==== Ky: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Ky [396769,396992)
+function Ky(e,n,s){let r=n.findIndex((d)=>d.availableModels!==void 0),i=n.findIndex((d)=>d.modelOverrides!==void 0);if(i!==-1&&(r===-1||i<=r||s&&r===0))e.modelOverrides={...n[i].modelOverrides};else delete e.modelOverrides}
+==== tVo: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable tVo [403243,403401)
+tVo=[...X5n,"forceLoginOrgUUID","forceLoginMethod","forceLoginGatewayUrl","gatewayInternalNetworks","parentSettingsBehavior","env","modelPicker",...mjr,...lt]
+==== Zl: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Zl [342862,343099)
+function Zl(e,n){let s=e?.commitTrailers;if(typeof s==="boolean")return s?"explicit-enabled":"disabled";if(e!==void 0&&J1r(e))return e.commit===""?"disabled":"implicit-enabled";if(n!==void 0)return n?"implicit-enabled":"disabled";return}
+==== G5n: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable G5n [383812,383844)
+G5n=/^(?:Read|Edit)\((?:\.\/)?!/
+==== Hy: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Hy [383629,383775)
+function Hy(e){let n={};for(let{path:s,restrictive:r}of Qe()){let i=Ee(e,s);if(s[0]==="sandbox"&&st(r).includes(i))Ve(n,s,i)}return n.sandbox??{}}
+==== Pd: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Pd [387328,387509)
+function Pd(e,n){let s=SRe,r=new Set(n.flatMap(hd));return D(e.flatMap(hd)).filter((i)=>s.includes(i)&&!r.has(i)).map((i,d)=>({accessKeyIdVar:i,secretAccessKeyVar:`${Rt}${d+1}_`}))}
+==== Id: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Id [399300,399523)
+function Id(e){let n=Os(e);if(UP({...e,helper:void 0}).present.mdm)return{base:n.settings,mergedOver:$e(),errors:n.errors};let s=e.file?.()??aft(e);return{base:s.settings,mergedOver:"file",errors:[...n.errors,...s.errors]}}
+==== eVo: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function eVo [399999,400092)
+function eVo(e,n){let s=Nd(e),r=W1({},s,n,Xy);if(s.env&&n.env)r.env=Vy(s.env,n.env);return r}
+==== Nd: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Nd [399523,399559)
+function Nd(e){return ss(e??{},mjr)}
+==== dft: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function dft [396688,396769)
+function dft(e){return e.userWritable!==!0&&(gUe(e)||e.loadState==="didNotLoad")}
+==== njr: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function njr [371221,371982)
+function njr(e,n){let s=[],r={merged:{},found:!1,authored:!1,floors:new Set},i=!1,d="absent",c=fz(Ie(e,"managed-settings.json"),n,void 0,!0);pd(r,c,s),i||=gUe(c),d=Yye(d,WUt(c));let p=Ie(e,"managed-settings.d");try{let h=n.folderListingForPolicyWalk(p),m;if(h!==void 0)m=h;else m=ce().readdirSync(p).filter(V2o).map((S)=>S.name).sort(),n.noteWalkListing(p,m);for(let S of m){let y=fz(Ie(p,S),n,void 0,!0);pd(r,y,s),i||=gUe(y),d=Yye(d,WUt(y))}}catch(h){let m=v(h);if(m!=="ENOENT"&&m!=="ENOTDIR")t(`managed-settings.d read failed: ${h}`,{level:"error"}),s.push(BUt(p,h,"directory")),d="didNotLoad"}let g=r.found&&cft(r.merged)?r.merged:null;return{settings:g,errors:s,documentHasPolicyContent:i,loadState:d,...g!==null&&!r.authored&&ggn(g)&&{onlySubstitutes:!0}}}
+==== Jk: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Jk [344879,344924)
+function Jk(){return td.getManagedFilePath()}
+==== C0: 1 definicion(es) de nivel superior
+---- chunk-z0m8rp11.js variable C0 [830,866)
+C0="/mnt/c/Program Files/ClaudeCode"
+==== Yye: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Yye [396561,396688)
+function Yye(e,n){if(e==="didNotLoad"||n==="didNotLoad")return"didNotLoad";return e==="loaded"||n==="loaded"?"loaded":"absent"}
+==== md: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable md [373032,373046)
+md=new WeakMap
+==== Ty: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Ty [373047,373648)
+function Ty(e,n){let s=tm(e),r=At(s,n,{skipMcpServerEntryFilter:!0,policySource:!0}),i=[],d=os(Od(n,i),n).safeParse(s);if(!d.success)return{settings:null,errors:[...r,...kt(d.error,n)],documentHasPolicyContent:!1,loadState:"didNotLoad",removed:[]};let c=[...r,...i],p=e,g=Object.keys(d.data).length>0?d.data:null;return{settings:g,errors:c,documentHasPolicyContent:C$o(e,d.data),loadState:"loaded",removed:Object.keys(p).filter((h)=>Ed(h,p[h])&&d.data[h]===void 0&&c.every((m)=>m.statusOnly||m.path!==h&&!m.path.startsWith(`${h}.`))),...g!==null&&i.some((h)=>h.onlySubstitutes)&&{onlySubstitutes:!0}}}
+==== gd: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function gd [372784,373028)
+function gd(e){return{settings:e.settings&&tm(e.settings),errors:e.errors.map((n)=>({...n})),documentHasPolicyContent:e.documentHasPolicyContent,loadState:e.loadState,removed:e.removed,...e.onlySubstitutes&&{onlySubstitutes:e.onlySubstitutes}}}
+==== Qh: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Qh [345237,345824)
+function Qh(e){let{file:n,severity:s,docLink:r,statusOnly:i,startupFatal:d,errorClass:c,preserveOnWrite:p,mcpErrorMetadata:g,userWritable:h,wslIgnored:m,substituted:S,onlySubstitutes:y,removal:E,path:C,message:I,expected:x,suggestion:L,invalidValue:F,...W}=e,ne=W;return{file:n,severity:s,docLink:r,statusOnly:i,startupFatal:d,errorClass:c,preserveOnWrite:p,mcpErrorMetadata:g,userWritable:h,wslIgnored:m,substituted:S,onlySubstitutes:y,removal:E,path:Bt(C),message:Bt(I),expected:x===void 0?void 0:Bt(x),suggestion:L===void 0?void 0:Bt(L),invalidValue:typeof F==="string"?Bt(F):void 0}}
+==== fd: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function fd [379883,379965)
+function fd(e){return e.path==="wslInheritsWindowsSettings"&&e.severity==="fatal"}
+==== ixe: 1 definicion(es) de nivel superior
+---- chunk-jwddn0q9.js function ixe [2100,2174)
+function ixe(){let e=a.CLAUDE_CODE_ENTRYPOINT;return e!==void 0&&p.has(e)}
+==== $e: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function $e [390203,390253)
+function $e(){return O()==="macos"?"plist":"hklm"}
+symbol: 34 de 34 nombre(s) resueltos

@@ -5,16 +5,12 @@
  * (erasado). `ConnectedMCPServer`/`MCPServerConnection` de
  * `@thyrox/mcp-runtime/types.js` también son TIPOS.
  *
- * `callIdeRpc` (de `@thyrox/mcp-runtime/clientRuntime.js`) es un punto de
- * inyección: ese archivo está BLOQUEADO dentro del propio
- * `@thyrox/mcp-runtime` (13/48 símbolos, por ausencia de `tool-registry`).
- * Ver el bloque 3 de `internal/pendingCrossPackageDeps.ts`.
- *
- * El resto de dependencias cruzadas (`@thyrox/{agent,app-host,config,
- * local-observability,shell,storage}`) SÍ existen en este árbol, pero
- * resuelven vía `require()` diferido porque `@thyrox/ide` no es miembro de
- * `src/packages/package.json:workspaces` todavía — ver la cabecera de
- * `internal/pendingCrossPackageDeps.ts` para la verificación en vivo.
+ * `callIdeRpc` se importa de `@thyrox/mcp-runtime/client`, que lo resuelve
+ * por los host bindings del runtime MCP; `getConfigHomeDir`, `envDynamic`,
+ * `getGlobalConfig`/`saveGlobalConfig` y `lt`, de `@thyrox/config`. Lo que
+ * sigue en `internal/pendingCrossPackageDeps.ts` es lo que cerraría un
+ * ciclo de módulos con este paquete o no tiene original exportado — ver su
+ * cabecera.
  *
  * `memoize`/`capitalize` de `lodash-es` — sustituto local (mismo criterio
  * que `@thyrox/storage`: no se instala `lodash-es` como dependencia npm nueva).
@@ -25,21 +21,22 @@ import { execa } from 'execa'
 import { createConnection } from 'net'
 import * as os from 'os'
 import { basename, join, sep as pathSeparator, resolve } from 'path'
+import { LEGACY_CONFIG_DIR_NAME } from '@thyrox/config/env/configHome.js'
 import type {
   ConnectedMCPServer,
   MCPServerConnection,
 } from '@thyrox/mcp-runtime/types.js'
+import { callIdeRpc } from '@thyrox/mcp-runtime/client'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+import { envDynamic } from '@thyrox/config/env/dynamic'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'
+import { lt } from '@thyrox/config/semver'
 import {
-  callIdeRpc,
   capitalize,
   env,
-  envDynamic,
   getAncestorPidsAsync,
-  getClaudeConfigHomeDir,
-  getGlobalConfig,
   getIsScrollDraining,
   isJetBrainsPluginInstalledCached,
-  lt,
   memoize,
   requireAgentAbortController,
   requireAppHostBootstrapState,
@@ -53,7 +50,6 @@ import {
   requireLocalObservabilitySlowOperations,
   requireShellExecFileNoThrow,
   requireStorageFsOperations,
-  saveGlobalConfig,
 } from './internal/pendingCrossPackageDeps.js'
 import { checkWSLDistroMatch, WindowsToWSLConverter } from './idePathConversion.js'
 
@@ -69,10 +65,10 @@ const ideOnboardingDialog = (): { hasIdeOnboardingDialogBeenShown(): boolean } =
 
 // Constante de build-time inyectada por Bun.build({ define }); undefined en
 // desarrollo. Declarada en línea, igual que `@thyrox/local-observability:
-// src/sentry.ts` — así este paquete no depende de un `.d.ts` global.
+// src/telemetry/attributes.ts` — así este paquete no depende de un `.d.ts` global.
 declare const MACRO: { VERSION: string } | undefined
 
-// ide antes tenía su propia copia. Se usa el probe canónico de shell —
+// Se usa el probe canónico de shell, no una copia propia —
 // misma semántica (EPERM → false, conservador para recuperación de lockfiles).
 function isProcessRunning(pid: number): boolean {
   if (pid <= 1) return false
@@ -511,7 +507,12 @@ export async function getIdeLockfilesPaths(): Promise<string[]> {
   const { errorMessage, isFsInaccessible } = requireLocalObservabilityErrorHelpers()
   const { getPlatform } = requireConfigPlatform()
 
-  const paths: string[] = [join(getClaudeConfigHomeDir(), 'ide')]
+  const paths: string[] = [join(getConfigHomeDir(), 'ide')]
+  // `rWn` (2.1.283) añade `~/.claude/ide` cuando la raíz se declaró por
+  // variable: es donde escriben las extensiones de editor. Aquí la raíz puede
+  // ser `~/.thyrox` sin variable, así que se decide por la raíz resuelta.
+  const legacyIdeDir = join(os.homedir(), LEGACY_CONFIG_DIR_NAME, 'ide').normalize('NFC')
+  if (paths[0] !== legacyIdeDir) paths.push(legacyIdeDir)
 
   if (getPlatform() !== 'wsl') {
     return paths
@@ -736,8 +737,8 @@ export async function detectIDEs(
   const detectedIDEs: DetectedIDEInfo[] = []
 
   try {
-    // Obtiene CLAUDE_CODE_SSE_PORT, si está fijado.
-    const ssePort = process.env.CLAUDE_CODE_SSE_PORT
+    // Obtiene THYROX_CODE_SSE_PORT, si está fijado.
+    const ssePort = process.env.THYROX_CODE_SSE_PORT
     const envPort = ssePort ? parseInt(ssePort, 10) : null
 
     // Obtiene el directorio de trabajo actual, normalizado a NFC para
@@ -765,7 +766,7 @@ export async function detectIDEs(
       if (!lockfileInfo) continue
 
       let isValid = false
-      if (isEnvTruthy(process.env.CLAUDE_CODE_IDE_SKIP_VALID_CHECK)) {
+      if (isEnvTruthy(process.env.THYROX_CODE_IDE_SKIP_VALID_CHECK)) {
         isValid = true
       } else if (lockfileInfo.port === envPort) {
         // Si el puerto coincide con la variable de entorno, se marca como válido sin importar el directorio.
@@ -857,7 +858,7 @@ export async function detectIDEs(
 
       const ideName =
         lockfileInfo.ideName ??
-        (isSupportedTerminal() ? toIDEDisplayName(envDynamic.terminal) : 'IDE')
+        (isSupportedTerminal() ? toIDEDisplayName(envDynamic.terminal as string | null) : 'IDE')
 
       const host = await detectHostIP(
         lockfileInfo.runningInWindows,
@@ -1280,7 +1281,7 @@ export function getIdeClientName(
   return config?.type === 'sse-ide' || config?.type === 'ws-ide'
     ? config.ideName
     : isSupportedTerminal()
-      ? toIDEDisplayName(envDynamic.terminal)
+      ? toIDEDisplayName(envDynamic.terminal as string | null)
       : null
 }
 
@@ -1393,7 +1394,7 @@ export async function initializeIdeIntegration(
 
   const shouldAutoInstall = getGlobalConfig().autoInstallIdeExtension ?? true
   if (
-    !isEnvTruthy(process.env.CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL) &&
+    !isEnvTruthy(process.env.THYROX_CODE_IDE_SKIP_AUTO_INSTALL) &&
     shouldAutoInstall
   ) {
     const ideType = ideToInstallExtension ?? getTerminalIdeType()
@@ -1450,8 +1451,8 @@ const detectHostIP = memoize(
   async (isIdeRunningInWindows: boolean, port: number) => {
     const { getPlatform } = requireConfigPlatform()
 
-    if (process.env.CLAUDE_CODE_IDE_HOST_OVERRIDE) {
-      return process.env.CLAUDE_CODE_IDE_HOST_OVERRIDE
+    if (process.env.THYROX_CODE_IDE_HOST_OVERRIDE) {
+      return process.env.THYROX_CODE_IDE_HOST_OVERRIDE
     }
 
     if (getPlatform() !== 'wsl' || !isIdeRunningInWindows) {

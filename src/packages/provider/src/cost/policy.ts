@@ -19,6 +19,8 @@
 import { CATALOG, MODELS, effortCostIndex, usageEquivalentTokens } from '@thyrox/agent/models'
 import type { EffortLevel, PricingTier } from '@thyrox/agent/models'
 import type { AgentDefinition, CacheTtl } from '@thyrox/agent/types'
+import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
+import { qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { promptCacheKey } from './cacheBreak.ts'
 
 function pricingOf(modelId: string): PricingTier {
@@ -334,6 +336,83 @@ export function recommend(kind: TaskKind, profile: TurnProfile): Recommendation 
     ranked,
     excluded,
   }
+}
+
+// ---------------------------------------------------------------------------
+// 3b. Dónde se ejecuta: un modelo local cualificado primero, claude-cli después
+// ---------------------------------------------------------------------------
+
+/** Lo que la instalación declara de sus modelos locales: catálogo y mediciones. */
+export type LocalModelInventory = {
+  entries: readonly ModelCatalogEntry[]
+  qualifications: readonly ModelQualification[]
+}
+
+/** Un modelo local servido por Ollama, elegido porque una suite lo aprobó para la clase. */
+export type LocalExecution = {
+  runtime: 'ollama'
+  /** Nombre contractual `thyrox-…` del catálogo. */
+  model: string
+  taskClass: TaskKind
+  /** Contexto que el perfil exige; la cualificación midió al menos esto. */
+  contextTokens: number
+  qualification: ModelQualification
+}
+
+/**
+ * El catálogo del proveedor ejecutado por `claude -p`. `fallbackReason` existe
+ * sólo cuando se llegó aquí porque ningún modelo local cumplió.
+ */
+export type ProviderExecution = Recommendation & {
+  runtime: 'claude-cli'
+  taskClass: TaskKind
+  fallbackReason?: string
+}
+
+export type ExecutionRecommendation = LocalExecution | ProviderExecution
+
+/** El catálogo del proveedor, sin pasar por los modelos locales. */
+export function providerExecution(kind: TaskKind, profile: TurnProfile): ProviderExecution {
+  return { ...recommend(kind, profile), runtime: 'claude-cli', taskClass: kind }
+}
+
+/**
+ * Por qué ningún modelo local cumple: catálogo vacío, ninguna cualificación
+ * aprobada vigente de la clase, o aprobadas con menos contexto medido del que
+ * el perfil exige (se nombra la mayor medida).
+ */
+function localFallbackReason(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory): string {
+  if (local.entries.length === 0) return 'catálogo local vacío: ningún modelo declarado'
+  const approvedAtAnyContext = qualifiedModels(local.entries, local.qualifications, kind, 0)
+  if (approvedAtAnyContext.length === 0) {
+    return `sin cualificación aprobada vigente de la clase ${kind} entre los ${local.entries.length} modelo(s) del catálogo local`
+  }
+  const widest = Math.max(...approvedAtAnyContext.map((candidate) => candidate.qualification.contextTokens))
+  return `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos`
+}
+
+/**
+ * Elige dónde se ejecuta una clase de tarea: el modelo local más rápido de los
+ * que una medición aprobó para la clase con contexto suficiente; si no hay
+ * ninguno, la recomendación del catálogo del proveedor por `claude-cli`, con
+ * la causa concreta en `fallbackReason`.
+ */
+export function recommendExecution(
+  kind: TaskKind,
+  profile: TurnProfile,
+  local: LocalModelInventory,
+): ExecutionRecommendation {
+  const [fastest] = qualifiedModels(local.entries, local.qualifications, kind, profile.contextTokens)
+  if (fastest) {
+    return {
+      runtime: 'ollama',
+      model: fastest.entry.name,
+      taskClass: kind,
+      contextTokens: profile.contextTokens,
+      qualification: fastest.qualification,
+    }
+  }
+  return { ...providerExecution(kind, profile), fallbackReason: localFallbackReason(kind, profile, local) }
 }
 
 // ---------------------------------------------------------------------------

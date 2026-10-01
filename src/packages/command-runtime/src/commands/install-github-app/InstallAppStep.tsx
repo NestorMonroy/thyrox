@@ -2,6 +2,7 @@ import figures from 'figures'
 import { GITHUB_ACTION_SETUP_DOCS_URL } from '@thyrox/agent/constants/github-app.js'
 import { Box, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 interface InstallAppStepProps {
   repoUrl: string
@@ -15,10 +16,10 @@ export function InstallAppStep({ repoUrl, onSubmit }: InstallAppStepProps) {
   return (
     <Box flexDirection="column" borderStyle="round" borderDimColor paddingX={1}>
       <Box flexDirection="column" marginBottom={1}>
-        <Text bold>Install the Claude GitHub App</Text>
+        <Text bold>Install the {PRODUCT_NAME} GitHub App</Text>
       </Box>
       <Box marginBottom={1}>
-        <Text>Opening browser to install the Claude GitHub App…</Text>
+        <Text>Opening browser to install the {PRODUCT_NAME} GitHub App…</Text>
       </Box>
       <Box marginBottom={1}>
         <Text>If your browser doesn&apos;t open automatically, visit:</Text>

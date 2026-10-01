@@ -1,0 +1,11 @@
+# errores TS por paquete y config: baseline (HEAD) | green
+tsc podman-execution tsconfig.build.json errors=0|tsc podman-execution tsconfig.build.json errors=0
+tsc podman-execution tsconfig.test.json errors=0|tsc podman-execution tsconfig.test.json errors=0
+tsc model-scheduling tsconfig.build.json errors=0|tsc model-scheduling tsconfig.build.json errors=0
+tsc model-scheduling tsconfig.test.json errors=1|tsc model-scheduling tsconfig.test.json errors=1
+tsc local-models tsconfig.build.json errors=0|tsc local-models tsconfig.build.json errors=0
+tsc local-models tsconfig.test.json errors=4|tsc local-models tsconfig.test.json errors=4
+tsc daemon tsconfig.build.json errors=0|tsc daemon tsconfig.build.json errors=0
+tsc daemon tsconfig.test.json errors=2|tsc daemon tsconfig.test.json errors=2
+tsc provider tsconfig.build.json errors=0|tsc provider tsconfig.build.json errors=0
+tsc provider tsconfig.test.json errors=9|tsc provider tsconfig.test.json errors=9

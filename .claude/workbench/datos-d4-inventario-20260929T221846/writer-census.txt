@@ -1,0 +1,149 @@
+censo de escritores (alcance medido: 8440 archivo(s); raices src, bin)
+  a                        2 sentencia(s)
+      src/packages/cli/dist/chunk-sr42mcx1.js:2939
+      src/packages/cli/src/commands/misc-commands.ts:560
+  agent_bridge_bypass      3 sentencia(s)
+      src/packages/mitm/src/state/agentBridgeBypass.ts:35
+      src/packages/mitm/src/state/agentBridgeBypass.ts:37
+      src/packages/mitm/src/state/agentBridgeBypass.ts:49
+  agent_bridge_mappings    3 sentencia(s)
+      src/packages/mitm/src/state/agentBridgeMappings.ts:31
+      src/packages/mitm/src/state/agentBridgeMappings.ts:33
+      src/packages/mitm/src/state/agentBridgeMappings.ts:43
+  agent_bridge_state       4 sentencia(s)
+      src/packages/mitm/src/state/agentBridgeState.ts:59
+      src/packages/mitm/src/state/agentBridgeState.ts:86
+      src/packages/mitm/src/state/agentBridgeState.ts:91
+      src/packages/mitm/src/state/agentBridgeState.ts:99
+  agent_sessions           14 sentencia(s)
+      src/agents/agent_store.py:805
+      src/agents/agent_store.py:1610
+      src/agents/agent_store.py:1898
+      src/agents/agent_store.py:2116
+      src/agents/backfill_agent_sessions.py:215
+      src/agents/reconcile_store.py:625
+      src/agents/reconcile_store.py:686
+      src/packages/observability/dist/store.js:28
+      src/packages/observability/dist/store.js:99
+      src/packages/observability/dist/store.js:113
+      src/packages/observability/src/store.ts:171
+      src/packages/observability/src/store.ts:259
+      src/store/agent_sessions.py:287
+      src/verify/verificar_persistencia.py:127
+  cleared_tool_results     2 sentencia(s)  [2 por nombre compuesto]
+      src/packages/observability/dist/clearedResults.js:63 (compuesto)
+      src/packages/observability/src/clearedResults.ts:140 (compuesto)
+  description              2 sentencia(s)
+      src/packages/cli/dist/chunk-sr42mcx1.js:2939
+      src/packages/cli/src/commands/misc-commands.ts:564
+  documents                1 sentencia(s)
+      src/agents/agent_store.py:2920
+  error_actions            4 sentencia(s)
+      src/packages/local-observability/dist/chunk-p3jdse7w.js:164
+      src/packages/local-observability/dist/chunk-p3jdse7w.js:192
+      src/packages/local-observability/src/errorStore/errorStore.ts:115
+      src/packages/local-observability/src/errorStore/errorStore.ts:145
+  error_store_migrations   1 sentencia(s)
+      src/packages/local-observability/dist/chunk-p3jdse7w.js:111
+  errors                   4 sentencia(s)
+      src/packages/local-observability/dist/chunk-p3jdse7w.js:157
+      src/packages/local-observability/dist/chunk-p3jdse7w.js:193
+      src/packages/local-observability/src/errorStore/errorStore.ts:108
+      src/packages/local-observability/src/errorStore/errorStore.ts:146
+  findings_fts             5 sentencia(s)
+      src/agents/agent_store.py:367
+      src/agents/agent_store.py:371
+      src/agents/agent_store.py:376
+      src/agents/agent_store.py:378
+      src/agents/agent_store.py:1781
+  findings_history         2 sentencia(s)
+      src/agents/agent_store.py:3851
+      src/corpus/backfill_findings_history.py:212
+  inspector_custom_hosts   4 sentencia(s)
+      src/packages/mitm/src/state/inspectorCustomHosts.ts:54
+      src/packages/mitm/src/state/inspectorCustomHosts.ts:60
+      src/packages/mitm/src/state/inspectorCustomHosts.ts:64
+      src/packages/mitm/src/state/inspectorCustomHosts.ts:68
+  inspector_session_requests 2 sentencia(s)
+      src/packages/mitm/src/state/inspectorSessions.ts:53
+      src/packages/mitm/src/state/inspectorSessions.ts:76
+  inspector_sessions       5 sentencia(s)
+      src/packages/mitm/src/state/inspectorSessions.ts:19
+      src/packages/mitm/src/state/inspectorSessions.ts:29
+      src/packages/mitm/src/state/inspectorSessions.ts:33
+      src/packages/mitm/src/state/inspectorSessions.ts:54
+      src/packages/mitm/src/state/inspectorSessions.ts:77
+  mitm_alias               1 sentencia(s)
+      src/packages/mitm/src/state/mitmAlias.ts:31
+  provider_connections     19 sentencia(s)  [1 por nombre compuesto]
+      src/packages/provider/dist/chunk-a93wpds5.js:115
+      src/packages/provider/dist/chunk-a93wpds5.js:122
+      src/packages/provider/dist/chunk-a93wpds5.js:129
+      src/packages/provider/dist/chunk-a93wpds5.js:132
+      src/packages/provider/dist/chunk-a93wpds5.js:538
+      src/packages/provider/dist/chunk-a93wpds5.js:542
+      src/packages/provider/dist/chunk-a93wpds5.js:723
+      src/packages/provider/dist/chunk-a93wpds5.js:729
+      src/packages/provider/dist/chunk-a93wpds5.js:734
+      src/packages/provider/src/accounts/connectionDeletion.ts:17
+      src/packages/provider/src/accounts/connectionDeletion.ts:24
+      src/packages/provider/src/accounts/connectionDeletion.ts:31
+      src/packages/provider/src/accounts/connectionDeletion.ts:35
+      src/packages/provider/src/accounts/connectionStore.ts:204
+      src/packages/provider/src/accounts/connectionStore.ts:213
+      src/packages/provider/src/accounts/connectionStore.ts:431
+      src/packages/provider/src/accounts/connectionStore.ts:439
+      src/packages/provider/src/accounts/connectionStore.ts:445
+      src/packages/provider/src/accounts/storageKeyRotation.ts:71 (compuesto)
+  subject                  2 sentencia(s)
+      src/packages/cli/dist/chunk-sr42mcx1.js:2939
+      src/packages/cli/src/commands/misc-commands.ts:563
+  task                     4 sentencia(s)
+      src/packages/agent/dist/chunk-2s5t6qva.js:9
+      src/packages/agent/dist/chunk-94er5dgt.js:2234
+      src/packages/agent/loop/context/attachments.ts:70
+      src/packages/agent/messages.ts:3644
+  task_highwater           1 sentencia(s)
+      src/packages/tools/dist/tasks.js:50
+  task_session_highwater   1 sentencia(s)
+      src/packages/tools/src/tasks.ts:129
+  tasks                    32 sentencia(s)
+      src/agents/agent_store.py:2276
+      src/agents/agent_store.py:2278
+      src/agents/agent_store.py:2280
+      src/agents/agent_store.py:2283
+      src/agents/agent_store.py:2421
+      src/agents/agent_store.py:2647
+      src/agents/agent_store.py:3074
+      src/packages/tools/dist/tasks.js:58
+      src/packages/tools/dist/tasks.js:74
+      src/packages/tools/dist/tasks.js:100
+      src/packages/tools/dist/tasks.js:160
+      src/packages/tools/dist/tasks.js:268
+      src/packages/tools/dist/tasks.js:334
+      src/packages/tools/dist/tasks.js:336
+      src/packages/tools/src/tasks.ts:143
+      src/packages/tools/src/tasks.ts:168
+      src/packages/tools/src/tasks.ts:197
+      src/packages/tools/src/tasks.ts:290
+      src/packages/tools/src/tasks.ts:419
+      src/packages/tools/src/tasks.ts:489
+      src/packages/tools/src/tasks.ts:492
+      src/task/board_sync.py:250
+      src/task/board_sync.py:404
+      src/task/task_ids.py:624
+      src/task/task_ids.py:702
+      src/task/task_ids.py:762
+      src/task/task_ids.py:770
+      src/task/task_ids.py:782
+      src/task/task_ids.py:860
+      src/task/task_ids.py:952
+      src/task/task_ids.py:960
+      src/task/task_ids.py:1004
+  tasks_con_check          1 sentencia(s)
+      src/agents/agent_store.py:1254
+  tasks_migrada            1 sentencia(s)
+      src/agents/agent_store.py:1164
+
+tablas con filas y SIN escritor: 1
+  schema_migrations        14 fila(s)

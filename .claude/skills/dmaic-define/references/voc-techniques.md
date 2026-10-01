@@ -62,7 +62,7 @@ CTQ (cómo se mide — métrica observable con especificación)
 **Cómo ejecutar:**
 - Estructura recomendada: preguntas de importancia (¿qué tan importante es X para usted?) + preguntas de satisfacción (¿qué tan satisfecho está con el desempeño actual?)
 - Escala Likert 1-5 o NPS
-- Regla de oro: preguntar sobre comportamientos pasados, no sobre intenciones futuras (*"¿Cuántas veces llamó a soporte el mes pasado?"* > *"¿Llamaría si tuviera un problema?"*)
+- Criterio rector: preguntar sobre comportamientos pasados, no sobre intenciones futuras (*"¿Cuántas veces llamó a soporte el mes pasado?"* > *"¿Llamaría si tuviera un problema?"*)
 - Muestra mínima: ≥ 30 para inferencia estadística básica; ≥ 100 para segmentación por subgrupos
 
 **Output:** Distribución de importancia × satisfacción por atributo; identificación de CTQs con alta importancia / baja satisfacción (zona de oportunidad).

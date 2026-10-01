@@ -1,0 +1,3 @@
+        with shared_lock.held(ledger, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+                              min_wait_s=0.01, max_wait_s=0.2):
+            reservations = {pid: mib for pid, mib in _reservations(ledger).items() if _alive(int(pid))}

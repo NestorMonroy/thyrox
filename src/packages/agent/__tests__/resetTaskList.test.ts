@@ -4,12 +4,18 @@
  */
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
-const base = mkdtempSync(join(resolve(import.meta.dir, '../../../../.claude/cache'), 'tasks-'))
-process.env.CLAUDE_CONFIG_DIR = base
+const base = mkdtempSync(join(tmpdir(), 'thyrox-tasks-'))
+const previousConfigDir = process.env.THYROX_CONFIG_DIR
+process.env.THYROX_CONFIG_DIR = base
 const { createTask, getTasksDir, listTasks, resetTaskList, updateTask } = await import('../tasks.ts')
-afterAll(() => rmSync(base, { recursive: true, force: true }))
+afterAll(() => {
+  rmSync(base, { recursive: true, force: true })
+  if (previousConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = previousConfigDir
+})
 
 let n = 0
 let list = ''

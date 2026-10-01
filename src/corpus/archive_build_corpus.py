@@ -67,24 +67,20 @@ ARCHIVE_DIR_NAME = "_archived"
 MANIFEST_NAME = "MANIFEST.tsv"
 README_NAME = "README.md"
 
-#: El `.7z` NO se versiona: `.gitignore` lleva un `*.7z` global. Eso no es un
-#: descuido que haya que revertir — es lo que hace que archivar NO añada peso al
-#: historial, que era el punto. Pero deja `_archived/` pareciendo un manifiesto
-#: que apunta a archivos que git no tiene, y quien lo mire concluye que el
-#: corpus se perdio. No se perdio: la columna `head` del manifiesto ES la clave
-#: de recuperacion, porque el archivado corre ANTES del commit que retira el
-#: crudo, asi que ese arbol todavia lo contiene.
-#:
-#: Este README lo declara. Sin el, la unica lectura posible de `_archived/` es
-#: la equivocada.
+#: El `.7z` se versiona, igual que el MANIFEST y este README: `.gitignore` ya no
+#: lleva el `*.7z` global (TASK-THYROX-0469). Archivar añade al historial el peso
+#: del `.7z`, y a cambio `_archived/` es autosuficiente en un clon nuevo. La
+#: columna `head` del manifiesto sigue siendo la segunda via de recuperacion:
+#: el archivado corre ANTES del commit que retira el crudo, asi que ese arbol
+#: todavia lo contiene.
 README_TEMPLATE = """# Corpus de builds archivado
 
 Las versiones que `list_corpus_builds` ya no lista viven aqui como un `.7z`
-solido por version. **Los `.7z` NO estan versionados** — `.gitignore` lleva un
-`*.7z` global, y eso es deliberado: archivar no debe anadir peso al historial.
+solido por version. **Los `.7z` se versionan**, junto con este README y el
+MANIFEST: un clon nuevo trae las builds archivadas sin nada mas.
 
-Son una copia de CONVENIENCIA, tan durable como el contenedor. La copia durable
-es el historial de git.
+El historial de git guarda ademas el crudo de cada build, en el commit que
+declara la columna `head`; es la segunda via, por si el `.7z` falta.
 
 ## Como se recupera una build archivada
 
@@ -308,7 +304,7 @@ def write_manifest(destination: pathlib.Path, results: list[ArchiveResult],
 
 
 def main(argv: "list[str] | None" = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=pathlib.Path, default=None,
                         help="raiz del corpus (default: la de thyrox)")
     parser.add_argument("--keep", type=int, default=DEFAULT_KEEP,

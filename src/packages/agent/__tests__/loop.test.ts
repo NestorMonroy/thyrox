@@ -50,6 +50,15 @@ describe('runLoop — el bucle (T-006)', () => {
     expect(r.stop).toBe('end_turn')
   })
 
+  test('sin maxTurns el bucle no tiene tope: termina cuando el modelo termina', async () => {
+    const d = dir()
+    const requests = Array.from({ length: 30 }, () => usaHerramienta('Read', { file_path: join(d, 'no-existe') }))
+    const p = new RecordedProvider([...requests, texto('fin')])
+    const r = await runLoop({ ...base(d), prompt: 'x', provider: p })
+    expect(r.stop).toBe('end_turn')
+    expect(r.turns).toBe(31)
+  })
+
   test('maxTurns corta el bucle y lo dice', async () => {
     const d = dir()
     const p = new RecordedProvider(Array.from({ length: 5 }, () => usaHerramienta('Bash', { command: 'true' })))

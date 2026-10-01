@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTrust.test.ts:
+125 |   test('en Linux sin ancestría verificada no es propio; en macOS decide el veredicto', async () => {
+126 |     expect(await isSelfSent({ selfPid: 4242, needsVerdict: true, childTokenPresented: true, platform: 'linux' })).toBe(false)
+127 |     const verdict = (value: 'self' | 'not-self' | 'no-evidence') => async () => value
+128 |     const macos = { selfPid: 4242, needsVerdict: true, platform: 'macos', verifiedPeerPid: 9 } as const
+129 |     expect(await isSelfSent({ ...macos, childTokenPresented: false, verdictOf: verdict('self') })).toBe(true)
+130 |     expect(await isSelfSent({ ...macos, childTokenPresented: true, verdictOf: verdict('no-evidence') })).toBe(true)
+                                                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTrust.test.ts:130:106)
+(fail) isSelfSent (ye) > en Linux sin ancestría verificada no es propio; en macOS decide el veredicto [0.45ms]
+
+ 16 pass
+ 1 fail
+ 47 expect() calls
+Ran 17 tests across 1 file. [110.00ms]

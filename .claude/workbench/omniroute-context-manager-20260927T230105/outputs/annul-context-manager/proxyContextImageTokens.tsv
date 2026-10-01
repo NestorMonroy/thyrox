@@ -1,0 +1,30 @@
+base	8 pass, 0 fail	—
+trim-tools	8 pass, 0 fail	—
+prune-images	8 pass, 0 fail	—
+compress-thinking	8 pass, 0 fail	—
+thinking-keep-last	8 pass, 0 fail	—
+purify	8 pass, 0 fail	—
+purify-repair	8 pass, 0 fail	—
+notice-merge	8 pass, 0 fail	—
+notice-bytes	8 pass, 0 fail	—
+image-budget	4 pass, 4 fail	#8368: inline base64 PNG image_url is NOT counted as raw text (bounded image-token estimate) | #8368: OpenAI chat.completions image_url object shape is bounded | #8368: Claude source.base64 image block shape is bounded | #8368: Gemini inlineData image block shape is bounded
+document-budget	8 pass, 0 fail	—
+openai-image	7 pass, 1 fail	#8368: OpenAI chat.completions image_url object shape is bounded
+claude-image	7 pass, 1 fail	#8368: Claude source.base64 image block shape is bounded
+gemini-image	7 pass, 1 fail	#8368: Gemini inlineData image block shape is bounded
+responses-placeholder	8 pass, 0 fail	—
+prune-target-stop	8 pass, 0 fail	—
+pairs-keep-last	8 pass, 0 fail	—
+pairs-orphan-result	8 pass, 0 fail	—
+pairs-empty-assistant	8 pass, 0 fail	—
+adjacency	8 pass, 0 fail	—
+strip-trailing	8 pass, 0 fail	—
+mistral	8 pass, 0 fail	—
+env-provider	0 pass, 1 fail	—
+env-default	8 pass, 0 fail	—
+env-reserve	8 pass, 0 fail	—
+env-keep	8 pass, 0 fail	—
+keep-zero	8 pass, 0 fail	—
+injected	8 pass, 0 fail	—
+name-hints	8 pass, 0 fail	—
+reserve-scale	8 pass, 0 fail	—

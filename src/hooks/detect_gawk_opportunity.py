@@ -39,7 +39,7 @@ Ciega a: un programa en un ``.awk`` o un ``.py`` invocado por ruta (mide la
 línea que se escribe), a un ``mv`` que no sigue inmediatamente al awk, y a
 un ``re.sub`` repartido en funciones. ``&`` sí lo expande ``gsub`` y no avisa.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 

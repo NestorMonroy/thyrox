@@ -1,0 +1,60 @@
+== 1. control positivo — la conducta medida, ejecutada ==
+  ok    un proceso externo que escribe tras el corte invierte `grep -q`
+  ok    el MISMO texto por el builtin printf también invierte (sin exportar)
+  ok    un literal corto por printf no invierte
+  ok    y la forma del arreglo —capturar antes— sale 0
+
+== 2. escritores externos: se marcan ==
+  ok    python3
+  ok    gawk
+  ok    cat de archivo
+  ok    find
+  ok    una función del guion
+  ok    un binario por variable
+  ok    timeout no cambia quién escribe
+  ok    una etapa intermedia externa tras un builtin
+  ok    dentro de un if
+  ok    grep -m también corta
+  ok    grep -l también corta
+  ok    continuación con barra
+  ok    echo de una variable: tamaño desconocido
+  ok    printf de una variable
+  ok    printf de una sustitución
+  ok    dentro de una función de una línea: escribe printf, no la función
+
+== 3. fuera de alcance ==
+  ok    echo de un literal
+  ok    printf de un literal
+  ok    printf literal en un if
+  ok    sin pipefail
+  ok    `|| true` neutraliza
+  ok    comentario
+  ok    `|` entre comillas
+  ok    consumidor que lee hasta EOF (grep -c)
+  ok    wc -l
+  ok    la forma del arreglo
+  ok    el escritor sin fin es del gate hermano
+
+== 4. controles de anulación ==
+  ok    íntegro: las 3 de literal pasan
+  ok    ANULADA la exención del literal: caen EXACTAMENTE esas 3
+  ok    y el positivo externo no depende de ella
+  ok    restaurada, vuelven a pasar
+  ok    ANULADA la precondición pipefail: caen EXACTAMENTE esas 2
+  ok    restaurada, vuelven a pasar
+
+== 5. CLI ==
+  ok    raíz ausente: exit 2
+  ok    y NO emite conteo
+  ok    1 incumplidor nuevo
+  ok    exit 1
+  ok    node_modules queda fuera
+  ok    publica el denominador
+  ok    declara qué mide
+  ok    y a qué es ciega
+  ok    --write-baseline congela y sale 0
+  ok    congelado: 0 nuevos y exit 0
+  ok    --quiet emite un entero pelado
+
+test_unsized_writer_pipe: 48 ok, 0 fallo(s)
+EXIT=0

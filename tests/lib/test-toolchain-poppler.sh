@@ -39,7 +39,7 @@ MISSING="thyrox-pdftoppm-que-no-existe-$$"
 
 # Caso 2 — EJE 1, presencia: un binario ausente y sin opt-in REHUSA con exit 2
 # y nombra el binario y la variable de opt-in.
-out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$MISSING" THYROX_INSTALL_POPPLER= \
+out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$MISSING" THYROX_INSTALL_POPPLER='' \
        thyrox_toolchain_require_poppler 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *"$MISSING"* && "$out" == *THYROX_INSTALL_POPPLER* ]]; then
   ok "rehusa con exit 2 nombrando el binario ausente y el opt-in"
@@ -61,7 +61,7 @@ else bad "esperaba exit 2 tras re-comprobar; dio $rc: '$out'"; fi
 
 # Caso 5 — EJE 2, conducta: `pdftotext` presente que no extrae el texto.
 printf '#!/bin/sh\nexit 0\n' > "$T/fake-pdftotext"; chmod +x "$T/fake-pdftotext"
-out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$T/fake-pdftotext" THYROX_INSTALL_POPPLER= \
+out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$T/fake-pdftotext" THYROX_INSTALL_POPPLER='' \
        thyrox_toolchain_require_poppler 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *fake-pdftotext* && "$out" != *"no resuelve"* ]]; then
   ok "un pdftotext presente que no extrae el texto rehusa por conducta"
@@ -69,7 +69,7 @@ else bad "esperaba rechazo de conducta de pdftotext; dio $rc: '$out'"; fi
 
 # Caso 6 — `pdftoppm` que sale 0 y no escribe la imagen: el exit no decide.
 printf '#!/bin/sh\nexit 0\n' > "$T/fake-pdftoppm"; chmod +x "$T/fake-pdftoppm"
-out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$T/fake-pdftoppm" THYROX_INSTALL_POPPLER= \
+out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$T/fake-pdftoppm" THYROX_INSTALL_POPPLER='' \
        thyrox_toolchain_require_poppler 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *fake-pdftoppm* ]]; then
   ok "un pdftoppm que sale 0 sin escribir la imagen rehusa"
@@ -98,6 +98,29 @@ if command -v pdftotext >/dev/null && command -v pdftoppm >/dev/null; then
   else bad "la sonda falla en un hijo: constantes sin exportar"; fi
 else
   echo "  omitido: poppler no esta en este entorno (caso 9 sin medir)"
+fi
+
+# Caso 10 — la sonda es PARAMETRO del consumidor (directiva del ejecutor
+# 2026-09-26: thyrox la expone, el consumidor decide como usarla). El valor
+# declarado tiene que LLEGAR a la sonda: un texto que el PDF no contiene la
+# hace fallar. Con la asignacion fija de antes, el valor se sobrescribia y
+# este caso pasaba en verde midiendo el default.
+#
+# El hijo corre con entorno LIMPIO y lleva un GEMELO que tiene que pasar con el
+# default: los casos de arriba dejan `THYROX_TOOLCHAIN_*` apuntando a binarios
+# falsos, y heredados hacian fallar la sonda con cualquier texto — medido, el
+# caso seguia verde con el valor sobrescrito. Sin el gemelo, «el valor llega»
+# no se distingue de «la sonda falla siempre».
+sonda() { env -i PATH="$PATH" HOME="$HOME" "$@" \
+            bash -c "source \"$SUBJECT\"; thyrox_toolchain_poppler_works" 2>/dev/null; }
+if command -v pdftotext >/dev/null && command -v pdftoppm >/dev/null; then
+  if sonda; then ok "gemelo: con el default la sonda pasa"
+  else bad "gemelo: la sonda falla con el default, el caso no discriminaria"; fi
+  if sonda THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT=NO-ESTA-EN-EL-PDF; then
+    bad "el texto declarado por el consumidor no llega a la sonda"
+  else ok "el texto declarado por el consumidor llega a la sonda"; fi
+else
+  echo "  omitido: poppler no esta en este entorno (caso 10 sin medir)"
 fi
 
 thyrox_summary

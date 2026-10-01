@@ -1,0 +1,98 @@
+sub acquire($) {
+    my $self = shift;
+    my $sleep = 1; # 1 ms
+    my $start_time = time;
+    while(1) {
+	# Can we get a lock?
+	$self->atomic_link_if_count_less_than() and last;
+	$self->remove_dead_locks();
+	# Retry slower and slower up to 1 second
+	$sleep = ($sleep < 1000) ? ($sleep * 1.1) : ($sleep);
+	# Random to avoid every sleeping job waking up at the same time
+	::usleep(rand()*$sleep);
+	if($opt::semaphoretimeout) {
+	    if($opt::semaphoretimeout > 0
+	       and
+	       time - $start_time > $opt::semaphoretimeout) {
+		# Timeout: Take the semaphore anyway
+		::warning("Semaphore timed out. Stealing the semaphore.");
+		if(not -e $self->{'idfile'}) {
+		    open (my $fh, ">", $self->{'idfile'}) or
+			::die_bug("timeout_write_idfile: $self->{'idfile'}");
+		    close $fh;
+		}
+		link $self->{'idfile'}, $self->{'pidfile'};
+		last;
+	    }
+	    if($opt::semaphoretimeout < 0
+	       and
+	       time - $start_time > -$opt::semaphoretimeout) {
+		# Timeout: Exit
+		::warning("Semaphore timed out. Exiting.");
+		exit(1);
+		last;
+	    }
+	}
+    }
+    ::debug("sem", "acquired $self->{'pid'}\n");
+}
+
+sub release($) {
+    my $self = shift;
+    ::rm($self->{'pidfile'});
+    if($self->nlinks() == 1) {
+	# This is the last link, so atomic cleanup
+	$self->lock();
+	if($self->nlinks() == 1) {
+	    ::rm($self->{'idfile'});
+	    rmdir $self->{'lockdir'};
+	}
+	$self->unlock();
+    }
+    ::debug("run", "released $self->{'pid'}\n");
+}
+
+sub pid_change($) {
+    # This should do what release()+acquire() would do without having
+    # to re-acquire the semaphore
+    my $self = shift;
+
+    my $old_pidfile =  $self->{'pidfile'};
+    $self->{'pid'} = $$;
+    $self->{'pidfile'} = $self->{'lockdir'}."/".$$.'@'.::hostname();
+    my $retval = link $self->{'idfile'}, $self->{'pidfile'};
+    ::debug("sem","link($self->{'idfile'},$self->{'pidfile'})=$retval\n");
+    ::rm($old_pidfile);
+}
+
+sub atomic_link_if_count_less_than($) {
+    # Link $file1 to $file2 if nlinks to $file1 < $count
+    my $self = shift;
+    my $retval = 0;
+    $self->lock();
+    my $nlinks = $self->nlinks();
+    ::debug("sem","$nlinks<$self->{'count'} ");
+    if($nlinks < $self->{'count'}) {
+	-d $self->{'lockdir'} or ::mkdir_or_die($self->{'lockdir'});
+	if(not -e $self->{'idfile'}) {
+	    open (my $fh, ">", $self->{'idfile'}) or
+		::die_bug("write_idfile: $self->{'idfile'}");
+	    close $fh;
+	}
+	$retval = link $self->{'idfile'}, $self->{'pidfile'};
+	::debug("sem","link($self->{'idfile'},$self->{'pidfile'})=$retval\n");
+    }
+    $self->unlock();
+    ::debug("sem", "atomic $retval");
+    return $retval;
+}
+
+sub nlinks($) {
+    my $self = shift;
+    if(-e $self->{'idfile'}) {
+	return (stat(_))[3];
+    } else {
+	return 0;
+    }
+}
+

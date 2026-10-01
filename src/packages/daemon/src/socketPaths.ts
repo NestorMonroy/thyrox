@@ -19,8 +19,10 @@
  */
 
 import { createHash } from 'node:crypto'
-import { homedir, tmpdir } from 'node:os'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 /** Cached realpath-of-cwd hash for stability across sub-calls. */
 let cachedRepoHash: string | undefined
@@ -72,7 +74,7 @@ export function getPtySocketPath(short: string): string {
  * ant runs TWO sockets per bg worker: the PTY socket carries screen
  * bytes (attach/replay), and a SEPARATE rendezvous socket carries the
  * out-of-band control channel (ant 4291.js worker-side server bound on
- * `CLAUDE_BG_RENDEZVOUS_SOCK`; ant 5016.js `naK` supervisor-side client).
+ * `THYROX_BG_RENDEZVOUS_SOCK`; ant 5016.js `naK` supervisor-side client).
  * ant's layout is `<scope>/rv/<short>.sock`; ccb keeps its existing flat
  * per-job-dir convention (the PTY socket is `<jobDir>/pty.sock` — see
  * `spawnPty.ts`), so the rendezvous socket sits alongside it as
@@ -95,13 +97,11 @@ export function getClaimSocketPath(short: string): string {
 }
 
 /**
- * ~/.claude/daemon directory for breadcrumb files. Respects
- * CLAUDE_CONFIG_HOME for consistency with bgWorkerRegistry.getJobsRoot()
- * and so unit tests can isolate by pointing the env var at a tmpdir.
+ * `<getConfigHomeDir()>/daemon` directory for breadcrumb files. Unit tests
+ * isolate by pointing `THYROX_CONFIG_DIR` at a tmpdir.
  */
 export function getDaemonHomeDir(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
-  return root ? join(root, 'daemon') : join(homedir(), '.claude', 'daemon')
+  return join(getConfigHomeDir(), 'daemon')
 }
 
 /** ~/.claude/daemon/pty-pids directory. */

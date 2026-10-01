@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/verify/test_single_workspace_root.py 2>&1 | tail -2

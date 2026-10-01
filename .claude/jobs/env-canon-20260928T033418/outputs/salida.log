@@ -1,0 +1,94 @@
+run-task-pool: 11 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260928T033419
+  job-20260928T033419/job-001 cd src/packages/agent && echo == agent && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-002 cd src/packages/app-host && echo == app-host && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-003 cd src/packages/bridge && echo == bridge && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-004 cd src/packages/config && echo == config && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-005 cd src/packages/ide && echo == ide && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-006 cd src/packages/ink && echo == ink && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-007 cd src/packages/memory && echo == memory && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-008 cd src/packages/permission && echo == permission && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-009 cd src/packages/provider && echo == provider && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-010 cd src/packages/storage && echo == storage && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+  job-20260928T033419/job-011 cd src/packages/swarm && echo == swarm && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)' | head -20
+run-task-pool: lanzados 11 de 11; esperando en PRIMER PLANO (timeout 869s)
+asentado: job-20260928T033419_job-001 -> OK (2 de 12)
+asentado: job-20260928T033419_job-002 -> OK (3 de 12)
+asentado: job-20260928T033419_job-003 -> OK (4 de 12)
+asentado: job-20260928T033419_job-004 -> OK (5 de 12)
+asentado: job-20260928T033419_job-005 -> OK (6 de 12)
+asentado: job-20260928T033419_job-006 -> OK (7 de 12)
+asentado: job-20260928T033419_job-007 -> OK (8 de 12)
+asentado: job-20260928T033419_job-008 -> OK (9 de 12)
+asentado: job-20260928T033419_job-009 -> OK (10 de 12)
+asentado: job-20260928T033419_job-010 -> OK (11 de 12)
+asentado: job-20260928T033419_job-011 -> OK (12 de 12)
+== 12 trabajos asentados ==
+OLVIDADO job-20260928T033419
+       | (vacío — no emitió nada)
+OK     job-20260928T033419_job-001 exit=0
+       | == agent
+       |  2660 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 267340 KB (261 MB) · pared 28.33s
+OK     job-20260928T033419_job-002 exit=0
+       | == app-host
+       |  245 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 209688 KB (205 MB) · pared 3.34s
+OK     job-20260928T033419_job-003 exit=0
+       | == bridge
+       |  150 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 132960 KB (130 MB) · pared 1.33s
+OK     job-20260928T033419_job-004 exit=0
+       | == config
+       |  868 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 156536 KB (153 MB) · pared 10.96s
+OK     job-20260928T033419_job-005 exit=0
+       | == ide
+       |  23 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 120872 KB (118 MB) · pared 0.70s
+OK     job-20260928T033419_job-006 exit=0
+       | == ink
+       |  80 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 87688 KB (86 MB) · pared 0.24s
+OK     job-20260928T033419_job-007 exit=0
+       | == memory
+       |  91 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 89944 KB (88 MB) · pared 0.28s
+OK     job-20260928T033419_job-008 exit=0
+       | == permission
+       |  1075 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 229864 KB (224 MB) · pared 15.17s
+OK     job-20260928T033419_job-009 exit=0
+       | == provider
+       |  3872 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 391208 KB (382 MB) · pared 12.62s
+OK     job-20260928T033419_job-010 exit=0
+       | == storage
+       |  1192 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 258712 KB (253 MB) · pared 10.37s
+OK     job-20260928T033419_job-011 exit=0
+       | == swarm
+       |  610 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 152284 KB (149 MB) · pared 3.62s
+__BG_EXIT__=0

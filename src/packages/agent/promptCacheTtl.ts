@@ -19,7 +19,7 @@
  *
  * Divergencias, declaradas:
  * - las variables llevan el prefijo `THYROX_` (`THYROX_CODE_PROMPT_CACHE_TTL`
- *   por `CLAUDE_CODE_PROMPT_CACHE_TTL`, etc.): son del harness, no del cliente;
+ *   por `THYROX_CODE_PROMPT_CACHE_TTL`, etc.): son del harness, no del cliente;
  * - la lista permitida del paso 7 la trae en el ejecutable una bandera remota
  *   (`tengu_prompt_cache_1h_config`); aquí la inyecta quien llama, con la del
  *   ejecutable por defecto;
@@ -66,7 +66,7 @@ export type PromptCacheTtlEnv = Readonly<Record<string, string | undefined>>
 export type PromptCacheTtlContext = {
   env: PromptCacheTtlEnv
   settings?: { promptCacheTtl?: CacheTtl; subagentPromptCacheTtl?: CacheTtl }
-  /** `gt()`: suscripción de Claude, no clave de API ni nube. */
+  /** `gt()`: suscripción de thyrox, no clave de API ni nube. */
   isSubscriber: boolean
   /** `wa().isUsingOverage`: la suscripción está en excedente. */
   isUsingOverage: boolean

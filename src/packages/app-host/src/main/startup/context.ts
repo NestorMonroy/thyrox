@@ -26,13 +26,7 @@
 
 import { getCwd } from '../../bootstrap/cwd.js'
 
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 export type DiagnosticsLevel = 'info' | 'warn' | 'error'
 
 export type PrefetchDeps = {
@@ -91,7 +85,7 @@ export function prefetchSystemContextIfSafe(deps: PrefetchDeps = {}): void {
  */
 export function startDeferredPrefetches(deps: PrefetchDeps = {}): void {
   const isBareModeFn = deps.isBareMode ?? (() => false)
-  if (isEnvTruthy(process.env.CLAUDE_CODE_EXIT_AFTER_FIRST_RENDER) || isBareModeFn()) {
+  if (isEnvTruthy(process.env.THYROX_CODE_EXIT_AFTER_FIRST_RENDER) || isBareModeFn()) {
     return
   }
 
@@ -101,14 +95,14 @@ export function startDeferredPrefetches(deps: PrefetchDeps = {}): void {
   void (deps.getRelevantTips ?? (async () => undefined))()
 
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH)
+    isEnvTruthy(process.env.THYROX_CODE_USE_BEDROCK) &&
+    !isEnvTruthy(process.env.THYROX_CODE_SKIP_BEDROCK_AUTH)
   ) {
     void (deps.prefetchAwsCredentialsAndBedRockInfoIfSafe ?? asyncNoop)()
   }
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_SKIP_VERTEX_AUTH)
+    isEnvTruthy(process.env.THYROX_CODE_USE_VERTEX) &&
+    !isEnvTruthy(process.env.THYROX_CODE_SKIP_VERTEX_AUTH)
   ) {
     void (deps.prefetchGcpCredentialsIfSafe ?? asyncNoop)()
   }

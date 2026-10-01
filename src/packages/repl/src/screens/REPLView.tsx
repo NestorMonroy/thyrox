@@ -266,6 +266,14 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flag
 import {
   textForResubmit,
   handleMessageFromStream,
+  isStreamItem,
+  thinkingAfterLanding,
+  estimateTokensFromChars,
+  CHARS_PER_ESTIMATED_TOKEN,
+  type ApiMetricsEvent,
+  type QueryEvent,
+  type StreamHandlerOptions,
+  type StreamItem,
   type StreamingToolUse,
   type StreamingThinking,
   isCompactBoundaryMessage,
@@ -366,7 +374,7 @@ import {
   restoreWorktreeForResume,
   exitRestoredWorktree,
 } from '@thyrox/storage/sessionRestore.js';
-import { updateSessionName, updateSessionActivity } from '@thyrox/agent/concurrentSessions.js';
+import { setSessionName, updateSessionStatus } from '@thyrox/local-observability/uds/pidFileRecord.js';
 import { isInProcessTeammateTask, type InProcessTeammateTaskState } from '@thyrox/swarm';
 import { restoreRemoteAgentTasks } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js';
 import { useInboxPoller } from '../hooks/useInboxPoller.js';
@@ -505,12 +513,13 @@ import {
   createAttachmentMessage,
   getQueuedCommandAttachments,
 } from '@thyrox/agent/attachments.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
 // function identity each render, which would break composedOnScroll's memo.
 const HISTORY_STUB = { maybeLoadOlder: (_: ScrollBoxHandle) => {} };
 // Window after a user-initiated scroll during which type-into-empty does NOT
-// repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+// repin to bottom. Josh Rosen's workflow: thyrox emits long output → scroll
 // up to read the start → start typing → before this fix, snapped to bottom.
 // https://anthropic.slack.com/archives/C07VBSHV7EV/p1773545449871739
 const RECENT_SCROLL_REPIN_WINDOW_MS = 3000;
@@ -605,7 +614,7 @@ export function REPL({
   const { titleDisabled, moreRightEnabled, disableVirtualScroll } = useReplEnvFlags();
   const disableMessageActions = feature('MESSAGE_ACTIONS')
     ?
-      useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_MESSAGE_ACTIONS), [])
+      useMemo(() => isEnvTruthy(process.env.THYROX_CODE_DISABLE_MESSAGE_ACTIONS), [])
     : false;
 
   // Log REPL mount/unmount lifecycle
@@ -682,7 +691,7 @@ export function REPL({
 
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
   // ResumeConversation.tsx (via setAppState before rendering REPL) to avoid
-  // useEffect-based state initialization on mount (per CLAUDE.md guidelines)
+  // useEffect-based state initialization on mount (per THYROX.md guidelines)
 
   // Local state for commands (hot-reloadable; see useCommandReload triggers)
   const [localCommands, setLocalCommands] = useState(initialCommands);
@@ -718,7 +727,7 @@ export function REPL({
   const [screen, setScreen] = useState<Screen>('prompt');
   const [showAllInTranscript, setShowAllInTranscript] = useState(false);
   // [ forces the dump-to-scrollback path inside transcript mode. Separate
-  // from CLAUDE_CODE_NO_FLICKER=0 (which is process-lifetime) — this is
+  // from THYROX_CODE_NO_FLICKER=0 (which is process-lifetime) — this is
   // ephemeral, reset on transcript exit. Diagnostic escape hatch so
   // terminal/tmux native cmd-F can search the full flat render.
   const [dumpMode, setDumpMode] = useState(false);
@@ -1012,7 +1021,7 @@ export function REPL({
   } | null>(null);
 
   // Track local JSX commands separately so tools can't overwrite them.
-  // This enables "immediate" commands (like /btw) to persist while Claude is processing.
+  // This enables "immediate" commands (like /btw) to persist while thyrox is processing.
   const localJSXCommandRef = useRef<{
     jsx: React.ReactNode | null;
     shouldHidePromptInput: boolean;
@@ -1108,7 +1117,7 @@ export function REPL({
   // session from mid-conversation context.
   const haikuTitleAttemptedRef = useRef((initialMessages?.length ?? 0) > 0);
   const agentTitle = mainThreadAgentDefinition?.agentType;
-  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'Claude Code';
+  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? `${PRODUCT_NAME}`;
   const isWaitingForApproval =
     toolUseConfirmQueue.length > 0 || promptQueue.length > 0 || pendingWorkerRequest || pendingSandboxRequest;
   // Local-jsx commands (like /plugin, /config) show user-facing dialogs that
@@ -1122,7 +1131,7 @@ export function REPL({
   // here because onQueryImpl reads them (background session description,
   // haiku title extraction gate).
 
-  // Prevent macOS from sleeping while Claude is working
+  // Prevent macOS from sleeping while thyrox is working
   useEffect(() => {
     if (isLoading && !isWaitingForApproval && !isShowingLocalJSXCommand) {
       startPreventSleep();
@@ -1150,7 +1159,7 @@ export function REPL({
   // back to transcript-tail derivation when this is missing/stale.
   useEffect(() => {
     if (feature('BG_SESSIONS')) {
-      void updateSessionActivity({ status: sessionStatus, waitingFor });
+      void updateSessionStatus({ status: sessionStatus, waitingFor });
     }
   }, [sessionStatus, waitingFor]);
 
@@ -1838,7 +1847,7 @@ export function REPL({
               }
             : undefined,
         }));
-        void updateSessionName(log.agentName);
+        void setSessionName(log.agentName);
 
         // Restore read file state from the message history
         restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
@@ -1862,7 +1871,7 @@ export function REPL({
         // Switch session (id + project dir atomically). fullPath may point to
         // a different project (cross-worktree, /branch); null derives from
         // current originalCwd.
-        switchSession(asSessionId(sessionId), log.fullPath ? dirname(log.fullPath) : null);
+        switchSession(asSessionId(sessionId), entrypoint === 'fork' ? 'fork' : 'resume', log.fullPath ? dirname(log.fullPath) : null);
         // Rename asciicast recording to match the resumed session ID
         const { renameRecordingForSession } = await import('@thyrox/output/capture');
         await renameRecordingForSession();
@@ -1981,13 +1990,13 @@ export function REPL({
   // before onQuery builds its own context, and discovery on turn N must
   // still attribute a SkillTool call on turn N+k. Cleared in clearConversation.
   const discoveredSkillNamesRef = useRef(new Set<string>());
-  // Session-level dedup for nested_memory CLAUDE.md attachments.
-  // readFileState is a 100-entry LRU; once it evicts a CLAUDE.md path,
+  // Session-level dedup for nested_memory THYROX.md attachments.
+  // readFileState is a 100-entry LRU; once it evicts a THYROX.md path,
   // the next discovery cycle re-injects it. Cleared in clearConversation.
   const loadedNestedMemoryPathsRef = useRef(new Set<string>());
 
   // Helper to restore read file state from messages (used for resume flows)
-  // This allows Claude to edit files that were read in previous sessions
+  // This allows thyrox to edit files that were read in previous sessions
   const restoreReadFileState = useCallback((messages: MessageType[], cwd: string) => {
     const extracted = extractReadFilesFromMessages(messages, cwd, READ_FILE_STATE_CACHE_SIZE);
     readFileState.current = mergeFileStateCaches(readFileState.current, extracted);
@@ -2668,114 +2677,166 @@ export function REPL({
     onBackgroundQuery: handleBackgroundQuery,
   });
 
-  const onQueryEvent = useCallback(
-    (event: Parameters<typeof handleMessageFromStream>[0]) => {
-      handleMessageFromStream(
-        event,
-        newMessage => {
-          if (isCompactBoundaryMessage(newMessage)) {
-            // Fullscreen: keep pre-compact messages for scrollback. query.ts
-            // slices at the boundary for API calls, Messages.tsx skips the
-            // boundary filter in fullscreen, and useLogMessages treats this
-            // as an incremental append (first uuid unchanged). Cap at one
-            // compact-interval of scrollback — normalizeMessages/applyGrouping
-            // are O(n) per render, so drop everything before the previous
-            // boundary to keep n bounded across multi-day sessions.
-            if (isFullscreenEnvEnabled()) {
-              setMessages(old => [
-                ...getMessagesAfterCompactBoundary(old, {
-                  includeSnipped: true,
-                }),
-                newMessage,
-              ]);
-            } else {
-              setMessages(() => [newMessage]);
-            }
-            // Bump conversationId so Messages.tsx row keys change and
-            // stale memoized rows remount with post-compact content.
-            setConversationId(randomUUID());
-            // Compaction succeeded — clear the context-blocked flag so ticks resume
-            if (feature('PROACTIVE') || feature('KAIROS')) {
-              proactiveModule?.setContextBlocked(false);
-            }
-          } else if (
-            newMessage.type === 'progress' &&
+  /**
+   * Un mensaje completo que el bucle entrega: la lapida retira, el resumen de
+   * SDK se ignora y el resto entra al historial. La frontera de compactacion
+   * reemplaza; el progreso efimero sustituye al anterior del mismo tool.
+   */
+  const deliverCompleteMessage = useCallback(
+    (item: Exclude<QueryEvent, StreamItem>) => {
+      if (item.type === 'tombstone') {
+        const tombstonedMessage = item.message;
+        setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage));
+        void removeTranscriptMessage(tombstonedMessage.uuid);
+        return;
+      }
+      if (item.type === 'tool_use_summary') return;
+      const newMessage = item;
+      const landedThinking = thinkingAfterLanding(newMessage);
+      if (landedThinking) setStreamingThinking(landedThinking);
+      // El texto parcial se retira en el mismo lote en que llega el mensaje
+      // final, para que la vista pase de uno a otro sin hueco ni duplicado.
+      onStreamingText(() => null);
+      if (isCompactBoundaryMessage(newMessage)) {
+        // Fullscreen: keep pre-compact messages for scrollback. query.ts
+        // slices at the boundary for API calls, Messages.tsx skips the
+        // boundary filter in fullscreen, and useLogMessages treats this
+        // as an incremental append (first uuid unchanged). Cap at one
+        // compact-interval of scrollback — normalizeMessages/applyGrouping
+        // are O(n) per render, so drop everything before the previous
+        // boundary to keep n bounded across multi-day sessions.
+        if (isFullscreenEnvEnabled()) {
+          setMessages(old => [
+            ...getMessagesAfterCompactBoundary(old, {
+              includeSnipped: true,
+            }),
+            newMessage,
+          ]);
+        } else {
+          setMessages(() => [newMessage]);
+        }
+        // Bump conversationId so Messages.tsx row keys change and
+        // stale memoized rows remount with post-compact content.
+        setConversationId(randomUUID());
+        // Compaction succeeded — clear the context-blocked flag so ticks resume
+        if (feature('PROACTIVE') || feature('KAIROS')) {
+          proactiveModule?.setContextBlocked(false);
+        }
+      } else if (
+        newMessage.type === 'progress' &&
+        typeof newMessage.data === 'object' &&
+        newMessage.data !== null &&
+        'type' in newMessage.data &&
+        isEphemeralToolProgress(newMessage.data.type)
+      ) {
+        // Replace the previous ephemeral progress tick for the same tool
+        // call instead of appending. Sleep/Bash emit a tick per second and
+        // only the last one is rendered; appending blows up the messages
+        // array (13k+ observed) and the transcript (120MB of sleep_progress
+        // lines). useLogMessages tracks length, so same-length replacement
+        // also skips the transcript write.
+        // agent_progress / hook_progress / skill_progress are NOT ephemeral
+        // — each carries distinct state the UI needs (e.g. subagent tool
+        // history). Replacing those leaves the AgentTool UI stuck at
+        // "Initializing…" because it renders the full progress trail.
+        setMessages(oldMessages => {
+          const last = oldMessages.at(-1);
+          if (
+            last?.type === 'progress' &&
+            last.parentToolUseID === newMessage.parentToolUseID &&
+            last.data &&
+            typeof last.data === 'object' &&
+            'type' in last.data &&
+            newMessage.data &&
             typeof newMessage.data === 'object' &&
-            newMessage.data !== null &&
             'type' in newMessage.data &&
-            isEphemeralToolProgress(newMessage.data.type)
+            last.data.type === newMessage.data.type
           ) {
-            // Replace the previous ephemeral progress tick for the same tool
-            // call instead of appending. Sleep/Bash emit a tick per second and
-            // only the last one is rendered; appending blows up the messages
-            // array (13k+ observed) and the transcript (120MB of sleep_progress
-            // lines). useLogMessages tracks length, so same-length replacement
-            // also skips the transcript write.
-            // agent_progress / hook_progress / skill_progress are NOT ephemeral
-            // — each carries distinct state the UI needs (e.g. subagent tool
-            // history). Replacing those leaves the AgentTool UI stuck at
-            // "Initializing…" because it renders the full progress trail.
-            setMessages(oldMessages => {
-              const last = oldMessages.at(-1);
-              if (
-                last?.type === 'progress' &&
-                last.parentToolUseID === newMessage.parentToolUseID &&
-                last.data &&
-                typeof last.data === 'object' &&
-                'type' in last.data &&
-                newMessage.data &&
-                typeof newMessage.data === 'object' &&
-                'type' in newMessage.data &&
-                last.data.type === newMessage.data.type
-              ) {
-                const copy = oldMessages.slice();
-                copy[copy.length - 1] = newMessage;
-                return copy;
-              }
-              return [...oldMessages, newMessage];
-            });
-          } else {
-            setMessages(oldMessages => [...oldMessages, newMessage]);
+            const copy = oldMessages.slice();
+            copy[copy.length - 1] = newMessage;
+            return copy;
           }
-          // Block ticks on API errors to prevent tick → error → tick
-          // runaway loops (e.g., auth failure, rate limit, blocking limit).
-          // Cleared on compact boundary (above) or successful response (below).
-          if (feature('PROACTIVE') || feature('KAIROS')) {
-            if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
-              proactiveModule?.setContextBlocked(true);
-            } else if (newMessage.type === 'assistant') {
-              proactiveModule?.setContextBlocked(false);
-            }
-          }
-        },
-        newContent => {
-          // setResponseLength handles updating both responseLengthRef (for
-          // spinner animation) and apiMetricsRef (endResponseLength/lastTokenTime
-          // for OTPS). No separate metrics update needed here.
-          setResponseLength(length => length + newContent.length);
-        },
-        setStreamMode,
-        setStreamingToolUses,
-        tombstonedMessage => {
-          setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage));
-          void removeTranscriptMessage(tombstonedMessage.uuid);
-        },
-        setStreamingThinking,
-        metrics => {
+          return [...oldMessages, newMessage];
+        });
+      } else {
+        setMessages(oldMessages => [...oldMessages, newMessage]);
+      }
+      // Block ticks on API errors to prevent tick → error → tick
+      // runaway loops (e.g., auth failure, rate limit, blocking limit).
+      // Cleared on compact boundary (above) or successful response (below).
+      if (feature('PROACTIVE') || feature('KAIROS')) {
+        if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
+          proactiveModule?.setContextBlocked(true);
+        } else if (newMessage.type === 'assistant') {
+          proactiveModule?.setContextBlocked(false);
+        }
+      }
+    },
+    [setMessages, setStreamingThinking, onStreamingText],
+  );
+
+  // El pensamiento no pasa por onUpdateLength: llega como tokens estimados y
+  // se convierte a caracteres para el mismo largo que mide el spinner. La firma
+  // refina el bloque solo cuando estima mas que su texto (pensamiento
+  // redactado); content_block_start reinicia esa cuenta.
+  const thinkingBlockTokensRef = useRef(0);
+  const recordApiMetric = useCallback(
+    (event: ApiMetricsEvent) => {
+      switch (event.type) {
+        case 'start': {
           const now = Date.now();
           const baseline = responseLengthRef.current;
           apiMetricsRef.current.push({
-            ...metrics,
+            ttftMs: event.ttftMs,
             firstTokenTime: now,
             lastTokenTime: now,
             responseLengthBaseline: baseline,
             endResponseLength: baseline,
           });
-        },
-        onStreamingText,
-      );
+          return;
+        }
+        case 'content_block_start':
+          thinkingBlockTokensRef.current = 0;
+          return;
+        case 'thinking_progress':
+          thinkingBlockTokensRef.current += event.estimatedTokensDelta;
+          setResponseLength(length => length + event.estimatedTokensDelta * CHARS_PER_ESTIMATED_TOKEN);
+          return;
+        case 'thinking_signature': {
+          const signatureTokens = estimateTokensFromChars(event.chars);
+          const missingTokens = signatureTokens - thinkingBlockTokensRef.current;
+          if (missingTokens <= 0) return;
+          thinkingBlockTokensRef.current = signatureTokens;
+          setResponseLength(length => length + missingTokens * CHARS_PER_ESTIMATED_TOKEN);
+          return;
+        }
+      }
     },
-    [setMessages, setResponseLength, setStreamMode, setStreamingToolUses, setStreamingThinking, onStreamingText],
+    [setResponseLength],
+  );
+
+  const streamHandlerOptions = useMemo<StreamHandlerOptions>(
+    () => ({
+      onSetStreamMode: setStreamMode,
+      // setResponseLength actualiza responseLengthRef (animacion del spinner)
+      // y apiMetricsRef (endResponseLength/lastTokenTime para OTPS).
+      onUpdateLength: charactersStreamed => setResponseLength(length => length + charactersStreamed),
+      onStreamingToolUses: setStreamingToolUses,
+      onStreamingText,
+      onApiMetrics: recordApiMetric,
+    }),
+    [setStreamMode, setResponseLength, setStreamingToolUses, onStreamingText, recordApiMetric],
+  );
+
+  const onQueryEvent = useCallback(
+    (event: QueryEvent) => {
+      if (isStreamItem(event)) {
+        handleMessageFromStream(event, streamHandlerOptions);
+        return;
+      }
+      deliverCompleteMessage(event);
+    },
+    [streamHandlerOptions, deliverCompleteMessage],
   );
 
   const onQueryImpl = useCallback(
@@ -2800,7 +2861,7 @@ export function REPL({
         }
       }
 
-      // Mark onboarding as complete when any user message is sent to Claude
+      // Mark onboarding as complete when any user message is sent to thyrox
       void maybeMarkProjectOnboardingComplete();
 
       // Extract a session title from the first real user message. One-shot
@@ -2809,7 +2870,7 @@ export function REPL({
       // which was broken by SessionStart hook messages (prepended via
       // useDeferredHookMessages) and attachment messages (appended by
       // processTextPrompt) — both pushed length past 1 on turn one, so the
-      // title silently fell through to the "Claude Code" default.
+      // title silently fell through to the "thyrox" default.
       if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
         const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content ?? '') : null;
@@ -3398,7 +3459,7 @@ export function REPL({
       }
 
       // Handle immediate commands - these bypass the queue and execute right away
-      // even while Claude is processing. Commands opt-in via `immediate: true`.
+      // even while thyrox is processing. Commands opt-in via `immediate: true`.
       // Commands triggered via keybindings are always treated as immediate.
       if (!speculationAccept && input.trim().startsWith('/')) {
         // Expand [Pasted text #N] refs so immediate commands (e.g. /btw) receive
@@ -3545,8 +3606,8 @@ export function REPL({
       // controls treatment: "dialog" (blocking), "hint" (notification), "off".
       {
         const willowMode = getFeatureValue_CACHED_MAY_BE_STALE('tengu_willow_mode', 'off');
-        const idleThresholdMin = Number(process.env.CLAUDE_CODE_IDLE_THRESHOLD_MINUTES) || 75;  // `||` falls back on NaN; `??` wouldn't
-        const tokenThreshold = Number(process.env.CLAUDE_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
+        const idleThresholdMin = Number(process.env.THYROX_CODE_IDLE_THRESHOLD_MINUTES) || 75;  // `||` falls back on NaN; `??` wouldn't
+        const tokenThreshold = Number(process.env.THYROX_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
         if (
           willowMode !== 'off' &&
           !getGlobalConfig().idleReturnDismissed &&
@@ -3872,7 +3933,7 @@ export function REPL({
    * with an empty prompt opens the agents view.
    *
    * In ccb, when the REPL is running as a bg session attached via
-   * FleetView (`CLAUDE_CODE_SESSION_KIND === 'bg'`), we emit a sentinel
+   * FleetView (`THYROX_CODE_SESSION_KIND === 'bg'`), we emit a sentinel
    * OSC sequence over stdout. The outer `runAttach` client scans PTY
    * data for the sentinel and detaches — landing the user back in
    * the FleetView (which is paused on the outer process).
@@ -3883,14 +3944,14 @@ export function REPL({
    */
   const handleLeftArrowOnEmpty = useCallback(() => {
     // Source: ant 4177.js `$1H()`:
-    //   if (!PF_()) return                     // PF_() = CLAUDE_BG_BACKEND==="daemon"
+    //   if (!PF_()) return                     // PF_() = THYROX_BG_BACKEND==="daemon"
     //   let H = f4K()                          // detach message
     //   ri({type:"detach-request", msg:H})    // daemon RPC (ccb has no daemon)
     //   process.stdout.write(w_H(H))          // APC wire format
     //
     // w_H = ant 4176.js: with msg → `\x1b_cc-detach-msg;<msg>\x1b\\` + aNH; without → aNH
     // aNH = `\x1b_cc-daemon-detach\x1b\\`
-    if (process.env.CLAUDE_CODE_SESSION_KIND === 'bg') {
+    if (process.env.THYROX_CODE_SESSION_KIND === 'bg') {
       sendBgDetachSignal();
       return;
     }
@@ -3959,7 +4020,7 @@ export function REPL({
   // (detach / exit via handleLeftArrowOnEmpty).
   const leftArrowMessageHandler = useMemo(
     () =>
-      process.env.CLAUDE_CODE_SESSION_KIND === 'bg' ||
+      process.env.THYROX_CODE_SESSION_KIND === 'bg' ||
       process.env.CCB_FLEET_ATTACH_CHILD === '1'
         ? undefined
         : (_show: boolean) => {
@@ -4129,15 +4190,15 @@ export function REPL({
     // bottom right corner of the screen if the API key is invalid.
     void reverify();
 
-    // Populate readFileState with CLAUDE.md files at startup
+    // Populate readFileState with THYROX.md files at startup
     const memoryFiles = await getMemoryFiles();
     if (memoryFiles.length > 0) {
       const fileList = memoryFiles
         .map(f => `  [${f.type}] ${f.path} (${f.content.length} chars)${f.parent ? ` (included by ${f.parent})` : ''}`)
         .join('\n');
-      logForDebugging(`Loaded ${memoryFiles.length} CLAUDE.md/rules files:\n${fileList}`);
+      logForDebugging(`Loaded ${memoryFiles.length} THYROX.md/rules files:\n${fileList}`);
     } else {
-      logForDebugging('No CLAUDE.md/rules files found');
+      logForDebugging('No THYROX.md/rules files found');
     }
     for (const file of memoryFiles) {
       // When the injected content doesn't match disk (stripped HTML comments,
@@ -4262,7 +4323,7 @@ export function REPL({
     }
   }, [submitCount]);
 
-  // Idle-prompt watcher: fire "Claude is waiting for your input" after
+  // Idle-prompt watcher: fire "thyrox is waiting for your input" after
   // messageIdleNotifThresholdMs of inactivity following a query completion.
   // Banner-policy gate (KAIROS push toggles, channel selection) lives in
   // notifier.ts:sendNotification → shouldFireBanner('idle_prompt') — the
@@ -4271,7 +4332,7 @@ export function REPL({
   // resplit/5031.js and avoids missing the fire window if a user toggles
   // settings between query-end and idle-threshold.
   useEffect(() => {
-    // Don't set up notification if Claude is busy
+    // Don't set up notification if thyrox is busy
     if (isLoading) return;
 
     // Only enable notifications after the first new interaction in this session
@@ -4287,7 +4348,7 @@ export function REPL({
         const lastUserInteraction = getLastInteractionTime();
 
         if (lastUserInteraction > lastQueryCompletionTime) {
-          // User has interacted since Claude finished - they're not idle, don't notify
+          // User has interacted since thyrox finished - they're not idle, don't notify
           return;
         }
 
@@ -4313,7 +4374,7 @@ export function REPL({
         ) {
           void sendNotification(
             {
-              message: 'Claude is waiting for your input',
+              message: `${PRODUCT_NAME} is waiting for your input`,
               notificationType: 'idle_prompt',
             },
             terminal,
@@ -4341,10 +4402,10 @@ export function REPL({
     if (willowMode !== 'hint' && willowMode !== 'hint_v2') return;
     if (getGlobalConfig().idleReturnDismissed) return;
 
-    const tokenThreshold = Number(process.env.CLAUDE_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
+    const tokenThreshold = Number(process.env.THYROX_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
     if (getTotalInputTokens() < tokenThreshold) return;
 
-    const idleThresholdMs = (Number(process.env.CLAUDE_CODE_IDLE_THRESHOLD_MINUTES) || 75) * 60_000;
+    const idleThresholdMs = (Number(process.env.THYROX_CODE_IDLE_THRESHOLD_MINUTES) || 75) * 60_000;
     const elapsed = Date.now() - lastQueryCompletionTime;
     const remaining = idleThresholdMs - elapsed;
 

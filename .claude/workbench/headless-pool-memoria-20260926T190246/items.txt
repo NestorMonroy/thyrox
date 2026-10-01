@@ -1,0 +1,4 @@
+tests/verify/test_package_root_resolution.sh
+tests/verify/test_pre_commit_hook.py
+tests/verify/test-commit-msg-citation.sh
+tests/hooks/test_detect_awk_substr_target.py

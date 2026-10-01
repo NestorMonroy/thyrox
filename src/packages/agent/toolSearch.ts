@@ -3,30 +3,24 @@
  * de `ccnmt: packages/agent/toolSearch.ts` (769 líneas, 13 símbolos
  * exportados).
  *
- * PORTE PARCIAL, declarado. Este archivo porta únicamente los DOS símbolos
- * que ejercita `__tests__/toolSearchPure.test.ts` — `isToolReferenceBlock`
- * y `extractDiscoveredToolNames` — más sus tres auxiliares privados
- * (`isToolReferenceWithName`, el tipo `ToolResultBlock` y
- * `isToolResultBlockWithContent`). Los once símbolos exportados restantes
- * de la fuente NO se portan aquí, y ningún test portado los ejercita:
+ * PORTE PARCIAL, declarado. Trae:
  *
- *   - (2026-09-24) `ToolSearchMode`, `getToolSearchMode`,
- *     `isToolSearchEnabledOptimistic` e `isToolSearchToolAvailable` YA
- *     están portados desde 2.1.275 (`u9e`, `Dg`, `gfe`, más `pQn`).
- *   - (2026-09-26) `getAutoToolSearchCharThreshold`,
- *     `modelSupportsToolReference` e `isToolSearchEnabled` YA están
- *     portados desde 2.1.282 (`V5n`, `z8`, `iPn`, más `iyt`, `Z5n`,
- *     `X5n`, `Q5n`, `J5n`, `ryt`, `gEe`, `W8`, `mBn`, `qpe`). Sus
+ *   - `isToolReferenceBlock` y `extractDiscoveredToolNames`, con sus tres
+ *     auxiliares privados (`isToolReferenceWithName`, el tipo
+ *     `ToolResultBlock` e `isToolResultBlockWithContent`): puros, sólo
+ *     inspeccionan la forma de bloques de mensaje ya materializados;
+ *   - `ToolSearchMode`, `getToolSearchMode`, `isToolSearchEnabledOptimistic`
+ *     e `isToolSearchToolAvailable`, desde 2.1.275 (`u9e`, `Dg`, `gfe`, más
+ *     `pQn`);
+ *   - `getAutoToolSearchCharThreshold`, `modelSupportsToolReference` e
+ *     `isToolSearchEnabled`, desde 2.1.282 (`V5n`, `z8`, `iPn`, más `iyt`,
+ *     `Z5n`, `X5n`, `Q5n`, `J5n`, `ryt`, `gEe`, `W8`, `mBn`, `qpe`). Sus
  *     divergencias están declaradas junto a cada uno.
- *   - `DeferredToolsDelta`, `DeferredToolsDeltaScanContext`,
- *     `isDeferredToolsDeltaEnabled`, `getDeferredToolsDelta` — el cálculo
- *     de delta de herramientas diferidas depende de la misma familia de
- *     paquetes ausentes.
  *
- * Los dos símbolos portados son puros: no leen variables de entorno, no
- * llaman a GrowthBook, no cuentan tokens — sólo inspeccionan la forma de
- * bloques de mensaje ya materializados. Por eso son portables sin
- * arrastrar el resto del archivo.
+ * No trae `DeferredToolsDelta`, `DeferredToolsDeltaScanContext`,
+ * `isDeferredToolsDeltaEnabled` ni `getDeferredToolsDelta`: el cálculo de
+ * delta de herramientas diferidas depende de paquetes que este árbol no
+ * tiene.
  *
  * Dos divergencias más, ambas de forma y no de comportamiento:
  *
@@ -82,7 +76,7 @@ function isToolSearchForced(): boolean {
 
 /** `e_t`: las betas experimentales desactivadas, salvo forzado. */
 function experimentalBetasDisabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS) && !isToolSearchForced()
+  return isEnvTruthy(process.env.THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS) && !isToolSearchForced()
 }
 
 /** `u9e`: el modo de búsqueda de herramientas según el entorno. */
@@ -391,7 +385,7 @@ export async function isToolSearchEnabled(
   switch (reason) {
     case 'model_unsupported':
       logForDebugging(
-        `Tool search disabled for model '${model}': model does not support tool_reference blocks. This feature is available on Claude Sonnet 4+, Opus 4+, Haiku 4.5+, and newer models.`,
+        `Tool search disabled for model '${model}': model does not support tool_reference blocks. This feature is available on Sonnet 4+, Opus 4+, Haiku 4.5+, and newer models.`,
       )
       record(false, 'standard', reason)
       return false

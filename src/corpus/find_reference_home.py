@@ -178,7 +178,7 @@ def roots_of(paths):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--ours", required=True, help="ruta a nuestro addon")
     parser.add_argument("--reference", required=True, help="repo de referencia")
     parser.add_argument("--rev", default="HEAD", help="revisión a consultar")

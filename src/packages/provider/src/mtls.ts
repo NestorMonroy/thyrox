@@ -28,14 +28,14 @@ export const getMTLSConfig = memoize((): MTLSConfig | undefined => {
   // We don't need to manually load it - Node.js appends it to the built-in CAs automatically
 
   // Client certificate
-  const certPath = readEnv('CLAUDE_CODE_CLIENT_CERT')
+  const certPath = readEnv('THYROX_CODE_CLIENT_CERT')
   if (certPath) {
     try {
       config.cert = getFsImplementation().readFileSync(certPath, {
         encoding: 'utf8',
       })
       logForDebugging(
-        'mTLS: Loaded client certificate from CLAUDE_CODE_CLIENT_CERT',
+        'mTLS: Loaded client certificate from THYROX_CODE_CLIENT_CERT',
       )
     } catch (error) {
       logForDebugging(`mTLS: Failed to load client certificate: ${error}`, {
@@ -45,13 +45,13 @@ export const getMTLSConfig = memoize((): MTLSConfig | undefined => {
   }
 
   // Client key
-  const keyPath = readEnv('CLAUDE_CODE_CLIENT_KEY')
+  const keyPath = readEnv('THYROX_CODE_CLIENT_KEY')
   if (keyPath) {
     try {
       config.key = getFsImplementation().readFileSync(keyPath, {
         encoding: 'utf8',
       })
-      logForDebugging('mTLS: Loaded client key from CLAUDE_CODE_CLIENT_KEY')
+      logForDebugging('mTLS: Loaded client key from THYROX_CODE_CLIENT_KEY')
     } catch (error) {
       logForDebugging(`mTLS: Failed to load client key: ${error}`, {
         level: 'error',
@@ -60,7 +60,7 @@ export const getMTLSConfig = memoize((): MTLSConfig | undefined => {
   }
 
   // Key passphrase
-  const passphrase = readEnv('CLAUDE_CODE_CLIENT_KEY_PASSPHRASE')
+  const passphrase = readEnv('THYROX_CODE_CLIENT_KEY_PASSPHRASE')
   if (passphrase) {
     config.passphrase = passphrase
     logForDebugging('mTLS: Using client key passphrase')

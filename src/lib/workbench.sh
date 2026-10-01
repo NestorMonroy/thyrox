@@ -24,7 +24,7 @@
 # - El identificador inglés traducía el sentido equivocado: `bank` es la
 #   institución o la orilla del río, nunca la mesa de trabajo. El término del
 #   dominio ya existía en este mismo subsistema y es `workbench`
-#   (`src/workbench/manifest.ts`, `.claude/workbench/`).
+#   (`src/packages/workbench/manifest.ts`, `.claude/workbench/`).
 #
 # Y la unidad que el parámetro nombra tampoco es el workbench entero: es UNA de
 # sus ejecuciones fechadas, que el productor ya llama `run` —`runIdFor`,

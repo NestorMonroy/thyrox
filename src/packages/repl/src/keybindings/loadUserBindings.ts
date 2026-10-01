@@ -17,7 +17,7 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flag
 import { logEvent } from '@thyrox/local-observability'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { errorMessage, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import { createSignal } from '@thyrox/config/signal'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
@@ -113,7 +113,7 @@ function isKeybindingBlockArray(arr: unknown): arr is KeybindingBlock[] {
  * Get the path to the user keybindings file.
  */
 export function getKeybindingsPath(): string {
-  return join(getClaudeConfigHomeDir(), 'keybindings.json')
+  return join(getConfigHomeDir(), 'keybindings.json')
 }
 
 /**

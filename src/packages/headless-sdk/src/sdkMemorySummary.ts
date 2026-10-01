@@ -1,9 +1,6 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/sdkMemorySummary.ts`
- * (verbatim en estructura; `obsLogEvent` se importa del sustituto local —
- * ver `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no
- * es miembro del bun workspace y no puede resolver
- * `@claude-code-how-works/local-observability` ni su equivalente
+ * (verbatim en estructura; `obsLogEvent` se importa del original,
  * `@thyrox/local-observability`).
  *
  * SDK memory-summary telemetry — byte-for-byte port of ant v2.1.136
@@ -32,7 +29,7 @@
  * Ant gates:
  *   - `Ny_()` — only SDK entrypoint (sdk-ts / sdk-py / sdk-cli) records
  *     children. `T1()` (simple mode) also skips. Mirror via the
- *     `CLAUDE_CODE_ENTRYPOINT` env check.
+ *     `THYROX_CODE_ENTRYPOINT` env check.
  *   - emit-once guard `VP9` so a second scheduleSdkMemorySummary call
  *     can't double-emit.
  *   - schedule-once guard `kP9` so multiple registration sites don't
@@ -45,7 +42,7 @@
  *   - childPeakRss map            — per-kind aggregate
  *   - attribute providers         — bytes + entries for each registered tag
  */
-import { logEvent as obsLogEvent } from './internal/pendingCrossPackageDeps.ts'
+import { logEvent as obsLogEvent } from '@thyrox/local-observability'
 
 /**
  * Ant `uG1` — child-kind whitelist. Only these kinds get a
@@ -101,13 +98,13 @@ export function _resetSdkMemorySummaryForTesting(): void {
 
 function isSdkEntrypoint(): boolean {
   // Mirror ant `Ny_()` — SDK paths only emit memory telemetry.
-  const ep = process.env.CLAUDE_CODE_ENTRYPOINT
+  const ep = process.env.THYROX_CODE_ENTRYPOINT
   return ep === 'sdk-ts' || ep === 'sdk-py' || ep === 'sdk-cli'
 }
 
 function isSimpleMode(): boolean {
   // Mirror ant `T1()` — simple-mode short-circuits telemetry.
-  return process.env.CLAUDE_CODE_SIMPLE === '1'
+  return process.env.THYROX_CODE_SIMPLE === '1'
 }
 
 /**

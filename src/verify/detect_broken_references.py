@@ -127,7 +127,10 @@ class ReferenceValidator:
                     fence_len = len(m.group(1))
                     in_code_block = True
             else:
-                # Closing fence: mismo carácter, >= fence_len, sin info string
+                # Closing fence: mismo carácter, >= fence_len, sin info string.
+                # `in_code_block` sólo es True tras el `if` de arriba, que ya
+                # asignó `fence_char` — nunca es None aquí.
+                assert fence_char is not None
                 closing_pattern = r'^' + re.escape(fence_char) + r'{' + str(fence_len) + r',}\s*$'
                 if re.match(closing_pattern, line):
                     in_code_block = False
@@ -315,7 +318,7 @@ class ReferenceValidator:
                 target = self.root_path / ref.lstrip('/')
             
             return target
-        except Exception as e:
+        except Exception:
             return None
     
     def validate_all_files(self):

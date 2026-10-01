@@ -7,155 +7,295 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./compat": {
+      "@thyrox/source": "./src/compat.ts",
       "types": "./dist/compat.d.ts",
       "default": "./src/compat.ts"
     },
     "./spans": {
+      "@thyrox/source": "./src/spans.ts",
       "types": "./dist/spans.d.ts",
       "default": "./src/spans.ts"
     },
     "./logging": {
+      "@thyrox/source": "./src/logging/index.ts",
       "types": "./dist/logging/index.d.ts",
       "default": "./src/logging/index.ts"
     },
     "./telemetry": {
+      "@thyrox/source": "./src/telemetry/index.ts",
       "types": "./dist/telemetry/index.d.ts",
       "default": "./src/telemetry/index.ts"
     },
     "./slowOperations.js": {
+      "@thyrox/source": "./src/slowOperations.ts",
       "types": "./dist/slowOperations.d.ts",
       "default": "./src/slowOperations.ts"
     },
     "./slowLoggingTag.js": {
+      "@thyrox/source": "./src/slowLoggingTag.ts",
       "types": "./dist/slowLoggingTag.d.ts",
       "default": "./src/slowLoggingTag.ts"
     },
     "./errorHelpers.js": {
+      "@thyrox/source": "./src/errorHelpers.ts",
       "types": "./dist/errorHelpers.d.ts",
       "default": "./src/errorHelpers.ts"
     },
     "./fileOperationAnalytics": {
+      "@thyrox/source": "./src/fileOperationAnalytics.ts",
       "types": "./dist/fileOperationAnalytics.d.ts",
       "default": "./src/fileOperationAnalytics.ts"
     },
     "./debug.js": {
+      "@thyrox/source": "./src/debug.ts",
       "types": "./dist/debug.d.ts",
       "default": "./src/debug.ts"
     },
     "./log.js": {
+      "@thyrox/source": "./src/log.ts",
       "types": "./dist/log.d.ts",
       "default": "./src/log.ts"
     },
     "./telemetryEvents.js": {
+      "@thyrox/source": "./src/telemetryEvents.ts",
       "types": "./dist/telemetryEvents.d.ts",
       "default": "./src/telemetryEvents.ts"
     },
-    "./sentry.js": {
-      "types": "./dist/sentry.d.ts",
-      "default": "./src/sentry.ts"
-    },
     "./betaSessionTracing.js": {
+      "@thyrox/source": "./src/betaSessionTracing.ts",
       "types": "./dist/betaSessionTracing.d.ts",
       "default": "./src/betaSessionTracing.ts"
     },
     "./errorIds.js": {
+      "@thyrox/source": "./src/errorIds.ts",
       "types": "./dist/errorIds.d.ts",
       "default": "./src/errorIds.ts"
     },
     "./errorIds": {
+      "@thyrox/source": "./src/errorIds.ts",
       "types": "./dist/errorIds.d.ts",
       "default": "./src/errorIds.ts"
     },
     "./utils/withResolvers.js": {
+      "@thyrox/source": "./src/utils/withResolvers.ts",
       "types": "./dist/utils/withResolvers.d.ts",
       "default": "./src/utils/withResolvers.ts"
     },
     "./sinks.js": {
+      "@thyrox/source": "./src/sinks.ts",
       "types": "./dist/sinks.d.ts",
       "default": "./src/sinks.ts"
     },
     "./eventLoopStallDetector.js": {
+      "@thyrox/source": "./src/eventLoopStallDetector.ts",
       "types": "./dist/eventLoopStallDetector.d.ts",
       "default": "./src/eventLoopStallDetector.ts"
     },
     "./uds/udsMessaging.js": {
+      "@thyrox/source": "./src/uds/udsMessaging.ts",
       "types": "./dist/uds/udsMessaging.d.ts",
       "default": "./src/uds/udsMessaging.ts"
     },
+    "./uds/peerAddress.js": {
+      "@thyrox/source": "./src/uds/peerAddress.ts",
+      "types": "./dist/uds/peerAddress.d.ts",
+      "default": "./src/uds/peerAddress.ts"
+    },
+    "./uds/peerFiles.js": {
+      "@thyrox/source": "./src/uds/peerFiles.ts",
+      "types": "./dist/uds/peerFiles.d.ts",
+      "default": "./src/uds/peerFiles.ts"
+    },
+    "./uds/confusableTagPatterns.js": {
+      "@thyrox/source": "./src/uds/confusableTagPatterns.ts",
+      "types": "./dist/uds/confusableTagPatterns.d.ts",
+      "default": "./src/uds/confusableTagPatterns.ts"
+    },
+    "./uds/unicodeSanitize.js": {
+      "@thyrox/source": "./src/uds/unicodeSanitize.ts",
+      "types": "./dist/uds/unicodeSanitize.d.ts",
+      "default": "./src/uds/unicodeSanitize.ts"
+    },
+    "./uds/stringUnits.js": {
+      "@thyrox/source": "./src/uds/stringUnits.ts",
+      "types": "./dist/uds/stringUnits.d.ts",
+      "default": "./src/uds/stringUnits.ts"
+    },
+    "./uds/sessionRename.js": {
+      "@thyrox/source": "./src/uds/sessionRename.ts",
+      "types": "./dist/uds/sessionRename.d.ts",
+      "default": "./src/uds/sessionRename.ts"
+    },
+    "./uds/renameNotice.js": {
+      "@thyrox/source": "./src/uds/renameNotice.ts",
+      "types": "./dist/uds/renameNotice.d.ts",
+      "default": "./src/uds/renameNotice.ts"
+    },
+    "./storageKeys.js": {
+      "@thyrox/source": "./src/storageKeys.ts",
+      "types": "./dist/storageKeys.d.ts",
+      "default": "./src/storageKeys.ts"
+    },
+    "./uds/fleetHeartbeat.js": {
+      "@thyrox/source": "./src/uds/fleetHeartbeat.ts",
+      "types": "./dist/uds/fleetHeartbeat.d.ts",
+      "default": "./src/uds/fleetHeartbeat.ts"
+    },
+    "./uds/messagingState.js": {
+      "@thyrox/source": "./src/uds/messagingState.ts",
+      "types": "./dist/uds/messagingState.d.ts",
+      "default": "./src/uds/messagingState.ts"
+    },
+    "./uds/pidFileRecord.js": {
+      "@thyrox/source": "./src/uds/pidFileRecord.ts",
+      "types": "./dist/uds/pidFileRecord.d.ts",
+      "default": "./src/uds/pidFileRecord.ts"
+    },
+    "./uds/registrySweep.js": {
+      "@thyrox/source": "./src/uds/registrySweep.ts",
+      "types": "./dist/uds/registrySweep.d.ts",
+      "default": "./src/uds/registrySweep.ts"
+    },
+    "./uds/registrySweepPermission.js": {
+      "@thyrox/source": "./src/uds/registrySweepPermission.ts",
+      "types": "./dist/uds/registrySweepPermission.d.ts",
+      "default": "./src/uds/registrySweepPermission.ts"
+    },
+    "./uds/spareSession.js": {
+      "@thyrox/source": "./src/uds/spareSession.ts",
+      "types": "./dist/uds/spareSession.d.ts",
+      "default": "./src/uds/spareSession.ts"
+    },
+    "./uds/sessionKind.js": {
+      "@thyrox/source": "./src/uds/sessionKind.ts",
+      "types": "./dist/uds/sessionKind.d.ts",
+      "default": "./src/uds/sessionKind.ts"
+    },
+    "./uds/sessionRegistration.js": {
+      "@thyrox/source": "./src/uds/sessionRegistration.ts",
+      "types": "./dist/uds/sessionRegistration.d.ts",
+      "default": "./src/uds/sessionRegistration.ts"
+    },
+    "./uds/sessionRegistryState.js": {
+      "@thyrox/source": "./src/uds/sessionRegistryState.ts",
+      "types": "./dist/uds/sessionRegistryState.d.ts",
+      "default": "./src/uds/sessionRegistryState.ts"
+    },
+    "./uds/launchRegistration.js": {
+      "@thyrox/source": "./src/uds/launchRegistration.ts",
+      "types": "./dist/uds/launchRegistration.d.ts",
+      "default": "./src/uds/launchRegistration.ts"
+    },
+    "./uds/sessionNameState.js": {
+      "@thyrox/source": "./src/uds/sessionNameState.ts",
+      "types": "./dist/uds/sessionNameState.d.ts",
+      "default": "./src/uds/sessionNameState.ts"
+    },
+    "./uds/liveSessionRegistry.js": {
+      "@thyrox/source": "./src/uds/liveSessionRegistry.ts",
+      "types": "./dist/uds/liveSessionRegistry.d.ts",
+      "default": "./src/uds/liveSessionRegistry.ts"
+    },
     "./uds/udsClient.js": {
+      "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",
       "default": "./src/uds/udsClient.ts"
     },
     "./sdkHeapDumpMonitor.js": {
+      "@thyrox/source": "./src/sdkHeapDumpMonitor.ts",
       "types": "./dist/sdkHeapDumpMonitor.d.ts",
       "default": "./src/sdkHeapDumpMonitor.ts"
     },
     "./sessionDataUploader.js": {
+      "@thyrox/source": "./src/sessionDataUploader.ts",
       "types": "./dist/sessionDataUploader.d.ts",
       "default": "./src/sessionDataUploader.ts"
     },
     "./telemetry/perfettoTracing.js": {
+      "@thyrox/source": "./src/telemetry/perfettoTracing.ts",
       "types": "./dist/telemetry/perfettoTracing.d.ts",
       "default": "./src/telemetry/perfettoTracing.ts"
     },
     "./aggregates/cleanup.js": {
+      "@thyrox/source": "./src/aggregates/cleanup.ts",
       "types": "./dist/aggregates/cleanup.d.ts",
       "default": "./src/aggregates/cleanup.ts"
     },
     "./aggregates/headlessProfiler.js": {
+      "@thyrox/source": "./src/aggregates/headlessProfiler.ts",
       "types": "./dist/aggregates/headlessProfiler.d.ts",
       "default": "./src/aggregates/headlessProfiler.ts"
     },
     "./aggregates/heatmap.js": {
+      "@thyrox/source": "./src/aggregates/heatmap.ts",
       "types": "./dist/aggregates/heatmap.d.ts",
       "default": "./src/aggregates/heatmap.ts"
     },
     "./aggregates/queryProfiler.js": {
+      "@thyrox/source": "./src/aggregates/queryProfiler.ts",
       "types": "./dist/aggregates/queryProfiler.d.ts",
       "default": "./src/aggregates/queryProfiler.ts"
     },
     "./aggregates/stats.js": {
+      "@thyrox/source": "./src/aggregates/stats.ts",
       "types": "./dist/aggregates/stats.d.ts",
       "default": "./src/aggregates/stats.ts"
     },
     "./localEventLogger.js": {
+      "@thyrox/source": "./src/localEventLogger.ts",
       "types": "./dist/localEventLogger.d.ts",
       "default": "./src/localEventLogger.ts"
     },
     "./internal/pendingCrossPackageDeps.js": {
+      "@thyrox/source": "./src/internal/pendingCrossPackageDeps.ts",
       "types": "./dist/internal/pendingCrossPackageDeps.d.ts",
       "default": "./src/internal/pendingCrossPackageDeps.ts"
     },
     "./logging/error-log.js": {
+      "@thyrox/source": "./src/logging/error-log.ts",
       "types": "./dist/logging/error-log.d.ts",
       "default": "./src/logging/error-log.ts"
+    },
+    "./errorRecorder.js": {
+      "@thyrox/source": "./src/errorStore/errorRecorder.ts",
+      "types": "./dist/errorStore/errorRecorder.d.ts",
+      "default": "./src/errorStore/errorRecorder.ts"
+    },
+    "./errorStore.js": {
+      "@thyrox/source": "./src/errorStore/errorStoreHome.ts",
+      "types": "./dist/errorStore/errorStoreHome.d.ts",
+      "default": "./src/errorStore/errorStoreHome.ts"
     }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@opentelemetry/api": "^1.9.1",
-    "@sentry/node": "^10.73.0",
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/storage": "workspace:*",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/storage": "0.1.0",
+    "@thyrox/store": "0.1.0",
     "axios": "^1.20.0",
     "cacache": "^21.0.1",
     "chalk": "^6.0.0",

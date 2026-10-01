@@ -153,11 +153,17 @@ import sqlite3
 c = sqlite3.connect('$DB')
 c.execute('UPDATE agent_sessions SET usage_source = NULL')
 c.commit()"
-# El relleno es ESCRITURA, asi que lo dispara `init`; el censo solo observa.
-# Separarlos no debilita el control: lo que el caso mide es que `transcript`
-# se reconstruye desde los tokens y `no_medido` no, y esa asimetria es del
-# relleno, no de quien la imprime.
-python3 "$STORE" init --claude-dir "$CLAUDE_DIR" >/dev/null 2>&1
+# El relleno es la migracion 2 del ledger `schema_migrations`: `init` ya no la
+# repite sobre una base que la tiene registrada (TASK-THYROX-0532), asi que el
+# control invoca la funcion de relleno directamente. Lo que el caso mide es que
+# `transcript` se reconstruye desde los tokens y `no_medido` no, y esa
+# asimetria es del relleno, no de quien lo dispara.
+PYTHONPATH=src python3 -c "
+import sqlite3
+from agents.agent_store import _migrate_agent_sessions_usage_columns
+c = sqlite3.connect('$DB')
+_migrate_agent_sessions_usage_columns(c)
+c.close()"
 CENSO_CIEGO=$(python3 "$STORE" censo-medicion --claude-dir "$CLAUDE_DIR")
 afirmar "anulado, el relleno reconstruye 'transcript' desde los tokens" \
     "1" "$(grep -c 'n = 2 de 5' <<<"$CENSO_CIEGO")"

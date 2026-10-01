@@ -1,5 +1,4 @@
 import memoize from 'lodash-es/memoize.js'
-import { join } from 'path'
 import {
   getCurrentProjectConfig,
   saveCurrentProjectConfig,
@@ -8,6 +7,8 @@ import { readEnv } from '@thyrox/config/env/utils'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { isDirEmpty } from '@thyrox/storage/file.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { INSTRUCTIONS_FILE_NAME, instructionsFileCandidates } from '@thyrox/config/env/instructionFiles.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type Step = {
   key: string
@@ -18,22 +19,21 @@ export type Step = {
 }
 
 export function getSteps(): Step[] {
-  const hasClaudeMd = getFsImplementation().existsSync(
-    join(getCwd(), 'CLAUDE.md'),
-  )
+  const fs = getFsImplementation()
+  const hasClaudeMd = instructionsFileCandidates(getCwd()).some(path => fs.existsSync(path))
   const isWorkspaceDirEmpty = isDirEmpty(getCwd())
 
   return [
     {
       key: 'workspace',
-      text: 'Ask Claude to create a new app or clone a repository',
+      text: `Ask ${PRODUCT_NAME} to create a new app or clone a repository`,
       isComplete: false,
       isCompletable: true,
       isEnabled: isWorkspaceDirEmpty,
     },
     {
       key: 'claudemd',
-      text: 'Run /init to create a CLAUDE.md file with instructions for Claude',
+      text: `Run /init to create a ${INSTRUCTIONS_FILE_NAME} file with instructions for ${PRODUCT_NAME}`,
       isComplete: hasClaudeMd,
       isCompletable: true,
       isEnabled: !isWorkspaceDirEmpty,

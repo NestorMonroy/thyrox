@@ -2,12 +2,12 @@
  * Built-in terminal panel toggled with Meta+J.
  *
  * Uses tmux for shell persistence: a separate tmux server with a per-instance
- * socket (e.g., "claude-panel-a1b2c3d4") holds the shell session. Each Claude
+ * socket (e.g., "claude-panel-a1b2c3d4") holds the shell session. Each thyrox
  * Code instance gets its own isolated terminal panel that persists within the
  * session but is destroyed when the instance exits.
  *
  * Meta+J is bound to detach-client inside tmux, so pressing it returns to
- * Claude Code while the shell keeps running. Next toggle re-attaches to the
+ * thyrox while the shell keeps running. Next toggle re-attaches to the
  * same session.
  *
  * When tmux is not available, falls back to a non-persistent shell via spawnSync.
@@ -21,12 +21,13 @@ import { instances } from '@anthropic/ink'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { pwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const TMUX_SESSION = 'panel'
 
 /**
  * Get the tmux socket name for the terminal panel.
- * Uses a unique socket per Claude Code instance (based on session ID)
+ * Uses a unique socket per thyrox instance (based on session ID)
  * so that each instance has its own isolated terminal panel.
  */
 export function getTerminalPanelSocket(): string {
@@ -109,7 +110,7 @@ class TerminalPanel {
       return false
     }
 
-    // Bind Meta+J (toggles back to Claude Code from inside the terminal)
+    // Bind Meta+J (toggles back to thyrox from inside the terminal)
     // and configure the status bar hint. Chained with ';' to collapse
     // 5 spawnSync calls into 1.
     // biome-ignore format: one tmux command per line
@@ -118,7 +119,7 @@ class TerminalPanel {
       'bind-key', '-n', 'M-j', 'detach-client', ';',
       'set-option', '-g', 'status-style', 'bg=default', ';',
       'set-option', '-g', 'status-left', '', ';',
-      'set-option', '-g', 'status-right', ' Alt+J to return to Claude ', ';',
+      'set-option', '-g', 'status-right', ` Alt+J to return to ${PRODUCT_NAME} `, ';',
       'set-option', '-g', 'status-right-style', 'fg=brightblack',
     ])
 

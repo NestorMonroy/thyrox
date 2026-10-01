@@ -3,11 +3,14 @@
  *
  * Daemon-less ccb's `ccb attach <short>` opens this directly against
  * the PTY host's socket; a future Phase C+ daemon would also use it
- * for cross-process supervision. Mirrors ant 4704.js rj6, but trimmed
- * down: ccb has no daemon supervisor so the respawn-detection /
- * upgrade-tracking / roster-hooks branches are removed. What's kept:
+ * for cross-process supervision. Mirrors chunk-ygx717jg.js `ae`, but
+ * trimmed down: ccb has no daemon supervisor so the respawn-detection /
+ * upgrade-tracking / roster-hooks / crash-breadcrumb-file / SIGKILL
+ * -escalation-on-hang branches are removed (that fuller surface belongs
+ * to the daemon-side client, `@thyrox/daemon: workerSocketClient.ts`).
+ * What's kept:
  *
- *   - Connect with backoff (WXK=30 attempts, PXK=[100,250,500,1000,2000])
+ *   - Connect with backoff (`Oe`=30 attempts, `Ie`=[50,100,250,500,1000,2000])
  *   - ENOENT detection (socket file gone) → caller-visible error
  *   - Hello-handshake receipt (capture replPid + version)
  *   - Buffer queue while disconnected (cap 2MB before drop)
@@ -31,7 +34,11 @@ import {
   FRAME_SIZE_CAP,
 } from './ptyFrame.js'
 
-const RECONNECT_BACKOFF_MS = [100, 250, 500, 1000, 2000] as const
+/** chunk-ygx717jg.js `Ie` — the PTY client's reconnect table (distinct from
+ *  `Me`, the rv/control client's; both are 5-6 step tables that top out at
+ *  2000ms, but `Ie` alone starts at 50ms, not 100ms). */
+export const RECONNECT_BACKOFF_MS = [50, 100, 250, 500, 1000, 2000] as const
+/** chunk-ygx717jg.js `Oe`. */
 const MAX_RECONNECT_ATTEMPTS = 30
 const QUEUE_CAP_BYTES = 2 * FRAME_SIZE_CAP // 2 * qiH = 2 MiB
 const CLIENT_BACKPRESSURE_BYTES = 1024 * 1024

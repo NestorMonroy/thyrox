@@ -47,8 +47,8 @@ from paths import reach  # noqa: E402
 # (tarea #228).
 HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location("vecinos", HERE / "task" / "vecinos_de_tarea.py")
+assert spec is not None and spec.loader is not None
 vecinos = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
 spec.loader.exec_module(vecinos)
 
 PASS = 0

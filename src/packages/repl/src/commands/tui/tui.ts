@@ -51,16 +51,16 @@ export async function call(
     return { type: 'text', value: `Already using the ${trimmed} renderer.` }
   }
 
-  // CLAUDE_CODE_NO_FLICKER env always wins over settings, so a user who set
+  // THYROX_CODE_NO_FLICKER env always wins over settings, so a user who set
   // it explicitly won't see settings take effect on relaunch. Warn loudly
   // instead of silently writing a setting that does nothing.
   const envSet =
-    isEnvDefinedFalsy(process.env.CLAUDE_CODE_NO_FLICKER) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_NO_FLICKER)
+    isEnvDefinedFalsy(process.env.THYROX_CODE_NO_FLICKER) ||
+    isEnvTruthy(process.env.THYROX_CODE_NO_FLICKER)
   if (envSet) {
     return {
       type: 'text',
-      value: `CLAUDE_CODE_NO_FLICKER is set in your environment — it overrides /tui. Unset it (or change the value) and re-run /tui.`,
+      value: `THYROX_CODE_NO_FLICKER is set in your environment — it overrides /tui. Unset it (or change the value) and re-run /tui.`,
     }
   }
 
@@ -78,7 +78,7 @@ export async function call(
   // (for analytics / future bounce-detection).
   await relaunchCli({
     freshIfNoTranscript: true,
-    env: { CLAUDE_CODE_TUI_JUST_SWITCHED: trimmed },
+    env: { THYROX_CODE_TUI_JUST_SWITCHED: trimmed },
   })
 
   // Unreachable — relaunchCli calls process.exit. Returned for type safety.

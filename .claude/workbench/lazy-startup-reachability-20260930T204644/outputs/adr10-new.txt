@@ -1,0 +1,29 @@
+importaba ``@thyrox/daemon``, no de seguir el cierre de imports.
+
+**P0 antes de P1–P7 (enmienda 1.4.0).** Por directiva del ejecutor, ninguna
+fase se implementa sin clasificar antes lo que ya existe (EXISTS_AND_REUSE ·
+PARTIAL_EXTEND · EXISTS_BUT_WRONG_OWNER · MISSING · OBSOLETE_DUPLICATE). La
+matriz medida está en
+``thyrox: .claude/workbench/lazy-startup-reachability-20260930T204644/outputs/p0-baseline.md``.
+Lo que decide la construcción:
+
+- **P1** era PARTIAL_EXTEND: la vía rápida de ``cli.tsx`` ya no abría ninguna
+  dependencia en ``--version``, ``--help``, ``-p --help`` ni
+  ``providers --help`` (0 conexiones, 0 llamadas a Podman, con centinelas),
+  pero ninguna prueba lo fijaba. Se añadió la prueba de contrato con sus
+  controles; ``cli.tsx`` no cambió.
+- **P6** era MISSING: no había grafo de imports. Se construyó sobre los
+  entrypoints que ya enumera ``generate_bin.py`` y los abridores que ya
+  existían; la matriz vive versionada con su gate ``--check``.
+- ``InfrastructureBootstrap`` no existe con ese nombre: la autoridad de
+  infraestructura gestionada es ``src/lib/infrastructure.sh`` +
+  ``bin/infrastructure_ensure``, y P7/P12 la reutilizan. Los workers siguen en
+  ``PodmanWorkerManager``.
+- **P5** es MISSING en el distribuible (ningún ``bun build``); sus gates de
+  declaraciones existen y se reutilizan.
+
+**Lo que la matriz aún no separa.** La dependencia «base de datos» la marca
+``store/sql.ts``, que abre tanto SQLite local (incluido) como PostgreSQL por
+URL. El requisito de distribución depende del esquema de la URL, no del
+alcance; hasta que el abridor se parta por motor, esas filas dicen
+«alcanzable», no «requiere PostgreSQL».

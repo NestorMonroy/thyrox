@@ -1,0 +1,48 @@
+# Anulaciones 106e-5c-3 — primera pasada
+== 1: heredados valen -> 1
+== 2: sin minúsculas -> 1
+== 3: grok con /models -> 1
+== 4: lmarena fiable -> 1
+== 5: JSON sin token -> 1
+== 6: token no textual -> 1
+== 7: sin Bearer -> 1
+== 8: Bearer sensible a caja -> 1
+== 9: prefijo Cookie -> 0
+== 10: sin token= -> 2
+== 11: par suelto vale -> 2
+== 12: JSON sin llave -> 0
+== 13: fuera de catálogo -> 1
+== 14: sin cookie sondea -> 1
+== 15: sin host sondea -> 2
+== 16: wss o consulta sondea -> 1
+== 17: zai con cookie -> 1
+== 18: zai sin token sondea -> 1
+== 19: cookie sin recortar -> 1
+== 20: sigue redirecciones -> 1
+== 21: 403 vale -> 1
+== 22: sin código AUTH_007 -> 1
+== 23: redirección vale -> 1
+== 24: sin API de modelos vale -> 1
+== 25: red lanza -> 2
+== 26: error sin sanear -> 1
+== 27: chatgpt sondea -> 1
+== 28: chatgpt sin su validador -> 1
+== 29: fuera de catálogo sondea -> 1
+== 30: sin intervalo -> 1
+== 31: intervalo inclusivo -> 1
+== 32: nunca comprobado se salta -> 0
+== 33: sin credencial sondea -> 1
+== 34: sin cookie en datos -> 1
+== 35: apiKey sin recortar -> 2
+== 36: no soportado caduca -> 1
+== 37: sólo por código -> 1
+== 38: sólo por texto -> 1
+== 39: sin caducar -> 2
+== 40: ambiguo sin aviso -> 1
+== 41: ambiguo sin sello -> 1
+== restaurado -> 0
+
+# 9 afilada; 12 y 32 retiradas por muertas; 26 reescrita al corregir TS2322
+== 9: prefijo Cookie -> 1
+== 26: error sin sanear -> 1
+== restaurado -> 0

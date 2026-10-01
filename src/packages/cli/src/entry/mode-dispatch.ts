@@ -20,6 +20,8 @@ import { claimsCommand } from '../commands/claims.ts'
 import { configOriginCommand } from '../commands/configOrigin.ts'
 import { HELP } from '../commands/help.ts'
 import { importTasksCommand } from '../commands/importTasks.ts'
+import { mitmCommand } from '../commands/mitm-commands.ts'
+import { providersCommand } from '../commands/providers-commands.ts'
 import { selectTestsCommand } from '../commands/selectTests.ts'
 import { sessionsCommand } from '../commands/sessions.ts'
 import { workbenchCommand } from '../commands/workbench.ts'
@@ -27,6 +29,7 @@ import { projectSlug } from '@thyrox/agent/loop/session'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { RuntimeHandles } from '@thyrox/app-host'
 import { runLoop } from './runLoop.ts'
+import { needsStdin, runPrint } from './print.ts'
 import { detectMode, type Mode, type ModeKind } from './detect-mode.ts'
 import { flag } from './flags.ts'
 import type { PendingHandles } from './preprocess-argv.ts'
@@ -51,6 +54,8 @@ export const HANDLERS: Record<ModeKind, Handler> = {
   claims: ({ argv, cwd }) => claimsCommand(argv, cwd),
   configOrigin: ({ argv, cwd }) => configOriginCommand(argv, cwd),
   sessions: ({ transcriptDir }) => sessionsCommand(transcriptDir),
+  mitm: ({ argv }) => mitmCommand(argv),
+  providers: ({ argv }) => providersCommand(argv),
   // `usage` distingue «pidió ayuda» (0) de «le falta lo obligatorio» (2). El
   // binario que esto reemplaza lo resolvía con `return prompt || chat ? 0 : 2`
   // dentro del mismo bloque; aquí la distinción viaja en el modo, medida.
@@ -59,6 +64,8 @@ export const HANDLERS: Record<ModeKind, Handler> = {
     return mode.usage ? EXIT_USAGE : EXIT_OK
   },
   loop: ({ argv, cwd, transcriptDir }) => runLoop(argv, cwd, transcriptDir),
+  print: async ({ argv, cwd, transcriptDir }) =>
+    runPrint(argv, cwd, transcriptDir, needsStdin(argv) ? await Bun.stdin.text() : null),
 }
 
 /** Corre el manejador del modo. */

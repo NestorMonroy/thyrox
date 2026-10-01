@@ -1,0 +1,49 @@
+  FALLA el pool sale 0 — esperado [0] obtenido [1]
+  FALLA resumen del pool — esperado [items=2 ok=2 fallidos=0] obtenido [items=2 ok=0 fallidos=2]
+  ok   un .json por ítem
+  FALLA el .json es la línea result, de éxito — esperado [result/success] obtenido []
+  FALLA con el texto del modelo — esperado [concepto: admisión] obtenido []
+  FALLA el stream abre con system/init — esperado [system/init] obtenido []
+  FALLA las herramientas del pool llegan acotadas — esperado [["Read"]] obtenido []
+  FALLA una línea assistant por petición, con su uso — esperado [2x500] obtenido []
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag-build" && uv sync
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag-build" && uv sync
+historial: sin ejecución previa de /tmp/tmp.dgpOk4aD5a/thyrox-p en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO beta
+-- FALLIDO alfa
+items=2 ok=0 fallidos=2
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+  FALLA por el túnel: el pool sale 0 — esperado [0] obtenido [1]
+  FALLA por el túnel: el ítem termina bien — esperado [items=1 ok=1 fallidos=0] obtenido [items=1 ok=0 fallidos=1]
+gawk: fatal: cannot open file `/tmp/tmp.dgpOk4aD5a/requests.log' for reading: No such file or directory
+  FALLA por el túnel: el servicio recibe la llave que puso el proxy — esperado [auth=x-api-key] obtenido []
+  ok   por el túnel: el socket no queda al terminar
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag-build" && uv sync
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag-build" && uv sync
+historial: sin ejecución previa de /home/user/thyrox/.thyrox/pool-worktrees/diag-build/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+ 5 | 
+ 6 | // src/packages/agent/SessionMemory/sessionMemoryUtils.ts
+ 7 | import { DEFAULT_SESSION_MEMORY_CONFIG, getLastSummarizedMessageId, getSessionMemoryConfig, getSessionMemoryContent, getToolCallsBetweenUpdates, hasMetInitializationThreshold, hasMetUpdateThreshold, isSessionMemoryInitialized, markExtractionCompleted, markExtractionStarted, markSessionMemoryInitialized, recordExtractionTokenCount, resetSessionMemoryState, setLastSummarizedMessageId, setSessionMemoryConfig, waitForSessionMemoryExtraction } from "@thyrox/memory/sessionMemoryUtils";
+ 8 | var init_sessionMemoryUtils = __esm(() => {
+ 9 | 
+10 |   export * from "@thyrox/memory/sessionMemoryUtils";
+     ^
+SyntaxError: Unexpected keyword 'export'
+      at <parse> (/home/user/thyrox/.thyrox/pool-worktrees/diag-build/src/packages/agent/dist/chunk-672hvsyt.js:10:1)
+      at native:11:43
+      at processTicksAndRejections (native:7:39)
+note: missing sourcemaps for /home/user/thyrox/.thyrox/pool-worktrees/diag-build/src/packages/agent/dist/chunk-672hvsyt.js
+note: consider bundling with '--sourcemap' to get unminified traces
+
+Bun v1.3.11 (Linux x64)
+
+2 ok · 10 falla(s) (alcance medido: headless-pool con thyrox -p)

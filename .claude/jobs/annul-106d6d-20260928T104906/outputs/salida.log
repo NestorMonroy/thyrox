@@ -1,0 +1,290 @@
+== 1: sin el anidado .token
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > the token nests under `.token`, with an ISO expiry and the method at the top [66.09ms]
+(fail) agy token file > both tokens are required, and blank counts as missing [84.39ms]
+ 25 pass
+ 2 fail
+== 2: sin access token se acepta
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > both tokens are required, and blank counts as missing [43.47ms]
+ 26 pass
+ 1 fail
+== 3: sin refresh token se acepta
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > both tokens are required, and blank counts as missing [43.34ms]
+ 26 pass
+ 1 fail
+== 4: sin expires_at
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > a flat file is accepted, with `expires_at`, its own token type and the method inside [42.05ms]
+ 26 pass
+ 1 fail
+== 5: un ISO ilegible pasa
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > a unix-ms `expiry_date` counts; an unreadable ISO or nothing leaves it null [55.37ms]
+ 26 pass
+ 1 fail
+== 6: sin expiry_date
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > a unix-ms `expiry_date` counts; an unreadable ISO or nothing leaves it null [49.74ms]
+ 26 pass
+ 1 fail
+== 7: el tipo de token fijo
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy token file > a flat file is accepted, with `expires_at`, its own token type and the method inside [46.16ms]
+ 26 pass
+ 1 fail
+== 8: el método sólo del documento
+   (src/accounts/imports/agyAuthImport.ts)
+ 27 pass
+ 0 fail
+== 9: userinfo sin ?alt=json
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > userinfo names the account and loadCodeAssist gives the project and the onboarding tier [66.23ms]
+ 26 pass
+ 1 fail
+== 10: un userinfo fallido nombra la cuenta
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > a failed userinfo or loadCodeAssist leaves its fields null and the import goes on [58.39ms]
+ 26 pass
+ 1 fail
+== 11: loadCodeAssist fallido se lee
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > a failed userinfo or loadCodeAssist leaves its fields null and the import goes on [41.58ms]
+ 26 pass
+ 1 fail
+== 12: el proyecto sólo como texto
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > the project may come as an object with its id [45.25ms]
+ 26 pass
+ 1 fail
+== 13: sin el nivel
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > userinfo names the account and loadCodeAssist gives the project and the onboarding tier [50.84ms]
+ 26 pass
+ 1 fail
+== 14: sin metadatos
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > userinfo names the account and loadCodeAssist gives the project and the onboarding tier [69.03ms]
+ 26 pass
+ 1 fail
+== 15: otro perfil de cliente
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > userinfo names the account and loadCodeAssist gives the project and the onboarding tier [56.57ms]
+ 26 pass
+ 1 fail
+== 16: sin plazo
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy backend identity > a backend that hangs is cut at the time box [5042.75ms]
+ 26 pass
+ 1 fail
+== 17: la cuenta distingue mayúsculas
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > the same account (any case) is a duplicate unless overwritten [67.51ms]
+ 26 pass
+ 1 fail
+== 18: el duplicado se sobrescribe solo
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > the same account (any case) is a duplicate unless overwritten [48.94ms]
+ 26 pass
+ 1 fail
+== 19: la elección del operador se pierde
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [47.22ms]
+ 26 pass
+ 1 fail
+== 20: el cliente OAuth guardado gana
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [52.67ms]
+ 26 pass
+ 1 fail
+== 21: el proyecto conocido se pierde
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [57.64ms]
+ 26 pass
+ 1 fail
+== 22: el nivel conocido se pierde
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [81.58ms]
+ 26 pass
+ 1 fail
+== 23: el nombre guardado se pierde
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [52.90ms]
+ 26 pass
+ 1 fail
+== 24: sin identidad se importa
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > an unverified identity needs overwriteExisting, and then takes the default name [44.18ms]
+ 26 pass
+ 1 fail
+== 25: sin proyecto no se degrada
+   (src/accounts/imports/agyAuthImport.ts)
+ 27 pass
+ 0 fail
+== 26: una conexión nueva sin proyecto no se degrada
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > a new account becomes an active CLI connection with the project, tier and import time [59.33ms]
+(fail) agy connection > without a Cloud Code project the connection is stored degraded [47.94ms]
+ 25 pass
+ 2 fail
+== 27: el correo declarado no gana
+   (src/accounts/imports/agyAuthImport.ts)
+ 27 pass
+ 0 fail
+== 28: sin autoSync en lo nuevo
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > a new account becomes an active CLI connection with the project, tier and import time [54.15ms]
+ 26 pass
+ 1 fail
+== 29: sin el cliente builtin
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > a new account becomes an active CLI connection with the project, tier and import time [55.03ms]
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [65.99ms]
+ 25 pass
+ 2 fail
+== 30: la hora de importación del reloj real
+   (src/accounts/imports/agyAuthImport.ts)
+(fail) agy connection > a new account becomes an active CLI connection with the project, tier and import time [47.80ms]
+(fail) agy connection > overwriting keeps the operator choices and the known project, and resets the OAuth client [48.99ms]
+ 25 pass
+ 2 fail
+== 31: cp — RFC3339 no se lee
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI expiry > an absolute `expired`, as RFC3339, unix seconds or milliseconds [40.34ms]
+ 26 pass
+ 1 fail
+== 32: cp — siempre milisegundos
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI expiry > an absolute `expired`, as RFC3339, unix seconds or milliseconds [40.97ms]
+ 26 pass
+ 1 fail
+== 33: cp — siempre segundos
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI expiry > an absolute `expired`, as RFC3339, unix seconds or milliseconds [44.86ms]
+ 26 pass
+ 1 fail
+== 34: cp — un expired cero cuenta
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI expiry > a relative `expires_in` from now, when `expired` is unusable [39.58ms]
+ 26 pass
+ 1 fail
+== 35: cp — sin expires_in
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI expiry > a relative `expires_in` from now, when `expired` is unusable [46.72ms]
+(fail) CLIProxyAPI record > the type maps to the provider, ignoring case; the rest is normalized [43.55ms]
+(fail) CLIProxyAPI record > a Muse record with only a DCA access token keeps the DCA clock [44.29ms]
+(fail) CLIProxyAPI record > the connection payload names the account and marks the import [58.51ms]
+ 23 pass
+ 4 fail
+== 36: cp — un expires_in cero cuenta
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI expiry > a relative `expires_in` from now, when `expired` is unusable [43.27ms]
+ 26 pass
+ 1 fail
+== 37: cp — el tipo distingue mayúsculas
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > the type maps to the provider, ignoring case; the rest is normalized [52.88ms]
+ 26 pass
+ 1 fail
+== 38: cp — un arreglo es un registro
+   (src/accounts/imports/cliProxyAuthImport.ts)
+ 27 pass
+ 0 fail
+== 39: cp — sin access token se importa
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > not an object, an unknown type or no access token is not importable [40.52ms]
+ 26 pass
+ 1 fail
+== 40: cp — projectId camelCase gana
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > the type maps to the provider, ignoring case; the rest is normalized [40.74ms]
+ 26 pass
+ 1 fail
+== 41: cp — muse por la rama general
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > a Muse record with a minted key keeps the DCA token as its refresh and no expiry [40.52ms]
+(fail) CLIProxyAPI record > a Muse record with only a DCA access token keeps the DCA clock [43.82ms]
+(fail) CLIProxyAPI record > the connection payload names the account and marks the import [41.32ms]
+ 24 pass
+ 3 fail
+== 42: cp — muse sin dca_token
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > a Muse record with a minted key keeps the DCA token as its refresh and no expiry [59.82ms]
+(fail) CLIProxyAPI record > the connection payload names the account and marks the import [49.28ms]
+ 25 pass
+ 2 fail
+== 43: cp — la api_key DCA es de inferencia
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > a Muse record with only a DCA access token keeps the DCA clock [42.69ms]
+ 26 pass
+ 1 fail
+== 44: cp — muse sin claves se importa
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > a Muse access token that is not DCA is the inference key [44.72ms]
+ 26 pass
+ 1 fail
+== 45: cp — la clave acuñada hereda el reloj
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > a Muse record with a minted key keeps the DCA token as its refresh and no expiry [50.32ms]
+ 26 pass
+ 1 fail
+== 46: cp — authKind sin defecto
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > a Muse record with a minted key keeps the DCA token as its refresh and no expiry [53.32ms]
+ 26 pass
+ 1 fail
+== 47: cp — el nombre sin defecto
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > the connection payload names the account and marks the import [47.79ms]
+ 26 pass
+ 1 fail
+== 48: cp — projectId vacío se escribe
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > the connection payload names the account and marks the import [43.09ms]
+ 26 pass
+ 1 fail
+== 49: cp — sin marca de importación
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI record > the connection payload names the account and marks the import [46.53ms]
+ 26 pass
+ 1 fail
+== 50: cp — sin la variable del directorio
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > the directory comes from THYROX_CLIPROXYAPI_CONFIG_DIR, else the home default [45.08ms]
+ 26 pass
+ 1 fail
+== 51: cp — .JSON en mayúsculas no cuenta
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > every .json is read; broken or unsupported ones are counted as skipped [45.66ms]
+ 26 pass
+ 1 fail
+== 52: cp — todos los archivos
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > every .json is read; broken or unsupported ones are counted as skipped [45.76ms]
+ 26 pass
+ 1 fail
+== 53: cp — un JSON roto corta el barrido
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > every .json is read; broken or unsupported ones are counted as skipped [54.14ms]
+ 26 pass
+ 1 fail
+== 54: cp — un directorio ausente lanza
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > every .json is read; broken or unsupported ones are counted as skipped [45.85ms]
+ 26 pass
+ 1 fail
+== 55: cp — la vista previa lleva tokens
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > the preview never carries tokens, and the import stores each account [53.08ms]
+ 26 pass
+ 1 fail
+== 56: cp — un rechazo corta la importación
+   (src/accounts/imports/cliProxyAuthImport.ts)
+(fail) CLIProxyAPI directory > an account the store refuses is reported, not thrown [50.12ms]
+ 26 pass
+ 1 fail
+== restaurado
+ 27 pass
+ 0 fail
+__BG_EXIT__=0

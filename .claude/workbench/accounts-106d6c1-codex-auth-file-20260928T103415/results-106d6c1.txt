@@ -1,0 +1,84 @@
+== 1: el JWT de cuatro partes
+ 0 fail
+== 2: un arreglo como cuerpo
+ 0 fail
+== 3: sin id token se exporta
+ 1 fail
+== 4: sin cuenta se exporta
+ 1 fail
+== 5: sin la cuenta heredada
+ 1 fail
+== 6: sin el espacio de trabajo
+ 1 fail
+== 7: el correo guardado gana al del token
+ 1 fail
+== 8: el archivo por la etiqueta
+ 1 fail
+== 9: el vencido por exp no mira el margen
+ 2 fail
+== 10: sin exp nunca vence
+ 1 fail
+== 11: el límite de seis horas es estricto
+ 1 fail
+== 12: lo ilegible vence
+ 1 fail
+== 13: siempre se escribe
+ 1 fail
+== 14: forzar no fuerza
+ 1 fail
+== 15: un archivo sin token cuenta como sano
+ 1 fail
+== 16: el archivo de codex se mezcla
+ 1 fail
+== 17: cualquier auth_mode
+ 1 fail
+== 18: un auth_mode nulo se rehúsa
+ 1 fail
+== 19: se importa sin id token
+ 1 fail
+== 20: se importa sin access token
+ 1 fail
+== 21: se importa sin refresh token
+ 1 fail
+== 22: se importa sin cuenta
+ 1 fail
+== 23: la cuenta del archivo no gana
+ 1 fail
+== 24: el usuario sin el sub
+ 1 fail
+== 25: la caducidad del id token primero
+ 1 fail
+== 26: sin respaldo en el id token
+ 1 fail
+== 27: otro usuario del mismo espacio se pisa
+ 1 fail
+== 28: el duplicado se sobrescribe solo
+ 1 fail
+== 29: el usuario guardado se pierde
+ 1 fail
+== 30: el nombre existente se pierde
+ 1 fail
+== 31: el refresco ignora su propia caducidad
+ 1 fail
+== 32: común — el margen es estricto
+ 1 fail
+== 33: común — sin copia al lado
+ 1 fail
+== 34: común — legible por todos
+ 2 fail
+== 35: común — el refresco no se persiste
+ 2 fail
+== 36: común — cualquier proveedor exporta
+ 2 fail
+== 37: común — lo anterior no se ofrece a render
+ 1 fail
+== restaurado
+ 0 fail
+
+== re-medición (annul-106d6c1-rerun-20260928T103651)
+== 1: el JWT de cuatro partes
+ 1 fail
+== 2: un arreglo como cuerpo
+ 1 fail
+== restaurado
+ 0 fail

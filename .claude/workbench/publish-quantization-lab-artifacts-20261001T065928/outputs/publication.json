@@ -1,0 +1,12 @@
+{
+  "status": "unpublished",
+  "publishedAt": "2026-10-01T07:20:07.728Z",
+  "outcome": {
+    "status": "unpublished",
+    "result": {
+      "status": "unauthorized",
+      "httpStatus": 401,
+      "detail": "401 Unauthorized"
+    }
+  }
+}

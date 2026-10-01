@@ -1,0 +1,35 @@
+{
+  "name": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+  "catalogSha256": "b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88",
+  "pinned": {
+    "registry": "docker.io",
+    "repository": "th3rox/thyrox-quantization-lab-artifacts",
+    "manifestDigest": "sha256:5fc241502bc2db459c265adca0c9e9244944aba7d92dfc454fc0a2052bc013af",
+    "blobDigest": "sha256:b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88",
+    "bytes": 397807712
+  },
+  "runs": [
+    {
+      "label": "first",
+      "outcome": {
+        "status": "fetched",
+        "path": "/home/user/thyrox/.thyrox/models/artifacts/sha256-b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88.gguf",
+        "sha256": "b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88"
+      },
+      "recomputedSha256": "b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88",
+      "fetchCallsSoFar": 1,
+      "wallMs": 10951
+    },
+    {
+      "label": "second",
+      "outcome": {
+        "status": "cached",
+        "path": "/home/user/thyrox/.thyrox/models/artifacts/sha256-b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88.gguf",
+        "sha256": "b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88"
+      },
+      "recomputedSha256": "b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88",
+      "fetchCallsSoFar": 1,
+      "wallMs": 1791
+    }
+  ]
+}

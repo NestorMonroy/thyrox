@@ -1,5 +1,5 @@
 /**
- * Navegadores, sockets y apertura de URL de Claude in Chrome (2.1.275,
+ * Navegadores, sockets y apertura de URL de thyrox in Chrome (2.1.275,
  * `chunk-g0b24p3s.js`). Linux es la plataforma de este contenedor.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'

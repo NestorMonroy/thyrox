@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+134 |   })
+135 | 
+136 |   test('un nombre de lanzamiento que se sanea a vacío cae al derivado', async () => {
+137 |     env.THYROX_CODE_SESSION_NAME = '\u0007'
+138 |     await registerSession(undefined, deps())
+139 |     expect(record().name).toBe('app-s1')
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: "app-s1"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:139:27)
+(fail) registerSession (nD) > un nombre de lanzamiento que se sanea a vacío cae al derivado [0.87ms]
+
+ 22 pass
+ 1 fail
+ 85 expect() calls
+Ran 23 tests across 1 file. [175.00ms]

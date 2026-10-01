@@ -42,8 +42,9 @@ import os
 import pathlib
 import re
 import subprocess
+import sys
 
-from session import transcripts
+from session import transcripts, user_wiring
 
 #: La forma DECLARADA del entorno: la clave, su separador —que el transcript
 #: escapa (``\"environment_id\":\"env_…\"``) o no, segun quien la escribio— y
@@ -121,6 +122,103 @@ def branch_of(root) -> str | None:
     return _git(root, "rev-parse", "--abbrev-ref", "HEAD")
 
 
+def session_environment(session: dict) -> str | None:
+    """El entorno de una sesion ya cargada (`get_session`): ``ccr.environment_id``.
+
+    Alternativa a `environment_of` cuando la fuente es la respuesta de la API
+    y no el transcript: la clave es la misma idea, la procedencia es otra.
+    """
+    ccr = (session or {}).get("ccr") or {}
+    return ccr.get("environment_id") or None
+
+
+def session_sources(session: dict) -> list[dict]:
+    """Los repositorios de una sesion: su URL y la revision REGISTRADA al arranque.
+
+    La revision que aqui viaja no es la rama actual: un repo puede arrancar
+    sin ninguna (medido en la fixture: el tercero no la trae), y aunque la
+    traiga puede haber cambiado desde entonces. La rama real se mide aparte,
+    con `branch_of` dentro del clon (`resolve_repo`).
+    """
+    ccr = (session or {}).get("ccr") or {}
+    context = ccr.get("session_context") or {}
+    sources = []
+    for source in context.get("sources") or []:
+        repo = (source or {}).get("git_repository") or {}
+        url = repo.get("url")
+        if not url:
+            continue
+        sources.append({"url": url, "registered_revision": repo.get("revision")})
+    return sources
+
+
+def normalize_repo_url(url: str) -> str:
+    """`url` sin barra final ni sufijo ``.git``, para comparar contra un ``origin``.
+
+    Dos clones del mismo repo pueden declarar su remoto con o sin cada uno de
+    los dos, y son la misma URL.
+    """
+    normalized = (url or "").strip()
+    if normalized.endswith("/"):
+        normalized = normalized[:-1]
+    if normalized.endswith(".git"):
+        normalized = normalized[:-4]
+    return normalized
+
+
+def find_clone(url, roots) -> pathlib.Path | None:
+    """El clon local cuyo ``origin`` normalizado coincide con `url`, bajo `roots`.
+
+    Cada raiz de `roots` se prueba como clon ella misma y, si es un
+    directorio, tambien por su primer nivel de subdirectorios: un
+    `--clone-root` puede nombrar el padre que contiene varios clones
+    hermanos, o el clon mismo.
+
+    *Ciega a:* un remoto que no se llame ``origin``; y a un clon a mas de un
+    nivel de profundidad bajo la raiz dada.
+    """
+    target = normalize_repo_url(url)
+    checked: set[pathlib.Path] = set()
+    for root in roots:
+        root_path = pathlib.Path(root)
+        candidates = [root_path]
+        if root_path.is_dir():
+            candidates += sorted(p for p in root_path.iterdir() if p.is_dir())
+        for candidate in candidates:
+            resolved = candidate.resolve()
+            if resolved in checked:
+                continue
+            checked.add(resolved)
+            if not (resolved / ".git").exists():
+                continue
+            origin = repository_of(candidate)
+            if origin and normalize_repo_url(origin) == target:
+                return candidate
+    return None
+
+
+def resolve_repo(source: dict, clone_roots) -> dict:
+    """Un repo de la sesion con su clon y su rama REAL, medidos, no adivinados.
+
+    La rama sale de `branch_of` DENTRO del clon, nunca de
+    `registered_revision`: esa es la de arranque, no la actual. Un HEAD
+    separado (`branch_of` devuelve el nombre literal ``"HEAD"``) no cuenta
+    como rama: no hay a que hacer checkout.
+    """
+    clone = find_clone(source["url"], clone_roots)
+    branch = None
+    if clone is not None:
+        raw_branch = branch_of(clone)
+        if raw_branch and raw_branch != "HEAD":
+            branch = raw_branch
+    return {
+        "url": source["url"],
+        "registered_revision": source.get("registered_revision"),
+        "clone": clone,
+        "branch": branch,
+    }
+
+
 def restart_needed(transcript, expected=("stop-gate-",)) -> dict:
     """Si el relevo hace falta, medido por los hooks que DISPARARON.
 
@@ -158,6 +256,33 @@ def restart_needed(transcript, expected=("stop-gate-",)) -> dict:
             "seen": len(summaries), "measured": True}
 
 
+def wiring_verdict(hooks: dict, drift: dict) -> str | None:
+    """El veredicto compuesto: instalar, relevar, o que no hace falta nada.
+
+    `drift` —de `session.user_wiring.wiring_drift(live, declared)`— gana
+    sobre `hooks` —de `restart_needed`—: un comando en `only_declared` esta
+    declarado y NO instalado, y `settings.local.json` no viaja al contenedor
+    nuevo, asi que un relevo lo dejaria igual de no instalado. Solo cuando no
+    queda nada pendiente de instalar tiene sentido preguntar si los hooks ya
+    disparan.
+
+    Devuelve ``None`` cuando `hooks["measured"]` es falso: sin universo
+    medido no se afirma ni «relevar» ni «no hace falta» — la misma razon por
+    la que `restart_needed` deja `needed` en ``None``.
+
+    *Ciega a:* un evento con deriva que no sea `only_declared` —por ejemplo
+    `only_live`, un comando instalado que ya no se declara— porque eso no es
+    "falta instalar", es limpieza, y proponer instalar por eso seria un
+    veredicto sobre el fenomeno equivocado.
+    """
+    pending = any(sides.get("only_declared") for sides in drift.values())
+    if pending:
+        return "instalar primero"
+    if not hooks.get("measured"):
+        return None
+    return "relevar" if hooks.get("needed") else "no hace falta"
+
+
 def build_payload(*, environment, repository, branch, title, prompt) -> dict:
     """La carga util de `create_session`, o un error que nombra lo que falta.
 
@@ -183,37 +308,237 @@ def build_payload(*, environment, repository, branch, title, prompt) -> dict:
     }
 
 
+#: El prompt por defecto de un relevo de UNA sola fuente. Con varias fuentes,
+#: `build_relay_prompt` lo usa como cabecera y le añade los pasos de las
+#: demás.
+DEFAULT_PROMPT = "Continua el trabajo de la sesion anterior en esta rama."
+
+#: Los pasos de arranque de la sesion NUEVA, en el orden que el Item fija:
+#: sincronizar dependencias, instalar el cableado declarado, y por ultimo
+#: MEDIR que dispara — no basta con instalarlo, `wiring_drift` compara contra
+#: lo declarado, no contra lo que de verdad se ejecuta en un turno.
+#:
+#: `bin/user_wiring --write` va sin consumidor a proposito: la sesion nueva lo
+#: resuelve por su contexto (`user_wiring.resolve_consumer`) y, si es ambiguo,
+#: rehusa nombrando THYROX_CONSUMER. Un clon fijo aqui seria el default que
+#: TASK-THYROX-0261 retiro del proveedor.
+SETUP_STEPS = (
+    "uv sync",
+    "bin/user_wiring --write",
+    "medir que los hooks disparan con `bin/session_restart --transcript {transcript}`",
+)
+
+
+def preflight_warnings(repos, *, live_settings=None, env_path=None,
+                       venv_path=None) -> list[dict]:
+    """Avisos del relevo, cada uno con si BLOQUEA. Sin veredicto sobre relevar.
+
+    Bloquean: un repo de la sesion sin clon local, y un clon sin rama (HEAD
+    separado o vacio). Avisan sin bloquear: `settings.local.json`, `.env` y
+    `.venv` ausentes — ninguno de los tres viaja al contenedor nuevo, y la
+    sesion nueva los restaura por su cuenta (`user_wiring --write`, `uv sync`,
+    y el usuario para `.env`).
+
+    *Ciega a:* la SALUD del clon mas alla de tener rama —un remoto
+    inalcanzable, cambios sin commitear— y a si el archivo ausente es
+    recuperable; solo mide presencia.
+    """
+    warnings: list[dict] = []
+    for repo in repos:
+        if repo.get("clone") is None:
+            warnings.append({
+                "message": f"sin clon local para {repo['url']}: no se puede "
+                          f"medir su rama real ni adjuntarlo al relevo",
+                "blocking": True})
+            continue
+        if not repo.get("branch"):
+            warnings.append({
+                "message": f"{repo['clone']}: HEAD separado o sin rama — no "
+                          f"hay a que hacer checkout en el relevo",
+                "blocking": True})
+    for path, name, restored_by in (
+        (live_settings, "settings.local.json",
+         "lo instala `bin/user_wiring --write`"),
+        (env_path, ".env", "lo restaura el usuario"),
+        (venv_path, ".venv", "lo recrea `uv sync`"),
+    ):
+        if path is not None and not pathlib.Path(path).exists():
+            warnings.append({
+                "message": f"{path} ausente: no viaja al contenedor nuevo, "
+                          f"{restored_by}",
+                "blocking": False})
+    return warnings
+
+
+def additional_repo_steps(repos) -> list[str]:
+    """Los pasos de prompt para adjuntar y ubicar los repos que NO son el primero.
+
+    Cada repo lleva su rama REAL —medida por `resolve_repo`, nunca la
+    registrada— porque es la que existe de verdad en su clon.
+    """
+    steps = []
+    for repo in repos:
+        steps.append(f"add_repo {repo['url']}")
+        if repo["branch"]:
+            steps.append(f"checkout la rama `{repo['branch']}` en {repo['url']}")
+        else:
+            steps.append(f"su rama no se pudo medir (sin clon o sin HEAD "
+                        f"con nombre) — resolver el aviso bloqueante antes "
+                        f"de hacer checkout en {repo['url']}")
+    return steps
+
+
+def build_relay_prompt(repos, transcript, base_prompt=DEFAULT_PROMPT) -> str:
+    """El prompt de un relevo con varias fuentes: pasos explicitos, no supuestos.
+
+    Solo `repos` —los que NO son la fuente primaria— entran aqui como pasos;
+    la primaria ya viaja en `source_url`/`source_revision` y repetirla en el
+    prompt duplicaria la instruccion. El setup de la sesion nueva va SIEMPRE
+    al final y en el orden fijado: `uv sync` antes de instalar el cableado
+    —que sus dependencias pueden requerir—, y medir los hooks al final,
+    porque medir antes de instalar mediria lo viejo.
+    """
+    lines = [base_prompt]
+    if repos:
+        lines.append("")
+        lines.append("Adjunta y ubica los repositorios restantes de la sesion:")
+        lines.extend(f"- {step}" for step in additional_repo_steps(repos))
+    lines.append("")
+    lines.append("Luego, en la sesion nueva, en este orden:")
+    lines.extend(f"- {step.format(transcript=transcript)}"
+                for step in SETUP_STEPS)
+    return "\n".join(lines)
+
+
+def build_multi_payload(*, environment, repos, title, transcript,
+                        base_prompt=DEFAULT_PROMPT) -> dict:
+    """La carga util de `create_session` para VARIAS fuentes, no solo una.
+
+    `create_session` acepta una fuente: la primera de la sesion viaja como
+    `source_url`/`source_revision`, con su rama REAL; el resto se declara
+    dentro del `prompt` como pasos explicitos de `add_repo` y checkout —
+    `build_relay_prompt`—, seguidos del setup de la sesion nueva.
+
+    Rehusa —via `build_payload`— si falta cualquier pieza del primario; y
+    aqui mismo si no hay ningun repo, porque entonces no hay fuente primaria
+    que nombrar.
+    """
+    if not repos:
+        raise RestartError(
+            "faltan 1 pieza(s) del relevo: repositorios. NO se compone un "
+            "relevo sin ninguna fuente.")
+    primary, rest = repos[0], repos[1:]
+    prompt = build_relay_prompt(rest, transcript, base_prompt)
+    return build_payload(environment=environment, repository=primary["url"],
+                         branch=primary["branch"], title=title, prompt=prompt)
 def main(argv=None) -> int:
     import argparse  # noqa: PLC0415
 
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--transcript", default=None,
                         help="el .jsonl de la sesion viva; por defecto se "
                              "deriva de CLAUDE_CODE_SESSION_ID")
     parser.add_argument("--root", default=".",
                         help="el arbol del que derivar repo y rama")
+    parser.add_argument("--consumer", default=None,
+                        help="la raiz del clon consumidor con que se compone "
+                             "el cableado declarado; sin ella, THYROX_CONSUMER "
+                             "y el contexto (`user_wiring.resolve_consumer`), "
+                             "que rehusa si es ambiguo")
+    parser.add_argument("--session-json", default=None,
+                        help="la salida de get_session (ccr.environment_id y "
+                             "session_context.sources[]); con esto, MEMBRESIA "
+                             "y rama salen de ahi y de los clones, no del "
+                             "transcript ni de --root")
+    parser.add_argument("--clone-root", action="append", default=None,
+                        help="raiz bajo la que buscar el clon de cada repo de "
+                             "la sesion (repetible); por defecto, el padre de "
+                             "--root. Solo aplica con --session-json")
+    parser.add_argument("--allow-partial", action="store_true",
+                        help="sale 0 aunque algun aviso del pre-flight "
+                             "bloquee; sin esto, un bloqueante sale 3")
     parser.add_argument("--title", default="Relevo de sesion")
-    parser.add_argument("--prompt", default="Continua el trabajo de la sesion "
-                                            "anterior en esta rama.")
+    parser.add_argument("--prompt", default=DEFAULT_PROMPT)
     args = parser.parse_args(argv)
 
     transcript = args.transcript
     if not transcript:
+        # thyrox-rename: keep — el id de la sesión anfitriona
         found = transcript_for(os.environ.get("CLAUDE_CODE_SESSION_ID", ""))
         transcript = str(found) if found else ""
 
-    verdict = restart_needed(transcript)
-    print(f"hooks del arbol que dispararon: {verdict['matched']} "
-          f"de {verdict['seen']} resumen(es) de hook")
-    if not verdict["measured"]:
+    hooks = restart_needed(transcript)
+    print(f"hooks del arbol que dispararon: {hooks['matched']} "
+          f"de {hooks['seen']} resumen(es) de hook")
+
+    live_settings_path = user_wiring.live_settings(pathlib.Path(args.root))
+    live_wiring = (json.loads(live_settings_path.read_text(encoding="utf-8"))
+                  if live_settings_path.exists() else {})
+    try:
+        declared_wiring = user_wiring.declared_wiring(
+            pathlib.Path(args.root), consumer=args.consumer)
+    except user_wiring.WiringRefused as error:
+        # Sin consumidor no hay cableado declarado que comparar, y un relevo
+        # que lo adivinara instalaria las rutas de otro clon (TASK-THYROX-0261).
+        print(f"REHUSA — {error}", file=sys.stderr)
+        return 2
+    drift = user_wiring.wiring_drift(live_wiring, declared_wiring)
+    verdict = wiring_verdict(hooks, drift)
+    if verdict == "instalar primero":
+        pending = sorted({command for sides in drift.values()
+                          for command in sides.get("only_declared", [])})
+        print("veredicto: INSTALAR PRIMERO — declarado y no instalado: "
+              + "; ".join(pending))
+        print("settings.local.json no viaja al contenedor nuevo: un relevo "
+              "ahora lo dejaria igual de no instalado.")
+    elif verdict is None:
         print("veredicto: NO PUDE MEDIR — no hay transcript que leer "
               f"({transcript or 'ninguno derivado'}). Un rojo sobre cero "
               f"resumenes no es un rojo: propondria relevar, que cuesta el "
               f"contexto de esta sesion, sin haber mirado nada.")
         return 2
-    print("veredicto: "
-          + ("HACE FALTA relevar" if verdict["needed"]
-             else "NO hace falta: los gates ya disparan"))
+    else:
+        print("veredicto: "
+              + ("HACE FALTA relevar" if verdict == "relevar"
+                 else "NO hace falta: los gates ya disparan"))
+
+    if args.session_json:
+        session = json.loads(
+            pathlib.Path(args.session_json).read_text(encoding="utf-8"))
+        environment = session_environment(session)
+        sources = session_sources(session)
+        clone_roots = args.clone_root or [
+            str(pathlib.Path(args.root).resolve().parent)]
+        repos = [resolve_repo(source, clone_roots) for source in sources]
+
+        live = pathlib.Path(args.root).parent / ".claude" / "settings.local.json"
+        warnings = preflight_warnings(
+            repos, live_settings=live,
+            env_path=pathlib.Path(args.root) / ".env",
+            venv_path=pathlib.Path(args.root) / ".venv")
+        print("\navisos del pre-flight (sin veredicto sobre el relevo):")
+        if not warnings:
+            print("  ninguno")
+        for warning in warnings:
+            label = "BLOQUEA" if warning["blocking"] else "no bloquea"
+            print(f"  [{label}] {warning['message']}")
+        blocking = any(warning["blocking"] for warning in warnings)
+
+        try:
+            payload = build_multi_payload(
+                environment=environment, repos=repos, title=args.title,
+                transcript=transcript, base_prompt=args.prompt)
+        except RestartError as exc:
+            print(f"\nno se pudo componer la carga util: {exc}")
+            return 3 if blocking and not args.allow_partial else 1
+
+        print("\ncarga util para create_session:")
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        print("\nEste guion PREPARA el relevo; no lo emite. La llamada la hace "
+              "quien tenga la herramienta, con esta carga util tal cual.")
+        if blocking and not args.allow_partial:
+            return 3
+        return 0
 
     payload = build_payload(
         environment=environment_of(transcript),

@@ -1,5 +1,6 @@
 /* eslint-disable custom-rules/no-process-exit */
 
+import { PRODUCT_NAME } from '../entry/productName.ts'
 import { feature } from 'bun:bundle'
 import chalk from 'chalk'
 import {
@@ -24,7 +25,7 @@ import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import { checkAndRestoreTerminalBackup } from '@thyrox/shell/terminal/appleTerminalBackup.js'
 import { prefetchApiKeyFromApiKeyHelperIfSafe } from '@thyrox/provider/authAlias.js'
 import { clearMemoryFileCaches } from '@thyrox/storage/claudemd.js'
-import { getCurrentProjectConfig } from '@thyrox/config'
+import { getCurrentProjectConfig, type ProjectConfig } from '@thyrox/config'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { env } from '@thyrox/config/env/paths'
 import { envDynamic } from '@thyrox/config/env/dynamic'
@@ -73,7 +74,7 @@ export async function setup(
   if (!nodeVersion || parseInt(nodeVersion, 10) < 18) {
     console.error(
       chalk.bold.red(
-        'Error: Claude Code requires Node.js version 18 or higher.',
+        `Error: ${PRODUCT_NAME} requires Node.js version 18 or higher.`,
       ),
     )
     process.exit(1)
@@ -81,7 +82,7 @@ export async function setup(
 
   // Set custom session ID if provided
   if (customSessionId) {
-    switchSession(asSessionId(customSessionId))
+    switchSession(asSessionId(customSessionId), 'startup_custom_id')
   }
 
   // --bare / SIMPLE: skip UDS messaging server and teammate snapshot.
@@ -91,7 +92,7 @@ export async function setup(
     // Start UDS messaging server (Mac/Linux only).
     // Enabled by default for ants — creates a socket in tmpdir if no
     // --messaging-socket-path is passed. Awaited so the server is bound
-    // and $CLAUDE_CODE_MESSAGING_SOCKET is exported before any hook
+    // and $THYROX_CODE_MESSAGING_SOCKET is exported before any hook
     // (SessionStart in particular) can spawn and snapshot process.env.
     if (feature('UDS_INBOX')) {
       const m = await import('@thyrox/local-observability/uds/udsMessaging.js')
@@ -301,7 +302,7 @@ export async function setup(
   profileCheckpoint('setup_before_prefetch')
   // Pre-fetch promises - only items needed before render
   logForDiagnosticsNoPII('info', 'setup_prefetch_starting')
-  // When CLAUDE_CODE_SYNC_PLUGIN_INSTALL is set, skip all plugin prefetch.
+  // When THYROX_CODE_SYNC_PLUGIN_INSTALL is set, skip all plugin prefetch.
   // The sync install path in print.ts calls refreshPluginState() after
   // installing, which reloads commands, hooks, and agents. Prefetching here
   // races with the install (concurrent copyPluginToVersionedCache / cachePlugin
@@ -309,7 +310,7 @@ export async function setup(
   // mid-install when policySettings arrives.
   const skipPluginPrefetch =
     (getIsNonInteractiveSession() &&
-      isEnvTruthy(process.env.CLAUDE_CODE_SYNC_PLUGIN_INSTALL)) ||
+      isEnvTruthy(process.env.THYROX_CODE_SYNC_PLUGIN_INSTALL)) ||
     // --bare: loadPluginHooks → loadAllPlugins is filesystem work that's
     // wasted when executeHooks early-returns under --bare anyway.
     isBareMode()
@@ -393,7 +394,7 @@ export async function setup(
       typeof process.getuid === 'function' &&
       process.getuid() === 0 &&
       process.env.IS_SANDBOX !== '1' &&
-      !isEnvTruthy(process.env.CLAUDE_CODE_BUBBLEWRAP)
+      !isEnvTruthy(process.env.THYROX_CODE_BUBBLEWRAP)
     ) {
       console.error(
         `--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons`,
@@ -406,10 +407,10 @@ export async function setup(
       // Skip for Desktop's local agent mode — same trust model as CCR/BYOC
       // (trusted Anthropic-managed launcher intentionally pre-approving everything).
       // Precedent: permissionSetup.ts:861, applySettingsChange.ts:55 (PR #19116)
-      process.env.CLAUDE_CODE_ENTRYPOINT !== 'local-agent' &&
-      // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+      process.env.THYROX_CODE_ENTRYPOINT !== 'local-agent' &&
+      // Same for CCD (thyrox in Desktop) — apps#29127 passes the flag
       // unconditionally to unlock mid-session bypass switching
-      process.env.CLAUDE_CODE_ENTRYPOINT !== 'claude-desktop'
+      process.env.THYROX_CODE_ENTRYPOINT !== 'claude-desktop'
     ) {
       // Only await if permission mode is set to bypass
       const [isDocker, hasInternet] = await Promise.all([
@@ -428,17 +429,24 @@ export async function setup(
     }
   }
 
-  if (process.env.NODE_ENV === 'test') {
-    return
-  }
-
   // Log tengu_exit event from the last session?
-  const projectConfig = getCurrentProjectConfig()
+  logPreviousSessionExit(getCurrentProjectConfig())
+}
+
+/**
+ * Registra el evento `tengu_exit` de la sesión anterior. Equivale al tramo
+ * final de `Ho` en el ejecutable 2.1.283: no depende de `NODE_ENV`; quien
+ * necesite otro sumidero lo inyecta con `log`.
+ */
+export function logPreviousSessionExit(
+  projectConfig: ProjectConfig,
+  log: typeof logEvent = logEvent,
+): void {
   if (
     projectConfig.lastCost !== undefined &&
     projectConfig.lastDuration !== undefined
   ) {
-    logEvent('tengu_exit', {
+    log('tengu_exit', {
       last_session_cost: projectConfig.lastCost,
       last_session_api_duration: projectConfig.lastAPIDuration,
       last_session_tool_duration: projectConfig.lastToolDuration,

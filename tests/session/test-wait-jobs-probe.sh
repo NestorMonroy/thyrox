@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -uo pipefail
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
 # y la RUTA a su declaracion. Los dos literales que el ultimo recurso
@@ -33,7 +34,7 @@ afirmar() {  # afirmar <descripción> <esperado> <obtenido>
     if [[ "$2" == "$3" ]]; then OK=$((OK+1)); echo "  ok    $1"
     else FALLO=$((FALLO+1)); echo "  FALLA $1 — esperado '$2', obtenido '$3'"; fi
 }
-contiene_texto() { printf '%s\n' "$1" | grep -Eq -- "$2" && echo si || echo no; }
+contiene_texto() { grep -Eq -- "$2" <<<"$1" && echo si || echo no; }
 
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
 export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
@@ -43,7 +44,7 @@ nohup bash -c "sleep 30 | cat" </dev/null >"$L1" 2>&1 & P1=$!; disown $P1
 # `limpio`: todo su árbol con stdin en /dev/null.
 nohup bash -c "sleep 30" </dev/null >"$L2" 2>&1 & P2=$!; disown $P2
 # `cerrado`: su nieto lee de una tubería cuyo escritor ya salió — la forma de
-# cada ítem del pool (`{ cat plantilla; printf item; } | claude -p`). Leer da
+# cada ítem del pool (`{ cat plantilla; printf item; } | thyrox -p`). Leer da
 # EOF, no espera: avisar ahí es una falsa alarma (medido en el paso 163).
 L3=$(fixture_file)
 nohup bash -c "echo hola | { sleep 1; exec sleep 30; }" </dev/null >"$L3" 2>&1 & P3=$!; disown $P3

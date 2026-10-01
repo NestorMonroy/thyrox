@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun .claude/workbench/model-artifact-install-20261001T075211/probes/materialize_real.ts thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf .claude/workbench/model-artifact-install-20261001T075211/outputs/materialize-real.json", "started_at": "2026-10-01T08:11:48+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T08:12:03+00:00", "duration_seconds": 15.19268}

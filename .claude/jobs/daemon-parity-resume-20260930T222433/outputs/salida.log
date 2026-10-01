@@ -1,0 +1,10 @@
+modelo: claude-opus-5-5 (derivado de --task-class analisis)
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-opus-5-5: nada que derivar
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/496dfc19bdd1-20260930T222436-5184/mailbox
+cache-ttl: 1h (constant)
+-- FALLIDO spare — TASK-THYROX-0689, paridad del daemon D15. Fuente de verdad: /home/user/thyrox/.claude/workbench/daemon-parity-closure-20260930T214805/source.md, sección spare. Te pertenecen src/packages/daemon/src/spareClaim.ts, sparePool.ts, la rama --bg-spare de src/packages/cli/src/entry/cli.tsx (sólo esa rama), y sus pruebas en src/packages/daemon/src/__tests__/ (existentes o nuevas con nombre propio).
+items=5 ok=4 fallidos=1
+verificados=1 rechazados=3 sin-cambios=0 fallidos=1
+__BG_EXIT__=1

@@ -1,0 +1,63 @@
+== src/packages/cli/__tests__/bin.test.ts exit=0
+
+== src/packages/cli/__tests__/impactCli.test.ts exit=0
+
+== src/packages/cli/__tests__/loopStreaming.test.ts exit=0
+
+== src/packages/mitm/__tests__/server/mitmServer.test.ts exit=1
+AssertionError: daily-cloudcode-pa.googleapis.com
+(fail) the root-CA mode presents one leaf, signed by the stored CA, for every target host [323.58ms]
+== tests/package/dependencies.test.ts exit=1
+error: expect(received).toEqual(expected)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/binary: todo import externo resuelve [5.12ms]
+== tests/package/exports.test.ts exit=1
+error: expect(received).toEqual(expected)
+(fail) 2 — el mapa esta completo y su forma se deriva > cada modulo .ts de src/ resuelve a si mismo por el mapa [264.27ms]
+== tests/package/sibling_exports.test.ts exit=1
+error: expect(received).toEqual(expected)
+(fail) exports de los paquetes hermanos > bloque 2 — ningun destino declarado apunta a un archivo ausente > @thyrox/provider [1.10ms]
+== tests/rules/markdown.test.ts exit=0
+
+== tests/unit/utils/envUtils.test.ts exit=1
+SyntaxError: Export named 'getClaudeConfigHomeDir' not found in module '/home/user/thyrox/src/packages/config/env/utils.ts'.
+== tests/verify/renameEnvPrefix.test.ts exit=1
+error: expect(received).toEqual(expected)
+(fail) renameEnvPrefix — constantes del cliente ajeno > toda constante CLAUDE_CODE_* declarada en src/ está en FOREIGN_CONSTANTS [41.66ms]
+== tests/session/test_gpu_monitor.py exit=0
+
+== tests/verify/test_env_contract_keys.py exit=1
+FAIL: test_arbol_real_sin_claves_sin_declarar (__main__.EnvContractKeysGate.test_arbol_real_sin_claves_sin_declarar)
+AssertionError: 1 != 0 : claves leidas del entorno: 423 | declaradas: 117 | sin declarar: 319
+FAILED (failures=1)
+== tests/verify/test_path_arithmetic.py exit=1
+
+== tests/verify/test_pre_commit_hook.py exit=1
+FAIL: test_a_named_import_between_packages_passes (__main__.PreCommitHook.test_a_named_import_between_packages_passes)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmplpq8vsqp/.claude/eventos)
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmplpq8vsqp/src/verify/checkEnvPrefix.ts'
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmph7k3k5r2/.claude/eventos)
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmph7k3k5r2/src/verify/checkEnvPrefix.ts'
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp_x5ef4s_/.claude/eventos)
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmp_x5ef4s_/src/verify/checkEnvPrefix.ts'
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpfp22wl0t/.claude/eventos)
+error: Cannot find module './renameEnvPrefix.ts' from '/tmp/tmpfp22wl0t/src/verify/checkEnvPrefix.ts'
+== tests/verify/test_runner.py exit=1
+test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered) ... FAIL
+FAIL: test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered)
+AssertionError: Lists differ: ['check_md_relative_links.py', 'check_prod[42 chars].py'] != []
+FAILED (failures=1)
+== tests/githooks/test-pre-commit-identifier-language.sh exit=1
+  FALLA con el gate en verde, el hook sale 0 — esperado [0], obtenido [1]
+== tests/githooks/test-pre-commit-reconcile-status.sh exit=1
+  FALLA y no bloquea el commit: el store es telemetría — esperado 0, obtenido 1
+== tests/skills/test-check-skill-artifacts.sh exit=1
+FALLA árbol limpio: exit 0 — esperado '0', obtenido '1'
+FALLA publica su denominador (N definición(es); M con diferencia) — esperado 'si', obtenido 'no'
+== tests/verify/test-script-naming.sh exit=1
+  FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [31]
+== tests/verify/test-suite-discrimina.sh exit=1
+
+__BG_EXIT__=0

@@ -1,0 +1,4 @@
+==== Op: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Op [162587,162615)
+Op=/^[A-Za-z0-9_$.-]{1,40}$/
+symbol: 1 de 1 nombre(s) resueltos

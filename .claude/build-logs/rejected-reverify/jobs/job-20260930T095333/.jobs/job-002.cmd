@@ -1,0 +1,1 @@
+timeout 1800 bash bin/check_package_typecheck --strict agent repl > /home/user/thyrox/.claude/build-logs/rejected-reverify/0284-typecheck.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/rejected-reverify/0284-typecheck.log

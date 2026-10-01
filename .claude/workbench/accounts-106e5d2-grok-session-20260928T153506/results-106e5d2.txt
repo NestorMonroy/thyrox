@@ -1,0 +1,20 @@
+== 1: sin nombre macos -> 1
+== 2: sin nombre windows -> 1
+== 3: sin aarch64 -> 1
+== 4: sin x86_64 -> 4
+== 5: desconocida vacía -> 4
+== 6: modo interactivo por defecto -> 1
+== 7: modo ignorado -> 1
+== 8: stream sin SSE -> 1
+== 9: sin token auth -> 1
+== 10: sin authenticate-response -> 1
+== 11: sin modelo -> 1
+== 12: usuario una vez -> 1
+== 13: correo de equipo -> 1
+== 14: correo de organización -> 2
+== 15: tipo sin recortar -> 1
+== 16: tipo sensible a caja -> 1
+== 17: modelos interactivos -> 1
+== 18: modelos sin correo -> 1
+== restaurado -> 0
+18 de 18 anulaciones discriminan; restaurado 0 fail.

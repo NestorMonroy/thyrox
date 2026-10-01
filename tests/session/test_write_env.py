@@ -126,12 +126,29 @@ def main() -> int:
         # Anulacion: el mismo guion con `--out` fuera de `$ROOT/.env` NO debe
         # emitirla. Un control que solo mirara el `.env` del proveedor pasaria
         # con y sin la guarda — no discriminaria.
-        propio = ROOT / ".env"
-        check("el proveedor la declara en su .env vivo",
-              any(l.startswith("THYROX_WORKBENCH_DIR=/")
-                  for l in propio.read_text().splitlines()),
-              "sin ella `workbench_dir()` rehusa: su .claude/ no lo distingue "
-              "de un consumidor")
+        # El proveedor se simula con una copia del layout llamada `thyrox`: el
+        # `.env` vivo lo regenera quien corre `--force`, y el test no lo toca.
+        provider = base / "thyrox"
+        for rel in ("src/paths/reach.py", "src/lib/reach.sh"):
+            (provider / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(ROOT / rel, provider / rel)
+        propio = provider / ".env"
+        # Un `.env` heredado con las claves GLOBALES: `--force` debe retirarlas.
+        propio.write_text("THYROX_WORKBENCH_DIR=/vieja/global\n"
+                          "THYROX_JOBS_DIR=/vieja/global-jobs\n")
+        r = run("--out", str(propio), "--force",
+                env={"THYROX_ROOT": str(provider)})
+        check("el proveedor regenera su .env", r.returncode == 0, r.stderr)
+        declared = keys(propio)
+        check("el proveedor declara su hogar con la clave POR CLON",
+              declared.get("THYROX_WORKBENCH_THYROX")
+              == f"{provider}/.claude/workbench", str(declared))
+        check("y el de sus trabajos con la suya",
+              declared.get("THYROX_JOBS_THYROX") == f"{provider}/.claude/jobs")
+        check("y NO emite las globales (se filtrarian a los consumidores)",
+              "THYROX_WORKBENCH_DIR" not in declared
+              and "THYROX_JOBS_DIR" not in declared,
+              "un consumidor sin clave por clon resolveria dentro de thyrox")
         ajeno = base / "consumidor.env"
         run("--out", str(ajeno), "--force")
         check("y NO la emite al .env de un consumidor",
@@ -141,12 +158,11 @@ def main() -> int:
         # misma guarda. Sin el, `jobs_dir()` cae al default y devuelve un
         # SEGMENTO relativo —`.claude/jobs`—, que resuelve contra el CWD: el
         # defecto home-by-cwd de #284/#286, en la familia hermana.
-        check("el proveedor declara tambien el hogar de sus trabajos",
-              any(l.startswith("THYROX_JOBS_DIR=/")
-                  for l in propio.read_text().splitlines()),
-              "sin ella jobs_dir() devuelve una ruta relativa")
         check("y tampoco esa al .env de un consumidor",
               "THYROX_JOBS_DIR" not in ajeno.read_text())
+        check("ni las claves por clon del proveedor",
+              "THYROX_WORKBENCH_THYROX" not in ajeno.read_text()
+              and "THYROX_JOBS_THYROX" not in ajeno.read_text())
 
         # --- caso 6: --force CONSERVA lo que el guion no emite --------------
         # El generador deriva del arbol lo que se puede derivar. Lo que NO se
@@ -165,6 +181,7 @@ def main() -> int:
             "THYROX_ROOT=/raiz/rancia\n"
             "THYROX_JOBS_API=/home/user/kaupamex-api/scripts/evidence\n"
             "THYROX_JOBS_DOCS=/home/user/kaupamex-docs/.claude/jobs\n"
+            "IDENTIFIER_LANGUAGE_BASELINE=/ruta/al/baseline.txt\n"
             "# un comentario del ejecutor\n"
         )
         r = run("--out", str(mixto), "--force")
@@ -178,6 +195,13 @@ def main() -> int:
         check("conserva la de docs tambien",
               tras.get("THYROX_JOBS_DOCS")
               == "/home/user/kaupamex-docs/.claude/jobs")
+        # Una clave de gate sin el prefijo `THYROX_` es tan del ejecutor como
+        # las de arriba: el gate de idioma lee `IDENTIFIER_LANGUAGE_BASELINE`,
+        # y perderla en un `--force` lo devolvia a rehusar sin que nadie viera
+        # por que.
+        check("conserva una clave declarada sin el prefijo THYROX_",
+              tras.get("IDENTIFIER_LANGUAGE_BASELINE") == "/ruta/al/baseline.txt",
+              f"dio {tras.get('IDENTIFIER_LANGUAGE_BASELINE')!r}")
         check("y REGENERA la suya: el valor rancio no sobrevive",
               tras.get("THYROX_ROOT") == str(ROOT),
               f"dio {tras.get('THYROX_ROOT')!r}, esperaba {str(ROOT)!r}")

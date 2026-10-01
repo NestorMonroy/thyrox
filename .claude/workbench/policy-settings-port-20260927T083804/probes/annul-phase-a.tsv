@@ -1,0 +1,23 @@
+non-policy-keys-count	s/^const isNonPolicyKey = (key: string) => .*/const isNonPolicyKey = (_key: string) => false/
+empty-tree-counts	s/^  return isPlainObject(value) \&\& Object.values(value).every(isEmptyObjectTree)$/  return false/
+array-is-object	s/^  return typeof value === 'object' \&\& value !== null \&\& !Array.isArray(value)$/  return typeof value === 'object' \&\& value !== null/
+policy-or-null-keeps-all	s/^  return settings \&\& hasPolicyKeys(settings) ? settings : null$/  return settings/
+authored-ignores-substitutes	s/ \&\& !read.onlySubstitutes$//
+rank-authored-ignored	s/^  if (authored) return 2$//
+content-ignores-declared	s/^  return read.documentHasPolicyContent ?? /  return /
+loadstate-ignores-declared	s/^  return read.loadState ?? /  return /
+combine-didnotload-lost	s/^  if (a === 'didNotLoad' || b === 'didNotLoad') return 'didNotLoad'$//
+binds-ignores-user	s/read.userWritable !== true \&\& //
+binds-ignores-failed	s/ || read.loadState === 'didNotLoad')/)/
+mcp-only-ignores-tiers	s/ || adminTiers.some(tier => tier.allowManagedMcpServersOnly === true)$//
+mcp-list-ignores-slot	s/^  return slot?.allowedMcpServers ?? /  return /
+host-overlay-ignores-flag	s/^  if (!hostManagedProvider || !parent) return null$/  if (!parent) return null/
+host-overlay-match-always	s/(parent.availableModelsMatch === 'exact' || (parent.availableModelsMatch !== undefined \&\& parent.availableModels !== undefined))/(parent.availableModelsMatch !== undefined)/
+host-overlay-empty-denied	s/Array.isArray(parent.deniedModels) \&\& parent.deniedModels.length > 0/parent.deniedModels !== undefined/
+set-shares-level	s/^    const copy = { ...(current\[key\] as PolicyDocument | undefined) }$/    const copy = (current[key] as PolicyDocument | undefined) ?? {}/
+set-keeps-empty-parents	s/^    if (Object.keys(chain\[level\]!).length > 0) break$/    break/
+overrides-ignore-order	s/ \&\& (models === -1 || overrides <= models || (snapshotFirst \&\& models === 0))//
+overrides-ignore-snapshot	s/ || (snapshotFirst \&\& models === 0)//
+wsl-downgrade-always	s/^  if (!isAuthoredPolicy(remote())) return errors$//
+wsl-reads-remote-eagerly	s/^  if (!errors.some(isFatalWslInheritError)) return errors$/  remote()/
+shadow-ignores-snapshot	s/^  if (tier === null || !snapshotFirst) return tier$/  if (tier === null) return tier/

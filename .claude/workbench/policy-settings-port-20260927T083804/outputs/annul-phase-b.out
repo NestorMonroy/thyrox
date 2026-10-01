@@ -1,0 +1,20 @@
+base	20 pass, 0 fail	—
+schema-failure-loads	19 pass, 1 fail	un documento de política (HRe) > uno que el esquema rechaza no carga
+empty-document-kept	19 pass, 1 fail	un documento de política (HRe) > uno vacío carga sin settings ni contenido
+no-copy-on-read	19 pass, 1 fail	un documento de política (HRe) > cada lectura recibe su copia de la caché
+remote-source-name	19 pass, 1 fail	la capa remota (Qq) > la caché remota se valida con el nombre de su fuente
+mdm-absent-loaded	19 pass, 1 fail	la capa MDM (Os) > sin lector MDM la fuente está ausente
+mdm-empty-kept	19 pass, 1 fail	la capa MDM (Os) > unos settings vacíos quedan en null y cargados
+mdm-no-wsl-downgrade	19 pass, 1 fail	la capa MDM (Os) > el fatal de wslInheritsWindowsSettings baja a aviso si la remota trae política
+enoent-fails-closed	19 pass, 1 fail	el archivo administrado (njr) > sin archivo ni directorio la fuente está ausente
+unreadable-absent	19 pass, 1 fail	el archivo administrado (njr) > un archivo que no se puede leer no carga y lo declara como fatal
+blank-not-empty	19 pass, 1 fail	el archivo administrado (njr) > un archivo vacío carga sin aportar nada
+not-object-accepted	19 pass, 1 fail	el archivo administrado (njr) > un documento que es JSON pero no objeto no se valida: se declara
+fragment-merge-default	18 pass, 2 fail	el archivo administrado (njr) > los fragmentos se funden sobre la base en orden de nombre, y sólo los .json visibles | el archivo administrado (njr) > los mapas de servidores MCP administrados se funden por servidor, sin mezclar su contenido
+fragments-unsorted	19 pass, 1 fail	el archivo administrado (njr) > los fragmentos se aplican en orden de nombre aunque el directorio los liste en otro
+hidden-fragments	19 pass, 1 fail	el archivo administrado (njr) > los fragmentos se funden sobre la base en orden de nombre, y sólo los .json visibles
+non-json-fragments	19 pass, 1 fail	el archivo administrado (njr) > los fragmentos se funden sobre la base en orden de nombre, y sólo los .json visibles
+dir-error-ignored	19 pass, 1 fail	el archivo administrado (njr) > un directorio de fragmentos que no se puede leer se declara
+enotdir-fails	19 pass, 1 fail	el archivo administrado (njr) > un directorio de fragmentos que no se puede leer se declara
+control-only-kept	19 pass, 1 fail	el archivo administrado (njr) > un documento con sólo claves de control no aporta settings
+state-not-combined	14 pass, 6 fail	el archivo administrado (njr) > los fragmentos se funden sobre la base en orden de nombre, y sólo los .json visibles | el archivo administrado (njr) > un fragmento ilegible deja la fuente sin cargar, para fallar cerrado | el archivo administrado (njr) > un archivo vacío carga sin aportar nada | el archivo administrado (njr) > un archivo que no se puede leer no carga y lo declara como fatal | el archivo administrado (njr) > un directorio de fragmentos que no se puede leer se declara | el archivo administrado (njr) > un documento con sólo claves de control no aporta settings

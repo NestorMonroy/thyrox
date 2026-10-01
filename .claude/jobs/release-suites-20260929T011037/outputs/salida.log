@@ -1,0 +1,48 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260929T011038
+  job-20260929T011038/job-001 PYTHONDONTWRITEBYTECODE=1 python3 tests/verify/test_measure_worktree.py
+  job-20260929T011038/job-002 PYTHONDONTWRITEBYTECODE=1 python3 tests/verify/test_pool_pipeline.py
+  job-20260929T011038/job-003 PYTHONDONTWRITEBYTECODE=1 python3 tests/verify/test_tsc_cycle.py
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1798s)
+asentado: job-20260929T011038_job-001 -> OK (2 de 4)
+asentado: job-20260929T011038_job-002 -> OK (3 de 4)
+asentado: job-20260929T011038_job-003 -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260929T011038
+       | (vacío — no emitió nada)
+OK     job-20260929T011038_job-001 exit=0
+       |   ok    sync deja el worktree igual al principal otra vez
+       |   ok    un paquete nuevo en un alcance ya reflejado también se refleja
+       |   ok    y el que ya estaba sigue
+       |   ok    con cambios sin exportar, release los nombra
+       |   ok    y no retira el worktree
+       |   ok    exportado todo, release no deja nada pendiente
+       |   ok    y el worktree ya no existe
+       |   ok    ni git lo lista
+       | test_measure_worktree: 14 aserciones — 14 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 12664 KB (12 MB) · pared 0.15s
+OK     job-20260929T011038_job-002 exit=0
+       |   ok    sin final.log, la base sigue siendo la anterior
+       |   ok    con final.log, la base es la del lote
+       |   ok    el archivo conservado queda aplicado
+       |   ok    el no conservado queda excluido
+       |   ok    y su razón cita el paso
+       |   ok    un conservado ajeno al patrón no se le atribuye
+       |   ok    devuelve lo aplicado y lo excluido
+       |   ok    una unidad que no es de patrón no toca la memoria
+       | test_pool_pipeline: 66 aserciones — 66 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 87300 KB (85 MB) · pared 2.32s
+OK     job-20260929T011038_job-003 exit=0
+       |   ok    la variable del origen gana a activar 1h
+       |   ok    forzar 5m gana a todo
+       |   ok    un valor ilegible rehúsa nombrando la variable
+       |   ok    sin entorno, la cota decide como antes
+       |   ok    sin paso anterior medido no se decide: lo decide el cliente
+       |   ok    el TTL decidido llega al pool
+       |   ok    sin TTL decidido el pool no lo fija
+       |   ok    el TTL es parte de la configuración del paso (setup_id)
+       | test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 23976 KB (23 MB) · pared 0.24s
+__BG_EXIT__=0

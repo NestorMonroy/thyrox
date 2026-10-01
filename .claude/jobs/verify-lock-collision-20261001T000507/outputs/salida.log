@@ -1,0 +1,8 @@
+ 0 fail
+ 148 expect() calls
+Ran 82 tests across 7 files. [4.75s]
+68 casos: 68 ok, 0 fallos
+72 casos: 72 ok, 0 fallos
+shellcheck: 0 hallazgo(s) (alcance medido: 4 archivo(s))
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+__BG_EXIT__=0

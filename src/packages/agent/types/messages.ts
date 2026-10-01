@@ -2,14 +2,10 @@
  * Porte de `ccnmt: packages/agent/types/messages.ts` (79 líneas, 10 símbolos):
  * la jerarquía de mensajes del bucle conversacional.
  *
- * La versión anterior era un porte MÍNIMO declarado, acotado a los campos que
- * consume `internal/abort.ts`. Ese recorte tenía un costo medido: con
- * `CoreAssistantMessage` sin `usage` y con firma de índice, `AgentCore.ts`
- * leía `event.message.usage` como `unknown` y producía 6 errores de tsc — la
- * laxitud de la firma de índice acepta la ESCRITURA del campo y no da nada
- * legible en la LECTURA, que es lo que ese consumidor hace.
- *
- * Se reconcilia con la fuente: los cinco símbolos ausentes (`TextContent`,
+ * Una forma mínima con firma de índice no basta: acepta la ESCRITURA de un
+ * campo y no da nada legible en la LECTURA (`AgentCore.ts` lee
+ * `event.message.usage`). Por eso se reconcilia con la fuente: los cinco
+ * símbolos (`TextContent`,
  * `ThinkingContent`, `ToolUseContent`, `ToolResultContent`,
  * `CoreSystemMessage`) y la forma completa de `CoreAssistantMessage`.
  *

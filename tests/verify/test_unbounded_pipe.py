@@ -13,7 +13,8 @@ confirma su propio encuadre.
 Los dos controles de anulación miden lo que de verdad decide si el gate
 sirve: (1) la precondición `pipefail` y (2) el recorte del escritor. Al
 anular el segundo el gate vuelve al alcance ingenuo, que sobre este árbol
-marcaba 527 sitios —202 de ellos `echo`, medido en 0 de 20 inversiones—.
+marcaba 527 sitios —202 de ellos `echo`, cuyo 0 de 20 no se reprodujo
+(2026-09-27: 20/20 con 5 MB); esa clase es de `check_unsized_writer_pipe.py`—.
 """
 from __future__ import annotations
 
@@ -122,9 +123,9 @@ for label, fragment in (("grep -q", "grep -q MARCA"),
 print("\n== 3. fuera de alcance: ni un falso positivo ==")
 
 OUT_OF_SCOPE_WRITERS = {
-    "echo de variable (medido 0/20 con 5 MB)": shell('echo "$V" | grep -q MARCA'),
-    "printf corto (medido 0/20)": shell('printf MARCA | grep -q MARCA'),
-    "cat de archivo — umbral sin medir, dos casos vivos de 2 bytes":
+    "echo de variable: su tamaño es de check_unsized_writer_pipe": shell('echo "$V" | grep -q MARCA'),
+    "printf de un literal corto (cabe en el búfer)": shell('printf MARCA | grep -q MARCA'),
+    "cat de archivo — tamaño desconocido, lo mide el gate hermano":
         shell('cat /sys/module/apparmor/parameters/enabled | grep -q Y'),
     "find sobre un árbol": shell('find . -name "*.py" | grep -q algo'),
     "timeout ACOTA al escritor sin fin":

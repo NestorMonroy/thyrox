@@ -2,8 +2,8 @@
  * El banco de trabajo como subcomando de la CLI (#80, #266).
  *
  * POR QUE ESTA SUITE SE REESCRIBE Y NO SE REAPUNTA. Habia dos portes del
- * mismo mecanismo conviviendo: `thyrox: src/workbench/manifest.ts` (sucesor)
- * y `thyrox: src/packages/harness/src/workbench/manifest.ts` (superado).
+ * mismo mecanismo conviviendo: `thyrox: src/packages/workbench/manifest.ts` (sucesor)
+ * y `thyrox: src/packages/harness/src/packages/workbench/manifest.ts` (superado).
  * :ref:`h-docs-1142` los midio y declaro sus contratos INCOMPATIBLES —sus
  * cinco claves no se solapan en ninguna posicion— y ordeno que el retiro
  * fuera «su propio pase y con su propia suite … para que no se cuele como
@@ -57,7 +57,7 @@ import {
   REQUIRED_KEYS, WORKBENCH_FORMS, MANIFEST_FILE_NAME, LEGACY_MANIFEST_FILE_NAME,
   runIdDate, runIdFor, checkWorkbench, scaffoldWorkbench,
   manifestLine, readManifestFile,
-} from '../../../workbench/manifest.ts'
+} from '@thyrox/workbench/manifest.ts'
 
 /**
  * Leer y escribir el manifiesto por el MECANISMO, no con un `JSON.parse` a mano.
@@ -75,7 +75,7 @@ function writeManifest(dir: string, m: Record<string, unknown>): void {
   writeFileSync(join(dir, MANIFEST_FILE_NAME), manifestLine('declaration', m) + '\n')
 }
 
-const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
+const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
 
 const root = () => mkdtempSync(join(tmpdir(), 'wb-'))
 

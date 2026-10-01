@@ -1,0 +1,819 @@
+diff --git a/src/packages/artifact-registry/__tests__/fetchLayerEntry.test.ts b/src/packages/artifact-registry/__tests__/fetchLayerEntry.test.ts
+new file mode 100644
+index 000000000..a61108134
+--- /dev/null
++++ b/src/packages/artifact-registry/__tests__/fetchLayerEntry.test.ts
+@@ -0,0 +1,86 @@
++/**
++ * La entrada del trabajo de descarga (`bin/fetchLayer.ts`), ejecutada como
++ * proceso contra el registry en proceso (TASK-THYROX-0729): lee de forma
++ * anónima, deja en `--report` el resultado del puerto y su código de salida
++ * distingue éxito, fallo con reporte y argumentos inválidos sin reporte.
++ *
++ * Métrica: código de salida, contenido de `--report` y del destino.
++ * Ciega a: el contenedor; eso lo mide `podmanArtifactFetcher.test.ts`.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join, resolve } from 'node:path'
++
++import { describeArtifactFile } from '../artifactFiles.js'
++import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
++import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '../testing/fakeOciRegistry.js'
++
++const ENTRY = resolve(import.meta.dir, '../bin/fetchLayer.ts')
++const REPOSITORY = 'thyrox/lab-artifacts'
++const MODEL_CONTENT = 'GGUF-bytes-of-a-model'
++
++let registry: FakeOciRegistry
++let workdir: string
++beforeEach(() => {
++  registry = startFakeOciRegistry()
++  workdir = mkdtempSync(join(tmpdir(), 'fetch-layer-entry-'))
++})
++afterEach(() => {
++  registry.stop()
++  rmSync(workdir, { recursive: true, force: true })
++})
++
++async function publishModel() {
++  const source = join(workdir, 'source')
++  mkdirSync(source)
++  writeFileSync(join(source, 'model.gguf'), MODEL_CONTENT)
++  const file = await describeArtifactFile(join(source, 'model.gguf'), 'model.gguf', 'application/vnd.thyrox.gguf')
++  const publisher = createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'basic', username: FAKE_PUBLISHER.username, secret: () => FAKE_PUBLISHER.token } })
++  const pushed = await publisher.pushArtifact(
++    { artifactType: 'application/vnd.thyrox.model-artifact.v1', files: [file], config: { mediaType: 'application/json', bytes: new TextEncoder().encode('{}') }, annotations: {} },
++    { repository: REPOSITORY, tag: 'lab' },
++  )
++  if (pushed.status !== 'success') throw new Error(`push falló: ${JSON.stringify(pushed)}`)
++  return { manifestDigest: pushed.value.digest, layerDigest: `sha256:${file.sha256}` }
++}
++
++async function runEntry(args: string[]): Promise<number> {
++  const child = Bun.spawn([process.execPath, ENTRY, ...args], { stdin: 'ignore', stdout: 'ignore', stderr: 'ignore' })
++  return child.exited
++}
++
++function argsFor(manifestDigest: string, layerDigest: string): { args: string[]; destination: string; report: string } {
++  const destination = join(workdir, 'out', 'model.partial')
++  const report = join(workdir, 'report', 'fetch.json')
++  return {
++    destination,
++    report,
++    args: ['--registry', registry.baseUrl, '--repository', REPOSITORY, '--manifest-digest', manifestDigest, '--layer-digest', layerDigest, '--destination', destination, '--report', report],
++  }
++}
++
++describe('bin/fetchLayer.ts', () => {
++  test('baja la capa y deja el resultado del puerto en el reporte, sale 0', async () => {
++    const { manifestDigest, layerDigest } = await publishModel()
++    const { args, destination, report } = argsFor(manifestDigest, layerDigest)
++    expect(await runEntry(args)).toBe(0)
++    expect(readFileSync(destination, 'utf8')).toBe(MODEL_CONTENT)
++    expect(JSON.parse(readFileSync(report, 'utf8'))).toMatchObject({ status: 'success', value: { digest: layerDigest, size: MODEL_CONTENT.length } })
++  })
++
++  test('un fallo del puerto queda en el reporte y sale 1', async () => {
++    const { manifestDigest } = await publishModel()
++    const { args, destination, report } = argsFor(manifestDigest, `sha256:${'f'.repeat(64)}`)
++    expect(await runEntry(args)).toBe(1)
++    expect(JSON.parse(readFileSync(report, 'utf8')).status).toBe('not_found')
++    expect(existsSync(destination)).toBe(false)
++  })
++
++  test('sin un argumento obligatorio sale 2 y no escribe reporte', async () => {
++    const { manifestDigest, layerDigest } = await publishModel()
++    const { args, report } = argsFor(manifestDigest, layerDigest)
++    expect(await runEntry(args.slice(2))).toBe(2)
++    expect(existsSync(report)).toBe(false)
++  })
++})
+diff --git a/src/packages/artifact-registry/__tests__/pullLayer.test.ts b/src/packages/artifact-registry/__tests__/pullLayer.test.ts
+new file mode 100644
+index 000000000..0cd5cbae6
+--- /dev/null
++++ b/src/packages/artifact-registry/__tests__/pullLayer.test.ts
+@@ -0,0 +1,104 @@
++/**
++ * `pullLayer`: bajar UNA capa de un artefacto fijado (TASK-THYROX-0729).
++ *
++ * Un artefacto de modelo trae el GGUF y sus logs; el consumidor que instala
++ * el modelo sólo necesita el GGUF. La capa se acepta sólo si pertenece al
++ * manifest verificado por su digest, y el destino sólo existe si su sha256
++ * coincide.
++ *
++ * Métrica: los GET de blobs que el registry en proceso registra, el archivo
++ * en el destino y el estado del resultado.
++ * Ciega a: un registry real que sirva otro contenido por la misma ruta, que
++ * es lo que el sha256 cubre y esta suite sólo simula con un byte cambiado.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { describeArtifactFile } from '../artifactFiles.js'
++import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
++import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '../testing/fakeOciRegistry.js'
++
++const REPOSITORY = 'thyrox/lab-artifacts'
++const MODEL_CONTENT = 'GGUF-bytes-of-a-model'
++
++let registry: FakeOciRegistry
++let workdir: string
++
++beforeEach(() => {
++  registry = startFakeOciRegistry()
++  workdir = mkdtempSync(join(tmpdir(), 'artifact-pull-layer-'))
++})
++afterEach(() => {
++  registry.stop()
++  rmSync(workdir, { recursive: true, force: true })
++})
++
++function anonymous() {
++  return createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'anonymous' }, retry: { maxAttempts: 1, maxWaitSeconds: 0 } })
++}
++
++async function publishModelWithLog() {
++  const source = join(workdir, 'source')
++  mkdirSync(source)
++  writeFileSync(join(source, 'model.gguf'), MODEL_CONTENT)
++  writeFileSync(join(source, 'quantize.log'), 'log line\n')
++  const files = [
++    await describeArtifactFile(join(source, 'model.gguf'), 'model.gguf', 'application/vnd.thyrox.gguf'),
++    await describeArtifactFile(join(source, 'quantize.log'), 'quantize.log', 'text/plain'),
++  ]
++  const publisher = createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'basic', username: FAKE_PUBLISHER.username, secret: () => FAKE_PUBLISHER.token } })
++  const pushed = await publisher.pushArtifact(
++    { artifactType: 'application/vnd.thyrox.model-artifact.v1', files, config: { mediaType: 'application/json', bytes: new TextEncoder().encode('{}') }, annotations: {} },
++    { repository: REPOSITORY, tag: 'lab' },
++  )
++  if (pushed.status !== 'success') throw new Error(`push falló: ${JSON.stringify(pushed)}`)
++  return { pinned: pushed.value, model: `sha256:${files[0]!.sha256}`, log: `sha256:${files[1]!.sha256}` }
++}
++
++function blobGets(): string[] {
++  return registry.requests.filter(request => request.method === 'GET' && request.path.includes('/blobs/')).map(request => request.path)
++}
++
++describe('pullLayer', () => {
++  test('baja sólo la capa pedida, verificada, al destino', async () => {
++    const { pinned, model } = await publishModelWithLog()
++    const before = blobGets().length
++    const destination = join(workdir, 'out', 'model.partial')
++    const result = await anonymous().pullLayer(pinned, model, destination)
++    expect(result).toEqual({ status: 'success', value: { title: 'model.gguf', digest: model, size: MODEL_CONTENT.length, path: destination } })
++    expect(readFileSync(destination, 'utf8')).toBe(MODEL_CONTENT)
++    expect(blobGets().slice(before)).toEqual([`/v2/${REPOSITORY}/blobs/${model}`])
++  })
++
++  test('una capa ajena al manifest se rehúsa sin pedir ningún blob', async () => {
++    const { pinned } = await publishModelWithLog()
++    const before = blobGets().length
++    const foreign = `sha256:${'f'.repeat(64)}`
++    const destination = join(workdir, 'out', 'model.partial')
++    const result = await anonymous().pullLayer(pinned, foreign, destination)
++    expect(result.status).toBe('not_found')
++    expect(blobGets().length).toBe(before)
++    expect(existsSync(destination)).toBe(false)
++  })
++
++  test('un blob corrupto es integrity_error y no deja el destino ni restos', async () => {
++    const { pinned, model } = await publishModelWithLog()
++    registry.corrupted.add(model)
++    const out = join(workdir, 'out')
++    const result = await anonymous().pullLayer(pinned, model, join(out, 'model.partial'))
++    expect(result.status).toBe('integrity_error')
++    expect(existsSync(out) ? readdirSync(out) : []).toEqual([])
++  })
++
++  test('un manifest que no es el de su digest es integrity_error y no pide blobs', async () => {
++    const { pinned, model } = await publishModelWithLog()
++    const before = blobGets().length
++    const forged = { repository: pinned.repository, digest: `sha256:${'0'.repeat(64)}` }
++    registry.manifests.set(forged.digest, registry.manifests.get(pinned.digest)!)
++    const result = await anonymous().pullLayer(forged, model, join(workdir, 'out', 'model.partial'))
++    expect(result.status).toBe('integrity_error')
++    expect(blobGets().length).toBe(before)
++  })
++})
+diff --git a/src/packages/artifact-registry/artifactRegistry.ts b/src/packages/artifact-registry/artifactRegistry.ts
+index 2704fa2c1..8b2ee223b 100644
+--- a/src/packages/artifact-registry/artifactRegistry.ts
++++ b/src/packages/artifact-registry/artifactRegistry.ts
+@@ -83,5 +83,11 @@ export interface ArtifactRegistry {
+   inspectArtifact(pinned: PinnedArtifact): Promise<ArtifactResult<ArtifactManifest>>
+   /** Materializa cada blob en `targetDir`, verificando su sha256 antes de seguir con el siguiente. */
+   pullArtifact(pinned: PinnedArtifact, targetDir: string, options?: PullOptions): Promise<ArtifactResult<readonly MaterializedFile[]>>
++  /**
++   * Materializa en `destination` sólo la capa `layerDigest`, que tiene que
++   * pertenecer al manifest verificado de `pinned` (si no, `not_found`). El
++   * destino aparece sólo si el sha256 y el tamaño coinciden.
++   */
++  pullLayer(pinned: PinnedArtifact, layerDigest: string, destination: string): Promise<ArtifactResult<MaterializedFile>>
+   deleteArtifact?(pinned: PinnedArtifact): Promise<ArtifactResult<void>>
+ }
+diff --git a/src/packages/artifact-registry/bin/fetchLayer.ts b/src/packages/artifact-registry/bin/fetchLayer.ts
+new file mode 100644
+index 000000000..7d6f1bed8
+--- /dev/null
++++ b/src/packages/artifact-registry/bin/fetchLayer.ts
+@@ -0,0 +1,38 @@
++/**
++ * Entrada del trabajo de descarga de una capa (`podmanArtifactFetcher.ts` de
++ * `@thyrox/local-models`): corre DENTRO del contenedor, sin credencial, baja
++ * sólo `--layer-digest` del manifest fijado a `--destination` y deja el
++ * resultado del puerto en `--report`.
++ *
++ * Salida: 0 capa bajada y verificada; 1 fallo del puerto (la causa va en el
++ * reporte); 2 argumentos inválidos, sin reporte.
++ */
++import { mkdir, writeFile } from 'node:fs/promises'
++import { dirname } from 'node:path'
++import { parseArgs } from 'node:util'
++
++import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
++
++const REQUIRED = ['registry', 'repository', 'manifest-digest', 'layer-digest', 'destination', 'report'] as const
++const EXIT_FETCHED = 0
++const EXIT_PORT_FAILURE = 1
++const EXIT_INVALID_ARGUMENTS = 2
++
++const { values } = parseArgs({ options: Object.fromEntries(REQUIRED.map(name => [name, { type: 'string' }])) as Record<(typeof REQUIRED)[number], { type: 'string' }> })
++const missing = REQUIRED.filter(name => !values[name])
++if (missing.length > 0) {
++  process.stderr.write(`fetchLayer: faltan ${missing.map(name => `--${name}`).join(', ')}\n`)
++  process.exit(EXIT_INVALID_ARGUMENTS)
++}
++const option = (name: (typeof REQUIRED)[number]): string => values[name] as string
++
++const consumer = createOciArtifactRegistry({ baseUrl: option('registry'), credential: { kind: 'anonymous' } })
++const result = await consumer.pullLayer(
++  { repository: option('repository'), digest: option('manifest-digest') },
++  option('layer-digest'),
++  option('destination'),
++)
++await mkdir(dirname(option('report')), { recursive: true })
++await writeFile(option('report'), JSON.stringify(result, null, 2))
++process.stderr.write(`fetchLayer: ${result.status}\n`)
++process.exit(result.status === 'success' ? EXIT_FETCHED : EXIT_PORT_FAILURE)
+diff --git a/src/packages/artifact-registry/jobEgress.ts b/src/packages/artifact-registry/jobEgress.ts
+index bb96ce80b..c0de539b1 100644
+--- a/src/packages/artifact-registry/jobEgress.ts
++++ b/src/packages/artifact-registry/jobEgress.ts
+@@ -10,6 +10,8 @@
+  * El valor viaja como `--env` y queda en `podman inspect`, así que una URL
+  * con usuario o contraseña se rehúsa en vez de propagarse.
+  */
++import type { WorkerNetworkMode, WorkerResourceMount } from '@thyrox/podman-execution/workerResourceProfile.ts'
++
+ export const JOB_EGRESS_ENV = {
+   proxyUrl: 'THYROX_JOB_EGRESS_PROXY_URL',
+   caBundle: 'THYROX_JOB_EGRESS_CA_BUNDLE',
+@@ -53,3 +55,28 @@ export function resolveJobEgress(env: Environment): JobEgress {
+   const caBundlePath = firstDeclared(env, [JOB_EGRESS_ENV.caBundle, ...INHERITED_CA_ENV])
+   return { kind: 'proxy', proxyUrl: requirePublicProxyUrl(proxyUrl), ...(caBundlePath ? { caBundlePath } : {}) }
+ }
++
++/** Dónde ve el contenedor el bundle de CA del anfitrión, montado de sólo lectura. */
++export const CONTAINER_CA_BUNDLE = '/certs/ca-bundle.crt'
++
++/** La parte del perfil del trabajo que decide la salida: red, entorno del proxy y montaje del CA. */
++export interface JobNetworkProfile {
++  readonly network: Extract<WorkerNetworkMode, 'bridge' | 'host'>
++  readonly environment: Readonly<Record<string, string>>
++  readonly mounts: readonly WorkerResourceMount[]
++}
++
++/**
++ * Directa, la red es `bridge`. Con proxy es `host`, porque el proxy declarado
++ * vive en el loopback del anfitrión, y el trabajo recibe `HTTPS_PROXY` y, si
++ * se declaró, el CA montado de sólo lectura.
++ */
++export function jobNetworkProfile(egress: JobEgress): JobNetworkProfile {
++  if (egress.kind === 'direct') return { network: 'bridge', environment: {}, mounts: [] }
++  const caBundle = egress.caBundlePath
++  return {
++    network: 'host',
++    environment: { HTTPS_PROXY: egress.proxyUrl, ...(caBundle ? { NODE_EXTRA_CA_CERTS: CONTAINER_CA_BUNDLE } : {}) },
++    mounts: caBundle ? [{ source: caBundle, destination: CONTAINER_CA_BUNDLE, mode: 'ro' }] : [],
++  }
++}
+diff --git a/src/packages/artifact-registry/ociArtifactRegistry.ts b/src/packages/artifact-registry/ociArtifactRegistry.ts
+index 3987e6815..3d76ee7f2 100644
+--- a/src/packages/artifact-registry/ociArtifactRegistry.ts
++++ b/src/packages/artifact-registry/ociArtifactRegistry.ts
+@@ -7,16 +7,18 @@
+  * manifest con `artifactType`: no hay imagen, capa de build ni tar intermedio,
+  * así que el disco que cuesta es el de los archivos que ya existen.
+  * Materializar baja y verifica un blob a la vez, en un temporal que se
+- * renombra sólo si su sha256 coincide.
++ * renombra sólo si su sha256 coincide; `pullLayer` hace lo mismo con una
++ * sola capa del manifest verificado.
+  */
+ import { createHash } from 'node:crypto'
+ import { createWriteStream } from 'node:fs'
+ import { existsSync } from 'node:fs'
+ import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+ import { tmpdir } from 'node:os'
+-import { join } from 'node:path'
++import { dirname, join } from 'node:path'
+ import { Readable } from 'node:stream'
+ import { pipeline } from 'node:stream/promises'
++import type { ReadableStream as WebReadableStream } from 'node:stream/web'
+ 
+ import {
+   OCI_MANIFEST_MEDIA_TYPE,
+@@ -47,6 +49,7 @@ export function createOciArtifactRegistry(options: OciArtifactRegistryOptions):
+     resolveArtifact: location => resolveArtifact(client, location),
+     inspectArtifact: pinned => inspectArtifact(client, pinned),
+     pullArtifact: (pinned, targetDir, pullOptions) => pullArtifact(client, pinned, targetDir, pullOptions ?? {}),
++    pullLayer: (pinned, layerDigest, destination) => pullLayer(client, pinned, layerDigest, destination),
+   }
+   if (options.supportsDelete ?? true) {
+     registry.deleteArtifact = pinned => client.deleteManifest(pinned.repository, pinned.digest)
+@@ -168,24 +171,46 @@ async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifac
+       materialized.push(file)
+       continue
+     }
+-    const blob = await client.getBlob(pinned.repository, layer.digest)
+-    if (blob.status !== 'success') return blob
+-    const partialPath = `${finalPath}.partial`
+-    const hash = createHash('sha256')
+-    let size = 0
+-    const body = Readable.fromWeb(blob.value.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>)
+-    body.on('data', (chunk: Buffer) => { hash.update(chunk); size += chunk.length })
+-    await pipeline(body, createWriteStream(partialPath))
+-    const digest = `sha256:${hash.digest('hex')}`
+-    if (digest !== layer.digest || size !== layer.size) {
+-      await rm(partialPath, { force: true })
+-      return { status: 'integrity_error', detail: `${layer.title}: se leyó ${digest} (${size} bytes), el manifest declara ${layer.digest} (${layer.size} bytes)` }
+-    }
+-    await rename(partialPath, finalPath)
+-    const file: MaterializedFile = { title: layer.title, digest, size, path: options.discardAfterVerify ? undefined : finalPath }
++    const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, finalPath)
++    if (downloaded.status !== 'success') return downloaded
++    const file: MaterializedFile = { title: layer.title, digest: layer.digest, size: layer.size, path: options.discardAfterVerify ? undefined : finalPath }
+     await options.onVerified?.({ ...file, verifiedPath: finalPath })
+     if (options.discardAfterVerify) await rm(finalPath, { force: true })
+     materialized.push(file)
+   }
+   return { status: 'success', value: materialized }
+ }
++
++/**
++ * Baja el blob de `layer` a un temporal hermano de `finalPath`, midiendo su
++ * sha256 en flujo, y lo renombra a `finalPath` sólo si digest y tamaño son
++ * los del manifest; si no, borra el temporal.
++ */
++async function downloadVerifiedLayer(client: OciDistributionClient, repository: string, layer: ArtifactLayer, finalPath: string): Promise<ArtifactResult<void>> {
++  const blob = await client.getBlob(repository, layer.digest)
++  if (blob.status !== 'success') return blob
++  const partialPath = `${finalPath}.partial`
++  const hash = createHash('sha256')
++  let size = 0
++  const body = Readable.fromWeb(blob.value.body as unknown as WebReadableStream<Uint8Array>)
++  body.on('data', (chunk: Buffer) => { hash.update(chunk); size += chunk.length })
++  await pipeline(body, createWriteStream(partialPath))
++  const digest = `sha256:${hash.digest('hex')}`
++  if (digest !== layer.digest || size !== layer.size) {
++    await rm(partialPath, { force: true })
++    return { status: 'integrity_error', detail: `${layer.title}: se leyó ${digest} (${size} bytes), el manifest declara ${layer.digest} (${layer.size} bytes)` }
++  }
++  await rename(partialPath, finalPath)
++  return { status: 'success', value: undefined }
++}
++
++async function pullLayer(client: OciDistributionClient, pinned: PinnedArtifact, layerDigest: string, destination: string): Promise<ArtifactResult<MaterializedFile>> {
++  const manifest = await inspectArtifact(client, pinned)
++  if (manifest.status !== 'success') return manifest
++  const layer = manifest.value.layers.find(candidate => candidate.digest === layerDigest)
++  if (!layer) return { status: 'not_found', detail: `la capa ${layerDigest} no pertenece al manifest ${pinned.digest}` }
++  await mkdir(dirname(destination), { recursive: true })
++  const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, destination)
++  if (downloaded.status !== 'success') return downloaded
++  return { status: 'success', value: { title: layer.title, digest: layer.digest, size: layer.size, path: destination } }
++}
+diff --git a/src/packages/artifact-registry/podmanJobVerifier.ts b/src/packages/artifact-registry/podmanJobVerifier.ts
+index cd5c50e32..b5cf956eb 100644
+--- a/src/packages/artifact-registry/podmanJobVerifier.ts
++++ b/src/packages/artifact-registry/podmanJobVerifier.ts
+@@ -21,12 +21,11 @@ import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/pod
+ 
+ import type { ArtifactLocation, PinnedArtifact } from './artifactRegistry.js'
+ import type { ArtifactVerifier, VerificationOutcome } from './artifactVerifier.js'
+-import type { JobEgress } from './jobEgress.js'
++import { jobNetworkProfile, type JobEgress } from './jobEgress.js'
+ 
+ export const VERIFICATION_REPORT_NAME = 'verification.json'
+ 
+ const CONTAINER_BUN = '/usr/local/bin/bun'
+-const CONTAINER_CA_BUNDLE = '/certs/ca-bundle.crt'
+ const CONTAINER_REPOSITORY = '/w'
+ const CONTAINER_SCRATCH = '/scratch'
+ const VERIFY_ENTRY = `${CONTAINER_REPOSITORY}/src/packages/artifact-registry/bin/verifyArtifact.ts`
+@@ -46,30 +45,18 @@ export interface PodmanJobVerifierOptions {
+   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
+ }
+ 
+-function egressProfile(egress: JobEgress): Pick<WorkerResourceProfile, 'network' | 'environment'> & { caMount?: string } {
+-  if (egress.kind === 'direct') return { network: 'bridge', environment: {} }
+-  return {
+-    network: 'host',
+-    environment: {
+-      HTTPS_PROXY: egress.proxyUrl,
+-      ...(egress.caBundlePath ? { NODE_EXTRA_CA_CERTS: CONTAINER_CA_BUNDLE } : {}),
+-    },
+-    ...(egress.caBundlePath ? { caMount: egress.caBundlePath } : {}),
+-  }
+-}
+-
+ export function verificationJobSpec(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): WorkerContainerSpec {
+-  const { caMount, ...network } = egressProfile(options.egress)
++  const network = jobNetworkProfile(options.egress)
+   const profile: WorkerResourceProfile = {
+     ...options.limits,
+-    ...network,
++    network: network.network,
+     environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+     readOnlyRootfs: true,
+     mounts: [
+       { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
+       { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
+       { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
+-      ...(caMount ? [{ source: caMount, destination: CONTAINER_CA_BUNDLE, mode: 'ro' as const }] : []),
++      ...network.mounts,
+     ],
+   }
+   return {
+diff --git a/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts b/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+new file mode 100644
+index 000000000..fa3f58dc3
+--- /dev/null
++++ b/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+@@ -0,0 +1,202 @@
++/**
++ * El `ArtifactFetcher` de producción: bajar la capa GGUF de un artefacto
++ * fijado como trabajo de la primitiva de Podman (ADR-THYROX-007,
++ * TASK-THYROX-0729).
++ *
++ * Dos niveles. Con un Podman doble: qué argv compone el trabajo (montajes,
++ * red y entorno según la salida declarada, ningún secreto) y cómo se traduce
++ * su reporte a `FetchOutcome`. Con el Podman real y el registry de prueba en
++ * el loopback: que el trabajo baja sólo la capa pedida al directorio del
++ * destino.
++ *
++ * Métrica: el argv entregado a `podman create`, el destino en el anfitrión y
++ * el `FetchOutcome`.
++ * Ciega a: un registry real y su límite anónimo; aquí el límite sólo llega
++ * como reporte del trabajo.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { basename, dirname, join, resolve } from 'node:path'
++
++import { describeArtifactFile } from '@thyrox/artifact-registry/artifactFiles.ts'
++import { createOciArtifactRegistry } from '@thyrox/artifact-registry/ociArtifactRegistry.ts'
++import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '@thyrox/artifact-registry/testing/fakeOciRegistry.ts'
++import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
++import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++
++import { createPodmanArtifactFetcher, FETCH_REPORT_NAME, type PodmanArtifactFetcherOptions } from '../podmanArtifactFetcher.js'
++
++const REPOSITORY_ROOT = resolve(import.meta.dir, '../../../..')
++const PINNED: PinnedModelArtifact = { registry: 'docker.io', repository: 'th3rox/lab', manifestDigest: `sha256:${'5'.repeat(64)}`, blobDigest: `sha256:${'6'.repeat(64)}`, bytes: 10 }
++const SECRET_PATTERN = /TOKEN|PASSWORD|SECRET|containers\/storage/i
++
++let workdir: string
++beforeEach(() => { workdir = mkdtempSync(join(tmpdir(), 'podman-artifact-fetcher-')) })
++afterEach(() => { rmSync(workdir, { recursive: true, force: true }) })
++
++interface RecordingPodman extends PodmanExecutor {
++  readonly calls: string[][]
++}
++
++/** Un Podman doble: `create` registra su argv y `wait` deja `report` en el montaje de trabajo. */
++function podmanLeaving(report: unknown, exitCode = '0'): RecordingPodman {
++  const calls: string[][] = []
++  return {
++    calls,
++    run: async (args): Promise<PodmanCommandResult> => {
++      calls.push([...args])
++      if (args[0] === 'wait' && report !== undefined) {
++        const reportMount = createArgv(calls).find(arg => arg.endsWith(':/scratch:rw'))!
++        writeFileSync(join(reportMount.split(':')[0]!, FETCH_REPORT_NAME), JSON.stringify(report))
++      }
++      if (args[0] === 'wait') return { exitCode: 0, stdout: `${exitCode}\n`, stderr: '' }
++      if (args[0] === 'logs') return { exitCode: 0, stdout: '', stderr: 'fetchLayer: boom' }
++      return { exitCode: 0, stdout: '', stderr: '' }
++    },
++  }
++}
++
++function createArgv(calls: readonly string[][]): string[] {
++  return calls.find(call => call[0] === 'create') ?? []
++}
++
++function options(overrides: Partial<PodmanArtifactFetcherOptions> = {}): PodmanArtifactFetcherOptions {
++  return {
++    podman: podmanLeaving(undefined),
++    image: `sha256:${'b'.repeat(64)}`,
++    bunPath: process.execPath,
++    repositoryRoot: REPOSITORY_ROOT,
++    egress: { kind: 'proxy', proxyUrl: 'http://10.1.2.3:3128', caBundlePath: '/host/ca.crt' },
++    owner: { kind: 'pool', id: 'artifact-fetch', pid: process.pid },
++    workerId: 'artifact-fetch-test',
++    limits: { cpus: 1, memoryMib: 512, pidsLimit: 64 },
++    ...overrides,
++  }
++}
++
++function destinationIn(dir: string): string {
++  return join(dir, 'cache', '.partial-model')
++}
++
++describe('createPodmanArtifactFetcher: el trabajo que compone', () => {
++  test('monta bun y el repositorio ro, el directorio del destino rw, y pide la capa fijada', async () => {
++    const podman = podmanLeaving({ status: 'success', value: {} })
++    const destination = destinationIn(workdir)
++    await createPodmanArtifactFetcher(options({ podman })).fetch(PINNED, destination)
++    const argv = createArgv(podman.calls).join(' ')
++    expect(argv).toContain(`-v ${process.execPath}:/usr/local/bin/bun:ro`)
++    expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
++    expect(argv).toContain(`-v ${dirname(destination)}:/destination:rw`)
++    expect(argv).toContain('--read-only')
++    expect(argv).toContain('--registry https://registry-1.docker.io')
++    expect(argv).toContain(`--repository ${PINNED.repository}`)
++    expect(argv).toContain(`--manifest-digest ${PINNED.manifestDigest}`)
++    expect(argv).toContain(`--layer-digest ${PINNED.blobDigest}`)
++    expect(argv).toContain(`--destination /destination/${basename(destination)}`)
++  })
++
++  test('el trabajo no recibe secreto ni el almacenamiento de Podman', async () => {
++    const podman = podmanLeaving({ status: 'success', value: {} })
++    await createPodmanArtifactFetcher(options({ podman })).fetch(PINNED, destinationIn(workdir))
++    expect(createArgv(podman.calls).join(' ')).not.toMatch(SECRET_PATTERN)
++  })
++
++  test('con proxy declarado: red host, HTTPS_PROXY y el CA montado de sólo lectura', async () => {
++    const podman = podmanLeaving({ status: 'success', value: {} })
++    await createPodmanArtifactFetcher(options({ podman })).fetch(PINNED, destinationIn(workdir))
++    const argv = createArgv(podman.calls).join(' ')
++    expect(argv).toContain('--network host')
++    expect(argv).toContain('--env HTTPS_PROXY=http://10.1.2.3:3128')
++    expect(argv).toContain('--env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt')
++    expect(argv).toContain('-v /host/ca.crt:/certs/ca-bundle.crt:ro')
++  })
++
++  test('sin proxy: red bridge, sin HTTPS_PROXY ni CA', async () => {
++    const podman = podmanLeaving({ status: 'success', value: {} })
++    await createPodmanArtifactFetcher(options({ podman, egress: { kind: 'direct' } })).fetch(PINNED, destinationIn(workdir))
++    const argv = createArgv(podman.calls).join(' ')
++    expect(argv).toContain('--network bridge')
++    expect(argv).not.toContain('HTTPS_PROXY')
++    expect(argv).not.toContain('/certs/')
++  })
++})
++
++describe('createPodmanArtifactFetcher: cómo lee el reporte', () => {
++  test('un reporte de éxito es fetched', async () => {
++    const outcome = await createPodmanArtifactFetcher(options({ podman: podmanLeaving({ status: 'success', value: {} }) })).fetch(PINNED, destinationIn(workdir))
++    expect(outcome).toEqual({ status: 'fetched' })
++  })
++
++  test('un trabajo que no deja reporte es failed con su diagnóstico', async () => {
++    const outcome = await createPodmanArtifactFetcher(options({ podman: podmanLeaving(undefined, '1') })).fetch(PINNED, destinationIn(workdir))
++    expect(outcome.status).toBe('failed')
++    if (outcome.status === 'failed') expect(outcome.reason).toContain('fetchLayer: boom')
++  })
++
++  test('un límite del provider es failed con su causa, nunca contenido', async () => {
++    const report = { status: 'rate_limited', rateLimit: { kind: 'pull-rate', limit: 100, remaining: 0, retryAfterSeconds: 3600 }, detail: 'toomanyrequests' }
++    const outcome = await createPodmanArtifactFetcher(options({ podman: podmanLeaving(report, '1') })).fetch(PINNED, destinationIn(workdir))
++    expect(outcome.status).toBe('failed')
++    if (outcome.status === 'failed') {
++      expect(outcome.reason).toContain('rate_limited')
++      expect(outcome.reason).toContain('3600')
++    }
++  })
++
++  test('un fallo de Podman al crear el contenedor es failed con la etapa, no una excepción', async () => {
++    const podman: PodmanExecutor = { run: async args => (args[0] === 'create' ? { exitCode: 125, stdout: '', stderr: 'no such image' } : { exitCode: 0, stdout: '', stderr: '' }) }
++    const outcome = await createPodmanArtifactFetcher(options({ podman })).fetch(PINNED, destinationIn(workdir))
++    expect(outcome.status).toBe('failed')
++    if (outcome.status === 'failed') expect(outcome.reason).toContain('no such image')
++  })
++
++  test('no deja el directorio del reporte en el anfitrión', async () => {
++    const before = readdirSync(tmpdir()).filter(name => name.startsWith('artifact-fetch-')).length
++    await createPodmanArtifactFetcher(options({ podman: podmanLeaving({ status: 'success', value: {} }) })).fetch(PINNED, destinationIn(workdir))
++    expect(readdirSync(tmpdir()).filter(name => name.startsWith('artifact-fetch-')).length).toBe(before)
++  })
++})
++
++const FETCHER_TEST_IMAGE = process.env.THYROX_ARTIFACT_VERIFIER_IMAGE || 'docker.io/library/ubuntu:24.04'
++const podman = createPodmanExecutor()
++const imagePresent = await podman.run(['image', 'exists', FETCHER_TEST_IMAGE]).then(result => result.exitCode === 0, () => false)
++if (!imagePresent) console.error(`podmanArtifactFetcher: sin Podman o sin ${FETCHER_TEST_IMAGE} local; el nivel real queda sin medir.`)
++
++describe.skipIf(!imagePresent)('createPodmanArtifactFetcher contra el Podman real', () => {
++  let registry: FakeOciRegistry
++  beforeEach(() => { registry = startFakeOciRegistry() })
++  afterEach(() => registry.stop())
++
++  test('el trabajo baja sólo la capa GGUF al directorio del destino, sin credencial', async () => {
++    const source = join(workdir, 'source')
++    mkdirSync(source)
++    writeFileSync(join(source, 'model.gguf'), 'g'.repeat(4096))
++    writeFileSync(join(source, 'quantize.log'), 'log line\n')
++    const files = [
++      await describeArtifactFile(join(source, 'model.gguf'), 'model.gguf', 'application/vnd.thyrox.gguf'),
++      await describeArtifactFile(join(source, 'quantize.log'), 'quantize.log', 'text/plain'),
++    ]
++    const publisher = createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'basic', username: FAKE_PUBLISHER.username, secret: () => FAKE_PUBLISHER.token } })
++    const pushed = await publisher.pushArtifact({ artifactType: 'application/vnd.thyrox.model-artifact.v1', files, config: { mediaType: 'application/json', bytes: new TextEncoder().encode('{}') }, annotations: {} }, { repository: 'thyrox/lab', tag: 'v1' })
++    if (pushed.status !== 'success') throw new Error(pushed.status)
++    const pinned: PinnedModelArtifact = { registry: 'fake.registry', repository: 'thyrox/lab', manifestDigest: pushed.value.digest, blobDigest: `sha256:${files[0]!.sha256}`, bytes: files[0]!.size }
++
++    const fetcher = createPodmanArtifactFetcher(options({
++      podman,
++      image: FETCHER_TEST_IMAGE,
++      registryUrlOf: () => registry.baseUrl,
++      // red host para alcanzar el registry de prueba en el loopback del anfitrión
++      egress: { kind: 'proxy', proxyUrl: 'http://127.0.0.1:9' },
++      workerId: `artifact-fetch-real-${process.pid}`,
++    }))
++    const destination = destinationIn(workdir)
++    const before = registry.requests.length
++    const outcome = await fetcher.fetch(pinned, destination)
++    expect(outcome).toEqual({ status: 'fetched' })
++    expect(readFileSync(destination, 'utf8')).toBe('g'.repeat(4096))
++    const blobGets = registry.requests.slice(before).filter(request => request.method === 'GET' && request.path.includes('/blobs/'))
++    expect(blobGets.map(request => request.path)).toEqual([`/v2/thyrox/lab/blobs/${pinned.blobDigest}`])
++    expect(existsSync(join(dirname(destination), 'quantize.log'))).toBe(false)
++  }, 120_000)
++})
+diff --git a/src/packages/local-models/package.json b/src/packages/local-models/package.json
+index 73505b9ec..add3ff8c7 100644
+--- a/src/packages/local-models/package.json
++++ b/src/packages/local-models/package.json
+@@ -12,6 +12,7 @@
+     }
+   },
+   "dependencies": {
++    "@thyrox/artifact-registry": "0.1.0",
+     "@thyrox/model-artifacts": "0.1.0",
+     "@thyrox/podman-execution": "0.1.0",
+     "@thyrox/shared-state": "0.1.0"
+diff --git a/src/packages/local-models/podmanArtifactFetcher.ts b/src/packages/local-models/podmanArtifactFetcher.ts
+new file mode 100644
+index 000000000..4a2ef05de
+--- /dev/null
++++ b/src/packages/local-models/podmanArtifactFetcher.ts
+@@ -0,0 +1,142 @@
++/**
++ * El `ArtifactFetcher` de producción (ADR-THYROX-007, TASK-THYROX-0729): baja
++ * la capa GGUF de un artefacto fijado corriendo
++ * `@thyrox/artifact-registry/bin/fetchLayer.ts` como trabajo de la primitiva
++ * de Podman.
++ *
++ * El trabajo lee el registry de forma anónima: no recibe secreto ni el
++ * almacenamiento de Podman de esta sesión. Monta de sólo lectura `bun` y el
++ * repositorio, y de lectura y escritura sólo el directorio de `destination`,
++ * donde deja el parcial; verificarlo contra el catálogo y publicarlo es de
++ * `materializeArtifact`. Su resultado lo deja en `fetch.json` de un montaje de
++ * trabajo propio, que se borra al terminar: la salida estándar es diagnóstico.
++ *
++ * Un límite del provider, una capa ajena al manifest o un blob corrupto llegan
++ * como reporte y se devuelven como `failed` con su causa: nunca como contenido.
++ */
++import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { basename, dirname, join } from 'node:path'
++
++import type { ArtifactResult, MaterializedFile } from '@thyrox/artifact-registry/artifactRegistry.ts'
++import { DOCKER_HUB_REGISTRY_URL, dockerHubRepository } from '@thyrox/artifact-registry/dockerHubArtifactRegistry.ts'
++import { jobNetworkProfile, type JobEgress } from '@thyrox/artifact-registry/jobEgress.ts'
++import { registryBaseUrl } from '@thyrox/artifact-registry/publishCommand.ts'
++import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
++import { ContainerRunError, runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
++import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
++
++import type { ArtifactFetcher, FetchOutcome } from './modelArtifactCache.js'
++
++export const FETCH_REPORT_NAME = 'fetch.json'
++
++const CONTAINER_BUN = '/usr/local/bin/bun'
++const CONTAINER_REPOSITORY = '/w'
++const CONTAINER_DESTINATION = '/destination'
++const CONTAINER_SCRATCH = '/scratch'
++const FETCH_ENTRY = `${CONTAINER_REPOSITORY}/src/packages/artifact-registry/bin/fetchLayer.ts`
++const SCRATCH_PREFIX = 'artifact-fetch-'
++/** Cuánto del final del stderr del trabajo acompaña a un fallo sin reporte. */
++const DIAGNOSTIC_TAIL_CHARS = 400
++
++export interface PodmanArtifactFetcherOptions {
++  readonly podman: PodmanExecutor
++  /** Imagen del trabajo, ya resuelta a un ID o digest inmutable. */
++  readonly image: string
++  readonly bunPath: string
++  readonly repositoryRoot: string
++  /** La salida de red declarada (`resolveJobEgress`). */
++  readonly egress: JobEgress
++  readonly owner: ContainerOwner
++  readonly workerId: string
++  readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
++  /** La URL de la API de distribución de un registry declarado por host; sin declarar, `registryBaseUrl`. */
++  readonly registryUrlOf?: (registry: string) => string
++}
++
++type FetchReport = ArtifactResult<MaterializedFile>
++
++/** Un repositorio de Docker Hub sin usuario vive bajo `library/`; en otro registry se usa tal cual. */
++function repositoryFor(registryUrl: string, repository: string): string {
++  return registryUrl === DOCKER_HUB_REGISTRY_URL ? dockerHubRepository(repository) : repository
++}
++
++export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): WorkerContainerSpec {
++  const registryUrl = (options.registryUrlOf ?? registryBaseUrl)(pinned.registry)
++  const network = jobNetworkProfile(options.egress)
++  const profile: WorkerResourceProfile = {
++    ...options.limits,
++    network: network.network,
++    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
++    readOnlyRootfs: true,
++    mounts: [
++      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
++      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
++      { source: dirname(destination), destination: CONTAINER_DESTINATION, mode: 'rw' },
++      { source: scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
++      ...network.mounts,
++    ],
++  }
++  return {
++    workerId: options.workerId,
++    image: options.image,
++    owner: options.owner,
++    resourceArgv: workerResourceLimitArgv(profile),
++    command: [
++      CONTAINER_BUN, FETCH_ENTRY,
++      '--registry', registryUrl,
++      '--repository', repositoryFor(registryUrl, pinned.repository),
++      '--manifest-digest', pinned.manifestDigest,
++      '--layer-digest', pinned.blobDigest,
++      '--destination', `${CONTAINER_DESTINATION}/${basename(destination)}`,
++      '--report', `${CONTAINER_SCRATCH}/${FETCH_REPORT_NAME}`,
++    ],
++  }
++}
++
++async function readReport(path: string): Promise<FetchReport | undefined> {
++  try {
++    return JSON.parse(await readFile(path, 'utf8')) as FetchReport
++  } catch {
++    return undefined
++  }
++}
++
++/** La causa de un fallo del puerto, con los números del límite si el provider los dio. */
++function failureReason(report: Exclude<FetchReport, { status: 'success' }>): string {
++  if (report.status === 'rate_limited') return `rate_limited: ${report.detail} ${JSON.stringify(report.rateLimit)}`
++  return `${report.status}: ${report.detail}`
++}
++
++function outcomeOf(report: FetchReport): FetchOutcome {
++  return report.status === 'success' ? { status: 'fetched' } : { status: 'failed', reason: failureReason(report) }
++}
++
++async function runFetchJob(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): Promise<FetchOutcome> {
++  try {
++    const job = await runJobWithOutput(options.podman, fetchJobSpec(options, pinned, destination, scratchDir))
++    const report = await readReport(join(scratchDir, FETCH_REPORT_NAME))
++    if (report) return outcomeOf(report)
++    return { status: 'failed', reason: `${job.containerName} salió con ${job.exitCode} sin reporte: ${job.stderr.trim().slice(-DIAGNOSTIC_TAIL_CHARS)}` }
++  } catch (error) {
++    if (error instanceof ContainerRunError) return { status: 'failed', reason: error.message }
++    throw error
++  }
++}
++
++export function createPodmanArtifactFetcher(options: PodmanArtifactFetcherOptions): ArtifactFetcher {
++  return {
++    async fetch(pinned, destination) {
++      await mkdir(dirname(destination), { recursive: true })
++      const scratchDir = await mkdtemp(join(tmpdir(), SCRATCH_PREFIX))
++      try {
++        await Promise.all(['home', 'tmp'].map(name => mkdir(join(scratchDir, name))))
++        return await runFetchJob(options, pinned, destination, scratchDir)
++      } finally {
++        await rm(scratchDir, { recursive: true, force: true })
++      }
++    },
++  }
++}

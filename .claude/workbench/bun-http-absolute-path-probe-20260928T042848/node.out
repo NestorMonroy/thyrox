@@ -1,0 +1,1 @@
+runtime=node 22.22.2 body=from-proxy hits=["proxy http://127.0.0.1:44789/test"]

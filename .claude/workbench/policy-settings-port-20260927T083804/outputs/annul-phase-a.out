@@ -1,0 +1,24 @@
+base	25 pass, 0 fail	—
+non-policy-keys-count	21 pass, 4 fail	claves y valores de política (cft, Lt, ggn, _s) > las claves de control no cuentan como política | claves y valores de política (cft, Lt, ggn, _s) > un árbol de objetos vacíos no es un valor de política | claves y valores de política (cft, Lt, ggn, _s) > la política se conserva sólo si trae claves de política | resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > el contenido de política declarado gana sobre el inferido
+empty-tree-counts	22 pass, 3 fail	claves y valores de política (cft, Lt, ggn, _s) > un árbol de objetos vacíos no es un valor de política | resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > una lectura es autorada si trae valores y no sólo sustitutos | resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > el rango ordena ausente, vacía, con valores y autorada
+array-is-object	24 pass, 1 fail	claves y valores de política (cft, Lt, ggn, _s) > un árbol de objetos vacíos no es un valor de política
+policy-or-null-keeps-all	24 pass, 1 fail	claves y valores de política (cft, Lt, ggn, _s) > la política se conserva sólo si trae claves de política
+authored-ignores-substitutes	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > una lectura es autorada si trae valores y no sólo sustitutos
+rank-authored-ignored	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > el rango ordena ausente, vacía, con valores y autorada
+content-ignores-declared	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > el contenido de política declarado gana sobre el inferido
+loadstate-ignores-declared	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > el estado de carga declarado gana; si no, sale de los settings
+combine-didnotload-lost	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > al combinar, «no cargó» domina y «cargado» gana a «ausente»
+binds-ignores-user	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > una fuente ata como administrada si no es del usuario y trae política o no cargó
+binds-ignores-failed	24 pass, 1 fail	resultados de lectura (mUe, bs, gUe, WUt, Yye, dft) > una fuente ata como administrada si no es del usuario y trae política o no cargó
+mcp-only-ignores-tiers	24 pass, 1 fail	servidores MCP administrados (uUe, h8e) > cualquier escalón que exija sólo servidores administrados lo exige
+mcp-list-ignores-slot	24 pass, 1 fail	servidores MCP administrados (uUe, h8e) > la lista sale de la ranura o, si no, del primer escalón que la declara
+host-overlay-ignores-flag	24 pass, 1 fail	capa de modelo del anfitrión (Z2o) > sin proveedor del anfitrión o sin ajustes del padre, no hay capa
+host-overlay-match-always	24 pass, 1 fail	capa de modelo del anfitrión (Z2o) > availableModelsMatch viaja si es exact o si acompaña a availableModels
+host-overlay-empty-denied	24 pass, 1 fail	capa de modelo del anfitrión (Z2o) > copia sólo las claves de modelo que el padre declara
+set-shares-level	24 pass, 1 fail	rutas en objetos (Ee, Ve) > escribe copiando cada nivel sin tocar el objeto compartido
+set-keeps-empty-parents	24 pass, 1 fail	rutas en objetos (Ee, Ve) > borrar deja de pie sólo los padres que aún tienen algo
+overrides-ignore-order	24 pass, 1 fail	herencia de modelOverrides (Ky) > un availableModels anterior la retira
+overrides-ignore-snapshot	24 pass, 1 fail	herencia de modelOverrides (Ky) > con la instantánea primero, un availableModels en el escalón 0 no la retira
+wsl-downgrade-always	24 pass, 1 fail	el error fatal de wslInheritsWindowsSettings (fd, B5n) > queda fatal si la capa remota no la trae, y la remota no se lee sin fatales
+wsl-reads-remote-eagerly	24 pass, 1 fail	el error fatal de wslInheritsWindowsSettings (fd, B5n) > queda fatal si la capa remota no la trae, y la remota no se lee sin fatales
+shadow-ignores-snapshot	24 pass, 1 fail	listas de permitidos del escalón administrado (By) > sin instantánea primero, o sin escalón, queda tal cual

@@ -11,6 +11,7 @@ import { getDisplayPath } from '@thyrox/storage/file.js'
 import { getPlan } from '@thyrox/storage/plans.js'
 import type { ThemeName } from '@anthropic/ink'
 import type { Output } from './ExitPlanModeV2Tool.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function renderToolUseMessage(): React.ReactNode {
   return null
@@ -60,7 +61,7 @@ export function renderToolResultMessage(
     <Box flexDirection="column" marginTop={1}>
       <Box flexDirection="row">
         <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
-        <Text> User approved Claude&apos;s plan</Text>
+        <Text> User approved {PRODUCT_NAME}&apos;s plan</Text>
       </Box>
       <MessageResponse>
         <Box flexDirection="column">

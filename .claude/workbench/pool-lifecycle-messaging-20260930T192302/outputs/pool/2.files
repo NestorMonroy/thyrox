@@ -1,0 +1,5 @@
+src/session/headless-pool.sh
+src/session/pool_lifecycle.py
+tests/session/test-headless-pool-lifecycle.sh
+tests/session/test-headless-pool.sh
+tests/session/test_pool_lifecycle.py

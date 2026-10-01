@@ -16,11 +16,11 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from verify import pool_pipeline as pp
 
@@ -35,6 +35,17 @@ def assert_equal(name: str, expected, obtained) -> None:
     else:
         failed += 1
         print(f"  FALLA {name} — esperado {expected!r}, obtenido {obtained!r}")
+
+
+def publish(path: Path) -> Path:
+    """Deja ``<n>.closed`` junto a la salida ``<n>.json``, como hace el pool.
+
+    ``pool_pipeline`` sólo lee ítems publicados (``pool_lifecycle``).
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    item = path.name.split(".", 1)[0]
+    (path.parent / f"{item}.closed").write_text(json.dumps({"item": item, "generation": 1, "artifacts": {}}))
+    return path
 
 
 print("test_pool_pipeline:")
@@ -57,6 +68,7 @@ candidate, dropped = pp.build_candidate("a.ts", text, [
     {"old": "OK", "new": "x as any"},
     {"old": "NOPE", "new": "z"},
 ], keys)
+assert candidate is not None  # hay dos ediciones válidas: siempre hay candidato
 assert_equal("aplica lo seguro y descarta lo que silencia o no encuentra", (["silencia", "old no único"],
              "const a = 1\nconst b = OK\n"), (dropped, candidate["edits"][0]["newText"]))
 assert_equal("la base es el texto ACTUAL, no HEAD", hashlib.sha256(text.encode()).hexdigest(),
@@ -89,7 +101,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("src/a.ts d/1.txt\n")
-    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}],
+    publish(main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}],
         "patterns": [{"patron": "bad-literal", "senal_del_verificador": "TS9001: bad \\d+",
                       "fix_generico": "sustituir BADn por n", "edits": [0]}]})}))
     cwd = os.getcwd()
@@ -97,7 +109,8 @@ with tempfile.TemporaryDirectory() as directory:
     try:
         result = pp.run(argparse.Namespace(
             main=Path("."), worktree=base / "wt", items=Path("items.txt"), outputs=[Path("out")],
-            bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1),
+            bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1,
+            keep_worktrees=False),
             [sys.executable, "fake_tsc.py"])
     except pp.GateBlocked as error:
         result = {"files_kept": [], "blocked": str(error)}
@@ -107,6 +120,9 @@ with tempfile.TemporaryDirectory() as directory:
                  result["files_kept"])
     assert_equal("y lo conservado vuelve al árbol principal", "const a = 1\n", (main / "src/a.ts").read_text())
     assert_equal("sin tocar lo que ningún lote tomó", "const b = BAD2\n", (main / "src/b.ts").read_text())
+    # Exportado lo conservado, el worktree de medición ya no aporta nada.
+    assert_equal("al terminar, el worktree de medición se retira", False, (base / "wt").exists())
+    assert_equal("y el resultado lo dice", [str((base / "wt").resolve())], result.get("released"))
     memory_file = main / "bench/patterns.jsonl"
     memory = [json.loads(l) for l in memory_file.read_text().splitlines()] if memory_file.exists() else []
     assert_equal("gate 3b: lo conservado deja su patrón en la memoria, con los cuatro campos",
@@ -127,7 +143,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("src/a.ts d/1.txt\n")
-    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}]})}))
+    publish(main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}]})}))
     cwd = os.getcwd()
     os.chdir(main)
     try:
@@ -243,7 +259,7 @@ with tempfile.TemporaryDirectory() as directory:
         (run_dir / step / "outputs").mkdir(parents=True)
         (run_dir / step / "items.txt").write_text(f"{file} {run_dir}/{step}/items/1.txt\n")
         named = ["old-one"] + (["late-one"] if step == "step-002" else [])
-        (run_dir / step / "outputs/1.json").write_text(json.dumps({"result": "texto ```json\n" + json.dumps(
+        publish(run_dir / step / "outputs/1.json").write_text(json.dumps({"result": "texto ```json\n" + json.dumps(
             {"edits": [], "patterns": [{"patron": name, "senal_del_verificador": "TS7: x", "fix_generico": "f"}
                                        for name in named]}) + "\n```"}))
     pp.tsc_sweep.add_pattern(run_dir, {"name": "old-one", "signal": "TS7: x", "fix": "f"})
@@ -260,6 +276,35 @@ with tempfile.TemporaryDirectory() as directory:
                  (memory["late-one"]["provenance"]["step"], memory["late-one"]["provenance"]["file"]))
     assert_equal("devuelve cuántos reconstruyó, y una segunda pasada no reconstruye nada", (2, 0),
                  (filled, pp.backfill_provenance(run_dir)))
+
+# Una salida sin `<n>.closed` es de un ítem que no terminó de publicarse: no da
+# procedencia aunque nombre el patrón antes que la publicada.
+def unsealed_backfill() -> dict:
+    with tempfile.TemporaryDirectory() as directory:
+        run_dir = Path(directory)
+        for step, file in (("step-001", "src/a.ts"), ("step-002", "src/b.ts")):
+            (run_dir / step / "outputs").mkdir(parents=True)
+            (run_dir / step / "items.txt").write_text(f"{file} {run_dir}/{step}/items/1.txt\n")
+            output = run_dir / step / "outputs/1.json"
+            if step == "step-002":
+                publish(output)
+            output.write_text(json.dumps({"result": "```json\n" + json.dumps(
+                {"edits": [], "patterns": [{"patron": "ghost", "senal_del_verificador": "TS7: g",
+                                            "fix_generico": "f"}]}) + "\n```"}))
+        pp.tsc_sweep.add_pattern(run_dir, {"name": "ghost", "signal": "TS7: g", "fix": "f"})
+        pp.backfill_provenance(run_dir)
+        return pp.tsc_sweep.load_patterns(run_dir)["ghost"]["provenance"]
+
+
+assert_equal("una salida sin sello no da procedencia; la da la primera publicada",
+             "step-002", unsealed_backfill()["step"])
+sealed_check = pp.is_closed
+pp.is_closed = lambda directory, item: True
+try:
+    assert_equal("control: sin el filtro de cerrados, la salida sin sello la da",
+                 "step-001", unsealed_backfill()["step"])
+finally:
+    pp.is_closed = sealed_check
 
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los
@@ -282,6 +327,7 @@ with tempfile.TemporaryDirectory() as directory:
         module_edit("src/sub/n.ts", "", "export const x = 1\n"),
         module_edit("src/c.ts", "NOPE", "3"),
     ], keys, ["src/z.ts"])
+    assert candidate is not None  # hay ediciones válidas: siempre hay candidato
     assert_equal("el candidato toca los archivos que aplican y crea el nuevo",
                  ["src/a.ts", "src/sub/n.ts"], candidate["files"])
     assert_equal("un archivo con una edición que falla cae entero, con su motivo",
@@ -315,7 +361,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "items.txt").write_text("module:n d/1.txt src/a.ts\n")
     proposal_text = json.dumps({"edits": [module_edit("src/a.ts", "BAD1", "1"),
                                           module_edit("src/port/n.ts", "", "export const n = 1\n")]})
-    (main / "out/1.json").write_text(json.dumps({"result": proposal_text}))
+    publish(main / "out/1.json").write_text(json.dumps({"result": proposal_text}))
     cwd = os.getcwd()
     os.chdir(main)
     try:
@@ -357,7 +403,7 @@ def speculative_run(bad: str, directory: str) -> tuple[dict, Path, Path]:
     (main / "items.txt").write_text("".join(f"src/{name}.ts d/{n}.txt\n" for n, name in enumerate("abc", 1)))
     for n, name in enumerate("abc", 1):
         old, new = edits[name]
-        (main / f"out/{n}.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": old, "new": new}]})}))
+        publish(main / f"out/{n}.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": old, "new": new}]})}))
     cwd = os.getcwd()
     os.chdir(main)
     try:
@@ -396,8 +442,8 @@ with tempfile.TemporaryDirectory() as directory:
 
 # La política neta viaja hasta el paso: sin ella, unificar un tipo que
 # destapa contratos se revierte aunque baje el total.
-base_args = dict(ledger=Path("/l.jsonl"), bench_dir=Path("/b"), before_log=Path("/before.log"), seed=3,
-                 tsc=["tsc"])
+base_args: dict[str, Any] = dict(ledger=Path("/l.jsonl"), bench_dir=Path("/b"),
+                 before_log=Path("/before.log"), seed=3, tsc=["tsc"])
 assert_equal("el paso lleva --net cuando el pipeline lo pide", True,
              "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=True, **base_args))
 assert_equal("y no lo lleva cuando no", False,

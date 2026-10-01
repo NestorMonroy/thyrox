@@ -1,0 +1,50 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+86 |     process.env[ENV] = 'claude-fable-5-1=fast_mode'
+87 |     expect(modelHasCapability('claude-fable-5-1', 'fast_mode', 'claude-fable-5-1')).toBe(true)
+88 |   })
+89 | 
+90 |   test('sin anulación: el catálogo afirma o no decide', () => {
+91 |     expect(modelHasCapability('claude-opus-5', 'fast_mode', 'opus')).toBe(true)
+                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:91:70)
+(fail) modelHasCapability ($h) > sin anulación: el catálogo afirma o no decide [0.24ms]
+ 95 |   test('la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite', () => {
+ 96 |     const asked: unknown[] = []
+ 97 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+ 98 |     expect(modelHasCapability('claude-fable-5-1[1m]', 'fast_mode', 'fable')).toBe(true)
+ 99 |     expect(asked).toEqual([['fast_mode', ['fable', 'claude-fable-5-1']]])
+100 |     expect(modelHasCapability('claude-fable-5-1', 'per_turn_effort', 'fable')).toBe(true)
+                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:100:80)
+(fail) modelHasCapability ($h) > la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite [0.13ms]
+102 |     expect(modelHasCapability('claude-haiku-4-5', 'per_turn_effort', 'haiku')).toBeUndefined()
+103 |   })
+104 | 
+105 |   test('una consulta servida que no dice true no niega el catálogo', () => {
+106 |     setServedCapabilityLookup(() => false)
+107 |     expect(modelHasCapability('claude-opus-5', 'fast_mode', 'opus')).toBe(true)
+                                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:107:70)
+(fail) modelHasCapability ($h) > una consulta servida que no dice true no niega el catálogo [0.05ms]
+
+ 8 pass
+ 3 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [106.00ms]

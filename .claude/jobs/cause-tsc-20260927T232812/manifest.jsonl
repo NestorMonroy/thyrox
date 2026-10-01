@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bunx tsc -p tsconfig.test.json --noEmit 2>&1 | grep -E 'src/proxy|__tests__/proxy'; echo tsc-done", "started_at": "2026-09-27T23:28:12+00:00"}

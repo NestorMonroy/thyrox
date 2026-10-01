@@ -57,7 +57,7 @@ async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
 beforeEach(() => resetHooksConfigSnapshot())
 afterEach(() => {
   resetHooksConfigSnapshot()
-  delete process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
+  delete process.env.THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
 })
 
 describe('hookMatcherMatches — el matcher del cliente', () => {
@@ -117,8 +117,8 @@ describe('executeHooksOutsideREPL — exit codes y JSON', () => {
   })
   test('el hook recibe el input por stdin', async () => {
     setHooksConfigSnapshot({ ConfigChange: [{ hooks: [cmd('cat')] }] })
-    const [r] = await executeHooksOutsideREPL({ hookInput: { ...input, marca: 'x1' } })
-    expect(JSON.parse(r!.output)).toMatchObject({ hook_event_name: 'ConfigChange', marca: 'x1' })
+    const [r] = await executeHooksOutsideREPL({ hookInput: { ...input, marker: 'x1' } })
+    expect(JSON.parse(r!.output)).toMatchObject({ hook_event_name: 'ConfigChange', marker: 'x1' })
   })
   test('el matcher filtra por matchQuery', async () => {
     setHooksConfigSnapshot({ ConfigChange: [{ matcher: 'skills', hooks: [cmd('true')] }] })
@@ -205,7 +205,7 @@ describe('eventos fuera del bucle', () => {
     expect(getSessionEndHookTimeoutMs()).toBe(30_000)
     setHooksConfigSnapshot({ SessionEnd: [{ hooks: [cmd('true', { timeout: 900 })] }] })
     expect(getSessionEndHookTimeoutMs()).toBe(60_000)
-    process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS = '4321'
+    process.env.THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS = '4321'
     expect(getSessionEndHookTimeoutMs()).toBe(4321)
   })
 })

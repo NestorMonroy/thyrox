@@ -1,0 +1,17 @@
+tests/session/test-infrastructure-ensure.sh -> 72 casos: 72 ok, 0 fallos
+tests/session/test-parallel-map.sh -> parallel_map: 28/34
+tests/session/test_gpu_scenarios.py -> test_gpu_scenarios: 19 ok, 0 falla(s)
+tests/session/test_gpu_monitor.py -> test_gpu_monitor: 90 ok, 0 falla(s)
+tests/session/test_resource_admission.py -> test_resource_admission: 76 ok, 0 fallos
+tests/session/test-gpu-admission-cli.sh -> aserciones: 13 de 13 · failures: 0
+tests/session/test_container_measure.py -> test_container_measure: 21 ok, 0 falla(s)
+tests/session/test_gpu_backend.py -> test_gpu_backend: 50 ok, 0 falla(s)
+tests/session/test-headless-pool.sh -> aserciones: 147 de 148 · fallos: 1
+tests/verify/test_step_report.py -> test_step_report: 22 aserciones — 22 ok, 0 falla(s)
+tests/session/test_parallel_map_history.py -> test_parallel_map_history: 14 ok, 5 fallos
+ 7 pass
+ 0 fail
+ruff: 0 hallazgo(s) (alcance medido: 4 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 4 archivo(s))
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+__BG_EXIT__=0

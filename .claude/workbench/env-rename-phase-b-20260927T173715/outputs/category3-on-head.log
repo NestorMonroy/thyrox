@@ -1,0 +1,88 @@
+-- FAIL src/packages/binary/__tests__/declaration.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declaration.test.ts:
+(fail) contra el corpus REAL de 2.1.274 > la tabla de ventanas se recupera sin conocer su binding [8988.00ms]
+  ^ this test timed out after 5000ms.
+
+ 12 pass
+ 1 fail
+ 22 expect() calls
+Ran 13 tests across 1 file. [11.68s]
+-- FAIL src/packages/cli/__tests__/bin.test.ts
+bun test v1.3.11 (af24e281)
+killed 1 dangling process
+
+src/packages/cli/__tests__/bin.test.ts:
+(fail) src/entry/main.ts (T-009) — un ciclo completo de punta a punta > con turnos grabados ejecuta una herramienta real y devuelve el texto [6499.08ms]
+  ^ this test timed out after 5000ms.
+killed 1 dangling process
+(fail) src/entry/main.ts (T-009) — un ciclo completo de punta a punta > sin --prompt imprime la ayuda y sale 2 [5093.17ms]
+  ^ this test timed out after 5000ms.
+
+ 18 pass
+ 2 fail
+ 54 expect() calls
+Ran 20 tests across 1 file. [42.47s]
+-- FAIL src/packages/cli/__tests__/workbench.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/workbench.test.ts:
+(fail) la CLI — andamiar y medir desde fuera > --workbench-new emite el contrato del SUCESOR, no el superado [6692.63ms]
+  ^ this test timed out after 5000ms.
+killed 1 dangling process
+(fail) la CLI — andamiar y medir desde fuera > --workbench-check no bloquea por defecto y si con --strict [8257.46ms]
+  ^ this test timed out after 5000ms.
+
+ 18 pass
+ 2 fail
+ 41 expect() calls
+Ran 20 tests across 1 file. [15.34s]
+-- FAIL tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+207 |     test(`${m.name}: todo import externo resuelve`, () => {
+208 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+209 |         .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+210 |           && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
+211 |         .sort()
+212 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "${DEF}",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox-head/tests/package/dependencies.test.ts:212:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/binary: todo import externo resuelve [6.39ms]
+
+ 101 pass
+ 1 fail
+ 103 expect() calls
+Ran 102 tests across 1 file. [6.14s]
+-- FAIL tests/unit/utils/envUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/envUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getClaudeConfigHomeDir' not found in module '/home/user/thyrox-head/src/packages/config/env/utils.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [297.00ms]
+pass=192 fail=7 errors=1 crashes=0 files=8 failed=5

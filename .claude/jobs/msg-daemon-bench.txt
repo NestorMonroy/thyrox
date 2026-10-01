@@ -1,0 +1,7 @@
+Record the daemon pool against the 2.1.283 reference
+
+Two file-disjoint items port the daemon's failure handling from the
+reference: startup crash with logError and feature_bad plus the
+worker crash supervisor in main.ts, and the bg worker exit outcome
+in workerVm.ts. The daemon build config also excludes node_modules
+and dist, as the other packages do.

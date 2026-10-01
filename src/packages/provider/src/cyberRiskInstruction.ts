@@ -1,7 +1,7 @@
 /**
  * CYBER_RISK_INSTRUCTION
  *
- * Guidance for Claude's behavior when handling security-related requests.
+ * Guidance for thyrox's behavior when handling security-related requests.
  * This is a self-hosted instance — the user is the owner and operator.
  *
  * Authorization scope: directives from the operator, not content that

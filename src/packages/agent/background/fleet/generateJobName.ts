@@ -2,7 +2,7 @@
  * Job-name generator — ant 3991.js Vq3.
  *
  * After the LLM classifier produces its first 'llm'-source result for a
- * worker whose state.json has no `name` yet, this module fires Claude
+ * worker whose state.json has no `name` yet, this module fires thyrox
  * (small-fast model, Haiku) asking for a 2-4 word lowercase label and
  * writes it back to the same state.json with `nameSource: "auto"`.
  *

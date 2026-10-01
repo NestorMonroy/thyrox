@@ -1,0 +1,9 @@
+      at locatePayload (/home/user/thyrox/src/packages/binary/src/payload.ts:35:19)
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/payloadLocation.test.ts:65:21)
+(fail) locatePayload — forma de apéndice (Bun 1.3) > localiza el payload por el largo que declara Offsets, no por el magic [1.05ms]
+
+ 15 pass
+ 1 fail
+ 2398 expect() calls
+Ran 16 tests across 2 files. [1152.00ms]
+__BG_EXIT__=0

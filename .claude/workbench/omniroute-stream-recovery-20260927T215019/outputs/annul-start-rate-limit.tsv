@@ -1,0 +1,3 @@
+base	11 pass, 0 fail	—
+oauth-skip	10 pass, 1 fail	startProxyServer > rateLimit protege las credenciales de clave de API y deja pasar las OAuth
+not-built	10 pass, 1 fail	startProxyServer > rateLimit protege las credenciales de clave de API y deja pasar las OAuth

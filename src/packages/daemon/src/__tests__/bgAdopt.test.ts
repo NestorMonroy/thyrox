@@ -1,6 +1,7 @@
 // Puerto fiel de `ccnmt: packages/daemon/src/__tests__/bgAdopt.test.ts`.
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -11,21 +12,30 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-bgadopt-test-'))
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
+const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
 })
 afterAll(() => {
-  if (ORIGINAL_CONFIG_HOME === undefined) {
-    delete process.env.CLAUDE_CONFIG_HOME
+  if (ORIGINAL_CONFIG_DIR === undefined) {
+    delete process.env.THYROX_CONFIG_DIR
   } else {
-    process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
   }
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })
 
-import { adoptFromRoster, adoptRunningPtyRecords } from '../bgAdopt.js'
+import { createServer, type Server } from 'node:net'
+
+import {
+  adoptFromRoster,
+  adoptRunningPtyRecords,
+  reapOrphanPtySockets,
+  terminateOrphanPtyHost,
+} from '../bgAdopt.js'
+import { encodeCtrlFrame } from '../internal/ptyFrame.js'
+import { getDaemonScopeDir } from '../socketPaths.js'
 import {
   type WorkerRecord,
   readWorkerRecord,
@@ -198,5 +208,159 @@ describe('adoptFromRoster', () => {
     workers.set('ros33333', {} as WorkerVm)
     await adoptFromRoster(workers)
     expect(workers.size).toBe(1) // sin cambios
+  })
+})
+
+/** Levanta un host de PTY falso en `path` que registra lo recibido y cierra al primer frame. */
+function listenFakePtyHost(path: string): Promise<{ server: Server; received: Promise<Buffer> }> {
+  return new Promise(resolveListen => {
+    let deliver: (data: Buffer) => void = () => {}
+    const received = new Promise<Buffer>(resolveData => {
+      deliver = resolveData
+    })
+    const server = createServer(conn => {
+      conn.once('data', data => {
+        deliver(data)
+        conn.end()
+      })
+    })
+    server.listen(path, () => resolveListen({ server, received }))
+  })
+}
+
+/** Borra del scope del daemon todo archivo de host de PTY, para que un caso no herede residuos de otro. */
+function clearPtyHostFiles(): void {
+  const scope = getDaemonScopeDir()
+  mkdirSync(scope, { recursive: true })
+  for (const f of readdirSync(scope)) {
+    if (f.includes('.pty.sock')) rmSync(join(scope, f), { force: true })
+  }
+}
+
+function closeServer(server: Server): Promise<void> {
+  return new Promise(resolveClose => server.close(() => resolveClose()))
+}
+
+describe('terminateOrphanPtyHost — ref NIe (chunk-kc04kkkd.js)', () => {
+  beforeEach(clearPtyHostFiles)
+  afterEach(clearPtyHostFiles)
+
+  test('un host vivo recibe el frame kill SIGTERM y la promesa resuelve true al cerrar', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    const sockPath = join(scope, 'nie11111.pty.sock')
+    const { server, received } = await listenFakePtyHost(sockPath)
+    const outcome = await terminateOrphanPtyHost(sockPath)
+    expect(outcome).toBe(true)
+    expect(await received).toEqual(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
+    await closeServer(server)
+    rmSync(sockPath, { force: true })
+  })
+
+  test('un socket muerto resuelve false y borra el socket con sus breadcrumbs .err/.err.read/.late', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    const sockPath = join(scope, 'nie22222.pty.sock')
+    const doomed = [sockPath, `${sockPath}.err`, `${sockPath}.err.read`, `${sockPath}.late`]
+    for (const path of doomed) writeFileSync(path, '')
+    const outcome = await terminateOrphanPtyHost(sockPath)
+    expect(outcome).toBe(false)
+    for (const path of doomed) expect(existsSync(path)).toBe(false)
+  })
+})
+
+describe('reapOrphanPtySockets — ref pr (chunk-92tvramn.js), rama POSIX', () => {
+  beforeEach(clearPtyHostFiles)
+  afterEach(clearPtyHostFiles)
+
+  test('reapa un .pty.sock muerto sin handle: lo borra y marca el record failed', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    mkdirSync(join(JOBS_DIR, 'orp11111'), { recursive: true })
+    writeWorkerRecord(baseRecord('orp11111', process.pid))
+    const sockPath = join(scope, 'orp11111.pty.sock')
+    writeFileSync(sockPath, '')
+    const logs: string[] = []
+    await reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+    expect(existsSync(sockPath)).toBe(false)
+    const after = readWorkerRecord('orp11111')
+    expect(after?.status).toBe('failed')
+    expect(after?.failedReason).toBe('reaped (roster gap)')
+    expect(logs).toEqual(['bg orphan-reap: 1 roster-less pty host(s)'])
+  })
+
+  test('un host vivo sin handle recibe SIGTERM, se marca failed y pierde .late y .exec-exit', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    mkdirSync(join(JOBS_DIR, 'orp33333'), { recursive: true })
+    writeWorkerRecord(baseRecord('orp33333', process.pid))
+    const sockPath = join(scope, 'orp33333.pty.sock')
+    const { server, received } = await listenFakePtyHost(sockPath)
+    writeFileSync(`${sockPath}.late`, '')
+    writeFileSync(`${sockPath}.exec-exit`, '0')
+    const logs: string[] = []
+    await reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+    expect(await received).toEqual(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
+    expect(readWorkerRecord('orp33333')?.failedReason).toBe('reaped (roster gap)')
+    expect(existsSync(`${sockPath}.late`)).toBe(false)
+    expect(existsSync(`${sockPath}.exec-exit`)).toBe(false)
+    expect(logs).toEqual(['bg orphan-reap: 1 roster-less pty host(s)'])
+    await closeServer(server)
+    rmSync(sockPath, { force: true })
+  })
+
+  test('no pisa un record que ya terminó por su cuenta', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    mkdirSync(join(JOBS_DIR, 'orp44444'), { recursive: true })
+    writeWorkerRecord({ ...baseRecord('orp44444', process.pid), status: 'stopped' })
+    writeFileSync(join(scope, 'orp44444.pty.sock'), '')
+    await reapOrphanPtySockets(new Map<string, WorkerVm>(), () => {})
+    expect(readWorkerRecord('orp44444')?.status).toBe('stopped')
+  })
+
+  test('borra los breadcrumbs cuyo .pty.sock ya no existe y conserva los de un socket con handle', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    const orphanBase = join(scope, 'gone5555.pty.sock')
+    const orphans = ['.err', '.late', '.exec-exit', '.err.read'].map(s => `${orphanBase}${s}`)
+    for (const path of orphans) writeFileSync(path, '')
+    const liveSock = join(scope, 'live5555.pty.sock')
+    writeFileSync(liveSock, '')
+    writeFileSync(`${liveSock}.err`, '')
+    const workers = new Map<string, WorkerVm>()
+    workers.set('live5555', {} as WorkerVm)
+    const logs: string[] = []
+    await reapOrphanPtySockets(workers, (m) => logs.push(m))
+    for (const path of orphans) expect(existsSync(path)).toBe(false)
+    expect(existsSync(`${liveSock}.err`)).toBe(true)
+    expect(logs).toEqual([])
+    rmSync(liveSock, { force: true })
+    rmSync(`${liveSock}.err`, { force: true })
+  })
+
+  test('omite un .pty.sock cuyo short ya está en el mapa de workers vivos', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    const sockPath = join(scope, 'orp22222.pty.sock')
+    writeFileSync(sockPath, '')
+    const workers = new Map<string, WorkerVm>()
+    workers.set('orp22222', {} as WorkerVm)
+    const logs: string[] = []
+    await reapOrphanPtySockets(workers, (m) => logs.push(m))
+    expect(existsSync(sockPath)).toBe(true)
+    expect(logs).toEqual([])
+    rmSync(sockPath, { force: true })
+  })
+
+  test('sin archivos .pty.sock no se emite log', async () => {
+    const scope = getDaemonScopeDir()
+    mkdirSync(scope, { recursive: true })
+    for (const f of readdirSync(scope)) {
+      if (f.includes('.pty.sock')) rmSync(join(scope, f), { force: true })
+    }
+    const logs: string[] = []
+    await reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+    expect(logs).toEqual([])
   })
 })

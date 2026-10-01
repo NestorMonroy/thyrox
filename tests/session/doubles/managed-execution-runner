@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Doble del runner de la primitiva (THYROX_MANAGED_EXECUTION_RUNNER): habla su
+# contrato —`run --task … --kind … -- <argv>`— y ejecuta el argv con `exec`, así
+# que el pid, GNU Time y el grupo de procesos miden el payload como antes. Lo
+# que la unidad real añade —el contenedor— lo prueba managedExecution.real.test.ts.
+[[ "${1:-}" == run ]] || { echo "doble del runner: se esperaba 'run', no '${1:-}'" >&2; exit 2; }
+while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+[[ "${1:-}" == "--" ]] || { echo "doble del runner: falta '--' antes del payload" >&2; exit 2; }
+shift
+exec "$@"

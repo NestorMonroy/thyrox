@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+tests/typescript/buildJavascript.test.ts:
+pkg: repunte INERTE — 3 .js no emitido(s):
+  ./dist/index.js
+  ./dist/sub/reader.js
+  ./dist/index.js
+  Corre antes: typescript-build-javascript <paquete>
+
+ 19 pass
+ 0 fail
+ 54 expect() calls
+Ran 19 tests across 1 file. [393.00ms]
+5 ok: el segundo build no hereda salidas del anterior
+1 ok: 31 de 31 prompt(s) leídos desde dist sin src/, mismo conjunto por nombre
+2a ok: models.jsonl junto a sus 1 lector(es)
+2b ok: models.js carga desde dist sin el fuente de agent (20 modelos)
+3 ok: sin rutas del fuente horneadas; bridge.py junto a sus 1 lector(es)
+3b ok: 2771 archivo(s) de dist idénticos construyendo en /w y en /v

@@ -1,0 +1,27 @@
+asentado: job-20260927T154821_job-001 -> OK (1 de 9)
+asentado: job-20260927T154821_job-002 -> OK (2 de 9)
+asentado: job-20260927T154821_job-004 -> OK (3 de 9)
+asentado: job-20260927T154821_job-005 -> OK (4 de 9)
+asentado: job-20260927T154821_job-006 -> OK (5 de 9)
+asentado: job-20260927T154821_job-007 -> OK (6 de 9)
+asentado: job-20260927T154821_job-008 -> OK (7 de 9)
+asentado: job-20260927T154821_job-003 -> OK (3 de 9)
+== 9 trabajos asentados ==
+OLVIDADO fail-rerun2
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-003
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-004
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-005
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-006
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-007
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-008
+       | (vacío — no emitió nada)

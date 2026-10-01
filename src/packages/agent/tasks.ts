@@ -15,26 +15,23 @@
  *     equipo del lider (via `swarm/teammateState.js`).
  *   - la resolucion por equipo de `getTaskListId()` (via
  *     `swarm/teammateContext.js` + `app-host/bootstrap/state.js`); esta
- *     version resuelve solo por `CLAUDE_CODE_TASK_LIST_ID` o el id explicito
+ *     version resuelve solo por `THYROX_CODE_TASK_LIST_ID` o el id explicito
  *     que el llamador pase.
  *   - `claimTask()`/`claimTaskWithBusyCheck()` y sus tipos
  *     `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita y
  *     dependen del mismo sustrato ausente. (`resetTaskList` se porta al
- *     final, 2026-09-24, desde 2.1.275.)
+ *     final, desde 2.1.275.)
  *
- * AVISO RETIRADO 2026-09-08: `isTodoV2Enabled()` figuraba aqui como NO
- * portada, bloqueada en `getIsNonInteractiveSession()`. El bloqueo era REAL
- * —medido, la funcion no existia en ningun paquete de este arbol— y cae al
- * portar la slice de sesion interactiva de `app-host/bootstrap/state.ts`.
- * La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
+ * `isTodoV2Enabled()` lee `getIsNonInteractiveSession()` de la slice de sesion
+ * interactiva de `app-host/bootstrap/state.ts`. La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
  * dos manifiestos y que la fuente tiene igual (`ccnmt: agent/tasks.ts:4`).
  *
  * REIMPLEMENTADO LOCALMENTE (la logica es trivial; no amerita traer una
  * dependencia externa para 3-10 lineas cada una):
  *   - `lazySchema` (memoiza la construccion del schema Zod al primer uso;
  *     `tool-registry/utils/lazySchema.ts`, 4 lineas).
- *   - `getClaudeConfigHomeDir` — la fuente la memoiza con `lodash-es`
- *     keyed por `CLAUDE_CONFIG_DIR`; aqui se lee el env var en cada
+ *   - `getConfigHomeDir` — la fuente la memoiza con `lodash-es`
+ *     keyed por `THYROX_CONFIG_DIR`; aqui se lee el env var en cada
  *     llamada (sin memo: es una optimizacion de performance, no de
  *     comportamiento, y el valor puede cambiar entre tests).
  *   - `errorMessage` / `getErrnoCode` (`local-observability/errorHelpers.ts`).
@@ -62,6 +59,7 @@ import { z } from 'zod'
 import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { TaskCycleError } from './errors.ts'
 import * as lockfile from '@thyrox/storage/lockfile.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ---------------------------------------------------------------------------
 // Reimplementaciones locales de utilidades de paquetes hermanos ausentes.
@@ -73,10 +71,6 @@ function lazySchema<T>(factory: () => T): () => T {
   return () => (cached ??= factory())
 }
 
-/** ≙ `config/env/utils.ts::getClaudeConfigHomeDir`, sin la memoizacion de lodash. */
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize('NFC')
-}
 
 /** ≙ `local-observability/errorHelpers.ts::errorMessage`. */
 function errorMessage(e: unknown): string {
@@ -248,11 +242,11 @@ async function writeHighWaterMark(taskListId: string, value: number): Promise<vo
 /**
  * Obtiene el ID de la lista de tareas segun el contexto actual.
  * Prioridad (version portada — ver la divergencia declarada arriba):
- * 1. `CLAUDE_CODE_TASK_LIST_ID` — ID de lista de tareas explicito.
+ * 1. `THYROX_CODE_TASK_LIST_ID` — ID de lista de tareas explicito.
  * 2. Nombre de equipo del lider — fijado al crear un equipo via TeamCreate.
  */
 export function getTaskListId(): string {
-  const taskListId = process.env.CLAUDE_CODE_TASK_LIST_ID
+  const taskListId = process.env.THYROX_CODE_TASK_LIST_ID
   if (taskListId) {
     return taskListId
   }
@@ -260,7 +254,7 @@ export function getTaskListId(): string {
     return leaderTeamName
   }
   throw new Error(
-    'getTaskListId(): no hay CLAUDE_CODE_TASK_LIST_ID ni equipo de lider — ' +
+    'getTaskListId(): no hay THYROX_CODE_TASK_LIST_ID ni equipo de lider — ' +
       'la resolucion por sesion/equipo no se porto (ver docstring del modulo).',
   )
 }
@@ -275,7 +269,7 @@ export function sanitizePathComponent(input: string): string {
 }
 
 export function getTasksDir(taskListId: string): string {
-  return join(getClaudeConfigHomeDir(), 'tasks', sanitizePathComponent(taskListId))
+  return join(getConfigHomeDir(), 'tasks', sanitizePathComponent(taskListId))
 }
 
 export function getTaskPath(taskListId: string, taskId: string): string {
@@ -694,7 +688,7 @@ export const DEFAULT_TASKS_MODE_TASK_LIST_ID = 'tasklist'
  * al reves de lo pedido.
  */
 export function isTodoV2Enabled(): boolean {
-  const declarado = process.env.CLAUDE_CODE_ENABLE_TASKS
+  const declarado = process.env.THYROX_CODE_ENABLE_TASKS
   if (
     declarado !== undefined &&
     ['1', 'true', 'yes', 'on'].includes(declarado.toLowerCase().trim())

@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+ELOOP: too many symbolic links encountered, open '/tmp/thyrox-tests-rrx5tn/uds-atomic-Ozs0HP/k.json'
+    path: "/tmp/thyrox-tests-rrx5tn/uds-atomic-Ozs0HP/k.json",
+ syscall: "open",
+   errno: -40,
+    code: "ELOOP"
+
+(fail) opciones completas de Jne > followSymlinks: el brazo in situ escribe a través del enlace [1.28ms]
+
+ 26 pass
+ 1 fail
+ 71 expect() calls
+Ran 27 tests across 1 file. [167.00ms]

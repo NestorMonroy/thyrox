@@ -1,0 +1,8 @@
+[0.05ms] ".env"
+bun install v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [60]
+Saved lockfile
+
+Checked 664 installs across 603 packages (no changes) [3.86s]
+__BG_EXIT__=0

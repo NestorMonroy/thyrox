@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/escaped-modules-20260927T012834/bisect_leak.sh /home/user/thyrox/src/packages/agent __tests__/toolSearchEnabled.test.ts tool_reference", "started_at": "2026-09-27T01:35:41+00:00"}

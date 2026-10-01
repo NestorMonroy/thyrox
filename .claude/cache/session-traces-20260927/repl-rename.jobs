@@ -1,0 +1,2 @@
+bash bin/check_package_typecheck --strict --jobs 2 repl
+cd src/packages/repl && set -o pipefail && bun test 2>&1 | tail -30

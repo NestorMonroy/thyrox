@@ -27,7 +27,7 @@ export const SHELL_TOOL_NAMES: string[] = [BASH_TOOL_NAME, POWERSHELL_TOOL_NAME]
  * Gate en tiempo de ejecución para PowerShellTool. Sólo Windows (el motor
  * de permisos usa normalizaciones de ruta específicas de Win32).
  * Habilitado por defecto en Windows (opt-out con
- * `CLAUDE_CODE_USE_POWERSHELL_TOOL=0`).
+ * `THYROX_CODE_USE_POWERSHELL_TOOL=0`).
  *
  * Lo usan `tools.ts` (visibilidad en la lista de tools), el ruteo de `!`
  * de un comando de bash, y el ruteo de frontmatter de skill, para que el
@@ -37,6 +37,6 @@ export const SHELL_TOOL_NAMES: string[] = [BASH_TOOL_NAME, POWERSHELL_TOOL_NAME]
 export function isPowerShellToolEnabled(): boolean {
   if (getPlatform() !== 'windows') return false
   return !requireConfigEnvUtils().isEnvDefinedFalsy(
-    process.env.CLAUDE_CODE_USE_POWERSHELL_TOOL,
+    process.env.THYROX_CODE_USE_POWERSHELL_TOOL,
   )
 }

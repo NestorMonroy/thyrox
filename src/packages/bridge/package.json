@@ -3,111 +3,137 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Remote Control / Bridge: sesion remota via claude.ai, transporte WebSocket, poll de trabajo, mensajeria peer-a-peer entre sesiones. Puerto de claude-code-nestor-monroy-tools (packages/bridge). No es miembro del bun workspace (src/packages/package.json) todavia; sus cruces a @thyrox/{provider,storage,local-observability,agent,config,tool-registry} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
+  "description": "Remote Control / Bridge: sesion remota via claude.ai, transporte WebSocket, poll de trabajo, mensajeria peer-a-peer entre sesiones. Puerto de claude-code-nestor-monroy-tools (packages/bridge). Miembro del workspace de la raiz desde la tarea #62; sus cruces a @thyrox/{provider,storage,local-observability,agent,config,tool-registry} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./commands/bridge-kick.js": {
+      "@thyrox/source": "./commands/bridge-kick.ts",
       "types": "./dist/commands/bridge-kick.d.ts",
       "default": "./commands/bridge-kick.ts"
     },
     "./bridgeConfig.js": {
+      "@thyrox/source": "./src/bridgeConfig.ts",
       "types": "./dist/src/bridgeConfig.d.ts",
       "default": "./src/bridgeConfig.ts"
     },
     "./bridgeEnabled.js": {
+      "@thyrox/source": "./src/bridgeEnabled.ts",
       "types": "./dist/src/bridgeEnabled.d.ts",
       "default": "./src/bridgeEnabled.ts"
     },
     "./bridgeMain.js": {
+      "@thyrox/source": "./src/bridgeMain.ts",
       "types": "./dist/src/bridgeMain.d.ts",
       "default": "./src/bridgeMain.ts"
     },
     "./bridgeMessaging.js": {
+      "@thyrox/source": "./src/bridgeMessaging.ts",
       "types": "./dist/src/bridgeMessaging.d.ts",
       "default": "./src/bridgeMessaging.ts"
     },
     "./bridgePermissionCallbacks.js": {
+      "@thyrox/source": "./src/bridgePermissionCallbacks.ts",
       "types": "./dist/src/bridgePermissionCallbacks.d.ts",
       "default": "./src/bridgePermissionCallbacks.ts"
     },
     "./bridgeStatusUtil.js": {
+      "@thyrox/source": "./src/bridgeStatusUtil.ts",
       "types": "./dist/src/bridgeStatusUtil.d.ts",
       "default": "./src/bridgeStatusUtil.ts"
     },
     "./createSession.js": {
+      "@thyrox/source": "./src/createSession.ts",
       "types": "./dist/src/createSession.d.ts",
       "default": "./src/createSession.ts"
     },
     "./envLessBridgeConfig.js": {
+      "@thyrox/source": "./src/envLessBridgeConfig.ts",
       "types": "./dist/src/envLessBridgeConfig.d.ts",
       "default": "./src/envLessBridgeConfig.ts"
     },
     "./inboundAttachments.js": {
+      "@thyrox/source": "./src/inboundAttachments.ts",
       "types": "./dist/src/inboundAttachments.d.ts",
       "default": "./src/inboundAttachments.ts"
     },
     "./inboundMessages.js": {
+      "@thyrox/source": "./src/inboundMessages.ts",
       "types": "./dist/src/inboundMessages.d.ts",
       "default": "./src/inboundMessages.ts"
     },
     "./initReplBridge.js": {
+      "@thyrox/source": "./src/initReplBridge.ts",
       "types": "./dist/src/initReplBridge.d.ts",
       "default": "./src/initReplBridge.ts"
     },
     "./jwtUtils.js": {
+      "@thyrox/source": "./src/jwtUtils.ts",
       "types": "./dist/src/jwtUtils.d.ts",
       "default": "./src/jwtUtils.ts"
     },
     "./peerSessions.js": {
+      "@thyrox/source": "./src/peerSessions.ts",
       "types": "./dist/src/peerSessions.d.ts",
       "default": "./src/peerSessions.ts"
     },
     "./pollConfig.js": {
+      "@thyrox/source": "./src/pollConfig.ts",
       "types": "./dist/src/pollConfig.d.ts",
       "default": "./src/pollConfig.ts"
     },
     "./replBridge.js": {
+      "@thyrox/source": "./src/replBridge.ts",
       "types": "./dist/src/replBridge.d.ts",
       "default": "./src/replBridge.ts"
     },
     "./replBridgeHandle.js": {
+      "@thyrox/source": "./src/replBridgeHandle.ts",
       "types": "./dist/src/replBridgeHandle.d.ts",
       "default": "./src/replBridgeHandle.ts"
     },
     "./runtimeHostSetup.js": {
+      "@thyrox/source": "./src/runtimeHostSetup.ts",
       "types": "./dist/src/runtimeHostSetup.d.ts",
       "default": "./src/runtimeHostSetup.ts"
     },
     "./sessionIdCompat.js": {
+      "@thyrox/source": "./src/sessionIdCompat.ts",
       "types": "./dist/src/sessionIdCompat.d.ts",
       "default": "./src/sessionIdCompat.ts"
     },
     "./trustedDevice.js": {
+      "@thyrox/source": "./src/trustedDevice.ts",
       "types": "./dist/src/trustedDevice.d.ts",
       "default": "./src/trustedDevice.ts"
     },
     "./types.js": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/src/types.d.ts",
       "default": "./src/types.ts"
     },
     "./webhookSanitizer.js": {
+      "@thyrox/source": "./src/webhookSanitizer.ts",
       "types": "./dist/src/webhookSanitizer.d.ts",
       "default": "./src/webhookSanitizer.ts"
     }
@@ -117,12 +143,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/cli": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/headless-sdk": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/storage": "workspace:*",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/cli": "0.1.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/headless-sdk": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/storage": "0.1.0",
     "axios": "^1.20.0",
     "chalk": "^6.0.0",
     "lodash-es": "^4.18.1",

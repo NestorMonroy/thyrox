@@ -8,7 +8,7 @@ import {
 } from '../claudemd.js'
 
 /**
- * Pin user-visible CLAUDE.md / memory constants and the small filter
+ * Pin user-visible THYROX.md / memory constants and the small filter
  * helpers. The bigger functions (getMemoryFiles, processMdRules) are
  * integration-tested elsewhere; these are the constants the rest of the
  * system reads + the predicates that decide what gets shown in /memory.

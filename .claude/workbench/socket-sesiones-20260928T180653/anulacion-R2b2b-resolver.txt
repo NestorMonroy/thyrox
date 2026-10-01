@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeProcessContext.test.ts:
+54 |     const context = processFastModeAvailabilityContext()
+55 |     expect(context.resolveModel('mi-modelo')).toBe('mi-modelo')
+56 |     expect(context.resolveModel(null)).toBe(String(getDefaultMainLoopModelSetting()))
+57 |     expect(context.resolveModel(undefined)).toBe(getMainLoopModel())
+58 |     process.env.ANTHROPIC_MODEL = 'claude-haiku-4-5'
+59 |     expect(processFastModeAvailabilityContext().resolveModel(undefined)).toBe('claude-haiku-4-5')
+                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "claude-haiku-4-5"
+Received: "claude-sonnet-4-6"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeProcessContext.test.ts:59:74)
+(fail) processFastModeAvailabilityContext > el modelo a juzgar: el pedido tal cual, null el de la configuración, undefined el del bucle [1.67ms]
+
+ 5 pass
+ 1 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [318.00ms]

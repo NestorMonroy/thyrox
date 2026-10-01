@@ -23,6 +23,8 @@
 
 # --- clichés que la regla nombra explícitamente
 regla de oro
+valor de oro
+valores de oro
 la clave esta en
 la clave está en
 a ojo

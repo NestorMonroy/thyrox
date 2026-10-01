@@ -32,6 +32,7 @@ HERE = reach.thyrox_root()
 sys.path.insert(0, str(HERE / "src"))
 
 spec = importlib.util.spec_from_file_location("agent_store", HERE / "src" / "agents" / "agent_store.py")
+assert spec is not None and spec.loader is not None
 store = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(store)
 

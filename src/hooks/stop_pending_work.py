@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
 
 # El módulo se importa como ``hooks.stop_pending_work`` (con ``src`` en la
 # ruta) y también se ejecuta como guion —así lo invoca el stub—, donde

@@ -15,7 +15,7 @@ import { resolve } from 'path'
  *
  * Bug history (V7 §11.6): the old `provider !== 'firstParty'` guard treated
  * a stale `'openai'` global provider (residue from a prior Codex session) as
- * 3P, downgrading Opus from latest → 4.6 for a Claude Account subscriber.
+ * 3P, downgrading Opus from latest → 4.6 for a thyrox Account subscriber.
  * Fixed by explicitly listing bedrock/vertex/foundry — pin the exact list.
  */
 describe('Model defaults provider-aware cascade (vs ant default-resolver)', () => {
@@ -78,7 +78,7 @@ describe('Model defaults provider-aware cascade (vs ant default-resolver)', () =
    * getSmallFastModel safety net — port of ant `wP` (1419.js), generalised
    * for ccb's connection registry.
    *
-   * ant's load-bearing invariant: only return a Claude Haiku id when Claude
+   * ant's load-bearing invariant: only return a Haiku id when thyrox
    * Haiku is GENUINELY REACHABLE; otherwise fall back to the main-loop model
    * (the one the user is actually on, guaranteed to route + authenticate).
    *
@@ -128,7 +128,7 @@ describe('Model defaults provider-aware cascade (vs ant default-resolver)', () =
       )
       expect(fnSlice).toMatch(/return getDefaultHaikuModel\(\)/)
       // …and the final fallback is the main-loop model (ant wP `return F7()`),
-      // NOT a bare Claude Haiku id that would 404/401 off-Anthropic.
+      // NOT a bare Haiku id that would 404/401 off-Anthropic.
       expect(fnSlice).toMatch(/return mainLoopModel/)
     })
   })

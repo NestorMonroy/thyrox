@@ -1,0 +1,12 @@
+26 | const outputs = join(probes, '..', 'outputs')
+27 | const podman = createPodmanExecutor()
+28 | 
+29 | async function must(args: string[]): Promise<string> {
+30 |   const result = await podman.run(args)
+31 |   if (result.exitCode !== 0) throw new Error(`podman ${args.slice(0, 2).join(' ')}: ${result.stderr.trim()}`)
+                                            ^
+error: podman build --label: Error: committing container for step {Env:[PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin] Command:copy Args:[. /data/] Flags:[] Attrs:map[] Message:COPY . /data/ Original:COPY . /data/}: copying layers and metadata for container "a93f2597b395289e1c38fa2656a4bfe3bc227bbbbf48a3a94aae60d8369a5457": writing blob: storing blob to file "/var/tmp/container_images_storage2004791975/1": write /var/tmp/container_images_storage2004791975/1: no space left on device
+      at must (/home/user/thyrox/.claude/workbench/archive-volumes-to-hub-20261001T055233/probes/archive_volume.ts:31:40)
+
+Bun v1.3.11 (Linux x64)
+__BG_EXIT__=1

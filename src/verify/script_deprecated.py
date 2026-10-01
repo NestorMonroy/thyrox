@@ -131,7 +131,7 @@ def resolve_roots(named: list[str]) -> dict[str, pathlib.Path]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument('root', nargs='*',
                     help='raíz(ces) a medir. Sin argumentos: todas las del alcance')
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')

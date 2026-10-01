@@ -159,6 +159,7 @@ export async function loadInitialMessages(
           if (result.sessionId) {
             switchSession(
               asSessionId(result.sessionId),
+              'resume',
               result.fullPath ? dirname(result.fullPath) : null,
             )
             if (persistSession) {
@@ -253,7 +254,7 @@ export async function loadInitialMessages(
       )
       if (!parsedSessionId) {
         let errorMessage =
-          'Error: --resume requires a valid session ID when used with --print. Usage: claude -p --resume <session-id>'
+          'Error: --resume requires a valid session ID when used with --print. Usage: thyrox -p --resume <session-id>'
         if (typeof options.resume === 'string') {
           errorMessage += `. Session IDs must be in UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000). Provided value "${options.resume}" is not a valid UUID`
         }
@@ -263,7 +264,7 @@ export async function loadInitialMessages(
       }
 
       // Hydrate local transcript from remote before loading
-      if (isEnvTruthy(process.env.CLAUDE_CODE_USE_CCR_V2)) {
+      if (isEnvTruthy(process.env.THYROX_CODE_USE_CCR_V2)) {
         // Await restore alongside hydration so SSE catchup lands on
         // restored state, not a fresh default.
         const [, metadata] = await Promise.all([
@@ -302,7 +303,7 @@ export async function loadInitialMessages(
         // For URL-based or CCR v2 resume, start with empty session (it was hydrated but empty)
         if (
           parsedSessionId.isUrl ||
-          isEnvTruthy(process.env.CLAUDE_CODE_USE_CCR_V2)
+          isEnvTruthy(process.env.THYROX_CODE_USE_CCR_V2)
         ) {
           // Execute SessionStart hooks for startup since we're starting a new session
           return {
@@ -365,6 +366,7 @@ export async function loadInitialMessages(
       if (!options.forkSession && result.sessionId) {
         switchSession(
           asSessionId(result.sessionId),
+          'resume',
           result.fullPath ? dirname(result.fullPath) : null,
         )
         if (persistSession) {

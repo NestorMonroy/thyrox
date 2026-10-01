@@ -1,0 +1,21 @@
+== tests/session/test_gpu_monitor.py
+test_gpu_monitor: 39 ok, 0 falla(s)
+== tests/session/test_gpu_scenarios.py
+test_gpu_scenarios: 19 ok, 0 falla(s)
+== tests/session/test_gpu_trace.py
+test_gpu_trace: 14 ok, 0 falla(s)
+== tests/session/test_pool_history.py
+test_pool_history: 36 ok, 0 falla(s)
+== tests/verify/test_step_report.py
+test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+== tests/session/test-gpu-admission-cli.sh
+aserciones: 3 de 3 · fallos: 0
+== tests/session/test-gpu-hardware-refusal.sh
+aserciones: 12 de 12 · fallos: 0
+== gpuAdmission.test.ts
+ 4 pass
+ 0 fail
+== generate_bin --check
+bin/ al día: 256 entrypoint(s)
+SUBSET_RC=0
+__BG_EXIT__=0

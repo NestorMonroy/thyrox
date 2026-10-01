@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+ 99 | describe('setOriginalCwd (oT) avisa del directorio normalizado', () => {
+100 |   test('cada fijación avisa con el valor en NFC', () => {
+101 |     const cwds = recordCwds()
+102 |     setOriginalCwd('/a/ré')
+103 |     setOriginalCwd('/b')
+104 |     expect(cwds).toEqual(['/a/ré', '/b'])
+                       ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "/a/ré",
+-   "/b",
+- ]
++ []
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:104:18)
+(fail) setOriginalCwd (oT) avisa del directorio normalizado > cada fijación avisa con el valor en NFC [0.53ms]
+108 |     const cwds: string[] = []
+109 |     const unsubscribe = onOriginalCwdChange(cwd => void cwds.push(cwd))
+110 |     setOriginalCwd('/x')
+111 |     unsubscribe()
+112 |     setOriginalCwd('/y')
+113 |     expect(cwds).toEqual(['/x'])
+                       ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "/x",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:113:18)
+(fail) setOriginalCwd (oT) avisa del directorio normalizado > desuscribirse deja de recibir [0.23ms]
+
+ 6 pass
+ 2 fail
+ 12 expect() calls
+Ran 8 tests across 1 file. [113.00ms]

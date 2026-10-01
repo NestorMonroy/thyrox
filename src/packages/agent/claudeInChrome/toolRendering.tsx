@@ -6,6 +6,7 @@ import { renderToolResultMessage as renderDefaultMCPToolResultMessage } from '@t
 import type { MCPToolResult } from '@thyrox/mcp-runtime/mcpValidation.js'
 import { truncateToWidth } from '@thyrox/output/formatters'
 import { trackClaudeInChromeTabId } from './common.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type { Tool } from '@modelcontextprotocol/sdk/types.js'
 
@@ -158,9 +159,9 @@ function renderChromeToolUseMessage(
 }
 
 /**
- * Renders a clickable "View Tab" link for Claude in Chrome MCP tools.
+ * Renders a clickable "View Tab" link for thyrox in Chrome MCP tools.
  * Returns null if:
- * - The tool is not a Claude in Chrome MCP tool
+ * - The tool is not a thyrox in Chrome MCP tool
  * - The input doesn't have a valid tabId
  * - Hyperlinks are not supported
  */
@@ -272,7 +273,7 @@ export function renderChromeToolResultMessage(
 }
 
 /**
- * Returns tool method overrides for Claude in Chrome MCP tools. Use this to customize
+ * Returns tool method overrides for thyrox in Chrome MCP tools. Use this to customize
  * rendering for chrome tools in a single spread operation.
  */
 export function getClaudeInChromeMCPToolOverrides(toolName: string): {
@@ -292,7 +293,7 @@ export function getClaudeInChromeMCPToolOverrides(toolName: string): {
     userFacingName(_input?: Record<string, unknown>) {
       // Trim the _mcp postfix that show up in some of the tool names
       const displayName = toolName.replace(/_mcp$/, '')
-      return `Claude in Chrome[${displayName}]`
+      return `${PRODUCT_NAME} in Chrome[${displayName}]`
     },
     renderToolUseMessage(
       input: Record<string, unknown>,

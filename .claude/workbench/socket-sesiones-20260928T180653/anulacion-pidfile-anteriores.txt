@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+130 | 
+131 | describe('setSessionName (eF)', () => {
+132 |   test('registra el nombre y publica nombre, origen, fecha y anteriores', async () => {
+133 |     writeFileSync(pidFile(), JSON.stringify({ pid: 4242 }))
+134 |     expect(await setSessionName('uno', undefined, undefined, undefined, deps())).toBe(true)
+135 |     expect(readRecord()).toEqual({ pid: 4242, name: 'uno', nameSource: 'user', nameSince: clock, updatedAt: clock })
+                               ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
++   "formerNames": [],
+    "name": "uno",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:135:26)
+(fail) setSessionName (eF) > registra el nombre y publica nombre, origen, fecha y anteriores [1.30ms]
+
+ 21 pass
+ 1 fail
+ 71 expect() calls
+Ran 22 tests across 1 file. [121.00ms]

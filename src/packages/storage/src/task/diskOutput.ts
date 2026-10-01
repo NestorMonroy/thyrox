@@ -18,7 +18,7 @@
  *    ausente por completo del árbol) — la fuente compone
  *    `getClaudeTempDirName()` (`claude-{uid}` en POSIX, `'claude'` en
  *    Windows) + `sanitizePath(getOriginalCwd())`, con resuelto de
- *    symlinks de `/tmp` (macOS) y honrando `CLAUDE_CODE_TMPDIR`. Se
+ *    symlinks de `/tmp` (macOS) y honrando `THYROX_CODE_TMPDIR`. Se
  *    reimplementa aquí fiel a esa fórmula sin el resuelto de symlinks
  *    (ningún test de este pase corre en macOS) — `sanitizePath` se
  *    reusa de `../sessionStoragePortable.js` (hermano YA portado en este
@@ -51,7 +51,7 @@ import { sanitizePath } from '../sessionStoragePortable.js'
 // SEGURIDAD: O_NOFOLLOW evita seguir symlinks al abrir archivos de salida
 // de tarea. Sin esto, un atacante dentro del sandbox podría crear
 // symlinks en el directorio de tareas apuntando a archivos arbitrarios,
-// causando que Claude Code en el host escriba en esos archivos.
+// causando que thyrox en el host escriba en esos archivos.
 // O_NOFOLLOW no está disponible en Windows, pero el vector de ataque del
 // sandbox es sólo-Unix.
 const O_NOFOLLOW = fsConstants.O_NOFOLLOW ?? 0
@@ -89,7 +89,7 @@ function getClaudeTempDirName(): string {
  * de symlinks de macOS — ver docstring del archivo. */
 function getClaudeTempDir(): string {
   const base =
-    process.env.CLAUDE_CODE_TMPDIR ||
+    process.env.THYROX_CODE_TMPDIR ||
     (process.platform === 'win32' ? tmpdir() : '/tmp')
   return join(base, getClaudeTempDirName())
 }
@@ -408,10 +408,10 @@ const outputs = new Map<string, DiskTaskOutput>()
 
 /**
  * Helper de test — cancela escrituras pendientes, espera operaciones en
- * vuelo, limpia el mapa. backgroundShells.test.ts y otros tests de tarea
- * lanzan shells reales que escriben a través de este módulo sin limpieza
- * en afterEach; sus entradas se filtran a diskOutput.test.ts en el mismo
- * shard.
+ * vuelo, limpia el mapa. Los tests de tarea que lanzan shells reales
+ * escriben a través de este módulo; sin esta barrera en afterEach sus
+ * entradas se filtran a los archivos siguientes del mismo proceso. Su
+ * control es `__tests__/diskOutput.test.ts` (« la barrera del teardown »).
  *
  * Espera todas las promesas rastreadas hasta que el conjunto se
  * estabilice — una promesa que se asienta puede engendrar otra

@@ -1,22 +1,11 @@
 /**
  * Puerto de `ccnmt: packages/server/**`.
  *
- * Verificado en este turno (`Bun.resolveSync`, 2026-09-07): los once
- * especificadores `@thyrox/{agent,app-host,config,local-observability,
- * provider}/...` que el paquete original importa **no resuelven** desde
- * `/home/user/thyrox/src/packages/server` — los once dan
- * `Cannot find module '...' from '/home/user/thyrox/src/packages/server'`.
- * La causa NO es que el módulo no esté portado: los cinco paquetes
- * hermanos existen en este árbol (`src/packages/{agent,app-host,config,
- * local-observability,provider}`) y sus símbolos concretos también. La
- * causa es que `@thyrox/server` todavía no es miembro de
- * `src/packages/package.json:workspaces` (ruta que no se toca en este
- * porte) — sin eso, `node_modules/@thyrox/*` no tiene el symlink que el
- * resolver de Bun necesita para el especificador con paquete.
- *
- * Por eso las secciones 1 se resuelven con `require()` diferido (Rule 3):
- * el módulo SÍ existe, sólo que el especificador con paquete no resuelve
- * desde aquí. La sección 2 es reimplementación fiel recortada de
+ * Los once especificadores `@thyrox/{agent,app-host,config,local-observability,
+ * provider}/...` que el paquete original importa apuntan a paquetes hermanos
+ * que existen en este árbol, y resuelven desde aquí. Las secciones 1 los
+ * llaman con `require()` diferido (Rule 3); cada una se retira importando el
+ * símbolo de forma estática. La sección 2 es reimplementación fiel recortada de
  * `fromSDKCompactMetadata` (`agent/messagesMappers.ts` no existe en este
  * árbol como archivo propio — sólo el símbolo que server consume). La
  * sección 3 es el punto de inyección para `sendEventToRemoteSession`
@@ -123,26 +112,16 @@ export function requireAgentMessages(): {
 
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-// ---------------------------------------------------------------------
-// 2a. Reimplementación fiel — tool-registry/utils/lazySchema.js: mismo
-// patrón "memoiza el resultado de un factory de schema zod" que ya se usó
-// en `@thyrox/ide` y `@thyrox/headless-sdk` (el paquete `tool-registry` no
-// existe en este árbol).
-// ---------------------------------------------------------------------
-
-export function lazySchema<T>(factory: () => T): () => T {
-  let cached: T | undefined
-  return () => (cached ??= factory())
-}
 
 // ---------------------------------------------------------------------
-// 2b. Reimplementación fiel recortada — `agent/messagesMappers.ts`
+// 2. Reimplementación fiel recortada — `agent/messagesMappers.ts`
 // (ccnmt: packages/agent/messages/mappers.ts:100-116). Sólo se porta
 // `fromSDKCompactMetadata`, que es lo único que `remote/sdkMessageAdapter.ts`
 // consume; `toSDKCompactMetadata`/`toSDKMessages` no tienen consumidor en
 // este paquete y no se portan (Rule 2: declarado, no silencioso).
 // ---------------------------------------------------------------------
 
+// homonym CompactMetadata: la forma del mapper del SDK (preservedSegment, campos opcionales); la de `@thyrox/agent/loop/transcript` es la del transcript (trigger cerrado, postTokens, cumulativeDroppedTokens)
 export type CompactMetadata = {
   trigger?: string
   preTokens?: number

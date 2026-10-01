@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/podman-execution && bun test __tests__/resourceMaterialization.real.test.ts 2>&1 | tail -40; echo TEST_EXIT=${PIPESTATUS[0]}", "started_at": "2026-10-01T15:11:27+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:11:32+00:00", "duration_seconds": 5.11969}

@@ -1,0 +1,2 @@
+error: Cannot find module '../../../src/accounts/oauth/loginRunner.ts' from '/home/user/thyrox/src/packages/provider/__tests__/accounts/oauth/loginRunner.test.ts'
+ 1 fail

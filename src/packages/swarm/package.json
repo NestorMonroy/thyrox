@@ -8,186 +8,237 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./backends/types.js": {
+      "@thyrox/source": "./src/backends/types.ts",
       "types": "./dist/src/backends/types.d.ts",
       "default": "./src/backends/types.ts"
     },
     "./types/constants.js": {
+      "@thyrox/source": "./src/types/constants.ts",
       "types": "./dist/src/types/constants.d.ts",
       "default": "./src/types/constants.ts"
     },
     "./types/deps.js": {
+      "@thyrox/source": "./src/types/deps.ts",
       "types": "./dist/src/types/deps.d.ts",
       "default": "./src/types/deps.ts"
     },
     "./core/constants.js": {
+      "@thyrox/source": "./src/core/constants.ts",
       "types": "./dist/src/core/constants.d.ts",
       "default": "./src/core/constants.ts"
     },
     "./core/teammatePromptAddendum.js": {
+      "@thyrox/source": "./src/core/teammatePromptAddendum.ts",
       "types": "./dist/src/core/teammatePromptAddendum.d.ts",
       "default": "./src/core/teammatePromptAddendum.ts"
     },
     "./core/teammateColors.js": {
+      "@thyrox/source": "./src/core/teammateColors.ts",
       "types": "./dist/src/core/teammateColors.d.ts",
       "default": "./src/core/teammateColors.ts"
     },
     "./core/teamHelpers.js": {
+      "@thyrox/source": "./src/core/teamHelpers.ts",
       "types": "./dist/src/core/teamHelpers.d.ts",
       "default": "./src/core/teamHelpers.ts"
     },
     "./teammateContext.js": {
+      "@thyrox/source": "./src/teammateContext.ts",
       "types": "./dist/src/teammateContext.d.ts",
       "default": "./src/teammateContext.ts"
     },
     "./teammateContextAlias.js": {
+      "@thyrox/source": "./src/teammateContextAlias.ts",
       "types": "./dist/src/teammateContextAlias.d.ts",
       "default": "./src/teammateContextAlias.ts"
     },
+    "./childSession.js": {
+      "@thyrox/source": "./src/childSession.ts",
+      "types": "./dist/src/childSession.d.ts",
+      "default": "./src/childSession.ts"
+    },
     "./teammateState.js": {
+      "@thyrox/source": "./src/teammateState.ts",
       "types": "./dist/src/teammateState.d.ts",
       "default": "./src/teammateState.ts"
     },
     "./mailbox/protocolMessages.js": {
+      "@thyrox/source": "./src/mailbox/protocolMessages.ts",
       "types": "./dist/src/mailbox/protocolMessages.d.ts",
       "default": "./src/mailbox/protocolMessages.ts"
     },
     "./tasks/types.js": {
+      "@thyrox/source": "./src/tasks/types.ts",
       "types": "./dist/src/tasks/types.d.ts",
       "default": "./src/tasks/types.ts"
     },
     "./worktree/postCommitAttribution.js": {
+      "@thyrox/source": "./src/worktree/postCommitAttribution.ts",
       "types": "./dist/src/worktree/postCommitAttribution.d.ts",
       "default": "./src/worktree/postCommitAttribution.ts"
     },
     "./worktree/safeRemoval.js": {
+      "@thyrox/source": "./src/worktree/safeRemoval.ts",
       "types": "./dist/src/worktree/safeRemoval.d.ts",
       "default": "./src/worktree/safeRemoval.ts"
     },
     "./worktree/safeIgnore.js": {
+      "@thyrox/source": "./src/worktree/safeIgnore.ts",
       "types": "./dist/src/worktree/safeIgnore.d.ts",
       "default": "./src/worktree/safeIgnore.ts"
     },
     "./adapters/appRuntime.js": {
+      "@thyrox/source": "./src/adapters/appRuntime.ts",
       "types": "./dist/src/adapters/appRuntime.d.ts",
       "default": "./src/adapters/appRuntime.ts"
     },
     "./adapters/buildSwarmAgentDeps.js": {
+      "@thyrox/source": "./src/adapters/buildSwarmAgentDeps.ts",
       "types": "./dist/src/adapters/buildSwarmAgentDeps.d.ts",
       "default": "./src/adapters/buildSwarmAgentDeps.ts"
     },
     "./core/teammateModel.js": {
+      "@thyrox/source": "./src/core/teammateModel.ts",
       "types": "./dist/src/core/teammateModel.d.ts",
       "default": "./src/core/teammateModel.ts"
     },
     "./backends/teammateModeSnapshot.js": {
+      "@thyrox/source": "./src/backends/teammateModeSnapshot.ts",
       "types": "./dist/src/backends/teammateModeSnapshot.d.ts",
       "default": "./src/backends/teammateModeSnapshot.ts"
     },
     "./backends/detection.js": {
+      "@thyrox/source": "./src/backends/detection.ts",
       "types": "./dist/src/backends/detection.d.ts",
       "default": "./src/backends/detection.ts"
     },
     "./runtime/spawnUtils.js": {
+      "@thyrox/source": "./src/runtime/spawnUtils.ts",
       "types": "./dist/src/runtime/spawnUtils.d.ts",
       "default": "./src/runtime/spawnUtils.ts"
     },
     "./worktree/sparseConfigCleanup.js": {
+      "@thyrox/source": "./src/worktree/sparseConfigCleanup.ts",
       "types": "./dist/src/worktree/sparseConfigCleanup.d.ts",
       "default": "./src/worktree/sparseConfigCleanup.ts"
     },
     "./core/teamFileRegistration.js": {
+      "@thyrox/source": "./src/core/teamFileRegistration.ts",
       "types": "./dist/src/core/teamFileRegistration.d.ts",
       "default": "./src/core/teamFileRegistration.ts"
     },
     "./core/reconnection.js": {
+      "@thyrox/source": "./src/core/reconnection.ts",
       "types": "./dist/src/core/reconnection.d.ts",
       "default": "./src/core/reconnection.ts"
     },
     "./teamDiscovery.js": {
+      "@thyrox/source": "./src/teamDiscovery.ts",
       "types": "./dist/src/teamDiscovery.d.ts",
       "default": "./src/teamDiscovery.ts"
     },
     "./mailbox/index.js": {
+      "@thyrox/source": "./src/mailbox/index.ts",
       "types": "./dist/src/mailbox/index.d.ts",
       "default": "./src/mailbox/index.ts"
     },
     "./core/teammateInit.js": {
+      "@thyrox/source": "./src/core/teammateInit.ts",
       "types": "./dist/src/core/teammateInit.d.ts",
       "default": "./src/core/teammateInit.ts"
     },
     "./permissions/index.js": {
+      "@thyrox/source": "./src/permissions/index.ts",
       "types": "./dist/src/permissions/index.d.ts",
       "default": "./src/permissions/index.ts"
     },
     "./backends/PaneBackendExecutor.js": {
+      "@thyrox/source": "./src/backends/PaneBackendExecutor.ts",
       "types": "./dist/src/backends/PaneBackendExecutor.d.ts",
       "default": "./src/backends/PaneBackendExecutor.ts"
     },
     "./backends/it2Setup.js": {
+      "@thyrox/source": "./src/backends/it2Setup.ts",
       "types": "./dist/src/backends/it2Setup.d.ts",
       "default": "./src/backends/it2Setup.ts"
     },
     "./backends/registry.js": {
+      "@thyrox/source": "./src/backends/registry.ts",
       "types": "./dist/src/backends/registry.d.ts",
       "default": "./src/backends/registry.ts"
     },
     "./backends/TmuxBackend.js": {
+      "@thyrox/source": "./src/backends/TmuxBackend.ts",
       "types": "./dist/src/backends/TmuxBackend.d.ts",
       "default": "./src/backends/TmuxBackend.ts"
     },
     "./backends/ITermBackend.js": {
+      "@thyrox/source": "./src/backends/ITermBackend.ts",
       "types": "./dist/src/backends/ITermBackend.d.ts",
       "default": "./src/backends/ITermBackend.ts"
     },
     "./backends/InProcessBackend.js": {
+      "@thyrox/source": "./src/backends/InProcessBackend.ts",
       "types": "./dist/src/backends/InProcessBackend.d.ts",
       "default": "./src/backends/InProcessBackend.ts"
     },
     "./runtime/pollForPromptOrShutdown.js": {
+      "@thyrox/source": "./src/runtime/pollForPromptOrShutdown.ts",
       "types": "./dist/src/runtime/pollForPromptOrShutdown.d.ts",
       "default": "./src/runtime/pollForPromptOrShutdown.ts"
     },
     "./core/teammateLayoutManager.js": {
+      "@thyrox/source": "./src/core/teammateLayoutManager.ts",
       "types": "./dist/src/core/teammateLayoutManager.d.ts",
       "default": "./src/core/teammateLayoutManager.ts"
     },
     "./runtime/spawnInProcess.js": {
+      "@thyrox/source": "./src/runtime/spawnInProcess.ts",
       "types": "./dist/src/runtime/spawnInProcess.d.ts",
       "default": "./src/runtime/spawnInProcess.ts"
     },
     "./runtime/inProcessRunner.js": {
+      "@thyrox/source": "./src/runtime/inProcessRunner.ts",
       "types": "./dist/src/runtime/inProcessRunner.d.ts",
       "default": "./src/runtime/inProcessRunner.ts"
     },
     "./mailbox": {
+      "@thyrox/source": "./src/mailbox/index.ts",
       "types": "./dist/src/mailbox/index.d.ts",
       "default": "./src/mailbox/index.ts"
     },
     "./permissions": {
+      "@thyrox/source": "./src/permissions/index.ts",
       "types": "./dist/src/permissions/index.d.ts",
       "default": "./src/permissions/index.ts"
     },
     "./worktree": {
+      "@thyrox/source": "./src/worktree/index.ts",
       "types": "./dist/src/worktree/index.d.ts",
       "default": "./src/worktree/index.ts"
     },
     "./commands/agents/index.js": {
+      "@thyrox/source": "./commands/agents/index.ts",
       "types": "./dist/commands/agents/index.d.ts",
       "default": "./commands/agents/index.ts"
     },
     "./commands/branch/index.js": {
+      "@thyrox/source": "./commands/branch/index.ts",
       "types": "./dist/commands/branch/index.d.ts",
       "default": "./commands/branch/index.ts"
     },
     "./install/installSwarmHost.js": {
+      "@thyrox/source": "./src/install/installSwarmHost.ts",
       "types": "./dist/src/install/installSwarmHost.d.ts",
       "default": "./src/install/installSwarmHost.ts"
     }
@@ -197,20 +248,20 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
-    "@anthropic/ink": "workspace:*",
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/command-runtime": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/headless-sdk": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/permission": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*",
+    "@anthropic/ink": "1.0.0",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/command-runtime": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/headless-sdk": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/permission": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/storage": "0.1.0",
+    "@thyrox/tool-registry": "0.1.0",
     "chalk": "^6.0.0",
     "ignore": "^7.0.8",
     "zod": "^4.3.6"

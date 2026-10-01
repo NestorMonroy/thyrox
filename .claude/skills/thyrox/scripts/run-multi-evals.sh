@@ -11,6 +11,9 @@ set -euo pipefail
 WORKSPACE="/tmp/thyrox-eval-workspace"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
 SKILL_DIR="${PROJECT_ROOT}/.claude/skills/thyrox"
+# El ejecutor de cada caso: `thyrox -p` (`bin/cli`), el mismo que usa
+# `headless-pool`. THYROX_CLI lo reemplaza, por ejemplo en las pruebas.
+THYROX_CLI="${THYROX_CLI:-${PROJECT_ROOT}/bin/cli}"
 SPECIFIC_EVAL="${1:-all}"
 
 TOTAL_PASS=0
@@ -33,7 +36,7 @@ check_expectation() {
     local pattern="$2"
     local description="$3"
 
-    if echo "$result" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<<"$result"; then
         echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
@@ -49,7 +52,7 @@ check_negative() {
     local pattern="$2"
     local description="$3"
 
-    if echo "$result" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<<"$result"; then
         echo "    [ERROR] $description (found when shouldn't)"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1
@@ -72,7 +75,7 @@ run_eval() {
     echo "  Prompt: ${prompt:0:80}..."
 
     local result
-    result=$(cd "$dir" && claude -p "$prompt" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "$prompt" 2>/dev/null) || result=""
 
     if [ -z "$result" ]; then
         echo "    [WARN]  Empty response"
@@ -120,7 +123,7 @@ EOF
     echo "=== MI-01: Reanudar trabajo interrumpido ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Ayer estábamos trabajando en la migración de la base de datos, ¿dónde quedamos?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Ayer estábamos trabajando en la migración de la base de datos, ¿dónde quedamos?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -170,7 +173,7 @@ EOF
     echo "=== MI-02: Cold boot en proyecto existente ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Hola, acabo de abrir el proyecto. ¿En qué estamos?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Hola, acabo de abrir el proyecto. ¿En qué estamos?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -220,7 +223,7 @@ EOF
     echo "=== MI-05: Phase 6 interrumpida ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Vengo a seguir con las tareas del sistema de autenticación. ¿Cuál es la siguiente?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Vengo a seguir con las tareas del sistema de autenticación. ¿Cuál es la siguiente?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -270,7 +273,7 @@ EOF
     echo "=== MI-13: Implementación falló ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Los tests no pasan después de implementar T-006 refresh tokens. El error dice que el token expiry no se calcula bien. ¿Qué hacemos?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Los tests no pasan después de implementar T-006 refresh tokens. El error dice que el token expiry no se calcula bien. ¿Qué hacemos?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -319,7 +322,7 @@ EOF
     echo "=== MI-21: Segunda interacción — proponer avance ==="
 
     local result
-    result=$(cd "$dir" && claude -p "OK, la tienda es de ropa, 500 productos, 2 empleados. Necesito stock, alertas y reportes. Solo web. ¿Qué sigue?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "OK, la tienda es de ropa, 500 productos, 2 empleados. Necesito stock, alertas y reportes. Solo web. ¿Qué sigue?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -365,7 +368,7 @@ EOF
     echo "=== MI-22: Status con plan activo ==="
 
     local result
-    result=$(cd "$dir" && claude -p "¿Cuál es la siguiente tarea que tengo que hacer?" 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "¿Cuál es la siguiente tarea que tengo que hacer?" 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
@@ -386,7 +389,7 @@ run_MI23() {
     echo "=== MI-23: Descomposición con trazabilidad ==="
 
     local result
-    result=$(cd "$dir" && claude -p "Descompón la implementación de un sistema de búsqueda con Elasticsearch. Requisitos: R-01 búsqueda full-text en productos, R-02 filtros facetados por categoría/precio/marca, R-03 autocompletado en barra de búsqueda. Necesito poder rastrear cada tarea hasta su requisito original." 2>/dev/null) || result=""
+    result=$(cd "$dir" && "$THYROX_CLI" -p "Descompón la implementación de un sistema de búsqueda con Elasticsearch. Requisitos: R-01 búsqueda full-text en productos, R-02 filtros facetados por categoría/precio/marca, R-03 autocompletado en barra de búsqueda. Necesito poder rastrear cada tarea hasta su requisito original." 2>/dev/null) || result=""
 
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"

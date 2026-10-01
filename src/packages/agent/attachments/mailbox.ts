@@ -55,7 +55,7 @@
  * este árbol.
  */
 import { logForDebugging } from '../internal/logging.ts'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getAgentId, getAgentName, getTeamName, isTeamLead } from '@thyrox/swarm/teammateState.js'
 import type { Attachment } from '../attachments.ts'
 import type { Message } from '../messageShapes.ts'
@@ -233,7 +233,7 @@ export function getTeamContextAttachment(messages: Message[]): Attachment[] {
     return []
   }
 
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getConfigHomeDir()
   const teamConfigPath = `${configDir}/teams/${teamName}/config.json`
   const taskListPath = `${configDir}/tasks/${teamName}/`
 

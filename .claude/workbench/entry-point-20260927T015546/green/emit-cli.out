@@ -1,0 +1,6 @@
+cli: emitio pese a 27 errores (27 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 27 error(es) que siguen vivos en su propio paquete
+EXIT=0
+check_exports_types: 0 destino(s) o proyecto(s) ausente(s) (alcance medido: 1530 entrada(s) types en 47 paquete(s))
+GATE=0

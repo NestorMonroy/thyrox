@@ -1,0 +1,5 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790449366.776	    14.700	0	0	0	0	_headless_item 1 tests/verify/test_package_root_resolution.sh
+2	:	1790449366.790	    14.888	0	0	0	0	_headless_item 2 tests/verify/test_pre_commit_hook.py
+4	:	1790449381.693	    12.434	0	0	0	0	_headless_item 4 tests/hooks/test_detect_awk_substr_target.py
+3	:	1790449381.492	    13.182	0	0	0	0	_headless_item 3 tests/verify/test-commit-msg-citation.sh

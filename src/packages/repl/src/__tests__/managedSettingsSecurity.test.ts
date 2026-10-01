@@ -100,7 +100,7 @@ describe('extractDangerousSettings — shell settings (always dangerous)', () =>
 describe('extractDangerousSettings — env vars (deny by default)', () => {
   test('safe env var (in SAFE_ENV_VARS) is NOT flagged', () => {
     const result = extractDangerousSettings({
-      env: { CLAUDE_CODE_USE_BEDROCK: '1' },
+      env: { THYROX_CODE_USE_BEDROCK: '1' },
     } as SettingsJson)
     expect(result.envVars).toEqual({})
   })
@@ -129,7 +129,7 @@ describe('extractDangerousSettings — env vars (deny by default)', () => {
   test('mixed safe + dangerous: only dangerous flagged', () => {
     const result = extractDangerousSettings({
       env: {
-        CLAUDE_CODE_USE_BEDROCK: '1', // safe
+        THYROX_CODE_USE_BEDROCK: '1', // safe
         ANTHROPIC_BASE_URL: 'evil', // dangerous
       },
     } as SettingsJson)
@@ -144,10 +144,10 @@ describe('extractDangerousSettings — env vars (deny by default)', () => {
   })
 
   test('env vars are matched case-insensitively against allowlist', () => {
-    // The allowlist check is `.toUpperCase()` — so 'claude_code_use_bedrock'
+    // The allowlist check is `.toUpperCase()` — so 'thyrox_code_use_bedrock'
     // (lowercase) should still match the safe list.
     const result = extractDangerousSettings({
-      env: { claude_code_use_bedrock: '1' },
+      env: { thyrox_code_use_bedrock: '1' },
     } as SettingsJson)
     expect(result.envVars).toEqual({})
   })

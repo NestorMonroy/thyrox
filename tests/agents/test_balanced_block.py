@@ -36,7 +36,6 @@ registro» de «delimita las tres formas de siempre».
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 
 def _thyrox_root() -> Path:
@@ -61,6 +60,7 @@ HERE = _thyrox_root()
 _spec = importlib.util.spec_from_file_location(
     "extract_model_registry",
     HERE / "src" / "packages" / "agent" / "bin" / "extract_model_registry.py")
+assert _spec is not None and _spec.loader is not None
 _extractor = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_extractor)
 block_balanced = _extractor.bloque_balanceado

@@ -1,0 +1,28 @@
+src/packages/cli/src/entry/main.tsx(79,2): error TS1003: Identifier expected.
+src/packages/cli/src/entry/main.tsx(80,2): error TS1109: Expression expected.
+src/packages/cli/src/entry/main.tsx(80,19): error TS1005: ';' expected.
+src/packages/cli/src/entry/main.tsx(80,24): error TS1443: Module declaration names may only use ' or " quoted strings.
+src/packages/cli/src/entry/main.tsx(80,34): error TS1128: Declaration or statement expected.
+src/packages/cli/src/entry/main.tsx(80,36): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(80,40): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(80,48): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(80,51): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(80,60): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(80,63): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(81,14): error TS1005: ')' expected.
+src/packages/cli/src/entry/main.tsx(81,41): error TS1005: ';' expected.
+src/packages/cli/src/entry/main.tsx(81,43): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(81,49): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(81,73): error TS1005: ';' expected.
+src/packages/cli/src/entry/main.tsx(82,11): error TS1005: ';' expected.
+src/packages/cli/src/entry/main.tsx(82,19): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(82,22): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(82,30): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(82,41): error TS1127: Invalid character.
+src/packages/cli/src/entry/main.tsx(82,43): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(82,46): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(82,52): error TS1434: Unexpected keyword or identifier.
+src/packages/cli/src/entry/main.tsx(82,62): error TS1443: Module declaration names may only use ' or " quoted strings.
+src/packages/cli/src/entry/main.tsx(83,2): error TS1003: Identifier expected.
+src/packages/cli/src/entry/main.tsx(83,3): error TS1161: Unterminated regular expression literal.
+EXIT=2

@@ -1,0 +1,1 @@
+        PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" watch "$pid" "$HP_OUT/$n.gpu" \

@@ -176,7 +176,7 @@ def render(data: dict) -> str:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument('--root', default='source/gestion/pm',
                     help='raiz del corpus del CONSUMIDOR (default: source/gestion/pm)')
     ap.add_argument('--json', action='store_true', help='salida legible por maquina')

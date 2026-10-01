@@ -28,6 +28,7 @@ from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_agent_dispatch.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
+assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
@@ -139,7 +140,7 @@ def test_suggests_the_headless_pool_for_judgment_over_many_items():
 
     Leer N notas y extraer sus conceptos exige un modelo en cada una y no
     necesita ni el contexto del orquestador ni su anchura de subagentes: es
-    `bin/headless-pool`, una conversacion `claude -p` por item con GNU Parallel.
+    `bin/headless-pool`, una conversacion `thyrox -p` por item con GNU Parallel.
     """
     notice = _detect("Para cada una de las 365 notas, analiza y extrae sus conceptos")
     assert notice is not None and "headless-pool" in notice

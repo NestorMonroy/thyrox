@@ -1,0 +1,35 @@
+# Vocabulario congelado — prospectivo, se paga al tocar.
+# Regenerar: python3 <thyrox>/src/verify/check_vocabulario_prosa.py --write-baseline
+#
+# Conviven los DOS ejes: una palabra suelta es un inventado (veredicto
+# global) y una clave `<ruta>::<forma>` es una forma vetada en ESE
+# archivo. Ceguera declarada de la clave por archivo: una ocurrencia
+# NUEVA dentro de un archivo ya congelado no se ve — el grifo protege
+# al archivo nuevo, no a la línea nueva (tarea #664).
+#
+# NO todo lo de aquí es un defecto que corregir. Tres clases conviven:
+#  (a) tecnicismo culto legítimo que el corpus no recoge —
+#      idempotencia, memoización, observabilidad, conmutatividad;
+#  (b) defecto real que espera su pase — occurrencias, nnotificaciones,
+#      disjunción (la forma española es disyunción);
+#  (c) la palabra CITADA por la regla que la prohíbe: «democión» está
+#      aquí porque redaccion-tecnica-es.md documenta el episodio, y
+#      corregirla ahí borraría la documentación del anti-patrón.
+# El triaje de las tres clases es la tarea #645.
+.claude/skills/dmaic-control/references/control-chart-guide.md::corrida
+.claude/skills/dmaic-control/references/control-chart-guide.md::corridas
+.claude/skills/dmaic-improve/references/doe-guide.md::corrida
+.claude/skills/dmaic-improve/references/doe-guide.md::corridas
+.claude/skills/pdca-check/SKILL.md::corridas
+.claude/skills/pdca-check/references/measurement-tools.md::corrida
+.claude/skills/pdca-check/references/measurement-tools.md::corridas
+alcanzabilidad
+autonomación
+elicitaciones
+idempotencia
+incrementalidad
+observabilidad
+postcondiciones
+resolubilidad
+sobreprocesamiento
+testabilidad

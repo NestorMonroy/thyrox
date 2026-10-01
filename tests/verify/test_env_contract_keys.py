@@ -9,6 +9,7 @@ El caso negativo usa una clave REAL del repo, no una fabricada. Fabricar el
 incumplidor lo escribe quien escribió el patrón, y hereda su encuadre: pasaría
 igual con un gate que sólo supiera ver la forma que su autor imaginó.
 """
+import importlib.util
 import pathlib
 import subprocess
 import sys
@@ -31,6 +32,15 @@ def run(*args: str) -> subprocess.CompletedProcess:
         capture_output=True, text=True,
     )
 
+
+
+def load_gate():
+    """El gate como módulo, para observar su recorrido sin lanzar un proceso."""
+    spec = importlib.util.spec_from_file_location('check_env_contract_keys', GATE)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 class EnvContractKeysGate(unittest.TestCase):
     def test_arbol_real_sin_claves_sin_declarar(self):
@@ -65,12 +75,120 @@ class EnvContractKeysGate(unittest.TestCase):
         self.assertNotIn('THYROX_WORKBENCH_ ', result.stdout)
         self.assertNotIn('SIN DECLARAR  THYROX_WORKBENCH_', result.stdout)
 
+    def test_files_measures_only_the_named_files(self):
+        """`--files` mide los archivos del commit, no el árbol entero.
+
+        Con un ejemplo sin `REAL_KEY`, nombrar el archivo que la lee la delata;
+        nombrar uno que no la lee pasa, aunque el resto del árbol sí la lea.
+        """
+        source = (THYROX / '.env.example').read_text()
+        mutated = '\n'.join(
+            line for line in source.splitlines() if not line.startswith(f'{REAL_KEY}=')
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            example = pathlib.Path(tmp) / '.env.example'
+            example.write_text(mutated)
+            reader = pathlib.Path(tmp) / 'reader.py'
+            reader.write_text(f'import os\nos.environ.get("{REAL_KEY}")\n')
+            quiet = pathlib.Path(tmp) / 'quiet.py'
+            quiet.write_text('import os\nos.environ.get("HOME")\n')
+            named = run('--env-example', str(example), '--strict', '--files', str(reader))
+            self.assertEqual(named.returncode, 1, named.stdout + named.stderr)
+            self.assertIn(f'SIN DECLARAR  {REAL_KEY}', named.stdout)
+            other = run('--env-example', str(example), '--strict', '--files', str(quiet))
+            self.assertEqual(other.returncode, 0, other.stdout + other.stderr)
+            self.assertIn('sin declarar: 0', other.stdout)
+
+    def test_files_skips_tests_and_unknown_suffixes(self):
+        """Un archivo de prueba o de otra extensión no crea obligación."""
+        with tempfile.TemporaryDirectory() as tmp:
+            test_file = pathlib.Path(tmp) / 'test_reader.py'
+            test_file.write_text('import os\nos.environ.get("THYROX_ONLY_IN_A_TEST")\n')
+            text_file = pathlib.Path(tmp) / 'notes.txt'
+            text_file.write_text('${THYROX_ONLY_IN_TEXT}\n')
+            result = run('--strict', '--files', str(test_file), str(text_file))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_sin_archivo_rehusa_sin_emitir_cifra(self):
         """Un 0 sin archivo no distinguiría «no falta ninguna» de «no pude medir»."""
         result = run('--env-example', '/no/existe/.env.example', '--strict')
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertNotIn('sin declarar:', result.stdout)
 
+
+
+class TraversalCost(unittest.TestCase):
+    """El recorrido completo no desciende a lo excluido ni analiza lo que no puede leer claves.
+
+    Medido el 2026-09-29: el modo de árbol entero tardaba 48.5 s porque
+    `rglob` entraba en `node_modules` y `_references` antes de descartarlos y
+    porque cada uno de los 6209 `.py` pasaba por `ast.parse`, aunque la gran
+    mayoría no nombra ninguna clave. Las dos pruebas observan el recorrido y el
+    análisis, no el resultado: el resultado es el mismo con y sin la mejora.
+    """
+
+    def setUp(self):
+        self.gate = load_gate()
+
+    def test_walk_does_not_descend_into_skipped_directories(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / 'src').mkdir()
+            (root / 'src' / 'reader.py').write_text('import os\nos.environ.get("THYROX_A")\n')
+            deep = root / 'node_modules' / 'pkg' / 'deep'
+            deep.mkdir(parents=True)
+            (deep / 'reader.py').write_text('import os\nos.environ.get("THYROX_B")\n')
+            visited = []
+            real_walk = self.gate.os.walk
+
+            def recording_walk(top, *args, **kwargs):
+                for entry in real_walk(top, *args, **kwargs):
+                    visited.append(entry[0])
+                    yield entry
+
+            self.gate.os.walk = recording_walk
+            try:
+                files = self.gate.tree_files(root)
+            finally:
+                self.gate.os.walk = real_walk
+            self.assertEqual([root / 'src' / 'reader.py'], files)
+            self.assertIn(str(root), visited, 'el recorrido tiene que pasar por os.walk para poder podarse')
+            self.assertFalse([path for path in visited if 'node_modules' in path], visited)
+
+    def test_pool_worktrees_are_runtime_state_not_the_tree(self):
+        # Un worktree de headless-pool vive bajo `.thyrox/` (ignorado por git) y
+        # lleva el código a medio escribir de un ítem en curso: medirlo exigía
+        # declarar en `.env.example` una clave que el árbol aún no lee.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / 'src').mkdir()
+            (root / 'src' / 'reader.py').write_text('import os\nos.environ.get("THYROX_A")\n')
+            item = root / '.thyrox' / 'pool-worktrees' / 'run' / '1' / 'src'
+            item.mkdir(parents=True)
+            (item / 'reader.py').write_text('import os\nos.environ.get("THYROX_IN_FLIGHT")\n')
+            self.assertEqual([root / 'src' / 'reader.py'], self.gate.tree_files(root))
+
+    def test_only_files_naming_the_prefix_are_parsed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            reader = root / 'reader.py'
+            reader.write_text('import os\nos.environ.get("THYROX_A")\n')
+            unrelated = root / 'unrelated.py'
+            unrelated.write_text('import os\nos.environ.get("HOME")\n')
+            parsed = []
+            real_parse = self.gate.ast.parse
+
+            def recording_parse(source, *args, **kwargs):
+                parsed.append(source)
+                return real_parse(source, *args, **kwargs)
+
+            self.gate.ast.parse = recording_parse
+            try:
+                keys = self.gate.read_keys(root, [reader, unrelated])
+            finally:
+                self.gate.ast.parse = real_parse
+            self.assertEqual({'THYROX_A'}, set(keys))
+            self.assertEqual(1, len(parsed), 'sólo el archivo que nombra el prefijo pasa por el parser')
 
 if __name__ == '__main__':
     unittest.main()

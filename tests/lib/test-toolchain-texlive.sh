@@ -157,4 +157,27 @@ if [[ "$pre" == *"omitida · texlive"* && "$pre" == *"omitida"*"alcance medido"*
   ok "el preflight declara la sonda de TeX omitida"
 else bad "el preflight no declara la sonda omitida: '$(tail -3 <<<"$pre")'"; fi
 
+
+# Caso 12 — THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC es el documento que se compila
+# cuando el consumidor no declara archivo. Un compilador falso que sólo da PDF
+# si el documento trae `\documentclass` separa el valor por defecto (compila)
+# de uno declarado sin clase (no compila): la sonda compila lo DECLARADO.
+fake "$T/xe-doc" pdf-if-doc
+THYROX_TOOLCHAIN_XELATEX_BIN="$T/xe-doc" thyrox_toolchain_texlive_compiles >/dev/null 2>&1; rc_default=$?
+THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC='sin clase' THYROX_TOOLCHAIN_XELATEX_BIN="$T/xe-doc" \
+  thyrox_toolchain_texlive_compiles >/dev/null 2>&1; rc_declared=$?
+if [[ $rc_default -eq 0 && $rc_declared -eq 1 ]]; then
+  ok "PROBE_DOC: el documento por defecto compila y uno declarado sin clase no"
+else
+  bad "PROBE_DOC: esperaba 0 por defecto y 1 declarado, dio $rc_default y $rc_declared"
+fi
+# env -i: esta suite ya cargó el guion y su guarda haría del source un no-op.
+kept="$(env -i PATH="$PATH" THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC='mio' bash -c \
+  'source "$0" 2>/dev/null; printf %s "$THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC"' "$SUBJECT")"
+if [[ "$kept" == "mio" ]]; then
+  ok "PROBE_DOC declarado antes de cargar el guion se conserva"
+else
+  bad "PROBE_DOC declarado: esperaba 'mio', obtuve '$kept'"
+fi
+
 thyrox_summary

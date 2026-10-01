@@ -27,7 +27,7 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from './featureFlags.ts'
  *
  * Histórico: esto solía cortar en corto con `USER_TYPE === 'ant'` para
  * builds internos de Anthropic, más exigir la variable de entorno
- * `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` o el flag de CLI
+ * `THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS=1` o el flag de CLI
  * `--agent-teams` para builds externos. Las dos puertas se retiraron para
  * el modelo de un solo operador self-hosted de ccb — ver el plan
  * `reactive-honking-dusk.md` Fase W1.

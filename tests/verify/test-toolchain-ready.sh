@@ -69,7 +69,7 @@ fi
 # intervalos, su sonda sale ok.
 green="$(run_subject THYROX_TOOLCHAIN_AWK_BIN=gawk)"; rc_green=$?
 if grep -qE '^ok +· +awk' <<<"$green"; then
-  ok "con gawk declarado, la sonda de awk sale ok"
+  ok "con gawk declarado, la sonda de awk sale ok (exit $rc_green)"
 else
   bad "esperaba 'ok · awk' con THYROX_TOOLCHAIN_AWK_BIN=gawk; salida: $green"
 fi

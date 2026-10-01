@@ -25,6 +25,8 @@ import {
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
 import { toError } from '../errorHelpers.js'
+import { recordError } from '../errorStore/errorRecorder.js'
+import { httpErrorContext } from './httpErrorContext.js'
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -131,9 +133,9 @@ export function logError(error: unknown): void {
   }
   try {
     if (
-      isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
-      isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
-      isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
+      isEnvTruthy(process.env.THYROX_CODE_USE_BEDROCK) ||
+      isEnvTruthy(process.env.THYROX_CODE_USE_VERTEX) ||
+      isEnvTruthy(process.env.THYROX_CODE_USE_FOUNDRY) ||
       process.env.DISABLE_ERROR_REPORTING ||
       isEssentialTrafficOnly()
     ) {
@@ -146,6 +148,7 @@ export function logError(error: unknown): void {
       error: errorStr,
       timestamp: new Date().toISOString(),
     })
+    recordError('log_error', err, { ...httpErrorContext(err) })
 
     if (errorLogSink === null) {
       errorQueue.push({ type: 'error', error: err })

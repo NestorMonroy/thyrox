@@ -1,0 +1,595 @@
+diff --git a/src/agents/agent_store.py b/src/agents/agent_store.py
+index def32588..d3a0977c 100644
+--- a/src/agents/agent_store.py
++++ b/src/agents/agent_store.py
+@@ -1317,6 +1317,12 @@ def _index_exists(conn: sqlite3.Connection, name: str) -> bool:
+     ).fetchone() is not None
+ 
+ 
++def _trigger_exists(conn: sqlite3.Connection, name: str) -> bool:
++    return conn.execute(
++        "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name=?", (name,)
++    ).fetchone() is not None
++
++
+ def _columns(conn: sqlite3.Connection, table: str) -> set:
+     return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+ 
+@@ -1567,11 +1573,61 @@ def _adopt_task_highwater_legacy(conn: sqlite3.Connection) -> None:
+     return None
+ 
+ 
++#: `CLEARED_TOOL_RESULTS_DDL` — mismo DDL que
++#: ``src/packages/observability/src/clearedResults.ts::ensureClearedTable``.
++#: Vive aqui porque DEC-TASK 2026-09-29 (opcion 1) hace a Python el dueno del
++#: schema; observability ya no ejecuta este DDL, solo valida contra el ledger
++#: que esta migracion escribe (TASK-THYROX-0534).
++CLEARED_TOOL_RESULTS_DDL = """CREATE TABLE IF NOT EXISTS cleared_tool_results (
++    session_id     TEXT NOT NULL,
++    tool_use_id    TEXT NOT NULL,
++    tool           TEXT NOT NULL,
++    input_json     TEXT NOT NULL,
++    content_sha256 TEXT NOT NULL,
++    content_chars  INTEGER NOT NULL,
++    cleared_at     TEXT NOT NULL,
++    PRIMARY KEY (session_id, tool_use_id)
++)"""
++
++
++def _cleared_tool_results_already_applied(conn: sqlite3.Connection) -> bool:
++    return _table_exists(conn, "cleared_tool_results")
++
++
++def _apply_cleared_tool_results(conn: sqlite3.Connection) -> None:
++    conn.execute(CLEARED_TOOL_RESULTS_DDL)
++    conn.commit()
++
++
++#: `AGENT_SESSIONS_STAMP_UPDATED_DDL` — mismo cuerpo que
++#: ``src/packages/observability/src/store.ts::ensureUpdatedAtTrigger``.
++#: Misma razon que `CLEARED_TOOL_RESULTS_DDL`: Python lo crea, observability
++#: solo valida que ya esta (TASK-THYROX-0534).
++AGENT_SESSIONS_STAMP_UPDATED_DDL = """CREATE TRIGGER IF NOT EXISTS agent_sessions_stamp_updated
++    AFTER UPDATE OF status ON agent_sessions
++    WHEN NEW.status <> OLD.status
++    BEGIN
++      UPDATE agent_sessions
++      SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
++      WHERE rowid = NEW.rowid;
++    END"""
++
++
++def _agent_sessions_stamp_updated_already_applied(conn: sqlite3.Connection) -> bool:
++    return _trigger_exists(conn, "agent_sessions_stamp_updated")
++
++
++def _apply_agent_sessions_stamp_updated(conn: sqlite3.Connection) -> None:
++    conn.execute(AGENT_SESSIONS_STAMP_UPDATED_DDL)
++    conn.commit()
++
++
+ #: El orden es el mismo que ``connect()`` invocaba suelto antes de este
+ #: cambio (``_migrate_agent_sessions_usage_columns`` .. ``_migrate_documents_
+-#: drop_scanned_at``), mas las dos versiones nuevas de esta tarea:
+-#: `task_session_highwater` (TASK-THYROX-0532) y la adopcion de la forma
+-#: legada `task_highwater`.
++#: drop_scanned_at``), mas las cuatro versiones nuevas: `task_session_highwater`
++#: y la adopcion de la forma legada `task_highwater` (TASK-THYROX-0532), y
++#: `cleared_tool_results` mas el trigger `agent_sessions_stamp_updated`,
++#: portados desde observability (TASK-THYROX-0534).
+ CORE_MIGRATIONS: tuple = (
+     Migration(1, "create_core_schema", _apply_core_schema, _core_schema_already_applied),
+     Migration(2, "add_agent_sessions_usage_columns", _migrate_agent_sessions_usage_columns,
+@@ -1596,6 +1652,10 @@ CORE_MIGRATIONS: tuple = (
+               _task_session_highwater_already_applied),
+     Migration(12, "adopt_task_highwater", _adopt_task_highwater_legacy,
+               _task_highwater_legacy_already_applied),
++    Migration(13, "create_cleared_tool_results", _apply_cleared_tool_results,
++              _cleared_tool_results_already_applied),
++    Migration(14, "create_agent_sessions_stamp_updated_trigger", _apply_agent_sessions_stamp_updated,
++              _agent_sessions_stamp_updated_already_applied),
+ )
+ 
+ 
+diff --git a/src/packages/agent/__tests__/contextPressure.test.ts b/src/packages/agent/__tests__/contextPressure.test.ts
+index 872c1db2..58066df8 100644
+--- a/src/packages/agent/__tests__/contextPressure.test.ts
++++ b/src/packages/agent/__tests__/contextPressure.test.ts
+@@ -15,6 +15,7 @@ import { join } from 'node:path'
+ import { Database } from 'bun:sqlite'
+ import { THRASHING_MESSAGE } from '../loop/context/contextLevel.ts'
+ import { CLEARED_TABLE } from '@thyrox/observability/clearedResults'
++import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
+ import { transcriptShapeOf } from '@thyrox/observability/transcriptShape'
+ import { runLoop, streamLoop } from '../loop/index.ts'
+ import { Transcript } from '../loop/transcript.ts'
+@@ -278,8 +279,10 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
+   test('con store, el mismo caso SÍ se limpia — el control que discrimina', async () => {
+     const d = dir()
+     process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
++    const db = join(d, 'store.sqlite3')
++    createMigratedTaskDb(db)
+     const eventos = await correr(d, [...conResultado('tu_con', 25_000), relleno(1_000)],
+-      { keepToolResults: 0, persistCleared: join(d, 'store.sqlite3') })
++      { keepToolResults: 0, persistCleared: db })
+     expect(eventos.some((e) => e.type === 'cleared_unpersisted')).toBe(false)
+     const purga = eventos.find((e) => e.type === 'compaction')
+     expect((purga as { cleared: number }).cleared).toBe(1)
+@@ -289,6 +292,7 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
+     const d = dir()
+     process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
+     const db = join(d, 'store.sqlite3')
++    createMigratedTaskDb(db)
+     await correr(d, [...conResultado('tu_fila', 25_000), relleno(1_000)],
+       { keepToolResults: 0, persistCleared: db })
+     const filas = new Database(db).query(
+diff --git a/src/packages/agent/__tests__/storeReconcile.test.ts b/src/packages/agent/__tests__/storeReconcile.test.ts
+index 5886e8a1..8f418fe0 100644
+--- a/src/packages/agent/__tests__/storeReconcile.test.ts
++++ b/src/packages/agent/__tests__/storeReconcile.test.ts
+@@ -11,10 +11,23 @@ import { mkdtempSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import { recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger } from '@thyrox/observability/store'
++import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
+ import { readProcStart } from '../loop/session/reconcile.ts'
+ import { USAGE_CERO } from '../loop/types.ts'
+ 
+-const ESQUEMA = `CREATE TABLE agent_sessions (
++/**
++ * Una base con el ledger COMPLETO — `agent_store.py` es el dueño del schema
++ * (DEC-TASK 2026-09-29), así que un fixture de prueba se migra igual que un
++ * despliegue real, no fabrica su esquema a mano.
++ */
++function db() {
++  const p = join(mkdtempSync(join(tmpdir(), 'store-')), 's.sqlite3')
++  createMigratedTaskDb(p)
++  return p
++}
++
++/** Una base sin ledger — sólo `agent_sessions`, para el caso "rehúsa". */
++const ESQUEMA_SIN_LEDGER = `CREATE TABLE agent_sessions (
+   agent_id TEXT PRIMARY KEY, subagent_type TEXT NOT NULL, session_id TEXT NOT NULL,
+   status TEXT NOT NULL CHECK(status IN ('running','completed','failed')),
+   started_at TEXT NOT NULL, updated_at TEXT NOT NULL, model TEXT, description TEXT,
+@@ -23,9 +36,9 @@ const ESQUEMA = `CREATE TABLE agent_sessions (
+   source TEXT, metadata_json TEXT, retention_level INTEGER, usage_source TEXT,
+   compactions INTEGER, dropped_tokens INTEGER)`
+ 
+-function db() {
+-  const p = join(mkdtempSync(join(tmpdir(), 'store-')), 's.sqlite3')
+-  new Database(p).run(ESQUEMA)
++function dbSinLedger() {
++  const p = join(mkdtempSync(join(tmpdir(), 'store-sin-ledger-')), 's.sqlite3')
++  new Database(p).run(ESQUEMA_SIN_LEDGER)
+   return p
+ }
+ const fila = (over: Partial<Parameters<typeof recordHarnessSession>[1]> = {}) => ({
+@@ -128,4 +141,13 @@ describe('trigger de updated_at (contabilidad)', () => {
+     d.run(`UPDATE agent_sessions SET status='running' WHERE agent_id='t2'`)
+     expect((d.query(`SELECT updated_at FROM agent_sessions WHERE agent_id='t2'`).get() as any).updated_at).toBe('fijo')
+   })
++
++  // CONTROL: sin ledger (DEC-TASK 2026-09-29, Python dueño del schema),
++  // `ensureUpdatedAtTrigger` ya NO crea el trigger — sólo valida. Sobre una
++  // base sin `schema_migrations` rehúsa, nombrando la tabla que falta.
++  test('sin ledger de migraciones, rehúsa en vez de crear el trigger', () => {
++    const p = dbSinLedger()
++    const d = new Database(p)
++    expect(() => ensureUpdatedAtTrigger(d)).toThrow(/schema_migrations/)
++  })
+ })
+diff --git a/src/packages/observability/__tests__/clearedResults.test.ts b/src/packages/observability/__tests__/clearedResults.test.ts
+new file mode 100644
+index 00000000..97aa2c4f
+--- /dev/null
++++ b/src/packages/observability/__tests__/clearedResults.test.ts
+@@ -0,0 +1,66 @@
++/**
++ * `ensureClearedTable`/`makeClearedPersister` (T-094, TASK-THYROX-0534): el
++ * DDL de `cleared_tool_results` ya no vive en Bun — `agent_store.py` es el
++ * dueño del schema (DEC-TASK 2026-09-29), y estas funciones sólo VALIDAN el
++ * ledger que su migración escribe.
++ */
++import { describe, expect, test } from 'bun:test'
++import { Database } from 'bun:sqlite'
++import { mkdtempSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
++import { ensureClearedTable, makeClearedPersister, CLEARED_TABLE } from '../src/clearedResults.ts'
++
++const dir = () => mkdtempSync(join(tmpdir(), 'cleared-'))
++const llamada = new Map([['tu1', { tool: 'Read', input: { file_path: '/x' } }]])
++
++describe('ensureClearedTable — valida el ledger, no lo crea', () => {
++  test('una base migrada por agent_store.py no rehúsa', () => {
++    const p = join(dir(), 'migrada.sqlite3')
++    createMigratedTaskDb(p)
++    const db = new Database(p)
++    expect(() => ensureClearedTable(db)).not.toThrow()
++    db.close()
++  })
++
++  // CONTROL: sin ledger de migraciones, rehúsa nombrando lo que falta —
++  // antes de este cambio, esta misma llamada CREABA la tabla en silencio.
++  test('una base sin ledger rehúsa nombrando schema_migrations', () => {
++    const p = join(dir(), 'sin-ledger.sqlite3')
++    const db = new Database(p)
++    db.run('CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY)')
++    expect(() => ensureClearedTable(db)).toThrow(/schema_migrations/)
++    db.close()
++  })
++})
++
++describe('makeClearedPersister — con y sin store migrado', () => {
++  test('con una base migrada, persiste la llamada y devuelve el marcador con procedencia', () => {
++    const p = join(dir(), 'migrada.sqlite3')
++    createMigratedTaskDb(p)
++    const persistidor = makeClearedPersister({ dbPath: p, sessionId: 's1', calls: llamada })
++    const marcador = persistidor.persist('contenido de prueba', 'tu1')
++    expect(marcador).not.toBeNull()
++    expect(marcador).toContain('Read')
++    expect(persistidor.failures.size).toBe(0)
++    const fila = new Database(p, { readonly: true })
++      .query(`SELECT tool, content_chars FROM ${CLEARED_TABLE} WHERE tool_use_id = 'tu1'`)
++      .get() as { tool: string; content_chars: number }
++    expect(fila.tool).toBe('Read')
++    expect(fila.content_chars).toBe('contenido de prueba'.length)
++  })
++
++  // CONTROL: el mismo caso que arriba, pero sin ledger — el motivo declarado
++  // es 'sin-store', con el detalle del rechazo (no se traga el porqué).
++  test('sin ledger, el motivo declarado es sin-store con su detalle', () => {
++    const p = join(dir(), 'sin-ledger.sqlite3')
++    new Database(p).run('CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY)')
++    const persistidor = makeClearedPersister({ dbPath: p, sessionId: 's1', calls: llamada })
++    const marcador = persistidor.persist('contenido de prueba', 'tu1')
++    expect(marcador).toBeNull()
++    const fallo = persistidor.failures.get('tu1')
++    expect(fallo?.reason).toBe('sin-store')
++    expect(fallo?.detail).toMatch(/schema_migrations/)
++  })
++})
+diff --git a/src/packages/observability/package.json b/src/packages/observability/package.json
+index c7ffd5bf..70b57761 100644
+--- a/src/packages/observability/package.json
++++ b/src/packages/observability/package.json
+@@ -42,6 +42,7 @@
+   "dependencies": {
+     "@thyrox/agent": "0.4.0",
+     "@thyrox/paths": "0.1.0",
+-    "@thyrox/store": "0.1.0"
++    "@thyrox/store": "0.1.0",
++    "@thyrox/task": "0.1.0"
+   }
+ }
+diff --git a/src/packages/observability/src/clearedResults.ts b/src/packages/observability/src/clearedResults.ts
+index 57f85d7a..cc8aa2d6 100644
+--- a/src/packages/observability/src/clearedResults.ts
++++ b/src/packages/observability/src/clearedResults.ts
+@@ -28,6 +28,7 @@
+ import { Database } from 'bun:sqlite'
+ import { openLocal } from '@thyrox/store/db.ts'
+ import { createHash } from 'node:crypto'
++import { assertCoreSchemaMigrated } from '@thyrox/task/schema.ts'
+ import type { Message } from '@thyrox/agent/loop/types'
+ import { CLEARED_MARKER } from '@thyrox/agent/loop/context/microcompact'
+ 
+@@ -54,17 +55,14 @@ export function toolCallIndex(messages: Message[]): Map<string, ToolCall> {
+   return idx
+ }
+ 
++/**
++ * Confirma que `CLEARED_TABLE` ya existe. El DDL ya no vive aquí:
++ * `agent_store.py` es el dueño del schema (DEC-TASK 2026-09-29), y esta
++ * función sólo valida la migración que lo crea — rehúsa, nombrando lo que
++ * falta, si el ledger está incompleto.
++ */
+ export function ensureClearedTable(db: Database): void {
+-  db.run(`CREATE TABLE IF NOT EXISTS ${CLEARED_TABLE} (
+-    session_id     TEXT NOT NULL,
+-    tool_use_id    TEXT NOT NULL,
+-    tool           TEXT NOT NULL,
+-    input_json     TEXT NOT NULL,
+-    content_sha256 TEXT NOT NULL,
+-    content_chars  INTEGER NOT NULL,
+-    cleared_at     TEXT NOT NULL,
+-    PRIMARY KEY (session_id, tool_use_id)
+-  )`)
++  assertCoreSchemaMigrated(db)
+ }
+ 
+ /** El argumento que identifica la llamada, con el mismo criterio que la CLI. */
+diff --git a/src/packages/observability/src/store.ts b/src/packages/observability/src/store.ts
+index 42214ebc..b556321f 100644
+--- a/src/packages/observability/src/store.ts
++++ b/src/packages/observability/src/store.ts
+@@ -21,6 +21,7 @@ import { openLocal } from '@thyrox/store/db.ts'
+ import { join, resolve } from 'node:path'
+ import { thyroxRoot } from '@thyrox/paths/reach.ts'
+ import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '@thyrox/paths/reach.ts'
++import { assertCoreSchemaMigrated } from '@thyrox/task/schema.ts'
+ import type { Usage } from '@thyrox/agent/loop/types'
+ import type { TranscriptShape } from './transcriptShape.ts'
+ import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/agent/loop/session/reconcile'
+@@ -273,14 +274,11 @@ export function reconcileStaleRunningRows(dbPath: string): StaleRow[] {
+  * seguro sobre la tabla compartida: `recursive_triggers` está apagado por
+  * defecto, así que el `UPDATE` de adentro no vuelve a disparar el trigger. El
+  * patrón ya existe en esta DB (los tres triggers de `findings_history`).
++ *
++ * El DDL ya no vive aquí: `agent_store.py` es el dueño del schema (DEC-TASK
++ * 2026-09-29), y esta función sólo confirma que su migración ya lo creó —
++ * rehúsa, nombrando lo que falta, si el ledger está incompleto.
+  */
+ export function ensureUpdatedAtTrigger(db: Database): void {
+-  db.run(`CREATE TRIGGER IF NOT EXISTS agent_sessions_stamp_updated
+-    AFTER UPDATE OF status ON agent_sessions
+-    WHEN NEW.status <> OLD.status
+-    BEGIN
+-      UPDATE agent_sessions
+-      SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+-      WHERE rowid = NEW.rowid;
+-    END`)
++  assertCoreSchemaMigrated(db)
+ }
+diff --git a/src/packages/task/package.json b/src/packages/task/package.json
+index 20ed825b..6182ccca 100644
+--- a/src/packages/task/package.json
++++ b/src/packages/task/package.json
+@@ -17,7 +17,8 @@
+     }
+   },
+   "dependencies": {
+-    "@thyrox/paths": "0.1.0"
++    "@thyrox/paths": "0.1.0",
++    "@thyrox/store": "0.1.0"
+   },
+   "types": "./dist/index.d.ts"
+ }
+diff --git a/src/packages/task/schema.ts b/src/packages/task/schema.ts
+index 1cd369ce..6b16e670 100644
+--- a/src/packages/task/schema.ts
++++ b/src/packages/task/schema.ts
+@@ -27,6 +27,8 @@ import { Database } from 'bun:sqlite'
+ import { readFileSync } from 'node:fs'
+ import { join } from 'node:path'
+ import { thyroxRoot } from '@thyrox/paths/reach.ts'
++import { validateMigrationLedgerSync } from '@thyrox/store/migrationLedger.ts'
++import type { Migration } from '@thyrox/store/migrationContract.ts'
+ 
+ export const TASK_STATUSES = ['pending', 'in_progress', 'completed'] as const
+ export type TaskStatus = (typeof TASK_STATUSES)[number]
+@@ -309,6 +311,39 @@ export function pythonMigrations(): { version: number; name: string }[] {
+   return salida
+ }
+ 
++/** El ledger compartido con el lado Python (`agent_store.py::MIGRATIONS_TABLE`). */
++export const CORE_MIGRATIONS_TABLE = 'schema_migrations'
++
++let coreMigrationsCache: Migration[] | null = null
++
++/**
++ * `pythonMigrations()`, con la forma que `validateMigrationLedgerSync` exige
++ * — memoizada porque relee y parsea `agent_store.py` en cada llamada, y esta
++ * función corre por cada apertura de base en el camino caliente. `statements`
++ * vacío: Bun nunca ejecuta DDL sobre esta base, sólo valida el ledger.
++ */
++export function coreMigrations(): Migration[] {
++  if (!coreMigrationsCache) {
++    coreMigrationsCache = pythonMigrations().map((m) => ({ ...m, statements: { sqlite: [] as string[], postgres: [] as string[] } }))
++  }
++  return coreMigrationsCache
++}
++
++/**
++ * Confirma, sin escribir nada, que `db` ya migró el schema del que Python es
++ * dueño (DEC-TASK 2026-09-29, opción 1). Rehúsa con el mensaje explícito de
++ * `validateMigrationLedgerSync` —nombra la versión que falta o el desacuerdo
++ * de provenance— si el ledger no existe o quedó incompleto.
++ *
++ * Punto único para todo escritor de `agent_store.sqlite3` que no migra por sí
++ * mismo: lo usan `tasks.ts::conBase` y `@thyrox/observability`
++ * (`store.ts`, `clearedResults.ts`), en vez de cada uno repitiendo la misma
++ * validación contra la misma tabla.
++ */
++export function assertCoreSchemaMigrated(db: Database): void {
++  validateMigrationLedgerSync(db, { table: CORE_MIGRATIONS_TABLE, migrations: coreMigrations() })
++}
++
+ /**
+  * Materializa una base de tareas COMPLETA (todas las tablas y el ledger de
+  * `CORE_MIGRATIONS`) en `dbPath`, invocando al dueño del schema — nunca DDL
+diff --git a/src/packages/tools/src/tasks.ts b/src/packages/tools/src/tasks.ts
+index edc371b2..bd142a14 100644
+--- a/src/packages/tools/src/tasks.ts
++++ b/src/packages/tools/src/tasks.ts
+@@ -35,9 +35,8 @@
+  */
+ import { Database } from 'bun:sqlite'
+ import { openLocal } from '@thyrox/store/db.ts'
+-import { validateMigrationLedgerSync } from '@thyrox/store/migrationLedger.ts'
+ import {
+-  pythonMigrations, selectCitationId, TASK_STATUSES, UPDATE_STATUSES,
++  assertCoreSchemaMigrated, selectCitationId, TASK_STATUSES, UPDATE_STATUSES,
+ } from '@thyrox/task/schema.ts'
+ import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
+ 
+@@ -58,40 +57,17 @@ const FUENTE_TODO = 'todo'
+ const ok = (content: string): ToolResult => ({ content, isError: false })
+ const err = (content: string): ToolResult => ({ content, isError: true })
+ 
+-/**
+- * El ledger compartido con el lado Python (`agent_store.py::MIGRATIONS_TABLE`).
+- * Bun no ejecuta DDL sobre esta base — DEC-TASK 2026-09-29 (opción 1) hace a
+- * Python el dueño del schema; aquí sólo se VALIDA que ya migró.
+- */
+-const MIGRATIONS_TABLE = 'schema_migrations'
+-
+-/**
+- * Las migraciones declaradas por Python, leídas una sola vez: `pythonMigrations()`
+- * relee y parsea `agent_store.py` en cada llamada, y `conBase` corre por cada
+- * invocación de herramienta — memoizar evita esa lectura de disco repetida
+- * en el camino caliente. `statements` vacío: `validateMigrationLedgerSync`
+- * sólo compara version/name contra el ledger, nunca ejecuta DDL.
+- */
+-let migrationsCache: ReturnType<typeof buildTaskMigrations> | null = null
+-function buildTaskMigrations() {
+-  return pythonMigrations().map((m) => ({ ...m, statements: { sqlite: [] as string[], postgres: [] as string[] } }))
+-}
+-function taskMigrations() {
+-  if (!migrationsCache) migrationsCache = buildTaskMigrations()
+-  return migrationsCache
+-}
+-
+ /**
+  * Abre, VALIDA que el schema ya migró y cierra: el tablero es de todos, no
+  * se retiene el descriptor. Sin ledger completo, rehúsa con el mensaje
+- * explícito que `validateMigrationLedgerSync` ya compone — la base la crea y
++ * explícito que `assertCoreSchemaMigrated` ya compone — la base la crea y
+  * migra `agent_store.py` (un hook de sesión, o `bin/agent_store migrate-file`
+  * en pruebas), nunca esta herramienta.
+  */
+ function conBase<T>(dbPath: string, fn: (db: Database) => T): T {
+   const db = openLocal(dbPath)
+   try {
+-    validateMigrationLedgerSync(db, { table: MIGRATIONS_TABLE, migrations: taskMigrations() })
++    assertCoreSchemaMigrated(db)
+     return fn(db)
+   } finally {
+     db.close()
+diff --git a/tests/agents/test_agent_store_migrations.py b/tests/agents/test_agent_store_migrations.py
+index 92abd158..972a7016 100644
+--- a/tests/agents/test_agent_store_migrations.py
++++ b/tests/agents/test_agent_store_migrations.py
+@@ -35,7 +35,10 @@ while ROOT != ROOT.parent and not (ROOT / "src/paths/reach.py").exists():
+ sys.path.insert(0, str(ROOT / "src"))
+ 
+ from agents.agent_store import (  # noqa: E402
++    AGENT_SESSIONS_STAMP_UPDATED_DDL,
++    CLEARED_TOOL_RESULTS_DDL,
+     CORE_MIGRATIONS,
++    CORE_SCHEMA,
+     MIGRATIONS_TABLE,
+     MigrationError,
+     connect,
+@@ -119,13 +122,16 @@ check("una fila por migracion declarada", len(CORE_MIGRATIONS), len(rows))
+ check("los nombres coinciden en orden con CORE_MIGRATIONS",
+       [(m.version, m.name) for m in CORE_MIGRATIONS], rows)
+ for table in ("agent_sessions", "findings_history", "tasks", "documents",
+-              "task_session_highwater"):
++              "task_session_highwater", "cleared_tool_results"):
+     check(f"la tabla {table} existe", True, conn.execute(
+         "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
+     ).fetchone() is not None)
+ check("task_highwater (legada) NO se crea", None, conn.execute(
+     "SELECT 1 FROM sqlite_master WHERE type='table' AND name='task_highwater'"
+ ).fetchone())
++check("el trigger agent_sessions_stamp_updated existe", True, conn.execute(
++    "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name='agent_sessions_stamp_updated'"
++).fetchone() is not None)
+ conn.close()
+ 
+ conn2 = connect(d1)
+@@ -231,6 +237,48 @@ check("y el ledger queda completo", len(CORE_MIGRATIONS), len(ledger_rows(conn5)
+ conn5.close()
+ shutil.rmtree(d5, ignore_errors=True)
+ 
++print()
++print("== 6. base heredada que YA trae cleared_tool_results y el trigger: se adoptan ==")
++# Ambos con exactamente el DDL de las migraciones 13/14 — la migracion NO
++# vuelve a ejecutar CREATE, solo acuna la version en el ledger.
++d6 = Path(tempfile.mkdtemp(prefix="agent-store-migrations-adopcion-observability-"))
++raw6 = sqlite3.connect(d6 / "agent_store.sqlite3")
++raw6.executescript(CORE_SCHEMA)
++raw6.execute(CLEARED_TOOL_RESULTS_DDL)
++raw6.execute(AGENT_SESSIONS_STAMP_UPDATED_DDL)
++raw6.commit()
++raw6.close()
++conn6 = connect(d6)
++check("las 14 migraciones quedan en el ledger", len(CORE_MIGRATIONS), len(ledger_rows(conn6)))
++check("cleared_tool_results sigue siendo la unica tabla con ese nombre", 1, conn6.execute(
++    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='cleared_tool_results'"
++).fetchone()[0])
++check("agent_sessions_stamp_updated sigue siendo el unico trigger con ese nombre", 1, conn6.execute(
++    "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name='agent_sessions_stamp_updated'"
++).fetchone()[0])
++conn6.close()
++shutil.rmtree(d6, ignore_errors=True)
++
++print()
++print("== 7. el trigger agent_sessions_stamp_updated sigue estampando updated_at ==")
++d7 = Path(tempfile.mkdtemp(prefix="agent-store-migrations-trigger-"))
++conn7 = connect(d7)
++conn7.execute(
++    "INSERT INTO agent_sessions (agent_id, subagent_type, session_id, status, "
++    "started_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
++    ("agente-trigger", "general-purpose", "sesion-trigger", "running",
++     "2026-01-01T00:00:00Z", "viejo"),
++)
++conn7.commit()
++conn7.execute("UPDATE agent_sessions SET status = 'completed' WHERE agent_id = 'agente-trigger'")
++conn7.commit()
++nuevo_updated_at = conn7.execute(
++    "SELECT updated_at FROM agent_sessions WHERE agent_id = 'agente-trigger'"
++).fetchone()[0]
++check("updated_at ya no es el valor viejo", True, nuevo_updated_at != "viejo")
++conn7.close()
++shutil.rmtree(d7, ignore_errors=True)
++
+ print()
+ print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
+ sys.exit(0 if FAILED == 0 else 1)
+diff --git a/tests/preload/store.ts b/tests/preload/store.ts
+index 84886e72..de7d837d 100644
+--- a/tests/preload/store.ts
++++ b/tests/preload/store.ts
+@@ -18,6 +18,13 @@
+  * lectura para copiar su esquema: un archivo vacio les quitaria la tabla que
+  * leen. La copia conserva el esquema y los datos, y las escrituras caen en ella.
+  *
++ * Y se MIGRA tras copiarse: el archivo versionado avanza su ledger sólo
++ * cuando una sesión real lo abre, así que puede quedar detrás del código de
++ * HOY. DEC-TASK 2026-09-29 hace a Python el dueño del schema — todo escritor
++ * (`tasks.ts::conBase`, `@thyrox/observability`) rehúsa contra un ledger
++ * incompleto, así que la copia tiene que llegar ya al día, igual que
++ * `createMigratedTaskDb` para un fixture nuevo.
++ *
+  * La copia vive en el `TMPDIR` que `tmpdir.ts` —que corre ANTES, por el orden
+  * de `bunfig.toml`— ya declaro de la ejecucion, y se retira con el.
+  *
+@@ -28,6 +35,11 @@
+  * pruebas declara en el suyo estos mismos preloads: sin eso, una suite corrida
+  * desde el directorio del paquete escribiría en el store versionado.
+  *
++ * `root` se deriva de la propia ubicación del archivo, NO de `thyroxRoot()`:
++ * un `THYROX_ROOT` heredado del entorno (p. ej. de un orquestador que fija
++ * la raíz del proveedor para otro propósito) apuntaría la migración al
++ * `agent_store.py` de OTRO árbol, no al de este worktree.
++ *
+  * Ciega a: una suite de Python o de shell, que no pasa por este preload, y a
+  * una suite que abra el store por una ruta literal en vez de `STORE_PATH`.
+  * Su control vive en `tests/session/test-store-faucet.sh`.
+@@ -38,12 +50,21 @@ import { join } from 'node:path'
+ 
+ const STORE_VAR = 'THYROX_STORE'
+ 
+-const providerStore = join(import.meta.dir, '..', '..', 'agent-results', 'agent_store.sqlite3')
++const root = join(import.meta.dir, '..', '..')
++const providerStore = join(root, 'agent-results', 'agent_store.sqlite3')
+ 
+ const declared = process.env[STORE_VAR]
+ 
+ if ((declared === undefined || declared === '') && existsSync(providerStore)) {
+   const copy = join(tmpdir(), 'agent_store.sqlite3')
+   copyFileSync(providerStore, copy)
++  const proc = Bun.spawnSync([join(root, 'bin', 'agent_store'), 'migrate-file', copy], {
++    env: { ...process.env, THYROX_ROOT: root },
++    stdout: 'pipe',
++    stderr: 'pipe',
++  })
++  if (proc.exitCode !== 0) {
++    throw new Error(`no se pudo migrar la copia del store en ${copy}: ${proc.stderr.toString()}`)
++  }
+   process.env[STORE_VAR] = copy
+ }

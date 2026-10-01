@@ -1,0 +1,35 @@
+== python3 src/session/generate_bin.py --check
+bin/ al día: 295 entrypoint(s)
+exit=0
+== python3 tests/session/test_generate_bin.py
+  ok   y el plan medido no esta vacio
+
+128 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+exit=0
+== bash -c cd src/packages/cli && bun test __tests__/peerMessagingTools.test.ts
+ 0 fail
+ 14 expect() calls
+Ran 7 tests across 1 file. [1231.00ms]
+exit=0
+== bash tests/session/test-send-message-two-cli.sh
+BLOQUEADA el texto de A aparece en la conversación de B — retenido por la compuerta de entrada (cause=mode-unknown)
+
+5 aserciones, 0 fallo(s), 2 bloqueada(s) (alcance medido: dos bin/cli reales, A envía a B)
+exit=0
+== bash tests/session/test-list-agents-two-cli.sh
+OK   sin mensajería el listing es el aviso de apagado
+
+10 aserciones, 0 fallo(s) (alcance medido: dos bin/cli reales, uno lista al otro)
+exit=0
+== bash bin/check_lint_zero src/session/generate_bin.py tests/session/test_generate_bin.py tests/session/test-send-message-two-cli.sh
+shellcheck: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+exit=0
+== bash bin/check_package_typecheck --strict cli
+  cli: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+exit=0
+suites-fallidas=0
+__BG_EXIT__=0

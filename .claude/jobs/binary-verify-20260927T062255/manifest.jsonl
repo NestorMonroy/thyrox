@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check_package_typecheck --strict binary config storage && (cd src/packages/binary && bun test) && (cd src/packages/config && bun test __tests__/platformWsl.test.ts) && (cd src/packages/storage && bun test)", "started_at": "2026-09-27T06:22:55+00:00"}

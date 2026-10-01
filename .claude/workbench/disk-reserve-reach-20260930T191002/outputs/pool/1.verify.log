@@ -1,0 +1,214 @@
+  ok    el sujeto existe: /home/user/thyrox/.thyrox/pool-worktrees/62dbafa9f111/1/src/lib/infrastructure.sh
+  ok    el sujeto se sourcea sin error
+  ok    declara thyrox_infrastructure_container_names
+  ok    declara thyrox_infrastructure_create_argv
+  ok    declara thyrox_infrastructure_health_check_argv
+  ok    declara thyrox_infrastructure_inspect
+  ok    container_names lista los dos nombres fijos
+  ok    sin contraseña, create_argv(postgres) sale 2
+  ok    sin contraseña, create_argv(postgres) no imprime nada
+  ok    el rehuso nombra THYROX_INFRA_POSTGRES_PASSWORD en stderr
+  ok    argv exacto de postgres (imagen, red, etiqueta, puerto, volumen, restart)
+  ok    imagen y puerto de postgres se sobreescriben por variable
+  ok    argv exacto de redis (imagen, red, etiqueta, puerto, restart, sin volumen)
+  ok    redis no declara ningun volumen
+  ok    imagen y puerto de redis se sobreescriben por variable
+  ok    create_argv de un nombre desconocido sale 2
+  ok    create_argv de un nombre desconocido no imprime nada
+  ok    health_check_argv de un nombre desconocido sale 2
+  ok    health_check_argv de un nombre desconocido no imprime nada
+  ok    THYROX_INFRA_POSTGRES_USER y THYROX_INFRA_POSTGRES_DB llegan a la creacion
+  ok    la salud de postgres usa el usuario y la base declarados
+  ok    health_check_argv(postgres) es pg_isready
+  ok    health_check_argv(redis) es redis-cli ping
+  ok    la etiqueta io.thyrox.role=infrastructure esta en los dos contenedores
+  ok    disk_need_bytes(postgres) sale 0
+  ok    disk_need_bytes(postgres): capas comprimidas medidas x factor de pull
+  ok    disk_need_bytes(redis): capas comprimidas medidas x factor de pull
+  ok    disk_need_bytes de un nombre desconocido sale 2
+  ok    disk_need_bytes de un nombre desconocido no imprime nada
+  ok    image(postgres) es la imagen declarada
+  ok    image(redis) respeta la variable
+  ok    image de un nombre desconocido sale 2
+  ok    inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid
+
+33 casos: 33 ok, 0 fallos
+== 1. sin reserva: Avail ES el techo, nada que declarar ==
+  ok    exit 0 cuando no hay reserva
+  ok    nombra el veredicto
+== 2. reserva ALCANZABLE: el techo es mayor que Avail ==
+  ok    exit 1 cuando la reserva se alcanza
+  ok    nombra el veredicto
+== 3. resv_strict la vuelve inalcanzable AUNQUE se tenga el bit ==
+  ok    exit 3 con resv_strict y bit puesto
+  ok    nombra resv_strict como la causa
+== 4. sin el bit 24 la reserva es inalcanzable ==
+  ok    exit 3 sin CAP_SYS_RESOURCE
+  ok    nombra la capacidad ausente
+== 5. ANULACION: retirado el test del bit 24, el veredicto cambia ==
+  ok    la anulacion modifico el guion
+  ok    sin la comprobacion del bit, pasa a ALCANZABLE
+== 6. rehusa SIN cifra si no puede leer las capacidades ==
+  ok    exit 2 al rehusar
+  ok    no emite ninguna cifra en MiB
+== 7. rehusa si la ruta no existe ==
+  ok    exit 2 ante ruta ausente
+== 8. control POSITIVO real: este contenedor, sin fixture ==
+  ok    este contenedor declara la reserva inalcanzable
+  ok    cita la reserva medida
+== 9. borrado y abierto: SOLO lo borrado, una vez por inodo, en ESTE dispositivo ==
+  ok    cuenta el inodo borrado una sola vez
+== 10. cada correccion tiene su cifra equivocada, y NINGUNA se publica ==
+  ok    el fixture discrimina: sin ninguna correccion
+  ok    el fixture discrimina: sin el filtro de borrado
+  ok    el fixture discrimina: sin deduplicar por inodo
+  ok    el fixture discrimina: sin acotar al dispositivo
+  ok    no publica la cifra de 263.51 MiB
+  ok    no publica la cifra de 208.21 MiB
+  ok    no publica la cifra de 20.00 MiB
+  ok    no publica la cifra de 15.30 MiB
+== 11. TASK-THYROX-0671: el uid efectivo ES resuid, sin resv_strict -> alcanzable sin el bit ===
+  ok    resuid = uid del proceso -> exit 1
+  ok    nombra resuid como la via
+== 12. uno de sus grupos ES resgid, sin resv_strict -> alcanzable sin el bit ===
+  ok    resgid en sus grupos -> exit 1
+  ok    nombra resgid como la via
+== 13. ni uid ni grupos coinciden, sin el bit -> inalcanzable ===
+  ok    uid y grupos ajenos a la reserva -> exit 3
+== 14. resv_strict cierra la reserva aunque uid y grupo coincidan ===
+  ok    resv_strict con resuid y resgid propios -> exit 3
+  ok    resv_strict sigue siendo la causa
+== 15. rehusa SIN cifra si el uid inyectado no es un entero ===
+  ok    uid ilegible -> exit 2
+  ok    no emite ninguna cifra en MiB
+== 16. --ceiling-bytes: reserva inalcanzable -> f_bavail, un solo entero ===
+  ok    techo = 200 * 4096
+  ok    conserva el exit del veredicto
+== 17. --ceiling-bytes: reserva alcanzable -> f_bfree ===
+  ok    techo = 500 * 4096
+  ok    exit 1
+== 18. --ceiling-bytes: sin reserva -> f_bavail ===
+  ok    techo = 200 * 4096
+  ok    exit 0
+== 19. --ceiling-bytes: al rehusar no imprime cifra ===
+  ok    exit 2
+  ok    stdout vacio
+== 20. --help imprime la cabecera completa, con la regla de resgid ===
+  ok    la ayuda documenta resgid
+  ok    la ayuda documenta --ceiling-bytes
+
+ok=43 fallo=0
+  ok    el sujeto existe y es ejecutable: /home/user/thyrox/.thyrox/pool-worktrees/62dbafa9f111/1/src/session/infrastructure_ensure.sh
+  ok    caso 1: ausente -> exit 0
+  ok    caso 1: postgres ausente se reporta con action=created
+  ok    caso 1: redis ausente se reporta con action=created
+  ok    caso 1: la red thyrox-infra se crea cuando falta
+  ok    caso 2: running+pid vivo+sano -> exit 0
+  ok    caso 2: postgres vivo y sano se conserva (kept)
+  ok    caso 2: ningun create/start/rm se invoco al conservar
+  ok    caso 3: running+pid muerto -> exit 0 tras recrear
+  ok    caso 3: postgres con PID muerto se recrea (recreated)
+  ok    caso 3: se invoco rm -f sobre el contenedor stale
+  ok    caso 3: ningun rm -f toca el volumen thyrox-postgres-data
+  ok    caso 4: exited -> exit 0 tras arrancar
+  ok    caso 4: postgres exited se arranca (started)
+  ok    caso 4: exited no dispara create, solo start
+  ok    caso 5: nunca sano -> exit 1
+  ok    caso 5: el fallo nombra el contenedor que nunca sano
+  ok    caso 6: sin contraseña -> exit 2
+  ok    caso 6: el rehuso nombra THYROX_INFRA_POSTGRES_PASSWORD
+  ok    caso 6: podman jamas se invoco (calls.log no existe)
+  ok    caso 7: primera invocacion -> exit 0
+  ok    caso 7: la primera invocacion crea los dos contenedores (created)
+  ok    caso 7: segunda invocacion -> exit 0
+  ok    caso 7: la segunda invocacion conserva los dos contenedores (kept)
+  ok    caso 7: la segunda invocacion no recrea nada
+  ok    caso 8: cabe -> exit 0
+  ok    caso 8: con el disco admitido, postgres se crea
+  ok    caso 8: reserva la necesidad declarada de postgres a nombre de un pid
+  ok    caso 8: el orden es admitir, crear y soltar
+  ok    caso 9: no cabe -> exit 2
+  ok    caso 9: ningun podman create sin disco admitido
+  ok    caso 9: el rehuso nombra thyrox-postgres
+  ok    caso 9: el rehuso nombra 625290552
+  ok    caso 9: el rehuso nombra techo
+  ok    caso 9: el rehuso nombra disk-reserve-reach-20260930T191002
+  ok    caso 10: imagen presente -> exit 0 aunque el disco no admita
+  ok    caso 10: con la imagen presente no se pide disco
+  ok    caso 11: con el create fallido, la reserva se suelta
+  ok    caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN
+
+39 casos: 39 ok, 0 fallos
+caso 1 — el registro es el mismo que usaba la GPU
+  ok    gpu_monitor reutiliza el registro común
+  ok    y la decisión pura
+caso 2 — la reserva de un dueño muerto no compromete nada
+  ok    sólo queda la del vivo
+caso 3 — lo libre de RAM descuenta lo reservado que aún no reside
+  ok    10000 − (3000 − 1000)
+  ok    sin MemAvailable no hay margen
+caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 5 — soltar la reserva deja entrar al siguiente
+  ok    release sale 0
+  ok    el otro entra ahora
+caso 6 — muerto el dueño, su reserva deja de contar
+  ok    el vivo entra sin que nadie haya soltado
+caso 7 — el RSS de un árbol vivo se mide de /proc
+  ok    un proceso vivo reside algo
+  ok    un pid inexistente no suma
+caso 7b — soltada la última reserva viva, el registro desaparece: en reposo no queda archivo
+  ok    sin reservas vivas no queda el archivo
+  ok    con otra reserva viva el registro sigue
+caso 7c — sin medida, admit_with espera hasta el plazo: rehusar al instante es de la VRAM, no de aquí
+  ok    sin medida no admite
+  ok    y agota el plazo antes de responder
+caso 8 — el registro y la fuente de MemAvailable se declaran por entorno
+  ok    THYROX_RAM_ADMISSION_LEDGER gana
+  ok    THYROX_RAM_ADMISSION_MEMINFO gana
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, MemAvailable sale del kernel
+caso 9 — disco: el techo sale de disk-headroom --ceiling-bytes
+  ok    un entero con exit 3 es el techo
+  ok    con exit 1 (reserva alcanzable) también
+  ok    exit 2 es «sin medida»
+  ok    una salida no entera es «sin medida»
+  ok    un binario ausente es «sin medida»
+caso 10 — disco: lo admisible es techo − piso − reservas vivas
+  ok    10000 − 1000 − 3000
+  ok    sin techo no hay margen
+caso 11 — disk-admit: cabe → 0 y queda la reserva; no cabe → 3
+  ok    cabe → 0
+  ok    la reserva queda registrada
+  ok    el piso en MiB se descuenta: 10 − 7 de piso no deja 4
+  ok    no cabe → 3
+  ok    el vencido publica necesidad y techo
+caso 12 — disk-release suelta la reserva
+  ok    disk-release sale 0
+  ok    el registro ya no la cuenta
+caso 13 — dos dueños vivos cuya suma no cabe: entra uno
+resource_admission disk-admit: no cabe la necesidad 3145728 bytes; techo 5242880 bytes, piso 0 bytes, reservado por otros 3145728 bytes
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 14 — muerto el dueño, su reserva de disco deja de contar
+  ok    entra sin que nadie haya soltado
+caso 15 — disk-headroom rehúsa: 2, con la causa, sin tocar el registro
+  ok    sale 2
+  ok    nombra disk-headroom en stderr
+  ok    no crea el registro
+caso 16 — el registro, el piso y el medidor de disco se declaran por entorno
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, el piso es el default con nombre
+  ok    sin declararlo, el medidor es el disk-headroom del árbol
+  ok    THYROX_DISK_ADMISSION_LEDGER gana
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB gana, en MiB
+  ok    THYROX_DISK_ADMISSION_HEADROOM gana
+caso 17 — .env.example declara las tres variables del disco
+  ok    THYROX_DISK_ADMISSION_LEDGER figura en .env.example
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB figura en .env.example
+  ok    THYROX_DISK_ADMISSION_HEADROOM figura en .env.example
+test_resource_admission: 49 ok, 0 fallos
+shellcheck: 0 hallazgo(s) (alcance medido: 6 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))

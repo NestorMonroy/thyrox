@@ -1,0 +1,9 @@
+    totals, utils = [], []
+    while True:
+        try:
+            current = sample(nvidia_smi)
+        except GpuUnavailable as error:
+            # Se intentó medir y falló: ni cero ni ausencia. No se publica un
+            # resumen parcial como si fuera la medida del ítem.
+            Path(out).write_text(f"error {error}\n")
+            return None

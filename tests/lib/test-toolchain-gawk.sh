@@ -47,7 +47,7 @@ fi
 MISSING="thyrox-awk-que-no-existe-$$"
 
 # Caso 2 — EJE 1, presencia: ausente y sin opt-in REHUSA con exit 2.
-presence_out="$(THYROX_TOOLCHAIN_AWK_BIN="$MISSING" THYROX_INSTALL_GAWK= \
+presence_out="$(THYROX_TOOLCHAIN_AWK_BIN="$MISSING" THYROX_INSTALL_GAWK='' \
                 thyrox_toolchain_require_gawk 2>&1)"; rc=$?
 if [[ $rc -eq 2 ]]; then ok "rehusa con exit 2 cuando el nombre no resuelve"
 else bad "esperaba exit 2 sin opt-in, dio $rc"; fi
@@ -89,7 +89,7 @@ fi
 # el de conducta tiene que rehusar igual. Un guard de un solo eje da verde
 # aqui con la maquina rota.
 if command -v mawk >/dev/null 2>&1; then
-  conduct_out="$(THYROX_TOOLCHAIN_AWK_BIN=mawk THYROX_INSTALL_GAWK= \
+  conduct_out="$(THYROX_TOOLCHAIN_AWK_BIN=mawk THYROX_INSTALL_GAWK='' \
                  thyrox_toolchain_require_gawk 2>&1)"; rc=$?
   if [[ $rc -eq 2 ]]; then
     ok "un awk PRESENTE que no compila intervalos rehusa igual"
@@ -208,6 +208,22 @@ if command -v gawk >/dev/null 2>&1; then
   fi
 else
   bad "gawk ausente: el caso 14 NO se pudo correr"
+fi
+
+
+# Caso 15 — THYROX_TOOLCHAIN_AWK_PROBE_INPUT viaja a los hijos y NO es
+# parámetro. Viaja porque la sonda lleva `export -f` y un hijo que sólo
+# heredara la función recibiría la entrada vacía (caso 14). No es parámetro
+# porque quien pudiera reemplazar la entrada podría hacer pasar un awk sin
+# intervalos: el guion la fija sin `${VAR:-...}` a propósito.
+# shellcheck disable=SC2016  # el $ lo expande el hijo, no este shell
+# env -i por la guarda de idempotencia del caso 12: sin él, el hijo no carga nada.
+child_input="$(env -i PATH="$PATH" THYROX_TOOLCHAIN_AWK_PROBE_INPUT='zzz' bash -c \
+  'source "$0" 2>/dev/null; bash -c "$1"' "$SUBJECT" 'printf %s "$THYROX_TOOLCHAIN_AWK_PROBE_INPUT"')"
+if [[ "$child_input" == "aaax" ]]; then
+  ok "AWK_PROBE_INPUT llega al hijo con su valor fijo, aunque el llamador exporte otro"
+else
+  bad "AWK_PROBE_INPUT en el hijo: esperaba 'aaax', obtuve '$child_input'"
 fi
 
 thyrox_summary

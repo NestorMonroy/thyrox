@@ -52,9 +52,9 @@ export function getAPIProvider(): APIProvider {
   })()
 
   if (hasConnections) {
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) return 'bedrock'
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY'))) return 'foundry'
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) return 'vertex'
+    if (isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) return 'bedrock'
+    if (isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY'))) return 'foundry'
+    if (isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) return 'vertex'
     return 'firstParty'
   }
 
@@ -63,12 +63,12 @@ export function getAPIProvider(): APIProvider {
   if (modelType === 'gemini') return 'gemini'
   if (modelType === 'codex') return 'codex'
 
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) return 'bedrock'
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY'))) return 'foundry'
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) return 'vertex'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) return 'bedrock'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY'))) return 'foundry'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) return 'vertex'
 
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_OPENAI'))) return 'openai'
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_GEMINI'))) return 'gemini'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_OPENAI'))) return 'openai'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_GEMINI'))) return 'gemini'
 
   return 'firstParty'
 }
@@ -154,7 +154,7 @@ export function isFirstPartyAnthropicEndpoint(modelId?: string): boolean {
 /**
  * Predicado puro: ¿(provider, model) soporta la herramienta server-side
  * `web_search_20250305` de Anthropic? firstParty/Bedrock/Foundry siempre;
- * Vertex sólo en modelos Claude serie 4.
+ * Vertex sólo en modelos thyrox serie 4.
  */
 export function isAnthropicServerWebSearchCapable(provider: APIProvider, modelId?: string): boolean {
   switch (provider) {

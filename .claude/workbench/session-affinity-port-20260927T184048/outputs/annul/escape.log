@@ -1,0 +1,3 @@
+(fail) goMarshal > escapa <, >, &, U+2028 y U+2029 como Go [0.42ms]
+ 20 pass
+ 1 fail

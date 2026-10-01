@@ -6,6 +6,7 @@ import type {
 } from '@thyrox/agent/messageShapes'
 import { getQuerySourceForAgent } from '@thyrox/agent/promptCategory.js'
 import { z } from 'zod/v4'
+import { agentNameSchema } from './agentNameValidation.js'
 import {
   clearInvokedSkillsForAgent,
   getSdkAgentProgressSummariesEnabled,
@@ -146,13 +147,13 @@ const PROGRESS_THRESHOLD_MS = 2000 // Show background hint after 2 seconds
 // Check if background tasks are disabled at module load time
 const isBackgroundTasksDisabled =
   // eslint-disable-next-line custom-rules/no-process-env-top-level -- Intentional: schema must be defined at module load
-  isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)
+  isEnvTruthy(process.env.THYROX_CODE_DISABLE_BACKGROUND_TASKS)
 
 // Auto-background agent tasks after this many ms (0 = disabled)
 // Enabled by env var OR GrowthBook gate (checked lazily since GB may not be ready at module load)
-function getAutoBackgroundMs(): number {
+export function getAutoBackgroundMs(): number {
   if (
-    isEnvTruthy(process.env.CLAUDE_AUTO_BACKGROUND_TASKS) ||
+    isEnvTruthy(process.env.THYROX_AUTO_BACKGROUND_TASKS) ||
     getFeatureValue_CACHED_MAY_BE_STALE('tengu_auto_background_agents', false)
   ) {
     return 120_000
@@ -192,8 +193,7 @@ const baseInputSchema = lazySchema(() =>
 const fullInputSchema = lazySchema(() => {
   // Multi-agent parameters
   const multiAgentInputSchema = z.object({
-    name: z
-      .string()
+    name: agentNameSchema()
       .optional()
       .describe(
         'Name for the spawned agent. Makes it addressable via SendMessage({to: name}) while running.',
@@ -384,7 +384,7 @@ export const AgentTool = buildTool({
     // Use inline env check instead of coordinatorModule to avoid circular
     // dependency issues during test module loading.
     const isCoordinator = feature('COORDINATOR_MODE')
-      ? isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)
+      ? isEnvTruthy(process.env.THYROX_CODE_COORDINATOR_MODE)
       : false
     return await getPrompt(filteredAgents, isCoordinator, allowedAgentTypes)
   },
@@ -843,7 +843,7 @@ export const AgentTool = buildTool({
     // Use inline env check instead of coordinatorModule to avoid circular
     // dependency issues during test module loading.
     const isCoordinator = feature('COORDINATOR_MODE')
-      ? isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)
+      ? isEnvTruthy(process.env.THYROX_CODE_COORDINATOR_MODE)
       : false
 
     // Fork subagent experiment: force ALL spawns async for a unified

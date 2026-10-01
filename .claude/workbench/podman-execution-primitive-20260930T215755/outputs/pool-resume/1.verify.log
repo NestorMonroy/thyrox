@@ -1,0 +1,69 @@
+bun test v1.3.11 (af24e281)
+
+ 24 pass
+ 0 fail
+ 58 expect() calls
+Ran 24 tests across 1 file. [3.21s]
+bun test v1.3.11 (af24e281)
+
+ 1 pass
+ 0 fail
+ 4 expect() calls
+Ran 1 test across 1 file. [5.51s]
+bun test v1.3.11 (af24e281)
+
+ 7 pass
+ 0 fail
+ 9 expect() calls
+Ran 7 tests across 1 file. [907.00ms]
+bun test v1.3.11 (af24e281)
+
+ 11 pass
+ 0 fail
+ 25 expect() calls
+Ran 11 tests across 1 file. [278.00ms]
+bun test v1.3.11 (af24e281)
+
+ 1 pass
+ 0 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [780.00ms]
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 10 expect() calls
+Ran 5 tests across 1 file. [11.16s]
+bun test v1.3.11 (af24e281)
+The following filters did not match any test files in --cwd="/home/user/thyrox/.thyrox/pool-worktrees/c3f5b14f166b/1/src/packages/daemon":
+ src/__tests__/repositoryJobProfile.test.ts
+93 files were searched [47.00ms]
+
+note: Tests need ".test", "_test_", ".spec" or "_spec_" in the filename (ex: "MyApp.test.ts")
+note: To treat the "src/__tests__/repositoryJobProfile.test.ts" filter as a path, run "bun test ./src/__tests__/repositoryJobProfile.test.ts"
+
+bun test v1.3.11 (af24e281)
+
+ 35 pass
+ 0 fail
+ 59 expect() calls
+Ran 35 tests across 1 file. [272.00ms]
+bun test v1.3.11 (af24e281)
+The following filters did not match any test files in --cwd="/home/user/thyrox/.thyrox/pool-worktrees/c3f5b14f166b/1/src/packages/daemon":
+ src/__tests__/workerResourceProfile.test.ts
+93 files were searched [9.00ms]
+
+note: Tests need ".test", "_test_", ".spec" or "_spec_" in the filename (ex: "MyApp.test.ts")
+note: To treat the "src/__tests__/workerResourceProfile.test.ts" filter as a path, run "bun test ./src/__tests__/workerResourceProfile.test.ts"
+
+check-package-typecheck: 42 provider(s) reconstruido(s) por viejos: agent, audio-capture-napi, bridge, claude-for-chrome-mcp, color-diff-napi, computer-use-input, computer-use-swift, context-compression, coordination, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, modifiers-napi, observability, output, paths, permission, plan, podman-execution, provider, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  provider app-host: la reconstruccion no emitio
+  provider cli: la reconstruccion no emitio
+  provider command-runtime: la reconstruccion no emitio
+  provider computer-use-mcp: la reconstruccion no emitio
+  provider config: la reconstruccion no emitio
+  provider mitm: la reconstruccion no emitio
+  SIN TIPAR por un provider roto: daemon
+  podman-execution: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+  NO se emite veredicto: un consumidor bloqueado por un provider roto
+  tiparia contra un contrato que no corresponde a su fuente.

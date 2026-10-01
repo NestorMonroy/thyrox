@@ -1,0 +1,3 @@
+stat de Bun sobre sticky del shell: 1777
+fs.promises.chmod 0o1777 -> 777
+shell chmod 1777 -> 1777; node chmodSync 0o1777 -> 1777 (medido arriba); Bun 1.3.11

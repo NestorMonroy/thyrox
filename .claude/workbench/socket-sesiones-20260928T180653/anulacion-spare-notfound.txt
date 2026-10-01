@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+94 |     backendActive = true
+95 |     const asked: unknown[] = []
+96 |     const found = statStorage(async key => (asked.push(key), { ok: true, value: { mtimeMs: 1 } }))
+97 |     expect(await isSpareClaimed(found, deps())).toBe(true)
+98 |     expect(asked).toEqual([{ namespace: 'job', jobId: 'j1', relPath: ['state.json'] }])
+99 |     expect(await isSpareClaimed(statStorage(async () => ({ ok: false, error: { code: 'NotFound' } })), deps())).toBe(false)
+                                                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:99:113)
+(fail) isSpareClaimed (jy) > con backend de storage mira la clave del trabajo [0.99ms]
+
+ 10 pass
+ 1 fail
+ 24 expect() calls
+Ran 11 tests across 1 file. [120.00ms]

@@ -1,0 +1,1 @@
+    print("== 6. disponible() distingue las dos situaciones ==")

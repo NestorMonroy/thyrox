@@ -4,7 +4,7 @@
  *
  * The /hooks menu is read-only: selecting an event lets you browse its
  * configured hooks but not modify them. To add or change hooks, users should
- * edit settings.json directly or ask Claude.
+ * edit settings.json directly or ask thyrox.
  */
 
 import figures from 'figures'
@@ -15,6 +15,7 @@ import { Box, Link, Text } from '@anthropic/ink'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { Select } from '../CustomSelect/select.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   hookEventMetadata: Record<HookEvent, HookEventMetadata>
@@ -54,7 +55,7 @@ export function SelectEventMode({
         <Box flexDirection="column">
           <Text dimColor>
             {figures.info} This menu is read-only. To add or modify hooks, edit
-            settings.json directly or ask Claude.{' '}
+            settings.json directly or ask {PRODUCT_NAME}.{' '}
             <Link url="https://code.claude.com/docs/en/hooks">Learn more</Link>
           </Text>
         </Box>

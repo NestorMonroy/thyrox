@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && uv sync --group gpu 2>&1 | tail -15 && .venv/bin/python -c \"import torch; print(\\\"torch\\\", torch.__version__, \\\"cuda_disponible\\\", torch.cuda.is_available())\"", "started_at": "2026-09-26T22:04:40+00:00"}

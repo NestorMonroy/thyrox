@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bun test 2>&1 | grep -E \"^ *[0-9]+ (pass|fail)|^\\(fail\\)\"", "started_at": "2026-09-28T03:58:51+00:00"}

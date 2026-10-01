@@ -1,12 +1,10 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts`
- * (verbatim en aserciones; el mecanismo de captura cambia porque el puerto
- * no usa `@claude-code-how-works/local-observability` sino el sustituto
- * local — ver `../internal/pendingCrossPackageDeps.ts`. La fuente hace
- * `mock.module('@thyrox/local-observability', ...)`; aquí
- * se inyecta directamente con `setLogEventFn`, que es el mismo patrón DI
- * que `setGetCwdFn` de `@thyrox/storage` — sin mockear un import de
- * paquete.
+ * (verbatim en aserciones; el mecanismo de captura cambia: la fuente hace
+ * `mock.module('@thyrox/local-observability', ...)`, que reemplaza el módulo
+ * entero en el registro de módulos de bun y se fuga a los archivos que corren
+ * después; aquí se reemplaza sólo el `logger` con `installLocalObservability`
+ * y se restaura al terminar).
  *
  * Tests para `sdkMemorySummary.ts` — corrección del puerto contra ant
  * v2.1.136 2144.js: `Cc_`/`vP9`/`mH8`/`pG1`/`UG1`/`hP9`/`xH8`/`uH8`.
@@ -28,39 +26,51 @@
  *   - vP9 marcar como muerto preserva la contribución de la entrada
  */
 import {
+  afterAll,
   afterEach,
   beforeEach,
   describe,
   expect,
   test,
 } from 'bun:test'
-import { setLogEventFn } from '../internal/pendingCrossPackageDeps.ts'
+import { getLocalObservability, installLocalObservability } from '@thyrox/local-observability'
 
 type EventPayload = Record<string, unknown>
 const events: { name: string; payload: EventPayload }[] = []
 
-setLogEventFn((name: string, payload?: EventPayload) => {
-  events.push({ name, payload: payload ?? {} })
+// Los eventos se capturan reemplazando el `logger` del runtime de
+// observabilidad por su API de inyección. Ese estado es del módulo y lo ven
+// los archivos que corren después en el mismo proceso de `bun test`, así que
+// el `logger` previo se reinstala al terminar.
+const previousLogger = getLocalObservability().logger
+afterAll(() => installLocalObservability({ logger: previousLogger }))
+installLocalObservability({
+  logger: {
+    ...getLocalObservability().logger,
+    event: (name: string, payload?: EventPayload) => {
+      events.push({ name, payload: payload ?? {} })
+    },
+  },
 })
 
 const mod = await import('../sdkMemorySummary.ts')
 
-const ORIG_ENTRYPOINT = process.env.CLAUDE_CODE_ENTRYPOINT
-const ORIG_SIMPLE = process.env.CLAUDE_CODE_SIMPLE
+const ORIG_ENTRYPOINT = process.env.THYROX_CODE_ENTRYPOINT
+const ORIG_SIMPLE = process.env.THYROX_CODE_SIMPLE
 
 beforeEach(() => {
   events.length = 0
   mod._resetSdkMemorySummaryForTesting()
-  process.env.CLAUDE_CODE_ENTRYPOINT = 'sdk-cli'
-  delete process.env.CLAUDE_CODE_SIMPLE
+  process.env.THYROX_CODE_ENTRYPOINT = 'sdk-cli'
+  delete process.env.THYROX_CODE_SIMPLE
 })
 
 afterEach(() => {
   if (ORIG_ENTRYPOINT === undefined)
-    delete process.env.CLAUDE_CODE_ENTRYPOINT
-  else process.env.CLAUDE_CODE_ENTRYPOINT = ORIG_ENTRYPOINT
-  if (ORIG_SIMPLE === undefined) delete process.env.CLAUDE_CODE_SIMPLE
-  else process.env.CLAUDE_CODE_SIMPLE = ORIG_SIMPLE
+    delete process.env.THYROX_CODE_ENTRYPOINT
+  else process.env.THYROX_CODE_ENTRYPOINT = ORIG_ENTRYPOINT
+  if (ORIG_SIMPLE === undefined) delete process.env.THYROX_CODE_SIMPLE
+  else process.env.THYROX_CODE_SIMPLE = ORIG_SIMPLE
 })
 
 function captureEmit(): EventPayload | undefined {
@@ -236,7 +246,7 @@ describe('registerMemoryAttribute / unregisterMemoryAttribute (ant xH8/uH8)', ()
 
 describe('trackChildProcess / markChildProcessDead (ant Cc_/vP9)', () => {
   test('non-SDK entrypoint never registers a child', () => {
-    process.env.CLAUDE_CODE_ENTRYPOINT = 'cli'
+    process.env.THYROX_CODE_ENTRYPOINT = 'cli'
     mod.trackChildProcess('bash_shell', 1234)
     mod.recordRssSample()
     let captured: (() => void) | null = null
@@ -249,7 +259,7 @@ describe('trackChildProcess / markChildProcessDead (ant Cc_/vP9)', () => {
   })
 
   test('simple mode never registers a child', () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.THYROX_CODE_SIMPLE = '1'
     mod.trackChildProcess('bash_shell', 1234)
     mod.recordRssSample()
     let captured: (() => void) | null = null

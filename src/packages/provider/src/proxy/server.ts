@@ -1,0 +1,447 @@
+/**
+ * Servidor proxy local — el camino de inferencia de la pasarela del
+ * ejecutable 2.1.283 (chunk-wg7ts4cy.js): `Jue` (el `fetch` de `Bun.serve`),
+ * `Bv` (el reenvío con conmutación entre upstreams), `Mt` (el cuerpo de
+ * error), `AD`/`Yne` (las cabeceras de seguridad) y `fj`/`Oh` (qué rutas son
+ * de inferencia). Extracto reflujado con `bin/binary reflow` en
+ * `.claude/workbench/omniroute-analysis-20260927T160306/outputs/reflow/`.
+ *
+ * A ese camino se suman el control de acceso de CLIProxyAPI
+ * (`sdk/access/manager.go`, `./access.ts`) y, por upstream, el selector de
+ * credenciales (`sdk/cliproxy/auth/selector.go`, `./credentialSelectors.ts`).
+ * El selector ve las cabeceras y el cuerpo del cliente tal como llegó —con
+ * su protocolo, el alcance que da su clave de acceso y la identidad que
+ * deriva `Enrich`; la afinidad por sesión (`./session/affinitySelector.ts`)
+ * saca de ahí la sesión o reconoce la conversación por su historia— y
+ * recibe el desenlace de cada intento por `onResult`.
+ *
+ * CLIProxyAPI y la pasarela del ejecutable son referencias, no
+ * dependencias: todo lo que aquí corre lo implementa thyrox. El servidor
+ * decide a quién, con qué modelo y con qué credencial; el reenvío HTTP al
+ * upstream es `createHttpForwarder` (`./upstreamForwarder.ts`) o, para
+ * los de nube, su SDK (`./sdk/cloudForwarder.ts`), y
+ * `startProxyServer` los une. `forward` es un parámetro para poder probar
+ * el enrutamiento sin red, no un hueco que llene un tercero.
+ *
+ * Divergencias declaradas, con su razón:
+ * - Lo que en `Jue` es de la pasarela empresarial —OIDC, sesiones por
+ *   cookie, Postgres, límites de gasto por usuario, telemetría, políticas
+ *   administradas, la prueba de carga— no se porta: el proxy local no tiene
+ *   usuarios ni almacén. Los límites de gasto ya existen sueltos
+ *   (`./spendLimits.ts`) para cuando haya a quién aplicárselos.
+ * - `/v1/models` (`qv`) vive en `./modelsList.ts`; `/v1/chat/completions`,
+ *   que la pasarela no sirve, en `./chatCompletions.ts`.
+ * - `/claude-cli/bridge/<token>` no existe en la pasarela: es el servidor MCP
+ *   que el upstream `claude-cli` (`./claudeCli/forwarder.ts`) expone a su
+ *   `claude -p` hijo, y se sirve antes del control de acceso.
+ * - `Mv` (upstream `raw`) está en `./upstreamForwarder.ts`; `jv` (cliente
+ *   de proveedor por SDK, con su renovación de credencial ante 401/403)
+ *   queda pendiente hasta que haya un upstream de nube que servir.
+ * - La excepción de `Bv` que no conmuta un 429 de un upstream `raw` con
+ *   identidad de usuario reenviada no aplica: no hay identidad de usuario.
+ */
+import { randomUUID } from 'node:crypto'
+import { type AccessManager, httpStatusOf } from './access.ts'
+import { type CredentialSelector, ModelCooldownError, type ProxyCredential } from './credentialSelectors.ts'
+import { ANTIGRAVITY_PATH, serveAntigravity } from './antigravity.ts'
+import { BRIDGE_PATH_PREFIX } from './claudeCli/bridge.ts'
+import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
+import { compactMessagesBody } from './context/compactRequest.ts'
+import type { ContextWindowOf } from './context/contextManager.ts'
+import { modelsResponse } from './modelsList.ts'
+import { enrich } from './session/enrich.ts'
+import { type ComboRouter, isComboStrategy } from './combo/comboRouter.ts'
+import type { OrderableTarget } from './targetSorters.ts'
+import type { CredentialCooldown } from './resilience/credentialCooldown.ts'
+import { blamesRequest, type ProviderTraits } from './resilience/errorClassifier.ts'
+import type { RateLimitManager } from './resilience/rateLimitManager.ts'
+import { createRecoverableStream } from './resilience/streamRecovery.ts'
+import { callerScope } from './session/identity.ts'
+import { METADATA_KEYS } from './session/info.ts'
+import { type GatewayRoutingConfig, type GatewayUpstream, modelEntryFor, resolveUpstreamModel } from './upstreamRouting.ts'
+
+/** `fj`: las rutas de inferencia. */
+export const INFERENCE_PATHS = ['/v1/messages', '/v1/messages/count_tokens'] as const
+/** `Yne`: las cabeceras de seguridad de toda respuesta. */
+export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+}
+/** `Xne`, `Qne` y `eie`: el id de petición del cliente, el propio y su forma válida. */
+export const CLIENT_REQUEST_ID_HEADER = 'x-client-request-id'
+export const REQUEST_ID_HEADER = 'x-request-id'
+const REQUEST_ID_FORM = /^[A-Za-z0-9._-]{1,64}$/
+/** Las cabeceras internas que `Jue` retira antes de responder. */
+const INTERNAL_HEADERS = ['x-gateway-upstream', 'x-gateway-model', 'x-gateway-upstream-model', 'x-gateway-upstream-kind', 'x-cri-upstream-kind']
+
+export type ForwardRequest = {
+  upstream: GatewayUpstream
+  upstreamModel: string
+  credential: ProxyCredential
+  path: string
+  /** La query de la petición del cliente, con su `?` (`Sh`), o vacía. */
+  search: string
+  body: Record<string, unknown>
+  headers: Headers
+  signal: AbortSignal
+  /** El identificador de la petición del cliente, para el cuerpo de un error propio. */
+  requestId?: string
+}
+
+export type ProxyServerConfig = {
+  access: AccessManager
+  routing: GatewayRoutingConfig
+  credentials: Record<string, ProxyCredential[] | undefined>
+  /** Si está, las credenciales de un upstream se piden aquí en cada petición en vez de a `credentials`. */
+  credentialsOf?: (upstreamName: string) => ProxyCredential[]
+  selector: CredentialSelector
+  forward: (request: ForwardRequest) => Promise<Response>
+  /** Los rasgos de cada proveedor que el clasificador de errores necesita. */
+  providerTraits?: (provider: string) => ProviderTraits | undefined
+  /**
+   * Reabrir un SSE que se corta antes de que el cliente reciba un byte
+   * (`./resilience/streamRecovery.ts`). Apagada por defecto: retener la
+   * ventana de apertura suma hasta `HOLDBACK_MS` al primer token.
+   */
+  streamRecovery?: { enabled: boolean; maxEarlyRetries?: number }
+  /**
+   * Los límites adaptativos por credencial (`./resilience/rateLimitManager.ts`).
+   * Qué credenciales protege lo decide quien lo construye.
+   */
+  rateLimit?: RateLimitManager
+  /**
+   * El enfriamiento por credencial (`./resilience/credentialCooldown.ts`): un
+   * fallo la aparta del selector mientras dura, y un acierto la devuelve.
+   */
+  cooldown?: CredentialCooldown
+  /**
+   * La compresión previa del contexto (`./context/compactRequest.ts`), por
+   * upstream y con la ventana de su modelo. `contextWindowOf` da esa ventana;
+   * sin él quedan el entorno y las pistas por nombre.
+   */
+  contextCompaction?: { contextWindowOf?: ContextWindowOf }
+  /**
+   * Los combos (`./combo/comboRouter.ts`): la entrada de modelo que declara
+   * `strategy` prueba sus upstreams en el orden de esa estrategia, y cada
+   * desenlace queda en las métricas del combo.
+   */
+  combos?: ComboRouter
+  /**
+   * El puente MCP del upstream `claude-cli` (`./claudeCli/bridge.ts`): sirve
+   * `POST /claude-cli/bridge/<token>` ANTES del control de acceso, porque
+   * quien llama es el `claude -p` hijo, que no conoce la clave del proxy; su
+   * token aleatorio, que sólo él recibió, es la credencial.
+   */
+  claudeCliBridge?: (token: string, request: Request) => Promise<Response>
+}
+
+/** `Mt`: el cuerpo de error del formato Anthropic. */
+/**
+ * La cabecera con que un error fabricado por el proxy declara su mensaje: el
+ * enrutador la lee para nombrar la causa de cada intento fallido sin leer el
+ * cuerpo de un 5xx, que puede no terminar. Va codificada porque una cabecera
+ * no admite caracteres fuera de ISO-8859-1.
+ */
+const ERROR_MESSAGE_HEADER = 'x-thyrox-error-message'
+
+export function errorResponse(status: number, type: string, message: string, requestId?: string): Response {
+  return Response.json(
+    { type: 'error', ...(requestId && { request_id: requestId }), error: { type, message } },
+    { status, headers: { [ERROR_MESSAGE_HEADER]: encodeURIComponent(message) } },
+  )
+}
+
+/** El mensaje que un error del proxy declara; `undefined` en una respuesta ajena. */
+export function errorMessageOf(response: Response): string | undefined {
+  const encoded = response.headers.get(ERROR_MESSAGE_HEADER)
+  return encoded === null ? undefined : decodeURIComponent(encoded)
+}
+
+/**
+ * El 429 de un grupo en enfriamiento (`newModelCooldownErrorWithCause`): el
+ * error del selector más el último fallo de sus credenciales, que dice al
+ * cliente por qué está enfriado y no sólo cuánto le falta.
+ */
+function cooldownResponse(config: ProxyServerConfig, error: ModelCooldownError, credentials: ProxyCredential[]): Response {
+  const cause = config.cooldown?.latestError(credentials)
+  const withCause = new ModelCooldownError(error.model, error.provider, error.resetInMs, cause)
+  return new Response(withCause.message, { status: withCause.statusCode, headers: withCause.headers() })
+}
+
+/** Estados que hacen pasar al siguiente upstream (`Bv`). */
+function fallsOver(status: number): boolean {
+  return status >= 500 || status === 429 || status === 401 || status === 403 || status === 404
+}
+
+/** Lo que la selección de credencial lee del cliente: su alcance y su cuerpo tal como llegó. */
+type SelectionSource = { callerScope: string; payload: string; sourceFormat: string }
+
+type JsonBody = { body: Record<string, unknown>; text: string }
+
+/** El cuerpo de la petición como objeto JSON con su texto, o la respuesta 400 que lo rechaza. */
+async function readJsonObject(request: Request, requestId: string): Promise<JsonBody | Response> {
+  let parsed: unknown
+  const text = await request.text()
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return errorResponse(400, 'invalid_request_error', 'invalid JSON', requestId)
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return errorResponse(400, 'invalid_request_error', 'request body must be a JSON object', requestId)
+  }
+  return { body: parsed as Record<string, unknown>, text }
+}
+
+/** El `model` del cuerpo, o la respuesta 400 que lo rechaza. */
+function requireModel(body: Record<string, unknown>, requestId: string): string | Response {
+  if (!('model' in body) || body.model === '') return errorResponse(400, 'invalid_request_error', 'model is required', requestId)
+  if (typeof body.model !== 'string') return errorResponse(400, 'invalid_request_error', 'model must be a string', requestId)
+  return body.model
+}
+
+async function forwardAcrossUpstreams(config: ProxyServerConfig, request: Request, path: string, requestId: string, scope: string): Promise<Response> {
+  const read = await readJsonObject(request, requestId)
+  if (read instanceof Response) return read
+  return forwardBody(config, request, path, read.body, requestId, { callerScope: scope, payload: read.text, sourceFormat: 'claude' })
+}
+
+/** `Bv`: el cuerpo ya validado, por cada upstream hasta que uno responda. */
+async function forwardBody(
+  config: ProxyServerConfig,
+  request: Request,
+  path: string,
+  body: Record<string, unknown>,
+  requestId: string,
+  source: SelectionSource,
+): Promise<Response> {
+  const model = requireModel(body, requestId)
+  if (model instanceof Response) return model
+  // `Enrich`: la identidad derivada de la conversación, antes de elegir credencial.
+  const enriched = enrich({
+    payload: source.payload,
+    headers: request.headers,
+    sourceFormat: source.sourceFormat,
+    optionsMetadata: source.callerScope ? { [METADATA_KEYS.callerScope]: source.callerScope } : {},
+  })
+
+  const reasons: string[] = []
+  let attempted = false
+  // Los fallos que se conservan para devolver el más informativo, en el orden de `Bv`.
+  let notImplemented: Response | undefined
+  let rateLimited: Response | undefined
+  let unauthorized: Response | undefined
+  let notFound: Response | undefined
+  const discard = (r: Response | undefined) => void r?.body?.cancel().catch(() => {})
+  const combo = await comboPlan(config, model)
+  const startedAt = performance.now()
+  let attempts = 0
+  let lastTried: GatewayUpstream | undefined
+  // Un enfriamiento de todo el grupo no es una petición inválida: vuelve como 429 con su causa.
+  let cooling: { error: ModelCooldownError, credentials: ProxyCredential[] } | undefined
+  const settle = (served: GatewayUpstream | undefined, success: boolean) =>
+    combo?.record(served, success, performance.now() - startedAt, attempts)
+
+  for (const upstream of combo?.upstreams ?? config.routing.upstreams) {
+    if (request.signal.aborted) break
+    const resolved = resolveUpstreamModel(model, upstream, config.routing.models, config.routing.auto_include_builtin_models)
+    if (!resolved.ok) {
+      reasons.push(resolved.error)
+      continue
+    }
+    attempted = true
+    attempts += 1
+    lastTried = upstream
+    // Por upstream, una metadata propia: la afinidad escribe en ella su espacio de nombres.
+    const selection = { headers: request.headers, payload: source.payload, sourceFormat: source.sourceFormat, metadata: { ...enriched.optionsMetadata } }
+    const report = (success: boolean, skipCooldown = false) =>
+      config.selector.onResult?.({ authId: credential.id, provider: upstream.provider, model: resolved.model, success, skipCooldown, options: selection })
+    let credential: ProxyCredential
+    const pool = config.credentialsOf?.(upstream.name) ?? config.credentials[upstream.name] ?? []
+    try {
+      credential = config.selector.pick(upstream.provider, resolved.model, pool, new Date(), selection)
+    } catch (error) {
+      if (error instanceof ModelCooldownError) cooling = { error, credentials: pool }
+      reasons.push(`${upstream.name}: ${error instanceof Error ? error.message : String(error)}`)
+      continue
+    }
+    try {
+      const forwarded: ForwardRequest = {
+        upstream,
+        upstreamModel: resolved.model,
+        credential,
+        path,
+        search: new URL(request.url).search,
+        body: upstreamBody(config, path, upstream.provider, resolved.model, resolved.model === model ? body : { ...body, model: resolved.model }),
+        headers: request.headers,
+        signal: request.signal,
+        requestId,
+      }
+      const limiter = config.rateLimit
+      const response = limiter
+        ? await limiter.withRateLimit(upstream.provider, credential.id, resolved.model, () => config.forward(forwarded), request.signal)
+        : await config.forward(forwarded)
+      // El cuerpo de un 4xx se lee de una copia, que el cliente recibe entera;
+      // el de un 5xx no, porque puede no terminar nunca.
+      const errorText = response.status >= 400 && response.status < 500 ? await response.clone().text() : null
+      limiter?.updateFromHeaders(upstream.provider, credential.id, response.headers, response.status, resolved.model)
+      if (errorText !== null) limiter?.updateFromResponseBody(upstream.provider, credential.id, errorText, response.status, resolved.model)
+      // Un 4xx puede culpar a la petición y no a la credencial.
+      const blamed = errorText !== null
+        && blamesRequest(response.status, errorText, upstream.provider, { traitsOf: config.providerTraits })
+      report(response.status < 400, blamed)
+      if (response.status < 400) config.cooldown?.clear(credential)
+      else config.cooldown?.markUnavailable({ credential, provider: upstream.provider, model: resolved.model, status: response.status, errorText, headers: response.headers })
+      if (fallsOver(response.status)) {
+        reasons.push(`${response.status} ${errorMessageOf(response) ?? response.statusText}`)
+        if (response.status === 501) { discard(notImplemented); notImplemented = response }
+        else if (response.status === 429) { discard(rateLimited); rateLimited = response }
+        else if (response.status === 401 || response.status === 403) { discard(unauthorized); unauthorized = response }
+        else if (response.status === 404) { discard(notFound); notFound = response }
+        else discard(response)
+        continue
+      }
+      for (const kept of [notImplemented, rateLimited, unauthorized, notFound]) discard(kept)
+      settle(upstream, response.status < 400)
+      return recoverable(config, forwarded, response)
+    } catch (error) {
+      // Un cierre del cliente no es culpa de la credencial.
+      report(false, request.signal.aborted)
+      reasons.push(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  if (request.signal.aborted) {
+    for (const kept of [notImplemented, rateLimited, unauthorized, notFound]) discard(kept)
+    return errorResponse(499, 'api_error', 'client closed request', requestId)
+  }
+  if (!attempted) return errorResponse(400, 'invalid_request_error', reasons.join('; '), requestId)
+  settle(lastTried, false)
+  if (rateLimited) { for (const r of [notImplemented, unauthorized, notFound]) discard(r); return rateLimited }
+  if (unauthorized) { for (const r of [notImplemented, notFound]) discard(r); return unauthorized }
+  if (notFound) { discard(notImplemented); return notFound }
+  if (notImplemented) return notImplemented
+  if (cooling) return cooldownResponse(config, cooling.error, cooling.credentials)
+  return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted): ${reasons.join('; ')}`, requestId)
+}
+
+type ComboPlan = {
+  upstreams: GatewayUpstream[]
+  record: (served: GatewayUpstream | undefined, success: boolean, latencyMs: number, attempts: number) => void
+}
+
+/**
+ * Si la entrada del modelo declara una estrategia de combo, los upstreams que
+ * sirven el modelo en el orden de esa estrategia, seguidos de los que no (que
+ * sólo aportan su motivo de rechazo), y cómo registrar el desenlace.
+ */
+async function comboPlan(config: ProxyServerConfig, model: string): Promise<ComboPlan | undefined> {
+  const router = config.combos
+  const entry = router && modelEntryFor(model, config.routing.models)
+  const strategy = entry?.strategy
+  if (!router || !entry || !isComboStrategy(strategy)) return undefined
+  const byName = new Map<string, GatewayUpstream>()
+  const targets: OrderableTarget[] = []
+  for (const upstream of config.routing.upstreams) {
+    const resolved = resolveUpstreamModel(model, upstream, config.routing.models, config.routing.auto_include_builtin_models)
+    if (!resolved.ok) continue
+    byName.set(upstream.name, upstream)
+    targets.push({ executionKey: upstream.name, modelStr: resolved.model, provider: upstream.provider, weight: entry.weights?.[upstream.name] ?? 0 })
+  }
+  const ordered = await router.order(strategy, entry.id, targets)
+  return {
+    upstreams: [...ordered.map(t => byName.get(t.executionKey)!), ...config.routing.upstreams.filter(u => !byName.has(u.name))],
+    record: (served, success, latencyMs, attempts) =>
+      router.recordOutcome(strategy, entry.id, targets, targets.find(t => t.executionKey === served?.name) ?? null, {
+        success, latencyMs, fallbackCount: Math.max(0, attempts - 1),
+      }),
+  }
+}
+
+/** El cuerpo para un upstream: comprimido para la ventana de su modelo, salvo el conteo de tokens, que mide el cuerpo tal como es. */
+function upstreamBody(config: ProxyServerConfig, path: string, provider: string, model: string, body: Record<string, unknown>): Record<string, unknown> {
+  if (!config.contextCompaction || path !== '/v1/messages') return body
+  return compactMessagesBody(body, { provider, model, contextWindowOf: config.contextCompaction.contextWindowOf }).body
+}
+
+/**
+ * La respuesta con su SSE envuelto para reabrirse ante un corte temprano,
+ * contra el mismo upstream y la misma credencial. Una reapertura que no da
+ * 2xx cuenta como fallida y su cuerpo se descarta.
+ */
+function recoverable(config: ProxyServerConfig, forwarded: ForwardRequest, response: Response): Response {
+  const options = config.streamRecovery
+  const isSse = response.headers.get('content-type')?.includes('text/event-stream') ?? false
+  if (!options?.enabled || !isSse || !response.body) return response
+  const reopen = async () => {
+    const next = await config.forward(forwarded)
+    if (next.ok && next.body) return next.body
+    void next.body?.cancel().catch(() => {})
+    return null
+  }
+  const body = createRecoverableStream(response.body, reopen, { finalize: () => {}, maxEarlyRetries: options.maxEarlyRetries })
+  return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers })
+}
+
+/** El `fetch` del servidor: id de petición, cabeceras de seguridad, acceso y reenvío. */
+export function createProxyHandler(config: ProxyServerConfig): (request: Request) => Promise<Response> {
+  return async request => {
+    const offered = request.headers.get(CLIENT_REQUEST_ID_HEADER)
+    const requestId = offered && REQUEST_ID_FORM.test(offered) ? offered : randomUUID()
+    let response: Response
+    try {
+      response = await route(config, request, requestId)
+    } catch {
+      response = errorResponse(500, 'api_error', 'internal server error', requestId)
+    }
+    // Una respuesta de `fetch` tiene cabeceras inmutables: se copia para poder tocarlas.
+    const headers = new Headers(response.headers)
+    for (const name of INTERNAL_HEADERS) headers.delete(name)
+    headers.set(REQUEST_ID_HEADER, requestId)
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) if (!headers.has(name)) headers.set(name, value)
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
+  }
+}
+
+/** El token de una ruta del puente, o nada si la ruta no es del puente. */
+function bridgeTokenOf(pathname: string): string | undefined {
+  if (!pathname.startsWith(BRIDGE_PATH_PREFIX)) return undefined
+  const token = pathname.slice(BRIDGE_PATH_PREFIX.length)
+  return token !== '' && !token.includes('/') ? token : undefined
+}
+
+async function route(config: ProxyServerConfig, request: Request, requestId: string): Promise<Response> {
+  const { pathname } = new URL(request.url)
+  if (request.method === 'GET' && pathname === '/healthz') return new Response('ok', { status: 200 })
+  const bridgeToken = bridgeTokenOf(pathname)
+  if (bridgeToken !== undefined && config.claudeCliBridge) return config.claudeCliBridge(bridgeToken, request)
+  const access = config.access.authenticate(request)
+  if (access.error) return errorResponse(httpStatusOf(access.error), 'authentication_error', access.error.message, requestId)
+  // `requestCallerScope`: el espacio de afinidad de este cliente sale de su clave de acceso, nunca guardada en claro.
+  const scope = callerScope(access.result?.principal ?? '')
+  if (request.method === 'POST' && (INFERENCE_PATHS as readonly string[]).includes(pathname)) {
+    return forwardAcrossUpstreams(config, request, pathname, requestId, scope)
+  }
+  if (request.method === 'GET' && pathname === '/v1/models') {
+    return modelsResponse(config.routing.models, config.routing.upstreams, config.routing.auto_include_builtin_models)
+  }
+  if (request.method === 'POST' && pathname === CHAT_COMPLETIONS_PATH) {
+    const read = await readJsonObject(request, requestId)
+    if (read instanceof Response) return read
+    const model = requireModel(read.body, requestId)
+    if (model instanceof Response) return model
+    const source = { callerScope: scope, payload: read.text, sourceFormat: 'openai' }
+    return serveChatCompletion(model, read.body, messagesBody => forwardBody(config, request, '/v1/messages', messagesBody, requestId, source))
+  }
+  if (request.method === 'POST' && pathname === ANTIGRAVITY_PATH) {
+    const read = await readJsonObject(request, requestId)
+    if (read instanceof Response) return read
+    const model = requireModel(read.body, requestId)
+    if (model instanceof Response) return model
+    const source = { callerScope: scope, payload: read.text, sourceFormat: 'antigravity' }
+    return serveAntigravity(model, read.body, messagesBody => forwardBody(config, request, '/v1/messages', messagesBody, requestId, source))
+  }
+  return new Response('not found', { status: 404 })
+}

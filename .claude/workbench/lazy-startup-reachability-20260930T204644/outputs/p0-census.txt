@@ -1,0 +1,109 @@
+## nombres de autoridad (archivos versionados en src bin tests install.sh, sin dist)
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+InfrastructureBootstrap	0
+infrastructure_ensure	3
+PodmanWorkerManager	8
+thyrox_toolchain_require_	69
+hardware-inventory	7
+check-toolchain-ready	12
+reach.py	196
+THYROX_CONSUMER	29
+THYROX_REACH_ROOT	35
+user_wiring	14
+check_exports_types	6
+check_package_typecheck	4
+emit_declarations	18
+provider_refresh	1
+bun.lock	13
+lightModes	2
+runLightMode	3
+closure_graph	5
+healthcheck	4
+## funciones require/ensure del toolchain
+src/lib/toolchain.sh:thyrox_toolchain_load_declared() src/lib/infrastructure.sh:thyrox_infrastructure_container_names() src/lib/infrastructure.sh:thyrox_infrastructure_create_argv() src/lib/infrastructure.sh:thyrox_infrastructure_health_check_argv() src/lib/infrastructure.sh:thyrox_infrastructure_image() src/lib/infrastructure.sh:thyrox_infrastructure_disk_need_bytes() src/lib/infrastructure.sh:thyrox_infrastructure_inspect() 
+## ensure/health en infraestructura
+src/lib/infrastructure.sh:69:thyrox_infrastructure_container_names() {
+src/lib/infrastructure.sh:83:_thyrox_infrastructure_create_argv_postgres() {
+src/lib/infrastructure.sh:109:_thyrox_infrastructure_create_argv_redis() {
+src/lib/infrastructure.sh:132:thyrox_infrastructure_create_argv() {
+src/lib/infrastructure.sh:154:thyrox_infrastructure_health_check_argv() {
+src/lib/infrastructure.sh:190:thyrox_infrastructure_image() {
+src/lib/infrastructure.sh:209:thyrox_infrastructure_disk_need_bytes() {
+src/lib/infrastructure.sh:231:thyrox_infrastructure_inspect() {
+src/session/infrastructure_ensure.sh:72:_infra_ensure_network() {
+src/session/infrastructure_ensure.sh:92:_infra_run_health_check() {
+src/session/infrastructure_ensure.sh:120:_infra_image_missing() {
+src/session/infrastructure_ensure.sh:130:_infra_admit_disk_or_refuse() {
+src/session/infrastructure_ensure.sh:144:_infra_release_disk() {
+src/session/infrastructure_ensure.sh:153:_infra_create_container() {
+src/session/infrastructure_ensure.sh:172:_infra_ensure_container() {
+## podmanWorkerManager: métodos públicos
+63:export type WorkerAccelerator = 'cpu' | 'cuda'
+66:export type HardwareVerdict = 'nvidia-usable' | 'partial' | 'none'
+71:export type WorkerLaunchRequest = {
+82:export type ManagedWorker = {
+90:export interface VramAdmissionPort {
+91:  admit(needMib: number, ownerPid: number): Promise<VramAdmission>
+92:  release(ownerPid: number): Promise<void>
+95:export type PodmanWorkerManagerDeps = {
+107:export class UnsupportedAcceleratorError extends Error {
+116:export class VramAdmissionTimeoutError extends Error {
+123:export class VramOwnerBusyError extends Error {
+131:export class WorkerAlreadyManagedError extends Error {
+138:export type WorkerLaunchStage = 'create' | 'start' | 'liveness'
+140:export class WorkerLaunchError extends Error {
+161:export class PodmanWorkerManager {
+166:  managedWorkers(): readonly ManagedWorker[] {
+170:  async launch(request: WorkerLaunchRequest): Promise<ManagedWorker> {
+186:  async retire(workerId: string): Promise<WorkerContainerRetirement> {
+195:  async retireAll(): Promise<WorkerContainerRetirement[]> {
+202:  async reconcileOrphans(): Promise<WorkerContainerRetirement[]> {
+272:export function parseHardwareVerdict(inventory: string): HardwareVerdict {
+298:export function createPodmanExecutor(): PodmanExecutor {
+322:export async function readHardwareVerdict(): Promise<HardwareVerdict> {
+337:export function createVramAdmissionPort(ledger: string): VramAdmissionPort {
+## pruebas de arranque ligero existentes
+35:describe('modos ligeros', () => {
+36:  test('providers y mitm son ligeros; el resto no', () => {
+44:  test('un modo que no es ligero no se ejecuta aquí', async () => {
+48:  test('cli.tsx resuelve providers sin cargar el arranque completo', () => {
+src/packages/cli/__tests__/lightModes.test.ts
+src/packages/cli/__tests__/productName.test.ts
+src/packages/cli/__tests__/startupFailure.test.ts
+src/packages/cli/__tests__/versionMacro.test.ts
+tests/integration/cli-arguments.test.ts
+tests/lib/test-toolchain-parallel.sh
+tests/lib/test-toolchain-pgvector.sh
+tests/lib/test-toolchain-podman.sh
+tests/lib/test-toolchain-redis.sh
+tests/session/test-gnu-time-launchers.sh
+## generate_bin: familias
+166:MAIN_GUARD = re.compile(r"__name__\s*==\s*.__main__.")
+169:GENERATED_MARKER = "# Generado por src/session/generate_bin.py — no editar a mano."
+174:DEFAULT_USER_BIN_DIR = pathlib.Path.home() / ".local" / "bin"
+186:PYTHON_FALLBACK_VAR = "THYROX_PYTHON_FALLBACK"
+189:def minimum_python(root: pathlib.Path) -> tuple[int, int]:
+232:def repository_root() -> pathlib.Path:
+251:def is_shell_entrypoint(path: pathlib.Path) -> bool:
+277:def is_python_entrypoint(path: pathlib.Path) -> bool:
+288:def discover_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Path]:
+309:def entrypoints_outside_universe(root: pathlib.Path) -> list[pathlib.Path]:
+337:def resolve_bin_name(stem: str) -> str:
+354:def needs_package_context(path: pathlib.Path) -> bool:
+394:def module_dotted_name(target: pathlib.Path, root: pathlib.Path) -> str:
+417:def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None = None) -> str:
+510:def user_bin_wrapper_body(stem: str) -> str:
+528:def path_warning(dest: pathlib.Path, path_value: str | None = None) -> str | None:
+551:def install_user_bin(plan: dict[str, str],
+614:def bun_feature_arguments(bin_name: str) -> str:
+619:def is_typescript_entrypoint(path: pathlib.Path) -> bool:
+646:def _kebab(name: str) -> str:
+666:def typescript_bin_name(target: pathlib.Path, root: pathlib.Path) -> str:
+693:def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Path]:
+730:def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
+778:def planned_files(root: pathlib.Path) -> dict[str, str]:
+814:EXERCISE_PROGRAM = """
+834:def exercise_entrypoints(root: pathlib.Path,
+891:def apply_plan(root: pathlib.Path, plan: dict[str, str]) -> tuple[list[str], list[str]]:
+913:def current_state(root: pathlib.Path) -> dict[str, str]:
+922:def main(argv: list[str] | None = None) -> int:

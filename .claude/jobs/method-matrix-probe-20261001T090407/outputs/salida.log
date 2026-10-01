@@ -1,0 +1,20 @@
+endpoint	GET	HEAD	POST	PUT	PATCH	DELETE
+/	200	200	405	405	405	405
+/api/version	200	200	405	405	405	405
+/api/tags	200	200	405	405	405	405
+/api/ps	200	405	405	405	405	405
+/api/show	405	405	400	405	405	405
+/api/blobs/<digest>	405	404	400	405	405	405
+/api/create	405	405	400	405	405	405
+/api/copy	405	405	400	405	405	405
+/api/delete	405	405	405	405	405	400
+/api/pull	405	405	400	405	405	405
+/api/push	405	405	400	405	405	405
+/api/generate	405	405	400	405	405	405
+/api/chat	405	405	400	405	405	405
+/api/embed	405	405	400	405	405	405
+/api/embeddings	405	405	400	405	405	405
+/v1/models	200	405	405	405	405	405
+/v1/chat/completions	405	405	400	405	405	405
+show_by_get=405
+__BG_EXIT__=0

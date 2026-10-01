@@ -54,6 +54,7 @@ import {
 } from '../teleport.js'
 import type { TodoList } from '../todo/types.js'
 import type { UltraplanPhase } from '@thyrox/repl/ultraplan/ccrSession.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type RemoteAgentTaskState = TaskStateBase & {
   type: 'remote_agent'
@@ -208,7 +209,7 @@ export function formatPreconditionError(
     case 'no_git_remote':
       return 'Background tasks require a GitHub remote. Add one with `git remote add origin REPO_URL`.'
     case 'github_app_not_installed':
-      return 'The Claude GitHub app must be installed on this repository first.\nhttps://github.com/apps/claude/installations/new'
+      return `The ${PRODUCT_NAME} GitHub app must be installed on this repository first.\nhttps://github.com/apps/claude/installations/new`
     case 'policy_blocked':
       return "Remote sessions are disabled by your organization's policy. Contact your organization admin to enable them."
   }
@@ -312,7 +313,7 @@ The remote Ultraplan session did not produce a plan (${reason}). Inspect the ses
  *
  * Two producers, two event shapes:
  * - bughunter mode: run_hunt.sh is a SessionStart hook; its echo lands as
- *   {type:'system', subtype:'hook_progress', stdout:'...'}. Claude never
+ *   {type:'system', subtype:'hook_progress', stdout:'...'}. thyrox never
  *   takes a turn so there are zero assistant messages.
  * - prompt mode: a real assistant turn wraps the review in the tag.
  *
@@ -846,7 +847,7 @@ function startRemoteSessionPolling(
         consecutiveIdlePolls = 0
       }
       const stableIdle = consecutiveIdlePolls >= STABLE_IDLE_POLLS
-      // stableIdle is a prompt-mode completion signal (Claude stops writing
+      // stableIdle is a prompt-mode completion signal (thyrox stops writing
       // → session idles → done). In bughunter mode the session is "idle" the
       // entire time the SessionStart hook runs; the previous guard checked
       // hasAssistantEvents as a prompt-mode proxy, but post_stage() now

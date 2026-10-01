@@ -1,6 +1,7 @@
 import { readdir } from 'fs/promises'
 import { join } from 'path'
 import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Production extension ID
 const PROD_EXTENSION_ID = 'fcoeoabgfenejglbffodgkkbkcdhcgfn'
@@ -36,7 +37,7 @@ type Logger = (message: string) => void
 
 
 /**
- * Detects if the Claude in Chrome extension is installed by checking the Extensions
+ * Detects if the thyrox in Chrome extension is installed by checking the Extensions
  * directory across all supported Chromium-based browsers and their profiles.
  *
  * This is a portable version that can be used by both TUI and VS Code extension.
@@ -53,7 +54,7 @@ async function detectExtensionInstallationPortable(
   browser: ChromiumBrowser | null
 }> {
   if (browserPaths.length === 0) {
-    log?.(`[Claude in Chrome] No browser paths to check`)
+    log?.(`[${PRODUCT_NAME} in Chrome] No browser paths to check`)
     return { isInstalled: false, browser: null }
   }
 
@@ -82,7 +83,7 @@ async function detectExtensionInstallationPortable(
 
     if (profileDirs.length > 0) {
       log?.(
-        `[Claude in Chrome] Found ${browser} profiles: ${profileDirs.join(', ')}`,
+        `[${PRODUCT_NAME} in Chrome] Found ${browser} profiles: ${profileDirs.join(', ')}`,
       )
     }
 
@@ -99,7 +100,7 @@ async function detectExtensionInstallationPortable(
         try {
           await readdir(extensionPath)
           log?.(
-            `[Claude in Chrome] Extension ${extensionId} found in ${browser} ${profile}`,
+            `[${PRODUCT_NAME} in Chrome] Extension ${extensionId} found in ${browser} ${profile}`,
           )
           return { isInstalled: true, browser }
         } catch {
@@ -109,7 +110,7 @@ async function detectExtensionInstallationPortable(
     }
   }
 
-  log?.(`[Claude in Chrome] Extension not found in any browser`)
+  log?.(`[${PRODUCT_NAME} in Chrome] Extension not found in any browser`)
   return { isInstalled: false, browser: null }
 }
 

@@ -1,0 +1,1902 @@
+diff --git a/bin/local-models-catalog b/bin/local-models-catalog
+new file mode 100755
+index 000000000..1b42df2f0
+--- /dev/null
++++ b/bin/local-models-catalog
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
++export THYROX_ROOT
++LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
++if [ ! -r "$LIB" ]; then
++  echo "bin/local-models-catalog: no alcanza $LIB — el arbol esta incompleto." >&2
++  exit 1
++fi
++# shellcheck source=/dev/null
++source "$LIB"
++THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
++  thyrox_toolchain_require_bun || exit 1
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/local-models/bin/catalog.ts" "$@"
+diff --git a/bin/local-models-qualify b/bin/local-models-qualify
+new file mode 100755
+index 000000000..26383e3fa
+--- /dev/null
++++ b/bin/local-models-qualify
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
++export THYROX_ROOT
++LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
++if [ ! -r "$LIB" ]; then
++  echo "bin/local-models-qualify: no alcanza $LIB — el arbol esta incompleto." >&2
++  exit 1
++fi
++# shellcheck source=/dev/null
++source "$LIB"
++THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
++  thyrox_toolchain_require_bun || exit 1
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/local-models/bin/qualify.ts" "$@"
+diff --git a/src/packages/local-models/__tests__/commands.test.ts b/src/packages/local-models/__tests__/commands.test.ts
+new file mode 100644
+index 000000000..1e2576621
+--- /dev/null
++++ b/src/packages/local-models/__tests__/commands.test.ts
+@@ -0,0 +1,205 @@
++import { afterAll, afterEach, describe, expect, test } from 'bun:test'
++import { createHash } from 'node:crypto'
++import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { parseQualifications } from '@thyrox/model-artifacts/modelQualification.ts'
++import { syntheticGgufBytes } from '@thyrox/model-artifacts/testing/syntheticGguf.ts'
++
++import { runCatalogCommand, type CommandContext } from '../catalogCommand.js'
++import { runQualifyCommand } from '../qualifyCommand.js'
++import { CORRECT_TOOL_CALLING_REPLIES, startFakeOllama, type FakeOllama, type FakeOllamaScript } from '../testing/fakeOllama.js'
++
++const WORKDIR = mkdtempSync(join(tmpdir(), 'local-models-commands-'))
++afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
++
++const MANIFEST_DIGEST = 'd'.repeat(64)
++const GGUF = syntheticGgufBytes({
++  entries: [
++    ['general.architecture', { type: 'string', value: 'qwen2' }],
++    ['qwen2.block_count', { type: 'uint32', value: 24 }],
++    ['qwen2.context_length', { type: 'uint32', value: 4096 }],
++    ['qwen2.embedding_length', { type: 'uint32', value: 896 }],
++    ['qwen2.attention.head_count', { type: 'uint32', value: 14 }],
++    ['qwen2.attention.head_count_kv', { type: 'uint32', value: 2 }],
++  ],
++})
++const GGUF_SHA256 = createHash('sha256').update(GGUF).digest('hex')
++const CONTRACT_NAME = 'thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-dddddddddddd'
++
++let counter = 0
++let server: FakeOllama | undefined
++afterEach(async () => {
++  await server?.stop()
++  server = undefined
++})
++
++interface Run {
++  readonly code: number
++  readonly stdout: string[]
++  readonly stderr: string[]
++}
++
++interface Installation {
++  readonly root: string
++  readonly env: Record<string, string>
++}
++
++function installation(chat: FakeOllamaScript['chat']): Installation {
++  counter += 1
++  const root = join(WORKDIR, `install-${counter}`)
++  const mountpoint = join(root, 'volume')
++  mkdirSync(join(mountpoint, 'models', 'blobs'), { recursive: true })
++  writeFileSync(join(mountpoint, 'models', 'blobs', `sha256-${GGUF_SHA256}`), GGUF)
++  const podman = join(root, 'podman')
++  writeFileSync(podman, `#!/bin/sh\necho "$@" >> '${podman}.calls'\necho '${mountpoint}'\n`)
++  chmodSync(podman, 0o755)
++  server = startFakeOllama({
++    tags: [{ name: 'qwen2.5:0.5b', digest: `sha256:${MANIFEST_DIGEST}` }],
++    show: { modelfile: `FROM /root/.ollama/models/blobs/sha256-${GGUF_SHA256}\n`, details: { quantization_level: 'Q4_K_M' }, capabilities: ['completion', 'tools'] },
++    chat,
++  })
++  return {
++    root,
++    env: { THYROX_INFRA_OLLAMA_PORT: String(server.port), THYROX_INFRA_OLLAMA_VOLUME: 'probe-volume', THYROX_TOOLCHAIN_PODMAN_BIN: podman },
++  }
++}
++
++function context(install: Installation, stdout: string[], stderr: string[]): CommandContext {
++  return {
++    env: install.env,
++    thyroxRoot: install.root,
++    output: { stdout: line => stdout.push(line), stderr: line => stderr.push(line) },
++    now: () => new Date('2026-10-01T07:00:00.000Z'),
++  }
++}
++
++async function run(command: typeof runCatalogCommand, argv: string[], install: Installation): Promise<Run> {
++  const stdout: string[] = []
++  const stderr: string[] = []
++  const code = await command(argv, context(install, stdout, stderr))
++  return { code, stdout, stderr }
++}
++
++function correct(prompt: string) {
++  return CORRECT_TOOL_CALLING_REPLIES[prompt] ?? { content: '' }
++}
++
++describe('local-models-catalog', () => {
++  test('declare inspecciona el volumen declarado y guarda bajo .thyrox/models de la raíz', async () => {
++    const install = installation(correct)
++    const result = await run(runCatalogCommand, ['declare', 'qwen2.5:0.5b'], install)
++    expect(result).toMatchObject({ code: 0, stderr: [] })
++    expect(result.stdout[0]).toContain(CONTRACT_NAME)
++    expect(readFileSync(`${install.env.THYROX_TOOLCHAIN_PODMAN_BIN}.calls`, 'utf8')).toContain('volume inspect probe-volume')
++    expect(readFileSync(join(install.root, '.thyrox/models/catalog.json'), 'utf8')).toContain(CONTRACT_NAME)
++    const listed = await run(runCatalogCommand, ['list', '--json'], install)
++    expect(JSON.parse(listed.stdout[0] as string).entries.map((e: { name: string }) => e.name)).toEqual([CONTRACT_NAME])
++  })
++
++  test('THYROX_MODEL_CATALOG gana a la ruta por defecto', async () => {
++    const install = installation(correct)
++    const declared = join(install.root, 'elsewhere', 'catalog.json')
++    const result = await run(runCatalogCommand, ['declare', 'qwen2.5:0.5b'], { ...install, env: { ...install.env, THYROX_MODEL_CATALOG: declared } })
++    expect(result.code).toBe(0)
++    expect(existsSync(declared)).toBe(true)
++    expect(existsSync(join(install.root, '.thyrox/models/catalog.json'))).toBe(false)
++  })
++
++  test('un modelo no instalado sale 2 con la causa', async () => {
++    const install = installation(correct)
++    const result = await run(runCatalogCommand, ['declare', 'llama3.2:1b'], install)
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('no está instalado')
++  })
++
++  test('list sobre un catálogo inválido sale 2 con la ruta, no una lista vacía', async () => {
++    const install = installation(correct)
++    mkdirSync(join(install.root, '.thyrox/models'), { recursive: true })
++    writeFileSync(join(install.root, '.thyrox/models/catalog.json'), 'nope')
++    const result = await run(runCatalogCommand, ['list'], install)
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('catalog.json')
++  })
++
++  test('sin subcomando conocido sale 2 con el uso', async () => {
++    const result = await run(runCatalogCommand, ['purge'], installation(correct))
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('uso:')
++  })
++})
++
++describe('local-models-qualify', () => {
++  async function declaredInstallation(chat: FakeOllamaScript['chat']): Promise<Installation> {
++    const install = installation(chat)
++    expect((await run(runCatalogCommand, ['declare', 'qwen2.5:0.5b'], install)).code).toBe(0)
++    return install
++  }
++
++  function storedQualifications(install: Installation) {
++    return parseQualifications(readFileSync(join(install.root, '.thyrox/models/qualifications.json'), 'utf8'))
++  }
++
++  test('seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo', async () => {
++    const install = await declaredInstallation(correct)
++    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica'], install)
++    expect(result.code).toBe(0)
++    expect(result.stdout.at(-1)).toContain('aprobada')
++    const [stored] = storedQualifications(install)
++    expect(stored).toMatchObject({ model: CONTRACT_NAME, taskClass: 'mecanica', passed: true, contextTokens: 4096 })
++  })
++
++  test('--context declarado viaja como num_ctx', async () => {
++    const install = await declaredInstallation(correct)
++    expect((await run(runQualifyCommand, [CONTRACT_NAME, 'analisis', '--context', '2048'], install)).code).toBe(0)
++    const chat = server?.requests.find(r => r.path === '/api/chat')?.body as { options: { num_ctx: number } }
++    expect(chat.options.num_ctx).toBe(2048)
++    expect(storedQualifications(install)[0]?.contextTokens).toBe(2048)
++  })
++
++  test('suspendida: sale 1 y también se escribe', async () => {
++    const install = await declaredInstallation(() => ({ content: 'no' }))
++    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica'], install)
++    expect(result.code).toBe(1)
++    expect(storedQualifications(install)[0]?.passed).toBe(false)
++  })
++
++  test('un modelo fuera del catálogo sale 2 sin medir', async () => {
++    const install = installation(correct)
++    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica'], install)
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('no está en el catálogo')
++    expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
++  })
++
++  test('--context por encima del máximo del modelo sale 2 sin medir', async () => {
++    const install = await declaredInstallation(correct)
++    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica', '--context', '8192'], install)
++    expect(result.code).toBe(2)
++    expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
++  })
++
++  test('una clase desconocida o un --context no entero salen 2 con el uso', async () => {
++    const install = installation(correct)
++    for (const argv of [[CONTRACT_NAME, 'rapida'], [CONTRACT_NAME, 'mecanica', '--context', 'x'], [CONTRACT_NAME]]) {
++      const result = await run(runQualifyCommand, argv, install)
++      expect(result.code).toBe(2)
++      expect(result.stderr.join('\n')).toContain('uso:')
++    }
++  })
++})
++
++describe('entradas bin/*.ts', () => {
++  test('bin/catalog.ts corre la orden con el entorno del proceso y propaga su código', () => {
++    const install = installation(correct)
++    const result = Bun.spawnSync([process.execPath, join(import.meta.dir, '..', 'bin', 'catalog.ts'), 'list'], {
++      env: { ...process.env, ...install.env, THYROX_ROOT: install.root }, stdin: 'ignore',
++    })
++    expect(result.exitCode).toBe(0)
++    expect(result.stdout.toString()).toBe('')
++    const refused = Bun.spawnSync([process.execPath, join(import.meta.dir, '..', 'bin', 'qualify.ts')], { env: { ...process.env, THYROX_ROOT: install.root }, stdin: 'ignore' })
++    expect(refused.exitCode).toBe(2)
++    expect(refused.stderr.toString()).toContain('uso:')
++  })
++})
+diff --git a/src/packages/local-models/__tests__/declareInstalledModel.test.ts b/src/packages/local-models/__tests__/declareInstalledModel.test.ts
+new file mode 100644
+index 000000000..dcea9fbfe
+--- /dev/null
++++ b/src/packages/local-models/__tests__/declareInstalledModel.test.ts
+@@ -0,0 +1,150 @@
++import { afterAll, afterEach, describe, expect, test } from 'bun:test'
++import { createHash } from 'node:crypto'
++import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
++import { thyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
++import { syntheticGgufBytes } from '@thyrox/model-artifacts/testing/syntheticGguf.ts'
++
++import { declareInstalledModel, ModelDeclarationError } from '../declareInstalledModel.js'
++import { OllamaApi } from '../ollamaApi.js'
++import { startFakeOllama, type FakeOllama, type FakeOllamaScript } from '../testing/fakeOllama.js'
++
++const WORKDIR = mkdtempSync(join(tmpdir(), 'declare-installed-'))
++afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
++
++const MANIFEST_DIGEST = 'c'.repeat(64)
++const NOW = new Date('2026-10-01T03:04:05.678Z')
++const GGUF = syntheticGgufBytes({
++  entries: [
++    ['general.architecture', { type: 'string', value: 'qwen2' }],
++    ['qwen2.block_count', { type: 'uint32', value: 24 }],
++    ['qwen2.context_length', { type: 'uint32', value: 32_768 }],
++    ['qwen2.embedding_length', { type: 'uint32', value: 896 }],
++    ['qwen2.attention.head_count', { type: 'uint32', value: 14 }],
++    ['qwen2.attention.head_count_kv', { type: 'uint32', value: 2 }],
++  ],
++})
++const GGUF_SHA256 = createHash('sha256').update(GGUF).digest('hex')
++const CONTRACT_NAME = thyroxModelName({ repository: 'library/qwen2.5-0.5b', quantization: 'q4_k_m', source: 'ollama', revision: MANIFEST_DIGEST })
++
++let counter = 0
++let server: FakeOllama | undefined
++afterEach(async () => {
++  await server?.stop()
++  server = undefined
++})
++
++interface Fixture {
++  readonly mountpoint: string
++  readonly catalogPath: string
++}
++
++function fixture(blobBytes: Uint8Array = GGUF): Fixture {
++  counter += 1
++  const mountpoint = join(WORKDIR, `volume-${counter}`)
++  mkdirSync(join(mountpoint, 'models', 'blobs'), { recursive: true })
++  writeFileSync(join(mountpoint, 'models', 'blobs', `sha256-${GGUF_SHA256}`), blobBytes)
++  return { mountpoint, catalogPath: join(WORKDIR, `catalog-${counter}.json`) }
++}
++
++function installedScript(overrides: Partial<FakeOllamaScript> = {}): FakeOllamaScript {
++  return {
++    tags: [{ name: 'qwen2.5:0.5b', digest: MANIFEST_DIGEST }],
++    show: {
++      modelfile: `FROM /root/.ollama/models/blobs/sha256-${GGUF_SHA256}\nTEMPLATE x\n`,
++      details: { quantization_level: 'Q4_K_M' },
++      capabilities: ['completion', 'tools', 'thinking'],
++    },
++    ...overrides,
++  }
++}
++
++async function declare(script: FakeOllamaScript, files: Fixture, name = 'qwen2.5:0.5b') {
++  server = startFakeOllama(script)
++  return declareInstalledModel(name, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW })
++}
++
++function paths(): string[] {
++  return server?.requests.map(request => request.path) ?? []
++}
++
++describe('declareInstalledModel — del Ollama gestionado al catálogo', () => {
++  test('construye la entrada con revisión, cuantización, digest y bytes medidos, la copia al nombre contractual y la guarda', async () => {
++    const files = fixture()
++    const entry = await declare(installedScript(), files)
++    expect(entry.name).toBe(CONTRACT_NAME)
++    expect(entry.source).toBe('ollama')
++    expect(entry.revision).toBe(MANIFEST_DIGEST)
++    expect(entry.quantization).toBe('q4_k_m')
++    expect(entry.artifact).toEqual({ format: 'gguf', sha256: GGUF_SHA256, bytes: GGUF.length })
++    expect(entry.maxContextLength).toBe(32_768)
++    expect(entry.capabilities).toEqual(['completion', 'tools'])
++    expect(entry.declaredAt).toBe('2026-10-01T03:04:05Z')
++    const copy = server?.requests.find(request => request.path === '/api/copy')
++    expect(copy?.body).toEqual({ source: 'qwen2.5:0.5b', destination: CONTRACT_NAME })
++    expect((await loadModelCatalog(files.catalogPath)).byName(CONTRACT_NAME)).toEqual(entry)
++  })
++
++  test('sin etiqueta se busca como :latest', async () => {
++    const files = fixture()
++    const entry = await declare(installedScript({ tags: [{ name: 'qwen3:latest', digest: MANIFEST_DIGEST }] }), files, 'qwen3')
++    expect(entry.repository).toBe('library/qwen3-latest')
++  })
++
++  test('un modelo que /api/tags no lista se rehúsa sin copiar ni escribir', async () => {
++    const files = fixture()
++    await expect(declare(installedScript({ tags: [] }), files)).rejects.toThrow(/qwen2.5:0.5b.*no está instalado/)
++    expect(paths()).not.toContain('/api/copy')
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++
++  test('un blob cuyo sha256 no coincide con su nombre se rehúsa sin copiar', async () => {
++    const files = fixture(new Uint8Array([...GGUF, 0]))
++    await expect(declare(installedScript(), files)).rejects.toThrow(/sha256/)
++    expect(paths()).not.toContain('/api/copy')
++  })
++
++  test('un modelo sin ninguna capacidad del catálogo se rehúsa', async () => {
++    const script = installedScript()
++    const files = fixture()
++    await expect(declare({ ...script, show: { ...script.show, capabilities: ['vision'] } }, files)).rejects.toThrow(ModelDeclarationError)
++  })
++
++  test('un nombre que el catálogo ya declara con otro contenido se rehúsa antes de copiar', async () => {
++    const files = fixture()
++    await declare(installedScript(), files)
++    await server?.stop()
++    const before = readFileSync(files.catalogPath, 'utf8')
++    const script = installedScript()
++    await expect(declare({ ...script, show: { ...script.show, capabilities: ['completion'] } }, files)).rejects.toThrow(/ya declara/)
++    expect(paths()).not.toContain('/api/copy')
++    expect(readFileSync(files.catalogPath, 'utf8')).toBe(before)
++  })
++
++  test('declarar dos veces lo mismo deja el catálogo igual', async () => {
++    const files = fixture()
++    await declare(installedScript(), files)
++    await server?.stop()
++    const before = readFileSync(files.catalogPath, 'utf8')
++    await declare(installedScript(), files)
++    expect(readFileSync(files.catalogPath, 'utf8')).toBe(before)
++  })
++
++  test('redeclarar más tarde conserva el instante de la primera declaración', async () => {
++    const files = fixture()
++    const first = await declare(installedScript(), files)
++    await server?.stop()
++    server = startFakeOllama(installedScript())
++    const later = await declareInstalledModel('qwen2.5:0.5b', { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => new Date('2026-10-02T00:00:00Z') })
++    expect(later.declaredAt).toBe(first.declaredAt)
++  })
++
++  test('si /api/copy falla, el catálogo no se escribe', async () => {
++    const files = fixture()
++    await expect(declare(installedScript({ copyStatus: 500 }), files)).rejects.toThrow(/\/api\/copy/)
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++})
+diff --git a/src/packages/local-models/__tests__/ollamaName.test.ts b/src/packages/local-models/__tests__/ollamaName.test.ts
+new file mode 100644
+index 000000000..828d93604
+--- /dev/null
++++ b/src/packages/local-models/__tests__/ollamaName.test.ts
+@@ -0,0 +1,26 @@
++import { describe, expect, test } from 'bun:test'
++
++import { InvalidOllamaNameError, repositoryOfOllamaName } from '../ollamaName.js'
++
++describe('repositoryOfOllamaName — `<namespace>/<modelo>-<etiqueta>` del registro', () => {
++  test('sin namespace es library, y la etiqueta se pega al modelo', () => {
++    expect(repositoryOfOllamaName('qwen2.5:0.5b')).toBe('library/qwen2.5-0.5b')
++  })
++
++  test('sin etiqueta es latest', () => {
++    expect(repositoryOfOllamaName('qwen3')).toBe('library/qwen3-latest')
++  })
++
++  test('con namespace se conserva', () => {
++    expect(repositoryOfOllamaName('someone/tiny-model:q4')).toBe('someone/tiny-model-q4')
++  })
++
++  test('con host del registro se descarta el host', () => {
++    expect(repositoryOfOllamaName('registry.ollama.ai/library/llama3.2:1b')).toBe('library/llama3.2-1b')
++  })
++
++  test('un nombre vacío o con más de tres segmentos se rehúsa', () => {
++    expect(() => repositoryOfOllamaName('')).toThrow(InvalidOllamaNameError)
++    expect(() => repositoryOfOllamaName('a/b/c/d:e')).toThrow(InvalidOllamaNameError)
++  })
++})
+diff --git a/src/packages/local-models/__tests__/qualificationStore.test.ts b/src/packages/local-models/__tests__/qualificationStore.test.ts
+new file mode 100644
+index 000000000..64dc4df24
+--- /dev/null
++++ b/src/packages/local-models/__tests__/qualificationStore.test.ts
+@@ -0,0 +1,58 @@
++import { afterAll, describe, expect, test } from 'bun:test'
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import type { ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
++
++import { QualificationFileError, appendQualification, loadQualifications } from '../qualificationStore.js'
++
++const WORKDIR = mkdtempSync(join(tmpdir(), 'qualification-store-'))
++afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
++
++const QUALIFICATION: ModelQualification = {
++  model: 'thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-cccccccccccc',
++  taskClass: 'mecanica',
++  suite: 'tool-calling@1',
++  casesPassed: 6,
++  casesTotal: 6,
++  passed: true,
++  contextTokens: 8192,
++  tokensPerSecond: 31.5,
++  measuredAt: '2026-10-01T05:00:00.000Z',
++}
++
++describe('qualificationStore', () => {
++  test('un archivo ausente es una lista vacía', async () => {
++    expect(await loadQualifications(join(WORKDIR, 'absent.json'))).toEqual([])
++  })
++
++  test('añadir conserva las anteriores y crea el directorio', async () => {
++    const path = join(WORKDIR, 'nested', 'dir', 'qualifications.json')
++    await appendQualification(path, QUALIFICATION)
++    const later = { ...QUALIFICATION, passed: false, casesPassed: 5, measuredAt: '2026-10-01T06:00:00.000Z' }
++    await appendQualification(path, later)
++    expect(await loadQualifications(path)).toEqual([QUALIFICATION, later])
++    expect(readFileSync(path, 'utf8').endsWith('\n')).toBe(true)
++  })
++
++  test('un archivo inválido se rehúsa con la ruta, nunca como lista vacía', async () => {
++    const path = join(WORKDIR, 'broken.json')
++    writeFileSync(path, '{"qualifications": [{"model": ""}]}')
++    await expect(loadQualifications(path)).rejects.toThrow(QualificationFileError)
++    await expect(loadQualifications(path)).rejects.toThrow(path)
++  })
++
++  test('un archivo que no es JSON se rehúsa con la ruta', async () => {
++    const path = join(WORKDIR, 'not-json.json')
++    writeFileSync(path, 'nope')
++    await expect(loadQualifications(path)).rejects.toThrow(path)
++  })
++
++  test('añadir sobre un archivo inválido no lo pisa', async () => {
++    const path = join(WORKDIR, 'broken-append.json')
++    writeFileSync(path, 'nope')
++    await expect(appendQualification(path, QUALIFICATION)).rejects.toThrow(QualificationFileError)
++    expect(readFileSync(path, 'utf8')).toBe('nope')
++  })
++})
+diff --git a/src/packages/local-models/__tests__/qualifyModel.test.ts b/src/packages/local-models/__tests__/qualifyModel.test.ts
+new file mode 100644
+index 000000000..3e45c1e32
+--- /dev/null
++++ b/src/packages/local-models/__tests__/qualifyModel.test.ts
+@@ -0,0 +1,82 @@
++import { afterEach, describe, expect, test } from 'bun:test'
++
++import { OllamaApi, OllamaRequestError } from '../ollamaApi.js'
++import { runQualification } from '../qualifyModel.js'
++import { TOOL_CALLING_SUITE_PATH, loadSuite } from '../toolCallingSuite.js'
++import { CORRECT_TOOL_CALLING_REPLIES, startFakeOllama, type FakeChatReply, type FakeOllama } from '../testing/fakeOllama.js'
++
++const MODEL = 'thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-cccccccccccc'
++const NOW = new Date('2026-10-01T05:00:00.000Z')
++const CONTEXT_TOKENS = 8192
++
++let server: FakeOllama | undefined
++afterEach(async () => {
++  await server?.stop()
++  server = undefined
++})
++
++async function qualify(reply: (prompt: string) => FakeChatReply) {
++  server = startFakeOllama({ chat: prompt => reply(prompt) })
++  const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
++  return runQualification({ api: new OllamaApi(server.baseUrl), suite, model: MODEL, taskClass: 'mecanica', contextTokens: CONTEXT_TOKENS, now: () => NOW })
++}
++
++function correct(prompt: string): FakeChatReply {
++  return CORRECT_TOOL_CALLING_REPLIES[prompt] ?? { content: '' }
++}
++
++describe('runQualification — tool-calling@1 contra /api/chat', () => {
++  test('seis aciertos aprueban, con la suite, el contexto servido y el instante', async () => {
++    const { qualification, outcomes } = await qualify(correct)
++    expect(outcomes.map(o => o.passed)).toEqual([true, true, true, true, true, true])
++    expect(qualification).toEqual({
++      model: MODEL,
++      taskClass: 'mecanica',
++      suite: 'tool-calling@1',
++      casesPassed: 6,
++      casesTotal: 6,
++      passed: true,
++      contextTokens: CONTEXT_TOKENS,
++      tokensPerSecond: 20,
++      measuredAt: '2026-10-01T05:00:00.000Z',
++    })
++  })
++
++  test('cinco de seis no aprueban, y el caso fallado dice lo que se observó', async () => {
++    const { qualification, outcomes } = await qualify(prompt =>
++      prompt === 'Switch the operating mode to safe.' ? { toolCalls: [{ name: 'set_mode', arguments: { mode: 'fast' } }] } : correct(prompt))
++    expect(qualification.casesPassed).toBe(5)
++    expect(qualification.passed).toBe(false)
++    const failed = outcomes.find(o => !o.passed)
++    expect(failed?.caseId).toBe('enum_argument')
++    expect(failed?.observed).toContain('fast')
++  })
++
++  test('tokens/s es la suma de eval_count entre la suma de eval_duration', async () => {
++    const { qualification } = await qualify(prompt =>
++      ({ ...correct(prompt), evalCount: prompt.startsWith('What') ? 70 : 10, evalDurationNs: 500_000_000 }))
++    // (70 + 5×10) tokens en 6 × 0.5 s
++    expect(qualification.tokensPerSecond).toBe(40)
++  })
++
++  test('cada petición lleva el modelo, sus herramientas, stream falso y num_ctx', async () => {
++    await qualify(correct)
++    const chats = server?.requests.filter(r => r.path === '/api/chat') ?? []
++    expect(chats).toHaveLength(6)
++    const first = chats[0]?.body as Record<string, any>
++    expect(first.model).toBe(MODEL)
++    expect(first.stream).toBe(false)
++    expect(first.options).toEqual({ temperature: 0, seed: 7, num_ctx: CONTEXT_TOKENS })
++    expect(first.tools.map((t: any) => t.function.name)).toEqual(['get_weather'])
++    const continuation = chats[5]?.body as Record<string, any>
++    expect(continuation.messages.map((m: any) => m.role)).toEqual(['user', 'assistant', 'tool'])
++  })
++
++  test('un error HTTP no es un caso fallado: se rehúsa sin cualificación', async () => {
++    await expect(qualify(() => ({ status: 500 }))).rejects.toThrow(OllamaRequestError)
++  })
++
++  test('una respuesta sin eval_duration no mide velocidad y se rehúsa', async () => {
++    await expect(qualify(prompt => ({ ...correct(prompt), evalDurationNs: 0 }))).rejects.toThrow(/tokens\/s/)
++  })
++})
+diff --git a/src/packages/local-models/__tests__/toolCallingSuite.test.ts b/src/packages/local-models/__tests__/toolCallingSuite.test.ts
+new file mode 100644
+index 000000000..724b6beb8
+--- /dev/null
++++ b/src/packages/local-models/__tests__/toolCallingSuite.test.ts
+@@ -0,0 +1,70 @@
++import { afterAll, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { InvalidSuiteError, TOOL_CALLING_SUITE_PATH, loadSuite, scoreReply, type CaseExpectation } from '../toolCallingSuite.js'
++
++const WORKDIR = mkdtempSync(join(tmpdir(), 'tool-calling-suite-'))
++afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
++
++const BENCHMARK_CASE_IDS = ['single_tool', 'integer_arguments', 'choose_between_tools', 'enum_argument', 'no_tool_needed', 'continuation_after_tool']
++
++describe('loadSuite — el archivo de datos del paquete', () => {
++  test('tool-calling@1 trae los seis casos del benchmark, en su orden, con sus herramientas resueltas', async () => {
++    const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
++    expect(suite.id).toBe('tool-calling@1')
++    expect(suite.cases.map(c => c.id)).toEqual(BENCHMARK_CASE_IDS)
++    const choose = suite.cases[2]
++    expect(choose?.tools.map(tool => (tool as { function: { name: string } }).function.name)).toEqual(['list_dir', 'read_file'])
++  })
++
++  test('un caso que nombra una herramienta no declarada se rehúsa nombrando el caso', async () => {
++    const path = join(WORKDIR, 'unknown-tool.json')
++    writeFileSync(path, JSON.stringify({ id: 'x@1', tools: {}, cases: [{ id: 'c1', tools: ['ghost'], messages: [], expectation: { kind: 'no-tool-call' } }] }))
++    await expect(loadSuite(path)).rejects.toThrow(/cases\[0\]\.tools.*ghost/)
++  })
++
++  test('una expectativa de clase desconocida se rehúsa', async () => {
++    const path = join(WORKDIR, 'unknown-kind.json')
++    writeFileSync(path, JSON.stringify({ id: 'x@1', tools: {}, cases: [{ id: 'c1', tools: [], messages: [], expectation: { kind: 'vibes' } }] }))
++    await expect(loadSuite(path)).rejects.toThrow(InvalidSuiteError)
++  })
++
++  test('una suite sin casos no es una suite', async () => {
++    const path = join(WORKDIR, 'empty.json')
++    writeFileSync(path, JSON.stringify({ id: 'x@1', tools: {}, cases: [] }))
++    await expect(loadSuite(path)).rejects.toThrow(/cases/)
++  })
++})
++
++describe('scoreReply — la recompensa de cada caso', () => {
++  const call: CaseExpectation = { kind: 'tool-call', name: 'add', arguments: { a: 17, b: 25 } }
++
++  test('tool-call: nombre y argumentos exactos, sin importar el orden de claves', () => {
++    expect(scoreReply(call, { content: '', toolCalls: [{ name: 'add', arguments: { b: 25, a: 17 } }] })).toBe(true)
++  })
++
++  test('tool-call: un argumento de otro tipo no acierta («17» no es 17)', () => {
++    expect(scoreReply(call, { content: '', toolCalls: [{ name: 'add', arguments: { a: '17', b: 25 } }] })).toBe(false)
++  })
++
++  test('tool-call: un argumento de más no acierta', () => {
++    expect(scoreReply(call, { content: '', toolCalls: [{ name: 'add', arguments: { a: 17, b: 25, c: 0 } }] })).toBe(false)
++  })
++
++  test('tool-call: se juzga la primera llamada, y sin llamada no acierta', () => {
++    expect(scoreReply(call, { content: '', toolCalls: [{ name: 'sub', arguments: {} }, { name: 'add', arguments: { a: 17, b: 25 } }] })).toBe(false)
++    expect(scoreReply(call, { content: '42', toolCalls: [] })).toBe(false)
++  })
++
++  test('no-tool-call: acierta sin llamadas y falla con una', () => {
++    expect(scoreReply({ kind: 'no-tool-call' }, { content: 'hello', toolCalls: [] })).toBe(true)
++    expect(scoreReply({ kind: 'no-tool-call' }, { content: '', toolCalls: [{ name: 'get_weather', arguments: {} }] })).toBe(false)
++  })
++
++  test('content-includes: el texto tiene que aparecer en el contenido', () => {
++    expect(scoreReply({ kind: 'content-includes', text: '42' }, { content: 'The result is 42.', toolCalls: [] })).toBe(true)
++    expect(scoreReply({ kind: 'content-includes', text: '42' }, { content: 'forty-two', toolCalls: [] })).toBe(false)
++  })
++})
+diff --git a/src/packages/local-models/__tests__/volumeBlobs.test.ts b/src/packages/local-models/__tests__/volumeBlobs.test.ts
+new file mode 100644
+index 000000000..0f99209af
+--- /dev/null
++++ b/src/packages/local-models/__tests__/volumeBlobs.test.ts
+@@ -0,0 +1,65 @@
++import { afterAll, describe, expect, test } from 'bun:test'
++import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { BlobLocationError, hostBlobPath, modelBlobOfModelfile, volumeMountpoint } from '../volumeBlobs.js'
++
++const WORKDIR = mkdtempSync(join(tmpdir(), 'volume-blobs-'))
++afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
++
++const DIGEST = 'b'.repeat(64)
++
++function fakePodman(name: string, body: string): string {
++  const path = join(WORKDIR, name)
++  writeFileSync(path, `#!/bin/sh\necho "$@" >> '${path}.calls'\n${body}\n`)
++  chmodSync(path, 0o755)
++  return path
++}
++
++describe('volumeMountpoint — `podman volume inspect`', () => {
++  test('devuelve el Mountpoint del volumen pedido', async () => {
++    const podman = fakePodman('podman-ok', `echo '${WORKDIR}/volume-data'`)
++    expect(await volumeMountpoint(podman, 'thyrox-ollama-models')).toBe(`${WORKDIR}/volume-data`)
++    expect(readFileSync(`${podman}.calls`, 'utf8')).toBe('volume inspect thyrox-ollama-models --format {{.Mountpoint}}\n')
++  })
++
++  test('podman que sale distinto de 0 se rehúsa con su stderr', async () => {
++    const podman = fakePodman('podman-missing', 'echo "no such volume" >&2; exit 125')
++    await expect(volumeMountpoint(podman, 'ghost')).rejects.toThrow(/ghost.*no such volume/)
++  })
++
++  test('una salida vacía no es un punto de montaje', async () => {
++    const podman = fakePodman('podman-empty', 'true')
++    await expect(volumeMountpoint(podman, 'v')).rejects.toThrow(BlobLocationError)
++  })
++
++  test('un binario que no existe se rehúsa nombrándolo', async () => {
++    await expect(volumeMountpoint(join(WORKDIR, 'no-podman'), 'v')).rejects.toThrow(/no-podman/)
++  })
++})
++
++describe('modelBlobOfModelfile — la capa GGUF que declara /api/show', () => {
++  test('lee la línea FROM con el blob', () => {
++    const modelfile = `# Modelfile generated by "ollama show"\nFROM /root/.ollama/models/blobs/sha256-${DIGEST}\nTEMPLATE """{{ .Prompt }}"""\n`
++    expect(modelBlobOfModelfile(modelfile)).toEqual({ containerPath: `/root/.ollama/models/blobs/sha256-${DIGEST}`, sha256: DIGEST })
++  })
++
++  test('un FROM que no es un blob sha256 se rehúsa', () => {
++    expect(() => modelBlobOfModelfile('FROM qwen2.5:0.5b\n')).toThrow(BlobLocationError)
++  })
++
++  test('sin FROM se rehúsa', () => {
++    expect(() => modelBlobOfModelfile('TEMPLATE x\n')).toThrow(BlobLocationError)
++  })
++})
++
++describe('hostBlobPath — del contenedor al volumen en el anfitrión', () => {
++  test('el prefijo /root/.ollama se cambia por el punto de montaje', () => {
++    expect(hostBlobPath(`/root/.ollama/models/blobs/sha256-${DIGEST}`, '/var/vol/_data')).toBe(`/var/vol/_data/models/blobs/sha256-${DIGEST}`)
++  })
++
++  test('una ruta fuera del directorio de modelos montado se rehúsa', () => {
++    expect(() => hostBlobPath('/srv/models/blobs/x', '/var/vol/_data')).toThrow(BlobLocationError)
++  })
++})
+diff --git a/src/packages/local-models/bin/catalog.ts b/src/packages/local-models/bin/catalog.ts
+new file mode 100644
+index 000000000..31dbc37ea
+--- /dev/null
++++ b/src/packages/local-models/bin/catalog.ts
+@@ -0,0 +1,9 @@
++#!/usr/bin/env bun
++/** Entrada de `bin/local-models-catalog`; la orden vive en `catalogCommand.ts`. */
++import { resolve } from 'node:path'
++
++import { runCatalogCommand } from '../catalogCommand.js'
++import { processOutput } from '../commandOutput.js'
++
++const thyroxRoot = process.env.THYROX_ROOT ?? resolve(import.meta.dir, '..', '..', '..', '..')
++process.exit(await runCatalogCommand(process.argv.slice(2), { env: process.env, thyroxRoot, output: processOutput, now: () => new Date() }))
+diff --git a/src/packages/local-models/bin/qualify.ts b/src/packages/local-models/bin/qualify.ts
+new file mode 100644
+index 000000000..391255614
+--- /dev/null
++++ b/src/packages/local-models/bin/qualify.ts
+@@ -0,0 +1,9 @@
++#!/usr/bin/env bun
++/** Entrada de `bin/local-models-qualify`; la orden vive en `qualifyCommand.ts`. */
++import { resolve } from 'node:path'
++
++import { processOutput } from '../commandOutput.js'
++import { runQualifyCommand } from '../qualifyCommand.js'
++
++const thyroxRoot = process.env.THYROX_ROOT ?? resolve(import.meta.dir, '..', '..', '..', '..')
++process.exit(await runQualifyCommand(process.argv.slice(2), { env: process.env, thyroxRoot, output: processOutput, now: () => new Date() }))
+diff --git a/src/packages/local-models/bunfig.toml b/src/packages/local-models/bunfig.toml
+new file mode 100644
+index 000000000..51b90dff6
+--- /dev/null
++++ b/src/packages/local-models/bunfig.toml
+@@ -0,0 +1,5 @@
++# `bun test` lee sólo el bunfig del cwd: sin este archivo, una suite corrida
++# desde el paquete no pasaría por los grifos de la raíz y escribiría en el
++# store versionado. Los preloads son los mismos, en el mismo orden.
++[test]
++preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]
+diff --git a/src/packages/local-models/catalogCommand.ts b/src/packages/local-models/catalogCommand.ts
+new file mode 100644
+index 000000000..0cd39ae4b
+--- /dev/null
++++ b/src/packages/local-models/catalogCommand.ts
+@@ -0,0 +1,62 @@
++/**
++ * `local-models-catalog declare <nombre-ollama>` y `local-models-catalog list
++ * [--json]`: el catálogo de modelos locales de la instalación
++ * (`localModelHome`). Salidas: 0 hecho · 2 rehusado, con la causa y la ruta.
++ */
++
++import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
++import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
++
++import { EXIT_OK, EXIT_REFUSED, type CommandOutput } from './commandOutput.js'
++import { declareInstalledModel } from './declareInstalledModel.js'
++import { managedOllama, type Environment } from './managedOllama.js'
++import { OllamaApi } from './ollamaApi.js'
++import { volumeMountpoint } from './volumeBlobs.js'
++
++export const CATALOG_USAGE = [
++  'uso: local-models-catalog declare <nombre-ollama>',
++  '     local-models-catalog list [--json]',
++].join('\n')
++
++export interface CommandContext {
++  readonly env: Environment
++  readonly thyroxRoot: string
++  readonly output: CommandOutput
++  readonly now: () => Date
++}
++
++export async function runCatalogCommand(argv: readonly string[], context: CommandContext): Promise<number> {
++  const [subcommand, ...rest] = argv
++  try {
++    if (subcommand === 'declare' && rest.length === 1) return await declare(rest[0] as string, context)
++    if (subcommand === 'list') return await list(rest.includes('--json'), context)
++  } catch (error) {
++    context.output.stderr(`local-models-catalog: ${(error as Error).message}`)
++    return EXIT_REFUSED
++  }
++  context.output.stderr(CATALOG_USAGE)
++  return EXIT_REFUSED
++}
++
++async function declare(ollamaName: string, context: CommandContext): Promise<number> {
++  const ollama = managedOllama(context.env)
++  const entry = await declareInstalledModel(ollamaName, {
++    api: new OllamaApi(ollama.baseUrl),
++    mountpoint: await volumeMountpoint(ollama.podmanBin, ollama.volume),
++    catalogPath: catalogPath(context),
++    now: context.now,
++  })
++  context.output.stdout(`declarado: ${entry.name} (${entry.artifact.bytes} bytes, sha256 ${entry.artifact.sha256})`)
++  return EXIT_OK
++}
++
++async function list(asJson: boolean, context: CommandContext): Promise<number> {
++  const entries = (await loadModelCatalog(catalogPath(context))).entries()
++  if (asJson) context.output.stdout(JSON.stringify({ entries }))
++  else entries.forEach(entry => context.output.stdout(`${entry.name}\t${entry.capabilities.join(',')}\tctx ${entry.maxContextLength}`))
++  return EXIT_OK
++}
++
++function catalogPath(context: CommandContext): string {
++  return localModelHome(context.env, context.thyroxRoot).catalog
++}
+diff --git a/src/packages/local-models/commandOutput.ts b/src/packages/local-models/commandOutput.ts
+new file mode 100644
+index 000000000..5652d98e7
+--- /dev/null
++++ b/src/packages/local-models/commandOutput.ts
+@@ -0,0 +1,16 @@
++/** Salida de una orden de línea de comandos, inyectable para probarla sin proceso aparte. */
++
++export interface CommandOutput {
++  stdout(line: string): void
++  stderr(line: string): void
++}
++
++export const processOutput: CommandOutput = {
++  stdout: line => { process.stdout.write(`${line}\n`) },
++  stderr: line => { process.stderr.write(`${line}\n`) },
++}
++
++/** Códigos de salida comunes a las órdenes del paquete. */
++export const EXIT_OK = 0
++export const EXIT_NOT_APPROVED = 1
++export const EXIT_REFUSED = 2
+diff --git a/src/packages/local-models/declareInstalledModel.ts b/src/packages/local-models/declareInstalledModel.ts
+new file mode 100644
+index 000000000..e8d34f253
+--- /dev/null
++++ b/src/packages/local-models/declareInstalledModel.ts
+@@ -0,0 +1,118 @@
++/**
++ * Declara en el catálogo un modelo ya instalado en el Ollama gestionado: lee
++ * su digest de `/api/tags` y su blob GGUF de `/api/show`, verifica el sha256
++ * del blob en el volumen, construye la entrada con `catalogEntryFromGguf`,
++ * registra el nombre contractual en Ollama (`/api/copy`) y guarda el catálogo.
++ *
++ * El orden es el de los efectos: nada se copia ni se escribe hasta que la
++ * entrada está construida y el catálogo la acepta; si la copia falla, el
++ * catálogo no cambia.
++ */
++
++import { createHash } from 'node:crypto'
++import { createReadStream } from 'node:fs'
++import { mkdir } from 'node:fs/promises'
++import { dirname } from 'node:path'
++
++import type { ModelCapability, ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
++import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
++import { catalogEntryFromGguf, loadModelCatalog, saveModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
++
++import type { OllamaApi } from './ollamaApi.js'
++import { repositoryOfOllamaName, withExplicitTag } from './ollamaName.js'
++import { hostBlobPath, modelBlobOfModelfile } from './volumeBlobs.js'
++
++/** La caché KV con que Ollama sirve si no se declara `OLLAMA_KV_CACHE_TYPE`. */
++export const OLLAMA_DEFAULT_KV_CACHE_TYPE: KvCacheType = 'f16'
++
++/** Capacidad de `/api/show` → capacidad del catálogo; las demás (vision, thinking…) no se declaran. */
++const CATALOG_CAPABILITY_BY_OLLAMA: Readonly<Record<string, ModelCapability>> = {
++  completion: 'completion',
++  tools: 'tools',
++  embedding: 'embeddings',
++}
++const DIGEST_PREFIX = 'sha256:'
++const ISO_SECOND_PRECISION_LENGTH = 'YYYY-MM-DDTHH:MM:SS'.length
++
++export class ModelDeclarationError extends Error {
++  constructor(readonly ollamaName: string, reason: string) {
++    super(`no se puede declarar «${ollamaName}»: ${reason}`)
++    this.name = 'ModelDeclarationError'
++  }
++}
++
++export interface DeclarationContext {
++  readonly api: OllamaApi
++  /** Punto de montaje en el anfitrión del volumen de modelos. */
++  readonly mountpoint: string
++  readonly catalogPath: string
++  readonly now: () => Date
++}
++
++export async function declareInstalledModel(ollamaName: string, context: DeclarationContext): Promise<ModelCatalogEntry> {
++  const taggedName = withExplicitTag(ollamaName)
++  const revision = await manifestDigest(context.api, taggedName)
++  const details = await context.api.modelDetails(taggedName)
++  const blob = modelBlobOfModelfile(details.modelfile)
++  const blobPath = hostBlobPath(blob.containerPath, context.mountpoint)
++  await requireBlobDigest(taggedName, blobPath, blob.sha256)
++  const built = await catalogEntryFromGguf({
++    path: blobPath,
++    repository: repositoryOfOllamaName(taggedName),
++    source: 'ollama',
++    revision,
++    quantization: details.quantizationLevel,
++    sha256: blob.sha256,
++    capabilities: catalogCapabilities(taggedName, details.capabilities),
++    declaredAt: secondPrecisionInstant(context.now()),
++    defaultKvCacheType: OLLAMA_DEFAULT_KV_CACHE_TYPE,
++  })
++  const catalog = await loadModelCatalog(context.catalogPath)
++  const entry = keepingFirstDeclaration(built, catalog.byName(built.name))
++  const updated = catalog.with(entry)
++  await context.api.copyModel(taggedName, entry.name)
++  await mkdir(dirname(context.catalogPath), { recursive: true })
++  await saveModelCatalog(context.catalogPath, updated)
++  return entry
++}
++
++async function manifestDigest(api: OllamaApi, taggedName: string): Promise<string> {
++  const installed = (await api.installedModels()).find(model => model.name === taggedName)
++  if (installed === undefined) throw new ModelDeclarationError(taggedName, `${taggedName} no está instalado en el Ollama gestionado (/api/tags)`)
++  return installed.digest.toLowerCase().replace(DIGEST_PREFIX, '')
++}
++
++async function requireBlobDigest(taggedName: string, blobPath: string, declared: string): Promise<void> {
++  const measured = await sha256OfFile(blobPath)
++  if (measured !== declared) throw new ModelDeclarationError(taggedName, `el sha256 de ${blobPath} es ${measured}, su nombre declara ${declared}`)
++}
++
++function sha256OfFile(path: string): Promise<string> {
++  return new Promise((resolve, reject) => {
++    const hash = createHash('sha256')
++    createReadStream(path)
++      .on('data', chunk => hash.update(chunk))
++      .on('error', reject)
++      .on('end', () => resolve(hash.digest('hex')))
++  })
++}
++
++function catalogCapabilities(taggedName: string, ollamaCapabilities: readonly string[]): ModelCapability[] {
++  const capabilities = ollamaCapabilities.flatMap(capability => {
++    const mapped = CATALOG_CAPABILITY_BY_OLLAMA[capability]
++    return mapped === undefined ? [] : [mapped]
++  })
++  if (capabilities.length === 0) {
++    throw new ModelDeclarationError(taggedName, `ninguna capacidad de /api/show (${ollamaCapabilities.join(', ')}) es ${Object.keys(CATALOG_CAPABILITY_BY_OLLAMA).join(', ')}`)
++  }
++  return capabilities
++}
++
++/** Volver a declarar lo mismo no es un cambio: el instante es el de la primera declaración. */
++function keepingFirstDeclaration(built: ModelCatalogEntry, existing: ModelCatalogEntry | undefined): ModelCatalogEntry {
++  return existing === undefined ? built : { ...built, declaredAt: existing.declaredAt }
++}
++
++function secondPrecisionInstant(instant: Date): string {
++  return `${instant.toISOString().slice(0, ISO_SECOND_PRECISION_LENGTH)}Z`
++}
+diff --git a/src/packages/local-models/managedOllama.ts b/src/packages/local-models/managedOllama.ts
+new file mode 100644
+index 000000000..83188f678
+--- /dev/null
++++ b/src/packages/local-models/managedOllama.ts
+@@ -0,0 +1,38 @@
++/**
++ * Dónde está el Ollama gestionado y con qué se inspecciona su volumen, leído
++ * del mismo entorno que `src/lib/infrastructure.sh` declara: el puerto de
++ * loopback (`THYROX_INFRA_OLLAMA_PORT`), el volumen de modelos
++ * (`THYROX_INFRA_OLLAMA_VOLUME`) y el binario de Podman que el toolchain midió
++ * (`THYROX_TOOLCHAIN_PODMAN_BIN`). Los valores por defecto son los de ese
++ * archivo.
++ */
++
++export const OLLAMA_PORT_VAR = 'THYROX_INFRA_OLLAMA_PORT'
++export const OLLAMA_VOLUME_VAR = 'THYROX_INFRA_OLLAMA_VOLUME'
++export const PODMAN_BIN_VAR = 'THYROX_TOOLCHAIN_PODMAN_BIN'
++
++const DEFAULT_OLLAMA_PORT = '51434'
++const DEFAULT_OLLAMA_VOLUME = 'thyrox-ollama-models'
++const DEFAULT_PODMAN_BIN = 'podman'
++const LOOPBACK = '127.0.0.1'
++
++export type Environment = Readonly<Record<string, string | undefined>>
++
++export interface ManagedOllama {
++  readonly baseUrl: string
++  readonly volume: string
++  readonly podmanBin: string
++}
++
++export function managedOllama(env: Environment): ManagedOllama {
++  return {
++    baseUrl: `http://${LOOPBACK}:${declared(env, OLLAMA_PORT_VAR) ?? DEFAULT_OLLAMA_PORT}`,
++    volume: declared(env, OLLAMA_VOLUME_VAR) ?? DEFAULT_OLLAMA_VOLUME,
++    podmanBin: declared(env, PODMAN_BIN_VAR) ?? DEFAULT_PODMAN_BIN,
++  }
++}
++
++function declared(env: Environment, key: string): string | undefined {
++  const value = env[key]?.trim()
++  return value ? value : undefined
++}
+diff --git a/src/packages/local-models/ollamaApi.ts b/src/packages/local-models/ollamaApi.ts
+new file mode 100644
+index 000000000..d44e7012e
+--- /dev/null
++++ b/src/packages/local-models/ollamaApi.ts
+@@ -0,0 +1,86 @@
++/**
++ * Cliente mínimo de la API nativa de Ollama: lo que necesitan declarar un
++ * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`) y cualificarlo
++ * (`/api/chat`). Un estado HTTP distinto de 2xx es un error con la ruta y el
++ * cuerpo, nunca una respuesta vacía.
++ */
++
++export class OllamaRequestError extends Error {
++  constructor(readonly path: string, readonly status: number, body: string) {
++    super(`Ollama ${path} respondió ${status}: ${body.trim()}`)
++    this.name = 'OllamaRequestError'
++  }
++}
++
++export interface InstalledModel {
++  readonly name: string
++  /** Digest del manifiesto, 64 hex. */
++  readonly digest: string
++}
++
++export interface ModelDetails {
++  readonly modelfile: string
++  readonly quantizationLevel: string
++  readonly capabilities: readonly string[]
++}
++
++export interface ChatToolCall {
++  readonly name: string
++  readonly arguments: Record<string, unknown>
++}
++
++export interface ChatReply {
++  readonly content: string
++  readonly toolCalls: readonly ChatToolCall[]
++  readonly evalCount: number
++  readonly evalDurationNs: number
++}
++
++const JSON_HEADERS = { 'content-type': 'application/json' }
++
++type JsonObject = Record<string, unknown>
++
++export class OllamaApi {
++  constructor(private readonly baseUrl: string) {}
++
++  async installedModels(): Promise<readonly InstalledModel[]> {
++    const document = await this.request('/api/tags', undefined)
++    const models = (document.models ?? []) as JsonObject[]
++    return models.map(model => ({ name: String(model.name), digest: String(model.digest) }))
++  }
++
++  async modelDetails(model: string): Promise<ModelDetails> {
++    const document = await this.request('/api/show', { model })
++    const details = (document.details ?? {}) as JsonObject
++    return {
++      modelfile: String(document.modelfile ?? ''),
++      quantizationLevel: String(details.quantization_level ?? ''),
++      capabilities: (document.capabilities ?? []) as string[],
++    }
++  }
++
++  async copyModel(source: string, destination: string): Promise<void> {
++    await this.request('/api/copy', { source, destination })
++  }
++
++  async chat(body: JsonObject): Promise<ChatReply> {
++    const document = await this.request('/api/chat', body)
++    const message = (document.message ?? {}) as JsonObject
++    const calls = (message.tool_calls ?? []) as { function: ChatToolCall }[]
++    return {
++      content: String(message.content ?? ''),
++      toolCalls: calls.map(call => ({ name: call.function.name, arguments: call.function.arguments ?? {} })),
++      evalCount: Number(document.eval_count ?? 0),
++      evalDurationNs: Number(document.eval_duration ?? 0),
++    }
++  }
++
++  /** GET sin cuerpo, POST con él; el cuerpo de respuesta vacío (`/api/copy`) es un objeto vacío. */
++  private async request(path: string, body: JsonObject | undefined): Promise<JsonObject> {
++    const init: RequestInit = body === undefined ? { method: 'GET' } : { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) }
++    const response = await fetch(`${this.baseUrl}${path}`, init)
++    const text = await response.text()
++    if (!response.ok) throw new OllamaRequestError(path, response.status, text)
++    return text === '' ? {} : JSON.parse(text) as JsonObject
++  }
++}
+diff --git a/src/packages/local-models/ollamaName.ts b/src/packages/local-models/ollamaName.ts
+new file mode 100644
+index 000000000..139e02101
+--- /dev/null
++++ b/src/packages/local-models/ollamaName.ts
+@@ -0,0 +1,52 @@
++/**
++ * Del nombre con que Ollama lista un modelo instalado (`qwen2.5:0.5b`,
++ * `ns/modelo:etiqueta`, `host/ns/modelo:etiqueta`) al repositorio que exige el
++ * contrato de nombre: `<namespace>/<modelo>-<etiqueta>`. Sin namespace es
++ * `library`, sin etiqueta es `latest`, como resuelve el propio registro.
++ */
++
++export const DEFAULT_NAMESPACE = 'library'
++export const DEFAULT_TAG = 'latest'
++
++const TAG_SEPARATOR = ':'
++const PATH_SEPARATOR = '/'
++const MAX_PATH_SEGMENTS = 3
++
++export class InvalidOllamaNameError extends Error {
++  constructor(readonly ollamaName: string, reason: string) {
++    super(`nombre de Ollama «${ollamaName}» inválido: ${reason}`)
++    this.name = 'InvalidOllamaNameError'
++  }
++}
++
++/** El nombre completo con etiqueta, como lo publica `/api/tags`. */
++export function withExplicitTag(ollamaName: string): string {
++  return hasTag(ollamaName) ? ollamaName : `${ollamaName}${TAG_SEPARATOR}${DEFAULT_TAG}`
++}
++
++/** `<namespace>/<modelo>-<etiqueta>`; el host del registro, si viene, se descarta. */
++export function repositoryOfOllamaName(ollamaName: string): string {
++  const [path, tag] = splitTag(withExplicitTag(requireNonEmpty(ollamaName)))
++  const segments = path.split(PATH_SEPARATOR)
++  if (segments.length > MAX_PATH_SEGMENTS || segments.some(segment => segment === '')) {
++    throw new InvalidOllamaNameError(ollamaName, `se espera [host/][namespace/]modelo, llegaron ${segments.length} segmentos`)
++  }
++  const model = segments[segments.length - 1] as string
++  const namespace = segments.length > 1 ? segments[segments.length - 2] as string : DEFAULT_NAMESPACE
++  return `${namespace}${PATH_SEPARATOR}${model}-${tag}`
++}
++
++function requireNonEmpty(ollamaName: string): string {
++  if (ollamaName.trim() === '') throw new InvalidOllamaNameError(ollamaName, 'vacío')
++  return ollamaName
++}
++
++/** La etiqueta va tras el último `:` posterior a la última `/`: un host puede llevar puerto. */
++function hasTag(ollamaName: string): boolean {
++  return ollamaName.lastIndexOf(TAG_SEPARATOR) > ollamaName.lastIndexOf(PATH_SEPARATOR)
++}
++
++function splitTag(taggedName: string): readonly [string, string] {
++  const at = taggedName.lastIndexOf(TAG_SEPARATOR)
++  return [taggedName.slice(0, at), taggedName.slice(at + 1)]
++}
+diff --git a/src/packages/local-models/package.json b/src/packages/local-models/package.json
+new file mode 100644
+index 000000000..ab730f3f5
+--- /dev/null
++++ b/src/packages/local-models/package.json
+@@ -0,0 +1,20 @@
++{
++  "name": "@thyrox/local-models",
++  "version": "0.1.0",
++  "private": true,
++  "type": "module",
++  "description": "Herramientas de los modelos locales (TASK-THYROX-0707): declarar en el catálogo un modelo instalado en el Ollama gestionado y cualificarlo por suite. Habla con Ollama por HTTP y con Podman para localizar el blob GGUF.",
++  "exports": {
++    "./*.ts": {
++      "@thyrox/source": "./*.ts",
++      "types": "./dist/*.d.ts",
++      "default": "./*.ts"
++    }
++  },
++  "dependencies": {
++    "@thyrox/model-artifacts": "0.1.0"
++  },
++  "scripts": {
++    "test": "bun test"
++  }
++}
+diff --git a/src/packages/local-models/qualificationStore.ts b/src/packages/local-models/qualificationStore.ts
+new file mode 100644
+index 000000000..fd7fbd8a0
+--- /dev/null
++++ b/src/packages/local-models/qualificationStore.ts
+@@ -0,0 +1,56 @@
++/**
++ * Persistencia del archivo de cualificaciones (nivel A de ADR-006: archivo con
++ * reemplazo atómico). Un archivo ausente es una lista vacía; uno ilegible o
++ * inválido es un error con la ruta, nunca una lista vacía en silencio, y
++ * añadir sobre él no lo pisa.
++ */
++
++import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
++import { dirname } from 'node:path'
++
++import { parseQualifications, serializeQualifications, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
++
++const FILE_NOT_FOUND_CODE = 'ENOENT'
++
++export class QualificationFileError extends Error {
++  constructor(readonly path: string, reason: string) {
++    super(`cualificaciones ilegibles (${path}): ${reason}`)
++    this.name = 'QualificationFileError'
++  }
++}
++
++export async function loadQualifications(path: string): Promise<ModelQualification[]> {
++  const text = await readTextIfPresent(path)
++  if (text === undefined) return []
++  try {
++    return parseQualifications(text)
++  } catch (error) {
++    throw new QualificationFileError(path, (error as Error).message)
++  }
++}
++
++/** Añade una medición a las existentes y reescribe el archivo de forma atómica. */
++export async function appendQualification(path: string, qualification: ModelQualification): Promise<void> {
++  const existing = await loadQualifications(path)
++  await mkdir(dirname(path), { recursive: true })
++  await writeAtomically(path, serializeQualifications([...existing, qualification]))
++}
++
++async function readTextIfPresent(path: string): Promise<string | undefined> {
++  try {
++    return await readFile(path, 'utf8')
++  } catch (error) {
++    if ((error as NodeJS.ErrnoException).code === FILE_NOT_FOUND_CODE) return undefined
++    throw new QualificationFileError(path, (error as Error).message)
++  }
++}
++
++async function writeAtomically(path: string, text: string): Promise<void> {
++  const temporaryPath = `${path}.${process.pid}.${Date.now()}.tmp`
++  try {
++    await writeFile(temporaryPath, text, { flag: 'wx' })
++    await rename(temporaryPath, path)
++  } finally {
++    await rm(temporaryPath, { force: true })
++  }
++}
+diff --git a/src/packages/local-models/qualifyCommand.ts b/src/packages/local-models/qualifyCommand.ts
+new file mode 100644
+index 000000000..82e34985e
+--- /dev/null
++++ b/src/packages/local-models/qualifyCommand.ts
+@@ -0,0 +1,83 @@
++/**
++ * `local-models-qualify <nombre-contractual> <clase> [--context N]`: corre
++ * `tool-calling@1` contra el Ollama gestionado y añade la medición al archivo
++ * de cualificaciones. El modelo tiene que estar en el catálogo: una
++ * cualificación de un modelo no declarado no cuenta (`qualifiedModels`).
++ *
++ * Salidas: 0 aprobada · 1 medida y suspendida (también se escribe: retira una
++ * aprobación anterior) · 2 rehusado sin medición.
++ */
++
++import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
++import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
++import { LOCAL_TASK_CLASSES, type LocalTaskClass } from '@thyrox/model-artifacts/modelQualification.ts'
++
++import type { CommandContext } from './catalogCommand.js'
++import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
++import { managedOllama } from './managedOllama.js'
++import { OllamaApi } from './ollamaApi.js'
++import { appendQualification } from './qualificationStore.js'
++import { runQualification } from './qualifyModel.js'
++import { TOOL_CALLING_SUITE_PATH, loadSuite } from './toolCallingSuite.js'
++
++/** Contexto de servicio de la medición si no se declara, acotado al máximo del modelo. */
++export const DEFAULT_QUALIFICATION_CONTEXT_TOKENS = 8192
++
++export const QUALIFY_USAGE = `uso: local-models-qualify <nombre-contractual> <${LOCAL_TASK_CLASSES.join('|')}> [--context N]`
++
++const CONTEXT_FLAG = '--context'
++
++class QualifyRefusal extends Error {}
++
++interface QualifyArguments {
++  readonly model: string
++  readonly taskClass: LocalTaskClass
++  readonly contextTokens: number | undefined
++}
++
++export async function runQualifyCommand(argv: readonly string[], context: CommandContext): Promise<number> {
++  try {
++    return await qualify(parseArguments(argv), context)
++  } catch (error) {
++    const message = error instanceof QualifyRefusal ? `${error.message}\n${QUALIFY_USAGE}` : error instanceof Error ? error.message : String(error)
++    context.output.stderr(`local-models-qualify: ${message}`)
++    return EXIT_REFUSED
++  }
++}
++
++async function qualify(args: QualifyArguments, context: CommandContext): Promise<number> {
++  const home = localModelHome(context.env, context.thyroxRoot)
++  const entry = (await loadModelCatalog(home.catalog)).byName(args.model)
++  if (entry === undefined) throw new Error(`«${args.model}» no está en el catálogo ${home.catalog}: decláralo antes con local-models-catalog declare`)
++  const contextTokens = args.contextTokens ?? Math.min(DEFAULT_QUALIFICATION_CONTEXT_TOKENS, entry.maxContextLength)
++  if (contextTokens > entry.maxContextLength) throw new Error(`--context ${contextTokens} supera el máximo del modelo (${entry.maxContextLength})`)
++  const run = await runQualification({
++    api: new OllamaApi(managedOllama(context.env).baseUrl),
++    suite: await loadSuite(TOOL_CALLING_SUITE_PATH),
++    model: args.model,
++    taskClass: args.taskClass,
++    contextTokens,
++    now: context.now,
++  })
++  await appendQualification(home.qualifications, run.qualification)
++  run.outcomes.forEach(outcome => context.output.stdout(`${outcome.passed ? 'ok  ' : 'FALLA'} ${outcome.caseId}\t${outcome.observed}`))
++  const { qualification } = run
++  const verdict = qualification.passed ? 'aprobada' : 'suspendida'
++  context.output.stdout(`${verdict}: ${qualification.model} ${qualification.taskClass} ${qualification.suite} ${qualification.casesPassed}/${qualification.casesTotal}, ${qualification.tokensPerSecond.toFixed(1)} tokens/s, ctx ${contextTokens} → ${home.qualifications}`)
++  return qualification.passed ? EXIT_OK : EXIT_NOT_APPROVED
++}
++
++function parseArguments(argv: readonly string[]): QualifyArguments {
++  const flagAt = argv.indexOf(CONTEXT_FLAG)
++  const positional = flagAt < 0 ? argv : [...argv.slice(0, flagAt), ...argv.slice(flagAt + 2)]
++  if (positional.length !== 2) throw new QualifyRefusal('se esperan exactamente el nombre contractual y la clase')
++  const [model = '', taskClass = ''] = positional
++  if (!(LOCAL_TASK_CLASSES as readonly string[]).includes(taskClass)) throw new QualifyRefusal(`«${taskClass}» no es una clase de tarea`)
++  return { model, taskClass: taskClass as LocalTaskClass, contextTokens: flagAt < 0 ? undefined : positiveInteger(argv[flagAt + 1]) }
++}
++
++function positiveInteger(text: string | undefined): number {
++  const value = Number(text)
++  if (!Number.isSafeInteger(value) || value <= 0) throw new QualifyRefusal(`${CONTEXT_FLAG} «${String(text)}» no es un entero positivo`)
++  return value
++}
+diff --git a/src/packages/local-models/qualifyModel.ts b/src/packages/local-models/qualifyModel.ts
+new file mode 100644
+index 000000000..8ace90f87
+--- /dev/null
++++ b/src/packages/local-models/qualifyModel.ts
+@@ -0,0 +1,91 @@
++/**
++ * Cualifica un modelo local para una clase de tarea: corre cada caso de la
++ * suite contra `/api/chat` con `options.num_ctx`, puntúa con la recompensa de
++ * la suite y mide tokens/s como lo declara el propio Ollama (suma de
++ * `eval_count` entre suma de `eval_duration`). Aprueba sólo si acierta todos.
++ *
++ * Métrica: aciertos exactos por caso, n = 1, temperatura 0 y semilla fija.
++ * Ciega a: la variación entre corridas y la calidad fuera de estos casos.
++ */
++
++import type { LocalTaskClass, ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
++
++import type { ChatReply, OllamaApi } from './ollamaApi.js'
++import { scoreReply, type Suite, type SuiteCase } from './toolCallingSuite.js'
++
++/** La semilla del benchmark de origen: la misma medición se repite igual. */
++export const QUALIFICATION_SEED = 7
++const QUALIFICATION_TEMPERATURE = 0
++const NANOSECONDS_PER_SECOND = 1e9
++const OBSERVED_PREVIEW_LENGTH = 120
++
++export interface QualificationRequest {
++  readonly api: OllamaApi
++  readonly suite: Suite
++  readonly model: string
++  readonly taskClass: LocalTaskClass
++  readonly contextTokens: number
++  readonly now: () => Date
++}
++
++export interface CaseOutcome {
++  readonly caseId: string
++  readonly passed: boolean
++  readonly observed: string
++}
++
++export interface QualificationRun {
++  readonly qualification: ModelQualification
++  readonly outcomes: readonly CaseOutcome[]
++}
++
++export class UnmeasuredSpeedError extends Error {
++  constructor(model: string) {
++    super(`Ollama no declaró eval_duration para ${model}: sin tokens/s no hay cualificación`)
++    this.name = 'UnmeasuredSpeedError'
++  }
++}
++
++/** Corre la suite entera; un error HTTP aborta sin cualificación, no cuenta como caso fallado. */
++export async function runQualification(request: QualificationRequest): Promise<QualificationRun> {
++  const replies: ChatReply[] = []
++  for (const suiteCase of request.suite.cases) replies.push(await request.api.chat(chatBody(request, suiteCase)))
++  const outcomes = request.suite.cases.map((suiteCase, index) => outcomeOf(suiteCase, replies[index] as ChatReply))
++  const casesPassed = outcomes.filter(outcome => outcome.passed).length
++  return {
++    outcomes,
++    qualification: {
++      model: request.model,
++      taskClass: request.taskClass,
++      suite: request.suite.id,
++      casesPassed,
++      casesTotal: outcomes.length,
++      passed: casesPassed === outcomes.length,
++      contextTokens: request.contextTokens,
++      tokensPerSecond: tokensPerSecond(request.model, replies),
++      measuredAt: request.now().toISOString(),
++    },
++  }
++}
++
++function chatBody(request: QualificationRequest, suiteCase: SuiteCase): Record<string, unknown> {
++  return {
++    model: request.model,
++    messages: suiteCase.messages,
++    tools: suiteCase.tools,
++    stream: false,
++    options: { temperature: QUALIFICATION_TEMPERATURE, seed: QUALIFICATION_SEED, num_ctx: request.contextTokens },
++  }
++}
++
++function outcomeOf(suiteCase: SuiteCase, reply: ChatReply): CaseOutcome {
++  const observed = JSON.stringify({ content: reply.content, toolCalls: reply.toolCalls }).slice(0, OBSERVED_PREVIEW_LENGTH)
++  return { caseId: suiteCase.id, passed: scoreReply(suiteCase.expectation, reply), observed }
++}
++
++function tokensPerSecond(model: string, replies: readonly ChatReply[]): number {
++  const tokens = replies.reduce((sum, reply) => sum + reply.evalCount, 0)
++  const nanoseconds = replies.reduce((sum, reply) => sum + reply.evalDurationNs, 0)
++  if (!(nanoseconds > 0) || !(tokens > 0)) throw new UnmeasuredSpeedError(model)
++  return tokens / (nanoseconds / NANOSECONDS_PER_SECOND)
++}
+diff --git a/src/packages/local-models/suites/tool-calling-1.json b/src/packages/local-models/suites/tool-calling-1.json
+new file mode 100644
+index 000000000..49aceab4d
+--- /dev/null
++++ b/src/packages/local-models/suites/tool-calling-1.json
+@@ -0,0 +1,53 @@
++{
++  "id": "tool-calling@1",
++  "source": ".claude/workbench/ollama-cpu-benchmark-20260930T191740/probes/benchmark.py (tool_calling_cases)",
++  "tools": {
++    "get_weather": {"type": "function", "function": {"name": "get_weather", "description": "Return the current weather for a city.", "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}}},
++    "add": {"type": "function", "function": {"name": "add", "description": "Add two integers.", "parameters": {"type": "object", "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}}, "required": ["a", "b"]}}},
++    "read_file": {"type": "function", "function": {"name": "read_file", "description": "Read the contents of one file.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}}},
++    "list_dir": {"type": "function", "function": {"name": "list_dir", "description": "List the entries of a directory.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}}},
++    "set_mode": {"type": "function", "function": {"name": "set_mode", "description": "Set the operating mode.", "parameters": {"type": "object", "properties": {"mode": {"type": "string", "enum": ["fast", "safe", "off"]}}, "required": ["mode"]}}}
++  },
++  "cases": [
++    {
++      "id": "single_tool",
++      "tools": ["get_weather"],
++      "messages": [{"role": "user", "content": "What is the weather in Madrid right now?"}],
++      "expectation": {"kind": "tool-call", "name": "get_weather", "arguments": {"city": "Madrid"}}
++    },
++    {
++      "id": "integer_arguments",
++      "tools": ["add"],
++      "messages": [{"role": "user", "content": "Use the tool to add 17 and 25."}],
++      "expectation": {"kind": "tool-call", "name": "add", "arguments": {"a": 17, "b": 25}}
++    },
++    {
++      "id": "choose_between_tools",
++      "tools": ["list_dir", "read_file"],
++      "messages": [{"role": "user", "content": "Show me the contents of the file /etc/hostname."}],
++      "expectation": {"kind": "tool-call", "name": "read_file", "arguments": {"path": "/etc/hostname"}}
++    },
++    {
++      "id": "enum_argument",
++      "tools": ["set_mode"],
++      "messages": [{"role": "user", "content": "Switch the operating mode to safe."}],
++      "expectation": {"kind": "tool-call", "name": "set_mode", "arguments": {"mode": "safe"}}
++    },
++    {
++      "id": "no_tool_needed",
++      "tools": ["get_weather"],
++      "messages": [{"role": "user", "content": "Reply with the single word: hello"}],
++      "expectation": {"kind": "no-tool-call"}
++    },
++    {
++      "id": "continuation_after_tool",
++      "tools": ["add"],
++      "messages": [
++        {"role": "user", "content": "Use the tool to add 17 and 25, then tell me the result."},
++        {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": "add", "arguments": {"a": 17, "b": 25}}}]},
++        {"role": "tool", "tool_name": "add", "content": "42"}
++      ],
++      "expectation": {"kind": "content-includes", "text": "42"}
++    }
++  ]
++}
+diff --git a/src/packages/local-models/testing/fakeOllama.ts b/src/packages/local-models/testing/fakeOllama.ts
+new file mode 100644
+index 000000000..ddb4d3228
+--- /dev/null
++++ b/src/packages/local-models/testing/fakeOllama.ts
+@@ -0,0 +1,99 @@
++/**
++ * Servidor Ollama falso para las pruebas: responde `/api/tags`, `/api/show`,
++ * `/api/copy` y `/api/chat` en loopback con lo que la prueba declara, y anota
++ * cada petición recibida. No hay red ni Ollama reales.
++ */
++
++export interface RecordedRequest {
++  readonly path: string
++  readonly body: unknown
++}
++
++export interface FakeChatReply {
++  readonly content?: string
++  readonly toolCalls?: readonly { readonly name: string, readonly arguments: Record<string, unknown> }[]
++  readonly evalCount?: number
++  readonly evalDurationNs?: number
++  readonly status?: number
++}
++
++export interface FakeOllamaScript {
++  readonly tags?: readonly { readonly name: string, readonly digest: string }[]
++  readonly show?: Readonly<Record<string, unknown>>
++  readonly copyStatus?: number
++  /** Respuesta del chat según el contenido del primer mensaje del usuario. */
++  readonly chat?: (firstUserContent: string, body: Record<string, unknown>) => FakeChatReply
++}
++
++export interface FakeOllama {
++  readonly port: number
++  readonly baseUrl: string
++  readonly requests: RecordedRequest[]
++  stop(): Promise<void>
++}
++
++const DEFAULT_EVAL_COUNT = 20
++const DEFAULT_EVAL_DURATION_NS = 1_000_000_000
++const HTTP_OK = 200
++const HTTP_NOT_FOUND = 404
++
++function json(value: unknown, status = HTTP_OK): Response {
++  return new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } })
++}
++
++function firstUserContent(body: Record<string, unknown>): string {
++  const messages = (body.messages ?? []) as { role: string, content: string }[]
++  return messages.find(message => message.role === 'user')?.content ?? ''
++}
++
++function chatResponse(reply: FakeChatReply): Response {
++  const message: Record<string, unknown> = { role: 'assistant', content: reply.content ?? '' }
++  if (reply.toolCalls) message.tool_calls = reply.toolCalls.map(call => ({ function: call }))
++  return json({
++    message,
++    done: true,
++    eval_count: reply.evalCount ?? DEFAULT_EVAL_COUNT,
++    eval_duration: reply.evalDurationNs ?? DEFAULT_EVAL_DURATION_NS,
++  }, reply.status ?? HTTP_OK)
++}
++
++function route(script: FakeOllamaScript, path: string, body: Record<string, unknown>): Response {
++  if (path === '/api/tags') return json({ models: script.tags ?? [] })
++  if (path === '/api/show') return script.show ? json(script.show) : json({ error: 'model not found' }, HTTP_NOT_FOUND)
++  if (path === '/api/copy') return new Response(null, { status: script.copyStatus ?? HTTP_OK })
++  if (path === '/api/chat' && script.chat) return chatResponse(script.chat(firstUserContent(body), body))
++  return json({ error: `ruta no declarada: ${path}` }, HTTP_NOT_FOUND)
++}
++
++/** Arranca el servidor en un puerto libre de loopback. */
++export function startFakeOllama(script: FakeOllamaScript): FakeOllama {
++  const requests: RecordedRequest[] = []
++  const server = Bun.serve({
++    hostname: '127.0.0.1',
++    port: 0,
++    async fetch(request) {
++      const path = new URL(request.url).pathname
++      const text = await request.text()
++      const body = (text === '' ? {} : JSON.parse(text)) as Record<string, unknown>
++      requests.push({ path, body })
++      return route(script, path, body)
++    },
++  })
++  const port = server.port as number
++  return {
++    port,
++    baseUrl: `http://127.0.0.1:${port}`,
++    requests,
++    stop: () => server.stop(true),
++  }
++}
++
++/** Respuesta correcta de cada caso de `tool-calling@1`, por su primer mensaje. */
++export const CORRECT_TOOL_CALLING_REPLIES: Readonly<Record<string, FakeChatReply>> = {
++  'What is the weather in Madrid right now?': { toolCalls: [{ name: 'get_weather', arguments: { city: 'Madrid' } }] },
++  'Use the tool to add 17 and 25.': { toolCalls: [{ name: 'add', arguments: { b: 25, a: 17 } }] },
++  'Show me the contents of the file /etc/hostname.': { toolCalls: [{ name: 'read_file', arguments: { path: '/etc/hostname' } }] },
++  'Switch the operating mode to safe.': { toolCalls: [{ name: 'set_mode', arguments: { mode: 'safe' } }] },
++  'Reply with the single word: hello': { content: 'hello' },
++  'Use the tool to add 17 and 25, then tell me the result.': { content: 'The result is 42.' },
++}
+diff --git a/src/packages/local-models/toolCallingSuite.ts b/src/packages/local-models/toolCallingSuite.ts
+new file mode 100644
+index 000000000..d14b0d5a0
+--- /dev/null
++++ b/src/packages/local-models/toolCallingSuite.ts
+@@ -0,0 +1,118 @@
++/**
++ * Suite de cualificación de tool calling, leída de un archivo de datos del
++ * paquete (`suites/tool-calling-1.json`) para que quien mide y quien entrena
++ * por refuerzo usen la misma recompensa (`scoreReply`).
++ *
++ * Los casos son los seis de `tool_calling_cases` del banco
++ * `ollama-cpu-benchmark-20260930T191740`, exactos, pasados a la API nativa de
++ * Ollama: los argumentos de una llamada previa van como objeto y el resultado
++ * de herramienta se identifica por `tool_name`.
++ */
++
++import { readFile } from 'node:fs/promises'
++
++import type { ChatReply } from './ollamaApi.js'
++
++export const TOOL_CALLING_SUITE_PATH = `${import.meta.dir}/suites/tool-calling-1.json`
++
++export type CaseExpectation =
++  | { readonly kind: 'tool-call', readonly name: string, readonly arguments: Record<string, unknown> }
++  | { readonly kind: 'no-tool-call' }
++  | { readonly kind: 'content-includes', readonly text: string }
++
++export interface SuiteCase {
++  readonly id: string
++  /** Definiciones completas de herramienta, en el orden del caso. */
++  readonly tools: readonly unknown[]
++  readonly messages: readonly unknown[]
++  readonly expectation: CaseExpectation
++}
++
++export interface Suite {
++  readonly id: string
++  readonly cases: readonly SuiteCase[]
++}
++
++/** Lo que `scoreReply` mira de una respuesta. */
++export type ScoredReply = Pick<ChatReply, 'content' | 'toolCalls'>
++
++export class InvalidSuiteError extends Error {
++  constructor(readonly path: string, readonly field: string, reason: string) {
++    super(`suite inválida (${path}) en ${field}: ${reason}`)
++    this.name = 'InvalidSuiteError'
++  }
++}
++
++type JsonObject = Record<string, unknown>
++
++const EXPECTATION_KINDS: ReadonlySet<string> = new Set(['tool-call', 'no-tool-call', 'content-includes'])
++
++export async function loadSuite(path: string): Promise<Suite> {
++  const document = parseDocument(path, await readFile(path, 'utf8'))
++  const id = document.id
++  if (typeof id !== 'string' || id === '') throw new InvalidSuiteError(path, 'id', 'se espera una cadena no vacía')
++  const tools = (isObject(document.tools) ? document.tools : {}) as JsonObject
++  const cases = document.cases
++  if (!Array.isArray(cases) || cases.length === 0) throw new InvalidSuiteError(path, 'cases', 'se espera una lista no vacía')
++  return { id, cases: cases.map((value, index) => suiteCase(path, tools, value, index)) }
++}
++
++/** Recompensa binaria de un caso: la usa la cualificación y la usará el RL. */
++export function scoreReply(expectation: CaseExpectation, reply: ScoredReply): boolean {
++  if (expectation.kind === 'no-tool-call') return reply.toolCalls.length === 0
++  if (expectation.kind === 'content-includes') return reply.content.includes(expectation.text)
++  const [first] = reply.toolCalls
++  return first !== undefined && first.name === expectation.name && canonicalJson(first.arguments) === canonicalJson(expectation.arguments)
++}
++
++function parseDocument(path: string, text: string): JsonObject {
++  let document: unknown
++  try {
++    document = JSON.parse(text) as unknown
++  } catch (error) {
++    throw new InvalidSuiteError(path, '<raíz>', `no es JSON (${(error as Error).message})`)
++  }
++  if (!isObject(document)) throw new InvalidSuiteError(path, '<raíz>', 'se espera un objeto')
++  return document
++}
++
++function suiteCase(path: string, tools: JsonObject, value: unknown, index: number): SuiteCase {
++  const field = `cases[${index}]`
++  if (!isObject(value) || typeof value.id !== 'string') throw new InvalidSuiteError(path, field, 'se espera un objeto con id')
++  if (!Array.isArray(value.messages)) throw new InvalidSuiteError(path, `${field}.messages`, 'se espera una lista')
++  return {
++    id: value.id,
++    tools: resolveTools(path, tools, value.tools, `${field}.tools`),
++    messages: value.messages,
++    expectation: requireExpectation(path, value.expectation, `${field}.expectation`),
++  }
++}
++
++function resolveTools(path: string, tools: JsonObject, names: unknown, field: string): readonly unknown[] {
++  if (!Array.isArray(names)) throw new InvalidSuiteError(path, field, 'se espera una lista de nombres')
++  return names.map(name => {
++    if (typeof name !== 'string' || !Object.hasOwn(tools, name)) throw new InvalidSuiteError(path, field, `«${String(name)}» no está declarada en tools`)
++    return tools[name]
++  })
++}
++
++function requireExpectation(path: string, value: unknown, field: string): CaseExpectation {
++  if (!isObject(value) || !EXPECTATION_KINDS.has(String(value.kind))) {
++    throw new InvalidSuiteError(path, field, `se espera kind ${[...EXPECTATION_KINDS].join(', ')}`)
++  }
++  return value as unknown as CaseExpectation
++}
++
++function canonicalJson(value: unknown): string {
++  return JSON.stringify(canonicalize(value))
++}
++
++function canonicalize(value: unknown): unknown {
++  if (Array.isArray(value)) return value.map(canonicalize)
++  if (!isObject(value)) return value
++  return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalize(value[key])]))
++}
++
++function isObject(value: unknown): value is JsonObject {
++  return typeof value === 'object' && value !== null && !Array.isArray(value)
++}
+diff --git a/src/packages/local-models/tsconfig.build.json b/src/packages/local-models/tsconfig.build.json
+new file mode 100644
+index 000000000..a24afbd5b
+--- /dev/null
++++ b/src/packages/local-models/tsconfig.build.json
+@@ -0,0 +1,40 @@
++{
++  "compilerOptions": {
++    "declaration": true,
++    "emitDeclarationOnly": true,
++    "noEmit": false,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "rootDir": ".",
++    "outDir": "dist",
++    "paths": {
++      "@thyrox/local-models/*.ts": [
++        "./*.ts"
++      ]
++    }
++  },
++  "include": [
++    "**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}
+diff --git a/src/packages/local-models/tsconfig.test.json b/src/packages/local-models/tsconfig.test.json
+new file mode 100644
+index 000000000..de4a64e70
+--- /dev/null
++++ b/src/packages/local-models/tsconfig.test.json
+@@ -0,0 +1,19 @@
++{
++  "extends": "./tsconfig.build.json",
++  "compilerOptions": {
++    "noEmit": true,
++    "declaration": false,
++    "emitDeclarationOnly": false,
++    "rootDir": "."
++  },
++  "include": [
++    "**/*",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/__tests__/**/*"
++  ],
++  "exclude": [
++    "node_modules",
++    "dist"
++  ]
++}
+diff --git a/src/packages/local-models/volumeBlobs.ts b/src/packages/local-models/volumeBlobs.ts
+new file mode 100644
+index 000000000..ae56704a3
+--- /dev/null
++++ b/src/packages/local-models/volumeBlobs.ts
+@@ -0,0 +1,74 @@
++/**
++ * Dónde está, en el anfitrión, el blob GGUF de un modelo instalado en el
++ * Ollama gestionado: `/api/show` declara su ruta dentro del contenedor (línea
++ * `FROM` del Modelfile) y `podman volume inspect` da el punto de montaje del
++ * volumen de modelos (`THYROX_INFRA_OLLAMA_VOLUME`), montado en `/root/.ollama`
++ * (`src/lib/infrastructure.sh`).
++ */
++
++import { spawn } from 'node:child_process'
++
++/** Directorio del contenedor donde `infrastructure.sh` monta el volumen de modelos. */
++export const CONTAINER_MODELS_DIR = '/root/.ollama'
++
++const MOUNTPOINT_FORMAT = '{{.Mountpoint}}'
++const BLOB_FROM_LINE = /^FROM\s+(\S*\/blobs\/sha256-([0-9a-f]{64}))\s*$/m
++const SUCCESS_EXIT_CODE = 0
++
++export class BlobLocationError extends Error {
++  constructor(message: string) {
++    super(message)
++    this.name = 'BlobLocationError'
++  }
++}
++
++export interface ModelBlob {
++  readonly containerPath: string
++  /** Digest que el nombre del blob declara; quien lo lee lo verifica contra el contenido. */
++  readonly sha256: string
++}
++
++interface CommandResult {
++  readonly exitCode: number | null
++  readonly stdout: string
++  readonly stderr: string
++}
++
++/** El punto de montaje del volumen en el anfitrión. */
++export async function volumeMountpoint(podmanBin: string, volume: string): Promise<string> {
++  const result = await runPodman(podmanBin, ['volume', 'inspect', volume, '--format', MOUNTPOINT_FORMAT])
++  if (result.exitCode !== SUCCESS_EXIT_CODE) {
++    throw new BlobLocationError(`podman volume inspect ${volume} salió ${String(result.exitCode)}: ${result.stderr.trim()}`)
++  }
++  const mountpoint = result.stdout.trim()
++  if (mountpoint === '') throw new BlobLocationError(`podman volume inspect ${volume} no dio punto de montaje`)
++  return mountpoint
++}
++
++/** La capa del modelo que el Modelfile de `/api/show` declara en su `FROM`. */
++export function modelBlobOfModelfile(modelfile: string): ModelBlob {
++  const match = BLOB_FROM_LINE.exec(modelfile)
++  if (!match) throw new BlobLocationError('el Modelfile no declara un FROM con un blob sha256-<64 hex>')
++  return { containerPath: match[1] as string, sha256: match[2] as string }
++}
++
++/** La ruta del blob en el anfitrión: el prefijo del montaje cambia por el punto de montaje. */
++export function hostBlobPath(containerPath: string, mountpoint: string): string {
++  const prefix = `${CONTAINER_MODELS_DIR}/`
++  if (!containerPath.startsWith(prefix)) {
++    throw new BlobLocationError(`«${containerPath}» no está bajo ${CONTAINER_MODELS_DIR}, el directorio montado del volumen`)
++  }
++  return `${mountpoint.replace(/\/+$/, '')}/${containerPath.slice(prefix.length)}`
++}
++
++function runPodman(bin: string, args: readonly string[]): Promise<CommandResult> {
++  return new Promise((resolve, reject) => {
++    const child = spawn(bin, [...args], { stdio: ['ignore', 'pipe', 'pipe'] })
++    let stdout = ''
++    let stderr = ''
++    child.stdout.on('data', chunk => { stdout += chunk })
++    child.stderr.on('data', chunk => { stderr += chunk })
++    child.on('error', error => reject(new BlobLocationError(`no se pudo lanzar ${bin}: ${error.message}`)))
++    child.on('close', exitCode => resolve({ exitCode, stdout, stderr }))
++  })
++}

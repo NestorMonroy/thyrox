@@ -34,6 +34,16 @@ def assert_equal(name: str, expected, obtained) -> None:
         print(f"  FALLA {name} — esperado {expected!r}, obtenido {obtained!r}")
 
 
+def publish(path: Path) -> Path:
+    """Deja ``<n>.closed`` junto a la salida ``<n>.json``, como hace el pool.
+
+    ``tsc_cycle`` sólo lee ítems publicados (``pool_lifecycle``).
+    """
+    item = path.name.split(".", 1)[0]
+    (path.parent / f"{item}.closed").write_text(json.dumps({"item": item, "generation": 1, "artifacts": {}}))
+    return path
+
+
 def run(argv: list[str]) -> tuple[int, str, str]:
     out, err = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
@@ -78,9 +88,9 @@ with tempfile.TemporaryDirectory() as tmp:
     step = Path(tmp) / "step"
     (step / "outputs").mkdir(parents=True)
     (step / "items.txt").write_text("a.ts d/1\nb.ts d/2\nc.ts d/3\n")
-    (step / "outputs" / "1.json").write_text(json.dumps({"subtype": "success"}))
-    (step / "outputs" / "2.json").write_text(json.dumps({"subtype": "error_max_turns"}))
-    (step / "outputs" / "3.json").write_text("")
+    publish(step / "outputs" / "1.json").write_text(json.dumps({"subtype": "success"}))
+    publish(step / "outputs" / "2.json").write_text(json.dumps({"subtype": "error_max_turns"}))
+    publish(step / "outputs" / "3.json").write_text("")
     for n, before, after, kept in ((1, 100, 90, 3), (2, 90, 88, 1)):
         batch = step / "pipeline" / f"batch-{n:02d}"
         batch.mkdir(parents=True)
@@ -152,7 +162,7 @@ with tempfile.TemporaryDirectory() as tmp:
 # --- modules: el módulo como unidad, de punta a punta -------------------------
 # `plan` deriva las unidades del log: un «el módulo X no exporta Y» (TS2305,
 # TS2724) es un porte pendiente de X, y quien lo emite es su consumidor.
-# `launch` corre el pool (GNU Parallel, `claude -p` por módulo) y el pipeline
+# `launch` corre el pool (GNU Parallel, `thyrox -p` por módulo) y el pipeline
 # que mide por lotes, los dos con `thyrox-bg`: ningún subagente.
 
 MISSING_LOG = """src/packages/a/x.ts(3,10): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'foo'.
@@ -214,7 +224,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("sin ningún módulo que portar, plan rehúsa en vez de escribir un lote vacío", (2, False),
                  (empty, (base / "none/items.txt").exists()))
 
-    commands = tc.launch_commands(base / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+    commands = tc.launch_commands(base / "step", task_class="analisis", worktree=Path("/wt"),
                                   ledger=Path("/run/ledger.jsonl"), seed=7, width=8)
     pool, pipeline = commands
     assert_equal("launch corre dos trabajos con thyrox-bg", (["bin/thyrox-bg", "start"], ["bin/thyrox-bg", "start"]),
@@ -223,6 +233,12 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("el pool es headless-pool con la plantilla de módulos, sobre items.txt", (True, True, True),
                  ("bin/headless-pool" in pool_text, "src/verify/prompts/module-port.md" in pool_text,
                   f"< {base / 'step/items.txt'}" in pool_text))
+    # La cota del pool NO va fija: la memoria del ítem la deriva el historial
+    # del pool, y lo único que `tsc_cycle` sabe y el pool no es su vecino —el
+    # `tsc` completo del pipeline—, que declara como reserva.
+    assert_equal("el pool no fija --memfree: deriva el ítem y recibe la reserva del tsc vecino",
+                 (False, True), ("--memfree" in pool_text,
+                                 f"HEADLESS_POOL_MEMFREE_RESERVE={tc.TSC_MEMORY_RESERVE}" in pool_text))
     assert_equal("el pipeline mide en modo módulo las salidas de ese pool", (True, True),
                  ("--unit module" in pipeline_text, f"--outputs {base / 'step/outputs'}" in pipeline_text))
 
@@ -267,22 +283,22 @@ src/packages/h/src/use.ts(4,1): error TS2305: Module '"x"' has no exported membe
                         "--root", str(root)])
     assert_equal("sin causas compartidas, rehúsa", (2, False), (none, (root / "none/items.txt").exists()))
 
-    pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, pipeline = tc.launch_commands(root / "step", task_class="analisis", worktree=Path("/wt"),
                                         ledger=Path("/run/ledger.jsonl"), seed=7, route="shared")
     pool_text, pipeline_text = " ".join(pool), " ".join(pipeline)
     assert_equal("la ruta 2 usa su plantilla y mide de a una con la política neta", (True, True, True),
                  ("src/verify/prompts/shared-type.md" in pool_text, "--batch 1" in pipeline_text,
                   "--net" in pipeline_text))
-    module_pool, module_pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5",
+    module_pool, module_pipeline = tc.launch_commands(root / "step", task_class="analisis",
                                                       worktree=Path("/wt"), ledger=Path("/run/l.jsonl"), seed=7)
     assert_equal("la ruta de módulos no hereda la política neta", False, "--net" in " ".join(module_pipeline))
     # N=2 worktrees en la ruta 2: dos tsc a la vez rinden 1.77x
     # (tsc-two-concurrent-*), y el lote toma N unidades para medirlas en prefijos.
-    _, two = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=[Path("/wt1"), Path("/wt2")],
+    _, two = tc.launch_commands(root / "step", task_class="analisis", worktree=[Path("/wt1"), Path("/wt2")],
                                 ledger=Path("/run/l.jsonl"), seed=7, route="shared")
     assert_equal("la ruta 2 pasa los dos worktrees y un lote de su tamaño", (2, True),
                  (two.count("--worktree"), "--batch 2" in " ".join(two)))
-    _, module_two = tc.launch_commands(root / "step", model="claude-sonnet-5",
+    _, module_two = tc.launch_commands(root / "step", task_class="analisis",
                                        worktree=[Path("/wt1"), Path("/wt2")], ledger=Path("/run/l.jsonl"), seed=7)
     assert_equal("la de módulos no especula: sólo el primero", 1, module_two.count("--worktree"))
 
@@ -362,7 +378,7 @@ assert_equal("la ruta determinista nombra la identidad, el proponente y tsc", (T
 # --- local: la ruta 3 versionada ------------------------------------------
 # Vivía como guion de banco (step-120/build_items.py + plantilla.md): corría y
 # nadie más podía invocarlo. Un ítem por archivo y trozo de diagnósticos, con
-# el código que los rodea, para que el `claude -p` no gaste turnos leyendo.
+# el código que los rodea, para que el `thyrox -p` no gaste turnos leyendo.
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     source = root / "src/packages/agent/query.ts"
@@ -393,7 +409,7 @@ with tempfile.TemporaryDirectory() as tmp:
                         "--root", str(root), "--run", str(root / "run")]) if (root / "none.log").write_text("") is not None else None
     assert_equal("sin diagnósticos locales, rehúsa sin items.txt", (2, False),
                  (none, (root / "none/items.txt").exists()))
-    pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, pipeline = tc.launch_commands(root / "step", task_class="analisis", worktree=Path("/wt"),
                                         ledger=Path("/run/l.jsonl"), seed=7, route="local")
     pool_text, pipeline_text = " ".join(pool), " ".join(pipeline)
     assert_equal("la ruta 3 usa su plantilla versionada, mide por archivo y sin política neta",
@@ -412,9 +428,9 @@ with tempfile.TemporaryDirectory() as tmp:
         path = root / f"src/{name}.ts"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(f"line {n}" for n in range(1, 21)) + "\n")
-    run = root / "run"
-    run.mkdir()
-    (run / "patterns.jsonl").write_text(json.dumps({
+    run_dir = root / "run"
+    run_dir.mkdir()
+    (run_dir / "patterns.jsonl").write_text(json.dumps({
         "name": "bad-literal", "signal": "TS9001: bad", "fix": "sustituir BADn por n", "include": "",
         "exclude": [], "site": "", "replace": "", "applied": ["src/a.ts"]}) + "\n")
     log = root / "sweep.log"
@@ -423,7 +439,7 @@ with tempfile.TemporaryDirectory() as tmp:
                    "src/d.ts(9,1): error TS1234: other.\n")
     with contextlib.redirect_stderr(io.StringIO()) as err:
         blocked = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "local"),
-                           "--root", str(root), "--run", str(run)])
+                           "--root", str(root), "--run", str(run_dir)])
     assert_equal("gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa", (2, True, False),
                  (blocked, "GATE 4 BLOQUEADO" in err.getvalue(), (root / "local/items.txt").exists()))
     # Las instancias en archivos que OTRO paso tiene en vuelo no bloquean: ése
@@ -434,13 +450,13 @@ with tempfile.TemporaryDirectory() as tmp:
     in_flight.write_text("src/b.ts\nsrc/c.ts\n")
     with contextlib.redirect_stderr(io.StringIO()):
         overlapped = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "overlap"),
-                              "--root", str(root), "--run", str(run), "--exclude", str(in_flight)])
+                              "--root", str(root), "--run", str(run_dir), "--exclude", str(in_flight)])
     planned = [line.split()[0] for line in (root / "overlap/items.txt").read_text().splitlines()] \
         if (root / "overlap/items.txt").exists() else []
     assert_equal("gate 4 descuenta las instancias en vuelo en otro paso, y no las planea", (0, ["src/d.ts"]),
                  (overlapped, planned))
     code = tc.main(["sweep", "plan", "--log", str(log), "--bench", str(root / "sweep"), "--root", str(root),
-                    "--run", str(run)])
+                    "--run", str(run_dir)])
     lines = (root / "sweep/items.txt").read_text().splitlines()
     assert_equal("un ítem por patrón con sus archivos vivos", (0, ["pattern:bad-literal", "src/b.ts", "src/c.ts"]),
                  (code, [lines[0].split()[0], *lines[0].split()[2:]]))
@@ -449,17 +465,17 @@ with tempfile.TemporaryDirectory() as tmp:
                  ("TS9001: bad" in item, "sustituir BADn por n" in item, "src/a.ts" in item, "    5> line 5" in item))
     assert_equal("sweep plan deja gate4.json con los patrones revisados", ["bad-literal"],
                  json.loads((root / "sweep/gate4.json").read_text())["reviewed"])
-    pool, pipeline = tc.launch_commands(root / "sweep", model="claude-sonnet-5", worktree=Path("/wt"),
-                                        ledger=run / "ledger.jsonl", seed=7, route="sweep")
+    pool, pipeline = tc.launch_commands(root / "sweep", task_class="analisis", worktree=Path("/wt"),
+                                        ledger=run_dir / "ledger.jsonl", seed=7, route="sweep")
     assert_equal("la ruta sweep usa su plantilla y la unidad de varios archivos", (True, True),
                  ("src/verify/prompts/pattern-sweep.md" in " ".join(pool), "--unit module" in " ".join(pipeline)))
     assert_equal("la plantilla del barrido existe", True, (tc.THYROX / "src/verify/prompts/pattern-sweep.md").is_file())
     assert_equal("next manda al barrido antes que a la ruta local", "sweep",
-                 tc.next_route(tc.tsc_routes.parse_diagnostics(log.read_text()), {}, run=run))
-    tc.tsc_sweep.exclude_files(run, "bad-literal", ["src/b.ts", "src/c.ts"], "otra causa, medido")
+                 tc.next_route(tc.tsc_routes.parse_diagnostics(log.read_text()), {}, run=run_dir))
+    tc.tsc_sweep.exclude_files(run_dir, "bad-literal", ["src/b.ts", "src/c.ts"], "otra causa, medido")
     with contextlib.redirect_stderr(io.StringIO()):
         freed = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "local2"),
-                         "--root", str(root), "--run", str(run)])
+                         "--root", str(root), "--run", str(run_dir)])
     assert_equal("excluidas con razón, la ruta local queda libre", 0, freed)
 
 # --- probabilidad de éxito por archivo (L03, self-evolving-agents-2026) -------
@@ -591,8 +607,11 @@ with tempfile.TemporaryDirectory() as tmp:
     code, out, _ = cli(["local", "launch", "--bench", str(root / "step-201"), "--worktree", "/wt",
                         "--ledger", str(root / "run/ledger.jsonl"), "--seed", "1", "--dry-run"])
     pipeline_line = next(line for line in out.splitlines() if "pool_pipeline.py" in line)
-    expected = tc.step_setup_of(root / "step-201", "claude-sonnet-5", Path("/wt"), "local",
-                                cache_ttl=tc.pool_cache_ttl(root / "step-201", "claude-sonnet-5")[0])
+    # El modelo del paso lo deriva el selector de la clase por defecto; el
+    # registro esperado se construye con el mismo, no con uno escrito aquí.
+    derived = tc.derive_model("analisis")
+    expected = tc.step_setup_of(root / "step-201", derived, Path("/wt"), "local",
+                                cache_ttl=tc.pool_cache_ttl(root / "step-201", derived)[0])
     assert_equal("launch pasa al pipeline el setup_id de su configuración (L02)", True,
                  "--setup-id " + expected["setup_id"] in pipeline_line)
     assert_equal("con --dry-run no se registra nada en la corrida", False,
@@ -608,23 +627,23 @@ with tempfile.TemporaryDirectory() as tmp:
                   bool(close) and f"--run {root / 'run'}" in close[0]))
 
 # --- el TTL de caché del pool se decide con lo que midió el paso anterior -----
-# Cada ítem es un `claude -p`: su caché es de 5 m salvo que un hueco entre
+# Cada ítem es un `thyrox -p`: su caché es de 5 m salvo que un hueco entre
 # turnos la haga caducar, y ningún hueco dentro de un ítem supera la duración
 # del ítem. El ítem más largo del paso anterior es la cota que decide.
 with tempfile.TemporaryDirectory() as tmp:
-    run = Path(tmp)
-    previous = run / "step-154" / "outputs"
+    run_dir = Path(tmp)
+    previous = run_dir / "step-154" / "outputs"
     previous.mkdir(parents=True)
     for n, minutes in enumerate((1.4, 4.91), 1):
-        (previous / f"{n}.json").write_text(json.dumps({"duration_ms": minutes * 60000}))
+        publish(previous / f"{n}.json").write_text(json.dumps({"duration_ms": minutes * 60000}))
     (previous / "joblog.tsv").write_text("no es json\n")
-    current = run / "step-155"
+    current = run_dir / "step-155"
     (current / "outputs").mkdir(parents=True)
     assert_equal("la cota es el ítem más largo del paso anterior, en minutos", 4.91,
                  tc.previous_item_bound(current))
     ttl, why = tc.pool_cache_ttl(current, "claude-sonnet-5")
     assert_equal("ítems de menos de 5 min: 5m, y el porqué", ("5m", True), (ttl, "turnos seguidos" in why))
-    (previous / "3.json").write_text(json.dumps({"duration_ms": 12 * 60000}))
+    publish(previous / "3.json").write_text(json.dumps({"duration_ms": 12 * 60000}))
     assert_equal("un ítem de 12 min en el paso anterior: 1h", "1h", tc.pool_cache_ttl(current, "claude-sonnet-5")[0])
     # El entorno THYROX_* va antes que la cota: la cota es un DEFAULT
     # derivado, no una declaración — en el orden de `QCt` (2.1.282) forzar
@@ -653,14 +672,32 @@ with tempfile.TemporaryDirectory() as tmp:
     alone.mkdir(parents=True)
     assert_equal("sin paso anterior medido no se decide: lo decide el cliente", None,
                  tc.pool_cache_ttl(alone, "claude-sonnet-5")[0])
-    pool, _ = tc.launch_commands(current, model="claude-sonnet-5", worktree=Path("/wt"),
-                                 ledger=run / "ledger.jsonl", seed=1, cache_ttl="5m")
+    pool, _ = tc.launch_commands(current, task_class="analisis", worktree=Path("/wt"),
+                                 ledger=run_dir / "ledger.jsonl", seed=1, cache_ttl="5m")
     assert_equal("el TTL decidido llega al pool", True, "--cache-ttl 5m" in " ".join(pool))
-    pool, _ = tc.launch_commands(current, model="claude-sonnet-5", worktree=Path("/wt"),
-                                 ledger=run / "ledger.jsonl", seed=1)
+    pool, _ = tc.launch_commands(current, task_class="analisis", worktree=Path("/wt"),
+                                 ledger=run_dir / "ledger.jsonl", seed=1)
     assert_equal("sin TTL decidido el pool no lo fija", False, "--cache-ttl" in " ".join(pool))
     assert_equal("el TTL es parte de la configuración del paso (setup_id)", "5m",
                  tc.step_setup_of(current, "claude-sonnet-5", Path("/wt"), "modules", cache_ttl="5m")["policy"]["cache_ttl"])
+
+# Un ítem sin `<n>.closed` no terminó de publicarse: su duración no acota el TTL
+# aunque sea la más larga del paso anterior.
+with tempfile.TemporaryDirectory() as tmp:
+    previous = Path(tmp) / "step-154" / "outputs"
+    previous.mkdir(parents=True)
+    publish(previous / "1.json").write_text(json.dumps({"duration_ms": 2 * 60000}))
+    (previous / "2.json").write_text(json.dumps({"duration_ms": 30 * 60000}))
+    current = Path(tmp) / "step-155"
+    (current / "outputs").mkdir(parents=True)
+    assert_equal("sin <n>.closed, el ítem no acota el TTL", 2.0, tc.previous_item_bound(current))
+    sealed_glob = tc.closed_glob
+    tc.closed_glob = lambda directory, pattern: sorted(Path(directory).glob(pattern))
+    try:
+        assert_equal("control: sin el filtro de cerrados, el ítem sin sello acota", 30.0,
+                     tc.previous_item_bound(current))
+    finally:
+        tc.closed_glob = sealed_glob
 
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

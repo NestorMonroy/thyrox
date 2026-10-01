@@ -1,0 +1,33 @@
+
+== read_directives ==
+  ok    una directiva sin comentario no está declarada
+  ok    el comentario en su PROPIA línea la declara
+  ok    una línea en blanco corta la adscripción
+  ok    el comentario en LÍNEA no declara — git descarta la línea entera
+  ok    el duplicado se conserva: es lista, no conjunto
+
+== review ==
+  ok    el contrato completo da ok
+  ok    sin .gitattributes da ausente_archivo
+  ok    con dos directivas de menos da divergente
+  ok    y el detalle NOMBRA las que faltan
+  ok    una extra CON comentario que la declare sigue siendo ok
+  ok    una extra SIN comentario es divergente
+  ok    un clon ausente da ausente_repo
+
+== controles de anulación ==
+  ok    retirar dos directivas cambia el veredicto
+  ok    retirar el comentario que declara la extra cambia el veredicto
+  ok    duplicar una directiva canónica cambia el veredicto
+
+== main ==
+  ok    los cinco en contrato salen 0
+  ok    y el conteo publica su DENOMINADOR
+  ok    --strict con una divergencia sale 1
+  ok    y sin --strict sigue saliendo 0
+  ok    el conteo nombra la divergencia
+  ok    con dos clones el denominador NO miente
+  ok    y los tres ausentes se NOMBRAN
+  ok    un clon ausente no cuenta como divergencia
+
+resultado: 23 de 23 aserciones en verde

@@ -12,7 +12,6 @@ Qué tiene que garantizar, según ``plan-tsc-zero.rst``:
 """
 from __future__ import annotations
 
-import random
 import sys
 from pathlib import Path
 

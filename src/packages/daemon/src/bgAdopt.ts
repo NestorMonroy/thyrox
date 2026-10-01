@@ -9,6 +9,9 @@
  */
 
 import { existsSync as existsSyncFn } from 'node:fs'
+import { readdir, unlink } from 'node:fs/promises'
+import { connect } from 'node:net'
+import { join } from 'node:path'
 
 import { logEvent } from '@thyrox/local-observability'
 
@@ -19,7 +22,9 @@ import {
   readWorkerRecord,
   writeWorkerRecord,
 } from './bgWorkerRegistry.js'
-import { readRoster } from './roster.js'
+import { encodeCtrlFrame } from './internal/ptyFrame.js'
+import { isCliVersionStale, readRoster } from './roster.js'
+import { getDaemonScopeDir } from './socketPaths.js'
 import { WorkerVm } from './workerVm.js'
 
 /**
@@ -102,7 +107,7 @@ export async function adoptFromRoster(
         ptySocket,
         rvSocket: entry.rendezvousSock,
         cmd: [],
-        cliVersion: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: process.env.THYROX_CODE_VERSION ?? 'dev',
       },
       record,
     )
@@ -154,8 +159,8 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
         sock: ptySocket,
       })
     }
-    const currentCli = process.env.CLAUDE_CODE_VERSION ?? 'dev'
-    if (record.cliVersion && record.cliVersion !== currentCli) {
+    const currentCli = process.env.THYROX_CODE_VERSION ?? 'dev'
+    if (isCliVersionStale(record.cliVersion, currentCli)) {
       logEvent('tengu_bg_adopt_upgrade_respawn', {
         short: record.short,
         was: record.cliVersion,
@@ -189,6 +194,117 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
       verified: String(record.procStart !== undefined && record.procStart !== 0),
     })
   }
+}
+
+/** Sufijo del socket de PTY de un worker bajo el scope del daemon. */
+const PTY_SOCKET_SUFFIX = '.pty.sock'
+
+/**
+ * Breadcrumbs que un host de PTY deja junto a su socket (`yw`/`nx`/`HV` y el
+ * `.err.read` de `NIe`). `.err` va antes que `.err.read` como en la
+ * referencia; el sufijo compuesto no termina en `.err`, así que no se pisan.
+ */
+const PTY_BREADCRUMB_SUFFIXES = ['.err', '.late', '.exec-exit', '.err.read']
+
+/** Plazo de `NIe` para que un host huérfano cierre tras el SIGTERM. */
+const ORPHAN_HOST_KILL_TIMEOUT_MS = 2000
+
+const REAPED_REASON = 'reaped (roster gap)'
+
+function unlinkQuietly(path: string): Promise<void> {
+  return unlink(path).catch(() => {})
+}
+
+/**
+ * Pide a un host de PTY huérfano que termine. Ref `NIe` (chunk-kc04kkkd.js):
+ * conecta, envía el frame `kill` SIGTERM y resuelve `true` cuando el host
+ * cierra; si la conexión falla, el socket está muerto: borra el socket y sus
+ * breadcrumbs `.err`/`.err.read`/`.late` y resuelve `false`; pasado el plazo
+ * destruye la conexión y resuelve `false`. Los `unlink` son silenciosos como
+ * en la referencia; aquí se esperan antes de resolver, para que quien llama
+ * observe el directorio ya limpio.
+ */
+export function terminateOrphanPtyHost(ptySocket: string): Promise<boolean> {
+  return new Promise(resolveOutcome => {
+    let settled = false
+    const settle = (outcome: boolean): void => {
+      if (settled) return
+      settled = true
+      resolveOutcome(outcome)
+    }
+    const socket = connect(ptySocket)
+    socket.unref()
+    socket.setTimeout(ORPHAN_HOST_KILL_TIMEOUT_MS, () => {
+      socket.destroy()
+      settle(false)
+    })
+    socket.on('error', () => {
+      const deadFiles = [ptySocket, `${ptySocket}.err`, `${ptySocket}.err.read`, `${ptySocket}.late`]
+      void Promise.all(deadFiles.map(unlinkQuietly)).then(() => settle(false))
+    })
+    socket.once('connect', () => {
+      socket.resume()
+      socket.write(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
+    })
+    socket.once('close', hadError => {
+      if (!hadError) settle(true)
+    })
+  })
+}
+
+/** Breadcrumb cuyo socket de PTY ya no está en el directorio. */
+function isOrphanBreadcrumb(entry: string, present: ReadonlySet<string>): boolean {
+  const suffix = PTY_BREADCRUMB_SUFFIXES.find(s => entry.endsWith(`${PTY_SOCKET_SUFFIX}${s}`))
+  return suffix !== undefined && !present.has(entry.slice(0, -suffix.length))
+}
+
+/**
+ * Reapa un host sin entrada de roster: le pide terminar (`NIe`) y, en la
+ * rama POSIX de `pr`, lo marca `failed` sea cual sea el desenlace y borra
+ * sus breadcrumbs `.late` y `.exec-exit`.
+ */
+async function reapRosterlessHost(scopeDir: string, short: string): Promise<void> {
+  const ptySocket = join(scopeDir, `${short}${PTY_SOCKET_SUFFIX}`)
+  await terminateOrphanPtyHost(ptySocket)
+  markAdoptionFailed(short, REAPED_REASON)
+  await Promise.all([unlinkQuietly(`${ptySocket}.late`), unlinkQuietly(`${ptySocket}.exec-exit`)])
+}
+
+/**
+ * Barrido archivo→roster de `<daemon-scope>`: la dirección opuesta a
+ * `adoptRunningPtyRecords`. Ref `pr` (chunk-92tvramn.js), rama no-Windows:
+ * 1. borra cada breadcrumb (`.err`/`.late`/`.exec-exit`/`.err.read`) cuyo
+ *    `.pty.sock` ya no existe;
+ * 2. cada `.pty.sock` sin handle en `workers` es un host "roster-less": se
+ *    reapa con `reapRosterlessHost`.
+ * El log agregado sale antes de esperar a los reapeos, como en la
+ * referencia; a diferencia de ella, la función espera a que terminen, para
+ * que quien la invoca sepa cuándo el directorio quedó consistente.
+ *
+ * Divergencias declaradas: la rama `storageV5` no aplica (ccb no tiene ese
+ * store) y la rama Windows (`.pid` bajo pty-pids) tampoco (socketPaths.ts
+ * deja el daemon de Windows fuera de alcance). La lectura fallida del
+ * directorio da lista vacía en silencio (`nr(a).catch(()=>[])`).
+ */
+export async function reapOrphanPtySockets(
+  workers: Map<string, WorkerVm>,
+  log: (message: string) => void,
+): Promise<void> {
+  const scopeDir = getDaemonScopeDir()
+  const entries = await readdir(scopeDir).catch(() => [] as string[])
+  const present = new Set(entries.filter(entry => entry.endsWith(PTY_SOCKET_SUFFIX)))
+  const breadcrumbs = entries.filter(entry => isOrphanBreadcrumb(entry, present))
+  const rosterless = [...present]
+    .map(entry => entry.slice(0, -PTY_SOCKET_SUFFIX.length))
+    .filter(short => !workers.has(short))
+  if (rosterless.length > 0) {
+    log(`bg orphan-reap: ${rosterless.length} roster-less pty host(s)`)
+    logEvent('tengu_bg_orphan_reap', { reaped: String(rosterless.length) })
+  }
+  await Promise.all([
+    ...breadcrumbs.map(entry => unlinkQuietly(join(scopeDir, entry))),
+    ...rosterless.map(short => reapRosterlessHost(scopeDir, short)),
+  ])
 }
 
 /**

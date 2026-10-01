@@ -8,7 +8,7 @@ import { OAUTH_BETA_HEADER } from './oauthConstants.js'
 import { getAnthropicClient } from './index.js'
 import { isClaudeAISubscriber } from './authAlias.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { safeParseJSON } from '@thyrox/storage/json.js'
 import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
@@ -39,7 +39,7 @@ const CacheFileSchema = lazySchema(() =>
 export type ModelCapability = z.infer<ReturnType<typeof ModelCapabilitySchema>>
 
 function getCacheDir(): string {
-  return join(getClaudeConfigHomeDir(), 'cache')
+  return join(getConfigHomeDir(), 'cache')
 }
 
 function getCachePath(): string {
@@ -60,7 +60,7 @@ function sortForMatching(models: ModelCapability[]): ModelCapability[] {
   )
 }
 
-// Keyed on cache path so tests that set CLAUDE_CONFIG_DIR get a fresh read
+// Keyed on cache path so tests that set THYROX_CONFIG_DIR get a fresh read
 const loadCache = memoize(
   (path: string): ModelCapability[] | null => {
     try {

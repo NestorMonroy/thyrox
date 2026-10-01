@@ -2,7 +2,7 @@
  * ViewHookMode shows read-only details for a single configured hook.
  *
  * The /hooks menu is read-only; this view replaces the former delete-hook
- * confirmation screen and directs users to settings.json or Claude for edits.
+ * confirmation screen and directs users to settings.json or thyrox for edits.
  */
 import * as React from 'react'
 import { Box, Text } from '@anthropic/ink'
@@ -11,6 +11,7 @@ import {
   type IndividualHookConfig,
 } from '../../hooksSettings.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   selectedHook: IndividualHookConfig
@@ -74,7 +75,7 @@ export function ViewHookMode({
           )}
         <Text dimColor>
           To modify or remove this hook, edit settings.json directly or ask
-          Claude to help.
+          {PRODUCT_NAME} to help.
         </Text>
       </Box>
     </Dialog>

@@ -15,15 +15,11 @@
  *  - `enqueueSdkEvent` (`agent/sdkEventQueue.js`) — no-op con setter de
  *    inyección `setEnqueueSdkEventFn`, para poder verificar en el test
  *    qué evento se intentó encolar sin el subsistema SDK real.
- *  - `isEnvTruthy` (`@thyrox/config: env/utils.ts`, que existe de verdad
- *    en este monorepo) — no se importa cruzando de paquete (mismo
- *    criterio que `sessionActivity.ts`); se reimplementa fiel a esa
- *    fuente.
  *
- * `readEnv` SÍ se reusa de verdad: se importa de
- * `./internal/pendingCrossPackageDeps.js`.
+ * `readEnv` e `isEnvTruthy` se importan del original,
+ * `@thyrox/config/env/utils`, un módulo hoja.
  */
-import { readEnv } from './internal/pendingCrossPackageDeps.js'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 export type SessionState = 'idle' | 'running' | 'requires_action'
 
@@ -52,14 +48,6 @@ export type RequiresActionDetails = {
 }
 
 type PermissionMode = string
-
-/** Fiel a `@thyrox/config: env/utils.ts::isEnvTruthy` — ver docstring. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
-}
 
 let _enqueueSdkEvent: (event: Record<string, unknown>) => void = () => {}
 export function setEnqueueSdkEventFn(
@@ -168,7 +156,7 @@ export function notifySessionStateChanged(
   // Opt-in hasta que los clientes CCR web + mobile aprendan a ignorar
   // este subtipo en sus heurísticas isWorking() de último mensaje — el
   // evento idle final hoy los deja fijos en "Running...".
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_EMIT_SESSION_STATE_EVENTS'))) {
     _enqueueSdkEvent({
       type: 'system',
       subtype: 'session_state_changed',

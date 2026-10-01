@@ -65,6 +65,7 @@ import { Transcript } from '../loop/transcript.ts'
 import { TASK_REMINDER_TEXT } from '../loop/context/attachments.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import type { AssistantTurn, HarnessEvent, Message, ProviderRequest } from '../loop/types.ts'
 
@@ -114,13 +115,13 @@ const traeTablero = (r: ProviderRequest): boolean =>
       && ((b as { text?: string }).text ?? '').includes(TASK_REMINDER_TEXT)))
 
 afterEach(() => {
-  delete process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
+  delete process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE
 })
 
 describe('A.4.6 — hay recuperación cuando la compactación misma falla', () => {
   test('1. el resumen lanza y el bucle NO muere: lo dice con su causa', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '1'
     const p = new RecordedProvider([pide(1), texto('fin')])
     const eventos = await recoger(streamLoop({
       ...base(d), prompt: 'hola', provider: p,
@@ -141,7 +142,7 @@ describe('A.4.6 — hay recuperación cuando la compactación misma falla', () =
 
   test('2. y degrada al mecanismo que NO necesita modelo, saltándose el piso', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '1'
     const p = new RecordedProvider([pide(1), texto('fin')])
     const eventos = await recoger(streamLoop({
       ...base(d), prompt: 'hola', provider: p,
@@ -173,7 +174,7 @@ describe('A.4.6 — hay recuperación cuando la compactación misma falla', () =
 
   test('3. si no queda nada que liberar, PARA declarando — no lanza', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '1'
     const p = new RecordedProvider([pide(1), pide(2), texto('fin')])
     // Sin un solo par purgable: la escalera se queda sin peldaños.
     const r = await runLoop({
@@ -192,12 +193,12 @@ describe('A.4.6 — hay recuperación cuando la compactación misma falla', () =
 describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista', () => {
   test('4. el tablero se reinyecta en el turno siguiente, sin esperar 10+10', async () => {
     const d = dir()
-    const db = join(d, 'tablero.sqlite3')
+    const db = join(d, 'tablero.sqlite3'); createMigratedTaskDb(db)
     const ctx = { cwd: d, sessionId: 'ses-1', abort: new AbortController().signal, messages: [] }
     const crear = taskTools({ dbPath: db, sessionId: 'ses-1' }).find((t) => t.name === 'TaskCreate')!
     await crear.run({ subject: 'la tarea que no se puede perder' }, ctx)
 
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '1'
     const p = new RecordedProvider([pide(1), texto('fin')])
     await runLoop({
       ...base(d), prompt: 'hola', provider: p,
@@ -216,7 +217,7 @@ describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista',
 
   test('5. el control: sin compactación, el turno 2 NO lo trae', async () => {
     const d = dir()
-    const db = join(d, 'tablero.sqlite3')
+    const db = join(d, 'tablero.sqlite3'); createMigratedTaskDb(db)
     const ctx = { cwd: d, sessionId: 'ses-2', abort: new AbortController().signal, messages: [] }
     const crear = taskTools({ dbPath: db, sessionId: 'ses-2' }).find((t) => t.name === 'TaskCreate')!
     await crear.run({ subject: 'la misma tarea, sin presión' }, ctx)

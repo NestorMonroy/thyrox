@@ -1,0 +1,72 @@
+== 1: la cuenta nueva se guarda sin cifrar
+   (src/accounts/connectionStore.ts)
+(fail) create > the credentials are ciphertext in the row and plaintext in what is returned [44.27ms]
+(fail) read > the raw list keeps the ciphertext [50.62ms]
+ 25 pass
+ 2 fail
+== 2: sin deduplicar por valor de clave
+   (src/accounts/connectionStore.ts)
+(fail) create an account that already exists > the same key value under another name is the same account [40.94ms]
+(fail) create an account that already exists > a local provider with the same key but another base URL is another server [41.15ms]
+ 25 pass
+ 2 fail
+== 3: un servidor local no se distingue por su URL
+   (src/accounts/connectionStore.ts)
+(fail) create an account that already exists > a local provider with the same key but another base URL is another server [43.52ms]
+ 26 pass
+ 1 fail
+== 4: la organización no separa cuentas
+   (src/accounts/connectionIdentity.ts)
+(fail) create an account that already exists > the same email in two organizations is two accounts [49.60ms]
+ 26 pass
+ 1 fail
+== 5: un username de un solo lado no separa cuentas
+   (src/accounts/connectionIdentity.ts)
+(fail) create an account that already exists > a username on one side only is another account [42.05ms]
+ 26 pass
+ 1 fail
+== 6: sin promover la fila de Codex sin usuario
+   (src/accounts/connectionStore.ts)
+(fail) create an account that already exists > a Codex row without a user id is promoted by its email [40.12ms]
+ 26 pass
+ 1 fail
+== 7: las credenciales que no llegan se pierden
+   (src/accounts/connectionStore.ts)
+ 27 pass
+ 0 fail
+== 8: un mapa inválido se descarta en silencio
+   (src/accounts/connectionStore.ts)
+(fail) create > invalid thresholds or overrides are refused, not dropped [44.61ms]
+(fail) update > refuses invalid thresholds and ignores an unknown id [49.66ms]
+ 25 pass
+ 2 fail
+== 9: la proyección acepta cualquier columna
+   (src/accounts/connectionStore.ts)
+(fail) read > a projection only admits real columns, and quotes group [48.93ms]
+ 26 pass
+ 1 fail
+== 10: la lista no descifra
+   (src/accounts/connectionStore.ts)
+(fail) read > list filters, orders by priority and decrypts only on access [43.85ms]
+ 26 pass
+ 1 fail
+== 11: borrar no renumera
+   (src/accounts/connectionDeletion.ts)
+(fail) delete > one account, and the rest of its provider is renumbered [56.75ms]
+ 26 pass
+ 1 fail
+== 12: la sesión web no se reconoce por su secreto
+   (src/accounts/connectionStore.ts)
+(fail) create an account that already exists > a web session with the same secret under another key or name is the same account [49.68ms]
+ 26 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/connectionColumns.ts
+?? src/packages/provider/src/accounts/connectionDeletion.ts
+?? src/packages/provider/src/accounts/connectionIdentity.ts
+?? src/packages/provider/src/accounts/connectionSchema.ts
+?? src/packages/provider/src/accounts/connectionStore.ts
+?? src/packages/provider/src/accounts/lazyConnectionRow.ts
+ 27 pass
+ 0 fail
+__BG_EXIT__=0

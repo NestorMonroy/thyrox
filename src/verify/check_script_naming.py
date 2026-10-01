@@ -93,10 +93,9 @@ EXCLUIR = ('node_modules', '.venv', 'venv', '__pycache__', 'build', 'dist',
 from workbench.paths import is_measurement_artifact  # noqa: E402
 from paths.reach import env_value  # noqa: E402
 
-# El léxico vive en el gate hermano, ya en este mismo directorio tras la
-# mudanza a THYROX (antes era `api: scripts/check_identifier_language.py`,
-# hoy ese archivo reexporta el veredicto de aquí). La variable permite
-# apuntarlo a otro sitio —o a ninguno, para probar el guard.
+# El léxico vive en el gate hermano de este mismo directorio
+# (`api: scripts/check_identifier_language.py` reexporta su veredicto). La
+# variable permite apuntarlo a otro sitio —o a ninguno, para probar el guard.
 LEXICO = os.environ.get('IDIOMA_GATE_LEXICO',
                         str(pathlib.Path(__file__).with_name('check_identifier_language.py')))
 #: Los dos baselines son PARAMETRO DEL CONSUMIDOR, no del proveedor — el mismo
@@ -172,6 +171,10 @@ def cargar_lexico():
               f'porque un 0 sería un verde falso.', file=sys.stderr)
         raise SystemExit(2)
     spec = importlib.util.spec_from_file_location('_lexico', ruta)
+    if spec is None or spec.loader is None:
+        # `ruta.is_file()` ya se verificó arriba; si esto falla es un
+        # fallo real de carga, no una condición esperada.
+        raise ImportError(f"no se pudo cargar el léxico desde {ruta}")
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     return modulo.spanish_words_in
@@ -249,6 +252,10 @@ def load_identifier_lexicon():
               file=sys.stderr)
         raise SystemExit(2)
     spec = importlib.util.spec_from_file_location('_lexico', ruta)
+    if spec is None or spec.loader is None:
+        # `ruta.is_file()` ya se verificó arriba; si esto falla es un
+        # fallo real de carga, no una condición esperada.
+        raise ImportError(f"no se pudo cargar el léxico desde {ruta}")
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     return modulo
@@ -341,7 +348,7 @@ def main_identifiers(root, args):
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument('raiz', nargs='?', default='.', help='raíz del repositorio')
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')
     ap.add_argument('--strict', action='store_true', help='exit 1 si hay infractores')

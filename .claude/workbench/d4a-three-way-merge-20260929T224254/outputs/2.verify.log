@@ -1,0 +1,94 @@
+EEEEEEEEEE..                                                             [100%]
+==================================== ERRORS ====================================
+___________ ERROR at setup of test_a_row_without_its_rst_is_reported ___________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 135
+  def test_a_row_without_its_rst_is_reported(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:135
+_____________ ERROR at setup of test_a_row_with_its_rst_is_silent ______________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 145
+  def test_a_row_with_its_rst_is_silent(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:145
+______________ ERROR at setup of test_b_padding_pair_is_reported _______________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 157
+  def test_b_padding_pair_is_reported(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:157
+_____________ ERROR at setup of test_b_distinct_numbers_are_silent _____________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 168
+  def test_b_distinct_numbers_are_silent(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:168
+____________ ERROR at setup of test_baseline_freezes_inherited_debt ____________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 184
+  def test_baseline_freezes_inherited_debt(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:184
+__________ ERROR at setup of test_the_gate_refuses_without_a_baseline __________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 197
+  def test_the_gate_refuses_without_a_baseline(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:197
+______ ERROR at setup of test_session_scope_hides_other_sessions_orphans _______
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 218
+  def test_session_scope_hides_other_sessions_orphans(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:218
+__________ ERROR at setup of test_session_scope_denominator_is_scoped __________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 232
+  def test_session_scope_denominator_is_scoped(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:232
+________ ERROR at setup of test_pending_findings_for_session_is_scoped _________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 245
+  def test_pending_findings_for_session_is_scoped(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:245
+__________ ERROR at setup of test_write_baseline_refuses_with_session __________
+file /home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py, line 266
+  def test_write_baseline_refuses_with_session(tree: pathlib.Path) -> None:
+E       fixture 'tree' not found
+>       available fixtures: cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/home/user/thyrox/.thyrox/pool-worktrees/17eedabac386/2/tests/verify/test_finding_id_unique.py:266
+=========================== short test summary info ============================
+ERROR tests/verify/test_finding_id_unique.py::test_a_row_without_its_rst_is_reported
+ERROR tests/verify/test_finding_id_unique.py::test_a_row_with_its_rst_is_silent
+ERROR tests/verify/test_finding_id_unique.py::test_b_padding_pair_is_reported
+ERROR tests/verify/test_finding_id_unique.py::test_b_distinct_numbers_are_silent
+ERROR tests/verify/test_finding_id_unique.py::test_baseline_freezes_inherited_debt
+ERROR tests/verify/test_finding_id_unique.py::test_the_gate_refuses_without_a_baseline
+ERROR tests/verify/test_finding_id_unique.py::test_session_scope_hides_other_sessions_orphans
+ERROR tests/verify/test_finding_id_unique.py::test_session_scope_denominator_is_scoped
+ERROR tests/verify/test_finding_id_unique.py::test_pending_findings_for_session_is_scoped
+ERROR tests/verify/test_finding_id_unique.py::test_write_baseline_refuses_with_session
+2 passed, 10 errors in 6.31s

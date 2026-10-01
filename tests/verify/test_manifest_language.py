@@ -135,6 +135,7 @@ else:
                      for name in (gate.MANIFEST_FILE_NAME, gate.LEGACY_MANIFEST_FILE_NAME)
                      for p in h.rglob(name)), None)
     check('el consumidor tiene al menos un run real', real_run is not None, True)
+    assert real_run is not None  # el check de arriba ya lo exige
     with tempfile.TemporaryDirectory() as tmp_home:
         copy = Path(tmp_home) / real_run.name
         shutil.copytree(real_run, copy)

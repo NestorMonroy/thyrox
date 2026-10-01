@@ -1,0 +1,47 @@
+../../../node_modules/@anthropic/ink/src/components/Box.tsx(90,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Box.tsx(114,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Link.tsx(25,9): error TS2339: Property 'ink-link' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Link.tsx(25,39): error TS2339: Property 'ink-link' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Newline.tsx(15,10): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Newline.tsx(15,40): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/RawAnsi.tsx(33,5): error TS2339: Property 'ink-raw-ansi' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/ScrollBox.tsx(234,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/ScrollBox.tsx(235,12): error TS7006: Parameter 'el' implicitly has an 'any' type.
+../../../node_modules/@anthropic/ink/src/components/ScrollBox.tsx(253,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Text.tsx(140,5): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Text.tsx(142,5): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+__tests__/udsControlIdleNotification.test.ts(44,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(53,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(61,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(69,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(77,35): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(96,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(108,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(115,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(124,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(126,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsInboundPolicy.test.ts(31,143): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: "accept" | "hold" | "refuse" | undefined): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"accept" | "hold" | "refuse" | undefined'.
+  Overload 2 of 2, '(expected: "accept" | "hold" | "refuse" | undefined): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"accept" | "hold" | "refuse" | undefined'.

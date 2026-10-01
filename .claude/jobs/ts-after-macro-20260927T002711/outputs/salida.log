@@ -1,0 +1,51 @@
+run-task-pool: 9 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T002712
+  job-20260927T002712/job-001 pid 32679   cd /home/user/thyrox && timeout 1200 bunx tsc --noEmit -p tsconfig.json > .claude/workbench/ts-own-errors-20260926T225629/after-macro/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/ts-own-errors-20260926T225629/after-macro/root-tsc.out
+  job-20260927T002712/job-002 pid 32714   cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/app-host > .claude/workbench/ts-own-errors-20260926T225629/after-macro/app-host.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/app-host.err
+  job-20260927T002712/job-003 pid 684     cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/bridge > .claude/workbench/ts-own-errors-20260926T225629/after-macro/bridge.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/bridge.err
+  job-20260927T002712/job-004 pid 953     cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/config > .claude/workbench/ts-own-errors-20260926T225629/after-macro/config.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/config.err
+  job-20260927T002712/job-005 pid 1183    cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/local-observability > .claude/workbench/ts-own-errors-20260926T225629/after-macro/local-observability.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/local-observability.err
+  job-20260927T002712/job-006 pid 1572    cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/mcp-runtime > .claude/workbench/ts-own-errors-20260926T225629/after-macro/mcp-runtime.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/mcp-runtime.err
+  job-20260927T002712/job-007 pid 1851    cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/permission > .claude/workbench/ts-own-errors-20260926T225629/after-macro/permission.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/permission.err
+  job-20260927T002712/job-008 pid 2119    cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/storage > .claude/workbench/ts-own-errors-20260926T225629/after-macro/storage.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/storage.err
+  job-20260927T002712/job-009 pid 2190    cd /home/user/thyrox && PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/provider > .claude/workbench/ts-own-errors-20260926T225629/after-macro/provider.txt 2> .claude/workbench/ts-own-errors-20260926T225629/after-macro/provider.err
+run-task-pool: lanzados 9 de 9; esperando en PRIMER PLANO (timeout 1300s)
+asentado: job-20260927T002712_job-001 -> OK (2 de 10)
+asentado: job-20260927T002712_job-002 -> OK (3 de 10)
+asentado: job-20260927T002712_job-003 -> OK (4 de 10)
+asentado: job-20260927T002712_job-004 -> OK (5 de 10)
+asentado: job-20260927T002712_job-005 -> OK (6 de 10)
+asentado: job-20260927T002712_job-006 -> OK (7 de 10)
+asentado: job-20260927T002712_job-007 -> OK (8 de 10)
+asentado: job-20260927T002712_job-008 -> OK (9 de 10)
+asentado: job-20260927T002712_job-009 -> OK (10 de 10)
+== 10 trabajos asentados ==
+OLVIDADO job-20260927T002712
+       | (vacío — no emitió nada)
+OK     job-20260927T002712_job-001
+       | EXIT=0
+       memoria pico: 2703364 KB (2640 MB) · pared 57.31s
+OK     job-20260927T002712_job-002
+       | EXIT=0
+       memoria pico: 876032 KB (856 MB) · pared 11.06s
+OK     job-20260927T002712_job-003
+       | EXIT=0
+       memoria pico: 725988 KB (709 MB) · pared 7.85s
+OK     job-20260927T002712_job-004
+       | EXIT=0
+       memoria pico: 729112 KB (712 MB) · pared 9.43s
+OK     job-20260927T002712_job-005
+       | EXIT=0
+       memoria pico: 699248 KB (683 MB) · pared 7.61s
+OK     job-20260927T002712_job-006
+       | EXIT=0
+       memoria pico: 769296 KB (751 MB) · pared 8.64s
+OK     job-20260927T002712_job-007
+       | EXIT=0
+       memoria pico: 746756 KB (729 MB) · pared 8.56s
+OK     job-20260927T002712_job-008
+       | EXIT=0
+       memoria pico: 688920 KB (673 MB) · pared 7.35s
+OK     job-20260927T002712_job-009
+       | EXIT=0
+       memoria pico: 839792 KB (820 MB) · pared 9.19s
+__BG_EXIT__=0

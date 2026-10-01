@@ -1,0 +1,13 @@
+Trying to pull docker.io/ollama/ollama:0.35.0...
+Getting image source signatures
+Copying blob sha256:824f81b155e31b29238e77b123406d5ecb9cfb1f9f4383934ff1024dbbb66e9e
+Copying blob sha256:edd1ed89f0d443580bd42e5a10cd8736aba5a3438b2a0645c2ebb50119bb0eba
+Copying blob sha256:39c974aaf248d8490fab4c606a88f126d58fe4547b025d9f5f48344a38663a04
+Copying blob sha256:9a53af372adcd00807d55722841c06081c3790329720bf67a2d311ea6f0baad9
+Copying config sha256:c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48
+Writing manifest to image destination
+c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48
+pull_exit=0 pull_seconds=89
+size_bytes=5513676936 digest=sha256:2a6e883b917fc543389599dae79918f5cac9e1438890506982f44aa4f5625d01
+/dev/vda        252G   20G   18G  54% /
+__BG_EXIT__=0

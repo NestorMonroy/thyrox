@@ -1,0 +1,1 @@
+- el drenaje por señal detiene el contenedor, no sólo el wrapper.

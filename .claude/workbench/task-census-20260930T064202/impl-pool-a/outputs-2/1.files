@@ -1,0 +1,7 @@
+.claude/workbench/task-thyrox-0546-unshare-cgroup-pids-20260930T074813/README.md
+.claude/workbench/task-thyrox-0546-unshare-cgroup-pids-20260930T074813/probes/podman_capabilities.tsv
+.claude/workbench/task-thyrox-0546-unshare-cgroup-pids-20260930T074813/probes/setsid-escape-control.txt
+.claude/workbench/task-thyrox-0546-unshare-cgroup-pids-20260930T074813/probes/unshare_capabilities.tsv
+src/lib/unshare_capabilities.sh
+src/session/process_ownership.py
+tests/lib/test-unshare-capabilities.sh

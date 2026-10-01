@@ -15,6 +15,7 @@ import {
 } from '@thyrox/provider/grove.js'
 import { Select } from '../CustomSelect/index.js'
 import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type GroveDecision =
   | 'accept_opt_in'
@@ -56,7 +57,7 @@ function GracePeriodContentBody(): React.ReactNode {
         <Box paddingLeft={1}>
           <Text>
             <Text>· </Text>
-            <Text bold>You can help improve Claude </Text>
+            <Text bold>You can help improve {PRODUCT_NAME} </Text>
             <Text>
               — Allow the use of your chats and coding sessions to train and
               improve Anthropic AI models. Change anytime in your Privacy
@@ -102,7 +103,7 @@ function PostGracePeriodContentBody(): React.ReactNode {
         <Text>What&apos;s changing?</Text>
 
         <Box flexDirection="column">
-          <Text bold>Help improve Claude</Text>
+          <Text bold>Help improve {PRODUCT_NAME}</Text>
           <Text>
             Allow the use of your chats and coding sessions to train and improve
             Anthropic AI models. You can change this anytime in Privacy Settings
@@ -113,7 +114,7 @@ function PostGracePeriodContentBody(): React.ReactNode {
         <Box flexDirection="column">
           <Text bold>How this affects data retention</Text>
           <Text>
-            Turning ON the improve Claude setting extends data retention from 30
+            Turning ON the improve {PRODUCT_NAME} setting extends data retention from 30
             days to 5 years. Turning it OFF keeps the default 30-day data
             retention. Delete data anytime.
           </Text>
@@ -228,17 +229,17 @@ export function GroveDialog({
     ? [
         {
           label:
-            'Accept terms · Help improve Claude: OFF (for emails with your domain)',
+            `Accept terms · Help improve ${PRODUCT_NAME}: OFF (for emails with your domain)`,
           value: 'accept_opt_out',
         },
       ]
     : [
         {
-          label: 'Accept terms · Help improve Claude: ON',
+          label: `Accept terms · Help improve ${PRODUCT_NAME}: ON`,
           value: 'accept_opt_in',
         },
         {
-          label: 'Accept terms · Help improve Claude: OFF',
+          label: `Accept terms · Help improve ${PRODUCT_NAME}: OFF`,
           value: 'accept_opt_out',
         },
       ]
@@ -364,7 +365,7 @@ export function PrivacySettingsDialog({
 
       <Box>
         <Box width={44}>
-          <Text bold>Help improve Claude</Text>
+          <Text bold>Help improve {PRODUCT_NAME}</Text>
         </Box>
         <Box>{valueComponent}</Box>
       </Box>

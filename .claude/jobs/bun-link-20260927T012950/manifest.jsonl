@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && timeout 300 bun install", "started_at": "2026-09-27T01:29:50+00:00"}

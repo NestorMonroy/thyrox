@@ -87,8 +87,19 @@ UNKNOWN_POLICY = "reportar y no tocar"
 # Por eso la proyeccion vive aqui tambien, emitida por el generador con los
 # mismos valores: comparar y propagar usan `project_repo_hooks`, no `repo`.
 # --------------------------------------------------------------------------
+#: El clon contra el que se escribieron los datos congelados de `SYNC_HOOKS`.
+#: NO es configuracion: `clone_bootstrap` lo usa para volver esos datos
+#: marcadores, y aqui se sustituye por el clon real de `--repo`. Con el literal
+#: como raiz, un consumidor en otra ruta proyectaba comandos de un arbol que no
+#: existe y el diff contra su copia viva nunca convergia.
 REPO_ROOT = pathlib.Path('/home/user/kaupamex-docs')
 RELATIVE_PREFIX = '.claude/'
+
+#: Marcadores intermedios de la sustitucion: la raiz del clon va primero porque
+#: en el arbol de origen contiene a la de la sesion, y sustituir al reves la
+#: partiria.
+PLACEHOLDER_CONSUMER = '%%CONSUMER%%'
+PLACEHOLDER_SESSION = '%%SESSION%%'
 
 #: El comando de un disparador cita un MECANISMO, que vive en el proveedor y no
 #: en el consumidor (DEC-04). El dato congelado lleva el marcador; quien lo
@@ -134,7 +145,7 @@ def _provider_root():
     return root
 
 
-def rendered_sync_hooks():
+def rendered_sync_hooks(consumer_root=REPO_ROOT, session_root=REPO_ROOT.parent):
     """`SYNC_HOOKS` con su marcador de proveedor ya resuelto.
 
     Es funcion y no constante de modulo por la razon medida en ERR-065: el
@@ -143,13 +154,20 @@ def rendered_sync_hooks():
     fijaria la raiz del proveedor al momento del import en vez de al del uso.
     """
     provider = str(_provider_root())
+
+    def resolved(command):
+        marked = command.replace(str(REPO_ROOT), PLACEHOLDER_CONSUMER) \
+                        .replace(str(REPO_ROOT.parent), PLACEHOLDER_SESSION)
+        return marked.replace(PLACEHOLDER_CONSUMER, str(consumer_root)) \
+                     .replace(PLACEHOLDER_SESSION, str(session_root)) \
+                     .replace(PLACEHOLDER_PROVIDER, provider)
     return {
         event: [
             {
                 **{k: v for k, v in matcher.items() if k != 'hooks'},
                 'hooks': [
                     {**hook,
-                     'command': hook['command'].replace(PLACEHOLDER_PROVIDER, provider)}
+                     'command': resolved(hook['command'])}
                     for hook in matcher.get('hooks', [])
                 ],
             }
@@ -238,7 +256,18 @@ def absolutise(command, repo_root):
     )
 
 
-def project_repo_hooks(repo_hooks):
+def roots_of(repo_path, live_path):
+    """(raiz del clon, raiz de la sesion) desde las dos copias que se sincronizan.
+
+    Las dos viven en `<raiz>/.claude/`; una que no, se toma tal cual su
+    directorio, que es lo que un settings suelto tiene por raiz."""
+    def root(path):
+        parent = pathlib.Path(path).resolve().parent
+        return parent.parent if parent.name == '.claude' else parent
+    return root(repo_path), (root(live_path) if live_path else REPO_ROOT.parent)
+
+
+def project_repo_hooks(repo_hooks, consumer_root=REPO_ROOT, session_root=REPO_ROOT.parent):
     """El bloque `hooks` del repositorio, tal como debe verse en la copia viva.
 
     Rutas absolutas mas los disparadores de la sincronizacion. Es lo que el
@@ -250,24 +279,24 @@ def project_repo_hooks(repo_hooks):
         for matcher in matchers:
             entry = {k: v for k, v in matcher.items() if k != "hooks"}
             entry["hooks"] = [
-                {**hook, "command": absolutise(hook["command"], REPO_ROOT)}
+                {**hook, "command": absolutise(hook["command"], consumer_root)}
                 for hook in matcher.get("hooks", [])
             ]
             rebuilt.append(entry)
         hooks[event] = rebuilt
-    for event, entries in rendered_sync_hooks().items():
+    for event, entries in rendered_sync_hooks(consumer_root, session_root).items():
         hooks.setdefault(event, [])
         hooks[event].extend(entries)
     return hooks
 
 
-def repo_view(block, repo):
+def repo_view(block, repo, consumer_root=REPO_ROOT, session_root=REPO_ROOT.parent):
     """El valor del repositorio TAL COMO debe verse en la copia viva.
 
     Para `hooks` es su proyeccion; para el resto, el bloque tal cual. Esta
     funcion es la que impide que el mecanismo se borre a si mismo."""
     if block == "hooks":
-        return project_repo_hooks(repo.get("hooks"))
+        return project_repo_hooks(repo.get("hooks"), consumer_root, session_root)
     return repo.get(block)
 
 
@@ -317,7 +346,7 @@ def decide(block, repo_value, live_value, base_value, base_tiene):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--repo", type=pathlib.Path, required=True,
                         help="copia versionada")
     parser.add_argument("--viva", type=pathlib.Path,
@@ -358,7 +387,7 @@ def main(argv=None):
 
     for block in blocks:
         # `repo_view`, no `repo.get`: el bloque `hooks` viaja PROYECTADO.
-        vista = repo_view(block, repo)
+        vista = repo_view(block, repo, *roots_of(args.repo, args.viva))
         # `block in base`, no `base.get(...) is not None`: un bloque presente
         # con valor nulo SI tiene historia, y confundirlo con la ausencia
         # devolveria el arbitraje al azar que la base existe para cerrar.

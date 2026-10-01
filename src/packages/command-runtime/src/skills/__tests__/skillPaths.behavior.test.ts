@@ -16,7 +16,7 @@ import { estimateSkillFrontmatterTokens, getSkillsPath } from '../loadSkillsDir.
  */
 describe('Skills path + token estimation invariants', () => {
   describe('getSkillsPath', () => {
-    test('userSettings → <CLAUDE_CONFIG_HOME>/<dir>', () => {
+    test('userSettings → <THYROX_CONFIG_DIR>/<dir>', () => {
       // Pin the structural form by checking the relative tail; the
       // absolute base is tested by integration tests.
       const path = getSkillsPath('userSettings', 'skills')

@@ -15,6 +15,7 @@ import {
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { Select } from '../CustomSelect/select.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type MatcherWithSource = {
   matcher: string
@@ -66,7 +67,7 @@ export function SelectMatcherMode({
         <Box flexDirection="column" gap={1}>
           <Text dimColor>No hooks configured for this event.</Text>
           <Text dimColor>
-            To add hooks, edit settings.json directly or ask Claude.
+            To add hooks, edit settings.json directly or ask {PRODUCT_NAME}.
           </Text>
         </Box>
       </Dialog>

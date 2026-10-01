@@ -1,0 +1,16 @@
+== 1. store ausente: REHUSA, y no fabrica nada ==
+  ok    rehusa con StoreNotFound
+  ok    no creo el directorio
+  ok    no creo el padre
+== 2. store presente: sabe leer ==
+  ok    cuenta las filas que hay
+== 3. la conexion RECHAZA escribir ==
+  ok    SQLite rechaza el INSERT
+== 4. el censo enrutado: rehusa sobre un store ausente ==
+  ok    exit 2 — no midio, no publica conteo
+  ok    el mensaje nombra el store ausente
+  ok    el censo no fabrico el store
+  ok    el censo no fabrico ni el hogar
+
+9 ok, 0 fallos
+EXIT=0

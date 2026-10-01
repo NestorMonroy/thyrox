@@ -7,7 +7,7 @@
  * formato nuevo.
  */
 
-import { thyroxRoot } from '../../../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
 import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

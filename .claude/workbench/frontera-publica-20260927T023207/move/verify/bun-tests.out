@@ -1,0 +1,99 @@
+bun test v1.3.11 (af24e281)
+
+tests/workbench/manifest.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../src/workbench/manifest' from '/home/user/thyrox/tests/workbench/manifest.test.ts'
+-------------------------------
+
+
+tests/task/extraction.test.ts:
+59 |     // directorio tenga exactamente cuatro: el subsistema crece —`schema.ts`
+60 |     // llegó con la partición de `tools/tasks.ts`— y una igualdad exacta
+61 |     // convertiría cada incorporación legítima en un rojo. Sigue
+62 |     // discriminando: si uno de los cuatro desapareciera, cae.
+63 |     for (const modulo of ['index.ts', 'io.ts', 'premises.ts', 'rst.ts']) {
+64 |       expect(entradas).toContain(modulo)
+                            ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "index.ts"
+Received: [
+  "render_tablero_asignadas.py", "refresh-board.sh", "implementation_order.py", "snapshot-tasks.sh",
+  "__init__.py", "agrupar_tareas_por_familia.py", "update-state.sh", "census_open_tasks.py",
+  "close-wp.sh", "sync-wp-state.sh", "vecinos_de_tarea.py", "board_sync.py", "task_source.py",
+  "asignadas.py", "closure_graph.py", "__pycache__", "project-status.sh", "refrescar-tablero.sh",
+  "layer_signals.tsv", "task_ids.py"
+]
+
+      at <anonymous> (/home/user/thyrox/tests/task/extraction.test.ts:64:24)
+(fail) la disolución del paquete es un movimiento, no una copia > los cuatro módulos viven junto a sus hermanos Python [0.97ms]
+87 |     // `ccnmt: packages/cli/src/commands/`). El de premisas es
+88 |     // `checkPremises.ts` -- `cli/package.json` lo declara verbatim: "sin
+89 |     // bin/harness.ts desde #205".
+90 |     const comando = readFileSync(join(CLI, 'src', 'commands', 'checkPremises.ts'), 'utf8')
+91 |     expect(comando).not.toContain('@thyrox/tasks')
+92 |     expect(comando).toContain('../../../../task/premises.ts')
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "../../../../task/premises.ts"
+Received: "/**\n * `--check-premises` (T-056): mide las premisas declaradas contra el árbol.\n *\n * Extraído de `bin/harness.ts` en #205 sin cambio de conducta: el binario\n * fundía sus siete comandos en una cascada de `argv.includes`, y la referencia\n * los reparte en `commands/` (ccnmt: packages/cli/src/commands/). Lo único que\n * cambia es de dónde sale el valor de una bandera — `flag()`, que reconoce\n * además `--x=v`; ver `entry/flags.ts`.\n */\nimport { assessAll, type TaskPremise } from '@thyrox/task/premises.ts'\nimport { fsPremiseIo, readPremises } from '@thyrox/task/io.ts'\nimport { flag, hasFlag } from '../entry/flags.ts'\n\nexport function checkPremisesCommand(argv: string[], cwd: string): number {\n  const path = flag(argv, 'premises')\n  if (!path) {\n    // NO se adivina una ruta por convención: un archivo inventado que no está\n    // daría un reporte vacío que se lee como «ninguna tarea tiene defectos».\n    process.stderr.write(\n      'Falta `--premises <archivo.json>`: las premisas se declaran, no se ' +\n        'infieren del texto de la tarea. Inferirlas daría un veredicto que ' +\n        'parece medido siendo adivinado.\\n',\n    )\n    return 2\n  }\n  let declaradas: TaskPremise[]\n  try {\n    const crudo = readPremises(path)\n    if (!Array.isArray(crudo)) throw new Error('se esperaba un arreglo de tareas')\n    declaradas = crudo as TaskPremise[]\n  } catch (e) {\n    process.stderr.write(`${(e as Error).message}\\n`)\n    return 2\n  }\n\n  const reporte = assessAll(declaradas, fsPremiseIo(cwd))\n  const ancho = Math.max(2, ...reporte.assessments.map((a) => a.id.length))\n  for (const a of reporte.assessments) {\n    process.stdout.write(`${a.id.padEnd(ancho)}  ${a.verdict.padEnd(12)}  ${a.reason}\\n`)\n  }\n  // El denominador va SIEMPRE: un conteo sin universo no es un resultado.\n  process.stdout.write(`· alcance: ${reporte.measured} de ${reporte.total} tareas medidas\\n`)\n  process.stdout.write(\n    `· Métrica: predicados declarados por tarea, evaluados contra el árbol de ${cwd}.\\n`,\n  )\n  process.stdout.write(\n    '· Ciega a: toda premisa que la tarea no declaró — el mecanismo evalúa, no infiere; ' +\n      'y a un predicado que se cumple por una razón distinta de la que la tarea supuso.\\n',\n  )\n  // `stale` sale 1 con `--strict` por la misma razón que `overclaimed`: las dos\n  // dicen que el enunciado no describe el árbol. `unmeasurable` NO — el\n  // silencio del instrumento no es un defecto del código, y castigarlo\n  // empujaría a declarar premisas falsas por pasar.\n  if (hasFlag(argv, 'strict') && reporte.byVerdict.overclaimed + reporte.byVerdict.stale > 0) return 1\n  return 0\n}\n"
+
+      at <anonymous> (/home/user/thyrox/tests/task/extraction.test.ts:92:21)
+(fail) la disolución del paquete es un movimiento, no una copia > el consumidor real importa por ruta, no por especificador de paquete [0.19ms]
+
+tests/reference/home.test.ts:
+32 | 
+33 | describe('el paquete harness deja de existir', () => {
+34 |   test('1. la triple de referencia vive en src/reference, como el workbench', () => {
+35 |     expect(existsSync(join(ROOT, 'src', 'reference', 'triple.ts'))).toBe(true)
+36 |     // El precedente que fija la forma, no una preferencia: el mismo layout.
+37 |     expect(existsSync(join(ROOT, 'src', 'workbench', 'manifest.ts'))).toBe(true)
+                                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/reference/home.test.ts:37:71)
+(fail) el paquete harness deja de existir > 1. la triple de referencia vive en src/reference, como el workbench [0.19ms]
+39 | 
+40 |   test('2. las dos suites huerfanas viajan con su sujeto a coordination', () => {
+41 |     for (const name of ['claims.test.ts', 'branchIntegration.test.ts']) {
+42 |       expect(existsSync(join(ROOT, 'tests', 'coordination', name))).toBe(true)
+43 |     }
+44 |     expect(existsSync(join(ROOT, 'src', 'coordination', 'claims.ts'))).toBe(true)
+                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/reference/home.test.ts:44:72)
+(fail) el paquete harness deja de existir > 2. las dos suites huerfanas viajan con su sujeto a coordination [0.10ms]
+
+tests/coordination/ledger.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../src/coordination/ledger' from '/home/user/thyrox/tests/coordination/ledger.test.ts'
+-------------------------------
+
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-2AvsgG/integ-NsbhV9/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-2AvsgG/integ-BneS6p/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+
+ 221 pass
+ 4 skip
+ 6 fail
+ 2 errors
+ 479 expect() calls
+Ran 231 tests across 18 files. [6.26s]
+EXIT=1

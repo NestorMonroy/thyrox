@@ -1,0 +1,117 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/bridge": [
+        "./src/index.ts"
+      ],
+      "@thyrox/bridge/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/bridge/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/bridge/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/bridge/commands/bridge-kick.js": [
+        "./commands/bridge-kick.ts"
+      ],
+      "@thyrox/bridge/bridgeConfig.js": [
+        "./src/bridgeConfig.ts"
+      ],
+      "@thyrox/bridge/bridgeEnabled.js": [
+        "./src/bridgeEnabled.ts"
+      ],
+      "@thyrox/bridge/bridgeMain.js": [
+        "./src/bridgeMain.ts"
+      ],
+      "@thyrox/bridge/bridgeMessaging.js": [
+        "./src/bridgeMessaging.ts"
+      ],
+      "@thyrox/bridge/bridgePermissionCallbacks.js": [
+        "./src/bridgePermissionCallbacks.ts"
+      ],
+      "@thyrox/bridge/bridgeStatusUtil.js": [
+        "./src/bridgeStatusUtil.ts"
+      ],
+      "@thyrox/bridge/createSession.js": [
+        "./src/createSession.ts"
+      ],
+      "@thyrox/bridge/envLessBridgeConfig.js": [
+        "./src/envLessBridgeConfig.ts"
+      ],
+      "@thyrox/bridge/inboundAttachments.js": [
+        "./src/inboundAttachments.ts"
+      ],
+      "@thyrox/bridge/inboundMessages.js": [
+        "./src/inboundMessages.ts"
+      ],
+      "@thyrox/bridge/initReplBridge.js": [
+        "./src/initReplBridge.ts"
+      ],
+      "@thyrox/bridge/jwtUtils.js": [
+        "./src/jwtUtils.ts"
+      ],
+      "@thyrox/bridge/peerSessions.js": [
+        "./src/peerSessions.ts"
+      ],
+      "@thyrox/bridge/pollConfig.js": [
+        "./src/pollConfig.ts"
+      ],
+      "@thyrox/bridge/replBridge.js": [
+        "./src/replBridge.ts"
+      ],
+      "@thyrox/bridge/replBridgeHandle.js": [
+        "./src/replBridgeHandle.ts"
+      ],
+      "@thyrox/bridge/runtimeHostSetup.js": [
+        "./src/runtimeHostSetup.ts"
+      ],
+      "@thyrox/bridge/sessionIdCompat.js": [
+        "./src/sessionIdCompat.ts"
+      ],
+      "@thyrox/bridge/trustedDevice.js": [
+        "./src/trustedDevice.ts"
+      ],
+      "@thyrox/bridge/types.js": [
+        "./src/types.ts"
+      ],
+      "@thyrox/bridge/webhookSanitizer.js": [
+        "./src/webhookSanitizer.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*",
+    "commands/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

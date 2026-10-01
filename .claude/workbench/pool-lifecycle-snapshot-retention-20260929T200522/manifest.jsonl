@@ -1,0 +1,1 @@
+{"kind": "declaration", "question": "¿Se conserva la foto de un ítem que se publicó bien?", "instrument": "test-headless-pool-worktree con las refs de foto contadas", "metric": "refs refs/thyrox/snapshots presentes tras publicar", "blind_to": "la retención a largo plazo y su poda", "destination": ".claude/workbench/pool-lifecycle-snapshot-retention-20260929T200522/outputs"}

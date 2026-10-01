@@ -1,0 +1,1 @@
+cd src/packages/storage && timeout 600 bun test src/__tests__/fsOperations.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0281-storage.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0281-storage.log

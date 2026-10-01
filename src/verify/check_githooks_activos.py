@@ -1,4 +1,4 @@
-"""Gate: los githooks están activos en los cinco clones.
+"""Gate: los githooks están activos en el proveedor y en cada clon del roster.
 
 Cierra la tarea #21, y con ella la causa de raíz de :ref:`h-api-858`.
 
@@ -32,6 +32,16 @@ bit de ejecución de los archivos de ese directorio.
 un hook que exista y siempre salga 0; y a ``--no-verify``, que sigue siendo
 invisible en el árbol.
 
+Qué clones, y por qué dos cifras
+================================
+
+El roster es el de ``paths.reach`` —declarado en ``THYROX_REACH_ROOTS`` o
+derivado de los hermanos— más el proveedor; ningún nombre de clon se escribe
+en el código. Sin roster rehúsa con exit 2 y sin cifra.
+
+Un clon AUSENTE no tiene los hooks inactivos, no está: se cuenta aparte y no
+bloquea ``--strict``. Sumarlo a los inactivos inflaría el conteo.
+
 Uso::
 
     python3 check_githooks_activos.py            # reporte
@@ -44,18 +54,35 @@ import pathlib
 import subprocess
 import sys
 
-#: Los cinco clones hermanos. El superproyecto está ausente por decisión
-#: (`gitlink-bump-gate.md`), así que el árbol son estos y no un padre.
-ARBOL = pathlib.Path(os.environ.get('KAUPAMEX_ARBOL', '/home/user'))
-CLONES = ('api', 'db', 'docs', 'server', 'ui')
+from paths import reach  # noqa: E402
 
 #: Lo que `scripts/install-hooks.sh` fija en todos ellos.
 ESPERADO = '.githooks'
 
 
-def estado(clon):
+def roster(provider):
+    """(nombre, raíz) del proveedor y de cada clon del roster.
+
+    Lanza ``reach.ReachRootError`` si no hay roster: quien llama rehúsa."""
+    clones = [(reach.clone_name(r), reach.root(r)) for r in reach.reach_roots()]
+    return [(pathlib.Path(provider).name, pathlib.Path(provider))] + clones
+
+
+def remedy_for(raiz):
+    """La orden que activa los hooks de ``raiz``, ejecutable desde cualquier sitio.
+
+    ``scripts/install-hooks.sh`` sólo existe en el proveedor: para un clon
+    consumidor se nombra el instalador del proveedor con el clon como destino,
+    que es la vía que sí existe en los dos."""
+    provider = pathlib.Path(reach.thyrox_root())
+    if pathlib.Path(raiz).resolve() == provider.resolve():
+        return 'bash scripts/install-hooks.sh'
+    return f'THYROX_TARGET_REPO={raiz} bash {provider}/bin/install-hooks --solo-mostrar'
+
+
+def estado(raiz):
     """(veredicto, detalle) para un clon. Nunca inventa un verde."""
-    raiz = ARBOL / f'kaupamex-{clon}'
+    raiz = pathlib.Path(raiz)
     if not (raiz / '.git').exists():
         return 'AUSENTE', 'no es un clon de git en este árbol'
 
@@ -63,8 +90,7 @@ def estado(clon):
                        capture_output=True, text=True)
     valor = r.stdout.strip()
     if not valor:
-        return 'SIN-FIJAR', ('core.hooksPath sin fijar — sus hooks no corren; '
-                             'arreglo: bash scripts/install-hooks.sh')
+        return 'SIN-FIJAR', f'core.hooksPath sin fijar — sus hooks no corren; arreglo: {remedy_for(raiz)}'
 
     d = raiz / valor if not os.path.isabs(valor) else pathlib.Path(valor)
     if not d.is_dir():
@@ -81,21 +107,31 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')
     ap.add_argument('--strict', action='store_true', help='exit 1 si falta')
+    ap.add_argument('--provider', default=None,
+                    help='raíz del proveedor (por defecto, la de paths.reach)')
     args = ap.parse_args()
 
-    filas = [(c, *estado(c)) for c in CLONES]
-    malos = [f for f in filas if f[1] != 'OK']
+    try:
+        clones = roster(args.provider or reach.thyrox_root())
+    except reach.ReachRootError as error:
+        print(f'check-githooks-activos: REHÚSA — {error} NO se emite un conteo.',
+              file=sys.stderr)
+        return 2
+    filas = [(nombre, *estado(raiz)) for nombre, raiz in clones]
+    ausentes = [f for f in filas if f[1] == 'AUSENTE']
+    inactivos = [f for f in filas if f[1] not in ('OK', 'AUSENTE')]
 
     if args.quiet:
-        print(len(malos))
+        print(len(inactivos))
     else:
-        for clon, veredicto, detalle in filas:
+        for nombre, veredicto, detalle in filas:
             marca = 'OK  ' if veredicto == 'OK' else f'{veredicto:<9}'
-            print(f'  {marca} kaupamex-{clon:<7} {detalle}')
-        print(f'check-githooks-activos: {len(malos)} clon(es) con los hooks '
-              f'inactivos (alcance medido: {len(filas)} de {len(CLONES)} '
-              f'declarados)')
-    return 1 if (args.strict and malos) else 0
+            print(f'  {marca} {nombre:<18} {detalle}')
+        print(f'check-githooks-activos: {len(inactivos)} clon(es) con los hooks '
+              f'inactivos, {len(ausentes)} ausente(s) (alcance medido: '
+              f'{len(filas) - len(ausentes)} presente(s) de {len(filas)}, el '
+              f'proveedor incluido)')
+    return 1 if (args.strict and inactivos) else 0
 
 
 if __name__ == '__main__':

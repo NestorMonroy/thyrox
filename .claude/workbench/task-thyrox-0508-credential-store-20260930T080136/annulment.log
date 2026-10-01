@@ -1,0 +1,39 @@
+## A. sin candado de archivo (fWr/Ci)
+(fail) withWriteLock (fWr): candado de archivo entre procesos > el candado existe mientras corre la tarea y desaparece al terminar
+(fail) withWriteLock (fWr): candado de archivo entre procesos > espera a un poseedor ajeno del mismo candado en vez de correr a la vez
+(fail) withWriteLock (fWr): candado de archivo entre procesos > crea el directorio de configuración si no existe antes de tomar el candado
+ 41 pass
+ 3 fail
+
+## B. ji.readStrict con las llamadas invertidas
+(fail) ji.readStrict: qué lectura del backend llama cada bandera > con la bandera en falso llama a readCredentialsStrict (mapeo laxo) y resuelve null
+(fail) ji.readStrict: qué lectura del backend llama cada bandera > con la bandera en verdadero llama a readCredentials (mapeo estricto) y resuelve READ_FAILED
+ 42 pass
+ 2 fail
+
+## C. Et con unreadableFileAs y sin backend
+(fail) Et: mutateCredentials pasa las opciones y el backend de la fuente > readAsyncStrict recibe { inaccessibleAs: "failureIfTransient" } y update recibe el backend
+(fail) Et: mutateCredentials pasa las opciones y el backend de la fuente > sobre plaintext, un archivo con EACCES se lee como ausente ($i) y la mutación se escribe
+ 42 pass
+ 2 fail
+
+## D. readCredentialsStrict con el clasificador estricto
+(fail) backend de archivo: los dos mapeadores de errno y el JSON null > readCredentialsStrict con EACCES es absent; readCredentials con EACCES es read-failed
+ 43 pass
+ 1 fail
+
+## E. JSON null como present
+(fail) backend de archivo: los dos mapeadores de errno y el JSON null > un archivo cuyo JSON es null se lee como absent, no como present
+ 43 pass
+ 1 fail
+
+## F. escritura directa sin staging+rename
+(fail) backend de archivo: los dos mapeadores de errno y el JSON null > si el rename falla, el archivo anterior queda intacto, no hay temporal y el estado es failed
+ 43 pass
+ 1 fail
+
+## G. copia parseada fuera del try
+(fail) In.read({ fromStoreCopy: true }) con una copia corrupta > una copia cuyo texto no es JSON resuelve null en vez de lanzar
+ 43 pass
+ 1 fail
+

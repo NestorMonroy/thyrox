@@ -15,6 +15,7 @@ import { join } from 'node:path'
 import { Database } from 'bun:sqlite'
 import { THRASHING_MESSAGE } from '../loop/context/contextLevel.ts'
 import { CLEARED_TABLE } from '@thyrox/observability/clearedResults'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { transcriptShapeOf } from '@thyrox/observability/transcriptShape'
 import { runLoop, streamLoop } from '../loop/index.ts'
 import { Transcript } from '../loop/transcript.ts'
@@ -54,7 +55,7 @@ function sembrar(d: string, mensajes: Message[]): string {
 
 afterEach(() => {
   delete process.env.DISABLE_COMPACT
-  delete process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
+  delete process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE
 })
 
 describe('el nivel blocked para el bucle ANTES de llamar al API', () => {
@@ -89,7 +90,7 @@ describe('la microcompactación dispara por presión, no por conteo', () => {
     const d = dir()
     // `warn` empieza en `umbral - 20000`. Con el override al 4 % de 980 000 el
     // umbral queda en 39 200, así que ~25 000 tokens caen en warn.
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     const historial: Message[] = [
       { role: 'assistant', content: [{ type: 'tool_use', id: 'tu_v', name: 'Read', input: { file_path: '/x' } }] },
       { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'tu_v', content: 'y'.repeat(100_000) }] },
@@ -148,7 +149,7 @@ describe('el guard antithrashing corta el bucle a la tercera recarga rápida', (
     const d = dir()
     // Umbral al 1 % de 980 000 → 9 800: cualquier historial por encima queda
     // en `compact` turno tras turno, que es la condición del guard.
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '1'
     // El bucle sólo llega al cuarto turno si el modelo pide herramienta: un
     // `end_turn` lo cierra antes y el guard no se llega a consultar.
     const pide = (i: number): AssistantTurn => ({
@@ -209,7 +210,7 @@ describe('el piso de la microcompactación — `Sdn=20000`', () => {
 
   test('bajo presión, un resultado que libera POCO no se purga', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     // Nivel `warn` con 25 000 tokens de relleno, pero el resultado purgable
     // libera 500: por debajo del piso. Purgar aquí rompe la caché de prompt
     // —el 98 % del consumo— para no liberar nada.
@@ -219,7 +220,7 @@ describe('el piso de la microcompactación — `Sdn=20000`', () => {
 
   test('bajo la MISMA presión, un resultado que libera mucho SÍ se purga', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     // El control que discrimina: si el piso vetara siempre, este caso caería
     // y el de arriba pasaría igual — y los dos juntos no dirían nada.
     const historial = [...par('tu_mucho', 25_000), relleno(1_000)]
@@ -228,7 +229,7 @@ describe('el piso de la microcompactación — `Sdn=20000`', () => {
 
   test('`minFreedTokens: 0` es la ausencia de piso, y se declara', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     const historial = [...par('tu_decl', 500), relleno(25_000)]
     const r = await purgas(d, historial, { keepToolResults: 0, minFreedTokens: 0 })
     expect(r).toContain('micro:context_hint')
@@ -262,7 +263,7 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
 
   test('sin store, el bloque se conserva y el fallo se emite con su causa', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     // Un directorio como ruta de base: `bun:sqlite` no puede abrirlo. Es un
     // fallo REAL del store, no un doble que finge fallar.
     const eventos = await correr(d, [...conResultado('tu_sin', 25_000), relleno(1_000)],
@@ -277,9 +278,11 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
 
   test('con store, el mismo caso SÍ se limpia — el control que discrimina', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     const eventos = await correr(d, [...conResultado('tu_con', 25_000), relleno(1_000)],
-      { keepToolResults: 0, persistCleared: join(d, 'store.sqlite3') })
+      { keepToolResults: 0, persistCleared: db })
     expect(eventos.some((e) => e.type === 'cleared_unpersisted')).toBe(false)
     const purga = eventos.find((e) => e.type === 'compaction')
     expect((purga as { cleared: number }).cleared).toBe(1)
@@ -287,8 +290,9 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
 
   test('la fila registrada permite volver a pedir la llamada y verificar el digest', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     await correr(d, [...conResultado('tu_fila', 25_000), relleno(1_000)],
       { keepToolResults: 0, persistCleared: db })
     const filas = new Database(db).query(
@@ -304,7 +308,7 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
 
   test('`persistCleared: false` limpia con el marcador pelado — declarado', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     const eventos = await correr(d, [...conResultado('tu_off', 25_000), relleno(1_000)],
       { keepToolResults: 0, persistCleared: false })
     expect(eventos.some((e) => e.type === 'cleared_unpersisted')).toBe(false)
@@ -321,7 +325,7 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
  * `compactMetadata` es lo que hace derivable el acumulado.
  */
 describe('la frontera compact_boundary la escribe el bucle (T-083)', () => {
-  afterEach(() => { delete process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE })
+  afterEach(() => { delete process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE })
 
   const pide = (i: number): AssistantTurn => ({
     id: `m${i}`, model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
@@ -330,7 +334,7 @@ describe('la frontera compact_boundary la escribe el bucle (T-083)', () => {
 
   test('la compactación auto escribe la frontera con pre y post honestos', async () => {
     const d = dir()
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '1'
     const p = new RecordedProvider([pide(1), texto('fin')])
     const r = await runLoop({
       ...base(d), prompt: 'hola', provider: p,

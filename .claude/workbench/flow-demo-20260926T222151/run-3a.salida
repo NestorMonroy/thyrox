@@ -1,0 +1,6 @@
+gpu: se mide la VRAM de cada item con /home/user/thyrox/.claude/workbench/flow-demo-20260926T222151/nvidia-smi (<n>.gpu)
+anchura: 3 (configurada 8; acotada por lo medido)
+historial: última ejecución: 6 ítems, pared máx 2.02 s, pico 3376 KB × 2 -> 7M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15630432 − 0) / (3376 × 2) -> 2314; VRAM calibrado: pide 3200 MiB (pico × 2, piso 0); VRAM: (14000 − 2000) / (1600 × 2) -> 3
+cache-ttl: 5m (history)
+memfree: 7M (history)
+items=3 ok=3 fallidos=0

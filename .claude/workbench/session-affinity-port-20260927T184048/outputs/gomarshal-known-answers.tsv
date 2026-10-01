@@ -1,0 +1,3 @@
+350a67c9c06d911bc612beae5a93a46d086ee7c795d50b8a1c06a50ab19fce53	{"version":"cpa-session-root-v1","format":"openai","caller_scope":"caller-a","instructions":["system prompt","developer prompt"],"user":[{"kind":"text","value":"complete first user prompt"}]}
+65e7a116dbb1465f82db9f8916bef9101e3c366dfcd40d7e3d519fe7fd6f924d	{"version":"cpa-session-root-v1","format":"claude","caller_scope":"","user":[{"kind":"text","value":"a\u003cb\u003e\u0026c\u2028d\u2029e \"q\" \\ \t\n 界 \u0001"},{"kind":"image","mime":"image/png","value":"iVBOR"}]}
+fde64c9259bd7979be96bbe46c18c0c23501b12ddb9ff67172fcefc4fe603937	{"version":"cpa-session-root-v1","format":"gemini","caller_scope":"s","user":[{"kind":"text","value":"x"}],"resource":"cachedContents/abc"}

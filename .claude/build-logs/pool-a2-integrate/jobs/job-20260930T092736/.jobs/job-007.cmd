@@ -1,0 +1,1 @@
+cd src/packages/daemon && timeout 600 bun test src/__tests__/workerExitOutcome.test.ts src/__tests__/workerPhaseGuard.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-daemon.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-daemon.log

@@ -106,7 +106,7 @@ export function snipCompactCore(
   if (!options?.force) {
     const tokenCount = deps.tokenCountWithEstimation(cleaned)
     const threshold = deps.getAutoCompactThreshold(
-      deps.getEnv('CLAUDE_CODE_MODEL') ?? 'claude-sonnet-4-6',
+      deps.getEnv('THYROX_CODE_MODEL') ?? 'claude-sonnet-4-6',
     )
     if (tokenCount < threshold * 0.9) {
       return { messages: cleaned, executed: false, tokensFreed: 0 }
@@ -156,7 +156,7 @@ export function shouldNudgeForSnips(
 ): boolean {
   const tokenCount = deps.tokenCountWithEstimation(messages)
   const threshold = deps.getAutoCompactThreshold(
-    deps.getEnv('CLAUDE_CODE_MODEL') ?? 'claude-sonnet-4-6',
+    deps.getEnv('THYROX_CODE_MODEL') ?? 'claude-sonnet-4-6',
   )
   return tokenCount >= threshold * 0.8
 }

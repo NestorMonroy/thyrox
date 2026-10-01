@@ -1,0 +1,92 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/server": [
+        "./src/index.ts"
+      ],
+      "@thyrox/server/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/server/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/server/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/server/upstreamproxy/upstreamproxy.js": [
+        "./src/upstreamproxy/upstreamproxy.ts"
+      ],
+      "@thyrox/server/backends/dangerousBackend.js": [
+        "./src/backends/dangerousBackend.ts"
+      ],
+      "@thyrox/server/connectHeadless.js": [
+        "./src/connectHeadless.ts"
+      ],
+      "@thyrox/server/createDirectConnectSession.js": [
+        "./src/createDirectConnectSession.ts"
+      ],
+      "@thyrox/server/directConnectManager.js": [
+        "./src/directConnectManager.ts"
+      ],
+      "@thyrox/server/lockfile.js": [
+        "./src/lockfile.ts"
+      ],
+      "@thyrox/server/parseConnectUrl.js": [
+        "./src/parseConnectUrl.ts"
+      ],
+      "@thyrox/server/remote/RemoteSessionManager.js": [
+        "./src/remote/RemoteSessionManager.ts"
+      ],
+      "@thyrox/server/remote/remotePermissionBridge.js": [
+        "./src/remote/remotePermissionBridge.ts"
+      ],
+      "@thyrox/server/remote/sdkMessageAdapter.js": [
+        "./src/remote/sdkMessageAdapter.ts"
+      ],
+      "@thyrox/server/server.js": [
+        "./src/server.ts"
+      ],
+      "@thyrox/server/serverBanner.js": [
+        "./src/serverBanner.ts"
+      ],
+      "@thyrox/server/serverLog.js": [
+        "./src/serverLog.ts"
+      ],
+      "@thyrox/server/sessionManager.js": [
+        "./src/sessionManager.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

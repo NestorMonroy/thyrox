@@ -1,0 +1,1 @@
+cd src/packages/repl && timeout 600 bun test src/__tests__/readFileInRange.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-repl.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-repl.log

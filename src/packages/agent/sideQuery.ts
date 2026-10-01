@@ -69,7 +69,7 @@ export type SideQueryOptions = {
   querySource: QuerySource
   /**
    * Extra request-body params spread onto the API call (ant `Zx`'s `...f`).
-   * Carries `CLAUDE_CODE_EXTRA_BODY` JSON + merged `anthropic_beta` headers via
+   * Carries `THYROX_CODE_EXTRA_BODY` JSON + merged `anthropic_beta` headers via
    * getExtraBodyParams(). Lets internal classifiers honor the same proxy /
    * beta-header overrides the main loop uses. Omitted = no extra body.
    */

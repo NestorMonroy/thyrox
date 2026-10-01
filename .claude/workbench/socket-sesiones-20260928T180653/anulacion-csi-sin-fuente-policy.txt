@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/crossSessionInbound.test.ts:
+ 95 |     writeFileSync(policy, JSON.stringify({ crossSessionInbound: 'maybe' }))
+ 96 |     const fromUser = loadSettings([{ source: 'userSettings', path: user }])
+ 97 |     expect(fromUser.settings.crossSessionInbound).toBeUndefined()
+ 98 |     expect(fromUser.errors.find(error => error.path === 'crossSessionInbound')?.statusOnly).toBeUndefined()
+ 99 |     const fromPolicy = loadSettings([{ source: 'policySettings', path: policy }])
+100 |     expect(fromPolicy.settings.crossSessionInbound).toBe('refuse')
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "refuse"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/crossSessionInbound.test.ts:100:53)
+(fail) el saneo en los sitios que parsean settings > loadSettings trata como managed sólo la fuente policySettings [1.32ms]
+
+ 7 pass
+ 1 fail
+ 28 expect() calls
+Ran 8 tests across 1 file. [189.00ms]

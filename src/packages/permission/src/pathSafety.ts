@@ -1,30 +1,33 @@
 /**
  * La guarda de seguridad de una escritura automática: ¿es este archivo algo
- * que una edición sin preguntar no debe tocar? Settings de Claude, carpetas
+ * que una edición sin preguntar no debe tocar? Settings de thyrox, carpetas
  * de configuración de herramientas, archivos de arranque de shell y rutas
  * que en Windows o en red no significan lo que parecen.
  *
  * Reimplementación del contrato de 2.1.275, no copia:
  *
- *   `checkPathSafetyForAutoEdit` ≙ `Gge` · `isClaudeSettingsPath` ≙ `HTe` ·
- *   `isClaudeConfigDirectory` ≙ `xu` · `isClaudeCommandSource` ≙ `Cu` ·
+ *   `checkPathSafetyForAutoEdit` ≙ `Gge` · `isSettingsFilePath` ≙ `HTe` ·
+ *   `isConfigDirectory` ≙ `xu` · `isCommandSource` ≙ `Cu` ·
  *   `isSensitivePath` ≙ `Lu` · `isSuspiciousWindowsPath` ≙ `b1` ·
  *   `pathContains` ≙ `Ld` · `isInTrustedNetworkDirectory` ≙ `Oe` ·
  *   `comparableSegment` ≙ `sc` · `comparablePath` ≙ `Ae` (todas en
  *   `chunk-9apg35nm.js`, salvo `sc` en `chunk-xbd48fav.js` y los predicados
- *   de red en `chunk-gfewy5rb.js`).
+ *   de red en `chunk-gfewy5rb.js`) · `isUnderCommandProducer` ≙ `eqr` +
+ *   `QGr` · `canonicalComparablePath` ≙ `PS` · `isWithinComparableRoot` ≙
+ *   `qf` (en `chunk-89nes5g8.js` y `chunk-gfewy5rb.js`). El registro que
+ *   `eqr` lee (`U7n`) vive en `@thyrox/config/plugin/installedPluginsManager:
+ *   collectCommandProducerPaths`, y las raíces en línea que `QGr` compara
+ *   (`fe`) en `@thyrox/app-host/bootstrap/state: getInlinePluginRoots`.
  *
  * Divergencias declaradas:
  *
- * - `Lu` empieza marcando sensible un archivo bajo un directorio productor
- *   de comandos de plugin (`eqr`: los `sourceProducerPath` y
- *   `previousProducerPaths` de `installed_plugins.json`) o bajo la raíz de
- *   un plugin en línea (`QGr`: `inlinePlugins`/`inlinePluginsNoMcp` del
- *   anfitrión). Esta rama NO está portada: este árbol no registra rutas
- *   productoras en su esquema de plugins ni tiene la API de plugins en
- *   línea del anfitrión. Lo que sigue cubierto: la caché de plugins vive
- *   bajo `~/.claude/`, y el segmento `.claude` ya es sensible por sí mismo.
- *   Sucesor: TASK-THYROX-0251.
+ * - `U7n` pasa cada ruta productora por la resolución de WSL y el prefijo
+ *   de dispositivo de Windows (`Z`, `JX`) antes de registrarla; aquí se
+ *   exige sólo que sea absoluta. La forma comparable se toma después, en
+ *   `canonicalComparablePath`, para la ruta y para cada raíz.
+ * - `QGr` declara sensible cualquier ruta de red si hay plugins en línea
+ *   (`nbe`); aquí esa ruta ya la juzgan los predicados de red que siguen, y
+ *   `Lu` sólo llega a la rama de productores cuando la ruta no es de red.
  * - `Vv` (la superficie de automontaje `/Network` de macOS) es constante
  *   `false` en la build de Linux medida; se reproduce así.
  * - `So()` (la raíz de configuración de proyecto que el anfitrión declara en
@@ -36,6 +39,9 @@ import * as nodePath from 'node:path'
 import { getPlatform } from '@thyrox/config/platform.js'
 import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { foldPathCase } from './pathCase.js'
+import { CONFIG_DIR_NAMES, getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
+import { stripDataVolumePrefix } from '@thyrox/local-observability/uds/peerAddress.js'
 
 export type TrustedNetworkDirectories = Map<string, readonly string[]>
 
@@ -140,13 +146,8 @@ function getCwdDeferred(): string {
   }
 }
 
-function getClaudeConfigHomeDirDeferred(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/env/utils.js') as { getClaudeConfigHomeDir: () => string }).getClaudeConfigHomeDir()
-  } catch {
-    return nodePath.join(homedir(), '.claude').normalize('NFC')
-  }
+function getConfigHomeDirDeferred(): string {
+  return getConfigHomeDir()
 }
 
 function expandPathDeferred(path: string): string {
@@ -173,6 +174,35 @@ function managedSettingsDropInDir(): string | undefined {
     return (require('@thyrox/config/managedPath') as { getManagedSettingsDropInDir: () => string }).getManagedSettingsDropInDir()
   } catch {
     return undefined
+  }
+}
+
+function pluginDirectoriesDeferred(): string[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return [(require('@thyrox/config/plugin/pluginDirectories') as { getPluginsDirectory: () => string }).getPluginsDirectory()]
+  } catch {
+    return []
+  }
+}
+
+function commandProducerPathsDeferred(pluginsDirs: readonly string[]): string[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('@thyrox/config/plugin/installedPluginsManager') as {
+      collectCommandProducerPaths: (dirs: readonly string[]) => string[]
+    }).collectCommandProducerPaths(pluginsDirs)
+  } catch {
+    return []
+  }
+}
+
+function inlinePluginRootsDeferred(): string[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('@thyrox/app-host/bootstrap/state.js') as { getInlinePluginRoots: () => string[] }).getInlinePluginRoots()
+  } catch {
+    return []
   }
 }
 
@@ -439,11 +469,17 @@ export function isSuspiciousWindowsPath(path: string, trusted?: TrustedNetworkDi
   return false
 }
 
-// ---- Archivos de configuración de Claude ----
+// ---- Archivos de configuración de thyrox ----
 
-/** `~/.claude` y el directorio de configuración, sin repetir (≙ `eo`). */
+/** El directorio de configuración, `~/.thyrox` y `~/.claude`, sin repetir
+ * (≙ `eo`, que sólo conoce `~/.claude`). */
 function claudeHomeDirectories(): string[] {
-  return unique([getClaudeConfigHomeDirDeferred(), nodePath.join(homedir(), '.claude')])
+  return unique([getConfigHomeDirDeferred(), ...CONFIG_DIR_NAMES.map(name => nodePath.join(homedir(), name))])
+}
+
+/** Las raíces de configuración de cada proyecto, con los dos nombres. */
+function projectConfigDirectories(): string[] {
+  return projectConfigRoots().flatMap(root => CONFIG_DIR_NAMES.map(name => nodePath.join(root, name)))
 }
 
 /** Las raíces de proyecto donde vive un `.claude` (≙ `Qr`). */
@@ -466,10 +502,14 @@ function knownSettingsFiles(): string[] {
   return files
 }
 
-/** ¿Es un archivo de settings de Claude, de cualquier fuente? (≙ `HTe`). */
-export function isClaudeSettingsPath(path: string): boolean {
+/** ¿Es un archivo de settings de thyrox, de cualquier fuente? (≙ `HTe`). */
+export function isSettingsFilePath(path: string): boolean {
   const target = comparablePath(expandPathDeferred(path))
-  if (target.endsWith(`${SEP}.claude${SEP}settings.json`) || target.endsWith(`${SEP}.claude${SEP}settings.local.json`)) {
+  if (
+    CONFIG_DIR_NAMES.some(
+      name => target.endsWith(`${SEP}${name}${SEP}settings.json`) || target.endsWith(`${SEP}${name}${SEP}settings.local.json`),
+    )
+  ) {
     return true
   }
   if (knownSettingsFiles().some(file => comparablePath(file) === target)) return true
@@ -481,7 +521,7 @@ export function isClaudeSettingsPath(path: string): boolean {
   const userNames = USER_SETTINGS_FILE_NAMES.map(comparableSegment)
   const candidates: Array<[string, readonly string[]]> = [
     ...claudeHomeDirectories().map((dir): [string, readonly string[]] => [dir, userNames]),
-    ...projectConfigRoots().map((root): [string, readonly string[]] => [nodePath.join(root, '.claude'), PROJECT_SETTINGS_FILE_NAMES]),
+    ...projectConfigDirectories().map((dir): [string, readonly string[]] => [dir, PROJECT_SETTINGS_FILE_NAMES]),
   ]
   return candidates.some(([dir, names]) => {
     if (!names.includes(name)) return false
@@ -490,14 +530,14 @@ export function isClaudeSettingsPath(path: string): boolean {
   })
 }
 
-/** ¿Es un directorio de configuración de Claude mismo? (≙ `xu`). */
-export function isClaudeConfigDirectory(path: string): boolean {
+/** ¿Es un directorio de configuración de thyrox mismo? (≙ `xu`). */
+export function isConfigDirectory(path: string): boolean {
   const target = comparablePath(expandPathDeferred(path)).replace(/[\\/]+$/, '')
-  if (nodePath.basename(target) === comparableSegment('.claude')) return true
+  if (CONFIG_DIR_NAMES.some(name => nodePath.basename(target) === comparableSegment(name))) return true
   const policyFile = settingsFilePathForSource('policySettings')
   const dirs = unique([
     ...claudeHomeDirectories(),
-    ...projectConfigRoots().map(root => nodePath.join(root, '.claude')),
+    ...projectConfigDirectories(),
     ...(policyFile !== undefined ? [nodePath.dirname(policyFile)] : []),
     ...managedSettingsDirectories(),
   ])
@@ -509,14 +549,90 @@ export function isClaudeConfigDirectory(path: string): boolean {
 }
 
 /** Settings, o un comando, agente o skill del proyecto (≙ `Cu`). */
-export function isClaudeCommandSource(path: string): boolean {
-  if (isClaudeSettingsPath(path)) return true
-  return projectConfigRoots().some(
-    root =>
-      pathContains(path, nodePath.join(root, '.claude', 'commands')) ||
-      pathContains(path, nodePath.join(root, '.claude', 'agents')) ||
-      pathContains(path, nodePath.join(root, '.claude', 'skills')),
+export function isCommandSource(path: string): boolean {
+  if (isSettingsFilePath(path)) return true
+  return projectConfigDirectories().some(
+    dir =>
+      pathContains(path, nodePath.join(dir, 'commands')) ||
+      pathContains(path, nodePath.join(dir, 'agents')) ||
+      pathContains(path, nodePath.join(dir, 'skills')),
   )
+}
+
+// ---- Productores de comandos de plugin (≙ `eqr`, `QGr`, `PS`) ----
+
+/** Cuánto vale una lectura de `installed_plugins.json` antes de repetirla (≙ `maxAgeMs: 5000`). */
+const PRODUCER_SCAN_MAX_AGE_MS = 5000
+
+/**
+ * La ruta como el disco la resuelve, en forma comparable (≙ `PS` con
+ * `foldCase`): realpath del tramo que existe, el tramo que aún no existe
+ * añadido tal cual, NFC y mayúsculas plegadas.
+ */
+export function canonicalComparablePath(path: string): string {
+  let existing = nodePath.resolve(path)
+  const missing: string[] = []
+  let real = realpathOrUndefined(existing)
+  while (real === undefined && nodePath.dirname(existing) !== existing) {
+    missing.unshift(nodePath.basename(existing))
+    existing = nodePath.dirname(existing)
+    real = realpathOrUndefined(existing)
+  }
+  return foldPathCase(nodePath.join(real ?? existing, ...missing).normalize('NFC'))
+}
+
+/** ¿Está `path` en `root` o debajo, ambos ya comparables? (≙ `qf` con `alreadyComparable`). */
+function isWithinComparableRoot(path: string, root: string): boolean {
+  const relative = nodePath.relative(root, path)
+  if (relative === '') return true
+  return !nodePath.isAbsolute(relative) && relative !== '..' && !relative.startsWith(`..${SEP}`)
+}
+
+type ComparableRootsCache = { key: string; scannedAt: number; roots: string[] }
+
+let producerRootsCache: ComparableRootsCache | undefined
+
+function isFreshProducerScan(cache: ComparableRootsCache | undefined, key: string): cache is ComparableRootsCache {
+  return cache !== undefined && cache.key === key && Date.now() - cache.scannedAt < PRODUCER_SCAN_MAX_AGE_MS
+}
+
+/**
+ * Las raíces productoras de comandos, comparables: los registros de plugins
+ * que no cuelgan del cwd y toda ruta productora que declaran (≙ la mitad de
+ * `eqr` que construye `commandProducerDirsComparable`).
+ */
+function commandProducerRoots(): string[] {
+  const pluginsDirs = pluginDirectoriesDeferred()
+  const cwd = canonicalComparablePath(getCwdDeferred())
+  const key = [...pluginsDirs, cwd].join('\0')
+  if (isFreshProducerScan(producerRootsCache, key)) return producerRootsCache.roots
+  const registries = pluginsDirs.map(canonicalComparablePath).filter(dir => !isWithinComparableRoot(dir, cwd))
+  const producers = commandProducerPathsDeferred(pluginsDirs).map(canonicalComparablePath)
+  producerRootsCache = { key, scannedAt: Date.now(), roots: unique([...registries, ...producers]) }
+  return producerRootsCache.roots
+}
+
+let inlineRootsCache: { key: string; roots: string[] } | undefined
+
+/** Las raíces de plugins en línea, comparables, rehechas sólo si cambian (≙ `inlinePluginRootsComparableMemo`). */
+function inlinePluginRootsComparable(): string[] {
+  const declared = inlinePluginRootsDeferred()
+  const key = declared.join('\0')
+  if (inlineRootsCache === undefined || inlineRootsCache.key !== key) {
+    inlineRootsCache = { key, roots: declared.map(canonicalComparablePath) }
+  }
+  return inlineRootsCache.roots
+}
+
+/** ¿Cuelga de un directorio productor de comandos de plugin, o de la raíz de un plugin en línea? (≙ `eqr || QGr`). */
+export function isUnderCommandProducer(path: string): boolean {
+  const target = canonicalComparablePath(path)
+  return [...commandProducerRoots(), ...inlinePluginRootsComparable()].some(root => isWithinComparableRoot(target, root))
+}
+
+/** Una ruta que alcanza la red antes de resolverse: `Lu` no la lleva a la rama de productores. */
+function reachesNetworkBeforeResolving(path: string): boolean {
+  return automountRoot(path) !== null || isAutomountMapRoot(path) || (isUncPath(path) && !isLocalWslUncPath(path))
 }
 
 // ---- Rutas sensibles (≙ `Lu`) ----
@@ -530,7 +646,7 @@ export function workingDirectoryDepth(segments: string[]): number {
   let depth = 0
   const originalCwd = getOriginalCwdDeferred()
   const roots =
-    process.env.CLAUDE_CODE_EVAL_CONFINED ? [originalCwd] : getPathsForPermissionCheck(originalCwd)
+    process.env.THYROX_CODE_EVAL_CONFINED ? [originalCwd] : getPathsForPermissionCheck(originalCwd)
   for (const root of roots) {
     const parts = expandPathDeferred(root).split(SEP)
     if (parts.length > 1 && parts.at(-1) === '') parts.pop()
@@ -569,6 +685,7 @@ export function isSensitivePath(
   const expanded = expandPathDeferred(path)
   const segments = expanded.split(SEP)
   const last = segments.at(-1)
+  if (!reachesNetworkBeforeResolving(expanded) && isUnderCommandProducer(expanded)) return true
   if (isUntrustedNetworkShare(path, trusted)) return true
   if (isUntrustedAutomount(path, trusted)) return true
 
@@ -628,12 +745,12 @@ export function checkPathSafetyForAutoEdit(
 ): PathSafetyResult {
   const allow = Boolean(allowClaudeConfig || allowClaudeConfigForMode)
   const paths = pathsToCheck ?? getPathsForPermissionCheck(path)
-  const touchesSettings = paths.some(p => isClaudeSettingsPath(p) || isClaudeConfigDirectory(p))
+  const touchesSettings = paths.some(p => isSettingsFilePath(p) || isConfigDirectory(p))
   for (const p of paths) {
     if (isSuspiciousWindowsPath(p, trusted)) {
       return {
         safe: false,
-        message: `Claude requested permissions to write to ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
+        message: `${PRODUCT_NAME} requested permissions to write to ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
         classifierApprovable: false,
         circuitBreaker: 'suspiciousWindowsPath',
         ...(touchesSettings && { also: ['claudeSettingsFile'] as ['claudeSettingsFile'] }),
@@ -643,16 +760,16 @@ export function checkPathSafetyForAutoEdit(
   if (touchesSettings) {
     return {
       safe: false,
-      message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+      message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
       classifierApprovable: true,
       circuitBreaker: 'claudeSettingsFile',
     }
   }
   for (const p of paths) {
-    if (!allow && isClaudeCommandSource(p)) {
+    if (!allow && isCommandSource(p)) {
       return {
         safe: false,
-        message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
         classifierApprovable: true,
       }
     }
@@ -661,10 +778,146 @@ export function checkPathSafetyForAutoEdit(
     if (isSensitivePath(p, allow, trusted)) {
       return {
         safe: false,
-        message: `Claude requested permissions to edit ${path} which is a sensitive file.`,
+        message: `${PRODUCT_NAME} requested permissions to edit ${path} which is a sensitive file.`,
         classifierApprovable: true,
       }
     }
   }
   return { safe: true }
+}
+
+// ---- Predicados de una copia de transferencia (chunk-yqm14hey.js, chunk-d6ekr2rh.js, 2.1.283) ----
+
+/** Los segmentos de la ruta tras resolver `.` y `..`, sin leer el disco. */
+function lexicalSegments(path: string): string[] {
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+  }
+  return stack
+}
+
+/** `nM`: `\\?\` o `\\.\` al principio. */
+function isWin32DevicePrefix(path: string): boolean {
+  return /^[\\/]{2}[?.][\\/]/.test(path)
+}
+
+/** `p9n`: los prefijos del espacio de nombres de NT. */
+function isNtNamespacePath(path: string): boolean {
+  return /^[\\/](GLOBAL\?\?|GLOBALROOT|DosDevices|Device)[\\/]/i.test(path)
+}
+
+/**
+ * `Djt`: una ruta que puede llegar a otra máquina o a otro nodo sin que su
+ * texto lo diga: UNC (salvo WSL local), automontaje o su mapa `/net`,
+ * prefijos de dispositivo y de NT, y los prefijos que el núcleo de macOS
+ * redirige.
+ */
+export function isNetworkLikePath(path: string): boolean {
+  return (
+    (isUncPath(path) && !isLocalWslUncPath(path)) ||
+    automountRoot(path) !== null ||
+    isAutomountMapRoot(path) ||
+    isWin32DevicePrefix(path) ||
+    isDeviceNamespacePath(path) ||
+    isNtNamespacePath(path) ||
+    isKernelResolvedPath(path)
+  )
+}
+
+/** `yN`/`Pt`: el primer segmento es `network`. */
+export function isNetworkRootPath(path: string): boolean {
+  if (!path.startsWith('/')) return false
+  const first = lexicalSegments(path)[0]
+  return first !== undefined && first.toLowerCase() === 'network'
+}
+
+/** `cn`: segmentos que `tt` examina. */
+const NETWORK_PREFIX_DEPTH = 6
+
+/** `O`: minúsculas sólo en ASCII. */
+function lowerAscii(text: string): string {
+  return text.replace(/[A-Z]/g, character => character.toLowerCase())
+}
+
+/**
+ * `tt`: los prefijos de red de macOS que la ruta atraviesa: `/network/`,
+ * `/network/<a>/` (parciales) y `/network/<a>/<b>` (completos); con
+ * `includeHome`, también `/home/<usuario>`. En darwin cada prefijo se lee
+ * sin el volumen de datos.
+ */
+export function networkPathPrefixes(path: string, platform: string, includeHome: boolean): { complete: string[]; partial: string[] } {
+  const complete: string[] = []
+  const partial: string[] = []
+  if (!path.startsWith('/')) return { complete, partial }
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+    if (stack.length > NETWORK_PREFIX_DEPTH) continue
+    const prefix = `/${stack.join('/')}`
+    const parts = (platform === 'darwin' ? stripDataVolumePrefix(prefix) : prefix).split('/').filter(part => part !== '')
+    const first = parts[0]?.toLowerCase()
+    if (first === 'network') {
+      if (parts.length === 1) partial.push('/network/')
+      else if (parts.length === 2) partial.push(`/network/${lowerAscii(parts[1]!)}/`)
+      else if (parts.length === 3) complete.push(`/network/${lowerAscii(parts[1]!)}/${lowerAscii(parts[2]!)}`)
+    } else if (includeHome && first === 'home' && parts.length === 2) complete.push(`/home/${parts[1]}`)
+  }
+  return { complete, partial }
+}
+
+/** `pn`: el `/home/<usuario>` propio, o null. */
+function ownHomeRoot(): string | null {
+  let home: string
+  try {
+    home = homedir()
+  } catch {
+    return null
+  }
+  const match = /^\/home\/([^/]+)/.exec(stripDataVolumePrefix(home))
+  return match ? `/home/${match[1]}` : null
+}
+
+/**
+ * `GF`: en darwin, una ruta bajo `/network` (o a medio camino de ella), bajo
+ * un prefijo que el núcleo redirige, o bajo el `/home` de otro usuario (que
+ * en macOS es un automontaje).
+ */
+export function isDarwinNetworkPath(
+  path: string,
+  platform = 'linux',
+  includeHome = platform === 'darwin',
+  homeRoot: () => string | null = ownHomeRoot,
+): boolean {
+  if (platform !== 'darwin') return false
+  if (isNetworkRootPath(path) || isKernelResolvedPath(path)) return true
+  if (!path.startsWith('/')) return false
+  const { complete, partial } = networkPathPrefixes(path, platform, includeHome)
+  if (partial.length > 0) return true
+  if (complete.some(prefix => prefix.startsWith('/network/'))) return true
+  const homes = complete.filter(prefix => prefix.startsWith('/home/'))
+  if (homes.length > 0) {
+    const own = homeRoot()
+    if (homes.some(home => home !== own)) return true
+  }
+  return false
+}
+
+/**
+ * `Mur`: una ruta de copia de transferencia que no se debe abrir. Su
+ * plataforma por omisión es `linux`, como en la referencia, así que la rama
+ * de macOS sólo cuenta cuando quien llama la pide.
+ */
+export function isUnsafeTransferPath(path: string, platform = 'linux'): boolean {
+  return isNetworkLikePath(path) || isDarwinNetworkPath(path, platform)
 }

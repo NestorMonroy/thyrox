@@ -125,12 +125,12 @@ with tempfile.TemporaryDirectory() as tmp:
     check("con el salto: la plantilla no rompe nada", ([], []), (broken, orphans))
 
     import re
-    original = crt.LITERAL_DIRECTIVE
+    original_literal_directive = crt.LITERAL_DIRECTIVE
     crt.LITERAL_DIRECTIVE = re.compile(r"^(\s*)\.\.\s+(?:NADA-QUE-CASE)::")
     try:
         broken_disabled, _, _, _ = crt.audit(root)
     finally:
-        crt.LITERAL_DIRECTIVE = original
+        crt.LITERAL_DIRECTIVE = original_literal_directive
     check("anulacion: sin el salto, la entrada de la plantilla se marca rota",
           1, len(broken_disabled))
     check("anulacion: y nombra el hijo que solo existe al materializar",

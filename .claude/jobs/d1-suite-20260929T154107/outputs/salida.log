@@ -1,0 +1,16 @@
+./.env: line 20: syntax error near unexpected token `newline'
+./.env: line 20: `THYROX_COMMIT_AUTHOR=Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>'
+bun test v1.3.11 (af24e281)
+
+ 74 pass
+ 2 todo
+ 0 fail
+ 156 expect() calls
+Ran 76 tests across 5 files. [112.00ms]
+
+ 17 pass
+ 1 skip
+ 0 fail
+ 27 expect() calls
+Ran 18 tests across 3 files. [76.00ms]
+__BG_EXIT__=0

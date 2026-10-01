@@ -14,7 +14,7 @@
  * primitivo de trabajo autónomo de este proyecto.
  *
  * Gate: `isWorkflowsEnabled()` (habilitado por defecto, con kill-switch
- * `CLAUDE_CODE_WORKFLOWS=0` más el kill-switch de `/goal`). El comando se
+ * `THYROX_CODE_WORKFLOWS=0` más el kill-switch de `/goal`). El comando se
  * registra incondicionalmente; este `isEnabled` es el único gate de
  * visibilidad.
  */

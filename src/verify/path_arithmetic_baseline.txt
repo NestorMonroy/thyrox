@@ -57,3 +57,5 @@
 .claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23
 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3
 tests/verify/test_rst_gate_root.py:57
+.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment.py:284
+.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment2.py:284

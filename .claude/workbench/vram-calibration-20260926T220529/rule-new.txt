@@ -1,0 +1,25 @@
+**El registro protege sólo lo que se pide, y lo que se pide sale del
+historial.** Un pico 0 medido es una medida («este ítem no usó GPU»); como
+predicción de los ítems siguientes sólo vale si el historial está
+**calibrado**: la última ejecución midió la VRAM de TODOS sus ítems y cada uno
+duró al menos dos intervalos de muestreo. Sin calibrar —sin historial, VRAM
+medida en parte de los ítems, ítems demasiado cortos o una fila anterior a la
+calibración— cada ítem pide el piso `HEADLESS_POOL_VRAM_MIN_MIB` si se
+declaró, y si no **la GPU entera, de a uno**, hasta que una ejecución lo
+calibre. El motivo sale en la línea `historial:`. Antes, un 0 de ítems no
+vistos hacía que no se pidiera nada y dos pools corrían juntos con el registro
+en su sitio (H-THYROX-192).
+
+**GNU Time se resuelve por el toolchain en los tres lanzadores** —`bg.sh`,
+`run-task-pool.sh` y `headless-pool.sh`—, con
+`thyrox_toolchain_require_gnu_time`: una sola definición de «es GNU Time», y
+`HEADLESS_POOL_TIME` como anulación. En las suites se declara en cada caso;
+heredado del contenedor, el `/usr/bin/time` real graba filas de historial y el
+resultado depende de la máquina.
+
+Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
+medida, este contenedor no tiene GPU: `bin/hardware-inventory` combina ocho
+señales —PCI `0x10de` y clase `0x03`, `/dev/nvidia*`, `/dev/dri`,
+`/proc/driver/nvidia`, `libcuda`, `libnvidia-ml` y `nvidia-smi -L`— y da
+`nvidia-usable`, `partial` (con lo que falta) o `none`. La ausencia de
+`nvidia-smi` sola no prueba nada.

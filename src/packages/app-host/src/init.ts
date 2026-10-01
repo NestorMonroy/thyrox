@@ -6,7 +6,7 @@
  * `init()` es la secuencia de arranque completa del host: configs,
  * variables de entorno seguras, cleanup en salida, OAuth, detección de
  * JetBrains/repo, settings remotos, migración de conexiones legacy,
- * mTLS/proxy, Sentry, preconexión a la API, shell de Windows, LSP,
+ * mTLS/proxy, preconexión a la API, shell de Windows, LSP,
  * swarm, scratchpad. Es la iniciativa más grande de este pase: 30
  * imports distintos de 15 paquetes/módulos hermanos.
  *
@@ -89,7 +89,7 @@ import { detectCurrentRepository } from '@thyrox/storage/detectRepository.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { initJetBrainsDetection } from '@thyrox/config/env/dynamic'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { getPlatform } from '@thyrox/config/platform'
+import { getPlatform, primePlatform } from '@thyrox/config/platform'
 import { getCachedPowerShellPath, isPowerShellToolEnabled } from '@thyrox/shell'
 import { ConfigParseError } from '@thyrox/local-observability/errorHelpers.js'
 // showInvalidConfigDialog se importa dinámicamente en la ruta de error para no cargar React durante init
@@ -110,7 +110,7 @@ import {
 // Los exporters gRPC (~700KB vía @grpc/grpc-js) se cargan perezosamente aún más adentro, en instrumentation.ts.
 import { configureGlobalAgents } from '@thyrox/provider/proxy.js'
 import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
-import { initSentry } from '@thyrox/local-observability/sentry.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // initialize1PEventLogging se importa dinámicamente para diferir sdk-logs/resources de OpenTelemetry
 
@@ -128,6 +128,11 @@ export const init = memoize(async (): Promise<void> => {
       duration_ms: Date.now() - configsStart,
     })
     profileCheckpoint('init_configs_enabled')
+
+    // Ceba el detector de plataforma: lee `/proc/version` de forma asíncrona
+    // antes de que nadie pregunte. 2.1.283 lo espera en el mismo punto, junto
+    // a los certificados de CA y mTLS (`init`, `Promise.all([...,pBo(),...])`).
+    await primePlatform()
 
     // Aplica sólo variables de entorno seguras antes del diálogo de confianza.
     // Las variables de entorno completas se aplican después de establecer la confianza.
@@ -275,8 +280,6 @@ export const init = memoize(async (): Promise<void> => {
     logForDebugging('[init] configureGlobalAgents complete')
     profileCheckpoint('init_network_configured')
 
-    // Inicializa Sentry para reporte de errores (no-op si SENTRY_DSN no está fijado)
-    initSentry()
 
     // Preconecta a la API de Anthropic — solapa el handshake TCP+TLS
     // (~100-200ms) con los ~100ms de trabajo del action-handler previos al
@@ -288,13 +291,13 @@ export const init = memoize(async (): Promise<void> => {
 
     // CCR upstreamproxy: arranca el relay CONNECT local para que los
     // subprocesos de agente puedan alcanzar upstreams configurados por la
-    // org con inyección de credenciales. Gateado en CLAUDE_CODE_REMOTE +
+    // org con inyección de credenciales. Gateado en THYROX_CODE_REMOTE +
     // GrowthBook; fail-open ante cualquier error. Import perezoso para que
     // los arranques no-CCR no paguen la carga del módulo. La función
     // getUpstreamProxyEnv se registra con subprocessEnv.ts para que el spawn
     // de subprocesos pueda inyectar variables de proxy sin un import
     // estático del módulo upstreamproxy.
-    if (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) {
+    if (isEnvTruthy(process.env.THYROX_CODE_REMOTE)) {
       try {
         const { initUpstreamProxy, getUpstreamProxyEnv } = await import(
           '@thyrox/server/upstreamproxy/upstreamproxy.js'
@@ -320,19 +323,19 @@ export const init = memoize(async (): Promise<void> => {
     if (getPlatform() === 'windows' && !findGitBashPath()) {
       if (!isPowerShellToolEnabled()) {
         process.stderr.write(
-          'Claude Code on Windows requires a shell tool. Git Bash was not found and the PowerShell tool is disabled (CLAUDE_CODE_USE_POWERSHELL_TOOL=0).\n' +
+          `${PRODUCT_NAME} on Windows requires a shell tool. Git Bash was not found and the PowerShell tool is disabled (THYROX_CODE_USE_POWERSHELL_TOOL=0).\n` +
             '  - Install Git for Windows: https://git-scm.com/downloads/win, or\n' +
-            '  - Remove CLAUDE_CODE_USE_POWERSHELL_TOOL from your environment or settings.\n',
+            '  - Remove THYROX_CODE_USE_POWERSHELL_TOOL from your environment or settings.\n',
         )
         // eslint-disable-next-line custom-rules/no-process-exit
         process.exit(1)
       }
       if ((await getCachedPowerShellPath()) === null) {
         process.stderr.write(
-          'Claude Code on Windows requires either Git for Windows (for bash) or PowerShell. Install one of:\n' +
+          `${PRODUCT_NAME} on Windows requires either Git for Windows (for bash) or PowerShell. Install one of:\n` +
             '  - Git for Windows: https://git-scm.com/downloads/win\n' +
             '  - PowerShell 7: https://aka.ms/powershell\n' +
-            'Or set CLAUDE_CODE_GIT_BASH_PATH to your bash.exe location.\n',
+            'Or set THYROX_CODE_GIT_BASH_PATH to your bash.exe location.\n',
         )
         // eslint-disable-next-line custom-rules/no-process-exit
         process.exit(1)

@@ -1,37 +1,39 @@
 #!/bin/bash
 # =============================================================================
-# test-merge-sqlite-union.sh — pruebas de merge_sqlite_union.py
+# test-merge-sqlite-union.sh — pruebas de merge_sqlite_union.py contra git real
 # =============================================================================
 # Estatico salvo por git: arma repositorios de laboratorio bajo un temporal y
-# ejerce un merge real. No toca ninguno de los cinco repos.
+# ejerce un merge real, con el driver registrado en `.git/config` como lo hace
+# `install-hooks.sh` en produccion. Los casos finos de la tabla de decision
+# (hash puro, contraejemplo de revision, control de anulacion con la
+# contabilidad dentro del hash) ya estan en `test_merge_sqlite_union.py`, con
+# `pytest` — mas rapido y sin necesitar un repo de git por caso. Lo que esta
+# suite mide es la MITAD que sólo se ve con git de por medio: que el codigo de
+# salida del driver marca el conflicto, que el archivo que queda en el arbol
+# es recuperable (no una eleccion arbitraria), y que lo que ya funcionaba
+# (FTS5 con rebuild, abortar ante esquema divergente o tabla no declarada)
+# sigue funcionando.
 #
-# El caso 2 es el CONTROL ANULADO, y aqui no hay que fabricarlo: el control
-# anulado es EL ESTADO ANTERIOR — el mismo laboratorio sin registrar el driver.
-# Ese es el defecto que #742 cierra, y su forma es exacta: conflicto, y la fila
-# del otro lado desaparece. Sin este caso, un verde en el caso 1 no distingue
-# «el driver une» de «el merge no tenia nada que unir».
+# La raiz de ESTE arbol se calcula desde la propia ubicacion del script, no
+# desde `THYROX_ROOT`: esta suite corre dentro de un worktree de pool
+# (`headless-pool --isolation worktree`), y `THYROX_ROOT` puede declarar otro
+# checkout. Medido al escribir esta suite: con `THYROX_ROOT` heredado del
+# entorno, `thyrox_root()` resolvia al checkout principal y esta prueba
+# habria ejercido el driver de OTRO arbol, no el que esta suite acompaña.
 #
-# Uso:  bash tests/legacy/test-merge-sqlite-union.sh
+# Uso:  bash tests/agents/test-merge-sqlite-union.sh
 # =============================================================================
 set -uo pipefail
 
-# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
-# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
-# necesita van tras constantes que el entorno tambien fija: cablearlos le
-# quitaria al consumidor la decision de donde van las cosas.
-_thyrox_root="${THYROX_ROOT:-}"
-if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
-    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
-        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOCS_ROOT="$HERE"
+while [[ "$DOCS_ROOT" != "/" && ! -f "$DOCS_ROOT/src/paths/reach.py" ]]; do
+    DOCS_ROOT="$(dirname "$DOCS_ROOT")"
+done
+if [[ ! -f "$DOCS_ROOT/src/paths/reach.py" ]]; then
+    echo "test-merge-sqlite-union: no se halló la raíz de thyrox ascendiendo desde $HERE" >&2
+    exit 2
 fi
-if [[ -z "$_thyrox_root" ]]; then
-    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
-        _thyrox_root="$(dirname "$_thyrox_root")"
-    done
-fi
-source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
-DOCS_ROOT="$(thyrox_root)" || exit 2
 DRIVER="$DOCS_ROOT/src/agents/merge_sqlite_union.py"
 OK=0
 FALLOS=0
@@ -48,55 +50,57 @@ comprobar() {  # comprobar <descripcion> <esperado> <obtenido>
     fi
 }
 
-# laboratorio <nombre> <con-driver:si|no> <ddl> -> imprime la ruta del repo
+# lab_repo <nombre> -> imprime la ruta del repo
 #
-# Construye tres commits: una fila comun, una fila solo nuestra y una fila solo
-# del otro lado. Es la forma minima en que dos sesiones divergen sobre el store.
-laboratorio() {
-    local nombre="$1" con_driver="$2" ddl="${3:-create table t(id text primary key, v text)}"
+# Un repo de git de laboratorio con el driver registrado, `.gitattributes`
+# declarado y un `store.sqlite3` con `agent_sessions` — la tabla real que
+# store_field_classes.py declara, con su identidad `agent_id`. Una tabla
+# ad-hoc sin declarar abortaría el merge por diseño (ver caso 4 más abajo),
+# así que el laboratorio usa una tabla de verdad.
+lab_repo() {
+    local nombre="$1"
     local repo="$TMP/$nombre"
     mkdir -p "$repo"
     git -C "$repo" init -q
     git -C "$repo" config user.email prueba@kaupamex
     git -C "$repo" config user.name prueba
-
     printf '* text=auto\nstore.sqlite3 merge=sqlite-union\n' > "$repo/.gitattributes"
-    if [[ "$con_driver" == "si" ]]; then
-        git -C "$repo" config merge.sqlite-union.name "union de filas para una base SQLite"
-        git -C "$repo" config merge.sqlite-union.driver "python3 $DRIVER %O %A %B"
-    fi
-
-    fila "$repo" "$ddl" base 0
-    git -C "$repo" add -A && git -C "$repo" commit -qm "Seed"
-
-    git -C "$repo" checkout -qb otra
-    fila "$repo" "" b 1
-    git -C "$repo" commit -qam "Add b"
-
-    git -C "$repo" checkout -q -    # vuelve a la rama inicial, se llame como se llame
-    fila "$repo" "" a 1
-    git -C "$repo" commit -qam "Add a"
-
+    git -C "$repo" config merge.sqlite-union.name "merge de tres vias para una base SQLite"
+    git -C "$repo" config merge.sqlite-union.driver "python3 $DRIVER %O %A %B"
     echo "$repo"
 }
 
-fila() {  # fila <repo> <ddl-o-vacio> <id> <v>
-    python3 - "$1/store.sqlite3" "$2" "$3" "$4" <<'PY'
+seed_session() {  # seed_session <repo> <status> <revision>
+    python3 - "$1/store.sqlite3" "$2" "$3" <<'PY'
 import sqlite3, sys
-destino, ddl, ident, valor = sys.argv[1:5]
+destino, status, revision = sys.argv[1], sys.argv[2], sys.argv[3]
 conexion = sqlite3.connect(destino)
-if ddl:
-    conexion.execute(ddl)
-conexion.execute("INSERT INTO t VALUES (?, ?)", (ident, valor))
+conexion.execute(
+    "CREATE TABLE IF NOT EXISTS agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, "
+    "session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
+)
+conexion.execute(
+    "INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', ?, 't0', 't0', ?) "
+    "ON CONFLICT(agent_id) DO UPDATE SET status = excluded.status, revision = excluded.revision",
+    (status, revision),
+)
 conexion.commit()
 PY
 }
 
-filas() {  # filas <repo> -> los ids, ordenados y separados por coma
+session_status() {  # session_status <repo> -> "status,revision"
     python3 -c "
 import sqlite3, sys
-print(','.join(sorted(r[0] for r in sqlite3.connect(sys.argv[1]).execute('select id from t'))))
+row = sqlite3.connect(sys.argv[1]).execute('select status, revision from agent_sessions').fetchone()
+print(f'{row[0]},{row[1]}')
 " "$1/store.sqlite3"
+}
+
+conflict_count() {  # conflict_count <repo> -> filas en merge_conflicts
+    python3 -c "
+import sqlite3, sys
+print(sqlite3.connect(sys.argv[1]).execute('select count(*) from merge_conflicts').fetchone()[0])
+" "$1/store.sqlite3" 2>/dev/null || echo 0
 }
 
 # --- Caso 0: el driver existe y valida sus argumentos ----------------------
@@ -105,95 +109,185 @@ comprobar "0a. el driver existe" "si" \
 comprobar "0b. sin los tres argumentos, aborta" "1" \
     "$(python3 "$DRIVER" solo-uno >/dev/null 2>&1; echo $?)"
 
-# --- Caso 1: CON driver, el merge une y no conflictua ----------------------
-CON="$(laboratorio con-driver si)"
-SALIDA_CON="$(git -C "$CON" merge otra 2>&1)"
-comprobar "1a. el merge no deja conflicto" "no" \
-    "$(grep -q CONFLICT <<<"$SALIDA_CON" && echo si || echo no)"
-comprobar "1b. las tres filas sobreviven" "a,b,base" "$(filas "$CON")"
+# --- Caso 1 (§10, caso obligatorio 1): el contraejemplo de la revisión -----
+# base rev 11 running; nuestro rev 13 completed; suyo rev 12 cancelled.
+# `max(revision)` diría "gana nuestro" (13 > 12); el contrato exige CONFLICTO
+# porque nuestro lado nunca vio la edición del otro.
+REV="$(lab_repo revision-counterexample)"
+seed_session "$REV" running 11
+git -C "$REV" add -A && git -C "$REV" commit -qm base
 
-# --- Caso 2: CONTROL ANULADO — el mismo laboratorio SIN registrar el driver -
-# Es el estado anterior a #742, no un incumplidor fabricado.
-SIN="$(laboratorio sin-driver no)"
-SALIDA_SIN="$(git -C "$SIN" merge otra 2>&1)"
-comprobar "2a. sin driver, el merge SI conflictua" "si" \
-    "$(grep -q CONFLICT <<<"$SALIDA_SIN" && echo si || echo no)"
-comprobar "2b. sin driver, la fila del otro lado se pierde" "a,base" "$(filas "$SIN")"
-comprobar "2c. el driver es quien discrimina: 3 filas contra 2" "3 2" \
-    "$(awk -F, '{print NF}' <<<"$(filas "$CON")") $(awk -F, '{print NF}' <<<"$(filas "$SIN")")"
+git -C "$REV" checkout -qb otra
+seed_session "$REV" cancelled 12
+git -C "$REV" commit -qam "suyo: cancelled rev 12"
 
-# --- Caso 3: la colision de clave se informa, no se traga ------------------
-# Los dos lados escriben la MISMA clave con valor distinto. El driver conserva
-# la nuestra — y lo dice. Es la mitad que #436 debe decidir; lo que este caso
-# fija es que no ocurra en silencio.
-COL="$TMP/colision"
+git -C "$REV" checkout -q -
+seed_session "$REV" completed 13
+git -C "$REV" commit -qam "nuestro: completed rev 13"
+
+SALIDA_REV="$(git -C "$REV" merge otra 2>&1)"
+CODIGO_REV=$?
+comprobar "1a. max(revision) NO es el criterio: git marca CONFLICT" "si" \
+    "$(grep -q CONFLICT <<<"$SALIDA_REV" && echo si || echo no)"
+comprobar "1b. el merge de git sale con codigo distinto de 0" "si" \
+    "$([[ "$CODIGO_REV" -ne 0 ]] && echo si || echo no)"
+comprobar "1c. el driver clasifico la fila como conflicto, no como 'gana nuestro'" "si" \
+    "$(grep -q 'conflict=1' <<<"$SALIDA_REV" && echo si || echo no)"
+comprobar "1d. las dos versiones quedan recuperables en merge_conflicts" "1" \
+    "$(conflict_count "$REV")"
+
+# --- Control de anulación del caso 1: SIN ancestro, cae el contraejemplo ---
+# El mismo par (nuestro rev 13, suyo rev 12) pero comparado sin base común
+# (tratada como vacía): ya no hay "misma fila editada dos veces sin verse" —
+# lo que hay es "dos lados insertan contenido distinto bajo la misma
+# identidad", otra rama de la tabla de decisión. Sigue dando CONFLICTO, pero
+# la ANULACION mide que decide_row toma la rama de fila NUEVA, no la de
+# edición sobre una base conocida — ver test_merge_sqlite_union.py, que lo
+# prueba directo contra decide_row() sin pasar por git.
+SIN_BASE="$TMP/sin-ancestro"
+mkdir -p "$SIN_BASE"
+python3 - "$SIN_BASE" <<'PY'
+import sqlite3, sys
+raiz = sys.argv[1]
+sqlite3.connect(f"{raiz}/ancestro.sqlite3").close()   # base vacia: sin la tabla siquiera
+for nombre, status, revision in (("nuestro", "completed", 13), ("suyo", "cancelled", 12)):
+    conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
+    conexion.execute(
+        "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, "
+        "session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
+    )
+    conexion.execute("INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', ?, 't0', 't0', ?)", (status, revision))
+    conexion.commit()
+PY
+SALIDA_SIN_BASE="$(python3 "$DRIVER" "$SIN_BASE/ancestro.sqlite3" "$SIN_BASE/nuestro.sqlite3" "$SIN_BASE/suyo.sqlite3" 2>&1)"
+comprobar "1e. control de anulación: sin ancestro, sigue habiendo conflicto (por otra rama)" "si" \
+    "$(grep -q 'conflict=1' <<<"$SALIDA_SIN_BASE" && echo si || echo no)"
+
+# --- Caso 2 (§10, caso obligatorio 2): misma modificación, contabilidad
+# distinta -> SIN conflicto ----------------------------------------------
+MOD="$(lab_repo same-modification)"
+seed_session "$MOD" running 11
+git -C "$MOD" add -A && git -C "$MOD" commit -qm base
+
+git -C "$MOD" checkout -qb otra
+seed_session "$MOD" completed 15
+git -C "$MOD" commit -qam "suyo: completed rev 15"
+
+git -C "$MOD" checkout -q -
+seed_session "$MOD" completed 12
+git -C "$MOD" commit -qam "nuestro: completed rev 12"
+
+SALIDA_MOD="$(git -C "$MOD" merge otra 2>&1)"
+comprobar "2a. misma modificación con revision/updated_at distintos: sin conflicto" "no" \
+    "$(grep -q CONFLICT <<<"$SALIDA_MOD" && echo si || echo no)"
+comprobar "2b. el contenido de dominio queda unificado" "completed,12" "$(session_status "$MOD")"
+
+# --- Caso 3 (§4/§10, ya en verde): la colisión de un id local ya no se
+# pierde — findings_history se empareja por finding_id ---------------------
+COL="$TMP/findings-collision"
 mkdir -p "$COL"
 python3 - "$COL" <<'PY'
 import sqlite3, sys
 raiz = sys.argv[1]
-for nombre, valor in (("ancestro", "0"), ("nuestro", "1"), ("suyo", "2")):
+ddl = (
+    "CREATE TABLE findings_history (id INTEGER PRIMARY KEY AUTOINCREMENT, finding_id TEXT NOT NULL UNIQUE, "
+    "submodule TEXT NOT NULL, initiative TEXT NOT NULL, finding_type TEXT NOT NULL DEFAULT 'finding', "
+    "severity TEXT, summary TEXT NOT NULL, content TEXT NOT NULL, source_ref TEXT, metadata_json TEXT, "
+    "session_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
+)
+sqlite3.connect(f"{raiz}/ancestro.sqlite3").execute(ddl)
+for nombre, finding_id in (("nuestro", "H-OURS-1"), ("suyo", "H-THEIRS-1")):
     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
-    conexion.execute("CREATE TABLE t(id text primary key, v text)")
-    conexion.execute("INSERT INTO t VALUES ('k', ?)", (valor,))
+    conexion.execute(ddl)
+    # El mismo `id` AUTOINCREMENT local (1) en los dos lados: es la colisión
+    # que §4 midió que la unión antigua perdía en silencio.
+    conexion.execute(
+        "INSERT INTO findings_history (id, finding_id, submodule, initiative, summary, content, "
+        "created_at, updated_at) VALUES (1, ?, 'thyrox', 'd4-a', 'r', 'c', 't0', 't0')",
+        (finding_id,),
+    )
     conexion.commit()
 PY
-AVISO="$(python3 "$DRIVER" "$COL/ancestro.sqlite3" "$COL/nuestro.sqlite3" "$COL/suyo.sqlite3" 2>&1)"
-comprobar "3a. la omision por clave presente se informa" "si" \
-    "$(grep -q 'omitidas por clave ya presente' <<<"$AVISO" && echo si || echo no)"
-comprobar "3b. se conserva nuestro valor" "1" \
+python3 "$DRIVER" "$COL/ancestro.sqlite3" "$COL/nuestro.sqlite3" "$COL/suyo.sqlite3" >/dev/null 2>&1
+comprobar "3a. los dos hallazgos con id local igual conviven (finding_id como identidad)" "2" \
     "$(python3 -c "
 import sqlite3, sys
-print(sqlite3.connect(sys.argv[1]).execute(\"select v from t where id='k'\").fetchone()[0])
+print(sqlite3.connect(sys.argv[1]).execute('select count(*) from findings_history').fetchone()[0])
 " "$COL/nuestro.sqlite3")"
 
-# --- Caso 4: la union NO esta definida -> aborta, no adivina ---------------
+# --- Caso 4 (§10, caso obligatorio 4): borrado contra cambio -> CONFLICTO --
+DEL="$TMP/delete-vs-change"
+mkdir -p "$DEL"
+python3 - "$DEL" <<'PY'
+import sqlite3, sys
+raiz = sys.argv[1]
+ddl = (
+    "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, session_id TEXT, "
+    "status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
+)
+conexion = sqlite3.connect(f"{raiz}/ancestro.sqlite3")
+conexion.execute(ddl)
+conexion.execute("INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', 'running', 't0', 't0', 11)")
+conexion.commit()
+
+conexion = sqlite3.connect(f"{raiz}/nuestro.sqlite3")
+conexion.execute(ddl)   # nuestro lado borró la fila: la tabla queda vacía
+conexion.commit()
+
+conexion = sqlite3.connect(f"{raiz}/suyo.sqlite3")
+conexion.execute(ddl)
+conexion.execute("INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', 'completed', 't0', 't0', 12)")
+conexion.commit()
+PY
+SALIDA_DEL="$(python3 "$DRIVER" "$DEL/ancestro.sqlite3" "$DEL/nuestro.sqlite3" "$DEL/suyo.sqlite3" 2>&1)"
+comprobar "4a. borrado de un lado contra cambio del otro: CONFLICTO" "si" \
+    "$(grep -q 'conflict=1' <<<"$SALIDA_DEL" && echo si || echo no)"
+comprobar "4b. y el driver sale distinto de 0" "1" \
+    "$(python3 "$DRIVER" "$DEL/ancestro.sqlite3" "$DEL/nuestro.sqlite3" "$DEL/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
+
+# --- Conserva lo que hoy funciona: columnas distintas o tabla sin declarar -
 ESQ="$TMP/esquema"
 mkdir -p "$ESQ"
 python3 - "$ESQ" <<'PY'
 import sqlite3, sys
 raiz = sys.argv[1]
-for nombre, ddl in (
-    ("ancestro", "CREATE TABLE t(id text primary key, v text)"),
-    ("nuestro",  "CREATE TABLE t(id text primary key, v text)"),
-    ("suyo",     "CREATE TABLE t(id text primary key, v text, extra text)"),
-):
+base_ddl = "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
+otro_ddl = base_ddl[:-1] + ", extra TEXT)"
+for nombre, ddl in (("ancestro", base_ddl), ("nuestro", base_ddl), ("suyo", otro_ddl)):
     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
     conexion.execute(ddl)
     conexion.commit()
 PY
-# La salida se captura ANTES de greppearla: con `set -o pipefail`, un
-# `driver | grep -q` hereda el exit 1 del driver y el `&&` de despues nunca
-# corre — el caso daria "no" con el mensaje correcto delante.
 SALIDA_ESQ="$(python3 "$DRIVER" "$ESQ/ancestro.sqlite3" "$ESQ/nuestro.sqlite3" "$ESQ/suyo.sqlite3" 2>&1)"
-comprobar "4a. columnas distintas: aborta con exit 1" "1" \
+comprobar "5a. columnas distintas: aborta con exit 1" "1" \
     "$(python3 "$DRIVER" "$ESQ/ancestro.sqlite3" "$ESQ/nuestro.sqlite3" "$ESQ/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
-comprobar "4b. y nombra la tabla y el motivo" "si" \
+comprobar "5b. y nombra la tabla y el motivo" "si" \
     "$(grep -q "columnas distintas" <<<"$SALIDA_ESQ" && echo si || echo no)"
 
-SPK="$TMP/sin-clave"
-mkdir -p "$SPK"
-python3 - "$SPK" <<'PY'
+SND="$TMP/sin-declarar"
+mkdir -p "$SND"
+python3 - "$SND" <<'PY'
 import sqlite3, sys
 raiz = sys.argv[1]
 for nombre in ("ancestro", "nuestro", "suyo"):
     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
-    conexion.execute("CREATE TABLE t(v text)")   # sin clave primaria
+    conexion.execute("CREATE TABLE tabla_no_declarada (id TEXT PRIMARY KEY, v TEXT)")
     conexion.commit()
 PY
-comprobar "4c. tabla sin clave primaria: aborta con exit 1" "1" \
-    "$(python3 "$DRIVER" "$SPK/ancestro.sqlite3" "$SPK/nuestro.sqlite3" "$SPK/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
+SALIDA_SND="$(python3 "$DRIVER" "$SND/ancestro.sqlite3" "$SND/nuestro.sqlite3" "$SND/suyo.sqlite3" 2>&1)"
+comprobar "5c. tabla sin declarar en store_field_classes: aborta con exit 1" "1" \
+    "$(python3 "$DRIVER" "$SND/ancestro.sqlite3" "$SND/nuestro.sqlite3" "$SND/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
+comprobar "5d. y lo dice, en vez de adivinar" "si" \
+    "$(grep -q "no tiene declarada su clasificación" <<<"$SALIDA_SND" && echo si || echo no)"
 
-# --- Caso 5: POSITIVO REAL — el esquema del store de verdad ----------------
-# No lo inventa la prueba: se copia agent_store.sqlite3 y se le anade una fila
-# por lado en su tabla mas poblada.
-# El store NO vive bajo `.claude/`: su hogar se decidio en TASK-DOCS-0435 y la
-# cascara del proveedor se retiro en TASK-THYROX-0153. La ruta se PIDE al
-# localizador en vez de componerse a mano — componerla es como esta linea quedo
-# apuntando a un archivo que ya no existe, y el caso 5 dejo de medir en silencio
-# (el AVISO salia, pero nadie lo leyo como rojo hasta que el corredor lo alcanzo).
-STORE="$(cd "$DOCS_ROOT" && PYTHONPATH=src python3 -c 'from paths import reach; print(reach.agent_store_path())')"
+# --- POSITIVO REAL: el esquema del store de verdad -------------------------
+# No lo inventa la prueba: se copia agent_store.sqlite3 de ESTE árbol (nunca
+# se escribe el original) y se le añade una tarea nueva por lado — la clave
+# real es (session_id, task_id), y dos sesiones distintas es exactamente el
+# caso que el driver existe para unir.
+STORE="$DOCS_ROOT/agent-results/agent_store.sqlite3"
 if [[ ! -f "$STORE" ]]; then
-    printf 'AVISO: no existe %s — el caso 5 no midio nada\n' "$STORE" >&2
+    printf 'AVISO: no existe %s — el caso real no midió nada\n' "$STORE" >&2
     FALLOS=$((FALLOS + 1))
 else
     REAL="$TMP/real"
@@ -208,8 +302,6 @@ print(sqlite3.connect(sys.argv[1]).execute('select count(*) from tasks').fetchon
     python3 - "$REAL" <<'PY'
 import sqlite3, sys
 raiz = sys.argv[1]
-# Una tarea nueva por lado. La clave primaria real es (session_id, task_id):
-# dos sesiones distintas es exactamente el caso que el driver existe para unir.
 for nombre in ("nuestro", "suyo"):
     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
     conexion.execute(
@@ -219,20 +311,20 @@ for nombre in ("nuestro", "suyo"):
     )
     conexion.commit()
 PY
-    python3 "$DRIVER" "$REAL/ancestro.sqlite3" "$REAL/nuestro.sqlite3" "$REAL/suyo.sqlite3" >/dev/null 2>&1
+    python3 "$DRIVER" "$REAL/ancestro.sqlite3" "$REAL/nuestro.sqlite3" "$REAL/suyo.sqlite3" >/dev/null 2>&1 || true
     DESPUES="$(python3 -c "
 import sqlite3, sys
 print(sqlite3.connect(sys.argv[1]).execute('select count(*) from tasks').fetchone()[0])
 " "$REAL/nuestro.sqlite3")"
-    comprobar "5a. sobre el esquema real, las dos filas nuevas conviven ($ANTES -> +2)" \
+    comprobar "6a. sobre el esquema real, las dos tareas nuevas conviven ($ANTES -> +2)" \
         "$((ANTES + 2))" "$DESPUES"
+    comprobar "6b. el merge sobre el esquema real no rompe (exit 0, sin conflicto)" "0" \
+        "$(python3 "$DRIVER" "$REAL/ancestro.sqlite3" "$REAL/nuestro.sqlite3" "$REAL/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
 
-    # 5b. El indice FTS5 del store es una tabla VIRTUAL sin clave primaria. La
-    # primera version del driver la trataba como tabla normal y abortaba el
-    # merge entero — lo destapo este mismo caso contra el esquema de verdad, no
-    # un insumo fabricado. Ahora se regenera, y esta asercion mide que quedo
-    # consistente con su tabla de contenido.
-    comprobar "5b. el indice FTS queda consistente con su tabla de contenido" "si" \
+    # El índice FTS5 del store es una tabla VIRTUAL sin identidad propia: se
+    # regenera con 'rebuild', no se une fila a fila. Esto ya funcionaba antes
+    # de este contrato y el rediseño no lo puede romper.
+    comprobar "6c. el índice FTS queda consistente con su tabla de contenido" "si" \
         "$(python3 -c "
 import sqlite3, sys
 conexion = sqlite3.connect(sys.argv[1])

@@ -16,7 +16,7 @@ import {
   LEGACY_CONSUMER_STORE_DIR, STORE_DIR,
   STORE_FILE, STORE_PATH, STORE_PATH_VAR, recordHarnessSession, storePath,
 } from '../src/store.ts'
-import { CONSUMER_ROOT_VAR, thyroxRoot } from '../../../paths/reach.ts'
+import { CONSUMER_ROOT_VAR, thyroxRoot } from '@thyrox/paths/reach.ts'
 import { costReport, turnCost } from '../src/cost.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 
@@ -267,8 +267,8 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
   // el modulo con el entorno de ESE momento: bajo el preload del store
   // (`tests/preload/store.ts`, H-THYROX-164) apunta a la copia de la ejecucion,
   // y con razon. Lo que el caso afirma es el ultimo peldaño de la precedencia,
-  // asi que se compara contra ese peldaño. El titulo decia «clon de docs»: el
-  // hogar unico es el proveedor desde el 2026-09-07, como el docstring declara.
+  // asi que se compara contra ese peldaño: el hogar unico es el proveedor,
+  // como el docstring declara.
   test('sin ninguna de las dos, cae al árbol del proveedor', () => {
     delete process.env[STORE_PATH_VAR]
     delete process.env[CONSUMER_ROOT_VAR]
@@ -291,8 +291,7 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
     // que no puede distinguir las dos conductas no mide ninguna — sub-patron D
     // de `metrica-decide-la-conclusion.md`.
     //
-    // Lo que este afirma es la decision del ejecutor 2026-09-07: sin variables,
-    // TODO aterriza en `thyrox/agent-results`, que es lo que impide el silo que
+    // Sin variables, TODO aterriza en `thyrox/agent-results`, que es lo que impide el silo que
     // :ref:`h-docs-1237` midio (dos archivos versionados, ninguno superconjunto
     // del otro).
     delete process.env[STORE_PATH_VAR]

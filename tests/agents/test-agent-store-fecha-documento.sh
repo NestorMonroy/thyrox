@@ -177,9 +177,9 @@ afirmar "10b sin filas duplicadas"               "6"              "$FILAS"
 
 # --- 11 · denominador junto al conteo ---------------------------------------
 SALIDA=$(python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" --dry-run 2>&1)
-echo "$SALIDA" | grep -q "alcance medido"
+grep -q "alcance medido" <<<"$SALIDA"
 afirmar "11a --dry-run publica denominador"      "0" "$?"
-echo "$SALIDA" | grep -qi "sin ninguna cota"
+grep -qi "sin ninguna cota" <<<"$SALIDA"
 afirmar "11b --dry-run nombra los sin cota"      "0" "$?"
 
 # --- 12 · --dry-run no escribe ----------------------------------------------
@@ -266,6 +266,125 @@ import sqlite3,sys
 c=sqlite3.connect(sys.argv[1] + '/agent_store.sqlite3')
 print(list(c.execute(\"select updated_at_source from documents where path='source/v.rst'\"))[0][0])" "$VIEJO")
 afirmar "15b la fila previa sobrevive a la migracion" "git-commit" "$SOBREVIVE"
+
+# --- 16 · H-THYROX-270: ruta con byte no ASCII --------------------------
+# `core.quotePath` (default true) hace que `git log --name-only` entrecomille
+# y escape en octal una ruta con bytes fuera de ASCII: la linea real es
+# `"source/h-i.rst"` con `\303\255` en vez de `i` con tilde, y esa cadena
+# jamas coincide con la ruta que el resto del store usa como clave. En el
+# store real quedaban exactamente 3 de 6508 documentos sin fechar por esto.
+doc "h-tilde-í.rst" "-" "H"
+git -C "$REPO" add -A
+commit_en "2026-08-01T00:00:00" "no ascii"
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
+afirmar "16 ruta no ASCII se fecha con su ruta real"  "git-commit"  "$(leer 'source/h-tilde-í.rst' updated_at_source)"
+
+
+# --- 17 · H-THYROX-271: archivo cuyo UNICO commit es un merge ---------------
+# git log sin opcion de diff para merges no lista archivos de un commit merge.
+# Un archivo creado al resolver el merge (no existe en ningun padre) queda sin
+# fecha porque su unico commit nunca aparece en `--name-only`. `--cc` lo
+# recupera: lista, en cada merge, solo los archivos que difieren de TODOS los
+# padres -- exactamente este caso -- sin re-fechar lo que el merge trajo
+# intacto de una rama (el CONTROL de abajo).
+RAMA_BASE=$(git -C "$REPO" branch --show-current)
+git -C "$REPO" checkout -q -b rama-b
+
+git -C "$REPO" checkout -q "$RAMA_BASE"
+doc "k-en-master.rst" "-" "K"
+git -C "$REPO" add -A
+commit_en "2026-08-05T00:00:00" "avanza master"
+
+git -C "$REPO" checkout -q rama-b
+doc "i-viene-de-rama.rst" "-" "I"
+git -C "$REPO" add -A
+commit_en "2026-08-10T00:00:00" "archivo creado en la rama"
+
+git -C "$REPO" checkout -q "$RAMA_BASE"
+git -C "$REPO" merge -q --no-commit --no-ff rama-b
+doc "j-nace-en-merge.rst" "-" "J"
+git -C "$REPO" add -A
+commit_en "2026-08-20T00:00:00" "merge con archivo nuevo"
+
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
+afirmar "17a archivo nacido en el merge toma su fecha"  "git-commit" "$(leer source/j-nace-en-merge.rst updated_at_source)"
+FECHA_MERGE=$(leer source/j-nace-en-merge.rst commit_at)
+if [[ "$FECHA_MERGE" == 2026-08-20* ]]; then RC_MERGE=0; else RC_MERGE=1; fi
+afirmar "17b la fecha es la del commit merge"           "0" "$RC_MERGE"
+
+# CONTROL: el archivo que el merge trajo SIN cambios conserva la fecha de su
+# commit en la rama, no la del merge.
+FECHA_RAMA=$(leer source/i-viene-de-rama.rst commit_at)
+if [[ "$FECHA_RAMA" == 2026-08-10* ]]; then RC_BRANCH=0; else RC_BRANCH=1; fi
+afirmar "17c CONTROL archivo traido intacto conserva su fecha de rama" "0" "$RC_BRANCH"
+# --- 18 · H-THYROX-269: clon superficial rehusa en vez de atribuir ----------
+# `git clone --depth 1` grafea su commit mas viejo sin padres: `git log
+# --name-only --cc` listaria ahi TODO archivo del arbol como si hubiera
+# cambiado en ese commit, atribuyendo la fecha de la FRONTERA del clon a
+# documentos que llevan meses sin tocarse. El subcomando rehusa antes de medir
+# eso, en vez de escribir una fecha fabricada.
+SUPERFICIAL="$TMP/superficial"
+rm -rf "$SUPERFICIAL"
+git clone -q --depth 1 "file://$REPO" "$SUPERFICIAL" 2>/dev/null
+ES_SUPERFICIAL=$(git -C "$SUPERFICIAL" rev-parse --is-shallow-repository)
+afirmar "18-setup el clon nace superficial"           "true" "$ES_SUPERFICIAL"
+
+FILAS_ANTES=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1]); print(list(c.execute('select count(*) from documents'))[0][0])
+" "$DB")
+# El conteo de filas no discrimina una fila REESCRITA de una intacta -- el
+# UPSERT no cambia cuantas filas hay. El valor de una fila YA fechada por el
+# clon COMPLETO es el sujeto que si lo detecta: si el clon superficial
+# escribiera, la sobreescribiria con la fecha de su frontera.
+ANTES_A=$(leer source/a-clave-vieja.rst updated_at)
+
+SALIDA_18=$(python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$SUPERFICIAL" 2>&1)
+RC_18=$?
+afirmar "18a clon superficial rehusa con exit 2"      "2"    "$RC_18"
+grep -q "^ERROR — .* clon superficial" <<<"$SALIDA_18"
+afirmar "18b el motivo nombra el clon superficial"    "0"    "$?"
+
+FILAS_DESPUES=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1]); print(list(c.execute('select count(*) from documents'))[0][0])
+" "$DB")
+afirmar "18c no escribio ninguna fila nueva"          "$FILAS_ANTES" "$FILAS_DESPUES"
+afirmar "18e no reescribio una fila YA fechada"       "$ANTES_A" "$(leer source/a-clave-vieja.rst updated_at)"
+
+# CONTROL: el mismo repo, ANTES de clonarlo superficial, no lleva esta guarda
+# — sigue fechando normal. Sin este control, un `exit 2` incondicional en
+# `cmd_date_documents` tambien pasaria 18a/18b y el caso no discriminaria la
+# causa real.
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
+RC_18_CTRL=$?
+afirmar "18d CONTROL el clon COMPLETO no rehusa"      "0"    "$RC_18_CTRL"
+
+# --- 19 · la pregunta a git falla -> tampoco escribe (no es "no superficial")
+# Un directorio sin `.git` hace que `git rev-parse --is-shallow-repository`
+# falle: eso es DESCONOCIDO, no "no es superficial", y escribir ahi atribuiria
+# lo mismo que el caso 18 evita, sin ni siquiera haber medido nada.
+SIN_GIT="$TMP/sin-git"
+rm -rf "$SIN_GIT"
+mkdir -p "$SIN_GIT/source"
+doc_sin_git() {
+    local ruta="$SIN_GIT/source/z-sin-git.rst"
+    { echo '.. meta::'; echo; echo 'Z'; echo '='; } > "$ruta"
+}
+doc_sin_git
+
+FILAS_ANTES_19=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1]); print(list(c.execute('select count(*) from documents'))[0][0])
+" "$DB")
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$SIN_GIT" >/dev/null 2>&1
+RC_19=$?
+afirmar "19a sin repo git rehusa con exit 2"          "2"    "$RC_19"
+FILAS_DESPUES_19=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1]); print(list(c.execute('select count(*) from documents'))[0][0])
+" "$DB")
+afirmar "19b no escribio ninguna fila nueva"          "$FILAS_ANTES_19" "$FILAS_DESPUES_19"
 
 echo
 echo "  $OK ok · $FALLO fallas"

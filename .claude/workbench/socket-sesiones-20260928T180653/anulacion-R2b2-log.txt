@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+143 | describe('fastModeUnavailableMessage (D5) e isFastModeAvailableFor (Bk)', () => {
+144 |   test('null si está disponible; si no, el mensaje, y se registra', () => {
+145 |     const logged: string[] = []
+146 |     expect(fastModeUnavailableMessage(undefined, {}, context(), line => void logged.push(line))).toBeNull()
+147 |     expect(fastModeUnavailableMessage(undefined, {}, context({ orgStatus: { status: 'pending' } }), line => void logged.push(line))).toBe('Checking fast mode availability')
+148 |     expect(logged).toEqual(['Fast mode unavailable: Checking fast mode availability'])
+                         ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "Fast mode unavailable: Checking fast mode availability",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:148:20)
+(fail) fastModeUnavailableMessage (D5) e isFastModeAvailableFor (Bk) > null si está disponible; si no, el mensaje, y se registra [0.33ms]
+
+ 13 pass
+ 1 fail
+ 53 expect() calls
+Ran 14 tests across 1 file. [58.00ms]

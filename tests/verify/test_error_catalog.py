@@ -72,6 +72,7 @@ def assert_that(condition: bool, label: str) -> None:
 
 def load_gate():
     spec = importlib.util.spec_from_file_location('check_error_catalog', GATE)
+    assert spec is not None and spec.loader is not None  # el archivo existe en este árbol
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

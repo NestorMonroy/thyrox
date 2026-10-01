@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env THYROX_BACKGROUND_LOG_DIR=/home/user/thyrox/.claude/build-logs/rejected-reverify/jobs bash bin/run-task-pool --width 3 .claude/build-logs/rejected-reverify/commands.txt", "started_at": "2026-09-30T09:53:32+00:00"}

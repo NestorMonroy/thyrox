@@ -55,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -103,18 +104,33 @@ class Report:
     packages: tuple[str, ...] = ()
 
 
+def _declares_exports(directory: pathlib.Path) -> bool:
+    try:
+        manifest = json.loads((directory / MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return isinstance(manifest, dict) and "exports" in manifest
+
+
 def packages(root: pathlib.Path) -> dict[str, pathlib.Path]:
-    """Los paquetes de la raíz: cada hijo directo que declara su manifiesto.
+    """Los paquetes bajo la raíz, a cualquier profundidad: cada directorio
+    cuyo manifiesto declara ``exports``, nombrado por su ruta relativa.
+
+    Antes eran sólo los hijos directos, y con ``src`` como raíz el agregador
+    ``src/packages`` —manifiesto sin ``exports``— contaba como UN paquete que
+    contenía 37: los cruces entre ellos salían «internos».
 
     Rehúsa si no hay ninguno — un cero ahí no distinguiría «esta raíz no tiene
     cruces» de «esta raíz no es una raíz de paquetes».
     """
     root = pathlib.Path(root).resolve()
-    found = {
-        child.name: child
-        for child in sorted(root.iterdir())
-        if child.is_dir() and (child / MANIFEST).is_file()
-    } if root.is_dir() else {}
+    found: dict[str, pathlib.Path] = {}
+    if root.is_dir():
+        for directory, subdirs, files in os.walk(root):
+            subdirs[:] = sorted(d for d in subdirs if d not in SKIP_DIRS)
+            here = pathlib.Path(directory)
+            if MANIFEST in files and here != root and _declares_exports(here):
+                found[here.relative_to(root).as_posix()] = here
     if not found:
         raise PackageRootError(
             f"{root} no contiene ningún paquete (ningún hijo con {MANIFEST}). "
@@ -143,10 +159,13 @@ def package_of(path: pathlib.Path, root: pathlib.Path) -> str | None:
         relative = pathlib.Path(path).resolve().relative_to(root)
     except ValueError:
         return None
-    if not relative.parts:
-        return None
-    name = relative.parts[0]
-    return name if (root / name / MANIFEST).is_file() else None
+    # El más profundo que lo contiene: un paquete anidado bajo otro directorio
+    # con manifiesto es suyo, no del de arriba.
+    for depth in range(len(relative.parts), 0, -1):
+        candidate = root.joinpath(*relative.parts[:depth])
+        if candidate.is_dir() and _declares_exports(candidate):
+            return pathlib.PurePosixPath(*relative.parts[:depth]).as_posix()
+    return None
 
 
 def specifiers(text: str) -> list[tuple[int, str]]:
@@ -215,7 +234,7 @@ def scan(root: pathlib.Path) -> Report:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("root", help="la raíz de paquetes a medir")
     parser.add_argument("--quiet", action="store_true", help="sólo el conteo")
     parser.add_argument("--strict", action="store_true", help="exit 1 si hay cruces")

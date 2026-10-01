@@ -1,0 +1,318 @@
+diff --git a/bun.lock b/bun.lock
+index 36055425..d914ea3f 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -421,6 +421,7 @@
+         "@thyrox/config": "0.1.0",
+         "@thyrox/output": "0.1.0",
+         "@thyrox/storage": "0.1.0",
++        "@thyrox/store": "0.1.0",
+         "axios": "^1.20.0",
+         "cacache": "^21.0.1",
+         "chalk": "^6.0.0",
+diff --git a/src/packages/local-observability/__tests__/errorStore.test.ts b/src/packages/local-observability/__tests__/errorStore.test.ts
+index 559d08d4..8a963483 100644
+--- a/src/packages/local-observability/__tests__/errorStore.test.ts
++++ b/src/packages/local-observability/__tests__/errorStore.test.ts
+@@ -10,7 +10,6 @@ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+ import { ACTION_TRAIL_CAPACITY, createActionTrail } from '../src/errorStore/actionTrail.ts'
+-import { dialectOf } from '../src/errorStore/dialect.ts'
+ import {
+   disableErrorRecording,
+   enableErrorRecording,
+@@ -50,13 +49,6 @@ describe('registro de acciones', () => {
+ })
+ 
+ describe('motor por URL', () => {
+-  test('sqlite y postgres se reconocen; otro esquema no', () => {
+-    expect(dialectOf('sqlite:///tmp/e.sqlite3')).toBe('sqlite')
+-    expect(dialectOf('postgres://u@h/db')).toBe('postgres')
+-    expect(dialectOf('postgresql://u@h/db')).toBe('postgres')
+-    expect(dialectOf('mysql://u@h/db')).toBeNull()
+-  })
+-
+   test('THYROX_OBSERVABILITY_DATABASE_URL gana; sin ella, el SQLite del hogar de datos', () => {
+     expect(resolveErrorStoreUrl({ THYROX_OBSERVABILITY_DATABASE_URL: 'postgres://u@h/db' })).toBe('postgres://u@h/db')
+     expect(resolveErrorStoreUrl({ THYROX_OBSERVABILITY_DATA_DIR: '/data/obs' })).toBe(`sqlite:///data/obs/${ERRORS_DB_FILE}`)
+diff --git a/src/packages/local-observability/package.json b/src/packages/local-observability/package.json
+index 841df2b5..38dd8dcf 100644
+--- a/src/packages/local-observability/package.json
++++ b/src/packages/local-observability/package.json
+@@ -280,6 +280,7 @@
+     "@thyrox/config": "0.1.0",
+     "@thyrox/output": "0.1.0",
+     "@thyrox/storage": "0.1.0",
++    "@thyrox/store": "0.1.0",
+     "axios": "^1.20.0",
+     "cacache": "^21.0.1",
+     "chalk": "^6.0.0",
+diff --git a/src/packages/local-observability/src/errorStore/dialect.ts b/src/packages/local-observability/src/errorStore/dialect.ts
+deleted file mode 100644
+index 03444a12..00000000
+--- a/src/packages/local-observability/src/errorStore/dialect.ts
++++ /dev/null
+@@ -1,37 +0,0 @@
+-/**
+- * Lo que distingue a SQLite de PostgreSQL para la base de errores, en un solo
+- * sitio. `Bun.SQL` da la misma API a los dos; difieren en cómo viajan y vuelven
+- * tres tipos, medidos contra los dos motores:
+- *
+- * - el id: número en SQLite, `BIGINT` devuelto como texto en PostgreSQL;
+- * - el momento: texto en SQLite, `TIMESTAMPTZ` devuelto como `Date`;
+- * - el JSON: SQLite lo guarda como texto; a una columna `JSONB` hay que pasarle
+- *   el objeto, porque una cadena se guarda como cadena JSON, doblemente
+- *   codificada.
+- */
+-export const DIALECTS = ['sqlite', 'postgres'] as const
+-export type Dialect = (typeof DIALECTS)[number]
+-
+-/** El motor que nombra una URL de base de datos, o `null` si no es uno admitido. */
+-export function dialectOf(url: string): Dialect | null {
+-  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(url)?.[1]?.toLowerCase()
+-  if (scheme === 'sqlite' || scheme === 'file') return 'sqlite'
+-  if (scheme === 'postgres' || scheme === 'postgresql') return 'postgres'
+-  return null
+-}
+-
+-export function jsonParam(dialect: Dialect, value: unknown): unknown {
+-  return dialect === 'postgres' ? value : JSON.stringify(value)
+-}
+-
+-export function readJson(value: unknown): Record<string, unknown> {
+-  return (typeof value === 'string' ? JSON.parse(value) : value) as Record<string, unknown>
+-}
+-
+-export function readTimestamp(value: unknown): string {
+-  return value instanceof Date ? value.toISOString() : String(value)
+-}
+-
+-export function readId(value: unknown): number {
+-  return Number(value)
+-}
+diff --git a/src/packages/local-observability/src/errorStore/errorStore.ts b/src/packages/local-observability/src/errorStore/errorStore.ts
+index 22a03c88..8c7a1f5b 100644
+--- a/src/packages/local-observability/src/errorStore/errorStore.ts
++++ b/src/packages/local-observability/src/errorStore/errorStore.ts
+@@ -10,7 +10,7 @@
+ import type { SQL } from 'bun'
+ 
+ import type { RecordedAction } from './actionTrail.ts'
+-import { type Dialect, jsonParam, readId, readJson, readTimestamp } from './dialect.ts'
++import { type Dialect, jsonParam, readId, readJson, readTimestamp } from '@thyrox/store/sql.ts'
+ import { classifyError, type ErrorType } from './errorType.ts'
+ import { ERROR_SOURCES, type ErrorSource, migrate } from './migrations.ts'
+ 
+diff --git a/src/packages/local-observability/src/errorStore/errorStoreHome.ts b/src/packages/local-observability/src/errorStore/errorStoreHome.ts
+index 4b2f9b74..4b10f886 100644
+--- a/src/packages/local-observability/src/errorStore/errorStoreHome.ts
++++ b/src/packages/local-observability/src/errorStore/errorStoreHome.ts
+@@ -8,13 +8,13 @@
+  * cambia el directorio—, sólo del dueño: los errores llevan rutas, URLs y
+  * mensajes del trabajo del usuario.
+  */
+-import { SQL } from 'bun'
++import type { SQL } from 'bun'
+ import fs from 'node:fs'
+ import { join } from 'node:path'
+ 
+ import { resolveDataDir } from '@thyrox/config/env/configHome'
+ 
+-import { type Dialect, dialectOf } from './dialect.ts'
++import { type Dialect, dialectOf, openByUrl } from '@thyrox/store/sql.ts'
+ import { createErrorStore, type ErrorStore } from './errorStore.ts'
+ 
+ export const OBSERVABILITY_DATA_SUBDIR = 'observability'
+@@ -41,16 +41,14 @@ export async function openErrorStoreOn(sql: SQL, dialect: Dialect): Promise<Erro
+ 
+ export async function openErrorStore(options: { env?: Env } = {}): Promise<{ store: ErrorStore; close(): Promise<void> }> {
+   const url = resolveErrorStoreUrl(options.env ?? process.env)
+-  const dialect = dialectOf(url)
+-  if (!dialect) throw new Error(`unsupported error store URL '${url.replace(/\/\/[^@/]*@/, '//***@')}': expected sqlite:// or postgres://`)
+-  if (dialect === 'sqlite') {
++  if (dialectOf(url) === 'sqlite') {
+     const dir = resolveObservabilityDataDir(options.env ?? process.env)
+     if (url.includes(dir)) {
+       fs.mkdirSync(dir, { recursive: true, mode: OWNER_ONLY })
+       fs.chmodSync(dir, OWNER_ONLY)
+     }
+   }
+-  const sql = new SQL(url)
++  const { sql, dialect } = openByUrl(url)
+   return { store: await openErrorStoreOn(sql, dialect), close: () => sql.close() }
+ }
+ 
+diff --git a/src/packages/local-observability/src/errorStore/migrations.ts b/src/packages/local-observability/src/errorStore/migrations.ts
+index 1590509c..bdeca5db 100644
+--- a/src/packages/local-observability/src/errorStore/migrations.ts
++++ b/src/packages/local-observability/src/errorStore/migrations.ts
+@@ -10,7 +10,7 @@
+  */
+ import type { SQL } from 'bun'
+ 
+-import type { Dialect } from './dialect.ts'
++import type { Dialect } from '@thyrox/store/sql.ts'
+ import { ERROR_TYPES } from './errorType.ts'
+ 
+ export const ERROR_SOURCES = ['log_error', 'component_boundary'] as const
+diff --git a/src/packages/store/__tests__/sql.test.ts b/src/packages/store/__tests__/sql.test.ts
+new file mode 100644
+index 00000000..e2506d33
+--- /dev/null
++++ b/src/packages/store/__tests__/sql.test.ts
+@@ -0,0 +1,77 @@
++/**
++ * El dialecto por URL y la apertura multi-motor (`openByUrl`).
++ */
++import { describe, expect, test } from 'bun:test'
++import { DIALECTS, dialectOf, jsonParam, openByUrl, readId, readJson, readTimestamp } from '../sql.ts'
++
++describe('dialectOf elige el motor por el esquema de la URL', () => {
++  test('sqlite y file son sqlite; postgres y postgresql son postgres', () => {
++    expect(dialectOf('sqlite:///tmp/e.sqlite3')).toBe('sqlite')
++    expect(dialectOf('file:///tmp/e.sqlite3')).toBe('sqlite')
++    expect(dialectOf('postgres://u@h/db')).toBe('postgres')
++    expect(dialectOf('postgresql://u@h/db')).toBe('postgres')
++  })
++
++  test('un esquema que no está en DIALECTS no es ninguno de los declarados', () => {
++    expect(dialectOf('mysql://u@h/db')).toBeNull()
++    expect(dialectOf('mongodb://u@h/db')).toBeNull()
++    expect(DIALECTS).toEqual(['sqlite', 'postgres'])
++  })
++})
++
++describe('los helpers de dialecto viajan igual que en la base de errores', () => {
++  test('jsonParam serializa en sqlite y pasa el objeto en postgres', () => {
++    expect(jsonParam('sqlite', { a: 1 })).toBe('{"a":1}')
++    expect(jsonParam('postgres', { a: 1 })).toEqual({ a: 1 })
++  })
++
++  test('readJson acepta texto (sqlite) u objeto ya parseado (postgres)', () => {
++    expect(readJson('{"a":1}')).toEqual({ a: 1 })
++    expect(readJson({ a: 1 })).toEqual({ a: 1 })
++  })
++
++  test('readTimestamp normaliza un Date (postgres) o deja el texto (sqlite)', () => {
++    const at = new Date('2026-09-28T17:40:00.000Z')
++    expect(readTimestamp(at)).toBe('2026-09-28T17:40:00.000Z')
++    expect(readTimestamp('2026-09-28T17:40:00.000Z')).toBe('2026-09-28T17:40:00.000Z')
++  })
++
++  test('readId siempre da número, venga como número o como texto (BIGINT de postgres)', () => {
++    expect(readId(9)).toBe(9)
++    expect(readId('9')).toBe(9)
++  })
++})
++
++describe('openByUrl abre la conexión que la URL declara', () => {
++  test('el esquema elige el motor', () => {
++    expect(openByUrl('sqlite://:memory:').dialect).toBe('sqlite')
++    expect(openByUrl('postgres://u@h/db').dialect).toBe('postgres')
++  })
++
++  test('extensionsLoadable es falso en sqlite y verdadero en postgres (H-THYROX-238)', () => {
++    expect(openByUrl('sqlite://:memory:').capabilities).toEqual({ dialect: 'sqlite', extensionsLoadable: false })
++    expect(openByUrl('postgres://u@h/db').capabilities).toEqual({ dialect: 'postgres', extensionsLoadable: true })
++  })
++
++  test('mysql y mariadb se rechazan nombrando el motor declarado, no como esquema desconocido', () => {
++    expect(() => openByUrl('mysql://user:secret@h/db')).toThrow(/mysql.*not yet supported/)
++    expect(() => openByUrl('mariadb://user:secret@h/db')).toThrow(/mariadb.*not yet supported/)
++    // CONTROL: sin la guarda de mysql/mariadb, dialectOf los trata como esquema
++    // desconocido y cae en el mensaje genérico, que NO dice "not yet supported".
++    expect(() => openByUrl('mysql://user:secret@h/db')).not.toThrow(/^unsupported database URL/)
++  })
++
++  test('un esquema fuera de todo lo declarado se rechaza como no admitido, sin nombrar una fase', () => {
++    expect(() => openByUrl('mongodb://user:secret@h/db')).toThrow(/^unsupported database URL/)
++    expect(() => openByUrl('mongodb://user:secret@h/db')).not.toThrow(/phase D7/)
++  })
++
++  // CONTROL: si openByUrl dejara de nombrar mysql/mariadb como caso propio, caería
++  // sobre el mensaje genérico de "unsupported" en vez de nombrar el motor declarado.
++  test('las credenciales de la URL van enmascaradas en los dos mensajes de rechazo', () => {
++    expect(() => openByUrl('mysql://user:secret@h/db')).toThrow(/mysql:\/\/\*\*\*@h\/db/)
++    expect(() => openByUrl('mysql://user:secret@h/db')).not.toThrow(/secret/)
++    expect(() => openByUrl('mongodb://user:secret@h/db')).toThrow(/mongodb:\/\/\*\*\*@h\/db/)
++    expect(() => openByUrl('mongodb://user:secret@h/db')).not.toThrow(/secret/)
++  })
++})
+diff --git a/src/packages/store/sql.ts b/src/packages/store/sql.ts
+new file mode 100644
+index 00000000..3a4ab6d1
+--- /dev/null
++++ b/src/packages/store/sql.ts
+@@ -0,0 +1,71 @@
++/**
++ * El dialecto de base de datos y la apertura de una conexión por URL, para
++ * cualquier store de thyrox. `Bun.SQL` da la misma API a varios motores; lo
++ * que cambia entre ellos —los tipos que van y vuelven, si acepta cargar
++ * extensiones— se declara aquí una sola vez, en lugar de en cada consumidor.
++ */
++import { SQL } from 'bun'
++
++/**
++ * Motores admitidos hoy. `sqlite:`/`file:` y `postgres:`/`postgresql:` abren;
++ * `mysql:`/`mariadb:` están declarados en la URL pero su soporte llega en una
++ * fase posterior (D7), así que se rechazan nombrándolos en vez de como un
++ * esquema desconocido.
++ */
++export const DIALECTS = ['sqlite', 'postgres'] as const
++export type Dialect = (typeof DIALECTS)[number]
++
++const DECLARED_PENDING = ['mysql', 'mariadb'] as const
++
++function schemeOf(url: string): string | undefined {
++  return /^([a-z][a-z0-9+.-]*):/i.exec(url)?.[1]?.toLowerCase()
++}
++
++/** Enmascara las credenciales de una URL de conexión antes de que viajen a un mensaje. */
++function maskCredentials(url: string): string {
++  return url.replace(/\/\/[^@/]*@/, '//***@')
++}
++
++/** El motor que nombra una URL de base de datos, o `null` si no es uno admitido. */
++export function dialectOf(url: string): Dialect | null {
++  const scheme = schemeOf(url)
++  if (scheme === 'sqlite' || scheme === 'file') return 'sqlite'
++  if (scheme === 'postgres' || scheme === 'postgresql') return 'postgres'
++  return null
++}
++
++export function jsonParam(dialect: Dialect, value: unknown): unknown {
++  return dialect === 'postgres' ? value : JSON.stringify(value)
++}
++
++export function readJson(value: unknown): Record<string, unknown> {
++  return (typeof value === 'string' ? JSON.parse(value) : value) as Record<string, unknown>
++}
++
++export function readTimestamp(value: unknown): string {
++  return value instanceof Date ? value.toISOString() : String(value)
++}
++
++export function readId(value: unknown): number {
++  return Number(value)
++}
++
++/** Lo que el motor de una URL permite abrir, más allá de su dialecto. */
++export type StoreCapabilities = { dialect: Dialect; extensionsLoadable: boolean }
++
++/**
++ * Abre la conexión que la URL declara: motor, dialecto y capacidades, en un
++ * solo sitio. `sqlite:` no puede cargar extensiones (H-THYROX-238: `Bun.SQL`
++ * no expone `loadExtension` sobre ese motor, al revés que `bun:sqlite`);
++ * `postgres:` sí.
++ */
++export function openByUrl(url: string): { sql: SQL; dialect: Dialect; capabilities: StoreCapabilities } {
++  const masked = maskCredentials(url)
++  const scheme = schemeOf(url)
++  if (scheme && (DECLARED_PENDING as readonly string[]).includes(scheme)) {
++    throw new Error(`database URL '${masked}' declares engine '${scheme}', not yet supported (phase D7)`)
++  }
++  const dialect = dialectOf(url)
++  if (!dialect) throw new Error(`unsupported database URL '${masked}': expected sqlite:// or postgres://`)
++  return { sql: new SQL(url), dialect, capabilities: { dialect, extensionsLoadable: dialect === 'postgres' } }
++}

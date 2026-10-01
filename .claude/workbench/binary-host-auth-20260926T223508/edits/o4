@@ -1,0 +1,9 @@
+    const key = opts.apiKey ?? process.env.ANTHROPIC_API_KEY
+    if (!key) {
+      throw new Error(
+        'AnthropicHttpProvider exige credencial: ANTHROPIC_API_KEY no está en el entorno. ' +
+          'Este contenedor no la tiene (el proveedor lo gestiona el anfitrión); usa RecordedProvider.',
+      )
+    }
+    this.apiKey = key
+    this.baseUrl = opts.baseUrl ?? process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'

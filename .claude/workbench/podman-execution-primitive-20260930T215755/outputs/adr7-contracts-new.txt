@@ -1,0 +1,56 @@
+**Contratos que cierran la ambigüedad (enmienda 1.6.1).** Precisados por el
+ejecutor antes de implementar TASK-THYROX-0691:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Pieza
+     - Responde
+     - No responde
+   * - ``hardware-inventory``
+     - ¿hay evidencia física de GPU?
+     - si hay telemetría: un ``partial`` no se traduce a ``unavailable`` sin
+       consultar el backend
+   * - ``GpuMemoryBackend``
+     - ¿puedo observar la memoria de la GPU?
+     - si hay GPU
+   * - admisión (``resource_admission``, ledger de VRAM)
+     - ¿puede entrar este trabajo ahora?
+     - cuánto consumió
+   * - medida (pico del cgroup; GNU Time secundaria; backend GPU)
+     - ¿cuánto consumió?
+     - si puede entrar
+   * - ``headless-pool.sh``
+     - orquesta: declaración del trabajo → admisión → worker → medida →
+       historial
+     - política de recursos: sin ramas propias sobre ``nvidia-smi`` ni sobre
+       rutas de cgroup
+
+- ``unavailable`` = evidencia suficiente de GPU **y** ningún backend soportado
+  da telemetría de memoria. ``absent`` = sin evidencia de GPU. Los cuatro
+  estados son disjuntos: ``measured(0)`` ≠ ``absent`` ≠ ``unavailable`` ≠
+  ``error``.
+- La ausencia de backend no es una implementación medible: no hay operación
+  que pueda devolver una cantidad sin backend; devuelve el estado.
+- ``none`` / ``optional`` / ``required`` es propiedad declarada del trabajo;
+  el planificador no convierte ``required`` en ``optional`` ni decide que un
+  trabajo puede ir a CPU. ``optional`` se resuelve **antes** de ejecutar
+  (backend y admisión posibles → ruta GPU; si no → la ruta CPU que el trabajo
+  declara), no reintentando tras un fallo, salvo que ese reintento sea parte
+  declarada del contrato del trabajo. ``required`` sin backend: exit 2, no se
+  ejecuta el trabajo y no se publica cifra de GPU.
+- Hay reserva en el ledger sólo en la ruta GPU con backend válido; ``none`` y
+  ``optional`` con ruta CPU no lo tocan. El ledger es uno por anfitrión.
+- RAM disponible = ``límite − uso`` del cgroup si hay un límite efectivo; si
+  no, la del anfitrión. «Sin límite» es un estado, no un ``0`` ni un número
+  enorme; se soportan las versiones de cgroups que thyrox soporta, medidas.
+- Tras 0691, ``nvidia-smi`` sólo aparece en el backend NVIDIA y en la sonda de
+  hardware; el resto trabaja con estado, memoria libre y uso por proceso, y se
+  prueba con backends falsos sin simular el binario.
+- La VRAM de un contenedor se atribuye por los PIDs de su cgroup vistos desde
+  el anfitrión, con una prueba explícita a nivel de backend.
+- El historial conserva la ausencia de dimensión: ``absent``,
+  ``unavailable`` y ``error`` no se guardan como ``0`` ni entran en las
+  estadísticas como muestras.
+
+GNU Parallel sigue en el anfitrión como planificador de ítems. La imagen

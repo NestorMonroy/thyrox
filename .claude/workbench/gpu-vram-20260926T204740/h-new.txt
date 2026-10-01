@@ -1,0 +1,18 @@
+    print("== 12. la VRAM: record guarda el pico de los .gpu, y sin ellos no inventa la clave ==")
+    out = run_with(["266000 10 1 0\n"])
+    (out / "1.gpu").write_text("3000 2500 90 20\n")
+    (out / "2.gpu").write_text("1000 800 40 20\n")
+    h = TMP / "h-vram"
+    row = ph.record(h, out)
+    check("pico de VRAM entre ítems", 3000, row.get("peak_vram_mib"))
+    check("sin .gpu no hay clave: ausente no es cero", False, "peak_vram_mib" in ph.record(TMP / "h-sin-gpu", run_with(["1 1 1 1\n"])))
+
+    print("== 13. la anchura se acota por VRAM: libre / (pico x margen) ==")
+    check("12000 libres / (3000 x 2) -> 2 a la vez", 2, ph.derive(h, MODEL, catalog, margin=2.0, free_vram_mib=12000).width_cap)
+    check("sin VRAM libre medida, sin tope", None, ph.derive(h, MODEL, catalog, margin=2.0).width_cap)
+    check("sin pico de VRAM en el historial, sin tope", None,
+          ph.derive(TMP / "h-sin-gpu", MODEL, catalog, free_vram_mib=12000).width_cap)
+    tight = ph.derive(h, MODEL, catalog, margin=2.0, free_vram_mib=4000)
+    check("si ni uno cabe, el tope es 1 y se dice", (1, True), (tight.width_cap, "no cabe" in tight.why))
+
+print(f"\ntest_pool_history:

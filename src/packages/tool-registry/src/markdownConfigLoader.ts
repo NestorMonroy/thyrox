@@ -10,7 +10,7 @@ import {
 } from '@thyrox/local-observability'
 import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
 import { normalizePathForComparison } from '@thyrox/storage/file.js'
 import type { FrontmatterData } from '@thyrox/agent/frontmatterParser.js'
@@ -25,7 +25,7 @@ import {
 import { getManagedFilePath } from '@thyrox/config/managedPath'
 import { isRestrictedToPluginOnly } from '@thyrox/config/pluginOnlyPolicy'
 
-// Claude configuration directory names
+// thyrox configuration directory names
 export const CLAUDE_CONFIG_DIRECTORIES = [
   'commands',
   'agents',
@@ -281,7 +281,7 @@ export const loadMarkdownFilesForSubdir = memoize(
     cwd: string,
   ): Promise<MarkdownFile[]> {
     const searchStartTime = Date.now()
-    const userDir = join(getClaudeConfigHomeDir(), subdir)
+    const userDir = join(getConfigHomeDir(), subdir)
     const managedDir = join(getManagedFilePath(), '.claude', subdir)
     const projectDirs = getProjectDirsUpToHome(subdir, cwd)
 
@@ -416,7 +416,7 @@ export const loadMarkdownFilesForSubdir = memoize(
  * This implementation exists alongside ripgrep for the following reasons:
  * 1. Ripgrep has poor startup performance in native builds (noticeable on app startup)
  * 2. Provides a fallback when ripgrep is unavailable
- * 3. Can be explicitly enabled via CLAUDE_CODE_USE_NATIVE_FILE_SEARCH env var
+ * 3. Can be explicitly enabled via THYROX_CODE_USE_NATIVE_FILE_SEARCH env var
  *
  * Symlink handling:
  * - Follows symlinks (equivalent to ripgrep's --follow flag)
@@ -533,10 +533,10 @@ async function loadMarkdownFiles(dir: string): Promise<
 > {
   // File search strategy:
   // - Default: ripgrep (faster, battle-tested)
-  // - Fallback: native Node.js (when CLAUDE_CODE_USE_NATIVE_FILE_SEARCH is set)
+  // - Fallback: native Node.js (when THYROX_CODE_USE_NATIVE_FILE_SEARCH is set)
   //
   // Why both? Ripgrep has poor startup performance in native builds.
-  const useNative = isEnvTruthy(process.env.CLAUDE_CODE_USE_NATIVE_FILE_SEARCH)
+  const useNative = isEnvTruthy(process.env.THYROX_CODE_USE_NATIVE_FILE_SEARCH)
   const signal = AbortSignal.timeout(3000)
   let files: string[]
   try {

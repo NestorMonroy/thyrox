@@ -1,0 +1,25 @@
+== 1. cada build se reporta con SUS marcadores, no con todos ==
+  ok    4 builds con forma de version (notas-sueltas queda fuera)
+  ok    9.9.1: extraccion completa
+  ok    9.9.2: solo volcado de cadenas
+  ok    9.9.2-nombrado: vista derivada, sin MANIFEST ni volcado
+  ok    9.9.2-nombrado declara su version base
+  ok    9.9.2-nombrado lleva su sufijo
+  ok    9.9.1 NO lleva sufijo (build de primer nivel)
+  ok    9.9.3: bunfs-root + MANIFEST.tsv SIN src (el caso que origino la tarea)
+== 2. el resumen lleva su denominador ==
+  ok    nombra el total
+  ok    cuenta los que tienen src (solo 2: 9.9.1 y 9.9.2-nombrado)
+  ok    cuenta las vistas derivadas (solo 1)
+== 3. CLI: reproducible desde fuera, con --root ==
+  ok    sale 0
+  ok    nombra 9.9.1
+  ok    nombra 9.9.3 sin listar src en su fila
+  ok    no lista a notas-sueltas
+== 4. CONTROL DE ANULACIÓN: sin detect_markers, todo parece completo ==
+  ok    anulado: 9.9.2 (solo volcado) aparenta TODOS los marcadores
+  ok    anulado: la aserción original del bloque 1 ahora es FALSA
+== 5. restaurado, 9.9.2 vuelve a mostrar solo sus dos marcadores ==
+  ok    9.9.2 vuelve a la forma correcta
+
+18 ok, 0 fallos

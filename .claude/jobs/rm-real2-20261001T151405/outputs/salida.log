@@ -1,0 +1,32 @@
+error: expect(received).toMatchObject(expected)
+
+@@ -2,5 +2,5 @@
+    "action": "recreated",
++   "created": true,
+    "drift": [
++     "image",
+      "configuration",
+@@ -8,3 +8,10 @@
+    "health": "healthy",
++   "name": "thyrox-rm-real-19557-1790867646233",
++   "started": true,
++   "volumes": [
++     {
++       "state": "preserved",
++       "volume": "thyrox-rm-real-volume-19557-1790867646233",
++     },
++   ],
+  }
+
+- Expected  - 0
++ Received  + 10
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.real.test.ts:116:21)
+(fail) ensureResource contra Podman real > recrear por deriva de configuración conserva el contenido del volumen [797.19ms]
+
+ 0 pass
+ 3 fail
+ 10 expect() calls
+Ran 3 tests across 1 file. [2.85s]
+TEST_EXIT=1
+__BG_EXIT__=0

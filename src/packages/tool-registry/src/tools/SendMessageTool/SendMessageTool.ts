@@ -31,7 +31,13 @@ import {
   writeToMailbox,
 } from '@thyrox/swarm'
 import { resumeAgentBackground } from '../AgentTool/resumeAgent.js'
-import { SEND_MESSAGE_TOOL_NAME } from './constants.js'
+import {
+  MAX_REQUEST_ID_LENGTH,
+  MAX_SUMMARY_LENGTH,
+  MAX_TO_LENGTH,
+  SEND_MESSAGE_TOOL_NAME,
+  SINGLE_LINE,
+} from './constants.js'
 import { DESCRIPTION, getPrompt } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'
 
@@ -43,13 +49,27 @@ const StructuredMessage = lazySchema(() =>
     }),
     z.object({
       type: z.literal('shutdown_response'),
-      request_id: z.string(),
+      request_id: z
+        .string()
+        .min(1, 'must be the request id being responded to')
+        .regex(SINGLE_LINE, 'must be a single-line request id')
+        .max(
+          MAX_REQUEST_ID_LENGTH,
+          `request id longer than any real one (max ${MAX_REQUEST_ID_LENGTH} characters)`,
+        ),
       approve: semanticBoolean(),
       reason: z.string().optional(),
     }),
     z.object({
       type: z.literal('plan_approval_response'),
-      request_id: z.string(),
+      request_id: z
+        .string()
+        .min(1, 'must be the request id being responded to')
+        .regex(SINGLE_LINE, 'must be a single-line request id')
+        .max(
+          MAX_REQUEST_ID_LENGTH,
+          `request id longer than any real one (max ${MAX_REQUEST_ID_LENGTH} characters)`,
+        ),
       approve: semanticBoolean(),
       feedback: z.string().optional(),
     }),
@@ -60,6 +80,11 @@ const inputSchema = lazySchema(() =>
   z.object({
     to: z
       .string()
+      .regex(SINGLE_LINE, 'must be a single-line recipient name or address')
+      .max(
+        MAX_TO_LENGTH,
+        `recipient longer than any listed name or address (max ${MAX_TO_LENGTH} characters)`,
+      )
       .describe(
         feature('UDS_INBOX')
           ? 'Recipient: teammate name, "*" for broadcast, "uds:<socket-path>" for a local peer, or "bridge:<session-id>" for a Remote Control peer (use ListPeers to discover)'
@@ -67,6 +92,7 @@ const inputSchema = lazySchema(() =>
       ),
     summary: z
       .string()
+      .max(MAX_SUMMARY_LENGTH)
       .optional()
       .describe(
         'A 5-10 word summary shown as a preview in the UI. For string messages, omitting this auto-derives a summary from the message; provide explicitly for better preview.',
@@ -164,7 +190,7 @@ async function handleBroadcast(
 
   if (!teamName) {
     throw new Error(
-      'Not in a team context. Create a team with Teammate spawnTeam first, or set CLAUDE_CODE_TEAM_NAME.',
+      'Not in a team context. Create a team with Teammate spawnTeam first, or set THYROX_CODE_TEAM_NAME.',
     )
   }
 
@@ -177,7 +203,7 @@ async function handleBroadcast(
     getAgentName() || (isTeammate() ? 'teammate' : TEAM_LEAD_NAME)
   if (!senderName) {
     throw new Error(
-      'Cannot broadcast: sender name is required. Set CLAUDE_CODE_AGENT_NAME.',
+      'Cannot broadcast: sender name is required. Set THYROX_CODE_AGENT_NAME.',
     )
   }
 
@@ -277,6 +303,7 @@ import {
   handleShutdownApproval,
   handleShutdownRejection,
 } from './responseHandlers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const SendMessageTool: Tool<InputSchema, SendMessageToolOutput> =
   buildTool({
@@ -347,7 +374,7 @@ export const SendMessageTool: Tool<InputSchema, SendMessageToolOutput> =
       if (feature('UDS_INBOX') && parseAddress(input.to).scheme === 'bridge') {
         return {
           behavior: 'ask' as const,
-          message: `Send a message to Remote Control session ${input.to}? It arrives as a user prompt on the receiving Claude (possibly another machine) via Anthropic's servers.`,
+          message: `Send a message to Remote Control session ${input.to}? It arrives as a user prompt on the receiving ${PRODUCT_NAME} (possibly another machine) via Anthropic's servers.`,
           // safetyCheck (not mode) — permissions.ts guards this before both
           // bypassPermissions (step 1g) and auto-mode's allowlist/classifier.
           // Cross-machine prompt injection must stay bypass-immune.

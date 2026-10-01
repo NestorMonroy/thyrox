@@ -1,0 +1,50 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+170 |     markRefusalFallbackOccurred('req')
+171 |     latchRefusalFallbackModel(latch())
+172 |     setMainLoopModelOverride('claude-opus-5')
+173 |     switchSession(id('igual'), 'cd')
+174 |     expect(seen).toEqual([[id('igual'), 'cd']])
+175 |     expect(seen[0]).toHaveLength(2)
+                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 2
+Received length: 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:175:21)
+(fail) el tercer argumento de la señal de sesión (fn) > la misma sesión no toca el enclavamiento y avisa con dos argumentos [0.38ms]
+179 | 
+180 |   test('sin restauración el oyente recibe dos argumentos', () => {
+181 |     const seen = recordArguments()
+182 |     switchSession(id('nueva'), 'resume')
+183 |     expect(seen).toEqual([[id('nueva'), 'resume']])
+184 |     expect(seen[0]).toHaveLength(2)
+                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 2
+Received length: 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:184:21)
+(fail) el tercer argumento de la señal de sesión (fn) > sin restauración el oyente recibe dos argumentos [0.14ms]
+197 | 
+198 |   test('regenerateSessionId sin enclavamiento avisa con dos argumentos', () => {
+199 |     const seen = recordArguments()
+200 |     const next = regenerateSessionId()
+201 |     expect(seen).toEqual([[next, 'clear']])
+202 |     expect(seen[0]).toHaveLength(2)
+                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 2
+Received length: 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:202:21)
+(fail) el tercer argumento de la señal de sesión (fn) > regenerateSessionId sin enclavamiento avisa con dos argumentos [0.08ms]
+
+ 13 pass
+ 3 fail
+ 38 expect() calls
+Ran 16 tests across 1 file. [62.00ms]

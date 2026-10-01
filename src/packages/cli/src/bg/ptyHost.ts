@@ -236,7 +236,7 @@ export async function runPtyHost(args: readonly string[]): Promise<void> {
         // so the bytes never reach the `data` callback → never reach
         // attached clients. The robust path: the inner connects to
         // pty.sock from inside the spawned process (which it can do
-        // because it knows CLAUDE_JOB_DIR), sends a 'detach' frame,
+        // because it knows THYROX_JOB_DIR), sends a 'detach' frame,
         // and we broadcast the APC frame directly to all attach
         // clients via the data-frame channel — bypassing the PTY
         // entirely. attachClient's handleLivePaint scans for the
@@ -362,7 +362,7 @@ export async function runPtyHost(args: readonly string[]): Promise<void> {
       encodeCtrlFrame({
         t: 'hello',
         replPid: child.pid ?? -1,
-        version: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        version: process.env.THYROX_CODE_VERSION ?? 'dev',
       }),
     )
     // Ring buffer replay.

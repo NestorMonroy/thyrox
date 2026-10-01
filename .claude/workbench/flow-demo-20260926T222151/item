@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Hace de `claude -p`: consume el prompt, asigna VRAM tarde y responde.
+cat >/dev/null
+echo "start $(date +%s.%N) $$" >> "$ITEM_LOG"
+sleep 0.5; echo 1600 > "$GPU_STATE/used/$$"; sleep 1.5
+echo "end $(date +%s.%N) $$" >> "$ITEM_LOG"
+printf '{"type":"result","result":"ok"}\n'

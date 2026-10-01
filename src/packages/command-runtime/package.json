@@ -8,326 +8,407 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./xml.js": {
+      "@thyrox/source": "./src/xml.ts",
       "types": "./dist/xml.d.ts",
       "default": "./src/xml.ts"
     },
     "./commands/plugin/parseArgs.js": {
+      "@thyrox/source": "./src/commands/plugin/parseArgs.ts",
       "types": "./dist/commands/plugin/parseArgs.d.ts",
       "default": "./src/commands/plugin/parseArgs.ts"
     },
     "./commands/fork/fork.js": {
+      "@thyrox/source": "./src/commands/fork/fork.tsx",
       "types": "./dist/commands/fork/fork.d.ts",
       "default": "./src/commands/fork/fork.tsx"
     },
     "./createMovedToPluginCommand.js": {
+      "@thyrox/source": "./src/createMovedToPluginCommand.ts",
       "types": "./dist/createMovedToPluginCommand.d.ts",
       "default": "./src/createMovedToPluginCommand.ts"
     },
     "./promptShellExecution.js": {
+      "@thyrox/source": "./src/promptShellExecution.ts",
       "types": "./dist/promptShellExecution.d.ts",
       "default": "./src/promptShellExecution.ts"
     },
     "./commands/review/ultrareviewEnabled.js": {
+      "@thyrox/source": "./src/commands/review/ultrareviewEnabled.ts",
       "types": "./dist/commands/review/ultrareviewEnabled.d.ts",
       "default": "./src/commands/review/ultrareviewEnabled.ts"
     },
     "./skills/loadSkillsDir.js": {
+      "@thyrox/source": "./src/skills/loadSkillsDir.ts",
       "types": "./dist/skills/loadSkillsDir.d.ts",
       "default": "./src/skills/loadSkillsDir.ts"
     },
     "./commands/clear": {
+      "@thyrox/source": "./src/commands/clear/index.ts",
       "types": "./dist/commands/clear/index.d.ts",
       "default": "./src/commands/clear/index.ts"
     },
     "./commands/compact": {
+      "@thyrox/source": "./src/commands/compact/index.ts",
       "types": "./dist/commands/compact/index.d.ts",
       "default": "./src/commands/compact/index.ts"
     },
     "./commands/cost": {
+      "@thyrox/source": "./src/commands/cost/index.ts",
       "types": "./dist/commands/cost/index.d.ts",
       "default": "./src/commands/cost/index.ts"
     },
     "./commands/goal": {
+      "@thyrox/source": "./src/commands/goal/index.ts",
       "types": "./dist/commands/goal/index.d.ts",
       "default": "./src/commands/goal/index.ts"
     },
     "./commands/recap": {
+      "@thyrox/source": "./src/commands/recap/index.ts",
       "types": "./dist/commands/recap/index.d.ts",
       "default": "./src/commands/recap/index.ts"
     },
     "./commands/rename": {
+      "@thyrox/source": "./src/commands/rename/index.ts",
       "types": "./dist/commands/rename/index.d.ts",
       "default": "./src/commands/rename/index.ts"
     },
     "./commands/status": {
+      "@thyrox/source": "./src/commands/status/index.ts",
       "types": "./dist/commands/status/index.d.ts",
       "default": "./src/commands/status/index.ts"
     },
     "./commands/voice": {
+      "@thyrox/source": "./src/commands/voice/index.ts",
       "types": "./dist/commands/voice/index.d.ts",
       "default": "./src/commands/voice/index.ts"
     },
     "./commands/workflows": {
+      "@thyrox/source": "./src/commands/workflows/index.ts",
       "types": "./dist/commands/workflows/index.d.ts",
       "default": "./src/commands/workflows/index.ts"
     },
     "./testing": {
+      "@thyrox/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./commands/extra-usage/extra-usage.js": {
+      "@thyrox/source": "./src/commands/extra-usage/extra-usage.tsx",
       "types": "./dist/commands/extra-usage/extra-usage.d.ts",
       "default": "./src/commands/extra-usage/extra-usage.tsx"
     },
     "./commands/fast/fast.js": {
+      "@thyrox/source": "./src/commands/fast/fast.tsx",
       "types": "./dist/commands/fast/fast.d.ts",
       "default": "./src/commands/fast/fast.tsx"
     },
     "./commands/install/install.js": {
+      "@thyrox/source": "./src/commands/install/install.tsx",
       "types": "./dist/commands/install/install.d.ts",
       "default": "./src/commands/install/install.tsx"
     },
     "./commands/plugin/index.js": {
+      "@thyrox/source": "./src/commands/plugin/index.tsx",
       "types": "./dist/commands/plugin/index.d.ts",
       "default": "./src/commands/plugin/index.tsx"
     },
     "./commands/powerup/PowerupBanner.js": {
+      "@thyrox/source": "./src/commands/powerup/PowerupBanner.tsx",
       "types": "./dist/commands/powerup/PowerupBanner.d.ts",
       "default": "./src/commands/powerup/PowerupBanner.tsx"
     },
     "./api.js": {
+      "@thyrox/source": "./src/api.ts",
       "types": "./dist/api.d.ts",
       "default": "./src/api.ts"
     },
     "./argumentSubstitution.js": {
+      "@thyrox/source": "./src/argumentSubstitution.ts",
       "types": "./dist/argumentSubstitution.d.ts",
       "default": "./src/argumentSubstitution.ts"
     },
     "./commands/background/index.js": {
+      "@thyrox/source": "./src/commands/background/index.ts",
       "types": "./dist/commands/background/index.d.ts",
       "default": "./src/commands/background/index.ts"
     },
     "./commands/bridge/index.js": {
+      "@thyrox/source": "./src/commands/bridge/index.ts",
       "types": "./dist/commands/bridge/index.d.ts",
       "default": "./src/commands/bridge/index.ts"
     },
     "./commands/btw/index.js": {
+      "@thyrox/source": "./src/commands/btw/index.ts",
       "types": "./dist/commands/btw/index.d.ts",
       "default": "./src/commands/btw/index.ts"
     },
     "./commands/chrome/index.js": {
+      "@thyrox/source": "./src/commands/chrome/index.ts",
       "types": "./dist/commands/chrome/index.d.ts",
       "default": "./src/commands/chrome/index.ts"
     },
     "./commands/clear/conversation.js": {
+      "@thyrox/source": "./src/commands/clear/conversation.ts",
       "types": "./dist/commands/clear/conversation.d.ts",
       "default": "./src/commands/clear/conversation.ts"
     },
     "./commands/clear/index.js": {
+      "@thyrox/source": "./src/commands/clear/index.ts",
       "types": "./dist/commands/clear/index.d.ts",
       "default": "./src/commands/clear/index.ts"
     },
     "./commands/compact/index.js": {
+      "@thyrox/source": "./src/commands/compact/index.ts",
       "types": "./dist/commands/compact/index.d.ts",
       "default": "./src/commands/compact/index.ts"
     },
     "./commands/pause-memory": {
+      "@thyrox/source": "./src/commands/pause-memory/index.ts",
       "types": "./dist/commands/pause-memory/index.d.ts",
       "default": "./src/commands/pause-memory/index.ts"
     },
     "./commands/pause-memory/index.js": {
+      "@thyrox/source": "./src/commands/pause-memory/index.ts",
       "types": "./dist/commands/pause-memory/index.d.ts",
       "default": "./src/commands/pause-memory/index.ts"
     },
     "./commands/context/context-noninteractive.js": {
+      "@thyrox/source": "./src/commands/context/context-noninteractive.ts",
       "types": "./dist/commands/context/context-noninteractive.d.ts",
       "default": "./src/commands/context/context-noninteractive.ts"
     },
     "./commands/context/index.js": {
+      "@thyrox/source": "./src/commands/context/index.ts",
       "types": "./dist/commands/context/index.d.ts",
       "default": "./src/commands/context/index.ts"
     },
     "./commands/copy/index.js": {
+      "@thyrox/source": "./src/commands/copy/index.ts",
       "types": "./dist/commands/copy/index.d.ts",
       "default": "./src/commands/copy/index.ts"
     },
     "./commands/cost/index.js": {
+      "@thyrox/source": "./src/commands/cost/index.ts",
       "types": "./dist/commands/cost/index.d.ts",
       "default": "./src/commands/cost/index.ts"
     },
     "./commands/effort/index.js": {
+      "@thyrox/source": "./src/commands/effort/index.ts",
       "types": "./dist/commands/effort/index.d.ts",
       "default": "./src/commands/effort/index.ts"
     },
     "./commands/extra-usage/extra-usage-noninteractive.js": {
+      "@thyrox/source": "./src/commands/extra-usage/extra-usage-noninteractive.ts",
       "types": "./dist/commands/extra-usage/extra-usage-noninteractive.d.ts",
       "default": "./src/commands/extra-usage/extra-usage-noninteractive.ts"
     },
     "./commands/fast/index.js": {
+      "@thyrox/source": "./src/commands/fast/index.ts",
       "types": "./dist/commands/fast/index.d.ts",
       "default": "./src/commands/fast/index.ts"
     },
     "./commands/fork/index.js": {
+      "@thyrox/source": "./src/commands/fork/index.ts",
       "types": "./dist/commands/fork/index.d.ts",
       "default": "./src/commands/fork/index.ts"
     },
     "./commands/goal/index.js": {
+      "@thyrox/source": "./src/commands/goal/index.ts",
       "types": "./dist/commands/goal/index.d.ts",
       "default": "./src/commands/goal/index.ts"
     },
     "./commands/ide/index.js": {
+      "@thyrox/source": "./src/commands/ide/index.ts",
       "types": "./dist/commands/ide/index.d.ts",
       "default": "./src/commands/ide/index.ts"
     },
     "./commands/insights/insights.js": {
+      "@thyrox/source": "./src/commands/insights/insights.ts",
       "types": "./dist/commands/insights/insights.d.ts",
       "default": "./src/commands/insights/insights.ts"
     },
     "./commands/install-github-app/index.js": {
+      "@thyrox/source": "./src/commands/install-github-app/index.ts",
       "types": "./dist/commands/install-github-app/index.d.ts",
       "default": "./src/commands/install-github-app/index.ts"
     },
     "./commands/install-github-app/types.js": {
+      "@thyrox/source": "./src/commands/install-github-app/types.ts",
       "types": "./dist/commands/install-github-app/types.d.ts",
       "default": "./src/commands/install-github-app/types.ts"
     },
     "./commands/login/index.js": {
+      "@thyrox/source": "./src/commands/login/index.ts",
       "types": "./dist/commands/login/index.d.ts",
       "default": "./src/commands/login/index.ts"
     },
     "./commands/mcp/index.js": {
+      "@thyrox/source": "./src/commands/mcp/index.ts",
       "types": "./dist/commands/mcp/index.d.ts",
       "default": "./src/commands/mcp/index.ts"
     },
     "./commands/memory/index.js": {
+      "@thyrox/source": "./src/commands/memory/index.ts",
       "types": "./dist/commands/memory/index.d.ts",
       "default": "./src/commands/memory/index.ts"
     },
     "./commands/model/index.js": {
+      "@thyrox/source": "./src/commands/model/index.ts",
       "types": "./dist/commands/model/index.d.ts",
       "default": "./src/commands/model/index.ts"
     },
     "./commands/powerup/index.js": {
+      "@thyrox/source": "./src/commands/powerup/index.ts",
       "types": "./dist/commands/powerup/index.d.ts",
       "default": "./src/commands/powerup/index.ts"
     },
     "./commands/privacy-settings/index.js": {
+      "@thyrox/source": "./src/commands/privacy-settings/index.ts",
       "types": "./dist/commands/privacy-settings/index.d.ts",
       "default": "./src/commands/privacy-settings/index.ts"
     },
     "./commands/rate-limit-options/index.js": {
+      "@thyrox/source": "./src/commands/rate-limit-options/index.ts",
       "types": "./dist/commands/rate-limit-options/index.d.ts",
       "default": "./src/commands/rate-limit-options/index.ts"
     },
     "./commands/recap/index.js": {
+      "@thyrox/source": "./src/commands/recap/index.ts",
       "types": "./dist/commands/recap/index.d.ts",
       "default": "./src/commands/recap/index.ts"
     },
     "./commands/remote-env/index.js": {
+      "@thyrox/source": "./src/commands/remote-env/index.ts",
       "types": "./dist/commands/remote-env/index.d.ts",
       "default": "./src/commands/remote-env/index.ts"
     },
     "./commands/remoteControlServer/index.js": {
+      "@thyrox/source": "./src/commands/remoteControlServer/index.ts",
       "types": "./dist/commands/remoteControlServer/index.d.ts",
       "default": "./src/commands/remoteControlServer/index.ts"
     },
     "./commands/rename/index.js": {
+      "@thyrox/source": "./src/commands/rename/index.ts",
       "types": "./dist/commands/rename/index.d.ts",
       "default": "./src/commands/rename/index.ts"
     },
     "./commands/resume/index.js": {
+      "@thyrox/source": "./src/commands/resume/index.ts",
       "types": "./dist/commands/resume/index.d.ts",
       "default": "./src/commands/resume/index.ts"
     },
     "./commands/review/review.js": {
+      "@thyrox/source": "./src/commands/review/review.ts",
       "types": "./dist/commands/review/review.d.ts",
       "default": "./src/commands/review/review.ts"
     },
     "./commands/session/index.js": {
+      "@thyrox/source": "./src/commands/session/index.ts",
       "types": "./dist/commands/session/index.d.ts",
       "default": "./src/commands/session/index.ts"
     },
     "./commands/skills/index.js": {
+      "@thyrox/source": "./src/commands/skills/index.ts",
       "types": "./dist/commands/skills/index.d.ts",
       "default": "./src/commands/skills/index.ts"
     },
     "./commands/status/index.js": {
+      "@thyrox/source": "./src/commands/status/index.ts",
       "types": "./dist/commands/status/index.d.ts",
       "default": "./src/commands/status/index.ts"
     },
     "./commands/stop/index.js": {
+      "@thyrox/source": "./src/commands/stop/index.ts",
       "types": "./dist/commands/stop/index.d.ts",
       "default": "./src/commands/stop/index.ts"
     },
     "./commands/terminalSetup/index.js": {
+      "@thyrox/source": "./src/commands/terminalSetup/index.ts",
       "types": "./dist/commands/terminalSetup/index.d.ts",
       "default": "./src/commands/terminalSetup/index.ts"
     },
     "./commands/theme/index.js": {
+      "@thyrox/source": "./src/commands/theme/index.ts",
       "types": "./dist/commands/theme/index.d.ts",
       "default": "./src/commands/theme/index.ts"
     },
     "./commands/upgrade/index.js": {
+      "@thyrox/source": "./src/commands/upgrade/index.ts",
       "types": "./dist/commands/upgrade/index.d.ts",
       "default": "./src/commands/upgrade/index.ts"
     },
     "./commands/voice/index.js": {
+      "@thyrox/source": "./src/commands/voice/index.ts",
       "types": "./dist/commands/voice/index.d.ts",
       "default": "./src/commands/voice/index.ts"
     },
     "./commands/workflows/index.js": {
+      "@thyrox/source": "./src/commands/workflows/index.ts",
       "types": "./dist/commands/workflows/index.d.ts",
       "default": "./src/commands/workflows/index.ts"
     },
     "./exampleCommands.js": {
+      "@thyrox/source": "./src/exampleCommands.ts",
       "types": "./dist/exampleCommands.d.ts",
       "default": "./src/exampleCommands.ts"
     },
     "./runtime": {
+      "@thyrox/source": "./src/runtime.ts",
       "types": "./dist/runtime.d.ts",
       "default": "./src/runtime.ts"
     },
     "./runtime.js": {
+      "@thyrox/source": "./src/runtime.ts",
       "types": "./dist/runtime.d.ts",
       "default": "./src/runtime.ts"
     },
     "./skills/bundledSkills.js": {
+      "@thyrox/source": "./src/skills/bundledSkills.ts",
       "types": "./dist/skills/bundledSkills.d.ts",
       "default": "./src/skills/bundledSkills.ts"
     },
     "./skills/featureCheck.js": {
+      "@thyrox/source": "./src/skills/featureCheck.ts",
       "types": "./dist/skills/featureCheck.d.ts",
       "default": "./src/skills/featureCheck.ts"
     },
     "./skills/mcpSkills.js": {
+      "@thyrox/source": "./src/skills/mcpSkills.ts",
       "types": "./dist/skills/mcpSkills.d.ts",
       "default": "./src/skills/mcpSkills.ts"
     },
     "./slashCommandParsing.js": {
+      "@thyrox/source": "./src/slashCommandParsing.ts",
       "types": "./dist/slashCommandParsing.d.ts",
       "default": "./src/slashCommandParsing.ts"
     },
     "./stubs/emptyCommandStub.js": {
+      "@thyrox/source": "./src/stubs/emptyCommandStub.ts",
       "types": "./dist/stubs/emptyCommandStub.d.ts",
       "default": "./src/stubs/emptyCommandStub.ts"
     },
     "./stubs/resetLimitsStub.js": {
+      "@thyrox/source": "./src/stubs/resetLimitsStub.ts",
       "types": "./dist/stubs/resetLimitsStub.d.ts",
       "default": "./src/stubs/resetLimitsStub.ts"
     },
     "./stubs/stubCommand.js": {
+      "@thyrox/source": "./src/stubs/stubCommand.ts",
       "types": "./dist/stubs/stubCommand.d.ts",
       "default": "./src/stubs/stubCommand.ts"
     },
     "./types": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/types.d.ts",
       "default": "./src/types.ts"
     },
     "./types.js": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/types.d.ts",
       "default": "./src/types.ts"
     }
@@ -336,29 +417,29 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@ant/claude-for-chrome-mcp": "workspace:*",
+    "@ant/claude-for-chrome-mcp": "1.0.0",
     "@anthropic-ai/sdk": "^0.124.0",
-    "@anthropic/ink": "workspace:*",
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/bridge": "workspace:*",
-    "@thyrox/cli": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/ide": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/mcp-runtime": "workspace:*",
-    "@thyrox/memory": "workspace:*",
-    "@thyrox/output": "workspace:*",
-    "@thyrox/permission": "workspace:*",
-    "@thyrox/provider": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*",
-    "@thyrox/swarm": "workspace:*",
-    "@thyrox/teleport": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*",
-    "@thyrox/updater": "workspace:*",
-    "@thyrox/voice": "workspace:*",
+    "@anthropic/ink": "1.0.0",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/bridge": "0.1.0",
+    "@thyrox/cli": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/ide": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/mcp-runtime": "0.1.0",
+    "@thyrox/memory": "0.1.0",
+    "@thyrox/output": "0.1.0",
+    "@thyrox/permission": "0.1.0",
+    "@thyrox/provider": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/storage": "0.1.0",
+    "@thyrox/swarm": "0.1.0",
+    "@thyrox/teleport": "0.1.0",
+    "@thyrox/tool-registry": "0.1.0",
+    "@thyrox/updater": "0.1.0",
+    "@thyrox/voice": "0.0.0",
     "ignore": "^7.0.8"
   }
 }

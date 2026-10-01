@@ -1,6 +1,6 @@
 /**
  * Puerto de `ccnmt: packages/ide/src/hooks/useIdeSelection.ts`.
- * `lazySchema` — ver la nota de `useIdeLogging.ts`.
+ * `lazySchema` viene de `@thyrox/config/lazySchema`.
  */
 import { useEffect, useRef } from 'react'
 import { z } from 'zod/v4'
@@ -8,10 +8,8 @@ import type {
   ConnectedMCPServer,
   MCPServerConnection,
 } from '@thyrox/mcp-runtime/types.js'
-import {
-  lazySchema,
-  requireLocalObservabilityLogging,
-} from '../internal/pendingCrossPackageDeps.js'
+import { lazySchema } from '@thyrox/config/lazySchema'
+import { requireLocalObservabilityLogging } from '../internal/pendingCrossPackageDeps.js'
 import { getConnectedIdeClient } from '../ide.js'
 
 export type SelectionPoint = {

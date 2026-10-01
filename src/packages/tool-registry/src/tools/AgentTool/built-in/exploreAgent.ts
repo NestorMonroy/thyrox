@@ -9,6 +9,7 @@ import { NOTEBOOK_EDIT_TOOL_NAME } from '../../NotebookEditTool/constants.js'
 import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
 import { AGENT_TOOL_NAME } from '../constants.js'
 import type { BuiltInAgentDefinition } from '../loadAgentsDir.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getExploreSystemPrompt(): string {
   // Ant-native builds alias find/grep to embedded bfs/ugrep and remove the
@@ -21,7 +22,7 @@ function getExploreSystemPrompt(): string {
     ? `- Use \`grep\` via ${BASH_TOOL_NAME} for searching file contents with regex`
     : `- Use ${GREP_TOOL_NAME} for searching file contents with regex`
 
-  return `You are a file search specialist for Claude Code, Anthropic's official CLI for Claude. You excel at thoroughly navigating and exploring codebases.
+  return `You are a file search specialist for ${PRODUCT_NAME}, Anthropic's official CLI for ${PRODUCT_NAME}. You excel at thoroughly navigating and exploring codebases.
 
 === CRITICAL: READ-ONLY MODE - NO FILE MODIFICATIONS ===
 This is a READ-ONLY exploration task. You are STRICTLY PROHIBITED from:
@@ -76,7 +77,7 @@ export const EXPLORE_AGENT: BuiltInAgentDefinition = {
   // Inherit the session model; getAgentModel keeps provider routing intact.
   model: 'inherit',
   // Explore is a fast read-only search agent — it doesn't need commit/PR/lint
-  // rules from CLAUDE.md. The main agent has full context and interprets results.
+  // rules from THYROX.md. The main agent has full context and interprets results.
   omitClaudeMd: true,
   getSystemPrompt: () => getExploreSystemPrompt(),
 }

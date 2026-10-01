@@ -1,0 +1,66 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  dictionaries-common emacsen-common hunspell-en-us libtext-iconv-perl
+Suggested packages:
+  wordlist openoffice.org-hunspell | openoffice.org-core
+The following NEW packages will be installed:
+  dictionaries-common emacsen-common hunspell hunspell-en-us
+  libtext-iconv-perl
+0 upgraded, 5 newly installed, 0 to remove and 239 not upgraded.
+Need to get 561 kB of archives.
+After this operation, 1965 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libtext-iconv-perl amd64 1.7-8build3 [13.5 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 emacsen-common all 3.0.5 [12.1 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 dictionaries-common all 1.29.7 [188 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/main amd64 hunspell-en-us all 1:2020.12.07-2 [280 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/universe amd64 hunspell amd64 1.7.2+really1.7.2-10build3 [67.6 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 561 kB in 1s (408 kB/s)
+Selecting previously unselected package libtext-iconv-perl:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 54607 files and directories currently installed.)
+Preparing to unpack .../libtext-iconv-perl_1.7-8build3_amd64.deb ...
+Unpacking libtext-iconv-perl:amd64 (1.7-8build3) ...
+Selecting previously unselected package emacsen-common.
+Preparing to unpack .../emacsen-common_3.0.5_all.deb ...
+Unpacking emacsen-common (3.0.5) ...
+Selecting previously unselected package dictionaries-common.
+Preparing to unpack .../dictionaries-common_1.29.7_all.deb ...
+Adding 'diversion of /usr/share/dict/words to /usr/share/dict/words.pre-dictionaries-common by dictionaries-common'
+Unpacking dictionaries-common (1.29.7) ...
+Selecting previously unselected package hunspell-en-us.
+Preparing to unpack .../hunspell-en-us_1%3a2020.12.07-2_all.deb ...
+Unpacking hunspell-en-us (1:2020.12.07-2) ...
+Selecting previously unselected package hunspell.
+Preparing to unpack .../hunspell_1.7.2+really1.7.2-10build3_amd64.deb ...
+Unpacking hunspell (1.7.2+really1.7.2-10build3) ...
+Setting up libtext-iconv-perl:amd64 (1.7-8build3) ...
+Setting up emacsen-common (3.0.5) ...
+Setting up dictionaries-common (1.29.7) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+Setting up hunspell-en-us (1:2020.12.07-2) ...
+Setting up hunspell (1.7.2+really1.7.2-10build3) ...
+Processing triggers for postgresql-common (257build1.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+Building PostgreSQL dictionaries from installed myspell/hunspell packages...
+  en_us
+Removing obsolete dictionary files:
+Processing triggers for dictionaries-common (1.29.7) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+thyrox_toolchain: hunspell con '' rechaza '', que tiene que aceptar.

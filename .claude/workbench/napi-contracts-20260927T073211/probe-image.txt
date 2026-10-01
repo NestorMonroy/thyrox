@@ -1,0 +1,28 @@
+{
+ "meta": {
+  "width": 8,
+  "height": 6,
+  "format": "png"
+ },
+ "resizedPngMagic": "89504e47",
+ "resizedMeta": {
+  "width": 4,
+  "height": 3,
+  "format": "png"
+ },
+ "jpegMagic": "ffd8ff",
+ "jpegMeta": {
+  "width": 8,
+  "height": 6,
+  "format": "jpg"
+ },
+ "webpMagic": "WEBP",
+ "noEnlarge": {
+  "width": 8,
+  "height": 6,
+  "format": "png"
+ },
+ "garbage": "rechaza: Error: Unable to determine image format",
+ "garbageBuf": "rechaza: Error: Unable to determine image format",
+ "clipboardModule": null
+}

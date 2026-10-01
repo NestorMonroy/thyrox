@@ -1,0 +1,11 @@
+== 26: un bootstrap caído rompe la importación
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the bootstrap names the account and its organization; a failed one leaves them empty [60.23ms]
+ 10 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+?? src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+ 11 pass
+ 0 fail
+__BG_EXIT__=0

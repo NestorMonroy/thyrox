@@ -8,20 +8,12 @@
  * borrado explícito o auto-expiración pasado
  * `DEFAULT_CRON_JITTER_CONFIG.recurringMaxAgeMs`.
  *
- * Antes era un porte PARCIAL, y su premisa era una sola: las ocho funciones
- * de E/S dependen de `getAgentHostBindings()`, «inexistente en este árbol».
- * Hoy es falsa — `host.ts:266` lo exporta.
- *
- * Y la pregunta que de verdad importaba no era si el símbolo existe sino si
- * da los miembros que esas ocho consultan. Los cinco están, y **ninguno vive
- * en `host.ts`**, que es donde el docstring anterior los buscaba: cuatro los
- * declara `contracts.ts` —`getProjectRoot`, `getSessionCronTasks`,
- * `addSessionCronTask`, `removeSessionCronTasks`— y `logDebug` es de
- * `host.ts`. Un grep sobre `host.ts` da cero para los cuatro **en los dos
- * árboles**: el instrumento equivocado habría confirmado el bloqueo.
- *
- * Los cinco son opcionales y se consultan con encadenado opcional más
- * respaldo, así que el porte no exige que el anfitrión los instale.
+ * Las ocho funciones de E/S consultan cinco miembros de
+ * `getAgentHostBindings()`: cuatro los declara `contracts.ts`
+ * —`getProjectRoot`, `getSessionCronTasks`, `addSessionCronTask`,
+ * `removeSessionCronTasks`— y `logDebug` es de `host.ts`. Los cinco son
+ * opcionales y se consultan con encadenado opcional más respaldo, así que el
+ * porte no exige que el anfitrión los instale.
  */
 
 import { randomUUID } from 'crypto'
@@ -493,7 +485,7 @@ export function oneShotJitteredNextCronRunMs(
  * Una tarea está "perdida" cuando su próxima corrida agendada (calculada
  * desde createdAt) está en el pasado. Se muestra al usuario al arrancar.
  * Funciona tanto para one-shots como para recurrentes — una tarea
- * recurrente cuya ventana pasó mientras Claude estaba caído sigue estando
+ * recurrente cuya ventana pasó mientras thyrox estaba caído sigue estando
  * "perdida".
  */
 export function findMissedTasks(tasks: CronTask[], nowMs: number): CronTask[] {

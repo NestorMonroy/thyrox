@@ -14,7 +14,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runCli } from '../src/entry/main.ts'
+import { runCli } from '../src/entry/run-cli.ts'
 import type { AssistantTurn, ContentBlock } from '@thyrox/agent/loop/types'
 
 const usage = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }
@@ -66,7 +66,7 @@ async function run(flags: string[]): Promise<string> {
   const transcriptDir = join(d, 'transcripts')
 
   // `--cwd d` aísla el prompt de sistema del árbol real: sin esto, el
-  // system prompt embebe el CLAUDE.md/reglas de ESTA sesión, que no aporta
+  // system prompt embebe el THYROX.md/reglas de ESTA sesión, que no aporta
   // nada al control y sólo alarga el transcript a comparar.
   //
   // `--grabacion` es el nombre real de la bandera ya declarada en

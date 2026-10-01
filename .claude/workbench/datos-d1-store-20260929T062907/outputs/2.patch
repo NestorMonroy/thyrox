@@ -1,0 +1,371 @@
+diff --git a/.env.example b/.env.example
+index 7d5223ff..8cb09d1f 100644
+--- a/.env.example
++++ b/.env.example
+@@ -796,6 +796,12 @@ THYROX_OBSERVABILITY_DATABASE_URL=
+ # Sólo pruebas: la base PostgreSQL donde corre el contrato del store. Sin ella,
+ # esa suite se declara NO MEDIDA en vez de pasar.
+ THYROX_TEST_POSTGRES_URL=
++# Sólo pruebas: la base PostgreSQL donde corre el contrato de @thyrox/store
++# (src/packages/store/testing/postgresHarness.ts, src/packages/store/__tests__/contract.test.ts).
++# Sin ella, esa suite deja constancia con test.todo en vez de pasar sin haberla
++# tocado — salvo que THYROX_STORE_REQUIRE_POSTGRES=1 la exija, y entonces falla.
++THYROX_STORE_TEST_POSTGRES_URL=
++THYROX_STORE_REQUIRE_POSTGRES=
+ 
+ # --- Claves leídas por el código, sin valor propio del consumidor --------
+ # Cada grupo lleva el archivo que la lee primero. Vacío = rige el default que
+diff --git a/src/packages/store/__tests__/contract.test.ts b/src/packages/store/__tests__/contract.test.ts
+new file mode 100644
+index 00000000..c4ebe18b
+--- /dev/null
++++ b/src/packages/store/__tests__/contract.test.ts
+@@ -0,0 +1,137 @@
++/**
++ * El contrato de `sql.ts`, el mismo conjunto de casos contra cada motor: lo
++ * que `jsonParam`/`readJson`, `readTimestamp`, `readId`, una transacción y
++ * `openByUrl` prometen que viaja igual en SQLite y en PostgreSQL. La misma
++ * forma que `errorStoreContract.ts` ya usa para la base de errores, un nivel
++ * más abajo — aquí es `sql.ts`, no un store completo, lo que se mide.
++ *
++ * SQLite corre siempre, en memoria. PostgreSQL corre si
++ * `THYROX_STORE_TEST_POSTGRES_URL` está declarada; si no, la suite lo dice en
++ * vez de pasar en verde sin haber tocado PostgreSQL — y falla de verdad sólo
++ * si `THYROX_STORE_REQUIRE_POSTGRES=1` exige que corra.
++ */
++import { SQL } from 'bun'
++import { describe, expect, test } from 'bun:test'
++
++import { type Dialect, jsonParam, openByUrl, readId, readJson, readTimestamp } from '../sql.ts'
++import { resolvePostgresTestUrl, withPostgresSchema } from '../testing/postgresHarness.ts'
++
++const AT = '2026-09-28T17:40:00.000Z'
++const PAYLOAD: Record<string, unknown> = { a: 1, nested: { list: [1, 'x'] } }
++
++type Engine = { sql: SQL; dialect: Dialect }
++
++/** El DDL de la tabla de prueba, una variante por motor — como `migrations.ts`. */
++function probeTableDdl(dialect: Dialect): string {
++  return dialect === 'postgres'
++    ? `CREATE TABLE contract_probe (
++        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
++        payload JSONB NOT NULL,
++        at TIMESTAMPTZ NOT NULL
++      )`
++    : `CREATE TABLE contract_probe (
++        id INTEGER PRIMARY KEY AUTOINCREMENT,
++        payload TEXT NOT NULL,
++        at TEXT NOT NULL
++      )`
++}
++
++/** Los mismos casos, registrados una vez por motor vía `withEngine`. */
++function defineStoreContract(name: string, withEngine: (body: (engine: Engine) => Promise<void>) => void): void {
++  describe(`contrato de sql.ts — ${name}`, () => {
++    test('jsonParam/readJson e id autoincremental (readId) hacen ida y vuelta', async () => {
++      await withEngine(async ({ sql, dialect }) => {
++        await sql.unsafe(probeTableDdl(dialect))
++        const [row] = (await sql`
++          INSERT INTO contract_probe (payload, at) VALUES (${jsonParam(dialect, PAYLOAD)}, ${AT})
++          RETURNING id, payload`) as { id: unknown; payload: unknown }[]
++        expect(readId(row!.id)).toBeGreaterThan(0)
++        expect(readJson(row!.payload)).toEqual(PAYLOAD)
++      })
++    })
++
++    test('readTimestamp normaliza lo que el motor devuelve', async () => {
++      await withEngine(async ({ sql, dialect }) => {
++        await sql.unsafe(probeTableDdl(dialect))
++        await sql`INSERT INTO contract_probe (payload, at) VALUES (${jsonParam(dialect, PAYLOAD)}, ${AT})`
++        const [row] = (await sql`SELECT at FROM contract_probe`) as { at: unknown }[]
++        expect(readTimestamp(row!.at)).toBe(AT)
++      })
++    })
++
++    test('una transacción que lanza no deja fila — rollback', async () => {
++      await withEngine(async ({ sql, dialect }) => {
++        await sql.unsafe(probeTableDdl(dialect))
++        await expect(
++          sql.begin(async tx => {
++            await tx`INSERT INTO contract_probe (payload, at) VALUES (${jsonParam(dialect, PAYLOAD)}, ${AT})`
++            throw new Error('rollback me')
++          }),
++        ).rejects.toThrow('rollback me')
++        const rows = (await sql`SELECT * FROM contract_probe`) as unknown[]
++        expect(rows).toHaveLength(0)
++      })
++    })
++
++    test('una transacción que no lanza persiste — commit', async () => {
++      await withEngine(async ({ sql, dialect }) => {
++        await sql.unsafe(probeTableDdl(dialect))
++        await sql.begin(async tx => {
++          await tx`INSERT INTO contract_probe (payload, at) VALUES (${jsonParam(dialect, PAYLOAD)}, ${AT})`
++        })
++        const rows = (await sql`SELECT * FROM contract_probe`) as unknown[]
++        expect(rows).toHaveLength(1)
++      })
++    })
++
++    test('capabilities de openByUrl: extensionsLoadable sólo en postgres (H-THYROX-238)', async () => {
++      await withEngine(async ({ dialect }) => {
++        const url = dialect === 'postgres' ? 'postgres://u@h/db' : 'sqlite://:memory:'
++        expect(openByUrl(url).capabilities).toEqual({ dialect, extensionsLoadable: dialect === 'postgres' })
++      })
++    })
++  })
++}
++
++defineStoreContract('sqlite', async body => {
++  const sql = new SQL('sqlite://:memory:')
++  try {
++    await body({ sql, dialect: 'sqlite' })
++  } finally {
++    await sql.close()
++  }
++})
++
++let postgresUrl: string | null = null
++let postgresUrlError: Error | null = null
++try {
++  postgresUrl = resolvePostgresTestUrl(process.env)
++} catch (e) {
++  postgresUrlError = e instanceof Error ? e : new Error(String(e))
++}
++
++if (postgresUrlError) {
++  // La variable está declarada pero mal escrita: eso no es "no medido", es un
++  // dato roto, y se dice en rojo en vez de tratarlo como ausencia silenciosa.
++  const error = postgresUrlError
++  describe('contrato de sql.ts — postgres', () => {
++    test(`THYROX_STORE_TEST_POSTGRES_URL inválida: ${error.message}`, () => {
++      throw error
++    })
++  })
++} else if (postgresUrl) {
++  const url = postgresUrl
++  defineStoreContract('postgres', async body => {
++    await withPostgresSchema(url, async sql => body({ sql, dialect: 'postgres' }))
++  })
++} else if (process.env.THYROX_STORE_REQUIRE_POSTGRES === '1') {
++  describe('contrato de sql.ts — postgres', () => {
++    test('THYROX_STORE_REQUIRE_POSTGRES=1 exige el contrato en postgres, y THYROX_STORE_TEST_POSTGRES_URL no está declarada', () => {
++      throw new Error('THYROX_STORE_REQUIRE_POSTGRES=1 exige THYROX_STORE_TEST_POSTGRES_URL, que no está declarada')
++    })
++  })
++} else {
++  describe('contrato de sql.ts — postgres', () => {
++    test.todo('NO MEDIDO: declara THYROX_STORE_TEST_POSTGRES_URL para correr el contrato en postgres', () => {})
++  })
++}
+diff --git a/src/packages/store/__tests__/postgresHarness.test.ts b/src/packages/store/__tests__/postgresHarness.test.ts
+new file mode 100644
+index 00000000..239a2db2
+--- /dev/null
++++ b/src/packages/store/__tests__/postgresHarness.test.ts
+@@ -0,0 +1,119 @@
++/**
++ * El arnés de PostgreSQL de `@thyrox/store`: de dónde sale la URL de prueba,
++ * y las ramas de `withPostgresSchema` (crear, correr, borrar — también al
++ * lanzar), probadas con una conexión inyectada, sin servidor.
++ */
++import type { SQL } from 'bun'
++import { describe, expect, test } from 'bun:test'
++
++import { resolvePostgresTestUrl, TEST_POSTGRES_URL_VAR, withPostgresSchema } from '../testing/postgresHarness.ts'
++
++describe('resolvePostgresTestUrl', () => {
++  test('sin la variable, da null', () => {
++    expect(resolvePostgresTestUrl({})).toBeNull()
++  })
++
++  test('con la variable en blanco, da null', () => {
++    expect(resolvePostgresTestUrl({ [TEST_POSTGRES_URL_VAR]: '   ' })).toBeNull()
++  })
++
++  test('con una URL postgres, la devuelve recortada', () => {
++    expect(resolvePostgresTestUrl({ [TEST_POSTGRES_URL_VAR]: '  postgres://u@h/db  ' })).toBe('postgres://u@h/db')
++  })
++
++  test('postgresql:// también cuenta como postgres', () => {
++    expect(resolvePostgresTestUrl({ [TEST_POSTGRES_URL_VAR]: 'postgresql://u@h/db' })).toBe('postgresql://u@h/db')
++  })
++
++  // CONTROL: sin la comprobación de dialecto, cualquier valor no vacío se
++  // devolvería tal cual en vez de rechazarse por no ser una URL postgres.
++  test('con una URL que no es postgres, rechaza nombrando la variable y sin las credenciales', () => {
++    expect(() => resolvePostgresTestUrl({ [TEST_POSTGRES_URL_VAR]: 'sqlite://x' })).toThrow(TEST_POSTGRES_URL_VAR)
++    expect(() => resolvePostgresTestUrl({ [TEST_POSTGRES_URL_VAR]: 'postgres://user:secret@h/db-mal-escrita' }))
++      .not.toThrow(/secret/)
++  })
++})
++
++/** Una conexión falsa que sólo registra las llamadas que `withPostgresSchema` hace. */
++function fakeConnect(calls: string[]): (url: string) => SQL {
++  return (url: string) => {
++    calls.push(`CONNECT ${url}`)
++    return {
++      unsafe: async (query: string) => {
++        calls.push(query)
++        return []
++      },
++      close: async () => {
++        calls.push('CLOSE')
++      },
++    } as unknown as SQL
++  }
++}
++
++describe('withPostgresSchema', () => {
++  test('crea el esquema, fija el search_path, corre body con esa conexión y borra el esquema al terminar', async () => {
++    const calls: string[] = []
++    const result = await withPostgresSchema(
++      'postgres://u@h/db',
++      async sql => {
++        calls.push('BODY')
++        expect(typeof (sql as unknown as { unsafe: unknown }).unsafe).toBe('function')
++        return 'ok'
++      },
++      { connect: fakeConnect(calls), randomSuffix: () => 'abc123' },
++    )
++    expect(result).toBe('ok')
++    expect(calls).toEqual([
++      'CONNECT postgres://u@h/db',
++      'CREATE SCHEMA thyrox_test_abc123',
++      'SET search_path TO thyrox_test_abc123',
++      'BODY',
++      'DROP SCHEMA IF EXISTS thyrox_test_abc123 CASCADE',
++      'CLOSE',
++    ])
++  })
++
++  // CONTROL: sin el `finally`, un `body` que lanza dejaría el esquema sin
++  // borrar y la conexión sin cerrar — este caso caería si se retira.
++  test('si body lanza, el esquema se borra y la conexión se cierra igual, y el error original viaja', async () => {
++    const calls: string[] = []
++    const boom = new Error('boom')
++    await expect(
++      withPostgresSchema(
++        'postgres://u@h/db',
++        async () => {
++          throw boom
++        },
++        { connect: fakeConnect(calls), randomSuffix: () => 'xyz' },
++      ),
++    ).rejects.toBe(boom)
++    expect(calls).toEqual([
++      'CONNECT postgres://u@h/db',
++      'CREATE SCHEMA thyrox_test_xyz',
++      'SET search_path TO thyrox_test_xyz',
++      'DROP SCHEMA IF EXISTS thyrox_test_xyz CASCADE',
++      'CLOSE',
++    ])
++  })
++
++  test('sin randomSuffix inyectado, dos llamadas usan nombres de esquema distintos', async () => {
++    const calls: string[] = []
++    await withPostgresSchema('postgres://u@h/db', async () => {}, { connect: fakeConnect(calls) })
++    await withPostgresSchema('postgres://u@h/db', async () => {}, { connect: fakeConnect(calls) })
++    const schemaCreates = calls.filter(call => call.startsWith('CREATE SCHEMA'))
++    expect(schemaCreates).toHaveLength(2)
++    expect(schemaCreates[0]).not.toBe(schemaCreates[1])
++    expect(schemaCreates[0]).toMatch(/^CREATE SCHEMA thyrox_test_[0-9a-f]+$/)
++    expect(schemaCreates[1]).toMatch(/^CREATE SCHEMA thyrox_test_[0-9a-f]+$/)
++  })
++
++  // CONTROL: sin la comprobación de dialecto al principio, `connect` se
++  // habría llamado con una URL sqlite antes de rechazarla.
++  test('una URL que no es postgres rehúsa antes de conectar', async () => {
++    const calls: string[] = []
++    await expect(
++      withPostgresSchema('sqlite://:memory:', async () => {}, { connect: fakeConnect(calls) }),
++    ).rejects.toThrow(/postgres/)
++    expect(calls).toEqual([])
++  })
++})
+diff --git a/src/packages/store/testing/postgresHarness.ts b/src/packages/store/testing/postgresHarness.ts
+new file mode 100644
+index 00000000..3a27e144
+--- /dev/null
++++ b/src/packages/store/testing/postgresHarness.ts
+@@ -0,0 +1,80 @@
++/**
++ * El arnés de PostgreSQL para las pruebas de `@thyrox/store`: de dónde sale
++ * la URL de prueba, y el esquema de usar y tirar en el que corre cada caso.
++ *
++ * Ningún caso corre en el esquema `public`: dos pruebas en paralelo, o una
++ * que deja basura, no se pisan porque cada una crea el suyo y lo borra al
++ * salir — el mismo problema que `errorStore.postgres.test.ts` resolvía
++ * repitiendo el mismo bloque en cada archivo; aquí vive una sola vez.
++ */
++import { SQL } from 'bun'
++
++import { dialectOf } from '../sql.ts'
++
++type Env = Record<string, string | undefined>
++
++/** La variable que declara la base PostgreSQL de pruebas, sin valor propio del proveedor. */
++export const TEST_POSTGRES_URL_VAR = 'THYROX_STORE_TEST_POSTGRES_URL'
++
++/** Enmascara las credenciales de una URL antes de que viajen a un mensaje de error. */
++function maskCredentials(url: string): string {
++  return url.replace(/\/\/[^@/]*@/, '//***@')
++}
++
++/**
++ * La URL de la base PostgreSQL de pruebas, o `null` si no se declaró.
++ *
++ * `null` es «no medido», no «falló»: una suite que lo reciba se declara sin
++ * correr en vez de pasar en verde sin haber tocado PostgreSQL. Una URL
++ * declarada que no es de PostgreSQL sí lanza — eso no es ausencia, es un dato
++ * mal escrito, y callarlo ocultaría el error de configuración.
++ */
++export function resolvePostgresTestUrl(env: Env = process.env): string | null {
++  const raw = env[TEST_POSTGRES_URL_VAR]?.trim()
++  if (!raw) return null
++  if (dialectOf(raw) !== 'postgres') {
++    throw new Error(`${TEST_POSTGRES_URL_VAR}='${maskCredentials(raw)}' no es una URL postgres:// ni postgresql://`)
++  }
++  return raw
++}
++
++export type PostgresSchemaDeps = {
++  /** Sustituye la apertura real de la conexión — para probar las ramas sin un servidor. */
++  connect?: (url: string) => SQL
++  /** Sustituye el sufijo aleatorio del nombre del esquema — para hacerlo determinista en pruebas. */
++  randomSuffix?: () => string
++}
++
++const SCHEMA_PREFIX = 'thyrox_test_'
++
++function defaultRandomSuffix(): string {
++  return crypto.randomUUID().replaceAll('-', '')
++}
++
++/**
++ * Corre `body` contra un esquema de PostgreSQL nuevo, de nombre único, con el
++ * `search_path` ya apuntando a él. El esquema se borra con `DROP SCHEMA …
++ * CASCADE` al terminar, también si `body` lanza, para que ninguna prueba deje
++ * basura ni dependa del orden en que corrieron las demás.
++ */
++export async function withPostgresSchema<T>(
++  url: string,
++  body: (sql: SQL) => Promise<T>,
++  deps: PostgresSchemaDeps = {},
++): Promise<T> {
++  if (dialectOf(url) !== 'postgres') {
++    throw new Error(`withPostgresSchema espera una URL postgres://, recibió '${maskCredentials(url)}'`)
++  }
++  const connect = deps.connect ?? ((connectionUrl: string) => new SQL(connectionUrl))
++  const randomSuffix = deps.randomSuffix ?? defaultRandomSuffix
++  const schema = `${SCHEMA_PREFIX}${randomSuffix()}`
++  const sql = connect(url)
++  try {
++    await sql.unsafe(`CREATE SCHEMA ${schema}`)
++    await sql.unsafe(`SET search_path TO ${schema}`)
++    return await body(sql)
++  } finally {
++    await sql.unsafe(`DROP SCHEMA IF EXISTS ${schema} CASCADE`)
++    await sql.close()
++  }
++}

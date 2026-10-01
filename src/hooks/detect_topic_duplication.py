@@ -90,7 +90,7 @@ TOKEN = re.compile(r"[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+")
 FREQUENCY_CAP = 5
 
 #: Cuántos tokens se reportan como máximo, para no saturar el presupuesto de
-#: caracteres que ``pretooluse_dispatch`` reparte entre los ocho detectores.
+#: caracteres que ``tool_use_preflight`` reparte entre los ocho detectores.
 MAX_TOKENS_REPORTED = 5
 
 

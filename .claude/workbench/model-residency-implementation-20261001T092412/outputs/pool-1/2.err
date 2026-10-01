@@ -1,0 +1,2 @@
+thyrox -p: 400 {"type":"error","request_id":"3a9c7950-7d06-4ddf-a64e-ad107a35083d","error":{"type":"invalid_request_error","message":"ninguna llamada suspendida espera el tool_use toolu_01UX9S1G6cvFqYr8W8sk1TeY; el turno vivo espera: toolu_c0580450-6e0c-4dff-8ae6-cec4e941bf96"}}
+drenaje: la sesión quedó vacía sola

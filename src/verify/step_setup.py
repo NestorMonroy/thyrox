@@ -12,7 +12,7 @@ política de aceptación. El entorno es el árbol, que ya versiona git.
 
 `setup_record` es puro: describe y da un `setup_id` estable (sha256 del
 registro canónico, sin la ruta del prompt). `register` lo guarda una vez por
-corrida en `setups.jsonl`, y cada fila del ledger lleva sólo el id.
+ejecución en `setups.jsonl`, y cada fila del ledger lleva sólo el id.
 
 Ciega a: la versión del binario de `claude` y de `tsc`, que el comando no
 fija; un cambio ahí no cambia el id.
@@ -24,6 +24,8 @@ import hashlib
 import json
 import re
 from pathlib import Path
+
+from session import shared_lock
 
 SETUPS = "setups.jsonl"
 
@@ -42,14 +44,22 @@ def setup_record(*, route: str, model: str, scaffold: Path, verifier: list[str],
     return {**record, "setup_id": _sha256(canonical.encode())[:16]}
 
 
+#: Reintentos del lock de `setups.jsonl`: la sección crítica es un leer y un
+#: añadir, así que un escritor espera a otro, no a un paso entero.
+REGISTER_RETRIES = 20
+
+
 def register(run: Path, record: dict) -> str:
-    """Guarda el registro en la corrida si su id no está; devuelve el id."""
+    """Guarda el registro en la ejecución si su id no está; devuelve el id.
+
+    Es leer-comprobar-añadir, así que va bajo el lock del archivo: sin él,
+    ocho escritores concurrentes dejaron 54 filas para 30 setups."""
     path = run / SETUPS
-    known = {json.loads(line)["setup_id"] for line in path.read_text().splitlines() if line.strip()} \
-        if path.exists() else set()
-    if record["setup_id"] not in known:
-        with path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    with shared_lock.held(path, run_id=str(run), retries=REGISTER_RETRIES, min_wait_s=0.05, max_wait_s=1.0):
+        known = {json.loads(line)["setup_id"] for line in path.read_text().splitlines() if line.strip()} \
+            if path.exists() else set()
+        if record["setup_id"] not in known:
+            shared_lock.append_line(path, json.dumps(record, ensure_ascii=False))
     return record["setup_id"]
 
 

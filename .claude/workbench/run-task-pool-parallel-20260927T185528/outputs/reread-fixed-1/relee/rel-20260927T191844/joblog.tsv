@@ -1,0 +1,5 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790536724.992	     2.020	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-fixed-1/relee/rel-20260927T191844 rel-20260927T191844 rel-001
+2	:	1790536725.996	     2.019	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-fixed-1/relee/rel-20260927T191844 rel-20260927T191844 rel-002
+3	:	1790536725.999	     2.024	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-fixed-1/relee/rel-20260927T191844 rel-20260927T191844 rel-003
+4	:	1790536727.017	     2.021	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-fixed-1/relee/rel-20260927T191844 rel-20260927T191844 rel-004

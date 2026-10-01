@@ -49,6 +49,7 @@ import {
 } from './pluginDetailsHelpers.js'
 import type { ViewState as ParentViewState } from './types.js'
 import { usePagination } from './usePagination.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   error: string | null
@@ -889,7 +890,7 @@ function EmptyStateMessage({
       return (
         <>
           <Text dimColor>Git is required to install marketplaces.</Text>
-          <Text dimColor>Please install git and restart Claude Code.</Text>
+          <Text dimColor>Please install git and restart {PRODUCT_NAME}.</Text>
         </>
       )
     case 'all-blocked-by-policy':

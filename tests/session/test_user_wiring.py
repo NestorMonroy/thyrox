@@ -43,6 +43,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "user_wiring", HERE / "src" / "session" / "user_wiring.py")
+assert spec is not None and spec.loader is not None
 w = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(w)
 
@@ -66,7 +67,7 @@ def check(etiqueta, esperado, obtenido):
 #: `task_id` y `task_subject` (medido en `_references/claude-code-bin/2.1.266`).
 #:
 #: `PreToolUse` entra el 2026-09-24: los diez detectores de
-#: `pretooluse_dispatch.py` existian y NINGUN cableado los declaraba, asi que el
+#: `tool_use_preflight.py` existian y NINGUN cableado los declaraba, asi que el
 #: aviso de comando largo en primer plano no podia dispararse en ninguna sesion.
 EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SessionStart", "SubagentStart",
                       "SubagentStop", "TaskCompleted", "TaskCreated"]
@@ -84,9 +85,9 @@ check("el matcher cubre Bash y Agent, los dos despachos que se miden",
       True, {"Bash", "Agent"} <= _matcher)
 check("el matcher cubre la escritura y la lectura de archivos",
       True, {"Write", "Edit", "Read"} <= _matcher)
-check("el comando es el despachador del proveedor", True,
-      any(h["command"].endswith("src/hooks/pretooluse_dispatch.py")
-          for h in _pre.get("hooks", [])))
+check("el comando es el preflight del proveedor, por su envoltorio de bin/",
+      True, any(h["command"].endswith("bin/tool_use_preflight")
+                for h in _pre.get("hooks", [])))
 
 # El comando cableado corre desde el cwd de la sesion y sin el PYTHONPATH del
 # corredor. Medido 2026-09-24: asi, 4 de 17 detectores no cargaban y el
@@ -105,12 +106,28 @@ _start = next(iter(w.declared_wiring()["hooks"].get("SessionStart", [])), {})
 check("SessionStart se declara con el matcher de la compactación", "compact",
       _start.get("matcher"))
 _cmd1 = next((h["command"] for h in _start.get("hooks", [])), "true")
-check("el comando es el hook de restauración del proveedor", True,
-      "src/hooks/compact_context.py" in _cmd1)
+check("el comando es el hook de restauración del proveedor, por bin/", True,
+      "bin/compact_context" in _cmd1)
 _r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=True,
                input='{"hook_event_name":"SessionStart","source":"startup","session_id":"x"}')
 check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",
       ("{}", ""), (_r1.stdout.strip(), _r1.stderr.strip()))
+
+# Al arrancar una sesión se recogen los worktrees de un pool que murió: su
+# `sweep` final nunca corrió, y cada uno es una copia del árbol en disco.
+_startup = next((e for e in w.declared_wiring()["hooks"].get("SessionStart", [])
+                 if e.get("matcher") == "startup"), {})
+_sweeps = [h["command"] for h in _startup.get("hooks", [])]
+check("SessionStart declara el barrido de huérfanos al arrancar", True,
+      bool(_sweeps) and all("bin/item_worktree sweep-orphans" in c for c in _sweeps))
+check("el barrido cubre el árbol del proveedor", True,
+      any(c.endswith(f" {w.thyrox_root()}") for c in _sweeps))
+import tempfile as _tf0  # noqa: E402
+with _tf0.TemporaryDirectory() as _root0:
+    _r2 = [_sp0.run(c, shell=True, cwd="/", capture_output=True, text=True,
+                    env={**_env0, "THYROX_POOL_WORKTREES_DIR": _root0}) for c in _sweeps]
+check("sin huérfanos, cada barrido sale 0 y calla", [(0, "")] * len(_sweeps),
+      [(r.returncode, r.stdout.strip()) for r in _r2])
 
 print("== 2. el control VE una ruta que no existe ==")
 falso = {"hooks": {"SubagentStop": [{"hooks": [
@@ -290,8 +307,8 @@ for _ev, _gs in w.declared_wiring()["hooks"].items():
     for _g in _gs:
         for _h in _g["hooks"]:
             # El ejecutable es el primer argumento que es una ruta: lo que
-            # viene despues de python3/node/bun run.
-            _m = _re.search(r"(?:python3|node|bun run)\s+(\S+)", _h["command"])
+            # viene despues de python3/node/bun run/bash.
+            _m = _re.search(r"(?:python3|node|bun run|bash)\s+(\S+)", _h["command"])
             if _m:
                 _ejecutables.append((_ev, _m.group(1)))
 _expected = sum(len(_g["hooks"]) for _gs in d["hooks"].values() for _g in _gs)
@@ -371,6 +388,7 @@ import json as _json
 import subprocess as _sp
 import tempfile as _tf
 
+assert w.__file__ is not None
 _MODULO = str(Path(w.__file__))
 
 def _correr(vivo: dict):
@@ -451,7 +469,7 @@ print("== 15-bis. CONTROL DE ANULACION: se retira el campo de la clave ==")
 # Debe caer 15.4 y SOLO 15.4: si tambien cayera 15.9, el verde de la seccion
 # estaria midiendo la idempotencia y no la politica de cache.
 _original = w.CACHE_KEY_FIELDS
-w.CACHE_KEY_FIELDS = ()
+setattr(w, "CACHE_KEY_FIELDS", ())
 try:
     _l18 = _tmp / "anulado.json"
     _l18.write_text(_json.dumps(_otro))
@@ -463,7 +481,7 @@ try:
         pass
     _r19 = w.install(_l16, _declarado15, _FakeBackup(), "SELLO", backups=_tmp)
 finally:
-    w.CACHE_KEY_FIELDS = _original
+    setattr(w, "CACHE_KEY_FIELDS", _original)
 
 check("15-bis.1 anulado, la negativa de 15.4 desaparece", False, _anulado_rehusa)
 check("15-bis.2 y la idempotencia de 15.9 SOBREVIVE", True, _r19["unchanged"])
@@ -527,12 +545,12 @@ print("== 16-bis. CONTROL DE ANULACION: se retira la bandera del destino ==")
 # cuerpo sano no se reporte, y un instrumento ciego tambien las pasa. Ese
 # contraste es lo que hace que el verde de la seccion discrimine.
 _flags_original = w.STORE_DEST_FLAGS
-w.STORE_DEST_FLAGS = ()
+setattr(w, "STORE_DEST_FLAGS", ())
 try:
     _anulado = w.misdirected_store_destinations(_cuerpos)
     _anulado_sano = w.misdirected_store_destinations(_optin)
 finally:
-    w.STORE_DEST_FLAGS = _flags_original
+    setattr(w, "STORE_DEST_FLAGS", _flags_original)
 
 check("16-bis.1 anulado, los dos incumplidores dejan de verse", 0, len(_anulado))
 check("16-bis.2 y el cuerpo sano SOBREVIVE en verde", [], _anulado_sano)
@@ -559,10 +577,37 @@ check("17.2 y entra al universo como roto", 1,
       len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
           {"type": "command", "command": _REL}]}]}},
           cwd="/home/user", bases=_BASES)))
-check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
-      w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
-          {"type": "command", "command": _REL}]}]}},
-          cwd=str(HERE.parent / "kaupamex-docs"), bases=_BASES))
+# H-THYROX-259: la disposicion NO se supone de donde vive el arbol -- se
+# arma la propia, en un directorio temporal retirado al salir, para que el
+# caso mida el comando real del consumidor resuelto desde el cwd correcto
+# sin depender de si `HERE` es el arbol principal o un worktree del pool.
+import tempfile as _tf17  # noqa: E402
+with _tf17.TemporaryDirectory() as _d17:
+    _root17 = Path(_d17)
+    _docs17 = _root17 / "kaupamex-docs"
+    _docs17.mkdir()
+    _target17 = (_root17 / "thyrox" / "src" / "packages" / "agent"
+                   / "bin" / "preModelSwitch.ts")
+    _target17.parent.mkdir(parents=True)
+    _target17.touch()
+    check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
+          w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES))
+
+    # CONTROL DE ANULACION propio de 17.3: si el objetivo temporal no
+    # existe, el mismo comando tiene que reportarse roto -- y solo este
+    # caso, porque es el unico que depende de la disposicion armada aqui.
+    _target17.unlink()
+    check("17.3-anulacion.1 sin el archivo, el comando SI se reporta roto",
+          1, len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES)))
+    _target17.touch()
+    check("17.3-anulacion.2 restaurado el archivo, vuelve a verse sano", [],
+          w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES))
 check("17.4 el prefijo `~/` usa la casa, no el cwd", "/root/x.py",
       w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES))
 check("17.5 un prefijo cuya raiz el entorno no declara REHUSA", None,
@@ -578,8 +623,8 @@ print("== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==")
 _sufijo_original = w._SCRIPT_SUFFIX
 _prefijos_original = w._BASE_PREFIXES
 import re as _re
-w._SCRIPT_SUFFIX = _re.compile(r"(?!)")   # no casa con nada
-w._BASE_PREFIXES = ()
+setattr(w, "_SCRIPT_SUFFIX", _re.compile(r"(?!)"))   # no casa con nada
+setattr(w, "_BASE_PREFIXES", ())
 try:
     _anul_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
     _anul_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
@@ -587,8 +632,8 @@ try:
     _anul_casa = w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES)
     _anul_sano = w._target_of("python3 --stop", cwd="/home/user", bases=_BASES)
 finally:
-    w._SCRIPT_SUFFIX = _sufijo_original
-    w._BASE_PREFIXES = _prefijos_original
+    setattr(w, "_SCRIPT_SUFFIX", _sufijo_original)
+    setattr(w, "_BASE_PREFIXES", _prefijos_original)
 
 # `../thyrox/...` lleva `/`, asi que anular el sufijo NO basta: la rama del
 # `/` es la que lo ve. Se anula tambien esa, y entonces 17.1 y 17.2 caen.
@@ -608,13 +653,13 @@ def _solo_absoluto(command, cwd=None, bases=None):
         if pieza.startswith("/"):
             return pieza
     return None
-w._target_of = _solo_absoluto
+setattr(w, "_target_of", _solo_absoluto)
 try:
     _ciego_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
     _ciego_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
         {"type": "command", "command": _REL}]}]}}, cwd="/home/user", bases=_BASES)
 finally:
-    w._target_of = _original_target
+    setattr(w, "_target_of", _original_target)
 
 check("17-bis.5 con la version vieja, 17.1 CAE", None, _ciego_rel)
 check("17-bis.6 y 17.2 CAE: el comando roto sale del universo", 0, len(_ciego_rotos))
@@ -642,5 +687,332 @@ with _tf9.TemporaryDirectory() as _d9:
     check("--hooks-only no toca advisorModel", False, "advisorModel" in _after9)
     check("--hooks-only conserva permissions", {"allow": ["Bash(ls)"]}, _after9.get("permissions"))
 
+
+print("\n== 18. TODO comando de declared_wiring corre sin ModuleNotFoundError, "
+      "aislado del disco real (H-THYROX-268) ==")
+# MITAD ROJA medida 2026-09-29 sobre el cableado ANTES de esta correccion:
+# `declared_wiring` cableaba `python3 <base>/src/hooks/task_lifecycle.py`
+# (TaskCreated, TaskCompleted) y `python3 <base>/src/agents/register_session.py`
+# (SubagentStart/SubagentStop) sin `PYTHONPATH`. Invocados por su ruta bajo el
+# entorno del cliente —que no declara `PYTHONPATH`— mueren con
+# `ModuleNotFoundError: No module named 'agents'`/`'hooks'`, exit 1 (289
+# tarjetas y 26 subagentes reconciliados a mano en la sesion que lo destapo).
+#
+# El defecto no era de esos dos comandos en particular: era que CUALQUIER
+# comando de `declared_wiring` que invoque un `.py` sin pasar por su
+# envoltorio de `bin/` puede repetirlo apenas ese modulo importe otro paquete
+# del arbol. Por eso esta seccion mide la PROPIEDAD GENERAL —recorre TODOS
+# los comandos que el cableado declara, por evento, sin lista escrita a mano
+# de nombres de hook— y no sólo los dos que fallaban hoy.
+#
+# AISLAMIENTO OBLIGATORIO: nada de lo que sigue escribe en el store real
+# (`<thyrox>/agent-results/`), en `~/.claude`, ni en un repo real. El sandbox
+# declara su propio HOME y las variables de destino que los mecanismos ya
+# leen (`AGENT_STORE_CLAUDE_DIR`, `THYROX_AGENT_STORE`, `THYROX_JOBS_DIR`,
+# `THYROX_SESSION_LEDGER_DIR`, `THYROX_POOL_WORKTREES_DIR`), y el unico
+# comando que actua sobre un REPO (`item_worktree sweep-orphans <repo>`)
+# recibe un repo git TEMPORAL por sustitucion textual, nunca uno real —
+# ninguno de los comandos medidos queda sin aislar.
+import re as _re18
+import subprocess as _sp18
+import tempfile as _tf18
+
+_sandbox18 = Path(_tf18.mkdtemp())
+_home18 = _sandbox18 / "home"
+_home18.mkdir()
+_consumer18 = _sandbox18 / "consumer"
+_agent_results18 = _sandbox18 / "agent-results"
+_store18 = _sandbox18 / "store" / "agent_store.sqlite3"
+_jobs18 = _sandbox18 / "jobs"
+_ledger18 = _sandbox18 / "ledger"
+_pool_worktrees18 = _sandbox18 / "pool-worktrees"
+_pool_worktrees18.mkdir()
+_sweep_repo18 = _sandbox18 / "sweep-repo"
+_sweep_repo18.mkdir()
+_sp18.run(["git", "init", "-q", str(_sweep_repo18)], check=True)
+
+# El entorno de ejecucion: SOLO `PATH` y un `HOME` temporal, sin `PYTHONPATH`
+# — el `env -i` que reproduce el entorno del cliente, que no declara ninguna
+# de las dos cosas que este arbol da por sentadas cuando corre desde `bin/`.
+_env18 = {
+    "PATH": _os0.environ.get("PATH", ""),
+    "HOME": str(_home18),
+    "AGENT_STORE_CLAUDE_DIR": str(_agent_results18),
+    "THYROX_AGENT_STORE": str(_store18),
+    "THYROX_JOBS_DIR": str(_jobs18),
+    "THYROX_SESSION_LEDGER_DIR": str(_ledger18),
+    "THYROX_POOL_WORKTREES_DIR": str(_pool_worktrees18),
+}
+
+_SWEEP18 = _re18.compile(r"(sweep-orphans )(\S+)")
+
+
+def _probe_wiring_commands18(declared: dict) -> list[dict]:
+    """Corre CADA comando de `declared` en el sandbox y mide su stderr.
+
+    Generico por diseño: recorre `declared["hooks"]` por evento, sin nombrar
+    ningun comando — el control de anulacion de mas abajo es lo que prueba
+    que discrimina el comando roto de los sanos, y no que este bucle este
+    mirando algo en particular.
+    """
+    measured = []
+    for event, groups in declared["hooks"].items():
+        for group in groups:
+            for hook_entry in group.get("hooks", []):
+                command = hook_entry["command"]
+                # El unico comando que actua sobre un REPO: se le sustituye
+                # el repo real por uno temporal, nunca al reves.
+                isolated_command = _SWEEP18.sub(rf"\1{_sweep_repo18}", command)
+                r = _sp18.run(isolated_command, shell=True, cwd=str(_sandbox18),
+                             env=_env18, input="{}", capture_output=True,
+                             text=True, timeout=60)
+                measured.append({"event": event, "command": command,
+                                "returncode": r.returncode,
+                                "stdout": r.stdout, "stderr": r.stderr})
+    return measured
+
+
+_declared18 = w.declared_wiring(root=HERE, consumer=_consumer18)
+_measured18 = _probe_wiring_commands18(_declared18)
+
+check("18.1 midio los mismos comandos que declara el cableado",
+      sum(len(g["hooks"]) for gs in _declared18["hooks"].values() for g in gs),
+      len(_measured18))
+
+_with_import_error18 = [
+    f"{m['event']}: {m['command']}" for m in _measured18
+    if "ModuleNotFoundError" in m["stderr"] or "ImportError" in m["stderr"]]
+check("18.2 ningun command declarado falla por import sin PYTHONPATH",
+      [], _with_import_error18)
+
+print("   comandos measured, aislados del disco real (ninguno excluido):")
+for _m18 in _measured18:
+    print(f"     {_m18['event']:16} rc={_m18['returncode']}  {_m18['command']}")
+
+print("== 18-bis. CONTROL DE ANULACION: task_lifecycle vuelve a su .py sin bin/ ==")
+# Si `declared_wiring` volviera a cablear `task_lifecycle` por su ruta
+# directa —el defecto exacto de H-THYROX-268—, 18.2 tiene que caer, Y SOLO por
+# los DOS comandos que usan ese ejecutable (TaskCreated, TaskCompleted). Un
+# 18.2 que cayera por CUALQUIER razon no discriminaria "vio el command roto"
+# de "algo mas se rompio".
+_ORIGINAL18 = f"bash {HERE}/bin/task_lifecycle"
+_BROKEN18 = f"python3 {HERE}/src/hooks/task_lifecycle.py"
+check("18-bis.0 el command original esta presente antes de anular",
+      True, _ORIGINAL18 in _json.dumps(_declared18))
+
+_declared18_annulled = _json.loads(
+    _json.dumps(_declared18).replace(_ORIGINAL18, _BROKEN18))
+check("18-bis.1 la anulacion tocó exactamente los dos comandos de task_lifecycle",
+      2, _json.dumps(_declared18_annulled).count(_BROKEN18))
+
+_measured18_annulled = _probe_wiring_commands18(_declared18_annulled)
+_with_import_error18_annulled = sorted(
+    m["event"] for m in _measured18_annulled
+    if "ModuleNotFoundError" in m["stderr"] or "ImportError" in m["stderr"])
+check("18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas",
+      ["TaskCompleted", "TaskCreated"], _with_import_error18_annulled)
+
+import shutil as _sh18  # noqa: E402
+_sh18.rmtree(_sandbox18, ignore_errors=True)
+
+print("\n== 19. el consumidor se RESUELVE: explicito > THYROX_CONSUMER > contexto > rehuso ==")
+# MITAD ROJA medida 2026-09-30 (TASK-THYROX-0261): `declared_wiring` caia a
+# `base.parent / "kaupamex-docs"` —un consumidor escrito a mano dentro del
+# proveedor— y `main()` no ofrecia `--consumer`. La decision del ejecutor
+# (`.claude/workbench/decisiones-ejecutor-siete-tareas-20260930T044345/`):
+# explicito -> por reach/contexto si es unico -> REHUSA. El contexto tiene dos
+# formas, las dos derivadas del roster de `reach`: el clon que CONTIENE el
+# punto de partida, o el unico clon declarado. `/home/user` —el cwd del
+# lanzador remoto— no esta dentro de ningun clon y lleva `.claude/`: con dos
+# clones declarados se rehusa en vez de tomar ese hogar por consumidor.
+import tempfile as _tf19  # noqa: E402
+
+_sandbox19 = Path(_tf19.mkdtemp())
+_clone_a19 = _sandbox19 / "kx-a"
+_clone_b19 = _sandbox19 / "kx-b"
+(_clone_a19 / "sub").mkdir(parents=True)
+_clone_b19.mkdir()
+# El hogar del lanzador: lleva `.claude/` y NO es un consumidor.
+_launcher_home19 = _sandbox19 / "home"
+(_launcher_home19 / ".claude").mkdir(parents=True)
+_explicit19 = _sandbox19 / "declared"
+_explicit19.mkdir()
+
+_original_reach19 = w.reach
+_original_consumer_env19 = _os0.environ.get(w.CONSUMER_ROOT_VAR)
+
+
+def _with_roster19(clones: dict) -> None:
+    setattr(w, "reach", lambda: dict(clones))
+
+
+def _without_roster19() -> None:
+    def _no_roster():
+        raise reach.ReachRootError("sin roster (simulado por la suite)")
+    setattr(w, "reach", _no_roster)
+
+
+def _refusal19(*args, **kwargs):
+    """El texto del rehuso, o None si resolvio."""
+    try:
+        w.resolve_consumer(*args, **kwargs)
+    except w.WiringRefused as error:
+        return str(error)
+    return None
+
+
+try:
+    _os0.environ[w.CONSUMER_ROOT_VAR] = str(_clone_b19)
+    _with_roster19({"a": _clone_a19, "b": _clone_b19})
+    check("19.1 el parametro explicito gana a THYROX_CONSUMER",
+          Path(_explicit19), w.resolve_consumer(_explicit19, start=_launcher_home19))
+    check("19.2 THYROX_CONSUMER sola resuelve, aunque el punto de partida este fuera",
+          _clone_b19.resolve(), w.resolve_consumer(start=_launcher_home19))
+
+    _os0.environ.pop(w.CONSUMER_ROOT_VAR, None)
+    check("19.3 sin variable, el clon que CONTIENE el punto de partida es el consumidor",
+          _clone_a19.resolve(), w.resolve_consumer(start=_clone_a19 / "sub"))
+    _with_roster19({"a": _clone_a19})
+    check("19.4 fuera de todo clon, el UNICO clon declarado es el consumidor",
+          _clone_a19.resolve(), w.resolve_consumer(start=_launcher_home19))
+
+    _with_roster19({"a": _clone_a19, "b": _clone_b19})
+    _ambiguous19 = _refusal19(start=_launcher_home19) or ""
+    check("19.5 fuera de todo clon y con dos declarados, REHUSA", True, bool(_ambiguous19))
+    check("19.5b y el rehuso nombra la variable y la opcion", True,
+          w.CONSUMER_ROOT_VAR in _ambiguous19 and "--consumer" in _ambiguous19)
+    check("19.5c y enumera los candidatos entre los que no elige", True,
+          str(_clone_a19.resolve()) in _ambiguous19 and str(_clone_b19.resolve()) in _ambiguous19)
+
+    _without_roster19()
+    _empty19 = _refusal19(start=_launcher_home19) or ""
+    check("19.6 sin roster que derivar, REHUSA nombrando la variable", True,
+          bool(_empty19) and w.CONSUMER_ROOT_VAR in _empty19)
+
+    # `declared_wiring` propaga el rehuso: sin consumidor no se componen rutas.
+    # El cwd de la suite es el proveedor, que no esta dentro de ningun clon.
+    _with_roster19({"a": _clone_a19, "b": _clone_b19})
+    try:
+        w.declared_wiring(root=HERE)
+        _propagated19 = False
+    except w.WiringRefused:
+        _propagated19 = True
+    check("19.7 declared_wiring sin consumidor resoluble REHUSA", True, _propagated19)
+    check("19.8 y con consumidor explicito compone las rutas con el", True,
+          f"{_explicit19}/.claude/agent-results"
+          in _json.dumps(w.declared_wiring(root=HERE, consumer=_explicit19)))
+
+    print("== 19-bis. CONTROL DE ANULACION: la ambiguedad deja de rehusar ==")
+    # Si con varios clones se tomara el primero —la forma del default que esta
+    # tarea retira—, cae 19.5 y SOLO 19.5: 19.3 y 19.4 no pasan por esa rama, y
+    # 19.6 rehusa por otra (sin roster no hay primero que tomar).
+    _original_sole19 = w.is_sole_candidate
+    setattr(w, "is_sole_candidate", lambda candidates: bool(candidates))
+    try:
+        _with_roster19({"a": _clone_a19, "b": _clone_b19})
+        _annulled_ambiguous19 = _refusal19(start=_launcher_home19)
+        _annulled_inside19 = w.resolve_consumer(start=_clone_a19 / "sub")
+        _with_roster19({"a": _clone_a19})
+        _annulled_sole19 = w.resolve_consumer(start=_launcher_home19)
+        _without_roster19()
+        _annulled_empty19 = _refusal19(start=_launcher_home19)
+    finally:
+        setattr(w, "is_sole_candidate", _original_sole19)
+    check("19-bis.1 anulado, la ambiguedad ya NO rehusa (19.5 cae)", None, _annulled_ambiguous19)
+    check("19-bis.2 el clon que contiene el punto de partida SOBREVIVE (19.3)",
+          _clone_a19.resolve(), _annulled_inside19)
+    check("19-bis.3 el unico clon SOBREVIVE (19.4)", _clone_a19.resolve(), _annulled_sole19)
+    check("19-bis.4 y sin roster SIGUE rehusando (19.6)", True, _annulled_empty19 is not None)
+    check("19-bis.5 restaurado, la ambiguedad vuelve a rehusar", False,
+          w.is_sole_candidate((_clone_a19, _clone_b19)))
+finally:
+    setattr(w, "reach", _original_reach19)
+    if _original_consumer_env19 is None:
+        _os0.environ.pop(w.CONSUMER_ROOT_VAR, None)
+    else:
+        _os0.environ[w.CONSUMER_ROOT_VAR] = _original_consumer_env19
+
+print("== 19-ter. main(): --consumer llega a las dos ramas, y el rehuso sale como REHUSA con exit 2 ==")
+# Un roster de dos clones fabricado por variables del localizador, un cwd
+# fuera de ambos y sin THYROX_CONSUMER: las dos ramas de `main` tienen que
+# rehusar igual, y con `--consumer` las dos tienen que trabajar.
+_env19 = {k: v for k, v in _os0.environ.items()
+          if k != w.CONSUMER_ROOT_VAR and not k.startswith("THYROX_REACH")}
+_env19.update({"THYROX_REACH_ROOTS": "a,b", "THYROX_CLONE_PREFIX": "kx-",
+               "THYROX_REACH_ROOT": str(_sandbox19),
+               "THYROX_REACH_A": str(_clone_a19), "THYROX_REACH_B": str(_clone_b19),
+               "PYTHONPATH": str(HERE / "src")})
+
+
+def _main19(*flags, live: dict, consumer=None):
+    live_path = _sandbox19 / "settings.local.json"
+    live_path.write_text(_json.dumps(live))
+    argv = [sys.executable, _MODULO, *flags]
+    if consumer is not None:
+        argv += ["--consumer", str(consumer)]
+    completed = _sp0.run(argv, cwd=str(_launcher_home19), capture_output=True, text=True,
+                         env={**_env19, w.LIVE_SETTINGS_VAR: str(live_path)})
+    return completed.returncode, completed.stdout, completed.stderr
+
+
+_rc_measure19, _, _err_measure19 = _main19(live={"hooks": {}})
+check("19-ter.1 la rama de medicion rehusa con exit 2", 2, _rc_measure19)
+check("19-ter.2 y lo dice como REHUSA nombrando la variable", True,
+      _err_measure19.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _err_measure19)
+_rc_write19, _, _err_write19 = _main19("--write", "--backups", str(_sandbox19), live={"hooks": {}})
+check("19-ter.3 la rama --write rehusa con exit 2", 2, _rc_write19)
+check("19-ter.4 y lo dice como REHUSA", True, _err_write19.startswith("REHUSA"))
+
+# Lo esperado se compone con el MISMO roster que ve el subproceso: con el
+# real, el `--repo` y el barrido de arranque difieren y la deriva seria de
+# la prueba, no del consumidor.
+_with_roster19({"a": _clone_a19, "b": _clone_b19})
+try:
+    _declared_explicit19 = w.declared_wiring(root=HERE, consumer=_explicit19)
+finally:
+    setattr(w, "reach", _original_reach19)
+_rc_ok19, _out_ok19, _err_ok19 = _main19(live=_declared_explicit19, consumer=_explicit19)
+check("19-ter.5 con --consumer la medicion trabaja", True, "roto(s) en la copia viva" in _out_ok19)
+check("19-ter.6 y el consumidor pasado es el que se compara: sin deriva", True,
+      "sin deriva" in _out_ok19)
+
+print("== 19-quater. los dos invocadores propagan el rehuso: el instalador shell y session_restart ==")
+# Los dos llamaban a `declared_wiring` poniendo ellos el consumidor: el
+# instalador shell con `reach.root("docs")` —un clon escrito a mano— y
+# `session_restart` sin ninguno. Con el roster ambiguo de 19-ter los dos
+# tienen que rehusar con exit 2 sin escribir nada; con el consumidor
+# declarado, trabajar.
+_installer19 = HERE / "src" / "session" / "instalar-hooks-sesion-multirepo.sh"
+_target19 = _sandbox19 / "installer-target"
+_installed19 = _target19 / ".claude" / "settings.local.json"
+_r_sh19 = _sp0.run(["bash", str(_installer19), str(_target19)], cwd=str(_launcher_home19),
+                   capture_output=True, text=True, env=_env19)
+check("19-quater.1 el instalador shell rehusa con exit 2", 2, _r_sh19.returncode)
+check("19-quater.2 y lo dice como REHUSA nombrando la variable", True,
+      _r_sh19.stderr.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _r_sh19.stderr)
+check("19-quater.3 y no deja ni un settings vacio detras", False, _installed19.exists())
+_r_sh_ok19 = _sp0.run(["bash", str(_installer19), str(_target19), "--consumer", str(_explicit19)],
+                      cwd=str(_launcher_home19), capture_output=True, text=True, env=_env19)
+check("19-quater.4 con --consumer instala", 0, _r_sh_ok19.returncode)
+check("19-quater.5 y el store apunta al consumidor pasado", True,
+      _installed19.exists() and f"{_explicit19}/.claude/agent-results" in _installed19.read_text())
+
+_restart19 = HERE / "src" / "session" / "session_restart.py"
+_transcript19 = _sandbox19 / "t.jsonl"
+_transcript19.write_text("")
+_restart_argv19 = [sys.executable, str(_restart19), "--transcript", str(_transcript19),
+                   "--root", str(HERE)]
+_r_restart19 = _sp0.run(_restart_argv19, cwd=str(_launcher_home19),
+                        capture_output=True, text=True, env=_env19)
+check("19-quater.6 session_restart rehusa con exit 2", 2, _r_restart19.returncode)
+check("19-quater.7 y lo dice como REHUSA nombrando la variable", True,
+      _r_restart19.stderr.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _r_restart19.stderr)
+_r_restart_ok19 = _sp0.run(_restart_argv19 + ["--consumer", str(_explicit19)],
+                           cwd=str(_launcher_home19), capture_output=True, text=True, env=_env19)
+check("19-quater.8 con --consumer session_restart pasa la resolucion del consumidor",
+      False, "REHUSA" in _r_restart_ok19.stderr)
+
+import shutil as _sh19  # noqa: E402
+_sh19.rmtree(_sandbox19, ignore_errors=True)
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

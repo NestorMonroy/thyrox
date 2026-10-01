@@ -1,0 +1,91 @@
+  ok    el sujeto existe y es ejecutable: /home/user/thyrox/src/session/infrastructure_ensure.sh
+  ok    caso 1: ausente -> exit 0
+  ok    caso 1: postgres ausente se reporta con action=created
+  ok    caso 1: redis ausente se reporta con action=created
+  ok    caso 1: ollama ausente se reporta con action=created
+  ok    caso 1: el ensure recorre los tres en orden postgres, redis, ollama
+  ok    caso 1: ollama se crea con la red del anfitrion
+  ok    caso 1: la red thyrox-infra se crea cuando falta
+  ok    caso 2: running+pid vivo+sano -> exit 0
+  ok    caso 2: postgres vivo y sano se conserva (kept)
+  ok    caso 2: ningun create/start/rm se invoco al conservar
+  ok    caso 3: running+pid muerto -> exit 0 tras recrear
+  ok    caso 3: postgres con PID muerto se recrea (recreated)
+  ok    caso 3: se invoco rm -f sobre el contenedor stale
+  ok    caso 3: ningun rm -f toca el volumen thyrox-postgres-data
+  ok    caso 3: ollama con PID muerto se recrea (recreated)
+  ok    caso 3: se invoco rm -f sobre el ollama stale
+  ok    caso 3: ningun rm -f toca el volumen thyrox-ollama-models
+  ok    caso 3: el ollama recreado vuelve a montar el volumen de modelos
+  ok    caso 4: exited -> exit 0 tras arrancar
+  ok    caso 4: postgres exited se arranca (started)
+  ok    caso 4: exited no dispara create, solo start
+  ok    caso 5: nunca sano -> exit 1
+  ok    caso 5: el fallo nombra el contenedor que nunca sano
+  ok    caso 6: sin contraseña -> exit 2
+  ok    caso 6: el rehuso nombra THYROX_INFRA_POSTGRES_PASSWORD
+  ok    caso 6: podman jamas se invoco (calls.log no existe)
+  ok    caso 7: primera invocacion -> exit 0
+  ok    caso 7: la primera invocacion crea los dos contenedores (created)
+  ok    caso 7: segunda invocacion -> exit 0
+  ok    caso 7: la segunda invocacion conserva los tres contenedores (kept)
+  ok    caso 7: la segunda invocacion no recrea nada
+  ok    caso 8: cabe -> exit 0
+  ok    caso 8: con el disco admitido, postgres se crea
+  ok    caso 8: reserva la necesidad declarada de postgres a nombre de un pid
+  ok    caso 8: el orden es admitir, crear y soltar
+  ok    caso 9: no cabe -> exit 2
+  ok    caso 9: ningun podman create sin disco admitido
+  ok    caso 9: el rehuso nombra thyrox-postgres
+  ok    caso 9: el rehuso nombra 625290552
+  ok    caso 9: el rehuso nombra techo
+  ok    caso 9: el rehuso nombra disk-reserve-reach-20260930T191002
+  ok    caso 10: imagen presente -> exit 0 aunque el disco no admita
+  ok    caso 10: con la imagen presente no se pide disco
+  ok    caso 11: con el create fallido, la reserva se suelta
+  ok    caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN
+  ok    caso 13: sólo ollama, sin contraseña -> exit 0
+  ok    caso 13: publica una sola linea, la de ollama
+  ok    caso 13: no crea postgres ni redis
+  ok    caso 14: con postgres seleccionado y sin contraseña -> exit 2
+tests/session/test-infrastructure-ensure.sh: line 482: /tmp/tmp.ENgk9BzkNY/state/calls.log: No such file or directory
+  ok    caso 14: no invoca podman
+  ok    caso 15: nombre desconocido -> exit 2
+  ok    caso 15: el rehuso nombra el contenedor
+tests/session/test-infrastructure-ensure.sh: line 491: /tmp/tmp.ENgk9BzkNY/state/calls.log: No such file or directory
+  ok    caso 15: no invoca podman
+  ok    caso 16: colision en create -> exit propio 3
+  ok    caso 16: el stderr nombra thyrox-postgres
+  ok    caso 16: el stderr nombra deadlock due to lock mismatch
+  ok    caso 16: el stderr nombra retirar
+  ok    caso 16: el stderr nombra podman system renumber
+  ok    caso 16: un solo create, sin reintento
+  ok    caso 16: tras la colision no se arranca ni se sondea la salud
+  ok    caso 16: la reserva de disco se suelta antes de salir
+  ok    caso 16: el ensure nunca invoca podman system
+  ok    caso 17: colision en start -> exit propio 3
+  ok    caso 17: el stderr nombra thyrox-postgres
+  ok    caso 17: el stderr nombra deadlock due to lock mismatch
+  ok    caso 17: el stderr nombra retirar
+  ok    caso 17: el stderr nombra podman system renumber
+  ok    caso 17: un solo start, sin reintento
+  ok    caso 18: un create fallido sin el literal sigue siendo el fallo generico
+  ok    caso 18: un fallo sin el literal no se reporta como colision
+  ok    caso 18: la cabecera del sujeto declara el exit 3
+  ok    caso 19: locks desfasados con todo parado -> exit 0
+  ok    caso 19: renumera una sola vez
+  ok    caso 19: renumera ANTES de retirar, crear o arrancar
+  ok    caso 19: publica la medida y la acción
+  ok    caso 20: base coherente -> exit 0
+  ok    caso 20: base coherente -> no renumera
+  ok    caso 21: desfase con un contenedor vivo -> exit 3
+  ok    caso 21: con un contenedor vivo no renumera
+  ok    caso 21: nombra el contenedor vivo y el remedio
+  ok    caso 21: rehúsa antes de tocar ningún contenedor
+  ok    caso 22: sin medida de locks -> sigue (exit 0)
+  ok    caso 22: sin medida de locks no renumera a ciegas
+  ok    caso 23: renumerar no corrige -> exit 3
+  ok    caso 23: el diagnóstico publica la medida tras renumerar
+
+86 casos: 86 ok, 0 fallos
+__BG_EXIT__=0

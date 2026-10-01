@@ -1,0 +1,19 @@
+test_the_env_file_declares_the_catalog (__main__.ElAccesorDeConfiguracion.test_the_env_file_declares_the_catalog) ... ok
+test_the_process_wins_over_the_env_file (__main__.ElAccesorDeConfiguracion.test_the_process_wins_over_the_env_file)
+Quien exporta para UNA invocacion esta corrigiendo a proposito. ... ok
+test_no_resolved_path_reaches_outside_thyrox (__main__.ResolucionDeRutas.test_no_resolved_path_reaches_outside_thyrox)
+Control de anulacion: restaurar ``parents[3]`` hace caer este caso. ... ok
+test_the_catalog_resolves_inside_thyrox (__main__.ResolucionDeRutas.test_the_catalog_resolves_inside_thyrox) ... ok
+test_the_previous_variable_keeps_working (__main__.ResolucionDeRutas.test_the_previous_variable_keeps_working)
+El nombre anterior no se rompe: un consumidor puede tenerlo declarado. ... ok
+test_the_resolved_catalog_exists_and_loads (__main__.ResolucionDeRutas.test_the_resolved_catalog_exists_and_loads) ... ok
+test_the_store_has_no_thyrox_default (__main__.ResolucionDeRutas.test_the_store_has_no_thyrox_default)
+Sin declararlo no hay ruta que suponer: es parametro del consumidor. ... ok
+test_the_variable_declares_the_store (__main__.ResolucionDeRutas.test_the_variable_declares_the_store) ... ok
+test_the_variable_overrides_the_resolution (__main__.ResolucionDeRutas.test_the_variable_overrides_the_resolution) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.027s
+
+OK
+EXIT=0

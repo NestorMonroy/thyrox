@@ -10,7 +10,7 @@ Qué haría fallar a estos casos (sub-patrón D): retirar el parámetro `source`
 de `env_value` y volver a leer `os.environ` incondicionalmente. Entonces el
 primer caso lee lo que el proceso tenga y el fake no decide nada.
 
-Ciega a: la mitad TypeScript, cuyo puerto ata `tests/paths/reach.test.ts`. Y
+Ciega a: la mitad TypeScript, cuyo puerto ata `src/packages/paths/__tests__/reach.test.ts`. Y
 ciega a los demás efectos conducidos del módulo —el ascenso por el sistema de
 archivos de `consumer_root`, que sigue sin puerto— por decisión de alcance:
 este porte declara UN puerto, el que sus consumidores ya usan.
@@ -147,6 +147,9 @@ class ProviderLayer(unittest.TestCase):
             "THYROX_CAPA_DIR=hogar-propio-del-proveedor\n")
         self.consumer = base / "acme-docs"
         self.consumer.mkdir()
+        # Un multi-repo `acme-`: con un solo `acme-docs` no hay prefijo que
+        # medir y el nombre corto es el nombre entero (H-THYROX-176).
+        (base / "acme-api").mkdir()
         (self.consumer / ".env").write_text("THYROX_COMPARTIDA_DOCS=del-consumidor\n")
         self._keys = ("THYROX_CAPA_DOCS", "THYROX_COMPARTIDA_DOCS", "THYROX_CAPA_API",
                       "THYROX_CAPA_DIR", "THYROX_ENV_FILE")
@@ -207,6 +210,10 @@ class ProviderLayer(unittest.TestCase):
     def test_real_positive_per_clone_family_is_read_from_consumer(self):
         """El episodio: ``THYROX_WORKBENCH_DOCS`` vive en el ``.env`` del
         proveedor y se pedía desde ``kaupamex-docs``."""
+        # El módulo ya rehusó con RuntimeError si `_ROOT` fuera None; se
+        # re-estrecha aquí porque el narrowing de un global no cruza al
+        # cuerpo de un método.
+        assert _ROOT is not None
         provider_env = _ROOT / ".env"
         declared = reach.read_env_file(provider_env).get("THYROX_WORKBENCH_DOCS") \
             if provider_env.is_file() else None

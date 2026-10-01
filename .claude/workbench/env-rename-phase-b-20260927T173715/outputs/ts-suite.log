@@ -1,0 +1,414 @@
+-- FAIL src/packages/agent/__tests__/compactDeltaAttachments.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/compactDeltaAttachments.test.ts:
+ 95 | 
+ 96 |   test('en modo compact devuelve el archivo leído con su contenido y su ruta', async () => {
+ 97 |     const path = join(dir, 'nota.txt')
+ 98 |     writeFileSync(path, 'primera línea\nsegunda línea\n')
+ 99 |     const attachment = await generateFileAttachment(path, fileContext(), 'ok_event', 'error_event', 'compact')
+100 |     expect(attachment).toMatchObject({ type: 'file', filename: path })
+                             ^
+error: expect(received).toMatchObject(expected)
+
+Matcher error: received value must be a non-null object
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/compactDeltaAttachments.test.ts:100:24)
+(fail) generateFileAttachment > en modo compact devuelve el archivo leído con su contenido y su ruta [16.02ms]
+
+ 6 pass
+ 1 fail
+ 9 expect() calls
+Ran 7 tests across 1 file. [1.77s]
+-- FAIL src/packages/agent/__tests__/subagentLimits.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/subagentLimits.test.ts:
+73 | // Las variables del cliente (`CLAUDE_CODE_*`) son de otro proceso: su valor
+74 | // no gobierna a thyrox, que lee las suyas (`THYROX_CODE_*`), como el TTL de
+75 | // caché en `promptCacheTtl.ts`.
+76 | describe('las variables del cliente no gobiernan', () => {
+77 |   test('THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH no fija la profundidad', () => {
+78 |     expect(maxSubagentSpawnDepth({ THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(5)
+                                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 5
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/subagentLimits.test.ts:78:91)
+(fail) las variables del cliente no gobiernan > THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH no fija la profundidad [0.23ms]
+76 | describe('las variables del cliente no gobiernan', () => {
+77 |   test('THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH no fija la profundidad', () => {
+78 |     expect(maxSubagentSpawnDepth({ THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(5)
+79 |   })
+80 |   test('THYROX_CODE_MAX_CONCURRENT_SUBAGENTS no fija la anchura', () => {
+81 |     expect(maxConcurrentSubagents({ THYROX_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBe(20)
+                                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: 20
+Received: 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/subagentLimits.test.ts:81:83)
+(fail) las variables del cliente no gobiernan > THYROX_CODE_MAX_CONCURRENT_SUBAGENTS no fija la anchura [0.04ms]
+
+ 10 pass
+ 2 fail
+ 23 expect() calls
+Ran 12 tests across 1 file. [269.00ms]
+-- FAIL src/packages/binary/__tests__/declaration.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declaration.test.ts:
+(fail) contra el corpus REAL de 2.1.274 > la tabla de ventanas se recupera sin conocer su binding [5292.81ms]
+  ^ this test timed out after 5000ms.
+
+ 12 pass
+ 1 fail
+ 22 expect() calls
+Ran 13 tests across 1 file. [6.77s]
+-- FAIL src/packages/cli/__tests__/bin.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/bin.test.ts:
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > --sessions lista lo que hay para reanudar, y sale sin correr el bucle [6453.15ms]
+  ^ this test timed out after 5000ms.
+
+ 19 pass
+ 1 fail
+ 54 expect() calls
+Ran 20 tests across 1 file. [56.50s]
+-- FAIL src/packages/cli/__tests__/workbench.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/workbench.test.ts:
+(fail) la CLI — andamiar y medir desde fuera > --workbench-check no bloquea por defecto y si con --strict [6386.32ms]
+  ^ this test timed out after 5000ms.
+
+ 19 pass
+ 1 fail
+ 41 expect() calls
+Ran 20 tests across 1 file. [9.49s]
+-- FAIL src/packages/provider/__tests__/credentials.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/credentials.test.ts:
+51 |     expect(c.error).toContain('vacío')
+52 |   })
+53 | 
+54 |   test('las variables del cliente ajeno NO se leen: los nombres propios son THYROX_CODE_*', () => {
+55 |     const c = resolveCredential({ THYROX_CODE_OAUTH_TOKEN: 'o', THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '3' }, sinFd)
+56 |     expect(c.source).toBe('none')
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: "none"
+Received: "THYROX_CODE_OAUTH_TOKEN"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/credentials.test.ts:56:22)
+(fail) resolveCredential — la cadena jc()/Qf() de 2.1.282 con nombres THYROX > las variables del cliente ajeno NO se leen: los nombres propios son THYROX_CODE_* [0.29ms]
+
+ 14 pass
+ 1 fail
+ 23 expect() calls
+Ran 15 tests across 1 file. [158.00ms]
+-- FAIL src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:
+147 |     // The allowlist check is `.toUpperCase()` — so 'claude_code_use_bedrock'
+148 |     // (lowercase) should still match the safe list.
+149 |     const result = extractDangerousSettings({
+150 |       env: { claude_code_use_bedrock: '1' },
+151 |     } as SettingsJson)
+152 |     expect(result.envVars).toEqual({})
+                                 ^
+error: expect(received).toEqual(expected)
+
+- {}
++ {
++   "claude_code_use_bedrock": "1",
++ }
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:152:28)
+(fail) extractDangerousSettings — env vars (deny by default) > env vars are matched case-insensitively against allowlist [0.20ms]
+
+ 32 pass
+ 1 fail
+ 44 expect() calls
+Ran 33 tests across 1 file. [233.00ms]
+-- FAIL tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+207 |     test(`${m.name}: todo import externo resuelve`, () => {
+208 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+209 |         .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+210 |           && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
+211 |         .sort()
+212 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "${DEF}",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:212:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/binary: todo import externo resuelve [5.19ms]
+
+ 101 pass
+ 1 fail
+ 103 expect() calls
+Ran 102 tests across 1 file. [2.78s]
+-- FAIL tests/smoke/headless-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/headless-smoke.test.ts:
+64 |   test('--version prints something and exits 0', async () => {
+65 |     const r = await runCli(['--version'], 30_000)
+66 |     expect(r.exitCode).toBe(0)
+67 |     expect(r.stdout.length).toBeGreaterThan(0)
+68 |     // Should look like a semver-ish string
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+                          ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /\d+\.\d+\.\d+/
+Received: "1.carus.000 (thyrox)\n"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:69:22)
+(fail) smoke:headless boot > --version prints something and exits 0 [57.41ms]
+
+ 2 pass
+ 1 fail
+ 6 expect() calls
+Ran 3 tests across 1 file. [3.19s]
+-- FAIL tests/unit/model/providers.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/model/providers.test.ts:
+64 |     expect(getAPIProvider()).toBe('gemini')
+65 |   })
+66 | 
+67 |   test('returns "gemini" when CLAUDE_CODE_USE_GEMINI is set', () => {
+68 |     process.env.CLAUDE_CODE_USE_GEMINI = '1'
+69 |     expect(getAPIProvider()).toBe('gemini')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "gemini"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:69:30)
+(fail) getAPIProvider > returns "gemini" when CLAUDE_CODE_USE_GEMINI is set [0.20ms]
+69 |     expect(getAPIProvider()).toBe('gemini')
+70 |   })
+71 | 
+72 |   test('returns "bedrock" when CLAUDE_CODE_USE_BEDROCK is set', () => {
+73 |     process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+74 |     expect(getAPIProvider()).toBe('bedrock')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "bedrock"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:74:30)
+(fail) getAPIProvider > returns "bedrock" when CLAUDE_CODE_USE_BEDROCK is set [0.07ms]
+74 |     expect(getAPIProvider()).toBe('bedrock')
+75 |   })
+76 | 
+77 |   test('returns "vertex" when CLAUDE_CODE_USE_VERTEX is set', () => {
+78 |     process.env.CLAUDE_CODE_USE_VERTEX = '1'
+79 |     expect(getAPIProvider()).toBe('vertex')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "vertex"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:79:30)
+(fail) getAPIProvider > returns "vertex" when CLAUDE_CODE_USE_VERTEX is set [0.07ms]
+79 |     expect(getAPIProvider()).toBe('vertex')
+80 |   })
+81 | 
+82 |   test('returns "foundry" when CLAUDE_CODE_USE_FOUNDRY is set', () => {
+83 |     process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+84 |     expect(getAPIProvider()).toBe('foundry')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "foundry"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:84:30)
+(fail) getAPIProvider > returns "foundry" when CLAUDE_CODE_USE_FOUNDRY is set [0.05ms]
+85 |   })
+86 | 
+87 |   test('bedrock takes precedence over gemini', () => {
+88 |     process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+89 |     process.env.CLAUDE_CODE_USE_GEMINI = '1'
+90 |     expect(getAPIProvider()).toBe('bedrock')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "bedrock"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:90:30)
+(fail) getAPIProvider > bedrock takes precedence over gemini [0.05ms]
+91 |   })
+92 | 
+93 |   test('bedrock takes precedence over vertex', () => {
+94 |     process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+95 |     process.env.CLAUDE_CODE_USE_VERTEX = '1'
+96 |     expect(getAPIProvider()).toBe('bedrock')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "bedrock"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:96:30)
+(fail) getAPIProvider > bedrock takes precedence over vertex [0.10ms]
+ 98 | 
+ 99 |   test('bedrock wins when all three env vars are set', () => {
+100 |     process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+101 |     process.env.CLAUDE_CODE_USE_VERTEX = '1'
+102 |     process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+103 |     expect(getAPIProvider()).toBe('bedrock')
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "bedrock"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:103:30)
+(fail) getAPIProvider > bedrock wins when all three env vars are set [0.07ms]
+103 |     expect(getAPIProvider()).toBe('bedrock')
+104 |   })
+105 | 
+106 |   test('"true" is truthy', () => {
+107 |     process.env.CLAUDE_CODE_USE_BEDROCK = 'true'
+108 |     expect(getAPIProvider()).toBe('bedrock')
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "bedrock"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/model/providers.test.ts:108:30)
+(fail) getAPIProvider > "true" is truthy [0.06ms]
+
+ 13 pass
+ 8 fail
+ 21 expect() calls
+Ran 21 tests across 1 file. [322.00ms]
+-- FAIL tests/unit/utils/envUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/envUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getClaudeConfigHomeDir' not found in module '/home/user/thyrox/src/packages/config/env/utils.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [172.00ms]
+-- FAIL tests/unit/utils/privacyLevel.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/privacyLevel.test.ts:
+30 |   })
+31 | 
+32 |   test("returns 'essential-traffic' when CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC is set", () => {
+33 |     process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+34 |     delete process.env.DISABLE_TELEMETRY
+35 |     expect(getPrivacyLevel()).toBe('essential-traffic')
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "essential-traffic"
+Received: "default"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/privacyLevel.test.ts:35:31)
+(fail) getPrivacyLevel > returns 'essential-traffic' when CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC is set [0.25ms]
+42 |   })
+43 | 
+44 |   test("'essential-traffic' takes priority over 'no-telemetry'", () => {
+45 |     process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+46 |     process.env.DISABLE_TELEMETRY = '1'
+47 |     expect(getPrivacyLevel()).toBe('essential-traffic')
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "essential-traffic"
+Received: "no-telemetry"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/privacyLevel.test.ts:47:31)
+(fail) getPrivacyLevel > 'essential-traffic' takes priority over 'no-telemetry' [0.07ms]
+57 |       process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = original
+58 |   })
+59 | 
+60 |   test("returns true for 'essential-traffic' level", () => {
+61 |     process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+62 |     expect(isEssentialTrafficOnly()).toBe(true)
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/privacyLevel.test.ts:62:38)
+(fail) isEssentialTrafficOnly > returns true for 'essential-traffic' level [0.05ms]
+86 |     expect(isTelemetryDisabled()).toBe(true)
+87 |   })
+88 | 
+89 |   test("returns true for 'essential-traffic' level", () => {
+90 |     process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+91 |     expect(isTelemetryDisabled()).toBe(true)
+                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/privacyLevel.test.ts:91:35)
+(fail) isTelemetryDisabled > returns true for 'essential-traffic' level [0.09ms]
+101 |     delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+102 |   })
+103 | 
+104 |   test('returns env var name when restricted', () => {
+105 |     process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+106 |     expect(getEssentialTrafficOnlyReason()).toBe(
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/privacyLevel.test.ts:106:45)
+(fail) getEssentialTrafficOnlyReason > returns env var name when restricted [0.05ms]
+
+ 7 pass
+ 5 fail
+ 12 expect() calls
+Ran 12 tests across 1 file. [188.00ms]
+pass=15982 fail=24 errors=1 crashes=0 files=1102 failed=12

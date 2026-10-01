@@ -1,0 +1,2 @@
+    #: Cuántos ítems caben a la vez en la VRAM libre; ``None`` sin dato de VRAM.
+    width_cap: int | None = None

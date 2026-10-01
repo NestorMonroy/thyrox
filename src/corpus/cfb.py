@@ -10,18 +10,13 @@ Por que existe, y por que NO compite con el convertidor
 
 .. important::
 
-   **Corregido 2026-09-21 por el ejecutor**, y la correccion es de medicion.
-   Aqui decia *"274.6 MB para leer un archivo de 16 384 bytes"* y ese
-   cociente usa el **denominador equivocado**: instalar es un costo **fijo y
-   de una vez**, y leer es una operacion que se repite. Dividir un costo fijo
-   entre una sola instancia infla el resultado tanto como se quiera — con
-   diez archivos son 27 MB cada uno y con cien, 2.7 MB.
-
-   La frase medida sigue siendo cierta —52 paquetes, 83 850 078 B de
-   descarga, 281 189 KB instalados— y **la conclusion que sugeria no se
-   seguia de ella**. Es el sub-patron de
-   `metrica-decide-la-conclusion.md` cometido con el propio argumento de
-   diseno como sujeto.
+   El costo del convertidor no se divide entre un solo archivo: instalar es
+   un costo **fijo y de una vez**, y leer es una operacion que se repite.
+   Dividir un costo fijo entre una sola instancia infla el resultado tanto
+   como se quiera — con diez archivos son 27 MB cada uno y con cien, 2.7 MB.
+   Lo medido —52 paquetes, 83 850 078 B de descarga, 281 189 KB instalados—
+   no decide por si solo entre las dos vias
+   (`metrica-decide-la-conclusion.md`).
 
    *Metrica:* ``Size`` e ``Installed-Size`` que ``apt`` declara.
    *Ciega a:* cuantos archivos llegaran — que es justo lo que decide si el

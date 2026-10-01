@@ -8,6 +8,7 @@ import { getDisplayPath } from '@thyrox/storage/file.js'
 import { formatFileSize } from '@thyrox/output/formatters'
 import { formatBriefTimestamp } from '@thyrox/output/formatters'
 import type { Output } from './BriefTool.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function renderToolUseMessage(): React.ReactNode {
   return ''
@@ -42,7 +43,7 @@ export function renderToolResultMessage(
     )
   }
 
-  // Brief-only (chat) view: "Claude" label + 2-col indent, matching the "You"
+  // Brief-only (chat) view: "thyrox" label + 2-col indent, matching the "You"
   // label UserPromptMessage applies to user input (#20889). The "N in background"
   // spinner status lives in BriefSpinner (Spinner.tsx) — stateless label here.
   if (options?.isBriefOnly) {
@@ -50,7 +51,7 @@ export function renderToolResultMessage(
     return (
       <Box flexDirection="column" marginTop={1} paddingLeft={2}>
         <Box flexDirection="row">
-          <Text color="briefLabelClaude">Claude</Text>
+          <Text color="briefLabelClaude">{PRODUCT_NAME}</Text>
           {ts ? <Text dimColor> {ts}</Text> : null}
         </Box>
         <Box flexDirection="column">

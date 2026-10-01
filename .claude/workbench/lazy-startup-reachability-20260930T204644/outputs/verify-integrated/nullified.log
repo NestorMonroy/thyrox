@@ -1,0 +1,78 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/startupActivation.test.ts:
+153 |   for (const command of STARTUP_COMMANDS) {
+154 |     test(`${command.args.join(' ')}: 0 conexiones, 0 llamadas a Podman, salida ${command.exitCode}`, async () => {
+155 |       const run = await runEntry(command.args)
+156 |       expect(run.output).toContain(command.says)
+157 |       expect(run.exitCode).toBe(command.exitCode)
+158 |       expect(run.connections).toBe(0)
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupActivation.test.ts:158:31)
+(fail) arrancar no activa dependencias operacionales > --version: 0 conexiones, 0 llamadas a Podman, salida 0 [212.62ms]
+153 |   for (const command of STARTUP_COMMANDS) {
+154 |     test(`${command.args.join(' ')}: 0 conexiones, 0 llamadas a Podman, salida ${command.exitCode}`, async () => {
+155 |       const run = await runEntry(command.args)
+156 |       expect(run.output).toContain(command.says)
+157 |       expect(run.exitCode).toBe(command.exitCode)
+158 |       expect(run.connections).toBe(0)
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupActivation.test.ts:158:31)
+(fail) arrancar no activa dependencias operacionales > --help: 0 conexiones, 0 llamadas a Podman, salida 0 [1221.25ms]
+153 |   for (const command of STARTUP_COMMANDS) {
+154 |     test(`${command.args.join(' ')}: 0 conexiones, 0 llamadas a Podman, salida ${command.exitCode}`, async () => {
+155 |       const run = await runEntry(command.args)
+156 |       expect(run.output).toContain(command.says)
+157 |       expect(run.exitCode).toBe(command.exitCode)
+158 |       expect(run.connections).toBe(0)
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupActivation.test.ts:158:31)
+(fail) arrancar no activa dependencias operacionales > -p --help: 0 conexiones, 0 llamadas a Podman, salida 2 [1279.32ms]
+153 |   for (const command of STARTUP_COMMANDS) {
+154 |     test(`${command.args.join(' ')}: 0 conexiones, 0 llamadas a Podman, salida ${command.exitCode}`, async () => {
+155 |       const run = await runEntry(command.args)
+156 |       expect(run.output).toContain(command.says)
+157 |       expect(run.exitCode).toBe(command.exitCode)
+158 |       expect(run.connections).toBe(0)
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupActivation.test.ts:158:31)
+(fail) arrancar no activa dependencias operacionales > providers --help: 0 conexiones, 0 llamadas a Podman, salida 2 [193.93ms]
+194 |     const done = Bun.spawnSync(['bash', join(REPO_ROOT, 'bin', 'cli'), '--version'], {
+195 |       cwd: '/',
+196 |       env: { PATH: `${dirname(process.execPath)}:/usr/bin:/bin` },
+197 |       stdin: 'ignore',
+198 |     })
+199 |     expect(done.stdout.toString().trim()).toBe(`${MANIFEST_VERSION} (thyrox)`)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "0.1.0 (thyrox)"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/startupActivation.test.ts:199:43)
+(fail) la vía rápida de --version > fuera del árbol y con el entorno vacío, bin/cli da la versión del manifiesto [229.54ms]
+
+ 4 pass
+ 5 fail
+ 21 expect() calls
+Ran 9 tests across 1 file. [4.32s]

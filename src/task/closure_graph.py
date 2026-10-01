@@ -621,13 +621,13 @@ def render(shape, ranking, limit):
                       if amb['absent'] else ''))
         if amb['ambiguous'] or amb['absent']:
             # El ordinal se reinicia y se reusa por sesion; la cita durable
-            # `TASK-<CAPA>-NNNN` se ancla al SUJETO y por eso no se vuelve
+            # `TASK-<LAYER>-NNNN` se ancla al SUJETO y por eso no se vuelve
             # ambigua (ERR-024, H-DOCS-1067). Se nombra aqui porque este es el
             # punto donde el lector descubre que su cita no resuelve: sin la
             # forma alternativa, el aviso diagnostica y no da salida.
             out.append('     la forma que NO se vuelve ambigua es la cita '
-                       'durable del store, `TASK-<CAPA>-NNNN`')
-            out.append('     (`python3 .claude/scripts/task/task_ids.py cita '
+                       'durable del store, `TASK-<LAYER>-NNNN`')
+            out.append('     (`python3 .claude/scripts/task/task_ids.py lookup '
                        '<sesion> <ordinal>`)')
     out.append('')
     out.append(f"  floydWarshall costaria {shape['floyd_warshall_ops']:,} "

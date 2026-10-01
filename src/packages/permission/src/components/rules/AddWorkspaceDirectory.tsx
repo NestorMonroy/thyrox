@@ -18,6 +18,7 @@ import {
   PromptInputFooterSuggestions,
   type SuggestionItem,
 } from '@thyrox/repl/components/PromptInput/PromptInputFooterSuggestions.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onAddDirectory: (path: string, remember?: boolean) => void
@@ -49,7 +50,7 @@ const REMEMBER_DIRECTORY_OPTIONS: Array<{
 function PermissionDescription(): React.ReactNode {
   return (
     <Text dimColor>
-      Claude Code will be able to read files in this directory and make edits
+      {PRODUCT_NAME} will be able to read files in this directory and make edits
       when auto-accept edits is on.
     </Text>
   )

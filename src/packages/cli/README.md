@@ -34,18 +34,11 @@ está fuera de las rutas asignadas al agente que escribió este paquete. Este
 recibe: el nombre `cli` ya está reservado para "argumentos, códigos de salida
 y punto de entrada", que es exactamente lo que esos dos archivos son.
 
-## Puente temporal: import relativo en `argv.ts`
+## `argv.ts` reexporta por nombre de paquete
 
-`argv.ts` reexporta desde `../../app-host/src/cliArgs.ts` (ruta relativa),
-no desde `@thyrox/app-host/cliArgs.js` (nombre de paquete) — aunque
-`package.json` SÍ declara la dependencia real
-(`@thyrox/app-host: workspace:*`). La razón: `@thyrox/cli` no resuelve por
-nombre desde ningún sitio hasta que `src/packages/bun.lock` registre este
-workspace, y ese archivo no estaba entre las rutas de la tarea que creó este
-paquete. `bun install --dry-run` en `src/packages/` confirma que el registro
-es aditivo (sin red, sin alterar ninguna entrada existente). El cambio, una
-vez que alguien corra ese `bun install`, es de una línea — marcado con
-`// TODO(bun.lock)` en `argv.ts`.
+`argv.ts` reexporta desde `@thyrox/app-host/cliArgs.js`, que `package.json`
+declara por la versión exacta del hermano. El workspace y su lockfile viven
+sólo en la raíz (`check_single_workspace_root` impide uno anidado).
 
 ## Verificación
 

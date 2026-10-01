@@ -1,0 +1,2 @@
+        if True:
+            if _try_admit(book, need_mib, owner_pid, nvidia_smi):

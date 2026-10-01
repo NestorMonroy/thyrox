@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+157 |     markRefusalFallbackOccurred('req')
+158 |     latchRefusalFallbackModel(latch())
+159 |     setMainLoopModelOverride('claude-opus-5')
+160 |     switchSession(id('otra'), 'resume')
+161 |     expect(seen).toHaveLength(1)
+162 |     expect(seen[0]).toEqual([id('otra'), 'resume', expect.objectContaining({ fallbackModel: 'claude-opus-5', overrideValue: 'claude-fable-5-1' })])
+                          ^
+error: expect(received).toEqual(expected)
+
+@@ -3,6 +3,3 @@
+    "resume",
+-   ObjectContaining {
+-     "fallbackModel": "claude-opus-5",
+-     "overrideValue": "claude-fable-5-1",
+-   },
+  ]
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:162:21)
+(fail) el tercer argumento de la señal de sesión (fn) > switchSession a otra sesión olvida el rechazo y pasa la restauración [3.34ms]
+
+ 25 pass
+ 1 fail
+ 52 expect() calls
+Ran 26 tests across 2 files. [73.00ms]

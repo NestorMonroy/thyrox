@@ -1,0 +1,83 @@
+run-task-pool: 14 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T013008
+  job-20260927T013008/job-001 pid 5150    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/agent > .claude/workbench/escaped-modules-20260927T012834/after/agent.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/agent.err
+  job-20260927T013008/job-002 pid 5191    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/cli > .claude/workbench/escaped-modules-20260927T012834/after/cli.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/cli.err
+  job-20260927T013008/job-003 pid 5245    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/observability > .claude/workbench/escaped-modules-20260927T012834/after/observability.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/observability.err
+  job-20260927T013008/job-004 pid 5274    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/skills > .claude/workbench/escaped-modules-20260927T012834/after/skills.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/skills.err
+  job-20260927T013008/job-005 pid 5333    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/tools > .claude/workbench/escaped-modules-20260927T012834/after/tools.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/tools.err
+  job-20260927T013008/job-006 pid 5368    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/tool-registry > .claude/workbench/escaped-modules-20260927T012834/after/tool-registry.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/tool-registry.err
+  job-20260927T013008/job-007 pid 5431    cd /home/user/thyrox && PYTHONPATH=src:.claude/workbench/escaped-modules-20260927T012834 python3 .claude/workbench/escaped-modules-20260927T012834/own_errors.py src/packages/repl > .claude/workbench/escaped-modules-20260927T012834/after/repl.txt 2> .claude/workbench/escaped-modules-20260927T012834/after/repl.err
+  job-20260927T013008/job-008 pid 5458    cd /home/user/thyrox && timeout 900 bunx tsc -p tsconfig.json --noEmit > .claude/workbench/escaped-modules-20260927T012834/after/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/escaped-modules-20260927T012834/after/root-tsc.out
+  job-20260927T013008/job-009 pid 5574    cd /home/user/thyrox/src/packages/agent && timeout 900 bun test > /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-agent.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-agent.out
+  job-20260927T013008/job-010 pid 7701    cd /home/user/thyrox/src/packages/cli && timeout 900 bun test > /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-cli.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-cli.out
+  job-20260927T013008/job-011 pid 12096   cd /home/user/thyrox/src/packages/observability && timeout 900 bun test > /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-observability.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-observability.out
+  job-20260927T013008/job-012 pid 12139   cd /home/user/thyrox/src/packages/skills && timeout 900 bun test > /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-skills.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-skills.out
+  job-20260927T013008/job-013 pid 12250   cd /home/user/thyrox/src/packages/tools && timeout 900 bun test > /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-tools.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-tools.out
+  job-20260927T013008/job-014 pid 12725   cd /home/user/thyrox/src/packages/storage && timeout 900 bun test > /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-storage.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/escaped-modules-20260927T012834/after/bun-storage.out
+run-task-pool: lanzados 14 de 14; esperando en PRIMER PLANO (timeout 1500s)
+asentado: job-20260927T013008_job-001 -> OK (2 de 15)
+asentado: job-20260927T013008_job-002 -> OK (3 de 15)
+asentado: job-20260927T013008_job-003 -> OK (4 de 15)
+asentado: job-20260927T013008_job-004 -> OK (5 de 15)
+asentado: job-20260927T013008_job-005 -> OK (6 de 15)
+asentado: job-20260927T013008_job-006 -> OK (7 de 15)
+asentado: job-20260927T013008_job-007 -> OK (8 de 15)
+asentado: job-20260927T013008_job-009 -> OK (9 de 15)
+asentado: job-20260927T013008_job-011 -> OK (10 de 15)
+asentado: job-20260927T013008_job-012 -> OK (11 de 15)
+asentado: job-20260927T013008_job-013 -> OK (12 de 15)
+asentado: job-20260927T013008_job-014 -> OK (13 de 15)
+asentado: job-20260927T013008_job-008 -> OK (9 de 15)
+esperando: 14 de 15 asentados, 30s; vivos: job-20260927T013008_job-010
+sonda job-20260927T013008_job-010: 7701 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T013008_job-010: 7705 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T013008_job-010: 7706 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T013008_job-010: 7707 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T013008_job-010: 7709 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.47s
+sonda job-20260927T013008_job-010: 14965 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.54s
+asentado: job-20260927T013008_job-010 -> OK (11 de 15)
+== 15 trabajos asentados ==
+OLVIDADO job-20260927T013008
+       | (vacío — no emitió nada)
+OK     job-20260927T013008_job-001
+       | EXIT=0
+       memoria pico: 726100 KB (709 MB) · pared 12.54s
+OK     job-20260927T013008_job-002
+       | EXIT=0
+       memoria pico: 917140 KB (896 MB) · pared 16.68s
+OK     job-20260927T013008_job-003
+       | EXIT=0
+       memoria pico: 243824 KB (238 MB) · pared 2.35s
+OK     job-20260927T013008_job-004
+       | EXIT=0
+       memoria pico: 238724 KB (233 MB) · pared 2.06s
+OK     job-20260927T013008_job-005
+       | EXIT=0
+       memoria pico: 657020 KB (642 MB) · pared 10.85s
+OK     job-20260927T013008_job-006
+       | EXIT=0
+       memoria pico: 872832 KB (852 MB) · pared 15.82s
+OK     job-20260927T013008_job-007
+       | EXIT=0
+       memoria pico: 1067824 KB (1043 MB) · pared 21.71s
+OK     job-20260927T013008_job-008
+       | EXIT=0
+       memoria pico: 2519132 KB (2460 MB) · pared 52.06s
+OK     job-20260927T013008_job-009
+       | EXIT=0
+       memoria pico: 265620 KB (259 MB) · pared 21.74s
+OK     job-20260927T013008_job-010
+       | EXIT=0
+       memoria pico: 239856 KB (234 MB) · pared 50.21s
+OK     job-20260927T013008_job-011
+       | EXIT=0
+       memoria pico: 61424 KB (60 MB) · pared 0.12s
+OK     job-20260927T013008_job-012
+       | EXIT=0
+       memoria pico: 64276 KB (63 MB) · pared 0.13s
+OK     job-20260927T013008_job-013
+       | EXIT=0
+       memoria pico: 224684 KB (219 MB) · pared 2.24s
+OK     job-20260927T013008_job-014
+       | EXIT=0
+       memoria pico: 254068 KB (248 MB) · pared 6.56s
+__BG_EXIT__=0

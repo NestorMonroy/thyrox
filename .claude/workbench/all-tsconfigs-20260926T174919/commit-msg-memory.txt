@@ -1,0 +1,26 @@
+Measure every launched job with GNU Time
+
+GNU Time was installed and verified but only headless-pool used it, so
+the jobs that weigh most here -- the full suite, a tree-wide tsc -- ran
+through bg.sh and run-task-pool.sh and left no figure; their --memfree
+stayed an estimate. Both launchers now wrap the inner command with
+GNU Time (-q) into <log>.time, keeping pid, setsid and the exit marker,
+and declare it when GNU Time is absent. wait-jobs prints the peak next
+to each verdict. The first headless-pool run measured claude -p at
+251-266 MB; the 42 launcher suites peaked at 208 MB.
+
+step_report read only the first word of a .time file, so a failed item
+-- whose file starts with "Command exited with non-zero status" --
+dropped out of the memory stats. It now reads the last numeric line.
+
+The census suite carried a consumer's domain (odoo-tools, api, the
+manifest marker and the live declaration) and refused whenever that
+consumer was absent. It now builds a synthetic consumer with an
+arbitrary marker, and each domain constant left undefined must refuse
+with exit 2 and name itself; giving the marker a default drops exactly
+those two assertions.
+
+Three suites measured their own environment instead of their subject:
+test-coordinator-sin-worktree searched history only where agents live
+today (a shallow clone left it red), test-suite-discrimina relied on
+another suite staying red, and both now measure the real positive.

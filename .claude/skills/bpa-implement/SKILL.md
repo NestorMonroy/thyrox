@@ -140,7 +140,7 @@ Al finalizar el período del piloto:
 Después del piloto aprobado:
 1. Comunicar fecha de Go-Live a todos los actores del proceso
 2. Publicar SOP en el repositorio oficial del equipo
-3. Desactivar el proceso As-Is (remover accesos, archivar formularios antiguos)
+3. Desactivar el proceso As-Is (retirar accesos, archivar formularios antiguos)
 4. Activar cualquier automatización configurada
 5. Establecer un período de soporte intensivo (primera semana post Go-Live)
 

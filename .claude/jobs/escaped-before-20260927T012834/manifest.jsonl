@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 1200 .claude/workbench/escaped-modules-20260927T012834/before.cmds", "started_at": "2026-09-27T01:28:34+00:00"}

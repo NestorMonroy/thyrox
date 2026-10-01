@@ -2,6 +2,9 @@
 # replace_literal.sh — reemplaza un texto LITERAL en un archivo, con gawk.
 #
 # Uso:  OLD='<texto>' NEW='<texto>' bash src/lib/replace_literal.sh [--all] <archivo>
+#       bash src/lib/replace_literal.sh --old-file F --new-file F [--all] <archivo>
+#       (por archivo: se escribe con un heredoc `<<'EOF'`, que no interpreta
+#       comillas; se quita sólo el salto final que el heredoc añade)
 #
 # Por que existe
 # --------------
@@ -31,19 +34,40 @@
 # Ciega a: la codificacion — gawk compara por caracter segun el locale, asi
 #   que un archivo con bytes invalidos en UTF-8 puede contar distinto; y a que
 #   el texto nuevo sea correcto, que es juicio de quien lo pide.
+# Todo el cuerpo va en `main`, y la llamada termina con `exit` en la MISMA
+# linea: bash lee una funcion entera antes de ejecutarla, asi que un
+# reemplazo que reescriba ESTE archivo no le hace leer la cola desplazada.
+main() {
 set -uo pipefail
 
 replace_all=0
 file=""
-for arg in "$@"; do
-    case "$arg" in
-        --all) replace_all=1 ;;
+old_file=""
+new_file=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --all) replace_all=1; shift ;;
+        --old-file) old_file="${2:-}"; shift 2 ;;
+        --new-file) new_file="${2:-}"; shift 2 ;;
         -h|--help) gawk 'FNR>=2 && /^#/ {sub(/^# ?/, ""); print} FNR>2 && !/^#/ {exit}' "$0"; exit 0 ;;
-        *) file="$arg" ;;
+        *) file="$1"; shift ;;
     esac
 done
 
 refuse() { echo "replace_literal: NO se pudo medir — $1. No se emite conteo." >&2; exit 2; }
+
+# El texto por ARCHIVO, para escribirlo con un heredoc `<<'EOF'`, que no
+# interpreta nada: por variable, las comillas simples del texto se pierden en
+# el shell antes de llegar aquí. Se quita EXACTAMENTE el salto final que el
+# heredoc añade —`$(cat)` quitaría todos—; los internos se conservan.
+read_text_file() {
+    local text
+    [[ -f "$1" ]] || refuse "no existe el archivo de texto $1"
+    text="$(cat "$1"; printf x)"; text="${text%x}"
+    printf '%s' "${text%$'\n'}"
+}
+if [[ -n "$old_file" ]]; then OLD="$(read_text_file "$old_file"; printf x)" || exit 2; OLD="${OLD%x}"; export OLD; fi
+if [[ -n "$new_file" ]]; then NEW="$(read_text_file "$new_file"; printf x)" || exit 2; NEW="${NEW%x}"; export NEW; fi
 
 command -v gawk >/dev/null || refuse "falta gawk (RS=\"^\$\" y el volcado exacto son de gawk)"
 [[ -n "${OLD:-}" ]] || refuse "OLD vacio o sin declarar"
@@ -91,3 +115,5 @@ case "$status" in
         refuse "gawk salio con $status"
         ;;
 esac
+}
+main "$@"; exit $?

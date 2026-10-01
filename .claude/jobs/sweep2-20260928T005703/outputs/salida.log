@@ -1,0 +1,9 @@
+bun test v1.3.11 (af24e281)
+
+ 47 pass
+ 0 fail
+ 115 expect() calls
+Ran 47 tests across 5 files. [373.00ms]
+error TS5057: Cannot find a tsconfig.json file at the specified directory: '.'.
+TSC_DONE
+__BG_EXIT__=0

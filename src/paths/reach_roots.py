@@ -36,7 +36,6 @@ Y además el ``.env``, que este módulo nunca leyó.
 """
 from __future__ import annotations
 
-import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -91,6 +90,12 @@ def _load_owner():
     """
     path = _owner_path()
     src = str(path.parent.parent)          # …/thyrox/src
+    # Sin este insert, `from paths import reach` puede resolver el paquete
+    # `paths` de OTRO árbol si ya hay uno en sys.path (bug real medido:
+    # ModuleNotFoundError sin este insert cuando el proceso no trae ya el
+    # `src` del dueño en su ruta de búsqueda).
+    if src not in sys.path:
+        sys.path.insert(0, src)
     from paths import reach                # noqa: PLC0415 — la ruta se compone arriba
     return reach
 

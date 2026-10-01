@@ -5,9 +5,21 @@
   "type": "module",
   "description": "El registro de skills, su lectura desde un directorio y las que viajan con el arbol. Lo que la herramienta Skill consulta.",
   "exports": {
-    "./registry": "./src/registry.ts",
-    "./fromDir": "./src/fromDir.ts",
-    "./bundled": "./src/bundled.ts"
+    "./registry": {
+      "@thyrox/source": "./src/registry.ts",
+      "types": "./dist/registry.d.ts",
+      "default": "./src/registry.ts"
+    },
+    "./fromDir": {
+      "@thyrox/source": "./src/fromDir.ts",
+      "types": "./dist/fromDir.d.ts",
+      "default": "./src/fromDir.ts"
+    },
+    "./bundled": {
+      "@thyrox/source": "./src/bundled.ts",
+      "types": "./dist/bundled.d.ts",
+      "default": "./src/bundled.ts"
+    }
   },
   "scripts": {
     "test": "bun test",
@@ -18,6 +30,7 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
-    "@thyrox/agent": "workspace:*"
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/paths": "0.1.0"
   }
 }

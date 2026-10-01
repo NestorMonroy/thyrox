@@ -9,16 +9,16 @@ import {
 } from '../startupProfiler.js'
 
 beforeEach(() => {
-  delete process.env.CLAUDE_CODE_PROFILE_STARTUP
+  delete process.env.THYROX_CODE_PROFILE_STARTUP
   delete process.env.USER_TYPE
   resetProfilerStateForTests()
 })
 
 describe('isDetailedProfilingEnabled', () => {
-  test('refleja CLAUDE_CODE_PROFILE_STARTUP al momento del reset', () => {
+  test('refleja THYROX_CODE_PROFILE_STARTUP al momento del reset', () => {
     expect(isDetailedProfilingEnabled()).toBe(false)
 
-    process.env.CLAUDE_CODE_PROFILE_STARTUP = '1'
+    process.env.THYROX_CODE_PROFILE_STARTUP = '1'
     resetProfilerStateForTests()
 
     expect(isDetailedProfilingEnabled()).toBe(true)
@@ -71,11 +71,11 @@ describe('logStartupPerf — cómputo de fases cuando el muestreo está activo',
 })
 
 describe('getStartupPerfLogPath', () => {
-  test('compone la ruta bajo CLAUDE_CONFIG_DIR/startup-perf/<sessionId>.txt', () => {
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-de-prueba'
+  test('compone la ruta bajo THYROX_CONFIG_DIR/startup-perf/<sessionId>.txt', () => {
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-de-prueba'
     const ruta = getStartupPerfLogPath('sesion-123')
     expect(ruta).toBe('/tmp/config-de-prueba/startup-perf/sesion-123.txt')
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.THYROX_CONFIG_DIR
   })
 })
 
@@ -116,8 +116,8 @@ describe('profileReport', () => {
     const { tmpdir } = await import('node:os')
     const { join } = await import('node:path')
     const dirTemporal = mkdtempSync(join(tmpdir(), 'startup-perf-test-'))
-    process.env.CLAUDE_CONFIG_DIR = dirTemporal
-    process.env.CLAUDE_CODE_PROFILE_STARTUP = '1'
+    process.env.THYROX_CONFIG_DIR = dirTemporal
+    process.env.THYROX_CODE_PROFILE_STARTUP = '1'
     resetProfilerStateForTests()
 
     profileCheckpoint('cli_entry')
@@ -135,6 +135,6 @@ describe('profileReport', () => {
     expect(mensajesDebug).toContain('Startup profiling report:')
 
     rmSync(dirTemporal, { recursive: true, force: true })
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.THYROX_CONFIG_DIR
   })
 })

@@ -1,0 +1,1 @@
+cd src/packages/provider && bunx tsc --noEmit -p tsconfig.json 2>&1 | grep -E 'proxy/|__tests__/proxy' ; echo tsc-done

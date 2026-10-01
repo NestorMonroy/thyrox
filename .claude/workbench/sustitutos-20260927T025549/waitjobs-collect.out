@@ -1,0 +1,14 @@
+asentado: waitjobs-derived -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     waitjobs-derived exit=0
+       |        |   ok   todos los .ts del arbol llegan al plan de bin/
+       |        |   ok   ningun entrypoint TS sale de un node_modules
+       |        |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |        |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |        |   ok   y el plan medido no esta vacio
+       |        | 
+       |        | 121 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+       |        | EXIT=0
+       |        memoria pico: 27140 KB (27 MB) · pared 16.67s
+       | __BG_EXIT__=0
+       memoria pico: 212648 KB (208 MB) · pared 36.01s

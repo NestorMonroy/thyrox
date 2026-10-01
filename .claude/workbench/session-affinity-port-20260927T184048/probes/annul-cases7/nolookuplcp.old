@@ -1,0 +1,1 @@
+      const lcp = this.matcher.lookupSession(candidate)

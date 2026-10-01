@@ -32,7 +32,7 @@ check() {
 
 check_contains() {
     local label="$1" needle="$2" haystack="$3"
-    if printf '%s' "$haystack" | grep -qF -- "$needle"; then
+    if grep -qF -- "$needle" <<<"$haystack"; then
         PASS=$((PASS + 1))
         printf '  ok   %s\n' "$label"
     else
@@ -186,7 +186,7 @@ check "--check ya instalado -> exit 0" "0" "$RC"
 # La declaración del consumidor y los wrappers son dos productos del mismo
 # instalador. Un bin/ ausente no puede publicar verde sólo porque `.env` esté
 # bien: ése sería comprobar el significante equivocado.
-rm -rf "$TREE/bin"
+rm -rf "${TREE:?}/bin"
 OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"; RC=$?
 check "--check con bin/ ausente -> exit 1" "1" "$RC"
 check_contains "--check con bin/ ausente nombra el generador" \
@@ -262,8 +262,8 @@ CONSUMER_HONDO="$(fake_consumer hondo)"
 mkdir -p "$TREE_HONDO/bin"
 cp "$INSTALL" "$TREE_HONDO/bin/install.sh"
 
-SALIDA_HONDO="$(env -u THYROX_ROOT bash "$TREE_HONDO/bin/install.sh" \
-    "$CONSUMER_HONDO" 2>&1)"
+env -u THYROX_ROOT bash "$TREE_HONDO/bin/install.sh" \
+    "$CONSUMER_HONDO" >/dev/null 2>&1
 check "desde un nivel mas hondo, resuelve la raiz igual" 0 "$?"
 check_contains "y el .env del consumidor apunta al arbol" \
     "THYROX_ROOT=$TREE_HONDO" "$(cat "$CONSUMER_HONDO/.env" 2>/dev/null)"
@@ -402,6 +402,63 @@ TREE="$(spy_tree rc3-consumidor)"; CONSUMER="$(fake_consumer rc3-consumidor)"
 OUT="$(SPY_LOG="$WORK/spy-rc3b.log" SPY_RC3_FOR="$CONSUMER" THYROX_ROOT="$TREE" \
        /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
 check "exit 3 en un consumidor -> exit 1" "1" "$RC"
+
+# --------------------------------------------------------------------------
+# 15. Empaquetado P11 — install.sh crea los hogares de un clon nuevo.
+#
+# Un `git clone` no trae lo que git ignora, y cada modulo creaba su hogar en
+# su primer uso: quien clonaba lo «descubria». El caso parte de un clon REAL
+# (`git clone` de un origen con los modulos del registro) y exige que falten
+# los hogares antes de instalar y existan todos los registrados despues.
+# Las claves de hogar se retiran del entorno: heredadas del corredor, el
+# guion resolveria otro sitio y el caso no mediria el default.
+# --------------------------------------------------------------------------
+printf '\n== install.sh — crea los hogares de un clon nuevo (P11) ==\n'
+
+HOME_KEYS=(THYROX_ENV_FILE THYROX_WORKBENCH_DIR THYROX_JOBS_DIR THYROX_JOBS_LEDGER_DIR
+    THYROX_JOBS_ARCHIVE_DIR THYROX_CACHE_DIR THYROX_PARALLEL_MAP_HISTORY_DIR
+    THYROX_RAM_ADMISSION_LEDGER THYROX_DISK_ADMISSION_LEDGER THYROX_RUNTIME_DIR
+    THYROX_POOL_WORKTREES_DIR THYROX_STATE_DIR)
+UNSET_HOMES=()
+for key in "${HOME_KEYS[@]}"; do UNSET_HOMES+=(-u "$key"); done
+
+ORIGIN="$WORK/origin-homes"
+mkdir -p "$ORIGIN/src/session"
+cp -r "$THYROX_REAL/src/paths" "$THYROX_REAL/src/workbench" "$THYROX_REAL/src/rules" "$ORIGIN/src/"
+cp "$THYROX_REAL/src/session/generate_bin.py" "$ORIGIN/src/session/"
+find "$ORIGIN" -name __pycache__ -prune -exec rm -rf {} +
+git -C "$ORIGIN" init -q
+git -C "$ORIGIN" add -A
+git -C "$ORIGIN" -c user.name=t -c user.email=t@t commit -qm origin
+CLONE="$WORK/fresh-clone"
+git clone -q "$ORIGIN" "$CLONE"
+CONSUMER="$(fake_consumer homes)"
+
+FRESH_HOMES=(.claude/jobs-ledger .thyrox/runtime .thyrox/pool-worktrees)
+present_homes() {
+    local dir count=0
+    for dir in "${FRESH_HOMES[@]}"; do [ -d "$CLONE/$dir" ] && count=$((count + 1)); done
+    printf '%s' "$count"
+}
+check "antes de instalar faltan los hogares ignorados" "0" "$(present_homes)"
+OUT="$(env "${UNSET_HOMES[@]}" THYROX_ROOT="$CLONE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "instala el clon nuevo -> exit 0" "0" "$RC"
+check "tras instalar existen los hogares ignorados" "${#FRESH_HOMES[@]}" "$(present_homes)"
+check_contains "publica una linea por hogar" "creado  THYROX_RUNTIME_DIR" "$OUT"
+BEFORE="$(cd "$CLONE" && find . -path ./.git -prune -o -print | sort | sha256sum)"
+OUT="$(env "${UNSET_HOMES[@]}" THYROX_ROOT="$CLONE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"
+AFTER="$(cd "$CLONE" && find . -path ./.git -prune -o -print | sort | sha256sum)"
+check "segunda instalacion no cambia el arbol" "$BEFORE" "$AFTER"
+check_contains "y lo dice" "nada que crear" "$OUT"
+
+# 16. Si ensure_homes rehusa, install.sh no se declara instalado.
+printf 'THYROX_RUNTIME_DIR=%s/.git/HEAD/runtime\n' "$CLONE" > "$WORK/homes-bad.env"
+OUT="$(env "${UNSET_HOMES[@]}" THYROX_ENV_FILE="$WORK/homes-bad.env" THYROX_ROOT="$CLONE" \
+       /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "hogar no escribible -> exit 1" "1" "$RC"
+check_contains "hogar no escribible -> nombra la clave" "THYROX_RUNTIME_DIR" "$OUT"
+check "hogar no escribible -> no se declara instalado" "0" \
+      "$(grep -c 'thyrox declarado en' <<<"$OUT")"
 
 printf '\n%d aserciones: %d ok, %d fallidas\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

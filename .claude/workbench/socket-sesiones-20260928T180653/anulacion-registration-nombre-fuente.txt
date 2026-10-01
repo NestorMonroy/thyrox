@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+127 | 
+128 |   test('THYROX_CODE_SESSION_NAME da el nombre de lanzamiento, saneado', async () => {
+129 |     env.THYROX_CODE_SESSION_NAME = '  Mi\u0007 sesión  '
+130 |     await registerSession(undefined, deps())
+131 |     expect(record().name).toBe('Mi  sesión')
+132 |     expect('nameSource' in record()).toBe(false)
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:132:38)
+(fail) registerSession (nD) > THYROX_CODE_SESSION_NAME da el nombre de lanzamiento, saneado [1.27ms]
+
+ 22 pass
+ 1 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [201.00ms]

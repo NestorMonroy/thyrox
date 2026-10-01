@@ -1,0 +1,3 @@
+thyrox-ollama status=running pid_alive=no action=recreated health=healthy
+thyrox-redis status=running pid_alive=no action=recreated health=healthy
+__BG_EXIT__=0

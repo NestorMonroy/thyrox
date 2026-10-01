@@ -1,0 +1,6 @@
+run	efectivo	unshare --pid --fork corrio el ayudante y salio 0
+pids_limit	efectivo	logro 15/64 procesos con pids.max=16
+escape_containment	efectivo	el hijo con setsid() no sobrevivio a la salida del principal
+cleanup	efectivo	cgroup.procs vacio tras salir el principal y rmdir salio 0
+wall_seconds=1.47 max_rss_kib=8172
+rc=0

@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/transferPathSafety.test.ts:
+32 |     expect(isNetworkRootPath('network')).toBe(false)
+33 |   })
+34 | 
+35 |   test('networkPathPrefixes (tt) separa prefijos completos de parciales, con el volumen de datos en darwin', () => {
+36 |     expect(networkPathPrefixes('/Network/Servers/h/x', 'linux', false)).toEqual({ complete: ['/network/servers/h'], partial: ['/network/', '/network/servers/'] })
+37 |     expect(networkPathPrefixes('/System/Volumes/Data/home/ana/x', 'darwin', true).complete).toEqual(['/home/ana'])
+                                                                                                 ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "/home/ana",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:37:93)
+(fail) rutas de red de macOS (yN, tt, GF) > networkPathPrefixes (tt) separa prefijos completos de parciales, con el volumen de datos en darwin [0.82ms]
+43 | 
+44 |   test('isDarwinNetworkPath (GF): sólo en darwin; /network, /.vol y el /home de otro usuario', () => {
+45 |     expect(isDarwinNetworkPath('/Network/x', 'linux')).toBe(false)
+46 |     expect(isDarwinNetworkPath('/Network/x', 'darwin')).toBe(true)
+47 |     expect(isDarwinNetworkPath('/.vol/1', 'darwin')).toBe(true)
+48 |     expect(isDarwinNetworkPath('/home/otro/x', 'darwin', true, () => '/home/yo')).toBe(true)
+                                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:48:83)
+(fail) rutas de red de macOS (yN, tt, GF) > isDarwinNetworkPath (GF): sólo en darwin; /network, /.vol y el /home de otro usuario [0.58ms]
+
+ 3 pass
+ 2 fail
+ 27 expect() calls
+Ran 5 tests across 1 file. [71.00ms]

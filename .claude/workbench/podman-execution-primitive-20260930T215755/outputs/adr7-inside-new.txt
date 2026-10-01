@@ -1,0 +1,35 @@
+- el drenaje por señal detiene el contenedor, no sólo el wrapper.
+
+**La imagen lleva el toolchain de medida, y cada medida se toma donde el
+proceso es visible (enmienda 1.5.2).** Propuesta del ejecutor: usar GNU
+Parallel, GNU Time y la medida de VRAM/RAM dentro de Podman con una plantilla de
+imagen. Medido el mismo día
+(``thyrox: .claude/workbench/podman-execution-primitive-20260930T215755/probes/inside_container_measurement.sh``):
+
+.. list-table::
+   :header-rows: 1
+
+   * - Medida
+     - Dentro del contenedor
+     - Dónde se toma
+   * - RAM pico del ítem
+     - GNU Time da ``maxrss=392468KB``; desde fuera, sobre el cliente, 41 MB
+     - **dentro**, con GNU Time; el pico del cgroup desde fuera es su contraste
+   * - RAM libre para anchura o admisión
+     - ``/proc/meminfo`` da la del anfitrión (6.8 GB) con ``--memory 512m``
+     - **nunca** de ``/proc/meminfo`` dentro: del límite y el uso del cgroup
+   * - lock del ledger de VRAM
+     - ``flock`` cruza el montaje: el contenedor esperó 6 s al anfitrión
+     - un solo archivo en el anfitrión, montado donde se use
+   * - VRAM por PID
+     - no medible aquí (sin GPU); dentro de un espacio de PIDs propio los PIDs
+       no son los que ``nvidia-smi`` reporta desde el anfitrión
+     - **fuera**: PIDs del cgroup del contenedor vistos desde el anfitrión
+
+GNU Parallel sigue en el anfitrión como planificador de ítems. La imagen
+plantilla del perfil repository/job lleva el toolchain declarado (GNU Time,
+GNU Parallel, gawk, bun, Python, git), y se deriva de las declaraciones de
+``src/lib/toolchain.sh``, no de una lista escrita a mano. Una fila de historial
+cuya RAM de GNU Time y cuyo pico de cgroup divergen no calibra. Queda
+pendiente de hardware (nivel 2) confirmar la atribución de VRAM por PID a
+contenedores en una GPU NVIDIA real.

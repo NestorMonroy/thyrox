@@ -1,0 +1,7 @@
+src/packages/agent/background/fleet/__tests__/fleetStore.test.ts
+src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts
+src/packages/command-runtime/src/skills/__tests__/skillPaths.behavior.test.ts
+src/packages/daemon/src/__tests__/bgAdopt.test.ts
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts
+src/packages/daemon/src/__tests__/roster.test.ts
+src/packages/daemon/src/__tests__/rvChannel.test.ts

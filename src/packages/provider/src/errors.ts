@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 /**
  * Errores tipados y mensajes de error del provider.
  *
@@ -261,7 +262,7 @@ export const CUSTOM_OFF_SWITCH_MESSAGE =
   'Opus is experiencing high load, please use /model to switch to Sonnet'
 export const API_TIMEOUT_ERROR_MESSAGE = 'Request timed out'
 export const OAUTH_ORG_NOT_ALLOWED_ERROR_MESSAGE =
-  'Your account does not have access to Claude Code. Please run /login.'
+  `Your account does not have access to ${PRODUCT_NAME}. Please run /login.`
 
 /** El texto del interruptor de capacidad, por familia (`aLe`/`lLe` en 2.1.275). */
 const CAPACITY_OFF_SWITCH_MESSAGES = [

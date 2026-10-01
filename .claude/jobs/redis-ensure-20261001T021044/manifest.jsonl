@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/infrastructure_ensure thyrox-redis", "started_at": "2026-10-01T02:10:44+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T02:10:51+00:00", "duration_seconds": 7.950497}

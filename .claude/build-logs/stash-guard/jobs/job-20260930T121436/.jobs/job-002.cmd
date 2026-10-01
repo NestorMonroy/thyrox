@@ -1,0 +1,1 @@
+timeout 1200 bash tests/session/test-headless-pool-lifecycle.sh > /home/user/thyrox/.claude/build-logs/stash-guard/lifecycle.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/stash-guard/lifecycle.log

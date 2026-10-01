@@ -7,70 +7,87 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./agentMemory": {
+      "@thyrox/source": "./src/agentMemory.ts",
       "types": "./dist/src/agentMemory.d.ts",
       "default": "./src/agentMemory.ts"
     },
     "./extractMemories": {
+      "@thyrox/source": "./src/extractMemories.ts",
       "types": "./dist/src/extractMemories.d.ts",
       "default": "./src/extractMemories.ts"
     },
     "./memoryAge": {
+      "@thyrox/source": "./src/memoryAge.ts",
       "types": "./dist/src/memoryAge.d.ts",
       "default": "./src/memoryAge.ts"
     },
     "./memoryFileDetection": {
+      "@thyrox/source": "./src/memoryFileDetection.ts",
       "types": "./dist/src/memoryFileDetection.d.ts",
       "default": "./src/memoryFileDetection.ts"
     },
     "./memoryPause": {
+      "@thyrox/source": "./src/memoryPause.ts",
       "types": "./dist/src/memoryPause.d.ts",
       "default": "./src/memoryPause.ts"
     },
     "./memoryShapeTelemetry": {
+      "@thyrox/source": "./src/memoryShapeTelemetry.ts",
       "types": "./dist/src/memoryShapeTelemetry.d.ts",
       "default": "./src/memoryShapeTelemetry.ts"
     },
     "./memorySourceTypes": {
+      "@thyrox/source": "./src/memorySourceTypes.ts",
       "types": "./dist/src/memorySourceTypes.d.ts",
       "default": "./src/memorySourceTypes.ts"
     },
     "./paths": {
+      "@thyrox/source": "./src/paths.ts",
       "types": "./dist/src/paths.d.ts",
       "default": "./src/paths.ts"
     },
     "./projectGitInfo": {
+      "@thyrox/source": "./src/projectGitInfo.ts",
       "types": "./dist/src/projectGitInfo.d.ts",
       "default": "./src/projectGitInfo.ts"
     },
     "./sessionMemoryPrompts": {
+      "@thyrox/source": "./src/sessionMemoryPrompts.ts",
       "types": "./dist/src/sessionMemoryPrompts.d.ts",
       "default": "./src/sessionMemoryPrompts.ts"
     },
     "./sessionMemoryUtils": {
+      "@thyrox/source": "./src/sessionMemoryUtils.ts",
       "types": "./dist/src/sessionMemoryUtils.d.ts",
       "default": "./src/sessionMemoryUtils.ts"
     },
     "./teamMemPaths": {
+      "@thyrox/source": "./src/teamMemPaths.ts",
       "types": "./dist/src/teamMemPaths.d.ts",
       "default": "./src/teamMemPaths.ts"
     },
     "./teamMemSecretGuard": {
+      "@thyrox/source": "./src/teamMemSecretGuard.ts",
       "types": "./dist/src/teamMemSecretGuard.d.ts",
       "default": "./src/teamMemSecretGuard.ts"
     },
     "./teamMemoryOps": {
+      "@thyrox/source": "./src/teamMemoryOps.ts",
       "types": "./dist/src/teamMemoryOps.d.ts",
       "default": "./src/teamMemoryOps.ts"
     },
     "./teamMemorySyncWatcher": {
+      "@thyrox/source": "./src/teamMemorySyncWatcher.ts",
       "types": "./dist/src/teamMemorySyncWatcher.d.ts",
       "default": "./src/teamMemorySyncWatcher.ts"
     }
@@ -79,8 +96,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
     "axios": "^1.20.0",
     "zod": "^4.3.6"
   }

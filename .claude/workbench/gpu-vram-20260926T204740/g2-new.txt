@@ -1,0 +1,10 @@
+    p_free = sub.add_parser("free", help="imprime la VRAM libre (MiB) de la GPU con más espacio")
+    p_free.add_argument("--nvidia-smi", default="nvidia-smi")
+    args = parser.parse_args(argv)
+    if args.order == "free":
+        free = free_vram_mib(args.nvidia_smi)
+        if free is None:
+            return 2
+        print(free)
+        return 0
+    if args.order == "available":

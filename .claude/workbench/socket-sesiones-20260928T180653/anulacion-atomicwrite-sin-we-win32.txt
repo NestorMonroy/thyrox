@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+316 |   test('en win32 un nombre temporal ocupado se detecta con lstat antes de abrir', async () => {
+317 |     const taken = join(dir, 'k.json.tmp.00000000')
+318 |     writeFileSync(taken, 'ajeno')
+319 |     let calls = 0
+320 |     const failure = await writeFileAtomicWithMode(join(dir, 'k.json'), 'x', { platform: 'win32', tempName: () => (calls++, taken) }).catch(e => e)
+321 |     expect(failure).toMatchObject({ code: 'EEXIST', syscall: 'lstat' })
+                          ^
+error: expect(received).toMatchObject(expected)
+
+- {
+-   "code": "EEXIST",
+-   "syscall": "lstat",
+- }
++ [Error: EEXIST: file already exists, open '/tmp/thyrox-tests-bM5PSD/uds-atomic-HTyS2e/k.json.tmp.00000000']
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:321:21)
+(fail) opciones completas de Jne > en win32 un nombre temporal ocupado se detecta con lstat antes de abrir [1.24ms]
+
+ 26 pass
+ 1 fail
+ 70 expect() calls
+Ran 27 tests across 1 file. [172.00ms]

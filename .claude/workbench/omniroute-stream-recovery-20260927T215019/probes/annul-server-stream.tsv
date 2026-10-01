@@ -1,0 +1,4 @@
+not-enabled	s/if (!options?.enabled || !isSse || !response.body) return response/if (!isSse || !response.body) return response/
+sse-only	s/if (!options?.enabled || !isSse || !response.body) return response/if (!options?.enabled || !response.body) return response/
+reopen-any-status	s/if (next.ok \&\& next.body) return next.body/if (next.body) return next.body/
+not-wrapped	s/return recoverable(config, forwarded, response)/return response/

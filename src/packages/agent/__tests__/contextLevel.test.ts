@@ -32,9 +32,9 @@ const EFECTIVA = effectiveContextWindow(MODELO)!
 afterEach(() => {
   delete process.env.DISABLE_COMPACT
   delete process.env.DISABLE_AUTO_COMPACT
-  delete process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
-  delete process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE
-  delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
+  delete process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE
+  delete process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE
+  delete process.env.THYROX_CODE_AUTO_COMPACT_WINDOW
 })
 
 describe('MF — la ventana con la que de verdad se cuenta', () => {
@@ -53,22 +53,22 @@ describe('nxe — el umbral, y por qué el override sólo puede bajarlo', () => 
 
   test('un override de 50 lo baja a la mitad de la ventana efectiva', () => {
     // `Math.min(Math.floor(e*(o/100)), r)`
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '50'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '50'
     expect(resolveThreshold(MODELO)).toBe(Math.floor(EFECTIVA * 0.5))
   })
 
   test('un override de 100 NO desactiva el colchón: el Math.min lo retiene', () => {
     // Es la trampa del `Math.min`: `e*(100/100)` es `e`, y el otro brazo
     // sigue siendo `e-13000`, que gana.
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '100'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '100'
     expect(resolveThreshold(MODELO)).toBe(EFECTIVA - AUTOCOMPACT_BUFFER_TOKENS)
   })
 
   test('un override fuera de (0,100] se ignora', () => {
     // `o!==void 0 && !isNaN(o) && o>0 && o<=100`
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '0'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '0'
     expect(resolveThreshold(MODELO)).toBe(EFECTIVA - AUTOCOMPACT_BUFFER_TOKENS)
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = 'nada'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = 'nada'
     expect(resolveThreshold(MODELO)).toBe(EFECTIVA - AUTOCOMPACT_BUFFER_TOKENS)
   })
 })
@@ -215,21 +215,21 @@ describe('wv/MF contra zZt — son DOS ventanas, y el porte usaba una', () => {
     expect(compactionWindow(MODELO, 5_000_000)).toBe(EFECTIVA)
   })
 
-  test('CLAUDE_CODE_AUTO_COMPACT_WINDOW gana sobre el ajuste, con piso y techo', () => {
-    // `Ete("CLAUDE_CODE_AUTO_COMPACT_WINDOW",…,pTe=1e5,zBe=1e6)` y luego
+  test('THYROX_CODE_AUTO_COMPACT_WINDOW gana sobre el ajuste, con piso y techo', () => {
+    // `Ete("THYROX_CODE_AUTO_COMPACT_WINDOW",…,pTe=1e5,zBe=1e6)` y luego
     // `Math.max(pTe,B.effective)`: el piso es 100 000 y el techo 1 000 000.
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '300000'
+    process.env.THYROX_CODE_AUTO_COMPACT_WINDOW = '300000'
     expect(compactionWindow(MODELO, 200_000)).toBe(300_000 - 20_000)
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '50000'
+    process.env.THYROX_CODE_AUTO_COMPACT_WINDOW = '50000'
     expect(compactionWindow(MODELO)).toBe(AUTO_COMPACT_WINDOW_FLOOR - 20_000)
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '9000000'
+    process.env.THYROX_CODE_AUTO_COMPACT_WINDOW = '9000000'
     expect(compactionWindow(MODELO)).toBe(AUTO_COMPACT_WINDOW_CAP - 20_000)
   })
 
   test('un valor inválido NO aplica la rama — cae al ajuste, no al piso', () => {
     // `if(B.status!=="invalid")`: con `status:"invalid"` el `return` no ocurre
     // y la resolución sigue. Leer el piso aquí sería inventar un valor.
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = 'no-es-un-numero'
+    process.env.THYROX_CODE_AUTO_COMPACT_WINDOW = 'no-es-un-numero'
     expect(compactionWindow(MODELO, 200_000)).toBe(200_000 - 20_000)
   })
 
@@ -255,11 +255,11 @@ describe('el tope duro se mide contra la ventana DECLARADA', () => {
   })
 })
 
-describe('CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE — la tercera variable, ausente del porte', () => {
+describe('THYROX_CODE_BLOCKING_LIMIT_OVERRIDE — la tercera variable, ausente del porte', () => {
   test('reemplaza el tope duro entero, no es un margen', () => {
     // `let v=r.testBlockingOverride, x=v!==void 0&&!isNaN(v)&&v>0?v:o-3000`
     // — sustituye a `o-3000`, así que NO se le resta nada.
-    process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE = '50000'
+    process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE = '50000'
     const r = contextLevel(50_000, MODELO)
     expect(r.level).toBe('blocked')
     expect(r.blocked).toBe(50_000)
@@ -267,16 +267,16 @@ describe('CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE — la tercera variable, ausente d
 
   test('un valor no numérico o ≤ 0 lo deja en el tope normal', () => {
     // `!isNaN(v)&&v>0` — las dos guardas del ejecutable.
-    process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE = '0'
+    process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE = '0'
     expect(contextLevel(50_000, MODELO).blocked).toBe(EFECTIVA - BLOCKED_MARGIN_TOKENS)
-    process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE = 'abc'
+    process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE = 'abc'
     expect(contextLevel(50_000, MODELO).blocked).toBe(EFECTIVA - BLOCKED_MARGIN_TOKENS)
   })
 
   test('`nl` acepta la forma con separadores que `parseInt` corta', () => {
     // `function nl(e){let n=String(e).trim();return N(n)??parseInt(n,10)}`
     // — el `trim` es parte del contrato.
-    process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE = '  50000  '
+    process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE = '  50000  '
     expect(contextLevel(50_000, MODELO).blocked).toBe(50_000)
   })
 })
@@ -295,8 +295,8 @@ describe('remoteAutocompactState — la rama que el porte no tenía', () => {
   test('el frame remoto DESCARTA los dos overrides de entorno', () => {
     // `{enabled:o.enabled, precomputeBufferFraction:txe,
     //   testPctOverride:void 0, testBlockingOverride:void 0}` — verbatim.
-    process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '10'
-    process.env.CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE = '50000'
+    process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '10'
+    process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE = '50000'
     const r = contextLevel(310_000, MODELO, { remote: frame })
     expect(r.threshold).toBe(300_000)
     expect(r.blocked).toBe(EFECTIVA - BLOCKED_MARGIN_TOKENS)

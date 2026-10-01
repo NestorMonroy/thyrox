@@ -1,0 +1,2 @@
+Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
+medida, este contenedor no tiene GPU.

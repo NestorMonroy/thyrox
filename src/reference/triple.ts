@@ -21,7 +21,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { envValue, thyroxRoot, treeRoot } from '../paths/reach.ts'
+import { envValue, thyroxRoot, treeRoot } from '@thyrox/paths/reach.ts'
 
 /** Cómo se leen los símbolos de una referencia. Uno por familia de fuente. */
 export const EXTRACTORS = ['python-ast', 'strings-regex', 'source-read', 'prose-read'] as const

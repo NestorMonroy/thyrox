@@ -90,8 +90,7 @@ export type TaskReminderItem = {
  *
  * El ejecutable 2.1.261 rinde tres campos —``#${f.id}. [${f.status}]
  * ${f.subject}``— y **ninguno** es el identificador de cita: el suyo es el
- * ordinal, que reinicia por sesión. Por decisión del ejecutor (2026-09-05) la
- * cita segmentada tiene que **verse** ahí, porque es lo único que un ``.rst``
+ * ordinal, que reinicia por sesión. La cita segmentada tiene que **verse** ahí, porque es lo único que un ``.rst``
  * puede citar sin ambigüedad (ERR-024).
  *
  * La divergencia con la fuente es deliberada y mínima: se **añade** entre

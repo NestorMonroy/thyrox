@@ -255,18 +255,13 @@ async function getDynamicConfig_BLOCKS_ON_INIT<T>(
   return getFeatureValue_CACHED_MAY_BE_STALE<T>(key, fallback)
 }
 
-function isEnvTruthy(value: string | boolean | undefined): boolean {
-  if (!value) return false
-  if (typeof value === 'boolean') return value
-  return ['1', 'true', 'yes', 'on'].includes(String(value).toLowerCase().trim())
-}
-
 /**
  * El contexto de permisos, con la misma forma laxa que usa
  * `PermissionUpdate.ts`: el tipo completo vive en el consumidor, y este
  * paquete sólo necesita saber que es un objeto indexable.
  */
 import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 type ToolPermissionRulesBySource = Record<string, string[]>
 
 const AGENT_TOOL_NAME = 'Agent'
@@ -1242,11 +1237,11 @@ export function initialPermissionModeFromCLI({
     // settings (p. ej. bypassPermissions concedería acceso total en
     // silencio en un entorno remoto).
     if (
-      isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
+      isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
       !['acceptEdits', 'plan', 'default'].includes(settingsMode)
     ) {
       logForDebugging(
-        `settings defaultMode "${settingsMode}" is not supported in CLAUDE_CODE_REMOTE — only acceptEdits and plan are allowed`,
+        `settings defaultMode "${settingsMode}" is not supported in THYROX_CODE_REMOTE — only acceptEdits and plan are allowed`,
       )
       logEvent('tengu_ccr_unsupported_default_mode_ignored', {
         mode: settingsMode,

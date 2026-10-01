@@ -7,7 +7,7 @@ import { fileSuffixForOauthConfig } from '@thyrox/provider/oauthConstants'
 import { findExecutable } from '@thyrox/shell/findExecutable.js'
 import { which } from '@thyrox/shell/which.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './utils.js'
+import { getConfigHomeDir, isEnvTruthy } from './utils.js'
 
 type Platform = 'win32' | 'darwin' | 'linux'
 
@@ -16,14 +16,14 @@ export const getGlobalClaudeFile = memoize((): string => {
   // Legacy fallback for backwards compatibility
   if (
     getFsImplementation().existsSync(
-      join(getClaudeConfigHomeDir(), '.config.json'),
+      join(getConfigHomeDir(), '.config.json'),
     )
   ) {
-    return join(getClaudeConfigHomeDir(), '.config.json')
+    return join(getConfigHomeDir(), '.config.json')
   }
 
   const filename = `.claude${fileSuffixForOauthConfig()}.json`
-  return join(process.env.CLAUDE_CONFIG_DIR || homedir(), filename)
+  return join(process.env.THYROX_CONFIG_DIR || homedir(), filename)
 })
 
 const hasInternetAccess = memoize(async (): Promise<boolean> => {
@@ -335,12 +335,12 @@ export const env = {
 
 /**
  * Returns the host platform for analytics reporting.
- * If CLAUDE_CODE_HOST_PLATFORM is set to a valid platform value, that overrides
+ * If THYROX_CODE_HOST_PLATFORM is set to a valid platform value, that overrides
  * the detected platform. This is useful for container/remote environments where
  * process.platform reports the container OS but the actual host platform differs.
  */
 export function getHostPlatformForAnalytics(): Platform {
-  const override = process.env.CLAUDE_CODE_HOST_PLATFORM
+  const override = process.env.THYROX_CODE_HOST_PLATFORM
   if (override === 'win32' || override === 'darwin' || override === 'linux') {
     return override
   }

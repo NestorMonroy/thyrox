@@ -33,7 +33,7 @@ import { parse } from 'url'
 import xss from 'xss'
 import { MCP_CLIENT_METADATA_URL } from '@thyrox/provider/oauthConstants'
 import { openBrowser } from '@thyrox/storage/browser.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { errorMessage, getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import * as lockfile from '@thyrox/storage/lockfile.js'
 import { logMCPDebug } from '@thyrox/local-observability/logging'
@@ -58,6 +58,7 @@ import {
   getXaaIdpSettings,
   isXaaEnabled,
 } from './xaaIdpLogin.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Timeout for individual OAuth requests (metadata discovery, token refresh, etc.)
@@ -365,7 +366,7 @@ export function hasMcpDiscoveryButNoToken(
 /**
  * Revokes a single token on the OAuth server.
  *
- * Per RFC 7009, public clients (like Claude Code) should authenticate by including
+ * Per RFC 7009, public clients (like thyrox) should authenticate by including
  * client_id in the request body, NOT via an Authorization header. The Bearer token
  * in an Authorization header is meant for resource owner authentication, not client
  * authentication.
@@ -866,12 +867,12 @@ export async function performMCPOAuthFlow(
   // user explicitly asked for XAA) and security-relevant (consent flow may
   // have a different trust/scope posture than the org's IdP policy).
   //
-  // Servers with `oauth.xaa` but CLAUDE_CODE_ENABLE_XAA unset hard-fail with
+  // Servers with `oauth.xaa` but THYROX_CODE_ENABLE_XAA unset hard-fail with
   // actionable copy rather than silently degrade to consent.
   if (serverConfig.oauth?.xaa) {
     if (!isXaaEnabled()) {
       throw new Error(
-        `XAA is not enabled (set CLAUDE_CODE_ENABLE_XAA=1). Remove 'oauth.xaa' from server '${serverName}' to use the standard consent flow.`,
+        `XAA is not enabled (set THYROX_CODE_ENABLE_XAA=1). Remove 'oauth.xaa' from server '${serverName}' to use the standard consent flow.`,
       )
     }
     logEvent('tengu_mcp_oauth_flow_start', {
@@ -1142,7 +1143,7 @@ export async function performMCPOAuthFlow(
           if (code) {
             res.writeHead(200, { 'Content-Type': 'text/html' })
             res.end(
-              `<h1>Authentication Successful</h1><p>You can close this window. Return to Claude Code.</p>`,
+              `<h1>Authentication Successful</h1><p>You can close this window. Return to ${PRODUCT_NAME}.</p>`,
             )
             cleanup()
             resolveOnce(code)
@@ -1416,7 +1417,7 @@ export class ClaudeAuthProvider implements OAuthClientProvider {
 
   get clientMetadata(): OAuthClientMetadata {
     const metadata: OAuthClientMetadata = {
-      client_name: `Claude Code (${this.serverName})`,
+      client_name: `${PRODUCT_NAME} (${this.serverName})`,
       redirect_uris: [this.redirectUri],
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],
@@ -1745,7 +1746,7 @@ export class ClaudeAuthProvider implements OAuthClientProvider {
    * both fire the full 4-request XAA chain and race on storage.update().
    * Unlike inc-4829 the id_token is not single-use so both access_tokens
    * stay valid (wasted round-trips + keychain write race, not brickage),
-   * but this is the shape CLAUDE.md flags under "Token/auth caching across
+   * but this is the shape THYROX.md flags under "Token/auth caching across
    * process boundaries". Mirror refreshAuthorization()'s lockfile pattern.
    */
   private async xaaRefresh(): Promise<OAuthTokens | undefined> {
@@ -2087,7 +2088,7 @@ export class ClaudeAuthProvider implements OAuthClientProvider {
     refreshToken: string,
   ): Promise<OAuthTokens | undefined> {
     const serverKey = getServerKey(this.serverName, this.serverConfig)
-    const claudeDir = getClaudeConfigHomeDir()
+    const claudeDir = getConfigHomeDir()
     await mkdir(claudeDir, { recursive: true })
     const sanitizedKey = serverKey.replace(/[^a-zA-Z0-9]/g, '_')
     const lockfilePath = join(claudeDir, `mcp-refresh-${sanitizedKey}.lock`)

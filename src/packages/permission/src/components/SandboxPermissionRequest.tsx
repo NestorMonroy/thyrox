@@ -10,6 +10,7 @@ import {
 } from '@thyrox/local-observability'
 import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { PermissionDialog } from './PermissionDialog.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type SandboxPermissionRequestProps = {
   hostPattern: NetworkHostPattern
@@ -72,7 +73,7 @@ export function SandboxPermissionRequest({
     {
       label: (
         <Text>
-          No, and tell Claude what to do differently <Text bold>(esc)</Text>
+          No, and tell {PRODUCT_NAME} what to do differently <Text bold>(esc)</Text>
         </Text>
       ),
       value: 'no',

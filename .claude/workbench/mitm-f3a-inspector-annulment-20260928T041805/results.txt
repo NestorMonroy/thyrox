@@ -1,0 +1,28 @@
+== A1 pricing sin el catálogo
+(fail) lookupPricing - versioned claude id matches prefix [1.49ms]
+(fail) lookupPricing - a current catalog model resolves from @thyrox/agent [0.15ms]
+(fail) computes costEstimateUsd for claude-3-5-sonnet with token counts [0.76ms]
+ 98 pass
+ 3 fail
+== A2 búfer con el nombre de la referencia
+(fail) THYROX_INSPECTOR_BUFFER_SIZE bounds the default capacity [2.92ms]
+ 100 pass
+ 1 fail
+== A3 parser que despacha sin campo data
+ 101 pass
+ 0 fail
+== restored
+ 101 pass
+ 0 fail
+== A3b parser que despacha sin campo data, con los casos nuevos
+(fail) parseSseStream - a block with event but no data field is not dispatched [3.07ms]
+(fail) parseSseStream - comments are not emitted as events [0.23ms]
+ 105 pass
+ 2 fail
+== A4 parser sin quitar el BOM
+(fail) parseSseStream - a leading BOM is ignored [2.65ms]
+ 106 pass
+ 1 fail
+== restored
+ 107 pass
+ 0 fail

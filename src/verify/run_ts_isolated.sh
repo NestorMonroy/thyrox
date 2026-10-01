@@ -2,8 +2,8 @@
 # La mitad TypeScript de tests/run.sh: un proceso de `bun test` por archivo.
 #
 # Lee la lista de archivos por stdin, los reparte con GNU parallel y publica,
-# por cada archivo en rojo, `-- ROJO <archivo>` seguido de su salida, y al
-# final una linea `pass=… fail=… errores=… caidas=… archivos=… en_rojo=…`.
+# por cada archivo en rojo, `-- FAIL <archivo>` seguido de su salida, y al
+# final una linea `pass=… fail=… errors=… crashes=… files=… failed=…`.
 #
 # Por que un proceso por archivo: `mock.module` de Bun reemplaza el modulo
 # para todo el proceso y no se deshace entre archivos, asi que en un solo
@@ -28,47 +28,47 @@ if ! command -v parallel >/dev/null 2>&1; then
     exit 2
 fi
 
-mapfile -t ARCHIVOS < <(gawk 'NF')
-if [[ ${#ARCHIVOS[@]} -eq 0 ]]; then
+mapfile -t FILES < <(gawk 'NF')
+if [[ ${#FILES[@]} -eq 0 ]]; then
     echo "run_ts_isolated: REHUSA — no recibio ningun archivo por stdin." >&2
     exit 2
 fi
 
 # El mismo PYTHONPATH que exporta tests/run.sh: una suite que invoca un gate
 # Python no puede pasar en la suite y caer al correrla desde aqui.
-RAIZ_PROVEEDOR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-export PYTHONPATH="$RAIZ_PROVEEDOR/src${PYTHONPATH:+:$PYTHONPATH}"
+PROVIDER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PYTHONPATH="$PROVIDER_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
-ANCHO="${THYROX_TS_WIDTH:-$(nproc 2>/dev/null || echo 4)}"
-SALIDAS="$(mktemp -d)"
-trap 'rm -rf "$SALIDAS"' EXIT
+WIDTH="${THYROX_TS_WIDTH:-$(nproc 2>/dev/null || echo 4)}"
+OUTPUTS="$(mktemp -d)"
+trap 'rm -rf "$OUTPUTS"' EXIT
 
-printf '%s\n' "${ARCHIVOS[@]}" \
-  | parallel -j "$ANCHO" --joblog "$SALIDAS/joblog.tsv" --results "$SALIDAS/{#}" \
+printf '%s\n' "${FILES[@]}" \
+  | parallel -j "$WIDTH" --joblog "$OUTPUTS/joblog.tsv" --results "$OUTPUTS/{#}" \
       'bun test {}' >/dev/null 2>&1
 
 # Cada archivo: su exit y su salida. El `Seq` del joblog es el `{#}` de
 # --results, asi que empareja archivo y salida sin depender del orden.
-en_rojo=0
-while IFS=$'\t' read -r seq exitval archivo; do
-    salida="$(cat "$SALIDAS/$seq" "$SALIDAS/$seq.err" 2>/dev/null)"
+failed=0
+while IFS=$'\t' read -r seq exitval file; do
+    output="$(cat "$OUTPUTS/$seq" "$OUTPUTS/$seq.err" 2>/dev/null)"
     # El rojo lo decide el codigo de salida: un aborto o un segfault de Bun ya
     # salen con uno distinto de cero. Una comprobacion extra de senal o del
     # texto `Bun has crashed` se probo por anulacion y no discrimino ningun
     # caso, asi que no se conserva como guarda.
     if [[ "$exitval" != "0" ]]; then
-        en_rojo=$((en_rojo + 1))
-        echo "-- ROJO $archivo"
-        printf '%s\n' "$salida"
+        failed=$((failed + 1))
+        echo "-- FAIL $file"
+        printf '%s\n' "$output"
     fi
-done < <(gawk -F'\t' 'NR>1 {cmd=$9; sub(/^bun test /,"",cmd); print $1"\t"$7"\t"cmd}' "$SALIDAS/joblog.tsv" | sort -n)
+done < <(gawk -F'\t' 'NR>1 {cmd=$9; sub(/^bun test /,"",cmd); print $1"\t"$7"\t"cmd}' "$OUTPUTS/joblog.tsv" | sort -n)
 
-cat "$SALIDAS"/*.err 2>/dev/null \
-  | gawk -v archivos="${#ARCHIVOS[@]}" -v rojo="$en_rojo" '
+cat "$OUTPUTS"/*.err 2>/dev/null \
+  | gawk -v files="${#FILES[@]}" -v failed="$failed" '
       /^ *[0-9]+ pass$/ {p += $1}
       /^ *[0-9]+ fail$/ {f += $1}
       /^ *[0-9]+ errors?$/ {e += $1}
       /Bun has crashed/ {c++}
-      END {printf "pass=%d fail=%d errores=%d caidas=%d archivos=%d en_rojo=%d\n", p, f, e, c, archivos, rojo}'
+      END {printf "pass=%d fail=%d errors=%d crashes=%d files=%d failed=%d\n", p, f, e, c, files, failed}'
 
-[[ $en_rojo -eq 0 ]]
+[[ $failed -eq 0 ]]

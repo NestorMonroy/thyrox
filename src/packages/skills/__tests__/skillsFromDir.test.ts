@@ -20,7 +20,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fromSkillDir } from '../src/fromDir.ts'
 import { SkillRegistry } from '../src/registry.ts'
-import { thyroxRoot } from '../../../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
 
 // Los skills se mudaron a thyrox; el hogar viejo dejaba estos 9 casos en
 // ENOENT — el mismo defecto que las rutas codificadas de `emit`.

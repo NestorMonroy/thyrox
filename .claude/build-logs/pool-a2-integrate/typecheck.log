@@ -1,0 +1,14 @@
+check-package-typecheck: 9 provider(s) reconstruido(s) por viejos: bridge, daemon, ide, local-observability, memory, permission, provider, storage, tool-registry
+  bridge: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  daemon: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  ide: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  memory: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  repl: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 10 de 10 paquete(s))
+rc=0

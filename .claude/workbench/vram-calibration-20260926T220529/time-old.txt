@@ -1,0 +1,9 @@
+# La memoria de cada item se mide con GNU Time si esta (se instala con
+# thyrox_toolchain_require_gnu_time). Sin el, el pool corre igual y lo declara:
+# una medida ausente no es un cero.
+TIME_BIN="${HEADLESS_POOL_TIME:-/usr/bin/time}"
+HP_TIME=""
+if [[ -x "$TIME_BIN" ]] && [[ "$("$TIME_BIN" --version 2>&1)" == *"GNU Time"* ]]; then
+    HP_TIME="$TIME_BIN"
+fi
+export HP_TIME

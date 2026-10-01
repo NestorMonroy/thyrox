@@ -1,0 +1,51 @@
+== podman inspect thyrox-ollama-probe-host (campos de configuración)
+image=docker.io/ollama/ollama:0.35.0 image_id=c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48
+state=running pid=22580 started=2026-09-30 19:03:03.762815492 +0000 UTC
+network_mode=host ports=map[]
+cmd=[serve] entrypoint=/bin/ollama
+labels=map[org.opencontainers.image.version:24.04]
+restart=
+-- env (sin valores de proxy)
+LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+no_proxy=<proxy del entorno>
+https_proxy=<proxy del entorno>
+NO_PROXY=<proxy del entorno>
+OLLAMA_HOST=127.0.0.1:11534
+container=podman
+HTTPS_PROXY=<proxy del entorno>
+NVIDIA_VISIBLE_DEVICES=all
+NVIDIA_DRIVER_CAPABILITIES=compute,utility
+SSL_CERT_FILE=/etc/ssl/certs/proxy-ca.crt
+HOME=/root
+HOSTNAME=vm
+
+-- mounts
+type=volume name=thyrox-ollama-probe-models source=/var/lib/containers/storage/volumes/thyrox-ollama-probe-models/_data dest=/root/.ollama rw=true
+type=bind name= source=/root/.ccr/ca-bundle.crt dest=/etc/ssl/certs/proxy-ca.crt rw=false
+
+-- ¿vive el PID?
+pid 22580 NO existe (estado reportado falso: TASK-THYROX-0605)
+== podman volume inspect thyrox-ollama-probe-models
+name=thyrox-ollama-probe-models driver=local mountpoint=/var/lib/containers/storage/volumes/thyrox-ollama-probe-models/_data labels=map[] created=2026-09-30 19:03:01.825663018 +0000 UTC
+-- contenido
+<vol>
+<vol>/cache
+<vol>/cache/model-recommendations.json
+<vol>/id_ed25519.pub
+<vol>/id_ed25519
+<vol>/models
+<vol>/models/metadata
+<vol>/models/metadata/sha256-c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515.json
+<vol>/models/blobs
+<vol>/models/blobs/sha256-832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e
+<vol>/models/blobs/sha256-66b9ea09bd5b7099cbb4fc820f31b575c0366fa439b08245566692c6784e281e
+<vol>/models/blobs/sha256-005f95c7475154a17e84b85cd497949d6dd2a4f9d77c096e3c66e4d9c32acaf5
+<vol>/models/blobs/sha256-c5396e06af294bd101b30dce59131a76d2b773e76950acc870eda801d3ab0515
+<vol>/models/blobs/sha256-eb4402837c7829a690fa845de4d7f3fd842c2adee476d5341da8a46ea9255175
+<vol>/models/manifests
+<vol>/models/manifests/registry.ollama.ai
+<vol>/models/manifests/registry.ollama.ai/library
+bytes_totales=397828601
+-- manifiesto del modelo
+<vol>/models/manifests/registry.ollama.ai/library/qwen2.5/0.5b

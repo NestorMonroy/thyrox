@@ -1,0 +1,8 @@
+== sin exigir la unidad materializada
+  FALLA la frontera exige estar declarada, el grant y la unidad materializada — esperado [('src/runtime/grantOnly.ts', 'direct-inference'), ('src/runtime/unlisted.ts', 'direct-inference')], obtenido [('src/runtime/unlisted.ts', 'direct-inference')]
+== sin saltar comentarios
+  FALLA comentarios, pruebas, dobles y dist no son código productivo — esperado [], obtenido [('src/proxy/doc.ts', 'model-name-upstream'), ('src/proxy/doc.ts', 'direct-inference'), ('src/proxy/doc.ts', 'model-name-upstream'), ('src/session/doc.sh', 'model-name-export')]
+== sin exigir OllamaApi para .chat
+  FALLA instalar no es ejecutar, y un .chat ajeno a OllamaApi no es el runtime — esperado [], obtenido [('src/chat/session.ts', 'direct-inference')]
+== sin excluir pruebas, dobles y dist
+  FALLA comentarios, pruebas, dobles y dist no son código productivo — esperado [], obtenido [('src/pkg/__tests__/route.test.ts', 'model-name-upstream'), ('src/pkg/dist/route.js', 'model-name-upstream'), ('src/pkg/testing/fake.ts', 'direct-inference')]

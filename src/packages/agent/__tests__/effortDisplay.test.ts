@@ -18,8 +18,8 @@ import {
   resolveModelEffort,
 } from '../effort.ts'
 
-const ENV = ['CLAUDE_CODE_EFFORT_LEVEL', 'CLAUDE_CODE_ALWAYS_ENABLE_EFFORT', 'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_BASE_URL'] as const
+const ENV = ['THYROX_CODE_EFFORT_LEVEL', 'THYROX_CODE_ALWAYS_ENABLE_EFFORT', 'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_USE_VERTEX', 'THYROX_CODE_USE_FOUNDRY', 'ANTHROPIC_BASE_URL'] as const
 const saved = Object.fromEntries(ENV.map((k) => [k, process.env[k]]))
 afterEach(() => {
   for (const k of ENV) {
@@ -57,7 +57,7 @@ describe('modelSupportsEffort — `I_`', () => {
     // Bajo firstParty el proveedor confia en todo lo no excluido, asi que los
     // casos de arriba no distinguen el catalogo del respaldo. Bajo Bedrock el
     // respaldo se apaga y queda el catalogo solo.
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     expect(modelSupportsEffort('claude-sonnet-5')).toBe(true)
     expect(modelSupportsEffort('modelo-desconocido')).toBe(false)
   })
@@ -65,10 +65,10 @@ describe('modelSupportsEffort — `I_`', () => {
     for (const m of ['claude-3-7-sonnet', 'claude-opus-4-0', 'claude-opus-4-1', 'claude-sonnet-4-0',
       'claude-sonnet-4-5', 'claude-haiku-4-5']) expect(modelSupportsEffort(m)).toBe(false)
   })
-  test('CLAUDE_CODE_ALWAYS_ENABLE_EFFORT habilita lo que no esta excluido', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+  test('THYROX_CODE_ALWAYS_ENABLE_EFFORT habilita lo que no esta excluido', () => {
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     expect(modelSupportsEffort('modelo-desconocido')).toBe(false)
-    process.env.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT = '1'
+    process.env.THYROX_CODE_ALWAYS_ENABLE_EFFORT = '1'
     expect(modelSupportsEffort('modelo-desconocido')).toBe(true)
     expect(modelSupportsEffort('claude-haiku-4-5')).toBe(false)
   })
@@ -106,12 +106,12 @@ describe('getDisplayedEffortLevel y getEffortSuffix — `TT` y `Uyt`', () => {
     expect(getEffortSuffix('claude-opus-4-8', 'medium')).toBe(' with medium effort')
     expect(getEffortSuffix('claude-haiku-4-5', 'medium')).toBe('')
   })
-  test('el valor de un hook gana sobre la sesion y sobre CLAUDE_CODE_EFFORT_LEVEL', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'high'
+  test('el valor de un hook gana sobre la sesion y sobre THYROX_CODE_EFFORT_LEVEL', () => {
+    process.env.THYROX_CODE_EFFORT_LEVEL = 'high'
     expect(resolveModelEffort('claude-opus-4-8', 'low', { hookEffortValue: 'medium' })).toBe('medium')
   })
-  test('CLAUDE_CODE_EFFORT_LEVEL gana sobre la sesion', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'low'
+  test('THYROX_CODE_EFFORT_LEVEL gana sobre la sesion', () => {
+    process.env.THYROX_CODE_EFFORT_LEVEL = 'low'
     expect(getDisplayedEffortLevel('claude-opus-4-8', 'high')).toBe('low')
   })
 })

@@ -152,7 +152,7 @@ export type DedupSectionsResult<T extends NamedSection> = { sections: T[]; dupli
  * intercalable de mensajes `role: 'system'`. El mismo PRINCIPIO -- descartar
  * contenido repetido antes de que entre al prompt -- se adapta a la forma
  * real que si tenemos: la lista de SECCIONES que `assembleSystemPrompt`
- * concatena (`CLAUDE.md`, cada `.claude/rules/*.md`...).
+ * concatena (`THYROX.md`, cada `.claude/rules/*.md`...).
  *
  * Divergencia deliberada de la clave: la fuente compara
  * `content.trim().slice(0, 200)` -- un PREFIJO -- porque sus mensajes de

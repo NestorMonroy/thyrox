@@ -36,17 +36,16 @@ type Payload = {
  * Un `ask` sólo tiene sentido donde hay diálogo. En una sesión Remote
  * Control/SDK el cambio llega como `set_model` (`source: "sdk"`) y el cliente
  * lo bloquea con «Model switch blocked by a PreModelSwitch hook: confirmation
- * required, and this session cannot ask» (2.1.258). Medido en la sesión
- * 168b0fdf el 2026-09-02: el cambio a claude-opus-5 quedó `user_switch_pending`
- * y los turnos siguientes los sirvió claude-fable-5-1 (H-DOCS-1012). Ahí el
- * hook permite y deja la cifra como `systemMessage`; el ejecutor ya decidió.
+ * required, and this session cannot ask» (2.1.258): el cambio queda
+ * `user_switch_pending` y el modelo anterior sigue sirviendo los turnos
+ * (H-DOCS-1012). Ahí el hook permite y deja la cifra como `systemMessage`; el ejecutor ya decidió.
  */
 const CANNOT_ASK: ReadonlySet<string> = new Set(['sdk', 'auto', 'resume'])
 
 /**
  * Cuánto pesa un token de escritura de caché frente a uno de lectura, en el
  * tier del modelo. Es adimensional: el mismo número que el múltiplo de coste,
- * sin nombrar moneda — el ejecutor pide la razón en tokens (2026-09-02).
+ * sin nombrar moneda: la razón se da en tokens.
  */
 function writeOverRead(modelId: string, ttl: '5m' | '1h'): number | undefined {
   const p = MODELS[modelId]?.pricing

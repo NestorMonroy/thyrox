@@ -34,8 +34,8 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
    no se asume.
 3. Trabajar en TDD, con la mitad roja persistida y su control de anulación.
 4. **Antes de citar una tarea propia** en un commit, un banco o un hallazgo:
-   acuñar su cita durable con `src/task/task_ids.py ingerir-board <session_id>
-   <ordinal> --capa thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
+   acuñar su cita durable con `bin/task_ids ingest-board <session_id>
+   <ordinal> --layer thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
    board **reinicia por sesión** (332 de 337 ids miden colisión entre dos
    sesiones, `task_ids.py`) — citarlo en texto que sobrevive al turno es
    fabricar una referencia rota desde el primer commit. `TASK-THYROX-NNNN` es
@@ -43,15 +43,16 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
 5. **Cuando el trabajo destape algo que no era obvio antes de medir** —una
    cifra que resultó otra, una premisa que resultó falsa, una decisión de
    diseño ajena que explica un comportamiento— se registra con
-   `src/agents/agent_store.py agregar-hallazgo`, citando en `--source-ref` el
+   `bin/agent_store agregar-hallazgo` (el envoltorio: el `.py` es biblioteca e invocado por su ruta muere con `ModuleNotFoundError: agents`), citando en `--source-ref` el
    archivo que es la fuente de verdad. El banco (`.claude/workbench/`) y el
    job (`.claude/jobs/`) documentan *cómo* se ejecutó el trabajo; un hallazgo
    documenta *qué se aprendió* y es lo único que queda indexado y buscable
-   entre sesiones (`agent_store.py buscar-hallazgos`). No todo trabajo
+   entre sesiones (`bin/agent_store buscar-hallazgos`). No todo trabajo
    produce uno — sólo el que corrige algo que alguien podría volver a asumir.
    **Cuando el hallazgo es del consumidor** —un ``H-<PREFIJO>-NNNN`` que vive
-   como ``.rst`` en `kaupamex-docs`— el número se acuña con
-   `src/hallazgo/hallazgo_ids.py acunar <PREFIJO>`, nunca a mano con un
+   como ``.rst`` en `kaupamex-docs`— el número lo propone
+   `bin/hallazgo_ids propose-id <PREFIJO>` (el mayor usado más uno, **sin
+   reservarlo**: queda asignado al registrar su fila), nunca a mano con un
    `ls`/`grep` acotado a una sola iniciativa. Ese acotado fue exactamente el
    error que originó este mecanismo: `H-API-1112` documenta el episodio.
 
@@ -66,7 +67,7 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
      etiqueta ``:ref:`` y su fila en el índice de la iniciativa;
    - **la fila es su índice de búsqueda** entre sesiones, y no lo sustituye;
    - **la ventana entre registrar la fila y escribir el archivo es legítima
-     mientras dura.** Por eso el acuñador consulta las dos fuentes por
+     mientras dura.** Por eso `propose-id` consulta las dos fuentes por
      defecto: un número libre en los ``.rst`` puede estar ocupado por una
      fila escrita hace un minuto. Congelada, esa ventana es deuda, y quien la
      mide es `src/verify/check_finding_id_unique.py`.
@@ -87,7 +88,7 @@ sólo leía el flujo de arriba no tenía cómo saber que existían.
 
 **El paso 4 tiene gate, y no es sólo prosa esta vez.**
 `src/hooks/detect_ephemeral_citation.py` (séptimo detector de
-`pretooluse_dispatch.py`) avisa cuando un `git commit` o un archivo de
+`tool_use_preflight.py`) avisa cuando un `git commit` o un archivo de
 `.claude/workbench/`/`.claude/jobs/` cita `board #N`/`T-N` sin una cita
 durable en el mismo texto — el defecto exacto del episodio de arriba, esta
 vez detectable antes de que aterrice. Avisa, no bloquea, por la misma razón

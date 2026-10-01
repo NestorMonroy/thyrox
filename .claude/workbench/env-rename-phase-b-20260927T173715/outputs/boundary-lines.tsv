@@ -1,0 +1,17 @@
+src/agents/agent-cost.sh	19	CLAUDE_HOME
+src/hooks/bridge_hooks.py	98	CLAUDE_PID
+src/session/report_client_caps.py	105	CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS
+src/session/report_client_caps.py	143	CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH
+src/session/session_restart.py	202	CLAUDE_CODE_SESSION_ID
+src/session/transcripts.py	147	CLAUDE_CODE_SESSION_ID
+src/session/user_wiring.py	482	CLAUDE_PROJECT_DIR
+src/session/user_wiring.py	483	CLAUDE_PLUGIN_ROOT
+src/session/wait-jobs.sh	84	CLAUDE_CODE_SESSION_ID
+src/task/refrescar-tablero.sh	53	CLAUDE_CONFIG_DIR
+src/task/refrescar-tablero.sh	54	CLAUDE_TASKS_ROOT
+src/task/refrescar-tablero.sh	75	CLAUDE_CODE_TASK_LIST_ID
+src/task/refresh-board.sh	48	CLAUDE_CONFIG_DIR
+src/task/refresh-board.sh	49	CLAUDE_TASKS_ROOT
+src/task/refresh-board.sh	76	CLAUDE_CODE_TASK_LIST_ID
+src/task/snapshot-tasks.sh	90	CLAUDE_HOME
+src/verify/verify-task-store-in-cli-js.sh	32	CLAUDE_CODE_PKG_DIR

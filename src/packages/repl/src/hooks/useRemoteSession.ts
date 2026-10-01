@@ -316,15 +316,11 @@ export function useRemoteSession({
         } else if (converted.type === 'stream_event') {
           // Process streaming events to update UI in real-time
           if (setStreamingToolUses && setStreamMode) {
-            handleMessageFromStream(
-              converted.event as AgentStreamEvent,
-              message => setMessages(prev => [...prev, message]),
-              () => {
-                // No-op for response length - remote sessions don't track this
-              },
-              setStreamMode,
-              setStreamingToolUses,
-            )
+            // El largo de la respuesta no se mide en remoto: no se declara.
+            handleMessageFromStream(converted.event as AgentStreamEvent, {
+              onSetStreamMode: setStreamMode,
+              onStreamingToolUses: setStreamingToolUses,
+            })
           } else {
             logForDebugging(
               `[useRemoteSession] Stream event received but streaming callbacks not provided`,

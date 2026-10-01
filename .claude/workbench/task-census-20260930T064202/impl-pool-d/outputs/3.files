@@ -1,0 +1,3 @@
+.claude/workbench/task-thyrox-0645-worktree-verify-leak-20260930T100825/README.md
+src/session/item_worktree.sh
+tests/session/test-item-worktree-links.sh

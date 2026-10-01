@@ -10,6 +10,7 @@ import type { LogOption } from '@thyrox/agent/logsTypes.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { formatRelativeTimeAgo } from '@thyrox/output/formatters'
 import type { FeedConfig, FeedLine } from './Feed.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function createRecentActivityFeed(activities: LogOption[]): FeedConfig {
   const lines: FeedLine[] = activities.map(log => {
@@ -63,8 +64,8 @@ export function createProjectOnboardingFeed(steps: Step[]): FeedConfig {
 export function createGuestPassesFeed(): FeedConfig {
   const reward = getCachedReferrerReward()
   const subtitle = reward
-    ? `Share Claude Code and earn ${formatCreditAmount(reward)} of extra usage`
-    : 'Share Claude Code with friends'
+    ? `Share ${PRODUCT_NAME} and earn ${formatCreditAmount(reward)} of extra usage`
+    : `Share ${PRODUCT_NAME} with friends`
   return {
     title: '3 guest passes',
     lines: [],

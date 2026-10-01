@@ -119,7 +119,7 @@ export const TOOL_SEARCH_BETA_HEADER_3P = 'tool-search-tool-2025-10-19'
 // `betas.ts` — reducido a los seis símbolos que `claudeLegacyRuntime.ts`
 // consume. `getModelBetas`/`getMergedBetas` en la fuente calculan la
 // lista completa de betas por-modelo con docenas de gates de GrowthBook;
-// aquí devuelven la base mínima verbatim-correcta (Claude Code +
+// aquí devuelven la base mínima verbatim-correcta (thyrox +
 // interleaved thinking), sin los gates opt-in.
 // ---------------------------------------------------------------------------
 
@@ -591,7 +591,7 @@ export function validateBoundedIntEnvVar(
 export { returnValue as returnValueFromGenerator }
 
 export function getOrCreateUserID(): string {
-  return readEnv('CLAUDE_CODE_USER_ID') ?? sessionId
+  return readEnv('THYROX_CODE_USER_ID') ?? sessionId
 }
 
 export function resolveAppliedEffort(_options: unknown): string | undefined {

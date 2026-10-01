@@ -16,6 +16,7 @@ import { switchModel } from '../loop/sessions/modelSwitch.ts'
 import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import type { AssistantTurn } from '../loop/types.ts'
 
@@ -395,9 +396,11 @@ describe('T-017 — el tablero como emisor (TaskCreated · TaskCompleted)', () =
    * acoplarla a ella la ataría a un harness concreto. El bucle ya sabe el
    * nombre de la herramienta y su resultado, que es todo lo que hace falta.
    */
-  const conTablero = (d: string) => ({
-    ...base(d), tools: [...CORE_TOOLS, ...taskTools({ dbPath: join(d, 'tablero.sqlite3') })],
-  })
+  const conTablero = (d: string) => {
+    const dbPath = join(d, 'tablero.sqlite3')
+    createMigratedTaskDb(dbPath)
+    return { ...base(d), tools: [...CORE_TOOLS, ...taskTools({ dbPath })] }
+  }
 
   test('TaskCreated dispara al crear, y lleva el id que el tablero asigno', async () => {
     const d = dir()
@@ -419,6 +422,7 @@ describe('T-017 — el tablero como emisor (TaskCreated · TaskCompleted)', () =
     const s = espia(d, 'ev')
     const cfg = { hooks: [{ type: 'command' as const, command: s.command }] }
     const dbPath = join(d, 'tablero.sqlite3')
+    createMigratedTaskDb(dbPath)
     const herramientas = [...CORE_TOOLS, ...taskTools({ dbPath })]
     // crear → in_progress → completed: tres llamadas, UN evento
     const p = new RecordedProvider([

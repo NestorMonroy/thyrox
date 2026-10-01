@@ -4,7 +4,7 @@ El defecto, medido antes de escribir esto
 (``.claude/workbench/vocabulario-de-estado-en-el-store-20260917T223234/``):
 la tabla ``tasks`` acepta ``borrador``, ``DONE``, ``in-progress``, ``deleted``
 y la cadena vacia. El vocabulario esta declarado dos veces y en dos lenguas —
-``src/task/schema.ts::TASK_STATUSES`` y el ``choices`` de un subcomando de
+``src/packages/task/schema.ts::TASK_STATUSES`` y el ``choices`` de un subcomando de
 ``agent_store.py``— y ninguna de las dos gobierna lo que entra.
 
 Por que la TABLA y no un guard en cada escritor: hay **cuatro** sitios de

@@ -121,6 +121,7 @@ import type {
 import { deletePermissionRuleFromSettings, shouldAllowManagedPermissionRulesOnly } from './permissionsLoader.js'
 import { canSandboxAutoAllowBash } from './ruleBasedPermissions.js'
 import { classifyYoloAction, formatActionForClassifier } from './yoloClassifier.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type ToolPermissionContext = {
   alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>
@@ -441,7 +442,7 @@ export function createPermissionRequestMessage(toolName: string, decisionReason?
         return `Current permission mode (${permissionModeTitleDeferred(decisionReason.mode as string)}) requires approval for this ${toolName} command`
     }
   }
-  return `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`
+  return `${PRODUCT_NAME} requested permissions to use ${toolName}, but you haven't granted it yet.`
 }
 
 // La mitad por reglas de la decisión (`oT` de 2.1.275) vive en su propio

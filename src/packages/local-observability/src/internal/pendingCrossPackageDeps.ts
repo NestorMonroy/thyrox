@@ -29,9 +29,7 @@
  * archivo son exactamente los que NO pasan esa verificación.
  */
 
-import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
-import { join } from 'node:path'
 import { performance as nodePerformance } from 'node:perf_hooks'
 
 // ---------------------------------------------------------------------------
@@ -39,71 +37,11 @@ import { performance as nodePerformance } from 'node:perf_hooks'
 // ---------------------------------------------------------------------------
 
 /**
- * SUSTITUTO RETIRADO. Su motivo declarado —«`@thyrox/config` sólo exporta
- * `isEnvTruthy`/`readEnv`/`getAllEnv`»— dejó de ser cierto: el símbolo
- * está en `config/env/utils.ts`, memoizado, con la clave del memo puesta
- * a `CLAUDE_CONFIG_DIR`. Se reexporta el canónico en vez de mantener una
- * segunda copia que puede divergir sin que nada lo delate.
- */
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
-export { getClaudeConfigHomeDir }
-
-/**
- * Sustituto de `@claude-code-how-works/config/env/utils.js`'s
- * `isEnvDefinedFalsy` — verbatim a `utils.ts:50-58`.
- */
-export function isEnvDefinedFalsy(
-  envVar: string | boolean | undefined,
-): boolean {
-  if (envVar === undefined) return false
-  if (typeof envVar === 'boolean') return !envVar
-  if (!envVar) return false
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['0', 'false', 'no', 'off'].includes(normalizedValue)
-}
-
-/**
- * Sustituto de `@claude-code-how-works/config/hash.js`'s `djb2Hash` —
- * verbatim a `hash.ts:7-13`. `@thyrox/config` no declara `./hash` en su
- * `exports` (el archivo ni siquiera existe en este árbol todavía).
- */
-export function djb2Hash(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
-  }
-  return hash
-}
-
-/**
- * Sustituto de `@claude-code-how-works/storage/fsOperations.js`'s
- * `getErrnoCode` — verbatim a `fsOperations.ts:113-119`. Duplica el mismo
- * sustituto que `@thyrox/storage: src/fsOperations.ts` ya declara para su
- * propio uso interno (ninguno de los dos importa al otro — DEC-04-like:
- * ver la nota de "Duplicación conocida" al final de este archivo).
- */
-export function getErrnoCode(e: unknown): string | undefined {
-  if (e && typeof e === 'object' && 'code' in e && typeof e.code === 'string') {
-    return e.code
-  }
-  return undefined
-}
-
-/**
  * Sustituto de `@claude-code-how-works/storage/toolResultStorage.js`'s
  * `TOOL_RESULTS_SUBDIR` — verbatim a `toolResultStorage.ts:27` (constante,
  * sin lógica). `@thyrox/storage` no exporta ese subpath.
  */
 export const TOOL_RESULTS_SUBDIR = 'tool-results'
-
-/**
- * Sustituto de `@claude-code-how-works/storage/sessionStorage.js`'s
- * `getProjectsDir` — verbatim a `sessionPaths.ts:20-22`
- * (`join(getClaudeConfigHomeDir(), 'projects')`).
- */
-export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
-}
 
 /**
  * Sustituto de `@claude-code-how-works/storage/sessionStoragePredicates.js`'s
@@ -129,15 +67,6 @@ export function isTranscriptMessage(entry: {
  * no declara `./messages` ni `./messagesConstants` en su `exports`.
  */
 export const SYNTHETIC_MODEL = '<synthetic>'
-
-/**
- * Sustituto de `@claude-code-how-works/shell/legacy/shellToolUtils.js`'s
- * `SHELL_TOOL_NAMES` — verbatim (`[BASH_TOOL_NAME, POWERSHELL_TOOL_NAME]`,
- * con los literales reales de
- * `tool-registry/src/tools/{BashTool,PowerShellTool}/toolName.ts`).
- * `@thyrox/shell` no exporta `./legacy/shellToolUtils.js`.
- */
-export const SHELL_TOOL_NAMES: string[] = ['Bash', 'PowerShell']
 
 /**
  * Sustituto de `@claude-code-how-works/app-host/startup/profilerBase.js`'s
@@ -185,112 +114,6 @@ export function formatTimelineLine(
   return `[+${formatMs(totalMs).padStart(totalPad)}ms] (+${formatMs(deltaMs).padStart(deltaPad)}ms) ${name}${extra}${memInfo}`
 }
 
-/**
- * Sustituto de `@claude-code-how-works/storage/lockfile.js` — mismo wrapper
- * perezoso sobre `proper-lockfile` (verbatim a `lockfile.ts`), salvo que
- * aquí SÍ se instala `proper-lockfile` como dependencia real de este
- * paquete (`bun add`, con acceso de red confirmado en este contenedor) en
- * vez de mantenerlo como una carga diferida CJS — Bun resuelve el import
- * ESM sin el costo de arranque que la fuente evitaba.
- */
-import type {
-  CheckOptions as LockfileCheckOptions,
-  LockOptions as LockfileLockOptions,
-  UnlockOptions as LockfileUnlockOptions,
-} from 'proper-lockfile'
-import * as properLockfile from 'proper-lockfile'
-
-export function lock(
-  file: string,
-  options?: LockfileLockOptions,
-): Promise<() => Promise<void>> {
-  return properLockfile.lock(file, options)
-}
-
-export function unlock(
-  file: string,
-  options?: LockfileUnlockOptions,
-): Promise<void> {
-  return properLockfile.unlock(file, options)
-}
-
-export function checkLock(
-  file: string,
-  options?: LockfileCheckOptions,
-): Promise<boolean> {
-  return properLockfile.check(file, options)
-}
-
-/**
- * Sustituto MÍNIMO de
- * `@claude-code-how-works/storage/fsOperations.js`'s `FsOperations` +
- * `getFsImplementation`/`setFsImplementation`. La interfaz real de la
- * fuente (y de `@thyrox/storage: src/fsOperations.ts`, que ya la porta
- * completa pero SIN exportarla) tiene ~30 métodos; este paquete sólo
- * llama a 9 (medido con
- * `grep -rhoE "\b(fs|fsImpl)\.[a-zA-Z]+|getFsImplementation\(\)\.[a-zA-Z]+"`
- * sobre todo `src/`). Declarar los 30 sería fabricar superficie que nadie
- * ejercita; declarar sólo 9 es la divergencia — cuando `@thyrox/storage`
- * exporte `./fsOperations.js`, este bloque entero se retira y los
- * importadores pasan a `getFsImplementation` real.
- */
-export type FsDirent = { name: string; isFile(): boolean; isDirectory(): boolean }
-export type FsStats = { mtime: Date; size: number }
-export type FsOperations = {
-  readdir(path: string): Promise<FsDirent[]>
-  readFile(path: string, options?: { encoding: 'utf-8' }): Promise<string>
-  unlink(path: string): Promise<void>
-  stat(path: string): Promise<FsStats>
-  rm(path: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>
-  rmdir(path: string): Promise<void>
-  mkdir(path: string, options?: { recursive?: boolean }): Promise<void>
-  appendFileSync(path: string, content: string): void
-  mkdirSync(path: string, options?: { recursive?: boolean }): void
-}
-
-export const NodeFsOperations: FsOperations = {
-  async readdir(path) {
-    const dirents = await fsPromises.readdir(path, { withFileTypes: true })
-    return dirents.map(d => ({
-      name: d.name,
-      isFile: () => d.isFile(),
-      isDirectory: () => d.isDirectory(),
-    }))
-  },
-  readFile(path, options) {
-    return fsPromises.readFile(path, options?.encoding ?? 'utf-8')
-  },
-  unlink(path) {
-    return fsPromises.unlink(path)
-  },
-  async stat(path) {
-    const s = await fsPromises.stat(path)
-    return { mtime: s.mtime, size: s.size }
-  },
-  rm(path, options) {
-    return fsPromises.rm(path, options)
-  },
-  rmdir(path) {
-    return fsPromises.rmdir(path)
-  },
-  mkdir(path, options) {
-    return fsPromises.mkdir(path, options).then(() => undefined)
-  },
-  appendFileSync(path, content) {
-    fs.appendFileSync(path, content)
-  },
-  mkdirSync(path, options) {
-    fs.mkdirSync(path, options)
-  },
-}
-
-let _fsImplementation: FsOperations = NodeFsOperations
-export function getFsImplementation(): FsOperations {
-  return _fsImplementation
-}
-export function setFsImplementation(impl: FsOperations): void {
-  _fsImplementation = impl
-}
 
 /**
  * Sustituto MÍNIMO de `@claude-code-how-works/storage/json.js`'s
@@ -322,25 +145,6 @@ export function parseJSONL<T>(data: string): T[] {
     }
   }
   return results
-}
-
-/**
- * Sustituto de `@claude-code-how-works/output/utils/displayTags.js`'s
- * `stripDisplayTags`/`stripDisplayTagsAllowEmpty` — verbatim a
- * `output/src/utils/displayTags.ts:14-35`. Mismo motivo que
- * `internal/bufferedWriter.ts`: `output` está en porte concurrente (otro
- * agente, esta misma sesión) — se sustituye en vez de depender de un
- * paquete en vuelo.
- */
-const XML_TAG_BLOCK_PATTERN = /<([a-z][\w-]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
-
-export function stripDisplayTags(text: string): string {
-  const result = text.replace(XML_TAG_BLOCK_PATTERN, '').trim()
-  return result || text
-}
-
-export function stripDisplayTagsAllowEmpty(text: string): string {
-  return text.replace(XML_TAG_BLOCK_PATTERN, '').trim()
 }
 
 // ---------------------------------------------------------------------------
@@ -533,6 +337,7 @@ let _getSettingsImpl: () => ObservedSettings | undefined = () => undefined
 export function getSettings(): ObservedSettings | undefined {
   return _getSettingsImpl()
 }
+// homonym setGetSettingsFn: es el setter DI del `getSettings` de arriba (que sigue aquí porque su original, `@thyrox/config/plugin/_deps`, cerraría un ciclo); el de `@thyrox/shell/providers/resolveDefaultShell.js` inyecta OTRO `getSettings`, el del shell por defecto.
 export function setGetSettingsFn(fn: () => ObservedSettings | undefined): void {
   _getSettingsImpl = fn
 }
@@ -606,12 +411,10 @@ export type EventLoggerLike = {
     attributes: Record<string, unknown>
   }): void
 }
-// CORREGIDO 2026-09-24. El default devolvía `null` porque
-// `app-host/bootstrap/state.js` «no estaba exportado»; lo está desde que se
-// cerraron los `exports`. Como NADIE llama a `setGetEventLoggerFn` en
-// producción, con `null` todo evento OTel de este paquete se descartaba
-// siempre. El default lee ahora el estado real de `app-host`, perezoso porque
-// `app-host` depende de este paquete; el setter queda para las pruebas.
+// El default lee el estado real de `app-host`, perezoso porque `app-host`
+// depende de este paquete. Nadie llama a `setGetEventLoggerFn` en producción,
+// así que un default `null` descartaría todo evento OTel; el setter queda
+// para las pruebas.
 function appHostState(): {
   getEventLogger?: () => EventLoggerLike | null
   getPromptId?: () => string | null
@@ -639,28 +442,6 @@ export function getPromptId(): string | undefined {
 }
 export function setGetPromptIdFn(fn: () => string | undefined): void {
   _getPromptIdImpl = fn
-}
-
-/**
- * `registerCleanup` — de
- * `@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js`. Mismo
- * motivo de subpath no exportado. Default: ejecuta el callback
- * directamente en `process.on('exit', ...)`  — un registro fiel de
- * "correr esto al salir", sin las garantías de orden/una-sola-vez que el
- * registro real de app-host aporta (documentadas como fuera de alcance).
- */
-let _registerCleanupImpl: (fn: () => void | Promise<void>) => void = fn => {
-  process.on('exit', () => {
-    void fn()
-  })
-}
-export function registerCleanup(fn: () => void | Promise<void>): void {
-  _registerCleanupImpl(fn)
-}
-export function setRegisterCleanupFn(
-  fn: (cleanup: () => void | Promise<void>) => void,
-): void {
-  _registerCleanupImpl = fn
 }
 
 /**
@@ -712,50 +493,6 @@ export function setAddSlowOperationFn(
 }
 
 /**
- * `getOrCreateUserID` — de `@claude-code-how-works/config` (bare barrel).
- * `@thyrox/config`'s `.` no declara este símbolo. Default `undefined` —
- * `telemetry/attributes.ts` ya trata un `userId` ausente como atributo
- * omitido (no lo fuerza).
- */
-let _getOrCreateUserIDImpl: () => string | undefined = () => undefined
-export function getOrCreateUserID(): string | undefined {
-  return _getOrCreateUserIDImpl()
-}
-export function setGetOrCreateUserIDFn(fn: () => string | undefined): void {
-  _getOrCreateUserIDImpl = fn
-}
-
-/**
- * `envDynamic` — de `@claude-code-how-works/config/env/dynamic.js`. En la
- * fuente NO es una función: es un objeto (`{ ...env, terminal:
- * getTerminalWithJetBrainsDetection(), … }`, `dynamic.ts:144-152`) leído
- * con `envDynamic.terminal` — `telemetry/attributes.ts` sólo consume ese
- * campo. Ese archivo no existe en `@thyrox/config`. Se sustituye por un
- * objeto mutable (no una función) con el mismo campo, para preservar la
- * sintaxis de acceso `envDynamic.terminal` del llamador; `terminal:
- * undefined` por defecto (atributo omitido en `telemetry/attributes.ts`).
- */
-export const envDynamic: { terminal: string | undefined } = {
-  terminal: undefined,
-}
-
-/**
- * `isEssentialTrafficOnly` — de
- * `@claude-code-how-works/config/env/privacy-level.js`. Ese archivo no
- * existe en `@thyrox/config`. Default `false` — la ruta menos restrictiva
- * (no suprime telemetría por privacidad) es la que ya rige hoy sin este
- * subsistema portado; suprimir de más sería inventar una política que
- * nadie declaró.
- */
-let _isEssentialTrafficOnlyImpl: () => boolean = () => false
-export function isEssentialTrafficOnly(): boolean {
-  return _isEssentialTrafficOnlyImpl()
-}
-export function setIsEssentialTrafficOnlyFn(fn: () => boolean): void {
-  _isEssentialTrafficOnlyImpl = fn
-}
-
-/**
  * `getOauthAccountInfo` — de
  * `@claude-code-how-works/provider/authAlias.js` (real: `authAlias.ts:1655`,
  * devuelve `AccountInfo | undefined`). `@thyrox/provider` exporta sólo
@@ -778,25 +515,6 @@ export function setGetOauthAccountInfoFn(
   fn: () => OauthAccountInfoLike | undefined,
 ): void {
   _getOauthAccountInfoImpl = fn
-}
-
-/**
- * `writeToStderr` — de `@claude-code-how-works/shell/process.js`.
- * `@thyrox/shell` SÍ exporta `./process.js`, pero el archivo real
- * (`src/process.ts`) no declara `writeToStderr` todavía (sólo lo nombra
- * en un comentario de docstring que enumera lo que la fuente tiene) —
- * confirmado con `grep -n "^export function writeToStderr"` → 0 hits.
- * Sustituto fiel: `process.stderr.write` directo, que es exactamente lo
- * que la fuente hace antes de sus guards de EPIPE/backpressure (fuera de
- * alcance reproducir esos guards aquí).
- */
-export function writeToStderr(text: string): void {
-  try {
-    process.stderr.write(text)
-  } catch {
-    // Igual que la fuente: un fallo de escritura a stderr no debe
-    // interrumpir el flujo de quien está logueando.
-  }
 }
 
 /*

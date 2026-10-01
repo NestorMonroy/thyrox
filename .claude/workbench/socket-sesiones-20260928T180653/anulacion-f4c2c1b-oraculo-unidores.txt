@@ -1,0 +1,2 @@
+patrones=6 entradas=20000 discrepancias=1
+LLo: el texto del patrón difiere

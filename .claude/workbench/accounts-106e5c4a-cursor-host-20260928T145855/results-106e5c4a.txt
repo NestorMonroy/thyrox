@@ -1,0 +1,48 @@
+# Anulaciones 106e-5c-4a — primera pasada
+== 1: sin cola -> 1
+== 2: fallo corta la cola -> 0
+== 3: cola sin olvidar -> 1
+== 4: stdin en tubería -> 1
+== 5: sin plazo -> 1
+== 6: sin SIGKILL -> 1
+== 7: stderr perdido -> 1
+== 8: error no rechaza -> 2
+== 9: sin ubicaciones fijas -> 1
+== 10: PATH siempre -> 1
+== 11: sin PATH -> 1
+== 12: sin GPT -> 2
+== 13: sin versión con punto -> 1
+== 14: auto sin nombre -> 2
+== 15: duplicados -> 1
+== 16: sin formato antiguo -> 2
+== 17: Tip no corta -> 1
+== 18: sin reintento antiguo -> 1
+== 19: no autenticado sin nombre -> 1
+== 20: ENOENT sin nombre -> 1
+== 21: sin buscar binario -> 0
+== 22: which ignorado -> 1
+== 23: sin .desktop -> 1
+== 24: sin desenvolver JSON -> 2
+== 25: el último gana -> 1
+== 26: machineId pisa -> 1
+== 27: refresh como access -> 0
+== 28: difuso pisa -> 1
+== 29: sin Insiders -> 2
+== 30: token no textual -> 1
+== 31: sólo auth.json -> 1
+== 32: archivo roto corta -> 1
+== 33: sin cabecera al abrir -> 1
+== 34: plataforma sin base -> 1
+== 35: instalación no mirada -> 1
+== 36: mac sin probar canales -> 1
+== 37: mac sin nombrar la base -> 1
+== 38: difuso en Linux -> 1
+== 39: sin difuso -> 1
+== 40: sin token vale -> 2
+== 41: lectura lanza -> 1
+== restaurado -> 0
+
+# 21 y 27 afiladas; 2 retirada por muerta
+== 21: sin buscar binario -> 1
+== 27: refresh como access -> 1
+== restaurado -> 0

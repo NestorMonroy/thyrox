@@ -3,7 +3,7 @@
 
 Escrita ANTES del guion (TDD, directiva del ejecutor 2026-09-02). Lo que fija:
 
-1. **La sonda nunca hereda la sesión.** Un ``claude -p`` hijo en este
+1. **La sonda nunca hereda la sesión.** Un ``thyrox -p`` hijo en este
    contenedor toma ``CLAUDE_CODE_SESSION_ID`` del entorno y escribe con el
    id de la sesión madre (medido: el transcript del hijo apareció bajo
    ``-home-user-probe-empty/168b0fdf….jsonl``). Cada comando lleva
@@ -44,8 +44,8 @@ HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location(
     "probe_model_switch_cache", HERE / "session" / "probe_model_switch_cache.py"
 )
+assert spec is not None and spec.loader is not None
 probe = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
 spec.loader.exec_module(probe)
 
 PASS = 0

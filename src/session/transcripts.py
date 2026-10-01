@@ -78,7 +78,12 @@ def transcripts_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     un consumidor que declare la variable despues del ``import`` no la ve y
     ningun control puede variarla.
     """
-    declared = env_value(TRANSCRIPTS_DIR_VAR, start)
+    # `env_value` exige `Path | None`; un `start` de tipo `str` (aceptado aqui
+    # por comodidad del llamador) tenia que normalizarse antes, o
+    # `env_value` habria operado sobre un `str` como si fuera `Path` — bug
+    # real, no solo del analizador.
+    start_path = pathlib.Path(start) if isinstance(start, str) else start
+    declared = env_value(TRANSCRIPTS_DIR_VAR, start_path)
     if declared:
         return pathlib.Path(declared).expanduser().resolve()
 
@@ -139,4 +144,5 @@ def session_id_declared() -> str:
     una de las dos podria envejecer sola, que es el defecto que este modulo
     cierra un nivel mas arriba.
     """
+    # thyrox-rename: keep — el id de la sesión anfitriona
     return os.environ.get("CLAUDE_CODE_SESSION_ID", "")

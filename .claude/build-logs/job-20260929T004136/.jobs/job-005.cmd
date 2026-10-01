@@ -1,0 +1,1 @@
+python3 tests/hooks/test_detect_agent_dispatch.py

@@ -1,0 +1,11 @@
+pgvector 0.8.6
+vector(2000) hnsw	aceptado
+vector(2001) hnsw	rechazado	ERROR:  column cannot have more than 2000 dimensions for hnsw index 
+halfvec(4000) hnsw	aceptado
+halfvec(4001) hnsw	rechazado	ERROR:  column cannot have more than 4000 dimensions for hnsw index 
+bit(64000) hnsw	aceptado
+bit(64001) hnsw	rechazado	ERROR:  column cannot have more than 64000 dimensions for hnsw index 
+vector(3072) via binary_quantize	aceptado
+vector(16000) via binary_quantize	aceptado
+halfvec(16000) via binary_quantize	aceptado
+vector(16001) columna	ERROR:  dimensions for type vector cannot exceed 16000 LINE 1: ...h_path=pgv_limits_29076,public; CREATE TABLE t (e vector(160...                                                              ^ 

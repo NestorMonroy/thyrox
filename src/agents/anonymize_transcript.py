@@ -107,6 +107,7 @@ EPOCH = "2026-01-01T00:00:00.000Z"
 def load_instrument():
     """El hook, cargado por ruta — es la única fuente de las tres extracciones."""
     spec = importlib.util.spec_from_file_location("ras", hook_path())
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

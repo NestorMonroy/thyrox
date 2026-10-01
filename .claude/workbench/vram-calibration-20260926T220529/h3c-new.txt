@@ -1,0 +1,3 @@
+# 2. Dos pools a la vez, TAMBIÉN medidos: cada uno deja su fila, que es la
+#    evidencia de la carga concurrente real.
+for p in a b; do printf 'item-%s\n' "$p" | pool "$p" > "$OUT/pool-$p.salida" 2>&1 & done

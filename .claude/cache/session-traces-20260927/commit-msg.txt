@@ -1,0 +1,13 @@
+Keep foreign-client constants out of the env rename
+
+renameEnvPrefix matched any CLAUDE_CODE_<X> token, so it would also
+rename TypeScript constants that model the foreign client rather than
+configure thyrox: the claude-code-20250219 beta header sent on the
+wire, its settings schema URL, its docs map and its guide agent.
+OmniRoute draws the same line with CLAUDE_CODE_CLIENT_VERSION.
+
+Those five names now live in FOREIGN_CONSTANTS and the renamer leaves
+them intact. The suite checks that every CLAUDE_CODE_* declaration in
+src/ belongs to the set, so a new one cannot be renamed silently.
+Annulment: dropping the skip fails one case; emptying the set fails
+both new cases.

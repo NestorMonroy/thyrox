@@ -1,0 +1,179 @@
+diff --git a/src/packages/model-scheduling/memoryVramLedger.ts b/src/packages/model-scheduling/memoryVramLedger.ts
+index 6a22a0dfd..6de28f66f 100644
+--- a/src/packages/model-scheduling/memoryVramLedger.ts
++++ b/src/packages/model-scheduling/memoryVramLedger.ts
+@@ -10,6 +10,8 @@
+  */
+ import type {
+   FencedVramLedger,
++  RequestAllocation,
++  RequestAllocationOutcome,
+   ResidencyVramLedger,
+   ReservationOutcome,
+   VramReservation,
+@@ -23,13 +25,106 @@ export interface MemoryVramLedgerOptions {
+ 
+ const UNDECLARED_CAPACITY_MIB = 0
+ const RESERVATION_ID_PREFIX = 'vram-reservation-'
++const ALLOCATION_ID_PREFIX = 'vram-allocation-'
+ 
+ interface DeviceShortfall {
+   readonly device: string
+   readonly freeMib: number
+ }
+ 
++/** MiB comprometidos en un dispositivo fuera de las reservas del núcleo. */
++type CommittedOutsideReservations = (device: string) => number
++
++/**
++ * El estado del ledger con fencing, expuesto a quien lo extiende: la reserva
++ * activa por id, la generación que supera a una dada y la VRAM libre.
++ */
++interface FencedLedgerCore {
++  readonly ledger: FencedVramLedger
++  activeReservation(reservationId: string): VramReservation | undefined
++  supersedingGeneration(residencyKey: string, generation: number): number | undefined
++  firstShortfall(devices: readonly string[], vramMib: number): DeviceShortfall | undefined
++}
++
++const NOTHING_COMMITTED_OUTSIDE: CommittedOutsideReservations = () => 0
++
+ export function createMemoryVramLedger(options: MemoryVramLedgerOptions): FencedVramLedger {
++  return createFencedLedgerCore(options, NOTHING_COMMITTED_OUTSIDE).ledger
++}
++
++/**
++ * El ledger en memoria con asignaciones por petición (ADR-007 1.13.0). Cada
++ * asignación cuenta contra la capacidad de los dispositivos de su reserva, y
++ * soltar la reserva suelta con ella sus asignaciones.
++ */
++export function createMemoryResidencyVramLedger(options: MemoryVramLedgerOptions): ResidencyVramLedger {
++  const allocations = new Map<string, RequestAllocation>()
++  const core = createFencedLedgerCore(options, allocatedOn)
++  let issued = 0
++
++  function allocatedOn(device: string): number {
++    let total = 0
++    for (const allocation of allocations.values()) {
++      if (core.activeReservation(allocation.reservationId)?.devices.includes(device)) total += allocation.vramMib
++    }
++    return total
++  }
++
++  function dropAllocationsOf(reservationId: string): void {
++    for (const [allocationId, allocation] of allocations) {
++      if (allocation.reservationId === reservationId) allocations.delete(allocationId)
++    }
++  }
++
++  function grant(reservation: VramReservation, requestId: string, vramMib: number): RequestAllocation {
++    issued += 1
++    const allocation: RequestAllocation = {
++      allocationId: `${ALLOCATION_ID_PREFIX}${issued}`,
++      reservationId: reservation.reservationId,
++      requestId,
++      generation: reservation.generation,
++      vramMib,
++    }
++    allocations.set(allocation.allocationId, allocation)
++    return allocation
++  }
++
++  return {
++    reserve: core.ledger.reserve,
++    reservations: core.ledger.reservations,
++
++    async release(reservation: VramReservation): Promise<'released' | 'absent'> {
++      const outcome = await core.ledger.release(reservation)
++      if (outcome === 'released') dropAllocationsOf(reservation.reservationId)
++      return outcome
++    },
++
++    async allocateRequest(reservation: VramReservation, requestId: string, vramMib: number): Promise<RequestAllocationOutcome> {
++      const currentGeneration = core.supersedingGeneration(reservation.residencyKey, reservation.generation)
++      if (currentGeneration !== undefined) return { status: 'stale_generation', currentGeneration }
++      const active = core.activeReservation(reservation.reservationId)
++      if (active === undefined) return { status: 'absent' }
++      const shortfall = core.firstShortfall(active.devices, vramMib)
++      if (shortfall !== undefined) {
++        return { status: 'insufficient', device: shortfall.device, freeMib: shortfall.freeMib, requestedMib: vramMib }
++      }
++      return { status: 'allocated', allocation: grant(active, requestId, vramMib) }
++    },
++
++    async releaseRequest(allocation: RequestAllocation): Promise<'released' | 'absent'> {
++      return allocations.delete(allocation.allocationId) ? 'released' : 'absent'
++    },
++
++    async allocations(): Promise<readonly RequestAllocation[]> {
++      return [...allocations.values()]
++    },
++  }
++}
++
++function createFencedLedgerCore(
++  options: MemoryVramLedgerOptions,
++  committedOutside: CommittedOutsideReservations,
++): FencedLedgerCore {
+   const active = new Map<string, VramReservation>()
+   const highestGeneration = new Map<string, number>()
+   let issued = 0
+@@ -47,19 +142,19 @@ export function createMemoryVramLedger(options: MemoryVramLedgerOptions): Fenced
+   }
+ 
+   function freeOn(device: string): number {
+-    return capacityOf(device) - reservedOn(device)
++    return capacityOf(device) - reservedOn(device) - committedOutside(device)
+   }
+ 
+-  /** La generación vigente de la residencia si la petición es más vieja; si no, `undefined`. */
+-  function supersedingGeneration(request: VramReservationRequest): number | undefined {
+-    const highest = highestGeneration.get(request.residencyKey)
+-    return highest !== undefined && request.generation < highest ? highest : undefined
++  /** La generación vigente de la residencia si la dada es más vieja; si no, `undefined`. */
++  function supersedingGeneration(residencyKey: string, generation: number): number | undefined {
++    const highest = highestGeneration.get(residencyKey)
++    return highest !== undefined && generation < highest ? highest : undefined
+   }
+ 
+-  function firstShortfall(request: VramReservationRequest): DeviceShortfall | undefined {
+-    for (const device of request.devices) {
++  function firstShortfall(devices: readonly string[], vramMib: number): DeviceShortfall | undefined {
++    for (const device of devices) {
+       const freeMib = freeOn(device)
+-      if (freeMib < request.vramMib) return { device, freeMib }
++      if (freeMib < vramMib) return { device, freeMib }
+     }
+     return undefined
+   }
+@@ -72,11 +167,11 @@ export function createMemoryVramLedger(options: MemoryVramLedgerOptions): Fenced
+     return reservation
+   }
+ 
+-  return {
++  const ledger: FencedVramLedger = {
+     async reserve(request: VramReservationRequest): Promise<ReservationOutcome> {
+-      const currentGeneration = supersedingGeneration(request)
++      const currentGeneration = supersedingGeneration(request.residencyKey, request.generation)
+       if (currentGeneration !== undefined) return { status: 'stale_generation', currentGeneration }
+-      const shortfall = firstShortfall(request)
++      const shortfall = firstShortfall(request.devices, request.vramMib)
+       if (shortfall !== undefined) {
+         return { status: 'insufficient', device: shortfall.device, freeMib: shortfall.freeMib, requestedMib: request.vramMib }
+       }
+@@ -91,9 +186,11 @@ export function createMemoryVramLedger(options: MemoryVramLedgerOptions): Fenced
+       return [...active.values()]
+     },
+   }
+-}
+ 
+-/** El ledger en memoria con asignaciones por petición (ADR-007 1.13.0). */
+-export function createMemoryResidencyVramLedger(_options: MemoryVramLedgerOptions): ResidencyVramLedger {
+-  throw new Error('createMemoryResidencyVramLedger: por implementar')
++  return {
++    ledger,
++    activeReservation: (reservationId) => active.get(reservationId),
++    supersedingGeneration,
++    firstShortfall,
++  }
+ }

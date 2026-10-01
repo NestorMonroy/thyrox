@@ -28,6 +28,7 @@ import {
 import { WindowsToWSLConverter } from '../idePathConversion.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { getPlatform } from '@thyrox/config/platform'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onChange(
@@ -60,7 +61,7 @@ export function useDiffInIDE({
 
   const sha = useMemo(() => randomUUID().slice(0, 6), [])
   const tabName = useMemo(
-    () => `✻ [Claude Code] ${basename(filePath)} (${sha}) ⧉`,
+    () => `✻ [${PRODUCT_NAME}] ${basename(filePath)} (${sha}) ⧉`,
     [filePath, sha],
   )
 

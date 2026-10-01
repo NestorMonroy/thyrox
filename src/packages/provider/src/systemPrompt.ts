@@ -36,7 +36,7 @@ function isProactiveActive_SAFE_TO_CALL_ANYWHERE(): boolean {
  *      instructions on top of the autonomous agent prompt, like teammates do)
  *    - Otherwise: agent prompt REPLACES default
  * 3. Custom system prompt (if specified via --system-prompt)
- * 4. Default system prompt (the standard Claude Code prompt)
+ * 4. Default system prompt (the standard thyrox prompt)
  *
  * Plus appendSystemPrompt is always added at the end if specified (except when override is set).
  */
@@ -62,7 +62,7 @@ export function buildEffectiveSystemPrompt({
   // Lazy require through shim to avoid circular dependency at module load time.
   if (
     feature('COORDINATOR_MODE') &&
-    isEnvTruthy(readEnv('CLAUDE_CODE_COORDINATOR_MODE')) &&
+    isEnvTruthy(readEnv('THYROX_CODE_COORDINATOR_MODE')) &&
     !mainThreadAgentDefinition
   ) {
     const { getCoordinatorSystemPrompt } =

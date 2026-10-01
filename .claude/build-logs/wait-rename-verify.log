@@ -1,0 +1,22 @@
+asentado: job-20260927T093651_job-003 -> OK (1 de 4)
+asentado: job-20260927T093651_job-002 -> OK (1 de 4)
+asentado: rename-verify -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T093651_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T093651_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T093651_job-003
+       | (vacío — no emitió nada)
+OK     rename-verify exit=0
+       | OK     job-20260927T093651_job-003 exit=0
+       |        | bun test v1.3.11 (af24e281)
+       |        | 
+       |        |  744 pass
+       |        |  0 fail
+       |        |  1436 expect() calls
+       |        | Ran 744 tests across 53 files. [9.24s]
+       |        | EXIT=0
+       |        memoria pico: 154952 KB (151 MB) · pared 9.25s
+       | __BG_EXIT__=0
+       memoria pico: 849068 KB (829 MB) · pared 23.54s

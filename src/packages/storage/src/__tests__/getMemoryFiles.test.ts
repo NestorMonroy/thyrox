@@ -1,5 +1,5 @@
 /**
- * El cargador de CLAUDE.md de 2.1.275 (`ob`/`qwo`, `hF`, `AEe`, `x7e`/`Gtn`,
+ * El cargador de THYROX.md de 2.1.275 (`ob`/`qwo`, `hF`, `AEe`, `x7e`/`Gtn`,
  * `Iwo`, `Hwo`, `Qtn` en `chunk-q2gh92k2.js`), medido sobre un árbol
  * temporal: usuario, proyecto hacia arriba desde el cwd, reglas, locales,
  * `@include`, `paths:` y `claudeMdExcludes`.
@@ -40,7 +40,13 @@ writeFileSync(join(outside, 'destino.md'), 'DESTINO')
 symlinkSync(join(outside, 'destino.md'), join(sub, 'enlace-sale.md'))
 writeFileSync(join(outside, 'externo.md'), 'EXTERNO')
 mkdirSync(join(sub, 'excluido'))
-process.env.CLAUDE_CONFIG_DIR = home
+// Lo que este archivo cambia del PROCESO se restaura al terminar: bun corre
+// todos los archivos del paquete en un solo proceso, y el siguiente heredaba
+// un cwd ya borrado — `git.test.ts` guardaba como «original» un directorio
+// inexistente y sus 14 casos caían al volver a él.
+const cwdBefore = process.cwd()
+const configDirBefore = process.env.THYROX_CONFIG_DIR
+process.env.THYROX_CONFIG_DIR = home
 process.chdir(sub)
 
 // Los settings (y con ellos `claudeMdExcludes`) exigen los bindings de host.
@@ -50,11 +56,16 @@ const { setOriginalCwd } = await import('@thyrox/app-host/bootstrap/state.js')
 setOriginalCwd(sub)
 const { getMemoryFiles, resetGetMemoryFilesCache, clearMemoryFileCaches, getClaudeMds } = await import('../claudemd.ts')
 
-afterAll(() => rmSync(base, { recursive: true, force: true }))
+afterAll(() => {
+  process.chdir(cwdBefore)
+  if (configDirBefore === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = configDirBefore
+  rmSync(base, { recursive: true, force: true })
+})
 beforeEach(() => clearMemoryFileCaches())
 
 // El árbol temporal vive dentro de thyrox: al subir desde el cwd también
-// aparecen sus CLAUDE.md, así que se mide sólo lo que cuelga de `base`.
+// aparecen sus THYROX.md, así que se mide sólo lo que cuelga de `base`.
 const ours = async (force = false) => (await getMemoryFiles(force)).filter(f => f.path.startsWith(base) || f.path.startsWith(home))
 const contents = async (force = false) => (await ours(force)).map(f => f.content.trim())
 
@@ -85,7 +96,7 @@ describe('getMemoryFiles', () => {
     expect(files.some(f => f.content === 'NO-DEBE-CARGAR')).toBe(false)
   })
   test('un @include fuera de la raíz de la sesión sólo con la inclusión externa', async () => {
-    // Medido en 2.1.275 (`f5` contra `ye()`): el hermano de un CLAUDE.md
+    // Medido en 2.1.275 (`f5` contra `ye()`): el hermano de un THYROX.md
     // superior también queda fuera si no cuelga de la raíz de la sesión.
     expect(await contents()).not.toContain('EXTERNO')
     expect(await contents()).not.toContain('HERMANO')

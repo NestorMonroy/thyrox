@@ -22,10 +22,10 @@ const SCALAR_KEYS = [
 ] as const
 
 /**
- * `initialPrompt` es prosa y se cita como `description`. Hasta 2026-09-02 el
- * emisor omitía `background`, `isolation` e `initialPrompt` aunque el tipo y el
- * esquema del cliente los declaran: 12 de 30 agentes perdían su
- * `background: true` al re-emitirse.
+ * `initialPrompt` es prosa y se cita como `description`. El emisor escribe
+ * `background`, `isolation` e `initialPrompt` porque el tipo y el esquema del
+ * cliente los declaran: omitirlos haría perder, por ejemplo, el
+ * `background: true` de un agente al re-emitirlo.
  */
 const QUOTED_KEYS = ['initialPrompt'] as const
 

@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: lookupAffinity > observa sin refrescar: las lecturas no alargan la vida de la vinculación [1.38ms]
+ 59 pass
+ 1 fail

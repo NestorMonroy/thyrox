@@ -1,0 +1,1 @@
+timeout 1800 bash bin/check_package_typecheck --strict local-observability tool-registry bridge daemon ide memory provider permission storage repl > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/typecheck.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/typecheck.log

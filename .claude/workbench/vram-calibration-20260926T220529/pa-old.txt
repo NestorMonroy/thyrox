@@ -1,0 +1,8 @@
+    local owner="$BASHPID"
+    if [[ -n "$HP_VRAM_NEED" ]] && ! bash "$HP_GPU" admit "$HP_VRAM_NEED" --ledger "$HP_VRAM_LEDGER" \
+            --owner "$owner" --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL"; then
+        echo "admision por VRAM vencida: el item pide $HP_VRAM_NEED MiB y no hubo sitio en ${HP_TIMEOUT}s" \
+            > "$HP_OUT/$n.err"
+        : > "$HP_OUT/$n.json"
+        return 3
+    fi

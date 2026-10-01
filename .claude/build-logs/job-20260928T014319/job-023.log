@@ -1,0 +1,12 @@
+== 1. la bandera explicita manda ==
+  ok    con --repo-docs se usa tal cual
+== 2. sin bandera, se DERIVA del consumidor ya nombrado en --repo ==
+  ok    --repo docs resuelve al arbol de docs
+== 3. --claude-dir tambien lo determina ==
+  ok    el padre de .claude es la raiz
+== 4. corrido DESDE el proveedor ya no compone thyrox/source ==
+  ok    no rehusa por ruta inexistente
+  ok    y no nombra el arbol del proveedor
+
+5 ok, 0 fallos
+EXIT=0

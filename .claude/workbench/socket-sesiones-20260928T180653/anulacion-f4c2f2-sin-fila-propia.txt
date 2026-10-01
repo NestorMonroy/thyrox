@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+86 | describe('resolveUniqueName (tPt)', () => {
+87 |   test('conserva el nombre si la unicidad está apagada, sin registro, sin fila propia o sin rival', async () => {
+88 |     live.push(holder('foo'))
+89 |     expect(await resolveUniqueName('foo', 'startup', { ...context, uniquenessEnabled: () => false })).toEqual({ name: 'foo', yielded: false })
+90 |     expect(await resolveUniqueName('foo', 'startup', { ...context, registry: { ...context.registry, whenRegistered: async () => false } })).toEqual({ name: 'foo', yielded: false })
+91 |     expect(await resolveUniqueName('foo', 'startup', { ...context, pid: 999 })).toEqual({ name: 'foo', yielded: false })
+                                                                                     ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "name": "foo",
+-   "yielded": false,
++   "yielded": true,
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:91:81)
+(fail) resolveUniqueName (tPt) > conserva el nombre si la unicidad está apagada, sin registro, sin fila propia o sin rival [1.26ms]
+
+ 21 pass
+ 1 fail
+ 56 expect() calls
+Ran 22 tests across 1 file. [63.00ms]

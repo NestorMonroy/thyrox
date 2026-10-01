@@ -1,0 +1,30 @@
+== 1. la traza: fases, asignado por paso y liberación al salir ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_gpu_trace.py", line 110, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/tests/session/test_gpu_trace.py", line 66, in main
+    rows = record_on_fake(Path(tmp))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/session/test_gpu_trace.py", line 56, in record_on_fake
+    return gt.record(alloc, ctl, mib=3200, steps=4, nvidia_smi=smi, window_s=0.3, interval_s=0.05, env=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/gpu_trace.py", line 111, in record
+    _sample_window(rows, t0, proc.pid, mib, mib * i // steps, "running", nvidia_smi, window_s, interval_s)
+  File "/home/user/thyrox/src/session/gpu_trace.py", line 82, in _sample_window
+    used, free = _observe(pid, nvidia_smi)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/gpu_trace.py", line 74, in _observe
+    listed = [current.vram_by_pid[p] for p in gpu_monitor.tree(pid) if p in current.vram_by_pid]
+                                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/gpu_monitor.py", line 122, in tree
+    for children in Path(proc_root, str(current), "task").glob("*/children"):
+  File "/usr/lib/python3.11/pathlib.py", line 953, in glob
+    for p in selector.select_from(self):
+  File "/usr/lib/python3.11/pathlib.py", line 355, in _select_from
+    with scandir(parent_path) as scandir_it:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 938, in _scandir
+    return os.scandir(self)
+           ^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/proc/29845/task'

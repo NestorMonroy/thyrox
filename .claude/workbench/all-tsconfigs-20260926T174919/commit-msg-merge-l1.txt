@@ -1,0 +1,25 @@
+Merge feature/ai-course-notes-l1 into feature/thyrox-l6
+
+Brings the 13 commits l1 has on top of the last merge (95cb11e7): the
+pgrep bracket fix (5a6b22f3), the gawk opportunity gate, the jobs
+ledger home key, and poppler, TeX Live and hunspell in the toolchain.
+No file was changed on both sides, so git merged without conflicts;
+what it could not see was resolved here, where l6 is the newer branch:
+
+- l1 read 14 environment keys that .env.example never declared, which
+  turns the env contract suite red. They are declared now.
+- The three probe values (poppler's PDF and text, the TeX fallback
+  document) were fixed literals that overwrote any value. thyrox is the
+  provider: the consumer that asked for these tools decides how to use
+  them, so they become parameters with the same defaults, declared and
+  documented as a pair where they must match.
+- l1 added a detector without its bin/ wrapper; bin/ is regenerated.
+
+It also fixes a regression from 918d2e2c: bg.sh and run-task-pool.sh
+sourced toolchain.sh to ask about GNU Time, and every job inherited its
+exported defaults, which failed 3 of 6 cases of test-toolchain-sh. The
+query now runs in a subshell. New cases cover the inheritance, and a
+poppler case with a clean-env twin shows a consumer's value reaches the
+probe; its first version stayed green with the value overwritten.
+
+The 20 suites the merge touches pass on the merged tree.

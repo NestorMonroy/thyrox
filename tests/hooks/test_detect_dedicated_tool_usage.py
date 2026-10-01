@@ -8,7 +8,6 @@ cubrirlo, y ahí el aviso sería un consejo falso.
 from __future__ import annotations
 
 import importlib.util
-import pathlib
 import sys
 from pathlib import Path
 
@@ -26,6 +25,7 @@ from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_dedicated_tool_usage.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
+assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 

@@ -1,0 +1,9 @@
+# PyTorch vive en el entorno del proveedor (`uv sync --group gpu`), no en el
+# python3 del sistema.
+PY="${THYROX_PYTHON:-$RAIZ/.venv/bin/python}"
+"$PY" -c 'import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)' >/dev/null 2>&1 \
+  || rehusa "falta PyTorch con CUDA en $PY (uv sync --group gpu)"
+# GNU Time por el toolchain, la misma definición que usa el pool.
+( THYROX_TOOLCHAIN_TIME_BIN="${HEADLESS_POOL_TIME:-${THYROX_TOOLCHAIN_TIME_BIN:-}}"
+  source "$RAIZ/src/lib/toolchain.sh"; thyrox_toolchain_require_gnu_time >/dev/null 2>&1 ) \
+  || rehusa "falta GNU Time (thyrox_toolchain_require_gnu_time; THYROX_INSTALL_GNU_TIME=1 lo instala)"

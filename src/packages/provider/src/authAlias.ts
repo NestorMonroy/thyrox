@@ -18,8 +18,8 @@
  *   status-manager singleton se re-implementa localmente con
  *   `createSignal` (mismo contrato observable: `getInstance`,
  *   `startAuthentication`, `addOutput`, `setError`, `endAuthentication`).
- * - `./betas.ts` (`clearBetasCaches`) y `@claude-code-how-works/tool-registry`
- *   (`clearToolSchemaCache`) → no-op en `internal/pendingCrossPackageDeps.ts`.
+ * - `./betas.ts` (`clearBetasCaches`) → no-op en `internal/pendingCrossPackageDeps.ts`;
+ *   `clearToolSchemaCache` se importa de `@thyrox/tool-registry/toolSchemaCache.js`.
  * - `execa` se sustituye por `node:child_process` (`execFile`/`exec`
  *   promisificados) en los tres sitios que lo usaban
  *   (`_executeApiKeyHelper`, `saveApiKey`, `maybeRemoveApiKeyFromMacOSKeychainThrows`)
@@ -31,7 +31,7 @@
  *   consumidor.
  *
  * Lo que SÍ resuelve y se importa estático: `@thyrox/config/env/utils`
- * (falta `isRunningOnHomespace`, sustituto en `pendingCrossPackageDeps.ts`),
+ * (`isRunningOnHomespace` incluido),
  * `@thyrox/storage/secureStorage.js` (`getSecureStorage`, real y completo),
  * `@thyrox/storage/lockfile.js` (`lock`, real), `@thyrox/storage/secureStorage/macOsKeychainHelpers.js`
  * (`getMacOsKeychainStorageServiceName`/`getUsername`/`clearKeychainCache`,
@@ -59,17 +59,23 @@ import {
 } from './internal/authFileDescriptor.ts'
 import { logForDebugging, logAntError } from '@thyrox/local-observability/debug.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
-import { isRunningOnHomespace } from './internal/pendingCrossPackageDeps.ts'
+import { isRunningOnHomespace } from '@thyrox/config/env/utils'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { execSyncWithDefaults } from '@thyrox/shell/execFileNoThrow.js'
 import * as lockfile from '@thyrox/storage/lockfile.js'
 import { logError } from '@thyrox/local-observability/log.js'
-import { memoizeWithTTLAsync, sleep, jsonParse, clearBetasCaches, clearToolSchemaCache, createSignal } from './internal/pendingCrossPackageDeps.ts'
+import { memoizeWithTTLAsync, jsonParse, clearBetasCaches } from './internal/pendingCrossPackageDeps.ts'
+import { sleep } from '@thyrox/config/sleep'
+import { createSignal } from '@thyrox/config/signal'
+import { clearToolSchemaCache } from '@thyrox/tool-registry/toolSchemaCache.js'
 import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
 import { getMacOsKeychainStorageServiceName, getUsername, clearKeychainCache } from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import type { AccountInfo, OAuthTokens, SubscriptionType } from './internal/oauthTypes.ts'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
+import { isBareMode } from '@thyrox/config/env/utils'
 const execFileAsync = promisify(execFile)
 
 const DEFAULT_API_KEY_HELPER_TTL = 5 * 60 * 1000
@@ -141,10 +147,6 @@ function checkHasTrustDialogAccepted(): boolean {
     return true
   }
 }
-function isBareMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) || process.argv.includes('--bare')
-}
-
 // `./mockRateLimits.js` es ant-only; USER_TYPE 'ant' nunca es true fuera de
 // Anthropic. Sustituto trivial fiel a ese camino frío.
 function shouldUseMockSubscription(): boolean {
@@ -155,7 +157,7 @@ function getMockSubscriptionType(): SubscriptionType | null {
 }
 
 function isManagedOAuthContext(): boolean {
-  return isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) || readEnv('CLAUDE_CODE_ENTRYPOINT') === 'claude-desktop'
+  return isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) || readEnv('THYROX_CODE_ENTRYPOINT') === 'claude-desktop'
 }
 
 /** ¿Soportamos auth 1P directa? */
@@ -163,22 +165,22 @@ export function isAnthropicAuthEnabled(): boolean {
   if (isBareMode()) return false
 
   if (readEnv('ANTHROPIC_UNIX_SOCKET')) {
-    return !!readEnv('CLAUDE_CODE_OAUTH_TOKEN')
+    return !!readEnv('THYROX_CODE_OAUTH_TOKEN')
   }
 
   const settings = getSettings() || {}
   const is3P =
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_ANTHROPIC_AWS')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_MANTLE')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_ANTHROPIC_AWS')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_MANTLE')) ||
     settings.modelType === 'openai' ||
     settings.modelType === 'gemini' ||
     !!readEnv('OPENAI_BASE_URL') ||
     !!readEnv('GEMINI_BASE_URL')
   const apiKeyHelper = settings.apiKeyHelper
-  const hasExternalAuthToken = readEnv('ANTHROPIC_AUTH_TOKEN') || apiKeyHelper || readEnv('CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR')
+  const hasExternalAuthToken = readEnv('ANTHROPIC_AUTH_TOKEN') || apiKeyHelper || readEnv('THYROX_CODE_API_KEY_FILE_DESCRIPTOR')
 
   const { source: apiKeySource } = getAnthropicApiKeyWithSource({ skipRetrievingKeyFromApiKeyHelper: true })
   const hasExternalApiKey = apiKeySource === 'ANTHROPIC_API_KEY' || apiKeySource === 'apiKeyHelper'
@@ -200,14 +202,14 @@ export function getAuthTokenSource() {
   if (readEnv('ANTHROPIC_AUTH_TOKEN') && !isManagedOAuthContext()) {
     return { source: 'ANTHROPIC_AUTH_TOKEN' as const, hasToken: true }
   }
-  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN')) {
-    return { source: 'CLAUDE_CODE_OAUTH_TOKEN' as const, hasToken: true }
+  if (readEnv('THYROX_CODE_OAUTH_TOKEN')) {
+    return { source: 'THYROX_CODE_OAUTH_TOKEN' as const, hasToken: true }
   }
 
   const oauthTokenFromFd = getOAuthTokenFromFileDescriptor()
   if (oauthTokenFromFd) {
-    if (readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
-      return { source: 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const, hasToken: true }
+    if (readEnv('THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+      return { source: 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const, hasToken: true }
     }
     return { source: 'CCR_OAUTH_TOKEN_FILE' as const, hasToken: true }
   }
@@ -274,12 +276,12 @@ export function getAnthropicApiKeyWithSource(
     return { key: apiKeyEnv, source: 'ANTHROPIC_API_KEY' }
   }
 
-  if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+  if (isEnvTruthy(readEnv('CI'))) {
     const apiKeyFromFd = getApiKeyFromFileDescriptor()
     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
 
-    if (!apiKeyEnv && !readEnv('CLAUDE_CODE_OAUTH_TOKEN') && !readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
-      throw new Error('ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required')
+    if (!apiKeyEnv && !readEnv('THYROX_CODE_OAUTH_TOKEN') && !readEnv('THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+      throw new Error('ANTHROPIC_API_KEY or THYROX_CODE_OAUTH_TOKEN env var is required')
     }
     if (apiKeyEnv) return { key: apiKeyEnv, source: 'ANTHROPIC_API_KEY' }
     return { key: null, source: 'none' }
@@ -371,11 +373,11 @@ export function isAwsCredentialExportFromProjectSettings(): boolean {
 }
 
 export function calculateApiKeyHelperTTL(): number {
-  const envTtl = readEnv('CLAUDE_CODE_API_KEY_HELPER_TTL_MS')
+  const envTtl = readEnv('THYROX_CODE_API_KEY_HELPER_TTL_MS')
   if (envTtl) {
     const parsed = parseInt(envTtl, 10)
     if (!Number.isNaN(parsed) && parsed >= 0) return parsed
-    logForDebugging(`Found CLAUDE_CODE_API_KEY_HELPER_TTL_MS env var, but it was not a valid number. Got ${envTtl}`, { level: 'error' })
+    logForDebugging(`Found THYROX_CODE_API_KEY_HELPER_TTL_MS env var, but it was not a valid number. Got ${envTtl}`, { level: 'error' })
   }
   return DEFAULT_API_KEY_HELPER_TTL
 }
@@ -1032,8 +1034,8 @@ function inferenceOnlyToken(accessToken: string): OAuthTokens {
 export const getClaudeAIOAuthTokens = memoize((): OAuthTokens | null => {
   if (isBareMode()) return null
 
-  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN')) {
-    return inferenceOnlyToken(readEnv('CLAUDE_CODE_OAUTH_TOKEN')!)
+  if (readEnv('THYROX_CODE_OAUTH_TOKEN')) {
+    return inferenceOnlyToken(readEnv('THYROX_CODE_OAUTH_TOKEN')!)
   }
   const oauthTokenFromFd = getOAuthTokenFromFileDescriptor()
   if (oauthTokenFromFd) return inferenceOnlyToken(oauthTokenFromFd)
@@ -1061,7 +1063,7 @@ let lastCredentialsMtimeMs = 0
 
 async function invalidateOAuthCacheIfDiskChanged(): Promise<void> {
   try {
-    const { mtimeMs } = await stat(join(getClaudeConfigHomeDirLocal(), '.credentials.json'))
+    const { mtimeMs } = await stat(join(getConfigHomeDir(), '.credentials.json'))
     if (mtimeMs !== lastCredentialsMtimeMs) {
       lastCredentialsMtimeMs = mtimeMs
       clearOAuthTokenCache()
@@ -1072,12 +1074,6 @@ async function invalidateOAuthCacheIfDiskChanged(): Promise<void> {
   }
 }
 
-function getClaudeConfigHomeDirLocal(): string {
-  const override = readEnv('CLAUDE_CONFIG_DIR')
-  if (override) return override
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? '.'
-  return `${home}/.claude`
-}
 
 const pending401Handlers = new Map<string, Promise<boolean>>()
 
@@ -1116,12 +1112,12 @@ async function handleOAuth401ErrorImpl(failedAccessToken: string): Promise<boole
   const currentTokens = asView(await getClaudeAIOAuthTokensAsync())
 
   if (!currentTokens?.refreshToken) {
-    const hasEnvToken = !!readEnv('CLAUDE_CODE_OAUTH_TOKEN')
+    const hasEnvToken = !!readEnv('THYROX_CODE_OAUTH_TOKEN')
     const hasCcrToken = !!getOAuthTokenFromFileDescriptor()
     if (hasEnvToken || hasCcrToken) {
       const diskOauth = asView(await readClaudeAiOauthFromDisk())
       if (diskOauth?.accessToken && diskOauth.accessToken !== failedAccessToken) {
-        if (hasEnvToken) process.env.CLAUDE_CODE_OAUTH_TOKEN = diskOauth.accessToken
+        if (hasEnvToken) process.env.THYROX_CODE_OAUTH_TOKEN = diskOauth.accessToken
         if (hasCcrToken) setOauthTokenFromFd(diskOauth.accessToken)
         clearOAuthTokenCache()
         logEvent('tengu_oauth_401_recovered_from_disk', {})
@@ -1141,7 +1137,7 @@ async function handleOAuth401ErrorImpl(failedAccessToken: string): Promise<boole
 
 export async function getClaudeAIOAuthTokensAsync(): Promise<OAuthTokens | null> {
   if (isBareMode()) return null
-  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN') || getOAuthTokenFromFileDescriptor()) {
+  if (readEnv('THYROX_CODE_OAUTH_TOKEN') || getOAuthTokenFromFileDescriptor()) {
     return getClaudeAIOAuthTokens()
   }
   return readClaudeAiOauthFromDisk()
@@ -1152,7 +1148,7 @@ let pendingRefreshCheck: Promise<boolean> | null = null
 export async function withOAuthRefreshLock<T>(
   callback: (ctx: { lockedTokens: OAuthTokensView | null; lockAttempts: number }) => Promise<T>,
 ): Promise<T> {
-  const claudeDir = getClaudeConfigHomeDirLocal()
+  const claudeDir = getConfigHomeDir()
   await mkdir(claudeDir, { recursive: true })
   const MAX_RETRIES = 5
   let retryCount = 0
@@ -1228,7 +1224,7 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
   }
   if (!force && !isOAuthTokenExpired(freshTokens.expiresAt ?? null)) return false
 
-  const claudeDir = getClaudeConfigHomeDirLocal()
+  const claudeDir = getConfigHomeDir()
   await mkdir(claudeDir, { recursive: true })
 
   let release: (() => Promise<void>) | undefined
@@ -1421,25 +1417,25 @@ export function getRateLimitTier(): string | null {
 export function getSubscriptionName(): string {
   switch (getSubscriptionType()) {
     case 'enterprise':
-      return 'Claude Enterprise'
+      return `${PRODUCT_NAME} Enterprise`
     case 'team':
-      return 'Claude Team'
+      return `${PRODUCT_NAME} Team`
     case 'max':
-      return 'Claude Max'
+      return `${PRODUCT_NAME} Max`
     case 'pro':
-      return 'Claude Pro'
+      return `${PRODUCT_NAME} Pro`
     default:
-      return 'Claude API'
+      return 'Anthropic API'
   }
 }
 
 export function isUsing3PServices(): boolean {
   return !!(
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_ANTHROPIC_AWS')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_MANTLE'))
+    isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_ANTHROPIC_AWS')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_MANTLE'))
   )
 }
 
@@ -1463,7 +1459,7 @@ export function getOtelHeadersFromHelper(): Record<string, string> {
   const otelHeadersHelper = getConfiguredOtelHeadersHelper()
   if (!otelHeadersHelper) return {}
 
-  const debounceMs = parseInt(readEnv('CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS') || DEFAULT_OTEL_HEADERS_DEBOUNCE_MS.toString(), 10)
+  const debounceMs = parseInt(readEnv('THYROX_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS') || DEFAULT_OTEL_HEADERS_DEBOUNCE_MS.toString(), 10)
   if (cachedOtelHeaders && Date.now() - cachedOtelHeadersTimestamp < debounceMs) {
     return cachedOtelHeaders
   }
@@ -1521,7 +1517,7 @@ export function getAccountInformation() {
 
   const { source: authTokenSource } = getAuthTokenSource()
   const accountInfo: UserAccountInfo = {}
-  if (authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN' || authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR') {
+  if (authTokenSource === 'THYROX_CODE_OAUTH_TOKEN' || authTokenSource === 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR') {
     accountInfo.tokenSource = authTokenSource
   } else if (isClaudeAISubscriber()) {
     accountInfo.subscription = getSubscriptionName()
@@ -1582,7 +1578,7 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
   if (!tokens) return { valid: true }
 
   const { source } = getAuthTokenSource()
-  const isEnvVarToken = source === 'CLAUDE_CODE_OAUTH_TOKEN' || source === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
+  const isEnvVarToken = source === 'THYROX_CODE_OAUTH_TOKEN' || source === 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
 
   // Porte de 2.1.275: el perfil se pide DESPUÉS de refrescar el token, y
   // un fallo al pedirlo rehúsa con `org_verify_failed`.
@@ -1610,9 +1606,9 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
   if (isEnvVarToken) {
     // Se nombra la variable para que el usuario sepa cuál quitar.
     const envVarName =
-      source === 'CLAUDE_CODE_OAUTH_TOKEN'
-        ? 'CLAUDE_CODE_OAUTH_TOKEN'
-        : 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
+      source === 'THYROX_CODE_OAUTH_TOKEN'
+        ? 'THYROX_CODE_OAUTH_TOKEN'
+        : 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
     return {
       valid: false,
       reason: 'org_pin_mismatch',

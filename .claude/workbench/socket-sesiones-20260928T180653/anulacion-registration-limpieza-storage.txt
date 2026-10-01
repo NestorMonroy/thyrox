@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+223 |     })
+224 |     expect(await registerSession(storage(true), deps())).toBe(true)
+225 |     expect(writes).toEqual([[{ namespace: 'session', file: '4242.json' }, 4242, { publishDiscipline: 'inPlace' }]])
+226 |     expect(existsSync(pidFile())).toBe(false)
+227 |     await cleanups[0]!()
+228 |     expect(deletes).toEqual([{ namespace: 'session', file: '4242.json' }])
+                          ^
+error: expect(received).toEqual(expected)
+
+- [
+-   {
+-     "file": "4242.json",
+-     "namespace": "session",
+-   },
+- ]
++ []
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:228:21)
+(fail) registerSession (nD) > con storage escribe en su sitio, y su fallo cancela el alta [0.91ms]
+
+ 22 pass
+ 1 fail
+ 83 expect() calls
+Ran 23 tests across 1 file. [177.00ms]

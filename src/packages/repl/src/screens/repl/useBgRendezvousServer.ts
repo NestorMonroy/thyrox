@@ -2,7 +2,7 @@
  * Start the rendezvous (control) server inside a bg-worker REPL.
  *
  * This is the inner-REPL half of the rv channel (ant 4291.js). It runs
- * ONLY in a bg worker that was spawned with `CLAUDE_BG_RENDEZVOUS_SOCK`
+ * ONLY in a bg worker that was spawned with `THYROX_BG_RENDEZVOUS_SOCK`
  * set (spawnPty.ts) — i.e. the daemon-supervised PTY path. The server
  * gives the worker an out-of-band channel to its supervisor that ccb
  * previously lacked:
@@ -21,7 +21,7 @@
  * useBgFleetStateSync (which already owns the state.json writes) so the
  * two hooks don't double-write disk — see that file's sendRv calls.
  *
- * Gated on `CLAUDE_CODE_SESSION_KIND === 'bg'` AND the rv socket env. The
+ * Gated on `THYROX_CODE_SESSION_KIND === 'bg'` AND the rv socket env. The
  * server itself no-ops if the env var is unset, but we also gate here to
  * avoid importing the rv module in the foreground REPL hot path.
  */
@@ -34,8 +34,8 @@ export function useBgRendezvousServer(isLoading: boolean): void {
 
   // Start the server once on mount (bg + rv-sock gated).
   useEffect(() => {
-    if (process.env.CLAUDE_CODE_SESSION_KIND !== 'bg') return
-    if (!process.env.CLAUDE_BG_RENDEZVOUS_SOCK) return
+    if (process.env.THYROX_CODE_SESSION_KIND !== 'bg') return
+    if (!process.env.THYROX_BG_RENDEZVOUS_SOCK) return
     if (startedRef.current) return
     startedRef.current = true
 

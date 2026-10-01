@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/agents/test_store_import_without_roster.py

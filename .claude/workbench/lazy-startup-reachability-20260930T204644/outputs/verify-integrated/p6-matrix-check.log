@@ -1,0 +1,13 @@
+sin resolver: src/packages/audio-capture-napi/src/index.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/command-runtime/src/commandRuntimeInstaller.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/image-processor-napi/src/index.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/permission/src/internalPaths.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/provider/src/authAlias.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/shell/src/bash/registry.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/storage/src/claudemd.ts: <sin literal> (especificador sin literal)
+sin resolver: src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts: @thyrox/tool-registry/tools/SleepTool/SleepTool.js (`exports` no declara ./tools/SleepTool/SleepTool.js)
+sin resolver: src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts: @thyrox/tool-registry/tools/SnipTool/SnipTool.js (`exports` no declara ./tools/SnipTool/SnipTool.js)
+sin resolver: src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts: @thyrox/tool-registry/tools/TerminalCaptureTool/TerminalCaptureTool.js (`exports` no declara ./tools/TerminalCaptureTool/TerminalCaptureTool.js)
+sin resolver: src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts: @thyrox/tool-registry/tools/WebBrowserTool/WebBrowserTool.js (`exports` no declara ./tools/WebBrowserTool/WebBrowserTool.js)
+sin resolver: src/packages/transparent-napi/src/index.ts: ../native/build/Release/transparent.node (ningún archivo en la ruta relativa)
+matriz al día: /home/user/thyrox/src/packaging/reachability-matrix.tsv

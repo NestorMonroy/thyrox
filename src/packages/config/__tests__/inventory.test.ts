@@ -6,10 +6,9 @@ import { CLIENT_SETTING_KEYS, KEY_STATUS, keysByStatus, deferredReason, deferred
 import { SettingsSchema } from '../settings/types.ts'
 import { loadSettings } from '../settings/load.ts'
 
-// Criterio del ejecutor 2026-09-02: «yo quitaria la de aws, pero dejaria las
-// de git, y creo que solo quitaria las de servicios externos como aws». El
-// inventario deja de ser una opinion mia y pasa a ser una particion
-// verificable: cada una de las 80 tiene estado y, si esta retirada, motivo.
+// Criterio: se retiran las claves de servicios externos (aws) y se conservan
+// las de git. El inventario es una particion verificable: cada clave tiene
+// estado y, si esta retirada, motivo.
 
 describe('inventario de las 80 claves del cliente', () => {
   test('son exactamente las 80 medidas, sin repetir', () => {
@@ -38,8 +37,8 @@ describe('inventario de las 80 claves del cliente', () => {
   })
 
   test('DIFERIDA no es descartada: cada una declara que la traeria de vuelta', () => {
-    // Directiva del ejecutor 2026-09-02: «me parece bien las 17 … pero quedan
-    // a un futuro». Sin condicion escrita, «a futuro» es un cajon sin llave:
+    // Una clave diferida queda para el futuro, y sin condicion escrita «a
+    // futuro» es un cajon sin llave:
     // es lo mismo que hallazgo-abierto-genera-sucesor exige de un hallazgo.
     for (const k of keysByStatus().diferida) {
       const condicion = deferredCondition(k)

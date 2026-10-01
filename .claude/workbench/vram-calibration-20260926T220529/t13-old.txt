@@ -1,0 +1,2 @@
+    check("sin pico de VRAM en el historial, sin tope", None,
+          ph.derive(TMP / "h-sin-gpu", MODEL, catalog, free_vram_mib=12000).width_cap)

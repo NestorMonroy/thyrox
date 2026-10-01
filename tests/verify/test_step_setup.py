@@ -15,10 +15,14 @@ Qué haría fallar a este control:
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
+from paths import reach
 from verify import step_setup as ss
 
 passed = failed = 0
@@ -102,6 +106,43 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("la mejor configuración de la ruta, entre las que tienen evidencia", a["setup_id"],
                  ss.best_setup(run, "local", min_trials=4))
     assert_equal("sin evidencia suficiente no se elige ninguna", None, ss.best_setup(run, "local", min_trials=5))
+
+# --- register es leer-comprobar-añadir: sin lock, dos procesos que registran
+# el mismo setup a la vez lo escriben dos veces. Se mide con N procesos que
+# registran los MISMOS 30 setups; cada id tiene que quedar una sola vez.
+REGISTER_WORKER = """
+import sys, time
+from pathlib import Path
+from verify import step_setup as ss
+run, scaffold, go = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+# Un disco lento, inyectado en el worker y no en el código: 5 ms después de
+# leer `setups.jsonl`. Sin eso la ventana leer->añadir es de microsegundos y
+# el caso pasaría con lock y sin él, que es un verde que no discrimina.
+read_text = Path.read_text
+def slow_read(self, *args, **kwargs):
+    text = read_text(self, *args, **kwargs)
+    if self.name == ss.SETUPS:
+        time.sleep(0.005)
+    return text
+Path.read_text = slow_read
+while not go.exists():
+    time.sleep(0.001)
+for n in range(30):
+    ss.register(run, ss.setup_record(route="local", model="claude-sonnet-5", scaffold=scaffold,
+                                     verifier=["tsc"], policy={"n": n}))
+"""
+with tempfile.TemporaryDirectory() as raw:
+    run, scaffold = Path(raw), Path(raw) / "prompt.md"
+    scaffold.write_text("plantilla")
+    env = {**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")}
+    go = run / "go"
+    workers = [subprocess.Popen([sys.executable, "-c", REGISTER_WORKER, str(run), str(scaffold), str(go)], env=env)
+               for _ in range(8)]
+    time.sleep(0.5)
+    go.touch()
+    assert_equal("los ocho procesos terminan bien", [0] * 8, [w.wait(timeout=120) for w in workers])
+    ids = [json.loads(line)["setup_id"] for line in (run / ss.SETUPS).read_text().splitlines()]
+    assert_equal("ocho escritores concurrentes: cada setup una sola vez", (30, 30), (len(ids), len(set(ids))))
 
 print(f"test_step_setup: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

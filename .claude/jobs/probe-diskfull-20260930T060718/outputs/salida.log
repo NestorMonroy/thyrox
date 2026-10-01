@@ -1,0 +1,15 @@
+el ítem nunca arrancó
+tmpfs           8.0M  296K  7.8M   4% /tmp/tmp.xdWJRH2bhS
+el pool sigue vivo con el disco lleno; se suelta el ítem
+pool exit: 143
+.claude/workbench/pool-exit-live-items-20260930T060212/probes/common.sh: line 49: /tmp/tmp.xdWJRH2bhS/repo/.claude/workbench/b/out/joblog.tsv: No such file or directory
+joblog lines (out): ausente
+joblog lines (runtime): 1
+worktrees del ítem: 0
+runners vivos: 0
+items cerrados: 0
+runtime conservado: 0
+--- pool.log
+cat: /tmp/tmp.xdWJRH2bhS/pool.log: No such file or directory
+umount: /tmp/tmp.xdWJRH2bhS: not mounted.
+__BG_EXIT__=32

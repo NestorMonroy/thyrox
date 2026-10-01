@@ -302,7 +302,11 @@ def shared_queue(shared: list[Diagnostic], duplicates: dict[str, list[str]]) -> 
     """Una entrada por definición duplicada, de la que más errores cita a la que menos."""
     by_type: dict[str, list[Diagnostic]] = defaultdict(list)
     for diagnostic in shared:
-        by_type[shared_type(diagnostic, duplicates)].append(diagnostic)
+        type_name = shared_type(diagnostic, duplicates)
+        # `shared` es `routes["shared"]` de `classify()`, que sólo entran ahí
+        # cuando `shared_type` ya dio un valor — nunca None en este contrato.
+        assert type_name is not None
+        by_type[type_name].append(diagnostic)
     queue = [{"type": name, "errors": len(found), "definitions": duplicates[name],
               "consumers": sorted({d.file for d in found})} for name, found in by_type.items()]
     return sorted(queue, key=lambda entry: (-entry["errors"], entry["type"]))

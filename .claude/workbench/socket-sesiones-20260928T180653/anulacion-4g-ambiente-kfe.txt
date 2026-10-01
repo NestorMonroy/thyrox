@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+88 |     setAmbientMarkerProbe(() => {
+89 |       calls++
+90 |       return true
+91 |     })
+92 |     const child = host({ env: { THYROX_CODE_CHILD_SESSION: '1' } })
+93 |     expect(isNestedInteractiveSession(child)).toBe(false)
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:93:47)
+(fail) setAmbientMarkerProbe (sYo) > traduce true/false y memoriza la primera respuesta [0.56ms]
+
+ 17 pass
+ 1 fail
+ 37 expect() calls
+Ran 18 tests across 1 file. [172.00ms]

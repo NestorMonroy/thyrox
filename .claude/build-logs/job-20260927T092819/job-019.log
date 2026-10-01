@@ -1,0 +1,13 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+ 1422 pass
+ 0 fail
+ 3251 expect() calls
+Ran 1422 tests across 86 files. [8.09s]
+EXIT=0

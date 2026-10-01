@@ -2,87 +2,19 @@
  * Estado de tarea de un teammate in-process — porte de
  * `ccnmt: packages/swarm/src/tasks/types.ts`.
  *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente tipa seis campos con
- * `TaskStateBase`, `AgentToolResult`, `AgentDefinition`, `Message`,
- * `PermissionMode` y `AgentProgress`, importados de
- * `adapters/appRuntime.ts`. Medido contra la PROPIA fuente de ese
- * adaptador (`ccnmt: packages/swarm/src/adapters/appRuntime.ts:44-63`):
- * de esos seis, CUATRO ya son type-bypass declarados a propósito por el
- * propio host (`AgentProgress`, `CustomAgentDefinition`, `AgentDefinition`
- * y `AgentToolResult` son los cuatro `unknown`; `PermissionMode` es
- * `string`) — sólo `Message` re-exporta un tipo real
- * (`@claude-code-how-works/agent/messageShapes.js`). Portar ese último
- * con fidelidad total exigiría depender de `@thyrox/agent` sólo por un
- * tipo de mensaje que ninguna función de ESTE archivo inspecciona (los
- * mensajes viajan opacos por `messages?: Message[]`); se reimplementa
- * localmente `TaskStateBase` con la forma mínima que el propio archivo
- * necesita (`id`+`status`+`type`, los tres campos que
- * `isInProcessTeammateTask`/`appendCappedMessage` — y sus consumidores en
- * `tasks/InProcessTeammateTask.tsx`, BLOQUEADO — leen), y los otros cinco
- * como `unknown`/`string`, igual que el propio adaptador de la fuente.
- * Ningún campo de datos se pierde: la forma completa de
- * `InProcessTeammateTaskState` se porta entera.
+ * Los tipos de los campos son los canónicos, como en la fuente:
+ * `TaskStateBase` de `@thyrox/tool-registry/Task.js` (sus 11 campos, que el
+ * productor `runtime/spawnInProcess.ts` rellena con `createTaskStateBase`), y
+ * `AgentToolResult`, `AgentProgress` y `Message` de `adapters/appRuntime.ts`,
+ * que los resuelve a los tipos reales de tool-registry y agent. Con el tipo
+ * canónico la unión de estados de tarea de `repl/tasksTypes.ts` puede
+ * estrechar `in_process_teammate`.
  *
- * `isInProcessTeammateTask` y `appendCappedMessage` se portan VERBATIM —
- * son el símbolo que resuelve el solape con
- * `api: agent/inProcessTeammateHelpers.ts`, que hasta hoy los
- * re-declaraba localmente porque «ninguno de los dos existe en este
- * árbol» (su propio docstring). Con este archivo puesto, esa declaración
- * ya no es cierta — queda registrado como hallazgo de solape
- * (`H-DOCS-1170`), pero NO se edita `agent/inProcessTeammateHelpers.ts`
- * en este pase (paquete ajeno, otro agente puede estar trabajándolo en
- * paralelo).
- *
- * CORRECCIÓN (estado heredado incorrecto, TASK-THYROX-0006): la línea 21
- * de este mismo docstring decía que `tasks/InProcessTeammateTask.tsx` es
- * BLOQUEADO. Es falso — medido con `grep -c '</\|React'` sobre la fuente:
- * 0 hits. El archivo es un objeto `Task` + funciones puras sobre AppState,
- * sin JSX ni import de React; se porta en este mismo pase. `TaskStateBase`
- * pasa a exportarse aquí porque ese archivo lo necesita como tipo público
- * (antes sólo lo usaban funciones internas de este módulo).
- *
- * CORRECCIÓN 2 (subconjunto insuficiente, TASK-THYROX-0006): el subconjunto de
- * arriba —`id`+`status`+`type`— dejaba fuera cinco campos que algún consumidor
- * DEL PAQUETE sí lee o escribe: `totalPausedMs`/`toolUseId` en el cálculo del
- * tiempo de espera de permiso y en el bookend SDK
- * (`runtime/inProcessRunner.ts:923,1169,1220`), `notified`/`endTime` al cerrar
- * la tarea en los dos caminos de salida (`:1175-1176,1226,1229`), y
- * `description`, que lee `runtime/spawnInProcess.ts:251`
- * (`teammateTask.description`, dentro de `killInProcessTeammate`) — un
- * consumidor DISTINTO de `inProcessRunner.ts`, ya portado. Ninguno es
- * extensión de teammate: medido contra
- * `ccnmt: packages/tool-registry/src/Task.ts:48-60`, los cinco viven en el
- * propio `TaskStateBase` de 11 campos que el adaptador de la fuente
- * re-exporta (`ccnmt: packages/swarm/src/adapters/appRuntime.ts:73`), con la
- * misma opcionalidad que aquí se porta: `toolUseId?`, `endTime?` y
- * `totalPausedMs?` opcionales, `notified` y `description` obligatorios. Los
- * dos campos restantes de esos 11 (`outputFile`, `outputOffset`) siguen sin
- * consumidor en este árbol — grep confirmado, cero hits sobre `src/`— y por
- * eso quedan fuera: el criterio no es «lo que `inProcessRunner.ts` lee» sino
- * «lo que ALGÚN consumidor del paquete lee», que es donde la primera versión
- * de esta corrección se quedó corta al mirar un solo archivo.
- */
-
-/**
- * CORRECCIÓN 3 (porte parcial, 2026-09-24): las dos correcciones de arriba
- * mantenían una COPIA de `TaskStateBase` con 8 de sus 11 campos y `type`/
- * `status` como `string`. El criterio «lo que algún consumidor lee» ya no la
- * sostiene: `startTime` lo leen `Spinner.tsx`, `TeammateSpinnerLine.tsx`,
- * `BackgroundTasksDialog.tsx` e `InProcessTeammateDetailDialog.tsx`, y el
- * productor (`runtime/spawnInProcess.ts`) ya rellena los 11 con
- * `createTaskStateBase`. La copia además rompía la unión de estados de tarea
- * (`repl/tasksTypes.ts` no podía estrechar `in_process_teammate`). La fuente
- * re-exporta el tipo canónico (`ccnmt: packages/swarm/src/adapters/
- * appRuntime.ts:73`) y este paquete ya declara `@thyrox/tool-registry` como
- * dependencia: se usa el canónico, como import sólo de tipo.
+ * `isInProcessTeammateTask` y `appendCappedMessage` se portan VERBATIM.
+ * `@thyrox/agent: inProcessTeammateHelpers.ts` todavía declara su propia
+ * copia del primero (H-DOCS-1170); retirarla es edición de ese paquete (#53).
  */
 import type { TaskStateBase } from '@thyrox/tool-registry/Task.js'
-/**
- * CORRECCIÓN 4 (2026-09-25): `result` y `progress` eran `unknown` porque el
- * adaptador de la fuente los dejaba así. En el árbol `adapters/appRuntime.ts`
- * ya los resuelve al tipo real (`AgentToolResult` de tool-registry,
- * `AgentProgress` de agent), así que se importan de ahí, como la fuente.
- */
 import type { AgentProgress, AgentToolResult, Message } from '../adapters/appRuntime.js'
 
 export type { TaskStateBase }

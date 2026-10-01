@@ -19,22 +19,22 @@
  * pisen.
  *
  * Puerto fiel de `ccnmt: packages/bridge/src/bridgePointer.ts`.
- * `logForDebugging`/`isENOENT`/`getWorktreePathsPortable`/`lazySchema`/
- * `getProjectsDir`/`sanitizePath`/`jsonParse`/`jsonStringify` son
- * sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
+ * `isENOENT` viene de `@thyrox/local-observability`, `lazySchema` de
+ * `@thyrox/config` y `getProjectsDir`/`sanitizePath` de `@thyrox/storage`;
+ * `logForDebugging`/`getWorktreePathsPortable`/`jsonParse`/`jsonStringify`
+ * son sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
  */
 import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { z } from 'zod/v4'
+import { lazySchema } from '@thyrox/config/lazySchema'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { getProjectsDir, sanitizePath } from '@thyrox/storage/sessionStoragePortable.js'
 import {
-  getProjectsDir,
   getWorktreePathsPortable,
-  isENOENT,
   jsonParse,
   jsonStringify,
-  lazySchema,
   logForDebugging,
-  sanitizePath,
 } from './internal/pendingCrossPackageDeps.js'
 
 /**
@@ -85,7 +85,7 @@ export async function writeBridgePointer(
 /**
  * Lee el puntero y su edad (ms desde la última escritura). Opera
  * directo y maneja errores — sin chequeo de existencia (regla TOCTOU de
- * CLAUDE.md). Devuelve null ante cualquier fallo: archivo faltante, JSON
+ * THYROX.md). Devuelve null ante cualquier fallo: archivo faltante, JSON
  * corrupto, desajuste de schema, u obsoleto (mtime > 4h). Los punteros
  * obsoletos/inválidos se eliminan para que no sigan re-preguntando
  * después de que el backend ya recolectó el entorno.

@@ -1,0 +1,5 @@
+
+
+import{N}from"/$bunfs/root/chunk-8nz62976.js";import{y}from"/$bunfs/root/chunk-vyyazxfq.js";import{tdn}from"/$bunfs/root/chunk-hc30qgxa.js";import{N5e,$5e,WX,RPo,uL}from"/$bunfs/root/chunk-8d8rr52p.js";import{yhn}from"/$bunfs/root/chunk-nqqgm2p0.js";function rt(){try{process.cwd();return}catch(n){le
+`);return}if(m!==void 0){process.stderr.write(`claude plugin test: ${m}
+`),process.exitCode=1;return}let{pluginTestMain:v}=await import("/$bunfs/root/chunk-1r5f00kf.js");process.exitCode=await v(t.slice(2));return}if(process.argv[2]==="--eval-mock-server"){g("cli_eval_mock_server_path");let{runEvalMockServer:e}=await import("/$bunfs/root/chunk-mvv4hv8b.js");try{await e(

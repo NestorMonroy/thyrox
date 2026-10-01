@@ -1,0 +1,25 @@
+{
+  "name": "@thyrox/transparent-napi",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@thyrox/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./proxyHeader": {
+      "@thyrox/source": "./src/proxyHeader.ts",
+      "types": "./dist/proxyHeader.d.ts",
+      "default": "./src/proxyHeader.ts"
+    },
+    "./build": {
+      "@thyrox/source": "./src/build.ts",
+      "types": "./dist/build.d.ts",
+      "default": "./src/build.ts"
+    }
+  }
+}

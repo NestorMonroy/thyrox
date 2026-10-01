@@ -1,5 +1,5 @@
 import { join } from 'path'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
 /**
@@ -51,7 +51,7 @@ What NOT to document:
 - Exhaustive lists of files, functions, or parameters
 - Step-by-step implementation details
 - Low-level code mechanics
-- Information already in CLAUDE.md or other project docs
+- Information already in THYROX.md or other project docs
 
 Use the Edit tool with file_path: {{docPath}}
 
@@ -65,7 +65,7 @@ REMEMBER: Only update if there is substantial new information. The Magic Doc hea
  */
 async function loadMagicDocsPrompt(): Promise<string> {
   const fs = getFsImplementation()
-  const promptPath = join(getClaudeConfigHomeDir(), 'magic-docs', 'prompt.md')
+  const promptPath = join(getConfigHomeDir(), 'magic-docs', 'prompt.md')
 
   try {
     return await fs.readFile(promptPath, { encoding: 'utf-8' })

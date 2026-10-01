@@ -3,63 +3,77 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte de @claude-code-how-works/ide (ccnmt): adaptadores de integracion IDE (VS Code/JetBrains) + cliente LSP. 19 de 19 modulos fuente portados (contando indice y stubs); ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (paquete no registrado todavia en src/packages/package.json:workspaces) y las reimplementaciones fieles recortadas de simbolos que no existen aun en ningun paquete hermano (tool-registry entero; agent/jetbrains.ts; agent/diff.ts:getPatchFromContents/getPatchForDisplay; shell/genericProcessUtils.ts; config/plugin/{lspPluginIntegration,pluginLoader,types}.ts; config/env/paths.ts; config/semver.ts). callIdeRpc (mcp-runtime/clientRuntime.ts) queda como punto de inyeccion: ese modulo esta bloqueado dentro del propio mcp-runtime (13/48 simbolos, por ausencia de tool-registry).",
+  "description": "Porte de @claude-code-how-works/ide (ccnmt): adaptadores de integracion IDE (VS Code/JetBrains) + cliente LSP. 19 de 19 modulos fuente portados (contando indice y stubs); ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (pendientes de reemplazo por el original, tarea #53) y las reimplementaciones fieles recortadas de simbolos que no existen aun en ningun paquete hermano (tool-registry entero; agent/jetbrains.ts; agent/diff.ts:getPatchFromContents/getPatchForDisplay; shell/genericProcessUtils.ts; config/plugin/{lspPluginIntegration,pluginLoader,types}.ts; config/env/paths.ts; config/semver.ts). callIdeRpc (mcp-runtime/clientRuntime.ts) queda como punto de inyeccion: ese modulo esta bloqueado dentro del propio mcp-runtime (13/48 simbolos, por ausencia de tool-registry).",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./ide.js": {
+      "@thyrox/source": "./src/ide.ts",
       "types": "./dist/src/ide.d.ts",
       "default": "./src/ide.ts"
     },
     "./hooks/useIDEIntegration": {
+      "@thyrox/source": "./src/hooks/useIDEIntegration.tsx",
       "types": "./dist/src/hooks/useIDEIntegration.d.ts",
       "default": "./src/hooks/useIDEIntegration.tsx"
     },
     "./hooks/useIDEIntegration.js": {
+      "@thyrox/source": "./src/hooks/useIDEIntegration.tsx",
       "types": "./dist/src/hooks/useIDEIntegration.d.ts",
       "default": "./src/hooks/useIDEIntegration.tsx"
     },
     "./hooks/useDiffInIDE.js": {
+      "@thyrox/source": "./src/hooks/useDiffInIDE.ts",
       "types": "./dist/src/hooks/useDiffInIDE.d.ts",
       "default": "./src/hooks/useDiffInIDE.ts"
     },
     "./hooks/useIdeAtMentioned.js": {
+      "@thyrox/source": "./src/hooks/useIdeAtMentioned.ts",
       "types": "./dist/src/hooks/useIdeAtMentioned.d.ts",
       "default": "./src/hooks/useIdeAtMentioned.ts"
     },
     "./hooks/useIdeConnectionStatus.js": {
+      "@thyrox/source": "./src/hooks/useIdeConnectionStatus.ts",
       "types": "./dist/src/hooks/useIdeConnectionStatus.d.ts",
       "default": "./src/hooks/useIdeConnectionStatus.ts"
     },
     "./hooks/useIdeLogging.js": {
+      "@thyrox/source": "./src/hooks/useIdeLogging.ts",
       "types": "./dist/src/hooks/useIdeLogging.d.ts",
       "default": "./src/hooks/useIdeLogging.ts"
     },
     "./hooks/useIdeSelection.js": {
+      "@thyrox/source": "./src/hooks/useIdeSelection.ts",
       "types": "./dist/src/hooks/useIdeSelection.d.ts",
       "default": "./src/hooks/useIdeSelection.ts"
     },
     "./lsp/LSPDiagnosticRegistry.js": {
+      "@thyrox/source": "./src/lsp/LSPDiagnosticRegistry.ts",
       "types": "./dist/src/lsp/LSPDiagnosticRegistry.d.ts",
       "default": "./src/lsp/LSPDiagnosticRegistry.ts"
     },
     "./lsp/manager.js": {
+      "@thyrox/source": "./src/lsp/manager.ts",
       "types": "./dist/src/lsp/manager.d.ts",
       "default": "./src/lsp/manager.ts"
     }
@@ -68,16 +82,16 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/app-host": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*",
-    "@thyrox/mcp-runtime": "workspace:*",
-    "@thyrox/permission": "workspace:*",
-    "@thyrox/repl": "workspace:*",
-    "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/app-host": "0.1.0",
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0",
+    "@thyrox/mcp-runtime": "0.1.0",
+    "@thyrox/permission": "0.1.0",
+    "@thyrox/repl": "0.0.0",
+    "@thyrox/shell": "0.1.0",
+    "@thyrox/storage": "0.1.0",
+    "@thyrox/tool-registry": "0.1.0",
     "axios": "^1.20.0",
     "diff": "^7.0.0",
     "execa": "^9.0.0",

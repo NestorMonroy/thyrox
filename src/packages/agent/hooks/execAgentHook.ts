@@ -8,20 +8,14 @@ import { type Tool, toolMatchesName } from '@thyrox/tool-registry/Tool.js'
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
 import { ALL_AGENT_DISALLOWED_TOOLS } from '@thyrox/tool-registry/runtime'
 import { asAgentId } from '../idTypes'
-import type {
-  Message,
-  RequestStartEvent,
-  StreamEvent,
-  TombstoneMessage,
-  ToolUseSummaryMessage,
-} from '../messageShapes'
+import type { Message } from '../messageShapes'
 import { createAbortController } from '../abortController.js'
 import { createAttachmentMessage } from '../attachments.js'
 import { createCombinedAbortSignal } from '../combinedAbortSignal.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import type { HookResult } from '../hooks.js'
-import { createUserMessage, handleMessageFromStream } from '../messages.js'
+import { createUserMessage, handleMessageFromStream, isStreamItem, type QueryEvent } from '../messages.js'
 import { getSmallFastModel } from '@thyrox/provider/model.js'
 import { hasPermissionsToUseTool } from '@thyrox/permission/permissions'
 import { getAgentTranscriptPath, getTranscriptPath } from '@thyrox/storage/sessionStorage.js'
@@ -35,20 +29,7 @@ import {
   registerStructuredOutputEnforcement,
 } from './hookHelpers.js'
 import { clearSessionHooks } from './sessionHooks.js'
-
-/**
- * El item que entrega `query()` viaja tipado con los alias sueltos de
- * `internalTypes.ts` (frontera V7 §8), pero `handleMessageFromStream` exige
- * la forma canónica de `messageShapes.ts`. Los dos describen el mismo objeto
- * en tiempo de ejecución; esta unión declara esa forma canónica para el
- * mensaje que entra a esa llamada.
- */
-type StreamedAgentItem =
-  | Message
-  | TombstoneMessage
-  | StreamEvent
-  | RequestStartEvent
-  | ToolUseSummaryMessage
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Execute an agent-based hook using a multi-turn LLM query
@@ -125,7 +106,7 @@ export async function execAgentHook(
       ]
 
       const systemPrompt = asSystemPrompt([
-        `You are verifying a stop condition in Claude Code. Your task is to verify that the agent completed the given plan. The conversation transcript is available at: ${transcriptPath}\nYou can read this file to analyze the conversation history if needed.
+        `You are verifying a stop condition in ${PRODUCT_NAME}. Your task is to verify that the agent completed the given plan. The conversation transcript is available at: ${transcriptPath}\nYou can read this file to analyze the conversation history if needed.
 
 Use the available tools to inspect the codebase and verify the condition.
 Use as few steps as possible - be efficient and direct.
@@ -193,23 +174,18 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
         toolUseContext: agentToolUseContext,
         querySource: 'hook_agent',
       })) {
-        // Process stream events to update response length in the spinner
-        handleMessageFromStream(
-          message as StreamedAgentItem,
-          () => {}, // onMessage - we handle messages below
-          newContent =>
-            toolUseContext.setResponseLength(
-              length => length + newContent.length,
-            ),
-          toolUseContext.setStreamMode ?? (() => {}),
-          () => {}, // onStreamingToolUses - not needed for hooks
-        )
-
-        // Skip streaming events for further processing
-        if (
-          message.type === 'stream_event' ||
-          message.type === 'stream_request_start'
-        ) {
+        // El item que entrega `query()` viaja tipado con los alias sueltos de
+        // `internalTypes.ts` (frontera V7 §8); `QueryEvent` es la misma forma
+        // en su version canonica de `messages.ts`. Un item del stream solo
+        // mueve el largo de la respuesta y el spinner; los mensajes completos
+        // se procesan abajo.
+        const queryEvent = message as QueryEvent
+        if (isStreamItem(queryEvent)) {
+          handleMessageFromStream(queryEvent, {
+            onUpdateLength: charactersStreamed =>
+              toolUseContext.setResponseLength(length => length + charactersStreamed),
+            onSetStreamMode: toolUseContext.setStreamMode,
+          })
           continue
         }
 

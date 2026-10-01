@@ -8,6 +8,7 @@ import {
 import { Select } from './CustomSelect/index.js'
 import { Dialog } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   targetRepo: string
@@ -75,7 +76,7 @@ export function TeleportRepoMismatchDialog({
           <Box flexDirection="column" gap={1}>
             {errorMessage && <Text color="error">{errorMessage}</Text>}
             <Text>
-              Open Claude Code in <Text bold>{targetRepo}</Text>:
+              Open {PRODUCT_NAME} in <Text bold>{targetRepo}</Text>:
             </Text>
           </Box>
 

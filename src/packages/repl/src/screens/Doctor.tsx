@@ -12,7 +12,7 @@ import { IneffectivePluginDisables } from '../components/IneffectivePluginDisabl
 import { KeybindingWarnings } from '../components/KeybindingWarnings.js'
 import { McpParsingWarnings } from '../components/mcp/McpParsingWarnings.js'
 import { getModelMaxOutputTokens } from '@thyrox/agent/context.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import type { SettingSource } from '@thyrox/config/constants'
 import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
@@ -58,6 +58,7 @@ import {
   TASK_MAX_OUTPUT_UPPER_LIMIT,
 } from '@thyrox/tool-registry/task/outputFormatting.js'
 import { getXDGStateHome } from '@thyrox/storage/xdg.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onDone: (
@@ -160,7 +161,7 @@ export function Doctor({ onDone }: Props): React.ReactNode {
         upperLimit: TASK_MAX_OUTPUT_UPPER_LIMIT,
       },
       {
-        name: 'CLAUDE_CODE_MAX_OUTPUT_TOKENS',
+        name: 'THYROX_CODE_MAX_OUTPUT_TOKENS',
         // Check for values against the latest supported model
         ...getModelMaxOutputTokens('claude-opus-4-6'),
       },
@@ -183,7 +184,7 @@ export function Doctor({ onDone }: Props): React.ReactNode {
     void getDoctorDiagnostic().then(setDiagnostic)
 
     void (async () => {
-      const userAgentsDir = join(getClaudeConfigHomeDir(), 'agents')
+      const userAgentsDir = join(getConfigHomeDir(), 'agents')
       const projectAgentsDir = join(getOriginalCwd(), '.claude', 'agents')
 
       const { activeAgents, allAgents, failedFiles } = agentDefinitions
@@ -240,7 +241,7 @@ export function Doctor({ onDone }: Props): React.ReactNode {
   }, [toolPermissionContext, tools, agentDefinitions])
 
   const handleDismiss = useCallback(() => {
-    onDone('Claude Code diagnostics dismissed', { display: 'system' })
+    onDone(`${PRODUCT_NAME} diagnostics dismissed`, { display: 'system' })
   }, [onDone])
 
   // Handle dismiss via keybindings (Enter, Escape, or Ctrl+C)

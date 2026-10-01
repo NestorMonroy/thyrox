@@ -23,7 +23,7 @@ export function TranscriptModeFooter({
    *  right-aligned count instead of scroll hints. */
   searchBadge?: { current: number; count: number }
   /** Hide the ctrl+e hint. The [ dump path shares this footer with
-   *  env-opted dump (CLAUDE_CODE_NO_FLICKER=0 / DISABLE_VIRTUAL_SCROLL=1),
+   *  env-opted dump (THYROX_CODE_NO_FLICKER=0 / DISABLE_VIRTUAL_SCROLL=1),
    *  but ctrl+e only works in the env case — useGlobalKeybindings.tsx
    *  gates on !virtualScrollActive which is env-derived, doesn't know
    *  [ happened. */

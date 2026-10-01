@@ -56,7 +56,7 @@ export type MemoryHostBindings = {
   getSessionId?: () => string
 
   // ── Config/paths ───────────────────────────────────────────────────────
-  /** Returns ~/.claude (or CLAUDE_CONFIG_DIR override) */
+  /** Returns ~/.claude (or THYROX_CONFIG_DIR override) */
   getConfigHomeDir?: () => string
 
   // ── Filesystem ─────────────────────────────────────────────────────────

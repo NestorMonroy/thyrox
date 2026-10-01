@@ -52,7 +52,7 @@ echo ""
 
 # 3. Verificar que YAML frontmatter tiene name y description
 echo "--- YAML frontmatter ---"
-if head -5 "$SKILL_FILE" | grep -q "^name:"; then
+if grep -q "^name:" <<<"$(head -5 "$SKILL_FILE")"; then
     echo "  [OK] name field presente"
     PASS=$((PASS + 1))
 else
@@ -60,7 +60,7 @@ else
     FAIL=$((FAIL + 1))
 fi
 
-if head -5 "$SKILL_FILE" | grep -q "^description:"; then
+if grep -q "^description:" <<<"$(head -5 "$SKILL_FILE")"; then
     echo "  [OK] description field presente"
     PASS=$((PASS + 1))
 else

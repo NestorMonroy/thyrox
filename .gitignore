@@ -5,13 +5,10 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Environment variables
-# `.env` NO se ignora — directiva del ejecutor 2026-09-10. Sus seis claves son
-# rutas del arbol, no secretos (medido: 0 credenciales en sus 8 lineas), y el
-# archivo es la entrada B de la DEC-04: sin el versionar, el contrato existe y
-# su valor vigente no. El costo se declara en `.env.example`, no se oculta.
-# Las variantes `*.local` SIGUEN ignoradas: son la sobreescritura del
-# consumidor, que es justo lo que la DEC-04 dice que no viaja.
+# `.env` es del consumidor y puede llevar secretos: no se versiona. Cada clave
+# que asigne tiene que figurar en `.env.example`, que sí viaja
+# (`src/verify/check_env_example_coverage.py`).
+.env
 .env.local
 .env.*.local
 
@@ -184,3 +181,25 @@ agent-results/mutantes-en-vuelo.jsonl
 # La cascara de store del proveedor: 0 filas de negocio, tracked sin el
 # driver de merge que .gitattributes da al store real. La retira TASK-THYROX-0153.
 .claude/agent-results/agent_store.sqlite3
+
+# Estado local de ejecución de los lanzadores de repository/job: copias
+# congeladas de su capa de shell y, más adelante, sus artefactos vivos. Se
+# nombra cada espacio en vez de ignorar `.thyrox/` entero, para que ese
+# directorio no se vuelva un cajón invisible para Git.
+/.thyrox/runtime/
+/.thyrox/pool-worktrees/
+# El catálogo de modelos locales y sus cualificaciones (localModelHome.ts):
+# digests del volumen de modelos y mediciones de este hardware, estado de la
+# instalación y no del repositorio.
+/.thyrox/models/
+
+# El proyecto sintetico de `check_package` (src/typescript/emit_declarations.py,
+# CHECK_FILE). Se retira en `finally`, pero un gate terminado con SIGKILL lo
+# deja en el paquete, y un item del pool lo arrastraba a su parche como si
+# fuera trabajo propio (daemon-parity-closure, items 1 y 3).
+tsconfig.check.json
+
+# Registros de la admisión de recursos (src/session/resource_admission.py):
+# estado de ejecución que cada reserva reescribe; no es evidencia.
+/.claude/cache/*-admission.json
+/.claude/cache/*-admission.json.*

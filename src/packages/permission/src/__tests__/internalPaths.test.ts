@@ -25,7 +25,7 @@ let base: string
 let home: string
 let work: string
 const saved: Record<string, string | undefined> = {}
-const ENV = ['CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_HOST_CREDS_FILE', 'ANTHROPIC_CONFIG_DIR', 'ANTHROPIC_PROFILE', 'CLAUDE_CODE_SESSION_KIND', 'CLAUDE_JOB_DIR']
+const ENV = ['THYROX_CONFIG_DIR', 'THYROX_CODE_HOST_CREDS_FILE', 'ANTHROPIC_CONFIG_DIR', 'ANTHROPIC_PROFILE', 'THYROX_CODE_SESSION_KIND', 'THYROX_JOB_DIR']
 let previousCwd: string
 
 function touch(path: string): string {
@@ -43,7 +43,7 @@ beforeAll(() => {
   mkdirSync(work, { recursive: true })
   for (const k of ENV) saved[k] = process.env[k]
   for (const k of ENV) delete process.env[k]
-  process.env.CLAUDE_CONFIG_DIR = home
+  process.env.THYROX_CONFIG_DIR = home
   previousCwd = getOriginalCwd()
   setOriginalCwd(work)
   setCwdState(work)
@@ -64,13 +64,13 @@ describe('checkEditableInternalPath (yyt)', () => {
   })
   test('el archivo de credenciales del anfitrión nunca se escribe', () => {
     const creds = touch(join(base, 'creds.json'))
-    process.env.CLAUDE_CODE_HOST_CREDS_FILE = creds
+    process.env.THYROX_CODE_HOST_CREDS_FILE = creds
     try {
       const r = checkEditableInternalPath(creds, input)
       expect(r.behavior).toBe('deny')
       expect(r).toMatchObject({ decisionReason: { type: 'safetyCheck', classifierApprovable: false } })
     } finally {
-      delete process.env.CLAUDE_CODE_HOST_CREDS_FILE
+      delete process.env.THYROX_CODE_HOST_CREDS_FILE
     }
   })
   test('seed-admin bajo el directorio de configuración nunca se escribe', () => {
@@ -111,12 +111,16 @@ describe('checkEditableInternalPath (yyt)', () => {
   })
   test('varias rutas: una denegada deniega todo', () => {
     const creds = touch(join(base, 'creds2.json'))
-    process.env.CLAUDE_CODE_HOST_CREDS_FILE = creds
+    process.env.THYROX_CODE_HOST_CREDS_FILE = creds
     try {
       expect(checkEditableInternalPath(join(work, 'a.ts'), input, [join(work, 'a.ts'), creds]).behavior).toBe('deny')
     } finally {
-      delete process.env.CLAUDE_CODE_HOST_CREDS_FILE
+      delete process.env.THYROX_CODE_HOST_CREDS_FILE
     }
+  })
+  test('el almacen de revision de settings vive bajo el directorio de configuracion, no homedir()/.claude a mano', () => {
+    const store = touch(join(home, 'state', 'settings-review.json'))
+    expect(checkEditableInternalPath(store, input).behavior).toBe('deny')
   })
 })
 
@@ -135,6 +139,10 @@ describe('checkReadableInternalPath (hee)', () => {
   test('con la cerca de lectura, el CLAUDE.md del usuario se lee', () => {
     const md = touch(join(home, 'CLAUDE.md'))
     expect(checkReadableInternalPath(md, input).behavior).toBe('passthrough')
+    expect(checkReadableInternalPath(md, input, undefined, { readBlockFence: true })).toMatchObject({ behavior: 'allow' })
+  })
+  test('con la cerca de lectura, el THYROX.md del usuario también se lee', () => {
+    const md = touch(join(home, 'THYROX.md'))
     expect(checkReadableInternalPath(md, input, undefined, { readBlockFence: true })).toMatchObject({ behavior: 'allow' })
   })
 })

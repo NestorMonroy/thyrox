@@ -1,0 +1,12 @@
+# Imagen del laboratorio de RLVR en CPU: PyTorch sin CUDA, transformers, TRL y
+# PEFT. Las versiones se fijan para que la medición sea reproducible; GRPO
+# existe en TRL desde la 0.14.
+FROM docker.io/library/python:3.11-slim
+# Proxy de salida y su CA, sólo si el anfitrión los da: un ARG no declarado no
+# llega al entorno del RUN.
+ARG HTTPS_PROXY
+ARG https_proxy
+ARG PIP_CERT
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1 \
+ && pip install --no-cache-dir transformers==4.46.3 trl==0.14.0 peft==0.13.2 datasets==3.1.0 accelerate==1.1.1
+WORKDIR /work

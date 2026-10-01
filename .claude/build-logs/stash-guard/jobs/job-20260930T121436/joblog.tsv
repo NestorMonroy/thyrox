@@ -1,0 +1,4 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790770476.858	    18.394	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/stash-guard/jobs/job-20260930T121436 job-20260930T121436 job-001
+2	:	1790770476.862	    30.461	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/stash-guard/jobs/job-20260930T121436 job-20260930T121436 job-002
+3	:	1790770476.868	   118.305	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/stash-guard/jobs/job-20260930T121436 job-20260930T121436 job-003

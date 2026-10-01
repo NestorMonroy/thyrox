@@ -170,7 +170,7 @@ export const call: LocalJSXCommandCall = async (onDone, rawContext, args) => {
     const additionalWorkingDirectories = Array.from(awdMap.keys())
     // If the user is in a custom-agent context (e.g. /agent helper),
     // resolve the matching definition so the fork inherits the agent's
-    // system prompt rather than falling back to the default Claude Code
+    // system prompt rather than falling back to the default thyrox
     // prompt. Mirrors ant 4656.js Wf3.
     const activeAgentName = narrowedAppState.agent
     const mainThreadAgentDefinition = activeAgentName

@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+fatal: not a git repository (or any of the parent directories): .git
+
+__tests__/portFidelity.test.ts:
+[portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+
+ 2691 pass
+ 0 fail
+ 4928 expect() calls
+Ran 2691 tests across 199 files. [20.37s]
+EXIT=0

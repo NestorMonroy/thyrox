@@ -11,20 +11,20 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // Isolate every roster test under a per-run tmpdir, NEVER touch the
-// user's real ~/.claude/daemon. Done via CLAUDE_CONFIG_HOME, which is
-// the same env var bgWorkerRegistry.getJobsRoot() respects.
+// user's real ~/.thyrox/daemon. Done via THYROX_CONFIG_DIR, which is
+// the same env var getConfigHomeDir() respects.
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-roster-test-'))
 const DAEMON_DIR = join(ISOLATED_HOME, 'daemon')
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
+const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
 })
 afterAll(() => {
-  if (ORIGINAL_CONFIG_HOME === undefined) {
-    delete process.env.CLAUDE_CONFIG_HOME
+  if (ORIGINAL_CONFIG_DIR === undefined) {
+    delete process.env.THYROX_CONFIG_DIR
   } else {
-    process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
   }
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })
@@ -32,6 +32,7 @@ afterAll(() => {
 import {
   emptyRoster,
   getRosterPath,
+  isCliVersionStale,
   readRoster,
   recordToRosterEntry,
   updateRoster,
@@ -237,5 +238,51 @@ describe('recordToRosterEntry', () => {
       status: 'running',
     })
     expect(e.attempt).toBe(0)
+  })
+})
+
+describe('cliVersion saneado — ref kr (chunk-92tvramn.js)', () => {
+  const record = {
+    short: 'ver',
+    pid: 3,
+    cmd: [],
+    cwd: '/v',
+    startedAt: 0,
+    status: 'running' as const,
+  }
+
+  test('recordToRosterEntry persiste "unrecognized" para una cliVersion con forma inválida', () => {
+    const e = recordToRosterEntry({ ...record, cliVersion: '2.1.283\x1b[31m; rm -rf /' })
+    expect(e.cliVersion).toBe('unrecognized')
+  })
+
+  test('recordToRosterEntry conserva una cliVersion válida y deja ausente la ausente', () => {
+    expect(recordToRosterEntry({ ...record, cliVersion: '2.1.283' }).cliVersion).toBe('2.1.283')
+    expect(recordToRosterEntry(record).cliVersion).toBeUndefined()
+  })
+
+  test('readRoster expone "unrecognized" para una cliVersion inválida escrita por otro proceso', async () => {
+    const roster = emptyRoster()
+    roster.workers['bad'] = { pid: 1, startedAt: 0, attempt: 0, cwd: '/', cliVersion: 'a b c' }
+    roster.workers['good'] = { pid: 2, startedAt: 0, attempt: 0, cwd: '/', cliVersion: '2.1.283' }
+    await writeRoster(roster)
+    const loaded = await readRoster()
+    expect(loaded.workers['bad']?.cliVersion).toBe('unrecognized')
+    expect(loaded.workers['good']?.cliVersion).toBe('2.1.283')
+  })
+})
+
+describe('isCliVersionStale — getter isVersionStale (chunk-ygx717jg.js)', () => {
+  test('sin cliVersion del worker no hay desfase', () => {
+    expect(isCliVersionStale(undefined, '2.1.283')).toBe(false)
+    expect(isCliVersionStale('', '2.1.283')).toBe(false)
+  })
+
+  test('misma versión que el daemon no es desfase', () => {
+    expect(isCliVersionStale('2.1.283', '2.1.283')).toBe(false)
+  })
+
+  test('versión distinta a la del daemon es desfase', () => {
+    expect(isCliVersionStale('2.1.282', '2.1.283')).toBe(true)
   })
 })

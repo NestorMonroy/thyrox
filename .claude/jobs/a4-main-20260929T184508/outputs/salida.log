@@ -1,0 +1,9 @@
+resultado: 28 de 28 aserciones en verde
+tests/agents/test-agent-store-usage-columns.sh: 31 ok, 0 fallos
+tests/agents/test-agent-store-usage-source.sh: usage_source: 12 ok, 0 fallos
+observability:  42 pass  0 fail 
+tools:  76 pass  0 fail 
+task:  44 pass  0 fail 
+agent:  2712 pass  0 fail 
+cli:  499 pass  0 fail 
+__BG_EXIT__=0

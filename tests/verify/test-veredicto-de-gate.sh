@@ -78,7 +78,7 @@ check "el conteo llega intacto"              "7"             "$GATE_N"
 WARN=0; PASS=0; SINMEDIR=0
 medir_gate muda
 gate_midio "prueba" || true
-check "un gate mudo no publica PASS" "PASS=0 WARN=1" "PASS=$PASS WARN=$WARN"
+check "un gate mudo no publica PASS y cuenta como sin medir" "PASS=0 WARN=1 SINMEDIR=1" "PASS=$PASS WARN=$WARN SINMEDIR=$SINMEDIR"
 
 # 5 — el idioma viejo NO sobrevive en el guion.
 VIEJOS=$(grep -cE '\$\{(AMIN|FRADM|SUC|WFR|RSTC|IDS|RSTS|HIDX|DOCN|HSUB):-0\}' "$AUDIT" || true)

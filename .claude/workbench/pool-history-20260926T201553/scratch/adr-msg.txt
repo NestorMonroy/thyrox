@@ -1,0 +1,15 @@
+Record ADR-THYROX-002: the pool owns its cycle
+
+The run-measure-adjust cycle around bin/headless-pool lived only in
+tsc_cycle.py, so any other caller of the pool lost it silently and
+tsc_cycle fixed --memfree 3G against a measured item peak of about
+260 MB.
+
+The decision moves the cycle into the pool: a per-template history
+derives the cache TTL through choose_cache_ttl, with its three
+branches, and --memfree from the measured peak plus a named reserve
+for a neighbour. Declared values always win, and without history
+nothing is invented. It also records why the derivation is Python
+called from the shell, and why VRAM is out of scope.
+
+Implemented in thyrox@7888bff3.

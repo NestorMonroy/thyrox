@@ -1,0 +1,8 @@
+net-with	net_connect=fail errno=Network is unreachable 
+net-without	net_connect=ok errno=- 
+rootfs-with	write=fail errno=Read-only file system 
+rootfs-without	write=ok errno=- 
+cpu-with	cpu_ratio=0.50 cpu_s=1.23 wall_s=2.48 
+cpu-without	cpu_ratio=1.77 cpu_s=4.24 wall_s=2.39 
+repo-ro	read=ok errno=-  write=fail errno=Read-only file system 
+repo-rw-control	write=ok errno=- 

@@ -2,7 +2,7 @@ import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { getPerformance } from '@thyrox/app-host/startup/profilerBase.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
-const DETAILED_PROFILING = isEnvTruthy(readEnv('CLAUDE_CODE_PROFILE_STARTUP'))
+const DETAILED_PROFILING = isEnvTruthy(readEnv('THYROX_CODE_PROFILE_STARTUP'))
 const STATSIG_SAMPLE_RATE = 0.05
 const STATSIG_LOGGING_SAMPLED =
   readEnv('USER_TYPE') === 'ant' || Math.random() < STATSIG_SAMPLE_RATE

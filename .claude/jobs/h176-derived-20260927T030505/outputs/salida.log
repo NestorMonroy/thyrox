@@ -1,0 +1,66 @@
+run-task-pool: 12 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T030505
+  job-20260927T030505/job-001 pid 563     PYTHONPATH=src python3 tests/cache/test_home_resolution.py > .claude/workbench/sustitutos-20260927T025549/h176/test_home_resolution.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_home_resolution.py.out
+  job-20260927T030505/job-002 pid 582     PYTHONPATH=src python3 tests/paths/test_consumer_root_refuses_provider.py > .claude/workbench/sustitutos-20260927T025549/h176/test_consumer_root_refuses_provider.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_consumer_root_refuses_provider.py.out
+  job-20260927T030505/job-003 pid 600     PYTHONPATH=src python3 tests/paths/test_ensure_home.py > .claude/workbench/sustitutos-20260927T025549/h176/test_ensure_home.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_ensure_home.py.out
+  job-20260927T030505/job-004 pid 618     PYTHONPATH=src python3 tests/paths/test_unprefixed_clone.py > .claude/workbench/sustitutos-20260927T025549/h176/test_unprefixed_clone.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_unprefixed_clone.py.out
+  job-20260927T030505/job-005 pid 636     PYTHONPATH=src python3 tests/session/test_background.py > .claude/workbench/sustitutos-20260927T025549/h176/test_background.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_background.py.out
+  job-20260927T030505/job-006 pid 662     PYTHONPATH=src python3 tests/session/test_background_log_home.py > .claude/workbench/sustitutos-20260927T025549/h176/test_background_log_home.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_background_log_home.py.out
+  job-20260927T030505/job-007 pid 704     PYTHONPATH=src python3 tests/session/test_jobs_home.py > .claude/workbench/sustitutos-20260927T025549/h176/test_jobs_home.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_jobs_home.py.out
+  job-20260927T030505/job-008 pid 783     PYTHONPATH=src python3 tests/session/test_task_pool.py > .claude/workbench/sustitutos-20260927T025549/h176/test_task_pool.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_task_pool.py.out
+  job-20260927T030505/job-009 pid 801     PYTHONPATH=src python3 tests/session/test_write_env.py > .claude/workbench/sustitutos-20260927T025549/h176/test_write_env.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_write_env.py.out
+  job-20260927T030505/job-010 pid 840     PYTHONPATH=src python3 tests/workbench/test_home_resolution.py > .claude/workbench/sustitutos-20260927T025549/h176/test_home_resolution.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_home_resolution.py.out
+  job-20260927T030505/job-011 pid 967     PYTHONPATH=src python3 tests/workbench/test_paths.py > .claude/workbench/sustitutos-20260927T025549/h176/test_paths.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_paths.py.out
+  job-20260927T030505/job-012 pid 985     PYTHONPATH=src python3 tests/workbench/test_provider_evidence.py > .claude/workbench/sustitutos-20260927T025549/h176/test_provider_evidence.py.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/h176/test_provider_evidence.py.out
+run-task-pool: lanzados 12 de 12; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T030505_job-001 -> OK (2 de 13)
+asentado: job-20260927T030505_job-002 -> OK (3 de 13)
+asentado: job-20260927T030505_job-003 -> OK (4 de 13)
+asentado: job-20260927T030505_job-004 -> OK (5 de 13)
+asentado: job-20260927T030505_job-005 -> OK (6 de 13)
+asentado: job-20260927T030505_job-006 -> OK (7 de 13)
+asentado: job-20260927T030505_job-007 -> OK (8 de 13)
+asentado: job-20260927T030505_job-008 -> OK (9 de 13)
+asentado: job-20260927T030505_job-009 -> OK (10 de 13)
+asentado: job-20260927T030505_job-010 -> OK (11 de 13)
+asentado: job-20260927T030505_job-011 -> OK (12 de 13)
+asentado: job-20260927T030505_job-012 -> OK (13 de 13)
+== 13 trabajos asentados ==
+OLVIDADO job-20260927T030505
+       | (vacío — no emitió nada)
+OK     job-20260927T030505_job-001
+       | EXIT=0
+       memoria pico: 15408 KB (15 MB) · pared 0.12s
+OK     job-20260927T030505_job-002
+       | EXIT=0
+       memoria pico: 14264 KB (14 MB) · pared 0.13s
+OK     job-20260927T030505_job-003
+       | EXIT=0
+       memoria pico: 17352 KB (17 MB) · pared 0.69s
+OK     job-20260927T030505_job-004
+       | EXIT=0
+       memoria pico: 13724 KB (13 MB) · pared 0.13s
+OK     job-20260927T030505_job-005
+       | EXIT=0
+       memoria pico: 16672 KB (16 MB) · pared 1.74s
+OK     job-20260927T030505_job-006
+       | EXIT=0
+       memoria pico: 16568 KB (16 MB) · pared 0.08s
+OK     job-20260927T030505_job-007
+       | EXIT=0
+       memoria pico: 15916 KB (16 MB) · pared 0.10s
+OK     job-20260927T030505_job-008
+       | EXIT=0
+       memoria pico: 14156 KB (14 MB) · pared 0.12s
+OK     job-20260927T030505_job-009
+       | EXIT=0
+       memoria pico: 13376 KB (13 MB) · pared 0.67s
+OK     job-20260927T030505_job-010
+       | EXIT=0
+       memoria pico: 15540 KB (15 MB) · pared 0.11s
+OK     job-20260927T030505_job-011
+       | EXIT=0
+       memoria pico: 15084 KB (15 MB) · pared 0.72s
+OK     job-20260927T030505_job-012
+       | EXIT=0
+       memoria pico: 15364 KB (15 MB) · pared 1.05s
+__BG_EXIT__=0

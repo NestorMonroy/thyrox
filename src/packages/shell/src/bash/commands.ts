@@ -8,6 +8,7 @@ import {
 } from '../shell/prefix.js'
 import { extractHeredocs, restoreHeredocs } from './heredoc.js'
 import { quote, tryParseShellCommand } from './shellQuote.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Generates placeholder strings with random salt to prevent injection attacks.
@@ -436,9 +437,9 @@ export function isHelpCommand(command: string): boolean {
 }
 
 const BASH_POLICY_SPEC = `<policy_spec>
-# Claude Code Code Bash command prefix detection
+# ${PRODUCT_NAME} Code Bash command prefix detection
 
-This document defines risk levels for actions that the Claude Code agent may take. This classification system is part of a broader safety framework and is used to determine when additional user confirmation or oversight may be needed.
+This document defines risk levels for actions that the ${PRODUCT_NAME} agent may take. This classification system is part of a broader safety framework and is used to determine when additional user confirmation or oversight may be needed.
 
 ## Definitions
 

@@ -14,7 +14,7 @@ let base: string
 let work: string
 let outside: string
 let previousCwd: string
-const savedConfig = process.env.CLAUDE_CONFIG_DIR
+const savedConfig = process.env.THYROX_CONFIG_DIR
 
 function touch(path: string): string {
   mkdirSync(join(path, '..'), { recursive: true })
@@ -40,7 +40,7 @@ beforeAll(() => {
   touch(join(work, '.bashrc'))
   touch(join(outside, 'secret.txt'))
   symlinkSync(outside, join(work, 'escape'))
-  process.env.CLAUDE_CONFIG_DIR = join(base, 'config-home')
+  process.env.THYROX_CONFIG_DIR = join(base, 'config-home')
   previousCwd = getOriginalCwd()
   setOriginalCwd(work)
   setCwdState(work)
@@ -48,8 +48,8 @@ beforeAll(() => {
 afterAll(() => {
   setOriginalCwd(previousCwd)
   setCwdState(previousCwd)
-  if (savedConfig === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = savedConfig
+  if (savedConfig === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = savedConfig
   rmSync(base, { recursive: true, force: true })
 })
 

@@ -9,6 +9,7 @@ import {
   getCachedRemainingPasses,
 } from '@thyrox/provider/referral.js'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function resetIfPassesRefreshed(): void {
   const remaining = getCachedRemainingPasses()
@@ -66,7 +67,7 @@ export function GuestPassesUpsell(): React.ReactNode {
       <Text color="claude">[✻]</Text> <Text color="claude">[✻]</Text>{' '}
       <Text color="claude">[✻]</Text> ·{' '}
       {reward
-        ? `Share Claude Code and earn ${formatCreditAmount(reward)} of extra usage · /passes`
+        ? `Share ${PRODUCT_NAME} and earn ${formatCreditAmount(reward)} of extra usage · /passes`
         : '3 guest passes at /passes'}
     </Text>
   )

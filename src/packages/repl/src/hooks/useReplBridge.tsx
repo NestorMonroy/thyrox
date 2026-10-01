@@ -44,6 +44,7 @@ import {
   transitionPermissionMode,
 } from '@thyrox/permission/permissionSetup'
 import { getLeaderToolUseConfirmQueue } from '@thyrox/swarm'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** How long after a failure before replBridgeEnabled is auto-cleared (stops retries). */
 const BRIDGE_FAILURE_DISMISS_MS = 10_000
@@ -494,7 +495,7 @@ export function useReplBridge(
               // setAutoModeActive(true) side-effect BEFORE the throw) rather
               // than a graceful reject. Letting that throw escape would:
               // (1) leave STATE.autoModeActive=true while the mode is
-              //     unchanged (3-way invariant violation per src/CLAUDE.md)
+              //     unchanged (3-way invariant violation per src/THYROX.md)
               // (2) fail to send a control_response → server kills WS
               // These mirror print.ts handleSetPermissionMode; the bridge
               // can't import the checks directly (bootstrap-isolation), so
@@ -736,7 +737,7 @@ export function useReplBridge(
               createBridgeStatusMessage(
                 url,
                 upgradeNudge
-                  ? 'Please upgrade to the latest version of the Claude mobile app to see your Remote Control sessions.'
+                  ? `Please upgrade to the latest version of the ${PRODUCT_NAME} mobile app to see your Remote Control sessions.`
                   : undefined,
               ),
             ])

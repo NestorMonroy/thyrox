@@ -320,6 +320,16 @@ class EnvFileDeclarations:
         return read_env_file(path).get(name) or None
 
 
+class FixedEnvFileDeclarations:
+    """Adaptador conducido: un ``.env`` ya localizado, sin ascenso."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def declared(self, name: str) -> str | None:
+        return read_env_file(self.path).get(name) or None if self.path.is_file() else None
+
+
 class FirstOfDeclarations:
     """Adaptador conducido que compone otros en orden de precedencia.
 
@@ -401,22 +411,92 @@ def clone_top_of(start: Path) -> Path:
     return next((level for level in (here, *here.parents) if (level / ".git").exists()), here)
 
 
-def clone_suffix_of(start: Path | None) -> str | None:
-    """El sufijo de la familia por clon del repositorio que contiene ``start``.
+def _short_name(root: Path) -> str:
+    """El nombre corto de un clon: sin el prefijo del multi-repo si lo lleva.
 
-    ``kaupamex-docs`` -> ``DOCS``: lo que sigue al último guion, en mayúsculas,
-    que es como ``workbench_home_name`` compone la clave. Se busca el ``.git``
-    y no el ``.env`` porque en un clon nuevo el ``.env`` del consumidor no
-    existe, que es justo el caso que la capa del proveedor cubre. Sin guion en
-    el nombre no hay sufijo, y sin sufijo no hay capa: mejor medir de menos que
-    inventar una familia.
+    El prefijo es OPCIONAL: un consumidor que no pertenece a ningún multi-repo
+    —``ai-course-notes``— se nombra entero. Antes sólo contaba un clon con el
+    prefijo derivado, y cualquier otro quedaba sin clave por clon, sin aviso
+    (H-THYROX-176).
+
+    El prefijo derivado se mide contra los HERMANOS del clon,
+    no contra el árbol del proveedor: un árbol sintético con un solo
+    ``acme-docs`` no es un multi-repo, y medirlo contra ``/home/user``
+    le aplicaba un prefijo ajeno.
+    """
+    name = root.name
+    # Lo declarado se lee sin `start`: con él, `env_value` consulta la familia
+    # por clon, que vuelve a pedir este nombre corto.
+    # Se quita el prefijo que el clon LLEVA: el declarado vale para su
+    # multi-repo, no para un clon de otro que viva en el mismo árbol.
+    for prefix in (env_value(CLONE_PREFIX_VAR), derive_clone_prefix(root)):
+        if prefix and name.startswith(prefix) and len(name) > len(prefix):
+            return name[len(prefix):]
+    return name
+
+
+def clone_root_of(start: str | Path | None) -> Path | None:
+    """La raíz del clon que contiene ``start``, o ``None`` fuera de uno.
+
+    Dos criterios, en orden:
+
+    1. el primer nivel, al ascender, cuyo nombre lleva el prefijo del
+       multi-repo —sin exigir ``.git``, como siempre: un árbol sintético de
+       prueba no lo tiene—;
+    2. si ninguno lo lleva, la raíz git: un consumidor sin prefijo
+       (``ai-course-notes``) también es un clon (H-THYROX-176).
+
+    Es la base contra la que se resuelve una clave por clon relativa: antes se
+    COMPONÍA ``<prefijo><nombre>``, una ruta que no existe para un clon sin
+    prefijo.
     """
     if start is None:
         return None
-    name = clone_top_of(start).name
-    if "-" not in name:
+    here = Path(start).resolve()
+    try:
+        prefix = clone_prefix()
+    except KeyError:
+        prefix = None
+    if prefix:
+        for level in (here, *here.parents):
+            if level.name.startswith(prefix) and len(level.name) > len(prefix):
+                return level
+    top = clone_top_of(here)
+    return top if (top / ".git").exists() else None
+
+
+def per_clone_base(start: str | Path | None) -> Path:
+    """La base contra la que se resuelve una clave por clon relativa: la raíz
+    del clon que contiene ``start``, o ``start`` mismo fuera de uno."""
+    here = Path(start or Path.cwd())
+    return clone_root_of(here) or here.resolve()
+
+
+def clone_short_name(start: str | Path | None) -> str | None:
+    """El nombre corto del clon que contiene ``start``, o ``None`` fuera de uno.
+
+    ``kaupamex-docs`` -> ``docs``; ``ai-course-notes`` -> ``ai-course-notes``.
+    """
+    root = clone_root_of(start)
+    return _short_name(root) if root is not None else None
+
+
+def clone_suffix_of(start: Path | None) -> str | None:
+    """El sufijo de la familia por clon del repositorio que contiene ``start``.
+
+    ``kaupamex-docs`` -> ``DOCS``; ``ai-course-notes`` -> ``AI_COURSE_NOTES``:
+    el nombre corto entero, en mayúsculas y con ``_`` por ``-``, que es como
+    ``workbench_home_name`` compone la clave. Tomaba sólo lo que sigue al
+    último guion, y para un nombre de varias palabras la clave leída y la
+    declarada no coincidían (H-THYROX-176). Se busca el ``.git`` y no el
+    ``.env`` porque en un clon nuevo el ``.env`` del consumidor no existe, que
+    es justo el caso que la capa del proveedor cubre; en un árbol sintético sin
+    ``.git`` la raíz es ``start`` mismo.
+    """
+    if start is None:
         return None
-    return name.rsplit("-", 1)[1].upper().replace("-", "_") or None
+    name = _short_name(clone_top_of(start))
+    return name.upper().replace("-", "_") or None
 
 
 def production_declarations(start: Path | None = None,
@@ -434,15 +514,79 @@ def production_declarations(start: Path | None = None,
     # desmentiría la declaración.
     if os.environ.get(ENV_FILE_VAR):
         return FirstOfDeclarations(ProcessEnvironment(), specific)
+    specific_path = env_file_path(start)
+    layers: list[ForReadingDeclarations] = [ProcessEnvironment()]
+    # Sin ``start`` el ascenso parte del módulo, dentro del proveedor: desde un
+    # clon consumidor se leía el ``.env`` de thyrox y no el suyo (H-THYROX-178).
+    # La capa del consumidor va ANTES, sin sustituir: su ``.env`` puede no
+    # declarar claves que el proveedor sí (``THYROX_COMMIT_AUTHOR``).
+    consumer = consumer_env_file() if start is None else None
+    if consumer is not None and (specific_path is None
+                                 or consumer.resolve() != specific_path.resolve()):
+        layers.append(FixedEnvFileDeclarations(consumer))
+    layers.append(specific)
     general = ProviderEnvFileDeclarations(provider_root, clone_suffix_of(start), start)
     # El mismo archivo no se lee como dos capas: desde dentro del proveedor la
     # especifica YA es la general.
-    specific_path = env_file_path(start)
     general_path = general.path()
-    if general_path is None or (specific_path is not None
-                                and specific_path.resolve() == general_path.resolve()):
-        return FirstOfDeclarations(ProcessEnvironment(), specific)
-    return FirstOfDeclarations(ProcessEnvironment(), specific, general)
+    if general_path is not None and (specific_path is None
+                                     or specific_path.resolve() != general_path.resolve()):
+        layers.append(general)
+    return FirstOfDeclarations(*layers)
+
+
+def declared_with_prefix(prefixes: tuple[str, ...],
+                         start: Path | None = None) -> dict[str, str]:
+    """Las claves con alguno de ``prefixes`` que la cadena de ``.env`` declara.
+
+    El puerto sólo responde por nombre, así que los candidatos salen de los
+    archivos que la cadena lee —el ``.env`` del consumidor y el específico— y
+    el VALOR de ``env_value``, que es quien decide la precedencia. Un guion
+    de shell lo usa para cargar su familia de una vez en vez de preguntar clave
+    por clave (``toolchain.sh``).
+    """
+    if not prefixes:
+        return {}
+    files = [env_file_path(start)]
+    if start is None and not os.environ.get(ENV_FILE_VAR):
+        files.insert(0, consumer_env_file())
+    names = sorted({name for path in files if path is not None
+                    for name in read_env_file(path)
+                    if name.startswith(prefixes)})
+    found = {name: env_value(name, start) for name in names}
+    return {name: value for name, value in found.items() if value is not None}
+
+
+def invoking_consumer(cwd: Path | None = None) -> Path | None:
+    """La raíz del clon consumidor desde el que se invoca, o ``None``.
+
+    Es consumidor el work tree git que contiene ``cwd`` si no es el del
+    proveedor. Fuera de un clon —el cwd de los hooks es ``/home/user``— o
+    dentro de thyrox devuelve ``None``, y quien pregunta conserva su conducta.
+    """
+    try:
+        here = (cwd or Path.cwd()).resolve()
+    except OSError:
+        return None
+    top = clone_top_of(here)
+    if not (top / ".git").exists():
+        return None
+    # Un clon con el marcador del proveedor ES un proveedor, esté donde esté
+    # este módulo: una copia de `reach.py` fuera del árbol, invocada con cwd en
+    # thyrox, leía el `.env` de thyrox como si fuera un consumidor. Sin
+    # entorno: `thyrox_root()` lee `env_value`, que vuelve a pedir esta capa.
+    if (top / THYROX_MARKER).is_file():
+        return None
+    return top
+
+
+def consumer_env_file(cwd: Path | None = None) -> Path | None:
+    """El ``.env`` del clon consumidor desde el que se invoca, o ``None``."""
+    top = invoking_consumer(cwd)
+    if top is None:
+        return None
+    candidate = top / ENV_FILE_NAME
+    return candidate if candidate.is_file() else None
 
 
 def env_value(
@@ -813,10 +957,9 @@ CONSUMER_MARKER = ".claude"
 #: Las dos clausulas, y por que son dos:
 #:
 #: 1. **Rehusar cuando el punto de partida es el proveedor.** Declarar cual es
-#:    el consumidor no convierte al proveedor en uno. Medido el 2026-09-23 en
-#:    un arbol real: sin esta clausula, un gate de idioma paso de 0 a 70
-#:    nombres al declararse la variable. Ninguno era nuevo — dejo de leer el
-#:    baseline del PROVEEDOR y lo busco en el consumidor, donde no esta.
+#:    el consumidor no convierte al proveedor en uno. Sin esta clausula, un
+#:    gate que corre en el proveedor buscaria su baseline en el consumidor,
+#:    donde no esta, y publicaria como nueva toda su deuda heredada.
 #: 2. **Resolver una declaracion RELATIVA contra la raiz del contenedor.** Una
 #:    ruta relativa resuelta contra el cwd da una respuesta distinta por cada
 #:    directorio desde el que se invoque — el defecto home-by-cwd que este
@@ -1217,6 +1360,18 @@ def main(argv: list[str]) -> int:
         print(f"reach: {key} sin declarar y sin default", file=sys.stderr)
         return 1
 
+    if mode == "--prefixed":
+        # Las claves de una FAMILIA declaradas en la cadena de `.env`, una por
+        # línea `CLAVE=valor`. Existe para que un guion cargue su familia con
+        # un solo proceso, sin su propio `grep` del `.env` —la segunda fuente
+        # de verdad que `--value` ya evita— (H-THYROX-178).
+        if len(argv) < 3:
+            print("reach: --prefixed exige al menos un prefijo", file=sys.stderr)
+            return 2
+        for name, value in declared_with_prefix(tuple(argv[2:])).items():
+            print(f"{name}={value}")
+        return 0
+
     if mode == "--home":
         # Igual que `--value`, pero RESOLVIENDO la ruta declarada contra la
         # raiz que la ancla, con las tres vias de `resolve_home`: absoluta tal
@@ -1290,7 +1445,8 @@ def main(argv: list[str]) -> int:
         f"reach: modo desconocido: {mode}\n"
         "  --list (default) · --env · --paths · --declared · --names · --check\n"
         "  --thyrox-root · --tree-root · --value <CLAVE> [DEFAULT]\n"
-        "  --home <CLAVE> [DEFAULT]  (el valor, resuelto contra la raíz)",
+        "  --home <CLAVE> [DEFAULT]  (el valor, resuelto contra la raíz)\n"
+        "  --prefixed <PREFIJO>...   (CLAVE=valor de la familia declarada)",
         file=sys.stderr,
     )
     return 2

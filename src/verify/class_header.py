@@ -62,9 +62,14 @@ la lectura de `Meta` y el emparejamiento de addons.
 import dataclasses
 import importlib.util
 import pathlib
+from typing import Callable, Optional
 
 _spec = importlib.util.spec_from_file_location(
     "verify_reader", pathlib.Path(__file__).resolve().parent / "reader.py")
+if _spec is None or _spec.loader is None:
+    # Sólo puede pasar si reader.py desaparece del árbol; es un fallo real,
+    # no una condición esperada — se hace explícito en vez de silenciarlo.
+    raise ImportError("no se pudo cargar verify/reader.py junto a este módulo")
 reader_module = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(reader_module)
 AstReader = reader_module.AstReader
@@ -90,8 +95,8 @@ class Header:
     name: str
     tracked: frozenset
     special_calls: frozenset = frozenset()
-    selects: object = None
-    relocated: object = None
+    selects: Optional[Callable[[str], bool]] = None
+    relocated: Optional[Callable[..., object]] = None
 
     def accepts(self, attribute):
         return (self.selects or default_selects)(attribute)

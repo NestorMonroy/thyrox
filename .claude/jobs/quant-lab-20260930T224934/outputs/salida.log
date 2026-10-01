@@ -1,0 +1,25 @@
+== fuente: Qwen/Qwen2.5-0.5B-Instruct
+revision=7ae557604adf67be50417f59c2c2f167def9a775
+descarga_s=14
+sha256 fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe  ./model.safetensors
+fuente_bytes=999586347
+{"architectures":["Qwen2ForCausalLM"],"torch_dtype":"bfloat16","num_hidden_layers":24,"num_key_value_heads":2,"hidden_size":896,"num_attention_heads":14,"max_position_embeddings":32768}
+== nivel invalido (para leer la lista que acepta)
+[?2026h[?25l[1G[?25h[?2026l
+Error: unsupported --quantize "q9_Z": supported types are int4, int8, nvfp4, mxfp4, mxfp8
+== q8_0 -> lab-q8-0
+[?2026h[?25l[1G[?25h[?2026l
+Error: unsupported --quantize "q8_0": supported types are int4, int8, nvfp4, mxfp4, mxfp8
+create_s=0
+{"format":null,"family":null,"parameter_size":null,"quantization_level":null}
+jq: error (at <stdin>:1): null (null) and number (1E+9) cannot be divided
+mem_usage=12.32MB / 16.88GB
+== q4_K_M -> lab-q4-k-m
+[?2026h[?25l[1G[?25h[?2026l
+Error: unsupported --quantize "q4_K_M": supported types are int4, int8, nvfp4, mxfp4, mxfp8
+create_s=1
+{"format":null,"family":null,"parameter_size":null,"quantization_level":null}
+jq: error (at <stdin>:1): null (null) and number (1E+9) cannot be divided
+mem_usage=12.33MB / 16.88GB
+== modelos en el laboratorio
+__BG_EXIT__=0

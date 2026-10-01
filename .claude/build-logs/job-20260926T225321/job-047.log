@@ -1,0 +1,15 @@
+== 1. los cinco estados se distinguen ==
+  ok    api con hook ejecutable -> OK
+  ok    db sin el config -> SIN-FIJAR
+  ok    docs con ruta inexistente -> ROTO
+  ok    ui con directorio inerte -> VACIO
+  ok    server que no es clon -> AUSENTE
+== 2. el conteo y su denominador ==
+  ok    cuatro clones incumplen
+  ok    publica su denominador
+== 3. --strict bloquea, y sale 0 cuando el arbol esta sano ==
+  ok    con incumplidores sale 1
+  ok    arbol sano sale 0
+
+test-githooks-activos: OK — 9 aserciones sobre 5 clones sinteticos
+EXIT=0

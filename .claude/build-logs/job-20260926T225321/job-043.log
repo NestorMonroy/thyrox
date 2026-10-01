@@ -1,0 +1,14 @@
+  ok   ve la cifra de suite (control real H-DOCS-137)
+  ok   el reporte imprime la razón
+  ok   ve el ordinal junto a su script (control real H-DOCS-162)
+  ok   NO marca el ordinal suelto (ceguera declarada)
+  ok   NO confunde un ID de tarea con un ordinal
+  ok   el reporte declara el alcance medido
+  ok   --strict sale 1 con un incumplidor
+  ok   --strict sale 0 sin incumplidores
+  ok   NO marca la evidencia fechada de un episodio (discriminador)
+  ok   el baseline se lee y FILTRA (crudo > filtrado)
+  ok   y el corpus real tiene deuda que ver (control positivo)
+
+11 ok · 0 falla(s)
+EXIT=0

@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/verify/test_check_cache_layout.py

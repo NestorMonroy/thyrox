@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+12 |   unicodeEscape,
+13 | } from '../src/uds/unicodeSanitize.ts'
+14 | 
+15 | describe('retirada', () => {
+16 |   test('stripLoneSurrogates (Mz) quita los sustitutos sueltos y deja los pares', () => {
+17 |     expect(stripLoneSurrogates('a\ud800b\udc00c')).toBe('abc')
+                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "abc"
+Received: "a�b�c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:17:52)
+(fail) retirada > stripLoneSurrogates (Mz) quita los sustitutos sueltos y deja los pares [0.28ms]
+23 |     expect(stripFormatCharacters('a\u{e0041}b')).toBe('ab')
+24 |     expect(stripFormatCharacters('ñ ok')).toBe('ñ ok')
+25 |   })
+26 | 
+27 |   test('stripInvisibleFormatting (sf) combina las dos', () => {
+28 |     expect(stripInvisibleFormatting('a\ud800​b')).toBe('ab')
+                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "ab"
+Received: "a�b"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:28:50)
+(fail) retirada > stripInvisibleFormatting (sf) combina las dos [0.14ms]
+
+ 3 pass
+ 2 fail
+ 9 expect() calls
+Ran 5 tests across 1 file. [34.00ms]

@@ -1,0 +1,46 @@
+
+1. Linea base — los tres veredictos que el banco produce
+  ok    1.1 tres hallazgos
+  ok    1.2 el denominador cuenta LOS DOS archivos de la fuente
+  ok    1.3 y solo la clase con contraparte entra al conteo comparado
+
+2. GUARDA — una clase AUSENTE sin miembros sigue siendo hallazgo
+  ok    2.1 aparece con lista vacia
+
+3. CONTROL `installed` — vuelve EXTENDIDA la clase, y la suprime
+  ok    3.1 la clase de solo campos desaparece del reporte
+  ok    3.2 y en la rama sin archivo pareado tambien absuelve
+
+4. CONTROL `located` — AUSENTE contra FUERA DE SITIO
+  ok    4.1 la clase pasa a estar portada en otro archivo
+  ok    4.2 y entra al denominador comparado
+
+5. CONTROL `key_source` — el alias resucita un miembro ausente
+  ok    5.1 el miembro deja de faltar
+
+6. CONTROL `absolved` — la equivalencia declarada en el archivo
+  ok    6.1 el miembro absuelto no es ausencia
+
+7. CONTROL `file_members` — AUSENTE contra FUERA DE SITIO
+  ok    7.1 pasa a fuera de sitio
+
+8. CONTROL `demoted` — presente, con la visibilidad cambiada
+  ok    8.1 un miembro presente puede seguir siendo hallazgo
+
+9. CONTROL `counterpart` — el localizador es PARAMETRO
+  ok    9.1 sin localizador los DOS archivos quedan sin portar
+  ok    9.2 y el recorrido se declara igual
+
+10. La direccion del localizador es la INVERSA de los otros niveles
+  ok    10.1 el localizador recibe la ruta de la fuente
+
+11. CONTROL `key_container` — el emparejamiento de dos clases
+  ok    11.1 con la llave por defecto, la clase no se empareja
+  ok    11.2 con la del consumidor, se empareja y no hay hallazgo
+  ok    11.3 y entra al denominador comparado
+
+12. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+  ok    12.1 el nivel corre sobre un formato que `ast` no parsea
+  ok    12.2 el lector de Python no ve nada ahi (por eso es parametro)
+
+20 ok, 0 fallos

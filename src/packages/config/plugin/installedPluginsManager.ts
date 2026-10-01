@@ -13,7 +13,7 @@
  * plugins active).
  */
 
-import { dirname, join } from 'path'
+import { dirname, isAbsolute, join } from 'path'
 import { logForDebugging } from './_deps.js'
 import { errorMessage, isENOENT, toError } from './_deps.js'
 import { getFsImplementation } from './_deps.js'
@@ -25,6 +25,7 @@ import {
 } from './_deps.js'
 import { getPluginsDirectory } from './pluginDirectories.js'
 import {
+  CommandProducerEntrySchema,
   type InstalledPlugin,
   InstalledPluginsFileSchemaV1,
   InstalledPluginsFileSchemaV2,
@@ -793,7 +794,7 @@ export function removeAllPluginsForMarketplace(marketplaceName: string): {
  * - user/managed scopes: always relevant (global)
  * - project/local scopes: only if projectPath matches the current project
  *
- * getOriginalCwd() (not getCwd()) because "current project" is where Claude
+ * getOriginalCwd() (not getCwd()) because "current project" is where thyrox
  * Code was launched from, not wherever the working directory has drifted to.
  */
 export function isInstallationRelevantToCurrentProject(
@@ -1264,4 +1265,56 @@ export async function migrateFromEnabledPlugins(): Promise<void> {
       `Sync completed: ${addedCount} added, ${updatedCount} updated in installed_plugins.json`,
     )
   }
+}
+
+// ---- Rutas productoras de comandos (≙ `U7n` de 2.1.275, `gHr` de 2.1.283) ----
+
+/** Un `installed_plugins.json` mayor que esto no se lee: no es un registro, es otra cosa. */
+const INSTALLED_PLUGINS_FILE_SIZE_LIMIT = 4 * 1024 * 1024
+
+/** Las entradas de instalación que un `installed_plugins.json` declara, o ninguna si no se puede leer. */
+function readInstallationEntriesUnchecked(pluginsDir: string): unknown[] {
+  const fs = getFsImplementation()
+  const filePath = join(pluginsDir, 'installed_plugins.json')
+  let parsed: unknown
+  try {
+    const stats = fs.statSync(filePath)
+    if (!stats.isFile() || stats.size > INSTALLED_PLUGINS_FILE_SIZE_LIMIT) return []
+    parsed = jsonParse(fs.readFileSync(filePath, 'utf8'))
+  } catch {
+    return []
+  }
+  const plugins = isRecord(parsed) && isRecord(parsed.plugins) ? parsed.plugins : undefined
+  if (plugins === undefined) return []
+  return Object.values(plugins).flatMap(installations => (Array.isArray(installations) ? installations : []))
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/** Las rutas productoras que una entrada declara, actual y anteriores. */
+function producerPathsOf(entry: unknown): string[] {
+  const parsed = CommandProducerEntrySchema().safeParse(entry)
+  if (!parsed.success) return []
+  const current = parsed.data.sourceProducerPath
+  return [...(current === undefined ? [] : [current]), ...(parsed.data.previousProducerPaths ?? [])]
+}
+
+/**
+ * Los directorios desde los que se instaló cada plugin de los registros
+ * dados, actuales y anteriores, absolutos y sin repetir. Un archivo ilegible
+ * o una entrada mal formada aportan nada y no interrumpen el recorrido:
+ * esta lectura protege una edición automática y tiene que terminar siempre.
+ */
+export function collectCommandProducerPaths(pluginsDirs: readonly string[]): string[] {
+  const producers = new Set<string>()
+  for (const pluginsDir of new Set(pluginsDirs)) {
+    for (const entry of readInstallationEntriesUnchecked(pluginsDir)) {
+      for (const producer of producerPathsOf(entry)) {
+        if (isAbsolute(producer)) producers.add(producer)
+      }
+    }
+  }
+  return [...producers]
 }

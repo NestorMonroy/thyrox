@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+313 | 
+314 | describe('ayudantes del alta', () => {
+315 |   test('tmuxPaneTarget (lD) sólo pregunta dentro de tmux y con panel', async () => {
+316 |     const calls: unknown[] = []
+317 |     const run = async (command: string, args: string[], options: { timeout: number }) => (calls.push([command, args, options.timeout]), { code: 0, stdout: 'main:@1.%2\n' })
+318 |     expect(await tmuxPaneTarget({ TMUX_PANE: '%2' }, run)).toBeUndefined()
+                                                                 ^
+error: expect(received).toBeUndefined()
+
+Received: "main:@1.%2"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:318:60)
+(fail) ayudantes del alta > tmuxPaneTarget (lD) sólo pregunta dentro de tmux y con panel [1.00ms]
+
+ 22 pass
+ 1 fail
+ 81 expect() calls
+Ran 23 tests across 1 file. [203.00ms]

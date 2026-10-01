@@ -1,0 +1,1 @@
+timeout 600 bash tests/session/test-list-agents-two-cli.sh > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-two-cli.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-two-cli.log

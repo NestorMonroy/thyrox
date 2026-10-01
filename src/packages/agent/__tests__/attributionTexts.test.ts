@@ -4,7 +4,7 @@
  * `buildAttributionTexts` es `MMo`: pie de PR y `Co-Authored-By` por defecto,
  * el override de `settings.attribution` campo por campo, y el vacío cuando
  * `includeCoAuthoredBy` es `false`. `getEnhancedPRAttribution` es `UMo`: el
- * pie enriquecido con el porcentaje de Claude, los prompts desde la última
+ * pie enriquecido con el porcentaje de thyrox, los prompts desde la última
  * compactación y las memorias leídas.
  */
 import { describe, expect, test } from 'bun:test'
@@ -24,7 +24,7 @@ describe('buildAttributionTexts', () => {
     const texts = buildAttributionTexts({}, 'Claude Opus 5')
     expect(texts.commit).toBe('Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>')
     expect(texts.pr).toBe(PR_FOOTER)
-    expect(PR_FOOTER).toBe('\u{1F916} Generated with [Claude Code](https://claude.com/claude-code)')
+    expect(PR_FOOTER).toBe('\u{1F916} Generated with thyrox')
   })
 
   test('settings.attribution sustituye campo por campo', () => {

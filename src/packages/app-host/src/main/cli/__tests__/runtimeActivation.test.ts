@@ -5,18 +5,18 @@ let envSnapshot: { proactive?: string; brief?: string }
 
 beforeEach(() => {
   envSnapshot = {
-    proactive: process.env.CLAUDE_CODE_PROACTIVE,
-    brief: process.env.CLAUDE_CODE_BRIEF,
+    proactive: process.env.THYROX_CODE_PROACTIVE,
+    brief: process.env.THYROX_CODE_BRIEF,
   }
-  delete process.env.CLAUDE_CODE_PROACTIVE
-  delete process.env.CLAUDE_CODE_BRIEF
+  delete process.env.THYROX_CODE_PROACTIVE
+  delete process.env.THYROX_CODE_BRIEF
 })
 
 afterEach(() => {
-  if (envSnapshot.proactive === undefined) delete process.env.CLAUDE_CODE_PROACTIVE
-  else process.env.CLAUDE_CODE_PROACTIVE = envSnapshot.proactive
-  if (envSnapshot.brief === undefined) delete process.env.CLAUDE_CODE_BRIEF
-  else process.env.CLAUDE_CODE_BRIEF = envSnapshot.brief
+  if (envSnapshot.proactive === undefined) delete process.env.THYROX_CODE_PROACTIVE
+  else process.env.THYROX_CODE_PROACTIVE = envSnapshot.proactive
+  if (envSnapshot.brief === undefined) delete process.env.THYROX_CODE_BRIEF
+  else process.env.THYROX_CODE_BRIEF = envSnapshot.brief
 })
 
 describe('maybeActivateProactive — sin el flag de build de la fuente, nunca activa', () => {
@@ -29,8 +29,8 @@ describe('maybeActivateProactive — sin el flag de build de la fuente, nunca ac
     expect(llamado).toBe(false)
   })
 
-  test('con CLAUDE_CODE_PROACTIVE=1, no llama a ningún colaborador', () => {
-    process.env.CLAUDE_CODE_PROACTIVE = '1'
+  test('con THYROX_CODE_PROACTIVE=1, no llama a ningún colaborador', () => {
+    process.env.THYROX_CODE_PROACTIVE = '1'
     let llamado = false
     maybeActivateProactive({}, { activateProactive: () => (llamado = true) })
     expect(llamado).toBe(false)
@@ -57,8 +57,8 @@ describe('maybeActivateBrief — sin el flag de build de la fuente, nunca activa
     expect(optInLlamado).toBe(false)
   })
 
-  test('con CLAUDE_CODE_BRIEF=1, no llama a logEvent', () => {
-    process.env.CLAUDE_CODE_BRIEF = '1'
+  test('con THYROX_CODE_BRIEF=1, no llama a logEvent', () => {
+    process.env.THYROX_CODE_BRIEF = '1'
     let eventoEmitido = false
     maybeActivateBrief({}, { logEvent: () => (eventoEmitido = true) })
     expect(eventoEmitido).toBe(false)

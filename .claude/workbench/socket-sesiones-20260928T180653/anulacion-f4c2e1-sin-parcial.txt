@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerFiles.test.ts:
+202 |     const events: Array<[string, Record<string, unknown>]> = []
+203 |     const sink = (name: string, metadata: Record<string, unknown>) => events.push([name, metadata])
+204 |     emitPeerFileReceiveTelemetry('uds', 2, 2, sink)
+205 |     emitPeerFileReceiveTelemetry('uds', 2, 1, sink)
+206 |     emitPeerFileReceiveTelemetry('bridge', 2, 0, sink)
+207 |     expect(events).toEqual([
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -24,5 +24,5 @@
+    [
+-     "tengu_feature_sad",
++     "tengu_feature_bad",
+      {
+-       "error_code": "partial_failed",
++       "error_code": "all_failed",
+        "feature_name": "peer_file_receive",
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:207:20)
+(fail) telemetría y bandera > emitPeerFileReceiveTelemetry (wxn): el evento y ok, sad o bad [0.78ms]
+
+ 16 pass
+ 1 fail
+ 58 expect() calls
+Ran 17 tests across 1 file. [143.00ms]

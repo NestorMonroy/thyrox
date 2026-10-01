@@ -21,7 +21,7 @@ import { join } from 'node:path'
 import {
   getAdditionalDirectoriesForClaudeMd,
 } from '@thyrox/app-host/bootstrap/state.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { isSettingSourceEnabled } from '@thyrox/config/constants'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
@@ -107,7 +107,7 @@ async function loadWorkflowsFromDir(
 // ant 3889 MHK — user (~/.claude/workflows) + project (<root>/.claude/workflows)
 // directories, gated by isSettingSourceEnabled. Project overrides user by name.
 async function loadUserAndProjectWorkflows(): Promise<NamedWorkflow[]> {
-  const userDir = join(getClaudeConfigHomeDir(), 'workflows')
+  const userDir = join(getConfigHomeDir(), 'workflows')
   const projectDirs = getAdditionalDirectoriesForClaudeMd().map(root =>
     join(root, '.claude', 'workflows'),
   )

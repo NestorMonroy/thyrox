@@ -28,6 +28,7 @@ from __future__ import annotations
 import importlib.util
 import pathlib
 import sys
+from typing import Any
 
 # El bootstrap de UNA linea es la unica aritmetica que el gate admite: no se
 # puede pedir `reach.thyrox_root()` antes de que `import reach` funcione.
@@ -36,7 +37,8 @@ from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_self_matching_pgrep.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
-gate = importlib.util.module_from_spec(_spec)
+assert _spec is not None and _spec.loader is not None
+gate: Any = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
 #: El comando del episodio, citado verbatim. NO es un incumplidor fabricado:
@@ -101,6 +103,7 @@ check("y no le basta la palabra en prosa", None,
 # --- 8. el aviso nombra las DOS salidas --------------------------------------
 print("== 8. el aviso nombra el mecanismo sancionado y el discriminador ==")
 notice = detect(EPISODE)
+assert notice is not None
 check("nombra marker_wait --pid-only", True, "--pid-only" in notice)
 check("nombra wait-jobs, para N trabajos", True, "wait-jobs" in notice)
 check("y nombra la clase de corchete como salida minima", True, "[c]" in notice or "[p]" in notice)

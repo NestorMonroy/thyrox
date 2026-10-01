@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: lookupAffinity sobre LCP > invalidateAuth también olvida los enlaces LCP [0.79ms]
+ 99 pass
+ 1 fail

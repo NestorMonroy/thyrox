@@ -2,7 +2,7 @@
 
 El defecto, medido antes de escribir esto
 (``.claude/workbench/disparo-de-acunado-al-crear-20260917T234857/``):
-``board_sync.mint_created_card`` tiene **cero invocadores de produccion** — solo
+``board_sync.assign_created_card`` tiene **cero invocadores de produccion** — solo
 lo llaman su propia suite y un volcado de banco. La capacidad esta escrita y
 muerta, que es por lo que ``TASK-DOCS-0404`` sigue abierta pese al mecanismo.
 
@@ -34,7 +34,7 @@ Lo que tiene que poder fallar:
   su silencio se lee como «no habia tarjetas nuevas».
 * **el guard SIGUE rechazando lo que no crea**. Es la otra mitad: admitir
   ``TaskCompleted`` en el acuñado daria al mismo trabajo una fila y una cita
-  mas en cada cierre — el duplicado que ``mint_created_card`` existe para
+  mas en cada cierre — el duplicado que ``assign_created_card`` existe para
   evitar, y que su propio docstring declara.
 * **el payload se lee del stdin del cliente, con SU forma**. Un lector que
   espere ``tool_input.ordinal`` no ve nada en un payload real, y su cero se
@@ -113,7 +113,7 @@ def scenario():
 def run(event, ordinal, session, board, store, layer="thyrox"):
     return subprocess.run(
         [sys.executable, str(HOOK), "--store", str(store), "--board", str(board),
-         "--capa", layer],
+         "--layer", layer],
         input=payload(event, ordinal, "Sujeto de la sonda", session),
         capture_output=True, text=True)
 
@@ -185,6 +185,18 @@ commands = [h["command"] for ev in ("TaskCreated", "TaskCompleted")
             for group in declared.get(ev, []) for h in group.get("hooks", [])]
 check("los dos apuntan al mismo guion", 2,
       sum(1 for c in commands if "task_lifecycle.py" in c))
+
+print()
+print("== 7. el CLI usa --layer, no --capa (#310) ==")
+tmp7, session7, board7, store7 = scenario()
+r7 = subprocess.run(
+    [sys.executable, str(HOOK), "--store", str(store7), "--board", str(board7),
+     "--capa", "thyrox"],
+    input=payload("TaskCreated", 7, "Sujeto de la sonda", session7),
+    capture_output=True, text=True)
+check("`--capa` (el nombre viejo) ya no se acepta (exit 2)", 2, r7.returncode)
+r8 = run("TaskCreated", 7, session7, board7, store7)
+check("`--layer` (el nombre nuevo) sale 0", 0, r8.returncode)
 
 print()
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")

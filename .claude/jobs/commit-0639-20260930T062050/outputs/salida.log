@@ -1,0 +1,137 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 114 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 114 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 114 archivo(s) pedido(s))
+shellcheck: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 92 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 114 ruta(s) preparada(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 294 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 72183 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1549 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 288 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1840 lectura(s) en 4003 archivo(s) de producción — propias 831, proveedor 94, cliente ajeno 18, sin prefijo 897)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 129 congelada(s), 0 obsoleta(s) (alcance medido: 351 variable(s) propia(s), 2136 archivo(s) de prueba)
+claves leidas del entorno: 14 | declaradas: 501 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 14 clave(s) en 1 archivo(s) ignorado(s), 511 declarada(s) en .env.example)
+REHUSA — no existe la raiz de boards /root/.claude/tasks. NO se reconcilia nada: un 0 aqui no distinguiria «ninguna sesion diverge» de «no mire ninguna».
+
+pre-commit: la reconciliacion board->store fallo (exit 2).
+  El commit SIGUE: el store es telemetria y el trabajo no se
+  pierde por ella. La fila queda atrasada hasta el proximo pase.
+  TASK-THYROX-0639 -> Pool exit must not orphan live items nor sweep their worktrees
+[feature/complete-orm-root 6ff2659aa] Drain live items and keep unclosed worktrees on pool exit
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 114 files changed, 1455 insertions(+), 24 deletions(-)
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/index
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-001.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-001.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-002.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-002.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-003.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-003.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-004.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-004.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-005.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-005.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-006.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-006.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-007.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-007.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-008.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-008.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-009.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-009.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-010.attempts
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/job-010.cmd
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/parallel.out
+ create mode 100644 .claude/build-logs/job-20260930T061304/.jobs/width
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-001.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-001.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-002.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-002.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-003.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-003.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-004.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-004.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-005.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-005.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-006.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-006.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-007.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-007.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-008.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-008.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-009.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-009.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-010.log
+ create mode 100644 .claude/build-logs/job-20260930T061304/job-010.log.time
+ create mode 100644 .claude/build-logs/job-20260930T061304/joblog.tsv
+ create mode 100644 .claude/build-logs/pool-exit-live-items/commit-thyrox.sh
+ create mode 100644 .claude/build-logs/pool-exit-live-items/exit-red-20260930T060300.log
+ create mode 100644 .claude/build-logs/pool-exit-live-items/final-pool-20260930T061851.log
+ create mode 100644 .claude/jobs/exit-suite-20260930T060705/README.md
+ create mode 100644 .claude/jobs/exit-suite-20260930T060705/manifest.jsonl
+ create mode 100644 .claude/jobs/exit-suite-20260930T060705/outputs/pid
+ create mode 100644 .claude/jobs/exit-suite-20260930T060705/outputs/salida.log
+ create mode 100644 .claude/jobs/exit-suite-20260930T060705/outputs/salida.log.time
+ create mode 100644 .claude/jobs/exit-suite2-20260930T060929/README.md
+ create mode 100644 .claude/jobs/exit-suite2-20260930T060929/manifest.jsonl
+ create mode 100644 .claude/jobs/exit-suite2-20260930T060929/outputs/pid
+ create mode 100644 .claude/jobs/exit-suite2-20260930T060929/outputs/salida.log
+ create mode 100644 .claude/jobs/exit-suite2-20260930T060929/outputs/salida.log.time
+ create mode 100644 .claude/jobs/exit-suite3-20260930T061151/README.md
+ create mode 100644 .claude/jobs/exit-suite3-20260930T061151/manifest.jsonl
+ create mode 100644 .claude/jobs/exit-suite3-20260930T061151/outputs/pid
+ create mode 100644 .claude/jobs/exit-suite3-20260930T061151/outputs/salida.log
+ create mode 100644 .claude/jobs/exit-suite3-20260930T061151/outputs/salida.log.time
+ create mode 100644 .claude/jobs/exit-suite4-20260930T061456/README.md
+ create mode 100644 .claude/jobs/exit-suite4-20260930T061456/manifest.jsonl
+ create mode 100644 .claude/jobs/exit-suite4-20260930T061456/outputs/pid
+ create mode 100644 .claude/jobs/exit-suite4-20260930T061456/outputs/salida.log
+ create mode 100644 .claude/jobs/exit-suite4-20260930T061456/outputs/salida.log.time
+ create mode 100644 .claude/jobs/lifecycle-suite-20260930T061227/README.md
+ create mode 100644 .claude/jobs/lifecycle-suite-20260930T061227/manifest.jsonl
+ create mode 100644 .claude/jobs/lifecycle-suite-20260930T061227/outputs/pid
+ create mode 100644 .claude/jobs/lifecycle-suite-20260930T061227/outputs/salida.log
+ create mode 100644 .claude/jobs/lifecycle-suite-20260930T061227/outputs/salida.log.time
+ create mode 100644 .claude/jobs/probe-diskfull-20260930T060718/README.md
+ create mode 100644 .claude/jobs/probe-diskfull-20260930T060718/manifest.jsonl
+ create mode 100644 .claude/jobs/probe-diskfull-20260930T060718/outputs/pid
+ create mode 100644 .claude/jobs/probe-diskfull-20260930T060718/outputs/salida.log
+ create mode 100644 .claude/jobs/probe-diskfull-20260930T060718/outputs/salida.log.time
+ create mode 100644 .claude/jobs/probe-diskfull2-20260930T060929/README.md
+ create mode 100644 .claude/jobs/probe-diskfull2-20260930T060929/manifest.jsonl
+ create mode 100644 .claude/jobs/probe-diskfull2-20260930T060929/outputs/pid
+ create mode 100644 .claude/jobs/probe-diskfull2-20260930T060929/outputs/salida.log
+ create mode 100644 .claude/jobs/probe-diskfull2-20260930T060929/outputs/salida.log.time
+ create mode 100644 .claude/jobs/probe-sigterm-20260930T060717/README.md
+ create mode 100644 .claude/jobs/probe-sigterm-20260930T060717/manifest.jsonl
+ create mode 100644 .claude/jobs/probe-sigterm-20260930T060717/outputs/pid
+ create mode 100644 .claude/jobs/probe-sigterm-20260930T060717/outputs/salida.log
+ create mode 100644 .claude/jobs/probe-sigterm-20260930T060717/outputs/salida.log.time
+ create mode 100644 .claude/jobs/worktree-suite-20260930T061228/README.md
+ create mode 100644 .claude/jobs/worktree-suite-20260930T061228/manifest.jsonl
+ create mode 100644 .claude/jobs/worktree-suite-20260930T061228/outputs/pid
+ create mode 100644 .claude/jobs/worktree-suite-20260930T061228/outputs/salida.log
+ create mode 100644 .claude/jobs/worktree-suite-20260930T061228/outputs/salida.log.time
+ create mode 100644 .claude/jobs/worktree-suite2-20260930T061456/README.md
+ create mode 100644 .claude/jobs/worktree-suite2-20260930T061456/manifest.jsonl
+ create mode 100644 .claude/jobs/worktree-suite2-20260930T061456/outputs/pid
+ create mode 100644 .claude/jobs/worktree-suite2-20260930T061456/outputs/salida.log
+ create mode 100644 .claude/jobs/worktree-suite2-20260930T061456/outputs/salida.log.time
+ create mode 100644 .claude/jobs/wt-location-20260930T061721/README.md
+ create mode 100644 .claude/jobs/wt-location-20260930T061721/manifest.jsonl
+ create mode 100644 .claude/jobs/wt-location-20260930T061721/outputs/pid
+ create mode 100644 .claude/jobs/wt-location-20260930T061721/outputs/salida.log
+ create mode 100644 .claude/jobs/wt-location-20260930T061721/outputs/salida.log.time
+ create mode 100644 .claude/workbench/pool-exit-live-items-20260930T060212/README.md
+ create mode 100755 .claude/workbench/pool-exit-live-items-20260930T060212/probes/common.sh
+ create mode 100755 .claude/workbench/pool-exit-live-items-20260930T060212/probes/disk-full.sh
+ create mode 100644 .claude/workbench/pool-exit-live-items-20260930T060212/probes/disk-full.trace.log
+ create mode 100755 .claude/workbench/pool-exit-live-items-20260930T060212/probes/sigterm-pool.sh
+ create mode 100644 .claude/workbench/pool-exit-live-items-20260930T060212/probes/sigterm-pool.trace.log
+ create mode 100755 tests/session/test-headless-pool-exit-live-items.sh
+6ff2659aa Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com> / jcg-admin <169318663+jcg-admin@users.noreply.github.com>
+Drain live items and keep unclosed worktrees on pool exit
+__BG_EXIT__=0

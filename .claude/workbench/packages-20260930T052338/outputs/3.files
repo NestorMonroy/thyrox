@@ -1,0 +1,4 @@
+src/packages/swarm/__tests__/swarmConstants.test.ts
+src/packages/swarm/src/index.ts
+src/packages/tool-registry/src/tools/shared/__tests__/spawnMultiAgentWindowArgs.test.ts
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts

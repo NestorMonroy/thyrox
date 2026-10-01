@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/paths",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Resolución de raíces y hogares del árbol (reach, docs).",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  }
+}

@@ -5,7 +5,7 @@
  *   bun run src/tools/WebSearchTool/__tests__/bingAdapter.integration.ts
  *
  * Optional env vars:
- *   BING_QUERY  — search query (default: "Claude AI Anthropic")
+ *   BING_QUERY  — search query (default: "thyrox AI Anthropic")
  */
 
 // Provide MACRO globals needed by the codebase when running outside dev mode

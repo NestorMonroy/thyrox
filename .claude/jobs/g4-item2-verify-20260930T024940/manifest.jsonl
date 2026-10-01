@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash tests/session/test-headless-pool-worktree.sh 2>&1 | tail -3; bash tests/session/test-item-worktree-stash.sh | tail -1; bash tests/session/test-item-worktree-sparse.sh | tail -1; bash tests/session/test-item-worktree-disk.sh | tail -1", "started_at": "2026-09-30T02:49:40+00:00"}

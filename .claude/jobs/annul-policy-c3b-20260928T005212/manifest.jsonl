@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/policy-settings-port-20260927T083804/probes/annul-phase-c3.sh", "started_at": "2026-09-28T00:52:12+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-28T00:52:18+00:00", "duration_seconds": 6.652182}

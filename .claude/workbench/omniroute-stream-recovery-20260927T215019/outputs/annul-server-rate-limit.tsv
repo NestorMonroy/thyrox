@@ -1,0 +1,5 @@
+base	5 pass, 0 fail	—
+not-limited	4 pass, 1 fail	una credencial protegida reenvía de a una cuando la cola lo pide
+headers-learn	4 pass, 1 fail	las cabeceras de la respuesta enseñan el ritmo al limitador
+body-learn	4 pass, 1 fail	el tope que un 429 escribe en su cuerpo se aprende, y el cliente recibe el cuerpo entero
+reads-5xx	4 pass, 1 fail	un 5xx no se lee: su cuerpo puede no terminar nunca

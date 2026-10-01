@@ -1,0 +1,39 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T093651
+  job-20260927T093651/job-001 pid 2645    bash bin/check_package_typecheck --strict --jobs 2 config permission tool-registry repl
+  job-20260927T093651/job-002 pid 2676    cd src/packages/permission && set -o pipefail && bun test 2>&1 | tail -6
+  job-20260927T093651/job-003 pid 2729    cd src/packages/config && set -o pipefail && bun test 2>&1 | tail -6
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260927T093651_job-002 -> OK (2 de 4)
+asentado: job-20260927T093651_job-003 -> OK (3 de 4)
+asentado: job-20260927T093651_job-001 -> OK (2 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T093651
+       | (vacío — no emitió nada)
+OK     job-20260927T093651_job-001 exit=0
+       |   config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   repl: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       | 
+       | check-package-typecheck: 0 error(es) propio(s) (alcance medido: 4 de 4 paquete(s))
+       | EXIT=0
+       memoria pico: 849068 KB (829 MB) · pared 22.91s
+OK     job-20260927T093651_job-002 exit=0
+       | See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+       | 
+       |  1075 pass
+       |  0 fail
+       |  1821 expect() calls
+       | Ran 1075 tests across 69 files. [10.69s]
+       | EXIT=0
+       memoria pico: 226692 KB (221 MB) · pared 10.74s
+OK     job-20260927T093651_job-003 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  744 pass
+       |  0 fail
+       |  1436 expect() calls
+       | Ran 744 tests across 53 files. [9.24s]
+       | EXIT=0
+       memoria pico: 154952 KB (151 MB) · pared 9.25s
+__BG_EXIT__=0

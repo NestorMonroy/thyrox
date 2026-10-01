@@ -1,0 +1,295 @@
+adopt_background	0	si	si	no	usage: adopt_background.py [-h] --ledger LEDGER [--id ID] [--log LOG]
+agent-cost	1	si	si	no	No se encontró transcript para agent_id=--help bajo /root/.claude/projects
+agent-cross-model-read-gate	0	si	no	no	rutas: 380 pares de modelo, 1140 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
+agent-emit	2	si	si	no	ERROR — argumento no reconocido: --help. Use --check o ninguno para escribir. NO se emite un conteo.
+agent-pre-model-switch	0	si	no	no	{}
+agent-recommend	2	si	si	no	uso: bun run bin/recommend.ts <clase> [--context N] [--json]
+agent_proposal	0	si	si	no	usage: agent_proposal.py [-h] [--root ROOT] --before-log BEFORE_LOG --pattern
+agent_store	0	si	si	no	usage: agent_store.py [-h]
+agent_timeline	0	si	si	no	usage: agent_timeline.py [-h] [--gap GAP] [--solo-huecos] agent_id
+agrupar_tareas_por_familia	0	si	no	no	IMPLEMENTACIÓN odoo-tools → kaupamex-api: 201 tareas abiertas
+analyze_typescript_diagnostics	0	si	si	no	usage: analyze_typescript_diagnostics.py [-h] [--json] log
+annul_parallel	1	si	no	no	/home/user/thyrox/src/verify/annul_parallel.sh: line 33: 2: falta TEST
+annulment_control	2	si	no	no	annulment_control: falta `--` antes del comando de la suite
+anonymize_transcript	0	si	si	no	usage: anonymize_transcript.py [-h] origen [destino]
+archive_build_corpus	0	si	si	no	usage: archive_build_corpus.py [-h] [--root ROOT] [--keep KEEP] [--apply]
+archive_extract	0	si	si	no	usage: archive_extract.py [-h] [--list] [--dest DEST] entrada
+assert_no_writes	0	si	si	no	#!/usr/bin/env bash
+backfill_agent_sessions	3	si	no	no	OBSOLETE — backfill_agent_sessions.py
+backfill_findings_history	0	si	si	no	usage: backfill_findings_history.py [-h] [--dry-run] [--claude-dir CLAUDE_DIR]
+background	0	si	no	no	background: anchura por defecto 2 (alcance medido: nproc=4; marcador '^EXIT='; intervalo 1.0s)
+batch_verification	0	si	si	no	usage: batch_verification.py [-h] --before BEFORE --after AFTER
+bie_series	0	si	si	no	usage: bie_series.py [-h] [--json] [--rows] entrada
+binary	2	si	si	no	ERROR — subcomando desconocido: --help. Use info | extract | graph | freshness | reflow | symbol | literal | references | declarations. NO
+board_sync	0	si	si	no	usage: board_sync.py [-h] [--store STORE]
+bound_detector	0	si	no	no	{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}
+bounded_scan	0	si	si	no	usage: bounded_scan.py [-h] [--name NAME] [--max-entries MAX_ENTRIES]
+bridge_hooks	0	si	si	no	usage: bridge_hooks.py [-h] [--apply] [--include-stop] [--quiet]
+cache_probe	0	si	si	no	usage: cache_probe.py [-h] --transcript TRANSCRIPT [--around AROUND]
+census_counterparts	0	si	si	no	usage: census_counterparts.py [-h] [--nuestro NUESTRO]
+census_findings	0	si	si	no	usage: census_findings.py [-h] [--root ROOT] [--json]
+census_message_envelopes	2	si	si	no	uso: census_message_envelopes.py [--quiet] <ruta-al-binario>
+census_open_tasks	0	si	si	no	usage: census_open_tasks.py [-h] --layer {api,db,docs,server,thyrox,ui,gen}
+census_scripts	0	si	si	no	usage: census_scripts.py [-h] [--verificar] [--huerfanos] [--strict]
+check-agent-artifacts	0	si	no	no	check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-artefactos-minimos	2	si	no	no	## Artefactos mínimos: 0 incumplidoras · 0 activas auditadas · 0 totales
+check-cli-typecheck	0	si	no	no	check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read	0	si	no	no	check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-fr-admin-coverage	2	si	no	no	---
+check-hallazgo-sucesor	2	si	no	no	check-hallazgo-sucesor: OK — todo hallazgo con alcance abierto nombra su sucesor.
+check-i001-prewrite	0	si	no	no	{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}
+check-ids-duplicados	2	si	no	no	check-ids-duplicados:
+check-toolchain-ready	0	si	no	no	# check-toolchain-ready.sh — preflight en seco de la cadena de herramientas.
+check-workflow-refutacion	2	si	no	no	check-workflow-refutacion: OK — todo guion que escribe código declara su fase de refutación.
+check_absence_claim	0	si	si	no	usage: check_absence_claim.py [-h] [--root ROOT] [--quiet] [--strict]
+check_agent_isolation	0	si	si	no	usage: check_agent_isolation.py [-h] [--dir DIR] [--strict] [--quiet]
+check_bench_untracked	0	si	si	no	usage: check_bench_untracked.py [-h] [--repo REPO] [paths ...]
+check_binary_literal_citations	0	si	si	no	usage: check_binary_literal_citations.py [-h] [--strict] [--write-baseline]
+check_branch_commit_messages	2	si	no	no	FATAL: no se pudo resolver la raíz del consumidor con reach.
+check_byte_oriented_class	0	si	si	no	usage: check_byte_oriented_class.py [-h] [--root ROOT] [--strict] [--quiet]
+check_cache_layout	0	si	si	no	usage: check_cache_layout.py [-h] [--root ROOT] [--cache CACHE] [--staged]
+check_cifra_de_artefacto_vivo	0	si	si	no	usage: check_cifra_de_artefacto_vivo.py [-h] [--strict] [--quiet]
+check_config_precedence	0	si	si	no	usage: check_config_precedence.py [-h] [--root ROOT] [--archivo ARCHIVO]
+check_consumer_anchor	0	si	si	no	usage: check_consumer_anchor.py [-h] [--root ROOT] [--strict]
+check_consumer_copies	0	si	si	no	usage: check_consumer_copies.py [-h] [--fuente FUENTE]
+check_corpus_al_dia	0	si	si	no	usage: check_corpus_al_dia.py [-h] [--raiz RAIZ] [--binario BINARIO]
+check_doc_citations	2	si	no	no	ERROR — no se encontro source/ bajo el consumidor.
+check_env_contract_keys	0	si	si	no	usage: check_env_contract_keys.py [-h] [--root ROOT]
+check_env_example_coverage	0	si	si	no	usage: check_env_example_coverage.py [-h] [--root ROOT]
+check_error_catalog	2	si	si	no	usage: check_error_catalog.py [--root ROOT] [--strict] [--quiet]
+check_eventos_hook	0	si	no	no	check-eventos-hook: 0 evento(s) desconocido(s)
+check_evidence_tracked	0	si	si	no	usage: check_evidence_tracked.py [-h] [--strict] [--write-baseline] [--quiet]
+check_exports_types	0	si	si	no	usage: check_exports_types.py [-h] [--root ROOT]
+check_finding_id_unique	2	si	no	no	ERROR — no se encontro finding_id_unique_baseline.txt.
+check_generator_determinism	0	si	si	no	usage: check_generator_determinism.py [-h] [--strict]
+check_gitattributes	0	si	si	no	usage: check_gitattributes.py [-h] [--quiet] [--strict]
+check_githooks_activos	0	si	si	no	usage: check_githooks_activos.py [-h] [--quiet] [--strict]
+check_hallazgo_submodulo	2	si	no	no	ERROR — no se encontro hallazgo_submodulo_baseline.txt.
+check_hallazgos_index	2	si	si	no	usage: check_hallazgos_index.py [--strict] [--quiet] [paths ...]
+check_hook_script_token	0	si	si	no	usage: check_hook_script_token.py [-h] [--quiet] [--strict]
+check_hooks_timeout	0	si	si	no	usage: check_hooks_timeout.py [-h] [--settings SETTINGS] [--strict]
+check_identifier_language	0	si	si	no	usage: check_identifier_language.py [-h] [--write-baseline] [paths ...]
+check_ids_entre_ramas	0	si	si	no	usage: check_ids_entre_ramas.py [-h] [--base BASE] [--quiet] [--strict]
+check_key_rename_symmetry	0	si	si	no	usage: check_key_rename_symmetry.py [-h] [--rev REV] [--strict] [root]
+check_lint_zero	0	si	si	no	usage: check_lint_zero.py [-h] [--root ROOT] [files ...]
+check_manifest_language	0	si	si	no	usage: check_manifest_language.py [-h] [--quiet] [--strict] [--write-baseline]
+check_md_relative_links	2	si	si	no	check_md_relative_links: REHÚSA — no existe --help
+check_meta_timestamps	1	si	no	no	Traceback (most recent call last):
+check_mutante_en_staging	0	si	no	no	check-mutante-en-staging: OK (alcance medido: 0 archivos)
+check_package_typecheck	0	si	si	no	usage: check_package_typecheck.py [-h] [--strict] [--write-baseline]
+check_path_arithmetic	0	si	si	no	usage: check_path_arithmetic.py [-h] [--root ROOT] [--baseline BASELINE]
+check_pathspec_commit	0	si	si	no	usage: check_pathspec_commit.py [-h] [--commit COMMIT] [--quiet] [repo]
+check_premise_drift	0	si	si	no	usage: check_premise_drift.py [-h] [--tasks-dir TASKS_DIR]
+check_product_word	0	si	si	no	usage: check_product_word.py [-h] [--repo REPO] [--root ROOT]
+check_provider_evidence	0	si	si	no	usage: check_provider_evidence.py [-h] [--root ROOT] [--strict]
+check_pushed_branch	2	si	no	no	pre-push UNKNOWN — rama de trabajo fuera del push
+check_python_surface	0	si	si	no	usage: check_python_surface.py [-h] [--strict] [--quiet]
+check_reference_root_resolution	0	si	si	no	usage: check_reference_root_resolution.py [-h] [--strict] [--quiet]
+check_role_abstraction	0	si	no	no	Sin violaciones en 0 archivos RST analizados.
+check_rst_convenciones	1	si	no	no	Traceback (most recent call last):
+check_rst_referencias	1	si	no	no	Traceback (most recent call last):
+check_rst_sintaxis	0	si	si	no	Gate #13 — sintaxis RST verificada con el motor REAL de Sphinx.
+check_rst_toctree	1	si	no	no	Traceback (most recent call last):
+check_rule_divergence	0	si	si	no	usage: check_rule_divergence.py [-h] [--strict] [--quiet] [--write-baseline]
+check_script_deprecated	0	si	si	no	usage: check_script_deprecated.py [-h] [--quiet] [--strict] [root ...]
+check_script_naming	0	si	si	no	usage: check_script_naming.py [-h] [--quiet] [--strict] [--idioma]
+check_single_workspace_root	0	si	si	no	usage: check_single_workspace_root.py [-h] [--root ROOT]
+check_staged_live_writers	0	si	si	no	usage: check_staged_live_writers.py [-h] [--repo REPO] [paths ...]
+check_stale_divergence	0	si	no	no	STALE: 0
+check_stand_ins	2	si	si	no	check_stand_ins: ningún pendingCrossPackageDeps.ts bajo /home/user/thyrox/--help; no se mide
+check_suite_discrimina	0	si	si	no	usage: check_suite_discrimina.py [-h] [--strict] [--solo ARCHIVO]
+check_test_home_isolation	0	si	si	no	usage: check_test_home_isolation.py [-h] [--repo REPO] [paths ...]
+check_unbounded_pipe	0	si	si	no	usage: check_unbounded_pipe.py [-h] [--root ROOT] [--baseline BASELINE]
+check_unreachable_rules	0	si	no	no	check-unreachable-rules: 2 regla(s) allow inalcanzable(s)
+check_unsized_writer_pipe	0	si	si	no	usage: check_unsized_writer_pipe.py [-h] [--root ROOT] [--baseline BASELINE]
+check_veredicto_de_gate	0	si	si	no	usage: check_veredicto_de_gate.py [-h] [--quiet] [--strict]
+check_vocabulario_prosa	0	si	si	no	usage: check_vocabulario_prosa.py [-h] [--quiet] [--strict] [--write-baseline]
+citation_resolution	0	si	si	no	usage: citation_resolution.py [-h] [--store STORE] [--history N] [--verbose]
+citations	0	si	si	no	usage: citations.py [-h] [--skip SKIP] [--verify] needle
+classifier_outages	0	si	si	no	usage: classifier_outages.py [-h] [--json] transcript
+classify_agents	0	si	si	no	usage: classify_agents.py [-h] [--quiet] [--solo-bloqueados] [--explicar ID]
+cli	0	si	no	no	thyrox — el bucle de agente, nativo
+clone_bootstrap	0	si	si	no	usage: clone_bootstrap.py [-h] [--raiz RAIZ] [--si] [--solo-mostrar]
+close_exports	0	si	si	no	usage: close_exports.py [-h] [--scan SCAN [SCAN ...]] [--write] [--check] root
+closure_graph	0	si	si	no	usage: closure_graph.py [-h] [--corpus CORPUS] [--json] [--no-git]
+command-runtime	0	si	si	no	uso: bun run bin/command.ts <subcomando> [args...]
+commands-emit	1	si	no	si	23 |   const emitido = toMarkdown(c)
+commit-msg-citation	0	si	si	no	usage: citation_resolution.py [-h] [--store STORE] [--history N] [--verbose]
+commit_identity	0	si	si	no	usage: commit_identity.py [-h] {check,trailers,env} ...
+commit_message	2	si	si	no	commit-msg REHUSADO — no se pudo leer --help: [Errno 2] No such file or directory: '--help'
+compact_context	0	si	si	no	usage: compact_context.py [-h] [--root ROOT] [--ledger-root LEDGER_ROOT]
+compare_neighbourhood	0	si	si	no	usage: compare_neighbourhood.py [-h] --manifests MANIFESTS [-k K]
+compressibility	0	si	si	no	usage: compressibility.py [-h] [--level LEVEL] source [source ...]
+config-settings	0	si	si	no	settings — la puerta a @thyrox/config
+context-audit	2	si	no	no	
+convert_broken_references	124	no	no	no	
+declarations	0	si	no	no	declaraciones: 5 hogar(es) · 1 declarado(s) · 4 que maneja THYROX
+detect-missing-md-links	0	si	si	no	[1m============================================[0m
+detect_awk_substr_target	1	si	no	no	Traceback (most recent call last):
+detect_bare_awk	1	si	no	no	Traceback (most recent call last):
+detect_broken_references	1	si	no	si	Traceback (most recent call last):
+detect_client_background	1	si	no	no	Traceback (most recent call last):
+detect_gawk_opportunity	1	si	no	no	Traceback (most recent call last):
+detect_library_path_invocation	1	si	no	no	Traceback (most recent call last):
+detect_literal_replacement	1	si	no	no	Traceback (most recent call last):
+detect_self_matching_pgrep	1	si	no	no	Traceback (most recent call last):
+detect_stdin_reading_interpreter	1	si	no	no	Traceback (most recent call last):
+detect_temp_home_write	1	si	no	no	Traceback (most recent call last):
+disk-headroom	0	si	no	no	¿Es `Avail` el techo real, o hay una reserva — y la alcanza quien llama?
+disk-usage	0	si	no	no	¿Quien se comio el disco? — el reparto, con cota y con el corte declarado.
+doc_to_text	0	si	si	no	usage: doc_to_text.py [-h] entrada [gathered]
+documentation_preflight	0	si	si	no	usage: documentation_preflight.py [-h] --docs-root DOCS_ROOT --provider-root
+documentation_publisher	0	si	si	no	usage: documentation_publisher.py [-h] {publish,write-intent} ...
+docx_to_text	0	si	si	no	usage: docx_to_text.py [-h] [--charts] entrada [gathered]
+drain_spool	0	si	si	no	usage: drain_spool.py [-h] [--quiet] [--dry-run]
+emit_declarations	0	si	si	no	Emitir la declaracion de un paquete hermano, para que su consumidor no
+error_log	2	si	si	no	uso: error_log.py <nombre-del-hook> -- <comando> [args...]
+extract_agent_output	1	si	si	no	Traceback (most recent call last):
+extract_pptx	0	si	si	no	usage: extract_pptx.py [-h] [-o SALIDA] pptx
+find_reference_home	0	si	si	no	usage: find_reference_home.py [-h] --ours OURS --reference REFERENCE
+finding	2	si	si	no	finding: uso: finding rst|index|publish …
+fix_agent_frontmatter	1	si	no	si	Traceback (most recent call last):
+fixture_leak	0	si	no	no	¿Que suite deja su fixture atras? — la respuesta por CONDUCTA.
+flow_selection	0	si	si	no	usage: flow_selection.py [-h] [--agents-dir AGENTS_DIR]
+generate_bin	0	si	si	no	usage: generate_bin.py [-h] [--check] [--dry-run] [--exercise]
+gitattributes	0	si	si	no	usage: gitattributes.py [-h] [--quiet] [--strict] [--tree-root TREE_ROOT]
+gitlink_bump	0	si	si	no	usage: gitlink_bump.py [-h] [--root ROOT] [--source SOURCE] submodule
+gpu_monitor	0	si	si	no	usage: gpu_monitor [-h] {watch,available,admit,release,free} ...
+gpu_trace	0	si	si	no	usage: gpu_trace.py [-h] {record,compare} ...
+graph_metrics	0	si	si	no	usage: graph_metrics.py [-h] (--manifests MANIFESTS | --edges EDGES)
+hallazgo_ids	0	si	si	no	usage: hallazgo_ids.py [-h] {propose-id,mint,acunar,verify,verificar} ...
+hardware-inventory	2	si	si	no	hardware-inventory: argumento desconocido: --help
+headless-pool	2	si	no	si	mkdir: cannot create directory '/home/user/thyrox/.thyrox/runtime/launchers/headless-pool-20260930T170550-25023': Read-only file system
+headless-sdk-generate-core-types	1	si	no	si	134 |       console.error('coreTypes.generated.ts difiere de lo que genera coreSchemas.ts; corre bun bin/generateCoreTypes.ts')
+hook_migration	0	si	si	no	usage: hook_migration.py [-h] {refs,broken,probe,confirm} ...
+hook_script_token	0	si	si	no	usage: hook_script_token.py [-h] [--quiet] [--strict] [--tree-root TREE_ROOT]
+implementation_order	0	si	si	no	usage: implementation_order.py [-h] [--tasks-dir TASKS_DIR] [--top TOP]
+inbox	0	si	si	no	usage: inbox [-h] [--dir DIR] {post,pending,render,inspect,wait,ack,peers} ...
+infrastructure_ensure	2	si	no	no	infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL).
+initiative_placement	0	si	si	no	usage: initiative_placement.py [-h] [--consumer CONSUMER] submodule slug
+instalar-config-usuario	0	si	si	no	--- USAGE-START ---  (centinela de usage(); no retirar)
+instalar-hooks-sesion-multirepo	0	si	si	no	Instala los hooks de registro de agentes en el settings que SÍ carga en una
+install-hooks	0	si	si	no	proveedor: /home/user/thyrox
+instruction_floor	0	si	no	no	  kaupamex-docs         39 siempre    0 acotadas    501714 bytes
+item_worktree	2	si	si	no	item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path|link-shared|checkout-bytes …
+kernel_modules	0	si	si	no	usage: kernel_modules.py [-h] [--json]
+lint_agents	0	si	si	no	Warning: path not found — --help
+list_corpus_builds	0	si	si	no	usage: list_corpus_builds.py [-h] [--root ROOT]
+maintenance_chain	0	si	si	no	usage: maintenance_chain.py [-h] --render {session-start,stop} --budget BUDGET
+manifest	0	si	si	no	usage: manifest [-h] [--base BASE] {run-id,runs,latest,scaffold} ...
+markdown_to_rst	0	si	si	no	usage: markdown_to_rst.py [-h] [--salida SALIDA] entrada
+marker_wait	0	si	si	no	usage: marker_wait [-h] [--pid PID] [--pid-only] [--pattern PATTERN]
+measure_delta	0	si	no	no	measure_delta: faltan parámetros del consumidor (--repo <n>=<ruta> … --results-dir <ruta>)
+measure_hook_firing	0	si	si	no	usage: measure_hook_firing.py [-h] [--desde DESDE] [--hasta HASTA]
+measure_subagent_usage	0	si	si	no	usage: measure_subagent_usage.py [-h] [--por-agente] [--json] [--raiz RAIZ]
+measure_worktree	2	si	si	no	Un árbol de medición aparte para el lazo tsc cero.
+member_port	0	si	si	no	usage: member_port.py [-h] --target TARGET [--source SOURCE] [--bench BENCH]
+merge_sqlite_union	1	si	si	no	uso: /home/user/thyrox/src/agents/merge_sqlite_union.py <ancestro> <nuestro> <suyo>
+merge_stores	0	si	si	no	usage: merge_stores.py [-h] [--dry-run] origen destino
+migration_report	0	si	si	no	usage: migration_report.py [-h] [--addon ADDON] [--paths [PATHS ...]]
+model_catalog	0	si	si	no	usage: model_catalog.py [-h] {costo,ficha,por-modelo,sesion} ...
+object_footprint	0	si	si	no	usage: object_footprint.py [-h] [--root ROOT] pathspec
+pack_headroom	0	si	si	no	usage: pack_headroom.py [-h] [--root ROOT] [--margin MARGIN]
+package_boundary	0	si	si	no	usage: package_boundary.py [-h] [--quiet] [--strict] [--escapes] root
+parallel	0	si	no	no	parallel: cap de anchura 2 (alcance medido: nproc=4; cota de vida 1000; cota de ítems 50)
+parallel_map	0	si	si	no	Reparte un comando sobre N ítems con GNU Parallel, en primer plano.
+parallel_map_history	0	si	si	no	usage: parallel_map_history [-h] {dir,record,derive} ...
+pdf_to_text	0	si	si	no	usage: pdf_to_text.py [-h] [--raw] entrada salida
+podman_capabilities	124	no	no	si	run efectivo el contenedor corrio y salio 0
+pool-calibrate	0	si	no	no	pool-calibrate — llena el historial de una plantilla midiendo `thyrox -p`
+pool_history	0	si	si	no	usage: pool_history.py [-h] {dir,record,derive} ...
+pool_integrate	2	si	si	no	pool_integrate: REHUSA — no hay --help/index.tsv
+pool_lifecycle	0	si	si	no	usage: pool_lifecycle.py [-h]
+pool_pipeline	2	si	no	no	pool_pipeline: falta `--` antes del comando de tsc
+pre-commit	2	si	si	no	cd: cd [-L|[-P [-e]] [-@]] [dir]
+pre-push	1	si	si	no	cd: cd [-L|[-P [-e]] [-@]] [dir]
+probe_model_switch_cache	0	si	si	no	usage: probe_model_switch_cache.py [-h] [--live] [--from-model FROM_MODEL]
+process_ownership	0	si	si	no	usage: process_ownership.py [-h] {drain,members} ...
+provider-anthropic-mock-server	124	no	no	no	url=http://127.0.0.1:46401
+provider-credential-proxy	2	si	no	no	credentialProxy: falta --socket <ruta>
+provider-generate-storage-key	1	si	no	no	THYROX_STORAGE_ENCRYPTION_KEY ya está declarada en /home/user/thyrox/.env: no se rota, dejaría huérfanas las conexiones que esa clave ya 
+provider-local-proxy	2	si	no	no	localProxy: falta --socket <ruta>. NO se escucha.
+provider-store-credential-proxy	2	si	no	no	storeCredentialProxy: falta THYROX_STORE_PROXY_ACCESS_KEY: la clave de acceso local que quien lo lanza reparte a sus hijos. NO se escucha.
+reach	2	si	si	no	reach: modo desconocido: --help
+reach_roots	2	si	si	no	reach: modo desconocido: --help
+reconcile-agents	64	si	si	no	argumento no reconocido: --help
+reconcile_store	0	si	si	no	usage: reconcile_store.py [-h] [--dry-run] [--quiet] [--claude-dir CLAUDE_DIR]
+reconcile_user_hooks	0	si	si	no	usage: reconcile_user_hooks.py [-h] [--dir DIR] [--check]
+record_environment	0	si	si	no	usage: record_environment.py [-h] [--force] event
+recovery	2	si	si	no	recovery: no se pudo leer --help: [Errno 2] No such file or directory: '--help'
+recovery_controller	0	si	si	no	usage: recovery_controller.py [-h] {classify,recover,prune} ...
+refrescar-tablero	3	si	no	no	DEPRECATED — refrescar-tablero.sh
+refresh-board	0	si	si	no	Uso: refresh-board.sh [-t team] [--claude-dir DIR] [-o archivo.rst] [--strict]
+register_session	0	si	no	no	
+rejection_sampling	0	si	no	no	aceptacion  min(1, q/p): [0.2857, 0.3333, 1.0, 1.0, 1.0]
+render_tablero_asignadas	0	si	si	no	usage: render_tablero_asignadas.py [-h] [--escribir] --fecha FECHA
+renumerar_colision	0	si	si	no	usage: renumerar_colision.py [-h] --source SOURCE --target TARGET [--json]
+replace_literal	0	si	no	no	replace_literal.sh — reemplaza un texto LITERAL en un archivo, con gawk.
+report_client_caps	0	si	si	no	usage: report_client_caps.py [-h]
+resource_admission	0	si	si	no	usage: resource_admission [-h] {admit-ram,release} ...
+rules-emit	2	si	si	no	ERROR — argumento no reconocido: --help NO se emite nada.
+run-task-pool	0	si	si	no	# =============================================================================
+run-task-pool-job	1	si	no	no	/home/user/thyrox/src/session/run-task-pool-job.sh: line 38: $2: unbound variable
+run-task-pool-limit	1	si	no	no	/home/user/thyrox/src/session/run-task-pool-limit.sh: line 45: $2: unbound variable
+run_ts_isolated	2	si	no	no	run_ts_isolated: REHUSA — no recibio ningun archivo por stdin.
+runner	0	si	si	no	usage: runner.py [-h] [--only ONLY] [--list] [--json] [--verbose]
+scaffold_initiative	0	si	si	no	usage: scaffold_initiative.py [-h] [--with-tareas] [--consumer CONSUMER]
+script_deprecated	0	si	si	no	usage: script_deprecated.py [-h] [--quiet] [--strict] [root ...]
+session-resume	3	si	no	no	DEPRECATED — session-resume.sh
+session-start	0	si	no	no	=== THYROX — ACTIVAR SKILL ANTES DE TRABAJAR ===
+session_restart	0	si	si	no	usage: session_restart.py [-h] [--transcript TRANSCRIPT] [--root ROOT]
+set-session-phase	1	si	no	no	Error: .thyrox/context/now.md not found
+shared_lock	2	si	si	no	usage: shared_lock [-h] {run,check} ...
+shell	0	si	si	no	uso: bun run bin/shell.ts <subcomando> [opciones]
+skills-emit	2	si	si	no	ERROR — argumento desconocido: --help NO se emite un conteo.
+skills-import	1	si	si	no	177 |  * test pueda importar un fixture SIN escribir sobre la definición real de
+snapshot-tasks	3	si	no	no	DEPRECATED — snapshot-tasks.sh
+snapshot_store	0	si	si	no	usage: snapshot_store.py [-h] {take,show} ...
+source_copy_step	2	si	no	no	source_copy_step: falta `--` antes del comando de tsc
+stdin_probe	0	si	si	no	usage: stdin_probe.py [-h] [--proc-root PROC_ROOT] pids [pids ...]
+step_close	0	si	si	no	usage: step_close.py [-h] --bench BENCH --run RUN [--repo REPO] [--no-push]
+step_report	0	si	si	no	usage: step_report.py [-h] --bench BENCH [--pipeline PIPELINE]
+stop-hook-git-check	0	si	no	no	
+stop_gate	0	si	si	no	usage: stop_gate.py [-h] --engine ENGINE [ENGINE ...] --reason REASON
+stop_pending_work	0	si	si	no	usage: stop_pending_work.py [-h] [--root ROOT] [--label LABEL]
+stop_tests	0	si	no	no	stop_tests: el directorio vigilado no está declarado: fija THYROX_WATCHED_DIR (o KAUPAMEX_WATCHED_DIR) o pásalo como argumento.
+storage	0	si	no	no	storage — leer lo que el paquete ya persiste en disco (SÓLO LECTURA)
+stranded-evidence	64	si	si	no	uso: /home/user/thyrox/src/session/stranded-evidence.sh {listar|olvidar <ruta>|asentar}
+sync_local_settings	0	si	si	no	usage: sync_local_settings.py [-h] --repo REPO [--viva VIVA]
+task_ids	0	si	si	no	usage: task_ids.py [-h] [--store STORE]
+task_lifecycle	0	si	si	no	usage: task_lifecycle.py [-h] [--store STORE] [--board BOARD] [--layer LAYER]
+term_census	0	si	si	no	usage: term_census.py [-h] [--prefix] [--case] corpus terminos [terminos ...]
+test_commit_msg_hook	1	si	no	no	FATAL: /home/user/thyrox/src/.githooks/commit-msg no existe o no es ejecutable
+thyrox-audit	0	si	no	no	# Auditoría de coherencia kaupamex — 2026-09-30T17:06:09Z
+thyrox-bg	2	si	si	no	Uso
+tool-registry-apply-edits	1	si	no	no	56 |     return { path: file.path, error: error instanceof Error ? error.message : String(error) }
+tool_use_preflight	0	si	no	no	{}
+tree_fingerprint	2	si	si	no	tree_fingerprint: NO se pudo fijar el estado — --help: no existe
+tsc_cycle	0	si	si	no	usage: tsc_cycle.py [-h]
+tsc_fix_census	1	si	si	no	89 | /** Servicio sobre un proyecto real: lee `tsconfig` y el disco. */
+tsc_proposers	1	si	si	no	89 | /** Servicio sobre un proyecto real: lee `tsconfig` y el disco. */
+tsc_reflect	0	si	si	no	usage: tsc_reflect.py [-h] {add,recall,gate-memory,gate-sweep,audit} ...
+tsc_schedule	0	si	si	no	usage: tsc_schedule.py [-h] --candidates CANDIDATES [--ledger LEDGER] --seed
+tsc_sweep	0	si	si	no	usage: tsc_sweep.py [-h]
+tsc_zero_loop	2	si	si	no	tsc_zero_loop: uso: tsc_zero_loop [opciones] -- <proponente> -- <tsc>
+tsc_zero_step	2	si	no	no	tsc_zero_step: falta `--` antes del comando de tsc
+typescript-build-javascript	2	si	si	no	uso: buildJavascript.ts [--check] <paquete>...
+unshare_capabilities	0	si	no	no	run efectivo unshare --pid --fork corrio el ayudante y salio 0
+unwrap_rst	0	si	no	no	
+user_wiring	0	si	si	no	usage: user_wiring.py [-h] [--write] [--consumer CONSUMER] [--backups BACKUPS]
+validate-missing-md-links	0	si	si	no	grep: : No such file or directory
+validate-phase-completion	0	si	no	no	[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+validate-session-close	0	si	no	no	✓ validate-session-close: sin problemas detectados
+validate_broken_references	1	si	no	no	FAIL: 4905 broken references found out of 12344
+vecinos_de_tarea	0	si	si	no	usage: vecinos_de_tarea.py [-h] [--k K] [--radius RADIUS] [--status STATUS]
+verificar_persistencia	0	si	si	no	usage: verificar_persistencia.py [-h] [--agente AGENTE] [--promover]
+verificar_premisa	0	si	si	no	usage: verificar_premisa.py [-h] [--tasks-dir TASKS_DIR] [--top TOP] [--todas]
+verificar_rutas_de_hook	0	si	si	no	usage: verificar_rutas_de_hook.py [-h] [--strict] archivos [archivos ...]
+verify-task-store-in-cli-js	0	si	no	no	=== Version instalada ===
+wait-jobs	64	si	no	no	Uso
+worktree_state	0	si	si	no	usage: worktree_state.py [-h] [--repo REPO] --tasks-dir TASKS_DIR
+write-env	0	si	no	no	Escribe el `.env` de este clon derivando cada valor del árbol real.
+writer_census	0	si	si	no	usage: writer_census.py [-h] [--root ROOT] [--store STORE] [--include-tests]
+writer_inspector	0	si	si	no	usage: writer_inspector.py [-h] paths [paths ...]
+xls_to_text	0	si	si	no	usage: xls_to_text.py [-h] entrada [gathered]
+xlsx_to_text	0	si	si	no	usage: xlsx_to_text.py [-h] [--sheet SHEET] entrada [salida]

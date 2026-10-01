@@ -24,6 +24,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 THYROX = HERE.parent.parent
 spec = importlib.util.spec_from_file_location(
     "commit_message", THYROX / "src" / "verify" / "commit_message.py")
+assert spec is not None and spec.loader is not None  # el archivo existe en este árbol
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 

@@ -1,0 +1,1 @@
+1	D3-A0b (#294) contrato de migraciones v2. Te pertenecen: src/packages/store/migrations.ts, src/packages/store/migrationsSync.ts, src/packages/store/migrationContract.ts, src/packages/store/migrationLedger.ts (nuevo, si separas el validador) y src/packages/store/__tests__/ (archivos de migraciones y la suite contractual).

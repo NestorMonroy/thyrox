@@ -14,7 +14,7 @@ import { getGlobalConfig } from '@thyrox/config'
 
 const NOTIFICATION_TYPES = [
   'push_notification', // PushNotificationTool — LLM-initiated
-  'idle_prompt', // REPLView idle watcher — "Claude is waiting"
+  'idle_prompt', // REPLView idle watcher — "thyrox is waiting"
   'permission_prompt', // PermissionRequest 6 s timeout banner
   'elicitation_dialog', // MCP elicitation form
   'elicitation_url_dialog', // MCP elicitation URL variant

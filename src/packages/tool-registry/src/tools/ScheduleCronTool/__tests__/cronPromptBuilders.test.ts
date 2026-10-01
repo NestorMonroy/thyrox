@@ -17,6 +17,7 @@ import {
   CRON_DELETE_TOOL_NAME,
   CRON_LIST_TOOL_NAME,
 } from '../prompt.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 describe('buildCronCreateDescription', () => {
   test('durable=true: mentions durable option + scheduled_tasks.json', () => {
@@ -30,7 +31,7 @@ describe('buildCronCreateDescription', () => {
     const r = buildCronCreateDescription(false)
     expect(r).not.toContain('durable: true')
     expect(r).not.toContain('scheduled_tasks.json')
-    expect(r).toContain('this Claude session')
+    expect(r).toContain(`this ${PRODUCT_NAME} session`)
   })
 
   test('both variants mention "Schedule" + "future"', () => {

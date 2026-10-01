@@ -1,0 +1,12 @@
+src/packages/config/__tests__/gpuAdmission.test.ts
+src/packages/config/gpuAdmission.ts
+src/session/gpu_backend.py
+src/session/gpu_monitor.py
+src/session/parallel_map_history.py
+src/session/resource_admission.py
+tests/session/hardware/test_gpu_admission_real.py
+tests/session/test_gpu_backend.py
+tests/session/test_gpu_monitor.py
+tests/session/test_gpu_scenarios.py
+tests/session/test_parallel_map_history.py
+tests/session/test_resource_admission.py

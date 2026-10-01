@@ -8,7 +8,7 @@
  * transcript cada vez. Sin cota, el transcript crece hasta que la
  * llamada principal a la API da 413 ("Prompt is too long"). Este cap
  * es el respaldo estructural: acota la racha por `maxTurns` Y por
- * `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` (default 8). El veredicto
+ * `THYROX_CODE_STOP_HOOK_BLOCK_CAP` (default 8). El veredicto
  * `impossible` del evaluador (`execPromptHook`) puede cortar en corto
  * ALGUNOS casos, pero depende de que el evaluador lo proponga
  * voluntariamente — el cap es la garantía.
@@ -26,20 +26,16 @@
  * `evaluateStopHookBlockOutcome`— y ninguno ejecuta código fuera de
  * esas dos funciones puras.
  *
- * PORTE COMPLETO desde 2026-09-08 (#262). El único símbolo que faltaba
- * —`handleStopHooks`, el generador de integración— entra en este pase, con
- * sus cuatro bloqueos cerrados en el mismo commit:
+ * PORTE COMPLETO, con `handleStopHooks`, el generador de integración. Sus
+ * dependencias:
  *
- *   · las **once** llamadas que hace sobre `getAgentHostBindings()` están
- *     ahora declaradas en `../host.ts`, no sólo dos;
- *   · `getTotalOutputTokens` llegó a `@thyrox/app-host` con la slice E
- *     entera de `bootstrap/state.ts`;
- *   · `isBareMode` entró en `../internalUtils.ts` — su bloqueo era `readEnv`,
- *     que ya existe;
- *   · `@thyrox/memory` se declaró como dependencia y re-exporta
- *     `executeExtractMemories` / `isExtractModeActive` desde su raíz, que es
- *     de donde la fuente los importa.
- *
+ *   · las **once** llamadas sobre `getAgentHostBindings()`, declaradas en
+ *     `../host.ts`;
+ *   · `getTotalOutputTokens`, de `@thyrox/app-host` (slice E de
+ *     `bootstrap/state.ts`);
+ *   · `isBareMode`, de `../internalUtils.ts`;
+ *   · `executeExtractMemories` / `isExtractModeActive`, re-exportados por la
+ *     raíz de `@thyrox/memory`, que es de donde la fuente los importa.
  * Lo que NO viaja, declarado: las tres banderas de compilación de la fuente
  * (`feature('TEMPLATES')`, `feature('EXTRACT_MEMORIES')`,
  * `feature('CHICAGO_MCP')`) provienen de `bun:bundle`, que este árbol no
@@ -50,7 +46,7 @@
 
 /**
  * Resuelve el cap de bloqueos consecutivos del Stop hook. Ant v2.1.143
- * 3999.js: `parseInt(env.CLAUDE_CODE_STOP_HOOK_BLOCK_CAP) ?? 8`, y
+ * 3999.js: `parseInt(env.THYROX_CODE_STOP_HOOK_BLOCK_CAP) ?? 8`, y
  * luego `cap > 0 && n > cap`.
  *
  * - ausente / no-numérico → 8 (el respaldo por defecto)
@@ -140,7 +136,7 @@ export function evaluateStopHookBlockOutcome(params: {
 export function stopHookBlockCapMessage(blockingCount: number): string {
   return (
     `A hook blocked the turn from ending ${blockingCount} consecutive times — overriding and ending turn. ` +
-    "For Stop/SubagentStop hooks, check stop_hook_active in the input and return success while it's true. Set CLAUDE_CODE_STOP_HOOK_BLOCK_CAP to raise this limit."
+    "For Stop/SubagentStop hooks, check stop_hook_active in the input and return success while it's true. Set THYROX_CODE_STOP_HOOK_BLOCK_CAP to raise this limit."
   )
 }
 
@@ -213,7 +209,7 @@ export async function* handleStopHooks(
   // una bifurcación de fondo ensucie la línea de tiempo con sus propios
   // mensajes. Se espera al clasificador para que el estado quede escrito
   // antes de que el turno vuelva — si no, un listado muestra estado rancio.
-  const jobDir = readEnv('CLAUDE_JOB_DIR')
+  const jobDir = readEnv('THYROX_JOB_DIR')
   if (jobDir && querySource.startsWith('repl_main_thread') && !toolUseContext.agentId) {
     // Historia completa del turno: `assistantMessages` se reinicia en cada
     // iteración del bucle, así que las llamadas de iteraciones anteriores
@@ -237,7 +233,7 @@ export async function* handleStopHooks(
   // guionizada no quiere auto-memoria ni agentes bifurcados peleándose
   // recursos mientras el proceso se apaga.
   if (!isBareMode()) {
-    if (!isEnvDefinedFalsy(readEnv('CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION'))) {
+    if (!isEnvDefinedFalsy(readEnv('THYROX_CODE_ENABLE_PROMPT_SUGGESTION'))) {
       void host().executePromptSuggestion?.(stopHookContext)
     }
     if (!toolUseContext.agentId && extraccionDeMemoriaActiva()) {

@@ -1,0 +1,2 @@
+src/packages/model-artifacts/__tests__/modelCatalog.test.ts
+src/packages/model-artifacts/modelCatalog.ts

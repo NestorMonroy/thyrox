@@ -7,11 +7,11 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { clearGrowthBookConfigOverrides, setGrowthBookConfigOverride } from '@thyrox/config/feature-flags'
 import { MEMORY_CORRECTION_HINT, withMemoryCorrectionHint } from '../messages.js'
 
-const saved = process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY
+const saved = process.env.THYROX_CODE_DISABLE_AUTO_MEMORY
 afterEach(() => {
   clearGrowthBookConfigOverrides()
-  if (saved === undefined) delete process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY
-  else process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = saved
+  if (saved === undefined) delete process.env.THYROX_CODE_DISABLE_AUTO_MEMORY
+  else process.env.THYROX_CODE_DISABLE_AUTO_MEMORY = saved
 })
 
 describe('withMemoryCorrectionHint (WO)', () => {
@@ -20,12 +20,12 @@ describe('withMemoryCorrectionHint (WO)', () => {
   })
   test('con la bandera y memoria activa, se añade la nota', () => {
     setGrowthBookConfigOverride('tengu_amber_prism', true)
-    process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = '0'
+    process.env.THYROX_CODE_DISABLE_AUTO_MEMORY = '0'
     expect(withMemoryCorrectionHint('rechazado')).toBe('rechazado' + MEMORY_CORRECTION_HINT)
   })
   test('con la memoria automática desactivada, no', () => {
     setGrowthBookConfigOverride('tengu_amber_prism', true)
-    process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = '1'
+    process.env.THYROX_CODE_DISABLE_AUTO_MEMORY = '1'
     expect(withMemoryCorrectionHint('rechazado')).toBe('rechazado')
   })
   test('la nota es propia y va separada por una línea en blanco', () => {

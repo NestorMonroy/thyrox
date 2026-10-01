@@ -16,6 +16,7 @@ import { MCPConnectionManager } from '@thyrox/mcp-runtime/MCPConnectionManager.j
 import { AppStateProvider, type AppState } from '../appStateShim.js'
 import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { isAnthropicAuthEnabled } from '@thyrox/provider/authAlias.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export async function setupTokenHandler(root: Root): Promise<void> {
   logEvent('tengu_setup_token_command', {})
@@ -51,7 +52,7 @@ export async function setupTokenHandler(root: Root): Promise<void> {
                 void resolve()
               }}
               mode="setup-token"
-              startingMessage="This will guide you through long-lived (1-year) auth token setup for your Claude account. Claude subscription required."
+              startingMessage={`This will guide you through long-lived (1-year) auth token setup for your ${PRODUCT_NAME} account. ${PRODUCT_NAME} subscription required.`}
             />
           </Box>
         </KeybindingSetup>

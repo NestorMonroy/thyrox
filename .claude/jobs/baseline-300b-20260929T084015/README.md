@@ -1,0 +1,16 @@
+# baseline-300b
+
+## Qué se lanzó
+
+```
+bash -c python3 tests/task/test_task_ids.py && python3 tests/task/test_board_sync.py && python3 tests/task/test_layer_axis.py && python3 tests/task/test_board_ordinal_identity.py && bash tests/agents/test-agent-store-tareas.sh && bash tests/agents/test-agent-store-reassignment-guard.sh && python3 tests/session/test_generate_bin.py && python3 tests/docs/test_scaffold_initiative.py && python3 tests/agents/test_task_status_vocabulary.py && python3 tests/hooks/test_detect_ephemeral_citation.py && python3 src/verify/check_identifier_language.py src/task/task_ids.py
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

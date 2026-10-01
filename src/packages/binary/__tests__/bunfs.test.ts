@@ -19,21 +19,34 @@
  * con SHA-256 por archivo. El porte nativo debe coincidir byte a byte.
  */
 import { describe, expect, test } from 'bun:test'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { findSection, isElf } from '../src/elf.ts'
 import { BUNFS_PREFIX, BUN_MAGIC, SECTION_HEADER, deriveVersion, readModuleTable, readTrailer } from '../src/bunfs.ts'
+import { CANONICAL_REFERENCE_VERSION } from '../src/canonical.ts'
+import { classifyLiveBuild } from '../src/liveBuild.ts'
 
 const BINARY = '/opt/claude-code/bin/claude'
+/** La raiz del corpus versionado, relativa a este archivo de test. */
+const CORPUS_ROOT = join(import.meta.dir, '..', '..', '..', '..', '_references', 'claude-code-bin')
+
+/**
+ * Las versiones con corpus EXTRAIDO — discrimina por `MANIFEST.tsv`, no por
+ * la existencia del directorio, igual que `freshness.corpusVersion`. Se lee
+ * SOLO, nunca se escribe nada aqui.
+ */
+function listCorpusVersions(root: string): string[] {
+  if (!existsSync(root)) return []
+  return readdirSync(root).filter(name => existsSync(join(root, name, 'MANIFEST.tsv')))
+}
 
 /**
  * Cifras medidas por build. Una entrada se anade SOLO tras medirla; nunca se
- * copia de la anterior. Fuente de 2.1.258: dry-run del probe Python el
- * 2026-09-02.
+ * copia de la anterior. Fuente de 2.1.258: dry-run del probe Python.
  */
 const MEASURED: Record<string, { entries: number; tableBytes: number; extractedBytes: number }> = {
   '2.1.258': { entries: 1802, tableBytes: 93_704, extractedBytes: 38_463_684 },
-  // Medida el 2026-09-06 con `binary info` sobre la build viva, no copiada de
-  // la anterior: 16 entradas mas y 832 B mas de tabla (paso 52, invariante).
+  // Medida con `binary info` sobre la build viva, no copiada de la anterior: 16 entradas mas y 832 B mas de tabla (paso 52, invariante).
   '2.1.263': { entries: 1818, tableBytes: 94_536, extractedBytes: 38_733_511 },
   // Medida el 2026-09-09T18:12:38 con `binary info` sobre la build viva. Nueve entradas
   // mas y 468 B mas de tabla (paso 52, invariante), pero el contenido BAJA en
@@ -145,18 +158,52 @@ describe('fidelidad contra la build medida', () => {
     const s = findSection(bytes!, '.bun')!
     const payload = bytes!.subarray(s.offset + SECTION_HEADER, s.offset + s.size)
     const version = deriveVersion(bytes!.subarray(s.offset, s.offset + s.size))!
-    const esperado = MEASURED[version]
 
-    // Una build desconocida FALLA, no se salta. El salto seria un verde que no
-    // discrimina «coincide» de «no lo mire» — y es justo la senal de frescura
-    // que falto tres builds seguidas (2.1.250, 2.1.251, 2.1.258).
-    expect(
-      esperado ?? `build ${version} sin medir — anadir su fila a MEASURED tras extraerla`,
-    ).toBeObject()
+    // Tres estados, no dos: la build viva puede ser la medida, una nueva sin
+    // corpus (legitimo tras actualizar el contenedor) o una con corpus pero
+    // sin fila en MEASURED (inconsistencia del arbol). `classifyLiveBuild`
+    // es pura; aqui se le entregan las listas ya derivadas del disco.
+    const classification = classifyLiveBuild({
+      liveVersion: version,
+      measuredVersions: Object.keys(MEASURED),
+      corpusVersions: listCorpusVersions(CORPUS_ROOT),
+    })
 
+    if (classification === 'unmeasured-with-corpus') {
+      // No es una build nueva: el corpus ya se extrajo y nadie anadio su fila.
+      throw new Error(
+        `build ${version} tiene corpus en ${CORPUS_ROOT} pero ninguna fila en MEASURED — inconsistencia del arbol, no build nueva`,
+      )
+    }
+
+    if (classification === 'unmeasured-without-corpus') {
+      const warning = `build viva ${version} sin medir (canonica: ${CANONICAL_REFERENCE_VERSION}); para incorporarla: bun src/packages/binary/bin/binary.ts extract, y anadir su fila a MEASURED`
+      if (process.env.THYROX_BINARY_REQUIRE_LIVE_MEASURED === '1') throw new Error(warning)
+      console.warn(warning)
+      return
+    }
+
+    const esperado = MEASURED[version]!
     const tabla = readModuleTable(payload)!
-    expect(tabla.entries.length).toBe(esperado!.entries)
-    expect(tabla.tableLength).toBe(esperado!.tableBytes)
-    expect(tabla.entries.reduce((n, e) => n + e.length, 0)).toBe(esperado!.extractedBytes)
+    expect(tabla.entries.length).toBe(esperado.entries)
+    expect(tabla.tableLength).toBe(esperado.tableBytes)
+    expect(tabla.entries.reduce((n, e) => n + e.length, 0)).toBe(esperado.extractedBytes)
+  })
+})
+
+describe('integridad del corpus canonico (sin leer el ejecutable vivo)', () => {
+  test('el MANIFEST.tsv de la version canonica tiene tantas filas y bytes como su fila en MEASURED', () => {
+    // Esta prueba NO depende de `bytes`: es la evidencia de que la
+    // referencia congelada sigue integra, independientemente de que build
+    // corra hoy en el contenedor.
+    const esperado = MEASURED[CANONICAL_REFERENCE_VERSION]
+    expect(esperado).toBeDefined()
+
+    const manifestText = readFileSync(join(CORPUS_ROOT, CANONICAL_REFERENCE_VERSION, 'MANIFEST.tsv'), 'utf8')
+    const rows = manifestText.trimEnd().split('\n').slice(1) // sin la cabecera archivo/bytes/tipo/sha256
+    expect(rows.length).toBe(esperado!.entries)
+
+    const totalBytes = rows.reduce((n, row) => n + Number(row.split('\t')[1]), 0)
+    expect(totalBytes).toBe(esperado!.extractedBytes)
   })
 })

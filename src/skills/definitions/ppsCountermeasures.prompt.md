@@ -83,7 +83,7 @@ Para cada causa raíz identificada en pps:analyze, generar múltiples opciones d
 
 | Nivel | Descripción | Robustez |
 |-------|-------------|----------|
-| **Eliminación** | Remover la causa del proceso completamente | ★★★★★ |
+| **Eliminación** | Retirar la causa del proceso completamente | ★★★★★ |
 | **Sustitución** | Reemplazar el elemento problemático por uno más confiable | ★★★★ |
 | **Control de ingeniería** | Diseño que hace imposible el error (poka-yoke) | ★★★★ |
 | **Control administrativo** | Procedimientos, estándares, capacitación | ★★★ |

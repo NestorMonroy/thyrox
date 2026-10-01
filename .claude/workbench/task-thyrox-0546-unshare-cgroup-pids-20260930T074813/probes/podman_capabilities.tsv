@@ -1,0 +1,14 @@
+run	efectivo	el contenedor corrio y salio 0
+pids_limit	efectivo	logro 15/64 procesos con --pids-limit 16
+memory_limit	efectivo	reservar 256 MiB fallo o el contenedor murio bajo --memory 64m (rc=137)
+cleanup	efectivo	sin contenedor listado y sin proceso del ayudante en el anfitrion
+network_none	efectivo	TCP y DNS fallan con --network none: net_connect=fail errno=Network is unreachable | dns_send=fail dns_answer=fail errno=Network is unreachable
+read_only_rootfs	efectivo	escribir en / y /tmp falla con --read-only --read-only-tmpfs=false: write=fail errno=Read-only file system | write=fail errno=Read-only file system
+cpu_limit	efectivo	0.51 nucleos obtenidos con --cpus 0.5 y 2 hilos (< 1.0)
+readonly_mount	efectivo	montaje :ro permite leer y rehusa escribir: read=ok errno=- | write=fail errno=Read-only file system
+overlay_mount	efectivo	lee del anfitrion, escribe dentro del contenedor, no filtra al anfitrion: read=ok errno=- | write=ok errno=-
+exit_code_propagation	efectivo	podman run devolvio 42, igual al declarado por el ayudante
+signal_propagation	efectivo	el proceso registro SIGTERM y salio 77: got_sigterm=1
+credential_injection	no-efectivo	ningun candidato entrega sin exponer en inspect (--env: entregado=1 en-inspect=1 | --secret: entregado=1 en-inspect=1)
+wall_seconds=34.57 max_rss_kib=43784
+rc=0

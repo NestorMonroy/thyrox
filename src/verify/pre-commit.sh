@@ -43,7 +43,8 @@ GATES="${GATES:-$HERE}"
 # bloqueaba el commit imprimiendo la receta de arreglar la prosa sobre dos
 # tracebacks. Los cinco consumidores delegan aqui, asi que el defecto era
 # de los cinco.
-export PYTHONPATH="$(dirname "$GATES")${PYTHONPATH:+:$PYTHONPATH}"
+PYTHONPATH="$(dirname "$GATES")${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH
 CODE=0
 
 # Rehusar en vez de omitir, y ANTES de medir nada. Un gate declarado que no

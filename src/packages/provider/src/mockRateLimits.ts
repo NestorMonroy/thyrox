@@ -55,7 +55,7 @@ export function getMockHeaderless429Message(): string | null {
     return null
   }
   // Env var path for -p / SDK testing where slash commands aren't available
-  const headerless429Override = readEnv('CLAUDE_MOCK_HEADERLESS_429')
+  const headerless429Override = readEnv('THYROX_MOCK_HEADERLESS_429')
   if (headerless429Override) {
     return headerless429Override
   }
@@ -114,7 +114,7 @@ export function shouldProcessMockLimits(): boolean {
   if (process.env.USER_TYPE !== 'ant') {
     return false
   }
-  return mockEnabled || Boolean(readEnv('CLAUDE_MOCK_HEADERLESS_429'))
+  return mockEnabled || Boolean(readEnv('THYROX_MOCK_HEADERLESS_429'))
 }
 
 export function getMockSubscriptionType(): SubscriptionType | null {

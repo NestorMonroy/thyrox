@@ -22,6 +22,11 @@ export class ClaudeError extends Error {
 
 export class MalformedCommandError extends Error {}
 
+/** `_m`: un error que el usuario provocó con lo que pasó en la línea de comandos; se muestra tal cual. */
+export class CliUserError extends Error {
+  override name = 'CliUserError'
+}
+
 export class AbortError extends Error {
   constructor(message?: string) {
     super(message)

@@ -1,0 +1,245 @@
+STEP 1/6: FROM docker.io/library/python:3.11-slim
+STEP 2/6: ARG HTTPS_PROXY
+--> ad2fc878abc5
+STEP 3/6: ARG https_proxy
+--> adcf39f56e1b
+STEP 4/6: ARG PIP_CERT
+--> 1a8b3c53b0ff
+STEP 5/6: RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1  && pip install --no-cache-dir transformers==4.46.3 trl==0.12.2 peft==0.13.2 datasets==3.1.0 accelerate==1.1.1
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_CHOWN: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_DAC_OVERRIDE: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_FOWNER: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_FSETID: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_KILL: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_NET_BIND_SERVICE: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_SETFCAP: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_SETGID: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_SETPCAP: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_SETUID: operation not permitted"
+time="2026-10-01T00:26:40Z" level=warning msg="can't raise ambient capability CAP_SYS_CHROOT: operation not permitted"
+Looking in indexes: https://download.pytorch.org/whl/cpu
+Collecting torch==2.5.1
+  Downloading https://download-r2.pytorch.org/whl/cpu/torch-2.5.1%2Bcpu-cp311-cp311-linux_x86_64.whl (174.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 174.7/174.7 MB 184.7 MB/s eta 0:00:00
+Collecting filelock (from torch==2.5.1)
+  Downloading filelock-3.32.3-py3-none-any.whl.metadata (2.0 kB)
+Collecting typing-extensions>=4.8.0 (from torch==2.5.1)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting networkx (from torch==2.5.1)
+  Downloading networkx-3.6.1-py3-none-any.whl.metadata (6.8 kB)
+Collecting jinja2 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting fsspec (from torch==2.5.1)
+  Downloading fsspec-2026.7.0-py3-none-any.whl.metadata (10 kB)
+Collecting sympy==1.13.1 (from torch==2.5.1)
+  Downloading sympy-1.13.1-py3-none-any.whl.metadata (12 kB)
+Collecting mpmath<1.4,>=1.1.0 (from sympy==1.13.1->torch==2.5.1)
+  Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/markupsafe-3.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Downloading sympy-1.13.1-py3-none-any.whl (6.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.2/6.2 MB 89.8 MB/s eta 0:00:00
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 146.2 MB/s eta 0:00:00
+Downloading filelock-3.32.3-py3-none-any.whl (98 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 98.9/98.9 kB 118.9 MB/s eta 0:00:00
+Downloading fsspec-2026.7.0-py3-none-any.whl (206 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 206.6/206.6 kB 459.0 MB/s eta 0:00:00
+Downloading https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl (134 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 14.7 MB/s eta 0:00:00
+Downloading networkx-3.6.1-py3-none-any.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 93.7 MB/s eta 0:00:00
+Downloading https://download.pytorch.org/whl/markupsafe-3.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 227.9 MB/s eta 0:00:00
+Installing collected packages: mpmath, typing-extensions, sympy, networkx, MarkupSafe, fsspec, filelock, jinja2, torch
+Successfully installed MarkupSafe-3.0.3 filelock-3.32.3 fsspec-2026.7.0 jinja2-3.1.6 mpmath-1.3.0 networkx-3.6.1 sympy-1.13.1 torch-2.5.1+cpu typing-extensions-4.16.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+Collecting transformers==4.46.3
+  Downloading transformers-4.46.3-py3-none-any.whl.metadata (44 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.1/44.1 kB 178.3 MB/s eta 0:00:00
+Collecting trl==0.12.2
+  Downloading trl-0.12.2-py3-none-any.whl.metadata (11 kB)
+Collecting peft==0.13.2
+  Downloading peft-0.13.2-py3-none-any.whl.metadata (13 kB)
+Collecting datasets==3.1.0
+  Downloading datasets-3.1.0-py3-none-any.whl.metadata (20 kB)
+Collecting accelerate==1.1.1
+  Downloading accelerate-1.1.1-py3-none-any.whl.metadata (19 kB)
+Requirement already satisfied: filelock in /usr/local/lib/python3.11/site-packages (from transformers==4.46.3) (3.32.3)
+Collecting huggingface-hub<1.0,>=0.23.2 (from transformers==4.46.3)
+  Downloading huggingface_hub-0.36.2-py3-none-any.whl.metadata (15 kB)
+Collecting numpy>=1.17 (from transformers==4.46.3)
+  Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.11/site-packages (from transformers==4.46.3) (26.3)
+Collecting pyyaml>=5.1 (from transformers==4.46.3)
+  Downloading pyyaml-6.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting regex!=2019.12.17 (from transformers==4.46.3)
+  Downloading regex-2026.9.29-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.6/40.6 kB 233.9 MB/s eta 0:00:00
+Collecting requests (from transformers==4.46.3)
+  Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+Collecting tokenizers<0.21,>=0.20 (from transformers==4.46.3)
+  Downloading tokenizers-0.20.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.7 kB)
+Collecting safetensors>=0.4.1 (from transformers==4.46.3)
+  Downloading safetensors-0.8.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.2 kB)
+Collecting tqdm>=4.27 (from transformers==4.46.3)
+  Downloading tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.4/57.4 kB 37.4 MB/s eta 0:00:00
+Collecting rich (from trl==0.12.2)
+  Downloading rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+Collecting psutil (from peft==0.13.2)
+  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+Requirement already satisfied: torch>=1.13.0 in /usr/local/lib/python3.11/site-packages (from peft==0.13.2) (2.5.1+cpu)
+Collecting pyarrow>=15.0.0 (from datasets==3.1.0)
+  Downloading pyarrow-25.0.1-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (3.0 kB)
+Collecting dill<0.3.9,>=0.3.0 (from datasets==3.1.0)
+  Downloading dill-0.3.8-py3-none-any.whl.metadata (10 kB)
+Collecting pandas (from datasets==3.1.0)
+  Downloading pandas-3.0.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.5/79.5 kB 297.8 MB/s eta 0:00:00
+Collecting xxhash (from datasets==3.1.0)
+  Downloading xxhash-4.0.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (17 kB)
+Collecting multiprocess<0.70.17 (from datasets==3.1.0)
+  Downloading multiprocess-0.70.16-py311-none-any.whl.metadata (7.2 kB)
+Collecting fsspec<=2024.9.0,>=2023.1.0 (from fsspec[http]<=2024.9.0,>=2023.1.0->datasets==3.1.0)
+  Downloading fsspec-2024.9.0-py3-none-any.whl.metadata (11 kB)
+Collecting aiohttp (from datasets==3.1.0)
+  Downloading aiohttp-3.14.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.3 kB)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp->datasets==3.1.0)
+  Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl.metadata (5.9 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp->datasets==3.1.0)
+  Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting attrs>=17.3.0 (from aiohttp->datasets==3.1.0)
+  Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp->datasets==3.1.0)
+  Downloading frozenlist-1.8.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (20 kB)
+Collecting multidict<7.0,>=4.5 (from aiohttp->datasets==3.1.0)
+  Downloading multidict-6.9.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+Collecting propcache>=0.2.0 (from aiohttp->datasets==3.1.0)
+  Downloading propcache-0.5.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (25 kB)
+Requirement already satisfied: typing_extensions>=4.4 in /usr/local/lib/python3.11/site-packages (from aiohttp->datasets==3.1.0) (4.16.0)
+Collecting yarl<2.0,>=1.17.0 (from aiohttp->datasets==3.1.0)
+  Downloading yarl-1.25.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (111 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 111.6/111.6 kB 307.9 MB/s eta 0:00:00
+Collecting hf-xet<2.0.0,>=1.1.3 (from huggingface-hub<1.0,>=0.23.2->transformers==4.46.3)
+  Downloading hf_xet-1.6.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Collecting charset_normalizer<4,>=2 (from requests->transformers==4.46.3)
+  Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 309.8 MB/s eta 0:00:00
+Collecting idna<4,>=2.5 (from requests->transformers==4.46.3)
+  Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting urllib3<3,>=1.26 (from requests->transformers==4.46.3)
+  Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+Collecting certifi>=2023.5.7 (from requests->transformers==4.46.3)
+  Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: networkx in /usr/local/lib/python3.11/site-packages (from torch>=1.13.0->peft==0.13.2) (3.6.1)
+Requirement already satisfied: jinja2 in /usr/local/lib/python3.11/site-packages (from torch>=1.13.0->peft==0.13.2) (3.1.6)
+Requirement already satisfied: sympy==1.13.1 in /usr/local/lib/python3.11/site-packages (from torch>=1.13.0->peft==0.13.2) (1.13.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.11/site-packages (from sympy==1.13.1->torch>=1.13.0->peft==0.13.2) (1.3.0)
+Collecting python-dateutil>=2.8.2 (from pandas->datasets==3.1.0)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting markdown-it-py>=2.2.0 (from rich->trl==0.12.2)
+  Downloading markdown_it_py-4.2.0-py3-none-any.whl.metadata (7.4 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich->trl==0.12.2)
+  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich->trl==0.12.2)
+  Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas->datasets==3.1.0)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.11/site-packages (from jinja2->torch>=1.13.0->peft==0.13.2) (3.0.3)
+Downloading transformers-4.46.3-py3-none-any.whl (10.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.0/10.0 MB 77.2 MB/s eta 0:00:00
+Downloading trl-0.12.2-py3-none-any.whl (365 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 365.7/365.7 kB 104.6 MB/s eta 0:00:00
+Downloading peft-0.13.2-py3-none-any.whl (320 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 320.7/320.7 kB 203.8 MB/s eta 0:00:00
+Downloading datasets-3.1.0-py3-none-any.whl (480 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 480.6/480.6 kB 52.0 MB/s eta 0:00:00
+Downloading accelerate-1.1.1-py3-none-any.whl (333 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 333.2/333.2 kB 82.8 MB/s eta 0:00:00
+Downloading dill-0.3.8-py3-none-any.whl (116 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 116.3/116.3 kB 299.9 MB/s eta 0:00:00
+Downloading fsspec-2024.9.0-py3-none-any.whl (179 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 179.3/179.3 kB 356.5 MB/s eta 0:00:00
+Downloading aiohttp-3.14.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 88.3 MB/s eta 0:00:00
+Downloading huggingface_hub-0.36.2-py3-none-any.whl (566 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 566.4/566.4 kB 93.4 MB/s eta 0:00:00
+Downloading multiprocess-0.70.16-py311-none-any.whl (143 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 143.5/143.5 kB 397.2 MB/s eta 0:00:00
+Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 77.6 MB/s eta 0:00:00
+Downloading pyarrow-25.0.1-cp311-cp311-manylinux_2_28_x86_64.whl (50.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50.1/50.1 MB 80.9 MB/s eta 0:00:00
+Downloading pyyaml-6.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (806 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 806.6/806.6 kB 167.6 MB/s eta 0:00:00
+Downloading regex-2026.9.29-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (804 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 805.0/805.0 kB 144.9 MB/s eta 0:00:00
+Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.1/73.1 kB 337.5 MB/s eta 0:00:00
+Downloading safetensors-0.8.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (516 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 516.0/516.0 kB 171.8 MB/s eta 0:00:00
+Downloading tokenizers-0.20.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.0/3.0 MB 87.2 MB/s eta 0:00:00
+Downloading tqdm-4.70.1-py3-none-any.whl (80 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.2/80.2 kB 287.4 MB/s eta 0:00:00
+Downloading pandas-3.0.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (11.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.1/11.1 MB 83.5 MB/s eta 0:00:00
+Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 155.6/155.6 kB 385.4 MB/s eta 0:00:00
+Downloading rich-15.0.0-py3-none-any.whl (310 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 310.7/310.7 kB 281.6 MB/s eta 0:00:00
+Downloading xxhash-4.0.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (261 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 261.0/261.0 kB 129.6 MB/s eta 0:00:00
+Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl (15 kB)
+Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 253.4 MB/s eta 0:00:00
+Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.0/137.0 kB 430.5 MB/s eta 0:00:00
+Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 270.0/270.0 kB 156.6 MB/s eta 0:00:00
+Downloading frozenlist-1.8.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (231 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 231.1/231.1 kB 69.2 MB/s eta 0:00:00
+Downloading hf_xet-1.6.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 82.6 MB/s eta 0:00:00
+Downloading idna-3.20-py3-none-any.whl (69 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.6/69.6 kB 350.2 MB/s eta 0:00:00
+Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 91.7/91.7 kB 443.3 MB/s eta 0:00:00
+Downloading multidict-6.9.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (320 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 320.7/320.7 kB 374.2 MB/s eta 0:00:00
+Downloading propcache-0.5.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (235 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 235.4/235.4 kB 257.1 MB/s eta 0:00:00
+Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 59.7 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 154.5 MB/s eta 0:00:00
+Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.7/135.7 kB 311.4 MB/s eta 0:00:00
+Downloading yarl-1.25.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (117 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 117.7/117.7 kB 292.3 MB/s eta 0:00:00
+Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Installing collected packages: xxhash, urllib3, tqdm, six, safetensors, regex, pyyaml, pygments, pyarrow, psutil, propcache, numpy, multidict, mdurl, idna, hf-xet, fsspec, frozenlist, dill, charset_normalizer, certifi, attrs, aiohappyeyeballs, yarl, requests, python-dateutil, multiprocess, markdown-it-py, aiosignal, rich, pandas, huggingface-hub, aiohttp, tokenizers, accelerate, transformers, datasets, trl, peft
+  Attempting uninstall: fsspec
+    Found existing installation: fsspec 2026.7.0
+    Uninstalling fsspec-2026.7.0:
+      Successfully uninstalled fsspec-2026.7.0
+Successfully installed accelerate-1.1.1 aiohappyeyeballs-2.7.1 aiohttp-3.14.3 aiosignal-1.4.0 attrs-26.1.0 certifi-2026.7.22 charset_normalizer-3.5.2 datasets-3.1.0 dill-0.3.8 frozenlist-1.8.0 fsspec-2024.9.0 hf-xet-1.6.0 huggingface-hub-0.36.2 idna-3.20 markdown-it-py-4.2.0 mdurl-0.1.2 multidict-6.9.1 multiprocess-0.70.16 numpy-2.4.6 pandas-3.0.6 peft-0.13.2 propcache-0.5.4 psutil-7.2.2 pyarrow-25.0.1 pygments-2.21.0 python-dateutil-2.9.0.post0 pyyaml-6.0.3 regex-2026.9.29 requests-2.34.2 rich-15.0.0 safetensors-0.8.0 six-1.17.0 tokenizers-0.20.3 tqdm-4.70.1 transformers-4.46.3 trl-0.12.2 urllib3-2.8.0 xxhash-4.0.1 yarl-1.25.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: pip install --upgrade pip
+--> 3ef32cbdb726
+STEP 6/6: WORKDIR /work
+COMMIT localhost/thyrox-rlvr-lab:cpu
+--> 6e5cd7656843
+Successfully tagged localhost/thyrox-rlvr-lab:cpu
+6e5cd7656843aeb11ed22d2431e862573f4dad1df619efef4a11f1a85aa9d1aa
+Traceback (most recent call last):
+  File "/probes/grpo_feasibility.py", line 20, in <module>
+    from trl import GRPOConfig, GRPOTrainer
+ImportError: cannot import name 'GRPOConfig' from 'trl' (/usr/local/lib/python3.11/site-packages/trl/__init__.py)
+__BG_EXIT__=1

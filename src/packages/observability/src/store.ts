@@ -17,10 +17,11 @@
  *   promoverse a sí mismo (`niveles-de-retencion.md`).
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '../../../store/db.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 import { join, resolve } from 'node:path'
-import { thyroxRoot } from '../../../paths/reach.ts'
-import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '../../../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
+import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '@thyrox/paths/reach.ts'
+import { assertCoreSchemaMigrated } from '@thyrox/task/schema.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 import type { TranscriptShape } from './transcriptShape.ts'
 import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/agent/loop/session/reconcile'
@@ -32,21 +33,14 @@ export const STORE_FILE = 'agent_store.sqlite3'
 /**
  * El subdirectorio del PROVEEDOR donde vive el store — uno solo, sin silos.
  *
- * Decisión del ejecutor 2026-09-07: *«queremos que sólo se llene uno, porque
- * si no existen los silos de información que es algo que queremos evitar; el
- * que se tiene que quedar es `thyrox/agent-results/agent_store.sqlite3` por
- * ser producer»*.
+ * Se llena uno solo, el del proveedor
+ * (`thyrox/agent-results/agent_store.sqlite3`): dos stores versionados que se
+ * escriben a la vez se vuelven silos, ninguno superconjunto del otro
+ * (:ref:`h-docs-1237`). Un silo heredado del consumidor se fusiona con
+ * `src/agents/merge_stores.py`.
  *
- * Antes era `.claude/agent-results` del **consumidor**, y el resultado medido
- * fue exactamente el silo: DOS archivos versionados, los dos escribiéndose, y
- * ninguno superconjunto del otro — 61 filas sólo en uno, 3 sólo en el otro
- * (:ref:`h-docs-1237`). Se fusionaron con `src/agents/merge_stores.py` antes
- * de reapuntar aquí; el orden importa, porque reapuntar primero habría dejado
- * las 61 sin camino de vuelta.
- *
- * NO lleva `.claude/`: la ruta es la que el ejecutor nombró, y `.claude/` es
- * la zona de configuración del cliente, no el hogar de un artefacto del
- * proveedor.
+ * NO lleva `.claude/`: `.claude/` es la zona de configuración del cliente, no
+ * el hogar de un artefacto del proveedor.
  */
 export const STORE_DIR = 'agent-results'
 
@@ -60,13 +54,11 @@ export const STORE_PATH_VAR = 'THYROX_STORE'
 /**
  * Dónde vive el store de sesiones — el CONSUMIDOR es parámetro, no literal.
  *
- * Las dos mitades de este mecanismo discrepaban. La mitad Python
- * (`src/store/agent_sessions.py`) excluye la resolución de ruta a propósito y
- * su docstring lo dice: *«`resolve_store_dir` — la resolución de rutas es del
- * consumidor»*; su `connect` toma `store_dir` como parámetro. La mitad TS
- * clavaba el clon de docs. Coincidían hoy sólo porque kaupamex-docs ES el
- * consumidor; el día que otro clon aloje su propia telemetría, la mitad TS
- * escribiría en el árbol equivocado sin que nada lo delate.
+ * Paridad con la mitad Python (`src/store/agent_sessions.py`), que excluye la
+ * resolución de ruta a propósito —*«`resolve_store_dir` — la resolución de
+ * rutas es del consumidor»*— y toma `store_dir` como parámetro. Clavar un
+ * clon concreto escribiría en el árbol equivocado el día que otro clon aloje
+ * su propia telemetría, sin que nada lo delate.
  *
  * Precedencia, de más específica a menos:
  *
@@ -75,14 +67,13 @@ export const STORE_PATH_VAR = 'THYROX_STORE'
  * 2. `THYROX_STORE`, la ruta del archivo, leída por `envValue` (proceso y
  *    después `.env`);
  * 3. `THYROX_CONSUMER`, la raíz del consumidor, compuesta con `STORE_DIR`;
- * 4. el árbol del PROVEEDOR (`thyroxRoot()/agent-results`) — el hogar único
- *    decidido el 2026-09-07. El peldaño 3 sigue existiendo para un consumidor
- *    que declare su propio store a propósito, pero ya no es lo que ocurre por
- *    omisión: por omisión todo aterriza en un solo archivo.
+ * 4. el árbol del PROVEEDOR (`thyroxRoot()/agent-results`) — el hogar único.
+ *    El peldaño 3 existe para un consumidor que declare su propio store a
+ *    propósito; por omisión todo aterriza en un solo archivo.
  *
- * El ASCENSO de `consumerRoot` no participa, y es deliberado. Medido en este
- * árbol el 2026-09-06: `/home/user/.claude`, `/home/user/thyrox/.claude` y
- * `/home/user/kaupamex-docs/.claude` existen los tres, así que un ascenso
+ * El ASCENSO de `consumerRoot` no participa, y es deliberado: varios `.claude`
+ * pueden existir en la cadena (`/home/user/.claude`,
+ * `/home/user/thyrox/.claude`, `/home/user/kaupamex-docs/.claude`), así que un ascenso
  * desde thyrox devolvería al PROVEEDOR y uno desde `/home/user` un directorio
  * que no es clon de nadie. Un artefacto que se escribe exige el valor
  * declarado; el ascenso sirve a un proceso que ya corre dentro del consumidor,
@@ -173,7 +164,7 @@ export type HarnessSessionRow = {
  * inflaría cualquier agregado del store con la misma sesión contada dos veces.
  */
 export function recordHarnessSession(dbPath: string, row: HarnessSessionRow): void {
-  const db = openStore(dbPath)
+  const db = openLocal(dbPath)
   try {
     const ahora = new Date().toISOString()
     db.run(
@@ -246,7 +237,7 @@ export type StaleRow = { agentId: string; verdict: Adoption }
  * harness, que es un momento conocido; no necesita disparo.
  */
 export function reconcileStaleRunningRows(dbPath: string): StaleRow[] {
-  const db = openStore(dbPath)
+  const db = openLocal(dbPath)
   try {
     ensureUpdatedAtTrigger(db)
     const rows = db.query(
@@ -283,14 +274,11 @@ export function reconcileStaleRunningRows(dbPath: string): StaleRow[] {
  * seguro sobre la tabla compartida: `recursive_triggers` está apagado por
  * defecto, así que el `UPDATE` de adentro no vuelve a disparar el trigger. El
  * patrón ya existe en esta DB (los tres triggers de `findings_history`).
+ *
+ * El DDL ya no vive aquí: `agent_store.py` es el dueño del schema (DEC-TASK
+ * 2026-09-29), y esta función sólo confirma que su migración ya lo creó —
+ * rehúsa, nombrando lo que falta, si el ledger está incompleto.
  */
 export function ensureUpdatedAtTrigger(db: Database): void {
-  db.run(`CREATE TRIGGER IF NOT EXISTS agent_sessions_stamp_updated
-    AFTER UPDATE OF status ON agent_sessions
-    WHEN NEW.status <> OLD.status
-    BEGIN
-      UPDATE agent_sessions
-      SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-      WHERE rowid = NEW.rowid;
-    END`)
+  assertCoreSchemaMigrated(db)
 }

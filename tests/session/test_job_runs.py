@@ -78,7 +78,7 @@ def test_settle_records_the_exit_code_where_the_manifest_can_be_read():
 def test_latest_run_finds_the_most_recent_of_a_slug():
     with tempfile.TemporaryDirectory() as base:
         job_runs.scaffold_run(base, "suite")
-        segundo = job_runs.scaffold_run(base, "suite")
+        job_runs.scaffold_run(base, "suite")
         # dos runs del mismo slug conviven; el cajón plano los pisaba
         assert len(list(pathlib.Path(base).iterdir())) >= 1
         assert job_runs.latest_run(base, "suite") is not None

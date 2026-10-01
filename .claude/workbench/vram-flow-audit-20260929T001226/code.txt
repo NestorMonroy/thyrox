@@ -1,0 +1,92 @@
+done
+
+# Un item por trabajo. El cuerpo va en una funcion exportada para que GNU
+# Parallel no tenga que citar el prompt: recibe numero e item como argumentos.
+_headless_item() {
+    local n="$1" item="$2"
+    # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
+    # GPU (`parallel` 20231122, líneas 4113-4118: no arranca si no hay sitio).
+    # La VRAM libre cambia mientras los items arrancan: se mira por item, justo
+    # antes de lanzar, y se RESERVA en el mismo paso bajo el lock del registro
+    # (`gpu_monitor admit`): comprobar sin reservar dejaba arrancar a dos items
+    # que no cabían juntos. El dueño es este shell, vivo hasta que el item
+    # termina; el `release` de abajo suelta la reserva, y si el shell muere
+    # antes, su reserva deja de contar sola. La otra mitad de Parallel —matar
+    # al más joven cuando lo libre cae a la mitad, 6847 y 6980-7005— NO se
+    # porta: matar un `thyrox -p` a mitad de su petición tira los tokens ya
+    # pagados.
+    local owner="$BASHPID" admit_rc=0
+    if [[ -n "$HP_VRAM_NEED" ]]; then
+        bash "$HP_GPU" admit "$HP_VRAM_NEED" --ledger "$HP_VRAM_LEDGER" --owner "$owner" \
+            --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL" \
+            2> "$HP_OUT/$n.admit.err" || admit_rc=$?
+    fi
+    # 3 es el plazo vencido, una medida; cualquier otro código es que la
+    # admisión no pudo decidir, y decir «no hubo sitio» afirmaría lo que no
+    # se midió.
+    if [[ "$admit_rc" -ne 0 ]]; then
+        if [[ "$admit_rc" -eq 3 ]]; then
+            echo "admision por VRAM vencida: el item pide $HP_VRAM_NEED MiB y no hubo sitio en ${HP_TIMEOUT}s"
+        else
+            echo "la admision por VRAM fallo (exit $admit_rc); el item no se lanzo:"
+            cat "$HP_OUT/$n.admit.err"
+        fi > "$HP_OUT/$n.err"
+        : > "$HP_OUT/$n.json"
+        return 3
+    fi
+----
+37:from session import shared_lock
+104:def _alive(pid: int, proc_root: str = "/proc") -> bool:
+116:    seen, pending = set(), [pid]
+117:    while pending:
+118:        current = pending.pop()
+130:                pending.extend(int(c) for c in children.read_text().split())
+142:    while True:
+154:        if not _alive(pid):
+160:        time.sleep(interval_s)
+211:        return {pid: mib for pid, mib in self._read().items() if _alive(int(pid))}
+215:        shared_lock.write_atomic(self.path, json.dumps(reservations, sort_keys=True))
+220:    def release(self, owner_pid: int) -> None:
+234:def pending(reservations: dict[str, int], usage: dict[int, int], trees: dict[int, set[int]]) -> int:
+245:def admissible(free_mib: int | None, pending_mib: int, need_mib: int) -> bool:
+247:    return free_mib is not None and free_mib - pending_mib >= need_mib
+259:    return free - pending(live, usage, trees)
+273:def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia-smi",
+280:    comprobar-y-reservar corre bajo el lock del registro (``shared_lock``), así
+282:    siguen separadas: ``VramLedger`` persiste, ``measure`` mide, ``pending`` y
+288:    deadline = time.monotonic() + timeout_s
+289:    while True:
+290:        with shared_lock.held(book.path, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+294:        if time.monotonic() >= deadline:
+296:        time.sleep(interval_s)
+299:def release(ledger: Path, owner_pid: int) -> None:
+304:    with shared_lock.held(book.path, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+----
+59:def effective_width(configured: int, decision: Decision) -> int:
+61:    medido — ``min(configurada, RAM, VRAM)``."""
+62:    return min(configured, decision.width_cap) if decision.width_cap else configured
+70:def history_base() -> Path:
+77:def history_dir(base: Path, prompt_path: Path) -> Path:
+85:def _last_measure(time_file: Path) -> tuple[int, float] | None:
+99:def _gpu_peak(gpu_file: Path) -> int | None:
+111:def template_digest(prompt_path: Path) -> str:
+117:def _nearest_rank(values: list[int], fraction: float) -> int:
+124:def record(history: Path, out_dir: Path, runner: str | None = None,
+140:        "min_wall_s": min(wall for _, wall in measures),
+178:def _rows(history: Path) -> list[dict]:
+185:def _last_row(history: Path, runner: str | None = None,
+198:def _mebibytes(kb: float) -> str:
+204:def _cap(label: str, unit: str, free: int | None, reserve: int, peak: int | None,
+225:def _age_s(row: dict, now: datetime | None) -> float | None:
+234:def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1,
+271:def vram_request(row: dict | None, calibrated: bool, margin: float, floor_mib: int,
+277:    if calibrated:
+278:        # ``calibrated`` sólo sale ``True`` de ``vram_calibration`` cuando
+290:def _vram_decision(row: dict | None, free_vram_mib: int | None, vram_reserve_mib: int, margin: float,
+295:    límites de ``vram_calibration`` (ítems mínimos, plantilla, edad)."""
+299:    calibrated, why_cal = vram_calibration(row, gpu_interval_s, **representativeness)
+300:    need, why_need = vram_request(row, calibrated, margin, floor_mib, max(free_vram_mib - vram_reserve_mib, 0))
+301:    if calibrated:
+312:def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MARGIN,
+354:    return Decision(ttl, memfree, why + ram_why + vram_why, min(caps) if caps else None, ram_cap, vram_cap, need)
+357:def main(argv: list[str]) -> int:

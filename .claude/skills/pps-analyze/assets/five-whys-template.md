@@ -88,7 +88,7 @@
 
 Antes de declarar la causa raíz confirmada, verificar:
 
-- [ ] Cada "por qué" fue respondido con evidencia, no con supuesición
+- [ ] Cada "por qué" fue respondido con evidencia, no con suposición
 - [ ] La causa raíz NO menciona a una persona como culpable (busca causas sistémicas)
 - [ ] Se consideraron causas de múltiples categorías (Fishbone), no solo la más obvia
 - [ ] La causa raíz fue observada o verificada directamente (Gemba / datos)

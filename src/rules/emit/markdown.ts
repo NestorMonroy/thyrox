@@ -17,7 +17,7 @@
  * el emisor empeoraría la cifra que existe para justificarlo.
  */
 import type { RuleDefinition } from '../types.ts'
-import { envValue } from '../../paths/reach.ts'
+import { envValue } from '@thyrox/paths/reach.ts'
 import { emittedMarker } from '../provenance.ts'
 
 /** El marcador de un parámetro en el cuerpo. */

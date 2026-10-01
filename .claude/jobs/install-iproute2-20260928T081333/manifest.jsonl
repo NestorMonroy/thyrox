@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c source src/lib/toolchain.sh && THYROX_INSTALL_IPROUTE2=1 thyrox_toolchain_require_iproute2; echo RC=$?; command -v ip; ip -V", "started_at": "2026-09-28T08:13:33+00:00"}

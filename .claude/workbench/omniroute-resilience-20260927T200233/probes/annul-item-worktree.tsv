@@ -1,0 +1,7 @@
+noremove	s/^    with_retries git -C "\$repo" worktree remove --force "\$dir"/    :/
+nofailed	s/^    if \[\[ "\$rc" -ne 0 \]\]; then/    if false; then/
+noempty	s/^    elif \[\[ ! -s "\$out\/\$n.patch" \]\]; then/    elif false; then/
+noverifyempty	s/^    elif \[\[ -z "\$verify" \]\]; then/    elif false; then/
+verifyalways	s/^    elif (cd "\$dir" \&\& bash -c "\$verify") .*then/    elif true; then/
+noaddall	s/^    git -C "\$dir" add -A$/    :/
+nosweep	s/^    sweep) shift; sweep "\$@" ;;/    sweep) shift ;;/

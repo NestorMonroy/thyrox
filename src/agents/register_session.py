@@ -39,6 +39,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 
 from hooks.error_log import run_and_log  # noqa: E402
@@ -765,19 +766,13 @@ def main() -> None:
 
     destino = _destination_from_argv(sys.argv)
     if destino is None:
-        # Sin destino declarado se usa EL HOGAR — `thyrox/agent-results/`,
-        # decidido por el ejecutor el 2026-09-07 para que no haya silos.
-        #
-        # Aquí había un rehúse, y su razón era correcta mientras no existía un
-        # hogar: *«un destino fabricado escribiría en el store equivocado y
-        # nadie lo notaría»*. Derivarlo del localizador no lo fabrica.
-        #
-        # Y era este rehúse el que sostenía el silo, no el de
-        # `resolve_store_dir`: obligaba a que cada llamador declarase destino,
-        # y el hook vivo del consumidor declaraba `--repo docs`. Lo destapó una
-        # SONDA DE CONDUCTA —invocar el hook y mirar dónde escribe—; el control
-        # unitario no podía verlo, porque llama a `resolve_store_dir` directo y
-        # este guard está aguas arriba. Ver :ref:`h-docs-1237`.
+        # Sin destino declarado se usa EL HOGAR — `thyrox/agent-results/`, un
+        # solo store para que no haya silos. Derivarlo del localizador no lo
+        # fabrica; rehusar obligaría a cada llamador a declarar destino, y un
+        # hook que declare el suyo reabre el silo (:ref:`h-docs-1237`). El
+        # control es de conducta —invocar el hook y mirar dónde escribe—: una
+        # prueba unitaria de `resolve_store_dir` no ve este guard, que está
+        # aguas arriba.
         destino = ["--claude-dir", str(agents_paths.agent_store_path().parent)]
 
     try:
@@ -896,7 +891,7 @@ def main() -> None:
         # Nombres y no valores por dos razones: un valor puede traer contenido
         # de la sesión (la lista blanca del anonimizador, tarea #662), y para
         # separar dos poblaciones basta con que sus formas difieran.
-        marca = {"claves_de_payload": sorted(payload)}
+        marca: dict[str, Any] = {"claves_de_payload": sorted(payload)}
         # Sin transcript la fila queda vacia y el reconciliador NO la alcanza:
         # lee de disco. Medido hoy: 68 de 107 filas nuevas sin modelo, sin tipo
         # y sin telemetria, y la correlacion con el disco es perfecta —39 con

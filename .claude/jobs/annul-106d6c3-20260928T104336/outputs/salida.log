@@ -1,0 +1,105 @@
+== 1: el 404 no es inicio deshabilitado
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > a disabled account, a failure, an incomplete answer, the network and an abort have their codes [0.60ms]
+ 7 pass
+ 1 fail
+== 2: sin el alias usercode
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > the user code comes with its handle, a sane interval and the page to enter it [0.75ms]
+ 7 pass
+ 1 fail
+== 3: sin intervalo por defecto
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > the user code comes with its handle, a sane interval and the page to enter it [0.85ms]
+ 7 pass
+ 1 fail
+== 4: el intervalo en texto no se lee
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > the user code comes with its handle, a sane interval and the page to enter it [0.66ms]
+ 7 pass
+ 1 fail
+== 5: el 403 no es pendiente
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > pending answers and network hiccups keep polling at the interval until the code arrives [0.67ms]
+(fail) polling > a hard failure, an incomplete grant, the deadline and an abort stop the poll [0.47ms]
+ 6 pass
+ 2 fail
+== 6: el 404 no es pendiente
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > pending answers and network hiccups keep polling at the interval until the code arrives [0.82ms]
+ 7 pass
+ 1 fail
+== 7: un fallo de red corta el sondeo
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > pending answers and network hiccups keep polling at the interval until the code arrives [1.01ms]
+ 7 pass
+ 1 fail
+== 8: sin plazo
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > a hard failure, an incomplete grant, the deadline and an abort stop the poll [0.99ms]
+ 7 pass
+ 1 fail
+== 9: sin comprobar la señal antes de esperar
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > a hard failure, an incomplete grant, the deadline and an abort stop the poll [0.94ms]
+ 7 pass
+ 1 fail
+== 10: el aborto del fetch es de red
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > a disabled account, a failure, an incomplete answer, the network and an abort have their codes [0.70ms]
+ 7 pass
+ 1 fail
+== 11: sin verificador se acepta
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > a hard failure, an incomplete grant, the deadline and an abort stop the poll [0.57ms]
+ 7 pass
+ 1 fail
+== 12: un fallo del sondeo no se rehúsa
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > a hard failure, an incomplete grant, the deadline and an abort stop the poll [3.34ms]
+ 7 pass
+ 1 fail
+== 13: el intercambio fallido no es error
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) exchange and the whole flow > a failed or empty exchange is an exchange failure [0.50ms]
+ 7 pass
+ 1 fail
+== 14: sin access token se acepta
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) exchange and the whole flow > a failed or empty exchange is an exchange failure [0.60ms]
+ 7 pass
+ 1 fail
+== 15: otra retrollamada
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) exchange and the whole flow > the code and the server verifier become tokens at the device callback [1.03ms]
+ 7 pass
+ 1 fail
+== 16: sin client id en el código de usuario
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > the user code comes with its handle, a sane interval and the page to enter it [0.94ms]
+ 7 pass
+ 1 fail
+== 17: sin el verificador en el intercambio
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) exchange and the whole flow > the code and the server verifier become tokens at the device callback [0.84ms]
+ 7 pass
+ 1 fail
+== 18: sin avisar el código
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) exchange and the whole flow > the whole flow shows the code, polls and exchanges [0.44ms]
+ 7 pass
+ 1 fail
+== 19: sin el user_code en el sondeo
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) polling > pending answers and network hiccups keep polling at the interval until the code arrives [0.92ms]
+ 7 pass
+ 1 fail
+== 20: un fallo de código de usuario no es error
+   (src/accounts/oauth/flows/codexDeviceAuth.ts)
+(fail) user code > a disabled account, a failure, an incomplete answer, the network and an abort have their codes [0.81ms]
+ 7 pass
+ 1 fail
+== restaurado
+ 8 pass
+ 0 fail
+__BG_EXIT__=0

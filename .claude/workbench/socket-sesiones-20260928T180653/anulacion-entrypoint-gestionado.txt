@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+ 97 |     const lineage = { ...base, THYROX_CODE_HOST_GATEWAY_LINEAGE: 'on', THYROX_CODE_HOST_CREDS_FILE: '/c' }
+ 98 |     expect(isHostManagedGateway(context(lineage))).toBe(true)
+ 99 |     expect(isHostGatewayLineageManaged(context(lineage))).toBe(true)
+100 |     expect(isHostGatewayLineageManaged(context({ ...lineage, THYROX_CODE_HOST_CREDS_FILE: ' ' }))).toBe(false)
+101 |     expect(isHostManagedGateway(context({ ...lineage, THYROX_CODE_USE_GATEWAY: '0' }))).toBe(false)
+102 |     expect(isHostManagedGateway(context({ ...lineage, THYROX_CODE_PROVIDER_MANAGED_BY_HOST: 'off' }))).toBe(false)
+                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:102:104)
+(fail) las demás variables del anfitrión > THYROX_CODE_PROVIDER_MANAGED_BY_HOST, THYROX_CODE_USE_GATEWAY, THYROX_CODE_HOST_GATEWAY_LINEAGE y THYROX_CODE_HOST_CREDS_FILE [0.34ms]
+
+ 15 pass
+ 1 fail
+ 91 expect() calls
+Ran 16 tests across 1 file. [54.00ms]

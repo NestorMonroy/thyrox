@@ -1,11 +1,11 @@
 /**
  * `--import-tasks` resuelve el store por el localizador, no por `cwd`.
  *
- * H-THYROX-41. Componía `join(cwd, '.claude', 'agent-results', …)`: sin pasar
- * por ninguna de las cuatro precedencias que `storePath()` declara, y hacia el
- * hogar que `LEGACY_CONSUMER_STORE_DIR` dice NO ser destino de escritura.
- * Como `connect()` hace `mkdir` sin condición, un `cwd` equivocado no falla —
- * crea una cáscara vacía y la deja ahí.
+ * Componer `join(cwd, '.claude', 'agent-results', …)` saltaría las cuatro
+ * precedencias que `storePath()` declara y apuntaría al hogar que
+ * `LEGACY_CONSUMER_STORE_DIR` dice NO ser destino de escritura; como
+ * `connect()` hace `mkdir` sin condición, un `cwd` equivocado no fallaría:
+ * crearía una cáscara vacía (H-THYROX-41).
  *
  * EL CONTROL QUE DISCRIMINA no es «la ruta es la esperada»: es que **cambiar
  * `cwd` no cambie el destino** mientras el localizador no cambie. Una versión

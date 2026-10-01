@@ -1,0 +1,5 @@
+rc=0
+ink: OK
+
+emit_declarations: 42 paquete(s) medido(s), 1090 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

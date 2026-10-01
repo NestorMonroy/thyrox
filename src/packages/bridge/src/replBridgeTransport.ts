@@ -161,7 +161,7 @@ export type CreateV2ReplTransportOpts = {
   /**
    * Fuente de cabecera de auth por instancia. Cuando se provee,
    * CCRClient + SSETransport leen la auth de este closure en vez de la
-   * env var de proceso CLAUDE_CODE_SESSION_ACCESS_TOKEN. Obligatorio
+   * env var de proceso THYROX_CODE_SESSION_ACCESS_TOKEN. Obligatorio
    * para llamadores que manejan varias sesiones concurrentes — el
    * camino por env var se pisa entre sesiones. Cuando se omite, cae a
    * la env var (llamadores de una sola sesión).

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Control de la resolucion del baseline del gate de submodulo de hallazgo.
 #
-# Origen: es h-docs-1107 en su hermano. La mudanza a thyrox (h-docs-1094) movio
-# los dos gates juntos; check-hallazgo-sucesor.sh y check_vocabulario_prosa.py
-# recibieron la resolucion contra el CONSUMIDOR, y este no. Siguio resolviendo
-# `__file__.parent`, que antes era `.claude/scripts/gates/` del consumidor y
-# desde `thyrox/src/verify/` es el proveedor, donde el archivo no existe.
+# El baseline se resuelve contra el CONSUMIDOR, como en sus hermanos
+# check-hallazgo-sucesor.sh y check_vocabulario_prosa.py (h-docs-1107): el
+# gate vive en `thyrox/src/verify/`, y `__file__.parent` apuntaria al
+# proveedor, donde el archivo no existe (h-docs-1094).
 #
 # Medido al escribir este control: 62 rutas congeladas en el consumidor, y el
 # gate publicando «63 fuera de su submodulo, sin baseline · 0 en baseline
@@ -17,7 +16,9 @@
 # «no encontre el archivo» (sub-patron D de metrica-decide-la-conclusion.md).
 set -uo pipefail
 
-GATE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../src/verify" && pwd)/check_hallazgo_submodulo.py"
+# Por el envoltorio de `bin/`, que exporta `PYTHONPATH=src`: el gate importa
+# `verify.check_vocabulario_prosa`, y por la ruta al fuente ese import muere.
+GATE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/bin/check_hallazgo_submodulo"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 FAILURES=0
@@ -39,7 +40,7 @@ echo "test-hallazgo-submodulo-baseline"
 # Es el caso que hoy falla: el gate busca junto a si mismo, en el proveedor.
 case_start
 printf '%s\n' "$RUTA" > "$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
-OUT="$(cd "$TMP/consumer" && python3 "$GATE" --strict 2>&1)"; EXIT=$?
+OUT="$(cd "$TMP/consumer" && bash "$GATE" --strict 2>&1)"; EXIT=$?
 if [ "$EXIT" -eq 0 ]; then
   ok "el baseline del consumidor congela la ruta (exit 0)"
 else
@@ -50,7 +51,7 @@ fi
 case_start
 printf '%s\n' "$RUTA" > "$TMP/declarado.txt"
 OUT="$(cd "$TMP/consumer" && HALLAZGO_SUBMODULO_BASELINE="$TMP/declarado.txt" \
-        python3 "$GATE" --strict 2>&1)"; EXIT=$?
+        bash "$GATE" --strict 2>&1)"; EXIT=$?
 if [ "$EXIT" -eq 0 ]; then
   ok "la variable declarada resuelve el baseline (exit 0)"
 else
@@ -62,8 +63,8 @@ fi
 # mezcla heredado con nuevo. Si volviera a hacerlo, este caso lo detecta.
 case_start
 rm -f "$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
-OUT="$(cd "$TMP/consumer" && python3 "$GATE" --quiet 2>&1)"; EXIT=$?
-if [ "$EXIT" -eq 2 ] && ! printf '%s' "$OUT" | grep -qE '^[0-9]+$'; then
+OUT="$(cd "$TMP/consumer" && bash "$GATE" --quiet 2>&1)"; EXIT=$?
+if [ "$EXIT" -eq 2 ] && ! grep -qE '^[0-9]+$' <<<"$OUT"; then
   ok "rehusa sin baseline (exit 2) y no emite conteo"
 else
   fail "rehuso sin baseline" "exit=$EXIT, salida='$OUT' — un conteo aqui no separa heredado de nuevo"
@@ -71,7 +72,7 @@ fi
 
 # --- Caso 4: --write-baseline escribe en el consumidor, no en el proveedor ---
 case_start
-OUT="$(cd "$TMP/consumer" && python3 "$GATE" --write-baseline 2>&1)"; EXIT=$?
+OUT="$(cd "$TMP/consumer" && bash "$GATE" --write-baseline 2>&1)"; EXIT=$?
 DESTINO="$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
 if [ -f "$DESTINO" ] && grep -qF "$RUTA" "$DESTINO"; then
   ok "--write-baseline aterriza en el consumidor"

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+216 | })
+217 | 
+218 | test('el contexto del proceso lee process.env y deja configurar lo ajeno', () => {
+219 |   expect(processEntrypointContext.env).toBe(process.env as Record<string, string | undefined>)
+220 |   configureEntrypointContext({ teammateAgentId: () => 'a1' })
+221 |   expect(processEntrypointContext.teammateAgentId()).toBe('a1')
+                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "a1"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:221:54)
+(fail) el contexto del proceso lee process.env y deja configurar lo ajeno [0.35ms]
+
+ 15 pass
+ 1 fail
+ 90 expect() calls
+Ran 16 tests across 1 file. [62.00ms]

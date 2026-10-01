@@ -11,6 +11,7 @@
  *  - the parseAsync + post-parse profiler report
  */
 
+import { PRODUCT_NAME } from './productName.ts'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
 import type { RuntimeHandles } from '@thyrox/app-host'
@@ -18,7 +19,7 @@ import type { RuntimeHandles } from '@thyrox/app-host'
 import { init } from '@thyrox/app-host/init.js'
 import { loadPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
 import { loadRemoteManagedSettings } from '../remoteManagedSettings.js'
-import { getSessionId, setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
+import { getSessionId, setInlinePlugins, setInlinePluginsNoMcp } from '@thyrox/app-host/bootstrap/state.js'
 import { clearPluginCache } from '../pluginLoader.js'
 import { runMigrations } from '@thyrox/app-host/main/startup/settings.js'
 import { canUserConfigureAdvisor } from '@thyrox/provider/advisor.js'
@@ -34,6 +35,8 @@ import { createMainProgram, type MainProgram } from './commander.js'
 import { runModeDispatch } from './mode-dispatch.js'
 import type { PendingHandles } from './preprocess-argv.js'
 import { registerMcpCommands } from '../commands/mcp-commands.js'
+import { registerMitmCommands } from '../commands/mitm-commands.js'
+import { registerProvidersCommands } from '../commands/providers-commands.js'
 import { registerMiscCommands } from '../commands/misc-commands.js'
 import { registerProjectCommands } from '../commands/project-commands.js'
 
@@ -42,6 +45,11 @@ import { registerProjectCommands } from '../commands/project-commands.js'
  * Handles the shared bootstrap shape: settings ready, sinks installed,
  * migrations applied, remote managed settings kicked off.
  */
+/** Lo que una opción acumulativa de commander entrega cuando el usuario la usó. */
+function isNonEmptyStringList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every(item => typeof item === 'string')
+}
+
 function attachPreActionHook(program: MainProgram): void {
   program.hook('preAction', async thisCommand => {
     if (
@@ -70,7 +78,7 @@ function attachPreActionHook(program: MainProgram): void {
     // process.title on Windows sets the console title directly; on POSIX,
     // terminal shell integration may mirror the process name to the tab.
     // After init() so settings.json env can also gate this (gh-4765).
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_DISABLE_TERMINAL_TITLE)) {
       process.title = 'claude'
     }
 
@@ -109,6 +117,11 @@ function attachPreActionHook(program: MainProgram): void {
     ) {
       setInlinePlugins(inlinePlugins as string[])
       clearPluginCache('preAction: inline plugins')
+    }
+    const pluginDirNoMcp = thisCommand.getOptionValue('pluginDirNoMcp')
+    if (isNonEmptyStringList(pluginDirNoMcp)) {
+      setInlinePluginsNoMcp(pluginDirNoMcp)
+      clearPluginCache('preAction: --plugin-dir-no-mcp inline plugins')
     }
 
     runMigrations()
@@ -384,7 +397,7 @@ export async function runCliProgram(
         },
       )
     })
-    .version(`${MACRO.VERSION} (Claude Code)`, '-v, --version', 'Output the version number')
+    .version(`${MACRO.VERSION} (${PRODUCT_NAME})`, '-v, --version', 'Output the version number')
 
   attachSecondaryOptions(program)
 
@@ -418,6 +431,9 @@ export async function runCliProgram(
 
   // claude project purge — port of ant v2.1.126 WD/5142.js
   registerProjectCommands(program)
+
+  registerMitmCommands(program)
+  registerProvidersCommands(program)
 
   profileCheckpoint('run_before_parse')
   await program.parseAsync(process.argv)

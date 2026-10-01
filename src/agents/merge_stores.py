@@ -248,7 +248,7 @@ def merge(origin_path: Path, target_path: Path, *, dry_run: bool = False) -> lis
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    p = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     p.add_argument("origen", type=Path)
     p.add_argument("destino", type=Path)
     p.add_argument("--dry-run", action="store_true",

@@ -15,23 +15,16 @@
  * hermano SÍ está portado y SÍ exporta ambos símbolos
  * (`@thyrox/swarm: src/index.ts:105,107`, reexportados desde
  * `tasks/types.ts`). El TIPO se importa directo (type-only, se borra al
- * transpilar — no exige que `@thyrox/swarm` esté enlazado). La FUNCIÓN
- * `isInProcessTeammateTask` NO: `@thyrox/swarm` no está declarado como
- * dependencia de `@thyrox/app-host` (sin symlink en
- * `node_modules/@thyrox/swarm`; verificado con `require.resolve`), así
- * que un import de valor rompería la carga del módulo. Se usa el
- * sustituto local de `internal/pendingCrossPackageDeps.ts` — ver ese
- * archivo para la divergencia exacta y la condición de retiro.
+ * transpilar). La FUNCIÓN `isInProcessTeammateTask` también se importa del
+ * original.
  */
 import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'
 import { isInProcessTeammateTask } from '@thyrox/swarm'
 
-// (2026-09-24) La guarda viene de `@thyrox/swarm`: el symlink ya existe y
-// `require.resolve` lo resuelve desde este paquete, que era la condición de
-// retiro del sustituto local. `LocalAgentTaskState` es el canónico, como
-// import sólo de tipo: la copia estructural local (`{ type: 'local_agent' }`)
-// no tenía los campos del `TaskStateBase` y no casaba con el tipo real.
+// `LocalAgentTaskState` es el canónico, como import sólo de tipo: una copia
+// estructural local (`{ type: 'local_agent' }`) no tendría los campos del
+// `TaskStateBase` y no casaría con el tipo real.
 type AppStateShape = {
   viewingAgentTaskId: string | null | undefined
   tasks: Record<string, { type: string; [key: string]: unknown }>

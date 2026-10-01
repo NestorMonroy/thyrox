@@ -1,0 +1,299 @@
+== 1: invalid_request no mata
+   (src/accounts/refresh/providers/refreshResult.ts)
+(fail) Anthropic > a dead token in any body shape asks for re-authentication; anything else is transient [1.39ms]
+(fail) GitLab Duo > no token is not attempted; dead codes are unrecoverable; the rest is null [0.41ms]
+ 20 pass
+ 2 fail
+== 2: invalid_grant no mata
+   (src/accounts/refresh/providers/refreshResult.ts)
+(fail) Anthropic > a dead token in any body shape asks for re-authentication; anything else is transient [1.40ms]
+(fail) GitHub > a dead token is unrecoverable, a transient failure is null, the network error propagates [0.96ms]
+(fail) GitLab Duo > no token is not attempted; dead codes are unrecoverable; the rest is null [0.59ms]
+(fail) Qoder > a dead token is unrecoverable; the rest is null [0.47ms]
+(fail) Cline > a code inside the message is unrecoverable; the rest is null [0.59ms]
+ 17 pass
+ 5 fail
+== 3: cualquier código mata
+   (src/accounts/refresh/providers/refreshResult.ts)
+(fail) Anthropic > a dead token in any body shape asks for re-authentication; anything else is transient [1.60ms]
+(fail) GitHub > a dead token is unrecoverable, a transient failure is null, the network error propagates [0.91ms]
+(fail) Cline > a code inside the message is unrecoverable; the rest is null [0.42ms]
+ 19 pass
+ 3 fail
+== 4: formulario sin tipo
+   (src/accounts/refresh/providers/refreshResult.ts)
+(fail) Anthropic > the refresh is form-encoded with the client and the OAuth beta [1.27ms]
+(fail) GitHub > the refresh carries the client and, when declared, its secret [0.70ms]
+(fail) Google > the refresh uses the client that issued the token [0.55ms]
+(fail) Qoder > the refresh authenticates the client with Basic and in the form [1.18ms]
+ 18 pass
+ 4 fail
+== 5: anthropic sin beta
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > the refresh is form-encoded with the client and the OAuth beta [1.18ms]
+ 21 pass
+ 1 fail
+== 6: anthropic sin cliente
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > without a client id the refresh refuses naming the variable [0.56ms]
+ 21 pass
+ 1 fail
+== 7: anthropic sin refresh rotado
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > the refresh is form-encoded with the client and the OAuth beta [1.07ms]
+ 21 pass
+ 1 fail
+== 8: anthropic sin clasificar
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > a dead token in any body shape asks for re-authentication; anything else is transient [0.81ms]
+ 21 pass
+ 1 fail
+== 9: anthropic la red lanza
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > a dead token in any body shape asks for re-authentication; anything else is transient [1.33ms]
+ 21 pass
+ 1 fail
+== 10: anthropic sin aviso de fallo
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > a dead token in any body shape asks for re-authentication; anything else is transient [1.11ms]
+ 21 pass
+ 1 fail
+== 11: anthropic sin aviso de éxito
+   (src/accounts/refresh/providers/anthropicRefresh.ts)
+(fail) Anthropic > the refresh is form-encoded with the client and the OAuth beta [1.55ms]
+ 21 pass
+ 1 fail
+== 12: github sin secreto
+   (src/accounts/refresh/providers/githubRefresh.ts)
+(fail) GitHub > the refresh carries the client and, when declared, its secret [0.98ms]
+ 21 pass
+ 1 fail
+== 13: github sin clasificar
+   (src/accounts/refresh/providers/githubRefresh.ts)
+(fail) GitHub > a dead token is unrecoverable, a transient failure is null, the network error propagates [0.61ms]
+ 21 pass
+ 1 fail
+== 14: github la red no lanza
+   (src/accounts/refresh/providers/githubRefresh.ts)
+(fail) GitHub > the refresh carries the client and, when declared, its secret [1.06ms]
+(fail) GitHub > a dead token is unrecoverable, a transient failure is null, the network error propagates [0.65ms]
+ 20 pass
+ 2 fail
+== 15: github sin refresh rotado
+   (src/accounts/refresh/providers/githubRefresh.ts)
+(fail) GitHub > the refresh carries the client and, when declared, its secret [1.08ms]
+ 21 pass
+ 1 fail
+== 16: copilot sin barra final quitada
+   (src/accounts/refresh/providers/copilotRefresh.ts)
+(fail) Copilot > an enterprise host gets its own endpoint, and a declared CLI version is used [0.43ms]
+ 21 pass
+ 1 fail
+== 17: copilot con Bearer
+   (src/accounts/refresh/providers/copilotRefresh.ts)
+(fail) Copilot > the Copilot token is requested with the GitHub token and the Copilot client identity [0.82ms]
+ 21 pass
+ 1 fail
+== 18: copilot sin versión declarada
+   (src/accounts/refresh/providers/copilotRefresh.ts)
+(fail) Copilot > an enterprise host gets its own endpoint, and a declared CLI version is used [0.54ms]
+ 21 pass
+ 1 fail
+== 19: copilot sin estado
+   (src/accounts/refresh/providers/copilotRefresh.ts)
+(fail) Copilot > a refusal reports its status; a network failure a null status [0.42ms]
+ 21 pass
+ 1 fail
+== 20: copilot la red lanza
+   (src/accounts/refresh/providers/copilotRefresh.ts)
+(fail) Copilot > a refusal reports its status; a network failure a null status [0.73ms]
+ 21 pass
+ 1 fail
+== 21: copilot sin caducidad
+   (src/accounts/refresh/providers/copilotRefresh.ts)
+(fail) Copilot > the Copilot token is requested with the GitHub token and the Copilot client identity [1.05ms]
+ 21 pass
+ 1 fail
+== 22: google sin secreto
+   (src/accounts/refresh/providers/googleRefresh.ts)
+(fail) Google > the refresh uses the client that issued the token [0.72ms]
+ 21 pass
+ 1 fail
+== 23: google sin token muerto
+   (src/accounts/refresh/providers/googleRefresh.ts)
+(fail) Google > only a JSON invalid_grant is unrecoverable [0.49ms]
+ 21 pass
+ 1 fail
+== 24: google muerto por texto
+   (src/accounts/refresh/providers/googleRefresh.ts)
+(fail) Google > only a JSON invalid_grant is unrecoverable [1.02ms]
+ 21 pass
+ 1 fail
+== 25: google cualquier código mata
+   (src/accounts/refresh/providers/googleRefresh.ts)
+(fail) Google > only a JSON invalid_grant is unrecoverable [0.53ms]
+ 21 pass
+ 1 fail
+== 26: google sin refresh rotado
+   (src/accounts/refresh/providers/googleRefresh.ts)
+(fail) Google > only a JSON invalid_grant is unrecoverable [0.68ms]
+ 21 pass
+ 1 fail
+== 27: gitlab sin token se intenta
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > no token is not attempted; dead codes are unrecoverable; the rest is null [0.73ms]
+ 21 pass
+ 1 fail
+== 28: gitlab sin instancia de la conexión
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > the instance and client of the connection win; the refresh needs no verifier [0.77ms]
+ 21 pass
+ 1 fail
+== 29: gitlab sin recortar la instancia
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > the instance and client of the connection win; the refresh needs no verifier [0.87ms]
+ 21 pass
+ 1 fail
+== 30: gitlab sin quitar la barra
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > the instance and client of the connection win; the refresh needs no verifier [0.72ms]
+ 21 pass
+ 1 fail
+== 31: gitlab sin cliente de la conexión
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > the instance and client of the connection win; the refresh needs no verifier [0.78ms]
+ 21 pass
+ 1 fail
+== 32: gitlab sin cliente configurado
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > without connection data the configured instance and client are used [0.39ms]
+ 21 pass
+ 1 fail
+== 33: gitlab sin muerto
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > no token is not attempted; dead codes are unrecoverable; the rest is null [0.50ms]
+ 21 pass
+ 1 fail
+== 34: gitlab la red lanza
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > no token is not attempted; dead codes are unrecoverable; the rest is null [0.78ms]
+ 21 pass
+ 1 fail
+== 35: gitlab sin refresh rotado
+   (src/accounts/refresh/providers/gitlabDuoRefresh.ts)
+(fail) GitLab Duo > the instance and client of the connection win; the refresh needs no verifier [0.86ms]
+ 21 pass
+ 1 fail
+== 36: qoder sin extremo se intenta
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > without the token URL, client or secret the refresh is skipped [0.65ms]
+ 21 pass
+ 1 fail
+== 37: qoder sin cliente se intenta
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > without the token URL, client or secret the refresh is skipped [0.89ms]
+ 21 pass
+ 1 fail
+== 38: qoder sin secreto se intenta
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > without the token URL, client or secret the refresh is skipped [0.72ms]
+ 21 pass
+ 1 fail
+== 39: qoder sin Basic
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > the refresh authenticates the client with Basic and in the form [1.03ms]
+ 21 pass
+ 1 fail
+== 40: qoder sin secreto en el formulario
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > the refresh authenticates the client with Basic and in the form [1.68ms]
+ 21 pass
+ 1 fail
+== 41: qoder sin clasificar
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > a dead token is unrecoverable; the rest is null [0.81ms]
+ 21 pass
+ 1 fail
+== 42: qoder sin aviso
+   (src/accounts/refresh/providers/qoderRefresh.ts)
+(fail) Qoder > without the token URL, client or secret the refresh is skipped [0.54ms]
+ 21 pass
+ 1 fail
+== 43: cline sin el sobre data
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > the refresh is JSON and the lifetime comes from the declared expiry [0.81ms]
+ 21 pass
+ 1 fail
+== 44: cline sin mínimo de un segundo
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > an unwrapped payload is read too; a past expiry still gives one second; no expiry gives none [0.50ms]
+ 21 pass
+ 1 fail
+== 45: cline redondea hacia arriba
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > the refresh is JSON and the lifetime comes from the declared expiry [1.12ms]
+ 21 pass
+ 1 fail
+== 46: cline sin clasificar
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > a code inside the message is unrecoverable; the rest is null [0.48ms]
+ 21 pass
+ 1 fail
+== 47: cline con reloj real
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > the refresh is JSON and the lifetime comes from the declared expiry [0.84ms]
+ 21 pass
+ 1 fail
+== 48: cline otro tipo de cliente
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > the refresh is JSON and the lifetime comes from the declared expiry [1.69ms]
+ 21 pass
+ 1 fail
+== 49: cline sin refresh rotado
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > the refresh is JSON and the lifetime comes from the declared expiry [0.86ms]
+ 21 pass
+ 1 fail
+== 50: cline la red lanza
+   (src/accounts/refresh/providers/clineRefresh.ts)
+(fail) Cline > a code inside the message is unrecoverable; the rest is null [0.80ms]
+ 21 pass
+ 1 fail
+== 51: codebuddy sin token se intenta
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > no token, a refusal, a non-zero code, no access token or the network give null [0.71ms]
+ 21 pass
+ 1 fail
+== 52: codebuddy sin cabecera del token
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > the refresh token travels in a header, with the CLI identity [0.78ms]
+ 21 pass
+ 1 fail
+== 53: codebuddy cualquier código
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > no token, a refusal, a non-zero code, no access token or the network give null [0.62ms]
+ 21 pass
+ 1 fail
+== 54: codebuddy sin access token
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > no token, a refusal, a non-zero code, no access token or the network give null [0.57ms]
+ 21 pass
+ 1 fail
+== 55: codebuddy rechazo se lee
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+ 22 pass
+ 0 fail
+== 56: codebuddy la red lanza
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > no token, a refusal, a non-zero code, no access token or the network give null [0.89ms]
+ 21 pass
+ 1 fail
+== 57: codebuddy sin refresh rotado
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > the refresh token travels in a header, with the CLI identity [1.02ms]
+ 21 pass
+ 1 fail
+== restaurado
+ 22 pass
+ 0 fail
+__BG_EXIT__=0

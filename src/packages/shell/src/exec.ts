@@ -24,6 +24,7 @@ import {
 } from './shellCommand.js'
 import { createProviderResolver } from './shellDiscovery.js'
 import { ExecError } from './errors.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
 const DEFAULT_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -137,7 +138,7 @@ export async function exec(
 
   // Sandbox temp directory - use per-user directory name to prevent multi-user permission conflicts
   const sandboxTmpDir = posixJoin(
-    process.env.CLAUDE_CODE_TMPDIR || '/tmp',
+    process.env.THYROX_CODE_TMPDIR || '/tmp',
     _getSandboxTmpDirNameFn?.() ?? 'claude-code',
   )
 
@@ -166,7 +167,7 @@ export async function exec(
       cwd = fallback
     } catch {
       return createFailedCommand(
-        `Working directory "${cwd}" no longer exists. Please restart Claude from an existing directory.`,
+        `Working directory "${cwd}" no longer exists. Please restart ${PRODUCT_NAME} from an existing directory.`,
       )
     }
   }
@@ -253,7 +254,7 @@ export async function exec(
         GIT_EDITOR: 'true',
         CLAUDECODE: '1',
         ...envOverrides,
-        CLAUDE_CODE_SESSION_ID: ctx.getSessionId(),
+        THYROX_CODE_SESSION_ID: ctx.getSessionId(),
         // extraEnv last so caller-provided values win over both subprocessEnv
         // and provider overrides — mirrors ant's `extraEnv` semantics.
         ...(extraEnv ?? {}),
@@ -378,13 +379,11 @@ export function setCwd(
   }
 
   ctx.setCwd(physicalPath)
-  if (process.env.NODE_ENV !== 'test') {
-    try {
-      logEvent('tengu_shell_set_cwd', {
-        success: true,
-      })
-    } catch (_error) {
-      // Ignore logging errors to prevent test failures
-    }
+  try {
+    logEvent('tengu_shell_set_cwd', {
+      success: true,
+    })
+  } catch (_error) {
+    // Un fallo de telemetría no debe impedir el cambio de directorio
   }
 }

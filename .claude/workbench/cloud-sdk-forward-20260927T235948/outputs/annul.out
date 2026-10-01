@@ -1,0 +1,39 @@
+== rejectionKind
+base	29 pass, 0 fail	—
+no-413	28 pass, 1 fail	413 > ventana de contexto o prompt largo es prompt_too_long
+no-mid-conv	23 pass, 6 fail	400 > la beta del sistema a mitad de conversación | 400 > un sistema que debe preceder | 400 > un sistema sólo de texto | 400 > un rol inesperado | 400 > cache_control en un mensaje de sistema | 400 > un rol de sistema no soportado
+no-cache-field	28 pass, 1 fail	400 > un campo cache_control desconocido
+no-thinking-signature	26 pass, 3 fail	400 > una firma de pensamiento inválida | 400 > un bloque de pensamiento modificado | 400 > la firma requerida
+no-thinking-type	27 pass, 2 fail	400 > el tipo de pensamiento no soportado | 400 > el pensamiento adaptativo no soportado
+no-effort	27 pass, 2 fail	400 > el esfuerzo no soportado | 400 > output_config sin soporte
+no-media-budget	28 pass, 1 fail	400 > demasiada multimedia
+no-media-block	25 pass, 4 fail	400 > una imagen por posición | 400 > un pdf por posición | 400 > una imagen por texto | 400 > un pdf por texto
+no-prompt-400	28 pass, 1 fail	400 > el prompt largo en un 400
+no-max-tokens	28 pass, 1 fail	400 > max_tokens sobre el contexto
+no-beta-loop	28 pass, 1 fail	400 > una beta enviada que el error nombra
+beta-without-header-word	28 pass, 1 fail	400 > una beta enviada que el error nombra
+no-ttl-exclusion	28 pass, 1 fail	400 > cache_control con ttl no es el campo
+no-tool-result-exclusion	28 pass, 1 fail	400 > cache_control en tool_result no es el campo
+no-backtick-strip	28 pass, 1 fail	400 > una firma de pensamiento inválida
+no-positioned	27 pass, 2 fail	400 > una imagen por posición | 400 > un pdf por posición
+no-prefix	28 pass, 1 fail	el mensaje del rechazo lleva su prefijo
+== sdkForward
+base	19 pass, 0 fail	—
+no-wire-model-json	18 pass, 1 fail	/v1/messages sin stream > el modelo del cable reemplaza al del upstream
+no-wire-model-sse	18 pass, 1 fail	/v1/messages con stream > reemite cada evento del SDK como SSE y el modelo del cable sólo en message_start
+no-stream	18 pass, 1 fail	/v1/messages con stream > reemite cada evento del SDK como SSE y el modelo del cable sólo en message_start
+no-bedrock-501	18 pass, 1 fail	count_tokens > Bedrock no lo admite: 501 sin llamar al SDK
+no-count-tokens	18 pass, 1 fail	count_tokens > cuenta con el SDK
+no-bedrock-body	16 pass, 3 fail	las betas en Bedrock > pasan de la cabecera al cuerpo, sin repetir | las betas en Bedrock > una cabecera sin betas no toca el cuerpo | las betas en Bedrock > el reenvío por Bedrock no envía la cabecera
+no-dedupe	18 pass, 1 fail	las betas en Bedrock > pasan de la cabecera al cuerpo, sin repetir
+no-empty-betas	18 pass, 1 fail	las betas en Bedrock > una cabecera sin betas no toca el cuerpo
+no-options-guard	17 pass, 2 fail	/v1/messages sin stream > sin cabeceras que enviar, las opciones no llevan cabeceras | las betas en Bedrock > el reenvío por Bedrock no envía la cabecera
+no-known-message	17 pass, 2 fail	errores del SDK > un 400 con un tipo conocido devuelve su mensaje | errores del SDK > el mensaje se recorta a 1000 caracteres
+no-truncate	18 pass, 1 fail	errores del SDK > el mensaje se recorta a 1000 caracteres
+no-rejection-kind	18 pass, 1 fail	errores del SDK > un 400 sin tipo conocido dice qué capacidad se rechazó
+leak-upstream-text	17 pass, 2 fail	errores del SDK > un 401 no reenvía el texto del upstream y registra el tipo de AWS | errores del SDK > un estado sin tipo propio es api_error
+no-error-details	18 pass, 1 fail	errores del SDK > un 401 no reenvía el texto del upstream y registra el tipo de AWS
+no-rethrow	18 pass, 1 fail	errores del SDK > un error que no es del SDK se propaga
+no-api-error-type	15 pass, 4 fail	/v1/messages con stream > un error a mitad del stream se vuelve un evento de error y cierra | errores del SDK > un 400 con un tipo conocido devuelve su mensaje | errores del SDK > un 400 irreconocible da el mensaje genérico | errores del SDK > un 401 no reenvía el texto del upstream y registra el tipo de AWS
+no-stream-error-event	18 pass, 1 fail	/v1/messages con stream > un error a mitad del stream se vuelve un evento de error y cierra
+no-keepalive	18 pass, 1 fail	/v1/messages con stream > un silencio largo se rellena con ping

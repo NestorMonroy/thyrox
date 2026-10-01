@@ -1,0 +1,34 @@
+  ok    el sujeto existe y es ejecutable
+  ok    sin podman en el PATH, rehusa con exit 2
+  ok    sin podman en el PATH, no imprime ninguna linea de veredicto
+  ok    el rechazo explica el motivo por stderr
+  ok    con Podman real, sale 0
+  ok    publica exactamente cuatro lineas
+  ok    capacidad 'run' trae un veredicto valido (efectivo): el contenedor corrio y salio 0
+  ok    capacidad 'pids_limit' trae un veredicto valido (efectivo): logro 15/64 procesos con --pids-limit 16
+  ok    capacidad 'memory_limit' trae un veredicto valido (efectivo): reservar 256 MiB fallo o el contenedor murio bajo --memory 64m (rc=137)
+  ok    capacidad 'cleanup' trae un veredicto valido (efectivo): sin contenedor listado y sin proceso del ayudante en el anfitrion
+  ok    aparece la capacidad 'run'
+  ok    aparece la capacidad 'pids_limit'
+  ok    aparece la capacidad 'memory_limit'
+  ok    aparece la capacidad 'cleanup'
+  ok    'run' da efectivo
+  ok    'cleanup' da efectivo
+  ok    'pids_limit' se informa (efectivo), sin forzar el valor
+  ok    'memory_limit' se informa (efectivo), sin forzar el valor
+  ok    no queda ninguna imagen de la sonda
+  ok    no queda ningun contenedor de la sonda
+
+20 casos: 20 ok, 0 fallos
+  ok    la adquisicion existe
+  ok    un binario presente cuyo info responde pasa y resuelve THYROX_TOOLCHAIN_PODMAN_BIN
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    sin opt-in no ejecuta el instalador
+  ok    el rechazo nombra THYROX_INSTALL_PODMAN=1
+  ok    el rechazo no emite conteo
+  ok    un instalador que deja un podman sano se acepta
+  ok    un instalador que miente dejando un binario que resuelve pero no arranca NO se acepta
+  ok    un binario que resuelve y responde --version pero cuyo info falla NO se acepta
+  ok    el instalador por defecto pide el paquete podman
+
+10 casos: 10 ok, 0 fallos

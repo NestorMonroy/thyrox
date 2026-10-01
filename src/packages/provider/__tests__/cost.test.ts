@@ -13,8 +13,8 @@ import {
 import { MODELS, usageCostUsd, usageEquivalentTokens } from '@thyrox/agent/models'
 import type { AgentDefinition } from '@thyrox/agent/types'
 
-// El control positivo es real: el contexto del último turno de la sesión del
-// 2026-09-02 (508 503 tokens) y las cifras que `model_catalog.py sesion` publicó.
+// El control positivo es real: el contexto del último turno de una sesión
+// medida (508 503 tokens) y las cifras que `model_catalog.py sesion` publicó.
 const CTX = 508_503
 
 describe('switchCost — cambiar de modelo reescribe el contexto', () => {

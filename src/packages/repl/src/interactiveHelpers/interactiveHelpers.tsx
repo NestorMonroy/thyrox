@@ -158,7 +158,6 @@ export async function showSetupScreens(
   devChannels?: ChannelEntry[],
 ): Promise<boolean> {
   if (
-    process.env.NODE_ENV === 'test' ||
     isEnvTruthy(false) ||
     process.env.IS_DEMO // Skip onboarding in demo mode
   ) {
@@ -220,7 +219,7 @@ export async function showSetupScreens(
 
   // ccb does not show a workspace-trust dialog: the operator owns this machine
   // and is the sole trust principal (see checkHasTrustDialogAccepted, which is
-  // unconditionally true). We still run the CLAUDE.md external-includes and
+  // unconditionally true). We still run the THYROX.md external-includes and
   // mcp.json approval flows below — those are content-level reviews, not the
   // folder-trust boundary. Skip everything in claubbit.
   if (!isEnvTruthy(process.env.CLAUBBIT)) {
@@ -298,7 +297,7 @@ export async function showSetupScreens(
 
   // Check for custom API key
   // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
-  // processes but ignored by Claude Code itself (see auth.ts).
+  // processes but ignored by thyrox itself (see auth.ts).
   if (process.env.ANTHROPIC_API_KEY && !isRunningOnHomespace()) {
     const customApiKeyTruncated = normalizeApiKeyForConfig(
       process.env.ANTHROPIC_API_KEY,
@@ -410,7 +409,7 @@ export async function showSetupScreens(
     }
   }
 
-  // Show Chrome onboarding for first-time Claude in Chrome users
+  // Show Chrome onboarding for first-time thyrox in Chrome users
   if (
     claudeInChrome &&
     !getGlobalConfig().hasCompletedClaudeInChromeOnboarding
@@ -447,7 +446,7 @@ export function getRenderContext(exitOnCtrlC: boolean): {
   // offline analysis by bench/repl-scroll.ts. Captures the full TUI
   // render pipeline (yoga → screen buffer → diff → optimize → stdout)
   // so perf work on any phase can be validated against real user flows.
-  const frameTimingLogPath = process.env.CLAUDE_CODE_FRAME_TIMING_LOG
+  const frameTimingLogPath = process.env.THYROX_CODE_FRAME_TIMING_LOG
   return {
     getFpsMetrics: () => fpsTracker.getMetrics(),
     stats,

@@ -1,0 +1,32 @@
+F...
+======================================================================
+FAIL: test_arbol_real_sin_claves_sin_declarar (__main__.EnvContractKeysGate.test_arbol_real_sin_claves_sin_declarar)
+El positivo: el árbol tal como está pasa en estricto.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_env_contract_keys.py", line 39, in test_arbol_real_sin_claves_sin_declarar
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : claves leidas del entorno: 94 | declaradas: 84 | sin declarar: 14
+  SIN DECLARAR  THYROX_INSTALL_HUNSPELL  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_INSTALL_POPPLER  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_INSTALL_TEXLIVE  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_HUNSPELL_BIN  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_HUNSPELL_PROBE_ACCEPT  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_HUNSPELL_PROBE_REJECT  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_PDFTOPPM_BIN  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_TEXLIVE_PACKAGES  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE  <- src/lib/toolchain.sh
+  SIN DECLARAR  THYROX_TOOLCHAIN_XELATEX_BIN  <- src/lib/toolchain.sh
+
+Cada una es una obligacion que el consumidor no puede conocer. Declararla en .env.example con el comentario que la explique.
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 24.754s
+
+FAILED (failures=1)
+EXIT=1

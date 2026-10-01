@@ -1,0 +1,84 @@
+**Política de ingestión por dominio (enmienda 1.4.0).** Corrige la 1.3.0, que
+declaraba fuente de ingestión el contenido de ``.thyrox/runtime/`` (los
+transcripts y los informes de cada ítem del pool) y el diff de cada worktree.
+Decisión del ejecutor, 2026-09-30: **lo que entra al corpus lo define un
+dominio, no un directorio**. Que algo exista en un worktree o en el runtime no
+lo hace ingerible, y cambiar «guardar todos los worktrees» por «meter todos los
+worktrees en PostgreSQL» sería otro problema.
+
+Los primeros dominios son **findings** y **errors**. Para cada uno, D5 fija
+los tipos de fuente aceptados, la identidad estable del documento, el scope,
+la revisión de la fuente, el hash, el chunking, el espacio de embeddings, la
+retención, la reingesta y el re-embedding.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Dominio
+     - Fuente autoritativa actual
+     - Fuente legada o de recuperación
+   * - findings
+     - los ``.rst`` de ``kaupamex-docs`` y el dominio de findings
+       (``@thyrox/finding``)
+     - un documento de ese dominio encontrado en ``.claude/worktrees/`` u otro
+       worktree conservado
+   * - errors
+     - el dominio de errores de ``@thyrox/local-observability``
+     - logs o worktrees, sólo si cumplen el contrato de documento de error
+
+Una fuente legada se **recorre y se reconoce**: se buscan en ella los tipos de
+documento que un dominio acepta, y sólo esos se ingieren. ``node_modules``,
+``dist``, ``.git`` y el ruido de ejecución no entran nunca. ``.thyrox/runtime/``
+es ejecución y no es corpus por defecto; las refs de snapshot son recuperación,
+tampoco corpus.
+
+**Dos invariantes de D5.**
+
+- **D5-I1.** Una fuente ingerida con éxito ⇒ la recuperación no depende de su
+  filesystem.
+- **D5-I2.** Un chunk persistido ⇒ se puede re-embeber sin reabrir la fuente
+  original.
+
+El documento guarda ``source_ref`` y ``source_revision`` para trazar, depurar y
+reconciliar; ninguno es almacenamiento del que dependa la búsqueda.
+
+**Un directorio legado se vuelve desechable después de demostrarlo, no
+antes.** Algunos worktrees pueden guardar la única copia de un contenido que el
+corpus todavía no tiene. Antes de limpiar, mover, consolidar o ignorar un
+directorio legado:
+
+.. code-block:: text
+
+   inventario del directorio
+   → reconocer los documentos de los dominios aceptados
+   → comprobar cuáles ya están ingeridos (identidad + hash + versión)
+   → ingerir los que falten
+   → verificar identidad, chunks, hash, procedencia y éxito de la ingesta
+   → verificar que ningún analysis_run cite algo que sólo exista allí
+   → sólo entonces el directorio es desechable
+
+**Dos retenciones distintas.** La de la fuente operativa (worktree, directorio
+del contenedor, checkout local): se elimina cuando termina su cierre o su
+recuperación y su contenido semántico requerido ya está ingerido. La del
+corpus: una versión citada por un ``analysis_run`` y la ingesta canónica
+vigente se retienen; una versión reemplazada y nunca citada es candidata a
+recolección; un embedding de un modelo obsoleto se regenera o se recolecta
+según la política de su espacio.
+
+**Durable respecto a qué.** El proceso o contenedor de PostgreSQL es
+desechable; sus datos no. Sobrevivir a ``rm`` del contenedor lo cubre un
+volumen persistente de la máquina. Sobrevivir a que desaparezca la sesión o la
+VM entera exige que la autoridad PostgreSQL viva fuera de ese ciclo de vida:
+es D4-B (TASK-THYROX-0627). Son dos requisitos distintos, y un volumen local a
+una VM efímera sólo cumple el primero.
+
+Implementación: la ingestión es **TASK-THYROX-0684**, que depende de
+TASK-THYROX-0682. La política de hogar de ``.claude/worktrees/`` es
+**TASK-THYROX-0683**, y empieza por la migración de contenido de arriba.
+
+**D5, repartida.** Unidad durable, metadata de identidad y revisión, detección
+por hash, reindexado por espacio, persistencia de análisis, los dos primeros
+dominios y sus invariantes quedan decididos arriba. Siguen abiertas, y son del
+ejecutor: **qué otros dominios**, **el scope de cada uno** y **la retención del
+contenido privado o temporal**. Hasta decidirlas, nada fuera de findings y
+errors se ingiere, y nada se borra por caducidad.

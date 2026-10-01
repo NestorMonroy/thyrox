@@ -1,0 +1,6 @@
+asentado: storage-full -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     storage-full exit=0
+       | EXIT=1
+       | __BG_EXIT__=0
+       memoria pico: 256036 KB (250 MB) · pared 7.63s

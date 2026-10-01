@@ -1,0 +1,3 @@
+[accounts] Failed to decrypt apiKey for "openai" (connection 70913bb3-fdff-41e6-b0cd-1d4aeff549dd). Re-authenticate this account, or check that THYROX_STORAGE_ENCRYPTION_KEY is the key it was stored with.
+FAIL main: Connection main has no API key configured.
+exit=1

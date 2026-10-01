@@ -1,0 +1,4 @@
+==== S5: 1 definicion(es) de nivel superior
+---- chunk-tsex6vh0.js function S5 [167933,168090)
+function S5({startedAt:e,common:r,variant:s}){let n={type:"result",duration_ms:Math.max(0,Math.round(performance.now()-e)),uuid:WH()};return{...r,...s,...n}}
+symbol: 1 de 1 nombre(s) resueltos

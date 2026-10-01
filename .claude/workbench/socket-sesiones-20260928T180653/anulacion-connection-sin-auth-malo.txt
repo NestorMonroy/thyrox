@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+165 |   test('un token equivocado cierra la conexión y la caída se reporta una sola vez', async () => {
+166 |     expect((await exchange([authFrameLine('0'.repeat(32)), line({ type: 'user' })], { waitMs: 400 })).closedByServer).toBe(true)
+167 |     await exchange([authFrameLine('1'.repeat(32))], { waitMs: 400 })
+168 |     expect(routed).toEqual([])
+169 |     expect(events).toEqual([['bad', 'cross_session_inbox_auth', 'unauthed_drop']])
+170 |     expect(warnings).toContain('[uds-messaging] Dropped a bad auth frame from a connection that did not authenticate; closing it')
+                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "[uds-messaging] Dropped a bad auth frame from a connection that did not authenticate; closing it"
+Received: [
+  "[uds-messaging] Dropped a 'user' line from a connection that did not authenticate; closing it"
+]
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:170:22)
+(fail) con autenticación exigida > un token equivocado cierra la conexión y la caída se reporta una sola vez [3.54ms]
+
+ 16 pass
+ 1 fail
+ 29 expect() calls
+Ran 17 tests across 1 file. [539.00ms]

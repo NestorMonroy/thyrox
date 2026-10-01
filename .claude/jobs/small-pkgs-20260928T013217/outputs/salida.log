@@ -1,0 +1,13 @@
+== storage
+ 1192 pass
+ 0 fail
+== local-observability
+ 235 pass
+ 0 fail
+== shell
+ 290 pass
+ 0 fail
+== bridge
+ 150 pass
+ 0 fail
+__BG_EXIT__=0

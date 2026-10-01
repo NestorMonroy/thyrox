@@ -39,8 +39,11 @@ TEST_MARKERS = ("__tests__", "/tests/", "test_", ".test.", "-test.")
 #: --identifiers` excluye `eventos/` y `tools/` «por ser evidencia y corpus
 #: vendorizado». Medido al añadirlo: la unica clave que caia por esta via era
 #: `THYROX_BOARD_DIR`, leida solo por la sonda de un volcado de tablero.
+#: `.thyrox/` es estado de ejecución, ignorado por git: los worktrees de
+#: headless-pool llevan el código a medio escribir de un ítem en curso, y una
+#: clave que sólo lee ese código aún no es obligación del árbol.
 SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/",
-             "/.claude/workbench/", "/.claude/eventos/")
+             "/.claude/workbench/", "/.claude/eventos/", "/.thyrox/")
 
 #: Segunda via: el nombre vive en una CONSTANTE y se pasa a `env_value(name)`.
 #: Un nombre que TERMINA en `_` no es una clave: es el PREFIJO de una familia
@@ -108,11 +111,43 @@ def declared_keys(env_example: pathlib.Path) -> set[str]:
     return keys
 
 
-def read_keys(root: pathlib.Path) -> dict[str, list[str]]:
-    """Las claves leidas del entorno, con el primer archivo que las lee."""
+def is_skipped(path: str) -> bool:
+    """Una ruta dentro de un directorio excluido (`SKIP_DIRS` lleva `/` a ambos lados)."""
+    return any(skip in path for skip in SKIP_DIRS)
+
+
+def tree_files(root: pathlib.Path) -> list[pathlib.Path]:
+    """Todo el árbol: la medición completa.
+
+    Los directorios excluidos se podan ANTES de descender: recorrerlos para
+    descartar después sus archivos visitaba `node_modules` y `_references`
+    enteros en cada medición completa.
+    """
+    files: list[pathlib.Path] = []
+    for directory, subdirectories, names in os.walk(root):
+        subdirectories[:] = [name for name in subdirectories
+                             if not is_skipped(os.path.join(directory, name) + "/")]
+        files.extend(pathlib.Path(directory, name) for name in names)
+    return sorted(path for path in files if path.is_file() and not is_skipped(str(path)))
+
+
+def display_path(path: pathlib.Path, root: pathlib.Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def read_keys(root: pathlib.Path, paths: list[pathlib.Path] | None = None) -> dict[str, list[str]]:
+    """Las claves leidas del entorno, con el primer archivo que las lee.
+
+    Sin `paths` recorre el árbol entero; con `paths` mide sólo esos archivos,
+    que es lo que el pre-commit necesita: los del commit, no los 60 000 del
+    árbol.
+    """
     by_key: dict[str, list[str]] = {}
-    for path in sorted(root.rglob("*")):
-        if not path.is_file() or any(skip in str(path) for skip in SKIP_DIRS):
+    for path in (tree_files(root) if paths is None else sorted(paths)):
+        if not path.is_file():
             continue
         if is_test(path):
             continue
@@ -129,11 +164,16 @@ def read_keys(root: pathlib.Path) -> dict[str, list[str]]:
             source = path.read_text(errors="ignore")
         except OSError:
             continue
+        # Los tres lectores sólo devuelven nombres con el prefijo, tomados de
+        # literales del propio archivo: sin el prefijo en el texto no hay
+        # clave posible, y el análisis sintáctico se omite.
+        if PREFIX not in source:
+            continue
         keys = reader(source)
         if suffix != ".sh":
             keys = keys | set(NAME_CONSTANT.findall(source))
         for key in keys:
-            by_key.setdefault(key, []).append(str(path.relative_to(root)))
+            by_key.setdefault(key, []).append(display_path(path, root))
     return by_key
 
 
@@ -142,6 +182,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=os.environ.get("THYROX_ROOT", "."))
     parser.add_argument("--env-example", default=None)
     parser.add_argument("--strict", action="store_true", help="exit 1 si falta alguna")
+    parser.add_argument("--files", nargs="+", default=None,
+                        help="mide sólo estos archivos en vez del árbol entero")
     args = parser.parse_args(argv)
 
     root = pathlib.Path(args.root).resolve()
@@ -151,7 +193,8 @@ def main(argv: list[str] | None = None) -> int:
               f"no distinguiria «no falta ninguna» de «no pude medir».", file=sys.stderr)
         return 2
 
-    by_key = read_keys(root)
+    paths = [pathlib.Path(name) for name in args.files] if args.files else None
+    by_key = read_keys(root, paths)
     declared = declared_keys(env_example)
     missing = sorted(key for key in by_key if key not in declared)
 

@@ -1,0 +1,23 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs0645b/job-20260930T120630
+  job-20260930T120630/job-001 timeout 900 bash tests/session/test-item-worktree-links.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-links.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-links.log
+  job-20260930T120630/job-002 timeout 1200 bash tests/session/test-headless-pool-worktree.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-worktree.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-worktree.log
+  job-20260930T120630/job-003 timeout 1200 bash tests/session/test-headless-pool-lifecycle.sh > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-lifecycle.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0645b-lifecycle.log
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1769s)
+asentado: job-20260930T120630_job-001 -> OK (2 de 4)
+asentado: job-20260930T120630_job-002 -> OK (3 de 4)
+asentado: job-20260930T120630_job-003 -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260930T120630
+       | (vacío — no emitió nada)
+OK     job-20260930T120630_job-001 exit=0
+       | EXIT=0
+       memoria pico: 27428 KB (27 MB) · pared 0.81s
+OK     job-20260930T120630_job-002 exit=0
+       | EXIT=0
+       memoria pico: 27612 KB (27 MB) · pared 18.90s
+OK     job-20260930T120630_job-003 exit=0
+       | EXIT=0
+       memoria pico: 27880 KB (27 MB) · pared 30.68s
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0
+__BG_EXIT__=5

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash tests/session/test-item-worktree-location.sh", "started_at": "2026-09-30T06:17:21+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-30T06:18:19+00:00", "duration_seconds": 58.405775}

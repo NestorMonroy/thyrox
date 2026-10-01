@@ -26,7 +26,7 @@
 # la redireccion de la EJECUCION y no la del preload — el mismo verde con y sin
 # `bunfig.toml`. Se aisla el sujeto, no se confia en el entorno del llamador.
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 RAIZ="$PWD"
 
 SUJETO="src/packages/cli/__tests__/impactCli.test.ts"

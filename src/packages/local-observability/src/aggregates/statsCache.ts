@@ -4,7 +4,7 @@ import { open } from 'fs/promises'
 import { join } from 'path'
 import type { ModelUsage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import { logForDebugging } from '../debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { errorMessage } from '../errorHelpers.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { logError } from '../log.js'
@@ -75,7 +75,7 @@ export type PersistedStatsCache = {
 }
 
 function getStatsCachePath(): string {
-  return join(getClaudeConfigHomeDir(), STATS_CACHE_FILENAME)
+  return join(getConfigHomeDir(), STATS_CACHE_FILENAME)
 }
 
 function getEmptyCache(): PersistedStatsCache {
@@ -220,7 +220,7 @@ export async function saveStatsCache(
 
   try {
     // Ensure the directory exists
-    const configDir = getClaudeConfigHomeDir()
+    const configDir = getConfigHomeDir()
     try {
       await fs.mkdir(configDir)
     } catch {

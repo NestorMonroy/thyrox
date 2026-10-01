@@ -1,0 +1,16 @@
+121 |         const cut = calls === 1
+122 |         const body = new ReadableStream<Uint8Array>({
+123 |           start(controller) {
+124 |             if (cut) {
+125 |               controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+126 |               controller.error(new Error('cortado'))
+                                         ^
+error: cortado
+      at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:126:36)
+      at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:122:22)
+
+ 1681 pass
+ 0 fail
+ 2489 expect() calls
+Ran 1681 tests across 38 files. [1432.00ms]
+__BG_EXIT__=0

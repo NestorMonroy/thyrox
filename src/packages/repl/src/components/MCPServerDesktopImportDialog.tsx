@@ -11,6 +11,7 @@ import type {
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { SelectMulti } from './CustomSelect/SelectMulti.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   servers: Record<string, McpServerConfig>
@@ -87,8 +88,8 @@ export function MCPServerDesktopImportDialog({
   return (
     <>
       <Dialog
-        title="Import MCP Servers from Claude Desktop"
-        subtitle={`Found ${serverNames.length} MCP ${plural(serverNames.length, 'server')} in Claude Desktop.`}
+        title={`Import MCP Servers from ${PRODUCT_NAME} Desktop`}
+        subtitle={`Found ${serverNames.length} MCP ${plural(serverNames.length, 'server')} in ${PRODUCT_NAME} Desktop.`}
         color="success"
         onCancel={handleEscCancel}
         hideInputGuide

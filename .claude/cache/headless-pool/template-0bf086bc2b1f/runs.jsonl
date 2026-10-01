@@ -1,0 +1,1 @@
+{"items_measured": 1, "max_wall_s": 1491.52, "min_wall_s": 1491.52, "peak_kb": 333276, "median_kb": 333276, "p90_kb": 333276, "recorded_at": "2026-09-29T08:27:00Z", "template_digest": "56475c2093387ec7b4ecb2172f5a4f595bd4a6134884629483e9d0178cc0e048", "runner": "/home/user/thyrox/bin/cli", "item_model": "claude-sonnet-5", "items_gpu_measured": 0}

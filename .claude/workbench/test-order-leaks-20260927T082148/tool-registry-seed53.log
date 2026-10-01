@@ -1,0 +1,234 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/packages/tool-registry/src/__tests__/ripgrep.test.ts:
+281 |     const count = await countFilesRoundedRg(
+282 |       join(root, 'count-fixture'),
+283 |       new AbortController().signal,
+284 |       ['zzz-no-such-pattern-16'],
+285 |     )
+286 |     expect(count).toBe(10)
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: 10
+Received: 20
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:286:19)
+(fail) countFilesRoundedRg — conteo memoizado redondeado a potencia de 10 > 16. cuenta y redondea el número de archivos del fixture (12 → 10) [6.01ms]
+
+src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:
+77 | 
+78 |   test('3. tras vaciar el antirrebote, el uso siguiente sí incrementa', () => {
+79 |     recordSkillUsage('rec-tras-vaciar')
+80 |     _test_resetSkillUsageDebounce()
+81 |     recordSkillUsage('rec-tras-vaciar')
+82 |     expect(getGlobalConfig().skillUsage?.['rec-tras-vaciar']?.usageCount).toBe(2)
+                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:82:75)
+(fail) recordSkillUsage — la cuenta y su antirrebote > 3. tras vaciar el antirrebote, el uso siguiente sí incrementa [0.49ms]
+83 |   })
+84 | 
+85 |   test('4. el antirrebote es POR skill, no global', () => {
+86 |     recordSkillUsage('rec-uno')
+87 |     recordSkillUsage('rec-otro')
+88 |     expect(getGlobalConfig().skillUsage?.['rec-uno']?.usageCount).toBe(1)
+                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:88:67)
+(fail) recordSkillUsage — la cuenta y su antirrebote > 4. el antirrebote es POR skill, no global [0.16ms]
+70 | 
+71 |   test('2. un segundo uso inmediato NO incrementa: lo para el antirrebote', () => {
+72 |     recordSkillUsage('rec-rebote')
+73 |     recordSkillUsage('rec-rebote')
+74 |     recordSkillUsage('rec-rebote')
+75 |     expect(getGlobalConfig().skillUsage?.['rec-rebote']?.usageCount).toBe(1)
+                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:75:70)
+(fail) recordSkillUsage — la cuenta y su antirrebote > 2. un segundo uso inmediato NO incrementa: lo para el antirrebote [0.10ms]
+91 | 
+92 |   test('5. registrar uno no borra los demás', () => {
+93 |     recordSkillUsage('rec-vecino-a')
+94 |     _test_resetSkillUsageDebounce()
+95 |     recordSkillUsage('rec-vecino-b')
+96 |     expect(getGlobalConfig().skillUsage?.['rec-vecino-a']).toBeDefined()
+                                                                ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:96:60)
+(fail) recordSkillUsage — la cuenta y su antirrebote > 5. registrar uno no borra los demás [0.07ms]
+62 | 
+63 | describe('recordSkillUsage — la cuenta y su antirrebote', () => {
+64 |   test('1. el primer uso siembra la entrada con cuenta 1', () => {
+65 |     recordSkillUsage('rec-primero')
+66 |     const usage = getGlobalConfig().skillUsage?.['rec-primero']
+67 |     expect(usage?.usageCount).toBe(1)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:67:31)
+(fail) recordSkillUsage — la cuenta y su antirrebote > 1. el primer uso siembra la entrada con cuenta 1 [0.07ms]
+108 |     expect(getSkillUsageScore('score-hoy')).toBeCloseTo(10, 5)
+109 |   })
+110 | 
+111 |   test('8. a los siete días vale la mitad: ésa es la semivida', () => {
+112 |     seedUsage('score-semivida', 8, 7)
+113 |     expect(getSkillUsageScore('score-semivida')).toBeCloseTo(4, 3)
+                                                       ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 4
+Received: 0
+
+Expected precision: 3
+Expected difference: < 0.0005
+Received difference: 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:113:50)
+(fail) getSkillUsageScore — frecuencia cruzada con recencia > 8. a los siete días vale la mitad: ésa es la semivida [0.15ms]
+126 |   })
+127 | 
+128 |   test('11. con la misma antigüedad, ordena por cuenta', () => {
+129 |     seedUsage('score-mucho', 20, 3)
+130 |     seedUsage('score-poco', 2, 3)
+131 |     expect(getSkillUsageScore('score-mucho')).toBeGreaterThan(
+                                                    ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:131:47)
+(fail) getSkillUsageScore — frecuencia cruzada con recencia > 11. con la misma antigüedad, ordena por cuenta [0.06ms]
+113 |     expect(getSkillUsageScore('score-semivida')).toBeCloseTo(4, 3)
+114 |   })
+115 | 
+116 |   test('9. a los catorce días vale un cuarto', () => {
+117 |     seedUsage('score-dos-semividas', 8, 14)
+118 |     expect(getSkillUsageScore('score-dos-semividas')).toBeCloseTo(2, 3)
+                                                            ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 2
+Received: 0
+
+Expected precision: 3
+Expected difference: < 0.0005
+Received difference: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:118:55)
+(fail) getSkillUsageScore — frecuencia cruzada con recencia > 9. a los catorce días vale un cuarto [0.05ms]
+103 |     expect(getSkillUsageScore('score-nunca-usado')).toBe(0)
+104 |   })
+105 | 
+106 |   test('7. un uso de hoy vale prácticamente su cuenta entera', () => {
+107 |     seedUsage('score-hoy', 10, 0)
+108 |     expect(getSkillUsageScore('score-hoy')).toBeCloseTo(10, 5)
+                                                  ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 10
+Received: 0
+
+Expected precision: 5
+Expected difference: < 0.000005
+Received difference: 10
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:108:45)
+(fail) getSkillUsageScore — frecuencia cruzada con recencia > 7. un uso de hoy vale prácticamente su cuenta entera [0.04ms]
+120 | 
+121 |   test('10. el suelo impide que un skill muy usado desaparezca', () => {
+122 |     // Con un año de antigüedad el decaimiento crudo daría ~1e-16: sin suelo,
+123 |     // cien usos y cero usos serían indistinguibles en el orden.
+124 |     seedUsage('score-viejo-pero-usado', 100, 365)
+125 |     expect(getSkillUsageScore('score-viejo-pero-usado')).toBeCloseTo(10, 5)
+                                                               ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 10
+Received: 0
+
+Expected precision: 5
+Expected difference: < 0.000005
+Received difference: 10
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:125:58)
+(fail) getSkillUsageScore — frecuencia cruzada con recencia > 10. el suelo impide que un skill muy usado desaparezca [0.12ms]
+134 |   })
+135 | 
+136 |   test('12. con la misma cuenta, ordena por recencia', () => {
+137 |     seedUsage('score-reciente', 5, 1)
+138 |     seedUsage('score-antiguo', 5, 20)
+139 |     expect(getSkillUsageScore('score-reciente')).toBeGreaterThan(
+                                                       ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts:139:50)
+(fail) getSkillUsageScore — frecuencia cruzada con recencia > 12. con la misma cuenta, ordena por recencia [0.06ms]
+
+src/packages/tool-registry/src/__tests__/pdf.test.ts:
+155 |     //
+156 |     // Este caso es el único que usa el `execFileNoThrow` REAL, y por eso va
+157 |     // antes que los que lo sustituyen: la sustitución no se puede deshacer
+158 |     // (ver la nota de la cabecera), así que su orden no es cosmético.
+159 |     const { getPDFPageCount } = await import('../pdf.ts')
+160 |     expect(await getPDFPageCount(writePdf('x.pdf'))).toBeNull()
+                                                           ^
+error: expect(received).toBeNull()
+
+Received: 42
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/pdf.test.ts:160:54)
+(fail) getPDFPageCount — el conteo, y su ausencia > 7. sin pdfinfo devuelve null en vez de lanzar [0.56ms]
+
+ --seed=53
+ 1405 pass
+ 13 fail
+ 3215 expect() calls
+Ran 1418 tests across 85 files. [7.89s]
+EXIT=1
+EXIT=0

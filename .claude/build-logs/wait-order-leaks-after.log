@@ -1,0 +1,35 @@
+asentado: job-20260927T083114_job-001 -> OK (1 de 3)
+asentado: job-20260927T083114_job-002 -> OK (2 de 3)
+esperando: 2 de 3 asentados, 31s; vivos: order-leaks-after
+sonda order-leaks-after: 20821 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 20827 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 20828 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.03s
+sonda order-leaks-after: 22984 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 22988 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 22990 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 22991 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=4.76s
+sonda order-leaks-after: 23017 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 23022 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 23023 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks-after: 23024 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=3.64s
+sonda order-leaks-after: 23036 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.02s
+sonda order-leaks-after: 23349 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+asentado: order-leaks-after -> OK (3 de 3)
+== 3 trabajos asentados ==
+OK     job-20260927T083114_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T083114_job-002
+       | (vacío — no emitió nada)
+OK     order-leaks-after exit=0
+       | OK     job-20260927T083114_job-010 exit=0
+       |        | EXIT=0
+       |        memoria pico: 256232 KB (250 MB) · pared 7.44s
+       | OK     job-20260927T083114_job-011 exit=0
+       |        | EXIT=0
+       |        memoria pico: 254064 KB (248 MB) · pared 7.54s
+       | OK     job-20260927T083114_job-012 exit=0
+       |        | EXIT=0
+       |        memoria pico: 255400 KB (249 MB) · pared 7.65s
+       | __BG_EXIT__=0
+       memoria pico: 285832 KB (279 MB) · pared 40.97s
+EXIT=0

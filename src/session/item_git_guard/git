@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Envoltorio de `git` para un item de headless-pool --isolation worktree:
+# rehusa cualquier forma de `git stash` (TASK-THYROX-0604).
+#
+# `refs/stash` es COMPARTIDO entre todos los worktrees del repositorio —git
+# sólo separa por worktree `refs/bisect`, `refs/worktree` y
+# `refs/rewritten`—, así que un stash del item cae en la pila del árbol
+# principal y, si `finalize` exporta con `git add -A`, el trabajo del item
+# queda fuera de su parche y su veredicto dice `sin-cambios` en silencio
+# (H-THYROX-275). El contrato del pool es: un item no toca `refs/stash`, en
+# ninguna forma.
+#
+# `headless-pool.sh` antepone el directorio de este archivo al PATH del item
+# bajo `--isolation worktree` y exporta THYROX_POOL_STASH_ATTEMPTS_FILE con la
+# ruta donde se registra cada intento rehusado; `item_worktree.sh finalize`
+# lee ese archivo para dar el veredicto `con-stash`.
+set -uo pipefail
+
+self_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Resuelve el git real quitando este directorio del PATH, para no invocarse
+# a sí mismo.
+IFS=: read -ra path_parts <<< "$PATH"
+real_path=""
+for part in "${path_parts[@]}"; do
+    [[ "$part" == "$self_dir" ]] && continue
+    real_path="${real_path:+$real_path:}$part"
+done
+real_git="$(PATH="$real_path" command -v git)" || {
+    echo "item_git_guard: no se encontró el git real en el PATH" >&2
+    exit 127
+}
+
+# Salta las opciones globales para llegar al subcomando. Las que llevan valor
+# como argumento propio consumen dos posiciones: -C, -c y las largas que git
+# acepta también separadas (--git-dir, --work-tree, --namespace,
+# --config-env); en la forma --clave=valor, y las que no llevan valor,
+# consumen una. Sin esto, `git --git-dir /r stash` tomaba la ruta por el
+# subcomando y el stash pasaba.
+args=("$@")
+subcommand=""
+i=0
+while [[ $i -lt ${#args[@]} ]]; do
+    arg="${args[$i]}"
+    case "$arg" in
+        -C|-c|--git-dir|--work-tree|--namespace|--config-env) i=$((i + 2)) ;;
+        --git-dir=*|--work-tree=*|--no-pager) i=$((i + 1)) ;;
+        -*) i=$((i + 1)) ;;
+        *) subcommand="$arg"; break ;;
+    esac
+done
+
+# `list` y `show` sólo leen la pila: no la mutan y no sacan nada del working
+# tree. `item_worktree.sh` usa `git stash list` para su línea base, así que
+# rehusarlos marcaba con-stash a todo ítem que ejecutara las pruebas del pool.
+# Cualquier otra forma —incluido `git stash` a secas, que es `push`— escribe
+# refs/stash o el working tree desde ella, y se rehúsa.
+stash_action="${args[$((i + 1))]:-}"
+is_read_only_stash() {
+    [[ "$stash_action" == list || "$stash_action" == show ]]
+}
+
+# Sólo cuenta el stash que cae en el `refs/stash` del repositorio del ítem:
+# el que comparte su directorio común. El pool lo declara en
+# THYROX_POOL_GUARDED_GIT_COMMON_DIR; un stash en otro repositorio —una suite
+# que stashea en su propio repositorio temporal— no toca esa pila y pasa
+# (TASK-THYROX-0647). Sin declararlo, o si el destino no se puede resolver,
+# todo stash cuenta: es el lado seguro.
+targets_guarded_repository() {
+    local guarded="${THYROX_POOL_GUARDED_GIT_COMMON_DIR:-}" common
+    [[ -n "$guarded" ]] || return 0
+    common="$("$real_git" "${args[@]:0:i}" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || return 0
+    [[ "$(realpath -m "$common")" == "$(realpath -m "$guarded")" ]]
+}
+
+if [[ "$subcommand" == stash ]] && ! is_read_only_stash && targets_guarded_repository; then
+    printf 'item_git_guard: REHÚSA — el pool exige dejar los cambios en el working tree, no en refs/stash: git %s\n' \
+        "${args[*]}" >&2
+    if [[ -n "${THYROX_POOL_STASH_ATTEMPTS_FILE:-}" ]]; then
+        mkdir -p "$(dirname "$THYROX_POOL_STASH_ATTEMPTS_FILE")" 2>/dev/null
+        printf 'git %s\n' "${args[*]}" >> "$THYROX_POOL_STASH_ATTEMPTS_FILE"
+    fi
+    exit 2
+fi
+
+exec "$real_git" "${args[@]}"

@@ -1,0 +1,36 @@
+**Identidad y versión son dos cosas (enmienda 1.5.0).** Que la identidad no
+incluya la ruta local no significa que sea el hash del contenido.
+
+.. code-block:: text
+
+   identidad del documento  = dominio + identificador estable del dominio
+   versión del documento    = hash del contenido canónico
+
+   ruta local del clon   ≠ identidad
+   hash del contenido    ≠ identidad
+
+Ejemplo: ``finding / H-THYROX-293`` es la misma identidad en cualquier clon,
+esté el ``.rst`` en ``/home/a/kaupamex-docs/…`` o en ``/work/kaupamex-docs/…``,
+y su hash dice qué versión es. Dos documentos distintos con texto idéntico
+(``H-THYROX-100`` y ``H-THYROX-200``) son dos identidades aunque sus hashes
+coincidan. ``source_ref`` y ``source_revision`` siguen siendo procedencia.
+
+**«Desechable» es una prueba positiva, no la ausencia de pendientes.** El
+veredicto de TASK-THYROX-0684 sobre un directorio legado sólo es
+``DISPOSABLE`` si se cumplen todas:
+
+- todo documento relevante reconocido está representado en el corpus;
+- sus chunks y su texto están persistidos;
+- su identidad, su hash y su versión están verificados contra el corpus;
+- ningún ``analysis_run`` depende de algo que sólo exista en el directorio;
+- no hay ingesta pendiente ni fallida.
+
+Un material que la herramienta no puede clasificar con seguridad, o que parece
+relevante y no pertenece a un dominio aceptado, deja el veredicto en
+``NOT_PROVEN``, nunca en ``DISPOSABLE``. No detectar nada no prueba que se
+pueda borrar; probar que se preservó sí. El veredicto se puede volver a
+calcular y da lo mismo con el mismo corpus y el mismo directorio, para que
+TASK-THYROX-0683 (y cualquier limpieza) dependa de él y no de una lectura
+humana.
+
+**Dos retenciones distintas.** La de la fuente operativa (worktree, directorio

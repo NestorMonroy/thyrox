@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790794542.137	   202.207	0	0	0	0	_headless_item 1 'item1 — TASK-THYROX-0668, una espera desprendida con & o disown se señala. Fuente de verdad: /home/user/thyrox/.claude/workbench/detached-wait-gate-20260930T185256/source.md. Te pertenecen src/hooks/detect_foreground_long_command.py y tests/hooks/test_detect_foreground_long_command.py.'

@@ -47,33 +47,37 @@
  * (`provider/authAlias.js`), `isUltrathinkEnabled` (`provider/thinking.js`)
  * y la resolución `ant`, ninguna disponible aquí, y ningún caso de
  * `effortNativeVsProxy.test.ts` la ejercita: los dos casos que tocan
- * `resolveAppliedEffort` fijan `CLAUDE_CODE_EFFORT_LEVEL`, así que el `??`
+ * `resolveAppliedEffort` fijan `THYROX_CODE_EFFORT_LEVEL`, así que el `??`
  * de la cadena corta antes de llegar a ese eslabón. Se sustituye por
  * `undefined` — el mismo valor que "no hay default para este modelo".
  *
- * NO confundir con `EFFORT_LEVELS` de `./schema.ts`: ése es el enum de 5
- * niveles (sin `none`) que valida el campo `effort:` del frontmatter de un
- * agente — otro dominio, otra fuente de verdad. Éste es el de 6 niveles que
- * gobierna la resolución de esfuerzo de la sesión/modelo.
+ * El vocabulario (`EFFORT_LEVELS`, `NAMED_EFFORT_LEVELS`) se declara en la
+ * hoja `./effortLevels.ts`; este módulo lo re-exporta.
  */
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { isProSubscriber } from '@thyrox/provider/authAlias.js'
 import { canonicalModelName, MODELS } from './models.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
-export const EFFORT_LEVELS = [
-  'none',
-  'low',
-  'medium',
-  'high',
-  'xhigh',
-  'max',
-] as const
+import { EFFORT_LEVELS, type EffortLevel } from './effortLevels.ts'
 
-export type EffortLevel = (typeof EFFORT_LEVELS)[number]
+export { EFFORT_LEVELS, NAMED_EFFORT_LEVELS } from './effortLevels.ts'
+export type { EffortLevel, NamedEffortLevel } from './effortLevels.ts'
 export type EffortValue = EffortLevel | number
 
 export function isEffortLevel(value: string): value is EffortLevel {
   return (EFFORT_LEVELS as readonly string[]).includes(value)
+}
+
+/** Los sinónimos que otros clientes usan para un nivel: `extra` es el `xhigh` de OmniRoute. */
+const EFFORT_SYNONYMS: Record<string, EffortLevel> = { extra: 'xhigh' }
+
+/** El nivel de esfuerzo que nombra `value`, sin distinguir mayúsculas, o `undefined`. */
+export function normalizeReasoningEffort(value: unknown): EffortLevel | undefined {
+  if (typeof value !== 'string') return undefined
+  const lowered = value.trim().toLowerCase()
+  if (!lowered) return undefined
+  return EFFORT_SYNONYMS[lowered] ?? (isEffortLevel(lowered) ? lowered : undefined)
 }
 
 export function isValidNumericEffort(value: number): boolean {
@@ -156,11 +160,11 @@ export type ApiProvider =
  * entorno se conserva verbatim.
  */
 export function getAPIProvider(): ApiProvider {
-  if (process.env.CLAUDE_CODE_USE_BEDROCK) return 'bedrock'
-  if (process.env.CLAUDE_CODE_USE_FOUNDRY) return 'foundry'
-  if (process.env.CLAUDE_CODE_USE_VERTEX) return 'vertex'
-  if (process.env.CLAUDE_CODE_USE_OPENAI) return 'openai'
-  if (process.env.CLAUDE_CODE_USE_GEMINI) return 'gemini'
+  if (process.env.THYROX_CODE_USE_BEDROCK) return 'bedrock'
+  if (process.env.THYROX_CODE_USE_FOUNDRY) return 'foundry'
+  if (process.env.THYROX_CODE_USE_VERTEX) return 'vertex'
+  if (process.env.THYROX_CODE_USE_OPENAI) return 'openai'
+  if (process.env.THYROX_CODE_USE_GEMINI) return 'gemini'
   return 'firstParty'
 }
 
@@ -233,13 +237,13 @@ export function modelSupportsXhighEffort(model: string): boolean {
 }
 
 /**
- * Lee el override de `CLAUDE_CODE_EFFORT_LEVEL`. `'unset'`/`'auto'` (sin
+ * Lee el override de `THYROX_CODE_EFFORT_LEVEL`. `'unset'`/`'auto'` (sin
  * distinguir mayúsculas) significa "no hay override" (`null`, distinto de
  * `undefined`: `resolveAppliedEffort` corta ahí en vez de seguir la
  * cadena). Cualquier otro valor se parsea con `parseEffortValue`.
  */
 export function getEffortEnvOverride(): EffortValue | null | undefined {
-  const envOverride = process.env.CLAUDE_CODE_EFFORT_LEVEL
+  const envOverride = process.env.THYROX_CODE_EFFORT_LEVEL
   return envOverride?.toLowerCase() === 'unset' ||
     envOverride?.toLowerCase() === 'auto'
     ? null
@@ -249,12 +253,12 @@ export function getEffortEnvOverride(): EffortValue | null | undefined {
 /**
  * Resuelve el valor de esfuerzo que en verdad se envía a la API para un
  * modelo dado, siguiendo la cadena de precedencia:
- *   env CLAUDE_CODE_EFFORT_LEVEL → appState.effortValue → default del modelo
+ *   env THYROX_CODE_EFFORT_LEVEL → appState.effortValue → default del modelo
  *
  * El tercer eslabón (default por modelo) se sustituye por `undefined` —
  * ver "AMPLIACIÓN" en la cabecera: ningún caso de este porte lo alcanza,
  * porque los dos que ejercitan esta función fijan
- * `CLAUDE_CODE_EFFORT_LEVEL` explícitamente.
+ * `THYROX_CODE_EFFORT_LEVEL` explícitamente.
  */
 export function resolveAppliedEffort(
   model: string,
@@ -331,7 +335,7 @@ function supportsLevel(model: string, capability: string, excluded: readonly str
 export function modelSupportsEffort(model: string): boolean {
   const m = canonicalModelName(model)
   if (m.includes('claude-3-') || EFFORT_EXCLUDED.includes(m)) return false
-  if (process.env.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT) return true
+  if (process.env.THYROX_CODE_ALWAYS_ENABLE_EFFORT) return true
   if (MODELS[m]?.capabilities?.includes('effort') || m === 'claude-mythos-5') return true
   return providerTrustsEffort()
 }
@@ -355,7 +359,7 @@ function clampToModel(value: EffortValue, model: string): EffortValue {
 
 /**
  * El nivel que rige para un modelo — `Sw`. Precedencia: el valor de un hook,
- * luego `CLAUDE_CODE_EFFORT_LEVEL`, el esfuerzo del turno, el de la sesion y
+ * luego `THYROX_CODE_EFFORT_LEVEL`, el esfuerzo del turno, el de la sesion y
  * el default del modelo. `auto`/`unset` en la variable devuelve `undefined`:
  * no se envia esfuerzo.
  */
@@ -455,7 +459,7 @@ const OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT: OpusDefaultEffortConfig = {
   enabled: true,
   dialogTitle: 'We recommend medium effort for Opus',
   dialogDescription:
-    'Effort determines how long Claude thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed.',
+    `Effort determines how long ${PRODUCT_NAME} thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed.`,
 }
 export function getOpusDefaultEffortConfig(): OpusDefaultEffortConfig {
   const config = getFeatureValue_CACHED_MAY_BE_STALE(

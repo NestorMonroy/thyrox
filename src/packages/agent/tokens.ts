@@ -119,7 +119,7 @@ export function finalContextTokensFromLastResponse(
  *
  * WARNING: Do NOT use this for threshold comparisons (autocompact, session memory).
  * Use tokenCountWithEstimation() instead, which measures full context size.
- * This function is only useful for measuring how many tokens Claude generated
+ * This function is only useful for measuring how many tokens thyrox generated
  * in a single response, not how full the context window is.
  */
 export function messageTokenCountFromLastAPIResponse(
@@ -175,12 +175,12 @@ export function doesMostRecentAssistantMessageExceed200k(
  * This is used when subagent streaming events are filtered out and we
  * need to count content from completed messages instead.
  *
- * Counts the same content that handleMessageFromStream would count via deltas:
- * - text (text_delta)
- * - thinking (thinking_delta)
- * - redacted_thinking data
- * - tool_use input (input_json_delta)
- * Note: signature_delta is excluded from streaming counts (not model output).
+ * Cuenta el mismo contenido que `handleMessageFromStream` mide en el stream:
+ * - text (text_delta, por `onUpdateLength` en caracteres)
+ * - thinking (thinking_delta, por la metrica `thinking_progress` en tokens
+ *   estimados, que el consumidor convierte a caracteres)
+ * - redacted_thinking data (su firma llega como `thinking_signature`)
+ * - tool_use input (input_json_delta, por `onUpdateLength` en caracteres)
  */
 export function getAssistantMessageContentLength(
   message: AssistantMessage,

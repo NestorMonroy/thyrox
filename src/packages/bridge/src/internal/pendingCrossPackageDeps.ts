@@ -8,10 +8,9 @@
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/daemon: src/internal/pendingCrossPackageDeps.ts`: un archivo
  * consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/bridge` no es
- * miembro del bun workspace (`src/packages/package.json`) todavía, así
- * que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano ya
- * exporte el subpath real.
+ * divergencia exacta y su condición de retiro. `@thyrox/*` resuelve desde
+ * este paquete: lo que tenía original importable sin ciclo ya se importa
+ * de él (TASK-THYROX-0309); lo que sigue aquí cierra ciclo o es homónimo.
  *
  * Tres formas, igual que en `@thyrox/daemon` — cada bloque dice cuál:
  *
@@ -24,41 +23,14 @@
  *    (no-op) + setter. NUNCA se reimplementa la lógica real aquí.
  */
 import packageJson from '../../package.json'
-import memoize from 'lodash-es/memoize.js'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import { randomInt, randomUUID } from 'node:crypto'
 import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { toCompatSessionId } from '../sessionIdCompat.js'
-
-/**
- * `getOauthConfig` — de `@claude-code-how-works/provider/oauthConstants`.
- * Ya existe idéntica en `@thyrox/provider: src/oauthConstants.ts:155`
- * (misma lógica local/staging/prod + override por env). Se reimplementa
- * aquí en su forma acotada (bridge sólo lee `.BASE_API_URL`) porque el
- * paquete no resuelve sin membresía de workspace. Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-export interface OauthConfig {
-  BASE_API_URL: string
-  CONSOLE_AUTHORIZE_URL: string
-}
-
-const PROD_OAUTH_CONFIG: OauthConfig = {
-  BASE_API_URL: 'https://api.anthropic.com',
-  CONSOLE_AUTHORIZE_URL: 'https://console.anthropic.com/oauth/authorize',
-}
-
-export function getOauthConfig(): OauthConfig {
-  const custom = process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL
-  if (custom) {
-    const base = custom.replace(/\/$/, '')
-    return { ...PROD_OAUTH_CONFIG, BASE_API_URL: base }
-  }
-  return PROD_OAUTH_CONFIG
-}
+import type { AccountInfo } from '@thyrox/config/global/config.js'
+import type { SecureStorageData } from '@thyrox/mcp-runtime/secureStorageTypes'
+import type { OAuthTokens } from '@thyrox/provider/oauth/types.js'
 
 /**
  * `getClaudeAIOAuthTokens` — de
@@ -67,15 +39,6 @@ export function getOauthConfig(): OauthConfig {
  * de inyección con default null (equivale a "sin sesión"). Se retira
  * cuando `@thyrox/bridge` sea miembro del workspace.
  */
-export interface OAuthTokens {
-  accessToken?: string
-  refreshToken?: string
-  expiresAt?: number
-  scopes?: readonly string[]
-  subscriptionType?: string | null
-  clientId?: string
-}
-
 let _getClaudeAIOAuthTokens: () => OAuthTokens | null = () => null
 
 export function getClaudeAIOAuthTokens(): OAuthTokens | null {
@@ -84,32 +47,6 @@ export function getClaudeAIOAuthTokens(): OAuthTokens | null {
 
 export function setGetClaudeAIOAuthTokensFn(fn: () => OAuthTokens | null): void {
   _getClaudeAIOAuthTokens = fn
-}
-
-/**
- * `updateSessionBridgeId` — de
- * `@claude-code-how-works/agent/concurrentSessions.js:145-149`. Escribe
- * `{bridgeSessionId}` al pid-file de la sesión (vía `updatePidFile`, un
- * mecanismo interno de ese mismo archivo) para que `claude ps` pueda
- * deduplicar sesiones bridge locales. Punto de inyección — default no-op:
- * `setReplBridgeHandle` sigue funcionando sin publicar el id al pid-file;
- * la única consecuencia es que otro peer local no la deduplique de su
- * lista. Se retira cuando `@thyrox/agent` porte `concurrentSessions.ts` Y
- * `@thyrox/bridge` sea miembro del workspace.
- */
-let _updateSessionBridgeId: (bridgeSessionId: string | null) => Promise<void> =
-  async () => {}
-
-export function updateSessionBridgeId(
-  bridgeSessionId: string | null,
-): Promise<void> {
-  return _updateSessionBridgeId(bridgeSessionId)
-}
-
-export function setUpdateSessionBridgeIdFn(
-  fn: (bridgeSessionId: string | null) => Promise<void>,
-): void {
-  _updateSessionBridgeId = fn
 }
 
 /**
@@ -256,41 +193,6 @@ export function setLogForDebuggingFn(fn: (...args: unknown[]) => void): void {
 }
 
 /**
- * `errorMessage` — de
- * `@claude-code-how-works/local-observability/errorHelpers.js:106-108`.
- * Ya existe idéntica en `@thyrox/local-observability:
- * src/errorHelpers.ts:114`. Reimplementación fiel VERBATIM (una línea,
- * cero estado) — no hace falta punto de inyección. Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-export function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e)
-}
-
-/**
- * `logEvent` — de `@claude-code-how-works/local-observability` (core.ts,
- * re-exportado desde el index). Ya existe idéntica en
- * `@thyrox/local-observability: src/core.ts:79`. Punto de inyección
- * (telemetría es dominio ajeno) — default no-op. `EventMetadata` se
- * acota a `Record<string, unknown>` (bridge sólo construye objetos
- * planos, no consume el tipo discriminado real). Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-type EventMetadata = Record<string, unknown>
-
-let _logEvent: (name: string, metadata: EventMetadata) => void = () => {}
-
-export function logEvent(name: string, metadata: EventMetadata = {}): void {
-  _logEvent(name, metadata)
-}
-
-export function setLogEventFn(
-  fn: (name: string, metadata: EventMetadata) => void,
-): void {
-  _logEvent = fn
-}
-
-/**
  * `jsonStringify` — de
  * `@claude-code-how-works/local-observability/slowOperations.js`. Ya
  * existe idéntica EN COMPORTAMIENTO en `@thyrox/local-observability:
@@ -318,49 +220,6 @@ export function jsonStringify(
 }
 
 /**
- * `lazySchema` — de
- * `@claude-code-how-works/tool-registry/utils/lazySchema.js`. Puro y
- * trivial (4 líneas, memoización de una fábrica) — reimplementación
- * fiel VERBATIM, sin punto de inyección. Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-export function lazySchema<T>(factory: () => T): () => T {
-  let cached: T | undefined
-  return () => (cached ??= factory())
-}
-
-/**
- * `getFeatureValue_CACHED_WITH_REFRESH` — de
- * `@claude-code-how-works/config/feature-flags`. Ya existe en
- * `@thyrox/config: feature-flags.ts:74`, con resolución real (override
- * de env → config → LOCAL_GATE_DEFAULTS → fallback). Punto de inyección
- * — la resolución de banderas de feature es dominio de `@thyrox/config`,
- * no de bridge; el default devuelve `fallback` sin más (equivale a
- * "ninguna bandera declarada", que es el comportamiento de
- * `DEFAULT_POLL_CONFIG` sin GrowthBook). Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-let _getFeatureValueCachedWithRefresh: <T>(
-  feature: string,
-  fallback: T,
-  refreshIntervalMs?: number,
-) => T = (_feature, fallback) => fallback
-
-export function getFeatureValue_CACHED_WITH_REFRESH<T>(
-  feature: string,
-  fallback: T,
-  refreshIntervalMs?: number,
-): T {
-  return _getFeatureValueCachedWithRefresh(feature, fallback, refreshIntervalMs)
-}
-
-export function setGetFeatureValueCachedWithRefreshFn(
-  fn: <T>(feature: string, fallback: T, refreshIntervalMs?: number) => T,
-): void {
-  _getFeatureValueCachedWithRefresh = fn
-}
-
-/**
  * `feature()` — de `bun:bundle`, macro de build time de ccnmt (medido:
  * `import('bun:bundle')` no resuelve en Bun 1.3.11 fuera del build de
  * ccnmt — "Cannot find package 'bundle'"). Mismo sustituto ya adoptado
@@ -384,89 +243,12 @@ export function setGetFeatureValueCachedWithRefreshFn(
  *   (`bridgeMain.ts:1520`: "sin la bandera, revierte al comportamiento
  *   pre-PR"). Default-OFF aquí, mismo criterio que `CCR_AUTO_CONNECT`.
  */
+// homonym feature: tabla de banderas y defaults propios de bridge (`BRIDGE_MODE` encendida, `CCR_*`/`KAIROS` apagadas); lo que ofrece `@thyrox/tool-registry/internal/pendingCrossPackageDeps.js` es otro sustituto con otra tabla.
 export function feature(
   flag: 'BRIDGE_MODE' | 'CCR_AUTO_CONNECT' | 'CCR_MIRROR' | 'KAIROS',
 ): boolean {
   if (flag === 'BRIDGE_MODE') return process.env[`CCB_FEATURE_${flag}`] !== '0'
   return process.env[`CCB_FEATURE_${flag}`] === '1'
-}
-
-/**
- * `getFeatureValue_CACHED_MAY_BE_STALE` — de
- * `@claude-code-how-works/config/feature-flags`. Ya existe en
- * `@thyrox/config: feature-flags.ts:63`, con resolución real (override
- * de env → config → LOCAL_GATE_DEFAULTS → fallback). Punto de inyección
- * — mismo razonamiento que `getFeatureValue_CACHED_WITH_REFRESH` arriba:
- * la resolución de banderas es dominio de `@thyrox/config`. Default:
- * devuelve `fallback`. Se retira cuando `@thyrox/bridge` sea miembro del
- * workspace.
- */
-let _getFeatureValueCachedMayBeStale: <T>(gate: string, fallback: T) => T = (
-  _gate,
-  fallback,
-) => fallback
-
-export function getFeatureValue_CACHED_MAY_BE_STALE<T>(
-  gate: string,
-  fallback: T,
-): T {
-  return _getFeatureValueCachedMayBeStale(gate, fallback)
-}
-
-export function setGetFeatureValueCachedMayBeStaleFn(
-  fn: <T>(gate: string, fallback: T) => T,
-): void {
-  _getFeatureValueCachedMayBeStale = fn
-}
-
-/**
- * `checkGate_CACHED_OR_BLOCKING` / `getDynamicConfig_CACHED_MAY_BE_STALE`
- * — de `@claude-code-how-works/config/feature-flags`. Ya existen en
- * `@thyrox/config: feature-flags.ts:183,215` — y AHÍ son literalmente
- * wrappers de una línea sobre `getFeatureValue_CACHED_MAY_BE_STALE`.
- * Reimplementación fiel VERBATIM de esa misma relación, delegando al
- * sustituto de arriba (no un punto de inyección propio, porque no
- * añaden lógica). Se retira cuando `@thyrox/bridge` sea miembro del
- * workspace.
- */
-export async function checkGate_CACHED_OR_BLOCKING(
-  gate: string,
-): Promise<boolean> {
-  return Boolean(getFeatureValue_CACHED_MAY_BE_STALE(gate, false))
-}
-
-export function getDynamicConfig_CACHED_MAY_BE_STALE<T>(
-  configName: string,
-  defaultValue: T,
-): T {
-  return getFeatureValue_CACHED_MAY_BE_STALE(configName, defaultValue)
-}
-
-/**
- * `isEnvTruthy` — de `@claude-code-how-works/config/env/utils`. Ya
- * existe idéntica en `@thyrox/config: env/utils.ts:25`. Reimplementación
- * fiel VERBATIM (pura, 5 líneas). Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
-}
-
-/**
- * `lt` — de `@claude-code-how-works/config/semver`. Ya existe en
- * `@thyrox/provider`... en realidad vive en `@thyrox/config` en la
- * fuente y aún no se porta ahí. Reimplementación fiel ACOTADA: la fuente
- * tiene una rama `typeof Bun !== 'undefined'` (Bun.semver.order) y un
- * fallback a la librería npm `semver` para Node — aquí sólo se porta la
- * rama Bun, porque este árbol es exclusivamente Bun (`_references/`,
- * runtime declarado). Se retira cuando `@thyrox/bridge` sea miembro del
- * workspace.
- */
-export function lt(a: string, b: string): boolean {
-  return Bun.semver.order(a, b) === -1
 }
 
 /**
@@ -535,9 +317,8 @@ export function getClaudeAiBaseUrl(
 
 /**
  * `getRemoteSessionUrl` — de `@claude-code-how-works/config/product`
- * (verbatim). Corregido H-DOCS-1: el docstring de este bloque ya
- * prometía esta función y NUNCA se escribió — sólo estaban sus tres
- * colaboradores (`getClaudeAiBaseUrl`, `isRemoteSession{Local,Staging}`).
+ * (verbatim), junto a sus tres colaboradores (`getClaudeAiBaseUrl`,
+ * `isRemoteSession{Local,Staging}`).
  */
 export function getRemoteSessionUrl(
   sessionId: string,
@@ -560,11 +341,6 @@ export function getRemoteSessionUrl(
  * try/catch de `bridgeEnabled.ts:94-116`). Se retira cuando
  * `@thyrox/bridge` sea miembro del workspace.
  */
-export interface AccountInfo {
-  organizationUuid?: string
-  billingType?: string
-}
-
 let _isClaudeAISubscriber: () => boolean = () => false
 let _hasProfileScope: () => boolean = () => false
 let _getOauthAccountInfo: () => AccountInfo | undefined = () => undefined
@@ -575,6 +351,7 @@ export function isClaudeAISubscriber(): boolean {
 export function hasProfileScope(): boolean {
   return _hasProfileScope()
 }
+// homonym getOauthAccountInfo: el original (`@thyrox/provider/authAlias.js`) cierra ciclo con este paquete; lo ofrecido es el punto de inyección de `@thyrox/local-observability`, otro registro DI.
 export function getOauthAccountInfo(): AccountInfo | undefined {
   return _getOauthAccountInfo()
 }
@@ -584,153 +361,12 @@ export function setIsClaudeAISubscriberFn(fn: () => boolean): void {
 export function setHasProfileScopeFn(fn: () => boolean): void {
   _hasProfileScope = fn
 }
+// homonym setGetOauthAccountInfoFn: setter del punto de inyección de arriba, no el de `@thyrox/local-observability`.
 export function setGetOauthAccountInfoFn(
   fn: () => AccountInfo | undefined,
 ): void {
   _getOauthAccountInfo = fn
 }
-
-/**
- * `stringWidth` — de `@anthropic/ink` (fork de Ink vendorizado en ccnmt
- * como `packages/@ant/ink`, NO publicado en npm — `@ant/ink` da 404 en
- * el registro público). La fuente
- * (`@ant/ink: src/core/stringWidth.ts:213-221`) resuelve a
- * `Bun.stringWidth(str, {ambiguousIsNarrow: true})` cuando existe, con
- * un fallback JS (emoji-regex + get-east-asian-width) para Node. Aquí
- * SÓLO se porta la rama Bun: este árbol es exclusivamente Bun, así que
- * el fallback JS nunca se ejercería y añadiría dos dependencias npm sin
- * uso real. Se retira cuando `@thyrox/bridge` sea miembro del workspace
- * Y `@ant/ink` (o su puerto) esté disponible.
- */
-export function stringWidth(str: string): number {
-  return Bun.stringWidth(str, { ambiguousIsNarrow: true })
-}
-
-/**
- * `getGraphemeSegmenter` — de
- * `@claude-code-how-works/output/utils/intl.js`. Ya existe idéntica en
- * `@thyrox/output: src/utils/intl.ts:17`. Reimplementación fiel
- * VERBATIM (memoiza un `Intl.Segmenter`). Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-let _graphemeSegmenter: Intl.Segmenter | undefined
-export function getGraphemeSegmenter(): Intl.Segmenter {
-  if (!_graphemeSegmenter) {
-    _graphemeSegmenter = new Intl.Segmenter(undefined, {
-      granularity: 'grapheme',
-    })
-  }
-  return _graphemeSegmenter
-}
-
-/**
- * `formatDuration` — de
- * `@claude-code-how-works/output/formatters/format.js`. Ya existe
- * idéntica en `@thyrox/output: src/formatters/format.ts:44`.
- * Reimplementación fiel VERBATIM. Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-export function formatDuration(
-  ms: number,
-  options?: { hideTrailingZeros?: boolean; mostSignificantOnly?: boolean },
-): string {
-  if (ms < 60000) {
-    if (ms === 0) {
-      return '0s'
-    }
-    if (ms < 1) {
-      const s = (ms / 1000).toFixed(1)
-      return `${s}s`
-    }
-    const s = Math.floor(ms / 1000).toString()
-    return `${s}s`
-  }
-
-  let days = Math.floor(ms / 86400000)
-  let hours = Math.floor((ms % 86400000) / 3600000)
-  let minutes = Math.floor((ms % 3600000) / 60000)
-  let seconds = Math.round((ms % 60000) / 1000)
-
-  if (seconds === 60) {
-    seconds = 0
-    minutes++
-  }
-  if (minutes === 60) {
-    minutes = 0
-    hours++
-  }
-  if (hours === 24) {
-    hours = 0
-    days++
-  }
-
-  const hide = options?.hideTrailingZeros
-
-  if (options?.mostSignificantOnly) {
-    if (days > 0) return `${days}d`
-    if (hours > 0) return `${hours}h`
-    if (minutes > 0) return `${minutes}m`
-    return `${seconds}s`
-  }
-
-  if (days > 0) {
-    if (hide && hours === 0 && minutes === 0) return `${days}d`
-    if (hide && minutes === 0) return `${days}d ${hours}h`
-    return `${days}d ${hours}h ${minutes}m`
-  }
-  if (hours > 0) {
-    if (hide && minutes === 0 && seconds === 0) return `${hours}h`
-    if (hide && seconds === 0) return `${hours}h ${minutes}m`
-    return `${hours}h ${minutes}m ${seconds}s`
-  }
-  if (minutes > 0) {
-    if (hide && seconds === 0) return `${minutes}m`
-    return `${minutes}m ${seconds}s`
-  }
-  return `${seconds}s`
-}
-
-/**
- * `truncateToWidth` — de
- * `@claude-code-how-works/output/formatters/truncate.js`. NO portado en
- * `@thyrox/output` (depende de `stringWidth` de `@anthropic/ink`, ver
- * el docstring de ese paquete). Reimplementación fiel VERBATIM usando
- * el `stringWidth`/`getGraphemeSegmenter` de arriba. Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace Y `@thyrox/output` porte
- * `truncate.ts`.
- */
-export function truncateToWidth(text: string, maxWidth: number): string {
-  if (stringWidth(text) <= maxWidth) return text
-  if (maxWidth <= 1) return '…'
-  let width = 0
-  let result = ''
-  for (const { segment } of getGraphemeSegmenter().segment(text)) {
-    const segWidth = stringWidth(segment)
-    if (width + segWidth > maxWidth - 1) break
-    result += segment
-    width += segWidth
-  }
-  return result + '…'
-}
-
-/**
- * `getClaudeConfigHomeDir` — de
- * `@claude-code-how-works/config/env/utils`. `@thyrox/config: env/utils.ts`
- * la MENCIONA en su docstring de cabecera pero no la exporta todavía
- * (porte parcial de ese paquete). Reimplementación fiel VERBATIM (pura,
- * memoizada con `lodash-es/memoize`, ya dependencia npm real de este
- * paquete). Se retira cuando `@thyrox/config` la porte Y `@thyrox/bridge`
- * sea miembro del workspace.
- */
-
-export const getClaudeConfigHomeDir = memoize(
-  (): string => {
-    return (
-      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
-    ).normalize('NFC')
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-)
 
 /**
  * `getSessionId` — de `@claude-code-how-works/app-host/bootstrap/state.js`.
@@ -749,10 +385,12 @@ let _getSessionId: () => string = (() => {
   return () => (cached ??= randomUUID())
 })()
 
+// homonym getSessionId: el original (`@thyrox/app-host/bootstrap/state.js`) cierra ciclo con este paquete; lo ofrecido es el punto de inyección de `@thyrox/local-observability`, otro registro DI.
 export function getSessionId(): string {
   return _getSessionId()
 }
 
+// homonym setGetSessionIdFn: setter del punto de inyección de arriba, no el de `@thyrox/local-observability`.
 export function setGetSessionIdFn(fn: () => string): void {
   _getSessionId = fn
 }
@@ -769,6 +407,7 @@ export function setGetSessionIdFn(fn: () => string): void {
  * retira cuando `@thyrox/local-observability` la porte Y
  * `@thyrox/bridge` sea miembro del workspace.
  */
+// homonym jsonParse: acepta `reviver`, que la copia de `@thyrox/provider/internal/pendingCrossPackageDeps.js` no acepta; el original (`@thyrox/local-observability/slowOperations`) cierra ciclo con este paquete.
 export function jsonParse(
   text: string,
   reviver?: (this: unknown, key: string, value: unknown) => unknown,
@@ -776,49 +415,6 @@ export function jsonParse(
   return typeof reviver === 'undefined'
     ? JSON.parse(text)
     : JSON.parse(text, reviver)
-}
-
-/**
- * `getProjectsDir` — de
- * `@claude-code-how-works/storage/sessionStoragePortable.js`. Ya existe
- * idéntica en `@thyrox/storage: src/sessionStoragePortable.ts:329`.
- * Reimplementación fiel VERBATIM, compuesta con el
- * `getClaudeConfigHomeDir` de arriba. Se retira cuando `@thyrox/bridge`
- * sea miembro del workspace.
- */
-export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
-}
-
-/**
- * `sanitizePath` (+ djb2Hash/simpleHash que usa) — de
- * `@claude-code-how-works/storage/sessionStoragePortable.js`. Ya existe
- * idéntica en `@thyrox/storage: src/sessionStoragePortable.ts:264`.
- * Reimplementación fiel VERBATIM. Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-const MAX_SANITIZED_LENGTH = 200
-
-function djb2Hash(str: string): number {
-  let hash = 5381
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i)
-  }
-  return hash
-}
-
-function simpleHash(str: string): string {
-  return Math.abs(djb2Hash(str)).toString(36)
-}
-
-export function sanitizePath(name: string): string {
-  const sanitized = name.replace(/[^a-zA-Z0-9]/g, '-')
-  if (sanitized.length <= MAX_SANITIZED_LENGTH) {
-    return sanitized
-  }
-  const hash =
-    typeof Bun !== 'undefined' ? Bun.hash(name).toString(36) : simpleHash(name)
-  return `${sanitized.slice(0, MAX_SANITIZED_LENGTH)}-${hash}`
 }
 
 /**
@@ -850,24 +446,6 @@ export async function getWorktreePathsPortable(cwd: string): Promise<string[]> {
 }
 
 /**
- * `getErrnoCode` / `isENOENT` — de
- * `@claude-code-how-works/local-observability/errorHelpers.js`. Ya
- * existen idénticas en `@thyrox/local-observability: src/errorHelpers.ts:119,127`.
- * Reimplementación fiel VERBATIM. Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-export function getErrnoCode(e: unknown): string | undefined {
-  if (e && typeof e === 'object' && 'code' in e && typeof e.code === 'string') {
-    return e.code
-  }
-  return undefined
-}
-
-export function isENOENT(e: unknown): boolean {
-  return getErrnoCode(e) === 'ENOENT'
-}
-
-/**
  * `logForDiagnosticsNoPII` — de
  * `@claude-code-how-works/local-observability/logging`. Ya existe con
  * lógica real en `@thyrox/local-observability: src/logging/diag-log.ts:35`
@@ -892,6 +470,7 @@ export function logForDiagnosticsNoPII(
   _logForDiagnosticsNoPII(level, event, data)
 }
 
+// homonym setLogForDiagnosticsNoPIIFn: setter del punto de inyección `logForDiagnosticsNoPII` de arriba; el de `@thyrox/storage/sessionActivity.js` inyecta el suyo.
 export function setLogForDiagnosticsNoPIIFn(
   fn: (
     level: DiagnosticLogLevel,
@@ -931,30 +510,6 @@ export function setWaitForPolicyLimitsToLoadFn(fn: () => Promise<void>): void {
 }
 
 /**
- * `getPrivacyLevel` / `isEssentialTrafficOnly` — de
- * `@claude-code-how-works/config/env/privacy-level`. `@thyrox/config`
- * NO tiene este archivo todavía (medido: `find … -iname "*privacy*"`
- * sin resultados). Reimplementación fiel VERBATIM (pura, lee dos env
- * vars). Se retira cuando `@thyrox/config` la porte Y `@thyrox/bridge`
- * sea miembro del workspace.
- */
-type PrivacyLevel = 'default' | 'no-telemetry' | 'essential-traffic'
-
-export function getPrivacyLevel(): PrivacyLevel {
-  if (process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) {
-    return 'essential-traffic'
-  }
-  if (process.env.DISABLE_TELEMETRY) {
-    return 'no-telemetry'
-  }
-  return 'default'
-}
-
-export function isEssentialTrafficOnly(): boolean {
-  return getPrivacyLevel() === 'essential-traffic'
-}
-
-/**
  * `getSecureStorage` (+ `SecureStorageData`) — de
  * `@claude-code-how-works/storage/secureStorage.js`. Ya existe con
  * lógica real (keychain de macOS vía subproceso `security`, fallback
@@ -969,11 +524,7 @@ export function isEssentialTrafficOnly(): boolean {
  * se acota al único campo que trustedDevice.ts toca. Se retira cuando
  * `@thyrox/bridge` sea miembro del workspace.
  */
-export interface SecureStorageData {
-  trustedDeviceToken?: string
-  [key: string]: unknown
-}
-
+// homonym SecureStorage: recorte a `read`/`update`, lo único que `trustedDevice.ts` consume; el tipo real (`@thyrox/storage/secureStorage/types.js`) exige `name`, `readAsync` y `update(data, backend)`, que ni el default en memoria ni el doble de la prueba implementan.
 export interface SecureStorage {
   read(): SecureStorageData | null
   update(data: SecureStorageData): { success: boolean; warning?: string }
@@ -1013,7 +564,7 @@ export function setGetSecureStorageFn(fn: () => SecureStorage): void {
  * workspace.
  */
 export function updateSessionIngressAuthToken(token: string): void {
-  process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN = token
+  process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = token
 }
 
 /**
@@ -1221,15 +772,6 @@ export function setGetMainLoopModelFn(fn: () => string): void {
 }
 
 /**
- * `PermissionMode` — de `@claude-code-how-works/permission/PermissionMode.js`,
- * que re-exporta el alias de `permissionTypes.ts:29`. `@thyrox/permission` ya
- * porta ese tipo, así que se re-exporta en vez de redeclararlo. La copia
- * estructural anterior añadía un `'ask'` que la fuente no tiene, y por eso el
- * modo que llegaba del puente no cabía en el estado de la sesión.
- */
-export type { PermissionMode } from '@thyrox/permission/permissionTypes'
-
-/**
  * `EMPTY_USAGE` — de `@claude-code-how-works/provider/emptyUsage.js`
  * (verbatim). NO es el mismo símbolo que el `EMPTY_USAGE` ya portado en
  * `@thyrox/provider: src/internal/legacyRuntimeSupport.ts:528` — son DOS
@@ -1255,206 +797,6 @@ export const EMPTY_USAGE: Readonly<NonNullableUsage> = {
   iterations: [],
   speed: 'standard',
 }
-
-/**
- * `normalizeControlMessageKeys` — de
- * `@claude-code-how-works/headless-sdk/controlMessageCompat.js` (verbatim,
- * la fuente no tiene imports). Ya existe idéntica en
- * `@thyrox/headless-sdk: src/controlMessageCompat.ts` (porte completo,
- * verificado). Se reimplementa aquí VERBATIM porque el paquete no resuelve
- * en runtime sin membresía de workspace (medido:
- * `require.resolve('@thyrox/headless-sdk/controlMessageCompat')` →
- * `Cannot find module`). Se retira cuando `@thyrox/bridge` sea miembro del
- * workspace.
- */
-export function normalizeControlMessageKeys(obj: unknown): unknown {
-  if (obj === null || typeof obj !== 'object') return obj
-  const record = obj as Record<string, unknown>
-  if ('requestId' in record && !('request_id' in record)) {
-    record.request_id = record.requestId
-    delete record.requestId
-  }
-  if (
-    'response' in record &&
-    record.response !== null &&
-    typeof record.response === 'object'
-  ) {
-    const response = record.response as Record<string, unknown>
-    if ('requestId' in response && !('request_id' in response)) {
-      response.request_id = response.requestId
-      delete response.requestId
-    }
-  }
-  return obj
-}
-
-/**
- * `stripDisplayTagsAllowEmpty` — de
- * `@claude-code-how-works/output/utils/displayTags.js` (verbatim, la
- * fuente no tiene imports). Ya existe idéntica en
- * `@thyrox/output: src/utils/displayTags.ts` (porte completo de las tres
- * funciones del archivo, verificado). Se reimplementa aquí VERBATIM sólo
- * la función que `bridgeMessaging.ts` consume (`extractTitleText`) —
- * `stripDisplayTags`/`stripIdeContextTags` no tienen consumidor en bridge
- * todavía — porque el paquete no resuelve en runtime sin membresía de
- * workspace. Se retira cuando `@thyrox/bridge` sea miembro del workspace.
- */
-const XML_TAG_BLOCK_PATTERN = /<([a-z][\w-]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
-
-export function stripDisplayTagsAllowEmpty(text: string): string {
-  return text.replace(XML_TAG_BLOCK_PATTERN, '').trim()
-}
-
-/**
- * `BRIDGE_SPINNER_FRAMES` / `BRIDGE_READY_INDICATOR` / `BRIDGE_FAILED_INDICATOR`
- * — de `@claude-code-how-works/output/constants/figures.js` (verbatim, la
- * fuente no tiene imports). Ya existen idénticas en
- * `@thyrox/output: src/constants/figures.ts:50-57` (porte completo de las
- * 26 constantes del archivo, verificado). Se reimplementan aquí VERBATIM
- * sólo las tres que `bridgeUI.ts` consume porque el paquete no resuelve en
- * runtime sin membresía de workspace. Se retiran cuando `@thyrox/bridge`
- * sea miembro del workspace.
- */
-export const BRIDGE_SPINNER_FRAMES = ['·|·', '·/·', '·—·', '·\\·']
-export const BRIDGE_READY_INDICATOR = '·✔︎·'
-export const BRIDGE_FAILED_INDICATOR = '×'
-
-/**
- * `sleep` — de `@claude-code-how-works/config/sleep.ts` (verbatim). Sleep
- * responsivo a abort: resuelve tras `ms`, o de inmediato cuando `signal`
- * aborta. `@thyrox/config` sí porta este archivo, pero no resuelve en
- * runtime sin membresía de workspace. Reimplementación fiel VERBATIM —
- * pura, sin imports en la fuente. Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-export function sleep(
-  ms: number,
-  signal?: AbortSignal,
-  opts?: { throwOnAbort?: boolean; abortError?: () => Error; unref?: boolean },
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      if (opts?.throwOnAbort || opts?.abortError) {
-        void reject(opts.abortError?.() ?? new Error('aborted'))
-      } else {
-        void resolve()
-      }
-      return
-    }
-    const timer = setTimeout(
-      (sig: AbortSignal | undefined, onAbort: () => void, res: () => void) => {
-        sig?.removeEventListener('abort', onAbort)
-        void res()
-      },
-      ms,
-      signal,
-      onAbort,
-      resolve,
-    )
-    function onAbort(): void {
-      clearTimeout(timer)
-      if (opts?.throwOnAbort || opts?.abortError) {
-        void reject(opts.abortError?.() ?? new Error('aborted'))
-      } else {
-        void resolve()
-      }
-    }
-    signal?.addEventListener('abort', onAbort, { once: true })
-    if (opts?.unref) {
-      timer.unref()
-    }
-  })
-}
-
-/**
- * `isInBundledMode` — de `@claude-code-how-works/config/bundledMode.ts`
- * (verbatim, incluido su helper puro `isBundledMainPath` — el fix de
- * Windows del comentario original se conserva). `@thyrox/config` no
- * porta este archivo. Reimplementación fiel VERBATIM. Se retira cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-const BUNFS_PREFIXES = ['/$bunfs/', 'B:\\~BUN\\', 'B:/~BUN/'] as const
-
-function isBundledMainPath(main: string): boolean {
-  for (const prefix of BUNFS_PREFIXES) {
-    if (main.startsWith(prefix)) return true
-  }
-  return false
-}
-
-export function isInBundledMode(): boolean {
-  if (typeof Bun === 'undefined' || typeof Bun.main !== 'string') {
-    return false
-  }
-  return isBundledMainPath(Bun.main)
-}
-
-/**
- * `isInProtectedNamespace` — de `@claude-code-how-works/config/env/utils.ts`
- * (verbatim). Sonda ant-only host-injected sobre metadata de cluster
- * interna; la fuente ya defaultea a `false` para builds externos —
- * `@thyrox/config` no porta este archivo. Reimplementación fiel VERBATIM
- * + punto de inyección (`_checkProtectedNamespace`, igual que la fuente).
- * Se retira cuando `@thyrox/bridge` sea miembro del workspace.
- */
-let _checkProtectedNamespace: () => boolean = () => false
-
-export function setCheckProtectedNamespaceFn(fn: () => boolean): void {
-  _checkProtectedNamespace = fn
-}
-
-export function isInProtectedNamespace(): boolean {
-  if (process.env.USER_TYPE !== 'ant') return false
-  return _checkProtectedNamespace()
-}
-
-/**
- * `logEventAsync` / `shutdownEventLoggers` — de
- * `@claude-code-how-works/local-observability` (`core.ts`) y su
- * `compat.ts` respectivamente. Ya existen en `@thyrox/local-observability`
- * con lógica real de telemetría/flush. Puntos de inyección — default
- * no-op (equivale a "el evento se pierde" / "nada que drenar"), porque
- * la implementación real hace I/O de red/disco que es dominio de
- * `@thyrox/local-observability`, no de bridge. Se retiran cuando
- * `@thyrox/bridge` sea miembro del workspace.
- */
-let _logEventAsync: (
-  name: string,
-  metadata?: Record<string, unknown>,
-) => Promise<void> = async () => {}
-
-export function logEventAsync(
-  name: string,
-  metadata: Record<string, unknown> = {},
-): Promise<void> {
-  return _logEventAsync(name, metadata)
-}
-
-export function setLogEventAsyncFn(
-  fn: (name: string, metadata?: Record<string, unknown>) => Promise<void>,
-): void {
-  _logEventAsync = fn
-}
-
-let _shutdownEventLoggers: () => Promise<void> = async () => {}
-
-export function shutdownEventLoggers(): Promise<void> {
-  return _shutdownEventLoggers()
-}
-
-export function setShutdownEventLoggersFn(fn: () => Promise<void>): void {
-  _shutdownEventLoggers = fn
-}
-
-/**
- * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` — de
- * `@claude-code-how-works/local-observability/compat.ts` (verbatim: alias
- * de `never`, un tipo "brand" que sólo sirve para forzar al llamador a
- * castear explícitamente cada valor de metadata de `logEvent` — documenta
- * en el sitio de uso que ese valor no es código ni un filepath sin
- * sanitizar). Ya existe idéntico en `@thyrox/local-observability`.
- */
-export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = never
 
 /**
  * `logError` — de `@claude-code-how-works/local-observability/logging.js`
@@ -1572,42 +914,6 @@ export function setInstallSwarmHostFn(fn: () => void): void {
 }
 
 /**
- * `enableConfigs` / `checkHasTrustDialogAccepted` — de
- * `@claude-code-how-works/config` (barrel, módulo de settings ~2700
- * líneas). `@thyrox/config` aún NO porta ninguna de las dos (medido:
- * `grep -rln "enableConfigs\|checkHasTrustDialogAccepted" config/` → 0
- * resultados). Puntos de inyección: `enableConfigs` default no-op — sin
- * ella, las llamadas que dependan de config habilitada ya están fuera de
- * alcance por otros stubs de este mismo archivo. `checkHasTrustDialogAccepted`
- * default `false` (CONSERVADOR, no fail-open): sin wiring real, el host
- * NO ha confirmado el diálogo de confianza del workspace — devolver
- * `true` sería un bypass de seguridad silencioso. Con el default,
- * `runBridgeHeadless` falla honestamente con
- * `BridgeHeadlessPermanentError` (el comportamiento correcto cuando la
- * confianza es de verdad desconocida) en vez de fingir que sí se
- * verificó. Se retiran cuando `@thyrox/config` porte esas dos funciones.
- */
-let _enableConfigs: () => void = () => {}
-
-export function enableConfigs(): void {
-  _enableConfigs()
-}
-
-export function setEnableConfigsFn(fn: () => void): void {
-  _enableConfigs = fn
-}
-
-let _checkHasTrustDialogAccepted: () => boolean = () => false
-
-export function checkHasTrustDialogAccepted(): boolean {
-  return _checkHasTrustDialogAccepted()
-}
-
-export function setCheckHasTrustDialogAcceptedFn(fn: () => boolean): void {
-  _checkHasTrustDialogAccepted = fn
-}
-
-/**
  * `initSinks` — de `@claude-code-how-works/local-observability/sinks.ts`
  * (14 líneas fuente, verbatim: llama a `initializeErrorLogSink()`). Ya
  * existe idéntica en `@thyrox/local-observability: src/sinks.ts`. Punto
@@ -1654,69 +960,6 @@ export function setCwdState(cwd: string): void {
 
 export function getCwdState(): string {
   return _cwdState
-}
-
-/**
- * `registerCleanup` — de
- * `@claude-code-how-works/app-host/bootstrap/cleanupRegistry.ts` (28
- * líneas fuente, verbatim: un `Set` de módulo + registrar/desregistrar).
- * Ya existe idéntica en `@thyrox/app-host: src/bootstrap/cleanupRegistry.ts`.
- * Reimplementación fiel VERBATIM — es un registro local pero PROPIO de
- * este archivo (no comparte el `Set` real de `@thyrox/app-host`), así
- * que una limpieza registrada aquí NO la corre el barrido de graceful
- * shutdown de `@thyrox/app-host` — divergencia declarada, no hay
- * consumidor de `runCleanupFunctions()` dentro de este porte de bridge
- * que la necesite. Se retira cuando `@thyrox/bridge` sea miembro del
- * workspace.
- */
-const _bridgeCleanupFunctions = new Set<() => Promise<void>>()
-
-export function registerCleanup(cleanupFn: () => Promise<void>): () => void {
-  _bridgeCleanupFunctions.add(cleanupFn)
-  return () => _bridgeCleanupFunctions.delete(cleanupFn)
-}
-
-/**
- * `readEnv` — de `@claude-code-how-works/config/env/utils.ts:198`
- * (verbatim: `process.env[name]`). Ya existe idéntica en
- * `@thyrox/config: src/env/utils.ts`. Reimplementación fiel VERBATIM.
- * Se retira cuando `@thyrox/bridge` sea miembro del workspace.
- */
-export function readEnv(name: string): string | undefined {
-  return process.env[name]
-}
-
-/**
- * `getGlobalConfig` / `saveGlobalConfig` — de
- * `@claude-code-how-works/config` (barrel, ~2700 líneas de settings
- * persistidos en disco). `@thyrox/config` aún no porta ninguna (mismo
- * 0 hits medido para `bridgeMain.ts`). Porte MÍNIMO ACOTADO: sólo los
- * dos campos que `initReplBridge.ts` lee/escribe
- * (`bridgeOauthDeadExpiresAt`/`bridgeOauthDeadFailCount`, el backoff
- * cross-proceso de token OAuth muerto) — el resto de `GlobalConfig`
- * (decenas de campos reales) NO se declara, porque inventarlo sería
- * fabricar un esquema que no existe. Punto de inyección con estado
- * en memoria (no en disco — la persistencia real es dominio de
- * `@thyrox/config`); el default vacío hace que el backoff cross-proceso
- * no persista entre invocaciones del proceso, que es el mismo límite
- * que ya tiene cualquier estado puramente en memoria. Se retira cuando
- * `@thyrox/config` porte `getGlobalConfig`/`saveGlobalConfig`.
- */
-export type BridgeGlobalConfigSlice = {
-  bridgeOauthDeadExpiresAt?: number | null
-  bridgeOauthDeadFailCount?: number
-}
-
-let _bridgeGlobalConfigSlice: BridgeGlobalConfigSlice = {}
-
-export function getGlobalConfig(): BridgeGlobalConfigSlice {
-  return _bridgeGlobalConfigSlice
-}
-
-export function saveGlobalConfig(
-  updater: (current: BridgeGlobalConfigSlice) => BridgeGlobalConfigSlice,
-): void {
-  _bridgeGlobalConfigSlice = updater(_bridgeGlobalConfigSlice)
 }
 
 /**

@@ -1,13 +1,14 @@
 import * as React from 'react'
 import { Box, Text } from '@anthropic/ink'
 import { PromptInputHelpMenu } from '../PromptInput/PromptInputHelpMenu.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function General(): React.ReactNode {
   return (
     <Box flexDirection="column" paddingY={1} gap={1}>
       <Box>
         <Text>
-          Claude understands your codebase, makes edits with your permission,
+          {PRODUCT_NAME} understands your codebase, makes edits with your permission,
           and executes commands — right from your terminal.
         </Text>
       </Box>

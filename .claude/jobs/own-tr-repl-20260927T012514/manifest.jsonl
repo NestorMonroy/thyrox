@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 900 .claude/workbench/ts-own-errors-20260926T225629/after-source.cmds", "started_at": "2026-09-27T01:25:14+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T01:25:44+00:00", "duration_seconds": 30.599267}

@@ -165,8 +165,17 @@ trap 'rm -rf "$ANTES"' EXIT
 
 REPO_HISTORICO=""
 ARBOL_CON_DEFECTO=""
-for _dir in "${DIRS_AGENTES[@]}"; do
-  _repo="${_dir%/.claude/agents}"
+# La historia se busca donde los agentes ESTUVIERON, no donde estan hoy: las
+# raices que conservan `.claude/agents` pueden ser clones superficiales sin el
+# arbol del defecto (medido: un `kaupamex-api` de profundidad 1 dejaba el
+# control SIN MEDIR y en rojo), y las que lo tuvieron —`kaupamex-docs`, este
+# arbol— ya no tienen el directorio. Se recorren todas las raices del alcance
+# mas el proveedor.
+REPOS_HISTORICOS=()
+while IFS= read -r _raiz; do
+  git -C "$_raiz" rev-parse --git-dir >/dev/null 2>&1 && REPOS_HISTORICOS+=("$_raiz")
+done < <({ python3 "$RAIZ/src/paths/reach_roots.py" --paths; echo "$RAIZ"; } | sort -u)
+for _repo in "${REPOS_HISTORICOS[@]}"; do
   while IFS= read -r _commit; do
     [[ -z "$_commit" ]] && continue
     for _arbol in "$_commit^" "$_commit"; do

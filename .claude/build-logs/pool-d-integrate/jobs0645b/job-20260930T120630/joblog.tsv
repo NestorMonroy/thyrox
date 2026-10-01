@@ -1,0 +1,4 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790769990.675	     0.845	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs0645b/job-20260930T120630 job-20260930T120630 job-001
+2	:	1790769990.679	    18.932	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs0645b/job-20260930T120630 job-20260930T120630 job-002
+3	:	1790769990.683	    30.720	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/pool-d-integrate/jobs0645b/job-20260930T120630 job-20260930T120630 job-003

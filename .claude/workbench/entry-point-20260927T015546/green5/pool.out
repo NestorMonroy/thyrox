@@ -1,0 +1,20 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T022309
+  job-20260927T022309/job-001 pid 4109    PYTHONPATH=src python3 tests/typescript/test_emit_declarations.py > .claude/workbench/entry-point-20260927T015546/green5/emit.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green5/emit.out
+  job-20260927T022309/job-002 pid 4128    python3 tests/verify/test_check_exports_types.py > .claude/workbench/entry-point-20260927T015546/green5/gate-suite.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green5/gate-suite.out
+  job-20260927T022309/job-003 pid 4155    bash bin/check_exports_types > .claude/workbench/entry-point-20260927T015546/green5/gate-tree.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green5/gate-tree.out
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T022309_job-003 -> OK (2 de 4)
+asentado: job-20260927T022309_job-002 -> OK (2 de 4)
+asentado: job-20260927T022309_job-001 -> OK (2 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T022309
+       | (vacío — no emitió nada)
+OK     job-20260927T022309_job-001
+       | EXIT=0
+       memoria pico: 149660 KB (146 MB) · pared 10.88s
+OK     job-20260927T022309_job-002
+       | EXIT=0
+       memoria pico: 14476 KB (14 MB) · pared 0.39s
+OK     job-20260927T022309_job-003
+       | EXIT=0
+       memoria pico: 15292 KB (15 MB) · pared 0.07s

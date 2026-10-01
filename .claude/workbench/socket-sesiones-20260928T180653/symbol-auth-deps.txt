@@ -1,0 +1,40 @@
+==== Pv: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function Pv [5804,5873)
+async function Pv(){return QCe.token??QCe.set(await nc(process.pid))}
+==== n6: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function n6 [5963,6055)
+function n6(e){return f()?{procStart:void 0,procStartFt:e}:{procStart:e,procStartFt:void 0}}
+==== HP: 1 definicion(es) de nivel superior
+---- chunk-t0sp7zte.js function HP [1115,1231)
+function HP(){return YCe.pidDomain??=(async()=>_Lo(O()))().catch((t)=>{throw YCe.pidDomain=void 0,t}),YCe.pidDomain}
+==== v0: 1 definicion(es) de nivel superior
+---- chunk-t0sp7zte.js function v0 [1638,1789)
+function v0(t,n){if(typeof t!=="string"||!n||t.length===0)return!1;let i=Buffer.from(t),r=Buffer.from(n);if(i.length!==r.length)return!1;return f(i,r)}
+==== An: 1 definicion(es) de nivel superior
+---- chunk-797phdpb.js function An [7965,8028)
+async function An(e,t,n,r){return Jne(e,t,{mode:n,renameFn:r})}
+==== Se: 1 definicion(es) de nivel superior
+---- chunk-4cnes656.js variable Se [2595,2648)
+Se=Fo(()=>(o()??u(R(),".claude")).normalize("NFC"),o)
+==== r3n: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function r3n [7192,7256)
+function r3n(e){return e.replace(/[A-Z]/g,(n)=>n.toLowerCase())}
+==== Wh: 1 definicion(es) de nivel superior
+---- chunk-yqm14hey.js function Wh [7205,7259)
+function Wh(t){return/(^|[\\/])\.\.([\\/]|$)/.test(t)}
+==== Nh: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function Nh [2608,2707)
+function Nh(e){if(!mfn(e))return!1;try{return process.kill(e,0),!1}catch(n){return v(n)==="ESRCH"}}
+==== Hx: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function Hx [5873,5963)
+function Hx(e){if(f())return e.procStart!==void 0?void 0:e.procStartFt;return e.procStart}
+==== TFe: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function TFe [5133,5178)
+function TFe(e,n){if(n===e)return!0;return!1}
+==== nc: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function nc [6074,6337)
+async function nc(e,n){let r=Date.now(),i=x.of(j().host);if(n?.env!==void 0)return b(e,n.env);if(!n?.skipCache){let a=i.get(e),l=a?.miss?_:C;if(a&&r-a.at<l)return a.p}let s=b(e),o={at:r,p:s};i.set(e,o);let u=await s;if(u===void 0&&i.get(e)===o)o.miss=!0;return u}
+==== cl: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function cl [1005,1130)
+async function cl(e,n){try{let r=await F(e);if(!r.isFile()||r.size>n)return null;return await U(e,"utf8")}catch{return null}}
+symbol: 13 de 13 nombre(s) resueltos

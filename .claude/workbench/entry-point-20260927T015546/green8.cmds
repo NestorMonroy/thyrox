@@ -1,0 +1,3 @@
+cd src/packages/cli && bun test > ../../../.claude/workbench/entry-point-20260927T015546/green8/bun-cli.out 2>&1; echo EXIT=$? >> ../../../.claude/workbench/entry-point-20260927T015546/green8/bun-cli.out
+npx tsc --noEmit -p tsconfig.json > .claude/workbench/entry-point-20260927T015546/green8/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green8/root-tsc.out
+bash bin/check-cli-typecheck > .claude/workbench/entry-point-20260927T015546/green8/cli-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green8/cli-typecheck.out

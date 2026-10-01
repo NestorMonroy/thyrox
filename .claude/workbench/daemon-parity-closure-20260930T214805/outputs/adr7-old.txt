@@ -1,0 +1,3 @@
+cambiar el contrato del pool ni del proxy.
+
+Tareas y contrato

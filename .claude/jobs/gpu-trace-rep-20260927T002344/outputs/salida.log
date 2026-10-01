@@ -1,0 +1,66 @@
+run-task-pool: 12 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260927T002344
+  job-20260927T002344/job-001 pid 32029   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-1.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-1.out
+  job-20260927T002344/job-002 pid 32064   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-2.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-2.out
+  job-20260927T002344/job-003 pid 32127   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-3.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-3.out
+  job-20260927T002344/job-004 pid 32173   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-4.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-4.out
+  job-20260927T002344/job-005 pid 7177    cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-5.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-5.out
+  job-20260927T002344/job-006 pid 7196    cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-6.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-6.out
+  job-20260927T002344/job-007 pid 7234    cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-7.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-7.out
+  job-20260927T002344/job-008 pid 7273    cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-8.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-8.out
+  job-20260927T002344/job-009 pid 14759   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-9.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-9.out
+  job-20260927T002344/job-010 pid 14778   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-10.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-10.out
+  job-20260927T002344/job-011 pid 14811   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-11.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-11.out
+  job-20260927T002344/job-012 pid 14855   cd /home/user/thyrox && PYTHONPATH=src timeout 120 .venv/bin/python tests/session/test_gpu_trace.py > .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-12.out 2>&1; echo EXIT=$? >> .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep-12.out
+run-task-pool: lanzados 12 de 12; esperando en PRIMER PLANO (timeout 200s)
+asentado: job-20260927T002344_job-001 -> OK (2 de 13)
+asentado: job-20260927T002344_job-002 -> OK (3 de 13)
+asentado: job-20260927T002344_job-003 -> OK (4 de 13)
+asentado: job-20260927T002344_job-004 -> OK (5 de 13)
+asentado: job-20260927T002344_job-005 -> OK (6 de 13)
+asentado: job-20260927T002344_job-006 -> OK (7 de 13)
+asentado: job-20260927T002344_job-007 -> OK (8 de 13)
+asentado: job-20260927T002344_job-008 -> OK (9 de 13)
+asentado: job-20260927T002344_job-012 -> OK (10 de 13)
+asentado: job-20260927T002344_job-009 -> OK (10 de 13)
+asentado: job-20260927T002344_job-010 -> OK (11 de 13)
+asentado: job-20260927T002344_job-011 -> OK (12 de 13)
+== 13 trabajos asentados ==
+OLVIDADO job-20260927T002344
+       | (vacío — no emitió nada)
+OK     job-20260927T002344_job-001
+       | EXIT=0
+       memoria pico: 16080 KB (16 MB) · pared 8.39s
+OK     job-20260927T002344_job-002
+       | EXIT=0
+       memoria pico: 16052 KB (16 MB) · pared 8.49s
+OK     job-20260927T002344_job-003
+       | EXIT=0
+       memoria pico: 16184 KB (16 MB) · pared 8.60s
+OK     job-20260927T002344_job-004
+       | EXIT=0
+       memoria pico: 16036 KB (16 MB) · pared 8.20s
+OK     job-20260927T002344_job-005
+       | EXIT=0
+       memoria pico: 16108 KB (16 MB) · pared 8.74s
+OK     job-20260927T002344_job-006
+       | EXIT=0
+       memoria pico: 16040 KB (16 MB) · pared 8.60s
+OK     job-20260927T002344_job-007
+       | EXIT=0
+       memoria pico: 16088 KB (16 MB) · pared 8.54s
+OK     job-20260927T002344_job-008
+       | EXIT=0
+       memoria pico: 16020 KB (16 MB) · pared 8.49s
+OK     job-20260927T002344_job-009
+       | EXIT=0
+       memoria pico: 16060 KB (16 MB) · pared 8.23s
+OK     job-20260927T002344_job-010
+       | EXIT=0
+       memoria pico: 16084 KB (16 MB) · pared 8.25s
+OK     job-20260927T002344_job-011
+       | EXIT=0
+       memoria pico: 15900 KB (16 MB) · pared 8.33s
+OK     job-20260927T002344_job-012
+       | EXIT=0
+       memoria pico: 16008 KB (16 MB) · pared 3.34s
+__BG_EXIT__=0

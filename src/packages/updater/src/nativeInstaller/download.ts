@@ -1,7 +1,7 @@
 /**
  * Funcionalidad de descarga para el instalador nativo
  *
- * Maneja la descarga de binarios de Claude desde varias fuentes:
+ * Maneja la descarga de binarios de thyrox desde varias fuentes:
  * - Paquetes NPM de Artifactory (ant-internal)
  * - Bucket GCS
  * - GitHub Releases (ruta por defecto de ccb)
@@ -276,7 +276,7 @@ async function downloadVersionFromArtifactory(
 const DEFAULT_STALL_TIMEOUT_MS = 60000 // 60 segundos
 function getStallTimeoutMs(): number {
   return (
-    Number(process.env.CLAUDE_CODE_STALL_TIMEOUT_MS_FOR_TESTING) ||
+    Number(process.env.THYROX_CODE_STALL_TIMEOUT_MS_FOR_TESTING) ||
     DEFAULT_STALL_TIMEOUT_MS
   )
 }
@@ -482,7 +482,7 @@ async function downloadVersionFromGithubReleases(
   //   - Otras formas de tag no reconocidas: fallback solo-TLS (defensivo
   //     — no deberia ocurrir en la practica ya que la descarga esta
   //     gateada por isVersionNewer).
-  // Corrida de auditoria 2026-05-04: 107/107 releases chequeados, solo
+  // Auditoria de la fuente (2026-05-04): 107/107 releases chequeados, solo
   // v1.carus.000 carece de .sha256 — confirma la seguridad de este gate.
   const expectedChecksum = await fetchAssetSha256(tag, assetName)
   // Major >= 10. Excluye v1.x (carus legacy + ant upstream) y v2-v9.

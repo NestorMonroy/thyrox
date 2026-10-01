@@ -32,6 +32,7 @@ import {
   renderToolUseMessage,
   renderToolUseRejectedMessage,
 } from './UI.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const inputSchema = lazySchema(() =>
   z.strictObject({
@@ -66,7 +67,7 @@ export type Output = z.infer<OutputSchema>
 
 export const ConfigTool = buildTool({
   name: CONFIG_TOOL_NAME,
-  searchHint: 'get or set Claude Code settings (theme, model)',
+  searchHint: `get or set ${PRODUCT_NAME} settings (theme, model)`,
   maxResultSizeChars: 100_000,
   async description() {
     return DESCRIPTION

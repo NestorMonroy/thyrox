@@ -175,6 +175,7 @@ def render_session_start(message: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     """Punto de entrada del hook. Sale 0 SIEMPRE: un hook no rompe el turno."""
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--agents-dir", default=None)
     parser.add_argument("--evidence-note", default="")

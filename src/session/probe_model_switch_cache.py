@@ -44,6 +44,7 @@ import shutil
 import subprocess
 import sys
 import uuid
+from typing import Mapping
 
 
 from paths import reach  # noqa: E402
@@ -171,16 +172,18 @@ def verdict(steps: list[dict]) -> dict:
     control = next((s for s in steps if s["step"].endswith("-4")), None)
     out = {"steps": len(steps), "original_entry_survived": None, "target_rewrote_context": None,
            "return_read_fraction": None, "control_read_fraction": None, "loss_attributable_to_switch": None}
-    ok = lambda s: s is not None and "cache_read" in s  # un paso sin usage no decide
-    if ok(ida) and ok(vuelta):
+    # `ok(s)` era `s is not None and "cache_read" in s` — un lambda no le da al
+    # analizador con qué estrechar el `dict | None` que sigue; la condición
+    # inline sí lo hace: un paso sin usage no decide igual.
+    if ida is not None and vuelta is not None and "cache_read" in ida and "cache_read" in vuelta:
         out["original_entry_survived"] = cache_reused(prior_context=ida["context_tokens"], cache_read=vuelta["cache_read"])
         out["return_read_fraction"] = vuelta["cache_read"] / ida["context_tokens"] if ida["context_tokens"] else None
-    if ok(vuelta) and ok(control):
+    if vuelta is not None and control is not None and "cache_read" in vuelta and "cache_read" in control:
         # el control reanuda con el MISMO modelo: lo que pierda es de reanudar
         out["control_read_fraction"] = control["cache_read"] / vuelta["context_tokens"] if vuelta["context_tokens"] else None
         if out["return_read_fraction"] is not None and out["control_read_fraction"] is not None:
             out["loss_attributable_to_switch"] = out["return_read_fraction"] < out["control_read_fraction"] - 0.05
-    if ok(ida) and ok(destino):
+    if ida is not None and destino is not None and "cache_read" in ida and "cache_read" in destino:
         # el destino no pudo leer la conversación de la ida: lo que releyó
         # es a lo sumo el prefijo de sistema compartido, y escribió el resto
         out["target_rewrote_context"] = destino["cache_creation"] > 0 and destino["cache_read"] < ida["context_tokens"] * REUSE_THRESHOLD
@@ -245,7 +248,7 @@ def preconditions(claude_bin: str = "claude") -> tuple[int, str]:
     return 0, resolved
 
 
-def child_env(base: dict) -> dict:
+def child_env(base: Mapping[str, str]) -> dict:
     """El entorno del hijo: el de la madre sin su ``CLAUDE_CODE_SESSION_ID``."""
     env = dict(base)
     env.pop(MOTHER_SESSION_ENV, None)
@@ -384,7 +387,7 @@ def live_matrix(args) -> int:
 
 
 def main(argv: list[str]) -> int:
-    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    p = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     p.add_argument("--live", action="store_true", help="ejecuta la secuencia contra el API (cuesta céntimos)")
     p.add_argument("--from-model", default="claude-fable-5-1")
     p.add_argument("--to-model", default="claude-opus-5")

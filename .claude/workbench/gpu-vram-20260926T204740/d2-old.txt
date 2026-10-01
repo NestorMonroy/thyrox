@@ -1,0 +1,2 @@
+        "peak_kb": max(kb for kb, _ in measures),
+    }

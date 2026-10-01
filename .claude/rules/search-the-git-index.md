@@ -50,7 +50,7 @@ tiempo.
 ## El gate
 
 `src/hooks/detect_git_grep_opportunity.py`, detector de
-`pretooluse_dispatch.py`. Momentos que reconoce, cada uno con su forma
+`tool_use_preflight.py`. Momentos que reconoce, cada uno con su forma
 alternativa en el aviso:
 
 1. `grep -r`/`-R` sobre una ruta dentro de un work tree de git → `rg` o
@@ -70,7 +70,7 @@ querer de verdad la historia entera.
 Sus tres mitades de juicio se probaron por anulación, y cada una tumba
 exactamente su gemelo: `REQUIRE_GIT_TREE` (el `grep -r` fuera de git),
 `SKIP_BOUNDED_RANGE` (el pickaxe con rango acotado) y el descarte de
-heredocs (sus dos casos). La primera corrida de la segunda anulación tumbó el caso
+heredocs (sus dos casos). La primera ejecución de la segunda anulación tumbó el caso
 equivocado: era el `.pyc` del paso anterior (mismo segundo, mismo tamaño),
 no el código; se repitió con `PYTHONDONTWRITEBYTECODE=1`.
 

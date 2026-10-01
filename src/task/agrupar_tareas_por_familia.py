@@ -24,7 +24,6 @@ import collections
 import re
 import sqlite3
 import sys
-from pathlib import Path
 
 from paths import reach  # noqa: E402
 

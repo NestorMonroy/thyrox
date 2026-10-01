@@ -53,10 +53,18 @@
 # Cada trabajo se registra en el ledger de `wait-jobs.sh`, así que el
 # Stop hook bloquea el turno si alguien omite la barrera.
 #
-# Sale: 0 todos asentaron · 2 alguno murió sin marcador · 3 timeout · 4 uso.
+# Sale: 0 todos asentaron · 2 alguno murió sin marcador · 3 timeout · 4 uso ·
+# 5 el árbol medido cambió durante el despacho: el veredicto no es atribuible.
 # =============================================================================
 
 set -uo pipefail
+
+# El cuerpo entero va dentro de un bloque `{ … exit; }`: bash lo analiza
+# completo antes de ejecutarlo. Sin el bloque, bash lee el guion por
+# desplazamiento a medida que avanza, y reescribirlo en su sitio mientras
+# corre (`cat >`, `bin/replace_literal`, que conservan el inodo) hace que el
+# proceso vivo siga leyendo el archivo nuevo desde el byte viejo.
+{
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WAIT_JOBS="$HERE/wait-jobs.sh"
@@ -92,6 +100,20 @@ done
 [ -n "$INPUT" ] || { echo "run-task-pool: falta el archivo de comandos (o '-' para stdin)" >&2; exit 4; }
 [ -x "$WAIT_JOBS" ] || { echo "run-task-pool: no encuentro wait-jobs.sh en $HERE" >&2; exit 4; }
 
+# El árbol que los trabajos miden es el del directorio desde el que se lanza
+# el pool. Si cambia entre el principio y el final —una edición del
+# orquestador, el commit de otro escritor, un trabajo que muta lo que otro
+# mide—, el veredicto no corresponde a ningún estado: se sale 5 y se dice cuál
+# habría sido. La huella y su alcance son los de `tests/run.sh`
+# (`src/verify/tree_fingerprint.py`). Fuera de un árbol de git no hay estado
+# que fijar y no se toma huella.
+TREE_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || TREE_ROOT=""
+tree_fingerprint() {
+    [ -n "$TREE_ROOT" ] || return 1
+    PYTHONPATH="$HERE/..${PYTHONPATH:+:$PYTHONPATH}" python3 -m verify.tree_fingerprint "$TREE_ROOT" 2>/dev/null
+}
+TREE_AT_START="$(tree_fingerprint)" || TREE_AT_START=""
+
 # ---------------------------------------------------------------------------
 # La cota por MEMORIA — `--memfree` de GNU Parallel 20231122
 # ---------------------------------------------------------------------------
@@ -109,15 +131,13 @@ done
 # ADMITIR y es ciega a lo que el trabajo consuma despues: varios `tsc`
 # admitidos con memoria de sobra crecen juntos y la agotan igual.
 #
+# Las dos mitades las ejerce el propio GNU Parallel por `--limit` (ver «El
+# planificador es GNU Parallel» abajo). Lo que se pasa a `--limit` en vez de su
+# `--memfree`, y por que, esta en la cabecera de `run-task-pool-limit.sh`: la
+# medida es `MemAvailable` y no la suma de Parallel, con cero vivos se admite,
+# y no se mata al ultimo vivo.
+#
 # DIVERGENCIAS DECLARADAS:
-#   - la medida es `MemAvailable`, la estimacion del kernel de memoria
-#     recuperable sin swap. La referencia suma `MemFree + Buffers + Cached +
-#     SwapCached`, que cuenta `Shmem` como libre aunque no se pueda recuperar.
-#     Sin `MemAvailable` (kernel < 3.14) se usa la suma de la referencia.
-#   - con cero trabajos vivos se admite aunque falte memoria. Sin esa
-#     excepcion, un trabajo mayor que la cota bloquearia el pool para siempre.
-#   - no se mata al ULTIMO trabajo vivo: matarlo no libera memoria que otro
-#     trabajo del despacho pueda usar, solo repite el mismo trabajo.
 #   - los sufijos llegan hasta `T`/`Ti`; `P` a `Y` no se portan porque ninguna
 #     maquina de este arbol tiene esa memoria.
 #   - `--memsuspend` (SIGSTOP en vez de matar) no se porta en este pase.
@@ -126,6 +146,19 @@ MEMFREE=0
 # `parse_binary_size` y `mem_available_bytes` viven en `src/lib/memory.sh`,
 # compartidas con `bg.sh --memfree`.
 source "$HERE/../lib/memory.sh"
+# GNU Time mide cada trabajo (memoria pico, pared y CPU a `<log>.time`); la
+# identidad la comprueba la cadena de herramientas, una vez por despacho. Sin
+# el, los trabajos corren igual y el despacho lo declara.
+#
+# La consulta va en una SUBSHELL: `toolchain.sh` exporta sus defaults, y
+# cargado aqui los heredaba cada trabajo del pool — medido, un
+# `THYROX_TOOLCHAIN_INTERPRETER_PATH` que nadie declaro tumbaba 3 de 6 casos
+# de `test-toolchain-sh.sh`. De la subshell solo sale la ruta.
+TIME_BIN="$(source "$HERE/../lib/toolchain.sh"
+            thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || true
+if [[ -z "$TIME_BIN" ]]; then
+    echo "run-task-pool: sin GNU Time, no se mide la memoria de los trabajos (thyrox_toolchain_require_gnu_time)"
+fi
 
 if [ -n "$MEMFREE_SPEC" ]; then
     # El awk es el que declara `THYROX_TOOLCHAIN_AWK_BIN` —el mismo nombre que
@@ -135,6 +168,7 @@ if [ -n "$MEMFREE_SPEC" ]; then
     # propio del `.env` seria una segunda fuente de verdad. Se resuelve UNA vez:
     # cada consulta lanza un interprete, y la sonda corre en cada ciclo.
     source "$HERE/../lib/reach.sh"
+    # shellcheck disable=SC2034  # lo lee memory.sh, cargado arriba
     AWK_BIN="$(thyrox_config_value THYROX_TOOLCHAIN_AWK_BIN awk)"
     MEMFREE="$(parse_binary_size "$MEMFREE_SPEC")" || {
         echo "run-task-pool: --memfree ilegible: '$MEMFREE_SPEC' (ej. 1G, 512M, 800m)" >&2; exit 4; }
@@ -163,8 +197,8 @@ fi
 # LA ANCHURA EFECTIVA ES min(WIDTH, N), y se capa donde N ya se conoce. La
 # derivacion es la de la referencia: `max_workers = min(cpu_cap,
 # len(uncached_work))` (graphify/extract.py:6184-6185). Aqui el coste es DE
-# REPORTE, no de spawn —el bucle de despacho no preasigna procesos, solo no
-# bloquea— pero una cifra publicada que no es la efectiva miente sobre lo que
+# REPORTE, no de spawn —GNU Parallel no preasigna procesos: lanza cada trabajo
+# al abrirse un hueco— pero una cifra publicada que no es la efectiva miente sobre lo que
 # la maquina va a hacer.
 #
 # DIVERGENCIA DECLARADA — el SEGUNDO caso de la referencia no se porta.
@@ -175,8 +209,8 @@ fi
 #
 #   razon que la fuente declara        | aqui
 #   -----------------------------------|-----------------------------------------
-#   spawn + un ida y vuelta de IPC por  | NO transfiere: lanzamos un `nohup setsid
-#   archivo, que una sola ranura no     | bash` por comando a CUALQUIER anchura,
+#   spawn + un ida y vuelta de IPC por  | NO transfiere: Parallel lanza un proceso
+#   archivo, que una sola ranura no     | por comando a CUALQUIER anchura,
 #   amortiza                            | asi que anchura 1 no anade ni un spawn
 #   el worker huerfano que deja         | NO transfiere: es el defecto que el kill
 #   `os._exit`                          | por grupo cierra en este mismo pase
@@ -320,155 +354,136 @@ SERIE=""
 
 echo "run-task-pool: $N trabajo(s), anchura ${WIDTH}${SERIE}, logs en $RUN_DIR"
 
-ALIVE=()          # pids vivos, del mas viejo al mas joven
-ALIVE_INDEX=()    # el indice del comando de cada pid
-ALIVE_LABEL=()    # la etiqueta del ledger de cada pid
-DRAINING=0
-LAUNCHED=0
-REQUEUED=0
-QUEUE=()
-for ((q = 0; q < N; q++)); do QUEUE+=("$q"); done
-ATTEMPTS=()
+# ---------------------------------------------------------------------------
+# El planificador es GNU Parallel
+# ---------------------------------------------------------------------------
+# Lo que Parallel hace, se le pide a Parallel (medido en
+# `.claude/workbench/run-task-pool-parallel-*/`):
+#
+#   anchura            `--jobs <archivo>`: lo relee cada vez que un trabajo
+#                      termina. El pool escribe ahi la anchura EFECTIVA —el
+#                      porcentaje ya resuelto y capada a N— y la reescribe al
+#                      cambiar el archivo del usuario;
+#   cota de memoria    `--limit run-task-pool-limit.sh`: admite, retiene o mata
+#                      al mas joven segun la sonda de `src/lib/memory.sh`;
+#   reencolar          `--retries`: Parallel 20231122 mata al mas joven y NO lo
+#                      reencola (sonda `limit2`); el envoltorio sale 143 solo
+#                      en ese caso, y ese intento se repite;
+#   drenaje            SIGHUP: «No new jobs will be started» y espera a los
+#                      vivos (`sub start_no_new_jobs`, `:5562`).
+#
+# Lo que Parallel no trae lo pone `run-task-pool-job.sh`: el marcador, el
+# ledger y GNU Time por trabajo. La barrera sigue siendo `wait-jobs`.
+#
+# El `--termseq` da al envoltorio tiempo de soltar su fila del ledger: con el
+# de Parallel (TERM 200 ms … KILL) moria antes de terminar la trampa.
+PARALLEL_BIN="$(source "$HERE/../lib/toolchain.sh"
+                thyrox_toolchain_require_parallel >/dev/null 2>&1 \
+                    && printf '%s' "${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}")" || true
+PARALLEL_HOME_DIR="$(source "$HERE/../lib/toolchain.sh"; thyrox_toolchain_parallel_home)"
+if [ -z "$PARALLEL_BIN" ]; then
+    echo "run-task-pool: falta GNU Parallel (${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}); se instala con" \
+         "THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh. No se lanza nada." >&2
+    exit 4
+fi
 
-# Retira de las tres listas paralelas los trabajos que ya terminaron.
-prune_alive() {
-    local k keep_pid=() keep_index=() keep_label=()
-    for k in "${!ALIVE[@]}"; do
-        if kill -0 "${ALIVE[$k]}" 2>/dev/null; then
-            keep_pid+=("${ALIVE[$k]}"); keep_index+=("${ALIVE_INDEX[$k]}")
-            keep_label+=("${ALIVE_LABEL[$k]}")
-        fi
-    done
-    ALIVE=("${keep_pid[@]}"); ALIVE_INDEX=("${keep_index[@]}"); ALIVE_LABEL=("${keep_label[@]}")
-}
-
-# ¿La memoria impide admitir otro trabajo? Nunca con cero vivos.
-memory_blocks_admission() {
-    [ "$MEMFREE" -gt 0 ] && [ "${#ALIVE[@]}" -gt 0 ] || return 1
-    local available
-    available="$(mem_available_bytes)" || return 1
-    [ "$available" -lt "$MEMFREE" ]
-}
-
-# La mitad de aplicacion: por debajo de la mitad de la cota, se mata al mas
-# joven —el ultimo de la lista— y su comando vuelve al final de la cola.
-enforce_memfree() {
-    [ "$MEMFREE" -gt 0 ] && [ "${#ALIVE[@]}" -gt 1 ] || return 0
-    local available last
-    available="$(mem_available_bytes)" || return 0
-    [ "$available" -lt $(( MEMFREE / 2 )) ] || return 0
-    last=$(( ${#ALIVE[@]} - 1 ))
-    "$WAIT_JOBS" kill "${ALIVE_LABEL[$last]}" >/dev/null 2>&1
-    echo "run-task-pool: memoria disponible $available < $(( MEMFREE / 2 )) —" \
-         "${ALIVE_LABEL[$last]} matado y reencolado" >&2
-    QUEUE+=("${ALIVE_INDEX[$last]}")
-    REQUEUED=$((REQUEUED + 1))
-    LAUNCHED=$((LAUNCHED - 1))
-    unset "ALIVE[$last]" "ALIVE_INDEX[$last]" "ALIVE_LABEL[$last]"
-    ALIVE=("${ALIVE[@]}"); ALIVE_INDEX=("${ALIVE_INDEX[@]}"); ALIVE_LABEL=("${ALIVE_LABEL[@]}")
-}
-
-# Espera a que quede un hueco. No usa `wait -n`: los trabajos van desprendidos
-# (`disown`) para sobrevivir al fin del turno, y un proceso desprendido ya no es
-# hijo esperable de este shell.
-free_a_slot() {
-    while :; do
-        prune_alive
-        enforce_memfree
-        refresh_width
-        [ "$DRAINING" -eq 1 ] && return 0
-        if [ "${#ALIVE[@]}" -lt "$WIDTH" ] && ! memory_blocks_admission; then
-            return 0
-        fi
-        sleep 1
-    done
-}
-
-# Relee el archivo de anchura, si lo hay. Un valor invalido NO mata el despacho:
-# se avisa una vez y se conserva la anchura anterior, porque un error de dedo en
-# un archivo de configuracion no debe tumbar trabajos que ya estan corriendo.
-refresh_width() {
-    [ -n "$WIDTH_FILE" ] || return 0
-    local raw nueva
-    raw="$(width_from_file "$WIDTH_FILE")" || return 0
-    [ "$raw" = "$RAW_WIDTH" ] && return 0
-    RAW_WIDTH="$raw"
-    # El cero drena: se deja de admitir, los vivos terminan.
-    case "$raw" in 0|0%) DRAINING=1
-        echo "run-task-pool: anchura 0 en $WIDTH_FILE — se drena: no se admiten trabajos nuevos" >&2
-        return 0 ;;
-    esac
-    nueva="$(resolve_width "$raw")" || return 0
-    # El mismo cap: la forma de archivo puede subir la anchura EN VUELO por
-    # encima del numero de trabajos, y lo que se publique al releerla tiene que
-    # seguir siendo la anchura efectiva.
-    [ "$nueva" -le "$N" ] || nueva="$N"
-    [ "$nueva" = "$WIDTH" ] && return 0
-    WIDTH="$nueva"
-    echo "run-task-pool: anchura ahora $WIDTH (releida de $WIDTH_FILE)" >&2
-}
-
-# La cola se consume hasta vaciarse. Con `--memfree` un trabajo matado vuelve a
-# ella, asi que el bucle no termina al lanzar el ultimo: sigue vigilando la
-# memoria mientras quede alguno vivo, y relanza lo que se reencole.
-while :; do
-    if [ "${#QUEUE[@]}" -eq 0 ]; then
-        [ "$MEMFREE" -gt 0 ] || break
-        prune_alive
-        [ "${#ALIVE[@]}" -eq 0 ] && break
-        enforce_memfree
-        [ "${#QUEUE[@]}" -eq 0 ] && sleep 1
-        continue
-    fi
-    free_a_slot
-    if [ "$DRAINING" -eq 1 ]; then
-        for idx in "${QUEUE[@]}"; do
-            echo "run-task-pool: sin lanzar ($((N - LAUNCHED))): ${COMMANDS[$idx]}" >&2
-        done
-        QUEUE=()
-        continue
-    fi
-    idx="${QUEUE[0]}"; QUEUE=("${QUEUE[@]:1}")
-    cmd="${COMMANDS[$idx]}"
-    ATTEMPTS[$idx]=$(( ${ATTEMPTS[$idx]:-0} + 1 ))
-    # El nombre: el declarado, o el ordinal dentro de ESTE despacho. Un
-    # reintento lleva sufijo propio: su etiqueta y su log no pisan los del
-    # intento matado, que se conservan como evidencia.
-    _nombre="${NAMES[$idx]}"
-    [ -n "$_nombre" ] || _nombre="$(printf '%s-%03d' "$PREFIX" "$((idx + 1))")"
-    [ "${ATTEMPTS[$idx]}" -gt 1 ] && _nombre="$_nombre-retry$(( ATTEMPTS[$idx] - 1 ))"
-    # La etiqueta lleva el despacho: es la clave del ledger, y sin el
-    # discriminante dos despachos se pisaban la fila.
-    LABEL="$DISPATCH/$_nombre"
-    LOG="$RUN_DIR/$_nombre.log"
-    # El marcador `EXIT=` es lo que hace decidible la muerte: sin él,
-    # `wait-jobs.sh` no distingue "sigue corriendo" de "murió callado".
-    #
-    # Va en un shell EXTERIOR al comando, no concatenado con `;`. Un `cmd; echo
-    # EXIT=$?` lo defiere cualquier comando que llame a `exit`: `exit 7` termina
-    # ese mismo shell y el `echo` no llega a correr — medido, el log quedaba
-    # vacío y la barrera lo daba por muerto callado. Con el shell interior, el
-    # `exit` mata al de dentro y el de fuera sí escribe el marcador.
-    # `setsid` — lider de su propio grupo, para que el kill del ledger barra a
-    # los hijos y no deje huerfanos. La nota larga esta en `bg.sh`: con el
-    # control de trabajos apagado no bifurca, asi que `$!` sigue siendo el pid
-    # que se registra.
-    nohup setsid bash -c 'bash -c "$1"; echo EXIT=$?' _ "$cmd" > "$LOG" 2>&1 &
-    PID=$!
-    disown "$PID" 2>/dev/null || true
-    ALIVE+=("$PID"); ALIVE_INDEX+=("$idx"); ALIVE_LABEL+=("$LABEL")
-    "$WAIT_JOBS" register "$LABEL" "$LOG" "$PID" >/dev/null
-    LAUNCHED=$((LAUNCHED + 1))
-    printf '  %-14s pid %-7s %s\n' "$LABEL" "$PID" "$cmd"
+JOBS_DIR="$RUN_DIR/.jobs"
+mkdir -p "$JOBS_DIR"
+: > "$JOBS_DIR/index"
+for ((q = 0; q < N; q++)); do
+    _nombre="${NAMES[$q]}"
+    [ -n "$_nombre" ] || _nombre="$(printf '%s-%03d' "$PREFIX" "$((q + 1))")"
+    printf '%s' "${COMMANDS[$q]}" > "$JOBS_DIR/$_nombre.cmd"
+    printf '%s\n' "$_nombre" >> "$JOBS_DIR/index"
+    printf '  %-14s %s\n' "$DISPATCH/$_nombre" "${COMMANDS[$q]}"
 done
+# Parallel detecta el cambio del archivo por su mtime en SEGUNDOS enteros
+# (`stat()[9]`, `/usr/bin/parallel:4006`): una reescritura dentro del mismo
+# segundo que la anterior no cuenta como cambio y la anchura nueva se ignora.
+# Cada escritura adelanta el mtime al menos un segundo sobre la previa.
+WIDTH_MTIME=0
+write_width() {
+    local now; now="$(date +%s)"
+    [ "$now" -gt "$WIDTH_MTIME" ] || now=$(( WIDTH_MTIME + 1 ))
+    echo "$1" > "$JOBS_DIR/width"
+    touch -d "@$now" "$JOBS_DIR/width"
+    WIDTH_MTIME="$now"
+}
+write_width "$WIDTH"
+
+LIMIT_ARGS=()
+if [ "$MEMFREE" -gt 0 ]; then
+    export AWK_BIN
+    LIMIT_ARGS=(--limit "$HERE/run-task-pool-limit.sh $MEMFREE $JOBS_DIR")
+fi
+export RUN_TASK_POOL_TIME_BIN="$TIME_BIN"
+
+PARALLEL_HOME="$PARALLEL_HOME_DIR" "$PARALLEL_BIN" --jobs "$JOBS_DIR/width" \
+    "${LIMIT_ARGS[@]}" --retries 100 --termseq TERM,5000,KILL,25 \
+    --joblog "$RUN_DIR/joblog.tsv" \
+    "$HERE/run-task-pool-job.sh" "$RUN_DIR" "$DISPATCH" '{}' \
+    :::: "$JOBS_DIR/index" < /dev/null > "$JOBS_DIR/parallel.out" 2>&1 &
+SCHEDULER=$!
+
+# Mientras Parallel despacha, el pool relee el archivo de anchura del usuario y
+# vigila el plazo. Un `0` drena con SIGHUP; un valor invalido se avisa y no
+# toca la anchura en vuelo, porque un error de dedo no debe tumbar trabajos
+# que ya corren.
+STARTED_AT="$(date +%s)"
+DRAINING=0
+while kill -0 "$SCHEDULER" 2>/dev/null; do
+    [ $(( $(date +%s) - STARTED_AT )) -lt "$TIMEOUT" ] || break
+    if [ -n "$WIDTH_FILE" ] && [ "$DRAINING" -eq 0 ]; then
+        raw="$(width_from_file "$WIDTH_FILE")" || raw="$RAW_WIDTH"
+        if [ "$raw" != "$RAW_WIDTH" ]; then
+            RAW_WIDTH="$raw"
+            case "$raw" in
+                0|0%)
+                    DRAINING=1
+                    kill -HUP "$SCHEDULER" 2>/dev/null
+                    echo "run-task-pool: anchura 0 en $WIDTH_FILE — se drena: no se admiten trabajos nuevos" >&2 ;;
+                *)
+                    if nueva="$(resolve_width "$raw")"; then
+                        [ "$nueva" -le "$N" ] || nueva="$N"
+                        if [ "$nueva" != "$WIDTH" ]; then
+                            WIDTH="$nueva"
+                            write_width "$WIDTH"
+                            echo "run-task-pool: anchura ahora $WIDTH (releida de $WIDTH_FILE)" >&2
+                        fi
+                    fi ;;
+            esac
+        fi
+    fi
+    sleep 0.2
+done
+
+# Lo lanzado es lo que tiene contador de intentos; el resto quedo en la cola.
+LAUNCHED=0 REQUEUED=0
+while IFS= read -r _nombre; do
+    if [ -f "$JOBS_DIR/$_nombre.attempts" ]; then
+        LAUNCHED=$((LAUNCHED + 1))
+        [ "$(cat "$JOBS_DIR/$_nombre.attempts")" -gt 1 ] && REQUEUED=$((REQUEUED + 1))
+    elif ! kill -0 "$SCHEDULER" 2>/dev/null; then
+        echo "run-task-pool: sin lanzar: $(cat "$JOBS_DIR/$_nombre.cmd")" >&2
+    fi
+done < "$JOBS_DIR/index"
 [ "$REQUEUED" -eq 0 ] || echo "run-task-pool: $REQUEUED reencolado(s) por memoria"
 
-# `--only "$DISPATCH"` acota la espera a los hijos de ESTE despacho. Con
-# `$PREFIX` a secas —como estaba— dos pools que compartieran prefijo se
-# esperaban mutuamente, que es la mitad de TASK-THYROX-0084 que da nombre a
-# la tarea. Sin ninguno, la
-# barrera globea todo el ledger — y cuando el pool se lanza a traves de
-# `bg.sh` esta registrado ahi, asi que se esperaba a si mismo: nunca asentaba
-# y agotaba su timeout entero con sus hijos ya terminados. TASK-THYROX-0083.
-echo "run-task-pool: lanzados $LAUNCHED de $N; esperando en PRIMER PLANO (timeout ${TIMEOUT}s)"
-"$WAIT_JOBS" wait --timeout "$TIMEOUT" --only "$DISPATCH"
+# `--only "$DISPATCH"` acota la espera a los trabajos de ESTE despacho: sin
+# ella dos pools con el mismo prefijo se esperaban mutuamente, y un pool lanzado
+# con `bg.sh` —que tambien esta en el ledger— se esperaba a si mismo.
+# Si el plazo se agoto con Parallel vivo, la espera es de un segundo y sale 3:
+# los trabajos siguen en el ledger, y los que Parallel aun no admitio se
+# registraran al arrancar.
+REMAINING=$(( TIMEOUT - ($(date +%s) - STARTED_AT) ))
+[ "$REMAINING" -ge 1 ] || REMAINING=1
+echo "run-task-pool: lanzados $LAUNCHED de $N; esperando en PRIMER PLANO (timeout ${REMAINING}s)"
+"$WAIT_JOBS" wait --timeout "$REMAINING" --only "$DISPATCH"
+VERDICT=$?
+if [ -n "$TREE_AT_START" ] && [ "$(tree_fingerprint)" != "$TREE_AT_START" ]; then
+    echo "ÁRBOL MUTADO durante el despacho ($TREE_ROOT): el veredicto no es atribuible a ningún estado."
+    echo "  habría sido: exit $VERDICT"
+    exit 5
+fi
+exit "$VERDICT"
+}

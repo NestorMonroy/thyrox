@@ -1,0 +1,11 @@
+== _completar publica la causa del fallo ==
+  ok    el sentinela sigue siendo «fallo»
+  ok    nombra el agente
+  ok    publica el codigo de salida
+  ok    publica el stderr del subproceso
+  ok    el camino sano no publica ruido
+  ok    el timeout es un desenlace, no una excepcion
+  ok    el timeout se nombra con su umbral
+
+== 7 ok · 0 fallas ==
+EXIT=0

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-host-coordinator-20261001T101644/launch.sh", "started_at": "2026-10-01T10:21:01+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T10:58:56+00:00", "duration_seconds": 2275.382566}

@@ -131,8 +131,8 @@ async function getMcpHeadersFromHelper(
         // deshaw/anthropic-issues#28.
         env: {
           ...process.env,
-          CLAUDE_CODE_MCP_SERVER_NAME: serverName,
-          CLAUDE_CODE_MCP_SERVER_URL: config.url,
+          THYROX_CODE_MCP_SERVER_NAME: serverName,
+          THYROX_CODE_MCP_SERVER_URL: config.url,
         },
       },
     )

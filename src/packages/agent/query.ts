@@ -1188,7 +1188,7 @@ async function* queryLoop(
         if (
           capEnabled &&
           maxOutputTokensOverride === undefined &&
-          !readEnv('CLAUDE_CODE_MAX_OUTPUT_TOKENS')
+          !readEnv('THYROX_CODE_MAX_OUTPUT_TOKENS')
         ) {
           logEvent('tengu_max_tokens_escalate', {
             escalatedTo: getEscalatedMaxTokens(),
@@ -1291,13 +1291,13 @@ async function* queryLoop(
         // met) can't block forever. Each block injects a blockingError into
         // the transcript; left unbounded the transcript grows every cycle
         // until the main API call 413s (prompt-too-long). Decision arithmetic
-        // (maxTurns bound + CLAUDE_CODE_STOP_HOOK_BLOCK_CAP, default 8) lives
+        // (maxTurns bound + THYROX_CODE_STOP_HOOK_BLOCK_CAP, default 8) lives
         // in stopHooksCore so it's unit-lockable.
         const decision = evaluateStopHookBlockOutcome({
           turnCount,
           blockingCount: stopHookBlockingCount,
           maxTurns,
-          blockCapEnv: readEnv('CLAUDE_CODE_STOP_HOOK_BLOCK_CAP'),
+          blockCapEnv: readEnv('THYROX_CODE_STOP_HOOK_BLOCK_CAP'),
         })
 
         if (decision.kind === 'max_turns') {
@@ -1670,7 +1670,7 @@ async function* queryLoop(
     })
 
     // Get queued commands snapshot before processing attachments.
-    // These will be sent as attachments so Claude can respond to them in the current turn.
+    // These will be sent as attachments so thyrox can respond to them in the current turn.
     //
     // Drain pending notifications. LocalShellTask completions are 'next'
     // (when MONITOR_TOOL is on) and drain without Sleep. Other task types

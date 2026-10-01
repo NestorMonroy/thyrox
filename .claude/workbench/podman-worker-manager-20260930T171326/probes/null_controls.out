@@ -1,0 +1,12 @@
+== liveness
+(fail) launch — ruta CPU > un contenedor «running» con el PID muerto no cuenta como lanzado [0.37ms]
+ 18 pass
+ 1 fail
+== release-on-failure
+(fail) launch — ruta CUDA > un lanzamiento fallido suelta la VRAM que reservó [0.61ms]
+ 18 pass
+ 1 fail
+== owner-busy
+(fail) launch — ruta CUDA > un segundo worker CUDA rehúsa: el registro reserva por dueño y soltar uno soltaría los dos [0.64ms]
+ 18 pass
+ 1 fail

@@ -101,9 +101,8 @@ export type AgentHookResult = {
 // ── Tipos de tool / contexto ─────────────────────────────────────────────────
 
 /**
- * El contexto de herramienta del query loop es el del registro. Antes era
- * una forma mínima local (la de la fuente, V7 §8), y cada consumidor que
- * tenía el tipo real tenía que convertirlo para pasarlo.
+ * El contexto de herramienta del query loop es el del registro, para que un
+ * consumidor que tiene el tipo real lo pase sin convertirlo.
  */
 export type AgentToolUseContext = ToolUseContext
 

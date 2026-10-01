@@ -1,0 +1,1081 @@
+diff --git a/src/packages/daemon/src/__tests__/bgAdopt.test.ts b/src/packages/daemon/src/__tests__/bgAdopt.test.ts
+index 475979fcd..d7cb88274 100644
+--- a/src/packages/daemon/src/__tests__/bgAdopt.test.ts
++++ b/src/packages/daemon/src/__tests__/bgAdopt.test.ts
+@@ -26,7 +26,15 @@ afterAll(() => {
+   rmSync(ISOLATED_HOME, { recursive: true, force: true })
+ })
+ 
+-import { adoptFromRoster, adoptRunningPtyRecords, reapOrphanPtySockets } from '../bgAdopt.js'
++import { createServer, type Server } from 'node:net'
++
++import {
++  adoptFromRoster,
++  adoptRunningPtyRecords,
++  reapOrphanPtySockets,
++  terminateOrphanPtyHost,
++} from '../bgAdopt.js'
++import { encodeCtrlFrame } from '../internal/ptyFrame.js'
+ import { getDaemonScopeDir } from '../socketPaths.js'
+ import {
+   type WorkerRecord,
+@@ -203,8 +211,69 @@ describe('adoptFromRoster', () => {
+   })
+ })
+ 
+-describe('reapOrphanPtySockets', () => {
+-  test('reaps a .pty.sock with no live handle: unlinks it and marks the record failed', () => {
++/** Levanta un host de PTY falso en `path` que registra lo recibido y cierra al primer frame. */
++function listenFakePtyHost(path: string): Promise<{ server: Server; received: Promise<Buffer> }> {
++  return new Promise(resolveListen => {
++    let deliver: (data: Buffer) => void = () => {}
++    const received = new Promise<Buffer>(resolveData => {
++      deliver = resolveData
++    })
++    const server = createServer(conn => {
++      conn.once('data', data => {
++        deliver(data)
++        conn.end()
++      })
++    })
++    server.listen(path, () => resolveListen({ server, received }))
++  })
++}
++
++/** Borra del scope del daemon todo archivo de host de PTY, para que un caso no herede residuos de otro. */
++function clearPtyHostFiles(): void {
++  const scope = getDaemonScopeDir()
++  mkdirSync(scope, { recursive: true })
++  for (const f of readdirSync(scope)) {
++    if (f.includes('.pty.sock')) rmSync(join(scope, f), { force: true })
++  }
++}
++
++function closeServer(server: Server): Promise<void> {
++  return new Promise(resolveClose => server.close(() => resolveClose()))
++}
++
++describe('terminateOrphanPtyHost — ref NIe (chunk-kc04kkkd.js)', () => {
++  beforeEach(clearPtyHostFiles)
++  afterEach(clearPtyHostFiles)
++
++  test('un host vivo recibe el frame kill SIGTERM y la promesa resuelve true al cerrar', async () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    const sockPath = join(scope, 'nie11111.pty.sock')
++    const { server, received } = await listenFakePtyHost(sockPath)
++    const outcome = await terminateOrphanPtyHost(sockPath)
++    expect(outcome).toBe(true)
++    expect(await received).toEqual(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
++    await closeServer(server)
++    rmSync(sockPath, { force: true })
++  })
++
++  test('un socket muerto resuelve false y borra el socket con sus breadcrumbs .err/.err.read/.late', async () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    const sockPath = join(scope, 'nie22222.pty.sock')
++    const doomed = [sockPath, `${sockPath}.err`, `${sockPath}.err.read`, `${sockPath}.late`]
++    for (const path of doomed) writeFileSync(path, '')
++    const outcome = await terminateOrphanPtyHost(sockPath)
++    expect(outcome).toBe(false)
++    for (const path of doomed) expect(existsSync(path)).toBe(false)
++  })
++})
++
++describe('reapOrphanPtySockets — ref pr (chunk-92tvramn.js), rama POSIX', () => {
++  beforeEach(clearPtyHostFiles)
++  afterEach(clearPtyHostFiles)
++
++  test('reapa un .pty.sock muerto sin handle: lo borra y marca el record failed', async () => {
+     const scope = getDaemonScopeDir()
+     mkdirSync(scope, { recursive: true })
+     mkdirSync(join(JOBS_DIR, 'orp11111'), { recursive: true })
+@@ -212,16 +281,65 @@ describe('reapOrphanPtySockets', () => {
+     const sockPath = join(scope, 'orp11111.pty.sock')
+     writeFileSync(sockPath, '')
+     const logs: string[] = []
+-    reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
++    await reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+     expect(existsSync(sockPath)).toBe(false)
+     const after = readWorkerRecord('orp11111')
+     expect(after?.status).toBe('failed')
+     expect(after?.failedReason).toBe('reaped (roster gap)')
+     expect(logs).toEqual(['bg orphan-reap: 1 roster-less pty host(s)'])
++  })
++
++  test('un host vivo sin handle recibe SIGTERM, se marca failed y pierde .late y .exec-exit', async () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    mkdirSync(join(JOBS_DIR, 'orp33333'), { recursive: true })
++    writeWorkerRecord(baseRecord('orp33333', process.pid))
++    const sockPath = join(scope, 'orp33333.pty.sock')
++    const { server, received } = await listenFakePtyHost(sockPath)
++    writeFileSync(`${sockPath}.late`, '')
++    writeFileSync(`${sockPath}.exec-exit`, '0')
++    const logs: string[] = []
++    await reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
++    expect(await received).toEqual(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
++    expect(readWorkerRecord('orp33333')?.failedReason).toBe('reaped (roster gap)')
++    expect(existsSync(`${sockPath}.late`)).toBe(false)
++    expect(existsSync(`${sockPath}.exec-exit`)).toBe(false)
++    expect(logs).toEqual(['bg orphan-reap: 1 roster-less pty host(s)'])
++    await closeServer(server)
+     rmSync(sockPath, { force: true })
+   })
+ 
+-  test('skips a .pty.sock whose short is already in the live workers map', () => {
++  test('no pisa un record que ya terminó por su cuenta', async () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    mkdirSync(join(JOBS_DIR, 'orp44444'), { recursive: true })
++    writeWorkerRecord({ ...baseRecord('orp44444', process.pid), status: 'stopped' })
++    writeFileSync(join(scope, 'orp44444.pty.sock'), '')
++    await reapOrphanPtySockets(new Map<string, WorkerVm>(), () => {})
++    expect(readWorkerRecord('orp44444')?.status).toBe('stopped')
++  })
++
++  test('borra los breadcrumbs cuyo .pty.sock ya no existe y conserva los de un socket con handle', async () => {
++    const scope = getDaemonScopeDir()
++    mkdirSync(scope, { recursive: true })
++    const orphanBase = join(scope, 'gone5555.pty.sock')
++    const orphans = ['.err', '.late', '.exec-exit', '.err.read'].map(s => `${orphanBase}${s}`)
++    for (const path of orphans) writeFileSync(path, '')
++    const liveSock = join(scope, 'live5555.pty.sock')
++    writeFileSync(liveSock, '')
++    writeFileSync(`${liveSock}.err`, '')
++    const workers = new Map<string, WorkerVm>()
++    workers.set('live5555', {} as WorkerVm)
++    const logs: string[] = []
++    await reapOrphanPtySockets(workers, (m) => logs.push(m))
++    for (const path of orphans) expect(existsSync(path)).toBe(false)
++    expect(existsSync(`${liveSock}.err`)).toBe(true)
++    expect(logs).toEqual([])
++    rmSync(liveSock, { force: true })
++    rmSync(`${liveSock}.err`, { force: true })
++  })
++
++  test('omite un .pty.sock cuyo short ya está en el mapa de workers vivos', async () => {
+     const scope = getDaemonScopeDir()
+     mkdirSync(scope, { recursive: true })
+     const sockPath = join(scope, 'orp22222.pty.sock')
+@@ -229,20 +347,20 @@ describe('reapOrphanPtySockets', () => {
+     const workers = new Map<string, WorkerVm>()
+     workers.set('orp22222', {} as WorkerVm)
+     const logs: string[] = []
+-    reapOrphanPtySockets(workers, (m) => logs.push(m))
++    await reapOrphanPtySockets(workers, (m) => logs.push(m))
+     expect(existsSync(sockPath)).toBe(true)
+     expect(logs).toEqual([])
+     rmSync(sockPath, { force: true })
+   })
+ 
+-  test('no .pty.sock files: no log emitted', () => {
++  test('sin archivos .pty.sock no se emite log', async () => {
+     const scope = getDaemonScopeDir()
+     mkdirSync(scope, { recursive: true })
+     for (const f of readdirSync(scope)) {
+-      if (f.endsWith('.pty.sock')) rmSync(join(scope, f), { force: true })
++      if (f.includes('.pty.sock')) rmSync(join(scope, f), { force: true })
+     }
+     const logs: string[] = []
+-    reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
++    await reapOrphanPtySockets(new Map<string, WorkerVm>(), (m) => logs.push(m))
+     expect(logs).toEqual([])
+   })
+ })
+diff --git a/src/packages/daemon/src/__tests__/roster.test.ts b/src/packages/daemon/src/__tests__/roster.test.ts
+index cbe3b515e..5bb360527 100644
+--- a/src/packages/daemon/src/__tests__/roster.test.ts
++++ b/src/packages/daemon/src/__tests__/roster.test.ts
+@@ -32,6 +32,7 @@ afterAll(() => {
+ import {
+   emptyRoster,
+   getRosterPath,
++  isCliVersionStale,
+   readRoster,
+   recordToRosterEntry,
+   updateRoster,
+@@ -239,3 +240,49 @@ describe('recordToRosterEntry', () => {
+     expect(e.attempt).toBe(0)
+   })
+ })
++
++describe('cliVersion saneado — ref kr (chunk-92tvramn.js)', () => {
++  const record = {
++    short: 'ver',
++    pid: 3,
++    cmd: [],
++    cwd: '/v',
++    startedAt: 0,
++    status: 'running' as const,
++  }
++
++  test('recordToRosterEntry persiste "unrecognized" para una cliVersion con forma inválida', () => {
++    const e = recordToRosterEntry({ ...record, cliVersion: '2.1.283\x1b[31m; rm -rf /' })
++    expect(e.cliVersion).toBe('unrecognized')
++  })
++
++  test('recordToRosterEntry conserva una cliVersion válida y deja ausente la ausente', () => {
++    expect(recordToRosterEntry({ ...record, cliVersion: '2.1.283' }).cliVersion).toBe('2.1.283')
++    expect(recordToRosterEntry(record).cliVersion).toBeUndefined()
++  })
++
++  test('readRoster expone "unrecognized" para una cliVersion inválida escrita por otro proceso', async () => {
++    const roster = emptyRoster()
++    roster.workers['bad'] = { pid: 1, startedAt: 0, attempt: 0, cwd: '/', cliVersion: 'a b c' }
++    roster.workers['good'] = { pid: 2, startedAt: 0, attempt: 0, cwd: '/', cliVersion: '2.1.283' }
++    await writeRoster(roster)
++    const loaded = await readRoster()
++    expect(loaded.workers['bad']?.cliVersion).toBe('unrecognized')
++    expect(loaded.workers['good']?.cliVersion).toBe('2.1.283')
++  })
++})
++
++describe('isCliVersionStale — getter isVersionStale (chunk-ygx717jg.js)', () => {
++  test('sin cliVersion del worker no hay desfase', () => {
++    expect(isCliVersionStale(undefined, '2.1.283')).toBe(false)
++    expect(isCliVersionStale('', '2.1.283')).toBe(false)
++  })
++
++  test('misma versión que el daemon no es desfase', () => {
++    expect(isCliVersionStale('2.1.283', '2.1.283')).toBe(false)
++  })
++
++  test('versión distinta a la del daemon es desfase', () => {
++    expect(isCliVersionStale('2.1.282', '2.1.283')).toBe(true)
++  })
++})
+diff --git a/src/packages/daemon/src/bgAdopt.ts b/src/packages/daemon/src/bgAdopt.ts
+index 07a68b300..b9f30dce8 100644
+--- a/src/packages/daemon/src/bgAdopt.ts
++++ b/src/packages/daemon/src/bgAdopt.ts
+@@ -8,7 +8,9 @@
+  * @dynamicRequire
+  */
+ 
+-import { existsSync as existsSyncFn, readdirSync, unlinkSync } from 'node:fs'
++import { existsSync as existsSyncFn } from 'node:fs'
++import { readdir, unlink } from 'node:fs/promises'
++import { connect } from 'node:net'
+ import { join } from 'node:path'
+ 
+ import { logEvent } from '@thyrox/local-observability'
+@@ -20,7 +22,8 @@ import {
+   readWorkerRecord,
+   writeWorkerRecord,
+ } from './bgWorkerRegistry.js'
+-import { readRoster } from './roster.js'
++import { encodeCtrlFrame } from './internal/ptyFrame.js'
++import { isCliVersionStale, readRoster } from './roster.js'
+ import { getDaemonScopeDir } from './socketPaths.js'
+ import { WorkerVm } from './workerVm.js'
+ 
+@@ -157,7 +160,7 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
+       })
+     }
+     const currentCli = process.env.THYROX_CODE_VERSION ?? 'dev'
+-    if (record.cliVersion && record.cliVersion !== currentCli) {
++    if (isCliVersionStale(record.cliVersion, currentCli)) {
+       logEvent('tengu_bg_adopt_upgrade_respawn', {
+         short: record.short,
+         was: record.cliVersion,
+@@ -193,61 +196,115 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
+   }
+ }
+ 
++/** Sufijo del socket de PTY de un worker bajo el scope del daemon. */
++const PTY_SOCKET_SUFFIX = '.pty.sock'
++
+ /**
+- * Barre `<daemon-scope>/*.pty.sock` en busca de hosts "roster-less": un
+- * socket de PTY en disco sin handle vivo en `workers`. Ref `pr`
+- * (chunk-92tvramn.js), rama no-Windows.
++ * Breadcrumbs que un host de PTY deja junto a su socket (`yw`/`nx`/`HV` y el
++ * `.err.read` de `NIe`). `.err` va antes que `.err.read` como en la
++ * referencia; el sufijo compuesto no termina en `.err`, así que no se pisan.
++ */
++const PTY_BREADCRUMB_SUFFIXES = ['.err', '.late', '.exec-exit', '.err.read']
++
++/** Plazo de `NIe` para que un host huérfano cierre tras el SIGTERM. */
++const ORPHAN_HOST_KILL_TIMEOUT_MS = 2000
++
++const REAPED_REASON = 'reaped (roster gap)'
++
++function unlinkQuietly(path: string): Promise<void> {
++  return unlink(path).catch(() => {})
++}
++
++/**
++ * Pide a un host de PTY huérfano que termine. Ref `NIe` (chunk-kc04kkkd.js):
++ * conecta, envía el frame `kill` SIGTERM y resuelve `true` cuando el host
++ * cierra; si la conexión falla, el socket está muerto: borra el socket y sus
++ * breadcrumbs `.err`/`.err.read`/`.late` y resuelve `false`; pasado el plazo
++ * destruye la conexión y resuelve `false`. Los `unlink` son silenciosos como
++ * en la referencia; aquí se esperan antes de resolver, para que quien llama
++ * observe el directorio ya limpio.
++ */
++export function terminateOrphanPtyHost(ptySocket: string): Promise<boolean> {
++  return new Promise(resolveOutcome => {
++    let settled = false
++    const settle = (outcome: boolean): void => {
++      if (settled) return
++      settled = true
++      resolveOutcome(outcome)
++    }
++    const socket = connect(ptySocket)
++    socket.unref()
++    socket.setTimeout(ORPHAN_HOST_KILL_TIMEOUT_MS, () => {
++      socket.destroy()
++      settle(false)
++    })
++    socket.on('error', () => {
++      const deadFiles = [ptySocket, `${ptySocket}.err`, `${ptySocket}.err.read`, `${ptySocket}.late`]
++      void Promise.all(deadFiles.map(unlinkQuietly)).then(() => settle(false))
++    })
++    socket.once('connect', () => {
++      socket.resume()
++      socket.write(encodeCtrlFrame({ t: 'kill', sig: 'SIGTERM' }))
++    })
++    socket.once('close', hadError => {
++      if (!hadError) settle(true)
++    })
++  })
++}
++
++/** Breadcrumb cuyo socket de PTY ya no está en el directorio. */
++function isOrphanBreadcrumb(entry: string, present: ReadonlySet<string>): boolean {
++  const suffix = PTY_BREADCRUMB_SUFFIXES.find(s => entry.endsWith(`${PTY_SOCKET_SUFFIX}${s}`))
++  return suffix !== undefined && !present.has(entry.slice(0, -suffix.length))
++}
++
++/**
++ * Reapa un host sin entrada de roster: le pide terminar (`NIe`) y, en la
++ * rama POSIX de `pr`, lo marca `failed` sea cual sea el desenlace y borra
++ * sus breadcrumbs `.late` y `.exec-exit`.
++ */
++async function reapRosterlessHost(scopeDir: string, short: string): Promise<void> {
++  const ptySocket = join(scopeDir, `${short}${PTY_SOCKET_SUFFIX}`)
++  await terminateOrphanPtyHost(ptySocket)
++  markAdoptionFailed(short, REAPED_REASON)
++  await Promise.all([unlinkQuietly(`${ptySocket}.late`), unlinkQuietly(`${ptySocket}.exec-exit`)])
++}
++
++/**
++ * Barrido archivo→roster de `<daemon-scope>`: la dirección opuesta a
++ * `adoptRunningPtyRecords`. Ref `pr` (chunk-92tvramn.js), rama no-Windows:
++ * 1. borra cada breadcrumb (`.err`/`.late`/`.exec-exit`/`.err.read`) cuyo
++ *    `.pty.sock` ya no existe;
++ * 2. cada `.pty.sock` sin handle en `workers` es un host "roster-less": se
++ *    reapa con `reapRosterlessHost`.
++ * El log agregado sale antes de esperar a los reapeos, como en la
++ * referencia; a diferencia de ella, la función espera a que terminen, para
++ * que quien la invoca sepa cuándo el directorio quedó consistente.
+  *
+- * Simplificaciones frente a la referencia, declaradas porque no se omiten
+- * en silencio:
+- * - pendiente: la referencia también barre huérfanos de `.err`/`.late`/
+- *   `.exec-exit`/`.err.read` sin su `.sock` correspondiente (primera mitad
+- *   del bucle de `pr`) — aquí sólo se reapan los `.sock` sin handle.
+- * - pendiente: antes de marcar `failed` la referencia espera al archivo
+- *   `.exec-exit` (`NIe`/`cl`/`ua`) para no pisar un proceso que está
+- *   terminando de escribir su salida; aquí se marca de inmediato.
+- * - pendiente: la rama `storageV5` (`o.storageV5`) no aplica — ccb no
+- *   tiene ese store.
++ * Divergencias declaradas: la rama `storageV5` no aplica (ccb no tiene ese
++ * store) y la rama Windows (`.pid` bajo pty-pids) tampoco (socketPaths.ts
++ * deja el daemon de Windows fuera de alcance). La lectura fallida del
++ * directorio da lista vacía en silencio (`nr(a).catch(()=>[])`).
+  */
+-export function reapOrphanPtySockets(
++export async function reapOrphanPtySockets(
+   workers: Map<string, WorkerVm>,
+   log: (message: string) => void,
+-): void {
+-  let entries: string[]
+-  try {
+-    entries = readdirSync(getDaemonScopeDir())
+-  } catch {
+-    return
+-  }
+-  let reaped = 0
+-  for (const entry of entries) {
+-    if (!entry.endsWith('.pty.sock')) continue
+-    const short = entry.slice(0, -'.pty.sock'.length)
+-    if (workers.has(short)) continue
+-    reaped++
+-    const record = readWorkerRecord(short)
+-    if (record && record.status === 'running') {
+-      try {
+-        writeWorkerRecord({
+-          ...record,
+-          status: 'failed',
+-          failedReason: 'reaped (roster gap)',
+-          exitedAt: Date.now(),
+-        })
+-      } catch {
+-        // best-effort
+-      }
+-    }
+-    try {
+-      unlinkSync(join(getDaemonScopeDir(), entry))
+-    } catch {
+-      // best-effort
+-    }
+-  }
+-  if (reaped > 0) {
+-    log(`bg orphan-reap: ${reaped} roster-less pty host(s)`)
+-    logEvent('tengu_bg_orphan_reap', { reaped: String(reaped) })
++): Promise<void> {
++  const scopeDir = getDaemonScopeDir()
++  const entries = await readdir(scopeDir).catch(() => [] as string[])
++  const present = new Set(entries.filter(entry => entry.endsWith(PTY_SOCKET_SUFFIX)))
++  const breadcrumbs = entries.filter(entry => isOrphanBreadcrumb(entry, present))
++  const rosterless = [...present]
++    .map(entry => entry.slice(0, -PTY_SOCKET_SUFFIX.length))
++    .filter(short => !workers.has(short))
++  if (rosterless.length > 0) {
++    log(`bg orphan-reap: ${rosterless.length} roster-less pty host(s)`)
++    logEvent('tengu_bg_orphan_reap', { reaped: String(rosterless.length) })
+   }
++  await Promise.all([
++    ...breadcrumbs.map(entry => unlinkQuietly(join(scopeDir, entry))),
++    ...rosterless.map(short => reapRosterlessHost(scopeDir, short)),
++  ])
+ }
+ 
+ /**
+diff --git a/src/packages/daemon/src/jobDirectoryCleanup.ts b/src/packages/daemon/src/jobDirectoryCleanup.ts
+index 2820f3b8b..0df437517 100644
+--- a/src/packages/daemon/src/jobDirectoryCleanup.ts
++++ b/src/packages/daemon/src/jobDirectoryCleanup.ts
+@@ -16,6 +16,7 @@ import { join, resolve } from 'node:path'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ 
+ import { getDaemonHomeDir, getPtyPidsDir, getPtySocketPath } from './socketPaths.js'
++import { sanitizeCliVersion } from './upgradeProbe.js'
+ 
+ /**
+  * `<daemon-home>/host-managed` — directorio donde la referencia deja las
+@@ -142,9 +143,6 @@ export interface RetireOutcome {
+   cause: string
+ }
+ 
+-/** Ref `kr` (chunk-92tvramn.js): formato válido de versión de CLI. */
+-const CLI_VERSION_PATTERN = /^[0-9A-Za-z.+_-]{1,100}$/
+-
+ /**
+  * Compone la línea humana "bg retire <short>: <causa>, idle <Nm/h>" para un
+  * worker retirado, agregando una advertencia si el CLI del worker quedó
+@@ -166,10 +164,7 @@ export function formatRetireMessage(
+   if (!outcome.retired) return null
+   const idleMinutes = Math.round(outcome.idleMs / 60000)
+   const idle = idleMinutes >= 120 ? `${Math.round(idleMinutes / 60)}h` : `${idleMinutes}m`
+-  const cliVersion =
+-    worker.cliVersion && CLI_VERSION_PATTERN.test(worker.cliVersion)
+-      ? worker.cliVersion
+-      : 'unrecognized'
++  const cliVersion = sanitizeCliVersion(worker.cliVersion ?? '')
+   const daemonVersion = process.env.THYROX_CODE_VERSION ?? 'dev'
+   const staleWarning = worker.isVersionStale
+     ? `, worker ${cliVersion} (daemon ${daemonVersion})`
+diff --git a/src/packages/daemon/src/roster.ts b/src/packages/daemon/src/roster.ts
+index c07ed3527..9a7c15c06 100644
+--- a/src/packages/daemon/src/roster.ts
++++ b/src/packages/daemon/src/roster.ts
+@@ -40,6 +40,7 @@ import { logEvent } from '@thyrox/local-observability'
+ import type { WorkerRecord } from './bgWorkerRegistry.js'
+ import { getDaemonHomeDir } from './socketPaths.js'
+ import { PROTO_VERSION } from './socketProto.js'
++import { sanitizeCliVersion } from './upgradeProbe.js'
+ 
+ /**
+  * Roster entry for one worker. Subset of WorkerRecord fields that
+@@ -108,13 +109,36 @@ export function recordToRosterEntry(r: WorkerRecord): RosterEntry {
+     // the rv client no-ops on an absent socket (degrades to pid-poll).
+     rendezvousSock: r.rendezvousSocket,
+     ptySock: r.ptySocket,
+-    cliVersion: r.cliVersion,
++    cliVersion: sanitizeOptionalCliVersion(r.cliVersion),
+     startedAt: r.startedAt,
+     attempt: r.attempt ?? 0,
+     cwd: r.cwd,
+   }
+ }
+ 
++/**
++ * Sanea la `cliVersion` que el roster persiste o expone con el patrón `kr`
++ * (chunk-92tvramn.js); una versión ausente sigue ausente. La referencia
++ * sanea sólo al mostrarla (`Ve`); aquí se sanea en la frontera del roster
++ * porque el archivo lo puede escribir otro proceso y su contenido acaba en
++ * líneas de log y en telemetría.
++ */
++function sanitizeOptionalCliVersion(cliVersion: string | undefined): string | undefined {
++  return cliVersion === undefined ? undefined : sanitizeCliVersion(cliVersion)
++}
++
++/**
++ * Decide si un worker corre un CLI distinto del daemon. Getter
++ * `isVersionStale` (chunk-ygx717jg.js): `!!cliVersion && cliVersion !== VERSION`
++ * — sin versión registrada no hay desfase que afirmar.
++ */
++export function isCliVersionStale(
++  workerCliVersion: string | undefined,
++  daemonCliVersion: string,
++): boolean {
++  return Boolean(workerCliVersion) && workerCliVersion !== daemonCliVersion
++}
++
+ /**
+  * Validate a parsed JSON value against the Roster schema. Returns
+  * the typed value, or null on shape mismatch. We avoid pulling zod
+@@ -142,7 +166,8 @@ function validateRoster(v: unknown): Roster | null {
+       rendezvousSock:
+         typeof w.rendezvousSock === 'string' ? w.rendezvousSock : undefined,
+       ptySock: typeof w.ptySock === 'string' ? w.ptySock : undefined,
+-      cliVersion: typeof w.cliVersion === 'string' ? w.cliVersion : undefined,
++      cliVersion:
++        typeof w.cliVersion === 'string' ? sanitizeCliVersion(w.cliVersion) : undefined,
+       startedAt: w.startedAt,
+       attempt: w.attempt,
+       cwd: w.cwd,
+diff --git a/src/packages/tool-registry/tsconfig.check.json b/src/packages/tool-registry/tsconfig.check.json
+new file mode 100644
+index 000000000..87c924ab1
+--- /dev/null
++++ b/src/packages/tool-registry/tsconfig.check.json
+@@ -0,0 +1,534 @@
++{
++  "compilerOptions": {
++    "noEmit": true,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "paths": {
++      "@thyrox/tool-registry": [
++        "./src/index.ts"
++      ],
++      "@thyrox/tool-registry/Tool.js": [
++        "./src/Tool.ts"
++      ],
++      "@thyrox/tool-registry/progressTypes": [
++        "./src/progressTypes.ts"
++      ],
++      "@thyrox/tool-registry/appStateTypes": [
++        "./src/appStateTypes.ts"
++      ],
++      "@thyrox/tool-registry/genericTypeUtils": [
++        "./src/genericTypeUtils.ts"
++      ],
++      "@thyrox/tool-registry/fileStateCache": [
++        "./src/fileStateCache.ts"
++      ],
++      "@thyrox/tool-registry/codeIndexing.js": [
++        "./src/codeIndexing.ts"
++      ],
++      "@thyrox/tool-registry/services/hookTiming.js": [
++        "./src/services/hookTiming.ts"
++      ],
++      "@thyrox/tool-registry/utils/array.js": [
++        "./src/utils/array.ts"
++      ],
++      "@thyrox/tool-registry/utils/lazySchema.js": [
++        "./src/utils/lazySchema.ts"
++      ],
++      "@thyrox/tool-registry/hooks/appState.js": [
++        "./src/hooks/appState.ts"
++      ],
++      "@thyrox/tool-registry/services/classifyToolError.js": [
++        "./src/services/classifyToolError.ts"
++      ],
++      "@thyrox/tool-registry/suggestions/skillUsageTracking.js": [
++        "./src/suggestions/skillUsageTracking.ts"
++      ],
++      "@thyrox/tool-registry/task/outputFormatting.js": [
++        "./src/task/outputFormatting.ts"
++      ],
++      "@thyrox/tool-registry/testing": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/tool-registry/testing/index.js": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/tool-registry/utils/objectGroupBy.js": [
++        "./src/utils/objectGroupBy.ts"
++      ],
++      "@thyrox/tool-registry/utils/semanticBoolean.js": [
++        "./src/utils/semanticBoolean.ts"
++      ],
++      "@thyrox/tool-registry/utils/semanticNumber.js": [
++        "./src/utils/semanticNumber.ts"
++      ],
++      "@thyrox/tool-registry/tools/MCPTool/classifyForCollapse.js": [
++        "./src/tools/MCPTool/classifyForCollapse.ts"
++      ],
++      "@thyrox/tool-registry/tools/MCPTool/MCPTool.js": [
++        "./src/tools/MCPTool/MCPTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/MCPTool/UI.js": [
++        "./src/tools/MCPTool/UI.ts"
++      ],
++      "@thyrox/tool-registry/tools/MCPTool/prompt.js": [
++        "./src/tools/MCPTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js": [
++        "./src/tools/ListMcpResourcesTool/ListMcpResourcesTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/ListMcpResourcesTool/UI.js": [
++        "./src/tools/ListMcpResourcesTool/UI.ts"
++      ],
++      "@thyrox/tool-registry/tools/ListMcpResourcesTool/prompt.js": [
++        "./src/tools/ListMcpResourcesTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/ReadMcpResourceTool/ReadMcpResourceTool.js": [
++        "./src/tools/ReadMcpResourceTool/ReadMcpResourceTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/ReadMcpResourceTool/UI.js": [
++        "./src/tools/ReadMcpResourceTool/UI.ts"
++      ],
++      "@thyrox/tool-registry/tools/ReadMcpResourceTool/prompt.js": [
++        "./src/tools/ReadMcpResourceTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/McpAuthTool/McpAuthTool.js": [
++        "./src/tools/McpAuthTool/McpAuthTool.ts"
++      ],
++      "@thyrox/tool-registry/internal/pendingCrossPackageDeps.js": [
++        "./src/internal/pendingCrossPackageDeps.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskGetTool/TaskGetTool.js": [
++        "./src/tools/TaskGetTool/TaskGetTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskGetTool/constants.js": [
++        "./src/tools/TaskGetTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskGetTool/prompt.js": [
++        "./src/tools/TaskGetTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskListTool/TaskListTool.js": [
++        "./src/tools/TaskListTool/TaskListTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskListTool/constants.js": [
++        "./src/tools/TaskListTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskListTool/prompt.js": [
++        "./src/tools/TaskListTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/todo/types.js": [
++        "./src/todo/types.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/constants.js": [
++        "./src/tools/AgentTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileEditTool/constants.js": [
++        "./src/tools/FileEditTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TodoWriteTool/TodoWriteTool.js": [
++        "./src/tools/TodoWriteTool/TodoWriteTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/TodoWriteTool/constants.js": [
++        "./src/tools/TodoWriteTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TodoWriteTool/prompt.js": [
++        "./src/tools/TodoWriteTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/SleepTool/prompt.js": [
++        "./src/tools/SleepTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/testing/TestingPermissionTool.js": [
++        "./src/tools/testing/TestingPermissionTool.tsx"
++      ],
++      "@thyrox/tool-registry/runtime": [
++        "./src/runtime.ts"
++      ],
++      "@thyrox/tool-registry/errors": [
++        "./src/errors.ts"
++      ],
++      "@thyrox/tool-registry/Task.js": [
++        "./src/Task.ts"
++      ],
++      "@thyrox/tool-registry/notebookTypes": [
++        "./src/notebookTypes.ts"
++      ],
++      "@thyrox/tool-registry/toolLimits": [
++        "./src/toolLimits.ts"
++      ],
++      "@thyrox/tool-registry/readEditContext.js": [
++        "./src/readEditContext.ts"
++      ],
++      "@thyrox/tool-registry/toolErrors.js": [
++        "./src/toolErrors.ts"
++      ],
++      "@thyrox/tool-registry/toolSchemaCache.js": [
++        "./src/toolSchemaCache.ts"
++      ],
++      "@thyrox/tool-registry/imageStore.js": [
++        "./src/imageStore.ts"
++      ],
++      "@thyrox/tool-registry/undercover.js": [
++        "./src/undercover.ts"
++      ],
++      "@thyrox/tool-registry/words.js": [
++        "./src/words.ts"
++      ],
++      "@thyrox/tool-registry/pdf.js": [
++        "./src/pdf.ts"
++      ],
++      "@thyrox/tool-registry/gitDiff.js": [
++        "./src/gitDiff.ts"
++      ],
++      "@thyrox/tool-registry/embeddedRgExtractor.js": [
++        "./src/embeddedRgExtractor.ts"
++      ],
++      "@thyrox/tool-registry/claudeCodeHints.js": [
++        "./src/claudeCodeHints.ts"
++      ],
++      "@thyrox/tool-registry/generatedFiles.js": [
++        "./src/generatedFiles.ts"
++      ],
++      "@thyrox/tool-registry/tools/testing/TestingPermissionTool": [
++        "./src/tools/testing/TestingPermissionTool.tsx"
++      ],
++      "@thyrox/tool-registry/task/TaskOutput.js": [
++        "./src/task/TaskOutput.ts"
++      ],
++      "@thyrox/tool-registry/tasks/RemoteAgentTask.js": [
++        "./src/tasks/RemoteAgentTask.tsx"
++      ],
++      "@thyrox/tool-registry/teleport.js": [
++        "./src/teleport.tsx"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/AgentTool.js": [
++        "./src/tools/AgentTool/AgentTool.tsx"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/UI.js": [
++        "./src/tools/AgentTool/UI.tsx"
++      ],
++      "@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js": [
++        "./src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/BashTool.js": [
++        "./src/tools/BashTool/BashTool.tsx"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/BashToolResultMessage.js": [
++        "./src/tools/BashTool/BashToolResultMessage.tsx"
++      ],
++      "@thyrox/tool-registry/tools/PowerShellTool/PowerShellTool.js": [
++        "./src/tools/PowerShellTool/PowerShellTool.tsx"
++      ],
++      "@thyrox/tool-registry/tools/TaskOutputTool/TaskOutputTool.js": [
++        "./src/tools/TaskOutputTool/TaskOutputTool.tsx"
++      ],
++      "@thyrox/tool-registry/collapseReadSearch.js": [
++        "./src/collapseReadSearch.ts"
++      ],
++      "@thyrox/tool-registry/diagnosticTracking.js": [
++        "./src/diagnosticTracking.ts"
++      ],
++      "@thyrox/tool-registry/markdownConfigLoader.js": [
++        "./src/markdownConfigLoader.ts"
++      ],
++      "@thyrox/tool-registry/notebook.js": [
++        "./src/notebook.ts"
++      ],
++      "@thyrox/tool-registry/ripgrep.js": [
++        "./src/ripgrep.ts"
++      ],
++      "@thyrox/tool-registry/services/StreamingToolExecutor.js": [
++        "./src/services/StreamingToolExecutor.ts"
++      ],
++      "@thyrox/tool-registry/services/toolOrchestration.js": [
++        "./src/services/toolOrchestration.ts"
++      ],
++      "@thyrox/tool-registry/skills/skillChangeDetector.js": [
++        "./src/skills/skillChangeDetector.ts"
++      ],
++      "@thyrox/tool-registry/telemetry/pluginTelemetry.js": [
++        "./src/telemetry/pluginTelemetry.ts"
++      ],
++      "@thyrox/tool-registry/toolConstants": [
++        "./src/toolConstants.ts"
++      ],
++      "@thyrox/tool-registry/toolPool.js": [
++        "./src/toolPool.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/agentColorManager.js": [
++        "./src/tools/AgentTool/agentColorManager.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/agentDisplay.js": [
++        "./src/tools/AgentTool/agentDisplay.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js": [
++        "./src/tools/AgentTool/agentToolUtils.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/built-in/claudeCodeGuideAgent.js": [
++        "./src/tools/AgentTool/built-in/claudeCodeGuideAgent.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/forkSubagent.js": [
++        "./src/tools/AgentTool/forkSubagent.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js": [
++        "./src/tools/AgentTool/loadAgentsDir.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/resumeAgent.js": [
++        "./src/tools/AgentTool/resumeAgent.ts"
++      ],
++      "@thyrox/tool-registry/tools/AgentTool/runAgent.js": [
++        "./src/tools/AgentTool/runAgent.ts"
++      ],
++      "@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js": [
++        "./src/tools/AskUserQuestionTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/bashPermissions.js": [
++        "./src/tools/BashTool/bashPermissions.ts"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/destructiveCommandWarning.js": [
++        "./src/tools/BashTool/destructiveCommandWarning.ts"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/readOnlyValidation.js": [
++        "./src/tools/BashTool/readOnlyValidation.ts"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/sedEditParser.js": [
++        "./src/tools/BashTool/sedEditParser.ts"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/shouldUseSandbox.js": [
++        "./src/tools/BashTool/shouldUseSandbox.ts"
++      ],
++      "@thyrox/tool-registry/tools/BashTool/toolName.js": [
++        "./src/tools/BashTool/toolName.ts"
++      ],
++      "@thyrox/tool-registry/tools/BriefTool/BriefTool.js": [
++        "./src/tools/BriefTool/BriefTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/BriefTool/prompt.js": [
++        "./src/tools/BriefTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/EnterPlanModeTool/EnterPlanModeTool.js": [
++        "./src/tools/EnterPlanModeTool/EnterPlanModeTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/EnterPlanModeTool/constants.js": [
++        "./src/tools/EnterPlanModeTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js": [
++        "./src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts"
++      ],
++      "@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js": [
++        "./src/tools/ExitPlanModeTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js": [
++        "./src/tools/FileEditTool/FileEditTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileEditTool/types.js": [
++        "./src/tools/FileEditTool/types.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileEditTool/utils.js": [
++        "./src/tools/FileEditTool/utils.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js": [
++        "./src/tools/FileReadTool/FileReadTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileReadTool/constants.js": [
++        "./src/tools/FileReadTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileReadTool/imageProcessor.js": [
++        "./src/tools/FileReadTool/imageProcessor.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileReadTool/prompt.js": [
++        "./src/tools/FileReadTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js": [
++        "./src/tools/FileWriteTool/FileWriteTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileWriteTool/constants.js": [
++        "./src/tools/FileWriteTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/FileWriteTool/prompt.js": [
++        "./src/tools/FileWriteTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/GlobTool/GlobTool.js": [
++        "./src/tools/GlobTool/GlobTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/GlobTool/prompt.js": [
++        "./src/tools/GlobTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/GrepTool/GrepTool.js": [
++        "./src/tools/GrepTool/GrepTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/GrepTool/prompt.js": [
++        "./src/tools/GrepTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/LSPTool/prompt.js": [
++        "./src/tools/LSPTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/MonitorTool/MonitorTool.js": [
++        "./src/tools/MonitorTool/MonitorTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/NotebookEditTool/NotebookEditTool.js": [
++        "./src/tools/NotebookEditTool/NotebookEditTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/NotebookEditTool/constants.js": [
++        "./src/tools/NotebookEditTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js": [
++        "./src/tools/OverflowTestTool/OverflowTestTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/PowerShellTool/destructiveCommandWarning.js": [
++        "./src/tools/PowerShellTool/destructiveCommandWarning.ts"
++      ],
++      "@thyrox/tool-registry/tools/PowerShellTool/readOnlyValidation.js": [
++        "./src/tools/PowerShellTool/readOnlyValidation.ts"
++      ],
++      "@thyrox/tool-registry/tools/PowerShellTool/toolName.js": [
++        "./src/tools/PowerShellTool/toolName.ts"
++      ],
++      "@thyrox/tool-registry/tools/REPLTool/REPLTool.js": [
++        "./src/tools/REPLTool/REPLTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/REPLTool/constants.js": [
++        "./src/tools/REPLTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/REPLTool/primitiveTools.js": [
++        "./src/tools/REPLTool/primitiveTools.ts"
++      ],
++      "@thyrox/tool-registry/tools/RemoteTriggerTool/prompt.js": [
++        "./src/tools/RemoteTriggerTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js": [
++        "./src/tools/ReviewArtifactTool/ReviewArtifactTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js": [
++        "./src/tools/ScheduleCronTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/ScheduleWakeupTool/prompt.js": [
++        "./src/tools/ScheduleWakeupTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/SendMessageTool/SendMessageTool.js": [
++        "./src/tools/SendMessageTool/SendMessageTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/SendMessageTool/constants.js": [
++        "./src/tools/SendMessageTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/SendUserFileTool/SendUserFileTool.js": [
++        "./src/tools/SendUserFileTool/SendUserFileTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/SendUserFileTool/prompt.js": [
++        "./src/tools/SendUserFileTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/SkillTool/SkillTool.js": [
++        "./src/tools/SkillTool/SkillTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/SkillTool/constants.js": [
++        "./src/tools/SkillTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/SkillTool/prompt.js": [
++        "./src/tools/SkillTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js": [
++        "./src/tools/SyntheticOutputTool/SyntheticOutputTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskCreateTool/constants.js": [
++        "./src/tools/TaskCreateTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskOutputTool/constants.js": [
++        "./src/tools/TaskOutputTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskStopTool/TaskStopTool.js": [
++        "./src/tools/TaskStopTool/TaskStopTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskStopTool/prompt.js": [
++        "./src/tools/TaskStopTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/TaskUpdateTool/constants.js": [
++        "./src/tools/TaskUpdateTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TeamCreateTool/constants.js": [
++        "./src/tools/TeamCreateTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TeamDeleteTool/constants.js": [
++        "./src/tools/TeamDeleteTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js": [
++        "./src/tools/TerminalCaptureTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/ToolSearchTool/ToolSearchTool.js": [
++        "./src/tools/ToolSearchTool/ToolSearchTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/ToolSearchTool/prompt.js": [
++        "./src/tools/ToolSearchTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/TungstenTool/TungstenLiveMonitor.js": [
++        "./src/tools/TungstenTool/TungstenLiveMonitor.ts"
++      ],
++      "@thyrox/tool-registry/tools/TungstenTool/TungstenTool.js": [
++        "./src/tools/TungstenTool/TungstenTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js": [
++        "./src/tools/VerifyPlanExecutionTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebBrowserTool/WebBrowserPanel.js": [
++        "./src/tools/WebBrowserTool/WebBrowserPanel.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js": [
++        "./src/tools/WebFetchTool/WebFetchTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebFetchTool/preapproved.js": [
++        "./src/tools/WebFetchTool/preapproved.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebFetchTool/prompt.js": [
++        "./src/tools/WebFetchTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebFetchTool/utils.js": [
++        "./src/tools/WebFetchTool/utils.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebSearchTool/WebSearchTool.js": [
++        "./src/tools/WebSearchTool/WebSearchTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/WebSearchTool/prompt.js": [
++        "./src/tools/WebSearchTool/prompt.ts"
++      ],
++      "@thyrox/tool-registry/tools/WorkflowTool/WorkflowTool.js": [
++        "./src/tools/WorkflowTool/WorkflowTool.ts"
++      ],
++      "@thyrox/tool-registry/tools/WorkflowTool/bundled/index.js": [
++        "./src/tools/WorkflowTool/bundled/index.ts"
++      ],
++      "@thyrox/tool-registry/tools/WorkflowTool/constants.js": [
++        "./src/tools/WorkflowTool/constants.ts"
++      ],
++      "@thyrox/tool-registry/tools/registry/providers/BuiltInToolsProvider.js": [
++        "./src/tools/registry/providers/BuiltInToolsProvider.ts"
++      ],
++      "@thyrox/tool-registry/tools/shared/gitOperationTracking.js": [
++        "./src/tools/shared/gitOperationTracking.ts"
++      ],
++      "@thyrox/tool-registry/utils/inkColor.js": [
++        "./src/utils/inkColor.ts"
++      ]
++    }
++  },
++  "include": [
++    "src/**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}

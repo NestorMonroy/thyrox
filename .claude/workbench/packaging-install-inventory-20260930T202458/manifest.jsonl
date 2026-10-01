@@ -1,0 +1,5 @@
+{"probe":"probes/inventory.sh","output":"outputs/inventory.out","exit":0}
+{"probe":"probes/packages_and_proxy.sh","output":"outputs/packages_and_proxy.out","exit":0,"note":"cuenta palabras, no dependencias: reemplazada por infra_consumers.sh"}
+{"probe":"probes/infra_consumers.sh","output":"outputs/infra_consumers.out","exit":0}
+{"probe":"probes/infra_consumers.sh","note":"mezcla directo y transitivo, lee comentarios y el arnés de prueba: reemplazada por operational_dependencies.sh"}
+{"probe":"probes/operational_dependencies.sh","output":"outputs/operational_dependencies.out","exit":0}

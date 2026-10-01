@@ -1,0 +1,81 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/providerRouting.test.ts:
+179 |         protocol: 'codex',
+180 |         endpoint: 'https://chatgpt.com/backend-api',
+181 |         models: [{ id: 'gpt-5.2-codex', label: 'GPT-5.2 Codex' }],
+182 |       },
+183 |     ])
+184 |     expect(getProviderForModel('test:gpt-5.2-codex')).toBe('codex')
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "codex"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:184:55)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 6. protocolo codex da codex [0.36ms]
+155 |         protocol: 'openai',
+156 |         endpoint: 'https://api.openai.com/v1',
+157 |         models: [{ id: 'gpt-5.5', label: 'GPT-5.5' }],
+158 |       },
+159 |     ])
+160 |     expect(getProviderForModel('test:gpt-5.5')).toBe('openai')
+                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "openai"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:160:49)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 4. protocolo openai da openai [0.25ms]
+167 |         protocol: 'gemini',
+168 |         endpoint: 'https://generativelanguage.googleapis.com',
+169 |         models: [{ id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' }],
+170 |       },
+171 |     ])
+172 |     expect(getProviderForModel('test:gemini-2.5-pro')).toBe('gemini')
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "gemini"
+Received: "firstParty"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:172:56)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 5. protocolo gemini da gemini [0.21ms]
+235 |         protocol: 'openai',
+236 |         endpoint: 'https://api.openai.com/v1',
+237 |         models: [{ id: 'gpt-5.5', label: 'GPT-5.5' }],
+238 |       },
+239 |     ])
+240 |     expect(isFirstPartyAnthropicEndpoint('test:gpt-5.5')).toBe(false)
+                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:240:59)
+(fail) isFirstPartyAnthropicEndpoint > 13. el modelo resuelve a una conexion openai: falso, no es un endpoint de Anthropic [0.18ms]
+223 |         ...conexionBase,
+224 |         protocol: 'anthropic',
+225 |         endpoint: 'https://mi-litellm.example.com/anthropic',
+226 |       },
+227 |     ])
+228 |     expect(isFirstPartyAnthropicEndpoint('test:claude-opus-4-7')).toBe(false)
+                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:228:67)
+(fail) isFirstPartyAnthropicEndpoint > 12. el modelo resuelve a una conexion anthropic en un proxy: falso [0.18ms]
+
+ --seed=41
+ 1811 pass
+ 5 fail
+ 3166 expect() calls
+Ran 1816 tests across 144 files. [4.27s]
+EXIT=1
+EXIT=0

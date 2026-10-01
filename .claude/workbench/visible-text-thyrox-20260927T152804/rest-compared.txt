@@ -1,0 +1,9 @@
+src/packages/config/plugin/validatePlugin.ts:265:           `it, but the Claude.ai marketplace sync requires kebab-case ` +
+src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts:340:     if (fullFilePath.endsWith(`${sep}CLAUDE.md`)) {
+src/packages/provider/src/model.ts:494:   if (canonical.includes('claude-3-7-sonnet')) return 'Claude 3.7 Sonnet'
+src/packages/provider/src/model.ts:495:   if (canonical.includes('claude-3-5-sonnet')) return 'Claude 3.5 Sonnet'
+src/packages/provider/src/model.ts:497:   if (canonical.includes('claude-3-5-haiku')) return 'Claude 3.5 Haiku'
+src/packages/agent/attribution.ts:46:   if (model.includes('claude-fable-')) return 'Claude'
+src/packages/cli/src/handlers/auth.ts:61:     name: 'Claude Account',
+src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts:528:     if (absoluteFilePath.endsWith(`${sep}CLAUDE.md`)) {
+src/packages/command-runtime/src/commands/insights/insights.ts:3144:     const header = `# Claude Code Insights

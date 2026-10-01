@@ -1,0 +1,26 @@
+apt-candidates	apt	0.6.0-1 http://archive.ubuntu.com/ubuntu
+build-prerequisites	tool	gcc /usr/bin/gcc
+build-prerequisites	tool	make /usr/bin/make
+build-prerequisites	tool	pg_config /usr/bin/pg_config
+build-prerequisites	pgxs	/usr/lib/postgresql/16/lib/pgxs/src/makefiles/pgxs.mk
+build-prerequisites	server_headers	absent
+upstream-tags	tag	v0.8.2
+upstream-tags	tag	v0.8.3
+upstream-tags	tag	v0.8.4
+upstream-tags	tag	v0.8.5
+upstream-tags	tag	v0.8.6
+pgdg-repo	pgdg_http	200
+installed-capabilities	type	bit
+installed-capabilities	type	vector
+installed-capabilities	index_opclass	btree:oidvector_ops
+installed-capabilities	index_opclass	btree:tsvector_ops
+installed-capabilities	index_opclass	btree:vector_ops
+installed-capabilities	index_opclass	gin:tsvector_ops
+installed-capabilities	index_opclass	gist:tsvector_ops
+installed-capabilities	index_opclass	hash:oidvector_ops
+installed-capabilities	index_opclass	hnsw:vector_cosine_ops
+installed-capabilities	index_opclass	hnsw:vector_ip_ops
+installed-capabilities	index_opclass	hnsw:vector_l2_ops
+installed-capabilities	index_opclass	ivfflat:vector_cosine_ops
+installed-capabilities	index_opclass	ivfflat:vector_ip_ops
+installed-capabilities	index_opclass	ivfflat:vector_l2_ops

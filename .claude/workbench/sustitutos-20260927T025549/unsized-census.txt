@@ -1,0 +1,114 @@
+  .claude/skills/thyrox/scripts/run-functional-evals.sh:36  echo → grep -q
+     if echo "$result" | grep -qi "$pattern"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/skills/thyrox/scripts/run-functional-evals.sh:52  echo → grep -q
+     if echo "$result" | grep -qi "$pattern"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/skills/thyrox/scripts/run-multi-evals.sh:36  echo → grep -q
+     if echo "$result" | grep -qi "$pattern"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/skills/thyrox/scripts/run-multi-evals.sh:52  echo → grep -q
+     if echo "$result" | grep -qi "$pattern"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/skills/thyrox/scripts/verify-skill-mapping.sh:55  head → grep -q
+     if head -5 "$SKILL_FILE" | grep -q "^name:"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/skills/thyrox/scripts/verify-skill-mapping.sh:63  head → grep -q
+     if head -5 "$SKILL_FILE" | grep -q "^description:"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/workbench/completar-packages-desde-la-referencia-20260918T163237/probes/commit_copy_per_package.sh:26  printf → grep -q
+     if printf '%s' "$out" | grep -q 'index.lock'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/workbench/completar-packages-desde-la-referencia-20260918T163237/probes/commit_rename_per_package.sh:32  printf → grep -q
+     if printf '%s' "$out" | grep -q 'index.lock'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  .claude/workbench/escaped-modules-20260927T012834/bisect_leak.sh:11  fails → grep -q
+     fails() { timeout 900 bun test "$@" "$TARGET" 2>&1 | grep -q "^(fail).*${PATTERN}"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/corpus/convert-missing-md-links.sh:98  echo → grep -q
+     if echo "$content" | grep -qoP '`[^`]*\.md`'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/corpus/convert-missing-md-links.sh:119  echo → grep -q
+     if echo "$new_content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/corpus/convert-missing-md-links.sh:122  echo → grep -q
+     if echo "$new_content" | grep -qP "\[${match//\//\\/}\]\("
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/task/update-state.sh:57  echo → grep -q
+     if echo "$line" | grep -qE "^## FASE [0-9]+:"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/check-i001-prewrite.sh:18  echo → grep -q
+     if ! echo "$FILE_PATH" | grep -q "plan-execution/"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/check-i001-prewrite.sh:27  ls → grep -q
+     ! ls "$WP_DIR/discover/"*-analysis.md 2>/dev/null | head -1 | grep -q "."
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/detect-missing-md-links.sh:69  echo → grep -q
+     if echo "$content" | grep -qoP '`[^`]*\.md`'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/detect-missing-md-links.sh:93  echo → grep -q
+     if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/detect-missing-md-links.sh:99  echo → grep -q
+     if echo "$content" | grep -qP "\[${match//\//\\/}\]\("
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/validate-missing-md-links.sh:38  echo → grep -q
+     if echo "$content" | grep -qoP '`[^`]*\.md`'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/validate-missing-md-links.sh:56  echo → grep -q
+     if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  src/verify/validate-missing-md-links.sh:59  echo → grep -q
+     if echo "$content" | grep -qP "\[${match//\//\\/}\]\("
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/agents/test-agent-store-clasificar-documentos.sh:132  echo → grep -q
+     echo "$SALIDA" | grep -q "alcance medido"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/agents/test-agent-store-clasificar-documentos.sh:134  echo → grep -q
+     echo "$SALIDA" | grep -qE "[0-9]+ serie"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/agents/test-agent-store-fecha-documento.sh:180  echo → grep -q
+     echo "$SALIDA" | grep -q "alcance medido"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/agents/test-agent-store-fecha-documento.sh:182  echo → grep -q
+     echo "$SALIDA" | grep -qi "sin ninguna cota"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/agents/test-costo-agente.sh:81  echo → grep -q
+     echo "$salida" | grep -q "No se encontró transcript"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/install/test_install.sh:35  printf → grep -q
+     if printf '%s' "$haystack" | grep -qF -- "$needle"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/session/test-run-task-pool.sh:49  printf → grep -q
+     printf '%s' "$1" | grep -qE "$2"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/session/test-wait-jobs-probe.sh:37  contiene_texto → grep -q
+     contiene_texto() { printf '%s\n' "$1" | grep -Eq -- "$2"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/session/test-wait-jobs.sh:236  printf → grep -q
+     printf '%s' "$1" | grep -qE "$2"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/task/test-closure-graph.sh:64  echo → grep -q
+     echo "$SALIDA" | grep -q "\"#$id\""
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/task/test-closure-graph.sh:69  echo → grep -q
+     echo "$SALIDA" | grep -q '"#999"'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/verify/test-hallazgo-submodulo-baseline.sh:68  printf → grep -q
+     ! printf '%s' "$OUT" | grep -qE '^[0-9]+$'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/verify/test-vocabulario-baseline-resolucion.sh:59  printf → grep -q
+     printf '%s' "$SALIDA" | grep -q "baseline"
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/verify/test-vocabulario-baseline-resolucion.sh:130  printf → grep -q
+     printf '%s' "$SALIDA7" | grep -q 'corrida'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/verify/test-vocabulario-baseline-resolucion.sh:130  printf → grep -q
+     ! printf '%s' "$SALIDA7" | grep -q 'zzforma-que-solo-el-consumidor-declara'
+     captura antes de decidir: grep -q … <<<"$(…)"
+  tests/verify/test-vocabulario-baseline-resolucion.sh:148  printf → grep -q
+     printf '%s' "$SALIDA8" | grep -q "vocabulario_prohibido"
+     captura antes de decidir: grep -q … <<<"$(…)"
+check-unsized-writer-pipe: 37 incumplidor(es) nuevo(s), 0 congelado(s)  (alcance medido: 558 tubería(s) en 261 guion(es) con pipefail, de 597 guion(es) de shell)
+Métrica: tubería bajo `set -o pipefail` con una etapa de tamaño desconocido —proceso, función, expansión; todo salvo `echo`/`printf` de literales— seguida de `grep -q`/`-m`/`-l`, con el estado no neutralizado por `|| true`.
+Ciega a: el tamaño real —lo que cabe en 64 KiB no invierte y se marca igual—; a la posición de la marca; a `head` como consumidor; y a la tubería armada en una variable o por `eval`.

@@ -89,7 +89,7 @@ Use esta metodología cuando necesite:
    → SÍ: Manual SIEMPRE
    → NO: Evaluar cuidadosamente
 
-**Regla de oro**: **Si dudas entre manual y script → MANUAL**
+**Criterio rector**: **Si dudas entre manual y script → MANUAL**
 
 **Regla de realidad**: Scripts "rápidos" sin protecciones SIEMPRE terminan en desastre.
 
@@ -195,11 +195,11 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Inmediatamente después de detectar issues en el build
 
-**Ubicación**: [analysis-phase.md.template](../assets/analysis-phase.md.template)
+**Ubicación**: [analysis-phase.md.template](../assets/legacy/analysis-phase.md.template)
 
 ---
 
-### 2. categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst
+### 2. categorization-plan.md.template
 
 **Propósito**: Estrategia y planificación de cómo abordar los issues en lotes
 
@@ -212,7 +212,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Después de completar analysis-phase.md
 
-**Ubicación**: `categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst`
+**Ubicación**: `categorization-plan.md.template`
 
 ---
 
@@ -301,8 +301,8 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 ```bash
 # Copiar templates según necesites
-cp .claude/skills/workflow-track/assets/analysis-phase.md.template ./ANALISIS_issues_$(date +%Y-%m-%d).md
-cp .claude/skills/workflow-decompose/assets/categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst ./PLAN_categorizacion_$(date +%Y-%m-%d).md
+cp .claude/skills/workflow-track/assets/legacy/analysis-phase.md.template ./ANALISIS_issues_$(date +%Y-%m-%d).md
+cp .claude/skills/workflow-decompose/assets/categorization-plan.md.template ./PLAN_categorizacion_$(date +%Y-%m-%d).md
 cp .claude/skills/workflow-implement/assets/execution-log.md.template ./LOG_ejecucion_$(date +%Y-%m-%d).md
 cp .claude/skills/workflow-track/assets/final-report.md.template ./REPORTE_final_$(date +%Y-%m-%d).md
 ```
@@ -415,7 +415,7 @@ cp .claude/skills/workflow-track/assets/final-report.md.template ./REPORTE_final
 
 ### Para execution-log.md
 
-- **Actualizar frecuentemente**: Después de cada lote, no al final del día
+- **Actualizar frecuentemente**: Después de cada lote, no al cierre de la jornada
 - **Documentar problemas**: Especialmente los inesperados
 - **Registrar decisiones**: Por qué se tomó X decisión vs Y
 - **Commits frecuentes**: Un commit por lote, no todo junto al final
@@ -551,9 +551,9 @@ A: Usa el Decision Framework al inicio. Si dudas → MANUAL. Scripts sin las 8 P
 
 - THYROX SKILL.md - PHASE 7: TRACK
 - Templates en `/assets/`:
-  - [analysis-phase.md.template](../assets/analysis-phase.md.template)
-  - [categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst](../../workflow-decompose/assets/categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst)
-  - [execution-log.md.template](../assets/execution-log.md.template)
+  - [analysis-phase.md.template](../assets/legacy/analysis-phase.md.template)
+  - [categorization-plan.md.template](../../workflow-decompose/assets/categorization-plan.md.template)
+  - [execution-log.md.template](../../workflow-implement/assets/execution-log.md.template)
   - [final-report.md.template](../assets/final-report.md.template)
 - commit-helper.md - Para commits documentados después de cada lote
 

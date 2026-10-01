@@ -1,0 +1,6 @@
+base	21 pass, 0 fail	—
+gemini-details	19 pass, 2 fail	parseRetryAfterFromBody lee el retryDelay de Gemini | parseRetryAfterFromBody acepta texto JSON, rechaza lo que no lo es y lo vacío
+openai-message	20 pass, 1 fail	parseRetryAfterFromBody lee «retry after Ns» del mensaje de OpenAI
+anthropic-type	20 pass, 1 fail	parseRetryAfterFromBody reconoce el rate_limit_error de Anthropic sin espera
+string-body	20 pass, 1 fail	parseRetryAfterFromBody acepta texto JSON, rechaza lo que no lo es y lo vacío
+seconds-unit	21 pass, 0 fail	—

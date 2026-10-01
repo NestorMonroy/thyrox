@@ -1,0 +1,5 @@
+abort-not-retryable	/if (name === 'AbortError' || name === 'ResponseAborted') return false/d
+restart-reject	s/emittedText.length > 0 \&\& scan.text.length > 0 \&\& overlapChars/false \&\& overlapChars/
+empty-stop-needs-reasoning	/^    emittedReasoningText.length > 0$/d; s/^    emittedText.length === 0 \&\&$/    emittedText.length === 0/
+cancel-no-reopen	s/if (cancelled || retries >= maxRetries) return false/if (retries >= maxRetries) return false/
+finalize-once	/^    if (finalized) return$/d

@@ -1,0 +1,3 @@
+infrastructure_ensure: `podman system renumber` no corrigió los locks (asignados 3, referenciados 4; exit 125).
+                       El ensure no repara internals de Podman. Recuperación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan).
+__BG_EXIT__=3

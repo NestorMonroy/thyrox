@@ -2668,7 +2668,7 @@ function Row({
     )
   }
   // ant 5277.js: isOrigin = `job.id === initialJobId` (both SHORT ids;
-  // initialJobId = CLAUDE_AGENTS_SELECT = the backgrounded job's short).
+  // initialJobId = THYROX_AGENTS_SELECT = the backgrounded job's short).
   // Compare job.id (short), NOT state.sessionId (full UUID) — the latter
   // never equals the short-id currentSessionId, so the "current session"
   // label never fired (FleetView short-vs-UUID gotcha).

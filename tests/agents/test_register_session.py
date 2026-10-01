@@ -60,6 +60,7 @@ cmd = register_session.build_command(
     store_path=Path("/x/agent_store.py"),
     destination=["--repo", "docs"],
 )
+assert cmd is not None  # con agent_id en el payload, build_command no rehusa
 check("nombra el subcomando del store", True, "registrar-sesion" in cmd)
 check("lleva el destino inyectado", True, "--repo" in cmd and "docs" in cmd)
 check("y el agent-id del payload", True, "a1" in cmd)

@@ -1,0 +1,33 @@
+
+1. El grafo se construye desde aristas, no desde una base de datos
+  ok    conserva los nodos declarados
+  ok    y las aristas
+  ok    un nodo aislado sigue siendo nodo
+
+2. Descendientes — a cuántas desbloquea cerrar una
+  ok    a desbloquea a las tres
+  ok    b sólo a d
+  ok    una hoja a ninguna
+  ok    un aislado a ninguna
+  ok    unblock_count es su tamaño
+  ok    un nodo desconocido se nombra
+
+3. Listas para trabajar — sin bloqueante pendiente
+  ok    sólo las que nadie bloquea
+  ok    cerrar a libera b y c
+  ok    un estado ausente cuenta como pendiente
+
+4. Orden topológico, y el ciclo que lo invalida
+  ok    los cinco aparecen una vez
+  ok    a va antes que b
+  ok    b va antes que d
+  ok    find_cycle NO ve ciclo donde no lo hay
+  ok    y SÍ lo ve donde lo hay
+  ok    el orden REHÚSA sobre un ciclo, no devuelve una lista corta
+
+5. Componentes — los grupos independientes de trabajo
+  ok    dos: {a,b,c,d} y {e}
+  ok    el aislado es su propio componente
+
+resultado: 20 de 20 aserciones en verde
+EXIT=0

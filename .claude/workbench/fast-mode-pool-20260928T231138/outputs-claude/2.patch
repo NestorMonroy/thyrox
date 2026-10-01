@@ -1,0 +1,279 @@
+diff --git a/src/packages/agent/__tests__/modelScope.test.ts b/src/packages/agent/__tests__/modelScope.test.ts
+new file mode 100644
+index 00000000..2c558f08
+--- /dev/null
++++ b/src/packages/agent/__tests__/modelScope.test.ts
+@@ -0,0 +1,124 @@
++/**
++ * El alcance del modelo de respaldo de 2.1.283 (`vV`, `chunk-5t3x93y6.js`) y
++ * sus cinco dependencias propias del pase (`ahe`, `MNe`, `Tle`, `$5`, `izn`).
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++
++import {
++  DEFAULT_FABLE_MODEL_ENV,
++  FEATURE_ROSTER_FLAG,
++  fallbackModelScope,
++  hasFable5Mitigations,
++  isDefaultFableModelOverride,
++  isEapModel,
++  isFableCanonicalModel,
++  isFeatureRosterListed,
++} from '../modelScope.ts'
++import { resetCapabilityLookupsForTests, setServedCapabilityLookup } from '../modelCapabilities.ts'
++
++const FLAGS_ENV = 'THYROX_FEATURE_FLAGS'
++
++afterEach(() => {
++  delete process.env[DEFAULT_FABLE_MODEL_ENV]
++  delete process.env['THYROX_CODE_MODEL_CAPABILITIES']
++  delete process.env[FLAGS_ENV]
++  resetCapabilityLookupsForTests()
++})
++
++describe('isEapModel (ahe)', () => {
++  test('un modelo `-eap` al final o antes de un sufijo de contexto', () => {
++    expect(isEapModel('claude-opus-5-eap')).toBe(true)
++    expect(isEapModel('claude-opus-5-eap[1m]')).toBe(true)
++    expect(isEapModel('claude-opus-5')).toBe(false)
++  })
++})
++
++describe('isFableCanonicalModel (MNe)', () => {
++  test('sólo el prefijo `claude-fable-`', () => {
++    expect(isFableCanonicalModel('claude-fable-5-1')).toBe(true)
++    expect(isFableCanonicalModel('claude-opus-5')).toBe(false)
++  })
++})
++
++describe('hasFable5Mitigations (Tle)', () => {
++  test('sigue la capacidad declarada por el catálogo', () => {
++    expect(hasFable5Mitigations('claude-fable-5-1', 'claude-fable-5-1')).toBe(true)
++    expect(hasFable5Mitigations('claude-opus-5', 'claude-opus-5')).toBe(false)
++  })
++
++  test('sin capacidad decidida, `claude-mythos-5` es el único caso especial', () => {
++    expect(hasFable5Mitigations('claude-mythos-5', 'claude-mythos-5')).toBe(true)
++    expect(hasFable5Mitigations('claude-haiku-4-5', 'claude-haiku-4-5')).toBe(false)
++  })
++
++  test('la anulación por entorno gana sobre el caso especial', () => {
++    process.env['THYROX_CODE_MODEL_CAPABILITIES'] = 'claude-mythos-5=-fable_5_mitigations'
++    expect(hasFable5Mitigations('claude-mythos-5', 'claude-mythos-5')).toBe(false)
++  })
++})
++
++describe('isDefaultFableModelOverride ($5) — THYROX_CODE_DEFAULT_FABLE_MODEL', () => {
++  test('sin la variable, nunca coincide', () => {
++    expect(isDefaultFableModelOverride('claude-fable-5-1')).toBe(false)
++  })
++
++  test('coincide con la variable, sin distinguir el sufijo [1m]', () => {
++    process.env[DEFAULT_FABLE_MODEL_ENV] = 'claude-fable-5-1'
++    expect(isDefaultFableModelOverride('claude-fable-5-1[1m]')).toBe(true)
++    expect(isDefaultFableModelOverride('claude-opus-5')).toBe(false)
++  })
++})
++
++describe('isFeatureRosterListed (izn/X) — THYROX_FEATURE_FLAGS', () => {
++  test(`nombre de la bandera: ${FEATURE_ROSTER_FLAG}`, () => {
++    expect(FEATURE_ROSTER_FLAG).toBe('tengu_loggia_roster')
++  })
++
++  test('sin la bandera, la lista está vacía', () => {
++    expect(isFeatureRosterListed('claude-opus-5')).toBe(false)
++  })
++
++  test('un array JSON de ids, comparado sin distinguir mayúsculas ni [1m]', () => {
++    process.env[FLAGS_ENV] = JSON.stringify({ [FEATURE_ROSTER_FLAG]: ['Claude-Opus-5-Preview'] })
++    expect(isFeatureRosterListed('claude-opus-5-preview[1m]')).toBe(true)
++    expect(isFeatureRosterListed('claude-opus-5')).toBe(false)
++  })
++
++  test('un valor que no es un array de strings se trata como vacío', () => {
++    process.env[FLAGS_ENV] = JSON.stringify({ [FEATURE_ROSTER_FLAG]: 'claude-opus-5' })
++    expect(isFeatureRosterListed('claude-opus-5')).toBe(false)
++  })
++})
++
++describe('fallbackModelScope (vV)', () => {
++  test('`-eap` gana sobre cualquier otra causa', () => {
++    expect(fallbackModelScope('claude-opus-5-eap')).toBe('eap')
++  })
++
++  test('con `refusal_fallback` declarado y sin exclusión de Fable, es `catalog_flag`', () => {
++    expect(fallbackModelScope('claude-opus-5')).toBe('catalog_flag')
++  })
++
++  test('un modelo Fable con `refusal_fallback` no cae en `catalog_flag`', () => {
++    expect(fallbackModelScope('claude-fable-5-1')).toBe('other')
++  })
++
++  test('el override de THYROX_CODE_DEFAULT_FABLE_MODEL excluye `catalog_flag`', () => {
++    process.env[DEFAULT_FABLE_MODEL_ENV] = 'claude-opus-5'
++    expect(fallbackModelScope('claude-opus-5')).toBe('other')
++  })
++
++  test('sin `refusal_fallback`, el roster de la bandera decide `gb_listed`', () => {
++    process.env[FLAGS_ENV] = JSON.stringify({ [FEATURE_ROSTER_FLAG]: ['claude-haiku-4-5'] })
++    expect(fallbackModelScope('claude-haiku-4-5')).toBe('gb_listed')
++  })
++
++  test('sin ninguna causa, `other`', () => {
++    expect(fallbackModelScope('claude-haiku-4-5')).toBe('other')
++  })
++
++  test('la consulta servida también puede afirmar `refusal_fallback`', () => {
++    setServedCapabilityLookup(capability => (capability === 'refusal_fallback' ? true : undefined))
++    expect(fallbackModelScope('claude-haiku-4-5')).toBe('catalog_flag')
++  })
++})
+diff --git a/src/packages/agent/modelScope.ts b/src/packages/agent/modelScope.ts
+new file mode 100644
+index 00000000..e6512d24
+--- /dev/null
++++ b/src/packages/agent/modelScope.ts
+@@ -0,0 +1,113 @@
++/**
++ * El alcance del modelo de respaldo (`refusal fallback`): por qué causa un
++ * modelo entra o no en la ruta de respaldo cuando el servidor rechaza una
++ * petición — un EAP, el catálogo (con sus dos excepciones de Fable), el
++ * roster de una bandera remota, o ninguna.
++ *
++ * Porte de `vV`, `ahe`, `MNe`, `Tle`, `$5` e `izn` (`chunk-5t3x93y6.js` y
++ * `chunk-ps9bsv64.js`) de 2.1.283, con `$x` y `X` (dependencias propias de
++ * `izn`, `chunk-s7awe3vb.js` y `chunk-ps9bsv64.js`). `$h` ya existe como
++ * `modelHasCapability` en `./modelCapabilities.ts`.
++ *
++ * Divergencia declarada: la referencia resuelve el canónico de `vV` con
++ * `Be` (`chunk-t6pwageh.js`), que antes de la cadena de familias consulta
++ * dos tablas ausentes en este árbol — los overrides por organización y el
++ * mapa de perfiles de inferencia de Bedrock. Aquí se usa
++ * `canonicalModelName`, ya portado con esa misma divergencia declarada en su
++ * propio docstring (`./models.ts`), así que no se declara dos veces el mismo
++ * hueco: se reutiliza la resolución que ya lo asume.
++ *
++ * `ANTHROPIC_DEFAULT_FABLE_MODEL` (`$5`) y la lista de `izn`/`X()` son
++ * las dos variables que el ejecutor pidió declarar: la primera es propia del
++ * producto — una anulación manual de qué modelo cuenta como Fable por
++ * defecto — y se lee como `THYROX_CODE_DEFAULT_FABLE_MODEL`. La segunda NO
++ * es una variable nueva: `X()` lee un valor de GrowthBook
++ * (`tengu_loggia_roster`), y ese mecanismo ya está generalizado en este
++ * árbol como `getFeatureValue_CACHED_MAY_BE_STALE` (`@thyrox/config/feature-
++ * flags`), que resuelve TODAS las banderas remotas —ésta incluida— contra
++ * `THYROX_FEATURE_FLAGS`. Darle una variable dedicada duplicaría un
++ * mecanismo que ya existe para exactamente este caso.
++ */
++import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
++import { logForDebugging } from '@thyrox/local-observability/debug.js'
++
++import { modelHasCapability, stripOneMillionSuffix } from './modelCapabilities.ts'
++import { canonicalModelName } from './models.ts'
++
++/** El alcance del modelo de respaldo que `fallbackModelScope` (`vV`) devuelve. */
++export type ModelScope = 'eap' | 'catalog_flag' | 'gb_listed' | 'other'
++
++/** `ahe`: un `-eap` al final del nombre, o antes de un sufijo `[...]`. */
++export function isEapModel(model: string): boolean {
++  return /-eap($|\[)/i.test(model)
++}
++
++/** `MNe`. */
++export function isFableCanonicalModel(canonicalModel: string): boolean {
++  return canonicalModel.startsWith('claude-fable-')
++}
++
++/**
++ * `Tle`: la capacidad `fable_5_mitigations` decide si está declarada; sin
++ * decisión, `claude-mythos-5` es el único caso especial que la referencia
++ * trata como mitigado.
++ */
++export function hasFable5Mitigations(canonicalModel: string, requestedModel: string): boolean {
++  const declared = modelHasCapability(canonicalModel, 'fable_5_mitigations', requestedModel)
++  if (declared !== undefined) return declared
++  return canonicalModel === 'claude-mythos-5'
++}
++
++/** La variable propia del producto que sustituye a `ANTHROPIC_DEFAULT_FABLE_MODEL` en `$5`. */
++export const DEFAULT_FABLE_MODEL_ENV = 'THYROX_CODE_DEFAULT_FABLE_MODEL'
++
++/** `$5`: el modelo pedido coincide con la anulación, sin distinguir el sufijo `[1m]`. */
++export function isDefaultFableModelOverride(requestedModel: string): boolean {
++  const override = process.env[DEFAULT_FABLE_MODEL_ENV]
++  if (!override) return false
++  return stripOneMillionSuffix(requestedModel) === stripOneMillionSuffix(override)
++}
++
++/** `O` en `X()`: la bandera de GrowthBook que `izn` consulta. */
++export const FEATURE_ROSTER_FLAG = 'tengu_loggia_roster'
++
++/**
++ * `X()`: el roster declarado por la bandera, validado como array de strings
++ * — la misma comprobación que la referencia hace con Zod antes de tratar un
++ * valor ajeno como la lista vacía por defecto.
++ */
++function featureRosterModels(): readonly string[] {
++  const raw = getFeatureValue_CACHED_MAY_BE_STALE<unknown>(FEATURE_ROSTER_FLAG, [])
++  if (Array.isArray(raw) && raw.every(entry => typeof entry === 'string')) return raw
++  logForDebugging(`GrowthBook: ${FEATURE_ROSTER_FLAG} no es un array JSON de ids de modelo; se trata como vacío`, {
++    level: 'warn',
++  })
++  return []
++}
++
++/** `izn`, con `$x` ya inline: comparación insensible a mayúsculas tras quitar `[1m]`. */
++export function isFeatureRosterListed(requestedModel: string): boolean {
++  const normalized = stripOneMillionSuffix(requestedModel).toLowerCase()
++  return featureRosterModels().some(entry => stripOneMillionSuffix(entry).toLowerCase() === normalized)
++}
++
++/**
++ * `vV`: el alcance del modelo de respaldo para `requestedModel`. Un EAP gana
++ * sobre cualquier otra causa; si no, el catálogo decide salvo que el modelo
++ * sea Fable, tenga sus mitigaciones o esté forzado por la anulación de
++ * entorno; si tampoco, el roster de la bandera; si no, ninguna causa.
++ */
++export function fallbackModelScope(requestedModel: string): ModelScope {
++  if (isEapModel(requestedModel)) return 'eap'
++  const canonical = canonicalModelName(requestedModel)
++  if (
++    modelHasCapability(canonical, 'refusal_fallback', requestedModel) &&
++    !isFableCanonicalModel(canonical) &&
++    !hasFable5Mitigations(canonical, requestedModel) &&
++    !isDefaultFableModelOverride(requestedModel)
++  ) {
++    return 'catalog_flag'
++  }
++  if (isFeatureRosterListed(requestedModel)) return 'gb_listed'
++  return 'other'
++}
+diff --git a/src/packages/agent/package.json b/src/packages/agent/package.json
+index ee64faff..ee8110d2 100644
+--- a/src/packages/agent/package.json
++++ b/src/packages/agent/package.json
+@@ -52,6 +52,11 @@
+       "types": "./dist/modelCapabilities.d.ts",
+       "default": "./modelCapabilities.ts"
+     },
++    "./modelScope": {
++      "@thyrox/source": "./modelScope.ts",
++      "types": "./dist/modelScope.d.ts",
++      "default": "./modelScope.ts"
++    },
+     "./taggedId": {
+       "@thyrox/source": "./taggedId.ts",
+       "types": "./dist/taggedId.d.ts",
+diff --git a/src/packages/agent/tsconfig.build.json b/src/packages/agent/tsconfig.build.json
+index 327cce05..1066cd90 100644
+--- a/src/packages/agent/tsconfig.build.json
++++ b/src/packages/agent/tsconfig.build.json
+@@ -44,6 +44,9 @@
+       "@thyrox/agent/modelCapabilities": [
+         "./modelCapabilities.ts"
+       ],
++      "@thyrox/agent/modelScope": [
++        "./modelScope.ts"
++      ],
+       "@thyrox/agent/taggedId": [
+         "./taggedId.ts"
+       ],

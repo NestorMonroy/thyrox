@@ -17,15 +17,21 @@
 # La memoria no se consume: `THYROX_POOL_MEMINFO_PATH` apunta a un meminfo
 # sintético que la suite reescribe, igual que la suite del pool.
 set -uo pipefail
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BG="$ROOT/bin/thyrox-bg"
 T="$(mktemp -d)"
+# Sin esto la clave por clon del .env gana a la global y la suite escribe en el hogar real.
+source "$(dirname "$THYROX_MANAGED_EXECUTION_RUNNER")/../../../src/lib/test_homes.sh"; thyrox_isolate_homes "$T"
 cleanup() { pkill -f "[m]emfree-probe-$$" 2>/dev/null; rm -rf "$T"; }
 trap cleanup EXIT
 export THYROX_POOL_MEMINFO_PATH="$T/meminfo" THYROX_BG_MEMFREE_DIR="$T/memfree"
 export THYROX_BG_MEMFREE_POLL=0.2
 # Los runs de la familia `jobs` van al temporal, no al árbol.
 export THYROX_JOBS_DIR="$T/jobs"
+export THYROX_RUNTIME_DIR="$T/runtime"
 export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 mem() { printf 'MemTotal: 16000000 kB\nMemAvailable: %s kB\n' "$1" > "$T/meminfo"; }
 passed=0; failed=0
@@ -40,20 +46,20 @@ echo "test-bg-memfree:"
 # 1. Sin otro trabajo --memfree vivo se admite aunque falte memoria: si no, un
 #    trabajo mayor que la cota no arrancaría nunca.
 mem 100000
-OUT="$(bash "$BG" start first --dir "$T/logs" --grace 0 --memfree 1G -- bash -c "sleep 30" memfree-probe-$$)"
+OUT="$(bash "$BG" start first --dir "$T/logs" --grace 0 --memfree 1G --task TASK-THYROX-0001 --kind test -- bash -c "sleep 30" memfree-probe-$$)"
 P1="$(pid_of "$OUT")"
 check "el único trabajo se admite aunque falte memoria" vivo "$(alive "$P1")"
 
 # 2. Con uno vivo y la memoria bajo la cota, el segundo espera y, al vencer la
 #    espera, rehúsa sin lanzar.
-OUT="$(bash "$BG" start second --dir "$T/logs" --grace 0 --memfree 1G --memfree-wait 1 -- bash -c "sleep 30" memfree-probe-$$ 2>&1)"
+OUT="$(bash "$BG" start second --dir "$T/logs" --grace 0 --memfree 1G --memfree-wait 1 --task TASK-THYROX-0001 --kind test -- bash -c "sleep 30" memfree-probe-$$ 2>&1)"
 RC=$?
 check "sin memoria, el segundo rehúsa al vencer la espera" 3 "$RC"
 check "y no lanza nada" "" "$(pid_of "$OUT")"
 
 # 3. Si la memoria sube durante la espera, se admite.
 ( sleep 0.6; mem 8000000 ) &
-OUT="$(bash "$BG" start third --dir "$T/logs" --grace 0 --memfree 1G --memfree-wait 10 -- bash -c "sleep 30" memfree-probe-$$)"
+OUT="$(bash "$BG" start third --dir "$T/logs" --grace 0 --memfree 1G --memfree-wait 10 --task TASK-THYROX-0001 --kind test -- bash -c "sleep 30" memfree-probe-$$)"
 P3="$(pid_of "$OUT")"
 check "con memoria liberada durante la espera, se admite" vivo "$(alive "$P3")"
 

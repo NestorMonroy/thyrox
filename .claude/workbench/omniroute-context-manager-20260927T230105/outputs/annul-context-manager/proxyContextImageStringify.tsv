@@ -1,0 +1,30 @@
+base	3 pass, 0 fail	—
+trim-tools	3 pass, 0 fail	—
+prune-images	3 pass, 0 fail	—
+compress-thinking	3 pass, 0 fail	—
+thinking-keep-last	3 pass, 0 fail	—
+purify	3 pass, 0 fail	—
+purify-repair	3 pass, 0 fail	—
+notice-merge	3 pass, 0 fail	—
+notice-bytes	3 pass, 0 fail	—
+image-budget	1 pass, 2 fail	#8594: compressContext does NOT compress a within-limit inline-image request | #8594: purifyHistory keeps all image-bearing turns when they fit within the limit
+document-budget	3 pass, 0 fail	—
+openai-image	1 pass, 2 fail	#8594: compressContext does NOT compress a within-limit inline-image request | #8594: purifyHistory keeps all image-bearing turns when they fit within the limit
+claude-image	3 pass, 0 fail	—
+gemini-image	3 pass, 0 fail	—
+responses-placeholder	3 pass, 0 fail	—
+prune-target-stop	3 pass, 0 fail	—
+pairs-keep-last	3 pass, 0 fail	—
+pairs-orphan-result	3 pass, 0 fail	—
+pairs-empty-assistant	3 pass, 0 fail	—
+adjacency	3 pass, 0 fail	—
+strip-trailing	3 pass, 0 fail	—
+mistral	3 pass, 0 fail	—
+env-provider	0 pass, 1 fail	—
+env-default	3 pass, 0 fail	—
+env-reserve	3 pass, 0 fail	—
+env-keep	3 pass, 0 fail	—
+keep-zero	3 pass, 0 fail	—
+injected	3 pass, 0 fail	—
+name-hints	3 pass, 0 fail	—
+reserve-scale	3 pass, 0 fail	—

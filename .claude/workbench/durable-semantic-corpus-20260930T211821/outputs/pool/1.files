@@ -1,0 +1,14 @@
+src/packages/semantic-search/__tests__/config.test.ts
+src/packages/semantic-search/__tests__/contentHash.test.ts
+src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+src/packages/semantic-search/__tests__/store.postgres.test.ts
+src/packages/semantic-search/__tests__/support/corpusFixtures.ts
+src/packages/semantic-search/analysisRuns.ts
+src/packages/semantic-search/config.ts
+src/packages/semantic-search/contentHash.ts
+src/packages/semantic-search/corpus.ts
+src/packages/semantic-search/corpusSql.ts
+src/packages/semantic-search/errors.ts
+src/packages/semantic-search/spaces.ts
+src/packages/semantic-search/store.ts
+src/packages/semantic-search/vectorSql.ts

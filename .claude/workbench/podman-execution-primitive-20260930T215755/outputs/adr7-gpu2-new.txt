@@ -1,0 +1,33 @@
+**La GPU es una capacidad opcional del anfitrión, no una precondición
+(enmienda 1.6.0).** Decidido por el ejecutor el 2026-09-30. ``nvidia-smi`` es
+una de las capacidades del backend de medición NVIDIA, no la definición de que
+la máquina «tenga GPU».
+
+- **Capacidad, antes que medida.** Una sonda de capacidad (que reutiliza las
+  ocho señales de ``bin/hardware-inventory``) da cuatro estados que no se
+  colapsan: ``measured`` (hay backend y se midió, el cero incluido),
+  ``absent`` (no hay GPU utilizable), ``unavailable`` (parece haber GPU pero
+  no hay vía soportada para consultar su memoria) y ``error`` (había backend,
+  se intentó y falló). Sin telemetría nunca se escribe ``VRAM = 0``.
+- **Un puerto, no una dependencia.** ``GpuMemoryBackend`` (disponibilidad,
+  memoria libre, uso por conjunto de PIDs, identidad); hoy
+  ``NvidiaSmiBackend`` y ``NoGpuBackend``. El pool, ``gpu_monitor`` y el
+  wrapper no saben qué hay detrás. No se implementan otros fabricantes sin
+  necesidad.
+- **El requisito lo declara el trabajo**: ``none``, ``optional`` o
+  ``required``. ``none``: la VRAM no participa y el ledger no lo bloquea.
+  ``optional``: con backend, admisión RAM + VRAM y camino GPU; sin él, sólo RAM
+  y el camino CPU que el propio trabajo declara (el planificador no inventa el
+  fallback). ``required`` sin backend válido: rehúsa con exit 2 sin publicar
+  cifra de VRAM.
+- **La anchura no presupone VRAM.** ``-j`` es el máximo estructural; el tope
+  de VRAM sólo entra cuando hay backend y trabajos que la pidan. Sin GPU, los
+  trabajos CPU no ven reducida su anchura.
+- **El ledger sólo existe donde hay algo que proteger**: sin backend no hay
+  reservas de 0 MiB; con backend es uno por anfitrión y su ``flock`` cruza los
+  contenedores (medido arriba).
+- **RAM**: el cgroup es la autoridad del consumo agregado; dentro de un
+  contenedor nada lee ``/proc/meminfo`` para decidir memoria, y un
+  paralelismo anidado toma su presupuesto del límite y el uso de su cgroup.
+
+GNU Parallel sigue en el anfitrión como planificador de ítems. La imagen

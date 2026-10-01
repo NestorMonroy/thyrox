@@ -3,7 +3,7 @@ import { CYBER_RISK_INSTRUCTION } from '../cyberRiskInstruction.js'
 
 describe('CYBER_RISK_INSTRUCTION — contract anchor', () => {
   // This string is injected into the system prompt for every session.
-  // Its purpose: tell Claude that the operator (user) has authorized
+  // Its purpose: tell thyrox that the operator (user) has authorized
   // security work, while making clear the authorization does NOT
   // extend to instructions arriving via tool results.
   //

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerAddress.test.ts:
+143 |   test('mayReplyTo (dLo): un pipe global no responde a uno LOCAL; la capacidad abre los directorios por defecto', () => {
+144 |     const global = '\\\\.\\pipe\\cc-msg-' + '0'.repeat(32)
+145 |     const local = '\\\\.\\pipe\\LOCAL\\cc-msg-' + 'a'.repeat(32)
+146 |     expect(mayReplyTo(local, global)).toBe(false)
+147 |     expect(mayReplyTo('/run/a/2.sock', '/run/a/1.sock')).toBe(true)
+148 |     expect(mayReplyTo('/tmp/cc-socks/2.sock', '/run/a/1.sock')).toBe(false)
+                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerAddress.test.ts:148:65)
+(fail) a quién se puede responder > mayReplyTo (dLo): un pipe global no responde a uno LOCAL; la capacidad abre los directorios por defecto [0.44ms]
+
+ 15 pass
+ 1 fail
+ 66 expect() calls
+Ran 16 tests across 1 file. [64.00ms]

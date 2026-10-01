@@ -1,0 +1,595 @@
+diff --git a/src/session/session_restart.py b/src/session/session_restart.py
+index 164ec14e..124e52b3 100644
+--- a/src/session/session_restart.py
++++ b/src/session/session_restart.py
+@@ -121,6 +121,103 @@ def branch_of(root) -> str | None:
+     return _git(root, "rev-parse", "--abbrev-ref", "HEAD")
+ 
+ 
++def session_environment(session: dict) -> str | None:
++    """El entorno de una sesion ya cargada (`get_session`): ``ccr.environment_id``.
++
++    Alternativa a `environment_of` cuando la fuente es la respuesta de la API
++    y no el transcript: la clave es la misma idea, la procedencia es otra.
++    """
++    ccr = (session or {}).get("ccr") or {}
++    return ccr.get("environment_id") or None
++
++
++def session_sources(session: dict) -> list[dict]:
++    """Los repositorios de una sesion: su URL y la revision REGISTRADA al arranque.
++
++    La revision que aqui viaja no es la rama actual: un repo puede arrancar
++    sin ninguna (medido en la fixture: el tercero no la trae), y aunque la
++    traiga puede haber cambiado desde entonces. La rama real se mide aparte,
++    con `branch_of` dentro del clon (`resolve_repo`).
++    """
++    ccr = (session or {}).get("ccr") or {}
++    context = ccr.get("session_context") or {}
++    sources = []
++    for source in context.get("sources") or []:
++        repo = (source or {}).get("git_repository") or {}
++        url = repo.get("url")
++        if not url:
++            continue
++        sources.append({"url": url, "registered_revision": repo.get("revision")})
++    return sources
++
++
++def normalize_repo_url(url: str) -> str:
++    """`url` sin barra final ni sufijo ``.git``, para comparar contra un ``origin``.
++
++    Dos clones del mismo repo pueden declarar su remoto con o sin cada uno de
++    los dos, y son la misma URL.
++    """
++    normalized = (url or "").strip()
++    if normalized.endswith("/"):
++        normalized = normalized[:-1]
++    if normalized.endswith(".git"):
++        normalized = normalized[:-4]
++    return normalized
++
++
++def find_clone(url, roots) -> pathlib.Path | None:
++    """El clon local cuyo ``origin`` normalizado coincide con `url`, bajo `roots`.
++
++    Cada raiz de `roots` se prueba como clon ella misma y, si es un
++    directorio, tambien por su primer nivel de subdirectorios: un
++    `--clone-root` puede nombrar el padre que contiene varios clones
++    hermanos, o el clon mismo.
++
++    *Ciega a:* un remoto que no se llame ``origin``; y a un clon a mas de un
++    nivel de profundidad bajo la raiz dada.
++    """
++    target = normalize_repo_url(url)
++    checked: set[pathlib.Path] = set()
++    for root in roots:
++        root_path = pathlib.Path(root)
++        candidates = [root_path]
++        if root_path.is_dir():
++            candidates += sorted(p for p in root_path.iterdir() if p.is_dir())
++        for candidate in candidates:
++            resolved = candidate.resolve()
++            if resolved in checked:
++                continue
++            checked.add(resolved)
++            if not (resolved / ".git").exists():
++                continue
++            origin = repository_of(candidate)
++            if origin and normalize_repo_url(origin) == target:
++                return candidate
++    return None
++
++
++def resolve_repo(source: dict, clone_roots) -> dict:
++    """Un repo de la sesion con su clon y su rama REAL, medidos, no adivinados.
++
++    La rama sale de `branch_of` DENTRO del clon, nunca de
++    `registered_revision`: esa es la de arranque, no la actual. Un HEAD
++    separado (`branch_of` devuelve el nombre literal ``"HEAD"``) no cuenta
++    como rama: no hay a que hacer checkout.
++    """
++    clone = find_clone(source["url"], clone_roots)
++    branch = None
++    if clone is not None:
++        raw_branch = branch_of(clone)
++        if raw_branch and raw_branch != "HEAD":
++            branch = raw_branch
++    return {
++        "url": source["url"],
++        "registered_revision": source.get("registered_revision"),
++        "clone": clone,
++        "branch": branch,
++    }
++
++
+ def restart_needed(transcript, expected=("stop-gate-",)) -> dict:
+     """Si el relevo hace falta, medido por los hooks que DISPARARON.
+ 
+@@ -158,6 +255,33 @@ def restart_needed(transcript, expected=("stop-gate-",)) -> dict:
+             "seen": len(summaries), "measured": True}
+ 
+ 
++def wiring_verdict(hooks: dict, drift: dict) -> str | None:
++    """El veredicto compuesto: instalar, relevar, o que no hace falta nada.
++
++    `drift` —de `session.user_wiring.wiring_drift(live, declared)`— gana
++    sobre `hooks` —de `restart_needed`—: un comando en `only_declared` esta
++    declarado y NO instalado, y `settings.local.json` no viaja al contenedor
++    nuevo, asi que un relevo lo dejaria igual de no instalado. Solo cuando no
++    queda nada pendiente de instalar tiene sentido preguntar si los hooks ya
++    disparan.
++
++    Devuelve ``None`` cuando `hooks["measured"]` es falso: sin universo
++    medido no se afirma ni «relevar» ni «no hace falta» — la misma razon por
++    la que `restart_needed` deja `needed` en ``None``.
++
++    *Ciega a:* un evento con deriva que no sea `only_declared` —por ejemplo
++    `only_live`, un comando instalado que ya no se declara— porque eso no es
++    "falta instalar", es limpieza, y proponer instalar por eso seria un
++    veredicto sobre el fenomeno equivocado.
++    """
++    pending = any(sides.get("only_declared") for sides in drift.values())
++    if pending:
++        return "instalar primero"
++    if not hooks.get("measured"):
++        return None
++    return "relevar" if hooks.get("needed") else "no hace falta"
++
++
+ def build_payload(*, environment, repository, branch, title, prompt) -> dict:
+     """La carga util de `create_session`, o un error que nombra lo que falta.
+ 
+@@ -183,6 +307,124 @@ def build_payload(*, environment, repository, branch, title, prompt) -> dict:
+     }
+ 
+ 
++#: El prompt por defecto de un relevo de UNA sola fuente. Con varias fuentes,
++#: `build_relay_prompt` lo usa como cabecera y le añade los pasos de las
++#: demás.
++DEFAULT_PROMPT = "Continua el trabajo de la sesion anterior en esta rama."
++
++#: Los pasos de arranque de la sesion NUEVA, en el orden que el Item fija:
++#: sincronizar dependencias, instalar el cableado declarado, y por ultimo
++#: MEDIR que dispara — no basta con instalarlo, `wiring_drift` compara contra
++#: lo declarado, no contra lo que de verdad se ejecuta en un turno.
++SETUP_STEPS = (
++    "uv sync",
++    "bin/user_wiring --write",
++    "medir que los hooks disparan con `bin/session_restart --transcript {transcript}`",
++)
++
++
++def preflight_warnings(repos, *, live_settings=None, env_path=None,
++                       venv_path=None) -> list[dict]:
++    """Avisos del relevo, cada uno con si BLOQUEA. Sin veredicto sobre relevar.
++
++    Bloquean: un repo de la sesion sin clon local, y un clon sin rama (HEAD
++    separado o vacio). Avisan sin bloquear: `settings.local.json`, `.env` y
++    `.venv` ausentes — ninguno de los tres viaja al contenedor nuevo, y la
++    sesion nueva los restaura por su cuenta (`user_wiring --write`, `uv sync`,
++    y el usuario para `.env`).
++
++    *Ciega a:* la SALUD del clon mas alla de tener rama —un remoto
++    inalcanzable, cambios sin commitear— y a si el archivo ausente es
++    recuperable; solo mide presencia.
++    """
++    warnings: list[dict] = []
++    for repo in repos:
++        if repo.get("clone") is None:
++            warnings.append({
++                "message": f"sin clon local para {repo['url']}: no se puede "
++                          f"medir su rama real ni adjuntarlo al relevo",
++                "blocking": True})
++            continue
++        if not repo.get("branch"):
++            warnings.append({
++                "message": f"{repo['clone']}: HEAD separado o sin rama — no "
++                          f"hay a que hacer checkout en el relevo",
++                "blocking": True})
++    for path, name, restored_by in (
++        (live_settings, "settings.local.json",
++         "lo instala `bin/user_wiring --write`"),
++        (env_path, ".env", "lo restaura el usuario"),
++        (venv_path, ".venv", "lo recrea `uv sync`"),
++    ):
++        if path is not None and not pathlib.Path(path).exists():
++            warnings.append({
++                "message": f"{path} ausente: no viaja al contenedor nuevo, "
++                          f"{restored_by}",
++                "blocking": False})
++    return warnings
++
++
++def additional_repo_steps(repos) -> list[str]:
++    """Los pasos de prompt para adjuntar y ubicar los repos que NO son el primero.
++
++    Cada repo lleva su rama REAL —medida por `resolve_repo`, nunca la
++    registrada— porque es la que existe de verdad en su clon.
++    """
++    steps = []
++    for repo in repos:
++        steps.append(f"add_repo {repo['url']}")
++        if repo["branch"]:
++            steps.append(f"checkout la rama `{repo['branch']}` en {repo['url']}")
++        else:
++            steps.append(f"su rama no se pudo medir (sin clon o sin HEAD "
++                        f"con nombre) — resolver el aviso bloqueante antes "
++                        f"de hacer checkout en {repo['url']}")
++    return steps
++
++
++def build_relay_prompt(repos, transcript, base_prompt=DEFAULT_PROMPT) -> str:
++    """El prompt de un relevo con varias fuentes: pasos explicitos, no supuestos.
++
++    Solo `repos` —los que NO son la fuente primaria— entran aqui como pasos;
++    la primaria ya viaja en `source_url`/`source_revision` y repetirla en el
++    prompt duplicaria la instruccion. El setup de la sesion nueva va SIEMPRE
++    al final y en el orden fijado: `uv sync` antes de instalar el cableado
++    —que sus dependencias pueden requerir—, y medir los hooks al final,
++    porque medir antes de instalar mediria lo viejo.
++    """
++    lines = [base_prompt]
++    if repos:
++        lines.append("")
++        lines.append("Adjunta y ubica los repositorios restantes de la sesion:")
++        lines.extend(f"- {step}" for step in additional_repo_steps(repos))
++    lines.append("")
++    lines.append("Luego, en la sesion nueva, en este orden:")
++    lines.extend(f"- {step.format(transcript=transcript)}"
++                for step in SETUP_STEPS)
++    return "\n".join(lines)
++
++
++def build_multi_payload(*, environment, repos, title, transcript,
++                        base_prompt=DEFAULT_PROMPT) -> dict:
++    """La carga util de `create_session` para VARIAS fuentes, no solo una.
++
++    `create_session` acepta una fuente: la primera de la sesion viaja como
++    `source_url`/`source_revision`, con su rama REAL; el resto se declara
++    dentro del `prompt` como pasos explicitos de `add_repo` y checkout —
++    `build_relay_prompt`—, seguidos del setup de la sesion nueva.
++
++    Rehusa —via `build_payload`— si falta cualquier pieza del primario; y
++    aqui mismo si no hay ningun repo, porque entonces no hay fuente primaria
++    que nombrar.
++    """
++    if not repos:
++        raise RestartError(
++            "faltan 1 pieza(s) del relevo: repositorios. NO se compone un "
++            "relevo sin ninguna fuente.")
++    primary, rest = repos[0], repos[1:]
++    prompt = build_relay_prompt(rest, transcript, base_prompt)
++    return build_payload(environment=environment, repository=primary["url"],
++                         branch=primary["branch"], title=title, prompt=prompt)
+ def main(argv=None) -> int:
+     import argparse  # noqa: PLC0415
+ 
+@@ -192,9 +434,20 @@ def main(argv=None) -> int:
+                              "deriva de CLAUDE_CODE_SESSION_ID")
+     parser.add_argument("--root", default=".",
+                         help="el arbol del que derivar repo y rama")
++    parser.add_argument("--session-json", default=None,
++                        help="la salida de get_session (ccr.environment_id y "
++                             "session_context.sources[]); con esto, MEMBRESIA "
++                             "y rama salen de ahi y de los clones, no del "
++                             "transcript ni de --root")
++    parser.add_argument("--clone-root", action="append", default=None,
++                        help="raiz bajo la que buscar el clon de cada repo de "
++                             "la sesion (repetible); por defecto, el padre de "
++                             "--root. Solo aplica con --session-json")
++    parser.add_argument("--allow-partial", action="store_true",
++                        help="sale 0 aunque algun aviso del pre-flight "
++                             "bloquee; sin esto, un bloqueante sale 3")
+     parser.add_argument("--title", default="Relevo de sesion")
+-    parser.add_argument("--prompt", default="Continua el trabajo de la sesion "
+-                                            "anterior en esta rama.")
++    parser.add_argument("--prompt", default=DEFAULT_PROMPT)
+     args = parser.parse_args(argv)
+ 
+     transcript = args.transcript
+@@ -203,18 +456,72 @@ def main(argv=None) -> int:
+         found = transcript_for(os.environ.get("CLAUDE_CODE_SESSION_ID", ""))
+         transcript = str(found) if found else ""
+ 
+-    verdict = restart_needed(transcript)
+-    print(f"hooks del arbol que dispararon: {verdict['matched']} "
+-          f"de {verdict['seen']} resumen(es) de hook")
+-    if not verdict["measured"]:
++    hooks = restart_needed(transcript)
++    print(f"hooks del arbol que dispararon: {hooks['matched']} "
++          f"de {hooks['seen']} resumen(es) de hook")
++
++    from session import user_wiring  # noqa: PLC0415
++    live_settings_path = user_wiring.live_settings(pathlib.Path(args.root))
++    live_wiring = (json.loads(live_settings_path.read_text(encoding="utf-8"))
++                  if live_settings_path.exists() else {})
++    drift = user_wiring.wiring_drift(
++        live_wiring, user_wiring.declared_wiring(pathlib.Path(args.root)))
++    verdict = wiring_verdict(hooks, drift)
++    if verdict == "instalar primero":
++        pending = sorted({command for sides in drift.values()
++                          for command in sides.get("only_declared", [])})
++        print("veredicto: INSTALAR PRIMERO — declarado y no instalado: "
++              + "; ".join(pending))
++        print("settings.local.json no viaja al contenedor nuevo: un relevo "
++              "ahora lo dejaria igual de no instalado.")
++    elif verdict is None:
+         print("veredicto: NO PUDE MEDIR — no hay transcript que leer "
+               f"({transcript or 'ninguno derivado'}). Un rojo sobre cero "
+               f"resumenes no es un rojo: propondria relevar, que cuesta el "
+               f"contexto de esta sesion, sin haber mirado nada.")
+         return 2
+-    print("veredicto: "
+-          + ("HACE FALTA relevar" if verdict["needed"]
+-             else "NO hace falta: los gates ya disparan"))
++    else:
++        print("veredicto: "
++              + ("HACE FALTA relevar" if verdict == "relevar"
++                 else "NO hace falta: los gates ya disparan"))
++
++    if args.session_json:
++        session = json.loads(
++            pathlib.Path(args.session_json).read_text(encoding="utf-8"))
++        environment = session_environment(session)
++        sources = session_sources(session)
++        clone_roots = args.clone_root or [
++            str(pathlib.Path(args.root).resolve().parent)]
++        repos = [resolve_repo(source, clone_roots) for source in sources]
++
++        live = pathlib.Path(args.root).parent / ".claude" / "settings.local.json"
++        warnings = preflight_warnings(
++            repos, live_settings=live,
++            env_path=pathlib.Path(args.root) / ".env",
++            venv_path=pathlib.Path(args.root) / ".venv")
++        print("\navisos del pre-flight (sin veredicto sobre el relevo):")
++        if not warnings:
++            print("  ninguno")
++        for warning in warnings:
++            marca = "BLOQUEA" if warning["blocking"] else "no bloquea"
++            print(f"  [{marca}] {warning['message']}")
++        blocking = any(warning["blocking"] for warning in warnings)
++
++        try:
++            payload = build_multi_payload(
++                environment=environment, repos=repos, title=args.title,
++                transcript=transcript, base_prompt=args.prompt)
++        except RestartError as exc:
++            print(f"\nno se pudo componer la carga util: {exc}")
++            return 3 if blocking and not args.allow_partial else 1
++
++        print("\ncarga util para create_session:")
++        print(json.dumps(payload, indent=2, ensure_ascii=False))
++        print("\nEste guion PREPARA el relevo; no lo emite. La llamada la hace "
++              "quien tenga la herramienta, con esta carga util tal cual.")
++        if blocking and not args.allow_partial:
++            return 3
++        return 0
+ 
+     payload = build_payload(
+         environment=environment_of(transcript),
+diff --git a/tests/session/test_session_restart.py b/tests/session/test_session_restart.py
+index d55e1d50..4e4dfe66 100644
+--- a/tests/session/test_session_restart.py
++++ b/tests/session/test_session_restart.py
+@@ -242,5 +242,219 @@ check("y ahi el veredicto es booleano", True,
+ 
+ check("mencion y disparo difieren", True, v["needed"] != v2["needed"])
+ 
++
++print("=== 9. session.json: entorno y fuentes de get_session ===")
++# La forma real de get_session (fixture medida, no inventada):
++# `.claude/workbench/session-relay-20260929T025523/session.json`.
++session_fixture = {
++    "ccr": {
++        "id": "session_ejemplo",
++        "environment_id": "env_01EjemploEjemplo",
++        "session_context": {"sources": [
++            {"git_repository": {"url": "https://github.com/NestorMonroy/thyrox",
++                                "revision": "refs/heads/feature/thyrox-l4"}},
++            {"git_repository": {"url": "https://github.com/jcg-admin/kaupamex-docs",
++                                "revision": "refs/heads/feature/kaupamex-l9"}},
++            {"git_repository": {"url": "https://github.com/jcg-admin/kaupamex-api"}},
++        ]},
++    }
++}
++check("el entorno sale de ccr.environment_id", "env_01EjemploEjemplo",
++      sr.session_environment(session_fixture))
++check("sin ccr, None", None, sr.session_environment({}))
++sources = sr.session_sources(session_fixture)
++check("hay tres fuentes", 3, len(sources))
++check("la primera trae su url",
++      "https://github.com/NestorMonroy/thyrox", sources[0]["url"])
++check("y su revision REGISTRADA (no la rama real)",
++      "refs/heads/feature/thyrox-l4", sources[0]["registered_revision"])
++check("la tercera no trae revision registrada", None,
++      sources[2]["registered_revision"])
++
++print("=== 10. normaliza la URL para comparar contra el origin del clon ===")
++check("sin .git final", "https://github.com/o/r",
++      sr.normalize_repo_url("https://github.com/o/r.git"))
++check("sin barra final", "https://github.com/o/r",
++      sr.normalize_repo_url("https://github.com/o/r/"))
++check("las tres formas son iguales", True,
++      sr.normalize_repo_url("https://github.com/o/r")
++      == sr.normalize_repo_url("https://github.com/o/r.git/"))
++
++print("=== 11. la rama sale del CLON, nunca de la revision registrada ===")
++farm = pathlib.Path(tempfile.mkdtemp())
++clone_a = farm / "thyrox"
++subprocess.run(["git", "init", "-q", "-b", "main-de-verdad", str(clone_a)],
++              check=True)
++subprocess.run(["git", "-C", str(clone_a), "remote", "add", "origin",
++                "https://github.com/NestorMonroy/thyrox.git"], check=True)
++subprocess.run(["git", "-C", str(clone_a), "-c", "user.name=t",
++                "-c", "user.email=t@t", "commit", "-q", "--allow-empty",
++                "-m", "seed"], check=True)
++found_clone = sr.find_clone("https://github.com/NestorMonroy/thyrox", [farm])
++check("el clon se localiza por su origin normalizado", str(clone_a),
++      str(found_clone))
++resolved_a = sr.resolve_repo(
++    {"url": "https://github.com/NestorMonroy/thyrox",
++     "registered_revision": "refs/heads/feature/thyrox-l4"}, [farm])
++check("la rama REAL gana a la registrada", "main-de-verdad",
++      resolved_a["branch"])
++check("y el registro no se descarta, solo no se usa para la rama",
++      "refs/heads/feature/thyrox-l4", resolved_a["registered_revision"])
++
++print("=== 11b. un repo sin revision registrada toma la rama de su clon ===")
++clone_c = farm / "kaupamex-api"
++subprocess.run(["git", "init", "-q", "-b", "develop", str(clone_c)],
++              check=True)
++subprocess.run(["git", "-C", str(clone_c), "remote", "add", "origin",
++                "https://github.com/jcg-admin/kaupamex-api"], check=True)
++subprocess.run(["git", "-C", str(clone_c), "-c", "user.name=t",
++                "-c", "user.email=t@t", "commit", "-q", "--allow-empty",
++                "-m", "seed"], check=True)
++resolved_c = sr.resolve_repo(
++    {"url": "https://github.com/jcg-admin/kaupamex-api",
++     "registered_revision": None}, [farm])
++check("sin revision registrada, la rama sigue saliendo del clon", "develop",
++      resolved_c["branch"])
++
++print("=== 11c. ANULACION — HEAD separado no cuenta como rama ===")
++detached = farm / "detached"
++subprocess.run(["git", "init", "-q", "-b", "main", str(detached)], check=True)
++subprocess.run(["git", "-C", str(detached), "-c", "user.name=t",
++                "-c", "user.email=t@t", "commit", "-q", "--allow-empty",
++                "-m", "seed"], check=True)
++subprocess.run(["git", "-C", str(detached), "remote", "add", "origin",
++                "https://github.com/o/detached"], check=True)
++subprocess.run(["git", "-C", str(detached), "checkout", "-q", "--detach"],
++              check=True)
++check("git SI da un nombre para HEAD separado", "HEAD",
++      sr.branch_of(detached))
++resolved_detached = sr.resolve_repo(
++    {"url": "https://github.com/o/detached", "registered_revision": None},
++    [farm])
++check("pero resolve_repo NO lo toma por rama", None,
++      resolved_detached["branch"])
++check("y el clon si se encontro", str(detached),
++      str(resolved_detached["clone"]))
++
++print("=== 12. repo sin clon: aviso BLOQUEANTE ===")
++missing = sr.resolve_repo(
++    {"url": "https://github.com/nadie/no-existe", "registered_revision": None},
++    [farm])
++check("sin clon local, no hay clon", None, missing["clone"])
++check("ni rama", None, missing["branch"])
++warnings_missing = sr.preflight_warnings([missing])
++check("hay exactamente un aviso", 1, len(warnings_missing))
++check("y bloquea", True, warnings_missing[0]["blocking"])
++check("nombrando el repo", True,
++      "no-existe" in warnings_missing[0]["message"])
++
++print("=== 12b. clon sin rama tambien bloquea ===")
++warnings_detached = sr.preflight_warnings([resolved_detached])
++check("un aviso", 1, len(warnings_detached))
++check("y bloquea", True, warnings_detached[0]["blocking"])
++
++print("=== 12c. lo que NO viaja avisa, pero NO bloquea ===")
++ghost_root = pathlib.Path(tempfile.mkdtemp())
++warnings_ghost = sr.preflight_warnings(
++    [resolved_a], live_settings=ghost_root / "settings.local.json",
++    env_path=ghost_root / ".env", venv_path=ghost_root / ".venv")
++check("tres avisos (settings, env, venv)", 3, len(warnings_ghost))
++check("ninguno bloquea", True,
++      all(not w["blocking"] for w in warnings_ghost))
++check("el repo resuelto no genera aviso propio", 3, len(warnings_ghost))
++
++print("=== 12d. ANULACION — un clon completo no genera ningun aviso de repo ===")
++warnings_ok = sr.preflight_warnings([resolved_a])
++check("sin settings/env/venv declarados, y clon completo: cero avisos", 0,
++      len(warnings_ok))
++
++print("=== 13. DECLARADO != INSTALADO != CARGADO: instalar antes que relevar ===")
++live_with_gap = {"hooks": {"Stop": [
++    {"hooks": [{"command": "bash /x/.claude/hooks/stop-gate-stale-board.sh"}]}]}}
++declared_with_gap = {"hooks": {"Stop": [
++    {"hooks": [{"command": "bash /x/.claude/hooks/stop-gate-stale-board.sh"}]}],
++    "SubagentStop": [
++    {"hooks": [{"command": "bash /x/.claude/hooks/stop-gate-nuevo.sh"}]}]}}
++from session import user_wiring  # noqa: E402
++gap = user_wiring.wiring_drift(live_with_gap, declared_with_gap)
++check("hay un evento con algo solo declarado", True,
++      "SubagentStop" in gap and bool(gap["SubagentStop"]["only_declared"]))
++check("veredicto: instalar primero, aunque los hooks SI disparen", "instalar primero",
++      sr.wiring_verdict({"needed": False, "measured": True}, gap))
++
++print("=== 13b. sin brecha, el veredicto lo decide restart_needed ===")
++no_gap = user_wiring.wiring_drift(live_with_gap, live_with_gap)
++check("sin brecha, el dict de deriva esta vacio", {}, no_gap)
++check("ahi si se propone relevar", "relevar",
++      sr.wiring_verdict({"needed": True, "measured": True}, no_gap))
++check("o no hace falta, si ya disparan", "no hace falta",
++      sr.wiring_verdict({"needed": False, "measured": True}, no_gap))
++
++print("=== 13c. ANULACION — sin medir, ningun veredicto se afirma ===")
++check("needed=None por no medido -> veredicto None", None,
++      sr.wiring_verdict({"needed": None, "measured": False}, no_gap))
++
++print("=== 14. la carga util con VARIAS fuentes: una en la carga, el resto en el prompt ===")
++repos_multi = [
++    {"url": "https://github.com/NestorMonroy/thyrox", "branch": "main-de-verdad",
++     "registered_revision": "refs/heads/feature/thyrox-l4", "clone": clone_a},
++    {"url": "https://github.com/jcg-admin/kaupamex-docs", "branch": "feature/kaupamex-l9",
++     "registered_revision": "refs/heads/feature/kaupamex-l9", "clone": farm / "docs"},
++    {"url": "https://github.com/jcg-admin/kaupamex-api", "branch": "develop",
++     "registered_revision": None, "clone": clone_c},
++]
++multi_payload = sr.build_multi_payload(
++    environment="env_01EjemploEjemplo", repos=repos_multi, title="Relevo",
++    transcript="/root/.claude/projects/x/sesion.jsonl")
++check("la PRIMERA fuente va en la carga", repos_multi[0]["url"],
++      multi_payload["source_url"])
++check("con su rama REAL", repos_multi[0]["branch"],
++      multi_payload["source_revision"])
++for repo in repos_multi[1:]:
++    check(f"{repo['url']} aparece en el prompt", True,
++          repo["url"] in multi_payload["prompt"])
++    check(f"con su rama real ({repo['branch']}) en el prompt", True,
++          repo["branch"] in multi_payload["prompt"])
++check("el primer repo NO se repite como paso del prompt", False,
++      repos_multi[0]["url"] in multi_payload["prompt"])
++check("el prompt trae el setup: uv sync", True,
++      "uv sync" in multi_payload["prompt"])
++check("y la instalacion del cableado", True,
++      "bin/user_wiring --write" in multi_payload["prompt"])
++check("y la medicion con SU PROPIO transcript", True,
++      "/root/.claude/projects/x/sesion.jsonl" in multi_payload["prompt"])
++
++print("=== 14b. ANULACION — sin repos, build_multi_payload rehusa ===")
++try:
++    sr.build_multi_payload(environment="env_x", repos=[], title="t",
++                           transcript="/x.jsonl")
++    check("sin repos -> rehusa", True, False)
++except sr.RestartError:
++    check("sin repos -> rehusa", True, True)
++
++print("=== 14c. una fuente sin rama medida NO se disfraza de rama real ===")
++broken_repo = {"url": "https://github.com/nadie/no-existe", "branch": None,
++              "registered_revision": None, "clone": None}
++steps_broken = sr.additional_repo_steps([broken_repo])
++check("no imprime la palabra None como si fuera una rama", False,
++      "None" in " ".join(steps_broken))
++check("nombra que la rama no se pudo medir", True,
++      any("no se pudo medir" in step for step in steps_broken))
++
+ print(f"\nOK={OK} FAILED={FAILED}")
+-raise SystemExit(1 if FAILED else 0)
++
++
++def test_session_restart_suite() -> None:
++    """Puente pytest: las verificaciones de arriba ya corrieron al importar.
++
++    Este archivo usa `check()` en vez de `assert` por modulo, asi que pytest
++    no vera ningun `test_` si no se declara uno: sin esto, `pytest` colecciona
++    cero items y el `raise SystemExit` de mas abajo rompe la coleccion. La
++    verificacion en si NO se repite aqui: se lee el contador que las 79
++    comprobaciones de arriba ya llenaron.
++    """
++    assert FAILED == 0, f"{FAILED} verificacion(es) en rojo (ver salida arriba)"
++
++
++if __name__ == "__main__":
++    raise SystemExit(1 if FAILED else 0)

@@ -1,0 +1,30 @@
+base	4 pass, 0 fail	—
+trim-tools	4 pass, 0 fail	—
+prune-images	4 pass, 0 fail	—
+compress-thinking	4 pass, 0 fail	—
+thinking-keep-last	4 pass, 0 fail	—
+purify	1 pass, 3 fail	purify_history merges dropped-notice into existing leading system message | purify_history prepends a single system notice when no system message exists | purify_history merges into leading developer message without adding a second one
+purify-repair	4 pass, 0 fail	—
+notice-merge	2 pass, 2 fail	purify_history merges dropped-notice into existing leading system message | purify_history merges into leading developer message without adding a second one
+notice-bytes	4 pass, 0 fail	—
+image-budget	4 pass, 0 fail	—
+document-budget	4 pass, 0 fail	—
+openai-image	4 pass, 0 fail	—
+claude-image	4 pass, 0 fail	—
+gemini-image	4 pass, 0 fail	—
+responses-placeholder	4 pass, 0 fail	—
+prune-target-stop	4 pass, 0 fail	—
+pairs-keep-last	4 pass, 0 fail	—
+pairs-orphan-result	4 pass, 0 fail	—
+pairs-empty-assistant	4 pass, 0 fail	—
+adjacency	4 pass, 0 fail	—
+strip-trailing	4 pass, 0 fail	—
+mistral	4 pass, 0 fail	—
+env-provider	0 pass, 1 fail	—
+env-default	4 pass, 0 fail	—
+env-reserve	4 pass, 0 fail	—
+env-keep	4 pass, 0 fail	—
+keep-zero	4 pass, 0 fail	—
+injected	4 pass, 0 fail	—
+name-hints	4 pass, 0 fail	—
+reserve-scale	4 pass, 0 fail	—

@@ -1,0 +1,7 @@
+(fail) infrastructure-bootstrap > sin el valor del secreto declarado sale 2 y nombra la variable [7.62ms]
+(fail) infrastructure-bootstrap > una entrada que no es un arreglo de declaraciones sale 2 y lo dice [4.72ms]
+(fail) infrastructure-bootstrap > una entrada que no es JSON sale 2 [3.44ms]
+ 0 pass
+ 3 fail
+TEST_EXIT=1
+__BG_EXIT__=0

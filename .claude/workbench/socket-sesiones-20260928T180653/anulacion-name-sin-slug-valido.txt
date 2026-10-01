@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+154 | 
+155 | describe('sufijos de slug (A/C/U/fDe)', () => {
+156 |   test('splitSlugSuffix reconoce base-adjetivo-sustantivo con número opcional', () => {
+157 |     expect(splitSlugSuffix('work-calm-fox', isSlug)).toEqual({ base: 'work', suffix: 'calm-fox' })
+158 |     expect(splitSlugSuffix('work-Calm-Fox-12', isSlug)).toEqual({ base: 'work', suffix: 'Calm-Fox-12' })
+159 |     expect(splitSlugSuffix('work-green-fox', isSlug)).toBeUndefined()
+                                                            ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  base: "work",
+  suffix: "green-fox",
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:159:55)
+(fail) sufijos de slug (A/C/U/fDe) > splitSlugSuffix reconoce base-adjetivo-sustantivo con número opcional [0.62ms]
+
+ 14 pass
+ 1 fail
+ 44 expect() calls
+Ran 15 tests across 1 file. [91.00ms]

@@ -1,0 +1,1 @@
+cd src/packages/tool-registry && bun test 2>&1 | tail -n 4

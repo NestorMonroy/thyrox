@@ -1,0 +1,5 @@
+no-ts-collect	s/if p.endswith(('.py', \*TYPESCRIPT_SUFFIXES))\]/if p.endswith('.py')]/
+no-ts-scan	s/^        return typescript.get(str(path))$/        return []/
+parsed-counted	s/if entry\['parsed'\] else None)/if entry['parsed'] else [])/
+no-refuse	s/^        raise TypeScriptUnavailable(f'el recorrido de los .ts salió.*$/        return {}/
+no-homographs	/^    'resolver',  #/d

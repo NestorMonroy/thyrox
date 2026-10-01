@@ -19,7 +19,7 @@ Calla cuando el comando ya viaja por ``thyrox-bg``, que registra el trabajo.
 Ciega a: un trabajo desprendido a mano con ``nohup … &`` en primer plano, que
 es el eje de ``detect_foreground_long_command``.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 
@@ -28,8 +28,8 @@ import re
 _ASSEMBLED = re.compile(r"\b(?:thyrox-bg|bg\.sh)\s+start\b")
 
 #: La espera de un trabajo que ya está en el ledger. Es la forma que la regla
-#: prescribe desde 2026-09-24: el trabajo va al ledger y su espera al segundo
-#: plano del cliente, que es lo único que notifica.
+#: prescribe: el trabajo va al ledger y su espera al segundo plano del
+#: cliente, que es lo único que notifica.
 _LEDGER_WAIT = re.compile(
     r"\b(?:(?:thyrox-bg|bg\.sh)\s+wait|wait-jobs(?:\.sh)?\s+wait)\b")
 

@@ -32,20 +32,20 @@ let listaPrevia: string | undefined
 let raiz: string
 
 beforeEach(async () => {
-  configPrevio = process.env.CLAUDE_CONFIG_DIR
-  listaPrevia = process.env.CLAUDE_CODE_TASK_LIST_ID
+  configPrevio = process.env.THYROX_CONFIG_DIR
+  listaPrevia = process.env.THYROX_CODE_TASK_LIST_ID
   raiz = await mkdtemp('/dev/shm/tool-registry-tareas-')
-  process.env.CLAUDE_CONFIG_DIR = raiz
-  process.env.CLAUDE_CODE_TASK_LIST_ID = LISTA
+  process.env.THYROX_CONFIG_DIR = raiz
+  process.env.THYROX_CODE_TASK_LIST_ID = LISTA
   resetStateForTests()
   setIsInteractive(true)
 })
 
 afterEach(async () => {
-  if (configPrevio === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = configPrevio
-  if (listaPrevia === undefined) delete process.env.CLAUDE_CODE_TASK_LIST_ID
-  else process.env.CLAUDE_CODE_TASK_LIST_ID = listaPrevia
+  if (configPrevio === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = configPrevio
+  if (listaPrevia === undefined) delete process.env.THYROX_CODE_TASK_LIST_ID
+  else process.env.THYROX_CODE_TASK_LIST_ID = listaPrevia
   await rm(raiz, { recursive: true, force: true })
 })
 

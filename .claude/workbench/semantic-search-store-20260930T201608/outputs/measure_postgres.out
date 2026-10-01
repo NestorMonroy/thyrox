@@ -1,0 +1,11 @@
+== clúster
+Ver Cluster Port Status Owner    Data directory              Log file
+16  main    5432 online postgres /var/lib/postgresql/16/main /var/log/postgresql/postgresql-16-main.log
+== pgvector disponible
+default_version = '0.8.6'
+== ¿confiable? (f = sólo superusuario la crea)
+f
+== versión instalada en la base de pruebas
+0.8.6
+== binary_quantize responde
+101

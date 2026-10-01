@@ -1,0 +1,3 @@
+src/packages/permission/src/__tests__/internalPaths.test.ts
+src/packages/permission/src/__tests__/permissionOptions.test.ts
+src/packages/permission/src/internalPaths.ts

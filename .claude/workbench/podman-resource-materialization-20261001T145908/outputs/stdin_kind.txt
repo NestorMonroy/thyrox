@@ -1,0 +1,3 @@
+node:child_process stdio pipe -> socket
+Bun.spawn stdin Uint8Array -> other
+Bun.spawn stdin 'pipe' -> socket

@@ -1,0 +1,109 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/providerRouting.test.ts:
+130 | 
+131 |   test('2. protocolo anthropic da firstParty, no el literal del protocolo', () => {
+132 |     setConnections([
+133 |       { ...conexionBase, protocol: 'anthropic', endpoint: 'https://api.anthropic.com' },
+134 |     ])
+135 |     expect(getProviderForModel('test:claude-opus-4-7')).toBe('firstParty')
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "firstParty"
+Received: "codex"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:135:57)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 2. protocolo anthropic da firstParty, no el literal del protocolo [0.68ms]
+143 |         ...conexionBase,
+144 |         protocol: 'anthropic',
+145 |         endpoint: 'https://mi-litellm.example.com/anthropic',
+146 |       },
+147 |     ])
+148 |     expect(getProviderForModel('test:claude-opus-4-7')).toBe('firstParty')
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "firstParty"
+Received: "codex"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:148:57)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 3. protocolo anthropic contra un proxy sigue dando firstParty [0.11ms]
+123 |   createdAt: 0,
+124 | }
+125 | 
+126 | describe('getProviderForModel — de protocolo de conexion a APIProvider', () => {
+127 |   test('1. sin conexion que coincida cae al proveedor global (firstParty por defecto)', () => {
+128 |     expect(getProviderForModel('claude-opus-4-7')).toBe('firstParty')
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: "firstParty"
+Received: "codex"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:128:52)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 1. sin conexion que coincida cae al proveedor global (firstParty por defecto) [0.11ms]
+167 |         protocol: 'gemini',
+168 |         endpoint: 'https://generativelanguage.googleapis.com',
+169 |         models: [{ id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' }],
+170 |       },
+171 |     ])
+172 |     expect(getProviderForModel('test:gemini-2.5-pro')).toBe('gemini')
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "gemini"
+Received: "codex"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:172:56)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 5. protocolo gemini da gemini [0.09ms]
+155 |         protocol: 'openai',
+156 |         endpoint: 'https://api.openai.com/v1',
+157 |         models: [{ id: 'gpt-5.5', label: 'GPT-5.5' }],
+158 |       },
+159 |     ])
+160 |     expect(getProviderForModel('test:gpt-5.5')).toBe('openai')
+                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "openai"
+Received: "codex"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:160:49)
+(fail) getProviderForModel — de protocolo de conexion a APIProvider > 4. protocolo openai da openai [0.08ms]
+246 |   })
+247 | 
+248 |   test('15. y con la variable por defecto, ese mismo modelo sin conexion da verdadero', () => {
+249 |     // El caso 14 mide el falso; este mide que la rama de respaldo no esta
+250 |     // clavada en `false`, que es lo que un `return false` la dejaria.
+251 |     expect(isFirstPartyAnthropicEndpoint('claude-opus-4-7')).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:251:62)
+(fail) isFirstPartyAnthropicEndpoint > 15. y con la variable por defecto, ese mismo modelo sin conexion da verdadero [0.14ms]
+212 | 
+213 |   test('11. el modelo resuelve a una conexion anthropic en api.anthropic.com: verdadero', () => {
+214 |     setConnections([
+215 |       { ...conexionBase, protocol: 'anthropic', endpoint: 'https://api.anthropic.com' },
+216 |     ])
+217 |     expect(isFirstPartyAnthropicEndpoint('test:claude-opus-4-7')).toBe(true)
+                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/providerRouting.test.ts:217:67)
+(fail) isFirstPartyAnthropicEndpoint > 11. el modelo resuelve a una conexion anthropic en api.anthropic.com: verdadero [0.09ms]
+
+ --seed=11
+ 1809 pass
+ 7 fail
+ 3166 expect() calls
+Ran 1816 tests across 144 files. [4.17s]
+EXIT=1
+EXIT=0

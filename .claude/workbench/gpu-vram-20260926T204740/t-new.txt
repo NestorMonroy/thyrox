@@ -1,0 +1,23 @@
+
+# --- la VRAM de cada item, con nvidia-smi ---------------------------------------
+# Un nvidia-smi falso: declara 400 MiB para cada proceso del `claude` falso y un
+# uso de GPU de 77 %. El item LENTO dura lo bastante para que el monitor lo
+# muestree; el rapido puede terminar antes de la primera muestra.
+cat > "$F/nvidia-smi" <<'SH'
+#!/usr/bin/env bash
+case "$*" in
+  *--query-compute-apps=pid,used_memory*) pgrep -f "[h]eadless-falso/claude" | gawk '{print $1 ", 400"}' ;;
+  *--query-gpu=index,utilization.gpu*)    echo "0, 77" ;;
+  *) exit 9 ;;
+esac
+SH
+chmod +x "$F/nvidia-smi"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre LENTO-alfa
+check "con nvidia-smi: el item deja su .gpu" "$(ls "$F/out"/*.gpu 2>/dev/null | wc -l)" "1"
+check "con nvidia-smi: VRAM pico y uso pico del item" "$(gawk '{print $1, $3}' "$F/out/1.gpu" 2>/dev/null)" "400 77"
+check "con nvidia-smi: lo declara" "$(printf '%s' "$SALIDA" | gawk '/^gpu: se mide la VRAM/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/no-existe" corre alfa
+check "sin nvidia-smi: ningun .gpu" "$(ls "$F/out"/*.gpu 2>/dev/null | wc -l)" "0"
+check "sin nvidia-smi: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/^gpu: sin nvidia-smi/{n++} END{print n+0}')" "1"
+
+# --- el historial: cada ejecución deja su medida y la siguiente deriva de ella --

@@ -14,7 +14,6 @@ hay umbral de instancias y de archivos, y por debajo el patrón queda abierto.
 """
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 import tempfile

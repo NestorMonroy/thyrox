@@ -138,7 +138,7 @@ def render(items: Sequence[Pending], labels: Mapping[str, str]) -> str:
     # `staged`. La telemetría se exige sólo si algún item la reporta —un
     # consumidor que no la declara no tiene número que rotular, y pedirle el
     # rótulo le rompería el gate por un eje que no usa.
-    exigidos = list(WORK_FIELDS)
+    exigidos: list[str] = list(WORK_FIELDS)
     if any(getattr(i, TELEMETRY_FIELD) for i in items):
         exigidos.append(TELEMETRY_FIELD)
     missing = [field for field in exigidos if field not in labels]

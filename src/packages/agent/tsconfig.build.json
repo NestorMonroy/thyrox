@@ -1,0 +1,797 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/agent": [
+        "./index.ts"
+      ],
+      "@thyrox/agent/file-history": [
+        "./fileHistory.ts"
+      ],
+      "@thyrox/agent/types": [
+        "./types.ts"
+      ],
+      "@thyrox/agent/schema": [
+        "./schema.ts"
+      ],
+      "@thyrox/agent/registry": [
+        "./registry.ts"
+      ],
+      "@thyrox/agent/emit/markdown": [
+        "./emit/markdown.ts"
+      ],
+      "@thyrox/agent/emit/agentsJson": [
+        "./emit/agentsJson.ts"
+      ],
+      "@thyrox/agent/models": [
+        "./models.ts"
+      ],
+      "@thyrox/agent/modelCapabilities": [
+        "./modelCapabilities.ts"
+      ],
+      "@thyrox/agent/modelScope": [
+        "./modelScope.ts"
+      ],
+      "@thyrox/agent/taggedId": [
+        "./taggedId.ts"
+      ],
+      "@thyrox/agent/idTypes": [
+        "./idTypes.ts"
+      ],
+      "@thyrox/agent/uuid": [
+        "./uuid.ts"
+      ],
+      "@thyrox/agent/agentIdUtils": [
+        "./agentIdUtils.ts"
+      ],
+      "@thyrox/agent/commitAttribution": [
+        "./commitAttribution.ts"
+      ],
+      "@thyrox/agent/sanitizePathComponent": [
+        "./sanitizePathComponent.ts"
+      ],
+      "@thyrox/agent/eventMetadata": [
+        "./eventMetadata.ts"
+      ],
+      "@thyrox/agent/promptCategory": [
+        "./promptCategory.ts"
+      ],
+      "@thyrox/agent/internal/tokenBudget": [
+        "./internal/tokenBudget.ts"
+      ],
+      "@thyrox/agent/contentArray": [
+        "./contentArray.ts"
+      ],
+      "@thyrox/agent/errors": [
+        "./errors.ts"
+      ],
+      "@thyrox/agent/abortController": [
+        "./abortController.ts"
+      ],
+      "@thyrox/agent/combinedAbortSignal": [
+        "./combinedAbortSignal.ts"
+      ],
+      "@thyrox/agent/tee": [
+        "./tee.ts"
+      ],
+      "@thyrox/agent/loop": [
+        "./loop/index.ts"
+      ],
+      "@thyrox/agent/loop/types": [
+        "./loop/types.ts"
+      ],
+      "@thyrox/agent/loop/hooks": [
+        "./loop/hooks.ts"
+      ],
+      "@thyrox/agent/loop/transcript": [
+        "./loop/transcript.ts"
+      ],
+      "@thyrox/agent/loop/session": [
+        "./loop/session.ts"
+      ],
+      "@thyrox/agent/loop/session/reconcile": [
+        "./loop/session/reconcile.ts"
+      ],
+      "@thyrox/agent/loop/sessions": [
+        "./loop/sessions/index.ts"
+      ],
+      "@thyrox/agent/loop/sessions/modelSwitch": [
+        "./loop/sessions/modelSwitch.ts"
+      ],
+      "@thyrox/agent/compaction": [
+        "./compaction/index.ts"
+      ],
+      "@thyrox/agent/coordinatorMode": [
+        "./coordinatorMode.ts"
+      ],
+      "@thyrox/agent/frontmatterParser": [
+        "./frontmatterParser.ts"
+      ],
+      "@thyrox/agent/proactive": [
+        "./proactive/index.ts"
+      ],
+      "@thyrox/agent/sessionStores": [
+        "./sessionStores.ts"
+      ],
+      "@thyrox/agent/yaml": [
+        "./yaml.ts"
+      ],
+      "@thyrox/agent/claudeInChrome/toolRendering.js": [
+        "./claudeInChrome/toolRendering.tsx"
+      ],
+      "@thyrox/agent/localAgentTask.js": [
+        "./localAgentTask.tsx"
+      ],
+      "@thyrox/agent/services/mcpServerApproval.js": [
+        "./services/mcpServerApproval.tsx"
+      ],
+      "@thyrox/agent/statusAlias.js": [
+        "./statusAlias.tsx"
+      ],
+      "@thyrox/agent/tasks/LocalMainSessionTask.js": [
+        "./tasks/LocalMainSessionTask.tsx"
+      ],
+      "@thyrox/agent/tasks/LocalShellTask.js": [
+        "./tasks/LocalShellTask.tsx"
+      ],
+      "@thyrox/agent/AgentSummary/agentSummary.js": [
+        "./AgentSummary/agentSummary.ts"
+      ],
+      "@thyrox/agent/MagicDocs/magicDocs.js": [
+        "./MagicDocs/magicDocs.ts"
+      ],
+      "@thyrox/agent/SessionMemory/sessionMemory.js": [
+        "./SessionMemory/sessionMemory.ts"
+      ],
+      "@thyrox/agent/SessionMemory/sessionMemoryUtils.js": [
+        "./SessionMemory/sessionMemoryUtils.ts"
+      ],
+      "@thyrox/agent/abortController.js": [
+        "./abortController.ts"
+      ],
+      "@thyrox/agent/agentContext.js": [
+        "./agentContext.ts"
+      ],
+      "@thyrox/agent/agentDeps.js": [
+        "./agentDeps.ts"
+      ],
+      "@thyrox/agent/agentHostBindings.js": [
+        "./agentHostBindings.ts"
+      ],
+      "@thyrox/agent/agentSwarmsEnabled.js": [
+        "./agentSwarmsEnabled.ts"
+      ],
+      "@thyrox/agent/assistant/AssistantSessionChooser.js": [
+        "./assistant/AssistantSessionChooser.ts"
+      ],
+      "@thyrox/agent/assistant/index.js": [
+        "./assistant/index.ts"
+      ],
+      "@thyrox/agent/assistant/sessionDiscovery.js": [
+        "./assistant/sessionDiscovery.ts"
+      ],
+      "@thyrox/agent/assistant/sessionHistory.js": [
+        "./assistant/sessionHistory.ts"
+      ],
+      "@thyrox/agent/attachments.js": [
+        "./attachments.ts"
+      ],
+      "@thyrox/agent/attribution.js": [
+        "./attribution.ts"
+      ],
+      "@thyrox/agent/awaySummary.js": [
+        "./awaySummary.ts"
+      ],
+      "@thyrox/agent/background/fleet/fleetStore.js": [
+        "./background/fleet/fleetStore.ts"
+      ],
+      "@thyrox/agent/background/fleet/fleetTypes.js": [
+        "./background/fleet/fleetTypes.ts"
+      ],
+      "@thyrox/agent/background/fleet/generateJobName.js": [
+        "./background/fleet/generateJobName.ts"
+      ],
+      "@thyrox/agent/background/fleet/listFleetJobs.js": [
+        "./background/fleet/listFleetJobs.ts"
+      ],
+      "@thyrox/agent/background/fleet/pinFleetJob.js": [
+        "./background/fleet/pinFleetJob.ts"
+      ],
+      "@thyrox/agent/background/fleet/renameFleetJob.js": [
+        "./background/fleet/renameFleetJob.ts"
+      ],
+      "@thyrox/agent/background/fleet/replBridgeSeed.js": [
+        "./background/fleet/replBridgeSeed.ts"
+      ],
+      "@thyrox/agent/background/fleet/replyToFleetJob.js": [
+        "./background/fleet/replyToFleetJob.ts"
+      ],
+      "@thyrox/agent/background/fleet/rvServer.js": [
+        "./background/fleet/rvServer.ts"
+      ],
+      "@thyrox/agent/background/fleet/sortFleetJobs.js": [
+        "./background/fleet/sortFleetJobs.ts"
+      ],
+      "@thyrox/agent/background/preconditions.js": [
+        "./background/preconditions.ts"
+      ],
+      "@thyrox/agent/background/remote/remoteSession.js": [
+        "./background/remote/remoteSession.ts"
+      ],
+      "@thyrox/agent/claudeInChrome/chromeNativeHost.js": [
+        "./claudeInChrome/chromeNativeHost.ts"
+      ],
+      "@thyrox/agent/claudeInChrome/common.js": [
+        "./claudeInChrome/common.ts"
+      ],
+      "@thyrox/agent/claudeInChrome/mcpServer.js": [
+        "./claudeInChrome/mcpServer.ts"
+      ],
+      "@thyrox/agent/claudeInChrome/prompt.js": [
+        "./claudeInChrome/prompt.ts"
+      ],
+      "@thyrox/agent/claudeInChrome/setup.js": [
+        "./claudeInChrome/setup.ts"
+      ],
+      "@thyrox/agent/claudeInChromeCommon.js": [
+        "./claudeInChromeCommon.ts"
+      ],
+      "@thyrox/agent/claudeInChromeSetup.js": [
+        "./claudeInChromeSetup.ts"
+      ],
+      "@thyrox/agent/combinedAbortSignal.js": [
+        "./combinedAbortSignal.ts"
+      ],
+      "@thyrox/agent/command.js": [
+        "./command.ts"
+      ],
+      "@thyrox/agent/commands/brief.js": [
+        "./commands/brief.ts"
+      ],
+      "@thyrox/agent/commands/commit-push-pr.js": [
+        "./commands/commit-push-pr.ts"
+      ],
+      "@thyrox/agent/commands/commit.js": [
+        "./commands/commit.ts"
+      ],
+      "@thyrox/agent/commands/pr_comments/index.js": [
+        "./commands/pr_comments/index.ts"
+      ],
+      "@thyrox/agent/commands/security-review.js": [
+        "./commands/security-review.ts"
+      ],
+      "@thyrox/agent/commands/tasks/index.js": [
+        "./commands/tasks/index.ts"
+      ],
+      "@thyrox/agent/commitAttribution.js": [
+        "./commitAttribution.ts"
+      ],
+      "@thyrox/agent/compaction/autoCompact.js": [
+        "./compaction/autoCompact.ts"
+      ],
+      "@thyrox/agent/compaction/compact.js": [
+        "./compaction/compact.ts"
+      ],
+      "@thyrox/agent/compaction/compactWarningHook.js": [
+        "./compaction/compactWarningHook.ts"
+      ],
+      "@thyrox/agent/compaction/compactWarningState.js": [
+        "./compaction/compactWarningState.ts"
+      ],
+      "@thyrox/agent/compaction/microCompact.js": [
+        "./compaction/microCompact.ts"
+      ],
+      "@thyrox/agent/compaction/postCompactCleanup.js": [
+        "./compaction/postCompactCleanup.ts"
+      ],
+      "@thyrox/agent/compaction/reactiveCompact.js": [
+        "./compaction/reactiveCompact.ts"
+      ],
+      "@thyrox/agent/compaction/sessionMemoryCompact.js": [
+        "./compaction/sessionMemoryCompact.ts"
+      ],
+      "@thyrox/agent/compaction/snipCompact.js": [
+        "./compaction/snipCompact.ts"
+      ],
+      "@thyrox/agent/compaction/snipProjection.js": [
+        "./compaction/snipProjection.ts"
+      ],
+      "@thyrox/agent/constants/github-app.js": [
+        "./constants/github-app.ts"
+      ],
+      "@thyrox/agent/constants/messages.js": [
+        "./constants/messages.ts"
+      ],
+      "@thyrox/agent/constants/oauth.js": [
+        "./constants/oauth.ts"
+      ],
+      "@thyrox/agent/constants/product.js": [
+        "./constants/product.ts"
+      ],
+      "@thyrox/agent/constants/prompts.js": [
+        "./constants/prompts.ts"
+      ],
+      "@thyrox/agent/constants/spinnerVerbs.js": [
+        "./constants/spinnerVerbs.ts"
+      ],
+      "@thyrox/agent/constants/systemPromptSections.js": [
+        "./constants/systemPromptSections.ts"
+      ],
+      "@thyrox/agent/constants/turnCompletionVerbs.js": [
+        "./constants/turnCompletionVerbs.ts"
+      ],
+      "@thyrox/agent/contentArray.js": [
+        "./contentArray.ts"
+      ],
+      "@thyrox/agent/context": [
+        "./context.ts"
+      ],
+      "@thyrox/agent/context.js": [
+        "./context.ts"
+      ],
+      "@thyrox/agent/contextCollapse/index.js": [
+        "./contextCollapse/index.ts"
+      ],
+      "@thyrox/agent/contextCollapse/operations.js": [
+        "./contextCollapse/operations.ts"
+      ],
+      "@thyrox/agent/contextCollapse/persist.js": [
+        "./contextCollapse/persist.ts"
+      ],
+      "@thyrox/agent/coordinatorMode.js": [
+        "./coordinatorMode.ts"
+      ],
+      "@thyrox/agent/coreMessages.js": [
+        "./coreMessages.ts"
+      ],
+      "@thyrox/agent/diff.js": [
+        "./diff.ts"
+      ],
+      "@thyrox/agent/effort.js": [
+        "./effort.ts"
+      ],
+      "@thyrox/agent/eventMetadata.js": [
+        "./eventMetadata.ts"
+      ],
+      "@thyrox/agent/fileChangedWatcher.js": [
+        "./fileChangedWatcher.ts"
+      ],
+      "@thyrox/agent/fileHistory.js": [
+        "./fileHistory.ts"
+      ],
+      "@thyrox/agent/forkedAgent.js": [
+        "./forkedAgent.ts"
+      ],
+      "@thyrox/agent/frontmatterParser.js": [
+        "./frontmatterParser.ts"
+      ],
+      "@thyrox/agent/git/gitConfigParser.js": [
+        "./git/gitConfigParser.ts"
+      ],
+      "@thyrox/agent/git/gitFilesystem.js": [
+        "./git/gitFilesystem.ts"
+      ],
+      "@thyrox/agent/goalStopHook.js": [
+        "./goalStopHook.ts"
+      ],
+      "@thyrox/agent/hooks.js": [
+        "./hooks.ts"
+      ],
+      "@thyrox/agent/hooks/AsyncHookRegistry.js": [
+        "./hooks/AsyncHookRegistry.ts"
+      ],
+      "@thyrox/agent/hooks/attributionHooks.js": [
+        "./hooks/attributionHooks.ts"
+      ],
+      "@thyrox/agent/hooks/fileChangedWatcher.js": [
+        "./hooks/fileChangedWatcher.ts"
+      ],
+      "@thyrox/agent/hooks/hooksConfigSnapshot.js": [
+        "./hooks/hooksConfigSnapshot.ts"
+      ],
+      "@thyrox/agent/hooks/registerFrontmatterHooks.js": [
+        "./hooks/registerFrontmatterHooks.ts"
+      ],
+      "@thyrox/agent/hooks/registerSkillHooks.js": [
+        "./hooks/registerSkillHooks.ts"
+      ],
+      "@thyrox/agent/hooks/sessionHooks.js": [
+        "./hooks/sessionHooks.ts"
+      ],
+      "@thyrox/agent/hooksConfigSnapshot.js": [
+        "./hooksConfigSnapshot.ts"
+      ],
+      "@thyrox/agent/idleTimeout.js": [
+        "./idleTimeout.ts"
+      ],
+      "@thyrox/agent/inProcessTeammateHelpers.js": [
+        "./inProcessTeammateHelpers.ts"
+      ],
+      "@thyrox/agent/jetbrains.js": [
+        "./jetbrains.ts"
+      ],
+      "@thyrox/agent/logsTypes.js": [
+        "./logsTypes.ts"
+      ],
+      "@thyrox/agent/loop/context/basePrompt": [
+        "./loop/context/basePrompt.ts"
+      ],
+      "@thyrox/agent/loop/context/microcompact": [
+        "./loop/context/microcompact.ts"
+      ],
+      "@thyrox/agent/loop/context/systemPrompt": [
+        "./loop/context/systemPrompt.ts"
+      ],
+      "@thyrox/agent/messagePredicates.js": [
+        "./messagePredicates.ts"
+      ],
+      "@thyrox/agent/messageQueueManager.js": [
+        "./messageQueueManager.ts"
+      ],
+      "@thyrox/agent/messageQueueTypes": [
+        "./messageQueueTypes.ts"
+      ],
+      "@thyrox/agent/messageShapes": [
+        "./messageShapes.ts"
+      ],
+      "@thyrox/agent/messageShapes.js": [
+        "./messageShapes.ts"
+      ],
+      "@thyrox/agent/messages.js": [
+        "./messages.ts"
+      ],
+      "@thyrox/agent/messages/mappers.js": [
+        "./messages/mappers.ts"
+      ],
+      "@thyrox/agent/messages/systemInit.js": [
+        "./messages/systemInit.ts"
+      ],
+      "@thyrox/agent/messagesMappers.js": [
+        "./messagesMappers.ts"
+      ],
+      "@thyrox/agent/misc/cronJitterConfig.js": [
+        "./misc/cronJitterConfig.ts"
+      ],
+      "@thyrox/agent/misc/directMemberMessage.js": [
+        "./misc/directMemberMessage.ts"
+      ],
+      "@thyrox/agent/misc/systemDirectories.js": [
+        "./misc/systemDirectories.ts"
+      ],
+      "@thyrox/agent/postSamplingHooks.js": [
+        "./postSamplingHooks.ts"
+      ],
+      "@thyrox/agent/proactive/index.js": [
+        "./proactive/index.ts"
+      ],
+      "@thyrox/agent/proactive/useProactive.js": [
+        "./proactive/useProactive.ts"
+      ],
+      "@thyrox/agent/promptCategory.js": [
+        "./promptCategory.ts"
+      ],
+      "@thyrox/agent/prompts.js": [
+        "./prompts.ts"
+      ],
+      "@thyrox/agent/query": [
+        "./query.ts"
+      ],
+      "@thyrox/agent/queryContext.js": [
+        "./queryContext.ts"
+      ],
+      "@thyrox/agent/querySource": [
+        "./querySource.ts"
+      ],
+      "@thyrox/agent/replHydration.js": [
+        "./replHydration.ts"
+      ],
+      "@thyrox/agent/runtime/QueryGuard.js": [
+        "./runtime/QueryGuard.ts"
+      ],
+      "@thyrox/agent/runtime/backgroundHousekeeping.js": [
+        "./runtime/backgroundHousekeeping.ts"
+      ],
+      "@thyrox/agent/runtime/mailbox.js": [
+        "./runtime/mailbox.ts"
+      ],
+      "@thyrox/agent/runtime/queueProcessor.js": [
+        "./runtime/queueProcessor.ts"
+      ],
+      "@thyrox/agent/scheduler": [
+        "./scheduler.ts"
+      ],
+      "@thyrox/agent/sdkControlSchemas.js": [
+        "./sdkControlSchemas.ts"
+      ],
+      "@thyrox/agent/sdkEventQueue.js": [
+        "./sdkEventQueue.ts"
+      ],
+      "@thyrox/agent/sdkProgress.js": [
+        "./sdkProgress.ts"
+      ],
+      "@thyrox/agent/services/preventSleep.js": [
+        "./services/preventSleep.ts"
+      ],
+      "@thyrox/agent/services/privacyConfig.js": [
+        "./services/privacyConfig.ts"
+      ],
+      "@thyrox/agent/sessionFileAccessHooks.js": [
+        "./sessionFileAccessHooks.ts"
+      ],
+      "@thyrox/agent/sessionStores.js": [
+        "./sessionStores.ts"
+      ],
+      "@thyrox/agent/sessionTitle.js": [
+        "./sessionTitle.ts"
+      ],
+      "@thyrox/agent/sessionTools/agenticSessionSearch.js": [
+        "./sessionTools/agenticSessionSearch.ts"
+      ],
+      "@thyrox/agent/sessionTools/analyzeContext.js": [
+        "./sessionTools/analyzeContext.ts"
+      ],
+      "@thyrox/agent/sessionTools/contextSuggestions.js": [
+        "./sessionTools/contextSuggestions.ts"
+      ],
+      "@thyrox/agent/sessionTools/crossProjectResume.js": [
+        "./sessionTools/crossProjectResume.ts"
+      ],
+      "@thyrox/agent/sessionTools/transcriptSearch.js": [
+        "./sessionTools/transcriptSearch.ts"
+      ],
+      "@thyrox/agent/sessionUrl.js": [
+        "./sessionUrl.ts"
+      ],
+      "@thyrox/agent/sideQuery.js": [
+        "./sideQuery.ts"
+      ],
+      "@thyrox/agent/sideQuestion.js": [
+        "./sideQuestion.ts"
+      ],
+      "@thyrox/agent/skillSearch/localSearch.js": [
+        "./skillSearch/localSearch.ts"
+      ],
+      "@thyrox/agent/skillSearch/remoteSkillLoader.js": [
+        "./skillSearch/remoteSkillLoader.ts"
+      ],
+      "@thyrox/agent/skillSearch/remoteSkillState.js": [
+        "./skillSearch/remoteSkillState.ts"
+      ],
+      "@thyrox/agent/skillSearch/telemetry.js": [
+        "./skillSearch/telemetry.ts"
+      ],
+      "@thyrox/agent/standalone/standaloneAgent.js": [
+        "./standalone/standaloneAgent.ts"
+      ],
+      "@thyrox/agent/taggedId.js": [
+        "./taggedId.ts"
+      ],
+      "@thyrox/agent/task/framework.js": [
+        "./task/framework.ts"
+      ],
+      "@thyrox/agent/taskFramework.js": [
+        "./taskFramework.ts"
+      ],
+      "@thyrox/agent/tasks.js": [
+        "./tasks.ts"
+      ],
+      "@thyrox/agent/tasks/DreamTask/DreamTask.js": [
+        "./tasks/DreamTask/DreamTask.ts"
+      ],
+      "@thyrox/agent/tasks/LocalShellTask/killShellTasks.js": [
+        "./tasks/LocalShellTask/killShellTasks.ts"
+      ],
+      "@thyrox/agent/tasks/LocalWorkflowTask/LocalWorkflowTask.js": [
+        "./tasks/LocalWorkflowTask/LocalWorkflowTask.ts"
+      ],
+      "@thyrox/agent/tasks/MonitorMcpTask/MonitorMcpTask.js": [
+        "./tasks/MonitorMcpTask/MonitorMcpTask.ts"
+      ],
+      "@thyrox/agent/tasks/pillLabel.js": [
+        "./tasks/pillLabel.ts"
+      ],
+      "@thyrox/agent/tasks/stopTask.js": [
+        "./tasks/stopTask.ts"
+      ],
+      "@thyrox/agent/teamTasks.js": [
+        "./teamTasks.ts"
+      ],
+      "@thyrox/agent/tokenBudget": [
+        "./tokenBudget.ts"
+      ],
+      "@thyrox/agent/tokenEstimation.js": [
+        "./tokenEstimation.ts"
+      ],
+      "@thyrox/agent/tokens.js": [
+        "./tokens.ts"
+      ],
+      "@thyrox/agent/toolSearch.js": [
+        "./toolSearch.ts"
+      ],
+      "@thyrox/agent/types/hooks.js": [
+        "./types/hooks.ts"
+      ],
+      "@thyrox/agent/userPromptKeywords/userPromptKeywords.js": [
+        "./userPromptKeywords/userPromptKeywords.ts"
+      ],
+      "@thyrox/agent/uuid.js": [
+        "./uuid.ts"
+      ],
+      "@thyrox/agent/workflow/engine.js": [
+        "./workflow/engine.ts"
+      ],
+      "@thyrox/agent/workflow/journal.js": [
+        "./workflow/journal.ts"
+      ],
+      "@thyrox/agent/workflow/metaParser.js": [
+        "./workflow/metaParser.ts"
+      ],
+      "@thyrox/agent/workflow/namedWorkflows.js": [
+        "./workflow/namedWorkflows.ts"
+      ],
+      "@thyrox/agent/workflow/paths.js": [
+        "./workflow/paths.ts"
+      ],
+      "@thyrox/agent/workflow/sandbox.js": [
+        "./workflow/sandbox.ts"
+      ],
+      "@thyrox/agent/workflow/types.js": [
+        "./workflow/types.ts"
+      ],
+      "@thyrox/agent/worktreeModeEnabled.js": [
+        "./worktreeModeEnabled.ts"
+      ],
+      "@thyrox/agent/yaml.js": [
+        "./yaml.ts"
+      ],
+      "@thyrox/agent/zodSchema/zodToJsonSchema.js": [
+        "./zodSchema/zodToJsonSchema.ts"
+      ],
+      "@thyrox/agent/query-engine": [
+        "./QueryEngine.ts"
+      ],
+      "@thyrox/agent/subagentLimits.js": [
+        "./subagentLimits.ts"
+      ]
+    }
+  },
+  "include": [
+    "emit/**/*",
+    "internal/**/*",
+    "loop/**/*",
+    "compaction/**/*",
+    "proactive/**/*",
+    "claudeInChrome/**/*",
+    "services/**/*",
+    "tasks/**/*",
+    "AgentSummary/**/*",
+    "MagicDocs/**/*",
+    "SessionMemory/**/*",
+    "assistant/**/*",
+    "background/**/*",
+    "commands/**/*",
+    "constants/**/*",
+    "contextCollapse/**/*",
+    "git/**/*",
+    "hooks/**/*",
+    "messages/**/*",
+    "misc/**/*",
+    "runtime/**/*",
+    "sessionTools/**/*",
+    "skillSearch/**/*",
+    "standalone/**/*",
+    "task/**/*",
+    "types/**/*",
+    "userPromptKeywords/**/*",
+    "workflow/**/*",
+    "zodSchema/**/*",
+    "QueryEngine.ts",
+    "abortController.ts",
+    "agentContext.ts",
+    "agentDeps.ts",
+    "agentHostBindings.ts",
+    "agentIdUtils.ts",
+    "agentSwarmsEnabled.ts",
+    "attachments.ts",
+    "attribution.ts",
+    "awaySummary.ts",
+    "claudeInChromeCommon.ts",
+    "claudeInChromeSetup.ts",
+    "combinedAbortSignal.ts",
+    "command.ts",
+    "commitAttribution.ts",
+    "contentArray.ts",
+    "context.ts",
+    "coordinatorMode.ts",
+    "coreMessages.ts",
+    "diff.ts",
+    "effort.ts",
+    "errors.ts",
+    "eventMetadata.ts",
+    "fileChangedWatcher.ts",
+    "fileHistory.ts",
+    "forkedAgent.ts",
+    "frontmatterParser.ts",
+    "goalStopHook.ts",
+    "hooks.ts",
+    "hooksConfigSnapshot.ts",
+    "idTypes.ts",
+    "idleTimeout.ts",
+    "inProcessTeammateHelpers.ts",
+    "index.ts",
+    "jetbrains.ts",
+    "localAgentTask.tsx",
+    "logsTypes.ts",
+    "messagePredicates.ts",
+    "messageQueueManager.ts",
+    "messageQueueTypes.ts",
+    "messageShapes.ts",
+    "messages.ts",
+    "messagesMappers.ts",
+    "modelCapabilities.ts",
+    "modelScope.ts",
+    "models.ts",
+    "postSamplingHooks.ts",
+    "promptCategory.ts",
+    "prompts.ts",
+    "query.ts",
+    "queryContext.ts",
+    "querySource.ts",
+    "registry.ts",
+    "replHydration.ts",
+    "sanitizePathComponent.ts",
+    "scheduler.ts",
+    "schema.ts",
+    "sdkControlSchemas.ts",
+    "sdkEventQueue.ts",
+    "sdkProgress.ts",
+    "sessionFileAccessHooks.ts",
+    "sessionStores.ts",
+    "sessionTitle.ts",
+    "sessionUrl.ts",
+    "sideQuery.ts",
+    "sideQuestion.ts",
+    "statusAlias.tsx",
+    "subagentLimits.ts",
+    "taggedId.ts",
+    "taskFramework.ts",
+    "tasks.ts",
+    "teamTasks.ts",
+    "tee.ts",
+    "tokenBudget.ts",
+    "tokenEstimation.ts",
+    "tokens.ts",
+    "toolSearch.ts",
+    "types.ts",
+    "uuid.ts",
+    "worktreeModeEnabled.ts",
+    "yaml.ts"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

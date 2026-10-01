@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Generado por src/session/generate_bin.py — no editar a mano.
+WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
+export THYROX_ROOT
+LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
+if [ ! -r "$LIB" ]; then
+  echo "bin/finding: no alcanza $LIB — el arbol esta incompleto." >&2
+  exit 1
+fi
+# shellcheck source=/dev/null
+source "$LIB"
+THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
+  thyrox_toolchain_require_bun || exit 1
+exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/finding/bin/finding.ts" "$@"

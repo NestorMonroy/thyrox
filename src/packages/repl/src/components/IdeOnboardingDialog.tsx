@@ -11,6 +11,7 @@ import {
   toIDEDisplayName,
 } from '@thyrox/ide/ide.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 interface Props {
   onDone: () => void
@@ -47,7 +48,7 @@ export function IdeOnboardingDialog({
         title={
           <>
             <Text color="claude">✻ </Text>
-            <Text>Welcome to Claude Code for {ideName}</Text>
+            <Text>Welcome to {PRODUCT_NAME} for {ideName}</Text>
           </>
         }
         subtitle={
@@ -61,11 +62,11 @@ export function IdeOnboardingDialog({
       >
         <Box flexDirection="column" gap={1}>
           <Text>
-            • Claude has context of <Text color="suggestion">⧉ open files</Text>{' '}
+            • {PRODUCT_NAME} has context of <Text color="suggestion">⧉ open files</Text>{' '}
             and <Text color="suggestion">⧉ selected lines</Text>
           </Text>
           <Text>
-            • Review Claude Code&apos;s changes{' '}
+            • Review {PRODUCT_NAME}&apos;s changes{' '}
             <Text color="diffAddedWord">+11</Text>{' '}
             <Text color="diffRemovedWord">-22</Text> in the comfort of your IDE
           </Text>

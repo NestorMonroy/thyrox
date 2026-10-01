@@ -1,0 +1,663 @@
+diff --git a/bin/ensure_homes b/bin/ensure_homes
+new file mode 100755
+index 000000000..3a9756298
+--- /dev/null
++++ b/bin/ensure_homes
+@@ -0,0 +1,27 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
++export THYROX_ROOT
++INTERPRETER="$THYROX_ROOT/.venv/bin/python"
++if [ ! -x "$INTERPRETER" ]; then
++  RESCUE="$(command -v "${THYROX_PYTHON_FALLBACK:-python3}" 2>/dev/null)"
++  if [ -n "$RESCUE" ] && "$RESCUE" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
++    echo "bin/ensure_homes: sin entorno del proveedor; corre con $RESCUE." >&2
++    echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
++    INTERPRETER="$RESCUE"
++  else
++    LIB="$THYROX_ROOT/src/lib/toolchain.sh"
++    if [ -r "$LIB" ]; then
++      # shellcheck source=/dev/null
++      source "$LIB"
++      thyrox_toolchain_degraded_notice \
++        "las herramientas Python de bin/, ensure_homes entre ellas" \
++        "cd \"$THYROX_ROOT\" && uv sync" >&2
++    fi
++    echo "bin/ensure_homes: falta el entorno del proveedor en $INTERPRETER." >&2
++    echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
++    exit 1
++  fi
++fi
++export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
++exec "$INTERPRETER" "$THYROX_ROOT/src/paths/ensure_homes.py" "$@"
+diff --git a/install.sh b/install.sh
+index fff1d9b4e..90947162c 100755
+--- a/install.sh
++++ b/install.sh
+@@ -23,6 +23,14 @@
+ # `src/verify/check_env_contract_keys.py` verifica que ninguna clave leída del
+ # entorno se quede fuera de ese archivo.
+ #
++# Los hogares del clon: Empaquetado P11
++# -------------------------------------
++# Además de declarar, crea los hogares que un `git clone` no trae porque git
++# los ignora (`.claude/jobs-ledger`, `.thyrox/runtime`,
++# `.thyrox/pool-worktrees`): delega en `src/paths/ensure_homes.py` (paso 5b)
++# y no se declara instalado si rehúsa. P11 vive aquí; P7 (instalar) y P8
++# (githooks) lo extenderán sin duplicarlo.
++#
+ # Procedencia del porte — tres referencias, leídas en sólo lectura
+ # ----------------------------------------------------------------
+ #   claude-code-nestor-monroy-tools/install.sh
+@@ -517,6 +525,41 @@ for target in "${TARGETS[@]}"; do
+     esac
+ done
+ 
++# --------------------------------------------------------------------------
++# Paso 5b — los hogares del clon del proveedor (Empaquetado P11)
++#
++# Un `git clone` no trae lo que git ignora —`.claude/jobs-ledger`,
++# `.thyrox/runtime`, `.thyrox/pool-worktrees`—, y cada módulo creaba su hogar
++# en su primer uso: quien clonaba lo «descubría», y lo que asumía que ya
++# existía fallaba. Se DELEGA en `src/paths/ensure_homes.py`, que crea cada
++# hogar de `src/paths/declarations.py` con su declaración o su default y
++# rehúsa con exit 2 nombrando la clave si una declaración no es escribible.
++# Va DESPUÉS de declarar `THYROX_ROOT`, y un rehúse impide declararse
++# instalado. P11 vive aquí; P7 (instalar) y P8 (githooks) lo extenderán.
++# --------------------------------------------------------------------------
++
++ENSURE_HOMES_REL="src/paths/ensure_homes.py"
++
++ensure_provider_homes() {
++    local output rc
++    if [ ! -f "$ROOT/$ENSURE_HOMES_REL" ]; then
++        warn "SIN MEDIR — falta $ENSURE_HOMES_REL: no se crearon los hogares del clon"
++        return 0
++    fi
++    output="$(cd "$ROOT" && THYROX_ROOT="$ROOT" PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
++        python3 "$ROOT/$ENSURE_HOMES_REL" 2>&1)"
++    rc=$?
++    printf '\n  hogares del clon:\n'
++    printf '%s\n' "$output" | sed 's/^/    /'
++    [ "$rc" -eq 0 ] || fatal "$ENSURE_HOMES_REL no pudo crear los hogares (exit $rc)" \
++        "corrige la declaración que nombra, en el .env del clon"
++}
++
++case "$MODE" in
++    install) ensure_provider_homes ;;
++    dry-run) info "$ROOT — crearía los hogares registrados ($ENSURE_HOMES_REL)" ;;
++esac
++
+ # --------------------------------------------------------------------------
+ # Paso 6 — preparar los clones: lo que vive en `.git/config` y no viaja
+ #
+diff --git a/src/paths/declarations.py b/src/paths/declarations.py
+index 6f840e1ba..62432c460 100644
+--- a/src/paths/declarations.py
++++ b/src/paths/declarations.py
+@@ -29,10 +29,132 @@ y sin registro nadie puede distinguirlas — el sub-patron D de
+ """
+ from __future__ import annotations
+ 
++import re
+ import sys
+ from dataclasses import dataclass
+ from pathlib import Path
+ 
++from paths import reach
++from rules import paths as rules
++from workbench import paths as workbench
++
++#: El contrato de entorno del proveedor: de él se DERIVAN las claves de hogar.
++CONTRACT_FILE_NAME = ".env.example"
++
++#: Una clave de hogar del contrato, por su forma: prefijo ``THYROX_`` y sufijo
++#: de ubicación. Es la misma expresión que el censo del banco
++#: ``clone-homes-20260930T200800`` usó para contar las 46.
++HOME_KEY_PATTERN = re.compile(r"^(THYROX_[A-Z_]*(?:_DIR|_HOME|_LEDGER|_ROOT))=", re.MULTILINE)
++
++#: El modo de un hogar creado: no depende del umask de quien instala, porque
++#: el hogar lo comparten los procesos que el clon lance después.
++HOME_MODE = 0o755
++
++#: El marcador del segmento de estado dentro de un default (``.claude`` salvo
++#: declaración de ``THYROX_STATE_DIR``).
++STATE_PLACEHOLDER = "{state}"
++
++
++@dataclass(frozen=True)
++class Home:
++    """Un hogar que el árbol resuelve por defecto dentro del clon.
++
++    ``default`` es relativo a la raíz y puede llevar ``{state}``; ``owner`` es
++    el módulo que lo resuelve, relativo a ``src/``; ``is_file`` distingue un
++    registro o una base —de los que sólo se asegura el directorio padre— de un
++    directorio.
++    """
++
++    key: str
++    default: str
++    owner: str
++    is_file: bool = False
++
++    def default_under(self, root: Path, state: str) -> Path:
++        """La ruta por defecto de este hogar en el clon ``root``."""
++        return root / self.default.replace(STATE_PLACEHOLDER, state)
++
++
++#: Los hogares que un clon necesita y que ningún ``git clone`` trae completos.
++HOMES: tuple[Home, ...] = (
++    Home("THYROX_WORKBENCH_DIR", "{state}/workbench", "workbench/paths.py"),
++    Home("THYROX_JOBS_DIR", "{state}/jobs", "session/job_runs.py"),
++    Home("THYROX_JOBS_LEDGER_DIR", "{state}/jobs-ledger", "session/job_ledger.py"),
++    Home("THYROX_JOBS_ARCHIVE_DIR", "{state}/jobs", "session/wait-jobs.sh"),
++    Home("THYROX_CACHE_DIR", "{state}/cache", "cache/paths.py"),
++    Home("THYROX_PARALLEL_MAP_HISTORY_DIR", "{state}/cache/parallel-map",
++         "session/parallel_map_history.py"),
++    Home("THYROX_RAM_ADMISSION_LEDGER", "{state}/cache/ram-admission.json",
++         "session/resource_admission.py", is_file=True),
++    Home("THYROX_DISK_ADMISSION_LEDGER", "{state}/cache/disk-admission.json",
++         "session/resource_admission.py", is_file=True),
++    Home("THYROX_RUNTIME_DIR", ".thyrox/runtime", "session/pool_lifecycle.py"),
++    Home("THYROX_POOL_WORKTREES_DIR", ".thyrox/pool-worktrees", "session/item_worktree.sh"),
++)
++
++_OUTSIDE_CLONE = "vive fuera del clon (hogar del usuario o del cliente)"
++_REFUSES = "rehúsa sin declarar: su ubicación es decisión del consumidor"
++_NOT_A_HOME = "no nombra un hogar de estado"
++
++#: Las claves de hogar del contrato que NO se registran, cada una con su razón.
++EXCLUDED: dict[str, str] = {
++    "THYROX_REACH_ROOT": f"{_NOT_A_HOME}: es el padre de los clones",
++    "THYROX_STATE_DIR": f"{_NOT_A_HOME}: es un segmento de nombre",
++    "THYROX_EVIDENCE_DIR": f"{_NOT_A_HOME}: es un segmento de nombre",
++    "THYROX_AGENTS_DIR": "su default es producto versionado (src/agents/definitions)",
++    "THYROX_SKILLS_DIR": "su default es producto versionado",
++    "THYROX_RULES_DIR": "hogar del consumidor; en el proveedor, las reglas se versionan",
++    "THYROX_COMMANDS_DIR": "destino de lo emitido: hogar del consumidor",
++    "THYROX_BACKGROUND_LOG_DIR": _REFUSES,
++    "THYROX_BACKGROUND_OUTPUT_ROOT": f"{_REFUSES} (adopción de una flota ajena)",
++    "THYROX_CENSUS_REFERENCE_ROOT": _REFUSES,
++    "THYROX_CENSUS_ROOT": _REFUSES,
++    "THYROX_MAILBOX_DIR": _REFUSES,
++    "THYROX_RESULTS_DIR": _REFUSES,
++    "THYROX_MIGRATION_ROOT": f"{_NOT_A_HOME}: es la raíz del clon que se mide",
++    "THYROX_WATCHED_DIR": f"{_NOT_A_HOME}: es lo que el hook de tests vigila",
++    "THYROX_CODE_TEST_FIXTURES_ROOT": "fixtures versionadas de prueba",
++    "THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR": f"{_NOT_A_HOME}: es una bandera",
++    "THYROX_TOOLCHAIN_NODE_MODULES_HOME": "es una dependencia, no un hogar",
++    "THYROX_LINT_BIN_DIR": "es una dependencia (.venv/bin), no un hogar",
++    "THYROX_JOB_DIR": "la fija el lanzador por trabajo, no se resuelve por defecto",
++    "THYROX_POOL_GUARDED_GIT_COMMON_DIR": "la exporta headless-pool a cada ítem",
++    "THYROX_SESSION_LEDGER_DIR": "cuelga de THYROX_JOBS_LEDGER_DIR por sesión",
++    "THYROX_BG_MEMFREE_DIR": "su default vive en TMPDIR, fuera del clon",
++    "THYROX_BOARD_ROOT": _OUTSIDE_CLONE,
++    "THYROX_USER_CLAUDE_DIR": _OUTSIDE_CLONE,
++    "THYROX_TRANSCRIPTS_DIR": _OUTSIDE_CLONE,
++    "THYROX_CONFIG_DIR": _OUTSIDE_CLONE,
++    "THYROX_CODE_DEBUG_LOGS_DIR": _OUTSIDE_CLONE,
++    "THYROX_CODE_LOCAL_TELEMETRY_DIR": _OUTSIDE_CLONE,
++    "THYROX_CODE_PLUGIN_CACHE_DIR": _OUTSIDE_CLONE,
++    "THYROX_CODE_PLUGIN_SEED_DIR": _OUTSIDE_CLONE,
++    "THYROX_CODE_REMOTE_MEMORY_DIR": _OUTSIDE_CLONE,
++    "THYROX_MITM_DATA_DIR": _OUTSIDE_CLONE,
++    "THYROX_OBSERVABILITY_DATA_DIR": _OUTSIDE_CLONE,
++    "THYROX_PROVIDERS_DATA_DIR": _OUTSIDE_CLONE,
++    "THYROX_CLIPROXYAPI_CONFIG_DIR": _OUTSIDE_CLONE,
++}
++
++
++def contract_home_keys(contract: Path) -> frozenset[str]:
++    """Las claves de hogar que el contrato publica, derivadas de su texto."""
++    return frozenset(HOME_KEY_PATTERN.findall(contract.read_text(encoding="utf-8")))
++
++
++def decided_keys() -> frozenset[str]:
++    """Las claves con decisión tomada: registradas o excluidas."""
++    return frozenset(home.key for home in HOMES) | frozenset(EXCLUDED)
++
++
++def undecided_keys(contract: Path) -> tuple[str, ...]:
++    """Las claves de hogar del contrato que nadie decidió, en orden."""
++    return tuple(sorted(contract_home_keys(contract) - decided_keys()))
++
++
++def stale_decisions(contract: Path) -> tuple[str, ...]:
++    """Las decisiones sobre claves que el contrato ya no publica, en orden."""
++    return tuple(sorted(decided_keys() - contract_home_keys(contract)))
+ 
+ 
+ @dataclass(frozen=True)
+@@ -80,10 +202,6 @@ def resolve_all(start: Path | None = None) -> list[tuple[str, str, str, str]]:
+     registro solo tendria lo que el proceso haya tocado por casualidad, y un
+     vacio ahi no distingue «todo declarado» de «nadie pregunto».
+     """
+-    from paths import reach  # noqa: PLC0415 — evita el ciclo en tiempo de import
+-    from rules import paths as rules  # noqa: PLC0415 — idem
+-    from workbench import paths as workbench
+-
+     clear()
+     rows: list[tuple[str, str, str, str]] = []
+     for repo in reach.REACH_ROOTS:
+diff --git a/src/paths/ensure_homes.py b/src/paths/ensure_homes.py
+new file mode 100644
+index 000000000..0caa8851c
+--- /dev/null
++++ b/src/paths/ensure_homes.py
+@@ -0,0 +1,123 @@
++#!/usr/bin/env python3
++"""Crea los hogares registrados de un clon: Empaquetado P11.
++
++Un ``git clone`` no trae lo que git ignora (``.claude/jobs-ledger``,
++``.thyrox/runtime``, ``.thyrox/pool-worktrees``), y cada módulo creaba su
++hogar en su primer uso: quien clonaba lo «descubría», y lo que asumía que ya
++existía fallaba. Este guion resuelve cada hogar de ``declarations.HOMES`` —su
++declaración si la hay, su default si no— y crea el directorio que falte con
++``reach.ensure_home``. De un hogar que es archivo (un registro, una base) sólo
++asegura el directorio padre: el archivo lo escribe su dueño.
++
++Imprime una línea por hogar —``creado``, ``existía`` o ``declarado fuera del
++árbol``— y es idempotente: la segunda corrida no cambia nada y lo dice. Una
++declaración fuera del clon no se crea: es un sitio que el consumidor eligió y
++gobierna. Si alguna declaración apunta a un sitio no escribible, rehúsa con
++exit 2 nombrando la clave ANTES de crear nada.
++
++    bash bin/ensure_homes
++
++Métrica: existencia de cada hogar registrado tras correr.
++Ciega a: la familia por clon (``THYROX_JOBS_<CLONE>``): se lee sólo la clave
++global del registro; y a los hogares que un módulo compone sin clave.
++"""
++from __future__ import annotations
++
++import os
++import sys
++from dataclasses import dataclass
++from pathlib import Path
++
++from paths import declarations, reach
++from workbench import paths as workbench
++
++EXIT_OK = 0
++EXIT_REFUSED = 2
++
++CREATED = "creado"
++EXISTED = "existía"
++OUTSIDE = "declarado fuera del árbol"
++
++
++@dataclass(frozen=True)
++class Target:
++    """El directorio que un hogar registrado exige, ya resuelto."""
++
++    key: str
++    directory: Path
++
++
++def resolve_directory(home: declarations.Home, root: Path, state: str) -> Path:
++    """La declaración del clon gana al default; de un archivo, su padre."""
++    declared = reach.env_value(home.key, root)
++    path = reach.resolve_home(declared, root) if declared else home.default_under(root, state)
++    return path.parent if home.is_file else path
++
++
++def is_inside(path: Path, root: Path) -> bool:
++    return path.resolve().is_relative_to(root.resolve())
++
++
++def nearest_existing(path: Path) -> Path:
++    return next(level for level in (path, *path.parents) if level.exists())
++
++
++def is_writable(directory: Path) -> bool:
++    """Se puede crear o usar: el primer ancestro existente es un directorio abierto."""
++    anchor = nearest_existing(directory)
++    return anchor.is_dir() and os.access(anchor, os.W_OK | os.X_OK)
++
++
++def ensure(directory: Path) -> str:
++    if directory.is_dir():
++        return EXISTED
++    reach.ensure_home(directory)
++    directory.chmod(declarations.HOME_MODE)
++    return CREATED
++
++
++def apply(target: Target, root: Path) -> str:
++    if not is_inside(target.directory, root):
++        return OUTSIDE
++    return ensure(target.directory)
++
++
++def refuse(unwritable: list[Target]) -> int:
++    for target in unwritable:
++        print(f"ensure_homes: {target.key} apunta a un sitio no escribible: "
++              f"{target.directory}. Corrige su declaración en el .env del clon.",
++              file=sys.stderr)
++    return EXIT_REFUSED
++
++
++def report(outcomes: list[str]) -> None:
++    created = outcomes.count(CREATED)
++    if created:
++        print(f"\n{created} hogar(es) creado(s) de {len(outcomes)}.")
++    else:
++        print(f"\nnada que crear: los {len(outcomes)} hogares ya estaban.")
++
++
++def main() -> int:
++    try:
++        root = reach.thyrox_root()
++    except reach.ReachRootError as error:
++        print(f"ensure_homes: {error}", file=sys.stderr)
++        return EXIT_REFUSED
++    state = workbench.state_dir(root)
++    targets = [Target(home.key, resolve_directory(home, root, state))
++               for home in declarations.HOMES]
++    unwritable = [target for target in targets if not is_writable(target.directory)]
++    if unwritable:
++        return refuse(unwritable)
++    outcomes = []
++    for target in targets:
++        outcome = apply(target, root)
++        outcomes.append(outcome)
++        print(f"{outcome}  {target.key}  {target.directory}")
++    report(outcomes)
++    return EXIT_OK
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/install/test_install.sh b/tests/install/test_install.sh
+index 0b9f7c13d..b09b45b4b 100755
+--- a/tests/install/test_install.sh
++++ b/tests/install/test_install.sh
+@@ -403,5 +403,62 @@ OUT="$(SPY_LOG="$WORK/spy-rc3b.log" SPY_RC3_FOR="$CONSUMER" THYROX_ROOT="$TREE"
+        /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+ check "exit 3 en un consumidor -> exit 1" "1" "$RC"
+ 
++# --------------------------------------------------------------------------
++# 15. Empaquetado P11 — install.sh crea los hogares de un clon nuevo.
++#
++# Un `git clone` no trae lo que git ignora, y cada modulo creaba su hogar en
++# su primer uso: quien clonaba lo «descubria». El caso parte de un clon REAL
++# (`git clone` de un origen con los modulos del registro) y exige que falten
++# los hogares antes de instalar y existan todos los registrados despues.
++# Las claves de hogar se retiran del entorno: heredadas del corredor, el
++# guion resolveria otro sitio y el caso no mediria el default.
++# --------------------------------------------------------------------------
++printf '\n== install.sh — crea los hogares de un clon nuevo (P11) ==\n'
++
++HOME_KEYS=(THYROX_ENV_FILE THYROX_WORKBENCH_DIR THYROX_JOBS_DIR THYROX_JOBS_LEDGER_DIR
++    THYROX_JOBS_ARCHIVE_DIR THYROX_CACHE_DIR THYROX_PARALLEL_MAP_HISTORY_DIR
++    THYROX_RAM_ADMISSION_LEDGER THYROX_DISK_ADMISSION_LEDGER THYROX_RUNTIME_DIR
++    THYROX_POOL_WORKTREES_DIR THYROX_STATE_DIR)
++UNSET_HOMES=()
++for key in "${HOME_KEYS[@]}"; do UNSET_HOMES+=(-u "$key"); done
++
++ORIGIN="$WORK/origin-homes"
++mkdir -p "$ORIGIN/src/session"
++cp -r "$THYROX_REAL/src/paths" "$THYROX_REAL/src/workbench" "$THYROX_REAL/src/rules" "$ORIGIN/src/"
++cp "$THYROX_REAL/src/session/generate_bin.py" "$ORIGIN/src/session/"
++find "$ORIGIN" -name __pycache__ -prune -exec rm -rf {} +
++git -C "$ORIGIN" init -q
++git -C "$ORIGIN" add -A
++git -C "$ORIGIN" -c user.name=t -c user.email=t@t commit -qm origin
++CLONE="$WORK/fresh-clone"
++git clone -q "$ORIGIN" "$CLONE"
++CONSUMER="$(fake_consumer homes)"
++
++FRESH_HOMES=(.claude/jobs-ledger .thyrox/runtime .thyrox/pool-worktrees)
++present_homes() {
++    local dir count=0
++    for dir in "${FRESH_HOMES[@]}"; do [ -d "$CLONE/$dir" ] && count=$((count + 1)); done
++    printf '%s' "$count"
++}
++check "antes de instalar faltan los hogares ignorados" "0" "$(present_homes)"
++OUT="$(env "${UNSET_HOMES[@]}" THYROX_ROOT="$CLONE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
++check "instala el clon nuevo -> exit 0" "0" "$RC"
++check "tras instalar existen los hogares ignorados" "${#FRESH_HOMES[@]}" "$(present_homes)"
++check_contains "publica una linea por hogar" "creado  THYROX_RUNTIME_DIR" "$OUT"
++BEFORE="$(cd "$CLONE" && find . -path ./.git -prune -o -print | sort | sha256sum)"
++OUT="$(env "${UNSET_HOMES[@]}" THYROX_ROOT="$CLONE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"
++AFTER="$(cd "$CLONE" && find . -path ./.git -prune -o -print | sort | sha256sum)"
++check "segunda instalacion no cambia el arbol" "$BEFORE" "$AFTER"
++check_contains "y lo dice" "nada que crear" "$OUT"
++
++# 16. Si ensure_homes rehusa, install.sh no se declara instalado.
++printf 'THYROX_RUNTIME_DIR=%s/.git/HEAD/runtime\n' "$CLONE" > "$WORK/homes-bad.env"
++OUT="$(env "${UNSET_HOMES[@]}" THYROX_ENV_FILE="$WORK/homes-bad.env" THYROX_ROOT="$CLONE" \
++       /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
++check "hogar no escribible -> exit 1" "1" "$RC"
++check_contains "hogar no escribible -> nombra la clave" "THYROX_RUNTIME_DIR" "$OUT"
++check "hogar no escribible -> no se declara instalado" "0" \
++      "$(grep -c 'thyrox declarado en' <<<"$OUT")"
++
+ printf '\n%d aserciones: %d ok, %d fallidas\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
+ [ "$FAIL" -eq 0 ]
+diff --git a/tests/paths/test_ensure_homes.py b/tests/paths/test_ensure_homes.py
+new file mode 100644
+index 000000000..a0478de29
+--- /dev/null
++++ b/tests/paths/test_ensure_homes.py
+@@ -0,0 +1,219 @@
++#!/usr/bin/env python3
++"""El registro completo de hogares y ``ensure_homes``: Empaquetado P11.
++
++Un clon nuevo no trae los hogares que git ignora (``.claude/jobs-ledger``,
++``.thyrox/runtime``, ``.thyrox/pool-worktrees``) y cada módulo los
++«descubría» en su primer uso. Estos casos miden las dos mitades del cierre:
++
++- el registro (``paths/declarations.py``) decide CADA clave de hogar que
++  ``.env.example`` publica —registrada o excluida con razón—, derivada del
++  archivo y no de una lista escrita a mano;
++- ``paths/ensure_homes.py`` crea lo registrado, es idempotente y rehúsa con
++  exit 2 nombrando la clave cuando el sitio no es escribible.
++
++Qué haría fallar a estos casos: que el registro dejara de leer
++``.env.example`` (cae el de la clave nueva sin decidir), que la declaración
++del ``.env`` del clon no ganara al default (cae el de la declaración), o que
++el rehúse creara algo antes de rehusar (cae el del plan atómico).
++
++Ciega a: los hogares que un módulo compone sin clave de entorno, que el
++registro no puede ver por nombre. Las raíces son sintéticas (``mkdtemp``): la
++prueba nunca escribe en los hogares reales.
++"""
++from __future__ import annotations
++
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++_AQUI = Path(__file__).resolve()
++_RAIZ = next((p for p in _AQUI.parents
++              if (p / "src" / "paths" / "reach.py").is_file()), None)
++if _RAIZ is None:
++    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
++sys.path.insert(0, str(_RAIZ / "src"))
++#: La raíz ya estrechada a ``Path``: el narrowing de un global no cruza al
++#: cuerpo de una función.
++ROOT: Path = _RAIZ
++
++from paths import declarations  # noqa: E402
++from workbench import paths as workbench  # noqa: E402
++
++ENSURE_HOMES = ROOT / "src" / "paths" / "ensure_homes.py"
++CONTRACT = ROOT / declarations.CONTRACT_FILE_NAME
++NEW_KEY = "THYROX_BRAND_NEW_THING_DIR"
++EXIT_REFUSED = 2
++RESTRICTIVE_UMASK = 0o077
++PERMISSION_BITS = 0o777
++OUTCOMES = ("creado", "existía", "declarado fuera del árbol")
++
++PASSED = 0
++FAILED = 0
++
++
++def check(label: str, expected: object, actual: object) -> None:
++    global PASSED, FAILED
++    if expected == actual:
++        PASSED += 1
++        print(f"  ok    {label}")
++    else:
++        FAILED += 1
++        print(f"  FALLO {label}\n        esperado=[{expected}] obtenido=[{actual}]")
++
++
++def registered_keys() -> set[str]:
++    return {home.key for home in declarations.HOMES}
++
++
++def isolated_env(root: Path) -> dict[str, str]:
++    """El entorno del proceso hijo sin ninguna clave de hogar heredada.
++
++    Equivalente Python de ``thyrox_isolate_homes``: sin retirar las claves, un
++    ``THYROX_RUNTIME_DIR`` exportado por el corredor decidiría por la prueba.
++    """
++    decided = registered_keys() | set(declarations.EXCLUDED)
++    env = {name: value for name, value in os.environ.items()
++           if name not in decided and not name.startswith("THYROX_")}
++    env["THYROX_ROOT"] = str(root)
++    env["PYTHONPATH"] = str(ROOT / "src")
++    return env
++
++
++def synthetic_root(base: Path) -> Path:
++    root = base / "clone"
++    (root / "src" / "paths").mkdir(parents=True)
++    (root / "src" / "paths" / "reach.py").write_text("")
++    return root
++
++
++def run_ensure(root: Path) -> subprocess.CompletedProcess[str]:
++    return subprocess.run([sys.executable, str(ENSURE_HOMES)], env=isolated_env(root),
++                          capture_output=True, text=True, check=False,
++                          umask=RESTRICTIVE_UMASK)
++
++
++def lines_with(stdout: str, outcome: str) -> int:
++    return sum(1 for line in stdout.splitlines() if line.startswith(outcome))
++
++
++def outcome_lines(stdout: str) -> int:
++    return sum(lines_with(stdout, outcome) for outcome in OUTCOMES)
++
++
++def snapshot(root: Path) -> list[str]:
++    return sorted(str(p.relative_to(root)) for p in root.rglob("*"))
++
++
++def default_path(root: Path, key: str) -> Path:
++    home = next(h for h in declarations.HOMES if h.key == key)
++    return home.default_under(root, workbench.STATE_DIR_DEFAULT)
++
++
++def home_mode() -> int:
++    return declarations.HOME_MODE
++
++
++def case_registry_decides_every_contract_key() -> None:
++    print("\n== el registro decide cada clave de hogar del contrato ==")
++    check("ninguna clave de .env.example sin decidir", (),
++          declarations.undecided_keys(CONTRACT))
++    check("ninguna decisión sobre una clave que el contrato ya no publica", (),
++          declarations.stale_decisions(CONTRACT))
++    check("registrada y excluida son disjuntas", set(),
++          registered_keys() & set(declarations.EXCLUDED))
++    check("toda exclusión lleva su razón", [],
++          [k for k, why in declarations.EXCLUDED.items() if not why.strip()])
++    check("todo default es relativo a la raíz", [],
++          [h.key for h in declarations.HOMES if Path(h.default).is_absolute()])
++    check("todo hogar nombra su módulo dueño", [],
++          [h.key for h in declarations.HOMES if not (ROOT / "src" / h.owner).is_file()])
++
++
++def case_new_key_is_undecided(base: Path) -> None:
++    print("\n== una clave nueva en el contrato queda sin decidir ==")
++    contract = base / "contract.env"
++    contract.write_text(CONTRACT.read_text() + f"\n# nueva\n{NEW_KEY}=\n")
++    check("la clave nueva sale como sin decidir", (NEW_KEY,),
++          declarations.undecided_keys(contract))
++
++
++def case_creates_registered_homes(base: Path) -> None:
++    print("\n== crea los hogares registrados, e idempotente ==")
++    root = synthetic_root(base / "fresh")
++    first = run_ensure(root)
++    check("primera corrida -> exit 0", 0, first.returncode)
++    missing = [h.key for h in declarations.HOMES if not h.is_file
++               and not default_path(root, h.key).is_dir()]
++    check("existen todos los hogares de directorio", [], missing)
++    check("un hogar que es archivo sólo asegura su padre", (True, False),
++          (default_path(root, "THYROX_RAM_ADMISSION_LEDGER").parent.is_dir(),
++           default_path(root, "THYROX_RAM_ADMISSION_LEDGER").exists()))
++    check("una línea de desenlace por hogar", len(declarations.HOMES),
++          outcome_lines(first.stdout))
++    check("sobre un clon vacío, crea", True, lines_with(first.stdout, "creado") > 0)
++    check("el modo del hogar creado no depende del umask", home_mode(),
++          default_path(root, "THYROX_RUNTIME_DIR").stat().st_mode & PERMISSION_BITS)
++    before = snapshot(root)
++    second = run_ensure(root)
++    check("segunda corrida -> exit 0", 0, second.returncode)
++    check("segunda corrida no cambia el árbol", before, snapshot(root))
++    check("segunda corrida: todo `existía`", len(declarations.HOMES),
++          lines_with(second.stdout, "existía"))
++    check("y lo dice", True, "nada que crear" in second.stdout)
++
++
++def case_clone_declaration_wins(base: Path) -> None:
++    print("\n== una declaración en el .env del clon gana al default ==")
++    root = synthetic_root(base / "declared")
++    (root / ".env").write_text("THYROX_RUNTIME_DIR=own-runtime\n")
++    result = run_ensure(root)
++    check("exit 0", 0, result.returncode)
++    check("crea el hogar declarado", True, (root / "own-runtime").is_dir())
++    check("no crea el default", False, (root / ".thyrox" / "runtime").exists())
++
++
++def case_declared_outside_tree(base: Path) -> None:
++    print("\n== una declaración fuera del árbol no se crea ==")
++    root = synthetic_root(base / "outside")
++    elsewhere = base / "elsewhere" / "runtime"
++    (root / ".env").write_text(f"THYROX_RUNTIME_DIR={elsewhere}\n")
++    result = run_ensure(root)
++    check("exit 0", 0, result.returncode)
++    check("lo dice", True, any(line.startswith("declarado fuera del árbol")
++                               and "THYROX_RUNTIME_DIR" in line
++                               for line in result.stdout.splitlines()))
++    check("no lo crea", False, elsewhere.exists())
++
++
++def case_unwritable_declaration_refuses(base: Path) -> None:
++    print("\n== una declaración no escribible rehúsa, sin crear nada ==")
++    root = synthetic_root(base / "unwritable")
++    (root / "a-file").write_text("no soy un directorio\n")
++    (root / ".env").write_text("THYROX_RUNTIME_DIR=a-file/runtime\n")
++    before = snapshot(root)
++    result = run_ensure(root)
++    check("exit 2", EXIT_REFUSED, result.returncode)
++    check("nombra la clave", True, "THYROX_RUNTIME_DIR" in result.stderr)
++    check("no crea nada antes de rehusar", before, snapshot(root))
++
++
++def main() -> int:
++    base = Path(tempfile.mkdtemp(prefix="ensure-homes-"))
++    try:
++        case_registry_decides_every_contract_key()
++        case_new_key_is_undecided(base)
++        case_creates_registered_homes(base)
++        case_clone_declaration_wins(base)
++        case_declared_outside_tree(base)
++        case_unwritable_declaration_refuses(base)
++    finally:
++        shutil.rmtree(base, ignore_errors=True)
++    print(f"\n{PASSED + FAILED} aserciones: {PASSED} ok, {FAILED} fallidas")
++    return 1 if FAILED else 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())

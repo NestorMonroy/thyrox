@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env THYROX_ITEM_WORKTREE_DISK_RESERVE_MB=100000 THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=20 bash tests/session/test-headless-pool-lifecycle.sh", "started_at": "2026-09-30T04:26:47+00:00"}

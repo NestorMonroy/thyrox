@@ -46,6 +46,16 @@ describe('gracefulShutdown — source pins', () => {
     })
   })
 
+  describe('Local error store', () => {
+    test('the bounded flush drains pending error records', () => {
+      // Un registro de error es fire-and-forget: sin esperarlo aquí, el que
+      // ocurre justo antes de salir se pierde con el proceso.
+      expect(source).toMatch(
+        /Promise\.race\(\[\s*\n?\s*Promise\.all\(\[shutdownEventLoggers\(\), flushErrorRecording\(\)\]\),\s*\n?\s*sleep\(500\)/,
+      )
+    })
+  })
+
   describe('SIGINT print-mode skip', () => {
     test('SIGINT early-return when -p or --print in argv', () => {
       // Pin: print.ts registers its own SIGINT handler. The global one
@@ -159,10 +169,10 @@ describe('gracefulShutdown — source pins', () => {
       expect(mouseIdx).toBeLessThan(altIdx)
     })
 
-    test('CLAUDE_CODE_DISABLE_TERMINAL_TITLE → skip clearing title', () => {
+    test('THYROX_CODE_DISABLE_TERMINAL_TITLE → skip clearing title', () => {
       // Pin: if user disabled title changes, don't clear it on exit.
       expect(source).toMatch(
-        /if \(!isEnvTruthy\(process\.env\.CLAUDE_CODE_DISABLE_TERMINAL_TITLE\)\)/,
+        /if \(!isEnvTruthy\(process\.env\.THYROX_CODE_DISABLE_TERMINAL_TITLE\)\)/,
       )
     })
 
@@ -203,16 +213,17 @@ describe('gracefulShutdown — source pins', () => {
 
   describe('Force exit fallback', () => {
     test('SIGKILL fallback when process.exit() throws EIO', () => {
-      // Pin: dead TTY → process.exit throws → SIGKILL.
+      // Fija: si process.exit lanza, el proceso se mata con SIGKILL.
       expect(source).toMatch(/process\.kill\(process\.pid, 'SIGKILL'\)/)
     })
 
-    test('test mode re-throws (NOT SIGKILL) so test can detect mock', () => {
-      // Pin: NODE_ENV==='test' path. Otherwise tests can't intercept
-      // process.exit mock.
-      expect(source).toMatch(
-        /if \(\(process\.env\.NODE_ENV as string\) === 'test'\) \{\s*\n?\s*throw e/,
-      )
+    test('no environment branch: an exit that returns throws unreachable', () => {
+      // Fija la forma de producción (2.1.283, `Zmo.forceExit`): ni el
+      // SIGKILL ni el error final dependen de NODE_ENV. El porte anterior
+      // re-lanzaba bajo NODE_ENV=test y volvía en silencio: una conducta que
+      // sólo existía en las pruebas.
+      expect(source).not.toMatch(/NODE_ENV/)
+      expect(source).toMatch(/SIGKILL'\)\s*\n\s*\}\s*\n(\s*\/\/[^\n]*\n)*\s*throw new Error\('unreachable'\)/)
     })
   })
 

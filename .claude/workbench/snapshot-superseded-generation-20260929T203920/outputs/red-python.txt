@@ -1,0 +1,4 @@
+  File "/home/user/thyrox/tests/session/test_snapshot_recovery.py", line 243, in <module>
+    stale = ss.take_snapshot(repo14, "r14", "1", 1, refuse_superseded=False)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: take_snapshot() got an unexpected keyword argument 'refuse_superseded'

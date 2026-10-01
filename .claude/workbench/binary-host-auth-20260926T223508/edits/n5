@@ -1,0 +1,11 @@
+    const { 'anthropic-beta': authBeta, ...auth } = authHeaders(this.credential)
+    // sólo cuando se va a usar: pedir la beta para 5 m no compra nada
+    const betas = [authBeta, request.cacheTtl === '1h' ? 'extended-cache-ttl-2025-04-11' : undefined].filter(
+      (b): b is string => !!b,
+    )
+    return {
+      'content-type': 'application/json',
+      ...auth,
+      'anthropic-version': this.version,
+      ...(betas.length ? { 'anthropic-beta': betas.join(',') } : {}),
+    }

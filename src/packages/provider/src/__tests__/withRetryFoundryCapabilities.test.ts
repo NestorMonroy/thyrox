@@ -11,10 +11,10 @@ import {
 } from '../foundryCapabilities.js'
 import { CannotRetryError, withRetry } from '../withRetry.js'
 
-const KEYS = ['CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_RESOURCE']
+const KEYS = ['THYROX_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_RESOURCE']
 const saved = Object.fromEntries(KEYS.map(k => [k, process.env[k]]))
 beforeEach(() => {
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  process.env.THYROX_CODE_USE_FOUNDRY = '1'
   process.env.ANTHROPIC_FOUNDRY_RESOURCE = 'mi-recurso'
   resetFoundryCapabilities()
 })

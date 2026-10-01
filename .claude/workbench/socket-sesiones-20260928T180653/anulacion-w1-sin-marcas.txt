@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+118 | })
+119 | 
+120 | describe('slugFromText (E$t) — un slug a partir de texto libre', () => {
+121 |   test('primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado', () => {
+122 |     expect(slugFromText('Fix the Login Bug in production now')).toBe('fix-the-login-bug')
+123 |     expect(slugFromText('[Pasted text #1 +3 lines] Revisa esto [Image #2] ya')).toBe('revisa-esto-ya')
+                                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "revisa-esto-ya"
+Received: "pasted-text-1-3"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:123:81)
+(fail) slugFromText (E$t) — un slug a partir de texto libre > primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado [0.76ms]
+
+ 15 pass
+ 1 fail
+ 192 expect() calls
+Ran 16 tests across 1 file. [89.00ms]

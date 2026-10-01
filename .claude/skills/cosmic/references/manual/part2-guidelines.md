@@ -359,7 +359,7 @@ COSMIC Medición Manual - Versión 5.0 - Parte 2: Directrices Copyright © 2020 
 Las flechas representan todos los movimientos de datos entre el software que se está midiendo 
 y 'almacenamiento persistente'. (El símbolo de diagrama de flujo para 'almacenamiento de 
 datos' hace hincapié en que el almacenamiento persistente es un concepto abstracto. Este 
-símbolo indica que el software no lo hace interactuar directamente con el alma cenamiento de 
+símbolo indica que el software no lo hace interactuar directamente con el almacenamiento de 
 hardware físico.) 
 Figura 2.5 - Símbolos de diagramas de contexto. 
 2.9 Identificacion de el nivel de granularidad. 
@@ -373,8 +373,8 @@ deben realizarse utilizando una de las técnicas de aproximación de tamaño des
 Software Sizing with COSMIC: Practitioners Guide” 
  
 NOTA 1 En las etapas iniciales de un proyecto de desarrollo de software, requisitos reales 
-son especificados 'en un alto nivel', que es, a grandes rasgos, o en el pequeño detalle. Como 
-los progresos del proyecto, se refinan las n ecesidades reales, (por ejemplo, a través de las 
+son especificados 'en un alto nivel', que es, en términos generales, o en el pequeño detalle. Como 
+los progresos del proyecto, se refinan las necesidades reales, (por ejemplo, a través de las 
 versiones 1, 2, 3 etc.), revelando más y más detalle 'en los niveles inferiores'. Estos diferentes 
 grados de detalle de los requisitos reales se conocen como diferentes 'niveles de 
 granularidad'. 
