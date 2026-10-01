@@ -412,6 +412,13 @@
         "wrap-ansi": "^10.0.0",
       },
     },
+    "src/packages/local-models": {
+      "name": "@thyrox/local-models",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/model-artifacts": "0.1.0",
+      },
+    },
     "src/packages/local-observability": {
       "name": "@thyrox/local-observability",
       "version": "0.1.0",
@@ -1269,6 +1276,8 @@
     "@thyrox/ide": ["@thyrox/ide@workspace:src/packages/ide"],
 
     "@thyrox/image-processor-napi": ["@thyrox/image-processor-napi@workspace:src/packages/image-processor-napi"],
+
+    "@thyrox/local-models": ["@thyrox/local-models@workspace:src/packages/local-models"],
 
     "@thyrox/local-observability": ["@thyrox/local-observability@workspace:src/packages/local-observability"],
 
