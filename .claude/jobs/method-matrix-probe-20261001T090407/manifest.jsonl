@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-scheduling-implementation-20261001T084219/probes/ollama_method_matrix.sh 61436 /home/user/thyrox/.thyrox/runtime/tmp.B3FtUdrB1P", "started_at": "2026-10-01T09:04:07+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T09:04:14+00:00", "duration_seconds": 7.853736}

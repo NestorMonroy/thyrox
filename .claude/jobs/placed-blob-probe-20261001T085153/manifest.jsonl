@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-scheduling-implementation-20261001T084219/probes/placed_blob_create.sh b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88 61434 /tmp/tmp.afbLGY6nJS", "started_at": "2026-10-01T08:51:53+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T08:52:00+00:00", "duration_seconds": 7.451326}
