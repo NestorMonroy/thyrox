@@ -1,0 +1,1 @@
+Fuente: .claude/workbench/model-residency-e2e-20261001T100517/p1-grant-issuer.md. Archivo: src/packages/model-scheduling/memoryGrantIssuer.ts.
