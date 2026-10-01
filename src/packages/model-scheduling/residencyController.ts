@@ -255,7 +255,7 @@ export class ResidencyController {
     const residency = registry.get(plan.residencyKey)
     if (!residency) throw new UnknownResidencyError(plan.residencyKey)
     const counted = registry.amend(plan.residencyKey, residency.generation, { activeRequests: residency.activeRequests + 1 })
-    return { status: 'admitted', requestId: plan.requestId, residency: counted, unit: held.unit, allocation: allocated.allocation, reused }
+    return { status: 'admitted', requestId: plan.requestId, residency: counted, grant: held.grant, unit: held.unit, allocation: allocated.allocation, reused }
   }
 
   /** Deshace lo creado y deja la residencia `absent`, o `error` si algo quedó marcado. */

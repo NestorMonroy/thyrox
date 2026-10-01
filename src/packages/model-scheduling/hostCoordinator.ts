@@ -16,11 +16,15 @@
  */
 import type { ExecutionGrant, ExecutionPlacement, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
-import type { ModelExecutionRequest, ResolvedModel } from '@thyrox/model-artifacts/modelResolver.ts'
-import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+import {
+  AmbiguousModelRequestError, ContextLengthExceededError, MissingCapabilityError, type ModelExecutionRequest, ModelNotDeclaredError,
+  type ResolvedModel, resolveModel,
+} from '@thyrox/model-artifacts/modelResolver.ts'
+import { InconsistentModelIdentityError, type ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 
 import type { ExecutionUnit } from './executionPrimitive.ts'
-import type { EvictionOutcome, ResidencyController, ResidencyStage } from './residencyController.ts'
+import type { Admission, EvictionOutcome, ResidencyController, ResidencyStage } from './residencyController.ts'
+import type { ExecutionPlan } from './scheduler.ts'
 
 /** Lo que pide un cliente: un modelo del catálogo y las restricciones de la petición. */
 export interface AdmissionRequest {
@@ -67,34 +71,106 @@ export interface ModelSchedulingCoordinatorDependencies {
   readonly newAdmissionId: () => string
 }
 
+/** Los errores con los que el resolver declara que la petición no tiene identidad exacta. */
+const RESOLVER_ERRORS = [
+  ModelNotDeclaredError, AmbiguousModelRequestError, MissingCapabilityError, ContextLengthExceededError, InconsistentModelIdentityError,
+] as const
+
+type ResolutionOutcome =
+  | { readonly status: 'resolved'; readonly resolved: ResolvedModel }
+  | { readonly status: 'refused'; readonly stage: 'resolve'; readonly reason: string }
+
+/** Un ticket vigente y la admisión del controlador que `finish` suelta. */
+interface ActiveAdmission {
+  readonly ticket: AdmissionTicket
+  readonly admission: Admission
+}
+
+function isResolverError(error: unknown): error is Error {
+  return RESOLVER_ERRORS.some(errorClass => error instanceof errorClass)
+}
+
+/** `cpu`, o `gpu:` con los dispositivos ordenados: el orden declarado no cambia la colocación. */
+function placementSegment(placement: ExecutionPlacement): string {
+  if (placement.kind === 'cpu') return 'cpu'
+  return `gpu:${[...placement.devices].sort().join(',')}`
+}
+
 /** La clave de residencia de una identidad en una colocación. */
 export function residencyKeyOf(artifact: ResolvedModelArtifact, placement: ExecutionPlacement): string {
-  void artifact; void placement
-  throw new Error('residencyKeyOf: por implementar')
+  return `residency/${artifact.modelId}@${artifact.artifactId}/${placementSegment(placement)}`
 }
 
 export class ModelSchedulingCoordinator {
+  private readonly active = new Map<string, ActiveAdmission>()
+
   constructor(private readonly dependencies: ModelSchedulingCoordinatorDependencies) {}
 
   /** Resuelve, coloca y admite; el ticket es la única vía hasta el runtime. */
   async admit(request: AdmissionRequest): Promise<CoordinatorAdmission> {
-    void request; void this.dependencies
-    throw new Error('ModelSchedulingCoordinator.admit: por implementar')
+    const resolution = await this.resolve(request)
+    if (resolution.status === 'refused') return resolution
+    const decision = this.dependencies.place(resolution.resolved)
+    if (!decision) return { status: 'refused', stage: 'placement', reason: `${resolution.resolved.artifact.modelId} no cabe en ninguna colocación` }
+    const outcome = await this.dependencies.controller.admit(this.planOf(request, resolution.resolved, decision))
+    if (outcome.status !== 'admitted') return { status: outcome.status, stage: outcome.stage, reason: outcome.reason }
+    return { status: 'admitted', ticket: this.issueTicket(request, outcome) }
   }
 
   /** Suelta la petición de un ticket; `absent` si ya no estaba admitida. */
   async finish(admissionId: string): Promise<'finished' | 'absent'> {
-    void admissionId
-    throw new Error('ModelSchedulingCoordinator.finish: por implementar')
+    const entry = this.active.get(admissionId)
+    if (!entry) return 'absent'
+    this.active.delete(admissionId)
+    await this.dependencies.controller.finish(entry.admission)
+    return 'finished'
   }
 
   async evict(residencyKey: string): Promise<EvictionOutcome> {
-    void residencyKey
-    throw new Error('ModelSchedulingCoordinator.evict: por implementar')
+    return this.dependencies.controller.evict(residencyKey)
   }
 
   /** Los tickets vigentes, para observar y reconciliar. */
   admissions(): readonly AdmissionTicket[] {
-    throw new Error('ModelSchedulingCoordinator.admissions: por implementar')
+    return [...this.active.values()].map(entry => entry.ticket)
+  }
+
+  /** Un error del resolver rehúsa la petición antes de tocar lease, reserva o unidad. */
+  private async resolve(request: AdmissionRequest): Promise<ResolutionOutcome> {
+    const entries = await this.dependencies.catalogEntries()
+    try {
+      const resolved = resolveModel({ model: request.model, contextLength: request.contextLength, requiredCapabilities: request.requiredCapabilities }, entries)
+      return { status: 'resolved', resolved }
+    } catch (error) {
+      if (!isResolverError(error)) throw error
+      return { status: 'refused', stage: 'resolve', reason: error.message }
+    }
+  }
+
+  private planOf(request: AdmissionRequest, resolved: ResolvedModel, decision: PlacementDecision): ExecutionPlan {
+    return {
+      requestId: request.requestId,
+      owner: this.dependencies.owner,
+      residencyKey: residencyKeyOf(resolved.artifact, decision.placement),
+      artifact: resolved.artifact,
+      runtime: decision.runtime,
+      placement: decision.placement,
+      residencyVramMib: decision.residencyVramMib,
+      requestVramMib: decision.requestVramMib,
+      contextLength: resolved.contextLength,
+      kvCacheType: resolved.kvCacheType,
+    }
+  }
+
+  private issueTicket(request: AdmissionRequest, admission: Admission): AdmissionTicket {
+    const ticket: AdmissionTicket = {
+      admissionId: this.dependencies.newAdmissionId(),
+      requestId: request.requestId,
+      client: request.client,
+      grant: admission.grant,
+      unit: admission.unit,
+    }
+    this.active.set(ticket.admissionId, { ticket, admission })
+    return ticket
   }
 }
