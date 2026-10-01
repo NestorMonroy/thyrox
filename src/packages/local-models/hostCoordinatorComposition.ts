@@ -64,7 +64,8 @@ export function cpuPlacementOf(resolved: ResolvedModel): PlacementDecision {
 
 export function composeHostCoordinatorService(env: Environment, thyroxRoot: string, dependencies: CompositionDependencies = {}): ComposedHostCoordinator {
   const coordination = openModelSchedulingCoordination(env)
-  const owner: ContainerOwner = { kind: MODEL_COORDINATOR_OWNER_KIND, id: `${MODEL_COORDINATOR_OWNER_KIND}@${hostname()}`, pid: process.pid }
+  // El separador es «.»: `requireValidOwner` rehúsa «@» y el nombre de host sólo usa [A-Za-z0-9.-].
+  const owner: ContainerOwner = { kind: MODEL_COORDINATOR_OWNER_KIND, id: `${MODEL_COORDINATOR_OWNER_KIND}.${hostname()}`, pid: process.pid }
   const currentGeneration = (residencyKey: string) => coordination.currentGeneration(residencyKey)
   const artifactCache = localArtifactHome(env, thyroxRoot).artifactCache
   const primitive = new PodmanModelUnitMaterializer({
