@@ -525,6 +525,14 @@
       "name": "@thyrox/model-artifacts",
       "version": "0.1.0",
     },
+    "src/packages/model-scheduling": {
+      "name": "@thyrox/model-scheduling",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/model-artifacts": "0.1.0",
+        "@thyrox/shared-state": "0.1.0",
+      },
+    },
     "src/packages/modifiers-napi": {
       "name": "@thyrox/modifiers-napi",
       "version": "1.0.0",
@@ -1321,6 +1329,8 @@
     "@thyrox/mitm": ["@thyrox/mitm@workspace:src/packages/mitm"],
 
     "@thyrox/model-artifacts": ["@thyrox/model-artifacts@workspace:src/packages/model-artifacts"],
+
+    "@thyrox/model-scheduling": ["@thyrox/model-scheduling@workspace:src/packages/model-scheduling"],
 
     "@thyrox/modifiers-napi": ["@thyrox/modifiers-napi@workspace:src/packages/modifiers-napi"],
 

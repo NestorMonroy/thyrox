@@ -1,0 +1,18 @@
+{
+  "name": "@thyrox/model-scheduling",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Scheduling de modelos locales gestionados (ADR-007 1.10.0–1.12.0): coordinación con generación por residencia, reserva de VRAM con fencing, emisión de ExecutionGrant y sus compensaciones.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/model-artifacts": "0.1.0",
+    "@thyrox/shared-state": "0.1.0"
+  }
+}
