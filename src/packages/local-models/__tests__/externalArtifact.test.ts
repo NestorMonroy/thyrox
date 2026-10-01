@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { SCRATCH_METADATA_MARGIN_BYTES } from '@thyrox/model-artifacts/quantizationPlan.ts'
 import { syntheticGgufBytes } from '@thyrox/model-artifacts/testing/syntheticGguf.ts'
 
 import { importExternalArtifact, type ExternalArtifactDeps, type ExternalArtifactRequest } from '../externalArtifact.js'
@@ -111,6 +112,15 @@ describe('external artifact import', () => {
     expect(second.kind).toBe('completed')
     expect(hub.downloads.length).toBe(downloads)
     expect(lab.commands.length).toBe(commands)
+  })
+
+  test('a rerun asks only for the bytes still missing from the scratch', async () => {
+    const hub = fakeHub()
+    const lab = fakeLab()
+    await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    const almostFull = async () => SCRATCH_METADATA_MARGIN_BYTES + 1
+    const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab, freeBytes: almostFull }))
+    expect(second.kind).toBe('completed')
   })
 
   test('an admission refusal stops before downloading', async () => {

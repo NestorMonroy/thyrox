@@ -10,7 +10,7 @@
  * archivo ya presente y verificado no se descarga, y una validación
  * registrada sobre el mismo sha256 no se repite.
  */
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { catalogEntryFromGguf, loadModelCatalog, saveModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
@@ -111,7 +111,7 @@ async function preflight(request: ExternalArtifactRequest, subset: SourceSpec, d
   const artifact = subset.files.find(file => file.path === request.file)
   if (artifact === undefined) return `${request.repository}@${request.revision} no publica ${request.file}`
   if (artifact.digest !== `sha256:${request.sha256}`) return `${request.file} se publica como ${artifact.digest}, no con el sha256 fijado ${request.sha256}`
-  const needBytes = subset.files.reduce((sum, file) => sum + file.sizeBytes, 0) + SCRATCH_METADATA_MARGIN_BYTES
+  const needBytes = await missingBytes(subset, request.scratchDir) + SCRATCH_METADATA_MARGIN_BYTES
   const free = await deps.freeBytes(request.scratchDir)
   if (free < needBytes) return `el scratch tiene ${free} bytes libres; se necesitan ${needBytes}`
   const disk = await deps.admission.admitDisk(needBytes, request.scratchDir)
@@ -119,6 +119,19 @@ async function preflight(request: ExternalArtifactRequest, subset: SourceSpec, d
   const memory = await deps.admission.admitMemory(request.memoryLimitBytes, workerContainerName(importIdOf(request)))
   if (!memory.admitted) return `admisión de memoria: ${memory.detail}`
   return undefined
+}
+
+/**
+ * Lo que falta escribir: un archivo ya presente con su tamaño exacto no se
+ * vuelve a pedir. Su contenido lo verifica la descarga, que lo baja de nuevo
+ * si no coincide; aquí sólo se decide cuánto disco reservar.
+ */
+async function missingBytes(subset: SourceSpec, scratchDir: string): Promise<number> {
+  const sizes = await Promise.all(subset.files.map(async file => {
+    const present = await stat(join(scratchDir, file.path)).then(info => info.size, () => undefined)
+    return present === file.sizeBytes ? 0 : file.sizeBytes
+  }))
+  return sizes.reduce((sum, bytes) => sum + bytes, 0)
 }
 
 async function refuse(request: ExternalArtifactRequest, reason: string, deps: ExternalArtifactDeps): Promise<ImportOutcome> {
