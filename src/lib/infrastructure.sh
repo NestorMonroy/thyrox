@@ -28,6 +28,49 @@
 # Guard de doble inclusion: sourcear dos veces es no-op.
 if type thyrox_infrastructure_container_names &>/dev/null; then return 0 2>/dev/null || true; fi
 
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/reach.sh"
+
+# Las claves `THYROX_INFRA_*` que la cadena de `.env` declara, con el valor que
+# ya decidio la precedencia canonica de `reach.py` (el proceso gana sobre el
+# archivo). Se cargan con UN proceso por familia: una consulta por clave
+# costaba un `python3` por clave y multiplicaba por 50 el tiempo de sourcear
+# (0.9 s -> 43.8 s la suite de esta biblioteca).
+declare -gA _INFRASTRUCTURE_DECLARED=()
+
+# _thyrox_infrastructure_load_declared — llena _INFRASTRUCTURE_DECLARED con la
+# familia `THYROX_INFRA_` que publica el mecanismo canonico de configuracion
+# (`_thyrox_delegate --prefixed`, reach.sh). No lee el `.env` por su cuenta.
+_thyrox_infrastructure_load_declared() {
+  local line key
+  # `|| [[ -n "$line" ]]`: el delegado imprime sin salto final.
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" == THYROX_INFRA_*=* ]] || continue
+    key="${line%%=*}"
+    _INFRASTRUCTURE_DECLARED["$key"]="${line#*=}"
+  done < <(_thyrox_delegate --prefixed THYROX_INFRA_ 2>/dev/null)
+}
+_thyrox_infrastructure_load_declared
+
+# @description Resuelve una clave declarable de la infraestructura: la variable
+# del proceso, despues el `.env` que nombra THYROX_ENV_FILE (o el de la raiz),
+# y el default solo si ninguno la declara. Leer solo el proceso dejaba fuera
+# el `.env` declarado: `thyrox-ollama` se creo sobre un volumen vacio porque
+# `bin/infrastructure_ensure` no heredo la declaracion (H-THYROX-307).
+# @arg $1 string la clave, `THYROX_INFRA_*`.
+# @arg $2 string el default.
+# @stdout el valor resuelto.
+thyrox_infrastructure_setting() {
+  local key="$1" default="$2"
+  if [[ -n "${!key:-}" ]]; then
+    printf '%s\n' "${!key}"
+  elif [[ -n "${_INFRASTRUCTURE_DECLARED[$key]:-}" ]]; then
+    printf '%s\n' "${_INFRASTRUCTURE_DECLARED[$key]}"
+  else
+    printf '%s\n' "$default"
+  fi
+}
+
 # --- nombres fijos: el PodmanWorkerManager futuro tendra los suyos, y nunca
 # gestionan los del otro (contrato de la etiqueta de rol, mas abajo). ---
 readonly _INFRASTRUCTURE_POSTGRES_NAME="thyrox-postgres"
@@ -57,7 +100,7 @@ readonly _INFRASTRUCTURE_POSTGRES_DATA_DIR="/var/lib/postgresql/data"
 # volumen.
 # El volumen es sobreescribible: un clon que ya tiene modelos en otro volumen
 # lo reutiliza en vez de volver a bajarlos.
-THYROX_INFRA_OLLAMA_VOLUME="${THYROX_INFRA_OLLAMA_VOLUME:-thyrox-ollama-models}"
+THYROX_INFRA_OLLAMA_VOLUME="$(thyrox_infrastructure_setting THYROX_INFRA_OLLAMA_VOLUME 'thyrox-ollama-models')"
 readonly _INFRASTRUCTURE_OLLAMA_MODELS_DIR="/root/.ollama"
 
 # Ollama es la UNICA excepcion de red de esta declaracion: la red del
@@ -77,22 +120,22 @@ readonly _INFRASTRUCTURE_PROXY_CA_TARGET="/etc/ssl/certs/proxy-ca.crt"
 
 # Imagenes versionadas y totalmente calificadas — sobreescribibles por
 # variable, nunca por edicion de este archivo.
-THYROX_INFRA_POSTGRES_IMAGE="${THYROX_INFRA_POSTGRES_IMAGE:-docker.io/pgvector/pgvector:0.8.0-pg16}"
-THYROX_INFRA_REDIS_IMAGE="${THYROX_INFRA_REDIS_IMAGE:-docker.io/library/redis:7.4}"
-THYROX_INFRA_OLLAMA_IMAGE="${THYROX_INFRA_OLLAMA_IMAGE:-docker.io/ollama/ollama:0.35.0}"
+THYROX_INFRA_POSTGRES_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_IMAGE 'docker.io/pgvector/pgvector:0.8.0-pg16')"
+THYROX_INFRA_REDIS_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_REDIS_IMAGE 'docker.io/library/redis:7.4')"
+THYROX_INFRA_OLLAMA_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_OLLAMA_IMAGE 'docker.io/ollama/ollama:0.35.0')"
 
 # Puertos SOLO en loopback, y nunca 5432/6379: 5432 ya lo ocupa el cluster
 # PostgreSQL del anfitrion. Sobreescribibles por variable.
-THYROX_INFRA_POSTGRES_PORT="${THYROX_INFRA_POSTGRES_PORT:-55432}"
-THYROX_INFRA_REDIS_PORT="${THYROX_INFRA_REDIS_PORT:-56379}"
+THYROX_INFRA_POSTGRES_PORT="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_PORT '55432')"
+THYROX_INFRA_REDIS_PORT="$(thyrox_infrastructure_setting THYROX_INFRA_REDIS_PORT '56379')"
 # Ollama, en la misma familia y lejos de 11434 para no chocar con un Ollama
 # del anfitrion.
-THYROX_INFRA_OLLAMA_PORT="${THYROX_INFRA_OLLAMA_PORT:-51434}"
+THYROX_INFRA_OLLAMA_PORT="$(thyrox_infrastructure_setting THYROX_INFRA_OLLAMA_PORT '51434')"
 
 # Identidad de PostgreSQL dentro del contenedor (no es la credencial: esa se
 # exige por separado en THYROX_INFRA_POSTGRES_PASSWORD, sin default).
-THYROX_INFRA_POSTGRES_USER="${THYROX_INFRA_POSTGRES_USER:-thyrox}"
-THYROX_INFRA_POSTGRES_DB="${THYROX_INFRA_POSTGRES_DB:-thyrox}"
+THYROX_INFRA_POSTGRES_USER="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_USER 'thyrox')"
+THYROX_INFRA_POSTGRES_DB="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_DB 'thyrox')"
 
 # @description Lista los nombres fijos de los contenedores de infraestructura
 # gestionada, uno por linea.
@@ -113,7 +156,8 @@ export -f thyrox_infrastructure_container_names
 # medias con la contraseña vacia seria un contenedor sin auth valida creado
 # en silencio.
 _thyrox_infrastructure_create_argv_postgres() {
-  local password="${THYROX_INFRA_POSTGRES_PASSWORD:-}"
+  local password
+  password="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_PASSWORD '')"
   if [[ -z "$password" ]]; then
     printf 'thyrox_infrastructure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL); no se emite argv\n' >&2
     return 2
@@ -162,11 +206,18 @@ _thyrox_infrastructure_outbound_proxy_declared() {
   [[ -n "${HTTPS_PROXY:-}" ]]
 }
 
+# _thyrox_infrastructure_proxy_ca_bundle — la ruta declarada de la CA del
+# proxy, o vacio si nadie la declara. Se lee al componer, como el proxy.
+_thyrox_infrastructure_proxy_ca_bundle() {
+  thyrox_infrastructure_setting THYROX_INFRA_PROXY_CA_BUNDLE ''
+}
+
 # _thyrox_infrastructure_proxy_ca_readable — ¿THYROX_INFRA_PROXY_CA_BUNDLE
 # nombra un archivo regular legible? Un directorio o una ruta ausente no se
 # montan: el contenedor confiaria en una CA que no existe.
 _thyrox_infrastructure_proxy_ca_readable() {
-  local bundle="${THYROX_INFRA_PROXY_CA_BUNDLE:-}"
+  local bundle
+  bundle="$(_thyrox_infrastructure_proxy_ca_bundle)"
   [[ -n "$bundle" && -f "$bundle" && -r "$bundle" ]]
 }
 
@@ -182,7 +233,7 @@ _thyrox_infrastructure_proxy_argv() {
     -e "NO_PROXY=${_INFRASTRUCTURE_PROXY_NO_PROXY}"
   _thyrox_infrastructure_proxy_ca_readable || return 0
   printf '%s\n' \
-    -v "${THYROX_INFRA_PROXY_CA_BUNDLE}:${_INFRASTRUCTURE_PROXY_CA_TARGET}:ro" \
+    -v "$(_thyrox_infrastructure_proxy_ca_bundle):${_INFRASTRUCTURE_PROXY_CA_TARGET}:ro" \
     -e "SSL_CERT_FILE=${_INFRASTRUCTURE_PROXY_CA_TARGET}"
 }
 
@@ -223,6 +274,27 @@ thyrox_infrastructure_create_argv() {
   esac
 }
 export -f thyrox_infrastructure_create_argv
+
+# @description Imprime el volumen con nombre que la declaracion monta en un
+# contenedor conocido, o nada si no monta ninguno (Redis). Es lo que el ensure
+# compara con lo que un contenedor vivo tiene montado.
+# @arg $1 string `thyrox-postgres`, `thyrox-redis` o `thyrox-ollama`.
+# @stdout el nombre del volumen, o nada.
+# @exitcode 0 declaracion publicada.
+# @exitcode 2 nombre desconocido.
+thyrox_infrastructure_named_volume() {
+  local name="${1:-}"
+  case "$name" in
+    "$_INFRASTRUCTURE_POSTGRES_NAME") printf '%s\n' "$_INFRASTRUCTURE_POSTGRES_VOLUME" ;;
+    "$_INFRASTRUCTURE_REDIS_NAME") ;;
+    "$_INFRASTRUCTURE_OLLAMA_NAME") printf '%s\n' "$THYROX_INFRA_OLLAMA_VOLUME" ;;
+    *)
+      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
+      return 2
+      ;;
+  esac
+}
+export -f thyrox_infrastructure_named_volume
 
 # @description Imprime el comando de verificacion de salud de un contenedor
 # conocido, una palabra por linea — el comando que corre DENTRO del

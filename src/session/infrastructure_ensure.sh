@@ -54,13 +54,13 @@ source "$_INFRA_ENSURE_HERE/../lib/infrastructure.sh"
 # de la declaracion. `THYROX_INFRA_ENSURE_SLEEP_BIN` no es un parametro de
 # produccion: es el punto de inyeccion que permite a la suite recorrer el
 # bucle de reintentos sin dormir de verdad.
-HEALTH_TIMEOUT="${THYROX_INFRA_HEALTH_TIMEOUT:-60}"
-HEALTH_INTERVAL="${THYROX_INFRA_HEALTH_INTERVAL:-2}"
-SLEEP_BIN="${THYROX_INFRA_ENSURE_SLEEP_BIN:-sleep}"
+HEALTH_TIMEOUT="$(thyrox_infrastructure_setting THYROX_INFRA_HEALTH_TIMEOUT 60)"
+HEALTH_INTERVAL="$(thyrox_infrastructure_setting THYROX_INFRA_HEALTH_INTERVAL 2)"
+SLEEP_BIN="$(thyrox_infrastructure_setting THYROX_INFRA_ENSURE_SLEEP_BIN sleep)"
 # La admision de disco antes de un pull (TASK-THYROX-0671): el envoltorio de
 # `resource_admission`, con su contrato `disk-admit`/`disk-release`. Se declara
 # para que la suite ejercite el orden sin tocar el disco real.
-DISK_ADMISSION_BIN="${THYROX_INFRA_DISK_ADMISSION_BIN:-$_INFRA_ENSURE_HERE/../../bin/resource_admission}"
+DISK_ADMISSION_BIN="$(thyrox_infrastructure_setting THYROX_INFRA_DISK_ADMISSION_BIN "$_INFRA_ENSURE_HERE/../../bin/resource_admission")"
 # El banco que mide por que el techo es `Avail` y no el tamaño del dispositivo.
 readonly DISK_ADMISSION_BENCH="disk-reserve-reach-20260930T191002"
 readonly EXIT_REFUSED=2
@@ -98,7 +98,7 @@ done
 # --- precondiciones: NADA se toca hasta que las dos esten satisfechas. La
 # credencial de PostgreSQL se exige sólo si PostgreSQL esta seleccionado.
 if _infra_list_contains thyrox-postgres "${SELECTED_CONTAINERS[@]}" \
-   && [[ -z "${THYROX_INFRA_POSTGRES_PASSWORD:-}" ]]; then
+   && [[ -z "$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_PASSWORD '')" ]]; then
   echo "infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL)." >&2
   echo "                       No se invoca podman ni se toca nada." >&2
   exit 2
@@ -125,8 +125,9 @@ _infra_ensure_network() {
 # publica los libres. THYROX_INFRA_PODMAN_NUM_LOCKS lo fija en la suite.
 _infra_num_locks() {
   local declared conf
-  if [[ -n "${THYROX_INFRA_PODMAN_NUM_LOCKS:-}" ]]; then
-    echo "$THYROX_INFRA_PODMAN_NUM_LOCKS"
+  declared="$(thyrox_infrastructure_setting THYROX_INFRA_PODMAN_NUM_LOCKS '')"
+  if [[ -n "$declared" ]]; then
+    echo "$declared"
     return
   fi
   for conf in /etc/containers/containers.conf /usr/share/containers/containers.conf; do
@@ -311,6 +312,42 @@ _infra_create_container() {
   return 0
 }
 
+# @description ¿Un contenedor vivo monta volumenes con nombre y ninguno es el
+# que su declaracion monta? Solo cuenta para los que declaran uno (postgres y
+# ollama). Sin volumenes con nombre medidos no se infiere deriva: una medida
+# ausente no prueba nada.
+# @arg $1 string nombre del contenedor.
+# @exitcode 0 hay deriva: monta otro volumen.
+# @exitcode 1 sin deriva, o no se pudo medir.
+_infra_volume_drifted() {
+  local name="$1" declared mounted
+  declared="$(thyrox_infrastructure_named_volume "$name")"
+  [[ -n "$declared" ]] || return 1
+  mounted="$("$PODMAN" inspect --format '{{range .Mounts}}{{.Name}}{{"\n"}}{{end}}' "$name" 2>/dev/null | grep .)" || return 1
+  ! grep -qxF -- "$declared" <<< "$mounted"
+}
+
+# @description Decide que hacer con un contenedor segun su estado medido:
+# `kept` si vive sobre su volumen declarado; `recreated` si vive sobre otro
+# volumen o si se reporta running con el PID muerto (stale); `created` si
+# falta; `started` en cualquier otro estado.
+# @arg $1 string nombre del contenedor.
+# @arg $2 string estado reportado, o `absent`.
+# @arg $3 string `yes` si el PID vive.
+# @stdout la accion.
+_infra_choose_action() {
+  local name="$1" status="$2" pid_alive="$3"
+  if [[ "$status" == "running" && "$pid_alive" == "yes" ]]; then
+    if _infra_volume_drifted "$name"; then echo recreated; else echo kept; fi
+  elif [[ "$status" == "absent" ]]; then
+    echo created
+  elif [[ "$status" == "running" ]]; then
+    echo recreated
+  else
+    echo started
+  fi
+}
+
 # @description Asegura un contenedor: inspecciona, decide kept/created/
 # recreated/started, ejecuta el health check y publica su linea de estado.
 # Acumula en FAILED_CONTAINERS cualquier contenedor que no llego a sano.
@@ -332,19 +369,12 @@ _infra_ensure_container() {
     pid_alive="yes"
   fi
 
-  if [[ "$status" == "running" && "$pid_alive" == "yes" ]]; then
-    action="kept"
-  else
-    if [[ "$status" == "absent" ]]; then
-      action="created"
-    elif [[ "$status" == "running" ]]; then
-      # running reportado, PID muerto: stale. rm -f SOLO retira el
-      # contenedor — el volumen con nombre (verdad durable de postgres)
-      # nunca aparece en este comando.
-      action="recreated"
+  action="$(_infra_choose_action "$name" "$status" "$pid_alive")"
+  if [[ "$action" != "kept" ]]; then
+    if [[ "$action" == "recreated" ]]; then
+      # rm -f SOLO retira el contenedor: ningun volumen con nombre (verdad
+      # durable de postgres y de ollama) aparece en este comando.
       "$PODMAN" rm -f "$name" >/dev/null 2>&1
-    else
-      action="started"
     fi
 
     if [[ "$action" == "created" || "$action" == "recreated" ]] && ! _infra_create_container "$name"; then
