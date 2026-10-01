@@ -35,6 +35,7 @@ afterEach(() => {
   delete process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE
   delete process.env.THYROX_CODE_BLOCKING_LIMIT_OVERRIDE
   delete process.env.THYROX_CODE_AUTO_COMPACT_WINDOW
+  delete process.env.THYROX_CODE_DECLARED_CONTEXT_WINDOW
 })
 
 describe('MF — la ventana con la que de verdad se cuenta', () => {
@@ -322,5 +323,25 @@ describe('remoteAutocompactState — la rama que el porte no tenía', () => {
     const conFrame = contextLevel(310_000, MODELO, { remote: frame })
     const sinFrame = contextLevel(310_000, MODELO)
     expect(conFrame.level).not.toBe(sinFrame.level)
+  })
+})
+
+describe('THYROX_CODE_DECLARED_CONTEXT_WINDOW — la ventana de un modelo que el catálogo no trae', () => {
+  test('un modelo fuera del catálogo con ventana declarada compacta y bloquea contra ella', () => {
+    process.env.THYROX_CODE_DECLARED_CONTEXT_WINDOW = '128000'
+    expect(effectiveContextWindow('qwen3.8-flash')).toBe(128_000 - 20_000)
+    expect(blockingWindow('qwen3.8-flash')).toBe(108_000)
+    expect(contextLevel(10_000, 'qwen3.8-flash').level).toBe('ok')
+    expect(contextLevel(100_000, 'qwen3.8-flash').level).toBe('compact')
+  })
+
+  test('no toca un modelo que el catálogo sí declara', () => {
+    process.env.THYROX_CODE_DECLARED_CONTEXT_WINDOW = '128000'
+    expect(effectiveContextWindow(MODELO)).toBe(EFECTIVA)
+  })
+
+  test('un valor inválido no declara nada: el modelo sigue sin decidir', () => {
+    process.env.THYROX_CODE_DECLARED_CONTEXT_WINDOW = 'mucho'
+    expect(contextLevel(10_000, 'qwen3.8-flash').level).toBe('unknown')
   })
 })
