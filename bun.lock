@@ -417,6 +417,8 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/model-artifacts": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
+        "@thyrox/shared-state": "0.1.0",
       },
     },
     "src/packages/local-observability": {

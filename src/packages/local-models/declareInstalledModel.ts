@@ -16,8 +16,6 @@
  * catálogo no cambia.
  */
 
-import { createHash } from 'node:crypto'
-import { createReadStream } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
@@ -28,6 +26,7 @@ import { parseThyroxModelName, type ModelSource, type ParsedThyroxModelName } fr
 
 import type { ModelDetails, OllamaApi } from './ollamaApi.js'
 import { repositoryOfOllamaName, withExplicitTag } from './ollamaName.js'
+import { sha256OfFile } from './sha256File.js'
 import { hostBlobPath, modelBlobOfModelfile } from './volumeBlobs.js'
 
 /** La caché KV con que Ollama sirve si no se declara `OLLAMA_KV_CACHE_TYPE`. */
@@ -165,16 +164,6 @@ function refuseUnusedRevision(taggedName: string, declaredRevision: string | und
 async function requireBlobDigest(taggedName: string, blobPath: string, declared: string): Promise<void> {
   const measured = await sha256OfFile(blobPath)
   if (measured !== declared) throw new ModelDeclarationError(taggedName, `el sha256 de ${blobPath} es ${measured}, su nombre declara ${declared}`)
-}
-
-function sha256OfFile(path: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const hash = createHash('sha256')
-    createReadStream(path)
-      .on('data', chunk => hash.update(chunk))
-      .on('error', reject)
-      .on('end', () => resolve(hash.digest('hex')))
-  })
 }
 
 function catalogCapabilities(taggedName: string, ollamaCapabilities: readonly string[]): ModelCapability[] {
