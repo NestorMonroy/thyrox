@@ -47,6 +47,15 @@ describe('FencedVramLedger en memoria', () => {
     expect((await ledger.reserve(request({ generation: 2 }))).status).toBe('reserved')
   })
 
+  test('soltar la reserva no olvida la generación: una vieja sigue rechazada (M19)', async () => {
+    const ledger = createMemoryVramLedger({ capacityMib: { [GPU]: 8_000 } })
+    const current = await ledger.reserve(request({ owner: 'coordinator-b', generation: 2 }))
+    if (current.status !== 'reserved') throw new Error(current.status)
+    expect(await ledger.release(current.reservation)).toBe('released')
+    expect(await ledger.reserve(request({ owner: 'coordinator-a', generation: 1 })))
+      .toEqual({ status: 'stale_generation', currentGeneration: 2 })
+  })
+
   test('en CPU no hay VRAM que reservar, pero la generación sigue mandando', async () => {
     const ledger = createMemoryVramLedger({ capacityMib: {} })
     const cpu = request({ residencyKey: 'residency/qwen/cpu', devices: [], vramMib: 0 })

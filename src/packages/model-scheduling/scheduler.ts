@@ -15,7 +15,7 @@ import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
 import type { ExecutionGrant, ExecutionPlacement, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
 
-import type { GenerationLease, ModelSchedulingCoordination } from './coordination.ts'
+import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
 import type { ExecutionUnit, ModelExecutionPrimitive, RuntimeAdapter } from './executionPrimitive.ts'
 import type { FencedVramLedger, VramReservation } from './vramLedger.ts'
 
@@ -81,16 +81,173 @@ export interface ModelSchedulerDependencies {
   readonly leaseTtlMs: number
 }
 
-export class ModelScheduler {
-  constructor(private readonly dependencies: ModelSchedulerDependencies) {}
+/** Deshace un paso ya hecho; devuelve la marca si no pudo completarse. */
+type Compensation = () => Promise<ReconciliationMark | undefined>
 
-  /** Lo que sobrevivió a un coordinador anterior: unidades, reservas y lo que el runtime sirve. */
-  async reconcile(): Promise<ReconciliationReport> {
-    void this.dependencies
-    throw new Error('ModelScheduler.reconcile: por implementar')
+/**
+ * Las compensaciones de una ejecución en curso: se apilan según se crea cada
+ * recurso y se deshacen en orden inverso. Una que no se completa no detiene a
+ * las siguientes: queda como marca (M18).
+ */
+class CompensationStack {
+  private readonly pending: Compensation[] = []
+
+  push(compensation: Compensation): void {
+    this.pending.push(compensation)
   }
 
-  async execute(_plan: ExecutionPlan): Promise<ScheduleOutcome> {
-    throw new Error('ModelScheduler.execute: por implementar')
+  async unwind(): Promise<readonly ReconciliationMark[]> {
+    const marks: ReconciliationMark[] = []
+    for (const compensation of this.pending.reverse()) {
+      const mark = await compensation()
+      if (mark) marks.push(mark)
+    }
+    return marks
+  }
+}
+
+/** Ejecuta una compensación y convierte su excepción en una marca con contexto. */
+async function markOnThrow(resource: ReconciliationMark['resource'], id: string, undo: () => Promise<ReconciliationMark | undefined>): Promise<ReconciliationMark | undefined> {
+  try {
+    return await undo()
+  } catch (error) {
+    return { resource, id, reason: `la compensación lanzó: ${error instanceof Error ? error.message : String(error)}` }
+  }
+}
+
+function leaseId(lease: GenerationLease): string {
+  return `${lease.residencyKey}#${lease.generation}`
+}
+
+/** Un grant `create` levanta la residencia y atiende la petición: reserva las dos. */
+function reservedVramMib(plan: ExecutionPlan): number {
+  return plan.residencyVramMib + plan.requestVramMib
+}
+
+function servesItsModel(unit: ExecutionUnit, loadedModel: string | undefined): boolean {
+  return loadedModel === unit.model
+}
+
+export class ModelScheduler {
+  /** M20: falso al arrancar y cada vez que la coordinación responde `unavailable`. */
+  private reconciled = false
+
+  constructor(private readonly dependencies: ModelSchedulerDependencies) {}
+
+  /**
+   * Lo que sobrevivió a un coordinador anterior: unidades, reservas y lo que
+   * el runtime sirve. Sólo observa y marca; nunca retira nada.
+   */
+  async reconcile(): Promise<ReconciliationReport> {
+    const units = await this.dependencies.primitive.units()
+    const reservations = await this.dependencies.ledger.reservations()
+    const marks: ReconciliationMark[] = []
+    for (const unit of units) {
+      const mark = await this.markUnitNotServing(unit)
+      if (mark) marks.push(mark)
+    }
+    this.reconciled = true
+    return { units, reservations, marks }
+  }
+
+  async execute(plan: ExecutionPlan): Promise<ScheduleOutcome> {
+    if (!this.reconciled) await this.reconcile()
+    const acquisition = await this.dependencies.coordination.acquireResidency(plan.residencyKey, plan.owner, this.dependencies.leaseTtlMs)
+    if (acquisition.status !== 'acquired') return this.refuseLease(acquisition)
+    const compensations = new CompensationStack()
+    compensations.push(() => this.releaseLease(acquisition.lease))
+    return this.reserveAndRun(plan, acquisition.lease, compensations)
+  }
+
+  private async markUnitNotServing(unit: ExecutionUnit): Promise<ReconciliationMark | undefined> {
+    return markOnThrow('unit', unit.unitId, async () => {
+      const loadedModel = await this.dependencies.runtime.loadedModel(unit)
+      if (servesItsModel(unit, loadedModel)) return undefined
+      return { resource: 'unit', id: unit.unitId, reason: `el runtime sirve ${loadedModel ?? 'ningún modelo'}, el grant ${unit.grantId} es de ${unit.model}` }
+    })
+  }
+
+  private refuseLease(acquisition: Exclude<LeaseAcquisition, { status: 'acquired' }>): ScheduleOutcome {
+    if (acquisition.status === 'unavailable') {
+      this.reconciled = false
+      return { status: 'refused', stage: 'lease', reason: `coordinación no disponible: ${acquisition.reason}` }
+    }
+    const reason = acquisition.status === 'held' ? `la residencia la tiene ${acquisition.holder}` : `generación vieja, vigente ${acquisition.currentGeneration}`
+    return { status: 'refused', stage: 'lease', reason }
+  }
+
+  private async reserveAndRun(plan: ExecutionPlan, lease: GenerationLease, compensations: CompensationStack): Promise<ScheduleOutcome> {
+    const reserved = await this.dependencies.ledger.reserve({
+      residencyKey: plan.residencyKey,
+      owner: plan.owner,
+      generation: lease.generation,
+      devices: plan.placement.kind === 'gpu' ? plan.placement.devices : [],
+      vramMib: reservedVramMib(plan),
+    })
+    if (reserved.status !== 'reserved') return this.fail('reserve', `la reserva salió ${reserved.status}`, compensations)
+    compensations.push(() => this.releaseReservation(reserved.reservation))
+    const issued = await this.dependencies.issuer.issue(plan, lease.generation)
+    if (issued.status !== 'issued') return this.fail('grant', issued.reason, compensations)
+    compensations.push(() => this.revokeGrant(issued.grant))
+    return this.materializeAndLoad({ lease, reservation: reserved.reservation, grant: issued.grant }, compensations)
+  }
+
+  private async materializeAndLoad(
+    held: { readonly lease: GenerationLease; readonly reservation: VramReservation; readonly grant: ExecutionGrant },
+    compensations: CompensationStack,
+  ): Promise<ScheduleOutcome> {
+    const materialization = await this.dependencies.primitive.materialize(held.grant)
+    if (materialization.status === 'rejected') return this.fail('materialize', `${materialization.reason}: ${materialization.detail}`, compensations)
+    if (materialization.status === 'failed') {
+      if (materialization.partial) compensations.push(() => this.retirePartialUnit(materialization.unitId, held.grant))
+      return this.fail('materialize', materialization.reason, compensations)
+    }
+    const unit = materialization.unit
+    compensations.push(() => this.retireUnit(unit.unitId))
+    const loaded = await this.dependencies.runtime.load(unit, held.grant)
+    if (loaded.status !== 'loaded') return this.fail('load', loaded.reason, compensations)
+    return { status: 'executing', ...held, unit }
+  }
+
+  private async fail(stage: ScheduleStage, reason: string, compensations: CompensationStack): Promise<ScheduleOutcome> {
+    return { status: 'failed', stage, reason, marks: await compensations.unwind() }
+  }
+
+  private retirePartialUnit(unitId: string | undefined, grant: ExecutionGrant): Promise<ReconciliationMark | undefined> {
+    if (unitId === undefined) {
+      return Promise.resolve({ resource: 'unit', id: grant.grantId, reason: 'materialización parcial sin unitId: la unidad del grant no se pudo retirar' })
+    }
+    return this.retireUnit(unitId)
+  }
+
+  private retireUnit(unitId: string): Promise<ReconciliationMark | undefined> {
+    return markOnThrow('unit', unitId, async () => {
+      const retired = await this.dependencies.primitive.retire(unitId)
+      return retired === 'failed' ? { resource: 'unit', id: unitId, reason: 'la primitiva no pudo retirar la unidad' } : undefined
+    })
+  }
+
+  private revokeGrant(grant: ExecutionGrant): Promise<ReconciliationMark | undefined> {
+    return markOnThrow('grant', grant.grantId, async () => {
+      await this.dependencies.issuer.revoke(grant.grantId)
+      return undefined
+    })
+  }
+
+  private releaseReservation(reservation: VramReservation): Promise<ReconciliationMark | undefined> {
+    return markOnThrow('reservation', reservation.reservationId, async () => {
+      await this.dependencies.ledger.release(reservation)
+      return undefined
+    })
+  }
+
+  /** `stale` no se marca: el lease ya no es nuestro y no queda nada que soltar. */
+  private releaseLease(lease: GenerationLease): Promise<ReconciliationMark | undefined> {
+    return markOnThrow('lease', leaseId(lease), async () => {
+      const validity = await this.dependencies.coordination.release(lease)
+      if (validity !== 'unavailable') return undefined
+      this.reconciled = false
+      return { resource: 'lease', id: leaseId(lease), reason: 'coordinación no disponible al soltar el lease' }
+    })
   }
 }
