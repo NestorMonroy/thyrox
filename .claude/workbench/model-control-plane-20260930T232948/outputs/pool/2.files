@@ -1,0 +1,2 @@
+src/packages/model-artifacts/__tests__/modelResolver.test.ts
+src/packages/model-artifacts/modelResolver.ts
