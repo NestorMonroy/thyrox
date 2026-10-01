@@ -11,6 +11,9 @@
 # no distinguiría el mecanismo de su ausencia.
 # =============================================================================
 set -uo pipefail
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; fallo=0
@@ -18,6 +21,8 @@ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
         else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; fallo=$((fallo+1)); fi; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+# Sin esto la clave por clon del .env gana a la global y la suite escribe en el hogar real.
+source "$(dirname "$THYROX_MANAGED_EXECUTION_RUNNER")/../../../src/lib/test_homes.sh"; thyrox_isolate_homes "$TMP"
 export THYROX_JOBS_DIR="$TMP/jobs"
 export THYROX_RUNTIME_DIR="$TMP/runtime"
 export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
@@ -36,7 +41,7 @@ print(read_manifest(sys.argv[1]).get(sys.argv[2], 'sin-clave'))" "$1" "$2"
 
 echo "== 1. la familia: el log nace DENTRO del run =="
 unset BG_DIR
-salida="$($BG start uno -- bash -c 'exit 5')"
+salida="$($BG start uno --task TASK-THYROX-0001 --kind test -- bash -c 'exit 5')"
 run="$(sed -n 's/^RUN=//p' <<<"$salida")"
 log="$(sed -n 's/^LOG=//p' <<<"$salida")"
 _es "start publica su RUN" "$([[ -n "$run" ]] && echo si || echo no)" "si"
@@ -51,13 +56,13 @@ _es "OMITE question (un run sin recoger no es conforme)" \
    "$([[ "$(_manifest_value "$run" question)" != "sin-clave" ]] && echo si || echo no)" "no"
 
 echo "== 3. EL QUE DISCRIMINA: dos ejecuciones del mismo nombre =="
-$BG start uno -- bash -c 'exit 0' >/dev/null; sleep 1; $BG status uno >/dev/null
+$BG start uno --task TASK-THYROX-0001 --kind test -- bash -c 'exit 0' >/dev/null; sleep 1; $BG status uno >/dev/null
 _es "la familia conserva las DOS" "$(ls -d "$THYROX_JOBS_DIR"/uno-* | wc -l | tr -d ' ')" "2"
 _es "y el primer run conserva su 5" "$(_manifest_value "$run" exit_code)" "5"
 
 echo "== 4. CONTROL de retrocompatibilidad: BG_DIR declarado gana =="
 plano="$TMP/plano"
-BG_DIR="$plano" $BG start dos -- bash -c 'exit 3' >/dev/null; sleep 1
+BG_DIR="$plano" $BG start dos --task TASK-THYROX-0001 --kind test -- bash -c 'exit 3' >/dev/null; sleep 1
 _es "forma plana intacta" "$(BG_DIR="$plano" $BG status dos)" "done:3"
 _es "y su log es el plano de siempre" "$(basename "$(BG_DIR="$plano" $BG log dos)")" "dos.log"
 
@@ -77,7 +82,7 @@ echo "== 4-ter. --dir RELATIVO se compone bajo el hogar declarado del clon =="
 # una ruta absoluta vuelve igual de la resolucion.
 unset BG_DIR
 export THYROX_BACKGROUND_LOG_DIR="$TMP/hogar-plano"
-$BG start tres --dir un-slug -- bash -c 'exit 4' >/dev/null; sleep 1
+$BG start tres --dir un-slug --task TASK-THYROX-0001 --kind test -- bash -c 'exit 4' >/dev/null; sleep 1
 # `--dir` es bandera de `start`; para leer, la grafia heredada `BG_DIR` sigue
 # siendo la via, y pasa por la MISMA resolucion — que es lo que este par mide.
 _es "el log cuelga del hogar declarado" \
@@ -103,7 +108,7 @@ echo "== 4-quater. EL LECTOR no tiene que re-declarar el hogar que start ya sabi
 # puntero carga su peso.
 unset BG_DIR
 export THYROX_BACKGROUND_LOG_DIR="$TMP/hogar-plano"
-$BG start cuatro --dir otro-slug -- bash -c 'exit 9' >/dev/null; sleep 1
+$BG start cuatro --dir otro-slug --task TASK-THYROX-0001 --kind test -- bash -c 'exit 9' >/dev/null; sleep 1
 _es "log resuelve SIN BG_DIR" \
    "$($BG log cuatro)" "$TMP/hogar-plano/otro-slug/cuatro.log"
 _es "status resuelve SIN BG_DIR" "$($BG status cuatro)" "done:9"
@@ -143,7 +148,7 @@ echo "== 5. la democion: start no obliga a saber de antemano si es largo =="
 unset BG_DIR
 
 # 5a. corto: cabe en la gracia, se comporta como correr el comando directo
-salida="$($BG start corto --grace 10 -- bash -c 'exit 7')"; rc=$?
+salida="$($BG start corto --grace 10 --task TASK-THYROX-0001 --kind test -- bash -c 'exit 7')"; rc=$?
 _es "un trabajo corto devuelve SU codigo de salida" "$rc" "7"
 _es "un trabajo corto NO se anuncia como demotido" \
     "$(grep -c 'SEGUNDO PLANO' <<<"$salida")" "0"
@@ -153,7 +158,7 @@ _es "un trabajo corto NO se anuncia como demotido" \
 # es un diagnostico sobre la llamada, no la salida del trabajo. Capturar ambos
 # NO debilita la asercion: antes del arreglo no habia mensaje en NINGUNO de los
 # dos flujos, asi que el caso discrimina igual.
-salida="$($BG start largo --grace 1 -- bash -c 'sleep 25; exit 0' 2>&1)"; rc=$?
+salida="$($BG start largo --grace 1 --task TASK-THYROX-0001 --kind test -- bash -c 'sleep 25; exit 0' 2>&1)"; rc=$?
 _es "un trabajo largo devuelve 125 (demotido), no el codigo del trabajo" "$rc" "125"
 _es "y lo dice, en vez de callarlo" \
     "$([[ "$salida" == *"SEGUNDO PLANO"* ]] && echo si || echo no)" "si"

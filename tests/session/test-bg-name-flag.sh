@@ -20,6 +20,9 @@
 # mecanismo inservible — un test que solo mirara el rechazo no los separa.
 # =============================================================================
 set -uo pipefail
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; fallo=0
@@ -29,6 +32,8 @@ _contiene() { if [[ "$2" == *"$3"* ]]; then echo "  ok    $1"; ok=$((ok+1));
         else echo "  FALLA $1 — [$2] no contiene [$3]"; fallo=$((fallo+1)); fi; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+# Sin esto la clave por clon del .env gana a la global y la suite escribe en el hogar real.
+source "$(dirname "$THYROX_MANAGED_EXECUTION_RUNNER")/../../../src/lib/test_homes.sh"; thyrox_isolate_homes "$TMP"
 export THYROX_JOBS_DIR="$TMP/jobs"
 export THYROX_RUNTIME_DIR="$TMP/runtime"
 export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
@@ -50,7 +55,7 @@ _contiene "nombra --grace" "$salida" "--grace"
 _contiene "nombra --dir" "$salida" "--dir"
 
 echo "== 4. CONTROL: un nombre legitimo sigue arrancando =="
-salida4="$(bash "$BG" start trabajo-legitimo --grace 0 -- true 2>&1)"; codigo4=$?
+salida4="$(bash "$BG" start trabajo-legitimo --grace 0 --task TASK-THYROX-0001 --kind test -- true 2>&1)"; codigo4=$?
 _es "arranca con exit 0" "$codigo4" "0"
 _contiene "publica su RUN" "$salida4" "RUN="
 # Y el run NO lleva guiones al principio: es lo que lo hace citable aguas abajo.

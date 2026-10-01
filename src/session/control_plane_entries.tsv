@@ -1,0 +1,7 @@
+# Entradas del plano de control que un orquestador puede lanzar en el anfitrión.
+# nombre en bin/<TAB>módulo al que su exec tiene que apuntar<TAB>por qué es plano de control
+headless-pool	src/session/headless-pool.sh	orquestador: reparte ítems y observa; su payload va a la primitiva
+wait-jobs	src/session/wait-jobs.sh	barrera del ledger: observa y recoge, no ejecuta payload
+infrastructure_ensure	src/session/infrastructure_ensure.sh	orquesta el bootstrap; materializa la primitiva
+infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	entrega el estado deseado a ensureResource
+podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícita del motor, pedida por un operador

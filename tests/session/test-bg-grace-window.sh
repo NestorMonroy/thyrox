@@ -13,6 +13,9 @@
 #      como sujeto: bajar el numero para el primero rompe el segundo;
 #   3. no hay clave de entorno, asi que el consumidor no puede fijarlo (DEC-04).
 set -uo pipefail
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
 _thyrox_root="${THYROX_ROOT:-}"
 if [[ -z "$_thyrox_root" ]]; then
     _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -32,6 +35,8 @@ check() {
 }
 
 DIR="$(mktemp -d)"
+# Sin esto la clave por clon del .env gana a la global y la suite escribe en el hogar real.
+source "$(dirname "$THYROX_MANAGED_EXECUTION_RUNNER")/../../../src/lib/test_homes.sh"; thyrox_isolate_homes "$DIR"
 trap 'rm -rf "$DIR"' EXIT
 # Los runs de la familia `jobs` —bg.sh crea su run-puntero aun con `--dir`— van
 # al temporal: sin esto la suite dejaba `lento-*` y `corto-*` en el árbol.
@@ -55,7 +60,7 @@ check "el grace por defecto cae en 20-30 s" "$EN_VENTANA" "si"
 # 2 — CONDUCTA: con el grace configurado, `start` devuelve el control al
 # vencer, no al terminar el trabajo. Se mide el reloj, no el docstring.
 INICIO="$(date +%s)"
-THYROX_BG_GRACE_SECONDS=2 bash "$BG" start lento --dir "$DIR" -- bash -c 'sleep 12' >/dev/null 2>&1
+THYROX_BG_GRACE_SECONDS=2 bash "$BG" start lento --dir "$DIR" --task TASK-THYROX-0001 --kind test -- bash -c 'sleep 12' >/dev/null 2>&1
 CODIGO=$?
 TRANSCURRIDO=$(( $(date +%s) - INICIO ))
 check "start devuelve al vencer el grace, no al terminar" \
@@ -70,7 +75,7 @@ check "la clave de entorno se declara en .env.example" \
 # 4 — EL CONTROL QUE DISCRIMINA LA SEPARACION: `wait` sin segundos NO usa el
 # grace. Con el grace en 2 y un trabajo de 6 s, si compartieran constante
 # `wait` venceria a los 2 y no recogeria nada. Tiene que recogerlo.
-bash "$BG" start corto --dir "$DIR" --grace 0 -- bash -c 'sleep 6; echo LISTO' >/dev/null 2>&1
+bash "$BG" start corto --dir "$DIR" --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c 'sleep 6; echo LISTO' >/dev/null 2>&1
 SALIDA="$(THYROX_BG_GRACE_SECONDS=2 bash "$BG" wait corto --dir "$DIR" 2>&1)"
 case "$SALIDA" in
     *LISTO*) RECOGIO=si ;;

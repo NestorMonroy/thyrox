@@ -22,6 +22,9 @@
 # casos 1 y 2 y ninguno más.
 # =============================================================================
 set -uo pipefail
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; failures=0
@@ -59,7 +62,7 @@ writers_under() {
 }
 
 mkfifo "$TMP/release"
-start_output="$($BG start vivo --grace 0 -- bash -c "echo linea-uno; read -r _ < '$TMP/release'; echo linea-dos")"
+start_output="$($BG start vivo --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c "echo linea-uno; read -r _ < '$TMP/release'; echo linea-dos")"
 run="$(sed -n 's/^RUN=//p' <<<"$start_output")"
 pid="$(sed -n 's/^PID=//p' <<<"$start_output")"
 live="$THYROX_RUNTIME_DIR/jobs/$(basename "$run")/salida.log"
@@ -87,14 +90,14 @@ check "y su directorio también" "$([[ -d "$(dirname "$live")" ]] && echo si || 
 check "status asienta el código" "$($BG status vivo)" "done:0"
 
 echo "== 4. la barrera recoge el trabajo por el log del run =="
-$BG start barrera --grace 0 -- bash -c 'echo hecho' >/dev/null
+$BG start barrera --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c 'echo hecho' >/dev/null
 $BG register barrera >/dev/null
 check "wait-jobs lo recoge OK" \
   "$(bash src/session/wait-jobs.sh wait --only barrera --timeout 30 2>/dev/null | grep -c '^OK *barrera')" "1"
 
 echo "== 5. la forma plana no cambia =="
 flat_home="$TMP/flat_home"
-BG_DIR="$flat_home" $BG start plana --grace 0 -- bash -c 'echo plana' >/dev/null
+BG_DIR="$flat_home" $BG start plana --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c 'echo plana' >/dev/null
 flat_pid="$(cat "$flat_home/plana.pid")"
 timeout 30 tail --pid="$flat_pid" -f /dev/null
 check "el log flat_home está en su hogar" "$(grep -c '^plana$' "$flat_home/plana.log" 2>/dev/null)" "1"
