@@ -78,3 +78,16 @@ invocaciones de Claude. Ninguna clave se guarda.
 
 Límite declarado: la sesión que orquesta este banco es en sí una sesión de Claude; el corte cubre lo
 que ella delega. Desde el corte no lanza `Agent`, `claude -p` ni `--runner claude`.
+
+### Corrección de la política de credenciales (2026-10-01T18:06:54 UTC)
+
+`credential_pending_rotation` = credencial operativa + deuda de rotación. Se usa durante esta
+implementación y se registra como aviso. Sólo se falla cerrado por credencial ausente, revocada o
+deshabilitada, autenticación rechazada, proveedor inaccesible o modelo inexistente/no permitido —
+y `no_candidate` sólo después de probar las rutas permitidas reales. La deuda vive en
+`credential-rotation.tsv` (nombre y estado, nunca el valor); su orden: P2–P5 verificados → flujos de
+proveedor verificados → corte sin Claude verificado → rotar → repetir las pruebas de autenticación.
+El resultado anterior (`no_candidate`) queda anulado y conservado. Control: `tests/test_credential_state.sh`.
+Ruta del proveedor: `thyrox -p` con `ANTHROPIC_BASE_URL` en el endpoint Anthropic-compatible del Token
+Plan (`https://token-plan.maas.qwencloudapi.com/apps/anthropic`); la clave llega a la unidad como
+`ExecutionSecret` montado, nunca en argv, `--env` ni evidencia.

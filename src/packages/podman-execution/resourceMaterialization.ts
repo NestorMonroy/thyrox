@@ -388,17 +388,27 @@ async function ensureVolumes(deps: ResourceMaterializationDeps, desired: Desired
   return states
 }
 
+export type SecretOutcome = 'created' | 'replaced' | 'unchanged'
+
+/**
+ * Asegura un secreto de Podman con su valor. El valor viaja sólo por stdin a
+ * `podman secret create`; el secreto lleva el sha256 del valor en una etiqueta,
+ * y si ya existe con el mismo digest no se toca.
+ */
+export async function ensureSecretValue(deps: Pick<ResourceMaterializationDeps, 'podman'>, name: string, value: string): Promise<SecretOutcome> {
+  const digest = sha256(value)
+  const inspected = await deps.podman.run(['secret', 'inspect', '--format', `{{index .Spec.Labels "${SECRET_VALUE_DIGEST_LABEL_KEY}"}}`, name])
+  if (inspected.exitCode === 0 && inspected.stdout.trim() === digest) return 'unchanged'
+  const replace = inspected.exitCode === 0 ? ['--replace'] : []
+  await step(deps as ResourceMaterializationDeps, 'secret', ['secret', 'create', ...replace, '--label', `${SECRET_VALUE_DIGEST_LABEL_KEY}=${digest}`, name, '-'], value)
+  return inspected.exitCode === 0 ? 'replaced' : 'created'
+}
+
 /** Asegura cada secreto declarado con su valor; devuelve si alguno existía con otro valor y se reemplazó. */
 async function ensureSecrets(deps: ResourceMaterializationDeps, desired: DesiredResource, secrets: SecretValues): Promise<boolean> {
   let replaced = false
   for (const mount of desired.secrets ?? []) {
-    const value = secrets.get(mount.secret) ?? ''
-    const digest = sha256(value)
-    const inspected = await deps.podman.run(['secret', 'inspect', '--format', `{{index .Spec.Labels "${SECRET_VALUE_DIGEST_LABEL_KEY}"}}`, mount.secret])
-    if (inspected.exitCode === 0 && inspected.stdout.trim() === digest) continue
-    const replace = inspected.exitCode === 0 ? ['--replace'] : []
-    await step(deps, 'secret', ['secret', 'create', ...replace, '--label', `${SECRET_VALUE_DIGEST_LABEL_KEY}=${digest}`, mount.secret, '-'], value)
-    replaced ||= inspected.exitCode === 0
+    replaced = (await ensureSecretValue(deps, mount.secret, secrets.get(mount.secret) ?? '')) === 'replaced' || replaced
   }
   return replaced
 }

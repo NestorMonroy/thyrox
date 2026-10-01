@@ -1,0 +1,10 @@
+{"model":"qwen3.8-flash","check":"secret_visible","ok":true,"detail":{"credential":"THYROX_OPENAI_COMPAT_API_KEY","rotationStatus":"pending"}}
+{"model":"qwen3.8-flash","check":"authentication","ok":true,"detail":{"result":"success"}}
+{"model":"qwen3.8-flash","check":"simple_request","ok":true,"detail":{"content":"listo","usage":{"prompt":66,"completion":19}}}
+{"model":"qwen3.8-flash","check":"context_request_1","ok":true,"detail":{"answer":"HEADLESS_POOL_RUNNER","usage":{"prompt":7360,"completion":140,"cached":0}}}
+{"model":"qwen3.8-flash","check":"context_request_2","ok":false,"detail":{"answer":"Parece que pegaste el script sin una pregunta concreta. Si lo que buscas es el punto más distintivo del texto:\n\n- `HEADLESS_POOL","usage":{"prompt":7360,"completion":2094,"cached":7168}}}
+{"model":"qwen3.8-flash","check":"structured_tool_call","ok":true,"detail":{"toolCall":{"name":"read_file","arguments":"{\"path\": \"README.md\"}"},"usage":{"prompt":326,"completion":43}}}
+{"model":"qwen3.8-flash","check":"file_read","ok":true,"detail":{"toolUses":" 2 Bash "}}
+{"model":"qwen3.8-flash","check":"controlled_modification","ok":true,"detail":{"diff":"+marcador: beta|","exit":0}}
+{"model":"qwen3.8-flash","check":"parseable_result","ok":true,"detail":{"subtype":"success","is_error":false,"result":"hecho","usage":{"input_tokens":2059,"output_tokens":283,"cache_creation_input_tokens":641,"cache_read_input_tokens":0}}}
+{"model":"qwen3.8-flash","check":"claude_invocations","ok":true,"detail":{"claudeBinary":null,"anthropicBaseUrl":"https://token-plan.maas.qwencloudapi.com/apps/anthropic","count":0}}

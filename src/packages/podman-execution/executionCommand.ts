@@ -13,12 +13,15 @@
 
 import { parseArgs } from 'node:util'
 
-import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind } from './executionAuthorization.js'
+import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionSecret } from './executionAuthorization.js'
+import { ensureSecretValue } from './resourceMaterialization.js'
 import { buildImage } from './imageStore.js'
 import type { PodmanExecutor } from './podmanExecutor.js'
 import type { WorkerMountMode, WorkerNetworkMode, WorkerResourceMount } from './workerResourceProfile.js'
 
 export const DEFAULT_EXECUTION_IMAGE = 'localhost/thyrox-task-runner:dev'
+/** Prefijo de los secretos de Podman que una ejecución recibe desde el entorno de quien la pide. */
+const EXECUTION_SECRET_PREFIX = 'thyrox-exec-'
 export const PROXY_CA_BUILD_PATH = '/etc/ssl/certs/proxy-ca.crt'
 const EXECUTION_IMAGE_KEY = 'THYROX_EXEC_IMAGE'
 const PROXY_CA_KEY = 'GIT_SSL_CAINFO'
@@ -49,7 +52,8 @@ export type ExecutionCommandDeps = {
 const USAGE = [
   'uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host]',
   '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
-  '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... (--script-stdin | -- ARGV...)',
+  '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
+  '                    (--script-stdin | -- ARGV...)',
   '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
 ].join('\n')
 
@@ -112,6 +116,27 @@ function parseNetwork(value: string | undefined): WorkerNetworkMode {
   throw new UsageError(`--network admite none o host, recibido: ${value}`)
 }
 
+/** Nombre del secreto de Podman que guarda la variable de entorno `name`. */
+export function executionSecretName(name: string): string {
+  return `${EXECUTION_SECRET_PREFIX}${name.toLowerCase().replace(/_/g, '-')}`
+}
+
+/**
+ * Convierte cada variable nombrada en un secreto de Podman montado en
+ * `/run/secrets/<NOMBRE>`. El valor sale del entorno de quien pide la
+ * ejecución y sólo viaja por stdin a la primitiva; nunca entra en argv,
+ * en `--env` ni en la salida.
+ */
+async function materializeSecretsFromEnvironment(deps: ExecutionCommandDeps, names: readonly string[]): Promise<ExecutionSecret[]> {
+  const secrets: ExecutionSecret[] = []
+  for (const name of names) {
+    const secretName = executionSecretName(name)
+    await ensureSecretValue(deps, secretName, deps.env[name] as string)
+    secrets.push({ name: secretName, target: name })
+  }
+  return secrets
+}
+
 async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -130,10 +155,14 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
       pids: { type: 'string' },
       output: { type: 'string', multiple: true },
       'script-stdin': { type: 'boolean' },
+      'secret-from-env': { type: 'string', multiple: true },
     },
   })
   const task = requireValue(values.task, 'task')
   const kind = requireValue(values.kind, 'kind') as ExecutionKind
+  const secretNames = values['secret-from-env'] ?? []
+  const missing = secretNames.filter(name => !deps.env[name])
+  if (missing.length > 0) throw new UsageError(`credencial ausente: ${missing.join(', ')}`)
   const command = values['script-stdin'] ? ['bash', '-c', await deps.readStdin()] : positionals
   if (command.length === 0) throw new UsageError('falta el payload: --script-stdin o -- ARGV')
   const network = parseNetwork(values.network)
@@ -155,6 +184,7 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
     network,
     environment: { ...forwardedEnvironment(deps.env, GIT_IDENTITY_KEYS), ...egress.environment, ...requestedEnvironment(deps.env, values.env ?? []) },
     outputs: values.output,
+    secrets: await materializeSecretsFromEnvironment(deps, secretNames),
   }
   const result = await runExecution(deps.podman, authorization)
   deps.output.stdout(result.stdout)
