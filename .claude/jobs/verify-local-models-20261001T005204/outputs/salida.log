@@ -1,0 +1,11 @@
+ 56 pass
+ 0 fail
+ 119 expect() calls
+Ran 56 tests across 7 files. [483.00ms]
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+  corre: bash bin/generate_bin
+uso: local-models-catalog declare <nombre-ollama>
+     local-models-catalog list [--json]
+local-models-qualify: se esperan exactamente el nombre contractual y la clase
+uso: local-models-qualify <nombre-contractual> <mecanica|analisis|adversarial|frontera> [--context N]
+__BG_EXIT__=0

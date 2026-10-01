@@ -1,0 +1,11 @@
+modelo: claude-opus-5-5 (derivado de --task-class analisis)
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-opus-5-5: nada que derivar
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/1feea10a1967-20261001T003024-13344/mailbox
+cache-ttl: 1h (constant)
+-- FALLIDO runtime-routing — TASK-THYROX-0706, el pool y thyrox -p usan el Ollama gestionado por defecto. Fuente de verdad: /home/user/thyrox/.claude/workbench/local-model-default-20261001T002712/source.md, sección runtime-routing. Te pertenecen src/session/headless-pool.sh (sólo la derivación del modelo y el entorno de los ítems), src/packages/provider/bin/localProxy.ts, src/packages/cli/src/entry/printDelegation.ts y sus pruebas. En las pruebas del pool inyecta el recomendador con HEADLESS_POOL_RECOMMEND (su salida JSON sigue el contrato de la fuente). No modifiques policy.ts, recommend.ts, model-artifacts ni src/packages/local-models/. Nunca arranques Ollama ni podman reales.
+-- FALLIDO recommender — TASK-THYROX-0705, el recomendador elige primero un modelo local cualificado y cae a claude-cli declarándolo. Fuente de verdad: /home/user/thyrox/.claude/workbench/local-model-default-20261001T002712/source.md, sección recommender. Te pertenecen src/packages/provider/src/cost/policy.ts, src/packages/agent/bin/recommend.ts y sus pruebas (las existentes de recommend y nuevas con nombre propio). No modifiques model-artifacts, headless-pool.sh, localProxy.ts, printDelegation.ts ni src/packages/local-models/.
+items=3 ok=1 fallidos=2
+verificados=1 rechazados=0 sin-cambios=0 fallidos=0
+__BG_EXIT__=1
