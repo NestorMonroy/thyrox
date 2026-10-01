@@ -10,6 +10,7 @@
  */
 import type {
   FencedVramLedger,
+  ResidencyVramLedger,
   ReservationOutcome,
   VramReservation,
   VramReservationRequest,
@@ -90,4 +91,9 @@ export function createMemoryVramLedger(options: MemoryVramLedgerOptions): Fenced
       return [...active.values()]
     },
   }
+}
+
+/** El ledger en memoria con asignaciones por petición (ADR-007 1.13.0). */
+export function createMemoryResidencyVramLedger(_options: MemoryVramLedgerOptions): ResidencyVramLedger {
+  throw new Error('createMemoryResidencyVramLedger: por implementar')
 }

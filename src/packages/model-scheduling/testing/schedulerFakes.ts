@@ -6,9 +6,9 @@
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 
 import type { GenerationLease, LeaseAcquisition, LeaseValidity, ModelSchedulingCoordination, MutationOperation } from '../coordination.ts'
-import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive, RuntimeAdapter, RuntimeLoadOutcome } from '../executionPrimitive.ts'
+import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive, RuntimeAdapter, RuntimeCapabilities, RuntimeLoadOutcome, RuntimeOperationOutcome, RuntimeVerification } from '../executionPrimitive.ts'
 import type { ExecutionPlan, GrantIssuer, IssueOutcome } from '../scheduler.ts'
-import type { FencedVramLedger, ReservationOutcome, VramReservation, VramReservationRequest } from '../vramLedger.ts'
+import type { RequestAllocation, RequestAllocationOutcome, ReservationOutcome, ResidencyVramLedger, VramReservation, VramReservationRequest } from '../vramLedger.ts'
 
 export type Journal = string[]
 
@@ -69,10 +69,11 @@ export class FakeCoordination implements ModelSchedulingCoordination {
   async close(): Promise<void> {}
 }
 
-export class FakeLedger implements FencedVramLedger {
+export class FakeLedger implements ResidencyVramLedger {
   failWith: Exclude<ReservationOutcome['status'], 'reserved'> | undefined
   failRelease = false
   readonly held: VramReservation[] = []
+  readonly requests: RequestAllocation[] = []
 
   constructor(private readonly journal: Journal) {}
 
@@ -97,6 +98,26 @@ export class FakeLedger implements FencedVramLedger {
   async reservations(): Promise<readonly VramReservation[]> {
     this.journal.push('ledger.reservations')
     return [...this.held]
+  }
+
+  async allocateRequest(reservation: VramReservation, requestId: string, vramMib: number): Promise<RequestAllocationOutcome> {
+    this.journal.push(`ledger.allocateRequest ${requestId}`)
+    if (!this.held.some(held => held.reservationId === reservation.reservationId)) return { status: 'absent' }
+    const allocation = { allocationId: `allocation-${requestId}`, reservationId: reservation.reservationId, requestId, generation: reservation.generation, vramMib }
+    this.requests.push(allocation)
+    return { status: 'allocated', allocation }
+  }
+
+  async releaseRequest(allocation: RequestAllocation): Promise<'released' | 'absent'> {
+    this.journal.push(`ledger.releaseRequest ${allocation.requestId}`)
+    const index = this.requests.findIndex(held => held.allocationId === allocation.allocationId)
+    if (index < 0) return 'absent'
+    this.requests.splice(index, 1)
+    return 'released'
+  }
+
+  async allocations(): Promise<readonly RequestAllocation[]> {
+    return [...this.requests]
   }
 }
 
@@ -154,6 +175,8 @@ export class FakePrimitive implements ModelExecutionPrimitive {
     const unit: ExecutionUnit = {
       unitId, grantId: grant.grantId, model: grant.model, residencyKey: grant.residency.instance,
       generation: grant.residency.generation, runtime: grant.runtime, endpoint: 'http://127.0.0.1:61000',
+      containerId: `container-${unitId}`, devices: grant.placement.kind === 'gpu' ? grant.placement.devices : [],
+      hostPids: [4242], createdAt: '2026-10-01T00:00:00.000Z',
     }
     this.live.push(unit)
     if (this.outcome === 'failed-partial') return { status: 'failed', reason: 'podman start falló', partial: true, unitId }
@@ -175,16 +198,46 @@ export class FakePrimitive implements ModelExecutionPrimitive {
   }
 }
 
+/** Lo que Ollama declara: thyrox no puede gobernar varias residencias dentro de una unidad. */
+export const SINGLE_RESIDENCY_CAPABILITIES: RuntimeCapabilities = {
+  multipleResidencies: false, explicitLoad: true, explicitUnload: true,
+  perResidencyIdentity: false, residencyObservation: true, placementEnforceable: false,
+}
+
 export class FakeRuntime implements RuntimeAdapter {
+  readonly capabilities = SINGLE_RESIDENCY_CAPABILITIES
   fail = false
+  unhealthy = false
+  /** El sha256 que el runtime dice servir; por defecto el del grant. */
+  servesSha256: string | undefined
+  /** Se ejecuta tras cargar: permite que otro coordinador tome la residencia en medio. */
+  afterLoad: (() => void) | undefined
   readonly loaded = new Map<string, string>()
 
   constructor(private readonly journal: Journal) {}
+
+  async awaitHealthy(unit: ExecutionUnit): Promise<RuntimeOperationOutcome> {
+    this.journal.push(`runtime.awaitHealthy ${unit.unitId}`)
+    return this.unhealthy ? { status: 'failed', reason: 'el runtime no respondió' } : { status: 'ok' }
+  }
+
+  async verify(unit: ExecutionUnit, grant: ExecutionGrant): Promise<RuntimeVerification> {
+    this.journal.push(`runtime.verify ${unit.unitId}`)
+    const observed = this.servesSha256 ?? grant.artifact.sha256
+    return observed === grant.artifact.sha256 ? { status: 'matches' } : { status: 'mismatch', expectedSha256: grant.artifact.sha256, observedSha256: observed }
+  }
+
+  async unload(unit: ExecutionUnit): Promise<RuntimeOperationOutcome> {
+    this.journal.push(`runtime.unload ${unit.unitId}`)
+    this.loaded.delete(unit.unitId)
+    return { status: 'ok' }
+  }
 
   async load(unit: ExecutionUnit, grant: ExecutionGrant): Promise<RuntimeLoadOutcome> {
     this.journal.push(`runtime.load ${unit.unitId}`)
     if (this.fail) return { status: 'failed', reason: 'el runtime no cargó el modelo' }
     this.loaded.set(unit.unitId, grant.model)
+    this.afterLoad?.()
     return { status: 'loaded' }
   }
 
