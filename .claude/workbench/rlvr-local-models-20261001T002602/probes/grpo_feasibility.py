@@ -91,7 +91,7 @@ def peak_rss_mib() -> float:
 
 
 def main(argv: list[str]) -> int:
-    model_dir, output_dir, steps = argv[0], argv[1], int(argv[2])
+    model_dir, output_dir, steps, group_size = argv[0], argv[1], int(argv[2]), int(argv[3])
     torch.set_num_threads(torch.get_num_threads())
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForCausalLM.from_pretrained(model_dir, torch_dtype=torch.float32)
@@ -100,9 +100,10 @@ def main(argv: list[str]) -> int:
     started = time.monotonic()
     before = mean_reward(model, tokenizer, dataset, max_new_tokens)
     baseline_seconds = time.monotonic() - started
-    config = GRPOConfig(output_dir=output_dir, max_steps=steps, per_device_train_batch_size=4, num_generations=4,
-                        max_completion_length=max_new_tokens, max_prompt_length=512, learning_rate=1e-5,
-                        logging_steps=1, use_cpu=True, bf16=False, report_to=[], save_strategy="no")
+    config = GRPOConfig(output_dir=output_dir, max_steps=steps, per_device_train_batch_size=group_size,
+                        num_generations=group_size, max_completion_length=max_new_tokens, max_prompt_length=512,
+                        learning_rate=1e-5, logging_steps=1, use_cpu=True, bf16=False, report_to=[],
+                        save_strategy="no", gradient_checkpointing=True)
     lora = LoraConfig(r=8, lora_alpha=16, target_modules=["q_proj", "v_proj"], task_type="CAUSAL_LM")
     trainer = GRPOTrainer(model=model, reward_funcs=tool_call_reward, args=config, train_dataset=dataset,
                           processing_class=tokenizer, peft_config=lora)
@@ -110,7 +111,7 @@ def main(argv: list[str]) -> int:
     trainer.train()
     train_seconds = time.monotonic() - started
     after = mean_reward(trainer.model, tokenizer, dataset, max_new_tokens)
-    print(json.dumps({"threads": torch.get_num_threads(), "steps": steps, "group_size": 4,
+    print(json.dumps({"threads": torch.get_num_threads(), "steps": steps, "group_size": group_size,
                       "seconds_per_step": round(train_seconds / steps, 1), "baseline_eval_seconds": round(baseline_seconds, 1),
                       "reward_before": before, "reward_after": after, "peak_rss_mib": round(peak_rss_mib()),
                       "log": trainer.state.log_history}, indent=2))

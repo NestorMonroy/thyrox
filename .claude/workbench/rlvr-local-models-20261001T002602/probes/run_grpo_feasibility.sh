@@ -12,6 +12,6 @@ if [[ -n "${HTTPS_PROXY:-}" ]]; then
 fi
 podman build --network host "${proxy_args[@]}" -t "$image" "$bank/probes/rl-image"
 model_dir=/sources/Qwen__Qwen2.5-0.5B-Instruct@7ae557604adf67be50417f59c2c2f167def9a775
-podman run --rm --network none --memory 8g \
+podman run --rm --network none --memory "${GRPO_MEMORY_LIMIT:-10g}" \
   -v thyrox-quantization-lab-sources:/sources:ro -v "$bank/probes:/probes:ro" \
-  "$image" python /probes/grpo_feasibility.py "$model_dir" /tmp/grpo "${GRPO_STEPS:-2}"
+  "$image" python /probes/grpo_feasibility.py "$model_dir" /tmp/grpo "${GRPO_STEPS:-2}" "${GRPO_GROUP_SIZE:-2}"
