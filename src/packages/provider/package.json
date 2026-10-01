@@ -640,6 +640,8 @@
     "@thyrox/headless-sdk": "0.1.0",
     "@thyrox/local-observability": "0.1.0",
     "@thyrox/mcp-runtime": "0.1.0",
+    "@thyrox/model-artifacts": "workspace:*",
+    "@thyrox/model-scheduling": "workspace:*",
     "@thyrox/output": "0.1.0",
     "@thyrox/paths": "0.1.0",
     "@thyrox/permission": "0.1.0",
