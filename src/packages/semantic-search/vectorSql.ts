@@ -69,6 +69,13 @@ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
 }
 
 /**
+ * Lo que un llamador puede ver, sobre el alias `d`: todo lo compartido, y lo
+ * privado sólo si `$3` nombra a su dueño. Sin dueño (`$3` NULL), sólo lo
+ * compartido: un documento privado nunca aparece en una búsqueda anónima.
+ */
+const VISIBLE_DOCUMENT_CONDITION = `(d.visibility = 'shared' OR d.owner = $3::text)`
+
+/**
  * El filtro de chunk buscable como subconsulta escalar correlacionada sobre
  * el alias `e`. Un `EXISTS` o un `JOIN` los aplana el planificador en un join
  * y ordena después (medido con `EXPLAIN`: sin rastro del HNSW); la subconsulta
@@ -79,7 +86,7 @@ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
  * `ef_search` 5 o 40 no se reprodujo (el grafo se recorrió entero), así que
  * `hnsw.iterative_scan` no se activa sin un caso que lo exija.
  */
-const SEARCHABLE_CHUNK_FILTER = `(SELECT ${SEARCHABLE_CHUNK_CONDITION} FROM document_chunks c
+const SEARCHABLE_CHUNK_FILTER = `(SELECT ${SEARCHABLE_CHUNK_CONDITION} AND ${VISIBLE_DOCUMENT_CONDITION} FROM document_chunks c
                                 JOIN documents d ON d.document_id = c.document_id
                                WHERE c.chunk_id = e.chunk_id)`
 
@@ -87,8 +94,9 @@ const SEARCHABLE_CHUNK_FILTER = `(SELECT ${SEARCHABLE_CHUNK_CONDITION} FROM docu
  * Los candidatos vigentes más cercanos por distancia de Hamming entre
  * cuantizaciones binarias, ordenados por la misma expresión que indexa el
  * HNSW para que el planificador pueda usarlo: `$1` consulta como texto, `$2`
- * límite. Devuelven el texto del chunk, su identidad y su procedencia: la búsqueda
- * no vuelve a ninguna fuente.
+ * límite, `$3` dueño cuyo contenido privado se ve, o NULL. Devuelven el texto
+ * del chunk, su identidad y su procedencia: la búsqueda no vuelve a ninguna
+ * fuente.
  */
 export function binaryCandidatesQuery(extensionSchema: string, spaceId: number, shape: EmbeddingShape): string {
   const query = binaryQuantized(extensionSchema, `$1::${vectorType(extensionSchema, shape)}`, shape)

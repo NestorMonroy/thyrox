@@ -213,7 +213,7 @@ if (!url) {
         const shape = { dimensions: DIMENSIONS, representation: 'vector' as const }
         const plan = await sql.begin(async tx => {
           await tx.unsafe('SET LOCAL enable_seqscan = off')
-          return (await tx.unsafe(`EXPLAIN ${binaryCandidatesQuery(extension.schema, spaceId, shape)}`, [JSON.stringify(QUERY), 4])) as {
+          return (await tx.unsafe(`EXPLAIN ${binaryCandidatesQuery(extension.schema, spaceId, shape)}`, [JSON.stringify(QUERY), 4, null])) as {
             'QUERY PLAN': string
           }[]
         })

@@ -1,5 +1,5 @@
 /**
- * El SQL del corpus durable (ADR-THYROX-008 1.5.0): el DDL de sus migraciones
+ * El SQL del corpus durable (ADR-THYROX-008 1.6.0): el DDL de sus migraciones
  * y las consultas que no dependen de ningún espacio de embeddings. El texto
  * vive en `document_chunks`; nada aquí lee `source_ref` como ruta.
  *
@@ -9,7 +9,8 @@
  * `domain_id`; la ruta y la revisión pasan a procedencia (`source_ref`,
  * `source_revision`) y no deciden nada. Las filas de la 2 quedan sin mapear
  * (`domain` NULL) con su identidad vieja en `legacy_source_identity` hasta
- * que `reconcileLegacyIdentities` las asigne.
+ * que `reconcileLegacyIdentities` las asigne. La 4 añade la visibilidad
+ * (`shared` o `private` con su dueño) y mete al dueño en la identidad.
  *
  * La versión 1 era la tabla única `semantic_embeddings` de la superficie
  * anterior, sin texto ni modelo: ya no se declara, así que un ledger que la
@@ -23,6 +24,8 @@ export const CORPUS_MIGRATION_VERSION = 2
 export const CORPUS_MIGRATION_NAME = 'create_durable_corpus'
 export const DOMAIN_IDENTITY_MIGRATION_VERSION = 3
 export const DOMAIN_IDENTITY_MIGRATION_NAME = 'domain_document_identity'
+export const VISIBILITY_MIGRATION_VERSION = 4
+export const VISIBILITY_MIGRATION_NAME = 'document_visibility'
 
 /**
  * La condición que deja sólo los chunks buscables, sobre los alias `c` (chunk)
@@ -102,24 +105,40 @@ export const DOMAIN_IDENTITY_STATEMENTS: readonly string[] = [
   `CREATE UNIQUE INDEX document_chunks_canonical_position ON document_chunks (document_id, version, position) WHERE canonical_chunk_id IS NULL`,
 ]
 
+/**
+ * Añade la visibilidad del documento (D5): `shared` sin dueño o `private` con
+ * él; lo efímero nunca llega a una fila. El dueño entra en la identidad, así
+ * que un documento compartido y uno privado con el mismo `domain` · `scope` ·
+ * `domain_id` son dos documentos y ninguno se convierte en el otro. El índice
+ * deja fuera, como hacía la restricción que reemplaza, las filas sin mapear
+ * (`domain` NULL).
+ */
+export const VISIBILITY_STATEMENTS: readonly string[] = [
+  `ALTER TABLE documents ADD COLUMN visibility TEXT NOT NULL DEFAULT 'shared' CHECK (visibility IN ('shared', 'private')), ADD COLUMN owner TEXT`,
+  `ALTER TABLE documents ADD CONSTRAINT documents_private_has_owner CHECK ((visibility = 'private') = (owner IS NOT NULL))`,
+  `ALTER TABLE documents DROP CONSTRAINT documents_domain_identity_key`,
+  `CREATE UNIQUE INDEX documents_domain_identity_owner ON documents (domain, scope, domain_id, COALESCE(owner, ''))`,
+]
+
 /** Las migraciones del corpus en el ledger de `@thyrox/store`, en orden; sólo PostgreSQL. */
 export const CORPUS_MIGRATIONS: readonly Migration[] = [
   { version: CORPUS_MIGRATION_VERSION, name: CORPUS_MIGRATION_NAME, statements: { postgres: [...CORPUS_STATEMENTS], sqlite: [] } },
   { version: DOMAIN_IDENTITY_MIGRATION_VERSION, name: DOMAIN_IDENTITY_MIGRATION_NAME, statements: { postgres: [...DOMAIN_IDENTITY_STATEMENTS], sqlite: [] } },
+  { version: VISIBILITY_MIGRATION_VERSION, name: VISIBILITY_MIGRATION_NAME, statements: { postgres: [...VISIBILITY_STATEMENTS], sqlite: [] } },
 ]
 
-const DOCUMENT_COLUMNS = 'document_id, domain, scope, domain_id, version, content_hash, source_ref, source_revision, metadata'
+const DOCUMENT_COLUMNS = 'document_id, domain, scope, domain_id, owner, visibility, version, content_hash, source_ref, source_revision, metadata'
 
-/** El documento de una identidad de dominio: `$1` dominio, `$2` scope, `$3` id de dominio. */
+/** El documento de una identidad de dominio: `$1` dominio, `$2` scope, `$3` id de dominio, `$4` dueño o NULL. */
 export const SELECT_DOCUMENT_QUERY = `SELECT ${DOCUMENT_COLUMNS} FROM documents
-   WHERE domain = $1 AND scope = $2 AND domain_id = $3`
+   WHERE domain = $1 AND scope = $2 AND domain_id = $3 AND owner IS NOT DISTINCT FROM $4::text`
 
 /** El mismo documento, bloqueado hasta el fin de la transacción. */
 export const LOCK_DOCUMENT_QUERY = `${SELECT_DOCUMENT_QUERY} FOR UPDATE`
 
-/** `$1` dominio, `$2` scope, `$3` id de dominio, `$4` ref, `$5` revisión, `$6` hash, `$7` metadata JSON. */
-export const INSERT_DOCUMENT_QUERY = `INSERT INTO documents (domain, scope, domain_id, source_ref, source_revision, version, content_hash, metadata)
-   VALUES ($1, $2, $3, $4, $5, 1, $6, $7::jsonb) RETURNING document_id`
+/** `$1` dominio, `$2` scope, `$3` id de dominio, `$4` dueño o NULL, `$5` visibilidad, `$6` ref, `$7` revisión, `$8` hash, `$9` metadata JSON. */
+export const INSERT_DOCUMENT_QUERY = `INSERT INTO documents (domain, scope, domain_id, owner, visibility, source_ref, source_revision, version, content_hash, metadata)
+   VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8, $9::jsonb) RETURNING document_id`
 
 /** `$1` documento, `$2` versión nueva, `$3` hash, `$4` metadata JSON, `$5` ref, `$6` revisión. */
 export const UPDATE_DOCUMENT_QUERY = `UPDATE documents SET version = $2, content_hash = $3, metadata = $4::jsonb, source_ref = $5, source_revision = $6, ingested_at = now()
@@ -129,9 +148,9 @@ export const UPDATE_DOCUMENT_QUERY = `UPDATE documents SET version = $2, content
 export const UPDATE_PROVENANCE_QUERY = `UPDATE documents SET source_ref = $2, source_revision = $3
    WHERE document_id = $1 AND (source_ref IS DISTINCT FROM $2 OR source_revision IS DISTINCT FROM $3)`
 
-/** El documento ya mapeado a una identidad, como miembro de una convergencia: `$1` dominio, `$2` scope, `$3` id. */
+/** El documento compartido ya mapeado a una identidad, como miembro de una convergencia: `$1` dominio, `$2` scope, `$3` id. */
 export const LOCK_MAPPED_MEMBER_QUERY = `SELECT document_id, ingested_at FROM documents
-   WHERE domain = $1 AND scope = $2 AND domain_id = $3 FOR UPDATE`
+   WHERE domain = $1 AND scope = $2 AND domain_id = $3 AND owner IS NULL FOR UPDATE`
 
 /** Los documentos sin identidad de dominio, bloqueados, en orden de ingesta. */
 export const LOCK_UNMAPPED_DOCUMENTS_QUERY = `SELECT document_id, scope, legacy_source_identity, ingested_at FROM documents

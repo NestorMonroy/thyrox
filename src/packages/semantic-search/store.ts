@@ -1,13 +1,15 @@
 /**
- * `SemanticSearchStore` (ADR-THYROX-008 1.5.0): el corpus durable y su
+ * `SemanticSearchStore` (ADR-THYROX-008 1.6.0): el corpus durable y su
  * búsqueda semántica sobre PostgreSQL + pgvector. Guarda el contenido
  * ingerido (documentos y chunks versionados por hash), sus representaciones
  * derivadas (un espacio de embeddings por modelo · forma) y los análisis
  * hechos sobre él. Buscar y recuperar texto no vuelven a ninguna fuente.
  *
  * Abre, migra, lee y escribe; no tiene ciclo de vida de servidor ni de worker,
- * su único contrato de conexión es una URL, y no borra nada por caducidad:
- * qué se ingiere y qué retención aplica no lo decide el store.
+ * su único contrato de conexión es una URL, y no borra nada por caducidad.
+ * Qué se ingiere y con qué visibilidad lo decide la política que recibe al
+ * abrirse (`corpusPolicy.ts`, D5): un archivo no entra por existir, y lo
+ * privado sólo aparece en la búsqueda de su dueño.
  *
  * Nunca degrada: una URL que no es de PostgreSQL rehúsa al abrir, y sin
  * pgvector utilizable rehúsa cada operación con el error de su estado —no
@@ -24,6 +26,7 @@ import { runMigrations } from '@thyrox/store/migrations.ts'
 
 import { type SchemaConfig, validateEmbedding, validateSchemaConfig, validateStoreUrl } from './config.ts'
 import { type DocumentIdentity, type DocumentInput, findDocument, type IngestResult, ingestDocument, type StoredDocument } from './corpus.ts'
+import { admitDocument, type CorpusPolicy, INITIAL_CORPUS_POLICY } from './corpusPolicy.ts'
 import { CORPUS_MIGRATIONS, MIGRATIONS_TABLE } from './corpusSql.ts'
 import { type LegacyIdentityResolver, type ReconciliationResult, reconcileLegacyIdentities } from './legacyIdentity.ts'
 import { type AnalysisRun, type AnalysisRunInput, getAnalysisRun, recordAnalysisRun } from './analysisRuns.ts'
@@ -67,7 +70,15 @@ export type NearestResult = {
   similarity: number
 }
 
-export type SemanticSearchStoreOptions = { url: string; schema: SchemaConfig }
+export type SemanticSearchStoreOptions = {
+  url: string
+  schema: SchemaConfig
+  /** Qué orígenes entran y con qué visibilidad; sin ella, la primera versión de D5. */
+  corpusPolicy?: CorpusPolicy
+}
+
+/** Quién busca: sin `owner`, sólo lo compartido; con él, también lo privado de ese dueño. */
+export type SearchVisibility = { owner?: string }
 
 export type SemanticSearchStoreDeps = {
   /** Sustituye la lectura del estado de pgvector — para probar rechazos sin degradar el servidor. */
@@ -89,10 +100,10 @@ export type SemanticSearchStore = {
   putEmbeddings(spaceId: number, embeddings: readonly ChunkEmbedding[]): Promise<void>
   activateSpace(spaceId: number): Promise<Activation>
   dropSpace(spaceId: number): Promise<void>
-  /** Candidatos vigentes del espacio activo por distancia de Hamming de la cuantización binaria. */
-  searchBinaryCandidates(query: readonly number[], limit: number): Promise<BinaryCandidate[]>
-  /** Los `k` chunks vigentes más cercanos en el espacio activo; sin espacio activo rehúsa. */
-  searchNearest(query: readonly number[], k: number, options: { candidates: number }): Promise<NearestResult[]>
+  /** Candidatos vigentes y visibles del espacio activo por distancia de Hamming de la cuantización binaria. */
+  searchBinaryCandidates(query: readonly number[], limit: number, visibility?: SearchVisibility): Promise<BinaryCandidate[]>
+  /** Los `k` chunks vigentes y visibles más cercanos en el espacio activo; sin espacio activo rehúsa. */
+  searchNearest(query: readonly number[], k: number, options: { candidates: number } & SearchVisibility): Promise<NearestResult[]>
   recordAnalysisRun(run: AnalysisRunInput): Promise<string>
   getAnalysisRun(analysisId: string): Promise<AnalysisRun | null>
   /** La extensión utilizable (versión y esquema), comprobada una vez por store. */
@@ -143,6 +154,7 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
   const url = validateStoreUrl(options.url)
   const config = validateSchemaConfig(options.schema)
   const probeExtension = deps.probeExtension ?? readVectorExtensionState
+  const corpusPolicy = options.corpusPolicy ?? INITIAL_CORPUS_POLICY
   const sql = new SQL({ url, connection: { search_path: config.name } })
   let extensionCheck: Promise<UsableVectorExtension> | undefined
 
@@ -157,12 +169,13 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
     return space
   }
 
-  async function fetchCandidates(query: readonly number[], limit: number): Promise<CandidateRow[]> {
+  async function fetchCandidates(query: readonly number[], limit: number, visibility: SearchVisibility): Promise<CandidateRow[]> {
     assertPositiveCount('limit', limit)
     const extension = await vectorExtension()
     const space = await requireActiveSpace()
     validateEmbedding(query, space.dimensions)
-    return (await sql.unsafe(binaryCandidatesQuery(extension.schema, space.spaceId, space), [JSON.stringify(query), limit])) as CandidateRow[]
+    const parameters = [JSON.stringify(query), limit, visibility.owner ?? null]
+    return (await sql.unsafe(binaryCandidatesQuery(extension.schema, space.spaceId, space), parameters)) as CandidateRow[]
   }
 
   return {
@@ -175,8 +188,9 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
     },
 
     async ingestDocument(input) {
+      const { visibility } = admitDocument(corpusPolicy, input)
       await vectorExtension()
-      return ingestDocument(sql, input)
+      return ingestDocument(sql, input, visibility)
     },
 
     async findDocument(identity) {
@@ -225,14 +239,14 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
       await dropSpace(sql, spaceId)
     },
 
-    async searchBinaryCandidates(query, limit) {
-      const rows = await fetchCandidates(query, limit)
+    async searchBinaryCandidates(query, limit, visibility = {}) {
+      const rows = await fetchCandidates(query, limit, visibility)
       return rows.map(row => ({ chunkId: row.chunk_id, hammingDistance: Number(row.hamming_distance) }))
     },
 
-    async searchNearest(query, k, { candidates }) {
+    async searchNearest(query, k, { candidates, owner }) {
       assertPositiveCount('k', k)
-      const rows = await fetchCandidates(query, candidates)
+      const rows = await fetchCandidates(query, candidates, { owner })
       const ranked = rerankByCosine(
         query,
         rows.map(row => ({ embedding: parseVectorText(row.embedding), item: row })),

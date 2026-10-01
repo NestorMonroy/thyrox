@@ -14,6 +14,7 @@ import { describe, expect, test } from 'bun:test'
 import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
 
 import type { DocumentInput } from '../corpus.ts'
+import { DOMAIN_IDENTITY_MIGRATION_VERSION, VISIBILITY_MIGRATION_VERSION } from '../corpusSql.ts'
 import type { LegacyIdentityResolver } from '../legacyIdentity.ts'
 import { countRows, currentSchema, embedPending, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
 import { allChunkIds, candidateTexts, insertLegacyAnalysisRun, insertLegacyDocument, migrateToLegacySchema } from './support/legacyCorpus.ts'
@@ -156,7 +157,7 @@ if (!url) {
 
         const store = openStoreFor(testUrl, schema)
         try {
-          expect(await store.migrate()).toEqual([3])
+          expect(await store.migrate()).toEqual([DOMAIN_IDENTITY_MIGRATION_VERSION, VISIBILITY_MIGRATION_VERSION])
           const resolve: LegacyIdentityResolver = (_scope, sourceIdentity) => {
             const match = /adr-(\d+)\.rst$/.exec(sourceIdentity)
             return match ? { domain: ADR, scope: 'thyrox', domainId: `ADR-${match[1]}` } : null

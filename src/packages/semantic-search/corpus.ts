@@ -22,6 +22,7 @@ import {
   UPDATE_DOCUMENT_QUERY,
   UPDATE_PROVENANCE_QUERY,
 } from './corpusSql.ts'
+import type { CorpusVisibility, DurableVisibility } from './corpusPolicy.ts'
 import { InvalidCorpusInputError } from './errors.ts'
 
 export type Metadata = Record<string, unknown>
@@ -29,10 +30,12 @@ export type Metadata = Record<string, unknown>
 /** El scope de un dominio cuyos ids son únicos en todo el dominio (findings: `H-<PREFIJO>-NNN`). */
 export const DOMAIN_WIDE_SCOPE = ''
 
-/** La identidad de un documento; sin `scope`, la del dominio entero. */
-export type DocumentIdentity = { domain: string; scope?: string; domainId: string }
+/** La identidad de un documento; sin `scope`, la del dominio entero; `owner` sólo en un documento privado. */
+export type DocumentIdentity = { domain: string; scope?: string; domainId: string; owner?: string }
 
 export type DocumentInput = DocumentIdentity & {
+  /** La visibilidad pedida; sin ella, la que declara el dominio en la política. */
+  visibility?: CorpusVisibility
   sourceRef: string
   sourceRevision: string | null
   metadata: Metadata
@@ -50,6 +53,8 @@ export type StoredDocument = {
   domain: string
   scope: string
   domainId: string
+  visibility: DurableVisibility
+  owner: string | null
   version: number
   contentHash: string
   sourceRef: string
@@ -62,6 +67,8 @@ type DocumentRow = {
   domain: string
   scope: string
   domain_id: string
+  owner: string | null
+  visibility: DurableVisibility
   version: number
   content_hash: string
   source_ref: string
@@ -96,8 +103,8 @@ function assertValidDocument(input: DocumentInput): void {
   if (input.chunks.length === 0) throw new InvalidCorpusInputError(`document '${input.domainId}' has no chunks`)
 }
 
-function identityParameters(identity: DocumentIdentity): string[] {
-  return [identity.domain, scopeOf(identity), identity.domainId]
+function identityParameters(identity: DocumentIdentity): (string | null)[] {
+  return [identity.domain, scopeOf(identity), identity.domainId, identity.owner ?? null]
 }
 
 function isSameContent(existing: DocumentRow, contentHash: string): boolean {
@@ -110,6 +117,8 @@ function toStoredDocument(row: DocumentRow): StoredDocument {
     domain: row.domain,
     scope: row.scope,
     domainId: row.domain_id,
+    visibility: row.visibility,
+    owner: row.owner,
     version: row.version,
     contentHash: row.content_hash,
     sourceRef: row.source_ref,
@@ -124,8 +133,8 @@ async function insertChunks(tx: Transaction, documentId: string, version: number
   }
 }
 
-async function createDocument(tx: Transaction, input: DocumentInput, contentHash: string): Promise<IngestResult> {
-  const parameters = [...identityParameters(input), input.sourceRef, input.sourceRevision, contentHash, JSON.stringify(input.metadata)]
+async function createDocument(tx: Transaction, input: DocumentInput, visibility: DurableVisibility, contentHash: string): Promise<IngestResult> {
+  const parameters = [...identityParameters(input), visibility, input.sourceRef, input.sourceRevision, contentHash, JSON.stringify(input.metadata)]
   const [row] = (await tx.unsafe(INSERT_DOCUMENT_QUERY, parameters)) as { document_id: string }[]
   if (!row) throw new Error(`inserting document '${input.domain}:${input.domainId}' returned no row`)
   await insertChunks(tx, row.document_id, 1, input.chunks)
@@ -149,13 +158,17 @@ async function keepVersion(tx: Transaction, existing: DocumentRow, input: Docume
  * versión ni chunks nuevos —sólo la procedencia, si cambió—. Hash distinto:
  * versión nueva con sus chunks, y la anterior deja de ser buscable (su texto
  * se conserva para los análisis).
+ *
+ * `visibility` la decidió antes la política del corpus (`admitDocument`): aquí
+ * sólo se guarda con el documento nuevo. El dueño forma parte de la identidad,
+ * así que una reingesta nunca cambia la visibilidad de un documento existente.
  */
-export async function ingestDocument(sql: SQL, input: DocumentInput): Promise<IngestResult> {
+export async function ingestDocument(sql: SQL, input: DocumentInput, visibility: DurableVisibility): Promise<IngestResult> {
   assertValidDocument(input)
   const contentHash = documentHash(input.chunks)
   return sql.begin(async tx => {
     const [existing] = (await tx.unsafe(LOCK_DOCUMENT_QUERY, identityParameters(input))) as DocumentRow[]
-    if (!existing) return createDocument(tx, input, contentHash)
+    if (!existing) return createDocument(tx, input, visibility, contentHash)
     if (isSameContent(existing, contentHash)) return keepVersion(tx, existing, input)
     return addVersion(tx, existing, input, contentHash)
   })

@@ -8,6 +8,7 @@ import type { SQL } from 'bun'
 
 import { withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
 
+import { type CorpusPolicy, INITIAL_CORPUS_POLICY } from '../../corpusPolicy.ts'
 import { openSemanticSearchStore, type SemanticSearchStore } from '../../store.ts'
 
 /** Suficiente para vaciar los chunks pendientes de los corpus de prueba en una sola llamada. */
@@ -24,8 +25,20 @@ export async function currentSchema(sql: SQL): Promise<string> {
   return row.name
 }
 
+/** El dominio privado de las suites: su contenido sólo lo encuentra su dueño. */
+export const PRIVATE_TEST_DOMAIN = 'workspace-note'
+
+/** La política inicial más los dominios con que las suites ingieren. */
+export const TEST_CORPUS_POLICY: CorpusPolicy = {
+  domains: [
+    ...INITIAL_CORPUS_POLICY.domains,
+    ...['note', 'notes', 'known', 's'].map(domain => ({ domain, visibility: 'shared' as const })),
+    { domain: PRIVATE_TEST_DOMAIN, visibility: 'private' },
+  ],
+}
+
 export function openStoreFor(url: string, schema: string): SemanticSearchStore {
-  return openSemanticSearchStore({ url, schema: { name: schema } })
+  return openSemanticSearchStore({ url, schema: { name: schema }, corpusPolicy: TEST_CORPUS_POLICY })
 }
 
 /** Corre `body` con un store migrado sobre un esquema desechable; lo cierra al salir. */

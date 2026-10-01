@@ -40,3 +40,22 @@ export class InvalidCorpusInputError extends Error {
     this.name = 'InvalidCorpusInputError'
   }
 }
+
+/** El dominio no está declarado en la política del corpus: un archivo que existe no es un origen. */
+export class UndeclaredCorpusDomainError extends Error {
+  constructor(
+    readonly domain: string,
+    declared: readonly string[],
+  ) {
+    super(`domain '${domain}' is not declared in the corpus policy; declared domains: ${declared.join(', ')}`)
+    this.name = 'UndeclaredCorpusDomainError'
+  }
+}
+
+/** Contenido efímero: queda fuera del corpus durable hasta que alguien lo promueva a private o shared. */
+export class EphemeralContentError extends Error {
+  constructor(readonly domainId: string) {
+    super(`document '${domainId}' is ephemeral: it stays out of the durable corpus unless it is explicitly promoted to private or shared`)
+    this.name = 'EphemeralContentError'
+  }
+}
