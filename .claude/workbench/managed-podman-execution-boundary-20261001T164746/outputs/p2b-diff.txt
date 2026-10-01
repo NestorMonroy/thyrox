@@ -1,0 +1,436 @@
+# TASK-THYROX-0743 — P2 tramo B — diff de los cuatro archivos del tramo
+# Los dos de producción: la composición pasa de un spec propio a una
+# ExecutionAuthorization (clase y referencia de outputs/p2-caller-classification.md)
+# y la llamada a runExecution. Ninguno importa runJobWithOutput, materializeContainer
+# ni WorkerContainerSpec; ninguno emite verbos de podman (invariante 1).
+# Los dos de pruebas: cuatro aserciones nuevas leídas del argv de `podman create`.
+#
+$ cd /home/user/thyrox && git diff -- src/packages/local-models/ollamaModelInstaller.ts src/packages/local-models/podmanArtifactFetcher.ts src/packages/local-models/__tests__/ollamaModelInstaller.test.ts src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+   .../__tests__/ollamaModelInstaller.test.ts         | 99 ++++++++++++++++------
+   .../__tests__/podmanArtifactFetcher.test.ts        | 29 +++++--
+   src/packages/local-models/ollamaModelInstaller.ts  | 55 +++++++-----
+   src/packages/local-models/podmanArtifactFetcher.ts | 58 ++++++++-----
+   4 files changed, 171 insertions(+), 70 deletions(-)
+
+diff --git a/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts b/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
+index 6674baf45..61ea35540 100644
+--- a/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
++++ b/src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
+@@ -4,10 +4,12 @@
+  * primitiva de Podman.
+  *
+  * Dos niveles. Con un Podman doble que, al esperar el contenedor, ejecuta la
+- * lógica del trabajo en proceso contra un Ollama falso: qué argv compone el
+- * trabajo y cómo se decide el desenlace (sólo `installed` si el runtime
+- * resuelve el contenido pedido). Con el Podman real, si la imagen está
+- * local: que el trabajo alcanza el Ollama del loopback y deja su reporte.
++ * lógica del trabajo en proceso contra un Ollama falso: cómo se materializa el
++ * trabajo —componiendo la autorización canónica, clase `maintenance` y la cita
++ * de su tarea, nunca un spec suelto— y cómo se decide el desenlace (sólo
++ * `installed` si el runtime resuelve el contenido pedido). Con el Podman real, si
++ * la imagen está local: que el trabajo alcanza el Ollama del loopback y deja su
++ * reporte.
+  *
+  * Métrica: el argv entregado a `podman create`, el estado del Ollama falso y
+  * el desenlace devuelto.
+@@ -19,15 +21,18 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join, resolve } from 'node:path'
+ 
++import { EXECUTION_ID_LABEL_KEY, EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ 
+ import { OLLAMA_PORT_VAR } from '../managedOllama.js'
+ import type { ModelInstallRequest } from '../modelInstaller.js'
+ import { OllamaApi, installModelIntoOllama } from '../ollamaApi.js'
+-import { INSTALL_REPORT_NAME, OllamaModelInstaller, installJobSpec, type OllamaModelInstallerOptions } from '../ollamaModelInstaller.js'
++import { INSTALL_REPORT_NAME, OllamaModelInstaller, type OllamaModelInstallerOptions } from '../ollamaModelInstaller.js'
+ 
+ const REPOSITORY_ROOT = resolve(import.meta.dir, '../../../..')
+ const MODEL_NAME = 'thyrox-library--qwen2.5-0.5b:q4_k_m'
++/** La imagen del trabajo: declarada, sirve para recortar el comando del argv de `create`. */
++const INSTALLER_IMAGE = 'sha256:' + 'b'.repeat(64)
+ const HTTP_OK = 200
+ const HTTP_CREATED = 201
+ const HTTP_NOT_FOUND = 404
+@@ -95,7 +100,7 @@ function artifact(content: string): ModelInstallRequest {
+ function options(port: number, overrides: Partial<OllamaModelInstallerOptions> = {}): OllamaModelInstallerOptions {
+   return {
+     podman: { run: async () => ({ exitCode: 0, stdout: '0\n', stderr: '' }) },
+-    image: 'sha256:' + 'b'.repeat(64),
++    image: INSTALLER_IMAGE,
+     bunPath: process.execPath,
+     repositoryRoot: REPOSITORY_ROOT,
+     scratchDir: join(workdir, 'scratch'),
+@@ -128,18 +133,49 @@ function installerRunningInProcess(port: number, request: ModelInstallRequest):
+   return new OllamaModelInstaller(options(port, { podman: podmanRunningInProcess(scratchDir, job) }))
+ }
+ 
+-describe('installJobSpec', () => {
+-  test('red host, bun y repositorio de sólo lectura, el GGUF de sólo lectura y el montaje de trabajo rw', () => {
+-    const request = artifact('gguf')
+-    const spec = installJobSpec(options(4321), request)
+-    const argv = spec.resourceArgv.join(' ')
+-    expect(argv).toContain('--network host')
+-    expect(argv).toContain('--read-only')
+-    expect(argv).toContain(`-v ${process.execPath}:/usr/local/bin/bun:ro`)
+-    expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
+-    expect(argv).toContain(`-v ${request.artifactPath}:/artifact/model.gguf:ro`)
+-    expect(argv).toContain(`-v ${join(workdir, 'scratch')}:/scratch:rw`)
+-    expect(spec.command).toEqual([
++/**
++ * El doble que registra el argv de `podman create`. Sin reporte en el montaje,
++ * `install` devuelve antes de confirmar el runtime, así que ninguna prueba de
++ * composición toca Ollama: lo que se mide es cómo se materializa el trabajo.
++ */
++function recordingPodman(): { podman: PodmanExecutor; created: string[][] } {
++  const created: string[][] = []
++  return {
++    created,
++    podman: {
++      run: async (args): Promise<PodmanCommandResult> => {
++        if (args[0] === 'create') created.push([...args])
++        if (args[0] === 'wait') return { exitCode: 0, stdout: '0\n', stderr: '' }
++        return { exitCode: 0, stdout: '', stderr: '' }
++      },
++    },
++  }
++}
++
++/** El trabajo que el instalador materializa: el argv con que `podman create` lo recibió y el artefacto pedido. */
++async function createdInstallJob(overrides: Partial<OllamaModelInstallerOptions> = {}): Promise<{ argv: string[]; request: ModelInstallRequest }> {
++  const request = artifact('gguf')
++  const recorder = recordingPodman()
++  await new OllamaModelInstaller(options(4321, { ...overrides, podman: recorder.podman })).install(request)
++  return { argv: recorder.created[0] ?? [], request }
++}
++
++/** Lo que recibe el contenedor como comando: lo que sigue a la imagen en el argv de `create`. */
++function containerCommand(argv: readonly string[]): string[] {
++  return argv.slice(argv.indexOf(INSTALLER_IMAGE) + 1)
++}
++
++describe('la composición del trabajo', () => {
++  test('red host, bun y repositorio de sólo lectura, el GGUF de sólo lectura y el montaje de trabajo rw', async () => {
++    const { argv, request } = await createdInstallJob()
++    const joined = argv.join(' ')
++    expect(joined).toContain('--network host')
++    expect(joined).toContain('--read-only')
++    expect(joined).toContain(`-v ${process.execPath}:/usr/local/bin/bun:ro`)
++    expect(joined).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
++    expect(joined).toContain(`-v ${request.artifactPath}:/artifact/model.gguf:ro`)
++    expect(joined).toContain(`-v ${join(workdir, 'scratch')}:/scratch:rw`)
++    expect(containerCommand(argv)).toEqual([
+       '/usr/local/bin/bun', '/w/src/packages/local-models/bin/installModel.ts',
+       '--ollama-url', 'http://127.0.0.1:4321',
+       '--name', MODEL_NAME,
+@@ -149,14 +185,29 @@ describe('installJobSpec', () => {
+     ])
+   })
+ 
+-  test('la URL de Ollama sale del entorno declarado', () => {
+-    const spec = installJobSpec(options(4321, { environment: {} }), artifact('gguf'))
+-    expect(spec.command).toContain('http://127.0.0.1:51434')
++  test('la URL de Ollama sale del entorno declarado', async () => {
++    const { argv } = await createdInstallJob({ environment: {} })
++    expect(argv.join(' ')).toContain('http://127.0.0.1:51434')
++  })
++
++  test('el trabajo no recibe ningún secreto', async () => {
++    const { argv } = await createdInstallJob()
++    expect(argv.join(' ')).not.toMatch(/TOKEN|PASSWORD|SECRET|KEY|containers\/storage/i)
++  })
++})
++
++describe('la autorización del trabajo', () => {
++  test('corre como una ejecución autorizada: clase maintenance y la cita de su tarea', async () => {
++    const { argv } = await createdInstallJob()
++    const joined = argv.join(' ')
++    expect(joined).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=maintenance`)
++    expect(joined).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0729`)
++    expect(joined).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=model-install-test`)
+   })
+ 
+-  test('el trabajo no recibe ningún secreto', () => {
+-    const spec = installJobSpec(options(4321), artifact('gguf'))
+-    expect([...spec.resourceArgv, ...(spec.command ?? [])].join(' ')).not.toMatch(/TOKEN|PASSWORD|SECRET|KEY|containers\/storage/i)
++  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
++    const { argv } = await createdInstallJob({ taskCitation: 'TASK-THYROX-0001' })
++    expect(argv.join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
+   })
+ })
+ 
+diff --git a/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts b/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+index fa3f58dc3..eeb84db9c 100644
+--- a/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
++++ b/src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+@@ -3,11 +3,12 @@
+  * fijado como trabajo de la primitiva de Podman (ADR-THYROX-007,
+  * TASK-THYROX-0729).
+  *
+- * Dos niveles. Con un Podman doble: qué argv compone el trabajo (montajes,
+- * red y entorno según la salida declarada, ningún secreto) y cómo se traduce
+- * su reporte a `FetchOutcome`. Con el Podman real y el registry de prueba en
+- * el loopback: que el trabajo baja sólo la capa pedida al directorio del
+- * destino.
++ * Dos niveles. Con un Podman doble: cómo se materializa el trabajo —la
++ * autorización canónica (clase `registry-operation` con la cita de su tarea) y
++ * sus montajes, red y entorno según la salida declarada, ningún secreto— y cómo
++ * se traduce su reporte a `FetchOutcome`. Con el Podman real y el registry de
++ * prueba en el loopback: que el trabajo baja sólo la capa pedida al directorio
++ * del destino.
+  *
+  * Métrica: el argv entregado a `podman create`, el destino en el anfitrión y
+  * el `FetchOutcome`.
+@@ -23,6 +24,7 @@ import { describeArtifactFile } from '@thyrox/artifact-registry/artifactFiles.ts
+ import { createOciArtifactRegistry } from '@thyrox/artifact-registry/ociArtifactRegistry.ts'
+ import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '@thyrox/artifact-registry/testing/fakeOciRegistry.ts'
+ import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
++import { EXECUTION_ID_LABEL_KEY, EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ 
+ import { createPodmanArtifactFetcher, FETCH_REPORT_NAME, type PodmanArtifactFetcherOptions } from '../podmanArtifactFetcher.js'
+@@ -122,6 +124,23 @@ describe('createPodmanArtifactFetcher: el trabajo que compone', () => {
+   })
+ })
+ 
++describe('createPodmanArtifactFetcher: la autorización del trabajo', () => {
++  test('corre como una ejecución autorizada: clase registry-operation y la cita de su tarea', async () => {
++    const podman = podmanLeaving({ status: 'success', value: {} })
++    await createPodmanArtifactFetcher(options({ podman })).fetch(PINNED, destinationIn(workdir))
++    const argv = createArgv(podman.calls).join(' ')
++    expect(argv).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=registry-operation`)
++    expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0729`)
++    expect(argv).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=artifact-fetch-test`)
++  })
++
++  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
++    const podman = podmanLeaving({ status: 'success', value: {} })
++    await createPodmanArtifactFetcher(options({ podman, taskCitation: 'TASK-THYROX-0001' })).fetch(PINNED, destinationIn(workdir))
++    expect(createArgv(podman.calls).join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
++  })
++})
++
+ describe('createPodmanArtifactFetcher: cómo lee el reporte', () => {
+   test('un reporte de éxito es fetched', async () => {
+     const outcome = await createPodmanArtifactFetcher(options({ podman: podmanLeaving({ status: 'success', value: {} }) })).fetch(PINNED, destinationIn(workdir))
+diff --git a/src/packages/local-models/ollamaModelInstaller.ts b/src/packages/local-models/ollamaModelInstaller.ts
+index 373ec81a6..0df89c90b 100644
+--- a/src/packages/local-models/ollamaModelInstaller.ts
++++ b/src/packages/local-models/ollamaModelInstaller.ts
+@@ -8,6 +8,10 @@
+  * loopback) y ningún secreto. El trabajo deja su veredicto en un archivo del
+  * montaje de trabajo; la salida estándar es diagnóstico.
+  *
++ * La composición pasa por la autorización canónica (clase `maintenance`, con
++ * la cita de la tarea que deja el modelo disponible): el instalador no compone
++ * un spec ni alcanza ninguna función interna de la primitiva.
++ *
+  * Que el trabajo diga `installed` no basta: después se vuelve a inspeccionar
+  * el runtime, y sólo es `installed` si el nombre resuelve al contenido
+  * pedido (H-THYROX-304).
+@@ -15,10 +19,10 @@
+ import { mkdir, readFile, rm } from 'node:fs/promises'
+ import { join } from 'node:path'
+ 
+-import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
++import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+-import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
++import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+ import { managedOllama, type Environment } from './managedOllama.js'
+ import type { InstallOutcome, InstalledModelState, ModelInstaller, ModelInstallRequest } from './modelInstaller.js'
+@@ -27,6 +31,9 @@ import { modelBlobOfModelfile } from './volumeBlobs.js'
+ 
+ export const INSTALL_REPORT_NAME = 'install.json'
+ 
++/** La cita de la tarea que autoriza la instalación; el llamador puede declarar otra. */
++export const DEFAULT_INSTALL_TASK_CITATION = 'TASK-THYROX-0729'
++
+ const CONTAINER_BUN = '/usr/local/bin/bun'
+ const CONTAINER_REPOSITORY = '/w'
+ const CONTAINER_SCRATCH = '/scratch'
+@@ -48,26 +55,24 @@ export interface OllamaModelInstallerOptions {
+   readonly owner: ContainerOwner
+   readonly workerId: string
+   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
++  /** Cita de la tarea que autoriza la instalación; por defecto, la del flujo que deja el modelo disponible. */
++  readonly taskCitation?: string
+ }
+ 
+-export function installJobSpec(options: OllamaModelInstallerOptions, request: ModelInstallRequest): WorkerContainerSpec {
+-  const profile: WorkerResourceProfile = {
+-    ...options.limits,
+-    network: 'host',
+-    environment: { HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+-    readOnlyRootfs: true,
+-    mounts: [
+-      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
+-      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
+-      { source: request.artifactPath, destination: CONTAINER_ARTIFACT, mode: 'ro' },
+-      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
+-    ],
+-  }
++/**
++ * La instalación compuesta en la autorización canónica: clase `maintenance`
++ * con la cita de su tarea, red del anfitrión para alcanzar el Ollama gestionado
++ * y los montajes de siempre —intérprete, repositorio y GGUF de sólo lectura,
++ * scratch de escritura—. El raíz se declara de sólo lectura: lo que el trabajo
++ * escribe vive en el montaje, y HOME y TMPDIR apuntan a él.
++ */
++export function installAuthorization(options: OllamaModelInstallerOptions, request: ModelInstallRequest): ExecutionAuthorization {
+   return {
+-    workerId: options.workerId,
+-    image: options.image,
++    executionId: options.workerId,
++    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_INSTALL_TASK_CITATION },
+     owner: options.owner,
+-    resourceArgv: workerResourceLimitArgv(profile),
++    kind: 'maintenance',
++    image: options.image,
+     command: [
+       CONTAINER_BUN, INSTALL_ENTRY,
+       '--ollama-url', managedOllama(options.environment).baseUrl,
+@@ -76,6 +81,16 @@ export function installJobSpec(options: OllamaModelInstallerOptions, request: Mo
+       '--sha256', request.contentSha256,
+       '--report', `${CONTAINER_SCRATCH}/${INSTALL_REPORT_NAME}`,
+     ],
++    mounts: [
++      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
++      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
++      { source: request.artifactPath, destination: CONTAINER_ARTIFACT, mode: 'ro' },
++      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
++    ],
++    resources: options.limits,
++    network: 'host',
++    readOnlyRootfs: true,
++    environment: { HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+   }
+ }
+ 
+@@ -104,7 +119,7 @@ export class OllamaModelInstaller implements ModelInstaller {
+     await rm(scratchDir, { recursive: true, force: true })
+     await Promise.all(['home', 'tmp'].map(name => mkdir(join(scratchDir, name), { recursive: true })))
+     try {
+-      const job = await runJobWithOutput(this.options.podman, installJobSpec(this.options, request))
++      const job = await runExecution(this.options.podman, installAuthorization(this.options, request))
+       const report = await readReport(join(scratchDir, INSTALL_REPORT_NAME))
+       if (report) return report
+       return { status: 'failed', reason: `${job.containerName} salió ${job.exitCode} sin reporte: ${job.stderr.trim().slice(-DIAGNOSTIC_TAIL_CHARS)}` }
+diff --git a/src/packages/local-models/podmanArtifactFetcher.ts b/src/packages/local-models/podmanArtifactFetcher.ts
+index 4a2ef05de..aed5dcfcc 100644
+--- a/src/packages/local-models/podmanArtifactFetcher.ts
++++ b/src/packages/local-models/podmanArtifactFetcher.ts
+@@ -11,6 +11,10 @@
+  * `materializeArtifact`. Su resultado lo deja en `fetch.json` de un montaje de
+  * trabajo propio, que se borra al terminar: la salida estándar es diagnóstico.
+  *
++ * La composición pasa por la autorización canónica (clase `registry-operation`,
++ * con la cita de la tarea que trae el artefacto): el fetcher no compone un spec
++ * ni alcanza ninguna función interna de la primitiva.
++ *
+  * Un límite del provider, una capa ajena al manifest o un blob corrupto llegan
+  * como reporte y se devuelven como `failed` con su causa: nunca como contenido.
+  */
+@@ -23,15 +27,19 @@ import { DOCKER_HUB_REGISTRY_URL, dockerHubRepository } from '@thyrox/artifact-r
+ import { jobNetworkProfile, type JobEgress } from '@thyrox/artifact-registry/jobEgress.ts'
+ import { registryBaseUrl } from '@thyrox/artifact-registry/publishCommand.ts'
+ import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
+-import { ContainerRunError, runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
++import { ContainerRunError } from '@thyrox/podman-execution/containerRun.ts'
++import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+-import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
++import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+ import type { ArtifactFetcher, FetchOutcome } from './modelArtifactCache.js'
+ 
+ export const FETCH_REPORT_NAME = 'fetch.json'
+ 
++/** La cita de la tarea que autoriza la bajada del artefacto; el llamador puede declarar otra. */
++export const DEFAULT_FETCH_TASK_CITATION = 'TASK-THYROX-0729'
++
+ const CONTAINER_BUN = '/usr/local/bin/bun'
+ const CONTAINER_REPOSITORY = '/w'
+ const CONTAINER_DESTINATION = '/destination'
+@@ -52,6 +60,8 @@ export interface PodmanArtifactFetcherOptions {
+   readonly owner: ContainerOwner
+   readonly workerId: string
+   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
++  /** Cita de la tarea que autoriza la bajada; por defecto, la del flujo que trae el artefacto. */
++  readonly taskCitation?: string
+   /** La URL de la API de distribución de un registry declarado por host; sin declarar, `registryBaseUrl`. */
+   readonly registryUrlOf?: (registry: string) => string
+ }
+@@ -63,27 +73,22 @@ function repositoryFor(registryUrl: string, repository: string): string {
+   return registryUrl === DOCKER_HUB_REGISTRY_URL ? dockerHubRepository(repository) : repository
+ }
+ 
+-export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): WorkerContainerSpec {
++/**
++ * La bajada de la capa compuesta en la autorización canónica: clase
++ * `registry-operation` con la cita de su tarea, la red que decide el egress y
++ * los montajes de siempre —intérprete y repositorio de sólo lectura, el
++ * directorio del destino y el scratch de escritura—. El raíz se declara de sólo
++ * lectura: lo que el trabajo escribe vive en esos montajes.
++ */
++export function fetchAuthorization(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): ExecutionAuthorization {
+   const registryUrl = (options.registryUrlOf ?? registryBaseUrl)(pinned.registry)
+   const network = jobNetworkProfile(options.egress)
+-  const profile: WorkerResourceProfile = {
+-    ...options.limits,
+-    network: network.network,
+-    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+-    readOnlyRootfs: true,
+-    mounts: [
+-      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
+-      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
+-      { source: dirname(destination), destination: CONTAINER_DESTINATION, mode: 'rw' },
+-      { source: scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
+-      ...network.mounts,
+-    ],
+-  }
+   return {
+-    workerId: options.workerId,
+-    image: options.image,
++    executionId: options.workerId,
++    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_FETCH_TASK_CITATION },
+     owner: options.owner,
+-    resourceArgv: workerResourceLimitArgv(profile),
++    kind: 'registry-operation',
++    image: options.image,
+     command: [
+       CONTAINER_BUN, FETCH_ENTRY,
+       '--registry', registryUrl,
+@@ -93,6 +98,17 @@ export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: Pinn
+       '--destination', `${CONTAINER_DESTINATION}/${basename(destination)}`,
+       '--report', `${CONTAINER_SCRATCH}/${FETCH_REPORT_NAME}`,
+     ],
++    mounts: [
++      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
++      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
++      { source: dirname(destination), destination: CONTAINER_DESTINATION, mode: 'rw' },
++      { source: scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
++      ...network.mounts,
++    ],
++    resources: options.limits,
++    network: network.network,
++    readOnlyRootfs: true,
++    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+   }
+ }
+ 
+@@ -116,7 +132,7 @@ function outcomeOf(report: FetchReport): FetchOutcome {
+ 
+ async function runFetchJob(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): Promise<FetchOutcome> {
+   try {
+-    const job = await runJobWithOutput(options.podman, fetchJobSpec(options, pinned, destination, scratchDir))
++    const job = await runExecution(options.podman, fetchAuthorization(options, pinned, destination, scratchDir))
+     const report = await readReport(join(scratchDir, FETCH_REPORT_NAME))
+     if (report) return outcomeOf(report)
+     return { status: 'failed', reason: `${job.containerName} salió con ${job.exitCode} sin reporte: ${job.stderr.trim().slice(-DIAGNOSTIC_TAIL_CHARS)}` }

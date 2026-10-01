@@ -1,0 +1,52 @@
+# TASK-THYROX-0743 — P2 tramo B — TYPECHECK (antes, RED y después)
+# El comando de los tres estados es el mismo, desde src/packages/local-models:
+#   bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+# Los tipos del paquete consumido se leen de su declaration emitida
+# (src/packages/podman-execution/dist/*.d.ts, condición "types" de los exports):
+# verificado, dist/executionAuthorization.d.ts ya declara `readOnlyRootfs?: boolean`
+# (línea 72), así que el campo conserva el --read-only que el spec daba y el
+# consumidor lo ve sin rehacer la declaración.
+
+## ANTES (HEAD, árbol sin tocar): 4 errores, ninguno en los dos archivos del tramo
+$ cd src/packages/local-models && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+  __tests__/externalArtifact.test.ts(49,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+      Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+  __tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+  __tests__/qualifyModel.test.ts(30,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+  __tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+      Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+  errores TS: 4 · exit=2
+
+## RED (pruebas nuevas, producción aún por spec): 6 errores — los 4 de antes más 2 del campo que aún no existe
+$ cd src/packages/local-models && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+  errores TS: 6
+  __tests__/ollamaModelInstaller.test.ts(209,48): error TS2353: Object literal may only specify known properties, and 'taskCitation' does not exist in type 'Partial<OllamaModelInstallerOptions>'.
+  __tests__/podmanArtifactFetcher.test.ts(139,57): error TS2353: Object literal may only specify known properties, and 'taskCitation' does not exist in type 'Partial<PodmanArtifactFetcherOptions>'.
+  (los otros 4 son los preexistentes de ANTES: externalArtifact, qualifyCommand, qualifyModel, quantizationRun)
+
+## DESPUÉS (GREEN): 4 errores, la misma lista que ANTES
+$ cd src/packages/local-models && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+  __tests__/externalArtifact.test.ts(49,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+      Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+  __tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+  __tests__/qualifyModel.test.ts(30,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+  __tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+      Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+  exit=2
+
+$ diff <(antes) <(despues)  # los dos archivos del tramo no aportan ningún error
+  (sin diferencias)
+
+# Los cuatro errores preexistentes son del paquete y no de este tramo: dos son el
+# `ModelExecutionUnit` que aún no cuadra con los dobletes de qualifyCommand /
+# qualifyModel (tramo del modelo de gestión) y dos el `BodyInit` de un fetch con
+# Uint8Array en las pruebas del puerto de artefactos. Ya estaban registrados como
+# hallazgo del plan (p2b-findings.jsonl) y no se arreglan aquí: fuera de alcance.
+
+# El bloque ANTES se volvió a medir sobre el árbol final, con los cuatro archivos del
+# tramo en su estado de HEAD: misma lista de cuatro errores (0 diferencias), así que
+# la comparación antes/después es del mismo árbol y no de dos momentos del plan.

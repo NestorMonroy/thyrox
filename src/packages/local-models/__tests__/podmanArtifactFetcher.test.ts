@@ -3,11 +3,12 @@
  * fijado como trabajo de la primitiva de Podman (ADR-THYROX-007,
  * TASK-THYROX-0729).
  *
- * Dos niveles. Con un Podman doble: qué argv compone el trabajo (montajes,
- * red y entorno según la salida declarada, ningún secreto) y cómo se traduce
- * su reporte a `FetchOutcome`. Con el Podman real y el registry de prueba en
- * el loopback: que el trabajo baja sólo la capa pedida al directorio del
- * destino.
+ * Dos niveles. Con un Podman doble: cómo se materializa el trabajo —la
+ * autorización canónica (clase `registry-operation` con la cita de su tarea) y
+ * sus montajes, red y entorno según la salida declarada, ningún secreto— y cómo
+ * se traduce su reporte a `FetchOutcome`. Con el Podman real y el registry de
+ * prueba en el loopback: que el trabajo baja sólo la capa pedida al directorio
+ * del destino.
  *
  * Métrica: el argv entregado a `podman create`, el destino en el anfitrión y
  * el `FetchOutcome`.
@@ -23,6 +24,7 @@ import { describeArtifactFile } from '@thyrox/artifact-registry/artifactFiles.ts
 import { createOciArtifactRegistry } from '@thyrox/artifact-registry/ociArtifactRegistry.ts'
 import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '@thyrox/artifact-registry/testing/fakeOciRegistry.ts'
 import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
+import { EXECUTION_ID_LABEL_KEY, EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY } from '@thyrox/podman-execution/executionAuthorization.ts'
 import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import { createPodmanArtifactFetcher, FETCH_REPORT_NAME, type PodmanArtifactFetcherOptions } from '../podmanArtifactFetcher.js'
@@ -119,6 +121,23 @@ describe('createPodmanArtifactFetcher: el trabajo que compone', () => {
     expect(argv).toContain('--network bridge')
     expect(argv).not.toContain('HTTPS_PROXY')
     expect(argv).not.toContain('/certs/')
+  })
+})
+
+describe('createPodmanArtifactFetcher: la autorización del trabajo', () => {
+  test('corre como una ejecución autorizada: clase registry-operation y la cita de su tarea', async () => {
+    const podman = podmanLeaving({ status: 'success', value: {} })
+    await createPodmanArtifactFetcher(options({ podman })).fetch(PINNED, destinationIn(workdir))
+    const argv = createArgv(podman.calls).join(' ')
+    expect(argv).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=registry-operation`)
+    expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0729`)
+    expect(argv).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=artifact-fetch-test`)
+  })
+
+  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
+    const podman = podmanLeaving({ status: 'success', value: {} })
+    await createPodmanArtifactFetcher(options({ podman, taskCitation: 'TASK-THYROX-0001' })).fetch(PINNED, destinationIn(workdir))
+    expect(createArgv(podman.calls).join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
   })
 })
 
