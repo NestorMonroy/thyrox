@@ -52,6 +52,13 @@ export class InvalidResidencyTransitionError extends Error {
   }
 }
 
+export class UnknownResidencyError extends Error {
+  constructor(readonly residencyKey: string) {
+    super(`la residencia ${residencyKey} no está registrada`)
+    this.name = 'UnknownResidencyError'
+  }
+}
+
 export type ResidencyChanges = Partial<Pick<ModelResidency, 'grantId' | 'unitId' | 'reservationId' | 'activeRequests' | 'reason'>>
 
 /** Las residencias que este coordinador conoce; la verdad material la reconcilia contra las unidades. */
@@ -68,13 +75,32 @@ export class ResidencyRegistry {
 
   /** Abre una residencia `planned` en la generación del lease que la coordina; reemplaza a una `absent`. */
   plan(residencyKey: string, generation: number, model: string): ModelResidency {
-    void residencyKey; void generation; void model
-    throw new Error('ResidencyRegistry.plan: por implementar')
+    const existing = this.residencies.get(residencyKey)
+    if (existing && existing.state !== 'absent') throw new InvalidResidencyTransitionError(residencyKey, existing.state, 'planned')
+    return this.store({ residencyKey, generation, model, state: 'planned', activeRequests: 0 })
   }
 
   /** Mueve la residencia si la generación presentada es la vigente y la tabla admite el paso. */
   transition(residencyKey: string, generation: number, target: ResidencyState, changes: ResidencyChanges = {}): ModelResidency {
-    void residencyKey; void generation; void target; void changes
-    throw new Error('ResidencyRegistry.transition: por implementar')
+    const residency = this.currentFor(residencyKey, generation)
+    if (!RESIDENCY_TRANSITIONS[residency.state].includes(target)) throw new InvalidResidencyTransitionError(residencyKey, residency.state, target)
+    return this.store({ ...residency, ...changes, state: target })
+  }
+
+  /** Aplica cambios sin mover el estado (p. ej. el contador de peticiones); exige la generación vigente. */
+  amend(residencyKey: string, generation: number, changes: ResidencyChanges): ModelResidency {
+    return this.store({ ...this.currentFor(residencyKey, generation), ...changes })
+  }
+
+  private currentFor(residencyKey: string, generation: number): ModelResidency {
+    const residency = this.residencies.get(residencyKey)
+    if (!residency) throw new UnknownResidencyError(residencyKey)
+    if (residency.generation !== generation) throw new StaleGenerationError(residencyKey, generation, residency.generation)
+    return residency
+  }
+
+  private store(residency: ModelResidency): ModelResidency {
+    this.residencies.set(residency.residencyKey, residency)
+    return residency
   }
 }

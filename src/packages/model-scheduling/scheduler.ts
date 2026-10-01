@@ -89,7 +89,7 @@ type Compensation = () => Promise<ReconciliationMark | undefined>
  * recurso y se deshacen en orden inverso. Una que no se completa no detiene a
  * las siguientes: queda como marca (M18).
  */
-class CompensationStack {
+export class CompensationStack {
   private readonly pending: Compensation[] = []
 
   push(compensation: Compensation): void {
@@ -107,7 +107,7 @@ class CompensationStack {
 }
 
 /** Ejecuta una compensación y convierte su excepción en una marca con contexto. */
-async function markOnThrow(resource: ReconciliationMark['resource'], id: string, undo: () => Promise<ReconciliationMark | undefined>): Promise<ReconciliationMark | undefined> {
+export async function markOnThrow(resource: ReconciliationMark['resource'], id: string, undo: () => Promise<ReconciliationMark | undefined>): Promise<ReconciliationMark | undefined> {
   try {
     return await undo()
   } catch (error) {

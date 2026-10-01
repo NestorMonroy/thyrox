@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790847335.366	   299.150	0	0	0	0	_headless_item 1 'Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p2-residency-controller.md. Archivos: src/packages/model-scheduling/residency.ts, residencyController.ts. Orden: registro, controlador.'
