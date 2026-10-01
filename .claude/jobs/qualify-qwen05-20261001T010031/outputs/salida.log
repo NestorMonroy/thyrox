@@ -1,0 +1,8 @@
+ok   single_tool	{"content":"","toolCalls":[{"name":"get_weather","arguments":{"city":"Madrid"}}]}
+ok   integer_arguments	{"content":"","toolCalls":[{"name":"add","arguments":{"a":17,"b":25}}]}
+ok   choose_between_tools	{"content":"","toolCalls":[{"name":"read_file","arguments":{"path":"/etc/hostname"}}]}
+ok   enum_argument	{"content":"","toolCalls":[{"name":"set_mode","arguments":{"mode":"safe"}}]}
+ok   no_tool_needed	{"content":"hello","toolCalls":[]}
+ok   continuation_after_tool	{"content":"The sum of 17 and 25 is 42.","toolCalls":[]}
+aprobada: thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf mecanica tool-calling@1 6/6, 0.3 tokens/s, ctx 8192 → /home/user/thyrox/.thyrox/models/qualifications.json
+__BG_EXIT__=0

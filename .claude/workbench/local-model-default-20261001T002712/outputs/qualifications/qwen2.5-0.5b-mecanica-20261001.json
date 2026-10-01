@@ -1,0 +1,15 @@
+{
+  "qualifications": [
+    {
+      "model": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+      "taskClass": "mecanica",
+      "suite": "tool-calling@1",
+      "casesPassed": 6,
+      "casesTotal": 6,
+      "passed": true,
+      "contextTokens": 8192,
+      "tokensPerSecond": 0.31623193301451047,
+      "measuredAt": "2026-10-01T01:07:04.849Z"
+    }
+  ]
+}
