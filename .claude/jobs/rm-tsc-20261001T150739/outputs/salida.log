@@ -1,0 +1,4 @@
+podmanExecutor.ts(43,5): error TS18047: 'child.stdout' is possibly 'null'.
+podmanExecutor.ts(44,5): error TS18047: 'child.stderr' is possibly 'null'.
+TSC_EXIT=2
+__BG_EXIT__=0

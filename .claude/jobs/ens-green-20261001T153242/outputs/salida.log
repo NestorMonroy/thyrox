@@ -1,0 +1,14 @@
+== tests/session/test-infrastructure-ensure.sh
+57 casos: 57 ok, 0 fallos
+EXIT tests/session/test-infrastructure-ensure.sh=0
+== tests/lib/test-infrastructure.sh
+73 casos: 73 ok, 0 fallos
+EXIT tests/lib/test-infrastructure.sh=0
+== tests/lib/test-infrastructure-desired.sh
+34 casos: 34 ok, 0 fallos
+EXIT tests/lib/test-infrastructure-desired.sh=0
+== tests/session/test-podman-lock-recovery.sh
+23 casos: 23 ok, 0 fallos
+EXIT tests/session/test-podman-lock-recovery.sh=0
+SUITE_DONE
+__BG_EXIT__=0

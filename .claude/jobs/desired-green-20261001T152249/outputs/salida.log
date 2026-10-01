@@ -1,0 +1,49 @@
+jq: Unknown option -U
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs  at https://jqlang.github.io/jq
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs  at https://jqlang.github.io/jq
+  ok    postgres: sale 0
+  FALLO postgres: nombre fijo: .name == "thyrox-postgres" sobre []
+  FALLO postgres: imagen por defecto: .image == "docker.io/pgvector/pgvector:0.8.0-pg16" sobre []
+  FALLO postgres: red con nombre thyrox-infra: .network == {mode: "named", name: "thyrox-infra"} sobre []
+  FALLO postgres: puerto sólo en loopback: .publishedPorts == [{hostAddress: "127.0.0.1", hostPort: 55432, containerPort: 5432}] sobre []
+  FALLO postgres: volumen durable con nombre: .namedVolumes == [{volume: "thyrox-postgres-data", destination: "/var/lib/postgresql/data"}] sobre []
+  FALLO postgres: el contenedor recibe la RUTA del secreto: .environment.POSTGRES_PASSWORD_FILE == "/run/secrets/postgres-password" sobre []
+  FALLO postgres: nunca POSTGRES_PASSWORD en el entorno: .environment | has("POSTGRES_PASSWORD") | not sobre []
+  FALLO postgres: secreto declarado por nombre, con la variable que da su valor: .secrets == [{secret: "thyrox-postgres-password", target: "postgres-password", valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}] sobre []
+  FALLO postgres: usuario y base públicos: .environment.POSTGRES_USER == "thyrox" and .environment.POSTGRES_DB == "thyrox" sobre []
+  FALLO postgres: salud pg_isready con usuario y base: .health.command == ["pg_isready", "-U", "thyrox", "-d", "thyrox"] sobre []
+  FALLO postgres: reinicio on-failure: .restartPolicy == "on-failure" sobre []
+  FALLO postgres: etiquetas de rol y servicio: .labels == {"io.thyrox.role": "infrastructure", "io.thyrox.service": "postgres"} sobre []
+  FALLO postgres: reconoce al predecesor por la etiqueta heredada: .legacyRoleLabel == {key: "io.thyrox.role", value: "infrastructure"} sobre []
+  ok    postgres: la declaración no lleva el valor del secreto
+jq: Unknown option -U
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs  at https://jqlang.github.io/jq
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs  at https://jqlang.github.io/jq
+  FALLO postgres: imagen sobreescribible: .image == "registry.example/pg:1" sobre []
+  FALLO postgres: puerto sobreescribible: .publishedPorts[0].hostPort == 55999 sobre []
+  FALLO postgres: usuario y base sobreescribibles, también en la salud: .environment.POSTGRES_USER == "app" and .environment.POSTGRES_DB == "appdb" and .health.command == ["pg_isready", "-U", "app", "-d", "appdb"] sobre []
+  FALLO plazo e intervalo de salud declarados: .health.timeoutSeconds == 30 and .health.intervalSeconds == 3 sobre []
+  ok    redis: sale 0
+  ok    redis: sin volumen ni secretos
+  ok    redis: persistencia desactivada en el comando
+  ok    redis: puerto en loopback
+  ok    redis: salud redis-cli ping
+  ok    ollama: sale 0 sin credenciales
+  ok    ollama: red del anfitrión, sin puertos publicados
+  ok    ollama: API en loopback por OLLAMA_HOST
+  ok    ollama: volumen de modelos
+  ok    ollama: sin proxy declarado no lleva variables de proxy
+  ok    ollama: el volumen declarado sólo en el .env gobierna
+  ok    ollama: con proxy, sus tres variables
+  ok    ollama: con CA legible, montaje de sólo lectura y SSL_CERT_FILE
+  ok    nombre desconocido: sale 2
+  ok    nombre desconocido: no imprime nada
+
+34 casos: 17 ok, 17 fallos
+__BG_EXIT__=1

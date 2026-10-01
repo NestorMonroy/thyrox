@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+ 134 pass
+ 0 fail
+ 316 expect() calls
+Ran 134 tests across 10 files. [5.43s]
+TEST_EXIT=0
+podmanExecutor.ts(43,5): error TS18047: 'child.stdout' is possibly 'null'.
+podmanExecutor.ts(44,5): error TS18047: 'child.stderr' is possibly 'null'.
+TSC_EXIT=2
+__BG_EXIT__=0

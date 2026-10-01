@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash tests/session/test-infrastructure-ensure.sh 2>&1 | grep -E 'FALLO|casos:'; cp '/home/user/thyrox/.thyrox/runtime/ensure.orig' src/session/infrastructure_ensure.sh; git diff --stat -- src/session/infrastructure_ensure.sh | tail -1; echo ANNUL_DONE", "started_at": "2026-10-01T15:33:12+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:33:19+00:00", "duration_seconds": 7.580358}

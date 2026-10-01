@@ -1,0 +1,19 @@
+== ownership
+(fail) ensureResource — ownership > un contenedor con ese nombre y otro dueño es una colisión: failed, sin tocarlo [1.68ms]
+(fail) ensureResource — ownership > un contenedor sin etiquetas de dueño y sin la etiqueta heredada declarada también es colisión [0.78ms]
+(fail) ensureResource — ownership > el predecesor que la declaración reconoce por su etiqueta heredada se migra: recreated [0.75ms]
+ 20 pass
+ 3 fail
+== redaction
+(fail) ensureResource — salud y fallos > un fallo de create que repite el secreto no lo publica en el mensaje [0.81ms]
+ 22 pass
+ 1 fail
+== volume-drift
+(fail) ensureResource — convergencia > contenedor sobre otro volumen: recreated por deriva de volumen, el volumen anterior no se toca [1.13ms]
+ 22 pass
+ 1 fail
+ 1 file changed, 359 insertions(+), 6 deletions(-)
+== restaurado
+ 23 pass
+ 0 fail
+__BG_EXIT__=0

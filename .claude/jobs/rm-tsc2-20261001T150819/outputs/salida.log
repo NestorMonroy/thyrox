@@ -1,0 +1,7 @@
+TSC_EXIT=0
+ 134 pass
+ 0 fail
+ 316 expect() calls
+Ran 134 tests across 10 files. [3.07s]
+TEST_EXIT=0
+__BG_EXIT__=0

@@ -1,0 +1,5 @@
+  FALLO caso 2: el bootstrap recibe la credencial por su entorno
+57 casos: 56 ok, 1 fallos
+ 1 file changed, 113 insertions(+), 276 deletions(-)
+ANNUL_DONE
+__BG_EXIT__=0

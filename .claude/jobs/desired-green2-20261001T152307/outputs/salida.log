@@ -1,0 +1,38 @@
+  ok    postgres: sale 0
+  ok    postgres: nombre fijo
+  ok    postgres: imagen por defecto
+  ok    postgres: red con nombre thyrox-infra
+  ok    postgres: puerto sólo en loopback
+  ok    postgres: volumen durable con nombre
+  ok    postgres: el contenedor recibe la RUTA del secreto
+  ok    postgres: nunca POSTGRES_PASSWORD en el entorno
+  ok    postgres: secreto declarado por nombre, con la variable que da su valor
+  ok    postgres: usuario y base públicos
+  ok    postgres: salud pg_isready con usuario y base
+  ok    postgres: reinicio on-failure
+  ok    postgres: etiquetas de rol y servicio
+  ok    postgres: reconoce al predecesor por la etiqueta heredada
+  ok    postgres: la declaración no lleva el valor del secreto
+  ok    postgres: imagen sobreescribible
+  ok    postgres: puerto sobreescribible
+  ok    postgres: usuario y base sobreescribibles, también en la salud
+  ok    plazo e intervalo de salud declarados
+  ok    redis: sale 0
+  ok    redis: sin volumen ni secretos
+  ok    redis: persistencia desactivada en el comando
+  ok    redis: puerto en loopback
+  ok    redis: salud redis-cli ping
+  ok    ollama: sale 0 sin credenciales
+  ok    ollama: red del anfitrión, sin puertos publicados
+  ok    ollama: API en loopback por OLLAMA_HOST
+  ok    ollama: volumen de modelos
+  ok    ollama: sin proxy declarado no lleva variables de proxy
+  ok    ollama: el volumen declarado sólo en el .env gobierna
+  ok    ollama: con proxy, sus tres variables
+  ok    ollama: con CA legible, montaje de sólo lectura y SSL_CERT_FILE
+  ok    nombre desconocido: sale 2
+  ok    nombre desconocido: no imprime nada
+
+34 casos: 34 ok, 0 fallos
+SUITE_EXIT=0
+__BG_EXIT__=0

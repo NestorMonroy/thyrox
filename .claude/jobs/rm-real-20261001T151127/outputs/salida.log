@@ -1,0 +1,42 @@
++   "failure": {
++     "lockCollision": false,
++     "message": "Error: if `-` is used, data must be passed into stdin",
++     "stage": "secret",
++   },
++   "health": "not-checked",
++   "name": "thyrox-rm-real-18464-1790867487759",
++   "started": false,
++   "volumes": [
++     {
++       "state": "preserved",
++       "volume": "thyrox-rm-real-volume-18464-1790867487759",
++     },
++   ],
+  }
+
+- Expected  - 2
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.real.test.ts:107:21)
+(fail) ensureResource contra Podman real > la misma declaración se conserva [125.12ms]
+108 |     expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'preserved' }])
+109 |   }, REAL_TEST_TIMEOUT_MS)
+110 | 
+111 |   test('recrear por deriva de configuración conserva el contenido del volumen', async () => {
+112 |     const written = await execInside('/bin/helper', 'write', MARKER_PATH, MARKER_TEXT)
+113 |     expect(written.exitCode).toBe(0)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 125
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.real.test.ts:113:30)
+(fail) ensureResource contra Podman real > recrear por deriva de configuración conserva el contenido del volumen [36.07ms]
+
+ 0 pass
+ 3 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [1449.00ms]
+TEST_EXIT=1
+__BG_EXIT__=0

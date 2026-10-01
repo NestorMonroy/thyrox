@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/podman-execution && timeout 60 bun test __tests__/podmanExecutor.test.ts 2>&1 | grep -E \"^\\(fail\\)|^\\(pass\\)| pass$| fail$\"; echo TEST_EXIT=${PIPESTATUS[0]}", "started_at": "2026-10-01T15:12:47+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:12:49+00:00", "duration_seconds": 2.751938}

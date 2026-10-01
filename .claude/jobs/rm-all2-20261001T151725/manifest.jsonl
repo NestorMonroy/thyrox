@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/podman-execution && bun test 2>&1 | grep -E \"^\\(fail\\)| pass$| fail$|^Ran \"; echo TEST_EXIT=${PIPESTATUS[0]}; bunx tsc -p tsconfig.test.json --noEmit 2>&1 | tail -5; echo TSC_EXIT=${PIPESTATUS[0]}", "started_at": "2026-10-01T15:17:25+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:17:35+00:00", "duration_seconds": 10.693064}

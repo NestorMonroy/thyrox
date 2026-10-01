@@ -1,0 +1,354 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/resourceMaterialization.test.ts:
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:68:27)
+(fail) ensureResource — primera materialización > ausente: crea el volumen, el secreto y el contenedor, arranca y comprueba la salud por separado [2.15ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:86:11)
+(fail) ensureResource — primera materialización > el secreto viaja por stdin, nunca en argv [0.27ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:94:11)
+(fail) ensureResource — primera materialización > una red con nombre ausente se crea antes del contenedor [0.13ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:102:27)
+(fail) ensureResource — primera materialización > sin salud declarada no ejecuta exec y lo dice [0.12ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:110:11)
+(fail) ensureResource — convergencia > contenedor y volumen correctos: kept, sin create/rm/start, volumen preservado [0.19ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:119:11)
+(fail) ensureResource — convergencia > contenedor sobre otro volumen: recreated por deriva de volumen, el volumen anterior no se toca [0.18ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:133:11)
+(fail) ensureResource — convergencia > imagen distinta: recreated por deriva de imagen [0.09ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:140:11)
+(fail) ensureResource — convergencia > entorno distinto: recreated por deriva de configuración [0.07ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:147:11)
+(fail) ensureResource — convergencia > declaración de secretos distinta: recreated por deriva de declaración de secretos [0.09ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:153:11)
+(fail) ensureResource — convergencia > valor del secreto distinto: se reemplaza por stdin y el contenedor se recrea [0.22ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:163:11)
+(fail) ensureResource — convergencia > running con el PID muerto: recreated por proceso stale [0.09ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:172:11)
+(fail) ensureResource — convergencia > detenido sin deriva: started, sin recrear [0.15ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:190:27)
+(fail) ensureResource — ownership > un contenedor con ese nombre y otro dueño es una colisión: failed, sin tocarlo [0.16ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:199:27)
+(fail) ensureResource — ownership > un contenedor sin etiquetas de dueño y sin la etiqueta heredada declarada también es colisión [0.10ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at ensureHealthy (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:63:10)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:210:27)
+(fail) ensureResource — ownership > el predecesor que la declaración reconoce por su etiqueta heredada se migra: recreated [0.14ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:221:27)
+(fail) ensureResource — salud y fallos > running no es ready: sin salud, failed con su razón y created/started reportados aparte [0.10ms]
+112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:232:27)
+(fail) ensureResource — salud y fallos > un fallo de create que repite el secreto no lo publica en el mensaje [0.13ms]
+238 |   })
+239 | })
+240 | 
+241 | describe('ensureResource — validación antes de tocar Podman', () => {
+242 |   test('infraestructura con el prefijo de worker se rehúsa', async () => {
+243 |     await expect(ensureResource(deps, desired({ name: `${WORKER_CONTAINER_NAME_PREFIX}pg` }), SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+                                                                                                                      ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidDesiredResourceError extends Error]
+Received value: 112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:243:18)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:243:113)
+(fail) ensureResource — validación antes de tocar Podman > infraestructura con el prefijo de worker se rehúsa [2.50ms]
+244 |     expect(host.calls).toEqual([])
+245 |   })
+246 | 
+247 |   test('un worker sin el prefijo de worker se rehúsa', async () => {
+248 |     const worker = desired({ kind: 'worker', name: 'free-name', owner: { kind: 'pool', id: 'pool-1', pid: 9 } })
+249 |     await expect(ensureResource(deps, worker, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+                                                                      ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidDesiredResourceError extends Error]
+Received value: 112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:249:18)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:249:65)
+(fail) ensureResource — validación antes de tocar Podman > un worker sin el prefijo de worker se rehúsa [0.23ms]
+249 |     await expect(ensureResource(deps, worker, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+250 |   })
+251 | 
+252 |   test('infraestructura con un dueño que no es infrastructure se rehúsa', async () => {
+253 |     const resource = desired({ owner: { kind: 'daemon', id: 'daemon-1', pid: 9 } })
+254 |     await expect(ensureResource(deps, resource, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+                                                                        ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidDesiredResourceError extends Error]
+Received value: 112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:254:18)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:254:67)
+(fail) ensureResource — validación antes de tocar Podman > infraestructura con un dueño que no es infrastructure se rehúsa [0.18ms]
+253 |     const resource = desired({ owner: { kind: 'daemon', id: 'daemon-1', pid: 9 } })
+254 |     await expect(ensureResource(deps, resource, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+255 |   })
+256 | 
+257 |   test('un secreto declarado sin valor se rehúsa sin crear nada', async () => {
+258 |     await expect(ensureResource(deps, desired(), new Map())).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+                                                                           ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidDesiredResourceError extends Error]
+Received value: 112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:258:18)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:258:70)
+(fail) ensureResource — validación antes de tocar Podman > un secreto declarado sin valor se rehúsa sin crear nada [0.16ms]
+259 |     expect(host.calls).toEqual([])
+260 |   })
+261 | 
+262 |   test('un valor de entorno igual a un secreto se rehúsa: el secreto no viaja como entorno', async () => {
+263 |     const resource = desired({ environment: { POSTGRES_PASSWORD: PASSWORD } })
+264 |     await expect(ensureResource(deps, resource, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+                                                                        ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidDesiredResourceError extends Error]
+Received value: 112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:264:18)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:264:67)
+(fail) ensureResource — validación antes de tocar Podman > un valor de entorno igual a un secreto se rehúsa: el secreto no viaja como entorno [0.13ms]
+265 |     expect(host.calls).toEqual([])
+266 |   })
+267 | 
+268 |   test('la red del anfitrión con puertos publicados se rehúsa', async () => {
+269 |     const resource = desired({ network: { mode: 'host' } })
+270 |     await expect(ensureResource(deps, resource, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+                                                                        ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidDesiredResourceError extends Error]
+Received value: 112 | export async function ensureResource(
+113 |   _deps: ResourceMaterializationDeps,
+114 |   _desired: DesiredResource,
+115 |   _secrets: SecretValues,
+116 | ): Promise<EnsureOutcome> {
+117 |   throw new Error('ensureResource: sin implementar')
+                  ^
+error: ensureResource: sin implementar
+      at ensureResource (/home/user/thyrox/src/packages/podman-execution/resourceMaterialization.ts:117:13)
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:270:18)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/resourceMaterialization.test.ts:270:67)
+(fail) ensureResource — validación antes de tocar Podman > la red del anfitrión con puertos publicados se rehúsa [0.16ms]
+
+ 0 pass
+ 23 fail
+ 6 expect() calls
+Ran 23 tests across 1 file. [257.00ms]
+__BG_EXIT__=1
