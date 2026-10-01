@@ -10,3 +10,17 @@ qwen3.8-flash 40k bytes=160102 http=200 input=137805
 qwen3.8-flash 70k bytes=280103 http=200 input=241128
 qwen3.8-flash 100k bytes=400097 http=200 input=344447
 # Conclusión: no es el tamaño — 344 447 tokens de entrada responden 200; el trabajador falló con 87 840.
+
+# Ventana: ~114 k tokens (donde fallaron los dos trabajadores) con max_tokens 16 / 32 000 / 8 000, con y sin streaming 2026-10-01T19:46:08Z
+qwen3.8-flash 33k max=16 stream=0 bytes=132119 http=200 body={"id":"msg_a0f6848f-61a0-456d
+qwen3.8-flash 33k max=32000 stream=0 bytes=132122 http=000 body={"id":"msg_a0f6848f-61a0-4
+qwen3.8-flash 33k max=32000 stream=1 bytes=132121 http=200 body=event:ping data:{"type":"p
+qwen3.8-flash 33k max=8000 stream=1 bytes=132120 http=200 body=event:ping data:{"type":"pi
+# http=000 es el --max-time 180 de curl (el modelo piensa en modo no streaming); el cuerpo mostrado es el de la petición anterior.
+# Conclusión: ningún 502 a ~114 k con max_tokens 32 000 en streaming. La hipótesis de la ventana no se sostiene; el 502 sigue sin causa medida y cuenta como transitorio.
+
+# Intento 3 de p2a (qwen3.8-flash, primero con THYROX_CODE_DECLARED_CONTEXT_WINDOW=110000), 2026-10-01T20:03Z
+# 502 tras 424 s con 66 223 de entrada sin caché + 23 339 en caché; ninguna compactación (el umbral de 77 k
+# se mide sobre los mensajes, ~66 k). Puntos de fallo medidos en cuatro trabajadores: 87 840, 91 074,
+# 79 033 (atascado) y 66 223 de entrada sin caché; duraciones 1007 s, 1173 s, 424 s.
+# Conclusión: el fallo no tiene un umbral de tamaño. Sigue siendo provider_transient; el controlador pasa a DeepSeek.

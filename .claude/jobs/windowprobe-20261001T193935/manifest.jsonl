@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0743 --kind probe --network host --secret-from-env THYROX_OPENAI_COMPAT_API_KEY -- bash .claude/workbench/managed-podman-execution-boundary-20261001T164746/probes/request_window_matrix.sh", "started_at": "2026-10-01T19:39:35+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T19:46:00+00:00", "duration_seconds": 385.70385}

@@ -41,34 +41,16 @@ resultado de GREEN y de la anulación, y cualquier cosa que no pudiste hacer y p
 
 - qwen3.8-flash: provider_transient (exit 1, verificación 1)
   ```
-  Traceback (most recent call last):
-    File "<string>", line 11, in <module>
-    File "/home/user/thyrox/src/session/job_runs.py", line 197, in scaffold_run
-      run_dir = pathlib.Path(base_dir) / run_id_for(slug, now)
-                                         ^^^^^^^^^^^^^^^^^^^^^
-    File "/home/user/thyrox/src/workbench/manifest.py", line 247, in run_id_for
-      raise RunIdError(f"el slug '{slug}' ya trae sufijo ISO: acunaria dos")
-  workbench.manifest.RunIdError: el slug 'cont-p2a-1-verify-20261001T191834' ya trae sufijo ISO: acunaria dos
+  execution thyrox-worker-maintenance-mupxt7hj-1537 kind=maintenance task=TASK-THYROX-0743 exit=1
+  __BG_EXIT__=1
   ```
 - qwen3.8-flash: provider_transient (exit 1, verificación 1)
   ```
-  Traceback (most recent call last):
-    File "<string>", line 11, in <module>
-    File "/home/user/thyrox/src/session/job_runs.py", line 197, in scaffold_run
-      run_dir = pathlib.Path(base_dir) / run_id_for(slug, now)
-                                         ^^^^^^^^^^^^^^^^^^^^^
-    File "/home/user/thyrox/src/workbench/manifest.py", line 247, in run_id_for
-      raise RunIdError(f"el slug '{slug}' ya trae sufijo ISO: acunaria dos")
-  workbench.manifest.RunIdError: el slug 'cont-p2a-2-verify-20261001T191834' ya trae sufijo ISO: acunaria dos
+  execution thyrox-worker-maintenance-mupyifis-8883 kind=maintenance task=TASK-THYROX-0743 exit=1
+  __BG_EXIT__=1
   ```
 - qwen3.8-flash: provider_transient (exit 1, verificación 1)
   ```
-  Traceback (most recent call last):
-    File "<string>", line 11, in <module>
-    File "/home/user/thyrox/src/session/job_runs.py", line 197, in scaffold_run
-      run_dir = pathlib.Path(base_dir) / run_id_for(slug, now)
-                                         ^^^^^^^^^^^^^^^^^^^^^
-    File "/home/user/thyrox/src/workbench/manifest.py", line 247, in run_id_for
-      raise RunIdError(f"el slug '{slug}' ya trae sufijo ISO: acunaria dos")
-  workbench.manifest.RunIdError: el slug 'cont-p2a-3-verify-20261001T191834' ya trae sufijo ISO: acunaria dos
+  execution thyrox-worker-maintenance-mupyrkzu-10966 kind=maintenance task=TASK-THYROX-0743 exit=1
+  __BG_EXIT__=1
   ```

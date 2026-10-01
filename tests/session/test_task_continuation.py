@@ -106,6 +106,33 @@ import re as _re  # noqa: E402
 from session.task_continuation import job_suffix  # noqa: E402
 check("el sufijo del trabajo no es ISO", None, _re.search(r"\d{8}T\d{6}", f"cont-p2a-1-{job_suffix()}"))
 
+# un trabajador delegado no ve el .env del árbol
+from session.task_continuation import ENV_FILE_MASK, ROOT, unit_start_argv  # noqa: E402
+argv = unit_start_argv("n", "TASK-THYROX-0001", ["true"], network="host", secrets=("K",), mounts=(ENV_FILE_MASK,))
+check("la máscara del .env viaja como montaje de sólo lectura", True,
+      "--mount" in argv and argv[argv.index("--mount") + 1] == f"/dev/null:{ROOT}/.env:ro")
+check("la máscara va antes del payload", True, argv.index("--mount") < argv.index("--"))
+
+# el despacho del trabajador pasa la máscara; la verificación, no (no lleva juicio ni proveedor)
+import session.task_continuation as controller  # noqa: E402
+calls = []
+def fake_unit(name, task, argv, network=None, secrets=(), mounts=()):
+    calls.append({"name": name, "mounts": mounts})
+    return (1, "") if "preverify" in name else (0, "")
+with tempfile.TemporaryDirectory() as tmp:
+    wb = Path(tmp); (wb / "outputs").mkdir(); (wb / "p.md").write_text("x\n")
+    saved = (controller.run_in_unit, controller.reconcile_orphans, controller.commit_item)
+    controller.run_in_unit, controller.reconcile_orphans = fake_unit, lambda: ""
+    controller.commit_item = lambda *a, **k: (0, "")
+    try:
+        result = controller.run_item(wb, PlanItem(id="i", prompt="p.md", verify="true", candidates=("m",)),
+                                     "TASK-THYROX-0001", random.Random(0), None)
+    finally:
+        controller.run_in_unit, controller.reconcile_orphans, controller.commit_item = saved
+dispatch = [c for c in calls if "preverify" not in c["name"] and "verify" not in c["name"]]
+check("el ítem se acepta con los dobles", "accepted", result)
+check("el despacho del trabajador lleva la máscara del .env", [(ENV_FILE_MASK,)], [c["mounts"] for c in dispatch])
+
 # las dos claves del entorno: el clasificador externo y la tarea por defecto
 import os  # noqa: E402
 from session.task_continuation import learned_classifier_from_environment, main  # noqa: E402

@@ -15,6 +15,12 @@ timeout_seconds="${DELEGATE_TIMEOUT_SECONDS:-2700}"
 # construye el stream-json al terminar.
 stall_seconds="${DELEGATE_STALL_SECONDS:-900}"
 poll_seconds="${DELEGATE_POLL_SECONDS:-30}"
+# Techo operativo de contexto para los modelos del Token Plan, que el catálogo
+# no conoce: no es su ventana real (una petición de 344 k tokens responde 200)
+# sino un límite por debajo de donde los trabajadores midieron 502 (102 k,
+# 111 k, 114 k; outputs/p2-provider-502-size.txt). Con 110 000 el bucle compacta
+# hacia los 77 k.
+declared_window="${DELEGATE_CONTEXT_WINDOW:-110000}"
 secret="${DELEGATE_SECRET_FILE:-/run/secrets/THYROX_OPENAI_COMPAT_API_KEY}"
 # Doble de prueba: otra orden en lugar de `bash bin/cli` (tests/test_delegate_stall.sh).
 cli="${DELEGATE_CLI:-bin/cli}"
@@ -28,7 +34,7 @@ mkdir -p "$transcript"
 [[ -e "$HOME/.harness" ]] || ln -s "$transcript" "$HOME/.harness"
 cd /home/user/thyrox
 ANTHROPIC_BASE_URL=https://token-plan.maas.qwencloudapi.com/apps/anthropic ANTHROPIC_API_KEY="$(cat "$secret")" \
-  THYROX_CODE_PROMPT_CACHE_TTL=5m \
+  THYROX_CODE_PROMPT_CACHE_TTL=5m THYROX_CODE_DECLARED_CONTEXT_WINDOW="$declared_window" \
   timeout "$timeout_seconds" bash "$cli" -p --model "$model" --setting-sources project --tools Read,Bash --allowedTools Read,Bash \
   --max-turns "$turns" --output-format stream-json --verbose \
   "$(cat "$prompt")" < /dev/null > "$stream" 2> "$workbench/outputs/$item-$model.stderr.log" &

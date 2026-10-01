@@ -1,0 +1,50 @@
+# p2a RED — la prueba nueva falla antes del cambio
+
+Estado: fuente original de podmanJobVerifier.ts (HEAD) + suite con las pruebas nuevas
+
+$ (cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts)
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanJobVerifier.test.ts:
+podmanJobVerifier: sin Podman o sin docker.io/library/ubuntu:24.04 local; el nivel real queda sin medir.
+(pass) la composición del trabajo > con proxy: red host, el proxy declarado y el CA montado de sólo lectura [6.00ms]
+(pass) la composición del trabajo > sin proxy la red es bridge y no se monta ningún CA [4.37ms]
+(pass) la composición del trabajo > el trabajo no recibe credencial ni el almacenamiento de Podman [4.16ms]
+ 99 | })
+100 | 
+101 | describe('la autorización del trabajo', () => {
+102 |   test('corre como una ejecución autorizada: clase registry-operation y la cita de su tarea', async () => {
+103 |     const argv = await createdArgv()
+104 |     expect(argv).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=registry-operation`)
+                       ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--label thyrox.execution-kind=registry-operation"
+Received: "create --name thyrox-worker-artifact-verify-test --label thyrox.owner-kind=pool --label thyrox.owner-id=artifact-verify --label thyrox.owner-pid=1584 --label thyrox.worker-id=artifact-verify-test --cpus 1 --memory 512m --pids-limit 64 --network host --read-only --read-only-tmpfs=false -v /usr/local/bin/bun:/usr/local/bin/bun:ro -v /home/user/thyrox:/w:ro -v /tmp/thyrox-tests-hQGDef/podman-job-verifier-bLOECh/scratch:/scratch:rw -v /host/ca.crt:/certs/ca-bundle.crt:ro --env HOME=/scratch/home --env HTTPS_PROXY=http://10.1.2.3:3128 --env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt --env TMPDIR=/scratch/tmp sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb /usr/local/bin/bun /w/src/packages/artifact-registry/bin/verifyArtifact.ts --registry https://registry.example --repository thyrox/lab --tag v1 --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --work-dir /scratch/blobs --report /scratch/verification.json"
+
+      at <anonymous> (/home/user/thyrox/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts:104:18)
+(fail) la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [4.90ms]
+106 |     expect(argv).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=artifact-verify-test`)
+107 |   })
+108 | 
+109 |   test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
+110 |     const argv = await createdArgv({ taskCitation: 'TASK-THYROX-0001' })
+111 |     expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
+                       ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--label thyrox.execution-reference=task:TASK-THYROX-0001"
+Received: "create --name thyrox-worker-artifact-verify-test --label thyrox.owner-kind=pool --label thyrox.owner-id=artifact-verify --label thyrox.owner-pid=1584 --label thyrox.worker-id=artifact-verify-test --cpus 1 --memory 512m --pids-limit 64 --network host --read-only --read-only-tmpfs=false -v /usr/local/bin/bun:/usr/local/bin/bun:ro -v /home/user/thyrox:/w:ro -v /tmp/thyrox-tests-hQGDef/podman-job-verifier-0O4rdN/scratch:/scratch:rw -v /host/ca.crt:/certs/ca-bundle.crt:ro --env HOME=/scratch/home --env HTTPS_PROXY=http://10.1.2.3:3128 --env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt --env TMPDIR=/scratch/tmp sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb /usr/local/bin/bun /w/src/packages/artifact-registry/bin/verifyArtifact.ts --registry https://registry.example --repository thyrox/lab --tag v1 --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --work-dir /scratch/blobs --report /scratch/verification.json"
+
+      at <anonymous> (/home/user/thyrox/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts:111:18)
+(fail) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [2.19ms]
+(pass) createPodmanJobVerifier con un Podman doble > devuelve el veredicto que el trabajo dejó en su montaje [2.03ms]
+(pass) createPodmanJobVerifier con un Podman doble > un trabajo que sale sin veredicto es unverified con su diagnóstico, nunca verified [2.41ms]
+(skip) createPodmanJobVerifier contra el Podman real > el trabajo materializa y verifica cada blob desde el registry, sin credencial
+
+ 5 pass
+ 1 skip
+ 2 fail
+ 15 expect() calls
+Ran 8 tests across 1 file. [229.00ms]
+exit=1

@@ -259,14 +259,30 @@ def attempt_prompt(workbench: Path, item: PlanItem, failures: list[dict], attemp
 
 # --- efectos: todo lo que ejecuta pasa por una unidad --------------------------------------------
 
-def run_in_unit(name: str, task: str, argv: list[str], network: str | None = None, secrets: tuple[str, ...] = ()) -> tuple[int, str]:
-    """Lanza ``argv`` con thyrox-bg en una ExecutionUnit, espera y devuelve (exit, log)."""
+#: Un trabajador delegado no ve el `.env` del árbol: bun lo carga solo y las
+#: herramientas del trabajador heredan sus secretos, que acaban en la
+#: conversación que viaja al proveedor. Su credencial llega como secreto montado.
+ENV_FILE_MASK = f"/dev/null:{ROOT}/.env:ro"
+
+
+def unit_start_argv(name: str, task: str, argv: list[str], network: str | None = None,
+                    secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = ()) -> list[str]:
+    """La orden de thyrox-bg que lanza ``argv`` en una ExecutionUnit."""
     start = [*BG, "start", name, "--grace", "0", "--task", task, "--kind", "maintenance"]
     if network:
         start += ["--network", network]
     for secret in secrets:
         start += ["--secret-from-env", secret]
-    launched = subprocess.run([*start, "--", *argv], capture_output=True, text=True, cwd=ROOT)
+    for mount in mounts:
+        start += ["--mount", mount]
+    return [*start, "--", *argv]
+
+
+def run_in_unit(name: str, task: str, argv: list[str], network: str | None = None,
+                secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = ()) -> tuple[int, str]:
+    """Lanza ``argv`` con thyrox-bg en una ExecutionUnit, espera y devuelve (exit, log)."""
+    launched = subprocess.run(unit_start_argv(name, task, argv, network, secrets, mounts),
+                              capture_output=True, text=True, cwd=ROOT)
     if launched.returncode != 0:
         # No hubo unidad: es un fallo de lanzamiento, no del trabajo ni del proveedor.
         return LAUNCH_FAILED_EXIT, f"lanzamiento rehusado: {launched.stdout}{launched.stderr}"
@@ -285,6 +301,25 @@ def wait_for_job(name: str, poll_seconds: int = 30) -> str:
     while (status := subprocess.run([*BG, "status", name], capture_output=True, text=True, cwd=ROOT).stdout.strip()) == "running":
         time.sleep(poll_seconds)
     return status
+
+
+def settled_job_dirs() -> list[str]:
+    """Registros de trabajos ya asentados, que viajan con el banco que citan.
+
+    Uno vivo (el propio controlador, el commit en curso) se queda fuera: su log
+    sigue creciendo. Se mide aquí, en el anfitrión, porque dentro de una unidad
+    `thyrox-bg status` no ve los PID del anfitrión.
+    """
+    listing = subprocess.run(["git", "status", "--porcelain", "--", ".claude/jobs"],
+                             capture_output=True, text=True, cwd=ROOT).stdout
+    dirs = sorted({"/".join(line[3:].split("/")[:3]) for line in listing.splitlines() if line[3:].startswith(".claude/jobs/")})
+    settled = []
+    for directory in dirs:
+        name = re.sub(r"-\d{8}T\d{6}$", "", Path(directory).name)
+        status = subprocess.run([*BG, "status", name], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+        if status != "running":
+            settled.append(directory)
+    return settled
 
 
 def job_suffix() -> str:
@@ -338,7 +373,7 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         code, worker_log = run_in_unit(
             f"cont-{item.id}-{attempt}-{stamp}", task,
             ["bash", str(workbench / "probes" / "delegate.sh"), str(workbench), item.id, model, str(prompt), str(item.max_turns)],
-            network="host", secrets=("THYROX_OPENAI_COMPAT_API_KEY",))
+            network="host", secrets=("THYROX_OPENAI_COMPAT_API_KEY",), mounts=(ENV_FILE_MASK,))
         elapsed = time.monotonic() - started
         # El stderr del trabajador sólo es evidencia si lo escribió ESTE intento; uno
         # viejo de otra ejecución clasificaría con un error que ya no ocurre.
@@ -383,14 +418,15 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
 
 def commit_item(workbench: Path, item: PlanItem, task: str, model: str) -> tuple[int, str]:
     """Commit por pathspec de lo que el ítem posee más el banco, y push; en una unidad con red."""
-    paths = " ".join(f"'{path}'" for path in (*item.owned, str(workbench.relative_to(ROOT))))
+    paths = " ".join((*item.owned, str(workbench.relative_to(ROOT)), *settled_job_dirs()))
     script = f"""set -uo pipefail
 cd {ROOT}
-git add -N -- {paths} 2>/dev/null || true
-changed="$(git status --porcelain -- {paths} | wc -l)"
+paths="{paths}"
+git add -N -- $paths 2>/dev/null || true
+changed="$(git status --porcelain -- $paths | wc -l)"
 [ "$changed" -gt 0 ] || {{ echo "sin cambios que commitear"; exit 0; }}
 git commit -q -m "Accept {item.id} of {task} from the continuation controller" \\
-  -m "Delegated to {model}; accepted by its declared verification." -- {paths} || exit 1
+  -m "Delegated to {model}; accepted by its declared verification." -- $paths || exit 1
 for i in 1 2 3 4; do git push -q origin HEAD && exit 0; sleep $((2**i)); done
 exit 1
 """
