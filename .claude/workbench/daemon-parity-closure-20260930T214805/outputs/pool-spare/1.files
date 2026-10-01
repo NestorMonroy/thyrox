@@ -1,0 +1,3 @@
+src/packages/daemon/src/__tests__/bgSpareEntrypoint.test.ts
+src/packages/daemon/src/__tests__/spareClaim.test.ts
+src/packages/daemon/src/spareClaim.ts
