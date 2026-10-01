@@ -12,7 +12,7 @@ import { join } from 'node:path'
 import type { ArtifactRegistry } from '../artifactRegistry.js'
 import { createInProcessVerifier } from '../artifactVerifier.js'
 import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
-import { publishAndVerify, type PublishDependencies, type PublishPlan } from '../publishArtifact.js'
+import { publishAndVerify, RECORD_MEDIA_TYPE, type PublishDependencies, type PublishPlan } from '../publishArtifact.js'
 import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '../testing/fakeOciRegistry.js'
 
 let registry: FakeOciRegistry
@@ -31,7 +31,7 @@ function plan(): PublishPlan {
     exclude: ['id_ed25519'],
     mediaTypeOf: title => (title.endsWith('.gguf') ? 'application/vnd.thyrox.gguf' : 'text/plain'),
     artifactType: 'application/vnd.thyrox.model-artifact.v1',
-    record: { model: 'probe' },
+    recordFor: files => ({ model: 'probe', files }),
     location: { repository: 'thyrox/lab', tag: 'v1' },
   }
 }
@@ -96,5 +96,14 @@ describe('publishAndVerify', () => {
     const outcome = await publishAndVerify(plan(), deps)
     expect(outcome.status).toBe('unverified')
     if (outcome.status === 'unverified') expect(outcome.result.status).toBe('rate_limited')
+  })
+
+  test('el registro permanente viaja como blob de configuración del manifest', async () => {
+    const outcome = await publishAndVerify(plan(), dependencies())
+    if (outcome.status !== 'verified') throw new Error(outcome.status)
+    const consumer = anonymousConsumer()
+    const manifest = await consumer.inspectArtifact(outcome.pinned)
+    if (manifest.status !== 'success') throw new Error(manifest.status)
+    expect(manifest.value.config.mediaType).toBe(RECORD_MEDIA_TYPE)
   })
 })

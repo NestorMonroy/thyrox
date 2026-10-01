@@ -28,8 +28,13 @@ export interface PublishPlan {
   readonly exclude: readonly string[]
   readonly mediaTypeOf: (title: string) => string
   readonly artifactType: string
-  /** El registro que describe el artefacto; viaja como su blob de configuración. */
-  readonly record: unknown
+  /**
+   * El registro permanente que describe el artefacto, compuesto con sus
+   * archivos ya medidos; viaja como su blob de configuración. No lleva el
+   * digest del manifest: ese digest depende de este blob, así que lo guarda
+   * el registro de publicación que se escribe después.
+   */
+  readonly recordFor: (files: readonly ArtifactFile[]) => unknown
   readonly location: ArtifactLocation
 }
 
@@ -66,7 +71,7 @@ export async function publishAndVerify(plan: PublishPlan, deps: PublishDependenc
   const verdict = await deps.admitDisk(needBytes)
   if (verdict !== 'admitted') return { status: 'refused', reason: `la admisión de disco respondió ${verdict} para ${needBytes} bytes más su margen` }
   try {
-    const config = { mediaType: RECORD_MEDIA_TYPE, bytes: new TextEncoder().encode(JSON.stringify(plan.record, null, 2)) }
+    const config = { mediaType: RECORD_MEDIA_TYPE, bytes: new TextEncoder().encode(JSON.stringify(plan.recordFor(files), null, 2)) }
     const pushed = await deps.publisher.pushArtifact({ artifactType: plan.artifactType, files, config, annotations: {} }, plan.location)
     if (pushed.status !== 'success') return { status: 'unpublished', result: pushed }
     const pinned = pushed.value
