@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -46,7 +46,7 @@ function fakeHub(publishedSha256 = GGUF_SHA256) {
     }
     const name = url.split('/').pop()!
     downloads.push(name)
-    return new Response(files[name]!)
+    return new Response(files[name]! as BodyInit)
   }
   return { fetcher, downloads }
 }
@@ -69,7 +69,7 @@ let request: ExternalArtifactRequest
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'external-artifact-'))
-  request = { repository: REPOSITORY, revision: REVISION, file: FILE, sha256: GGUF_SHA256, quantization: 'Q4_K_M',
+  request = { repository: REPOSITORY, revision: REVISION, parts: [{ file: FILE, sha256: GGUF_SHA256 }], quantization: 'Q4_K_M',
     scratchDir: join(root, 'scratch'), runDir: join(root, 'run'), memoryLimitBytes: 1024 ** 3 }
 })
 
@@ -146,5 +146,105 @@ describe('external artifact import', () => {
     expect(outcome.kind).toBe('refused')
     expect(hub.downloads).toHaveLength(0)
     expect(existsSync(join(request.scratchDir, FILE))).toBe(false)
+  })
+})
+
+const SHARDS = ['tiny-q4_k_m-00001-of-00002.gguf', 'tiny-q4_k_m-00002-of-00002.gguf'] as const
+const MERGED = 'tiny-q4_k_m.gguf'
+const SHARD_BYTES = [new Uint8Array([1, 2, 3, 4]), new Uint8Array([5, 6, 7])] as const
+const SHARD_SHA256 = SHARD_BYTES.map(bytes => createHash('sha256').update(bytes).digest('hex'))
+const STILL_SPLIT = syntheticGgufBytes({ tensorCount: 1n, entries: [
+  ['general.architecture', { type: 'string', value: 'qwen2' }],
+  ['general.file_type', { type: 'uint32', value: 15 }],
+  ['split.count', { type: 'uint16', value: 2 }],
+] })
+
+function fakeShardedHub(publishedSha256: readonly string[] = SHARD_SHA256) {
+  const downloads: string[] = []
+  const files: Record<string, Uint8Array | string> = { [SHARDS[0]]: SHARD_BYTES[0], [SHARDS[1]]: SHARD_BYTES[1], 'README.md': README, LICENSE }
+  const fetcher = async (url: string): Promise<Response> => {
+    if (url.includes('/api/models/')) {
+      return Response.json({ sha: REVISION, cardData: { license: 'apache-2.0' }, siblings: [
+        ...SHARDS.map((file, index) => ({ rfilename: file, size: SHARD_BYTES[index]!.length, lfs: { sha256: publishedSha256[index] } })),
+        { rfilename: 'README.md', size: README.length, blobId: gitBlobSha1(README) },
+        { rfilename: 'LICENSE', size: LICENSE.length, blobId: gitBlobSha1(LICENSE) },
+      ] })
+    }
+    const name = url.split('/').pop()!
+    downloads.push(name)
+    return new Response(files[name]! as BodyInit)
+  }
+  return { fetcher, downloads }
+}
+
+/** El laboratorio que además fusiona: `llama-gguf-split --merge` escribe `merged` en la ruta de salida. */
+function fakeMergingLab(scratchDir: () => string, merged: Uint8Array = GGUF) {
+  const validating = fakeLab(scratchDir)
+  const steps: LabStep[] = []
+  const runInLab = async (step: LabStep): Promise<LabStepResult> => {
+    steps.push(step)
+    if (toolOf(step) !== 'llama-gguf-split') return validating.runInLab(step)
+    validating.commands.push('llama-gguf-split')
+    const output = join(scratchDir(), step.command[3]!.replace(/^\/scratch\/?/, ''))
+    writeFileSync(output, merged)
+    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab', containerId: 'lab-id' }
+  }
+  return { runInLab, steps, commands: validating.commands }
+}
+
+describe('external artifact import from official shards', () => {
+  beforeEach(() => {
+    request = { ...request, parts: SHARDS.map((file, index) => ({ file, sha256: SHARD_SHA256[index]! })) }
+  })
+
+  test('merges the shards in the lab and registers the merged GGUF with each official shard in its provenance', async () => {
+    const hub = fakeShardedHub()
+    const lab = fakeMergingLab(() => request.scratchDir)
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    expect(outcome.kind).toBe('completed')
+    expect(lab.steps[0]!.command).toEqual(['llama-gguf-split', '--merge', `/scratch/${SHARDS[0]}`, `/scratch/${MERGED}`])
+    const provenance = JSON.parse(readFileSync(join(request.runDir, 'provenance.json'), 'utf8'))
+    expect(provenance).toMatchObject({
+      provenance: 'external', repository: REPOSITORY, revision: REVISION, file: MERGED, sha256: GGUF_SHA256, bytes: GGUF.length,
+      shards: SHARDS.map((file, index) => ({ file, sha256: SHARD_SHA256[index], bytes: SHARD_BYTES[index]!.length })),
+      assembly: { tool: 'llama-gguf-split --merge', labImageDigest: `sha256:${'b'.repeat(64)}` },
+    })
+    const catalog = JSON.parse(readFileSync(join(root, 'catalog.json'), 'utf8'))
+    expect(catalog.entries).toHaveLength(1)
+    expect(catalog.entries[0].artifact.sha256).toBe(GGUF_SHA256)
+  })
+
+  test('refuses before downloading when any shard is published with another sha256', async () => {
+    const hub = fakeShardedHub([SHARD_SHA256[0]!, 'e'.repeat(64)])
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeMergingLab(() => request.scratchDir).runInLab }))
+    expect(outcome.kind).toBe('refused')
+    expect(hub.downloads).toHaveLength(0)
+  })
+
+  test('refuses before downloading a shard set that is not the complete split', async () => {
+    const hub = fakeShardedHub()
+    const incomplete = { ...request, parts: [request.parts[0]!] }
+    const outcome = await importExternalArtifact(incomplete, deps({ fetcher: hub.fetcher, runInLab: fakeMergingLab(() => request.scratchDir).runInLab }))
+    expect(outcome.kind).toBe('refused')
+    expect(hub.downloads).toHaveLength(0)
+  })
+
+  test('a merge that still declares a split fails instead of registering', async () => {
+    const hub = fakeShardedHub()
+    const lab = fakeMergingLab(() => request.scratchDir, STILL_SPLIT)
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    expect(outcome.kind).toBe('failed')
+    expect(existsSync(join(root, 'catalog.json'))).toBe(false)
+  })
+
+  test('a rerun neither downloads, merges nor validates again', async () => {
+    const hub = fakeShardedHub()
+    const lab = fakeMergingLab(() => request.scratchDir)
+    await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    const [downloads, steps] = [hub.downloads.length, lab.steps.length]
+    const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    expect(second.kind).toBe('completed')
+    expect(hub.downloads.length).toBe(downloads)
+    expect(lab.steps.length).toBe(steps)
   })
 })

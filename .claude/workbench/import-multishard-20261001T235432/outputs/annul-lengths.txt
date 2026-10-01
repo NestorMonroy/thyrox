@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/importArguments.test.ts:
+19 |     const parsed = parseImportArguments([...BASE, '--file', 'm-00001-of-00002.gguf,m-00002-of-00002.gguf', '--sha256', `${A},${B}`])
+20 |     expect(parsed?.request.parts).toEqual([{ file: 'm-00001-of-00002.gguf', sha256: A }, { file: 'm-00002-of-00002.gguf', sha256: B }])
+21 |   })
+22 | 
+23 |   test('a different number of files and digests is not an import', () => {
+24 |     expect(parseImportArguments([...BASE, '--file', 'm-00001-of-00002.gguf,m-00002-of-00002.gguf', '--sha256', A])).toBeUndefined()
+                                                                                                                         ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  request: {
+    repository: "Qwen/Qwen2.5-7B-Instruct-GGUF",
+    revision: "cccccccccccccccccccccccccccccccccccccccc",
+    parts: [
+      {
+        file: "m-00001-of-00002.gguf",
+        sha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      },
+      {
+        file: "m-00002-of-00002.gguf",
+        sha256: undefined,
+      }
+    ],
+    quantization: "Q4_K_M",
+    scratchDir: "/s",
+    runDir: "/r",
+    memoryLimitBytes: 8589934592,
+  },
+  cpus: 4,
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/importArguments.test.ts:24:117)
+(fail) parseImportArguments > a different number of files and digests is not an import [1.08ms]
+
+ 3 pass
+ 1 fail
+ 4 expect() calls
+Ran 4 tests across 1 file. [179.00ms]

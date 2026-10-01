@@ -1,5 +1,5 @@
 # Runtime del laboratorio de cuantización: sólo convert_hf_to_gguf.py, gguf-py,
-# llama-quantize, llama-perplexity y llama-simple, con las dependencias de Python que el
+# llama-quantize, llama-perplexity, llama-simple y llama-gguf-split, con las dependencias de Python que el
 # convertidor declara. Las dos etapas parten de digests fijos, así que la
 # imagen es reproducible; su digest final se registra al construirla.
 #
@@ -37,6 +37,9 @@ RUN python3 -m venv /opt/venv \
 # Inferencia mínima de validación dentro del laboratorio: el artefacto se
 # prueba aquí, nunca llamando a un runtime de inferencia por nombre de modelo.
 COPY --from=llama /app/llama-simple /app/
+# Fusión de un GGUF que su autor publica en shards (`local-models-import`):
+# el artefacto que entra al catálogo es el fusionado, con su sha256 medido.
+COPY --from=llama /app/llama-gguf-split /app/
 ENV PATH=/opt/venv/bin:/app:$PATH \
     LD_LIBRARY_PATH=/app
 WORKDIR /work

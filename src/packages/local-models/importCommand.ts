@@ -1,9 +1,11 @@
 /**
- * `local-models-import run --repository R --revision SHA --file F --sha256 HEX
+ * `local-models-import run --repository R --revision SHA --file F[,F…] --sha256 HEX[,HEX…]
  *  --scratch-dir DIR --run-dir DIR [--memory-limit-bytes N] [--cpus N]`
  *
  * Adquiere un GGUF Q4_K_M publicado por su autor, lo valida en el
  * laboratorio y lo registra con procedencia `external` (TASK-THYROX-0720).
+ * Si el autor lo publica en shards, `--file` lista la partición completa y
+ * `--sha256` el digest de cada shard en el mismo orden.
  * Salidas: 0 hecho · 1 la validación falló · 2 rehusado sin descargar ·
  * 4 otra ejecución tiene el lease.
  */
@@ -24,13 +26,14 @@ import { DEFAULT_LAB_IMAGE, EXIT_LEASE_BUSY, LAB_IMAGE_ENV, optionsOf } from './
 import { ResourceAdmissionCli } from './resourceAdmission.js'
 import { RunLeaseBusyError, RunLeaseUnavailableError, acquireRunLease, globalLeaseStore } from './runLease.js'
 
-export const IMPORT_USAGE = 'uso: local-models-import run --repository R --revision SHA --file F --sha256 HEX '
+export const IMPORT_USAGE = 'uso: local-models-import run --repository R --revision SHA --file F[,F…] --sha256 HEX[,HEX…] '
   + '--scratch-dir DIR --run-dir DIR [--memory-limit-bytes N] [--cpus N]'
 
 /** Un 7B en Q4_K_M sirve con unos 5 GB; 8 GiB deja sitio a la caché KV de la validación. */
 const DEFAULT_MEMORY_LIMIT_BYTES = 8 * 1024 ** 3
 const DEFAULT_CPUS = 4
 const SHA256_PATTERN = /^[0-9a-f]{64}$/
+const LIST_SEPARATOR = ','
 
 interface ImportArguments {
   readonly request: ExternalArtifactRequest
@@ -38,7 +41,7 @@ interface ImportArguments {
 }
 
 export async function runImportCommand(argv: readonly string[], context: CommandContext): Promise<number> {
-  const parsed = parseArguments(argv)
+  const parsed = parseImportArguments(argv)
   if (parsed === undefined) {
     context.output.stderr(IMPORT_USAGE)
     return EXIT_REFUSED
@@ -88,7 +91,7 @@ async function acquire(parsed: ImportArguments, context: CommandContext): Promis
   return outcome.kind === 'refused' ? EXIT_REFUSED : EXIT_NOT_APPROVED
 }
 
-function parseArguments(argv: readonly string[]): ImportArguments | undefined {
+export function parseImportArguments(argv: readonly string[]): ImportArguments | undefined {
   const [subcommand, ...rest] = argv
   if (subcommand !== 'run') return undefined
   const options = optionsOf(rest)
@@ -96,9 +99,11 @@ function parseArguments(argv: readonly string[]): ImportArguments | undefined {
   const { repository, revision, file, sha256 } = options
   const scratchDir = options['scratch-dir']
   const runDir = options['run-dir']
-  if (!repository || !revision || !file || !sha256 || !SHA256_PATTERN.test(sha256) || !scratchDir || !runDir) return undefined
+  if (!repository || !revision || !file || !sha256 || !scratchDir || !runDir) return undefined
+  const [files, digests] = [file.split(LIST_SEPARATOR), sha256.split(LIST_SEPARATOR)]
+  if (files.length !== digests.length || files.some(name => !name) || !digests.every(digest => SHA256_PATTERN.test(digest))) return undefined
   return {
-    request: { repository, revision, file, sha256, quantization: 'Q4_K_M', scratchDir: resolve(scratchDir), runDir: resolve(runDir),
+    request: { repository, revision, parts: files.map((name, index) => ({ file: name, sha256: digests[index]! })), quantization: 'Q4_K_M', scratchDir: resolve(scratchDir), runDir: resolve(runDir),
       memoryLimitBytes: Number(options['memory-limit-bytes'] ?? DEFAULT_MEMORY_LIMIT_BYTES) },
     cpus: Number(options.cpus ?? DEFAULT_CPUS),
   }

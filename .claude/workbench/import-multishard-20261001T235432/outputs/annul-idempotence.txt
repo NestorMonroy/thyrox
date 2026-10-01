@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/externalArtifact.test.ts:
+243 |     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+244 |     const [downloads, steps] = [hub.downloads.length, lab.steps.length]
+245 |     const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+246 |     expect(second.kind).toBe('completed')
+247 |     expect(hub.downloads.length).toBe(downloads)
+248 |     expect(lab.steps.length).toBe(steps)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 6
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:248:30)
+(fail) external artifact import from official shards > a rerun neither downloads, merges nor validates again [33.43ms]
+
+ 10 pass
+ 1 fail
+ 29 expect() calls
+Ran 11 tests across 1 file. [318.00ms]

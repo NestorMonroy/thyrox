@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/externalArtifact.test.ts:
+128 |     return { version, tensorCount, metadata: await this.readEntries(kvCount) }
+129 |   }
+130 | 
+131 |   private async readMagic(): Promise<void> {
+132 |     const magic = String.fromCharCode(...await this.cursor.takeBytes(GGUF_MAGIC.length))
+133 |     if (magic !== GGUF_MAGIC) throw new InvalidGgufError(this.path, `magia «${magic}», se espera «${GGUF_MAGIC}»`)
+                                          ^
+InvalidGgufError: GGUF inválido (/tmp/thyrox-tests-GT1eN1/external-artifact-gYzXrz/scratch/tiny-q4_k_m-00001-of-00002.gguf): magia «», se espera «GGUF»
+ path: "/tmp/thyrox-tests-GT1eN1/external-artifact-gYzXrz/scratch/tiny-q4_k_m-00001-of-00002.gguf",
+
+      at readMagic (/home/user/thyrox/src/packages/model-artifacts/ggufMetadata.ts:133:37)
+      at async read (/home/user/thyrox/src/packages/model-artifacts/ggufMetadata.ts:123:16)
+      at async readGgufMetadata (/home/user/thyrox/src/packages/model-artifacts/ggufMetadata.ts:66:49)
+      at async readGgufFacts (/home/user/thyrox/src/packages/local-models/ggufValidation.ts:75:24)
+      at async validateGgufArtifact (/home/user/thyrox/src/packages/local-models/ggufValidation.ts:81:30)
+      at async acquire (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:234:27)
+      at async importExternalArtifact (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:132:18)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:227:27)
+(fail) external artifact import from official shards > refuses before downloading a shard set that is not the complete split [7.16ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [336.00ms]
