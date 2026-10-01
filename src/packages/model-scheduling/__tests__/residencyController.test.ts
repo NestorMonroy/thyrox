@@ -13,6 +13,8 @@
  */
 import { beforeEach, describe, expect, test } from 'bun:test'
 
+import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
+
 import { ResidencyRegistry } from '../residency.ts'
 import { ResidencyController, type Admission } from '../residencyController.ts'
 import type { ExecutionPlan } from '../scheduler.ts'
@@ -24,9 +26,7 @@ const PLAN: ExecutionPlan = {
   requestId: 'request-1',
   owner: 'coordinator-a',
   residencyKey: RESIDENCY,
-  model: 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf',
-  revision: '7ae557604adf67be50417f59c2c2f167def9a775',
-  artifact: { format: 'gguf', sha256: 'b'.repeat(64), bytes: 397_807_712 },
+  artifact: resolvedArtifact(),
   runtime: 'ollama',
   placement: { kind: 'gpu', devices: ['GPU-0'] },
   residencyVramMib: 6_000,

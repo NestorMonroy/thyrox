@@ -18,8 +18,8 @@
  * `/api/delete` en este adapter.
  */
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
-import { parseThyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
 import { normalizeQuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
+import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type {
   ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, ObservedArtifactIdentity,
   ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
@@ -64,17 +64,17 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
   }
 
   async prepareRuntimeArtifact(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
-    const sha256 = grant.artifact.sha256
+    const sha256 = grant.artifact.artifactId
     return this.mutate(binding, async api => {
       if (!await api.hasBlob(sha256)) await api.pushBlob(sha256, this.options.artifactPath(sha256))
-      await api.createModel(grant.model, sha256)
+      await api.createModel(grant.artifact.modelId, sha256)
     })
   }
 
   async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
-    const expected = grantIdentity(grant)
+    const expected = grant.artifact
     try {
-      const observed = await observeIdentity(apiOf(unit), grant.model)
+      const observed = await observeIdentity(apiOf(unit), expected.modelId)
       if (observed && identityMatches(expected, observed)) return { status: 'matches', observed }
       return { status: 'mismatch', expected, observed }
     } catch (error) {
@@ -83,16 +83,16 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
   }
 
   async loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
-    return this.mutate(binding, () => setKeepAlive(binding.unit, grant.model, KEEP_ALIVE_FOREVER))
+    return this.mutate(binding, () => setKeepAlive(binding.unit, grant.artifact.modelId, KEEP_ALIVE_FOREVER))
   }
 
   async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
     try {
       const api = apiOf(unit)
-      if (!(await api.residentModelNames()).includes(expected.model)) return { status: 'absent' }
-      const observed = await observeIdentity(api, expected.model)
+      if (!(await api.residentModelNames()).includes(expected.artifact.modelId)) return { status: 'absent' }
+      const observed = await observeIdentity(api, expected.artifact.modelId)
       if (!observed) return { status: 'absent' }
-      if (observed.sha256 !== expected.sha256) return { status: 'mismatch', observed }
+      if (!identityMatches(expected.artifact, observed)) return { status: 'mismatch', observed }
       return { status: 'resident', observed }
     } catch (error) {
       return { status: 'error', reason: reasonOf(error) }
@@ -100,7 +100,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
   }
 
   async unloadResidency(binding: ResidencyBinding): Promise<RuntimeMutationOutcome> {
-    return this.mutate(binding, () => setKeepAlive(binding.unit, binding.unit.model, KEEP_ALIVE_UNLOAD))
+    return this.mutate(binding, () => setKeepAlive(binding.unit, binding.unit.artifact.modelId, KEEP_ALIVE_UNLOAD))
   }
 
   /** Corre `change` sólo si la generación del binding es la vigente; un error del runtime es `failed`. */
@@ -134,27 +134,28 @@ async function observeIdentity(api: OllamaApi, model: string): Promise<ObservedA
   const details = await api.findModelDetails(model)
   if (!details) return undefined
   return {
-    model,
-    sha256: FROM_BLOB_DIGEST.exec(details.modelfile)?.[1],
-    quantization: details.quantizationLevel === '' ? undefined : details.quantizationLevel,
+    modelId: model,
+    artifactId: FROM_BLOB_DIGEST.exec(details.modelfile)?.[1],
+    format: details.format === '' ? undefined : details.format,
+    quantization: canonicalQuantization(details.quantizationLevel),
   }
 }
 
-/** Lo que el grant concede: el blob y, si el nombre es del contrato, su cuantización. */
-function grantIdentity(grant: ExecutionGrant): ObservedArtifactIdentity {
-  return { model: grant.model, sha256: grant.artifact.sha256, quantization: parseThyroxModelName(grant.model)?.quantization }
+/**
+ * El runtime sirve exactamente la identidad concedida: el mismo nombre, el
+ * mismo blob, el mismo formato y la misma cuantización. La revisión no es
+ * observable en Ollama; la ata el blob, que el catálogo resolvió para ella.
+ */
+function identityMatches(expected: ResolvedModelArtifact, observed: ObservedArtifactIdentity): boolean {
+  return observed.modelId === expected.modelId
+    && observed.artifactId === expected.artifactId
+    && observed.format === expected.format
+    && observed.quantization === expected.quantization
 }
 
-/** Mismo blob y, cuando el grant la declara, la misma cuantización canónica. */
-function identityMatches(expected: ObservedArtifactIdentity, observed: ObservedArtifactIdentity): boolean {
-  if (observed.sha256 !== expected.sha256) return false
-  if (expected.quantization === undefined) return true
-  return canonicalQuantization(observed.quantization) === canonicalQuantization(expected.quantization)
-}
-
-/** La forma canónica de una cuantización; una que el catálogo no conoce no coincide con ninguna. */
-function canonicalQuantization(level: string | undefined): string | undefined {
-  if (level === undefined) return undefined
+/** La forma canónica de una cuantización; vacía o desconocida es `undefined` y no coincide con ninguna. */
+function canonicalQuantization(level: string): string | undefined {
+  if (level === '') return undefined
   try {
     return normalizeQuantizationLevel(level)
   } catch {

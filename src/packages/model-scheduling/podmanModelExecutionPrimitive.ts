@@ -10,6 +10,10 @@
  * retira el contenedor de la unidad y nada más.
  */
 import type { ExecutionGrant, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
+import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
+import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
+import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
+import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
@@ -22,6 +26,13 @@ export const MODEL_UNIT_LABELS = {
   unit: 'thyrox.model.unit',
   grant: 'thyrox.model.grant',
   model: 'thyrox.model.name',
+  repository: 'thyrox.model.repository',
+  source: 'thyrox.model.source',
+  /** Revisión completa, nunca sus 12 primeros hex. */
+  revision: 'thyrox.model.revision',
+  format: 'thyrox.model.format',
+  quantization: 'thyrox.model.quantization',
+  bytes: 'thyrox.model.bytes',
   residency: 'thyrox.model.residency',
   generation: 'thyrox.model.generation',
   sha256: 'thyrox.model.sha256',
@@ -39,7 +50,8 @@ type ModelUnitLabelKey = keyof typeof MODEL_UNIT_LABELS
  * `devices` no está: su ausencia se lee como «sin dispositivos».
  */
 const REQUIRED_LABEL_KEYS: readonly ModelUnitLabelKey[] = [
-  'unit', 'grant', 'model', 'residency', 'generation', 'sha256', 'runtime', 'port', 'createdAt',
+  'unit', 'grant', 'model', 'repository', 'source', 'revision', 'format', 'quantization', 'bytes',
+  'residency', 'generation', 'sha256', 'runtime', 'port', 'createdAt',
 ]
 
 /** Cómo se levanta el contenedor de un runtime: imagen local y entorno según el puerto de loopback. */
@@ -113,10 +125,16 @@ function unitLabels(spec: ModelUnitContainerSpec): Record<ModelUnitLabelKey, str
   return {
     unit: spec.unitId,
     grant: grant.grantId,
-    model: grant.model,
+    model: grant.artifact.modelId,
+    repository: grant.artifact.repository,
+    source: grant.artifact.source,
+    revision: grant.artifact.revision,
+    format: grant.artifact.format,
+    quantization: grant.artifact.quantization,
+    bytes: String(grant.artifact.bytes),
     residency: grant.residency.instance,
     generation: String(grant.residency.generation),
-    sha256: grant.artifact.sha256,
+    sha256: grant.artifact.artifactId,
     runtime: grant.runtime,
     port: String(spec.port),
     createdAt: spec.createdAt,
@@ -190,12 +208,12 @@ function unitFromContainer(container: ListedContainer): ExecutionUnit | undefine
   const generation = parseInteger(label('generation'))
   const port = parseInteger(label('port'))
   const runtime = label('runtime')
-  if (generation === undefined || port === undefined || !isKnownRuntime(runtime)) return undefined
+  const artifact = artifactFromLabels(label)
+  if (generation === undefined || port === undefined || !isKnownRuntime(runtime) || artifact === undefined) return undefined
   return {
     unitId: label('unit'),
     grantId: label('grant'),
-    model: label('model'),
-    artifactSha256: label('sha256'),
+    artifact,
     residencyKey: label('residency'),
     generation,
     runtime,
@@ -263,8 +281,7 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
     const unit: ExecutionUnit = {
       unitId,
       grantId: grant.grantId,
-      model: grant.model,
-      artifactSha256: grant.artifact.sha256,
+      artifact: grant.artifact,
       residencyKey: grant.residency.instance,
       generation: grant.residency.generation,
       runtime: grant.runtime,
@@ -292,4 +309,27 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
 
 function partialFailure(unitId: string, reason: string): MaterializationOutcome {
   return { status: 'failed', reason, partial: true, unitId }
+}
+
+const MODEL_SOURCES: readonly string[] = ['hf', 'ollama'] satisfies readonly ModelSource[]
+const ARTIFACT_FORMATS: readonly string[] = ['gguf', 'ollama-registry'] satisfies readonly ArtifactFormat[]
+
+/** La identidad resuelta que las etiquetas declaran; incompleta o ilegible es `undefined`. */
+function artifactFromLabels(label: (key: ModelUnitLabelKey) => string): ResolvedModelArtifact | undefined {
+  const source = label('source')
+  const format = label('format')
+  const quantization = label('quantization')
+  const bytes = parseInteger(label('bytes'))
+  if (!MODEL_SOURCES.includes(source) || !ARTIFACT_FORMATS.includes(format)) return undefined
+  if (!Object.hasOwn(QUANTIZATION_LEVELS, quantization) || bytes === undefined) return undefined
+  return {
+    modelId: label('model'),
+    repository: label('repository'),
+    source: source as ModelSource,
+    revision: label('revision'),
+    artifactId: label('sha256'),
+    format: format as ArtifactFormat,
+    quantization: quantization as QuantizationLevel,
+    bytes,
+  }
 }

@@ -8,7 +8,7 @@
  * son de la unidad que la primitiva crea a partir de él.
  */
 
-import type { CatalogArtifact } from './catalogEntry.js'
+import type { ResolvedModelArtifact } from './resolvedModelArtifact.js'
 import type { KvCacheType } from './memoryEstimate.js'
 
 /** Runtimes subordinados que un grant puede nombrar. */
@@ -37,11 +37,8 @@ export interface ResidencyAssignment {
 export interface ExecutionGrant {
   readonly grantId: string
   readonly requestId: string
-  /** Nombre contractual del catálogo. */
-  readonly model: string
-  /** Revisión completa del artefacto. */
-  readonly revision: string
-  readonly artifact: CatalogArtifact
+  /** Identidad exacta: modelo, revisión completa, artefacto, formato y cuantización. */
+  readonly artifact: ResolvedModelArtifact
   readonly runtime: ModelRuntime
   readonly placement: ExecutionPlacement
   readonly residency: ResidencyAssignment

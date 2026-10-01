@@ -9,6 +9,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelExecutionPrimitive } from '../podmanModelExecutionPrimitive.ts'
@@ -21,9 +22,7 @@ const CONTAINER_ID = 'c0ffee'.repeat(10) + 'abcd'
 const GRANT: ExecutionGrant = {
   grantId: 'grant-request-1',
   requestId: 'request-1',
-  model: 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf',
-  revision: '7ae557604adf67be50417f59c2c2f167def9a775',
-  artifact: { format: 'gguf', sha256: SHA, bytes: 397_807_712 },
+  artifact: resolvedArtifact({ artifactId: SHA }),
   runtime: 'ollama',
   placement: { kind: 'gpu', devices: [GPU] },
   residency: { mode: 'create', instance: 'residency/qwen/gpu0', generation: 3 },
@@ -114,7 +113,7 @@ describe('PodmanModelExecutionPrimitive: materializar', () => {
     if (outcome.status !== 'materialized') throw new Error(JSON.stringify(outcome))
     expect(verbs(podman)).toEqual(['create', 'start', 'inspect'])
     expect(outcome.unit).toMatchObject({
-      grantId: GRANT.grantId, model: GRANT.model, artifactSha256: SHA, residencyKey: GRANT.residency.instance,
+      grantId: GRANT.grantId, artifact: GRANT.artifact, residencyKey: GRANT.residency.instance,
       generation: 3, runtime: 'ollama', endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID,
       devices: [GPU], hostPids: [4242], cgroup: '/machine.slice/libpod-x.scope', createdAt: NOW.toISOString(),
     })
@@ -132,6 +131,9 @@ describe('PodmanModelExecutionPrimitive: materializar', () => {
     for (const [key, value] of [
       [MODEL_UNIT_LABELS.unit, outcome.unit.unitId], [MODEL_UNIT_LABELS.grant, GRANT.grantId],
       [MODEL_UNIT_LABELS.residency, GRANT.residency.instance], [MODEL_UNIT_LABELS.generation, '3'], [MODEL_UNIT_LABELS.sha256, SHA],
+      [MODEL_UNIT_LABELS.model, GRANT.artifact.modelId], [MODEL_UNIT_LABELS.revision, GRANT.artifact.revision],
+      [MODEL_UNIT_LABELS.quantization, GRANT.artifact.quantization], [MODEL_UNIT_LABELS.format, 'gguf'],
+      [MODEL_UNIT_LABELS.repository, GRANT.artifact.repository], [MODEL_UNIT_LABELS.source, 'hf'], [MODEL_UNIT_LABELS.bytes, String(GRANT.artifact.bytes)],
     ]) expect(create).toContain(`--label ${key}=${value}`)
     expect(podman.calls[0]).toContain('docker.io/ollama/ollama:0.35.0')
   })
@@ -172,7 +174,10 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
 
   test('units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos', async () => {
     const labels = {
-      [MODEL_UNIT_LABELS.unit]: 'unit-a', [MODEL_UNIT_LABELS.grant]: 'grant-a', [MODEL_UNIT_LABELS.model]: GRANT.model,
+      [MODEL_UNIT_LABELS.unit]: 'unit-a', [MODEL_UNIT_LABELS.grant]: 'grant-a', [MODEL_UNIT_LABELS.model]: GRANT.artifact.modelId,
+      [MODEL_UNIT_LABELS.repository]: GRANT.artifact.repository, [MODEL_UNIT_LABELS.source]: GRANT.artifact.source,
+      [MODEL_UNIT_LABELS.revision]: GRANT.artifact.revision, [MODEL_UNIT_LABELS.format]: GRANT.artifact.format,
+      [MODEL_UNIT_LABELS.quantization]: GRANT.artifact.quantization, [MODEL_UNIT_LABELS.bytes]: String(GRANT.artifact.bytes),
       [MODEL_UNIT_LABELS.residency]: 'residency/qwen/gpu0', [MODEL_UNIT_LABELS.generation]: '3', [MODEL_UNIT_LABELS.sha256]: SHA,
       [MODEL_UNIT_LABELS.runtime]: 'ollama', [MODEL_UNIT_LABELS.port]: String(PORT), [MODEL_UNIT_LABELS.createdAt]: NOW.toISOString(),
     }
@@ -183,7 +188,7 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
     const podman = healthyPodman({ ps: ok(listed) })
     const units = await primitiveWith(podman).units()
     expect(units).toHaveLength(1)
-    expect(units[0]).toMatchObject({ unitId: 'unit-a', grantId: 'grant-a', generation: 3, artifactSha256: SHA, endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID })
+    expect(units[0]).toMatchObject({ unitId: 'unit-a', grantId: 'grant-a', generation: 3, artifact: GRANT.artifact, endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID })
   })
 
   test('nunca borra imágenes ni volúmenes', async () => {
@@ -192,5 +197,17 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
     await primitive.materialize(GRANT)
     await primitive.destroy('unit-a')
     expect(podman.calls.some(call => call[0] === 'rmi' || (call[0] === 'volume' && call[1] === 'rm') || (call[0] === 'image' && call[1] === 'rm'))).toBe(false)
+  })
+})
+
+describe('PodmanModelExecutionPrimitive: identidad completa', () => {
+  test('una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva', async () => {
+    const labels = {
+      [MODEL_UNIT_LABELS.unit]: 'unit-a', [MODEL_UNIT_LABELS.grant]: 'grant-a', [MODEL_UNIT_LABELS.model]: GRANT.artifact.modelId,
+      [MODEL_UNIT_LABELS.residency]: 'residency/qwen/gpu0', [MODEL_UNIT_LABELS.generation]: '3', [MODEL_UNIT_LABELS.sha256]: SHA,
+      [MODEL_UNIT_LABELS.runtime]: 'ollama', [MODEL_UNIT_LABELS.port]: String(PORT), [MODEL_UNIT_LABELS.createdAt]: NOW.toISOString(),
+    }
+    const listed = JSON.stringify([{ Id: CONTAINER_ID, Names: [`${MODEL_UNIT_CONTAINER_PREFIX}unit-a`], Labels: labels, Pid: 4242 }])
+    expect(await primitiveWith(healthyPodman({ ps: ok(listed) })).units()).toEqual([])
   })
 })

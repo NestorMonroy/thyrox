@@ -27,6 +27,9 @@ export interface FakeOllamaRuntime {
   loadWithoutResidency: boolean
   /** Hace que `/api/ps` responda 500. */
   psFails: boolean
+  /** La cuantización y el formato que `/api/show` informa de cualquier modelo. */
+  servedQuantization: string
+  servedFormat: string
   stop(): Promise<void>
 }
 
@@ -51,7 +54,7 @@ export function startFakeOllamaRuntime(): FakeOllamaRuntime {
   const blobs = new Map<string, number>()
   const models = new Map<string, string>()
   const resident = new Set<string>()
-  const state = { loadWithoutResidency: false, psFails: false }
+  const state = { loadWithoutResidency: false, psFails: false, servedQuantization: 'Q4_K_M', servedFormat: 'gguf' }
 
   async function handle(request: Request): Promise<Response> {
     const path = new URL(request.url).pathname
@@ -85,7 +88,7 @@ export function startFakeOllamaRuntime(): FakeOllamaRuntime {
     if (path === '/api/show') {
       const sha = models.get(String(body?.model))
       if (!sha) return json({ error: 'model not found' }, HTTP_NOT_FOUND)
-      return json({ modelfile: `FROM /root/.ollama/models/blobs/sha256-${sha}\n`, details: { quantization_level: 'Q4_K_M' }, capabilities: ['completion'] })
+      return json({ modelfile: `FROM /root/.ollama/models/blobs/sha256-${sha}\n`, details: { format: state.servedFormat, quantization_level: state.servedQuantization }, capabilities: ['completion'] })
     }
     if (path === '/api/generate') {
       const name = String(body?.model)
@@ -108,6 +111,10 @@ export function startFakeOllamaRuntime(): FakeOllamaRuntime {
     set loadWithoutResidency(value: boolean) { state.loadWithoutResidency = value },
     get psFails() { return state.psFails },
     set psFails(value: boolean) { state.psFails = value },
+    get servedQuantization() { return state.servedQuantization },
+    set servedQuantization(value: string) { state.servedQuantization = value },
+    get servedFormat() { return state.servedFormat },
+    set servedFormat(value: string) { state.servedFormat = value },
     stop: async () => { await server.stop(true) },
   }
 }

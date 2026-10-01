@@ -11,6 +11,8 @@
  * semántica que `pool_lifecycle` aplica a los ítems de pool, aquí obligatoria.
  */
 
+import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+
 export type ResidencyState = 'planned' | 'materializing' | 'loading' | 'resident' | 'draining' | 'evicting' | 'absent' | 'error'
 
 export const RESIDENCY_TRANSITIONS: Readonly<Record<ResidencyState, readonly ResidencyState[]>> = {
@@ -27,7 +29,8 @@ export const RESIDENCY_TRANSITIONS: Readonly<Record<ResidencyState, readonly Res
 export interface ModelResidency {
   readonly residencyKey: string
   readonly generation: number
-  readonly model: string
+  /** Modelo, revisión completa, artefacto, formato y cuantización que la residencia sirve. */
+  readonly artifact: ResolvedModelArtifact
   readonly state: ResidencyState
   readonly grantId?: string
   readonly unitId?: string
@@ -74,10 +77,10 @@ export class ResidencyRegistry {
   }
 
   /** Abre una residencia `planned` en la generación del lease que la coordina; reemplaza a una `absent`. */
-  plan(residencyKey: string, generation: number, model: string): ModelResidency {
+  plan(residencyKey: string, generation: number, artifact: ResolvedModelArtifact): ModelResidency {
     const existing = this.residencies.get(residencyKey)
     if (existing && existing.state !== 'absent') throw new InvalidResidencyTransitionError(residencyKey, existing.state, 'planned')
-    return this.store({ residencyKey, generation, model, state: 'planned', activeRequests: 0 })
+    return this.store({ residencyKey, generation, artifact, state: 'planned', activeRequests: 0 })
   }
 
   /** Mueve la residencia si la generación presentada es la vigente y la tabla admite el paso. */

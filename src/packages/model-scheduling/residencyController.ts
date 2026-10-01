@@ -106,7 +106,7 @@ function bindingOf(unit: ExecutionUnit): ResidencyBinding {
 }
 
 function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
-  return { residencyKey: unit.residencyKey, generation: unit.generation, model: unit.model, sha256: unit.artifactSha256 }
+  return { residencyKey: unit.residencyKey, generation: unit.generation, artifact: unit.artifact }
 }
 
 function mutationFailure(outcome: Exclude<RuntimeMutationOutcome, { status: 'done' }>): string {
@@ -169,7 +169,7 @@ export class ResidencyController {
     if (acquisition.status !== 'acquired') return { status: 'refused', stage: 'lease', reason: leaseRefusal(acquisition) }
     const compensations = new CompensationStack()
     compensations.push(() => this.releaseLease(acquisition.lease))
-    this.dependencies.registry.plan(plan.residencyKey, acquisition.lease.generation, plan.model)
+    this.dependencies.registry.plan(plan.residencyKey, acquisition.lease.generation, plan.artifact)
     return this.reserveAndIssue({ plan, lease: acquisition.lease, compensations })
   }
 
@@ -220,7 +220,7 @@ export class ResidencyController {
     if (prepared.status !== 'done') return this.fail(establishment, 'prepare', mutationFailure(prepared))
     const identity = await runtime.verifyArtifactIdentity(unit, grant)
     if (identity.status === 'failed') return this.fail(establishment, 'verify', identity.reason)
-    if (identity.status === 'mismatch') return this.fail(establishment, 'verify', `el runtime sirve ${identity.observed?.sha256}, el grant concede ${identity.expected.sha256}`)
+    if (identity.status === 'mismatch') return this.fail(establishment, 'verify', `el runtime sirve ${JSON.stringify(identity.observed)}, el grant concede ${identity.expected.modelId} ${identity.expected.artifactId}`)
     const loaded = await runtime.loadResidency(bindingOf(unit), grant)
     if (loaded.status !== 'done') return this.fail(establishment, 'load', mutationFailure(loaded))
     const observed = await runtime.observeResidency(unit, expectedResidencyOf(unit))

@@ -4,11 +4,12 @@
  * cadena y de sus compensaciones, y se le puede ordenar fallar en un paso.
  */
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 
 import type { GenerationLease, LeaseAcquisition, LeaseValidity, ModelSchedulingCoordination, MutationOperation } from '../coordination.ts'
 import type {
   ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, MaterializationOutcome, ModelExecutionPrimitive,
-  ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
+  ObservedArtifactIdentity, ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
 } from '../executionPrimitive.ts'
 import type { ExecutionPlan, GrantIssuer, IssueOutcome } from '../scheduler.ts'
 import type { RequestAllocation, RequestAllocationOutcome, ReservationOutcome, ResidencyVramLedger, VramReservation, VramReservationRequest } from '../vramLedger.ts'
@@ -136,8 +137,6 @@ export class FakeIssuer implements GrantIssuer {
     const grant: ExecutionGrant = {
       grantId: `grant-${plan.requestId}`,
       requestId: plan.requestId,
-      model: plan.model,
-      revision: plan.revision,
       artifact: plan.artifact,
       runtime: plan.runtime,
       placement: plan.placement,
@@ -180,7 +179,7 @@ export class FakePrimitive implements ModelExecutionPrimitive {
     const unitId = `unit-${grant.grantId}`
     if (this.outcome === 'failed-clean') return { status: 'failed', reason: 'podman create falló', partial: false }
     const unit: ExecutionUnit = {
-      unitId, grantId: grant.grantId, model: grant.model, artifactSha256: grant.artifact.sha256, residencyKey: grant.residency.instance,
+      unitId, grantId: grant.grantId, artifact: grant.artifact, residencyKey: grant.residency.instance,
       generation: grant.residency.generation, runtime: grant.runtime, endpoint: 'http://127.0.0.1:61000',
       containerId: `container-${unitId}`, devices: grant.placement.kind === 'gpu' ? grant.placement.devices : [],
       hostPids: [4242], createdAt: '2026-10-01T00:00:00.000Z',
@@ -230,8 +229,8 @@ export class FakeRuntime implements RuntimeAdapter {
   observeAs: ObservedResidency['status'] | undefined
   /** Se ejecuta tras cargar: permite que otro coordinador tome la residencia en medio. */
   afterLoad: (() => void) | undefined
-  /** unitId → modelo residente. */
-  readonly loaded = new Map<string, string>()
+  /** unitId → identidad residente. */
+  readonly loaded = new Map<string, ResolvedModelArtifact>()
 
   /** Sin coordinación, el doble no comprueba la generación de las mutaciones. */
   constructor(private readonly journal: Journal, private readonly coordination?: ModelSchedulingCoordination) {}
@@ -254,9 +253,8 @@ export class FakeRuntime implements RuntimeAdapter {
 
   async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
     this.journal.push(`runtime.verifyArtifactIdentity ${unit.unitId}`)
-    const expected = { model: grant.model, sha256: grant.artifact.sha256, quantization: undefined }
-    const observed = { ...expected, sha256: this.servesSha256 ?? grant.artifact.sha256 }
-    return observed.sha256 === expected.sha256 ? { status: 'matches', observed } : { status: 'mismatch', expected, observed }
+    const observed = this.observedIdentity(grant.artifact)
+    return observed.artifactId === grant.artifact.artifactId ? { status: 'matches', observed } : { status: 'mismatch', expected: grant.artifact, observed }
   }
 
   async loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
@@ -265,17 +263,17 @@ export class FakeRuntime implements RuntimeAdapter {
     if (stale) return stale
     if (this.staleOnLoad) return { status: 'stale_generation', currentGeneration: binding.generation + 1 }
     if (this.fail) return { status: 'failed', reason: 'el runtime no cargó el modelo' }
-    this.loaded.set(binding.unit.unitId, grant.model)
+    this.loaded.set(binding.unit.unitId, grant.artifact)
     this.afterLoad?.()
     return { status: 'done' }
   }
 
   async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
     this.journal.push(`runtime.observeResidency ${unit.unitId}`)
-    const model = this.loaded.get(unit.unitId)
-    const status = this.observeAs ?? (model === undefined ? 'absent' : 'resident')
-    const observed = { model: model ?? expected.model, sha256: this.servesSha256 ?? expected.sha256, quantization: undefined }
-    if (status === 'resident' && (observed.model !== expected.model || observed.sha256 !== expected.sha256)) return { status: 'mismatch', observed }
+    const resident = this.loaded.get(unit.unitId)
+    const status = this.observeAs ?? (resident === undefined ? 'absent' : 'resident')
+    const observed = this.observedIdentity(resident ?? expected.artifact)
+    if (status === 'resident' && !matchesIdentity(expected.artifact, observed)) return { status: 'mismatch', observed }
     if (status === 'resident' || status === 'mismatch') return { status, observed }
     if (status === 'error') return { status, reason: 'el runtime no respondió a la observación' }
     return { status }
@@ -290,10 +288,20 @@ export class FakeRuntime implements RuntimeAdapter {
     return { status: 'done' }
   }
 
+  /** Lo que el runtime informaría de `artifact`, salvo el digest que la prueba ordene servir. */
+  private observedIdentity(artifact: ResolvedModelArtifact): ObservedArtifactIdentity {
+    return { modelId: artifact.modelId, artifactId: this.servesSha256 ?? artifact.artifactId, format: artifact.format, quantization: artifact.quantization }
+  }
+
   /** La comprobación que el adapter real hace antes de tocar el runtime. */
   private async staleGeneration(binding: ResidencyBinding): Promise<RuntimeMutationOutcome | undefined> {
     if (!this.coordination) return undefined
     const current = await this.coordination.currentGeneration(binding.residencyKey)
     return current === binding.generation ? undefined : { status: 'stale_generation', currentGeneration: current }
   }
+}
+
+function matchesIdentity(expected: ResolvedModelArtifact, observed: ObservedArtifactIdentity): boolean {
+  return observed.modelId === expected.modelId && observed.artifactId === expected.artifactId
+    && observed.format === expected.format && observed.quantization === expected.quantization
 }

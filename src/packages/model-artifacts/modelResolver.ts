@@ -9,9 +9,10 @@
  * ninguna capa cambia la cuantización en silencio).
  */
 
-import type { CatalogArtifact, ModelCapability, ModelCatalogEntry } from './catalogEntry.js'
+import type { ModelCapability, ModelCatalogEntry } from './catalogEntry.js'
 import { estimateServingMemoryFromShape, type KvCacheType, type ServingMemoryEstimate } from './memoryEstimate.js'
 import { normalizeQuantizationLevel } from './quantizationLevel.js'
+import { resolvedArtifactOf, type ResolvedModelArtifact } from './resolvedModelArtifact.js'
 
 /** Petición por repositorio: los filtros ausentes no restringen. */
 export interface ModelRepositoryRequest {
@@ -31,7 +32,8 @@ export interface ModelExecutionRequest {
 
 export interface ResolvedModel {
   readonly entry: ModelCatalogEntry
-  readonly artifact: CatalogArtifact
+  /** La identidad exacta del artefacto resuelto. */
+  readonly artifact: ResolvedModelArtifact
   readonly contextLength: number
   readonly kvCacheType: KvCacheType
   readonly memoryProfile: ServingMemoryEstimate
@@ -76,7 +78,7 @@ export function resolveModel(request: ModelExecutionRequest, entries: readonly M
   const kvCacheType = request.kvCacheType ?? entry.defaultKvCacheType
   return {
     entry,
-    artifact: entry.artifact,
+    artifact: resolvedArtifactOf(entry),
     contextLength,
     kvCacheType,
     memoryProfile: estimateServingMemoryFromShape({

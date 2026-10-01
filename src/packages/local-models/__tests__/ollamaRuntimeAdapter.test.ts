@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
 import type { ExecutionUnit, ResidencyBinding } from '@thyrox/model-scheduling/executionPrimitive.ts'
 
 import { OllamaRuntimeAdapter } from '../ollamaRuntimeAdapter.ts'
@@ -23,7 +24,10 @@ const SHA = createHash('sha256').update(CONTENT).digest('hex')
 const OTHER_SHA = 'c'.repeat(64)
 const RESIDENCY = 'residency/qwen/gpu0'
 const GENERATION = 3
-const MODEL = 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf'
+const ARTIFACT = resolvedArtifact({ artifactId: SHA, bytes: CONTENT.byteLength })
+const MODEL = ARTIFACT.modelId
+/** Lo que el runtime informa cuando sirve exactamente `ARTIFACT`. */
+const OBSERVED = { modelId: MODEL, artifactId: SHA, format: 'gguf', quantization: 'q4_k_m' }
 
 let ollama: FakeOllamaRuntime
 let directory: string
@@ -32,9 +36,8 @@ let adapter: OllamaRuntimeAdapter
 
 function grant(sha256 = SHA): ExecutionGrant {
   return {
-    grantId: 'grant-request-1', requestId: 'request-1', model: MODEL,
-    revision: '7ae557604adf67be50417f59c2c2f167def9a775',
-    artifact: { format: 'gguf', sha256, bytes: CONTENT.byteLength },
+    grantId: 'grant-request-1', requestId: 'request-1',
+    artifact: { ...ARTIFACT, artifactId: sha256 },
     runtime: 'ollama', placement: { kind: 'cpu' },
     residency: { mode: 'create', instance: RESIDENCY, generation: GENERATION },
     residencyVramMib: 0, requestVramMib: 0, contextLength: 4_096, kvCacheType: 'f16',
@@ -44,7 +47,7 @@ function grant(sha256 = SHA): ExecutionGrant {
 
 function unit(endpoint = ollama.baseUrl): ExecutionUnit {
   return {
-    unitId: 'unit-a', grantId: 'grant-request-1', model: MODEL, artifactSha256: SHA, residencyKey: RESIDENCY,
+    unitId: 'unit-a', grantId: 'grant-request-1', artifact: ARTIFACT, residencyKey: RESIDENCY,
     generation: GENERATION, runtime: 'ollama', endpoint, containerId: 'c'.repeat(64), devices: [], hostPids: [4242],
     createdAt: '2026-10-01T00:00:00.000Z',
   }
@@ -54,7 +57,7 @@ function binding(): ResidencyBinding {
   return { unit: unit(), residencyKey: RESIDENCY, generation: GENERATION }
 }
 
-const expected = { residencyKey: RESIDENCY, generation: GENERATION, model: MODEL, sha256: SHA }
+const expected = { residencyKey: RESIDENCY, generation: GENERATION, artifact: ARTIFACT }
 
 async function prepared(): Promise<void> {
   expect(await adapter.prepareRuntimeArtifact(binding(), grant())).toEqual({ status: 'done' })
@@ -125,14 +128,32 @@ describe('OllamaRuntimeAdapter: identidad', () => {
   test('el blob del FROM coincide con el del grant', async () => {
     await prepared()
     expect(await adapter.verifyArtifactIdentity(unit(), grant())).toEqual({
-      status: 'matches', observed: { model: MODEL, sha256: SHA, quantization: 'Q4_K_M' },
+      status: 'matches', observed: OBSERVED,
     })
   })
 
   test('el mismo nombre con otro blob es mismatch', async () => {
     await prepared()
     ollama.models.set(MODEL, OTHER_SHA)
-    expect(await adapter.verifyArtifactIdentity(unit(), grant())).toMatchObject({ status: 'mismatch', observed: { sha256: OTHER_SHA } })
+    expect(await adapter.verifyArtifactIdentity(unit(), grant())).toMatchObject({ status: 'mismatch', observed: { artifactId: OTHER_SHA } })
+  })
+
+  test('el mismo blob servido con otra cuantización es mismatch: la cuantización se compara', async () => {
+    await prepared()
+    ollama.servedQuantization = 'Q8_0'
+    expect(await adapter.verifyArtifactIdentity(unit(), grant())).toMatchObject({ status: 'mismatch', observed: { quantization: 'q8_0' } })
+  })
+
+  test('un formato distinto del concedido es mismatch', async () => {
+    await prepared()
+    ollama.servedFormat = 'safetensors'
+    expect(await adapter.verifyArtifactIdentity(unit(), grant())).toMatchObject({ status: 'mismatch', observed: { format: 'safetensors' } })
+  })
+
+  test('otro modelo con la misma cuantización no satisface el grant', async () => {
+    await prepared()
+    const deepseek = resolvedArtifact({ repository: 'TheBloke/deepseek-coder-6.7B-instruct-GGUF', revision: '0123456789abcdef0123456789abcdef01234567', artifactId: SHA })
+    expect(await adapter.verifyArtifactIdentity(unit(), { ...grant(), artifact: deepseek })).toMatchObject({ status: 'mismatch', observed: undefined })
   })
 
   test('un modelo que la unidad no tiene es mismatch sin observado', async () => {
@@ -146,7 +167,7 @@ describe('OllamaRuntimeAdapter: residencia', () => {
     expect(await adapter.loadResidency(binding(), grant())).toEqual({ status: 'done' })
     const load = ollama.requests.find(request => request.path === '/api/generate')
     expect(load?.body).toMatchObject({ model: MODEL, keep_alive: -1 })
-    expect(await adapter.observeResidency(unit(), expected)).toEqual({ status: 'resident', observed: { model: MODEL, sha256: SHA, quantization: 'Q4_K_M' } })
+    expect(await adapter.observeResidency(unit(), expected)).toEqual({ status: 'resident', observed: OBSERVED })
   })
 
   test('cargar con generación vieja no toca el runtime', async () => {
@@ -168,7 +189,7 @@ describe('OllamaRuntimeAdapter: residencia', () => {
     await prepared()
     await adapter.loadResidency(binding(), grant())
     ollama.models.set(MODEL, OTHER_SHA)
-    expect(await adapter.observeResidency(unit(), expected)).toMatchObject({ status: 'mismatch', observed: { sha256: OTHER_SHA } })
+    expect(await adapter.observeResidency(unit(), expected)).toMatchObject({ status: 'mismatch', observed: { artifactId: OTHER_SHA } })
   })
 
   test('un runtime que falla al observar es error, no una excepción', async () => {

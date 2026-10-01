@@ -62,7 +62,7 @@ describe('resolveModel — por nombre exacto', () => {
   test('devuelve esa entrada y su artefacto', () => {
     const resolved = resolveModel({ model: Q8.name }, [Q4, Q8])
     expect(resolved.entry).toBe(Q8)
-    expect(resolved.artifact).toBe(Q8.artifact)
+    expect(resolved.artifact).toMatchObject({ modelId: Q8.name, artifactId: Q8.artifact.sha256, quantization: 'q8_0', revision: Q8.revision })
   })
 
   test('un nombre no declarado se rehúsa nombrándolo', () => {

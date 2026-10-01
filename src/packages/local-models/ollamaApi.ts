@@ -28,6 +28,8 @@ export interface InstalledModel {
 
 export interface ModelDetails {
   readonly modelfile: string
+  /** `details.format` de `/api/show`; vacío si el runtime no lo informa. */
+  readonly format: string
   readonly quantizationLevel: string
   readonly capabilities: readonly string[]
 }
@@ -67,6 +69,7 @@ export class OllamaApi {
     const details = (document.details ?? {}) as JsonObject
     return {
       modelfile: String(document.modelfile ?? ''),
+      format: String(details.format ?? ''),
       quantizationLevel: String(details.quantization_level ?? ''),
       capabilities: (document.capabilities ?? []) as string[],
     }

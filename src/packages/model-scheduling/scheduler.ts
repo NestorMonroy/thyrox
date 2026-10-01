@@ -11,7 +11,7 @@
  * una coordinación no disponible congela las admisiones hasta reconciliar otra
  * vez. No mata ejecuciones materializadas por una caída de la coordinación.
  */
-import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
+import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type { ExecutionGrant, ExecutionPlacement, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
 
@@ -25,9 +25,8 @@ export interface ExecutionPlan {
   /** Identidad de este coordinador: dueño del lease y de la reserva. */
   readonly owner: string
   readonly residencyKey: string
-  readonly model: string
-  readonly revision: string
-  readonly artifact: CatalogArtifact
+  /** La identidad exacta que el resolver fijó. */
+  readonly artifact: ResolvedModelArtifact
   readonly runtime: ModelRuntime
   readonly placement: ExecutionPlacement
   readonly residencyVramMib: number
@@ -125,7 +124,7 @@ function reservedVramMib(plan: ExecutionPlan): number {
 }
 
 function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
-  return { residencyKey: unit.residencyKey, generation: unit.generation, model: unit.model, sha256: unit.artifactSha256 }
+  return { residencyKey: unit.residencyKey, generation: unit.generation, artifact: unit.artifact }
 }
 
 export class ModelScheduler {
@@ -163,7 +162,7 @@ export class ModelScheduler {
     return markOnThrow('unit', unit.unitId, async () => {
       const observed = await this.dependencies.runtime.observeResidency(unit, expectedResidencyOf(unit))
       if (observed.status === 'resident') return undefined
-      return { resource: 'unit', id: unit.unitId, reason: `el runtime de la unidad está ${observed.status}; el grant ${unit.grantId} es de ${unit.model}` }
+      return { resource: 'unit', id: unit.unitId, reason: `el runtime de la unidad está ${observed.status}; el grant ${unit.grantId} es de ${unit.artifact.modelId}` }
     })
   }
 

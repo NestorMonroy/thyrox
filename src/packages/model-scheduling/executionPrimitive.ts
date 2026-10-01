@@ -9,6 +9,7 @@
  * local` sale de los tipos, no de un control posterior.
  */
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 
 /**
  * La ejecución que la primitiva creó a partir de un grant: una identidad, no
@@ -18,9 +19,8 @@ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 export interface ExecutionUnit {
   readonly unitId: string
   readonly grantId: string
-  readonly model: string
-  /** Digest del blob que el grant concede; la reconciliación lo compara con lo residente. */
-  readonly artifactSha256: string
+  /** La identidad que el grant concede; la reconciliación la compara con lo residente. */
+  readonly artifact: ResolvedModelArtifact
   readonly residencyKey: string
   readonly generation: number
   readonly runtime: ExecutionGrant['runtime']
@@ -91,24 +91,29 @@ export type RuntimeMutationOutcome =
   | { readonly status: 'stale_generation'; readonly currentGeneration: number | 'unavailable' }
   | { readonly status: 'failed'; readonly reason: string }
 
-/** Identidad del artefacto que el runtime sirve bajo el nombre del grant. */
+/**
+ * Identidad del artefacto que el runtime sirve bajo el nombre del grant, tal
+ * como la informa: lo que el runtime no declara queda `undefined` y no
+ * coincide con nada. La revisión no es observable en el runtime: la ata el
+ * digest del artefacto, que el catálogo resolvió para esa revisión.
+ */
 export interface ObservedArtifactIdentity {
-  readonly model: string
-  readonly sha256: string | undefined
+  readonly modelId: string
+  readonly artifactId: string | undefined
+  readonly format: string | undefined
   readonly quantization: string | undefined
 }
 
 export type ArtifactIdentityVerification =
   | { readonly status: 'matches'; readonly observed: ObservedArtifactIdentity }
-  | { readonly status: 'mismatch'; readonly expected: ObservedArtifactIdentity; readonly observed: ObservedArtifactIdentity | undefined }
+  | { readonly status: 'mismatch'; readonly expected: ResolvedModelArtifact; readonly observed: ObservedArtifactIdentity | undefined }
   | { readonly status: 'failed'; readonly reason: string }
 
 /** Lo que la reconciliación espera encontrar en una unidad. */
 export interface ExpectedResidency {
   readonly residencyKey: string
   readonly generation: number
-  readonly model: string
-  readonly sha256: string
+  readonly artifact: ResolvedModelArtifact
 }
 
 /** Estado de dominio observado en el runtime de una unidad, sin inferirlo de una carga anterior. */
