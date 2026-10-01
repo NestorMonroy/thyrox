@@ -13,6 +13,11 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 SUBJECT="$ROOT/src/lib/infrastructure.sh"
 source "$ROOT/src/lib/assert.sh"
+source "$ROOT/src/lib/test_homes.sh"
+# Ningún .env del árbol gobierna esta suite: sin aislar, sus valores por
+# defecto dependerían de lo que declare la máquina (TASK-THYROX-0735).
+ISOLATED_HOMES="$(mktemp -d)"
+thyrox_isolate_homes "$ISOLATED_HOMES"
 ok()  { thyrox_ok "$*"; }
 bad() { thyrox_fail "$*" || true; }
 
@@ -341,7 +346,7 @@ for piece in thyrox-ollama retirar "podman system renumber"; do
 done
 
 # --- inspeccion contra un podman falso ---
-WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
+WORK="$(mktemp -d)"; trap 'rm -rf "$WORK" "$ISOLATED_HOMES"' EXIT
 cat > "$WORK/podman-fake" <<'STUB'
 #!/usr/bin/env bash
 if [[ "$1" == "inspect" ]]; then
@@ -356,5 +361,49 @@ inspect_out="$(THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" bash -c \
   "source '$SUBJECT'; thyrox_infrastructure_inspect thyrox-postgres")"
 thyrox_check "inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid" \
   "$(printf 'running\t4242')" "$inspect_out"
+
+
+# =====================================================================
+# TASK-THYROX-0735 — las claves THYROX_INFRA_* se resuelven también desde el
+# `.env` declarado (`THYROX_ENV_FILE`), con el proceso por encima del archivo y
+# el valor por defecto sólo si ninguno declara. Un `bin/infrastructure_ensure`
+# lanzado sin el `.env` en su entorno creó `thyrox-ollama` sobre un volumen
+# vacío (H-THYROX-307).
+# =====================================================================
+DECLARED_ENV="$WORK/env/declared.env"
+mkdir -p "$WORK/env"
+printf 'THYROX_INFRA_OLLAMA_VOLUME=vol-from-file\nTHYROX_INFRA_OLLAMA_PORT=51999\n' > "$DECLARED_ENV"
+
+ollama_argv_with() {
+  env -u THYROX_INFRA_OLLAMA_VOLUME -u THYROX_INFRA_OLLAMA_PORT "$@" bash -c \
+    "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-ollama" | tr '\n' ' '
+}
+
+from_file="$(ollama_argv_with THYROX_ENV_FILE="$DECLARED_ENV")"
+if [[ "$from_file" == *"vol-from-file:/root/.ollama"* ]]; then
+  ok "0735: el volumen declarado en el .env se monta sin exportarlo"
+else
+  bad "0735: el volumen del .env no se usó: [$from_file]"
+fi
+if [[ "$from_file" == *"OLLAMA_HOST=127.0.0.1:51999"* ]]; then
+  ok "0735: el puerto declarado en el .env se usa sin exportarlo"
+else
+  bad "0735: el puerto del .env no se usó: [$from_file]"
+fi
+
+process_wins="$(ollama_argv_with THYROX_ENV_FILE="$DECLARED_ENV" THYROX_INFRA_OLLAMA_VOLUME=vol-from-process)"
+if [[ "$process_wins" == *"vol-from-process:/root/.ollama"* && "$process_wins" != *"vol-from-file"* ]]; then
+  ok "0735: la variable del proceso gana sobre el .env"
+else
+  bad "0735: el proceso no ganó sobre el .env: [$process_wins]"
+fi
+
+: > "$WORK/env/empty.env"
+default_only="$(ollama_argv_with THYROX_ENV_FILE="$WORK/env/empty.env")"
+if [[ "$default_only" == *"thyrox-ollama-models:/root/.ollama"* ]]; then
+  ok "0735: sin declaración en proceso ni archivo queda el volumen por defecto"
+else
+  bad "0735: sin declaración no quedó el valor por defecto: [$default_only]"
+fi
 
 thyrox_summary

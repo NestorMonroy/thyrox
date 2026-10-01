@@ -96,6 +96,10 @@ case "\$1" in
       echo "Error: no such container \$name" >&2
       exit 1
     fi
+    if [[ "\$*" == *Mounts* ]]; then
+      cat "\$STATE/\${name}.volumes" 2>/dev/null
+      exit 0
+    fi
     status="\$(cat "\$STATE/\${name}.status")"
     pid="\$(cat "\$STATE/\${name}.pid" 2>/dev/null || echo 0)"
     printf '%s\t%s\n' "\$status" "\$pid"
@@ -119,6 +123,12 @@ case "\$1" in
     done
     echo created > "\$STATE/\${name}.status"
     echo 0 > "\$STATE/\${name}.pid"
+    # Los volúmenes con nombre que monta, para el inspect de .Mounts.
+    prev=""; : > "\$STATE/\${name}.volumes"
+    for a in "\$@"; do
+      [[ "\$prev" == "-v" ]] && echo "\${a%%:*}" >> "\$STATE/\${name}.volumes"
+      prev="\$a"
+    done
     exit 0
     ;;
   start)
@@ -176,7 +186,11 @@ STUB
 chmod +x "$WORK/admission-fake"
 
 reset_state() { rm -rf "$STATE"; mkdir -p "$STATE"; }
+# Ningún .env del árbol gobierna la suite (TASK-THYROX-0735): un caso declara
+# el suyo con TEST_ENV_FILE.
+: > "$WORK/empty.env"
 run_ensure() {
+  THYROX_ENV_FILE="${TEST_ENV_FILE:-$WORK/empty.env}" \
   THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" \
   THYROX_INFRA_ENSURE_SLEEP_BIN="$WORK/sleep-fake" \
   THYROX_INFRA_DISK_ADMISSION_BIN="$WORK/admission-fake" \
@@ -697,5 +711,60 @@ for svc in thyrox-redis thyrox-ollama; do
     bad "caso 25: $svc no se reconcilió a recreado y sano: [$out]"
   fi
 done
+
+# =====================================================================
+# Casos 26-28 — TASK-THYROX-0735: un contenedor vivo y sano montado sobre un
+# volumen distinto del declarado no se conserva: se recrea sobre el
+# declarado, sin borrar ningún volumen. El declarado sale del proceso o del
+# .env (H-THYROX-307: thyrox-ollama quedó sobre un volumen vacío).
+# =====================================================================
+live_ollama_on() {
+  reset_state
+  touch "$STATE/network-thyrox-infra"
+  ( exec -a "${MARKER}-drift" sleep 999 ) &
+  local pid=$!
+  disown "$pid" 2>/dev/null || true
+  echo running > "$STATE/thyrox-ollama.status"
+  echo "$pid" > "$STATE/thyrox-ollama.pid"
+  echo ok > "$STATE/thyrox-ollama.health"
+  echo "$1" > "$STATE/thyrox-ollama.volumes"
+}
+
+live_ollama_on old-empty-volume
+out="$(THYROX_INFRA_OLLAMA_VOLUME=declared-volume run_ensure thyrox-ollama 2>&1)"; rc=$?
+thyrox_check "caso 26: volumen distinto del declarado -> exit 0" "0" "$rc"
+if [[ "$out" == *"thyrox-ollama status=running pid_alive=yes action=recreated health=healthy"* ]]; then
+  ok "caso 26: vivo sobre otro volumen -> recreado y sano"
+else
+  bad "caso 26: no se recreó el ollama montado sobre otro volumen: [$out]"
+fi
+if grep -q '^create .*-v declared-volume:/root/.ollama' "$STATE/calls.log"; then
+  ok "caso 26: el recreado monta el volumen declarado"
+else
+  bad "caso 26: el create no monta declared-volume: $(cat "$STATE/calls.log")"
+fi
+if grep -E '^(rm|volume rm)' "$STATE/calls.log" | grep -q old-empty-volume; then
+  bad "caso 26: se tocó el volumen anterior en un rm"
+else
+  ok "caso 26: el volumen anterior no se borra"
+fi
+
+live_ollama_on thyrox-ollama-models
+out="$(run_ensure thyrox-ollama 2>&1)"; rc=$?
+if [[ "$out" == *"thyrox-ollama status=running pid_alive=yes action=kept health=healthy"* ]] \
+   && ! grep -qE '^(create|rm|start)' "$STATE/calls.log"; then
+  ok "caso 27: vivo sobre el volumen declarado -> se conserva sin create/rm/start"
+else
+  bad "caso 27: el ollama sobre su volumen declarado no se conservó: [$out]"
+fi
+
+live_ollama_on thyrox-ollama-models
+printf 'THYROX_INFRA_OLLAMA_VOLUME=volume-from-env-file\n' > "$WORK/declared.env"
+out="$(TEST_ENV_FILE="$WORK/declared.env" run_ensure thyrox-ollama 2>&1)"; rc=$?
+if [[ "$out" == *"action=recreated"* ]] && grep -q '^create .*-v volume-from-env-file:/root/.ollama' "$STATE/calls.log"; then
+  ok "caso 28: el volumen declarado sólo en el .env gobierna el ensure"
+else
+  bad "caso 28: el .env no gobernó el volumen del ensure: [$out] $(cat "$STATE/calls.log")"
+fi
 
 thyrox_summary
