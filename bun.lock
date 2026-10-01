@@ -403,6 +403,13 @@
         "@thyrox/registry-credentials": "0.1.0",
       },
     },
+    "src/packages/infrastructure": {
+      "name": "@thyrox/infrastructure",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/podman-execution": "0.1.0",
+      },
+    },
     "src/packages/ink": {
       "name": "@anthropic/ink",
       "version": "1.0.0",
@@ -1325,6 +1332,8 @@
     "@thyrox/image-processor-napi": ["@thyrox/image-processor-napi@workspace:src/packages/image-processor-napi"],
 
     "@thyrox/image-registry": ["@thyrox/image-registry@workspace:src/packages/image-registry"],
+
+    "@thyrox/infrastructure": ["@thyrox/infrastructure@workspace:src/packages/infrastructure"],
 
     "@thyrox/local-models": ["@thyrox/local-models@workspace:src/packages/local-models"],
 
