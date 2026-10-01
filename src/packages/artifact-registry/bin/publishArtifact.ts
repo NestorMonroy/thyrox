@@ -108,7 +108,7 @@ await mkdir(dirname(scratchDir), { recursive: true })
 const baseRecord = JSON.parse(await readFile(values['record-file'] as string, 'utf8')) as Record<string, unknown>
 const registryUrl = registryBaseUrl(credential.registry)
 const location = { repository: values.repository as string, tag: values.tag as string }
-const admission = createDiskAdmission({ thyroxRoot: root, path: dirname(scratchDir), owner })
+const admission = createDiskAdmission({ thyroxRoot: root, path: dirname(scratchDir), ownerPid: process.pid })
 
 const outcome = await publishAndVerify(
   {
