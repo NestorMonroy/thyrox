@@ -120,7 +120,11 @@ const outcome = await publishAndVerify(
     location,
   },
   {
-    publisher: createOciArtifactRegistry({ baseUrl: registryUrl, credential: { kind: 'basic', username: credential.username, secret: () => credential.revealToken() } }),
+    publisher: createOciArtifactRegistry({
+      baseUrl: registryUrl,
+      credential: { kind: 'basic', username: credential.username, secret: () => credential.revealToken() },
+      trace: line => process.stderr.write(`publish-artifact: ${line}\n`),
+    }),
     verifier: createPodmanJobVerifier({
       podman,
       image: verifierImage,

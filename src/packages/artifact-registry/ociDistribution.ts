@@ -8,8 +8,6 @@
  * `Retry-After` dentro del plazo declarado se espera y se reintenta; si no,
  * se devuelve como `rate_limited` con lo que el provider reportó.
  */
-import { createReadStream } from 'node:fs'
-import { Readable } from 'node:stream'
 
 import { classifyResponse, type RegistryFailure, type RegistryResult } from './registryResult.js'
 
@@ -30,6 +28,8 @@ export interface OciDistributionOptions {
   readonly credential: RegistryCredential
   readonly retry?: RetryPolicy
   readonly fetch?: typeof fetch
+  /** Diagnóstico por intercambio: método, URL sin consulta, estado y duración; nunca cabeceras. */
+  readonly trace?: (line: string) => void
 }
 
 export interface ManifestHead {
@@ -48,7 +48,16 @@ export class OciDistributionClient {
 
   constructor(options: OciDistributionOptions) {
     this.#options = options
-    this.#fetch = options.fetch ?? fetch
+    const base = options.fetch ?? fetch
+    const trace = options.trace
+    this.#fetch = trace === undefined ? base : (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const started = Date.now()
+      const url = new URL(input instanceof Request ? input.url : String(input))
+      trace(`→ ${init?.method ?? 'GET'} ${url.origin}${url.pathname}`)
+      const response = await base(input, init)
+      trace(`← ${response.status} ${init?.method ?? 'GET'} ${url.pathname} ${Date.now() - started}ms`)
+      return response
+    }) as typeof fetch
   }
 
   async headManifest(repository: string, reference: string, accept: string): Promise<RegistryResult<ManifestHead>> {
@@ -91,7 +100,10 @@ export class OciDistributionClient {
     if (!location) return { status: 'provider_error', httpStatus: started.status, detail: 'el registry no devolvió Location para la subida' }
     const target = new URL(location, this.#options.baseUrl)
     target.searchParams.set('digest', digest)
-    const body = Readable.toWeb(createReadStream(path)) as unknown as ReadableStream<Uint8Array>
+    // Bun.file y no un ReadableStream: medido, un PUT con cuerpo en flujo no
+    // recibe respuesta a través del proxy de salida, y Bun.file se envía con
+    // su longitud conocida sin cargarlo en memoria (y se puede reenviar).
+    const body = Bun.file(path)
     const finished = await this.#send(repository, 'pull,push', 'PUT', target.toString(),
       { 'content-type': 'application/octet-stream', 'content-length': String(size) }, body)
     return finished.ok ? { status: 'success', value: undefined } : failure(finished)
