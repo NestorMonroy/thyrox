@@ -1,0 +1,4 @@
+manifest PUT http=201 digest=sha256:93f55dcd3939224f5a4a4856807ec523b97ffb2dc0fcbbac8c732689e905dbd0
+curl: (22) The requested URL returned error: 429
+manifest anónimo: DISTINTO artifactType=
+blob anónimo: DISTINTO

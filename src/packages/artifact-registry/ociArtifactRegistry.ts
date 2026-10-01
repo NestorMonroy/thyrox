@@ -11,7 +11,8 @@
  */
 import { createHash } from 'node:crypto'
 import { createWriteStream } from 'node:fs'
-import { mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Readable } from 'node:stream'
@@ -30,6 +31,7 @@ import {
   type PinnedArtifact,
   type PullOptions,
 } from './artifactRegistry.js'
+import { sha256OfPath } from './artifactFiles.js'
 import { OciDistributionClient, type OciDistributionOptions } from './ociDistribution.js'
 
 export interface OciArtifactRegistryOptions extends OciDistributionOptions {
@@ -108,8 +110,13 @@ async function resolveArtifact(client: OciDistributionClient, location: Artifact
 async function inspectArtifact(client: OciDistributionClient, pinned: PinnedArtifact): Promise<ArtifactResult<ArtifactManifest>> {
   const fetched = await client.getManifest(pinned.repository, pinned.digest, OCI_MANIFEST_MEDIA_TYPE)
   if (fetched.status !== 'success') return fetched
-  if (digestOf(fetched.value) !== pinned.digest) return { status: 'integrity_error', detail: `el manifest leído no corresponde a ${pinned.digest}` }
-  const raw = JSON.parse(new TextDecoder().decode(fetched.value)) as {
+  return parseManifest(pinned, fetched.value)
+}
+
+/** Interpreta un manifest sólo si sus bytes son los de su digest. */
+function parseManifest(pinned: PinnedArtifact, bytes: Uint8Array): ArtifactResult<ArtifactManifest> {
+  if (digestOf(bytes) !== pinned.digest) return { status: 'integrity_error', detail: `el manifest leído no corresponde a ${pinned.digest}` }
+  const raw = JSON.parse(new TextDecoder().decode(bytes)) as {
     artifactType?: string
     config: ArtifactManifest['config']
     layers: Array<{ mediaType: string; digest: string; size: number; annotations?: Record<string, string> }>
@@ -119,15 +126,50 @@ async function inspectArtifact(client: OciDistributionClient, pinned: PinnedArti
   return { status: 'success', value: { artifactType: raw.artifactType ?? '', config: raw.config, layers, annotations: raw.annotations ?? {} } }
 }
 
+/** Dónde queda el manifest verificado junto a su materialización: con él, una segunda lectura no pide nada. */
+function manifestCachePath(targetDir: string, digest: string): string {
+  return join(targetDir, '.oci-manifests', `${digest.replace(':', '-')}.json`)
+}
+
+/** El manifest de la caché local si sus bytes siguen siendo los de su digest; si no, el del registry. */
+async function manifestFor(client: OciDistributionClient, pinned: PinnedArtifact, targetDir: string): Promise<ArtifactResult<ArtifactManifest>> {
+  const cached = manifestCachePath(targetDir, pinned.digest)
+  if (existsSync(cached)) {
+    const local = parseManifest(pinned, new Uint8Array(await readFile(cached)))
+    if (local.status === 'success') return local
+  }
+  const fetched = await client.getManifest(pinned.repository, pinned.digest, OCI_MANIFEST_MEDIA_TYPE)
+  if (fetched.status !== 'success') return fetched
+  const parsed = parseManifest(pinned, fetched.value)
+  if (parsed.status === 'success') {
+    await mkdir(join(targetDir, '.oci-manifests'), { recursive: true })
+    await writeFile(cached, fetched.value)
+  }
+  return parsed
+}
+
+/** ¿El archivo ya está materializado con el tamaño y el sha256 del layer? */
+async function presentLocally(path: string, layer: ArtifactLayer): Promise<boolean> {
+  if (!existsSync(path)) return false
+  if ((await stat(path)).size !== layer.size) return false
+  return `sha256:${await sha256OfPath(path)}` === layer.digest
+}
+
 async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifact, targetDir: string, options: PullOptions): Promise<ArtifactResult<readonly MaterializedFile[]>> {
-  const manifest = await inspectArtifact(client, pinned)
-  if (manifest.status !== 'success') return manifest
   await mkdir(targetDir, { recursive: true })
+  const manifest = await manifestFor(client, pinned, targetDir)
+  if (manifest.status !== 'success') return manifest
   const materialized: MaterializedFile[] = []
   for (const layer of manifest.value.layers) {
+    const finalPath = join(targetDir, layer.title)
+    if (!options.discardAfterVerify && await presentLocally(finalPath, layer)) {
+      const file: MaterializedFile = { title: layer.title, digest: layer.digest, size: layer.size, path: finalPath }
+      await options.onVerified?.({ ...file, verifiedPath: finalPath })
+      materialized.push(file)
+      continue
+    }
     const blob = await client.getBlob(pinned.repository, layer.digest)
     if (blob.status !== 'success') return blob
-    const finalPath = join(targetDir, layer.title)
     const partialPath = `${finalPath}.partial`
     const hash = createHash('sha256')
     let size = 0

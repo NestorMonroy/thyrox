@@ -28,6 +28,11 @@ afterEach(() => {
   rmSync(workdir, { recursive: true, force: true })
 })
 
+/** Los archivos materializados, sin la caché del manifest verificado que queda a su lado. */
+function materializedFiles(dir: string): string[] {
+  return existsSync(dir) ? readdirSync(dir).filter(name => name !== '.oci-manifests') : []
+}
+
 function publisher() {
   return createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'basic', username: FAKE_PUBLISHER.username, secret: () => FAKE_PUBLISHER.token } })
 }
@@ -124,16 +129,16 @@ describe('pullArtifact', () => {
     const result = await anonymous().pullArtifact(pinned, target)
     expect(result.status).toBe('integrity_error')
     expect(existsSync(join(target, 'model.gguf'))).toBe(false)
-    expect(existsSync(target) ? readdirSync(target) : []).toEqual([])
+    expect(materializedFiles(target)).toEqual([])
   })
 
   test('discard: cada blob verificado se borra antes de bajar el siguiente', async () => {
     const { pinned } = await publish()
     const target = join(workdir, 'consumer')
     const presentWhenVerified: string[][] = []
-    await anonymous().pullArtifact(pinned, target, { discardAfterVerify: true, onVerified: () => { presentWhenVerified.push(readdirSync(target)) } })
+    await anonymous().pullArtifact(pinned, target, { discardAfterVerify: true, onVerified: () => { presentWhenVerified.push(materializedFiles(target)) } })
     expect(presentWhenVerified).toEqual([['model.gguf'], ['quantize.log']])
-    expect(readdirSync(target)).toEqual([])
+    expect(materializedFiles(target)).toEqual([])
   })
 })
 
