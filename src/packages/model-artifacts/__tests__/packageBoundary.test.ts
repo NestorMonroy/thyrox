@@ -5,7 +5,7 @@ import { join } from 'node:path'
 const PACKAGE_ROOT = join(import.meta.dir, '..')
 const IMPORT_SPECIFIER = /from\s+'([^']+)'/g
 const ALLOWED_EXTERNAL = new Set(['node:fs/promises'])
-const CORE_MODULES = ['modelName.ts', 'quantizationLevel.ts', 'artifactManifest.ts', 'ggufMetadata.ts', 'memoryEstimate.ts', 'catalogEntry.ts', 'executionGrant.ts']
+const CORE_MODULES = ['modelName.ts', 'quantizationLevel.ts', 'artifactManifest.ts', 'ggufMetadata.ts', 'memoryEstimate.ts', 'catalogEntry.ts', 'executionGrant.ts', 'modelQualification.ts', 'localModelHome.ts']
 
 function sourceFiles(): string[] {
   return readdirSync(PACKAGE_ROOT).filter(name => name.endsWith('.ts')).map(name => join(PACKAGE_ROOT, name))
