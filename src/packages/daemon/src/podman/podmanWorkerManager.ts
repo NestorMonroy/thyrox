@@ -41,12 +41,12 @@
 import { join } from 'node:path'
 
 import { admitVram, releaseVram, type VramAdmission } from '@thyrox/config/gpuAdmission'
+import { ContainerRunError, materializeContainer } from '@thyrox/podman-execution/containerRun.ts'
 import { runCommand } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import {
   DEFAULT_STOP_TIMEOUT_SECONDS,
   InvalidWorkerContainerSpecError,
-  createWorkerContainerArgv,
   daemonContainerOwner,
   inspectWorkerContainer,
   isWorkerContainerProcessAlive,
@@ -245,10 +245,13 @@ export class PodmanWorkerManager {
   private async materialize(request: WorkerLaunchRequest, spec: WorkerContainerSpec): Promise<ManagedWorker> {
     const { podman } = this.deps.lifecycle
     const name = workerContainerName(request.workerId)
-    const created = await podman.run(createWorkerContainerArgv(spec))
-    if (created.exitCode !== 0) await this.abandon(request.workerId, 'create', commandDetail(created))
-    const started = await podman.run(['start', name])
-    if (started.exitCode !== 0) await this.abandon(request.workerId, 'start', commandDetail(started))
+    try {
+      await materializeContainer(podman, spec)
+    } catch (error) {
+      if (!(error instanceof ContainerRunError)) throw error
+      // La primitiva nombra la etapa; el daemon sólo decide retirar lo creado.
+      await this.abandon(request.workerId, error.stage === 'create' ? 'create' : 'start', error.message)
+    }
     const inspection = await inspectWorkerContainer(this.deps.lifecycle, name)
     if (!isWorkerContainerProcessAlive(inspection, this.deps.lifecycle.isProcessAlive)) {
       await this.abandon(request.workerId, 'liveness', 'el contenedor no tiene un proceso vivo tras arrancar')
