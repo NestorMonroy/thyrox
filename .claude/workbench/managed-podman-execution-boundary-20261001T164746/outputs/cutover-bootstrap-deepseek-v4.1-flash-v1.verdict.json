@@ -1,0 +1,20 @@
+{
+  "required": {
+    "secret_visible": true,
+    "authentication": true,
+    "simple_response_with_content": true,
+    "structured_tool_call": true,
+    "file_tool_capability": true,
+    "controlled_modification": true,
+    "thyrox_p_parseable_result": true
+  },
+  "observations": {
+    "context_answer_correct": [
+      false,
+      false
+    ],
+    "cached_tokens_second_request": 7168,
+    "identical_repetition": true
+  },
+  "requiredFailed": []
+}

@@ -1,0 +1,8 @@
+{"requiredFailed":[],"observations":{"context_answer_correct":[true,false],"cached_tokens_second_request":7168,"identical_repetition":false}}
+qwen3.8-flash-v1 verdict exit=0
+{"requiredFailed":[],"observations":{"context_answer_correct":[true,true],"cached_tokens_second_request":7168,"identical_repetition":false}}
+qwen3.8-flash verdict exit=0
+{"requiredFailed":[],"observations":{"context_answer_correct":[false,false],"cached_tokens_second_request":7168,"identical_repetition":true}}
+deepseek-v4.1-flash-v1 verdict exit=0
+{"requiredFailed":[],"observations":{"context_answer_correct":[true,true],"cached_tokens_second_request":7936,"identical_repetition":true}}
+deepseek-v4.1-flash verdict exit=0
