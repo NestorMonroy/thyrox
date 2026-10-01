@@ -27,6 +27,7 @@ function harness(env: Record<string, string> = {}, stdin = ''): Harness {
     now: () => 36 ** 3,
     podman,
     repositoryRoot: ROOT,
+    isProcessAlive: () => true,
   }
   return { deps, calls, stdout, stderr }
 }
@@ -171,3 +172,44 @@ describe('--secret-from-env: la credencial llega a la unidad como secreto montad
 function createArgvOf(calls: string[][]): string[] {
   return calls.find(call => call[0] === 'create') ?? []
 }
+
+describe('reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención', () => {
+  function orphanHarness(owners: Record<string, string>, alive: number[]): Harness & { removed: string[] } {
+    const h = harness()
+    const removed: string[] = []
+    h.deps.isProcessAlive = pid => alive.includes(pid)
+    h.deps.podman = {
+      async run(args) {
+        h.calls.push([...args])
+        if (args[0] === 'ps') return { exitCode: 0, stdout: Object.keys(owners).join('\n') + '\n', stderr: '' }
+        if (args[0] === 'inspect') {
+          const name = args.at(-1) ?? ''
+          return { exitCode: 0, stdout: `running\t9000\t${owners[name]}\tthyrox-worker\n`, stderr: '' }
+        }
+        if (args[0] === 'rm') removed.push(args.at(-1) ?? '')
+        return { exitCode: 0, stdout: '', stderr: '' }
+      },
+    }
+    return { ...h, removed }
+  }
+
+  test('retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos', async () => {
+    const h = orphanHarness({
+      'thyrox-worker-a': 'task\ttask-thyrox-0001\t11',
+      'thyrox-worker-b': 'task\ttask-thyrox-0001\t22',
+      'thyrox-worker-c': 'pool\tpool-x\t33',
+    }, [22])
+    const code = await runExecutionCommand(['reconcile-orphans'], h.deps)
+    expect(code).toBe(0)
+    expect(h.removed).toEqual(['thyrox-worker-a'])
+    expect(h.stdout.join('')).toContain('retirado thyrox-worker-a')
+    expect(h.stdout.join('')).toContain('1 huérfano(s) retirado(s)')
+  })
+
+  test('sin huérfanos, sale 0 y lo dice', async () => {
+    const h = orphanHarness({ 'thyrox-worker-b': 'task\ttask-thyrox-0001\t22' }, [22])
+    expect(await runExecutionCommand(['reconcile-orphans'], h.deps)).toBe(0)
+    expect(h.removed).toEqual([])
+    expect(h.stdout.join('')).toContain('0 huérfano(s) retirado(s)')
+  })
+})

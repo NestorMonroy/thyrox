@@ -16,6 +16,7 @@ import { parseArgs } from 'node:util'
 import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionSecret } from './executionAuthorization.js'
 import { ensureSecretValue } from './resourceMaterialization.js'
 import { buildImage } from './imageStore.js'
+import { retireOrphanedWorkerContainers } from './workerContainerLifecycle.js'
 import type { PodmanExecutor } from './podmanExecutor.js'
 import type { WorkerMountMode, WorkerNetworkMode, WorkerResourceMount } from './workerResourceProfile.js'
 
@@ -47,6 +48,8 @@ export type ExecutionCommandDeps = {
   now(): number
   podman: PodmanExecutor
   repositoryRoot: string
+  /** Sonda de vida del PID de un dueño, en el espacio de PIDs del anfitrión. */
+  isProcessAlive(pid: number): boolean
 }
 
 const USAGE = [
@@ -54,6 +57,7 @@ const USAGE = [
   '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
+  '     podman-execution-execute reconcile-orphans',
   '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
 ].join('\n')
 
@@ -222,12 +226,28 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
   return 0
 }
 
+/**
+ * Retira las unidades de tarea cuyo dueño —el proceso que pidió la ejecución—
+ * ya no vive: si quien espera muere, su unidad queda sin nadie que la recoja.
+ * Los contenedores de otros dueños (pool, daemon, laboratorio) tienen su propia
+ * política de huérfanos y no se tocan.
+ */
+async function reconcileOrphansCommand(deps: ExecutionCommandDeps): Promise<number> {
+  const lifecycle = { podman: deps.podman, isProcessAlive: deps.isProcessAlive, killProcess: (pid: number, signal: NodeJS.Signals) => { process.kill(pid, signal) } }
+  const retired = await retireOrphanedWorkerContainers(lifecycle, ({ owner }) =>
+    owner.kind === 'task' && owner.pid !== null && !deps.isProcessAlive(owner.pid))
+  for (const retirement of retired) deps.output.stdout(`retirado ${retirement.name} removed=${retirement.removed}\n`)
+  deps.output.stdout(`${retired.length} huérfano(s) retirado(s)\n`)
+  return retired.every(retirement => retirement.removed) ? 0 : EXIT_FAILED
+}
+
 /** Despacha la orden; devuelve el código de salida. 2 es uso inválido o autorización rehusada. */
 export async function runExecutionCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
   const [subcommand, ...rest] = argv
   try {
     if (subcommand === 'run') return await runCommand(rest, deps)
     if (subcommand === 'build-image') return await buildImageCommand(rest, deps)
+    if (subcommand === 'reconcile-orphans') return await reconcileOrphansCommand(deps)
     throw new UsageError(`orden desconocida: ${subcommand ?? '(ninguna)'}`)
   } catch (error) {
     if (error instanceof UsageError) {
