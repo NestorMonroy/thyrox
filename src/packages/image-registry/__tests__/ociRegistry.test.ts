@@ -17,7 +17,7 @@ const SERVED = `sha256:${'f'.repeat(64)}`
 describe('verificación del digest al consumir', () => {
   test('un almacén con otro digest que el fijado rehúsa nombrando los dos', async () => {
     const podman = createFakePodmanRegistry()
-    podman.remote.set(canonicalReference(PINNED), SERVED)
+    podman.remote.set(canonicalReference(PINNED), { digest: SERVED, labels: {} })
     const registry = createOciRegistry({ provider: 'generic-oci', registry: 'registry.example.com', podman })
     const attempt = registry.reader.pull(PINNED)
     await expect(attempt).rejects.toBeInstanceOf(ImageTransferError)
@@ -26,7 +26,7 @@ describe('verificación del digest al consumir', () => {
 
   test('el consumidor anónimo no pasa authfile', async () => {
     const podman = createFakePodmanRegistry()
-    podman.remote.set(canonicalReference(PINNED), PINNED.digest)
+    podman.remote.set(canonicalReference(PINNED), { digest: PINNED.digest, labels: {} })
     await createOciRegistry({ provider: 'generic-oci', registry: 'registry.example.com', podman }).reader.pull(PINNED)
     expect(podman.calls.flat()).not.toContain('--authfile')
   })

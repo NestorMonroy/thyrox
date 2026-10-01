@@ -1,7 +1,12 @@
 /**
  * Un `PodmanExecutor` que simula un registro remoto y el almacén local, para
- * probar los adapters OCI sin red. Registra cada argv y, durante un push con
- * authfile, lo que ese archivo contenía y sus permisos.
+ * probar los adapters y el ciclo de vida de imágenes sin red ni runtime.
+ *
+ * Una imagen local guarda sus nombres, sus etiquetas, su digest y un instante
+ * de creación que avanza con cada build o pull. Las etiquetas viajan con la
+ * imagen: una imagen traída del registro conserva las de su construcción.
+ * Registra cada argv y, si el comando lleva authfile, lo que ese archivo
+ * contenía y sus permisos.
  */
 import { readFileSync, statSync, writeFileSync } from 'node:fs'
 
@@ -11,20 +16,26 @@ import { digestOfLocalImage } from './inMemoryRegistry.ts'
 
 export type AuthFileObservation = { path: string; content: string; mode: number }
 
+export type FakeImage = { id: string; names: string[]; labels: Record<string, string>; digest: string; createdAt: number; sizeBytes: number }
+
+type RemoteImage = { digest: string; labels: Record<string, string> }
+
 export type FakePodmanRegistry = PodmanExecutor & {
   readonly calls: string[][]
-  readonly remote: Map<string, string>
-  readonly local: Map<string, string>
+  readonly remote: Map<string, RemoteImage>
+  readonly images: Map<string, FakeImage>
   authFilesSeen: AuthFileObservation[]
   failNext?: { command: string; stderr: string }
   history: string
   env: string
-  /** Valor de la etiqueta de retención de la imagen local; vacío si no la lleva. */
-  retention: string
+  /** Pone una imagen local, como si se hubiera construido antes. */
+  addLocalImage(name: string, labels?: Record<string, string>): FakeImage
+  findImage(reference: string): FakeImage | undefined
 }
 
 const OK: PodmanCommandResult = { exitCode: 0, stdout: '', stderr: '' }
 const DIGEST_SEPARATOR = '@'
+const IMAGE_SIZE_BYTES = 1000
 
 function failure(stderr: string): PodmanCommandResult {
   return { exitCode: 125, stdout: '', stderr }
@@ -34,15 +45,48 @@ function lastTwo(args: readonly string[]): [string, string] {
   return [args[args.length - 2] ?? '', args[args.length - 1] ?? '']
 }
 
+function repositoryOf(reference: string): string {
+  return reference.split(DIGEST_SEPARATOR)[0]?.replace(/:[^/:]+$/, '') ?? reference
+}
+
+function labelsOf(args: readonly string[]): Record<string, string> {
+  const labels: Record<string, string> = {}
+  args.forEach((arg, index) => {
+    if (arg !== '--label') return
+    const [key, ...value] = (args[index + 1] ?? '').split('=')
+    if (key !== undefined) labels[key] = value.join('=')
+  })
+  return labels
+}
+
+function filtersOf(args: readonly string[]): [string, string][] {
+  return args.flatMap((arg, index) => {
+    if (arg !== '--filter') return []
+    const [key, ...value] = (args[index + 1] ?? '').replace(/^label=/, '').split('=')
+    return key === undefined ? [] : [[key, value.join('=')] as [string, string]]
+  })
+}
+
 export function createFakePodmanRegistry(): FakePodmanRegistry {
+  let clock = 0
+  let sequence = 0
+  const nextId = () => `image-${++sequence}`
+
   const fake: FakePodmanRegistry = {
     calls: [],
     remote: new Map(),
-    local: new Map(),
+    images: new Map(),
     authFilesSeen: [],
     history: '/bin/sh -c apt-get update\n',
     env: '["PATH=/usr/bin"]\n',
-    retention: 'durable',
+    addLocalImage(name, labels = {}) {
+      const image: FakeImage = { id: nextId(), names: [name], labels, digest: digestOfLocalImage(`${name}#${sequence}`), createdAt: ++clock, sizeBytes: IMAGE_SIZE_BYTES }
+      fake.images.set(image.id, image)
+      return image
+    },
+    findImage(reference) {
+      return [...fake.images.values()].find(image => image.id === reference || image.names.includes(reference))
+    },
     async run(args) {
       fake.calls.push([...args])
       const authIndex = args.indexOf('--authfile')
@@ -56,28 +100,54 @@ export function createFakePodmanRegistry(): FakePodmanRegistry {
         return failure(stderr)
       }
       switch (args[0]) {
+        case 'build': {
+          const tag = args[args.indexOf('-t') + 1] ?? ''
+          for (const image of fake.images.values()) image.names = image.names.filter(name => name !== tag)
+          fake.addLocalImage(tag, labelsOf(args))
+          return OK
+        }
         case 'push': {
           const [source, destination] = lastTwo(args)
-          const digest = digestOfLocalImage(source)
-          fake.remote.set(destination, digest)
-          fake.remote.set(`${destination.replace(/:[^/:]+$/, '')}${DIGEST_SEPARATOR}${digest}`, digest)
-          writeFileSync(args[args.indexOf('--digestfile') + 1] ?? '', digest)
+          const local = fake.findImage(source)
+          const remote = { digest: local?.digest ?? digestOfLocalImage(source), labels: local?.labels ?? {} }
+          fake.remote.set(destination, remote)
+          fake.remote.set(`${repositoryOf(destination)}${DIGEST_SEPARATOR}${remote.digest}`, remote)
+          writeFileSync(args[args.indexOf('--digestfile') + 1] ?? '', remote.digest)
           return OK
         }
         case 'pull': {
           const reference = args[args.length - 1] ?? ''
-          const digest = fake.remote.get(reference)
-          if (digest === undefined) return failure(`manifest unknown: ${reference}`)
-          fake.local.set(reference, digest)
+          const remote = fake.remote.get(reference)
+          if (remote === undefined) return failure(`manifest unknown: ${reference}`)
+          const existing = fake.findImage(reference)
+          if (existing !== undefined) existing.digest = remote.digest
+          else fake.images.set(nextId(), { id: `image-${sequence}`, names: [reference], labels: remote.labels, digest: remote.digest, createdAt: ++clock, sizeBytes: IMAGE_SIZE_BYTES })
           return OK
         }
         case 'image': {
           const reference = args[2] ?? ''
-          const digest = fake.local.get(reference)
-          if (args[4] === '{{json .Config.Env}}') return { ...OK, stdout: fake.env }
-          if (args[4]?.startsWith('{{index .Labels')) return { ...OK, stdout: `${fake.retention}\n` }
-          if (digest === undefined) return failure(`image not known: ${reference}`)
-          return { ...OK, stdout: `${digest}\n` }
+          const image = fake.findImage(reference)
+          if (args[1] === 'exists') return image === undefined ? { ...OK, exitCode: 1 } : OK
+          const format = args[4] ?? ''
+          if (format === '{{json .Config.Env}}') return { ...OK, stdout: fake.env }
+          if (image === undefined) return failure(`image not known: ${reference}`)
+          if (format === '{{.Id}}') return { ...OK, stdout: `${image.id}\n` }
+          if (format === '{{.Digest}}') return { ...OK, stdout: `${image.digest}\n` }
+          if (format === '{{json .Labels}}') return { ...OK, stdout: `${JSON.stringify(image.labels)}\n` }
+          const label = /^\{\{index \.Labels "(.+)"\}\}$/.exec(format)?.[1]
+          if (label !== undefined) return { ...OK, stdout: `${image.labels[label] ?? '<no value>'}\n` }
+          return OK
+        }
+        case 'images': {
+          const wanted = filtersOf(args)
+          const listed = [...fake.images.values()].filter(image => wanted.every(([key, value]) => image.labels[key] === value))
+          return { ...OK, stdout: JSON.stringify(listed.map(image => ({ Id: image.id, Names: image.names, Labels: image.labels, Created: image.createdAt, Size: image.sizeBytes }))) }
+        }
+        case 'rmi': {
+          const image = fake.findImage(args[1] ?? '')
+          if (image === undefined) return failure(`image not known: ${args[1]}`)
+          fake.images.delete(image.id)
+          return OK
         }
         case 'history':
           return { ...OK, stdout: fake.history }
