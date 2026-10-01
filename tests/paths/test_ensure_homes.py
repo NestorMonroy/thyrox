@@ -89,8 +89,8 @@ def synthetic_root(base: Path) -> Path:
     return root
 
 
-def run_ensure(root: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run([sys.executable, str(ENSURE_HOMES)], env=isolated_env(root),
+def run_ensure(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run([sys.executable, str(ENSURE_HOMES), *args], env=isolated_env(root),
                           capture_output=True, text=True, check=False,
                           umask=RESTRICTIVE_UMASK)
 
@@ -175,6 +175,23 @@ def case_clone_declaration_wins(base: Path) -> None:
     check("no crea el default", False, (root / ".thyrox" / "runtime").exists())
 
 
+def case_resolve_single_key(base: Path) -> None:
+    print("\n== --resolve publica la ruta de un hogar sin crear nada ==")
+    root = synthetic_root(base / "resolve")
+    before = snapshot(root)
+    result = run_ensure(root, "--resolve", "THYROX_RUNTIME_DIR")
+    check("exit 0", 0, result.returncode)
+    check("imprime el default del registro", str(root / ".thyrox" / "runtime"), result.stdout.strip())
+    check("no crea nada", before, snapshot(root))
+    (root / ".env").write_text("THYROX_RUNTIME_DIR=own-runtime\n")
+    declared = run_ensure(root, "--resolve", "THYROX_RUNTIME_DIR")
+    check("la declaración del clon gana", str(root / "own-runtime"), declared.stdout.strip())
+    unknown = run_ensure(root, "--resolve", NEW_KEY)
+    check("una clave no registrada rehúsa con exit 2", EXIT_REFUSED, unknown.returncode)
+    check("sin ruta en stdout", "", unknown.stdout)
+    check("nombra la clave", True, NEW_KEY in unknown.stderr)
+
+
 def case_declared_outside_tree(base: Path) -> None:
     print("\n== una declaración fuera del árbol no se crea ==")
     root = synthetic_root(base / "outside")
@@ -207,6 +224,7 @@ def main() -> int:
         case_new_key_is_undecided(base)
         case_creates_registered_homes(base)
         case_clone_declaration_wins(base)
+        case_resolve_single_key(base)
         case_declared_outside_tree(base)
         case_unwritable_declaration_refuses(base)
     finally:

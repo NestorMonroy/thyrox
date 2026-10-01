@@ -15,6 +15,7 @@
  * Salida: 0 verificado; 1 sin publicar o sin verificar; 2 rehusado antes de
  * empezar (argumentos, credencial, imagen, admisión); 3 límite del provider.
  */
+import { spawnSync } from 'node:child_process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -33,7 +34,7 @@ import { mediaTypeOf, publicationExitCode, publicationRecord, registryBaseUrl } 
 const REFUSED = 2
 const VERIFIER_IMAGE_ENV = 'THYROX_ARTIFACT_VERIFIER_IMAGE'
 const DEFAULT_VERIFIER_IMAGE = 'docker.io/library/ubuntu:24.04'
-const RUNTIME_DIR_ENV = 'THYROX_RUNTIME_DIR'
+const RUNTIME_HOME_KEY = 'THYROX_RUNTIME_DIR'
 const VERIFIER_LIMITS = { cpus: 1, memoryMib: 1024, pidsLimit: 128 }
 
 function refuse(message: string): never {
@@ -101,8 +102,17 @@ const verifierImageRef = declared(VERIFIER_IMAGE_ENV) || DEFAULT_VERIFIER_IMAGE
 const verifierImage = await podmanValue(['image', 'inspect', verifierImageRef, '--format', '{{.Id}}'], `la imagen del verificador ${verifierImageRef} (no se descarga implícitamente)`)
 
 const root = thyroxRoot()
+
+/** La ruta de un hogar la decide el registro de P11 (`paths/declarations.py`), no una copia de su default. */
+function registeredHome(key: string): string {
+  const resolved = spawnSync('bash', [join(root, 'bin', 'ensure_homes'), '--resolve', key], { encoding: 'utf8' })
+  const path = resolved.stdout.trim()
+  if (resolved.status !== 0 || !path) refuse(`no se resolvió el hogar ${key}: ${resolved.stderr.trim() || `exit ${resolved.status}`}`)
+  return path
+}
+
 const owner = `artifact-publish-${process.pid}`
-const scratchDir = join(declared(RUNTIME_DIR_ENV) || join(root, '.thyrox', 'runtime'), 'artifact-verify', owner)
+const scratchDir = join(registeredHome(RUNTIME_HOME_KEY), 'artifact-verify', owner)
 await mkdir(dirname(scratchDir), { recursive: true })
 
 const baseRecord = JSON.parse(await readFile(values['record-file'] as string, 'utf8')) as Record<string, unknown>

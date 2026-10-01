@@ -16,6 +16,12 @@ gobierna. Si alguna declaración apunta a un sitio no escribible, rehúsa con
 exit 2 nombrando la clave ANTES de crear nada.
 
     bash bin/ensure_homes
+    bash bin/ensure_homes --resolve THYROX_RUNTIME_DIR
+
+``--resolve <CLAVE>`` imprime la ruta de UN hogar registrado —su declaración
+o su default— sin crear nada. Es la vía de un consumidor en otro lenguaje
+(TypeScript) para leer un hogar sin copiar su default: el default vive sólo
+en ``declarations.HOMES``. Una clave no registrada rehúsa con exit 2.
 
 Métrica: existencia de cada hogar registrado tras correr.
 Ciega a: la familia por clon (``THYROX_JOBS_<CLONE>``): se lee sólo la clave
@@ -98,13 +104,30 @@ def report(outcomes: list[str]) -> None:
         print(f"\nnada que crear: los {len(outcomes)} hogares ya estaban.")
 
 
-def main() -> int:
+def resolve_one(key: str, root: Path, state: str) -> int:
+    """Imprime la ruta del hogar ``key`` sin crearla; de un archivo, la del archivo."""
+    home = next((home for home in declarations.HOMES if home.key == key), None)
+    if home is None:
+        print(f"ensure_homes: {key} no es un hogar registrado en paths/declarations.py",
+              file=sys.stderr)
+        return EXIT_REFUSED
+    declared = reach.env_value(home.key, root)
+    print(reach.resolve_home(declared, root) if declared else home.default_under(root, state))
+    return EXIT_OK
+
+
+def main(argv: list[str]) -> int:
     try:
         root = reach.thyrox_root()
     except reach.ReachRootError as error:
         print(f"ensure_homes: {error}", file=sys.stderr)
         return EXIT_REFUSED
     state = workbench.state_dir(root)
+    if argv[:1] == ["--resolve"]:
+        if len(argv) != 2:
+            print("ensure_homes: uso: --resolve <CLAVE>", file=sys.stderr)
+            return EXIT_REFUSED
+        return resolve_one(argv[1], root, state)
     targets = [Target(home.key, resolve_directory(home, root, state))
                for home in declarations.HOMES]
     unwritable = [target for target in targets if not is_writable(target.directory)]
@@ -120,4 +143,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))
