@@ -274,6 +274,14 @@ def run_in_unit(name: str, task: str, argv: list[str], network: str | None = Non
     return (int(match.group(1)) if match else 1), log
 
 
+def wait_for_job(name: str, poll_seconds: int = 30) -> str:
+    """Bloquea hasta que el trabajo de thyrox-bg deje de estar ``running``; devuelve su estado final."""
+    subprocess.run([*BG, "wait", name], capture_output=True, text=True, cwd=ROOT)
+    while (status := subprocess.run([*BG, "status", name], capture_output=True, text=True, cwd=ROOT).stdout.strip()) == "running":
+        time.sleep(poll_seconds)
+    return status
+
+
 def reconcile_orphans() -> str:
     done = subprocess.run([*EXECUTE, "reconcile-orphans"], capture_output=True, text=True, cwd=ROOT)
     return (done.stdout + done.stderr).strip()
@@ -384,6 +392,7 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--task", default=os.environ.get("THYROX_CONTINUATION_TASK", ""))
         command.add_argument("--max-items", type=int, default=0)
         command.add_argument("--seed", type=int, default=None)
+        command.add_argument("--after", default=None, help="espera a que este trabajo de thyrox-bg se asiente antes de empezar")
     args = parser.parse_args(argv)
     workbench = args.workbench.resolve()
     plan = load_plan(workbench)
@@ -394,6 +403,8 @@ def main(argv: list[str] | None = None) -> int:
     if not re.fullmatch(r"TASK-[A-Z]+-\d{4}", args.task):
         print("task_continuation: --task TASK-<CAPA>-NNNN es obligatorio", file=sys.stderr)
         return 2
+    if args.after:
+        wait_for_job(args.after)
     rng = random.Random(args.seed)
     learned = learned_classifier_from_environment()
     append_log(workbench, {"kind": "start", "orphans": reconcile_orphans()})
