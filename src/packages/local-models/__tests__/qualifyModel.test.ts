@@ -18,7 +18,7 @@ afterEach(async () => {
 async function qualify(reply: (prompt: string) => FakeChatReply) {
   server = startFakeOllama({ chat: prompt => reply(prompt) })
   const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
-  return runQualification({ api: new OllamaApi(server.baseUrl), suite, model: MODEL, taskClass: 'mecanica', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+  return runQualification({ api: new OllamaApi(server.baseUrl), suite, model: MODEL, measurementCondition: 'contended', contextTokens: CONTEXT_TOKENS, now: () => NOW })
 }
 
 function correct(prompt: string): FakeChatReply {
@@ -31,13 +31,14 @@ describe('runQualification — tool-calling@1 contra /api/chat', () => {
     expect(outcomes.map(o => o.passed)).toEqual([true, true, true, true, true, true])
     expect(qualification).toEqual({
       model: MODEL,
-      taskClass: 'mecanica',
+      kind: 'protocol',
       suite: 'tool-calling@1',
       casesPassed: 6,
       casesTotal: 6,
       passed: true,
       contextTokens: CONTEXT_TOKENS,
       tokensPerSecond: 20,
+      measurementCondition: 'contended',
       measuredAt: '2026-10-01T05:00:00.000Z',
     })
   })

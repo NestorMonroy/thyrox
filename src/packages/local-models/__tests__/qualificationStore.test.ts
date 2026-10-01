@@ -12,13 +12,14 @@ afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
 
 const QUALIFICATION: ModelQualification = {
   model: 'thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-cccccccccccc',
-  taskClass: 'mecanica',
+  kind: 'protocol',
   suite: 'tool-calling@1',
   casesPassed: 6,
   casesTotal: 6,
   passed: true,
   contextTokens: 8192,
   tokensPerSecond: 31.5,
+  measurementCondition: 'contended',
   measuredAt: '2026-10-01T05:00:00.000Z',
 }
 

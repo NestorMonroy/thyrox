@@ -1,8 +1,17 @@
 /**
- * Cuándo un modelo local cumple una clase de tarea: sólo si existe una
- * medición aprobada de esa clase sobre ese modelo exacto (nombre contractual
- * con su revisión). Un modelo local no declara rango de capacidad como lo hace
- * el catálogo del proveedor; lo que se publica aquí es lo que una suite midió.
+ * Cuándo un modelo local es elegible para una clase de tarea: sólo si una
+ * suite midió, sobre ese modelo exacto (nombre contractual con su revisión),
+ * las dos cosas que la clase exige, y ninguna se infiere de la otra:
+ *
+ * - **protocolo** (`kind: 'protocol'`): que emite llamadas a herramienta bien
+ *   formadas. Es condición necesaria, no competencia: un modelo de 0,5B
+ *   aprobó `tool-calling@1` 6/6 y respondió «3» a «2+2».
+ * - **tarea** (`kind: 'task'`): que resuelve el trabajo de la clase, medido
+ *   con un ítem real y su verify.
+ *
+ * Cada medición declara su condición: `isolated` (sin otra carga que la
+ * desplace) o `contended`. Una velocidad contendida no ordena candidatos: se
+ * sabe inválida para comparar.
  *
  * Es el contrato entre quien mide (`bin/model-qualify`) y quien elige el
  * modelo de una tarea (el recomendador): los dos leen y escriben esta forma.
@@ -14,10 +23,18 @@ import type { ModelCatalogEntry } from './catalogEntry.js'
 export const LOCAL_TASK_CLASSES = ['mecanica', 'analisis', 'adversarial', 'frontera'] as const
 export type LocalTaskClass = (typeof LOCAL_TASK_CLASSES)[number]
 
+/** Qué demuestra una cualificación: el formato del protocolo o la tarea de una clase. */
+export type QualificationKind = 'protocol' | 'task'
+
+/** Si la medición corrió sola o con otra carga que la desplazaba. */
+export type MeasurementCondition = 'isolated' | 'contended'
+
 export interface ModelQualification {
   /** Nombre contractual del catálogo. */
   readonly model: string
-  readonly taskClass: LocalTaskClass
+  readonly kind: QualificationKind
+  /** La clase que una cualificación de tarea mide; una de protocolo no tiene. */
+  readonly taskClass?: LocalTaskClass
   /** Identificador y versión de la suite que midió (`tool-calling@1`). */
   readonly suite: string
   readonly casesPassed: number
@@ -26,6 +43,7 @@ export interface ModelQualification {
   /** Contexto con que se sirvió el modelo durante la medición, en tokens. */
   readonly contextTokens: number
   readonly tokensPerSecond: number
+  readonly measurementCondition: MeasurementCondition
   /** Instante ISO 8601 en UTC. */
   readonly measuredAt: string
 }
@@ -58,6 +76,26 @@ function requireNonNegativeInteger(record: Record<string, unknown>, key: string,
   return value
 }
 
+const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task']
+const MEASUREMENT_CONDITIONS: readonly MeasurementCondition[] = ['isolated', 'contended']
+
+function requireOneOf<T extends string>(record: Record<string, unknown>, key: string, allowed: readonly T[], path: string): T {
+  const value = requireString(record, key, path)
+  if (!(allowed as readonly string[]).includes(value)) {
+    throw new InvalidQualificationError(`${path}.${key}`, `«${value}» no es ${allowed.join(', ')}`)
+  }
+  return value as T
+}
+
+/** La clase es obligatoria en una cualificación de tarea y no existe en una de protocolo. */
+function taskClassFor(kind: QualificationKind, record: Record<string, unknown>, path: string): LocalTaskClass | undefined {
+  if (kind === 'task') return requireTaskClass(record, path)
+  if (record.taskClass !== undefined) {
+    throw new InvalidQualificationError(`${path}.taskClass`, 'una cualificación de protocolo no mide ninguna clase')
+  }
+  return undefined
+}
+
 function requireTaskClass(record: Record<string, unknown>, path: string): LocalTaskClass {
   const value = requireString(record, 'taskClass', path)
   if (!(LOCAL_TASK_CLASSES as readonly string[]).includes(value)) {
@@ -83,15 +121,19 @@ export function validateQualification(value: unknown, path = 'qualification'): M
   if (!ISO_UTC_INSTANT.test(measuredAt)) throw new InvalidQualificationError(`${path}.measuredAt`, 'se espera un instante ISO 8601 en UTC')
   const contextTokens = requireNonNegativeInteger(record, 'contextTokens', path)
   if (contextTokens === 0) throw new InvalidQualificationError(`${path}.contextTokens`, 'se espera un entero positivo')
+  const kind = requireOneOf(record, 'kind', QUALIFICATION_KINDS, path)
+  const taskClass = taskClassFor(kind, record, path)
   return {
     model: requireString(record, 'model', path),
-    taskClass: requireTaskClass(record, path),
+    kind,
+    ...(taskClass === undefined ? {} : { taskClass }),
     suite: requireString(record, 'suite', path),
     casesPassed,
     casesTotal,
     passed: record.passed,
     contextTokens,
     tokensPerSecond,
+    measurementCondition: requireOneOf(record, 'measurementCondition', MEASUREMENT_CONDITIONS, path),
     measuredAt,
   }
 }
@@ -104,8 +146,12 @@ export function parseQualifications(text: string): ModelQualification[] {
   return list.map((item, index) => validateQualification(item, `qualifications[${index}]`))
 }
 
+function scopeOf(qualification: ModelQualification): string {
+  return qualification.kind === 'task' ? `task:${qualification.taskClass}` : 'protocol'
+}
+
 function byMeasurementKey(left: ModelQualification, right: ModelQualification): number {
-  return left.model.localeCompare(right.model) || left.taskClass.localeCompare(right.taskClass)
+  return left.model.localeCompare(right.model) || scopeOf(left).localeCompare(scopeOf(right))
     || left.measuredAt.localeCompare(right.measuredAt)
 }
 
@@ -115,25 +161,43 @@ export function serializeQualifications(qualifications: readonly ModelQualificat
 }
 
 /**
- * La medición vigente de un modelo para una clase: la más reciente. Una
- * medición nueva que suspende retira la aprobación de una anterior.
+ * La medición vigente de un modelo para un alcance (protocolo, o tarea de una
+ * clase): la más reciente. Una medición nueva que suspende retira la
+ * aprobación de una anterior.
  */
-function latestFor(qualifications: readonly ModelQualification[], model: string, taskClass: LocalTaskClass): ModelQualification | undefined {
+function latestFor(qualifications: readonly ModelQualification[], model: string, scope: string): ModelQualification | undefined {
   return qualifications
-    .filter((q) => q.model === model && q.taskClass === taskClass)
+    .filter((q) => q.model === model && scopeOf(q) === scope)
     .reduce<ModelQualification | undefined>((latest, q) => (!latest || q.measuredAt > latest.measuredAt ? q : latest), undefined)
 }
 
 export interface QualifiedLocalModel {
   readonly entry: ModelCatalogEntry
+  /** La cualificación de tarea de la clase: la que da el contexto y la velocidad. */
   readonly qualification: ModelQualification
+  readonly protocol: ModelQualification
+}
+
+function passed(qualification: ModelQualification | undefined): qualification is ModelQualification {
+  return qualification !== undefined && qualification.passed
+}
+
+/** Primero las medidas aisladas, de la más rápida a la más lenta; las contendidas después, sin ordenar por velocidad. */
+function bySpeedWhenIsolated(left: QualifiedLocalModel, right: QualifiedLocalModel): number {
+  const leftIsolated = left.qualification.measurementCondition === 'isolated'
+  const rightIsolated = right.qualification.measurementCondition === 'isolated'
+  if (leftIsolated !== rightIsolated) return leftIsolated ? -1 : 1
+  const speed = leftIsolated ? right.qualification.tokensPerSecond - left.qualification.tokensPerSecond : 0
+  return speed || left.entry.name.localeCompare(right.entry.name)
 }
 
 /**
- * Los modelos del catálogo que cumplen `taskClass` con al menos
- * `minContextTokens` de contexto medido, del más rápido al más lento. Una
- * cualificación de un modelo que no está en el catálogo no cuenta: el nombre
- * lleva la revisión, así que otra revisión es otro modelo.
+ * Los modelos del catálogo elegibles para `taskClass`: protocolo aprobado,
+ * tarea de esa clase aprobada y al menos `minContextTokens` de contexto
+ * medido en la medición de tarea. Ordenados por velocidad sólo entre medidas
+ * aisladas. Una cualificación de un modelo que no está en el catálogo no
+ * cuenta: el nombre lleva la revisión, así que otra revisión es otro modelo.
+ * Elegible no es autorizado: decide el scheduler y autoriza el grant.
  */
 export function qualifiedModels(
   entries: readonly ModelCatalogEntry[],
@@ -142,10 +206,13 @@ export function qualifiedModels(
   minContextTokens: number,
 ): QualifiedLocalModel[] {
   return entries
-    .map((entry) => ({ entry, qualification: latestFor(qualifications, entry.name, taskClass) }))
+    .map((entry) => ({
+      entry,
+      qualification: latestFor(qualifications, entry.name, `task:${taskClass}`),
+      protocol: latestFor(qualifications, entry.name, 'protocol'),
+    }))
     .filter((candidate): candidate is QualifiedLocalModel =>
-      candidate.qualification !== undefined && candidate.qualification.passed
+      passed(candidate.protocol) && passed(candidate.qualification)
       && candidate.qualification.contextTokens >= minContextTokens)
-    .sort((left, right) => right.qualification.tokensPerSecond - left.qualification.tokensPerSecond
-      || left.entry.name.localeCompare(right.entry.name))
+    .sort(bySpeedWhenIsolated)
 }

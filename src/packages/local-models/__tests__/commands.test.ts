@@ -171,16 +171,17 @@ describe('local-models-qualify', () => {
 
   test('seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo', async () => {
     const install = await declaredInstallation(correct)
-    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica'], install)
+    const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
     expect(result.code).toBe(0)
     expect(result.stdout.at(-1)).toContain('aprobada')
     const [stored] = storedQualifications(install)
-    expect(stored).toMatchObject({ model: CONTRACT_NAME, taskClass: 'mecanica', passed: true, contextTokens: 4096 })
+    expect(stored).toMatchObject({ model: CONTRACT_NAME, kind: 'protocol', measurementCondition: 'contended', passed: true, contextTokens: 4096 })
+    expect(stored?.taskClass).toBeUndefined()
   })
 
   test('--context declarado viaja como num_ctx', async () => {
     const install = await declaredInstallation(correct)
-    expect((await run(runQualifyCommand, [CONTRACT_NAME, 'analisis', '--context', '2048'], install)).code).toBe(0)
+    expect((await run(runQualifyCommand, [CONTRACT_NAME, '--context', '2048'], install)).code).toBe(0)
     const chat = server?.requests.find(r => r.path === '/api/chat')?.body as { options: { num_ctx: number } }
     expect(chat.options.num_ctx).toBe(2048)
     expect(storedQualifications(install)[0]?.contextTokens).toBe(2048)
@@ -188,14 +189,14 @@ describe('local-models-qualify', () => {
 
   test('suspendida: sale 1 y también se escribe', async () => {
     const install = await declaredInstallation(() => ({ content: 'no' }))
-    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica'], install)
+    const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
     expect(result.code).toBe(1)
     expect(storedQualifications(install)[0]?.passed).toBe(false)
   })
 
   test('un modelo fuera del catálogo sale 2 sin medir', async () => {
     const install = installation(correct)
-    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica'], install)
+    const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
     expect(result.code).toBe(2)
     expect(result.stderr.join('\n')).toContain('no está en el catálogo')
     expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
@@ -203,14 +204,20 @@ describe('local-models-qualify', () => {
 
   test('--context por encima del máximo del modelo sale 2 sin medir', async () => {
     const install = await declaredInstallation(correct)
-    const result = await run(runQualifyCommand, [CONTRACT_NAME, 'mecanica', '--context', '8192'], install)
+    const result = await run(runQualifyCommand, [CONTRACT_NAME, '--context', '8192'], install)
     expect(result.code).toBe(2)
     expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
   })
 
-  test('una clase desconocida o un --context no entero salen 2 con el uso', async () => {
+  test('--isolated declara la medición aislada; sin él queda contended', async () => {
+    const install = await declaredInstallation(correct)
+    expect((await run(runQualifyCommand, [CONTRACT_NAME, '--isolated'], install)).code).toBe(0)
+    expect(storedQualifications(install)[0]?.measurementCondition).toBe('isolated')
+  })
+
+  test('una clase sobrante, un --context no entero o sin modelo salen 2 con el uso', async () => {
     const install = installation(correct)
-    for (const argv of [[CONTRACT_NAME, 'rapida'], [CONTRACT_NAME, 'mecanica', '--context', 'x'], [CONTRACT_NAME]]) {
+    for (const argv of [[CONTRACT_NAME, 'mecanica'], [CONTRACT_NAME, '--context', 'x'], []]) {
       const result = await run(runQualifyCommand, argv, install)
       expect(result.code).toBe(2)
       expect(result.stderr.join('\n')).toContain('uso:')

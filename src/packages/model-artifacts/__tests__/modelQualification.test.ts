@@ -44,16 +44,23 @@ const SLOW = entry('meta-llama/Llama-3.2-3B-Instruct', 'c'.repeat(40))
 function measured(model: string, parts: Partial<ModelQualification> = {}): ModelQualification {
   return {
     model,
+    kind: 'task',
     taskClass: 'mecanica',
-    suite: 'tool-calling@1',
+    suite: 'mecanica-items@1',
     casesPassed: 6,
     casesTotal: 6,
     passed: true,
     contextTokens: 32_768,
     tokensPerSecond: 8,
+    measurementCondition: 'isolated',
     measuredAt: '2026-10-01T00:10:00Z',
     ...parts,
   }
+}
+
+function protocolPass(model: string, parts: Partial<ModelQualification> = {}): ModelQualification {
+  const { taskClass: _taskClass, ...rest } = measured(model, { kind: 'protocol', suite: 'tool-calling@1', ...parts })
+  return rest
 }
 
 describe('validateQualification', () => {
@@ -96,10 +103,22 @@ describe('parse y serialize', () => {
 })
 
 describe('qualifiedModels', () => {
-  test('sólo cuenta una medición aprobada de esa clase', () => {
-    const qualifications = [measured(FAST.name), measured(SLOW.name, { taskClass: 'analisis' })]
+  const PROTOCOLS = [protocolPass(FAST.name), protocolPass(SLOW.name)]
+
+  test('sólo cuenta una medición de tarea aprobada de esa clase', () => {
+    const qualifications = [...PROTOCOLS, measured(FAST.name), measured(SLOW.name, { taskClass: 'analisis' })]
     expect(qualifiedModels([FAST, SLOW], qualifications, 'mecanica', 8_192).map((q) => q.entry.name)).toEqual([FAST.name])
     expect(qualifiedModels([FAST, SLOW], qualifications, 'adversarial', 8_192)).toEqual([])
+  })
+
+  test('el protocolo aprobado solo no hace elegible: compatibilidad no es competencia', () => {
+    expect(qualifiedModels([FAST], [protocolPass(FAST.name)], 'mecanica', 1)).toEqual([])
+  })
+
+  test('sin protocolo aprobado, una tarea aprobada tampoco basta', () => {
+    expect(qualifiedModels([FAST], [measured(FAST.name)], 'mecanica', 1)).toEqual([])
+    const failedProtocol = protocolPass(FAST.name, { passed: false, casesPassed: 1 })
+    expect(qualifiedModels([FAST], [failedProtocol, measured(FAST.name)], 'mecanica', 1)).toEqual([])
   })
 
   test('sin medición no hay modelo: el rango no se declara', () => {
@@ -108,21 +127,45 @@ describe('qualifiedModels', () => {
 
   test('la medición más reciente gobierna: una que suspende retira la aprobación', () => {
     const failedLater = measured(FAST.name, { passed: false, casesPassed: 2, measuredAt: '2026-10-01T02:00:00Z' })
-    expect(qualifiedModels([FAST], [measured(FAST.name), failedLater], 'mecanica', 1)).toEqual([])
+    expect(qualifiedModels([FAST], [...PROTOCOLS, measured(FAST.name), failedLater], 'mecanica', 1)).toEqual([])
   })
 
   test('un contexto medido menor que el exigido no cumple', () => {
-    expect(qualifiedModels([FAST], [measured(FAST.name, { contextTokens: 4_096 })], 'mecanica', 24_000)).toEqual([])
+    expect(qualifiedModels([FAST], [...PROTOCOLS, measured(FAST.name, { contextTokens: 4_096 })], 'mecanica', 24_000)).toEqual([])
   })
 
   test('una cualificación de otra revisión no cuenta', () => {
     const otherRevision = entry('Qwen/Qwen2.5-3B-Instruct-GGUF', 'd'.repeat(40))
-    expect(qualifiedModels([otherRevision], [measured(FAST.name)], 'mecanica', 1)).toEqual([])
+    expect(qualifiedModels([otherRevision], [...PROTOCOLS, measured(FAST.name)], 'mecanica', 1)).toEqual([])
   })
 
-  test('del más rápido al más lento', () => {
-    const qualifications = [measured(FAST.name, { tokensPerSecond: 11.5 }), measured(SLOW.name, { tokensPerSecond: 8.2 })]
+  test('entre medidas aisladas, del más rápido al más lento', () => {
+    const qualifications = [...PROTOCOLS, measured(FAST.name, { tokensPerSecond: 11.5 }), measured(SLOW.name, { tokensPerSecond: 8.2 })]
     expect(qualifiedModels([SLOW, FAST], qualifications, 'mecanica', 1).map((q) => q.entry.name)).toEqual([FAST.name, SLOW.name])
+  })
+
+  test('una velocidad contendida no ordena: va detrás aunque su cifra sea mayor', () => {
+    const qualifications = [...PROTOCOLS,
+      measured(FAST.name, { tokensPerSecond: 50, measurementCondition: 'contended' }),
+      measured(SLOW.name, { tokensPerSecond: 0.3 })]
+    expect(qualifiedModels([FAST, SLOW], qualifications, 'mecanica', 1).map((q) => q.entry.name)).toEqual([SLOW.name, FAST.name])
+  })
+})
+
+describe('forma de cada tipo de cualificación', () => {
+  test('una de tarea exige su clase', () => {
+    const { taskClass: _taskClass, ...withoutClass } = measured(FAST.name)
+    expect(() => validateQualification(withoutClass)).toThrow(/qualification\.taskClass/)
+  })
+
+  test('una de protocolo no mide ninguna clase', () => {
+    expect(() => validateQualification({ ...protocolPass(FAST.name), taskClass: 'mecanica' }))
+      .toThrow(new InvalidQualificationError('qualification.taskClass', 'una cualificación de protocolo no mide ninguna clase'))
+  })
+
+  test('la condición de medición es isolated o contended', () => {
+    expect(() => validateQualification({ ...measured(FAST.name), measurementCondition: 'quiet' }))
+      .toThrow(/qualification\.measurementCondition/)
   })
 })
 

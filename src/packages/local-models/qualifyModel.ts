@@ -8,7 +8,7 @@
  * Ciega a: la variación entre corridas y la calidad fuera de estos casos.
  */
 
-import type { LocalTaskClass, ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+import type { MeasurementCondition, ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 
 import type { ChatReply, OllamaApi } from './ollamaApi.js'
 import { scoreReply, type Suite, type SuiteCase } from './toolCallingSuite.js'
@@ -23,7 +23,8 @@ export interface QualificationRequest {
   readonly api: OllamaApi
   readonly suite: Suite
   readonly model: string
-  readonly taskClass: LocalTaskClass
+  /** Si la medición corre sola: sólo así su velocidad puede ordenar candidatos. */
+  readonly measurementCondition: MeasurementCondition
   readonly contextTokens: number
   readonly now: () => Date
 }
@@ -56,13 +57,14 @@ export async function runQualification(request: QualificationRequest): Promise<Q
     outcomes,
     qualification: {
       model: request.model,
-      taskClass: request.taskClass,
+      kind: 'protocol',
       suite: request.suite.id,
       casesPassed,
       casesTotal: outcomes.length,
       passed: casesPassed === outcomes.length,
       contextTokens: request.contextTokens,
       tokensPerSecond: tokensPerSecond(request.model, replies),
+      measurementCondition: request.measurementCondition,
       measuredAt: request.now().toISOString(),
     },
   }

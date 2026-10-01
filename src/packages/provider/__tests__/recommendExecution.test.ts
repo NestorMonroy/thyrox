@@ -36,16 +36,24 @@ function catalogEntry(repository: string, revisionDigit: string): ModelCatalogEn
 function qualification(model: string, overrides: Partial<ModelQualification> = {}): ModelQualification {
   return {
     model,
+    kind: 'task',
     taskClass: 'mecanica',
-    suite: 'tool-calling@1',
+    suite: 'mecanica-items@1',
     casesPassed: 6,
     casesTotal: 6,
     passed: true,
     contextTokens: 65_536,
     tokensPerSecond: 20,
+    measurementCondition: 'isolated',
     measuredAt: '2026-10-01T01:00:00Z',
     ...overrides,
   }
+}
+
+/** La cualificación de protocolo que todo candidato elegible necesita además de la de tarea. */
+function protocol(model: string): ModelQualification {
+  const { taskClass: _taskClass, ...rest } = qualification(model, { kind: 'protocol', suite: 'tool-calling@1' })
+  return rest
 }
 
 const SLOW = catalogEntry('qwen/slow', 'a')
@@ -56,7 +64,7 @@ describe('recommendExecution — local primero, claude-cli declarado como respal
     const fast = qualification(FAST.name, { tokensPerSecond: 40 })
     const result = recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, {
       entries: [SLOW, FAST],
-      qualifications: [qualification(SLOW.name), fast],
+      qualifications: [protocol(SLOW.name), protocol(FAST.name), qualification(SLOW.name), fast],
     })
     expect(result.runtime).toBe('ollama')
     expect(result.model).toBe(FAST.name)
@@ -75,7 +83,7 @@ describe('recommendExecution — local primero, claude-cli declarado como respal
   test('sin cualificación aprobada de la clase: cae y nombra la clase', () => {
     const result = recommendExecution('analisis', { contextTokens: CONTEXT_TOKENS }, {
       entries: [SLOW],
-      qualifications: [qualification(SLOW.name), qualification(SLOW.name, { taskClass: 'analisis', passed: false, casesPassed: 4 })],
+      qualifications: [protocol(SLOW.name), qualification(SLOW.name), qualification(SLOW.name, { taskClass: 'analisis', passed: false, casesPassed: 4 })],
     })
     expect(result.runtime).toBe('claude-cli')
     expect(result.model.startsWith('claude-')).toBe(true)
@@ -85,7 +93,7 @@ describe('recommendExecution — local primero, claude-cli declarado como respal
   test('contexto medido insuficiente: cae y nombra el contexto medido y el exigido', () => {
     const result = recommendExecution('mecanica', { contextTokens: 100_000 }, {
       entries: [SLOW],
-      qualifications: [qualification(SLOW.name, { contextTokens: 65_536 })],
+      qualifications: [protocol(SLOW.name), qualification(SLOW.name, { contextTokens: 65_536 })],
     })
     expect(result.runtime).toBe('claude-cli')
     expect(result.runtime === 'claude-cli' ? result.fallbackReason : '').toMatch(/contexto medido insuficiente.*65536.*100000/)

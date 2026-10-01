@@ -1,8 +1,12 @@
 /**
- * `local-models-qualify <nombre-contractual> <clase> [--context N]`: corre
- * `tool-calling@1` contra el Ollama gestionado y añade la medición al archivo
- * de cualificaciones. El modelo tiene que estar en el catálogo: una
- * cualificación de un modelo no declarado no cuenta (`qualifiedModels`).
+ * `local-models-qualify <nombre-contractual> [--context N] [--isolated]`:
+ * corre `tool-calling@1` contra el Ollama gestionado y añade la medición al
+ * archivo de cualificaciones. Es una cualificación de **protocolo**: prueba
+ * llamadas a herramienta bien formadas, no la competencia en una clase de
+ * tarea, que mide otra suite. La medición es `contended` salvo que se declare
+ * `--isolated`: sin admisión de recursos no se sabe si corrió sola, y una
+ * velocidad contendida no ordena candidatos. El modelo tiene que estar en el
+ * catálogo: una cualificación de un modelo no declarado no cuenta.
  *
  * Salidas: 0 aprobada · 1 medida y suspendida (también se escribe: retira una
  * aprobación anterior) · 2 rehusado sin medición.
@@ -10,7 +14,7 @@
 
 import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
 import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
-import { LOCAL_TASK_CLASSES, type LocalTaskClass } from '@thyrox/model-artifacts/modelQualification.ts'
+import type { MeasurementCondition } from '@thyrox/model-artifacts/modelQualification.ts'
 
 import type { CommandContext } from './catalogCommand.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
@@ -23,15 +27,16 @@ import { TOOL_CALLING_SUITE_PATH, loadSuite } from './toolCallingSuite.js'
 /** Contexto de servicio de la medición si no se declara, acotado al máximo del modelo. */
 export const DEFAULT_QUALIFICATION_CONTEXT_TOKENS = 8192
 
-export const QUALIFY_USAGE = `uso: local-models-qualify <nombre-contractual> <${LOCAL_TASK_CLASSES.join('|')}> [--context N]`
+export const QUALIFY_USAGE = 'uso: local-models-qualify <nombre-contractual> [--context N] [--isolated]'
 
 const CONTEXT_FLAG = '--context'
+const ISOLATED_FLAG = '--isolated'
 
 class QualifyRefusal extends Error {}
 
 interface QualifyArguments {
   readonly model: string
-  readonly taskClass: LocalTaskClass
+  readonly measurementCondition: MeasurementCondition
   readonly contextTokens: number | undefined
 }
 
@@ -55,7 +60,7 @@ async function qualify(args: QualifyArguments, context: CommandContext): Promise
     api: new OllamaApi(managedOllama(context.env).baseUrl),
     suite: await loadSuite(TOOL_CALLING_SUITE_PATH),
     model: args.model,
-    taskClass: args.taskClass,
+    measurementCondition: args.measurementCondition,
     contextTokens,
     now: context.now,
   })
@@ -63,17 +68,21 @@ async function qualify(args: QualifyArguments, context: CommandContext): Promise
   run.outcomes.forEach(outcome => context.output.stdout(`${outcome.passed ? 'ok  ' : 'FALLA'} ${outcome.caseId}\t${outcome.observed}`))
   const { qualification } = run
   const verdict = qualification.passed ? 'aprobada' : 'suspendida'
-  context.output.stdout(`${verdict}: ${qualification.model} ${qualification.taskClass} ${qualification.suite} ${qualification.casesPassed}/${qualification.casesTotal}, ${qualification.tokensPerSecond.toFixed(1)} tokens/s, ctx ${contextTokens} → ${home.qualifications}`)
+  context.output.stdout(`${verdict}: ${qualification.model} protocolo ${qualification.suite} ${qualification.casesPassed}/${qualification.casesTotal}, ${qualification.tokensPerSecond.toFixed(1)} tokens/s (${qualification.measurementCondition}), ctx ${contextTokens} → ${home.qualifications}`)
   return qualification.passed ? EXIT_OK : EXIT_NOT_APPROVED
 }
 
 function parseArguments(argv: readonly string[]): QualifyArguments {
-  const flagAt = argv.indexOf(CONTEXT_FLAG)
-  const positional = flagAt < 0 ? argv : [...argv.slice(0, flagAt), ...argv.slice(flagAt + 2)]
-  if (positional.length !== 2) throw new QualifyRefusal('se esperan exactamente el nombre contractual y la clase')
-  const [model = '', taskClass = ''] = positional
-  if (!(LOCAL_TASK_CLASSES as readonly string[]).includes(taskClass)) throw new QualifyRefusal(`«${taskClass}» no es una clase de tarea`)
-  return { model, taskClass: taskClass as LocalTaskClass, contextTokens: flagAt < 0 ? undefined : positiveInteger(argv[flagAt + 1]) }
+  const isolated = argv.includes(ISOLATED_FLAG)
+  const withoutIsolated = argv.filter(argument => argument !== ISOLATED_FLAG)
+  const flagAt = withoutIsolated.indexOf(CONTEXT_FLAG)
+  const positional = flagAt < 0 ? withoutIsolated : [...withoutIsolated.slice(0, flagAt), ...withoutIsolated.slice(flagAt + 2)]
+  if (positional.length !== 1) throw new QualifyRefusal('se espera exactamente el nombre contractual')
+  return {
+    model: positional[0] ?? '',
+    measurementCondition: isolated ? 'isolated' : 'contended',
+    contextTokens: flagAt < 0 ? undefined : positiveInteger(withoutIsolated[flagAt + 1]),
+  }
 }
 
 function positiveInteger(text: string | undefined): number {

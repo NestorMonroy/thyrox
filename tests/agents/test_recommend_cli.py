@@ -45,14 +45,22 @@ CATALOG_ENTRY = {
 MEASURED_CONTEXT_TOKENS = 200_000
 QUALIFICATION = {
     "model": LOCAL_MODEL,
+    "kind": "task",
     "taskClass": "mecanica",
-    "suite": "tool-calling@1",
+    "suite": "mecanica-items@1",
     "casesPassed": 6,
     "casesTotal": 6,
     "passed": True,
     "contextTokens": MEASURED_CONTEXT_TOKENS,
     "tokensPerSecond": 21.5,
+    "measurementCondition": "isolated",
     "measuredAt": "2026-10-01T01:00:00Z",
+}
+# Sin la cualificación de protocolo, la de tarea no hace elegible al modelo.
+PROTOCOL_QUALIFICATION = {
+    **{key: value for key, value in QUALIFICATION.items() if key != "taskClass"},
+    "kind": "protocol",
+    "suite": "tool-calling@1",
 }
 
 passed = failed = 0
@@ -78,7 +86,7 @@ class LocalHome:
 
     def write_qualified_model(self) -> None:
         self.catalog.write_text(json.dumps({"entries": [CATALOG_ENTRY]}))
-        self.qualifications.write_text(json.dumps({"qualifications": [QUALIFICATION]}))
+        self.qualifications.write_text(json.dumps({"qualifications": [PROTOCOL_QUALIFICATION, QUALIFICATION]}))
 
     def env(self) -> dict[str, str]:
         return {**os.environ,
@@ -157,7 +165,7 @@ def check_local_choice(home: LocalHome) -> None:
     check("cualificado: model es el nombre contractual", document.get("model") == LOCAL_MODEL)
     check("cualificado: sin fallbackReason", "fallbackReason" not in document)
     check("cualificado: publica su cualificación",
-          document.get("qualification", {}).get("suite") == "tool-calling@1")
+          document.get("qualification", {}).get("suite") == "mecanica-items@1")
     r = run(home, "mecanica")
     check("cualificado: la salida humana muestra runtime ollama y el modelo",
           r.returncode == 0 and "runtime ollama" in r.stdout and LOCAL_MODEL in r.stdout, r.stderr[:160])
