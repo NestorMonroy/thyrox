@@ -49,6 +49,8 @@ _INFRA_ENSURE_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_INFRA_ENSURE_HERE/../lib/toolchain.sh"
 # shellcheck source=/dev/null
 source "$_INFRA_ENSURE_HERE/../lib/infrastructure.sh"
+# shellcheck source=/dev/null
+source "$_INFRA_ENSURE_HERE/../lib/podman_locks.sh"
 
 # Plazo e intervalo del health check, con prefijo THYROX_INFRA_ como el resto
 # de la declaracion. `THYROX_INFRA_ENSURE_SLEEP_BIN` no es un parametro de
@@ -120,82 +122,53 @@ _infra_ensure_network() {
   "$PODMAN" network create "$_INFRASTRUCTURE_NETWORK" >/dev/null 2>&1
 }
 
-# @description Total de locks del motor: `num_locks` de containers.conf, o el
-# default de Podman (2048) si ningún archivo lo declara. `podman info` sólo
-# publica los libres. THYROX_INFRA_PODMAN_NUM_LOCKS lo fija en la suite.
-_infra_num_locks() {
-  local declared conf
-  declared="$(thyrox_infrastructure_setting THYROX_INFRA_PODMAN_NUM_LOCKS '')"
-  if [[ -n "$declared" ]]; then
-    echo "$declared"
-    return
-  fi
-  for conf in /etc/containers/containers.conf /usr/share/containers/containers.conf; do
-    [[ -f "$conf" ]] || continue
-    declared="$(sed -n 's/^[[:space:]]*num_locks[[:space:]]*=[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$conf" | tail -1)"
-    [[ -n "$declared" ]] && { echo "$declared"; return; }
-  done
-  echo 2048
-}
-
-# @description Locks asignados y números de lock DISTINTOS que la base
-# referencia, separados por espacio. Se cuentan números y no objetos: en
-# Podman 4.9.3 los volúmenes comparten números entre sí y con los
-# contenedores (medido el 2026-10-01 tras `podman system renumber`: 7 objetos,
-# 3 números distintos, 3 asignados). Sin medida de locks libres no imprime
-# nada: un desfase no se infiere de una medida ausente.
-_infra_lock_balance() {
-  local free referenced
-  free="$("$PODMAN" info --format '{{.Host.FreeLocks}}' 2>/dev/null)"
-  [[ "$free" =~ ^[0-9]+$ ]] || return 1
-  local -a containers
-  mapfile -t containers < <("$PODMAN" ps -a --format '{{.Names}}' 2>/dev/null)
-  referenced="$( {
-    [[ "${#containers[@]}" -gt 0 ]] && "$PODMAN" container inspect --format '{{.LockNumber}}' "${containers[@]}" 2>/dev/null
-    "$PODMAN" pod inspect --all --format '{{.LockNumber}}' 2>/dev/null
-    "$PODMAN" volume inspect --all --format '{{.LockNumber}}' 2>/dev/null
-  } | grep -E '^[0-9]+$' | sort -u | wc -l )"
-  echo "$(( $(_infra_num_locks) - free )) $referenced"
-}
-
-# @description Contenedores con proceso vivo: los que la base reporta
-# `running` y cuyo PID existe. Uno solo basta para que renumerar no sea seguro.
-_infra_live_containers() {
-  local name inspect_out pid
-  while IFS= read -r name; do
-    [[ -n "$name" ]] || continue
-    inspect_out="$("$PODMAN" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name" 2>/dev/null)" || continue
-    pid="${inspect_out##*$'\t'}"
-    [[ "${inspect_out%%$'\t'*}" == running && "$pid" != 0 ]] && kill -0 "$pid" 2>/dev/null && echo "$name"
-  done < <("$PODMAN" ps -a --format '{{.Names}}' 2>/dev/null)
-}
-
 # @description Locks desfasados tras reiniciar la VM (H-THYROX-302): la
 # memoria compartida de Podman se rehace vacía y la base conserva el número
 # de lock de cada objeto, así que el siguiente objeto nuevo recibe un lock
 # ocupado (`deadlock due to lock mismatch`, `freeing lock ... no such file`).
-# Se mide ANTES de tocar nada; con locks asignados < números de lock distintos referenciados y ningún
-# contenedor vivo, `podman system renumber` es seguro y se corre. Con un
-# contenedor vivo, o si renumerar no corrige la medida, se rehúsa.
+# Se mide ANTES de tocar nada. Con un contenedor vivo se rehúsa. Sin ninguno,
+# se intenta el mecanismo soportado, `podman system renumber`, y su stderr se
+# conserva: si falla, o si no corrige la medida, se rehúsa publicándolo, y se
+# nombra el defecto conocido de sqlite cuando el mensaje coincide
+# (H-THYROX-308). El ensure no repara internals de Podman: esa recuperación es
+# el procedimiento explícito `bin/podman_lock_recovery`.
 _infra_reconcile_locks() {
-  local balance allocated objects live
-  balance="$(_infra_lock_balance)" || return 0
+  local balance allocated objects live renumber_stderr renumber_rc
+  balance="$(thyrox_podman_lock_balance)" || return 0
   read -r allocated objects <<< "$balance"
   (( allocated >= objects )) && return 0
-  live="$(_infra_live_containers | paste -sd, -)"
+  live="$(thyrox_podman_live_containers | paste -sd, -)"
   if [[ -n "$live" ]]; then
     echo "infrastructure_ensure: locks de Podman desfasados (asignados $allocated, referenciados $objects) con contenedores vivos: $live." >&2
     echo "                       Detenerlos y ejecutar \`$_INFRASTRUCTURE_RENUMBER_COMMAND\`; no se renumera con procesos vivos." >&2
     exit "$EXIT_LOCK_COLLISION"
   fi
-  "$PODMAN" system renumber >/dev/null 2>&1
+  renumber_stderr="$("$PODMAN" system renumber 2>&1 >/dev/null)"
+  renumber_rc=$?
   local after_allocated after_objects
-  read -r after_allocated after_objects <<< "$(_infra_lock_balance)"
-  if (( after_allocated < after_objects )); then
-    echo "infrastructure_ensure: \`$_INFRASTRUCTURE_RENUMBER_COMMAND\` no corrigió los locks (asignados $after_allocated, referenciados $after_objects)." >&2
-    exit "$EXIT_LOCK_COLLISION"
+  read -r after_allocated after_objects <<< "$(thyrox_podman_lock_balance)"
+  if (( renumber_rc == 0 && after_allocated >= after_objects )); then
+    printf 'locks asignados %s de referenciados %s: desfasados, renumerados (ahora %s)\n' "$allocated" "$objects" "$after_allocated"
+    return 0
   fi
-  printf 'locks asignados %s de referenciados %s: desfasados, renumerados (ahora %s)\n' "$allocated" "$objects" "$after_allocated"
+  _infra_refuse_unreconciled_locks "$renumber_rc" "$renumber_stderr" "$after_allocated" "$after_objects"
+}
+
+# @description Rehúsa tras un renumber que falló o no corrigió la medida:
+# publica la medida, el exit y el stderr verbatim de Podman, y el remedio.
+# @arg $1 int exit de renumber.
+# @arg $2 string stderr de renumber.
+# @arg $3 int locks asignados tras renumber.
+# @arg $4 int números de lock referenciados tras renumber.
+_infra_refuse_unreconciled_locks() {
+  local rc="$1" stderr_text="$2" after_allocated="$3" after_objects="$4"
+  echo "infrastructure_ensure: \`$_INFRASTRUCTURE_RENUMBER_COMMAND\` no corrigió los locks (asignados $after_allocated, referenciados $after_objects; exit $rc)." >&2
+  [[ -n "$stderr_text" ]] && printf '                       stderr de Podman: %s\n' "$stderr_text" >&2
+  if thyrox_podman_is_sqlite_volume_renumber_defect "$stderr_text"; then
+    echo "                       Es el defecto conocido de Podman 4.9.3 con backend sqlite (H-THYROX-308): renumber se detiene en el primer volumen." >&2
+  fi
+  echo "                       El ensure no repara internals de Podman. Recuperación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan)." >&2
+  exit "$EXIT_LOCK_COLLISION"
 }
 
 _infra_reconcile_locks

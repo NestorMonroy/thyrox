@@ -77,6 +77,12 @@ case "\$1" in
     # renumber deja asignado un lock por número distinto que la base
     # referencia (medido en 4.9.3: los volúmenes comparten números), salvo
     # que el caso declare que no corrige nada.
+    # Con \$STATE/renumber-fails, renumber escribe su contenido en stderr y
+    # sale 125 sin corregir nada, como Podman 4.9.3 con backend sqlite.
+    if [[ "\$2" == renumber && -f "\$STATE/renumber-fails" ]]; then
+      cat "\$STATE/renumber-fails" >&2
+      exit 125
+    fi
     if [[ "\$2" == renumber && ! -f "\$STATE/renumber-noop" ]]; then
       referenced=\$(cat "\$STATE"/*.lock 2>/dev/null; cut -d' ' -f2 "\$STATE/pods" "\$STATE/volumes" 2>/dev/null)
       echo \$(( 2048 - \$(printf '%s\n' "\$referenced" | grep . | sort -u | wc -l) )) > "\$STATE/free-locks"
@@ -765,6 +771,49 @@ if [[ "$out" == *"action=recreated"* ]] && grep -q '^create .*-v volume-from-env
   ok "caso 28: el volumen declarado sólo en el .env gobierna el ensure"
 else
   bad "caso 28: el .env no gobernó el volumen del ensure: [$out] $(cat "$STATE/calls.log")"
+fi
+
+# Caso 29 — renumber falla con el defecto conocido de Podman 4.9.3 sobre
+# backend sqlite («updating volume config table with new configuration for
+# volume …: no such column: ID», exit 125; H-THYROX-308). El ensure
+# conserva el stderr de Podman, nombra el defecto y el procedimiento explícito
+# de recuperación, y rehúsa: no repara internals de Podman por su cuenta.
+SQLITE_RENUMBER_ERROR="updating volume config table with new configuration for volume vol-a: no such column: ID"
+seed_stale_base
+echo "$SQLITE_RENUMBER_ERROR" > "$STATE/renumber-fails"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 29: renumber falla -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+if [[ "$err" == *"$SQLITE_RENUMBER_ERROR"* ]]; then
+  ok "caso 29: el stderr de renumber se publica verbatim"
+else
+  bad "caso 29: el stderr de renumber se perdió: [$err]"
+fi
+if [[ "$err" == *"defecto conocido"*"sqlite"* ]]; then
+  ok "caso 29: nombra el defecto conocido del backend sqlite"
+else
+  bad "caso 29: no nombra el defecto conocido: [$err]"
+fi
+if [[ "$err" == *"bin/podman_lock_recovery"* ]]; then
+  ok "caso 29: nombra el procedimiento explícito de recuperación"
+else
+  bad "caso 29: no nombra el procedimiento de recuperación: [$err]"
+fi
+if grep -qE '^(create|start|rm) ' "$STATE/calls.log"; then
+  bad "caso 29: tocó contenedores tras rehusar"
+else
+  ok "caso 29: rehúsa antes de tocar ningún contenedor"
+fi
+
+# Caso 30 — renumber falla por otra causa: stderr verbatim, sin atribuirlo al
+# defecto de sqlite. El diagnóstico no se infiere de un fallo cualquiera.
+seed_stale_base
+echo "Error: some other renumber failure" > "$STATE/renumber-fails"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 30: renumber falla por otra causa -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+if [[ "$err" == *"Error: some other renumber failure"* && "$err" != *"defecto conocido"* ]]; then
+  ok "caso 30: publica el stderr sin atribuirlo al defecto de sqlite"
+else
+  bad "caso 30: diagnóstico equivocado: [$err]"
 fi
 
 thyrox_summary
