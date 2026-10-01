@@ -38,9 +38,11 @@ interface HubSibling {
 export async function fetchSourceSpec(fetcher: Fetcher, repository: string, revision: string): Promise<SourceSpec> {
   const response = await fetcher(`${HUGGING_FACE_BASE_URL}/api/models/${repository}/revision/${revision}?blobs=true`)
   if (!response.ok) throw new SourceDownloadError(repository, `la API respondió ${response.status}`)
-  const body = await response.json() as { sha?: string; siblings?: readonly HubSibling[] }
+  const body = await response.json() as { sha?: string; siblings?: readonly HubSibling[]; cardData?: { license?: string } }
   if (body.sha !== revision) throw new SourceDownloadError(repository, `la API resolvió ${body.sha}, no ${revision}`)
-  return { repository, revision, files: (body.siblings ?? []).map(sourceFileOf) }
+  const files = (body.siblings ?? []).map(sourceFileOf)
+  const license = body.cardData?.license
+  return license === undefined ? { repository, revision, files } : { repository, revision, files, license }
 }
 
 function sourceFileOf(sibling: HubSibling): SourceFile {

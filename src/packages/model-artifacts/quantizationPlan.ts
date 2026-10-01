@@ -58,6 +58,8 @@ export interface SourceSpec {
   /** Revisión completa de 40 hex: una rama o un prefijo no fijan la fuente. */
   readonly revision: string
   readonly files: readonly SourceFile[]
+  /** La licencia que el repositorio declara en su ficha, si la declara. */
+  readonly license?: string
 }
 
 /** Bits por peso del intermedio de cada método; BF16 → F16 no cambia el ancho. */

@@ -24,16 +24,14 @@ import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
 import { QuantizationLab, containerMeasureProbe, resolveLabImage } from './quantizationLab.js'
 import { runIdOf, runQuantization, type QuantizationRequest, type RunState } from './quantizationRun.js'
 import { quantizedPath } from './quantizationSteps.js'
+import { DEFAULT_LAB_IMAGE, EXIT_LEASE_BUSY, LAB_IMAGE_ENV, optionsOf } from './labCommandOptions.js'
 import { ResourceAdmissionCli } from './resourceAdmission.js'
 import { RunLeaseBusyError, RunLeaseUnavailableError, acquireRunLease, globalLeaseStore } from './runLease.js'
 import { sha256OfFile } from './sha256File.js'
 
-export const EXIT_LEASE_BUSY = 4
 export const QUANTIZE_USAGE = 'uso: local-models-quantize run --repository R --revision SHA --scratch-dir DIR --run-dir DIR '
   + '[--method direct|requantized_q8_to_q4] [--minimum-free-bytes N] [--memory-limit-bytes N] [--cpus N]'
 
-const LAB_IMAGE_ENV = 'THYROX_QUANTIZER_IMAGE'
-const DEFAULT_LAB_IMAGE = 'localhost/thyrox-model-quantizer:dev'
 const DEFAULT_MEMORY_LIMIT_BYTES = 8 * 1024 ** 3
 const DEFAULT_CPUS = 4
 const CONVERTER_NAME = 'convert_hf_to_gguf.py'
@@ -150,15 +148,4 @@ function parseArguments(argv: readonly string[]): QuantizeArguments | undefined 
     },
     cpus: Number(options.cpus ?? DEFAULT_CPUS),
   }
-}
-
-/** `--clave valor` repetido; una clave sin valor o un argumento suelto no son una orden válida. */
-function optionsOf(argv: readonly string[]): Record<string, string> | undefined {
-  const options: Record<string, string> = {}
-  for (let index = 0; index < argv.length; index += 2) {
-    const [flag, value] = [argv[index]!, argv[index + 1]]
-    if (!flag.startsWith('--') || value === undefined) return undefined
-    options[flag.slice(2)] = value
-  }
-  return options
 }
