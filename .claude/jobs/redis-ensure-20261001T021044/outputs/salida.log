@@ -1,0 +1,2 @@
+thyrox-redis status=absent pid_alive=no action=created health=healthy
+__BG_EXIT__=0

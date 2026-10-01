@@ -1,0 +1,12 @@
+ 0 fail
+ 186 expect() calls
+Ran 79 tests across 9 files. [634.00ms]
+ 0 fail
+ 153 expect() calls
+Ran 85 tests across 7 files. [2.83s]
+  daemon: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  local-models: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+  podman-execution: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 3 de 3 paquete(s))
+__BG_EXIT__=0
