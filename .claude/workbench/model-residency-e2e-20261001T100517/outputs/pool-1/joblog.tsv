@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790849165.074	   149.709	0	0	0	0	_headless_item 1 'Fuente: .claude/workbench/model-residency-e2e-20261001T100517/p1-grant-issuer.md. Archivo: src/packages/model-scheduling/memoryGrantIssuer.ts.'
