@@ -382,6 +382,25 @@ minutos. El trabajo va al *ledger* con `thyrox-bg`; la espera, al segundo plano
 del cliente, que es lo único que notifica. `detect_foreground_long_command`
 avisa ya sobre una espera sin `run_in_background`.
 
+**Cuando el cliente no ofrece `run_in_background`, la espera va a un
+`Monitor`.** El entorno remoto fija `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`,
+y con cualquier valor no vacío el cliente omite el parámetro del esquema de
+Bash y de Agent (2.1.286: `yl()?sn().omit({run_in_background:!0}):sn()`). La
+llamada que lo pasa se rechaza antes de ejecutarse. Lo que sí notifica sin
+bloquear es la herramienta `Monitor` (diferida: se carga con `ToolSearch`)
+con un comando que **termina** al asentarse el trabajo y emite una sola
+línea:
+
+```bash
+bash bin/thyrox-bg wait <nombre> >/dev/null 2>&1; echo "<nombre>: $(bash bin/thyrox-bg status <nombre>)"
+```
+
+El trabajo sigue en el ledger con `thyrox-bg`; el `Monitor` sólo sustituye
+la espera. `detect_foreground_long_command` lee la misma variable y prescribe
+esta forma en vez del parámetro ausente (episodio del 2026-10-01: el aviso
+pedía `run_in_background`, la llamada falló por esquema y la espera cayó en
+primer plano).
+
 **Y ordenar no exige bloquear.** Si B depende de A, la arista se declara **al
 lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:
 

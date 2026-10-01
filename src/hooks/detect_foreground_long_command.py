@@ -46,7 +46,9 @@ sería el sub-patrón D con el gate como sujeto.
 """
 from __future__ import annotations
 
+import os
 import re
+from collections.abc import Mapping
 
 #: El cuerpo de un heredoc es texto, no comandos: un mensaje de commit que
 #: nombra una suite no la ejecuta.
@@ -162,6 +164,23 @@ def detaches_a_wait(command: str) -> bool:
                for shell_list, terminator in shell_lists(command))
 
 
+#: Variable con que el entorno deshabilita las tareas en segundo plano del
+#: cliente. Con ella, 2.1.286 omite `run_in_background` del esquema de Bash y
+#: de Agent (`yl()?sn().omit({run_in_background:!0}):sn()`); el entorno remoto
+#: la fija. Lo que queda para recibir aviso sin bloquear es la herramienta
+#: `Monitor`: un comando que termina produce un solo evento.
+CLIENT_BACKGROUND_SWITCH = "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"
+
+
+def client_background_disabled(environ: Mapping[str, str]) -> bool:
+    """¿El cliente omite `run_in_background`? Misma prueba de verdad que `yl()`.
+
+    `yl()` lee la variable sin interpretarla: cualquier valor no vacío,
+    incluido «0», la deshabilita.
+    """
+    return bool(environ.get(CLIENT_BACKGROUND_SWITCH))
+
+
 def blocks_the_turn(command: str, tool_input: dict) -> bool:
     """Una espera en el primer plano del cliente: retiene el turno hasta terminar."""
     return bool(BLOCKING_WAIT.search(command)) and not tool_input.get("run_in_background")
@@ -186,9 +205,38 @@ BLOCKING_WAIT_NOTICE = (
     "o `wait-jobs status`."
 )
 
+#: La forma que notifica cuando el cliente no ofrece `run_in_background`: un
+#: `Monitor` cuyo comando espera en silencio y emite UNA línea al asentarse.
+MONITOR_WAIT_FORM = (
+    "`Monitor` con el comando `bash bin/thyrox-bg wait <nombre> >/dev/null 2>&1; "
+    "echo \"<nombre>: $(bash bin/thyrox-bg status <nombre>)\"` (para N, "
+    "`bash bin/wait-jobs wait … >/dev/null 2>&1; bash bin/wait-jobs status`)"
+)
 
-def detect(payload: dict) -> str | None:
-    """El aviso de segundo plano si el comando lo merece, o ``None``."""
+DETACHED_WAIT_NOTICE_WITHOUT_CLIENT_BACKGROUND = (
+    "GATE DE SEGUNDO PLANO — esta ESPERA se desprende del shell (`&`, `nohup` "
+    "o `setsid`): nadie recibe aviso cuando termina y recoge el trabajo del "
+    "ledger en silencio. Este cliente no ofrece `run_in_background` "
+    f"({CLIENT_BACKGROUND_SWITCH}); lánzala como {MONITOR_WAIT_FORM}: "
+    "termina al asentarse el trabajo y da un solo aviso."
+)
+
+BLOCKING_WAIT_NOTICE_WITHOUT_CLIENT_BACKGROUND = (
+    "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
+    "trabajo termine. Este cliente no ofrece `run_in_background` "
+    f"({CLIENT_BACKGROUND_SWITCH}); la forma que notifica sin bloquear es "
+    f"{MONITOR_WAIT_FORM}. Para mirar sin esperar: `thyrox-bg status <nombre>` "
+    "o `wait-jobs status`."
+)
+
+
+def detect(payload: dict, environ: Mapping[str, str] | None = None) -> str | None:
+    """El aviso de segundo plano si el comando lo merece, o ``None``.
+
+    ``environ`` es el entorno del cliente; sin declararlo, el del proceso, que
+    el hook hereda del cliente que lo invoca.
+    """
+    without_client_background = client_background_disabled(os.environ if environ is None else environ)
     tool_input = payload.get("tool_input") or {}
     command = tool_input.get("command")
     if not isinstance(command, str) or not command.strip():
@@ -196,9 +244,9 @@ def detect(payload: dict) -> str | None:
 
     executed = strip_heredoc_bodies(command)
     if detaches_a_wait(executed):
-        return DETACHED_WAIT_NOTICE
+        return DETACHED_WAIT_NOTICE_WITHOUT_CLIENT_BACKGROUND if without_client_background else DETACHED_WAIT_NOTICE
     if blocks_the_turn(executed, tool_input):
-        return BLOCKING_WAIT_NOTICE
+        return BLOCKING_WAIT_NOTICE_WITHOUT_CLIENT_BACKGROUND if without_client_background else BLOCKING_WAIT_NOTICE
 
     # Un comando que ya viaja por el mecanismo cumple la regla: callar.
     if ALREADY_BACKGROUND.search(command):
