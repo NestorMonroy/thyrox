@@ -103,7 +103,8 @@ def main(argv: list[str]) -> int:
     config = GRPOConfig(output_dir=output_dir, max_steps=steps, per_device_train_batch_size=group_size,
                         num_generations=group_size, max_completion_length=max_new_tokens, max_prompt_length=512,
                         learning_rate=1e-5, logging_steps=1, use_cpu=True, bf16=False, report_to=[],
-                        save_strategy="no", gradient_checkpointing=True)
+                        save_strategy="no", gradient_checkpointing=True,
+                        gradient_checkpointing_kwargs={"use_reentrant": False})
     lora = LoraConfig(r=8, lora_alpha=16, target_modules=["q_proj", "v_proj"], task_type="CAUSAL_LM")
     trainer = GRPOTrainer(model=model, reward_funcs=tool_call_reward, args=config, train_dataset=dataset,
                           processing_class=tokenizer, peft_config=lora)

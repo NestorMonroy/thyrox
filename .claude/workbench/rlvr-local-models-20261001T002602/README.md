@@ -11,4 +11,5 @@ con la suite de llamadas a herramientas como recompensa verificable.
 | 2 | `ImportError: GRPOConfig` | TRL 0.12 no trae GRPO; entra en 0.14 |
 | 3 | `no space left on device` al escribir torch | disco lleno con el pool al lado (H-THYROX-298) |
 | 4 | exit 137 en el paso 0 de GRPO | OOM del cgroup del contenedor: `anon-rss` 8 360 144 kB contra `--memory 8g`, con grupo 4 en fp32. Sólo murió el contenedor; el pool vecino siguió |
-| 5 | grupo 2, gradient checkpointing, `--memory 10g` | pendiente |
+| 5 | `RuntimeError: element 0 of tensors does not require grad` en el backward, a los 23 s | el checkpointing reentrante corta el gradiente con LoRA (entradas congeladas). Ya cabe en memoria |
+| 6 | `use_reentrant: False` | pendiente |
