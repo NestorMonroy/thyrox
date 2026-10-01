@@ -14,7 +14,7 @@ import { join } from 'node:path'
 
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
-import type { ExecutionUnit, ResidencyBinding } from '@thyrox/model-scheduling/executionPrimitive.ts'
+import type { ModelExecutionUnit, ResidencyBinding } from '@thyrox/model-scheduling/modelUnitMaterializer.ts'
 
 import { OllamaRuntimeAdapter } from '../ollamaRuntimeAdapter.ts'
 import { startFakeOllamaRuntime, type FakeOllamaRuntime } from '../testing/fakeOllamaRuntime.ts'
@@ -45,9 +45,11 @@ function grant(sha256 = SHA): ExecutionGrant {
   }
 }
 
-function unit(endpoint = ollama.baseUrl): ExecutionUnit {
+function unit(endpoint = ollama.baseUrl): ModelExecutionUnit {
   return {
-    unitId: 'unit-a', grantId: 'grant-request-1', artifact: ARTIFACT, residencyKey: RESIDENCY,
+    unitId: 'unit-a', kind: 'model-runtime', reference: { kind: 'grant', grantId: 'grant-request-1' },
+    owner: { kind: 'model-coordinator', id: 'coordinator', pid: 7 }, containerName: 'thyrox-model-unit-a',
+    grantId: 'grant-request-1', artifact: ARTIFACT, residencyKey: RESIDENCY,
     generation: GENERATION, runtime: 'ollama', endpoint, containerId: 'c'.repeat(64), devices: [], hostPids: [4242],
     createdAt: '2026-10-01T00:00:00.000Z',
   }

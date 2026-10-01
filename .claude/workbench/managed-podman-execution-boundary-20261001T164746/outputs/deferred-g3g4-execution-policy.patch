@@ -1,0 +1,379 @@
+From abec52f2c1f0fd72775309d5982bc60a0179273c Mon Sep 17 00:00:00 2001
+From: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+Date: Thu, 1 Oct 2026 16:37:43 +0000
+Subject: [PATCH] Let a declared policy forbid the claude-cli fallback
+
+recommendExecution always fell back to claude-cli when no local model
+qualified, and the pool asked for that fallback itself when the
+managed Ollama did not start. Choosing a provider nobody authorized
+belongs to neither of them silently.
+
+An ExecutionPolicy now declares the allowed runtimes and the ones the
+control plane measured down. Without an allowed runtime that has a
+candidate the recommender throws NoCandidateError (no_candidate or
+runtime_unavailable) instead of returning claude-cli. The open policy
+keeps today's behavior. agent-recommend takes --allow-runtime and
+--unavailable, repeatable, and refuses --runtime claude-cli outside
+the declared policy.
+
+Annulment: forcing the provider branch to be usable drops exactly the
+three fail-closed cases (8 pass, 3 fail).
+
+Refs: TASK-THYROX-0743
+---
+ src/packages/agent/bin/recommend.ts           | 50 ++++++++++--
+ .../__tests__/recommendExecution.test.ts      | 51 +++++++++++-
+ src/packages/provider/src/cost/policy.ts      | 78 +++++++++++++++----
+ tests/agents/test_recommend_cli.py            | 29 ++++++-
+ 4 files changed, 187 insertions(+), 21 deletions(-)
+
+diff --git a/src/packages/agent/bin/recommend.ts b/src/packages/agent/bin/recommend.ts
+index 106cfce28..6dc00b6f9 100755
+--- a/src/packages/agent/bin/recommend.ts
++++ b/src/packages/agent/bin/recommend.ts
+@@ -15,6 +15,12 @@
+  * salida nombra la causa. `--runtime claude-cli` declara el proveedor de
+  * forma explícita y la declaración queda en la salida.
+  *
++ * La política la declara quien despacha: `--allow-runtime R` (repetible)
++ * acota los runtimes permitidos y `--unavailable R` dice cuál midió caído el
++ * plano de control. Sin runtime permitido con candidato rehúsa con 2 y nombra
++ * `no_candidate` o `runtime_unavailable`: el respaldo a `claude-cli` sólo
++ * existe si la política lo permite.
++ *
+  * Por qué el contexto es un parámetro y no una constante: el orden cambia con
+  * él, y además decide si la medición de un modelo local alcanza.
+  *
+@@ -29,10 +35,15 @@ import { localModelHome, type LocalModelHome } from '@thyrox/model-artifacts/loc
+ import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
+ import { parseQualifications, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+ import {
++  EXECUTION_RUNTIMES,
++  NoCandidateError,
++  OPEN_EXECUTION_POLICY,
+   providerExecution,
+   recommendExecution,
+   TASK_KINDS,
++  type ExecutionPolicy,
+   type ExecutionRecommendation,
++  type ExecutionRuntime,
+   type LocalExecution,
+   type LocalModelInventory,
+   type ProviderExecution,
+@@ -44,7 +55,7 @@ const SUBAGENT_FLOOR_TOKENS = 126_029
+ const EXIT_OK = 0
+ const EXIT_REFUSED = 2
+ const DECLARABLE_RUNTIME = 'claude-cli'
+-const OPTIONS_WITH_VALUE = new Set(['--context', '--runtime'])
++const OPTIONS_WITH_VALUE = new Set(['--context', '--runtime', '--allow-runtime', '--unavailable'])
+ const FILE_NOT_FOUND_CODE = 'ENOENT'
+ /** `src/packages/agent/bin` está cuatro niveles por debajo de la raíz de thyrox. */
+ const ROOT_FROM_BIN = '../../../..'
+@@ -54,6 +65,8 @@ type CliArguments = {
+   kind?: string
+   context?: string
+   runtime?: string
++  allowedRuntimes: string[]
++  unavailableRuntimes: string[]
+   json: boolean
+   help: boolean
+ }
+@@ -68,17 +81,21 @@ function usage(): string {
+     `  --context tokens releídos por turno (por defecto ${SUBAGENT_FLOOR_TOKENS},`,
+     '            el piso siempre-cargado; súbelo con lo que el agente vaya a leer)',
+     `  --runtime ${DECLARABLE_RUNTIME}: declara el proveedor y no mira los modelos locales`,
++    `  --allow-runtime R  runtime permitido, repetible (${EXECUTION_RUNTIMES.join(' | ')}); sin él, todos`,
++    '  --unavailable R    runtime que el plano de control midió caído, repetible',
+     '  --json    la recomendación completa, para consumo por otro guion',
+   ].join('\n')
+ }
+ 
+ function parseArguments(argv: readonly string[]): CliArguments {
+-  const parsed: CliArguments = { json: false, help: false }
++  const parsed: CliArguments = { allowedRuntimes: [], unavailableRuntimes: [], json: false, help: false }
+   for (let index = 0; index < argv.length; index += 1) {
+     const argument = argv[index] as string
+     if (OPTIONS_WITH_VALUE.has(argument)) {
+       const value = argv[index + 1] ?? ''
+       if (argument === '--context') parsed.context = value
++      else if (argument === '--allow-runtime') parsed.allowedRuntimes.push(value)
++      else if (argument === '--unavailable') parsed.unavailableRuntimes.push(value)
+       else parsed.runtime = value
+       index += 1
+     } else if (argument === '--json') parsed.json = true
+@@ -114,6 +131,20 @@ function requireDeclarableRuntime(runtime: string): void {
+   }
+ }
+ 
++function requireRuntime(runtime: string): ExecutionRuntime {
++  if ((EXECUTION_RUNTIMES as readonly string[]).includes(runtime)) return runtime as ExecutionRuntime
++  throw new RefusalError(`runtime desconocido «${runtime}»: la política admite ${EXECUTION_RUNTIMES.join(', ')}.`)
++}
++
++/** La política declarada; sin `--allow-runtime`, la abierta. */
++function requirePolicy(options: CliArguments): ExecutionPolicy {
++  return {
++    allowedRuntimes: options.allowedRuntimes.length === 0
++      ? OPEN_EXECUTION_POLICY.allowedRuntimes : options.allowedRuntimes.map(requireRuntime),
++    unavailableRuntimes: options.unavailableRuntimes.map(requireRuntime),
++  }
++}
++
+ function thyroxRoot(): string {
+   return process.env.THYROX_ROOT?.trim() || resolve(import.meta.dir, ROOT_FROM_BIN)
+ }
+@@ -153,13 +184,22 @@ async function loadLocalInventory(home: LocalModelHome): Promise<LocalModelInven
+   }
+ }
+ 
+-async function chooseExecution(kind: TaskKind, contextTokens: number, runtime: string | undefined): Promise<ExecutionRecommendation & { runtimeDeclared?: true }> {
++async function chooseExecution(kind: TaskKind, contextTokens: number, runtime: string | undefined,
++  policy: ExecutionPolicy): Promise<ExecutionRecommendation & { runtimeDeclared?: true }> {
+   if (runtime !== undefined) {
+     requireDeclarableRuntime(runtime)
++    if (!policy.allowedRuntimes.includes(DECLARABLE_RUNTIME)) {
++      throw new RefusalError(`--runtime ${DECLARABLE_RUNTIME} está fuera de la política declarada (${policy.allowedRuntimes.join(', ')}).`)
++    }
+     return { ...providerExecution(kind, { contextTokens }), runtimeDeclared: true }
+   }
+   const inventory = await loadLocalInventory(localModelHome(process.env, thyroxRoot()))
+-  return recommendExecution(kind, { contextTokens }, inventory)
++  try {
++    return recommendExecution(kind, { contextTokens }, inventory, policy)
++  } catch (error) {
++    if (error instanceof NoCandidateError) throw new RefusalError(error.message)
++    throw error
++  }
+ }
+ 
+ function printLocal(execution: LocalExecution): void {
+@@ -203,7 +243,7 @@ async function run(argv: readonly string[]): Promise<number> {
+   }
+   const kind = requireKind(options.kind)
+   const contextTokens = requireContextTokens(options.context)
+-  const execution = await chooseExecution(kind, contextTokens, options.runtime)
++  const execution = await chooseExecution(kind, contextTokens, options.runtime, requirePolicy(options))
+   if (options.json) console.log(JSON.stringify(execution, null, 2))
+   else if (execution.runtime === 'ollama') printLocal(execution)
+   else printProvider(execution, contextTokens, execution.runtimeDeclared === true)
+diff --git a/src/packages/provider/__tests__/recommendExecution.test.ts b/src/packages/provider/__tests__/recommendExecution.test.ts
+index 2bcf309f1..1f01cda1b 100644
+--- a/src/packages/provider/__tests__/recommendExecution.test.ts
++++ b/src/packages/provider/__tests__/recommendExecution.test.ts
+@@ -4,7 +4,7 @@ import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
+ import { attentionShapeOf } from '@thyrox/model-artifacts/memoryEstimate.ts'
+ import type { ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+ import { thyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
+-import { recommend, recommendExecution } from '../src/cost/policy.ts'
++import { NoCandidateError, recommend, recommendExecution } from '../src/cost/policy.ts'
+ 
+ const CONTEXT_TOKENS = 32_000
+ const ATTENTION = attentionShapeOf({
+@@ -106,3 +106,52 @@ describe('recommendExecution — local primero, claude-cli declarado como respal
+     expect(result.runtime === 'claude-cli' ? result.effort : undefined).toBe(provider.effort)
+   })
+ })
++
++describe('recommendExecution — la política declara los runtimes permitidos', () => {
++  const QUALIFIED = { entries: [FAST], qualifications: [protocol(FAST.name), qualification(FAST.name)] }
++  const LOCAL_ONLY = { allowedRuntimes: ['ollama'] as const, unavailableRuntimes: [] }
++
++  test('local permitido y cualificado: lo elige igual que sin política', () => {
++    const result = recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, QUALIFIED, LOCAL_ONLY)
++    expect(result.runtime).toBe('ollama')
++    expect(result.model).toBe(FAST.name)
++  })
++
++  test('sin candidato local y claude-cli no permitido: no_candidate, nunca claude-cli', () => {
++    const choose = () => recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, { entries: [], qualifications: [] }, LOCAL_ONLY)
++    expect(choose).toThrow(NoCandidateError)
++    try { choose() } catch (error) {
++      expect((error as NoCandidateError).code).toBe('no_candidate')
++      expect((error as Error).message).toMatch(/catálogo local vacío/)
++      expect((error as Error).message).not.toMatch(/claude-[a-z]+-\d/)
++    }
++  })
++
++  test('el runtime local no arrancó y claude-cli no está permitido: runtime_unavailable', () => {
++    const choose = () => recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, QUALIFIED,
++      { allowedRuntimes: ['ollama'], unavailableRuntimes: ['ollama'] })
++    expect(choose).toThrow(NoCandidateError)
++    try { choose() } catch (error) {
++      expect((error as NoCandidateError).code).toBe('runtime_unavailable')
++      expect((error as Error).message).toMatch(/ollama/)
++    }
++  })
++
++  test('el runtime local no arrancó y la política permite claude-cli: respaldo declarado', () => {
++    const result = recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, QUALIFIED,
++      { allowedRuntimes: ['ollama', 'claude-cli'], unavailableRuntimes: ['ollama'] })
++    expect(result.runtime).toBe('claude-cli')
++    expect(result.runtime === 'claude-cli' ? result.fallbackReason : '').toMatch(/ollama no disponible/)
++  })
++
++  test('sólo claude-cli permitido: no mira los modelos locales', () => {
++    const result = recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, QUALIFIED,
++      { allowedRuntimes: ['claude-cli'], unavailableRuntimes: [] })
++    expect(result.runtime).toBe('claude-cli')
++  })
++
++  test('una política sin runtimes permitidos rehúsa', () => {
++    expect(() => recommendExecution('mecanica', { contextTokens: CONTEXT_TOKENS }, QUALIFIED,
++      { allowedRuntimes: [], unavailableRuntimes: [] })).toThrow(NoCandidateError)
++  })
++})
+diff --git a/src/packages/provider/src/cost/policy.ts b/src/packages/provider/src/cost/policy.ts
+index 260f3b618..b28fb1a51 100644
+--- a/src/packages/provider/src/cost/policy.ts
++++ b/src/packages/provider/src/cost/policy.ts
+@@ -339,7 +339,7 @@ export function recommend(kind: TaskKind, profile: TurnProfile): Recommendation
+ }
+ 
+ // ---------------------------------------------------------------------------
+-// 3b. Dónde se ejecuta: un modelo local cualificado primero, claude-cli después
++// 3b. Dónde se ejecuta: un modelo local cualificado primero, el proveedor si la política lo permite
+ // ---------------------------------------------------------------------------
+ 
+ /** Lo que la instalación declara de sus modelos locales: catálogo y mediciones. */
+@@ -391,28 +391,78 @@ function localFallbackReason(kind: TaskKind, profile: TurnProfile, local: LocalM
+   return `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos`
+ }
+ 
++export const EXECUTION_RUNTIMES = ['ollama', 'claude-cli'] as const
++export type ExecutionRuntime = (typeof EXECUTION_RUNTIMES)[number]
++
++/**
++ * Lo que quien despacha permite y lo que el plano de control midió caído. La
++ * decisión de caer a otro runtime vive aquí, no en el orquestador: un pool
++ * que reintenta con `claude-cli` por su cuenta decide un proveedor que nadie
++ * autorizó.
++ */
++export type ExecutionPolicy = {
++  allowedRuntimes: readonly ExecutionRuntime[]
++  unavailableRuntimes: readonly ExecutionRuntime[]
++}
++
++/** La política sin declarar: los dos runtimes, ninguno caído (decisión del 2026-10-01). */
++export const OPEN_EXECUTION_POLICY: ExecutionPolicy = { allowedRuntimes: EXECUTION_RUNTIMES, unavailableRuntimes: [] }
++
++export type NoCandidateCode = 'no_candidate' | 'runtime_unavailable'
++
++/** Ningún runtime permitido y disponible tiene candidato: se rehúsa, nunca se cae a otro. */
++export class NoCandidateError extends Error {
++  constructor(readonly code: NoCandidateCode, detail: string) {
++    super(`${code}: ${detail}`)
++    this.name = 'NoCandidateError'
++  }
++}
++
++function usable(policy: ExecutionPolicy, runtime: ExecutionRuntime): boolean {
++  return policy.allowedRuntimes.includes(runtime) && !policy.unavailableRuntimes.includes(runtime)
++}
++
++/** Por qué el modelo local no sirve: caído según el plano de control, o sin candidato medido. */
++function localUnusableReason(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory, policy: ExecutionPolicy): string {
++  if (!policy.allowedRuntimes.includes('ollama')) return 'ollama no permitido por la política'
++  if (policy.unavailableRuntimes.includes('ollama')) return 'ollama no disponible según el plano de control'
++  return localFallbackReason(kind, profile, local)
++}
++
+ /**
+- * Elige dónde se ejecuta una clase de tarea: el modelo local más rápido de los
+- * que una medición aprobó para la clase con contexto suficiente; si no hay
+- * ninguno, la recomendación del catálogo del proveedor por `claude-cli`, con
+- * la causa concreta en `fallbackReason`.
++ * Elige dónde se ejecuta una clase de tarea dentro de lo que la política
++ * permite: el modelo local más rápido de los que una medición aprobó para la
++ * clase con contexto suficiente; si no hay ninguno y la política permite el
++ * proveedor, su catálogo por `claude-cli` con la causa en `fallbackReason`.
++ * Si no queda ningún runtime permitido y disponible, `NoCandidateError`.
+  */
+ export function recommendExecution(
+   kind: TaskKind,
+   profile: TurnProfile,
+   local: LocalModelInventory,
++  policy: ExecutionPolicy = OPEN_EXECUTION_POLICY,
+ ): ExecutionRecommendation {
+-  const [fastest] = qualifiedModels(local.entries, local.qualifications, kind, profile.contextTokens)
+-  if (fastest) {
+-    return {
+-      runtime: 'ollama',
+-      model: fastest.entry.name,
+-      taskClass: kind,
+-      contextTokens: profile.contextTokens,
+-      qualification: fastest.qualification,
++  if (usable(policy, 'ollama')) {
++    const [fastest] = qualifiedModels(local.entries, local.qualifications, kind, profile.contextTokens)
++    if (fastest) {
++      return {
++        runtime: 'ollama',
++        model: fastest.entry.name,
++        taskClass: kind,
++        contextTokens: profile.contextTokens,
++        qualification: fastest.qualification,
++      }
+     }
+   }
+-  return { ...providerExecution(kind, profile), fallbackReason: localFallbackReason(kind, profile, local) }
++  const localReason = localUnusableReason(kind, profile, local, policy)
++  if (usable(policy, 'claude-cli')) {
++    const execution = providerExecution(kind, profile)
++    return policy.allowedRuntimes.includes('ollama') ? { ...execution, fallbackReason: localReason } : execution
++  }
++  const code: NoCandidateCode = policy.unavailableRuntimes.some((runtime) => policy.allowedRuntimes.includes(runtime))
++    ? 'runtime_unavailable' : 'no_candidate'
++  throw new NoCandidateError(code, `ningún runtime permitido (${policy.allowedRuntimes.join(', ') || 'ninguno'}) `
++    + `tiene candidato para ${kind}; ${localReason}`)
+ }
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/tests/agents/test_recommend_cli.py b/tests/agents/test_recommend_cli.py
+index 9b3c4f8ee..9b27b36d1 100644
+--- a/tests/agents/test_recommend_cli.py
++++ b/tests/agents/test_recommend_cli.py
+@@ -189,6 +189,33 @@ def check_local_choice(home: LocalHome) -> None:
+     check("la salida humana dice que el runtime se declaró", "declarado con --runtime" in r.stdout)
+ 
+ 
++def check_policy(home: LocalHome) -> None:
++    """La política declara los runtimes: sin candidato permitido rehúsa, nunca cae a claude-cli."""
++    r = run(home, "mecanica", "--allow-runtime", "ollama", "--json")
++    check("sólo ollama y catálogo vacío: rehúsa con 2", r.returncode == 2, str(r.returncode))
++    check("y nombra no_candidate", "no_candidate" in r.stderr, r.stderr[:160])
++    check("y no recomienda claude-cli", "claude-" not in r.stdout, r.stdout[:160])
++
++    home.write_qualified_model()
++    document = parse_json(run(home, "mecanica", "--allow-runtime", "ollama", "--json").stdout)
++    check("sólo ollama y cualificado: runtime ollama", document.get("runtime") == "ollama", str(document)[:160])
++
++    r = run(home, "mecanica", "--allow-runtime", "ollama", "--unavailable", "ollama", "--json")
++    check("ollama caído y claude no permitido: rehúsa con 2", r.returncode == 2, str(r.returncode))
++    check("y nombra runtime_unavailable", "runtime_unavailable" in r.stderr, r.stderr[:160])
++    check("y no recomienda claude-cli", "claude-" not in r.stdout, r.stdout[:160])
++
++    document = parse_json(run(home, "mecanica", "--allow-runtime", "ollama", "--allow-runtime", "claude-cli",
++                              "--unavailable", "ollama", "--json").stdout)
++    check("ollama caído y claude permitido: respaldo declarado",
++          document.get("runtime") == "claude-cli" and "ollama no disponible" in str(document.get("fallbackReason")))
++
++    r = run(home, "mecanica", "--allow-runtime", "ollama", "--runtime", "claude-cli")
++    check("--runtime claude-cli fuera de la política rehúsa con 2", r.returncode == 2, str(r.returncode))
++    r = run(home, "mecanica", "--allow-runtime", "vllm")
++    check("un runtime desconocido rehúsa con 2", r.returncode == 2 and "vllm" in r.stderr, r.stderr[:160])
++
++
+ def check_unreadable_files(home: LocalHome) -> None:
+     """Un archivo ilegible o inválido rehúsa con su ruta; nunca una lista vacía en silencio."""
+     home.write_qualified_model()
+@@ -207,7 +234,7 @@ def check_unreadable_files(home: LocalHome) -> None:
+ 
+ def main() -> int:
+     for scenario in (check_provider_catalog, check_refusals, check_fallback_json,
+-                     check_local_choice, check_unreadable_files):
++                     check_local_choice, check_policy, check_unreadable_files):
+         home = LocalHome()
+         try:
+             scenario(home)
+-- 
+2.43.0
+

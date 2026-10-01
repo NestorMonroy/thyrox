@@ -1,5 +1,5 @@
 /**
- * `OllamaRuntimeAdapter`: el `RuntimeAdapter` de una `ExecutionUnit` de
+ * `OllamaRuntimeAdapter`: el `RuntimeAdapter` de una `ModelExecutionUnit` de
  * Ollama (ADR-007 1.13.0). Habla sólo con el endpoint de la unidad y sólo por
  * la API pública medida en Ollama 0.35.0 (H-THYROX-305): los verbos y estados
  * HTTP quedan aquí, el puerto no los conoce.
@@ -21,9 +21,9 @@ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 import { normalizeQuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type {
-  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, ObservedArtifactIdentity,
+  ArtifactIdentityVerification, ModelExecutionUnit, ExpectedResidency, HealthObservation, ObservedArtifactIdentity,
   ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
-} from '@thyrox/model-scheduling/executionPrimitive.ts'
+} from '@thyrox/model-scheduling/modelUnitMaterializer.ts'
 
 import { OllamaApi, OllamaRequestError } from './ollamaApi.ts'
 
@@ -54,7 +54,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
 
   constructor(private readonly options: OllamaRuntimeAdapterOptions) {}
 
-  async probeHealth(unit: ExecutionUnit): Promise<HealthObservation> {
+  async probeHealth(unit: ModelExecutionUnit): Promise<HealthObservation> {
     try {
       await apiOf(unit).version()
       return { status: 'healthy' }
@@ -71,7 +71,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
     })
   }
 
-  async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
+  async verifyArtifactIdentity(unit: ModelExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
     const expected = grant.artifact
     try {
       const observed = await observeIdentity(apiOf(unit), expected.modelId)
@@ -86,7 +86,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
     return this.mutate(binding, () => setKeepAlive(binding.unit, grant.artifact.modelId, KEEP_ALIVE_FOREVER))
   }
 
-  async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
+  async observeResidency(unit: ModelExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
     try {
       const api = apiOf(unit)
       if (!(await api.residentModelNames()).includes(expected.artifact.modelId)) return { status: 'absent' }
@@ -125,7 +125,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
   }
 }
 
-function apiOf(unit: ExecutionUnit): OllamaApi {
+function apiOf(unit: ModelExecutionUnit): OllamaApi {
   return new OllamaApi(unit.endpoint)
 }
 
@@ -173,7 +173,7 @@ function reasonOf(error: unknown): string {
  * `OllamaApi` porque sólo la frontera que recibe grant y unidad puede tocar la
  * inferencia del runtime (M8).
  */
-async function setKeepAlive(unit: ExecutionUnit, model: string, keepAlive: number): Promise<void> {
+async function setKeepAlive(unit: ModelExecutionUnit, model: string, keepAlive: number): Promise<void> {
   const response = await fetch(`${unit.endpoint}${GENERATE_PATH}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

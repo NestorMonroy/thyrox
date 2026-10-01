@@ -1,5 +1,5 @@
 /**
- * `PodmanModelExecutionPrimitive` contra un `PodmanExecutor` doble que anota
+ * `PodmanModelUnitMaterializer` contra un `PodmanExecutor` doble que anota
  * cada argv. Qué haría fallar a esta suite: tocar Podman con un grant
  * caducado, de generación vieja o con la coordinación caída; una unidad sin la
  * identidad que la reconciliación necesita; una materialización a medias que
@@ -11,10 +11,17 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
-import { createWorkerContainerArgv, removeWorkerContainerArgv, workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+import {
+  createWorkerContainerArgv,
+  OWNER_ID_LABEL_KEY,
+  OWNER_KIND_LABEL_KEY,
+  OWNER_PID_LABEL_KEY,
+  removeWorkerContainerArgv,
+  workerContainerName,
+} from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 import { workerResourceLimitArgv } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
-import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelExecutionPrimitive } from '../podmanModelExecutionPrimitive.ts'
+import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelUnitMaterializer } from '../podmanModelUnitMaterializer.ts'
 
 const NOW = new Date('2026-10-01T00:30:00.000Z')
 const PORT = 61_234
@@ -61,8 +68,8 @@ function healthyPodman(overrides: Partial<Record<string, PodmanCommandResult>> =
 
 let generation: number | 'unavailable'
 
-function primitiveWith(podman: RecordingPodman): PodmanModelExecutionPrimitive {
-  return new PodmanModelExecutionPrimitive({
+function primitiveWith(podman: RecordingPodman): PodmanModelUnitMaterializer {
+  return new PodmanModelUnitMaterializer({
     podman,
     currentGeneration: async () => generation,
     profiles: { ollama: { image: 'docker.io/ollama/ollama:0.35.0', containerPort: 11_434, environment: { OLLAMA_HOST: '0.0.0.0:11434' } } },
@@ -81,7 +88,7 @@ beforeEach(() => {
   generation = GRANT.residency.generation
 })
 
-describe('PodmanModelExecutionPrimitive: rechazar sin tocar Podman', () => {
+describe('PodmanModelUnitMaterializer: rechazar sin tocar Podman', () => {
   test('un grant caducado', async () => {
     const podman = healthyPodman()
     const outcome = await primitiveWith(podman).materialize({ ...GRANT, expiresAt: '2026-10-01T00:10:00.000Z' })
@@ -110,7 +117,7 @@ describe('PodmanModelExecutionPrimitive: rechazar sin tocar Podman', () => {
   })
 })
 
-describe('PodmanModelExecutionPrimitive: materializar', () => {
+describe('PodmanModelUnitMaterializer: materializar', () => {
   test('crea, arranca e inspecciona; la unidad lleva su identidad completa', async () => {
     const podman = healthyPodman()
     const outcome = await primitiveWith(podman).materialize(GRANT)
@@ -182,7 +189,10 @@ describe('PodmanModelExecutionPrimitive: materializar', () => {
   })
 })
 
-describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
+/** Las etiquetas de dueño que la primitiva escribe en todo contenedor; sin ellas no hay unidad que reconstruir. */
+const OWNER_LABELS = { [OWNER_KIND_LABEL_KEY]: 'model-coordinator', [OWNER_ID_LABEL_KEY]: 'coordinator', [OWNER_PID_LABEL_KEY]: '7' }
+
+describe('PodmanModelUnitMaterializer: destruir y listar', () => {
   test('destroy distingue destruido, ausente y fallido', async () => {
     expect(await primitiveWith(healthyPodman()).destroy('unit-a')).toBe('destroyed')
     expect(await primitiveWith(healthyPodman({ rm: fail('Error: no container with name or ID "thyrox-model-unit-a" found: no such container') })).destroy('unit-a')).toBe('absent')
@@ -204,15 +214,21 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
       [MODEL_UNIT_LABELS.quantization]: GRANT.artifact.quantization, [MODEL_UNIT_LABELS.bytes]: String(GRANT.artifact.bytes),
       [MODEL_UNIT_LABELS.residency]: 'residency/qwen/gpu0', [MODEL_UNIT_LABELS.generation]: '3', [MODEL_UNIT_LABELS.sha256]: SHA,
       [MODEL_UNIT_LABELS.runtime]: 'ollama', [MODEL_UNIT_LABELS.port]: String(PORT), [MODEL_UNIT_LABELS.createdAt]: NOW.toISOString(),
+      ...OWNER_LABELS,
     }
     const listed = JSON.stringify([
       { Id: CONTAINER_ID, Names: [`${MODEL_UNIT_CONTAINER_PREFIX}unit-a`], Labels: labels, Pid: 4242 },
       { Id: 'f'.repeat(64), Names: ['thyrox-redis'], Labels: { 'thyrox.owner': 'infra' }, Pid: 99 },
+      { Id: 'e'.repeat(64), Names: [`${MODEL_UNIT_CONTAINER_PREFIX}unit-b`], Labels: { ...labels, [OWNER_KIND_LABEL_KEY]: undefined }, Pid: 77 },
     ])
     const podman = healthyPodman({ ps: ok(listed) })
     const units = await primitiveWith(podman).units()
     expect(units).toHaveLength(1)
-    expect(units[0]).toMatchObject({ unitId: 'unit-a', grantId: 'grant-a', generation: 3, artifact: GRANT.artifact, endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID })
+    expect(units[0]).toMatchObject({
+      unitId: 'unit-a', grantId: 'grant-a', generation: 3, artifact: GRANT.artifact, endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID,
+      kind: 'model-runtime', reference: { kind: 'grant', grantId: 'grant-a' },
+      owner: { kind: 'model-coordinator', id: 'coordinator', pid: 7 }, containerName: `${MODEL_UNIT_CONTAINER_PREFIX}unit-a`,
+    })
   })
 
   test('nunca borra imágenes ni volúmenes', async () => {
@@ -224,7 +240,7 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
   })
 })
 
-describe('PodmanModelExecutionPrimitive: identidad completa', () => {
+describe('PodmanModelUnitMaterializer: identidad completa', () => {
   test('una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva', async () => {
     const labels = {
       [MODEL_UNIT_LABELS.unit]: 'unit-a', [MODEL_UNIT_LABELS.grant]: 'grant-a', [MODEL_UNIT_LABELS.model]: GRANT.artifact.modelId,

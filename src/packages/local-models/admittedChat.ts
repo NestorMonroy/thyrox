@@ -1,6 +1,6 @@
 /**
  * `/api/chat` de Ollama, alcanzable sólo con una admisión (ADR-007 1.14.0,
- * M8): recibe el `ExecutionGrant` y la `ExecutionUnit` del ticket, habla con
+ * M8): recibe el `ExecutionGrant` y la `ModelExecutionUnit` del ticket, habla con
  * el `endpoint` de esa unidad y pide el modelo que el grant concede. Fuera de
  * este módulo nadie hace inferencia contra el runtime.
  */

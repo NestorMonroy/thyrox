@@ -20,7 +20,7 @@ import {
   type WorkerContainerSpec,
 } from './workerContainerLifecycle.js'
 
-export type ContainerRunStage = 'create' | 'start' | 'wait' | 'logs' | 'signal' | 'export'
+export type ContainerRunStage = 'create' | 'start' | 'inspect' | 'wait' | 'logs' | 'signal' | 'export'
 
 /** Mensaje base del fallo: la etapa, el sujeto y lo que Podman dijo. */
 function failureMessage(stage: ContainerRunStage, subject: string, result: PodmanCommandResult): string {
@@ -72,6 +72,40 @@ function parseWaitExitCode(name: string, result: PodmanCommandResult): number {
 export type MaterializedContainer = {
   containerName: string
   containerId: string
+}
+
+/** Lo que `podman inspect` dice del contenedor en el anfitrión: su proceso y su cgroup. */
+export type InspectedContainerState = {
+  hostPids: readonly number[]
+  cgroup?: string
+}
+
+/** Podman informa `Pid: 0` de un contenedor sin proceso. */
+const NOT_RUNNING_PID = 0
+
+/**
+ * Inspecciona un contenedor y devuelve su proceso y su cgroup vistos desde el
+ * anfitrión. Un fallo de Podman o una salida ilegible es la etapa `inspect`:
+ * una unidad sin identidad no se publica como materializada.
+ */
+export async function inspectContainerState(podman: PodmanExecutor, containerName: string): Promise<InspectedContainerState> {
+  const result = await podman.run(['inspect', '--format', 'json', containerName])
+  if (result.exitCode !== 0) throw new ContainerRunError('inspect', containerName, result)
+  let first: { State?: { Pid?: unknown; CgroupPath?: unknown } } | undefined
+  try {
+    const entries: unknown = JSON.parse(result.stdout)
+    first = Array.isArray(entries) ? (entries[0] as typeof first) : undefined
+  } catch {
+    first = undefined
+  }
+  if (!first?.State) {
+    throw new ContainerRunError('inspect', containerName, { ...result, stderr: `salida ilegible: «${result.stdout.trim()}»` })
+  }
+  const { Pid: pid, CgroupPath: cgroup } = first.State
+  return {
+    hostPids: typeof pid === 'number' && pid !== NOT_RUNNING_PID ? [pid] : [],
+    ...(typeof cgroup === 'string' && cgroup !== '' ? { cgroup } : {}),
+  }
 }
 
 /**

@@ -1,0 +1,4 @@
+src/__tests__/bgAdopt.test.ts(223,17): error TS2345: Argument of type 'string | NonSharedBuffer' is not assignable to parameter of type 'Buffer<ArrayBufferLike>'.
+  Type 'string' is not assignable to type 'Buffer<ArrayBufferLike>'.
+src/__tests__/daemonLockStartup.test.ts(259,19): error TS2339: Property 'message' does not exist on type 'YieldHandshakeResult'.
+  Property 'message' does not exist on type '{ kind: "not-needed"; }'.

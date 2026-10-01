@@ -10,17 +10,17 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
 
-import type { ExecutionUnit } from '../executionPrimitive.ts'
+import type { ModelExecutionUnit } from '../modelUnitMaterializer.ts'
 import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from '../hostCoordinator.ts'
 import { OrphanUnitSurvivedError, startHostCoordinatorService, type ServiceCoordinator } from '../hostCoordinatorService.ts'
 import type { EvictionOutcome } from '../residencyController.ts'
-import { FakeCoordination, FakePrimitive, type Journal } from '../testing/schedulerFakes.ts'
+import { FAKE_UNIT_OWNER, FakeCoordination, FakePrimitive, type Journal } from '../testing/schedulerFakes.ts'
 
 const ARTIFACT = resolvedArtifact()
 
-function orphan(unitId: string, residencyKey: string): ExecutionUnit {
+function orphan(unitId: string, residencyKey: string): ModelExecutionUnit {
   return {
-    unitId, grantId: `grant-${unitId}`, artifact: ARTIFACT, residencyKey, generation: 3, runtime: 'ollama',
+    unitId, kind: 'model-runtime' as const, reference: { kind: 'grant' as const, grantId: `grant-${unitId}` }, owner: FAKE_UNIT_OWNER, containerName: `thyrox-model-${unitId}`, grantId: `grant-${unitId}`, artifact: ARTIFACT, residencyKey, generation: 3, runtime: 'ollama',
     endpoint: 'http://127.0.0.1:61001', containerId: `container-${unitId}`, devices: [],
   }
 }

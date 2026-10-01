@@ -98,6 +98,25 @@ function requireNonEmptyImage(image: string): void {
   }
 }
 
+/**
+ * El dueño que las etiquetas de un contenedor declaran, leído por las mismas
+ * claves con que `ownerLabelArgv` lo escribe; `undefined` si falta alguna o
+ * no es válida. Quien reconstruye desde Podman no inventa un dueño.
+ */
+export function ownerFromLabels(labels: Readonly<Record<string, unknown>> | null | undefined): ContainerOwner | undefined {
+  const kind = labels?.[OWNER_KIND_LABEL_KEY]
+  const id = labels?.[OWNER_ID_LABEL_KEY]
+  const pid = Number(labels?.[OWNER_PID_LABEL_KEY])
+  if (typeof kind !== 'string' || typeof id !== 'string' || !isOwnerKind(kind)) return undefined
+  const owner: ContainerOwner = { kind, id, pid }
+  try {
+    requireValidOwner(owner)
+  } catch {
+    return undefined
+  }
+  return owner
+}
+
 export function requireValidOwner(owner: ContainerOwner): void {
   if (!isOwnerKind(owner.kind)) {
     throw new InvalidWorkerContainerSpecError('owner.kind', `tipo de dueño desconocido: ${owner.kind}`)

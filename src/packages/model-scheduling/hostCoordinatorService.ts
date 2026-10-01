@@ -15,7 +15,7 @@
  */
 import type { ModelSchedulingCoordination } from './coordination.ts'
 import { startModelCoordinatorServer, type ModelCoordinatorServer, type ServedCoordinator } from './coordinatorServer.ts'
-import type { ModelExecutionPrimitive } from './executionPrimitive.ts'
+import type { ModelUnitMaterializer } from './modelUnitMaterializer.ts'
 import type { ModelSchedulingCoordinator } from './hostCoordinator.ts'
 
 /** Lo que el servicio necesita del coordinador: servirlo y desalojar al detenerse. */
@@ -23,7 +23,7 @@ export type ServiceCoordinator = ServedCoordinator & Pick<ModelSchedulingCoordin
 
 export interface HostCoordinatorServiceOptions {
   readonly socketPath: string
-  readonly primitive: ModelExecutionPrimitive
+  readonly primitive: ModelUnitMaterializer
   readonly coordinator: ServiceCoordinator
   readonly coordination: ModelSchedulingCoordination
 }
@@ -50,7 +50,7 @@ export async function startHostCoordinatorService(options: HostCoordinatorServic
 }
 
 /** Destruye cada unidad listada y comprueba que ya no lo esté; una que sobrevive impide arrancar. */
-async function sweepOrphanUnits(primitive: ModelExecutionPrimitive): Promise<string[]> {
+async function sweepOrphanUnits(primitive: ModelUnitMaterializer): Promise<string[]> {
   const orphans = await primitive.units()
   for (const unit of orphans) {
     const outcome = await primitive.destroy(unit.unitId)

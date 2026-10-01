@@ -1,5 +1,5 @@
 /**
- * `PodmanModelExecutionPrimitive`: materializa un `ExecutionGrant` vigente en
+ * `PodmanModelUnitMaterializer`: materializa un `ExecutionGrant` vigente en
  * un contenedor de runtime por residencia (ADR-007 1.13.0, topología A).
  *
  * Rechaza sin tocar Podman un grant caducado o de una generación que no es la
@@ -22,8 +22,9 @@ import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artif
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import { ContainerRunError } from '@thyrox/podman-execution/containerRun.ts'
-import { type ExecutionAuthorization, materializeExecution } from '@thyrox/podman-execution/executionAuthorization.ts'
+import { type ExecutionAuthorization, type ExecutionUnit, materializeExecution } from '@thyrox/podman-execution/executionAuthorization.ts'
 import {
+  ownerFromLabels,
   type ContainerOwner,
   removeWorkerContainerArgv,
   WORKER_CONTAINER_NAME_PREFIX,
@@ -31,7 +32,7 @@ import {
 } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 import type { WorkerPublishedPort } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
-import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
+import type { ModelExecutionUnit, MaterializationOutcome, ModelUnitMaterializer } from './modelUnitMaterializer.ts'
 
 /** Prefijo del nombre de contenedor de una unidad de modelo. */
 export const MODEL_UNIT_CONTAINER_PREFIX = WORKER_CONTAINER_NAME_PREFIX
@@ -86,7 +87,7 @@ export interface ModelUnitLimits {
   readonly pidsLimit: number
 }
 
-export interface PodmanModelExecutionPrimitiveOptions {
+export interface PodmanModelUnitMaterializerOptions {
   readonly podman: PodmanExecutor
   /** La generación vigente de una residencia, de la coordinación. */
   currentGeneration(residencyKey: string): Promise<number | 'unavailable'>
@@ -207,28 +208,14 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
   }
 }
 
-/** Lo que `podman inspect` aporta a la unidad: su proceso y su cgroup en el anfitrión. */
-interface InspectedState {
-  readonly hostPids: readonly number[]
-  readonly cgroup: string | undefined
-}
-
 function pidsOf(pid: unknown): readonly number[] {
   return typeof pid === 'number' && pid !== NOT_RUNNING_PID ? [pid] : []
-}
-
-/** Lee la primera entrada de `podman inspect --format json`; una salida ilegible lanza con su contexto. */
-function parseInspect(stdout: string): InspectedState {
-  const entries: unknown = JSON.parse(stdout)
-  const first = Array.isArray(entries) ? (entries[0] as { State?: { Pid?: unknown; CgroupPath?: unknown } } | undefined) : undefined
-  if (!first?.State) throw new Error(`podman inspect no devolvió el estado del contenedor: «${stdout.trim()}»`)
-  const cgroup = typeof first.State.CgroupPath === 'string' && first.State.CgroupPath !== '' ? first.State.CgroupPath : undefined
-  return { hostPids: pidsOf(first.State.Pid), cgroup }
 }
 
 /** Una entrada de `podman ps --format json`, con sólo lo que la reconstrucción lee. */
 interface ListedContainer {
   readonly Id?: unknown
+  readonly Names?: unknown
   readonly Labels?: Record<string, unknown> | null
   readonly Pid?: unknown
 }
@@ -259,16 +246,23 @@ function parseDevices(text: string | undefined): readonly string[] {
  * contenedor sin la identidad completa, o con una generación, un puerto o un
  * runtime ilegibles, no es una unidad de esta primitiva: `undefined`.
  */
-function unitFromContainer(container: ListedContainer): ExecutionUnit | undefined {
+function unitFromContainer(container: ListedContainer): ModelExecutionUnit | undefined {
   if (!hasUnitIdentity(container)) return undefined
   const label = (key: ModelUnitLabelKey): string => labelValue(container, key) as string
   const generation = parseInteger(label('generation'))
   const port = parseInteger(label('port'))
   const runtime = label('runtime')
   const artifact = artifactFromLabels(label)
-  if (generation === undefined || port === undefined || !isKnownRuntime(runtime) || artifact === undefined) return undefined
+  const owner = ownerFromLabels(container.Labels)
+  const [containerName] = Array.isArray(container.Names) ? container.Names : []
+  if (generation === undefined || port === undefined || !isKnownRuntime(runtime) || artifact === undefined
+    || owner === undefined || typeof containerName !== 'string') return undefined
   return {
     unitId: label('unit'),
+    kind: 'model-runtime',
+    reference: { kind: 'grant', grantId: label('grant') },
+    owner,
+    containerName,
     grantId: label('grant'),
     artifact,
     residencyKey: label('residency'),
@@ -282,8 +276,8 @@ function unitFromContainer(container: ListedContainer): ExecutionUnit | undefine
   }
 }
 
-export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
-  constructor(private readonly options: PodmanModelExecutionPrimitiveOptions) {}
+export class PodmanModelUnitMaterializer implements ModelUnitMaterializer {
+  constructor(private readonly options: PodmanModelUnitMaterializerOptions) {}
 
   async materialize(grant: ExecutionGrant): Promise<MaterializationOutcome> {
     const rejection = await this.admissionRejection(grant)
@@ -300,7 +294,7 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
   }
 
   /** Lanza si Podman no lista: un vacío no distingue «no hay unidades» de «no se pudo mirar». */
-  async units(): Promise<readonly ExecutionUnit[]> {
+  async units(): Promise<readonly ModelExecutionUnit[]> {
     const result = await this.options.podman.run(['ps', '--all', '--filter', `label=${MODEL_UNIT_LABELS.unit}`, '--format', 'json'])
     if (!succeeded(result)) throw new Error(`podman ps no listó las unidades de modelo: ${podmanDiagnostic(result)}`)
     const listed: unknown = JSON.parse(result.stdout.trim() || '[]')
@@ -331,44 +325,30 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
     const createdAt = this.options.now().toISOString()
     const { owner, limits } = this.options
     const authorization = modelUnitAuthorization({ grant, unitId, port, createdAt, profile, owner, limits })
-    let containerId: string
+    let materialized: ExecutionUnit
     try {
-      ;({ containerId } = await materializeExecution(podman, authorization, this.options.now().getTime()))
+      materialized = await materializeExecution(podman, authorization, Date.parse(createdAt))
     } catch (error) {
       if (!(error instanceof ContainerRunError)) throw error
-      // `create` que falla no deja nada; `start` que falla deja el contenedor creado.
+      // `create` que falla no deja nada; `start` o `inspect` que fallan dejan el contenedor creado.
       if (error.stage === 'create') return { status: 'failed', reason: `podman create ${name}: ${error.message}`, partial: false }
-      return partialFailure(unitId, `podman start ${name}: ${error.message}`)
+      return partialFailure(unitId, `podman ${error.stage} ${name}: ${error.message}`)
     }
-    const state = await this.inspectContainer(name)
-    if (typeof state === 'string') return partialFailure(unitId, state)
-    const unit: ExecutionUnit = {
-      unitId,
+    const unit: ModelExecutionUnit = {
+      ...materialized,
+      kind: 'model-runtime',
+      reference: { kind: 'grant', grantId: grant.grantId },
       grantId: grant.grantId,
       artifact: grant.artifact,
       residencyKey: grant.residency.instance,
       generation: grant.residency.generation,
       runtime: grant.runtime,
       endpoint: loopbackEndpoint(port),
-      containerId,
       devices: grantedDevices(grant),
-      ...(state.cgroup === undefined ? {} : { cgroup: state.cgroup }),
-      hostPids: state.hostPids,
-      createdAt,
     }
     return { status: 'materialized', unit }
   }
 
-  /** El estado del contenedor en el anfitrión, o el motivo por el que no se pudo leer. */
-  private async inspectContainer(name: string): Promise<InspectedState | string> {
-    const inspected = await this.options.podman.run(['inspect', '--format', 'json', name])
-    if (!succeeded(inspected)) return `podman inspect ${name}: ${podmanDiagnostic(inspected)}`
-    try {
-      return parseInspect(inspected.stdout)
-    } catch (error) {
-      return `podman inspect ${name}: ${(error as Error).message}`
-    }
-  }
 }
 
 function partialFailure(unitId: string, reason: string): MaterializationOutcome {

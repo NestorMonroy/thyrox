@@ -8,11 +8,14 @@ import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedMode
 
 import type { GenerationLease, LeaseAcquisition, LeaseValidity, ModelSchedulingCoordination, MutationOperation } from '../coordination.ts'
 import type {
-  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, MaterializationOutcome, ModelExecutionPrimitive,
+  ArtifactIdentityVerification, ModelExecutionUnit, ExpectedResidency, HealthObservation, MaterializationOutcome, ModelUnitMaterializer,
   ObservedArtifactIdentity, ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
-} from '../executionPrimitive.ts'
+} from '../modelUnitMaterializer.ts'
 import type { ExecutionPlan, GrantIssuer, IssueOutcome } from '../scheduler.ts'
 import type { RequestAllocation, RequestAllocationOutcome, ReservationOutcome, ResidencyVramLedger, VramReservation, VramReservationRequest } from '../vramLedger.ts'
+
+/** El dueño de toda unidad de los dobles: el coordinador de modelos. */
+export const FAKE_UNIT_OWNER = { kind: 'model-coordinator', id: 'coordinator', pid: 7 } as const
 
 export type Journal = string[]
 
@@ -158,14 +161,14 @@ export class FakeIssuer implements GrantIssuer {
   }
 }
 
-export class FakePrimitive implements ModelExecutionPrimitive {
+export class FakePrimitive implements ModelUnitMaterializer {
   outcome: 'materialized' | 'failed-partial' | 'failed-clean' = 'materialized'
   failDestroy = false
   /** `destroy` responde `destroyed` pero la unidad sigue listada. */
   destroyLies = false
   /** Se ejecuta tras materializar: permite que otro coordinador tome la residencia en medio. */
   afterMaterialize: (() => void) | undefined
-  readonly live: ExecutionUnit[] = []
+  readonly live: ModelExecutionUnit[] = []
 
   constructor(private readonly journal: Journal, private readonly coordination: ModelSchedulingCoordination) {}
 
@@ -178,8 +181,9 @@ export class FakePrimitive implements ModelExecutionPrimitive {
     }
     const unitId = `unit-${grant.grantId}`
     if (this.outcome === 'failed-clean') return { status: 'failed', reason: 'podman create falló', partial: false }
-    const unit: ExecutionUnit = {
-      unitId, grantId: grant.grantId, artifact: grant.artifact, residencyKey: grant.residency.instance,
+    const unit: ModelExecutionUnit = {
+      unitId, kind: 'model-runtime', reference: { kind: 'grant', grantId: grant.grantId }, owner: FAKE_UNIT_OWNER,
+      containerName: `thyrox-model-${unitId}`, grantId: grant.grantId, artifact: grant.artifact, residencyKey: grant.residency.instance,
       generation: grant.residency.generation, runtime: grant.runtime, endpoint: 'http://127.0.0.1:61000',
       containerId: `container-${unitId}`, devices: grant.placement.kind === 'gpu' ? grant.placement.devices : [],
       hostPids: [4242], createdAt: '2026-10-01T00:00:00.000Z',
@@ -200,7 +204,7 @@ export class FakePrimitive implements ModelExecutionPrimitive {
     return 'destroyed'
   }
 
-  async units(): Promise<readonly ExecutionUnit[]> {
+  async units(): Promise<readonly ModelExecutionUnit[]> {
     this.journal.push('primitive.units')
     return [...this.live]
   }
@@ -235,7 +239,7 @@ export class FakeRuntime implements RuntimeAdapter {
   /** Sin coordinación, el doble no comprueba la generación de las mutaciones. */
   constructor(private readonly journal: Journal, private readonly coordination?: ModelSchedulingCoordination) {}
 
-  async probeHealth(unit: ExecutionUnit): Promise<HealthObservation> {
+  async probeHealth(unit: ModelExecutionUnit): Promise<HealthObservation> {
     this.journal.push(`runtime.probeHealth ${unit.unitId}`)
     if (this.unhealthyProbes > 0) {
       this.unhealthyProbes -= 1
@@ -251,7 +255,7 @@ export class FakeRuntime implements RuntimeAdapter {
     return this.failPrepare ? { status: 'failed', reason: 'el runtime rechazó el artefacto' } : { status: 'done' }
   }
 
-  async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
+  async verifyArtifactIdentity(unit: ModelExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
     this.journal.push(`runtime.verifyArtifactIdentity ${unit.unitId}`)
     const observed = this.observedIdentity(grant.artifact)
     return observed.artifactId === grant.artifact.artifactId ? { status: 'matches', observed } : { status: 'mismatch', expected: grant.artifact, observed }
@@ -268,7 +272,7 @@ export class FakeRuntime implements RuntimeAdapter {
     return { status: 'done' }
   }
 
-  async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
+  async observeResidency(unit: ModelExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
     this.journal.push(`runtime.observeResidency ${unit.unitId}`)
     const resident = this.loaded.get(unit.unitId)
     const status = this.observeAs ?? (resident === undefined ? 'absent' : 'resident')

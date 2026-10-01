@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
 
 import { ModelScheduler, type ExecutionPlan } from '../scheduler.ts'
-import { FakeCoordination, FakeIssuer, FakeLedger, FakePrimitive, FakeRuntime, type Journal } from '../testing/schedulerFakes.ts'
+import { FAKE_UNIT_OWNER, FakeCoordination, FakeIssuer, FakeLedger, FakePrimitive, FakeRuntime, type Journal } from '../testing/schedulerFakes.ts'
 
 const RESIDENCY = 'residency/qwen/gpu0'
 const PLAN: ExecutionPlan = {
@@ -200,14 +200,14 @@ describe('ModelScheduler: fencing (M19)', () => {
 
 describe('ModelScheduler.reconcile (M20)', () => {
   test('marca una unidad cuyo runtime no sirve el modelo de su grant', async () => {
-    primitive.live.push({ unitId: 'unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama', endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' })
+    primitive.live.push({ unitId: 'unit-old', kind: 'model-runtime' as const, reference: { kind: 'grant' as const, grantId: 'grant-old' }, owner: FAKE_UNIT_OWNER, containerName: 'thyrox-model-unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama', endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' })
     const report = await scheduler.reconcile()
     expect(report.units.map(unit => unit.unitId)).toEqual(['unit-old'])
     expect(report.marks).toEqual([{ resource: 'unit', id: 'unit-old', reason: expect.any(String) }])
   })
 
   test('una unidad que sobrevivió y sirve su modelo no se marca ni se retira', async () => {
-    const survivor = { unitId: 'unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama' as const, endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' }
+    const survivor = { unitId: 'unit-old', kind: 'model-runtime' as const, reference: { kind: 'grant' as const, grantId: 'grant-old' }, owner: FAKE_UNIT_OWNER, containerName: 'thyrox-model-unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama' as const, endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' }
     primitive.live.push(survivor)
     runtime.loaded.set('unit-old', PLAN.artifact)
     const report = await scheduler.reconcile()

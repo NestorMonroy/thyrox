@@ -2,7 +2,7 @@
  * El upstream compatible con OpenAI que el proxy local usa para un modelo del
  * catálogo (ADR-007 1.14.0, M8): un relé en loopback que, por cada petición,
  * pide una admisión al coordinador de model scheduling del anfitrión y
- * reenvía SÓLO al `endpoint` de la `ExecutionUnit` del ticket. No hay otra
+ * reenvía SÓLO al `endpoint` de la `ModelExecutionUnit` del ticket. No hay otra
  * dirección: el relé no conoce puertos de Ollama ni base URLs declaradas.
  *
  *   petición → admit({ model }) → ticket { grant, unit }

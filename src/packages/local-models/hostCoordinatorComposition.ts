@@ -28,7 +28,7 @@ import { ModelSchedulingCoordinator, type PlacementDecision } from '@thyrox/mode
 import type { HostCoordinatorServiceOptions } from '@thyrox/model-scheduling/hostCoordinatorService.ts'
 import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts'
 import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
-import { PodmanModelExecutionPrimitive } from '@thyrox/model-scheduling/podmanModelExecutionPrimitive.ts'
+import { PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
 import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
 import { ResidencyController } from '@thyrox/model-scheduling/residencyController.ts'
 import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
@@ -67,7 +67,7 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
   const owner: ContainerOwner = { kind: MODEL_COORDINATOR_OWNER_KIND, id: `${MODEL_COORDINATOR_OWNER_KIND}@${hostname()}`, pid: process.pid }
   const currentGeneration = (residencyKey: string) => coordination.currentGeneration(residencyKey)
   const artifactCache = localArtifactHome(env, thyroxRoot).artifactCache
-  const primitive = new PodmanModelExecutionPrimitive({
+  const primitive = new PodmanModelUnitMaterializer({
     podman: dependencies.podman ?? createPodmanExecutor(),
     currentGeneration,
     profiles: { ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },

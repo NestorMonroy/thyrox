@@ -1,0 +1,1140 @@
+ .../__tests__/ollamaRuntimeAdapter.test.ts         |  8 ++-
+ .../__tests__/residencyLifecycle.real.test.ts      |  6 +-
+ src/packages/local-models/admittedChat.ts          |  2 +-
+ .../local-models/hostCoordinatorComposition.ts     |  4 +-
+ src/packages/local-models/ollamaRuntimeAdapter.ts  | 16 ++---
+ .../__tests__/hostCoordinatorService.test.ts       |  8 +--
+ ...test.ts => podmanModelUnitMaterializer.test.ts} | 36 ++++++++---
+ .../model-scheduling/__tests__/scheduler.test.ts   |  6 +-
+ src/packages/model-scheduling/hostCoordinator.ts   |  6 +-
+ .../model-scheduling/hostCoordinatorService.ts     |  6 +-
+ ...cutionPrimitive.ts => modelUnitMaterializer.ts} | 31 ++++------
+ ...Primitive.ts => podmanModelUnitMaterializer.ts} | 72 ++++++++--------------
+ .../model-scheduling/residencyController.ts        | 18 +++---
+ src/packages/model-scheduling/scheduler.ts         | 14 ++---
+ .../model-scheduling/testing/schedulerFakes.ts     | 24 +++++---
+ .../__tests__/executionAuthorization.test.ts       | 43 +++++++++++--
+ src/packages/podman-execution/containerRun.ts      | 36 ++++++++++-
+ .../podman-execution/executionAuthorization.ts     | 45 ++++++++++++--
+ .../podman-execution/workerContainerLifecycle.ts   | 19 ++++++
+ .../src/proxy/openaiCompat/admittedUpstream.ts     |  2 +-
+ 20 files changed, 262 insertions(+), 140 deletions(-)
+diff --git a/src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts b/src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts
+index cebddf64c..130e7a635 100644
+--- a/src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts
++++ b/src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts
+@@ -14,7 +14,7 @@ import { join } from 'node:path'
+ 
+ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
+-import type { ExecutionUnit, ResidencyBinding } from '@thyrox/model-scheduling/executionPrimitive.ts'
++import type { ModelExecutionUnit, ResidencyBinding } from '@thyrox/model-scheduling/modelUnitMaterializer.ts'
+ 
+ import { OllamaRuntimeAdapter } from '../ollamaRuntimeAdapter.ts'
+ import { startFakeOllamaRuntime, type FakeOllamaRuntime } from '../testing/fakeOllamaRuntime.ts'
+@@ -45,9 +45,11 @@ function grant(sha256 = SHA): ExecutionGrant {
+   }
+ }
+ 
+-function unit(endpoint = ollama.baseUrl): ExecutionUnit {
++function unit(endpoint = ollama.baseUrl): ModelExecutionUnit {
+   return {
+-    unitId: 'unit-a', grantId: 'grant-request-1', artifact: ARTIFACT, residencyKey: RESIDENCY,
++    unitId: 'unit-a', kind: 'model-runtime', reference: { kind: 'grant', grantId: 'grant-request-1' },
++    owner: { kind: 'model-coordinator', id: 'coordinator', pid: 7 }, containerName: 'thyrox-model-unit-a',
++    grantId: 'grant-request-1', artifact: ARTIFACT, residencyKey: RESIDENCY,
+     generation: GENERATION, runtime: 'ollama', endpoint, containerId: 'c'.repeat(64), devices: [], hostPids: [4242],
+     createdAt: '2026-10-01T00:00:00.000Z',
+   }
+diff --git a/src/packages/local-models/__tests__/residencyLifecycle.real.test.ts b/src/packages/local-models/__tests__/residencyLifecycle.real.test.ts
+index 4a8af0878..ba70a2644 100644
+--- a/src/packages/local-models/__tests__/residencyLifecycle.real.test.ts
++++ b/src/packages/local-models/__tests__/residencyLifecycle.real.test.ts
+@@ -2,7 +2,7 @@
+  * E2E real de una residencia (ADR-007 1.13.0 y 1.14.0): Podman y Ollama de
+  * verdad, con el artefacto exacto del catálogo.
+  *
+- *   ResolvedModelArtifact → ExecutionGrant → PodmanModelExecutionPrimitive
++ *   ResolvedModelArtifact → ExecutionGrant → PodmanModelUnitMaterializer
+  *     → ExecutionUnit → OllamaRuntimeAdapter (prepare → verify → load → observe)
+  *     → RESIDENT → dos peticiones reales que la reutilizan → drain → destroy
+  *     → unidad ausente → VRAM, grant y lease soltados
+@@ -33,7 +33,7 @@ import { assertConsistentIdentity } from '@thyrox/model-artifacts/resolvedModelA
+ import { createMemoryCoordination } from '@thyrox/model-scheduling/memoryCoordination.ts'
+ import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts'
+ import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
+-import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelExecutionPrimitive } from '@thyrox/model-scheduling/podmanModelExecutionPrimitive.ts'
++import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
+ import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
+ import { ResidencyController, type Admission } from '@thyrox/model-scheduling/residencyController.ts'
+ import type { ExecutionPlan } from '@thyrox/model-scheduling/scheduler.ts'
+@@ -144,7 +144,7 @@ describe.skipIf(skipReason !== undefined)('residencia real: Podman + Ollama', ()
+     const ledger = createMemoryResidencyVramLedger({ capacityMib: {} })
+     const issuer = new MemoryGrantIssuer({ ttlMs: GRANT_TTL_MS, now: () => new Date(), newGrantId: () => `grant-e2e-${crypto.randomUUID()}` })
+     const currentGeneration = (key: string) => coordination.currentGeneration(key)
+-    const primitive = new PodmanModelExecutionPrimitive({
++    const primitive = new PodmanModelUnitMaterializer({
+       podman,
+       currentGeneration,
+       profiles: { ollama: { image: RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },
+diff --git a/src/packages/local-models/admittedChat.ts b/src/packages/local-models/admittedChat.ts
+index dcc690f96..7492a03e0 100644
+--- a/src/packages/local-models/admittedChat.ts
++++ b/src/packages/local-models/admittedChat.ts
+@@ -1,6 +1,6 @@
+ /**
+  * `/api/chat` de Ollama, alcanzable sólo con una admisión (ADR-007 1.14.0,
+- * M8): recibe el `ExecutionGrant` y la `ExecutionUnit` del ticket, habla con
++ * M8): recibe el `ExecutionGrant` y la `ModelExecutionUnit` del ticket, habla con
+  * el `endpoint` de esa unidad y pide el modelo que el grant concede. Fuera de
+  * este módulo nadie hace inferencia contra el runtime.
+  */
+diff --git a/src/packages/local-models/hostCoordinatorComposition.ts b/src/packages/local-models/hostCoordinatorComposition.ts
+index 85afe165b..b3c8e0a08 100644
+--- a/src/packages/local-models/hostCoordinatorComposition.ts
++++ b/src/packages/local-models/hostCoordinatorComposition.ts
+@@ -28,7 +28,7 @@ import { ModelSchedulingCoordinator, type PlacementDecision } from '@thyrox/mode
+ import type { HostCoordinatorServiceOptions } from '@thyrox/model-scheduling/hostCoordinatorService.ts'
+ import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts'
+ import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
+-import { PodmanModelExecutionPrimitive } from '@thyrox/model-scheduling/podmanModelExecutionPrimitive.ts'
++import { PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
+ import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
+ import { ResidencyController } from '@thyrox/model-scheduling/residencyController.ts'
+ import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+@@ -67,7 +67,7 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
+   const owner: ContainerOwner = { kind: MODEL_COORDINATOR_OWNER_KIND, id: `${MODEL_COORDINATOR_OWNER_KIND}@${hostname()}`, pid: process.pid }
+   const currentGeneration = (residencyKey: string) => coordination.currentGeneration(residencyKey)
+   const artifactCache = localArtifactHome(env, thyroxRoot).artifactCache
+-  const primitive = new PodmanModelExecutionPrimitive({
++  const primitive = new PodmanModelUnitMaterializer({
+     podman: dependencies.podman ?? createPodmanExecutor(),
+     currentGeneration,
+     profiles: { ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },
+diff --git a/src/packages/local-models/ollamaRuntimeAdapter.ts b/src/packages/local-models/ollamaRuntimeAdapter.ts
+index 158281c2f..fcde9f312 100644
+--- a/src/packages/local-models/ollamaRuntimeAdapter.ts
++++ b/src/packages/local-models/ollamaRuntimeAdapter.ts
+@@ -1,5 +1,5 @@
+ /**
+- * `OllamaRuntimeAdapter`: el `RuntimeAdapter` de una `ExecutionUnit` de
++ * `OllamaRuntimeAdapter`: el `RuntimeAdapter` de una `ModelExecutionUnit` de
+  * Ollama (ADR-007 1.13.0). Habla sólo con el endpoint de la unidad y sólo por
+  * la API pública medida en Ollama 0.35.0 (H-THYROX-305): los verbos y estados
+  * HTTP quedan aquí, el puerto no los conoce.
+@@ -21,9 +21,9 @@ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+ import { normalizeQuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
+ import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+ import type {
+-  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, ObservedArtifactIdentity,
++  ArtifactIdentityVerification, ModelExecutionUnit, ExpectedResidency, HealthObservation, ObservedArtifactIdentity,
+   ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
+-} from '@thyrox/model-scheduling/executionPrimitive.ts'
++} from '@thyrox/model-scheduling/modelUnitMaterializer.ts'
+ 
+ import { OllamaApi, OllamaRequestError } from './ollamaApi.ts'
+ 
+@@ -54,7 +54,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
+ 
+   constructor(private readonly options: OllamaRuntimeAdapterOptions) {}
+ 
+-  async probeHealth(unit: ExecutionUnit): Promise<HealthObservation> {
++  async probeHealth(unit: ModelExecutionUnit): Promise<HealthObservation> {
+     try {
+       await apiOf(unit).version()
+       return { status: 'healthy' }
+@@ -71,7 +71,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
+     })
+   }
+ 
+-  async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
++  async verifyArtifactIdentity(unit: ModelExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
+     const expected = grant.artifact
+     try {
+       const observed = await observeIdentity(apiOf(unit), expected.modelId)
+@@ -86,7 +86,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
+     return this.mutate(binding, () => setKeepAlive(binding.unit, grant.artifact.modelId, KEEP_ALIVE_FOREVER))
+   }
+ 
+-  async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
++  async observeResidency(unit: ModelExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
+     try {
+       const api = apiOf(unit)
+       if (!(await api.residentModelNames()).includes(expected.artifact.modelId)) return { status: 'absent' }
+@@ -125,7 +125,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
+   }
+ }
+ 
+-function apiOf(unit: ExecutionUnit): OllamaApi {
++function apiOf(unit: ModelExecutionUnit): OllamaApi {
+   return new OllamaApi(unit.endpoint)
+ }
+ 
+@@ -173,7 +173,7 @@ function reasonOf(error: unknown): string {
+  * `OllamaApi` porque sólo la frontera que recibe grant y unidad puede tocar la
+  * inferencia del runtime (M8).
+  */
+-async function setKeepAlive(unit: ExecutionUnit, model: string, keepAlive: number): Promise<void> {
++async function setKeepAlive(unit: ModelExecutionUnit, model: string, keepAlive: number): Promise<void> {
+   const response = await fetch(`${unit.endpoint}${GENERATE_PATH}`, {
+     method: 'POST',
+     headers: { 'content-type': 'application/json' },
+diff --git a/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts b/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
+index d79da5df3..e91cff98b 100644
+--- a/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
++++ b/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
+@@ -10,17 +10,17 @@ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
+ 
+-import type { ExecutionUnit } from '../executionPrimitive.ts'
++import type { ModelExecutionUnit } from '../modelUnitMaterializer.ts'
+ import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from '../hostCoordinator.ts'
+ import { OrphanUnitSurvivedError, startHostCoordinatorService, type ServiceCoordinator } from '../hostCoordinatorService.ts'
+ import type { EvictionOutcome } from '../residencyController.ts'
+-import { FakeCoordination, FakePrimitive, type Journal } from '../testing/schedulerFakes.ts'
++import { FAKE_UNIT_OWNER, FakeCoordination, FakePrimitive, type Journal } from '../testing/schedulerFakes.ts'
+ 
+ const ARTIFACT = resolvedArtifact()
+ 
+-function orphan(unitId: string, residencyKey: string): ExecutionUnit {
++function orphan(unitId: string, residencyKey: string): ModelExecutionUnit {
+   return {
+-    unitId, grantId: `grant-${unitId}`, artifact: ARTIFACT, residencyKey, generation: 3, runtime: 'ollama',
++    unitId, kind: 'model-runtime' as const, reference: { kind: 'grant' as const, grantId: `grant-${unitId}` }, owner: FAKE_UNIT_OWNER, containerName: `thyrox-model-${unitId}`, grantId: `grant-${unitId}`, artifact: ARTIFACT, residencyKey, generation: 3, runtime: 'ollama',
+     endpoint: 'http://127.0.0.1:61001', containerId: `container-${unitId}`, devices: [],
+   }
+ }
+diff --git a/src/packages/model-scheduling/__tests__/podmanModelExecutionPrimitive.test.ts b/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts
+similarity index 88%
+rename from src/packages/model-scheduling/__tests__/podmanModelExecutionPrimitive.test.ts
+rename to src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts
+index 4de26423b..d3e652d4d 100644
+--- a/src/packages/model-scheduling/__tests__/podmanModelExecutionPrimitive.test.ts
++++ b/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts
+@@ -1,5 +1,5 @@
+ /**
+- * `PodmanModelExecutionPrimitive` contra un `PodmanExecutor` doble que anota
++ * `PodmanModelUnitMaterializer` contra un `PodmanExecutor` doble que anota
+  * cada argv. Qué haría fallar a esta suite: tocar Podman con un grant
+  * caducado, de generación vieja o con la coordinación caída; una unidad sin la
+  * identidad que la reconciliación necesita; una materialización a medias que
+@@ -11,10 +11,17 @@ import { beforeEach, describe, expect, test } from 'bun:test'
+ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
+ import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+-import { createWorkerContainerArgv, removeWorkerContainerArgv, workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import {
++  createWorkerContainerArgv,
++  OWNER_ID_LABEL_KEY,
++  OWNER_KIND_LABEL_KEY,
++  OWNER_PID_LABEL_KEY,
++  removeWorkerContainerArgv,
++  workerContainerName,
++} from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+ import { workerResourceLimitArgv } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+-import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelExecutionPrimitive } from '../podmanModelExecutionPrimitive.ts'
++import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelUnitMaterializer } from '../podmanModelUnitMaterializer.ts'
+ 
+ const NOW = new Date('2026-10-01T00:30:00.000Z')
+ const PORT = 61_234
+@@ -61,8 +68,8 @@ function healthyPodman(overrides: Partial<Record<string, PodmanCommandResult>> =
+ 
+ let generation: number | 'unavailable'
+ 
+-function primitiveWith(podman: RecordingPodman): PodmanModelExecutionPrimitive {
+-  return new PodmanModelExecutionPrimitive({
++function primitiveWith(podman: RecordingPodman): PodmanModelUnitMaterializer {
++  return new PodmanModelUnitMaterializer({
+     podman,
+     currentGeneration: async () => generation,
+     profiles: { ollama: { image: 'docker.io/ollama/ollama:0.35.0', containerPort: 11_434, environment: { OLLAMA_HOST: '0.0.0.0:11434' } } },
+@@ -81,7 +88,7 @@ beforeEach(() => {
+   generation = GRANT.residency.generation
+ })
+ 
+-describe('PodmanModelExecutionPrimitive: rechazar sin tocar Podman', () => {
++describe('PodmanModelUnitMaterializer: rechazar sin tocar Podman', () => {
+   test('un grant caducado', async () => {
+     const podman = healthyPodman()
+     const outcome = await primitiveWith(podman).materialize({ ...GRANT, expiresAt: '2026-10-01T00:10:00.000Z' })
+@@ -110,7 +117,7 @@ describe('PodmanModelExecutionPrimitive: rechazar sin tocar Podman', () => {
+   })
+ })
+ 
+-describe('PodmanModelExecutionPrimitive: materializar', () => {
++describe('PodmanModelUnitMaterializer: materializar', () => {
+   test('crea, arranca e inspecciona; la unidad lleva su identidad completa', async () => {
+     const podman = healthyPodman()
+     const outcome = await primitiveWith(podman).materialize(GRANT)
+@@ -182,7 +189,10 @@ describe('PodmanModelExecutionPrimitive: materializar', () => {
+   })
+ })
+ 
+-describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
++/** Las etiquetas de dueño que la primitiva escribe en todo contenedor; sin ellas no hay unidad que reconstruir. */
++const OWNER_LABELS = { [OWNER_KIND_LABEL_KEY]: 'model-coordinator', [OWNER_ID_LABEL_KEY]: 'coordinator', [OWNER_PID_LABEL_KEY]: '7' }
++
++describe('PodmanModelUnitMaterializer: destruir y listar', () => {
+   test('destroy distingue destruido, ausente y fallido', async () => {
+     expect(await primitiveWith(healthyPodman()).destroy('unit-a')).toBe('destroyed')
+     expect(await primitiveWith(healthyPodman({ rm: fail('Error: no container with name or ID "thyrox-model-unit-a" found: no such container') })).destroy('unit-a')).toBe('absent')
+@@ -204,15 +214,21 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
+       [MODEL_UNIT_LABELS.quantization]: GRANT.artifact.quantization, [MODEL_UNIT_LABELS.bytes]: String(GRANT.artifact.bytes),
+       [MODEL_UNIT_LABELS.residency]: 'residency/qwen/gpu0', [MODEL_UNIT_LABELS.generation]: '3', [MODEL_UNIT_LABELS.sha256]: SHA,
+       [MODEL_UNIT_LABELS.runtime]: 'ollama', [MODEL_UNIT_LABELS.port]: String(PORT), [MODEL_UNIT_LABELS.createdAt]: NOW.toISOString(),
++      ...OWNER_LABELS,
+     }
+     const listed = JSON.stringify([
+       { Id: CONTAINER_ID, Names: [`${MODEL_UNIT_CONTAINER_PREFIX}unit-a`], Labels: labels, Pid: 4242 },
+       { Id: 'f'.repeat(64), Names: ['thyrox-redis'], Labels: { 'thyrox.owner': 'infra' }, Pid: 99 },
++      { Id: 'e'.repeat(64), Names: [`${MODEL_UNIT_CONTAINER_PREFIX}unit-b`], Labels: { ...labels, [OWNER_KIND_LABEL_KEY]: undefined }, Pid: 77 },
+     ])
+     const podman = healthyPodman({ ps: ok(listed) })
+     const units = await primitiveWith(podman).units()
+     expect(units).toHaveLength(1)
+-    expect(units[0]).toMatchObject({ unitId: 'unit-a', grantId: 'grant-a', generation: 3, artifact: GRANT.artifact, endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID })
++    expect(units[0]).toMatchObject({
++      unitId: 'unit-a', grantId: 'grant-a', generation: 3, artifact: GRANT.artifact, endpoint: `http://127.0.0.1:${PORT}`, containerId: CONTAINER_ID,
++      kind: 'model-runtime', reference: { kind: 'grant', grantId: 'grant-a' },
++      owner: { kind: 'model-coordinator', id: 'coordinator', pid: 7 }, containerName: `${MODEL_UNIT_CONTAINER_PREFIX}unit-a`,
++    })
+   })
+ 
+   test('nunca borra imágenes ni volúmenes', async () => {
+@@ -224,7 +240,7 @@ describe('PodmanModelExecutionPrimitive: destruir y listar', () => {
+   })
+ })
+ 
+-describe('PodmanModelExecutionPrimitive: identidad completa', () => {
++describe('PodmanModelUnitMaterializer: identidad completa', () => {
+   test('una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva', async () => {
+     const labels = {
+       [MODEL_UNIT_LABELS.unit]: 'unit-a', [MODEL_UNIT_LABELS.grant]: 'grant-a', [MODEL_UNIT_LABELS.model]: GRANT.artifact.modelId,
+diff --git a/src/packages/model-scheduling/__tests__/scheduler.test.ts b/src/packages/model-scheduling/__tests__/scheduler.test.ts
+index 35c3b2922..38bb72f9f 100644
+--- a/src/packages/model-scheduling/__tests__/scheduler.test.ts
++++ b/src/packages/model-scheduling/__tests__/scheduler.test.ts
+@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, test } from 'bun:test'
+ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
+ 
+ import { ModelScheduler, type ExecutionPlan } from '../scheduler.ts'
+-import { FakeCoordination, FakeIssuer, FakeLedger, FakePrimitive, FakeRuntime, type Journal } from '../testing/schedulerFakes.ts'
++import { FAKE_UNIT_OWNER, FakeCoordination, FakeIssuer, FakeLedger, FakePrimitive, FakeRuntime, type Journal } from '../testing/schedulerFakes.ts'
+ 
+ const RESIDENCY = 'residency/qwen/gpu0'
+ const PLAN: ExecutionPlan = {
+@@ -200,14 +200,14 @@ describe('ModelScheduler: fencing (M19)', () => {
+ 
+ describe('ModelScheduler.reconcile (M20)', () => {
+   test('marca una unidad cuyo runtime no sirve el modelo de su grant', async () => {
+-    primitive.live.push({ unitId: 'unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama', endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' })
++    primitive.live.push({ unitId: 'unit-old', kind: 'model-runtime' as const, reference: { kind: 'grant' as const, grantId: 'grant-old' }, owner: FAKE_UNIT_OWNER, containerName: 'thyrox-model-unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama', endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' })
+     const report = await scheduler.reconcile()
+     expect(report.units.map(unit => unit.unitId)).toEqual(['unit-old'])
+     expect(report.marks).toEqual([{ resource: 'unit', id: 'unit-old', reason: expect.any(String) }])
+   })
+ 
+   test('una unidad que sobrevivió y sirve su modelo no se marca ni se retira', async () => {
+-    const survivor = { unitId: 'unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama' as const, endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' }
++    const survivor = { unitId: 'unit-old', kind: 'model-runtime' as const, reference: { kind: 'grant' as const, grantId: 'grant-old' }, owner: FAKE_UNIT_OWNER, containerName: 'thyrox-model-unit-old', grantId: 'grant-old', artifact: PLAN.artifact, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama' as const, endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' }
+     primitive.live.push(survivor)
+     runtime.loaded.set('unit-old', PLAN.artifact)
+     const report = await scheduler.reconcile()
+diff --git a/src/packages/model-scheduling/hostCoordinator.ts b/src/packages/model-scheduling/hostCoordinator.ts
+index 21d338d6f..6c18f7753 100644
+--- a/src/packages/model-scheduling/hostCoordinator.ts
++++ b/src/packages/model-scheduling/hostCoordinator.ts
+@@ -2,7 +2,7 @@
+  * `ModelSchedulingCoordinator`: la única autoridad de admisión de modelos de
+  * un anfitrión (ADR-007 1.14.0). Los proxies, los ítems del pool y `thyrox -p`
+  * son sus clientes: piden una admisión y reciben un ticket con el grant y la
+- * `ExecutionUnit`; usan sólo el endpoint de esa unidad. Ninguno mantiene
++ * `ModelExecutionUnit`; usan sólo el endpoint de esa unidad. Ninguno mantiene
+  * residencias propias ni fabrica admisiones.
+  *
+  *   AdmissionRequest → ModelResolver (catálogo) → identidad exacta
+@@ -22,7 +22,7 @@ import {
+ } from '@thyrox/model-artifacts/modelResolver.ts'
+ import { InconsistentModelIdentityError, type ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+ 
+-import type { ExecutionUnit } from './executionPrimitive.ts'
++import type { ModelExecutionUnit } from './modelUnitMaterializer.ts'
+ import type { Admission, EvictionOutcome, ResidencyController, ResidencyStage } from './residencyController.ts'
+ import type { ExecutionPlan } from './scheduler.ts'
+ 
+@@ -42,7 +42,7 @@ export interface AdmissionTicket {
+   readonly requestId: string
+   readonly client: string
+   readonly grant: ExecutionGrant
+-  readonly unit: ExecutionUnit
++  readonly unit: ModelExecutionUnit
+ }
+ 
+ export type CoordinatorStage = 'resolve' | 'placement' | ResidencyStage
+diff --git a/src/packages/model-scheduling/hostCoordinatorService.ts b/src/packages/model-scheduling/hostCoordinatorService.ts
+index 4d2531fec..826f7ac1e 100644
+--- a/src/packages/model-scheduling/hostCoordinatorService.ts
++++ b/src/packages/model-scheduling/hostCoordinatorService.ts
+@@ -15,7 +15,7 @@
+  */
+ import type { ModelSchedulingCoordination } from './coordination.ts'
+ import { startModelCoordinatorServer, type ModelCoordinatorServer, type ServedCoordinator } from './coordinatorServer.ts'
+-import type { ModelExecutionPrimitive } from './executionPrimitive.ts'
++import type { ModelUnitMaterializer } from './modelUnitMaterializer.ts'
+ import type { ModelSchedulingCoordinator } from './hostCoordinator.ts'
+ 
+ /** Lo que el servicio necesita del coordinador: servirlo y desalojar al detenerse. */
+@@ -23,7 +23,7 @@ export type ServiceCoordinator = ServedCoordinator & Pick<ModelSchedulingCoordin
+ 
+ export interface HostCoordinatorServiceOptions {
+   readonly socketPath: string
+-  readonly primitive: ModelExecutionPrimitive
++  readonly primitive: ModelUnitMaterializer
+   readonly coordinator: ServiceCoordinator
+   readonly coordination: ModelSchedulingCoordination
+ }
+@@ -50,7 +50,7 @@ export async function startHostCoordinatorService(options: HostCoordinatorServic
+ }
+ 
+ /** Destruye cada unidad listada y comprueba que ya no lo esté; una que sobrevive impide arrancar. */
+-async function sweepOrphanUnits(primitive: ModelExecutionPrimitive): Promise<string[]> {
++async function sweepOrphanUnits(primitive: ModelUnitMaterializer): Promise<string[]> {
+   const orphans = await primitive.units()
+   for (const unit of orphans) {
+     const outcome = await primitive.destroy(unit.unitId)
+diff --git a/src/packages/model-scheduling/executionPrimitive.ts b/src/packages/model-scheduling/modelUnitMaterializer.ts
+similarity index 86%
+rename from src/packages/model-scheduling/executionPrimitive.ts
+rename to src/packages/model-scheduling/modelUnitMaterializer.ts
+index c6bcc0441..bbf6b7ee0 100644
+--- a/src/packages/model-scheduling/executionPrimitive.ts
++++ b/src/packages/model-scheduling/modelUnitMaterializer.ts
+@@ -1,6 +1,6 @@
+ /**
+  * Los dos puertos que quedan después del grant (ADR-007 1.10.0–1.12.0): la
+- * primitiva materializa un `ExecutionGrant` vigente en una `ExecutionUnit`, y
++ * primitiva materializa un `ExecutionGrant` vigente en una `ModelExecutionUnit`, y
+  * el adapter del runtime sólo habla con el runtime desde esa unidad.
+  *
+  * Ninguno decide: la primitiva rechaza un grant caducado o de una generación
+@@ -10,14 +10,16 @@
+  */
+ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+ import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
++import type { ExecutionUnit } from '@thyrox/podman-execution/executionAuthorization.ts'
+ 
+ /**
+  * La ejecución que la primitiva creó a partir de un grant: una identidad, no
+  * sólo un endpoint (ADR-007 1.13.0). Es el único sitio donde vive el endpoint
+  * de un runtime local, y su relación con la residencia es 1:1 en la topología A.
+  */
+-export interface ExecutionUnit {
+-  readonly unitId: string
++export interface ModelExecutionUnit extends ExecutionUnit {
++  readonly kind: 'model-runtime'
++  readonly reference: { readonly kind: 'grant'; readonly grantId: string }
+   readonly grantId: string
+   /** La identidad que el grant concede; la reconciliación la compara con lo residente. */
+   readonly artifact: ResolvedModelArtifact
+@@ -26,15 +28,8 @@ export interface ExecutionUnit {
+   readonly runtime: ExecutionGrant['runtime']
+   /** Base URL del runtime de esta unidad, en loopback. */
+   readonly endpoint: string
+-  readonly containerId: string
+   /** UUID de los dispositivos concedidos; vacío en CPU. */
+   readonly devices: readonly string[]
+-  /** El cgroup del contenedor visto desde el anfitrión, si Podman lo informa. */
+-  readonly cgroup?: string
+-  /** PIDs del runtime vistos desde el anfitrión. */
+-  readonly hostPids: readonly number[]
+-  /** Instante ISO 8601 en UTC. */
+-  readonly createdAt: string
+ }
+ 
+ /**
+@@ -57,11 +52,11 @@ export function admitsSharedUnits(capabilities: RuntimeCapabilities): boolean {
+ }
+ 
+ export type MaterializationOutcome =
+-  | { readonly status: 'materialized'; readonly unit: ExecutionUnit }
++  | { readonly status: 'materialized'; readonly unit: ModelExecutionUnit }
+   | { readonly status: 'rejected'; readonly reason: 'stale_generation' | 'expired_grant'; readonly detail: string }
+   /** `partial`: quedó algo creado que hay que retirar. */
+   | { readonly status: 'failed'; readonly reason: string; readonly partial: boolean; readonly unitId?: string }
+-export interface ModelExecutionPrimitive {
++export interface ModelUnitMaterializer {
+   materialize(grant: ExecutionGrant): Promise<MaterializationOutcome>
+   /**
+    * Destruye la unidad: en la topología A es la frontera material definitiva de
+@@ -69,7 +64,7 @@ export interface ModelExecutionPrimitive {
+    */
+   destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'>
+   /** Las unidades de modelo que existen, para reconciliar. */
+-  units(): Promise<readonly ExecutionUnit[]>
++  units(): Promise<readonly ModelExecutionUnit[]>
+ }
+ 
+ /**
+@@ -77,7 +72,7 @@ export interface ModelExecutionPrimitive {
+  * adapter rechaza una generación que no es la vigente antes de tocar nada.
+  */
+ export interface ResidencyBinding {
+-  readonly unit: ExecutionUnit
++  readonly unit: ModelExecutionUnit
+   readonly residencyKey: string
+   readonly generation: number
+ }
+@@ -125,7 +120,7 @@ export type ObservedResidency =
+   | { readonly status: 'error'; readonly reason: string }
+ 
+ /**
+- * El runtime de una `ExecutionUnit` visto por thyrox (ADR-007 1.13.0). Traduce
++ * El runtime de una `ModelExecutionUnit` visto por thyrox (ADR-007 1.13.0). Traduce
+  * la ejecución concedida al protocolo del runtime y sólo habla con el endpoint
+  * de la unidad; los verbos y estados HTTP del runtime quedan dentro de cada
+  * implementación. No decide modelo, revisión ni cuantización: vienen en el
+@@ -136,15 +131,15 @@ export type ObservedResidency =
+ export interface RuntimeAdapter {
+   readonly capabilities: RuntimeCapabilities
+   /** Lectura: el runtime de la unidad responde. */
+-  probeHealth(unit: ExecutionUnit): Promise<HealthObservation>
++  probeHealth(unit: ModelExecutionUnit): Promise<HealthObservation>
+   /** Muta: hace utilizable en ESTA unidad el artefacto exacto del grant, que `ensureModel` ya materializó. */
+   prepareRuntimeArtifact(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome>
+   /** Lectura: modelo, digest y cuantización que el runtime sirve, contra los del grant. */
+-  verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification>
++  verifyArtifactIdentity(unit: ModelExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification>
+   /** Muta: deja residente el modelo exacto del grant. */
+   loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome>
+   /** Lectura: qué residencia hay de verdad en la unidad, para reconciliar. */
+-  observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency>
++  observeResidency(unit: ModelExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency>
+   /** Muta: descarga con gracia; si falla, destruir la unidad sigue siendo posible y definitivo. */
+   unloadResidency(binding: ResidencyBinding): Promise<RuntimeMutationOutcome>
+ }
+diff --git a/src/packages/model-scheduling/podmanModelExecutionPrimitive.ts b/src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+similarity index 84%
+rename from src/packages/model-scheduling/podmanModelExecutionPrimitive.ts
+rename to src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+index f4da93f07..e7409275f 100644
+--- a/src/packages/model-scheduling/podmanModelExecutionPrimitive.ts
++++ b/src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+@@ -1,5 +1,5 @@
+ /**
+- * `PodmanModelExecutionPrimitive`: materializa un `ExecutionGrant` vigente en
++ * `PodmanModelUnitMaterializer`: materializa un `ExecutionGrant` vigente en
+  * un contenedor de runtime por residencia (ADR-007 1.13.0, topología A).
+  *
+  * Rechaza sin tocar Podman un grant caducado o de una generación que no es la
+@@ -22,8 +22,9 @@ import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artif
+ import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+ import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ import { ContainerRunError } from '@thyrox/podman-execution/containerRun.ts'
+-import { type ExecutionAuthorization, materializeExecution } from '@thyrox/podman-execution/executionAuthorization.ts'
++import { type ExecutionAuthorization, type ExecutionUnit, materializeExecution } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import {
++  ownerFromLabels,
+   type ContainerOwner,
+   removeWorkerContainerArgv,
+   WORKER_CONTAINER_NAME_PREFIX,
+@@ -31,7 +32,7 @@ import {
+ } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+ import type { WorkerPublishedPort } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+-import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
++import type { ModelExecutionUnit, MaterializationOutcome, ModelUnitMaterializer } from './modelUnitMaterializer.ts'
+ 
+ /** Prefijo del nombre de contenedor de una unidad de modelo. */
+ export const MODEL_UNIT_CONTAINER_PREFIX = WORKER_CONTAINER_NAME_PREFIX
+@@ -86,7 +87,7 @@ export interface ModelUnitLimits {
+   readonly pidsLimit: number
+ }
+ 
+-export interface PodmanModelExecutionPrimitiveOptions {
++export interface PodmanModelUnitMaterializerOptions {
+   readonly podman: PodmanExecutor
+   /** La generación vigente de una residencia, de la coordinación. */
+   currentGeneration(residencyKey: string): Promise<number | 'unavailable'>
+@@ -207,28 +208,14 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
+   }
+ }
+ 
+-/** Lo que `podman inspect` aporta a la unidad: su proceso y su cgroup en el anfitrión. */
+-interface InspectedState {
+-  readonly hostPids: readonly number[]
+-  readonly cgroup: string | undefined
+-}
+-
+ function pidsOf(pid: unknown): readonly number[] {
+   return typeof pid === 'number' && pid !== NOT_RUNNING_PID ? [pid] : []
+ }
+ 
+-/** Lee la primera entrada de `podman inspect --format json`; una salida ilegible lanza con su contexto. */
+-function parseInspect(stdout: string): InspectedState {
+-  const entries: unknown = JSON.parse(stdout)
+-  const first = Array.isArray(entries) ? (entries[0] as { State?: { Pid?: unknown; CgroupPath?: unknown } } | undefined) : undefined
+-  if (!first?.State) throw new Error(`podman inspect no devolvió el estado del contenedor: «${stdout.trim()}»`)
+-  const cgroup = typeof first.State.CgroupPath === 'string' && first.State.CgroupPath !== '' ? first.State.CgroupPath : undefined
+-  return { hostPids: pidsOf(first.State.Pid), cgroup }
+-}
+-
+ /** Una entrada de `podman ps --format json`, con sólo lo que la reconstrucción lee. */
+ interface ListedContainer {
+   readonly Id?: unknown
++  readonly Names?: unknown
+   readonly Labels?: Record<string, unknown> | null
+   readonly Pid?: unknown
+ }
+@@ -259,16 +246,23 @@ function parseDevices(text: string | undefined): readonly string[] {
+  * contenedor sin la identidad completa, o con una generación, un puerto o un
+  * runtime ilegibles, no es una unidad de esta primitiva: `undefined`.
+  */
+-function unitFromContainer(container: ListedContainer): ExecutionUnit | undefined {
++function unitFromContainer(container: ListedContainer): ModelExecutionUnit | undefined {
+   if (!hasUnitIdentity(container)) return undefined
+   const label = (key: ModelUnitLabelKey): string => labelValue(container, key) as string
+   const generation = parseInteger(label('generation'))
+   const port = parseInteger(label('port'))
+   const runtime = label('runtime')
+   const artifact = artifactFromLabels(label)
+-  if (generation === undefined || port === undefined || !isKnownRuntime(runtime) || artifact === undefined) return undefined
++  const owner = ownerFromLabels(container.Labels)
++  const [containerName] = Array.isArray(container.Names) ? container.Names : []
++  if (generation === undefined || port === undefined || !isKnownRuntime(runtime) || artifact === undefined
++    || owner === undefined || typeof containerName !== 'string') return undefined
+   return {
+     unitId: label('unit'),
++    kind: 'model-runtime',
++    reference: { kind: 'grant', grantId: label('grant') },
++    owner,
++    containerName,
+     grantId: label('grant'),
+     artifact,
+     residencyKey: label('residency'),
+@@ -282,8 +276,8 @@ function unitFromContainer(container: ListedContainer): ExecutionUnit | undefine
+   }
+ }
+ 
+-export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
+-  constructor(private readonly options: PodmanModelExecutionPrimitiveOptions) {}
++export class PodmanModelUnitMaterializer implements ModelUnitMaterializer {
++  constructor(private readonly options: PodmanModelUnitMaterializerOptions) {}
+ 
+   async materialize(grant: ExecutionGrant): Promise<MaterializationOutcome> {
+     const rejection = await this.admissionRejection(grant)
+@@ -300,7 +294,7 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
+   }
+ 
+   /** Lanza si Podman no lista: un vacío no distingue «no hay unidades» de «no se pudo mirar». */
+-  async units(): Promise<readonly ExecutionUnit[]> {
++  async units(): Promise<readonly ModelExecutionUnit[]> {
+     const result = await this.options.podman.run(['ps', '--all', '--filter', `label=${MODEL_UNIT_LABELS.unit}`, '--format', 'json'])
+     if (!succeeded(result)) throw new Error(`podman ps no listó las unidades de modelo: ${podmanDiagnostic(result)}`)
+     const listed: unknown = JSON.parse(result.stdout.trim() || '[]')
+@@ -331,44 +325,30 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
+     const createdAt = this.options.now().toISOString()
+     const { owner, limits } = this.options
+     const authorization = modelUnitAuthorization({ grant, unitId, port, createdAt, profile, owner, limits })
+-    let containerId: string
++    let materialized: ExecutionUnit
+     try {
+-      ;({ containerId } = await materializeExecution(podman, authorization, this.options.now().getTime()))
++      materialized = await materializeExecution(podman, authorization, Date.parse(createdAt))
+     } catch (error) {
+       if (!(error instanceof ContainerRunError)) throw error
+-      // `create` que falla no deja nada; `start` que falla deja el contenedor creado.
++      // `create` que falla no deja nada; `start` o `inspect` que fallan dejan el contenedor creado.
+       if (error.stage === 'create') return { status: 'failed', reason: `podman create ${name}: ${error.message}`, partial: false }
+-      return partialFailure(unitId, `podman start ${name}: ${error.message}`)
++      return partialFailure(unitId, `podman ${error.stage} ${name}: ${error.message}`)
+     }
+-    const state = await this.inspectContainer(name)
+-    if (typeof state === 'string') return partialFailure(unitId, state)
+-    const unit: ExecutionUnit = {
+-      unitId,
++    const unit: ModelExecutionUnit = {
++      ...materialized,
++      kind: 'model-runtime',
++      reference: { kind: 'grant', grantId: grant.grantId },
+       grantId: grant.grantId,
+       artifact: grant.artifact,
+       residencyKey: grant.residency.instance,
+       generation: grant.residency.generation,
+       runtime: grant.runtime,
+       endpoint: loopbackEndpoint(port),
+-      containerId,
+       devices: grantedDevices(grant),
+-      ...(state.cgroup === undefined ? {} : { cgroup: state.cgroup }),
+-      hostPids: state.hostPids,
+-      createdAt,
+     }
+     return { status: 'materialized', unit }
+   }
+ 
+-  /** El estado del contenedor en el anfitrión, o el motivo por el que no se pudo leer. */
+-  private async inspectContainer(name: string): Promise<InspectedState | string> {
+-    const inspected = await this.options.podman.run(['inspect', '--format', 'json', name])
+-    if (!succeeded(inspected)) return `podman inspect ${name}: ${podmanDiagnostic(inspected)}`
+-    try {
+-      return parseInspect(inspected.stdout)
+-    } catch (error) {
+-      return `podman inspect ${name}: ${(error as Error).message}`
+-    }
+-  }
+ }
+ 
+ function partialFailure(unitId: string, reason: string): MaterializationOutcome {
+diff --git a/src/packages/model-scheduling/residencyController.ts b/src/packages/model-scheduling/residencyController.ts
+index 6a1e8a3b6..fa349130d 100644
+--- a/src/packages/model-scheduling/residencyController.ts
++++ b/src/packages/model-scheduling/residencyController.ts
+@@ -22,8 +22,8 @@ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+ 
+ import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
+ import type {
+-  ExecutionUnit, ExpectedResidency, HealthObservation, ModelExecutionPrimitive, ResidencyBinding, RuntimeAdapter, RuntimeMutationOutcome,
+-} from './executionPrimitive.ts'
++  ModelExecutionUnit, ExpectedResidency, HealthObservation, ModelUnitMaterializer, ResidencyBinding, RuntimeAdapter, RuntimeMutationOutcome,
++} from './modelUnitMaterializer.ts'
+ import { type ModelResidency, type ResidencyRegistry, type ResidencyState, UnknownResidencyError } from './residency.ts'
+ import { CompensationStack, type ExecutionPlan, type GrantIssuer, markOnThrow, type ReconciliationMark } from './scheduler.ts'
+ import type { RequestAllocation, ResidencyVramLedger, VramReservation } from './vramLedger.ts'
+@@ -38,7 +38,7 @@ export interface ResidencyControllerDependencies {
+   readonly coordination: ModelSchedulingCoordination
+   readonly ledger: ResidencyVramLedger
+   readonly issuer: GrantIssuer
+-  readonly primitive: ModelExecutionPrimitive
++  readonly primitive: ModelUnitMaterializer
+   readonly runtime: RuntimeAdapter
+   readonly registry: ResidencyRegistry
+   readonly leaseTtlMs: number
+@@ -55,7 +55,7 @@ export interface Admission {
+   readonly residency: ModelResidency
+   /** El grant de la residencia: el mismo para toda petición que la reutiliza. */
+   readonly grant: ExecutionGrant
+-  readonly unit: ExecutionUnit
++  readonly unit: ModelExecutionUnit
+   readonly allocation: RequestAllocation
+   /** Verdadero si la residencia ya estaba `resident` y sólo se asignó la petición. */
+   readonly reused: boolean
+@@ -81,7 +81,7 @@ interface EstablishedResidency {
+   readonly lease: GenerationLease
+   readonly reservation: VramReservation
+   readonly grant: ExecutionGrant
+-  readonly unit: ExecutionUnit
++  readonly unit: ModelExecutionUnit
+ }
+ 
+ /** Una residencia en curso de establecerse: su lease y las compensaciones de lo creado. */
+@@ -103,11 +103,11 @@ function leaseId(lease: GenerationLease): string {
+   return `${lease.residencyKey}#${lease.generation}`
+ }
+ 
+-function bindingOf(unit: ExecutionUnit): ResidencyBinding {
++function bindingOf(unit: ModelExecutionUnit): ResidencyBinding {
+   return { unit, residencyKey: unit.residencyKey, generation: unit.generation }
+ }
+ 
+-function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
++function expectedResidencyOf(unit: ModelExecutionUnit): ExpectedResidency {
+   return { residencyKey: unit.residencyKey, generation: unit.generation, artifact: unit.artifact }
+ }
+ 
+@@ -233,7 +233,7 @@ export class ResidencyController {
+   }
+ 
+   /** Sondea la salud hasta `attempts` veces, esperando `intervalMs` entre sondas y no tras la última. */
+-  private async awaitHealth(unit: ExecutionUnit): Promise<HealthObservation> {
++  private async awaitHealth(unit: ModelExecutionUnit): Promise<HealthObservation> {
+     const { attempts, intervalMs } = this.dependencies.health
+     let observation = await this.dependencies.runtime.probeHealth(unit)
+     for (let attempt = 1; attempt < attempts && observation.status !== 'healthy'; attempt += 1) {
+@@ -286,7 +286,7 @@ export class ResidencyController {
+   }
+ 
+   /** La descarga es cortesía: su fallo no impide destruir la unidad. */
+-  private async unloadGracefully(unit: ExecutionUnit): Promise<void> {
++  private async unloadGracefully(unit: ModelExecutionUnit): Promise<void> {
+     await markOnThrow('unit', unit.unitId, async () => {
+       await this.dependencies.runtime.unloadResidency(bindingOf(unit))
+       return undefined
+diff --git a/src/packages/model-scheduling/scheduler.ts b/src/packages/model-scheduling/scheduler.ts
+index 8a3ed4cc9..5213810fc 100644
+--- a/src/packages/model-scheduling/scheduler.ts
++++ b/src/packages/model-scheduling/scheduler.ts
+@@ -3,7 +3,7 @@
+  * un modelo local gestionado (ADR-007 1.10.0–1.12.0).
+  *
+  *   lease de residencia (generación N) → reserva de VRAM (N) → ExecutionGrant (N)
+- *     → PodmanExecutionPrimitive.materialize → ExecutionUnit → RuntimeAdapter.load
++ *     → PodmanExecutionPrimitive.materialize → ModelExecutionUnit → RuntimeAdapter.load
+  *
+  * Cada paso que falla deshace los anteriores en orden inverso; lo que no se
+  * puede deshacer se devuelve marcado para reconciliación, nunca se calla (M18).
+@@ -16,7 +16,7 @@ import type { ExecutionGrant, ExecutionPlacement, ModelRuntime } from '@thyrox/m
+ import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
+ 
+ import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
+-import type { ExecutionUnit, ExpectedResidency, ModelExecutionPrimitive, RuntimeAdapter } from './executionPrimitive.ts'
++import type { ModelExecutionUnit, ExpectedResidency, ModelUnitMaterializer, RuntimeAdapter } from './modelUnitMaterializer.ts'
+ import type { FencedVramLedger, VramReservation } from './vramLedger.ts'
+ 
+ /** Lo que el resolver y el planner ya decidieron; el scheduler añade generación, reserva y grant. */
+@@ -58,7 +58,7 @@ export type ScheduleOutcome =
+       readonly lease: GenerationLease
+       readonly reservation: VramReservation
+       readonly grant: ExecutionGrant
+-      readonly unit: ExecutionUnit
++      readonly unit: ModelExecutionUnit
+     }
+   /** Rehusado antes de crear nada. */
+   | { readonly status: 'refused'; readonly stage: ScheduleStage; readonly reason: string }
+@@ -66,7 +66,7 @@ export type ScheduleOutcome =
+   | { readonly status: 'failed'; readonly stage: ScheduleStage; readonly reason: string; readonly marks: readonly ReconciliationMark[] }
+ 
+ export interface ReconciliationReport {
+-  readonly units: readonly ExecutionUnit[]
++  readonly units: readonly ModelExecutionUnit[]
+   readonly reservations: readonly VramReservation[]
+   readonly marks: readonly ReconciliationMark[]
+ }
+@@ -75,7 +75,7 @@ export interface ModelSchedulerDependencies {
+   readonly coordination: ModelSchedulingCoordination
+   readonly ledger: FencedVramLedger
+   readonly issuer: GrantIssuer
+-  readonly primitive: ModelExecutionPrimitive
++  readonly primitive: ModelUnitMaterializer
+   readonly runtime: RuntimeAdapter
+   readonly leaseTtlMs: number
+ }
+@@ -123,7 +123,7 @@ function reservedVramMib(plan: ExecutionPlan): number {
+   return plan.residencyVramMib + plan.requestVramMib
+ }
+ 
+-function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
++function expectedResidencyOf(unit: ModelExecutionUnit): ExpectedResidency {
+   return { residencyKey: unit.residencyKey, generation: unit.generation, artifact: unit.artifact }
+ }
+ 
+@@ -158,7 +158,7 @@ export class ModelScheduler {
+     return this.reserveAndRun(plan, acquisition.lease, compensations)
+   }
+ 
+-  private async markUnitNotServing(unit: ExecutionUnit): Promise<ReconciliationMark | undefined> {
++  private async markUnitNotServing(unit: ModelExecutionUnit): Promise<ReconciliationMark | undefined> {
+     return markOnThrow('unit', unit.unitId, async () => {
+       const observed = await this.dependencies.runtime.observeResidency(unit, expectedResidencyOf(unit))
+       if (observed.status === 'resident') return undefined
+diff --git a/src/packages/model-scheduling/testing/schedulerFakes.ts b/src/packages/model-scheduling/testing/schedulerFakes.ts
+index 88348ff93..cf5183067 100644
+--- a/src/packages/model-scheduling/testing/schedulerFakes.ts
++++ b/src/packages/model-scheduling/testing/schedulerFakes.ts
+@@ -8,12 +8,15 @@ import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedMode
+ 
+ import type { GenerationLease, LeaseAcquisition, LeaseValidity, ModelSchedulingCoordination, MutationOperation } from '../coordination.ts'
+ import type {
+-  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, MaterializationOutcome, ModelExecutionPrimitive,
++  ArtifactIdentityVerification, ModelExecutionUnit, ExpectedResidency, HealthObservation, MaterializationOutcome, ModelUnitMaterializer,
+   ObservedArtifactIdentity, ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
+-} from '../executionPrimitive.ts'
++} from '../modelUnitMaterializer.ts'
+ import type { ExecutionPlan, GrantIssuer, IssueOutcome } from '../scheduler.ts'
+ import type { RequestAllocation, RequestAllocationOutcome, ReservationOutcome, ResidencyVramLedger, VramReservation, VramReservationRequest } from '../vramLedger.ts'
+ 
++/** El dueño de toda unidad de los dobles: el coordinador de modelos. */
++export const FAKE_UNIT_OWNER = { kind: 'model-coordinator', id: 'coordinator', pid: 7 } as const
++
+ export type Journal = string[]
+ 
+ export class FakeCoordination implements ModelSchedulingCoordination {
+@@ -158,14 +161,14 @@ export class FakeIssuer implements GrantIssuer {
+   }
+ }
+ 
+-export class FakePrimitive implements ModelExecutionPrimitive {
++export class FakePrimitive implements ModelUnitMaterializer {
+   outcome: 'materialized' | 'failed-partial' | 'failed-clean' = 'materialized'
+   failDestroy = false
+   /** `destroy` responde `destroyed` pero la unidad sigue listada. */
+   destroyLies = false
+   /** Se ejecuta tras materializar: permite que otro coordinador tome la residencia en medio. */
+   afterMaterialize: (() => void) | undefined
+-  readonly live: ExecutionUnit[] = []
++  readonly live: ModelExecutionUnit[] = []
+ 
+   constructor(private readonly journal: Journal, private readonly coordination: ModelSchedulingCoordination) {}
+ 
+@@ -178,8 +181,9 @@ export class FakePrimitive implements ModelExecutionPrimitive {
+     }
+     const unitId = `unit-${grant.grantId}`
+     if (this.outcome === 'failed-clean') return { status: 'failed', reason: 'podman create falló', partial: false }
+-    const unit: ExecutionUnit = {
+-      unitId, grantId: grant.grantId, artifact: grant.artifact, residencyKey: grant.residency.instance,
++    const unit: ModelExecutionUnit = {
++      unitId, kind: 'model-runtime', reference: { kind: 'grant', grantId: grant.grantId }, owner: FAKE_UNIT_OWNER,
++      containerName: `thyrox-model-${unitId}`, grantId: grant.grantId, artifact: grant.artifact, residencyKey: grant.residency.instance,
+       generation: grant.residency.generation, runtime: grant.runtime, endpoint: 'http://127.0.0.1:61000',
+       containerId: `container-${unitId}`, devices: grant.placement.kind === 'gpu' ? grant.placement.devices : [],
+       hostPids: [4242], createdAt: '2026-10-01T00:00:00.000Z',
+@@ -200,7 +204,7 @@ export class FakePrimitive implements ModelExecutionPrimitive {
+     return 'destroyed'
+   }
+ 
+-  async units(): Promise<readonly ExecutionUnit[]> {
++  async units(): Promise<readonly ModelExecutionUnit[]> {
+     this.journal.push('primitive.units')
+     return [...this.live]
+   }
+@@ -235,7 +239,7 @@ export class FakeRuntime implements RuntimeAdapter {
+   /** Sin coordinación, el doble no comprueba la generación de las mutaciones. */
+   constructor(private readonly journal: Journal, private readonly coordination?: ModelSchedulingCoordination) {}
+ 
+-  async probeHealth(unit: ExecutionUnit): Promise<HealthObservation> {
++  async probeHealth(unit: ModelExecutionUnit): Promise<HealthObservation> {
+     this.journal.push(`runtime.probeHealth ${unit.unitId}`)
+     if (this.unhealthyProbes > 0) {
+       this.unhealthyProbes -= 1
+@@ -251,7 +255,7 @@ export class FakeRuntime implements RuntimeAdapter {
+     return this.failPrepare ? { status: 'failed', reason: 'el runtime rechazó el artefacto' } : { status: 'done' }
+   }
+ 
+-  async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
++  async verifyArtifactIdentity(unit: ModelExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
+     this.journal.push(`runtime.verifyArtifactIdentity ${unit.unitId}`)
+     const observed = this.observedIdentity(grant.artifact)
+     return observed.artifactId === grant.artifact.artifactId ? { status: 'matches', observed } : { status: 'mismatch', expected: grant.artifact, observed }
+@@ -268,7 +272,7 @@ export class FakeRuntime implements RuntimeAdapter {
+     return { status: 'done' }
+   }
+ 
+-  async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
++  async observeResidency(unit: ModelExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
+     this.journal.push(`runtime.observeResidency ${unit.unitId}`)
+     const resident = this.loaded.get(unit.unitId)
+     const status = this.observeAs ?? (resident === undefined ? 'absent' : 'resident')
+diff --git a/src/packages/podman-execution/__tests__/executionAuthorization.test.ts b/src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+index 92d3e1e66..9a193aa03 100644
+--- a/src/packages/podman-execution/__tests__/executionAuthorization.test.ts
++++ b/src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+@@ -16,6 +16,8 @@ import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
+ import { createWorkerContainerArgv } from '../workerContainerLifecycle.js'
+ 
+ const ROOT = '/srv/repo'
++const CREATED_AT = '2026-10-01T00:00:00.000Z'
++const INSPECTED = { exitCode: 0, stdout: JSON.stringify([{ State: { Pid: 9001, CgroupPath: '/machine.slice/libpod-c0ffee.scope' } }]), stderr: '' }
+ 
+ function authorization(overrides: Partial<ExecutionAuthorization> = {}): ExecutionAuthorization {
+   return {
+@@ -164,11 +166,44 @@ describe('el contenedor que materializa una autorización', () => {
+     expect(calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'logs', 'rm'])
+   })
+ 
+-  test('materializeExecution crea y arranca, devuelve la identidad y no espera ni retira', async () => {
++  test('materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira', async () => {
+     const calls: string[][] = []
+-    const materialized = await materializeExecution(recordingPodman(calls), modelAuthorization())
+-    expect(materialized).toEqual({ containerName: 'thyrox-worker-unit-g1', containerId: 'c0ffee' })
+-    expect(calls.map(call => call[0])).toEqual(['create', 'start'])
++    const unit = await materializeExecution(recordingPodman(calls, { inspect: INSPECTED }), modelAuthorization(), Date.parse(CREATED_AT))
++    expect(unit).toEqual({
++      unitId: 'unit-g1',
++      kind: 'model-runtime',
++      reference: { kind: 'grant', grantId: 'g1' },
++      owner: { kind: 'model-coordinator', id: 'coordinator', pid: 7 },
++      containerName: 'thyrox-worker-unit-g1',
++      containerId: 'c0ffee',
++      cgroup: '/machine.slice/libpod-c0ffee.scope',
++      hostPids: [9001],
++      createdAt: CREATED_AT,
++    })
++    expect(calls.map(call => call[0])).toEqual(['create', 'start', 'inspect'])
++  })
++
++  test('un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup', async () => {
++    const stopped = { exitCode: 0, stdout: JSON.stringify([{ State: { Pid: 0, CgroupPath: '' } }]), stderr: '' }
++    const unit = await materializeExecution(recordingPodman([], { inspect: stopped }), modelAuthorization(), Date.parse(CREATED_AT))
++    expect(unit.hostPids).toEqual([])
++    expect('cgroup' in unit).toBe(false)
++  })
++
++  test('si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño', async () => {
++    const calls: string[][] = []
++    const podman = recordingPodman(calls, { inspect: { exitCode: 125, stdout: '', stderr: 'no inspect' } })
++    const error = await materializeExecution(podman, modelAuthorization()).catch(caught => caught)
++    expect(error).toBeInstanceOf(ContainerRunError)
++    expect((error as ContainerRunError).stage).toBe('inspect')
++    expect(calls.map(call => call[0])).toEqual(['create', 'start', 'inspect'])
++  })
++
++  test('una inspección ilegible también es la etapa inspect, no un éxito sin identidad', async () => {
++    const podman = recordingPodman([], { inspect: { exitCode: 0, stdout: 'no es json', stderr: '' } })
++    const error = await materializeExecution(podman, modelAuthorization()).catch(caught => caught)
++    expect(error).toBeInstanceOf(ContainerRunError)
++    expect((error as ContainerRunError).stage).toBe('inspect')
+   })
+ 
+   test('si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño', async () => {
+diff --git a/src/packages/podman-execution/containerRun.ts b/src/packages/podman-execution/containerRun.ts
+index 429003b41..caab329d9 100644
+--- a/src/packages/podman-execution/containerRun.ts
++++ b/src/packages/podman-execution/containerRun.ts
+@@ -20,7 +20,7 @@ import {
+   type WorkerContainerSpec,
+ } from './workerContainerLifecycle.js'
+ 
+-export type ContainerRunStage = 'create' | 'start' | 'wait' | 'logs' | 'signal' | 'export'
++export type ContainerRunStage = 'create' | 'start' | 'inspect' | 'wait' | 'logs' | 'signal' | 'export'
+ 
+ /** Mensaje base del fallo: la etapa, el sujeto y lo que Podman dijo. */
+ function failureMessage(stage: ContainerRunStage, subject: string, result: PodmanCommandResult): string {
+@@ -74,6 +74,40 @@ export type MaterializedContainer = {
+   containerId: string
+ }
+ 
++/** Lo que `podman inspect` dice del contenedor en el anfitrión: su proceso y su cgroup. */
++export type InspectedContainerState = {
++  hostPids: readonly number[]
++  cgroup?: string
++}
++
++/** Podman informa `Pid: 0` de un contenedor sin proceso. */
++const NOT_RUNNING_PID = 0
++
++/**
++ * Inspecciona un contenedor y devuelve su proceso y su cgroup vistos desde el
++ * anfitrión. Un fallo de Podman o una salida ilegible es la etapa `inspect`:
++ * una unidad sin identidad no se publica como materializada.
++ */
++export async function inspectContainerState(podman: PodmanExecutor, containerName: string): Promise<InspectedContainerState> {
++  const result = await podman.run(['inspect', '--format', 'json', containerName])
++  if (result.exitCode !== 0) throw new ContainerRunError('inspect', containerName, result)
++  let first: { State?: { Pid?: unknown; CgroupPath?: unknown } } | undefined
++  try {
++    const entries: unknown = JSON.parse(result.stdout)
++    first = Array.isArray(entries) ? (entries[0] as typeof first) : undefined
++  } catch {
++    first = undefined
++  }
++  if (!first?.State) {
++    throw new ContainerRunError('inspect', containerName, { ...result, stderr: `salida ilegible: «${result.stdout.trim()}»` })
++  }
++  const { Pid: pid, CgroupPath: cgroup } = first.State
++  return {
++    hostPids: typeof pid === 'number' && pid !== NOT_RUNNING_PID ? [pid] : [],
++    ...(typeof cgroup === 'string' && cgroup !== '' ? { cgroup } : {}),
++  }
++}
++
+ /**
+  * Crea y arranca el contenedor sin esperarlo: la materialización de una unidad
+  * de vida larga. Es el único sitio del árbol que emite `create` y `start`.
+diff --git a/src/packages/podman-execution/executionAuthorization.ts b/src/packages/podman-execution/executionAuthorization.ts
+index f93a0a9eb..3ef77cd8d 100644
+--- a/src/packages/podman-execution/executionAuthorization.ts
++++ b/src/packages/podman-execution/executionAuthorization.ts
+@@ -19,7 +19,7 @@
+  * pidió.
+  */
+ 
+-import { materializeContainer, runJobWithOutput, type JobOutput, type MaterializedContainer } from './containerRun.js'
++import { inspectContainerState, materializeContainer, runJobWithOutput, type JobOutput } from './containerRun.js'
+ import type { PodmanExecutor } from './podmanExecutor.js'
+ import { requireValidOwner, type ContainerOwner, type WorkerContainerSpec } from './workerContainerLifecycle.js'
+ import {
+@@ -247,11 +247,48 @@ export async function runExecution(podman: PodmanExecutor, authorization: Execut
+   return runJobWithOutput(podman, executionContainerSpec(authorization, now))
+ }
+ 
+-/** Crea y arranca el contenedor de una ejecución de vida larga; no lo espera ni lo retira. */
++/**
++ * La unidad materializada: la única identidad de una ejecución gestionada,
++ * cualquiera que sea su clase. Un dominio la especializa —la unidad de un
++ * modelo añade su grant y su endpoint— sin definir otra.
++ */
++export interface ExecutionUnit {
++  readonly unitId: string
++  readonly kind: ExecutionKind
++  readonly reference: ExecutionReference
++  readonly owner: ContainerOwner
++  readonly containerName: string
++  readonly containerId: string
++  /** El cgroup del contenedor visto desde el anfitrión, si Podman lo informa. */
++  readonly cgroup?: string
++  /** PIDs del proceso principal vistos desde el anfitrión; vacío si no corre. */
++  readonly hostPids: readonly number[]
++  /** Instante ISO 8601 en UTC. */
++  readonly createdAt: string
++}
++
++/**
++ * Crea, arranca e inspecciona el contenedor de una ejecución de vida larga y
++ * devuelve su `ExecutionUnit`; no lo espera ni lo retira. Un fallo nombra la
++ * etapa (`create`, `start`, `inspect`) y, a partir de `start`, el contenedor
++ * queda creado para su dueño.
++ */
+ export async function materializeExecution(
+   podman: PodmanExecutor,
+   authorization: ExecutionAuthorization,
+   now = Date.now(),
+-): Promise<MaterializedContainer> {
+-  return materializeContainer(podman, executionContainerSpec(authorization, now))
++): Promise<ExecutionUnit> {
++  const { containerName, containerId } = await materializeContainer(podman, executionContainerSpec(authorization, now))
++  const state = await inspectContainerState(podman, containerName)
++  return {
++    unitId: authorization.executionId,
++    kind: authorization.kind,
++    reference: authorization.reference,
++    owner: authorization.owner,
++    containerName,
++    containerId,
++    ...(state.cgroup === undefined ? {} : { cgroup: state.cgroup }),
++    hostPids: state.hostPids,
++    createdAt: new Date(now).toISOString(),
++  }
+ }
+diff --git a/src/packages/podman-execution/workerContainerLifecycle.ts b/src/packages/podman-execution/workerContainerLifecycle.ts
+index e3dd58ec6..a7798bf77 100644
+--- a/src/packages/podman-execution/workerContainerLifecycle.ts
++++ b/src/packages/podman-execution/workerContainerLifecycle.ts
+@@ -98,6 +98,25 @@ function requireNonEmptyImage(image: string): void {
+   }
+ }
+ 
++/**
++ * El dueño que las etiquetas de un contenedor declaran, leído por las mismas
++ * claves con que `ownerLabelArgv` lo escribe; `undefined` si falta alguna o
++ * no es válida. Quien reconstruye desde Podman no inventa un dueño.
++ */
++export function ownerFromLabels(labels: Readonly<Record<string, unknown>> | null | undefined): ContainerOwner | undefined {
++  const kind = labels?.[OWNER_KIND_LABEL_KEY]
++  const id = labels?.[OWNER_ID_LABEL_KEY]
++  const pid = Number(labels?.[OWNER_PID_LABEL_KEY])
++  if (typeof kind !== 'string' || typeof id !== 'string' || !isOwnerKind(kind)) return undefined
++  const owner: ContainerOwner = { kind, id, pid }
++  try {
++    requireValidOwner(owner)
++  } catch {
++    return undefined
++  }
++  return owner
++}
++
+ export function requireValidOwner(owner: ContainerOwner): void {
+   if (!isOwnerKind(owner.kind)) {
+     throw new InvalidWorkerContainerSpecError('owner.kind', `tipo de dueño desconocido: ${owner.kind}`)
+diff --git a/src/packages/provider/src/proxy/openaiCompat/admittedUpstream.ts b/src/packages/provider/src/proxy/openaiCompat/admittedUpstream.ts
+index 7130282a6..feb866d5b 100644
+--- a/src/packages/provider/src/proxy/openaiCompat/admittedUpstream.ts
++++ b/src/packages/provider/src/proxy/openaiCompat/admittedUpstream.ts
+@@ -2,7 +2,7 @@
+  * El upstream compatible con OpenAI que el proxy local usa para un modelo del
+  * catálogo (ADR-007 1.14.0, M8): un relé en loopback que, por cada petición,
+  * pide una admisión al coordinador de model scheduling del anfitrión y
+- * reenvía SÓLO al `endpoint` de la `ExecutionUnit` del ticket. No hay otra
++ * reenvía SÓLO al `endpoint` de la `ModelExecutionUnit` del ticket. No hay otra
+  * dirección: el relé no conoce puertos de Ollama ni base URLs declaradas.
+  *
+  *   petición → admit({ model }) → ticket { grant, unit }

@@ -2,7 +2,7 @@
  * `ModelSchedulingCoordinator`: la única autoridad de admisión de modelos de
  * un anfitrión (ADR-007 1.14.0). Los proxies, los ítems del pool y `thyrox -p`
  * son sus clientes: piden una admisión y reciben un ticket con el grant y la
- * `ExecutionUnit`; usan sólo el endpoint de esa unidad. Ninguno mantiene
+ * `ModelExecutionUnit`; usan sólo el endpoint de esa unidad. Ninguno mantiene
  * residencias propias ni fabrica admisiones.
  *
  *   AdmissionRequest → ModelResolver (catálogo) → identidad exacta
@@ -22,7 +22,7 @@ import {
 } from '@thyrox/model-artifacts/modelResolver.ts'
 import { InconsistentModelIdentityError, type ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 
-import type { ExecutionUnit } from './executionPrimitive.ts'
+import type { ModelExecutionUnit } from './modelUnitMaterializer.ts'
 import type { Admission, EvictionOutcome, ResidencyController, ResidencyStage } from './residencyController.ts'
 import type { ExecutionPlan } from './scheduler.ts'
 
@@ -42,7 +42,7 @@ export interface AdmissionTicket {
   readonly requestId: string
   readonly client: string
   readonly grant: ExecutionGrant
-  readonly unit: ExecutionUnit
+  readonly unit: ModelExecutionUnit
 }
 
 export type CoordinatorStage = 'resolve' | 'placement' | ResidencyStage

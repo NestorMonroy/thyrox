@@ -16,6 +16,8 @@ import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
 import { createWorkerContainerArgv } from '../workerContainerLifecycle.js'
 
 const ROOT = '/srv/repo'
+const CREATED_AT = '2026-10-01T00:00:00.000Z'
+const INSPECTED = { exitCode: 0, stdout: JSON.stringify([{ State: { Pid: 9001, CgroupPath: '/machine.slice/libpod-c0ffee.scope' } }]), stderr: '' }
 
 function authorization(overrides: Partial<ExecutionAuthorization> = {}): ExecutionAuthorization {
   return {
@@ -164,11 +166,44 @@ describe('el contenedor que materializa una autorización', () => {
     expect(calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'logs', 'rm'])
   })
 
-  test('materializeExecution crea y arranca, devuelve la identidad y no espera ni retira', async () => {
+  test('materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira', async () => {
     const calls: string[][] = []
-    const materialized = await materializeExecution(recordingPodman(calls), modelAuthorization())
-    expect(materialized).toEqual({ containerName: 'thyrox-worker-unit-g1', containerId: 'c0ffee' })
-    expect(calls.map(call => call[0])).toEqual(['create', 'start'])
+    const unit = await materializeExecution(recordingPodman(calls, { inspect: INSPECTED }), modelAuthorization(), Date.parse(CREATED_AT))
+    expect(unit).toEqual({
+      unitId: 'unit-g1',
+      kind: 'model-runtime',
+      reference: { kind: 'grant', grantId: 'g1' },
+      owner: { kind: 'model-coordinator', id: 'coordinator', pid: 7 },
+      containerName: 'thyrox-worker-unit-g1',
+      containerId: 'c0ffee',
+      cgroup: '/machine.slice/libpod-c0ffee.scope',
+      hostPids: [9001],
+      createdAt: CREATED_AT,
+    })
+    expect(calls.map(call => call[0])).toEqual(['create', 'start', 'inspect'])
+  })
+
+  test('un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup', async () => {
+    const stopped = { exitCode: 0, stdout: JSON.stringify([{ State: { Pid: 0, CgroupPath: '' } }]), stderr: '' }
+    const unit = await materializeExecution(recordingPodman([], { inspect: stopped }), modelAuthorization(), Date.parse(CREATED_AT))
+    expect(unit.hostPids).toEqual([])
+    expect('cgroup' in unit).toBe(false)
+  })
+
+  test('si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño', async () => {
+    const calls: string[][] = []
+    const podman = recordingPodman(calls, { inspect: { exitCode: 125, stdout: '', stderr: 'no inspect' } })
+    const error = await materializeExecution(podman, modelAuthorization()).catch(caught => caught)
+    expect(error).toBeInstanceOf(ContainerRunError)
+    expect((error as ContainerRunError).stage).toBe('inspect')
+    expect(calls.map(call => call[0])).toEqual(['create', 'start', 'inspect'])
+  })
+
+  test('una inspección ilegible también es la etapa inspect, no un éxito sin identidad', async () => {
+    const podman = recordingPodman([], { inspect: { exitCode: 0, stdout: 'no es json', stderr: '' } })
+    const error = await materializeExecution(podman, modelAuthorization()).catch(caught => caught)
+    expect(error).toBeInstanceOf(ContainerRunError)
+    expect((error as ContainerRunError).stage).toBe('inspect')
   })
 
   test('si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño', async () => {

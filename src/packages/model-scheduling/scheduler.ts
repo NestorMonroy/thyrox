@@ -3,7 +3,7 @@
  * un modelo local gestionado (ADR-007 1.10.0–1.12.0).
  *
  *   lease de residencia (generación N) → reserva de VRAM (N) → ExecutionGrant (N)
- *     → PodmanExecutionPrimitive.materialize → ExecutionUnit → RuntimeAdapter.load
+ *     → PodmanExecutionPrimitive.materialize → ModelExecutionUnit → RuntimeAdapter.load
  *
  * Cada paso que falla deshace los anteriores en orden inverso; lo que no se
  * puede deshacer se devuelve marcado para reconciliación, nunca se calla (M18).
@@ -16,7 +16,7 @@ import type { ExecutionGrant, ExecutionPlacement, ModelRuntime } from '@thyrox/m
 import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
 
 import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
-import type { ExecutionUnit, ExpectedResidency, ModelExecutionPrimitive, RuntimeAdapter } from './executionPrimitive.ts'
+import type { ModelExecutionUnit, ExpectedResidency, ModelUnitMaterializer, RuntimeAdapter } from './modelUnitMaterializer.ts'
 import type { FencedVramLedger, VramReservation } from './vramLedger.ts'
 
 /** Lo que el resolver y el planner ya decidieron; el scheduler añade generación, reserva y grant. */
@@ -58,7 +58,7 @@ export type ScheduleOutcome =
       readonly lease: GenerationLease
       readonly reservation: VramReservation
       readonly grant: ExecutionGrant
-      readonly unit: ExecutionUnit
+      readonly unit: ModelExecutionUnit
     }
   /** Rehusado antes de crear nada. */
   | { readonly status: 'refused'; readonly stage: ScheduleStage; readonly reason: string }
@@ -66,7 +66,7 @@ export type ScheduleOutcome =
   | { readonly status: 'failed'; readonly stage: ScheduleStage; readonly reason: string; readonly marks: readonly ReconciliationMark[] }
 
 export interface ReconciliationReport {
-  readonly units: readonly ExecutionUnit[]
+  readonly units: readonly ModelExecutionUnit[]
   readonly reservations: readonly VramReservation[]
   readonly marks: readonly ReconciliationMark[]
 }
@@ -75,7 +75,7 @@ export interface ModelSchedulerDependencies {
   readonly coordination: ModelSchedulingCoordination
   readonly ledger: FencedVramLedger
   readonly issuer: GrantIssuer
-  readonly primitive: ModelExecutionPrimitive
+  readonly primitive: ModelUnitMaterializer
   readonly runtime: RuntimeAdapter
   readonly leaseTtlMs: number
 }
@@ -123,7 +123,7 @@ function reservedVramMib(plan: ExecutionPlan): number {
   return plan.residencyVramMib + plan.requestVramMib
 }
 
-function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
+function expectedResidencyOf(unit: ModelExecutionUnit): ExpectedResidency {
   return { residencyKey: unit.residencyKey, generation: unit.generation, artifact: unit.artifact }
 }
 
@@ -158,7 +158,7 @@ export class ModelScheduler {
     return this.reserveAndRun(plan, acquisition.lease, compensations)
   }
 
-  private async markUnitNotServing(unit: ExecutionUnit): Promise<ReconciliationMark | undefined> {
+  private async markUnitNotServing(unit: ModelExecutionUnit): Promise<ReconciliationMark | undefined> {
     return markOnThrow('unit', unit.unitId, async () => {
       const observed = await this.dependencies.runtime.observeResidency(unit, expectedResidencyOf(unit))
       if (observed.status === 'resident') return undefined

@@ -22,8 +22,8 @@ import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 
 import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
 import type {
-  ExecutionUnit, ExpectedResidency, HealthObservation, ModelExecutionPrimitive, ResidencyBinding, RuntimeAdapter, RuntimeMutationOutcome,
-} from './executionPrimitive.ts'
+  ModelExecutionUnit, ExpectedResidency, HealthObservation, ModelUnitMaterializer, ResidencyBinding, RuntimeAdapter, RuntimeMutationOutcome,
+} from './modelUnitMaterializer.ts'
 import { type ModelResidency, type ResidencyRegistry, type ResidencyState, UnknownResidencyError } from './residency.ts'
 import { CompensationStack, type ExecutionPlan, type GrantIssuer, markOnThrow, type ReconciliationMark } from './scheduler.ts'
 import type { RequestAllocation, ResidencyVramLedger, VramReservation } from './vramLedger.ts'
@@ -38,7 +38,7 @@ export interface ResidencyControllerDependencies {
   readonly coordination: ModelSchedulingCoordination
   readonly ledger: ResidencyVramLedger
   readonly issuer: GrantIssuer
-  readonly primitive: ModelExecutionPrimitive
+  readonly primitive: ModelUnitMaterializer
   readonly runtime: RuntimeAdapter
   readonly registry: ResidencyRegistry
   readonly leaseTtlMs: number
@@ -55,7 +55,7 @@ export interface Admission {
   readonly residency: ModelResidency
   /** El grant de la residencia: el mismo para toda petición que la reutiliza. */
   readonly grant: ExecutionGrant
-  readonly unit: ExecutionUnit
+  readonly unit: ModelExecutionUnit
   readonly allocation: RequestAllocation
   /** Verdadero si la residencia ya estaba `resident` y sólo se asignó la petición. */
   readonly reused: boolean
@@ -81,7 +81,7 @@ interface EstablishedResidency {
   readonly lease: GenerationLease
   readonly reservation: VramReservation
   readonly grant: ExecutionGrant
-  readonly unit: ExecutionUnit
+  readonly unit: ModelExecutionUnit
 }
 
 /** Una residencia en curso de establecerse: su lease y las compensaciones de lo creado. */
@@ -103,11 +103,11 @@ function leaseId(lease: GenerationLease): string {
   return `${lease.residencyKey}#${lease.generation}`
 }
 
-function bindingOf(unit: ExecutionUnit): ResidencyBinding {
+function bindingOf(unit: ModelExecutionUnit): ResidencyBinding {
   return { unit, residencyKey: unit.residencyKey, generation: unit.generation }
 }
 
-function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
+function expectedResidencyOf(unit: ModelExecutionUnit): ExpectedResidency {
   return { residencyKey: unit.residencyKey, generation: unit.generation, artifact: unit.artifact }
 }
 
@@ -233,7 +233,7 @@ export class ResidencyController {
   }
 
   /** Sondea la salud hasta `attempts` veces, esperando `intervalMs` entre sondas y no tras la última. */
-  private async awaitHealth(unit: ExecutionUnit): Promise<HealthObservation> {
+  private async awaitHealth(unit: ModelExecutionUnit): Promise<HealthObservation> {
     const { attempts, intervalMs } = this.dependencies.health
     let observation = await this.dependencies.runtime.probeHealth(unit)
     for (let attempt = 1; attempt < attempts && observation.status !== 'healthy'; attempt += 1) {
@@ -286,7 +286,7 @@ export class ResidencyController {
   }
 
   /** La descarga es cortesía: su fallo no impide destruir la unidad. */
-  private async unloadGracefully(unit: ExecutionUnit): Promise<void> {
+  private async unloadGracefully(unit: ModelExecutionUnit): Promise<void> {
     await markOnThrow('unit', unit.unitId, async () => {
       await this.dependencies.runtime.unloadResidency(bindingOf(unit))
       return undefined

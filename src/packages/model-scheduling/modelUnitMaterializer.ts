@@ -1,6 +1,6 @@
 /**
  * Los dos puertos que quedan después del grant (ADR-007 1.10.0–1.12.0): la
- * primitiva materializa un `ExecutionGrant` vigente en una `ExecutionUnit`, y
+ * primitiva materializa un `ExecutionGrant` vigente en una `ModelExecutionUnit`, y
  * el adapter del runtime sólo habla con el runtime desde esa unidad.
  *
  * Ninguno decide: la primitiva rechaza un grant caducado o de una generación
@@ -10,14 +10,16 @@
  */
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+import type { ExecutionUnit } from '@thyrox/podman-execution/executionAuthorization.ts'
 
 /**
  * La ejecución que la primitiva creó a partir de un grant: una identidad, no
  * sólo un endpoint (ADR-007 1.13.0). Es el único sitio donde vive el endpoint
  * de un runtime local, y su relación con la residencia es 1:1 en la topología A.
  */
-export interface ExecutionUnit {
-  readonly unitId: string
+export interface ModelExecutionUnit extends ExecutionUnit {
+  readonly kind: 'model-runtime'
+  readonly reference: { readonly kind: 'grant'; readonly grantId: string }
   readonly grantId: string
   /** La identidad que el grant concede; la reconciliación la compara con lo residente. */
   readonly artifact: ResolvedModelArtifact
@@ -26,15 +28,8 @@ export interface ExecutionUnit {
   readonly runtime: ExecutionGrant['runtime']
   /** Base URL del runtime de esta unidad, en loopback. */
   readonly endpoint: string
-  readonly containerId: string
   /** UUID de los dispositivos concedidos; vacío en CPU. */
   readonly devices: readonly string[]
-  /** El cgroup del contenedor visto desde el anfitrión, si Podman lo informa. */
-  readonly cgroup?: string
-  /** PIDs del runtime vistos desde el anfitrión. */
-  readonly hostPids: readonly number[]
-  /** Instante ISO 8601 en UTC. */
-  readonly createdAt: string
 }
 
 /**
@@ -57,11 +52,11 @@ export function admitsSharedUnits(capabilities: RuntimeCapabilities): boolean {
 }
 
 export type MaterializationOutcome =
-  | { readonly status: 'materialized'; readonly unit: ExecutionUnit }
+  | { readonly status: 'materialized'; readonly unit: ModelExecutionUnit }
   | { readonly status: 'rejected'; readonly reason: 'stale_generation' | 'expired_grant'; readonly detail: string }
   /** `partial`: quedó algo creado que hay que retirar. */
   | { readonly status: 'failed'; readonly reason: string; readonly partial: boolean; readonly unitId?: string }
-export interface ModelExecutionPrimitive {
+export interface ModelUnitMaterializer {
   materialize(grant: ExecutionGrant): Promise<MaterializationOutcome>
   /**
    * Destruye la unidad: en la topología A es la frontera material definitiva de
@@ -69,7 +64,7 @@ export interface ModelExecutionPrimitive {
    */
   destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'>
   /** Las unidades de modelo que existen, para reconciliar. */
-  units(): Promise<readonly ExecutionUnit[]>
+  units(): Promise<readonly ModelExecutionUnit[]>
 }
 
 /**
@@ -77,7 +72,7 @@ export interface ModelExecutionPrimitive {
  * adapter rechaza una generación que no es la vigente antes de tocar nada.
  */
 export interface ResidencyBinding {
-  readonly unit: ExecutionUnit
+  readonly unit: ModelExecutionUnit
   readonly residencyKey: string
   readonly generation: number
 }
@@ -125,7 +120,7 @@ export type ObservedResidency =
   | { readonly status: 'error'; readonly reason: string }
 
 /**
- * El runtime de una `ExecutionUnit` visto por thyrox (ADR-007 1.13.0). Traduce
+ * El runtime de una `ModelExecutionUnit` visto por thyrox (ADR-007 1.13.0). Traduce
  * la ejecución concedida al protocolo del runtime y sólo habla con el endpoint
  * de la unidad; los verbos y estados HTTP del runtime quedan dentro de cada
  * implementación. No decide modelo, revisión ni cuantización: vienen en el
@@ -136,15 +131,15 @@ export type ObservedResidency =
 export interface RuntimeAdapter {
   readonly capabilities: RuntimeCapabilities
   /** Lectura: el runtime de la unidad responde. */
-  probeHealth(unit: ExecutionUnit): Promise<HealthObservation>
+  probeHealth(unit: ModelExecutionUnit): Promise<HealthObservation>
   /** Muta: hace utilizable en ESTA unidad el artefacto exacto del grant, que `ensureModel` ya materializó. */
   prepareRuntimeArtifact(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome>
   /** Lectura: modelo, digest y cuantización que el runtime sirve, contra los del grant. */
-  verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification>
+  verifyArtifactIdentity(unit: ModelExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification>
   /** Muta: deja residente el modelo exacto del grant. */
   loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome>
   /** Lectura: qué residencia hay de verdad en la unidad, para reconciliar. */
-  observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency>
+  observeResidency(unit: ModelExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency>
   /** Muta: descarga con gracia; si falla, destruir la unidad sigue siendo posible y definitivo. */
   unloadResidency(binding: ResidencyBinding): Promise<RuntimeMutationOutcome>
 }

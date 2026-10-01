@@ -19,7 +19,7 @@
  * pidió.
  */
 
-import { materializeContainer, runJobWithOutput, type JobOutput, type MaterializedContainer } from './containerRun.js'
+import { inspectContainerState, materializeContainer, runJobWithOutput, type JobOutput } from './containerRun.js'
 import type { PodmanExecutor } from './podmanExecutor.js'
 import { requireValidOwner, type ContainerOwner, type WorkerContainerSpec } from './workerContainerLifecycle.js'
 import {
@@ -247,11 +247,48 @@ export async function runExecution(podman: PodmanExecutor, authorization: Execut
   return runJobWithOutput(podman, executionContainerSpec(authorization, now))
 }
 
-/** Crea y arranca el contenedor de una ejecución de vida larga; no lo espera ni lo retira. */
+/**
+ * La unidad materializada: la única identidad de una ejecución gestionada,
+ * cualquiera que sea su clase. Un dominio la especializa —la unidad de un
+ * modelo añade su grant y su endpoint— sin definir otra.
+ */
+export interface ExecutionUnit {
+  readonly unitId: string
+  readonly kind: ExecutionKind
+  readonly reference: ExecutionReference
+  readonly owner: ContainerOwner
+  readonly containerName: string
+  readonly containerId: string
+  /** El cgroup del contenedor visto desde el anfitrión, si Podman lo informa. */
+  readonly cgroup?: string
+  /** PIDs del proceso principal vistos desde el anfitrión; vacío si no corre. */
+  readonly hostPids: readonly number[]
+  /** Instante ISO 8601 en UTC. */
+  readonly createdAt: string
+}
+
+/**
+ * Crea, arranca e inspecciona el contenedor de una ejecución de vida larga y
+ * devuelve su `ExecutionUnit`; no lo espera ni lo retira. Un fallo nombra la
+ * etapa (`create`, `start`, `inspect`) y, a partir de `start`, el contenedor
+ * queda creado para su dueño.
+ */
 export async function materializeExecution(
   podman: PodmanExecutor,
   authorization: ExecutionAuthorization,
   now = Date.now(),
-): Promise<MaterializedContainer> {
-  return materializeContainer(podman, executionContainerSpec(authorization, now))
+): Promise<ExecutionUnit> {
+  const { containerName, containerId } = await materializeContainer(podman, executionContainerSpec(authorization, now))
+  const state = await inspectContainerState(podman, containerName)
+  return {
+    unitId: authorization.executionId,
+    kind: authorization.kind,
+    reference: authorization.reference,
+    owner: authorization.owner,
+    containerName,
+    containerId,
+    ...(state.cgroup === undefined ? {} : { cgroup: state.cgroup }),
+    hostPids: state.hostPids,
+    createdAt: new Date(now).toISOString(),
+  }
 }

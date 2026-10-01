@@ -2,7 +2,7 @@
  * E2E real de una residencia (ADR-007 1.13.0 y 1.14.0): Podman y Ollama de
  * verdad, con el artefacto exacto del catálogo.
  *
- *   ResolvedModelArtifact → ExecutionGrant → PodmanModelExecutionPrimitive
+ *   ResolvedModelArtifact → ExecutionGrant → PodmanModelUnitMaterializer
  *     → ExecutionUnit → OllamaRuntimeAdapter (prepare → verify → load → observe)
  *     → RESIDENT → dos peticiones reales que la reutilizan → drain → destroy
  *     → unidad ausente → VRAM, grant y lease soltados
@@ -33,7 +33,7 @@ import { assertConsistentIdentity } from '@thyrox/model-artifacts/resolvedModelA
 import { createMemoryCoordination } from '@thyrox/model-scheduling/memoryCoordination.ts'
 import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts'
 import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
-import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelExecutionPrimitive } from '@thyrox/model-scheduling/podmanModelExecutionPrimitive.ts'
+import { MODEL_UNIT_CONTAINER_PREFIX, MODEL_UNIT_LABELS, PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
 import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
 import { ResidencyController, type Admission } from '@thyrox/model-scheduling/residencyController.ts'
 import type { ExecutionPlan } from '@thyrox/model-scheduling/scheduler.ts'
@@ -144,7 +144,7 @@ describe.skipIf(skipReason !== undefined)('residencia real: Podman + Ollama', ()
     const ledger = createMemoryResidencyVramLedger({ capacityMib: {} })
     const issuer = new MemoryGrantIssuer({ ttlMs: GRANT_TTL_MS, now: () => new Date(), newGrantId: () => `grant-e2e-${crypto.randomUUID()}` })
     const currentGeneration = (key: string) => coordination.currentGeneration(key)
-    const primitive = new PodmanModelExecutionPrimitive({
+    const primitive = new PodmanModelUnitMaterializer({
       podman,
       currentGeneration,
       profiles: { ollama: { image: RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },
