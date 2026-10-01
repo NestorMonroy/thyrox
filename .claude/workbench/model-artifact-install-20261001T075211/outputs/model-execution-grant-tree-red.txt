@@ -1,0 +1,12 @@
+  FALLA src/packages/local-models/ollamaApi.ts:111 direct-inference
+  FALLA src/packages/local-models/qualifyModel.ts:53 direct-inference
+  FALLA src/packages/provider/bin/localProxy.ts:68 model-name-upstream
+  FALLA src/packages/provider/src/proxy/openaiCompat/declaration.ts:9 model-name-upstream
+  FALLA src/packages/provider/src/proxy/openaiCompat/declaration.ts:19 model-name-upstream
+  FALLA src/packages/provider/src/proxy/openaiCompat/declaration.ts:21 model-name-upstream
+  FALLA src/packages/provider/src/proxy/openaiCompat/declaration.ts:23 model-name-upstream
+  FALLA src/packages/provider/src/proxy/openaiCompat/declaration.ts:24 model-name-upstream
+  FALLA src/session/headless-pool.sh:401 managed-runtime-endpoint
+  FALLA src/session/headless-pool.sh:696 model-name-export
+test_model_execution_grant_tree: 10 punto(s) de ejecución local sin grant (alcance medido: 3785 archivo(s) productivos)
+exit=1
