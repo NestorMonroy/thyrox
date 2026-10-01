@@ -1,0 +1,2606 @@
+diff --git a/src/packages/config/__tests__/gpuAdmission.test.ts b/src/packages/config/__tests__/gpuAdmission.test.ts
+index e36eec502..85a31807a 100644
+--- a/src/packages/config/__tests__/gpuAdmission.test.ts
++++ b/src/packages/config/__tests__/gpuAdmission.test.ts
+@@ -101,6 +101,20 @@ describe('admitVram', () => {
+     expect(existsSync(ledger)).toBe(false)
+   })
+ 
++  test('optional sin telemetría: la ruta CPU declarada, sin reserva', async () => {
++    const { dir, ledger } = fakeGpu()
++    expect(await admitVram({ needMib: 100, ledger, ownerPid: process.pid, nvidiaSmi: join(dir, 'no-existe'),
++      requirement: 'optional', timeoutS: 5 })).toBe('cpu-fallback')
++    expect(existsSync(ledger)).toBe(false)
++  })
++
++  test('none: admitido sin tocar el registro aunque no haya GPU', async () => {
++    const { dir, ledger } = fakeGpu()
++    expect(await admitVram({ needMib: 100, ledger, ownerPid: process.pid, nvidiaSmi: join(dir, 'no-existe'),
++      requirement: 'none' })).toBe('admitted')
++    expect(existsSync(ledger)).toBe(false)
++  })
++
+   test('si la herramienta no corre, es un error y no un «no admitido»', async () => {
+     const { smi, ledger } = fakeGpu()
+     const empty = mkdtempSync(join(tmpdir(), 'no-thyrox-'))
+diff --git a/src/packages/config/gpuAdmission.ts b/src/packages/config/gpuAdmission.ts
+index 0bca2dc7b..c74e7b1c6 100644
+--- a/src/packages/config/gpuAdmission.ts
++++ b/src/packages/config/gpuAdmission.ts
+@@ -9,21 +9,30 @@
+  * `bin/gpu_monitor`, igual que `headless-pool.sh`, y traduce su código de
+  * salida:
+  *
+- *   0 -> 'admitted' (reservó)   3 -> 'timeout' (venció el plazo sin sitio)
++ *   0 -> 'admitted' (reservó, o el requisito `none` no mira la VRAM)
++ *   3 -> 'timeout' (venció el plazo sin sitio)
++ *   4 -> 'cpu-fallback' (un `optional` sin telemetría o sin sitio: la ruta
++ *        CPU que el trabajo declaró, decidida antes de ejecutarlo)
+  *   cualquier otro -> excepción con el stderr: no pudo medir, y eso no es
+- *   un «no admitido». El 2 es el caso de una máquina sin GPU: `nvidia-smi` no
+- *   responde y `admit` rehúsa al instante, sin esperar el plazo.
++ *   un «no admitido». El 2 es un `required` sin telemetría: `admit` rehúsa
++ *   al instante, sin esperar el plazo y sin publicar cifra.
++ *
++ * El requisito es propiedad declarada del trabajo; sin declararlo es
++ * `required`, el contrato anterior a que existiera.
+  */
+ import { spawn } from 'node:child_process'
+ import { join } from 'node:path'
+ 
+-export type VramAdmission = 'admitted' | 'timeout'
++export type VramAdmission = 'admitted' | 'timeout' | 'cpu-fallback'
++
++export type GpuRequirement = 'none' | 'optional' | 'required'
+ 
+ export type AdmitVramOptions = {
+   needMib: number
+   ledger: string
+   ownerPid: number
+   nvidiaSmi?: string
++  requirement?: GpuRequirement
+   timeoutS?: number
+   intervalS?: number
+   thyroxRoot?: string
+@@ -33,6 +42,7 @@ export type ReleaseVramOptions = { ledger: string; ownerPid: number; thyroxRoot?
+ 
+ const EXIT_ADMITTED = 0
+ const EXIT_TIMEOUT = 3
++const EXIT_CPU_FALLBACK = 4
+ 
+ /** La raíz de thyrox: la declarada, o la del árbol donde vive este módulo. */
+ function gpuMonitorBin(thyroxRoot?: string): string {
+@@ -59,11 +69,13 @@ export async function admitVram(options: AdmitVramOptions): Promise<VramAdmissio
+   const bin = gpuMonitorBin(options.thyroxRoot)
+   const args = ['admit', String(options.needMib), '--ledger', options.ledger,
+     '--owner', String(options.ownerPid), '--nvidia-smi', options.nvidiaSmi ?? 'nvidia-smi']
++  if (options.requirement !== undefined) args.push('--requirement', options.requirement)
+   if (options.timeoutS !== undefined) args.push('--timeout', String(options.timeoutS))
+   if (options.intervalS !== undefined) args.push('--interval', String(options.intervalS))
+   const { code, stderr } = await runGpuMonitor(bin, args)
+   if (code === EXIT_ADMITTED) return 'admitted'
+   if (code === EXIT_TIMEOUT) return 'timeout'
++  if (code === EXIT_CPU_FALLBACK) return 'cpu-fallback'
+   throw failure(bin, 'admit', code, stderr)
+ }
+ 
+diff --git a/src/session/gpu_backend.py b/src/session/gpu_backend.py
+new file mode 100644
+index 000000000..25d5ce7b5
+--- /dev/null
++++ b/src/session/gpu_backend.py
+@@ -0,0 +1,298 @@
++"""La GPU como capacidad opcional del anfitrión: el puerto de telemetría y la sonda.
++
++Dos observaciones distintas (ADR-007 1.6.1):
++
++- ``hardware-inventory`` responde «¿hay evidencia física de GPU?»;
++- ``GpuMemoryBackend`` responde «¿puedo observar su memoria?».
++
++La capa de capacidad (``probe_capability``) las combina:
++
++    evidencia de hardware   backend          estado
++    ninguna                 ninguno usable   absent
++    presente o partial      ninguno usable   unavailable
++    cualquiera              usable           available (la telemetría decide)
++
++y sólo con telemetría ``available`` una lectura concreta da ``Measured`` o un
++``Unmeasured`` de estado ``error``. La ausencia de backend no es una
++implementación medible: se representa con ``None``, no con un backend que
++devuelva ceros, y ``Unmeasured`` no tiene atributo de cantidad. Así el tipo no
++permite que ``absent``, ``unavailable`` o ``error`` se lean como ``measured(0)``.
++
++La memoria se lee POR DISPOSITIVO (ADR-007 1.7.0): cada reserva nombra el suyo
++y la admisión compara contra lo libre de ese dispositivo, nunca contra la suma
++del anfitrión. ``largest_free_mib`` es la cifra única que la anchura necesita.
++
++El requisito de GPU es propiedad declarada del trabajo (``none``, ``optional``,
++``required``); ``plan_route`` decide la ruta ANTES de ejecutar y nunca
++convierte ``required`` en ``optional``.
++
++Este módulo y la sonda de hardware son los únicos de ``src/session`` que
++nombran el binario de NVIDIA; el resto trabaja con estado, memoria libre y uso
++por proceso (``tests/session/test_gpu_backend.py``, caso de superficie).
++
++Métrica: ``memory.free`` por GPU y ``used_memory`` por PID que publica el
++binario de NVIDIA, y el veredicto de ``hardware-inventory``.
++Ciega a: una GPU que otro backend (ROCm, Metal) sí podría observar —sin
++implementación aquí, cuenta como ``unavailable`` si hay evidencia física—; a
++los PIDs que el binario no lista (espacio de PID no compartido); y, con un
++binario que no publica ``uuid``, a la identidad estable del dispositivo: se
++identifica por su índice.
++"""
++from __future__ import annotations
++
++import subprocess
++from collections.abc import Callable, Collection, Sequence
++from dataclasses import dataclass
++from enum import Enum
++from pathlib import Path
++from typing import Protocol
++
++#: El binario que habla con el driver de NVIDIA, y la opción de CLI que lo declara.
++DEFAULT_BINARY = "nvidia-smi"
++BINARY_OPTION = "--nvidia-smi"
++QUERY_TIMEOUT_S = 10
++CSV_FORMAT = "--format=csv,noheader,nounits"
++APPS_QUERY = ["--query-compute-apps=pid,used_memory", CSV_FORMAT]
++UTILIZATION_QUERY = ["--query-gpu=index,utilization.gpu", CSV_FORMAT]
++#: El ``uuid`` va al final: un binario que no lo publica sigue respondiendo a
++#: la consulta de ``index,memory.free``, y entonces se identifica por índice.
++DEVICES_QUERY = ["--query-gpu=index,memory.free,uuid", CSV_FORMAT]
++UUID_COLUMN = 2
++
++#: La sonda de hardware del árbol, hermana de este módulo.
++DEFAULT_INVENTORY_COMMAND = (str(Path(__file__).resolve().parents[2] / "bin" / "hardware-inventory"),)
++INVENTORY_TIMEOUT_S = 60
++
++MEASURED = "measured"
++ABSENT = "absent"
++UNAVAILABLE = "unavailable"
++AVAILABLE = "available"
++ERROR = "error"
++
++
++class GpuReadFailed(Exception):
++    """El backend no pudo dar la lectura pedida: no hay cifra que publicar."""
++
++
++class EvidenceUnavailable(Exception):
++    """El inventario de hardware no emitió un veredicto fiable."""
++
++
++@dataclass(frozen=True)
++class DeviceMemory:
++    """La memoria libre de UN dispositivo, con la identidad que da el backend."""
++    device: str
++    free_mib: int
++
++
++class GpuMemoryBackend(Protocol):
++    """El puerto de telemetría de memoria de GPU. Las lecturas lanzan
++    ``GpuReadFailed`` cuando no pueden medir; nunca devuelven un cero por
++    defecto."""
++
++    def available(self) -> bool: ...
++
++    def devices(self) -> list[DeviceMemory]: ...
++
++    def usage_by_pid(self, pids: Collection[int]) -> dict[int, int]: ...
++
++    def utilization_pct(self) -> int: ...
++
++    def identity(self) -> str: ...
++
++
++def largest_free_mib(backend: GpuMemoryBackend) -> int:
++    """La VRAM libre del dispositivo con MÁS espacio: un ítem corre en una GPU
++    y no se reparte, así que la suma prometería un sitio que no existe."""
++    return max(device.free_mib for device in backend.devices())
++
++
++def parse_mib(cell: str) -> int:
++    """Una cifra del CSV; ``GpuReadFailed`` si el binario publica otra cosa
++    (``[N/A]``, ``[Not Supported]``)."""
++    try:
++        return int(float(cell))
++    except ValueError as error:
++        raise GpuReadFailed(f"cifra ilegible del binario: {cell!r}") from error
++
++
++def device_identity(row: list[str]) -> str:
++    has_uuid = len(row) > UUID_COLUMN and row[UUID_COLUMN]
++    return row[UUID_COLUMN] if has_uuid else f"index:{row[0]}"
++
++
++class NvidiaSmiBackend:
++    """El backend de NVIDIA: consulta su binario por CSV."""
++
++    def __init__(self, binary: str = DEFAULT_BINARY):
++        self.binary = binary
++
++    def _query(self, args: list[str]) -> list[list[str]]:
++        try:
++            done = subprocess.run([self.binary, *args], capture_output=True, text=True, timeout=QUERY_TIMEOUT_S)
++        except (OSError, subprocess.TimeoutExpired) as error:
++            raise GpuReadFailed(f"{DEFAULT_BINARY} no responde ({self.binary}): {error}") from error
++        if done.returncode != 0:
++            cause = done.stderr.strip() or f"exit {done.returncode}"
++            raise GpuReadFailed(f"{DEFAULT_BINARY} no responde ({self.binary}): {cause}")
++        return [[cell.strip() for cell in line.split(",")] for line in done.stdout.splitlines() if line.strip()]
++
++    def available(self) -> bool:
++        return telemetry_failure(self) is None
++
++    def devices(self) -> list[DeviceMemory]:
++        rows = self._query(DEVICES_QUERY)
++        if not rows:
++            raise GpuReadFailed(f"{self.binary} no listó ninguna GPU")
++        return [DeviceMemory(device_identity(row), parse_mib(row[1])) for row in rows]
++
++    def listed_usage(self) -> dict[int, int]:
++        """La VRAM de TODOS los procesos que el binario lista, por PID del anfitrión."""
++        return {int(pid): parse_mib(mib) for pid, mib, *_ in self._query(APPS_QUERY)}
++
++    def usage_by_pid(self, pids: Collection[int]) -> dict[int, int]:
++        wanted = set(pids)
++        return {pid: mib for pid, mib in self.listed_usage().items() if pid in wanted}
++
++    def utilization_pct(self) -> int:
++        """El uso máximo entre las GPUs: el binario lo da por GPU, no por proceso."""
++        return max((parse_mib(pct) for _index, pct, *_ in self._query(UTILIZATION_QUERY)), default=0)
++
++    def identity(self) -> str:
++        return f"{DEFAULT_BINARY}:{self.binary}"
++
++
++def telemetry_failure(backend: GpuMemoryBackend) -> str | None:
++    """La causa por la que el backend no da telemetría; ``None`` si la da.
++    Quien rehúsa por falta de GPU tiene que poder nombrar esa causa."""
++    try:
++        backend.devices()
++    except GpuReadFailed as error:
++        return str(error)
++    return None
++
++
++def usable_backend(backend: GpuMemoryBackend) -> GpuMemoryBackend | None:
++    """El backend si da telemetría; ``None`` —«no hay backend»— si no."""
++    return backend if backend.available() else None
++
++
++class HardwareEvidence(Enum):
++    """El veredicto de ``hardware-inventory``."""
++    NONE = "none"
++    PARTIAL = "partial"
++    USABLE = "nvidia-usable"
++
++
++#: El código de salida con que ``hardware-inventory`` publica cada veredicto.
++INVENTORY_EXIT_CODES = {HardwareEvidence.USABLE: 0, HardwareEvidence.NONE: 1, HardwareEvidence.PARTIAL: 3}
++
++
++def parse_verdict(stdout: str) -> HardwareEvidence:
++    for line in stdout.splitlines():
++        fields = line.split("\t")
++        if fields[0] == "verdict" and len(fields) > 1:
++            try:
++                return HardwareEvidence(fields[1])
++            except ValueError as error:
++                raise EvidenceUnavailable(f"veredicto desconocido: {fields[1]!r}") from error
++    raise EvidenceUnavailable("el inventario no emitió línea verdict")
++
++
++def read_inventory(command: Sequence[str]) -> HardwareEvidence:
++    """Corre el inventario y exige que su veredicto y su código de salida
++    coincidan: si discrepan, ninguno es fiable."""
++    try:
++        done = subprocess.run(list(command), capture_output=True, text=True, timeout=INVENTORY_TIMEOUT_S)
++    except (OSError, subprocess.TimeoutExpired) as error:
++        raise EvidenceUnavailable(f"hardware-inventory no corrió: {error}") from error
++    evidence = parse_verdict(done.stdout)
++    if INVENTORY_EXIT_CODES[evidence] != done.returncode:
++        raise EvidenceUnavailable(f"hardware-inventory da {evidence.value!r} con exit {done.returncode}")
++    return evidence
++
++
++def inventory_evidence(command: Sequence[str] = DEFAULT_INVENTORY_COMMAND) -> Callable[[], HardwareEvidence]:
++    """La evidencia como consulta diferida: sólo se paga si el backend falla."""
++    return lambda: read_inventory(command)
++
++
++@dataclass(frozen=True)
++class Capability:
++    """Qué se puede observar de la GPU. ``telemetry`` existe sólo en ``available``."""
++    state: str
++    reason: str
++    telemetry: GpuMemoryBackend | None = None
++
++
++def probe_capability(backend: GpuMemoryBackend | None,
++                     evidence: Callable[[], HardwareEvidence]) -> Capability:
++    """Combina las dos observaciones. Con backend usable la telemetría decide y
++    el inventario no se consulta; sin él, la evidencia física separa
++    ``absent`` de ``unavailable``, y un inventario sin veredicto es ``error``."""
++    telemetry = usable_backend(backend) if backend is not None else None
++    if telemetry is not None:
++        return Capability(AVAILABLE, f"telemetría de {telemetry.identity()}", telemetry)
++    try:
++        found = evidence()
++    except EvidenceUnavailable as error:
++        return Capability(ERROR, f"sin telemetría y sin evidencia de hardware: {error}")
++    if found is HardwareEvidence.NONE:
++        return Capability(ABSENT, "sin evidencia física de GPU ni backend")
++    return Capability(UNAVAILABLE, f"hardware {found.value} sin backend que observe su memoria")
++
++
++@dataclass(frozen=True)
++class Measured:
++    """Una lectura hecha: el cero incluido es una medida."""
++    mib: int
++    state: str = MEASURED
++
++
++@dataclass(frozen=True)
++class Unmeasured:
++    """No hubo lectura: ``absent``, ``unavailable`` o ``error``, con su causa."""
++    state: str
++    reason: str
++
++
++def measure_free(capability: Capability) -> Measured | Unmeasured:
++    """La VRAM libre, en dos etapas: sin telemetría devuelve el estado de la
++    capacidad; con ella, la lectura o ``error``."""
++    if capability.telemetry is None:
++        return Unmeasured(capability.state, capability.reason)
++    try:
++        return Measured(largest_free_mib(capability.telemetry))
++    except GpuReadFailed as error:
++        return Unmeasured(ERROR, str(error))
++
++
++def free_mib_or_none(measure: Measured | Unmeasured) -> int | None:
++    """La VRAM libre como dimensión de anchura: ``None`` quita la dimensión en
++    ``pool_history.derive``, que es lo que una lectura ausente significa."""
++    return measure.mib if isinstance(measure, Measured) else None
++
++
++class GpuRequirement(Enum):
++    """Lo que el trabajo declara que necesita de la GPU."""
++    NONE = "none"
++    OPTIONAL = "optional"
++    REQUIRED = "required"
++
++
++class Route(Enum):
++    """Por dónde corre el trabajo, decidido antes de ejecutarlo."""
++    UNCONSTRAINED = "unconstrained"   # la VRAM no es dimensión de admisión
++    CPU_FALLBACK = "cpu-fallback"     # la ruta CPU que el trabajo declaró
++    GPU = "gpu"
++    REFUSE = "refuse"
++
++
++def plan_route(requirement: GpuRequirement, telemetry: GpuMemoryBackend | None) -> Route:
++    """``none`` no mira la GPU; ``optional`` va a la GPU sólo con telemetría;
++    ``required`` sin ella rehúsa. Nunca se rebaja ``required``."""
++    if requirement is GpuRequirement.NONE:
++        return Route.UNCONSTRAINED
++    if telemetry is not None:
++        return Route.GPU
++    return Route.CPU_FALLBACK if requirement is GpuRequirement.OPTIONAL else Route.REFUSE
+diff --git a/src/session/gpu_monitor.py b/src/session/gpu_monitor.py
+index 8f807e1d8..1db3ac959 100644
+--- a/src/session/gpu_monitor.py
++++ b/src/session/gpu_monitor.py
+@@ -1,8 +1,9 @@
+-"""La VRAM de un ítem del pool, como GNU Time mide su RAM.
++"""La VRAM de un ítem del pool y su admisión, sobre el puerto de telemetría.
+ 
+ ``--memfree`` de GNU Parallel es memoria del SISTEMA; la de la GPU es otro
+-recurso y GNU Time no la ve. Este monitor muestrea ``nvidia-smi`` mientras
+-vive el ÁRBOL de procesos del ítem y deja ``<n>.gpu``, una línea::
++recurso y GNU Time no la ve. Este monitor muestrea un ``GpuMemoryBackend``
++(``gpu_backend``) mientras vive el ÁRBOL de procesos del ítem y deja
++``<n>.gpu``, una línea::
+ 
+     <vram pico MiB> <vram media MiB> <uso pico de GPU %> <muestras>
+ 
+@@ -10,53 +11,78 @@ Cuenta la VRAM de los procesos que da su FUENTE DE MIEMBROS, no la de los
+ demás que compartan la GPU. En local la fuente es el árbol ``/proc`` del ítem
+ (``HostTree``); en contenedor, el cgroup del contenedor (``ContainerMembers``,
+ ``--container``), porque su proceso cuelga de ``conmon`` y no del wrapper
+-(H-THYROX-294). Una fuente que no puede dar los PIDs deja ``error <causa>``,
+-nunca un cero. El uso de GPU sólo se atribuye a una
+-muestra en la que el árbol tenía VRAM: ``nvidia-smi`` da el uso por GPU, no
+-por proceso.
+-
+-Sin ``nvidia-smi`` no escribe nada —una medida ausente no es un cero—, y un
+-árbol que no usó la GPU escribe ceros, que sí son una medida. ``headless-pool``
+-lo lanza por ítem sólo si ``available()``; con ``thyrox -p`` el modelo corre
+-en el servidor y la GPU local no se usa, así que medirla sólo informa cuando
+-el pool corre trabajo local con CUDA.
+-
+-Métrica: ``used_memory`` de ``nvidia-smi --query-compute-apps`` por PID del
+-árbol (o del cgroup), sumada por muestra; ``utilization.gpu`` máxima entre GPUs.
++(H-THYROX-294). Los PIDs son siempre los del anfitrión: la telemetría los
++publica así. Una fuente que no puede dar los PIDs deja ``error <causa>``,
++nunca un cero. El uso de GPU sólo se atribuye a una muestra en la que el
++árbol tenía VRAM: el backend lo da por GPU, no por proceso.
++
++Sin telemetría no se escribe una cifra: ``absent`` no deja archivo,
++``unavailable`` deja ``unavailable <causa>``. Un árbol que no usó la GPU
++escribe ceros, que sí son una medida.
++
++La admisión reserva en un registro de VRAM comprometida, uno por anfitrión
++(ADR-007 1.7.0). Cada reserva nombra su DISPOSITIVO y su TIPO: ``worker``
++(el ítem de un pool o un contenedor, dueño por PID), ``residency`` (un modelo
++residente, dueño por instancia y generación) y ``request`` (una petición que
++apunta a su ``residency``). Se admite contra lo libre de un dispositivo, nunca
++contra la suma del anfitrión. El requisito del trabajo (``none``,
++``optional``, ``required``) decide antes de ejecutar si la VRAM entra en la
++admisión (``admit_for``).
++
++Métrica: el uso por PID del árbol (o del cgroup) que publica el backend,
++sumado por muestra; el uso de GPU máximo entre GPUs; y lo libre por
++dispositivo menos lo reservado que aún no se usa.
+ Ciega a: un pico más corto que el intervalo de muestreo; la VRAM de un
+-proceso del árbol que ``nvidia-smi`` no lista (contenedores sin espacio de
+-PID compartido); y el uso de GPU de OTRO proceso en la misma muestra.
++proceso que el backend no lista; el uso de GPU de OTRO proceso en la misma
++muestra; y el uso real de una ``residency`` o una ``request``, que cuentan
++enteras hasta que el grant de su runtime las atribuya.
+ """
+ from __future__ import annotations
+ 
+ import argparse
++import dataclasses
++import json
+ import statistics
+-import subprocess
+ import sys
+ import time
++from collections.abc import Callable, Collection
+ from dataclasses import dataclass
++from enum import Enum
+ from pathlib import Path
+-from typing import Protocol
++from typing import ClassVar, Protocol
+ 
++from session import gpu_backend as gb
++from session import shared_lock
+ from session.container_measure import DEFAULT_CGROUP_ROOT, ContainerMembers, MembersUnavailable
+ from session.resource_admission import (  # noqa: F401 — superficie pública de gpu_monitor
+     LEDGER_LOCK_RETRIES,
+-    ReservationLedger as VramLedger,
+     admissible,
+-    admit_with,
+-    is_alive as _alive,
+-    pending,
+-    release_from,
++    admit_locked,
++    is_alive,
+     tree,
+ )
+ 
+ DEFAULT_INTERVAL_S = 0.5
+-APPS_QUERY = ["--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"]
+-UTILIZATION_QUERY = ["--query-gpu=index,utilization.gpu", "--format=csv,noheader,nounits"]
++DEFAULT_TIMEOUT_S = 600.0
++RUN_ID = "vram-admission"
+ 
+ 
+-class GpuUnavailable(Exception):
+-    """``nvidia-smi`` no está o no respondió: no hay con qué medir."""
++class MemberSource(Protocol):
++    """A quién se mide. ``current_members`` da los PIDs que lo forman, o
++    ``None`` si ya no vive; lanza ``MembersUnavailable`` cuando no puede
++    saberlo."""
++
++    def current_members(self) -> set[int] | None: ...
++
++
++class HostTree:
++    """El ítem local: ``pid`` y sus descendientes por ``/proc``."""
++
++    def __init__(self, pid: int):
++        self.pid = pid
++
++    def current_members(self) -> set[int] | None:
++        return tree(self.pid) if is_alive(self.pid) else None
+ 
+ 
+ @dataclass(frozen=True)
+@@ -76,95 +102,53 @@ class Summary:
+         return f"{self.peak_mib} {self.avg_mib} {self.peak_utilization_pct} {self.samples}"
+ 
+ 
+-def _query(nvidia_smi: str, args: list[str]) -> list[list[str]]:
+-    try:
+-        done = subprocess.run([nvidia_smi, *args], capture_output=True, text=True, timeout=10)
+-    except (OSError, subprocess.TimeoutExpired) as error:
+-        raise GpuUnavailable(str(error)) from error
+-    if done.returncode != 0:
+-        raise GpuUnavailable(done.stderr.strip() or f"exit {done.returncode}")
+-    return [[cell.strip() for cell in line.split(",")] for line in done.stdout.splitlines() if line.strip()]
++def sample(backend: gb.GpuMemoryBackend, pids: Collection[int]) -> Sample:
++    """Una lectura: la VRAM de ``pids`` y el uso máximo entre las GPUs."""
++    return Sample(backend.usage_by_pid(pids), backend.utilization_pct())
+ 
+ 
+-def sample(nvidia_smi: str = "nvidia-smi") -> Sample:
+-    """Una lectura: VRAM por PID y el uso máximo entre las GPUs."""
+-    vram = {int(pid): int(float(mib)) for pid, mib, *_ in _query(nvidia_smi, APPS_QUERY)}
+-    utils = [int(float(pct)) for _index, pct, *_ in _query(nvidia_smi, UTILIZATION_QUERY)]
+-    return Sample(vram, max(utils, default=0))
+-
+-
+-FREE_QUERY = ["--query-gpu=index,memory.free", "--format=csv,noheader,nounits"]
+-
+-
+-def free_vram_mib(nvidia_smi: str = "nvidia-smi") -> int | None:
+-    """La VRAM libre de la GPU con MÁS espacio: un ítem corre en una GPU y no
+-    se reparte, así que la suma entre GPUs prometería un sitio que no existe.
+-    ``None`` sin ``nvidia-smi``."""
+-    try:
+-        rows = _query(nvidia_smi, FREE_QUERY)
+-    except GpuUnavailable:
+-        return None
+-    return max((int(float(mib)) for _index, mib, *_ in rows), default=None)
+-
+-
+-def available(nvidia_smi: str = "nvidia-smi") -> bool:
++def measure(binary: str) -> tuple[Sample | None, int | None]:
++    """La GPU entera por el backend de NVIDIA, para el arnés de nivel 2
++    (``gpu_trace``): la VRAM de TODOS los PIDs listados y la libre mayor.
++    ``(None, None)`` sin lectura."""
++    backend = gb.NvidiaSmiBackend(binary)
+     try:
+-        sample(nvidia_smi)
+-    except GpuUnavailable:
+-        return False
+-    return True
+-
+-
+-class MemberSource(Protocol):
+-    """A quién se mide. ``current_members`` da los PIDs que lo forman, o
+-    ``None`` si ya no vive; lanza ``MembersUnavailable`` cuando no puede
+-    saberlo."""
+-
+-    def current_members(self) -> set[int] | None: ...
+-
+-
+-class HostTree:
+-    """El ítem local: ``pid`` y sus descendientes por ``/proc``."""
+-
+-    def __init__(self, pid: int):
+-        self.pid = pid
+-
+-    def current_members(self) -> set[int] | None:
+-        return tree(self.pid) if _alive(self.pid) else None
++        return Sample(backend.listed_usage(), backend.utilization_pct()), gb.largest_free_mib(backend)
++    except gb.GpuReadFailed:
++        return None, None
+ 
+ 
+-def write_error(out: Path, cause: object) -> None:
+-    """Se intentó medir y falló: ni cero ni ausencia, y sin resumen parcial."""
+-    Path(out).write_text(f"error {cause}\n")
++def write_state(out: Path, state: str, cause: object) -> None:
++    """No hubo cifra: el estado y su causa, sin resumen parcial."""
++    Path(out).write_text(f"{state} {cause}\n")
+ 
+ 
+-def watch(source: MemberSource, out: Path, nvidia_smi: str = "nvidia-smi",
++def watch(source: MemberSource, out: Path, capability: gb.Capability,
+           interval_s: float = DEFAULT_INTERVAL_S) -> Summary | None:
+     """Muestrea mientras vive ``source`` y escribe ``out``."""
+-    if not available(nvidia_smi):
++    backend = capability.telemetry
++    if backend is None:
++        if capability.state != gb.ABSENT:
++            write_state(out, capability.state, capability.reason)
+         return None
+     totals, utils = [], []
+-    while True:
+-        try:
+-            current = sample(nvidia_smi)
+-        except GpuUnavailable as error:
+-            write_error(out, error)
+-            return None
+-        # La vida se comprueba ANTES de registrar: una muestra tomada con el
+-        # árbol ya terminado (el padre zombi, sin hijos) vale 0 MiB y bajaría
+-        # la media de una medida que no le pertenece. Sonda:
+-        # `.claude/workbench/gpu-vram-*/probe-tree-lifecycle.sh`.
+-        try:
++    try:
++        members = source.current_members()
++        while members is not None:
++            current = sample(backend, members)
++            # La vida se comprueba DESPUÉS de muestrear: una muestra tomada con
++            # el árbol ya terminado vale 0 MiB y bajaría la media de una medida
++            # que no le pertenece.
+             members = source.current_members()
+-        except MembersUnavailable as error:
+-            write_error(out, error)
+-            return None
+-        if members is None:
+-            break
+-        used = sum(mib for p, mib in current.vram_by_pid.items() if p in members)
+-        totals.append(used)
+-        utils.append(current.utilization_pct if used > 0 else 0)
+-        time.sleep(interval_s)
++            if members is None:
++                break
++            used = sum(current.vram_by_pid.values())
++            totals.append(used)
++            utils.append(current.utilization_pct if used > 0 else 0)
++            time.sleep(interval_s)
++    except (gb.GpuReadFailed, MembersUnavailable) as error:
++        write_state(out, gb.ERROR, error)
++        return None
+     if not totals:
+         return None
+     summary = Summary(max(totals), round(statistics.mean(totals)), max(utils), len(totals))
+@@ -174,92 +158,318 @@ def watch(source: MemberSource, out: Path, nvidia_smi: str = "nvidia-smi",
+ 
+ @dataclass(frozen=True)
+ class GpuReading:
+-    """Los TRES estados de un ``<n>.gpu``, que no se colapsan: ``measured``
+-    (incluido el cero, que es una medida), ``absent`` (no se midió) y
+-    ``error`` (se intentó y falló)."""
++    """Los estados de un ``<n>.gpu``, que no se colapsan: ``measured``
++    (incluido el cero, que es una medida), ``absent`` (no se midió),
++    ``unavailable`` (hay GPU sin telemetría) y ``error`` (se intentó y falló)."""
+     state: str
+     summary: Summary | None = None
+     reason: str | None = None
+ 
+ 
++UNMEASURED_STATES = (gb.ERROR, gb.UNAVAILABLE)
++
++
+ def read_gpu_file(path: Path) -> GpuReading:
+     try:
+         text = Path(path).read_text(errors="replace").strip()
+     except FileNotFoundError:
+-        return GpuReading("absent")
+-    if text.startswith("error"):
+-        return GpuReading("error", reason=text[len("error"):].strip())
++        return GpuReading(gb.ABSENT)
++    for state in UNMEASURED_STATES:
++        if text.startswith(state):
++            return GpuReading(state, reason=text[len(state):].strip())
+     fields = text.split()
+     if len(fields) == 4 and all(f.isdigit() for f in fields):
+-        return GpuReading("measured", Summary(*(int(f) for f in fields)))
+-    return GpuReading("error", reason=f"ilegible: {text[:80]!r}")
++        return GpuReading(gb.MEASURED, Summary(*(int(f) for f in fields)))
++    return GpuReading(gb.ERROR, reason=f"ilegible: {text[:80]!r}")
+ 
+ 
+-def measure(nvidia_smi: str) -> tuple[Sample | None, int | None]:
+-    """La medida: la muestra por PID y la VRAM libre; ``(None, None)`` sin GPU."""
+-    try:
+-        return sample(nvidia_smi), free_vram_mib(nvidia_smi)
+-    except GpuUnavailable:
+-        return None, None
++# --- el registro de VRAM comprometida ------------------------------------------
+ 
+ 
+-def headroom(live: dict[str, int], nvidia_smi: str) -> int | None:
+-    """El margen para un ítem nuevo: lo libre menos lo comprometido que la GPU
+-    aún no muestra. ``None`` si no hay lectura de la GPU — sin medida no hay
+-    margen, y un cero lo afirmaría. Es una consulta: no reserva ni bloquea."""
+-    current, free = measure(nvidia_smi)
+-    if free is None:
+-        return None
+-    usage = current.vram_by_pid if current else {}
+-    trees = {int(pid): tree(int(pid)) for pid in live}
+-    return free - pending(live, usage, trees)
++class ResidencyBusy(Exception):
++    """Se pidió liberar una ``residency`` que aún tiene ``request`` vivas."""
+ 
+ 
+-def require_gpu(nvidia_smi: str) -> None:
+-    """Lanza ``GpuUnavailable`` con su causa si ``nvidia-smi`` no da la VRAM
+-    libre: sin GPU que medir no falta sitio, falta GPU."""
+-    _query(nvidia_smi, FREE_QUERY)
++class ResidencyMissing(Exception):
++    """Una ``request`` apunta a una ``residency`` que no está en el registro."""
+ 
+ 
+-def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia-smi",
+-          timeout_s: float = 600.0, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+-    """La admisión por VRAM SIN carrera de comprobar-y-usar.
++@dataclass(frozen=True)
++class WorkerReservation:
++    """La reserva de un trabajo: su dueño es un PID y su árbol es su uso."""
++    owner_pid: int
++    mib: int
++    device: str | None = None
++    kind: ClassVar[str] = "worker"
+ 
+-    Comprobar sin reservar deja una ventana: con 5000 MiB libres dos ítems de
+-    3000 veían sitio los dos y arrancaban los dos (sonda:
+-    ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). El registro y el
+-    bucle de comprobar-y-reservar bajo lock son los de ``resource_admission``;
+-    la VRAM sólo aporta su medida, ``headroom``.
++    @property
++    def key(self) -> str:
++        return f"{self.kind}:{self.owner_pid}"
++
++    def is_live(self) -> bool:
++        return is_alive(self.owner_pid)
++
++    def attributed_pids(self) -> set[int]:
++        return tree(self.owner_pid)
++
++    def pinned_device(self, live: dict[str, Reservation]) -> str | None:
++        return self.device
++
++    def owned_by(self, pid: int) -> bool:
++        return self.owner_pid == pid
++
++
++@dataclass(frozen=True)
++class ResidencyReservation:
++    """Un modelo residente: su dueño es una instancia con generación, no un
++    PID efímero, y vive en el registro hasta que se libera."""
++    instance: str
++    generation: int
++    mib: int
++    device: str | None = None
++    kind: ClassVar[str] = "residency"
+ 
+-    Una GPU AUSENTE al empezar no es una GPU sin sitio: se rehúsa con
+-    ``GpuUnavailable`` antes de tocar el registro, en vez de sondear hasta el
+-    plazo para informar una causa falsa. Una lectura que falla a mitad de la
+-    espera sigue siendo «sin medida» y no admite."""
+-    require_gpu(nvidia_smi)
+-    return admit_with(ledger, need_mib, owner_pid, lambda live: headroom(live, nvidia_smi),
+-                      "vram-admission", timeout_s, interval_s)
++    @property
++    def key(self) -> str:
++        return f"{self.kind}:{self.instance}:{self.generation}"
++
++    def is_live(self) -> bool:
++        return True
++
++    def attributed_pids(self) -> set[int]:
++        return set()
++
++    def pinned_device(self, live: dict[str, Reservation]) -> str | None:
++        return self.device
++
++    def owned_by(self, pid: int) -> bool:
++        return False
++
++
++@dataclass(frozen=True)
++class RequestReservation:
++    """Una petición sobre una ``residency``: va al dispositivo de ésta y
++    vive mientras vive su dueño."""
++    request_id: str
++    owner_pid: int
++    residency: str
++    mib: int
++    device: str | None = None
++    kind: ClassVar[str] = "request"
++
++    @property
++    def key(self) -> str:
++        return f"{self.kind}:{self.request_id}"
++
++    def is_live(self) -> bool:
++        return is_alive(self.owner_pid)
++
++    def attributed_pids(self) -> set[int]:
++        return set()
++
++    def pinned_device(self, live: dict[str, Reservation]) -> str | None:
++        target = live.get(self.residency)
++        if target is None:
++            raise ResidencyMissing(f"la request {self.request_id} apunta a {self.residency}, que no está reservada")
++        return target.device
++
++    def owned_by(self, pid: int) -> bool:
++        return self.owner_pid == pid
++
++
++Reservation = WorkerReservation | ResidencyReservation | RequestReservation
++RESERVATION_KINDS: dict[str, type[Reservation]] = {
++    cls.kind: cls for cls in (WorkerReservation, ResidencyReservation, RequestReservation)}
++
++
++def reservation_to_json(reservation: Reservation) -> dict:
++    return {"kind": reservation.kind, **dataclasses.asdict(reservation)}
++
++
++def reservation_from_json(key: str, data: object) -> Reservation:
++    """Una entrada del registro. Un entero es el formato anterior al tipo y al
++    dispositivo: un ``worker`` sin dispositivo, que cuenta en todos."""
++    if isinstance(data, int):
++        return WorkerReservation(int(key), data)
++    if not isinstance(data, dict):
++        raise ValueError(f"entrada ilegible: {key}")
++    cls = RESERVATION_KINDS[data["kind"]]
++    return cls(**{field.name: data[field.name] for field in dataclasses.fields(cls)})
++
++
++class VramLedger:
++    """El registro de lo comprometido: ``{clave: reserva}``. Sólo persiste; no
++    bloquea — quien lo usa sostiene el lock del archivo."""
++
++    def __init__(self, path: Path):
++        self.path = Path(path)
++
++    def _read(self) -> dict[str, Reservation]:
++        try:
++            raw = json.loads(self.path.read_text())
++            return {key: reservation_from_json(key, data) for key, data in raw.items()}
++        except (OSError, ValueError, KeyError, TypeError):
++            return {}
++
++    def live(self) -> dict[str, Reservation]:
++        """Las reservas vigentes: la de un dueño muerto ya no compromete nada."""
++        return {key: r for key, r in self._read().items() if r.is_live()}
++
++    def save(self, reservations: dict[str, Reservation]) -> None:
++        """Escribe las reservas; sin ninguna, retira el registro: en reposo no
++        deja archivo en el árbol."""
++        if not reservations:
++            self.path.unlink(missing_ok=True)
++            return
++        self.path.parent.mkdir(parents=True, exist_ok=True)
++        shared_lock.write_atomic(self.path, json.dumps(
++            {key: reservation_to_json(r) for key, r in reservations.items()}, sort_keys=True))
++
++
++def device_headroom(backend: gb.GpuMemoryBackend, live: dict[str, Reservation]) -> dict[str, int] | None:
++    """Lo admisible por dispositivo: lo libre menos lo reservado que aún no se
++    usa. Lo que un ``worker`` ya usa ya está restado de lo libre; contarlo
++    otra vez bloquearía VRAM que sí existe. Una reserva sin dispositivo cuenta
++    en todos. ``None`` sin lectura: sin medida no hay margen, y un cero lo
++    afirmaría. Es una consulta: no reserva."""
++    try:
++        devices = backend.devices()
++        attributed = {key: r.attributed_pids() for key, r in live.items()}
++        usage = backend.usage_by_pid(set().union(*attributed.values()))
++    except gb.GpuReadFailed:
++        return None
++    unused = {key: max(0, r.mib - sum(usage.get(pid, 0) for pid in attributed[key])) for key, r in live.items()}
++    return {d.device: d.free_mib - sum(unused[key] for key, r in live.items() if r.device in (d.device, None))
++            for d in devices}
++
++
++def choose_device(headroom: dict[str, int], need_mib: int, pinned: str | None) -> str | None:
++    """El dispositivo donde cabe ``need_mib``: el fijado si se fijó, y si no
++    el de más margen. ``None`` si no cabe en ninguno — la suma de márgenes no
++    cuenta: un trabajo no se reparte entre GPUs."""
++    candidates = {pinned: headroom.get(pinned)} if pinned is not None else headroom
++    fitting = {device: room for device, room in candidates.items() if admissible(room, 0, need_mib)}
++    return max(fitting, key=lambda device: fitting[device]) if fitting else None
++
++
++def admit(reservation: Reservation, ledger: Path, backend: gb.GpuMemoryBackend,
++          timeout_s: float = DEFAULT_TIMEOUT_S, interval_s: float = DEFAULT_INTERVAL_S) -> Reservation | None:
++    """Comprobar y reservar bajo el lock del registro, sin la carrera de
++    comprobar-y-usar: con 5000 MiB libres dos ítems de 3000 veían sitio los
++    dos (sonda: ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). Devuelve
++    la reserva con su dispositivo, o ``None`` al vencer el plazo. Una lectura
++    que falla a mitad de la espera es «sin medida» y no admite."""
++    book = VramLedger(ledger)
++
++    def attempt() -> Reservation | None:
++        live = book.live()
++        pinned = reservation.pinned_device(live)
++        headroom = device_headroom(backend, live)
++        device = choose_device(headroom, reservation.mib, pinned) if headroom is not None else None
++        if device is None:
++            book.save(live)
++            return None
++        placed = dataclasses.replace(reservation, device=device)
++        book.save({**live, placed.key: placed})
++        return placed
++
++    return admit_locked(book.path, RUN_ID, timeout_s, interval_s, attempt)
++
++
++def rewrite(ledger: Path, change: Callable[[dict[str, Reservation]], dict[str, Reservation]]) -> None:
++    """Aplica ``change`` a las reservas vivas bajo el lock del registro."""
++    book = VramLedger(ledger)
++    if not book.path.exists():
++        return
++    with shared_lock.held(book.path, run_id=RUN_ID, retries=LEDGER_LOCK_RETRIES,
++                          min_wait_s=0.01, max_wait_s=0.2):
++        book.save(change(book.live()))
+ 
+ 
+ def release(ledger: Path, owner_pid: int) -> None:
+-    """Suelta la reserva de un ítem que terminó, bajo el lock del registro."""
+-    release_from(ledger, owner_pid, "vram-admission")
++    """Suelta las reservas cuyo dueño es ``owner_pid`` (su ``worker`` y sus
++    ``request``), bajo el lock del registro."""
++    rewrite(ledger, lambda live: {key: r for key, r in live.items() if not r.owned_by(owner_pid)})
++
++
++def release_residency(ledger: Path, instance: str, generation: int) -> None:
++    """Suelta una ``residency``; se rehúsa mientras una ``request`` viva
++    apunte a ella, porque el runtime aún la está sirviendo."""
++    target = ResidencyReservation(instance, generation, 0).key
++
++    def without_residency(live: dict[str, Reservation]) -> dict[str, Reservation]:
++        waiting = sorted(key for key, r in live.items() if isinstance(r, RequestReservation) and r.residency == target)
++        if waiting:
++            raise ResidencyBusy(f"{target} tiene requests vivas: {', '.join(waiting)}")
++        return {key: r for key, r in live.items() if key != target}
++
++    rewrite(ledger, without_residency)
++
++
++# --- la admisión por requisito ---------------------------------------------------
++
++
++@dataclass(frozen=True)
++class AdmissionRequest:
++    """Lo que un trabajo pide al admitirse como ``worker``."""
++    need_mib: int
++    ledger: Path
++    owner_pid: int
++    timeout_s: float = DEFAULT_TIMEOUT_S
++    interval_s: float = DEFAULT_INTERVAL_S
++
++
++class Outcome(Enum):
++    """Qué decide la admisión, antes de ejecutar el trabajo."""
++    RESERVED = "reserved"
++    UNCONSTRAINED = "unconstrained"   # requisito none: la VRAM no es dimensión
++    CPU_FALLBACK = "cpu-fallback"     # la ruta CPU que el trabajo declaró
++    TIMEOUT = "timeout"
++    REFUSED = "refused"               # required sin telemetría
++
++
++#: Las rutas que se deciden sin tocar el registro.
++ROUTE_OUTCOMES = {gb.Route.UNCONSTRAINED: Outcome.UNCONSTRAINED, gb.Route.CPU_FALLBACK: Outcome.CPU_FALLBACK,
++                  gb.Route.REFUSE: Outcome.REFUSED}
++#: Qué significa no encontrar sitio en el plazo, por requisito.
++NO_ROOM_OUTCOMES = {gb.GpuRequirement.OPTIONAL: Outcome.CPU_FALLBACK, gb.GpuRequirement.REQUIRED: Outcome.TIMEOUT}
++
++
++def admit_for(requirement: gb.GpuRequirement, request: AdmissionRequest,
++              telemetry: gb.GpuMemoryBackend | None) -> Outcome:
++    """La admisión de un trabajo según su requisito declarado. Sólo la ruta
++    GPU con telemetría reserva; ``required`` nunca se rebaja a CPU."""
++    route = gb.plan_route(requirement, telemetry)
++    if telemetry is None or route in ROUTE_OUTCOMES:
++        return ROUTE_OUTCOMES[route]
++    placed = admit(WorkerReservation(request.owner_pid, request.need_mib), request.ledger, telemetry,
++                   request.timeout_s, request.interval_s)
++    return Outcome.RESERVED if placed is not None else NO_ROOM_OUTCOMES[requirement]
+ 
+ 
+ EXIT_ADMITTED = 0
+ EXIT_ABSENT = 2
+ EXIT_TIMEOUT = 3
++EXIT_CPU_FALLBACK = 4
++OUTCOME_EXITS = {Outcome.RESERVED: EXIT_ADMITTED, Outcome.UNCONSTRAINED: EXIT_ADMITTED,
++                 Outcome.CPU_FALLBACK: EXIT_CPU_FALLBACK, Outcome.TIMEOUT: EXIT_TIMEOUT,
++                 Outcome.REFUSED: EXIT_ABSENT}
+ 
+ 
+ def admit_exit_code(args: argparse.Namespace) -> int:
+-    """``admit`` como código de salida: 0 reservó, 3 venció el plazo sin sitio,
+-    2 no hay GPU que medir — con la causa por stderr, como ``available``."""
+-    try:
+-        admitted = admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval)
+-    except GpuUnavailable as error:
+-        print(f"gpu_monitor admit: nvidia-smi no responde ({args.nvidia_smi}): {error}; "
+-              "sin GPU que medir no se espera", file=sys.stderr)
+-        return EXIT_ABSENT
+-    return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
++    """``admit`` como código de salida: 0 reservó (o ``none``), 3 venció el
++    plazo sin sitio, 4 ruta CPU de un ``optional``, 2 ``required`` sin
++    telemetría — con la causa por stderr y sin cifra."""
++    backend = gb.NvidiaSmiBackend(args.binary)
++    cause = gb.telemetry_failure(backend)
++    requirement = gb.GpuRequirement(args.requirement)
++    outcome = admit_for(requirement, AdmissionRequest(args.need, args.ledger, args.owner, args.timeout, args.interval),
++                        None if cause else backend)
++    if outcome is Outcome.REFUSED:
++        print(f"gpu_monitor admit: {cause}; sin GPU que medir no se espera", file=sys.stderr)
++    if outcome is Outcome.CPU_FALLBACK:
++        print(f"gpu_monitor admit: ruta CPU declarada: {cause or 'sin sitio en el plazo'}", file=sys.stderr)
++    return OUTCOME_EXITS[outcome]
+ 
+ 
+ def member_source(args: argparse.Namespace) -> MemberSource:
+@@ -271,7 +481,44 @@ def member_source(args: argparse.Namespace) -> MemberSource:
+     return HostTree(args.pid)
+ 
+ 
+-def main(argv: list[str]) -> int:
++def watched_capability(binary: str) -> gb.Capability:
++    return gb.probe_capability(gb.NvidiaSmiBackend(binary), gb.inventory_evidence())
++
++
++def watch_exit_code(args: argparse.Namespace) -> int:
++    summary = watch(member_source(args), args.out, watched_capability(args.binary), args.interval)
++    return 0 if summary else EXIT_ABSENT
++
++
++def free_exit_code(args: argparse.Namespace) -> int:
++    try:
++        print(gb.largest_free_mib(gb.NvidiaSmiBackend(args.binary)))
++    except gb.GpuReadFailed:
++        return EXIT_ABSENT
++    return 0
++
++
++def available_exit_code(args: argparse.Namespace) -> int:
++    return 0 if gb.telemetry_failure(gb.NvidiaSmiBackend(args.binary)) is None else EXIT_ABSENT
++
++
++def capability_exit_code(args: argparse.Namespace) -> int:
++    capability = watched_capability(args.binary)
++    print(f"{capability.state}\t{capability.reason}")
++    return 0 if capability.state == gb.AVAILABLE else EXIT_ABSENT
++
++
++def release_exit_code(args: argparse.Namespace) -> int:
++    release(args.ledger, args.owner)
++    return 0
++
++
++def add_binary_option(parser: argparse.ArgumentParser) -> None:
++    parser.add_argument(gb.BINARY_OPTION, dest="binary", default=gb.DEFAULT_BINARY,
++                        help="el binario del backend de telemetría")
++
++
++def build_parser() -> argparse.ArgumentParser:
+     parser = argparse.ArgumentParser(prog="gpu_monitor", description=(__doc__ or "").splitlines()[0])
+     sub = parser.add_subparsers(dest="order", required=True)
+     p_watch = sub.add_parser("watch", help="muestrea el árbol de PID (o el contenedor) y escribe OUT")
+@@ -281,37 +528,36 @@ def main(argv: list[str]) -> int:
+                          help="mide el cgroup de este contenedor en vez del árbol de PID")
+     p_watch.add_argument("--podman", default="podman")
+     p_watch.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
+-    p_watch.add_argument("--nvidia-smi", default="nvidia-smi")
+     p_watch.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+-    p_avail = sub.add_parser("available", help="sale 0 si hay con qué medir, 2 si no")
+-    p_avail.add_argument("--nvidia-smi", default="nvidia-smi")
+-    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, 3 al vencer el plazo, o 2 sin GPU que medir")
++    p_watch.set_defaults(handler=watch_exit_code)
++    p_avail = sub.add_parser("available", help="sale 0 si hay telemetría, 2 si no")
++    p_avail.set_defaults(handler=available_exit_code)
++    p_capability = sub.add_parser("capability", help="imprime el estado de la GPU y su causa; sale 0 sólo si available")
++    p_capability.set_defaults(handler=capability_exit_code)
++    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, 3 al vencer el plazo, "
++                                           "4 ruta CPU de un optional, o 2 si required no tiene telemetría")
+     p_admit.add_argument("need", type=int)
+     p_admit.add_argument("--ledger", type=Path, required=True)
+     p_admit.add_argument("--owner", type=int, required=True)
+-    p_admit.add_argument("--nvidia-smi", default="nvidia-smi")
+-    p_admit.add_argument("--timeout", type=float, default=600.0)
++    p_admit.add_argument("--requirement", choices=[r.value for r in gb.GpuRequirement],
++                         default=gb.GpuRequirement.REQUIRED.value)
++    p_admit.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT_S)
+     p_admit.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+-    p_release = sub.add_parser("release", help="suelta la reserva de OWNER")
++    p_admit.set_defaults(handler=admit_exit_code)
++    p_release = sub.add_parser("release", help="suelta las reservas de OWNER")
+     p_release.add_argument("--ledger", type=Path, required=True)
+     p_release.add_argument("--owner", type=int, required=True)
+-    p_free = sub.add_parser("free", help="imprime la VRAM libre (MiB) de la GPU con más espacio")
+-    p_free.add_argument("--nvidia-smi", default="nvidia-smi")
+-    args = parser.parse_args(argv)
+-    if args.order == "admit":
+-        return admit_exit_code(args)
+-    if args.order == "release":
+-        release(args.ledger, args.owner)
+-        return 0
+-    if args.order == "free":
+-        free = free_vram_mib(args.nvidia_smi)
+-        if free is None:
+-            return 2
+-        print(free)
+-        return 0
+-    if args.order == "available":
+-        return 0 if available(args.nvidia_smi) else 2
+-    return 0 if watch(member_source(args), args.out, args.nvidia_smi, args.interval) else 2
++    p_release.set_defaults(handler=release_exit_code)
++    p_free = sub.add_parser("free", help="imprime la VRAM libre (MiB) del dispositivo con más espacio")
++    p_free.set_defaults(handler=free_exit_code)
++    for sub_parser in (p_watch, p_avail, p_capability, p_admit, p_free):
++        add_binary_option(sub_parser)
++    return parser
++
++
++def main(argv: list[str]) -> int:
++    args = build_parser().parse_args(argv)
++    return args.handler(args)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/src/session/parallel_map_history.py b/src/session/parallel_map_history.py
+index 44190903b..fc3538847 100644
+--- a/src/session/parallel_map_history.py
++++ b/src/session/parallel_map_history.py
+@@ -9,6 +9,10 @@ caben a la vez (`pool_history.derive_memory`).
+ Qué hace `parallel_map` con esa cifra NO lo decide este módulo: la reserva
+ entre procesos concurrentes es del registro de admisión, no de una medición.
+ 
++La RAM disponible con que se deriva el tope es la efectiva
++(`resource_admission.effective_available_ram_kb`): la del cgroup cuando el
++proceso corre bajo un límite, `MemAvailable` si no.
++
+ Métrica: memoria residente pico por ítem, de GNU Time, por comando.
+ Ciega a: dos invocaciones del mismo comando sobre ítems de peso muy distinto
+ —comparten historial— y a la memoria de los hijos que el ítem no espera.
+@@ -38,6 +42,13 @@ def command_history_dir(base: Path, command: str) -> Path:
+     return Path(base) / f"command-{hashlib.sha256(command.encode()).hexdigest()[:12]}"
+ 
+ 
++def effective_ram_kb(args: argparse.Namespace) -> int | None:
++    """La RAM que este proceso puede repartir: la del cgroup si corre bajo un
++    límite, ``MemAvailable`` si no. Un ``parallel_map`` anidado dentro de un
++    contenedor no promete la memoria del anfitrión."""
++    view = resource_admission.CgroupView(args.self_cgroup, args.cgroup_root)
++    return resource_admission.effective_available_ram_kb(args.meminfo or resource_admission.meminfo_path(), view)
++
+ 
+ def main(argv: list[str]) -> int:
+     parser = argparse.ArgumentParser(prog="parallel_map_history", description=(__doc__ or "").splitlines()[0])
+@@ -50,6 +61,10 @@ def main(argv: list[str]) -> int:
+     p_der.add_argument("history")
+     p_der.add_argument("--margin", type=float, default=pool_history.DEFAULT_MARGIN)
+     p_der.add_argument("--available-ram-kb", type=int, default=None)
++    p_der.add_argument("--meminfo", type=Path, default=None, help="de dónde se lee MemAvailable")
++    p_der.add_argument("--self-cgroup", type=Path, default=resource_admission.SELF_CGROUP,
++                       help="la pertenencia a cgroups cuyo límite acota la RAM libre")
++    p_der.add_argument("--cgroup-root", type=Path, default=resource_admission.DEFAULT_CGROUP_ROOT)
+     args = parser.parse_args(argv)
+ 
+     if args.action == "dir":
+@@ -58,8 +73,7 @@ def main(argv: list[str]) -> int:
+     if args.action == "record":
+         pool_history.record(Path(args.history), Path(args.run_dir))
+         return 0
+-    ram = (args.available_ram_kb if args.available_ram_kb is not None
+-           else resource_admission.available_ram_kb(resource_admission.meminfo_path()))
++    ram = args.available_ram_kb if args.available_ram_kb is not None else effective_ram_kb(args)
+     decision = pool_history.derive_memory(Path(args.history), args.margin, available_ram_kb=ram)
+     ram_cap = "" if decision.ram_cap is None else str(decision.ram_cap)
+     need_kb = "" if decision.need_kb is None else str(decision.need_kb)
+diff --git a/src/session/resource_admission.py b/src/session/resource_admission.py
+index f96641b86..ef7691348 100644
+--- a/src/session/resource_admission.py
++++ b/src/session/resource_admission.py
+@@ -12,8 +12,9 @@ La reserva va por pid del dueño y caduca sola cuando el dueño muere: un
+ contador que se repone en un `trap` pierde el hueco con SIGKILL.
+ 
+ El registro y el bucle no saben de qué recurso se trata. Cada recurso aporta
+-su medida: la VRAM, `gpu_monitor` con `nvidia-smi`; la RAM, este módulo con
+-`MemAvailable` y el RSS de cada árbol en `/proc` —o, si el dueño es un ítem en
++su medida: la VRAM, `gpu_monitor` con su backend de telemetría; la RAM, este
++módulo con la memoria libre efectiva —la del cgroup cuando el proceso corre
++bajo un límite, `MemAvailable` si no— y el RSS de cada árbol en `/proc` —o, si el dueño es un ítem en
+ contenedor, el uso de memoria del cgroup del contenedor, porque su proceso
+ cuelga de `conmon` y no del árbol del dueño (H-THYROX-294)—; el disco, este módulo con el
+ techo que publica `disk-headroom --ceiling-bytes` menos un piso de seguridad.
+@@ -25,7 +26,8 @@ dos veces— y el ensure suelta en cuanto el `podman create` termina.
+ 
+ Métrica: lo libre que el sistema declara, menos lo reservado y aún no usado.
+ Ciega a: lo que un proceso ajeno al registro va a pedir y todavía no pidió
+-—ése no reserva—, y al pico de un ítem por encima de lo que reservó.
++—ése no reserva—; al pico de un ítem por encima de lo que reservó; y a un
++límite de cgroup que el proceso no ve montado (se lee la RAM del anfitrión).
+ """
+ from __future__ import annotations
+ 
+@@ -37,7 +39,9 @@ import subprocess
+ import sys
+ import time
+ from collections.abc import Callable
+-from pathlib import Path
++from dataclasses import dataclass
++from pathlib import Path, PurePosixPath
++from typing import TypeVar
+ 
+ from cache.paths import cache_dir
+ from session import shared_lock
+@@ -170,27 +174,47 @@ def admissible(free: int | None, pending_amount: int, need: int) -> bool:
+ Headroom = Callable[[dict[str, int]], "int | None"]
+ 
+ 
+-def admit_with(ledger_path: Path, need: int, owner_pid: int, headroom: Headroom, run_id: str,
+-               timeout_s: float, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+-    """Comprobar y reservar bajo el lock del registro, reintentando hasta el
+-    plazo. ``headroom`` recibe las reservas vivas y devuelve lo libre menos lo
+-    comprometido aún no usado; ``None`` es «sin medida», y no admite."""
+-    book = ReservationLedger(ledger_path)
+-    book.path.parent.mkdir(parents=True, exist_ok=True)
++Admitted = TypeVar("Admitted")
++
++
++def admit_locked(ledger_path: Path, run_id: str, timeout_s: float, interval_s: float,
++                 attempt: Callable[[], Admitted | None]) -> Admitted | None:
++    """El bucle de comprobar-y-reservar: ``attempt`` corre bajo el lock del
++    registro y devuelve lo que reservó, o ``None`` si no cabe; se reintenta
++    hasta el plazo. Qué se lee y qué se escribe es de ``attempt``: el registro
++    escalar de la RAM y el disco, o el de VRAM por dispositivo."""
++    ledger_path = Path(ledger_path)
++    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+     deadline = time.monotonic() + timeout_s
+     while True:
+-        with shared_lock.held(book.path, run_id=run_id, retries=LEDGER_LOCK_RETRIES,
++        with shared_lock.held(ledger_path, run_id=run_id, retries=LEDGER_LOCK_RETRIES,
+                               min_wait_s=0.01, max_wait_s=0.2):
+-            live = book.live()
+-            if admissible(headroom(live), 0, need):
+-                book.reserve(owner_pid, need)
+-                return True
+-            book.save(live)
++            admitted = attempt()
++        if admitted is not None:
++            return admitted
+         if time.monotonic() >= deadline:
+-            return False
++            return None
+         time.sleep(interval_s)
+ 
+ 
++def admit_with(ledger_path: Path, need: int, owner_pid: int, headroom: Headroom, run_id: str,
++               timeout_s: float, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
++    """Comprobar y reservar en el registro escalar. ``headroom`` recibe las
++    reservas vivas y devuelve lo libre menos lo comprometido aún no usado;
++    ``None`` es «sin medida», y no admite."""
++    book = ReservationLedger(ledger_path)
++
++    def attempt() -> bool | None:
++        live = book.live()
++        if admissible(headroom(live), 0, need):
++            book.reserve(owner_pid, need)
++            return True
++        book.save(live)
++        return None
++
++    return admit_locked(book.path, run_id, timeout_s, interval_s, attempt) is not None
++
++
+ def release_from(ledger_path: Path, owner_pid: int, run_id: str) -> None:
+     """Suelta la reserva de un dueño que terminó, bajo el lock del registro."""
+     book = ReservationLedger(ledger_path)
+@@ -222,6 +246,127 @@ def available_ram_kb(meminfo: Path = Path("/proc/meminfo")) -> int | None:
+     return int(match.group(1)) if match else None
+ 
+ 
++#: La pertenencia de este proceso a sus cgroups.
++SELF_CGROUP = Path("/proc/self/cgroup")
++#: v1 publica «sin límite» como el mayor múltiplo de página bajo 2**63
++#: (medido aquí: 9223372036854771712). Todo límite por encima de 2**62 es ese
++#: sentinela con otro tamaño de página, no una memoria que exista.
++V1_UNLIMITED_FLOOR = 1 << 62
++V2_UNLIMITED = "max"
++V1_MEMORY_CONTROLLER = "memory"
++V2_HIERARCHY_ID = "0"
++
++
++class Unlimited:
++    """«Sin límite» de cgroup: un estado, no ``0`` ni un número enorme."""
++
++    def __repr__(self) -> str:
++        return "UNLIMITED"
++
++
++UNLIMITED = Unlimited()
++
++
++class CgroupUnreadable(Exception):
++    """El cgroup existe pero sus archivos no se pudieron leer: sin medida."""
++
++
++@dataclass(frozen=True)
++class CgroupView:
++    """De dónde se lee el cgroup: la pertenencia del proceso y la raíz montada."""
++    membership: Path = SELF_CGROUP
++    root: Path = DEFAULT_CGROUP_ROOT
++
++
++@dataclass(frozen=True)
++class MemoryHierarchy:
++    """La jerarquía que lleva el controlador de memoria, con sus archivos."""
++    root: Path
++    own: str
++    limit_file: str
++    usage_file: str
++
++    def levels(self) -> list[Path]:
++        """El cgroup propio y sus ancestros, sin la raíz de la jerarquía: la
++        raíz no tiene límite en v2 y en v1 lleva el sentinela."""
++        parts = PurePosixPath(self.own).parts[1:]
++        return [self.root.joinpath(*parts[:depth]) for depth in range(len(parts), 0, -1)]
++
++
++def memory_hierarchy(view: CgroupView) -> MemoryHierarchy | None:
++    """La jerarquía de memoria del proceso: v1 si un controlador ``memory``
++    aparece en su pertenencia, v2 si sólo está la unificada; ``None`` si no
++    hay ninguna."""
++    try:
++        lines = [line.split(":", 2) for line in view.membership.read_text().splitlines() if line.count(":") >= 2]
++    except OSError as error:
++        raise CgroupUnreadable(f"pertenencia ilegible en {view.membership}: {error}") from error
++    for _hierarchy, controllers, own in lines:
++        if V1_MEMORY_CONTROLLER in controllers.split(","):
++            return MemoryHierarchy(view.root / V1_MEMORY_CONTROLLER, own,
++                                   "memory.limit_in_bytes", "memory.usage_in_bytes")
++    for hierarchy, controllers, own in lines:
++        if hierarchy == V2_HIERARCHY_ID and not controllers:
++            return MemoryHierarchy(view.root, own, "memory.max", "memory.current")
++    return None
++
++
++def read_limit(path: Path) -> int | Unlimited:
++    """Un límite normalizado: el sentinela de v1 y el ``max`` de v2 son ``UNLIMITED``."""
++    text = path.read_text().strip()
++    if text == V2_UNLIMITED:
++        return UNLIMITED
++    value = int(text)
++    return UNLIMITED if value >= V1_UNLIMITED_FLOOR else value
++
++
++def level_headroom(level: Path, hierarchy: MemoryHierarchy) -> int | Unlimited:
++    """Lo que queda bajo el límite de UN nivel: ``max(0, límite − uso)``."""
++    try:
++        limit = read_limit(level / hierarchy.limit_file)
++        if isinstance(limit, Unlimited):
++            return UNLIMITED
++        return max(0, limit - int((level / hierarchy.usage_file).read_text().strip()))
++    except (OSError, ValueError) as error:
++        raise CgroupUnreadable(f"cgroup ilegible en {level}: {error}") from error
++
++
++def cgroup_headroom_bytes(view: CgroupView = CgroupView()) -> int | Unlimited:
++    """Lo que el cgroup del proceso y sus ancestros aún dejan usar, en bytes.
++
++    El límite aplicable es el MÁS RESTRICTIVO de la cadena, y se mide por lo
++    que cada nivel deja libre (límite − uso de ese nivel): un ancestro cuenta
++    también lo que usan los hermanos. Sin cgroup de memoria observable —sin
++    controlador en la pertenencia, o con el cgroup propio fuera del montaje
++    que este proceso ve— no hay límite que leer: ``UNLIMITED``."""
++    hierarchy = memory_hierarchy(view)
++    if hierarchy is None:
++        return UNLIMITED
++    levels = hierarchy.levels()
++    if not levels or not levels[0].is_dir():
++        return UNLIMITED
++    bounded = [room for room in (level_headroom(level, hierarchy) for level in levels)
++               if not isinstance(room, Unlimited)]
++    return min(bounded) if bounded else UNLIMITED
++
++
++def effective_available_ram_kb(meminfo: Path = Path("/proc/meminfo"),
++                               cgroup: CgroupView = CgroupView()) -> int | None:
++    """La RAM que este proceso puede pedir: bajo un límite de cgroup, lo que
++    el límite deja; sin límite, ``MemAvailable``. Con límite se toma además el
++    menor de los dos: un límite holgado (medido aquí: 14.3 GB de límite con
++    8.7 GB disponibles en el anfitrión) no crea memoria que el anfitrión no
++    tiene. ``None`` sin lectura de cualquiera de los dos."""
++    host = available_ram_kb(meminfo)
++    try:
++        room = cgroup_headroom_bytes(cgroup)
++    except CgroupUnreadable:
++        return None
++    if host is None or isinstance(room, Unlimited):
++        return host
++    return min(host, room // BYTES_PER_KB)
++
++
+ OwnerUsage = Callable[[int], int]
+ 
+ 
+@@ -245,10 +390,11 @@ def container_aware_usage(containers: dict[int, ContainerMembers],
+ 
+ 
+ def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
+-                 usage: OwnerUsage = host_tree_usage_kb) -> int | None:
+-    """Lo libre de RAM menos lo reservado que los dueños aún no usan. ``None``
+-    sin ``MemAvailable`` o sin poder medir el uso de un dueño."""
+-    free = available_ram_kb(meminfo)
++                 usage: OwnerUsage = host_tree_usage_kb, cgroup: CgroupView = CgroupView()) -> int | None:
++    """Lo libre de RAM —la efectiva, con el límite del cgroup— menos lo
++    reservado que los dueños aún no usan. ``None`` sin lectura de lo libre o
++    sin poder medir el uso de un dueño."""
++    free = effective_available_ram_kb(meminfo, cgroup)
+     if free is None:
+         return None
+     try:
+@@ -373,7 +519,8 @@ def admit_ram(args: argparse.Namespace) -> int:
+         record_container_owner(ledger, args.owner, args.container)
+     admitted = admit_with(ledger, bounded_need(args.need, args.memory_limit_kb), args.owner,
+                           lambda live: ram_headroom(live, meminfo,
+-                                                    ledger_usage(ledger, args.podman, args.cgroup_root)),
++                                                    ledger_usage(ledger, args.podman, args.cgroup_root),
++                                                    CgroupView(args.self_cgroup, args.cgroup_root)),
+                           "ram-admission", args.timeout, args.interval)
+     return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
+ 
+@@ -399,6 +546,8 @@ def build_parser() -> argparse.ArgumentParser:
+                          help="el --memory del contenedor en kB: acota lo que se reserva")
+     p_admit.add_argument("--podman", default="podman")
+     p_admit.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
++    p_admit.add_argument("--self-cgroup", type=Path, default=SELF_CGROUP,
++                         help="la pertenencia a cgroups cuyo límite acota la RAM libre")
+     p_admit.set_defaults(handler=admit_ram)
+     p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
+     p_release.add_argument("--ledger", type=Path, default=None)
+diff --git a/tests/session/hardware/test_gpu_admission_real.py b/tests/session/hardware/test_gpu_admission_real.py
+index f9bc2a76d..83f1f0d43 100755
+--- a/tests/session/hardware/test_gpu_admission_real.py
++++ b/tests/session/hardware/test_gpu_admission_real.py
+@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+ from paths import reach  # noqa: E402
+ 
+ ROOT = reach.thyrox_root()
+-from session import gpu_monitor as gm  # noqa: E402
++from session import gpu_backend as gb  # noqa: E402
+ from session import gpu_trace as gt  # noqa: E402
+ 
+ ALLOCATOR = Path(__file__).resolve().parent / "cuda_stepped_alloc.py"
+@@ -55,13 +55,16 @@ def main(argv: list[str] | None = None) -> int:
+     parser.add_argument("--window", type=float, default=1.0)
+     args = parser.parse_args(argv)
+ 
+-    if not gm.available(args.nvidia_smi):
+-        return refuse(f"nvidia-smi no responde ({args.nvidia_smi})")
++    backend = gb.NvidiaSmiBackend(args.nvidia_smi)
++    cause = gb.telemetry_failure(backend)
++    if cause:
++        return refuse(cause)
+     if not cuda_ready():
+         return refuse("falta PyTorch con CUDA en este intérprete")
+-    free = gm.free_vram_mib(args.nvidia_smi)
+-    if free is None:
+-        return refuse(f"no se pudo medir la VRAM libre ({args.nvidia_smi})")
++    try:
++        free = gb.largest_free_mib(backend)
++    except gb.GpuReadFailed as error:
++        return refuse(f"no se pudo medir la VRAM libre: {error}")
+     mib = args.mib or min(2048, free // 4)
+     out = args.out or ROOT / ".claude/build-logs" / time.strftime("gpu-trace-%Y%m%dT%H%M%SZ", time.gmtime())
+     out.mkdir(parents=True, exist_ok=True)
+diff --git a/tests/session/test_gpu_backend.py b/tests/session/test_gpu_backend.py
+new file mode 100644
+index 000000000..13833869e
+--- /dev/null
++++ b/tests/session/test_gpu_backend.py
+@@ -0,0 +1,246 @@
++"""La GPU como capacidad opcional: el puerto de telemetría y la sonda de capacidad.
++
++Dos observaciones distintas (ADR-007 1.6.1): ``hardware-inventory`` responde
++«¿hay evidencia física de GPU?» y ``GpuMemoryBackend`` responde «¿puedo
++observar su memoria?». La capa de capacidad las combina y ninguna ausencia de
++backend produce una cantidad: ``measured(0)``, ``absent``, ``unavailable`` y
++``error`` son disjuntos.
++
++Todo lo que no es el backend NVIDIA se prueba con backends falsos en Python,
++sin simular el binario. El backend NVIDIA se prueba contra un ejecutable falso
++porque su responsabilidad ES hablar con ese binario.
++
++Invariantes de TASK-THYROX-0691 que cubre este guion: 1, 2, 5, 11, la
++superficie del binario (contrato 7 / corrección 3), el historial sin ceros
++(contrato 10) y la memoria por dispositivo (enmienda 1.7.0, punto 1).
++Las de admisión y atribución (3, 4, 6, 7, 8) viven en ``test_gpu_monitor.py``.
++"""
++from __future__ import annotations
++
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "src"))
++from agents import model_catalog  # noqa: E402
++from session import gpu_backend as gb  # noqa: E402
++from session import pool_history as ph  # noqa: E402
++
++OK = FAILED = 0
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}"); OK += 1
++    else:
++        print(f"  FALLA {label}: esperado {expected!r}, obtenido {obtained!r}"); FAILED += 1
++
++
++DEFAULT_DEVICES = {"GPU-a": 5000}
++
++
++class FakeBackend:
++    """Un backend con memoria declarada por dispositivo; ``devices`` ``None``
++    hace fallar la lectura."""
++
++    def __init__(self, devices: dict[str, int] | None = DEFAULT_DEVICES, usable: bool = True):
++        self.memory = devices
++        self.usable = usable
++
++    def available(self) -> bool:
++        return self.usable
++
++    def devices(self) -> list[gb.DeviceMemory]:
++        if self.memory is None:
++            raise gb.GpuReadFailed("lectura simulada fallida")
++        return [gb.DeviceMemory(device, free) for device, free in self.memory.items()]
++
++    def usage_by_pid(self, pids) -> dict[int, int]:
++        return {}
++
++    def utilization_pct(self) -> int:
++        return 0
++
++    def identity(self) -> str:
++        return "fake"
++
++
++class CountingEvidence:
++    """Evidencia de hardware declarada que cuenta cuántas veces se consultó."""
++
++    def __init__(self, evidence: gb.HardwareEvidence | None):
++        self.evidence = evidence
++        self.calls = 0
++
++    def __call__(self) -> gb.HardwareEvidence:
++        self.calls += 1
++        if self.evidence is None:
++            raise gb.EvidenceUnavailable("inventario simulado sin veredicto")
++        return self.evidence
++
++
++def fake_binary(directory: Path, name: str, free_rows: str) -> Path:
++    smi = directory / name
++    smi.write_text("#!/usr/bin/env bash\n"
++                   'case "$*" in\n'
++                   '  *--query-compute-apps=pid,used_memory*) echo "4242, 300"; echo "4343, 5000" ;;\n'
++                   '  *--query-gpu=index,utilization.gpu*)    echo "0, 91"; echo "1, 12" ;;\n'
++                   f"  *--query-gpu=index,memory.free*)        printf '{free_rows}' ;;\n"
++                   '  *) exit 9 ;;\nesac\n')
++    smi.chmod(0o755)
++    return smi
++
++
++def fake_inventory(directory: Path, name: str, verdict: str, code: int) -> list[str]:
++    script = directory / name
++    script.write_text(f"#!/usr/bin/env bash\nprintf 'signal\\tpci_nvidia\\tabsent\\t-\\n'\n"
++                      f"printf 'verdict\\t{verdict}\\tmissing=-\\n'\nexit {code}\n")
++    script.chmod(0o755)
++    return [str(script)]
++
++
++def read_outcome(backend: gb.NvidiaSmiBackend) -> str:
++    """Lee los dispositivos y resume qué pasó, sin dejar escapar la excepción."""
++    try:
++        backend.devices()
++    except gb.GpuReadFailed as error:
++        return f"GpuReadFailed: {error}"
++    return "devolvió dispositivos"
++
++
++with tempfile.TemporaryDirectory() as raw:
++    tmp = Path(raw)
++
++    print("== 1. el backend NVIDIA habla con su binario, por dispositivo ==")
++    nvidia = gb.NvidiaSmiBackend(str(fake_binary(tmp, "smi-uuid", "0, 6000, GPU-aaa\\n1, 11000, GPU-bbb\\n")))
++    check("disponible con el binario que responde", True, nvidia.available())
++    check("cada dispositivo con su UUID y su libre",
++          [gb.DeviceMemory("GPU-aaa", 6000), gb.DeviceMemory("GPU-bbb", 11000)], nvidia.devices())
++    check("la mayor libre es la de un dispositivo, no la suma", 11000, gb.largest_free_mib(nvidia))
++    check("uso sólo de los PIDs pedidos", {4242: 300}, nvidia.usage_by_pid({4242, 1}))
++    check("uso pico entre GPUs", 91, nvidia.utilization_pct())
++    check("la identidad nombra el binario", True, str(tmp) in nvidia.identity())
++    legacy = gb.NvidiaSmiBackend(str(fake_binary(tmp, "smi-index", "0, 5000\\n")))
++    check("un binario sin columna uuid identifica por índice",
++          [gb.DeviceMemory("index:0", 5000)], legacy.devices())
++    empty = gb.NvidiaSmiBackend(str(fake_binary(tmp, "smi-empty", "")))
++    check("sin ninguna GPU listada: lectura fallida, no lista vacía", True,
++          read_outcome(empty).startswith("GpuReadFailed"))
++    check("y no está disponible", False, empty.available())
++    garbled = gb.NvidiaSmiBackend(str(fake_binary(tmp, "smi-garbled", "0, [N/A], GPU-x\\n")))
++    check("una cifra ilegible es lectura fallida, no una excepción suelta", True,
++          read_outcome(garbled).startswith("GpuReadFailed"))
++    missing = gb.NvidiaSmiBackend(str(tmp / "no-existe"))
++    check("sin binario: no disponible", False, missing.available())
++    check("sin binario, la lectura lanza con la causa y no da cifra", True,
++          "no responde" in read_outcome(missing))
++
++    print("== 2. la capacidad combina evidencia de hardware y backend ==")
++    evidence = CountingEvidence(gb.HardwareEvidence.NONE)
++    capability = gb.probe_capability(None, evidence)
++    check("ninguna evidencia, ningún backend: absent", gb.ABSENT, capability.state)
++    check("absent no lleva telemetría", None, capability.telemetry)
++    check("partial sin backend usable: unavailable", gb.UNAVAILABLE,
++          gb.probe_capability(FakeBackend(usable=False), CountingEvidence(gb.HardwareEvidence.PARTIAL)).state)
++    check("GPU usable en el inventario sin backend: unavailable", gb.UNAVAILABLE,
++          gb.probe_capability(None, CountingEvidence(gb.HardwareEvidence.USABLE)).state)
++    check("inventario sin veredicto y sin backend: error", gb.ERROR,
++          gb.probe_capability(None, CountingEvidence(None)).state)
++    lazy = CountingEvidence(gb.HardwareEvidence.NONE)
++    check("backend usable sin evidencia física: la telemetría decide", gb.AVAILABLE,
++          gb.probe_capability(FakeBackend(), lazy).state)
++    check("con backend usable no se consulta el inventario", 0, lazy.calls)
++
++    print("== 3. partial + backend usable: capacidad y medida son dos etapas ==")
++    partial = CountingEvidence(gb.HardwareEvidence.PARTIAL)
++    good = gb.probe_capability(FakeBackend({"GPU-a": 4000}), partial)
++    check("etapa 1 — partial con backend usable: telemetría available", gb.AVAILABLE, good.state)
++    check("etapa 2 — lectura válida: measured", gb.Measured(4000), gb.measure_free(good))
++    failing = gb.probe_capability(FakeBackend(None), partial)
++    check("etapa 2 — lectura que falla: error, sin cifra", gb.ERROR, gb.measure_free(failing).state)
++
++    print("== 4. ninguna ausencia es un cero (invariantes 2, 5 y 11) ==")
++    absent = gb.measure_free(capability)
++    check("sin backend la medida es el estado absent", gb.ABSENT, absent.state)
++    check("y lleva su causa", True, isinstance(absent, gb.Unmeasured) and "GPU" in absent.reason)
++    check("y no es measured(0)", False, absent == gb.Measured(0))
++    unavailable = gb.measure_free(gb.probe_capability(None, CountingEvidence(gb.HardwareEvidence.PARTIAL)))
++    measured_zero = gb.measure_free(gb.probe_capability(FakeBackend({"GPU-a": 0}), lazy))
++    check("measured(0) es una medida", gb.Measured(0), measured_zero)
++    states = {measured_zero.state, absent.state, unavailable.state, gb.measure_free(failing).state}
++    check("measured, absent, unavailable y error son cuatro estados", 4, len(states))
++    check("un estado sin medida no tiene atributo de cantidad", False, hasattr(absent, "mib"))
++    check("sin medida, la dimensión de anchura desaparece (None)", None, gb.free_mib_or_none(absent))
++    check("measured(0) sí es una dimensión: 0", 0, gb.free_mib_or_none(measured_zero))
++
++    print("== 5. el inventario es evidencia; su código y su veredicto tienen que coincidir ==")
++    check("nvidia-usable, exit 0", gb.HardwareEvidence.USABLE,
++          gb.read_inventory(fake_inventory(tmp, "inv-usable", "nvidia-usable", 0)))
++    check("none, exit 1", gb.HardwareEvidence.NONE, gb.read_inventory(fake_inventory(tmp, "inv-none", "none", 1)))
++    check("partial, exit 3", gb.HardwareEvidence.PARTIAL,
++          gb.read_inventory(fake_inventory(tmp, "inv-partial", "partial", 3)))
++    for name, verdict, code in (("inv-refused", "none", 2), ("inv-contradiction", "none", 3),
++                                ("inv-unknown", "quizá", 0)):
++        try:
++            gb.read_inventory(fake_inventory(tmp, name, verdict, code))
++            outcome = "evidencia"
++        except gb.EvidenceUnavailable:
++            outcome = "sin evidencia"
++        check(f"rehúsa, se contradice o no se entiende: sin evidencia ({name})", "sin evidencia", outcome)
++    check("el inventario real del árbol responde con un veredicto", True,
++          isinstance(gb.read_inventory(gb.DEFAULT_INVENTORY_COMMAND), gb.HardwareEvidence))
++
++    print("== 6. la ruta se decide ANTES de ejecutar, por el requisito declarado ==")
++    table = {(gb.GpuRequirement.NONE, True): gb.Route.UNCONSTRAINED,
++             (gb.GpuRequirement.NONE, False): gb.Route.UNCONSTRAINED,
++             (gb.GpuRequirement.OPTIONAL, True): gb.Route.GPU,
++             (gb.GpuRequirement.OPTIONAL, False): gb.Route.CPU_FALLBACK,
++             (gb.GpuRequirement.REQUIRED, True): gb.Route.GPU,
++             (gb.GpuRequirement.REQUIRED, False): gb.Route.REFUSE}
++    for (requirement, usable), route in table.items():
++        check(f"{requirement.value} con backend={usable}: {route.value}", route,
++              gb.plan_route(requirement, FakeBackend() if usable else None))
++
++    print("== 7. el historial conserva la ausencia de dimensión (contrato 10) ==")
++    run = tmp / "run"
++    run.mkdir()
++    for n, content in ((1, "unavailable GPU sin telemetría\n"), (2, "error NVML: mismatch\n")):
++        (run / f"{n}.time").write_text("1000 1.0 0.00 0.00\n")
++        (run / f"{n}.gpu").write_text(content)
++        (run / f"{n}.closed").write_text(f'{{"item": "{n}", "generation": 1, "artifacts": {{}}}}')
++    row = ph.record(tmp / "history", run)
++    check("sin pico de VRAM en la fila", False, row is not None and "peak_vram_mib" in row)
++    check("ningún ítem cuenta como medido en VRAM", 0, row["items_gpu_measured"] if row else None)
++
++    print("== 8. sin telemetría la anchura no se reduce (invariante 1) ==")
++    decision = ph.derive(tmp / "history", "claude-sonnet-5", model_catalog.require_catalog(),
++                         free_vram_mib=gb.free_mib_or_none(absent), available_ram_kb=10_000_000)
++    check("sin tope de VRAM", None, decision.vram_cap)
++    check("ni petición de VRAM", None, decision.vram_need_mib)
++    check("el tope es sólo el de RAM", decision.ram_cap, decision.width_cap)
++
++print("== 9. superficie: el binario de NVIDIA sólo en los archivos permitidos ==")
++# Cada entrada lleva su razón; una referencia nueva en cualquier otro archivo
++# de producción rompe la prueba (se comparan archivos, no un conteo).
++ALLOWED = {
++    "src/session/gpu_backend.py",            # el backend NVIDIA
++    "src/session/hardware-inventory.sh",     # la sonda de hardware
++    "src/session/gpu_trace.py",              # arnés de nivel 2: registra el binario real
++    "src/session/headless-pool.sh",          # ítem B: su variable de configuración del binario
++    "src/packages/config/gpuAdmission.ts",   # configuración: la opción de CLI que declara el binario
++}
++SCANNED = ("src/session", "src/lib", "src/packages", "bin")
++SKIPPED = ("__tests__", "/dist/", "node_modules", "/tests/")
++listed = subprocess.run(["git", "grep", "-l", "--untracked", "nvidia-smi", "--", *SCANNED],
++                        cwd=ROOT, capture_output=True, text=True)
++check("git grep respondió", True, listed.returncode in (0, 1))
++found = {path for path in listed.stdout.split()
++         if path.endswith((".py", ".sh", ".ts")) or path.startswith("bin/")}
++found = {path for path in found if not any(skip in f"/{path}" for skip in SKIPPED)}
++check("cada archivo que nombra el binario está en la lista", set(), found - ALLOWED)
++
++print(f"\ntest_gpu_backend: {OK} ok, {FAILED} falla(s)")
++raise SystemExit(1 if FAILED else 0)
+diff --git a/tests/session/test_gpu_monitor.py b/tests/session/test_gpu_monitor.py
+index d0b87db85..971fc021b 100644
+--- a/tests/session/test_gpu_monitor.py
++++ b/tests/session/test_gpu_monitor.py
+@@ -1,23 +1,32 @@
+-"""La VRAM de cada ítem del pool, como GNU Time mide su RAM.
++"""La VRAM de cada ítem del pool y su admisión, sobre el puerto de telemetría.
+ 
+ `--memfree` de GNU Parallel es memoria del SISTEMA; la de la GPU es otro
+-recurso y GNU Time no la ve. `gpu_monitor` la muestrea con `nvidia-smi`
+-mientras vive el ÁRBOL de procesos del ítem y deja `<n>.gpu`:
++recurso y GNU Time no la ve. `gpu_monitor` la muestrea con un
++`GpuMemoryBackend` mientras vive el ÁRBOL de procesos del ítem y deja `<n>.gpu`:
+ 
+     <vram pico MiB> <vram media MiB> <uso pico de GPU %> <muestras>
+ 
+-Aquí no hay GPU, así que `nvidia-smi` es un falso que responde lo que el test
+-escribe en dos archivos. Eso prueba el mecanismo —qué PIDs cuenta, cuándo
+-para, qué hace sin GPU—, no la precisión de `nvidia-smi`, que es de NVIDIA.
++Aquí no hay GPU. Donde el caso es la conversación con el binario de NVIDIA se
++usa un ejecutable falso con `NvidiaSmiBackend`; el resto usa backends falsos
++en Python, sin simular el binario. Eso prueba el mecanismo —qué PIDs cuenta,
++cuándo para, qué hace sin telemetría, en qué dispositivo reserva—, no la
++precisión del driver.
+ 
+ Contrato:
+-  - cuenta sólo la VRAM del árbol del ítem, no la de otros procesos;
++  - cuenta sólo la VRAM del árbol del ítem, por PIDs del anfitrión;
+   - para cuando el árbol termina;
+-  - sin `nvidia-smi` no escribe nada: una medida ausente no es un cero;
+-  - un árbol que no usó la GPU SÍ escribe, con cero: eso es una medida.
++  - sin telemetría no escribe una cifra: `absent` no deja archivo y
++    `unavailable` deja su estado;
++  - un árbol que no usó la GPU SÍ escribe, con cero: eso es una medida;
++  - cada reserva nombra su dispositivo y su tipo (worker, residency, request),
++    y se admite contra lo libre de ESE dispositivo;
++  - el requisito del trabajo (none, optional, required) decide antes de
++    ejecutar si la VRAM es dimensión de admisión.
++Invariantes de TASK-THYROX-0691: 3, 4, 6, 7, 8 y la enmienda 1.7.0.
+ """
+ from __future__ import annotations
+ 
++import json
+ import os
+ import shutil
+ import subprocess
+@@ -28,9 +37,11 @@ import time
+ from pathlib import Path
+ 
+ from paths import reach
++from session import gpu_backend as gb
+ from session import gpu_monitor as gm
+ 
+ OK = FAILED = 0
++GIB = 1024
+ 
+ 
+ def check(label: str, expected, obtained) -> None:
+@@ -42,7 +53,7 @@ def check(label: str, expected, obtained) -> None:
+ 
+ 
+ FAKE_SMI = """#!/usr/bin/env bash
+-# nvidia-smi falso: las dos consultas que usa gpu_monitor, desde dos archivos.
++# El binario de NVIDIA falso: las tres consultas del backend, desde tres archivos.
+ case "$*" in
+   *--query-compute-apps=pid,used_memory*) cat "$FAKE_GPU_APPS" ;;
+   *--query-gpu=index,utilization.gpu*)    cat "$FAKE_GPU_UTIL" ;;
+@@ -52,30 +63,103 @@ esac
+ """
+ 
+ 
++class FakeBackend:
++    """Telemetría declarada: memoria libre por dispositivo y uso por PID del anfitrión."""
++
++    def __init__(self, devices: dict[str, int], usage: dict[int, int] | None = None):
++        self.memory = devices
++        self.usage = usage or {}
++
++    def available(self) -> bool:
++        return True
++
++    def devices(self) -> list[gb.DeviceMemory]:
++        return [gb.DeviceMemory(device, free) for device, free in self.memory.items()]
++
++    def usage_by_pid(self, pids) -> dict[int, int]:
++        return {pid: mib for pid, mib in self.usage.items() if pid in set(pids)}
++
++    def utilization_pct(self) -> int:
++        return 50
++
++    def identity(self) -> str:
++        return "fake"
++
++
++class StaticMembers:
++    """Una fuente de miembros que vive ``rounds`` lecturas con PIDs fijos."""
++
++    def __init__(self, pids: set[int], rounds: int):
++        self.pids = pids
++        self.rounds = rounds
++
++    def current_members(self) -> set[int] | None:
++        self.rounds -= 1
++        return set(self.pids) if self.rounds >= 0 else None
++
++
++def no_hardware() -> gb.HardwareEvidence:
++    return gb.HardwareEvidence.NONE
++
++
++def partial_hardware() -> gb.HardwareEvidence:
++    return gb.HardwareEvidence.PARTIAL
++
++
++def capability_of(binary: Path) -> gb.Capability:
++    return gb.probe_capability(gb.NvidiaSmiBackend(str(binary)), no_hardware)
++
++
+ def spawn_tree(seconds: float) -> tuple[subprocess.Popen, int]:
+     """Un padre con un hijo: el hijo es quien usa la GPU, no el padre."""
+     parent = subprocess.Popen(["bash", "-c", f"sleep {seconds} & echo $!; wait"],
+                               stdout=subprocess.PIPE, text=True)
+-    assert parent.stdout is not None  # se pidio con stdout=PIPE
++    assert parent.stdout is not None  # se pidió con stdout=PIPE
+     return parent, int(parent.stdout.readline())
+ 
+ 
++def worker(owner_pid: int, need_mib: int) -> gm.WorkerReservation:
++    return gm.WorkerReservation(owner_pid, need_mib)
++
++
++def admitted(reservation: gm.Reservation | None) -> bool:
++    return reservation is not None
++
++
++def refusal_of(action) -> str:
++    """El nombre de la excepción que lanza ``action``, o «sin excepción»."""
++    try:
++        action()
++    except Exception as error:  # noqa: BLE001 — el caso compara el tipo lanzado
++        return type(error).__name__
++    return "sin excepción"
++
++
++def run_cli(*args: str) -> subprocess.CompletedProcess:
++    return subprocess.run([sys.executable, "-m", "session.gpu_monitor", *args],
++                          env={**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")},
++                          capture_output=True, text=True, timeout=60)
++
++
+ with tempfile.TemporaryDirectory() as raw:
+     tmp = Path(raw)
+     smi = tmp / "nvidia-smi"
+     smi.write_text(FAKE_SMI); smi.chmod(0o755)
+-    apps, utilization = tmp / "apps.csv", tmp / "util.csv"
++    apps, utilization, free = tmp / "apps.csv", tmp / "util.csv", tmp / "free.csv"
+     os.environ["FAKE_GPU_APPS"], os.environ["FAKE_GPU_UTIL"] = str(apps), str(utilization)
++    os.environ["FAKE_GPU_FREE"] = str(free)
++    free.write_text("0, 5000\n")
++    nvidia = gb.NvidiaSmiBackend(str(smi))
+ 
+     print("== 1. el árbol del ítem incluye a sus hijos ==")
+     parent, child = spawn_tree(2)
+     check("el hijo está en el árbol del padre", True, child in gm.tree(parent.pid))
+     parent.wait()
+ 
+-    print("== 2. una muestra: VRAM por PID y uso por GPU ==")
++    print("== 2. una muestra: VRAM de los PIDs pedidos y uso por GPU ==")
+     apps.write_text("4242, 300\n4343, 5000\n")
+     utilization.write_text("0, 91\n1, 12\n")
+-    sample = gm.sample(str(smi))
++    sample = gm.sample(nvidia, {4242, 4343})
+     check("VRAM por PID", {4242: 300, 4343: 5000}, sample.vram_by_pid)
+     check("uso pico entre GPUs", 91, sample.utilization_pct)
+ 
+@@ -84,15 +168,13 @@ with tempfile.TemporaryDirectory() as raw:
+     apps.write_text(f"{child}, 300\n999999, 5000\n")
+     out = tmp / "1.gpu"
+     started = time.monotonic()
+-    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(smi), interval_s=0.2)
++    summary = gm.watch(gm.HostTree(parent.pid), out, capability_of(smi), interval_s=0.2)
+     elapsed = time.monotonic() - started
+     parent.wait()
+     assert summary is not None
+     check("pico: los 300 MiB del hijo, no los 5000 ajenos", 300, summary.peak_mib)
+-    # La media NO se fija en 300: entre que el hijo termina y el padre sale hay
+-    # una ventana de milisegundos, y una muestra ahí mide 0 MiB, que es verdad
+-    # (el árbol no usaba VRAM en ese instante). Fijarla en 300 suponía una
+-    # sincronización que el test no controla: salió 262 de forma intermitente.
++    # La media no se fija en 300: entre que el hijo termina y el padre sale
++    # hay una ventana de milisegundos en la que el árbol no usa VRAM.
+     check("media: positiva y no mayor que el pico", True, 0 < summary.avg_mib <= 300)
+     check("uso pico de GPU", 91, summary.peak_utilization_pct)
+     check("varias muestras", True, summary.samples >= 3)
+@@ -103,29 +185,34 @@ with tempfile.TemporaryDirectory() as raw:
+     parent, child = spawn_tree(0.6)
+     apps.write_text("999999, 5000\n")
+     out = tmp / "2.gpu"
+-    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(smi), interval_s=0.2)
++    summary = gm.watch(gm.HostTree(parent.pid), out, capability_of(smi), interval_s=0.2)
+     parent.wait()
+     assert summary is not None
+     check("pico cero, uso cero", (0, 0), (summary.peak_mib, summary.peak_utilization_pct))
+     check("y el archivo existe", True, out.exists())
+ 
+-    print("== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==")
++    print("== 5. sin telemetría no se escribe una cifra ==")
+     parent, child = spawn_tree(0.3)
+     out = tmp / "3.gpu"
+-    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(tmp / "no-existe"), interval_s=0.1)
++    absent = capability_of(tmp / "no-existe")
++    check("sin binario ni evidencia: absent", gb.ABSENT, absent.state)
++    check("absent: sin resumen", None, gm.watch(gm.HostTree(parent.pid), out, absent, interval_s=0.1))
+     parent.wait()
+-    check("sin resumen", None, summary)
+-    check("sin archivo", False, out.exists())
+-
+-    print("== 7. la VRAM libre: la de la GPU con más espacio, que es donde cabe un ítem ==")
+-    free = tmp / "free.csv"
+-    os.environ["FAKE_GPU_FREE"] = str(free)
++    check("absent: sin archivo", False, out.exists())
++    out = tmp / "3u.gpu"
++    unavailable = gb.probe_capability(gb.NvidiaSmiBackend(str(tmp / "no-existe")), partial_hardware)
++    check("unavailable: sin resumen", None, gm.watch(StaticMembers({1}, 1), out, unavailable, interval_s=0.01))
++    check("unavailable: el archivo declara el estado", gb.UNAVAILABLE, gm.read_gpu_file(out).state)
++    check("y no lleva resumen", None, gm.read_gpu_file(out).summary)
++
++    print("== 7. la VRAM libre: la del dispositivo con más espacio ==")
+     free.write_text("0, 6000\n1, 11000\n")
+-    check("la mayor entre GPUs, no la suma: un ítem no se reparte", 11000, gm.free_vram_mib(str(smi)))
+-    check("sin nvidia-smi, None", None, gm.free_vram_mib(str(tmp / "no-existe")))
++    check("la mayor entre GPUs, no la suma: un ítem no se reparte", 11000, gb.largest_free_mib(nvidia))
++    check("la CLI free la imprime", "11000", run_cli("free", "--nvidia-smi", str(smi)).stdout.strip())
++    check("la CLI free sin binario sale 2", 2, run_cli("free", "--nvidia-smi", str(tmp / "no-existe")).returncode)
+ 
+     print("== 8. TRES estados: medido 0, ausente, y error al medir ==")
+-    # nvidia-smi que responde las primeras N llamadas y luego falla: se intentó
++    # Un binario que responde las primeras N llamadas y luego falla: se intentó
+     # medir y no se pudo. Eso NO es cero ni ausencia, y no se publica parcial.
+     flaky = tmp / "nvidia-smi-flaky"
+     flaky.write_text('#!/usr/bin/env bash\nn=$(cat "$FAKE_CALLS" 2>/dev/null || echo 0); echo $((n+1)) > "$FAKE_CALLS"\n'
+@@ -136,11 +223,9 @@ with tempfile.TemporaryDirectory() as raw:
+     parent, child = spawn_tree(1.5)
+     apps.write_text(f"{child}, 300\n")
+     out = tmp / "4.gpu"
+-    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(flaky), interval_s=0.2)
++    summary = gm.watch(gm.HostTree(parent.pid), out, capability_of(flaky), interval_s=0.2)
+     parent.wait()
+     check("error al medir: sin resumen publicado", None, summary)
+-    # Se lee sin lanzar una excepción: si el archivo falta, el caso sale FALLA,
+-    # no una excepción que un filtro de resumen lea como silencio.
+     written = out.read_text() if out.exists() else ""
+     check("el archivo declara el error y su causa", True,
+           written.startswith("error ") and "mismatch" in written)
+@@ -151,59 +236,68 @@ with tempfile.TemporaryDirectory() as raw:
+     print("== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==")
+     ledger9 = tmp / "ledger9.json"
+     owner9 = os.getpid()
+-    free.write_text("0, 1000\n")
++    free.write_text("0, 1000\n"); apps.write_text("")
+     check("sin sitio y sin plazo: no admite", False,
+-          gm.admit(2000, ledger9, owner9, str(smi), timeout_s=0.5, interval_s=0.1))
++          admitted(gm.admit(worker(owner9, 2000), ledger9, nvidia, timeout_s=0.5, interval_s=0.1)))
+     free.write_text("0, 5000\n")
+     check("con sitio: admite enseguida", True,
+-          gm.admit(2000, ledger9, owner9, str(smi), timeout_s=0.5, interval_s=0.1))
++          admitted(gm.admit(worker(owner9, 2000), ledger9, nvidia, timeout_s=0.5, interval_s=0.1)))
+     gm.release(ledger9, owner9)
+     free.write_text("0, 1000\n")
+     subprocess.Popen(["bash", "-c", f"sleep 0.4; echo '0, 5000' > {free}"])
+     check("se libera mientras espera: admite", True,
+-          gm.admit(2000, ledger9, owner9, str(smi), timeout_s=3, interval_s=0.1))
++          admitted(gm.admit(worker(owner9, 2000), ledger9, nvidia, timeout_s=3, interval_s=0.1)))
+     gm.release(ledger9, owner9)
+ 
+     print("== 9b. el registro vive en un directorio que aún no existe: admit lo crea ==")
+-    # La primera ejecución de un pool con una base de historial nueva: el
+-    # directorio del registro no existe todavía, y el lock no podía crearse.
+     fresh = tmp / "base-nueva" / "sub" / "vram.json"
+     free.write_text("0, 5000\n")
+     check("admite aunque el directorio no exista", True,
+-          gm.admit(2000, fresh, os.getpid(), str(smi), timeout_s=0.5, interval_s=0.1))
++          admitted(gm.admit(worker(os.getpid(), 2000), fresh, nvidia, timeout_s=0.5, interval_s=0.1)))
+     gm.release(fresh, os.getpid())
+     check("y release deja el registro vacío", {}, gm.VramLedger(fresh).live())
+     check("release sobre un directorio inexistente no lanza", None,
+           gm.release(tmp / "otra-base" / "vram.json", os.getpid()))
+ 
+-    print("== 9c. sin nvidia-smi que responda, admit rehúsa al instante: una ausencia no es una espera ==")
+-    # Sin GPU que medir no falta sitio, falta GPU: esperar el plazo informaría
+-    # una causa falsa. El registro no se escribe.
+-    absent_ledger = tmp / "absent" / "vram.json"
++    print("== 9c. el requisito del trabajo decide antes de ejecutar (invariantes 3 y 4) ==")
++    def request(ledger: Path, need: int = 3000, timeout_s: float = 0.2) -> gm.AdmissionRequest:
++        return gm.AdmissionRequest(need, ledger, os.getpid(), timeout_s, 0.05)
++
++    ledger_req = tmp / "requirement" / "vram.json"
+     started = time.monotonic()
+-    try:
+-        gm.admit(100, absent_ledger, os.getpid(), str(tmp / "no-existe"), timeout_s=5, interval_s=0.1)
+-        refusal = "admitió o venció"
+-    except gm.GpuUnavailable:
+-        refusal = "GpuUnavailable"
+-    check("sin nvidia-smi: GpuUnavailable, no un plazo vencido", "GpuUnavailable", refusal)
+-    check("y en menos de un segundo", True, time.monotonic() - started < 1.0)
+-    check("el registro no se escribe", False, absent_ledger.parent.exists())
+-
+-    print("== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==")
+-    # 5000 libres y dos ítems de 3000 a la vez: comprobar sin reservar deja
+-    # arrancar a los dos (3000 + 3000 > 5000). Con el registro de lo comprometido,
+-    # uno entra y el otro espera. Sonda de shell que lo reprodujo:
+-    # `.claude/workbench/vram-toctou-*/probe-toctou.sh`.
++    check("required sin telemetría: rehúsa", gm.Outcome.REFUSED,
++          gm.admit_for(gb.GpuRequirement.REQUIRED, request(ledger_req, timeout_s=5), None))
++    check("y al instante, sin esperar el plazo", True, time.monotonic() - started < 1.0)
++    check("y no se escribe reserva", False, ledger_req.parent.exists())
++    full = FakeBackend({"GPU-a": 0})
++    check("none con la GPU llena: entra sin la VRAM como dimensión", gm.Outcome.UNCONSTRAINED,
++          gm.admit_for(gb.GpuRequirement.NONE, request(ledger_req), full))
++    check("none sin telemetría: igual", gm.Outcome.UNCONSTRAINED,
++          gm.admit_for(gb.GpuRequirement.NONE, request(ledger_req), None))
++    check("none: el registro sigue sin existir", False, ledger_req.parent.exists())
++    check("optional sin telemetría: la ruta CPU declarada", gm.Outcome.CPU_FALLBACK,
++          gm.admit_for(gb.GpuRequirement.OPTIONAL, request(ledger_req), None))
++    check("optional sin telemetría: sin reserva", False, ledger_req.parent.exists())
++    check("optional con telemetría y sitio: reserva", gm.Outcome.RESERVED,
++          gm.admit_for(gb.GpuRequirement.OPTIONAL, request(ledger_req), FakeBackend({"GPU-a": 5000})))
++    check("y la reserva está en el registro, en su dispositivo", [("worker", "GPU-a", 3000)],
++          [(r.kind, r.device, r.mib) for r in gm.VramLedger(ledger_req).live().values()])
++    gm.release(ledger_req, os.getpid())
++    check("optional con telemetría sin sitio: ruta CPU al vencer su plazo", gm.Outcome.CPU_FALLBACK,
++          gm.admit_for(gb.GpuRequirement.OPTIONAL, request(ledger_req), FakeBackend({"GPU-a": 100})))
++    check("required con telemetría sin sitio: vence el plazo", gm.Outcome.TIMEOUT,
++          gm.admit_for(gb.GpuRequirement.REQUIRED, request(ledger_req), FakeBackend({"GPU-a": 100})))
++
++    print("== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM (invariante 6) ==")
+     free.write_text("0, 5000\n")
+     apps.write_text("")
+     ledger = tmp / "vram.json"
+     go = tmp / "go"
+-    racer = (f"import sys, time\nfrom pathlib import Path\nfrom session import gpu_monitor as gm\n"
++    racer = (f"import sys, time\nfrom pathlib import Path\nfrom session import gpu_backend as gb, gpu_monitor as gm\n"
+              f"while not Path({str(go)!r}).exists(): time.sleep(0.001)\n"
+-             f"ok = gm.admit(3000, Path({str(ledger)!r}), owner_pid=int(sys.argv[1]), nvidia_smi={str(smi)!r},"
+-             f" timeout_s=0.8, interval_s=0.1)\n"
+-             f"print('admitido' if ok else 'esperó')\n")
++             f"got = gm.admit(gm.WorkerReservation(int(sys.argv[1]), 3000), Path({str(ledger)!r}),"
++             f" gb.NvidiaSmiBackend({str(smi)!r}), timeout_s=0.8, interval_s=0.1)\n"
++             f"print('admitido' if got else 'esperó')\n")
+     env = {**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")}
+     holders = [subprocess.Popen(["sleep", "5"]) for _ in range(2)]
+     racers = [subprocess.Popen([sys.executable, "-c", racer, str(h.pid)], stdout=subprocess.PIPE, text=True, env=env)
+@@ -213,53 +307,52 @@ with tempfile.TemporaryDirectory() as raw:
+     check("uno admitido y el otro esperó", ["admitido", "esperó"], outcomes)
+ 
+     print("== 11. una reserva cuenta sólo lo que su árbol aún no usa: sin doble conteo ==")
+-    # El dueño ya ocupa sus 3000 y nvidia-smi ya los resta de lo libre: su
+-    # reserva no puede volver a restarse, o se bloquea VRAM que sí existe.
+     ledger2 = tmp / "vram2.json"
+     parent, child = spawn_tree(5)
+-    check("el primero reserva", True, gm.admit(3000, ledger2, owner_pid=parent.pid, nvidia_smi=str(smi), timeout_s=0.2))
++    check("el primero reserva", True,
++          admitted(gm.admit(worker(parent.pid, 3000), ledger2, nvidia, timeout_s=0.2)))
+     apps.write_text(f"{child}, 3000\n")
+     free.write_text("0, 2000\n")
+     check("con los 3000 ya visibles, 1500 caben en los 2000 libres", True,
+-          gm.admit(1500, ledger2, owner_pid=holders[0].pid, nvidia_smi=str(smi), timeout_s=0.2))
++          admitted(gm.admit(worker(holders[0].pid, 1500), ledger2, nvidia, timeout_s=0.2)))
+ 
+-    print("== 12. soltar y dueños muertos liberan lo comprometido ==")
++    print("== 12. soltar y dueños muertos liberan lo comprometido (invariante 7) ==")
+     free.write_text("0, 5000\n"); apps.write_text("")
+     ledger3 = tmp / "vram3.json"
+-    check("A reserva 3000", True, gm.admit(3000, ledger3, owner_pid=holders[0].pid, nvidia_smi=str(smi), timeout_s=0.2))
++    check("A reserva 3000", True, admitted(gm.admit(worker(holders[0].pid, 3000), ledger3, nvidia, timeout_s=0.2)))
+     check("B no cabe mientras A tenga su reserva", False,
+-          gm.admit(3000, ledger3, owner_pid=holders[1].pid, nvidia_smi=str(smi), timeout_s=0.2, interval_s=0.05))
++          admitted(gm.admit(worker(holders[1].pid, 3000), ledger3, nvidia, timeout_s=0.2, interval_s=0.05)))
+     gm.release(ledger3, holders[0].pid)
+-    check("soltada la de A, B cabe", True, gm.admit(3000, ledger3, owner_pid=holders[1].pid, nvidia_smi=str(smi), timeout_s=0.2))
++    check("soltada la de A, B cabe", True,
++          admitted(gm.admit(worker(holders[1].pid, 3000), ledger3, nvidia, timeout_s=0.2)))
+     holders[1].kill(); holders[1].wait()
+     check("con el dueño de B muerto, su reserva no cuenta", True,
+-          gm.admit(3000, ledger3, owner_pid=holders[0].pid, nvidia_smi=str(smi), timeout_s=0.2))
++          admitted(gm.admit(worker(holders[0].pid, 3000), ledger3, nvidia, timeout_s=0.2)))
+     for h in holders: h.kill(); h.wait()
+     parent.kill(); parent.wait()
+ 
+-    print("== 13. la decisión es pura: se prueba sin nvidia-smi ni registro ==")
++    print("== 13. la decisión es pura: se prueba sin telemetría ni registro ==")
+     check("5000 libres, nada comprometido, pide 3000: cabe", True, gm.admissible(5000, 0, 3000))
+     check("5000 libres, 3000 comprometidos, pide 3000: no cabe", False, gm.admissible(5000, 3000, 3000))
+     check("sin lectura de VRAM libre: no se admite", False, gm.admissible(None, 0, 1))
+-    usage = {10: 1000, 11: 500, 99: 7000}
+-    check("pendiente: cada reserva menos lo que su árbol ya usa", 1500 + 3000,
+-          gm.pending({"1": 3000, "2": 3000}, usage, trees={1: {1, 10, 11}, 2: {2}}))
+-    check("una reserva ya visible entera no cuenta", 0, gm.pending({"1": 1500}, usage, trees={1: {1, 10, 11}}))
++    check("elige el dispositivo con más margen que alcance", "GPU-10",
++          gm.choose_device({"GPU-4": 4 * GIB, "GPU-10": 10 * GIB}, 3 * GIB, None))
++    check("ninguno alcanza: None", None, gm.choose_device({"GPU-4": 4 * GIB, "GPU-10": 10 * GIB}, 12 * GIB, None))
++    check("fijado a un dispositivo, sólo cuenta ése", None,
++          gm.choose_device({"GPU-4": 4 * GIB, "GPU-10": 10 * GIB}, 8 * GIB, "GPU-4"))
+ 
+     print("== 14. el registro: reservar, soltar, descartar dueños muertos ==")
+     book = gm.VramLedger(tmp / "libro.json")
+     alive = subprocess.Popen(["sleep", "5"])
+     dead = subprocess.Popen(["true"]); dead.wait()
+-    book.reserve(alive.pid, 3000); book.reserve(dead.pid, 2000)
+-    check("sólo cuentan los dueños vivos", {str(alive.pid): 3000}, book.live())
+-    book.release(alive.pid)
++    book.save({r.key: r for r in (gm.WorkerReservation(alive.pid, 3000, "GPU-a"),
++                                  gm.WorkerReservation(dead.pid, 2000, "GPU-a"))})
++    check("sólo cuentan los dueños vivos", [f"worker:{alive.pid}"], sorted(book.live()))
++    gm.release(tmp / "libro.json", alive.pid)
+     check("soltada, no queda nada", {}, book.live())
+     alive.kill(); alive.wait()
+ 
+     print("== 5b. un proceso que sale a mitad del recorrido no tumba tree() ==")
+-    # La carrera medida en test_gpu_trace.py: pathlib 3.11 comprueba que
+-    # `/proc/<pid>/task` es directorio y luego lo lista; si el proceso salió en
+-    # medio, `scandir` da FileNotFoundError. Se fuerza aquí, sin carrera real.
+     fake_proc = tmp / "proc"
+     (fake_proc / "4242" / "task" / "4242").mkdir(parents=True)
+     (fake_proc / "4242" / "task" / "4242" / "children").write_text("4243\n")
+@@ -282,8 +375,6 @@ with tempfile.TemporaryDirectory() as raw:
+     check("el hijo que desapareció cuenta y el recorrido sigue", {4242, 4243}, walked)
+ 
+     print("== 15. watch con la fuente de un contenedor: mide sus PIDs, no los del cliente ==")
+-    # Doble de Podman y de cgroup v1: `cgroup.procs` lista al proceso del
+-    # contenedor; el cliente (este test) también tiene VRAM y no debe contar.
+     relative = "/libpod_parent/libpod-gpu"
+     podman = tmp / "podman"
+     podman.write_text("#!/usr/bin/env bash\n"
+@@ -295,15 +386,15 @@ with tempfile.TemporaryDirectory() as raw:
+     cgroup_root = tmp / "cgroup"
+     memory = cgroup_root / "memory" / relative.lstrip("/")
+     memory.mkdir(parents=True)
+-    worker = subprocess.Popen(["sleep", "30"])
+-    (memory / "cgroup.procs").write_text(f"{worker.pid}\n")
++    container_worker = subprocess.Popen(["sleep", "30"])
++    (memory / "cgroup.procs").write_text(f"{container_worker.pid}\n")
+     (memory / "memory.max_usage_in_bytes").write_text("1\n")
+     (memory / "memory.usage_in_bytes").write_text("1\n")
+-    apps.write_text(f"{worker.pid}, 700\n{os.getpid()}, 5000\n")
++    apps.write_text(f"{container_worker.pid}, 700\n{os.getpid()}, 5000\n")
+     source = gm.ContainerMembers("known", str(podman), cgroup_root)
+     threading.Timer(1.0, shutil.rmtree, args=(memory,)).start()
+     out = tmp / "15.gpu"
+-    summary = gm.watch(source, out, nvidia_smi=str(smi), interval_s=0.2)
++    summary = gm.watch(source, out, capability_of(smi), interval_s=0.2)
+     check("pico: los 700 MiB del contenedor, no los 5000 del cliente", 700,
+           summary.peak_mib if summary else None)
+     check("para cuando el cgroup desaparece", True, summary is not None and summary.samples >= 2)
+@@ -314,31 +405,103 @@ with tempfile.TemporaryDirectory() as raw:
+     (memory / "memory.max_usage_in_bytes").write_text("1\n")
+     (memory / "memory.usage_in_bytes").write_text("1\n")
+     out = tmp / "16.gpu"
+-    summary = gm.watch(source, out, nvidia_smi=str(smi), interval_s=0.2)
++    summary = gm.watch(source, out, capability_of(smi), interval_s=0.2)
+     check("sin resumen publicado", None, summary)
+     check("el archivo es error con causa, no ceros", "error", gm.read_gpu_file(out).state)
+ 
+     print("== 17. la CLI: watch --container usa la fuente del contenedor ==")
+     shutil.rmtree(memory)
+     memory.mkdir(parents=True)
+-    (memory / "cgroup.procs").write_text(f"{worker.pid}\n")
++    (memory / "cgroup.procs").write_text(f"{container_worker.pid}\n")
+     (memory / "memory.max_usage_in_bytes").write_text("1\n")
+     (memory / "memory.usage_in_bytes").write_text("1\n")
+     threading.Timer(1.0, shutil.rmtree, args=(memory,)).start()
+     out = tmp / "17.gpu"
+-    done = subprocess.run([sys.executable, "-m", "session.gpu_monitor", "watch", str(os.getpid()), str(out),
+-                           "--container", "known", "--podman", str(podman), "--cgroup-root", str(cgroup_root),
+-                           "--nvidia-smi", str(smi), "--interval", "0.2"],
+-                          env={**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")},
+-                          capture_output=True, text=True, timeout=30)
++    done = run_cli("watch", str(os.getpid()), str(out), "--container", "known", "--podman", str(podman),
++                   "--cgroup-root", str(cgroup_root), "--nvidia-smi", str(smi), "--interval", "0.2")
+     reading = gm.read_gpu_file(out)
+     check("la CLI mide el contenedor: pico 700", (0, 700),
+           (done.returncode, reading.summary.peak_mib if reading.summary else None))
+-    worker.kill(); worker.wait()
++    container_worker.kill(); container_worker.wait()
++
++    print("== 18. la VRAM se atribuye por PIDs del anfitrión, no del contenedor (invariante 8) ==")
++    # Dentro del contenedor el trabajo es el PID 7; en el anfitrión es 5001, y
++    # el 7 del anfitrión es otro proceso con 5000 MiB.
++    host_view = FakeBackend({"GPU-a": 1000}, usage={5001: 700, 7: 5000})
++    out = tmp / "18.gpu"
++    capable = gb.probe_capability(host_view, no_hardware)
++    summary = gm.watch(StaticMembers({5001}, 2), out, capable, interval_s=0.01)
++    check("con los PIDs del anfitrión: 700", 700, summary.peak_mib if summary else None)
++    check("con los del espacio del contenedor saldría otra cifra", 5000,
++          sum(host_view.usage_by_pid({1, 7}).values()))
++
++    print("== 19. cada reserva nombra su dispositivo: se admite contra lo libre de ESE ==")
++    two = FakeBackend({"GPU-4": 4 * GIB, "GPU-10": 10 * GIB})
++    ledger19 = tmp / "devices.json"
++    check("4 GiB en una y 10 en otra no admiten 12", None,
++          gm.admit(worker(os.getpid(), 12 * GIB), ledger19, two, timeout_s=0.1, interval_s=0.05))
++    placed = gm.admit(worker(os.getpid(), 8 * GIB), ledger19, two, timeout_s=0.1, interval_s=0.05)
++    check("8 GiB entran en la de 10", "GPU-10", placed.device if placed else None)
++    other = subprocess.Popen(["sleep", "30"])
++    second = gm.admit(worker(other.pid, 3 * GIB), ledger19, two, timeout_s=0.1, interval_s=0.05)
++    check("la siguiente de 3 GiB va a la de 4: en la de 10 quedan 2", "GPU-4",
++          second.device if second else None)
++    other.kill(); other.wait()
++    stored = json.loads(ledger19.read_text())
++    check("el registro guarda tipo, dispositivo y MiB", {"kind": "worker", "device": "GPU-10", "mib": 8 * GIB},
++          {k: stored[f"worker:{os.getpid()}"][k] for k in ("kind", "device", "mib")})
++    gm.release(ledger19, os.getpid())
++
++    print("== 20. los tres tipos: worker, residency y request ==")
++    ledger20 = tmp / "types.json"
++    residency = gm.admit(gm.ResidencyReservation("llama@host", 2, 6 * GIB), ledger20, two, timeout_s=0.1)
++    check("una residency se reserva a nombre de su instancia y generación", "residency:llama@host:2",
++          residency.key if residency else None)
++    check("y vive sin PID que la sostenga", True, residency is not None and residency.key in gm.VramLedger(ledger20).live())
++    requester = subprocess.Popen(["sleep", "30"])
++    req = gm.admit(gm.RequestReservation("r-1", requester.pid, "residency:llama@host:2", 1 * GIB),
++                   ledger20, two, timeout_s=0.1)
++    check("la request va al dispositivo de su residency", residency.device if residency else "?",
++          req.device if req else None)
++    check("liberar la residency con una request viva se rehúsa", "ResidencyBusy",
++          refusal_of(lambda: gm.release_residency(ledger20, "llama@host", 2)))
++    check("y la residency sigue en el registro", True, "residency:llama@host:2" in gm.VramLedger(ledger20).live())
++    check("otra generación no la libera", "sin excepción",
++          refusal_of(lambda: gm.release_residency(ledger20, "llama@host", 1)))
++    check("la de generación 2 sigue", True, "residency:llama@host:2" in gm.VramLedger(ledger20).live())
++    check("una request sin su residency se rehúsa", "ResidencyMissing",
++          refusal_of(lambda: gm.admit(gm.RequestReservation("r-2", requester.pid, "residency:otra:1", 1),
++                                      ledger20, two, timeout_s=0.1)))
++    requester.kill(); requester.wait()
++    check("muerto su dueño, la request deja de contar", ["residency:llama@host:2"],
++          sorted(gm.VramLedger(ledger20).live()))
++    check("y la residency ya se puede liberar", "sin excepción",
++          refusal_of(lambda: gm.release_residency(ledger20, "llama@host", 2)))
++    check("sin reservas vivas no queda archivo", False, ledger20.exists())
++
++    print("== 21. la CLI admit con requisito ==")
++    cli_ledger = tmp / "cli" / "vram.json"
++    check("none: sale 0 sin tocar el registro", (0, False),
++          (run_cli("admit", "100", "--ledger", str(cli_ledger), "--owner", str(os.getpid()),
++                   "--requirement", "none", "--nvidia-smi", str(tmp / "no-existe")).returncode, cli_ledger.parent.exists()))
++    optional = run_cli("admit", "100", "--ledger", str(cli_ledger), "--owner", str(os.getpid()),
++                       "--requirement", "optional", "--nvidia-smi", str(tmp / "no-existe"))
++    check("optional sin telemetría: sale con su código de ruta CPU", gm.EXIT_CPU_FALLBACK, optional.returncode)
++    check("y lo dice por stderr", True, "ruta CPU" in optional.stderr)
++    required = run_cli("admit", "100", "--ledger", str(cli_ledger), "--owner", str(os.getpid()),
++                       "--nvidia-smi", str(tmp / "no-existe"))
++    check("sin requisito declarado es required: sale 2", 2, required.returncode)
++    check("sin cifra en stdout", "", required.stdout)
++    check("y el registro no se escribe", False, cli_ledger.parent.exists())
++
++    print("== 22. la CLI capability publica el estado, no una cifra ==")
++    shown = run_cli("capability", "--nvidia-smi", str(smi))
++    check("con telemetría: available", "available", shown.stdout.split("\t")[0])
++    free.write_text("0, 5000\n")
+ 
+-    print("== 6. disponible() distingue las dos situaciones ==")
+-    check("con el falso: disponible", True, gm.available(str(smi)))
+-    check("sin él: no disponible", False, gm.available(str(tmp / "no-existe")))
++    print("== 6. available() distingue las dos situaciones ==")
++    check("con el falso: sale 0", 0, run_cli("available", "--nvidia-smi", str(smi)).returncode)
++    check("sin él: sale 2", 2, run_cli("available", "--nvidia-smi", str(tmp / "no-existe")).returncode)
+ 
+ print(f"\ntest_gpu_monitor: {OK} ok, {FAILED} falla(s)")
+ raise SystemExit(1 if FAILED else 0)
+diff --git a/tests/session/test_gpu_scenarios.py b/tests/session/test_gpu_scenarios.py
+index 897815ce9..3093829b7 100644
+--- a/tests/session/test_gpu_scenarios.py
++++ b/tests/session/test_gpu_scenarios.py
+@@ -1,6 +1,6 @@
+ #!/usr/bin/env python3
+ """La admisión por VRAM contra una GPU simulada CON ESTADO — prueba de
+-COMPONENTE (``gpu_monitor`` + ``VramLedger``), no de integración.
++COMPONENTE (``gpu_monitor`` + ``VramLedger`` sobre ``NvidiaSmiBackend``), no de integración.
+ 
+ El nvidia-smi falso (``fakes/stateful-nvidia-smi.sh``) calcula lo libre como
+ el total menos lo que usan los procesos VIVOS; el asignador
+@@ -32,11 +32,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+ from paths import reach  # noqa: E402
+ 
+ ROOT = reach.thyrox_root()
++from session import gpu_backend as gb  # noqa: E402
+ from session import gpu_monitor as gm  # noqa: E402
+ 
+ FAKES = Path(__file__).resolve().parent / "fakes"
+ STEP_TIMEOUT_S = 10.0
+ RACE_ROUNDS = 5
++#: El falso con estado publica un solo dispositivo, sin uuid: se identifica por índice.
++DEVICE = "index:0"
+ 
+ results = []
+ 
+@@ -67,6 +70,7 @@ class Gpu:
+         self.smi = str(self.dir / "nvidia-smi")
+         Path(self.smi).write_text(f'#!/usr/bin/env bash\nGPU_STATE="{self.state}" exec bash "{FAKES}/stateful-nvidia-smi.sh" "$@"\n')
+         os.chmod(self.smi, 0o755)
++        self.backend = gb.NvidiaSmiBackend(self.smi)
+         self.ledger = self.dir / "vram.json"
+         self.stack = stack
+ 
+@@ -74,15 +78,24 @@ class Gpu:
+         return self.stack.enter_context(Job(self, mib, steps))
+ 
+     def row(self) -> tuple[int, int, int | None, int | None]:
+-        """(usado por los dueños, pendiente, libre, margen) en este instante."""
++        """(usado por los dueños, pendiente, libre, margen) en este instante.
++        Lo pendiente es lo libre menos el margen: la parte reservada que la
++        GPU aún no muestra."""
+         live = gm.VramLedger(self.ledger).live()
+-        usage = gm.sample(self.smi).vram_by_pid
+-        trees = {int(pid): gm.tree(int(pid)) for pid in live}
+-        used = sum(usage.get(p, 0) for t in trees.values() for p in t)
+-        return used, gm.pending(live, usage, trees), gm.free_vram_mib(self.smi), gm.headroom(live, self.smi)
++        owners = set().union(*(r.attributed_pids() for r in live.values()))
++        used = sum(self.backend.usage_by_pid(owners).values())
++        free = gb.largest_free_mib(self.backend)
++        margin = gm.device_headroom(self.backend, live)
++        margin_mib = margin[DEVICE] if margin else None
++        return used, free - (margin_mib or 0), free, margin_mib
+ 
+     def admit(self, need: int, owner: "Job", timeout_s: float = 0.5) -> bool:
+-        return gm.admit(need, self.ledger, owner.pid, self.smi, timeout_s=timeout_s, interval_s=0.05)
++        return admit_owner(self, need, owner.pid, timeout_s)
++
++
++def admit_owner(gpu: Gpu, need: int, owner_pid: int, timeout_s: float = 0.5) -> bool:
++    return gm.admit(gm.WorkerReservation(owner_pid, need), gpu.ledger, gpu.backend,
++                    timeout_s=timeout_s, interval_s=0.05) is not None
+ 
+ 
+ class Job:
+@@ -163,7 +176,7 @@ def scenario_sigkill():
+         check("B de 3200 no cabe mientras A vive", False, gpu.admit(3200, b))
+         a.kill()
+         check("B de 3200 entra tras el SIGKILL de A", True, gpu.admit(3200, b))
+-        check("el registro guarda sólo a B", [str(b.pid)], sorted(gm.VramLedger(gpu.ledger).live()))
++        check("el registro guarda sólo a B", [f"worker:{b.pid}"], sorted(gm.VramLedger(gpu.ledger).live()))
+ 
+ 
+ def scenario_zombie():
+@@ -172,7 +185,7 @@ def scenario_zombie():
+         gpu = Gpu(stack, 6000)
+         owner = subprocess.Popen(["bash", "-c", "read -r _"], stdin=subprocess.PIPE)
+         stack.callback(owner.wait)
+-        check("A admitido mientras vive", True, gm.admit(3200, gpu.ledger, owner.pid, gpu.smi, timeout_s=0.5, interval_s=0.05))
++        check("A admitido mientras vive", True, admit_owner(gpu, 3200, owner.pid))
+         b = gpu.job()
+         check("B de 3200 no cabe mientras A vive", False, gpu.admit(3200, b))
+         assert owner.stdin is not None  # se pidio con stdin=PIPE
+@@ -188,7 +201,7 @@ def scenario_foreign():
+         gpu = Gpu(stack, 6000)
+         foreign = gpu.job(5000, 1)
+         foreign.step(1)
+-        check("margen = 1000", 1000, gm.headroom({}, gpu.smi))
++        check("margen = 1000", {DEVICE: 1000}, gm.device_headroom(gpu.backend, {}))
+         b = gpu.job()
+         check("GPU casi llena: 3200 no entra", False, gpu.admit(3200, b))
+         check("800 sí entra", True, gpu.admit(800, b))
+@@ -200,18 +213,20 @@ def scenario_unmeasured():
+         smi = Path(tmp) / "nvidia-smi"
+         smi.write_text(f'#!/usr/bin/env bash\nGPU_STATE="{tmp}/no-existe" exec bash "{FAKES}/stateful-nvidia-smi.sh" "$@"\n')
+         os.chmod(smi, 0o755)
+-        check("headroom sin medida es None", None, gm.headroom({}, str(smi)))
++        check("headroom sin medida es None", None, gm.device_headroom(gb.NvidiaSmiBackend(str(smi)), {}))
+ 
+ 
+ RACER = r"""
+ import sys, time
+ from pathlib import Path
+-from session import gpu_monitor as gm
++import os
++from session import gpu_backend as gb, gpu_monitor as gm
+ barrier, ledger, smi, need = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], int(sys.argv[4])
+ while not barrier.exists():
+     time.sleep(0.001)
+-import os
+-print("admitido" if gm.admit(need, ledger, os.getpid(), smi, timeout_s=1.0, interval_s=0.05) else "esperó", flush=True)
++placed = gm.admit(gm.WorkerReservation(os.getpid(), need), ledger, gb.NvidiaSmiBackend(smi),
++                  timeout_s=1.0, interval_s=0.05)
++print("admitido" if placed else "esperó", flush=True)
+ sys.stdin.read()   # el dueño sigue vivo hasta que el test lo suelte
+ """
+ 
+diff --git a/tests/session/test_parallel_map_history.py b/tests/session/test_parallel_map_history.py
+index a527897fa..d2c911d1e 100644
+--- a/tests/session/test_parallel_map_history.py
++++ b/tests/session/test_parallel_map_history.py
+@@ -99,5 +99,34 @@ with tempfile.TemporaryDirectory() as tmp:
+     check("dir imprime el historial del comando", str(first), out.getvalue().strip())
+     del os.environ[pmh.HISTORY_DIR_VAR]
+ 
++    print("caso 7 — un paralelismo anidado respeta el límite de su cgroup (invariante 10)")
++    # Una fila con el ítem publicado: 100 000 kB de pico, 200 000 por ítem.
++    nested = pmh.command_history_dir(base, "anidado {}")
++    nested_run = Path(tmp) / "nested-run"
++    write_time(nested_run, 1, 100_000, 0.5)
++    (nested_run / "1.closed").write_text('{"item": "1", "generation": 1, "artifacts": {}}')
++    ph.record(nested, nested_run)
++    cgroup_root = Path(tmp) / "cgroup"
++    limited = cgroup_root / "memory" / "worker"
++    limited.mkdir(parents=True)
++    (limited / "memory.limit_in_bytes").write_text(f"{512 * 1024 * 1024}\n")
++    (limited / "memory.usage_in_bytes").write_text(f"{112 * 1024 * 1024}\n")
++    membership = Path(tmp) / "self-cgroup"
++    membership.write_text("4:memory:/worker\n0::/\n")
++    meminfo = Path(tmp) / "meminfo"
++    meminfo.write_text("MemTotal:  16000000 kB\nMemAvailable:  6800000 kB\n")
++    out = io.StringIO()
++    with contextlib.redirect_stdout(out):
++        pmh.main(["derive", str(nested), "--meminfo", str(meminfo), "--self-cgroup", str(membership),
++                  "--cgroup-root", str(cgroup_root)])
++    check("bajo 512 MiB de límite con 112 usados caben 2, no los 34 del anfitrión", "2",
++          out.getvalue().split("\t")[1])
++    membership.write_text("0::/\n")
++    out = io.StringIO()
++    with contextlib.redirect_stdout(out):
++        pmh.main(["derive", str(nested), "--meminfo", str(meminfo), "--self-cgroup", str(membership),
++                  "--cgroup-root", str(cgroup_root)])
++    check("sin límite, la RAM del anfitrión: 34", "34", out.getvalue().split("\t")[1])
++
+ print(f"test_parallel_map_history: {OK} ok, {FAILED} fallos")
+ sys.exit(1 if FAILED else 0)
+diff --git a/tests/session/test_resource_admission.py b/tests/session/test_resource_admission.py
+index 166013698..93ccef630 100644
+--- a/tests/session/test_resource_admission.py
++++ b/tests/session/test_resource_admission.py
+@@ -40,6 +40,13 @@ def meminfo(path: Path, available_kb: int) -> Path:
+     return path
+ 
+ 
++#: Una pertenencia en la raíz de v2: sin cgroup que acote, así las admisiones
++#: de estos casos leen sólo el MemAvailable que el caso declara.
++NO_CGROUP_DIR = tempfile.TemporaryDirectory()
++NO_CGROUP = Path(NO_CGROUP_DIR.name) / "self-root"
++NO_CGROUP.write_text("0::/\n")
++
++
+ def cli(*args: str) -> subprocess.CompletedProcess:
+     return subprocess.run([sys.executable, "-m", "session.resource_admission", *args],
+                           cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+@@ -50,7 +57,7 @@ with tempfile.TemporaryDirectory() as tmp:
+     tmp_path = Path(tmp)
+ 
+     print("caso 1 — el registro es el mismo que usaba la GPU")
+-    check("gpu_monitor reutiliza el registro común", ra.ReservationLedger, gm.VramLedger)
++    check("gpu_monitor reutiliza el bucle común", ra.admit_locked, gm.admit_locked)
+     check("y la decisión pura", ra.admissible, gm.admissible)
+ 
+     print("caso 2 — la reserva de un dueño muerto no compromete nada")
+@@ -73,7 +80,7 @@ with tempfile.TemporaryDirectory() as tmp:
+     ledger = tmp_path / "race.json"
+     owners = [subprocess.Popen(["sleep", "30"]) for _ in range(2)]
+     try:
+-        racers = [subprocess.Popen([sys.executable, "-m", "session.resource_admission", "admit-ram", "3000000",
++        racers = [subprocess.Popen([sys.executable, "-m", "session.resource_admission", "admit-ram", "3000000", "--self-cgroup", str(NO_CGROUP),
+                                     "--ledger", str(ledger), "--owner", str(o.pid), "--meminfo", str(info),
+                                     "--timeout", "0"],
+                                    cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
+@@ -86,7 +93,7 @@ with tempfile.TemporaryDirectory() as tmp:
+         admitted = next(iter(ra.ReservationLedger(ledger).live()))
+         check("release sale 0", 0, cli("release", "--ledger", str(ledger), "--owner", admitted).returncode)
+         waiting = next(str(o.pid) for o in owners if str(o.pid) != admitted)
+-        check("el otro entra ahora", 0, cli("admit-ram", "3000000", "--ledger", str(ledger), "--owner", waiting,
++        check("el otro entra ahora", 0, cli("admit-ram", "3000000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", waiting,
+                                               "--meminfo", str(info), "--timeout", "0").returncode)
+ 
+         print("caso 6 — muerto el dueño, su reserva deja de contar")
+@@ -94,7 +101,7 @@ with tempfile.TemporaryDirectory() as tmp:
+         holder.kill(); holder.wait()
+         survivor = next(o for o in owners if o is not holder)
+         check("el vivo entra sin que nadie haya soltado", 0,
+-              cli("admit-ram", "3000000", "--ledger", str(ledger), "--owner", str(survivor.pid),
++              cli("admit-ram", "3000000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", str(survivor.pid),
+                   "--meminfo", str(info), "--timeout", "0").returncode)
+     finally:
+         for o in owners:
+@@ -147,7 +154,7 @@ with tempfile.TemporaryDirectory() as raw:
+     ledger = root / "ram.json"
+     owner = subprocess.Popen(["sleep", "30"])
+     try:
+-        code = cli("admit-ram", "5000", "--ledger", str(ledger), "--owner", str(owner.pid),
++        code = cli("admit-ram", "5000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", str(owner.pid),
+                    "--meminfo", str(meminfo(root / "meminfo3", 3000)), "--timeout", "0",
+                    "--container", "known", "--memory-limit-kb", "2000",
+                    "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode
+@@ -157,7 +164,7 @@ with tempfile.TemporaryDirectory() as raw:
+         # El cgroup ya usa 2000 kB: la reserva del dueño está entera a la vista
+         # y no se resta dos veces. Por su árbol (un `sleep`) se restaría casi entera.
+         check("otro de 2500 cabe en 3000 libres: el cgroup ya muestra la reserva", 0,
+-              cli("admit-ram", "2500", "--ledger", str(ledger), "--owner", str(os.getpid()),
++              cli("admit-ram", "2500", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", str(os.getpid()),
+                   "--meminfo", str(root / "meminfo3"), "--timeout", "0",
+                   "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode)
+     finally:
+@@ -300,5 +307,85 @@ example = (ROOT / ".env.example").read_text()
+ for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
+     check(f"{name} figura en .env.example", True, f"\n{name}=" in example)
+ 
++V1_SENTINEL = 9223372036854771712  # el «sin límite» de v1 medido en este anfitrión
++
++
++def membership(path: Path, text: str) -> Path:
++    path.write_text(text)
++    return path
++
++
++def cgroup_level(directory: Path, files: tuple[str, str], limit: str, usage: str) -> None:
++    directory.mkdir(parents=True, exist_ok=True)
++    (directory / files[0]).write_text(f"{limit}\n")
++    (directory / files[1]).write_text(f"{usage}\n")
++
++
++V1_FILES = ("memory.limit_in_bytes", "memory.usage_in_bytes")
++V2_FILES = ("memory.max", "memory.current")
++
++print("caso 18 — cgroups v1: el límite más restrictivo del cgroup y sus ancestros")
++with tempfile.TemporaryDirectory() as raw:
++    root = Path(raw)
++    info = meminfo(root / "meminfo", 10_000)
++    own_v1 = membership(root / "self-v1", "4:memory:/a/b\n3:cpuset:/\n0::/\n")
++    view = ra.CgroupView(own_v1, root)
++    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(8 * MIB), str(2 * MIB))
++    cgroup_level(root / "memory" / "a", V1_FILES, str(4 * MIB), str(3 * MIB))
++    check("el ancestro deja 1 MiB aunque el propio deje 6", 1024, ra.effective_available_ram_kb(info, view))
++    cgroup_level(root / "memory" / "a", V1_FILES, str(V1_SENTINEL), str(3 * MIB))
++    check("con el ancestro sin límite manda el propio: 6 MiB", 6144, ra.effective_available_ram_kb(info, view))
++    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(V1_SENTINEL), str(2 * MIB))
++    check("el sentinela de v1 es «sin límite», no una cifra", ra.UNLIMITED, ra.cgroup_headroom_bytes(view))
++    check("y sin límite la RAM es la del anfitrión", 10_000, ra.effective_available_ram_kb(info, view))
++    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(2 * MIB), str(3 * MIB))
++    check("uso por encima del límite: 0, no negativo", 0, ra.cgroup_headroom_bytes(view))
++    check("«sin límite» no es 0", False, ra.UNLIMITED == 0)
++
++    print("caso 19 — cgroups v2 con un doble: memory.max y memory.current")
++    own_v2 = membership(root / "self-v2", "0::/x/y\n")
++    view2 = ra.CgroupView(own_v2, root / "unified")
++    cgroup_level(root / "unified" / "x" / "y", V2_FILES, str(5 * MIB), str(1 * MIB))
++    cgroup_level(root / "unified" / "x", V2_FILES, "max", "0")
++    check("4 MiB libres bajo memory.max", 4096, ra.effective_available_ram_kb(info, view2))
++    cgroup_level(root / "unified" / "x" / "y", V2_FILES, "max", str(1 * MIB))
++    check("«max» en todos los niveles: sin límite", ra.UNLIMITED, ra.cgroup_headroom_bytes(view2))
++
++    print("caso 20 — un cgroup ilegible es «sin medida», no la RAM del anfitrión")
++    cgroup_level(root / "memory" / "a" / "b", V1_FILES, "basura", "0")
++    check("límite ilegible: None", None, ra.effective_available_ram_kb(info, view))
++    check("pertenencia ilegible: None", None,
++          ra.effective_available_ram_kb(info, ra.CgroupView(root / "no-existe", root)))
++
++    print("caso 21 — sin cgroup de memoria observable, la RAM es la del anfitrión")
++    check("en la raíz de v2: sin límite", ra.UNLIMITED,
++          ra.cgroup_headroom_bytes(ra.CgroupView(membership(root / "self-root", "0::/\n"), root / "unified")))
++    check("un cgroup propio que no está montado: sin límite", ra.UNLIMITED,
++          ra.cgroup_headroom_bytes(ra.CgroupView(membership(root / "self-hidden", "0::/oculto\n"), root / "unified")))
++
++    print("caso 22 — un límite holgado no promete más de lo que el anfitrión tiene")
++    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(64 * MIB), "0")
++    cgroup_level(root / "memory" / "a", V1_FILES, str(V1_SENTINEL), "0")
++    check("64 MiB de límite con 10000 kB libres en el anfitrión: 10000", 10_000,
++          ra.effective_available_ram_kb(info, view))
++
++    print("caso 23 — la admisión de RAM lee el cgroup (invariante 9)")
++    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(3 * MIB), str(1 * MIB))
++    check("10000 kB en /proc/meminfo, 2 MiB en el cgroup: 2048", 2048,
++          ra.ram_headroom({}, info, usage=lambda pid: 0, cgroup=view))
++    big = meminfo(root / "meminfo-big", 5_000_000)
++    check("admit-ram bajo el límite: 3 GB no caben en 2 MiB", 3,
++          cli("admit-ram", "3000000", "--ledger", str(root / "cg.json"), "--owner", str(os.getpid()),
++              "--meminfo", str(big), "--self-cgroup", str(own_v1), "--cgroup-root", str(root),
++              "--timeout", "0").returncode)
++    check("admit-ram sin límite: caben en los 5 GB del anfitrión", 0,
++          cli("admit-ram", "3000000", "--ledger", str(root / "cg2.json"), "--owner", str(os.getpid()),
++              "--meminfo", str(big), "--self-cgroup", str(membership(root / "self-free", "0::/\n")),
++              "--cgroup-root", str(root), "--timeout", "0").returncode)
++
++print("caso 24 — el cgroup real de este anfitrión se lee sin error")
++real = ra.cgroup_headroom_bytes(ra.CgroupView())
++check("un entero o «sin límite»", True, isinstance(real, (int, ra.Unlimited)))
++
+ print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
+ sys.exit(1 if FAILED else 0)

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/head-baseline && bash tests/session/test-parallel-map.sh 2>&1 | grep -E 'FALLA|parallel_map:'", "started_at": "2026-10-01T00:11:48+00:00"}
