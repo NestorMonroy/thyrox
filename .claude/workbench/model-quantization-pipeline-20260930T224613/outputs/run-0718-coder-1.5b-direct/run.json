@@ -1,0 +1,181 @@
+{
+  "request": {
+    "repository": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    "revision": "2e1fd397ee46e1388853d2af2c993145b0f1098a",
+    "level": "Q4_K_M",
+    "method": "direct",
+    "minimumFreeBytes": 0,
+    "memoryLimitBytes": 8589934592
+  },
+  "source": {
+    "repository": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    "revision": "2e1fd397ee46e1388853d2af2c993145b0f1098a",
+    "files": [
+      {
+        "path": ".gitattributes",
+        "sizeBytes": 1519,
+        "digest": "gitblob:a6344aac8c09253b3b630fb776ae94478aa0275b"
+      },
+      {
+        "path": "LICENSE",
+        "sizeBytes": 11343,
+        "digest": "gitblob:6634c8cc3133b3848ec74b9f275acaaa1ea618ab"
+      },
+      {
+        "path": "README.md",
+        "sizeBytes": 5258,
+        "digest": "gitblob:ae7c2e1a888ccc658813a6779ba63625ceeac946"
+      },
+      {
+        "path": "config.json",
+        "sizeBytes": 660,
+        "digest": "gitblob:b4831594221a81ea1540f0c6aeae93b6a8aeae56"
+      },
+      {
+        "path": "generation_config.json",
+        "sizeBytes": 242,
+        "digest": "gitblob:b7849b3dad857bc1e227afd6ca21d1e4cb3f8f82"
+      },
+      {
+        "path": "merges.txt",
+        "sizeBytes": 1671839,
+        "digest": "gitblob:20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+      },
+      {
+        "path": "model.safetensors",
+        "sizeBytes": 3087467144,
+        "digest": "sha256:c1b9b30e907950516ba3c646bdf570d8084c25a6410a0cdca80cf04b11bc13a8"
+      },
+      {
+        "path": "tokenizer.json",
+        "sizeBytes": 7031645,
+        "digest": "gitblob:443909a61d429dff23010e5bddd28ff530edda00"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "sizeBytes": 7305,
+        "digest": "gitblob:acee076f49bf3c0298e15de0909d1da7b392f0c3"
+      },
+      {
+        "path": "vocab.json",
+        "sizeBytes": 2776833,
+        "digest": "gitblob:4783fe10ac3adce15ac8f358ef5462739852c569"
+      }
+    ]
+  },
+  "image": {
+    "reference": "localhost/thyrox-model-quantizer:dev",
+    "id": "ddf16d444d8bd2ac8cb4cfd94b7dd966b7da1de15e5a0ab9137a97d16fcf9156",
+    "digest": "sha256:7bbe1b609ecf553fffa28443c41c1ba27ec02a8b45f856dc231166da0eac40ad"
+  },
+  "records": [
+    {
+      "step": "download",
+      "completedAt": "2026-10-01T02:35:39.652Z",
+      "artifact": {
+        "path": "/home/user/.thyrox-lab/quantize-scratch/source/model.safetensors",
+        "sha256": "c1b9b30e907950516ba3c646bdf570d8084c25a6410a0cdca80cf04b11bc13a8",
+        "bytes": 3087467144
+      }
+    },
+    {
+      "step": "convert",
+      "completedAt": "2026-10-01T02:36:09.835Z",
+      "artifact": {
+        "path": "/home/user/.thyrox-lab/quantize-scratch/model-F16.gguf",
+        "sha256": "3cdb9aacd3cb1851882b3d1e2c9772fc40b7a6afd6d6f8a7fdb61d72e6a453ab",
+        "bytes": 3093669536
+      }
+    },
+    {
+      "step": "verify-intermediate",
+      "completedAt": "2026-10-01T02:36:10.605Z"
+    },
+    {
+      "step": "release-source",
+      "completedAt": "2026-10-01T02:36:12.013Z"
+    },
+    {
+      "step": "quantize",
+      "completedAt": "2026-10-01T02:36:53.214Z",
+      "artifact": {
+        "path": "/home/user/.thyrox-lab/quantize-scratch/model-Q4_K_M.gguf",
+        "sha256": "47c034a0322d82f6361df5f1d67497246bed41836ac4daf154c5a19957a8fa17",
+        "bytes": 986048672
+      }
+    },
+    {
+      "step": "validate",
+      "completedAt": "2026-10-01T02:37:21.442Z"
+    },
+    {
+      "step": "release-intermediate",
+      "completedAt": "2026-10-01T02:37:22.921Z"
+    },
+    {
+      "step": "register",
+      "completedAt": "2026-10-01T02:37:23.687Z",
+      "artifact": {
+        "path": "/home/user/thyrox/.claude/workbench/model-quantization-pipeline-20260930T224613/outputs/run-0718-coder-1.5b-direct/manifest.json",
+        "sha256": "c6c0ec2b32f48b0d0a4de745b943a5e6dabfc2729874603a774ec35391cce851",
+        "bytes": 1564
+      }
+    }
+  ],
+  "observations": {
+    "sourceSha256": {
+      ".gitattributes": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+      "LICENSE": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "README.md": "a8504fd3e1247c90e4fe640d84df963237134bf29db02b0de7d502eed6c93c33",
+      "config.json": "88f9a17863c05fb313515d2ff74b1098e0c35579f99068e32beda00618508ae0",
+      "generation_config.json": "1a628a5775bc69cde01c6749a531150ca4d3189652c618a174f7077923acf3b1",
+      "merges.txt": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+      "model.safetensors": "c1b9b30e907950516ba3c646bdf570d8084c25a6410a0cdca80cf04b11bc13a8",
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "959e7f1d9a1b7641a6d6ce05ca97b75c7894fcb66cbe5a040406458fb1128ee4",
+      "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+    },
+    "downloadedBytes": 3098973788,
+    "architecture": "qwen2",
+    "intermediateBytes": 3093669536,
+    "validation": {
+      "loaded": true,
+      "tokensPerSecond": 15.75,
+      "perplexity": 3.2242
+    },
+    "quantizedBytes": 986048672,
+    "quantizedSha256": "47c034a0322d82f6361df5f1d67497246bed41836ac4daf154c5a19957a8fa17"
+  },
+  "metrics": {
+    "steps": {
+      "download": {
+        "durationMs": 93781
+      },
+      "convert": {
+        "durationMs": 30154,
+        "peakMemoryBytes": 3590029312
+      },
+      "verify-intermediate": {
+        "durationMs": 768
+      },
+      "release-source": {
+        "durationMs": 1407
+      },
+      "quantize": {
+        "durationMs": 41200,
+        "peakMemoryBytes": 2160181248
+      },
+      "validate": {
+        "durationMs": 28227,
+        "peakMemoryBytes": 2124439552
+      },
+      "release-intermediate": {
+        "durationMs": 1478
+      },
+      "register": {
+        "durationMs": 765
+      }
+    },
+    "minimumFreeBytes": 3285622784
+  }
+}
