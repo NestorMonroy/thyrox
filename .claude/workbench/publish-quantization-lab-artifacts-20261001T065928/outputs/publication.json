@@ -1,0 +1,8 @@
+{
+  "status": "refused",
+  "publishedAt": "2026-10-01T07:00:02.669Z",
+  "outcome": {
+    "status": "refused",
+    "reason": "la admisión de disco respondió unmeasured para 994156640 bytes más su margen"
+  }
+}
