@@ -55,6 +55,13 @@ describe('isLockCollision', () => {
     expect(isLockCollision(COLLISION.stderr)).toBe(true)
   })
 
+  test('reconoce el lock que Podman no puede liberar al retirar un objeto desfasado', () => {
+    // Escrito por `podman volume rm` el 2026-10-01 con la memoria de locks vacía.
+    expect(
+      isLockCollision('Error: freeing lock for volume thyrox-quantization-lab-sources: no such file or directory\n'),
+    ).toBe(true)
+  })
+
   test('un stderr distinto no es colisión', () => {
     expect(isLockCollision('Error: no such image\n')).toBe(false)
     expect(isLockCollision('')).toBe(false)

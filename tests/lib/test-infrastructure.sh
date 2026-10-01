@@ -317,6 +317,13 @@ if bash -c "source '$SUBJECT'; thyrox_infrastructure_is_lock_collision \"\$1\"" 
 else
   bad "is_lock_collision no reconocio el literal"
 fi
+# El mismo desfase visto desde el borrado (`podman volume rm`, 2026-10-01).
+release_literal="Error: freeing lock for volume thyrox-quantization-lab-sources: no such file or directory"
+if bash -c "source '$SUBJECT'; thyrox_infrastructure_is_lock_collision \"\$1\"" _ "$release_literal"; then
+  ok "is_lock_collision reconoce el lock que Podman no puede liberar"
+else
+  bad "is_lock_collision no reconocio el lock que Podman no puede liberar"
+fi
 for other in "Error: no such image" ""; do
   if bash -c "source '$SUBJECT'; thyrox_infrastructure_is_lock_collision \"\$1\"" _ "$other"; then
     bad "is_lock_collision clasifico como colision: [$other]"

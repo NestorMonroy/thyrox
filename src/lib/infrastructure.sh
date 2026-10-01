@@ -331,8 +331,13 @@ export -f thyrox_infrastructure_disk_need_bytes
 # (H-THYROX-296). Literal exacto de Podman 4.9.3, presente en su binario y
 # escrito por `podman start` el 2026-09-30.
 readonly _INFRASTRUCTURE_LOCK_COLLISION_LITERAL="deadlock due to lock mismatch"
-# El remedio que Podman nombra. Nunca lo corre este arbol: exige que no corra
-# ningun otro proceso de Podman y afectaria a los workers vivos.
+# La misma causa vista desde el borrado: `podman volume rm` sobre un objeto
+# cuyo lock no esta en la memoria compartida (2026-10-01, H-THYROX-302).
+readonly _INFRASTRUCTURE_LOCK_RELEASE_LITERAL="freeing lock for"
+# El remedio que Podman nombra. Exige que no corra ningun otro proceso de
+# Podman: `infrastructure_ensure` lo corre solo al arrancar, con el desfase
+# medido y ningun contenedor vivo (H-THYROX-302); en cualquier otro momento
+# lo decide el operador.
 readonly _INFRASTRUCTURE_RENUMBER_COMMAND="podman system renumber"
 
 # @description ¿El stderr de un comando de Podman declara una colision de locks?
@@ -340,7 +345,8 @@ readonly _INFRASTRUCTURE_RENUMBER_COMMAND="podman system renumber"
 # @exitcode 0 lleva el literal de la colision.
 # @exitcode 1 no lo lleva.
 thyrox_infrastructure_is_lock_collision() {
-  [[ "${1:-}" == *"$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL"* ]]
+  [[ "${1:-}" == *"$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL"* \
+     || "${1:-}" == *"$_INFRASTRUCTURE_LOCK_RELEASE_LITERAL"* ]]
 }
 export -f thyrox_infrastructure_is_lock_collision
 

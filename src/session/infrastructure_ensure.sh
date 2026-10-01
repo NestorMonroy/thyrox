@@ -33,10 +33,14 @@
 #         credencial de PostgreSQL con PostgreSQL seleccionado — no se toca
 #         nada —, o la imagen de un contenedor falta y su pull no cabe en disco (se rehusa
 #         antes de `podman create`, TASK-THYROX-0671).
-# Exit 3  `podman create` o `start` de un contenedor fallo por una colision de
-#         locks de Podman (TASK-THYROX-0695): stderr nombra el contenedor, el
-#         literal y el remedio. No se reintenta ni se renumera: lo decide el
-#         operador.
+# Exit 3  colision de locks de Podman. Antes de tocar nada se mide el balance
+#         de locks (H-THYROX-302): con locks asignados < objetos —la memoria
+#         compartida se rehizo vacia al reiniciar la VM— y ningun contenedor
+#         vivo, se corre `podman system renumber`; con un contenedor vivo, o
+#         si renumerar no corrige la medida, se sale con 3. Tambien sale con 3
+#         si `podman create` o `start` choca con un lock ajeno
+#         (TASK-THYROX-0695): stderr nombra el contenedor, el literal y el
+#         remedio, sin reintento.
 # =============================================================================
 set -uo pipefail
 
@@ -115,6 +119,78 @@ _infra_ensure_network() {
   fi
   "$PODMAN" network create "$_INFRASTRUCTURE_NETWORK" >/dev/null 2>&1
 }
+
+# @description Total de locks del motor: `num_locks` de containers.conf, o el
+# default de Podman (2048) si ningún archivo lo declara. `podman info` sólo
+# publica los libres. THYROX_INFRA_PODMAN_NUM_LOCKS lo fija en la suite.
+_infra_num_locks() {
+  local declared conf
+  if [[ -n "${THYROX_INFRA_PODMAN_NUM_LOCKS:-}" ]]; then
+    echo "$THYROX_INFRA_PODMAN_NUM_LOCKS"
+    return
+  fi
+  for conf in /etc/containers/containers.conf /usr/share/containers/containers.conf; do
+    [[ -f "$conf" ]] || continue
+    declared="$(sed -n 's/^[[:space:]]*num_locks[[:space:]]*=[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$conf" | tail -1)"
+    [[ -n "$declared" ]] && { echo "$declared"; return; }
+  done
+  echo 2048
+}
+
+# @description Locks asignados y objetos que tienen lock (contenedores, pods
+# y volúmenes), separados por espacio. Sin medida de locks libres no imprime
+# nada: un desfase no se infiere de una medida ausente.
+_infra_lock_balance() {
+  local free objects
+  free="$("$PODMAN" info --format '{{.Host.FreeLocks}}' 2>/dev/null)"
+  [[ "$free" =~ ^[0-9]+$ ]] || return 1
+  objects=$(( $("$PODMAN" ps -aq 2>/dev/null | grep -c .) \
+            + $("$PODMAN" pod ls -q 2>/dev/null | grep -c .) \
+            + $("$PODMAN" volume ls -q 2>/dev/null | grep -c .) ))
+  echo "$(( $(_infra_num_locks) - free )) $objects"
+}
+
+# @description Contenedores con proceso vivo: los que la base reporta
+# `running` y cuyo PID existe. Uno solo basta para que renumerar no sea seguro.
+_infra_live_containers() {
+  local name inspect_out pid
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    inspect_out="$("$PODMAN" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name" 2>/dev/null)" || continue
+    pid="${inspect_out##*$'\t'}"
+    [[ "${inspect_out%%$'\t'*}" == running && "$pid" != 0 ]] && kill -0 "$pid" 2>/dev/null && echo "$name"
+  done < <("$PODMAN" ps -a --format '{{.Names}}' 2>/dev/null)
+}
+
+# @description Locks desfasados tras reiniciar la VM (H-THYROX-302): la
+# memoria compartida de Podman se rehace vacía y la base conserva el número
+# de lock de cada objeto, así que el siguiente objeto nuevo recibe un lock
+# ocupado (`deadlock due to lock mismatch`, `freeing lock ... no such file`).
+# Se mide ANTES de tocar nada; con locks asignados < objetos y ningún
+# contenedor vivo, `podman system renumber` es seguro y se corre. Con un
+# contenedor vivo, o si renumerar no corrige la medida, se rehúsa.
+_infra_reconcile_locks() {
+  local balance allocated objects live
+  balance="$(_infra_lock_balance)" || return 0
+  read -r allocated objects <<< "$balance"
+  (( allocated >= objects )) && return 0
+  live="$(_infra_live_containers | paste -sd, -)"
+  if [[ -n "$live" ]]; then
+    echo "infrastructure_ensure: locks de Podman desfasados (asignados $allocated, objetos $objects) con contenedores vivos: $live." >&2
+    echo "                       Detenerlos y ejecutar \`$_INFRASTRUCTURE_RENUMBER_COMMAND\`; no se renumera con procesos vivos." >&2
+    exit "$EXIT_LOCK_COLLISION"
+  fi
+  "$PODMAN" system renumber >/dev/null 2>&1
+  local after_allocated after_objects
+  read -r after_allocated after_objects <<< "$(_infra_lock_balance)"
+  if (( after_allocated < after_objects )); then
+    echo "infrastructure_ensure: \`$_INFRASTRUCTURE_RENUMBER_COMMAND\` no corrigió los locks (asignados $after_allocated, objetos $after_objects)." >&2
+    exit "$EXIT_LOCK_COLLISION"
+  fi
+  printf 'locks asignados %s de objetos %s: desfasados, renumerados (ahora %s)\n' "$allocated" "$objects" "$after_allocated"
+}
+
+_infra_reconcile_locks
 
 if ! _infra_ensure_network; then
   echo "infrastructure_ensure: no se pudo asegurar la red $_INFRASTRUCTURE_NETWORK." >&2

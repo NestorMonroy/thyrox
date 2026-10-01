@@ -48,7 +48,27 @@ STATE="$STATE"
 MARKER="$MARKER"
 printf '%s\n' "\$*" >> "\$STATE/calls.log"
 case "\$1" in
-  info) exit 0 ;;
+  info)
+    # Con --format devuelve los locks libres sólo si el caso los declara: sin
+    # ese archivo la medida no existe, como en un Podman que no la publica.
+    [[ "\$*" == *FreeLocks* && -f "\$STATE/free-locks" ]] && cat "\$STATE/free-locks"
+    exit 0
+    ;;
+  ps)
+    for f in "\$STATE"/*.status; do [[ -e "\$f" ]] && basename "\$f" .status; done
+    exit 0
+    ;;
+  pod) cat "\$STATE/pods" 2>/dev/null; exit 0 ;;
+  volume) cat "\$STATE/volumes" 2>/dev/null; exit 0 ;;
+  system)
+    # renumber reasigna un lock a cada objeto: los asignados pasan a ser
+    # tantos como objetos, salvo que el caso declare que no corrige nada.
+    if [[ "\$2" == renumber && ! -f "\$STATE/renumber-noop" ]]; then
+      objects=\$(( \$(ls "\$STATE"/*.status 2>/dev/null | wc -l) + \$(cat "\$STATE/pods" "\$STATE/volumes" 2>/dev/null | wc -l) ))
+      echo \$(( 2048 - objects )) > "\$STATE/free-locks"
+    fi
+    exit 0
+    ;;
   network)
     case "\$2" in
       exists) [[ -f "\$STATE/network-\${3}" ]] && exit 0 || exit 1 ;;
@@ -149,6 +169,7 @@ run_ensure() {
   THYROX_INFRA_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-6}" \
   THYROX_INFRA_HEALTH_INTERVAL="${TEST_HEALTH_INTERVAL:-2}" \
   THYROX_INFRA_POSTGRES_PASSWORD="${TEST_PASSWORD-secret123}" \
+  THYROX_INFRA_PODMAN_NUM_LOCKS=2048 \
     bash "$SUBJECT" "$@"
 }
 
@@ -534,6 +555,91 @@ if grep -qE '^# Exit 3 ' "$SUBJECT"; then
   ok "caso 18: la cabecera del sujeto declara el exit 3"
 else
   bad "caso 18: la cabecera del sujeto no declara el exit 3"
+fi
+
+# =====================================================================
+# Casos 19-23 — locks desfasados tras reiniciar la VM (H-THYROX-302).
+# La memoria compartida de Podman se rehace vacía y la base conserva el
+# número de lock de cada objeto: locks asignados < objetos. El ensure lo mide
+# ANTES de tocar nada y renumera sólo si ningún contenedor tiene proceso vivo.
+# Episodio real (2026-10-01): 2048 libres de 2048 con 2 contenedores y 5
+# volúmenes en la base.
+# =====================================================================
+
+# seed_stale_base — el estado del episodio: un contenedor «running» con el
+# PID muerto, dos volúmenes y la memoria de locks vacía.
+seed_stale_base() {
+  reset_state
+  touch "$STATE/network-thyrox-infra"
+  echo running > "$STATE/thyrox-postgres.status"
+  echo 999999 > "$STATE/thyrox-postgres.pid"
+  printf 'vol-a\nvol-b\n' > "$STATE/volumes"
+  echo 2048 > "$STATE/free-locks"
+  echo ok > "$STATE/thyrox-postgres.health"
+}
+
+# first_line_matching <regex> — número de la primera línea de calls.log que casa.
+first_line_matching() { grep -nE "$1" "$STATE/calls.log" | head -1 | cut -d: -f1; }
+
+seed_stale_base
+out="$(run_ensure thyrox-postgres 2>&1)"; rc=$?
+thyrox_check "caso 19: locks desfasados con todo parado -> exit 0" "0" "$rc"
+thyrox_check "caso 19: renumera una sola vez" "1" "$(grep -c '^system renumber' "$STATE/calls.log")"
+renumber_at="$(first_line_matching '^system renumber')"
+mutation_at="$(first_line_matching '^(rm|create|start) ')"
+if [[ -n "$renumber_at" && -n "$mutation_at" && "$renumber_at" -lt "$mutation_at" ]]; then
+  ok "caso 19: renumera ANTES de retirar, crear o arrancar"
+else
+  bad "caso 19: el orden no es renumerar primero: $(cat "$STATE/calls.log")"
+fi
+if [[ "$out" == *"locks"*"asignados 0"*"objetos 3"*"renumerados"* ]]; then
+  ok "caso 19: publica la medida y la acción"
+else
+  bad "caso 19: no publica asignados, objetos y acción: [$out]"
+fi
+
+reset_state
+touch "$STATE/network-thyrox-infra"
+printf 'vol-a\nvol-b\n' > "$STATE/volumes"
+echo 2046 > "$STATE/free-locks"
+echo ok > "$STATE/thyrox-postgres.health"
+run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
+thyrox_check "caso 20: base coherente -> exit 0" "0" "$rc"
+thyrox_check "caso 20: base coherente -> no renumera" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+
+seed_stale_base
+nohup bash -c "exec -a ${MARKER}-live sleep 999" >/dev/null 2>&1 &
+live_pid=$!; disown "$live_pid" 2>/dev/null || true
+echo running > "$STATE/thyrox-redis.status"
+echo "$live_pid" > "$STATE/thyrox-redis.pid"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 21: desfase con un contenedor vivo -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+thyrox_check "caso 21: con un contenedor vivo no renumera" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+if [[ "$err" == *thyrox-redis* && "$err" == *"podman system renumber"* ]]; then
+  ok "caso 21: nombra el contenedor vivo y el remedio"
+else
+  bad "caso 21: el stderr no nombra el contenedor vivo ni el remedio: [$err]"
+fi
+if grep -qE '^(rm|create|start) ' "$STATE/calls.log"; then
+  bad "caso 21: tocó contenedores tras rehusar"
+else
+  ok "caso 21: rehúsa antes de tocar ningún contenedor"
+fi
+
+seed_stale_base
+rm -f "$STATE/free-locks"
+run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
+thyrox_check "caso 22: sin medida de locks -> sigue (exit 0)" "0" "$rc"
+thyrox_check "caso 22: sin medida de locks no renumera a ciegas" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+
+seed_stale_base
+touch "$STATE/renumber-noop"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 23: renumerar no corrige -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+if [[ "$err" == *"asignados 0"*"objetos 3"* ]]; then
+  ok "caso 23: el diagnóstico publica la medida tras renumerar"
+else
+  bad "caso 23: el diagnóstico no publica la medida: [$err]"
 fi
 
 thyrox_summary
