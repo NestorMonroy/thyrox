@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Suite del runtime de los ítems de src/session/headless-pool.sh: el selector
 # devuelve `runtime` ("ollama" | "claude-cli") junto al modelo, y el pool
-# asegura el Ollama gestionado, exporta a cada ítem el upstream compatible
-# con OpenAI o cae a `claude-cli` declarándolo.
+# asegura el Ollama gestionado o cae a `claude-cli` declarándolo. Al ítem no le
+# exporta ningún upstream compatible con OpenAI: su proxy pide el modelo al
+# coordinador (ADR-007 1.14.0, M8).
 #
 # Ni Ollama ni podman reales: el selector es un doble por
 # HEADLESS_POOL_RECOMMEND, el arranque del servicio otro por
@@ -60,12 +61,14 @@ lines_of() { [[ -f "$1" ]] && wc -l < "$1" || echo 0; }
 RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' run_pool
 check "ollama: exit 0" "$CODE" "0"
 check "ollama: asegura el servicio gestionado" "$(cat "$ENSURE_LOG" 2>/dev/null)" "thyrox-ollama"
-check "ollama: el ítem recibe modelo y upstream" "$(item_result)" "model=thyrox-qwen|base=http://127.0.0.1:51434/v1|open=thyrox-qwen"
+# M8 (ADR-007 1.14.0): el ítem recibe sólo el modelo; su proxy lo pide al
+# coordinador. Ninguna base URL ni modelo abierto viajan por el entorno.
+check "ollama: el ítem recibe el modelo y ningún upstream por entorno" "$(item_result)" "model=thyrox-qwen|base=none|open=none"
 check "ollama: la línea modelo dice el runtime" "$(model_line)" "modelo: thyrox-qwen (derivado de --task-class analisis) runtime: ollama"
 
 # 2 — el puerto del servicio es el declarado.
 RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' THYROX_INFRA_OLLAMA_PORT=6123 run_pool
-check "puerto declarado: la URL lo lleva" "$(item_result)" "model=thyrox-qwen|base=http://127.0.0.1:6123/v1|open=thyrox-qwen"
+check "puerto declarado: tampoco viaja al ítem" "$(item_result)" "model=thyrox-qwen|base=none|open=none"
 
 # 3 — el servicio no arranca: cae a claude-cli con el selector forzado y lo dice.
 RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' ENSURE_EXIT=3 run_pool

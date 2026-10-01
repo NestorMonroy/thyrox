@@ -136,6 +136,19 @@ describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
     expect(await child!.exited).not.toBe(0)
   })
 
+  test('un modelo con nombre contractual del catálogo va al proxy como --local-model, nunca como --model', async () => {
+    const localModel = 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf'
+    let argv: string[] = []
+    const credential = await credentialEnvironmentFor(launch, {
+      env: { PATH: '/bin' }, cwd: '/', models: [localModel, 'claude-sonnet-5'],
+      spawn: (args) => { argv = args; return shellChild('echo socket=/run/anunciado.sock; sleep 30') },
+    })
+    await credential.close()
+    const valueAfter = (flag: string): string[] => argv.flatMap((token, index) => (token === flag ? [argv[index + 1] as string] : []))
+    expect(valueAfter('--local-model')).toEqual([localModel])
+    expect(valueAfter('--model')).toEqual(['claude-sonnet-5'])
+  })
+
   test('el lanzador que sale antes de anunciar es una causa: su código y su stderr', async () => {
     const pending = credentialEnvironmentFor(launch, {
       env: {}, cwd: '/', models: ['m'], spawn: () => shellChild('echo "sin claude en el PATH" >&2; exit 2'),
