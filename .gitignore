@@ -188,6 +188,10 @@ agent-results/mutantes-en-vuelo.jsonl
 # directorio no se vuelva un cajón invisible para Git.
 /.thyrox/runtime/
 /.thyrox/pool-worktrees/
+# El catálogo de modelos locales y sus cualificaciones (localModelHome.ts):
+# digests del volumen de modelos y mediciones de este hardware, estado de la
+# instalación y no del repositorio.
+/.thyrox/models/
 
 # El proyecto sintetico de `check_package` (src/typescript/emit_declarations.py,
 # CHECK_FILE). Se retira en `finally`, pero un gate terminado con SIGKILL lo
