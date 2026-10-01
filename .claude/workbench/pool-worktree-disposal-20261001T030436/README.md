@@ -35,3 +35,7 @@ decisión del ejecutor.
 deja `git apply --cached` del snapshot sobre su base; `cmp` contra el tar.
 *Ciega a:* archivos ignorados por `.gitignore` dentro del worktree (no son
 contenido de la tarea: `node_modules`, `dist`, cachés).
+
+## Borrado (2026-10-01)
+
+Autorizado por el ejecutor con la condición de que no aportaran nada a semantic search: el contenido es código y tests de corridas cortadas (ver `snapshots/*.untracked.list` y los `+++ b/` de los parches), ningún documento de un dominio ingerible según ADR-008. Se retiraron los 8 con `git worktree remove --force` y `git worktree prune` (`removal.log`). Disco libre: 3 793 375 232 → 5 476 450 304 bytes (+1 683 075 072). Quedan los directorios de corrida vacíos y sus `.lock`, que el pool consulta.
