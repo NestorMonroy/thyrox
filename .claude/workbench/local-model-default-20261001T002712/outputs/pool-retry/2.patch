@@ -1,0 +1,398 @@
+diff --git a/src/packages/provider/bin/localProxy.ts b/src/packages/provider/bin/localProxy.ts
+index 0b3cc6983..d40b8331a 100755
+--- a/src/packages/provider/bin/localProxy.ts
++++ b/src/packages/provider/bin/localProxy.ts
+@@ -25,10 +25,15 @@
+  * (`src/proxy/openaiCompat/`) que sirve sólo ese modelo; los demás siguen a
+  * `claude-cli`. Sin declararlas, nada cambia; con una sola, rehúsa con exit 2.
+  *
++ * Sin `claude` y con el upstream abierto declarado —el Ollama gestionado que
++ * un pool o `thyrox -p` declaran—, arranca sirviendo sólo ese modelo: una
++ * petición a otro responde 400 nombrando el modelo y que no hay upstream
++ * `claude-cli`, en vez del «no lo sirve» genérico del enrutamiento.
++ *
+  * Imprime `socket=<ruta>` cuando ya escucha y atiende hasta SIGTERM o SIGINT,
+- * cuando cierra, borra el socket y sale 0. Sin `claude` rehúsa con exit 2 y
+- * no escucha: un proxy sin ejecutable aceptaría peticiones que no puede
+- * atender.
++ * cuando cierra, borra el socket y sale 0. Sin `claude` ni upstream abierto
++ * rehúsa con exit 2 y no escucha: un proxy sin upstream aceptaría peticiones
++ * que no puede atender.
+  */
+ import { randomUUID } from 'node:crypto'
+ import { startCredentialProxy } from '../src/credentialProxy.ts'
+@@ -42,6 +47,7 @@ const OPENAI_COMPAT_PROVIDER = 'openai-compatible'
+ const LOOPBACK_HOST = '127.0.0.1'
+ const ANY_FREE_PORT = 0
+ const REFUSAL_EXIT_CODE = 2
++const INVALID_REQUEST_STATUS = 400
+ 
+ function argument(name: string): string | undefined {
+   const index = process.argv.indexOf(name)
+@@ -74,10 +80,52 @@ function openModels(open: OpenAICompatDeclaration | undefined): GatewayModelEntr
+   return open ? [{ id: open.model, upstream_model: { [OPENAI_COMPAT_UPSTREAM_NAME]: open.model } }] : []
+ }
+ 
++/** El cuerpo de error del formato Anthropic con que el proxy rechaza una petición. */
++function invalidRequest(message: string): Response {
++  return Response.json({ type: 'error', error: { type: 'invalid_request_error', message } }, { status: INVALID_REQUEST_STATUS })
++}
++
++/** El `model` de un cuerpo JSON, o nada si el cuerpo no lo trae: ese rechazo es del servidor. */
++function requestedModel(body: string): string | undefined {
++  try {
++    const parsed: unknown = JSON.parse(body)
++    const model = typeof parsed === 'object' && parsed !== null ? (parsed as { model?: unknown }).model : undefined
++    return typeof model === 'string' ? model : undefined
++  } catch {
++    return undefined
++  }
++}
++
++function isOtherModel(model: string | undefined, open: OpenAICompatDeclaration): model is string {
++  return model !== undefined && model.toLowerCase() !== open.model.toLowerCase()
++}
++
++/**
++ * Delante del proxy cuando no hay `claude`: rechaza con su causa la petición
++ * a un modelo que no es el abierto y deja pasar el resto tal cual.
++ */
++function startOpenModelGuard(open: OpenAICompatDeclaration, upstreamUrl: string): ReturnType<typeof Bun.serve> {
++  return Bun.serve({
++    hostname: LOOPBACK_HOST,
++    port: ANY_FREE_PORT,
++    async fetch(request) {
++      const url = new URL(request.url)
++      const body = request.method === 'POST' ? await request.text() : undefined
++      const model = body === undefined ? undefined : requestedModel(body)
++      if (isOtherModel(model, open)) {
++        return invalidRequest(`el modelo ${model} no tiene upstream: este proxy sólo sirve ${open.model} (${OPENAI_COMPAT_UPSTREAM_NAME}) y no hay upstream ${UPSTREAM_NAME} (sin ejecutable de claude)`)
++      }
++      return fetch(`${upstreamUrl}${url.pathname}${url.search}`, { method: request.method, headers: request.headers, body })
++    },
++  })
++}
++
+ const openModel = declarationOrRefuse()
+ const socketPath = argument('--socket') ?? refuse('falta --socket <ruta>')
+-const executable = argument('--cli') ?? Bun.which('claude') ?? refuse('sin ejecutable de claude: declara --cli <ruta> o ponlo en el PATH')
+-const passthroughModels = repeatedArgument('--model')
++const executable = argument('--cli') ?? Bun.which('claude') ?? undefined
++if (executable === undefined && openModel === undefined) refuse('sin ejecutable de claude: declara --cli <ruta> o ponlo en el PATH')
++const cliUpstreams = executable === undefined ? [] : [{ name: UPSTREAM_NAME, command: { executable }, cwd: process.cwd() }]
++const passthroughModels = executable === undefined ? [] : repeatedArgument('--model')
+ const { version } = (await Bun.file(new URL('../package.json', import.meta.url)).json()) as { version: string }
+ // La clave de acceso vive sólo en este proceso: el socket la pone por el
+ // cliente, y el cliente sólo conoce el marcador.
+@@ -88,7 +136,7 @@ const proxy = startProxyServer({
+   port: ANY_FREE_PORT,
+   accessKeys: [accessKey],
+   routing: {
+-    upstreams: [...openUpstreams(openModel), { name: UPSTREAM_NAME, provider: 'anthropic' }],
++    upstreams: [...openUpstreams(openModel), ...cliUpstreams.map(({ name }) => ({ name, provider: 'anthropic' }))],
+     models: [...openModels(openModel), ...passthroughModels.map(id => ({ id, upstream_model: { [UPSTREAM_NAME]: id } }))],
+     auto_include_builtin_models: true,
+   },
+@@ -97,22 +145,23 @@ const proxy = startProxyServer({
+   selector: 'fill-first',
+   version,
+   env: process.env,
+-  claudeCli: { upstreams: [{ name: UPSTREAM_NAME, command: { executable }, cwd: process.cwd() }] },
++  claudeCli: { upstreams: cliUpstreams },
+   openaiCompat: {
+     upstreams: openModel ? [{ name: OPENAI_COMPAT_UPSTREAM_NAME, baseUrl: openModel.baseUrl, apiKey: openModel.apiKey }] : [],
+   },
+ })
+ // Para el socket, la clave de acceso es «la credencial» que antepone: viaja
+ // como `x-api-key`, que es lo que `createConfigApiKeyProvider` lee.
++const guard = executable === undefined && openModel !== undefined ? startOpenModelGuard(openModel, proxy.url) : undefined
+ const tunnel = await startCredentialProxy({
+   socketPath,
+-  upstream: proxy.url,
++  upstream: guard ? `http://${LOOPBACK_HOST}:${guard.port}` : proxy.url,
+   credential: { source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: accessKey },
+ })
+ // Los manejadores van ANTES de anunciar: el anuncio es la señal de «listo»,
+ // y quien lo lee puede mandar SIGTERM en seguida.
+ const stop = (): void => {
+-  void tunnel.close().then(() => proxy.stop()).then(() => process.exit(0))
++  void tunnel.close().then(() => guard?.stop(true)).then(() => proxy.stop()).then(() => process.exit(0))
+ }
+ process.on('SIGTERM', stop)
+ process.on('SIGINT', stop)
+diff --git a/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts b/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+index 905bdbaad..f4e702b57 100644
+--- a/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
++++ b/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+@@ -5,7 +5,7 @@
+  * exit 2 nombrando la variable que falta.
+  */
+ import { afterEach, describe, expect, test } from 'bun:test'
+-import { mkdtempSync, rmSync } from 'node:fs'
++import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import { BASE_URL_ENV, MODEL_ENV } from '../openaiCompat/declaration.ts'
+@@ -33,10 +33,20 @@ function fake(): FakeOpenAIUpstream {
+   return upstream
+ }
+ 
+-function launch(env: Record<string, string>) {
++/** Sin `--cli` y con un PATH vacío: el proxy no encuentra `claude`. */
++function withoutClaude(env: Record<string, string>): { args: string[]; env: Record<string, string> } {
++  const emptyPath = join(workDir(), 'empty-path')
++  mkdirSync(emptyPath)
++  return { args: [], env: { ...env, PATH: emptyPath } }
++}
++
++const WITH_CLAUDE = (env: Record<string, string>) => ({ args: ['--cli', process.execPath], env: { PATH: process.env.PATH ?? '', ...env } })
++
++function launch(env: Record<string, string>, setup = WITH_CLAUDE) {
+   const socket = join(workDir(), 'proxy.sock')
+-  const child = Bun.spawn([process.execPath, LOCAL_PROXY, '--socket', socket, '--cli', process.execPath], {
+-    env: { PATH: process.env.PATH ?? '', ...env },
++  const { args, env: childEnv } = setup(env)
++  const child = Bun.spawn([process.execPath, LOCAL_PROXY, '--socket', socket, ...args], {
++    env: childEnv,
+     stdin: 'ignore',
+     stdout: 'pipe',
+     stderr: 'pipe',
+@@ -45,8 +55,8 @@ function launch(env: Record<string, string>) {
+ }
+ 
+ /** Arranca el proxy y espera su anuncio; lo detiene al final de la prueba. */
+-async function listeningProxy(env: Record<string, string>): Promise<string> {
+-  const child = launch(env)
++async function listeningProxy(env: Record<string, string>, setup = WITH_CLAUDE): Promise<string> {
++  const child = launch(env, setup)
+   cleanups.push(async () => {
+     child.kill('SIGTERM')
+     await child.exited
+@@ -90,6 +100,31 @@ describe('localProxy con upstream compatible con OpenAI', () => {
+     expect(upstream.received).toHaveLength(0)
+   })
+ 
++  test('declarado y sin claude, arranca y sirve el modelo abierto', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutClaude)
++    const response = await sendOverSocket(socket, HELLO)
++    expect(response.status).toBe(200)
++    expect(upstream.received[0]?.model).toBe(OPEN_MODEL)
++  })
++
++  test('declarado y sin claude, otro modelo responde un error que lo nombra y nombra la falta de claude-cli', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutClaude)
++    const response = await sendOverSocket(socket, { ...HELLO, model: 'claude-sonnet-5' })
++    expect(response.status).toBe(400)
++    const message = ((await response.json()) as { error: { message: string } }).error.message
++    expect(message).toContain('claude-sonnet-5')
++    expect(message).toContain('claude-cli')
++    expect(upstream.received).toHaveLength(0)
++  })
++
++  test('sin declarar y sin claude rehúsa con exit 2 nombrando --cli', async () => {
++    const child = launch({}, withoutClaude)
++    expect(await child.exited).toBe(REFUSAL_EXIT_CODE)
++    expect(await new Response(child.stderr).text()).toContain('--cli')
++  })
++
+   test('a medias rehúsa con exit 2 nombrando la variable que falta, sin escuchar', async () => {
+     const child = launch({ [BASE_URL_ENV]: 'http://127.0.0.1:9/v1' })
+     expect(await child.exited).toBe(REFUSAL_EXIT_CODE)
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index fbb467ccc..693cf7d93 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -239,16 +239,42 @@ case "$TASK_CLASS" in
+     mecanica|analisis|adversarial|frontera) ;;
+     *) rehusa "--task-class va mecanica, analisis, adversarial o frontera, no: ${TASK_CLASS:-(vacio)}" ;;
+ esac
++# >>> runtime-routing
+ RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
+-# El selector devuelve el registro completo; sólo su `model` gobierna el ítem.
+-# Un selector que falla o devuelve algo que no es un identificador rehúsa sin
+-# lanzar nada: un modelo por defecto aquí volvería a escribirlo a mano.
+-MODEL="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" --json 2>/dev/null | jq -r '.model // empty' 2>/dev/null)" || MODEL=""
+-case "$MODEL" in
+-    claude-*) ;;
+-    *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: ${MODEL:-(sin respuesta)}" ;;
+-esac
+-echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS)"
++INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
++readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE=thyrox-ollama
++readonly DEFAULT_OLLAMA_PORT=51434
++# El selector devuelve `runtime`, `model` y, si cayó al proveedor,
++# `fallbackReason`. Un registro sin `runtime` es el del selector de catálogo:
++# `claude-cli`. Un selector que falla, o un modelo que no casa con su runtime
++# —un nombre contractual `thyrox-…` en Ollama, un id `claude-…` en el
++# proveedor—, rehúsa sin lanzar nada: un modelo por defecto aquí volvería a
++# escribirlo a mano.
++derive_recommendation() {
++    local reply
++    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" --json 2>/dev/null)" || reply=""
++    IFS=$'\t' read -r RUNTIME MODEL FALLBACK_REASON < <(printf '%s' "$reply" \
++        | jq -r --arg default "$PROVIDER_RUNTIME" '[.runtime // $default, .model // "", .fallbackReason // ""] | @tsv' 2>/dev/null)
++    case "$RUNTIME:$MODEL" in
++        "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
++        *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
++    esac
++}
++derive_recommendation
++# El modelo local exige el Ollama gestionado en marcha. Si no arranca, el pool
++# cae al proveedor pidiéndolo explícitamente al selector, y lo dice
++# (decisión del ejecutor 2026-10-01: «local y caer a Claude»).
++ensure_local_runtime() {
++    local ensure_exit=0
++    bash "$INFRASTRUCTURE_ENSURE_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
++    [[ "$ensure_exit" -ne 0 ]] || return 0
++    derive_recommendation --runtime "$PROVIDER_RUNTIME"
++    FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit)"
++}
++announce_model() {
++    echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS) runtime: $RUNTIME${FALLBACK_REASON:+ — respaldo: $FALLBACK_REASON}"
++}
++# <<< runtime-routing
+ [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
+ [[ -z "$CREDENTIAL_PROXY" || -z "$STORE_CREDENTIAL_PROXY" ]] \
+     || rehusa "--credential-proxy y --store-credential-proxy no van juntos: son dos fuentes de credencial para el mismo item"
+@@ -361,6 +387,19 @@ VRAM_FLOOR_MIB="${HEADLESS_POOL_VRAM_MIN_MIB:-0}"
+ # ítems)— es cuántos tiene que haber medido la fila para representarlos.
+ mapfile -t ITEMS < <(gawk 'NF')
+ [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
++# El servicio se asegura con los ítems ya leídos: un pool que rehúsa antes no
++# arranca nada. `claude -p` no habla con un upstream compatible con OpenAI.
++if [[ "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
++    [[ "$RUNNER_KIND" != claude ]] || rehusa "--runner claude no sirve el modelo local $MODEL: el runtime $LOCAL_RUNTIME va con --runner thyrox"
++    ensure_local_runtime
++fi
++announce_model
++# Con el modelo local, cada ítem recibe el upstream compatible con OpenAI del
++# Ollama gestionado; `thyrox -p` lo conecta en su proxy local.
++HP_OPENAI_COMPAT_BASE_URL=""
++[[ "$RUNTIME" != "$LOCAL_RUNTIME" ]] \
++    || HP_OPENAI_COMPAT_BASE_URL="http://127.0.0.1:${THYROX_INFRA_OLLAMA_PORT:-$DEFAULT_OLLAMA_PORT}/v1"
++export HP_OPENAI_COMPAT_BASE_URL
+ MIN_ITEMS=$(( ${#ITEMS[@]} < WIDTH ? ${#ITEMS[@]} : WIDTH ))
+ DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
+              # Representativa de lo que se lanza: la misma plantilla por su
+@@ -653,6 +692,8 @@ _headless_item_run() {
+          # El buzón de la ejecución y la dirección del ítem en él: el
+          # párrafo que antecede al prompt le dice cómo usarlos.
+          export THYROX_MAILBOX_DIR="$HP_MAILBOX" THYROX_POOL_ITEM_ADDRESS="item-$n"
++         [[ -z "$HP_OPENAI_COMPAT_BASE_URL" ]] \
++             || export THYROX_OPENAI_COMPAT_BASE_URL="$HP_OPENAI_COMPAT_BASE_URL" THYROX_OPENAI_COMPAT_MODEL="$HP_MODEL"
+          if [[ "$HP_ISOLATION" == worktree ]]; then
+              # >>> item-root
+              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
+diff --git a/tests/session/test-headless-pool-runtime.sh b/tests/session/test-headless-pool-runtime.sh
+new file mode 100644
+index 000000000..a4d814ddd
+--- /dev/null
++++ b/tests/session/test-headless-pool-runtime.sh
+@@ -0,0 +1,105 @@
++#!/usr/bin/env bash
++# Suite del runtime de los ítems de src/session/headless-pool.sh: el selector
++# devuelve `runtime` ("ollama" | "claude-cli") junto al modelo, y el pool
++# asegura el Ollama gestionado, exporta a cada ítem el upstream compatible
++# con OpenAI o cae a `claude-cli` declarándolo.
++#
++# Ni Ollama ni podman reales: el selector es un doble por
++# HEADLESS_POOL_RECOMMEND, el arranque del servicio otro por
++# HEADLESS_POOL_INFRASTRUCTURE_ENSURE, y el ejecutor del ítem uno que publica
++# el modelo y el entorno que recibió.
++set -uo pipefail
++ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
++POOL="$ROOT/src/session/headless-pool.sh"
++failures=0; total=0
++check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FALLA $1 — esperado '$3', obtenido '$2'"; failures=$((failures+1)); fi; }
++
++F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
++export THYROX_RUNTIME_DIR="$F/runtime"
++unset THYROX_OPENAI_COMPAT_BASE_URL THYROX_OPENAI_COMPAT_MODEL THYROX_INFRA_OLLAMA_PORT
++
++# El selector responde lo que diga RECOMMEND_REPLY; con `--runtime claude-cli`
++# responde el respaldo forzado. Cada llamada queda en su registro.
++cat > "$F/recommend" <<'EOF'
++#!/usr/bin/env bash
++printf '%s\n' "$*" >> "$RECOMMEND_LOG"
++case " $* " in
++  *" --runtime claude-cli "*) printf '{"runtime":"claude-cli","model":"claude-sonnet-5","taskClass":"%s"}\n' "$1" ;;
++  *) printf '%s\n' "$RECOMMEND_REPLY" ;;
++esac
++EOF
++# El arranque del servicio: registra su argumento y sale con ENSURE_EXIT.
++cat > "$F/ensure" <<'EOF'
++#!/usr/bin/env bash
++printf '%s\n' "$*" >> "$ENSURE_LOG"
++exit "${ENSURE_EXIT:-0}"
++EOF
++cat > "$F/runner" <<'EOF'
++#!/usr/bin/env bash
++cat >/dev/null
++model=""
++while [[ $# -gt 0 ]]; do case "$1" in --model) model="$2"; shift 2 ;; *) shift ;; esac; done
++r="model=$model|base=${THYROX_OPENAI_COMPAT_BASE_URL:-none}|open=${THYROX_OPENAI_COMPAT_MODEL:-none}"
++jq -cn --arg r "$r" '{type:"result",result:$r}'
++EOF
++chmod +x "$F/recommend" "$F/ensure" "$F/runner"
++printf 'Lee.\n' > "$F/prompt.md"
++export HEADLESS_POOL_RECOMMEND="$F/recommend" HEADLESS_POOL_INFRASTRUCTURE_ENSURE="$F/ensure" HEADLESS_POOL_RUNNER="$F/runner"
++export RECOMMEND_LOG="$F/recommend.log" ENSURE_LOG="$F/ensure.log"
++
++run_pool() {
++    rm -rf "$F/out" "$RECOMMEND_LOG" "$ENSURE_LOG"
++    OUTPUT="$(printf 'alfa\n' | HEADLESS_POOL_TIME="$F/missing" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" \
++        bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --width 1 "$@" 2>&1)"; CODE=$?
++}
++item_result() { cat "$F"/out/*.json 2>/dev/null | jq -r .result; }
++model_line() { printf '%s\n' "$OUTPUT" | gawk '/^modelo: /{print; exit}'; }
++lines_of() { [[ -f "$1" ]] && wc -l < "$1" || echo 0; }
++
++# 1 — ollama: asegura thyrox-ollama y el ítem recibe el upstream abierto.
++RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' run_pool
++check "ollama: exit 0" "$CODE" "0"
++check "ollama: asegura el servicio gestionado" "$(cat "$ENSURE_LOG" 2>/dev/null)" "thyrox-ollama"
++check "ollama: el ítem recibe modelo y upstream" "$(item_result)" "model=thyrox-qwen|base=http://127.0.0.1:51434/v1|open=thyrox-qwen"
++check "ollama: la línea modelo dice el runtime" "$(model_line)" "modelo: thyrox-qwen (derivado de --task-class analisis) runtime: ollama"
++
++# 2 — el puerto del servicio es el declarado.
++RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' THYROX_INFRA_OLLAMA_PORT=6123 run_pool
++check "puerto declarado: la URL lo lleva" "$(item_result)" "model=thyrox-qwen|base=http://127.0.0.1:6123/v1|open=thyrox-qwen"
++
++# 3 — el servicio no arranca: cae a claude-cli con el selector forzado y lo dice.
++RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' ENSURE_EXIT=3 run_pool
++check "respaldo por servicio: exit 0" "$CODE" "0"
++check "respaldo por servicio: pide el proveedor forzado" "$(gawk 'index($0, "--runtime claude-cli"){n++} END{print n+0}' "$RECOMMEND_LOG")" "1"
++check "respaldo por servicio: el ítem va a claude sin upstream abierto" "$(item_result)" "model=claude-sonnet-5|base=none|open=none"
++check "respaldo por servicio: la línea nombra runtime y motivo" "$(model_line)" "modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (infrastructure_ensure salió 3)"
++
++# 4 — el selector ya cae: el motivo llega a la línea y no se toca el servicio.
++RECOMMEND_REPLY='{"runtime":"claude-cli","model":"claude-sonnet-5","taskClass":"analisis","fallbackReason":"catálogo vacío"}' run_pool
++check "respaldo del selector: exit 0" "$CODE" "0"
++check "respaldo del selector: no asegura el servicio" "$(lines_of "$ENSURE_LOG")" "0"
++check "respaldo del selector: la línea lleva su motivo" "$(model_line)" "modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: catálogo vacío"
++check "respaldo del selector: sin upstream abierto" "$(item_result)" "model=claude-sonnet-5|base=none|open=none"
++
++# 5 — runtime y modelo tienen que casar; un runtime desconocido rehúsa.
++RECOMMEND_REPLY='{"runtime":"ollama","model":"claude-sonnet-5"}' run_pool
++check "ollama con id claude: exit 2" "$CODE" "2"
++check "ollama con id claude: no asegura el servicio" "$(lines_of "$ENSURE_LOG")" "0"
++RECOMMEND_REPLY='{"runtime":"claude-cli","model":"thyrox-qwen"}' run_pool
++check "claude-cli con nombre thyrox: exit 2" "$CODE" "2"
++RECOMMEND_REPLY='{"runtime":"vllm","model":"thyrox-qwen"}' run_pool
++check "runtime desconocido: exit 2" "$CODE" "2"
++check "runtime desconocido: lo nombra" "$(printf '%s' "$OUTPUT" | gawk 'index($0, "vllm"){n++} END{print n+0}')" "1"
++
++# 6 — sin `runtime` el registro es el del selector de catálogo: claude-cli.
++RECOMMEND_REPLY='{"kind":"analisis","model":"claude-sonnet-5"}' run_pool
++check "sin runtime: exit 0" "$CODE" "0"
++check "sin runtime: claude-cli sin motivo" "$(model_line)" "modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli"
++
++# 7 — `claude -p` no habla con Ollama: rehúsa antes de asegurar nada.
++RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen"}' run_pool --runner claude
++check "runner claude con ollama: exit 2" "$CODE" "2"
++check "runner claude con ollama: no asegura el servicio" "$(lines_of "$ENSURE_LOG")" "0"
++
++echo "$((total - failures))/$total aserciones"
++[[ "$failures" -eq 0 ]]

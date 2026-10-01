@@ -239,16 +239,42 @@ case "$TASK_CLASS" in
     mecanica|analisis|adversarial|frontera) ;;
     *) rehusa "--task-class va mecanica, analisis, adversarial o frontera, no: ${TASK_CLASS:-(vacio)}" ;;
 esac
+# >>> runtime-routing
 RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
-# El selector devuelve el registro completo; sólo su `model` gobierna el ítem.
-# Un selector que falla o devuelve algo que no es un identificador rehúsa sin
-# lanzar nada: un modelo por defecto aquí volvería a escribirlo a mano.
-MODEL="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" --json 2>/dev/null | jq -r '.model // empty' 2>/dev/null)" || MODEL=""
-case "$MODEL" in
-    claude-*) ;;
-    *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: ${MODEL:-(sin respuesta)}" ;;
-esac
-echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS)"
+INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
+readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE=thyrox-ollama
+readonly DEFAULT_OLLAMA_PORT=51434
+# El selector devuelve `runtime`, `model` y, si cayó al proveedor,
+# `fallbackReason`. Un registro sin `runtime` es el del selector de catálogo:
+# `claude-cli`. Un selector que falla, o un modelo que no casa con su runtime
+# —un nombre contractual `thyrox-…` en Ollama, un id `claude-…` en el
+# proveedor—, rehúsa sin lanzar nada: un modelo por defecto aquí volvería a
+# escribirlo a mano.
+derive_recommendation() {
+    local reply
+    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" --json 2>/dev/null)" || reply=""
+    IFS=$'\t' read -r RUNTIME MODEL FALLBACK_REASON < <(printf '%s' "$reply" \
+        | jq -r --arg default "$PROVIDER_RUNTIME" '[.runtime // $default, .model // "", .fallbackReason // ""] | @tsv' 2>/dev/null)
+    case "$RUNTIME:$MODEL" in
+        "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
+        *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
+    esac
+}
+derive_recommendation
+# El modelo local exige el Ollama gestionado en marcha. Si no arranca, el pool
+# cae al proveedor pidiéndolo explícitamente al selector, y lo dice
+# (decisión del ejecutor 2026-10-01: local por defecto y respaldo en claude-cli).
+ensure_local_runtime() {
+    local ensure_exit=0
+    bash "$INFRASTRUCTURE_ENSURE_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
+    [[ "$ensure_exit" -ne 0 ]] || return 0
+    derive_recommendation --runtime "$PROVIDER_RUNTIME"
+    FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit)"
+}
+announce_model() {
+    echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS) runtime: $RUNTIME${FALLBACK_REASON:+ — respaldo: $FALLBACK_REASON}"
+}
+# <<< runtime-routing
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
 [[ -z "$CREDENTIAL_PROXY" || -z "$STORE_CREDENTIAL_PROXY" ]] \
     || rehusa "--credential-proxy y --store-credential-proxy no van juntos: son dos fuentes de credencial para el mismo item"
@@ -361,6 +387,19 @@ VRAM_FLOOR_MIB="${HEADLESS_POOL_VRAM_MIN_MIB:-0}"
 # ítems)— es cuántos tiene que haber medido la fila para representarlos.
 mapfile -t ITEMS < <(gawk 'NF')
 [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
+# El servicio se asegura con los ítems ya leídos: un pool que rehúsa antes no
+# arranca nada. `claude -p` no habla con un upstream compatible con OpenAI.
+if [[ "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
+    [[ "$RUNNER_KIND" != claude ]] || rehusa "--runner claude no sirve el modelo local $MODEL: el runtime $LOCAL_RUNTIME va con --runner thyrox"
+    ensure_local_runtime
+fi
+announce_model
+# Con el modelo local, cada ítem recibe el upstream compatible con OpenAI del
+# Ollama gestionado; `thyrox -p` lo conecta en su proxy local.
+HP_OPENAI_COMPAT_BASE_URL=""
+[[ "$RUNTIME" != "$LOCAL_RUNTIME" ]] \
+    || HP_OPENAI_COMPAT_BASE_URL="http://127.0.0.1:${THYROX_INFRA_OLLAMA_PORT:-$DEFAULT_OLLAMA_PORT}/v1"
+export HP_OPENAI_COMPAT_BASE_URL
 MIN_ITEMS=$(( ${#ITEMS[@]} < WIDTH ? ${#ITEMS[@]} : WIDTH ))
 DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
              # Representativa de lo que se lanza: la misma plantilla por su
@@ -653,6 +692,8 @@ _headless_item_run() {
          # El buzón de la ejecución y la dirección del ítem en él: el
          # párrafo que antecede al prompt le dice cómo usarlos.
          export THYROX_MAILBOX_DIR="$HP_MAILBOX" THYROX_POOL_ITEM_ADDRESS="item-$n"
+         [[ -z "$HP_OPENAI_COMPAT_BASE_URL" ]] \
+             || export THYROX_OPENAI_COMPAT_BASE_URL="$HP_OPENAI_COMPAT_BASE_URL" THYROX_OPENAI_COMPAT_MODEL="$HP_MODEL"
          if [[ "$HP_ISOLATION" == worktree ]]; then
              # >>> item-root
              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus

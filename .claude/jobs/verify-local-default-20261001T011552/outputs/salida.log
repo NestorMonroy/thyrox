@@ -1,0 +1,16 @@
+ 11 pass
+ 0 fail
+51 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+22/22 aserciones
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{
+aserciones: 147 de 148 · fallos: 1
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+ruff: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 1 archivo(s))
+  runtime claude-cli (respaldo: contexto medido insuficiente: el mayor aprobado para mecanica midió 8192 tokens < 126029 exigidos)
+  clase mecanica · esfuerzo low · contexto 126.029 tokens
+  vara: equivalentes de claude-haiku-4-5
+
+  → claude-haiku-4-5           13k/turno
+    claude-opus-5-5            25k/turno
+__BG_EXIT__=0

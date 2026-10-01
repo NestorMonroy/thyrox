@@ -5,7 +5,7 @@
  * exit 2 nombrando la variable que falta.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { BASE_URL_ENV, MODEL_ENV } from '../openaiCompat/declaration.ts'
@@ -33,10 +33,20 @@ function fake(): FakeOpenAIUpstream {
   return upstream
 }
 
-function launch(env: Record<string, string>) {
+/** Sin `--cli` y con un PATH vacío: el proxy no encuentra `claude`. */
+function withoutCliExecutable(env: Record<string, string>): { args: string[]; env: Record<string, string> } {
+  const emptyPath = join(workDir(), 'empty-path')
+  mkdirSync(emptyPath)
+  return { args: [], env: { ...env, PATH: emptyPath } }
+}
+
+const WITH_CLAUDE = (env: Record<string, string>) => ({ args: ['--cli', process.execPath], env: { PATH: process.env.PATH ?? '', ...env } })
+
+function launch(env: Record<string, string>, setup = WITH_CLAUDE) {
   const socket = join(workDir(), 'proxy.sock')
-  const child = Bun.spawn([process.execPath, LOCAL_PROXY, '--socket', socket, '--cli', process.execPath], {
-    env: { PATH: process.env.PATH ?? '', ...env },
+  const { args, env: childEnv } = setup(env)
+  const child = Bun.spawn([process.execPath, LOCAL_PROXY, '--socket', socket, ...args], {
+    env: childEnv,
     stdin: 'ignore',
     stdout: 'pipe',
     stderr: 'pipe',
@@ -45,8 +55,8 @@ function launch(env: Record<string, string>) {
 }
 
 /** Arranca el proxy y espera su anuncio; lo detiene al final de la prueba. */
-async function listeningProxy(env: Record<string, string>): Promise<string> {
-  const child = launch(env)
+async function listeningProxy(env: Record<string, string>, setup = WITH_CLAUDE): Promise<string> {
+  const child = launch(env, setup)
   cleanups.push(async () => {
     child.kill('SIGTERM')
     await child.exited
@@ -88,6 +98,31 @@ describe('localProxy con upstream compatible con OpenAI', () => {
     const response = await sendOverSocket(socket, HELLO)
     expect(response.status).toBe(400)
     expect(upstream.received).toHaveLength(0)
+  })
+
+  test('declarado y sin claude, arranca y sirve el modelo abierto', async () => {
+    const upstream = fake()
+    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutCliExecutable)
+    const response = await sendOverSocket(socket, HELLO)
+    expect(response.status).toBe(200)
+    expect(upstream.received[0]?.model).toBe(OPEN_MODEL)
+  })
+
+  test('declarado y sin claude, otro modelo responde un error que lo nombra y nombra la falta de claude-cli', async () => {
+    const upstream = fake()
+    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL }, withoutCliExecutable)
+    const response = await sendOverSocket(socket, { ...HELLO, model: 'claude-sonnet-5' })
+    expect(response.status).toBe(400)
+    const message = ((await response.json()) as { error: { message: string } }).error.message
+    expect(message).toContain('claude-sonnet-5')
+    expect(message).toContain('claude-cli')
+    expect(upstream.received).toHaveLength(0)
+  })
+
+  test('sin declarar y sin claude rehúsa con exit 2 nombrando --cli', async () => {
+    const child = launch({}, withoutCliExecutable)
+    expect(await child.exited).toBe(REFUSAL_EXIT_CODE)
+    expect(await new Response(child.stderr).text()).toContain('--cli')
   })
 
   test('a medias rehúsa con exit 2 nombrando la variable que falta, sin escuchar', async () => {

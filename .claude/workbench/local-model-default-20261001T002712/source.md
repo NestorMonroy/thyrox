@@ -108,3 +108,26 @@ como `model-artifacts`) con dos entradas y sus envoltorios en `bin/` (vía
    archivo de datos del paquete, para que el RL use la misma recompensa.
 3. Pruebas con un servidor HTTP falso y un `podman` falso; nada de red ni
    Ollama reales en las pruebas.
+
+## print-routing — TASK-THYROX-0711
+
+Lo que el ítem runtime-routing (0706) dejó sin hacer al perder la herramienta
+de shell (su reporte, `outputs/pool-retry/2.json`):
+
+1. **`thyrox -p --model thyrox-…`** (punto 3 de runtime-routing): en
+   `src/packages/cli/src/entry/printDelegation.ts`, sólo en la ruta que lanza
+   el proxy, si el modelo pedido es un nombre contractual
+   (`parseThyroxModelName` de `@thyrox/model-artifacts/modelName.ts`) y no hay
+   `THYROX_OPENAI_COMPAT_BASE_URL`/`_MODEL` declarados, el entorno del proxy
+   recibe `THYROX_OPENAI_COMPAT_BASE_URL=http://127.0.0.1:${THYROX_INFRA_OLLAMA_PORT:-51434}/v1`
+   y `THYROX_OPENAI_COMPAT_MODEL=<modelo>`. Lo declarado gana. Un modelo
+   `claude-…` no cambia de camino.
+2. **Controles de anulación** de lo que 0706 integró (`thyrox@<integración>`):
+   la derivación del runtime en `src/session/headless-pool.sh` (aceptar
+   `ollama`, exportar el upstream a los ítems, la línea `modelo:` con el
+   motivo del respaldo, rehusar un id que no casa con su runtime) y el modo
+   sólo-openai de `src/packages/provider/bin/localProxy.ts`. Por cada rama:
+   retirarla y contar qué aserciones caen, en
+   `tests/session/test-headless-pool-runtime.sh` y
+   `src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts`.
+   Si una rama se retira y no cae nada, se escribe la prueba que la discrimina.
