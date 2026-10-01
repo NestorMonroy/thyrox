@@ -6,15 +6,22 @@
 # Uso: delegate.sh <banco> <ítem> <modelo> <prompt.md> [max-turns]
 set -uo pipefail
 workbench="$1" item="$2" model="$3" prompt="$4" turns="${5:-150}"
+# Un trabajo delegado tiene cota propia: uno que se cuelga no vuelve solo, y su
+# unidad quedaría viva. 45 min por defecto; DELEGATE_TIMEOUT_SECONDS la cambia.
+timeout_seconds="${DELEGATE_TIMEOUT_SECONDS:-2700}"
 secret=/run/secrets/THYROX_OPENAI_COMPAT_API_KEY
 [[ -s "$secret" ]] || { echo "delegate: credencial ausente en la unidad" >&2; exit 2; }
 bash "$workbench/probes/unit_identity.sh" "$workbench" "$item" "delegate-$model"
 stream="$workbench/outputs/$item-$model.stream.jsonl"
+# El stream-json se construye al final desde el transcript: si el ítem falla a
+# mitad, el stream queda vacío. El transcript persiste turno a turno y es la
+# evidencia de dónde falló.
+mkdir -p "$workbench/outputs/$item-$model.transcript"
 cd /home/user/thyrox
 ANTHROPIC_BASE_URL=https://token-plan.maas.qwencloudapi.com/apps/anthropic ANTHROPIC_API_KEY="$(cat "$secret")" \
   THYROX_CODE_PROMPT_CACHE_TTL=5m \
-  bash bin/cli -p --model "$model" --setting-sources project --tools Read,Bash --allowedTools Read,Bash \
-  --max-turns "$turns" --no-session-persistence --output-format stream-json --verbose \
+  timeout "$timeout_seconds" bash bin/cli -p --model "$model" --setting-sources project --tools Read,Bash --allowedTools Read,Bash \
+  --max-turns "$turns" --transcript-dir "$workbench/outputs/$item-$model.transcript" --output-format stream-json --verbose \
   "$(cat "$prompt")" < /dev/null > "$stream" 2> "$workbench/outputs/$item-$model.stderr.log"
 code=$?
 result="$(jq -c 'select(.type == "result")' "$stream" 2>/dev/null | tail -1)"
