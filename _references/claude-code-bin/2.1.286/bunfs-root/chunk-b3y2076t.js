@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.286
+import{De}from"/$bunfs/root/chunk-dj0a6j9w.js";import{V,bC,j}from"/$bunfs/root/chunk-hbjpbz2q.js";var yGe=bC(()=>l().rowStaged),b=/^[A-Za-z_$][\w$.]{0,63}$/;function CMe(e){try{let t=e instanceof Error?e.name:typeof e;return typeof t==="string"&&b.test(t)?t:"unnamed"}catch{return"unnamed"}}function v(e,t){if(e===void 0)return"deliver";if(t===e)return"repeat";return e==="served"&&t==="refused"?"deliver":"out_of_order"}function g(e){return typeof e==="object"&&e!==null&&"then"in e&&typeof e.then==="function"}function m(e,t){if(!g(e))return;Promise.resolve(e).catch((s)=>{try{t?.(CMe(s))}catch{}})}function w(){let e,t=[],s=!1,d=[],a=(r)=>()=>{t=t.filter((n)=>n!==r)},h=(r,n,i)=>{try{return m(r.listener(n,a(r)),i),null}catch(o){return CMe(o)}},f=({verdict:r,onRejected:n})=>{e=r;let i=t,o=0,c=[];for(let u of i){if(!t.includes(u))continue;o++;let p=h(u,r,n);if(p!==null)c.push(p)}if(r!=="served")t=[];return{listeners:o,threw:c}},S=()=>{let r=[];while(d.length>0)r.push(...f(d.shift()).threw);return r};return{current:()=>e,subscribe:(r)=>{let n={listener:r},i=a(n);if(e===void 0)return t=[...t,n],i;let o=e;if(o==="served")t=[...t,n];let c=s;s=!0;try{let u=r(o,i);if(g(u))Promise.resolve(u).catch(()=>{})}catch(u){throw i(),u}finally{if(!c)S(),s=!1}return i},publish:(r,n)=>{let i=d.at(-1)?.verdict??e,o=v(i,r);if(o==="repeat")return{kind:"repeat"};if(o==="out_of_order")return{kind:"out_of_order",basis:i};if(d.push({verdict:r,onRejected:n}),s)return{kind:"queued"};s=!0;try{let c=f(d.shift());return{kind:"delivered",listeners:c.listeners,threw:[...c.threw,...S()]}}finally{d.length=0,s=!1}},reset:()=>{e=void 0,t=[],s=!1,d.length=0}}}var y=new V(()=>({rowStaged:De(),verdict:w()}));function l(){return y.of(j().host)}var yro=Object.freeze({current:()=>l().verdict.current(),subscribe:(e)=>l().verdict.subscribe(e)}),_ro=(e,t)=>l().verdict.publish(e,t);
+export{yGe,CMe,yro,_ro};

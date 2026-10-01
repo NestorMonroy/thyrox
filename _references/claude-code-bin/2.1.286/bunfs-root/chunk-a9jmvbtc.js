@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.286
+import{e_,bE}from"/$bunfs/root/chunk-v67w5hxq.js";import{xZ}from"/$bunfs/root/chunk-zpa40wwj.js";import{G}from"/$bunfs/root/chunk-fcbtf7cc.js";function wve(o){let t=o[0];if(!t)return null;let e=o.length;if(o.every((r)=>r.type===t.type))switch(t.type){case"local_bash":{let r=G(o,(s)=>s.type==="local_bash"&&s.kind==="monitor"),n=e-r,a=[];if(n>0)a.push(n===1?"1 shell":`${n} shells`);if(r>0)a.push(r===1?"1 monitor":`${r} monitors`);return a.join(", ")}case"in_process_teammate":{let r=new Set(o.map((n)=>n.type==="in_process_teammate"?n.identity.teamName:"")).size;return r===1?"1 team":`${r} teams`}case"local_agent":return e===1?"1 local agent":`${e} local agents`;case"remote_agent":{if(e===1&&t.isUltraplan)switch(t.ultraplanPhase){case"plan_ready":return`${bE} ultraplan ready`;case"needs_input":return`${e_} ultraplan needs your input`;default:return`${e_} ultraplan`}if(o.every((r)=>r.type==="remote_agent"&&r.remoteTaskType==="remote-workflow"))return e===1?`${e_} 1 remote dynamic workflow`:`${e_} ${e} remote dynamic workflows`;return e===1?`${e_} 1 cloud session`:`${e_} ${e} cloud sessions`}case"local_workflow":return e===1?"1 background dynamic workflow":`${e} background dynamic workflows`;case"monitor_mcp":case"monitor_ws":{if(o.every(xZ))return e===1?"1 Artifact comment monitor":`${e} Artifact comment monitors`;return e===1?"1 monitor":`${e} monitors`}case"mcp_task":return e===1?"1 MCP task":`${e} MCP tasks`;case"dream":return"dreaming";case"auto_mode_scan":return"auto-mode scan";case"local_memory_import":return t.windowsPlanned>0?`memory import ${t.windowsDone}/${t.windowsPlanned}`:"memory import";default:}return`${e} background ${e===1?"task":"tasks"}`}function Hur(o){if(o.length!==1)return!1;let t=o[0];return t.type==="remote_agent"&&t.isUltraplan===!0&&t.ultraplanPhase!==void 0}
+export{wve,Hur};
