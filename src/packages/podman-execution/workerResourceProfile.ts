@@ -10,7 +10,15 @@
  * trabajo futuro, no de este archivo.
  */
 
-export type WorkerNetworkMode = 'none' | 'bridge'
+/**
+ * `host` existe porque, medido en el contenedor remoto, el proxy de salida
+ * escucha en el loopback del anfitrión (`127.0.0.1`) y ni `bridge` ni
+ * `slirp4netns` lo alcanzan. Su costo: el trabajo ve TODO servicio del
+ * loopback del anfitrión (Redis, Ollama, el proxy local). Por eso nunca es
+ * el default y se declara sólo para trabajos sin credencial cuyo único
+ * destino de red es el exterior.
+ */
+export type WorkerNetworkMode = 'none' | 'bridge' | 'host'
 export type WorkerMountMode = 'ro' | 'rw'
 
 export type WorkerResourceMount = {
@@ -26,9 +34,17 @@ export type WorkerResourceProfile = {
   network: WorkerNetworkMode
   readOnlyRootfs: boolean
   mounts: WorkerResourceMount[]
+  /**
+   * Variables del proceso del trabajo. Su valor queda en `Config.Env` de
+   * `podman inspect` (medido 2026-09-29, `repositoryJobProfile.ts`), así que
+   * sólo admite valores públicos: un nombre de credencial se rehúsa.
+   */
+  environment?: Readonly<Record<string, string>>
 }
 
-const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge']
+const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge', 'host']
+const ENVIRONMENT_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/
+const CREDENTIAL_NAME_PATTERN = /(TOKEN|SECRET|PASSWORD|PASSWD|KEY|CREDENTIAL)/i
 const KNOWN_MOUNT_MODES: readonly WorkerMountMode[] = ['ro', 'rw']
 
 /**
@@ -97,6 +113,17 @@ export function validateWorkerResourceProfile(profile: WorkerResourceProfile): v
   requirePositiveInteger('pidsLimit', profile.pidsLimit)
   requireKnownNetwork(profile.network)
   profile.mounts.forEach((mount, index) => requireValidMount(mount, index))
+  Object.keys(profile.environment ?? {}).forEach(requirePublicEnvironmentName)
+}
+
+function requirePublicEnvironmentName(name: string): void {
+  const field = `environment.${name}`
+  if (!ENVIRONMENT_NAME_PATTERN.test(name)) {
+    throw new InvalidWorkerResourceProfileError(field, `nombre de variable inválido: ${name}`)
+  }
+  if (CREDENTIAL_NAME_PATTERN.test(name)) {
+    throw new InvalidWorkerResourceProfileError(field, `${name} nombra una credencial y su valor quedaría en podman inspect`)
+  }
 }
 
 function cpuLimitArgv(cpus: number): string[] {
@@ -119,6 +146,10 @@ function rootfsArgv(readOnlyRootfs: boolean): string[] {
   return readOnlyRootfs ? ['--read-only', '--read-only-tmpfs=false'] : []
 }
 
+function environmentArgv(environment: Readonly<Record<string, string>>): string[] {
+  return Object.keys(environment).sort().flatMap(name => ['--env', `${name}=${environment[name]}`])
+}
+
 function mountArgv(mount: WorkerResourceMount): string[] {
   return ['-v', `${mount.source}:${mount.destination}:${mount.mode}`]
 }
@@ -138,5 +169,6 @@ export function workerResourceLimitArgv(profile: WorkerResourceProfile): string[
     ...networkArgv(profile.network),
     ...rootfsArgv(profile.readOnlyRootfs),
     ...profile.mounts.flatMap(mountArgv),
+    ...environmentArgv(profile.environment ?? {}),
   ]
 }

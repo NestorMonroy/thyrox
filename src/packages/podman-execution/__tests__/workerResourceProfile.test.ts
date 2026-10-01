@@ -145,12 +145,49 @@ describe('validateWorkerResourceProfile — rehúsos, cada uno nombrando su camp
   })
 
   test('red desconocida', () => {
-    const profile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'host' } as unknown as WorkerResourceProfile
+    const profile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'container:other' } as unknown as WorkerResourceProfile
     try {
       validateWorkerResourceProfile(profile)
       throw new Error('debía rehusar')
     } catch (error) {
       expect((error as InvalidWorkerResourceProfileError).field).toBe('network')
     }
+  })
+})
+
+describe('red host y entorno declarado', () => {
+  const base: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'host' }
+
+  test('la red host se declara y se emite tal cual', () => {
+    expect(workerResourceLimitArgv(base)).toContain('host')
+    expect(workerResourceLimitArgv(base).slice(6, 8)).toEqual(['--network', 'host'])
+  })
+
+  test('el entorno declarado se emite como --env, en orden de nombre', () => {
+    const profile: WorkerResourceProfile = {
+      ...base,
+      environment: { NODE_EXTRA_CA_CERTS: '/certs/ca.crt', HTTPS_PROXY: 'http://127.0.0.1:43003' },
+    }
+    expect(workerResourceLimitArgv(profile).slice(-4)).toEqual([
+      '--env', 'HTTPS_PROXY=http://127.0.0.1:43003',
+      '--env', 'NODE_EXTRA_CA_CERTS=/certs/ca.crt',
+    ])
+  })
+
+  test('rehúsa un nombre de credencial: su valor quedaría en podman inspect', () => {
+    for (const name of ['REGISTRY_TOKEN', 'DB_PASSWORD', 'API_KEY', 'CLIENT_SECRET']) {
+      const profile: WorkerResourceProfile = { ...base, environment: { [name]: 'x' } }
+      try {
+        validateWorkerResourceProfile(profile)
+        throw new Error('debía rehusar')
+      } catch (error) {
+        expect((error as InvalidWorkerResourceProfileError).field).toBe(`environment.${name}`)
+      }
+    }
+  })
+
+  test('rehúsa un nombre de variable inválido', () => {
+    const profile: WorkerResourceProfile = { ...base, environment: { 'A=B': 'x' } }
+    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
   })
 })
