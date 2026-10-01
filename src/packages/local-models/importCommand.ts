@@ -15,7 +15,8 @@ import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
 import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import { openSharedStateStore } from '@thyrox/shared-state/factory.ts'
 
-import type { CommandContext } from './catalogCommand.js'
+import { infrastructureEnsureOf, type CommandContext } from './catalogCommand.js'
+import { infrastructureReady, REDIS_CONTAINER } from './infrastructureReadiness.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
 import { importExternalArtifact, importIdOf, type ExternalArtifactRequest } from './externalArtifact.js'
 import { QuantizationLab, containerMeasureProbe, resolveLabImage } from './quantizationLab.js'
@@ -42,6 +43,9 @@ export async function runImportCommand(argv: readonly string[], context: Command
     context.output.stderr(IMPORT_USAGE)
     return EXIT_REFUSED
   }
+  const ready = await infrastructureReady([REDIS_CONTAINER], infrastructureEnsureOf(context),
+    message => context.output.stderr(`local-models-import: ${message}`))
+  if (!ready) return EXIT_REFUSED
   const shared = openSharedStateStore({ env: context.env })
   try {
     const lease = await acquireRunLease(globalLeaseStore(shared), importIdOf(parsed.request), `${hostname()}:${process.pid}`)

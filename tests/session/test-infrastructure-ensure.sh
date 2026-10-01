@@ -673,4 +673,29 @@ run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
 thyrox_check "caso 24: estado real tras renumerar -> exit 0" "0" "$rc"
 thyrox_check "caso 24: estado real tras renumerar -> no renumera" "0" "$(grep -c '^system ' "$STATE/calls.log")"
 
+# Caso 25 — reinicio (TASK-THYROX-0727): Redis y Ollama persistidos como
+# `running` con el PID muerto y los locks desfasados. La reconciliación no
+# confía en lo persistido: renumera, invalida los dos `running`, los recrea y
+# sólo los declara listos tras su health check.
+reset_state
+touch "$STATE/network-thyrox-infra" "$STATE/image-present"
+for svc in thyrox-redis thyrox-ollama; do
+  echo running > "$STATE/$svc.status"
+  echo 999999 > "$STATE/$svc.pid"
+  echo ok > "$STATE/$svc.health"
+done
+echo 0 > "$STATE/thyrox-redis.lock"; echo 1 > "$STATE/thyrox-ollama.lock"
+printf 'models 1\n' > "$STATE/volumes"
+echo 2048 > "$STATE/free-locks"
+out="$(run_ensure thyrox-redis thyrox-ollama 2>&1)"; rc=$?
+thyrox_check "caso 25: reinicio -> exit 0" "0" "$rc"
+thyrox_check "caso 25: reinicio -> renumera una vez" "1" "$(grep -c '^system renumber' "$STATE/calls.log")"
+for svc in thyrox-redis thyrox-ollama; do
+  if [[ "$out" == *"$svc status=running pid_alive=no action=recreated health=healthy"* ]]; then
+    ok "caso 25: $svc persistido running con PID muerto -> recreado y sano"
+  else
+    bad "caso 25: $svc no se reconcilió a recreado y sano: [$out]"
+  fi
+done
+
 thyrox_summary

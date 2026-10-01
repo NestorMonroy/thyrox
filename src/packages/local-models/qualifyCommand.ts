@@ -16,7 +16,8 @@ import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
 import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 import type { MeasurementCondition } from '@thyrox/model-artifacts/modelQualification.ts'
 
-import type { CommandContext } from './catalogCommand.js'
+import { infrastructureEnsureOf, type CommandContext } from './catalogCommand.js'
+import { OLLAMA_CONTAINER, requireInfrastructure } from './infrastructureReadiness.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
 import { managedOllama } from './managedOllama.js'
 import { OllamaApi } from './ollamaApi.js'
@@ -51,6 +52,7 @@ export async function runQualifyCommand(argv: readonly string[], context: Comman
 }
 
 async function qualify(args: QualifyArguments, context: CommandContext): Promise<number> {
+  await requireInfrastructure([OLLAMA_CONTAINER], infrastructureEnsureOf(context))
   const home = localModelHome(context.env, context.thyroxRoot)
   const entry = (await loadModelCatalog(home.catalog)).byName(args.model)
   if (entry === undefined) throw new Error(`«${args.model}» no está en el catálogo ${home.catalog}: decláralo antes con local-models-catalog declare`)

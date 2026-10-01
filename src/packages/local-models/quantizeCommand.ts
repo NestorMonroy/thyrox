@@ -19,7 +19,8 @@ import { QUANTIZATION_METHODS, type QuantizationMethod, type StepRecord } from '
 import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import { openSharedStateStore } from '@thyrox/shared-state/factory.ts'
 
-import type { CommandContext } from './catalogCommand.js'
+import { infrastructureEnsureOf, type CommandContext } from './catalogCommand.js'
+import { infrastructureReady, REDIS_CONTAINER } from './infrastructureReadiness.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
 import { QuantizationLab, containerMeasureProbe, resolveLabImage } from './quantizationLab.js'
 import { runIdOf, runQuantization, type QuantizationRequest, type RunState } from './quantizationRun.js'
@@ -49,6 +50,9 @@ export async function runQuantizeCommand(argv: readonly string[], context: Comma
     context.output.stderr(QUANTIZE_USAGE)
     return EXIT_REFUSED
   }
+  const ready = await infrastructureReady([REDIS_CONTAINER], infrastructureEnsureOf(context),
+    message => context.output.stderr(`local-models-quantize: ${message}`))
+  if (!ready) return EXIT_REFUSED
   const shared = openSharedStateStore({ env: context.env })
   try {
     const lease = await acquireRunLease(globalLeaseStore(shared), runIdOf(parsed.request), `${hostname()}:${process.pid}`)

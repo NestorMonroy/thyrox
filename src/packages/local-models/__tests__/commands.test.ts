@@ -72,6 +72,9 @@ function context(install: Installation, stdout: string[], stderr: string[]): Com
     thyroxRoot: install.root,
     output: { stdout: line => stdout.push(line), stderr: line => stderr.push(line) },
     now: () => new Date('2026-10-01T07:00:00.000Z'),
+    // El Ollama de estas pruebas es un servidor falso ya levantado: la
+    // reconciliación lo declara sano sin tocar Podman.
+    ensureInfrastructure: async () => ({ exitCode: 0, stdout: '', stderr: '' }),
   }
 }
 
